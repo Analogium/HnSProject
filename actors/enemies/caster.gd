@@ -27,9 +27,13 @@ var _cast_cd := 0.0
 var _strafe_dir := 1.0
 
 
+## Le sens de rotation se déduit de la case d'apparition, comme la silhouette
+## (voir ActorSprite._pick). Surtout pas Game.rng : une même graine de zone doit
+## redonner exactement le même combat, et un caster qui tourne dans l'autre sens
+## change tout l'engagement.
 func setup(p_target: Node2D) -> void:
 	super(p_target)
-	_strafe_dir = 1.0 if Game.rng.randf() < 0.5 else -1.0
+	_strafe_dir = 1.0 if absi(hash(Vector2i(position.round()))) % 2 == 0 else -1.0
 
 
 func tick(delta: float) -> void:

@@ -143,7 +143,7 @@ func _export() -> void:
 func _frame_count(anim: String) -> int:
 	match anim:
 		"walk": return SpriteForge.WALK_SWING.size()
-		"attack": return 2
+		"attack": return SpriteForge.ATTACK_FRAMES
 		_: return SpriteForge.IDLE_BOB.size()
 
 

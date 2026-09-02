@@ -47,17 +47,27 @@ func _pick() -> int:
 
 ## Appelée par l'acteur à chaque tick. facing peut être nul : on garde alors la
 ## direction précédente plutôt que de repartir arbitrairement vers le bas.
+##
+## Un coup en cours verrouille tout : ni la direction, ni l'animation ne
+## bougent jusqu'à la fin. Sans ce verrou, le caster qui tourne autour du
+## joueur repartait face à sa trajectoire dès l'image suivante — il tirait donc
+## vers le joueur en jouant l'animation de côté — et le changement de nom
+## d'animation relançait le coup depuis sa première image. Même chose pour le
+## joueur dès qu'on bougeait la souris pendant le swing.
 func set_state(moving: bool, facing: Vector2) -> void:
+	if _attacking:
+		return
 	_face(facing)
-	if not _attacking:
-		_anim = "walk" if moving else "idle"
+	_anim = "walk" if moving else "idle"
 	_apply()
 
 
+## play() direct et non _apply() : un nouveau coup doit repartir de sa première
+## image même si le précédent jouait encore.
 func attack() -> void:
 	_attacking = true
 	_anim = "attack"
-	_apply()
+	play("attack_%s" % _dir)
 
 
 func _face(facing: Vector2) -> void:
@@ -73,10 +83,13 @@ func _face(facing: Vector2) -> void:
 
 ## Le test sur le nom est indispensable : play() repart de la première image,
 ## donc l'appeler à chaque tick figerait la marche sur son premier pas.
+##
+## next et non name : name est déjà le nom du nœud, hérité de Node, et le
+## masquer rendrait le code trompeur à la première relecture.
 func _apply() -> void:
-	var name := "%s_%s" % [_anim, _dir]
-	if animation != name or not is_playing():
-		play(name)
+	var next := "%s_%s" % [_anim, _dir]
+	if animation != next or not is_playing():
+		play(next)
 
 
 func _on_animation_finished() -> void:

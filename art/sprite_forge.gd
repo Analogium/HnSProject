@@ -47,6 +47,11 @@ const WALK_SWING := [1.0, 0.0, -1.0, 0.0]
 const WALK_BOB := [0.0, -1.0, 0.0, -1.0]
 const IDLE_BOB := [0.0, -1.0]
 
+## Armé, puis frappé. Deux images suffisent — c'est le contraste entre les deux
+## qui se lit, pas leur nombre. Constante et non nombre écrit à la main : la
+## galerie compose ses planches d'export à partir de la même valeur.
+const ATTACK_FRAMES := 2
+
 static var _cache: Dictionary = {}
 
 
@@ -65,7 +70,7 @@ static func frames(archetype: String, variant := 0) -> SpriteFrames:
 	for dir in DIRS:
 		_add_anim(sf, cfg, "idle_" + dir, dir, "idle", IDLE_BOB.size(), 3.0, true)
 		_add_anim(sf, cfg, "walk_" + dir, dir, "walk", WALK_SWING.size(), 10.0, true)
-		_add_anim(sf, cfg, "attack_" + dir, dir, "attack", 2, 11.0, false)
+		_add_anim(sf, cfg, "attack_" + dir, dir, "attack", ATTACK_FRAMES, 11.0, false)
 
 	_cache[key] = sf
 	return sf
@@ -249,7 +254,6 @@ static func _weapon_dir(cfg: Dictionary, dir: String, anim: String, index: int) 
 ## le côté du bras armé, la présence du visage, et la quantité de cheveux —
 ## redessiner un sprite de dos entier ne servirait à rien.
 static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces_camera: bool) -> void:
-	var head_r: float = cfg["head_r"]
 	var torso_r: float = cfg["torso_r"]
 	var sh_w: float = cfg["sh_w"]
 	var hip_w: float = cfg["hip_w"]
@@ -335,7 +339,6 @@ static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces
 ## gauche). Les membres arrière sont assombris : c'est le seul indice de
 ## profondeur dont on dispose sans redessiner.
 static func _draw_side(c: PixelCanvas, cfg: Dictionary, pose: Dictionary) -> void:
-	var head_r: float = cfg["head_r"]
 	var torso_r: float = cfg["torso_r"]
 	var limb_r: float = cfg["limb_r"]
 	var arm_r: float = cfg["arm_r"]
@@ -486,7 +489,7 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 
 ## Le mannequin n'a pas de squelette : un poteau, un sac, une cible peinte.
 ## Il ne marche pas — son unique animation est un léger balancement.
-static func _draw_dummy(c: PixelCanvas, cfg: Dictionary, pose: Dictionary) -> void:
+static func _draw_dummy(c: PixelCanvas, _cfg: Dictionary, pose: Dictionary) -> void:
 	var sway: float = float(pose["bob"]) * 0.6
 
 	c.ground_shadow(CX, FEET + 1.5, 5.5, 2.4)
