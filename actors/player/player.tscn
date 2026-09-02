@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://actors/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://actors/player/swing_arc.gd" id="5_arc"]
+[ext_resource type="PackedScene" path="res://actors/projectiles/player_bolt.tscn" id="6_bolt"]
 [ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Resource" path="res://resources/stats/player_stats.tres" id="4_stats"]
@@ -38,6 +39,7 @@ collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_player")
 stats = ExtResource("4_stats")
+bolt_scene = ExtResource("6_bolt")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_player")

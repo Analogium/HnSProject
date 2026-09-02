@@ -9,6 +9,6 @@ move_speed = 62.0
 attack_damage = 8.0
 attack_cooldown = 0.9
 attack_range = 20.0
-knockback_force = 120.0
+knockback_force = 0.0
 crit_chance = 0.0
 crit_multiplier = 1.0

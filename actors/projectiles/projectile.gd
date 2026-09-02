@@ -1,7 +1,12 @@
 class_name Projectile
 extends Area2D
 
-## Tir du caster. Le document ne le fournit pas, il n'en décrit que l'appel :
+## Tir générique, partagé par le caster et par le joueur : la logique est la
+## même — avancer, s'arrêter au mur, blesser la première Hurtbox rencontrée.
+## Ce sont les layers de collision de la scène qui décident de qui il peut
+## toucher, pas le script. D'où enemy_bolt.tscn et player_bolt.tscn.
+##
+## Le document ne fournit pas ce fichier, il n'en décrit que l'appel :
 ## setup(direction, dégâts, source).
 ##
 ## Contrairement aux ennemis, il garde son propre _physics_process : il n'est
@@ -12,6 +17,9 @@ extends Area2D
 @export var speed: float = 140.0
 @export var knockback: float = 80.0
 @export var lifetime: float = 3.0
+## Les tirs du joueur figent brièvement le jeu à l'impact, comme le corps à
+## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
+@export var hit_stop_on_impact: bool = false
 
 var _dir := Vector2.RIGHT
 var _damage := 0.0
@@ -45,6 +53,8 @@ func _on_area_entered(area: Area2D) -> void:
 	(area as Hurtbox).take_damage(
 		DamageInfo.new(_damage, global_position, knockback)
 	)
+	if hit_stop_on_impact:
+		Game.hit_stop()
 	queue_free()
 
 

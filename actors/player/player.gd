@@ -11,6 +11,13 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
+
+@export_group("Tir")
+## Attaque à distance. Moins de dégâts que le corps à corps, mais elle
+## n'oblige pas à entrer dans la mêlée : c'est le compromis à régler.
+@export var bolt_scene: PackedScene
+@export var bolt_damage: float = 7.0
+@export var bolt_cooldown: float = 0.30
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -21,10 +28,15 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 @onready var swing_arc: SwingArc = $AttackPivot/SwingArc
 @onready var camera: Camera2D = $Camera2D
 
+## Où atterrissent les tirs du joueur. Posé par la scène (zone ou arène) ;
+## à défaut, ils naissent à côté du joueur.
+var projectile_parent: Node2D
+
 var health: float
 var is_dead := false
 var facing := Vector2.RIGHT
 var _attack_cd := 0.0
+var _bolt_cd := 0.0
 var _is_swinging := false
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
@@ -57,6 +69,7 @@ func _input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	_attack_cd = maxf(_attack_cd - delta, 0.0)
+	_bolt_cd = maxf(_bolt_cd - delta, 0.0)
 
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
@@ -81,6 +94,9 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("attack") and _attack_cd <= 0.0:
 		_swing()
 
+	if Input.is_action_just_pressed("attack_ranged") and _bolt_cd <= 0.0:
+		_shoot()
+
 
 func _swing() -> void:
 	_attack_cd = stats.attack_cooldown
@@ -97,6 +113,19 @@ func _swing() -> void:
 
 	hitbox.set_deferred("monitoring", false)
 	_is_swinging = false
+
+
+func _shoot() -> void:
+	if bolt_scene == null:
+		return
+	_bolt_cd = bolt_cooldown
+
+	var parent := projectile_parent if projectile_parent != null else get_parent()
+	var bolt: Projectile = bolt_scene.instantiate()
+	# add_child d'abord : global_position n'a de sens qu'une fois dans l'arbre.
+	parent.add_child(bolt)
+	bolt.global_position = global_position + facing * 12.0
+	bolt.setup(facing, bolt_damage, self)
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:

@@ -5,12 +5,25 @@ signal died(enemy: Enemy)
 
 @export var stats: CharacterStats
 
+## Rayon auquel l'ennemi remarque sa cible.
+##
+## Avant, rien ne les freinait : le seul seuil était le culling de
+## l'EnemyManager (700 px), donc ils fonçaient depuis bien au-delà de l'écran.
+## 350 px, c'est la moitié — soit à peu près le bord de l'écran en 640 × 360.
+##
+## À ne pas confondre avec CULL_DISTANCE, qui reste un garde-fou de performance :
+## entre 350 et 700 px l'ennemi est bien mis à jour, il ne t'a simplement pas
+## encore repéré. Les deux valeurs confondues feraient geler à l'écran des
+## ennemis parfaitement visibles.
+@export var detection_radius: float = 350.0
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var hurtbox: Hurtbox = $Hurtbox
 
 var health: float
 var target: Node2D
 var is_dead := false
+var is_aggro := false
 ## Posé par EnemyManager.register(). Sert aux archétypes qui doivent faire
 ## naître quelque chose dans la scène (le caster et ses projectiles).
 var manager: EnemyManager
@@ -34,9 +47,23 @@ func tick(_delta: float) -> void:
 	pass
 
 
+## À appeler en tête de tick() par chaque archétype. Une fois alerté, l'ennemi
+## le reste : sinon il ferait le yo-yo dès qu'on repasse la limite du rayon.
+func _should_act() -> bool:
+	if target == null or is_dead:
+		return false
+	if not is_aggro:
+		var r := detection_radius
+		if global_position.distance_squared_to(target.global_position) <= r * r:
+			is_aggro = true
+	return is_aggro
+
+
 func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
+	# Se faire tirer dessus de loin alerte, même hors du rayon de détection.
+	is_aggro = true
 	health -= info.amount
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	_flash()

@@ -7,11 +7,30 @@ var hit_stop_duration := 0.05
 
 var rng := RandomNumberGenerator.new()
 
+## Scène d'où l'on vient, pour pouvoir ressortir d'un aperçu par la touche qui
+## l'a ouvert. Passer par goto_scene() plutôt que par change_scene_to_file()
+## directement, sinon l'historique se désynchronise.
+var previous_scene_path := ""
+
 var _hit_stop_active := false
 
 
 func _ready() -> void:
 	rng.randomize()
+
+
+func goto_scene(path: String) -> void:
+	var tree := get_tree()
+	if tree.current_scene != null:
+		previous_scene_path = tree.current_scene.scene_file_path
+	tree.change_scene_to_file(path)
+
+
+## Revient d'où l'on venait. Comme go_back() passe elle-même par goto_scene(),
+## deux appels successifs font un aller-retour : la touche qui ouvre un aperçu
+## peut donc aussi le refermer.
+func go_back(fallback: String = "res://world/zone.tscn") -> void:
+	goto_scene(previous_scene_path if previous_scene_path != "" else fallback)
 
 
 ## Fige le jeu très brièvement à l'impact.

@@ -33,7 +33,7 @@ func setup(p_target: Node2D) -> void:
 
 
 func tick(delta: float) -> void:
-	if target == null or is_dead:
+	if not _should_act():
 		return
 
 	var to_target := target.global_position - global_position

@@ -13,7 +13,7 @@ var _attack_cd := 0.0
 
 
 func tick(delta: float) -> void:
-	if target == null or is_dead:
+	if not _should_act():
 		return
 
 	var to_target := target.global_position - global_position

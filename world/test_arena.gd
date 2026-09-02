@@ -60,6 +60,7 @@ func _ready() -> void:
 	# passe à setup() sur chaque ennemi.
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
+	player.projectile_parent = projectiles
 	_spawn_pack()
 
 
@@ -71,6 +72,11 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
+
+	# Retenu avant le match : change_scene_to_file() détache ce nœud de l'arbre
+	# immédiatement, et get_viewport() renverrait alors null. Le viewport racine,
+	# lui, survit au changement de scène.
+	var vp := get_viewport()
 
 	match (event as InputEventKey).keycode:
 		KEY_1: Game.hit_stop_duration = maxf(Game.hit_stop_duration - 0.01, 0.0)
@@ -87,10 +93,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_C: _spawn_lone_caster()
 		KEY_K: _kill_all()
 		KEY_R: _reset_arena()
-		KEY_TAB: overlay.visible = not overlay.visible
+		KEY_F1: Game.goto_scene("res://world/zone.tscn")
+		KEY_F3: Game.goto_scene("res://world/map_debug.tscn")
+		KEY_H: overlay.visible = not overlay.visible
 		_: return
 
-	get_viewport().set_input_as_handled()
+	vp.set_input_as_handled()
 
 
 func _overlay_text() -> String:
@@ -105,7 +113,8 @@ func _overlay_text() -> String:
 		"[7/8] cooldown        %.2f s" % player.stats.attack_cooldown,
 		"[9/0] shake camera    %.0f" % player.shake_amount,
 		"[G] paquet mixte  [C] caster seul  [K] tout tuer",
-		"[R] reset arene   [TAB] masquer",
+		"[R] reset arene   [H] masquer",
+		"[F1] zone jouable   [F3] carte debug",
 	])
 
 
