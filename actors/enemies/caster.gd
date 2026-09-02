@@ -66,6 +66,10 @@ func tick(delta: float) -> void:
 	if dist < preferred_distance * 1.4 and _cast_cd <= 0.0 and _has_line_of_sight():
 		_cast_cd = stats.attack_cooldown
 		_fire(dir)
+		sprite.set_state(false, dir)
+		sprite.attack()
+	else:
+		_animate()
 
 
 ## Pas dans le document, mais une arène à piliers rend l'absence de test

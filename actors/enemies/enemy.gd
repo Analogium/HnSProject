@@ -17,7 +17,7 @@ signal died(enemy: Enemy)
 ## ennemis parfaitement visibles.
 @export var detection_radius: float = 350.0
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
 
 var health: float
@@ -45,6 +45,13 @@ func setup(p_target: Node2D) -> void:
 ## Surchargée par chaque archétype. Appelée par l'EnemyManager.
 func tick(_delta: float) -> void:
 	pass
+
+
+## À appeler en fin de tick(). Le sprite se pilote depuis la vitesse réelle et
+## non depuis l'intention de déplacement : un ennemi qui pousse contre un mur ne
+## doit pas continuer à marcher sur place.
+func _animate() -> void:
+	sprite.set_state(velocity.length() > 8.0, velocity)
 
 
 ## À appeler en tête de tick() par chaque archétype. Une fois alerté, l'ennemi

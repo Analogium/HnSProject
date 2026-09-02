@@ -27,15 +27,26 @@ const TILE_SIZE := 32
 @export var grunt_weight: int = 75
 @export var caster_weight: int = 25
 
+## Tirage propre à la zone, réamorcé par populate(). Surtout pas Game.rng : son
+## état dépend de tout ce qui a été tiré avant dans la session, donc une même
+## graine de zone n'y redonnerait pas la même population.
+var _rng := RandomNumberGenerator.new()
+
 
 ## Renvoie le nombre d'ennemis réellement placés.
-func populate(gen: MapGenerator, manager: EnemyManager, spawn_cell: Vector2i) -> int:
+func populate(
+	gen: MapGenerator, manager: EnemyManager, spawn_cell: Vector2i, zone_seed: int
+) -> int:
 	if gen.floor_cells.is_empty():
 		return 0
 
+	# Décalée par rapport à la graine de la carte : sinon deux zones aux cartes
+	# voisines auraient aussi des populations corrélées.
+	_rng.seed = zone_seed ^ 0x5EED
+
 	var placed := 0
 	for anchor in _pick_pack_anchors(gen, spawn_cell):
-		var size := Game.rng.randi_range(pack_size_min, pack_size_max)
+		var size := _rng.randi_range(pack_size_min, pack_size_max)
 		placed += _spawn_pack(gen, manager, anchor, size)
 	return placed
 
@@ -51,7 +62,7 @@ func _pick_pack_anchors(gen: MapGenerator, spawn_cell: Vector2i) -> Array[Vector
 
 	while anchors.size() < pack_count and attempts < max_attempts:
 		attempts += 1
-		var cell: Vector2i = gen.floor_cells[Game.rng.randi() % gen.floor_cells.size()]
+		var cell: Vector2i = gen.floor_cells[_rng.randi() % gen.floor_cells.size()]
 
 		if (cell - spawn_cell).length_squared() < min_from_spawn_sq:
 			continue
@@ -84,8 +95,8 @@ func _spawn_pack(
 	while placed < size and attempts < size * 12:
 		attempts += 1
 		var offset := Vector2i(
-			Game.rng.randi_range(-pack_radius_tiles, pack_radius_tiles),
-			Game.rng.randi_range(-pack_radius_tiles, pack_radius_tiles)
+			_rng.randi_range(-pack_radius_tiles, pack_radius_tiles),
+			_rng.randi_range(-pack_radius_tiles, pack_radius_tiles)
 		)
 		var cell := anchor + offset
 
@@ -112,4 +123,4 @@ func _pick_scene() -> PackedScene:
 	var total := grunt_weight + caster_weight
 	if total <= 0:
 		return grunt_scene
-	return caster_scene if Game.rng.randi() % total >= grunt_weight else grunt_scene
+	return caster_scene if _rng.randi() % total >= grunt_weight else grunt_scene

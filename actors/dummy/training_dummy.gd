@@ -11,7 +11,7 @@ extends CharacterBody2D
 const FRICTION := 0.12
 const RETURN_SPEED := 0.02   # rappel très lent vers la position d'origine
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var label: Label = $DamageLabel
 

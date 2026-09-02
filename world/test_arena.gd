@@ -95,6 +95,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_R: _reset_arena()
 		KEY_F1: Game.goto_scene("res://world/zone.tscn")
 		KEY_F3: Game.goto_scene("res://world/map_debug.tscn")
+		KEY_F4: Game.goto_scene("res://art/forge_gallery.tscn")
 		KEY_H: overlay.visible = not overlay.visible
 		_: return
 

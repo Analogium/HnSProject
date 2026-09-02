@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://actors/enemies/grunt.gd" id="1_grunt"]
+[ext_resource type="Script" path="res://art/actor_sprite.gd" id="5_sprite"]
 [ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Resource" path="res://resources/stats/grunt_stats.tres" id="4_stats"]
@@ -9,17 +10,6 @@
 resource_local_to_scene = true
 shader = ExtResource("2_flash")
 shader_parameter/flash_amount = 0.0
-
-[sub_resource type="Gradient" id="Gradient_grunt"]
-offsets = PackedFloat32Array(0, 0.45, 1)
-colors = PackedColorArray(0.55, 0.78, 0.35, 1, 0.31, 0.5, 0.2, 1, 0.12, 0.2, 0.09, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_grunt"]
-gradient = SubResource("Gradient_grunt")
-width = 14
-height = 20
-fill_from = Vector2(0, 0)
-fill_to = Vector2(0, 1)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 7.0
@@ -35,9 +25,10 @@ motion_mode = 1
 script = ExtResource("1_grunt")
 stats = ExtResource("4_stats")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_grunt")
-texture = SubResource("GradientTexture2D_grunt")
+script = ExtResource("5_sprite")
+archetype = "grunt"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 3)

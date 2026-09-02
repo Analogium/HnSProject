@@ -21,7 +21,7 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var attack_pivot: Node2D = $AttackPivot
 @onready var hitbox: Area2D = $AttackPivot/Hitbox
@@ -81,7 +81,10 @@ func _physics_process(delta: float) -> void:
 		facing = input.normalized()
 
 	attack_pivot.rotation = facing.angle()
-	sprite.flip_h = facing.x < 0.0
+	# Le sprite suit la visée, pas le déplacement : dans un hack'n'slash on
+	# recule en gardant l'ennemi en face, et voir le dos du joueur à ce
+	# moment-là casse la lecture du combat.
+	sprite.set_state(input != Vector2.ZERO, facing)
 
 	var speed := stats.move_speed * (ATTACK_MOVE_MULT if _is_swinging else 1.0)
 	if input != Vector2.ZERO:
@@ -103,6 +106,7 @@ func _swing() -> void:
 	_is_swinging = true
 	_already_hit.clear()
 	swing_arc.play(swing_duration)
+	sprite.attack()
 
 	# set_deferred : on est dans un callback physique, on ne peut pas
 	# modifier l'état de monitoring en direct.

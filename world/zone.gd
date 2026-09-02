@@ -28,6 +28,12 @@ const PACK_MIN_TILES := 3
 
 var generator: MapGenerator
 
+## Tirage propre à la zone : tout ce qui la dessine ou la peuple passe par lui.
+## C'est ce qui fait qu'une graine redonne exactement la même zone — mêmes murs,
+## mêmes tuiles, mêmes ennemis, mêmes silhouettes. Choisir une *nouvelle* graine
+## reste, lui, un tirage global.
+var zone_rng := RandomNumberGenerator.new()
+
 var _seed := 0
 var _gen_ms := 0.0
 var _paint_ms := 0.0
@@ -78,6 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
 		KEY_F3: Game.goto_scene("res://world/map_debug.tscn")
+		KEY_F4: Game.goto_scene("res://art/forge_gallery.tscn")
 		_: return
 
 	vp.set_input_as_handled()
@@ -85,6 +92,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func generate_zone(zone_seed: int) -> void:
 	_seed = zone_seed
+	zone_rng.seed = zone_seed
 	_kill_all()
 
 	generator = MapGenerator.new()
@@ -106,7 +114,7 @@ func generate_zone(zone_seed: int) -> void:
 	# Placement par paquets répartis sur toute la zone, avec du vide entre eux.
 	# C'est ça qui donne le rythme de traversée ; un paquet autour du joueur ne
 	# sert plus qu'au test manuel (touche G).
-	_spawned = spawner.populate(generator, enemy_manager, spawn_cell)
+	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
 
 
 func _paint() -> void:
@@ -134,8 +142,8 @@ func _wall_tile(x: int, y: int) -> int:
 
 ## Variation visuelle : 85 % de tuile neutre, 15 % de variantes.
 func _random_floor_tile() -> Vector2i:
-	if Game.rng.randf() < 0.15:
-		return Vector2i(Game.rng.randi_range(1, 3), 0)
+	if zone_rng.randf() < 0.15:
+		return Vector2i(zone_rng.randi_range(1, 3), 0)
 	return Vector2i(0, 0)
 
 
@@ -190,7 +198,7 @@ func _respawn() -> void:
 	player.revive()
 	var spawn_cell := generator.get_spawn_cell()
 	player.global_position = _cell_center(spawn_cell)
-	_spawned = spawner.populate(generator, enemy_manager, spawn_cell)
+	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
 
 
 func _overlay_text() -> String:
@@ -206,5 +214,5 @@ func _overlay_text() -> String:
 		"[TAB] carte de la zone",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[H] masquer cette aide",
-		"[F2] arene de reglage   [F3] reglage generation",
+		"[F2] arene de reglage   [F3] reglage generation   [F4] forge",
 	])

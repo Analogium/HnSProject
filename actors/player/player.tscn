@@ -1,6 +1,7 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://actors/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://art/actor_sprite.gd" id="7_sprite"]
 [ext_resource type="Script" path="res://actors/player/swing_arc.gd" id="5_arc"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_bolt.tscn" id="6_bolt"]
 [ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
@@ -11,17 +12,6 @@
 resource_local_to_scene = true
 shader = ExtResource("2_flash")
 shader_parameter/flash_amount = 0.0
-
-[sub_resource type="Gradient" id="Gradient_player"]
-offsets = PackedFloat32Array(0, 0.45, 1)
-colors = PackedColorArray(0.53, 0.78, 1, 1, 0.29, 0.51, 0.85, 1, 0.11, 0.19, 0.36, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_player"]
-gradient = SubResource("Gradient_player")
-width = 14
-height = 22
-fill_from = Vector2(0, 0)
-fill_to = Vector2(0, 1)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 7.0
@@ -41,9 +31,11 @@ script = ExtResource("1_player")
 stats = ExtResource("4_stats")
 bolt_scene = ExtResource("6_bolt")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_player")
-texture = SubResource("GradientTexture2D_player")
+script = ExtResource("7_sprite")
+archetype = "player"
+variant = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4)
