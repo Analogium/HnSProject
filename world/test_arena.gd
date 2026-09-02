@@ -1,38 +1,50 @@
 extends Node2D
 
-## Arène de test des étapes 3 à 5 : quelques murs, des mannequins, et un
-## panneau de réglage à chaud.
+## Arène de test des étapes 3 à 6 : quelques murs, des mannequins immobiles
+## qui servent de référence pour juger le coup, des grunts, et un panneau de
+## réglage à chaud.
 ##
-## L'étape 5 du document est la plus importante du jalon : c'est ici qu'on
-## décide si taper est agréable. Les valeurs se règlent en jeu, puis se
-## recopient à la main dans player_stats.tres / player.tscn une fois trouvées.
+## Les valeurs se règlent en jeu, puis se recopient à la main dans les .tres
+## et dans player.tscn une fois trouvées.
 
 const DUMMY_SCENE := preload("res://actors/dummy/training_dummy.tscn")
+const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
+const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
 
 const ARENA_SIZE := Vector2(640, 480)
 const WALL_THICKNESS := 16.0
 const WALL_COLOR := Color(0.16, 0.15, 0.19)
 
-## Obstacles intérieurs, en coordonnées monde.
+## Obstacles intérieurs, en coordonnées monde. Le centre reste dégagé : c'est
+## là qu'apparaît le joueur, et c'est autour de lui que tombent les paquets.
 const PILLARS := [
 	Rect2(140, 120, 48, 48),
 	Rect2(452, 120, 48, 48),
 	Rect2(140, 312, 48, 48),
 	Rect2(452, 312, 48, 48),
-	Rect2(296, 216, 48, 48),
 ]
 
+## On en garde deux : une cible qui ne bouge pas reste le meilleur repère pour
+## juger le hit-stop et le flash sans que ça riposte.
 const DUMMY_POSITIONS := [
-	Vector2(240, 160),
-	Vector2(400, 160),
-	Vector2(240, 320),
-	Vector2(400, 320),
-	Vector2(320, 110),
+	Vector2(240, 130),
+	Vector2(400, 130),
 ]
+
+## Taille d'un paquet, et distance à laquelle il apparaît du joueur.
+## Un paquet mixte — des grunts qui foncent, un caster derrière — est bien plus
+## intéressant qu'un paquet homogène : il faut décider si on perce jusqu'au
+## caster ou si on nettoie d'abord.
+const PACK_GRUNTS := 4
+const PACK_CASTERS := 1
+const PACK_DISTANCE := 130.0
+const CASTER_DISTANCE := 190.0
 
 @onready var walls: Node2D = $Walls
 @onready var entities: Node2D = $Entities
 @onready var player: Player = $Entities/Player
+@onready var enemy_manager: EnemyManager = $Entities/EnemyManager
+@onready var projectiles: Node2D = $Entities/Projectiles
 @onready var overlay: Label = $UI/Overlay
 
 var _dummies: Array[TrainingDummy] = []
@@ -42,6 +54,13 @@ func _ready() -> void:
 	_build_walls()
 	_spawn_dummies()
 	player.global_position = ARENA_SIZE * 0.5
+	player.died.connect(_on_player_died)
+
+	# Le target doit être posé avant tout register() : c'est lui que le manager
+	# passe à setup() sur chaque ennemi.
+	enemy_manager.target = player
+	enemy_manager.projectile_parent = projectiles
+	_spawn_pack()
 
 
 func _process(_delta: float) -> void:
@@ -64,7 +83,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_8: player.stats.attack_cooldown += 0.05
 		KEY_9: player.shake_amount = maxf(player.shake_amount - 1.0, 0.0)
 		KEY_0: player.shake_amount += 1.0
-		KEY_R: _reset_dummies()
+		KEY_G: _spawn_pack()
+		KEY_C: _spawn_lone_caster()
+		KEY_K: _kill_all()
+		KEY_R: _reset_arena()
 		KEY_TAB: overlay.visible = not overlay.visible
 		_: return
 
@@ -73,12 +95,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _overlay_text() -> String:
 	return "\n".join([
+		"PV %.0f/%.0f    ennemis %d" % [
+			maxf(player.health, 0.0), player.stats.max_health, enemy_manager.enemies.size()
+		],
+		"",
 		"[1/2] hit-stop        %.2f s" % Game.hit_stop_duration,
 		"[3/4] knockback       %.0f" % player.stats.knockback_force,
 		"[5/6] duree swing     %.2f s" % player.swing_duration,
 		"[7/8] cooldown        %.2f s" % player.stats.attack_cooldown,
 		"[9/0] shake camera    %.0f" % player.shake_amount,
-		"[R] reset cibles   [TAB] masquer",
+		"[G] paquet mixte  [C] caster seul  [K] tout tuer",
+		"[R] reset arene   [TAB] masquer",
 	])
 
 
@@ -128,7 +155,62 @@ func _spawn_dummies() -> void:
 		_dummies.append(dummy)
 
 
-func _reset_dummies() -> void:
+## Paquet mixte en cercle autour du joueur : les grunts convergent, ce qui met
+## la séparation à l'épreuve, et le caster se tient plus loin derrière.
+func _spawn_pack() -> void:
+	var origin := player.global_position
+	var total := PACK_GRUNTS + PACK_CASTERS
+	for i in total:
+		var angle := TAU * float(i) / float(total) + Game.rng.randf_range(-0.2, 0.2)
+		var is_caster := i >= PACK_GRUNTS
+		var radius := CASTER_DISTANCE if is_caster else PACK_DISTANCE
+		var scene := CASTER_SCENE if is_caster else GRUNT_SCENE
+		_add_enemy(scene, origin + Vector2.from_angle(angle) * radius)
+
+
+## Un caster seul, pour juger son comportement sans la mêlée autour.
+func _spawn_lone_caster() -> void:
+	var angle := Game.rng.randf() * TAU
+	_add_enemy(CASTER_SCENE, player.global_position + Vector2.from_angle(angle) * CASTER_DISTANCE)
+
+
+func _add_enemy(scene: PackedScene, pos: Vector2) -> void:
+	# On garde l'ennemi à l'intérieur des murs.
+	pos.x = clampf(pos.x, WALL_THICKNESS + 10.0, ARENA_SIZE.x - WALL_THICKNESS - 10.0)
+	pos.y = clampf(pos.y, WALL_THICKNESS + 10.0, ARENA_SIZE.y - WALL_THICKNESS - 10.0)
+
+	var enemy: Enemy = scene.instantiate()
+	enemy.position = pos
+	enemy_manager.add_child(enemy)
+	enemy_manager.register(enemy)
+
+
+func _kill_all() -> void:
+	# Copie du tableau : die() émet died, que le manager traite en retirant
+	# l'élément — on ne parcourt pas une liste qu'on modifie.
+	for e in enemy_manager.enemies.duplicate():
+		if is_instance_valid(e):
+			e.die()
+	# Les tirs déjà partis ne sont pas dans la liste du manager.
+	for p in projectiles.get_children():
+		p.queue_free()
+
+
+func _reset_arena() -> void:
 	for d in _dummies:
 		if is_instance_valid(d):
 			d.reset()
+	_kill_all()
+	player.revive()
+	player.global_position = ARENA_SIZE * 0.5
+	_spawn_pack()
+
+
+func _on_player_died() -> void:
+	# Pas d'écran de fin au jalon 1 : on remet en jeu pour pouvoir continuer
+	# à régler le game feel.
+	#
+	# En différé, impérativement : la mort arrive depuis Grunt.tick(), donc
+	# depuis la boucle de l'EnemyManager. Vider et repeupler la liste des
+	# ennemis en plein parcours la ferait rétrécir sous ses pieds.
+	_reset_arena.call_deferred()

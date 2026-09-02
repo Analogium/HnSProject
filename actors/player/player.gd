@@ -1,6 +1,8 @@
 class_name Player
 extends CharacterBody2D
 
+signal died
+
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
 const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
@@ -16,9 +18,11 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var attack_pivot: Node2D = $AttackPivot
 @onready var hitbox: Area2D = $AttackPivot/Hitbox
+@onready var swing_arc: SwingArc = $AttackPivot/SwingArc
 @onready var camera: Camera2D = $Camera2D
 
 var health: float
+var is_dead := false
 var facing := Vector2.RIGHT
 var _attack_cd := 0.0
 var _is_swinging := false
@@ -82,6 +86,7 @@ func _swing() -> void:
 	_attack_cd = stats.attack_cooldown
 	_is_swinging = true
 	_already_hit.clear()
+	swing_arc.play(swing_duration)
 
 	# set_deferred : on est dans un callback physique, on ne peut pas
 	# modifier l'état de monitoring en direct.
@@ -107,6 +112,8 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 
 
 func _on_damaged(info: DamageInfo) -> void:
+	if is_dead:
+		return
 	health -= info.amount
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	_flash()
@@ -120,6 +127,20 @@ func _flash() -> void:
 	sprite.material.set_shader_parameter("flash_amount", 0.0)
 
 
+## Le drapeau évite d'émettre died plusieurs fois : plusieurs grunts peuvent
+## frapper dans la même image, et chaque coup relancerait sinon un rechargement
+## complet de la zone.
 func _die() -> void:
+	if is_dead:
+		return
+	is_dead = true
 	set_physics_process(false)
-	print("mort")   # à remplacer par l'écran de fin de run
+	velocity = Vector2.ZERO
+	died.emit()   # l'écran de fin de run se branchera ici
+
+
+func revive() -> void:
+	is_dead = false
+	health = stats.max_health
+	velocity = Vector2.ZERO
+	set_physics_process(true)
