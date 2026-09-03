@@ -149,15 +149,9 @@ func _on_damaged(info: DamageInfo) -> void:
 		return
 	health -= info.amount
 	velocity += (global_position - info.source_position).normalized() * info.knockback
-	_flash()
+	sprite.flash()
 	if health <= 0.0:
 		_die()
-
-
-func _flash() -> void:
-	sprite.material.set_shader_parameter("flash_amount", 1.0)
-	await get_tree().create_timer(0.08, true, false, true).timeout
-	sprite.material.set_shader_parameter("flash_amount", 0.0)
 
 
 ## Le drapeau évite d'émettre died plusieurs fois : plusieurs grunts peuvent

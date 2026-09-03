@@ -15,7 +15,9 @@ extends Area2D
 ## ne se justifie pas au jalon 1.
 
 @export var speed: float = 140.0
-@export var knockback: float = 80.0
+## Zéro par défaut, comme CharacterStats.knockback_force : ce jeu n'a pas de
+## recul. Un nouveau projectile ne doit pas en réintroduire sans qu'on le veuille.
+@export var knockback: float = 0.0
 @export var lifetime: float = 3.0
 ## Les tirs du joueur figent brièvement le jeu à l'impact, comme le corps à
 ## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.

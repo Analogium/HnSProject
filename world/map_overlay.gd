@@ -61,30 +61,32 @@ func _draw() -> void:
 
 	draw_rect(Rect2(Vector2.ZERO, size), BACKDROP)
 
-	var scale := _scale()
-	var span := Vector2(_grid) * scale
+	# zoom et non scale : scale est déjà la propriété d'échelle du Control, et
+	# la masquer rendrait ce bloc trompeur à la relecture.
+	var zoom := _zoom()
+	var span := Vector2(_grid) * zoom
 	var origin := ((size - span) * 0.5).floor()
 	draw_texture_rect(_tex, Rect2(origin, span), false)
 
 	if enemy_manager != null:
 		for e in enemy_manager.enemies:
 			if is_instance_valid(e) and not e.is_dead:
-				_marker(origin, scale, e.global_position,
+				_marker(origin, zoom, e.global_position,
 					CASTER_COLOR if e is Caster else GRUNT_COLOR, 1.0)
 
 	if player != null:
-		_marker(origin, scale, player.global_position, PLAYER_COLOR, 2.0)
+		_marker(origin, zoom, player.global_position, PLAYER_COLOR, 2.0)
 
 
 ## Échelle entière : à l'échelle fractionnaire les pixels de la carte bavent.
-func _scale() -> float:
+func _zoom() -> float:
 	var fit := minf(size.x, size.y) * FIT / float(maxi(_grid.x, _grid.y))
 	return maxf(1.0, floorf(fit))
 
 
-func _marker(origin: Vector2, scale: float, world_pos: Vector2, color: Color, grow: float) -> void:
-	var p := origin + (world_pos / float(_tile_size)) * scale
-	var s := scale + grow * 2.0
+func _marker(origin: Vector2, zoom: float, world_pos: Vector2, color: Color, grow: float) -> void:
+	var p := origin + (world_pos / float(_tile_size)) * zoom
+	var s := zoom + grow * 2.0
 	# Liseré sombre : sans lui un marqueur sur du sol clair devient illisible.
 	draw_rect(Rect2(p - Vector2(s, s) * 0.5 - Vector2.ONE, Vector2(s + 2.0, s + 2.0)), OUTLINE)
 	draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), color)

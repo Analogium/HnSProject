@@ -11,7 +11,9 @@ const TILE_SIZE := 32
 const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
 const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
 
-## Paquet manuel, en attendant le placement par paquets de l'étape 10.
+## Paquet manuel autour du joueur (touche G). Ce n'est plus le peuplement de la
+## zone — c'est l'EnemySpawner qui s'en charge — mais un outil de test, pour
+## provoquer une mêlée sur commande sans traverser la carte.
 const PACK_GRUNTS := 4
 const PACK_CASTERS := 1
 const PACK_RADIUS_TILES := 6
@@ -141,9 +143,11 @@ func _wall_tile(x: int, y: int) -> int:
 
 
 ## Variation visuelle : 85 % de tuile neutre, 15 % de variantes.
+## Les bornes viennent de TilesetBuilder et ne sont pas réécrites ici : ajouter
+## une variante à l'atlas doit suffire à la voir apparaître dans la zone.
 func _random_floor_tile() -> Vector2i:
 	if zone_rng.randf() < 0.15:
-		return Vector2i(zone_rng.randi_range(1, 3), 0)
+		return Vector2i(zone_rng.randi_range(1, TilesetBuilder.FLOOR_VARIANTS - 1), 0)
 	return Vector2i(0, 0)
 
 

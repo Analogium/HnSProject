@@ -73,7 +73,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	is_aggro = true
 	health -= info.amount
 	velocity += (global_position - info.source_position).normalized() * info.knockback
-	_flash()
+	sprite.flash()
 	if health <= 0.0:
 		die()
 
@@ -84,11 +84,3 @@ func die() -> void:
 	is_dead = true
 	died.emit(self)
 	queue_free()
-
-
-func _flash() -> void:
-	sprite.material.set_shader_parameter("flash_amount", 1.0)
-	# ignore_time_scale : sans ça le hit-stop étire le flash d'un facteur 50.
-	await get_tree().create_timer(0.08, true, false, true).timeout
-	if is_instance_valid(self):
-		sprite.material.set_shader_parameter("flash_amount", 0.0)

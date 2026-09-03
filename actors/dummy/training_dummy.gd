@@ -2,11 +2,12 @@ class_name TrainingDummy
 extends CharacterBody2D
 
 ## Cible d'entraînement de l'étape 4. Elle ne meurt pas et ne rend pas les coups :
-## elle sert uniquement à juger le hit-stop, le knockback et le flash.
+## elle sert à juger le hit-stop et le flash, et à lire les dégâts cumulés.
 ##
-## Écart assumé avec le document (qui décrit un StaticBody2D) : un CharacterBody2D
-## permet de voir le knockback tout de suite, alors que c'est justement une des
-## trois sensations à valider au jalon 1. Elle revient à sa place toute seule.
+## Le recul ne fait pas partie du jeu — il est à zéro partout, c'est un choix —
+## mais elle reste un CharacterBody2D et non le StaticBody2D du document : c'est
+## ce qui permet de le rallumer avec les touches 3/4 de l'arène et de le juger
+## tout de suite. Elle revient à sa place toute seule.
 
 const FRICTION := 0.12
 const RETURN_SPEED := 0.02   # rappel très lent vers la position d'origine
@@ -21,8 +22,6 @@ var _total_damage := 0.0
 
 func _ready() -> void:
 	_home = global_position
-	# Matériau unique par instance, sinon toutes les cibles flashent ensemble.
-	sprite.material = sprite.material.duplicate()
 	hurtbox.damaged.connect(_on_damaged)
 	label.text = ""
 
@@ -45,11 +44,4 @@ func _on_damaged(info: DamageInfo) -> void:
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	label.text = "%d" % roundi(_total_damage)
 	label.modulate = Color(1.0, 0.85, 0.3) if info.is_crit else Color(1, 1, 1)
-	_flash()
-
-
-func _flash() -> void:
-	sprite.material.set_shader_parameter("flash_amount", 1.0)
-	await get_tree().create_timer(0.08, true, false, true).timeout
-	if is_instance_valid(self):
-		sprite.material.set_shader_parameter("flash_amount", 0.0)
+	sprite.flash()

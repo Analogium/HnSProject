@@ -115,7 +115,7 @@ func _overlay_text() -> String:
 		"[9/0] shake camera    %.0f" % player.shake_amount,
 		"[G] paquet mixte  [C] caster seul  [K] tout tuer",
 		"[R] reset arene   [H] masquer",
-		"[F1] zone jouable   [F3] carte debug",
+		"[F1] zone jouable   [F3] carte debug   [F4] forge",
 	])
 
 

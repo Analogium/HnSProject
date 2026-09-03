@@ -53,7 +53,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_build()
 		KEY_S:
 			_export()
-		KEY_ESCAPE, KEY_F3:
+		# La touche qui a ouvert la forge la referme, comme pour la carte de
+		# réglage (F3) — et Échap referme n'importe quel aperçu.
+		KEY_F4, KEY_ESCAPE:
 			Game.go_back("res://world/zone.tscn")
 		_:
 			return
@@ -94,7 +96,7 @@ func _build() -> void:
 	columns.text = "        repos  ^  |  marche  ^  |  attaque  ^"
 	footer.text = "\n".join([
 		"[<-] [->] archetype     [S] exporter les planches en PNG",
-		"[ECHAP] retour",
+		"[F4] ou [ECHAP] retour",
 		_status,
 	])
 

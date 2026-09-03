@@ -21,6 +21,11 @@ extends AnimatedSprite2D
 ## image ; le coup d'œil du joueur y est très sensible.
 const SIDE_BIAS := 1.15
 
+## Durée du flash blanc encaissé. En secondes réelles : le hit-stop ralentit le
+## jeu d'un facteur 50, et un flash étiré d'autant resterait à l'écran presque
+## quatre secondes.
+const FLASH_TIME := 0.08
+
 var _dir := "down"
 var _anim := "idle"
 var _attacking := false
@@ -68,6 +73,22 @@ func attack() -> void:
 	_attacking = true
 	_anim = "attack"
 	play("attack_%s" % _dir)
+
+
+## Le blanchiment encaissé. Il vit ici et non chez chaque acteur : le joueur,
+## l'ennemi et le mannequin en écrivaient trois copies identiques, alors qu'ils
+## ont tous un ActorSprite et que c'est lui qui porte le matériau.
+##
+## Le matériau est propre à chaque instance grâce à resource_local_to_scene,
+## coché sur le ShaderMaterial des quatre scènes d'acteur — sans quoi tous les
+## grunts de l'écran flasheraient ensemble.
+func flash() -> void:
+	if material == null:
+		return
+	material.set_shader_parameter("flash_amount", 1.0)
+	await get_tree().create_timer(FLASH_TIME, true, false, true).timeout
+	if is_instance_valid(self) and material != null:
+		material.set_shader_parameter("flash_amount", 0.0)
 
 
 func _face(facing: Vector2) -> void:
