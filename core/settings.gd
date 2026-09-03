@@ -15,3 +15,11 @@ var show_health_bars := true:
 			return
 		show_health_bars = value
 		changed.emit()
+
+## Noms des affixes empilés au-dessus des ennemis qui en portent.
+var show_affix_names := true:
+	set(value):
+		if value == show_affix_names:
+			return
+		show_affix_names = value
+		changed.emit()

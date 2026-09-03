@@ -51,6 +51,11 @@ var _dummies: Array[TrainingDummy] = []
 
 
 func _ready() -> void:
+	# Copie privée de la ressource : l'arène modifie les statistiques à chaud
+	# (touches 3/4 et 7/8), et sans ça elle écrirait dans player_stats.tres.
+	# Les réglages trouvés se recopient ensuite à la main dans le fichier.
+	player.base_stats = player.base_stats.duplicate()
+
 	_build_walls()
 	_spawn_dummies()
 	player.global_position = ARENA_SIZE * 0.5
@@ -81,12 +86,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	match (event as InputEventKey).keycode:
 		KEY_1: Game.hit_stop_duration = maxf(Game.hit_stop_duration - 0.01, 0.0)
 		KEY_2: Game.hit_stop_duration = minf(Game.hit_stop_duration + 0.01, 0.30)
-		KEY_3: player.stats.knockback_force = maxf(player.stats.knockback_force - 20.0, 0.0)
-		KEY_4: player.stats.knockback_force += 20.0
+		KEY_3: _tune("knockback_force", -20.0, 0.0)
+		KEY_4: _tune("knockback_force", 20.0, 0.0)
 		KEY_5: player.swing_duration = maxf(player.swing_duration - 0.01, 0.02)
 		KEY_6: player.swing_duration += 0.01
-		KEY_7: player.stats.attack_cooldown = maxf(player.stats.attack_cooldown - 0.05, 0.05)
-		KEY_8: player.stats.attack_cooldown += 0.05
+		KEY_7: _tune("attack_cooldown", -0.05, 0.05)
+		KEY_8: _tune("attack_cooldown", 0.05, 0.05)
 		KEY_9: player.shake_amount = maxf(player.shake_amount - 1.0, 0.0)
 		KEY_0: player.shake_amount += 1.0
 		KEY_G: _spawn_pack()
@@ -101,6 +106,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_: return
 
 	vp.set_input_as_handled()
+
+
+## Le réglage porte sur base_stats et non sur la copie de travail : celle-ci est
+## reconstruite à chaque montée de niveau, ce qui effacerait le réglage en cours
+## au beau milieu d'une session d'essai.
+func _tune(field: String, delta: float, floor_value: float) -> void:
+	player.base_stats.set(field, maxf(float(player.base_stats.get(field)) + delta, floor_value))
+	player.recompute_stats()
 
 
 func _overlay_text() -> String:
@@ -202,7 +215,7 @@ func _kill_all() -> void:
 	# l'élément — on ne parcourt pas une liste qu'on modifie.
 	for e in enemy_manager.enemies.duplicate():
 		if is_instance_valid(e):
-			e.die()
+			e.die(false)   # un vidage n'est pas une victoire : pas d'expérience
 	# Les tirs déjà partis ne sont pas dans la liste du manager.
 	for p in projectiles.get_children():
 		p.queue_free()

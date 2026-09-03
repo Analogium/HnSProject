@@ -91,6 +91,22 @@ func flash() -> void:
 		material.set_shader_parameter("flash_amount", 0.0)
 
 
+## Le liseré permanent d'un affixe. Un liseré et non une teinte du corps :
+## repeindre le sprite fait perdre la couleur de l'archétype, et un grunt cyan
+## ne se lit plus comme un grunt. Ici le corps garde ses teintes et l'affixe
+## s'annonce autour.
+##
+## Sur le shader et non sur une variante de sprite : cinq affixes font trente et
+## une combinaisons, et les générer ferait exploser le cache de la forge pour
+## une information qui tient dans un vec3.
+func set_rim(color: Color, amount: float, width := 1.0) -> void:
+	if material == null:
+		return
+	material.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
+	material.set_shader_parameter("rim_amount", amount)
+	material.set_shader_parameter("rim_width", width)
+
+
 func _face(facing: Vector2) -> void:
 	if facing.length_squared() < 0.01:
 		return

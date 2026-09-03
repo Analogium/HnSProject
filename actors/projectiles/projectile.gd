@@ -52,9 +52,13 @@ func _physics_process(delta: float) -> void:
 func _on_area_entered(area: Area2D) -> void:
 	if not area is Hurtbox:
 		return
-	(area as Hurtbox).take_damage(
-		DamageInfo.new(_damage, global_position, knockback)
-	)
+	var info := DamageInfo.new(_damage, global_position, knockback)
+	(area as Hurtbox).take_damage(info)
+	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
+	# c'est lui qu'on soigne, s'il est encore en vie.
+	var caster := _source as Enemy
+	if caster != null and is_instance_valid(caster):
+		caster.on_damage_dealt(info.amount)
 	if hit_stop_on_impact:
 		Game.hit_stop()
 	queue_free()

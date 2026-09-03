@@ -77,9 +77,9 @@ Cinq. Quatre sont de purs multiplicateurs — donc du contenu, pas du code — e
 seul demande un comportement. C'est délibéré : le système doit faire ses preuves
 avant que les branches de comportement se multiplient.
 
-| Affixe | Effet | Teinte |
+| Affixe | Effet | Couleur du liseré |
 |---|---|---|
-| **Colossal** | +100 % PV, −20 % vitesse | ambre `#D9A227` |
+| **Colossal** | +100 % PV, −20 % vitesse | terre brûlée `#944F1C` |
 | **Véloce** | +45 % vitesse, −25 % PV | cyan `#54D8E0` |
 | **Brutal** | +60 % dégâts, +20 % temps de recharge | rouge `#D8433A` |
 | **Blindé** | dégâts reçus réduits d'un montant fixe | acier `#8C93A6` |
@@ -91,33 +91,49 @@ de vie plus longue.
 
 ### 3.3 La règle de couleur
 
-- **aucun affixe** → pas de teinte. Le mob ordinaire doit rester lisible comme
-  son archétype, sinon la couleur ne veut plus rien dire ;
-- **un affixe** → la teinte de cet affixe ;
-- **deux affixes** → doré `#FACC4D`, la couleur réservée à l'élite. On perd
-  l'information « lesquels », on gagne « celui-là est dangereux », qui est
-  l'information utile à distance.
+**Un liseré autour de la silhouette, pas une teinte du corps.** Repeindre le
+sprite fait perdre la couleur de l'archétype : un grunt cyan ne se lit plus comme
+un grunt, et on troque une information contre une autre au lieu d'en ajouter une.
+Le liseré se pose à l'extérieur du contour noir que le rastériseur dessine déjà,
+donc la couleur est séparée du corps par ce noir et les deux se lisent.
+
+- **aucun affixe** → aucun liseré. Le mob ordinaire reste exactement tel que la
+  forge l'a dessiné, sinon la couleur cesse de vouloir dire quelque chose ;
+- **un affixe** → sa couleur, sur un pixel ;
+- **deux affixes** → doré `#FACC4D`, la couleur réservée à l'élite, **sur deux
+  pixels**. L'épaisseur se lit à une distance où la couleur ne se distingue plus.
+  On perd l'information « lesquels » sur le corps, on la retrouve dans les noms
+  empilés au-dessus de la tête.
+
+Les noms d'affixes s'affichent en texte au-dessus de la barre de vie, chacun dans
+la couleur de son affixe — c'est ce qui apprend au joueur à lire le liseré seul.
+Leur **valeur** est relevée à 0,80 minimum : la couleur d'un liseré peut être
+volontairement sombre, un texte sombre sur sol sombre ne se lit pas.
 
 Tirage : 18 % d'un affixe, 4 % de deux. Deux affixes ne se cumulent jamais s'ils
 sont opposés (Colossal et Véloce s'annuleraient).
 
 ### 3.4 Le shader
 
-`core/flash.gdshader` gagne la teinte. L'ordre compte : **la teinte d'abord, le
-flash par-dessus** — un ennemi qui encaisse doit devenir blanc, quel que soit son
-affixe.
+`core/flash.gdshader` gagne le liseré : un pixel vide au contact de la silhouette
+prend la couleur. L'ordre compte — **le liseré d'abord, le flash par-dessus** :
+un ennemi qui encaisse doit devenir blanc, quel que soit son affixe.
 
 ```glsl
-uniform vec3 tint_color = vec3(1.0);
-uniform float tint_amount : hint_range(0.0, 1.0) = 0.0;
+uniform vec3 rim_color = vec3(1.0);
+uniform float rim_amount : hint_range(0.0, 1.0) = 0.0;
+uniform float rim_width : hint_range(1.0, 3.0) = 1.0;
 
-void fragment() {
-	vec4 tex = texture(TEXTURE, UV);
-	// Seuil sur l'opacité : le sprite porte son ombre au sol, un noir à 30 %.
-	float solid = step(0.5, tex.a);
-	vec3 c = mix(tex.rgb, tint_color, tint_amount * solid);
-	c = mix(c, vec3(1.0), flash_amount * solid);
-	COLOR = vec4(c, tex.a);
+// Un pixel vide au contact de la silhouette prend la couleur de l'affixe.
+if (rim_amount > 0.0 && solid < 0.5) {
+	vec2 px = TEXTURE_PIXEL_SIZE * rim_width;
+	float near = /* les quatre voisins, testés à step(0.5, alpha) */;
+	if (near > 0.0) {
+		c = rim_color;
+		// max : là où le liseré recouvre l'ombre au sol, il ne doit pas la
+		// rendre plus transparente qu'elle ne l'est.
+		a = max(a, rim_amount);
+	}
 }
 ```
 
@@ -278,13 +294,13 @@ Trois règles, dictées par le nombre d'ennemis à l'écran :
 
 Chaque étape doit être jouable et testée avant la suivante.
 
-- [ ] **1. Menu Échap, autoload `Settings`, barres de vie.** Aucune dépendance,
+- [x] **1. Menu Échap, autoload `Settings`, barres de vie.** Aucune dépendance,
       et ça pose la coquille d'interface où tout le reste viendra se brancher.
       Les barres rendent aussi les affixes lisibles à l'étape 3 — sans elles, on
       ne *voit* pas qu'un Colossal a le double de PV.
-- [ ] **2. Expérience et niveaux.** Le signal `died` existe déjà. Première boucle
+- [x] **2. Expérience et niveaux.** Le signal `died` existe déjà. Première boucle
       de progression, sans machinerie nouvelle.
-- [ ] **3. Affixes.** Demande la duplication des stats. C'est ici que le pari du
+- [x] **3. Affixes.** Demande la duplication des stats. C'est ici que le pari du
       jalon se joue : à valider sur une capture, au milieu d'un paquet, pas seul
       sur fond uni.
 - [ ] **4. Objets, butin, inventaire.** En dernier : ça réclame la discipline de
@@ -295,9 +311,9 @@ Chaque étape doit être jouable et testée avant la suivante.
 
 ## 8. Ce qui peut mal tourner
 
-- **La teinte écrase le modelé.** À `tint_amount` trop haut, le mob devient une
-  découpe de couleur unie et tout le travail du rastériseur disparaît. À juger
-  sur capture, jamais dans le code.
+- **Deux couleurs voisines ne se distinguent pas en 32 px.** Constaté : Colossal
+  en ambre et l'élite en doré se confondaient. C'est la **valeur** qui sépare de
+  façon fiable, pas la teinte — Colossal est passé en terre brûlée sombre.
 - **Trop d'affixes visibles à la fois.** Deux au maximum, et le second passe par
   le doré. Un troisième marqueur en 32 px ne se lit pas.
 - **Les ressources partagées.** Stats d'ennemis à l'affixage, stats du joueur à

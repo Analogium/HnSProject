@@ -29,10 +29,14 @@ static var current: HitFeedback
 const T_HIT := 0
 const T_CRIT := 1
 const T_PLAYER := 2
+const T_XP := 3
 const TINTS := [
 	Color(1.00, 0.98, 0.88),   # coup ordinaire : le blanc chaud de la lame
 	Color(1.00, 0.78, 0.25),   # critique : l'or, la seule couleur réservée
 	Color(1.00, 0.42, 0.38),   # le joueur encaisse : rouge, lisible au coin de l'œil
+	# Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre :
+	# le gain qui s'envole et la barre qui monte doivent se répondre.
+	Color(0.45, 0.68, 1.00),
 ]
 
 const NUMBER_LIFE := 0.62
@@ -43,6 +47,13 @@ const NUMBER_HEIGHT := 13.0       # au-dessus du centre du corps, à hauteur de 
 const NUMBER_SIZE := 9
 const CRIT_SIZE := 13
 const GRAVITY := 210.0
+
+## Le gain d'expérience part plus haut et monte moins vite que les dégâts : il
+## arrive au moment où le dernier coup s'affiche encore, et deux libellés dans
+## la même bande à la même vitesse se lisent comme un seul bloc illisible.
+const XP_HEIGHT := 22.0
+const XP_SIZE := 8
+const XP_RISE := 0.7
 
 const PARTICLE_LIFE := 0.30
 const PARTICLE_SPEED := 92.0
@@ -100,19 +111,40 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	queue_redraw()
 
 
+## Le gain d'expérience d'un ennemi qui tombe. Pas d'éclat de pixels : ce n'est
+## pas un impact, et une gerbe sur un corps déjà mort brouillerait le coup
+## suivant.
+func xp_gain(at: Vector2, amount: int) -> void:
+	if amount <= 0:
+		return
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), "+%d exp" % amount, XP_SIZE, T_XP, XP_RISE)
+	set_process(true)
+	queue_redraw()
+
+
 func _add_number(at: Vector2, amount: float, is_crit: bool, tint: int) -> void:
+	_add_label(
+		at + Vector2(0.0, -NUMBER_HEIGHT),
+		"%d" % maxi(roundi(amount), 1),
+		CRIT_SIZE if is_crit else NUMBER_SIZE,
+		tint,
+		1.25 if is_crit else 1.0
+	)
+
+
+## Le libellé flottant générique — dégâts comme expérience. Un seul chemin :
+## deux copies divergeraient à la première retouche de la trajectoire.
+func _add_label(at: Vector2, text: String, body: int, tint: int, rise: float) -> void:
 	if _font == null:
 		return
-	var text := "%d" % maxi(roundi(amount), 1)
-	var body := CRIT_SIZE if is_crit else NUMBER_SIZE
 	# Largeur mesurée une fois et gardée : la re-mesurer à chaque image coûterait
 	# plus cher que tout le reste du dessin.
 	var half := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, body).x * 0.5
 
 	_numbers.append([
-		at.x, at.y - NUMBER_HEIGHT,
+		at.x, at.y,
 		_rng.randf_range(-NUMBER_DRIFT, NUMBER_DRIFT),
-		NUMBER_RISE * (1.25 if is_crit else 1.0),
+		NUMBER_RISE * rise,
 		0.0, NUMBER_LIFE,
 		text, tint, body, half,
 	])

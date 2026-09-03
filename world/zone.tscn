@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="PackedScene" path="res://actors/player/player.tscn" id="2_player"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://world/enemy_spawner.gd" id="5_spawner"]
 [ext_resource type="Script" path="res://fx/hit_feedback.gd" id="6_fx"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="8_hud"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -39,6 +40,42 @@ script = ExtResource("6_fx")
 script = ExtResource("5_spawner")
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Hud" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("8_hud")
+
+[node name="Level" type="Label" parent="UI/Hud"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -26.0
+offset_right = 80.0
+offset_bottom = -12.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 9
+text = "Niv. 1"
+
+[node name="Amount" type="Label" parent="UI/Hud"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -26.0
+offset_right = -12.0
+offset_bottom = -12.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 9
+text = "0 exp / 40 exp"
+horizontal_alignment = 2
 
 [node name="MapOverlay" type="Control" parent="UI"]
 anchors_preset = 15

@@ -165,7 +165,7 @@ func _remove(count: int) -> void:
 			return
 		var e := list[list.size() - 1]
 		if is_instance_valid(e):
-			e.die()
+			e.die(false)   # banc de mesure : aucune de ces morts n'est une victoire
 		else:
 			list.remove_at(list.size() - 1)
 

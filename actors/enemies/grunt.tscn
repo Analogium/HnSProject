@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://actors/enemies/grunt.gd" id="1_grunt"]
 [ext_resource type="Script" path="res://art/actor_sprite.gd" id="5_sprite"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Resource" path="res://resources/stats/grunt_stats.tres" id="4_stats"]
 [ext_resource type="Script" path="res://ui/health_bar.gd" id="9_bar"]
+[ext_resource type="Script" path="res://ui/affix_tag.gd" id="10_tag"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grunt"]
 resource_local_to_scene = true
@@ -33,6 +34,9 @@ archetype = "grunt"
 
 [node name="HealthBar" type="Node2D" parent="."]
 script = ExtResource("9_bar")
+
+[node name="AffixTag" type="Node2D" parent="."]
+script = ExtResource("10_tag")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 3)

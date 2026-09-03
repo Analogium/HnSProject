@@ -2,12 +2,27 @@ class_name Player
 extends CharacterBody2D
 
 signal died
+signal xp_changed(current: int, needed: int, level: int)
+signal leveled_up(level: int)
 
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
 const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 
-@export var stats: CharacterStats
+## La ressource du disque. **Jamais modifiée** : aucun `.tres` du projet n'est
+## `resource_local_to_scene`, donc l'écrire toucherait le fichier lui-même et
+## toutes les parties suivantes de la session.
+@export var base_stats: CharacterStats
+
+## Progression. Le personnage persiste : ni la mort ni le changement de zone ne
+## les remettent à zéro.
+const XP_BASE := 40.0
+const XP_POWER := 1.5
+const LEVEL_HEALTH := 8.0
+const LEVEL_DAMAGE := 1.0
+## Soin partiel à la montée de niveau, jamais complet : à 100 % on chercherait à
+## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
+const LEVEL_HEAL := 0.30
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
@@ -33,6 +48,15 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## à défaut, ils naissent à côté du joueur.
 var projectile_parent: Node2D
 
+## Copie de travail : base + niveaux, et plus tard l'équipement. Recalculée
+## d'un bloc à chaque changement, jamais retouchée pièce par pièce — sinon les
+## bonus s'accumuleraient à chaque recalcul.
+var stats: CharacterStats
+
+var level := 1
+var xp := 0
+var xp_to_next := 40
+
 var health: float
 var is_dead := false
 var facing := Vector2.RIGHT
@@ -46,8 +70,10 @@ var _aim_with_mouse := true
 
 func _ready() -> void:
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
-	if stats == null:
-		stats = CharacterStats.new()
+	if base_stats == null:
+		base_stats = CharacterStats.new()
+	recompute_stats()
+	xp_to_next = _needed_for(level)
 	health = stats.max_health
 	health_bar.set_health(health, stats.max_health)
 	hitbox.monitoring = false
@@ -132,6 +158,44 @@ func _shoot() -> void:
 	parent.add_child(bolt)
 	bolt.global_position = global_position + facing * 12.0
 	bolt.setup(facing, bolt_damage, self)
+
+
+## Reconstruit les stats de zéro à partir de la ressource du disque. De zéro et
+## non par incréments : additionner le bonus de niveau à la valeur courante le
+## compterait une fois de plus à chaque appel.
+##
+## Publique : l'arène de réglage l'appelle après avoir modifié base_stats, et
+## l'équipement l'appellera à chaque objet porté.
+func recompute_stats() -> void:
+	stats = base_stats.duplicate()
+	stats.max_health += LEVEL_HEALTH * float(level - 1)
+	stats.attack_damage += LEVEL_DAMAGE * float(level - 1)
+
+
+func _needed_for(lvl: int) -> int:
+	return roundi(XP_BASE * pow(float(lvl), XP_POWER))
+
+
+## Appelée par l'EnemyManager quand un ennemi meurt d'un vrai coup.
+func gain_xp(amount: int) -> void:
+	if is_dead or amount <= 0:
+		return
+	xp += amount
+	# Une boucle et non un test : un ennemi qui vaut beaucoup peut faire monter
+	# de deux niveaux d'un coup.
+	while xp >= xp_to_next:
+		xp -= xp_to_next
+		_level_up()
+	xp_changed.emit(xp, xp_to_next, level)
+
+
+func _level_up() -> void:
+	level += 1
+	xp_to_next = _needed_for(level)
+	recompute_stats()
+	health = minf(health + stats.max_health * LEVEL_HEAL, stats.max_health)
+	health_bar.set_health(health, stats.max_health)
+	leveled_up.emit(level)
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:

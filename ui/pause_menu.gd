@@ -14,6 +14,7 @@ extends CanvasLayer
 @onready var menu: VBoxContainer = $Root/Center/Panel/Menu
 @onready var options: VBoxContainer = $Root/Center/Panel/Options
 @onready var bars_check: CheckBox = $Root/Center/Panel/Options/Bars
+@onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
 
 
 func _ready() -> void:
@@ -21,8 +22,12 @@ func _ready() -> void:
 	root.visible = false
 	options.visible = false
 
+	# La valeur est posée avant la connexion : dans l'autre sens, l'initialisation
+	# émettrait un toggled et réécrirait le réglage avec lui-même.
 	bars_check.button_pressed = Settings.show_health_bars
 	bars_check.toggled.connect(func(on: bool) -> void: Settings.show_health_bars = on)
+	names_check.button_pressed = Settings.show_affix_names
+	names_check.toggled.connect(func(on: bool) -> void: Settings.show_affix_names = on)
 
 	($Root/Center/Panel/Menu/Resume as Button).pressed.connect(close)
 	($Root/Center/Panel/Menu/OptionsBtn as Button).pressed.connect(_show_options)

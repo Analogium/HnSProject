@@ -26,6 +26,7 @@ const PACK_MIN_TILES := 3
 @onready var projectiles: Node2D = $Entities/Projectiles
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
+@onready var hud: Hud = $UI/Hud
 @onready var spawner: EnemySpawner = $EnemySpawner
 
 var generator: MapGenerator
@@ -56,6 +57,7 @@ func _ready() -> void:
 	player.projectile_parent = projectiles
 	map_overlay.player = player
 	map_overlay.enemy_manager = enemy_manager
+	hud.bind(player)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -188,7 +190,7 @@ func spawn_pack() -> void:
 func kill_all() -> void:
 	for e in enemy_manager.enemies.duplicate():
 		if is_instance_valid(e):
-			e.die()
+			e.die(false)   # un vidage n'est pas une victoire : pas d'expérience
 	for p in projectiles.get_children():
 		p.queue_free()
 
@@ -209,8 +211,9 @@ func _respawn() -> void:
 
 func _overlay_text() -> String:
 	return "\n".join([
-		"PV %.0f/%.0f    ennemis %d" % [
-			maxf(player.health, 0.0), player.stats.max_health, enemy_manager.enemies.size()
+		"PV %.0f/%.0f    niv %d (%d/%d)    ennemis %d" % [
+			maxf(player.health, 0.0), player.stats.max_health,
+			player.level, player.xp, player.xp_to_next, enemy_manager.enemies.size()
 		],
 		"",
 		"zone %d  —  %d cases de sol" % [_seed, generator.floor_cells.size()],

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Affix" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/affix.gd" id="1_affix"]
+
+[resource]
+script = ExtResource("1_affix")
+id = "blinde"
+display_name = "Blindé"
+tint = Color(0.549, 0.576, 0.651, 1)
+speed_mult = 0.9
+damage_reduction = 4.0
+xp_mult = 1.6

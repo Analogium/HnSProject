@@ -33,6 +33,9 @@ func tick(delta: float) -> void:
 			stats.attack_damage, global_position, stats.knockback_force
 		)
 		(target as Player).hurtbox.take_damage(info)
+		# Après take_damage : info.amount a pu être réduit par une armure, et on
+		# ne vole que ce qu'on a réellement infligé.
+		on_damage_dealt(info.amount)
 		# Vers la cible et non vers la vitesse : au contact il ne bouge presque
 		# plus, et le coup partirait dans une direction arbitraire.
 		sprite.set_state(false, to_target)

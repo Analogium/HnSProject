@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://actors/enemies/caster.gd" id="1_caster"]
 [ext_resource type="Script" path="res://art/actor_sprite.gd" id="6_sprite"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/stats/caster_stats.tres" id="4_stats"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/enemy_bolt.tscn" id="5_proj"]
 [ext_resource type="Script" path="res://ui/health_bar.gd" id="9_bar"]
+[ext_resource type="Script" path="res://ui/affix_tag.gd" id="10_tag"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_caster"]
 resource_local_to_scene = true
@@ -35,6 +36,9 @@ archetype = "caster"
 
 [node name="HealthBar" type="Node2D" parent="."]
 script = ExtResource("9_bar")
+
+[node name="AffixTag" type="Node2D" parent="."]
+script = ExtResource("10_tag")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4)

@@ -62,5 +62,20 @@ func _physics_process(delta: float) -> void:
 		e.tick(delta)
 
 
+## L'ennemi ne connaît pas le joueur, le manager si. C'est donc lui qui fait
+## remonter la récompense, plutôt que de donner à chaque ennemi une référence
+## vers le joueur dont il n'a besoin qu'à sa mort.
+func report_kill(enemy: Enemy) -> void:
+	var player := target as Player
+	if player == null:
+		return
+	var gain := enemy.xp_value()
+	player.gain_xp(gain)
+	# Au-dessus du corps et non au-dessus du joueur : c'est l'ennemi tombé qui
+	# rapporte, et on doit pouvoir attribuer le gain à la cible qu'on a choisie.
+	if HitFeedback.current != null:
+		HitFeedback.current.xp_gain(enemy.global_position, gain)
+
+
 func _on_enemy_died(enemy: Enemy) -> void:
 	enemies.erase(enemy)

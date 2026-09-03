@@ -20,6 +20,12 @@ signal died(enemy: Enemy)
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
+@onready var affix_tag: AffixTag = $AffixTag
+
+## Les affixes de cet ennemi, tirés à l'apparition et jamais changés ensuite.
+var affixes: Array[Affix] = []
+## Fraction des dégâts infligés reconvertie en soin, cumulée depuis les affixes.
+var lifesteal := 0.0
 
 var health: float
 var target: Node2D
@@ -33,11 +39,56 @@ var manager: EnemyManager
 func _ready() -> void:
 	if stats == null:
 		stats = CharacterStats.new()
+	_apply_affixes()
 	health = stats.max_health
 	health_bar.set_health(health, stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
 	set_physics_process(false)
+
+
+## Le tirage se déduit de la case d'apparition, comme la silhouette et le sens
+## de rotation du caster. Surtout pas Game.rng : une même graine de zone doit
+## redonner exactement les mêmes ennemis affixés, sinon la zone cesse d'être
+## reproductible.
+func _apply_affixes() -> void:
+	var rng := RandomNumberGenerator.new()
+	# Décalé par rapport à la graine de silhouette, sinon la variante et
+	# l'affixe seraient corrélés et un Colossal aurait toujours le même corps.
+	rng.seed = absi(hash(Vector2i(position.round()))) ^ 0xA771
+	affixes = AffixPool.roll(rng)
+	# Posée dans tous les cas : sans affixe, l'étiquette se vide et se cache.
+	affix_tag.set_affixes(affixes)
+	if affixes.is_empty():
+		return
+
+	# La copie est obligatoire. Aucun `.tres` du projet n'est
+	# resource_local_to_scene : multiplier en place multiplierait les
+	# statistiques de *tous* les ennemis du même type pour la session, et
+	# l'éditeur peut graver le résultat dans le fichier.
+	stats = stats.duplicate()
+	for a in affixes:
+		stats.max_health *= a.health_mult
+		stats.move_speed *= a.speed_mult
+		stats.attack_damage *= a.damage_mult
+		stats.attack_cooldown *= a.cooldown_mult
+		hurtbox.damage_reduction += a.damage_reduction
+		lifesteal += a.lifesteal
+
+	sprite.set_rim(
+		AffixPool.tint_of(affixes),
+		AffixPool.rim_amount_of(affixes),
+		AffixPool.rim_width_of(affixes)
+	)
+
+
+## Appelée par l'archétype quand il a réellement blessé quelqu'un — au contact
+## pour le grunt, à l'impact du projectile pour le caster.
+func on_damage_dealt(amount: float) -> void:
+	if lifesteal <= 0.0 or is_dead or amount <= 0.0:
+		return
+	health = minf(health + amount * lifesteal, stats.max_health)
+	health_bar.set_health(health, stats.max_health)
 
 
 func setup(p_target: Node2D) -> void:
@@ -81,9 +132,28 @@ func _on_damaged(info: DamageInfo) -> void:
 		die()
 
 
-func die() -> void:
+## Expérience dérivée des PV, jamais posée à la main : une constante par
+## archétype divergerait le jour où les statistiques bougent.
+const XP_PER_HEALTH := 0.35
+
+
+func xp_value() -> int:
+	# max_health porte déjà les multiplicateurs d'affixes ; xp_mult est le
+	# supplément de récompense, distinct de la robustesse.
+	var v := stats.max_health * XP_PER_HEALTH
+	for a in affixes:
+		v *= a.xp_mult
+	return maxi(roundi(v), 1)
+
+
+## award = false pour les morts qui ne sont pas des victoires : la touche K de
+## débogage, le rechargement d'une zone, la scène de stress. Sans ce garde-fou,
+## vider la zone ferait monter le joueur de plusieurs niveaux d'un coup.
+func die(award := true) -> void:
 	if is_dead:
 		return
 	is_dead = true
+	if award and manager != null:
+		manager.report_kill(self)
 	died.emit(self)
 	queue_free()
