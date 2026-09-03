@@ -12,6 +12,12 @@ const CULL_DISTANCE := 700.0   # au-delà, on ne tick pas
 var enemies: Array[Enemy] = []
 var target: Node2D
 
+## Nombre d'ennemis réellement tickés à la dernière image, culling déduit. Lu
+## par la scène de stress test : sans ce chiffre, on ne sait pas si trois cents
+## ennemis coûtent peu parce que le code est bon ou parce que deux cent quatre
+## vingts sont hors portée.
+var ticked := 0
+
 ## Où atterrissent les projectiles. Laissé à null, ils naissent sous le manager.
 ## L'arène lui donne un conteneur dédié pour pouvoir les balayer d'un coup.
 var projectile_parent: Node2D
@@ -35,6 +41,7 @@ func _physics_process(delta: float) -> void:
 
 	var origin := target.global_position
 	var cull_sq := CULL_DISTANCE * CULL_DISTANCE
+	ticked = 0
 
 	# Parcours à l'envers : on peut retirer des éléments sans casser l'index.
 	#
@@ -51,6 +58,7 @@ func _physics_process(delta: float) -> void:
 			continue
 		if origin.distance_squared_to(e.global_position) > cull_sq:
 			continue
+		ticked += 1
 		e.tick(delta)
 
 

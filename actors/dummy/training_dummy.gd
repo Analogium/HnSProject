@@ -14,6 +14,9 @@ const RETURN_SPEED := 0.02   # rappel très lent vers la position d'origine
 
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
+## Le cumul des dégâts encaissés. Sous les pieds et non au-dessus de la tête :
+## c'est là que passent maintenant les nombres flottants de chaque coup, et deux
+## chiffres superposés se lisaient comme un bug d'affichage.
 @onready var label: Label = $DamageLabel
 
 var _home := Vector2.ZERO

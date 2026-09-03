@@ -81,12 +81,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	match (event as InputEventKey).keycode:
 		KEY_F5: generate_zone(Game.rng.randi())
 		KEY_G: spawn_pack()
-		KEY_K: _kill_all()
+		KEY_K: kill_all()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
 		KEY_F3: Game.goto_scene("res://world/map_debug.tscn")
 		KEY_F4: Game.goto_scene("res://art/forge_gallery.tscn")
+		KEY_F6: Game.goto_scene("res://world/stress_test.tscn")
 		_: return
 
 	vp.set_input_as_handled()
@@ -95,7 +96,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func generate_zone(zone_seed: int) -> void:
 	_seed = zone_seed
 	zone_rng.seed = zone_seed
-	_kill_all()
+	kill_all()
 
 	generator = MapGenerator.new()
 	var t0 := Time.get_ticks_usec()
@@ -183,7 +184,8 @@ func spawn_pack() -> void:
 		placed += 1
 
 
-func _kill_all() -> void:
+## Publique : la scène de stress test vide la zone avant d'y verser ses vagues.
+func kill_all() -> void:
 	for e in enemy_manager.enemies.duplicate():
 		if is_instance_valid(e):
 			e.die()
@@ -198,7 +200,7 @@ func _on_player_died() -> void:
 
 
 func _respawn() -> void:
-	_kill_all()
+	kill_all()
 	player.revive()
 	var spawn_cell := generator.get_spawn_cell()
 	player.global_position = _cell_center(spawn_cell)
@@ -218,5 +220,6 @@ func _overlay_text() -> String:
 		"[TAB] carte de la zone",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[H] masquer cette aide",
-		"[F2] arene de reglage   [F3] reglage generation   [F4] forge",
+		"[F2] arene de reglage   [F3] reglage generation",
+		"[F4] forge              [F6] stress test",
 	])
