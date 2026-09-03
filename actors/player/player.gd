@@ -23,6 +23,7 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
+@onready var health_bar: HealthBar = $HealthBar
 @onready var attack_pivot: Node2D = $AttackPivot
 @onready var hitbox: Area2D = $AttackPivot/Hitbox
 @onready var swing_arc: SwingArc = $AttackPivot/SwingArc
@@ -48,6 +49,7 @@ func _ready() -> void:
 	if stats == null:
 		stats = CharacterStats.new()
 	health = stats.max_health
+	health_bar.set_health(health, stats.max_health)
 	hitbox.monitoring = false
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
@@ -148,6 +150,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
 	health -= info.amount
+	health_bar.set_health(health, stats.max_health)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:
@@ -169,5 +172,6 @@ func _die() -> void:
 func revive() -> void:
 	is_dead = false
 	health = stats.max_health
+	health_bar.set_health(health, stats.max_health)
 	velocity = Vector2.ZERO
 	set_physics_process(true)

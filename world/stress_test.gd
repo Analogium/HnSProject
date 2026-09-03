@@ -60,6 +60,12 @@ func _ready() -> void:
 	# rôle de décor, sinon deux panneaux se superposent et F5 régénère sous nous.
 	_zone.set_process_unhandled_input(false)
 	_zone.overlay.visible = false
+	# La zone embarque le menu Échap, qui capterait la touche avant cette scène
+	# et ouvrirait une pause au lieu de sortir. Ici c'est un banc de mesure, pas
+	# une partie : le menu n'y a rien à faire.
+	var pause_menu := _zone.get_node_or_null("PauseMenu")
+	if pause_menu != null:
+		pause_menu.queue_free()
 
 	# La zone s'est déjà générée sur une graine tirée au hasard dans son _ready ;
 	# on la refait sur la graine figée, puis on la vide de ses propres paquets.

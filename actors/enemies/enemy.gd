@@ -19,6 +19,7 @@ signal died(enemy: Enemy)
 
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
+@onready var health_bar: HealthBar = $HealthBar
 
 var health: float
 var target: Node2D
@@ -33,6 +34,7 @@ func _ready() -> void:
 	if stats == null:
 		stats = CharacterStats.new()
 	health = stats.max_health
+	health_bar.set_health(health, stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
 	set_physics_process(false)
@@ -72,6 +74,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	# Se faire tirer dessus de loin alerte, même hors du rayon de détection.
 	is_aggro = true
 	health -= info.amount
+	health_bar.set_health(health, stats.max_health)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:

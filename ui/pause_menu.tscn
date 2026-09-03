@@ -1,0 +1,98 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_pause"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+bg_color = Color(0.082, 0.075, 0.106, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.27, 0.35, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_pause")
+
+[node name="Root" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.035, 0.03, 0.05, 0.86)
+mouse_filter = 2
+
+[node name="Center" type="CenterContainer" parent="Root"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Menu" type="VBoxContainer" parent="Root/Center/Panel"]
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Menu"]
+theme_override_colors/font_color = Color(0.85, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+text = "PAUSE"
+
+[node name="Spacer" type="Control" parent="Root/Center/Panel/Menu"]
+custom_minimum_size = Vector2(0, 6)
+
+[node name="Resume" type="Button" parent="Root/Center/Panel/Menu"]
+custom_minimum_size = Vector2(132, 0)
+theme_override_font_sizes/font_size = 10
+text = "Reprendre"
+
+[node name="OptionsBtn" type="Button" parent="Root/Center/Panel/Menu"]
+custom_minimum_size = Vector2(132, 0)
+theme_override_font_sizes/font_size = 10
+text = "Options"
+
+[node name="Quit" type="Button" parent="Root/Center/Panel/Menu"]
+custom_minimum_size = Vector2(132, 0)
+theme_override_font_sizes/font_size = 10
+text = "Quitter"
+
+[node name="Options" type="VBoxContainer" parent="Root/Center/Panel"]
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Options"]
+theme_override_colors/font_color = Color(0.85, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+text = "OPTIONS"
+
+[node name="Spacer" type="Control" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(0, 6)
+
+[node name="Bars" type="CheckBox" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(168, 0)
+theme_override_font_sizes/font_size = 10
+button_pressed = true
+text = "Barres de vie"
+
+[node name="Spacer2" type="Control" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(0, 4)
+
+[node name="Back" type="Button" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(168, 0)
+theme_override_font_sizes/font_size = 10
+text = "Retour"
