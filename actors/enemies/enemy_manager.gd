@@ -27,9 +27,6 @@ var projectile_parent: Node2D
 var loot_parent: Node2D
 
 
-const GROUND_ITEM := preload("res://actors/items/ground_item.tscn")
-
-
 func _ready() -> void:
 	if projectile_parent == null:
 		projectile_parent = self
@@ -93,12 +90,7 @@ func _drop_loot(enemy: Enemy) -> void:
 	var item := LootTable.roll(enemy.affixes.size())
 	if item == null:
 		return
-	var drop: GroundItem = GROUND_ITEM.instantiate()
-	# add_child d'abord : setup touche un nœud enfant, et global_position n'a de
-	# sens qu'une fois dans l'arbre.
-	loot_parent.add_child(drop)
-	drop.global_position = enemy.global_position
-	drop.setup(item)
+	GroundItem.spawn(loot_parent, enemy.global_position, item)
 
 
 func _on_enemy_died(enemy: Enemy) -> void:

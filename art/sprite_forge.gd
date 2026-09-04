@@ -103,41 +103,87 @@ static func frame_image(cfg: Dictionary, dir: String, anim: String, index: int) 
 	return canvas.to_image(cfg["palettes"])
 
 
-## Côté d'une icône d'objet. Plus petit que le cadre d'un personnage : une arme
-## seule n'a pas besoin de la place d'un corps.
+## Cadre de travail d'une icône d'objet. Plus petit que celui d'un personnage :
+## une arme seule n'a pas besoin de la place d'un corps.
 const ICON := 24
 
 static var _icons: Dictionary = {}
 
 
-## L'icône d'un objet, dessinée par _weapon — exactement la fonction qui pose
-## l'arme dans la main d'un personnage. Une épée au sol et l'épée que tient le
-## joueur ne peuvent donc pas se contredire.
-static func weapon_icon(kind: String) -> Texture2D:
-	if _icons.has(kind):
-		return _icons[kind]
+## L'icône d'un objet posé au sol : dessinée en diagonale, à sa taille native.
+## En diagonale parce qu'une arme verticale dans un cadre carré laisse deux
+## grandes marges vides et se lit plus petite qu'elle n'est.
+static func ground_icon(kind: String) -> Texture2D:
+	return _icon(kind, false, Vector2i.ZERO)
+
+
+## L'icône d'un objet dans le sac. Dressée à la verticale — c'est la lecture
+## d'un rangement en grille, et elle épouse la forme des emplacements, qui sont
+## presque tous plus hauts que larges.
+##
+## `target` est la place disponible en pixels d'écran, encombrement compris :
+## le dessin y est agrandi d'un facteur **entier**. Un facteur fractionnaire
+## doublerait certaines lignes de pixels et pas d'autres, ce qui se voit
+## immédiatement sur un sprite de cette taille.
+static func inventory_icon(kind: String, target: Vector2i) -> Texture2D:
+	return _icon(kind, true, target)
+
+
+## Le dessin d'un objet, recadré sur ce qui est réellement peint.
+##
+## Recadré et non centré dans son cadre : une épée, une baguette et un plastron
+## n'ont ni la même longueur ni le même encombrement, et aucun ne tombe au
+## centre du cadre tout seul. Un sprite recadré est centré par construction, sur
+## son point d'ancrage comme dans sa case.
+static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
+	var key := "%s:%d:%dx%d" % [kind, int(upright), target.x, target.y]
+	if _icons.has(key):
+		return _icons[key]
 
 	var canvas := PixelCanvas.new(ICON, ICON)
-	# La palette du joueur : c'est celle qui donne l'acier clair et l'or de la
+	# La palette du joueur : c'est elle qui donne l'acier clair et l'or de la
 	# garde, les deux teintes qui font lire « arme » plutôt que « bâton ».
 	var cfg := config("player", 0)
 	cfg["weapon"] = kind
-	# En diagonale : une arme verticale dans un cadre carré laisse deux grandes
-	# marges vides et se lit plus petite qu'elle n'est.
-	_weapon(canvas, cfg, Vector2(6.0, 17.5), Vector2(0.72, -0.69), 0.0)
 
-	# Recadrée sur ce qui est réellement peint : une épée et une baguette n'ont
-	# ni la même longueur ni le même encombrement, et aucune ne tombe au centre
-	# du cadre toute seule. Sans ça l'objet et son halo au sol ne coïncident pas.
-	var drawn := canvas.to_image(cfg["palettes"])
-	var r := canvas.painted_rect()
-	var img := Image.create_empty(ICON, ICON, false, Image.FORMAT_RGBA8)
-	if r.size.x > 0 and r.size.y > 0:
-		img.blit_rect(drawn, r, Vector2i((ICON - r.size.x) / 2, (ICON - r.size.y) / 2))
+	if kind == "torso":
+		_plate(canvas, ICON * 0.5, 2.0)
+	elif upright:
+		_weapon(canvas, cfg, Vector2(ICON * 0.5, 20.0), Vector2(0.0, -1.0), 0.0)
+	else:
+		_weapon(canvas, cfg, Vector2(6.0, 17.5), Vector2(0.72, -0.69), 0.0)
+
+	var img := canvas.to_image(cfg["palettes"]).get_region(canvas.painted_rect())
+	if target.x > 0 and target.y > 0:
+		var fit := minf(
+			float(target.x) / float(img.get_width()), float(target.y) / float(img.get_height())
+		)
+		# Agrandir : facteur entier. Réduire : facteur exact — c'est moins beau,
+		# mais une icône qui dépasse déborde sur les cases voisines et on ne sait
+		# plus lire la grille. Le cas ne se présente que si l'encombrement déclaré
+		# dans le .tres est plus petit que le dessin.
+		var factor := floorf(fit) if fit >= 1.0 else fit
+		if not is_equal_approx(factor, 1.0):
+			img.resize(
+				maxi(int(img.get_width() * factor), 1),
+				maxi(int(img.get_height() * factor), 1),
+				Image.INTERPOLATE_NEAREST
+			)
 
 	var tex := ImageTexture.create_from_image(img)
-	_icons[kind] = tex
+	_icons[key] = tex
 	return tex
+
+
+## Un plastron. Contrairement aux armes il n'a pas de porteur : c'est une pièce
+## posée à plat, qui n'existe que pour l'icône — d'où son dessin ici plutôt que
+## dans le squelette d'un personnage.
+static func _plate(c: PixelCanvas, cx: float, top: float) -> void:
+	c.capsule(Vector2(cx - 5.8, top + 2.8), Vector2(cx + 5.8, top + 2.8), 2.6, R_METAL)
+	c.capsule(Vector2(cx, top + 5.0), Vector2(cx, top + 11.0), 5.2, R_METAL)
+	c.capsule(Vector2(cx - 4.0, top + 14.0), Vector2(cx + 4.0, top + 14.0), 1.7, R_LEATHER)
+	# Encolure creusée : sans elle, la plaque se lit comme un bouclier.
+	c.disc(Vector2(cx, top + 1.6), 2.1, R_LEATHER, -0.30)
 
 
 # --------------------------------------------------------------------------

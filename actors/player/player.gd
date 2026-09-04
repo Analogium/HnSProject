@@ -3,7 +3,6 @@ extends CharacterBody2D
 
 signal died
 signal xp_changed(current: int, needed: int, level: int)
-signal inventory_changed
 signal leveled_up(level: int)
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -25,10 +24,11 @@ const LEVEL_DAMAGE := 1.0
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
 const LEVEL_HEAL := 0.30
 
-## Taille de l'inventaire, en cases. La grille de l'interface s'y accorde.
-const INVENTORY_COLS := 6
-const INVENTORY_ROWS := 4
-const INVENTORY_SIZE := INVENTORY_COLS * INVENTORY_ROWS
+## Taille du sac, en cases. Large plutôt que haut, comme dans les jeux dont il
+## reprend la règle : une épée mange trois lignes, et un sac de quatre lignes
+## n'accepterait presque rien.
+const INVENTORY_COLS := 10
+const INVENTORY_ROWS := 5
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
@@ -63,10 +63,10 @@ var level := 1
 var xp := 0
 var xp_to_next := 40
 
-## Ce qu'on a ramassé. Une simple liste pour l'instant : ni emplacements
-## d'équipement, ni tri, ni piles. La grille de l'interface se contente de la
-## lire, donc ajouter l'équipement plus tard ne la déplacera pas.
-var inventory: Array[ItemData] = []
+## Ce qu'on a ramassé, et où c'est rangé. Le sac porte son propre signal
+## `changed` : l'interface s'y abonne directement, sans que le joueur ait à le
+## réémettre sous un autre nom.
+var inventory := Inventory.new(INVENTORY_COLS, INVENTORY_ROWS)
 
 var health: float
 var is_dead := false
@@ -133,11 +133,15 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	if Input.is_action_just_pressed("attack") and _attack_cd <= 0.0:
-		_swing()
+	# L'attaque est lue par sondage, ce qui court-circuite le système d'entrées
+	# de l'interface : sans ce test, chaque clic pour déplacer une épée dans le
+	# sac déclencherait aussi un coup d'épée.
+	if not Game.ui_grabs_input:
+		if Input.is_action_just_pressed("attack") and _attack_cd <= 0.0:
+			_swing()
 
-	if Input.is_action_just_pressed("attack_ranged") and _bolt_cd <= 0.0:
-		_shoot()
+		if Input.is_action_just_pressed("attack_ranged") and _bolt_cd <= 0.0:
+			_shoot()
 
 
 func _swing() -> void:
@@ -209,14 +213,19 @@ func _level_up() -> void:
 	leveled_up.emit(level)
 
 
-## Appelée par l'objet au sol quand le joueur lui passe dessus.
-func pick_up(item: ItemData) -> void:
-	if item == null or inventory.size() >= INVENTORY_SIZE:
-		return
-	inventory.append(item)
-	inventory_changed.emit()
+## Appelée par l'objet au sol quand le joueur lui passe dessus. Renvoie faux
+## quand il ne reste pas de rectangle libre à sa taille — l'objet reste alors
+## au sol, il ne doit pas s'évaporer parce que le sac est plein.
+func pick_up(item: ItemData) -> bool:
+	if item == null:
+		return false
+	if not inventory.add(item):
+		if HitFeedback.current != null:
+			HitFeedback.current.loot_gain(global_position, "sac plein")
+		return false
 	if HitFeedback.current != null:
 		HitFeedback.current.loot_gain(global_position, item.display_name)
+	return true
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:

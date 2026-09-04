@@ -56,9 +56,16 @@ func _on_area_entered(area: Area2D) -> void:
 	(area as Hurtbox).take_damage(info)
 	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
 	# c'est lui qu'on soigne, s'il est encore en vie.
-	var caster := _source as Enemy
-	if caster != null and is_instance_valid(caster):
-		caster.on_damage_dealt(info.amount)
+	#
+	# La validité se teste **avant** la conversion : convertir un objet déjà
+	# libéré est en soi une erreur, et elle interrompait la fonction avant son
+	# queue_free(). Le tir d'un caster tué pendant que sa bille volait
+	# traversait alors le joueur en le blessant à chaque image, jusqu'à
+	# expiration. Le cas se présente à chaque caster abattu à distance.
+	if is_instance_valid(_source):
+		var caster := _source as Enemy
+		if caster != null:
+			caster.on_damage_dealt(info.amount)
 	if hit_stop_on_impact:
 		Game.hit_stop()
 	queue_free()

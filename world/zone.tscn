@@ -87,8 +87,8 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -178.0
-offset_top = -164.0
+offset_left = -219.0
+offset_top = -168.0
 offset_right = -8.0
 offset_bottom = -34.0
 mouse_filter = 2
@@ -96,11 +96,11 @@ script = ExtResource("9_inv")
 
 [node name="Title" type="Label" parent="UI/Inventory"]
 offset_left = 4.0
-offset_right = 176.0
+offset_right = 207.0
 offset_bottom = 14.0
 theme_override_colors/font_color = Color(0.8, 0.77, 0.86, 1)
 theme_override_font_sizes/font_size = 9
-text = "SAC  0 / 24"
+text = "SAC  0 / 50 cases"
 
 [node name="MapOverlay" type="Control" parent="UI"]
 anchors_preset = 15

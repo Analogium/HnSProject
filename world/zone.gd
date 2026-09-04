@@ -62,6 +62,7 @@ func _ready() -> void:
 	map_overlay.enemy_manager = enemy_manager
 	hud.bind(player)
 	inventory.bind(player)
+	inventory.drop_requested.connect(_on_item_dropped)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -69,6 +70,15 @@ func _ready() -> void:
 	spawner.caster_scene = CASTER_SCENE
 
 	generate_zone(Game.rng.randi())
+
+
+## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
+## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
+## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
+func _on_item_dropped(item: ItemData) -> void:
+	GroundItem.spawn(
+		loot, player.global_position + player.facing * 14.0, item, GroundItem.DROP_DELAY
+	)
 
 
 func _process(_delta: float) -> void:

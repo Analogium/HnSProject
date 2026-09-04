@@ -197,11 +197,13 @@ regarder.
 
 ### 5.1 L'icône est générée, comme le reste
 
-`art/item_forge.gd`, sur le modèle de `SpriteForge` : une icône de 24 × 24 tirée
-du même `PixelCanvas`, avec la même primitive de capsule que
-`SpriteForge._weapon()`, qui dessine déjà épée, couperet, gourdin et bâton. Une
-épée d'objet et l'épée que tient le joueur sortent alors du même code — elles ne
-peuvent pas diverger.
+Dans `SpriteForge` et non dans un fichier à part, contrairement à ce qui était
+prévu : l'icône d'une arme est un appel à `_weapon()`, la fonction qui la pose
+déjà dans la main d'un personnage. Une épée d'objet et l'épée que tient le joueur
+sortent du même code — elles ne peuvent pas diverger. Le dessin est recadré sur
+ce qu'il a réellement peint (donc centré par construction, sur son halo au sol
+comme dans sa case), puis agrandi d'un facteur **entier** pour remplir son
+emplacement.
 
 ### 5.2 Le modèle
 
@@ -244,10 +246,29 @@ var stats: CharacterStats
 
 ### 5.5 L'inventaire
 
-Une grille de 6 × 4 sur le joueur, un panneau à la touche **I**, un seul
+Une grille de 10 × 5 sur le joueur, un panneau à la touche **I**, un seul
 emplacement d'équipement pour commencer : l'arme. Ramasser range dans
 l'inventaire ; équiper depuis l'inventaire remplace, et l'ancien objet retourne
 dans la grille.
+
+**Chaque objet occupe un rectangle de cases**, comme dans Path of Exile et Hero
+Siege : une épée une colonne sur trois lignes, une baguette une sur deux, un
+plastron deux sur trois. Ce n'est donc pas le nombre d'objets qui limite mais la
+place qu'ils prennent, et ranger devient une décision plutôt qu'une formalité.
+
+Le modèle vit dans `core/inventory.gd` — sans nœud ni dessin, donc testable seul.
+Il tient une grille d'occupation en plus de la liste des objets : c'est elle qui
+rend « est-ce que ça tient ici ? » immédiat pour chaque case survolée. Le panneau
+ne détient rien, il lit le sac du joueur et le manipule.
+
+À la souris : clic pour prendre, clic pour reposer, clic droit pour jeter au sol.
+Un objet suivi par le curseur plutôt qu'un glisser maintenu — on tient parfois
+une pièce plusieurs secondes, le temps de faire de la place. La case visée est
+teintée en vert ou en rouge selon que l'objet y tient.
+
+Deux règles pour qu'un objet ne disparaisse jamais : sac plein, il **reste au
+sol** au lieu d'être avalé ; sac refermé la main pleine, l'objet revient à sa
+place, ou à la première libre, ou par terre.
 
 ---
 
@@ -303,11 +324,12 @@ Chaque étape doit être jouable et testée avant la suivante.
 - [x] **3. Affixes.** Demande la duplication des stats. C'est ici que le pari du
       jalon se joue : à valider sur une capture, au milieu d'un paquet, pas seul
       sur fond uni.
-- [x] **4a. Objets, butin, inventaire.** Deux objets nus — une épée, une
-      baguette — dont l'icône est dessinée par `SpriteForge._weapon()`, la
-      fonction même qui pose l'arme dans la main d'un personnage. Chute à 10 %,
-      multipliée par la quantité de butin de l'ennemi (+10 % par affixe).
-      Ramassage au contact, sac de 6 × 4 à la touche **I**.
+- [x] **4a. Objets, butin, inventaire.** Trois objets nus — une épée, une
+      baguette, un plastron — dont l'icône est dessinée par la forge, pour les
+      armes par la fonction même qui les pose dans la main d'un personnage.
+      Chute à 20 %, multipliée par la quantité de butin de l'ennemi (+10 % par
+      affixe). Ramassage au contact, sac de 10 × 5 à la touche **I**, où chaque
+      objet occupe son rectangle de cases et se range à la souris.
 - [ ] **4b. Équipement.** Un emplacement, l'arme. Ramasser équipe, l'ancien
       objet retourne dans le sac, et `recompute_stats()` reprend les bonus. Rien
       n'est encore fait : les deux objets n'ont volontairement aucun effet.

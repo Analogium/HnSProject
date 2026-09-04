@@ -12,6 +12,13 @@ var rng := RandomNumberGenerator.new()
 ## directement, sinon l'historique se désynchronise.
 var previous_scene_path := ""
 
+## Vrai quand une fenêtre d'interface s'est emparée de la souris — le sac, pour
+## l'instant. Un drapeau global parce que le joueur lit ses attaques par
+## sondage (Input.is_action_just_pressed) dans _physics_process : ces lectures
+## ne passent pas par l'arbre d'entrées, donc aucune fenêtre ne peut les
+## intercepter en consommant l'événement.
+var ui_grabs_input := false
+
 var _hit_stop_active := false
 
 

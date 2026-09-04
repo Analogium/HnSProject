@@ -12,13 +12,16 @@ class_name LootTable
 const ITEMS := [
 	preload("res://resources/items/epee.tres"),
 	preload("res://resources/items/baguette.tres"),
+	preload("res://resources/items/plastron.tres"),
 ]
 
-## Probabilité de base qu'un ennemi ordinaire lâche quelque chose.
-const BASE_CHANCE := 0.10
+## Probabilité de base qu'un ennemi ordinaire lâche quelque chose. À 10 % un
+## paquet entier ne donnait souvent rien : dans un jeu où l'on tue par grappes,
+## c'est la grappe qui doit récompenser, pas la centième mise à mort.
+const BASE_CHANCE := 0.20
 
 ## Quantité de butin gagnée par affixe porté, en fraction. Multiplicatif sur la
-## chance : un ennemi à deux affixes tombe à 12 % là où un ordinaire est à 10 %.
+## chance : un ennemi à deux affixes tombe à 24 % là où un ordinaire est à 20 %.
 ## C'est volontairement modeste — le gros de la récompense d'un élite reste son
 ## expérience, qui vaut déjà près du double.
 const QUANTITY_PER_AFFIX := 0.10
