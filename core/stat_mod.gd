@@ -24,6 +24,7 @@ const LABELS := {
 	"attack_damage": "dégâts",
 	"attack_cooldown": "temps de recharge",
 	"attack_range": "allonge",
+	"damage_reduction": "armure",
 	"crit_chance": "chance critique",
 	"crit_multiplier": "dégâts critiques",
 }

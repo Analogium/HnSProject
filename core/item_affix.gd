@@ -11,6 +11,15 @@ extends Resource
 
 @export var id: String = ""
 
+## Les emplacements où cet affixe peut sortir. Une armure ne donne pas d'allonge,
+## une épée ne donne pas de PV : sans ce filtre, tous les objets se valent et le
+## type de base ne veut plus rien dire.
+##
+## Vide = partout. Utile pour un affixe volontairement universel, et ça évite
+## d'avoir à énumérer les emplacements sur chaque nouvelle ligne du jour où il y
+## en aura huit.
+@export var slots: PackedStringArray = PackedStringArray()
+
 ## Le champ de CharacterStats touché. Doit exister : voir StatMod.LABELS.
 @export var stat: String = "attack_damage"
 
@@ -27,6 +36,12 @@ extends Resource
 ## Poids dans la réserve. Un affixe rare n'est pas un affixe fort — c'est un
 ## affixe qu'on est content de voir.
 @export var weight: int = 10
+
+
+func fits(base: ItemBase) -> bool:
+	if slots.is_empty():
+		return true
+	return base != null and slots.has(base.slot)
 
 
 func roll(rng: RandomNumberGenerator) -> StatMod:

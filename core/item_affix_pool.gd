@@ -19,19 +19,35 @@ const ALL := [
 	preload("res://resources/item_affixes/cruel.tres"),
 	preload("res://resources/item_affixes/sanglant.tres"),
 	preload("res://resources/item_affixes/allonge.tres"),
+	preload("res://resources/item_affixes/cuirasse.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6. La courbe descend vite : un objet à six
-## affixes doit rester l'histoire qu'on raconte, pas le butin du mardi. Six
-## exige déjà d'en tirer six distincts sur neuf.
+## affixes doit rester l'histoire qu'on raconte, pas le butin du mardi.
+##
+## Le maximum réel dépend de la base : six affixes d'arme existent, donc une épée
+## peut les porter tous ; les armures n'en ont que quatre et plafonnent là. C'est
+## la réserve qui décide, pas cette table.
 ##
 ## Un objet sur deux sort nu — c'est ce qui donne sa valeur au reste, et le
 ## joueur doit pouvoir jeter la moitié de ce qu'il ramasse sans réfléchir.
 const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 
 
-## Combien d'affixes pour cet objet.
-static func roll_count(rng: RandomNumberGenerator) -> int:
+## Ce qui peut sortir sur cette base. Une armure et une épée ne tirent pas dans
+## la même réserve : c'est ce qui donne un sens au type de l'objet.
+static func eligible(base: ItemBase) -> Array:
+	var out := []
+	for a in ALL:
+		if a.fits(base):
+			out.append(a)
+	return out
+
+
+## Combien d'affixes pour cet objet. Borné par la réserve réellement disponible :
+## une base dont la famille compte quatre affixes ne peut pas en porter six, et
+## le tirage doit le dire plutôt que de rendre des lignes vides.
+static func roll_count(rng: RandomNumberGenerator, disponibles: int) -> int:
 	var total := 0
 	for w in COUNT_WEIGHTS:
 		total += w
@@ -39,17 +55,17 @@ static func roll_count(rng: RandomNumberGenerator) -> int:
 	for i in COUNT_WEIGHTS.size():
 		pick -= COUNT_WEIGHTS[i]
 		if pick <= 0:
-			return mini(i, ALL.size())
+			return mini(i, disponibles)
 	return 0
 
 
 ## Les affixes d'un objet neuf, tirés distincts : deux fois « acéré » sur la
 ## même épée se liraient comme un bug, et additionner deux fois la même ligne
 ## n'ajoute rien qu'un affixe plus large n'aurait fait.
-static func roll(rng: RandomNumberGenerator) -> Array[StatMod]:
+static func roll(rng: RandomNumberGenerator, base: ItemBase) -> Array[StatMod]:
 	var mods: Array[StatMod] = []
-	var reste := ALL.duplicate()
-	for i in roll_count(rng):
+	var reste := eligible(base)
+	for i in roll_count(rng, reste.size()):
 		var choisi := _pick(rng, reste)
 		if choisi == null:
 			break

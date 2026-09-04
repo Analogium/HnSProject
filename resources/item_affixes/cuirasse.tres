@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_affix")
-id = "robuste"
-stat = "max_health"
-percent = true
-min_value = 5.0
-max_value = 15.0
-weight = 10
+id = "cuirasse"
+stat = "damage_reduction"
+percent = false
+min_value = 1.0
+max_value = 4.0
+weight = 9
 slots = PackedStringArray("chest")

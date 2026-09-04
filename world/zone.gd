@@ -234,6 +234,13 @@ func _overlay_text() -> String:
 			maxf(player.health, 0.0), player.stats.max_health,
 			player.level, player.xp, player.xp_to_next, enemy_manager.enemies.size()
 		],
+		# Les statistiques que l'équipement change : sans elles à l'écran, porter
+		# un objet ne se vérifie qu'en comptant les coups.
+		"degats %.1f   critique %.0f %% x%.1f   recharge %.2f s   vitesse %.0f" % [
+			player.stats.attack_damage, player.stats.crit_chance * 100.0,
+			player.stats.crit_multiplier, player.stats.attack_cooldown,
+			player.stats.move_speed
+		],
 		"",
 		"zone %d  —  %d cases de sol" % [_seed, generator.floor_cells.size()],
 		"%d ennemis places en %d paquets" % [_spawned, spawner.pack_count],

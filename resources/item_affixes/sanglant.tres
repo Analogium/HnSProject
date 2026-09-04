@@ -10,3 +10,4 @@ percent = false
 min_value = 0.2
 max_value = 0.8
 weight = 6
+slots = PackedStringArray("weapon")

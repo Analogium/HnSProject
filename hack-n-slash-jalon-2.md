@@ -231,22 +231,30 @@ qu'une forme à connaître. Les plats s'appliquent **avant** les pourcentages,
 sinon deux objets identiques ne donnent pas le même résultat selon l'ordre
 d'équipement.
 
+**Chaque affixe déclare les emplacements où il peut sortir.** Une épée ne donne
+pas de PV, une armure pas d'allonge : sans ce filtre, tous les objets se valent
+et le type de base ne veut plus rien dire. Six affixes d'arme, quatre d'armure —
+c'est la réserve de la base qui plafonne le tirage, pas la table des poids, donc
+un plastron s'arrête à quatre lignes là où une épée peut en porter six.
+
 **La rareté se déduit** du nombre d'affixes (0 commun, 1-2 magique, 3+ rare)
 plutôt que d'être tirée à part : deux sources pour la même information finissent
 par se contredire, et un objet doré sans affixe est un mensonge.
 
 Mesuré sur 5000 objets réellement tombés : 47 % communs, 37 % magiques, 16 %
-rares, 1,08 affixe par objet.
+rares, 1,08 affixe par objet. Et sur 40 000 tirages, aucun affixe n'est jamais
+sorti sur un emplacement qui ne l'admet pas.
 
 ### 5.3 Le butin
 
 À la mort, une table tire une base au hasard puis ses affixes. Chute à 20 %,
 multipliée par la quantité de butin de l'ennemi (+10 % par affixe porté).
 
-**Pas encore fait :** la table devait *lire ce que l'ennemi portait* — un
-Colossal lâchant plus volontiers de la robustesse, un Véloce de la vitesse.
-C'est ce qui donnerait une raison de choisir sa cible dans un paquet plutôt que
-de frapper le plus proche. Le tirage est pour l'instant uniforme.
+**Abandonné :** la table devait *lire ce que l'ennemi portait* — un Colossal
+lâchant plus volontiers de la robustesse, un Véloce de la vitesse. Décision du
+4 septembre 2026 : le tirage reste uniforme. Lier le type de butin aux affixes
+de la cible ajoute une règle à apprendre avant même qu'il y ait assez de types
+d'objets pour qu'elle se remarque.
 
 Au sol : une `Area2D` avec l'icône, et un halo à la couleur de rareté — de loin,
 avant même de distinguer la forme, on sait si ça vaut le détour. Ramassage au
@@ -267,12 +275,23 @@ c'est-à-dire dans la ressource partagée `player_stats.tres`.
 var stats: CharacterStats
 ```
 
-### 5.5 L'inventaire
+### 5.5 L'inventaire et l'équipement
 
-Une grille de 10 × 5 sur le joueur, un panneau à la touche **I**, un seul
-emplacement d'équipement pour commencer : l'arme. Ramasser range dans
-l'inventaire ; équiper depuis l'inventaire remplace, et l'ancien objet retourne
-dans la grille.
+Une grille de 10 × 5 sur le joueur, un panneau à la touche **I**, et deux
+emplacements portés au-dessus : arme et torse. Un dictionnaire indexé par nom
+d'emplacement, pas un champ par emplacement — ajouter les bottes ou l'anneau
+n'est qu'une entrée de plus dans `Player.SLOTS`.
+
+Clic droit pour porter, clic droit sur l'emplacement pour retirer : un seul
+geste dans les deux sens, et il évite d'avoir à viser un emplacement avec un
+objet en main. L'objet est **sorti du sac avant** d'être porté, ce qui garantit
+que celui qu'il remplace trouve une place ; ce qui déborde vraiment tombe au
+sol, plutôt que d'annuler l'échange qu'on vient de demander.
+
+`recompute_stats()` repart toujours de la ressource du disque : un objet retiré
+ne peut pas laisser son bonus derrière lui. Les PV courants sont ramenés sous le
+nouveau plafond au passage — sinon retirer un plastron laisse une barre qui
+déborde.
 
 **Chaque objet occupe un rectangle de cases**, comme dans Path of Exile et Hero
 Siege : une épée une colonne sur trois lignes, une baguette une sur deux, un
@@ -353,9 +372,11 @@ Chaque étape doit être jouable et testée avant la suivante.
       Chute à 20 %, multipliée par la quantité de butin de l'ennemi (+10 % par
       affixe). Ramassage au contact, sac de 10 × 5 à la touche **I**, où chaque
       objet occupe son rectangle de cases et se range à la souris.
-- [ ] **4b. Équipement.** Un emplacement, l'arme. Ramasser équipe, l'ancien
-      objet retourne dans le sac, et `recompute_stats()` reprend les bonus. Rien
-      n'est encore fait : les deux objets n'ont volontairement aucun effet.
+- [x] **4b. Équipement.** Deux emplacements — arme et torse — au-dessus du sac.
+      Clic droit pour porter, clic droit sur l'emplacement pour retirer.
+      `recompute_stats()` repart de la ressource du disque et applique implicites
+      et affixes, les valeurs plates avant les pourcentages. L'arme portée se
+      voit sur le personnage : la forge redessine ses planches avec elle.
 
 ---
 

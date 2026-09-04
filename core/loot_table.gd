@@ -42,4 +42,4 @@ static func roll(affix_count: int) -> Item:
 	if Game.rng.randf() >= BASE_CHANCE * quantity_for(affix_count):
 		return null
 	var base: ItemBase = ITEMS[Game.rng.randi() % ITEMS.size()]
-	return Item.new(base, ItemAffixPool.roll(Game.rng))
+	return Item.new(base, ItemAffixPool.roll(Game.rng, base))

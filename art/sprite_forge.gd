@@ -58,12 +58,18 @@ static var _cache: Dictionary = {}
 ## Le point d'entrée du jeu. Les SpriteFrames sont partagées entre toutes les
 ## instances d'une même variante : seul l'état de lecture est propre à chaque
 ## AnimatedSprite2D, donc rien n'est dupliqué.
-static func frames(archetype: String, variant := 0) -> SpriteFrames:
-	var key := "%s:%d" % [archetype, variant]
+## weapon force l'arme tenue, vide pour celle de l'archétype. C'est ce qui rend
+## l'équipement visible : le joueur qui ramasse une baguette la tient vraiment.
+## Le nom entre dans la clé du cache — sans ça, équiper une baguette changerait
+## l'arme de tous les personnages déjà générés avec cette variante.
+static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrames:
+	var key := "%s:%d:%s" % [archetype, variant, weapon]
 	if _cache.has(key):
 		return _cache[key]
 
 	var cfg := config(archetype, variant)
+	if not weapon.is_empty():
+		cfg["weapon"] = weapon
 	var sf := SpriteFrames.new()
 	sf.remove_animation("default")
 

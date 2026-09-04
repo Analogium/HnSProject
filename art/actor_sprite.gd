@@ -29,11 +29,30 @@ const FLASH_TIME := 0.08
 var _dir := "down"
 var _anim := "idle"
 var _attacking := false
+var _variant := 0
+var _weapon := ""
 
 
 func _ready() -> void:
-	sprite_frames = SpriteForge.frames(archetype, variant if variant >= 0 else _pick())
+	_variant = variant if variant >= 0 else _pick()
+	sprite_frames = SpriteForge.frames(archetype, _variant)
 	animation_finished.connect(_on_animation_finished)
+	_apply()
+
+
+## Change l'arme tenue, vide pour revenir à celle de l'archétype.
+##
+## Les planches sont refaites, pas retouchées : une arme fait partie du dessin
+## de chaque image. Une trentaine d'images à un quart de milliseconde, une seule
+## fois par type d'arme grâce au cache de la forge — c'est le prix d'un
+## changement d'équipement, pas d'une image de jeu.
+func set_weapon(kind: String) -> void:
+	if kind == _weapon:
+		return
+	_weapon = kind
+	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
+	# L'animation en cours reprend à zéro : sprite_frames remplacé, il n'y a
+	# plus d'image courante à préserver.
 	_apply()
 
 

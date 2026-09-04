@@ -4,6 +4,7 @@ extends CharacterBody2D
 signal died
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
+signal equipment_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
@@ -23,6 +24,13 @@ const LEVEL_DAMAGE := 1.0
 ## Soin partiel à la montée de niveau, jamais complet : à 100 % on chercherait à
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
 const LEVEL_HEAL := 0.30
+
+## Les emplacements d'équipement, dans l'ordre où l'interface les montre. Un
+## dictionnaire indexé par nom et non un champ par emplacement : ajouter les
+## bottes ou l'anneau se fera en allongeant cette liste, sans toucher au calcul
+## des statistiques ni au dessin du panneau.
+const SLOTS := ["weapon", "chest"]
+const SLOT_NAMES := {"weapon": "ARME", "chest": "TORSE"}
 
 ## Taille du sac, en cases. Large plutôt que haut, comme dans les jeux dont il
 ## reprend la règle : une épée mange trois lignes, et un sac de quatre lignes
@@ -67,6 +75,9 @@ var xp_to_next := 40
 ## `changed` : l'interface s'y abonne directement, sans que le joueur ait à le
 ## réémettre sous un autre nom.
 var inventory := Inventory.new(INVENTORY_COLS, INVENTORY_ROWS)
+
+## Ce qui est porté, par emplacement. Un Item par entrée, ou rien.
+var equipment := {}
 
 var health: float
 var is_dead := false
@@ -177,14 +188,84 @@ func _shoot() -> void:
 
 ## Reconstruit les stats de zéro à partir de la ressource du disque. De zéro et
 ## non par incréments : additionner le bonus de niveau à la valeur courante le
-## compterait une fois de plus à chaque appel.
+## compterait une fois de plus à chaque appel — et un objet retiré laisserait son
+## bonus derrière lui.
 ##
 ## Publique : l'arène de réglage l'appelle après avoir modifié base_stats, et
-## l'équipement l'appellera à chaque objet porté.
+## l'équipement l'appelle à chaque objet porté ou retiré.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
 	stats.max_health += LEVEL_HEALTH * float(level - 1)
 	stats.attack_damage += LEVEL_DAMAGE * float(level - 1)
+
+	# Tous les objets d'un coup, et non emplacement par emplacement : c'est ce
+	# qui permet d'appliquer les valeurs plates avant les pourcentages, donc
+	# d'obtenir le même personnage quel que soit l'ordre d'équipement.
+	var mods: Array[StatMod] = []
+	for slot in SLOTS:
+		var item: Item = equipment.get(slot)
+		if item != null:
+			mods.append_array(item.mods())
+	StatMod.apply_all(stats, mods)
+
+	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
+	# sous 1 transformerait un critique en coup amorti.
+	stats.crit_chance = clampf(stats.crit_chance, 0.0, 1.0)
+	stats.crit_multiplier = maxf(stats.crit_multiplier, 1.0)
+
+	# L'armure vit sur la hurtbox : c'est elle le point de passage unique de
+	# tous les coups reçus, et elle applique déjà la même règle aux ennemis
+	# blindés. Réassignée à chaque recalcul, donc retirer un plastron la reprend.
+	hurtbox.damage_reduction = maxf(stats.damage_reduction, 0.0)
+
+
+## Porte un objet et rend celui qu'il remplace, ou null. L'appelant décide du
+## sort de l'ancien : le sac s'il y reste de la place, le sol sinon — ce n'est
+## pas au joueur d'en juger, c'est à l'interface qui a déclenché l'échange.
+##
+## Renvoie l'objet lui-même quand il ne peut pas être porté (pas d'emplacement),
+## pour que l'appelant n'ait pas à le tester d'avance et ne le perde jamais.
+func equip(item: Item) -> Item:
+	if item == null:
+		return null
+	if item.base == null or not SLOTS.has(item.base.slot):
+		return item
+	var ancien: Item = equipment.get(item.base.slot)
+	equipment[item.base.slot] = item
+	_after_equipment_change()
+	return ancien
+
+
+func unequip(slot: String) -> Item:
+	var item: Item = equipment.get(slot)
+	if item == null:
+		return null
+	equipment.erase(slot)
+	_after_equipment_change()
+	return item
+
+
+func equipped(slot: String) -> Item:
+	return equipment.get(slot)
+
+
+## Les statistiques changent, donc les PV maximum aussi : retirer un plastron
+## doit ramener la vie courante sous le nouveau plafond, sinon la barre déborde
+## et le joueur garde des PV qu'il n'a plus.
+func _after_equipment_change() -> void:
+	recompute_stats()
+	health = minf(health, stats.max_health)
+	health_bar.set_health(health, stats.max_health)
+	sprite.set_weapon(_weapon_kind())
+	equipment_changed.emit()
+
+
+## L'arme visible. Vide quand rien n'est porté : le joueur reprend alors l'épée
+## de sa fiche d'archétype plutôt que de se battre à mains nues, ce qui serait
+## une régression de silhouette pour une information qu'on lit déjà dans le sac.
+func _weapon_kind() -> String:
+	var arme: Item = equipment.get("weapon")
+	return "" if arme == null else arme.base.kind
 
 
 func _needed_for(lvl: int) -> int:
