@@ -216,7 +216,7 @@ func _level_up() -> void:
 ## Appelée par l'objet au sol quand le joueur lui passe dessus. Renvoie faux
 ## quand il ne reste pas de rectangle libre à sa taille — l'objet reste alors
 ## au sol, il ne doit pas s'évaporer parce que le sac est plein.
-func pick_up(item: ItemData) -> bool:
+func pick_up(item: Item) -> bool:
 	if item == null:
 		return false
 	if not inventory.add(item):
@@ -224,7 +224,7 @@ func pick_up(item: ItemData) -> bool:
 			HitFeedback.current.loot_gain(global_position, "sac plein")
 		return false
 	if HitFeedback.current != null:
-		HitFeedback.current.loot_gain(global_position, item.display_name)
+		HitFeedback.current.loot_gain(global_position, item.display_name())
 	return true
 
 

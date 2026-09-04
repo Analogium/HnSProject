@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+
+[resource]
+script = ExtResource("1_affix")
+id = "sanglant"
+stat = "crit_multiplier"
+percent = false
+min_value = 0.2
+max_value = 0.8
+weight = 6

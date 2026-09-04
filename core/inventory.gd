@@ -19,10 +19,10 @@ const EMPTY := -1
 ## dictionnaire : c'est la structure que toute l'interface manipule, elle mérite
 ## des champs nommés que l'éditeur complète.
 class Placed:
-	var data: ItemData
+	var data: Item
 	var cell: Vector2i
 
-	func _init(p_data: ItemData, p_cell: Vector2i) -> void:
+	func _init(p_data: Item, p_cell: Vector2i) -> void:
 		data = p_data
 		cell = p_cell
 
@@ -52,10 +52,11 @@ func _init(p_cols: int, p_rows: int) -> void:
 ## L'encombrement d'un objet, borné à une case au minimum : un .tres laissé à
 ## 0×0 donnerait sinon un objet qui n'occupe rien, donc invisible et impossible
 ## à reprendre.
-static func footprint(item: ItemData) -> Vector2i:
-	if item == null:
+static func footprint(item: Item) -> Vector2i:
+	if item == null or item.base == null:
 		return Vector2i.ONE
-	return Vector2i(maxi(item.grid_size.x, 1), maxi(item.grid_size.y, 1))
+	var s := item.base.grid_size
+	return Vector2i(maxi(s.x, 1), maxi(s.y, 1))
 
 
 func cell_count() -> int:
@@ -71,7 +72,7 @@ func used_cells() -> int:
 
 
 ## Le rectangle tient-il entièrement dans la grille, sur des cases libres ?
-func fits(item: ItemData, cell: Vector2i) -> bool:
+func fits(item: Item, cell: Vector2i) -> bool:
 	var s := footprint(item)
 	if cell.x < 0 or cell.y < 0 or cell.x + s.x > cols or cell.y + s.y > rows:
 		return false
@@ -82,7 +83,7 @@ func fits(item: ItemData, cell: Vector2i) -> bool:
 	return true
 
 
-func place(item: ItemData, cell: Vector2i) -> bool:
+func place(item: Item, cell: Vector2i) -> bool:
 	if item == null or not fits(item, cell):
 		return false
 	placed.append(Placed.new(item, cell))
@@ -95,7 +96,7 @@ func place(item: ItemData, cell: Vector2i) -> bool:
 ## gauche à droite — l'ordre dans lequel l'œil cherche lui-même un trou.
 ## Renvoie faux quand plus rien ne rentre ; l'appelant doit alors laisser
 ## l'objet où il est plutôt que de le perdre.
-func add(item: ItemData) -> bool:
+func add(item: Item) -> bool:
 	for y in rows:
 		for x in cols:
 			if fits(item, Vector2i(x, y)):
@@ -109,7 +110,7 @@ func index_at(cell: Vector2i) -> int:
 	return _cells[cell.y * cols + cell.x]
 
 
-func at(cell: Vector2i) -> ItemData:
+func at(cell: Vector2i) -> Item:
 	var i := index_at(cell)
 	return placed[i].data if i != EMPTY else null
 
@@ -121,11 +122,11 @@ func at(cell: Vector2i) -> ItemData:
 ## par case est exactement le genre de code qui finit par laisser une case
 ## fantôme occupée par un objet qui n'existe plus. Cinquante cases et une
 ## poignée d'objets, on peut se le payer.
-func take_at(cell: Vector2i) -> ItemData:
+func take_at(cell: Vector2i) -> Item:
 	var i := index_at(cell)
 	if i == EMPTY:
 		return null
-	var item: ItemData = placed[i].data
+	var item: Item = placed[i].data
 	placed.remove_at(i)
 	_rebuild()
 	changed.emit()

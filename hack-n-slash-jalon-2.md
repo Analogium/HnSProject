@@ -207,26 +207,49 @@ emplacement.
 
 ### 5.2 Le modèle
 
-```gdscript
-class_name ItemData
-extends Resource
+Deux classes, pas une — c'est le point d'architecture de la partie objets.
 
-@export var display_name: String
-@export var rarity: int          # 0 commun, 1 magique, 2 rare
-@export var slot: StringName     # &"weapon", ou &"" pour un consommable
-@export var kind: StringName     # &"sword", &"cleaver", ... pour l'icône
-@export var damage_bonus: float = 0.0
-@export var speed_bonus: float = 0.0
+`ItemBase` (`.tres`, sur le disque) est le **type** : ce qui est vrai de toutes
+les épées. Nom, dessin, emplacement, encombrement, et un **implicite** — le bonus
+que porte la famille entière, sans tirage. Elle est partagée par tous les
+exemplaires et n'est jamais écrite, comme `base_stats` chez le joueur.
+
+`Item` (en mémoire) est l'**exemplaire** ramassé : une base, plus les affixes
+tirés à sa création. Avant lui, le butin rendait directement la ressource du
+disque : toutes les épées du jeu étaient le même objet, et y écrire un affixe
+l'aurait écrit dans `epee.tres`.
+
+```gdscript
+class_name Item
+var base: ItemBase
+var explicits: Array[StatMod]    # 0 à 6, tirés à la création
 ```
+
+`StatMod` — un champ de `CharacterStats`, à plat ou en pourcentage — décrit
+aussi bien l'implicite d'une base qu'un affixe tiré : tout ce qui les lit n'a
+qu'une forme à connaître. Les plats s'appliquent **avant** les pourcentages,
+sinon deux objets identiques ne donnent pas le même résultat selon l'ordre
+d'équipement.
+
+**La rareté se déduit** du nombre d'affixes (0 commun, 1-2 magique, 3+ rare)
+plutôt que d'être tirée à part : deux sources pour la même information finissent
+par se contredire, et un objet doré sans affixe est un mensonge.
+
+Mesuré sur 5000 objets réellement tombés : 47 % communs, 37 % magiques, 16 %
+rares, 1,08 affixe par objet.
 
 ### 5.3 Le butin
 
-À la mort, une table pondérée tire un objet — **et elle lit ce que l'ennemi
-portait**. Un Colossal lâche plus volontiers de la robustesse, un Véloce de la
-vitesse, un élite lâche mieux. C'est ce qui donne une raison de choisir sa cible
-dans un paquet plutôt que de frapper le plus proche.
+À la mort, une table tire une base au hasard puis ses affixes. Chute à 20 %,
+multipliée par la quantité de butin de l'ennemi (+10 % par affixe porté).
 
-Au sol : une `Area2D` avec l'icône et un faisceau coloré par rareté. Ramassage au
+**Pas encore fait :** la table devait *lire ce que l'ennemi portait* — un
+Colossal lâchant plus volontiers de la robustesse, un Véloce de la vitesse.
+C'est ce qui donnerait une raison de choisir sa cible dans un paquet plutôt que
+de frapper le plus proche. Le tirage est pour l'instant uniforme.
+
+Au sol : une `Area2D` avec l'icône, et un halo à la couleur de rareté — de loin,
+avant même de distinguer la forme, on sait si ça vaut le détour. Ramassage au
 contact, comme un ARPG classique.
 
 ### 5.4 Les stats du joueur deviennent calculées

@@ -75,7 +75,7 @@ func _ready() -> void:
 ## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
 ## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
 ## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
-func _on_item_dropped(item: ItemData) -> void:
+func _on_item_dropped(item: Item) -> void:
 	GroundItem.spawn(
 		loot, player.global_position + player.facing * 14.0, item, GroundItem.DROP_DELAY
 	)

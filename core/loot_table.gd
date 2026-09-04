@@ -32,9 +32,14 @@ static func quantity_for(affix_count: int) -> float:
 
 
 ## Renvoie null quand rien ne tombe — le cas courant.
-static func roll(affix_count: int) -> ItemData:
+##
+## L'objet rendu est un exemplaire neuf, avec ses propres affixes : jamais la
+## ressource du disque, qui est partagée par toutes les épées du jeu et ne doit
+## pas être écrite.
+static func roll(affix_count: int) -> Item:
 	if ITEMS.is_empty():
 		return null
 	if Game.rng.randf() >= BASE_CHANCE * quantity_for(affix_count):
 		return null
-	return ITEMS[Game.rng.randi() % ITEMS.size()]
+	var base: ItemBase = ITEMS[Game.rng.randi() % ITEMS.size()]
+	return Item.new(base, ItemAffixPool.roll(Game.rng))

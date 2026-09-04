@@ -8,7 +8,10 @@ extends Area2D
 
 ## Halo au sol. Sans lui, une icône de 24 px posée sur des tuiles texturées se
 ## perd complètement — c'est le halo qu'on repère du coin de l'œil, pas l'objet.
-const GLOW := Color(0.98, 0.86, 0.45, 0.30)
+##
+## Il prend la couleur de rareté : de loin, avant même de distinguer la forme,
+## on sait si ça vaut le détour. C'est le seul rôle de la rareté au sol.
+const GLOW_ALPHA := 0.34
 const GLOW_RX := 9.0
 const GLOW_RY := 4.5
 
@@ -24,7 +27,7 @@ const DROP_DELAY := 0.6
 
 @onready var icon: Sprite2D = $Icon
 
-var data: ItemData
+var data: Item
 
 ## Temps restant avant que le ramassage soit permis. Zéro pour le butin d'un
 ## ennemi : celui-là, on veut pouvoir le prendre en courant dessus.
@@ -35,6 +38,7 @@ var _t := 0.0
 ## *sur* son halo, pas dessus. À hauteur fixe, les objets étroits allaient bien
 ## et un plastron cachait complètement le halo qui sert à le repérer.
 var _rest_y := 0.0
+var _glow := Color(0.98, 0.86, 0.45, GLOW_ALPHA)
 
 static var _scene: PackedScene
 
@@ -48,7 +52,7 @@ static var _scene: PackedScene
 ## Godot refuse qu'on y ajoute une Area2D : « Can't change this state while
 ## flushing queries ». La forme de ramassage n'était alors pas initialisée et
 ## l'objet risquait de rester à jamais impossible à ramasser.
-static func spawn(parent: Node, at: Vector2, item: ItemData, delay := 0.0) -> GroundItem:
+static func spawn(parent: Node, at: Vector2, item: Item, delay := 0.0) -> GroundItem:
 	# Chargée à la première pose et non par preload : un script qui préchargerait
 	# la scène dont il est lui-même le script forme un cycle de dépendances que
 	# Godot refuse.
@@ -72,8 +76,10 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	if data == null:
 		return
-	icon.texture = SpriteForge.ground_icon(data.kind)
+	icon.texture = SpriteForge.ground_icon(data.base.kind)
 	_rest_y = -icon.texture.get_height() * 0.5 - 1.0
+	_glow = data.color()
+	_glow.a = GLOW_ALPHA
 
 
 func _process(delta: float) -> void:
@@ -89,7 +95,7 @@ func _draw() -> void:
 	# Un cercle unitaire écrasé par la transformation : c'est le seul moyen de
 	# tracer une ellipse sans construire un polygone à la main.
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(GLOW_RX, GLOW_RY))
-	draw_circle(Vector2.ZERO, 1.0, GLOW)
+	draw_circle(Vector2.ZERO, 1.0, _glow)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 

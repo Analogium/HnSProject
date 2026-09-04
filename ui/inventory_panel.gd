@@ -15,7 +15,7 @@ extends Control
 ## Ce qu'on jette du sac. Un signal plutôt qu'une référence au monde : le
 ## panneau vit dans une CanvasLayer et n'a aucune raison de savoir où poser des
 ## nœuds — c'est la scène qui sait.
-signal drop_requested(item: ItemData)
+signal drop_requested(item: Item)
 
 const CELL := 20.0
 const PAD := 1.0
@@ -33,18 +33,33 @@ const SLOT_EDGE := Color(0.22, 0.20, 0.26)
 ## Fond des cases occupées : c'est lui qui donne la forme de l'objet d'un coup
 ## d'œil, avant même que l'icône soit lue.
 const ITEM_BACK := Color(0.22, 0.21, 0.28)
-const ITEM_EDGE := Color(0.45, 0.42, 0.52)
-const HOVER := Color(0.35, 0.33, 0.42)
+## Le cadre d'un objet rangé prend sa couleur de rareté, assombrie pour ne pas
+## crier : le sac se lit alors d'un coup d'œil, sans survoler case par case.
+const ITEM_EDGE_DIM := 0.3
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
 const HINT := Color(0.52, 0.50, 0.60)
+## L'infobulle. Le cadre prend la couleur de rareté de l'objet : c'est la même
+## information que le halo au sol, donc la même couleur, et on n'apprend pas
+## deux codes pour une seule idée.
+const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
+const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
+const TIP_EXPLICIT := Color(0.55, 0.75, 1.0)
+const TIP_PAD := 5.0
+const TIP_LINE := 9.0
+## Écart entre le sac et son infobulle : collée, on ne sait plus laquelle des
+## deux bordures appartient à quoi.
+const TIP_GAP := 5.0
+const TIP_MIN_W := 74.0
+const FONT_SIZE := 8
+const TITLE_SIZE := 9
 
 @onready var title: Label = $Title
 
 var _inventory: Inventory
 
 ## L'objet tenu à la main, sorti du sac tant qu'on ne l'a pas reposé.
-var _held: ItemData
+var _held: Item
 ## Sa case d'origine, pour le rendre là où on l'a pris si on referme le sac.
 var _from := Vector2i.ZERO
 ## Quelle case de l'objet le curseur avait attrapée : sans elle, un plastron
@@ -142,7 +157,7 @@ func _click(cell: Vector2i) -> void:
 ## Rend au sac l'objet tenu à la main, à sa place d'origine si elle est encore
 ## libre. Renvoie ce qui n'a pas pu rentrer : le sac a pu se remplir pendant
 ## qu'on le tenait, et un objet ne doit jamais disparaître entre deux mains.
-func _return_held() -> ItemData:
+func _return_held() -> Item:
 	if _held == null:
 		return null
 	var item := _held
@@ -198,11 +213,15 @@ func _draw() -> void:
 			draw_rect(r, SLOT)
 			draw_rect(r, SLOT_EDGE, false, 1.0)
 
+	var survole := _inventory.index_at(_hover) if _held == null else Inventory.EMPTY
 	for p in _inventory.placed:
-		var r := p.rect()
 		_draw_item(p.data, p.cell, true)
-		if _held == null and r.has_point(_hover):
-			draw_rect(_rect_of(p.cell, r.size), HOVER, false, 1.0)
+	if survole != Inventory.EMPTY:
+		var vise: Inventory.Placed = _inventory.placed[survole]
+		# Le cadre de l'objet survolé passe à sa couleur de rareté pleine, au lieu
+		# d'un gris de survol qui l'effacerait justement sur les objets rares.
+		draw_rect(_rect_of(vise.cell, vise.rect().size), vise.data.color(), false, 1.0)
+		_draw_tooltip(vise.data, vise.cell)
 
 	if _held != null:
 		# L'objet tenu se cale sur la grille au lieu de flotter librement : dans
@@ -217,19 +236,79 @@ func _draw() -> void:
 	if font != null:
 		draw_string(
 			font, Vector2(4.0, s.y - 3.0), "[clic] prendre / poser    [clic droit] jeter",
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, 8, HINT
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, HINT
 		)
+
+
+## Ce que porte l'objet, à côté du sac. Sans elle, un objet à six affixes et une
+## épée nue se ressemblent : c'est la seule fenêtre par laquelle le tirage
+## devient visible.
+func _draw_tooltip(item: Item, cell: Vector2i) -> void:
+	var font := get_theme_default_font()
+	if font == null:
+		return
+
+	var titre := item.display_name()
+	var implicite := item.implicit_line()
+	var explicites := item.explicit_lines()
+
+	var w := maxf(TIP_MIN_W, font.get_string_size(
+		titre, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
+	for ligne in explicites:
+		w = maxf(w, font.get_string_size(ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	if not implicite.is_empty():
+		w = maxf(w, font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	w += TIP_PAD * 2.0
+
+	var n := explicites.size() + (1 if not implicite.is_empty() else 0)
+	var h := TIP_PAD * 2.0 + TIP_LINE + float(n) * TIP_LINE
+	# Le trait de séparation, quand il y a les deux sortes de lignes à séparer.
+	var separe := not implicite.is_empty() and not explicites.is_empty()
+	if separe:
+		h += TIP_LINE * 0.5
+
+	# Alignée sur le haut de l'objet, mais jamais débordante vers le bas : les
+	# objets de la dernière ligne sont ceux dont l'infobulle est la plus longue
+	# à sortir de l'écran.
+	var s := _panel_size()
+	var haut := minf(_rect_of(cell, Vector2i.ONE).position.y, s.y - h)
+	var r := Rect2(Vector2(-w - TIP_GAP, haut), Vector2(w, h))
+
+	draw_rect(r, TIP_BACK)
+	draw_rect(r, item.color(), false, 1.0)
+
+	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
+	draw_string(font, Vector2(r.position.x + TIP_PAD, y), titre,
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE, item.color())
+	if not implicite.is_empty():
+		y += TIP_LINE
+		draw_string(font, Vector2(r.position.x + TIP_PAD, y), implicite,
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_IMPLICIT)
+	if separe:
+		# Ce que la base garantit au-dessus du trait, ce que le tirage a donné
+		# en dessous. Sans lui, les deux se lisent comme une seule liste et
+		# l'implicite passe pour un affixe de plus.
+		y += TIP_LINE * 0.5
+		draw_line(
+			Vector2(r.position.x + TIP_PAD, y - 2.0),
+			Vector2(r.end.x - TIP_PAD, y - 2.0),
+			TIP_IMPLICIT * Color(1.0, 1.0, 1.0, 0.5), 1.0
+		)
+	for ligne in explicites:
+		y += TIP_LINE
+		draw_string(font, Vector2(r.position.x + TIP_PAD, y), ligne,
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_EXPLICIT)
 
 
 ## framed : le cadre de l'objet rangé. L'objet tenu à la main s'en passe — il
 ## est déjà posé sur la teinte verte ou rouge qui dit s'il peut tomber là.
-func _draw_item(item: ItemData, cell: Vector2i, framed: bool) -> void:
+func _draw_item(item: Item, cell: Vector2i, framed: bool) -> void:
 	var r := _rect_of(cell, Inventory.footprint(item))
 	if framed:
 		draw_rect(r, ITEM_BACK)
-		draw_rect(r, ITEM_EDGE, false, 1.0)
+		draw_rect(r, item.color().darkened(ITEM_EDGE_DIM), false, 1.0)
 
-	var tex := SpriteForge.inventory_icon(item.kind, Vector2i(r.size) - Vector2i(MARGIN, MARGIN) * 2)
+	var tex := SpriteForge.inventory_icon(item.base.kind, Vector2i(r.size) - Vector2i(MARGIN, MARGIN) * 2)
 	# Position entière : une icône à cheval sur deux pixels bave, et c'est
 	# précisément ce que le rendu pixel art ne pardonne pas.
 	draw_texture(tex, (r.position + (r.size - tex.get_size()) * 0.5).round())
