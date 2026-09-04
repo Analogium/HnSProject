@@ -22,10 +22,19 @@ var ticked := 0
 ## L'arène lui donne un conteneur dédié pour pouvoir les balayer d'un coup.
 var projectile_parent: Node2D
 
+## Où atterrit le butin. Même principe, et séparé des projectiles : on balaie
+## les tirs au rechargement d'une zone, jamais les objets au sol.
+var loot_parent: Node2D
+
+
+const GROUND_ITEM := preload("res://actors/items/ground_item.tscn")
+
 
 func _ready() -> void:
 	if projectile_parent == null:
 		projectile_parent = self
+	if loot_parent == null:
+		loot_parent = self
 
 
 func register(enemy: Enemy) -> void:
@@ -75,6 +84,21 @@ func report_kill(enemy: Enemy) -> void:
 	# rapporte, et on doit pouvoir attribuer le gain à la cible qu'on a choisie.
 	if HitFeedback.current != null:
 		HitFeedback.current.xp_gain(enemy.global_position, gain)
+	_drop_loot(enemy)
+
+
+## Appelée uniquement depuis report_kill, donc jamais pour un vidage de zone ni
+## pour le banc de mesure : ceux-là passent die(false).
+func _drop_loot(enemy: Enemy) -> void:
+	var item := LootTable.roll(enemy.affixes.size())
+	if item == null:
+		return
+	var drop: GroundItem = GROUND_ITEM.instantiate()
+	# add_child d'abord : setup touche un nœud enfant, et global_position n'a de
+	# sens qu'une fois dans l'arbre.
+	loot_parent.add_child(drop)
+	drop.global_position = enemy.global_position
+	drop.setup(item)
 
 
 func _on_enemy_died(enemy: Enemy) -> void:

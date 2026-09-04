@@ -145,6 +145,19 @@ func is_empty() -> bool:
 	return _x1 < _x0
 
 
+## Le rectangle réellement peint, contour compris. Sert à recadrer un dessin qui
+## ne remplit pas son cadre — une icône d'objet, par exemple, dont la forme
+## dépend de l'arme et ne tombe jamais au centre toute seule.
+func painted_rect() -> Rect2i:
+	if is_empty():
+		return Rect2i()
+	# +1 de marge : le contour se pose sur les pixels vides qui touchent la
+	# silhouette, donc juste à l'extérieur du rectangle suivi.
+	return Rect2i(_x0, _y0, _x1 - _x0 + 1, _y1 - _y0 + 1).grow(1).intersection(
+		Rect2i(0, 0, width, height)
+	)
+
+
 ## Une seule passe sur les pixels, et une seule écriture par pixel.
 ##
 ## Ce qui coûte en GDScript, ce n'est pas le calcul mais le nombre d'accès

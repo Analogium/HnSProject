@@ -103,6 +103,43 @@ static func frame_image(cfg: Dictionary, dir: String, anim: String, index: int) 
 	return canvas.to_image(cfg["palettes"])
 
 
+## Côté d'une icône d'objet. Plus petit que le cadre d'un personnage : une arme
+## seule n'a pas besoin de la place d'un corps.
+const ICON := 24
+
+static var _icons: Dictionary = {}
+
+
+## L'icône d'un objet, dessinée par _weapon — exactement la fonction qui pose
+## l'arme dans la main d'un personnage. Une épée au sol et l'épée que tient le
+## joueur ne peuvent donc pas se contredire.
+static func weapon_icon(kind: String) -> Texture2D:
+	if _icons.has(kind):
+		return _icons[kind]
+
+	var canvas := PixelCanvas.new(ICON, ICON)
+	# La palette du joueur : c'est celle qui donne l'acier clair et l'or de la
+	# garde, les deux teintes qui font lire « arme » plutôt que « bâton ».
+	var cfg := config("player", 0)
+	cfg["weapon"] = kind
+	# En diagonale : une arme verticale dans un cadre carré laisse deux grandes
+	# marges vides et se lit plus petite qu'elle n'est.
+	_weapon(canvas, cfg, Vector2(6.0, 17.5), Vector2(0.72, -0.69), 0.0)
+
+	# Recadrée sur ce qui est réellement peint : une épée et une baguette n'ont
+	# ni la même longueur ni le même encombrement, et aucune ne tombe au centre
+	# du cadre toute seule. Sans ça l'objet et son halo au sol ne coïncident pas.
+	var drawn := canvas.to_image(cfg["palettes"])
+	var r := canvas.painted_rect()
+	var img := Image.create_empty(ICON, ICON, false, Image.FORMAT_RGBA8)
+	if r.size.x > 0 and r.size.y > 0:
+		img.blit_rect(drawn, r, Vector2i((ICON - r.size.x) / 2, (ICON - r.size.y) / 2))
+
+	var tex := ImageTexture.create_from_image(img)
+	_icons[kind] = tex
+	return tex
+
+
 # --------------------------------------------------------------------------
 # Configuration
 # --------------------------------------------------------------------------
@@ -478,6 +515,13 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 			var head := hand + d * 4.0
 			c.capsule(hand - d * 1.4, head, 1.3, R_LEATHER, bias)
 			c.capsule(head, head + d * 4.5, 2.7, R_LEATHER, bias + 0.08)
+
+		"wand":
+			# Un bâton court. Le cristal reste au niveau maximal, comme celui du
+			# staff : c'est une source de lumière, elle ne s'assombrit pas avec
+			# le manche.
+			c.capsule(hand - d * 1.8, hand + d * 5.2, 1.0, R_LEATHER, bias)
+			c.disc(hand + d * 5.8, 1.5, R_ACCENT, 1.0)
 
 		"staff":
 			c.capsule(hand - d * 3.0, hand + d * 9.0, 1.2, R_LEATHER, bias)

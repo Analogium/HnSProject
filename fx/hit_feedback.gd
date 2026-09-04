@@ -30,6 +30,7 @@ const T_HIT := 0
 const T_CRIT := 1
 const T_PLAYER := 2
 const T_XP := 3
+const T_LOOT := 4
 const TINTS := [
 	Color(1.00, 0.98, 0.88),   # coup ordinaire : le blanc chaud de la lame
 	Color(1.00, 0.78, 0.25),   # critique : l'or, la seule couleur réservée
@@ -37,6 +38,9 @@ const TINTS := [
 	# Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre :
 	# le gain qui s'envole et la barre qui monte doivent se répondre.
 	Color(0.45, 0.68, 1.00),
+	# Le doré du halo posé sous les objets au sol : ramasser et repérer sont la
+	# même information, elles partagent la couleur.
+	Color(0.98, 0.86, 0.45),
 ]
 
 const NUMBER_LIFE := 0.62
@@ -118,6 +122,13 @@ func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
 	_add_label(at + Vector2(0.0, -XP_HEIGHT), "+%d exp" % amount, XP_SIZE, T_XP, XP_RISE)
+	set_process(true)
+	queue_redraw()
+
+
+## Le nom de l'objet ramassé, au-dessus du joueur.
+func loot_gain(at: Vector2, text: String) -> void:
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, T_LOOT, XP_RISE)
 	set_process(true)
 	queue_redraw()
 

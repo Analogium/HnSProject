@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 signal died
 signal xp_changed(current: int, needed: int, level: int)
+signal inventory_changed
 signal leveled_up(level: int)
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -23,6 +24,11 @@ const LEVEL_DAMAGE := 1.0
 ## Soin partiel à la montée de niveau, jamais complet : à 100 % on chercherait à
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
 const LEVEL_HEAL := 0.30
+
+## Taille de l'inventaire, en cases. La grille de l'interface s'y accorde.
+const INVENTORY_COLS := 6
+const INVENTORY_ROWS := 4
+const INVENTORY_SIZE := INVENTORY_COLS * INVENTORY_ROWS
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
@@ -56,6 +62,11 @@ var stats: CharacterStats
 var level := 1
 var xp := 0
 var xp_to_next := 40
+
+## Ce qu'on a ramassé. Une simple liste pour l'instant : ni emplacements
+## d'équipement, ni tri, ni piles. La grille de l'interface se contente de la
+## lire, donc ajouter l'équipement plus tard ne la déplacera pas.
+var inventory: Array[ItemData] = []
 
 var health: float
 var is_dead := false
@@ -196,6 +207,16 @@ func _level_up() -> void:
 	health = minf(health + stats.max_health * LEVEL_HEAL, stats.max_health)
 	health_bar.set_health(health, stats.max_health)
 	leveled_up.emit(level)
+
+
+## Appelée par l'objet au sol quand le joueur lui passe dessus.
+func pick_up(item: ItemData) -> void:
+	if item == null or inventory.size() >= INVENTORY_SIZE:
+		return
+	inventory.append(item)
+	inventory_changed.emit()
+	if HitFeedback.current != null:
+		HitFeedback.current.loot_gain(global_position, item.display_name)
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:

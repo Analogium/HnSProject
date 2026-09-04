@@ -24,9 +24,11 @@ const PACK_MIN_TILES := 3
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
 @onready var projectiles: Node2D = $Entities/Projectiles
+@onready var loot: Node2D = $Entities/Loot
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
 @onready var hud: Hud = $UI/Hud
+@onready var inventory: InventoryPanel = $UI/Inventory
 @onready var spawner: EnemySpawner = $EnemySpawner
 
 var generator: MapGenerator
@@ -52,12 +54,14 @@ func _ready() -> void:
 
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
+	enemy_manager.loot_parent = loot
 	player.died.connect(_on_player_died)
 
 	player.projectile_parent = projectiles
 	map_overlay.player = player
 	map_overlay.enemy_manager = enemy_manager
 	hud.bind(player)
+	inventory.bind(player)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -84,6 +88,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_F5: generate_zone(Game.rng.randi())
 		KEY_G: spawn_pack()
 		KEY_K: kill_all()
+		KEY_I: inventory.toggle()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -193,6 +198,10 @@ func kill_all() -> void:
 			e.die(false)   # un vidage n'est pas une victoire : pas d'expérience
 	for p in projectiles.get_children():
 		p.queue_free()
+	# Le butin est posé sur le sol de *cette* carte : le garder d'une zone à
+	# l'autre laisserait des objets flotter dans les murs de la suivante.
+	for l in loot.get_children():
+		l.queue_free()
 
 
 func _on_player_died() -> void:
@@ -221,6 +230,7 @@ func _overlay_text() -> String:
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],
 		"",
 		"[TAB] carte de la zone",
+		"[I] inventaire",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",

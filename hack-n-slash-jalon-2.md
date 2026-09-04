@@ -303,9 +303,14 @@ Chaque étape doit être jouable et testée avant la suivante.
 - [x] **3. Affixes.** Demande la duplication des stats. C'est ici que le pari du
       jalon se joue : à valider sur une capture, au milieu d'un paquet, pas seul
       sur fond uni.
-- [ ] **4. Objets, butin, inventaire.** En dernier : ça réclame la discipline de
-      copie des stats posée aux étapes 2 et 3, et l'icône générée réutilise le
-      dessin d'arme existant.
+- [x] **4a. Objets, butin, inventaire.** Deux objets nus — une épée, une
+      baguette — dont l'icône est dessinée par `SpriteForge._weapon()`, la
+      fonction même qui pose l'arme dans la main d'un personnage. Chute à 10 %,
+      multipliée par la quantité de butin de l'ennemi (+10 % par affixe).
+      Ramassage au contact, sac de 6 × 4 à la touche **I**.
+- [ ] **4b. Équipement.** Un emplacement, l'arme. Ramasser équipe, l'ancien
+      objet retourne dans le sac, et `recompute_stats()` reprend les bonus. Rien
+      n'est encore fait : les deux objets n'ont volontairement aucun effet.
 
 ---
 
