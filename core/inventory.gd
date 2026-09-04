@@ -110,11 +110,6 @@ func index_at(cell: Vector2i) -> int:
 	return _cells[cell.y * cols + cell.x]
 
 
-func at(cell: Vector2i) -> Item:
-	var i := index_at(cell)
-	return placed[i].data if i != EMPTY else null
-
-
 ## Retire l'objet qui couvre cette case et le rend.
 ##
 ## La grille d'occupation est reconstruite en entier plutôt que rapiécée :

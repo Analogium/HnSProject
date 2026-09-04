@@ -11,8 +11,6 @@ extends Node
 ## intéressant qu'un paquet homogène : il faut décider si on perce jusqu'au
 ## caster ou si on nettoie d'abord.
 
-const TILE_SIZE := 32
-
 @export var pack_count: int = 14
 @export var pack_size_min: int = 3
 @export var pack_size_max: int = 7
@@ -104,16 +102,8 @@ func _spawn_pack(
 			continue
 		used[cell] = true
 
-		var scene := _pick_scene()
-		if scene == null:
+		if manager.spawn(_pick_scene(), MapGenerator.cell_center(cell)) == null:
 			continue
-
-		var enemy: Enemy = scene.instantiate()
-		# +0.5 tuile : on vise le centre de la case, pas son coin.
-		enemy.position = (Vector2(cell) + Vector2(0.5, 0.5)) * TILE_SIZE
-
-		manager.add_child(enemy)
-		manager.register(enemy)
 		placed += 1
 
 	return placed

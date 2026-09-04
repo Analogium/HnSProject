@@ -23,7 +23,6 @@ const ACCEL := 0.06
 ## trop grand, le caster coupe la corde et se resserre sur le joueur.
 @export var orbit_step: float = 0.15
 
-var _cast_cd := 0.0
 var _strafe_dir := 1.0
 
 
@@ -66,12 +65,10 @@ func tick(delta: float) -> void:
 	if strafing and get_slide_collision_count() > 0:
 		_strafe_dir = -_strafe_dir
 
-	_cast_cd = maxf(_cast_cd - delta, 0.0)
-	if dist < preferred_distance * 1.4 and _cast_cd <= 0.0 and _has_line_of_sight():
-		_cast_cd = stats.attack_cooldown
+	_cool_down(delta)
+	if dist < preferred_distance * 1.4 and _attack_cd <= 0.0 and _has_line_of_sight():
+		_strike(dir)
 		_fire(dir)
-		sprite.set_state(false, dir)
-		sprite.attack()
 	else:
 		_animate()
 
@@ -87,10 +84,7 @@ func _has_line_of_sight() -> bool:
 
 
 func _fire(dir: Vector2) -> void:
-	if projectile_scene == null:
-		return
-	var p: Projectile = projectile_scene.instantiate()
-	# add_child d'abord : global_position n'a de sens qu'une fois dans l'arbre.
-	manager.projectile_parent.add_child(p)
-	p.global_position = global_position + dir * 12.0
-	p.setup(dir, stats.attack_damage, self)
+	Projectile.spawn(
+		manager.projectile_parent, projectile_scene,
+		global_position, dir, stats.attack_damage, self
+	)

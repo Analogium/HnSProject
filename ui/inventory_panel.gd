@@ -198,14 +198,13 @@ func _release(point: Vector2) -> void:
 
 ## Ce que la souris survole, sac et emplacements ensemble.
 func _track(point: Vector2) -> void:
+	_mouse = point
 	var cell := _cell_at(point)
 	var slot := _slot_at(point)
-	# Un objet en main suit le curseur au pixel : il faut redessiner à chaque
-	# mouvement, pas seulement quand on change de case.
+	# Un objet en main suit le curseur au pixel : il faut alors redessiner à
+	# chaque mouvement, et pas seulement quand on change de case.
 	if cell == _hover and slot == _hover_slot and _held == null:
-		_mouse = point
 		return
-	_mouse = point
 	_hover = cell
 	_hover_slot = slot
 	queue_redraw()
@@ -238,14 +237,26 @@ func _equip(cell: Vector2i) -> void:
 		return
 	var origine: Vector2i = _inventory.placed[index].cell
 	var item := _inventory.take_at(cell)
-	var ancien := _player.equip(item)
-	if ancien == item:
+	if not _wear(item):
 		# Rien à quoi l'attacher : il retourne exactement d'où il vient.
 		_inventory.place(item, origine)
-		return
+	queue_redraw()
+
+
+## Porte un objet et reloge celui qu'il remplace : le sac s'il y reste de la
+## place, le sol sinon. Renvoie faux quand l'objet n'a pas d'emplacement.
+##
+## Le seul endroit où le remplacement est relogé : le clic droit depuis le sac
+## et le dépôt sur l'emplacement faisaient la même chose, chacun de son côté.
+func _wear(item: Item) -> bool:
+	if _player == null:
+		return false
+	var ancien := _player.equip(item)
+	if ancien == item:
+		return false
 	if ancien != null and not _inventory.add(ancien):
 		drop_requested.emit(ancien)
-	queue_redraw()
+	return true
 
 
 func _unequip(slot: String) -> void:
@@ -300,7 +311,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 		if _equip_held(Player.SLOTS[slot]):
 			queue_redraw()
 			return
-	elif not Rect2(Vector2.ZERO, _panel_size()).has_point(point):
+	elif not _panel_rect().has_point(point):
 		# Hors du panneau : au sol. C'est le seul moyen de se débarrasser d'un
 		# objet, et il se lit tout seul — on l'a sorti du sac.
 		drop_requested.emit(_held)
@@ -323,14 +334,9 @@ func _resolve(point: Vector2, drag: bool) -> void:
 ## torse est refusée plutôt que rangée d'office dans l'emplacement d'arme : le
 ## joueur a visé, on ne décide pas à sa place.
 func _equip_held(slot: String) -> bool:
-	if _player == null or _held.base == null or _held.base.slot != slot:
-		return false
-	var ancien := _player.equip(_held)
-	if ancien == _held:
+	if _held.base == null or _held.base.slot != slot or not _wear(_held):
 		return false
 	_held = null
-	if ancien != null and not _inventory.add(ancien):
-		drop_requested.emit(ancien)
 	return true
 
 
@@ -352,6 +358,12 @@ func _on_changed() -> void:
 		title.text = "SAC  %d / %d cases" % [_inventory.used_cells(), _inventory.cell_count()]
 	if visible:
 		queue_redraw()
+
+
+## Le panneau entier. Sert à savoir si un point est dedans — donc si un objet
+## lâché doit tomber au sol.
+func _panel_rect() -> Rect2:
+	return Rect2(Vector2.ZERO, _panel_size())
 
 
 func _panel_size() -> Vector2:
@@ -435,7 +447,7 @@ func _draw() -> void:
 		# sur la grille, verte ou rouge — dans un rangement en rectangles c'est
 		# la place qu'il prendrait qui compte — et l'**objet**, qui suit le
 		# curseur au pixel près pour qu'on sente qu'on le tient.
-		if _hover_slot < 0 and Rect2(Vector2.ZERO, s).has_point(_mouse):
+		if _hover_slot < 0 and _panel_rect().has_point(_mouse):
 			draw_rect(_rect_of(at, span), CAN_PLACE if _inventory.fits(_held, at) else BLOCKED)
 		_draw_item(_held, Rect2(_mouse - _grab_px, _span_size(span)), false)
 
@@ -457,33 +469,29 @@ func _draw_equipment() -> void:
 	for i in Player.SLOTS.size():
 		var slot: String = Player.SLOTS[i]
 		var r := _slot_rect(i)
-		draw_rect(r, SLOT)
 		var item: Item = _player.equipped(slot) if _player != null else null
 
-		# La teinte du survol se pose **après** l'objet déjà porté : peinte
-		# avant, le fond opaque de cet objet l'effaçait, et un emplacement
-		# occupé n'annonçait jamais s'il accepte ce qu'on lui apporte.
-		if _held != null and _hover_slot == i:
-			var bon: bool = _held.base != null and _held.base.slot == slot
-			if item != null:
-				_draw_item(item, r, true)
-			draw_rect(r, CAN_PLACE if bon else BLOCKED)
-			draw_rect(r, (CAN_PLACE if bon else BLOCKED) * Color(1, 1, 1, 3.0), false, 1.0)
-			continue
+		draw_rect(r, SLOT)
+		draw_rect(r, SLOT_EDGE, false, 1.0)
+		if item != null:
+			_draw_item(item, r, true)
+		elif font != null:
+			# Le nom de l'emplacement ne s'affiche que vide : une fois rempli,
+			# l'icône dit déjà de quoi il s'agit.
+			var nom: String = Player.SLOT_NAMES[slot]
+			var w := font.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
+			draw_string(font, Vector2(r.get_center().x - w * 0.5, r.get_center().y + 3.0),
+				nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, EQUIP_LABEL)
 
-		if item == null:
-			draw_rect(r, SLOT_EDGE, false, 1.0)
-			if font != null:
-				# Le nom de l'emplacement ne s'affiche que vide : une fois
-				# rempli, l'icône dit déjà de quoi il s'agit.
-				var nom: String = Player.SLOT_NAMES[slot]
-				var w := font.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
-				draw_string(font, Vector2(r.get_center().x - w * 0.5, r.get_center().y + 3.0),
-					nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, EQUIP_LABEL)
+		if _hover_slot != i:
 			continue
-
-		_draw_item(item, r, true)
-		if _hover_slot == i and _held == null:
+		if _held != null:
+			# Posée **après** l'objet porté : peinte avant, son fond opaque
+			# l'effaçait, et un emplacement occupé n'annonçait jamais s'il
+			# accepte ce qu'on lui apporte.
+			var accepte: bool = _held.base != null and _held.base.slot == slot
+			draw_rect(r, CAN_PLACE if accepte else BLOCKED)
+		elif item != null:
 			draw_rect(r, item.color(), false, 1.0)
 			_draw_tooltip(item, r.position.y)
 

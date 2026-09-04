@@ -18,7 +18,6 @@ const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
 const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
 
 const SEED := 4242
-const TILE_SIZE := 32
 
 const STEP := 20            # ennemis retirés par [1], ajoutés par [2]
 const WAVE := 100           # ennemis ajoutés d'un coup par [3]
@@ -130,7 +129,7 @@ func _spawn(count: int) -> void:
 	if gen == null or gen.floor_cells.is_empty():
 		return
 
-	var origin := Vector2i(_zone.player.global_position / TILE_SIZE)
+	var origin := MapGenerator.cell_at(_zone.player.global_position)
 	var placed := 0
 	var attempts := 0
 
@@ -148,10 +147,7 @@ func _spawn(count: int) -> void:
 
 		# Même proportion que l'EnemySpawner : un caster pour trois grunts.
 		var scene := CASTER_SCENE if _rng.randi() % 4 == 0 else GRUNT_SCENE
-		var enemy: Enemy = scene.instantiate()
-		enemy.position = (Vector2(cell) + Vector2(0.5, 0.5)) * TILE_SIZE
-		_zone.enemy_manager.add_child(enemy)
-		_zone.enemy_manager.register(enemy)
+		_zone.enemy_manager.spawn(scene, MapGenerator.cell_center(cell))
 		placed += 1
 
 

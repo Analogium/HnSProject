@@ -9,8 +9,6 @@ const ACCEL := 0.08
 const SEPARATION_RADIUS := 18.0
 const SEPARATION_FORCE := 0.35
 
-var _attack_cd := 0.0
-
 
 func tick(delta: float) -> void:
 	if not _should_act():
@@ -26,9 +24,9 @@ func tick(delta: float) -> void:
 	velocity = velocity.lerp(desired.normalized() * stats.move_speed, ACCEL)
 	move_and_slide()
 
-	_attack_cd = maxf(_attack_cd - delta, 0.0)
+	_cool_down(delta)
 	if dist < stats.attack_range and _attack_cd <= 0.0:
-		_attack_cd = stats.attack_cooldown
+		_strike(to_target)
 		var info := DamageInfo.new(
 			stats.attack_damage, global_position, stats.knockback_force
 		)
@@ -36,10 +34,6 @@ func tick(delta: float) -> void:
 		# Après take_damage : info.amount a pu être réduit par une armure, et on
 		# ne vole que ce qu'on a réellement infligé.
 		on_damage_dealt(info.amount)
-		# Vers la cible et non vers la vitesse : au contact il ne bouge presque
-		# plus, et le coup partirait dans une direction arbitraire.
-		sprite.set_state(false, to_target)
-		sprite.attack()
 	else:
 		_animate()
 

@@ -96,8 +96,7 @@ func _ready() -> void:
 		base_stats = CharacterStats.new()
 	recompute_stats()
 	xp_to_next = _needed_for(level)
-	health = stats.max_health
-	health_bar.set_health(health, stats.max_health)
+	_set_health(stats.max_health)
 	hitbox.monitoring = false
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
@@ -177,13 +176,8 @@ func _shoot() -> void:
 	if bolt_scene == null:
 		return
 	_bolt_cd = bolt_cooldown
-
 	var parent := projectile_parent if projectile_parent != null else get_parent()
-	var bolt: Projectile = bolt_scene.instantiate()
-	# add_child d'abord : global_position n'a de sens qu'une fois dans l'arbre.
-	parent.add_child(bolt)
-	bolt.global_position = global_position + facing * 12.0
-	bolt.setup(facing, bolt_damage, self)
+	Projectile.spawn(parent, bolt_scene, global_position, facing, bolt_damage, self)
 
 
 ## Reconstruit les stats de zéro à partir de la ressource du disque. De zéro et
@@ -254,8 +248,7 @@ func equipped(slot: String) -> Item:
 ## et le joueur garde des PV qu'il n'a plus.
 func _after_equipment_change() -> void:
 	recompute_stats()
-	health = minf(health, stats.max_health)
-	health_bar.set_health(health, stats.max_health)
+	_set_health(health)
 	sprite.set_weapon(_weapon_kind())
 	equipment_changed.emit()
 
@@ -266,6 +259,15 @@ func _after_equipment_change() -> void:
 func _weapon_kind() -> String:
 	var arme: Item = equipment.get("weapon")
 	return "" if arme == null else arme.base.kind
+
+
+## Le seul chemin pour changer la vie. La barre était mise à jour à la main
+## juste après chaque écriture de `health` — cinq fois, et il suffisait d'en
+## oublier une pour qu'elle mente. Le plafond est appliqué ici aussi : un soin
+## ou un plastron retiré ne doivent jamais laisser plus de PV que le maximum.
+func _set_health(value: float) -> void:
+	health = clampf(value, 0.0, stats.max_health)
+	health_bar.set_health(health, stats.max_health)
 
 
 func _needed_for(lvl: int) -> int:
@@ -289,8 +291,7 @@ func _level_up() -> void:
 	level += 1
 	xp_to_next = _needed_for(level)
 	recompute_stats()
-	health = minf(health + stats.max_health * LEVEL_HEAL, stats.max_health)
-	health_bar.set_health(health, stats.max_health)
+	_set_health(health + stats.max_health * LEVEL_HEAL)
 	leveled_up.emit(level)
 
 
@@ -300,13 +301,12 @@ func _level_up() -> void:
 func pick_up(item: Item) -> bool:
 	if item == null:
 		return false
-	if not inventory.add(item):
-		if HitFeedback.current != null:
-			HitFeedback.current.loot_gain(global_position, "sac plein")
-		return false
+	var pris := inventory.add(item)
 	if HitFeedback.current != null:
-		HitFeedback.current.loot_gain(global_position, item.display_name())
-	return true
+		HitFeedback.current.loot_gain(
+			global_position, item.display_name() if pris else "sac plein"
+		)
+	return pris
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -324,8 +324,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
-	health -= info.amount
-	health_bar.set_health(health, stats.max_health)
+	_set_health(health - info.amount)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:
@@ -346,7 +345,6 @@ func _die() -> void:
 
 func revive() -> void:
 	is_dead = false
-	health = stats.max_health
-	health_bar.set_health(health, stats.max_health)
+	_set_health(stats.max_health)
 	velocity = Vector2.ZERO
 	set_physics_process(true)

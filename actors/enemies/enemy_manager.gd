@@ -34,6 +34,29 @@ func _ready() -> void:
 		loot_parent = self
 
 
+## Pose un ennemi dans le monde et l'enregistre. Quatre appelants écrivaient les
+## quatre mêmes lignes — la zone, l'arène, le banc de mesure et le peupleur — et
+## le jour où poser un ennemi demandera une étape de plus, elle s'ajoutera ici.
+func spawn(scene: PackedScene, at: Vector2) -> Enemy:
+	if scene == null:
+		return null
+	var enemy: Enemy = scene.instantiate()
+	enemy.position = at
+	add_child(enemy)
+	register(enemy)
+	return enemy
+
+
+## Tue tout le monde sans récompense : un vidage n'est pas une victoire.
+##
+## Sur une copie de la liste : die() émet died, que le manager traite en
+## retirant l'ennemi — on ne parcourt pas une liste qu'on modifie.
+func clear() -> void:
+	for e in enemies.duplicate():
+		if is_instance_valid(e):
+			e.die(false)
+
+
 func register(enemy: Enemy) -> void:
 	enemy.manager = self
 	enemy.setup(target)

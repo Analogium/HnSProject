@@ -25,11 +25,9 @@ const RARITY_COLORS := [
 	Color(0.95, 0.82, 0.30),
 ]
 
-const RARITY_NAMES := ["Commun", "Magique", "Rare"]
-
 var base: ItemBase
-## Les affixes tirés à la création, déjà résolus en valeurs. Jamais retirés ni
-## retirés au hasard une seconde fois : un objet est ce qu'il est.
+## Les affixes tirés à la création, déjà résolus en valeurs. Ils ne changent
+## plus ensuite : un objet est ce qu'il est.
 var explicits: Array[StatMod] = []
 
 

@@ -23,6 +23,10 @@ extends Area2D
 ## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
 @export var hit_stop_on_impact: bool = false
 
+## Distance à laquelle le tir naît devant son lanceur. Trop court, il apparaît
+## dans le corps et touche le tireur lui-même ; trop loin, il saute une case.
+const MUZZLE := 12.0
+
 var _dir := Vector2.RIGHT
 var _damage := 0.0
 var _source: Node2D
@@ -32,6 +36,25 @@ var _life := 0.0
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
+
+
+## Fait partir un tir. Le joueur et le caster écrivaient les mêmes quatre
+## lignes, dont le piège de l'ordre : add_child d'abord, sinon global_position
+## ne veut rien dire.
+##
+## Ajout immédiat et non différé, contrairement à GroundItem : un tir part
+## toujours depuis _physics_process, jamais depuis un callback de collision.
+static func spawn(
+	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
+	damage: float, source: Node2D
+) -> Projectile:
+	if scene == null or parent == null:
+		return null
+	var bolt: Projectile = scene.instantiate()
+	parent.add_child(bolt)
+	bolt.global_position = from + dir * MUZZLE
+	bolt.setup(dir, damage, source)
+	return bolt
 
 
 ## À appeler après add_child, sinon global_position ne veut rien dire.

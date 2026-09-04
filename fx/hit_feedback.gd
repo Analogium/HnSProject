@@ -76,10 +76,27 @@ const IMPACT_OFFSET := 7.0
 const P_STRIDE := 8
 
 var _p := PackedFloat32Array()
-## [x, y, vx, vy, âge, durée, texte, index de teinte, corps, demi-largeur].
-## Un Array et non un tableau packé : ils portent une chaîne, et il y en a au
-## plus quelques dizaines là où les particules se comptent par centaines.
-var _numbers: Array = []
+
+
+## Un libellé qui s'envole. Une petite classe et non un tableau indexé comme les
+## particules : ils portent une chaîne, il y en a au plus quelques dizaines là où
+## les particules se comptent par centaines, et `n.half` se relit là où `n[9]`
+## oblige à compter les colonnes.
+class FloatingText:
+	var pos: Vector2
+	var vel: Vector2
+	var age := 0.0
+	var life: float
+	var text: String
+	## Index dans TINTS, et non une couleur : la palette tient en un seul endroit.
+	var tint: int
+	var body: int
+	## Demi-largeur du texte, mesurée une fois à la création : la re-mesurer à
+	## chaque image coûterait plus cher que tout le reste du dessin.
+	var half: float
+
+
+var _numbers: Array[FloatingText] = []
 
 ## Tirage propre à l'effet. Surtout pas Game.rng : la dispersion d'un éclat est
 ## purement décorative et ne doit pas décaler le hasard dont dépend le reste.
@@ -148,17 +165,15 @@ func _add_number(at: Vector2, amount: float, is_crit: bool, tint: int) -> void:
 func _add_label(at: Vector2, text: String, body: int, tint: int, rise: float) -> void:
 	if _font == null:
 		return
-	# Largeur mesurée une fois et gardée : la re-mesurer à chaque image coûterait
-	# plus cher que tout le reste du dessin.
-	var half := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, body).x * 0.5
-
-	_numbers.append([
-		at.x, at.y,
-		_rng.randf_range(-NUMBER_DRIFT, NUMBER_DRIFT),
-		NUMBER_RISE * rise,
-		0.0, NUMBER_LIFE,
-		text, tint, body, half,
-	])
+	var n := FloatingText.new()
+	n.pos = at
+	n.vel = Vector2(_rng.randf_range(-NUMBER_DRIFT, NUMBER_DRIFT), NUMBER_RISE * rise)
+	n.life = NUMBER_LIFE
+	n.text = text
+	n.tint = tint
+	n.body = body
+	n.half = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, body).x * 0.5
+	_numbers.append(n)
 
 
 func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: int) -> void:
@@ -210,16 +225,15 @@ func _step_particles(delta: float) -> bool:
 
 func _step_numbers(delta: float) -> bool:
 	for i in range(_numbers.size() - 1, -1, -1):
-		var n: Array = _numbers[i]
-		n[4] += delta
-		if n[4] >= n[5]:
+		var n := _numbers[i]
+		n.age += delta
+		if n.age >= n.life:
 			_numbers.remove_at(i)
 			continue
 		# Freiné plus fort que les éclats : le nombre doit monter puis s'arrêter
 		# pour se laisser lire, pas retomber comme un débris.
-		n[3] += GRAVITY * 0.45 * delta
-		n[0] += n[2] * delta
-		n[1] += n[3] * delta
+		n.vel.y += GRAVITY * 0.45 * delta
+		n.pos += n.vel * delta
 	return not _numbers.is_empty()
 
 
@@ -239,16 +253,14 @@ func _draw() -> void:
 		return
 
 	for n in _numbers:
-		var t: float = n[4] / n[5]
-		var c: Color = TINTS[int(n[7])]
+		var c: Color = TINTS[n.tint]
 		# Le nombre reste opaque les deux premiers tiers : s'il s'efface trop
 		# tôt on ne le lit pas, et un nombre illisible ne sert à rien.
-		c.a = 1.0 - smoothstep(0.62, 1.0, t)
-		var pos := Vector2(roundf(n[0] - n[9]), roundf(n[1]))
-		var body: int = n[8]
+		c.a = 1.0 - smoothstep(0.62, 1.0, n.age / n.life)
+		var pos := Vector2(roundf(n.pos.x - n.half), roundf(n.pos.y))
 		# Contour noir : sur un sol clair comme sur un mur sombre, le nombre doit
 		# tenir sans qu'on ait à choisir sa couleur en fonction du décor.
 		draw_string_outline(
-			_font, pos, n[6], HORIZONTAL_ALIGNMENT_LEFT, -1, body, 1, Color(0, 0, 0, c.a)
+			_font, pos, n.text, HORIZONTAL_ALIGNMENT_LEFT, -1, n.body, 1, Color(0, 0, 0, c.a)
 		)
-		draw_string(_font, pos, n[6], HORIZONTAL_ALIGNMENT_LEFT, -1, body, c)
+		draw_string(_font, pos, n.text, HORIZONTAL_ALIGNMENT_LEFT, -1, n.body, c)

@@ -7,7 +7,6 @@ extends Node2D
 ## Le WallLayer et le conteneur d'entités sont Y-sortés ensemble, sinon les
 ## personnages passeraient devant et derrière les murs de façon incohérente.
 
-const TILE_SIZE := 32
 const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
 const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
 
@@ -125,11 +124,11 @@ func generate_zone(zone_seed: int) -> void:
 	_paint_ms = float(Time.get_ticks_usec() - t0) / 1000.0
 
 	# La carte suit la zone réellement jouée : reconstruite ici, pas ailleurs.
-	map_overlay.build(generator, TILE_SIZE)
+	map_overlay.build(generator, MapGenerator.TILE)
 
 	var spawn_cell := generator.get_spawn_cell()
 	player.revive()
-	player.global_position = _cell_center(spawn_cell)
+	player.global_position = MapGenerator.cell_center(spawn_cell)
 
 	# Placement par paquets répartis sur toute la zone, avec du vide entre eux.
 	# C'est ça qui donne le rythme de traversée ; un paquet autour du joueur ne
@@ -169,14 +168,9 @@ func _random_floor_tile() -> Vector2i:
 	return Vector2i(0, 0)
 
 
-## +0.5 tuile : on vise le centre de la case, pas son coin.
-func _cell_center(cell: Vector2i) -> Vector2:
-	return (Vector2(cell) + Vector2(0.5, 0.5)) * TILE_SIZE
-
-
 ## Paquet mixte autour du joueur, sur des cases praticables uniquement.
 func spawn_pack() -> void:
-	var origin := Vector2i(player.global_position / TILE_SIZE)
+	var origin := MapGenerator.cell_at(player.global_position)
 	var total := PACK_GRUNTS + PACK_CASTERS
 	var placed := 0
 	var attempts := 0
@@ -194,18 +188,13 @@ func spawn_pack() -> void:
 			continue
 
 		var scene := CASTER_SCENE if placed >= PACK_GRUNTS else GRUNT_SCENE
-		var enemy: Enemy = scene.instantiate()
-		enemy.position = _cell_center(cell)
-		enemy_manager.add_child(enemy)
-		enemy_manager.register(enemy)
+		enemy_manager.spawn(scene, MapGenerator.cell_center(cell))
 		placed += 1
 
 
 ## Publique : la scène de stress test vide la zone avant d'y verser ses vagues.
 func kill_all() -> void:
-	for e in enemy_manager.enemies.duplicate():
-		if is_instance_valid(e):
-			e.die(false)   # un vidage n'est pas une victoire : pas d'expérience
+	enemy_manager.clear()
 	for p in projectiles.get_children():
 		p.queue_free()
 	# Le butin est posé sur le sol de *cette* carte : le garder d'une zone à
@@ -224,7 +213,7 @@ func _respawn() -> void:
 	kill_all()
 	player.revive()
 	var spawn_cell := generator.get_spawn_cell()
-	player.global_position = _cell_center(spawn_cell)
+	player.global_position = MapGenerator.cell_center(spawn_cell)
 	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
 
 

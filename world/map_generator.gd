@@ -10,6 +10,11 @@ extends RefCounted
 const WALL := 1
 const FLOOR := 0
 
+## Côté d'une case en pixels. Repris de la planche de tuiles, qui est ce qui les
+## dessine réellement : la zone, le peupleur et le banc de mesure en gardaient
+## chacun leur copie, et trois copies d'un nombre finissent par diverger.
+const TILE := TilesetBuilder.TILE
+
 var width: int
 var height: int
 var fill_chance: float
@@ -158,6 +163,17 @@ func get_spawn_cell() -> Vector2i:
 			best_dist = d
 			best = c
 	return best
+
+
+## Le centre d'une case, en pixels. Le demi-décalage est la seule subtilité, et
+## elle était recopiée partout où l'on faisait naître quelque chose sur la carte.
+static func cell_center(cell: Vector2i) -> Vector2:
+	return (Vector2(cell) + Vector2(0.5, 0.5)) * float(TILE)
+
+
+## La conversion inverse : dans quelle case tombe ce point.
+static func cell_at(pos: Vector2) -> Vector2i:
+	return Vector2i((pos / float(TILE)).floor())
 
 
 func is_walkable(cell: Vector2i) -> bool:

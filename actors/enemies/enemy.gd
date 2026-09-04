@@ -28,6 +28,10 @@ var affixes: Array[Affix] = []
 var lifesteal := 0.0
 
 var health: float
+## Attente avant le prochain coup. Sur Enemy et non sur chaque archétype : le
+## grunt et le caster tenaient la même variable, la décomptaient de la même
+## façon et la rechargeaient avec la même statistique.
+var _attack_cd := 0.0
 var target: Node2D
 var is_dead := false
 var is_aggro := false
@@ -40,8 +44,7 @@ func _ready() -> void:
 	if stats == null:
 		stats = CharacterStats.new()
 	_apply_affixes()
-	health = stats.max_health
-	health_bar.set_health(health, stats.max_health)
+	_set_health(stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
 	set_physics_process(false)
@@ -87,7 +90,13 @@ func _apply_affixes() -> void:
 func on_damage_dealt(amount: float) -> void:
 	if lifesteal <= 0.0 or is_dead or amount <= 0.0:
 		return
-	health = minf(health + amount * lifesteal, stats.max_health)
+	_set_health(health + amount * lifesteal)
+
+
+## Le seul chemin pour changer la vie : la barre suivait chaque écriture de
+## `health` à la main, et une seule oubliée la faisait mentir.
+func _set_health(value: float) -> void:
+	health = clampf(value, 0.0, stats.max_health)
 	health_bar.set_health(health, stats.max_health)
 
 
@@ -107,6 +116,22 @@ func _animate() -> void:
 	sprite.set_state(velocity.length() > 8.0, velocity)
 
 
+## À appeler une fois par tick, avant de tester `_attack_cd`. Séparé du test
+## pour qu'un ennemi hors de portée continue de recharger : glissé dans la
+## condition, l'évaluation paresseuse aurait figé son attente.
+func _cool_down(delta: float) -> void:
+	_attack_cd = maxf(_attack_cd - delta, 0.0)
+
+
+## Déclenche le coup : recharge, et l'animation face à la cible. Face à elle et
+## non dans le sens de la vitesse — au contact l'ennemi ne bouge presque plus,
+## et le coup partirait dans une direction arbitraire.
+func _strike(facing: Vector2) -> void:
+	_attack_cd = stats.attack_cooldown
+	sprite.set_state(false, facing)
+	sprite.attack()
+
+
 ## À appeler en tête de tick() par chaque archétype. Une fois alerté, l'ennemi
 ## le reste : sinon il ferait le yo-yo dès qu'on repasse la limite du rayon.
 func _should_act() -> bool:
@@ -124,8 +149,7 @@ func _on_damaged(info: DamageInfo) -> void:
 		return
 	# Se faire tirer dessus de loin alerte, même hors du rayon de détection.
 	is_aggro = true
-	health -= info.amount
-	health_bar.set_health(health, stats.max_health)
+	_set_health(health - info.amount)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:

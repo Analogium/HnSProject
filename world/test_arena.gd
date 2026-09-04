@@ -204,18 +204,11 @@ func _add_enemy(scene: PackedScene, pos: Vector2) -> void:
 	pos.x = clampf(pos.x, WALL_THICKNESS + 10.0, ARENA_SIZE.x - WALL_THICKNESS - 10.0)
 	pos.y = clampf(pos.y, WALL_THICKNESS + 10.0, ARENA_SIZE.y - WALL_THICKNESS - 10.0)
 
-	var enemy: Enemy = scene.instantiate()
-	enemy.position = pos
-	enemy_manager.add_child(enemy)
-	enemy_manager.register(enemy)
+	enemy_manager.spawn(scene, pos)
 
 
 func _kill_all() -> void:
-	# Copie du tableau : die() émet died, que le manager traite en retirant
-	# l'élément — on ne parcourt pas une liste qu'on modifie.
-	for e in enemy_manager.enemies.duplicate():
-		if is_instance_valid(e):
-			e.die(false)   # un vidage n'est pas une victoire : pas d'expérience
+	enemy_manager.clear()
 	# Les tirs déjà partis ne sont pas dans la liste du manager.
 	for p in projectiles.get_children():
 		p.queue_free()
