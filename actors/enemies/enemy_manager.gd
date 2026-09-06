@@ -88,6 +88,7 @@ func _physics_process(delta: float) -> void:
 		if origin.distance_squared_to(e.global_position) > cull_sq:
 			continue
 		ticked += 1
+		e.regen(delta)
 		e.tick(delta)
 
 

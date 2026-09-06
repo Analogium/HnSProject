@@ -4,7 +4,7 @@
 
 [sub_resource type="Gradient" id="Gradient_proj"]
 offsets = PackedFloat32Array(0, 1)
-colors = PackedColorArray(1, 0.85, 0.95, 1, 0.85, 0.25, 0.9, 1)
+colors = PackedColorArray(0.88, 0.99, 1, 1, 0.5, 0.88, 1, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_proj"]
 gradient = SubResource("Gradient_proj")
@@ -21,6 +21,7 @@ collision_layer = 64
 collision_mask = 9
 script = ExtResource("1_proj")
 knockback = 0.0
+damage_type = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("GradientTexture2D_proj")

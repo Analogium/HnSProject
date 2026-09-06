@@ -1,3 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# GUT écrit ici ses résultats de session dans l'éditeur
+.gut_editor_config.json
+.gut_editor_shortcuts.cfg

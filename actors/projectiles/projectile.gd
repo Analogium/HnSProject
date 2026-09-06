@@ -22,6 +22,10 @@ extends Area2D
 ## Les tirs du joueur figent brièvement le jeu à l'impact, comme le corps à
 ## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
 @export var hit_stop_on_impact: bool = false
+## La nature des dégâts portés. Sur la scène et non passée à spawn() : c'est le
+## tir qui est de froid ou de foudre, pas le geste de le lancer — et enemy_bolt
+## comme player_bolt le déclarent une fois pour toutes dans l'inspecteur.
+@export var damage_type: DamageType.Kind = DamageType.Kind.PHYSICAL
 
 ## Distance à laquelle le tir naît devant son lanceur. Trop court, il apparaît
 ## dans le corps et touche le tireur lui-même ; trop loin, il saute une case.
@@ -75,7 +79,9 @@ func _physics_process(delta: float) -> void:
 func _on_area_entered(area: Area2D) -> void:
 	if not area is Hurtbox:
 		return
-	var info := DamageInfo.new(_damage, global_position, knockback)
+	var info := DamageInfo.new(
+		_damage, global_position, knockback, false, damage_type
+	)
 	(area as Hurtbox).take_damage(info)
 	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
 	# c'est lui qu'on soigne, s'il est encore en vie.

@@ -23,10 +23,12 @@ extends Resource
 @export var cooldown_mult: float = 1.0
 
 @export_group("Effets")
-## Retranché à chaque coup reçu, en points. Fixe et non proportionnel : c'est ce
-## qui rend les petits coups répétés inefficaces contre lui, donc ce qui change
-## la façon de l'attaquer plutôt que la durée du combat.
-@export var damage_reduction: float = 0.0
+## Ajouté à la notation d'armure. Elle protège proportionnellement plus des
+## petits coups que des gros : c'est ce qui rend le harcèlement inefficace
+## contre lui, donc ce qui change la façon de l'attaquer plutôt que la durée du
+## combat. Et comme l'armure ne couvre que le physique, un tir élémentaire reste
+## le recours — voir CharacterStats.armor_reduction.
+@export var armor: float = 0.0
 ## Fraction des dégâts infligés reconvertie en soin.
 @export var lifesteal: float = 0.0
 

@@ -44,6 +44,9 @@ func _ready() -> void:
 	if stats == null:
 		stats = CharacterStats.new()
 	_apply_affixes()
+	# Après _apply_affixes, qui duplique la fiche : donnée avant, la hurtbox
+	# défendrait avec la fiche partagée et ignorerait l'armure de l'affixe.
+	hurtbox.stats = stats
 	_set_health(stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
@@ -75,7 +78,7 @@ func _apply_affixes() -> void:
 		stats.move_speed *= a.speed_mult
 		stats.attack_damage *= a.damage_mult
 		stats.attack_cooldown *= a.cooldown_mult
-		hurtbox.damage_reduction += a.damage_reduction
+		stats.armor += a.armor
 		lifesteal += a.lifesteal
 
 	sprite.set_rim(
@@ -104,6 +107,19 @@ func setup(p_target: Node2D) -> void:
 	target = p_target
 
 
+## Appelée par l'EnemyManager avant tick(). Chez le manager et non dans tick()
+## de chaque archétype : c'est lui le pilote, et un archétype qui oublierait de
+## l'appeler aurait silencieusement une statistique morte.
+##
+## Les ennemis culés (au-delà de CULL_DISTANCE) ne régénèrent pas. Voulu : à
+## 700 px ils sont hors combat depuis longtemps, et les faire remonter coûterait
+## une boucle sur toute la liste pour une différence invisible.
+func regen(delta: float) -> void:
+	if stats.health_regen <= 0.0 or is_dead or health >= stats.max_health:
+		return
+	_set_health(health + stats.health_regen * delta)
+
+
 ## Surchargée par chaque archétype. Appelée par l'EnemyManager.
 func tick(_delta: float) -> void:
 	pass
@@ -127,7 +143,7 @@ func _cool_down(delta: float) -> void:
 ## non dans le sens de la vitesse — au contact l'ennemi ne bouge presque plus,
 ## et le coup partirait dans une direction arbitraire.
 func _strike(facing: Vector2) -> void:
-	_attack_cd = stats.attack_cooldown
+	_attack_cd = stats.attack_interval()
 	sprite.set_state(false, facing)
 	sprite.attack()
 

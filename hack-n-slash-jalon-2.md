@@ -377,6 +377,9 @@ Chaque étape doit être jouable et testée avant la suivante.
       `recompute_stats()` repart de la ressource du disque et applique implicites
       et affixes, les valeurs plates avant les pourcentages. L'arme portée se
       voit sur le personnage : la forge redessine ses planches avec elle.
+- [x] **5. La fiche de personnage.** Décidée le 6 septembre 2026, après le
+      jalon : la réserve d'affixes ne pouvait pas s'étoffer tant que le jeu
+      n'avait que huit statistiques. Voir la section 9.
 
 ---
 
@@ -391,3 +394,91 @@ Chaque étape doit être jouable et testée avant la suivante.
   l'équipement. Le même piège, deux fois, dans le même jalon.
 - **Le coût des barres de vie.** Trois cents `_draw()` par image ne sont pas
   gratuits. Relancer la scène de stress après l'étape 1, avant d'aller plus loin.
+- **Une statistique sans source est une statistique morte.** Vraie deux fois :
+  le mana sans rien à dépenser, et une résistance qu'aucun ennemi n'éprouve.
+  C'est ce qui a décidé du coût en mana du tir et de l'élément du caster
+  (section 9), plutôt que de poser cinq champs que personne n'exerce.
+
+
+---
+
+## 9. La fiche de personnage
+
+Ajoutée le 6 septembre 2026, entre le jalon 2 et le jalon 3. La raison est
+mécanique : la réserve d'affixes ne pouvait pas s'étoffer tant que le jeu n'avait
+que huit statistiques à viser. Une épée à six affixes portait forcément les six
+mêmes lignes — c'est la réserve qu'il fallait élargir, et pour ça il fallait
+d'abord des statistiques à modifier.
+
+Le jeu de statistiques est le classique du genre : vie, mana, armure, esquive,
+cinq résistances, régénération de vie et de mana, vitesse d'attaque,
+d'incantation et de déplacement.
+
+### 9.1 Armure et esquive sont des notations, pas des points
+
+L'armure retranchait des points fixes. Elle est devenue une **notation** :
+
+```
+réduction = armure / (armure + 5 × dégâts du coup)      plafond 90 %
+```
+
+Elle se lit par rapport à la taille du coup encaissé — beaucoup contre le
+harcèlement, peu contre un gros coup. Des points plats ne s'échelonnent pas : à
+bas niveau ils sont négligeables, à haut niveau ils rendent invulnérable, et il
+n'y a pas de zone entre les deux. L'esquive suit la même famille de courbe
+(`esquive / (esquive + 60)`, plafond 75 %) mais reste **binaire** : le coup est
+évité ou il ne l'est pas. C'est cette irrégularité qui la distingue de l'armure ;
+sans elle, les deux défenses seraient deux noms pour la même chose.
+
+Les deux formules vivent dans `CharacterStats` et non dans la `Hurtbox` qui les
+applique, parce que la fiche doit pouvoir annoncer « 42 d'armure, soit 46 %
+contre un coup de 10 » sans réécrire la règle de son côté.
+
+**Un coup passe toujours** : le plancher à 1 dégât reste, et les deux plafonds
+existent pour la même raison — l'invulnérabilité est une impasse, pas une
+difficulté.
+
+### 9.2 Les natures de dégâts sont vivantes, pas décoratives
+
+`DamageType` porte les six natures, leurs noms, leurs couleurs et le champ de
+résistance de chacune. Une classe à part et non un enum posé dans `DamageInfo` :
+`CharacterStats` doit nommer ses résistances par nature et `DamageInfo` nomme
+déjà `CharacterStats`, donc les deux se référenceraient en rond.
+
+**La couleur d'un dégât gagne sur toutes les autres**, y compris sur l'or du
+critique : savoir par quoi on est touché est la seule information qu'on ne peut
+pas déduire d'ailleurs, alors qu'un critique se reconnaît déjà à sa taille.
+Elle est définie **une seule fois**, dans `DamageType.COLORS` — le nombre qui
+s'envole, la gerbe d'éclats et la ligne de la fiche la partagent.
+
+Décision du 6 septembre : les résistances devaient être **exercées tout de
+suite**, pas attendre le contenu du jalon 3. Le tir du caster est donc du froid
+et celui du joueur de la foudre, et les deux billes ont été repeintes dans leur
+teinte. Conséquence voulue : **l'armure n'arrête pas les éléments**, donc le tir
+est le recours contre un ennemi Blindé — un choix tactique là où il n'y en avait
+aucun.
+
+### 9.3 Le mana est une contrainte, pas une jauge
+
+Le tir secondaire est devenu un sort : il coûte 6 de mana sur une réserve de 50
+qui remonte de 4 par seconde, et sa cadence suit `cast_speed` là où l'épée suit
+`attack_speed`. Huit tirs d'affilée, puis il faut alterner. Une réserve que rien
+ne dépense n'aurait été qu'une barre décorative de plus.
+
+`attack_cooldown` reste le rythme de base de l'arme ou de l'archétype ;
+`attack_speed` et `cast_speed` sont les multiplicateurs portés par le
+personnage. Les affixes visent les seconds : « +8 % de vitesse d'attaque » se
+lit, « -7 % de temps de recharge » demande une conversion mentale à chaque fois.
+L'affixe *Vif* et l'implicite de la baguette ont migré en conséquence — le jeu
+n'a plus deux façons d'exprimer la même chose.
+
+### 9.4 Ce qui n'a pas été fait
+
+- **Aucun affixe nouveau.** Décision explicite : la réserve s'étoffera au jalon
+  3, maintenant qu'elle a de quoi viser. *Cuirassé* vise la nouvelle notation
+  d'armure et *Vif* la cadence, mais rien n'a été ajouté.
+- **L'esquive n'a donc aucune source.** Elle est mesurée et jouable, mais aucun
+  objet n'en donne encore. C'est le prix de la décision précédente, assumé.
+- **Les ennemis ne régénèrent pas et n'ont pas de mana.** Les champs valent zéro
+  par défaut : leur en donner serait une décision de design, pas un état par
+  défaut.

@@ -28,6 +28,7 @@ const PACK_MIN_TILES := 3
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
 @onready var hud: Hud = $UI/Hud
 @onready var inventory: InventoryPanel = $UI/Inventory
+@onready var stats_panel: StatsPanel = $UI/Stats
 @onready var spawner: EnemySpawner = $EnemySpawner
 
 var generator: MapGenerator
@@ -62,6 +63,7 @@ func _ready() -> void:
 	hud.bind(player)
 	inventory.bind(player)
 	inventory.drop_requested.connect(_on_item_dropped)
+	stats_panel.bind(player)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -98,6 +100,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_G: spawn_pack()
 		KEY_K: kill_all()
 		KEY_I: inventory.toggle()
+		KEY_C: stats_panel.toggle()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -219,16 +222,11 @@ func _respawn() -> void:
 
 func _overlay_text() -> String:
 	return "\n".join([
-		"PV %.0f/%.0f    niv %d (%d/%d)    ennemis %d" % [
-			maxf(player.health, 0.0), player.stats.max_health,
+		# Ni les PV ni les statistiques de combat : les jauges du HUD donnent les
+		# premiers au point près, et la fiche (touche C) donne les secondes en
+		# entier. Ce bandeau ne garde que ce que lui seul sait.
+		"niv %d (%d/%d)    ennemis %d" % [
 			player.level, player.xp, player.xp_to_next, enemy_manager.enemies.size()
-		],
-		# Les statistiques que l'équipement change : sans elles à l'écran, porter
-		# un objet ne se vérifie qu'en comptant les coups.
-		"degats %.1f   critique %.0f %% x%.1f   recharge %.2f s   vitesse %.0f" % [
-			player.stats.attack_damage, player.stats.crit_chance * 100.0,
-			player.stats.crit_multiplier, player.stats.attack_cooldown,
-			player.stats.move_speed
 		],
 		"",
 		"zone %d  —  %d cases de sol" % [_seed, generator.floor_cells.size()],
@@ -236,7 +234,7 @@ func _overlay_text() -> String:
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],
 		"",
 		"[TAB] carte de la zone",
-		"[I] inventaire",
+		"[I] inventaire   [C] fiche de personnage",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",

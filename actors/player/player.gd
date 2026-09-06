@@ -2,6 +2,11 @@ class_name Player
 extends CharacterBody2D
 
 signal died
+## Vie et mana, pour l'affichage tête haute. Par signal et non lu à chaque
+## image : les deux ne bougent qu'aux coups et à la régénération, et le HUD n'a
+## alors aucune raison d'interroger le joueur soixante fois par seconde.
+signal health_changed(current: float, maximum: float)
+signal mana_changed(current: float, maximum: float)
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
 signal equipment_changed
@@ -47,6 +52,10 @@ const INVENTORY_ROWS := 5
 @export var bolt_scene: PackedScene
 @export var bolt_damage: float = 7.0
 @export var bolt_cooldown: float = 0.30
+## Le tir est un sort : il coûte du mana et sa cadence suit cast_speed, là où le
+## coup d'épée est gratuit et suit attack_speed. C'est ce qui donne son rôle à la
+## réserve — sans coût, le mana serait une barre décorative.
+@export var bolt_mana_cost: float = 6.0
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -80,6 +89,7 @@ var inventory := Inventory.new(INVENTORY_COLS, INVENTORY_ROWS)
 var equipment := {}
 
 var health: float
+var mana: float
 var is_dead := false
 var facing := Vector2.RIGHT
 var _attack_cd := 0.0
@@ -97,6 +107,7 @@ func _ready() -> void:
 	recompute_stats()
 	xp_to_next = _needed_for(level)
 	_set_health(stats.max_health)
+	_set_mana(stats.max_mana)
 	hitbox.monitoring = false
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
@@ -119,6 +130,8 @@ func _input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	_attack_cd = maxf(_attack_cd - delta, 0.0)
 	_bolt_cd = maxf(_bolt_cd - delta, 0.0)
+
+	_regen(delta)
 
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
@@ -155,7 +168,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _swing() -> void:
-	_attack_cd = stats.attack_cooldown
+	_attack_cd = stats.attack_interval()
 	_is_swinging = true
 	_already_hit.clear()
 	swing_arc.play(swing_duration)
@@ -173,11 +186,22 @@ func _swing() -> void:
 
 
 func _shoot() -> void:
-	if bolt_scene == null:
+	if bolt_scene == null or mana < bolt_mana_cost:
 		return
-	_bolt_cd = bolt_cooldown
+	_set_mana(mana - bolt_mana_cost)
+	_bolt_cd = bolt_cooldown / maxf(stats.cast_speed, 0.1)
 	var parent := projectile_parent if projectile_parent != null else get_parent()
 	Projectile.spawn(parent, bolt_scene, global_position, facing, bolt_damage, self)
+
+
+## Vie et mana remontent en continu. Testé avant d'écrire : sans le test, chaque
+## image appellerait _set_health à valeur constante une fois la barre pleine, ce
+## qui émettrait un signal et redessinerait le HUD pour rien.
+func _regen(delta: float) -> void:
+	if stats.health_regen > 0.0 and health < stats.max_health:
+		_set_health(health + stats.health_regen * delta)
+	if stats.mana_regen > 0.0 and mana < stats.max_mana:
+		_set_mana(mana + stats.mana_regen * delta)
 
 
 ## Reconstruit les stats de zéro à partir de la ressource du disque. De zéro et
@@ -207,10 +231,11 @@ func recompute_stats() -> void:
 	stats.crit_chance = clampf(stats.crit_chance, 0.0, 1.0)
 	stats.crit_multiplier = maxf(stats.crit_multiplier, 1.0)
 
-	# L'armure vit sur la hurtbox : c'est elle le point de passage unique de
-	# tous les coups reçus, et elle applique déjà la même règle aux ennemis
-	# blindés. Réassignée à chaque recalcul, donc retirer un plastron la reprend.
-	hurtbox.damage_reduction = maxf(stats.damage_reduction, 0.0)
+	# La hurtbox est le point de passage unique de tous les coups reçus : c'est
+	# elle qui applique l'esquive, l'armure et les résistances. On lui donne la
+	# fiche entière — réassignée à chaque recalcul, puisque recompute_stats en
+	# fabrique une neuve, sinon elle continuerait de défendre avec l'ancienne.
+	hurtbox.stats = stats
 
 
 ## Porte un objet et rend celui qu'il remplace, ou null. L'appelant décide du
@@ -249,6 +274,7 @@ func equipped(slot: String) -> Item:
 func _after_equipment_change() -> void:
 	recompute_stats()
 	_set_health(health)
+	_set_mana(mana)
 	sprite.set_weapon(_weapon_kind())
 	equipment_changed.emit()
 
@@ -268,6 +294,15 @@ func _weapon_kind() -> String:
 func _set_health(value: float) -> void:
 	health = clampf(value, 0.0, stats.max_health)
 	health_bar.set_health(health, stats.max_health)
+	health_changed.emit(health, stats.max_health)
+
+
+## Le pendant du précédent pour la réserve. Même plafond appliqué ici : un objet
+## qui donnait du mana et qu'on retire ne doit pas laisser une réserve qui
+## déborde, exactement comme un plastron pour les PV.
+func _set_mana(value: float) -> void:
+	mana = clampf(value, 0.0, stats.max_mana)
+	mana_changed.emit(mana, stats.max_mana)
 
 
 func _needed_for(lvl: int) -> int:
@@ -292,6 +327,7 @@ func _level_up() -> void:
 	xp_to_next = _needed_for(level)
 	recompute_stats()
 	_set_health(health + stats.max_health * LEVEL_HEAL)
+	_set_mana(mana + stats.max_mana * LEVEL_HEAL)
 	leveled_up.emit(level)
 
 
@@ -346,5 +382,6 @@ func _die() -> void:
 func revive() -> void:
 	is_dead = false
 	_set_health(stats.max_health)
+	_set_mana(stats.max_mana)
 	velocity = Vector2.ZERO
 	set_physics_process(true)

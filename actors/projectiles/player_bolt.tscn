@@ -4,7 +4,7 @@
 
 [sub_resource type="Gradient" id="Gradient_bolt"]
 offsets = PackedFloat32Array(0, 1)
-colors = PackedColorArray(0.88, 0.99, 1, 1, 0.25, 0.72, 1, 1)
+colors = PackedColorArray(0.93, 0.89, 1, 1, 0.72, 0.56, 1, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_bolt"]
 gradient = SubResource("Gradient_bolt")
@@ -24,6 +24,7 @@ speed = 230.0
 knockback = 0.0
 lifetime = 1.4
 hit_stop_on_impact = true
+damage_type = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("GradientTexture2D_bolt")

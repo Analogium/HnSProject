@@ -8,5 +8,5 @@ id = "blinde"
 display_name = "Blindé"
 tint = Color(0.549, 0.576, 0.651, 1)
 speed_mult = 0.9
-damage_reduction = 4.0
+armor = 50.0
 xp_mult = 1.6

@@ -23,25 +23,20 @@ extends Node2D
 ## qu'il ne reste jamais une référence morte après un changement de scène.
 static var current: HitFeedback
 
-## Teintes, indexées par les constantes T_* ci-dessous. Un index plutôt qu'une
-## couleur stockée par particule : trois flottants de moins par particule, et
-## la palette du feedback tient en un seul endroit.
-const T_HIT := 0
-const T_CRIT := 1
-const T_PLAYER := 2
-const T_XP := 3
-const T_LOOT := 4
-const TINTS := [
-	Color(1.00, 0.98, 0.88),   # coup ordinaire : le blanc chaud de la lame
-	Color(1.00, 0.78, 0.25),   # critique : l'or, la seule couleur réservée
-	Color(1.00, 0.42, 0.38),   # le joueur encaisse : rouge, lisible au coin de l'œil
-	# Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre :
-	# le gain qui s'envole et la barre qui monte doivent se répondre.
-	Color(0.45, 0.68, 1.00),
-	# Le doré du halo posé sous les objets au sol : ramasser et repérer sont la
-	# même information, elles partagent la couleur.
-	Color(0.98, 0.86, 0.45),
-]
+## Les couleurs qui n'appartiennent pas à une nature de dégâts. Celles des coups
+## viennent de DamageType.COLORS, qui est leur seule définition : « le froid »
+## doit être le même bleu sur le nombre, sur la gerbe et sur la fiche.
+const CRIT := Color(1.00, 0.78, 0.25)      # l'or, la seule couleur réservée
+const PLAYER := Color(1.00, 0.42, 0.38)    # le joueur encaisse : rouge, lisible au coin de l'œil
+## Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre : le
+## gain qui s'envole et la barre qui monte doivent se répondre.
+const XP := Color(0.45, 0.68, 1.00)
+## Le doré du halo posé sous les objets au sol : ramasser et repérer sont la
+## même information, elles partagent la couleur.
+const LOOT := Color(0.98, 0.86, 0.45)
+## Un coup esquivé : gris-bleu éteint. Volontairement terne — c'est un
+## non-événement, il doit se lire sans attirer l'œil comme un chiffre.
+const MISS := Color(0.72, 0.78, 0.88)
 
 const NUMBER_LIFE := 0.62
 const NUMBER_RISE := -46.0        # vitesse initiale vers le haut, px/s
@@ -72,8 +67,14 @@ const CRIT_PARTICLES := 16
 ## sprite — et sous le flash blanc, qui couvre justement ce moment-là.
 const IMPACT_OFFSET := 7.0
 
-## x, y, vx, vy, âge, durée, côté du carré, index de teinte.
-const P_STRIDE := 8
+## x, y, vx, vy, âge, durée, côté du carré, puis r, g, b.
+##
+## La couleur est stockée en clair, là où c'était un index dans une palette
+## locale. Trois flottants de plus par particule — 38 Ko au pire cas mesuré, à
+## mille ennemis — contre une palette qui devait rester alignée à la main sur
+## l'ordre de l'enum DamageType. C'est exactement le genre d'alignement qui
+## finit par céder.
+const P_STRIDE := 10
 
 var _p := PackedFloat32Array()
 
@@ -88,8 +89,7 @@ class FloatingText:
 	var age := 0.0
 	var life: float
 	var text: String
-	## Index dans TINTS, et non une couleur : la palette tient en un seul endroit.
-	var tint: int
+	var tint: Color
 	var body: int
 	## Demi-largeur du texte, mesurée une fois à la création : la re-mesurer à
 	## chaque image coûterait plus cher que tout le reste du dessin.
@@ -124,10 +124,36 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	var away := at - info.source_position
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
-	var tint := T_PLAYER if on_player else (T_CRIT if info.is_crit else T_HIT)
+	var tint := _hit_color(info, on_player)
 	_add_number(at, info.amount, info.is_crit, tint)
 	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, tint)
 
+	set_process(true)
+	queue_redraw()
+
+
+## La couleur d'un coup. **L'élément gagne sur tout le reste** : savoir par quoi
+## on est touché est ce qui rend les résistances jouables, et c'est la seule
+## information qu'on ne peut pas déduire d'ailleurs. Le critique reste lisible
+## sans sa couleur — il est déjà quatre points de corps plus gros.
+func _hit_color(info: DamageInfo, on_player: bool) -> Color:
+	if info.type != DamageType.Kind.PHYSICAL:
+		return info.color()
+	if on_player:
+		return PLAYER
+	return CRIT if info.is_crit else info.color()
+
+
+## Un coup esquivé. Pas de gerbe : rien n'a été touché, et des éclats sur une
+## esquive raconteraient l'inverse de ce qui vient de se passer.
+func miss(at: Vector2, on_player: bool) -> void:
+	_add_label(
+		at + Vector2(0.0, -NUMBER_HEIGHT),
+		"esquive" if on_player else "raté",
+		XP_SIZE,
+		MISS,
+		1.0
+	)
 	set_process(true)
 	queue_redraw()
 
@@ -138,19 +164,19 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), "+%d exp" % amount, XP_SIZE, T_XP, XP_RISE)
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), "+%d exp" % amount, XP_SIZE, XP, XP_RISE)
 	set_process(true)
 	queue_redraw()
 
 
 ## Le nom de l'objet ramassé, au-dessus du joueur.
 func loot_gain(at: Vector2, text: String) -> void:
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, T_LOOT, XP_RISE)
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, LOOT, XP_RISE)
 	set_process(true)
 	queue_redraw()
 
 
-func _add_number(at: Vector2, amount: float, is_crit: bool, tint: int) -> void:
+func _add_number(at: Vector2, amount: float, is_crit: bool, tint: Color) -> void:
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
 		"%d" % maxi(roundi(amount), 1),
@@ -160,9 +186,9 @@ func _add_number(at: Vector2, amount: float, is_crit: bool, tint: int) -> void:
 	)
 
 
-## Le libellé flottant générique — dégâts comme expérience. Un seul chemin :
-## deux copies divergeraient à la première retouche de la trajectoire.
-func _add_label(at: Vector2, text: String, body: int, tint: int, rise: float) -> void:
+## Le libellé flottant générique — dégâts, esquive, expérience, butin. Un seul
+## chemin : deux copies divergeraient à la première retouche de la trajectoire.
+func _add_label(at: Vector2, text: String, body: int, tint: Color, rise: float) -> void:
 	if _font == null:
 		return
 	var n := FloatingText.new()
@@ -176,7 +202,7 @@ func _add_label(at: Vector2, text: String, body: int, tint: int, rise: float) ->
 	_numbers.append(n)
 
 
-func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: int) -> void:
+func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: Color) -> void:
 	var count := CRIT_PARTICLES if is_crit else HIT_PARTICLES
 	var base := away.angle()
 
@@ -190,7 +216,7 @@ func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: int) -> void:
 			# Deux pixels de côté par défaut : à un seul, la gerbe disparaît sur
 			# un sol texturé — mesuré à l'image, pas au jugé.
 			3.0 if (is_crit and i % 4 == 0) else 2.0,
-			float(tint),
+			tint.r, tint.g, tint.b,
 		]))
 
 
@@ -241,8 +267,8 @@ func _draw() -> void:
 	var i := 0
 	while i < _p.size():
 		var t: float = _p[i + 4] / _p[i + 5]
-		var c: Color = TINTS[int(_p[i + 7])]
-		c.a = 1.0 - t * t   # pleine intensité longtemps, puis extinction brutale
+		# pleine intensité longtemps, puis extinction brutale
+		var c := Color(_p[i + 7], _p[i + 8], _p[i + 9], 1.0 - t * t)
 		var s: float = _p[i + 6]
 		# Coordonnées entières : une particule à cheval sur deux pixels bave et
 		# trahit tout de suite le rendu pixel art.
@@ -253,7 +279,7 @@ func _draw() -> void:
 		return
 
 	for n in _numbers:
-		var c: Color = TINTS[n.tint]
+		var c := n.tint
 		# Le nombre reste opaque les deux premiers tiers : s'il s'efface trop
 		# tôt on ne le lit pas, et un nombre illisible ne sert à rien.
 		c.a = 1.0 - smoothstep(0.62, 1.0, n.age / n.life)

@@ -144,39 +144,35 @@ revient à la revue suivante.
 
 ## 5. Valider — obligatoire avant d'annoncer quoi que ce soit
 
-Le code qui compile n'est pas du code vérifié. La recette complète est dans la
-mémoire `godot-headless-validation` ; le minimum pour une passe de revue :
+Le code qui compile n'est pas du code vérifié. Le projet a une suite versionnée :
 
-1. **Copie fraîche** du projet sous `/mnt/c/.../AppData/Local/Temp/hns-<horodatage>`
-   (ne jamais toucher le cache `.godot/` du vrai projet).
-2. `--headless --path <chemin Windows> --import` → doit sortir **zéro** erreur de
-   parsing. Toujours en premier : sans import, les `class_name` ne sont pas
-   enregistrés et tout échoue en « Could not find type X ».
-3. Une scène de test écrite pour l'occasion, lancée en
-   `--headless --quit-after <images> res://test_all.tscn`, qui **rejoue les
-   invariants touchés par la passe**. Ce qui a été vérifié la dernière fois, à
-   reprendre comme base : modèle du sac, aller-retour case ↔ pixels, filtre des
-   affixes par type d'objet, plats avant pourcentages, peuplement et vidage de
-   zone, dégâts et équipement, distance de bouche des projectiles, gain
-   d'expérience, glisser-déposer à la souris réelle, **zone de graine fixe
-   identique sur trois lancements**, planches de sprites inchangées au pixel près,
-   `.tres` du disque intacts.
-4. Un test d'endurance de quelques centaines d'images de physique en combat dense :
-   c'est lui qui débusque les fautes de rappel de physique, invisibles autrement.
-5. Si la passe touche au dessin : lancer **sans** `--headless` et sauver le
-   framebuffer (`await RenderingServer.frame_post_draw` puis `save_png`), recadrer
-   et agrandir en NEAREST avec PIL avant de juger.
-6. Si la passe touche à une boucle chaude : remesurer avec `world/stress_test.tscn`
-   en fenêtré et comparer au tableau de la mémoire `hns-perf-reference`. Chauffer
-   ~240 images avant de relever, et alterner l'ordre des conditions.
+```bash
+tests/run.sh              # tout (~22 s)
+tests/run.sh unit         # unitaires seuls (<1 s), pendant qu'on itère
+```
 
-Puis **nettoyer** : supprimer le dossier temporaire et le
-`AppData/Roaming/Godot/app_userdata/<projet>/` laissé par les exécutions.
+Le lanceur recopie le projet dans un dossier temporaire avant de l'exécuter — il
+ne faut jamais lancer Godot sur le dossier de travail pendant que l'éditeur y est
+ouvert — et il nettoie tout seul en ciblant ses processus par ligne de commande,
+jamais par nom d'image.
 
-**Ne jamais arrêter un processus Godot par nom d'image** — ça tue l'éditeur ouvert
-de l'utilisateur. Cibler par PID sur la ligne de commande `Temp/hns-`, comme décrit
-dans la mémoire `ne-pas-tuer-godot-utilisateur`. Mieux : que les scripts de test se
-terminent seuls.
+Une passe de revue **ne doit rien changer au comportement**. C'est ce qui la rend
+vérifiable : la suite passait avant, elle doit passer après, à l'identique. Si un
+test se met à échouer, la refactorisation a changé quelque chose — c'est une
+régression, pas un test à ajuster.
+
+Le détail de la démarche (où écrire un test, comment décider si c'est le code ou
+le test qui a tort, les pièges de mesure, la capture de rendu) est dans le skill
+**`valider`**, qui est aussi celui à lancer après une fonctionnalité. Ici, deux
+choses en plus de la suite :
+
+- si la passe a touché au dessin, une **capture réelle** en fenêtré : aucune
+  assertion n'attrape un panneau qui passe sous un autre ;
+- si elle a touché une boucle chaude, une **remesure** comparée au tableau de
+  référence de `world/stress_test.tscn`.
+
+Puis nettoyer : le lanceur s'en charge, mais vérifier qu'il ne reste ni dossier
+`Temp/hns-*` ni `AppData/Roaming/Godot/app_userdata/<projet>/`.
 
 ## 6. Le rapport
 
