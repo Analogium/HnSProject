@@ -73,6 +73,13 @@ func _smooth() -> void:
 	grid = next
 
 
+## Une case est-elle dans la grille ? Le test était réécrit à quatre endroits —
+## trois ici et un dans l'écran de réglage — et une inégalité inversée y donne un
+## accès hors tableau, pas un refus.
+func in_bounds(cell: Vector2i) -> bool:
+	return cell.x >= 0 and cell.y >= 0 and cell.x < width and cell.y < height
+
+
 func _count_wall_neighbours(cx: int, cy: int) -> int:
 	var count := 0
 	for dy in range(-1, 2):
@@ -82,6 +89,13 @@ func _count_wall_neighbours(cx: int, cy: int) -> int:
 			var x := cx + dx
 			var y := cy + dy
 			# Hors grille = mur : ça referme naturellement les bords.
+			#
+			# Seul endroit qui n'appelle pas in_bounds, et c'est mesuré : cette
+			# boucle tourne 370 000 fois par carte, et l'appel plus la
+			# construction du Vector2i font passer la génération de 78,8 à
+			# 126,4 ms (banc de 10 cartes 96 × 96, moyenne après chauffe).
+			# Soixante pour cent sur chaque changement de zone ne se paient pas
+			# pour une ligne.
 			if x < 0 or y < 0 or x >= width or y >= height or grid[y][x] == WALL:
 				count += 1
 	return count
@@ -130,7 +144,7 @@ func _flood_fill(start: Vector2i, visited: Dictionary) -> Array[Vector2i]:
 		region.append(cell)
 		for offset in NEIGHBOURS:
 			var n: Vector2i = cell + offset
-			if n.x < 0 or n.y < 0 or n.x >= width or n.y >= height:
+			if not in_bounds(n):
 				continue
 			if visited.has(n) or grid[n.y][n.x] != FLOOR:
 				continue
@@ -176,7 +190,18 @@ static func cell_at(pos: Vector2) -> Vector2i:
 	return Vector2i((pos / float(TILE)).floor())
 
 
+## La grille peinte en image, un pixel par case. La carte superposée du jeu et
+## l'écran de réglage écrivaient chacun la même double boucle, avec le même
+## format de pixel — deux copies qui casseraient ensemble le jour où la grille
+## changera de représentation. Les couleurs restent à l'appelant : les deux
+## écrans ne se ressemblent pas et n'ont pas à partager leur palette.
+func to_image(floor_color: Color, wall_color: Color) -> Image:
+	var img := Image.create_empty(width, height, false, Image.FORMAT_RGB8)
+	for y in height:
+		for x in width:
+			img.set_pixel(x, y, floor_color if grid[y][x] == FLOOR else wall_color)
+	return img
+
+
 func is_walkable(cell: Vector2i) -> bool:
-	if cell.x < 0 or cell.y < 0 or cell.x >= width or cell.y >= height:
-		return false
-	return grid[cell.y][cell.x] == FLOOR
+	return in_bounds(cell) and grid[cell.y][cell.x] == FLOOR

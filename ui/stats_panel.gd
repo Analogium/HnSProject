@@ -11,41 +11,51 @@ extends Control
 ## dur, elle mentirait au premier changement de résolution, et le quart de
 ## largeur demandé n'aurait plus rien d'un quart.
 ##
-## Elle **ne prend pas la souris**, contrairement au sac : il n'y a rien à
-## cliquer, et on doit pouvoir la laisser ouverte pour regarder le mana remonter
-## ou vérifier ce qu'un objet vient de changer.
+## Elle ne prend la souris **que lorsqu'il reste des points d'attribut à
+## placer** — c'est-à-dire seulement quand il y a quelque chose à cliquer. Le
+## reste du temps elle est un affichage passif qu'on peut laisser ouvert pendant
+## qu'on se bat, pour regarder le mana remonter ou vérifier ce qu'un objet vient
+## de changer. Le joueur lit ses attaques par sondage, donc sans ce drapeau un
+## clic sur un bouton déclencherait aussi un coup d'épée.
 ##
 ## Les libellés viennent de StatMod.LABELS et les valeurs de StatMod.format :
 ## une statistique doit s'écrire pareil dans l'infobulle d'un affixe et sur la
 ## fiche, sinon « +8 % vitesse d'attaque » et « 108 % » cesseront un jour de
 ## parler de la même chose.
 
-## Le panneau reprend le cadre du sac plutôt que d'en définir un second : les
-## deux s'ouvrent côte à côte, et deux gris différents se liraient comme un
-## défaut d'affichage. Le jour où un troisième panneau arrive, cette palette
-## méritera son propre fichier — à deux, elle ne le paie pas.
+## Le panneau prend son cadre dans UiPalette, comme le sac : les deux s'ouvrent
+## côte à côte, et deux gris différents se liraient comme un défaut d'affichage.
 ##
 ## Seule l'opacité diverge, et le fond est rendu **entièrement opaque** au
 ## dessin. Le sac est une petite fenêtre posée sur le décor, où 0,97 se lit
 ## comme de la profondeur ; ce bandeau couvre toute la hauteur de l'écran et
 ## tombe sur le bandeau de débogage, dont le texte transparaissait au travers.
-const BACK := InventoryPanel.BACK
-const BORDER := InventoryPanel.BORDER
-const HINT := InventoryPanel.HINT
-const GROUP := InventoryPanel.EQUIP_LABEL
+const BACK := UiPalette.BACK
+const BORDER := UiPalette.BORDER
+const HINT := UiPalette.HINT
+const GROUP := UiPalette.LABEL
 
 const PAD := 6.0
-## Interligne et respiration entre groupes. Réglés pour que les cinq groupes —
-## 19 lignes et 5 titres — tiennent dans les 360 px de haut du cadrage avec de
-## la marge : 315 px de contenu, le reste sépare la dernière ligne de l'aide.
-const LINE := 11.0
-const GROUP_GAP := 7.0
+## Interligne et respiration entre groupes. Ils sont resserrés au minimum
+## lisible parce que la fiche doit tenir **entière** dans la hauteur du cadrage :
+## le groupe des attributs, ajouté après coup, avait fait déborder la dernière
+## ligne sur l'aide du bas. C'est `test_la_fiche_tient_dans_sa_hauteur` qui garde
+## l'invariant, pas ce commentaire.
+const LINE := 10.0
+const GROUP_GAP := 5.0
 const FONT_SIZE := 8
 const TITLE_SIZE := 9
 const HEADER := 15.0
 
 const NAME_COLOR := Color(0.72, 0.70, 0.78)
 const VALUE_COLOR := Color(0.92, 0.90, 0.96)
+## Les points à placer et les boutons qui vont avec. Vert : c'est un gain en
+## attente, pas un avertissement.
+const POINT_COLOR := Color(0.52, 0.88, 0.48)
+const BUTTON_BACK := Color(0.20, 0.30, 0.20)
+const BUTTON_HOVER := Color(0.30, 0.46, 0.29)
+const BUTTON_W := 11.0
+const BUTTON_H := 9.0
 
 ## Le coup de référence contre lequel l'armure est annoncée. Une notation nue ne
 ## veut rien dire — « 40 d'armure » n'apprend rien tant qu'on ne sait pas contre
@@ -57,6 +67,7 @@ const ARMOR_REFERENCE_HIT := 10.0
 ## et l'ordre des groupes se voit d'un coup d'œil au lieu de se reconstituer en
 ## parcourant _draw.
 const GROUPS := [
+	["ATTRIBUTS", CharacterStats.ATTRIBUTES],
 	["VIE ET RESSOURCE", ["max_health", "health_regen", "max_mana", "mana_regen"]],
 	["DÉFENSES", ["armor", "evasion"]],
 	[
@@ -73,10 +84,30 @@ const GROUPS := [
 	["DÉPLACEMENT", ["move_speed"]],
 ]
 
+## La hauteur qu'occupe le contenu, titres et respirations compris. Publique et
+## statique : le test qui vérifie que la fiche ne déborde pas ne doit pas avoir à
+## recopier ce calcul, sinon il validerait sa propre copie.
+static func content_height() -> float:
+	var h := HEADER + PAD
+	for g in GROUPS:
+		h += LINE * float(1 + (g[1] as Array).size()) + GROUP_GAP
+	return h
+
+
+## Hauteur réservée à la ligne d'aide, en bas.
+const FOOTER := 16.0
+
 @onready var title: Label = $Title
 
 var _player: Player
 var _font: Font
+## Position de la souris dans le repère du panneau, pour surligner le bouton
+## survolé. Vector2.INF tant qu'elle n'y est jamais entrée.
+var _mouse := Vector2.INF
+## Rectangle cliquable par attribut, rempli au dessin. Calculé là plutôt que
+## recalculé au clic : une seule définition de l'endroit où se trouve le bouton,
+## donc pas de dérive entre ce qu'on voit et ce qu'on touche.
+var _boutons := {}
 
 
 func _ready() -> void:
@@ -91,6 +122,7 @@ func bind(player: Player) -> void:
 	# vingtaine de chaînes, mesurées comme négligeables, et c'est le prix pour
 	# que le compte affiché ne soit jamais en retard sur la réserve réelle.
 	player.equipment_changed.connect(_refresh)
+	player.points_changed.connect(func(_n: int) -> void: _refresh())
 	player.leveled_up.connect(func(_lvl: int) -> void: _refresh())
 	player.health_changed.connect(func(_c: float, _m: float) -> void: _refresh())
 	player.mana_changed.connect(func(_c: float, _m: float) -> void: _refresh())
@@ -99,7 +131,47 @@ func bind(player: Player) -> void:
 
 func toggle() -> void:
 	visible = not visible
+	_saisir_la_souris()
 	_refresh()
+
+
+## Le drapeau doit retomber quoi qu'il arrive — y compris si la zone est
+## rechargée fiche ouverte, sinon le joueur se retrouve incapable de frapper dans
+## une scène où plus aucun panneau n'existe.
+func _exit_tree() -> void:
+	Game.grab_ui_input(self, false)
+
+
+func _saisir_la_souris() -> void:
+	Game.grab_ui_input(self, visible and _points_restants() > 0)
+	mouse_filter = (
+		Control.MOUSE_FILTER_STOP if visible and _points_restants() > 0
+		else Control.MOUSE_FILTER_IGNORE
+	)
+
+
+func _points_restants() -> int:
+	return 0 if _player == null else _player.unspent_points
+
+
+func _gui_input(event: InputEvent) -> void:
+	var deplacement := event as InputEventMouseMotion
+	if deplacement != null:
+		_mouse = deplacement.position
+		queue_redraw()
+		return
+
+	var clic := event as InputEventMouseButton
+	if clic == null or not clic.pressed or clic.button_index != MOUSE_BUTTON_LEFT:
+		return
+	for attribut in _boutons:
+		if (_boutons[attribut] as Rect2).has_point(clic.position):
+			_player.spend_point(attribut)
+			# Le dernier point placé rend la souris au jeu : il n'y a plus rien à
+			# cliquer, et la fiche redevient un affichage qu'on laisse ouvert.
+			_saisir_la_souris()
+			accept_event()
+			return
 
 
 ## Caché, le panneau ne redessine rien : la régénération de mana émet son signal
@@ -107,7 +179,10 @@ func toggle() -> void:
 func _refresh() -> void:
 	if not visible or _player == null:
 		return
+	var restants := _points_restants()
 	title.text = "PERSONNAGE  —  NIV. %d" % _player.level
+	if restants > 0:
+		title.text += "  (+%d)" % restants
 	queue_redraw()
 
 
@@ -141,35 +216,71 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(BACK, 1.0))
 	draw_rect(Rect2(Vector2.ZERO, size), BORDER, false, 1.0)
 
+	var restants := _points_restants()
+	_boutons.clear()
+
 	var y := HEADER + PAD
 	for g in GROUPS:
 		draw_string(
 			_font, Vector2(PAD, y + FONT_SIZE), g[0],
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, GROUP
 		)
+		if g[0] == "ATTRIBUTS" and restants > 0:
+			draw_string(
+				_font, Vector2(PAD, y + FONT_SIZE), "%d à placer" % restants,
+				HORIZONTAL_ALIGNMENT_RIGHT, roundi(size.x - PAD * 2.0),
+				FONT_SIZE, POINT_COLOR
+			)
 		y += LINE
 		for field in g[1]:
-			_draw_row(y, StatMod.LABELS.get(field, field), _value_of(field))
+			var bouton: bool = restants > 0 and field in CharacterStats.ATTRIBUTES
+			_draw_row(y, StatMod.LABELS.get(field, field), _value_of(field), bouton)
+			if bouton:
+				_boutons[field] = _draw_bouton(y)
 			y += LINE
 		y += GROUP_GAP
 
 	# Remontée au-dessus de la bande où passe la barre d'expérience, qui est
 	# dessinée par-dessus le panneau.
 	draw_string(
-		_font, Vector2(PAD, size.y - 16.0), "C pour fermer",
+		_font, Vector2(PAD, size.y - FOOTER), "C pour fermer",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, HINT
 	)
 
 
+## Le bouton d'ajout, et le rectangle qu'il occupe — c'est ce même rectangle que
+## le clic consultera, donc l'endroit dessiné et l'endroit cliquable ne peuvent
+## pas diverger.
+func _draw_bouton(y: float) -> Rect2:
+	var r := Rect2(
+		roundf(size.x - PAD - BUTTON_W), roundf(y + (LINE - BUTTON_H) * 0.5),
+		BUTTON_W, BUTTON_H
+	)
+	draw_rect(r, BUTTON_HOVER if r.has_point(_mouse) else BUTTON_BACK)
+	draw_rect(r, POINT_COLOR, false, 1.0)
+	draw_string(
+		_font, Vector2(r.position.x, r.position.y + BUTTON_H - 1.0), "+",
+		HORIZONTAL_ALIGNMENT_CENTER, roundi(BUTTON_W), FONT_SIZE, POINT_COLOR
+	)
+	return r
+
+
 ## Nom à gauche, valeur alignée à droite. L'alignement à droite est ce qui rend
 ## une colonne de nombres comparable d'un coup d'œil.
-func _draw_row(y: float, name_text: String, value_text: String) -> void:
+func _draw_row(
+	y: float, name_text: String, value_text: String, place_un_bouton := false
+) -> void:
 	var base := y + FONT_SIZE
 	draw_string(
 		_font, Vector2(PAD, base), name_text,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, NAME_COLOR
 	)
+	# La valeur se décale pour laisser la place au bouton, sinon les deux se
+	# chevauchent sur les seules lignes où l'on peut cliquer.
+	var largeur := size.x - PAD * 2.0
+	if place_un_bouton:
+		largeur -= BUTTON_W + 3.0
 	draw_string(
 		_font, Vector2(PAD, base), value_text,
-		HORIZONTAL_ALIGNMENT_RIGHT, roundi(size.x - PAD * 2.0), FONT_SIZE, VALUE_COLOR
+		HORIZONTAL_ALIGNMENT_RIGHT, roundi(largeur), FONT_SIZE, VALUE_COLOR
 	)

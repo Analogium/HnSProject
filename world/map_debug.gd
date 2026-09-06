@@ -68,10 +68,7 @@ func _regenerate(rng_seed: int) -> void:
 
 
 func _paint() -> void:
-	var img := Image.create_empty(gen.width, gen.height, false, Image.FORMAT_RGB8)
-	for y in gen.height:
-		for x in gen.width:
-			img.set_pixel(x, y, FLOOR_COLOR if gen.grid[y][x] == MapGenerator.FLOOR else WALL_COLOR)
+	var img := gen.to_image(FLOOR_COLOR, WALL_COLOR)
 
 	# Croix sur le point d'apparition, pour vérifier qu'il tombe bien sur du sol.
 	var s := gen.get_spawn_cell()
@@ -83,7 +80,7 @@ func _paint() -> void:
 
 
 func _plot(img: Image, cell: Vector2i) -> void:
-	if cell.x < 0 or cell.y < 0 or cell.x >= gen.width or cell.y >= gen.height:
+	if not gen.in_bounds(cell):
 		return
 	img.set_pixel(cell.x, cell.y, SPAWN_COLOR)
 

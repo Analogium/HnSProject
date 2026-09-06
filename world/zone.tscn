@@ -99,6 +99,20 @@ theme_override_colors/font_color = Color(0.8, 0.77, 0.86, 1)
 theme_override_font_sizes/font_size = 9
 text = "PERSONNAGE"
 
+[node name="Temoin" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -110.0
+offset_top = 5.0
+offset_right = -8.0
+offset_bottom = 19.0
+theme_override_colors/font_color = Color(0.55, 0.75, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 2
+modulate = Color(1, 1, 1, 0)
+
 [node name="Hud" type="Control" parent="UI"]
 anchors_preset = 15
 anchor_right = 1.0

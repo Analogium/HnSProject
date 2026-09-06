@@ -1,0 +1,168 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/selection_personnage.gd" id="1_selection"]
+
+[node name="SelectionPersonnage" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_selection")
+
+[node name="Titre" type="Label" parent="."]
+anchor_right = 1.0
+offset_top = 16.0
+offset_bottom = 36.0
+theme_override_font_sizes/font_size = 12
+text = "PERSONNAGES"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="."]
+anchor_right = 1.0
+offset_top = 236.0
+offset_bottom = 250.0
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+
+[node name="Actions" type="Control" parent="."]
+offset_left = 170.0
+offset_top = 260.0
+offset_right = 470.0
+offset_bottom = 282.0
+mouse_filter = 2
+
+[node name="Jouer" type="Button" parent="Actions"]
+offset_right = 90.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 10
+text = "Jouer"
+
+[node name="Nouveau" type="Button" parent="Actions"]
+offset_left = 105.0
+offset_right = 195.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 10
+text = "Nouveau"
+
+[node name="Supprimer" type="Button" parent="Actions"]
+offset_left = 210.0
+offset_right = 300.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 10
+text = "Supprimer"
+
+[node name="Aide" type="Label" parent="."]
+anchor_right = 1.0
+offset_top = 330.0
+offset_bottom = 344.0
+theme_override_font_sizes/font_size = 8
+text = "[Flèches] choisir     [Entrée] jouer     [N] nouveau     [Suppr] supprimer     [Échap] quitter"
+horizontal_alignment = 1
+
+[node name="Creation" type="Control" parent="."]
+visible = false
+offset_left = 170.0
+offset_top = 74.0
+offset_right = 470.0
+offset_bottom = 270.0
+mouse_filter = 2
+
+[node name="Titre" type="Label" parent="Creation"]
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 26.0
+theme_override_font_sizes/font_size = 10
+text = "NOUVEAU PERSONNAGE"
+horizontal_alignment = 1
+
+[node name="Nom" type="LineEdit" parent="Creation"]
+offset_left = 60.0
+offset_top = 32.0
+offset_right = 240.0
+offset_bottom = 54.0
+theme_override_font_sizes/font_size = 10
+placeholder_text = "son nom"
+alignment = 1
+max_length = 20
+
+[node name="Silhouette" type="Label" parent="Creation"]
+anchor_right = 1.0
+offset_top = 62.0
+offset_bottom = 74.0
+theme_override_font_sizes/font_size = 8
+text = "sa silhouette"
+horizontal_alignment = 1
+
+[node name="Erreur" type="Label" parent="Creation"]
+anchor_right = 1.0
+offset_top = 126.0
+offset_bottom = 140.0
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+
+[node name="Creer" type="Button" parent="Creation"]
+offset_left = 60.0
+offset_top = 150.0
+offset_right = 145.0
+offset_bottom = 172.0
+theme_override_font_sizes/font_size = 10
+text = "Créer"
+
+[node name="Annuler" type="Button" parent="Creation"]
+offset_left = 155.0
+offset_top = 150.0
+offset_right = 240.0
+offset_bottom = 172.0
+theme_override_font_sizes/font_size = 10
+text = "Annuler"
+
+[node name="Suppression" type="Control" parent="."]
+visible = false
+offset_left = 170.0
+offset_top = 74.0
+offset_right = 470.0
+offset_bottom = 270.0
+mouse_filter = 2
+
+[node name="Avertissement" type="Label" parent="Suppression"]
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 16.0
+offset_right = -12.0
+offset_bottom = 84.0
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Confirmation" type="LineEdit" parent="Suppression"]
+offset_left = 60.0
+offset_top = 92.0
+offset_right = 240.0
+offset_bottom = 114.0
+theme_override_font_sizes/font_size = 10
+alignment = 1
+max_length = 20
+
+[node name="Erreur" type="Label" parent="Suppression"]
+anchor_right = 1.0
+offset_top = 120.0
+offset_bottom = 134.0
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+
+[node name="Confirmer" type="Button" parent="Suppression"]
+offset_left = 60.0
+offset_top = 150.0
+offset_right = 145.0
+offset_bottom = 172.0
+theme_override_font_sizes/font_size = 10
+text = "Supprimer"
+
+[node name="Annuler" type="Button" parent="Suppression"]
+offset_left = 155.0
+offset_top = 150.0
+offset_right = 240.0
+offset_bottom = 172.0
+theme_override_font_sizes/font_size = 10
+text = "Annuler"
+
+[node name="Silhouettes" type="Node2D" parent="."]

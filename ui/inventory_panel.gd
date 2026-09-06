@@ -36,14 +36,11 @@ const FOOTER := 22.0
 ## tienne quel que soit l'emplacement.
 const EQUIP_SPAN := Vector2i(2, 3)
 const EQUIP_GAP := 12.0
-const EQUIP_LABEL := Color(0.42, 0.40, 0.50)
 ## Marge autour d'une icône dans son emplacement. Sans elle, un objet qui remplit
 ## exactement son rectangle mange les lignes de la grille et on ne voit plus où
 ## il commence.
 const MARGIN := 3
 
-const BACK := Color(0.082, 0.075, 0.106, 0.97)
-const BORDER := Color(0.29, 0.27, 0.35)
 const SLOT := Color(0.14, 0.13, 0.17)
 const SLOT_EDGE := Color(0.22, 0.20, 0.26)
 ## Fond des cases occupées : c'est lui qui donne la forme de l'objet d'un coup
@@ -58,7 +55,6 @@ const ITEM_EDGE_DIM := 0.3
 const DRAG_MIN := 5.0
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
-const HINT := Color(0.52, 0.50, 0.60)
 ## L'infobulle. Le cadre prend la couleur de rareté de l'objet : c'est la même
 ## information que le halo au sol, donc la même couleur, et on n'apprend pas
 ## deux codes pour une seule idée.
@@ -109,7 +105,7 @@ func _ready() -> void:
 ## incapable de frapper dans une scène où plus aucun panneau n'existe.
 func _exit_tree() -> void:
 	if visible:
-		Game.ui_grabs_input = false
+		Game.grab_ui_input(self, false)
 
 
 func bind(player: Player) -> void:
@@ -131,7 +127,7 @@ func bind(player: Player) -> void:
 
 func toggle() -> void:
 	visible = not visible
-	Game.ui_grabs_input = visible
+	Game.grab_ui_input(self, visible)
 	if visible:
 		# Sans ça, la case survolée reste celle d'avant la fermeture jusqu'au
 		# premier mouvement de souris.
@@ -418,8 +414,8 @@ func _draw() -> void:
 		return
 
 	var s := _panel_size()
-	draw_rect(Rect2(Vector2.ZERO, s), BACK)
-	draw_rect(Rect2(Vector2.ZERO, s), BORDER, false, 1.0)
+	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BACK)
+	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BORDER, false, 1.0)
 
 	for y in _inventory.rows:
 		for x in _inventory.cols:
@@ -455,10 +451,10 @@ func _draw() -> void:
 	if font != null:
 		draw_string(font, Vector2(4.0, s.y - 13.0),
 			"[clic] prendre et poser     [clic droit] équiper / retirer",
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, HINT)
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 		draw_string(font, Vector2(4.0, s.y - 3.0),
 			"lâché hors du sac : jeté au sol",
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, HINT)
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 
 
 ## Les emplacements portés. Ils sont dans le même panneau que le sac et non dans
@@ -481,7 +477,7 @@ func _draw_equipment() -> void:
 			var nom: String = Player.SLOT_NAMES[slot]
 			var w := font.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
 			draw_string(font, Vector2(r.get_center().x - w * 0.5, r.get_center().y + 3.0),
-				nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, EQUIP_LABEL)
+				nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.LABEL)
 
 		if _hover_slot != i:
 			continue

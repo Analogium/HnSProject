@@ -30,6 +30,12 @@ const PACK_MIN_TILES := 3
 @onready var inventory: InventoryPanel = $UI/Inventory
 @onready var stats_panel: StatsPanel = $UI/Stats
 @onready var spawner: EnemySpawner = $EnemySpawner
+@onready var temoin: Label = $UI/Temoin
+
+## Filet de sécurité, en secondes. Ni à chaque changement — ramasser un objet
+## écrirait sur le disque à chaque grappe d'ennemis tués — ni seulement à la
+## fermeture, ce qui perdrait la session entière sur une coupure de courant.
+const SAUVEGARDE_PERIODE := 120.0
 
 var generator: MapGenerator
 
@@ -70,12 +76,53 @@ func _ready() -> void:
 	spawner.grunt_scene = GRUNT_SCENE
 	spawner.caster_scene = CASTER_SCENE
 
+	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
+	# seule depuis l'éditeur : le joueur garde alors sa fiche par défaut, et rien
+	# n'est écrit — une scène de réglage ne doit pas toucher aux sauvegardes.
+	if Game.personnage != null:
+		player.charger(Game.personnage)
+		player.leveled_up.connect(_on_niveau_gagne)
+		Game.sauvegarde_demandee.connect(sauvegarder)
+		var filet := Timer.new()
+		filet.wait_time = SAUVEGARDE_PERIODE
+		filet.timeout.connect(sauvegarder)
+		add_child(filet)
+		filet.start()
+
 	generate_zone(Game.rng.randi())
 
 
 ## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
 ## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
 ## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
+## Écrit le personnage courant. Publique : c'est le point d'entrée des trois
+## déclencheurs, et celui du test.
+##
+## Sans effet quand aucun personnage n'est chargé — c'est le cas des scènes de
+## réglage, qui partagent cette scène de zone.
+func sauvegarder() -> void:
+	if Game.personnage == null:
+		return
+	player.remplir(Game.personnage)
+	if not Sauvegarde.ecrire(Game.personnage):
+		temoin.text = "échec de la sauvegarde"
+		temoin.modulate.a = 1.0
+		return
+
+	# Un témoin discret, mais un témoin. Sans lui on ne sait pas si le jeu a
+	# sauvegardé, et on ferme la fenêtre en croisant les doigts.
+	temoin.text = "sauvegardé"
+	temoin.modulate.a = 1.0
+	create_tween().tween_property(temoin, "modulate:a", 0.0, 1.4).set_delay(0.8)
+
+
+## En différé : la montée de niveau arrive depuis la boucle de l'EnemyManager,
+## donc d'un rappel de physique. Rien de ce qui touche au disque ou à l'arbre ne
+## part de là.
+func _on_niveau_gagne(_niveau: int) -> void:
+	sauvegarder.call_deferred()
+
+
 func _on_item_dropped(item: Item) -> void:
 	GroundItem.spawn(
 		loot, player.global_position + player.facing * 14.0, item, GroundItem.DROP_DELAY
@@ -129,13 +176,20 @@ func generate_zone(zone_seed: int) -> void:
 	# La carte suit la zone réellement jouée : reconstruite ici, pas ailleurs.
 	map_overlay.build(generator, MapGenerator.TILE)
 
+	_place_and_populate()
+
+
+## Remet le joueur au point d'apparition et repeuple la carte courante. Le même
+## quatuor de lignes était écrit à la génération d'une zone **et** à la mort du
+## joueur ; le jour où repeupler demandera une étape de plus, elle s'ajoutera ici.
+##
+## Placement par paquets répartis sur toute la carte, avec du vide entre eux.
+## C'est ça qui donne le rythme de traversée ; un paquet autour du joueur ne sert
+## plus qu'au test manuel (touche G).
+func _place_and_populate() -> void:
 	var spawn_cell := generator.get_spawn_cell()
 	player.revive()
 	player.global_position = MapGenerator.cell_center(spawn_cell)
-
-	# Placement par paquets répartis sur toute la zone, avec du vide entre eux.
-	# C'est ça qui donne le rythme de traversée ; un paquet autour du joueur ne
-	# sert plus qu'au test manuel (touche G).
 	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
 
 
@@ -214,10 +268,7 @@ func _on_player_died() -> void:
 
 func _respawn() -> void:
 	kill_all()
-	player.revive()
-	var spawn_cell := generator.get_spawn_cell()
-	player.global_position = MapGenerator.cell_center(spawn_cell)
-	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
+	_place_and_populate()
 
 
 func _overlay_text() -> String:
@@ -239,4 +290,5 @@ func _overlay_text() -> String:
 		"[H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
+		"[ECHAP] menu et sauvegarde",
 	])

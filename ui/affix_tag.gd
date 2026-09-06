@@ -23,7 +23,19 @@ const SIZE := 8
 ## de couleur que le corps, et il devient lisible.
 const MIN_TEXT_VALUE := 0.80
 
-var _lines: Array = []   # [texte, couleur, demi-largeur]
+## Une ligne de l'étiquette. Une petite classe et non un tableau indexé à la
+## main : `line[2]` obligeait à compter les colonnes pour retrouver la
+## demi-largeur, là où `ligne.half` se relit. Il y en a au plus deux par ennemi,
+## donc rien à gagner à les empaqueter.
+class Ligne:
+	var text: String
+	var tint: Color
+	## Demi-largeur du texte, mesurée une fois à la création : la re-mesurer à
+	## chaque image coûterait plus cher que tout le reste du dessin.
+	var half: float
+
+
+var _lines: Array[Ligne] = []
 var _font: Font
 
 
@@ -40,16 +52,15 @@ func _ready() -> void:
 func set_affixes(affixes: Array[Affix]) -> void:
 	_lines.clear()
 	if _font != null:
-		for a in affixes:
-			var affix: Affix = a
-			var text: String = affix.display_name
-			var c := affix.tint
-			c.v = maxf(c.v, MIN_TEXT_VALUE)
-			_lines.append([
-				text,
-				c,
-				_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE).x * 0.5,
-			])
+		for affix in affixes:
+			var ligne := Ligne.new()
+			ligne.text = affix.display_name
+			ligne.tint = affix.tint
+			ligne.tint.v = maxf(ligne.tint.v, MIN_TEXT_VALUE)
+			ligne.half = _font.get_string_size(
+				ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE
+			).x * 0.5
+			_lines.append(ligne)
 	_refresh()
 
 
@@ -61,14 +72,17 @@ func _refresh() -> void:
 
 func _draw() -> void:
 	for i in _lines.size():
-		var line: Array = _lines[i]
+		var ligne := _lines[i]
 		# Le premier affixe en haut de la pile, le dernier au ras de la tête :
 		# on lit de haut en bas comme partout ailleurs.
 		var y := roundf(OFFSET_Y - float(_lines.size() - 1 - i) * LINE_H)
-		var pos := Vector2(roundf(-float(line[2])), y)
+		var pos := Vector2(roundf(-ligne.half), y)
 		# Contour noir : sur un sol clair comme sur un mur sombre, le nom doit
 		# tenir sans qu'on ait à choisir sa couleur selon le décor.
 		draw_string_outline(
-			_font, pos, line[0], HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, 1, Color(0, 0, 0, 0.95)
+			_font, pos, ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, 1,
+			Color(0, 0, 0, 0.95)
 		)
-		draw_string(_font, pos, line[0], HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, line[1])
+		draw_string(
+			_font, pos, ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, ligne.tint
+		)

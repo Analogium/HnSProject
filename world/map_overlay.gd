@@ -39,13 +39,7 @@ func build(gen: MapGenerator, tile_size: int) -> void:
 	_grid = Vector2i(gen.width, gen.height)
 	_tile_size = tile_size
 
-	var img := Image.create_empty(gen.width, gen.height, false, Image.FORMAT_RGB8)
-	for y in gen.height:
-		for x in gen.width:
-			var floor_here: bool = gen.grid[y][x] == MapGenerator.FLOOR
-			img.set_pixel(x, y, FLOOR_COLOR if floor_here else WALL_COLOR)
-
-	_tex = ImageTexture.create_from_image(img)
+	_tex = ImageTexture.create_from_image(gen.to_image(FLOOR_COLOR, WALL_COLOR))
 	queue_redraw()
 
 

@@ -9,6 +9,19 @@ extends Resource
 ## la formule de son côté. Un seul endroit où la règle est écrite, deux endroits
 ## qui la lisent.
 
+@export_group("Attributs")
+## Les trois attributs classiques du genre. Ils ne servent à rien par eux-mêmes :
+## ce sont des **entrées**, dont on dérive des statistiques réelles (voir
+## apply_attributes). Un attribut qui ne gouverne rien serait une ligne de plus
+## sur la fiche et rien d'autre.
+##
+## Zéro par défaut, comme le mana : un grunt n'a pas d'attributs, et lui en
+## donner dix silencieusement lui offrirait vingt points de vie que personne
+## n'aurait décidés. C'est la fiche du joueur qui les pose.
+@export var strength: float = 0.0
+@export var dexterity: float = 0.0
+@export var intelligence: float = 0.0
+
 @export_group("Vie et ressource")
 @export var max_health: float = 100.0
 ## Points de vie par seconde. Zéro par défaut : un ennemi qui se régénère tout
@@ -79,6 +92,39 @@ const EVASION_K := 60.0
 ## Au-delà, le combat devient une loterie qu'on gagne en attendant.
 const MAX_EVASION := 0.75
 
+## Les trois champs d'attributs, pour que l'appelant n'ait pas à les énumérer à
+## la main. C'est cette liste qui sépare les modificateurs à appliquer **avant**
+## la dérivation de ceux qui viennent après.
+const ATTRIBUTES := ["strength", "dexterity", "intelligence"]
+
+
+## Une répartition vierge : un compteur par attribut, à zéro. Le joueur la tient
+## pour ses points placés, la sauvegarde la relit. Dérivée d'ATTRIBUTES et non
+## réécrite en dur des deux côtés : un quatrième attribut ajouté à la liste doit
+## apparaître dans les deux, ou celui qui l'oublie perd les points du joueur
+## sans rien dire.
+static func empty_attributes() -> Dictionary:
+	var vide := {}
+	for champ in ATTRIBUTES:
+		vide[champ] = 0
+	return vide
+
+## Ce que chaque point d'attribut rapporte. Chacun gouverne une réserve et une
+## cadence : monter un attribut doit changer deux choses, sinon c'est un alias
+## pour la statistique qu'il pilote et autant modifier celle-ci directement.
+##
+## Première calibration, à ajuster en jouant : à dix dans chaque attribut — le
+## départ — cela vaut +20 PV, +2 dégâts, 15 d'esquive, +15 de mana et +4 % sur
+## les deux cadences.
+const HEALTH_PER_STRENGTH := 2.0
+const DAMAGE_PER_STRENGTH := 0.2
+const EVASION_PER_DEXTERITY := 1.5
+## En points de pourcentage ajoutés au multiplicateur : dix points de dextérité
+## font passer la cadence de 100 à 104 %.
+const ATTACK_SPEED_PER_DEXTERITY := 0.4
+const MANA_PER_INTELLIGENCE := 1.5
+const CAST_SPEED_PER_INTELLIGENCE := 0.4
+
 ## Le plafond classique du genre. Il donne sa valeur à l'objectif « atteindre le
 ## plafond », et empêche l'immunité pure à un élément.
 const MAX_RESISTANCE := 75.0
@@ -117,3 +163,23 @@ func resistance(kind: DamageType.Kind) -> float:
 ## fige l'attaquant pour toujours au lieu de le ralentir.
 func attack_interval() -> float:
 	return attack_cooldown / maxf(attack_speed, 0.1)
+
+
+## Verse dans les statistiques ce que les attributs rapportent.
+##
+## **À n'appeler qu'une fois par recalcul**, et seulement sur une fiche neuve :
+## appelée deux fois, elle compterait les bonus deux fois. C'est la même règle
+## que pour recompute_stats, dont elle est un morceau.
+##
+## Elle se place entre les modificateurs qui visent les attributs et ceux qui
+## visent le reste : un objet qui donne « +20 force » doit rapporter ses quarante
+## points de vie, et un objet qui donne « +10 % PV » doit les multiplier aussi.
+func apply_attributes() -> void:
+	max_health += strength * HEALTH_PER_STRENGTH
+	attack_damage += strength * DAMAGE_PER_STRENGTH
+
+	evasion += dexterity * EVASION_PER_DEXTERITY
+	attack_speed += dexterity * ATTACK_SPEED_PER_DEXTERITY * 0.01
+
+	max_mana += intelligence * MANA_PER_INTELLIGENCE
+	cast_speed += intelligence * CAST_SPEED_PER_INTELLIGENCE * 0.01

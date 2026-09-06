@@ -4,6 +4,9 @@
 
 [resource]
 script = ExtResource("1_stats")
+strength = 10.0
+dexterity = 10.0
+intelligence = 10.0
 max_health = 100.0
 health_regen = 1.0
 max_mana = 50.0

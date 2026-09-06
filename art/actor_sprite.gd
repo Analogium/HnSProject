@@ -40,6 +40,29 @@ func _ready() -> void:
 	_apply()
 
 
+## Change la silhouette. C'est le choix que le joueur fait à la création de son
+## personnage, et il doit pouvoir s'appliquer **après** le _ready du sprite : le
+## joueur est déjà dans la scène quand la sauvegarde est chargée.
+##
+## Passe par le même chemin que l'arme — les planches sont refaites, jamais
+## retouchées — et le cache de la forge fait que la quatrième silhouette d'un
+## personnage déjà vu ne coûte rien.
+func set_variant(index: int) -> void:
+	var borne := posmod(index, SpriteForge.VARIANTS)
+	if borne == _variant:
+		return
+	_variant = borne
+	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
+	_apply()
+
+
+## La silhouette effectivement dessinée. Publique parce qu'elle peut avoir été
+## déduite de la position d'apparition plutôt que choisie : c'est elle qu'on
+## sauvegarde, pas le champ exporté qui vaut -1.
+func current_variant() -> int:
+	return _variant
+
+
 ## Change l'arme tenue, vide pour revenir à celle de l'archétype.
 ##
 ## Les planches sont refaites, pas retouchées : une arme fait partie du dessin

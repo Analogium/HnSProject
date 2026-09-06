@@ -22,6 +22,9 @@ enum Mode { FLAT, PERCENT }
 ## L'unité fait partie du nom quand elle n'est pas évidente — « PV/s » plutôt
 ## que « régénération », qui laisserait croire à un pourcentage.
 const LABELS := {
+	"strength": "force",
+	"dexterity": "dextérité",
+	"intelligence": "intelligence",
 	"max_health": "PV",
 	"health_regen": "PV/s",
 	"max_mana": "mana",

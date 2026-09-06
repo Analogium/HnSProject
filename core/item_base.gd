@@ -11,6 +11,17 @@ extends Resource
 ## du disque et toutes les parties suivantes de la session. C'est la même
 ## séparation que `base_stats` / `stats` chez le joueur.
 
+## Ce qui désigne cette base dans une sauvegarde, et rien d'autre — jamais
+## affiché. Saisi à la main dans le `.tres`, et **il ne doit plus jamais
+## changer** : le renommer transformerait tous les objets déjà sauvegardés en
+## objets inconnus, qui seraient ignorés au chargement.
+##
+## Pourquoi pas le chemin du fichier, qui désigne déjà la base de façon unique :
+## parce qu'il décrit un rangement et non un objet. Déplacer `epee.tres` dans un
+## sous-dossier est une décision sans conséquence de jeu ; elle ne doit pas
+## effacer l'épée de tout le monde.
+@export var id: String = ""
+
 @export var display_name: String = ""
 
 ## Ce que l'objet est, au sens de SpriteForge : "sword", "wand", "torso"…

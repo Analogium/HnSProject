@@ -9,12 +9,6 @@ class_name LootTable
 ## résultat — on saurait d'avance quoi frapper, et recharger suffirait à garantir
 ## une chute.
 
-const ITEMS := [
-	preload("res://resources/items/epee.tres"),
-	preload("res://resources/items/baguette.tres"),
-	preload("res://resources/items/plastron.tres"),
-]
-
 ## Probabilité de base qu'un ennemi ordinaire lâche quelque chose. À 10 % un
 ## paquet entier ne donnait souvent rien : dans un jeu où l'on tue par grappes,
 ## c'est la grappe qui doit récompenser, pas la centième mise à mort.
@@ -33,13 +27,16 @@ static func quantity_for(affix_count: int) -> float:
 
 ## Renvoie null quand rien ne tombe — le cas courant.
 ##
+## Tire dans le catalogue et n'a plus sa propre liste de bases : ce qui tombe et
+## ce qui se recharge doivent désigner exactement le même lot d'objets.
+##
 ## L'objet rendu est un exemplaire neuf, avec ses propres affixes : jamais la
 ## ressource du disque, qui est partagée par toutes les épées du jeu et ne doit
 ## pas être écrite.
 static func roll(affix_count: int) -> Item:
-	if ITEMS.is_empty():
+	if ItemCatalog.ALL.is_empty():
 		return null
 	if Game.rng.randf() >= BASE_CHANCE * quantity_for(affix_count):
 		return null
-	var base: ItemBase = ITEMS[Game.rng.randi() % ITEMS.size()]
+	var base: ItemBase = ItemCatalog.ALL[Game.rng.randi() % ItemCatalog.ALL.size()]
 	return Item.new(base, ItemAffixPool.roll(Game.rng, base))

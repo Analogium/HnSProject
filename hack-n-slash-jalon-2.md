@@ -20,7 +20,8 @@ porte sur lui ce qu'il est.
 - Menu Échap avec des options, et barres de vie affichables
 
 **Explicitement dehors :** enchaînement des zones, sauvegarde, classes, audio,
-multijoueur, optimisation. Ils sont au jalon 3 ou plus loin.
+multijoueur, optimisation. Ils sont au jalon 3 ou plus loin — la sauvegarde y est
+allée, voir `hack-n-slash-jalon-3.md`.
 
 **Critère de réussite :** repérer un ennemi bleu dans un paquet, savoir avant de
 l'engager qu'il sera rapide, le tuer pour son butin, équiper ce butin, et sentir
@@ -452,7 +453,7 @@ Elle est définie **une seule fois**, dans `DamageType.COLORS` — le nombre qui
 s'envole, la gerbe d'éclats et la ligne de la fiche la partagent.
 
 Décision du 6 septembre : les résistances devaient être **exercées tout de
-suite**, pas attendre le contenu du jalon 3. Le tir du caster est donc du froid
+suite**, pas attendre une future passe de contenu. Le tir du caster est donc du froid
 et celui du joueur de la foudre, et les deux billes ont été repeintes dans leur
 teinte. Conséquence voulue : **l'armure n'arrête pas les éléments**, donc le tir
 est le recours contre un ennemi Blindé — un choix tactique là où il n'y en avait
@@ -474,11 +475,87 @@ n'a plus deux façons d'exprimer la même chose.
 
 ### 9.4 Ce qui n'a pas été fait
 
-- **Aucun affixe nouveau.** Décision explicite : la réserve s'étoffera au jalon
-  3, maintenant qu'elle a de quoi viser. *Cuirassé* vise la nouvelle notation
+- **Aucun affixe nouveau.** Décision explicite : la réserve s'étoffera plus
+  tard, maintenant qu'elle a de quoi viser. Le jalon 3 s'est finalement porté sur
+  la persistance du personnage, donc l'élargissement de la réserve attend encore. *Cuirassé* vise la nouvelle notation
   d'armure et *Vif* la cadence, mais rien n'a été ajouté.
 - **L'esquive n'a donc aucune source.** Elle est mesurée et jouable, mais aucun
   objet n'en donne encore. C'est le prix de la décision précédente, assumé.
 - **Les ennemis ne régénèrent pas et n'ont pas de mana.** Les champs valent zéro
   par défaut : leur en donner serait une décision de design, pas un état par
   défaut.
+
+---
+
+## 10. Les attributs
+
+Ajoutés le 6 septembre 2026, juste avant d'attaquer le jalon 3. Les trois
+classiques du genre : **force, dextérité, intelligence**.
+
+### 10.1 Ce ne sont pas des statistiques, ce sont des entrées
+
+Un attribut ne fait rien par lui-même. Il est là pour qu'on en **dérive** des
+statistiques réelles, et chacun en gouverne **deux** — une réserve et une
+cadence. Un attribut qui n'en gouvernerait qu'une serait un alias pour la
+statistique qu'il pilote, et autant modifier celle-ci directement.
+
+| Attribut | Par point | Par point |
+|---|---|---|
+| Force | +2 PV max | +0,2 dégât d'attaque |
+| Dextérité | +1,5 d'esquive | +0,4 point de % de vitesse d'attaque |
+| Intelligence | +1,5 de mana max | +0,4 point de % de vitesse d'incantation |
+
+Première calibration, à ajuster en jouant. À dix dans chaque — le départ — cela
+vaut +20 PV, +2 dégâts, 15 d'esquive, +15 de mana et +4 % sur les deux cadences.
+
+**La dextérité donne enfin une source à l'esquive**, qui n'en avait aucune depuis
+sa création : elle était mesurée, testée, et strictement inatteignable en jouant.
+
+Zéro par défaut sur `CharacterStats`, comme le mana : un grunt n'a pas
+d'attributs, et lui en donner dix silencieusement lui offrirait vingt points de
+vie que personne n'aurait décidés.
+
+### 10.2 L'ordre du recalcul, en trois temps
+
+C'est le seul point délicat, et il tombe faux dans les deux sens si on l'ignore :
+
+1. **les modificateurs qui visent les attributs** — un objet « +20 force » doit
+   être compté avant qu'on en dérive quoi que ce soit, sinon il ne rapporte pas
+   les quarante points de vie qui vont avec ;
+2. **la dérivation** ;
+3. **tout le reste**, plats puis pourcentages — pour qu'un « +10 % PV »
+   multiplie aussi ce que la force a donné.
+
+`recompute_stats()` partitionne donc les modificateurs selon
+`CharacterStats.ATTRIBUTES`. Deux tests gardent chacune des deux moitiés de la
+règle, parce qu'inverser deux lignes suffirait à la casser sans que rien ne
+plante.
+
+### 10.3 Trois points par niveau, placés à la main
+
+Les gains bruts de l'ancienne progression — `LEVEL_HEALTH` (+8 PV) et
+`LEVEL_DAMAGE` (+1 dégât) par niveau — **ont disparu**. Ce sont les points qui
+les remplacent : la progression passe désormais par une grandeur que le joueur
+choisit, et garder deux sources automatiques en plus aurait demandé de
+rééquilibrer les trois ensemble.
+
+À assumer : la survie brute progresse moins vite qu'avant. Au niveau 10, les 27
+points valent +54 PV s'ils vont tous dans la force, contre +72 automatiques
+auparavant. `POINTS_PER_LEVEL` est le bouton.
+
+**Pas de retour en arrière.** Une répartition qu'on peut défaire n'est plus un
+choix, c'est un réglage, et il n'y aurait aucune raison de ne pas tout remettre
+dans le même attribut avant chaque combat.
+
+### 10.4 La fiche prend la souris, mais seulement quand il le faut
+
+Un `[+]` apparaît au bout de chaque ligne d'attribut **tant qu'il reste des
+points**. Le joueur lisant ses attaques par sondage, un clic sur un bouton
+déclencherait aussi un coup d'épée : la fiche réclame donc la souris — mais
+uniquement quand il y a quelque chose à cliquer. Le reste du temps elle reste
+l'affichage passif qu'on peut laisser ouvert en se battant.
+
+Le drapeau `Game.ui_grabs_input` est devenu un **ensemble** de demandeurs. En
+simple booléen, refermer le sac alors que la fiche tient encore la souris le
+remettait à faux, et le joueur se remettait à frapper en cliquant dans un
+panneau.

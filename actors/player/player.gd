@@ -9,6 +9,8 @@ signal health_changed(current: float, maximum: float)
 signal mana_changed(current: float, maximum: float)
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
+## Les points d'attribut non dépensés ont changé — gagnés ou placés.
+signal points_changed(restants: int)
 signal equipment_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -24,8 +26,11 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## les remettent à zéro.
 const XP_BASE := 40.0
 const XP_POWER := 1.5
-const LEVEL_HEALTH := 8.0
-const LEVEL_DAMAGE := 1.0
+## Points d'attribut gagnés par niveau. Ils **remplacent** les anciens gains
+## bruts de PV et de dégâts : la progression passe désormais par une grandeur
+## que le joueur choisit, et deux sources automatiques en plus de celle-ci
+## auraient demandé de rééquilibrer les trois ensemble.
+const POINTS_PER_LEVEL := 3
 ## Soin partiel à la montée de niveau, jamais complet : à 100 % on chercherait à
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
 const LEVEL_HEAL := 0.30
@@ -36,12 +41,6 @@ const LEVEL_HEAL := 0.30
 ## des statistiques ni au dessin du panneau.
 const SLOTS := ["weapon", "chest"]
 const SLOT_NAMES := {"weapon": "ARME", "chest": "TORSE"}
-
-## Taille du sac, en cases. Large plutôt que haut, comme dans les jeux dont il
-## reprend la règle : une épée mange trois lignes, et un sac de quatre lignes
-## n'accepterait presque rien.
-const INVENTORY_COLS := 10
-const INVENTORY_ROWS := 5
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
@@ -80,10 +79,15 @@ var level := 1
 var xp := 0
 var xp_to_next := 40
 
+## Ce que le joueur a placé, par attribut. Tenu ici et non sur `stats`, qui est
+## reconstruite de zéro à chaque recalcul et perdrait la répartition.
+var allocated := CharacterStats.empty_attributes()
+var unspent_points := 0
+
 ## Ce qu'on a ramassé, et où c'est rangé. Le sac porte son propre signal
 ## `changed` : l'interface s'y abonne directement, sans que le joueur ait à le
 ## réémettre sous un autre nom.
-var inventory := Inventory.new(INVENTORY_COLS, INVENTORY_ROWS)
+var inventory := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 
 ## Ce qui est porté, par emplacement. Un Item par entrée, ou rien.
 var equipment := {}
@@ -213,8 +217,8 @@ func _regen(delta: float) -> void:
 ## l'équipement l'appelle à chaque objet porté ou retiré.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
-	stats.max_health += LEVEL_HEALTH * float(level - 1)
-	stats.attack_damage += LEVEL_DAMAGE * float(level - 1)
+	for champ in CharacterStats.ATTRIBUTES:
+		stats.set(champ, float(stats.get(champ)) + float(allocated[champ]))
 
 	# Tous les objets d'un coup, et non emplacement par emplacement : c'est ce
 	# qui permet d'appliquer les valeurs plates avant les pourcentages, donc
@@ -224,7 +228,22 @@ func recompute_stats() -> void:
 		var item: Item = equipment.get(slot)
 		if item != null:
 			mods.append_array(item.mods())
-	StatMod.apply_all(stats, mods)
+
+	# En trois temps, et l'ordre compte. Les attributs sont des **entrées** : ils
+	# doivent être définitifs avant qu'on en dérive quoi que ce soit, sinon un
+	# objet donnant « +20 force » ne rapporterait pas ses quarante points de vie.
+	# Et la dérivation doit précéder le reste, pour qu'un « +10 % PV » multiplie
+	# aussi ce que la force a donné.
+	var sur_attributs: Array[StatMod] = []
+	var sur_le_reste: Array[StatMod] = []
+	for m in mods:
+		if m.stat in CharacterStats.ATTRIBUTES:
+			sur_attributs.append(m)
+		else:
+			sur_le_reste.append(m)
+	StatMod.apply_all(stats, sur_attributs)
+	stats.apply_attributes()
+	StatMod.apply_all(stats, sur_le_reste)
 
 	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
 	# sous 1 transformerait un critique en coup amorti.
@@ -236,6 +255,71 @@ func recompute_stats() -> void:
 	# fiche entière — réassignée à chaque recalcul, puisque recompute_stats en
 	# fabrique une neuve, sinon elle continuerait de défendre avec l'ancienne.
 	hurtbox.stats = stats
+
+
+## Fait entrer un personnage sauvegardé dans ce corps : progression, points
+## placés, sac, équipement, silhouette.
+##
+## Recopie plutôt qu'adoption des objets du personnage — le sac et l'équipement
+## restent **ceux du joueur**, ceux que l'interface a liés à son ouverture. Leur
+## substituer les objets venus de la sauvegarde laisserait le panneau afficher
+## un sac qui n'est plus le bon.
+##
+## À appeler après le _ready du joueur : la scène de zone le fait au moment où
+## elle connaît le personnage choisi.
+func charger(personnage: Personnage) -> void:
+	if personnage == null:
+		return
+
+	level = maxi(personnage.niveau, 1)
+	xp = personnage.experience
+	xp_to_next = _needed_for(level)
+	unspent_points = personnage.points_a_placer
+	for champ in CharacterStats.ATTRIBUTES:
+		allocated[champ] = int(personnage.attributs.get(champ, 0))
+
+	inventory.clear()
+	for pose in personnage.sac.placed:
+		# Sa place d'abord : un sac rechargé doit se retrouver tel qu'on l'a
+		# laissé, pas rangé automatiquement.
+		if not inventory.place(pose.data, pose.cell):
+			inventory.add(pose.data)
+
+	equipment.clear()
+	for emplacement in personnage.equipement:
+		if SLOTS.has(emplacement):
+			equipment[emplacement] = personnage.equipement[emplacement]
+
+	sprite.set_variant(personnage.silhouette)
+	# _after_equipment_change fait le recalcul, replace les plafonds et l'arme
+	# visible : trois choses qu'on oublierait à la main.
+	_after_equipment_change()
+	_set_health(stats.max_health)
+	_set_mana(stats.max_mana)
+
+	# L'interface s'accroche à ces signaux : sans eux le HUD garderait le niveau
+	# 1 et la fiche annoncerait zéro point à placer jusqu'au premier ennemi tué.
+	xp_changed.emit(xp, xp_to_next, level)
+	points_changed.emit(unspent_points)
+
+
+## L'inverse, juste avant d'écrire sur le disque : un instantané de ce que le
+## joueur est devenu. Rien de calculé n'y entre — ni PV, ni statistiques : elles
+## se reconstruisent au chargement, et les écrire créerait une seconde vérité.
+func remplir(personnage: Personnage) -> void:
+	if personnage == null:
+		return
+	personnage.niveau = level
+	personnage.experience = xp
+	personnage.points_a_placer = unspent_points
+	for champ in CharacterStats.ATTRIBUTES:
+		personnage.attributs[champ] = int(allocated[champ])
+	personnage.silhouette = sprite.current_variant()
+
+	personnage.sac = Inventory.new(inventory.cols, inventory.rows)
+	for pose in inventory.placed:
+		personnage.sac.place(pose.data, pose.cell)
+	personnage.equipement = equipment.duplicate()
 
 
 ## Porte un objet et rend celui qu'il remplace, ou null. L'appelant décide du
@@ -266,6 +350,26 @@ func unequip(slot: String) -> Item:
 
 func equipped(slot: String) -> Item:
 	return equipment.get(slot)
+
+
+## Place un point dans un attribut. Renvoie faux si le nom est inconnu ou s'il ne
+## reste rien à placer — l'interface n'a donc pas à vérifier d'avance.
+##
+## Sans retour en arrière : une répartition qu'on peut défaire n'est plus un
+## choix, c'est un réglage, et il n'y aurait aucune raison de ne pas tout mettre
+## dans le même attribut avant chaque combat.
+func spend_point(attribut: String) -> bool:
+	if unspent_points <= 0 or not allocated.has(attribut):
+		return false
+	allocated[attribut] += 1
+	unspent_points -= 1
+	recompute_stats()
+	# Les plafonds ont bougé : la force monte les PV maximum, l'intelligence la
+	# réserve. Sans ce passage, la barre resterait sur l'ancien maximum.
+	_set_health(health)
+	_set_mana(mana)
+	points_changed.emit(unspent_points)
+	return true
 
 
 ## Les statistiques changent, donc les PV maximum aussi : retirer un plastron
@@ -325,6 +429,8 @@ func gain_xp(amount: int) -> void:
 func _level_up() -> void:
 	level += 1
 	xp_to_next = _needed_for(level)
+	unspent_points += POINTS_PER_LEVEL
+	points_changed.emit(unspent_points)
 	recompute_stats()
 	_set_health(health + stats.max_health * LEVEL_HEAL)
 	_set_mana(mana + stats.max_mana * LEVEL_HEAL)

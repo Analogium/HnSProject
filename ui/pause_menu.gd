@@ -31,7 +31,8 @@ func _ready() -> void:
 
 	($Root/Center/Panel/Menu/Resume as Button).pressed.connect(close)
 	($Root/Center/Panel/Menu/OptionsBtn as Button).pressed.connect(_show_options)
-	($Root/Center/Panel/Menu/Quit as Button).pressed.connect(get_tree().quit)
+	($Root/Center/Panel/Menu/Retour as Button).pressed.connect(_retour_menu)
+	($Root/Center/Panel/Menu/Quit as Button).pressed.connect(_quitter)
 	($Root/Center/Panel/Options/Back as Button).pressed.connect(_show_menu)
 
 
@@ -62,6 +63,22 @@ func open() -> void:
 func close() -> void:
 	root.visible = false
 	get_tree().paused = false
+
+
+## Les deux sorties passent par le même signal : quitter le jeu et revenir au
+## menu doivent écrire la partie, et un seul des deux chemins qui l'oublie suffit
+## à perdre une session.
+func _retour_menu() -> void:
+	Game.sauvegarde_demandee.emit()
+	# Dépausé avant de changer de scène : l'arbre reste en pause d'une scène à
+	# l'autre, et l'écran de sélection naîtrait figé.
+	get_tree().paused = false
+	Game.goto_scene("res://ui/selection_personnage.tscn")
+
+
+func _quitter() -> void:
+	Game.sauvegarde_demandee.emit()
+	get_tree().quit()
 
 
 func _show_menu() -> void:

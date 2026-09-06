@@ -17,15 +17,20 @@ func before_each() -> void:
 	await wait_physics_frames(1)
 
 
+## Les valeurs sont exprimées à partir des constantes de dérivation et non en
+## dur : un recalibrage des attributs ne doit pas faire échouer un test qui ne
+## parle pas de calibrage.
 func test_reserve_pleine_a_la_naissance() -> void:
-	assert_eq(_p.mana, 50.0)
-	assert_eq(_p.stats.max_mana, 50.0)
-	assert_eq(_p.health, _p.stats.max_health)
+	var attendu := 50.0 + 10.0 * CharacterStats.MANA_PER_INTELLIGENCE
+	assert_eq(_p.stats.max_mana, attendu, "réserve de base plus l'intelligence")
+	assert_eq(_p.mana, _p.stats.max_mana, "pleine")
+	assert_eq(_p.health, _p.stats.max_health, "en pleine santé")
 
 
 func test_le_tir_coute_du_mana() -> void:
+	var avant := _p.mana
 	_p._shoot()
-	assert_eq(_p.mana, 44.0, "6 par tir")
+	assert_eq(_p.mana, avant - _p.bolt_mana_cost, "le coût exact, pas un de plus")
 
 
 func test_reserve_insuffisante_refuse_le_tir() -> void:
@@ -61,29 +66,34 @@ func test_la_hurtbox_suit_la_fiche() -> void:
 
 func test_la_baguette_accelere_l_incantation_pas_la_lame() -> void:
 	var recharge := _p.stats.attack_cooldown
+	var incantation := _p.stats.cast_speed
 	_p.equip(Item.new(load("res://resources/items/baguette.tres")))
-	assert_almost_eq(_p.stats.cast_speed, 1.15, 0.001, "+15 % d'incantation")
+	# Un pourcentage, donc il multiplie ce que l'intelligence a déjà donné.
+	assert_almost_eq(_p.stats.cast_speed, incantation * 1.15, 0.001, "+15 %")
 	assert_eq(_p.stats.attack_cooldown, recharge, "le corps à corps est intact")
 
 
 ## Le cœur du système d'équipement : un objet retiré ne laisse rien derrière lui,
 ## parce que recompute_stats repart toujours de la ressource du disque.
 func test_un_objet_retire_ne_laisse_rien() -> void:
+	var pv := _p.stats.max_health
 	var mod := StatMod.new("armor", StatMod.Mode.FLAT, 40.0)
 	_p.equip(Item.new(load("res://resources/items/plastron.tres"), [mod]))
 	assert_eq(_p.stats.armor, 40.0)
 	_p.unequip("chest")
 	assert_eq(_p.stats.armor, 0.0)
-	assert_eq(_p.stats.max_health, 100.0, "l'implicite est parti aussi")
+	assert_eq(_p.stats.max_health, pv, "l'implicite est parti aussi")
 
 
 ## Retirer un plastron baisse le plafond : la vie courante doit le suivre, sinon
 ## la barre déborde et le joueur garde des PV qu'il n'a plus.
 func test_les_pv_repassent_sous_le_nouveau_plafond() -> void:
+	var sans_plastron := _p.stats.max_health
 	_p.equip(Item.new(load("res://resources/items/plastron.tres")))
-	_p._set_health(120.0)
+	_p._set_health(_p.stats.max_health)
+	assert_gt(_p.health, sans_plastron, "le plastron a bien relevé le plafond")
 	_p.unequip("chest")
-	assert_eq(_p.health, 100.0)
+	assert_eq(_p.health, sans_plastron, "la vie redescend avec le plafond")
 
 
 ## La ressource du disque n'est jamais écrite : aucun .tres du projet n'est
@@ -103,3 +113,92 @@ func test_le_sac_plein_laisse_l_objet_au_sol() -> void:
 	while _p.inventory.add(Item.new(plastron)):
 		pass
 	assert_false(_p.pick_up(Item.new(plastron)), "refusé, donc il reste au sol")
+
+
+## Les attributs de départ arrivent bien dans la fiche, dérivation comprise.
+func test_les_attributs_de_depart_sont_derives() -> void:
+	assert_eq(_p.stats.strength, 10.0)
+	assert_eq(
+		_p.stats.max_health, 100.0 + 10.0 * CharacterStats.HEALTH_PER_STRENGTH,
+		"PV de base plus ce que la force rapporte"
+	)
+	assert_eq(
+		_p.stats.max_mana, 50.0 + 10.0 * CharacterStats.MANA_PER_INTELLIGENCE,
+		"réserve de base plus ce que l'intelligence rapporte"
+	)
+	assert_gt(_p.stats.evasion, 0.0, "la dextérité donne enfin une source à l'esquive")
+
+
+func test_une_montee_de_niveau_donne_des_points() -> void:
+	assert_eq(_p.unspent_points, 0, "aucun point au départ")
+	_p.gain_xp(_p.xp_to_next)
+	assert_eq(_p.level, 2)
+	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL)
+
+
+func test_placer_un_point_change_la_fiche() -> void:
+	_p.gain_xp(_p.xp_to_next)
+	var avant := _p.stats.max_health
+	assert_true(_p.spend_point("strength"))
+	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL - 1)
+	assert_eq(_p.stats.strength, 11.0)
+	assert_eq(_p.stats.max_health, avant + CharacterStats.HEALTH_PER_STRENGTH)
+
+
+func test_on_ne_place_pas_ce_qu_on_n_a_pas() -> void:
+	assert_false(_p.spend_point("strength"), "aucun point disponible")
+	_p.gain_xp(_p.xp_to_next)
+	assert_false(_p.spend_point("charisme"), "attribut inconnu")
+	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL, "rien n'a été consommé")
+
+
+## La répartition survit à un recalcul : elle est tenue sur le joueur et non sur
+## `stats`, qui est reconstruite de zéro à chaque équipement.
+func test_la_repartition_survit_a_un_equipement() -> void:
+	_p.gain_xp(_p.xp_to_next)
+	_p.spend_point("dexterity")
+	var esquive := _p.stats.evasion
+	_p.equip(Item.new(load("res://resources/items/plastron.tres")))
+	_p.unequip("chest")
+	assert_eq(_p.stats.dexterity, 11.0, "le point placé est toujours là")
+	assert_eq(_p.stats.evasion, esquive)
+
+
+## L'ordre du recalcul : les attributs doivent être définitifs avant qu'on en
+## dérive quoi que ce soit, sinon un objet qui donne de la force ne rapporterait
+## pas les points de vie correspondants.
+func test_un_objet_qui_donne_de_la_force_donne_les_pv_qui_vont_avec() -> void:
+	var avant := _p.stats.max_health
+	_p.equip(Item.new(
+		load("res://resources/items/plastron.tres"),
+		[StatMod.new("strength", StatMod.Mode.FLAT, 20.0)]
+	))
+	assert_eq(_p.stats.strength, 30.0)
+	assert_eq(
+		_p.stats.max_health,
+		avant + 20.0 + 20.0 * CharacterStats.HEALTH_PER_STRENGTH,
+		"l'implicite du plastron, plus ce que les 20 de force rapportent"
+	)
+
+
+## Et la dérivation doit précéder les pourcentages, pour qu'un « +10 % PV »
+## multiplie aussi ce que la force a donné.
+func test_un_pourcentage_multiplie_aussi_les_pv_de_la_force() -> void:
+	_p.equip(Item.new(
+		load("res://resources/items/plastron.tres"),
+		[StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]
+	))
+	var attendu := (
+		100.0 + 10.0 * CharacterStats.HEALTH_PER_STRENGTH + 20.0
+	) * 2.0
+	assert_eq(_p.stats.max_health, attendu, "base, force et implicite, tous doublés")
+
+
+## Monter la force relève le plafond de vie : la barre doit suivre, sinon elle
+## affiche un maximum que le joueur n'a pas.
+func test_placer_un_point_ne_casse_pas_les_barres() -> void:
+	_p.gain_xp(_p.xp_to_next)
+	_p._set_health(10.0)
+	_p.spend_point("strength")
+	assert_eq(_p.health, 10.0, "la vie courante ne bouge pas")
+	assert_lt(_p.health, _p.stats.max_health, "mais le plafond a monté")

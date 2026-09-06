@@ -7,23 +7,72 @@ var hit_stop_duration := 0.05
 
 var rng := RandomNumberGenerator.new()
 
+## Le personnage en cours de partie, posé par l'écran de sélection et lu par la
+## zone. Null quand on lance une scène de réglage directement depuis l'éditeur :
+## la zone repart alors des valeurs par défaut du joueur, et n'écrit rien.
+##
+## Sur l'autoload parce qu'il doit survivre au changement de scène — c'est
+## exactement ce qu'un changement de scène détruit.
+var personnage: Personnage
+
+## « Quelqu'un s'apprête à partir, écris maintenant. » Émis à la fermeture de la
+## fenêtre, au retour au menu et à la sortie du jeu.
+##
+## Un signal et non un appel direct : l'autoload n'a aucune raison de connaître
+## la zone, ni le joueur, ni quel nœud tient l'état à écrire. Ceux qui ont
+## quelque chose à sauvegarder s'y abonnent.
+signal sauvegarde_demandee
+
 ## Scène d'où l'on vient, pour pouvoir ressortir d'un aperçu par la touche qui
 ## l'a ouvert. Passer par goto_scene() plutôt que par change_scene_to_file()
 ## directement, sinon l'historique se désynchronise.
 var previous_scene_path := ""
 
-## Vrai quand une fenêtre d'interface s'est emparée de la souris — le sac, pour
-## l'instant. Un drapeau global parce que le joueur lit ses attaques par
-## sondage (Input.is_action_just_pressed) dans _physics_process : ces lectures
-## ne passent pas par l'arbre d'entrées, donc aucune fenêtre ne peut les
-## intercepter en consommant l'événement.
+## Vrai quand une fenêtre d'interface s'est emparée de la souris. Un drapeau
+## global parce que le joueur lit ses attaques par sondage
+## (Input.is_action_just_pressed) dans _physics_process : ces lectures ne passent
+## pas par l'arbre d'entrées, donc aucune fenêtre ne peut les intercepter en
+## consommant l'événement.
+##
+## **En lecture seule.** Passer par grab_ui_input() pour le modifier.
 var ui_grabs_input := false
+
+## Qui réclame la souris. Un ensemble et non un simple booléen : le sac et la
+## fiche de personnage peuvent être ouverts en même temps, et le premier des deux
+## à se fermer remettrait le drapeau à faux alors que l'autre tient encore la
+## souris — le joueur se retrouverait à frapper en cliquant dans un panneau.
+var _ui_grabbers := {}
+
+
+## Déclare qu'un panneau prend la souris, ou qu'il la rend. À appeler avec le
+## même objet dans les deux sens, et **toujours** depuis _exit_tree en plus de la
+## fermeture : une scène rechargée panneau ouvert laisserait sinon le joueur
+## incapable de frapper dans une scène où plus aucun panneau n'existe.
+func grab_ui_input(source: Object, grabbing: bool) -> void:
+	if grabbing:
+		_ui_grabbers[source] = true
+	else:
+		_ui_grabbers.erase(source)
+	ui_grabs_input = not _ui_grabbers.is_empty()
 
 var _hit_stop_active := false
 
 
 func _ready() -> void:
 	rng.randomize()
+	# Sinon la croix de la fenêtre ferme le jeu sans que personne ait pu écrire.
+	# Le pendant obligatoire est _notification : sans lui la fenêtre ne se
+	# fermerait plus du tout.
+	get_tree().auto_accept_quit = false
+
+
+## La fermeture par la croix ou par Alt+F4. On laisse une dernière chance
+## d'écrire, puis **on quitte quoi qu'il arrive** : un abonné en erreur ne doit
+## pas transformer la fenêtre en piège.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		sauvegarde_demandee.emit()
+		get_tree().quit()
 
 
 func goto_scene(path: String) -> void:

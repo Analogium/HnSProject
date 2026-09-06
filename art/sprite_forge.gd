@@ -40,6 +40,24 @@ const ARCHETYPES := ["player", "grunt", "caster", "dummy"]
 ## copies du même pochoir.
 const VARIANTS := 4
 
+## Les quatre tenues du joueur, dans l'ordre des variantes.
+##
+## Choisies et non tirées : l'écran de création demande de choisir une
+## silhouette parmi quatre, et quatre héros qui ne diffèrent que d'un demi-ton
+## de bleu — ce que donnait le tirage de nuance — ne sont pas un choix. La
+## capture de l'écran l'a montrée avant qu'un joueur ait à le découvrir.
+##
+## Seule l'étoffe change. Le fil doré, l'acier et le cuir restent communs : ce
+## sont eux qui font qu'on se reconnaît dans une mêlée de soixante-dix ennemis,
+## et les faire varier aussi rendrait deux personnages confondables avec un
+## caster ou un grunt.
+const PLAYER_CLOTHS := [
+	Color(0.24, 0.45, 0.86),   # bleu, la tenue d'origine
+	Color(0.76, 0.26, 0.28),   # cramoisi
+	Color(0.24, 0.60, 0.38),   # vert
+	Color(0.58, 0.34, 0.80),   # violet
+]
+
 ## Cycle de marche en 4 temps : contact, passage, contact opposé, passage.
 ## Le rebond d'une image sur deux (le corps monte au passage) fait davantage
 ## pour la lisibilité de la marche que le balancement des jambes.
@@ -219,7 +237,8 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 	match archetype:
 		"player":
 			base = {
-				"cloth": Color(0.24, 0.45, 0.86), "skin": Color(0.92, 0.73, 0.56),
+				"cloth": PLAYER_CLOTHS[variant % PLAYER_CLOTHS.size()],
+				"skin": Color(0.92, 0.73, 0.56),
 				"accent": Color(0.98, 0.80, 0.30), "metal": Color(0.72, 0.78, 0.86),
 				"leather": Color(0.40, 0.26, 0.18),
 			}
@@ -268,7 +287,11 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 			}
 
 	# Variation par instance : nuance des étoffes et de la peau, corpulence.
-	# Le joueur reste hors du tirage — son apparence doit être stable.
+	#
+	# Le joueur reste hors du tirage, mais plus pour la même raison qu'avant. Sa
+	# tenue n'est plus tirée au sort **ni figée** : elle est choisie à la
+	# création, dans PLAYER_CLOTHS. Un tirage par-dessus ce choix ferait deux
+	# personnages du même numéro de silhouette.
 	var amount := 0.0 if archetype == "player" else 1.0
 	cfg["palettes"] = [
 		ArtPalette.ramp(ArtPalette.jitter(base["cloth"], rng, amount)),

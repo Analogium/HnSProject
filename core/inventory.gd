@@ -14,6 +14,17 @@ signal changed
 
 const EMPTY := -1
 
+## La taille du sac du joueur. Ici et non chez le Player : la sauvegarde doit
+## reconstruire un sac de la même grille sans rien savoir de l'acteur qui le
+## porte, et deux définitions se seraient contredites le jour d'un
+## agrandissement — les objets rangés au-delà de l'ancienne limite auraient
+## silencieusement changé de place au rechargement.
+##
+## Large plutôt que haut, comme dans les jeux dont il reprend la règle : une épée
+## mange trois lignes, et un sac de quatre lignes n'accepterait presque rien.
+const DEFAULT_COLS := 10
+const DEFAULT_ROWS := 5
+
 
 ## Un objet et le coin haut-gauche qu'il occupe. Une classe et non un
 ## dictionnaire : c'est la structure que toute l'interface manipule, elle mérite
@@ -126,6 +137,17 @@ func take_at(cell: Vector2i) -> Item:
 	_rebuild()
 	changed.emit()
 	return item
+
+
+## Vide le sac. Employée au chargement d'un personnage : le panneau
+## d'inventaire tient une référence sur *cet* objet depuis son bind, et lui en
+## substituer un neuf le laisserait afficher un sac fantôme.
+func clear() -> void:
+	if placed.is_empty():
+		return
+	placed.clear()
+	_rebuild()
+	changed.emit()
 
 
 func _stamp(index: int) -> void:

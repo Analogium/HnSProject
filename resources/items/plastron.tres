@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_item")
+id = "plastron"
 display_name = "Plastron"
 kind = "torso"
 slot = "chest"

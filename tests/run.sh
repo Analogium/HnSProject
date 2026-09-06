@@ -70,10 +70,21 @@ fi
 echo "propre"
 
 echo "== tests : $SUITE =="
-"$GODOT" --headless --path "$TMP_WIN" \
+SORTIE="$("$GODOT" --headless --path "$TMP_WIN" \
 	-s res://addons/gut/gut_cmdln.gd \
-	-gdir="$DIRS" -ginclude_subdirs -gexit -gdisable_colors
+	-gdir="$DIRS" -ginclude_subdirs -gexit -gdisable_colors 2>&1)"
 CODE=$?
+echo "$SORTIE"
+
+# Un fichier de test qui ne compile pas est **ignoré** par GUT, qui annonce
+# ensuite « All tests passed » sans lui. C'est arrivé : un test e2e entier
+# absent de la campagne, et un rapport vert. L'étape --import ne l'attrape pas
+# non plus, elle ne parse pas les scripts de test.
+if grep -qE "Failed to load script|Parse Error" <<<"$SORTIE"; then
+	echo "== UN SCRIPT DE TEST NE COMPILE PAS : il n'a pas été exécuté =="
+	grep -E "Failed to load script|Parse Error" <<<"$SORTIE" | head -10
+	CODE=1
+fi
 
 echo "== code de sortie : $CODE =="
 exit $CODE
