@@ -94,6 +94,19 @@ static func format(stat_name: String, v: float, signed := false) -> String:
 	return (fmt + ".1f") % v
 
 
+## Une jauge « courant / maximum », telle qu'elle s'affiche. Le HUD et la fiche
+## de personnage l'écrivaient chacun de leur côté, et le mana une troisième fois.
+##
+## La valeur courante est arrondie **vers le haut** : à 0,4 PV on est vivant, et
+## annoncer 0 alors qu'on tient encore est un mensonge. Mais jamais au-delà du
+## maximum affiché — sans ce plafond, un personnage à 215,4 PV sur 215,4 lisait
+## « 216 / 215 », le même mensonge à l'autre bout de la barre. Les deux règles
+## vont ensemble et n'ont qu'un seul endroit où être écrites.
+static func gauge(current: float, maximum: float) -> String:
+	var haut := roundi(maximum)
+	return "%d / %d" % [mini(ceili(current), haut), haut]
+
+
 func label() -> String:
 	var nom: String = LABELS.get(stat, stat)
 	# Un modificateur en pourcentage porte son unité du fait de son mode, quelle

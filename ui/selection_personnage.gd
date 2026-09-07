@@ -38,7 +38,14 @@ const ABIME := Color(0.72, 0.42, 0.42)
 
 const FONT_SIZE := 8
 const NOM_SIZE := 10
-const TITRE_SIZE := 12
+
+## Les quatre vignettes de silhouette de l'écran de création : leur taille, leur
+## écartement, et la hauteur de leur centre dans la fenêtre. Nommées parce que
+## `_vignette_rect` est le seul à s'en servir et qu'un nombre nu dans un calcul
+## de rectangle ne dit pas s'il est une largeur ou une marge.
+const VIGNETTE := Vector2(34.0, 36.0)
+const VIGNETTE_PAS := 56.0
+const VIGNETTE_Y := 104.0
 
 ## Ce qu'il faut retaper pour supprimer un personnage dont on n'a pas su lire le
 ## nom. Les autres se confirment en retapant le leur.
@@ -313,11 +320,8 @@ func _poser_silhouettes() -> void:
 		enfant.queue_free()
 
 	if _etat == Etat.CREATION:
-		var y := MODALE.position.y + 104.0
-		var pas := 56.0
-		var x0 := MODALE.position.x + MODALE.size.x * 0.5 - pas * 1.5
 		for v in SpriteForge.VARIANTS:
-			_silhouette_a(Vector2(x0 + pas * float(v), y), v)
+			_silhouette_a(_vignette_rect(v).get_center(), v)
 		return
 
 	if _etat != Etat.LISTE:
@@ -413,14 +417,28 @@ func _dessiner_ligne(p: Personnage, cadre: Rect2, i: int) -> void:
 	)
 
 
+## Où se trouve la vignette d'une silhouette, cadre compris.
+##
+## **Le seul endroit qui le sait.** Trois fonctions recalculaient ce rectangle
+## chacune de son côté — celle qui pose le sprite, celle qui dessine le cadre,
+## celle qui teste le clic — avec les mêmes six nombres réécrits à la main. Ce
+## genre de triplet ne se contredit pas au moment où on l'écrit : il se
+## contredit le jour où l'on décale les vignettes de deux pixels et où le clic
+## reste sur les anciennes, sans que rien ne le signale.
+func _vignette_rect(variante: int) -> Rect2:
+	var x0 := MODALE.position.x + MODALE.size.x * 0.5 - VIGNETTE_PAS * 1.5
+	return Rect2(
+		x0 + VIGNETTE_PAS * float(variante) - VIGNETTE.x * 0.5,
+		MODALE.position.y + VIGNETTE_Y - VIGNETTE.y * 0.5,
+		VIGNETTE.x, VIGNETTE.y
+	)
+
+
 ## Le cadre autour de la silhouette choisie. Les sprites eux-mêmes sont des
 ## nœuds posés par _poser_silhouettes ; ici on ne dessine que la sélection.
 func _dessiner_choix_silhouette() -> void:
-	var pas := 56.0
-	var x0 := MODALE.position.x + MODALE.size.x * 0.5 - pas * 1.5
-	var y := MODALE.position.y + 104.0
 	for v in SpriteForge.VARIANTS:
-		var boite := Rect2(x0 + pas * float(v) - 17.0, y - 18.0, 34.0, 36.0)
+		var boite := _vignette_rect(v)
 		draw_rect(boite, CHOISI if v == _silhouette else Color(UiPalette.BACK, 1.0))
 		draw_rect(boite, ACCENT if v == _silhouette else UiPalette.BORDER, false, 1.0)
 
@@ -429,11 +447,8 @@ func _dessiner_choix_silhouette() -> void:
 ## Traité ici et non par des boutons : un bouton dessinerait son propre cadre
 ## par-dessus le sprite.
 func _clic_silhouette(position_locale: Vector2) -> void:
-	var pas := 56.0
-	var x0 := MODALE.position.x + MODALE.size.x * 0.5 - pas * 1.5
-	var y := MODALE.position.y + 104.0
 	for v in SpriteForge.VARIANTS:
-		if Rect2(x0 + pas * float(v) - 17.0, y - 18.0, 34.0, 36.0).has_point(position_locale):
+		if _vignette_rect(v).has_point(position_locale):
 			_silhouette = v
 			_rafraichir()
 			return

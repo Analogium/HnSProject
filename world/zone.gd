@@ -105,15 +105,24 @@ func sauvegarder() -> void:
 		return
 	player.remplir(Game.personnage)
 	if not Sauvegarde.ecrire(Game.personnage):
-		temoin.text = "échec de la sauvegarde"
-		temoin.modulate.a = 1.0
+		# Sans fondu, exprès : un échec d'écriture doit rester à l'écran jusqu'à
+		# la sauvegarde suivante, là où une réussite n'a pas à s'attarder.
+		_annoncer("échec de la sauvegarde")
 		return
 
-	# Un témoin discret, mais un témoin. Sans lui on ne sait pas si le jeu a
-	# sauvegardé, et on ferme la fenêtre en croisant les doigts.
-	temoin.text = "sauvegardé"
-	temoin.modulate.a = 1.0
+	_annoncer("sauvegardé")
 	create_tween().tween_property(temoin, "modulate:a", 0.0, 1.4).set_delay(0.8)
+
+
+## Un témoin discret, mais un témoin : sans lui on ne sait pas si le jeu a
+## sauvegardé, et on ferme la fenêtre en croisant les doigts.
+##
+## Le texte et l'opacité vont ensemble. Écrire le texte sans relever l'opacité
+## n'affiche rien du tout — le fondu précédent l'a laissée à zéro — et ça ne se
+## voit qu'en jouant.
+func _annoncer(texte: String) -> void:
+	temoin.text = texte
+	temoin.modulate.a = 1.0
 
 
 ## En différé : la montée de niveau arrive depuis la boucle de l'EnemyManager,

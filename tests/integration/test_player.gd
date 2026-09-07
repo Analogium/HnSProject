@@ -277,3 +277,24 @@ func test_un_anneau_compte_dans_la_fiche() -> void:
 	assert_eq(_p.stats.armor, avant + 12.0, "l'implicite de l'anneau est entré")
 	_p.unequip("ring_left")
 	assert_eq(_p.stats.armor, avant, "et il repart avec lui")
+
+
+## L'invariant que l'affichage trahissait : la vie ne dépasse jamais le
+## maximum, quel que soit le chemin qui a modifié la fiche. Le modèle était
+## sain — c'était le texte qui mentait — et ce test est là pour qu'il le reste.
+func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
+	var plastron := Item.new(load("res://resources/items/plastron.tres"))
+	_p.equip(plastron)
+	assert_lte(_p.health, _p.stats.max_health, "après avoir équipé")
+
+	_p.gain_xp(3000)
+	assert_lte(_p.health, _p.stats.max_health, "après plusieurs niveaux")
+
+	_p.spend_point("strength")
+	assert_lte(_p.health, _p.stats.max_health, "après un point de force")
+
+	_p.unequip("chest")
+	assert_lte(_p.health, _p.stats.max_health, "et après avoir retiré le plastron")
+
+	_p._regen(100.0)
+	assert_eq(_p.health, _p.stats.max_health, "la régénération s'arrête pile au plafond")

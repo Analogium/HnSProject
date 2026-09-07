@@ -35,9 +35,8 @@ var _weapon := ""
 
 func _ready() -> void:
 	_variant = variant if variant >= 0 else _pick()
-	sprite_frames = SpriteForge.frames(archetype, _variant)
 	animation_finished.connect(_on_animation_finished)
-	_apply()
+	_rebuild()
 
 
 ## Change la silhouette. C'est le choix que le joueur fait à la création de son
@@ -52,8 +51,7 @@ func set_variant(index: int) -> void:
 	if borne == _variant:
 		return
 	_variant = borne
-	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
-	_apply()
+	_rebuild()
 
 
 ## La silhouette effectivement dessinée. Publique parce qu'elle peut avoir été
@@ -73,10 +71,7 @@ func set_weapon(kind: String) -> void:
 	if kind == _weapon:
 		return
 	_weapon = kind
-	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
-	# L'animation en cours reprend à zéro : sprite_frames remplacé, il n'y a
-	# plus d'image courante à préserver.
-	_apply()
+	_rebuild()
 
 
 ## La silhouette se déduit de la case où l'ennemi apparaît, et non d'un tirage.
@@ -147,6 +142,18 @@ func set_rim(color: Color, amount: float, width := 1.0) -> void:
 	material.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
 	material.set_shader_parameter("rim_amount", amount)
 	material.set_shader_parameter("rim_width", width)
+
+
+## Redemande ses planches à la forge et relance l'animation. Trois endroits le
+## faisaient chacun de leur côté — la naissance, le changement de silhouette et
+## le changement d'arme — et le jour où la clé de la forge prendra une dimension
+## de plus, celui qui l'oublierait garderait un sprite qui ne se met plus à jour.
+##
+## L'animation en cours reprend à zéro : sprite_frames est remplacé, il n'y a
+## plus d'image courante à préserver.
+func _rebuild() -> void:
+	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
+	_apply()
 
 
 func _face(facing: Vector2) -> void:

@@ -543,9 +543,7 @@ func _draw() -> void:
 
 	for y in _inventory.rows:
 		for x in _inventory.cols:
-			var r := _rect_of(Vector2i(x, y), Vector2i.ONE)
-			draw_rect(r, SLOT)
-			draw_rect(r, SLOT_EDGE, false, 1.0)
+			_draw_case(_rect_of(Vector2i(x, y), Vector2i.ONE))
 
 	_draw_doll()
 	_draw_equipment()
@@ -582,10 +580,7 @@ func _draw() -> void:
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 
 
-## Les emplacements portés. Ils sont dans le même panneau que le sac et non dans
-## une fenêtre à part : équiper est un geste entre les deux, et deux fenêtres
-## obligeraient à en ouvrir une seconde pour un aller-retour.
-## Le rectangle laissé libre par les emplacements, au centre de la grille.
+## Le rectangle du portrait, dans le coin que les emplacements laissent libre.
 func _doll_area_rect() -> Rect2:
 	return _doll_rect(DOLL_AREA)
 
@@ -596,8 +591,7 @@ func _doll_area_rect() -> Rect2:
 ## l'épée qu'on vient d'équiper est bien celle qu'on porte.
 func _draw_doll() -> void:
 	var zone := _doll_area_rect()
-	draw_rect(zone, SLOT)
-	draw_rect(zone, SLOT_EDGE, false, 1.0)
+	_draw_case(zone)
 	if _doll_frames == null or not _doll_frames.has_animation(DOLL_ANIM):
 		return
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
@@ -605,14 +599,12 @@ func _draw_doll() -> void:
 		return
 	# À sa taille native : le sprite fait 32 pixels et le portrait 41. L'agrandir
 	# le ferait déborder sur le casque et l'arme.
-	#
-	# Position entière : un sprite à cheval sur deux pixels bave, et le rendu
-	# pixel art ne le pardonne pas.
-	draw_texture_rect(
-		tex, Rect2((zone.get_center() - tex.get_size() * 0.5).round(), tex.get_size()), false
-	)
+	_draw_centered(tex, zone)
 
 
+## Les emplacements portés. Ils sont dans le même panneau que le sac et non dans
+## une fenêtre à part : équiper est un geste entre les deux, et deux fenêtres
+## obligeraient à en ouvrir une seconde pour un aller-retour.
 func _draw_equipment() -> void:
 	for i in EquipmentSlots.count():
 		var slot: String = EquipmentSlots.ids()[i]
@@ -627,8 +619,7 @@ func _draw_equipment() -> void:
 			draw_rect(r, item.color().darkened(0.35), false, 1.0)
 			_draw_item(item, r, false, true)
 		else:
-			draw_rect(r, SLOT)
-			draw_rect(r, SLOT_EDGE, false, 1.0)
+			_draw_case(r)
 			_draw_ghost(slot, r)
 
 		if _hover_slot != i:
@@ -651,12 +642,35 @@ func _draw_ghost(slot: String, r: Rect2) -> void:
 	var kind := _ghost_kind(slot)
 	if kind.is_empty():
 		return
-	var cible := r.size - Vector2(MARGIN, MARGIN) * 2.0
-	var tex := SpriteForge.inventory_icon(kind, Vector2i(cible))
-	draw_texture_rect(
-		tex, Rect2((r.get_center() - tex.get_size() * 0.5).round(), tex.get_size()),
-		false, GHOST
-	)
+	_draw_centered(SpriteForge.inventory_icon(kind, Vector2i(_place_libre(r))), r, GHOST)
+
+
+## Le fond d'une case vide : le creux et son liseré. Les deux vont toujours
+## ensemble — la grille du sac, le portrait et les emplacements libres les
+## écrivaient chacun de leur côté, et il suffisait d'en oublier un pour qu'une
+## case se lise comme un trou dans le panneau.
+func _draw_case(r: Rect2) -> void:
+	draw_rect(r, SLOT)
+	draw_rect(r, SLOT_EDGE, false, 1.0)
+
+
+## La place utile d'un rectangle, marge déduite.
+func _place_libre(r: Rect2) -> Vector2:
+	return r.size - Vector2(MARGIN, MARGIN) * 2.0
+
+
+## Une texture au milieu d'un rectangle, à sa taille native.
+##
+## Position entière : une image à cheval sur deux pixels bave, et c'est
+## précisément ce que le rendu pixel art ne pardonne pas. Trois appelants
+## écrivaient ce centrage — l'objet rangé, la silhouette fantôme et le portrait
+## — dont deux avec la même formule écrite autrement, ce qui suffit à ne plus
+## voir qu'il s'agit du même calcul.
+func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
+	if tex == null:
+		return
+	var at := (r.get_center() - tex.get_size() * 0.5).round()
+	draw_texture_rect(tex, Rect2(at, tex.get_size()), false, teinte)
 
 
 ## Ce que porte l'objet, à côté du sac. Sans elle, un objet à six affixes et une
@@ -731,12 +745,9 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	# case voisine. Dans un emplacement d'équipement (`fill`), elle **remplit sa
 	# case** : celle-ci est déjà taillée à la famille de l'objet, et une baguette
 	# dessinée petite au milieu d'un grand cadre se lisait comme un oubli.
-	##
+	#
 	# Le facteur d'agrandissement reste entier et l'aspect conservé : la forge
 	# s'en charge, aucun objet n'est déformé.
-	var place := r.size - Vector2(MARGIN, MARGIN) * 2.0
+	var place := _place_libre(r)
 	var propre := place if fill else _span_size(Inventory.footprint(item)).min(place)
-	var tex := SpriteForge.inventory_icon(item.base.kind, Vector2i(propre))
-	# Position entière : une icône à cheval sur deux pixels bave, et c'est
-	# précisément ce que le rendu pixel art ne pardonne pas.
-	draw_texture(tex, (r.position + (r.size - tex.get_size()) * 0.5).round())
+	_draw_centered(SpriteForge.inventory_icon(item.base.kind, Vector2i(propre)), r)

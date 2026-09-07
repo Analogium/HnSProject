@@ -182,11 +182,9 @@ func _draw_gauge(
 	_draw_bar(Rect2(x, y, BAR_W, BAR_H), ratio, fill)
 	if _font == null:
 		return
-	# ceili et non roundi sur la valeur courante : à 0,4 PV on est vivant, et une
-	# jauge qui annonce 0 alors qu'on tient encore est un mensonge.
-	var text := "%d / %d" % [ceili(current), roundi(maximum)]
 	_text(
-		Vector2(roundf(x + BAR_W + 5.0), roundf(y + BAR_H - 1.0)), text,
+		Vector2(roundf(x + BAR_W + 5.0), roundf(y + BAR_H - 1.0)),
+		StatMod.gauge(current, maximum),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, fill
 	)
 

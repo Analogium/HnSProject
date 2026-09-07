@@ -194,9 +194,9 @@ func _value_of(field: String) -> String:
 	var st := _player.stats
 	match field:
 		"max_health":
-			return "%d / %d" % [ceili(_player.health), roundi(st.max_health)]
+			return StatMod.gauge(_player.health, st.max_health)
 		"max_mana":
-			return "%d / %d" % [ceili(_player.mana), roundi(st.max_mana)]
+			return StatMod.gauge(_player.mana, st.max_mana)
 		"armor":
 			return "%d  (%d %%)" % [
 				roundi(st.armor),

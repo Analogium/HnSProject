@@ -48,3 +48,32 @@ func test_les_plats_avant_les_pourcentages() -> void:
 
 	assert_eq(a.max_health, 300.0, "(100 + 100) x 1,5")
 	assert_eq(b.max_health, a.max_health, "l'ordre d'équipement ne change rien")
+
+
+# --------------------------------------------------------------------------
+# L'affichage d'une jauge
+# --------------------------------------------------------------------------
+
+## Le défaut trouvé en jouant : 216 / 215. Les PV étaient pleins — 215,4 sur
+## 215,4 — mais la valeur courante était arrondie vers le haut et le maximum au
+## plus proche, chacun de son côté.
+func test_une_jauge_pleine_n_affiche_jamais_plus_que_son_maximum() -> void:
+	assert_eq(StatMod.gauge(215.4, 215.4), "215 / 215", "pleine, et fractionnaire")
+	assert_eq(StatMod.gauge(215.6, 215.6), "216 / 216")
+	assert_eq(StatMod.gauge(100.0, 100.0), "100 / 100", "le cas entier ne bouge pas")
+
+
+## L'autre bout de la barre, et la raison pour laquelle l'arrondi se fait vers
+## le haut : à 0,4 PV on est vivant.
+func test_un_reste_de_vie_ne_s_affiche_pas_a_zero() -> void:
+	assert_eq(StatMod.gauge(0.4, 100.0), "1 / 100")
+	assert_eq(StatMod.gauge(0.01, 100.0), "1 / 100")
+
+
+func test_zero_reste_zero() -> void:
+	assert_eq(StatMod.gauge(0.0, 100.0), "0 / 100", "mort, et ça doit se voir")
+
+
+## Un personnage sans mana : la fiche l'annonce, elle ne divise pas par zéro.
+func test_une_reserve_absente() -> void:
+	assert_eq(StatMod.gauge(0.0, 0.0), "0 / 0")
