@@ -35,7 +35,14 @@ const FOOTER := 22.0
 ## lignes chacun — la taille du plus gros objet équipable, pour que l'icône y
 ## tienne quel que soit l'emplacement.
 const EQUIP_SPAN := Vector2i(2, 3)
-const EQUIP_GAP := 12.0
+const EQUIP_GAP := 8.0
+## Emplacements par ligne. Les dix du jalon 4 ne tiennent pas sur une seule :
+## il en faudrait 490 pixels de large pour un cadrage qui en fait 640.
+##
+## Disposition provisoire, en attendant la fenêtre de personnage — la silhouette
+## entourée de ses emplacements. `_slot_rect` est la couture par laquelle elle
+## arrivera : c'est le seul endroit qui décide où se trouve un emplacement.
+const SLOT_COLUMNS := 5
 ## Marge autour d'une icône dans son emplacement. Sans elle, un objet qui remplit
 ## exactement son rectangle mange les lignes de la grille et on ne voit plus où
 ## il commence.
@@ -218,7 +225,7 @@ func _right_click() -> void:
 	if _player == null:
 		return
 	if _hover_slot >= 0:
-		_unequip(Player.SLOTS[_hover_slot])
+		_unequip(EquipmentSlots.ids()[_hover_slot])
 	else:
 		_equip(_hover)
 
@@ -244,10 +251,14 @@ func _equip(cell: Vector2i) -> void:
 ##
 ## Le seul endroit où le remplacement est relogé : le clic droit depuis le sac
 ## et le dépôt sur l'emplacement faisaient la même chose, chacun de son côté.
-func _wear(item: Item) -> bool:
+##
+## `emplacement` vide au clic droit — on n'a désigné aucune destination, le
+## joueur choisit le premier doigt libre. Rempli quand l'objet a été lâché sur
+## un emplacement précis : c'est celui-là qu'on veut, même si l'autre est libre.
+func _wear(item: Item, emplacement := "") -> bool:
 	if _player == null:
 		return false
-	var ancien := _player.equip(item)
+	var ancien := _player.equip(item, emplacement)
 	if ancien == item:
 		return false
 	if ancien != null and not _inventory.add(ancien):
@@ -267,10 +278,10 @@ func _unequip(slot: String) -> void:
 func _take(point: Vector2) -> void:
 	var slot := _slot_at(point)
 	if slot >= 0:
-		var porte: Item = _player.equipped(Player.SLOTS[slot]) if _player != null else null
+		var porte: Item = _player.equipped(EquipmentSlots.ids()[slot]) if _player != null else null
 		if porte == null:
 			return
-		_player.unequip(Player.SLOTS[slot])
+		_player.unequip(EquipmentSlots.ids()[slot])
 		_held = porte
 		# Rien à quoi le rendre : la case d'origine est volontairement hors
 		# grille, `place` la refusera et `_return_held` cherchera une place.
@@ -304,7 +315,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 
 	var slot := _slot_at(point)
 	if slot >= 0:
-		if _equip_held(Player.SLOTS[slot]):
+		if _equip_held(EquipmentSlots.ids()[slot]):
 			queue_redraw()
 			return
 	elif not _panel_rect().has_point(point):
@@ -330,7 +341,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 ## torse est refusée plutôt que rangée d'office dans l'emplacement d'arme : le
 ## joueur a visé, on ne décide pas à sa place.
 func _equip_held(slot: String) -> bool:
-	if _held.base == null or _held.base.slot != slot or not _wear(_held):
+	if not EquipmentSlots.accepts(slot, _held) or not _wear(_held, slot):
 		return false
 	_held = null
 	return true
@@ -362,9 +373,12 @@ func _panel_rect() -> Rect2:
 	return Rect2(Vector2.ZERO, _panel_size())
 
 
+## Le plus large des deux : la grille du sac, ou la rangée d'emplacements. Sans
+## ce maximum, les emplacements dépassaient du cadre par la droite dès qu'ils
+## sont devenus dix.
 func _panel_size() -> Vector2:
 	return Vector2(
-		_inventory.cols * (CELL + PAD) + PAD,
+		maxf(_inventory.cols * (CELL + PAD) + PAD, _equip_size().x + PAD * 2.0),
 		_grid_top() + _inventory.rows * (CELL + PAD) + PAD + FOOTER
 	)
 
@@ -376,12 +390,26 @@ func _span_size(span: Vector2i) -> Vector2:
 
 func _slot_rect(index: int) -> Rect2:
 	var sz := _span_size(EQUIP_SPAN)
-	return Rect2(Vector2(PAD + float(index) * (sz.x + EQUIP_GAP), HEADER + PAD), sz)
+	return Rect2(Vector2(
+		PAD + float(index % SLOT_COLUMNS) * (sz.x + EQUIP_GAP),
+		HEADER + PAD + float(index / SLOT_COLUMNS) * (sz.y + EQUIP_GAP)
+	), sz)
 
 
-## Où commence le sac : sous la bande d'équipement.
+## L'encombrement de la zone d'équipement, en pixels.
+func _equip_size() -> Vector2:
+	var sz := _span_size(EQUIP_SPAN)
+	var colonnes := mini(EquipmentSlots.count(), SLOT_COLUMNS)
+	var lignes := ceili(float(EquipmentSlots.count()) / float(SLOT_COLUMNS))
+	return Vector2(
+		float(colonnes) * (sz.x + EQUIP_GAP) - EQUIP_GAP,
+		float(lignes) * (sz.y + EQUIP_GAP) - EQUIP_GAP
+	)
+
+
+## Où commence le sac : sous la zone d'équipement.
 func _grid_top() -> float:
-	return HEADER + _span_size(EQUIP_SPAN).y + PAD + 6.0
+	return HEADER + _equip_size().y + PAD + 6.0
 
 
 ## Le coin haut-gauche d'un rectangle de cases du sac, en pixels du panneau.
@@ -403,7 +431,7 @@ func _cell_at(point: Vector2) -> Vector2i:
 
 
 func _slot_at(point: Vector2) -> int:
-	for i in Player.SLOTS.size():
+	for i in EquipmentSlots.count():
 		if _slot_rect(i).has_point(point):
 			return i
 	return -1
@@ -462,8 +490,8 @@ func _draw() -> void:
 ## obligeraient à en ouvrir une seconde pour un aller-retour.
 func _draw_equipment() -> void:
 	var font := get_theme_default_font()
-	for i in Player.SLOTS.size():
-		var slot: String = Player.SLOTS[i]
+	for i in EquipmentSlots.count():
+		var slot: String = EquipmentSlots.ids()[i]
 		var r := _slot_rect(i)
 		var item: Item = _player.equipped(slot) if _player != null else null
 
@@ -474,10 +502,12 @@ func _draw_equipment() -> void:
 		elif font != null:
 			# Le nom de l'emplacement ne s'affiche que vide : une fois rempli,
 			# l'icône dit déjà de quoi il s'agit.
-			var nom: String = Player.SLOT_NAMES[slot]
-			var w := font.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
-			draw_string(font, Vector2(r.get_center().x - w * 0.5, r.get_center().y + 3.0),
-				nom, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.LABEL)
+			# Centré **et borné** à la largeur de la case : mesuré puis centré à la
+			# main, « ANNEAU D. » débordait de son emplacement sur le bord du
+			# panneau. La largeur passée à draw_string fait les deux d'un coup.
+			draw_string(font, Vector2(r.position.x, r.get_center().y + 3.0),
+				EquipmentSlots.label(slot), HORIZONTAL_ALIGNMENT_CENTER, r.size.x,
+				FONT_SIZE, UiPalette.LABEL)
 
 		if _hover_slot != i:
 			continue
@@ -485,7 +515,7 @@ func _draw_equipment() -> void:
 			# Posée **après** l'objet porté : peinte avant, son fond opaque
 			# l'effaçait, et un emplacement occupé n'annonçait jamais s'il
 			# accepte ce qu'on lui apporte.
-			var accepte: bool = _held.base != null and _held.base.slot == slot
+			var accepte: bool = EquipmentSlots.accepts(slot, _held)
 			draw_rect(r, CAN_PLACE if accepte else BLOCKED)
 		elif item != null:
 			draw_rect(r, item.color(), false, 1.0)

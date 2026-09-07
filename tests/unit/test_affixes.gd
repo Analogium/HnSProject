@@ -83,7 +83,7 @@ func test_pas_de_ligne_en_double_sur_un_objet() -> void:
 func test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne() -> void:
 	var vus := {}
 	for a in ItemAffixPool.ALL:
-		var cle := "%s/%s/%s" % [a.stat, a.percent, a.slots]
+		var cle := "%s/%s/%s" % [a.stat, a.percent, a.families]
 		assert_false(vus.has(cle), "%s fait doublon avec %s" % [a.id, vus.get(cle, "")])
 		vus[cle] = a.id
 

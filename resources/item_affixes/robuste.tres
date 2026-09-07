@@ -10,4 +10,4 @@ percent = true
 min_value = 5.0
 max_value = 15.0
 weight = 10
-slots = PackedStringArray("chest")
+families = PackedStringArray("chest")

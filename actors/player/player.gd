@@ -35,13 +35,6 @@ const POINTS_PER_LEVEL := 3
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
 const LEVEL_HEAL := 0.30
 
-## Les emplacements d'équipement, dans l'ordre où l'interface les montre. Un
-## dictionnaire indexé par nom et non un champ par emplacement : ajouter les
-## bottes ou l'anneau se fera en allongeant cette liste, sans toucher au calcul
-## des statistiques ni au dessin du panneau.
-const SLOTS := ["weapon", "chest"]
-const SLOT_NAMES := {"weapon": "ARME", "chest": "TORSE"}
-
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud (étape 5).
 @export var swing_duration: float = 0.12
 
@@ -224,7 +217,7 @@ func recompute_stats() -> void:
 	# qui permet d'appliquer les valeurs plates avant les pourcentages, donc
 	# d'obtenir le même personnage quel que soit l'ordre d'équipement.
 	var mods: Array[StatMod] = []
-	for slot in SLOTS:
+	for slot in EquipmentSlots.ids():
 		var item: Item = equipment.get(slot)
 		if item != null:
 			mods.append_array(item.mods())
@@ -287,7 +280,10 @@ func charger(personnage: Personnage) -> void:
 
 	equipment.clear()
 	for emplacement in personnage.equipement:
-		if SLOTS.has(emplacement):
+		# Un emplacement inconnu est écarté et non porté : une sauvegarde peut
+		# venir d'une version qui en avait un de plus, et il fausserait le calcul
+		# des statistiques sans jamais s'afficher nulle part.
+		if EquipmentSlots.exists(emplacement):
 			equipment[emplacement] = personnage.equipement[emplacement]
 
 	sprite.set_variant(personnage.silhouette)
@@ -326,15 +322,21 @@ func remplir(personnage: Personnage) -> void:
 ## sort de l'ancien : le sac s'il y reste de la place, le sol sinon — ce n'est
 ## pas au joueur d'en juger, c'est à l'interface qui a déclenché l'échange.
 ##
-## Renvoie l'objet lui-même quand il ne peut pas être porté (pas d'emplacement),
-## pour que l'appelant n'ait pas à le tester d'avance et ne le perde jamais.
-func equip(item: Item) -> Item:
+## `emplacement` vide : on choisit le premier libre de la famille de l'objet.
+## C'est le chemin du ramassage, où personne ne désigne de destination. Le
+## panneau, lui, sait sur quel emplacement l'objet a été lâché et l'impose —
+## sinon un anneau lâché sur la main droite irait à la gauche si elle est libre.
+##
+## Renvoie l'objet lui-même quand il ne peut pas être porté, pour que l'appelant
+## n'ait pas à le tester d'avance et ne le perde jamais.
+func equip(item: Item, emplacement := "") -> Item:
 	if item == null:
 		return null
-	if item.base == null or not SLOTS.has(item.base.slot):
+	var cible := emplacement if not emplacement.is_empty() else EquipmentSlots.free_for(item, equipment)
+	if cible.is_empty() or not EquipmentSlots.accepts(cible, item):
 		return item
-	var ancien: Item = equipment.get(item.base.slot)
-	equipment[item.base.slot] = item
+	var ancien: Item = equipment.get(cible)
+	equipment[cible] = item
 	_after_equipment_change()
 	return ancien
 

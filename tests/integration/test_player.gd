@@ -202,3 +202,78 @@ func test_placer_un_point_ne_casse_pas_les_barres() -> void:
 	_p.spend_point("strength")
 	assert_eq(_p.health, 10.0, "la vie courante ne bouge pas")
 	assert_lt(_p.health, _p.stats.max_health, "mais le plafond a monté")
+
+
+# --------------------------------------------------------------------------
+# Emplacements et familles (jalon 4)
+# --------------------------------------------------------------------------
+
+## Une base fabriquée en mémoire : les bases des dix familles arrivent à l'étape
+## suivante du jalon, la règle d'équipement doit tenir avant elles.
+func _bague(nom: String) -> Item:
+	var base := ItemBase.new()
+	base.id = "test_" + nom
+	base.family = "ring"
+	base.display_name = nom
+	base.kind = "sword"
+	return Item.new(base)
+
+
+## Le défaut que le jalon 4 vient corriger : avant, le second anneau écrasait le
+## premier — silencieusement, puisque rien ne disait que le doigt était pris.
+func test_deux_anneaux_tiennent_sur_deux_doigts() -> void:
+	var a := _bague("un")
+	var b := _bague("deux")
+	assert_null(_p.equip(a), "rien à remplacer")
+	assert_null(_p.equip(b), "le second n'en remplace aucun")
+	assert_eq(_p.equipped("ring_left"), a)
+	assert_eq(_p.equipped("ring_right"), b)
+	assert_eq(_p.equipment.size(), 2)
+
+
+## Lâché sur un emplacement précis, l'objet y va — même si l'autre doigt est
+## libre. Sans ça, le panneau ne pourrait pas viser la main droite.
+func test_un_emplacement_impose_est_respecte() -> void:
+	var a := _bague("un")
+	_p.equip(a, "ring_right")
+	assert_eq(_p.equipped("ring_right"), a)
+	assert_null(_p.equipped("ring_left"), "le doigt gauche est resté libre")
+
+
+func test_un_emplacement_impose_de_la_mauvaise_famille_est_refuse() -> void:
+	var a := _bague("un")
+	assert_eq(_p.equip(a, "amulet"), a, "rendu tel quel, jamais perdu")
+	assert_eq(_p.equipment.size(), 0)
+
+
+func test_un_objet_sans_famille_est_rendu_intact() -> void:
+	var base := ItemBase.new()
+	base.family = ""
+	var caillou := Item.new(base)
+	assert_eq(_p.equip(caillou), caillou)
+	assert_eq(_p.equipment.size(), 0)
+
+
+## Les deux doigts pris, on remplace celui de gauche et l'ancien revient à
+## l'appelant : c'est lui qui décide s'il retourne au sac ou au sol.
+func test_le_troisieme_anneau_rend_celui_qu_il_remplace() -> void:
+	var a := _bague("un")
+	_p.equip(a)
+	_p.equip(_bague("deux"))
+	assert_eq(_p.equip(_bague("trois")), a, "le premier doigt est rendu")
+	assert_eq(_p.equipment.size(), 2, "toujours deux anneaux portés")
+
+
+## Les dix emplacements entrent tous dans le calcul, pas seulement les deux
+## d'avant : un bonus porté à un doigt doit se voir sur la fiche.
+func test_un_anneau_compte_dans_la_fiche() -> void:
+	var base := ItemBase.new()
+	base.id = "test_anneau_armure"
+	base.family = "ring"
+	base.implicit_stat = "armor"
+	base.implicit_value = 12.0
+	var avant := _p.stats.armor
+	_p.equip(Item.new(base))
+	assert_eq(_p.stats.armor, avant + 12.0, "l'implicite de l'anneau est entré")
+	_p.unequip("ring_left")
+	assert_eq(_p.stats.armor, avant, "et il repart avec lui")

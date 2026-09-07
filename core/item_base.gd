@@ -30,8 +30,13 @@ extends Resource
 ## portée ne peuvent pas diverger.
 @export var kind: String = "sword"
 
-## Emplacement d'équipement. Vide pour un objet qui ne s'équipe pas.
-@export var slot: String = "weapon"
+## La **famille** d'équipement : à quel genre d'objet celui-ci appartient.
+## Vide pour un objet qui ne s'équipe pas.
+##
+## Une famille et non un emplacement, et le champ s'appelait `slot` jusqu'au
+## jalon 4. Un anneau est de famille « ring » et le personnage a deux doigts :
+## c'est EquipmentSlots qui décide auquel des deux il va, pas la base.
+@export var family: String = "weapon"
 
 ## Encombrement dans le sac, en cases : colonnes × lignes. C'est la règle de
 ## Path of Exile et de Hero Siege — une épée mange une colonne sur trois lignes,

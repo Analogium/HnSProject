@@ -18,7 +18,7 @@ extends Resource
 ## Vide = partout. Utile pour un affixe volontairement universel, et ça évite
 ## d'avoir à énumérer les emplacements sur chaque nouvelle ligne du jour où il y
 ## en aura huit.
-@export var slots: PackedStringArray = PackedStringArray()
+@export var families: PackedStringArray = PackedStringArray()
 
 ## Le champ de CharacterStats touché. Doit exister : voir StatMod.LABELS.
 @export var stat: String = "attack_damage"
@@ -39,9 +39,9 @@ extends Resource
 
 
 func fits(base: ItemBase) -> bool:
-	if slots.is_empty():
+	if families.is_empty():
 		return true
-	return base != null and slots.has(base.slot)
+	return base != null and families.has(base.family)
 
 
 func roll(rng: RandomNumberGenerator) -> StatMod:
