@@ -8,6 +8,7 @@ id = "casque"
 display_name = "Casque"
 kind = "helmet"
 family = "helmet"
+tags = PackedStringArray("helmet", "armour")
 grid_size = Vector2i(2, 2)
 implicit_stat = "max_health"
 implicit_percent = false

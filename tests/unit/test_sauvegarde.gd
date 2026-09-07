@@ -236,3 +236,56 @@ func test_le_fichier_de_reference_se_relit() -> void:
 	assert_ne(p.sac.index_at(Vector2i(3, 1)), Inventory.EMPTY, "l'épée à sa place")
 	assert_eq(p.equipement["chest"].base.id, "plastron")
 	assert_eq(p.equipement["chest"].explicits[0].mode, StatMod.Mode.PERCENT)
+	# Une version 1 ne dit pas d'où venaient ses objets. Ils valent 1, et pas un
+	# niveau déduit du personnage : ce serait inventer.
+	assert_eq(p.equipement["chest"].item_level, 1, "un objet de version 1 vaut le niveau 1")
+	for pose in p.sac.placed:
+		assert_eq(pose.data.item_level, 1)
+
+
+# --------------------------------------------------------------------------
+# Le niveau d'objet et la version 2 (jalon 5)
+# --------------------------------------------------------------------------
+
+## Le niveau est posé à la chute et ne bouge plus : il doit donc traverser le
+## disque intact. Sans lui, un objet rechargé perdrait ce qui dit ce qu'il a pu
+## recevoir comme tiers, et deux objets identiques à l'écran n'auraient pas la
+## même histoire.
+func test_le_niveau_d_objet_survit_a_l_aller_retour() -> void:
+	var p := Personnage.nouveau("Niveaux", 0)
+	p.sac.place(Item.new(ItemCatalog.by_id("epee"), [], 42), Vector2i(0, 0))
+	p.equipement["chest"] = Item.new(ItemCatalog.by_id("plastron"), [], 28)
+
+	var relu := Personnage.depuis_dict(p.vers_dict())
+	assert_not_null(relu)
+	assert_eq(relu.sac.placed[0].data.item_level, 42, "l'épée garde son niveau")
+	assert_eq(relu.equipement["chest"].item_level, 28, "le plastron aussi")
+
+
+## Le format qu'on écrit aujourd'hui, figé dans le dépôt à côté de celui d'hier.
+## Le fichier de version 1 prouve qu'on lit encore les sauvegardes des joueurs ;
+## celui-ci prouve que le champ qu'on vient d'ajouter porte bien le nom qu'on
+## croit — un renommage des deux côtés à la fois passerait l'aller-retour.
+func test_le_fichier_de_reference_v2_se_relit() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v2.json", FileAccess.READ)
+	assert_not_null(fichier, "le fichier de référence est bien dans le dépôt")
+	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
+	fichier.close()
+
+	var p := Personnage.depuis_dict(contenu)
+	assert_not_null(p, "une sauvegarde de version 2 se lit")
+	assert_eq(p.nom, "Brenna")
+	assert_eq(p.equipement["chest"].item_level, 28, "le niveau écrit dans le fichier")
+	var niveaux := {}
+	for pose in p.sac.placed:
+		niveaux[pose.data.base.id] = pose.data.item_level
+	assert_eq(niveaux["epee"], 42)
+	assert_eq(niveaux["baguette"], 12)
+
+
+## La version écrite est bien celle qu'on annonce, et pas un numéro laissé
+## derrière : un fichier neuf marqué « version 1 » se relirait aujourd'hui et
+## deviendrait indéchiffrable le jour où la version 1 cessera d'être lue.
+func test_ce_qu_on_ecrit_porte_la_version_courante() -> void:
+	assert_eq(Personnage.nouveau("Version", 0).vers_dict()["version"], Personnage.VERSION)
+	assert_true(Personnage.VERSIONS_LUES.has(Personnage.VERSION), "on sait relire ce qu'on écrit")

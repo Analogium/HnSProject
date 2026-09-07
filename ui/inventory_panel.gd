@@ -85,6 +85,10 @@ const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
 ## deux codes pour une seule idée.
 const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
 const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
+## Le niveau de l'objet, sous son nom. Plus effacé que l'implicite : c'est une
+## étiquette, pas une ligne de statistique, et il ne doit pas se lire comme un
+## bonus de plus.
+const TIP_LEVEL := Color(0.46, 0.44, 0.52)
 const TIP_EXPLICIT := Color(0.55, 0.75, 1.0)
 const TIP_PAD := 5.0
 const TIP_LINE := 9.0
@@ -682,19 +686,24 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 		return
 
 	var titre := item.display_name()
+	# Toujours affiché, même sur un objet blanc : c'est ce qui décide si on le
+	# garde. Les tiers qu'il a permis de tirer, eux, se montreront sur Alt.
+	var niveau := "niveau d'objet %d" % item.item_level
 	var implicite := item.implicit_line()
 	var explicites := item.explicit_lines()
 
 	var w := maxf(TIP_MIN_W, font.get_string_size(
 		titre, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
+	w = maxf(w, font.get_string_size(niveau, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	for ligne in explicites:
 		w = maxf(w, font.get_string_size(ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	if not implicite.is_empty():
 		w = maxf(w, font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
 
+	# Le titre et le niveau, puis une ligne par affixe.
 	var n := explicites.size() + (1 if not implicite.is_empty() else 0)
-	var h := TIP_PAD * 2.0 + TIP_LINE + float(n) * TIP_LINE
+	var h := TIP_PAD * 2.0 + TIP_LINE * 2.0 + float(n) * TIP_LINE
 	# Le trait de séparation, quand il y a les deux sortes de lignes à séparer.
 	var separe := not implicite.is_empty() and not explicites.is_empty()
 	if separe:
@@ -713,6 +722,9 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
 	draw_string(font, Vector2(r.position.x + TIP_PAD, y), titre,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE, item.color())
+	y += TIP_LINE
+	draw_string(font, Vector2(r.position.x + TIP_PAD, y), niveau,
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 	if not implicite.is_empty():
 		y += TIP_LINE
 		draw_string(font, Vector2(r.position.x + TIP_PAD, y), implicite,

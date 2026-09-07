@@ -8,6 +8,7 @@ id = "bottes"
 display_name = "Bottes"
 kind = "boots"
 family = "boots"
+tags = PackedStringArray("boots", "armour")
 grid_size = Vector2i(2, 2)
 implicit_stat = "move_speed"
 implicit_percent = false

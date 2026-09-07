@@ -56,6 +56,18 @@ extends Resource
 
 @export_group("Combat")
 @export var attack_damage: float = 12.0
+## Les dégâts d'un tir, avant les résistances de la cible. Distinct
+## d'attack_damage, et pas seulement par symétrie : c'est cette séparation qui
+## permet à une arme d'incantation de ne rien devoir aux affixes de mêlée.
+##
+## Zéro par défaut, comme le mana : un grunt ne lance rien, et lui donner des
+## dégâts de sort silencieusement lui offrirait une attaque que personne n'a
+## décidée. C'est la fiche du joueur qui la pose.
+##
+## Avant lui, le tir lisait `Player.bolt_damage` — un export du nœud, absent de
+## la fiche, donc qu'aucun objet ne pouvait toucher. Une baguette n'avait alors
+## aucun affixe offensif à recevoir.
+@export var spell_damage: float = 0.0
 ## Le temps de base entre deux coups, propre à l'archétype ou à l'arme.
 ## Distinct de attack_speed, qui est le multiplicateur porté par le personnage :
 ## l'un est le rythme de l'outil, l'autre l'adresse de celui qui le tient.

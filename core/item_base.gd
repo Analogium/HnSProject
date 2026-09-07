@@ -38,6 +38,28 @@ extends Resource
 ## c'est EquipmentSlots qui décide auquel des deux il va, pas la base.
 @export var family: String = "weapon"
 
+## Ce que la base est, au-delà de l'endroit où elle se porte : une épée est une
+## arme *de mêlée*, une baguette une arme *d'incantation*, un plastron une
+## *armure*. C'est là-dessus que les affixes filtrent.
+##
+## Pourquoi pas la famille, qui existe déjà : parce qu'elle ne sépare pas l'épée
+## de la baguette — les deux sont de famille `weapon`, et **aucun filtre écrit
+## sur les familles ne peut donner des dégâts d'attaque à l'une et pas à
+## l'autre**. C'est le cas qui a fait éclater la règle, comme les deux anneaux
+## avaient fait éclater `slot` au jalon 4.
+##
+## Pourquoi pas l'identifiant de la base : chaque base nouvelle obligerait alors
+## à rouvrir tous les `.tres` d'affixes pour l'y ajouter, et l'oubli donnerait
+## une base qui ne tire rien sans que rien ne le signale. Une base qui a besoin
+## de son propre identifiant dans un affixe est une base à qui il manque une
+## étiquette.
+##
+## **La famille en fait partie**, et c'est la première : un affixe peut donc
+## viser « les bottes » sans vocabulaire supplémentaire, et les affixes écrits
+## avant le jalon 5 continuent de tomber sur exactement les mêmes objets. Le
+## test du catalogue vérifie que chaque base porte bien la sienne.
+@export var tags: PackedStringArray = PackedStringArray()
+
 ## Encombrement dans le sac, en cases : colonnes × lignes. C'est la règle de
 ## Path of Exile et de Hero Siege — une épée mange une colonne sur trois lignes,
 ## un plastron deux sur trois. Le sac ne compte donc pas les objets mais la
@@ -46,6 +68,15 @@ extends Resource
 ## Vector2i et non deux entiers : c'est un couple qu'on lit, teste et décale
 ## toujours d'un bloc.
 @export var grid_size: Vector2i = Vector2i(1, 1)
+
+## Le niveau de zone à partir duquel cette base peut tomber. Une seule borne,
+## basse : au-dessus, la base reste dans le tirage — c'est le palier suivant de
+## sa lignée qui la chassera, pas un plafond écrit ici.
+##
+## Toutes les bases du jalon 4 valent 1 : elles sont le premier palier de leur
+## lignée, et le jeu doit pouvoir tout habiller dès la première zone. Ce sont les
+## paliers de l'étape 5 qui donneront ses valeurs à ce champ.
+@export var niveau_requis: int = 1
 
 @export_group("Implicite")
 ## Le bonus que porte *toute* la famille, sans tirage : une épée fait des

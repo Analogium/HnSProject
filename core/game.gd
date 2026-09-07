@@ -15,6 +15,15 @@ var rng := RandomNumberGenerator.new()
 ## exactement ce qu'un changement de scène détruit.
 var personnage: Personnage
 
+## Le niveau de la zone en cours : celui de ses ennemis, et celui des objets qui
+## y tombent. Sur l'autoload pour la même raison que `personnage` — il doit
+## survivre au changement de scène, et c'est l'écran de réglage de génération qui
+## le pose avant d'entrer dans la zone.
+##
+## 1 par défaut, et les scènes de réglage n'y touchent pas : l'arène, le banc de
+## stress et la galerie n'ont pas de niveau et n'ont rien à en savoir.
+var niveau_de_zone := 1
+
 ## « Quelqu'un s'apprête à partir, écris maintenant. » Émis à la fermeture de la
 ## fenêtre, au retour au menu et à la sortie du jeu.
 ##

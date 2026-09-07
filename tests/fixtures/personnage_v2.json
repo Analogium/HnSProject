@@ -1,0 +1,42 @@
+{
+	"version": 2,
+	"id": "p_reference_v2",
+	"nom": "Brenna",
+	"silhouette": 2,
+	"cree_le": "2026-09-06",
+	"joue_le": "2026-09-07",
+	"niveau": 7,
+	"experience": 240,
+	"attributs": {
+		"strength": 8,
+		"dexterity": 4,
+		"intelligence": 6
+	},
+	"points_a_placer": 3,
+	"sac": [
+		{
+			"base": "epee",
+			"niveau": 42,
+			"cellule": [3, 1],
+			"affixes": [
+				{ "stat": "attack_damage", "mode": 0, "valeur": 6.0 },
+				{ "stat": "attack_speed", "mode": 1, "valeur": 8.0 }
+			]
+		},
+		{
+			"base": "baguette",
+			"niveau": 12,
+			"cellule": [0, 0],
+			"affixes": []
+		}
+	],
+	"equipement": {
+		"chest": {
+			"base": "plastron",
+			"niveau": 28,
+			"affixes": [
+				{ "stat": "max_health", "mode": 1, "valeur": 12.0 }
+			]
+		}
+	}
+}

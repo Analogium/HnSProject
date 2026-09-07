@@ -11,14 +11,27 @@ extends Resource
 
 @export var id: String = ""
 
-## Les emplacements où cet affixe peut sortir. Une armure ne donne pas d'allonge,
-## une épée ne donne pas de PV : sans ce filtre, tous les objets se valent et le
-## type de base ne veut plus rien dire.
+## Les étiquettes qu'une base doit porter pour recevoir cet affixe : **une seule
+## suffit**. Une armure ne donne pas d'allonge, une épée ne donne pas de PV —
+## sans ce filtre, tous les objets se valent et le type de base ne veut plus rien
+## dire.
 ##
-## Vide = partout. Utile pour un affixe volontairement universel, et ça évite
-## d'avoir à énumérer les emplacements sur chaque nouvelle ligne du jour où il y
-## en aura huit.
-@export var families: PackedStringArray = PackedStringArray()
+## Des étiquettes et non des familles ; le champ s'appelait `families` jusqu'au
+## jalon 5. Une épée et une baguette sont toutes deux de famille `weapon`, et il
+## fallait pouvoir donner les dégâts d'attaque à l'une seulement. Voir
+## `ItemBase.tags`.
+##
+## Vide = partout, sous réserve d'`exclut`. Utile pour un affixe volontairement
+## universel — les résistances — et ça évite d'énumérer trente bases.
+@export var tags: PackedStringArray = PackedStringArray()
+
+## Les étiquettes qui interdisent cet affixe, quoi qu'en dise `tags` : une seule
+## suffit à refuser, et **elle l'emporte**.
+##
+## C'est elle qui écrit « partout sauf sur les armes » en une ligne au lieu de
+## neuf, et surtout : une base ajoutée plus tard hérite du refus sans qu'on ait
+## à y penser, là où une liste d'autorisations l'aurait oubliée en silence.
+@export var exclut: PackedStringArray = PackedStringArray()
 
 ## Le champ de CharacterStats touché. Doit exister : voir StatMod.LABELS.
 @export var stat: String = "attack_damage"
@@ -38,10 +51,21 @@ extends Resource
 @export var weight: int = 10
 
 
+## Le refus d'abord : `exclut` l'emporte sur `tags`, sinon « partout sauf les
+## armes » se lirait « partout, y compris les armes qui portent une étiquette
+## autorisée ».
 func fits(base: ItemBase) -> bool:
-	if families.is_empty():
+	if base == null:
+		return false
+	for t in exclut:
+		if base.tags.has(t):
+			return false
+	if tags.is_empty():
 		return true
-	return base != null and families.has(base.family)
+	for t in tags:
+		if base.tags.has(t):
+			return true
+	return false
 
 
 func roll(rng: RandomNumberGenerator) -> StatMod:

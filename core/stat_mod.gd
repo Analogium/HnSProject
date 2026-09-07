@@ -37,6 +37,7 @@ const LABELS := {
 	"res_necrotic": "rés. nécrotique",
 	"res_holy": "rés. sacré",
 	"attack_damage": "dégâts",
+	"spell_damage": "dégâts de sort",
 	"attack_cooldown": "temps de recharge",
 	"attack_speed": "vitesse d'attaque",
 	"cast_speed": "vitesse d'incantation",

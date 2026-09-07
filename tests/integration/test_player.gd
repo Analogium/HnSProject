@@ -4,6 +4,9 @@ extends GutTest
 ## recalcul de la fiche. Rien de tout ça n'existe hors scène.
 
 var _p: Player
+## Retenu et pas seulement branché : le test des dégâts de sort a besoin d'aller
+## regarder le tir qui vient d'en sortir.
+var _tirs: Node2D
 
 
 func before_each() -> void:
@@ -11,9 +14,9 @@ func before_each() -> void:
 	add_child_autofree(_p)
 	# Un parent dédié pour les tirs : sans lui ils naissent sous le script de
 	# test et y restent après coup, ce que GUT signale en enfants non libérés.
-	var tirs := Node2D.new()
-	add_child_autofree(tirs)
-	_p.projectile_parent = tirs
+	_tirs = Node2D.new()
+	add_child_autofree(_tirs)
+	_p.projectile_parent = _tirs
 	await wait_physics_frames(1)
 
 
@@ -298,3 +301,23 @@ func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
 
 	_p._regen(100.0)
 	assert_eq(_p.health, _p.stats.max_health, "la régénération s'arrête pile au plafond")
+
+
+## Les dégâts du tir viennent de la fiche et non d'un export du nœud. C'est
+## cette seule ligne qui rend une arme d'incantation atteignable par un objet :
+## tant que le tir lisait `bolt_damage`, aucun affixe ne pouvait le toucher, et
+## une baguette n'avait rien d'offensif à recevoir.
+func test_le_tir_lit_les_degats_de_sort_de_la_fiche() -> void:
+	_p.stats.spell_damage = 33.0
+	_p._shoot()
+	assert_eq(_tirs.get_child_count(), 1, "un tir est parti")
+	var tir := _tirs.get_child(0) as Projectile
+	assert_not_null(tir)
+	assert_eq(tir._damage, 33.0, "les dégâts sortent de la fiche")
+
+
+## Et la fiche de départ en porte, sinon le tir ne ferait rien du tout — un
+## défaut à zéro sur une statistique neuve est le genre de chose qu'on ne voit
+## qu'en jouant, et seulement si on pense à tirer.
+func test_la_fiche_du_joueur_porte_des_degats_de_sort() -> void:
+	assert_gt(_p.stats.spell_damage, 0.0)

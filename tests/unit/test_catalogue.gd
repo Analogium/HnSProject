@@ -41,7 +41,7 @@ func test_le_butin_tire_dans_le_catalogue() -> void:
 	Game.rng.seed = 31337
 	var bases_vues := {}
 	for i in 400:
-		var item := LootTable.roll(0)
+		var item := LootTable.roll(0, 1)
 		if item != null:
 			bases_vues[item.base.id] = true
 			assert_not_null(
@@ -109,3 +109,60 @@ func test_chaque_famille_a_de_quoi_tirer_des_affixes() -> void:
 			"« %s » (famille %s) n'a que %d affixe(s) possible(s)"
 				% [base.display_name, base.family, possibles]
 		)
+
+
+# --------------------------------------------------------------------------
+# Les étiquettes (jalon 5)
+# --------------------------------------------------------------------------
+
+## La famille est la première étiquette de chaque base. C'est ce qui laisse un
+## affixe viser « les bottes » sans vocabulaire supplémentaire — et c'est ce qui
+## a rendu la migration du jalon 5 mécanique. L'oublier sur une base nouvelle la
+## rendrait invisible à tous les affixes écrits sur sa famille, sans un mot.
+func test_chaque_base_porte_sa_famille_en_etiquette() -> void:
+	for base in ItemCatalog.ALL:
+		assert_false(
+			base.tags.is_empty(),
+			"« %s » n\'a aucune étiquette : elle ne recevra que les affixes universels"
+				% base.display_name
+		)
+		assert_true(
+			base.tags.has(base.family),
+			"« %s » ne porte pas sa famille « %s » en étiquette"
+				% [base.display_name, base.family]
+		)
+
+
+## Une étiquette écrite sur un affixe et sur aucune base est une règle qui ne
+## s\'applique jamais : l\'affixe paraît ciblé et sort partout, ou ne sort nulle
+## part. Les deux se découvrent en jouant, jamais en lisant.
+func test_aucune_etiquette_d_affixe_ne_vise_le_vide() -> void:
+	var portees := {}
+	for base in ItemCatalog.ALL:
+		for t in base.tags:
+			portees[t] = true
+	for a in ItemAffixPool.ALL:
+		for t in a.tags:
+			assert_true(portees.has(t), "l\'affixe « %s » vise « %s », que personne ne porte" % [a.id, t])
+		for t in a.exclut:
+			assert_true(portees.has(t), "l\'affixe « %s » exclut « %s », que personne ne porte" % [a.id, t])
+
+
+## Ce que le catalogue laisse tomber dépend du niveau de la zone. Toutes les
+## bases du jalon 4 valent 1 : elles habillent la première zone, et ce sont les
+## paliers de l'étape 5 qui creuseront cet écart.
+func test_les_bases_disponibles_suivent_le_niveau_de_la_zone() -> void:
+	assert_eq(ItemCatalog.disponibles(0).size(), 0, "rien avant le niveau 1")
+	assert_eq(
+		ItemCatalog.disponibles(1).size(), ItemCatalog.ALL.size(),
+		"tout est disponible dès la première zone"
+	)
+	for base in ItemCatalog.disponibles(60):
+		assert_lte(base.niveau_requis, 60, "« %s » ne devrait pas être là" % base.display_name)
+
+
+## Un niveau requis à zéro ou négatif rendrait une base disponible dans une zone
+## qui n'existe pas, et surtout : il ne veut rien dire.
+func test_aucune_base_n_a_un_niveau_requis_absurde() -> void:
+	for base in ItemCatalog.ALL:
+		assert_gte(base.niveau_requis, 1, "« %s »" % base.display_name)

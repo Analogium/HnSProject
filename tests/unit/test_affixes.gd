@@ -83,7 +83,7 @@ func test_pas_de_ligne_en_double_sur_un_objet() -> void:
 func test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne() -> void:
 	var vus := {}
 	for a in ItemAffixPool.ALL:
-		var cle := "%s/%s/%s" % [a.stat, a.percent, a.families]
+		var cle := "%s/%s/%s/%s" % [a.stat, a.percent, a.tags, a.exclut]
 		assert_false(vus.has(cle), "%s fait doublon avec %s" % [a.id, vus.get(cle, "")])
 		vus[cle] = a.id
 
@@ -95,3 +95,88 @@ func test_la_rarete_se_deduit_du_nombre_d_affixes() -> void:
 	assert_eq(Item.new(base, un).rarity(), Item.Rarity.MAGIQUE)
 	var trois: Array[StatMod] = [un[0], un[0], un[0]]
 	assert_eq(Item.new(base, trois).rarity(), Item.Rarity.RARE)
+
+
+# --------------------------------------------------------------------------
+# Les étiquettes (jalon 5)
+# --------------------------------------------------------------------------
+
+## Le cas qui a fait passer le filtre des familles aux étiquettes. Une épée et
+## une baguette sont toutes deux de famille `weapon` : tant que le filtre lisait
+## la famille, il était **impossible** de donner les dégâts d'attaque à l'une et
+## pas à l'autre, et une baguette sortait « acérée ».
+func test_une_baguette_ne_tire_jamais_d_affixe_de_melee() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	var interdits := ["attack_damage", "attack_speed", "attack_range"]
+	var baguette: ItemBase = load("res://resources/items/baguette.tres")
+	for i in 1000:
+		for m in ItemAffixPool.roll(rng, baguette):
+			assert_false(
+				m.stat in interdits,
+				"une baguette a tiré « %s », qui appartient au corps à corps" % m.stat
+			)
+
+
+## L'épée, elle, doit continuer de les recevoir : un filtre qui ne laisse plus
+## rien passer passerait ce test-là sans rien dire.
+func test_une_epee_tire_encore_ses_affixes_de_melee() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 909
+	var epee: ItemBase = load("res://resources/items/epee.tres")
+	var vus := {}
+	for i in 600:
+		for m in ItemAffixPool.roll(rng, epee):
+			vus[m.stat] = true
+	for attendu in ["attack_damage", "attack_speed", "attack_range"]:
+		assert_true(vus.has(attendu), "l'épée tire encore « %s »" % attendu)
+
+
+## Une statistique qui ne se trouve qu'à un endroit fait de cet endroit une
+## décision. La vitesse de déplacement est la seule du jalon 4 à être passée
+## d'un emplacement à deux ; elle revient aux bottes seules.
+func test_la_vitesse_de_deplacement_ne_sort_que_sur_des_bottes() -> void:
+	for base in ItemCatalog.ALL:
+		for a in ItemAffixPool.eligible(base):
+			if a.stat != "move_speed":
+				continue
+			assert_eq(
+				base.family, "boots",
+				"« %s » peut tirer de la vitesse de déplacement" % base.display_name
+			)
+
+
+## Le refus l'emporte sur l'autorisation, sinon « partout sauf les armes » se
+## lirait « partout, y compris les armes qui portent une étiquette autorisée ».
+func test_une_exclusion_l_emporte_sur_une_etiquette_autorisee() -> void:
+	var epee: ItemBase = load("res://resources/items/epee.tres")
+	var a := ItemAffix.new()
+	a.tags = PackedStringArray(["melee"])
+	assert_true(a.fits(epee), "l'étiquette autorise")
+	a.exclut = PackedStringArray(["weapon"])
+	assert_false(a.fits(epee), "et l'exclusion referme")
+
+
+## C'est cette forme-là que prendront les résistances : rien à autoriser, une
+## seule chose à refuser, et toute base ajoutée plus tard en hérite sans qu'on y
+## pense.
+func test_un_affixe_sans_etiquette_sort_partout_sauf_ou_il_est_exclu() -> void:
+	var a := ItemAffix.new()
+	a.exclut = PackedStringArray(["weapon"])
+	var recus := 0
+	for base in ItemCatalog.ALL:
+		if a.fits(base):
+			recus += 1
+		else:
+			assert_true(base.tags.has("weapon"), "seule une arme est refusée")
+	assert_eq(recus, ItemCatalog.ALL.size() - 2, "les huit bases qui ne sont pas des armes")
+
+
+## Une base sans étiquette ne recevrait que les affixes universels, et le
+## constater demanderait de ramasser cent objets.
+func test_une_base_sans_etiquette_ne_recoit_pas_les_affixes_cibles() -> void:
+	var nue := ItemBase.new()
+	var a := ItemAffix.new()
+	a.tags = PackedStringArray(["melee"])
+	assert_false(a.fits(nue))
+	assert_false(a.fits(null), "et pas de base du tout n'est pas « partout »")

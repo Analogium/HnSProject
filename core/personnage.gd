@@ -15,10 +15,23 @@ extends RefCounted
 ## quand on range un fichier ailleurs, et **exécute du code** au chargement. Une
 ## sauvegarde est un fichier que le joueur peut recevoir de quelqu'un d'autre.
 
-## Le numéro de format. Il ne sert qu'à refuser proprement ce qu'on ne sait pas
-## lire : tant qu'il n'y a qu'une version, un numéro inconnu est refusé et le
-## personnage reste dans la liste, grisé. Jamais deviner.
-const VERSION := 1
+## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
+## fichier : ici, le niveau des objets, au jalon 5.
+const VERSION := 2
+
+## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité.
+##
+## Le code refusait tout ce qui n'était pas exactement `VERSION` — la bonne
+## règle tant qu'il n'existait qu'un format. Monter le numéro sans écrire la
+## lecture de l'ancien aurait fait passer tous les personnages existants en
+## « illisible » d'un coup, grisés dans l'écran de sélection, alors que leurs
+## fichiers sont intacts. C'est la faute la plus coûteuse du jalon, et elle ne
+## se serait vue qu'au premier lancement après la mise à jour.
+##
+## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1.
+## On ne sait pas dans quelle zone ils sont tombés, et prétendre le contraire
+## serait inventer. Un numéro **inconnu** reste refusé — jamais deviner.
+const VERSIONS_LUES := [1, 2]
 
 ## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine
 ## sur une ligne, et qu'un nom de deux cents caractères y déborderait sur le
@@ -148,8 +161,8 @@ func vers_dict() -> Dictionary:
 ## résultats possibles.
 static func depuis_dict(source: Dictionary) -> Personnage:
 	var version := _entier(source, "version", 0)
-	if version != VERSION:
-		push_warning("Sauvegarde de version %d, attendu %d : refusée." % [version, VERSION])
+	if not VERSIONS_LUES.has(version):
+		push_warning("Sauvegarde de version %d, connues %s : refusée." % [version, VERSIONS_LUES])
 		return null
 
 	var p := Personnage.new()
@@ -199,7 +212,7 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 	var affixes := []
 	for m in item.explicits:
 		affixes.append({"stat": m.stat, "mode": int(m.mode), "valeur": m.value})
-	return {"base": item.base.id, "affixes": affixes}
+	return {"base": item.base.id, "niveau": item.item_level, "affixes": affixes}
 
 
 ## Renvoie null quand la base n'existe plus dans le projet. L'objet est alors
@@ -223,7 +236,11 @@ static func _item_depuis_dict(source: Variant) -> Item:
 			continue
 		var mode := StatMod.Mode.PERCENT if _entier(a as Dictionary, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
 		explicits.append(StatMod.new(stat, mode, _reel(a as Dictionary, "valeur", 0.0)))
-	return Item.new(base, explicits)
+	# Absent, il vaut 1 : c'est le cas de tous les objets d'une sauvegarde de
+	# version 1, et il n'y a pas de version à tester pour le savoir — un champ
+	# manquant vaut son défaut, ici comme partout ailleurs dans cette fonction.
+	var niveau := _entier(source as Dictionary, "niveau", 1)
+	return Item.new(base, explicits, niveau)
 
 
 static func _cellule(source: Variant) -> Vector2i:

@@ -8,6 +8,7 @@ id = "anneau"
 display_name = "Anneau"
 kind = "ring"
 family = "ring"
+tags = PackedStringArray("ring", "jewellery")
 grid_size = Vector2i(1, 1)
 implicit_stat = "crit_chance"
 implicit_percent = false

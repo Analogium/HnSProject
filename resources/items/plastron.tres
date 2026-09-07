@@ -8,6 +8,7 @@ id = "plastron"
 display_name = "Plastron"
 kind = "torso"
 family = "chest"
+tags = PackedStringArray("chest", "armour")
 grid_size = Vector2i(2, 3)
 implicit_stat = "max_health"
 implicit_percent = false

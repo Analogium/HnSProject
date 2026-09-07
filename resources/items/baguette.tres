@@ -8,6 +8,7 @@ id = "baguette"
 display_name = "Baguette"
 kind = "wand"
 family = "weapon"
+tags = PackedStringArray("weapon", "caster")
 grid_size = Vector2i(1, 2)
 implicit_stat = "cast_speed"
 implicit_percent = true

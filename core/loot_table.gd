@@ -33,10 +33,15 @@ static func quantity_for(affix_count: int) -> float:
 ## L'objet rendu est un exemplaire neuf, avec ses propres affixes : jamais la
 ## ressource du disque, qui est partagée par toutes les épées du jeu et ne doit
 ## pas être écrite.
-static func roll(affix_count: int) -> Item:
-	if ItemCatalog.ALL.is_empty():
+## `niveau` est celui de la zone : il décide de ce qui peut tomber, et c'est lui
+## que l'objet portera. Un argument et non une lecture de `Game` : le tirage est
+## la seule chose de ce fichier qui soit globale, et elle est déjà justifiée
+## au-dessus.
+static func roll(affix_count: int, niveau: int) -> Item:
+	var bases := ItemCatalog.disponibles(niveau)
+	if bases.is_empty():
 		return null
 	if Game.rng.randf() >= BASE_CHANCE * quantity_for(affix_count):
 		return null
-	var base: ItemBase = ItemCatalog.ALL[Game.rng.randi() % ItemCatalog.ALL.size()]
-	return Item.new(base, ItemAffixPool.roll(Game.rng, base))
+	var base: ItemBase = bases[Game.rng.randi() % bases.size()]
+	return Item.new(base, ItemAffixPool.roll(Game.rng, base), niveau)

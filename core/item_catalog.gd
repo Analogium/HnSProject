@@ -24,6 +24,22 @@ const ALL := [
 ]
 
 
+## Les bases qu'une zone de ce niveau peut lâcher. Ici et non dans LootTable :
+## c'est le catalogue qui sait ce qu'il contient, et la table de butin n'a qu'à
+## tirer dans ce qu'on lui donne.
+##
+## Une seule règle pour l'instant — le niveau requis de la base. L'étape 5 y
+## ajoutera celle qui compte vraiment : ne garder que les deux meilleurs paliers
+## de chaque lignée, sans quoi trente bases tirées à égalité donneraient une
+## chute utile sur cinq.
+static func disponibles(niveau: int) -> Array:
+	var out := []
+	for base in ALL:
+		if base.niveau_requis <= niveau:
+			out.append(base)
+	return out
+
+
 ## La base portant cet identifiant, ou null s'il n'existe plus. Le null n'est pas
 ## une erreur de programmation mais un cas de jeu : une sauvegarde peut contenir
 ## un objet dont la base a été retirée du projet depuis. L'appelant l'ignore,

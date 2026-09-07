@@ -90,8 +90,8 @@ const GROUPS := [
 	[
 		"OFFENSE",
 		[
-			"attack_damage", "attack_speed", "cast_speed", "attack_range",
-			"crit_chance", "crit_multiplier",
+			"attack_damage", "spell_damage", "attack_speed", "cast_speed",
+			"attack_range", "crit_chance", "crit_multiplier",
 		],
 	],
 	["DÉPLACEMENT", ["move_speed"]],

@@ -8,6 +8,7 @@ id = "epee"
 display_name = "Épée"
 kind = "sword"
 family = "weapon"
+tags = PackedStringArray("weapon", "melee", "blade")
 grid_size = Vector2i(1, 3)
 implicit_stat = "attack_damage"
 implicit_percent = false

@@ -42,7 +42,6 @@ const LEVEL_HEAL := 0.30
 ## Attaque à distance. Moins de dégâts que le corps à corps, mais elle
 ## n'oblige pas à entrer dans la mêlée : c'est le compromis à régler.
 @export var bolt_scene: PackedScene
-@export var bolt_damage: float = 7.0
 @export var bolt_cooldown: float = 0.30
 ## Le tir est un sort : il coûte du mana et sa cadence suit cast_speed, là où le
 ## coup d'épée est gratuit et suit attack_speed. C'est ce qui donne son rôle à la
@@ -188,7 +187,10 @@ func _shoot() -> void:
 	_set_mana(mana - bolt_mana_cost)
 	_bolt_cd = bolt_cooldown / maxf(stats.cast_speed, 0.1)
 	var parent := projectile_parent if projectile_parent != null else get_parent()
-	Projectile.spawn(parent, bolt_scene, global_position, facing, bolt_damage, self)
+	# Les dégâts viennent de la fiche et non d'un export du nœud : c'est ce qui
+	# les rend atteignables par un objet. Le coût et la cadence, eux, restent des
+	# réglages de l'attaque — aucun objet ne les touche encore.
+	Projectile.spawn(parent, bolt_scene, global_position, facing, stats.spell_damage, self)
 
 
 ## Vie et mana remontent en continu. Testé avant d'écrire : sans le test, chaque

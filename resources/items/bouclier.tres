@@ -8,6 +8,7 @@ id = "bouclier"
 display_name = "Bouclier"
 kind = "shield"
 family = "offhand"
+tags = PackedStringArray("offhand", "armour")
 grid_size = Vector2i(2, 2)
 implicit_stat = "armor"
 implicit_percent = false

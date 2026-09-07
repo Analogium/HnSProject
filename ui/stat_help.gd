@@ -44,6 +44,7 @@ const TEXTS := {
 	"res_holy": "Réduit les dégâts sacrés, en pourcentage direct.",
 
 	"attack_damage": "Les dégâts d'un coup d'épée, avant l'armure et les résistances de la cible.",
+	"spell_damage": "Les dégâts d'un tir, avant les résistances de la cible. L'armure ne s'y oppose pas — c'est ce qui fait tenir le tir face à une cible cuirassée.",
 	"attack_cooldown": "Le délai de base entre deux coups, avant la vitesse d'attaque.",
 	"attack_speed": "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation.",
 	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque.",

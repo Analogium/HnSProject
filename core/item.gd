@@ -30,10 +30,27 @@ var base: ItemBase
 ## plus ensuite : un objet est ce qu'il est.
 var explicits: Array[StatMod] = []
 
+## Le niveau de l'objet : celui de la zone où il est tombé, posé **une fois** et
+## jamais rejoué. C'est lui qui décidera des tiers d'affixes qu'il a pu recevoir
+## (étape 3), et lui qui permettra un jour à l'artisanat de relancer un objet
+## dans la réserve de *son* niveau plutôt que dans celle de la zone où l'on se
+## trouve.
+##
+## Le niveau du personnage n'y entre pas. Adossé à lui, le butin s'améliorerait
+## en jouant longtemps ; adossé à la zone, il s'améliore en allant là où c'est
+## dangereux — et c'est la seule des deux règles qui laisse une décision à
+## prendre.
+##
+## 1 par défaut : c'est ce que vaut un objet dont personne n'a dit d'où il
+## venait — un objet de test, ou un objet rechargé d'une sauvegarde écrite avant
+## que ce champ existe.
+var item_level: int = 1
 
-func _init(p_base: ItemBase, p_explicits: Array[StatMod] = []) -> void:
+
+func _init(p_base: ItemBase, p_explicits: Array[StatMod] = [], p_level: int = 1) -> void:
 	base = p_base
 	explicits = p_explicits
+	item_level = maxi(p_level, 1)
 
 
 ## La rareté se **déduit** du nombre d'affixes au lieu d'être tirée à part :

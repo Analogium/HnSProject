@@ -146,7 +146,7 @@ func report_kill(enemy: Enemy) -> void:
 ## Appelée uniquement depuis report_kill, donc jamais pour un vidage de zone ni
 ## pour le banc de mesure : ceux-là passent die(false).
 func _drop_loot(enemy: Enemy) -> void:
-	var item := LootTable.roll(enemy.affixes.size())
+	var item := LootTable.roll(enemy.affixes.size(), Game.niveau_de_zone)
 	if item == null:
 		return
 	GroundItem.spawn(loot_parent, enemy.global_position, item)
