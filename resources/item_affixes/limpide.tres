@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_wxxb7"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_warnl"]
+
+[sub_resource type="Resource" id="Resource_y4p43"]
+script = ExtResource("2_warnl")
+niveau_requis = 48
+min_value = 3.7
+max_value = 4.9
+
+[sub_resource type="Resource" id="Resource_jk4cd"]
+script = ExtResource("2_warnl")
+niveau_requis = 36
+min_value = 2.6
+max_value = 3.6
+
+[sub_resource type="Resource" id="Resource_3flfj"]
+script = ExtResource("2_warnl")
+niveau_requis = 24
+min_value = 1.7
+max_value = 2.5
+
+[sub_resource type="Resource" id="Resource_mvpda"]
+script = ExtResource("2_warnl")
+niveau_requis = 12
+max_value = 1.6
+
+[sub_resource type="Resource" id="Resource_4i02n"]
+script = ExtResource("2_warnl")
+min_value = 0.4
+max_value = 0.9
+
+[resource]
+script = ExtResource("1_wxxb7")
+id = "limpide"
+tags = PackedStringArray("caster", "belt", "jewellery")
+exclut = PackedStringArray()
+stat = "mana_regen"
+tiers = Array[ExtResource("2_warnl")]([SubResource("Resource_y4p43"), SubResource("Resource_jk4cd"), SubResource("Resource_3flfj"), SubResource("Resource_mvpda"), SubResource("Resource_4i02n")])
+arrondi = 0.1
+weight = 6

@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_4cskp"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_osveh"]
+
+[sub_resource type="Resource" id="Resource_tqtmy"]
+script = ExtResource("2_osveh")
+niveau_requis = 52
+min_value = 146.0
+max_value = 185.0
+
+[sub_resource type="Resource" id="Resource_pycbn"]
+script = ExtResource("2_osveh")
+niveau_requis = 43
+min_value = 114.0
+max_value = 145.0
+
+[sub_resource type="Resource" id="Resource_pnfvl"]
+script = ExtResource("2_osveh")
+niveau_requis = 34
+min_value = 87.0
+max_value = 113.0
+
+[sub_resource type="Resource" id="Resource_k0281"]
+script = ExtResource("2_osveh")
+niveau_requis = 26
+min_value = 64.0
+max_value = 86.0
+
+[sub_resource type="Resource" id="Resource_005oq"]
+script = ExtResource("2_osveh")
+niveau_requis = 19
+min_value = 45.0
+max_value = 63.0
+
+[sub_resource type="Resource" id="Resource_2rnrl"]
+script = ExtResource("2_osveh")
+niveau_requis = 12
+min_value = 30.0
+max_value = 44.0
+
+[sub_resource type="Resource" id="Resource_xq4l3"]
+script = ExtResource("2_osveh")
+niveau_requis = 6
+min_value = 18.0
+max_value = 29.0
+
+[sub_resource type="Resource" id="Resource_ibmg5"]
+script = ExtResource("2_osveh")
+min_value = 10.0
+max_value = 17.0
+
+[resource]
+script = ExtResource("1_4cskp")
+id = "fuyant"
+tags = PackedStringArray("light")
+exclut = PackedStringArray()
+stat = "evasion"
+tiers = Array[ExtResource("2_osveh")]([SubResource("Resource_tqtmy"), SubResource("Resource_pycbn"), SubResource("Resource_pnfvl"), SubResource("Resource_k0281"), SubResource("Resource_005oq"), SubResource("Resource_2rnrl"), SubResource("Resource_xq4l3"), SubResource("Resource_ibmg5")])
+weight = 9

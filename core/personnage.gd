@@ -210,8 +210,15 @@ static func depuis_dict(source: Dictionary) -> Personnage:
 ## du jour, et les rejouerait des mois plus tard.
 static func _item_vers_dict(item: Item) -> Dictionary:
 	var affixes := []
-	for m in item.explicits:
-		affixes.append({"stat": m.stat, "mode": int(m.mode), "valeur": m.value})
+	for r in item.explicits:
+		var entree := {"stat": r.mod.stat, "mode": int(r.mod.mode), "valeur": r.mod.value}
+		# La provenance n'est écrite que quand on l'a. Un objet relu d'une
+		# version 1 puis resauvegardé ne doit pas se voir attribuer un palier
+		# qu'il n'a jamais eu.
+		if r.connu():
+			entree["affixe"] = r.affix_id
+			entree["tier"] = r.tier
+		affixes.append(entree)
 	return {"base": item.base.id, "niveau": item.item_level, "affixes": affixes}
 
 
@@ -227,7 +234,7 @@ static func _item_depuis_dict(source: Variant) -> Item:
 		push_warning("Base d'objet inconnue « %s » : objet ignoré." % identifiant)
 		return null
 
-	var explicits: Array[StatMod] = []
+	var explicits: Array[RolledAffix] = []
 	for a in _liste((source as Dictionary).get("affixes")):
 		if not a is Dictionary:
 			continue
@@ -235,7 +242,16 @@ static func _item_depuis_dict(source: Variant) -> Item:
 		if stat.is_empty():
 			continue
 		var mode := StatMod.Mode.PERCENT if _entier(a as Dictionary, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
-		explicits.append(StatMod.new(stat, mode, _reel(a as Dictionary, "valeur", 0.0)))
+		var mod := StatMod.new(stat, mode, _reel(a as Dictionary, "valeur", 0.0))
+		# La valeur fait foi, la provenance l'accompagne. Absente — une
+		# sauvegarde de version 1, ou un affixe retiré du projet depuis — la
+		# ligne s'applique quand même : c'est l'infobulle qui n'aura rien à
+		# montrer, pas l'objet qui perd son bonus.
+		explicits.append(RolledAffix.new(
+			String((a as Dictionary).get("affixe", "")),
+			maxi(_entier(a as Dictionary, "tier", 0), 0),
+			mod
+		))
 	# Absent, il vaut 1 : c'est le cas de tous les objets d'une sauvegarde de
 	# version 1, et il n'y a pas de version à tester pour le savoir — un champ
 	# manquant vaut son défaut, ici comme partout ailleurs dans cette fonction.

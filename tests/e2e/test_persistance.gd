@@ -62,7 +62,7 @@ func test_le_critere_du_jalon() -> void:
 	assert_eq(repris.inventory.placed.size(), 1, "le plastron est dans le sac")
 	assert_eq(repris.inventory.placed[0].data.base.id, "plastron")
 	assert_almost_eq(
-		repris.inventory.placed[0].data.explicits[0].value, 20.0, 0.0001, "avec son affixe"
+		repris.inventory.placed[0].data.explicits[0].mod.value, 20.0, 0.0001, "avec son affixe"
 	)
 
 

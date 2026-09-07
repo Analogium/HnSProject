@@ -1,13 +1,60 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_n5nkw"]
+
+[sub_resource type="Resource" id="Resource_qvrrf"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 52
+min_value = 93.0
+max_value = 112.0
+
+[sub_resource type="Resource" id="Resource_5fbwv"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 43
+min_value = 75.0
+max_value = 92.0
+
+[sub_resource type="Resource" id="Resource_h1eb5"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 34
+min_value = 59.0
+max_value = 74.0
+
+[sub_resource type="Resource" id="Resource_effjj"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 26
+min_value = 45.0
+max_value = 58.0
+
+[sub_resource type="Resource" id="Resource_yhn3x"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 19
+min_value = 33.0
+max_value = 44.0
+
+[sub_resource type="Resource" id="Resource_goq4b"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 12
+min_value = 23.0
+max_value = 32.0
+
+[sub_resource type="Resource" id="Resource_omo1a"]
+script = ExtResource("2_n5nkw")
+niveau_requis = 6
+min_value = 15.0
+max_value = 22.0
+
+[sub_resource type="Resource" id="Resource_npe7r"]
+script = ExtResource("2_n5nkw")
+min_value = 8.0
+max_value = 14.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "vigoureux"
-stat = "max_health"
-percent = false
-min_value = 8.0
-max_value = 30.0
-weight = 12
 tags = PackedStringArray("armour", "belt", "jewellery")
+exclut = PackedStringArray()
+stat = "max_health"
+tiers = Array[ExtResource("2_n5nkw")]([SubResource("Resource_qvrrf"), SubResource("Resource_5fbwv"), SubResource("Resource_h1eb5"), SubResource("Resource_effjj"), SubResource("Resource_yhn3x"), SubResource("Resource_goq4b"), SubResource("Resource_omo1a"), SubResource("Resource_npe7r")])
+weight = 12

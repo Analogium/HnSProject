@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_net52"]
+
+[resource]
+script = ExtResource("1_net52")
+id = "sceptre"
+display_name = "Sceptre"
+kind = "wand"
+tags = PackedStringArray("weapon", "caster")
+grid_size = Vector2i(1, 2)
+lignee = "focus"
+palier = 2
+niveau_requis = 18
+implicit_stat = "cast_speed"
+implicit_percent = true
+implicit_value = 24.0

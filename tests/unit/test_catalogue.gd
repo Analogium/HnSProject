@@ -72,7 +72,9 @@ func test_chaque_emplacement_a_au_moins_une_base() -> void:
 ## produit un dessin sans un seul pixel peint.
 func test_chaque_base_a_une_icone_non_vide() -> void:
 	for base in ItemCatalog.ALL:
-		var tex := SpriteForge.inventory_icon(base.kind, Vector2i.ZERO)
+		# Le palier compris : chaque combinaison a sa propre entrée de cache, donc
+		# un palier dont l'icône ne peindrait rien passerait entre les mailles.
+		var tex := SpriteForge.inventory_icon(base.kind, Vector2i.ZERO, base.palier)
 		assert_not_null(tex, "« %s » n'a pas d'icône" % base.display_name)
 		assert_gt(
 			tex.get_size().x * tex.get_size().y, 0.0,
@@ -99,14 +101,19 @@ func test_les_implicites_visent_des_statistiques_reelles() -> void:
 
 
 ## Une famille sans affixe ne donne que des objets blancs : l'emplacement existe
-## mais ne récompense jamais rien. Deux au minimum, sinon le tirage n'a pas de
-## quoi faire deux objets différents.
+## mais ne récompense jamais rien.
+##
+## **Quatre au minimum, et dès le niveau d'objet 1** — le seuil était de deux
+## jusqu'à l'étape 4 du jalon 5. Deux affixes ne font pas deux objets différents,
+## ils font deux fois le même ; et mesuré au niveau 1, ce test attrape aussi
+## l'échelle dont le dernier palier serait écrit trop haut, qui viderait les
+## premières zones sans rien dire.
 func test_chaque_famille_a_de_quoi_tirer_des_affixes() -> void:
 	for base in ItemCatalog.ALL:
-		var possibles := ItemAffixPool.eligible(base).size()
+		var possibles := ItemAffixPool.eligible(base, 1).size()
 		assert_gte(
-			possibles, 2,
-			"« %s » (famille %s) n'a que %d affixe(s) possible(s)"
+			possibles, 4,
+			"« %s » (famille %s) n'a que %d affixe(s) possible(s) au niveau 1"
 				% [base.display_name, base.family, possibles]
 		)
 
@@ -153,12 +160,14 @@ func test_aucune_etiquette_d_affixe_ne_vise_le_vide() -> void:
 ## paliers de l'étape 5 qui creuseront cet écart.
 func test_les_bases_disponibles_suivent_le_niveau_de_la_zone() -> void:
 	assert_eq(ItemCatalog.disponibles(0).size(), 0, "rien avant le niveau 1")
-	assert_eq(
-		ItemCatalog.disponibles(1).size(), ItemCatalog.ALL.size(),
-		"tout est disponible dès la première zone"
-	)
-	for base in ItemCatalog.disponibles(60):
-		assert_lte(base.niveau_requis, 60, "« %s » ne devrait pas être là" % base.display_name)
+	for base in ItemCatalog.disponibles(1):
+		assert_eq(base.palier, 1, "« %s » n\'est pas un premier palier" % base.display_name)
+	for niveau in [1, 12, 30, 60]:
+		for base in ItemCatalog.disponibles(niveau):
+			assert_lte(
+				base.niveau_requis, niveau,
+				"« %s » tombe dans une zone de niveau %d" % [base.display_name, niveau]
+			)
 
 
 ## Un niveau requis à zéro ou négatif rendrait une base disponible dans une zone
@@ -166,3 +175,121 @@ func test_les_bases_disponibles_suivent_le_niveau_de_la_zone() -> void:
 func test_aucune_base_n_a_un_niveau_requis_absurde() -> void:
 	for base in ItemCatalog.ALL:
 		assert_gte(base.niveau_requis, 1, "« %s »" % base.display_name)
+
+
+# --------------------------------------------------------------------------
+# Les lignées et leurs paliers (jalon 5, étape 5)
+# --------------------------------------------------------------------------
+
+## Une lignée, c\'est le même objet à trois âges. Un palier supérieur doit
+## demander un niveau supérieur **et** donner un implicite supérieur : une lignée
+## où le troisième palier vaut moins que le deuxième est un piège que personne ne
+## remarque avant de comparer deux objets en jeu.
+func test_chaque_lignee_est_monotone() -> void:
+	var lignees := {}
+	for base in ItemCatalog.ALL:
+		assert_false(base.lignee.is_empty(), "« %s » n\'a pas de lignée" % base.display_name)
+		if not lignees.has(base.lignee):
+			lignees[base.lignee] = []
+		lignees[base.lignee].append(base)
+
+	for nom in lignees:
+		var membres: Array = lignees[nom]
+		membres.sort_custom(func(a: ItemBase, b: ItemBase) -> bool: return a.palier < b.palier)
+		for i in membres.size():
+			var base: ItemBase = membres[i]
+			assert_eq(base.palier, i + 1, "lignée « %s » : les paliers se suivent depuis 1" % nom)
+			if i == 0:
+				continue
+			var dessous: ItemBase = membres[i - 1]
+			assert_gt(
+				base.niveau_requis, dessous.niveau_requis,
+				"« %s » doit se mériter plus que « %s »" % [base.display_name, dessous.display_name]
+			)
+			assert_eq(
+				base.implicit_stat, dessous.implicit_stat,
+				"lignée « %s » : deux paliers ne promettent pas la même chose" % nom
+			)
+			assert_gt(
+				absf(base.implicit_value), absf(dessous.implicit_value),
+				"« %s » donne moins que « %s »" % [base.display_name, dessous.display_name]
+			)
+		# Une lignée n\'a de sens qu\'à partir de deux paliers : à un seul, c\'est
+		# une base isolée et le champ ment sur ce qu\'il décrit.
+		assert_gte(membres.size(), 2, "lignée « %s » : un seul palier" % nom)
+
+
+## Une lignée homogène : même famille, même dessin, mêmes étiquettes. Deux
+## paliers qui ne vont pas au même emplacement ne sont pas deux âges du même
+## objet, et la règle des paliers visibles ferait alors disparaître une base au
+## profit d\'une autre qui ne la remplace pas.
+func test_une_lignee_ne_melange_pas_deux_objets() -> void:
+	var vus := {}
+	for base in ItemCatalog.ALL:
+		if not vus.has(base.lignee):
+			vus[base.lignee] = base
+			continue
+		var premier: ItemBase = vus[base.lignee]
+		assert_eq(base.family, premier.family, "lignée « %s »" % base.lignee)
+		assert_eq(base.kind, premier.kind, "lignée « %s » : deux dessins" % base.lignee)
+		assert_eq(
+			", ".join(base.tags), ", ".join(premier.tags),
+			"lignée « %s » : deux jeux d\'étiquettes" % base.lignee
+		)
+
+
+## La règle qui empêche la dilution : à un niveau donné, une lignée ne lâche que
+## ses deux meilleurs paliers atteints. Sans elle, quarante et une bases tirées à
+## égalité feraient une chute utile sur cinq — et le rythme de récompense
+## s\'effondrerait au moment précis où il devrait s\'améliorer.
+func test_une_lignee_ne_lache_que_ses_deux_meilleurs_paliers() -> void:
+	for niveau in [1, 16, 24, 40, 60]:
+		var par_lignee := {}
+		for base in ItemCatalog.disponibles(niveau):
+			par_lignee[base.lignee] = int(par_lignee.get(base.lignee, 0)) + 1
+		for lignee in par_lignee:
+			assert_lte(
+				par_lignee[lignee], ItemCatalog.PALIERS_VISIBLES,
+				"niveau %d : la lignée « %s » lâche %d paliers"
+					% [niveau, lignee, par_lignee[lignee]]
+			)
+
+
+## Le sens de la règle, vu du joueur : descendre plus bas fait **disparaître**
+## les vieilles bases. L\'épée de la première zone ne tombe plus dans une zone de
+## niveau 60, l\'épée large et la lame de guerre l\'ont chassée.
+func test_les_vieux_paliers_disparaissent() -> void:
+	var ids := {}
+	for base in ItemCatalog.disponibles(60):
+		ids[base.id] = true
+	assert_false(ids.has("epee"), "l\'épée de départ ne tombe plus au niveau 60")
+	assert_true(ids.has("epee_large"), "l\'épée large est encore là")
+	assert_true(ids.has("lame_de_guerre"), "et la lame de guerre l\'accompagne")
+
+
+## Un emplacement sans base disponible est un emplacement qu\'on ne peut pas
+## remplir dans cette zone-là. Vérifié à **chaque** niveau, pas seulement au
+## premier : c\'est un palier écrit trop haut qui creuserait le trou, et il
+## n\'apparaîtrait qu\'entre deux zones.
+func test_chaque_emplacement_a_une_base_a_tous_les_niveaux() -> void:
+	for niveau in range(1, 61):
+		var familles := {}
+		for base in ItemCatalog.disponibles(niveau):
+			familles[base.family] = true
+		for id in EquipmentSlots.ids():
+			assert_true(
+				familles.has(EquipmentSlots.family_of(id)),
+				"niveau %d : rien à mettre dans « %s »" % [niveau, EquipmentSlots.label(id)]
+			)
+
+
+## Les dix identifiants du jalon 4 sont écrits dans les sauvegardes des
+## personnages existants. En renommer un ferait disparaître l\'objet de tout le
+## monde, et seulement au prochain chargement.
+func test_les_identifiants_du_jalon_4_survivent() -> void:
+	for id in [
+		"epee", "baguette", "bouclier", "casque", "plastron",
+		"gants", "bottes", "ceinture", "amulette", "anneau",
+	]:
+		assert_not_null(ItemCatalog.by_id(id), "« %s » a disparu du catalogue" % id)
+		assert_eq(ItemCatalog.by_id(id).palier, 1, "« %s » reste le premier palier" % id)

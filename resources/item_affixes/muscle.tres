@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_hvbt4"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_dhrve"]
+
+[sub_resource type="Resource" id="Resource_3830l"]
+script = ExtResource("2_dhrve")
+niveau_requis = 54
+min_value = 33.0
+max_value = 42.0
+
+[sub_resource type="Resource" id="Resource_j5tux"]
+script = ExtResource("2_dhrve")
+niveau_requis = 42
+min_value = 25.0
+max_value = 32.0
+
+[sub_resource type="Resource" id="Resource_512qv"]
+script = ExtResource("2_dhrve")
+niveau_requis = 31
+min_value = 18.0
+max_value = 24.0
+
+[sub_resource type="Resource" id="Resource_xetfr"]
+script = ExtResource("2_dhrve")
+niveau_requis = 20
+min_value = 12.0
+max_value = 17.0
+
+[sub_resource type="Resource" id="Resource_wm7e1"]
+script = ExtResource("2_dhrve")
+niveau_requis = 10
+min_value = 7.0
+max_value = 11.0
+
+[sub_resource type="Resource" id="Resource_fqbgt"]
+script = ExtResource("2_dhrve")
+min_value = 3.0
+max_value = 6.0
+
+[resource]
+script = ExtResource("1_hvbt4")
+id = "muscle"
+tags = PackedStringArray()
+exclut = PackedStringArray()
+stat = "strength"
+tiers = Array[ExtResource("2_dhrve")]([SubResource("Resource_3830l"), SubResource("Resource_j5tux"), SubResource("Resource_512qv"), SubResource("Resource_xetfr"), SubResource("Resource_wm7e1"), SubResource("Resource_fqbgt")])
+weight = 8

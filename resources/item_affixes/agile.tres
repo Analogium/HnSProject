@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_78tes"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_ro4ev"]
+
+[sub_resource type="Resource" id="Resource_wssis"]
+script = ExtResource("2_ro4ev")
+niveau_requis = 54
+min_value = 33.0
+max_value = 42.0
+
+[sub_resource type="Resource" id="Resource_lplg3"]
+script = ExtResource("2_ro4ev")
+niveau_requis = 42
+min_value = 25.0
+max_value = 32.0
+
+[sub_resource type="Resource" id="Resource_tpqg0"]
+script = ExtResource("2_ro4ev")
+niveau_requis = 31
+min_value = 18.0
+max_value = 24.0
+
+[sub_resource type="Resource" id="Resource_6rlmo"]
+script = ExtResource("2_ro4ev")
+niveau_requis = 20
+min_value = 12.0
+max_value = 17.0
+
+[sub_resource type="Resource" id="Resource_q6gyp"]
+script = ExtResource("2_ro4ev")
+niveau_requis = 10
+min_value = 7.0
+max_value = 11.0
+
+[sub_resource type="Resource" id="Resource_khuay"]
+script = ExtResource("2_ro4ev")
+min_value = 3.0
+max_value = 6.0
+
+[resource]
+script = ExtResource("1_78tes")
+id = "agile"
+tags = PackedStringArray()
+exclut = PackedStringArray()
+stat = "dexterity"
+tiers = Array[ExtResource("2_ro4ev")]([SubResource("Resource_wssis"), SubResource("Resource_lplg3"), SubResource("Resource_tpqg0"), SubResource("Resource_6rlmo"), SubResource("Resource_q6gyp"), SubResource("Resource_khuay")])
+weight = 8

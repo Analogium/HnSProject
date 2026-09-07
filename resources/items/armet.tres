@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_r08do"]
+
+[resource]
+script = ExtResource("1_r08do")
+id = "armet"
+display_name = "Armet"
+kind = "helmet"
+family = "helmet"
+tags = PackedStringArray("helmet", "armour", "heavy")
+grid_size = Vector2i(2, 2)
+lignee = "casque_lourd"
+palier = 3
+niveau_requis = 32
+implicit_stat = "max_health"
+implicit_value = 44.0

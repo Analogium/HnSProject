@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_kpask"]
+
+[resource]
+script = ExtResource("1_kpask")
+id = "codex"
+display_name = "Codex"
+kind = "tome"
+family = "offhand"
+tags = PackedStringArray("offhand", "caster")
+grid_size = Vector2i(2, 2)
+lignee = "grimoire"
+palier = 2
+niveau_requis = 28
+implicit_stat = "spell_damage"
+implicit_value = 11.0

@@ -1,13 +1,43 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_6jnwg"]
+
+[sub_resource type="Resource" id="Resource_eoviw"]
+script = ExtResource("2_6jnwg")
+niveau_requis = 48
+min_value = 0.15
+max_value = 0.18
+
+[sub_resource type="Resource" id="Resource_outwg"]
+script = ExtResource("2_6jnwg")
+niveau_requis = 36
+min_value = 0.11
+max_value = 0.14
+
+[sub_resource type="Resource" id="Resource_o5scs"]
+script = ExtResource("2_6jnwg")
+niveau_requis = 24
+min_value = 0.08
+max_value = 0.1
+
+[sub_resource type="Resource" id="Resource_vmffm"]
+script = ExtResource("2_6jnwg")
+niveau_requis = 12
+min_value = 0.05
+max_value = 0.07
+
+[sub_resource type="Resource" id="Resource_kq8xr"]
+script = ExtResource("2_6jnwg")
+min_value = 0.02
+max_value = 0.04
 
 [resource]
 script = ExtResource("1_affix")
 id = "cruel"
-stat = "crit_chance"
-percent = false
-min_value = 0.02
-max_value = 0.08
-weight = 7
 tags = PackedStringArray("weapon", "gloves", "jewellery")
+exclut = PackedStringArray()
+stat = "crit_chance"
+tiers = Array[ExtResource("2_6jnwg")]([SubResource("Resource_eoviw"), SubResource("Resource_outwg"), SubResource("Resource_o5scs"), SubResource("Resource_vmffm"), SubResource("Resource_kq8xr")])
+arrondi = 0.01
+weight = 7

@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_32qch"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_h5jea"]
+
+[sub_resource type="Resource" id="Resource_gsbrx"]
+script = ExtResource("2_h5jea")
+niveau_requis = 48
+min_value = 29.0
+max_value = 36.0
+
+[sub_resource type="Resource" id="Resource_6d63l"]
+script = ExtResource("2_h5jea")
+niveau_requis = 36
+min_value = 22.0
+max_value = 28.0
+
+[sub_resource type="Resource" id="Resource_b2uj6"]
+script = ExtResource("2_h5jea")
+niveau_requis = 24
+min_value = 16.0
+max_value = 21.0
+
+[sub_resource type="Resource" id="Resource_tq3q2"]
+script = ExtResource("2_h5jea")
+niveau_requis = 12
+min_value = 10.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_mrvk8"]
+script = ExtResource("2_h5jea")
+min_value = 5.0
+max_value = 9.0
+
+[resource]
+script = ExtResource("1_32qch")
+id = "embaume"
+tags = PackedStringArray()
+exclut = PackedStringArray("weapon")
+stat = "res_necrotic"
+tiers = Array[ExtResource("2_h5jea")]([SubResource("Resource_gsbrx"), SubResource("Resource_6d63l"), SubResource("Resource_b2uj6"), SubResource("Resource_tq3q2"), SubResource("Resource_mrvk8")])
+weight = 9

@@ -26,9 +26,10 @@ const RARITY_COLORS := [
 ]
 
 var base: ItemBase
-## Les affixes tirés à la création, déjà résolus en valeurs. Ils ne changent
-## plus ensuite : un objet est ce qu'il est.
-var explicits: Array[StatMod] = []
+## Les affixes tirés à la création, déjà résolus en valeurs, **et leur
+## provenance** : quel affixe, quel palier. Ils ne changent plus ensuite — un
+## objet est ce qu'il est.
+var explicits: Array[RolledAffix] = []
 
 ## Le niveau de l'objet : celui de la zone où il est tombé, posé **une fois** et
 ## jamais rejoué. C'est lui qui décidera des tiers d'affixes qu'il a pu recevoir
@@ -47,9 +48,15 @@ var explicits: Array[StatMod] = []
 var item_level: int = 1
 
 
-func _init(p_base: ItemBase, p_explicits: Array[StatMod] = [], p_level: int = 1) -> void:
+## `p_explicits` accepte les deux formes : des RolledAffix, ou de simples StatMod
+## qui deviennent alors des affixes **sans provenance**. Ce n'est pas une
+## complaisance envers les appelants — c'est exactement l'état d'un objet relu
+## d'une sauvegarde écrite avant les paliers, et il fallait bien le représenter.
+func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	base = p_base
-	explicits = p_explicits
+	explicits = []
+	for e in p_explicits:
+		explicits.append(e if e is RolledAffix else RolledAffix.orphelin(e))
 	item_level = maxi(p_level, 1)
 
 
@@ -79,7 +86,8 @@ func mods() -> Array[StatMod]:
 	var imp := base.implicit()
 	if imp != null:
 		all.append(imp)
-	all.append_array(explicits)
+	for r in explicits:
+		all.append(r.mod)
 	return all
 
 
@@ -92,6 +100,6 @@ func implicit_line() -> String:
 
 func explicit_lines() -> PackedStringArray:
 	var lines := PackedStringArray()
-	for m in explicits:
-		lines.append(m.label())
+	for r in explicits:
+		lines.append(r.mod.label())
 	return lines

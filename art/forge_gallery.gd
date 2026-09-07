@@ -23,13 +23,37 @@ const EXPORT_FALLBACK := "user://forge_export"
 
 const ANIMS := ["idle", "walk", "attack"]
 
+## Les planches d'objets, après les archétypes. Elles existent pour la même
+## raison qu'eux : quarante et une icônes se règlent côte à côte ou ne se règlent
+## pas. Les bases y arrivent dans l'ordre du catalogue — par lignée, puis par
+## palier — donc les trois âges d'un même objet sont voisins, et c'est exactement
+## la comparaison qu'on vient faire.
+##
+## Agrandies deux fois, comme les archétypes : à leur taille native l'icône fait
+## seize pixels sur la planche alors que le sac l'agrandit pour remplir sa case.
+## Une planche qui montre plus petit que le jeu ne sert à rien.
+const ITEM_COLS := 6
+const ITEM_ROWS := 4
+const ITEM_CELL := Vector2(104.0, 60.0)
+const ITEM_SCALE := 2
+
 @onready var header: Label = $Header
 @onready var footer: Label = $Footer
 @onready var columns: Label = $Columns
 @onready var stage: Node2D = $Stage
 
+## La page courante : un archétype, ou la planche d'objets en dernier.
 var _index := 0
 var _status := ""
+
+
+## Les archétypes, puis autant de planches d'objets qu'il en faut.
+static func _item_pages() -> int:
+	return ceili(float(ItemCatalog.ALL.size()) / float(ITEM_COLS * ITEM_ROWS))
+
+
+static func _pages() -> int:
+	return SpriteForge.ARCHETYPES.size() + _item_pages()
 
 
 func _ready() -> void:
@@ -46,10 +70,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	match (event as InputEventKey).keycode:
 		KEY_RIGHT, KEY_SPACE:
-			_index = (_index + 1) % SpriteForge.ARCHETYPES.size()
+			_index = (_index + 1) % _pages()
 			_build()
 		KEY_LEFT:
-			_index = (_index - 1 + SpriteForge.ARCHETYPES.size()) % SpriteForge.ARCHETYPES.size()
+			_index = (_index - 1 + _pages()) % _pages()
 			_build()
 		KEY_S:
 			_export()
@@ -66,6 +90,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func _build() -> void:
 	for child in stage.get_children():
 		child.queue_free()
+
+	if _index >= SpriteForge.ARCHETYPES.size():
+		_build_items()
+		return
 
 	var archetype: String = SpriteForge.ARCHETYPES[_index]
 	var x0 := (size.x - COLS * CELL) * 0.5
@@ -95,7 +123,61 @@ func _build() -> void:
 	]
 	columns.text = "        repos  ^  |  marche  ^  |  attaque  ^"
 	footer.text = "\n".join([
-		"[<-] [->] archetype     [S] exporter les planches en PNG",
+		"[<-] [->] page          [S] exporter les planches en PNG",
+		"[F4] ou [ECHAP] retour",
+		_status,
+	])
+
+
+## La planche d'objets : toutes les bases du catalogue à leur taille native,
+## sous leur nom et leur palier.
+##
+## À leur taille native et non agrandies : une icône se juge à la taille où on
+## la verra, et c'est dans une case de sac qu'on doit distinguer un anneau d'une
+## amulette — pas sur une planche où tout est lisible.
+func _build_items() -> void:
+	var page := _index - SpriteForge.ARCHETYPES.size()
+	var par_page := ITEM_COLS * ITEM_ROWS
+	var premier := page * par_page
+	var dernier := mini(premier + par_page, ItemCatalog.ALL.size())
+
+	var x0 := (size.x - ITEM_COLS * ITEM_CELL.x) * 0.5 + ITEM_CELL.x * 0.5
+	var y0 := 76.0
+
+	for i in range(premier, dernier):
+		var base: ItemBase = ItemCatalog.ALL[i]
+		var rang := i - premier
+		var centre := Vector2(
+			x0 + (rang % ITEM_COLS) * ITEM_CELL.x,
+			y0 + (rang / ITEM_COLS) * ITEM_CELL.y
+		)
+
+		var s := Sprite2D.new()
+		s.texture = SpriteForge.inventory_icon(base.kind, Vector2i.ZERO, base.palier)
+		s.scale = Vector2(ITEM_SCALE, ITEM_SCALE)
+		s.position = centre
+		stage.add_child(s)
+
+		var l := Label.new()
+		l.text = "%s %d" % [base.display_name, base.palier]
+		l.add_theme_font_size_override("font_size", 8)
+		l.add_theme_color_override("font_color", Color(0.70, 0.68, 0.76))
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Largeur imposée **et** texte coupé : sans la largeur un nom long se
+		# centre sur lui-même et déborde sur l'objet voisin, sans la coupe il
+		# déborde quand même. « Marteau de guerre » et « Baguette » se
+		# recouvraient exactement comme ça.
+		l.size = Vector2(ITEM_CELL.x, 10.0)
+		l.clip_text = true
+		l.position = centre + Vector2(-ITEM_CELL.x * 0.5, ITEM_CELL.y * 0.5 - 14.0)
+		stage.add_child(l)
+
+	header.text = "FORGE  —  OBJETS  %d/%d   (%d bases, par lignee puis par palier)" % [
+		page + 1, _item_pages(), ItemCatalog.ALL.size()
+	]
+	columns.text = "        palier 1 terne  |  2 acier  |  3 clair"
+	footer.text = "\n".join([
+		"[<-] [->] page",
 		"[F4] ou [ECHAP] retour",
 		_status,
 	])

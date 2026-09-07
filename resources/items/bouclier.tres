@@ -1,15 +1,15 @@
-[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemBase" format=3]
 
-[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_umgo5"]
 
 [resource]
-script = ExtResource("1_item")
+script = ExtResource("1_umgo5")
 id = "bouclier"
 display_name = "Bouclier"
 kind = "shield"
 family = "offhand"
-tags = PackedStringArray("offhand", "armour")
+tags = PackedStringArray("offhand", "armour", "heavy")
 grid_size = Vector2i(2, 2)
+lignee = "bouclier"
 implicit_stat = "armor"
-implicit_percent = false
 implicit_value = 18.0

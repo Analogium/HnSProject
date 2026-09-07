@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_33d0d"]
+
+[resource]
+script = ExtResource("1_33d0d")
+id = "ecu"
+display_name = "Écu"
+kind = "shield"
+family = "offhand"
+tags = PackedStringArray("offhand", "armour", "heavy")
+grid_size = Vector2i(2, 2)
+lignee = "bouclier"
+palier = 2
+niveau_requis = 15
+implicit_stat = "armor"
+implicit_value = 38.0

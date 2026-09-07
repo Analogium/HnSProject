@@ -1,15 +1,15 @@
-[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemBase" format=3]
 
-[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_syor5"]
 
 [resource]
-script = ExtResource("1_item")
+script = ExtResource("1_syor5")
 id = "plastron"
 display_name = "Plastron"
 kind = "torso"
 family = "chest"
-tags = PackedStringArray("chest", "armour")
+tags = PackedStringArray("chest", "armour", "heavy")
 grid_size = Vector2i(2, 3)
+lignee = "torse_lourd"
 implicit_stat = "max_health"
-implicit_percent = false
 implicit_value = 20.0

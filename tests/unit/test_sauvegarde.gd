@@ -92,10 +92,10 @@ func test_les_affixes_survivent_avec_leur_mode() -> void:
 	var apres := _aller_retour(_personnage_joue())
 	var epee: Item = apres.sac.placed[apres.sac.index_at(Vector2i(3, 1))].data
 	assert_eq(epee.explicits.size(), 2)
-	assert_eq(epee.explicits[0].stat, "attack_damage")
-	assert_eq(epee.explicits[0].mode, StatMod.Mode.FLAT)
-	assert_almost_eq(epee.explicits[0].value, 6.0, 0.0001)
-	assert_eq(epee.explicits[1].mode, StatMod.Mode.PERCENT, "le mode n'est pas retombé sur plat")
+	assert_eq(epee.explicits[0].mod.stat, "attack_damage")
+	assert_eq(epee.explicits[0].mod.mode, StatMod.Mode.FLAT)
+	assert_almost_eq(epee.explicits[0].mod.value, 6.0, 0.0001)
+	assert_eq(epee.explicits[1].mod.mode, StatMod.Mode.PERCENT, "le mode n'est pas retombé sur plat")
 	assert_eq(epee.rarity(), Item.Rarity.MAGIQUE, "deux affixes, donc bleu")
 
 
@@ -140,7 +140,7 @@ func test_un_objet_a_six_affixes_survit() -> void:
 
 	var recharge: Item = _aller_retour(p).sac.placed[0].data
 	assert_eq(recharge.explicits.size(), 6)
-	assert_almost_eq(recharge.explicits[5].value, 5.5, 0.0001, "les décimales aussi")
+	assert_almost_eq(recharge.explicits[5].mod.value, 5.5, 0.0001, "les décimales aussi")
 
 
 func test_un_personnage_sans_rien_se_recharge() -> void:
@@ -235,7 +235,7 @@ func test_le_fichier_de_reference_se_relit() -> void:
 	assert_eq(p.sac.placed.size(), 2, "l'épée et la baguette")
 	assert_ne(p.sac.index_at(Vector2i(3, 1)), Inventory.EMPTY, "l'épée à sa place")
 	assert_eq(p.equipement["chest"].base.id, "plastron")
-	assert_eq(p.equipement["chest"].explicits[0].mode, StatMod.Mode.PERCENT)
+	assert_eq(p.equipement["chest"].explicits[0].mod.mode, StatMod.Mode.PERCENT)
 	# Une version 1 ne dit pas d'où venaient ses objets. Ils valent 1, et pas un
 	# niveau déduit du personnage : ce serait inventer.
 	assert_eq(p.equipement["chest"].item_level, 1, "un objet de version 1 vaut le niveau 1")
@@ -276,6 +276,10 @@ func test_le_fichier_de_reference_v2_se_relit() -> void:
 	assert_not_null(p, "une sauvegarde de version 2 se lit")
 	assert_eq(p.nom, "Brenna")
 	assert_eq(p.equipement["chest"].item_level, 28, "le niveau écrit dans le fichier")
+	# Le plastron du fichier n'a ni « affixe » ni « tier » : c'est le cas d'un
+	# objet relu d'une version 1 puis resauvegardé. Sa ligne s'applique, elle n'a
+	# simplement rien à dire sur son tirage.
+	assert_false(p.equipement["chest"].explicits[0].connu(), "une provenance absente le reste")
 	var niveaux := {}
 	for pose in p.sac.placed:
 		niveaux[pose.data.base.id] = pose.data.item_level
@@ -289,3 +293,39 @@ func test_le_fichier_de_reference_v2_se_relit() -> void:
 func test_ce_qu_on_ecrit_porte_la_version_courante() -> void:
 	assert_eq(Personnage.nouveau("Version", 0).vers_dict()["version"], Personnage.VERSION)
 	assert_true(Personnage.VERSIONS_LUES.has(Personnage.VERSION), "on sait relire ce qu'on écrit")
+
+
+## La provenance accompagne la valeur jusque sur le disque : sans elle,
+## l'infobulle des paliers n'aurait rien à montrer sur un objet rechargé, et un
+## objet ramassé hier ne se lirait pas comme un objet ramassé à l'instant.
+func test_la_provenance_d_un_affixe_survit_au_disque() -> void:
+	var p := Personnage.nouveau("Paliers", 0)
+	var tire := RolledAffix.new("acere", 3, StatMod.new("attack_damage", StatMod.Mode.FLAT, 29.0))
+	p.equipement["weapon"] = Item.new(ItemCatalog.by_id("epee"), [tire], 40)
+
+	var relu := Personnage.depuis_dict(p.vers_dict())
+	var repris: RolledAffix = relu.equipement["weapon"].explicits[0]
+	assert_eq(repris.affix_id, "acere")
+	assert_eq(repris.tier, 3)
+	assert_almost_eq(repris.mod.value, 29.0, 0.0001, "et la valeur, qui fait foi")
+	assert_true(repris.connu())
+
+
+## L'inverse, et c'est le cas des sauvegardes déjà sur les disques : un affixe
+## sans provenance n'en gagne pas une en passant par le disque. Un palier deviné
+## depuis la valeur serait faux une fois sur trois, les fourchettes de deux
+## paliers voisins se chevauchant.
+func test_un_affixe_sans_provenance_ne_s_en_invente_pas() -> void:
+	var p := Personnage.nouveau("Orphelin", 0)
+	var mod := StatMod.new("max_health", StatMod.Mode.FLAT, 22.0)
+	p.equipement["chest"] = Item.new(ItemCatalog.by_id("plastron"), [mod])
+
+	var dict := p.vers_dict()
+	var ecrit: Dictionary = dict["equipement"]["chest"]["affixes"][0]
+	assert_false(ecrit.has("affixe"), "rien d'inventé dans le fichier")
+	assert_false(ecrit.has("tier"))
+
+	var repris: RolledAffix = Personnage.depuis_dict(dict).equipement["chest"].explicits[0]
+	assert_false(repris.connu())
+	assert_eq(repris.tier, 0)
+	assert_almost_eq(repris.mod.value, 22.0, 0.0001, "mais le bonus, lui, s'applique")

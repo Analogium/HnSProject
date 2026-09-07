@@ -1,13 +1,43 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_vfot7"]
+
+[sub_resource type="Resource" id="Resource_ahtoo"]
+script = ExtResource("2_vfot7")
+niveau_requis = 48
+min_value = 1.25
+max_value = 1.5
+
+[sub_resource type="Resource" id="Resource_8bsgw"]
+script = ExtResource("2_vfot7")
+niveau_requis = 36
+min_value = 0.95
+max_value = 1.2
+
+[sub_resource type="Resource" id="Resource_dcean"]
+script = ExtResource("2_vfot7")
+niveau_requis = 24
+min_value = 0.7
+max_value = 0.9
+
+[sub_resource type="Resource" id="Resource_4o2xy"]
+script = ExtResource("2_vfot7")
+niveau_requis = 12
+min_value = 0.45
+max_value = 0.65
+
+[sub_resource type="Resource" id="Resource_qw11n"]
+script = ExtResource("2_vfot7")
+min_value = 0.2
+max_value = 0.4
 
 [resource]
 script = ExtResource("1_affix")
 id = "sanglant"
-stat = "crit_multiplier"
-percent = false
-min_value = 0.2
-max_value = 0.8
-weight = 6
 tags = PackedStringArray("weapon", "jewellery")
+exclut = PackedStringArray()
+stat = "crit_multiplier"
+tiers = Array[ExtResource("2_vfot7")]([SubResource("Resource_ahtoo"), SubResource("Resource_8bsgw"), SubResource("Resource_dcean"), SubResource("Resource_4o2xy"), SubResource("Resource_qw11n")])
+arrondi = 0.01
+weight = 6

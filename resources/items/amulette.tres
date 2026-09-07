@@ -1,15 +1,14 @@
-[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemBase" format=3]
 
-[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_6b67v"]
 
 [resource]
-script = ExtResource("1_item")
+script = ExtResource("1_6b67v")
 id = "amulette"
 display_name = "Amulette"
 kind = "amulet"
 family = "amulet"
 tags = PackedStringArray("amulet", "jewellery")
-grid_size = Vector2i(1, 1)
+lignee = "amulette"
 implicit_stat = "max_mana"
-implicit_percent = false
 implicit_value = 15.0

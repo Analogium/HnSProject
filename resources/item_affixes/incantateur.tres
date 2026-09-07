@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_bhxbv"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_nd4y2"]
+
+[sub_resource type="Resource" id="Resource_cf7y7"]
+script = ExtResource("2_nd4y2")
+niveau_requis = 54
+min_value = 24.0
+max_value = 28.0
+
+[sub_resource type="Resource" id="Resource_btp4u"]
+script = ExtResource("2_nd4y2")
+niveau_requis = 42
+min_value = 20.0
+max_value = 23.0
+
+[sub_resource type="Resource" id="Resource_qhhbl"]
+script = ExtResource("2_nd4y2")
+niveau_requis = 31
+min_value = 16.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_84jq3"]
+script = ExtResource("2_nd4y2")
+niveau_requis = 20
+min_value = 12.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_qr3w1"]
+script = ExtResource("2_nd4y2")
+niveau_requis = 10
+min_value = 8.0
+max_value = 11.0
+
+[sub_resource type="Resource" id="Resource_setcp"]
+script = ExtResource("2_nd4y2")
+min_value = 4.0
+max_value = 7.0
+
+[resource]
+script = ExtResource("1_bhxbv")
+id = "incantateur"
+tags = PackedStringArray("caster", "gloves", "jewellery")
+exclut = PackedStringArray()
+stat = "cast_speed"
+percent = true
+tiers = Array[ExtResource("2_nd4y2")]([SubResource("Resource_cf7y7"), SubResource("Resource_btp4u"), SubResource("Resource_qhhbl"), SubResource("Resource_84jq3"), SubResource("Resource_qr3w1"), SubResource("Resource_setcp")])
+weight = 8

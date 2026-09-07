@@ -137,8 +137,8 @@ static var _icons: Dictionary = {}
 ## L'icône d'un objet posé au sol : dessinée en diagonale, à sa taille native.
 ## En diagonale parce qu'une arme verticale dans un cadre carré laisse deux
 ## grandes marges vides et se lit plus petite qu'elle n'est.
-static func ground_icon(kind: String) -> Texture2D:
-	return _icon(kind, false, Vector2i.ZERO)
+static func ground_icon(kind: String, palier := 1) -> Texture2D:
+	return _icon(kind, false, Vector2i.ZERO, palier)
 
 
 ## L'icône d'un objet dans le sac. Dressée à la verticale — c'est la lecture
@@ -149,8 +149,8 @@ static func ground_icon(kind: String) -> Texture2D:
 ## le dessin y est agrandi d'un facteur **entier**. Un facteur fractionnaire
 ## doublerait certaines lignes de pixels et pas d'autres, ce qui se voit
 ## immédiatement sur un sprite de cette taille.
-static func inventory_icon(kind: String, target: Vector2i) -> Texture2D:
-	return _icon(kind, true, target)
+static func inventory_icon(kind: String, target: Vector2i, palier := 1) -> Texture2D:
+	return _icon(kind, true, target, palier)
 
 
 ## Le dessin d'un objet, recadré sur ce qui est réellement peint.
@@ -159,8 +159,8 @@ static func inventory_icon(kind: String, target: Vector2i) -> Texture2D:
 ## n'ont ni la même longueur ni le même encombrement, et aucun ne tombe au
 ## centre du cadre tout seul. Un sprite recadré est centré par construction, sur
 ## son point d'ancrage comme dans sa case.
-static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
-	var key := "%s:%d:%dx%d" % [kind, int(upright), target.x, target.y]
+static func _icon(kind: String, upright: bool, target: Vector2i, palier := 1) -> Texture2D:
+	var key := "%s:%d:%dx%d:%d" % [kind, int(upright), target.x, target.y, palier]
 	if _icons.has(key):
 		return _icons[key]
 
@@ -169,6 +169,15 @@ static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
 	# garde, les deux teintes qui font lire « arme » plutôt que « bâton ».
 	var cfg := config("player", 0)
 	cfg["weapon"] = kind
+
+	# Trois des cinq rampes sont remplacées par celles du palier. L'or de
+	# l'accent, lui, ne bouge pas : c'est la couleur qui dit « ça compte » dans
+	# tout le jeu, et la faire varier ferait passer un palier pour une rareté.
+	var p := clampi(palier, 1, PALIER_METAL.size()) - 1
+	var palettes: Array = cfg["palettes"]
+	palettes[R_METAL] = ArtPalette.ramp(PALIER_METAL[p])
+	palettes[R_LEATHER] = ArtPalette.ramp(PALIER_LEATHER[p])
+	palettes[R_CLOTH] = ArtPalette.ramp(PALIER_CLOTH[p])
 
 	if GEAR.has(kind):
 		_gear(canvas, kind, ICON * 0.5, 2.0)
@@ -208,7 +217,34 @@ static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
 ## part dans _weapon. Le test du catalogue vérifie que chaque base du jeu tombe
 ## dans l'un des deux, sinon son icône serait vide et personne ne le verrait
 ## avant de l'avoir ramassée.
-const GEAR := ["torso", "shield", "helmet", "gloves", "boots", "belt", "amulet", "ring"]
+const GEAR := [
+	"torso", "shield", "helmet", "gloves", "boots", "belt", "amulet", "ring",
+	# Étape 5 du jalon 5 : la main gauche d'incantation et les deux pièces
+	# d'armure légère, qui ne pouvaient pas réemployer le casque et le plastron
+	# sans se lire comme eux.
+	"tome", "hood", "tunic",
+]
+
+## Ce qui distingue trois paliers d'une même lignée dans le sac.
+##
+## Le nom ne suffit pas — on ne lit pas le nom d'un objet au sol — et redessiner
+## trois silhouettes par lignée serait un jalon à soi seul. Restent les
+## couleurs : un métal plus clair, un cuir plus riche et une étoffe plus franche
+## à chaque palier. Ça se lit à la taille d'une case, là où un détail de deux
+## pixels se perd.
+##
+## Le palier 2 garde exactement les teintes d'avant l'étape 5 : c'est le point
+## de comparaison, et les objets du jalon 4 ne devaient pas changer d'aspect
+## pour la seule raison qu'on a ajouté des voisins.
+const PALIER_METAL := [
+	Color(0.50, 0.51, 0.56), Color(0.72, 0.78, 0.86), Color(0.88, 0.93, 1.00)
+]
+const PALIER_LEATHER := [
+	Color(0.31, 0.21, 0.14), Color(0.40, 0.26, 0.18), Color(0.58, 0.41, 0.23)
+]
+const PALIER_CLOTH := [
+	Color(0.34, 0.36, 0.44), Color(0.30, 0.45, 0.68), Color(0.48, 0.34, 0.72)
+]
 
 
 ## Chaque pièce en trois ou quatre traits. La contrainte n'est pas le détail
@@ -272,6 +308,34 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# monture et le pendentif se lisait comme une étoile à quatre branches.
 			c.disc(Vector2(cx, top + 13.2), 4.0, R_METAL)
 			c.disc(Vector2(cx, top + 13.2), 1.8, R_ACCENT, 0.55)
+
+		"tome":
+			# Un livre fermé, vu de trois quarts : le corps, le dos plus sombre
+			# sur un seul bord, le fermoir en travers. C'est le dos qui le
+			# distingue d'un plastron — sans lui, deux rectangles arrondis.
+			c.capsule(Vector2(cx + 0.6, top + 5.4), Vector2(cx + 0.6, top + 13.0), 4.6, R_LEATHER)
+			c.capsule(Vector2(cx - 4.2, top + 4.6), Vector2(cx - 4.2, top + 13.8), 1.3, R_METAL)
+			c.capsule(Vector2(cx + 0.4, top + 9.2), Vector2(cx + 5.0, top + 9.2), 1.0, R_ACCENT)
+			# Les pages, en creux le long du bord libre.
+			c.capsule(Vector2(cx + 4.4, top + 6.4), Vector2(cx + 4.4, top + 12.0), 0.7, R_CLOTH, 0.35)
+
+		"hood":
+			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare
+			# du dôme d'un casque, et l'ouverture creusée qui dit qu'on y entre
+			# la tête.
+			c.capsule(Vector2(cx, top + 3.2), Vector2(cx, top + 10.4), 4.4, R_CLOTH)
+			c.capsule(Vector2(cx, top + 1.6), Vector2(cx, top + 4.6), 1.6, R_CLOTH)
+			c.disc(Vector2(cx, top + 11.4), 3.0, R_LEATHER, -0.38)
+			c.capsule(Vector2(cx - 4.2, top + 13.6), Vector2(cx + 4.2, top + 13.6), 1.4, R_LEATHER)
+
+		"tunic":
+			# Le plastron en étoffe : épaules tombantes au lieu de spallières,
+			# taille resserrée par une ceinture, encolure en V. Aucune plaque —
+			# c'est l'absence de métal qui dit « légère » avant la couleur.
+			c.capsule(Vector2(cx - 5.2, top + 3.6), Vector2(cx + 5.2, top + 3.6), 2.0, R_CLOTH)
+			c.capsule(Vector2(cx, top + 5.2), Vector2(cx, top + 11.4), 4.6, R_CLOTH)
+			c.capsule(Vector2(cx - 3.4, top + 13.4), Vector2(cx + 3.4, top + 13.4), 1.8, R_LEATHER)
+			c.capsule(Vector2(cx, top + 1.4), Vector2(cx, top + 4.6), 1.4, R_LEATHER, -0.32)
 
 		"ring":
 			c.disc(Vector2(cx, top + 11.0), 4.8, R_METAL)
@@ -662,11 +726,36 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 			c.capsule(hand - d * 1.4, head, 1.3, R_LEATHER, bias)
 			c.capsule(head, head + d * 4.5, 2.7, R_LEATHER, bias + 0.08)
 
+		"dagger":
+			# Une épée en plus court et plus fin, garde comprise : c'est le
+			# rapport lame / poignée qui la distingue, pas un détail.
+			c.capsule(hand + d * 1.4, hand + d * 6.4, 0.9, R_METAL, bias)
+			var croisiere := hand + d * 2.0
+			c.capsule(croisiere - perp * 1.5, croisiere + perp * 1.5, 0.8, R_ACCENT, bias)
+			c.capsule(hand - d * 1.4, hand + d * 1.6, 1.0, R_LEATHER, bias)
+
+		"mace":
+			# Manche long, tête courte et large, et deux ailettes en travers :
+			# sans elles la tête se lit comme le cristal d'un bâton.
+			var tete := hand + d * 6.0
+			c.capsule(hand - d * 1.6, tete, 1.0, R_LEATHER, bias)
+			c.capsule(tete, tete + d * 3.4, 2.5, R_METAL, bias)
+			c.capsule(
+				tete + d * 1.7 - perp * 3.0, tete + d * 1.7 + perp * 3.0, 0.9, R_METAL, bias + 0.12
+			)
+
 		"wand":
 			# Un bâton court. Le cristal reste au niveau maximal, comme celui du
 			# staff : c'est une source de lumière, elle ne s'assombrit pas avec
 			# le manche.
 			c.capsule(hand - d * 1.8, hand + d * 5.2, 1.0, R_LEATHER, bias)
+			# La poignée d'étoffe. Elle a été ajoutée pour l'icône : le manche
+			# est mince et le cristal, qui occupe presque toute la silhouette,
+			# garde l'or constant d'un palier à l'autre — les trois baguettes de
+			# la lignée se ressemblaient donc trait pour trait. L'étoffe, elle,
+			# change avec le palier, et elle éloigne au passage la baguette de
+			# la dague, qui a la même longueur.
+			c.capsule(hand - d * 1.4, hand + d * 1.4, 1.4, R_CLOTH, bias)
 			c.disc(hand + d * 5.8, 1.5, R_ACCENT, 1.0)
 
 		"staff":

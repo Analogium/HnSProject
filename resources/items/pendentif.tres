@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_3s51a"]
+
+[resource]
+script = ExtResource("1_3s51a")
+id = "pendentif"
+display_name = "Pendentif"
+kind = "amulet"
+family = "amulet"
+tags = PackedStringArray("amulet", "jewellery")
+lignee = "amulette"
+palier = 3
+niveau_requis = 35
+implicit_stat = "max_mana"
+implicit_value = 58.0

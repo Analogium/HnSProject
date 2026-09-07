@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_8oa0c"]
+
+[resource]
+script = ExtResource("1_8oa0c")
+id = "marteau_de_guerre"
+display_name = "Marteau de guerre"
+kind = "mace"
+tags = PackedStringArray("weapon", "melee", "blunt")
+grid_size = Vector2i(1, 3)
+lignee = "contondante"
+palier = 3
+niveau_requis = 40
+implicit_stat = "attack_damage"
+implicit_value = 21.0

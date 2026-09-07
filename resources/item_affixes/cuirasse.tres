@@ -1,13 +1,66 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_ticyo"]
+
+[sub_resource type="Resource" id="Resource_6t325"]
+script = ExtResource("2_ticyo")
+niveau_requis = 57
+min_value = 216.0
+max_value = 265.0
+
+[sub_resource type="Resource" id="Resource_nsvkx"]
+script = ExtResource("2_ticyo")
+niveau_requis = 48
+min_value = 173.0
+max_value = 215.0
+
+[sub_resource type="Resource" id="Resource_dhlir"]
+script = ExtResource("2_ticyo")
+niveau_requis = 39
+min_value = 135.0
+max_value = 172.0
+
+[sub_resource type="Resource" id="Resource_op0q5"]
+script = ExtResource("2_ticyo")
+niveau_requis = 31
+min_value = 103.0
+max_value = 134.0
+
+[sub_resource type="Resource" id="Resource_kglig"]
+script = ExtResource("2_ticyo")
+niveau_requis = 23
+min_value = 76.0
+max_value = 102.0
+
+[sub_resource type="Resource" id="Resource_a2812"]
+script = ExtResource("2_ticyo")
+niveau_requis = 16
+min_value = 53.0
+max_value = 75.0
+
+[sub_resource type="Resource" id="Resource_mn14l"]
+script = ExtResource("2_ticyo")
+niveau_requis = 10
+min_value = 35.0
+max_value = 52.0
+
+[sub_resource type="Resource" id="Resource_pucxk"]
+script = ExtResource("2_ticyo")
+niveau_requis = 5
+min_value = 21.0
+max_value = 34.0
+
+[sub_resource type="Resource" id="Resource_6r0q4"]
+script = ExtResource("2_ticyo")
+min_value = 12.0
+max_value = 20.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "cuirasse"
-stat = "armor"
-percent = false
-min_value = 12.0
-max_value = 40.0
-weight = 9
 tags = PackedStringArray("armour")
+exclut = PackedStringArray()
+stat = "armor"
+tiers = Array[ExtResource("2_ticyo")]([SubResource("Resource_6t325"), SubResource("Resource_nsvkx"), SubResource("Resource_dhlir"), SubResource("Resource_op0q5"), SubResource("Resource_kglig"), SubResource("Resource_a2812"), SubResource("Resource_mn14l"), SubResource("Resource_pucxk"), SubResource("Resource_6r0q4")])
+weight = 9

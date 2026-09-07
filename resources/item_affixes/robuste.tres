@@ -1,13 +1,48 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_cdbyp"]
+
+[sub_resource type="Resource" id="Resource_bo06r"]
+script = ExtResource("2_cdbyp")
+niveau_requis = 54
+min_value = 35.0
+max_value = 42.0
+
+[sub_resource type="Resource" id="Resource_tfr0r"]
+script = ExtResource("2_cdbyp")
+niveau_requis = 42
+min_value = 27.0
+max_value = 34.0
+
+[sub_resource type="Resource" id="Resource_vl58h"]
+script = ExtResource("2_cdbyp")
+niveau_requis = 31
+min_value = 20.0
+max_value = 26.0
+
+[sub_resource type="Resource" id="Resource_d8pam"]
+script = ExtResource("2_cdbyp")
+niveau_requis = 20
+min_value = 14.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_072e0"]
+script = ExtResource("2_cdbyp")
+niveau_requis = 10
+min_value = 9.0
+max_value = 13.0
+
+[sub_resource type="Resource" id="Resource_7mlm7"]
+script = ExtResource("2_cdbyp")
+min_value = 5.0
+max_value = 8.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "robuste"
+tags = PackedStringArray("armour", "belt")
+exclut = PackedStringArray()
 stat = "max_health"
 percent = true
-min_value = 5.0
-max_value = 15.0
-weight = 10
-tags = PackedStringArray("armour", "belt")
+tiers = Array[ExtResource("2_cdbyp")]([SubResource("Resource_bo06r"), SubResource("Resource_tfr0r"), SubResource("Resource_vl58h"), SubResource("Resource_d8pam"), SubResource("Resource_072e0"), SubResource("Resource_7mlm7")])

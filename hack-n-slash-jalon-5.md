@@ -521,18 +521,18 @@ suivantes sont le contenu ; la dernière est l'écran.
       Tests : un fichier de version 1 se recharge avec ses objets et leurs
       valeurs ; un objet neuf porte le niveau de la zone ; un aller-retour sur le
       disque conserve le niveau.
-- [ ] **3. Les tiers.** `ItemAffixTier`, le tirage par niveau, l'affixe tiré qui
+- [x] **3. Les tiers.** `ItemAffixTier`, le tirage par niveau, l'affixe tiré qui
       retient son identifiant et son tier, la sauvegarde des deux. Les dix
       affixes existants passent en échelles. Tests : monotonie de chaque échelle ;
       un objet de niveau 1 ne sort jamais un tier verrouillé ; à niveau 60 tous
       les tiers sont atteignables ; un objet rechargé retrouve ses tiers.
-- [ ] **4. La réserve élargie.** Une vingtaine d'affixes de plus — résistances,
+- [x] **4. La réserve élargie.** Une vingtaine d'affixes de plus — résistances,
       esquive, mana et régénérations, attributs, dégâts de sort — chacun avec ses
       tiers et ses étiquettes. Tests : chaque statistique qui doit être
       atteignable l'est par au moins un affixe ; chaque base a au moins quatre
       affixes disponibles à niveau d'objet 1, sinon les premières zones ne
       lâchent que du blanc ; les règles du §3.4 vérifiées base par base.
-- [ ] **5. Les paliers de bases.** Les `.tres`, les lignées, les niveaux requis,
+- [x] **5. Les paliers de bases.** Les `.tres`, les lignées, les niveaux requis,
       les implicites croissants, la règle des deux meilleurs paliers, les icônes
       des nouveaux `kind` et la distinction visuelle entre paliers. Tests :
       monotonie d'une lignée ; chaque emplacement a au moins une base disponible
@@ -550,6 +550,102 @@ suivantes sont le contenu ; la dernière est l'écran.
       lecture de l'état réel de la touche. Capture avec Alt maintenu sur un objet
       à quatre affixes, et une capture d'un objet chargé depuis une sauvegarde de
       version 1 — celui qui n'a pas de tiers à montrer.
+
+### Ce que l'étape 5 a changé au plan
+
+- **Quarante et une bases, quinze lignées.** Le tableau du §5.2 en annonçait une
+  trentaine ; la dague a pris sa propre lignée plutôt que de partager celle des
+  lames — deux paliers au même niveau dans une lignée, c'est une lignée qui n'en
+  est pas une, et le test de monotonie le refuse.
+- **`heavy` et `light` sont enfin posées, et elles se partagent les armures
+  autrement que prévu.** L'armure **plate** reste sur toute pièce d'armure — la
+  demande initiale la voulait sur le casque, le torse, les gants et les bottes ;
+  c'est l'armure **en pourcentage** qui est passée aux lourdes, et l'esquive aux
+  légères. Une pièce lourde multiplie des plaques, une pièce légère n'en a pas à
+  multiplier : c'est ce qui donne un sens au choix entre une cotte de mailles et
+  une tunique, et les deux étiquettes ont chacune un affixe qui les lit.
+- **Les gants et les bottes sont des pièces légères.** Du cuir dans la forge,
+  des implicites de cadence et de vitesse : les ranger avec les plaques aurait
+  donné trois emplacements légers contre six lourds, et l'esquive n'aurait
+  jamais été un choix.
+- **Cinq dessins de plus, et une poignée d'étoffe sur la baguette.** La planche
+  a tranché sur un point que le plan ne prévoyait pas : les trois paliers de la
+  lignée d'incantation se ressemblaient trait pour trait, parce que le cristal
+  occupe presque toute l'icône et que son or est **volontairement** constant —
+  c'est la couleur qui dit « ça compte » partout ailleurs dans le jeu. Une
+  poignée d'étoffe, qui elle change de palier en palier, les sépare, et éloigne
+  au passage la baguette de la dague, qui a la même longueur.
+- **La galerie a deux planches d'objets** (`F4`, flèches). Elle ne montrait que
+  les archétypes ; le jalon 4 affirmait pourtant que « la galerie est l'endroit
+  où on règle les icônes », ce qui était faux. Quarante et une icônes se
+  comparent côte à côte ou ne se comparent pas. Agrandies deux fois, comme les
+  archétypes : une planche qui montre plus petit que le jeu ne sert à rien —
+  la première version, à la taille native, ne permettait de juger de rien.
+- **La règle des deux paliers vit dans `ItemCatalog.disponibles`**, pas dans
+  `LootTable` : le catalogue sait ce qu'il contient, la table de butin tire dans
+  ce qu'on lui donne. Conséquence mesurable : une zone de niveau 60 ne lâche plus
+  l'épée de départ, seulement l'épée large et la lame de guerre — et un test
+  l'écrit noir sur blanc.
+
+### Ce que l'étape 4 a changé au plan
+
+- **Quinze affixes, pas vingt.** Les cinq résistances comptent pour cinq lignes
+  d'une même idée ; le reste ouvre l'esquive, l'armure en pourcentage, la
+  réserve et ses deux régénérations, l'incantation et les trois attributs. La
+  réserve passe de dix à vingt-cinq, et la plus pauvre des bases — l'épée et la
+  baguette, à égalité — a maintenant neuf affixes possibles contre deux à six
+  avant.
+- **`heavy` et `light` ne sont toujours pas posées**, et l'esquive vise
+  `armour`. Le §3.4 la voulait sur `light` : il n'existe encore aucune base
+  légère, et une étiquette sans porteur est une règle qu'on croit appliquée.
+  C'est l'étape 5, avec la tunique et la capuche, qui posera les deux étiquettes
+  **et** resserrera l'esquive dessus — c'est un reciblage d'un affixe, pas un
+  ajout, et il tient en une ligne de `.tres`.
+- **Les attributs sont volontairement universels**, armes comprises. Ils ne
+  servent à rien par eux-mêmes et n'existent que par ce qu'ils dérivent : les
+  réserver à un emplacement n'apprendrait rien à personne, et c'est le seul
+  groupe d'affixes qui n'a ni autorisation ni exclusion.
+- **Le seuil du test passe de deux à quatre affixes par base, et se mesure au
+  niveau 1.** Deux affixes ne font pas deux objets différents, ils font deux
+  fois le même. Mesuré au niveau 1 plutôt qu'à 60, il attrape en plus l'échelle
+  dont le dernier palier serait écrit trop haut — celle qui viderait les
+  premières zones sans un mot.
+- **La couverture se vérifie dans les deux sens.** L'ancien test disait que tout
+  affixe se lit sur la fiche ; le nouveau dit que toute ligne de la fiche est
+  atteignable par un affixe. Une statistique qu'on regarde sans jamais pouvoir
+  agir dessus est aussi inutile qu'un affixe invisible. Le temps de recharge est
+  le seul champ hors de portée, et il n'est pas non plus sur la fiche : c'est la
+  cadence de l'outil, pas l'adresse de celui qui le tient.
+
+### Ce que l'étape 3 a changé au plan
+
+- **L'arrondi est passé du palier à l'affixe.** La règle d'avant les paliers le
+  déduisait de la borne haute — entier au-dessus de 1, centième en dessous. Une
+  échelle qui traverse 1, comme celle des dégâts critiques (0,2 en bas, 1,5 en
+  haut), aurait affiché « +0,35 » à un palier et « +1 » au suivant, pour le même
+  affixe. `ItemAffix.arrondi` est donc un champ, et c'est un champ de moins
+  deviné.
+- **Un affixe sans provenance est un état légitime**, pas un cas à éviter.
+  `Item.new` accepte aussi bien des `RolledAffix` que de simples `StatMod`, qui
+  deviennent alors des affixes orphelins : c'est exactement ce qu'est un objet
+  relu d'une sauvegarde de version 1, et il fallait bien le représenter. Le
+  bonus s'applique, l'infobulle n'aura rien à montrer, et **rien n'est écrit
+  dans le fichier** — resauvegarder un vieil objet ne lui invente pas un palier.
+- **Le premier palier de chaque échelle exige le niveau 1**, et un test l'exige
+  aussi. C'était une intention du §4.1 ; sans assertion, le premier affixe écrit
+  distraitement aurait disparu des premières zones sans que rien ne le dise.
+- **Le butin des zones de niveau 1 est plus modeste qu'avant.** La fourchette
+  unique d'un affixe du jalon 4 couvrait ce qui est aujourd'hui deux paliers :
+  « acéré » tirait 2 à 8, il tire maintenant 2 à 4 au niveau 1 et n'atteint 5 à
+  8 qu'au niveau 6. C'est la conséquence directe d'avoir posé une échelle sous
+  les valeurs existantes plutôt qu'au-dessus, et c'est le bon sens : les zones
+  profondes doivent améliorer le butin, pas simplement l'égaler.
+- **Les `.tres` sont générés, puis relus par un test.** Deux cents lignes de
+  paliers saisies à la main dans neuf fichiers, c'est une faute de frappe
+  garantie ; elles ont été posées par un script jetable et c'est le test de
+  monotonie qui les garde — niveau qui monte, fourchette qui monte, signe qui ne
+  change pas. Le test compare en **valeur absolue** : un affixe dont le bon sens
+  est négatif s'améliorera en descendant, et le test le suivra sans réécriture.
 
 ### Ce que l'étape 2 a changé au plan
 

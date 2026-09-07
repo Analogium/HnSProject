@@ -762,4 +762,6 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	# s'en charge, aucun objet n'est déformé.
 	var place := _place_libre(r)
 	var propre := place if fill else _span_size(Inventory.footprint(item)).min(place)
-	_draw_centered(SpriteForge.inventory_icon(item.base.kind, Vector2i(propre)), r)
+	_draw_centered(
+		SpriteForge.inventory_icon(item.base.kind, Vector2i(propre), item.base.palier), r
+	)

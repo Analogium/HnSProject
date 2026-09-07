@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_rqt4m"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_8s3ay"]
+
+[sub_resource type="Resource" id="Resource_yxxa8"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 54
+min_value = 78.0
+max_value = 100.0
+
+[sub_resource type="Resource" id="Resource_cgihf"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 44
+min_value = 59.0
+max_value = 77.0
+
+[sub_resource type="Resource" id="Resource_kb2dj"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 34
+min_value = 43.0
+max_value = 58.0
+
+[sub_resource type="Resource" id="Resource_hhpqj"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 25
+min_value = 30.0
+max_value = 42.0
+
+[sub_resource type="Resource" id="Resource_r0q62"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 16
+min_value = 20.0
+max_value = 29.0
+
+[sub_resource type="Resource" id="Resource_lms4d"]
+script = ExtResource("2_8s3ay")
+niveau_requis = 8
+min_value = 12.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_4ujsd"]
+script = ExtResource("2_8s3ay")
+min_value = 6.0
+max_value = 11.0
+
+[resource]
+script = ExtResource("1_rqt4m")
+id = "sagace"
+tags = PackedStringArray("caster", "helmet", "jewellery")
+exclut = PackedStringArray()
+stat = "max_mana"
+tiers = Array[ExtResource("2_8s3ay")]([SubResource("Resource_yxxa8"), SubResource("Resource_cgihf"), SubResource("Resource_kb2dj"), SubResource("Resource_hhpqj"), SubResource("Resource_r0q62"), SubResource("Resource_lms4d"), SubResource("Resource_4ujsd")])
+weight = 8

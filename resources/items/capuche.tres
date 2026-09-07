@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_t0xie"]
+
+[resource]
+script = ExtResource("1_t0xie")
+id = "capuche"
+display_name = "Capuche"
+kind = "hood"
+family = "helmet"
+tags = PackedStringArray("helmet", "armour", "light")
+grid_size = Vector2i(2, 2)
+lignee = "casque_leger"
+implicit_stat = "evasion"
+implicit_value = 14.0

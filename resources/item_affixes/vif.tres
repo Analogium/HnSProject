@@ -1,13 +1,49 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_cys1f"]
+
+[sub_resource type="Resource" id="Resource_eh341"]
+script = ExtResource("2_cys1f")
+niveau_requis = 54
+min_value = 24.0
+max_value = 28.0
+
+[sub_resource type="Resource" id="Resource_1fmfb"]
+script = ExtResource("2_cys1f")
+niveau_requis = 42
+min_value = 20.0
+max_value = 23.0
+
+[sub_resource type="Resource" id="Resource_guacq"]
+script = ExtResource("2_cys1f")
+niveau_requis = 31
+min_value = 16.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_sn24x"]
+script = ExtResource("2_cys1f")
+niveau_requis = 20
+min_value = 12.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_c0wd5"]
+script = ExtResource("2_cys1f")
+niveau_requis = 10
+min_value = 8.0
+max_value = 11.0
+
+[sub_resource type="Resource" id="Resource_ar2h3"]
+script = ExtResource("2_cys1f")
+min_value = 4.0
+max_value = 7.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "vif"
+tags = PackedStringArray("melee", "gloves", "jewellery")
+exclut = PackedStringArray()
 stat = "attack_speed"
 percent = true
-min_value = 4.0
-max_value = 12.0
+tiers = Array[ExtResource("2_cys1f")]([SubResource("Resource_eh341"), SubResource("Resource_1fmfb"), SubResource("Resource_guacq"), SubResource("Resource_sn24x"), SubResource("Resource_c0wd5"), SubResource("Resource_ar2h3")])
 weight = 8
-tags = PackedStringArray("melee", "gloves", "jewellery")

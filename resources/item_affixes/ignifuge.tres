@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_2mh66"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_0tonj"]
+
+[sub_resource type="Resource" id="Resource_kqdu4"]
+script = ExtResource("2_0tonj")
+niveau_requis = 48
+min_value = 29.0
+max_value = 36.0
+
+[sub_resource type="Resource" id="Resource_d57o0"]
+script = ExtResource("2_0tonj")
+niveau_requis = 36
+min_value = 22.0
+max_value = 28.0
+
+[sub_resource type="Resource" id="Resource_hvg73"]
+script = ExtResource("2_0tonj")
+niveau_requis = 24
+min_value = 16.0
+max_value = 21.0
+
+[sub_resource type="Resource" id="Resource_fnp1b"]
+script = ExtResource("2_0tonj")
+niveau_requis = 12
+min_value = 10.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_1rpwm"]
+script = ExtResource("2_0tonj")
+min_value = 5.0
+max_value = 9.0
+
+[resource]
+script = ExtResource("1_2mh66")
+id = "ignifuge"
+tags = PackedStringArray()
+exclut = PackedStringArray("weapon")
+stat = "res_fire"
+tiers = Array[ExtResource("2_0tonj")]([SubResource("Resource_kqdu4"), SubResource("Resource_d57o0"), SubResource("Resource_hvg73"), SubResource("Resource_fnp1b"), SubResource("Resource_1rpwm")])
+weight = 9

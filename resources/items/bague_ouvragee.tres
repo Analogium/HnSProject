@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_oies3"]
+
+[resource]
+script = ExtResource("1_oies3")
+id = "bague_ouvragee"
+display_name = "Bague ouvragée"
+kind = "ring"
+family = "ring"
+tags = PackedStringArray("ring", "jewellery")
+lignee = "anneau"
+palier = 2
+niveau_requis = 16
+implicit_stat = "crit_chance"
+implicit_value = 0.04

@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_ruilm"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_igtvc"]
+
+[sub_resource type="Resource" id="Resource_nf3sg"]
+script = ExtResource("2_igtvc")
+niveau_requis = 54
+min_value = 33.0
+max_value = 42.0
+
+[sub_resource type="Resource" id="Resource_fvwmt"]
+script = ExtResource("2_igtvc")
+niveau_requis = 42
+min_value = 25.0
+max_value = 32.0
+
+[sub_resource type="Resource" id="Resource_mdjh1"]
+script = ExtResource("2_igtvc")
+niveau_requis = 31
+min_value = 18.0
+max_value = 24.0
+
+[sub_resource type="Resource" id="Resource_pwllv"]
+script = ExtResource("2_igtvc")
+niveau_requis = 20
+min_value = 12.0
+max_value = 17.0
+
+[sub_resource type="Resource" id="Resource_a7dmb"]
+script = ExtResource("2_igtvc")
+niveau_requis = 10
+min_value = 7.0
+max_value = 11.0
+
+[sub_resource type="Resource" id="Resource_t1kou"]
+script = ExtResource("2_igtvc")
+min_value = 3.0
+max_value = 6.0
+
+[resource]
+script = ExtResource("1_ruilm")
+id = "erudit"
+tags = PackedStringArray()
+exclut = PackedStringArray()
+stat = "intelligence"
+tiers = Array[ExtResource("2_igtvc")]([SubResource("Resource_nf3sg"), SubResource("Resource_fvwmt"), SubResource("Resource_mdjh1"), SubResource("Resource_pwllv"), SubResource("Resource_a7dmb"), SubResource("Resource_t1kou")])
+weight = 8

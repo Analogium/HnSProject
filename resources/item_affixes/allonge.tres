@@ -1,13 +1,42 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_uu3nr"]
+
+[sub_resource type="Resource" id="Resource_k060x"]
+script = ExtResource("2_uu3nr")
+niveau_requis = 48
+min_value = 14.0
+max_value = 17.0
+
+[sub_resource type="Resource" id="Resource_indlb"]
+script = ExtResource("2_uu3nr")
+niveau_requis = 36
+min_value = 11.0
+max_value = 13.0
+
+[sub_resource type="Resource" id="Resource_nhnaq"]
+script = ExtResource("2_uu3nr")
+niveau_requis = 24
+min_value = 8.0
+max_value = 10.0
+
+[sub_resource type="Resource" id="Resource_5v5fc"]
+script = ExtResource("2_uu3nr")
+niveau_requis = 12
+min_value = 5.0
+max_value = 7.0
+
+[sub_resource type="Resource" id="Resource_d2dgh"]
+script = ExtResource("2_uu3nr")
+min_value = 2.0
+max_value = 4.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "allonge"
-stat = "attack_range"
-percent = false
-min_value = 2.0
-max_value = 6.0
-weight = 8
 tags = PackedStringArray("melee")
+exclut = PackedStringArray()
+stat = "attack_range"
+tiers = Array[ExtResource("2_uu3nr")]([SubResource("Resource_k060x"), SubResource("Resource_indlb"), SubResource("Resource_nhnaq"), SubResource("Resource_5v5fc"), SubResource("Resource_d2dgh")])
+weight = 8

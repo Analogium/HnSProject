@@ -69,13 +69,30 @@ extends Resource
 ## toujours d'un bloc.
 @export var grid_size: Vector2i = Vector2i(1, 1)
 
+## La suite de bases à laquelle celle-ci appartient : « lame », « bouclier »,
+## « casque_leger »… Une lignée, c'est le même objet à trois âges — une épée, une
+## épée large, une lame de guerre — et c'est l'unité sur laquelle la table de
+## butin raisonne : elle ne garde que les meilleurs paliers **de chaque lignée**,
+## sinon trente-neuf bases tirées à égalité donneraient une chute utile sur cinq.
+##
+## Un emplacement peut en compter plusieurs : le torse a sa lignée lourde et sa
+## légère, et c'est ce qui fait qu'on choisit entre l'armure et l'esquive au lieu
+## de recevoir la seule armure qui existe.
+@export var lignee: String = ""
+
+## Le rang dans la lignée, 1 pour le plus modeste. Le test de monotonie exige
+## qu'un palier supérieur demande un niveau supérieur **et** donne un implicite
+## supérieur : une lignée où le troisième palier vaut moins que le deuxième est
+## un piège que personne ne remarque avant de comparer deux objets en jeu.
+@export var palier: int = 1
+
 ## Le niveau de zone à partir duquel cette base peut tomber. Une seule borne,
 ## basse : au-dessus, la base reste dans le tirage — c'est le palier suivant de
 ## sa lignée qui la chassera, pas un plafond écrit ici.
 ##
-## Toutes les bases du jalon 4 valent 1 : elles sont le premier palier de leur
-## lignée, et le jeu doit pouvoir tout habiller dès la première zone. Ce sont les
-## paliers de l'étape 5 qui donneront ses valeurs à ce champ.
+## Le premier palier de chaque lignée vaut 1, ou presque : le jeu doit pouvoir
+## habiller un personnage entier dès la première zone, et c'est un test qui le
+## vérifie pour chaque emplacement, à chaque niveau.
 @export var niveau_requis: int = 1
 
 @export_group("Implicite")

@@ -1,15 +1,16 @@
-[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemBase" format=3]
 
-[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_epx53"]
 
 [resource]
-script = ExtResource("1_item")
+script = ExtResource("1_epx53")
 id = "gants"
 display_name = "Gants"
 kind = "gloves"
 family = "gloves"
-tags = PackedStringArray("gloves", "armour")
+tags = PackedStringArray("gloves", "armour", "light")
 grid_size = Vector2i(2, 2)
+lignee = "gants"
 implicit_stat = "attack_speed"
 implicit_percent = true
 implicit_value = 8.0

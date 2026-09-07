@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_spcpf"]
+
+[resource]
+script = ExtResource("1_spcpf")
+id = "chevaliere"
+display_name = "Chevalière"
+kind = "ring"
+family = "ring"
+tags = PackedStringArray("ring", "jewellery")
+lignee = "anneau"
+palier = 3
+niveau_requis = 34
+implicit_stat = "crit_chance"
+implicit_value = 0.06

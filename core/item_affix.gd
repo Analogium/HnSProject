@@ -1,13 +1,16 @@
 class_name ItemAffix
 extends Resource
 
-## La *définition* d'un affixe d'objet : quelle statistique, dans quelle
-## fourchette. Le tirage, lui, donne un StatMod — un affixe sur le disque, mille
+## La *définition* d'un affixe d'objet : quelle statistique, et son échelle de
+## paliers. Le tirage, lui, donne un RolledAffix — un affixe sur le disque, mille
 ## exemplaires différents en jeu.
 ##
 ## Une fourchette et non une valeur fixe : c'est elle qui fait qu'on regarde
 ## deux épées « acérées » avant de choisir. Sans elle, un affixe est un
 ## interrupteur et deux objets du même type sont interchangeables.
+##
+## Et une **échelle** de fourchettes depuis le jalon 5 : le niveau de l'objet
+## ouvre des paliers, et c'est par là que descendre plus bas rapporte mieux.
 
 @export var id: String = ""
 
@@ -41,10 +44,24 @@ extends Resource
 ## l'inverse en fin de partie.
 @export var percent: bool = false
 
-## Fourchette du tirage, bornes comprises. Peut être négative : un temps de
-## recharge qui baisse est un bon affixe.
-@export var min_value: float = 1.0
-@export var max_value: float = 1.0
+## Les paliers, **du meilleur au pire** : le premier de la liste est le T1. Le
+## numéro est donc une position et non un champ à saisir — deux paliers portant
+## le même numéro seraient invérifiables autrement.
+##
+## Le nombre de paliers dépend de l'affixe : neuf pour l'armure qui progresse par
+## grands bonds, cinq pour la vitesse de déplacement qu'on veut garder serrée.
+## C'est ce qui fait que deux affixes ne se lisent pas à la même échelle.
+@export var tiers: Array[ItemAffixTier] = []
+
+## Le pas d'arrondi de la valeur tirée : 1 pour un affixe entier, 0.01 pour une
+## fraction. « +7 dégâts » se lit, « +7.3184 dégâts » non, et l'infobulle ne doit
+## pas mentir sur ce qui est réellement appliqué.
+##
+## Un champ et non une déduction depuis la borne haute, comme avant les paliers :
+## une même échelle peut passer sous 1 en bas et au-dessus en haut, et la règle
+## déduite aurait arrondi les paliers d'un même affixe différemment — des
+## dégâts critiques affichés « +0,35 » à un palier et « +1 » au suivant.
+@export var arrondi: float = 1.0
 
 ## Poids dans la réserve. Un affixe rare n'est pas un affixe fort — c'est un
 ## affixe qu'on est content de voir.
@@ -68,11 +85,55 @@ func fits(base: ItemBase) -> bool:
 	return false
 
 
-func roll(rng: RandomNumberGenerator) -> StatMod:
+## Les indices des paliers qu'un objet de ce niveau peut recevoir : le meilleur
+## atteint **et tous ceux du dessous**.
+##
+## Garder les mauvais paliers est la règle, pas un oubli. Sans eux, le niveau
+## d'objet cesserait d'être une chance pour devenir une garantie, et un objet de
+## haut niveau n'aurait plus rien à espérer.
+func ouverts(niveau: int) -> Array:
+	var out := []
+	for i in tiers.size():
+		if tiers[i].niveau_requis <= niveau:
+			out.append(i)
+	return out
+
+
+## Le niveau à partir duquel cet affixe existe. Rien à voir avec son meilleur
+## palier : c'est le plus bas de l'échelle, et il doit valoir 1.
+func niveau_minimum() -> int:
+	var mini := 0
+	for t in tiers:
+		if mini == 0 or t.niveau_requis < mini:
+			mini = t.niveau_requis
+	return mini
+
+
+## Un exemplaire de cet affixe pour un objet de ce niveau, ou null si aucun
+## palier n'est ouvert. L'appelant qui reçoit null ne doit pas insister : il n'y
+## a rien à tirer, et pas un tirage à recommencer.
+func roll(rng: RandomNumberGenerator, niveau: int) -> RolledAffix:
+	var index := _pick_tier(rng, niveau)
+	if index < 0:
+		return null
+	var palier: ItemAffixTier = tiers[index]
 	var mode := StatMod.Mode.PERCENT if percent else StatMod.Mode.FLAT
-	var v := rng.randf_range(min_value, max_value)
-	# Arrondi à l'unité pour les valeurs entières et au centième pour les
-	# fractions : « +7 dégâts » se lit, « +7.3184 dégâts » non, et l'infobulle
-	# n'a pas à mentir sur ce qui est réellement appliqué.
-	v = roundf(v) if absf(max_value) >= 1.0 else snappedf(v, 0.01)
-	return StatMod.new(stat, mode, v)
+	var v := snappedf(rng.randf_range(palier.min_value, palier.max_value), arrondi)
+	return RolledAffix.new(id, index + 1, StatMod.new(stat, mode, v))
+
+
+## Tirage pondéré parmi les paliers ouverts. Rend -1 quand il n'y en a aucun,
+## ce qui est un cas de jeu ordinaire : un affixe dont même le dernier palier
+## demande plus que le niveau de l'objet n'est pas dans la réserve.
+func _pick_tier(rng: RandomNumberGenerator, niveau: int) -> int:
+	var total := 0
+	for i in ouverts(niveau):
+		total += maxi(tiers[i].poids, 0)
+	if total <= 0:
+		return -1
+	var pick := rng.randi_range(1, total)
+	for i in ouverts(niveau):
+		pick -= maxi(tiers[i].poids, 0)
+		if pick <= 0:
+			return i
+	return -1

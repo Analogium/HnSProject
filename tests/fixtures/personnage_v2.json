@@ -19,8 +19,8 @@
 			"niveau": 42,
 			"cellule": [3, 1],
 			"affixes": [
-				{ "stat": "attack_damage", "mode": 0, "valeur": 6.0 },
-				{ "stat": "attack_speed", "mode": 1, "valeur": 8.0 }
+				{ "stat": "attack_damage", "mode": 0, "valeur": 6.0, "affixe": "acere", "tier": 7 },
+				{ "stat": "attack_speed", "mode": 1, "valeur": 8.0, "affixe": "vif", "tier": 5 }
 			]
 		},
 		{

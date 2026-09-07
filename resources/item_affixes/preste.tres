@@ -1,13 +1,42 @@
-[gd_resource type="Resource" script_class="ItemAffix" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
 
 [ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_bfw2y"]
+
+[sub_resource type="Resource" id="Resource_ftyhq"]
+script = ExtResource("2_bfw2y")
+niveau_requis = 48
+min_value = 19.0
+max_value = 22.0
+
+[sub_resource type="Resource" id="Resource_yny5s"]
+script = ExtResource("2_bfw2y")
+niveau_requis = 36
+min_value = 15.0
+max_value = 18.0
+
+[sub_resource type="Resource" id="Resource_ssr26"]
+script = ExtResource("2_bfw2y")
+niveau_requis = 24
+min_value = 11.0
+max_value = 14.0
+
+[sub_resource type="Resource" id="Resource_2ckeg"]
+script = ExtResource("2_bfw2y")
+niveau_requis = 12
+min_value = 7.0
+max_value = 10.0
+
+[sub_resource type="Resource" id="Resource_8bb35"]
+script = ExtResource("2_bfw2y")
+min_value = 3.0
+max_value = 6.0
 
 [resource]
 script = ExtResource("1_affix")
 id = "preste"
+tags = PackedStringArray("boots")
+exclut = PackedStringArray()
 stat = "move_speed"
 percent = true
-min_value = 3.0
-max_value = 12.0
-weight = 10
-tags = PackedStringArray("boots")
+tiers = Array[ExtResource("2_bfw2y")]([SubResource("Resource_ftyhq"), SubResource("Resource_yny5s"), SubResource("Resource_ssr26"), SubResource("Resource_2ckeg"), SubResource("Resource_8bb35")])
