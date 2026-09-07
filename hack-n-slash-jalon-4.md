@@ -283,11 +283,11 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
       emplacement libre. Aucune interface, aucune nouvelle base : uniquement le
       code d'équipement et ses tests, y compris « deux anneaux ne s'écrasent
       pas » et « un personnage sauvegardé avant ce jalon retrouve son plastron ».
-- [ ] **2. Les dix bases.** Les `.tres`, leurs identifiants, leurs implicites,
+- [x] **2. Les dix bases.** Les `.tres`, leurs identifiants, leurs implicites,
       leur encombrement. Le test du catalogue vérifie déjà la présence et
       l'unicité des identifiants ; y ajouter que **chaque emplacement a au moins
       une base**, sinon un emplacement restera vide sans que personne le voie.
-- [ ] **3. Les icônes.** Sept formes à forger, réglées dans la galerie. C'est du
+- [x] **3. Les icônes.** Sept formes à forger, réglées dans la galerie. C'est du
       dessin : la validation est une capture, pas une assertion.
 - [ ] **4. Le panneau de personnage.** La silhouette et ses dix emplacements, le
       sac en dessous, les gestes existants préservés. Test de tenue en hauteur,
@@ -299,6 +299,24 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
       donnent le même champ. Et une remesure du banc de stress.
 - [ ] **6. Les infobulles.** La table de textes, le survol, le test de
       couverture des champs, une capture.
+
+### Ce que les étapes 2 et 3 ont changé au plan
+
+- **Les affixes existants visent enfin les dix familles.** Ce n'est pas
+  l'élargissement de la réserve, qui reste hors périmètre : aucun affixe n'a été
+  ajouté. Les dix qui existaient ne visaient que `weapon` et `chest`, donc sept
+  familles sur dix n'auraient jamais lâché que des objets blancs — un
+  emplacement qui existe mais ne récompense jamais rien. `preste` (vitesse) est
+  passé du torse aux bottes, où il a un sens ; les autres se sont ouverts aux
+  familles qui leur vont. Un test exige au moins deux affixes possibles par
+  base.
+- **Le taux de chute n'a pas bougé.** Le nombre d'objets par mise à mort est le
+  même ; c'est la variété qui augmente. À remesurer en jouant : si un objet
+  précis se fait trop attendre, c'est `LootTable.BASE_CHANCE` qu'on relève,
+  comme le prévoit la section 8.
+- **`SpriteForge.GEAR` sert d'aiguillage** entre pièce d'équipement et arme, et
+  un test vérifie que chaque base du catalogue peint au moins un pixel. Une
+  icône vide ne se découvre autrement qu'en ramassant l'objet.
 
 ### Ce que l'étape 1 a changé au plan
 

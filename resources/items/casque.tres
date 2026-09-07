@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "casque"
+display_name = "Casque"
+kind = "helmet"
+family = "helmet"
+grid_size = Vector2i(2, 2)
+implicit_stat = "max_health"
+implicit_percent = false
+implicit_value = 12.0

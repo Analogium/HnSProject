@@ -8,10 +8,19 @@ class_name ItemCatalog
 ## Ajouter une base = ajouter une ligne ici et un `id` dans son `.tres`. Le test
 ## du catalogue refuse un identifiant vide ou en double.
 
+## Dans l'ordre des emplacements d'EquipmentSlots : une base manquante pour un
+## emplacement se voit en lisant la liste, et le test le confirme.
 const ALL := [
 	preload("res://resources/items/epee.tres"),
 	preload("res://resources/items/baguette.tres"),
+	preload("res://resources/items/bouclier.tres"),
+	preload("res://resources/items/casque.tres"),
 	preload("res://resources/items/plastron.tres"),
+	preload("res://resources/items/gants.tres"),
+	preload("res://resources/items/bottes.tres"),
+	preload("res://resources/items/ceinture.tres"),
+	preload("res://resources/items/amulette.tres"),
+	preload("res://resources/items/anneau.tres"),
 ]
 
 

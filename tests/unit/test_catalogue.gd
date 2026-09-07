@@ -48,3 +48,64 @@ func test_le_butin_tire_dans_le_catalogue() -> void:
 				ItemCatalog.by_id(item.base.id), "une chute doit être rechargeable"
 			)
 	assert_gt(bases_vues.size(), 1, "plusieurs bases tirées, pas toujours la même")
+
+
+# --------------------------------------------------------------------------
+# Les dix familles (jalon 4)
+# --------------------------------------------------------------------------
+
+## Un emplacement sans base est un emplacement qui restera vide toute la partie,
+## sans que rien ne le signale.
+func test_chaque_emplacement_a_au_moins_une_base() -> void:
+	var familles := {}
+	for base in ItemCatalog.ALL:
+		familles[base.family] = true
+	for id in EquipmentSlots.ids():
+		assert_true(
+			familles.has(EquipmentSlots.family_of(id)),
+			"aucune base ne va dans « %s »" % EquipmentSlots.label(id)
+		)
+
+
+## Une icône vide ne se découvre qu'en ramassant l'objet. La forge dessine soit
+## une pièce d'équipement, soit une arme : un `kind` qui n'est ni l'un ni l'autre
+## produit un dessin sans un seul pixel peint.
+func test_chaque_base_a_une_icone_non_vide() -> void:
+	for base in ItemCatalog.ALL:
+		var tex := SpriteForge.inventory_icon(base.kind, Vector2i.ZERO)
+		assert_not_null(tex, "« %s » n'a pas d'icône" % base.display_name)
+		assert_gt(
+			tex.get_size().x * tex.get_size().y, 0.0,
+			"l'icône de « %s » (kind « %s ») ne peint rien" % [base.display_name, base.kind]
+		)
+
+
+## L'implicite d'une base vise un champ de la fiche. Une faute de frappe
+## modifierait silencieusement une statistique qui n'existe pas.
+func test_les_implicites_visent_des_statistiques_reelles() -> void:
+	var fiche := CharacterStats.new()
+	for base in ItemCatalog.ALL:
+		if base.implicit_stat.is_empty():
+			continue
+		assert_true(
+			fiche.get(base.implicit_stat) != null,
+			"« %s » vise « %s », qui n'est pas dans la fiche"
+				% [base.display_name, base.implicit_stat]
+		)
+		assert_true(
+			StatMod.LABELS.has(base.implicit_stat),
+			"« %s » n'a pas de nom lisible" % base.implicit_stat
+		)
+
+
+## Une famille sans affixe ne donne que des objets blancs : l'emplacement existe
+## mais ne récompense jamais rien. Deux au minimum, sinon le tirage n'a pas de
+## quoi faire deux objets différents.
+func test_chaque_famille_a_de_quoi_tirer_des_affixes() -> void:
+	for base in ItemCatalog.ALL:
+		var possibles := ItemAffixPool.eligible(base).size()
+		assert_gte(
+			possibles, 2,
+			"« %s » (famille %s) n'a que %d affixe(s) possible(s)"
+				% [base.display_name, base.family, possibles]
+		)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "bouclier"
+display_name = "Bouclier"
+kind = "shield"
+family = "offhand"
+grid_size = Vector2i(2, 2)
+implicit_stat = "armor"
+implicit_percent = false
+implicit_value = 18.0

@@ -170,8 +170,8 @@ static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
 	var cfg := config("player", 0)
 	cfg["weapon"] = kind
 
-	if kind == "torso":
-		_plate(canvas, ICON * 0.5, 2.0)
+	if GEAR.has(kind):
+		_gear(canvas, kind, ICON * 0.5, 2.0)
 	elif upright:
 		_weapon(canvas, cfg, Vector2(ICON * 0.5, 20.0), Vector2(0.0, -1.0), 0.0)
 	else:
@@ -199,15 +199,86 @@ static func _icon(kind: String, upright: bool, target: Vector2i) -> Texture2D:
 	return tex
 
 
-## Un plastron. Contrairement aux armes il n'a pas de porteur : c'est une pièce
-## posée à plat, qui n'existe que pour l'icône — d'où son dessin ici plutôt que
-## dans le squelette d'un personnage.
-static func _plate(c: PixelCanvas, cx: float, top: float) -> void:
-	c.capsule(Vector2(cx - 5.8, top + 2.8), Vector2(cx + 5.8, top + 2.8), 2.6, R_METAL)
-	c.capsule(Vector2(cx, top + 5.0), Vector2(cx, top + 11.0), 5.2, R_METAL)
-	c.capsule(Vector2(cx - 4.0, top + 14.0), Vector2(cx + 4.0, top + 14.0), 1.7, R_LEATHER)
-	# Encolure creusée : sans elle, la plaque se lit comme un bouclier.
-	c.disc(Vector2(cx, top + 1.6), 2.1, R_LEATHER, -0.30)
+## Les pièces d'équipement qui ne sont pas des armes. Contrairement à celles-ci
+## elles n'ont pas de porteur : ce sont des objets posés à plat, qui n'existent
+## que pour l'icône — d'où leur dessin ici plutôt que dans le squelette d'un
+## personnage.
+##
+## La liste sert aussi d'aiguillage : un `kind` qui n'y est pas est une arme, et
+## part dans _weapon. Le test du catalogue vérifie que chaque base du jeu tombe
+## dans l'un des deux, sinon son icône serait vide et personne ne le verrait
+## avant de l'avoir ramassée.
+const GEAR := ["torso", "shield", "helmet", "gloves", "boots", "belt", "amulet", "ring"]
+
+
+## Chaque pièce en trois ou quatre traits. La contrainte n'est pas le détail
+## mais la **silhouette** : à 24 pixels recadrés puis réduits à la taille d'une
+## case, on reconnaît une forme, pas un dessin. Un anneau et une amulette qui se
+## ressemblent en petit sont deux objets qu'on confondra dans un sac plein —
+## d'où la chaîne en V de l'une et le trou central de l'autre.
+static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
+	match kind:
+		"torso":
+			c.capsule(Vector2(cx - 5.8, top + 2.8), Vector2(cx + 5.8, top + 2.8), 2.6, R_METAL)
+			c.capsule(Vector2(cx, top + 5.0), Vector2(cx, top + 11.0), 5.2, R_METAL)
+			c.capsule(Vector2(cx - 4.0, top + 14.0), Vector2(cx + 4.0, top + 14.0), 1.7, R_LEATHER)
+			# Encolure creusée : sans elle, la plaque se lit comme un bouclier.
+			c.disc(Vector2(cx, top + 1.6), 2.1, R_LEATHER, -0.30)
+
+		"shield":
+			# Large en haut, pointu en bas : c'est ce profil-là qui le distingue
+			# du plastron, dont les épaules sont plus étroites que le ventre.
+			c.capsule(Vector2(cx, top + 5.0), Vector2(cx, top + 10.0), 6.0, R_METAL)
+			c.capsule(Vector2(cx, top + 10.0), Vector2(cx, top + 16.5), 2.4, R_METAL)
+			c.disc(Vector2(cx, top + 7.5), 2.2, R_ACCENT, 0.30)
+
+		"helmet":
+			c.disc(Vector2(cx, top + 8.0), 4.8, R_METAL)
+			c.capsule(Vector2(cx - 4.4, top + 10.8), Vector2(cx + 4.4, top + 10.8), 1.5, R_METAL)
+			# La fente, peinte sombre par-dessus le dôme : sans elle le casque
+			# n'est qu'une bosse grise. **Au-dessus** du nasal et non traversée
+			# par lui — coupée en deux, elle se lisait comme des lunettes.
+			c.capsule(Vector2(cx - 3.4, top + 9.8), Vector2(cx + 3.4, top + 9.8), 0.9, R_LEATHER, -0.40)
+			c.capsule(Vector2(cx, top + 11.0), Vector2(cx, top + 12.6), 0.9, R_METAL, 0.25)
+
+		"gloves":
+			# Une moufle : la masse de la main, le pouce, la manchette. Le pouce
+			# **part du bord de la main** — détaché, il flottait à côté comme un
+			# second objet.
+			c.capsule(Vector2(cx + 0.4, top + 6.8), Vector2(cx + 0.4, top + 11.2), 3.0, R_METAL)
+			c.capsule(Vector2(cx - 2.4, top + 9.4), Vector2(cx - 4.2, top + 11.6), 1.4, R_METAL)
+			c.capsule(Vector2(cx - 3.6, top + 14.2), Vector2(cx + 3.6, top + 14.2), 2.2, R_LEATHER)
+
+		"boots":
+			# La tige et le pied à angle droit : c'est l'angle qui fait la botte.
+			# Tige fine et pied long — à l'inverse, la première version se lisait
+			# comme un marteau, le pied ne dépassant presque pas.
+			c.capsule(Vector2(cx - 1.0, top + 4.5), Vector2(cx - 1.0, top + 11.0), 2.4, R_LEATHER)
+			c.capsule(Vector2(cx - 2.0, top + 13.5), Vector2(cx + 5.5, top + 13.5), 2.4, R_LEATHER)
+			c.capsule(Vector2(cx - 3.6, top + 16.2), Vector2(cx + 6.2, top + 16.2), 1.0, R_METAL)
+
+		"belt":
+			c.capsule(Vector2(cx - 8.5, top + 9.0), Vector2(cx + 8.5, top + 9.0), 2.0, R_LEATHER)
+			c.capsule(Vector2(cx - 2.0, top + 9.0), Vector2(cx + 2.0, top + 9.0), 3.2, R_ACCENT)
+			# L'ardillon, creusé : une boucle pleine se lit comme une gemme.
+			c.disc(Vector2(cx, top + 9.0), 1.5, R_LEATHER, -0.40)
+
+		"amulet":
+			# Chaîne resserrée : ouverte en grand, le V se lisait comme une paire
+			# de ciseaux plutôt que comme un pendentif.
+			c.capsule(Vector2(cx - 3.4, top + 3.5), Vector2(cx - 0.6, top + 9.5), 0.8, R_METAL)
+			c.capsule(Vector2(cx + 3.4, top + 3.5), Vector2(cx + 0.6, top + 9.5), 0.8, R_METAL)
+			# Monture large et gemme réduite : à l'inverse, la gemme mangeait sa
+			# monture et le pendentif se lisait comme une étoile à quatre branches.
+			c.disc(Vector2(cx, top + 13.2), 4.0, R_METAL)
+			c.disc(Vector2(cx, top + 13.2), 1.8, R_ACCENT, 0.55)
+
+		"ring":
+			c.disc(Vector2(cx, top + 11.0), 4.8, R_METAL)
+			# Le trou, peint sombre : le canevas n'efface pas, il repeint. C'est
+			# le même procédé que l'encolure du plastron.
+			c.disc(Vector2(cx, top + 11.0), 2.5, R_LEATHER, -0.55)
+			c.disc(Vector2(cx, top + 5.6), 2.3, R_ACCENT, 0.55)
 
 
 # --------------------------------------------------------------------------

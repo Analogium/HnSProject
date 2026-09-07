@@ -10,4 +10,4 @@ percent = true
 min_value = 4.0
 max_value = 12.0
 weight = 8
-families = PackedStringArray("weapon")
+families = PackedStringArray("weapon", "gloves", "ring")

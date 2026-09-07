@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "ceinture"
+display_name = "Ceinture"
+kind = "belt"
+family = "belt"
+grid_size = Vector2i(2, 1)
+implicit_stat = "health_regen"
+implicit_percent = false
+implicit_value = 1.5
