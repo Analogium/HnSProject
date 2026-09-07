@@ -31,18 +31,36 @@ const HEADER := 16.0
 ## Deux lignes d'aide : les gestes sont maintenant trop nombreux pour tenir sur
 ## la largeur du panneau.
 const FOOTER := 22.0
-## Les emplacements d'équipement, au-dessus du sac. Deux colonnes sur trois
-## lignes chacun — la taille du plus gros objet équipable, pour que l'icône y
-## tienne quel que soit l'emplacement.
-const EQUIP_SPAN := Vector2i(2, 3)
-const EQUIP_GAP := 8.0
-## Emplacements par ligne. Les dix du jalon 4 ne tiennent pas sur une seule :
-## il en faudrait 490 pixels de large pour un cadrage qui en fait 640.
+## La fenêtre de personnage. Chaque emplacement occupe le rectangle de cases
+## qu'un objet de sa famille occuperait dans le sac : l'arme trois cases de
+## haut, le plastron deux sur trois, la bague une colonne étroite. C'est la
+## règle de Path of Exile et de Hero Siege — la place que prend un objet est une
+## information de jeu, et l'équipement doit la dire aussi.
 ##
-## Disposition provisoire, en attendant la fenêtre de personnage — la silhouette
-## entourée de ses emplacements. `_slot_rect` est la couture par laquelle elle
-## arrivera : c'est le seul endroit qui décide où se trouve un emplacement.
-const SLOT_COLUMNS := 5
+## En Rect2i et non en position seule : la **taille** fait partie de la
+## disposition. Une grille de carrés identiques donnait dix cases
+## interchangeables où plus rien n'annonçait ce qui allait où.
+##
+## Trois colonnes larges, séparées par une gouttière d'une case, et le corps qui
+## descend : le portrait, la tête et le cou en haut ; les deux mains encadrant le
+## torse ; les gants, la ceinture et les bottes en bas ; les deux bagues dans les
+## gouttières, de part et d'autre de la taille.
+const DOLL := {
+	"helmet": Rect2i(4, 0, 3, 2), "amulet": Rect2i(8, 0, 3, 2),
+	"weapon": Rect2i(0, 2, 3, 3), "chest": Rect2i(4, 2, 3, 3), "offhand": Rect2i(8, 2, 3, 3),
+	"gloves": Rect2i(0, 5, 3, 2), "belt": Rect2i(4, 5, 3, 2), "boots": Rect2i(8, 5, 3, 2),
+	"ring_left": Rect2i(3, 5, 1, 2), "ring_right": Rect2i(7, 5, 1, 2),
+}
+const DOLL_COLS := 11
+const DOLL_ROWS := 7
+
+const DOLL_AREA := Rect2i(0, 0, 2, 2)
+const DOLL_ANIM := "idle_down"
+
+## Un emplacement vide montre l'objet qu'il attend, peint très sombre : la forge
+## sait déjà dessiner un anneau et une botte, et une silhouette fantôme se
+## comprend sans lire, là où « BAGUE G. » ne tenait même pas dans sa case.
+const GHOST := Color(1.0, 1.0, 1.0, 0.13)
 ## Marge autour d'une icône dans son emplacement. Sans elle, un objet qui remplit
 ## exactement son rectangle mange les lignes de la grille et on ne voit plus où
 ## il commence.
@@ -101,6 +119,16 @@ var _hover := Vector2i(-1, -1)
 ## deux zones ne se recouvrent pas, mais un même Vector2i ne peut pas désigner
 ## à la fois « case (2,1) du sac » et « emplacement torse ».
 var _hover_slot := -1
+
+## La silhouette du personnage, au centre de la fenêtre. Dessinée par _draw et
+## non montée comme AnimatedSprite2D : un nœud enfant se peint **au-dessus** du
+## Control, donc au-dessus de l'objet qu'on traîne à la souris, qui disparaîtrait
+## derrière elle en traversant le panneau.
+var _doll_frames: SpriteFrames
+## L'image affichée, et la clé de ce qui est chargé. Sans la clé, chaque
+## rafraîchissement rebâtirait les planches et relancerait l'animation.
+var _doll_shown := 0
+var _doll_key := ""
 
 
 func _ready() -> void:
@@ -360,9 +388,47 @@ func _return_held() -> Item:
 	return item
 
 
+## Une image toutes les FPS d'animation, déduite de l'horloge plutôt que d'un
+## compteur : le panneau n'a pas de raison de tourner quand il est fermé, et un
+## compteur repartirait de zéro à chaque ouverture.
+func _process(_delta: float) -> void:
+	if not visible or _doll_frames == null:
+		return
+	var i := _doll_frame_index()
+	if i != _doll_shown:
+		_doll_shown = i
+		queue_redraw()
+
+
+func _doll_frame_index() -> int:
+	var n := _doll_frames.get_frame_count(DOLL_ANIM)
+	if n <= 1:
+		return 0
+	var fps := _doll_frames.get_animation_speed(DOLL_ANIM)
+	return int(Time.get_ticks_msec() * 0.001 * fps) % n
+
+
+## Recharge les planches quand la silhouette ou l'arme portée a changé — et
+## seulement alors : SpriteForge les met en cache, mais réassigner relancerait
+## l'animation à chaque objet ramassé.
+func _refresh_doll() -> void:
+	if _player == null:
+		return
+	var variante := _player.sprite.current_variant()
+	var arme := _player.weapon_kind()
+	var cle := "%d:%s" % [variante, arme]
+	if cle == _doll_key:
+		return
+	_doll_key = cle
+	_doll_frames = SpriteForge.frames("player", variante, arme)
+
+
 func _on_changed() -> void:
 	if _inventory != null:
 		title.text = "SAC  %d / %d cases" % [_inventory.used_cells(), _inventory.cell_count()]
+	# L'arme portée peut avoir changé : la silhouette doit tenir celle qu'on
+	# vient d'équiper, sinon la fenêtre montre un personnage qui n'existe plus.
+	_refresh_doll()
 	if visible:
 		queue_redraw()
 
@@ -373,9 +439,7 @@ func _panel_rect() -> Rect2:
 	return Rect2(Vector2.ZERO, _panel_size())
 
 
-## Le plus large des deux : la grille du sac, ou la rangée d'emplacements. Sans
-## ce maximum, les emplacements dépassaient du cadre par la droite dès qu'ils
-## sont devenus dix.
+## Le plus large des deux : la grille du sac, ou celle du personnage.
 func _panel_size() -> Vector2:
 	return Vector2(
 		maxf(_inventory.cols * (CELL + PAD) + PAD, _equip_size().x + PAD * 2.0),
@@ -388,23 +452,55 @@ func _span_size(span: Vector2i) -> Vector2:
 	return Vector2(span) * (CELL + PAD) - Vector2(PAD, PAD)
 
 
-func _slot_rect(index: int) -> Rect2:
-	var sz := _span_size(EQUIP_SPAN)
-	return Rect2(Vector2(
-		PAD + float(index % SLOT_COLUMNS) * (sz.x + EQUIP_GAP),
-		HEADER + PAD + float(index / SLOT_COLUMNS) * (sz.y + EQUIP_GAP)
-	), sz)
-
-
-## L'encombrement de la zone d'équipement, en pixels.
-func _equip_size() -> Vector2:
-	var sz := _span_size(EQUIP_SPAN)
-	var colonnes := mini(EquipmentSlots.count(), SLOT_COLUMNS)
-	var lignes := ceili(float(EquipmentSlots.count()) / float(SLOT_COLUMNS))
-	return Vector2(
-		float(colonnes) * (sz.x + EQUIP_GAP) - EQUIP_GAP,
-		float(lignes) * (sz.y + EQUIP_GAP) - EQUIP_GAP
+## Le rectangle d'une zone de la grille du personnage, en pixels du panneau.
+## Même pas de grille que le sac : les deux grilles s'alignent à l'œil, et la
+## place qu'un objet prend en haut est celle qu'il prendra en bas.
+func _doll_rect(zone: Rect2i) -> Rect2:
+	return Rect2(
+		Vector2(
+			_equip_left() + float(zone.position.x) * (CELL + PAD),
+			HEADER + PAD + float(zone.position.y) * (CELL + PAD)
+		),
+		_span_size(zone.size)
 	)
+
+
+## Les deux grilles sont centrées dans le panneau, chacune de son côté : celle
+## du personnage est la plus large et fixe donc la largeur de la fenêtre ; le sac,
+## plus étroit, serait collé à gauche avec un vide à droite qui se lit comme un
+## défaut d'alignement.
+##
+## Position entière : une grille posée sur un demi-pixel rend ses lignes floues.
+func _equip_left() -> float:
+	return _centered(_equip_size().x)
+
+
+func _grid_left() -> float:
+	return _centered(_inventory.cols * (CELL + PAD) + PAD)
+
+
+func _centered(largeur: float) -> float:
+	return maxf(floorf((_panel_size().x - largeur) * 0.5), PAD)
+
+
+func _slot_rect(index: int) -> Rect2:
+	return _doll_rect(DOLL[EquipmentSlots.ids()[index]])
+
+
+## L'objet type d'un emplacement : celui dont on peint la silhouette quand il
+## est vide. Pris dans le catalogue, donc jamais réécrit ici — une base ajoutée
+## à une famille sans emplacement se verrait aussitôt.
+static func _ghost_kind(slot: String) -> String:
+	var famille := EquipmentSlots.family_of(slot)
+	for base in ItemCatalog.ALL:
+		if base.family == famille:
+			return base.kind
+	return ""
+
+
+## L'encombrement de la grille du personnage, en pixels.
+func _equip_size() -> Vector2:
+	return _span_size(Vector2i(DOLL_COLS, DOLL_ROWS))
 
 
 ## Où commence le sac : sous la zone d'équipement.
@@ -415,7 +511,7 @@ func _grid_top() -> float:
 ## Le coin haut-gauche d'un rectangle de cases du sac, en pixels du panneau.
 func _rect_of(cell: Vector2i, span: Vector2i) -> Rect2:
 	return Rect2(
-		Vector2(PAD + cell.x * (CELL + PAD), _grid_top() + PAD + cell.y * (CELL + PAD)),
+		Vector2(_grid_left() + cell.x * (CELL + PAD), _grid_top() + PAD + cell.y * (CELL + PAD)),
 		_span_size(span)
 	)
 
@@ -425,7 +521,7 @@ func _rect_of(cell: Vector2i, span: Vector2i) -> Rect2:
 ## l'intérieur.
 func _cell_at(point: Vector2) -> Vector2i:
 	return Vector2i(
-		floori((point.x - PAD) / (CELL + PAD)),
+		floori((point.x - _grid_left()) / (CELL + PAD)),
 		floori((point.y - _grid_top() - PAD) / (CELL + PAD))
 	)
 
@@ -451,6 +547,7 @@ func _draw() -> void:
 			draw_rect(r, SLOT)
 			draw_rect(r, SLOT_EDGE, false, 1.0)
 
+	_draw_doll()
 	_draw_equipment()
 
 	var survole := _inventory.index_at(_hover) if _held == null else Inventory.EMPTY
@@ -488,26 +585,51 @@ func _draw() -> void:
 ## Les emplacements portés. Ils sont dans le même panneau que le sac et non dans
 ## une fenêtre à part : équiper est un geste entre les deux, et deux fenêtres
 ## obligeraient à en ouvrir une seconde pour un aller-retour.
+## Le rectangle laissé libre par les emplacements, au centre de la grille.
+func _doll_area_rect() -> Rect2:
+	return _doll_rect(DOLL_AREA)
+
+
+## Le personnage tel qu'il est dans le monde : sa silhouette choisie à la
+## création, et l'arme qu'il tient réellement. C'est le seul endroit du jeu où
+## on le voit en grand, et la seule façon de vérifier d'un coup d'œil que
+## l'épée qu'on vient d'équiper est bien celle qu'on porte.
+func _draw_doll() -> void:
+	var zone := _doll_area_rect()
+	draw_rect(zone, SLOT)
+	draw_rect(zone, SLOT_EDGE, false, 1.0)
+	if _doll_frames == null or not _doll_frames.has_animation(DOLL_ANIM):
+		return
+	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
+	if tex == null:
+		return
+	# À sa taille native : le sprite fait 32 pixels et le portrait 41. L'agrandir
+	# le ferait déborder sur le casque et l'arme.
+	#
+	# Position entière : un sprite à cheval sur deux pixels bave, et le rendu
+	# pixel art ne le pardonne pas.
+	draw_texture_rect(
+		tex, Rect2((zone.get_center() - tex.get_size() * 0.5).round(), tex.get_size()), false
+	)
+
+
 func _draw_equipment() -> void:
-	var font := get_theme_default_font()
 	for i in EquipmentSlots.count():
 		var slot: String = EquipmentSlots.ids()[i]
 		var r := _slot_rect(i)
 		var item: Item = _player.equipped(slot) if _player != null else null
 
-		draw_rect(r, SLOT)
-		draw_rect(r, SLOT_EDGE, false, 1.0)
 		if item != null:
-			_draw_item(item, r, true)
-		elif font != null:
-			# Le nom de l'emplacement ne s'affiche que vide : une fois rempli,
-			# l'icône dit déjà de quoi il s'agit.
-			# Centré **et borné** à la largeur de la case : mesuré puis centré à la
-			# main, « ANNEAU D. » débordait de son emplacement sur le bord du
-			# panneau. La largeur passée à draw_string fait les deux d'un coup.
-			draw_string(font, Vector2(r.position.x, r.get_center().y + 3.0),
-				EquipmentSlots.label(slot), HORIZONTAL_ALIGNMENT_CENTER, r.size.x,
-				FONT_SIZE, UiPalette.LABEL)
+			# Le fond prend la couleur de rareté, très assombrie : c'est la même
+			# information que le cadre d'un objet rangé et que le halo au sol, et
+			# elle se lit ici sans survoler, d'un bout à l'autre de la fenêtre.
+			draw_rect(r, item.color().darkened(0.80))
+			draw_rect(r, item.color().darkened(0.35), false, 1.0)
+			_draw_item(item, r, false, true)
+		else:
+			draw_rect(r, SLOT)
+			draw_rect(r, SLOT_EDGE, false, 1.0)
+			_draw_ghost(slot, r)
 
 		if _hover_slot != i:
 			continue
@@ -515,11 +637,26 @@ func _draw_equipment() -> void:
 			# Posée **après** l'objet porté : peinte avant, son fond opaque
 			# l'effaçait, et un emplacement occupé n'annonçait jamais s'il
 			# accepte ce qu'on lui apporte.
-			var accepte: bool = EquipmentSlots.accepts(slot, _held)
-			draw_rect(r, CAN_PLACE if accepte else BLOCKED)
+			draw_rect(r, CAN_PLACE if EquipmentSlots.accepts(slot, _held) else BLOCKED)
 		elif item != null:
 			draw_rect(r, item.color(), false, 1.0)
 			_draw_tooltip(item, r.position.y)
+
+
+## La silhouette de ce que l'emplacement attend, presque effacée. Elle remplace
+## le nom de l'emplacement : « CEINTURE » tenait dans sa case, « BAGUE G. » non,
+## et deux libellés tronqués au même endroit annonçaient deux emplacements
+## qu'on ne distinguait plus.
+func _draw_ghost(slot: String, r: Rect2) -> void:
+	var kind := _ghost_kind(slot)
+	if kind.is_empty():
+		return
+	var cible := r.size - Vector2(MARGIN, MARGIN) * 2.0
+	var tex := SpriteForge.inventory_icon(kind, Vector2i(cible))
+	draw_texture_rect(
+		tex, Rect2((r.get_center() - tex.get_size() * 0.5).round(), tex.get_size()),
+		false, GHOST
+	)
 
 
 ## Ce que porte l'objet, à côté du sac. Sans elle, un objet à six affixes et une
@@ -584,15 +721,21 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 
 ## framed : le cadre de l'objet rangé. L'objet tenu à la main s'en passe — il
 ## est déjà posé sur la teinte verte ou rouge qui dit s'il peut tomber là.
-func _draw_item(item: Item, r: Rect2, framed: bool) -> void:
+func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	if framed:
 		draw_rect(r, ITEM_BACK)
 		draw_rect(r, item.color().darkened(ITEM_EDGE_DIM), false, 1.0)
 
-	# L'icône est dimensionnée sur l'encombrement de l'objet et non sur le
-	# rectangle qui l'accueille : un emplacement d'équipement est plus large que
-	# la plupart des objets, et une épée n'a pas à y tripler de taille.
-	var propre := _span_size(Inventory.footprint(item)) - Vector2(MARGIN, MARGIN) * 2.0
+	# Dans le sac, l'icône est dimensionnée sur l'encombrement de l'objet : c'est
+	# lui qui dit la place qu'il prend, et une épée n'a pas à s'étirer sur la
+	# case voisine. Dans un emplacement d'équipement (`fill`), elle **remplit sa
+	# case** : celle-ci est déjà taillée à la famille de l'objet, et une baguette
+	# dessinée petite au milieu d'un grand cadre se lisait comme un oubli.
+	##
+	# Le facteur d'agrandissement reste entier et l'aspect conservé : la forge
+	# s'en charge, aucun objet n'est déformé.
+	var place := r.size - Vector2(MARGIN, MARGIN) * 2.0
+	var propre := place if fill else _span_size(Inventory.footprint(item)).min(place)
 	var tex := SpriteForge.inventory_icon(item.base.kind, Vector2i(propre))
 	# Position entière : une icône à cheval sur deux pixels bave, et c'est
 	# précisément ce que le rendu pixel art ne pardonne pas.

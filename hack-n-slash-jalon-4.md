@@ -289,7 +289,7 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
       une base**, sinon un emplacement restera vide sans que personne le voie.
 - [x] **3. Les icônes.** Sept formes à forger, réglées dans la galerie. C'est du
       dessin : la validation est une capture, pas une assertion.
-- [ ] **4. Le panneau de personnage.** La silhouette et ses dix emplacements, le
+- [x] **4. Le panneau de personnage.** La silhouette et ses dix emplacements, le
       sac en dessous, les gestes existants préservés. Test de tenue en hauteur,
       et capture réelle avec la fiche ouverte à côté.
 - [ ] **5. Le champ de flux.** Le calcul, sa mise à jour, sa lecture par les
@@ -299,6 +299,42 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
       donnent le même champ. Et une remesure du banc de stress.
 - [ ] **6. Les infobulles.** La table de textes, le survol, le test de
       couverture des champs, une capture.
+
+### Ce que l'étape 4 a changé au plan
+
+- **La fenêtre est plus large que le sac**, et c'est la grille du personnage
+  qui fixe sa largeur : trois colonnes larges séparées par une gouttière, où
+  logent les deux bagues. Le sac, plus étroit, est centré dedans — d'où un
+  `_grid_left()` que le dessin **et** le calcul de la case sous le curseur
+  partagent, sinon on cliquerait à côté de ce qu'on voit.
+- **Les emplacements ont la forme de ce qu'ils reçoivent**, et non une taille
+  unique : l'arme trois cases de haut, le plastron deux sur trois, la bague une
+  colonne étroite — la même grille que le sac, donc la place qu'un objet prend
+  en haut est celle qu'il prendra en bas. Une grille de carrés identiques
+  donnait dix cases interchangeables où plus rien n'annonçait ce qui allait où.
+- **Le fond d'un emplacement porte la couleur de rareté**, très assombrie.
+  C'est l'information du cadre d'un objet rangé et du halo au sol, lisible ici
+  sans survoler, d'un bout à l'autre de la fenêtre.
+- **Un emplacement vide montre la silhouette de ce qu'il attend**, peinte
+  presque effacée, au lieu de son nom. La forge sait déjà dessiner une botte et
+  un anneau ; « BAGUE G. » ne tenait pas dans sa case, et deux libellés tronqués
+  au même endroit annonçaient deux emplacements qu'on ne distinguait plus.
+- **La silhouette est dessinée, pas montée en nœud.** Un `AnimatedSprite2D`
+  enfant se peint au-dessus du Control, donc au-dessus de l'objet qu'on traîne à
+  la souris : il aurait disparu derrière elle en traversant le panneau. Le
+  panneau lit les planches de la forge et peint l'image lui-même, en la
+  choisissant sur l'horloge — c'est le « pilote unique » appliqué au dessin.
+- **Les emplacements sont carrés et plus petits qu'un plastron** (40 pixels
+  contre 41 × 62). Dix emplacements à la taille du plus gros objet équipable ne
+  tiennent pas dans un cadrage de 360 pixels de haut. L'icône est donc bornée au
+  rectangle qui l'accueille — dans le sac les deux coïncident, l'ancien
+  comportement est intact.
+- **La disposition est une table**, `InventoryPanel.DOLL` : un emplacement, une
+  case. Trois tests la gardent — chaque emplacement a sa case, deux
+  emplacements n'en partagent pas une, et aucun ne tombe sur la silhouette.
+- **Le panneau occupe désormais presque toute la hauteur à droite**, comme la
+  fiche à gauche. C'est ce que demande une fenêtre de personnage ; les deux
+  s'ouvrent toujours ensemble, et le combat reste visible entre les deux.
 
 ### Ce que les étapes 2 et 3 ont changé au plan
 

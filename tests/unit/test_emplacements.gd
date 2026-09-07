@@ -112,3 +112,60 @@ func test_les_bases_du_catalogue_visent_des_familles_connues() -> void:
 			"« %s » vise la famille « %s », qui n'a aucun emplacement"
 				% [base.display_name, base.family]
 		)
+
+
+# --------------------------------------------------------------------------
+# La disposition de la fenêtre de personnage
+# --------------------------------------------------------------------------
+
+## Un emplacement sans position ne se dessine nulle part et ne se clique pas :
+## il existerait dans le modèle et pas à l'écran.
+func test_chaque_emplacement_a_sa_place_dans_la_fenetre() -> void:
+	for id in EquipmentSlots.ids():
+		assert_true(
+			InventoryPanel.DOLL.has(id),
+			"« %s » n'a pas de case dans la fenêtre de personnage" % id
+		)
+	assert_eq(InventoryPanel.DOLL.size(), EquipmentSlots.count(), "et pas de case en trop")
+
+
+## Deux emplacements qui se recouvrent, c'est l'un des deux qu'on ne peut plus
+## ni voir ni viser — et rien ne le dirait. Des rectangles de tailles
+## différentes rendent le cas bien plus facile à créer qu'avec des cases égales.
+func test_deux_emplacements_ne_se_recouvrent_pas() -> void:
+	var ids := InventoryPanel.DOLL.keys()
+	for i in ids.size():
+		for j in range(i + 1, ids.size()):
+			var a: Rect2i = InventoryPanel.DOLL[ids[i]]
+			var b: Rect2i = InventoryPanel.DOLL[ids[j]]
+			assert_false(
+				a.intersects(b), "« %s » et « %s » se recouvrent" % [ids[i], ids[j]]
+			)
+
+
+## Le portrait occupe un coin. Un emplacement posé dessus serait recouvert.
+func test_aucun_emplacement_ne_tombe_sur_le_portrait() -> void:
+	for id in InventoryPanel.DOLL:
+		assert_false(
+			(InventoryPanel.DOLL[id] as Rect2i).intersects(InventoryPanel.DOLL_AREA),
+			"« %s » est posé sur le portrait" % id
+		)
+
+
+func test_la_grille_ne_deborde_pas_de_ses_colonnes() -> void:
+	var cadre := Rect2i(0, 0, InventoryPanel.DOLL_COLS, InventoryPanel.DOLL_ROWS)
+	for id in InventoryPanel.DOLL:
+		assert_true(
+			cadre.encloses(InventoryPanel.DOLL[id]),
+			"« %s » sort de la grille" % id
+		)
+
+
+## Un emplacement vide montre l'objet qu'il attend : sans base dans sa famille,
+## il resterait un rectangle nu que rien n'explique.
+func test_chaque_emplacement_a_une_silhouette_fantome() -> void:
+	for id in EquipmentSlots.ids():
+		assert_false(
+			InventoryPanel._ghost_kind(id).is_empty(),
+			"« %s » n'a aucune base à montrer quand il est vide" % id
+		)

@@ -381,14 +381,17 @@ func _after_equipment_change() -> void:
 	recompute_stats()
 	_set_health(health)
 	_set_mana(mana)
-	sprite.set_weapon(_weapon_kind())
+	sprite.set_weapon(weapon_kind())
 	equipment_changed.emit()
 
 
 ## L'arme visible. Vide quand rien n'est porté : le joueur reprend alors l'épée
 ## de sa fiche d'archétype plutôt que de se battre à mains nues, ce qui serait
 ## une régression de silhouette pour une information qu'on lit déjà dans le sac.
-func _weapon_kind() -> String:
+##
+## Publique : la fenêtre de personnage dessine la même silhouette que le monde,
+## arme comprise, et elle ne doit pas la déduire une seconde fois de son côté.
+func weapon_kind() -> String:
 	var arme: Item = equipment.get("weapon")
 	return "" if arme == null else arme.base.kind
 
