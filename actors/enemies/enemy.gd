@@ -125,6 +125,26 @@ func tick(_delta: float) -> void:
 	pass
 
 
+## Par où partir pour rejoindre la cible.
+##
+## Le champ de flux quand la zone en a un — il contourne les murs, ce que la
+## ligne droite ne fait pas : un ennemi séparé du joueur par une concavité
+## poussait contre la pierre jusqu'à ce qu'on vienne le chercher.
+##
+## La ligne droite sinon, et c'est un vrai repli, pas un pis-aller : l'arène de
+## réglage et le banc de stress n'ont pas de murs, et le champ y serait du
+## calcul pour rien. Elle sert aussi quand la case courante n'a pas de direction
+## — l'ennemi repoussé dans la pierre, ou hors du rayon du champ.
+func heading() -> Vector2:
+	if target == null:
+		return Vector2.ZERO
+	if manager != null and manager.field != null:
+		var d := manager.field.direction_at(MapGenerator.cell_at(global_position))
+		if d != Vector2.ZERO:
+			return d
+	return (target.global_position - global_position).normalized()
+
+
 ## À appeler en fin de tick(). Le sprite se pilote depuis la vitesse réelle et
 ## non depuis l'intention de déplacement : un ennemi qui pousse contre un mur ne
 ## doit pas continuer à marcher sur place.

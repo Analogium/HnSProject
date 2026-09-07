@@ -16,7 +16,9 @@ func tick(delta: float) -> void:
 
 	var to_target := target.global_position - global_position
 	var dist := to_target.length()
-	var desired := to_target.normalized()
+	# La distance reste à vol d'oiseau — c'est elle qui décide s'il est au
+	# contact — mais la direction suit le chemin, qui contourne les murs.
+	var desired := heading()
 
 	# Séparation : sans ça les grunts se superposent en une bouillie illisible.
 	desired += _separation() * SEPARATION_FORCE

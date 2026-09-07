@@ -60,7 +60,20 @@ const BUTTON_H := 9.0
 ## Le coup de référence contre lequel l'armure est annoncée. Une notation nue ne
 ## veut rien dire — « 40 d'armure » n'apprend rien tant qu'on ne sait pas contre
 ## quoi. Dix, c'est l'ordre de grandeur d'un coup de grunt.
-const ARMOR_REFERENCE_HIT := 10.0
+const ARMOR_REFERENCE_HIT := StatHelp.COUP_LEGER
+
+## La ligne survolée, à peine éclaircie : elle dit quelle statistique l'infobulle
+## explique, sans attirer l'œil plus que le texte lui-même.
+const SURVOL := Color(1.0, 1.0, 1.0, 0.06)
+
+## L'infobulle des statistiques. Elle s'ouvre **à droite** du panneau, qui est
+## collé au bord gauche de l'écran : le seul côté où il y a de la place, et
+## jamais par-dessus la ligne qui l'a déclenchée.
+const TIP_W := 150.0
+const TIP_PAD := 5.0
+const TIP_LINE := 9.0
+const TIP_GAP := 4.0
+const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
 
 ## La fiche, dans l'ordre où elle se lit. En données et non en suite d'appels de
 ## dessin : ajouter une statistique au modèle ne doit demander qu'une ligne ici,
@@ -108,6 +121,10 @@ var _mouse := Vector2.INF
 ## recalculé au clic : une seule définition de l'endroit où se trouve le bouton,
 ## donc pas de dérive entre ce qu'on voit et ce qu'on touche.
 var _boutons := {}
+## Rectangle survolable par statistique, rempli au dessin. Même raison que
+## `_boutons` : une seule définition de l'endroit où se trouve une ligne, donc
+## pas de dérive entre ce qu'on voit et ce qu'on survole.
+var _lignes := {}
 
 
 func _ready() -> void:
@@ -133,6 +150,8 @@ func toggle() -> void:
 	visible = not visible
 	_saisir_la_souris()
 	_refresh()
+	if visible:
+		queue_redraw()
 
 
 ## Le drapeau doit retomber quoi qu'il arrive — y compris si la zone est
@@ -142,12 +161,27 @@ func _exit_tree() -> void:
 	Game.grab_ui_input(self, false)
 
 
+## Trois états, et ils ne disent pas la même chose.
+##
+## **STOP** quand il reste des points : il y a des boutons à cliquer, et le clic
+## ne doit pas partir en coup d'épée. **PASS** quand la fiche est simplement
+## ouverte : elle reçoit le survol — c'est ce qui fait vivre les infobulles —
+## mais laisse passer les clics, donc on peut se battre la fiche ouverte, ce qui
+## est tout l'intérêt de pouvoir la laisser ouverte. **IGNORE** fermée.
+##
+## Le drapeau `ui_grabs_input`, lui, ne suit que le premier cas : le joueur lit
+## ses attaques par sondage, et le lever en mode PASS l'empêcherait de frapper.
 func _saisir_la_souris() -> void:
-	Game.grab_ui_input(self, visible and _points_restants() > 0)
-	mouse_filter = (
-		Control.MOUSE_FILTER_STOP if visible and _points_restants() > 0
-		else Control.MOUSE_FILTER_IGNORE
-	)
+	var boutons := visible and _points_restants() > 0
+	Game.grab_ui_input(self, boutons)
+	if boutons:
+		mouse_filter = Control.MOUSE_FILTER_STOP
+	elif visible:
+		mouse_filter = Control.MOUSE_FILTER_PASS
+	else:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if not visible:
+		_mouse = Vector2.INF
 
 
 func _points_restants() -> int:
@@ -218,6 +252,7 @@ func _draw() -> void:
 
 	var restants := _points_restants()
 	_boutons.clear()
+	_lignes.clear()
 
 	var y := HEADER + PAD
 	for g in GROUPS:
@@ -234,6 +269,10 @@ func _draw() -> void:
 		y += LINE
 		for field in g[1]:
 			var bouton: bool = restants > 0 and field in CharacterStats.ATTRIBUTES
+			var ligne := Rect2(0.0, y, size.x, LINE)
+			_lignes[field] = ligne
+			if ligne.has_point(_mouse):
+				draw_rect(ligne, SURVOL)
 			_draw_row(y, StatMod.LABELS.get(field, field), _value_of(field), bouton)
 			if bouton:
 				_boutons[field] = _draw_bouton(y)
@@ -246,6 +285,94 @@ func _draw() -> void:
 		_font, Vector2(PAD, size.y - FOOTER), "C pour fermer",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, HINT
 	)
+
+	# En dernier : l'infobulle déborde du panneau et doit passer par-dessus tout
+	# ce qui précède, y compris les lignes voisines.
+	_draw_infobulle()
+
+
+## Ce que fait la statistique survolée, comment elle se calcule quand ce n'est
+## pas évident, et ce qu'elle vaut à cet instant.
+##
+## La fiche annonce « armure 40 (44 %) » : un joueur qui découvre le jeu ne peut
+## pas deviner que l'armure protège proportionnellement plus des petits coups,
+## ni qu'elle ne couvre pas les éléments. Rien de tout ça ne se lit sur un
+## nombre.
+func _draw_infobulle() -> void:
+	var champ := _survole()
+	if champ.is_empty():
+		return
+	var lignes := StatHelp.lines(champ, _player.stats)
+	if lignes.is_empty():
+		return
+
+	# Repliées à la largeur du panneau : les explications sont des phrases, pas
+	# des valeurs, et une bulle plus large que la fiche sortirait de l'écran.
+	var enroulees := PackedStringArray()
+	for texte in lignes:
+		for morceau in _replier(texte, TIP_W - TIP_PAD * 2.0):
+			enroulees.append(morceau)
+
+	var h := TIP_PAD * 2.0 + TIP_LINE * float(enroulees.size() + 1)
+	var ancre: Rect2 = _lignes[champ]
+	# Posée à droite du panneau — le seul côté libre, la fiche étant collée au
+	# bord gauche — et remontée au-dessus du bloc de jauges quand elle
+	# descendrait dedans.
+	#
+	# La limite vient du HUD lui-même et n'est pas réécrite ici : les jauges sont
+	# dessinées **après** ce panneau et passeraient par-dessus l'infobulle, dont
+	# la deuxième ligne devenait illisible pour les dernières statistiques de la
+	# fiche. C'est le genre de chose qu'aucune assertion n'attrape.
+	var plancher := size.y - Hud.HEALTH_TOP - Hud.BAR_H - TIP_GAP
+	var r := Rect2(
+		Vector2(size.x + TIP_GAP, clampf(ancre.position.y, PAD, plancher - h)),
+		Vector2(TIP_W, h)
+	)
+
+	draw_rect(r, TIP_BACK)
+	draw_rect(r, BORDER, false, 1.0)
+
+	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
+	draw_string(
+		_font, Vector2(r.position.x + TIP_PAD, y), StatMod.LABELS.get(champ, champ),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, TITLE_SIZE, VALUE_COLOR
+	)
+	for texte in enroulees:
+		y += TIP_LINE
+		draw_string(
+			_font, Vector2(r.position.x + TIP_PAD, y), texte,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, NAME_COLOR
+		)
+
+
+## La statistique sous le curseur, vide s'il n'y en a pas. Le survol d'un bouton
+## n'en est pas un : on y explique déjà ce qu'on va cliquer.
+func _survole() -> String:
+	if _mouse == Vector2.INF:
+		return ""
+	for champ in _lignes:
+		if (_lignes[champ] as Rect2).has_point(_mouse) and StatHelp.has(champ):
+			return champ
+	return ""
+
+
+## Coupe un texte en lignes qui tiennent dans `largeur`. Aux espaces seulement :
+## couper un mot en deux dans une bulle de six mots se lit comme un défaut
+## d'affichage.
+func _replier(texte: String, largeur: float) -> PackedStringArray:
+	var out := PackedStringArray()
+	var courante := ""
+	for mot in texte.split(" ", false):
+		var essai := mot if courante.is_empty() else courante + " " + mot
+		if _font.get_string_size(essai, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x > largeur:
+			if not courante.is_empty():
+				out.append(courante)
+			courante = mot
+		else:
+			courante = essai
+	if not courante.is_empty():
+		out.append(courante)
+	return out
 
 
 ## Le bouton d'ajout, et le rectangle qu'il occupe — c'est ce même rectangle que

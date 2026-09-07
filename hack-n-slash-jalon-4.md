@@ -292,13 +292,33 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
 - [x] **4. Le panneau de personnage.** La silhouette et ses dix emplacements, le
       sac en dessous, les gestes existants préservés. Test de tenue en hauteur,
       et capture réelle avec la fiche ouverte à côté.
-- [ ] **5. Le champ de flux.** Le calcul, sa mise à jour, sa lecture par les
+- [x] **5. Le champ de flux.** Le calcul, sa mise à jour, sa lecture par les
       ennemis, le repli quand il n'y a pas de carte. Tests : un ennemi placé
       derrière un mur en U rejoint le joueur ; une case isolée ne fait pas
       boucler le parcours ; deux calculs sur la même carte et la même case
       donnent le même champ. Et une remesure du banc de stress.
-- [ ] **6. Les infobulles.** La table de textes, le survol, le test de
+- [x] **6. Les infobulles.** La table de textes, le survol, le test de
       couverture des champs, une capture.
+
+### Ce que les étapes 5 et 6 ont changé au plan
+
+- **Le champ de flux est borné au rayon de culling**, et le rayon en est
+  dérivé, pas posé à part : au-delà, l'EnemyManager ne fait plus vivre
+  personne. Mesuré : la carte entière coûte 8,9 ms par recalcul, le rayon de
+  23 cases 1,67.
+- **Sa boucle interne travaille sur des tableaux à plat.** En passant par
+  `MapGenerator.is_walkable` — un appel de fonction, un appel imbriqué et deux
+  indexations de tableau non typé — un recalcul coûtait **5,45 ms**, un tiers
+  d'image, dix fois par seconde. C'est l'exception que ce projet réserve aux
+  boucles mesurées, et la mesure est écrite à côté du code.
+- **L'infobulle de statistique remonte au-dessus des jauges du HUD**, dont elle
+  tire la limite au lieu de la réécrire. Les jauges sont dessinées après la
+  fiche et passaient par-dessus la bulle des dernières lignes : aucune
+  assertion n'attrape ça, seule la capture.
+- **La fiche passe en `MOUSE_FILTER_PASS` quand elle est simplement ouverte.**
+  Elle reçoit le survol, ce qui fait vivre les infobulles, mais laisse passer
+  les clics — on continue de se battre la fiche ouverte, ce qui était toute la
+  raison de pouvoir la laisser ouverte.
 
 ### Ce que l'étape 4 a changé au plan
 

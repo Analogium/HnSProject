@@ -46,7 +46,10 @@ func tick(delta: float) -> void:
 	var move := Vector2.ZERO
 	var strafing := false
 	if dist > preferred_distance:
-		move = dir                                            # se rapproche
+		# Le chemin, pas la ligne droite : c'est en se rapprochant qu'il a des
+		# murs à contourner. Une fois à distance, il tourne, et l'orbite est un
+		# mouvement local dont le champ n'a rien à dire.
+		move = heading()
 	else:
 		# On vise un point plus loin sur le cercle de rayon actuel, plutôt que
 		# de suivre la tangente. Avec la tangente, le retard du lerp (ACCEL est

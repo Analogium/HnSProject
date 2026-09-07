@@ -9,8 +9,25 @@ extends Node2D
 
 const CULL_DISTANCE := 700.0   # au-delà, on ne tick pas
 
+## Rayon du champ de flux, en cases. Dérivé de la distance de culling et non
+## posé à part : au-delà, l'ennemi n'est plus tické, et lui calculer un chemin
+## serait du travail pour quelqu'un de figé.
+const FIELD_CELLS := int(CULL_DISTANCE / float(MapGenerator.TILE)) + 2
+## Délai minimal entre deux recalculs. Le joueur immobile sur une frontière de
+## cases bascule de l'une à l'autre à chaque image : sans ce délai, chaque image
+## paierait un parcours complet de la carte.
+const FIELD_PERIOD := 0.10
+
 var enemies: Array[Enemy] = []
 var target: Node2D
+
+## Le chemin vers la cible, partagé par tous les ennemis. **Facultatif** : null
+## dans les scènes sans carte — l'arène de réglage, le banc de stress, les tests
+## d'intégration — où les ennemis foncent en ligne droite, ce qui est
+## exactement ce qu'il faut faire dans une pièce sans mur.
+var field: FlowField
+
+var _field_cd := 0.0
 
 ## Nombre d'ennemis réellement tickés à la dernière image, culling déduit. Lu
 ## par la scène de stress test : sans ce chiffre, on ne sait pas si trois cents
@@ -68,6 +85,8 @@ func _physics_process(delta: float) -> void:
 	if target == null:
 		return
 
+	_update_field(delta)
+
 	var origin := target.global_position
 	var cull_sq := CULL_DISTANCE * CULL_DISTANCE
 	ticked = 0
@@ -90,6 +109,22 @@ func _physics_process(delta: float) -> void:
 		ticked += 1
 		e.regen(delta)
 		e.tick(delta)
+
+
+## Recalcule le chemin quand la cible a changé de case, et pas plus souvent que
+## FIELD_PERIOD. Un champ vieux de quelques centièmes de seconde ne trompe
+## personne : il pointe vers l'endroit où le joueur était, à une case près.
+func _update_field(delta: float) -> void:
+	if field == null:
+		return
+	_field_cd = maxf(_field_cd - delta, 0.0)
+	if _field_cd > 0.0:
+		return
+	var cell := MapGenerator.cell_at(target.global_position)
+	if cell == field.origin:
+		return
+	field.rebuild(cell, FIELD_CELLS)
+	_field_cd = FIELD_PERIOD
 
 
 ## L'ennemi ne connaît pas le joueur, le manager si. C'est donc lui qui fait

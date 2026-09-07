@@ -185,6 +185,10 @@ func generate_zone(zone_seed: int) -> void:
 	# La carte suit la zone réellement jouée : reconstruite ici, pas ailleurs.
 	map_overlay.build(generator, MapGenerator.TILE)
 
+	# Le champ de flux appartient à la carte : un nouveau générateur, un nouveau
+	# champ. Le garder ferait poursuivre les ennemis à travers l'ancienne.
+	enemy_manager.field = FlowField.new(generator)
+
 	_place_and_populate()
 
 

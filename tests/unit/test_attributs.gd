@@ -106,3 +106,67 @@ func test_la_fiche_tient_dans_sa_hauteur() -> void:
 			StatsPanel.content_height(), disponible
 		]
 	)
+
+
+# --------------------------------------------------------------------------
+# Les infobulles de statistiques
+# --------------------------------------------------------------------------
+
+## Une table indexée par une liste de champs, c'est une entrée oubliée qui donne
+## une bulle vide en plein jeu plutôt qu'un échec ici.
+func test_chaque_statistique_de_la_fiche_a_son_explication() -> void:
+	for groupe in StatsPanel.GROUPS:
+		for champ in groupe[1]:
+			assert_true(
+				StatHelp.has(champ),
+				"« %s » s'affiche sur la fiche sans explication" % champ
+			)
+
+
+## Et l'inverse : une explication pour un champ qui n'existe plus ne se verrait
+## jamais, et personne ne penserait à la retirer.
+func test_aucune_explication_ne_vise_un_champ_inconnu() -> void:
+	var fiche := CharacterStats.new()
+	for champ in StatHelp.TEXTS:
+		assert_true(
+			StatMod.LABELS.has(champ), "« %s » n'a pas de nom lisible" % champ
+		)
+		assert_true(
+			fiche.get(champ) != null, "« %s » n'est pas un champ de la fiche" % champ
+		)
+
+
+## La ligne « en ce moment » est calculée depuis la fiche, jamais recopiée : un
+## texte qui affirmerait un plafond que le code n'applique pas serait pire que
+## pas de texte du tout.
+func test_l_explication_dit_ce_que_la_fiche_vaut_vraiment() -> void:
+	var fiche := CharacterStats.new()
+	fiche.armor = 40.0
+	var lignes := StatHelp.lines("armor", fiche)
+	assert_eq(lignes.size(), 2, "ce que ça fait, puis ce que ça vaut")
+	var attendu := "%d %%" % roundi(fiche.armor_reduction(StatHelp.COUP_LEGER) * 100.0)
+	assert_true(lignes[1].contains(attendu), "« %s » attendu dans « %s »" % [attendu, lignes[1]])
+
+
+func test_les_resistances_annoncent_leur_plafond() -> void:
+	var fiche := CharacterStats.new()
+	for champ in DamageType.RESIST_FIELDS:
+		if champ.is_empty():
+			continue
+		var lignes := StatHelp.lines(champ, fiche)
+		assert_eq(lignes.size(), 2, "« %s »" % champ)
+		assert_true(
+			lignes[1].contains("%d %%" % roundi(CharacterStats.MAX_RESISTANCE)),
+			"le plafond réel apparaît : %s" % lignes[1]
+		)
+
+
+## Une statistique qui se lit directement n'a pas de seconde ligne : inventer
+## une phrase pour « 90 de vitesse » n'apprendrait rien.
+func test_une_statistique_evidente_n_a_qu_une_ligne() -> void:
+	assert_eq(StatHelp.lines("move_speed", CharacterStats.new()).size(), 1)
+
+
+func test_un_champ_inconnu_ne_rend_rien() -> void:
+	assert_eq(StatHelp.lines("chance", CharacterStats.new()).size(), 0)
+	assert_false(StatHelp.has("chance"))

@@ -124,3 +124,42 @@ func _empreinte() -> int:
 	for e in _zone.enemy_manager.enemies:
 		h = hash([h, Vector2i(e.global_position.round()), e.affixes.size()])
 	return h
+
+
+## Le défaut que le champ de flux vient corriger, joué dans la vraie zone : un
+## grunt lâché derrière une paroi fonçait dedans et y restait jusqu'à ce qu'on
+## vienne le chercher.
+##
+## On mesure la distance parcourue vers le joueur, pas l'arrivée : un ennemi qui
+## se rapproche franchement a contourné, celui qui pousse contre la pierre reste
+## où il est.
+func test_un_ennemi_derriere_un_mur_se_rapproche() -> void:
+	_zone.kill_all()
+	var joueur: Player = _zone.player
+	var gen: MapGenerator = _zone.generator
+
+	# Une case praticable loin du joueur, mais pas à vue : on prend la plus
+	# éloignée du champ de vision direct parmi celles à bonne distance.
+	var depart := Vector2i(-1, -1)
+	for cell in gen.floor_cells:
+		var d := MapGenerator.cell_center(cell).distance_to(joueur.global_position)
+		if d > 180.0 and d < 320.0:
+			depart = cell
+			break
+	assert_ne(depart, Vector2i(-1, -1), "une case de départ a été trouvée")
+
+	var grunt: Enemy = _zone.enemy_manager.spawn(
+		load("res://actors/enemies/grunt.tscn"), MapGenerator.cell_center(depart)
+	)
+	grunt.is_aggro = true
+	var avant: float = grunt.global_position.distance_to(joueur.global_position)
+
+	# Le joueur ne bouge pas : on veut mesurer la poursuite, pas une rencontre.
+	joueur.set_physics_process(false)
+	await wait_physics_frames(240)
+
+	var apres: float = grunt.global_position.distance_to(joueur.global_position)
+	assert_lt(
+		apres, avant - 60.0,
+		"le grunt s'est rapproché de %.0f px (de %.0f à %.0f)" % [avant - apres, avant, apres]
+	)
