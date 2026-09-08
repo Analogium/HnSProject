@@ -1,11 +1,16 @@
 # Tests
 
 ```bash
-tests/run.sh              # tout (~22 s)
-tests/run.sh unit         # <1 s, à lancer pendant qu'on code
+tests/run.sh              # tout : ~45 s, dont 33 s de tests
+tests/run.sh unit         # ~15 s, dont 3 s de tests
 tests/run.sh integration
 tests/run.sh e2e          # lent, mais c'est lui qui attrape les surprises
 ```
+
+L'écart entre les deux colonnes est la recopie du projet et son import, payés
+quelle que soit la suite. C'est pourquoi l'onglet GUT de l'éditeur reste le bon
+outil pour itérer sur un seul test — le lanceur, lui, part d'une copie propre et
+reste la référence.
 
 Sortie 0 = tout passe, 1 = au moins un échec, 2 = Godot introuvable (le passer
 par la variable `GODOT`).
