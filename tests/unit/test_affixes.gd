@@ -232,7 +232,134 @@ func test_chaque_affixe_existe_des_le_niveau_1() -> void:
 			a.ouverts(1).size(), 1,
 			"« %s » : un seul palier ouvert au niveau 1, le pire" % a.id
 		)
-		assert_eq(a.ouverts(100).size(), a.tiers.size(), "« %s » : tout est ouvert en fin de course" % a.id)
+		assert_eq(
+			a.ouverts(100).size(), mini(a.tiers.size(), ItemAffix.PALIERS_OUVERTS),
+			"« %s » : en fin de course, la fenêtre est pleine et pas davantage" % a.id
+		)
+
+
+## La fenêtre glisse : elle ne s\'ouvre pas, elle **se déplace**. Le meilleur
+## palier atteint monte avec le niveau d\'objet, et le pire ouvert monte avec lui.
+##
+## C\'est la moitié qui manquait. Le plafond existait depuis le jalon 5 ; sans
+## plancher, un objet de niveau 60 pouvait sortir le palier des premières zones,
+## et le meilleur objet du jeu valait parfois moins que le premier ramassé.
+func test_la_fenetre_de_paliers_glisse_avec_le_niveau() -> void:
+	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var precedent := acere.ouverts(1)
+
+	for niveau in range(2, 61):
+		var courant := acere.ouverts(niveau)
+		assert_lte(
+			courant.size(), ItemAffix.PALIERS_OUVERTS,
+			"niveau %d : jamais plus que la fenêtre" % niveau
+		)
+		if courant.is_empty() or precedent.is_empty():
+			continue
+		# Les indices vont du meilleur (0) au pire : la fenêtre ne peut que
+		# glisser vers le meilleur, jamais revenir en arrière.
+		assert_lte(
+			int(courant[0]), int(precedent[0]),
+			"niveau %d : le meilleur palier ouvert ne redescend pas" % niveau
+		)
+		assert_lte(
+			int(courant[courant.size() - 1]), int(precedent[precedent.size() - 1]),
+			"niveau %d : le pire palier ouvert ne redescend pas non plus" % niveau
+		)
+		precedent = courant
+
+
+## Vu depuis le tirage plutôt que depuis la table : le même affixe sur deux
+## objets de niveaux éloignés ne peut pas rendre la même chose.
+func test_un_objet_de_haut_niveau_ne_tire_plus_les_paliers_de_debut() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var dernier := acere.tiers.size()
+
+	for i in 500:
+		assert_eq(acere.roll(rng, 1).tier, dernier, "au niveau 1, le pire palier et lui seul")
+		assert_lte(
+			acere.roll(rng, 60).tier, ItemAffix.PALIERS_OUVERTS,
+			"au niveau 60, rien sous la fenêtre"
+		)
+
+
+## Ce qu\'une plage de niveaux atteint, c\'est **exactement** l\'union des fenêtres
+## de cette plage. Un palier de trop décrirait un objet qui ne peut pas exister,
+## un de moins cacherait une sortie possible.
+func test_les_paliers_atteignables_sur_une_plage_sont_l_union_des_fenetres() -> void:
+	for brut in ItemAffixPool.ALL:
+		var a: ItemAffix = brut
+		for plage in [Vector2i(1, 22), Vector2i(34, 60)]:
+			var union := a.ouverts_entre(plage.x, plage.y)
+			for index in a.tiers.size():
+				var atteignable := false
+				for niveau in range(plage.x, plage.y + 1):
+					if a.ouverts(niveau).has(index):
+						atteignable = true
+						break
+				assert_eq(
+					union.has(index), atteignable,
+					"« %s » T%d entre les niveaux %d et %d" % [a.id, index + 1, plage.x, plage.y]
+				)
+
+
+## Le cas qui a motivé le filtrage de la fiche, écrit avec ses vrais chiffres :
+## l\'épée large cesse de tomber en zone 40, et le T1 d\'« acéré » demande le
+## niveau 52. Aucune épée large ne peut donc porter ce palier — l\'afficher
+## décrivait un objet impossible.
+func test_une_base_n_atteint_pas_un_palier_hors_de_sa_fenetre() -> void:
+	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var large := ItemCatalog.by_id("epee_large")
+	var fenetre := ItemCatalog.fenetre_de_chute(large)
+
+	assert_eq(acere.tiers[0].niveau_requis, 52, "le T1 d\'acéré demande le niveau 52")
+	assert_eq(fenetre.y, 40, "et l\'épée large cesse de tomber en zone 40")
+	assert_false(
+		acere.ouverts_entre(fenetre.x, fenetre.y).has(0),
+		"donc aucune épée large ne porte ce palier"
+	)
+
+	# La lame de guerre, elle, y arrive : sans ça le filtre serait simplement
+	# en train de tout couper.
+	var guerre := ItemCatalog.by_id("lame_de_guerre")
+	assert_true(
+		acere.ouverts_entre(guerre.niveau_requis, Game.NIVEAU_MAX).has(0),
+		"la lame de guerre, elle, atteint le T1"
+	)
+
+
+## La fenêtre d\'un palier doit dire exactement ce que le tirage accepte : c\'est
+## elle que la fiche de la forge affiche, et une fiche qui annonce un palier que
+## le tirage refuse est pire qu\'une fiche absente.
+func test_la_fenetre_d_un_palier_dit_ce_que_le_tirage_accepte() -> void:
+	for brut in ItemAffixPool.ALL:
+		var a: ItemAffix = brut
+		for index in a.tiers.size():
+			var fenetre := a.fenetre_du_palier(index)
+			assert_eq(
+				fenetre.x, a.tiers[index].niveau_requis,
+				"« %s » T%d ouvre à son niveau requis" % [a.id, index + 1]
+			)
+			assert_true(
+				a.ouverts(fenetre.x).has(index),
+				"« %s » T%d sort au niveau %d" % [a.id, index + 1, fenetre.x]
+			)
+			if fenetre.y <= 0:
+				assert_true(
+					a.ouverts(Game.NIVEAU_MAX).has(index),
+					"« %s » T%d n\'est chassé par rien" % [a.id, index + 1]
+				)
+				continue
+			assert_true(
+				a.ouverts(fenetre.y).has(index),
+				"« %s » T%d sort encore au niveau %d" % [a.id, index + 1, fenetre.y]
+			)
+			assert_false(
+				a.ouverts(fenetre.y + 1).has(index),
+				"« %s » T%d ne sort plus au niveau %d" % [a.id, index + 1, fenetre.y + 1]
+			)
 
 
 ## Le cœur du jalon : le niveau d\'objet ne corrige pas des probabilités par une
@@ -255,21 +382,32 @@ func test_un_objet_de_niveau_1_ne_tire_jamais_un_palier_verrouille() -> void:
 				)
 
 
-## Et l\'inverse, sans quoi le test précédent passerait avec une réserve vide :
-## à haut niveau, **tous** les paliers sortent, le meilleur comme les pires.
-## Garder les mauvais est la règle — sinon le niveau d\'objet serait une
-## garantie et il n\'y aurait plus rien à espérer en regardant tomber un objet.
-func test_a_haut_niveau_tous_les_paliers_sont_atteignables() -> void:
+## Et l\'inverse, sans quoi le test précédent passerait avec une réserve vide : à
+## haut niveau, c\'est **la fenêtre entière** qui sort, le meilleur palier comme
+## le moins bon des quatre. Garder plusieurs paliers ouverts est la règle — sinon
+## le niveau d\'objet serait une garantie et il n\'y aurait plus rien à espérer en
+## regardant tomber un objet.
+##
+## Ce que ce test dit maintenant et ne disait pas avant : les paliers **sous** la
+## fenêtre ne sortent plus. Un objet de niveau 60 ne peut plus recevoir le T8,
+## celui des premières zones.
+func test_a_haut_niveau_la_fenetre_entiere_sort_et_rien_dessous() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 8080
 	var vigoureux: ItemAffix = load("res://resources/item_affixes/vigoureux.tres")
 	var vus := {}
 	for i in 4000:
 		vus[vigoureux.roll(rng, 60).tier] = true
+
 	assert_eq(
-		vus.size(), vigoureux.tiers.size(),
-		"les %d paliers doivent tous pouvoir sortir, %d vus" % [vigoureux.tiers.size(), vus.size()]
+		vus.size(), ItemAffix.PALIERS_OUVERTS,
+		"les %d paliers de la fenêtre sortent, %d vus" % [ItemAffix.PALIERS_OUVERTS, vus.size()]
 	)
+	for tier in vus:
+		assert_lte(
+			int(tier), ItemAffix.PALIERS_OUVERTS,
+			"le T%d est sous la fenêtre d\'un objet de niveau 60" % tier
+		)
 
 
 ## La promesse du jalon, mesurée plutôt que déclarée : descendre plus bas
@@ -368,8 +506,13 @@ func test_le_tier_1_est_le_meilleur() -> void:
 		# palier à s\'ouvrir.
 		assert_eq(a.roll(rng, 1).tier, dernier, "« %s » : au niveau 1, le pire palier" % a.id)
 		assert_eq(
-			a.ouverts(meilleur.niveau_requis - 1).size(), dernier - 1,
+			a.ouverts(meilleur.niveau_requis - 1).size(),
+			mini(dernier - 1, ItemAffix.PALIERS_OUVERTS),
 			"« %s » : le T1 est le dernier à s\'ouvrir" % a.id
+		)
+		assert_false(
+			a.ouverts(meilleur.niveau_requis - 1).has(0),
+			"« %s » : juste en dessous, le T1 n\'est pas encore là" % a.id
 		)
 		assert_between(a.roll(rng, 999).tier, 1, dernier, "« %s » : un numéro de palier reste dans l'échelle" % a.id)
 
@@ -485,3 +628,52 @@ func test_l_armure_en_pourcentage_et_l_esquive_se_partagent_les_armures() -> voi
 			assert_true(stats.has("evasion"), "« %s » doit tirer de l\'esquive" % base.display_name)
 	assert_gt(lourdes, 0, "il y a bien des pièces lourdes")
 	assert_gt(legeres, 0, "et des légères")
+
+
+# --------------------------------------------------------------------------
+# L\'affichage des paliers (jalon 5, étape 7)
+# --------------------------------------------------------------------------
+
+func test_on_retrouve_un_affixe_par_son_identifiant() -> void:
+	for a in ItemAffixPool.ALL:
+		assert_eq(ItemAffixPool.by_id(a.id), a, "aller-retour sur « %s »" % a.id)
+	assert_null(ItemAffixPool.by_id("affixe_de_2027"), "un affixe retiré rend null")
+	assert_null(ItemAffixPool.by_id(""))
+
+
+## Ce que l\'infobulle écrit à droite d\'une ligne, sous Alt : le palier et la
+## fourchette **de ce palier**, pas celle de l\'affixe entier.
+func test_un_affixe_tire_annonce_son_palier_et_sa_plage() -> void:
+	var vigoureux: ItemAffix = load("res://resources/item_affixes/vigoureux.tres")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 314
+	var tire := vigoureux.roll(rng, 60)
+	var palier: ItemAffixTier = vigoureux.tiers[tire.tier - 1]
+
+	var texte := tire.palier_et_plage()
+	assert_true(texte.begins_with("T%d" % tire.tier), "le numéro d\'abord : « %s »" % texte)
+	assert_true(
+		texte.contains(StatMod.range_label(
+			tire.mod.stat, tire.mod.mode, palier.min_value, palier.max_value
+		)),
+		"puis la fourchette du palier : « %s »" % texte
+	)
+	assert_between(tire.mod.value, palier.min_value, palier.max_value, "et la valeur en vient")
+
+
+## Un objet d\'avant les paliers n\'a pas de palier, et on ne le devine pas :
+## deux paliers voisins se chevauchent, la déduction serait fausse une fois sur
+## trois. Pas de colonne vaut mieux qu\'une colonne fausse.
+func test_un_affixe_sans_provenance_n_affiche_pas_de_palier() -> void:
+	var orphelin := RolledAffix.orphelin(StatMod.new("max_health", StatMod.Mode.FLAT, 40.0))
+	assert_eq(orphelin.palier_et_plage(), "")
+
+
+## Et un affixe retiré du projet depuis : sa valeur s\'applique toujours, c\'est
+## son palier qui devient inaffichable.
+func test_un_affixe_disparu_n_affiche_pas_de_palier() -> void:
+	var perdu := RolledAffix.new("affixe_de_2027", 3, StatMod.new("armor", StatMod.Mode.FLAT, 12.0))
+	assert_eq(perdu.palier_et_plage(), "")
+	# Et un numéro de palier hors de l\'échelle, si une échelle raccourcit.
+	var vieux := RolledAffix.new("preste", 99, StatMod.new("move_speed", StatMod.Mode.PERCENT, 5.0))
+	assert_eq(vieux.palier_et_plage(), "")

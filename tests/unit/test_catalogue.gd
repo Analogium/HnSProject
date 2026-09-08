@@ -238,33 +238,109 @@ func test_une_lignee_ne_melange_pas_deux_objets() -> void:
 		)
 
 
-## La règle qui empêche la dilution : à un niveau donné, une lignée ne lâche que
-## ses deux meilleurs paliers atteints. Sans elle, quarante et une bases tirées à
-## égalité feraient une chute utile sur cinq — et le rythme de récompense
-## s\'effondrerait au moment précis où il devrait s\'améliorer.
-func test_une_lignee_ne_lache_que_ses_deux_meilleurs_paliers() -> void:
-	for niveau in [1, 16, 24, 40, 60]:
+## La règle qui empêche la dilution. Elle n\'est plus écrite dans le code —
+## chaque base déclare sa fenêtre, et la relève la ferme — donc c\'est ce test qui
+## la tient : à aucun niveau une lignée ne doit lâcher plus de deux paliers.
+##
+## Vérifié à **chaque** niveau et non sur cinq d\'entre eux : le chevauchement
+## dépend de l\'écart entre deux paliers voisins, et un troisième palier écrit
+## trop près de son prédécesseur ouvrirait une fenêtre à trois quelque part au
+## milieu de l\'échelle, là où personne ne penserait à regarder.
+const PALIERS_SIMULTANES := 2
+
+
+func test_une_lignee_ne_lache_jamais_plus_de_deux_paliers() -> void:
+	for niveau in range(1, 61):
 		var par_lignee := {}
 		for base in ItemCatalog.disponibles(niveau):
 			par_lignee[base.lignee] = int(par_lignee.get(base.lignee, 0)) + 1
 		for lignee in par_lignee:
 			assert_lte(
-				par_lignee[lignee], ItemCatalog.PALIERS_VISIBLES,
+				par_lignee[lignee], PALIERS_SIMULTANES,
 				"niveau %d : la lignée « %s » lâche %d paliers"
 					% [niveau, lignee, par_lignee[lignee]]
 			)
 
 
 ## Le sens de la règle, vu du joueur : descendre plus bas fait **disparaître**
-## les vieilles bases. L\'épée de la première zone ne tombe plus dans une zone de
-## niveau 60, l\'épée large et la lame de guerre l\'ont chassée.
+## les vieilles bases — toutes, pas seulement l\'avant-dernière. Dans une zone de
+## niveau 60, la lignée de la lame ne lâche plus que la lame de guerre.
+##
+## C\'est ce qui a changé : l\'épée large tombait encore au niveau 60 à côté de la
+## lame de guerre, qui la surclasse sur tous les points. Une base périmée qui
+## continue de tomber n\'est pas une chance de plus, c\'est du bruit.
 func test_les_vieux_paliers_disparaissent() -> void:
 	var ids := {}
 	for base in ItemCatalog.disponibles(60):
 		ids[base.id] = true
 	assert_false(ids.has("epee"), "l\'épée de départ ne tombe plus au niveau 60")
-	assert_true(ids.has("epee_large"), "l\'épée large est encore là")
-	assert_true(ids.has("lame_de_guerre"), "et la lame de guerre l\'accompagne")
+	assert_false(ids.has("epee_large"), "l\'épée large non plus")
+	assert_true(ids.has("lame_de_guerre"), "il ne reste que la lame de guerre")
+
+
+## La fenêtre s\'ouvre exactement au niveau requis de la base : c\'est la seule des
+## deux bornes que le `.tres` écrit noir sur blanc.
+func test_la_fenetre_s_ouvre_au_niveau_requis() -> void:
+	for base in ItemCatalog.ALL:
+		assert_eq(
+			ItemCatalog.fenetre_de_chute(base).x, base.niveau_requis,
+			"« %s » s\'ouvre au niveau %d" % [base.display_name, base.niveau_requis]
+		)
+
+
+## Toute base doit tomber quelque part. Une base injoignable est du contenu que
+## personne ne verra jamais, et rien d\'autre ne le signalerait.
+func test_toute_base_tombe_a_un_moment() -> void:
+	for base in ItemCatalog.ALL:
+		var vue := false
+		for niveau in range(1, 61):
+			if ItemCatalog.disponibles(niveau).has(base):
+				vue = true
+				break
+		assert_true(vue, "« %s » tombe quelque part" % base.display_name)
+
+
+## L\'exemple qui a défini la règle : la lame de guerre ouvre au niveau 34, donc
+## l\'épée large cesse de tomber après la zone 40. Le chiffre est écrit ici parce
+## que c\'est celui qu\'on a demandé — s\'il bouge, ce doit être une décision, pas
+## un effet de bord d\'un palier déplacé ailleurs.
+func test_l_epee_large_s_arrete_apres_la_zone_40() -> void:
+	var large := ItemCatalog.by_id("epee_large")
+	assert_eq(ItemCatalog.fenetre_de_chute(large), Vector2i(16, 40))
+	assert_true(ItemCatalog.disponibles(40).has(large), "elle tombe encore en zone 40")
+	assert_false(ItemCatalog.disponibles(41).has(large), "plus en zone 41")
+
+
+## Le meilleur palier d\'une lignée n\'est chassé par rien : sa fenêtre n\'a pas de
+## fin. Sans ça, une zone profonde finirait par n\'avoir plus rien à lâcher dans
+## cet emplacement.
+func test_le_meilleur_palier_ne_se_ferme_jamais() -> void:
+	var meilleur := {}
+	for base in ItemCatalog.ALL:
+		if not meilleur.has(base.lignee) or base.palier > meilleur[base.lignee].palier:
+			meilleur[base.lignee] = base
+
+	for lignee in meilleur:
+		var base: ItemBase = meilleur[lignee]
+		assert_eq(
+			ItemCatalog.fenetre_de_chute(base).y, 0,
+			"« %s » tient jusqu\'au bout" % base.display_name
+		)
+		assert_null(ItemCatalog.releve_de(base), "et rien ne prend sa relève")
+
+
+## Une fenêtre vide est une base que personne ne verra jamais : elle ouvrirait
+## après avoir été chassée. Impossible aujourd\'hui, mais c\'est exactement ce
+## qu\'un palier écrit trop près de son successeur produirait.
+func test_aucune_base_n_a_une_fenetre_vide() -> void:
+	for base in ItemCatalog.ALL:
+		var fenetre := ItemCatalog.fenetre_de_chute(base)
+		if fenetre.y <= 0:
+			continue
+		assert_lte(
+			fenetre.x, fenetre.y,
+			"« %s » ouvre en %d et ferme en %d" % [base.display_name, fenetre.x, fenetre.y]
+		)
 
 
 ## Un emplacement sans base disponible est un emplacement qu\'on ne peut pas

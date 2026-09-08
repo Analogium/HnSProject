@@ -80,15 +80,23 @@ const ITEM_EDGE_DIM := 0.3
 const DRAG_MIN := 5.0
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
-## L'infobulle. Le cadre prend la couleur de rareté de l'objet : c'est la même
-## information que le halo au sol, donc la même couleur, et on n'apprend pas
-## deux codes pour une seule idée.
-const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
+## L'infobulle, et ce qui n'appartient qu'à celle-ci. Son fond est celui de
+## toutes les infobulles du jeu et vit dans UiPalette ; son cadre, lui, prend la
+## couleur de rareté de l'objet — c'est la même information que le halo au sol,
+## donc la même couleur, et on n'apprend pas deux codes pour une seule idée.
+##
+## La ligne d'implicite : ce que la base garantit, avant tout tirage.
 const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
 ## Le niveau de l'objet, sous son nom. Plus effacé que l'implicite : c'est une
 ## étiquette, pas une ligne de statistique, et il ne doit pas se lire comme un
 ## bonus de plus.
 const TIP_LEVEL := Color(0.46, 0.44, 0.52)
+## La colonne des paliers, sous Alt. Plus sourde que les affixes eux-mêmes :
+## c'est une note de bas de page sur la ligne, pas une deuxième ligne.
+const TIP_TIER := Color(0.55, 0.53, 0.62)
+## Gouttière entre un affixe et son palier. Collés, on ne sait plus si « T4 »
+## appartient à la ligne du dessus ou du dessous.
+const TIP_TIER_GAP := 10.0
 const TIP_EXPLICIT := Color(0.55, 0.75, 1.0)
 const TIP_PAD := 5.0
 const TIP_LINE := 9.0
@@ -118,6 +126,10 @@ var _grab_px := Vector2.ZERO
 var _mouse := Vector2.ZERO
 ## Où le bouton a été pressé, pour distinguer le glisser du clic.
 var _press := Vector2.ZERO
+## Alt maintenue : l'infobulle montre alors le palier de chaque affixe et la
+## fourchette de ce palier. Relevé dans _process, jamais posé depuis un
+## événement — voir la raison là-bas.
+var _alt := false
 var _hover := Vector2i(-1, -1)
 ## L'emplacement d'équipement survolé, ou -1. Séparé de la case survolée : les
 ## deux zones ne se recouvrent pas, mais un même Vector2i ne peut pas désigner
@@ -396,7 +408,21 @@ func _return_held() -> Item:
 ## compteur : le panneau n'a pas de raison de tourner quand il est fermé, et un
 ## compteur repartirait de zéro à chaque ouverture.
 func _process(_delta: float) -> void:
-	if not visible or _doll_frames == null:
+	if not visible:
+		return
+
+	# L'état **réel** de la touche, relevé à chaque image, et non un booléen
+	# mémorisé sur l'événement : Alt est interceptée par le gestionnaire de
+	# fenêtres sur les trois systèmes, et perdre le focus la touche enfoncée ne
+	# rend jamais le relâchement — l'infobulle resterait détaillée jusqu'au
+	# prochain appui. C'est le même sondage que les attaques du joueur, et pour
+	# la même raison.
+	var alt := Input.is_key_pressed(KEY_ALT)
+	if alt != _alt:
+		_alt = alt
+		queue_redraw()
+
+	if _doll_frames == null:
 		return
 	var i := _doll_frame_index()
 	if i != _doll_shown:
@@ -687,22 +713,54 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 
 	var titre := item.display_name()
 	# Toujours affiché, même sur un objet blanc : c'est ce qui décide si on le
-	# garde. Les tiers qu'il a permis de tirer, eux, se montreront sur Alt.
+	# garde. Les paliers, eux, ne sortent que sous Alt.
 	var niveau := "niveau d'objet %d" % item.item_level
 	var implicite := item.implicit_line()
-	var explicites := item.explicit_lines()
+
+	var explicites := PackedStringArray()
+	var paliers := PackedStringArray()
+	var detaille := false
+	var sans_provenance := false
+	for r in item.explicits:
+		explicites.append(r.mod.label())
+		# Vide quand la provenance est inconnue — un objet d'avant les paliers,
+		# ou un affixe retiré du projet depuis. La ligne s'affiche sans colonne.
+		var palier := r.palier_et_plage() if _alt else ""
+		paliers.append(palier)
+		detaille = detaille or not palier.is_empty()
+		sans_provenance = sans_provenance or palier.is_empty()
+
+	# Une bulle qui se tait sur un objet dont on vient d'ouvrir le détail se lit
+	# comme une panne. Elle dit donc pourquoi — et cette ligne disparaît d'elle
+	# même à mesure que le personnage remplace son équipement.
+	var note := "paliers inconnus : ramassé avant" if _alt and sans_provenance else ""
+
+	# Deux colonnes : les affixes, puis leurs paliers. La gouttière est prise sur
+	# la plus large des lignes d'affixes, pas sur chacune — une colonne en
+	# escalier ne se lit plus comme une colonne.
+	var w_affixes := 0.0
+	for ligne in explicites:
+		w_affixes = maxf(w_affixes, font.get_string_size(
+			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	var w_paliers := 0.0
+	for ligne in paliers:
+		w_paliers = maxf(w_paliers, font.get_string_size(
+			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 
 	var w := maxf(TIP_MIN_W, font.get_string_size(
 		titre, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
 	w = maxf(w, font.get_string_size(niveau, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
-	for ligne in explicites:
-		w = maxf(w, font.get_string_size(ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	var colonne := w_affixes + (TIP_TIER_GAP + w_paliers if detaille else 0.0)
+	w = maxf(w, colonne)
 	if not implicite.is_empty():
 		w = maxf(w, font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	if not note.is_empty():
+		w = maxf(w, font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
 
-	# Le titre et le niveau, puis une ligne par affixe.
+	# Le titre et le niveau, puis une ligne par affixe, plus la note s'il y en a.
 	var n := explicites.size() + (1 if not implicite.is_empty() else 0)
+	n += 1 if not note.is_empty() else 0
 	var h := TIP_PAD * 2.0 + TIP_LINE * 2.0 + float(n) * TIP_LINE
 	# Le trait de séparation, quand il y a les deux sortes de lignes à séparer.
 	var separe := not implicite.is_empty() and not explicites.is_empty()
@@ -712,11 +770,16 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	# Alignée sur le haut de l'objet, mais jamais débordante vers le bas : les
 	# objets de la dernière ligne sont ceux dont l'infobulle est la plus longue
 	# à sortir de l'écran.
+	#
+	# Ni vers la gauche : la bulle est dessinée à gauche du panneau, et le mode
+	# détaillé l'élargit d'un tiers. Le jalon 4 avait borné sa hauteur, il fallait
+	# la même borne de ce côté — sinon un objet à six affixes sort du cadrage.
 	var s := _panel_size()
 	var haut := minf(haut_vise, s.y - h)
-	var r := Rect2(Vector2(-w - TIP_GAP, haut), Vector2(w, h))
+	var gauche := maxf(-w - TIP_GAP, -global_position.x)
+	var r := Rect2(Vector2(gauche, haut), Vector2(w, h))
 
-	draw_rect(r, TIP_BACK)
+	draw_rect(r, UiPalette.TIP_BACK)
 	draw_rect(r, item.color(), false, 1.0)
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
@@ -739,10 +802,22 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 			Vector2(r.end.x - TIP_PAD, y - 2.0),
 			TIP_IMPLICIT * Color(1.0, 1.0, 1.0, 0.5), 1.0
 		)
-	for ligne in explicites:
+	for i in explicites.size():
 		y += TIP_LINE
-		draw_string(font, Vector2(r.position.x + TIP_PAD, y), ligne,
+		draw_string(font, Vector2(r.position.x + TIP_PAD, y), explicites[i],
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_EXPLICIT)
+		if paliers[i].is_empty():
+			continue
+		draw_string(
+			font,
+			Vector2(r.position.x + TIP_PAD + w_affixes + TIP_TIER_GAP, y), paliers[i],
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_TIER
+		)
+
+	if not note.is_empty():
+		y += TIP_LINE
+		draw_string(font, Vector2(r.position.x + TIP_PAD, y), note,
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 
 
 ## framed : le cadre de l'objet rangé. L'objet tenu à la main s'en passe — il

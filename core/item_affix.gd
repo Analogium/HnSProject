@@ -85,18 +85,80 @@ func fits(base: ItemBase) -> bool:
 	return false
 
 
-## Les indices des paliers qu'un objet de ce niveau peut recevoir : le meilleur
-## atteint **et tous ceux du dessous**.
+## Combien de paliers restent ouverts en même temps : le meilleur qu'un objet
+## atteint, et les trois du dessous.
 ##
-## Garder les mauvais paliers est la règle, pas un oubli. Sans eux, le niveau
-## d'objet cesserait d'être une chance pour devenir une garantie, et un objet de
-## haut niveau n'aurait plus rien à espérer.
+## **Une fenêtre et non un plafond.** Le niveau d'objet ouvrait les bons paliers
+## sans jamais fermer les mauvais : un objet de niveau 60 pouvait donc sortir le
+## T8, celui des premières zones, et le meilleur objet du jeu valait parfois
+## moins que le premier ramassé. Le plancher monte maintenant avec le plafond —
+## un objet de haut niveau ne peut plus tirer le fond de l'échelle.
+##
+## Quatre, donc un objet qui atteint le T1 ne tire plus rien en dessous du T4. Ce
+## n'est pas une garantie pour autant : quatre paliers d'écart, c'est encore un
+## objet sur quatre qui déçoit, et c'est ce qu'il faut pour qu'une bonne sortie
+## reste une bonne nouvelle.
+const PALIERS_OUVERTS := 4
+
+
+## Les indices des paliers qu'un objet de ce niveau peut recevoir : le meilleur
+## qu'il atteint, et les PALIERS_OUVERTS - 1 suivants.
+##
+## Le parcours va du meilleur au pire — c'est l'ordre de `tiers` — donc les
+## premiers indices retenus sont bien les meilleurs paliers atteints. Un `.tres`
+## dont l'échelle serait écrite à l'envers ouvrirait le mauvais bout ; c'est la
+## monotonie, vérifiée par le test, qui l'interdit.
 func ouverts(niveau: int) -> Array:
 	var out := []
 	for i in tiers.size():
-		if tiers[i].niveau_requis <= niveau:
-			out.append(i)
+		if tiers[i].niveau_requis > niveau:
+			continue
+		out.append(i)
+		if out.size() >= PALIERS_OUVERTS:
+			break
 	return out
+
+
+## Les paliers qu'un objet peut recevoir quand son niveau tombe **quelque part**
+## entre ces deux bornes : l'union des fenêtres de tous ces niveaux.
+##
+## C'est ce qu'une base donnée peut réellement sortir, une fois croisé avec sa
+## fenêtre de chute. Une épée large ne tombe qu'entre les zones 16 et 40, donc
+## aucune n'atteint jamais un palier qui demande le niveau 52 : l'annoncer
+## reviendrait à décrire un objet qui ne peut pas exister.
+##
+## Vaut pour ce qui **tombe**. Un objet plus ancien qu'une règle, ou refondu un
+## jour par un artisanat, peut porter autre chose ; c'est le tirage neuf que
+## cette fonction décrit.
+func ouverts_entre(premier: int, dernier: int) -> Array:
+	var vus := {}
+	for niveau in range(maxi(premier, 1), maxi(dernier, premier) + 1):
+		for i in ouverts(niveau):
+			vus[i] = true
+	var out := vus.keys()
+	# Du meilleur au pire, comme `tiers` : c'est l'ordre dans lequel la fiche les
+	# lit, et celui du numéro de palier.
+	out.sort()
+	return out
+
+
+## Entre quels niveaux d'objet ce palier peut sortir. **Un y de zéro veut dire
+## « sans fin »** : les meilleurs paliers ne sont chassés par rien.
+##
+## Interrogée et non recalculée : la réponse vient de `ouverts`, qui est la
+## règle. La fiche de la forge l'affiche, et elle ne peut donc pas annoncer un
+## palier que le tirage refuserait — ce qui serait le pire défaut d'un outil de
+## réglage.
+func fenetre_du_palier(index: int) -> Vector2i:
+	var premier := 0
+	var dernier := 0
+	for niveau in range(1, Game.NIVEAU_MAX + 1):
+		if not ouverts(niveau).has(index):
+			continue
+		if premier == 0:
+			premier = niveau
+		dernier = niveau
+	return Vector2i(premier, 0 if dernier >= Game.NIVEAU_MAX else dernier)
 
 
 ## Le niveau à partir duquel cet affixe existe. Rien à voir avec son meilleur
@@ -125,15 +187,14 @@ func roll(rng: RandomNumberGenerator, niveau: int) -> RolledAffix:
 ## Tirage pondéré parmi les paliers ouverts. Rend -1 quand il n'y en a aucun,
 ## ce qui est un cas de jeu ordinaire : un affixe dont même le dernier palier
 ## demande plus que le niveau de l'objet n'est pas dans la réserve.
+##
+## `ouverts` n'est appelé qu'une fois. Il l'était deux fois — une pour la somme,
+## une pour la descente — et les deux listes devaient rester dans le même ordre
+## sans que rien ne l'impose.
 func _pick_tier(rng: RandomNumberGenerator, niveau: int) -> int:
-	var total := 0
-	for i in ouverts(niveau):
-		total += maxi(tiers[i].poids, 0)
-	if total <= 0:
-		return -1
-	var pick := rng.randi_range(1, total)
-	for i in ouverts(niveau):
-		pick -= maxi(tiers[i].poids, 0)
-		if pick <= 0:
-			return i
-	return -1
+	var ouv := ouverts(niveau)
+	var poids := []
+	for i in ouv:
+		poids.append(tiers[i].poids)
+	var choisi := Tirage.pondere(rng, poids)
+	return -1 if choisi < 0 else ouv[choisi]

@@ -32,8 +32,13 @@ const HEALTH_TOP := 52.0   # depuis le bas
 const MANA_TOP := 42.0
 const VALUE_SIZE := 8
 
+## Le fond est propre au HUD — plus opaque que celui d'une barre du monde, qui se
+## pose sur du décor et non sur un bandeau. Le **liseré**, lui, vient de la barre
+## du monde, pour la même raison que les couleurs de vie plus bas : c'est le
+## cadre d'une jauge, il n'y en a qu'un dans ce jeu, et les deux fichiers le
+## déclaraient à la même valeur sans que rien ne les tienne d'accord.
 const BACK := Color(0.06, 0.05, 0.08, 0.90)
-const EDGE := Color(0.02, 0.02, 0.03, 0.95)
+const EDGE := HealthBar.EDGE
 ## Le bleu du joueur, celui de sa tunique : la barre est sa progression à lui.
 ## L'or reste réservé aux critiques et aux élites.
 const FILL := Color(0.24, 0.45, 0.86)
@@ -94,7 +99,7 @@ func _on_mana_changed(current: float, maximum: float) -> void:
 
 
 func _on_xp_changed(current: int, needed: int, level: int) -> void:
-	_ratio = 0.0 if needed <= 0 else clampf(float(current) / float(needed), 0.0, 1.0)
+	_ratio = StatMod.ratio(float(current), float(needed))
 	_xp = current
 	_xp_needed = needed
 	_level = level
@@ -129,7 +134,7 @@ func _draw() -> void:
 	# La barre et son compte sont centrés d'un bloc, pas la barre seule : sinon
 	# l'ensemble paraîtrait décalé vers la droite de la moitié du texte.
 	var gx := roundf((size.x - (BAR_W + 5.0 + VALUE_W)) * 0.5)
-	var health_ratio := _ratio_of(_health, _health_max)
+	var health_ratio := StatMod.ratio(_health, _health_max)
 	_draw_gauge(
 		gx,
 		roundf(size.y - HEALTH_TOP),
@@ -142,7 +147,7 @@ func _draw() -> void:
 	# annoncerait une ressource que ce personnage n'a pas.
 	if _mana_max > 0.0:
 		_draw_gauge(
-			gx, roundf(size.y - MANA_TOP), _ratio_of(_mana, _mana_max),
+			gx, roundf(size.y - MANA_TOP), StatMod.ratio(_mana, _mana_max),
 			MANA_FILL, _mana, _mana_max
 		)
 
@@ -158,10 +163,6 @@ func _draw() -> void:
 		"%d exp / %d exp" % [_xp, _xp_needed],
 		HORIZONTAL_ALIGNMENT_RIGHT, roundi(w), LABEL_COLOR
 	)
-
-
-static func _ratio_of(current: float, maximum: float) -> float:
-	return 0.0 if maximum <= 0.0 else clampf(current / maximum, 0.0, 1.0)
 
 
 ## Le cadre, le fond, le remplissage. Les trois barres de l'écran l'appellent :

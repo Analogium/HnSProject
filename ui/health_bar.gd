@@ -41,7 +41,7 @@ func _ready() -> void:
 
 ## Appelée par l'acteur à chaque changement de vie, et une fois à la naissance.
 func set_health(current: float, maximum: float) -> void:
-	var r := 0.0 if maximum <= 0.0 else clampf(current / maximum, 0.0, 1.0)
+	var r := StatMod.ratio(current, maximum)
 	if is_equal_approx(r, _ratio):
 		return
 	_ratio = r

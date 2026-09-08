@@ -73,7 +73,6 @@ const TIP_W := 150.0
 const TIP_PAD := 5.0
 const TIP_LINE := 9.0
 const TIP_GAP := 4.0
-const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
 
 ## La fiche, dans l'ordre où elle se lit. En données et non en suite d'appels de
 ## dessin : ajouter une statistique au modèle ne doit demander qu'une ligne ici,
@@ -329,7 +328,7 @@ func _draw_infobulle() -> void:
 		Vector2(TIP_W, h)
 	)
 
-	draw_rect(r, TIP_BACK)
+	draw_rect(r, UiPalette.TIP_BACK)
 	draw_rect(r, BORDER, false, 1.0)
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0

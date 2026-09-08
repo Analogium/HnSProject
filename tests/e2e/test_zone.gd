@@ -21,6 +21,10 @@ var _morts := 0
 
 
 func before_each() -> void:
+	# L'autoload survit d'un test à l'autre : un niveau laissé derrière soi
+	# donnerait des ennemis mis à l'échelle dans les tests suivants, et une
+	# mesure de combat qui n'aurait plus rien à voir avec ce qu'elle mesure.
+	Game.niveau_de_zone = 1
 	_zone = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(_zone)
 	await wait_physics_frames(1)
@@ -119,9 +123,11 @@ func test_six_cents_images_de_combat_dense() -> void:
 	assert_between(joueur.mana, 0.0, joueur.stats.max_mana, "la réserve reste bornée")
 
 
-func _empreinte() -> int:
+## Par défaut la zone du test courant, mais on peut lui en donner une autre :
+## comparer deux zones est exactement ce que le test du niveau vient faire.
+func _empreinte(zone: Node2D = _zone) -> int:
 	var h := 0
-	for e in _zone.enemy_manager.enemies:
+	for e in zone.enemy_manager.enemies:
 		h = hash([h, Vector2i(e.global_position.round()), e.affixes.size()])
 	return h
 
@@ -162,4 +168,83 @@ func test_un_ennemi_derriere_un_mur_se_rapproche() -> void:
 	assert_lt(
 		apres, avant - 60.0,
 		"le grunt s'est rapproché de %.0f px (de %.0f à %.0f)" % [avant - apres, avant, apres]
+	)
+
+
+# --------------------------------------------------------------------------
+# Le niveau de zone (jalon 5, étape 6)
+# --------------------------------------------------------------------------
+
+## Le chemin complet du §2, de bout en bout : l\'écran de réglage pose le niveau
+## sur l\'autoload, la zone le lit en naissant, les ennemis en héritent, et ce
+## qu\'ils lâchent le porte.
+func test_une_zone_prend_le_niveau_choisi_avant_d_y_entrer() -> void:
+	Game.niveau_de_zone = 30
+	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	add_child_autofree(zone)
+	await wait_physics_frames(1)
+
+	assert_eq(zone.enemy_manager.niveau, 30, "la zone a lu l\'autoload")
+	var ennemi: Enemy = zone.enemy_manager.enemies[0]
+	assert_eq(ennemi.niveau, 30, "et ses ennemis sont nés dedans")
+	var faible: CharacterStats = load("res://resources/stats/grunt_stats.tres")
+	assert_gt(ennemi.stats.max_health, faible.max_health * 3.0, "nettement plus dur")
+
+	# Le butin est un tirage : on tue toute la zone et on regarde ce qui reste
+	# au sol. Soixante-neuf morts à 20 % de chance, il en tombe forcément.
+	for e in zone.enemy_manager.enemies.duplicate():
+		if is_instance_valid(e):
+			e.die()
+	await wait_physics_frames(2)
+
+	var objets := 0
+	for l in zone.loot.get_children():
+		objets += 1
+		assert_eq(
+			l.data.item_level, 30,
+			"« %s » porte le niveau de sa zone" % l.data.display_name()
+		)
+	assert_gt(objets, 0, "au moins un objet est tombé")
+
+
+## Le niveau n\'entre pas dans la graine, et c\'est ce qui permettra d\'équilibrer :
+## deux zones de même graine et de niveaux différents ont les mêmes murs, les
+## mêmes paquets aux mêmes cases, les mêmes silhouettes. Seule l\'échelle des
+## ennemis change.
+func test_le_niveau_ne_change_pas_la_carte() -> void:
+	var au_niveau_1 := _empreinte()
+
+	Game.niveau_de_zone = 45
+	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	add_child_autofree(zone)
+	await wait_physics_frames(1)
+	zone.generate_zone(GRAINE)
+
+	assert_eq(_empreinte(zone), au_niveau_1, "même graine, même carte, mêmes ennemis placés")
+	assert_gt(
+		zone.enemy_manager.enemies[0].stats.max_health,
+		_zone.enemy_manager.enemies[0].stats.max_health,
+		"seule leur échelle a changé"
+	)
+
+
+## Le niveau se choisit **dans la zone**, et prend effet à la génération
+## suivante. Changer celui de la zone en cours donnerait une population mêlée :
+## les ennemis sont mis à l\'échelle en naissant, ceux déjà debout ne bougeraient
+## plus.
+func test_le_niveau_choisi_prend_effet_a_la_generation_suivante() -> void:
+	var avant: float = _zone.enemy_manager.enemies[0].stats.max_health
+	Game.changer_niveau_de_zone(20)
+
+	assert_eq(_zone.enemy_manager.niveau, 1, "la zone sous les pieds ne change pas")
+	assert_eq(
+		_zone.enemy_manager.enemies[0].stats.max_health, avant,
+		"ni les ennemis déjà debout"
+	)
+
+	_zone.generate_zone(GRAINE)
+	assert_eq(_zone.enemy_manager.niveau, 21, "la zone suivante, si")
+	assert_gt(
+		_zone.enemy_manager.enemies[0].stats.max_health, avant * 2.0,
+		"et ses ennemis sont nés dedans"
 	)

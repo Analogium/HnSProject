@@ -54,6 +54,36 @@ const ALL := [
 const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 
 
+## La définition portant cet identifiant, ou null s'il n'existe plus. Le null
+## n'est pas une erreur de programmation mais un cas de jeu : un objet sauvegardé
+## peut porter un affixe retiré du projet depuis. Sa valeur s'applique toujours,
+## c'est son palier qui devient inaffichable.
+##
+## Balayage linéaire : vingt-cinq entrées, et le seul appelant est l'infobulle,
+## qui en fait six par survol.
+static func by_id(id: String) -> ItemAffix:
+	for a in ALL:
+		if a.id == id:
+			return a
+	return null
+
+
+## Tout ce que cette base peut porter, **quel que soit son niveau** : le type de
+## l'objet seul décide. Une armure ne donne pas d'allonge, une baguette pas de
+## dégâts d'attaque, et ça reste vrai à tous les niveaux.
+##
+## Séparée d'`eligible` parce que les deux questions sont distinctes : celle-ci
+## est « qu'est-ce que cet objet peut avoir un jour », que pose la fiche d'objet
+## de la galerie ; l'autre est « qu'est-ce qu'il peut recevoir maintenant », que
+## pose le tirage. Une seule des deux écrit le filtre.
+static func compatibles(base: ItemBase) -> Array:
+	var out := []
+	for a in ALL:
+		if a.fits(base):
+			out.append(a)
+	return out
+
+
 ## Ce qui peut sortir sur cette base, à ce niveau d'objet. Une armure et une épée
 ## ne tirent pas dans la même réserve — c'est ce qui donne un sens au type de
 ## l'objet — et un objet de bas niveau n'atteint pas tout ce qui existe.
@@ -63,8 +93,8 @@ const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 ## probabilités par une formule, il ouvre des lignes dans une table.
 static func eligible(base: ItemBase, niveau: int) -> Array:
 	var out := []
-	for a in ALL:
-		if a.fits(base) and not a.ouverts(niveau).is_empty():
+	for a in compatibles(base):
+		if not a.ouverts(niveau).is_empty():
 			out.append(a)
 	return out
 
@@ -73,15 +103,8 @@ static func eligible(base: ItemBase, niveau: int) -> Array:
 ## une base dont la famille compte quatre affixes ne peut pas en porter six, et
 ## le tirage doit le dire plutôt que de rendre des lignes vides.
 static func roll_count(rng: RandomNumberGenerator, disponibles: int) -> int:
-	var total := 0
-	for w in COUNT_WEIGHTS:
-		total += w
-	var pick := rng.randi_range(1, total)
-	for i in COUNT_WEIGHTS.size():
-		pick -= COUNT_WEIGHTS[i]
-		if pick <= 0:
-			return mini(i, disponibles)
-	return 0
+	var i := Tirage.pondere(rng, COUNT_WEIGHTS)
+	return 0 if i < 0 else mini(i, disponibles)
 
 
 ## Les affixes d'un objet neuf, tirés distincts : deux fois « acéré » sur la
@@ -104,18 +127,12 @@ static func roll(rng: RandomNumberGenerator, base: ItemBase, niveau: int) -> Arr
 	return tires
 
 
-## Tirage pondéré dans ce qui reste. Le total est recalculé à chaque fois :
+## Tirage pondéré dans ce qui reste. Les poids sont relevés à chaque appel :
 ## retirer un affixe déjà tiré change les probabilités des suivants, et garder
-## un total figé donnerait des tirages nuls de plus en plus fréquents.
+## une table figée donnerait des tirages nuls de plus en plus fréquents.
 static func _pick(rng: RandomNumberGenerator, pool: Array) -> ItemAffix:
-	var total := 0
+	var poids := []
 	for a in pool:
-		total += a.weight
-	if total <= 0:
-		return null
-	var pick := rng.randi_range(1, total)
-	for a in pool:
-		pick -= a.weight
-		if pick <= 0:
-			return a
-	return null
+		poids.append(a.weight)
+	var i := Tirage.pondere(rng, poids)
+	return null if i < 0 else pool[i]

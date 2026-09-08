@@ -24,6 +24,22 @@ var personnage: Personnage
 ## stress et la galerie n'ont pas de niveau et n'ont rien à en savoir.
 var niveau_de_zone := 1
 
+## Les bornes du niveau. Soixante parce que c'est là que s'arrêtent les échelles
+## d'affixes : au-delà, plus rien ne s'ouvrirait et le danger monterait sans que
+## la récompense suive.
+const NIVEAU_MIN := 1
+const NIVEAU_MAX := 60
+
+
+## Monte ou descend le niveau des zones à venir, et rend la valeur obtenue.
+##
+## Ici et non chez les deux écrans qui l'appellent : ils bornaient chacun de leur
+## côté, et le jour où le maximum bougera, celui qui l'aurait oublié laisserait
+## engendrer une zone dont aucun affixe ne suit.
+func changer_niveau_de_zone(delta: int) -> int:
+	niveau_de_zone = clampi(niveau_de_zone + delta, NIVEAU_MIN, NIVEAU_MAX)
+	return niveau_de_zone
+
 ## « Quelqu'un s'apprête à partir, écris maintenant. » Émis à la fermeture de la
 ## fenêtre, au retour au menu et à la sortie du jeu.
 ##

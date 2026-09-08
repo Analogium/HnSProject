@@ -91,15 +91,13 @@ func mods() -> Array[StatMod]:
 	return all
 
 
-## Les lignes de l'infobulle. L'implicite en premier et séparé : c'est ce que la
-## base garantit, le reste est le fruit du tirage.
+## La ligne d'implicite de l'infobulle, à part et en premier : c'est ce que la
+## base garantit, le reste est le fruit du tirage. Les explicites, eux, se
+## dessinent depuis `explicits` — l'infobulle a besoin de leur provenance, pas
+## seulement de leur texte.
 func implicit_line() -> String:
 	var imp := base.implicit()
 	return "" if imp == null else imp.label()
 
 
-func explicit_lines() -> PackedStringArray:
-	var lines := PackedStringArray()
-	for r in explicits:
-		lines.append(r.mod.label())
-	return lines
+

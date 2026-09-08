@@ -70,44 +70,79 @@ const ALL := [
 ]
 
 
+## Combien de niveaux une base continue de tomber **après** l'ouverture de celle
+## qui la remplace.
+##
+## C'est toute la règle de relève, et elle a remplacé une borne relative — « les
+## deux meilleurs paliers de chaque lignée » — qui ne retirait jamais l'avant
+## dernier : l'épée large tombait encore dans une zone de niveau 60, à côté de la
+## lame de guerre qui la surclasse en tout point. Une base périmée qui continue
+## de tomber n'est pas une chance de plus, c'est du bruit dans le butin.
+##
+## Six et non zéro : la bascule doit être un chevauchement, pas une falaise. Le
+## palier sortant reste souhaitable quelques niveaux — ses affixes peuvent
+## encore sortir mieux — puis il s'efface. Six niveaux, c'est deux ou trois zones
+## pendant lesquelles on voit les deux tomber, assez pour comprendre ce qui
+## remplace quoi sans avoir rien à lire.
+##
+## Le chiffre se lit directement dans le jeu : la lame de guerre ouvre au niveau
+## 34, donc l'épée large cesse de tomber après la zone 40.
+const MARGE_DE_RELEVE := 6
+
+
+## La base qui prend la relève de celle-ci dans sa lignée — le palier
+## immédiatement supérieur — ou null quand c'est déjà le meilleur.
+##
+## Calculée une fois pour tout le catalogue et retenue : `disponibles` la demande
+## pour chacune des quarante et une bases, et elle est appelée à chaque chute.
+## Sans la table, chercher la relève à chaque fois ferait mille sept cents
+## comparaisons par ennemi tué.
+static var _releves: Dictionary = {}
+
+
+static func releve_de(base: ItemBase) -> ItemBase:
+	if _releves.is_empty():
+		for candidate in ALL:
+			var suivante: ItemBase = null
+			for autre in ALL:
+				if autre.lignee != candidate.lignee or autre.palier <= candidate.palier:
+					continue
+				if suivante == null or autre.palier < suivante.palier:
+					suivante = autre
+			_releves[candidate.id] = suivante
+	return _releves.get(base.id)
+
+
+## Entre quels niveaux de zone cette base tombe : son niveau requis, et le
+## dernier niveau où elle sort encore. **Un y de zéro veut dire « sans fin »** —
+## rien ne viendra jamais la remplacer, c'est le meilleur palier de sa lignée.
+##
+## C'est la règle elle-même, pas une lecture de la règle : `disponibles` s'en
+## sert pour décider, et la fiche de la forge pour l'afficher. L'outil qui sert à
+## vérifier le catalogue ne peut donc pas dire autre chose que ce qui tombe.
+static func fenetre_de_chute(base: ItemBase) -> Vector2i:
+	var suivante := releve_de(base)
+	return Vector2i(
+		base.niveau_requis,
+		0 if suivante == null else suivante.niveau_requis + MARGE_DE_RELEVE
+	)
+
+
 ## Les bases qu'une zone de ce niveau peut lâcher. Ici et non dans LootTable :
 ## c'est le catalogue qui sait ce qu'il contient, et la table de butin n'a qu'à
 ## tirer dans ce qu'on lui donne.
 ##
-## Une seule règle pour l'instant — le niveau requis de la base. L'étape 5 y
-## ajoutera celle qui compte vraiment : ne garder que les deux meilleurs paliers
-## de chaque lignée, sans quoi trente bases tirées à égalité donneraient une
-## chute utile sur cinq.
-## Combien de paliers d'une même lignée peuvent tomber en même temps.
-##
-## Sans cette borne, chaque base ajoutée dilue les autres : à niveau 40, une
-## chute sur cinq serait une dague de niveau 1, et le rythme de récompense
-## s'effondrerait au moment précis où il devrait s'améliorer. Avec elle, entrer
-## dans une zone de niveau 34 fait disparaître les épées larges au profit des
-## lames de guerre en deux ou trois chutes — et ça se sent sans rien lire.
-##
-## Deux et non un : le palier précédent qui traîne encore est ce qui rend la
-## bascule progressive plutôt que brutale, et il reste souhaitable quand ses
-## affixes sortent mieux.
-const PALIERS_VISIBLES := 2
-
-
+## Une seule règle, et c'est la fenêtre de chute : une base tombe entre son
+## niveau requis et le moment où sa remplaçante l'a chassée.
 static func disponibles(niveau: int) -> Array:
-	# Par lignée, les paliers atteints, du meilleur au pire.
-	var par_lignee := {}
-	for base in ALL:
-		if base.niveau_requis > niveau:
-			continue
-		if not par_lignee.has(base.lignee):
-			par_lignee[base.lignee] = []
-		par_lignee[base.lignee].append(base)
-
 	var out := []
-	for lignee in par_lignee:
-		var membres: Array = par_lignee[lignee]
-		membres.sort_custom(func(a: ItemBase, b: ItemBase) -> bool: return a.palier > b.palier)
-		for i in mini(membres.size(), PALIERS_VISIBLES):
-			out.append(membres[i])
+	for base in ALL:
+		var fenetre := fenetre_de_chute(base)
+		if niveau < fenetre.x:
+			continue
+		if fenetre.y > 0 and niveau > fenetre.y:
+			continue
+		out.append(base)
 	return out
 
 
@@ -116,9 +151,11 @@ static func disponibles(niveau: int) -> Array:
 ## un objet dont la base a été retirée du projet depuis. L'appelant l'ignore,
 ## il ne plante pas.
 ##
-## Balayage linéaire : trois bases. Le jour où il y en aura cinquante, un
-## dictionnaire construit une fois remplacera cette boucle — pas avant, une table
-## de correspondance pour trois entrées coûte plus à lire qu'elle ne rapporte.
+## Balayage linéaire sur les quarante et une bases. Les appelants sont le
+## chargement d'une sauvegarde — quelques dizaines d'objets, une fois — et les
+## tests ; aucun n'est dans une boucle de jeu. Un dictionnaire construit une fois
+## remplacerait cette boucle le jour où quelque chose la ferait tourner par
+## image, ce qui n'est le cas de rien aujourd'hui.
 static func by_id(id: String) -> ItemBase:
 	for base in ALL:
 		if base.id == id:

@@ -108,14 +108,44 @@ static func gauge(current: float, maximum: float) -> String:
 	return "%d / %d" % [mini(ceili(current), haut), haut]
 
 
+## La part qu'une jauge remplit, entre 0 et 1. Le pendant de gauge(), qui écrit
+## la même jauge en clair : l'une donne la longueur de la barre, l'autre le
+## compte à côté, et les deux doivent parler de la même fraction.
+##
+## Les trois barres du HUD et celle qui flotte au-dessus de chaque acteur
+## écrivaient ce quotient et sa garde chacune de leur côté. La garde est le
+## point important : un maximum nul existe vraiment — un personnage sans réserve
+## de mana, un acteur dont la fiche n'est pas encore posée — et sans elle c'est
+## une division par zéro, pas une barre vide.
+static func ratio(current: float, maximum: float) -> float:
+	return 0.0 if maximum <= 0.0 else clampf(current / maximum, 0.0, 1.0)
+
+
+## La valeur d'un modificateur, sans le nom de la statistique.
+##
+## Un modificateur en pourcentage porte son unité du fait de son mode, quelle que
+## soit celle de la statistique visée : « +12 % » de PV comme « +8 % » de vitesse
+## d'attaque. C'est la valeur absolue qui a besoin de format().
+static func value_label(stat_name: String, p_mode: Mode, v: float, signed := true) -> String:
+	if p_mode == Mode.PERCENT:
+		return ("%+d %%" if signed else "%d %%") % roundi(v)
+	return format(stat_name, v, signed)
+
+
+## Une fourchette, telle que l'infobulle des paliers l'écrit : « 45–58 »,
+## « 8–11 % ». Sans signe — une plage annonce ce qu'un affixe **peut** donner, et
+## un « + » sur chaque borne se lit comme deux valeurs plutôt qu'un intervalle.
+static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -> String:
+	var bas := value_label(stat_name, p_mode, lo, false)
+	var haut := value_label(stat_name, p_mode, hi, false)
+	# L'unité ne se répète pas dans une plage : « 8 %–11 % » se lit deux fois.
+	if bas.ends_with(" %") and haut.ends_with(" %"):
+		bas = bas.trim_suffix(" %")
+	return "%s–%s" % [bas, haut]
+
+
 func label() -> String:
-	var nom: String = LABELS.get(stat, stat)
-	# Un modificateur en pourcentage porte son unité du fait de son mode, quelle
-	# que soit celle de la statistique visée : « +12 % PV » comme « +8 % vitesse
-	# d'attaque ». C'est la valeur absolue qui a besoin de format().
-	if mode == Mode.PERCENT:
-		return "%+d %% %s" % [roundi(value), nom]
-	return "%s %s" % [format(stat, value, true), nom]
+	return "%s %s" % [value_label(stat, mode, value), LABELS.get(stat, stat)]
 
 
 ## Applique une liste à des statistiques, **les plats d'abord**.

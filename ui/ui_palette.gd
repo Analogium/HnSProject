@@ -17,6 +17,14 @@ class_name UiPalette
 ## Fond de panneau. L'opacité vaut pour une fenêtre posée sur le décor ; un
 ## panneau qui couvre tout l'écran la rend opaque à son dessin.
 const BACK := Color(0.082, 0.075, 0.106, 0.97)
+## Fond d'infobulle. Plus sombre et plus opaque qu'un panneau : elle se pose
+## **par-dessus** lui, et un fond trop clair y laisserait transparaître les
+## lignes qu'elle vient justement expliquer.
+##
+## Le sac et la fiche la déclaraient chacun, à la même valeur. Deux infobulles du
+## même jeu qui divergeraient d'un ton se liraient comme un défaut d'affichage —
+## c'est exactement ce que cette palette existe pour empêcher.
+const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
 const BORDER := Color(0.29, 0.27, 0.35)
 ## Les lignes d'aide, en bas des panneaux : présentes, jamais lues avant qu'on
 ## les cherche.

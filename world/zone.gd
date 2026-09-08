@@ -92,9 +92,6 @@ func _ready() -> void:
 	generate_zone(Game.rng.randi())
 
 
-## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
-## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
-## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
 ## Écrit le personnage courant. Publique : c'est le point d'entrée des trois
 ## déclencheurs, et celui du test.
 ##
@@ -132,6 +129,9 @@ func _on_niveau_gagne(_niveau: int) -> void:
 	sauvegarder.call_deferred()
 
 
+## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
+## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
+## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
 func _on_item_dropped(item: Item) -> void:
 	GroundItem.spawn(
 		loot, player.global_position + player.facing * 14.0, item, GroundItem.DROP_DELAY
@@ -153,6 +153,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	match (event as InputEventKey).keycode:
 		KEY_F5: generate_zone(Game.rng.randi())
+		# Le niveau de la **prochaine** zone. Changer celui de la zone en cours
+		# donnerait une population mêlée : les ennemis sont mis à l'échelle en
+		# naissant, ceux déjà debout ne bougeraient plus. Le bandeau annonce donc
+		# les deux quand ils diffèrent.
+		KEY_PAGEUP: Game.changer_niveau_de_zone(10 if (event as InputEventKey).shift_pressed else 1)
+		KEY_PAGEDOWN: Game.changer_niveau_de_zone(-10 if (event as InputEventKey).shift_pressed else -1)
 		KEY_G: spawn_pack()
 		KEY_K: kill_all()
 		KEY_I: inventory.toggle()
@@ -168,9 +174,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	vp.set_input_as_handled()
 
 
+## Le niveau choisi prend effet **ici**, et nulle part ailleurs : c'est le seul
+## moment où l'on peut peupler une carte d'ennemis tous nés au même niveau.
 func generate_zone(zone_seed: int) -> void:
 	_seed = zone_seed
 	zone_rng.seed = zone_seed
+	enemy_manager.niveau = Game.niveau_de_zone
 	kill_all()
 
 	generator = MapGenerator.new()
@@ -284,6 +293,15 @@ func _respawn() -> void:
 	_place_and_populate()
 
 
+## Ce que F5 donnera, quand ce n'est pas ce qu'on a sous les pieds. Rien à
+## afficher tant que les deux coïncident : une deuxième valeur en permanence se
+## lirait comme une contradiction.
+func _niveau_en_attente() -> String:
+	if Game.niveau_de_zone == enemy_manager.niveau:
+		return ""
+	return "  (F5 : %d)" % Game.niveau_de_zone
+
+
 func _overlay_text() -> String:
 	return "\n".join([
 		# Ni les PV ni les statistiques de combat : les jauges du HUD donnent les
@@ -293,13 +311,16 @@ func _overlay_text() -> String:
 			player.level, player.xp, player.xp_to_next, enemy_manager.enemies.size()
 		],
 		"",
-		"zone %d  —  %d cases de sol" % [_seed, generator.floor_cells.size()],
+		"zone %d  —  niveau %d%s  —  %d cases de sol" % [
+			_seed, enemy_manager.niveau, _niveau_en_attente(), generator.floor_cells.size()
+		],
 		"%d ennemis places en %d paquets" % [_spawned, spawner.pack_count],
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],
 		"",
 		"[TAB] carte de la zone",
 		"[I] inventaire   [C] fiche de personnage",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
+		"[PAGE HAUT/BAS] niveau de la prochaine zone  (+MAJ : 10)",
 		"[H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",

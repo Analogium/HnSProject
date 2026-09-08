@@ -77,3 +77,30 @@ func test_zero_reste_zero() -> void:
 ## Un personnage sans mana : la fiche l'annonce, elle ne divise pas par zéro.
 func test_une_reserve_absente() -> void:
 	assert_eq(StatMod.gauge(0.0, 0.0), "0 / 0")
+
+
+# --------------------------------------------------------------------------
+# Les plages de paliers (jalon 5, étape 7)
+# --------------------------------------------------------------------------
+
+## Une plage annonce ce qu\'un affixe **peut** donner : pas de signe, et l\'unité
+## une seule fois. « +8 %–+11 % » se lit comme deux valeurs, pas comme un
+## intervalle.
+func test_une_plage_s_ecrit_sans_signe_et_avec_une_seule_unite() -> void:
+	assert_eq(StatMod.range_label("max_health", StatMod.Mode.FLAT, 45.0, 58.0), "45–58")
+	assert_eq(StatMod.range_label("max_health", StatMod.Mode.PERCENT, 8.0, 11.0), "8–11 %")
+	# Une statistique rangée en fraction se lit en pourcentage, une seule fois.
+	assert_eq(StatMod.range_label("crit_chance", StatMod.Mode.FLAT, 0.05, 0.07), "5–7 %")
+	# Et une déjà comptée en points de pourcentage n\'est pas multipliée.
+	assert_eq(StatMod.range_label("res_fire", StatMod.Mode.FLAT, 16.0, 21.0), "16–21 %")
+
+
+## Le libellé d\'un modificateur est sa valeur plus le nom de la statistique :
+## les deux fonctions ne doivent pas diverger d\'un arrondi, d\'où le partage.
+func test_la_valeur_seule_est_celle_du_libelle() -> void:
+	var m := StatMod.new("attack_speed", StatMod.Mode.PERCENT, 9.0)
+	assert_eq(m.label(), "+9 % vitesse d\'attaque")
+	assert_eq(StatMod.value_label(m.stat, m.mode, m.value), "+9 %")
+	var plat := StatMod.new("max_health", StatMod.Mode.FLAT, 63.0)
+	assert_eq(plat.label(), "+63 PV")
+	assert_eq(StatMod.value_label(plat.stat, plat.mode, plat.value), "+63")

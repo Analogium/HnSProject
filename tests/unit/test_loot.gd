@@ -62,7 +62,7 @@ func test_les_mods_reunissent_implicite_et_affixes() -> void:
 	]
 	var enrichi := Item.new(base, deux)
 	assert_eq(enrichi.mods().size(), 3, "l'implicite plus ses deux affixes")
-	assert_eq(enrichi.explicit_lines().size(), 2, "l'infobulle ne montre que les tirés")
+	assert_eq(enrichi.explicits.size(), 2, "l'infobulle ne montre que les tirés")
 	assert_false(enrichi.implicit_line().is_empty(), "et l'implicite à part")
 
 

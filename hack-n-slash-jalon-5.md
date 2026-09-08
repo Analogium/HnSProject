@@ -203,15 +203,40 @@ ressemblerait à un ajout de contenu plutôt qu'à une progression.
 
 ### 4.2 Le tirage
 
-**Tous les tiers dont le niveau requis est atteint peuvent sortir**, le meilleur
-comme les moins bons — c'est la demande, et c'est ce qui fait qu'un objet de
-niveau 60 avec un T7 dessus existe et déçoit. Sans les mauvais tiers, le niveau
-d'objet ne serait plus une chance mais une garantie, et il n'y aurait plus rien
-à espérer en regardant tomber un objet.
+**Une fenêtre glissante de quatre tiers** : le meilleur que l'objet atteint, et
+les trois du dessous. Le plafond monte avec le niveau d'objet, et le plancher
+monte avec lui.
 
-Poids **égal entre tiers disponibles** par défaut, avec un champ `poids` par
-tier pour l'exception. Un affixe à huit tiers ouverts sort donc T1 une fois sur
-huit à niveau 52. C'est volontairement généreux pour une première calibration :
+Garder plusieurs tiers ouverts est ce qui fait qu'un objet de niveau 60 peut
+décevoir : sans eux, le niveau d'objet ne serait plus une chance mais une
+garantie, et il n'y aurait plus rien à espérer en regardant tomber un objet.
+
+> **Révisé après le jalon.** La première écriture n'avait qu'un plafond — tous
+> les tiers atteints restaient ouverts, sans exception — donc un objet de niveau
+> 60 pouvait sortir le T8, celui des premières zones, et le meilleur objet du jeu
+> valait parfois moins que le premier ramassé. Le plancher manquait.
+>
+> `ItemAffix.PALIERS_OUVERTS := 4` : un objet qui atteint le T1 ne tire plus rien
+> sous le T4. Ce n'est pas une garantie pour autant — quatre tiers d'écart, c'est
+> encore un objet sur quatre qui déçoit, et c'est ce qu'il faut pour qu'une bonne
+> sortie reste une bonne nouvelle.
+>
+> `ItemAffix.fenetre_du_palier` dit entre quels niveaux d'objet un tier peut
+> sortir, en interrogeant `ouverts` plutôt qu'en rejouant son raisonnement.
+> C'est ce que la fiche de la forge affiche : un outil de réglage qui annoncerait
+> un tier que le tirage refuse serait pire qu'un outil absent.
+>
+> Et la fiche **croise les deux fenêtres**. Une base ne tombe que dans sa plage
+> de zones, et le niveau d'un objet est celui de la zone où il tombe : une épée
+> large, qui s'arrête en zone 40, n'atteint jamais un tier qui demande le niveau
+> 52. `ItemAffix.ouverts_entre` donne l'union des fenêtres d'une plage, et la
+> fiche n'affiche que ça — huit cent vingt tiers en moins sur les quarante et
+> une bases, plus de la moitié sur celles de début. Sans ce croisement, l'écran
+> qui sert à équilibrer décrivait des objets qui ne peuvent pas exister.
+
+Poids **égal entre tiers ouverts** par défaut, avec un champ `poids` par tier
+pour l'exception. Un affixe dont la fenêtre est pleine sort donc T1 une fois sur
+quatre une fois le T1 atteint. C'est volontairement généreux pour une première calibration :
 on serre en jouant, et le champ est là pour ça.
 
 Un affixe dont **aucun** tier n'est ouvert n'est pas dans la réserve. C'est le
@@ -328,7 +353,7 @@ l'autre, une lignée en moins la supprime pour toute la partie.
 
 ### 5.3 Ce qui peut tomber
 
-**Les deux meilleurs paliers disponibles de chaque lignée**, et rien en dessous.
+**Chaque base a une fenêtre de chute**, et elle se referme.
 
 Sans cette règle, chaque nouvelle base dilue les autres : à niveau 40, une chute
 sur trois serait une dague de niveau 1, et le rythme de récompense s'effondrerait
@@ -336,7 +361,24 @@ au moment précis où il devrait s'améliorer. Avec elle, entrer dans une zone d
 niveau 34 fait **disparaître les épées larges au profit des lames de guerre** en
 deux ou trois chutes, et ça se sent sans qu'on ait rien à lire.
 
-Une constante, `LootTable.PALIERS_VISIBLES := 2`, et un seul endroit qui l'applique.
+> **Révisé après le jalon.** La première écriture était relative — « les deux
+> meilleurs paliers atteints de chaque lignée », `ItemCatalog.PALIERS_VISIBLES`
+> — et elle ne retirait jamais l'avant-dernier : l'épée large tombait encore
+> dans une zone de niveau 60, à côté de la lame de guerre qui la surclasse en
+> tout point. Une base périmée qui continue de tomber n'est pas une chance de
+> plus, c'est du bruit dans le butin.
+>
+> La règle est maintenant une **fenêtre par base** : elle tombe de son
+> `niveau_requis` jusqu'à `MARGE_DE_RELEVE` niveaux après l'ouverture de celle
+> qui la remplace, et le meilleur palier d'une lignée n'est chassé par rien. À
+> six niveaux de marge, la lame de guerre ouvrant à 34, **l'épée large cesse de
+> tomber après la zone 40**.
+>
+> Le « pas plus de deux paliers à la fois » n'est plus écrit dans le code : il
+> en est devenu une *conséquence*, et c'est un test qui le tient, à chacun des
+> soixante niveaux. `ItemCatalog.fenetre_de_chute` est la règle, `disponibles`
+> la consomme, et la fiche d'objet de la forge l'affiche — trois usages, une
+> seule écriture.
 `LootTable.roll` prend désormais le niveau de la zone en argument — il ne peut
 plus tirer uniformément dans `ItemCatalog.ALL`, qui reste la liste unique des
 bases mais n'est plus la liste de ce qui tombe.
@@ -539,17 +581,97 @@ suivantes sont le contenu ; la dernière est l'écran.
       à tous les niveaux de zone de 1 à 60 ; chaque base peint au moins un pixel.
       Capture de la galerie, et une capture du sac avec trois paliers d'une même
       lignée côte à côte — c'est elle qui dit si on les distingue.
-- [ ] **6. Le niveau de zone.** La mise à l'échelle et sa duplication de fiche,
+- [x] **6. Le niveau de zone.** La mise à l'échelle et sa duplication de fiche,
       l'expérience bornée, le choix depuis l'écran de génération, l'affichage au
       bandeau. Tests : un ennemi de niveau 40 a la vie attendue **et le `.tres`
       partagé n'a pas bougé** ; l'expérience d'un écart de vingt niveaux est
       bornée ; e2e — une zone de niveau 30 ne lâche que des objets de niveau 30,
       et deux zones de même graine et de niveaux différents ont la même carte.
       Remesure du banc de stress.
-- [ ] **7. Alt.** Les colonnes de tier et de plage, la borne de largeur, la
+- [x] **7. Alt.** Les colonnes de tier et de plage, la borne de largeur, la
       lecture de l'état réel de la touche. Capture avec Alt maintenu sur un objet
       à quatre affixes, et une capture d'un objet chargé depuis une sauvegarde de
       version 1 — celui qui n'a pas de tiers à montrer.
+
+### Ce que l'étape 7 a changé au plan
+
+- **L'état d'Alt est sondé à chaque image, dans le `_process` qui fait déjà
+  tourner le portrait**, et non capté sur l'événement. C'est le même sondage que
+  les attaques du joueur, pour la même raison : Alt est interceptée par le
+  gestionnaire de fenêtres sur les trois systèmes, et perdre le focus la touche
+  enfoncée ne rend jamais le relâchement. La capture l'a démontré à ses dépens —
+  poser le drapeau depuis un script ne sert à rien, le sondage l'efface à
+  l'image suivante ; il a fallu couper le `_process` pour photographier l'état.
+- **`Item.explicit_lines()` a disparu.** L'infobulle avait besoin de la
+  provenance de chaque ligne, pas d'une liste de chaînes toutes faites : elle
+  parcourt maintenant `explicits`. Une fonction dont le seul appelant réel
+  n'appelle plus est une API morte.
+- **`StatMod.label()` s'est dédoublé** en `value_label()` — la valeur sans le nom
+  de la statistique — et le libellé complet, qui l'utilise. La plage d'un palier
+  et la ligne de l'affixe s'écrivent donc avec le même code : deux formatages
+  séparés auraient fini par diverger d'un arrondi, et l'infobulle aurait annoncé
+  une valeur hors de sa propre fourchette.
+- **Une plage s'écrit sans signe et avec une seule unité** : « 45–58 »,
+  « 8–11 % ». Elle annonce ce qu'un affixe *peut* donner ; un « + » sur chaque
+  borne se lit comme deux valeurs plutôt que comme un intervalle, et l'unité
+  répétée se lit deux fois.
+- **La colonne est calée sur la plus large des lignes d'affixes**, pas sur
+  chacune : alignée ligne à ligne, elle montait en escalier et ne se lisait plus
+  comme une colonne.
+- **Une bulle muette se lit comme une panne.** Sur un objet sans provenance, Alt
+  n'affichait rien du tout — et le premier personnage à essayer portait
+  justement cinq objets d'avant l'étape 3, ramassés quand les affixes ne
+  retenaient pas encore leur palier. La bulle dit donc pourquoi :
+  « paliers inconnus : ramassé avant », en gris, sous les affixes. Ce n'est pas
+  une colonne devinée — c'est l'absence, expliquée — et la ligne disparaît d'elle
+  même à mesure qu'on remplace son équipement.
+- **Les objets portés l'ont eu sans une ligne de code.** Le survol d'un
+  emplacement et celui d'une case du sac appellent la même fonction depuis le
+  jalon 4 — c'était la réponse à la question « faut-il partager ce dessin ? »,
+  et elle vient de payer. Vérifié sur capture, un emplacement à la fois : la
+  bulle tient à cette position-là, y compris sur les bagues, dont les lignes
+  sont les plus longues du jeu.
+
+### Ce que l'étape 6 a changé au plan
+
+- **Le niveau se choisit dans la zone, pas seulement dans l'écran de
+  génération.** `Page haut` / `Page bas` d'un cran, `Maj` pour dix, et la
+  **génération suivante** l'applique — c'est là qu'on engendre vraiment des
+  zones en jouant, alors que `F3` sert à régler la forme de la carte. Deux
+  touches physiques et non des chiffres : ceux-là seront des potions ou des
+  compétences, et ils ne sont pas au même endroit d'un clavier à l'autre.
+- **Le changement ne touche pas la zone sous les pieds.** Les ennemis sont mis à
+  l'échelle en naissant : appliquer le nouveau niveau tout de suite donnerait une
+  population mêlée, ceux déjà debout restant à l'ancien. Le bandeau annonce donc
+  les deux quand ils diffèrent — « niveau 1 (F5 : 21) » — et rien tant qu'ils
+  coïncident, une seconde valeur permanente se lisant comme une contradiction.
+- **Les bornes ont déménagé sur `Game`**, avec la valeur, et les deux écrans
+  passent par `changer_niveau_de_zone`. Ils bornaient chacun de leur côté : le
+  jour où le maximum bougera, celui qui l'aurait oublié laisserait engendrer une
+  zone dont aucun affixe ne suit.
+
+- **La copie de fiche est redevenue conditionnelle, et c'est le banc qui l'a
+  demandé.** La mise à l'échelle écrit dans la fiche, donc il faut la dupliquer
+  — mais au niveau 1 et sans affixe, il n'y a rien à écrire. Copiée
+  systématiquement, la physique passait de **4,4 à 5,4 ms** à sept cents ennemis
+  simulés, deux passages de suite : une fiche par ennemi, c'est une ligne de
+  cache par ennemi dans la boucle de tick. Le tirage des affixes a donc été
+  séparé de leur application — c'est son résultat qui décide s'il faut copier.
+  Remesuré après correction : **4,70 ms**, contre 4,40 avant le jalon.
+- **Le niveau vit sur l'EnemyManager, pas seulement sur l'autoload.** La zone le
+  lit sur `Game` et le pose sur le manager, qui le donne à chaque ennemi avant
+  son entrée dans l'arbre et le passe à la table de butin. Un champ se règle
+  depuis un test, là où une variable globale se subit — et le manager est déjà
+  le pilote unique.
+- **Le facteur d'expérience est une fonction statique d'`Enemy`**, à côté de
+  `xp_value()` dont il borne le résultat. Les deux règles de récompense se
+  lisent au même endroit, et le test n'a pas besoin d'un ennemi dans l'arbre
+  pour vérifier la seconde.
+- **Quatre touches et non deux** dans l'écran de réglage : 5/6 pour un niveau,
+  7/8 pour dix. Soixante marches à une touche, c'est un réglage qu'on n'utilise
+  pas. La phrase qui expliquait à quoi sert le niveau a été raccourcie à
+  « ennemis et butin » — la capture a montré qu'elle débordait sur l'aperçu de
+  la carte, qui n'occupe que les cent quarante premiers pixels.
 
 ### Ce que l'étape 5 a changé au plan
 

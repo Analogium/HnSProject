@@ -38,6 +38,24 @@ static func orphelin(p_mod: StatMod) -> RolledAffix:
 	return RolledAffix.new("", 0, p_mod)
 
 
+## « T4  (45–58) », ou une chaîne vide quand la provenance est inconnue.
+##
+## Vide plutôt qu'un « T? » : un objet d'avant les paliers n'a pas de palier, et
+## le déduire de sa valeur serait faux une fois sur trois — les fourchettes de
+## deux paliers voisins se chevauchent. Pas de colonne vaut mieux qu'une colonne
+## fausse.
+func palier_et_plage() -> String:
+	if not connu():
+		return ""
+	var definition := ItemAffixPool.by_id(affix_id)
+	if definition == null or tier > definition.tiers.size():
+		return ""
+	var palier: ItemAffixTier = definition.tiers[tier - 1]
+	return "T%d  (%s)" % [
+		tier, StatMod.range_label(mod.stat, mod.mode, palier.min_value, palier.max_value)
+	]
+
+
 ## Vrai quand on sait d'où vient cette ligne. L'infobulle s'en sert pour montrer
 ## un palier ou n'en montrer aucun — pas de colonne vaut mieux qu'une colonne
 ## fausse.

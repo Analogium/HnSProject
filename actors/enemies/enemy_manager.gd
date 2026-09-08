@@ -21,6 +21,14 @@ const FIELD_PERIOD := 0.10
 var enemies: Array[Enemy] = []
 var target: Node2D
 
+## Le niveau de la zone : celui des ennemis qui y naissent, et celui des objets
+## qui y tombent. Posé par la zone depuis `Game.niveau_de_zone`.
+##
+## Ici et non lu sur l'autoload à chaque mort : le manager est le pilote unique,
+## et un champ se règle depuis un test là où une variable globale se subit. Les
+## scènes de réglage — l'arène, le banc de stress — le laissent à 1.
+var niveau := 1
+
 ## Le chemin vers la cible, partagé par tous les ennemis. **Facultatif** : null
 ## dans les scènes sans carte — l'arène de réglage, le banc de stress, les tests
 ## d'intégration — où les ennemis foncent en ligne droite, ce qui est
@@ -59,6 +67,9 @@ func spawn(scene: PackedScene, at: Vector2) -> Enemy:
 		return null
 	var enemy: Enemy = scene.instantiate()
 	enemy.position = at
+	# Avant add_child : c'est _ready qui met la fiche à l'échelle, et il part
+	# dès l'entrée dans l'arbre.
+	enemy.niveau = niveau
 	add_child(enemy)
 	register(enemy)
 	return enemy
@@ -134,7 +145,10 @@ func report_kill(enemy: Enemy) -> void:
 	var player := target as Player
 	if player == null:
 		return
-	var gain := enemy.xp_value()
+	# L'expérience fond quand la zone dépasse le personnage de plus de cinq
+	# niveaux. Le butin, lui, garde le niveau de la zone : c'est ce qui fait
+	# qu'aller trop loin reste payant sans devenir le chemin le plus court.
+	var gain := maxi(roundi(enemy.xp_value() * Enemy.facteur_d_experience(niveau, player.level)), 1)
 	player.gain_xp(gain)
 	# Au-dessus du corps et non au-dessus du joueur : c'est l'ennemi tombé qui
 	# rapporte, et on doit pouvoir attribuer le gain à la cible qu'on a choisie.
@@ -146,7 +160,7 @@ func report_kill(enemy: Enemy) -> void:
 ## Appelée uniquement depuis report_kill, donc jamais pour un vidage de zone ni
 ## pour le banc de mesure : ceux-là passent die(false).
 func _drop_loot(enemy: Enemy) -> void:
-	var item := LootTable.roll(enemy.affixes.size(), Game.niveau_de_zone)
+	var item := LootTable.roll(enemy.affixes.size(), niveau)
 	if item == null:
 		return
 	GroundItem.spawn(loot_parent, enemy.global_position, item)

@@ -104,6 +104,35 @@ const EVASION_K := 60.0
 ## Au-delà, le combat devient une loterie qu'on gagne en attendant.
 const MAX_EVASION := 0.75
 
+## Ce que le niveau d'une zone ajoute à un ennemi qui y naît, par niveau au-delà
+## du premier.
+##
+## Linéaire et non exponentiel : une courbe exponentielle demande un exposant
+## qu'on ne saura pas régler avant d'avoir joué, et se trompe d'un facteur dix à
+## la soixantième marche. À niveau 40, un grunt a huit fois sa vie et cinq fois
+## ses dégâts — c'est brutal, c'est réglable, et c'est mesurable en une partie.
+##
+## Ni l'armure ni les résistances ne montent. Le joueur n'a aucun moyen de
+## percer une armure ; la faire croître transformerait une zone profonde en mur
+## au lieu d'un danger.
+const VIE_PAR_NIVEAU := 0.18
+const DEGATS_PAR_NIVEAU := 0.12
+
+
+## Met une fiche à l'échelle d'un niveau de zone. **Écrit dans la fiche qu'on
+## lui donne** : à l'appelant de l'avoir dupliquée, car les fiches d'archétypes
+## sont des `.tres` partagés par tous leurs exemplaires.
+##
+## Les dégâts de sort suivent les dégâts d'attaque : le tir du caster lit
+## attack_damage, mais un ennemi qui lancerait un vrai sort ne doit pas rester
+## au niveau 1 par oubli.
+static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
+	var marches := float(maxi(niveau, 1) - 1)
+	stats.max_health *= 1.0 + VIE_PAR_NIVEAU * marches
+	stats.attack_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
+	stats.spell_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
+
+
 ## Les trois champs d'attributs, pour que l'appelant n'ait pas à les énumérer à
 ## la main. C'est cette liste qui sépare les modificateurs à appliquer **avant**
 ## la dérivation de ceux qui viennent après.
