@@ -3,24 +3,21 @@ extends RefCounted
 
 ## Une modification de statistique : « +6 dégâts », « +12 % de PV ».
 ##
-## Une seule structure pour l'implicite d'une base d'objet et pour ses affixes
-## tirés au hasard. Les deux disent la même chose — quel champ, de combien, à
-## plat ou en pourcentage — et tout ce qui les lit (le calcul des stats du
-## joueur, l'infobulle) n'a donc qu'une forme à connaître.
+## Une seule structure pour l'implicite d'une base et pour ses affixes tirés : les
+## deux disent quel champ, de combien, à plat ou en pourcentage, et tout ce qui
+## les lit n'a donc qu'une forme à connaître.
 ##
-## Pas une Resource : un modificateur tiré au hasard n'existe que dans une
-## partie, il n'a rien à faire sur le disque. Ce sont les *définitions*
-## (ItemAffix) qui sont des `.tres`.
+## Pas une Resource : un modificateur tiré au hasard n'existe que dans une partie.
+## Ce sont les *définitions* (ItemAffix) qui sont des `.tres`.
 
 enum Mode { FLAT, PERCENT }
 
 ## Le nom lisible de chaque statistique, au même endroit pour toute l'interface.
-## Les clés sont les champs de CharacterStats : une faute se voit à l'écran
-## plutôt que de modifier silencieusement une statistique inexistante — et le
-## test de la réserve d'affixes vérifie que chacune existe.
+## Les clés sont les champs de CharacterStats, et le test de la réserve d'affixes
+## vérifie que chacune existe.
 ##
-## L'unité fait partie du nom quand elle n'est pas évidente — « PV/s » plutôt
-## que « régénération », qui laisserait croire à un pourcentage.
+## L'unité fait partie du nom quand elle n'est pas évidente — « PV/s » plutôt que
+## « régénération », qui laisserait croire à un pourcentage.
 const LABELS := {
 	"strength": "force",
 	"dexterity": "dextérité",
@@ -80,9 +77,9 @@ func _init(p_stat: String, p_mode: Mode, p_value: float) -> void:
 	value = p_value
 
 
-## Une valeur de statistique dans son unité. Statique et partagée : l'infobulle
-## d'un affixe et la fiche de personnage doivent écrire « 110 % » de la même
-## façon, sinon les deux finiront par diverger d'un arrondi.
+## Une valeur de statistique dans son unité. L'infobulle d'un affixe et la fiche
+## de personnage doivent écrire « 110 % » de la même façon, sinon les deux
+## finiront par diverger d'un arrondi.
 static func format(stat_name: String, v: float, signed := false) -> String:
 	var fmt := "%+" if signed else "%"
 	if stat_name in SCALED:
@@ -95,37 +92,31 @@ static func format(stat_name: String, v: float, signed := false) -> String:
 	return (fmt + ".1f") % v
 
 
-## Une jauge « courant / maximum », telle qu'elle s'affiche. Le HUD et la fiche
-## de personnage l'écrivaient chacun de leur côté, et le mana une troisième fois.
+## Une jauge « courant / maximum », telle qu'elle s'affiche.
 ##
 ## La valeur courante est arrondie **vers le haut** : à 0,4 PV on est vivant, et
 ## annoncer 0 alors qu'on tient encore est un mensonge. Mais jamais au-delà du
-## maximum affiché — sans ce plafond, un personnage à 215,4 PV sur 215,4 lisait
-## « 216 / 215 », le même mensonge à l'autre bout de la barre. Les deux règles
-## vont ensemble et n'ont qu'un seul endroit où être écrites.
+## maximum affiché, sinon un personnage à 215,4 PV sur 215,4 lit « 216 / 215 » —
+## le même mensonge à l'autre bout de la barre.
 static func gauge(current: float, maximum: float) -> String:
 	var haut := roundi(maximum)
 	return "%d / %d" % [mini(ceili(current), haut), haut]
 
 
-## La part qu'une jauge remplit, entre 0 et 1. Le pendant de gauge(), qui écrit
-## la même jauge en clair : l'une donne la longueur de la barre, l'autre le
-## compte à côté, et les deux doivent parler de la même fraction.
+## La part qu'une jauge remplit, entre 0 et 1. Le pendant de gauge() : l'une donne
+## la longueur de la barre, l'autre le compte à côté, et les deux doivent parler
+## de la même fraction.
 ##
-## Les trois barres du HUD et celle qui flotte au-dessus de chaque acteur
-## écrivaient ce quotient et sa garde chacune de leur côté. La garde est le
-## point important : un maximum nul existe vraiment — un personnage sans réserve
-## de mana, un acteur dont la fiche n'est pas encore posée — et sans elle c'est
-## une division par zéro, pas une barre vide.
+## La garde est le point important : un maximum nul existe vraiment — un
+## personnage sans réserve de mana, un acteur dont la fiche n'est pas encore
+## posée — et sans elle c'est une division par zéro, pas une barre vide.
 static func ratio(current: float, maximum: float) -> float:
 	return 0.0 if maximum <= 0.0 else clampf(current / maximum, 0.0, 1.0)
 
 
-## La valeur d'un modificateur, sans le nom de la statistique.
-##
-## Un modificateur en pourcentage porte son unité du fait de son mode, quelle que
-## soit celle de la statistique visée : « +12 % » de PV comme « +8 % » de vitesse
-## d'attaque. C'est la valeur absolue qui a besoin de format().
+## La valeur d'un modificateur, sans le nom de la statistique. Un modificateur en
+## pourcentage porte son unité du fait de son mode, quelle que soit celle de la
+## statistique visée ; c'est la valeur absolue qui a besoin de format().
 static func value_label(stat_name: String, p_mode: Mode, v: float, signed := true) -> String:
 	if p_mode == Mode.PERCENT:
 		return ("%+d %%" if signed else "%d %%") % roundi(v)

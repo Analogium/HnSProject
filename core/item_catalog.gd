@@ -5,8 +5,8 @@ class_name ItemCatalog
 ## son identifiant : deux listes séparées auraient fini par diverger, et un objet
 ## qui tombe sans pouvoir être rechargé est pire qu'un objet qui ne tombe pas.
 ##
-## Ajouter une base = ajouter une ligne ici et un `id` dans son `.tres`. Le test
-## du catalogue refuse un identifiant vide ou en double.
+## Ajouter une base = une ligne ici et un `id` dans son `.tres`. Le test du
+## catalogue refuse un identifiant vide ou en double.
 
 ## Rangées par lignée, puis par palier croissant : c'est ainsi qu'on les lit, et
 ## une lignée à laquelle il manque un palier se voit sans compter.
@@ -71,22 +71,15 @@ const ALL := [
 
 
 ## Combien de niveaux une base continue de tomber **après** l'ouverture de celle
-## qui la remplace.
-##
-## C'est toute la règle de relève, et elle a remplacé une borne relative — « les
-## deux meilleurs paliers de chaque lignée » — qui ne retirait jamais l'avant
-## dernier : l'épée large tombait encore dans une zone de niveau 60, à côté de la
-## lame de guerre qui la surclasse en tout point. Une base périmée qui continue
+## qui la remplace. C'est toute la règle de relève : une base périmée qui continue
 ## de tomber n'est pas une chance de plus, c'est du bruit dans le butin.
 ##
-## Six et non zéro : la bascule doit être un chevauchement, pas une falaise. Le
-## palier sortant reste souhaitable quelques niveaux — ses affixes peuvent
-## encore sortir mieux — puis il s'efface. Six niveaux, c'est deux ou trois zones
-## pendant lesquelles on voit les deux tomber, assez pour comprendre ce qui
-## remplace quoi sans avoir rien à lire.
+## Six et non zéro : la bascule doit être un chevauchement, pas une falaise. Deux
+## ou trois zones pendant lesquelles on voit les deux tomber, assez pour
+## comprendre ce qui remplace quoi sans avoir rien à lire.
 ##
-## Le chiffre se lit directement dans le jeu : la lame de guerre ouvre au niveau
-## 34, donc l'épée large cesse de tomber après la zone 40.
+## Le chiffre se lit dans le jeu : la lame de guerre ouvre au niveau 34, donc
+## l'épée large cesse de tomber après la zone 40.
 const MARGE_DE_RELEVE := 6
 
 
@@ -94,9 +87,8 @@ const MARGE_DE_RELEVE := 6
 ## immédiatement supérieur — ou null quand c'est déjà le meilleur.
 ##
 ## Calculée une fois pour tout le catalogue et retenue : `disponibles` la demande
-## pour chacune des quarante et une bases, et elle est appelée à chaque chute.
-## Sans la table, chercher la relève à chaque fois ferait mille sept cents
-## comparaisons par ennemi tué.
+## pour chacune des quarante et une bases, à chaque chute. Sans la table, ce
+## serait mille sept cents comparaisons par ennemi tué.
 static var _releves: Dictionary = {}
 
 
@@ -148,14 +140,10 @@ static func disponibles(niveau: int) -> Array:
 
 ## La base portant cet identifiant, ou null s'il n'existe plus. Le null n'est pas
 ## une erreur de programmation mais un cas de jeu : une sauvegarde peut contenir
-## un objet dont la base a été retirée du projet depuis. L'appelant l'ignore,
-## il ne plante pas.
+## un objet dont la base a été retirée du projet depuis.
 ##
-## Balayage linéaire sur les quarante et une bases. Les appelants sont le
-## chargement d'une sauvegarde — quelques dizaines d'objets, une fois — et les
-## tests ; aucun n'est dans une boucle de jeu. Un dictionnaire construit une fois
-## remplacerait cette boucle le jour où quelque chose la ferait tourner par
-## image, ce qui n'est le cas de rien aujourd'hui.
+## Balayage linéaire : les appelants sont le chargement d'une sauvegarde et les
+## tests, aucun n'est dans une boucle de jeu.
 static func by_id(id: String) -> ItemBase:
 	for base in ALL:
 		if base.id == id:

@@ -20,8 +20,8 @@ const CHANCE_TWO := 0.04
 ## elle veut dire « ça compte plus que d'habitude ».
 const ELITE_TINT := Color(0.980, 0.800, 0.302)
 
-## Opacité du liseré. Pleine : c'est un pixel vide qu'on colore, il n'y a rien
-## en dessous à ménager, et un liseré translucide se perd sur un sol clair.
+## Opacité du liseré. Pleine : c'est un pixel vide qu'on colore, et un liseré
+## translucide se perd sur un sol clair.
 const RIM_AMOUNT := 1.0
 ## L'élite porte un liseré de deux pixels : il doit se repérer de plus loin, et
 ## l'épaisseur se lit à une distance où la couleur ne se distingue plus.

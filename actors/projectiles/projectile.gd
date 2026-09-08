@@ -1,18 +1,14 @@
 class_name Projectile
 extends Area2D
 
-## Tir générique, partagé par le caster et par le joueur : la logique est la
-## même — avancer, s'arrêter au mur, blesser la première Hurtbox rencontrée.
-## Ce sont les layers de collision de la scène qui décident de qui il peut
-## toucher, pas le script. D'où enemy_bolt.tscn et player_bolt.tscn.
+## Tir générique, partagé par le caster et par le joueur : avancer, s'arrêter au
+## mur, blesser la première Hurtbox rencontrée. Ce sont les layers de collision de
+## la scène qui décident de qui il peut toucher, pas le script — d'où
+## enemy_bolt.tscn et player_bolt.tscn.
 ##
-## Le document ne fournit pas ce fichier, il n'en décrit que l'appel :
-## setup(direction, dégâts, source).
-##
-## Contrairement aux ennemis, il garde son propre _physics_process : il n'est
-## pas piloté par l'EnemyManager. Le jour où les projectiles se comptent par
-## centaines, c'est le même chemin de migration — une boucle unique — mais ça
-## ne se justifie pas au jalon 1.
+## Contrairement aux ennemis, il garde son propre _physics_process. Le jour où les
+## projectiles se compteront par centaines, c'est le même chemin de migration
+## qu'eux : une boucle unique.
 
 @export var speed: float = 140.0
 ## Zéro par défaut, comme CharacterStats.knockback_force : ce jeu n'a pas de
@@ -42,12 +38,11 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 
-## Fait partir un tir. Le joueur et le caster écrivaient les mêmes quatre
-## lignes, dont le piège de l'ordre : add_child d'abord, sinon global_position
-## ne veut rien dire.
+## Fait partir un tir, avec le piège de l'ordre : add_child d'abord, sinon
+## global_position ne veut rien dire.
 ##
-## Ajout immédiat et non différé, contrairement à GroundItem : un tir part
-## toujours depuis _physics_process, jamais depuis un callback de collision.
+## Ajout immédiat et non différé, contrairement à GroundItem : un tir part toujours
+## depuis _physics_process, jamais depuis un callback de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
 	damage: float, source: Node2D
@@ -86,11 +81,10 @@ func _on_area_entered(area: Area2D) -> void:
 	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
 	# c'est lui qu'on soigne, s'il est encore en vie.
 	#
-	# La validité se teste **avant** la conversion : convertir un objet déjà
-	# libéré est en soi une erreur, et elle interrompait la fonction avant son
-	# queue_free(). Le tir d'un caster tué pendant que sa bille volait
-	# traversait alors le joueur en le blessant à chaque image, jusqu'à
-	# expiration. Le cas se présente à chaque caster abattu à distance.
+	# La validité se teste **avant** la conversion : convertir un objet déjà libéré
+	# est en soi une erreur, et elle interrompt la fonction avant son queue_free().
+	# Le tir d'un caster tué pendant que sa bille vole traverse alors le joueur en
+	# le blessant à chaque image, jusqu'à expiration.
 	if is_instance_valid(_source):
 		var caster := _source as Enemy
 		if caster != null:

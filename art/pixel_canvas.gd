@@ -3,17 +3,15 @@ extends RefCounted
 
 ## Le rastériseur de la forge : on empile des capsules, on en déduit un volume
 ## éclairé, puis on cerne le tout d'un contour. C'est la seule couche qui touche
-## réellement des pixels — tous les générateurs d'assets passent par elle.
+## réellement des pixels.
 ##
-## Pourquoi une capsule (segment + rayon) et rien d'autre : un personnage vu de
-## dessus se résume à une dizaine de membres, et la capsule couvre le disque
-## (tête), le cylindre (bras, jambe, arme) et l'ovale (buste) selon la longueur
-## du segment. Une seule primitive à écrire, une seule à éclairer, et l'union de
-## capsules donne naturellement des silhouettes rondes et lisibles en 32 px.
+## Une capsule (segment + rayon) et rien d'autre : elle couvre le disque (tête),
+## le cylindre (bras, jambe, arme) et l'ovale (buste) selon la longueur du
+## segment. Une seule primitive à écrire, une seule à éclairer, et leur union
+## donne des silhouettes rondes et lisibles en 32 px.
 ##
-## On ne stocke pas des couleurs mais un couple (rampe, niveau d'éclairage).
-## La couleur n'est décidée qu'à to_image() : le même dessin peut donc ressortir
-## dans n'importe quelle palette, ce qui rend les variantes gratuites.
+## On ne stocke pas des couleurs mais un couple (rampe, niveau d'éclairage) : la
+## couleur n'est décidée qu'à to_image(), ce qui rend les variantes gratuites.
 
 ## Direction d'où vient la lumière, en coordonnées écran (y vers le bas) : en
 ## haut à gauche. Fixe pour tout le jeu, sinon les sprites ne s'accordent pas.
@@ -26,13 +24,31 @@ var height: int
 
 var _ramp: PackedInt32Array
 var _level: PackedFloat32Array
-## [cx, cy, rx, ry, alpha] — peintes sous le sprite, elles ne participent ni à
-## l'éclairage ni au contour.
-var _shadows: Array = []
 
-## Rectangle réellement peint. Un personnage n'occupe qu'une moitié de son
-## image ; sans ce suivi, to_image balaierait les 1024 pixels du cadre pour en
-## colorer 400.
+
+## Une ombre portée au sol : peinte sous le sprite, elle ne participe ni à
+## l'éclairage ni au contour.
+##
+## Une petite classe et non un tableau de cinq colonnes, contrairement aux
+## particules du retour visuel : il y en a **une** par sprite, donc rien à gagner
+## à l'empaqueter, et `ombre.rayons` se relit là où `s[2]` oblige à se souvenir
+## de l'ordre.
+class Ombre:
+	var centre: Vector2
+	var rayons: Vector2
+	var alpha: float
+
+	func _init(p_centre: Vector2, p_rayons: Vector2, p_alpha: float) -> void:
+		centre = p_centre
+		rayons = p_rayons
+		alpha = p_alpha
+
+
+var _shadows: Array[Ombre] = []
+
+## Rectangle réellement peint. Un personnage n'occupe qu'une moitié de son image ;
+## sans ce suivi, to_image balaierait les 1024 pixels du cadre pour en colorer
+## 400.
 var _x0 := 0
 var _y0 := 0
 var _x1 := -1
@@ -59,9 +75,9 @@ func capsule(a: Vector2, b: Vector2, radius: float, ramp: int, bias := 0.0) -> v
 	var y1 := mini(int(ceil(maxf(a.y, b.y) + radius)), height - 1)
 	if x1 < x0 or y1 < y0:
 		return
-	# Élargi une fois par capsule et non par pixel : un appel de fonction par
-	# pixel coûtait plus cher que la boucle qu'il fait économiser. Le rectangle
-	# est donc celui de la boîte englobante, légèrement plus large que la forme.
+	# Élargi une fois par capsule et non par pixel : un appel de fonction par pixel
+	# coûte plus cher que la boucle qu'il fait économiser. Le rectangle est donc
+	# celui de la boîte englobante, légèrement plus large que la forme.
 	_touch(x0, y0)
 	_touch(x1, y1)
 
@@ -94,12 +110,10 @@ func capsule(a: Vector2, b: Vector2, radius: float, ramp: int, bias := 0.0) -> v
 			if d2 > r2:
 				continue
 
-			# Le centre du volume reste en demi-teinte et les bords partent vers
-			# la lumière ou vers l'ombre : c'est ce qui donne le relief rond.
-			# L'éclairage voulu est (n/|n|) · L, atténué par |n|/rayon vers le
-			# centre — les deux |n| s'annulent, donc ni normalisation ni racine
-			# carrée. Un bord franc, sans cette atténuation, se lirait comme un
-			# aplat découpé au lieu d'un volume.
+			# Le centre du volume reste en demi-teinte et les bords partent vers la
+			# lumière ou vers l'ombre : c'est ce qui donne le relief rond. L'éclairage
+			# voulu est (n/|n|) · L, atténué par |n|/rayon vers le centre — les deux
+			# |n| s'annulent, donc ni normalisation ni racine carrée.
 			var lvl := 0.55 + 0.45 * (nx * LIGHT.x + ny * LIGHT.y) * inv_r
 
 			var i := y * width + x
@@ -122,10 +136,10 @@ func dot_px(x: int, y: int, ramp: int, level: float) -> void:
 	_touch(x, y)
 
 
-## Ombre portée au sol. Indispensable en vue de dessus : sans elle, on ne sait
-## pas si un personnage est posé ou s'il flotte, et la profondeur disparaît.
+## Ombre portée au sol. Indispensable en vue de dessus : sans elle, on ne sait pas
+## si un personnage est posé ou s'il flotte, et la profondeur disparaît.
 func ground_shadow(cx: float, cy: float, rx: float, ry: float, alpha := 0.30) -> void:
-	_shadows.append([cx, cy, rx, ry, alpha])
+	_shadows.append(Ombre.new(Vector2(cx, cy), Vector2(rx, ry), alpha))
 
 
 func _touch(x: int, y: int) -> void:
@@ -146,8 +160,8 @@ func is_empty() -> bool:
 
 
 ## Le rectangle réellement peint, contour compris. Sert à recadrer un dessin qui
-## ne remplit pas son cadre — une icône d'objet, par exemple, dont la forme
-## dépend de l'arme et ne tombe jamais au centre toute seule.
+## ne remplit pas son cadre — une icône d'objet, dont la forme dépend de l'arme et
+## ne tombe jamais au centre toute seule.
 func painted_rect() -> Rect2i:
 	if is_empty():
 		return Rect2i()
@@ -179,8 +193,8 @@ func to_image(palettes: Array) -> Image:
 
 	# Avant la boucle : les pixels vides ne sont jamais réécrits, donc l'ombre
 	# qu'ils portent survit.
-	for s in _shadows:
-		_paint_shadow(data, s)
+	for ombre in _shadows:
+		_paint_shadow(data, ombre)
 
 	# +1 de marge : le contour se pose sur les pixels vides qui touchent le bord
 	# de la silhouette, donc juste à l'extérieur du rectangle peint.
@@ -194,10 +208,9 @@ func to_image(palettes: Array) -> Image:
 				data.encode_u32(i * 4, lut[r * (levels + 1) + step])
 				continue
 
-			# Contour a posteriori plutôt que dessiné : on cerne la silhouette
-			# finale, pas chaque membre. Un contour par membre transformerait le
-			# personnage en tas de saucisses cernées — l'erreur classique du
-			# sprite généré.
+			# Contour a posteriori plutôt que dessiné : on cerne la silhouette finale,
+			# pas chaque membre. Un contour par membre transformerait le personnage
+			# en tas de saucisses cernées.
 			var n := EMPTY
 			if x + 1 < width and _ramp[i + 1] != EMPTY:
 				n = _ramp[i + 1]
@@ -238,12 +251,12 @@ static func _pack(c: Color) -> int:
 	)
 
 
-func _paint_shadow(data: PackedByteArray, s: Array) -> void:
-	var cx: float = s[0]
-	var cy: float = s[1]
-	var rx: float = s[2]
-	var ry: float = s[3]
-	var alpha := int(clampf(s[4], 0.0, 1.0) * 255.0)
+func _paint_shadow(data: PackedByteArray, ombre: Ombre) -> void:
+	var cx := ombre.centre.x
+	var cy := ombre.centre.y
+	var rx := ombre.rayons.x
+	var ry := ombre.rayons.y
+	var alpha := int(clampf(ombre.alpha, 0.0, 1.0) * 255.0)
 
 	for y in range(maxi(int(cy - ry), 0), mini(int(cy + ry) + 1, height)):
 		for x in range(maxi(int(cx - rx), 0), mini(int(cx + rx) + 1, width)):

@@ -5,16 +5,13 @@ extends CanvasLayer
 ## PROCESS_MODE_ALWAYS et non WHEN_PAUSED : en mode « pendant la pause », le
 ## menu ne traiterait plus rien une fois le jeu repris, donc il ne pourrait plus
 ## jamais s'ouvrir. Il doit vivre dans les deux états.
-##
-## Échap sert de « retour » dans la forge, la carte de réglage et la scène de
-## stress. Pas de conflit : ce sont des aperçus de débogage, ce menu n'existe que
-## dans la zone jouée.
 
 @onready var root: Control = $Root
 @onready var menu: VBoxContainer = $Root/Center/Panel/Menu
 @onready var options: VBoxContainer = $Root/Center/Panel/Options
 @onready var bars_check: CheckBox = $Root/Center/Panel/Options/Bars
 @onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
+@onready var fenetre_btn: Button = $Root/Center/Panel/Options/Fenetre
 
 
 func _ready() -> void:
@@ -29,6 +26,12 @@ func _ready() -> void:
 	names_check.button_pressed = Settings.show_affix_names
 	names_check.toggled.connect(func(on: bool) -> void: Settings.show_affix_names = on)
 
+	# Un bouton qui tourne plutôt qu'une liste déroulante : il y a quatre valeurs
+	# au plus, le libellé dit toujours celle qu'on a, et une liste déroulante
+	# dessinerait sa fenêtre par-dessus le menu de pause.
+	fenetre_btn.pressed.connect(_changer_fenetre)
+	_rafraichir_fenetre()
+
 	($Root/Center/Panel/Menu/Resume as Button).pressed.connect(close)
 	($Root/Center/Panel/Menu/OptionsBtn as Button).pressed.connect(_show_options)
 	($Root/Center/Panel/Menu/Retour as Button).pressed.connect(_retour_menu)
@@ -37,9 +40,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	if (event as InputEventKey).keycode != KEY_ESCAPE:
+	if Touches.enfoncee(event) != KEY_ESCAPE:
 		return
 
 	# Échap depuis les options revient au menu plutôt que de tout fermer : sinon
@@ -79,6 +80,18 @@ func _retour_menu() -> void:
 func _quitter() -> void:
 	Game.sauvegarde_demandee.emit()
 	get_tree().quit()
+
+
+## Le libellé se relit sur le réglage plutôt que de retenir ce qu'on a cliqué :
+## la valeur peut avoir été bornée à l'écran de la machine, et un bouton qui
+## annonce ×4 pendant que la fenêtre est en ×3 est pire que pas de bouton.
+func _changer_fenetre() -> void:
+	Settings.cycler_echelle()
+	_rafraichir_fenetre()
+
+
+func _rafraichir_fenetre() -> void:
+	fenetre_btn.text = Settings.libelle_courant()
 
 
 func _show_menu() -> void:

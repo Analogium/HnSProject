@@ -1,8 +1,7 @@
 extends Node
 
-## Durée du hit-stop, en secondes réelles. C'est LE réglage du game feel :
-## teste entre 0.03 et 0.10, tu sentiras la différence immédiatement.
-## Réglable à chaud depuis l'arène de test.
+## Durée du hit-stop, en secondes réelles. LE réglage du game feel : entre 0.03
+## et 0.10 la différence est immédiate. Réglable à chaud depuis l'arène de test.
 var hit_stop_duration := 0.05
 
 var rng := RandomNumberGenerator.new()
@@ -16,12 +15,10 @@ var rng := RandomNumberGenerator.new()
 var personnage: Personnage
 
 ## Le niveau de la zone en cours : celui de ses ennemis, et celui des objets qui
-## y tombent. Sur l'autoload pour la même raison que `personnage` — il doit
-## survivre au changement de scène, et c'est l'écran de réglage de génération qui
-## le pose avant d'entrer dans la zone.
+## y tombent. Sur l'autoload pour la même raison que `personnage`, et posé par
+## l'écran de réglage de génération avant d'entrer dans la zone.
 ##
-## 1 par défaut, et les scènes de réglage n'y touchent pas : l'arène, le banc de
-## stress et la galerie n'ont pas de niveau et n'ont rien à en savoir.
+## 1 par défaut : l'arène, le banc de stress et la galerie n'ont pas de niveau.
 var niveau_de_zone := 1
 
 ## Les bornes du niveau. Soixante parce que c'est là que s'arrêtent les échelles
@@ -54,18 +51,16 @@ signal sauvegarde_demandee
 var previous_scene_path := ""
 
 ## Vrai quand une fenêtre d'interface s'est emparée de la souris. Un drapeau
-## global parce que le joueur lit ses attaques par sondage
-## (Input.is_action_just_pressed) dans _physics_process : ces lectures ne passent
-## pas par l'arbre d'entrées, donc aucune fenêtre ne peut les intercepter en
-## consommant l'événement.
+## global parce que le joueur lit ses attaques par sondage dans
+## _physics_process : ces lectures ne passent pas par l'arbre d'entrées, donc
+## aucune fenêtre ne peut les intercepter en consommant l'événement.
 ##
 ## **En lecture seule.** Passer par grab_ui_input() pour le modifier.
 var ui_grabs_input := false
 
-## Qui réclame la souris. Un ensemble et non un simple booléen : le sac et la
-## fiche de personnage peuvent être ouverts en même temps, et le premier des deux
-## à se fermer remettrait le drapeau à faux alors que l'autre tient encore la
-## souris — le joueur se retrouverait à frapper en cliquant dans un panneau.
+## Qui réclame la souris. Un ensemble et non un booléen : le sac et la fiche
+## peuvent être ouverts ensemble, et le premier des deux à se fermer remettrait
+## le drapeau à faux alors que l'autre tient encore la souris.
 var _ui_grabbers := {}
 
 

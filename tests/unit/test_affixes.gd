@@ -337,7 +337,7 @@ func test_la_fenetre_d_un_palier_dit_ce_que_le_tirage_accepte() -> void:
 	for brut in ItemAffixPool.ALL:
 		var a: ItemAffix = brut
 		for index in a.tiers.size():
-			var fenetre := a.fenetre_du_palier(index)
+			var fenetre := a.fenetre_du_palier(index, 1, Game.NIVEAU_MAX)
 			assert_eq(
 				fenetre.x, a.tiers[index].niveau_requis,
 				"« %s » T%d ouvre à son niveau requis" % [a.id, index + 1]
@@ -346,20 +346,37 @@ func test_la_fenetre_d_un_palier_dit_ce_que_le_tirage_accepte() -> void:
 				a.ouverts(fenetre.x).has(index),
 				"« %s » T%d sort au niveau %d" % [a.id, index + 1, fenetre.x]
 			)
-			if fenetre.y <= 0:
-				assert_true(
-					a.ouverts(Game.NIVEAU_MAX).has(index),
-					"« %s » T%d n\'est chassé par rien" % [a.id, index + 1]
-				)
-				continue
 			assert_true(
 				a.ouverts(fenetre.y).has(index),
 				"« %s » T%d sort encore au niveau %d" % [a.id, index + 1, fenetre.y]
 			)
+			if fenetre.y >= Game.NIVEAU_MAX:
+				continue
 			assert_false(
 				a.ouverts(fenetre.y + 1).has(index),
 				"« %s » T%d ne sort plus au niveau %d" % [a.id, index + 1, fenetre.y + 1]
 			)
+
+
+## Bornée à une plage, la fenêtre d'un palier reste dans cette plage : c'est ce
+## qui permet à la fiche d'annoncer « zones 19 à 22 » sur une base qui s'arrête
+## en 22, au lieu de « 19 à 51 » qu'il faut intersecter de tête.
+func test_la_fenetre_d_un_palier_reste_dans_la_plage_demandee() -> void:
+	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var epee := ItemCatalog.by_id("epee")
+	var zones := ItemCatalog.fenetre_de_chute(epee)
+	assert_eq(zones, Vector2i(1, 22), "l\'épée tombe des zones 1 à 22")
+
+	for brut in acere.ouverts_entre(zones.x, zones.y):
+		var index := int(brut)
+		var fenetre := acere.fenetre_du_palier(index, zones.x, zones.y)
+		assert_gte(fenetre.x, zones.x, "T%d ne commence pas avant la base" % [index + 1])
+		assert_lte(fenetre.y, zones.y, "T%d ne finit pas après elle" % [index + 1])
+		assert_lte(fenetre.x, fenetre.y, "T%d a une fenêtre non vide" % [index + 1])
+
+	# Et un palier hors de portée rend une fenêtre vide plutôt qu'une fenêtre
+	# fausse : le T1 demande le niveau 52, l'épée s'arrête à 22.
+	assert_eq(acere.fenetre_du_palier(0, zones.x, zones.y), Vector2i(0, 0))
 
 
 ## Le cœur du jalon : le niveau d\'objet ne corrige pas des probabilités par une

@@ -10,14 +10,12 @@ extends Resource
 ## qui la lisent.
 
 @export_group("Attributs")
-## Les trois attributs classiques du genre. Ils ne servent à rien par eux-mêmes :
-## ce sont des **entrées**, dont on dérive des statistiques réelles (voir
-## apply_attributes). Un attribut qui ne gouverne rien serait une ligne de plus
+## Des **entrées** dont on dérive des statistiques réelles (voir
+## apply_attributes) : un attribut qui ne gouverne rien serait une ligne de plus
 ## sur la fiche et rien d'autre.
 ##
-## Zéro par défaut, comme le mana : un grunt n'a pas d'attributs, et lui en
-## donner dix silencieusement lui offrirait vingt points de vie que personne
-## n'aurait décidés. C'est la fiche du joueur qui les pose.
+## Zéro par défaut : un grunt n'a pas d'attributs, et lui en donner dix
+## silencieusement lui offrirait vingt points de vie que personne n'a décidés.
 @export var strength: float = 0.0
 @export var dexterity: float = 0.0
 @export var intelligence: float = 0.0
@@ -27,8 +25,8 @@ extends Resource
 ## Points de vie par seconde. Zéro par défaut : un ennemi qui se régénère tout
 ## seul est une décision de design, pas un état par défaut.
 @export var health_regen: float = 0.0
-## Zéro par défaut pour la même raison — un grunt n'a pas de réserve de mana, et
-## lui en donner une silencieusement afficherait une barre vide sur la fiche.
+## Zéro pour la même raison — un grunt sans réserve ne doit pas afficher une
+## barre de mana vide sur la fiche.
 @export var max_mana: float = 0.0
 @export var mana_regen: float = 0.0
 
@@ -58,15 +56,10 @@ extends Resource
 @export var attack_damage: float = 12.0
 ## Les dégâts d'un tir, avant les résistances de la cible. Distinct
 ## d'attack_damage, et pas seulement par symétrie : c'est cette séparation qui
-## permet à une arme d'incantation de ne rien devoir aux affixes de mêlée.
+## permet à une arme d'incantation de ne rien devoir aux affixes de mêlée, et qui
+## rend le tir atteignable par un objet.
 ##
-## Zéro par défaut, comme le mana : un grunt ne lance rien, et lui donner des
-## dégâts de sort silencieusement lui offrirait une attaque que personne n'a
-## décidée. C'est la fiche du joueur qui la pose.
-##
-## Avant lui, le tir lisait `Player.bolt_damage` — un export du nœud, absent de
-## la fiche, donc qu'aucun objet ne pouvait toucher. Une baguette n'avait alors
-## aucun affixe offensif à recevoir.
+## Zéro par défaut : un grunt ne lance rien.
 @export var spell_damage: float = 0.0
 ## Le temps de base entre deux coups, propre à l'archétype ou à l'arme.
 ## Distinct de attack_speed, qui est le multiplicateur porté par le personnage :
@@ -78,10 +71,9 @@ extends Resource
 @export var attack_speed: float = 1.0
 @export var cast_speed: float = 1.0
 @export var attack_range: float = 28.0
-## Zéro par défaut : ce jeu n'a pas de recul. Le mécanisme est entier — il
-## suffit de monter ce chiffre, ou d'utiliser les touches 3/4 de l'arène de
-## test — mais un nouvel ennemi doit naître comme les autres, sans recul, et
-## pas obliger à penser à le débrancher.
+## Zéro par défaut : ce jeu n'a pas de recul. Le mécanisme est entier — touches
+## 3/4 de l'arène de test — mais un nouvel ennemi doit naître sans, et non
+## obliger à penser à le débrancher.
 @export var knockback_force: float = 0.0
 @export_range(0.0, 1.0) var crit_chance: float = 0.05
 @export var crit_multiplier: float = 2.0
@@ -107,25 +99,23 @@ const MAX_EVASION := 0.75
 ## Ce que le niveau d'une zone ajoute à un ennemi qui y naît, par niveau au-delà
 ## du premier.
 ##
-## Linéaire et non exponentiel : une courbe exponentielle demande un exposant
-## qu'on ne saura pas régler avant d'avoir joué, et se trompe d'un facteur dix à
-## la soixantième marche. À niveau 40, un grunt a huit fois sa vie et cinq fois
-## ses dégâts — c'est brutal, c'est réglable, et c'est mesurable en une partie.
+## Linéaire et non exponentiel : un exposant ne se règle pas avant d'avoir joué
+## et se trompe d'un facteur dix à la soixantième marche. À niveau 40, un grunt a
+## huit fois sa vie et cinq fois ses dégâts.
 ##
-## Ni l'armure ni les résistances ne montent. Le joueur n'a aucun moyen de
-## percer une armure ; la faire croître transformerait une zone profonde en mur
-## au lieu d'un danger.
+## Ni l'armure ni les résistances ne montent : le joueur n'a aucun moyen de
+## percer une armure, et la faire croître ferait d'une zone profonde un mur au
+## lieu d'un danger.
 const VIE_PAR_NIVEAU := 0.18
 const DEGATS_PAR_NIVEAU := 0.12
 
 
-## Met une fiche à l'échelle d'un niveau de zone. **Écrit dans la fiche qu'on
-## lui donne** : à l'appelant de l'avoir dupliquée, car les fiches d'archétypes
-## sont des `.tres` partagés par tous leurs exemplaires.
+## Met une fiche à l'échelle d'un niveau de zone. **Écrit dans la fiche qu'on lui
+## donne** : à l'appelant de l'avoir dupliquée, car les fiches d'archétypes sont
+## des `.tres` partagés par tous leurs exemplaires.
 ##
-## Les dégâts de sort suivent les dégâts d'attaque : le tir du caster lit
-## attack_damage, mais un ennemi qui lancerait un vrai sort ne doit pas rester
-## au niveau 1 par oubli.
+## Les dégâts de sort suivent ceux d'attaque : un ennemi qui lancerait un vrai
+## sort ne doit pas rester au niveau 1 par oubli.
 static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
 	var marches := float(maxi(niveau, 1) - 1)
 	stats.max_health *= 1.0 + VIE_PAR_NIVEAU * marches
@@ -139,11 +129,9 @@ static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
 const ATTRIBUTES := ["strength", "dexterity", "intelligence"]
 
 
-## Une répartition vierge : un compteur par attribut, à zéro. Le joueur la tient
-## pour ses points placés, la sauvegarde la relit. Dérivée d'ATTRIBUTES et non
-## réécrite en dur des deux côtés : un quatrième attribut ajouté à la liste doit
-## apparaître dans les deux, ou celui qui l'oublie perd les points du joueur
-## sans rien dire.
+## Une répartition vierge : un compteur par attribut, à zéro. Dérivée
+## d'ATTRIBUTES et non réécrite en dur : un quatrième attribut ajouté à la liste
+## doit apparaître partout, ou celui qui l'oublie perd les points du joueur.
 static func empty_attributes() -> Dictionary:
 	var vide := {}
 	for champ in ATTRIBUTES:
@@ -152,11 +140,10 @@ static func empty_attributes() -> Dictionary:
 
 ## Ce que chaque point d'attribut rapporte. Chacun gouverne une réserve et une
 ## cadence : monter un attribut doit changer deux choses, sinon c'est un alias
-## pour la statistique qu'il pilote et autant modifier celle-ci directement.
+## pour la statistique qu'il pilote.
 ##
-## Première calibration, à ajuster en jouant : à dix dans chaque attribut — le
-## départ — cela vaut +20 PV, +2 dégâts, 15 d'esquive, +15 de mana et +4 % sur
-## les deux cadences.
+## À dix dans chaque attribut — le départ — cela vaut +20 PV, +2 dégâts, 15
+## d'esquive, +15 de mana et +4 % sur les deux cadences.
 const HEALTH_PER_STRENGTH := 2.0
 const DAMAGE_PER_STRENGTH := 0.2
 const EVASION_PER_DEXTERITY := 1.5
@@ -209,12 +196,11 @@ func attack_interval() -> float:
 ## Verse dans les statistiques ce que les attributs rapportent.
 ##
 ## **À n'appeler qu'une fois par recalcul**, et seulement sur une fiche neuve :
-## appelée deux fois, elle compterait les bonus deux fois. C'est la même règle
-## que pour recompute_stats, dont elle est un morceau.
+## appelée deux fois, elle compterait les bonus deux fois.
 ##
 ## Elle se place entre les modificateurs qui visent les attributs et ceux qui
 ## visent le reste : un objet qui donne « +20 force » doit rapporter ses quarante
-## points de vie, et un objet qui donne « +10 % PV » doit les multiplier aussi.
+## points de vie, et un « +10 % PV » doit les multiplier aussi.
 func apply_attributes() -> void:
 	max_health += strength * HEALTH_PER_STRENGTH
 	attack_damage += strength * DAMAGE_PER_STRENGTH

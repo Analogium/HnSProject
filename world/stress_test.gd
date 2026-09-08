@@ -89,14 +89,15 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match (event as InputEventKey).keycode:
+	match touche:
 		KEY_1: _remove(STEP)
 		KEY_2: _spawn(STEP)
 		KEY_3: _spawn(WAVE)

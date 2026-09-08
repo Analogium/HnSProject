@@ -1,18 +1,15 @@
 class_name MapGenerator
 extends RefCounted
 
-## Automate cellulaire. Il donne des cavernes ouvertes et organiques : de larges
-## espaces où l'on peut tourner autour des ennemis, ponctués d'obstacles qui
-## cassent les lignes de vue et créent des goulots. C'est exactement ce dont un
-## hack'n'slash a besoin — un donjon BSP ou une marche aléatoire donneraient des
-## couloirs, qui cassent la mêlée.
+## Automate cellulaire : des cavernes ouvertes où l'on peut tourner autour des
+## ennemis, ponctuées d'obstacles qui cassent les lignes de vue. Un donjon BSP ou
+## une marche aléatoire donneraient des couloirs, qui cassent la mêlée.
 
 const WALL := 1
 const FLOOR := 0
 
 ## Côté d'une case en pixels. Repris de la planche de tuiles, qui est ce qui les
-## dessine réellement : la zone, le peupleur et le banc de mesure en gardaient
-## chacun leur copie, et trois copies d'un nombre finissent par diverger.
+## dessine réellement.
 const TILE := TilesetBuilder.TILE
 
 var width: int
@@ -73,9 +70,8 @@ func _smooth() -> void:
 	grid = next
 
 
-## Une case est-elle dans la grille ? Le test était réécrit à quatre endroits —
-## trois ici et un dans l'écran de réglage — et une inégalité inversée y donne un
-## accès hors tableau, pas un refus.
+## Une case est-elle dans la grille ? Le seul endroit qui l'écrit : une inégalité
+## inversée donne ici un accès hors tableau, pas un refus.
 func in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < width and cell.y < height
 
@@ -90,12 +86,9 @@ func _count_wall_neighbours(cx: int, cy: int) -> int:
 			var y := cy + dy
 			# Hors grille = mur : ça referme naturellement les bords.
 			#
-			# Seul endroit qui n'appelle pas in_bounds, et c'est mesuré : cette
-			# boucle tourne 370 000 fois par carte, et l'appel plus la
-			# construction du Vector2i font passer la génération de 78,8 à
-			# 126,4 ms (banc de 10 cartes 96 × 96, moyenne après chauffe).
-			# Soixante pour cent sur chaque changement de zone ne se paient pas
-			# pour une ligne.
+			# Seul endroit qui n'appelle pas in_bounds, et c'est mesuré : la boucle
+			# tourne 370 000 fois par carte, et l'appel plus la construction du
+			# Vector2i font passer la génération de 78,8 à 126,4 ms.
 			if x < 0 or y < 0 or x >= width or y >= height or grid[y][x] == WALL:
 				count += 1
 	return count
@@ -180,7 +173,7 @@ func get_spawn_cell() -> Vector2i:
 
 
 ## Le centre d'une case, en pixels. Le demi-décalage est la seule subtilité, et
-## elle était recopiée partout où l'on faisait naître quelque chose sur la carte.
+## c'est le seul endroit qui l'écrit.
 static func cell_center(cell: Vector2i) -> Vector2:
 	return (Vector2(cell) + Vector2(0.5, 0.5)) * float(TILE)
 
@@ -190,11 +183,9 @@ static func cell_at(pos: Vector2) -> Vector2i:
 	return Vector2i((pos / float(TILE)).floor())
 
 
-## La grille peinte en image, un pixel par case. La carte superposée du jeu et
-## l'écran de réglage écrivaient chacun la même double boucle, avec le même
-## format de pixel — deux copies qui casseraient ensemble le jour où la grille
-## changera de représentation. Les couleurs restent à l'appelant : les deux
-## écrans ne se ressemblent pas et n'ont pas à partager leur palette.
+## La grille peinte en image, un pixel par case — la carte superposée du jeu et
+## l'écran de réglage y passent tous deux. Les couleurs restent à l'appelant : les
+## deux écrans ne se ressemblent pas et n'ont pas à partager leur palette.
 func to_image(floor_color: Color, wall_color: Color) -> Image:
 	var img := Image.create_empty(width, height, false, Image.FORMAT_RGB8)
 	for y in height:

@@ -30,15 +30,15 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
 
-	# Retenu avant le match : change_scene_to_file() détache ce nœud de l'arbre
-	# immédiatement, et get_viewport() renverrait alors null. Le viewport racine,
-	# lui, survit au changement de scène.
+	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
+	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match (event as InputEventKey).keycode:
+	match touche:
 		KEY_1: _fill = maxf(_fill - 0.01, 0.30); _regenerate(_seed)
 		KEY_2: _fill = minf(_fill + 0.01, 0.60); _regenerate(_seed)
 		KEY_3: _iterations = maxi(_iterations - 1, 0); _regenerate(_seed)

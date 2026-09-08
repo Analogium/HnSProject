@@ -21,10 +21,8 @@ const ALL := [
 	preload("res://resources/item_affixes/allonge.tres"),
 	preload("res://resources/item_affixes/cuirasse.tres"),
 
-	# --- Étape 4 du jalon 5. Les dix du dessus visaient la mêlée, l'armure et le
-	# butin de base ; ceux-ci ouvrent les défenses élémentaires, la réserve,
-	# l'incantation et les attributs — et rendent à la baguette et à la ceinture
-	# de quoi être intéressantes.
+	# Défenses élémentaires, réserve, incantation et attributs : ceux-ci rendent
+	# à la baguette et à la ceinture de quoi être intéressantes.
 	preload("res://resources/item_affixes/givre.tres"),
 	preload("res://resources/item_affixes/ignifuge.tres"),
 	preload("res://resources/item_affixes/isole.tres"),
@@ -43,14 +41,11 @@ const ALL := [
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6. La courbe descend vite : un objet à six
-## affixes doit rester l'histoire qu'on raconte, pas le butin du mardi.
+## affixes doit rester l'histoire qu'on raconte, pas le butin du mardi. Un objet
+## sur deux sort nu — c'est ce qui donne sa valeur au reste.
 ##
-## Le maximum réel dépend de la base : six affixes d'arme existent, donc une épée
-## peut les porter tous ; les armures n'en ont que quatre et plafonnent là. C'est
-## la réserve qui décide, pas cette table.
-##
-## Un objet sur deux sort nu — c'est ce qui donne sa valeur au reste, et le
-## joueur doit pouvoir jeter la moitié de ce qu'il ramasse sans réfléchir.
+## Le maximum réel dépend de la base : les armures n'ont que quatre affixes
+## compatibles et plafonnent là. C'est la réserve qui décide, pas cette table.
 const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 
 
@@ -58,9 +53,6 @@ const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 ## n'est pas une erreur de programmation mais un cas de jeu : un objet sauvegardé
 ## peut porter un affixe retiré du projet depuis. Sa valeur s'applique toujours,
 ## c'est son palier qui devient inaffichable.
-##
-## Balayage linéaire : vingt-cinq entrées, et le seul appelant est l'infobulle,
-## qui en fait six par survol.
 static func by_id(id: String) -> ItemAffix:
 	for a in ALL:
 		if a.id == id:
@@ -73,9 +65,9 @@ static func by_id(id: String) -> ItemAffix:
 ## dégâts d'attaque, et ça reste vrai à tous les niveaux.
 ##
 ## Séparée d'`eligible` parce que les deux questions sont distinctes : celle-ci
-## est « qu'est-ce que cet objet peut avoir un jour », que pose la fiche d'objet
-## de la galerie ; l'autre est « qu'est-ce qu'il peut recevoir maintenant », que
-## pose le tirage. Une seule des deux écrit le filtre.
+## est « qu'est-ce que cet objet peut avoir un jour », que pose la fiche de la
+## forge ; l'autre est « qu'est-ce qu'il peut recevoir maintenant », que pose le
+## tirage. Une seule des deux écrit le filtre.
 static func compatibles(base: ItemBase) -> Array:
 	var out := []
 	for a in ALL:
@@ -84,13 +76,11 @@ static func compatibles(base: ItemBase) -> Array:
 	return out
 
 
-## Ce qui peut sortir sur cette base, à ce niveau d'objet. Une armure et une épée
-## ne tirent pas dans la même réserve — c'est ce qui donne un sens au type de
-## l'objet — et un objet de bas niveau n'atteint pas tout ce qui existe.
+## Ce qui peut sortir sur cette base, à ce niveau d'objet.
 ##
-## Un affixe dont **aucun** palier n'est ouvert n'est pas dans la réserve. C'est
-## tout le mécanisme du jalon 5 : le niveau d'objet ne corrige pas des
-## probabilités par une formule, il ouvre des lignes dans une table.
+## Un affixe dont **aucun** palier n'est ouvert n'est pas dans la réserve : le
+## niveau d'objet ne corrige pas des probabilités par une formule, il ouvre des
+## lignes dans une table.
 static func eligible(base: ItemBase, niveau: int) -> Array:
 	var out := []
 	for a in compatibles(base):
@@ -99,17 +89,17 @@ static func eligible(base: ItemBase, niveau: int) -> Array:
 	return out
 
 
-## Combien d'affixes pour cet objet. Borné par la réserve réellement disponible :
-## une base dont la famille compte quatre affixes ne peut pas en porter six, et
-## le tirage doit le dire plutôt que de rendre des lignes vides.
+## Combien d'affixes pour cet objet. Borné par la réserve réellement
+## disponible : une base dont la famille compte quatre affixes ne peut pas en
+## porter six, et le tirage doit le dire plutôt que de rendre des lignes vides.
 static func roll_count(rng: RandomNumberGenerator, disponibles: int) -> int:
 	var i := Tirage.pondere(rng, COUNT_WEIGHTS)
 	return 0 if i < 0 else mini(i, disponibles)
 
 
-## Les affixes d'un objet neuf, tirés distincts : deux fois « acéré » sur la
-## même épée se liraient comme un bug, et additionner deux fois la même ligne
-## n'ajoute rien qu'un affixe plus large n'aurait fait.
+## Les affixes d'un objet neuf, tirés distincts : deux fois « acéré » sur la même
+## épée se liraient comme un bug, et additionner deux fois la même ligne n'ajoute
+## rien qu'un affixe plus large n'aurait fait.
 static func roll(rng: RandomNumberGenerator, base: ItemBase, niveau: int) -> Array[RolledAffix]:
 	var tires: Array[RolledAffix] = []
 	var reste := eligible(base, niveau)
@@ -120,8 +110,8 @@ static func roll(rng: RandomNumberGenerator, base: ItemBase, niveau: int) -> Arr
 		reste.erase(choisi)
 		var tire := choisi.roll(rng, niveau)
 		# Null est impossible ici — `eligible` a déjà écarté les affixes sans
-		# palier ouvert — mais l'ignorer silencieusement vaut mieux qu'une ligne
-		# vide sur un objet le jour où les deux règles divergeraient.
+		# palier ouvert — mais l'ignorer vaut mieux qu'une ligne vide sur un
+		# objet le jour où les deux règles divergeraient.
 		if tire != null:
 			tires.append(tire)
 	return tires

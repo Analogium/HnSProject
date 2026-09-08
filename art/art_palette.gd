@@ -1,16 +1,15 @@
 class_name ArtPalette
 
-## Fabrique les rampes de couleurs de tout le jeu à partir d'une seule teinte.
+## Fabrique les rampes de couleurs de tout le jeu à partir d'une seule teinte :
+## LEVELS teintes ordonnées de la plus sombre à la plus claire.
 ##
-## Une rampe = LEVELS teintes ordonnées de la plus sombre à la plus claire.
 ## Le point important : les ombres ne sont **pas** la couleur de base assombrie,
-## et les lumières ne sont pas la couleur de base éclaircie. On tire les ombres
-## vers un violet froid et les lumières vers un blanc chaud. C'est le seul
-## détail qui sépare un dégradé fade d'une vraie rampe de pixel art — sans lui,
-## tous les sprites générés se ressemblent et paraissent en plastique.
+## et les lumières pas la couleur de base éclaircie. On tire les ombres vers un
+## violet froid et les lumières vers un blanc chaud — c'est le seul détail qui
+## sépare un dégradé fade d'une vraie rampe de pixel art.
 ##
-## Toute la direction artistique passe par ici : changer SHADOW_TINT et
-## LIGHT_TINT retend l'ambiance du jeu entier d'un coup.
+## Toute la direction artistique passe par ici : changer SHADOW_TINT et LIGHT_TINT
+## retend l'ambiance du jeu entier d'un coup.
 
 const LEVELS := 5
 

@@ -6,9 +6,6 @@ class_name Sauvegarde
 ## Un fichier par personnage et non un fichier unique : supprimer devient un
 ## `remove()`, une sauvegarde corrompue ne coûte qu'un personnage, et deux
 ## écritures ne peuvent pas se marcher dessus.
-##
-## Toute cette classe est statique et sans nœud. Elle ne sait rien du jeu — elle
-## sait lire et écrire des Personnage.
 
 const DOSSIER := "user://personnages"
 const EXTENSION := ".json"
@@ -69,8 +66,7 @@ static func lire(id: String) -> Personnage:
 
 	# Une instance de JSON et non JSON.parse_string() : la fonction statique
 	# journalise une erreur du **moteur** sur un fichier abîmé, alors que ce cas
-	# est attendu ici. L'instance rend un code d'erreur qu'on traite nous-mêmes,
-	# et donne au passage la ligne fautive — de quoi réparer un fichier à la main.
+	# est attendu ici. L'instance donne au passage la ligne fautive.
 	var lecteur := JSON.new()
 	if lecteur.parse(texte) != OK:
 		push_warning("Sauvegarde « %s » illisible : %s, ligne %d." % [
@@ -84,14 +80,13 @@ static func lire(id: String) -> Personnage:
 
 
 ## Écrit le personnage, et **marque la date du jour** au passage : sauvegarder,
-## c'est avoir joué. Ici et pas chez l'appelant, qui aurait fini par l'oublier
-## sur l'un des trois points de sauvegarde.
+## c'est avoir joué. Ici et pas chez l'appelant, qui l'oublierait sur l'un des
+## trois points de sauvegarde.
 ##
 ## Écriture en deux temps : un fichier temporaire, fermé, puis renommé sur le
-## vrai. Une coupure pendant l'écriture laisse alors un `.tmp` inutile au lieu
-## d'un personnage tronqué. Le renommage n'est pas atomique sous Windows — le
-## moteur efface la cible d'abord — mais ce qu'on cherchait à empêcher, c'est un
-## fichier à moitié écrit portant le nom du personnage.
+## vrai. Une coupure laisse alors un `.tmp` inutile au lieu d'un personnage
+## tronqué. Le renommage n'est pas atomique sous Windows, mais ce qu'on empêche
+## c'est un fichier à moitié écrit portant le nom du personnage.
 static func ecrire(personnage: Personnage) -> bool:
 	if personnage == null or personnage.id.is_empty() or personnage.illisible:
 		return false

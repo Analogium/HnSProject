@@ -2,21 +2,19 @@ class_name HitFeedback
 extends Node2D
 
 ## Le retour visuel d'un coup : le nombre de dégâts qui s'envole, et l'éclat de
-## pixels projeté au point d'impact. C'est ce que le document de cadrage met en
-## tête de l'après-jalon 1 — « le feedback qui manque le plus après le hit-stop ».
+## pixels projeté au point d'impact.
 ##
 ## Un seul nœud dessine tout, sur le principe de l'EnemyManager. Un nœud par
-## nombre et par particule voudrait dire une allocation par coup, alors qu'un
-## swing peut toucher cinq ennemis à la fois et qu'il y en a soixante-dix à
-## l'écran ; ici un coup n'ajoute que des flottants dans un tableau.
+## nombre et par particule voudrait dire une allocation par coup, alors qu'un swing
+## peut toucher cinq ennemis à la fois et qu'il y en a soixante-dix à l'écran ; ici
+## un coup n'ajoute que des flottants dans un tableau.
 ##
-## Le nœud s'enregistre lui-même dans HitFeedback.current : une scène n'a qu'à
-## le contenir, il n'y a rien à câbler. C'est aussi ce qui évite de le mettre
-## sur l'autoload Game — Game est un Node, il ne sait pas dessiner, et le
-## déclarer là créerait une dépendance croisée entre les deux scripts.
+## Le nœud s'enregistre lui-même dans HitFeedback.current : une scène n'a qu'à le
+## contenir, il n'y a rien à câbler. Sur l'autoload il aurait fallu que Game sache
+## dessiner, et les deux scripts se seraient référencés en rond.
 ##
-## Le delta n'est pas dé-scalé : pendant le hit-stop les nombres et les éclats
-## se figent avec le reste du jeu, exactement comme la trace du swing.
+## Le delta n'est pas dé-scalé : pendant le hit-stop les nombres et les éclats se
+## figent avec le reste du jeu, comme la trace du swing.
 
 ## Le nœud vivant de la scène courante, ou null hors combat. Statique et non
 ## posé par la scène : le mettre à jour depuis _ready / _exit_tree garantit
@@ -69,20 +67,19 @@ const IMPACT_OFFSET := 7.0
 
 ## x, y, vx, vy, âge, durée, côté du carré, puis r, g, b.
 ##
-## La couleur est stockée en clair, là où c'était un index dans une palette
-## locale. Trois flottants de plus par particule — 38 Ko au pire cas mesuré, à
-## mille ennemis — contre une palette qui devait rester alignée à la main sur
-## l'ordre de l'enum DamageType. C'est exactement le genre d'alignement qui
-## finit par céder.
+## La couleur est stockée en clair et non en index de palette : trois flottants de
+## plus par particule — 38 Ko au pire cas mesuré, à mille ennemis — contre une
+## palette qu'il faudrait garder alignée à la main sur l'ordre de l'enum
+## DamageType.
 const P_STRIDE := 10
 
 var _p := PackedFloat32Array()
 
 
 ## Un libellé qui s'envole. Une petite classe et non un tableau indexé comme les
-## particules : ils portent une chaîne, il y en a au plus quelques dizaines là où
-## les particules se comptent par centaines, et `n.half` se relit là où `n[9]`
-## oblige à compter les colonnes.
+## particules : ils portent une chaîne, il y en a quelques dizaines là où les
+## particules se comptent par centaines, et `n.half` se relit là où `n[9]` oblige à
+## compter les colonnes.
 class FloatingText:
 	var pos: Vector2
 	var vel: Vector2
@@ -132,9 +129,8 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	queue_redraw()
 
 
-## La couleur d'un coup. **L'élément gagne sur tout le reste** : savoir par quoi
-## on est touché est ce qui rend les résistances jouables, et c'est la seule
-## information qu'on ne peut pas déduire d'ailleurs. Le critique reste lisible
+## La couleur d'un coup. **L'élément gagne sur tout le reste** : savoir par quoi on
+## est touché est ce qui rend les résistances jouables. Le critique reste lisible
 ## sans sa couleur — il est déjà quatre points de corps plus gros.
 func _hit_color(info: DamageInfo, on_player: bool) -> Color:
 	if info.type != DamageType.Kind.PHYSICAL:

@@ -5,16 +5,13 @@ signal died(enemy: Enemy)
 
 @export var stats: CharacterStats
 
-## Rayon auquel l'ennemi remarque sa cible.
+## Rayon auquel l'ennemi remarque sa cible : à peu près le bord de l'écran en
+## 640 × 360.
 ##
-## Avant, rien ne les freinait : le seul seuil était le culling de
-## l'EnemyManager (700 px), donc ils fonçaient depuis bien au-delà de l'écran.
-## 350 px, c'est la moitié — soit à peu près le bord de l'écran en 640 × 360.
-##
-## À ne pas confondre avec CULL_DISTANCE, qui reste un garde-fou de performance :
-## entre 350 et 700 px l'ennemi est bien mis à jour, il ne t'a simplement pas
-## encore repéré. Les deux valeurs confondues feraient geler à l'écran des
-## ennemis parfaitement visibles.
+## À ne pas confondre avec CULL_DISTANCE (700 px), qui est un garde-fou de
+## performance : entre les deux l'ennemi est bien mis à jour, il ne t'a simplement
+## pas encore repéré. Les confondre ferait geler à l'écran des ennemis
+## parfaitement visibles.
 @export var detection_radius: float = 350.0
 
 @onready var sprite: ActorSprite = $Sprite
@@ -34,8 +31,7 @@ var niveau := 1
 
 var health: float
 ## Attente avant le prochain coup. Sur Enemy et non sur chaque archétype : le
-## grunt et le caster tenaient la même variable, la décomptaient de la même
-## façon et la rechargeaient avec la même statistique.
+## grunt et le caster la décomptent de la même façon.
 var _attack_cd := 0.0
 var target: Node2D
 var is_dead := false
@@ -54,16 +50,14 @@ func _ready() -> void:
 	_tirer_affixes()
 
 	# **La copie, et une seule pour les deux écrivains.** La fiche vient d'un
-	# `.tres` partagé par tous les exemplaires de l'archétype, et aucun `.tres`
-	# du projet n'est `resource_local_to_scene` : écrire dedans multiplierait la
-	# vie de tous les grunts de la session, et l'éditeur pourrait graver le
-	# résultat dans le fichier.
+	# `.tres` partagé par tous les exemplaires de l'archétype, et aucun `.tres` du
+	# projet n'est `resource_local_to_scene` : écrire dedans multiplierait la vie
+	# de tous les grunts de la session.
 	#
-	# Mais **seulement si quelqu'un écrit**. Au niveau 1 et sans affixe, il n'y a
-	# rien à changer, et sept cents fiches copiées pour rien coûtent une
-	# milliseconde de physique par image au banc de mesure — une fiche par
-	# ennemi, c'est une ligne de cache par ennemi dans la boucle de tick.
-	# Mesuré : 5,4 ms contre 4,4 à sept cents ennemis simulés.
+	# Mais **seulement si quelqu'un écrit**. Au niveau 1 et sans affixe il n'y a
+	# rien à changer, et sept cents fiches copiées pour rien font une ligne de
+	# cache par ennemi dans la boucle de tick : mesuré à 5,4 ms de physique contre
+	# 4,4 à sept cents ennemis simulés.
 	if niveau > 1 or not affixes.is_empty():
 		stats = stats.duplicate()
 		CharacterStats.mettre_a_l_echelle(stats, niveau)
@@ -77,13 +71,12 @@ func _ready() -> void:
 	set_physics_process(false)
 
 
-## Le tirage se déduit de la case d'apparition, comme la silhouette et le sens
-## de rotation du caster. Surtout pas Game.rng : une même graine de zone doit
-## redonner exactement les mêmes ennemis affixés, sinon la zone cesse d'être
-## reproductible.
+## Le tirage se déduit de la case d'apparition, comme la silhouette et le sens de
+## rotation du caster. Surtout pas Game.rng : une même graine de zone doit
+## redonner exactement les mêmes ennemis affixés.
 ##
-## Séparé de l'application : le tirage ne touche à rien, et c'est son résultat
-## qui décide s'il faut copier la fiche avant d'y écrire.
+## Séparé de l'application : c'est son résultat qui décide s'il faut copier la
+## fiche avant d'y écrire.
 func _tirer_affixes() -> void:
 	var rng := RandomNumberGenerator.new()
 	# Décalé par rapport à la graine de silhouette, sinon la variante et
@@ -134,13 +127,12 @@ func setup(p_target: Node2D) -> void:
 	target = p_target
 
 
-## Appelée par l'EnemyManager avant tick(). Chez le manager et non dans tick()
-## de chaque archétype : c'est lui le pilote, et un archétype qui oublierait de
-## l'appeler aurait silencieusement une statistique morte.
+## Appelée par l'EnemyManager avant tick(). Chez le manager et non dans tick() de
+## chaque archétype : un archétype qui oublierait de l'appeler aurait
+## silencieusement une statistique morte.
 ##
-## Les ennemis culés (au-delà de CULL_DISTANCE) ne régénèrent pas. Voulu : à
-## 700 px ils sont hors combat depuis longtemps, et les faire remonter coûterait
-## une boucle sur toute la liste pour une différence invisible.
+## Les ennemis culés ne régénèrent pas : à 700 px ils sont hors combat depuis
+## longtemps, et les faire remonter coûterait une boucle sur toute la liste.
 func regen(delta: float) -> void:
 	if stats.health_regen <= 0.0 or is_dead or health >= stats.max_health:
 		return
@@ -154,14 +146,14 @@ func tick(_delta: float) -> void:
 
 ## Par où partir pour rejoindre la cible.
 ##
-## Le champ de flux quand la zone en a un — il contourne les murs, ce que la
-## ligne droite ne fait pas : un ennemi séparé du joueur par une concavité
-## poussait contre la pierre jusqu'à ce qu'on vienne le chercher.
+## Le champ de flux quand la zone en a un : il contourne les murs, là où la ligne
+## droite fait pousser contre la pierre un ennemi séparé du joueur par une
+## concavité.
 ##
 ## La ligne droite sinon, et c'est un vrai repli, pas un pis-aller : l'arène de
-## réglage et le banc de stress n'ont pas de murs, et le champ y serait du
-## calcul pour rien. Elle sert aussi quand la case courante n'a pas de direction
-## — l'ennemi repoussé dans la pierre, ou hors du rayon du champ.
+## réglage et le banc de stress n'ont pas de murs. Elle sert aussi quand la case
+## courante n'a pas de direction — l'ennemi repoussé dans la pierre, ou hors du
+## rayon du champ.
 func heading() -> Vector2:
 	if target == null:
 		return Vector2.ZERO
@@ -224,17 +216,14 @@ func _on_damaged(info: DamageInfo) -> void:
 const XP_PER_HEALTH := 0.35
 
 
-## Ce qu'on garde de l'expérience quand la zone est trop haute pour le
-## personnage. Cinq niveaux d'avance sans pénalité — c'est la marge dans
-## laquelle on veut que le joueur pousse ; au-delà, la récompense fond.
+## Ce qu'on garde de l'expérience quand la zone dépasse le personnage. Cinq
+## niveaux d'avance sans pénalité, au-delà la récompense fond.
 ##
-## Sans ce plafond, une zone de niveau 40 donnerait huit fois l'expérience
-## (elle dérive des PV, qui ont été multipliés par huit) : le niveau de zone
-## cesserait d'être un choix de risque pour devenir un raccourci, et plus
-## personne ne jouerait les niveaux intermédiaires.
+## Sans ce plafond, une zone de niveau 40 donnerait huit fois l'expérience — elle
+## dérive des PV, multipliés par huit : le niveau de zone cesserait d'être un
+## choix de risque pour devenir un raccourci.
 ##
-## Le **butin**, lui, n'est pas borné. C'est tout l'intérêt d'aller trop loin,
-## et la seule chose qu'on rapporte d'une zone où l'on n'apprend rien.
+## Le **butin**, lui, n'est pas borné. C'est tout l'intérêt d'aller trop loin.
 const XP_MARGE := 5
 const XP_PERTE_PAR_NIVEAU := 0.10
 const XP_PLANCHER := 0.05

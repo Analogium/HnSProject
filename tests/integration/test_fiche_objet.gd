@@ -2,17 +2,18 @@ extends GutTest
 
 ## La fiche d'objet de la forge (F4, puis clic sur un objet).
 ##
-## C'est un écran de réglage, mais il porte trois informations qu'on ne peut lire
-## nulle part ailleurs d'un seul coup d'œil — ce qu'une base est, entre quels
-## niveaux de zone elle tombe, et ce qu'elle peut recevoir. Une fiche fausse est
-## pire qu'une fiche absente : on réglerait l'équilibrage sur elle.
+## C'est un écran de réglage, mais il porte des informations qu'on ne peut lire
+## nulle part ailleurs d'un seul coup d'œil — ce qu'une base est, entre quelles
+## zones elle tombe, et ce qu'elle peut recevoir. Une fiche fausse est pire
+## qu'une fiche absente : on réglerait l'équilibrage sur elle.
 ##
-## Ce qui se casse en silence ici, c'est la hauteur : l'anneau tient à quelques
-## lignes près, et le prochain affixe du projet ferait déborder sa fiche sur
-## l'aide du bas sans qu'aucune assertion existante ne bronche.
+## Deux choses se cassent en silence ici. Les **bornes** : la fiche annonce des
+## zones, et une borne non ramenée à la fenêtre de la base oblige à faire une
+## intersection de tête sans que rien ne le signale. Et la **hauteur** : la liste
+## de gauche grandit avec chaque affixe ajouté au projet.
 ##
-## Les règles que la fiche **affiche** — la fenêtre de chute d'une base, celle
-## d'un palier d'affixe — sont testées là où elles vivent, dans test_catalogue et
+## Les règles que la fiche affiche — la fenêtre de chute d'une base, celle d'un
+## palier d'affixe — sont testées là où elles vivent, dans test_catalogue et
 ## test_affixes. Ici on ne vérifie que la fiche.
 
 const GALERIE := preload("res://art/forge_gallery.tscn")
@@ -27,7 +28,7 @@ func before_each() -> void:
 
 
 # --------------------------------------------------------------------------
-# Le contenu de la fiche
+# Ce que la fiche montre
 # --------------------------------------------------------------------------
 
 ## **Ni un palier de trop, ni un de moins.** Un de trop décrit un objet qui ne
@@ -40,60 +41,117 @@ func before_each() -> void:
 func test_la_fiche_ne_montre_que_les_paliers_atteignables() -> void:
 	for brut in ItemCatalog.ALL:
 		var base: ItemBase = brut
-		var fenetre := ItemCatalog.fenetre_de_chute(base)
-		var dernier: int = Game.NIVEAU_MAX if fenetre.y <= 0 else fenetre.y
-
-		var attendus := 0
-		for affixe in ItemAffixPool.compatibles(base):
-			attendus += affixe.ouverts_entre(fenetre.x, dernier).size()
-
-		var vus := 0
-		for ligne in ForgeGallery.lignes_affixes(base):
-			for texte in (ligne as ForgeGallery.Ligne).textes:
-				if texte.begins_with("T"):
-					vus += 1
-
-		assert_eq(vus, attendus, "« %s » : %d paliers atteignables" % [base.display_name, attendus])
+		var zones := ForgeGallery.zones_de(base)
+		for affixe in ForgeGallery.affixes_de(base):
+			assert_eq(
+				ForgeGallery.paliers_de(base, affixe).size(),
+				(affixe as ItemAffix).ouverts_entre(zones.x, zones.y).size(),
+				"« %s » / « %s »" % [base.display_name, (affixe as ItemAffix).id]
+			)
 
 
-## Le pire cas n'est pas celui qu'on croit : c'est la base dont la **fenêtre de
-## chute** est la plus large, pas celle qui accepte le plus d'affixes. Le
-## pendentif, qui tombe de la zone 35 jusqu'à la fin, dépasse l'anneau qui
-## accepte pourtant les mêmes affixes mais s'arrête en zone 22.
-##
-## Ce test ne fige pas un nom — il vérifie que la fiche la plus lourde garde de
-## la marge. Sans marge, le prochain palier ajouté déborde sans prévenir.
-func test_la_fiche_la_plus_lourde_garde_de_la_marge() -> void:
-	var pire := 0
-	var pire_nom := ""
+## Les zones annoncées sont celles où **cette base-ci** sort ce palier : jamais
+## avant qu'elle tombe, jamais après qu'elle a cessé. C'est tout l'intérêt de la
+## ligne — sans ces bornes il faut intersecter de tête à chaque fois.
+func test_les_zones_annoncees_tiennent_dans_la_fenetre_de_la_base() -> void:
 	for brut in ItemCatalog.ALL:
 		var base: ItemBase = brut
-		var lignes: int = ForgeGallery.lignes_affixes(base).size()
-		if lignes > pire:
-			pire = lignes
-			pire_nom = base.display_name
-	var par_colonne := ceili(float(pire) / float(ForgeGallery.DETAIL_COLS))
-	var tiennent := int((_galerie.footer.offset_top - ForgeGallery.DETAIL_TOP) / ForgeGallery.DETAIL_LINE)
-	assert_lte(
-		par_colonne, tiennent,
-		"« %s » : %d lignes par colonne pour %d qui tiennent" % [pire_nom, par_colonne, tiennent]
+		var zones := ForgeGallery.zones_de(base)
+		for affixe in ForgeGallery.affixes_de(base):
+			for entree in ForgeGallery.paliers_de(base, affixe):
+				var palier: ForgeGallery.Palier = entree
+				assert_gte(
+					palier.zones.x, zones.x,
+					"« %s » T%d ne sort pas avant que la base tombe"
+						% [base.display_name, palier.numero]
+				)
+				assert_lte(
+					palier.zones.y, zones.y,
+					"« %s » T%d ne sort pas après qu'elle a cessé"
+						% [base.display_name, palier.numero]
+				)
+				assert_lte(
+					palier.zones.x, palier.zones.y,
+					"« %s » T%d a une plage non vide" % [base.display_name, palier.numero]
+				)
+
+
+## Les paliers arrivent du meilleur au pire, comme partout ailleurs dans le
+## projet. Une échelle affichée à l'envers ferait lire le T1 comme le palier des
+## premières zones.
+func test_les_paliers_sont_listes_du_meilleur_au_pire() -> void:
+	for brut in ItemCatalog.ALL:
+		var base: ItemBase = brut
+		for affixe in ForgeGallery.affixes_de(base):
+			var precedent := 0
+			for entree in ForgeGallery.paliers_de(base, affixe):
+				var palier: ForgeGallery.Palier = entree
+				assert_gt(
+					palier.numero, precedent,
+					"« %s » : les numéros montent" % (affixe as ItemAffix).id
+				)
+				precedent = palier.numero
+
+
+## Le singulier n'est pas de la coquetterie : « zones 34 à 34 » se lit comme une
+## erreur d'affichage, et le cas se produit dès qu'un palier n'ouvre que sur la
+## dernière zone où la base tombe.
+func test_une_zone_unique_se_dit_au_singulier() -> void:
+	assert_eq(ForgeGallery._zones_texte(Vector2i(34, 34)), "zone 34")
+	assert_eq(ForgeGallery._zones_texte(Vector2i(19, 22)), "zones 19 à 22")
+
+
+## Le dernier niveau du jeu est une fin d'échelle, pas une borne : le tableau
+## doit le dire comme l'en-tête, sinon les deux phrases se contredisent à trois
+## centimètres l'une de l'autre.
+func test_la_fin_de_l_echelle_se_dit_comme_dans_l_entete() -> void:
+	assert_eq(
+		ForgeGallery._zones_texte(Vector2i(34, Game.NIVEAU_MAX)),
+		"zones 34 et au-delà"
+	)
+	var chevaliere := ItemCatalog.by_id("chevaliere")
+	assert_true(
+		ForgeGallery._fenetre_texte(chevaliere).ends_with("et au-delà"),
+		"et l'en-tête de la même base le dit pareil"
 	)
 
 
-## L'invariant qui casse en silence : la colonne la plus longue doit s'arrêter
+# --------------------------------------------------------------------------
+# Ce qui tient à l'écran
+# --------------------------------------------------------------------------
+
+## L'invariant qui casse en silence : le plus haut des deux volets doit s'arrêter
 ## avant l'aide du bas. La limite vient de la scène et n'est pas recopiée ici —
 ## déplacer l'aide dans l'éditeur doit suffire à changer ce que ce test exige.
 func test_la_fiche_d_objet_tient_dans_sa_hauteur() -> void:
 	var plancher: float = _galerie.footer.offset_top
-	for base in ItemCatalog.ALL:
-		var bas := ForgeGallery.DETAIL_TOP + ForgeGallery.hauteur_de_fiche(base)
+	for brut in ItemCatalog.ALL:
+		var base: ItemBase = brut
 		assert_lte(
-			bas, plancher,
+			ForgeGallery.hauteur_de_fiche(base), plancher,
 			"« %s » : %.0f px de fiche pour %.0f disponibles" % [
-				base.display_name, bas, plancher
+				base.display_name, ForgeGallery.hauteur_de_fiche(base), plancher
 			]
 		)
 
+
+## Le volet de gauche et celui de droite ne doivent pas se recouvrir : la liste
+## porte des noms d'affixes et des plages, et un chevauchement d'un pixel se lit
+## comme un défaut d'affichage.
+func test_les_deux_volets_ne_se_recouvrent_pas() -> void:
+	assert_lte(
+		ForgeGallery.LISTE_X + ForgeGallery.LISTE_W, ForgeGallery.TABLE_X,
+		"la liste s'arrête avant le tableau"
+	)
+	assert_lte(
+		ForgeGallery.TABLE_X + ForgeGallery.TABLE_W, 640.0,
+		"et le tableau tient dans le cadrage"
+	)
+
+
+# --------------------------------------------------------------------------
+# L'en-tête
+# --------------------------------------------------------------------------
 
 ## L'en-tête est une phrase : rien autour d'elle ne signale qu'elle est fausse.
 ## Elle a annoncé « tombe dans les zones 35 à 0 » — le zéro de « sans fin » lu

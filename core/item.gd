@@ -5,14 +5,13 @@ extends RefCounted
 ## qu'à lui. Deux épées ramassées à cinq secondes d'écart sont deux Item
 ## différents autour du même ItemBase.
 ##
-## C'est la raison d'être de la classe. Avant elle, le butin rendait directement
-## la ressource du disque : toutes les épées du jeu étaient **le même objet**, et
-## y écrire un affixe l'aurait écrit dans `epee.tres`, donc dans toutes les
-## parties suivantes.
+## C'est la raison d'être de la classe : sans elle, le butin rendrait la
+## ressource du disque, toutes les épées du jeu seraient **le même objet**, et y
+## écrire un affixe l'écrirait dans `epee.tres`.
 ##
 ## RefCounted et non Resource : un objet tiré au hasard n'a pas à savoir
-## s'enregistrer sur le disque. Le jour où il faudra sauvegarder une partie,
-## c'est un dictionnaire de quelques nombres à écrire — pas un fichier par épée.
+## s'enregistrer sur le disque. La sauvegarde en fait un dictionnaire de quelques
+## nombres, pas un fichier par épée.
 
 enum Rarity { COMMUN, MAGIQUE, RARE }
 
@@ -27,15 +26,11 @@ const RARITY_COLORS := [
 
 var base: ItemBase
 ## Les affixes tirés à la création, déjà résolus en valeurs, **et leur
-## provenance** : quel affixe, quel palier. Ils ne changent plus ensuite — un
-## objet est ce qu'il est.
+## provenance**. Ils ne changent plus ensuite — un objet est ce qu'il est.
 var explicits: Array[RolledAffix] = []
 
 ## Le niveau de l'objet : celui de la zone où il est tombé, posé **une fois** et
-## jamais rejoué. C'est lui qui décidera des tiers d'affixes qu'il a pu recevoir
-## (étape 3), et lui qui permettra un jour à l'artisanat de relancer un objet
-## dans la réserve de *son* niveau plutôt que dans celle de la zone où l'on se
-## trouve.
+## jamais rejoué. C'est lui qui décide des tiers d'affixes qu'il a pu recevoir.
 ##
 ## Le niveau du personnage n'y entre pas. Adossé à lui, le butin s'améliorerait
 ## en jouant longtemps ; adossé à la zone, il s'améliore en allant là où c'est
@@ -43,15 +38,13 @@ var explicits: Array[RolledAffix] = []
 ## prendre.
 ##
 ## 1 par défaut : c'est ce que vaut un objet dont personne n'a dit d'où il
-## venait — un objet de test, ou un objet rechargé d'une sauvegarde écrite avant
-## que ce champ existe.
+## venait — un objet de test, ou un objet d'une sauvegarde de version 1.
 var item_level: int = 1
 
 
 ## `p_explicits` accepte les deux formes : des RolledAffix, ou de simples StatMod
-## qui deviennent alors des affixes **sans provenance**. Ce n'est pas une
-## complaisance envers les appelants — c'est exactement l'état d'un objet relu
-## d'une sauvegarde écrite avant les paliers, et il fallait bien le représenter.
+## qui deviennent alors des affixes **sans provenance**. C'est exactement l'état
+## d'un objet relu d'une sauvegarde écrite avant les paliers.
 func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	base = p_base
 	explicits = []
@@ -60,9 +53,9 @@ func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	item_level = maxi(p_level, 1)
 
 
-## La rareté se **déduit** du nombre d'affixes au lieu d'être tirée à part :
-## deux sources pour la même information finiraient par se contredire, et un
-## objet doré sans affixe serait un mensonge.
+## La rareté se **déduit** du nombre d'affixes au lieu d'être tirée à part : deux
+## sources pour la même information finiraient par se contredire, et un objet
+## doré sans affixe serait un mensonge.
 func rarity() -> Rarity:
 	if explicits.is_empty():
 		return Rarity.COMMUN
@@ -79,8 +72,8 @@ func display_name() -> String:
 	return base.display_name
 
 
-## Tout ce que l'objet donne, implicite compris — c'est cette liste que le
-## calcul des statistiques du joueur consommera.
+## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul
+## des statistiques du joueur consomme.
 func mods() -> Array[StatMod]:
 	var all: Array[StatMod] = []
 	var imp := base.implicit()
@@ -93,11 +86,7 @@ func mods() -> Array[StatMod]:
 
 ## La ligne d'implicite de l'infobulle, à part et en premier : c'est ce que la
 ## base garantit, le reste est le fruit du tirage. Les explicites, eux, se
-## dessinent depuis `explicits` — l'infobulle a besoin de leur provenance, pas
-## seulement de leur texte.
+## dessinent depuis `explicits` — l'infobulle a besoin de leur provenance.
 func implicit_line() -> String:
 	var imp := base.implicit()
 	return "" if imp == null else imp.label()
-
-
-

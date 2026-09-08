@@ -1,24 +1,19 @@
 class_name ForgeGallery
 extends Control
 
-## La planche-contact de la forge : un archétype par page, ses quatre variantes
-## en lignes, ses neuf animations en colonnes, le tout en train de jouer.
+## La planche-contact de la forge : un archétype par page, ses quatre variantes en
+## lignes, ses neuf animations en colonnes, le tout en train de jouer. Sans elle
+## on règle une silhouette à l'aveugle, en relançant le jeu et en cherchant un
+## ennemi du bon type.
 ##
-## Et, depuis les planches d'objets, la **fiche d'une base** : cliquer dessus dit
-## ce qu'elle est, entre quels niveaux de zone elle tombe, et tout ce qu'elle
-## peut recevoir comme affixe — chaque palier avec le niveau d'objet qui l'ouvre
-## et la plage dans laquelle il tire. C'est un outil de réglage : ces trois
-## informations vivent dans trois fichiers différents, et les rapprocher à la
-## main pour juger une base était le vrai coût de chaque retouche d'équilibrage.
+## Et, depuis les planches d'objets, la **fiche d'une base** : ce qu'elle est,
+## entre quels niveaux de zone elle tombe, et tout ce qu'elle peut recevoir comme
+## affixe — chaque palier avec les zones qui l'ouvrent et la plage dans laquelle
+## il tire. Ces trois informations vivent dans trois fichiers différents, et les
+## rapprocher à la main était le vrai coût de chaque retouche d'équilibrage.
 ##
-## C'est l'outil qui rend la génération procédurale utilisable. Sans lui on
-## règle une silhouette à l'aveugle, en relançant le jeu et en cherchant un
-## ennemi du bon type ; ici les quatre variantes sont côte à côte et le moindre
-## défaut de proportion saute aux yeux.
-##
-## [S] écrit toutes les planches en PNG. C'est la porte de sortie du procédural :
-## un sprite exporté peut être retouché dans un éditeur d'image et rechargé comme
-## un asset ordinaire — la forge ne t'enferme pas dans le code.
+## [S] écrit toutes les planches en PNG : un sprite exporté peut être retouché
+## dans un éditeur d'image et rechargé comme un asset ordinaire.
 
 const CELL := 64          # 32 px de sprite, agrandis 2 fois
 const SCALE := 2
@@ -31,49 +26,48 @@ const EXPORT_FALLBACK := "user://forge_export"
 
 const ANIMS := ["idle", "walk", "attack"]
 
-## Les planches d'objets, après les archétypes. Elles existent pour la même
-## raison qu'eux : quarante et une icônes se règlent côte à côte ou ne se règlent
-## pas. Les bases y arrivent dans l'ordre du catalogue — par lignée, puis par
-## palier — donc les trois âges d'un même objet sont voisins, et c'est exactement
-## la comparaison qu'on vient faire.
+## Les planches d'objets, après les archétypes. Les bases y arrivent dans l'ordre
+## du catalogue — par lignée, puis par palier — donc les trois âges d'un même
+## objet sont voisins, et c'est exactement la comparaison qu'on vient faire.
 ##
-## Agrandies deux fois, comme les archétypes : à leur taille native l'icône fait
-## seize pixels sur la planche alors que le sac l'agrandit pour remplir sa case.
-## Une planche qui montre plus petit que le jeu ne sert à rien.
+## Agrandies deux fois : à leur taille native l'icône fait seize pixels alors que
+## le sac l'agrandit pour remplir sa case, et une planche qui montre plus petit
+## que le jeu ne sert à rien.
 const ITEM_COLS := 6
 const ITEM_ROWS := 4
 const ITEM_CELL := Vector2(104.0, 60.0)
 const ITEM_SCALE := 2
 
-## La fiche d'une base, quand on a cliqué dessus. Elle remplace la planche au
-## lieu de se poser à côté : le pire cas mesuré — le pendentif — compte dix-sept
-## affixes et soixante-huit lignes, et rien de tout ça ne tient dans la marge
-## d'un cadrage de 640 × 360.
+## La fiche d'une base. Elle remplace la planche au lieu de se poser à côté : elle
+## a besoin de toute la largeur.
 ##
-## Le pire cas n'est pas la base qui accepte le plus d'affixes mais celle dont la
-## **fenêtre de chute est la plus large** : un pendentif tombe des zones 35 à la
-## fin, donc il atteint quatre-vingt-treize paliers, là où l'anneau, cantonné aux
-## zones 1 à 22, n'en atteint que quarante-quatre. C'est contre-intuitif, et
-## c'est pour ça que la hauteur se mesure au lieu de se supposer.
-##
-## Trois colonnes et deux paliers par ligne : c'est le seul découpage où le pire
-## cas tient d'une pièce, sans page à tourner au milieu d'une liste qu'on
-## parcourt justement pour comparer. `test_la_fiche_d_objet_tient_dans_sa_hauteur`
-## garde l'invariant — un affixe de plus le cassera en silence autrement.
-const DETAIL_TOP := 82.0
-const DETAIL_COLS := 3
-const DETAIL_LINE := 9.0
-const DETAIL_TIERS_PAR_LIGNE := 2
-## Largeur d'une entrée de palier dans sa colonne. « T4  26→42  10–15 % » est le
-## cas le plus large : deux niveaux, puis une plage en pourcentage à deux
-## chiffres des deux côtés.
-const DETAIL_TIER_W := 100.0
-const DETAIL_MARGE := 10.0
+## **Deux volets**, parce que les deux questions qu'on vient poser ne sont pas de
+## la même taille : « qu'est-ce que cette base peut avoir » se répond d'un coup
+## d'œil sur dix-sept lignes, « combien donne celui-là et quand » demande un
+## tableau. Mélangés dans un seul damier, ils étaient illisibles.
+const FICHE_TOP := 68.0
+const FICHE_LIGNE := 11.0
+const FICHE_SIZE := 8
+const FICHE_TITRE_SIZE := 9
 
-const DETAIL_TITRE := Color(0.86, 0.84, 0.92)
-const DETAIL_PALIER := Color(0.62, 0.68, 0.80)
-const DETAIL_LEGENDE := Color(0.55, 0.53, 0.62)
-const DETAIL_SIZE := 8
+const LISTE_X := 10.0
+const LISTE_W := 262.0
+const TABLE_X := 292.0
+const TABLE_W := 338.0
+## Les trois colonnes du tableau de droite, en décalage depuis son bord.
+const COL_PALIER := 0.0
+const COL_ZONES := 46.0
+const COL_VALEUR := 158.0
+
+const FICHE_TITRE := Color(0.90, 0.88, 0.95)
+const FICHE_TEXTE := Color(0.74, 0.72, 0.82)
+const FICHE_SOURDINE := Color(0.52, 0.50, 0.60)
+const FICHE_VALEUR := Color(0.62, 0.78, 1.00)
+## La ligne choisie dans la liste. Un fond plein plutôt qu'une couleur de texte :
+## il faut voir d'où l'on vient sans lire, en passant d'un affixe à l'autre.
+const FICHE_CHOISI := Color(0.20, 0.22, 0.32)
+const FICHE_SEPARATEUR := Color(0.26, 0.25, 0.32)
+
 
 @onready var header: Label = $Header
 @onready var footer: Label = $Footer
@@ -86,22 +80,24 @@ var _status := ""
 ## L'index dans ItemCatalog.ALL de la base dont on regarde la fiche, -1 sur la
 ## planche. C'est le seul état qui distingue les deux écrans.
 var _detail := -1
+## L'affixe choisi dans la liste de gauche, dont le volet de droite montre le
+## détail. Remis à zéro en changeant de base : la liste n'est pas la même, et
+## garder le rang ferait atterrir sur un affixe qu'on n'a pas désigné.
+var _detail_affixe := 0
 
 
-## Une ligne de la fiche : un ou deux textes, chacun à son décalage dans la
-## colonne. Une petite classe et non un tableau indexé à la main — `ligne.textes`
-## se relit là où `l[0]` oblige à se souvenir de ce qu'était la colonne zéro.
-class Ligne:
-	var textes := PackedStringArray()
-	var decalages := PackedFloat32Array()
-	var couleur: Color
+## Une ligne du tableau de droite : un palier, les zones où il sort **sur cette
+## base**, et ce qu'il y donne. Une petite classe et non un tableau indexé à la
+## main — `palier.zones` se relit là où `p[1]` oblige à se souvenir de l'ordre.
+class Palier:
+	var numero: int
+	var zones: Vector2i
+	var valeur: String
 
-	func _init(p_couleur: Color) -> void:
-		couleur = p_couleur
-
-	func ajouter(texte: String, x: float) -> void:
-		textes.append(texte)
-		decalages.append(x)
+	func _init(p_numero: int, p_zones: Vector2i, p_valeur: String) -> void:
+		numero = p_numero
+		zones = p_zones
+		valeur = p_valeur
 
 
 ## Les archétypes, puis autant de planches d'objets qu'il en faut.
@@ -134,7 +130,15 @@ func _gui_input(event: InputEvent) -> void:
 		return
 
 	if _detail >= 0:
-		_fermer_fiche()
+		# Dans la fiche, un clic sur la liste choisit l'affixe ; ailleurs, il
+		# referme. Choisir prime : c'est le geste qu'on répète, et refermer par
+		# mégarde en visant une ligne serait le pire des deux.
+		var affixe := _affixe_at(clic.position)
+		if affixe >= 0:
+			_detail_affixe = affixe
+			_build()
+		else:
+			_fermer_fiche()
 	else:
 		var vise := _item_at(clic.position)
 		if vise < 0:
@@ -142,6 +146,17 @@ func _gui_input(event: InputEvent) -> void:
 		_detail = vise
 		_build()
 	accept_event()
+
+
+## La ligne de la liste sous un point, ou -1.
+func _affixe_at(point: Vector2) -> int:
+	if _detail < 0:
+		return -1
+	var affixes := affixes_de(ItemCatalog.ALL[_detail])
+	for rang in affixes.size():
+		if _rang_rect(rang).has_point(point):
+			return rang
+	return -1
 
 
 ## L'objet sous un point, ou -1. Hors d'une planche d'objets, il n'y a rien à
@@ -170,28 +185,45 @@ func _fermer_fiche() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match (event as InputEventKey).keycode:
+	match touche:
 		# Sur une fiche, les flèches parcourent le catalogue entier plutôt que
 		# les pages : les paliers d'une même lignée s'y suivent, donc comparer
 		# une épée à l'épée large est une seule touche.
 		KEY_RIGHT, KEY_SPACE:
 			if _detail >= 0:
 				_detail = (_detail + 1) % ItemCatalog.ALL.size()
+				# La liste change avec la base : garder le rang ferait atterrir
+				# sur un affixe qu'on n'a pas désigné.
+				_detail_affixe = 0
 			else:
 				_index = (_index + 1) % _pages()
 			_build()
 		KEY_LEFT:
 			if _detail >= 0:
 				_detail = (_detail - 1 + ItemCatalog.ALL.size()) % ItemCatalog.ALL.size()
+				_detail_affixe = 0
 			else:
 				_index = (_index - 1 + _pages()) % _pages()
+			_build()
+		# Haut et bas ne servent que dans la fiche : la planche n'a qu'une
+		# dimension de navigation, et leur donner un sens ailleurs inventerait un
+		# geste que rien n'annonce.
+		KEY_UP, KEY_DOWN:
+			if _detail < 0:
+				return
+			var affixes := affixes_de(ItemCatalog.ALL[_detail])
+			if affixes.is_empty():
+				return
+			var pas := 1 if touche == KEY_DOWN else -1
+			_detail_affixe = posmod(_detail_affixe + pas, affixes.size())
 			_build()
 		KEY_S:
 			_export()
@@ -258,11 +290,6 @@ func _build() -> void:
 
 ## Une planche d'objets : les bases du catalogue sous leur nom et leur palier,
 ## dessinées comme le sac les dessine puis agrandies d'ITEM_SCALE.
-##
-## L'agrandissement est celui des planches d'archétypes, et il a remplacé la
-## taille native de la première version : une icône de seize pixels sur un écran
-## de réglage se juge moins bien que dans le sac, qui l'agrandit déjà pour
-## remplir sa case. Une planche qui montre plus petit que le jeu ne sert à rien.
 func _build_items() -> void:
 	var page := _index - SpriteForge.ARCHETYPES.size()
 	var par_page := ITEM_COLS * ITEM_ROWS
@@ -308,10 +335,12 @@ func _build_items() -> void:
 	])
 
 
-## La fiche d'une base : son identité et sa fenêtre de chute en tête, puis tout
-## ce qu'elle peut recevoir, palier par palier.
+## La fiche d'une base : son identité en tête, ses affixes à gauche, le détail
+## du sélectionné à droite.
 func _build_detail() -> void:
 	var base: ItemBase = ItemCatalog.ALL[_detail]
+	var affixes := affixes_de(base)
+	_detail_affixe = clampi(_detail_affixe, 0, maxi(affixes.size() - 1, 0))
 
 	header.text = "FORGE  —  %s   (palier %d de la lignée « %s »)" % [
 		base.display_name.to_upper(), base.palier, base.lignee
@@ -324,40 +353,184 @@ func _build_detail() -> void:
 	icone.position = Vector2(size.x - 40.0, 44.0)
 	stage.add_child(icone)
 
-	_etiquette(
-		"chaque palier : T numéro  ·  niveaux d'objet où il peut sortir  ·  plage tirée",
-		Vector2(DETAIL_MARGE, DETAIL_TOP - DETAIL_LINE - 3.0), DETAIL_LEGENDE
+	# Le trait qui sépare les deux volets. Sans lui les deux colonnes de texte se
+	# lisent comme une seule liste en deux morceaux.
+	#
+	# `separation` et non `trait` : GDScript réserve ce mot, et l'erreur qu'il
+	# rend — « Expected variable name after var » — ne le nomme pas.
+	_rectangle(
+		FICHE_SEPARATEUR,
+		Vector2(TABLE_X - 14.0, FICHE_TOP),
+		Vector2(1.0, footer.offset_top - FICHE_TOP - 6.0)
 	)
 
-	var lignes := lignes_affixes(base)
-	# Au moins une ligne par colonne : une base sans aucun affixe compatible
-	# donnerait sinon une division par zéro. Le cas n'existe pas dans le
-	# catalogue d'aujourd'hui — il naîtrait d'une base à qui on oublierait ses
-	# étiquettes, ce qui est précisément ce qu'on vient vérifier ici.
-	var par_colonne := maxi(ceili(float(lignes.size()) / float(DETAIL_COLS)), 1)
-	var largeur := (size.x - DETAIL_MARGE * 2.0) / float(DETAIL_COLS)
-
-	for i in lignes.size():
-		var ligne: Ligne = lignes[i]
-		var x := DETAIL_MARGE + float(i / par_colonne) * largeur
-		var y := DETAIL_TOP + float(i % par_colonne) * DETAIL_LINE
-		for k in ligne.textes.size():
-			_etiquette(ligne.textes[k], Vector2(x + ligne.decalages[k], y), ligne.couleur)
+	_build_liste(base, affixes)
+	if not affixes.is_empty():
+		_build_table(base, affixes[_detail_affixe])
 
 	footer.text = "\n".join([
-		"[<-] [->] objet précédent / suivant       %d affixes possibles" % (
-			ItemAffixPool.compatibles(base).size()
-		),
-		"[ECHAP] [F4] ou [clic] retour à la planche",
+		"[HAUT/BAS] ou [clic] choisir un affixe        [<-] [->] objet précédent / suivant",
+		"[ECHAP] ou [F4] retour à la planche",
 		_status,
 	])
+
+
+## Le volet de gauche : un affixe par ligne, avec la statistique qu'il touche et
+## **tout ce qu'il peut donner sur cette base**. C'est la ligne qui permet de
+## comparer deux affixes sans ouvrir chacun.
+func _build_liste(base: ItemBase, affixes: Array) -> void:
+	_etiquette(
+		"AFFIXES POSSIBLES  (%d)" % affixes.size(),
+		Vector2(LISTE_X, FICHE_TOP), FICHE_SOURDINE, FICHE_SIZE
+	)
+
+	for rang in affixes.size():
+		var affixe: ItemAffix = affixes[rang]
+		var r := _rang_rect(rang)
+
+		if rang == _detail_affixe:
+			_rectangle(FICHE_CHOISI, r.position, r.size)
+
+		var teinte := FICHE_TITRE if rang == _detail_affixe else FICHE_TEXTE
+		_etiquette(affixe.id, Vector2(LISTE_X + 3.0, r.position.y), teinte, FICHE_SIZE)
+		_etiquette(
+			StatMod.LABELS.get(affixe.stat, affixe.stat),
+			Vector2(LISTE_X + 78.0, r.position.y), FICHE_SOURDINE, FICHE_SIZE
+		)
+		_colonne_droite(
+			_plage_totale(base, affixe),
+			Vector2(LISTE_X, r.position.y), LISTE_W - 6.0, FICHE_VALEUR
+		)
+
+
+## Le volet de droite : ce que l'affixe choisi donne, palier par palier.
+##
+## Trois colonnes titrées plutôt que trois nombres collés. Le poids est rendu en
+## pourcentage : « 12 » ne veut rien dire seul, « un tirage sur sept » se compare
+## à l'affixe d'à côté sans calculer.
+func _build_table(base: ItemBase, affixe: ItemAffix) -> void:
+	var y := FICHE_TOP
+	_etiquette(
+		"%s  —  %s" % [affixe.id, StatMod.LABELS.get(affixe.stat, affixe.stat)],
+		Vector2(TABLE_X, y), FICHE_TITRE, FICHE_TITRE_SIZE
+	)
+
+	y += FICHE_LIGNE + 2.0
+	_etiquette(_poids_texte(base, affixe), Vector2(TABLE_X, y), FICHE_SOURDINE, FICHE_SIZE)
+
+	y += FICHE_LIGNE + 6.0
+	_etiquette("palier", Vector2(TABLE_X + COL_PALIER, y), FICHE_SOURDINE, FICHE_SIZE)
+	_etiquette("zones où il sort", Vector2(TABLE_X + COL_ZONES, y), FICHE_SOURDINE, FICHE_SIZE)
+	_etiquette("valeur tirée", Vector2(TABLE_X + COL_VALEUR, y), FICHE_SOURDINE, FICHE_SIZE)
+
+	y += 3.0
+	_rectangle(
+		FICHE_SEPARATEUR, Vector2(TABLE_X, y + FICHE_LIGNE - 2.0), Vector2(TABLE_W - 8.0, 1.0)
+	)
+
+	for palier in paliers_de(base, affixe):
+		y += FICHE_LIGNE
+		var p: Palier = palier
+		_etiquette("T%d" % p.numero, Vector2(TABLE_X + COL_PALIER, y), FICHE_TEXTE, FICHE_SIZE)
+		_etiquette(
+			_zones_texte(p.zones), Vector2(TABLE_X + COL_ZONES, y), FICHE_TEXTE, FICHE_SIZE
+		)
+		_etiquette(
+			p.valeur, Vector2(TABLE_X + COL_VALEUR, y), FICHE_VALEUR, FICHE_SIZE
+		)
+
+
+## « zone 34 », « zones 19 à 22 », « zones 34 et au-delà ».
+##
+## Le singulier n'est pas de la coquetterie : « zones 34 à 34 » se lit comme une
+## erreur d'affichage. Et le dernier niveau du jeu n'est pas une borne mais une
+## fin d'échelle — l'en-tête dit déjà « et au-delà » de la fenêtre de chute, le
+## tableau dirait « à 60 » de la même chose, et les deux phrases se
+## contrediraient à trois centimètres l'une de l'autre.
+static func _zones_texte(zones: Vector2i) -> String:
+	if zones.x == zones.y:
+		return "zone %d" % zones.x
+	if zones.y >= Game.NIVEAU_MAX:
+		return "zones %d et au-delà" % zones.x
+	return "zones %d à %d" % [zones.x, zones.y]
+
+
+## Ce que pèse cet affixe dans la réserve de cette base. Le poids brut ne se
+## compare à rien tant qu'on ne connaît pas le total ; la part, si.
+static func _poids_texte(base: ItemBase, affixe: ItemAffix) -> String:
+	var total := 0
+	for autre in ItemAffixPool.compatibles(base):
+		total += (autre as ItemAffix).weight
+	if total <= 0:
+		return "poids %d" % affixe.weight
+	return "poids %d sur %d  —  %d %% des affixes tirés ici" % [
+		affixe.weight, total, roundi(100.0 * float(affixe.weight) / float(total))
+	]
+
+
+## Les affixes qu'une base peut recevoir, dans l'ordre où la fiche les liste.
+##
+## Triés par identifiant : on vient chercher un affixe qu'on a en tête, et
+## l'ordre de la réserve — thématique, puis chronologique — ne se devine pas.
+static func affixes_de(base: ItemBase) -> Array:
+	var out := ItemAffixPool.compatibles(base)
+	out.sort_custom(func(a: ItemAffix, b: ItemAffix) -> bool: return a.id < b.id)
+	return out
+
+
+## La plage de zones dans laquelle cette base tombe, en bornes concrètes : le
+## zéro de « sans fin » d'ItemCatalog résolu ici une bonne fois, pour que le
+## reste de la fiche n'ait pas à connaître la convention.
+static func zones_de(base: ItemBase) -> Vector2i:
+	var fenetre := ItemCatalog.fenetre_de_chute(base)
+	return Vector2i(fenetre.x, Game.NIVEAU_MAX if fenetre.y <= 0 else fenetre.y)
+
+
+## Les paliers d'un affixe **sur cette base**, et rien d'autre : ceux qu'elle
+## peut atteindre, avec les zones où elle les sort réellement.
+##
+## Les bornes sont celles de la base et non celles du palier. Sur une épée qui
+## cesse de tomber en zone 22, annoncer « de 19 à 51 » oblige à faire
+## l'intersection de tête ; « zones 19 à 22 » se lit sans rien calculer.
+static func paliers_de(base: ItemBase, affixe: ItemAffix) -> Array:
+	var zones := zones_de(base)
+	var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
+	var out := []
+	for brut in affixe.ouverts_entre(zones.x, zones.y):
+		var index := int(brut)
+		var palier: ItemAffixTier = affixe.tiers[index]
+		out.append(Palier.new(
+			index + 1,
+			affixe.fenetre_du_palier(index, zones.x, zones.y),
+			StatMod.range_label(affixe.stat, mode, palier.min_value, palier.max_value)
+		))
+	return out
+
+
+## Tout ce que cet affixe peut donner sur cette base, du pire palier au meilleur.
+## Les bornes sont cherchées et non déduites des extrémités de la liste : un
+## affixe dont la valeur baisse quand il s'améliore — un temps de recharge —
+## inverserait les deux.
+static func _plage_totale(base: ItemBase, affixe: ItemAffix) -> String:
+	var paliers := paliers_de(base, affixe)
+	if paliers.is_empty():
+		return ""
+	var zones := zones_de(base)
+	var bas := INF
+	var haut := -INF
+	for brut in affixe.ouverts_entre(zones.x, zones.y):
+		var palier: ItemAffixTier = affixe.tiers[int(brut)]
+		bas = minf(bas, palier.min_value)
+		haut = maxf(haut, palier.max_value)
+	var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
+	return StatMod.range_label(affixe.stat, mode, bas, haut)
 
 
 ## L'en-tête d'une fiche : ce que la base **est**, et entre quels niveaux de zone
 ## elle tombe. Cette dernière est la seule information de l'écran qu'on ne peut
 ## lire nulle part ailleurs — ni dans le `.tres` de la base, ni dans le
-## catalogue : elle naît de la rencontre entre le niveau requis et la règle des
-## paliers visibles.
+## catalogue : elle naît de la rencontre entre le niveau requis et la règle de
+## relève.
 static func _identite(base: ItemBase) -> String:
 	var morceaux := [", ".join(base.tags)]
 	var implicite := base.implicit()
@@ -374,9 +547,8 @@ static func _identite(base: ItemBase) -> String:
 
 
 ## Statique, et testée : c'est une phrase, donc rien de ce qui l'entoure ne
-## signale qu'elle est fausse. Elle a annoncé « tombe dans les zones 35 à 0 »
-## pendant tout le temps où le zéro de « sans fin » n'avait pas été reporté ici,
-## et seule une capture l'a vu.
+## signale qu'elle est fausse. Elle a déjà annoncé « tombe dans les zones 35 à 0 »
+## sans que rien d'autre qu'une capture ne le voie.
 static func _fenetre_texte(base: ItemBase) -> String:
 	var fenetre := ItemCatalog.fenetre_de_chute(base)
 	if fenetre.y <= 0:
@@ -386,106 +558,72 @@ static func _fenetre_texte(base: ItemBase) -> String:
 	return "tombe dans les zones %d à %d" % [fenetre.x, fenetre.y]
 
 
-## Les lignes de la fiche, sans rien dessiner. Publique et statique pour la même
-## raison que StatsPanel.content_height : le test qui vérifie qu'aucune fiche ne
-## déborde sur l'aide du bas ne doit pas recopier ce calcul, sinon il validerait
-## sa propre copie.
-##
-## **Seuls les paliers que cette base peut réellement sortir.** Une base ne tombe
-## que dans sa fenêtre de zones, et le niveau d'un objet est celui de la zone où
-## il tombe : une épée large, qui ne tombe qu'entre 16 et 40, n'atteint jamais un
-## palier qui demande le niveau 52. Les afficher décrivait un objet qui ne peut
-## pas exister — le défaut le plus coûteux pour un outil de réglage, puisqu'on
-## équilibre en le lisant.
-##
-## Triées par identifiant : on vient chercher un affixe qu'on a en tête, et
-## l'ordre de la réserve — thématique, puis chronologique — ne se devine pas.
-static func lignes_affixes(base: ItemBase) -> Array:
-	var out := []
-	var affixes := ItemAffixPool.compatibles(base)
-	affixes.sort_custom(func(a: ItemAffix, b: ItemAffix) -> bool: return a.id < b.id)
-
-	var fenetre := ItemCatalog.fenetre_de_chute(base)
-	# Un y de zéro veut dire « rien ne la remplace » : elle tombe jusqu'au
-	# dernier niveau de zone du jeu.
-	var dernier := Game.NIVEAU_MAX if fenetre.y <= 0 else fenetre.y
-
-	# Typée à l'entrée : la réserve rend un tableau non typé, et sans ça
-	# l'inférence part en Variant jusqu'au calcul de la place du palier.
-	for brut in affixes:
-		var affixe: ItemAffix = brut
-		var atteignables := affixe.ouverts_entre(fenetre.x, dernier)
-		if atteignables.is_empty():
-			continue
-
-		var titre := Ligne.new(DETAIL_TITRE)
-		titre.ajouter("%s · %s ×%d" % [
-			affixe.id, StatMod.LABELS.get(affixe.stat, affixe.stat), affixe.weight
-		], 0.0)
-		out.append(titre)
-
-		var courante: Ligne = null
-		for rang in atteignables.size():
-			var place := rang % DETAIL_TIERS_PAR_LIGNE
-			if place == 0:
-				courante = Ligne.new(DETAIL_PALIER)
-				out.append(courante)
-			courante.ajouter(
-				_texte_palier(affixe, int(atteignables[rang])), float(place) * DETAIL_TIER_W
-			)
-
-	return out
+## Le rectangle d'une ligne de la liste, et **le seul endroit qui le sait** : le
+## fond de la ligne choisie, son texte et le clic le visent tous les trois.
+func _rang_rect(rang: int) -> Rect2:
+	return Rect2(
+		Vector2(LISTE_X, FICHE_TOP + FICHE_LIGNE + 4.0 + float(rang) * FICHE_LIGNE),
+		Vector2(LISTE_W, FICHE_LIGNE)
+	)
 
 
-## « T3  34→51  27–34 », ou « T1  52+  44–54 » pour un palier que rien ne ferme.
-##
-## Le numéro est la **position** dans l'échelle, T1 en tête : c'est la règle
-## d'ItemAffix, et la recopier autrement ferait mentir la fiche sur ce que
-## l'infobulle du sac affiche pour le même objet.
-##
-## Deux niveaux et non un seul depuis que les paliers se ferment : n'afficher que
-## celui qui ouvre laisserait croire qu'un objet de niveau 60 peut encore sortir
-## le T8, ce qui est exactement ce que le tirage refuse maintenant.
-static func _texte_palier(affixe: ItemAffix, index: int) -> String:
-	var palier: ItemAffixTier = affixe.tiers[index]
-	var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
-	var fenetre := affixe.fenetre_du_palier(index)
-	var niveaux := "%d+" % fenetre.x if fenetre.y <= 0 else "%d→%d" % [fenetre.x, fenetre.y]
-	return "T%d  %s  %s" % [
-		index + 1,
-		niveaux,
-		StatMod.range_label(affixe.stat, mode, palier.min_value, palier.max_value),
-	]
-
-
-## La hauteur qu'occupe la plus longue colonne d'une fiche. C'est elle que le
-## test compare au haut de l'aide : l'anneau tient aujourd'hui à quatre lignes
-## près, et un affixe de plus le ferait déborder sans que rien ne le dise.
+## La hauteur qu'occupe le plus haut des deux volets. C'est elle que le test
+## compare au haut de l'aide : la liste grandit avec chaque affixe ajouté au
+## projet, et rien d'autre ne dirait qu'elle a fini par déborder.
 static func hauteur_de_fiche(base: ItemBase) -> float:
-	var lignes := lignes_affixes(base)
-	return ceilf(float(lignes.size()) / float(DETAIL_COLS)) * DETAIL_LINE
+	var affixes := affixes_de(base)
+	var liste := FICHE_TOP + FICHE_LIGNE + 4.0 + float(affixes.size()) * FICHE_LIGNE
+	var table := FICHE_TOP
+	for affixe in affixes:
+		table = maxf(
+			table,
+			FICHE_TOP + FICHE_LIGNE * 3.0 + 11.0
+				+ float(paliers_de(base, affixe).size()) * FICHE_LIGNE
+		)
+	return maxf(liste, table)
+
+
+## Un aplat de la fiche : le fond de la ligne choisie, le trait entre les deux
+## volets, le filet sous les titres du tableau. Les trois posaient les mêmes
+## quatre propriétés, dont le `mouse_filter` sans lequel l'aplat mange le clic
+## qu'il recouvre.
+func _rectangle(couleur: Color, at: Vector2, taille: Vector2) -> void:
+	var r := ColorRect.new()
+	r.color = couleur
+	r.position = at
+	r.size = taille
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_child(r)
 
 
 ## Une étiquette de la fiche. Elles sont nombreuses — jusqu'à cent quinze pour un
 ## anneau — mais posées une fois et jamais retouchées : cet écran ne s'anime pas.
-## Un Label par entrée plutôt qu'un bloc de texte par colonne, parce que la
-## police n'est pas à chasse fixe et qu'un tableau aligné à coups d'espaces y
-## serait en escalier.
-func _etiquette(texte: String, at: Vector2, teinte: Color) -> void:
+## Un Label par entrée plutôt qu'un bloc de texte par colonne, parce que la police
+## n'est pas à chasse fixe et qu'un tableau aligné à coups d'espaces serait en
+## escalier.
+func _etiquette(texte: String, at: Vector2, teinte: Color, corps := FICHE_SIZE) -> Label:
 	var l := Label.new()
 	l.text = texte
 	l.position = at
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_size_override("font_size", DETAIL_SIZE)
+	l.add_theme_font_size_override("font_size", corps)
 	l.add_theme_color_override("font_color", teinte)
 	stage.add_child(l)
+	return l
+
+
+## La même, calée sur son bord droit. Une colonne de valeurs alignée à droite se
+## compare d'un coup d'œil ; alignée à gauche, il faut lire chaque nombre.
+func _colonne_droite(texte: String, at: Vector2, largeur: float, teinte: Color) -> void:
+	var l := _etiquette(texte, at, teinte)
+	l.size = Vector2(largeur, FICHE_LIGNE)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 
 ## Le centre de la case d'un objet sur la planche, et **le seul endroit qui le
-## sait**. Le dessin et le clic le calculaient sinon chacun de son côté, avec les
-## mêmes quatre nombres réécrits : ce genre de paire ne se contredit pas le jour
-## où on l'écrit, elle se contredit le jour où l'on décale la grille de deux
-## pixels et où le clic reste sur l'ancienne, sans que rien ne le signale.
+## sait** : le dessin et le clic le visent tous les deux. Ce genre de paire ne se
+## contredit pas le jour où on l'écrit, mais le jour où l'on décale la grille de
+## deux pixels et où le clic reste sur l'ancienne.
 func _item_centre(rang: int) -> Vector2:
 	var x0 := (size.x - ITEM_COLS * ITEM_CELL.x) * 0.5 + ITEM_CELL.x * 0.5
 	return Vector2(

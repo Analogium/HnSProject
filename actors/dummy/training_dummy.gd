@@ -1,22 +1,21 @@
 class_name TrainingDummy
 extends CharacterBody2D
 
-## Cible d'entraînement de l'étape 4. Elle ne meurt pas et ne rend pas les coups :
-## elle sert à juger le hit-stop et le flash, et à lire les dégâts cumulés.
+## Cible d'entraînement : elle ne meurt pas et ne rend pas les coups, elle sert à
+## juger le hit-stop et le flash et à lire les dégâts cumulés.
 ##
-## Le recul ne fait pas partie du jeu — il est à zéro partout, c'est un choix —
-## mais elle reste un CharacterBody2D et non le StaticBody2D du document : c'est
-## ce qui permet de le rallumer avec les touches 3/4 de l'arène et de le juger
-## tout de suite. Elle revient à sa place toute seule.
+## Un CharacterBody2D et non un StaticBody2D : c'est ce qui permet de rallumer le
+## recul avec les touches 3/4 de l'arène et de le juger tout de suite. Elle revient
+## à sa place toute seule.
 
 const FRICTION := 0.12
 const RETURN_SPEED := 0.02   # rappel très lent vers la position d'origine
 
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
-## Le cumul des dégâts encaissés. Sous les pieds et non au-dessus de la tête :
-## c'est là que passent maintenant les nombres flottants de chaque coup, et deux
-## chiffres superposés se lisaient comme un bug d'affichage.
+## Le cumul des dégâts encaissés. Sous les pieds : au-dessus de la tête passent
+## les nombres flottants de chaque coup, et deux chiffres superposés se lisent
+## comme un bug d'affichage.
 @onready var label: Label = $DamageLabel
 
 var _home := Vector2.ZERO

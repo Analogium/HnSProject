@@ -24,9 +24,8 @@ func _init(
 	type = p_type
 
 
-## La couleur sous laquelle ce coup s'annonce. Ici et non chez celui qui dessine :
-## le nombre flottant et la gerbe d'éclats doivent la partager, et la fiche de
-## personnage utilise la même pour la ligne de résistance correspondante.
+## Ici et non chez celui qui dessine : le nombre flottant, la gerbe d'éclats et
+## la ligne de résistance de la fiche doivent la partager.
 func color() -> Color:
 	return DamageType.COLORS[type]
 

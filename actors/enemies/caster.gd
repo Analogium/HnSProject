@@ -1,17 +1,13 @@
 class_name Caster
 extends Enemy
 
-## Le tireur à distance. Il se rapproche s'il est trop loin, tourne autour
-## sinon, et tire. Il change la façon de jouer : on ne peut plus rester au
-## milieu de la mêlée, il faut choisir des cibles prioritaires.
+## Le tireur à distance. Il se rapproche s'il est trop loin, tourne autour sinon,
+## et tire. On ne peut plus rester au milieu de la mêlée : il faut choisir des
+## cibles prioritaires.
 ##
-## C'est ça, avoir deux types d'ennemis différents : la différence est
-## comportementale, et elle pose au joueur une question différente.
-##
-## Écart avec le document : il ne fuit pas quand le joueur le rejoint. Le doc
-## prévoit un recul sous flee_distance, mais un tireur qui décroche transforme
-## chaque engagement en course-poursuite. Ici, percer jusqu'à lui est
-## récompensé — il reste mobile en tournant, pas en s'échappant.
+## **Il ne fuit pas quand le joueur le rejoint**, contrairement au document : un
+## tireur qui décroche transforme chaque engagement en course-poursuite. Ici,
+## percer jusqu'à lui est récompensé — il reste mobile en tournant.
 
 const ACCEL := 0.06
 
@@ -27,9 +23,8 @@ var _strafe_dir := 1.0
 
 
 ## Le sens de rotation se déduit de la case d'apparition, comme la silhouette
-## (voir ActorSprite._pick). Surtout pas Game.rng : une même graine de zone doit
-## redonner exactement le même combat, et un caster qui tourne dans l'autre sens
-## change tout l'engagement.
+## (voir ActorSprite._pick). Surtout pas Game.rng : un caster qui tourne dans
+## l'autre sens change tout l'engagement, et une graine doit redonner le même.
 func setup(p_target: Node2D) -> void:
 	super(p_target)
 	_strafe_dir = 1.0 if absi(hash(Vector2i(position.round()))) % 2 == 0 else -1.0
@@ -51,11 +46,10 @@ func tick(delta: float) -> void:
 		# mouvement local dont le champ n'a rien à dire.
 		move = heading()
 	else:
-		# On vise un point plus loin sur le cercle de rayon actuel, plutôt que
-		# de suivre la tangente. Avec la tangente, le retard du lerp (ACCEL est
-		# volontairement très bas) laisse la vitesse pointer le long de l'ancienne
-		# tangente, et le caster spirale vers l'extérieur — ce qui se lit comme
-		# une fuite lente. En visant sur le cercle, il tourne sans s'éloigner.
+		# On vise un point plus loin sur le cercle de rayon actuel, plutôt que la
+		# tangente : avec elle, le retard du lerp (ACCEL est volontairement très
+		# bas) fait spiraler le caster vers l'extérieur, ce qui se lit comme une
+		# fuite lente.
 		var offset := global_position - target.global_position
 		var goal := target.global_position + offset.rotated(_strafe_dir * orbit_step)
 		move = (goal - global_position).normalized() * strafe_bias

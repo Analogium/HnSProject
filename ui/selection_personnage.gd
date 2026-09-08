@@ -125,9 +125,9 @@ func selection() -> Personnage:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
-	var touche := (event as InputEventKey).keycode
 
 	if _etat != Etat.LISTE:
 		if touche == KEY_ESCAPE:
@@ -352,7 +352,7 @@ func _draw() -> void:
 	if _etat == Etat.LISTE:
 		_dessiner_liste()
 	else:
-		draw_rect(MODALE, Color(UiPalette.BACK, 1.0))
+		draw_rect(MODALE, UiPalette.BACK_PLEIN)
 		draw_rect(MODALE, UiPalette.BORDER, false, 1.0)
 		if _etat == Etat.CREATION:
 			_dessiner_choix_silhouette()
@@ -360,7 +360,7 @@ func _draw() -> void:
 
 func _dessiner_liste() -> void:
 	var cadre := _rect_liste()
-	draw_rect(cadre, Color(UiPalette.BACK, 1.0))
+	draw_rect(cadre, UiPalette.BACK_PLEIN)
 	draw_rect(cadre, UiPalette.BORDER, false, 1.0)
 
 	if _personnages.is_empty():
@@ -439,7 +439,7 @@ func _vignette_rect(variante: int) -> Rect2:
 func _dessiner_choix_silhouette() -> void:
 	for v in SpriteForge.VARIANTS:
 		var boite := _vignette_rect(v)
-		draw_rect(boite, CHOISI if v == _silhouette else Color(UiPalette.BACK, 1.0))
+		draw_rect(boite, CHOISI if v == _silhouette else UiPalette.BACK_PLEIN)
 		draw_rect(boite, ACCENT if v == _silhouette else UiPalette.BORDER, false, 1.0)
 
 

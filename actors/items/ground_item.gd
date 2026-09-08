@@ -7,10 +7,8 @@ extends Area2D
 ## sur une touche au milieu d'une mêlée casse le rythme du combat.
 
 ## Halo au sol. Sans lui, une icône de 24 px posée sur des tuiles texturées se
-## perd complètement — c'est le halo qu'on repère du coin de l'œil, pas l'objet.
-##
-## Il prend la couleur de rareté : de loin, avant même de distinguer la forme,
-## on sait si ça vaut le détour. C'est le seul rôle de la rareté au sol.
+## perd — c'est le halo qu'on repère du coin de l'œil, pas l'objet. Il prend la
+## couleur de rareté : de loin, on sait si ça vaut le détour.
 const GLOW_ALPHA := 0.34
 const GLOW_RX := 9.0
 const GLOW_RY := 4.5
@@ -19,10 +17,9 @@ const GLOW_RY := 4.5
 const BOB_SPEED := 3.2
 const BOB_AMOUNT := 1.5
 
-## Délai avant qu'un objet jeté depuis le sac puisse être repris. Sans lui, le
-## joueur qui jette une épée est déjà dans la zone de ramassage : elle lui
-## reviendrait dans le sac à l'image suivante, et le bouton « jeter » ne ferait
-## rien de visible.
+## Délai avant qu'un objet jeté depuis le sac puisse être repris : sans lui, celui
+## qui jette une épée est déjà dans la zone de ramassage et elle lui revient à
+## l'image suivante.
 const DROP_DELAY := 0.6
 
 @onready var icon: Sprite2D = $Icon
@@ -34,24 +31,22 @@ var data: Item
 var pickup_delay := 0.0
 
 var _t := 0.0
-## Hauteur de repos de l'icône, déduite de sa taille : un objet doit se poser
-## *sur* son halo, pas dessus. À hauteur fixe, les objets étroits allaient bien
-## et un plastron cachait complètement le halo qui sert à le repérer.
+## Hauteur de repos de l'icône, déduite de sa taille : à hauteur fixe, un plastron
+## cache complètement le halo qui sert à le repérer.
 var _rest_y := 0.0
 var _glow := Color(0.98, 0.86, 0.45, GLOW_ALPHA)
 
 static var _scene: PackedScene
 
 
-## Pose un objet dans le monde. Statique et sur la classe de l'objet plutôt que
-## recopiée chez chaque appelant : l'ennemi qui lâche son butin et le sac qui
-## jette une pièce font exactement la même chose, à la position près.
+## Pose un objet dans le monde : l'ennemi qui lâche son butin et le sac qui jette
+## une pièce font la même chose, à la position près.
 ##
 ## **Entrée dans l'arbre différée.** Un ennemi meurt presque toujours depuis un
 ## callback de physique — le `area_entered` d'un coup d'épée ou d'un tir — et
 ## Godot refuse qu'on y ajoute une Area2D : « Can't change this state while
-## flushing queries ». La forme de ramassage n'était alors pas initialisée et
-## l'objet risquait de rester à jamais impossible à ramasser.
+## flushing queries ». La forme de ramassage resterait non initialisée, donc
+## l'objet impossible à ramasser.
 static func spawn(parent: Node, at: Vector2, item: Item, delay := 0.0) -> GroundItem:
 	# Chargée à la première pose et non par preload : un script qui préchargerait
 	# la scène dont il est lui-même le script forme un cycle de dépendances que
@@ -69,9 +64,8 @@ static func spawn(parent: Node, at: Vector2, item: Item, delay := 0.0) -> Ground
 	return drop
 
 
-## L'icône se construit ici et non dans une méthode à appeler après coup : le
-## nœud entre dans l'arbre en différé, donc l'appelant n'a plus de moment sûr
-## pour le faire lui-même.
+## L'icône se construit ici et non dans une méthode à appeler après coup : le nœud
+## entre dans l'arbre en différé, donc l'appelant n'a plus de moment sûr.
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	if data == null:

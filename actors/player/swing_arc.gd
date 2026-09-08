@@ -1,12 +1,12 @@
 class_name SwingArc
 extends Node2D
 
-## Trace du coup, dessinée à la volée : pas de sprite à fournir, et la portée
-## se règle en même temps que la hitbox.
+## Trace du coup, dessinée à la volée : pas de sprite à fournir, et la portée se
+## règle en même temps que la hitbox. Se place sous l'AttackPivot, donc l'arc est
+## déjà orienté vers la cible.
 ##
-## Se place sous l'AttackPivot, donc l'arc est déjà orienté vers la cible.
-## Le delta n'est volontairement pas dé-scalé : pendant le hit-stop, la lame
-## se fige avec le reste du jeu, ce qui est exactement l'effet recherché.
+## Le delta n'est volontairement pas dé-scalé : pendant le hit-stop, la lame se
+## fige avec le reste du jeu.
 
 ## Bord extérieur de la lame. À garder proche de la portée de la hitbox
 ## (capsule décalée de 20 px, rayon 8 → 28 px de portée).

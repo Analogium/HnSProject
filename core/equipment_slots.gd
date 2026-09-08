@@ -1,24 +1,18 @@
 class_name EquipmentSlots
 
-## Les emplacements d'équipement du personnage, et la famille d'objets que
-## chacun accepte.
+## Les emplacements d'équipement du personnage, et la famille d'objets que chacun
+## accepte.
 ##
-## **Un emplacement n'est pas une famille**, et c'est la distinction que le
-## jalon 4 vient poser. Une base d'objet dit ce qu'elle est — un anneau ; le
-## personnage, lui, a deux doigts. Le code d'avant les confondait
-## (`equipment[base.slot] = item`), ce qui marchait tant qu'il y avait une
-## correspondance un pour un et faisait disparaître le premier anneau dès qu'on
-## en équipait un second, sans que rien ne le signale.
+## **Un emplacement n'est pas une famille.** Une base dit ce qu'elle est — un
+## anneau ; le personnage, lui, a deux doigts. Les confondre fait disparaître le
+## premier anneau dès qu'on en équipe un second, sans que rien ne le signale.
 ##
-## Un dictionnaire et non deux tableaux parallèles : la famille et le nom
-## lisible d'un emplacement se lisent sur la même ligne, et une entrée oubliée
-## se voit. L'ordre d'insertion est celui dans lequel le panneau les montre — un
-## Dictionary GDScript le conserve.
+## L'ordre d'insertion est celui dans lequel le panneau les montre — un Dictionary
+## GDScript le conserve.
 ##
-## **Les identifiants ne changent jamais.** Ils sont écrits dans les sauvegardes
-## des personnages : renommer `chest` en `torse` ferait disparaître le plastron
-## de tout le monde, au prochain chargement seulement. Le nom lisible, lui, est
-## à côté et se traduit librement.
+## **Les identifiants ne changent jamais.** Ils sont écrits dans les sauvegardes :
+## renommer `chest` en `torse` ferait disparaître le plastron de tout le monde, au
+## prochain chargement seulement. Le nom lisible, lui, se traduit librement.
 
 const SLOTS := {
 	"weapon": {"family": "weapon", "label": "ARME"},
@@ -30,9 +24,8 @@ const SLOTS := {
 	"belt": {"family": "belt", "label": "CEINTURE"},
 	"amulet": {"family": "amulet", "label": "AMULETTE"},
 	# « BAGUE » et non « ANNEAU » : à la taille du cadrage, les deux libellés en
-	# ANNEAU dépassaient de leur case et se faisaient tronquer au même endroit —
-	# deux emplacements qui s'annonçaient pareil, ce qui est pire que le
-	# débordement qu'on corrigeait.
+	# ANNEAU se faisaient tronquer au même endroit et annonçaient donc la même
+	# chose — pire que le débordement qu'on corrigeait.
 	"ring_left": {"family": "ring", "label": "BAGUE G."},
 	"ring_right": {"family": "ring", "label": "BAGUE D."},
 }
@@ -64,7 +57,7 @@ static func label(slot: String) -> String:
 
 
 ## La famille d'un objet, vide s'il ne s'équipe pas. Passe par la base : c'est
-## elle qui sait ce qu'est l'objet, l'exemplaire ne porte que ses affixes.
+## elle qui sait ce qu'est l'objet.
 static func family_of_item(item: Item) -> String:
 	if item == null or item.base == null:
 		return ""
@@ -79,12 +72,12 @@ static func accepts(slot: String, item: Item) -> bool:
 ## Où poser cet objet quand l'appelant n'impose rien : **le premier emplacement
 ## libre de sa famille**, à défaut le premier de cette famille.
 ##
-## C'est toute la règle des anneaux. Un second anneau ramassé va au doigt libre ;
-## un troisième remplace celui de gauche, faute de mieux, et c'est à l'interface
-## de proposer l'autre en le lâchant dessus.
+## C'est toute la règle des anneaux : le second va au doigt libre, le troisième
+## remplace celui de gauche, et c'est à l'interface de proposer l'autre en le
+## lâchant dessus.
 ##
-## Rend une chaîne vide pour un objet qui ne s'équipe nulle part — l'appelant
-## doit alors le rendre intact, jamais le perdre.
+## Rend une chaîne vide pour un objet qui ne s'équipe nulle part — l'appelant doit
+## alors le rendre intact, jamais le perdre.
 static func free_for(item: Item, worn: Dictionary) -> String:
 	var famille := family_of_item(item)
 	if famille.is_empty():

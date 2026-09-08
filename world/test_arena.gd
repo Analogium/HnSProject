@@ -75,15 +75,15 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
 
-	# Retenu avant le match : change_scene_to_file() détache ce nœud de l'arbre
-	# immédiatement, et get_viewport() renverrait alors null. Le viewport racine,
-	# lui, survit au changement de scène.
+	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
+	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match (event as InputEventKey).keycode:
+	match touche:
 		KEY_1: Game.hit_stop_duration = maxf(Game.hit_stop_duration - 0.01, 0.0)
 		KEY_2: Game.hit_stop_duration = minf(Game.hit_stop_duration + 0.01, 0.30)
 		KEY_3: _tune("knockback_force", -20.0, 0.0)

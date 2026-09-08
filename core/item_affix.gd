@@ -5,24 +5,16 @@ extends Resource
 ## paliers. Le tirage, lui, donne un RolledAffix — un affixe sur le disque, mille
 ## exemplaires différents en jeu.
 ##
-## Une fourchette et non une valeur fixe : c'est elle qui fait qu'on regarde
-## deux épées « acérées » avant de choisir. Sans elle, un affixe est un
-## interrupteur et deux objets du même type sont interchangeables.
-##
-## Et une **échelle** de fourchettes depuis le jalon 5 : le niveau de l'objet
-## ouvre des paliers, et c'est par là que descendre plus bas rapporte mieux.
+## Une échelle de fourchettes et non une valeur fixe : c'est elle qui fait qu'on
+## regarde deux épées « acérées » avant de choisir, et c'est par elle que
+## descendre plus bas rapporte mieux.
 
 @export var id: String = ""
 
 ## Les étiquettes qu'une base doit porter pour recevoir cet affixe : **une seule
 ## suffit**. Une armure ne donne pas d'allonge, une épée ne donne pas de PV —
 ## sans ce filtre, tous les objets se valent et le type de base ne veut plus rien
-## dire.
-##
-## Des étiquettes et non des familles ; le champ s'appelait `families` jusqu'au
-## jalon 5. Une épée et une baguette sont toutes deux de famille `weapon`, et il
-## fallait pouvoir donner les dégâts d'attaque à l'une seulement. Voir
-## `ItemBase.tags`.
+## dire. Voir `ItemBase.tags`.
 ##
 ## Vide = partout, sous réserve d'`exclut`. Utile pour un affixe volontairement
 ## universel — les résistances — et ça évite d'énumérer trente bases.
@@ -32,8 +24,8 @@ extends Resource
 ## suffit à refuser, et **elle l'emporte**.
 ##
 ## C'est elle qui écrit « partout sauf sur les armes » en une ligne au lieu de
-## neuf, et surtout : une base ajoutée plus tard hérite du refus sans qu'on ait
-## à y penser, là où une liste d'autorisations l'aurait oubliée en silence.
+## neuf, et surtout : une base ajoutée plus tard hérite du refus sans qu'on ait à
+## y penser, là où une liste d'autorisations l'aurait oubliée en silence.
 @export var exclut: PackedStringArray = PackedStringArray()
 
 ## Le champ de CharacterStats touché. Doit exister : voir StatMod.LABELS.
@@ -48,19 +40,16 @@ extends Resource
 ## numéro est donc une position et non un champ à saisir — deux paliers portant
 ## le même numéro seraient invérifiables autrement.
 ##
-## Le nombre de paliers dépend de l'affixe : neuf pour l'armure qui progresse par
-## grands bonds, cinq pour la vitesse de déplacement qu'on veut garder serrée.
-## C'est ce qui fait que deux affixes ne se lisent pas à la même échelle.
+## Leur nombre dépend de l'affixe : neuf pour l'armure qui progresse par grands
+## bonds, cinq pour la vitesse de déplacement qu'on veut garder serrée.
 @export var tiers: Array[ItemAffixTier] = []
 
 ## Le pas d'arrondi de la valeur tirée : 1 pour un affixe entier, 0.01 pour une
-## fraction. « +7 dégâts » se lit, « +7.3184 dégâts » non, et l'infobulle ne doit
-## pas mentir sur ce qui est réellement appliqué.
+## fraction. « +7 dégâts » se lit, « +7.3184 dégâts » non.
 ##
-## Un champ et non une déduction depuis la borne haute, comme avant les paliers :
-## une même échelle peut passer sous 1 en bas et au-dessus en haut, et la règle
-## déduite aurait arrondi les paliers d'un même affixe différemment — des
-## dégâts critiques affichés « +0,35 » à un palier et « +1 » au suivant.
+## Un champ et non une déduction depuis la borne haute : une même échelle peut
+## passer sous 1 en bas et au-dessus en haut, et la règle déduite arrondirait les
+## paliers d'un même affixe différemment.
 @export var arrondi: float = 1.0
 
 ## Poids dans la réserve. Un affixe rare n'est pas un affixe fort — c'est un
@@ -88,26 +77,22 @@ func fits(base: ItemBase) -> bool:
 ## Combien de paliers restent ouverts en même temps : le meilleur qu'un objet
 ## atteint, et les trois du dessous.
 ##
-## **Une fenêtre et non un plafond.** Le niveau d'objet ouvrait les bons paliers
-## sans jamais fermer les mauvais : un objet de niveau 60 pouvait donc sortir le
-## T8, celui des premières zones, et le meilleur objet du jeu valait parfois
-## moins que le premier ramassé. Le plancher monte maintenant avec le plafond —
-## un objet de haut niveau ne peut plus tirer le fond de l'échelle.
+## **Une fenêtre et non un plafond.** Le plancher monte avec le plafond : sans
+## ça, un objet de niveau 60 pouvait sortir le T8, celui des premières zones, et
+## le meilleur objet du jeu valait parfois moins que le premier ramassé.
 ##
 ## Quatre, donc un objet qui atteint le T1 ne tire plus rien en dessous du T4. Ce
-## n'est pas une garantie pour autant : quatre paliers d'écart, c'est encore un
-## objet sur quatre qui déçoit, et c'est ce qu'il faut pour qu'une bonne sortie
-## reste une bonne nouvelle.
+## n'est pas une garantie pour autant : c'est encore un objet sur quatre qui
+## déçoit, et c'est ce qu'il faut pour qu'une bonne sortie reste une bonne
+## nouvelle.
 const PALIERS_OUVERTS := 4
 
 
-## Les indices des paliers qu'un objet de ce niveau peut recevoir : le meilleur
-## qu'il atteint, et les PALIERS_OUVERTS - 1 suivants.
+## Les indices des paliers qu'un objet de ce niveau peut recevoir.
 ##
 ## Le parcours va du meilleur au pire — c'est l'ordre de `tiers` — donc les
-## premiers indices retenus sont bien les meilleurs paliers atteints. Un `.tres`
-## dont l'échelle serait écrite à l'envers ouvrirait le mauvais bout ; c'est la
-## monotonie, vérifiée par le test, qui l'interdit.
+## premiers indices retenus sont bien les meilleurs paliers atteints. C'est la
+## monotonie, vérifiée par le test, qui interdit une échelle écrite à l'envers.
 func ouverts(niveau: int) -> Array:
 	var out := []
 	for i in tiers.size():
@@ -128,37 +113,39 @@ func ouverts(niveau: int) -> Array:
 ## reviendrait à décrire un objet qui ne peut pas exister.
 ##
 ## Vaut pour ce qui **tombe**. Un objet plus ancien qu'une règle, ou refondu un
-## jour par un artisanat, peut porter autre chose ; c'est le tirage neuf que
-## cette fonction décrit.
+## jour par un artisanat, peut porter autre chose.
 func ouverts_entre(premier: int, dernier: int) -> Array:
 	var vus := {}
 	for niveau in range(maxi(premier, 1), maxi(dernier, premier) + 1):
 		for i in ouverts(niveau):
 			vus[i] = true
 	var out := vus.keys()
-	# Du meilleur au pire, comme `tiers` : c'est l'ordre dans lequel la fiche les
-	# lit, et celui du numéro de palier.
+	# Du meilleur au pire, comme `tiers` : l'ordre dans lequel la fiche les lit.
 	out.sort()
 	return out
 
 
-## Entre quels niveaux d'objet ce palier peut sortir. **Un y de zéro veut dire
-## « sans fin »** : les meilleurs paliers ne sont chassés par rien.
+## Entre quels niveaux d'objet ce palier peut sortir, **à l'intérieur de la plage
+## demandée**. Rend (0, 0) quand il n'y sort jamais.
+##
+## La plage est un argument et non une constante parce que la question utile
+## n'est jamais « sur toute l'échelle du jeu » mais « sur cette base-ci » : une
+## épée cesse de tomber en zone 22, et lui annoncer un palier qui sort « de 19 à
+## 51 » oblige à faire l'intersection de tête.
 ##
 ## Interrogée et non recalculée : la réponse vient de `ouverts`, qui est la
-## règle. La fiche de la forge l'affiche, et elle ne peut donc pas annoncer un
-## palier que le tirage refuserait — ce qui serait le pire défaut d'un outil de
-## réglage.
-func fenetre_du_palier(index: int) -> Vector2i:
-	var premier := 0
-	var dernier := 0
-	for niveau in range(1, Game.NIVEAU_MAX + 1):
+## règle. La fiche de la forge ne peut donc pas annoncer un palier que le tirage
+## refuserait — ce qui serait le pire défaut d'un outil de réglage.
+func fenetre_du_palier(index: int, premier: int, dernier: int) -> Vector2i:
+	var debut := 0
+	var fin := 0
+	for niveau in range(maxi(premier, 1), maxi(dernier, premier) + 1):
 		if not ouverts(niveau).has(index):
 			continue
-		if premier == 0:
-			premier = niveau
-		dernier = niveau
-	return Vector2i(premier, 0 if dernier >= Game.NIVEAU_MAX else dernier)
+		if debut == 0:
+			debut = niveau
+		fin = niveau
+	return Vector2i(debut, fin)
 
 
 ## Le niveau à partir duquel cet affixe existe. Rien à voir avec son meilleur
@@ -184,13 +171,8 @@ func roll(rng: RandomNumberGenerator, niveau: int) -> RolledAffix:
 	return RolledAffix.new(id, index + 1, StatMod.new(stat, mode, v))
 
 
-## Tirage pondéré parmi les paliers ouverts. Rend -1 quand il n'y en a aucun,
-## ce qui est un cas de jeu ordinaire : un affixe dont même le dernier palier
-## demande plus que le niveau de l'objet n'est pas dans la réserve.
-##
-## `ouverts` n'est appelé qu'une fois. Il l'était deux fois — une pour la somme,
-## une pour la descente — et les deux listes devaient rester dans le même ordre
-## sans que rien ne l'impose.
+## Tirage pondéré parmi les paliers ouverts. `ouverts` n'est appelé qu'une fois :
+## les poids et la descente doivent porter sur la même liste, dans le même ordre.
 func _pick_tier(rng: RandomNumberGenerator, niveau: int) -> int:
 	var ouv := ouverts(niveau)
 	var poids := []

@@ -2,20 +2,17 @@ class_name SpriteForge
 
 ## La forge de personnages : (archétype, variante) -> SpriteFrames animées.
 ##
-## Aucun fichier image n'existe sur le disque. Au premier appel, les pixels sont
-## calculés puis gardés en cache pour toute la session ; la graine étant dérivée
-## du nom et du numéro de variante, le même personnage ressort identique à
-## chaque lancement du jeu. C'est le même principe que TilesetBuilder, étendu
-## aux acteurs.
+## Aucun fichier image n'existe sur le disque. Les pixels sont calculés au premier
+## appel puis gardés en cache pour la session ; la graine étant dérivée du nom et
+## du numéro de variante, le même personnage ressort identique à chaque lancement.
 ##
-## Un personnage n'est pas un dessin mais un squelette : une dizaine de points
-## d'ancrage (hanches, épaules, mains, pieds, tête) reliés par des capsules.
-## Animer revient à déplacer ces points, pas à redessiner — c'est ce qui rend
-## une marche 4 images aussi bon marché qu'une pose fixe, et ce qui permet
-## d'ajouter un archétype en n'écrivant qu'une entrée de configuration.
+## Un personnage n'est pas un dessin mais un **squelette** : une dizaine de points
+## d'ancrage reliés par des capsules. Animer revient à déplacer ces points, pas à
+## redessiner — d'où une marche à 4 images aussi bon marché qu'une pose fixe, et
+## un archétype qui s'ajoute en une entrée de configuration.
 ##
-## Pour figer un sprite et le retoucher à la main : la galerie (F4) exporte
-## toutes les planches en PNG dans user://forge_export/.
+## La galerie (F4) exporte toutes les planches en PNG pour les retoucher à la
+## main.
 
 const FRAME := 32
 ## Axe vertical du corps et ligne de sol, dans le repère de l'image.
@@ -42,15 +39,11 @@ const VARIANTS := 4
 
 ## Les quatre tenues du joueur, dans l'ordre des variantes.
 ##
-## Choisies et non tirées : l'écran de création demande de choisir une
-## silhouette parmi quatre, et quatre héros qui ne diffèrent que d'un demi-ton
-## de bleu — ce que donnait le tirage de nuance — ne sont pas un choix. La
-## capture de l'écran l'a montrée avant qu'un joueur ait à le découvrir.
+## Choisies et non tirées : quatre héros qui ne diffèrent que d'un demi-ton de
+## bleu — ce que donne un tirage de nuance — ne sont pas un choix.
 ##
-## Seule l'étoffe change. Le fil doré, l'acier et le cuir restent communs : ce
-## sont eux qui font qu'on se reconnaît dans une mêlée de soixante-dix ennemis,
-## et les faire varier aussi rendrait deux personnages confondables avec un
-## caster ou un grunt.
+## Seule l'étoffe change. Le fil doré, l'acier et le cuir restent communs : ce sont
+## eux qui font qu'on se reconnaît dans une mêlée de soixante-dix ennemis.
 const PLAYER_CLOTHS := [
 	Color(0.24, 0.45, 0.86),   # bleu, la tenue d'origine
 	Color(0.76, 0.26, 0.28),   # cramoisi
@@ -66,8 +59,8 @@ const WALK_BOB := [0.0, -1.0, 0.0, -1.0]
 const IDLE_BOB := [0.0, -1.0]
 
 ## Armé, puis frappé. Deux images suffisent — c'est le contraste entre les deux
-## qui se lit, pas leur nombre. Constante et non nombre écrit à la main : la
-## galerie compose ses planches d'export à partir de la même valeur.
+## qui se lit, pas leur nombre. La galerie compose ses planches d'export à partir
+## de la même constante.
 const ATTACK_FRAMES := 2
 
 static var _cache: Dictionary = {}
@@ -75,11 +68,11 @@ static var _cache: Dictionary = {}
 
 ## Le point d'entrée du jeu. Les SpriteFrames sont partagées entre toutes les
 ## instances d'une même variante : seul l'état de lecture est propre à chaque
-## AnimatedSprite2D, donc rien n'est dupliqué.
-## weapon force l'arme tenue, vide pour celle de l'archétype. C'est ce qui rend
-## l'équipement visible : le joueur qui ramasse une baguette la tient vraiment.
-## Le nom entre dans la clé du cache — sans ça, équiper une baguette changerait
-## l'arme de tous les personnages déjà générés avec cette variante.
+## AnimatedSprite2D.
+##
+## `weapon` force l'arme tenue, vide pour celle de l'archétype — c'est ce qui rend
+## l'équipement visible. Elle entre dans la clé du cache, sinon équiper une
+## baguette changerait l'arme de tous les personnages de cette variante.
 static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrames:
 	var key := "%s:%d:%s" % [archetype, variant, weapon]
 	if _cache.has(key):
@@ -141,24 +134,19 @@ static func ground_icon(kind: String, palier := 1) -> Texture2D:
 	return _icon(kind, false, Vector2i.ZERO, palier)
 
 
-## L'icône d'un objet dans le sac. Dressée à la verticale — c'est la lecture
-## d'un rangement en grille, et elle épouse la forme des emplacements, qui sont
-## presque tous plus hauts que larges.
+## L'icône d'un objet dans le sac. Dressée à la verticale : elle épouse la forme
+## des emplacements, presque tous plus hauts que larges.
 ##
-## `target` est la place disponible en pixels d'écran, encombrement compris :
-## le dessin y est agrandi d'un facteur **entier**. Un facteur fractionnaire
-## doublerait certaines lignes de pixels et pas d'autres, ce qui se voit
-## immédiatement sur un sprite de cette taille.
+## `target` est la place disponible en pixels d'écran : le dessin y est agrandi
+## d'un facteur **entier**, un facteur fractionnaire doublant certaines lignes de
+## pixels et pas d'autres.
 static func inventory_icon(kind: String, target: Vector2i, palier := 1) -> Texture2D:
 	return _icon(kind, true, target, palier)
 
 
-## Le dessin d'un objet, recadré sur ce qui est réellement peint.
-##
-## Recadré et non centré dans son cadre : une épée, une baguette et un plastron
-## n'ont ni la même longueur ni le même encombrement, et aucun ne tombe au
-## centre du cadre tout seul. Un sprite recadré est centré par construction, sur
-## son point d'ancrage comme dans sa case.
+## Le dessin d'un objet, recadré sur ce qui est réellement peint : une épée, une
+## baguette et un plastron ne tombent pas au centre du cadre tout seuls, et un
+## sprite recadré est centré par construction.
 static func _icon(kind: String, upright: bool, target: Vector2i, palier := 1) -> Texture2D:
 	var key := "%s:%d:%dx%d:%d" % [kind, int(upright), target.x, target.y, palier]
 	if _icons.has(key):
@@ -208,15 +196,14 @@ static func _icon(kind: String, upright: bool, target: Vector2i, palier := 1) ->
 	return tex
 
 
-## Les pièces d'équipement qui ne sont pas des armes. Contrairement à celles-ci
-## elles n'ont pas de porteur : ce sont des objets posés à plat, qui n'existent
-## que pour l'icône — d'où leur dessin ici plutôt que dans le squelette d'un
-## personnage.
+## Les pièces d'équipement qui ne sont pas des armes : des objets posés à plat,
+## qui n'existent que pour l'icône — d'où leur dessin ici plutôt que dans le
+## squelette d'un personnage.
 ##
-## La liste sert aussi d'aiguillage : un `kind` qui n'y est pas est une arme, et
-## part dans _weapon. Le test du catalogue vérifie que chaque base du jeu tombe
-## dans l'un des deux, sinon son icône serait vide et personne ne le verrait
-## avant de l'avoir ramassée.
+## La liste sert aussi d'aiguillage : un `kind` qui n'y est pas est une arme et
+## part dans _weapon. Le test du catalogue vérifie que chaque base tombe dans l'un
+## des deux, sinon son icône serait vide et personne ne le verrait avant de
+## l'avoir ramassée.
 const GEAR := [
 	"torso", "shield", "helmet", "gloves", "boots", "belt", "amulet", "ring",
 	# Étape 5 du jalon 5 : la main gauche d'incantation et les deux pièces
@@ -228,14 +215,10 @@ const GEAR := [
 ## Ce qui distingue trois paliers d'une même lignée dans le sac.
 ##
 ## Le nom ne suffit pas — on ne lit pas le nom d'un objet au sol — et redessiner
-## trois silhouettes par lignée serait un jalon à soi seul. Restent les
-## couleurs : un métal plus clair, un cuir plus riche et une étoffe plus franche
-## à chaque palier. Ça se lit à la taille d'une case, là où un détail de deux
-## pixels se perd.
-##
-## Le palier 2 garde exactement les teintes d'avant l'étape 5 : c'est le point
-## de comparaison, et les objets du jalon 4 ne devaient pas changer d'aspect
-## pour la seule raison qu'on a ajouté des voisins.
+## trois silhouettes par lignée serait un jalon à soi seul. Restent les couleurs :
+## un métal plus clair, un cuir plus riche et une étoffe plus franche à chaque
+## palier, ce qui se lit à la taille d'une case là où un détail de deux pixels se
+## perd.
 const PALIER_METAL := [
 	Color(0.50, 0.51, 0.56), Color(0.72, 0.78, 0.86), Color(0.88, 0.93, 1.00)
 ]
@@ -247,11 +230,10 @@ const PALIER_CLOTH := [
 ]
 
 
-## Chaque pièce en trois ou quatre traits. La contrainte n'est pas le détail
-## mais la **silhouette** : à 24 pixels recadrés puis réduits à la taille d'une
-## case, on reconnaît une forme, pas un dessin. Un anneau et une amulette qui se
-## ressemblent en petit sont deux objets qu'on confondra dans un sac plein —
-## d'où la chaîne en V de l'une et le trou central de l'autre.
+## Chaque pièce en trois ou quatre traits. La contrainte n'est pas le détail mais
+## la **silhouette** : à la taille d'une case on reconnaît une forme, pas un
+## dessin, et un anneau et une amulette qui se ressemblent en petit sont deux
+## objets qu'on confondra dans un sac plein.
 static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 	match kind:
 		"torso":
@@ -349,9 +331,9 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 # Configuration
 # --------------------------------------------------------------------------
 
-## Toute la direction artistique des personnages tient dans cette fonction :
-## cinq couleurs, une dizaine de mesures, trois options. Ajouter un archétype,
-## c'est ajouter un cas ici — le reste du fichier n'en sait rien.
+## Toute la direction artistique des personnages tient dans cette fonction : cinq
+## couleurs, une dizaine de mesures, trois options. Ajouter un archétype, c'est
+## ajouter un cas ici — le reste du fichier n'en sait rien.
 static func config(archetype: String, variant := 0) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	# Graine figée : la variante 2 du grunt sera toujours le même grunt.
@@ -421,12 +403,9 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 				"leather": Color(0.40, 0.28, 0.18),
 			}
 
-	# Variation par instance : nuance des étoffes et de la peau, corpulence.
-	#
-	# Le joueur reste hors du tirage, mais plus pour la même raison qu'avant. Sa
-	# tenue n'est plus tirée au sort **ni figée** : elle est choisie à la
-	# création, dans PLAYER_CLOTHS. Un tirage par-dessus ce choix ferait deux
-	# personnages du même numéro de silhouette.
+	# Variation par instance : nuance des étoffes et de la peau, corpulence. Le
+	# joueur en est exclu — sa tenue est choisie à la création, et un tirage
+	# par-dessus ce choix ferait deux personnages du même numéro de silhouette.
 	var amount := 0.0 if archetype == "player" else 1.0
 	cfg["palettes"] = [
 		ArtPalette.ramp(ArtPalette.jitter(base["cloth"], rng, amount)),
@@ -497,9 +476,8 @@ static func _weapon_dir(cfg: Dictionary, dir: String, anim: String, index: int) 
 # Dessin
 # --------------------------------------------------------------------------
 
-## Vue de face ou de dos. Le paramètre faces_camera ne change que trois choses :
-## le côté du bras armé, la présence du visage, et la quantité de cheveux —
-## redessiner un sprite de dos entier ne servirait à rien.
+## Vue de face ou de dos. `faces_camera` ne change que trois choses : le côté du
+## bras armé, la présence du visage et la quantité de cheveux.
 static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces_camera: bool) -> void:
 	var torso_r: float = cfg["torso_r"]
 	var sh_w: float = cfg["sh_w"]
@@ -760,9 +738,8 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 
 		"staff":
 			c.capsule(hand - d * 3.0, hand + d * 9.0, 1.2, R_LEATHER, bias)
-			# Cristal forcé au niveau maximal : c'est une source de lumière, elle
-			# ne doit pas s'assombrir avec le reste du membre. Collé au bout du
-			# bâton — un pixel de trop et il flotte tout seul dans le vide.
+			# Cristal forcé au niveau maximal : c'est une source de lumière. Collé
+			# au bout du bâton — un pixel de trop et il flotte dans le vide.
 			c.disc(hand + d * 9.6, 2.0, R_ACCENT, 1.0)
 
 

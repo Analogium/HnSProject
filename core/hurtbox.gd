@@ -19,13 +19,12 @@ const MIN_DAMAGE := 1.0
 
 @export var invulnerable: bool = false
 
-## La fiche de l'acteur qui porte cette zone, posée par lui. Une référence et
-## non une copie des quelques champs défensifs : l'armure, l'esquive et les cinq
-## résistances feraient sept valeurs à recopier — et à ne pas oublier de
-## remettre à jour à chaque objet équipé.
+## La fiche de l'acteur qui porte cette zone, posée par lui. Une référence et non
+## une copie des champs défensifs : sept valeurs à recopier, et à ne pas oublier
+## de remettre à jour à chaque objet équipé.
 ##
-## Laissée à null, la zone encaisse tout brut : c'est ce qu'il faut pour un
-## mannequin de test, qui doit mesurer les dégâts et non les absorber.
+## Laissée à null, la zone encaisse tout brut — ce qu'il faut pour un mannequin
+## de test, qui doit mesurer les dégâts et non les absorber.
 var stats: CharacterStats
 
 

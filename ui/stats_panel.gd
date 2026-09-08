@@ -2,45 +2,28 @@ class_name StatsPanel
 extends Control
 
 ## La fiche de personnage, à la touche C : un bandeau collé au bord gauche, un
-## quart de la largeur sur toute la hauteur, comme dans les jeux dont ce projet
-## reprend les règles. Elle ne fait que lire : toutes les valeurs viennent de
-## `player.stats`, la copie de travail recalculée à chaque niveau et à chaque
-## objet équipé.
+## quart de la largeur sur toute la hauteur. Elle ne fait que lire — toutes les
+## valeurs viennent de `player.stats`.
 ##
 ## Sa taille vient **des ancres de la scène**, jamais d'une constante : posée en
-## dur, elle mentirait au premier changement de résolution, et le quart de
-## largeur demandé n'aurait plus rien d'un quart.
+## dur, elle mentirait au premier changement de résolution.
 ##
-## Elle ne prend la souris **que lorsqu'il reste des points d'attribut à
-## placer** — c'est-à-dire seulement quand il y a quelque chose à cliquer. Le
-## reste du temps elle est un affichage passif qu'on peut laisser ouvert pendant
-## qu'on se bat, pour regarder le mana remonter ou vérifier ce qu'un objet vient
-## de changer. Le joueur lit ses attaques par sondage, donc sans ce drapeau un
-## clic sur un bouton déclencherait aussi un coup d'épée.
+## Elle ne prend la souris **que lorsqu'il reste des points à placer**, donc
+## seulement quand il y a quelque chose à cliquer ; le reste du temps c'est un
+## affichage qu'on peut laisser ouvert en se battant. Le joueur lit ses attaques
+## par sondage, donc sans ce drapeau un clic sur un bouton frapperait aussi.
 ##
-## Les libellés viennent de StatMod.LABELS et les valeurs de StatMod.format :
-## une statistique doit s'écrire pareil dans l'infobulle d'un affixe et sur la
-## fiche, sinon « +8 % vitesse d'attaque » et « 108 % » cesseront un jour de
-## parler de la même chose.
+## Les libellés viennent de StatMod.LABELS et les valeurs de StatMod.format : une
+## statistique doit s'écrire pareil ici et dans l'infobulle d'un affixe.
 
-## Le panneau prend son cadre dans UiPalette, comme le sac : les deux s'ouvrent
-## côte à côte, et deux gris différents se liraient comme un défaut d'affichage.
-##
-## Seule l'opacité diverge, et le fond est rendu **entièrement opaque** au
-## dessin. Le sac est une petite fenêtre posée sur le décor, où 0,97 se lit
-## comme de la profondeur ; ce bandeau couvre toute la hauteur de l'écran et
-## tombe sur le bandeau de débogage, dont le texte transparaissait au travers.
-const BACK := UiPalette.BACK
-const BORDER := UiPalette.BORDER
-const HINT := UiPalette.HINT
-const GROUP := UiPalette.LABEL
-
+## Les couleurs viennent d'UiPalette et ne sont pas ré-exportées sous des noms
+## locaux : le sac et cette fiche s'ouvrent côte à côte, et deux gris différents
+## se liraient comme un défaut d'affichage.
 const PAD := 6.0
-## Interligne et respiration entre groupes. Ils sont resserrés au minimum
-## lisible parce que la fiche doit tenir **entière** dans la hauteur du cadrage :
-## le groupe des attributs, ajouté après coup, avait fait déborder la dernière
-## ligne sur l'aide du bas. C'est `test_la_fiche_tient_dans_sa_hauteur` qui garde
-## l'invariant, pas ce commentaire.
+## Interligne et respiration entre groupes, resserrés au minimum lisible : la
+## fiche doit tenir **entière** dans la hauteur du cadrage. C'est
+## `test_la_fiche_tient_dans_sa_hauteur` qui garde l'invariant, pas ce
+## commentaire.
 const LINE := 10.0
 const GROUP_GAP := 5.0
 const FONT_SIZE := 8
@@ -57,9 +40,9 @@ const BUTTON_HOVER := Color(0.30, 0.46, 0.29)
 const BUTTON_W := 11.0
 const BUTTON_H := 9.0
 
-## Le coup de référence contre lequel l'armure est annoncée. Une notation nue ne
-## veut rien dire — « 40 d'armure » n'apprend rien tant qu'on ne sait pas contre
-## quoi. Dix, c'est l'ordre de grandeur d'un coup de grunt.
+## Le coup de référence contre lequel l'armure est annoncée : « 40 d'armure »
+## n'apprend rien tant qu'on ne sait pas contre quoi. Dix, c'est l'ordre de
+## grandeur d'un coup de grunt.
 const ARMOR_REFERENCE_HIT := StatHelp.COUP_LEGER
 
 ## La ligne survolée, à peine éclaircie : elle dit quelle statistique l'infobulle
@@ -75,9 +58,8 @@ const TIP_LINE := 9.0
 const TIP_GAP := 4.0
 
 ## La fiche, dans l'ordre où elle se lit. En données et non en suite d'appels de
-## dessin : ajouter une statistique au modèle ne doit demander qu'une ligne ici,
-## et l'ordre des groupes se voit d'un coup d'œil au lieu de se reconstituer en
-## parcourant _draw.
+## dessin : ajouter une statistique ne demande qu'une ligne ici, et l'ordre des
+## groupes se voit sans parcourir _draw.
 const GROUPS := [
 	["ATTRIBUTS", CharacterStats.ATTRIBUTES],
 	["VIE ET RESSOURCE", ["max_health", "health_regen", "max_mana", "mana_regen"]],
@@ -116,13 +98,10 @@ var _font: Font
 ## Position de la souris dans le repère du panneau, pour surligner le bouton
 ## survolé. Vector2.INF tant qu'elle n'y est jamais entrée.
 var _mouse := Vector2.INF
-## Rectangle cliquable par attribut, rempli au dessin. Calculé là plutôt que
-## recalculé au clic : une seule définition de l'endroit où se trouve le bouton,
-## donc pas de dérive entre ce qu'on voit et ce qu'on touche.
+## Rectangle cliquable par attribut, et rectangle survolable par statistique, tous
+## deux remplis au dessin : une seule définition de l'endroit où se trouvent le
+## bouton et la ligne, donc pas de dérive entre ce qu'on voit et ce qu'on touche.
 var _boutons := {}
-## Rectangle survolable par statistique, rempli au dessin. Même raison que
-## `_boutons` : une seule définition de l'endroit où se trouve une ligne, donc
-## pas de dérive entre ce qu'on voit et ce qu'on survole.
 var _lignes := {}
 
 
@@ -133,10 +112,9 @@ func _ready() -> void:
 
 func bind(player: Player) -> void:
 	_player = player
-	# Les quatre signaux qui peuvent changer une ligne de la fiche. Ouverte
-	# pendant que le mana remonte, elle se redessine donc à chaque image — une
-	# vingtaine de chaînes, mesurées comme négligeables, et c'est le prix pour
-	# que le compte affiché ne soit jamais en retard sur la réserve réelle.
+	# Les signaux qui peuvent changer une ligne. Ouverte pendant que le mana
+	# remonte, la fiche se redessine donc à chaque image — une vingtaine de
+	# chaînes, mesurées comme négligeables.
 	player.equipment_changed.connect(_refresh)
 	player.points_changed.connect(func(_n: int) -> void: _refresh())
 	player.leveled_up.connect(func(_lvl: int) -> void: _refresh())
@@ -160,16 +138,14 @@ func _exit_tree() -> void:
 	Game.grab_ui_input(self, false)
 
 
-## Trois états, et ils ne disent pas la même chose.
+## Trois états, et ils ne disent pas la même chose. **STOP** quand il reste des
+## points : il y a des boutons à cliquer, et le clic ne doit pas partir en coup
+## d'épée. **PASS** quand la fiche est simplement ouverte : elle reçoit le survol,
+## ce qui fait vivre les infobulles, mais laisse passer les clics. **IGNORE**
+## fermée.
 ##
-## **STOP** quand il reste des points : il y a des boutons à cliquer, et le clic
-## ne doit pas partir en coup d'épée. **PASS** quand la fiche est simplement
-## ouverte : elle reçoit le survol — c'est ce qui fait vivre les infobulles —
-## mais laisse passer les clics, donc on peut se battre la fiche ouverte, ce qui
-## est tout l'intérêt de pouvoir la laisser ouverte. **IGNORE** fermée.
-##
-## Le drapeau `ui_grabs_input`, lui, ne suit que le premier cas : le joueur lit
-## ses attaques par sondage, et le lever en mode PASS l'empêcherait de frapper.
+## Le drapeau `ui_grabs_input` ne suit que le premier cas : le lever en mode PASS
+## empêcherait le joueur de frapper.
 func _saisir_la_souris() -> void:
 	var boutons := visible and _points_restants() > 0
 	Game.grab_ui_input(self, boutons)
@@ -246,8 +222,8 @@ func _draw() -> void:
 	if _player == null or _font == null:
 		return
 
-	draw_rect(Rect2(Vector2.ZERO, size), Color(BACK, 1.0))
-	draw_rect(Rect2(Vector2.ZERO, size), BORDER, false, 1.0)
+	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BACK_PLEIN)
+	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BORDER, false, 1.0)
 
 	var restants := _points_restants()
 	_boutons.clear()
@@ -257,7 +233,7 @@ func _draw() -> void:
 	for g in GROUPS:
 		draw_string(
 			_font, Vector2(PAD, y + FONT_SIZE), g[0],
-			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, GROUP
+			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.LABEL
 		)
 		if g[0] == "ATTRIBUTS" and restants > 0:
 			draw_string(
@@ -282,7 +258,7 @@ func _draw() -> void:
 	# dessinée par-dessus le panneau.
 	draw_string(
 		_font, Vector2(PAD, size.y - FOOTER), "C pour fermer",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, HINT
+		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.HINT
 	)
 
 	# En dernier : l'infobulle déborde du panneau et doit passer par-dessus tout
@@ -290,13 +266,10 @@ func _draw() -> void:
 	_draw_infobulle()
 
 
-## Ce que fait la statistique survolée, comment elle se calcule quand ce n'est
-## pas évident, et ce qu'elle vaut à cet instant.
-##
-## La fiche annonce « armure 40 (44 %) » : un joueur qui découvre le jeu ne peut
-## pas deviner que l'armure protège proportionnellement plus des petits coups,
-## ni qu'elle ne couvre pas les éléments. Rien de tout ça ne se lit sur un
-## nombre.
+## Ce que fait la statistique survolée, et ce qu'elle vaut à cet instant. Un joueur
+## qui lit « armure 40 (44 %) » ne peut pas deviner qu'elle protège
+## proportionnellement plus des petits coups, ni qu'elle ne couvre pas les
+## éléments.
 func _draw_infobulle() -> void:
 	var champ := _survole()
 	if champ.is_empty():
@@ -314,14 +287,9 @@ func _draw_infobulle() -> void:
 
 	var h := TIP_PAD * 2.0 + TIP_LINE * float(enroulees.size() + 1)
 	var ancre: Rect2 = _lignes[champ]
-	# Posée à droite du panneau — le seul côté libre, la fiche étant collée au
-	# bord gauche — et remontée au-dessus du bloc de jauges quand elle
-	# descendrait dedans.
-	#
-	# La limite vient du HUD lui-même et n'est pas réécrite ici : les jauges sont
-	# dessinées **après** ce panneau et passeraient par-dessus l'infobulle, dont
-	# la deuxième ligne devenait illisible pour les dernières statistiques de la
-	# fiche. C'est le genre de chose qu'aucune assertion n'attrape.
+	# Posée à droite du panneau — le seul côté libre — et remontée au-dessus du bloc
+	# de jauges. La limite vient du HUD et n'est pas réécrite ici : ses jauges sont
+	# dessinées **après** ce panneau et passeraient par-dessus l'infobulle.
 	var plancher := size.y - Hud.HEALTH_TOP - Hud.BAR_H - TIP_GAP
 	var r := Rect2(
 		Vector2(size.x + TIP_GAP, clampf(ancre.position.y, PAD, plancher - h)),
@@ -329,7 +297,7 @@ func _draw_infobulle() -> void:
 	)
 
 	draw_rect(r, UiPalette.TIP_BACK)
-	draw_rect(r, BORDER, false, 1.0)
+	draw_rect(r, UiPalette.BORDER, false, 1.0)
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
 	draw_string(
@@ -355,9 +323,7 @@ func _survole() -> String:
 	return ""
 
 
-## Coupe un texte en lignes qui tiennent dans `largeur`. Aux espaces seulement :
-## couper un mot en deux dans une bulle de six mots se lit comme un défaut
-## d'affichage.
+## Coupe un texte en lignes qui tiennent dans `largeur`, aux espaces seulement.
 func _replier(texte: String, largeur: float) -> PackedStringArray:
 	var out := PackedStringArray()
 	var courante := ""
@@ -375,8 +341,7 @@ func _replier(texte: String, largeur: float) -> PackedStringArray:
 
 
 ## Le bouton d'ajout, et le rectangle qu'il occupe — c'est ce même rectangle que
-## le clic consultera, donc l'endroit dessiné et l'endroit cliquable ne peuvent
-## pas diverger.
+## le clic consultera.
 func _draw_bouton(y: float) -> Rect2:
 	var r := Rect2(
 		roundf(size.x - PAD - BUTTON_W), roundf(y + (LINE - BUTTON_H) * 0.5),

@@ -2,21 +2,21 @@ class_name LootTable
 
 ## Ce qui tombe d'un ennemi, et avec quelle probabilité.
 ##
-## Le tirage se fait sur Game.rng et **non** sur le tirage de la zone, contrairement
-## à la règle qui vaut pour tout ce qui décrit le monde. Une raison précise : le
-## butin récompense une action, pas un lieu. Adossé à la case d'apparition, tuer
-## le même ennemi dans une zone qu'on revisite redonnerait toujours le même
-## résultat — on saurait d'avance quoi frapper, et recharger suffirait à garantir
-## une chute.
+## Le tirage se fait sur Game.rng et **non** sur le tirage de la zone,
+## contrairement à la règle qui vaut pour tout ce qui décrit le monde. Une raison
+## précise : le butin récompense une action, pas un lieu. Adossé à la case
+## d'apparition, tuer le même ennemi dans une zone qu'on revisite redonnerait
+## toujours le même résultat — on saurait d'avance quoi frapper, et recharger
+## suffirait à garantir une chute.
 
-## Probabilité de base qu'un ennemi ordinaire lâche quelque chose. À 10 % un
-## paquet entier ne donnait souvent rien : dans un jeu où l'on tue par grappes,
-## c'est la grappe qui doit récompenser, pas la centième mise à mort.
+## Probabilité de base qu'un ennemi ordinaire lâche quelque chose. Dans un jeu où
+## l'on tue par grappes, c'est la grappe qui doit récompenser, pas la centième
+## mise à mort.
 const BASE_CHANCE := 0.20
 
 ## Quantité de butin gagnée par affixe porté, en fraction. Multiplicatif sur la
 ## chance : un ennemi à deux affixes tombe à 24 % là où un ordinaire est à 20 %.
-## C'est volontairement modeste — le gros de la récompense d'un élite reste son
+## Volontairement modeste — le gros de la récompense d'un élite reste son
 ## expérience, qui vaut déjà près du double.
 const QUANTITY_PER_AFFIX := 0.10
 
@@ -27,16 +27,12 @@ static func quantity_for(affix_count: int) -> float:
 
 ## Renvoie null quand rien ne tombe — le cas courant.
 ##
-## Tire dans le catalogue et n'a plus sa propre liste de bases : ce qui tombe et
-## ce qui se recharge doivent désigner exactement le même lot d'objets.
-##
 ## L'objet rendu est un exemplaire neuf, avec ses propres affixes : jamais la
 ## ressource du disque, qui est partagée par toutes les épées du jeu et ne doit
 ## pas être écrite.
+##
 ## `niveau` est celui de la zone : il décide de ce qui peut tomber, et c'est lui
-## que l'objet portera. Un argument et non une lecture de `Game` : le tirage est
-## la seule chose de ce fichier qui soit globale, et elle est déjà justifiée
-## au-dessus.
+## que l'objet portera.
 static func roll(affix_count: int, niveau: int) -> Item:
 	var bases := ItemCatalog.disponibles(niveau)
 	if bases.is_empty():

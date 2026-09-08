@@ -2,9 +2,8 @@ class_name Player
 extends CharacterBody2D
 
 signal died
-## Vie et mana, pour l'affichage tête haute. Par signal et non lu à chaque
-## image : les deux ne bougent qu'aux coups et à la régénération, et le HUD n'a
-## alors aucune raison d'interroger le joueur soixante fois par seconde.
+## Vie et mana, pour l'affichage tête haute. Par signal et non lu à chaque image :
+## les deux ne bougent qu'aux coups et à la régénération.
 signal health_changed(current: float, maximum: float)
 signal mana_changed(current: float, maximum: float)
 signal xp_changed(current: int, needed: int, level: int)
@@ -26,10 +25,9 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## les remettent à zéro.
 const XP_BASE := 40.0
 const XP_POWER := 1.5
-## Points d'attribut gagnés par niveau. Ils **remplacent** les anciens gains
-## bruts de PV et de dégâts : la progression passe désormais par une grandeur
-## que le joueur choisit, et deux sources automatiques en plus de celle-ci
-## auraient demandé de rééquilibrer les trois ensemble.
+## Points d'attribut gagnés par niveau. La montée ne donne **que** ça, pas de PV
+## ni de dégâts bruts en plus : la progression passe par une grandeur que le
+## joueur choisit, et trois sources demanderaient de les rééquilibrer ensemble.
 const POINTS_PER_LEVEL := 3
 ## Soin partiel à la montée de niveau, jamais complet : à 100 % on chercherait à
 ## monter de niveau au milieu d'un paquet plutôt qu'à se battre.
@@ -77,8 +75,7 @@ var allocated := CharacterStats.empty_attributes()
 var unspent_points := 0
 
 ## Ce qu'on a ramassé, et où c'est rangé. Le sac porte son propre signal
-## `changed` : l'interface s'y abonne directement, sans que le joueur ait à le
-## réémettre sous un autre nom.
+## `changed`, auquel l'interface s'abonne directement.
 var inventory := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 
 ## Ce qui est porté, par emplacement. Un Item par entrée, ou rien.
@@ -109,9 +106,9 @@ func _ready() -> void:
 	hurtbox.damaged.connect(_on_damaged)
 
 
-## Purement observationnel : on retient quel périphérique sert à viser.
-## À ne pas tester via get_global_mouse_position(), qui bouge aussi quand la
-## caméra suit le joueur — la souris paraîtrait alors constamment en mouvement.
+## Quel périphérique sert à viser. À ne pas déduire de
+## get_global_mouse_position(), qui bouge aussi quand la caméra suit le joueur —
+## la souris paraîtrait constamment en mouvement.
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion or event is InputEventMouseButton:
 		_aim_with_mouse = true
@@ -152,9 +149,8 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# L'attaque est lue par sondage, ce qui court-circuite le système d'entrées
-	# de l'interface : sans ce test, chaque clic pour déplacer une épée dans le
-	# sac déclencherait aussi un coup d'épée.
+	# L'attaque est lue par sondage, ce qui court-circuite le système d'entrées de
+	# l'interface : sans ce test, chaque clic dans le sac frapperait aussi.
 	if not Game.ui_grabs_input:
 		if Input.is_action_just_pressed("attack") and _attack_cd <= 0.0:
 			_swing()
@@ -187,15 +183,14 @@ func _shoot() -> void:
 	_set_mana(mana - bolt_mana_cost)
 	_bolt_cd = bolt_cooldown / maxf(stats.cast_speed, 0.1)
 	var parent := projectile_parent if projectile_parent != null else get_parent()
-	# Les dégâts viennent de la fiche et non d'un export du nœud : c'est ce qui
-	# les rend atteignables par un objet. Le coût et la cadence, eux, restent des
-	# réglages de l'attaque — aucun objet ne les touche encore.
+	# Les dégâts viennent de la fiche et non d'un export du nœud : c'est ce qui les
+	# rend atteignables par un objet. Le coût et la cadence restent des réglages.
 	Projectile.spawn(parent, bolt_scene, global_position, facing, stats.spell_damage, self)
 
 
-## Vie et mana remontent en continu. Testé avant d'écrire : sans le test, chaque
-## image appellerait _set_health à valeur constante une fois la barre pleine, ce
-## qui émettrait un signal et redessinerait le HUD pour rien.
+## Vie et mana remontent en continu. Testé avant d'écrire : une fois la barre
+## pleine, écrire quand même émettrait un signal et redessinerait le HUD à chaque
+## image.
 func _regen(delta: float) -> void:
 	if stats.health_regen > 0.0 and health < stats.max_health:
 		_set_health(health + stats.health_regen * delta)
@@ -204,12 +199,9 @@ func _regen(delta: float) -> void:
 
 
 ## Reconstruit les stats de zéro à partir de la ressource du disque. De zéro et
-## non par incréments : additionner le bonus de niveau à la valeur courante le
-## compterait une fois de plus à chaque appel — et un objet retiré laisserait son
-## bonus derrière lui.
-##
-## Publique : l'arène de réglage l'appelle après avoir modifié base_stats, et
-## l'équipement l'appelle à chaque objet porté ou retiré.
+## non par incréments : additionner à la valeur courante compterait le bonus une
+## fois de plus à chaque appel, et un objet retiré laisserait le sien derrière
+## lui.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
 	for champ in CharacterStats.ATTRIBUTES:
@@ -245,23 +237,19 @@ func recompute_stats() -> void:
 	stats.crit_chance = clampf(stats.crit_chance, 0.0, 1.0)
 	stats.crit_multiplier = maxf(stats.crit_multiplier, 1.0)
 
-	# La hurtbox est le point de passage unique de tous les coups reçus : c'est
-	# elle qui applique l'esquive, l'armure et les résistances. On lui donne la
-	# fiche entière — réassignée à chaque recalcul, puisque recompute_stats en
-	# fabrique une neuve, sinon elle continuerait de défendre avec l'ancienne.
+	# Réassignée à chaque recalcul, puisqu'on en fabrique une neuve : sans ça la
+	# hurtbox continuerait de défendre avec l'ancienne fiche.
 	hurtbox.stats = stats
 
 
 ## Fait entrer un personnage sauvegardé dans ce corps : progression, points
 ## placés, sac, équipement, silhouette.
 ##
-## Recopie plutôt qu'adoption des objets du personnage — le sac et l'équipement
-## restent **ceux du joueur**, ceux que l'interface a liés à son ouverture. Leur
-## substituer les objets venus de la sauvegarde laisserait le panneau afficher
-## un sac qui n'est plus le bon.
+## Recopie plutôt qu'adoption : le sac et l'équipement restent **ceux du joueur**,
+## ceux que l'interface a liés à son ouverture. Leur substituer les objets venus de
+## la sauvegarde laisserait le panneau afficher un sac qui n'est plus le bon.
 ##
-## À appeler après le _ready du joueur : la scène de zone le fait au moment où
-## elle connaît le personnage choisi.
+## À appeler après le _ready du joueur.
 func charger(personnage: Personnage) -> void:
 	if personnage == null:
 		return
@@ -289,8 +277,7 @@ func charger(personnage: Personnage) -> void:
 			equipment[emplacement] = personnage.equipement[emplacement]
 
 	sprite.set_variant(personnage.silhouette)
-	# _after_equipment_change fait le recalcul, replace les plafonds et l'arme
-	# visible : trois choses qu'on oublierait à la main.
+	# Recalcul, plafonds et arme visible : trois choses qu'on oublierait à la main.
 	_after_equipment_change()
 	_set_health(stats.max_health)
 	_set_mana(stats.max_mana)
@@ -301,9 +288,8 @@ func charger(personnage: Personnage) -> void:
 	points_changed.emit(unspent_points)
 
 
-## L'inverse, juste avant d'écrire sur le disque : un instantané de ce que le
-## joueur est devenu. Rien de calculé n'y entre — ni PV, ni statistiques : elles
-## se reconstruisent au chargement, et les écrire créerait une seconde vérité.
+## L'inverse, juste avant d'écrire sur le disque. Rien de calculé n'y entre — ni
+## PV, ni statistiques : elles se reconstruisent au chargement.
 func remplir(personnage: Personnage) -> void:
 	if personnage == null:
 		return
@@ -320,17 +306,16 @@ func remplir(personnage: Personnage) -> void:
 	personnage.equipement = equipment.duplicate()
 
 
-## Porte un objet et rend celui qu'il remplace, ou null. L'appelant décide du
-## sort de l'ancien : le sac s'il y reste de la place, le sol sinon — ce n'est
-## pas au joueur d'en juger, c'est à l'interface qui a déclenché l'échange.
+## Porte un objet et rend celui qu'il remplace, ou null. C'est l'interface qui
+## décide du sort de l'ancien, pas le joueur.
 ##
-## `emplacement` vide : on choisit le premier libre de la famille de l'objet.
-## C'est le chemin du ramassage, où personne ne désigne de destination. Le
-## panneau, lui, sait sur quel emplacement l'objet a été lâché et l'impose —
-## sinon un anneau lâché sur la main droite irait à la gauche si elle est libre.
+## `emplacement` vide : le premier libre de la famille — le chemin du ramassage,
+## où personne ne désigne de destination. Le panneau, lui, impose celui sur lequel
+## l'objet a été lâché, sinon un anneau lâché sur la main droite irait à la gauche
+## si elle est libre.
 ##
 ## Renvoie l'objet lui-même quand il ne peut pas être porté, pour que l'appelant
-## n'ait pas à le tester d'avance et ne le perde jamais.
+## ne le perde jamais.
 func equip(item: Item, emplacement := "") -> Item:
 	if item == null:
 		return null
@@ -357,11 +342,11 @@ func equipped(slot: String) -> Item:
 
 
 ## Place un point dans un attribut. Renvoie faux si le nom est inconnu ou s'il ne
-## reste rien à placer — l'interface n'a donc pas à vérifier d'avance.
+## reste rien à placer — l'interface n'a pas à vérifier d'avance.
 ##
-## Sans retour en arrière : une répartition qu'on peut défaire n'est plus un
-## choix, c'est un réglage, et il n'y aurait aucune raison de ne pas tout mettre
-## dans le même attribut avant chaque combat.
+## Sans retour en arrière : une répartition qu'on peut défaire n'est plus un choix,
+## c'est un réglage, et rien n'empêcherait de tout mettre dans le même attribut
+## avant chaque combat.
 func spend_point(attribut: String) -> bool:
 	if unspent_points <= 0 or not allocated.has(attribut):
 		return false
@@ -387,30 +372,27 @@ func _after_equipment_change() -> void:
 	equipment_changed.emit()
 
 
-## L'arme visible. Vide quand rien n'est porté : le joueur reprend alors l'épée
-## de sa fiche d'archétype plutôt que de se battre à mains nues, ce qui serait
-## une régression de silhouette pour une information qu'on lit déjà dans le sac.
+## L'arme visible. Vide quand rien n'est porté : le joueur reprend alors l'épée de
+## sa fiche d'archétype plutôt que de se battre à mains nues.
 ##
 ## Publique : la fenêtre de personnage dessine la même silhouette que le monde,
-## arme comprise, et elle ne doit pas la déduire une seconde fois de son côté.
+## arme comprise, et ne doit pas la déduire une seconde fois.
 func weapon_kind() -> String:
 	var arme: Item = equipment.get("weapon")
 	return "" if arme == null else arme.base.kind
 
 
-## Le seul chemin pour changer la vie. La barre était mise à jour à la main
-## juste après chaque écriture de `health` — cinq fois, et il suffisait d'en
-## oublier une pour qu'elle mente. Le plafond est appliqué ici aussi : un soin
-## ou un plastron retiré ne doivent jamais laisser plus de PV que le maximum.
+## Le seul chemin pour changer la vie : la barre suit chaque écriture, et il
+## suffirait d'en oublier une pour qu'elle mente. Le plafond est appliqué ici
+## aussi — un soin ou un plastron retiré ne doivent jamais laisser plus de PV que
+## le maximum.
 func _set_health(value: float) -> void:
 	health = clampf(value, 0.0, stats.max_health)
 	health_bar.set_health(health, stats.max_health)
 	health_changed.emit(health, stats.max_health)
 
 
-## Le pendant du précédent pour la réserve. Même plafond appliqué ici : un objet
-## qui donnait du mana et qu'on retire ne doit pas laisser une réserve qui
-## déborde, exactement comme un plastron pour les PV.
+## Le pendant du précédent pour la réserve, plafond compris.
 func _set_mana(value: float) -> void:
 	mana = clampf(value, 0.0, stats.max_mana)
 	mana_changed.emit(mana, stats.max_mana)
@@ -444,9 +426,9 @@ func _level_up() -> void:
 	leveled_up.emit(level)
 
 
-## Appelée par l'objet au sol quand le joueur lui passe dessus. Renvoie faux
-## quand il ne reste pas de rectangle libre à sa taille — l'objet reste alors
-## au sol, il ne doit pas s'évaporer parce que le sac est plein.
+## Appelée par l'objet au sol quand le joueur lui passe dessus. Renvoie faux quand
+## il ne reste pas de rectangle libre à sa taille : l'objet reste au sol, il ne
+## doit pas s'évaporer parce que le sac est plein.
 func pick_up(item: Item) -> bool:
 	if item == null:
 		return false
@@ -481,8 +463,8 @@ func _on_damaged(info: DamageInfo) -> void:
 
 
 ## Le drapeau évite d'émettre died plusieurs fois : plusieurs grunts peuvent
-## frapper dans la même image, et chaque coup relancerait sinon un rechargement
-## complet de la zone.
+## frapper dans la même image, et chaque coup relancerait un rechargement complet
+## de la zone.
 func _die() -> void:
 	if is_dead:
 		return

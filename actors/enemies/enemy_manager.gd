@@ -1,10 +1,9 @@
 class_name EnemyManager
 extends Node2D
 
-## Pilote unique de tous les ennemis : aucun d'eux n'a de _physics_process.
-## C'est le point structurant du jalon. Ça ne coûte rien aujourd'hui et ça donne
-## gratuitement le culling par distance, le passage aux tableaux packés le jour
-## où le profileur le demande, et le ralenti / pause / debug step sur les
+## Pilote unique de tous les ennemis : aucun d'eux n'a de _physics_process. Ça
+## donne gratuitement le culling par distance, le passage aux tableaux packés le
+## jour où le profileur le demande, et le ralenti / pause / pas à pas sur les
 ## ennemis seuls.
 
 const CULL_DISTANCE := 700.0   # au-delà, on ne tick pas
@@ -24,9 +23,9 @@ var target: Node2D
 ## Le niveau de la zone : celui des ennemis qui y naissent, et celui des objets
 ## qui y tombent. Posé par la zone depuis `Game.niveau_de_zone`.
 ##
-## Ici et non lu sur l'autoload à chaque mort : le manager est le pilote unique,
-## et un champ se règle depuis un test là où une variable globale se subit. Les
-## scènes de réglage — l'arène, le banc de stress — le laissent à 1.
+## Un champ et non une lecture de l'autoload à chaque mort : un champ se règle
+## depuis un test là où une variable globale se subit. Les scènes de réglage le
+## laissent à 1.
 var niveau := 1
 
 ## Le chemin vers la cible, partagé par tous les ennemis. **Facultatif** : null
@@ -37,10 +36,10 @@ var field: FlowField
 
 var _field_cd := 0.0
 
-## Nombre d'ennemis réellement tickés à la dernière image, culling déduit. Lu
-## par la scène de stress test : sans ce chiffre, on ne sait pas si trois cents
-## ennemis coûtent peu parce que le code est bon ou parce que deux cent quatre
-## vingts sont hors portée.
+## Nombre d'ennemis réellement tickés à la dernière image, culling déduit. Sans
+## ce chiffre, le banc de mesure ne sait pas si trois cents ennemis coûtent peu
+## parce que le code est bon ou parce que deux cent quatre-vingts sont hors
+## portée.
 var ticked := 0
 
 ## Où atterrissent les projectiles. Laissé à null, ils naissent sous le manager.
@@ -59,9 +58,9 @@ func _ready() -> void:
 		loot_parent = self
 
 
-## Pose un ennemi dans le monde et l'enregistre. Quatre appelants écrivaient les
-## quatre mêmes lignes — la zone, l'arène, le banc de mesure et le peupleur — et
-## le jour où poser un ennemi demandera une étape de plus, elle s'ajoutera ici.
+## Pose un ennemi dans le monde et l'enregistre. Le seul chemin : la zone,
+## l'arène, le banc de mesure et le peupleur passent tous par lui, et le jour où
+## poser un ennemi demandera une étape de plus, elle s'ajoutera ici.
 func spawn(scene: PackedScene, at: Vector2) -> Enemy:
 	if scene == null:
 		return null
@@ -138,9 +137,9 @@ func _update_field(delta: float) -> void:
 	_field_cd = FIELD_PERIOD
 
 
-## L'ennemi ne connaît pas le joueur, le manager si. C'est donc lui qui fait
-## remonter la récompense, plutôt que de donner à chaque ennemi une référence
-## vers le joueur dont il n'a besoin qu'à sa mort.
+## L'ennemi ne connaît pas le joueur, le manager si : c'est donc lui qui fait
+## remonter la récompense, plutôt que de donner à chaque ennemi une référence dont
+## il n'a besoin qu'à sa mort.
 func report_kill(enemy: Enemy) -> void:
 	var player := target as Player
 	if player == null:

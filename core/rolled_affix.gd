@@ -4,16 +4,9 @@ extends RefCounted
 ## Un affixe tel qu'un objet le porte : d'où il vient, à quel palier, et la
 ## valeur qui en est sortie.
 ##
-## Avant lui, `Item.explicits` était une liste de StatMod — une statistique, un
-## mode, une valeur. **De quel affixe cette valeur venait-elle, et de quel
-## palier ?** Rien ne le disait, et l'infobulle des tiers ne peut pas l'inventer :
-## deux paliers voisins se chevauchent, une déduction depuis la valeur serait
-## fausse une fois sur trois.
-##
-## Le StatMod reste ce que le calcul des statistiques consomme. C'est
-## l'infobulle, et elle seule, qui a besoin de la provenance — d'où une coquille
-## autour du modificateur plutôt qu'un champ de plus dans StatMod, que le calcul
-## des stats du joueur et les implicites de bases traînent pour rien.
+## Une coquille autour du StatMod plutôt qu'un champ de plus dans celui-ci :
+## seule l'infobulle a besoin de la provenance, et le calcul des statistiques du
+## joueur comme les implicites de bases la traîneraient pour rien.
 
 ## L'identifiant de l'ItemAffix d'origine. Vide quand on ne sait pas : c'est le
 ## cas des objets d'une sauvegarde de version 1, qui n'écrivait pas la
@@ -32,18 +25,16 @@ func _init(p_affix_id: String, p_tier: int, p_mod: StatMod) -> void:
 
 
 ## Un modificateur sans provenance : un objet d'avant les paliers, ou un objet
-## fabriqué à la main dans un test. Il s'applique exactement comme les autres, il
-## n'a simplement rien à dire sur son tirage.
+## fabriqué à la main dans un test. Il s'applique exactement comme les autres.
 static func orphelin(p_mod: StatMod) -> RolledAffix:
 	return RolledAffix.new("", 0, p_mod)
 
 
 ## « T4  (45–58) », ou une chaîne vide quand la provenance est inconnue.
 ##
-## Vide plutôt qu'un « T? » : un objet d'avant les paliers n'a pas de palier, et
-## le déduire de sa valeur serait faux une fois sur trois — les fourchettes de
-## deux paliers voisins se chevauchent. Pas de colonne vaut mieux qu'une colonne
-## fausse.
+## Vide plutôt qu'un « T? » : les fourchettes de deux paliers voisins se
+## chevauchent, donc déduire le palier de la valeur serait faux une fois sur
+## trois. Pas de colonne vaut mieux qu'une colonne fausse.
 func palier_et_plage() -> String:
 	if not connu():
 		return ""
@@ -56,8 +47,5 @@ func palier_et_plage() -> String:
 	]
 
 
-## Vrai quand on sait d'où vient cette ligne. L'infobulle s'en sert pour montrer
-## un palier ou n'en montrer aucun — pas de colonne vaut mieux qu'une colonne
-## fausse.
 func connu() -> bool:
 	return tier > 0 and not affix_id.is_empty()

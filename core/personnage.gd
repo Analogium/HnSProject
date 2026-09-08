@@ -11,36 +11,26 @@ extends RefCounted
 ## une zone neuve, en pleine santé.
 ##
 ## RefCounted et non Resource, pour la raison qui a fait choisir le JSON contre
-## le `.tres` : une Resource sauvegardée porte des chemins de scripts, casse
-## quand on range un fichier ailleurs, et **exécute du code** au chargement. Une
-## sauvegarde est un fichier que le joueur peut recevoir de quelqu'un d'autre.
+## le `.tres` : une Resource sauvegardée porte des chemins de scripts et
+## **exécute du code** au chargement. Une sauvegarde est un fichier que le joueur
+## peut recevoir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
 ## fichier : ici, le niveau des objets, au jalon 5.
 const VERSION := 2
 
-## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité.
+## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité. Monter
+## VERSION sans ajouter l'ancien numéro ici ferait passer tous les personnages
+## existants en « illisible » d'un coup, alors que leurs fichiers sont intacts —
+## et cela ne se verrait qu'au premier lancement après la mise à jour.
 ##
-## Le code refusait tout ce qui n'était pas exactement `VERSION` — la bonne
-## règle tant qu'il n'existait qu'un format. Monter le numéro sans écrire la
-## lecture de l'ancien aurait fait passer tous les personnages existants en
-## « illisible » d'un coup, grisés dans l'écran de sélection, alors que leurs
-## fichiers sont intacts. C'est la faute la plus coûteuse du jalon, et elle ne
-## se serait vue qu'au premier lancement après la mise à jour.
-##
-## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1.
-## On ne sait pas dans quelle zone ils sont tombés, et prétendre le contraire
-## serait inventer. Un numéro **inconnu** reste refusé — jamais deviner.
+## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1. Un
+## numéro **inconnu** reste refusé — jamais deviner.
 const VERSIONS_LUES := [1, 2]
 
-## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine
-## sur une ligne, et qu'un nom de deux cents caractères y déborderait sur le
-## niveau et la date.
-##
-## Vingt et non seize : la première valeur, posée au jugé, refusait
-## « Jean-Luc de l'Est ». Une borne qui rejette un nom composé ordinaire n'est
-## pas une protection, c'est un bug. À revérifier quand l'écran de sélection
-## sera dessiné — c'est lui qui a le dernier mot sur ce qui tient sur sa ligne.
+## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine sur
+## une ligne. Vingt et non seize : une borne qui rejette « Jean-Luc de l'Est »
+## n'est pas une protection, c'est un bug.
 const NOM_MAX := 20
 
 var id := ""
@@ -54,10 +44,9 @@ var joue_le := ""
 var niveau := 1
 var experience := 0
 
-## Ce que le joueur a **placé**, et non ce qu'il a en tout. Le total se
-## reconstruit à partir de la fiche de départ et de l'équipement ; écrire le
-## total figerait les valeurs de départ du jour de la sauvegarde, et un
-## rééquilibrage n'atteindrait jamais les personnages existants.
+## Ce que le joueur a **placé**, et non ce qu'il a en tout : écrire le total
+## figerait les valeurs de départ du jour de la sauvegarde, et un rééquilibrage
+## n'atteindrait jamais les personnages existants.
 var attributs := CharacterStats.empty_attributes()
 ## Sauvegardé aussi : monter de niveau puis quitter sans répartir ne doit pas
 ## coûter les points.
@@ -69,10 +58,9 @@ var sac := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 ## ce qu'il ne sait pas porter.
 var equipement := {}
 
-## Vrai pour l'entrée d'un fichier qu'on n'a pas su lire. Elle existe pour que
-## l'écran de sélection puisse la montrer grisée plutôt que la faire disparaître
-## en silence — un personnage qui s'évapore du menu ressemble à une perte, même
-## quand le fichier est toujours là.
+## Vrai pour l'entrée d'un fichier qu'on n'a pas su lire : l'écran de sélection la
+## montre grisée plutôt que de la faire disparaître, un personnage qui s'évapore
+## du menu ressemblant à une perte même quand son fichier est intact.
 var illisible := false
 
 
@@ -95,11 +83,11 @@ static func illisible_avec(p_id: String) -> Personnage:
 
 ## L'identifiant est **généré**, jamais dérivé du nom saisi : deux personnages
 ## peuvent porter le même nom, et un nom peut contenir des caractères qu'un
-## système de fichiers refuse — barres obliques, points, noms réservés.
+## système de fichiers refuse.
 ##
-## Tire sur le générateur global et non sur Game.rng : celui-là est le fil des
-## tirages de la partie, et lui prendre deux nombres pour nommer un fichier
-## décalerait toutes les graines de zone tirées ensuite.
+## Tire sur le générateur global et non sur Game.rng, dont l'état est le fil des
+## tirages de la partie : lui prendre deux nombres décalerait toutes les graines
+## de zone tirées ensuite.
 static func nouvel_id() -> String:
 	return "p_%d_%04d" % [int(Time.get_unix_time_from_system()), randi() % 10000]
 
@@ -118,9 +106,8 @@ static func nom_valide(p_nom: String) -> bool:
 
 
 ## Ce qui part sur le disque. Aucune statistique calculée : elles se
-## **recalculent** à partir de la fiche de base, des attributs et de
-## l'équipement, et les écrire ici créerait une deuxième vérité qui finirait par
-## contredire recompute_stats().
+## **recalculent** à partir de la fiche de base, des attributs et de l'équipement,
+## et les écrire créerait une deuxième vérité.
 func vers_dict() -> Dictionary:
 	var objets := []
 	for pose in sac.placed:
@@ -152,13 +139,11 @@ func vers_dict() -> Dictionary:
 
 ## Le chemin inverse, et **le seul endroit** qui fait confiance à des données
 ## venues du dehors. Tout y est reconverti explicitement : le JSON ne connaît
-## qu'un seul type de nombre, donc un niveau relu vaut 7.0 et non 7, et un
-## `assert_eq(niveau, 7)` échouerait sur un personnage pourtant intact.
+## qu'un seul type de nombre, donc un niveau relu vaut 7.0 et non 7.
 ##
-## Renvoie null quand le fichier n'est pas exploitable. Un champ isolé qui
-## manque ne fait pas échouer le personnage — il reprend sa valeur par défaut,
-## parce que perdre un personnage entier pour un champ absent est le pire des
-## résultats possibles.
+## Renvoie null quand le fichier n'est pas exploitable. Un champ isolé qui manque
+## reprend sa valeur par défaut : perdre un personnage entier pour un champ absent
+## est le pire des résultats possibles.
 static func depuis_dict(source: Dictionary) -> Personnage:
 	var version := _entier(source, "version", 0)
 	if not VERSIONS_LUES.has(version):

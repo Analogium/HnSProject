@@ -144,14 +144,15 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo):
+	var touche := Touches.enfoncee(event)
+	if touche == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match (event as InputEventKey).keycode:
+	match touche:
 		KEY_F5: generate_zone(Game.rng.randi())
 		# Le niveau de la **prochaine** zone. Changer celui de la zone en cours
 		# donnerait une population mêlée : les ennemis sont mis à l'échelle en

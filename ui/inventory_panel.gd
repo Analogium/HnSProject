@@ -4,21 +4,18 @@ extends Control
 ## Le sac, à la touche I : une grille rectangulaire où chaque objet occupe la
 ## place qu'il prend réellement, et où on range à la souris.
 ##
-## Deux gestes pour une seule mécanique, et ils se distinguent tout seuls :
-## **glisser** (presser, déplacer, relâcher sur la cible) et **clic-clic**
-## (cliquer pour prendre, l'objet suit le curseur, cliquer pour poser). Un
-## relâchement qui n'a pas bougé de plus de quelques pixels est un clic, pas la
-## fin d'un glisser — c'est la seule règle qui les sépare, et elle évite de
-## choisir à la place du joueur.
+## Deux gestes pour une seule mécanique : **glisser** (presser, déplacer,
+## relâcher) et **clic-clic** (cliquer pour prendre, cliquer pour poser). Un
+## relâchement qui n'a pas bougé de plus de quelques pixels est un clic, pas la fin
+## d'un glisser — c'est la seule règle qui les sépare, et elle évite de choisir à
+## la place du joueur.
 ##
-## Relâché **hors du panneau**, l'objet tombe au sol. Relâché sur un emplacement
-## d'équipement, il est porté, à condition que ce soit le bon emplacement.
+## Relâché **hors du panneau**, l'objet tombe au sol ; relâché sur un emplacement,
+## il est porté si c'est le bon. Le clic droit reste le raccourci : équiper,
+## retirer, jeter ce qu'on tient.
 ##
-## Le clic droit reste le raccourci : équiper depuis le sac, retirer depuis
-## l'emplacement, jeter ce qu'on tient.
-##
-## Il ne détient rien : le sac vit sur le joueur, ce panneau le lit et le
-## manipule. Deux listes à tenir d'accord finissent toujours par diverger.
+## Il ne détient rien : le sac vit sur le joueur. Deux listes à tenir d'accord
+## finissent toujours par diverger.
 
 ## Ce qu'on jette du sac. Un signal plutôt qu'une référence au monde : le
 ## panneau vit dans une CanvasLayer et n'a aucune raison de savoir où poser des
@@ -31,20 +28,16 @@ const HEADER := 16.0
 ## Deux lignes d'aide : les gestes sont maintenant trop nombreux pour tenir sur
 ## la largeur du panneau.
 const FOOTER := 22.0
-## La fenêtre de personnage. Chaque emplacement occupe le rectangle de cases
-## qu'un objet de sa famille occuperait dans le sac : l'arme trois cases de
-## haut, le plastron deux sur trois, la bague une colonne étroite. C'est la
-## règle de Path of Exile et de Hero Siege — la place que prend un objet est une
-## information de jeu, et l'équipement doit la dire aussi.
+## La fenêtre de personnage. Chaque emplacement occupe le rectangle de cases qu'un
+## objet de sa famille occuperait dans le sac : la place que prend un objet est une
+## information de jeu, et l'équipement doit la dire aussi. Une grille de carrés
+## identiques donnait dix cases interchangeables où plus rien n'annonçait ce qui
+## allait où.
 ##
-## En Rect2i et non en position seule : la **taille** fait partie de la
-## disposition. Une grille de carrés identiques donnait dix cases
-## interchangeables où plus rien n'annonçait ce qui allait où.
-##
-## Trois colonnes larges, séparées par une gouttière d'une case, et le corps qui
+## Trois colonnes larges séparées par une gouttière d'une case, et le corps qui
 ## descend : le portrait, la tête et le cou en haut ; les deux mains encadrant le
 ## torse ; les gants, la ceinture et les bottes en bas ; les deux bagues dans les
-## gouttières, de part et d'autre de la taille.
+## gouttières.
 const DOLL := {
 	"helmet": Rect2i(4, 0, 3, 2), "amulet": Rect2i(8, 0, 3, 2),
 	"weapon": Rect2i(0, 2, 3, 3), "chest": Rect2i(4, 2, 3, 3), "offhand": Rect2i(8, 2, 3, 3),
@@ -57,9 +50,9 @@ const DOLL_ROWS := 7
 const DOLL_AREA := Rect2i(0, 0, 2, 2)
 const DOLL_ANIM := "idle_down"
 
-## Un emplacement vide montre l'objet qu'il attend, peint très sombre : la forge
-## sait déjà dessiner un anneau et une botte, et une silhouette fantôme se
-## comprend sans lire, là où « BAGUE G. » ne tenait même pas dans sa case.
+## Un emplacement vide montre l'objet qu'il attend, peint très sombre : une
+## silhouette fantôme se comprend sans lire, là où « BAGUE G. » ne tenait même pas
+## dans sa case.
 const GHOST := Color(1.0, 1.0, 1.0, 0.13)
 ## Marge autour d'une icône dans son emplacement. Sans elle, un objet qui remplit
 ## exactement son rectangle mange les lignes de la grille et on ne voit plus où
@@ -80,10 +73,9 @@ const ITEM_EDGE_DIM := 0.3
 const DRAG_MIN := 5.0
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
-## L'infobulle, et ce qui n'appartient qu'à celle-ci. Son fond est celui de
-## toutes les infobulles du jeu et vit dans UiPalette ; son cadre, lui, prend la
-## couleur de rareté de l'objet — c'est la même information que le halo au sol,
-## donc la même couleur, et on n'apprend pas deux codes pour une seule idée.
+## L'infobulle. Son fond est celui de toutes les infobulles du jeu et vit dans
+## UiPalette ; son cadre prend la couleur de rareté de l'objet — la même
+## information que le halo au sol, donc la même couleur.
 ##
 ## La ligne d'implicite : ce que la base garantit, avant tout tirage.
 const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
@@ -108,6 +100,11 @@ const FONT_SIZE := 8
 const TITLE_SIZE := 9
 
 @onready var title: Label = $Title
+
+## La même source que les quatre autres panneaux du jeu : ce fichier passait par
+## get_theme_default_font(), qui rend la même police mais oblige à retester le
+## null à chaque bloc de dessin.
+var _font: Font
 
 var _player: Player
 var _inventory: Inventory
@@ -136,10 +133,9 @@ var _hover := Vector2i(-1, -1)
 ## à la fois « case (2,1) du sac » et « emplacement torse ».
 var _hover_slot := -1
 
-## La silhouette du personnage, au centre de la fenêtre. Dessinée par _draw et
-## non montée comme AnimatedSprite2D : un nœud enfant se peint **au-dessus** du
-## Control, donc au-dessus de l'objet qu'on traîne à la souris, qui disparaîtrait
-## derrière elle en traversant le panneau.
+## La silhouette du personnage. Dessinée par _draw et non montée comme
+## AnimatedSprite2D : un nœud enfant se peint **au-dessus** du Control, donc de
+## l'objet qu'on traîne à la souris, qui disparaîtrait en la traversant.
 var _doll_frames: SpriteFrames
 ## L'image affichée, et la clé de ce qui est chargé. Sans la clé, chaque
 ## rafraîchissement rebâtirait les planches et relancerait l'animation.
@@ -149,6 +145,7 @@ var _doll_key := ""
 
 func _ready() -> void:
 	visible = false
+	_font = ThemeDB.fallback_font
 
 
 ## Le sac ouvert prend la souris. Le drapeau doit retomber quoi qu'il arrive —
@@ -194,10 +191,9 @@ func _input(event: InputEvent) -> void:
 	if not visible or _inventory == null:
 		return
 
-	# La position vient de l'événement et non du curseur : c'est elle qui est
-	# vraie au moment du clic, elle se convertit dans le repère du panneau par
-	# make_input_local, et elle rend le geste rejouable dans un test sans avoir
-	# à déplacer la souris de l'écran.
+	# La position vient de l'événement et non du curseur : c'est elle qui est vraie
+	# au moment du clic, et elle rend le geste rejouable dans un test sans avoir à
+	# déplacer la souris de l'écran.
 	var souris := make_input_local(event) as InputEventMouse
 	if souris == null:
 		return
@@ -275,9 +271,8 @@ func _right_click() -> void:
 
 
 ## Équipe l'objet du sac. Il est **sorti du sac d'abord** : c'est ce qui garantit
-## que l'objet remplacé trouve au moins sa place, et la grille rejette de toute
-## façon un objet qui ne rentre pas. Ce qui déborde vraiment tombe au sol,
-## plutôt que d'annuler l'échange — on a demandé à porter cet objet.
+## que l'objet remplacé trouve au moins sa place. Ce qui déborde vraiment tombe au
+## sol plutôt que d'annuler l'échange — on a demandé à porter cet objet.
 func _equip(cell: Vector2i) -> void:
 	var index := _inventory.index_at(cell)
 	if index == Inventory.EMPTY:
@@ -291,14 +286,12 @@ func _equip(cell: Vector2i) -> void:
 
 
 ## Porte un objet et reloge celui qu'il remplace : le sac s'il y reste de la
-## place, le sol sinon. Renvoie faux quand l'objet n'a pas d'emplacement.
+## place, le sol sinon. **Le seul endroit** où le remplacement est relogé, pour le
+## clic droit comme pour le dépôt.
 ##
-## Le seul endroit où le remplacement est relogé : le clic droit depuis le sac
-## et le dépôt sur l'emplacement faisaient la même chose, chacun de son côté.
-##
-## `emplacement` vide au clic droit — on n'a désigné aucune destination, le
-## joueur choisit le premier doigt libre. Rempli quand l'objet a été lâché sur
-## un emplacement précis : c'est celui-là qu'on veut, même si l'autre est libre.
+## `emplacement` vide au clic droit — aucune destination désignée, le joueur
+## choisit le premier doigt libre. Rempli quand l'objet a été lâché sur un
+## emplacement précis : c'est celui-là qu'on veut, même si l'autre est libre.
 func _wear(item: Item, emplacement := "") -> bool:
 	if _player == null:
 		return false
@@ -405,18 +398,15 @@ func _return_held() -> Item:
 
 
 ## Une image toutes les FPS d'animation, déduite de l'horloge plutôt que d'un
-## compteur : le panneau n'a pas de raison de tourner quand il est fermé, et un
-## compteur repartirait de zéro à chaque ouverture.
+## compteur, qui repartirait de zéro à chaque ouverture.
 func _process(_delta: float) -> void:
 	if not visible:
 		return
 
 	# L'état **réel** de la touche, relevé à chaque image, et non un booléen
 	# mémorisé sur l'événement : Alt est interceptée par le gestionnaire de
-	# fenêtres sur les trois systèmes, et perdre le focus la touche enfoncée ne
-	# rend jamais le relâchement — l'infobulle resterait détaillée jusqu'au
-	# prochain appui. C'est le même sondage que les attaques du joueur, et pour
-	# la même raison.
+	# fenêtres, et perdre le focus la touche enfoncée ne rend jamais le
+	# relâchement — l'infobulle resterait détaillée jusqu'au prochain appui.
 	var alt := Input.is_key_pressed(KEY_ALT)
 	if alt != _alt:
 		_alt = alt
@@ -600,12 +590,11 @@ func _draw() -> void:
 			draw_rect(_rect_of(at, span), CAN_PLACE if _inventory.fits(_held, at) else BLOCKED)
 		_draw_item(_held, Rect2(_mouse - _grab_px, _span_size(span)), false)
 
-	var font := get_theme_default_font()
-	if font != null:
-		draw_string(font, Vector2(4.0, s.y - 13.0),
+	if _font != null:
+		draw_string(_font, Vector2(4.0, s.y - 13.0),
 			"[clic] prendre et poser     [clic droit] équiper / retirer",
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
-		draw_string(font, Vector2(4.0, s.y - 3.0),
+		draw_string(_font, Vector2(4.0, s.y - 3.0),
 			"lâché hors du sac : jeté au sol",
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 
@@ -689,13 +678,9 @@ func _place_libre(r: Rect2) -> Vector2:
 	return r.size - Vector2(MARGIN, MARGIN) * 2.0
 
 
-## Une texture au milieu d'un rectangle, à sa taille native.
-##
-## Position entière : une image à cheval sur deux pixels bave, et c'est
-## précisément ce que le rendu pixel art ne pardonne pas. Trois appelants
-## écrivaient ce centrage — l'objet rangé, la silhouette fantôme et le portrait
-## — dont deux avec la même formule écrite autrement, ce qui suffit à ne plus
-## voir qu'il s'agit du même calcul.
+## Une texture au milieu d'un rectangle, à sa taille native. Position entière :
+## une image à cheval sur deux pixels bave, et c'est ce que le rendu pixel art ne
+## pardonne pas.
 func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
 	if tex == null:
 		return
@@ -704,11 +689,9 @@ func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
 
 
 ## Ce que porte l'objet, à côté du sac. Sans elle, un objet à six affixes et une
-## épée nue se ressemblent : c'est la seule fenêtre par laquelle le tirage
-## devient visible.
+## épée nue se ressemblent.
 func _draw_tooltip(item: Item, haut_vise: float) -> void:
-	var font := get_theme_default_font()
-	if font == null:
+	if _font == null:
 		return
 
 	var titre := item.display_name()
@@ -740,22 +723,22 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	# escalier ne se lit plus comme une colonne.
 	var w_affixes := 0.0
 	for ligne in explicites:
-		w_affixes = maxf(w_affixes, font.get_string_size(
+		w_affixes = maxf(w_affixes, _font.get_string_size(
 			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	var w_paliers := 0.0
 	for ligne in paliers:
-		w_paliers = maxf(w_paliers, font.get_string_size(
+		w_paliers = maxf(w_paliers, _font.get_string_size(
 			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 
-	var w := maxf(TIP_MIN_W, font.get_string_size(
+	var w := maxf(TIP_MIN_W, _font.get_string_size(
 		titre, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
-	w = maxf(w, font.get_string_size(niveau, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	w = maxf(w, _font.get_string_size(niveau, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	var colonne := w_affixes + (TIP_TIER_GAP + w_paliers if detaille else 0.0)
 	w = maxf(w, colonne)
 	if not implicite.is_empty():
-		w = maxf(w, font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+		w = maxf(w, _font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	if not note.is_empty():
-		w = maxf(w, font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+		w = maxf(w, _font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
 
 	# Le titre et le niveau, puis une ligne par affixe, plus la note s'il y en a.
@@ -767,13 +750,10 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	if separe:
 		h += TIP_LINE * 0.5
 
-	# Alignée sur le haut de l'objet, mais jamais débordante vers le bas : les
-	# objets de la dernière ligne sont ceux dont l'infobulle est la plus longue
-	# à sortir de l'écran.
-	#
-	# Ni vers la gauche : la bulle est dessinée à gauche du panneau, et le mode
-	# détaillé l'élargit d'un tiers. Le jalon 4 avait borné sa hauteur, il fallait
-	# la même borne de ce côté — sinon un objet à six affixes sort du cadrage.
+	# Alignée sur le haut de l'objet, mais bornée dans les deux sens : vers le bas
+	# parce que les objets de la dernière ligne sortiraient de l'écran, vers la
+	# gauche parce que la bulle est dessinée à gauche du panneau et que le mode
+	# détaillé l'élargit d'un tiers.
 	var s := _panel_size()
 	var haut := minf(haut_vise, s.y - h)
 	var gauche := maxf(-w - TIP_GAP, -global_position.x)
@@ -783,14 +763,14 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	draw_rect(r, item.color(), false, 1.0)
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
-	draw_string(font, Vector2(r.position.x + TIP_PAD, y), titre,
+	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), titre,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE, item.color())
 	y += TIP_LINE
-	draw_string(font, Vector2(r.position.x + TIP_PAD, y), niveau,
+	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), niveau,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 	if not implicite.is_empty():
 		y += TIP_LINE
-		draw_string(font, Vector2(r.position.x + TIP_PAD, y), implicite,
+		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), implicite,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_IMPLICIT)
 	if separe:
 		# Ce que la base garantit au-dessus du trait, ce que le tirage a donné
@@ -804,19 +784,19 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 		)
 	for i in explicites.size():
 		y += TIP_LINE
-		draw_string(font, Vector2(r.position.x + TIP_PAD, y), explicites[i],
+		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), explicites[i],
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_EXPLICIT)
 		if paliers[i].is_empty():
 			continue
 		draw_string(
-			font,
+			_font,
 			Vector2(r.position.x + TIP_PAD + w_affixes + TIP_TIER_GAP, y), paliers[i],
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_TIER
 		)
 
 	if not note.is_empty():
 		y += TIP_LINE
-		draw_string(font, Vector2(r.position.x + TIP_PAD, y), note,
+		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), note,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 
 

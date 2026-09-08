@@ -1,34 +1,30 @@
 class_name Inventory
 extends RefCounted
 
-## Le sac : une grille de cases où chaque objet occupe un **rectangle**, comme
-## dans Path of Exile ou Hero Siege. Une épée tient sur trois cases de haut, un
-## plastron sur deux colonnes et trois lignes. Ce n'est donc plus le nombre
-## d'objets qui limite mais la place qu'ils prennent, et ranger devient une
-## décision : garder l'arme encombrante ou trois babioles.
+## Le sac : une grille de cases où chaque objet occupe un **rectangle**. Ce n'est
+## donc pas le nombre d'objets qui limite mais la place qu'ils prennent, et ranger
+## devient une décision : garder l'arme encombrante ou trois babioles.
 ##
-## Modèle pur — aucun nœud, aucun dessin. L'interface le lit et le manipule,
-## mais il tourne aussi bien dans un test sans arbre de scène.
+## Modèle pur — aucun nœud, aucun dessin. Il tourne dans un test sans arbre de
+## scène.
 
 signal changed
 
 const EMPTY := -1
 
 ## La taille du sac du joueur. Ici et non chez le Player : la sauvegarde doit
-## reconstruire un sac de la même grille sans rien savoir de l'acteur qui le
-## porte, et deux définitions se seraient contredites le jour d'un
-## agrandissement — les objets rangés au-delà de l'ancienne limite auraient
-## silencieusement changé de place au rechargement.
+## reconstruire la même grille sans rien savoir de l'acteur qui la porte, et le
+## jour d'un agrandissement, deux définitions feraient changer de place les objets
+## rangés au-delà de l'ancienne limite.
 ##
-## Large plutôt que haut, comme dans les jeux dont il reprend la règle : une épée
-## mange trois lignes, et un sac de quatre lignes n'accepterait presque rien.
+## Large plutôt que haut : une épée mange trois lignes, et un sac de quatre lignes
+## n'accepterait presque rien.
 const DEFAULT_COLS := 10
 const DEFAULT_ROWS := 5
 
 
 ## Un objet et le coin haut-gauche qu'il occupe. Une classe et non un
-## dictionnaire : c'est la structure que toute l'interface manipule, elle mérite
-## des champs nommés que l'éditeur complète.
+## dictionnaire : c'est ce que toute l'interface manipule.
 class Placed:
 	var data: Item
 	var cell: Vector2i
@@ -47,9 +43,8 @@ var rows: int
 ## Les objets rangés, dans leur ordre d'arrivée.
 var placed: Array[Placed] = []
 
-## Case -> index dans `placed`, ou EMPTY. Redondant avec `placed`, mais c'est
-## lui qui rend « est-ce que ça tient ici ? » immédiat : sans lui, chaque case
-## survolée par la souris ferait relire la liste entière des objets.
+## Case -> index dans `placed`, ou EMPTY. Redondant avec `placed`, mais sans lui
+## chaque case survolée ferait relire la liste entière des objets.
 var _cells: PackedInt32Array
 
 
@@ -123,11 +118,10 @@ func index_at(cell: Vector2i) -> int:
 
 ## Retire l'objet qui couvre cette case et le rend.
 ##
-## La grille d'occupation est reconstruite en entier plutôt que rapiécée :
-## retirer un élément décale l'index de tous les suivants, et recoudre ça case
-## par case est exactement le genre de code qui finit par laisser une case
-## fantôme occupée par un objet qui n'existe plus. Cinquante cases et une
-## poignée d'objets, on peut se le payer.
+## La grille d'occupation est reconstruite en entier plutôt que rapiécée : retirer
+## un élément décale l'index de tous les suivants, et recoudre ça case par case
+## finit par laisser une case fantôme occupée par un objet qui n'existe plus.
+## Cinquante cases et une poignée d'objets, on peut se le payer.
 func take_at(cell: Vector2i) -> Item:
 	var i := index_at(cell)
 	if i == EMPTY:
