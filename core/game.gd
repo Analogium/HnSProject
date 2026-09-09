@@ -63,6 +63,8 @@ var ui_grabs_input := false
 ## le drapeau à faux alors que l'autre tient encore la souris.
 var _ui_grabbers := {}
 
+var _hit_stop_active := false
+
 
 ## Déclare qu'un panneau prend la souris, ou qu'il la rend. À appeler avec le
 ## même objet dans les deux sens, et **toujours** depuis _exit_tree en plus de la
@@ -74,8 +76,6 @@ func grab_ui_input(source: Object, grabbing: bool) -> void:
 	else:
 		_ui_grabbers.erase(source)
 	ui_grabs_input = not _ui_grabbers.is_empty()
-
-var _hit_stop_active := false
 
 
 func _ready() -> void:

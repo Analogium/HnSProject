@@ -144,11 +144,18 @@ func report_kill(enemy: Enemy) -> void:
 	var player := target as Player
 	if player == null:
 		return
-	# L'expérience fond quand la zone dépasse le personnage de plus de cinq
-	# niveaux. Le butin, lui, garde le niveau de la zone : c'est ce qui fait
-	# qu'aller trop loin reste payant sans devenir le chemin le plus court.
+	# L'expérience suit le niveau de l'ennemi — elle dérive de ses PV, qui suivent
+	# celui de la zone — et **rien ne la borne vers le haut** : descendre plus bas
+	# rapporte mieux, comme pour le butin. Elle ne fond que dans l'autre sens, sur
+	# une zone laissée loin derrière soi.
 	var gain := maxi(roundi(enemy.xp_value() * Enemy.facteur_d_experience(niveau, player.level)), 1)
 	player.gain_xp(gain)
+	# Les manuels à l'étude apprennent de la même mort et du **même montant** : le
+	# choix est déjà dans les trois emplacements du râtelier, et diviser par trois
+	# punirait deux fois — un deuxième manuel doit être une ouverture, pas un
+	# handicap. Celui qui dort dans le sac, lui, n'apprend rien.
+	for livre in player.ratelier.equipes():
+		livre.manuel.gagner_experience(gain)
 	# Au-dessus du corps et non au-dessus du joueur : c'est l'ennemi tombé qui
 	# rapporte, et on doit pouvoir attribuer le gain à la cible qu'on a choisie.
 	if HitFeedback.current != null:

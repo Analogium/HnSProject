@@ -135,7 +135,8 @@ func _overlay_text() -> String:
 
 
 ## Murs construits par code : plus simple à retoucher qu'une scène pleine de
-## noeuds, et de toute facon ils disparaitront a l'etape 9 (TileMapLayer).
+## noeuds. L'arène ne passera pas au TileMapLayer comme la zone l'a fait — ces
+## quatre bords et ces piliers sont un décor de réglage, pas une carte.
 func _build_walls() -> void:
 	var t := WALL_THICKNESS
 	var borders := [

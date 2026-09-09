@@ -1,7 +1,7 @@
 # Architecture
 
 Ce document dit **où vit chaque règle** et **ce qu'on ne peut pas casser**. Les
-cinq `hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
+six `hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
 dans l'ordre où ça a été décidé ; celui-ci décrit l'état actuel, sans
 chronologie.
 
@@ -36,7 +36,7 @@ en PNG, retouchables dans un éditeur d'image.
 | `fx/` | Le retour visuel des coups. | `core/` |
 | `tests/` | La campagne GUT — voir [tests/README.md](../tests/README.md). | tout |
 | `tools/` | Les outils hors jeu (génération de cette documentation). | tout |
-| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes. | — |
+| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels et compétences**. | — |
 
 **Le sens de circulation ne s'inverse jamais.** `core/` ne remonte pas vers une
 scène, un nœud ou un panneau. C'est ce qui permet à la moitié de la campagne de
@@ -81,9 +81,17 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Où va un objet équipé ? | `EquipmentSlots.free_for()` |
 | Ce qui tient dans le sac ? | `Inventory.fits()` |
 | Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` |
-| Ce que rapporte un ennemi ? | `Enemy.xp_value()` et `Enemy.facteur_d_experience()` |
+| Ce que rapporte un ennemi ? | `Enemy.xp_value()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
+| Quand l'expérience fond-elle ? | `Enemy.facteur_d_experience()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
 | Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
+| Combien fait une compétence ? | `Competence.degats()` — **la seule formule**, appelée par le lancement comme par l'affichage |
+| À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
+| Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les quatre refus — case vide, non apprise, réserve, recharge |
+| Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne |
+| Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
+| Peut-on y placer un point ? | `Manuel.peut_investir()` — les quatre conditions, jamais dans l'interface |
+| Où un manuel apprend-il ? | Au râtelier seulement, par `EnemyManager.report_kill()` |
 
 ## Les invariants
 
@@ -220,9 +228,12 @@ ailleurs, une petite classe nommée.
 | `art/forge_gallery.tscn` | Juger les sprites, et la fiche d'une base d'objet | `F4` |
 | `world/stress_test.tscn` | Banc de mesure | `F6` |
 
-Dans la zone : `I` sac, `C` fiche, `TAB` carte, `H` bandeau, `F5` nouvelle zone,
-`G` paquet, `K` tout tuer, `Page haut/bas` niveau de la prochaine zone,
-`Échap` menu et sauvegarde. Chaque aperçu se referme par la touche qui l'a
+Dans la zone : `I` sac, `C` fiche, `M` manuels, `TAB` carte, `H` bandeau,
+`F5` nouvelle zone, `G` paquet, `K` tout tuer, `Page haut/bas` niveau de la
+prochaine zone, `Échap` menu et sauvegarde. Les cinq cases de la barre se
+lancent par `competence_1` à `competence_5` — clic gauche, clic droit, `A`, `R`,
+`F` — et **la barre lit ses libellés dans la carte d'entrées**, jamais dans une
+liste réécrite à côté. Chaque aperçu se referme par la touche qui l'a
 ouvert, et par `Échap`.
 
 ## Sauvegarde

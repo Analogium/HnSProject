@@ -32,13 +32,31 @@ func test_reserve_pleine_a_la_naissance() -> void:
 
 func test_le_tir_coute_du_mana() -> void:
 	var avant := _p.mana
-	_p._shoot()
-	assert_eq(_p.mana, avant - _p.bolt_mana_cost, "le coût exact, pas un de plus")
+	_p.lancer(1)
+	assert_eq(
+		_p.mana, avant - _p.competence_tir.cout_en_mana,
+		"le coût exact, pas un de plus"
+	)
+
+
+## La nature du tir est écrite à deux endroits tant que la bille porte la sienne :
+## sur la compétence, et sur la scène du projectile. Elles disent aujourd'hui la
+## même chose, et ce test est ce qui l'exige — le jour où la compétence deviendra
+## seule à décider, il tombera de lui-même.
+func test_la_nature_du_tir_ne_diverge_pas_de_celle_de_la_bille() -> void:
+	# Hors de l'arbre : montée, la bille avancerait et se libérerait toute seule.
+	var bille: Projectile = load("res://actors/projectiles/player_bolt.tscn").instantiate()
+	var nature: int = bille.damage_type
+	bille.free()
+	assert_eq(
+		_p.competence_tir.nature, nature,
+		"« %s » et la bille annoncent la même nature" % _p.competence_tir.nom
+	)
 
 
 func test_reserve_insuffisante_refuse_le_tir() -> void:
 	_p._set_mana(2.0)
-	_p._shoot()
+	_p.lancer(1)
 	assert_eq(_p.mana, 2.0, "ni tir, ni prélèvement partiel")
 
 
@@ -309,7 +327,7 @@ func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
 ## une baguette n'avait rien d'offensif à recevoir.
 func test_le_tir_lit_les_degats_de_sort_de_la_fiche() -> void:
 	_p.stats.spell_damage = 33.0
-	_p._shoot()
+	_p.lancer(1)
 	assert_eq(_tirs.get_child_count(), 1, "un tir est parti")
 	var tir := _tirs.get_child(0) as Projectile
 	assert_not_null(tir)
@@ -321,3 +339,130 @@ func test_le_tir_lit_les_degats_de_sort_de_la_fiche() -> void:
 ## qu'en jouant, et seulement si on pense à tirer.
 func test_la_fiche_du_joueur_porte_des_degats_de_sort() -> void:
 	assert_gt(_p.stats.spell_damage, 0.0)
+
+
+## Le personnage et les manuels montent sur la **même fonction**, avec leurs
+## propres constantes. Deux exponentielles écrites côte à côte finiraient par
+## diverger d'un arrondi, et personne ne saurait laquelle est la bonne.
+func test_la_courbe_du_personnage_est_la_courbe_partagee() -> void:
+	for niveau in [1, 2, 7, 30]:
+		assert_eq(
+			_p._needed_for(niveau),
+			Progression.cout_du_niveau(niveau, Player.XP_BASE, Player.XP_POWER),
+			"le palier %d" % niveau
+		)
+
+
+# --------------------------------------------------------------------------
+# La barre de compétences (jalon 6, étape 6)
+# --------------------------------------------------------------------------
+
+func _livre_travaille() -> Item:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.gagner_experience(999999)
+	livre.manuel.investir(livre.base.manuel, "eclair_vif")
+	return livre
+
+
+## Ce qu'on peut poser dans une case : les deux attaques de départ, et ce qu'on a
+## réellement appris dans les livres à l'étude. Une case à zéro point n'y est pas
+## — on ne propose pas de mettre sous les doigts ce qui ne fait rien.
+func test_ce_qu_on_peut_poser_dans_une_case() -> void:
+	var noms := []
+	for c in _p.competences_disponibles():
+		noms.append(c.id)
+	assert_eq(noms, [CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR], "les deux de départ")
+
+	_p.etudier(_livre_travaille())
+	noms = []
+	for c in _p.competences_disponibles():
+		noms.append(c.id)
+	assert_true(noms.has("eclair_vif"), "la case où l'on a mis un point")
+	assert_false(noms.has("nova_de_foudre"), "mais pas celles restées vides")
+
+
+func test_les_points_d_une_competence_viennent_du_livre_qui_l_enseigne() -> void:
+	assert_eq(_p.points_de_competence("eclair_vif"), 0, "aucun livre à l'étude")
+	assert_eq(
+		_p.points_de_competence(CompetenceCatalog.ID_ATTAQUE), 1,
+		"les attaques de départ ne s'apprennent pas"
+	)
+	_p.etudier(_livre_travaille())
+	assert_eq(_p.points_de_competence("eclair_vif"), 1)
+
+
+## Le lancement porte lui-même ses quatre refus : aucun appelant n'a à les
+## refaire, et c'est ce qui permet à la touche, à la barre et aux tests de passer
+## par le même chemin.
+func test_lancer_refuse_ce_qu_on_n_a_pas_appris() -> void:
+	_p.barre.poser(2, "eclair_vif")
+	assert_false(_p.lancer(2), "la compétence n'est dans aucun livre à l'étude")
+	assert_eq(_tirs.get_child_count(), 0)
+
+	_p.etudier(_livre_travaille())
+	assert_true(_p.lancer(2), "le livre à l'étude la rend lançable")
+	assert_eq(_tirs.get_child_count(), 1)
+
+
+func test_lancer_refuse_une_case_vide_et_une_recharge_en_cours() -> void:
+	assert_false(_p.lancer(4), "la cinquième case est vide")
+	assert_true(_p.lancer(1), "le tir part")
+	assert_false(_p.lancer(1), "et ne repart pas tant qu'il se recharge")
+
+
+## L'éventail : trois projectiles pour une salve, huit pour une nova, et un seul
+## qui part droit devant quoi qu'annonce la dispersion.
+func test_une_salve_part_en_eventail() -> void:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.gagner_experience(999999)
+	livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	_p.etudier(livre)
+	_p.stats.max_mana = 999.0
+	_p._set_mana(999.0)
+
+	_p.barre.poser(3, "salve_d_eclairs")
+	assert_true(_p.lancer(3))
+	assert_eq(_tirs.get_child_count(), 3, "trois traits")
+
+	var angles := []
+	for tir in _tirs.get_children():
+		angles.append(snappedf(rad_to_deg((tir as Projectile)._dir.angle()), 0.1))
+	assert_eq(angles.size(), 3)
+	assert_ne(angles[0], angles[1], "et ils ne partent pas tous au même endroit")
+
+
+## Et l'autre bout : un projectile unique part **exactement** dans la visée.
+##
+## Le test manquait, et la répartition en éventail traitait le cas à part pour
+## cette raison. Il tient maintenant tout seul — pas nul et départ nul font une
+## rotation qui ne tourne pas — mais c'était vrai sans que rien ne le vérifie, et
+## une dispersion recopiée par erreur sur le trait de base ferait tirer à côté de
+## la souris sans qu'aucune assertion ne s'en aperçoive.
+func test_un_trait_seul_part_droit_dans_la_visee() -> void:
+	_p.facing = Vector2(0.6, -0.8)
+	assert_true(_p.lancer(1), "le tir de départ")
+	assert_eq(_tirs.get_child_count(), 1, "un seul trait")
+	assert_eq(
+		(_tirs.get_child(0) as Projectile)._dir, _p.facing,
+		"la direction de la visée, au bit près"
+	)
+
+
+## Retirer un livre du râtelier vide les cases qui pointaient dessus : une case
+## qui annonce un sort inlançable se découvre au pire moment.
+func test_ranger_un_livre_vide_les_cases_qui_le_designaient() -> void:
+	_p.etudier(_livre_travaille())
+	_p.barre.poser(2, "eclair_vif")
+	_p.cesser_d_etudier(0)
+	assert_eq(_p.barre.id_de(2), "", "la case est vide")
+	assert_eq(_p.barre.id_de(0), CompetenceCatalog.ID_ATTAQUE, "les attaques de départ restent")
+
+
+## Mais pas si un autre livre du râtelier l'enseigne encore : la question est
+## « la sait-on toujours », pas « d'où venait-elle ».
+func test_un_second_livre_garde_la_case_pleine() -> void:
+	_p.etudier(_livre_travaille(), 0)
+	_p.etudier(_livre_travaille(), 1)
+	_p.barre.poser(2, "eclair_vif")
+	_p.cesser_d_etudier(0)
+	assert_eq(_p.barre.id_de(2), "eclair_vif", "l'autre livre l'enseigne toujours")

@@ -202,6 +202,9 @@ func _input(event: InputEvent) -> void:
 		_track(souris.position)
 		return
 
+	if not _possede_le_clic(souris.position):
+		return
+
 	var button := souris as InputEventMouseButton
 	if not button.pressed:
 		if button.button_index == MOUSE_BUTTON_LEFT:
@@ -295,7 +298,10 @@ func _equip(cell: Vector2i) -> void:
 func _wear(item: Item, emplacement := "") -> bool:
 	if _player == null:
 		return false
-	var ancien := _player.equip(item, emplacement)
+	# Un manuel ne se porte pas, il s'étudie. Le clic droit l'envoie donc au
+	# râtelier plutôt qu'à un emplacement d'équipement, qui le refuserait — et
+	# l'objet, refusé, retournerait dans sa case sans que rien ne dise pourquoi.
+	var ancien := _player.etudier(item) if Ratelier.accepte(item) else _player.equip(item, emplacement)
 	if ancien == item:
 		return false
 	if ancien != null and not _inventory.add(ancien):
@@ -455,6 +461,17 @@ func _on_changed() -> void:
 
 ## Le panneau entier. Sert à savoir si un point est dedans — donc si un objet
 ## lâché doit tomber au sol.
+## **Un clic hors du sac ne lui appartient pas.** Le consommer quand même — ce
+## que faisait la première version — rendait sourds tous les autres panneaux
+## ouverts en même temps : la fiche de personnage et la page d'un manuel ne
+## recevaient plus rien tant que le sac était à l'écran.
+##
+## L'objet **tenu à la main** fait exception : il possède le geste jusqu'à ce
+## qu'on le lâche, y compris au-dehors — c'est comme ça qu'on jette au sol.
+func _possede_le_clic(point: Vector2) -> bool:
+	return _held != null or _panel_rect().has_point(point)
+
+
 func _panel_rect() -> Rect2:
 	return Rect2(Vector2.ZERO, _panel_size())
 

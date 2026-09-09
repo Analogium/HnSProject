@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-41 bases d'objets, 25 affixes d'objets, 5 affixes d'ennemis.
+42 bases d'objets, 25 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -63,6 +63,7 @@ Niveaux de zone : 1 à 60.
 | `anneau` | Anneau | anneau | 1 | ring | ring, jewellery | +2 % chance critique | 1 × 1 | 1 à 22 |
 | `bague_ouvragee` | Bague ouvragée | anneau | 2 | ring | ring, jewellery | +4 % chance critique | 1 × 1 | 16 à 40 |
 | `chevaliere` | Chevalière | anneau | 3 | ring | ring, jewellery | +6 % chance critique | 1 × 1 | 34 et au-delà |
+| `manuel_foudre` | Manuel de la foudre | manuel_foudre | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
 
 ## Affixes d'objets
 
@@ -70,31 +71,31 @@ Niveaux de zone : 1 à 60.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `acere` | dégâts | melee | — | 12 | 8 | 8 / 41 |
-| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 41 |
-| `allonge` | allonge | melee | — | 8 | 5 | 8 / 41 |
-| `arcanique` | dégâts de sort | caster, jewellery | — | 10 | 8 | 11 / 41 |
-| `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 41 |
-| `cuirasse` | armure | armour | — | 9 | 9 | 19 / 41 |
-| `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 41 |
-| `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 41 |
-| `fuyant` | esquive | light | — | 9 | 8 | 10 / 41 |
-| `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 41 |
-| `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 41 |
-| `impie` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 41 |
-| `incantateur` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 41 |
-| `isole` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 41 |
-| `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 41 |
-| `meurtrier` | dégâts (%) | melee | — | 10 | 6 | 8 / 41 |
-| `muscle` | force | *partout* | — | 8 | 6 | 41 / 41 |
-| `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 41 |
-| `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 41 |
-| `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 41 |
-| `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 41 |
-| `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 41 |
-| `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 41 |
-| `vif` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 41 |
-| `vigoureux` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 41 |
+| `acere` | dégâts | melee | — | 12 | 8 | 8 / 42 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 42 |
+| `allonge` | allonge | melee | — | 8 | 5 | 8 / 42 |
+| `arcanique` | dégâts de sort | caster, jewellery | — | 10 | 8 | 11 / 42 |
+| `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 42 |
+| `cuirasse` | armure | armour | — | 9 | 9 | 19 / 42 |
+| `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 42 |
+| `fuyant` | esquive | light | — | 9 | 8 | 10 / 42 |
+| `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `impie` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `incantateur` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 42 |
+| `isole` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 42 |
+| `meurtrier` | dégâts (%) | melee | — | 10 | 6 | 8 / 42 |
+| `muscle` | force | *partout* | — | 8 | 6 | 41 / 42 |
+| `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 42 |
+| `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 42 |
+| `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 42 |
+| `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 42 |
+| `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 42 |
+| `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 42 |
+| `vif` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 42 |
+| `vigoureux` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 42 |
 
 ### Affixes d'ennemis
 

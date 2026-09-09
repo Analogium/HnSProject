@@ -110,6 +110,12 @@ func test_les_implicites_visent_des_statistiques_reelles() -> void:
 ## premières zones sans rien dire.
 func test_chaque_famille_a_de_quoi_tirer_des_affixes() -> void:
 	for base in ItemCatalog.ALL:
+		# Une base qui ne se porte nulle part n'a pas d'affixes à recevoir, et ce
+		# n'est pas un appauvrissement du butin : un manuel vaut par ce qu'on y
+		# apprend. **Le seuil de quatre ne bouge pas pour autant** — l'abaisser
+		# pour faire passer un manuel remplirait les premières zones de blanc.
+		if not EquipmentSlots.famille_equipable(base.family):
+			continue
 		var possibles := ItemAffixPool.eligible(base, 1).size()
 		assert_gte(
 			possibles, 4,
@@ -189,6 +195,12 @@ func test_chaque_lignee_est_monotone() -> void:
 	var lignees := {}
 	for base in ItemCatalog.ALL:
 		assert_false(base.lignee.is_empty(), "« %s » n\'a pas de lignée" % base.display_name)
+		# Les paliers d'une lignée sont la règle de relève de l'équipement : le
+		# palier suivant chasse le précédent du butin. Les manuels n'en sont pas —
+		# leurs versions rares devront tomber **en plus** de la commune, pas à sa
+		# place — et leur palier ne sert qu'à dire leur rareté.
+		if not EquipmentSlots.famille_equipable(base.family):
+			continue
 		if not lignees.has(base.lignee):
 			lignees[base.lignee] = []
 		lignees[base.lignee].append(base)

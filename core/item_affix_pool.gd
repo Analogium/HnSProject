@@ -69,6 +69,13 @@ static func by_id(id: String) -> ItemAffix:
 ## forge ; l'autre est « qu'est-ce qu'il peut recevoir maintenant », que pose le
 ## tirage. Une seule des deux écrit le filtre.
 static func compatibles(base: ItemBase) -> Array:
+	# Ce qui ne se porte nulle part ne reçoit rien : un manuel se lit, il ne
+	# s'équipe pas, et les affixes **universels** — les résistances, les
+	# attributs — sortiraient sinon sur un livre. La règle est ici et non en
+	# `exclut` sur chaque affixe : elle demanderait de toucher les vingt-cinq
+	# fichiers, et le vingt-sixième l'oublierait.
+	if base == null or not EquipmentSlots.famille_equipable(base.family):
+		return []
 	var out := []
 	for a in ALL:
 		if a.fits(base):

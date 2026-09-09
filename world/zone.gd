@@ -29,8 +29,17 @@ const PACK_MIN_TILES := 3
 @onready var hud: Hud = $UI/Hud
 @onready var inventory: InventoryPanel = $UI/Inventory
 @onready var stats_panel: StatsPanel = $UI/Stats
+@onready var manuels: ManuelPanel = $UI/Manuels
+@onready var barre: BarrePanel = $UI/Barre
 @onready var spawner: EnemySpawner = $EnemySpawner
 @onready var temoin: Label = $UI/Temoin
+
+## À quelle distance devant soi tombe ce qu'on pose au sol. Posé au centre, un
+## objet serait à moitié caché par le personnage ; plus loin, il franchirait un
+## mur collé au dos du joueur. Le manuel de départ et ce qu'on jette du sac
+## partagent ce chiffre — deux distances réglées séparément se mettraient à
+## répondre différemment au même geste.
+const DEVANT_LES_PIEDS := 14.0
 
 ## Filet de sécurité, en secondes. Ni à chaque changement — ramasser un objet
 ## écrirait sur le disque à chaque grappe d'ennemis tués — ni seulement à la
@@ -70,6 +79,11 @@ func _ready() -> void:
 	inventory.bind(player)
 	inventory.drop_requested.connect(_on_item_dropped)
 	stats_panel.bind(player)
+	manuels.bind(player)
+	barre.bind(player)
+	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
+	# qu'on jette : un seul chemin pour poser un objet au sol.
+	manuels.drop_requested.connect(_on_item_dropped)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -90,6 +104,23 @@ func _ready() -> void:
 		filet.start()
 
 	generate_zone(Game.rng.randi())
+
+
+## Un manuel aux pieds d'un personnage neuf, **au sol** et non dans le sac : c'est
+## le geste du ramassage qu'on veut enseigner, et un objet qui brille par terre le
+## dit mieux qu'une ligne d'aide.
+##
+## Reposé à **chaque génération** tant qu'il n'a pas été pris, parce que
+## regénérer efface le butin au sol : sans ça, un `F5` dans les premières
+## secondes détruisait pour toujours le seul manuel du personnage, et rien ne le
+## disait. C'est le ramassage qui pose le drapeau, pas la chute.
+func _offrir_le_premier_manuel() -> void:
+	if Game.personnage == null or player.manuel_offert:
+		return
+	var base := ItemCatalog.by_id(ItemCatalog.ID_MANUEL_DE_DEPART)
+	if base == null:
+		return
+	_poser_au_sol(Item.new(base))
 
 
 ## Écrit le personnage courant. Publique : c'est le point d'entrée des trois
@@ -129,12 +160,21 @@ func _on_niveau_gagne(_niveau: int) -> void:
 	sauvegarder.call_deferred()
 
 
-## Ce qu'on jette du sac atterrit devant le joueur et non sous ses pieds : posé
-## au centre, il serait à moitié caché par le personnage. Le délai de ramassage
-## fait le reste — sans lui on le reprendrait aussitôt sans avoir bougé.
 func _on_item_dropped(item: Item) -> void:
+	_poser_au_sol(item)
+
+
+## **Le seul endroit qui pose un objet au sol** : ce qu'on jette du sac, ce que le
+## râtelier rend sans place pour l'accueillir, et le manuel de départ. Les trois
+## écrivaient la même ligne, distance et délai compris ; il suffisait d'en corriger
+## deux pour que le troisième tombe ailleurs, ce qui ne se voit qu'en jouant.
+##
+## Le délai de ramassage vaut pour tous : sans lui, le joueur est déjà dans la zone
+## de contact et l'objet lui revient à l'image suivante, sans qu'il ait bougé.
+func _poser_au_sol(item: Item) -> void:
 	GroundItem.spawn(
-		loot, player.global_position + player.facing * 14.0, item, GroundItem.DROP_DELAY
+		loot, player.global_position + player.facing * DEVANT_LES_PIEDS, item,
+		GroundItem.DROP_DELAY
 	)
 
 
@@ -164,6 +204,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_K: kill_all()
 		KEY_I: inventory.toggle()
 		KEY_C: stats_panel.toggle()
+		KEY_M: manuels.toggle()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -199,7 +240,14 @@ func generate_zone(zone_seed: int) -> void:
 	# champ. Le garder ferait poursuivre les ennemis à travers l'ancienne.
 	enemy_manager.field = FlowField.new(generator)
 
+	# **Après** le placement, jamais avant : c'est `_place_and_populate()` qui pose
+	# le joueur sur le point d'apparition de la carte neuve. Offert plus tôt, le
+	# livre tombait à l'endroit où le joueur était encore — le coin de la scène
+	# pour un personnage qui entre en jeu pour la première fois, c'est-à-dire
+	# exactement le cas qu'on veut servir.
 	_place_and_populate()
+
+	_offrir_le_premier_manuel()
 
 
 ## Remet le joueur au point d'apparition et repeuple la carte courante. Le même

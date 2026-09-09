@@ -1,0 +1,54 @@
+{
+	"version": 3,
+	"id": "p_reference_v3",
+	"nom": "Brenna",
+	"silhouette": 2,
+	"cree_le": "2026-09-06",
+	"joue_le": "2026-09-09",
+	"niveau": 7,
+	"experience": 240,
+	"attributs": {
+		"strength": 8,
+		"dexterity": 4,
+		"intelligence": 6
+	},
+	"points_a_placer": 3,
+	"sac": [
+		{
+			"base": "epee",
+			"niveau": 42,
+			"cellule": [3, 1],
+			"affixes": [
+				{ "stat": "attack_damage", "mode": 0, "valeur": 6.0, "affixe": "acere", "tier": 7 }
+			]
+		},
+		{
+			"base": "manuel_foudre",
+			"niveau": 12,
+			"cellule": [0, 3],
+			"affixes": [],
+			"manuel": { "exp": 0, "points": {} }
+		}
+	],
+	"equipement": {
+		"chest": {
+			"base": "plastron",
+			"niveau": 28,
+			"affixes": [
+				{ "stat": "max_health", "mode": 1, "valeur": 12.0 }
+			]
+		}
+	},
+	"ratelier": [
+		{
+			"base": "manuel_foudre",
+			"niveau": 30,
+			"affixes": [],
+			"manuel": { "exp": 340, "points": { "eclair_vif": 3 } }
+		},
+		null,
+		null
+	],
+	"barre": ["attaque", "tir", "eclair_vif", null, null],
+	"manuel_offert": true
+}

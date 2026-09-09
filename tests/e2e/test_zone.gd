@@ -76,10 +76,11 @@ func test_six_cents_images_de_combat_dense() -> void:
 			if is_instance_valid(cible):
 				joueur.global_position = cible.global_position + Vector2(10, 0)
 		if not joueur.is_dead:
-			if joueur._attack_cd <= 0.0:
-				joueur._swing()
-			if joueur._bolt_cd <= 0.0:
-				joueur._shoot()
+			# Les deux premières cases de la barre : le coup d'épée et le tir.
+			# `lancer()` porte lui-même la recharge, la réserve et la compétence
+			# apprise — l'appeler à chaque image ne lance rien de trop.
+			joueur.lancer(0)
+			joueur.lancer(1)
 
 		# On ne se fie pas au hasard du contact : la fenêtre de la hitbox dépend
 		# d'un timer réel, donc le nombre de coups qui portent varie d'un

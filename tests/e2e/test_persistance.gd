@@ -131,3 +131,28 @@ func test_une_zone_sans_personnage_n_ecrit_rien() -> void:
 
 	# joue_le mis à part : il ne bouge qu'à l'écriture, justement.
 	assert_eq(Sauvegarde.lire(_id).vers_dict(), avant, "le fichier est intact")
+
+
+## Le manuel à l'étude traverse une vraie fermeture : joueur, personnage, JSON,
+## disque, et retour dans un corps neuf. C'est la chaîne entière du jalon 6, et
+## elle est debout avant qu'un seul panneau n'existe.
+func test_un_manuel_a_l_etude_survit_a_la_fermeture() -> void:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"), [], 30)
+	livre.manuel.experience = 340
+	livre.manuel.points["eclair_vif"] = 2
+	assert_null(_zone.player.ratelier.poser(0, livre), "le râtelier était vide")
+	_zone.player.barre.poser(2, "eclair_vif")
+	_zone.player.manuel_offert = true
+
+	_zone.sauvegarder()
+	var repris := await _relancer()
+
+	var etudie := repris.ratelier.a(0)
+	assert_not_null(etudie, "le manuel est revenu au râtelier")
+	if etudie == null:
+		return
+	assert_eq(etudie.manuel.points_de("eclair_vif"), 2, "avec ses points")
+	assert_eq(etudie.manuel.experience, 340, "et son expérience")
+	assert_eq(etudie.item_level, 30, "et son niveau d'objet")
+	assert_eq(repris.barre.id_de(2), "eclair_vif", "la barre aussi")
+	assert_true(repris.manuel_offert, "et le manuel de départ reste donné")

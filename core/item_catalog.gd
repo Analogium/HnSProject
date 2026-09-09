@@ -67,6 +67,13 @@ const ALL := [
 	preload("res://resources/items/anneau.tres"),
 	preload("res://resources/items/bague_ouvragee.tres"),
 	preload("res://resources/items/chevaliere.tres"),
+
+	# Les manuels (jalon 6). Ils sont dans le catalogue parce qu'ils tombent et se
+	# rechargent comme le reste — mais ils ne se **portent** pas, et les règles
+	# écrites pour l'équipement les laissent donc de côté : pas d'affixes, pas de
+	# lignée à deux paliers, pas d'implicite qui doit croître. La question se pose
+	# à un seul endroit, `EquipmentSlots.famille_equipable()`.
+	preload("res://resources/items/manuel_foudre.tres"),
 ]
 
 
@@ -80,6 +87,11 @@ const ALL := [
 ##
 ## Le chiffre se lit dans le jeu : la lame de guerre ouvre au niveau 34, donc
 ## l'épée large cesse de tomber après la zone 40.
+## Le manuel qu'un personnage neuf reçoit à son premier pas. Un identifiant en
+## constante et non un tirage : un jeu qui ferait chercher son premier manuel
+## dans le butin apprendrait sa mécanique centrale par le hasard.
+const ID_MANUEL_DE_DEPART := "manuel_foudre"
+
 const MARGE_DE_RELEVE := 6
 
 

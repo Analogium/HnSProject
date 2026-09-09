@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ManuelArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manuel_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/case_de_manuel.gd" id="2_case"]
+[ext_resource type="Resource" path="res://resources/competences/eclair_vif.tres" id="3_eclair"]
+[ext_resource type="Resource" path="res://resources/competences/salve_d_eclairs.tres" id="4_salve"]
+[ext_resource type="Resource" path="res://resources/competences/fulguration.tres" id="5_fulgur"]
+[ext_resource type="Resource" path="res://resources/competences/nova_de_foudre.tres" id="6_nova"]
+
+[sub_resource type="Resource" id="Resource_eclair"]
+script = ExtResource("2_case")
+competence = ExtResource("3_eclair")
+position = Vector2i(0, 0)
+
+[sub_resource type="Resource" id="Resource_salve"]
+script = ExtResource("2_case")
+competence = ExtResource("4_salve")
+position = Vector2i(2, 0)
+
+[sub_resource type="Resource" id="Resource_fulgur"]
+script = ExtResource("2_case")
+competence = ExtResource("5_fulgur")
+position = Vector2i(1, 1)
+
+[sub_resource type="Resource" id="Resource_nova"]
+script = ExtResource("2_case")
+competence = ExtResource("6_nova")
+position = Vector2i(3, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "foudre"
+nom = "Maître de la foudre"
+cases = Array[ExtResource("2_case")]([SubResource("Resource_eclair"), SubResource("Resource_salve"), SubResource("Resource_fulgur"), SubResource("Resource_nova")])

@@ -219,6 +219,63 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
 
 ---
 
+## Ajouter une compétence
+
+1. **`resources/competences/<id>.tres`** — copier une voisine du même manuel.
+
+   | Champ | À remplir |
+   |---|---|
+   | `id` | Unique, **définitif** — il part dans les barres sauvegardées (invariant 1) |
+   | `nom` | Ce que le joueur lit ; se change librement |
+   | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
+   | `cadence` / `recharge` | `ARME` suit la fiche (`attack_cooldown`) ; `INCANTATION` suit `recharge` divisée par `cast_speed` |
+   | `cout_en_mana` | 0 pour un geste gratuit |
+   | `degats_par_point` | Un nombre **par point placé** : sa longueur est le maximum de la case |
+   | `stat_de_base` | `attack_damage` ou `spell_damage` — le terme qui garde les affixes vivants |
+   | `attribut` / `pourcentage_par_attribut` | Vide pour ce qui ne monte avec rien |
+   | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 3 et 24 pour une salve ; 8 et 360 pour une nova |
+   | `niveau_de_manuel_requis` | À partir de quand la case accepte son premier point |
+
+2. **`core/competence_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
+   endroit qui les liste, et c'est là que les sauvegardes retrouvent un
+   identifiant.
+
+3. **Le manuel qui l'enseigne** — une `CaseDeManuel` de plus dans son `.tres`,
+   avec sa **position sur la page**. Deux cases à la même position se
+   recouvriraient sans que rien ne le dise.
+
+**Ce qui refusera un oubli** — `tests/unit/test_competences.gd` :
+`test_chaque_competence_a_un_identifiant`, `test_les_identifiants_sont_uniques`,
+`test_chaque_competence_vise_des_champs_reels`,
+`test_chaque_competence_a_de_quoi_faire_des_degats` ; et
+`tests/integration/test_panneau_manuels.gd :
+test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la
+page.
+
+---
+
+## Ajouter un manuel
+
+Un manuel est **une base d'objet** de plus, plus un archétype.
+
+1. **`resources/manuels/<id>.tres`** — l'archétype : son nom, et une
+   `CaseDeManuel` par compétence, chacune à sa position.
+2. **`resources/items/manuel_<id>.tres`** — la base : `family = "manual"`,
+   `tags = ["manual"]`, `kind = "manuel"`, et le champ `manuel` qui pointe sur
+   l'archétype. Son `palier` dit sa **rareté**, pas son rang de relève.
+3. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
+
+**Ce qui refusera un oubli** — `tests/unit/test_manuels.gd` :
+`test_un_archetype_va_avec_la_famille_du_manuel` (une base porte un archétype
+**si et seulement si** elle est de la famille des manuels),
+`test_chaque_case_porte_une_competence`, `test_un_manuel_ne_recoit_aucun_affixe`.
+
+Un manuel échappe aux règles écrites pour l'équipement — affixes, lignée à
+paliers, implicite croissant — et la question se pose à un seul endroit :
+`EquipmentSlots.famille_equipable()`.
+
+---
+
 ## Faire évoluer le format de sauvegarde
 
 La recette la plus dangereuse du dépôt : elle se rate en silence et ne se voit

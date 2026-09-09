@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "nova_de_foudre"
+nom = "Nova de foudre"
+nature = 3
+cadence = 1
+recharge = 1.40
+cout_en_mana = 26.0
+projectiles = 8
+dispersion_en_degres = 360.0
+degats_par_point = Array[float]([11.0, 15.0, 20.0, 26.0, 33.0])
+stat_de_base = "spell_damage"
+attribut = "intelligence"
+pourcentage_par_attribut = 4.0
+niveau_de_manuel_requis = 8

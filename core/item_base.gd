@@ -77,6 +77,21 @@ extends Resource
 ## chaque emplacement, à chaque niveau.
 @export var niveau_requis: int = 1
 
+## La famille de ce qui se lit au lieu de se porter. Nommée ici plutôt qu'écrite
+## en clair dans les règles : c'est la seule famille du jeu qui n'a pas
+## d'emplacement, et l'invariant qui va avec — une base porte un archétype **si
+## et seulement si** elle est de cette famille — se vérifie donc à un endroit.
+const FAMILLE_MANUEL := "manual"
+
+## L'archétype que cette base ouvre, ou null. Non nul si et seulement si la
+## famille est « manual » : c'est la base qui dit ce qu'elle est, comme elle dit
+## déjà son implicite.
+##
+## Un champ facultatif ici plutôt qu'un second catalogue tenu en parallèle : deux
+## listes qui doivent se correspondre finissent par diverger, et cette
+## divergence-là ne se verrait qu'en ramassant l'objet.
+@export var manuel: ManuelArchetype
+
 @export_group("Implicite")
 ## Le bonus que porte *toute* la famille, sans tirage : une épée fait des dégâts,
 ## un plastron donne des PV. C'est lui qui dit à quoi sert la base.

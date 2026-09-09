@@ -566,6 +566,11 @@ func test_les_resistances_ne_sortent_jamais_sur_une_arme() -> void:
 	var armes := 0
 	var autres := 0
 	for base in ItemCatalog.ALL:
+		# « Partout sauf sur les armes » parle de ce qu'on **porte**. Un manuel se
+		# lit : il ne reçoit aucun affixe, pas même universel, et l'attendre à
+		# cinq résistances reviendrait à demander des résistances à un livre.
+		if not EquipmentSlots.famille_equipable(base.family):
+			continue
 		var resistances := 0
 		for a in ItemAffixPool.eligible(base, 60):
 			if a.stat in DamageType.RESIST_FIELDS:
@@ -614,6 +619,9 @@ func test_une_baguette_a_de_quoi_etre_offensive() -> void:
 ## les réserver à un emplacement n\'apprendrait rien à personne.
 func test_les_attributs_sortent_partout() -> void:
 	for base in ItemCatalog.ALL:
+		# « Partout » veut dire sur tout ce qui se porte : un manuel ne reçoit rien.
+		if not EquipmentSlots.famille_equipable(base.family):
+			continue
 		var vus := {}
 		for a in ItemAffixPool.eligible(base, 1):
 			if a.stat in CharacterStats.ATTRIBUTES:

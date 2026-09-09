@@ -115,19 +115,36 @@ func test_un_niveau_absurde_ne_diminue_personne() -> void:
 	assert_eq(fiche.max_health, 100.0)
 
 
-## Cinq niveaux d\'avance sans pénalité, puis la récompense fond. Sans ce
-## plafond, une zone de niveau 40 donnerait huit fois l\'expérience — elle dérive
-## des PV, qui viennent d\'être multipliés par huit — et la zone profonde
-## deviendrait le chemin le plus court plutôt qu\'un risque.
-func test_l_experience_fond_quand_la_zone_depasse_le_personnage() -> void:
-	assert_eq(Enemy.facteur_d_experience(1, 10), 1.0, "une zone plus basse ne pénalise pas")
-	assert_eq(Enemy.facteur_d_experience(10, 10), 1.0, "à niveau égal non plus")
-	assert_eq(Enemy.facteur_d_experience(15, 10), 1.0, "cinq niveaux d\'avance sont gratuits")
-	assert_almost_eq(Enemy.facteur_d_experience(20, 10), 0.5, 0.001, "dix d\'écart, moitié moins")
+## L\'expérience suit le niveau de l\'ennemi **sans borne haute** : une zone qui
+## dépasse le personnage paie tout ce qu\'elle vaut, et c\'est le danger qui en
+## fait le prix. Elle ne fond que dans l\'autre sens, sur une zone laissée loin
+## derrière — sinon moudre la première zone à niveau 60 resterait payant.
+func test_l_experience_ne_fond_que_sur_les_zones_laissees_derriere() -> void:
+	assert_eq(Enemy.facteur_d_experience(40, 10), 1.0, "une zone bien au-dessus paie tout")
+	assert_eq(Enemy.facteur_d_experience(10, 10), 1.0, "à niveau égal aussi")
+	assert_eq(Enemy.facteur_d_experience(5, 10), 1.0, "cinq niveaux de retard sont gratuits")
+	assert_almost_eq(Enemy.facteur_d_experience(10, 20), 0.5, 0.001, "dix d\'écart, moitié moins")
 	assert_almost_eq(
-		Enemy.facteur_d_experience(40, 1), Enemy.XP_PLANCHER, 0.001,
-		"et un gouffre ne rapporte presque plus rien"
+		Enemy.facteur_d_experience(1, 40), Enemy.XP_PLANCHER, 0.001,
+		"et la première zone ne rapporte presque plus rien à qui la surplombe"
 	)
+
+
+## Ce que le changement de sens veut dire en jeu : le même ennemi, dans une zone
+## profonde, rapporte franchement plus — huit fois ses PV, huit fois son
+## expérience. C\'est la promesse du jalon 5 pour le butin, tenue ici pour
+## l\'expérience.
+func test_une_zone_profonde_rapporte_plus_qu_une_zone_de_depart() -> void:
+	var faible := CharacterStats.new()
+	faible.max_health = 30.0
+	var fort := CharacterStats.new()
+	fort.max_health = 30.0
+	CharacterStats.mettre_a_l_echelle(fort, 40)
+
+	var joueur := 12
+	var gain_bas := faible.max_health * Enemy.XP_PER_HEALTH * Enemy.facteur_d_experience(1, joueur)
+	var gain_haut := fort.max_health * Enemy.XP_PER_HEALTH * Enemy.facteur_d_experience(40, joueur)
+	assert_gt(gain_haut, gain_bas * 5.0, "la zone 40 rapporte au moins cinq fois plus")
 
 
 ## Les bornes vivent avec la valeur, et non chez les deux écrans qui la

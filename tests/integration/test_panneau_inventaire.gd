@@ -62,3 +62,18 @@ func test_le_panneau_tient_dans_le_cadrage() -> void:
 	assert_lte(taille.x, 640.0, "largeur")
 	assert_lte(taille.y, 360.0, "hauteur : la fenêtre déborderait de l'écran")
 	assert_gte(taille.x, _panneau._equip_size().x, "la grille du personnage tient dedans")
+
+
+## Le sac ouvert ne doit pas rendre sourds les panneaux ouverts à côté : il ne
+## répond que des clics tombés sur lui. L'objet **tenu à la main** fait
+## exception — c'est en le lâchant au-dehors qu'on le jette au sol.
+func test_le_sac_ne_prend_que_ses_clics() -> void:
+	var dedans: Vector2 = _panneau._rect_of(Vector2i(0, 0), Vector2i.ONE).get_center()
+	assert_true(_panneau._possede_le_clic(dedans))
+	assert_false(_panneau._possede_le_clic(Vector2(-40.0, 20.0)), "à gauche du sac")
+
+	_panneau._held = Item.new(ItemCatalog.by_id("epee"))
+	assert_true(
+		_panneau._possede_le_clic(Vector2(-40.0, 20.0)),
+		"un objet en main possède le geste jusqu'au lâcher"
+	)

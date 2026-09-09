@@ -94,3 +94,109 @@ func test_sans_niveau_pose_l_ennemi_reste_au_premier() -> void:
 	var disque: CharacterStats = load("res://resources/stats/grunt_stats.tres")
 	assert_eq(e.niveau, 1)
 	assert_almost_eq(e.stats.max_health, disque.max_health, 0.001)
+
+
+# --------------------------------------------------------------------------
+# Ce qu'une mort rapporte aux manuels (jalon 6, étape 4)
+# --------------------------------------------------------------------------
+
+## Un joueur, son pilote d'ennemis et un grunt prêt à mourir. Le manager est
+## monté nu : sans carte ni champ de flux, ce qui suffit à `report_kill`.
+func _scene_de_mise_a_mort() -> Array:
+	var joueur: Player = load("res://actors/player/player.tscn").instantiate()
+	add_child_autofree(joueur)
+	var manager := EnemyManager.new()
+	add_child_autofree(manager)
+	manager.target = joueur
+	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
+	add_child_autofree(grunt)
+	await wait_physics_frames(1)
+	return [joueur, manager, grunt]
+
+
+func _livre() -> Item:
+	return Item.new(ItemCatalog.by_id("manuel_foudre"))
+
+
+## Le râtelier est le seul endroit où un manuel apprend.
+func test_les_manuels_du_ratelier_apprennent_de_chaque_mort() -> void:
+	var scene := await _scene_de_mise_a_mort()
+	var joueur: Player = scene[0]
+	var manager: EnemyManager = scene[1]
+	var grunt: Enemy = scene[2]
+
+	var etudie := _livre()
+	joueur.ratelier.poser(0, etudie)
+	manager.report_kill(grunt)
+	# Une image avant de conclure : la chute d'un objet passe par
+	# `add_child.call_deferred()` (invariant 4), et sans elle le GroundItem est
+	# créé sans jamais entrer dans l'arbre — donc jamais libéré.
+	await wait_physics_frames(1)
+
+	assert_gt(etudie.manuel.experience, 0, "le livre à l'étude a appris")
+	assert_eq(
+		etudie.manuel.experience, joueur.xp,
+		"du même montant que son porteur, non divisé"
+	)
+
+
+## Celui qui dort dans le sac ne gagne rien : c'est ce qui donne son poids au
+## choix des trois.
+func test_un_manuel_dans_le_sac_n_apprend_rien() -> void:
+	var scene := await _scene_de_mise_a_mort()
+	var joueur: Player = scene[0]
+	var manager: EnemyManager = scene[1]
+	var grunt: Enemy = scene[2]
+
+	var range := _livre()
+	joueur.pick_up(range)
+	manager.report_kill(grunt)
+	# Une image avant de conclure : la chute d'un objet passe par
+	# `add_child.call_deferred()` (invariant 4), et sans elle le GroundItem est
+	# créé sans jamais entrer dans l'arbre — donc jamais libéré.
+	await wait_physics_frames(1)
+
+	assert_eq(range.manuel.experience, 0)
+	assert_gt(joueur.xp, 0, "le personnage, lui, a bien gagné")
+
+
+## Trois manuels reçoivent chacun le tout : un deuxième livre doit être une
+## ouverture, pas un handicap.
+func test_trois_manuels_recoivent_chacun_le_tout() -> void:
+	var scene := await _scene_de_mise_a_mort()
+	var joueur: Player = scene[0]
+	var manager: EnemyManager = scene[1]
+	var grunt: Enemy = scene[2]
+
+	var livres := [_livre(), _livre(), _livre()]
+	for i in livres.size():
+		joueur.ratelier.poser(i, livres[i])
+	manager.report_kill(grunt)
+	# Une image avant de conclure : la chute d'un objet passe par
+	# `add_child.call_deferred()` (invariant 4), et sans elle le GroundItem est
+	# créé sans jamais entrer dans l'arbre — donc jamais libéré.
+	await wait_physics_frames(1)
+
+	for livre in livres:
+		assert_eq(livre.manuel.experience, joueur.xp, "chacun le montant entier")
+
+
+## Ce que le personnage gagne n'a pas bougé d'un point : le manuel est une
+## seconde récompense, jamais un prélèvement sur la première.
+func test_le_personnage_gagne_exactement_ce_qu_il_gagnait() -> void:
+	var scene := await _scene_de_mise_a_mort()
+	var joueur: Player = scene[0]
+	var manager: EnemyManager = scene[1]
+	var grunt: Enemy = scene[2]
+
+	var attendu := maxi(roundi(
+		grunt.xp_value() * Enemy.facteur_d_experience(manager.niveau, joueur.level)
+	), 1)
+	joueur.ratelier.poser(0, _livre())
+	manager.report_kill(grunt)
+	# Une image avant de conclure : la chute d'un objet passe par
+	# `add_child.call_deferred()` (invariant 4), et sans elle le GroundItem est
+	# créé sans jamais entrer dans l'arbre — donc jamais libéré.
+	await wait_physics_frames(1)
+
+	assert_eq(joueur.xp, attendu, "la règle d'avant, inchangée")

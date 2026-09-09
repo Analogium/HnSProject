@@ -96,9 +96,15 @@ func _affixes(l: PackedStringArray) -> void:
 	l.append("|---|---|---|---|---|---|---|")
 	for brut in _tries():
 		var a: ItemAffix = brut
+		# Par `compatibles()` et non par `fits()` : le filtre par étiquettes n'est
+		# qu'une partie de la règle, et une base qui ne se porte nulle part
+		# n'accepte aucun affixe, pas même universel. Interrogé sur `fits()` seul,
+		# ce document annonçait qu'un manuel pouvait recevoir de la dextérité —
+		# une référence qui décrit autre chose que le tirage est pire qu'aucune
+		# référence.
 		var eligibles := 0
 		for autre in ItemCatalog.ALL:
-			if a.fits(autre):
+			if ItemAffixPool.compatibles(autre).has(a):
 				eligibles += 1
 		l.append("| `%s` | %s%s | %s | %s | %d | %d | %d / %d |" % [
 			a.id,

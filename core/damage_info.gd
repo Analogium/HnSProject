@@ -30,11 +30,23 @@ func color() -> Color:
 	return DamageType.COLORS[type]
 
 
+## Un coup porté par le joueur : le **montant** vient de l'appelant — de la
+## compétence lancée depuis le jalon 6 — et c'est ici, et nulle part ailleurs,
+## que le critique s'applique. Une compétence ne le retire ni ne le double.
+##
+## Le montant est demandé plutôt que déduit de `stats.attack_damage` : une
+## compétence sur trois ne tape pas avec l'arme, et lire la fiche ici rendrait
+## tous les sorts physiques sans qu'un seul appelant s'en aperçoive.
+##
+## **Un seul tirage, quel que soit le résultat** (invariant 3) : `Game.rng` est le
+## fil des tirages de la partie, et un coup qui consommerait tantôt un nombre
+## tantôt zéro décalerait toutes les graines de zone tirées ensuite.
 static func roll(
 	stats: CharacterStats,
 	source: Vector2,
+	montant: float,
 	type: DamageType.Kind = DamageType.Kind.PHYSICAL
 ) -> DamageInfo:
 	var crit := Game.rng.randf() < stats.crit_chance
-	var dmg := stats.attack_damage * (stats.crit_multiplier if crit else 1.0)
+	var dmg := montant * (stats.crit_multiplier if crit else 1.0)
 	return DamageInfo.new(dmg, source, stats.knockback_force, crit, type)

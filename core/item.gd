@@ -41,6 +41,15 @@ var explicits: Array[RolledAffix] = []
 ## venait — un objet de test, ou un objet d'une sauvegarde de version 1.
 var item_level: int = 1
 
+## L'état de ce manuel, quand cet objet en est un : son expérience et les points
+## qu'on y a placés. Null pour tout le reste, c'est-à-dire pour tout le catalogue
+## sauf les manuels.
+##
+## Sur l'exemplaire et **jamais sur l'archétype**, qui est un `.tres` partagé :
+## y écrire donnerait à tous les manuels de foudre du jeu les points du dernier
+## ouvert (invariant 2).
+var manuel: Manuel
+
 
 ## `p_explicits` accepte les deux formes : des RolledAffix, ou de simples StatMod
 ## qui deviennent alors des affixes **sans provenance**. C'est exactement l'état
@@ -51,12 +60,26 @@ func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	for e in p_explicits:
 		explicits.append(e if e is RolledAffix else RolledAffix.orphelin(e))
 	item_level = maxi(p_level, 1)
+	# Un exemplaire de manuel naît avec son état vierge. Le créer ici plutôt qu'au
+	# premier point placé évite d'écrire le même « si null » dans les cinq
+	# endroits qui le liront.
+	if base != null and base.manuel != null:
+		manuel = Manuel.new()
 
 
 ## La rareté se **déduit** du nombre d'affixes au lieu d'être tirée à part : deux
 ## sources pour la même information finiraient par se contredire, et un objet
 ## doré sans affixe serait un mensonge.
 func rarity() -> Rarity:
+	# Un manuel n'a pas d'affixes : sa rareté est celle de sa **version**, que
+	# porte le palier de sa lignée — le livre de départ est commun, ses versions
+	# plus rares viendront au-dessus. Deux branches, mais **une seule fonction** :
+	# le jour où la seconde se recopiera ailleurs, la rareté se mettra à dire deux
+	# choses différentes selon l'endroit où on la regarde.
+	if manuel != null:
+		if base.palier <= 1:
+			return Rarity.COMMUN
+		return Rarity.MAGIQUE if base.palier == 2 else Rarity.RARE
 	if explicits.is_empty():
 		return Rarity.COMMUN
 	if explicits.size() <= 2:
@@ -70,6 +93,20 @@ func color() -> Color:
 
 func display_name() -> String:
 	return base.display_name
+
+
+## Ce livre enseigne-t-il cette compétence ? Faux pour tout ce qui n'est pas un
+## manuel.
+##
+## **La question était posée à deux endroits** — le joueur, pour savoir combien de
+## points on y a mis ; le chargement d'une sauvegarde, pour décider quels points
+## garder. Deux réponses qui divergeraient donneraient des points relus qu'aucune
+## case ne saurait dépenser, ou l'inverse, et rien ne le dirait avant la partie
+## suivante.
+func enseigne(id_competence: String) -> bool:
+	if base == null or base.manuel == null:
+		return false
+	return base.manuel.case_de(id_competence) != null
 
 
 ## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul

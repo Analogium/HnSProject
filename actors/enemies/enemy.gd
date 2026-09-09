@@ -216,21 +216,26 @@ func _on_damaged(info: DamageInfo) -> void:
 const XP_PER_HEALTH := 0.35
 
 
-## Ce qu'on garde de l'expérience quand la zone dépasse le personnage. Cinq
-## niveaux d'avance sans pénalité, au-delà la récompense fond.
+## Ce qu'on garde de l'expérience quand la zone est **en dessous** du
+## personnage. Cinq niveaux de retard sans pénalité, au-delà la récompense fond.
 ##
-## Sans ce plafond, une zone de niveau 40 donnerait huit fois l'expérience — elle
-## dérive des PV, multipliés par huit : le niveau de zone cesserait d'être un
-## choix de risque pour devenir un raccourci.
+## **Le sens de ce plafond a été retourné au jalon 6.** Il pénalisait la zone qui
+## dépasse le personnage : un ennemi de niveau 40 vaut huit fois plus — son
+## expérience dérive de ses PV — mais un personnage de niveau 12 n'en touchait
+## presque rien. L'expérience cessait donc de suivre le niveau de l'ennemi, ce
+## qui est exactement ce qu'on attend d'elle.
 ##
-## Le **butin**, lui, n'est pas borné. C'est tout l'intérêt d'aller trop loin.
+## Elle le suit maintenant sans borne haute, comme le butin depuis le jalon 5 :
+## **descendre plus bas rapporte mieux**, et c'est le danger qui fait le prix.
+## Ce qui reste borné est l'autre bout — moudre une zone de niveau 1 à niveau 60
+## ne doit pas rester payant, sinon la profondeur ne serait plus qu'une option.
 const XP_MARGE := 5
 const XP_PERTE_PAR_NIVEAU := 0.10
 const XP_PLANCHER := 0.05
 
 
 static func facteur_d_experience(niveau_zone: int, niveau_joueur: int) -> float:
-	var ecart := niveau_zone - niveau_joueur
+	var ecart := niveau_joueur - niveau_zone
 	return clampf(1.0 - XP_PERTE_PAR_NIVEAU * float(maxi(0, ecart - XP_MARGE)), XP_PLANCHER, 1.0)
 
 

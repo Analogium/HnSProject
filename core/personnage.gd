@@ -16,17 +16,21 @@ extends RefCounted
 ## peut recevoir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
-## fichier : ici, le niveau des objets, au jalon 5.
-const VERSION := 2
+## fichier : le niveau des objets au jalon 5, les manuels et ce qu'on en a
+## appris au jalon 6.
+const VERSION := 3
 
 ## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité. Monter
 ## VERSION sans ajouter l'ancien numéro ici ferait passer tous les personnages
 ## existants en « illisible » d'un coup, alors que leurs fichiers sont intacts —
 ## et cela ne se verrait qu'au premier lancement après la mise à jour.
 ##
-## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1. Un
-## numéro **inconnu** reste refusé — jamais deviner.
-const VERSIONS_LUES := [1, 2]
+## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1.
+## Ce qu'une version 2 devient en version 3 : un râtelier vide, la barre de
+## départ — le coup d'épée et le tir, c'est-à-dire le jeu d'avant — et un manuel
+## de départ qui n'a pas encore été offert. Un numéro **inconnu** reste refusé :
+## jamais deviner.
+const VERSIONS_LUES := [1, 2, 3]
 
 ## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine sur
 ## une ligne. Vingt et non seize : une borne qui rejette « Jean-Luc de l'Est »
@@ -57,6 +61,20 @@ var sac := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 ## validés ici : c'est le Player qui sait lesquels existent, et il refuse déjà
 ## ce qu'il ne sait pas porter.
 var equipement := {}
+
+## Les manuels à l'étude. Ils ont quitté le sac pour y entrer, comme un plastron
+## qu'on enfile : ils sont donc écrits ici et **nulle part ailleurs**, sans quoi
+## il y aurait deux vérités sur leurs points et le rechargement en choisirait une.
+var ratelier := Ratelier.new()
+
+## Les cinq cases de la barre. Par défaut celles du jeu d'avant, ce qui est aussi
+## ce que devient une sauvegarde de version 2.
+var barre := BarreDeCompetences.par_defaut()
+
+## Le manuel de départ a-t-il déjà été donné. Sauvegardé, et non déduit de « le
+## sac contient un manuel » : un joueur qui jette le sien en recevrait un second,
+## et le livre de départ deviendrait une monnaie.
+var manuel_offert := false
 
 ## Vrai pour l'entrée d'un fichier qu'on n'a pas su lire : l'écran de sélection la
 ## montre grisée plutôt que de la faire disparaître, un personnage qui s'évapore
@@ -121,6 +139,19 @@ func vers_dict() -> Dictionary:
 		if item != null and item.base != null:
 			porte[emplacement] = _item_vers_dict(item)
 
+	# Les trois emplacements sont écrits même vides : une liste de trois entrées
+	# dont deux valent null se relit sans avoir à deviner laquelle manquait.
+	var livres := []
+	for item in ratelier.manuels:
+		livres.append(_item_vers_dict(item) if item != null and item.base != null else null)
+
+	# Une case vide s'écrit null et non chaîne vide : le fichier se lit à l'œil,
+	# et « rien » y ressemble à rien.
+	var cases := []
+	for i in BarreDeCompetences.EMPLACEMENTS:
+		var id := barre.id_de(i)
+		cases.append(null if id.is_empty() else id)
+
 	return {
 		"version": VERSION,
 		"id": id,
@@ -134,6 +165,9 @@ func vers_dict() -> Dictionary:
 		"points_a_placer": points_a_placer,
 		"sac": objets,
 		"equipement": porte,
+		"ratelier": livres,
+		"barre": cases,
+		"manuel_offert": manuel_offert,
 	}
 
 
@@ -187,6 +221,32 @@ static func depuis_dict(source: Dictionary) -> Personnage:
 		if item != null:
 			p.equipement[String(emplacement)] = item
 
+	var livres := _liste(source.get("ratelier"))
+	for i in mini(livres.size(), Ratelier.EMPLACEMENTS):
+		var item := _item_depuis_dict(livres[i])
+		if item == null:
+			continue
+		# Refusé — un fichier trafiqué, un objet qui n'est pas un manuel — il
+		# retombe dans le sac plutôt que de disparaître.
+		if p.ratelier.poser(i, item) != null and not p.sac.add(item):
+			push_warning("Manuel « %s » abandonné : le râtelier l'a refusé." % item.display_name())
+
+	# **Clé absente : la barre de départ.** C'est ce que devient une sauvegarde
+	# d'avant le jalon 6, et c'est le jeu d'avant. Clé présente : ce qu'elle dit,
+	# cases vides comprises — sinon une case qu'on a délibérément vidée
+	# reviendrait remplie au chargement suivant.
+	if source.has("barre"):
+		p.barre = BarreDeCompetences.new()
+		var cases := _liste(source.get("barre"))
+		for i in mini(cases.size(), BarreDeCompetences.EMPLACEMENTS):
+			var id := String(cases[i]) if cases[i] is String else ""
+			# Une compétence retirée du projet laisse sa case vide. Le fichier
+			# reste lisible : c'est une case de barre, pas un personnage.
+			if not id.is_empty() and CompetenceCatalog.by_id(id) != null:
+				p.barre.poser(i, id)
+
+	p.manuel_offert = source.get("manuel_offert", false) == true
+
 	return p
 
 
@@ -204,7 +264,16 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 			entree["affixe"] = r.affix_id
 			entree["tier"] = r.tier
 		affixes.append(entree)
-	return {"base": item.base.id, "niveau": item.item_level, "affixes": affixes}
+	var entree := {"base": item.base.id, "niveau": item.item_level, "affixes": affixes}
+	# L'état d'un manuel, quand cet objet en est un. Son **niveau ne s'écrit
+	# pas** : il se déduit de son expérience, et l'écrire créerait la deuxième
+	# vérité que ce format refuse partout ailleurs — ni PV, ni statistiques.
+	if item.manuel != null:
+		entree["manuel"] = {
+			"exp": item.manuel.experience,
+			"points": item.manuel.points.duplicate(),
+		}
+	return entree
 
 
 ## Renvoie null quand la base n'existe plus dans le projet. L'objet est alors
@@ -241,7 +310,29 @@ static func _item_depuis_dict(source: Variant) -> Item:
 	# version 1, et il n'y a pas de version à tester pour le savoir — un champ
 	# manquant vaut son défaut, ici comme partout ailleurs dans cette fonction.
 	var niveau := _entier(source as Dictionary, "niveau", 1)
-	return Item.new(base, explicits, niveau)
+	var item := Item.new(base, explicits, niveau)
+	_manuel_depuis_dict(item, (source as Dictionary).get("manuel"))
+	return item
+
+
+## Remplit l'état du manuel que `Item.new()` a déjà créé vierge. On le remplit,
+## on ne le remplace pas : c'est l'objet qui décide s'il en a un, d'après sa base.
+static func _manuel_depuis_dict(item: Item, source: Variant) -> void:
+	if item.manuel == null or not source is Dictionary:
+		return
+	var etat := source as Dictionary
+	item.manuel.experience = maxi(_entier(etat, "exp", 0), 0)
+
+	var points: Variant = etat.get("points")
+	if not points is Dictionary:
+		return
+	for id in points:
+		# La question n'est pas « cette compétence existe-t-elle » mais « ce
+		# livre l'enseigne-t-il » : des points placés dans une case que
+		# l'archétype ne contient plus ne sont dépensables nulle part, et les
+		# garder ferait un manuel qui doit des points à personne.
+		if item.enseigne(String(id)):
+			item.manuel.points[String(id)] = maxi(int(points[id]), 0)
 
 
 static func _cellule(source: Variant) -> Vector2i:

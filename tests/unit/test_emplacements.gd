@@ -107,6 +107,12 @@ func test_les_bases_du_catalogue_visent_des_familles_connues() -> void:
 	for base in ItemCatalog.ALL:
 		if base.family.is_empty():
 			continue
+		# La famille des manuels est la seule qui n'a pas d'emplacement, et ce
+		# n'est pas une porte ouverte aux fautes de frappe : c'est
+		# `test_un_archetype_va_avec_la_famille_du_manuel` qui interdit une base
+		# non équipable qui ne serait pas un manuel.
+		if base.family == ItemBase.FAMILLE_MANUEL:
+			continue
 		assert_true(
 			familles.has(base.family),
 			"« %s » vise la famille « %s », qui n'a aucun emplacement"

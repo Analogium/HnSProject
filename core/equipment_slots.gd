@@ -48,6 +48,20 @@ static func exists(slot: String) -> bool:
 	return SLOTS.has(slot)
 
 
+## Vrai si un emplacement accepte cette famille — donc si un objet de cette
+## famille se porte.
+##
+## La question est ici et nulle part ailleurs : ce qui ne se porte pas échappe
+## aux règles écrites pour l'équipement — pas d'affixes, pas de lignée à paliers,
+## pas d'implicite qui doit croître. La poser en `family == "manual"` dans chaque
+## règle ferait de la règle suivante un oubli en puissance.
+static func famille_equipable(famille: String) -> bool:
+	for id in SLOTS:
+		if SLOTS[id]["family"] == famille:
+			return true
+	return false
+
+
 static func family_of(slot: String) -> String:
 	return SLOTS[slot]["family"] if SLOTS.has(slot) else ""
 

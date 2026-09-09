@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "tir"
+nom = "Trait"
+nature = 3
+cadence = 1
+recharge = 0.3
+cout_en_mana = 6.0
+degats_par_point = Array[float]([0.0])
+stat_de_base = "spell_damage"
+attribut = ""
+pourcentage_par_attribut = 0.0
+niveau_de_manuel_requis = 0

@@ -210,6 +210,9 @@ const GEAR := [
 	# d'armure légère, qui ne pouvaient pas réemployer le casque et le plastron
 	# sans se lire comme eux.
 	"tome", "hood", "tunic",
+	# Jalon 6 : le manuel, qui ne pouvait pas réemployer le tome — celui-ci est
+	# le livre qu'on tient en main gauche, celui-là est le livre qu'on lit.
+	"manuel",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée dans le sac.
@@ -300,6 +303,25 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			c.capsule(Vector2(cx + 0.4, top + 9.2), Vector2(cx + 5.0, top + 9.2), 1.0, R_ACCENT)
 			# Les pages, en creux le long du bord libre.
 			c.capsule(Vector2(cx + 4.4, top + 6.4), Vector2(cx + 4.4, top + 12.0), 0.7, R_CLOTH, 0.35)
+
+		"manuel":
+			# **Deux livres empilés**, vus de trois quarts. Le tome de la main
+			# gauche est un livre unique et debout ; une pile couchée s'en
+			# distingue par sa silhouette seule, ce qui est la seule chose qui se
+			# lise à la taille d'une case — un détail de deux pixels s'y perd.
+			#
+			# Chaque volume est une reliure sombre surmontée d'une tranche claire :
+			# c'est ce liseré qui dit « pages » et empêche la pile de se lire comme
+			# deux briques. Les tranches prennent la rampe du **métal**, la plus
+			# claire des trois au premier palier ; en étoffe ou en cuir, tous deux
+			# sombres, la pile sortait comme un monticule.
+			c.capsule(Vector2(cx - 5.4, top + 12.6), Vector2(cx + 5.4, top + 12.6), 1.9, R_LEATHER)
+			c.capsule(Vector2(cx - 4.6, top + 11.2), Vector2(cx + 4.6, top + 11.2), 0.8, R_METAL, 0.40)
+			c.capsule(Vector2(cx - 4.4, top + 8.4), Vector2(cx + 4.4, top + 8.4), 1.9, R_LEATHER)
+			c.capsule(Vector2(cx - 3.6, top + 7.0), Vector2(cx + 3.6, top + 7.0), 0.8, R_METAL, 0.40)
+			# Le fermoir du volume du dessus, seul accent : posé au bord gauche,
+			# là où le dos se lit, et jamais au centre où il passerait pour un titre.
+			c.capsule(Vector2(cx - 4.4, top + 8.4), Vector2(cx - 2.4, top + 8.4), 1.0, R_ACCENT)
 
 		"hood":
 			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare

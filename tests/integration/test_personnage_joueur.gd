@@ -118,7 +118,21 @@ func test_remplir_n_ecrit_aucune_statistique() -> void:
 	var dict := p.vers_dict()
 	assert_false(dict.has("stats"))
 	assert_false(dict.has("max_health"))
-	assert_eq(dict.size(), 12, "douze champs, ni plus ni moins")
+
+	# Les champs attendus, nommés plutôt que comptés : un total seul annonce
+	# qu'il y en a un de trop sans dire lequel, et c'est le moment où on aimerait
+	# le savoir. Ajouter une ligne ici doit rester un geste délibéré.
+	var attendus := [
+		"version", "id", "nom", "silhouette", "cree_le", "joue_le",
+		"niveau", "experience", "attributs", "points_a_placer",
+		"sac", "equipement",
+		# Jalon 6 : ce qu'on étudie, ce qu'on a sous les doigts, et si le livre de
+		# départ a déjà été donné.
+		"ratelier", "barre", "manuel_offert",
+	]
+	for cle in attendus:
+		assert_true(dict.has(cle), "le champ « %s » a disparu du fichier" % cle)
+	assert_eq(dict.size(), attendus.size(), "et pas un champ de plus")
 
 
 ## Le tour complet, sans passer par le disque : jouer, remplir, sérialiser,

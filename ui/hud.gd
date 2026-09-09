@@ -157,11 +157,15 @@ func _draw() -> void:
 	# consulte du coin de l'œil, ils doivent tenir dans un seul regard.
 	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), "Niv. %d" % _level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_COLOR)
-	# Le compte exact reste au bord droit, au-dessus de sa propre barre.
+	# Le compte exact **au centre**, au-dessus de sa barre et sous les jauges.
+	# Il a fait les deux bords avant d'atterrir là : à droite il tombait derrière
+	# la barre de compétences, à gauche derrière la fiche de personnage — les deux
+	# seules fenêtres qui descendent jusqu'en bas. Le centre est la bande que rien
+	# n'occupe, pour la même raison qui y a mis les jauges au jalon 4.
 	_text(
 		Vector2(roundf(MARGIN), roundf(size.y - BOTTOM - HEIGHT - 3.0)),
 		"%d exp / %d exp" % [_xp, _xp_needed],
-		HORIZONTAL_ALIGNMENT_RIGHT, roundi(w), LABEL_COLOR
+		HORIZONTAL_ALIGNMENT_CENTER, roundi(w), LABEL_COLOR
 	)
 
 

@@ -329,3 +329,152 @@ func test_un_affixe_sans_provenance_ne_s_en_invente_pas() -> void:
 	assert_false(repris.connu())
 	assert_eq(repris.tier, 0)
 	assert_almost_eq(repris.mod.value, 22.0, 0.0001, "mais le bonus, lui, s'applique")
+
+
+# --------------------------------------------------------------------------
+# Les manuels, le râtelier et la barre (jalon 6, version 3)
+# --------------------------------------------------------------------------
+
+## Ce qu'un manuel a appris traverse le disque : c'est la seule chose du jalon 6
+## qui ne se recalcule pas, et la perdre serait perdre des heures de jeu.
+func test_les_points_d_un_manuel_survivent_a_l_aller_retour() -> void:
+	var p := Personnage.nouveau("Studieuse", 0)
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"), [], 30)
+	livre.manuel.experience = 340
+	livre.manuel.points["eclair_vif"] = 3
+	p.sac.place(livre, Vector2i(0, 0))
+
+	var relu := Personnage.depuis_dict(p.vers_dict())
+	assert_not_null(relu)
+	var repris: Item = relu.sac.placed[0].data
+	assert_not_null(repris.manuel, "il est revenu manuel")
+	assert_eq(repris.manuel.experience, 340)
+	assert_eq(repris.manuel.points_de("eclair_vif"), 3)
+	assert_eq(repris.item_level, 30, "et il garde son niveau d'objet")
+
+
+## Le niveau d'un manuel se **déduit** de son expérience. L'écrire créerait la
+## deuxième vérité que ce format refuse partout ailleurs : ni PV, ni statistiques,
+## ni total d'attributs.
+func test_le_niveau_d_un_manuel_ne_s_ecrit_pas() -> void:
+	var p := Personnage.nouveau("Deduite", 0)
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.experience = 900
+	p.sac.place(livre, Vector2i(0, 0))
+
+	var ecrit: Dictionary = p.vers_dict()["sac"][0]["manuel"]
+	assert_true(ecrit.has("exp"), "l'expérience, oui")
+	assert_false(ecrit.has("niveau"), "le niveau, non : il se recalcule")
+
+
+## Un manuel au râtelier a quitté le sac : il est écrit là et **nulle part
+## ailleurs**. Deux écritures feraient deux vérités sur ses points, et le
+## rechargement en choisirait une au hasard.
+func test_un_manuel_au_ratelier_revient_au_ratelier() -> void:
+	var p := Personnage.nouveau("Rangee", 0)
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"), [], 30)
+	livre.manuel.points["eclair_vif"] = 2
+	assert_null(p.ratelier.poser(1, livre), "l'emplacement du milieu était libre")
+
+	var relu := Personnage.depuis_dict(p.vers_dict())
+	assert_not_null(relu)
+	assert_eq(relu.sac.placed.size(), 0, "il n'est pas aussi dans le sac")
+	assert_null(relu.ratelier.a(0), "ni ailleurs sur le râtelier")
+	var repris := relu.ratelier.a(1)
+	assert_not_null(repris, "il est revenu à sa place")
+	assert_eq(repris.manuel.points_de("eclair_vif"), 2)
+
+
+func test_la_barre_survit_a_l_aller_retour() -> void:
+	var p := Personnage.nouveau("Barree", 0)
+	p.barre.poser(2, "eclair_vif")
+	p.barre.vider(1)
+
+	var relu := Personnage.depuis_dict(p.vers_dict())
+	assert_not_null(relu)
+	assert_eq(relu.barre.id_de(0), CompetenceCatalog.ID_ATTAQUE)
+	assert_eq(relu.barre.id_de(1), "", "une case vidée exprès le reste")
+	assert_eq(relu.barre.id_de(2), "eclair_vif")
+	assert_eq(relu.barre.id_de(4), "")
+
+
+## Une compétence retirée du projet vide sa case. Le fichier reste lisible : on
+## perd une touche, pas un personnage.
+func test_une_competence_disparue_laisse_sa_case_vide() -> void:
+	var source := Personnage.nouveau("Oubliee", 0).vers_dict()
+	source["barre"] = ["attaque", "sort_retire_du_projet", null, null, null]
+
+	var relu := Personnage.depuis_dict(source)
+	assert_not_null(relu, "le personnage se charge quand même")
+	assert_eq(relu.barre.id_de(0), CompetenceCatalog.ID_ATTAQUE)
+	assert_eq(relu.barre.id_de(1), "", "la case de la disparue est vide")
+
+
+## Des points placés dans une case que l'archétype n'a plus ne sont dépensables
+## nulle part : les garder ferait un manuel qui doit des points à personne.
+func test_des_points_pour_une_competence_inconnue_sont_ignores() -> void:
+	var p := Personnage.nouveau("Rature", 0)
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.points["eclair_vif"] = 1
+	p.sac.place(livre, Vector2i(0, 0))
+	var source := p.vers_dict()
+	source["sac"][0]["manuel"]["points"]["case_qui_n_existe_plus"] = 4
+
+	var relu := Personnage.depuis_dict(source)
+	assert_not_null(relu)
+	var repris: Item = relu.sac.placed[0].data
+	assert_eq(repris.manuel.points_de("eclair_vif"), 1, "ce que le livre enseigne reste")
+	assert_eq(repris.manuel.points_de("case_qui_n_existe_plus"), 0, "le reste est oublié")
+	assert_eq(repris.manuel.points_places(), 1)
+
+
+## Une sauvegarde d'avant le jalon 6 arrive avec le jeu d'avant : rien au
+## râtelier, le coup d'épée et le tir sous les doigts, et un manuel de départ
+## qu'on n'a pas encore reçu.
+func test_une_version_2_arrive_avec_le_jeu_d_avant() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v2.json", FileAccess.READ)
+	assert_not_null(fichier)
+	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
+	fichier.close()
+
+	var p := Personnage.depuis_dict(contenu)
+	assert_not_null(p)
+	assert_true(p.ratelier.vide(), "aucun manuel à l'étude")
+	assert_eq(p.barre.id_de(0), CompetenceCatalog.ID_ATTAQUE, "le coup d'épée")
+	assert_eq(p.barre.id_de(1), CompetenceCatalog.ID_TIR, "et le tir")
+	assert_eq(p.barre.id_de(2), "", "rien d'autre")
+	assert_false(p.manuel_offert, "le manuel de départ reste à donner")
+
+
+## Le format qu'on écrit aujourd'hui, figé dans le dépôt à côté de ceux d'hier.
+## Il attrape ce qu'un aller-retour en mémoire laisse passer : un champ renommé
+## des deux côtés à la fois.
+func test_le_fichier_de_reference_v3_se_relit() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v3.json", FileAccess.READ)
+	assert_not_null(fichier, "le fichier de référence est bien dans le dépôt")
+	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
+	fichier.close()
+
+	var p := Personnage.depuis_dict(contenu)
+	assert_not_null(p, "une sauvegarde de version 3 se lit")
+	assert_eq(p.nom, "Brenna")
+	assert_true(p.manuel_offert, "celui-ci a déjà eu son manuel")
+
+	var etudie := p.ratelier.a(0)
+	assert_not_null(etudie, "le manuel du râtelier")
+	assert_eq(etudie.base.id, "manuel_foudre")
+	assert_eq(etudie.item_level, 30)
+	assert_eq(etudie.manuel.experience, 340)
+	assert_eq(etudie.manuel.points_de("eclair_vif"), 3)
+
+	assert_eq(p.barre.id_de(2), "eclair_vif", "la case du milieu")
+	assert_eq(p.barre.id_de(3), "", "et les deux dernières sont vides")
+
+	# Un second manuel dort dans le sac, vierge : c'est le cas qu'on oublie —
+	# celui qui n'apprend rien parce qu'il n'est pas à l'étude.
+	var range_dans_le_sac := 0
+	for pose in p.sac.placed:
+		if pose.data.manuel != null:
+			range_dans_le_sac += 1
+			assert_eq(pose.data.manuel.points_places(), 0)
+	assert_eq(range_dans_le_sac, 1)

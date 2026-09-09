@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="PackedScene" path="res://actors/player/player.tscn" id="2_player"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" path="res://ui/hud.gd" id="8_hud"]
 [ext_resource type="Script" path="res://ui/inventory_panel.gd" id="9_inv"]
 [ext_resource type="Script" path="res://ui/stats_panel.gd" id="10_stats"]
+[ext_resource type="Script" path="res://ui/manuel_panel.gd" id="11_manuels"]
+[ext_resource type="Script" path="res://ui/barre_panel.gd" id="12_barre"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -53,9 +55,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -219.0
-offset_top = -168.0
+offset_top = -192.0
 offset_right = -8.0
-offset_bottom = -34.0
+offset_bottom = -58.0
 mouse_filter = 2
 script = ExtResource("9_inv")
 
@@ -98,6 +100,27 @@ offset_bottom = 14.0
 theme_override_colors/font_color = Color(0.8, 0.77, 0.86, 1)
 theme_override_font_sizes/font_size = 9
 text = "PERSONNAGE"
+
+[node name="Manuels" type="Control" parent="UI"]
+offset_left = 172.0
+offset_top = 14.0
+offset_right = 382.0
+offset_bottom = 244.0
+mouse_filter = 2
+script = ExtResource("11_manuels")
+
+[node name="Barre" type="Control" parent="UI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -162.0
+offset_top = -54.0
+offset_right = -8.0
+offset_bottom = -14.0
+mouse_filter = 2
+script = ExtResource("12_barre")
 
 [node name="Temoin" type="Label" parent="UI"]
 anchor_left = 1.0
