@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="PackedScene" path="res://actors/player/player.tscn" id="2_player"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://ui/stats_panel.gd" id="10_stats"]
 [ext_resource type="Script" path="res://ui/manuel_panel.gd" id="11_manuels"]
 [ext_resource type="Script" path="res://ui/barre_panel.gd" id="12_barre"]
+[ext_resource type="Script" path="res://ui/atelier_panel.gd" id="13_atelier"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -108,6 +109,14 @@ offset_right = 382.0
 offset_bottom = 244.0
 mouse_filter = 2
 script = ExtResource("11_manuels")
+
+[node name="Atelier" type="Control" parent="UI"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 396.0
+offset_bottom = 292.0
+mouse_filter = 2
+script = ExtResource("13_atelier")
 
 [node name="Barre" type="Control" parent="UI"]
 anchors_preset = 3

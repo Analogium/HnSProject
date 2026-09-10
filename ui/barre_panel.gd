@@ -42,6 +42,10 @@ var _etat_affiche := -1
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
+	# Au plus proche voisin : une icône de vingt-quatre pixels agrandie dans une
+	# case de vingt-six serait lissée par défaut, et la trame du pixel art
+	# deviendrait une bouillie grise.
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
 func _exit_tree() -> void:
@@ -250,9 +254,7 @@ func _draw_slot(index: int) -> void:
 
 	var competence := _player.barre.competence_de(index)
 	if competence != null:
-		# Un disque de la couleur de la nature : à vingt-six pixels, une teinte se
-		# lit d'un coup d'œil là où un nom se tronque. Le menu, lui, écrit les noms.
-		draw_circle(r.get_center(), SLOT * 0.30, DamageType.COLORS[competence.nature])
+		_draw_marque(r, competence)
 		if _player.mana < competence.cout_en_mana:
 			draw_rect(r, RECHARGE)
 
@@ -278,6 +280,21 @@ func _draw_slot(index: int) -> void:
 			_font, Vector2(r.position.x + (SLOT - largeur) * 0.5, r.end.y + TOUCHE_H - 2.0),
 			touche, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT
 		)
+
+
+## Ce qui identifie la compétence dans sa case : son icône si elle en a une, à
+## défaut un disque de la couleur de sa nature.
+##
+## Le disque n'est pas un bouchon en attendant mieux : à vingt-six pixels une
+## teinte se lit d'un coup d'œil, et une compétence sans image reste jouable et
+## reconnaissable. Le menu, lui, écrit les noms en clair.
+func _draw_marque(r: Rect2, competence: Competence) -> void:
+	var tex := IconeDeCompetence.texture(competence)
+	if tex == null:
+		draw_circle(r.get_center(), SLOT * 0.30, DamageType.COLORS[competence.nature])
+		return
+	var taille := tex.get_size() * float(IconeDeCompetence.facteur(tex, SLOT))
+	draw_texture_rect(tex, Rect2(r.position + (r.size - taille) * 0.5, taille), false)
 
 
 func _draw_menu() -> void:

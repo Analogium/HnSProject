@@ -31,6 +31,9 @@ const PACK_MIN_TILES := 3
 @onready var stats_panel: StatsPanel = $UI/Stats
 @onready var manuels: ManuelPanel = $UI/Manuels
 @onready var barre: BarrePanel = $UI/Barre
+## Outil de réglage, à retirer avant publication : il tient en trois
+## attaches — ce nœud, la touche F8, et le branchement de `drop_requested`.
+@onready var atelier: AtelierPanel = $UI/Atelier
 @onready var spawner: EnemySpawner = $EnemySpawner
 @onready var temoin: Label = $UI/Temoin
 
@@ -84,6 +87,9 @@ func _ready() -> void:
 	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
 	# qu'on jette : un seul chemin pour poser un objet au sol.
 	manuels.drop_requested.connect(_on_item_dropped)
+	# L'établi pose par le même chemin que tout le reste : un seul endroit sait
+	# faire tomber un objet, et l'outil de réglage n'y fait pas exception.
+	atelier.drop_requested.connect(_on_item_dropped)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -205,6 +211,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_I: inventory.toggle()
 		KEY_C: stats_panel.toggle()
 		KEY_M: manuels.toggle()
+		# **Pas une touche de fonction.** F5, F6, F7 et F8 sont les raccourcis de
+		# la barre d'exécution de l'éditeur — lancer, lancer la scène, pause,
+		# arrêter — et depuis Godot 4.4 la fenêtre de jeu est intégrée à
+		# l'éditeur : ils atteignent le jeu pendant qu'on y joue. F8 fermait donc
+		# la partie au lieu d'ouvrir l'établi. B comme banc d'essai.
+		KEY_B: atelier.toggle()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -373,5 +385,6 @@ func _overlay_text() -> String:
 		"[H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
+		"[B] etabli (reglage)",
 		"[ECHAP] menu et sauvegarde",
 	])

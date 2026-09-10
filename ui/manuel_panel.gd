@@ -66,6 +66,10 @@ var _exp_affichee := -1
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
+	# Au plus proche voisin : une icône de vingt-quatre pixels dans une case de
+	# trente-quatre serait lissée par défaut, et la trame du pixel art deviendrait
+	# une bouillie grise.
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
 func _exit_tree() -> void:
@@ -308,27 +312,59 @@ func _draw_case(manuel: Manuel, case: CaseDeManuel, survolee: bool) -> void:
 
 	var places := manuel.points_de(competence.id)
 	var maximum := competence.points_max()
+	var verrouillee := manuel.niveau() < competence.niveau_de_manuel_requis
 	var teinte := VERROU
 	if places >= maximum:
 		teinte = PLEINE
-	elif manuel.niveau() >= competence.niveau_de_manuel_requis:
+	elif not verrouillee:
 		teinte = OUVERTE if manuel.points_restants() > 0 else ATTENTE
 
+	# L'icône d'abord, le liseré par-dessus : c'est lui qui dit l'état de la case,
+	# et une icône claire qui déborderait dessus en effacerait le message.
+	_draw_icone(r, competence, verrouillee)
 	draw_rect(r, teinte, false, 2.0 if survolee else 1.0)
 
-	# Le compte au centre, la seule chose qui tienne à cette taille. Verrouillée,
-	# la case annonce ce qu'elle demande plutôt que zéro : « niv. 4 » explique,
-	# « 0/5 » laisse croire à une case qu'on a le droit d'ouvrir.
+	# Verrouillée, la case annonce ce qu'elle demande plutôt que zéro : « niv. 4 »
+	# explique, « 0/5 » laisse croire à une case qu'on a le droit d'ouvrir.
 	var libelle := "%d/%d" % [places, maximum]
-	if places == 0 and manuel.niveau() < competence.niveau_de_manuel_requis:
+	if places == 0 and verrouillee:
 		libelle = "niv. %d" % competence.niveau_de_manuel_requis
+	_draw_compte(r, libelle, TEXTE if teinte != VERROU else UiPalette.LABEL)
+
+
+## L'icône de la compétence, **assombrie tant que la case est verrouillée**. Une
+## icône grise se lit comme « pas encore » d'un coup d'œil, là où il faut lire le
+## « niv. 4 » du coin pour comprendre la même chose.
+##
+## Rien à dessiner quand la compétence n'a pas d'image : la case garde son fond,
+## et c'est le compte qui l'identifie. Une page de manuel reste utilisable sans
+## une seule icône.
+func _draw_icone(r: Rect2, competence: Competence, verrouillee: bool) -> void:
+	var tex := IconeDeCompetence.texture(competence)
+	if tex == null:
+		return
+	var taille := tex.get_size() * float(IconeDeCompetence.facteur(tex, CASE))
+	draw_texture_rect(
+		tex, Rect2(r.position + (r.size - taille) * 0.5, taille), false,
+		Color(0.42, 0.40, 0.48) if verrouillee else Color.WHITE
+	)
+
+
+## Le compte des points investis, **en bas à droite sur une plaque sombre**.
+##
+## Au centre — là où il était avant les icônes — il tombait en plein milieu du
+## dessin. Et posé à même l'icône sans sa plaque, il disparaîtrait dès que
+## celle-ci est claire à cet endroit : c'est le chiffre qui compte pour décider
+## d'un point, il ne peut pas dépendre de ce que le dessin fait derrière.
+func _draw_compte(r: Rect2, libelle: String, teinte: Color) -> void:
 	var largeur := _font.get_string_size(
 		libelle, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE
-	).x
-	_texte(
-		libelle, r.position + Vector2((CASE - largeur) * 0.5, CASE * 0.5 + 3.0),
-		FONT_SIZE, TEXTE if teinte != VERROU else UiPalette.LABEL
-	)
+	).x + 4.0
+	# Décalée d'un pixel : posée sur le bord, la plaque mangerait le liseré qui
+	# dit l'état de la case.
+	var plaque := Rect2(r.end - Vector2(largeur + 1.0, LINE + 1.0), Vector2(largeur, LINE))
+	draw_rect(plaque, Color(0.06, 0.05, 0.09, 0.82))
+	_texte(libelle, plaque.position + Vector2(2.0, LINE - 2.0), FONT_SIZE, teinte)
 
 
 ## Ce que la case survolée donne, calculé par la **même** fonction que le

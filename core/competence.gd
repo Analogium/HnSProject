@@ -76,6 +76,17 @@ enum Cadence { ARME, INCANTATION }
 ## pour ce qui ne vient d'aucun manuel.
 @export var niveau_de_manuel_requis: int = 0
 
+## L'image de la compétence, ou null. **Null est un état normal** : la barre
+## retombe alors sur un disque de la couleur de sa nature, et une compétence sans
+## icône reste jouable.
+##
+## Une image fournie et non dessinée par la forge : contrairement à un objet, dont
+## l'icône *est* le dessin qui le pose dans la main d'un personnage, un sort n'a
+## pas de forme que le jeu connaisse déjà. Elle est ramenée à la grille par
+## `IconeDeCompetence`, qui est le seul endroit qui sait quelle taille elle doit
+## faire.
+@export var icone: Texture2D
+
 
 ## L'intervalle entre deux lancers, cadence comprise. Ici et non chez le joueur :
 ## c'est la compétence qui sait si elle suit l'arme ou l'incantation, et lui

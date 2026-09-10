@@ -194,3 +194,88 @@ func test_les_attaques_de_depart_ne_montent_avec_aucun_attribut() -> void:
 			c.attribut.is_empty(),
 			"« %s » monterait deux fois avec « %s »" % [c.nom, c.attribut]
 		)
+
+
+# --------------------------------------------------------------------------
+# Les icônes
+# --------------------------------------------------------------------------
+
+## Une image de cette taille, unie, pour éprouver la mise au cadre sans dépendre
+## d'un fichier du disque : le tuyau doit marcher avant qu'une seule illustration
+## n'existe.
+func _image(w: int, h: int) -> Texture2D:
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.7, 0.5, 1.0))
+	return ImageTexture.create_from_image(img)
+
+
+func _avec_icone(id: String, tex: Texture2D) -> Competence:
+	IconeDeCompetence.oublier()
+	var c := Competence.new()
+	c.id = id
+	c.icone = tex
+	return c
+
+
+## Sans image, pas d'icône — et ce n'est pas une erreur. C'est l'état de toutes
+## les compétences tant qu'aucune n'a été produite, et la barre doit alors
+## retomber sur son disque de couleur au lieu de laisser une case vide.
+func test_une_competence_sans_image_n_a_pas_d_icone() -> void:
+	assert_null(IconeDeCompetence.texture(null), "aucune compétence")
+	assert_null(
+		IconeDeCompetence.texture(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE)),
+		"une compétence sans image"
+	)
+
+
+## Une illustration générée fait mille pixels de côté, pas vingt-quatre. Sans
+## cette réduction elle sortirait de sa case et recouvrirait ses voisines.
+func test_une_grande_image_est_ramenee_au_cadre() -> void:
+	var tex := IconeDeCompetence.texture(_avec_icone("grande", _image(512, 512)))
+	assert_not_null(tex)
+	assert_eq(tex.get_size(), Vector2(IconeDeCompetence.COTE, IconeDeCompetence.COTE))
+
+
+## Les proportions sont gardées : une image large et basse ramenée dans un carré
+## deviendrait autre chose que ce qu'on a dessiné.
+func test_la_reduction_garde_les_proportions() -> void:
+	var tex := IconeDeCompetence.texture(_avec_icone("large", _image(400, 200)))
+	assert_eq(tex.get_size(), Vector2(24.0, 12.0))
+
+
+## Une image déjà petite n'est **pas** agrandie ici : c'est la case qui le fera,
+## et la barre et la page de manuel n'ont pas la même taille. L'agrandir au
+## chargement figerait un facteur qui ne vaut que pour l'une des deux.
+func test_une_petite_image_reste_intacte() -> void:
+	var tex := IconeDeCompetence.texture(_avec_icone("petite", _image(16, 16)))
+	assert_eq(tex.get_size(), Vector2(16.0, 16.0))
+
+
+## Le facteur d'agrandissement est **entier**, sinon certaines lignes de pixels
+## sont doublées et pas d'autres : la trame de l'icône se met à onduler, et ça ne
+## se voit qu'à l'écran.
+func test_le_facteur_d_agrandissement_est_entier_et_tient_dans_la_case() -> void:
+	var douze := _image(12, 12)
+	assert_eq(IconeDeCompetence.facteur(douze, 26.0), 2, "deux fois douze tient dans vingt-six")
+	assert_eq(IconeDeCompetence.facteur(douze, 34.0), 2, "et trois fois, non")
+	var vingt_quatre := _image(24, 24)
+	assert_eq(IconeDeCompetence.facteur(vingt_quatre, 26.0), 1)
+	assert_eq(IconeDeCompetence.facteur(null, 26.0), 1, "et sans icône, on n'agrandit rien")
+
+
+## L'image fournie n'est jamais retouchée : c'est une ressource du disque, et la
+## redimensionner sur place l'écrirait pour toutes les parties suivantes de la
+## session (invariant 2).
+func test_l_image_fournie_n_est_pas_modifiee() -> void:
+	var source := _image(96, 96)
+	IconeDeCompetence.texture(_avec_icone("intacte", source))
+	assert_eq(source.get_size(), Vector2(96.0, 96.0), "la source garde sa taille")
+
+
+## Le cadre des icônes ne doit **jamais** dépasser la plus petite case qui les
+## dessine : `facteur()` ne descend pas en dessous de 1, donc une icône plus
+## grande que sa case y serait dessinée telle quelle et déborderait sur ses
+## voisines. On ne lirait plus la grille, et ça ne se verrait qu'à l'écran.
+func test_le_cadre_des_icones_tient_dans_la_plus_petite_case() -> void:
+	assert_lte(float(IconeDeCompetence.COTE), BarrePanel.SLOT, "la case de la barre")
+	assert_lte(float(IconeDeCompetence.COTE), ManuelPanel.CASE, "la case du manuel")

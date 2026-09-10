@@ -27,15 +27,101 @@ extends Area2D
 ## dans le corps et touche le tireur lui-même ; trop loin, il saute une case.
 const MUZZLE := 12.0
 
+# --------------------------------------------------------------------------
+# Le dessin
+# --------------------------------------------------------------------------
+
+## Le glyphe de l'éclair, sept sommets dans une boîte de 24, **pointe vers +x**.
+## Le nœud tourne déjà sur sa trajectoire — `setup()` pose sa `rotation` — donc
+## le dessin n'a rien à orienter : il travaille en repère local.
+##
+## Sept sommets et non une image : à cette taille une texture serait figée, et un
+## éclair figé a l'air mort. Ici les sommets bougent d'une image à l'autre.
+const GLYPHE := [
+	Vector2(-10, 5), Vector2(1, 5), Vector2(1, 2), Vector2(10, 2),
+	Vector2(-2, -5), Vector2(-2, -1), Vector2(-10, -5),
+]
+
+## La boîte du glyphe, puis son étirement : long dans le sens de la marche,
+## mince en travers. Dix-huit pixels sur trois — un dard, pas un pictogramme.
+##
+## **C'est un choix de lecture, pas un réglage de goût** : à cette finesse le cran
+## de l'éclair se referme presque, et la forme se lit comme un trait effilé. C'est
+## celle qui a été retenue en la regardant en jeu, contre la variante large qui
+## gardait mieux son cran mais faisait la taille du torse du joueur.
+const TAILLE := 12.0
+const ALLONGE := 1.8
+const FINESSE := 0.62
+
+## Le halo est le glyphe lui-même, réempilé plus large et plus pâle. Un contour
+## épais aurait été plus court à écrire, mais les jointures d'une polyligne large
+## sont anguleuses : le halo sortait carré autour d'une forme qui ne l'est pas.
+const AUREOLES := [[1.34, 0.10], [1.18, 0.15], [1.07, 0.20]]
+
+## Le corps est sous-alimenté exprès. En mélange additif, la teinte pleine fait
+## déborder le canal le plus clair et le tir sort **blanc**, quelle que soit sa
+## nature — le froid et la foudre deviendraient le même trait. À cette valeur, il
+## se cumule avec ses auréoles jusqu'à sa couleur sans jamais saturer, sauf au
+## croisement des passes, qui devient le cœur brûlant.
+const CORPS := 0.78
+
+## Écart des sommets d'une image à l'autre, en unités du glyphe. C'est tout le
+## grésillement : sans lui le tir est un autocollant qui glisse.
+const GIGUE := 0.4
+
 var _dir := Vector2.RIGHT
 var _damage := 0.0
 var _source: Node2D
 var _life := 0.0
 
+## Tirage **local**, et surtout pas `Game.rng` : celui-là est le fil des tirages
+## de la partie, et un scintillement qui y puiserait décalerait toutes les graines
+## de zone tirées ensuite (invariant 3). Semé sur l'identité du nœud, pour que
+## deux tirs d'une même salve ne grésillent pas à l'unisson.
+var _scintille := RandomNumberGenerator.new()
+
 
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
+	_scintille.seed = int(get_instance_id())
+	# Additif : la lumière s'ajoute au sol au lieu de le couvrir. C'est ce qui
+	# sépare un trait coloré posé sur l'image de quelque chose qui éclaire.
+	var m := CanvasItemMaterial.new()
+	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	material = m
+
+
+## Le glyphe à cette échelle, sommets regigotés. Reconstruit à chaque appel et
+## non mis en cache : c'est le fait qu'il change qui fait l'effet.
+func _forme(echelle: float) -> PackedVector2Array:
+	var k := TAILLE * echelle / 24.0
+	var pts := PackedVector2Array()
+	for v: Vector2 in GLYPHE:
+		var d := Vector2(v.x * ALLONGE, v.y * FINESSE)
+		d += Vector2(
+			_scintille.randf_range(-GIGUE, GIGUE),
+			_scintille.randf_range(-GIGUE, GIGUE)
+		)
+		pts.append(d * k)
+	return pts
+
+
+## La couleur vient de la nature du tir, jamais réécrite ici : `DamageType.COLORS`
+## est la seule définition, et c'est elle que le nombre qui s'envole et la fiche
+## de résistances montrent déjà.
+func _draw() -> void:
+	# Type explicite : COLORS est un tableau non typé, donc l'indexer rend un
+	# Variant et l'inférence échoue — le même piège que `generator.grid` dans la
+	# zone.
+	var teinte: Color = DamageType.COLORS[damage_type]
+	for a: Array in AUREOLES:
+		var halo := teinte
+		halo.a = float(a[1])
+		draw_colored_polygon(_forme(float(a[0])), halo)
+	var corps := teinte
+	corps.a = CORPS
+	draw_colored_polygon(_forme(1.0), corps)
 
 
 ## Fait partir un tir, avec le piège de l'ordre : add_child d'abord, sinon
@@ -67,6 +153,10 @@ func setup(dir: Vector2, damage: float, source: Node2D) -> void:
 func _physics_process(delta: float) -> void:
 	global_position += _dir * speed * delta
 	_life += delta
+	# Redessiné à chaque pas : c'est le seul endroit du jeu où repeindre en
+	# permanence se justifie, parce que c'est le changement lui-même qu'on
+	# regarde. Sept sommets et quatre polygones, sur une poignée de tirs.
+	queue_redraw()
 	if _life >= lifetime:
 		queue_free()
 

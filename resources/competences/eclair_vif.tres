@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="Competence" format=3]
+[gd_resource type="Resource" script_class="Competence" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icones/eclair_vif.png" id="2_icone"]
 
 [resource]
 script = ExtResource("1_comp")
@@ -17,3 +18,4 @@ stat_de_base = "spell_damage"
 attribut = "intelligence"
 pourcentage_par_attribut = 4.0
 niveau_de_manuel_requis = 1
+icone = ExtResource("2_icone")
