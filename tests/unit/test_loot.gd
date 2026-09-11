@@ -46,7 +46,7 @@ func test_chaque_chute_est_un_exemplaire_neuf() -> void:
 			assert_false(item in vus, "deux chutes ne partagent pas d'objet")
 			vus.append(item)
 	var disque: ItemBase = load("res://resources/items/epee.tres")
-	assert_eq(disque.implicit_value, 4.0, "epee.tres n'a pas été écrit")
+	assert_eq(disque.implicit_value, 2.0, "epee.tres n'a pas été écrit")
 
 
 ## L'implicite de la base et les affixes tirés sortent par le même canal : c'est

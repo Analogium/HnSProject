@@ -66,13 +66,14 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | `Tirage` | `ItemAffixPool` précharge les `.tres` d'`ItemAffix` ; un `ItemAffix` qui appellerait la réserve refermerait la boucle. |
 | `Touches` | Sept scènes lisent le clavier, aucune n'a à connaître les six autres. |
 | `ArtPalette`, `UiPalette` | Les couleurs sont lues par tout le monde et ne lisent personne. |
+| `Textes` | La traduction est demandée par les tables de libellés, par le contenu et par les panneaux : elle ne peut nommer aucun des trois. |
 | `MotsCles`, `StatsDeCompetence` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Competence` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
 
 ## Où vit chaque règle
 
 | La question | La réponse |
 |---|---|
-| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances), appliqué par `Hurtbox` |
+| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
 | Quels objets tombent dans une zone ? | `ItemCatalog.disponibles()` |
 | Jusqu'à quand une base tombe-t-elle ? | `ItemCatalog.fenetre_de_chute()` |
 | Quels affixes une base peut-elle porter ? | `ItemAffix.fits()` via `ItemAffixPool.compatibles()` |
@@ -81,19 +82,23 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quelle rareté ? | `Item.rarity()`, **déduite** du nombre d'affixes |
 | Où va un objet équipé ? | `EquipmentSlots.free_for()` |
 | Ce qui tient dans le sac ? | `Inventory.fits()` |
-| Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` |
+| Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `StatsDeCompetence.fourchette_lisible()` ; un pourcentage, `StatMod.pourcentage()`, dont la typographie suit la langue |
+| En quelle langue s'écrit un texte ? | `Textes.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.langue` choisit |
+| Jusqu'où descend une fenêtre flottante ? | `Hud.haut_des_jauges()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus |
 | Ce que rapporte un ennemi ? | `Enemy.xp_value()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
 | Quand l'expérience fond-elle ? | `Enemy.facteur_d_experience()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
 | Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
-| Combien fait une compétence ? | `Competence.degats()` — **la seule formule** des dégâts de base |
-| Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement comme par la page du manuel** : dégâts, projectiles, dispersion, vitesse, coût, intervalle |
+| Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement, la page du manuel et la fiche de personnage** : dégâts par nature en fourchette et leur décomposition, projectiles, dispersion, vitesse, coût, intervalle |
+| Combien une compétence inflige-t-elle en moyenne ? | `StatsDeCompetence.moyenne_par_lancer()` et `moyenne_par_seconde()` : si tout touche, avant défenses, sans critique |
+| Combien fait un coup parti ? | `StatsDeCompetence.tirer()` : une fois par projectile, une fois par coup d'épée pour tout son arc, avec `Game.rng` et **un tirage par fourchette ouverte** |
 | Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles` |
-| Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence` |
+| Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence`, avec la force changée en dégâts physiques aux attaques |
 | À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
 | Un tir ou un coup d'arme ? | Le mot-clé `projectile`, lu par `Player.lancer()` — pas la cadence |
 | Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les quatre refus — case vide, non apprise, réserve, recharge |
-| Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne |
+| Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `CompetenceCatalog.DE_DEPART` |
+| Une ligne se donne-t-elle en fourchette ? | `StatMod.stat_en_fourchette()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.depuis_definition()` |
 | Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
 | Peut-on y placer un point ? | `Manuel.peut_investir()` — les quatre conditions, jamais dans l'interface |
 | Où un manuel apprend-il ? | Au râtelier seulement, par `EnemyManager.report_kill()` |
@@ -106,8 +111,10 @@ compilation, et la moitié ne se voit qu'au lancement suivant.
 ### 1. Les identifiants écrits sur le disque ne changent jamais
 
 `ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, les
-identifiants de `MotsCles` — la portée d'un affixe en nomme un — et les noms de
-champs de `Personnage.vers_dict()` sont **dans les sauvegardes des joueurs**.
+identifiants de `MotsCles` — la portée d'un affixe en nomme un —, ceux de
+`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `degats_froid` — et les
+noms de champs de `Personnage.vers_dict()` sont **dans les sauvegardes des
+joueurs**.
 Renommer `chest` en `torse` fait disparaître le plastron de tout le monde — au
 prochain chargement seulement, sans erreur.
 
@@ -252,6 +259,12 @@ Rien de **calculé** n'est écrit : ni PV, ni statistiques. Elles se reconstruis
 à partir de la fiche de base, des attributs placés et de l'équipement. Les
 écrire créerait une seconde vérité qui figerait l'équilibrage du jour de la
 sauvegarde, et un rééquilibrage n'atteindrait jamais les personnages existants.
+
+Une ligne d'objet qui vise une statistique **disparue** est convertie à la
+lecture, dans `Personnage._ligne_actuelle()`, et seulement par une équivalence
+exacte avec le jeu d'avant : les dégâts plats des versions 1 à 4 deviennent des
+dégâts ajoutés aux attaques ou aux sorts. Ce qui n'a pas d'équivalent est retiré
+**avec un avertissement**, jamais deviné.
 
 L'écriture passe par un `.tmp` renommé : une coupure laisse un fichier inutile
 plutôt qu'un personnage tronqué. Trois déclencheurs — la croix de la fenêtre, le

@@ -56,7 +56,10 @@ if grep -qiE "SCRIPT ERROR|Parse Error|Failed to load" <<<"$IMPORT"; then
 fi
 
 echo "== generation =="
-SORTIE="$("$GODOT" --headless --path "$TMP_WIN" 2>&1)"
+# --language fr : le catalogue est un document français. Sans lui, il se
+# régénérerait en anglais sur une machine anglaise, et le diff ferait croire à
+# une retouche de contenu.
+SORTIE="$("$GODOT" --headless --path "$TMP_WIN" --language fr 2>&1)"
 grep -iE "SCRIPT ERROR|ERROR" <<<"$SORTIE" | head -10
 
 if [[ ! -f "$USERDATA/CATALOGUE.md" ]]; then

@@ -13,13 +13,15 @@ const PAD := 4.0
 const SLOT := 26.0
 const GAP := 4.0
 const FONT_SIZE := 8
-const LINE := 10.0
 ## Hauteur réservée sous les cases pour le libellé de touche.
 const TOUCHE_H := 10.0
+## Une entrée du menu : l'icône à la taille de sa grille, et un pixel d'air
+## dessus et dessous. Plus basse, l'icône devrait être réduite d'un facteur
+## fractionnaire, et la trame du pixel art perdrait une ligne sur trois.
+const ENTREE_H := IconeDeCompetence.COTE + 2.0
 
 const FOND := Color(0.10, 0.09, 0.13, 0.88)
 const VIDE := Color(0.16, 0.15, 0.20, 0.85)
-const TEXTE := Color(0.90, 0.88, 0.95)
 ## La case dont le menu est ouvert, et celle que la souris survole.
 const CHOISIE := Color(0.95, 0.82, 0.30)
 ## Le voile de recharge : il descend, il ne tourne pas — un cadran demanderait un
@@ -51,6 +53,13 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _menu >= 0:
 		Game.grab_ui_input(self, false)
+
+
+## La langue a changé : les noms du menu et les libellés de touche sont dessinés
+## à la main, et la barre ne se repeint qu'au changement d'état.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		queue_redraw()
 
 
 func bind(player: Player) -> void:
@@ -176,12 +185,12 @@ func _slot_rect(index: int) -> Rect2:
 	return Rect2(PAD + float(index) * (SLOT + GAP), PAD, SLOT, SLOT)
 
 
-## Les entrées du menu : « vider », puis ce qu'on peut poser.
-func _entrees() -> Array[String]:
-	var out: Array[String] = ["— vider la case —"]
+## Les entrées du menu : « vider », qui n'a pas de compétence, puis ce qu'on peut
+## poser.
+func _entrees() -> Array[Competence]:
+	var out: Array[Competence] = [null]
 	if _player != null:
-		for competence in _player.competences_disponibles():
-			out.append(competence.nom)
+		out.append_array(_player.competences_disponibles())
 	return out
 
 
@@ -191,16 +200,24 @@ func _entrees() -> Array[String]:
 ##
 ## Le menu monte depuis la barre : il n'y a rien au-dessus, et tout en dessous.
 func _menu_cadre(entrees: int) -> Rect2:
-	var hauteur := float(entrees) * LINE + PAD * 2.0
+	var hauteur := float(entrees) * ENTREE_H + PAD * 2.0
 	return Rect2(PAD, -hauteur - PAD, size.x - PAD * 2.0, hauteur)
 
 
 func _menu_rect(entree: int) -> Rect2:
 	var cadre := _menu_cadre(_entrees().size())
 	return Rect2(
-		cadre.position.x, cadre.position.y + PAD + float(entree) * LINE,
-		cadre.size.x, LINE
+		cadre.position.x, cadre.position.y + PAD + float(entree) * ENTREE_H,
+		cadre.size.x, ENTREE_H
 	)
+
+
+## La place de l'icône dans son entrée, à gauche. Le clic la lit comme le dessin :
+## c'est sur l'image qu'on vise d'abord.
+func _icone_d_entree(entree: int) -> Rect2:
+	var r := _menu_rect(entree)
+	var cote := float(IconeDeCompetence.COTE)
+	return Rect2(r.position + Vector2(2.0, (r.size.y - cote) * 0.5), Vector2(cote, cote))
 
 
 ## Le libellé de la touche, lu dans la **carte d'entrées** et non réécrit ici :
@@ -230,7 +247,7 @@ static func libelle_de_touche(index: int) -> String:
 			return OS.get_keycode_string(lue)
 		var clic := evenement as InputEventMouseButton
 		if clic != null:
-			return "clic G" if clic.button_index == MOUSE_BUTTON_LEFT else "clic D"
+			return Textes.t("clic G") if clic.button_index == MOUSE_BUTTON_LEFT else Textes.t("clic D")
 	return ""
 
 
@@ -287,13 +304,15 @@ func _draw_slot(index: int) -> void:
 ##
 ## Le disque n'est pas un bouchon en attendant mieux : à vingt-six pixels une
 ## teinte se lit d'un coup d'œil, et une compétence sans image reste jouable et
-## reconnaissable. Le menu, lui, écrit les noms en clair.
+## reconnaissable. Le menu montre la même marque, pour qu'on retrouve dans la
+## liste la silhouette qu'on voit sur la barre.
 func _draw_marque(r: Rect2, competence: Competence) -> void:
+	var cote := minf(r.size.x, r.size.y)
 	var tex := IconeDeCompetence.texture(competence)
 	if tex == null:
-		draw_circle(r.get_center(), SLOT * 0.30, DamageType.COLORS[competence.nature])
+		draw_circle(r.get_center(), cote * 0.30, DamageType.COLORS[competence.nature])
 		return
-	var taille := tex.get_size() * float(IconeDeCompetence.facteur(tex, SLOT))
+	var taille := tex.get_size() * float(IconeDeCompetence.facteur(tex, cote))
 	draw_texture_rect(tex, Rect2(r.position + (r.size - taille) * 0.5, taille), false)
 
 
@@ -307,8 +326,17 @@ func _draw_menu() -> void:
 		var r := _menu_rect(i)
 		if i == _survol_menu:
 			draw_rect(r, Color(1.0, 1.0, 1.0, 0.08))
+		var base := r.position.y + (r.size.y + FONT_SIZE) * 0.5 - 1.0
+		var competence := entrees[i]
+		if competence == null:
+			draw_string(
+				_font, Vector2(r.position.x + 3.0, base), Textes.t("— vider la case —"),
+				HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT
+			)
+			continue
+		var icone := _icone_d_entree(i)
+		_draw_marque(icone, competence)
 		draw_string(
-			_font, Vector2(r.position.x + 3.0, r.position.y + LINE - 2.0), entrees[i],
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE,
-			UiPalette.HINT if i == 0 else TEXTE
+			_font, Vector2(icone.end.x + 5.0, base), competence.nom_affiche(),
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.TEXTE
 		)

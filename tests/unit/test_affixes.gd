@@ -28,7 +28,7 @@ func test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer() -> void:
 		portes += 1
 		assert_true(MotsCles.existe(a.portee), "« %s » vise « %s », hors de la liste" % [a.id, a.portee])
 		assert_true(
-			StatsDeCompetence.LABELS.has(a.stat),
+			StatsDeCompetence.modifiable(a.stat),
 			"« %s » vise « %s », qu'un modificateur ne peut pas toucher" % [a.id, a.stat]
 		)
 	assert_gt(portes, 0, "la réserve en contient")
@@ -54,7 +54,7 @@ func test_chaque_mot_cle_est_vise_par_quelque_chose() -> void:
 
 func test_chaque_implicite_vise_un_champ_reel_et_nomme() -> void:
 	var st := CharacterStats.new()
-	for nom in ["epee", "baguette", "plastron"]:
+	for nom in ["baguette", "plastron", "bouclier"]:
 		var base: ItemBase = load("res://resources/items/%s.tres" % nom)
 		assert_not_null(st.get(base.implicit_stat), "l'implicite de %s existe" % nom)
 		assert_true(StatMod.LABELS.has(base.implicit_stat), "et il a un libellé")
@@ -128,7 +128,7 @@ func test_pas_de_ligne_en_double_sur_un_objet() -> void:
 func test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne() -> void:
 	var vus := {}
 	for a in ItemAffixPool.ALL:
-		var cle := "%s/%s/%s/%s" % [a.stat, a.percent, a.tags, a.exclut]
+		var cle := "%s/%s/%s/%s/%s" % [a.stat, a.portee, a.percent, a.tags, a.exclut]
 		assert_false(vus.has(cle), "%s fait doublon avec %s" % [a.id, vus.get(cle, "")])
 		vus[cle] = a.id
 
@@ -136,7 +136,7 @@ func test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne() -> void:
 func test_la_rarete_se_deduit_du_nombre_d_affixes() -> void:
 	var base: ItemBase = load("res://resources/items/epee.tres")
 	assert_eq(Item.new(base).rarity(), Item.Rarity.COMMUN, "sans affixe")
-	var un: Array[StatMod] = [StatMod.new("attack_damage", StatMod.Mode.FLAT, 1.0)]
+	var un: Array[StatMod] = [StatMod.new("armor", StatMod.Mode.FLAT, 1.0)]
 	assert_eq(Item.new(base, un).rarity(), Item.Rarity.MAGIQUE)
 	var trois: Array[StatMod] = [un[0], un[0], un[0]]
 	assert_eq(Item.new(base, trois).rarity(), Item.Rarity.RARE)
@@ -153,13 +153,13 @@ func test_la_rarete_se_deduit_du_nombre_d_affixes() -> void:
 func test_une_baguette_ne_tire_jamais_d_affixe_de_melee() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242
-	var interdits := ["attack_damage", "attack_speed", "attack_range"]
+	var interdits := ["attack_speed", "attack_range"]
 	var baguette: ItemBase = load("res://resources/items/baguette.tres")
 	for i in 1000:
 		for m in ItemAffixPool.roll(rng, baguette, 60):
 			assert_false(
-				m.mod.stat in interdits,
-				"une baguette a tiré « %s », qui appartient au corps à corps" % m.mod.stat
+				m.mod.stat in interdits or m.mod.portee == MotsCles.ATTAQUE,
+				"une baguette a tiré « %s », qui appartient au corps à corps" % m.mod.label()
 			)
 
 
@@ -173,8 +173,25 @@ func test_une_epee_tire_encore_ses_affixes_de_melee() -> void:
 	for i in 600:
 		for m in ItemAffixPool.roll(rng, epee, 60):
 			vus[m.mod.stat] = true
-	for attendu in ["attack_damage", "attack_speed", "attack_range"]:
+			vus[m.mod.portee] = true
+	for attendu in [MotsCles.ATTAQUE, "attack_speed", "attack_range"]:
 		assert_true(vus.has(attendu), "l'épée tire encore « %s »" % attendu)
+
+
+## `ensorcele` ne sort que sur ce qu'on tient pour lancer : les armes et les main
+## gauche de lanceur, jamais un bijou ni une épée. Vérifié base par base sur tout
+## le catalogue : une étiquette `caster` posée un jour sur une capuche le ferait
+## tomber ici, et ce serait une décision à prendre plutôt qu'un effet de bord.
+func test_les_degats_des_sorts_en_pourcentage_ne_sortent_que_sur_les_objets_de_lanceur() -> void:
+	var ensorcele := ItemAffixPool.by_id("ensorcele")
+	assert_eq(ensorcele.portee, MotsCles.SORT)
+	var de_lanceur := 0
+	for base: ItemBase in ItemCatalog.ALL:
+		var attendu: bool = base.family in ["weapon", "offhand"] and base.tags.has("caster")
+		assert_eq(ensorcele.fits(base), attendu, "« %s »" % base.id)
+		if attendu:
+			de_lanceur += 1
+	assert_gt(de_lanceur, 0, "encore faut-il qu'il existe des objets de lanceur")
 
 
 ## Une statistique qui ne se trouve qu'à un endroit fait de cet endroit une
@@ -290,11 +307,11 @@ func test_chaque_affixe_existe_des_le_niveau_1() -> void:
 ## plancher, un objet de niveau 60 pouvait sortir le palier des premières zones,
 ## et le meilleur objet du jeu valait parfois moins que le premier ramassé.
 func test_la_fenetre_de_paliers_glisse_avec_le_niveau() -> void:
-	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
-	var precedent := acere.ouverts(1)
+	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
+	var precedent := physique.ouverts(1)
 
 	for niveau in range(2, 61):
-		var courant := acere.ouverts(niveau)
+		var courant := physique.ouverts(niveau)
 		assert_lte(
 			courant.size(), ItemAffix.PALIERS_OUVERTS,
 			"niveau %d : jamais plus que la fenêtre" % niveau
@@ -319,13 +336,13 @@ func test_la_fenetre_de_paliers_glisse_avec_le_niveau() -> void:
 func test_un_objet_de_haut_niveau_ne_tire_plus_les_paliers_de_debut() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242
-	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
-	var dernier := acere.tiers.size()
+	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
+	var dernier := physique.tiers.size()
 
 	for i in 500:
-		assert_eq(acere.roll(rng, 1).tier, dernier, "au niveau 1, le pire palier et lui seul")
+		assert_eq(physique.roll(rng, 1).tier, dernier, "au niveau 1, le pire palier et lui seul")
 		assert_lte(
-			acere.roll(rng, 60).tier, ItemAffix.PALIERS_OUVERTS,
+			physique.roll(rng, 60).tier, ItemAffix.PALIERS_OUVERTS,
 			"au niveau 60, rien sous la fenêtre"
 		)
 
@@ -351,18 +368,18 @@ func test_les_paliers_atteignables_sur_une_plage_sont_l_union_des_fenetres() -> 
 
 
 ## Le cas qui a motivé le filtrage de la fiche, écrit avec ses vrais chiffres :
-## l\'épée large cesse de tomber en zone 40, et le T1 d\'« acéré » demande le
+## l\'épée large cesse de tomber en zone 40, et le T1 du « physique aux attaques » demande le
 ## niveau 52. Aucune épée large ne peut donc porter ce palier — l\'afficher
 ## décrivait un objet impossible.
 func test_une_base_n_atteint_pas_un_palier_hors_de_sa_fenetre() -> void:
-	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
 	var large := ItemCatalog.by_id("epee_large")
 	var fenetre := ItemCatalog.fenetre_de_chute(large)
 
-	assert_eq(acere.tiers[0].niveau_requis, 52, "le T1 d\'acéré demande le niveau 52")
+	assert_eq(physique.tiers[0].niveau_requis, 52, "le T1 du physique aux attaques demande le niveau 52")
 	assert_eq(fenetre.y, 40, "et l\'épée large cesse de tomber en zone 40")
 	assert_false(
-		acere.ouverts_entre(fenetre.x, fenetre.y).has(0),
+		physique.ouverts_entre(fenetre.x, fenetre.y).has(0),
 		"donc aucune épée large ne porte ce palier"
 	)
 
@@ -370,7 +387,7 @@ func test_une_base_n_atteint_pas_un_palier_hors_de_sa_fenetre() -> void:
 	# en train de tout couper.
 	var guerre := ItemCatalog.by_id("lame_de_guerre")
 	assert_true(
-		acere.ouverts_entre(guerre.niveau_requis, Game.NIVEAU_MAX).has(0),
+		physique.ouverts_entre(guerre.niveau_requis, Game.NIVEAU_MAX).has(0),
 		"la lame de guerre, elle, atteint le T1"
 	)
 
@@ -407,21 +424,21 @@ func test_la_fenetre_d_un_palier_dit_ce_que_le_tirage_accepte() -> void:
 ## qui permet à la fiche d'annoncer « zones 19 à 22 » sur une base qui s'arrête
 ## en 22, au lieu de « 19 à 51 » qu'il faut intersecter de tête.
 func test_la_fenetre_d_un_palier_reste_dans_la_plage_demandee() -> void:
-	var acere: ItemAffix = load("res://resources/item_affixes/acere.tres")
+	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
 	var epee := ItemCatalog.by_id("epee")
 	var zones := ItemCatalog.fenetre_de_chute(epee)
 	assert_eq(zones, Vector2i(1, 22), "l\'épée tombe des zones 1 à 22")
 
-	for brut in acere.ouverts_entre(zones.x, zones.y):
+	for brut in physique.ouverts_entre(zones.x, zones.y):
 		var index := int(brut)
-		var fenetre := acere.fenetre_du_palier(index, zones.x, zones.y)
+		var fenetre := physique.fenetre_du_palier(index, zones.x, zones.y)
 		assert_gte(fenetre.x, zones.x, "T%d ne commence pas avant la base" % [index + 1])
 		assert_lte(fenetre.y, zones.y, "T%d ne finit pas après elle" % [index + 1])
 		assert_lte(fenetre.x, fenetre.y, "T%d a une fenêtre non vide" % [index + 1])
 
 	# Et un palier hors de portée rend une fenêtre vide plutôt qu'une fenêtre
 	# fausse : le T1 demande le niveau 52, l'épée s'arrête à 22.
-	assert_eq(acere.fenetre_du_palier(0, zones.x, zones.y), Vector2i(0, 0))
+	assert_eq(physique.fenetre_du_palier(0, zones.x, zones.y), Vector2i(0, 0))
 
 
 ## Le cœur du jalon : le niveau d\'objet ne corrige pas des probabilités par une
@@ -592,16 +609,29 @@ func test_le_tier_1_est_le_meilleur() -> void:
 ## l'adresse de celui qui le tient, et ce sont les multiplicateurs que les
 ## affixes touchent — « +10 % de vitesse » se lit, « -9 % de recharge » demande
 ## une conversion mentale à chaque fois.
+##
+## Une ligne de compétence de départ est atteinte par les dégâts qui visent l'un
+## de ses mots-clés : « dégâts de froid aux attaques » monte l'attaque.
 func test_chaque_statistique_de_la_fiche_est_atteignable_par_un_affixe() -> void:
 	var touchees := {}
 	for a in ItemAffixPool.ALL:
 		touchees[a.stat] = true
 	for groupe in StatsPanel.GROUPS:
 		for champ in groupe[1]:
+			var atteinte := touchees.has(champ)
+			if StatsPanel._est_une_competence(champ):
+				atteinte = _des_degats_ajoutes_atteignent(CompetenceCatalog.by_id(champ))
 			assert_true(
-				touchees.has(champ),
+				atteinte,
 				"« %s » s\'affiche sur la fiche mais aucun affixe ne l\'atteint" % champ
 			)
+
+
+func _des_degats_ajoutes_atteignent(competence: Competence) -> bool:
+	for a in ItemAffixPool.ALL:
+		if competence.porte(a.portee) and StatsDeCompetence.nature_ajoutee(a.stat) >= 0:
+			return true
+	return false
 
 
 ## La règle demandée : les résistances partout **sauf** sur les armes. Écrite
@@ -651,11 +681,13 @@ func test_les_defenses_ne_sortent_jamais_sur_une_arme() -> void:
 func test_une_baguette_a_de_quoi_etre_offensive() -> void:
 	var baguette: ItemBase = load("res://resources/items/baguette.tres")
 	var stats := {}
+	var portees := {}
 	for a in ItemAffixPool.eligible(baguette, 1):
 		stats[a.stat] = true
-	assert_true(stats.has("spell_damage"), "des dégâts de sort")
+		portees[a.portee] = true
+	assert_true(portees.has(MotsCles.SORT), "des dégâts ajoutés aux sorts")
 	assert_true(stats.has("cast_speed"), "et une cadence")
-	assert_false(stats.has("attack_damage"), "toujours pas de mêlée")
+	assert_false(portees.has(MotsCles.ATTAQUE), "toujours pas de mêlée")
 	assert_false(stats.has("attack_speed"))
 
 
@@ -747,3 +779,58 @@ func test_un_affixe_disparu_n_affiche_pas_de_palier() -> void:
 	# Et un numéro de palier hors de l\'échelle, si une échelle raccourcit.
 	var vieux := RolledAffix.new("preste", 99, StatMod.new("move_speed", StatMod.Mode.PERCENT, 5.0))
 	assert_eq(vieux.palier_et_plage(), "")
+
+
+# --------------------------------------------------------------------------
+# Les dégâts ajoutés en fourchette (jalon 8)
+# --------------------------------------------------------------------------
+
+## Une nature est une nature comme les autres : chacune s'ajoute aux attaques et
+## aux sorts, y compris celles qu'aucune compétence du jeu ne porte encore.
+func test_chaque_nature_s_ajoute_aux_attaques_et_aux_sorts() -> void:
+	for nature in DamageType.Kind.values():
+		for famille in [MotsCles.ATTAQUE, MotsCles.SORT]:
+			var trouve := false
+			for a in ItemAffixPool.ALL:
+				if a.stat == StatsDeCompetence.stat_ajoutee(nature) and a.portee == famille:
+					trouve = true
+			assert_true(trouve, "« %s » ne s'ajoute pas %s" % [
+				DamageType.NAMES[nature], MotsCles.destinataire(famille)
+			])
+
+
+## Une fourchette ne sort jamais à l'envers : sa borne haute commence au-dessus de
+## sa basse, et elle croît avec les paliers comme la basse.
+func test_chaque_fourchette_est_monotone_et_a_l_endroit() -> void:
+	for a in ItemAffixPool.ALL:
+		if not a.est_une_fourchette():
+			continue
+		for i in a.tiers.size():
+			var t: ItemAffixTier = a.tiers[i]
+			assert_lte(t.min_haut, t.max_haut, "%s T%d : borne haute à l'envers" % [a.id, i + 1])
+			assert_gte(
+				t.min_haut, t.max_value,
+				"%s T%d : la borne haute peut sortir sous la basse" % [a.id, i + 1]
+			)
+			if i + 1 >= a.tiers.size():
+				continue
+			var pire: ItemAffixTier = a.tiers[i + 1]
+			assert_gt(
+				t.min_haut, pire.min_haut,
+				"%s : T%d n'est pas meilleur que T%d" % [a.id, i + 1, i + 2]
+			)
+			assert_gt(t.max_haut, pire.max_haut)
+
+
+## Un tirage donne deux nombres, chacun dans sa plage : c'est ce que la ligne
+## « T5  (7–10 à 21–29) » de l'infobulle promet.
+func test_une_fourchette_tiree_reste_dans_ses_deux_plages() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 808
+	var froid := ItemAffixPool.by_id("froid_aux_sorts")
+	for i in 300:
+		var tire := froid.roll(rng, 60)
+		var palier: ItemAffixTier = froid.tiers[tire.tier - 1]
+		assert_between(tire.mod.value, palier.min_value, palier.max_value)
+		assert_between(tire.mod.value_max, palier.min_haut, palier.max_haut)
+		assert_eq(tire.mod.portee, MotsCles.SORT)

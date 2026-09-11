@@ -19,6 +19,12 @@ const FICHIER := "user://reglages.json"
 ## de facteur de zoom, pas un facteur négatif.
 const PLEIN_ECRAN := 0
 
+## Les deux langues du jeu. Le **français est la langue source** : le code écrit
+## ses textes en français et ils servent de clés, donc il n'existe pas de fichier
+## de traduction française. L'anglais vit dans `i18n/en.po`.
+const FRANCAIS := "fr"
+const ANGLAIS := "en"
+
 ## Barres de vie au-dessus des acteurs, ennemis comme alliés.
 var show_health_bars := true:
 	set(value):
@@ -34,6 +40,22 @@ var show_affix_names := true:
 		if value == show_affix_names:
 			return
 		show_affix_names = value
+		changed.emit()
+		_ecrire()
+
+## La langue de l'interface, « fr » ou « en ». La poser change la locale du
+## moteur : c'est lui qui traduit, les `Label` des scènes se retraduisent seuls et
+## les panneaux dessinés reçoivent `NOTIFICATION_TRANSLATION_CHANGED`.
+##
+## Toujours normalisée : une valeur venue d'un fichier trafiqué ferait chercher au
+## moteur des traductions qui n'existent pas.
+var langue := FRANCAIS:
+	set(value):
+		var choisie := normaliser(value)
+		if choisie == langue:
+			return
+		langue = choisie
+		TranslationServer.set_locale(langue)
 		changed.emit()
 		_ecrire()
 
@@ -75,9 +97,24 @@ var _chargement := false
 ## options ne mente pas. Autrement le jeu écraserait au démarrage toute taille
 ## qu'il n'a pas décidée — celle du cadre de jeu intégré à l'éditeur, par
 ## exemple, qui a son propre sélecteur.
+##
+## La langue suit la même règle : celle du système au premier lancement, celle du
+## joueur ensuite. Elle est posée **en mode chargement**, donc sans rien écrire :
+## un premier lancement qui créerait le fichier ferait passer la taille de fenêtre
+## par défaut pour un choix, dès le lancement suivant.
 func _ready() -> void:
 	var choisie := FileAccess.file_exists(FICHIER)
+
+	_chargement = true
+	langue = normaliser(TranslationServer.get_locale())
+	_chargement = false
 	_charger()
+
+	# Dans tous les cas, et pas seulement quand la valeur a changé : le moteur
+	# doit tourner sur « fr » ou « en » exactement, jamais sur le « fr_CA » que le
+	# système a pu poser.
+	TranslationServer.set_locale(langue)
+
 	if choisie:
 		_appliquer()
 		return
@@ -85,6 +122,53 @@ func _ready() -> void:
 	_chargement = true
 	echelle = echelle_observee()
 	_chargement = false
+
+
+# --------------------------------------------------------------------------
+# La langue
+# --------------------------------------------------------------------------
+
+## Ramène une locale quelconque à l'une des deux langues du jeu : tout ce qui
+## commence par « fr » donne le français, tout le reste l'anglais.
+##
+## Sans elle, un Windows en allemand demanderait au moteur une traduction
+## allemande qui n'existe pas ; il afficherait alors les clés, c'est-à-dire du
+## français — la bonne langue par accident, et pour un joueur sur deux la mauvaise.
+##
+## Pure et statique : le test ne doit pas dépendre de la langue de la machine qui
+## le lance.
+static func normaliser(locale: String) -> String:
+	return FRANCAIS if locale.to_lower().begins_with(FRANCAIS) else ANGLAIS
+
+
+## Ce que le bouton affiche : la langue en cours, **écrite dans cette
+## langue-là**, et jamais traduite. Un joueur tombé dans une langue qu'il ne lit
+## pas doit reconnaître la sienne dans la ronde.
+const LIBELLES_DE_LANGUE := {
+	FRANCAIS: "Langue : Français",
+	ANGLAIS: "Language: English",
+}
+
+
+static func libelle_de_langue(valeur: String) -> String:
+	return LIBELLES_DE_LANGUE.get(normaliser(valeur), "")
+
+
+func libelle_de_langue_courante() -> String:
+	return libelle_de_langue(langue)
+
+
+## La suivante dans la ronde. Deux langues, donc une bascule — mais écrite comme
+## une ronde, pour que la troisième n'oblige pas à revoir les deux boutons qui
+## l'appellent.
+static func langue_suivante(courante: String) -> String:
+	return ANGLAIS if normaliser(courante) == FRANCAIS else FRANCAIS
+
+
+## Passe à la langue suivante. Appelée par les Options et par l'écran des
+## personnages, les deux seuls endroits où le joueur peut changer.
+func cycler_langue() -> void:
+	langue = langue_suivante(langue)
 
 
 # --------------------------------------------------------------------------
@@ -133,7 +217,7 @@ static func echelle_maximale() -> int:
 
 ## Le facteur suivant dans la ronde : 1, 2, … jusqu'au maximum, puis plein écran,
 ## puis on repart à 1. Le plein écran est **après** les facteurs : on en sort en
-## continuant d'appuyer, sans deviner qu'il faudrait revenir en arrière.
+## continuant d'appuyant, sans deviner qu'il faudrait revenir en arrière.
 static func echelle_suivante(courante: int, maximum: int) -> int:
 	if courante == PLEIN_ECRAN:
 		return 1
@@ -146,8 +230,10 @@ static func echelle_suivante(courante: int, maximum: int) -> int:
 ## texte qu'un écran de démarrage écrira un jour.
 static func libelle(valeur: int, base: Vector2i) -> String:
 	if valeur == PLEIN_ECRAN:
-		return "Fenêtre : plein écran"
-	return "Fenêtre : ×%d  (%d × %d)" % [valeur, base.x * valeur, base.y * valeur]
+		return Textes.t("Fenêtre : plein écran")
+	return Textes.t("Fenêtre : ×{facteur}  ({largeur} × {hauteur})").format({
+		"facteur": valeur, "largeur": base.x * valeur, "hauteur": base.y * valeur
+	})
 
 
 func libelle_courant() -> String:
@@ -190,6 +276,7 @@ func vers_dict() -> Dictionary:
 	return {
 		"barres_de_vie": show_health_bars,
 		"noms_d_affixes": show_affix_names,
+		"langue": langue,
 		"echelle": echelle,
 	}
 
@@ -201,6 +288,8 @@ func depuis_dict(source: Dictionary) -> void:
 	_chargement = true
 	show_health_bars = bool(source.get("barres_de_vie", show_health_bars))
 	show_affix_names = bool(source.get("noms_d_affixes", show_affix_names))
+	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
+	langue = String(source.get("langue", langue))
 	var lue: Variant = source.get("echelle", echelle)
 	if lue is float or lue is int:
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand

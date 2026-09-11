@@ -175,15 +175,47 @@ func roll(rng: RandomNumberGenerator, niveau: int) -> RolledAffix:
 		return null
 	var palier: ItemAffixTier = tiers[index]
 	var v := snappedf(rng.randf_range(palier.min_value, palier.max_value), arrondi)
-	return RolledAffix.new(id, index + 1, modificateur(v))
+	# Un tirage de plus pour la borne haute d'une fourchette. Le compte dépend de
+	# l'affixe, jamais de ce qui sort (invariant 3).
+	var haut := v
+	if est_une_fourchette():
+		haut = snappedf(rng.randf_range(palier.min_haut, palier.max_haut), arrondi)
+	return RolledAffix.new(id, index + 1, modificateur(v, haut))
 
 
-## Le modificateur que donne cet affixe à cette valeur. Le tirage et l'établi
-## passent tous deux par ici : une portée oubliée d'un côté ferait d'un
-## « +1 projectile » une ligne de fiche qui vise un champ inconnu.
-func modificateur(valeur: float) -> StatMod:
+## Vrai pour un affixe qui ajoute une fourchette de dégâts : il tire deux nombres
+## par palier au lieu d'un. Déduit de la statistique visée plutôt que saisi : un
+## drapeau de plus pourrait contredire le nom de la statistique.
+func est_une_fourchette() -> bool:
+	return StatMod.stat_en_fourchette(stat)
+
+
+## Le modificateur que donne cet affixe à cette valeur — et à cette borne haute,
+## pour une fourchette. Le tirage et l'établi passent tous deux par ici : une
+## portée oubliée d'un côté ferait d'un « +1 projectile » une ligne de fiche qui
+## vise un champ inconnu.
+func modificateur(valeur: float, valeur_max := 0.0) -> StatMod:
+	return StatMod.depuis_definition(stat, percent, valeur, valeur_max, portee)
+
+
+## Le modificateur au sommet de ce palier : le haut de chaque fourchette, arrondi
+## comme le tirage l'arrondirait. C'est ce que pose l'établi — un réglage doit être
+## reproductible, sinon deux essais du même palier ne se comparent pas.
+func au_sommet(index: int) -> StatMod:
+	var palier: ItemAffixTier = tiers[index]
+	return modificateur(snappedf(palier.max_value, arrondi), snappedf(palier.max_haut, arrondi))
+
+
+## Ce qu'un palier peut donner, tel qu'on l'écrit : « 45–58 », « 8–11 % », ou
+## « 3–4 à 7–9 » pour une fourchette. La forge, le catalogue et l'infobulle y
+## passent tous : trois formatages séparés finiraient par diverger d'un arrondi.
+func plage(index: int) -> String:
+	var palier: ItemAffixTier = tiers[index]
 	var mode := StatMod.Mode.PERCENT if percent else StatMod.Mode.FLAT
-	return StatMod.new(stat, mode, valeur, portee)
+	var bas := StatMod.range_label(stat, mode, palier.min_value, palier.max_value)
+	if not est_une_fourchette():
+		return bas
+	return "%s à %s" % [bas, StatMod.range_label(stat, mode, palier.min_haut, palier.max_haut)]
 
 
 ## Tirage pondéré parmi les paliers ouverts. `ouverts` n'est appelé qu'une fois :

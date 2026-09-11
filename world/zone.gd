@@ -32,7 +32,7 @@ const PACK_MIN_TILES := 3
 @onready var manuels: ManuelPanel = $UI/Manuels
 @onready var barre: BarrePanel = $UI/Barre
 ## Outil de réglage, à retirer avant publication : il tient en trois
-## attaches — ce nœud, la touche F8, et le branchement de `drop_requested`.
+## attaches — ce nœud, la touche B, et le branchement de `drop_requested`.
 @onready var atelier: AtelierPanel = $UI/Atelier
 @onready var spawner: EnemySpawner = $EnemySpawner
 @onready var temoin: Label = $UI/Temoin
@@ -141,10 +141,10 @@ func sauvegarder() -> void:
 	if not Sauvegarde.ecrire(Game.personnage):
 		# Sans fondu, exprès : un échec d'écriture doit rester à l'écran jusqu'à
 		# la sauvegarde suivante, là où une réussite n'a pas à s'attarder.
-		_annoncer("échec de la sauvegarde")
+		_annoncer(Textes.t("échec de la sauvegarde"))
 		return
 
-	_annoncer("sauvegardé")
+	_annoncer(Textes.t("sauvegardé"))
 	create_tween().tween_property(temoin, "modulate:a", 0.0, 1.4).set_delay(0.8)
 
 
@@ -244,6 +244,15 @@ func generate_zone(zone_seed: int) -> void:
 	t0 = Time.get_ticks_usec()
 	_paint()
 	_paint_ms = float(Time.get_ticks_usec() - t0) / 1000.0
+
+	# Les collisions d'une couche de tuiles ne se reconstruisent qu'en fin d'image.
+	# Sans cette mise à jour, le joueur posé plus bas sur l'apparition de la carte
+	# neuve chevauche encore un mur de l'ancienne à la première image de physique,
+	# et s'en fait éjecter — seize pixels mesurés, de quoi envoyer le manuel de
+	# départ hors de ses pieds. C'est `F5` en jeu. Hors de la mesure de peinture,
+	# pour que celle-ci reste comparable à ses relevés d'avant.
+	floor_layer.update_internals()
+	wall_layer.update_internals()
 
 	# La carte suit la zone réellement jouée : reconstruite ici, pas ailleurs.
 	map_overlay.build(generator, MapGenerator.TILE)

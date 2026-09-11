@@ -70,7 +70,10 @@ fi
 echo "propre"
 
 echo "== tests : $SUITE =="
-SORTIE="$("$GODOT" --headless --path "$TMP_WIN" \
+# --language fr : la campagne affirme des textes français. Sans lui, la langue
+# vient du système, et les tests passeraient ici pour échouer sur un Windows
+# anglais — l'échec le plus cher à comprendre, celui qui ne se reproduit pas.
+SORTIE="$("$GODOT" --headless --path "$TMP_WIN" --language fr \
 	-s res://addons/gut/gut_cmdln.gd \
 	-gdir="$DIRS" -ginclude_subdirs -gexit -gdisable_colors 2>&1)"
 CODE=$?

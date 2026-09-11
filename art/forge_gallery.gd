@@ -46,7 +46,10 @@ const ITEM_SCALE := 2
 ## d'œil sur dix-sept lignes, « combien donne celui-là et quand » demande un
 ## tableau. Mélangés dans un seul damier, ils étaient illisibles.
 const FICHE_TOP := 68.0
-const FICHE_LIGNE := 11.0
+## Dix et non onze : les bijoux acceptent vingt-trois affixes depuis les dégâts
+## ajoutés par nature, et la liste doit tenir au-dessus de l'aide. Le test de
+## hauteur dira quand le prochain affixe la fera déborder.
+const FICHE_LIGNE := 10.0
 const FICHE_SIZE := 8
 const FICHE_TITRE_SIZE := 9
 
@@ -235,7 +238,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			if _detail >= 0:
 				_fermer_fiche()
 			else:
-				Game.go_back("res://world/zone.tscn")
+				Game.go_back()
 		_:
 			return
 
@@ -494,15 +497,11 @@ static func zones_de(base: ItemBase) -> Vector2i:
 ## l'intersection de tête ; « zones 19 à 22 » se lit sans rien calculer.
 static func paliers_de(base: ItemBase, affixe: ItemAffix) -> Array:
 	var zones := zones_de(base)
-	var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
 	var out := []
 	for brut in affixe.ouverts_entre(zones.x, zones.y):
 		var index := int(brut)
-		var palier: ItemAffixTier = affixe.tiers[index]
 		out.append(Palier.new(
-			index + 1,
-			affixe.fenetre_du_palier(index, zones.x, zones.y),
-			StatMod.range_label(affixe.stat, mode, palier.min_value, palier.max_value)
+			index + 1, affixe.fenetre_du_palier(index, zones.x, zones.y), affixe.plage(index)
 		))
 	return out
 
@@ -521,7 +520,8 @@ static func _plage_totale(base: ItemBase, affixe: ItemAffix) -> String:
 	for brut in affixe.ouverts_entre(zones.x, zones.y):
 		var palier: ItemAffixTier = affixe.tiers[int(brut)]
 		bas = minf(bas, palier.min_value)
-		haut = maxf(haut, palier.max_value)
+		# D'une fourchette, le plus haut que peut sortir sa borne haute.
+		haut = maxf(haut, palier.max_haut if affixe.est_une_fourchette() else palier.max_value)
 	var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
 	return StatMod.range_label(affixe.stat, mode, bas, haut)
 

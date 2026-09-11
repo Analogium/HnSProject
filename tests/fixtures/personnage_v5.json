@@ -1,0 +1,46 @@
+{
+	"version": 5,
+	"id": "p_reference_v5",
+	"nom": "Ysolde",
+	"silhouette": 1,
+	"cree_le": "2026-09-10",
+	"joue_le": "2026-09-11",
+	"niveau": 18,
+	"experience": 820,
+	"attributs": {
+		"strength": 12,
+		"dexterity": 3,
+		"intelligence": 21
+	},
+	"points_a_placer": 0,
+	"sac": [],
+	"equipement": {
+		"weapon": {
+			"base": "epee",
+			"niveau": 18,
+			"affixes": [
+				{ "stat": "degats_feu", "mode": 0, "valeur": 3.0, "valeur_max": 8.0, "affixe": "feu_aux_attaques", "tier": 5, "portee": "attaque" },
+				{ "stat": "attack_speed", "mode": 1, "valeur": 9.0, "affixe": "vif", "tier": 4 }
+			]
+		},
+		"offhand": {
+			"base": "grimoire",
+			"niveau": 18,
+			"affixes": [
+				{ "stat": "degats_sacre", "mode": 0, "valeur": 2.0, "valeur_max": 5.0, "affixe": "sacre_aux_sorts", "tier": 5, "portee": "sort" }
+			]
+		}
+	},
+	"ratelier": [
+		{
+			"base": "manuel_foudre",
+			"niveau": 18,
+			"affixes": [],
+			"manuel": { "exp": 900, "points": { "eclair_vif": 4 } }
+		},
+		null,
+		null
+	],
+	"barre": ["attaque", "tir", "eclair_vif", null, null],
+	"manuel_offert": true
+}

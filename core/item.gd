@@ -91,8 +91,10 @@ func color() -> Color:
 	return RARITY_COLORS[rarity()]
 
 
+## Le nom tel que le joueur le lit. Celui de la base est la clé française : c'est
+## par cet accesseur, et pas par `base.display_name`, que passe tout affichage.
 func display_name() -> String:
-	return base.display_name
+	return Textes.t(base.display_name)
 
 
 ## Ce livre enseigne-t-il cette compétence ? Faux pour tout ce qui n'est pas un

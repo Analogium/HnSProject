@@ -14,6 +14,12 @@ class_name CompetenceCatalog
 const ID_ATTAQUE := "attaque"
 const ID_TIR := "tir"
 
+## Ce qu'un personnage sait sans l'avoir appris, dans l'ordre où le menu de la
+## barre le propose. Les points qu'on y a, le menu d'assignation et la fiche de
+## personnage posaient chacun la question de leur côté : une attaque de départ
+## ajoutée à l'un seulement serait proposée sans pouvoir partir, ou l'inverse.
+const DE_DEPART := [ID_ATTAQUE, ID_TIR]
+
 const ALL := [
 	preload("res://resources/competences/attaque.tres"),
 	preload("res://resources/competences/tir.tres"),
@@ -29,12 +35,16 @@ const ALL := [
 ]
 
 
+static func est_de_depart(id: String) -> bool:
+	return DE_DEPART.has(id)
+
+
 ## La compétence portant cet identifiant, ou null s'il n'existe plus. Le null
 ## n'est pas une erreur de programmation mais un cas de jeu : une barre
 ## sauvegardée peut citer une compétence retirée du projet depuis.
 ##
-## Balayage linéaire : les appelants sont le chargement d'une sauvegarde,
-## l'assignation d'une case et les tests — aucun n'est dans une boucle de jeu.
+## Balayage linéaire. La barre relit pourtant ses cinq cases à chaque image, mais
+## le catalogue se compte en unités : une table ne se paierait pas.
 static func by_id(id: String) -> Competence:
 	for c in ALL:
 		if c.id == id:

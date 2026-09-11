@@ -16,7 +16,7 @@ extends RefCounted
 ## Il ne connaît pas son archétype. C'est l'objet qui porte les deux — sa base
 ## sait quel livre c'est, son manuel sait ce qu'il en a tiré — et les règles qui
 ## ont besoin des deux reçoivent l'archétype en argument, comme
-## `Competence.degats()` reçoit la fiche. Une référence en retour serait un
+## `Competence.resoudre()` reçoit la fiche. Une référence en retour serait un
 ## deuxième chemin vers la même information.
 
 ## La courbe du manuel : sa propre base et sa propre puissance, sur la forme

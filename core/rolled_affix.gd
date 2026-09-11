@@ -41,10 +41,7 @@ func palier_et_plage() -> String:
 	var definition := ItemAffixPool.by_id(affix_id)
 	if definition == null or tier > definition.tiers.size():
 		return ""
-	var palier: ItemAffixTier = definition.tiers[tier - 1]
-	return "T%d  (%s)" % [
-		tier, StatMod.range_label(mod.stat, mod.mode, palier.min_value, palier.max_value)
-	]
+	return "T%d  (%s)" % [tier, definition.plage(tier - 1)]
 
 
 func connu() -> bool:

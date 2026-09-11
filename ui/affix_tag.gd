@@ -36,6 +36,10 @@ class Ligne:
 
 
 var _lines: Array[Ligne] = []
+## Les affixes tels qu'on les a reçus. Gardés pour pouvoir **re-mesurer** : un
+## changement de langue donne des noms d'une autre longueur, et une demi-largeur
+## d'avant décentrerait l'étiquette.
+var _affixes: Array[Affix] = []
 var _font: Font
 
 
@@ -48,13 +52,23 @@ func _ready() -> void:
 	Settings.changed.connect(_refresh)
 
 
-## Appelée une fois, à l'apparition de l'ennemi.
+## La langue a changé : les noms sont d'une autre longueur, et une demi-largeur
+## mesurée avant décentrerait l'étiquette. On remesure donc tout, depuis les
+## affixes gardés.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		set_affixes(_affixes)
+
+
+## Appelée à l'apparition de l'ennemi, et de nouveau à chaque changement de
+## langue.
 func set_affixes(affixes: Array[Affix]) -> void:
+	_affixes = affixes
 	_lines.clear()
 	if _font != null:
 		for affix in affixes:
 			var ligne := Ligne.new()
-			ligne.text = affix.display_name
+			ligne.text = affix.nom_affiche()
 			ligne.tint = affix.tint
 			ligne.tint.v = maxf(ligne.tint.v, MIN_TEXT_VALUE)
 			ligne.half = _font.get_string_size(

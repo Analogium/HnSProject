@@ -4,8 +4,6 @@ extends GutTest
 ## endroit, et les quatre conditions de l'investissement doivent tenir même
 ## lorsqu'on clique là où il ne faut pas.
 
-const TAILLE := Vector2(210.0, 230.0)
-
 var _panneau: ManuelPanel
 var _joueur: Player
 
@@ -14,13 +12,32 @@ func before_each() -> void:
 	_joueur = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(_joueur)
 	# Le panneau vit dans la scène de zone et n'a pas de scène propre : on lui
-	# donne ici la taille que ses ancres lui donnent là-bas.
+	# donne la place qu'il y occupe, lue dans la scène et non recopiée. La fiche se
+	# borne à l'écran d'après cette place ; une place inventée validerait un
+	# panneau qui n'est pas celui du jeu.
 	_panneau = ManuelPanel.new()
-	_panneau.size = TAILLE
+	var cadre := _cadre_dans_la_zone()
+	_panneau.position = cadre.position
+	_panneau.size = cadre.size
 	add_child_autofree(_panneau)
 	await wait_process_frames(1)
 	_panneau.bind(_joueur)
 	_panneau.visible = true
+
+
+func _cadre_dans_la_zone() -> Rect2:
+	var etat := (load("res://world/zone.tscn") as PackedScene).get_state()
+	for i in etat.get_node_count():
+		if etat.get_node_name(i) != "Manuels":
+			continue
+		var bords := {}
+		for j in etat.get_node_property_count(i):
+			bords[etat.get_node_property_name(i, j)] = etat.get_node_property_value(i, j)
+		return Rect2(
+			bords["offset_left"], bords["offset_top"],
+			bords["offset_right"] - bords["offset_left"], bords["offset_bottom"] - bords["offset_top"]
+		)
+	return Rect2()
 
 
 func _livre() -> Item:
@@ -36,7 +53,7 @@ func test_le_clic_retrouve_l_emplacement_dessine() -> void:
 
 
 func test_hors_des_emplacements_rien_n_est_survole() -> void:
-	_panneau._track(Vector2(TAILLE.x - 2.0, 2.0))
+	_panneau._track(Vector2(_panneau.size.x - 2.0, 2.0))
 	assert_eq(_panneau._survol_slot, -1)
 	assert_eq(_panneau._survol_case, -1)
 
@@ -49,11 +66,8 @@ func test_les_cases_tiennent_dans_le_panneau() -> void:
 	for case in ItemCatalog.by_id("manuel_foudre").manuel.cases:
 		var r: Rect2 = _panneau._case_rect(case.position)
 		assert_gte(r.position.y, _panneau._page_top(), "la case déborde sur le râtelier")
-		assert_lte(r.end.x, TAILLE.x, "la case sort par la droite")
-		# La ligne du bas décrit la case survolée : les carrés ne doivent pas
-		# descendre dessus. Mesuré avec **la même fonction** que le dessin, sinon
-		# ce test validerait sa propre copie du calcul.
-		assert_lte(r.end.y, _panneau._fiche_top(), "la case couvre la fiche")
+		assert_lte(r.end.x, _panneau.size.x, "la case sort par la droite")
+		assert_lte(r.end.y, _panneau._aide_top(), "la case couvre la ligne d'aide")
 
 
 func test_le_clic_choisit_l_emplacement() -> void:
@@ -127,21 +141,36 @@ func test_un_livre_range_sans_place_est_jete() -> void:
 	assert_same(jetes[0], livre, "et c'est bien lui")
 
 
+## Les valeurs des lignes de la fiche qui portent cet intitulé, dans leur ordre.
+func _valeurs(lignes: Array, libelle: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for ligne: ManuelPanel.LigneDeFiche in lignes:
+		if ligne.libelle == libelle:
+			out.append(ligne.valeur)
+	return out
+
+
+func _fiche_de(livre: Item, competence_id: String) -> Array:
+	return _panneau._lignes_de_fiche(livre.manuel, CompetenceCatalog.by_id(competence_id))
+
+
 ## **La fiche passe par le même chemin que le lancer** (jalon 7, étape 5). Avec un
-## « +1 projectile » porté, elle annonce deux traits — et ce sont bien deux traits
-## qui partent. Lue sur la compétence, elle en aurait annoncé un.
+## « +1 projectile » porté, elle en annonce deux — et ce sont bien deux traits qui
+## partent. Lue sur la compétence, elle en aurait annoncé un.
 func test_la_fiche_annonce_ce_qui_part_vraiment() -> void:
 	var livre := _livre()
 	livre.manuel.gagner_experience(999999)
 	livre.manuel.investir(livre.base.manuel, "eclair_vif")
 	_joueur.etudier(livre)
-	var eclair := CompetenceCatalog.by_id("eclair_vif")
-	assert_false(_panneau._detail(eclair, 1).contains("traits"), "un trait droit ne se compte pas")
+	assert_eq(_valeurs(_fiche_de(livre, "eclair_vif"), "projectiles"), PackedStringArray(["1"]))
 
 	_joueur.equip(Item.new(
 		ItemCatalog.by_id("baguette"), [ItemAffixPool.by_id("fourchu").modificateur(1.0)]
 	))
-	assert_true(_panneau._detail(eclair, 1).contains("2 traits"), "la fiche en annonce deux")
+	assert_eq(
+		_valeurs(_fiche_de(livre, "eclair_vif"), "projectiles"), PackedStringArray(["2"]),
+		"la fiche en annonce deux"
+	)
 
 	var tirs := Node2D.new()
 	add_child_autofree(tirs)
@@ -149,6 +178,140 @@ func test_la_fiche_annonce_ce_qui_part_vraiment() -> void:
 	_joueur.barre.poser(2, "eclair_vif")
 	assert_true(_joueur.lancer(2))
 	assert_eq(tirs.get_child_count(), 2, "et deux partent")
+
+
+## **Chaque ligne vient de la résolution du lancer** : un sort à trois natures et
+## plusieurs projectiles, lu ligne à ligne contre `Player.resoudre()` au même
+## nombre de points.
+func test_chaque_ligne_vient_de_la_resolution_du_lancer() -> void:
+	var livre := _livre()
+	livre.manuel.gagner_experience(999999)
+	for i in 2:
+		livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	_joueur.etudier(livre)
+	_joueur.equip(Item.new(ItemCatalog.by_id("baguette"), [
+		ItemAffixPool.by_id("froid_aux_sorts").modificateur(3.0, 7.0),
+		ItemAffixPool.by_id("feu_aux_sorts").modificateur(2.0, 5.0),
+		ItemAffixPool.by_id("fourchu").modificateur(1.0),
+		ItemAffixPool.by_id("orageux").modificateur(20.0),
+	]))
+	var salve := CompetenceCatalog.by_id("salve_d_eclairs")
+	var geste := _joueur.resoudre(salve, 2)
+	var lignes := _fiche_de(livre, "salve_d_eclairs")
+
+	assert_eq(_valeurs(lignes, "points"), PackedStringArray(["2 / %d" % salve.points_max()]))
+	assert_eq(_valeurs(lignes, "coût"), PackedStringArray(["%d mana" % roundi(geste.cout_en_mana)]))
+	assert_eq(_valeurs(lignes, "recharge"), PackedStringArray(["%.2f s" % geste.intervalle]))
+	assert_eq(
+		_valeurs(lignes, "de base"), PackedStringArray(["%d foudre" % roundi(geste.degats_de_base)])
+	)
+	assert_eq(
+		_valeurs(lignes, "ajoutés"), PackedStringArray(["3–7 froid", "2–5 feu"]),
+		"une ligne par nature ajoutée, dans l'ordre des natures"
+	)
+	var attribut := PackedStringArray()
+	if not is_equal_approx(geste.facteur_d_attribut, 1.0):
+		attribut.append("%+d %%" % roundi((geste.facteur_d_attribut - 1.0) * 100.0))
+	assert_eq(_valeurs(lignes, "intelligence"), attribut)
+	assert_eq(_valeurs(lignes, "dégâts accrus"), PackedStringArray(["+20 %"]))
+	assert_eq(_valeurs(lignes, "par projectile"), PackedStringArray([
+		"%d–%d" % [roundi(geste.total_min()), roundi(geste.total_max())]
+	]))
+	assert_eq(
+		_valeurs(lignes, "projectiles"), PackedStringArray([str(geste.nombre_de_projectiles())])
+	)
+	assert_eq(geste.nombre_de_projectiles(), salve.projectiles + 1, "la salve et son projectile de plus")
+	assert_eq(
+		_valeurs(lignes, "écart"), PackedStringArray(["%d°" % roundi(geste.dispersion_en_degres)])
+	)
+	assert_eq(
+		_valeurs(lignes, "vitesse"),
+		PackedStringArray(["%d px/s" % roundi(geste.vitesse_de_projectile)])
+	)
+	assert_eq(
+		_valeurs(lignes, "moyenne par lancer"),
+		PackedStringArray([str(roundi(geste.moyenne_par_lancer()))])
+	)
+	assert_eq(
+		_valeurs(lignes, "par seconde"),
+		PackedStringArray([str(roundi(geste.moyenne_par_seconde()))])
+	)
+	assert_eq(_valeurs(lignes, "si tout touche, avant défenses").size(), 1, "et ce qu'elle suppose")
+
+
+## Une nature sans dégâts n'a pas de ligne : rien d'équipé, rien d'ajouté ; un
+## anneau de feu, et seule la ligne du feu apparaît.
+func test_une_nature_sans_degats_n_a_pas_de_ligne() -> void:
+	var livre := _livre()
+	_joueur.etudier(livre)
+	var nue := _fiche_de(livre, "eclair_vif")
+	assert_eq(_valeurs(nue, "ajoutés").size(), 0, "rien d'équipé, rien d'ajouté")
+	assert_eq(_valeurs(nue, "dégâts accrus").size(), 0)
+	assert_eq(_valeurs(nue, "écart").size(), 0, "un trait droit n'a pas d'écart")
+
+	_joueur.equip(Item.new(
+		ItemCatalog.by_id("anneau"), [ItemAffixPool.by_id("feu_aux_sorts").modificateur(2.0, 5.0)]
+	))
+	assert_eq(_valeurs(_fiche_de(livre, "eclair_vif"), "ajoutés"), PackedStringArray(["2–5 feu"]))
+
+
+## Une case verrouillée dit ce qu'elle demande, et montre les nombres du premier
+## point plutôt que zéro.
+func test_une_case_verrouillee_dit_ce_qu_elle_demande() -> void:
+	var livre := _livre()
+	_joueur.etudier(livre)
+	var haute: Competence = null
+	for case in livre.base.manuel.cases:
+		if haute == null or case.competence.niveau_de_manuel_requis > haute.niveau_de_manuel_requis:
+			haute = case.competence
+	assert_lt(livre.manuel.niveau(), haute.niveau_de_manuel_requis, "un livre neuf ne l'ouvre pas")
+
+	var lignes := _fiche_de(livre, haute.id)
+	assert_eq(
+		_valeurs(lignes, "verrouillée"),
+		PackedStringArray(["niveau %d du manuel" % haute.niveau_de_manuel_requis])
+	)
+	assert_eq(_valeurs(lignes, "points"), PackedStringArray(["0 / %d" % haute.points_max()]))
+	assert_eq(
+		_valeurs(lignes, "de base"),
+		PackedStringArray(["%d foudre" % roundi(haute.degats_par_point[0])]), "le premier point"
+	)
+	assert_eq(
+		_valeurs(_fiche_de(livre, "eclair_vif"), "verrouillée").size(), 0,
+		"une case ouverte ne se dit pas verrouillée"
+	)
+
+
+## La fiche reste dans le cadrage et au-dessus des jauges du HUD, **quelle que
+## soit la case survolée**. Mesurée avec le cadre du dessin, sur la fiche la plus
+## longue qu'on sache monter : les six natures ajoutées, un accroissement, un
+## projectile de plus, et un livre neuf dont les cases hautes sont verrouillées.
+func test_la_fiche_reste_dans_le_cadrage() -> void:
+	var mods: Array[StatMod] = [
+		ItemAffixPool.by_id("fourchu").modificateur(1.0),
+		ItemAffixPool.by_id("orageux").modificateur(20.0),
+	]
+	for nature: String in DamageType.IDS:
+		mods.append(ItemAffixPool.by_id("%s_aux_sorts" % nature).modificateur(20.0, 60.0))
+	_joueur.equip(Item.new(ItemCatalog.by_id("baguette"), mods))
+
+	var base := Vector2(Settings.taille_de_base())
+	var cadrage := Rect2(0.0, 0.0, base.x, Hud.haut_des_jauges(base.y))
+	var mesurees := 0
+	for modele: ItemBase in ItemCatalog.ALL:
+		if modele.manuel == null:
+			continue
+		var livre := Item.new(modele)
+		for case: CaseDeManuel in modele.manuel.cases:
+			var lignes := _panneau._lignes_de_fiche(livre.manuel, case.competence)
+			var r: Rect2 = _panneau._fiche_rect(case, _panneau._hauteur_de_fiche(lignes))
+			var a_l_ecran := Rect2(r.position + _panneau.global_position, r.size)
+			assert_true(
+				cadrage.encloses(a_l_ecran),
+				"« %s » : la fiche %s sort de %s" % [case.competence.nom, a_l_ecran, cadrage]
+			)
+			mesurees += 1
+	assert_gt(mesurees, 0, "encore faut-il qu'il y ait des cases")
 
 
 ## Le dessin traverse ses trois états sans se plaindre : un emplacement vide, un
@@ -163,9 +326,11 @@ func test_le_dessin_traverse_ses_etats() -> void:
 	livre.manuel.gagner_experience(999999)
 	for i in 9:
 		livre.manuel.investir(livre.base.manuel, "eclair_vif")
+	for case in livre.base.manuel.cases:
+		_panneau._track(_panneau._case_rect(case.position).get_center())
+		_panneau.queue_redraw()
+		await wait_process_frames(1)
 	_panneau._track(_panneau._case_rect(Vector2i.ZERO).get_center())
-	_panneau.queue_redraw()
-	await wait_process_frames(1)
 
 	assert_eq(
 		livre.manuel.points_de("eclair_vif"), 5,
@@ -180,6 +345,6 @@ func test_un_clic_au_dehors_est_laisse_aux_autres_panneaux() -> void:
 	assert_true(_panneau._possede_le_clic(_panneau._slot_rect(1).get_center()), "sur un dos")
 	assert_false(_panneau._possede_le_clic(Vector2(-30.0, 40.0)), "à gauche de la fenêtre")
 	assert_false(
-		_panneau._possede_le_clic(Vector2(TAILLE.x + 30.0, TAILLE.y * 0.5)),
+		_panneau._possede_le_clic(Vector2(_panneau.size.x + 30.0, _panneau.size.y * 0.5)),
 		"à droite, là où le sac est ouvert"
 	)

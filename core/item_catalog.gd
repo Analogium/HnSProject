@@ -77,6 +77,11 @@ const ALL := [
 ]
 
 
+## Le manuel qu'un personnage neuf reçoit à son premier pas. Un identifiant en
+## constante et non un tirage : un jeu qui ferait chercher son premier manuel
+## dans le butin apprendrait sa mécanique centrale par le hasard.
+const ID_MANUEL_DE_DEPART := "manuel_foudre"
+
 ## Combien de niveaux une base continue de tomber **après** l'ouverture de celle
 ## qui la remplace. C'est toute la règle de relève : une base périmée qui continue
 ## de tomber n'est pas une chance de plus, c'est du bruit dans le butin.
@@ -87,11 +92,6 @@ const ALL := [
 ##
 ## Le chiffre se lit dans le jeu : la lame de guerre ouvre au niveau 34, donc
 ## l'épée large cesse de tomber après la zone 40.
-## Le manuel qu'un personnage neuf reçoit à son premier pas. Un identifiant en
-## constante et non un tirage : un jeu qui ferait chercher son premier manuel
-## dans le butin apprendrait sa mécanique centrale par le hasard.
-const ID_MANUEL_DE_DEPART := "manuel_foudre"
-
 const MARGE_DE_RELEVE := 6
 
 
@@ -99,7 +99,7 @@ const MARGE_DE_RELEVE := 6
 ## immédiatement supérieur — ou null quand c'est déjà le meilleur.
 ##
 ## Calculée une fois pour tout le catalogue et retenue : `disponibles` la demande
-## pour chacune des quarante et une bases, à chaque chute. Sans la table, ce
+## pour chacune des quarante-deux bases, à chaque chute. Sans la table, ce
 ## serait mille sept cents comparaisons par ennemi tué.
 static var _releves: Dictionary = {}
 

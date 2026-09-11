@@ -53,14 +53,66 @@ func test_les_libelles_viennent_de_la_carte_d_entrees() -> void:
 		)
 
 
-## Le menu propose de vider, puis ce qu'on peut poser.
+## Le menu propose de vider — l'entrée sans compétence —, puis ce qu'on peut poser.
 func test_le_menu_propose_le_vidage_puis_les_competences() -> void:
 	var entrees := _barre._entrees()
 	assert_eq(entrees.size(), 3, "vider, le coup d'épée, le tir")
-	assert_true(entrees[0].contains("vider"))
+	assert_null(entrees[0], "la première entrée vide la case")
+	assert_eq(entrees[1].id, CompetenceCatalog.ID_ATTAQUE)
+	assert_eq(entrees[2].id, CompetenceCatalog.ID_TIR)
 
 	_joueur.etudier(_livre_travaille())
 	assert_eq(_barre._entrees().size(), 5, "et les deux cases apprises")
+
+
+## Le clic retombe sur l'entrée dessinée, **icône comprise** : c'est sur l'image
+## qu'on vise d'abord, et une icône qui déborderait sur la voisine poserait la
+## compétence d'à côté.
+func test_le_clic_du_menu_retombe_sur_l_entree_dessinee() -> void:
+	_joueur.etudier(_livre_travaille())
+	_barre._ouvrir(2)
+	for i in _barre._entrees().size():
+		var icone: Rect2 = _barre._icone_d_entree(i)
+		assert_true(_barre._menu_rect(i).encloses(icone), "l'icône de l'entrée %d déborde" % i)
+		for point in [
+			_barre._menu_rect(i).get_center(), icone.get_center(),
+			icone.position + Vector2.ONE, icone.end - Vector2.ONE,
+		]:
+			_barre._track(point)
+			assert_eq(_barre._survol_menu, i, "entrée %d, point %s" % [i, point])
+
+
+## Le haut de la barre à l'écran, lu dans la scène de zone : elle est ancrée en bas
+## à droite, et c'est de là que le menu monte.
+func _haut_de_la_barre_dans_la_zone() -> float:
+	var etat := (load("res://world/zone.tscn") as PackedScene).get_state()
+	for i in etat.get_node_count():
+		if etat.get_node_name(i) != "Barre":
+			continue
+		var proprietes := {}
+		for j in etat.get_node_property_count(i):
+			proprietes[etat.get_node_property_name(i, j)] = etat.get_node_property_value(i, j)
+		return (
+			float(proprietes.get("anchor_top", 0.0)) * float(Settings.taille_de_base().y)
+			+ float(proprietes["offset_top"])
+		)
+	return -INF
+
+
+## Le menu monte au-dessus de la barre et tient dans le cadrage, livre entier
+## appris : une entrée coupée par le haut de l'écran serait une compétence qu'on
+## ne pose jamais.
+func test_le_menu_tient_dans_le_cadrage() -> void:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.gagner_experience(999999)
+	for competence in livre.base.manuel.competences():
+		livre.manuel.investir(livre.base.manuel, competence.id)
+	_joueur.etudier(livre)
+	var entrees := _barre._entrees().size()
+	assert_eq(entrees, 3 + livre.base.manuel.competences().size(), "tout le livre est proposé")
+
+	var haut := _haut_de_la_barre_dans_la_zone() + _barre._menu_cadre(entrees).position.y
+	assert_gte(haut, 0.0, "le menu sort par le haut de l'écran")
 
 
 func test_ouvrir_et_fermer_le_menu_prend_et_rend_la_souris() -> void:

@@ -89,6 +89,20 @@ func test_les_implicites_visent_des_statistiques_reelles() -> void:
 	for base in ItemCatalog.ALL:
 		if base.implicit_stat.is_empty():
 			continue
+		# Un implicite porté vise un mot-clé et un nombre de lancer, comme un
+		# affixe porté : l'épée ajoute des dégâts aux attaques.
+		if not base.implicit_portee.is_empty():
+			assert_true(MotsCles.existe(base.implicit_portee), "« %s » : portée inconnue" % base.display_name)
+			assert_true(
+				StatsDeCompetence.modifiable(base.implicit_stat),
+				"« %s » vise « %s », qu'un modificateur ne peut pas toucher"
+					% [base.display_name, base.implicit_stat]
+			)
+			assert_gte(
+				base.implicit_value_max, base.implicit_value,
+				"« %s » : fourchette à l'envers" % base.display_name
+			)
+			continue
 		assert_true(
 			fiche.get(base.implicit_stat) != null,
 			"« %s » vise « %s », qui n'est pas dans la fiche"
@@ -225,6 +239,10 @@ func test_chaque_lignee_est_monotone() -> void:
 			assert_gt(
 				absf(base.implicit_value), absf(dessous.implicit_value),
 				"« %s » donne moins que « %s »" % [base.display_name, dessous.display_name]
+			)
+			assert_gte(
+				base.implicit_value_max, dessous.implicit_value_max,
+				"« %s » monte moins haut que « %s »" % [base.display_name, dessous.display_name]
 			)
 		# Une lignée n\'a de sens qu\'à partir de deux paliers : à un seul, c\'est
 		# une base isolée et le champ ment sur ce qu\'il décrit.

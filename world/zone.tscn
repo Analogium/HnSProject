@@ -66,7 +66,6 @@ script = ExtResource("9_inv")
 offset_left = 4.0
 offset_right = 207.0
 offset_bottom = 14.0
-theme_override_colors/font_color = Color(0.8, 0.77, 0.86, 1)
 theme_override_font_sizes/font_size = 9
 text = "SAC  0 / 50 cases"
 
@@ -98,7 +97,6 @@ anchor_right = 1.0
 offset_left = 6.0
 offset_right = -6.0
 offset_bottom = 14.0
-theme_override_colors/font_color = Color(0.8, 0.77, 0.86, 1)
 theme_override_font_sizes/font_size = 9
 text = "PERSONNAGE"
 
@@ -106,7 +104,7 @@ text = "PERSONNAGE"
 offset_left = 172.0
 offset_top = 14.0
 offset_right = 382.0
-offset_bottom = 244.0
+offset_bottom = 210.0
 mouse_filter = 2
 script = ExtResource("11_manuels")
 

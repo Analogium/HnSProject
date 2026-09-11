@@ -47,17 +47,33 @@ func take_damage(info: DamageInfo) -> void:
 			if HitFeedback.current != null:
 				HitFeedback.current.miss(global_position, on_player)
 			return
-		info.amount = maxf(_mitigate(info), MIN_DAMAGE)
+		_mitigate(info)
 
 	if HitFeedback.current != null:
 		HitFeedback.current.hit(global_position, info, on_player)
 	damaged.emit(info)
 
 
-## Le physique passe par l'armure, tout le reste par sa résistance. La règle de
-## chacune vit dans CharacterStats, qui est aussi ce que lit la fiche de
-## personnage — ici on ne fait que choisir laquelle s'applique.
-func _mitigate(info: DamageInfo) -> float:
-	if info.type == DamageType.Kind.PHYSICAL:
-		return info.amount * (1.0 - stats.armor_reduction(info.amount))
-	return info.amount * (1.0 - stats.resistance(info.type) * 0.01)
+## Chaque part par sa propre défense : le physique par l'armure, tout le reste
+## par sa résistance. La règle de chacune vit dans CharacterStats, qui est aussi
+## ce que lit la fiche de personnage — ici on ne fait que choisir laquelle
+## s'applique.
+##
+## **L'armure se calcule sur la part physique seule.** Elle protège plus des petits
+## coups : calculée sur le total d'un sort à cinquante points dont trois
+## physiques, elle traiterait ces trois points comme un gros coup.
+##
+## **Le plancher porte sur le total**, versé à la part dominante : appliqué part
+## par part, un coup en six natures ferait six points au lieu d'un.
+func _mitigate(info: DamageInfo) -> void:
+	for kind in info.parts.size():
+		var part := info.parts[kind]
+		if part <= 0.0:
+			continue
+		if kind == DamageType.Kind.PHYSICAL:
+			info.parts[kind] = part * (1.0 - stats.armor_reduction(part))
+		else:
+			info.parts[kind] = part * (1.0 - stats.resistance(kind) * 0.01)
+	var total := info.amount
+	if total < MIN_DAMAGE:
+		info.parts[info.type] += MIN_DAMAGE - total

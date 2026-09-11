@@ -34,7 +34,7 @@ func test_le_tir_coute_du_mana() -> void:
 	var avant := _p.mana
 	_p.lancer(1)
 	assert_eq(
-		_p.mana, avant - _p.competence_tir.cout_en_mana,
+		_p.mana, avant - CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).cout_en_mana,
 		"le coût exact, pas un de plus"
 	)
 
@@ -49,8 +49,8 @@ func test_la_nature_du_tir_ne_diverge_pas_de_celle_de_la_bille() -> void:
 	var nature: int = bille.damage_type
 	bille.free()
 	assert_eq(
-		_p.competence_tir.nature, nature,
-		"« %s » et la bille annoncent la même nature" % _p.competence_tir.nom
+		CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).nature, nature,
+		"« %s » et la bille annoncent la même nature" % CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).nom
 	)
 
 
@@ -321,24 +321,42 @@ func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
 	assert_eq(_p.health, _p.stats.max_health, "la régénération s'arrête pile au plafond")
 
 
-## Les dégâts du tir viennent de la fiche et non d'un export du nœud. C'est
-## cette seule ligne qui rend une arme d'incantation atteignable par un objet :
-## tant que le tir lisait `bolt_damage`, aucun affixe ne pouvait le toucher, et
-## une baguette n'avait rien d'offensif à recevoir.
-func test_le_tir_lit_les_degats_de_sort_de_la_fiche() -> void:
-	_p.stats.spell_damage = 33.0
+## Le tir reçoit ce que l'équipement ajoute aux sorts. C'est cette ligne qui rend
+## une arme d'incantation offensive : sans elle, une baguette n'aurait rien à
+## donner à un sort.
+func test_le_tir_recoit_ce_que_l_equipement_ajoute_aux_sorts() -> void:
+	_p.equip(Item.new(ItemCatalog.by_id("baguette"), [
+		StatMod.fourchette("degats_foudre", 33.0, 33.0, MotsCles.SORT),
+	]))
 	_p.lancer(1)
 	assert_eq(_tirs.get_child_count(), 1, "un tir est parti")
 	var tir := _tirs.get_child(0) as Projectile
 	assert_not_null(tir)
-	assert_eq(tir._damage, 33.0, "les dégâts sortent de la fiche")
+	assert_eq(tir._parts[DamageType.Kind.LIGHTNING], 7.0 + 33.0, "sa table, plus la baguette")
 
 
-## Et la fiche de départ en porte, sinon le tir ne ferait rien du tout — un
-## défaut à zéro sur une statistique neuve est le genre de chose qu'on ne voit
-## qu'en jouant, et seulement si on pense à tirer.
-func test_la_fiche_du_joueur_porte_des_degats_de_sort() -> void:
-	assert_gt(_p.stats.spell_damage, 0.0)
+## La force ajoute ses dégâts physiques aux attaques, et à elles seules : le Trait
+## est un sort.
+func test_la_force_ajoute_du_physique_aux_attaques_seulement() -> void:
+	assert_gt(_p.stats.degats_de_force(), 0.0, "la fiche de départ a de la force")
+	var attaque := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
+	assert_almost_eq(
+		attaque.degats_min[DamageType.Kind.PHYSICAL], 12.0 + _p.stats.degats_de_force(), 0.0001
+	)
+	assert_eq(_p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).degats_min[DamageType.Kind.PHYSICAL], 0.0)
+
+
+## **La séparation des deux familles**, vue depuis le joueur : une épée ajoute ses
+## dégâts à l'Attaque, et le Trait n'en voit rien.
+func test_une_epee_ajoute_ses_degats_a_l_attaque_et_pas_au_trait() -> void:
+	var epee := ItemCatalog.by_id("epee")
+	var attaque_avant := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
+	var tir_avant := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).total_max()
+	_p.equip(Item.new(epee))
+	var attaque := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
+	assert_almost_eq(attaque.total_min(), attaque_avant.total_min() + epee.implicit_value, 0.0001)
+	assert_almost_eq(attaque.total_max(), attaque_avant.total_max() + epee.implicit_value_max, 0.0001)
+	assert_eq(_p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).total_max(), tir_avant, "le Trait n'a rien reçu")
 
 
 ## Le personnage et les manuels montent sur la **même fonction**, avec leurs
@@ -488,7 +506,11 @@ func test_chaque_sort_part_avec_les_nombres_de_sa_fiche() -> void:
 		assert_true(_p.lancer(4), "« %s » part" % c.nom)
 		assert_eq(_tirs.get_child_count(), c.projectiles, "« %s » : traits" % c.nom)
 		for tir: Projectile in _tirs.get_children():
-			assert_eq(tir._damage, c.degats(points, _p.stats), "« %s » : dégâts" % c.nom)
+			assert_eq(tir._parts[c.nature], c.degats(points, _p.stats), "« %s » : dégâts" % c.nom)
+			assert_eq(
+				DamageInfo.en_parts(tir._parts, Vector2.ZERO).amount, c.degats(points, _p.stats),
+				"« %s » : et aucune autre nature" % c.nom
+			)
 			assert_eq(tir.speed, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
 		assert_eq(_p.mana, 999.0 - c.cout_en_mana, "« %s » : coût" % c.nom)
 		# À la précision d'un réel sur 32 bits, qui est celle de `_recharges` : la
@@ -513,6 +535,52 @@ func test_un_tir_porte_d_un_projectile_de_plus_en_sort_deux() -> void:
 	)
 
 
+## Une fourchette ajoutée se tire **par trait** : trois traits d'une salve ne
+## portent pas le même froid, sinon ils se liraient comme un coup recopié.
+func test_chaque_trait_tire_sa_fourchette() -> void:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.gagner_experience(999999)
+	livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	_p.etudier(livre)
+	_p.stats.max_mana = 999.0
+	_p._set_mana(999.0)
+	_p.mods_de_competence.assign([
+		StatMod.fourchette("degats_froid", 1.0, 1000.0, MotsCles.SORT),
+	])
+
+	_p.barre.poser(3, "salve_d_eclairs")
+	assert_true(_p.lancer(3))
+	var froids := {}
+	for tir: Projectile in _tirs.get_children():
+		froids[tir._parts[DamageType.Kind.COLD]] = true
+	assert_eq(froids.size(), 3, "trois traits, trois tirages")
+
+
+## Un coup d'épée tire **une** fois : tous les ennemis de l'arc reçoivent la même
+## valeur. Critique coupé, pour ne comparer que le tirage de la fourchette.
+func test_un_coup_d_epee_frappe_tout_l_arc_de_la_meme_valeur() -> void:
+	_p.stats.crit_chance = 0.0
+	_p.mods_de_competence.assign([
+		StatMod.fourchette("degats_feu", 1.0, 1000.0, MotsCles.ATTAQUE),
+	])
+	assert_true(_p.lancer(0), "le coup de base")
+
+	var recus: Array[float] = []
+	for i in 2:
+		var cible := Hurtbox.new()
+		add_child_autofree(cible)
+		cible.damaged.connect(
+			func(info: DamageInfo) -> void: recus.append(info.parts[DamageType.Kind.FIRE])
+		)
+		_p._on_hitbox_area_entered(cible)
+	assert_eq(recus.size(), 2, "les deux cibles sont touchées")
+	assert_eq(recus[0], recus[1], "par la même valeur")
+	assert_gt(recus[0], 0.0, "et le feu ajouté est bien dedans")
+	# Le geste attend la fin de son arc et le gel d'impact : on le laisse finir
+	# plutôt que de libérer le joueur au milieu.
+	await wait_seconds(0.4)
+
+
 # --------------------------------------------------------------------------
 # L'affixe porté (jalon 7, étape 4)
 # --------------------------------------------------------------------------
@@ -526,7 +594,7 @@ func _baguette(affixes: Array[String]) -> Item:
 
 
 func test_un_objet_porte_ajoute_son_projectile_et_le_retirer_le_reprend() -> void:
-	var tir := _p.competence_tir
+	var tir := CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
 	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 1, "à mains nues")
 	_p.equip(_baguette(["fourchu"] as Array[String]))
 	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 3, "le T1 de « fourchu » : +2")
@@ -543,7 +611,7 @@ func test_un_affixe_porte_n_ecrit_rien_sur_la_fiche() -> void:
 	var nue := _champs(_p.stats)
 	_p.equip(_baguette(["fourchu", "sifflant", "orageux"] as Array[String]))
 	assert_eq_deep(_champs(_p.stats), nue)
-	assert_eq(_p.mods_de_competence.size(), 3, "les trois partent au lancer")
+	assert_eq(_p.mods_de_competence.size(), 1 + 3, "la force, et les trois partent au lancer")
 
 
 ## Tous les champs d'une fiche, pour la comparer à une autre sans en oublier un.

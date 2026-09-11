@@ -36,7 +36,7 @@ func _personnage_joue() -> Personnage:
 	p.attributs["dexterity"] = 6
 	p.points_a_placer = 2
 	p.sac.place(Item.new(ItemCatalog.by_id("epee"), [
-		StatMod.new("attack_damage", StatMod.Mode.FLAT, 5.0),
+		StatMod.fourchette("degats_physique", 3.0, 7.0, MotsCles.ATTAQUE),
 	] as Array[StatMod]), Vector2i(2, 0))
 	p.equipement["chest"] = Item.new(ItemCatalog.by_id("plastron"))
 	return p

@@ -18,6 +18,12 @@ extends Resource
 @export var cases: Array[CaseDeManuel] = []
 
 
+## Le nom tel que le joueur le lit. `nom` est la clé française écrite dans le
+## `.tres` : une interface qui l'afficherait directement resterait en français.
+func nom_affiche() -> String:
+	return Textes.t(nom)
+
+
 ## La case qui porte cette compétence, ou null. Le null est un cas de jeu et non
 ## une erreur : une sauvegarde peut citer une compétence retirée de l'archétype
 ## depuis, et ses points sont alors simplement oubliés.

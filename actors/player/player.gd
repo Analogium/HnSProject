@@ -95,13 +95,6 @@ var manuel_offert := false
 ## lancer par `resoudre()`.
 var mods_de_competence: Array[StatMod] = []
 
-## Les deux compétences de départ, résolues une fois plutôt qu'à chaque coup.
-## Elles ne servent plus à lancer — la barre s'en charge — mais à **proposer** :
-## ce sont les deux seules entrées du menu d'assignation qui ne viennent d'aucun
-## manuel, et personne ne les apprend.
-var competence_attaque: Competence
-var competence_tir: Competence
-
 var health: float
 var mana: float
 var is_dead := false
@@ -111,10 +104,12 @@ var facing := Vector2.RIGHT
 ## compétence sur deux cases ne doit pas se recharger deux fois — ce que la
 ## barre interdit déjà en refusant les doublons.
 var _recharges := PackedFloat32Array()
-## Ce que le coup en cours doit infliger, retenu au départ du geste : la hitbox
-## s'ouvre une image plus tard, et la case de barre aura pu changer entre-temps.
-var _degats_du_coup := 0.0
-var _nature_du_coup := DamageType.Kind.PHYSICAL
+## Ce que le coup en cours inflige, **tiré une fois au départ du geste** : la
+## hitbox s'ouvre une image plus tard, la case de barre aura pu changer
+## entre-temps, et tous les ennemis de l'arc reçoivent la même valeur — un
+## balayage qui fait 3 à l'un et 7 à l'autre dans la même image se lit comme un
+## bug.
+var _parts_du_coup: Array[float] = []
 var _is_swinging := false
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
@@ -125,8 +120,6 @@ func _ready() -> void:
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
 	if base_stats == null:
 		base_stats = CharacterStats.new()
-	competence_attaque = CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE)
-	competence_tir = CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
 	_recharges.resize(BarreDeCompetences.EMPLACEMENTS)
 	recompute_stats()
 	xp_to_next = _needed_for(level)
@@ -216,7 +209,7 @@ func lancer(index: int) -> bool:
 	if competence.porte(MotsCles.PROJECTILE):
 		_tirer(geste)
 	else:
-		_swing(geste, competence.nature)
+		_swing(geste)
 	return true
 
 
@@ -249,7 +242,7 @@ func points_de_competence(id_competence: String) -> int:
 	for livre in ratelier.equipes():
 		if livre.enseigne(id_competence):
 			return livre.manuel.points_de(id_competence)
-	if id_competence == CompetenceCatalog.ID_ATTAQUE or id_competence == CompetenceCatalog.ID_TIR:
+	if CompetenceCatalog.est_de_depart(id_competence):
 		return POINTS_DES_ATTAQUES_DE_BASE
 	return 0
 
@@ -258,8 +251,8 @@ func points_de_competence(id_competence: String) -> int:
 ## toute case des manuels à l'étude où l'on a mis au moins un point.
 func competences_disponibles() -> Array[Competence]:
 	var out: Array[Competence] = []
-	out.append(competence_attaque)
-	out.append(competence_tir)
+	for id: String in CompetenceCatalog.DE_DEPART:
+		out.append(CompetenceCatalog.by_id(id))
 	for livre in ratelier.equipes():
 		for competence in livre.base.manuel.competences():
 			if livre.manuel.points_de(competence.id) > 0:
@@ -267,9 +260,8 @@ func competences_disponibles() -> Array[Competence]:
 	return out
 
 
-func _swing(geste: StatsDeCompetence, nature: DamageType.Kind) -> void:
-	_degats_du_coup = geste.degats
-	_nature_du_coup = nature
+func _swing(geste: StatsDeCompetence) -> void:
+	_parts_du_coup = geste.tirer(Game.rng)
 	_is_swinging = true
 	_already_hit.clear()
 	swing_arc.play(swing_duration)
@@ -313,8 +305,10 @@ func _tirer(geste: StatsDeCompetence) -> void:
 
 	for i in nombre:
 		var direction := facing.rotated(depart + pas * float(i))
+		# Un tirage par trait : trois traits identiques au point près se liraient
+		# comme un seul coup recopié.
 		Projectile.spawn(
-			parent, bolt_scene, global_position, direction, geste.degats, self,
+			parent, bolt_scene, global_position, direction, geste.tirer(Game.rng), self,
 			geste.vitesse_de_projectile
 		)
 
@@ -368,6 +362,13 @@ func recompute_stats() -> void:
 	StatMod.apply_all(stats, sur_attributs)
 	stats.apply_attributes()
 	StatMod.apply_all(stats, sur_le_reste)
+
+	# La force ajoute ses dégâts physiques aux attaques, lue sur la fiche
+	# **finale** : un anneau de force doit rapporter les siens.
+	sur_les_competences.append(StatMod.fourchette(
+		StatsDeCompetence.stat_ajoutee(DamageType.Kind.PHYSICAL),
+		stats.degats_de_force(), stats.degats_de_force(), MotsCles.ATTAQUE
+	))
 	mods_de_competence = sur_les_competences
 
 	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
@@ -640,7 +641,7 @@ func pick_up(item: Item) -> bool:
 		manuel_offert = true
 	if HitFeedback.current != null:
 		HitFeedback.current.loot_gain(
-			global_position, item.display_name() if pris else "sac plein"
+			global_position, item.display_name() if pris else Textes.t("sac plein")
 		)
 	return pris
 
@@ -650,7 +651,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		return
 	_already_hit.append(area)   # un swing ne touche une cible qu'une fois
 
-	var info := DamageInfo.roll(stats, global_position, _degats_du_coup, _nature_du_coup)
+	var info := DamageInfo.roll(stats, global_position, _parts_du_coup)
 	(area as Hurtbox).take_damage(info)
 	Game.hit_stop()
 	if shake_amount > 0.0:

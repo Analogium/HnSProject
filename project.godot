@@ -91,6 +91,15 @@ competence_5={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://i18n/en.po")
+; Le repli est le français et non l'anglais d'usine : les clés de traduction
+; sont les textes français eux-mêmes, et il n'existe pas de fichier français.
+; Avec le repli d'usine, un texte affiché en français n'y trouverait aucune
+; traduction, retomberait sur l'anglais, et le jeu parlerait anglais en français.
+locale/fallback="fr"
+
 [layer_names]
 
 2d_physics/layer_1="decor"

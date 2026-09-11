@@ -176,7 +176,7 @@ func test_cent_baguettes_tombees_sans_degats_d_attaque() -> void:
 		vues += 1
 		for r in item.explicits:
 			assert_ne(
-				r.mod.stat, "attack_damage",
+				r.mod.portee, MotsCles.ATTAQUE,
 				"« %s » : %s" % [item.display_name(), r.mod.label()]
 			)
 	assert_eq(vues, 100, "cent baguettes sont tombées en %d tirages" % essais)

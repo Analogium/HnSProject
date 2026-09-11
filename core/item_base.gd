@@ -96,15 +96,21 @@ const FAMILLE_MANUEL := "manual"
 ## Le bonus que porte *toute* la famille, sans tirage : une épée fait des dégâts,
 ## un plastron donne des PV. C'est lui qui dit à quoi sert la base.
 ##
-## Trois champs simples plutôt qu'une sous-ressource : il y en a exactement un
-## par base. Vide (chaîne nulle) pour une base sans implicite.
+## Des champs simples plutôt qu'une sous-ressource : il y en a exactement un par
+## base. Vide (chaîne nulle) pour une base sans implicite.
 @export var implicit_stat: String = ""
 @export var implicit_percent: bool = false
 @export var implicit_value: float = 0.0
+## La borne haute d'un implicite de dégâts ajoutés — « ajoute 2 à **6** dégâts
+## physiques aux attaques ». Ignorée pour tout le reste.
+@export var implicit_value_max: float = 0.0
+## Le mot-clé visé, comme pour un affixe : vide pour la fiche du personnage.
+@export var implicit_portee: String = ""
 
 
 func implicit() -> StatMod:
 	if implicit_stat.is_empty():
 		return null
-	var mode := StatMod.Mode.PERCENT if implicit_percent else StatMod.Mode.FLAT
-	return StatMod.new(implicit_stat, mode, implicit_value)
+	return StatMod.depuis_definition(
+		implicit_stat, implicit_percent, implicit_value, implicit_value_max, implicit_portee
+	)

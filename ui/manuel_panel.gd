@@ -36,9 +36,8 @@ const CASE_GAP := 6.0
 ## liseré fait la différence, pas le texte.
 ## Verrouillée : le niveau du livre n'y donne pas encore droit.
 const VERROU := Color(0.26, 0.24, 0.31)
-## Ouverte, et il reste un point à y mettre — le vert des points à placer de la
-## fiche de personnage, pour dire la même chose au même endroit du regard.
-const OUVERTE := Color(0.52, 0.88, 0.48)
+## Ouverte, et il reste un point à y mettre : le vert des points à placer.
+const OUVERTE := UiPalette.A_PLACER
 ## Pleine : l'or, qui dans ce jeu veut dire « ça compte plus que d'habitude ».
 const PLEINE := Color(0.95, 0.82, 0.30)
 ## Ouverte mais sans point disponible : ni promesse, ni interdit.
@@ -46,14 +45,46 @@ const ATTENTE := Color(0.55, 0.53, 0.64)
 
 const CASE_FOND := Color(0.14, 0.13, 0.18, 0.9)
 const XP_FOND := Color(0.10, 0.09, 0.13)
-## Le bleu du joueur, celui de sa barre d'expérience : un livre progresse comme
-## son porteur, et l'œil doit le reconnaître.
-const XP_PLEIN := Color(0.24, 0.45, 0.86)
-const TEXTE := Color(0.90, 0.88, 0.95)
+## Le bleu de la barre d'expérience du joueur : un livre progresse comme son
+## porteur, et l'œil doit le reconnaître.
+const XP_PLEIN := Hud.FILL
 ## Les mots-clés de la fiche : un bleu acier, ni le gris des nombres ni la couleur
 ## d'une nature — « Foudre » écrit en violet se lirait comme un type de dégâts, et
 ## non comme ce qui peut améliorer la compétence.
 const MOT_CLE := Color(0.62, 0.72, 0.88)
+
+## La fiche de la case survolée, posée à côté de la page. Assez large pour
+## « par projectile   123–456 » sans que l'intitulé touche la valeur, et pas plus :
+## elle couvre le sac quand il est ouvert.
+const FICHE_W := 170.0
+const FICHE_PAD := 6.0
+const FICHE_GAP := 4.0
+## Le nom et les mots-clés, au-dessus des lignes.
+const FICHE_ENTETE := LINE * 2.0
+const FICHE_SEPARATION := 5.0
+## Ce qui manque pour ouvrir la case : un rouge doux, qui dit « pas encore » sans
+## crier à l'erreur.
+const MANQUE := Color(0.92, 0.50, 0.44)
+
+## Les groupes de la fiche, dans l'ordre où l'on se pose les questions : puis-je
+## la prendre, que coûte-t-elle, combien frappe-t-elle, comment part-elle, et ce
+## que tout cela donne.
+enum Groupe { ETAT, COUT, DEGATS, TIR, ESTIMATION }
+
+
+## Une ligne de la fiche : un intitulé à gauche, une valeur alignée à droite dans
+## sa couleur — celle de la nature, pour une ligne de dégâts.
+class LigneDeFiche:
+	var groupe: int
+	var libelle: String
+	var valeur: String
+	var teinte: Color
+
+	func _init(p_groupe: int, p_libelle: String, p_valeur: String, p_teinte: Color) -> void:
+		groupe = p_groupe
+		libelle = p_libelle
+		valeur = p_valeur
+		teinte = p_teinte
 
 var _player: Player
 var _font: Font
@@ -79,6 +110,13 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if visible:
 		Game.grab_ui_input(self, false)
+
+
+## La langue a changé : la page et la fiche sont dessinées à la main, donc rien
+## n'y bougerait avant le prochain survol.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		queue_redraw()
 
 
 func bind(player: Player) -> void:
@@ -205,14 +243,11 @@ func _page_top() -> float:
 	return HEADER + SLOT + PAD * 2.0
 
 
-## Le haut de la fiche du bas — celle qui décrit la case survolée. C'est la
-## borne basse des cases, et le dessin comme le test la lisent ici : mesurée
-## séparément, l'une des deux finirait par laisser les carrés descendre dessus.
-##
-## Cinq lignes : le nom, les nombres, les mots-clés, et l'air qui les sépare de
-## l'aide du bas.
-func _fiche_top() -> float:
-	return size.y - LINE * 5.0
+## Le haut de la ligne d'aide, en bas de la page : la borne basse des cases. Le
+## dessin comme le test la lisent ici — mesurée deux fois, l'une des deux finirait
+## par laisser les carrés descendre dessus.
+func _aide_top() -> float:
+	return size.y - LINE - 5.0
 
 
 func _case_rect(position: Vector2i) -> Rect2:
@@ -230,7 +265,7 @@ func _draw() -> void:
 		return
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BACK)
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BORDER, false, 1.0)
-	_texte("MANUELS", Vector2(PAD, 11.0), TITLE_SIZE, Color(0.80, 0.77, 0.86))
+	_texte(Textes.t("MANUELS"), Vector2(PAD, 11.0), TITLE_SIZE, UiPalette.TITRE)
 
 	for i in Ratelier.EMPLACEMENTS:
 		_draw_slot(i)
@@ -238,16 +273,22 @@ func _draw() -> void:
 	var livre := _livre()
 	if livre == null:
 		_texte(
-			"aucun manuel à cet emplacement", Vector2(PAD, _page_top() + 8.0),
+			Textes.t("aucun manuel à cet emplacement"), Vector2(PAD, _page_top() + 8.0),
 			FONT_SIZE, UiPalette.HINT
 		)
 		return
 	_draw_page(livre)
 
 	_texte(
-		"[clic] investir     [clic droit] ranger un manuel",
-		Vector2(PAD, size.y - 5.0), FONT_SIZE, UiPalette.HINT
+		Textes.t("[clic] investir     [clic droit] ranger un manuel"),
+		Vector2(PAD, _aide_top() + LINE), FONT_SIZE, UiPalette.HINT
 	)
+
+	# En dernier : la fiche déborde de la page et doit passer par-dessus ce qu'elle
+	# recouvre, le sac compris.
+	var cases := livre.base.manuel.cases
+	if _survol_case >= 0 and _survol_case < cases.size():
+		_draw_fiche(livre.manuel, cases[_survol_case])
 
 
 func _draw_slot(index: int) -> void:
@@ -274,15 +315,21 @@ func _draw_slot(index: int) -> void:
 func _draw_page(livre: Item) -> void:
 	var manuel := livre.manuel
 	var y := _page_top() + 8.0
-	_texte(livre.base.manuel.nom, Vector2(PAD, y), TITLE_SIZE, livre.color())
+	_texte(livre.base.manuel.nom_affiche(), Vector2(PAD, y), TITLE_SIZE, livre.color())
 
 	var restants := manuel.points_restants()
-	var a_placer := "%d point%s à placer" % [restants, "s" if restants > 1 else ""]
+	# Le pluriel passe par la traduction, parce que sa règle n'est pas la même
+	# d'une langue à l'autre. Zéro ne passe pas par ici : il a sa propre phrase,
+	# et le français y met le singulier là où l'anglais met le pluriel.
+	var a_placer := Textes.tn(
+		"{points} point à placer", "{points} points à placer", restants
+	).format({"points": restants})
 	_texte(
-		"niveau %d" % manuel.niveau(), Vector2(PAD, y + LINE), FONT_SIZE, UiPalette.LABEL
+		Textes.t("niveau %d") % manuel.niveau(), Vector2(PAD, y + LINE),
+		FONT_SIZE, UiPalette.LABEL
 	)
 	_texte(
-		a_placer if restants > 0 else "aucun point à placer",
+		a_placer if restants > 0 else Textes.t("aucun point à placer"),
 		Vector2(size.x - PAD - 78.0, y + LINE), FONT_SIZE,
 		OUVERTE if restants > 0 else UiPalette.LABEL
 	)
@@ -300,12 +347,6 @@ func _draw_page(livre: Item) -> void:
 	var cases := livre.base.manuel.cases
 	for i in cases.size():
 		_draw_case(manuel, cases[i], i == _survol_case)
-
-	# La ligne du bas : ce que la case survolée fait vraiment. Les carrés ne
-	# portent qu'un compte — à trente-quatre pixels, un nom se tronque et deux
-	# cases voisines finissent par annoncer la même chose.
-	if _survol_case >= 0 and _survol_case < cases.size():
-		_draw_fiche(manuel, cases[_survol_case])
 
 
 func _draw_case(manuel: Manuel, case: CaseDeManuel, survolee: bool) -> void:
@@ -335,8 +376,8 @@ func _draw_case(manuel: Manuel, case: CaseDeManuel, survolee: bool) -> void:
 	# explique, « 0/5 » laisse croire à une case qu'on a le droit d'ouvrir.
 	var libelle := "%d/%d" % [places, maximum]
 	if places == 0 and verrouillee:
-		libelle = "niv. %d" % competence.niveau_de_manuel_requis
-	_draw_compte(r, libelle, TEXTE if teinte != VERROU else UiPalette.LABEL)
+		libelle = Textes.t("niv. %d") % competence.niveau_de_manuel_requis
+	_draw_compte(r, libelle, UiPalette.TEXTE if teinte != VERROU else UiPalette.LABEL)
 
 
 ## L'icône de la compétence, **assombrie tant que la case est verrouillée**. Une
@@ -374,37 +415,186 @@ func _draw_compte(r: Rect2, libelle: String, teinte: Color) -> void:
 	_texte(libelle, plaque.position + Vector2(2.0, LINE - 2.0), FONT_SIZE, teinte)
 
 
-## Ce que la case survolée donne : son nom, ses nombres, ses mots-clés.
+## La fiche complète de la case survolée. Les carrés ne portent qu'un compte : à
+## trente-quatre pixels, un nom se tronque et deux cases voisines finissent par
+## annoncer la même chose.
 func _draw_fiche(manuel: Manuel, case: CaseDeManuel) -> void:
 	var competence := case.competence
 	if competence == null or _player == null:
 		return
-	var y := _fiche_top() + LINE
-	_texte(competence.nom, Vector2(PAD, y), FONT_SIZE, TEXTE)
+	var lignes := _lignes_de_fiche(manuel, competence)
+	var r := _fiche_rect(case, _hauteur_de_fiche(lignes))
+	draw_rect(r, UiPalette.TIP_BACK)
+	draw_rect(r, UiPalette.BORDER, false, 1.0)
+
+	var gauche := r.position.x + FICHE_PAD
+	var largeur := r.size.x - FICHE_PAD * 2.0
+	var y := r.position.y + FICHE_PAD
+	_texte(competence.nom_affiche(), Vector2(gauche, y + LINE - 1.0), TITLE_SIZE, UiPalette.TEXTE)
+	# Ce qui peut l'améliorer : ici et pas sur la barre, parce qu'on lit une page de
+	# manuel pour comprendre une compétence, et la barre pour la lancer.
 	_texte(
-		_detail(competence, maxi(manuel.points_de(competence.id), 1)),
-		Vector2(PAD, y + LINE), FONT_SIZE, UiPalette.LABEL
+		competence.libelle_des_mots_cles(), Vector2(gauche, y + LINE * 2.0 - 2.0),
+		FONT_SIZE, MOT_CLE
 	)
-	# Ce qui peut l'améliorer. C'est ici et pas sur la barre : on regarde une page
-	# de manuel pour comprendre une compétence, et la barre pour la lancer.
-	_texte(competence.libelle_des_mots_cles(), Vector2(PAD, y + LINE * 2.0), FONT_SIZE, MOT_CLE)
+	y += FICHE_ENTETE
+
+	for i in lignes.size():
+		if _ouvre_un_groupe(lignes, i):
+			draw_rect(Rect2(gauche, roundf(y + FICHE_SEPARATION * 0.5), largeur, 1.0), UiPalette.BORDER)
+			y += FICHE_SEPARATION
+		var ligne := lignes[i]
+		var base := y + LINE - 2.0
+		_texte(ligne.libelle, Vector2(gauche, base), FONT_SIZE, UiPalette.HINT)
+		draw_string(
+			_font, Vector2(gauche, base), ligne.valeur,
+			HORIZONTAL_ALIGNMENT_RIGHT, largeur, FONT_SIZE, ligne.teinte
+		)
+		y += LINE
 
 
-## « 20 dégâts foudre · 2 traits   8 mana » : les nombres **résolus**, par le
-## même chemin que le lancer — `Player.resoudre()`. Lus sur la compétence, ils
-## ignoreraient ce que l'équipement donne, et la page annoncerait un trait de
-## moins que ce qui part.
+## Tout ce que fait la compétence de la case, une caractéristique par ligne.
 ##
-## Les traits ne se comptent qu'à partir de deux : « 1 trait » sur chaque sort
-## droit serait une ligne qu'on apprend à ne plus lire.
-func _detail(competence: Competence, points: int) -> String:
-	var geste := _player.resoudre(competence, points)
-	var detail := "%d dégâts %s" % [roundi(geste.degats), DamageType.NAMES[competence.nature]]
-	if geste.nombre_de_projectiles() > 1:
-		detail += " · %d traits" % geste.nombre_de_projectiles()
+## **Tous les nombres viennent de `Player.resoudre()`**, le chemin même du lancer.
+## Lus sur la compétence, ils ignoreraient l'équipement, et la fiche annoncerait
+## un projectile de moins que ce qui part. Une ligne qui ne dit rien ne s'écrit
+## pas : pas de « 0 froid », pas d'écart pour un trait droit.
+##
+## Sans point placé, ce sont les nombres du premier : une case qui annoncerait
+## zéro ne dirait pas ce qu'elle vaut.
+func _lignes_de_fiche(manuel: Manuel, competence: Competence) -> Array[LigneDeFiche]:
+	var places := manuel.points_de(competence.id)
+	var geste := _player.resoudre(competence, maxi(places, 1))
+	var projectile := competence.porte(MotsCles.PROJECTILE)
+	var out: Array[LigneDeFiche] = []
+
+	out.append(LigneDeFiche.new(
+		Groupe.ETAT, Textes.t("points"), "%d / %d" % [places, competence.points_max()],
+		UiPalette.TEXTE
+	))
+	if manuel.niveau() < competence.niveau_de_manuel_requis:
+		out.append(LigneDeFiche.new(
+			Groupe.ETAT, Textes.t("verrouillée"),
+			Textes.t("niveau %d du manuel") % competence.niveau_de_manuel_requis,
+			MANQUE
+		))
+	if places == 0:
+		out.append(LigneDeFiche.new(
+			Groupe.ETAT, Textes.t("nombres du premier point"), "", UiPalette.TEXTE
+		))
+
 	if geste.cout_en_mana > 0.0:
-		detail += "   %d mana" % roundi(geste.cout_en_mana)
-	return detail
+		out.append(LigneDeFiche.new(
+			Groupe.COUT, Textes.t("coût"),
+			Textes.t("%d mana") % roundi(geste.cout_en_mana), UiPalette.TEXTE
+		))
+	if geste.intervalle > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.COUT, Textes.t("recharge"), "%.2f s" % geste.intervalle, UiPalette.TEXTE
+		))
+
+	if geste.degats_de_base > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.DEGATS, Textes.t("de base"),
+			_en_nature(geste.degats_de_base, geste.degats_de_base, competence.nature),
+			DamageType.COLORS[competence.nature]
+		))
+	for nature in DamageType.Kind.size():
+		if geste.ajoutes_max[nature] > 0.0:
+			out.append(LigneDeFiche.new(
+				Groupe.DEGATS, Textes.t("ajoutés"),
+				_en_nature(geste.ajoutes_min[nature], geste.ajoutes_max[nature], nature),
+				DamageType.COLORS[nature]
+			))
+	if not is_equal_approx(geste.facteur_d_attribut, 1.0):
+		out.append(LigneDeFiche.new(
+			Groupe.DEGATS, StatMod.nom(competence.attribut),
+			_accroissement(geste.facteur_d_attribut), UiPalette.TEXTE
+		))
+	if not is_equal_approx(geste.accroissement, 1.0):
+		out.append(LigneDeFiche.new(
+			Groupe.DEGATS, Textes.t("dégâts accrus"),
+			_accroissement(geste.accroissement), UiPalette.TEXTE
+		))
+	if geste.total_max() > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.DEGATS, Textes.t("par projectile") if projectile else Textes.t("par coup"),
+			StatsDeCompetence.fourchette_lisible(geste.total_min(), geste.total_max()), PLEINE
+		))
+
+	if projectile:
+		out.append(LigneDeFiche.new(
+			Groupe.TIR, Textes.t("projectiles"), str(geste.nombre_de_projectiles()),
+			UiPalette.TEXTE
+		))
+		if geste.dispersion_en_degres > 0.0:
+			out.append(LigneDeFiche.new(
+				Groupe.TIR, Textes.t("écart"), "%d°" % roundi(geste.dispersion_en_degres),
+				UiPalette.TEXTE
+			))
+		if geste.vitesse_de_projectile > 0.0:
+			out.append(LigneDeFiche.new(
+				# Un contexte : « vitesse » nomme aussi le déplacement sur la fiche
+				# de personnage, et l'anglais ne dit pas les deux pareil.
+				Groupe.TIR, Textes.t("vitesse", "fiche de compétence"),
+				"%d px/s" % roundi(geste.vitesse_de_projectile), UiPalette.TEXTE
+			))
+
+	# Ce que la compétence inflige, la ligne qu'on cherche pour comparer deux sorts :
+	# les bornes d'un projectile ne disent pas ce que vaut une salve de quatre.
+	var par_lancer := geste.moyenne_par_lancer()
+	if par_lancer > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.ESTIMATION, Textes.t("moyenne par lancer"), str(roundi(par_lancer)), PLEINE
+		))
+		if geste.intervalle > 0.0:
+			out.append(LigneDeFiche.new(
+				Groupe.ESTIMATION, Textes.t("par seconde"),
+				str(roundi(geste.moyenne_par_seconde())), PLEINE
+			))
+	return out
+
+
+static func _ouvre_un_groupe(lignes: Array[LigneDeFiche], index: int) -> bool:
+	return index == 0 or lignes[index].groupe != lignes[index - 1].groupe
+
+
+## Mesurée sur les lignes mêmes que le dessin écrit : un compte tenu à part
+## laisserait la dernière déborder du cadre au premier groupe ajouté.
+func _hauteur_de_fiche(lignes: Array[LigneDeFiche]) -> float:
+	var h := FICHE_PAD * 2.0 + FICHE_ENTETE + LINE * float(lignes.size())
+	for i in lignes.size():
+		if _ouvre_un_groupe(lignes, i):
+			h += FICHE_SEPARATION
+	return h
+
+
+## Le cadre de la fiche, dans le repère du panneau : à droite de la page, à la
+## hauteur de la case survolée, et **tenu dans le cadrage** au-dessus des jauges
+## du HUD. À gauche quand la droite n'a pas la place : un panneau qu'on
+## déplacerait ne doit pas emmener sa fiche hors de l'écran.
+func _fiche_rect(case: CaseDeManuel, hauteur: float) -> Rect2:
+	var ecran := Vector2(Settings.taille_de_base())
+	var x := size.x + FICHE_GAP
+	if global_position.x + x + FICHE_W > ecran.x:
+		x = -FICHE_GAP - FICHE_W
+	var plancher := Hud.haut_des_jauges(ecran.y) - global_position.y
+	var y := minf(_case_rect(case.position).position.y, plancher - hauteur)
+	return Rect2(x, maxf(y, -global_position.y), FICHE_W, hauteur)
+
+
+## « 3–7 froid », ou « 23 foudre » quand les deux bornes s'arrondissent au même
+## nombre.
+static func _en_nature(bas: float, haut: float, nature: int) -> String:
+	return "%s %s" % [StatsDeCompetence.fourchette_lisible(bas, haut), DamageType.nom(nature)]
+
+
+## Un multiplicateur écrit comme le joueur le lit sur un objet, et **par la même
+## fonction** que l'objet : 1,4 devient « +40 % ». Écrit à part, le pourcentage de
+## la fiche et celui de l'infobulle divergeraient à la première retouche de
+## typographie.
+static func _accroissement(facteur: float) -> String:
+	return StatMod.value_label("", StatMod.Mode.PERCENT, (facteur - 1.0) * 100.0)
 
 
 func _texte(texte: String, at: Vector2, taille: int, teinte: Color) -> void:

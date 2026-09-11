@@ -28,7 +28,7 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    | `lignee` / `palier` | La suite à laquelle il appartient, et son rang |
    | `niveau_requis` | La zone à partir de laquelle il tombe |
    | `grid_size` | Son encombrement en cases |
-   | `implicit_*` | Le bonus que porte toute la base, sans tirage |
+   | `implicit_*` | Le bonus que porte toute la base, sans tirage. Pour des dégâts ajoutés : `implicit_stat = degats_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_portee` (`attaque` ou `sort`) |
 
 2. **`core/item_catalog.gd`** — ajouter le `preload` dans `ALL`, **dans le bloc
    de sa lignée et par palier croissant**. C'est le seul endroit où les bases
@@ -55,6 +55,9 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
 supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fenetre_vide`,
 `test_chaque_emplacement_a_une_base_a_tous_les_niveaux`.
 
+**Et son nom anglais** : une entrée dans `i18n/en.po`, dont le `msgid` est le
+`display_name` français. Voir « Ajouter un texte affiché ».
+
 ---
 
 ## Ajouter un affixe d'objet
@@ -65,14 +68,14 @@ supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fen
    | Champ | À remplir |
    |---|---|
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
-   | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `StatsDeCompetence.LABELS` |
+   | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `StatsDeCompetence.LABELS`, ou des dégâts ajoutés `degats_<id>` sur `DamageType.IDS` — ceux-là n'existent **qu'avec une portée** |
    | `portee` | Vide pour la fiche du personnage ; sinon **un mot-clé de `MotsCles`**, et l'affixe n'agit que sur les compétences qui le portent |
    | `percent` | Pourcentage plutôt que valeur absolue |
    | `tags` | Les étiquettes visées ; **vide = partout** |
    | `exclut` | Ce qui refuse, et **qui l'emporte** sur `tags` |
    | `arrondi` | Le pas de la valeur tirée : `1` pour un entier, `0.01` pour une fraction |
    | `weight` | Son poids dans la réserve |
-   | `tiers` | L'échelle, **du meilleur au pire** |
+   | `tiers` | L'échelle, **du meilleur au pire**. Pour des dégâts ajoutés, deux plages par palier : `min_value`/`max_value` pour la borne basse, `min_haut`/`max_haut` pour la borne haute |
 
 2. **L'échelle** est la seule partie délicate :
    - le **premier** de la liste est le T1, le meilleur ;
@@ -80,7 +83,9 @@ supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fen
      dans les premières zones et sa première sortie ressemble à un ajout de
      contenu plutôt qu'à une progression ;
    - la monotonie est obligatoire : niveau requis et valeurs croissent ensemble
-     du bas vers le haut.
+     du bas vers le haut ;
+   - une fourchette l'est **sur ses deux bornes**, et sa plage basse ne dépasse
+     jamais sa plage haute : un objet ne doit pas pouvoir tirer « ajoute 9 à 7 ».
 
 3. **`core/item_affix_pool.gd`** — ajouter le `preload` dans `ALL`.
 
@@ -96,7 +101,9 @@ supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fen
 `test_aucune_etiquette_d_affixe_ne_vise_le_vide` (une étiquette qui ne
 correspond à aucune base est une faute de frappe qui ne se verrait jamais),
 `test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne`,
-`test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer` ; et
+`test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer`,
+`test_chaque_fourchette_est_monotone_et_a_l_endroit`,
+`test_une_fourchette_tiree_reste_dans_ses_deux_plages` ; et
 `tests/integration/test_atelier.gd : test_chaque_affixe_accepte_a_sa_ligne`, qui
 refuse une base dont la liste déborde du bas de l'établi.
 
@@ -113,6 +120,11 @@ Deux tests forment une **bijection** qu'il faut satisfaire des deux côtés :
 
 Autrement dit : **on n'ajoute pas une statistique seule.** Elle arrive avec au
 moins un affixe, ou elle n'arrive pas.
+
+Les lignes « attaque » et « trait » du groupe OFFENSE ne sont pas des
+statistiques : ce sont les deux compétences de départ, résolues par le chemin du
+lancer. Leur explication est dans `StatHelp.COMPETENCES`, et elles comptent comme
+atteintes dès qu'un affixe de dégâts ajoutés vise l'un de leurs mots-clés.
 
 1. **`core/character_stats.gd`** — le champ `@export`, dans son groupe.
 2. **`core/stat_mod.gd`** — son entrée dans `LABELS` (l'unité fait partie du nom
@@ -136,24 +148,33 @@ moins un affixe, ou elle n'arrive pas.
 360 pixels du cadrage, et c'est le groupe des attributs, ajouté après coup, qui
 avait fait déborder la dernière ligne sur l'aide du bas.
 
+**Et son anglais** : deux entrées dans `i18n/en.po`, son nom de `LABELS` et son
+explication de `StatHelp`. La fiche doit ensuite tenir dans **les deux langues** —
+`tests/integration/test_largeurs.gd`.
+
 ---
 
 ## Ajouter une nature de dégâts
 
 C'est la recette qui montre pourquoi `DamageType` est une feuille sans
-dépendance : quatre tables alignées sur un seul enum.
+dépendance : des tables alignées sur un seul enum.
 
 1. **`core/damage_type.gd`** — la valeur dans `Kind`, **à la fin** (l'enum est
-   indexé par des tableaux), puis son entrée dans les trois tables : `NAMES`,
-   `COLORS`, `RESIST_FIELDS`.
+   indexé par des tableaux), puis son entrée dans les cinq tables : `NAMES`,
+   `IDS` (**définitif** : il forme le nom `degats_<id>` que les sauvegardes
+   écrivent), `LIBELLES_DE_DEGATS`, `COLORS`, `RESIST_FIELDS`.
 2. **`core/character_stats.gd`** — le champ `res_<nom>`, du même nom que dans
    `RESIST_FIELDS`.
 3. **`core/stat_mod.gd`** — `LABELS` et `PERCENT_POINTS`.
 4. **`ui/stats_panel.gd`** — dans le groupe `RÉSISTANCES`.
 5. **Un affixe** qui la donne, avec `exclut = ["weapon"]` comme ses sœurs.
+6. **Deux affixes de dégâts ajoutés**, `<id>_aux_attaques` et `<id>_aux_sorts` :
+   copier ceux d'une nature voisine, échelle comprise. Une nature est une nature
+   comme les autres, même si aucune compétence n'en est encore.
 
 `StatHelp` n'a **rien** à changer : sa ligne « plafonnée à 75 % » est écrite pour
-tout ce qui est dans `RESIST_FIELDS`, donc la nouvelle nature en hérite.
+tout ce qui est dans `RESIST_FIELDS`, donc la nouvelle nature en hérite. La fiche
+du manuel non plus : elle écrit une ligne par nature ajoutée, dans sa couleur.
 
 Une nature **ne donne pas de mot-clé d'elle-même** : il faut l'entrée dans
 `Competence.MOT_CLE_DE_NATURE` et un affixe qui la vise — voir « Ajouter un
@@ -163,7 +184,12 @@ mot-clé ». Sans eux, une compétence de feu n'affiche simplement pas « Feu »
 `test_les_tables_couvrent_toutes_les_natures`,
 `test_seul_le_physique_n_a_pas_de_champ`,
 `test_aucune_couleur_ne_confond_avec_l_or` (l'or est réservé aux critiques et
-aux élites), `test_les_couleurs_sont_distinctes_entre_elles`.
+aux élites), `test_les_couleurs_sont_distinctes_entre_elles` ; et
+`tests/unit/test_affixes.gd : test_chaque_nature_s_ajoute_aux_attaques_et_aux_sorts`.
+
+**Et son anglais** : deux entrées dans `i18n/en.po`, son nom (`NAMES`) et ses
+dégâts (`LIBELLES_DE_DEGATS`) — « froid » et « dégâts de froid » se traduisent
+séparément, parce que l'anglais colle le nom au mot « damage ».
 
 ---
 
@@ -225,6 +251,8 @@ plutôt que compter sur les tests.
 `test_le_clic_retrouve_l_emplacement_dessine` (l'endroit dessiné et l'endroit
 cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
 
+**Et son nom anglais** : une entrée dans `i18n/en.po` pour son `label`.
+
 ---
 
 ## Ajouter une compétence
@@ -238,8 +266,7 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
    | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
    | `cadence` / `recharge` | `ARME` suit la fiche (`attack_cooldown`) ; `INCANTATION` suit `recharge` divisée par `cast_speed` |
    | `cout_en_mana` | 0 pour un geste gratuit |
-   | `degats_par_point` | Un nombre **par point placé** : sa longueur est le maximum de la case |
-   | `stat_de_base` | `attack_damage` ou `spell_damage` — le terme qui garde les affixes vivants |
+   | `degats_par_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus |
    | `attribut` / `pourcentage_par_attribut` | Vide pour ce qui ne monte avec rien |
    | `mots_cles_declares` | **Seulement ce que rien d'autre ne dit** — aujourd'hui `projectile`. Jamais la nature ni la cadence, qui donnent déjà `foudre`, `sort` ou `attaque` |
    | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 3 et 24 pour une salve ; 8 et 360 pour une nova |
@@ -264,7 +291,12 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
 `test_sans_modificateur_la_resolution_rend_la_fiche` ; et
 `tests/integration/test_panneau_manuels.gd :
 test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la
-page.
+page, et `test_la_fiche_reste_dans_le_cadrage`, qui refuse une case dont la fiche
+au survol sortirait de l'écran.
+
+**Et son nom anglais** : une entrée dans `i18n/en.po` pour son `nom`. Il s'écrit
+en entier dans le menu de la barre et en tête de sa fiche, tous deux étroits —
+`tests/integration/test_largeurs.gd` refuse un nom qui déborde.
 
 ---
 
@@ -294,6 +326,10 @@ seul.** Il arrive avec au moins un affixe qui le vise, ou il n'arrive pas.
 `tests/unit/test_affixes.gd : test_chaque_mot_cle_est_vise_par_quelque_chose` —
 le mot-clé décoratif, affiché sans que rien ne le vise.
 
+**Et son anglais** : son libellé dans `i18n/en.po`, plus son destinataire s'il
+en a un (« aux sorts » → « to spells »), qui est le morceau de phrase que porte
+une ligne de dégâts ajoutés.
+
 ---
 
 ## Ajouter un manuel
@@ -311,6 +347,10 @@ Un manuel est **une base d'objet** de plus, plus un archétype.
 `test_un_archetype_va_avec_la_famille_du_manuel` (une base porte un archétype
 **si et seulement si** elle est de la famille des manuels),
 `test_chaque_case_porte_une_competence`, `test_un_manuel_ne_recoit_aucun_affixe`.
+
+**Et ses deux noms anglais** dans `i18n/en.po` : celui de l'archétype, qui coiffe
+la page, et celui de la base, que le sac affiche. Ce sont deux textes différents
+— « Maître de la foudre » et « Manuel de la foudre ».
 
 Un manuel échappe aux règles écrites pour l'équipement — affixes, lignée à
 paliers, implicite croissant — et la question se pose à un seul endroit :
@@ -332,6 +372,11 @@ qu'au **premier lancement après la mise à jour**, sur les fichiers des joueurs
    le niveau 1 parce qu'on ne sait pas dans quelle zone ils sont tombés.
 4. **`tests/fixtures/personnage_v<N>.json`** — écrire à la main un fichier de
    référence du nouveau format, et **garder les anciens**.
+5. **Si une statistique disparaît**, les lignes d'objet qui la visent sont dans
+   les fichiers des joueurs : les convertir dans `Personnage._ligne_actuelle()`
+   par une **équivalence exacte** avec le jeu d'avant, ou les retirer avec un
+   `push_warning`. Voir `test_des_degats_d_attaque_deviennent_du_physique_aux_attaques`
+   et `test_un_pourcentage_de_degats_est_retire`.
 
 Les fichiers de référence attrapent exactement ce que l'aller-retour en mémoire
 ne peut pas voir : le jour où `points_a_placer` devient `points`, l'aller-retour
@@ -354,6 +399,51 @@ lui, ne se relit plus. Voir [tests/fixtures/LISEZMOI.md](../tests/fixtures/LISEZ
 Un réglage qui ne survit pas à la fermeture n'est pas un réglage.
 `tests/integration/test_reglages_disque.gd` couvre l'aller-retour, le fichier
 abîmé et l'absence de fichier.
+
+---
+
+## Ajouter un texte affiché
+
+**Le texte français est la clé.** Le code l'écrit en clair, `i18n/en.po` en donne
+l'anglais, et il n'existe pas de fichier français. Le prix de ce choix : retoucher
+un texte change sa clé, et sa traduction tombe sans un mot — l'anglais réaffiche
+alors le français.
+
+1. **Dans le code** — l'envelopper dans `Textes.t("…")` **là où il est lu**, et
+   jamais là où il est dessiné : une table de libellés se traduit dans sa
+   fonction de lecture (`StatMod.nom()`, `MotsCles.libelle()`,
+   `EquipmentSlots.label()`), un contenu par son accesseur
+   (`Item.display_name()`, `Competence.nom_affiche()`). Un texte posé dans une
+   scène — `Label`, `Button`, texte fantôme d'un champ — n'a **rien** à faire :
+   Godot le traduit seul.
+2. **`i18n/en.po`** — `msgid` le français, `msgstr` l'anglais, dans la section
+   qui va bien.
+3. **Une phrase se traduit entière.** Dès qu'elle porte deux valeurs ou plus,
+   elles sont **nommées** : `Textes.t("ajoute {bas} à {haut} {degats}")`. Collée
+   à partir de morceaux, elle sortirait en anglais dans l'ordre du français.
+4. **Un pluriel** passe par `Textes.tn(singulier, pluriel, n)` : le français met
+   le singulier à zéro, l'anglais le pluriel, et c'est `en.po` qui porte la règle
+   de chaque langue.
+5. **Deux sens pour un même mot** demandent un contexte :
+   `Textes.t("vitesse", "fiche de compétence")`, et un `msgctxt` dans le `.po`.
+6. **Un pourcentage** s'écrit par `StatMod.pourcentage()` — l'espace devant le
+   signe est une règle française, et le gabarit est lui-même traduit.
+7. **Ce qui est dessiné à la main doit redessiner** quand la langue change :
+   `_notification(NOTIFICATION_TRANSLATION_CHANGED)`. Elle arrive **aussi à
+   l'entrée dans l'arbre**, donc la garder derrière `is_node_ready()` dès qu'on y
+   touche un `@onready`. Ce qui **mesure** un texte une fois — `AffixTag` — doit
+   le re-mesurer.
+
+**Ce qui refusera un oubli** — `tests/unit/test_traductions.gd` :
+`test_chaque_texte_affiche_a_son_anglais` (les tables, le contenu, les scènes, et
+chaque littéral confié à `Textes`), `test_aucune_traduction_orpheline` (une entrée
+d'`en.po` que plus rien n'affiche est un texte français qui a changé),
+`test_les_gabarits_gardent_leurs_valeurs` ; et `tests/integration/test_largeurs.gd`,
+qui refuse un texte débordant **dans l'une des deux langues**.
+
+Ce qui **ne se traduit pas** : les outils de réglage (forge `F4`, arène `F2`,
+établi `B`, bandeau `H`), `CATALOGUE.md`, la console (`push_warning`), et les
+identifiants.
 
 ---
 

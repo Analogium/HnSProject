@@ -10,8 +10,6 @@ class_name ItemAffixPool
 ## fourchette de valeurs et un poids.
 
 const ALL := [
-	preload("res://resources/item_affixes/acere.tres"),
-	preload("res://resources/item_affixes/meurtrier.tres"),
 	preload("res://resources/item_affixes/vigoureux.tres"),
 	preload("res://resources/item_affixes/robuste.tres"),
 	preload("res://resources/item_affixes/preste.tres"),
@@ -33,7 +31,6 @@ const ALL := [
 	preload("res://resources/item_affixes/regenerant.tres"),
 	preload("res://resources/item_affixes/sagace.tres"),
 	preload("res://resources/item_affixes/limpide.tres"),
-	preload("res://resources/item_affixes/arcanique.tres"),
 	preload("res://resources/item_affixes/incantateur.tres"),
 	preload("res://resources/item_affixes/muscle.tres"),
 	preload("res://resources/item_affixes/agile.tres"),
@@ -45,6 +42,24 @@ const ALL := [
 	preload("res://resources/item_affixes/fourchu.tres"),
 	preload("res://resources/item_affixes/sifflant.tres"),
 	preload("res://resources/item_affixes/orageux.tres"),
+	preload("res://resources/item_affixes/ensorcele.tres"),
+
+	# Les dégâts ajoutés : chaque nature, aux attaques puis aux sorts. Une nature est
+	# une nature comme les autres, et elles partagent une seule échelle. Leurs
+	# poids sont réglés pour que chaque famille pèse ce que pesait l'affixe qu'elle
+	# remplace, et non six fois plus.
+	preload("res://resources/item_affixes/physique_aux_attaques.tres"),
+	preload("res://resources/item_affixes/froid_aux_attaques.tres"),
+	preload("res://resources/item_affixes/feu_aux_attaques.tres"),
+	preload("res://resources/item_affixes/foudre_aux_attaques.tres"),
+	preload("res://resources/item_affixes/necrotique_aux_attaques.tres"),
+	preload("res://resources/item_affixes/sacre_aux_attaques.tres"),
+	preload("res://resources/item_affixes/physique_aux_sorts.tres"),
+	preload("res://resources/item_affixes/froid_aux_sorts.tres"),
+	preload("res://resources/item_affixes/feu_aux_sorts.tres"),
+	preload("res://resources/item_affixes/foudre_aux_sorts.tres"),
+	preload("res://resources/item_affixes/necrotique_aux_sorts.tres"),
+	preload("res://resources/item_affixes/sacre_aux_sorts.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6. La courbe descend vite : un objet à six
@@ -79,8 +94,8 @@ static func compatibles(base: ItemBase) -> Array:
 	# Ce qui ne se porte nulle part ne reçoit rien : un manuel se lit, il ne
 	# s'équipe pas, et les affixes **universels** — les résistances, les
 	# attributs — sortiraient sinon sur un livre. La règle est ici et non en
-	# `exclut` sur chaque affixe : elle demanderait de toucher les vingt-cinq
-	# fichiers, et le vingt-sixième l'oublierait.
+	# `exclut` sur chaque affixe : elle demanderait de toucher chaque fichier
+	# d'affixe, et le prochain l'oublierait.
 	if base == null or not EquipmentSlots.famille_equipable(base.family):
 		return []
 	var out := []

@@ -1,0 +1,753 @@
+# Traduction anglaise de HnSProject.
+#
+# Le français est la langue source : les clés (msgid) sont les textes français
+# écrits dans le code, et il n'existe pas de fichier français. Un msgid retouché
+# dans le code sans l'être ici perd sa traduction en silence — c'est le test des
+# orphelins qui le voit.
+msgid ""
+msgstr ""
+"Project-Id-Version: HnSProject\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ---------------------------------------------------------------------------
+# Armes
+# ---------------------------------------------------------------------------
+
+msgid "Épée"
+msgstr "Sword"
+
+msgid "Épée large"
+msgstr "Broadsword"
+
+msgid "Lame de guerre"
+msgstr "War Blade"
+
+msgid "Dague"
+msgstr "Dagger"
+
+msgid "Miséricorde"
+msgstr "Misericorde"
+
+msgid "Masse"
+msgstr "Mace"
+
+msgid "Masse d'armes"
+msgstr "Battle Mace"
+
+msgid "Marteau de guerre"
+msgstr "War Hammer"
+
+msgid "Baguette"
+msgstr "Wand"
+
+msgid "Sceptre"
+msgstr "Scepter"
+
+msgid "Sceptre runique"
+msgstr "Runic Scepter"
+
+# ---------------------------------------------------------------------------
+# Main gauche
+# ---------------------------------------------------------------------------
+
+msgid "Bouclier"
+msgstr "Shield"
+
+msgid "Écu"
+msgstr "Kite Shield"
+
+msgid "Pavois"
+msgstr "Pavise"
+
+msgid "Grimoire"
+msgstr "Grimoire"
+
+msgid "Codex"
+msgstr "Codex"
+
+# ---------------------------------------------------------------------------
+# Armures
+# ---------------------------------------------------------------------------
+
+msgid "Casque"
+msgstr "Helmet"
+
+msgid "Armet"
+msgstr "Armet"
+
+msgid "Heaume"
+msgstr "Great Helm"
+
+msgid "Capuche"
+msgstr "Hood"
+
+msgid "Capuche de maître"
+msgstr "Master's Hood"
+
+msgid "Tunique"
+msgstr "Tunic"
+
+msgid "Justaucorps"
+msgstr "Jerkin"
+
+msgid "Plastron"
+msgstr "Breastplate"
+
+msgid "Cotte de mailles"
+msgstr "Chainmail"
+
+msgid "Harnois"
+msgstr "Full Plate"
+
+msgid "Gants"
+msgstr "Gloves"
+
+msgid "Gants renforcés"
+msgstr "Reinforced Gloves"
+
+msgid "Gants de maître"
+msgstr "Master's Gloves"
+
+msgid "Bottes"
+msgstr "Boots"
+
+msgid "Bottes cloutées"
+msgstr "Studded Boots"
+
+msgid "Bottes de marche"
+msgstr "Travel Boots"
+
+msgid "Ceinture"
+msgstr "Belt"
+
+msgid "Ceinturon"
+msgstr "Girdle"
+
+msgid "Baudrier"
+msgstr "Baldric"
+
+# ---------------------------------------------------------------------------
+# Bijoux
+# ---------------------------------------------------------------------------
+
+msgid "Anneau"
+msgstr "Ring"
+
+msgid "Chevalière"
+msgstr "Signet Ring"
+
+msgid "Bague ouvragée"
+msgstr "Ornate Ring"
+
+msgid "Amulette"
+msgstr "Amulet"
+
+msgid "Pendentif"
+msgstr "Pendant"
+
+msgid "Talisman"
+msgstr "Talisman"
+
+# ---------------------------------------------------------------------------
+# Manuel et compétences
+# ---------------------------------------------------------------------------
+
+msgid "Manuel de la foudre"
+msgstr "Manual of Lightning"
+
+msgid "Maître de la foudre"
+msgstr "Master of Lightning"
+
+msgid "Attaque"
+msgstr "Attack"
+
+msgid "Trait"
+msgstr "Bolt"
+
+msgid "Éclair vif"
+msgstr "Swift Bolt"
+
+msgid "Salve d'éclairs"
+msgstr "Bolt Volley"
+
+msgid "Fulguration"
+msgstr "Fulmination"
+
+msgid "Nova de foudre"
+msgstr "Lightning Nova"
+
+# ---------------------------------------------------------------------------
+# Affixes d'élite
+# ---------------------------------------------------------------------------
+
+msgid "Blindé"
+msgstr "Armored"
+
+msgid "Brutal"
+msgstr "Brutal"
+
+msgid "Colossal"
+msgstr "Colossal"
+
+msgid "Véloce"
+msgstr "Swift"
+
+msgid "Vorace"
+msgstr "Ravenous"
+
+# ---------------------------------------------------------------------------
+# Natures de dégâts
+# ---------------------------------------------------------------------------
+
+msgid "physique"
+msgstr "physical"
+
+msgid "froid"
+msgstr "cold"
+
+msgid "feu"
+msgstr "fire"
+
+msgid "foudre"
+msgstr "lightning"
+
+msgid "nécrotique"
+msgstr "necrotic"
+
+msgid "sacré"
+msgstr "holy"
+
+msgid "dégâts physiques"
+msgstr "physical damage"
+
+msgid "dégâts de froid"
+msgstr "cold damage"
+
+msgid "dégâts de feu"
+msgstr "fire damage"
+
+msgid "dégâts de foudre"
+msgstr "lightning damage"
+
+msgid "dégâts nécrotiques"
+msgstr "necrotic damage"
+
+msgid "dégâts sacrés"
+msgstr "holy damage"
+
+# ---------------------------------------------------------------------------
+# Mots-clés de compétence
+# ---------------------------------------------------------------------------
+
+msgid "Projectile"
+msgstr "Projectile"
+
+msgid "Foudre"
+msgstr "Lightning"
+
+msgid "Sort"
+msgstr "Spell"
+
+msgid "aux attaques"
+msgstr "to attacks"
+
+msgid "aux sorts"
+msgstr "to spells"
+
+# ---------------------------------------------------------------------------
+# Emplacements d'équipement
+# ---------------------------------------------------------------------------
+
+msgid "ARME"
+msgstr "WEAPON"
+
+msgid "MAIN G."
+msgstr "OFF-HAND"
+
+msgid "CASQUE"
+msgstr "HELMET"
+
+msgid "TORSE"
+msgstr "CHEST"
+
+msgid "GANTS"
+msgstr "GLOVES"
+
+msgid "BOTTES"
+msgstr "BOOTS"
+
+msgid "CEINTURE"
+msgstr "BELT"
+
+msgid "AMULETTE"
+msgstr "AMULET"
+
+msgid "BAGUE G."
+msgstr "RING L."
+
+msgid "BAGUE D."
+msgstr "RING R."
+
+# ---------------------------------------------------------------------------
+# Noms de statistiques
+# ---------------------------------------------------------------------------
+
+msgid "force"
+msgstr "strength"
+
+msgid "dextérité"
+msgstr "dexterity"
+
+msgid "intelligence"
+msgstr "intelligence"
+
+msgid "PV"
+msgstr "HP"
+
+msgid "PV/s"
+msgstr "HP/s"
+
+msgid "mana"
+msgstr "mana"
+
+msgid "mana/s"
+msgstr "mana/s"
+
+msgid "armure"
+msgstr "armor"
+
+msgid "esquive"
+msgstr "evasion"
+
+msgid "rés. froid"
+msgstr "cold res."
+
+msgid "rés. feu"
+msgstr "fire res."
+
+msgid "rés. foudre"
+msgstr "lightning res."
+
+msgid "rés. nécrotique"
+msgstr "necrotic res."
+
+msgid "rés. sacré"
+msgstr "holy res."
+
+msgid "temps de recharge"
+msgstr "cooldown"
+
+msgid "vitesse d'attaque"
+msgstr "attack speed"
+
+msgid "vitesse d'incantation"
+msgstr "cast speed"
+
+msgid "allonge"
+msgstr "reach"
+
+msgid "chance critique"
+msgstr "crit chance"
+
+msgid "dégâts critiques"
+msgstr "crit damage"
+
+msgid "vitesse"
+msgstr "movement speed"
+
+msgid "dégâts"
+msgstr "damage"
+
+msgid "nombre de projectiles"
+msgstr "projectiles"
+
+msgid "vitesse de projectile"
+msgstr "projectile speed"
+
+# ---------------------------------------------------------------------------
+# Lignes d'objet
+# ---------------------------------------------------------------------------
+
+msgid "{valeur} %"
+msgstr "{valeur}%"
+
+msgid "ajoute {valeur} {degats}"
+msgstr "adds {valeur} {degats}"
+
+msgid "ajoute {bas} à {haut} {degats}"
+msgstr "adds {bas} to {haut} {degats}"
+
+# ---------------------------------------------------------------------------
+# Explications de la fiche de personnage
+# ---------------------------------------------------------------------------
+
+msgid "La force. Chaque point donne {pv} points de vie et {degats} dégâts."
+msgstr "Strength. Each point gives {pv} hit points and {degats} damage."
+
+msgid "La dextérité. Chaque point donne {esquive} d'esquive et {vitesse} % de vitesse d'attaque."
+msgstr "Dexterity. Each point gives {esquive} evasion and {vitesse}% attack speed."
+
+msgid "L'intelligence. Chaque point donne {mana} de mana et {vitesse} % de vitesse d'incantation."
+msgstr "Intelligence. Each point gives {mana} mana and {vitesse}% cast speed."
+
+msgid "Les points de vie. À zéro, la zone est perdue — jamais le personnage."
+msgstr "Hit points. At zero the zone is lost — never the character."
+
+msgid "Vie regagnée par seconde, en permanence. Elle ne s'interrompt pas au combat."
+msgstr "Health regained every second, at all times. It does not stop in combat."
+
+msgid "La réserve. Chaque tir en coûte, le coup d'épée est gratuit."
+msgstr "The mana pool. Every bolt costs some; the sword swing is free."
+
+msgid "Mana regagné par seconde. C'est lui qui fixe la cadence de tir soutenable."
+msgstr "Mana regained every second. It sets the rate of fire you can sustain."
+
+msgid "Une notation, pas des points retranchés. Elle protège proportionnellement plus des petits coups que des gros, et ne couvre que les dégâts physiques : contre un élément, seule la résistance compte."
+msgstr "A rating, not points subtracted. It protects proportionally more against small hits than large ones, and covers physical damage only: against an element, resistance alone counts."
+
+msgid "Une notation, elle aussi. Un coup esquivé ne fait rien du tout — mais l'esquive ne protège que de ce qui vise, jamais des dégâts continus."
+msgstr "A rating as well. A dodged hit does nothing at all — but evasion only protects against what aims at you, never against damage over time."
+
+msgid "Réduit les dégâts de froid, en pourcentage direct."
+msgstr "Reduces cold damage, as a direct percentage."
+
+msgid "Réduit les dégâts de feu, en pourcentage direct."
+msgstr "Reduces fire damage, as a direct percentage."
+
+msgid "Réduit les dégâts de foudre, en pourcentage direct."
+msgstr "Reduces lightning damage, as a direct percentage."
+
+msgid "Réduit les dégâts nécrotiques, en pourcentage direct."
+msgstr "Reduces necrotic damage, as a direct percentage."
+
+msgid "Réduit les dégâts sacrés, en pourcentage direct."
+msgstr "Reduces holy damage, as a direct percentage."
+
+msgid "Le délai de base entre deux coups, avant la vitesse d'attaque."
+msgstr "The base delay between two hits, before attack speed."
+
+msgid "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation."
+msgstr "The rate of melee. It does not affect bolts, which follow cast speed."
+
+msgid "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque."
+msgstr "The rate of bolts. It does not affect the sword swing, which follows attack speed."
+
+msgid "L'allonge du coup d'épée, en pixels."
+msgstr "The reach of the sword swing, in pixels."
+
+msgid "La probabilité qu'un coup soit critique."
+msgstr "The chance that a hit is critical."
+
+msgid "Ce que multiplie un coup critique."
+msgstr "What a critical hit multiplies."
+
+msgid "La vitesse de déplacement, en pixels par seconde."
+msgstr "Movement speed, in pixels per second."
+
+msgid "Le coup d'épée : gratuit, à la cadence de l'arme. La force et tout ce qui ajoute des dégâts aux attaques le font monter."
+msgstr "The sword swing: free, at the weapon's rate. Strength and anything that adds damage to attacks raise it."
+
+msgid "Le trait : un sort, qui coûte du mana et suit la vitesse d'incantation. Tout ce qui ajoute des dégâts aux sorts le fait monter."
+msgstr "The bolt: a spell, which costs mana and follows cast speed. Anything that adds damage to spells raises it."
+
+msgid "Ici : {legers} % sur un coup de {coup_leger}, {lourds} % sur un coup de {coup_lourd}."
+msgstr "Here: {legers}% against a hit of {coup_leger}, {lourds}% against a hit of {coup_lourd}."
+
+msgid "Ici : {esquive} % des coups évités, {plafond} % au plus."
+msgstr "Here: {esquive}% of hits avoided, {plafond}% at most."
+
+msgid "Ici : un coup toutes les %.2f s."
+msgstr "Here: one hit every %.2f s."
+
+msgid "Ici : {coups} coups sur cent, pour {degats} % de dégâts."
+msgstr "Here: {coups} hits in a hundred, for {degats}% damage."
+
+msgid "Plafonnée à {plafond} %, et elle peut devenir négative (jusqu'à {plancher} %)."
+msgstr "Capped at {plafond}%, and it can go negative (down to {plancher}%)."
+
+# ---------------------------------------------------------------------------
+# Menu de pause et options
+# ---------------------------------------------------------------------------
+
+msgid "PAUSE"
+msgstr "PAUSE"
+
+msgid "Reprendre"
+msgstr "Resume"
+
+msgid "Options"
+msgstr "Options"
+
+msgid "Menu des personnages"
+msgstr "Character menu"
+
+msgid "Quitter"
+msgstr "Quit"
+
+msgid "OPTIONS"
+msgstr "OPTIONS"
+
+msgid "Barres de vie"
+msgstr "Health bars"
+
+msgid "Noms des affixes"
+msgstr "Affix names"
+
+msgid "Fenêtre"
+msgstr "Window"
+
+msgid "Retour"
+msgstr "Back"
+
+msgid "Fenêtre : plein écran"
+msgstr "Window: fullscreen"
+
+msgid "Fenêtre : ×{facteur}  ({largeur} × {hauteur})"
+msgstr "Window: ×{facteur}  ({largeur} × {hauteur})"
+
+# ---------------------------------------------------------------------------
+# Écran des personnages
+# ---------------------------------------------------------------------------
+
+msgid "PERSONNAGES"
+msgstr "CHARACTERS"
+
+msgid "Jouer"
+msgstr "Play"
+
+msgid "Nouveau"
+msgstr "New"
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "[Flèches] choisir     [Entrée] jouer     [N] nouveau     [Suppr] supprimer     [Échap] quitter"
+msgstr "[Arrows] choose     [Enter] play     [N] new     [Del] delete     [Esc] quit"
+
+msgid "NOUVEAU PERSONNAGE"
+msgstr "NEW CHARACTER"
+
+msgid "son nom"
+msgstr "their name"
+
+msgid "sa silhouette"
+msgstr "their look"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "SUPPRIMER"
+msgstr "DELETE"
+
+msgid "Aucun personnage. [N] pour en créer un."
+msgstr "No characters. [N] to create one."
+
+msgid "Cette sauvegarde ne se lit pas. Son fichier est toujours là."
+msgstr "This save cannot be read. Its file is still there."
+
+msgid "Nom vide ou trop long (%d au plus)."
+msgstr "Empty name, or too long (%d at most)."
+
+msgid "Écriture impossible sur le disque."
+msgstr "Cannot write to disk."
+
+msgid "« %s » créé."
+msgstr "\"%s\" created."
+
+msgid "Supprimer « %s » définitivement ?"
+msgstr "Delete \"%s\" permanently?"
+
+msgid "Tapez %s pour confirmer."
+msgstr "Type %s to confirm."
+
+msgid "Ce n'est pas ce qui était demandé."
+msgstr "That is not what was asked."
+
+msgid "Suppression impossible."
+msgstr "Deletion failed."
+
+msgid "« %s » supprimé."
+msgstr "\"%s\" deleted."
+
+msgid "sauvegarde illisible"
+msgstr "unreadable save"
+
+msgid "Aucun personnage pour l'instant."
+msgstr "No characters yet."
+
+msgid "niveau %d"
+msgstr "level %d"
+
+msgid "joué le %s"
+msgstr "played %s"
+
+# ---------------------------------------------------------------------------
+# Affichage tête haute, sac et fiche de personnage
+# ---------------------------------------------------------------------------
+
+msgid "Niv. %d"
+msgstr "Lv. %d"
+
+msgid "{courant} exp / {total} exp"
+msgstr "{courant} xp / {total} xp"
+
+msgid "SAC  {occupees} / {total} cases"
+msgstr "BAG  {occupees} / {total} cells"
+
+msgid "[clic] prendre et poser     [clic droit] équiper / retirer"
+msgstr "[LMB] pick up and place     [RMB] equip / remove"
+
+msgid "lâché hors du sac : jeté au sol"
+msgstr "dropped outside the bag: thrown on the ground"
+
+msgid "niveau d'objet %d"
+msgstr "item level %d"
+
+msgid "paliers inconnus : ramassé avant"
+msgstr "tiers unknown: picked up earlier"
+
+msgid "PERSONNAGE  —  NIV. %d"
+msgstr "CHARACTER  —  LV. %d"
+
+msgid "%d à placer"
+msgstr "%d to spend"
+
+msgid "C pour fermer"
+msgstr "C to close"
+
+msgid "ATTRIBUTS"
+msgstr "ATTRIBUTES"
+
+msgid "VIE ET RESSOURCE"
+msgstr "LIFE AND RESOURCE"
+
+msgid "DÉFENSES"
+msgstr "DEFENSES"
+
+msgid "RÉSISTANCES"
+msgstr "RESISTANCES"
+
+msgid "OFFENSE"
+msgstr "OFFENSE"
+
+msgid "DÉPLACEMENT"
+msgstr "MOVEMENT"
+
+# ---------------------------------------------------------------------------
+# Barre de compétences
+# ---------------------------------------------------------------------------
+
+msgid "clic G"
+msgstr "LMB"
+
+msgid "clic D"
+msgstr "RMB"
+
+msgid "— vider la case —"
+msgstr "— clear the slot —"
+
+# ---------------------------------------------------------------------------
+# Manuels et fiche de compétence
+# ---------------------------------------------------------------------------
+
+msgid "MANUELS"
+msgstr "MANUALS"
+
+msgid "aucun manuel à cet emplacement"
+msgstr "no manual in this slot"
+
+msgid "[clic] investir     [clic droit] ranger un manuel"
+msgstr "[LMB] spend a point     [RMB] put a manual away"
+
+msgid "{points} point à placer"
+msgid_plural "{points} points à placer"
+msgstr[0] "{points} point to spend"
+msgstr[1] "{points} points to spend"
+
+msgid "aucun point à placer"
+msgstr "no point to spend"
+
+msgid "niv. %d"
+msgstr "lv. %d"
+
+msgid "points"
+msgstr "points"
+
+msgid "verrouillée"
+msgstr "locked"
+
+msgid "niveau %d du manuel"
+msgstr "manual level %d"
+
+msgid "nombres du premier point"
+msgstr "numbers for the first point"
+
+msgid "coût"
+msgstr "cost"
+
+msgid "%d mana"
+msgstr "%d mana"
+
+msgid "recharge"
+msgstr "cooldown"
+
+msgid "de base"
+msgstr "base"
+
+msgid "ajoutés"
+msgstr "added"
+
+msgid "dégâts accrus"
+msgstr "increased damage"
+
+msgid "par projectile"
+msgstr "per projectile"
+
+msgid "par coup"
+msgstr "per hit"
+
+msgid "projectiles"
+msgstr "projectiles"
+
+msgid "écart"
+msgstr "spread"
+
+msgctxt "fiche de compétence"
+msgid "vitesse"
+msgstr "projectile speed"
+
+msgid "moyenne par lancer"
+msgstr "average per cast"
+
+msgid "par seconde"
+msgstr "per second"
+
+# ---------------------------------------------------------------------------
+# Retour de coup, butin et sauvegarde
+# ---------------------------------------------------------------------------
+
+msgctxt "coup évité"
+msgid "esquive"
+msgstr "dodged"
+
+msgid "raté"
+msgstr "miss"
+
+msgid "+%d exp"
+msgstr "+%d xp"
+
+msgid "sac plein"
+msgstr "bag full"
+
+msgid "sauvegardé"
+msgstr "saved"
+
+msgid "échec de la sauvegarde"
+msgstr "save failed"

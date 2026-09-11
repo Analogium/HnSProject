@@ -19,7 +19,7 @@ func _aller_retour(p: Personnage) -> Personnage:
 
 func _epee_ouvragee() -> Item:
 	return Item.new(ItemCatalog.by_id("epee"), [
-		StatMod.new("attack_damage", StatMod.Mode.FLAT, 6.0),
+		StatMod.fourchette("degats_physique", 4.0, 9.0, MotsCles.ATTAQUE),
 		StatMod.new("attack_speed", StatMod.Mode.PERCENT, 8.0),
 	] as Array[StatMod])
 
@@ -92,9 +92,10 @@ func test_les_affixes_survivent_avec_leur_mode() -> void:
 	var apres := _aller_retour(_personnage_joue())
 	var epee: Item = apres.sac.placed[apres.sac.index_at(Vector2i(3, 1))].data
 	assert_eq(epee.explicits.size(), 2)
-	assert_eq(epee.explicits[0].mod.stat, "attack_damage")
+	assert_eq(epee.explicits[0].mod.stat, "degats_physique")
 	assert_eq(epee.explicits[0].mod.mode, StatMod.Mode.FLAT)
-	assert_almost_eq(epee.explicits[0].mod.value, 6.0, 0.0001)
+	assert_almost_eq(epee.explicits[0].mod.value, 4.0, 0.0001)
+	assert_almost_eq(epee.explicits[0].mod.value_max, 9.0, 0.0001, "et la borne haute de la fourchette")
 	assert_eq(epee.explicits[1].mod.mode, StatMod.Mode.PERCENT, "le mode n'est pas retombé sur plat")
 	assert_eq(epee.rarity(), Item.Rarity.MAGIQUE, "deux affixes, donc bleu")
 
@@ -116,7 +117,8 @@ func test_l_objet_recharge_pointe_sur_la_base_du_catalogue() -> void:
 	var apres := _aller_retour(_personnage_joue())
 	var epee: Item = apres.sac.placed[apres.sac.index_at(Vector2i(3, 1))].data
 	assert_eq(epee.base, ItemCatalog.by_id("epee"), "la même ressource, pas une copie")
-	assert_eq(epee.base.implicit_value, 4.0, "epee.tres n'a pas été touché")
+	assert_eq(epee.base.implicit_value, 2.0, "epee.tres n'a pas été touché")
+	assert_eq(epee.base.implicit_value_max, 6.0)
 
 
 func test_un_sac_plein_se_recharge_entierement() -> void:
@@ -300,12 +302,12 @@ func test_ce_qu_on_ecrit_porte_la_version_courante() -> void:
 ## objet ramassé hier ne se lirait pas comme un objet ramassé à l'instant.
 func test_la_provenance_d_un_affixe_survit_au_disque() -> void:
 	var p := Personnage.nouveau("Paliers", 0)
-	var tire := RolledAffix.new("acere", 3, StatMod.new("attack_damage", StatMod.Mode.FLAT, 29.0))
-	p.equipement["weapon"] = Item.new(ItemCatalog.by_id("epee"), [tire], 40)
+	var tire := RolledAffix.new("cuirasse", 3, StatMod.new("armor", StatMod.Mode.FLAT, 29.0))
+	p.equipement["chest"] = Item.new(ItemCatalog.by_id("plastron"), [tire], 40)
 
 	var relu := Personnage.depuis_dict(p.vers_dict())
-	var repris: RolledAffix = relu.equipement["weapon"].explicits[0]
-	assert_eq(repris.affix_id, "acere")
+	var repris: RolledAffix = relu.equipement["chest"].explicits[0]
+	assert_eq(repris.affix_id, "cuirasse")
 	assert_eq(repris.tier, 3)
 	assert_almost_eq(repris.mod.value, 29.0, 0.0001, "et la valeur, qui fait foi")
 	assert_true(repris.connu())
@@ -490,7 +492,7 @@ func test_la_portee_d_un_affixe_survit_a_l_aller_retour() -> void:
 	var p := Personnage.nouveau("Portee", 0)
 	p.equipement["weapon"] = Item.new(ItemCatalog.by_id("baguette"), [
 		ItemAffixPool.by_id("fourchu").modificateur(1.0),
-		StatMod.new("spell_damage", StatMod.Mode.FLAT, 4.0),
+		StatMod.new("max_mana", StatMod.Mode.FLAT, 4.0),
 	])
 
 	var dict := p.vers_dict()
@@ -520,22 +522,84 @@ func test_le_fichier_de_reference_v4_se_relit() -> void:
 	var portees := []
 	for r in baguette.explicits:
 		portees.append(r.mod.portee)
-	assert_eq(portees, ["", MotsCles.PROJECTILE, MotsCles.FOUDRE])
+	# La première ligne était « +5 dégâts de sort » : la version 5 la relit en
+	# foudre ajoutée aux sorts. Les deux lignes portées passent telles quelles.
+	assert_eq(portees, [MotsCles.SORT, MotsCles.PROJECTILE, MotsCles.FOUDRE])
 	assert_eq(baguette.explicits[2].mod.stat, "degats")
 	assert_eq(baguette.explicits[2].tier, 5, "avec sa provenance")
 
 
-## Une sauvegarde de version 3 n'a que des lignes de fiche : rien ne doit y
-## gagner une portée en passant.
-func test_une_version_3_n_a_que_des_lignes_de_fiche() -> void:
-	var fichier := FileAccess.open("res://tests/fixtures/personnage_v3.json", FileAccess.READ)
+# --------------------------------------------------------------------------
+# Les fourchettes et la conversion des dégâts plats (jalon 8, version 5)
+# --------------------------------------------------------------------------
+
+## Le format qu'on écrit aujourd'hui : deux lignes de dégâts ajoutés, avec leur
+## borne haute.
+func test_le_fichier_de_reference_v5_se_relit() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v5.json", FileAccess.READ)
+	assert_not_null(fichier, "le fichier de référence est bien dans le dépôt")
 	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
 	fichier.close()
 
 	var p := Personnage.depuis_dict(contenu)
-	for pose in p.sac.placed:
-		for r in pose.data.explicits:
-			assert_eq(r.mod.portee, "")
-	for emplacement in p.equipement:
-		for r in p.equipement[emplacement].explicits:
-			assert_eq(r.mod.portee, "")
+	assert_not_null(p, "une sauvegarde de version 5 se lit")
+	var epee: Item = p.equipement["weapon"]
+	var feu: StatMod = epee.explicits[0].mod
+	assert_eq(feu.stat, "degats_feu")
+	assert_eq(feu.value, 3.0)
+	assert_eq(feu.value_max, 8.0, "la borne haute écrite dans le fichier")
+	assert_eq(feu.portee, MotsCles.ATTAQUE)
+	assert_true(epee.explicits[0].connu(), "une ligne du format courant garde sa provenance")
+	assert_eq(p.equipement["offhand"].explicits[0].mod.value_max, 5.0)
+
+
+## Un objet relu d'un fichier de version 4, portant ces lignes.
+func _objet_d_une_version_4(lignes: Array) -> Item:
+	var dict := Personnage.nouveau("Ancien", 0).vers_dict()
+	dict["version"] = 4
+	dict["equipement"] = {"weapon": {"base": "epee", "niveau": 10, "affixes": lignes}}
+	var relu: Variant = JSON.parse_string(JSON.stringify(dict))
+	return Personnage.depuis_dict(relu).equipement["weapon"]
+
+
+## « +6 dégâts » faisait six points de plus à la seule attaque du jeu, qui était
+## physique : « ajoute 6 à 6 dégâts physiques aux attaques » fait exactement ça.
+func test_des_degats_d_attaque_deviennent_du_physique_aux_attaques() -> void:
+	var ligne: RolledAffix = _objet_d_une_version_4([
+		{"stat": "attack_damage", "mode": 0, "valeur": 6.0, "affixe": "acere", "tier": 7},
+	]).explicits[0]
+	assert_eq(ligne.mod.stat, "degats_physique")
+	assert_eq(ligne.mod.value, 6.0)
+	assert_eq(ligne.mod.value_max, 6.0)
+	assert_eq(ligne.mod.portee, MotsCles.ATTAQUE)
+	assert_false(ligne.connu(), "le palier 7 d'acéré n'est pas un palier du nouvel affixe")
+
+
+## Tous les sorts étaient de foudre : des dégâts de sort étaient de la foudre.
+func test_des_degats_de_sort_deviennent_de_la_foudre_aux_sorts() -> void:
+	var ligne: RolledAffix = _objet_d_une_version_4([
+		{"stat": "spell_damage", "mode": 0, "valeur": 5.0, "affixe": "arcanique", "tier": 6},
+	]).explicits[0]
+	assert_eq(ligne.mod.stat, "degats_foudre")
+	assert_eq(ligne.mod.value_max, 5.0)
+	assert_eq(ligne.mod.portee, MotsCles.SORT)
+
+
+## La seule perte du jalon : un pourcentage de dégâts n'a plus rien à multiplier.
+## La ligne part, et le reste de l'objet reste.
+func test_un_pourcentage_de_degats_est_retire() -> void:
+	var epee := _objet_d_une_version_4([
+		{"stat": "attack_damage", "mode": 1, "valeur": 12.0, "affixe": "meurtrier", "tier": 3},
+		{"stat": "attack_speed", "mode": 1, "valeur": 8.0},
+	])
+	assert_eq(epee.explicits.size(), 1, "seule la vitesse reste")
+	assert_eq(epee.explicits[0].mod.stat, "attack_speed")
+
+
+## Une borne haute plus basse que la basse — un fichier trafiqué — ne donne pas
+## une fourchette à l'envers.
+func test_une_fourchette_a_l_envers_est_redressee() -> void:
+	var ligne: RolledAffix = _objet_d_une_version_4([
+		{"stat": "degats_feu", "mode": 0, "valeur": 9.0, "valeur_max": 2.0, "portee": "attaque"},
+	]).explicits[0]
+	assert_eq(ligne.mod.value_max, 9.0)

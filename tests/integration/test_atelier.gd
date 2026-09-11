@@ -139,23 +139,40 @@ func _taille_dans_la_zone() -> Vector2:
 	return Vector2.ZERO
 
 
-## Chaque affixe qu'une base accepte a sa ligne. La liste s'arrête au bas du
-## panneau **sans rien dire** : un affixe tombé dessous ne pourrait jamais être
-## posé, et on le croirait absent de la réserve.
+## Chaque affixe qu'une base accepte a sa ligne, sur l'une des pages, et aucune
+## ligne ne passe sous les boutons du bas. Un affixe qu'on ne peut pas voir ne
+## peut jamais être posé, et on le croirait absent de la réserve.
 func test_chaque_affixe_accepte_a_sa_ligne() -> void:
 	_atelier.size = _taille_dans_la_zone()
 	assert_gt(_atelier.size.y, 0.0, "la zone donne une taille à l'établi")
 	for i in _atelier.bases().size():
 		_atelier.choisir_base(i)
-		_atelier._disposer()
+		var nom := _atelier.base_courante().display_name
 		var lignes := 0
-		for ligne in _atelier._lignes:
-			if String(ligne["action"]).begins_with("affixe:"):
+		for page in _atelier.pages_d_affixes():
+			_atelier._appliquer("affixes:1" if page > 0 else "")
+			_atelier._disposer()
+			for ligne in _atelier._lignes:
+				if not String(ligne["action"]).begins_with("affixe:"):
+					continue
 				lignes += 1
-		assert_eq(
-			lignes, _atelier.compatibles().size(),
-			"« %s » : des affixes sous le bas du panneau" % _atelier.base_courante().display_name
-		)
+				assert_lte(
+					(ligne["rect"] as Rect2).end.y, _atelier.size.y - AtelierPanel.LINE - AtelierPanel.PAD,
+					"« %s » : une ligne passe sous les boutons" % nom
+				)
+		assert_eq(lignes, _atelier.compatibles().size(), "« %s » : des affixes introuvables" % nom)
+
+
+## Changer de base ramène à la première page : la seconde page d'un anneau n'a
+## rien à voir avec celle d'une épée.
+func test_changer_de_base_ramene_a_la_premiere_page_d_affixes() -> void:
+	_atelier.size = _taille_dans_la_zone()
+	_atelier.choisir_base(_index_de("anneau"))
+	assert_gt(_atelier.pages_d_affixes(), 1, "un anneau accepte plus d'une page d'affixes")
+	_atelier._appliquer("affixes:1")
+	assert_eq(_atelier._page_affixes, 1)
+	_atelier.choisir_base(_index_de("epee"))
+	assert_eq(_atelier._page_affixes, 0)
 
 
 ## Aucun tirage : deux fabrications du même réglage donnent la même valeur, et

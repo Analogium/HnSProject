@@ -73,6 +73,20 @@ func test_l_absence_de_fichier_est_l_etat_normal() -> void:
 	assert_true(true, "on est arrivé jusqu'ici")
 
 
+## Le choix de la langue part sur le disque comme les autres réglages, et c'est
+## lui qu'on retrouve au lancement suivant — pas la langue du système, qui ne
+## décide qu'au tout premier.
+func test_la_langue_choisie_se_relit_du_disque() -> void:
+	Settings.langue = Settings.ANGLAIS
+	assert_true(FileAccess.file_exists(Settings.FICHIER), "le choix est écrit")
+
+	Settings.depuis_dict({"langue": Settings.FRANCAIS})
+	assert_eq(Settings.langue, Settings.FRANCAIS, "remis en français en mémoire")
+
+	Settings._charger()
+	assert_eq(Settings.langue, Settings.ANGLAIS, "le disque fait foi au chargement")
+
+
 ## La lecture ne réécrit pas ce qu'elle vient de lire. Sans ce garde-fou, chaque
 ## champ relu déclencherait une écriture du fichier en cours de lecture.
 func test_la_lecture_ne_reecrit_pas_le_fichier() -> void:

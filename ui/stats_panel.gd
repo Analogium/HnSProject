@@ -2,8 +2,9 @@ class_name StatsPanel
 extends Control
 
 ## La fiche de personnage, à la touche C : un bandeau collé au bord gauche, un
-## quart de la largeur sur toute la hauteur. Elle ne fait que lire — toutes les
-## valeurs viennent de `player.stats`.
+## quart de la largeur sur toute la hauteur. Elle ne fait que lire : les
+## statistiques de `player.stats`, et les dégâts des deux compétences de départ
+## par le chemin du lancer.
 ##
 ## Sa taille vient **des ancres de la scène**, jamais d'une constante : posée en
 ## dur, elle mentirait au premier changement de résolution.
@@ -32,9 +33,6 @@ const HEADER := 15.0
 
 const NAME_COLOR := Color(0.72, 0.70, 0.78)
 const VALUE_COLOR := Color(0.92, 0.90, 0.96)
-## Les points à placer et les boutons qui vont avec. Vert : c'est un gain en
-## attente, pas un avertissement.
-const POINT_COLOR := Color(0.52, 0.88, 0.48)
 const BUTTON_BACK := Color(0.20, 0.30, 0.20)
 const BUTTON_HOVER := Color(0.30, 0.46, 0.29)
 const BUTTON_W := 11.0
@@ -71,8 +69,8 @@ const GROUPS := [
 	[
 		"OFFENSE",
 		[
-			"attack_damage", "spell_damage", "attack_speed", "cast_speed",
-			"attack_range", "crit_chance", "crit_multiplier",
+			CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR,
+			"attack_speed", "cast_speed", "attack_range", "crit_chance", "crit_multiplier",
 		],
 	],
 	["DÉPLACEMENT", ["move_speed"]],
@@ -108,6 +106,7 @@ var _lignes := {}
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
+	title.add_theme_color_override("font_color", UiPalette.TITRE)
 
 
 func bind(player: Player) -> void:
@@ -136,6 +135,13 @@ func toggle() -> void:
 ## une scène où plus aucun panneau n'existe.
 func _exit_tree() -> void:
 	Game.grab_ui_input(self, false)
+
+
+## La langue a changé : le titre est écrit par le code et les lignes sont
+## dessinées à la main, donc ni l'un ni les autres ne se retraduisent seuls.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		_refresh()
 
 
 ## Trois états, et ils ne disent pas la même chose. **STOP** quand il reste des
@@ -189,7 +195,7 @@ func _refresh() -> void:
 	if not visible or _player == null:
 		return
 	var restants := _points_restants()
-	title.text = "PERSONNAGE  —  NIV. %d" % _player.level
+	title.text = Textes.t("PERSONNAGE  —  NIV. %d") % _player.level
 	if restants > 0:
 		title.text += "  (+%d)" % restants
 	queue_redraw()
@@ -200,6 +206,8 @@ func _refresh() -> void:
 ## deux notations défensives montrent ce qu'elles valent réellement — une
 ## notation d'armure nue n'apprend rien à personne.
 func _value_of(field: String) -> String:
+	if _est_une_competence(field):
+		return _degats_de(field)
 	var st := _player.stats
 	match field:
 		"max_health":
@@ -207,15 +215,35 @@ func _value_of(field: String) -> String:
 		"max_mana":
 			return StatMod.gauge(_player.mana, st.max_mana)
 		"armor":
-			return "%d  (%d %%)" % [
+			return "%d  (%s)" % [
 				roundi(st.armor),
-				roundi(st.armor_reduction(ARMOR_REFERENCE_HIT) * 100.0),
+				StatMod.pourcentage(roundi(st.armor_reduction(ARMOR_REFERENCE_HIT) * 100.0)),
 			]
 		"evasion":
-			return "%d  (%d %%)" % [
-				roundi(st.evasion), roundi(st.evade_chance() * 100.0)
+			return "%d  (%s)" % [
+				roundi(st.evasion), StatMod.pourcentage(roundi(st.evade_chance() * 100.0))
 			]
 	return StatMod.format(field, float(st.get(field)))
+
+
+## Les deux compétences de départ ont leur ligne ici parce qu'aucune page de
+## manuel ne les décrit : c'est l'endroit où le joueur cherche ce que valent son
+## attaque et son sort, maintenant que l'une et l'autre ont leurs dégâts propres.
+static func _est_une_competence(field: String) -> bool:
+	return CompetenceCatalog.est_de_depart(field)
+
+
+## Par le chemin du lancer — ses points, puis `Player.resoudre()` : lue sur la
+## compétence, la ligne ignorerait l'épée qu'on tient.
+func _degats_de(id: String) -> String:
+	var geste := _player.resoudre(CompetenceCatalog.by_id(id), _player.points_de_competence(id))
+	return StatsDeCompetence.fourchette_lisible(geste.total_min(), geste.total_max())
+
+
+func _libelle_of(field: String) -> String:
+	if _est_une_competence(field):
+		return CompetenceCatalog.by_id(field).nom_affiche().to_lower()
+	return StatMod.nom(field)
 
 
 func _draw() -> void:
@@ -232,14 +260,16 @@ func _draw() -> void:
 	var y := HEADER + PAD
 	for g in GROUPS:
 		draw_string(
-			_font, Vector2(PAD, y + FONT_SIZE), g[0],
+			_font, Vector2(PAD, y + FONT_SIZE), Textes.t(g[0]),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.LABEL
 		)
+		# La comparaison porte sur le titre **français**, qui est la clé : traduite,
+		# elle ne vaudrait plus qu'en français.
 		if g[0] == "ATTRIBUTS" and restants > 0:
 			draw_string(
-				_font, Vector2(PAD, y + FONT_SIZE), "%d à placer" % restants,
+				_font, Vector2(PAD, y + FONT_SIZE), Textes.t("%d à placer") % restants,
 				HORIZONTAL_ALIGNMENT_RIGHT, roundi(size.x - PAD * 2.0),
-				FONT_SIZE, POINT_COLOR
+				FONT_SIZE, UiPalette.A_PLACER
 			)
 		y += LINE
 		for field in g[1]:
@@ -248,7 +278,7 @@ func _draw() -> void:
 			_lignes[field] = ligne
 			if ligne.has_point(_mouse):
 				draw_rect(ligne, SURVOL)
-			_draw_row(y, StatMod.LABELS.get(field, field), _value_of(field), bouton)
+			_draw_row(y, _libelle_of(field), _value_of(field), bouton)
 			if bouton:
 				_boutons[field] = _draw_bouton(y)
 			y += LINE
@@ -257,7 +287,7 @@ func _draw() -> void:
 	# Remontée au-dessus de la bande où passe la barre d'expérience, qui est
 	# dessinée par-dessus le panneau.
 	draw_string(
-		_font, Vector2(PAD, size.y - FOOTER), "C pour fermer",
+		_font, Vector2(PAD, size.y - FOOTER), Textes.t("C pour fermer"),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.HINT
 	)
 
@@ -290,7 +320,7 @@ func _draw_infobulle() -> void:
 	# Posée à droite du panneau — le seul côté libre — et remontée au-dessus du bloc
 	# de jauges. La limite vient du HUD et n'est pas réécrite ici : ses jauges sont
 	# dessinées **après** ce panneau et passeraient par-dessus l'infobulle.
-	var plancher := size.y - Hud.HEALTH_TOP - Hud.BAR_H - TIP_GAP
+	var plancher := Hud.haut_des_jauges(size.y) - TIP_GAP
 	var r := Rect2(
 		Vector2(size.x + TIP_GAP, clampf(ancre.position.y, PAD, plancher - h)),
 		Vector2(TIP_W, h)
@@ -301,7 +331,7 @@ func _draw_infobulle() -> void:
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
 	draw_string(
-		_font, Vector2(r.position.x + TIP_PAD, y), StatMod.LABELS.get(champ, champ),
+		_font, Vector2(r.position.x + TIP_PAD, y), _libelle_of(champ),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, TITLE_SIZE, VALUE_COLOR
 	)
 	for texte in enroulees:
@@ -348,10 +378,10 @@ func _draw_bouton(y: float) -> Rect2:
 		BUTTON_W, BUTTON_H
 	)
 	draw_rect(r, BUTTON_HOVER if r.has_point(_mouse) else BUTTON_BACK)
-	draw_rect(r, POINT_COLOR, false, 1.0)
+	draw_rect(r, UiPalette.A_PLACER, false, 1.0)
 	draw_string(
 		_font, Vector2(r.position.x, r.position.y + BUTTON_H - 1.0), "+",
-		HORIZONTAL_ALIGNMENT_CENTER, roundi(BUTTON_W), FONT_SIZE, POINT_COLOR
+		HORIZONTAL_ALIGNMENT_CENTER, roundi(BUTTON_W), FONT_SIZE, UiPalette.A_PLACER
 	)
 	return r
 

@@ -12,6 +12,10 @@ extends CanvasLayer
 @onready var bars_check: CheckBox = $Root/Center/Panel/Options/Bars
 @onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
 @onready var fenetre_btn: Button = $Root/Center/Panel/Options/Fenetre
+## Le bouton de langue. Son libellé n'est pas écrit dans la scène : il est
+## toujours posé par le code, et **dans la langue qu'il annonce** — un joueur
+## perdu dans une langue qu'il ne lit pas doit reconnaître la sienne.
+@onready var langue_btn: Button = $Root/Center/Panel/Options/Langue
 
 
 func _ready() -> void:
@@ -32,11 +36,29 @@ func _ready() -> void:
 	fenetre_btn.pressed.connect(_changer_fenetre)
 	_rafraichir_fenetre()
 
+	# Une ronde, comme la fenêtre : deux langues aujourd'hui, et le bouton dira la
+	# troisième sans qu'on y revienne.
+	langue_btn.pressed.connect(_changer_langue)
+	_rafraichir_langue()
+
 	($Root/Center/Panel/Menu/Resume as Button).pressed.connect(close)
 	($Root/Center/Panel/Menu/OptionsBtn as Button).pressed.connect(_show_options)
 	($Root/Center/Panel/Menu/Retour as Button).pressed.connect(_retour_menu)
 	($Root/Center/Panel/Menu/Quit as Button).pressed.connect(_quitter)
 	($Root/Center/Panel/Options/Back as Button).pressed.connect(_show_menu)
+
+
+## Les deux libellés que le code écrit lui-même : Godot retraduit les textes posés
+## dans la scène, pas ceux-là. Celui de la fenêtre change de langue, celui de la
+## langue change de langue **et** de sens.
+##
+## La garde n'est pas une précaution : cette notification arrive **aussi à
+## l'entrée dans l'arbre**, avant que les `@onready` soient posés. Sans elle, le
+## menu écrit dans un bouton qui n'existe pas encore, à chaque zone chargée.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		_rafraichir_fenetre()
+		_rafraichir_langue()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -92,6 +114,15 @@ func _changer_fenetre() -> void:
 
 func _rafraichir_fenetre() -> void:
 	fenetre_btn.text = Settings.libelle_courant()
+
+
+func _changer_langue() -> void:
+	Settings.cycler_langue()
+	_rafraichir_langue()
+
+
+func _rafraichir_langue() -> void:
+	langue_btn.text = Settings.libelle_de_langue_courante()
 
 
 func _show_menu() -> void:

@@ -53,14 +53,12 @@ extends Resource
 @export var res_holy: float = 0.0
 
 @export_group("Combat")
-@export var attack_damage: float = 12.0
-## Les dégâts d'un tir, avant les résistances de la cible. Distinct
-## d'attack_damage, et pas seulement par symétrie : c'est cette séparation qui
-## permet à une arme d'incantation de ne rien devoir aux affixes de mêlée, et qui
-## rend le tir atteignable par un objet.
+## Les dégâts d'un coup **d'ennemi** : un grunt n'a pas de compétence, il frappe
+## avec son corps, et c'est ce nombre que la montée de niveau multiplie.
 ##
-## Zéro par défaut : un grunt ne lance rien.
-@export var spell_damage: float = 0.0
+## Le joueur ne le lit pas. Ses dégâts viennent de ses compétences et de ce que
+## ses objets y ajoutent, par nature et par famille — voir `Competence.resoudre()`.
+@export var attack_damage: float = 12.0
 ## Le temps de base entre deux coups, propre à l'archétype ou à l'arme.
 ## Distinct de attack_speed, qui est le multiplicateur porté par le personnage :
 ## l'un est le rythme de l'outil, l'autre l'adresse de celui qui le tient.
@@ -113,14 +111,10 @@ const DEGATS_PAR_NIVEAU := 0.12
 ## Met une fiche à l'échelle d'un niveau de zone. **Écrit dans la fiche qu'on lui
 ## donne** : à l'appelant de l'avoir dupliquée, car les fiches d'archétypes sont
 ## des `.tres` partagés par tous leurs exemplaires.
-##
-## Les dégâts de sort suivent ceux d'attaque : un ennemi qui lancerait un vrai
-## sort ne doit pas rester au niveau 1 par oubli.
 static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
 	var marches := float(maxi(niveau, 1) - 1)
 	stats.max_health *= 1.0 + VIE_PAR_NIVEAU * marches
 	stats.attack_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
-	stats.spell_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
 
 
 ## Les trois champs d'attributs, pour que l'appelant n'ait pas à les énumérer à
@@ -159,6 +153,14 @@ const MAX_RESISTANCE := 75.0
 ## Au pire un coup fait le double, jamais plus : une malédiction doit faire mal,
 ## pas transformer un coup d'épingle en exécution.
 const MIN_RESISTANCE := -100.0
+
+
+## Ce que la force ajoute aux attaques, en dégâts physiques. Pas un champ de la
+## fiche : une fourchette aux bornes égales, que le joueur verse dans ses
+## modificateurs de compétence. C'est l'effet d'avant — « +0,2 dégât par point » —
+## sous la forme que prennent désormais tous les dégâts ajoutés.
+func degats_de_force() -> float:
+	return strength * DAMAGE_PER_STRENGTH
 
 
 ## La fraction retranchée à un coup physique de cette taille. Prend les dégâts
@@ -203,7 +205,6 @@ func attack_interval() -> float:
 ## points de vie, et un « +10 % PV » doit les multiplier aussi.
 func apply_attributes() -> void:
 	max_health += strength * HEALTH_PER_STRENGTH
-	attack_damage += strength * DAMAGE_PER_STRENGTH
 
 	evasion += dexterity * EVASION_PER_DEXTERITY
 	attack_speed += dexterity * ATTACK_SPEED_PER_DEXTERITY * 0.01

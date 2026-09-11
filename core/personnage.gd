@@ -17,8 +17,9 @@ extends RefCounted
 
 ## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
 ## fichier : le niveau des objets au jalon 5, les manuels et ce qu'on en a
-## appris au jalon 6, la portée d'un affixe au jalon 7.
-const VERSION := 4
+## appris au jalon 6, la portée d'un affixe au jalon 7, la borne haute d'une
+## fourchette au jalon 8.
+const VERSION := 5
 
 ## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité. Monter
 ## VERSION sans ajouter l'ancien numéro ici ferait passer tous les personnages
@@ -29,9 +30,16 @@ const VERSION := 4
 ## Ce qu'une version 2 devient en version 3 : un râtelier vide, la barre de
 ## départ — le coup d'épée et le tir, c'est-à-dire le jeu d'avant — et un manuel
 ## de départ qui n'a pas encore été offert. Ce qu'une version 3 devient en
-## version 4 : rien, toutes ses lignes d'affixes visent la fiche. Un numéro
-## **inconnu** reste refusé : jamais deviner.
-const VERSIONS_LUES := [1, 2, 3, 4]
+## version 4 : rien, toutes ses lignes d'affixes visent la fiche. Ce que les
+## versions 1 à 4 deviennent en version 5 : leurs dégâts plats sont convertis en
+## fourchettes — voir `_ligne_actuelle`. Un numéro **inconnu** reste refusé :
+## jamais deviner.
+const VERSIONS_LUES := [1, 2, 3, 4, 5]
+
+## Les deux statistiques de dégâts plats d'avant le jalon 8. Elles ne vivent plus
+## que dans les sauvegardes, et ne sont nommées qu'ici, pour être converties.
+const ANCIENS_DEGATS_D_ATTAQUE := "attack_damage"
+const ANCIENS_DEGATS_DE_SORT := "spell_damage"
 
 ## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine sur
 ## une ligne. Vingt et non seize : une borne qui rejette « Jean-Luc de l'Est »
@@ -263,6 +271,8 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 		# deviendrait une ligne de fiche visant un champ inconnu.
 		if not r.mod.portee.is_empty():
 			entree["portee"] = r.mod.portee
+		if r.mod.est_une_fourchette():
+			entree["valeur_max"] = r.mod.value_max
 		# La provenance n'est écrite que quand on l'a. Un objet relu d'une
 		# version 1 puis resauvegardé ne doit pas se voir attribuer un palier
 		# qu'il n'a jamais eu.
@@ -288,42 +298,89 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 static func _item_depuis_dict(source: Variant) -> Item:
 	if not source is Dictionary:
 		return null
-	var identifiant := String((source as Dictionary).get("base", ""))
+	var objet := source as Dictionary
+	var identifiant := String(objet.get("base", ""))
 	var base := ItemCatalog.by_id(identifiant)
 	if base == null:
 		push_warning("Base d'objet inconnue « %s » : objet ignoré." % identifiant)
 		return null
 
 	var explicits: Array[RolledAffix] = []
-	for a in _liste((source as Dictionary).get("affixes")):
-		if not a is Dictionary:
+	for brut in _liste(objet.get("affixes")):
+		if not brut is Dictionary:
 			continue
-		var stat := String((a as Dictionary).get("stat", ""))
+		var ligne := brut as Dictionary
+		var stat := String(ligne.get("stat", ""))
 		if stat.is_empty():
 			continue
-		var mode := StatMod.Mode.PERCENT if _entier(a as Dictionary, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
+		var mode := StatMod.Mode.PERCENT if _entier(ligne, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
 		# Portée absente : une ligne de fiche, ce que sont toutes celles d'avant la
 		# version 4.
-		var mod := StatMod.new(
-			stat, mode, _reel(a as Dictionary, "valeur", 0.0),
-			String((a as Dictionary).get("portee", ""))
-		)
+		var valeur := _reel(ligne, "valeur", 0.0)
+		var mod := StatMod.new(stat, mode, valeur, String(ligne.get("portee", "")))
+		if mod.est_une_fourchette():
+			mod.value_max = maxf(_reel(ligne, "valeur_max", valeur), valeur)
+
+		var actuelle := _ligne_actuelle(mod)
+		if actuelle == null:
+			push_warning(
+				"« %s » : ligne « %s » en pourcentage abandonnée, plus rien ne multiplie ces dégâts."
+				% [identifiant, stat]
+			)
+			continue
 		# La valeur fait foi, la provenance l'accompagne. Absente — une
 		# sauvegarde de version 1, ou un affixe retiré du projet depuis — la
 		# ligne s'applique quand même : c'est l'infobulle qui n'aura rien à
 		# montrer, pas l'objet qui perd son bonus.
+		#
+		# Une ligne **convertie** perd la sienne : le palier 7 d'`acere` n'est pas
+		# un palier de l'affixe qui l'a remplacé.
+		var convertie := actuelle != mod
 		explicits.append(RolledAffix.new(
-			String((a as Dictionary).get("affixe", "")),
-			maxi(_entier(a as Dictionary, "tier", 0), 0),
-			mod
+			"" if convertie else String(ligne.get("affixe", "")),
+			0 if convertie else maxi(_entier(ligne, "tier", 0), 0),
+			actuelle
 		))
 	# Absent, il vaut 1 : c'est le cas de tous les objets d'une sauvegarde de
 	# version 1, et il n'y a pas de version à tester pour le savoir — un champ
 	# manquant vaut son défaut, ici comme partout ailleurs dans cette fonction.
-	var niveau := _entier(source as Dictionary, "niveau", 1)
+	var niveau := _entier(objet, "niveau", 1)
 	var item := Item.new(base, explicits, niveau)
-	_manuel_depuis_dict(item, (source as Dictionary).get("manuel"))
+	_manuel_depuis_dict(item, objet.get("manuel"))
 	return item
+
+
+## Ce que devient une ligne écrite avant que les dégâts plats deviennent des
+## fourchettes : la ligne elle-même quand rien n'a changé, sa conversion, ou null
+## quand plus rien ne sait l'appliquer.
+##
+## **Chaque conversion est une équivalence exacte avec le jeu d'alors**, pas une
+## supposition : la seule attaque était physique, et tous les sorts étaient de
+## foudre. Un personnage relu frappe donc exactement comme avant la mise à jour.
+## Seuls les pourcentages de dégâts de `meurtrier` n'ont plus d'équivalent.
+##
+## Sur le nom de la statistique et non sur la version : ces deux champs ont quitté
+## la fiche du joueur, et une ligne qui les viserait ne ferait plus rien, d'où
+## qu'elle vienne.
+static func _ligne_actuelle(mod: StatMod) -> StatMod:
+	if not mod.portee.is_empty():
+		return mod
+	var nature: DamageType.Kind
+	var famille := ""
+	match mod.stat:
+		ANCIENS_DEGATS_D_ATTAQUE:
+			nature = DamageType.Kind.PHYSICAL
+			famille = MotsCles.ATTAQUE
+		ANCIENS_DEGATS_DE_SORT:
+			nature = DamageType.Kind.LIGHTNING
+			famille = MotsCles.SORT
+		_:
+			return mod
+	if mod.mode == StatMod.Mode.PERCENT:
+		return null
+	return StatMod.fourchette(
+		StatsDeCompetence.stat_ajoutee(nature), mod.value, mod.value, famille
+	)
 
 
 ## Remplit l'état du manuel que `Item.new()` a déjà créé vierge. On le remplit,

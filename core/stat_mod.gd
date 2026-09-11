@@ -33,8 +33,6 @@ const LABELS := {
 	"res_lightning": "rés. foudre",
 	"res_necrotic": "rés. nécrotique",
 	"res_holy": "rés. sacré",
-	"attack_damage": "dégâts",
-	"spell_damage": "dégâts de sort",
 	"attack_cooldown": "temps de recharge",
 	"attack_speed": "vitesse d'attaque",
 	"cast_speed": "vitesse d'incantation",
@@ -80,24 +78,76 @@ var value: float
 ## ligne vise la fiche ou un mot-clé, et le tirage, l'infobulle et la sauvegarde
 ## n'ont ainsi qu'une forme à connaître.
 var portee: String
+## La borne haute d'une fourchette — « ajoute 3 à **7** dégâts de froid » — et
+## `value` en est alors la basse. Égale à `value` pour tout le reste : un
+## modificateur ordinaire est une fourchette dont les deux bornes se confondent.
+var value_max: float
 
 
 func _init(p_stat: String, p_mode: Mode, p_value: float, p_portee := "") -> void:
 	stat = p_stat
 	mode = p_mode
 	value = p_value
+	value_max = p_value
 	portee = p_portee
+
+
+## « Ajoute `bas` à `haut` dégâts » d'une nature, à une famille de compétences.
+static func fourchette(p_stat: String, bas: float, haut: float, p_portee: String) -> StatMod:
+	var m := StatMod.new(p_stat, Mode.FLAT, bas, p_portee)
+	m.value_max = haut
+	return m
+
+
+## Vrai pour une statistique qui se donne en fourchette plutôt qu'en un nombre :
+## les dégâts ajoutés d'une nature. Le tirage d'un affixe, l'implicite d'une base,
+## la ligne affichée et la sauvegarde — qui écrit ou non la borne haute — le
+## demandaient chacun de leur côté.
+static func stat_en_fourchette(p_stat: String) -> bool:
+	return StatsDeCompetence.nature_ajoutee(p_stat) >= 0
+
+
+## La ligne qu'une **définition** donne à ces valeurs : un affixe d'objet, ou
+## l'implicite d'une base. Une fourchette s'ajoute toujours à plat, et sa borne
+## haute ne descend jamais sous la basse.
+##
+## Les deux la construisaient chacun de son côté : une forme de ligne ajoutée à
+## l'affixe seul aurait donné un implicite qui s'affiche et se sauvegarde
+## autrement que l'affixe de la même statistique.
+static func depuis_definition(
+	p_stat: String, pourcentage: bool, valeur: float, valeur_max: float, p_portee: String
+) -> StatMod:
+	if stat_en_fourchette(p_stat):
+		return fourchette(p_stat, valeur, maxf(valeur_max, valeur), p_portee)
+	return StatMod.new(p_stat, Mode.PERCENT if pourcentage else Mode.FLAT, valeur, p_portee)
+
+
+## Un pourcentage, écrit comme la langue l'écrit : « 20 % » en français, « 20% »
+## en anglais. L'espace devant le signe est une règle typographique française, et
+## le gabarit est donc un texte traduit comme un autre.
+##
+## **Le seul endroit qui écrit un pourcentage.** Les trois qui l'écrivaient à la
+## main donneraient sinon trois typographies dans la même infobulle.
+static func pourcentage(valeur: int, signe := false) -> String:
+	return Textes.t("{valeur} %").format({"valeur": ("%+d" if signe else "%d") % valeur})
+
+
+## L'unité telle que la langue courante l'accole au nombre : « % » et son espace
+## en français, « % » seul en anglais. Déduite du gabarit lui-même, et non écrite
+## une seconde fois : c'est ce qui permet à une plage de ne pas la répéter.
+static func _unite_de_pourcentage() -> String:
+	return pourcentage(0).trim_prefix("0")
 
 
 ## Une valeur de statistique dans son unité. L'infobulle d'un affixe et la fiche
 ## de personnage doivent écrire « 110 % » de la même façon, sinon les deux
 ## finiront par diverger d'un arrondi.
 static func format(stat_name: String, v: float, signed := false) -> String:
-	var fmt := "%+" if signed else "%"
 	if stat_name in SCALED:
-		return (fmt + "d %%") % roundi(v * 100.0)
+		return pourcentage(roundi(v * 100.0), signed)
 	if stat_name in PERCENT_POINTS:
-		return (fmt + "d %%") % roundi(v)
+		return pourcentage(roundi(v), signed)
+	var fmt := "%+" if signed else "%"
 	# Sans décimale quand il n'y en a pas : « 6 dégâts » et non « 6.0 ».
 	if is_equal_approx(v, roundf(v)):
 		return (fmt + "d") % roundi(v)
@@ -131,7 +181,7 @@ static func ratio(current: float, maximum: float) -> float:
 ## statistique visée ; c'est la valeur absolue qui a besoin de format().
 static func value_label(stat_name: String, p_mode: Mode, v: float, signed := true) -> String:
 	if p_mode == Mode.PERCENT:
-		return ("%+d %%" if signed else "%d %%") % roundi(v)
+		return pourcentage(roundi(v), signed)
 	return format(stat_name, v, signed)
 
 
@@ -141,9 +191,12 @@ static func value_label(stat_name: String, p_mode: Mode, v: float, signed := tru
 static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -> String:
 	var bas := value_label(stat_name, p_mode, lo, false)
 	var haut := value_label(stat_name, p_mode, hi, false)
-	# L'unité ne se répète pas dans une plage : « 8 %–11 % » se lit deux fois.
-	if bas.ends_with(" %") and haut.ends_with(" %"):
-		bas = bas.trim_suffix(" %")
+	# L'unité ne se répète pas dans une plage : « 8 %–11 % » se lit deux fois. Elle
+	# est demandée au gabarit plutôt qu'écrite ici, parce qu'elle change avec la
+	# langue — « 8 % » en français, « 8% » en anglais.
+	var unite := _unite_de_pourcentage()
+	if bas.ends_with(unite) and haut.ends_with(unite):
+		bas = bas.trim_suffix(unite)
 	return "%s–%s" % [bas, haut]
 
 
@@ -154,16 +207,50 @@ static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -
 ## Le libellé du mot-clé est **celui de la fiche du manuel** : le joueur doit
 ## pouvoir rapprocher « (Projectile) » sur un objet de « Projectile » sur un sort
 ## sans traduire.
+##
+## Des dégâts ajoutés disent leur destinataire en toutes lettres — « dégâts de
+## froid aux sorts » — plutôt que « (Sort) » : c'est la phrase du genre, et la
+## portée y est déjà.
 static func nom(stat_name: String, p_portee := "") -> String:
 	if p_portee.is_empty():
-		return LABELS.get(stat_name, stat_name)
+		return Textes.t(LABELS.get(stat_name, stat_name))
+	var nature := StatsDeCompetence.nature_ajoutee(stat_name)
+	if nature >= 0:
+		return "%s %s" % [
+			DamageType.libelle_de_degats(nature), MotsCles.destinataire(p_portee)
+		]
 	return "%s (%s)" % [
-		StatsDeCompetence.LABELS.get(stat_name, stat_name), MotsCles.libelle(p_portee)
+		Textes.t(StatsDeCompetence.LABELS.get(stat_name, stat_name)), MotsCles.libelle(p_portee)
 	]
 
 
+func est_une_fourchette() -> bool:
+	return stat_en_fourchette(stat)
+
+
+## La valeur seule : « +9 % », « 3–7 », « 6 ». Une fourchette aux bornes égales
+## s'écrit comme un nombre — « 6–6 » se lit comme une faute.
+func valeur_lisible() -> String:
+	if not est_une_fourchette():
+		return value_label(stat, mode, value)
+	if is_equal_approx(value, value_max):
+		return format(stat, value)
+	return "%s–%s" % [format(stat, value), format(stat, value_max)]
+
+
+## « +25 armure », ou « ajoute 3 à 7 dégâts de froid aux sorts ».
 func label() -> String:
-	return "%s %s" % [value_label(stat, mode, value), nom(stat, portee)]
+	if not est_une_fourchette():
+		return "%s %s" % [value_label(stat, mode, value), nom(stat, portee)]
+	# La phrase entière, et pas des morceaux collés : l'ordre des mots n'est pas le
+	# même dans les deux langues, et un traducteur ne peut rien faire d'un « à ».
+	if is_equal_approx(value, value_max):
+		return Textes.t("ajoute {valeur} {degats}").format({
+			"valeur": format(stat, value), "degats": nom(stat, portee)
+		})
+	return Textes.t("ajoute {bas} à {haut} {degats}").format({
+		"bas": format(stat, value), "haut": format(stat, value_max), "degats": nom(stat, portee)
+	})
 
 
 ## Applique une liste à la fiche d'un personnage.

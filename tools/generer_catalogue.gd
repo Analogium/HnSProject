@@ -144,7 +144,6 @@ func _echelles(l: PackedStringArray) -> void:
 	l.append("")
 	for brut in _tries():
 		var a: ItemAffix = brut
-		var mode := StatMod.Mode.PERCENT if a.percent else StatMod.Mode.FLAT
 		l.append("**`%s`** — %s, arrondi %s" % [
 			a.id, StatMod.nom(a.stat, a.portee),
 			("%.2f" % a.arrondi).trim_suffix("0").trim_suffix("0").trim_suffix("."),
@@ -155,9 +154,7 @@ func _echelles(l: PackedStringArray) -> void:
 		for i in a.tiers.size():
 			var t: ItemAffixTier = a.tiers[i]
 			l.append("| T%d | %d | %s | %d |" % [
-				i + 1, t.niveau_requis,
-				StatMod.range_label(a.stat, mode, t.min_value, t.max_value),
-				t.poids,
+				i + 1, t.niveau_requis, a.plage(i), t.poids,
 			])
 		l.append("")
 

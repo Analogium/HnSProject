@@ -105,6 +105,10 @@ custom_minimum_size = Vector2(168, 0)
 theme_override_font_sizes/font_size = 10
 text = "Fenêtre"
 
+[node name="Langue" type="Button" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(168, 0)
+theme_override_font_sizes/font_size = 10
+
 [node name="Spacer2" type="Control" parent="Root/Center/Panel/Options"]
 custom_minimum_size = Vector2(0, 4)
 

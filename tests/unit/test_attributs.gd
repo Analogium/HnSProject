@@ -14,11 +14,10 @@ func test_les_attributs_sont_nuls_par_defaut() -> void:
 func test_la_force_donne_vie_et_degats() -> void:
 	var st := CharacterStats.new()
 	st.max_health = 100.0
-	st.attack_damage = 12.0
 	st.strength = 10.0
 	st.apply_attributes()
 	assert_eq(st.max_health, 120.0, "+2 PV par point")
-	assert_almost_eq(st.attack_damage, 14.0, 0.001, "+0,2 dégât par point")
+	assert_almost_eq(st.degats_de_force(), 2.0, 0.001, "+0,2 dégât physique aux attaques par point")
 
 
 func test_la_dexterite_donne_esquive_et_cadence() -> void:
@@ -58,10 +57,13 @@ func test_chaque_attribut_gouverne_deux_statistiques() -> void:
 		st.set(champ, 20.0)
 		st.apply_attributes()
 		var changes := 0
-		for autre in ["max_health", "attack_damage", "evasion", "attack_speed",
-				"max_mana", "cast_speed"]:
+		for autre in ["max_health", "evasion", "attack_speed", "max_mana", "cast_speed"]:
 			if not is_equal_approx(float(st.get(autre)), float(temoin.get(autre))):
 				changes += 1
+		# Les dégâts de la force ne sont pas un champ de la fiche mais une
+		# fourchette versée aux attaques : ils comptent quand même pour deux.
+		if not is_equal_approx(st.degats_de_force(), temoin.degats_de_force()):
+			changes += 1
 		assert_eq(changes, 2, "%s gouverne exactement deux statistiques" % champ)
 
 
@@ -121,6 +123,24 @@ func test_chaque_statistique_de_la_fiche_a_son_explication() -> void:
 				StatHelp.has(champ),
 				"« %s » s'affiche sur la fiche sans explication" % champ
 			)
+
+
+## Les explications des deux compétences de départ n'écrivent aucun nombre, mais
+## elles affirment une famille, une cadence et un coût : c'est vérifié sur les
+## compétences elles-mêmes.
+func test_l_explication_des_competences_de_depart_dit_vrai() -> void:
+	var attaque := CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE)
+	assert_true(attaque.porte(MotsCles.ATTAQUE), "« aux attaques »")
+	assert_eq(attaque.cadence, Competence.Cadence.ARME, "« à la cadence de l'arme »")
+	assert_eq(attaque.cout_en_mana, 0.0, "« gratuit »")
+
+	var sort_de_depart := CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
+	assert_true(sort_de_depart.porte(MotsCles.SORT), "« un sort »")
+	assert_eq(sort_de_depart.cadence, Competence.Cadence.INCANTATION, "« suit la vitesse d'incantation »")
+	assert_gt(sort_de_depart.cout_en_mana, 0.0, "« coûte du mana »")
+
+	for id in [CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR]:
+		assert_eq(StatHelp.lines(id, CharacterStats.new()).size(), 1, "une phrase, sans ligne « ici »")
 
 
 ## Et l'inverse : une explication pour un champ qui n'existe plus ne se verrait

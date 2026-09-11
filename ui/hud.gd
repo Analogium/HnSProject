@@ -69,10 +69,25 @@ var _mana_max := 0.0
 var _font: Font
 
 
+## Le haut du bloc de jauges sur un écran de cette hauteur : la limite basse de
+## toute fenêtre flottante. Le HUD est dessiné **après** les panneaux, et ses
+## jauges passeraient par-dessus. Une hauteur de barre au-dessus de la vie, parce
+## que le « Niv. » qui la coiffe monte jusque-là.
+static func haut_des_jauges(hauteur: float) -> float:
+	return hauteur - HEALTH_TOP - BAR_H
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_font = ThemeDB.fallback_font
 	set_process(false)
+
+
+## La langue a changé : le niveau et le compte d'expérience sont dessinés à la
+## main, et le HUD ne se repeint qu'aux signaux du joueur.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		queue_redraw()
 
 
 ## Appelée par la scène, qui est la seule à connaître les deux nœuds.
@@ -155,7 +170,7 @@ func _draw() -> void:
 		return
 	# Le niveau coiffe le bloc de ressources : niveau, vie et mana sont ce qu'on
 	# consulte du coin de l'œil, ils doivent tenir dans un seul regard.
-	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), "Niv. %d" % _level,
+	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), Textes.t("Niv. %d") % _level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_COLOR)
 	# Le compte exact **au centre**, au-dessus de sa barre et sous les jauges.
 	# Il a fait les deux bords avant d'atterrir là : à droite il tombait derrière
@@ -164,7 +179,7 @@ func _draw() -> void:
 	# n'occupe, pour la même raison qui y a mis les jauges au jalon 4.
 	_text(
 		Vector2(roundf(MARGIN), roundf(size.y - BOTTOM - HEIGHT - 3.0)),
-		"%d exp / %d exp" % [_xp, _xp_needed],
+		Textes.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed}),
 		HORIZONTAL_ALIGNMENT_CENTER, roundi(w), LABEL_COLOR
 	)
 

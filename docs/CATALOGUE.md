@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-42 bases d'objets, 28 affixes d'objets, 5 affixes d'ennemis.
+42 bases d'objets, 38 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -22,22 +22,22 @@ Niveaux de zone : 1 à 60.
 
 | id | nom | lignée | palier | famille | étiquettes | implicite | cases | tombe en zones |
 |---|---|---|---|---|---|---|---|---|
-| `epee` | Épée | lame | 1 | weapon | weapon, melee, blade | +4 dégâts | 1 × 3 | 1 à 22 |
-| `epee_large` | Épée large | lame | 2 | weapon | weapon, melee, blade | +9 dégâts | 1 × 3 | 16 à 40 |
-| `lame_de_guerre` | Lame de guerre | lame | 3 | weapon | weapon, melee, blade | +16 dégâts | 1 × 3 | 34 et au-delà |
+| `epee` | Épée | lame | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 1 × 3 | 1 à 22 |
+| `epee_large` | Épée large | lame | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 1 × 3 | 16 à 40 |
+| `lame_de_guerre` | Lame de guerre | lame | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 1 × 3 | 34 et au-delà |
 | `dague` | Dague | dague | 1 | weapon | weapon, melee, blade | +10 % vitesse d'attaque | 1 × 2 | 1 à 30 |
 | `misericorde` | Miséricorde | dague | 2 | weapon | weapon, melee, blade | +18 % vitesse d'attaque | 1 × 2 | 24 et au-delà |
-| `masse` | Masse | contondante | 1 | weapon | weapon, melee, blunt | +6 dégâts | 1 × 3 | 6 à 28 |
-| `masse_d_armes` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | +12 dégâts | 1 × 3 | 22 à 46 |
-| `marteau_de_guerre` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | +21 dégâts | 1 × 3 | 40 et au-delà |
+| `masse` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 1 × 3 | 6 à 28 |
+| `masse_d_armes` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 1 × 3 | 22 à 46 |
+| `marteau_de_guerre` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 1 × 3 | 40 et au-delà |
 | `baguette` | Baguette | focus | 1 | weapon | weapon, caster | +15 % vitesse d'incantation | 1 × 2 | 1 à 24 |
 | `sceptre` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % vitesse d'incantation | 1 × 2 | 18 à 42 |
 | `sceptre_runique` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % vitesse d'incantation | 1 × 2 | 36 et au-delà |
 | `bouclier` | Bouclier | bouclier | 1 | offhand | offhand, armour, heavy | +18 armure | 2 × 2 | 1 à 21 |
 | `ecu` | Écu | bouclier | 2 | offhand | offhand, armour, heavy | +38 armure | 2 × 2 | 15 à 39 |
 | `pavois` | Pavois | bouclier | 3 | offhand | offhand, armour, heavy | +68 armure | 2 × 2 | 33 et au-delà |
-| `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | +5 dégâts de sort | 2 × 2 | 10 à 34 |
-| `codex` | Codex | grimoire | 2 | offhand | offhand, caster | +11 dégâts de sort | 2 × 2 | 28 et au-delà |
+| `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | ajoute 3 à 7 dégâts de foudre aux sorts | 2 × 2 | 10 à 34 |
+| `codex` | Codex | grimoire | 2 | offhand | offhand, caster | ajoute 6 à 16 dégâts de foudre aux sorts | 2 × 2 | 28 et au-delà |
 | `casque` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 PV | 2 × 2 | 1 à 20 |
 | `heaume` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 PV | 2 × 2 | 14 à 38 |
 | `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 PV | 2 × 2 | 32 et au-delà |
@@ -71,15 +71,20 @@ Niveaux de zone : 1 à 60.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `acere` | dégâts | melee | — | 12 | 8 | 8 / 42 |
 | `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 42 |
 | `allonge` | allonge | melee | — | 8 | 5 | 8 / 42 |
-| `arcanique` | dégâts de sort | caster, jewellery | — | 10 | 8 | 11 / 42 |
 | `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 42 |
 | `cuirasse` | armure | armour | — | 9 | 9 | 19 / 42 |
 | `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 42 |
+| `ensorcele` | dégâts (Sort) (%) | caster | — | 8 | 6 | 5 / 42 |
 | `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 42 |
+| `feu_aux_attaques` | dégâts de feu aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `feu_aux_sorts` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
+| `foudre_aux_attaques` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `foudre_aux_sorts` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
 | `fourchu` | nombre de projectiles (Projectile) | caster | — | 3 | 2 | 5 / 42 |
+| `froid_aux_attaques` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `froid_aux_sorts` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
 | `fuyant` | esquive | light | — | 9 | 8 | 10 / 42 |
 | `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 42 |
 | `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 42 |
@@ -87,13 +92,18 @@ Niveaux de zone : 1 à 60.
 | `incantateur` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 42 |
 | `isole` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 42 |
 | `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 42 |
-| `meurtrier` | dégâts (%) | melee | — | 10 | 6 | 8 / 42 |
 | `muscle` | force | *partout* | — | 8 | 6 | 41 / 42 |
+| `necrotique_aux_attaques` | dégâts nécrotiques aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `necrotique_aux_sorts` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
 | `orageux` | dégâts (Foudre) (%) | caster, jewellery | — | 8 | 6 | 11 / 42 |
+| `physique_aux_attaques` | dégâts physiques aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `physique_aux_sorts` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
 | `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 42 |
 | `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 42 |
 | `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 42 |
 | `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 42 |
+| `sacre_aux_attaques` | dégâts sacrés aux attaques | melee | — | 2 | 8 | 8 / 42 |
+| `sacre_aux_sorts` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
 | `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 42 |
 | `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 42 |
 | `sifflant` | vitesse de projectile (Projectile) (%) | caster, gloves | — | 8 | 5 | 8 / 42 |
@@ -116,19 +126,6 @@ Un affixe apparaît sur 18 % des ennemis, deux sur 4 %.
 
 T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 
-**`acere`** — dégâts, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 44–54 | 10 |
-| T2 | 43 | 35–43 | 10 |
-| T3 | 34 | 27–34 | 10 |
-| T4 | 26 | 20–26 | 10 |
-| T5 | 19 | 14–19 | 10 |
-| T6 | 12 | 9–13 | 10 |
-| T7 | 6 | 5–8 | 10 |
-| T8 | 1 | 2–4 | 10 |
-
 **`agile`** — dextérité, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -149,19 +146,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 8–10 | 10 |
 | T4 | 12 | 5–7 | 10 |
 | T5 | 1 | 2–4 | 10 |
-
-**`arcanique`** — dégâts de sort, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 43–53 | 10 |
-| T2 | 43 | 34–42 | 10 |
-| T3 | 34 | 26–33 | 10 |
-| T4 | 26 | 19–25 | 10 |
-| T5 | 19 | 13–18 | 10 |
-| T6 | 12 | 8–12 | 10 |
-| T7 | 6 | 4–7 | 10 |
-| T8 | 1 | 2–3 | 10 |
 
 **`cruel`** — chance critique, arrondi 0.01
 
@@ -197,6 +181,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
+**`ensorcele`** — dégâts (Sort), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`erudit`** — intelligence, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -208,12 +203,90 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
+**`feu_aux_attaques`** — dégâts de feu aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`feu_aux_sorts`** — dégâts de feu aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`foudre_aux_attaques`** — dégâts de foudre aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`foudre_aux_sorts`** — dégâts de foudre aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
 **`fourchu`** — nombre de projectiles (Projectile), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
 | T1 | 50 | 2–2 | 10 |
 | T2 | 1 | 1–1 | 10 |
+
+**`froid_aux_attaques`** — dégâts de froid aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`froid_aux_sorts`** — dégâts de froid aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
 
 **`fuyant`** — esquive, arrondi 1
 
@@ -289,17 +362,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 1–1.6 | 10 |
 | T5 | 1 | 0.4–0.9 | 10 |
 
-**`meurtrier`** — dégâts, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 54 | 41–50 % | 10 |
-| T2 | 42 | 32–40 % | 10 |
-| T3 | 31 | 24–31 % | 10 |
-| T4 | 20 | 17–23 % | 10 |
-| T5 | 10 | 11–16 % | 10 |
-| T6 | 1 | 6–10 % | 10 |
-
 **`muscle`** — force, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -311,6 +373,32 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
+**`necrotique_aux_attaques`** — dégâts nécrotiques aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`necrotique_aux_sorts`** — dégâts nécrotiques aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
 **`orageux`** — dégâts (Foudre), arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -321,6 +409,32 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 22 | 13–18 % | 10 |
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
+
+**`physique_aux_attaques`** — dégâts physiques aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`physique_aux_sorts`** — dégâts physiques aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
 
 **`plaque`** — armure, arrondi 1
 
@@ -363,6 +477,32 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 14–19 % | 10 |
 | T5 | 10 | 9–13 % | 10 |
 | T6 | 1 | 5–8 % | 10 |
+
+**`sacre_aux_attaques`** — dégâts sacrés aux attaques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
+
+**`sacre_aux_sorts`** — dégâts sacrés aux sorts, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 22–27 à 66–81 | 10 |
+| T2 | 43 | 18–22 à 53–65 | 10 |
+| T3 | 34 | 14–17 à 41–51 | 10 |
+| T4 | 26 | 10–13 à 30–39 | 10 |
+| T5 | 19 | 7–10 à 21–29 | 10 |
+| T6 | 12 | 5–7 à 14–20 | 10 |
+| T7 | 6 | 3–4 à 8–12 | 10 |
+| T8 | 1 | 1–2 à 3–6 | 10 |
 
 **`sagace`** — mana, arrondi 1
 

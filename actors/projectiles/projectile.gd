@@ -18,9 +18,9 @@ extends Area2D
 ## Les tirs du joueur figent brièvement le jeu à l'impact, comme le corps à
 ## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
 @export var hit_stop_on_impact: bool = false
-## La nature des dégâts portés. Sur la scène et non passée à spawn() : c'est le
-## tir qui est de froid ou de foudre, pas le geste de le lancer — et enemy_bolt
-## comme player_bolt le déclarent une fois pour toutes dans l'inspecteur.
+## La nature de la scène : celle que portent les tirs ennemis, qui n'ont qu'un
+## nombre, et **la couleur du tir, quoi qu'il porte**. Un éclair reste un éclair :
+## le froid qu'un objet y ajoute change ses dégâts, pas son dessin.
 @export var damage_type: DamageType.Kind = DamageType.Kind.PHYSICAL
 
 ## Distance à laquelle le tir naît devant son lanceur. Trop court, il apparaît
@@ -70,7 +70,8 @@ const CORPS := 0.78
 const GIGUE := 0.4
 
 var _dir := Vector2.RIGHT
-var _damage := 0.0
+## Les parts du coup, par nature, tirées au lancer.
+var _parts: Array[float] = []
 var _source: Node2D
 var _life := 0.0
 
@@ -108,8 +109,7 @@ func _forme(echelle: float) -> PackedVector2Array:
 
 
 ## La couleur vient de la nature du tir, jamais réécrite ici : `DamageType.COLORS`
-## est la seule définition, et c'est elle que le nombre qui s'envole et la fiche
-## de résistances montrent déjà.
+## est la seule définition, celle que la gerbe d'éclats et la fiche montrent aussi.
 func _draw() -> void:
 	# Type explicite : COLORS est un tableau non typé, donc l'indexer rend un
 	# Variant et l'inférence échoue — le même piège que `generator.grid` dans la
@@ -131,14 +131,35 @@ func _draw() -> void:
 ## depuis _physics_process, jamais depuis un callback de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
-	damage: float, source: Node2D, vitesse := 0.0
+	parts: Array[float], source: Node2D, vitesse := 0.0
 ) -> Projectile:
+	var bolt := _naitre(parent, scene, from, dir)
+	if bolt != null:
+		bolt.setup(dir, parts, source, vitesse)
+	return bolt
+
+
+## Un tir d'une seule nature, celle de sa scène : le chemin des ennemis, qui ne
+## portent qu'un nombre. La nature reste ainsi écrite à un seul endroit, dans
+## l'inspecteur de `enemy_bolt.tscn`.
+static func spawn_d_une_nature(
+	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
+	montant: float, source: Node2D
+) -> Projectile:
+	var bolt := _naitre(parent, scene, from, dir)
+	if bolt != null:
+		var parts := DamageType.parts_vides()
+		parts[bolt.damage_type] = montant
+		bolt.setup(dir, parts, source)
+	return bolt
+
+
+static func _naitre(parent: Node, scene: PackedScene, from: Vector2, dir: Vector2) -> Projectile:
 	if scene == null or parent == null:
 		return null
 	var bolt: Projectile = scene.instantiate()
 	parent.add_child(bolt)
 	bolt.global_position = from + dir * MUZZLE
-	bolt.setup(dir, damage, source, vitesse)
 	return bolt
 
 
@@ -151,9 +172,11 @@ static func spawn(
 ##
 ## La durée de vie, elle, reste sur la scène : un tir plus rapide porte donc plus
 ## loin, ce qui est ce qu'on attend d'un bonus de vitesse de projectile.
-func setup(dir: Vector2, damage: float, source: Node2D, vitesse := 0.0) -> void:
+##
+## Les parts sont recopiées : le lanceur tire les suivantes dans son propre tableau.
+func setup(dir: Vector2, parts: Array[float], source: Node2D, vitesse := 0.0) -> void:
 	_dir = dir.normalized()
-	_damage = damage
+	_parts = parts.duplicate()
 	_source = source
 	if vitesse > 0.0:
 		speed = vitesse
@@ -174,9 +197,7 @@ func _physics_process(delta: float) -> void:
 func _on_area_entered(area: Area2D) -> void:
 	if not area is Hurtbox:
 		return
-	var info := DamageInfo.new(
-		_damage, global_position, knockback, false, damage_type
-	)
+	var info := DamageInfo.en_parts(_parts, global_position, knockback)
 	(area as Hurtbox).take_damage(info)
 	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
 	# c'est lui qu'on soigne, s'il est encore en vie.

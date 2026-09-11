@@ -29,7 +29,6 @@ const LISTE_Y := 56.0
 const MODALE := Rect2(170.0, 74.0, 300.0, 196.0)
 
 const FOND := Color(0.055, 0.051, 0.075)
-const NOM_COLOR := Color(0.90, 0.88, 0.95)
 const CHOISI := Color(0.20, 0.19, 0.26)
 const ACCENT := Color(0.55, 0.75, 1.0)
 ## Un personnage dont le fichier ne se lit pas. Rouge éteint et non vif : ce
@@ -49,6 +48,10 @@ const VIGNETTE_Y := 104.0
 
 ## Ce qu'il faut retaper pour supprimer un personnage dont on n'a pas su lire le
 ## nom. Les autres se confirment en retapant le leur.
+##
+## **Traduit**, et par la même clé des deux côtés — la consigne et la
+## vérification passent toutes deux par `_mot_a_taper()`. Traduit d'un côté
+## seulement, l'écran demanderait de taper un mot que la saisie refuserait.
 const MOT_SANS_NOM := "SUPPRIMER"
 
 ## Le refus d'une saisie. Rouge franc, contrairement au gris d'une entrée
@@ -87,12 +90,12 @@ func _ready() -> void:
 	_font = ThemeDB.fallback_font
 	# Les couleurs viennent d'ici et non du `.tscn` : une couleur écrite dans une
 	# scène est une seconde définition, qui ne suit pas quand la palette bouge.
-	titre.add_theme_color_override("font_color", NOM_COLOR)
+	titre.add_theme_color_override("font_color", UiPalette.TEXTE)
 	aide.add_theme_color_override("font_color", UiPalette.HINT)
 	message.add_theme_color_override("font_color", ACCENT)
-	($Creation/Titre as Label).add_theme_color_override("font_color", NOM_COLOR)
+	($Creation/Titre as Label).add_theme_color_override("font_color", UiPalette.TEXTE)
 	($Creation/Silhouette as Label).add_theme_color_override("font_color", UiPalette.HINT)
-	avertissement.add_theme_color_override("font_color", NOM_COLOR)
+	avertissement.add_theme_color_override("font_color", UiPalette.TEXTE)
 	for etiquette in [erreur_creation, erreur_suppression]:
 		etiquette.add_theme_color_override("font_color", ERREUR)
 
@@ -106,7 +109,37 @@ func _ready() -> void:
 	champ_nom.text_submitted.connect(func(_t: String) -> void: _creer())
 	champ_confirmation.text_submitted.connect(func(_t: String) -> void: _supprimer())
 
+	# La langue se change **avant** d'entrer en jeu, et pas seulement depuis la
+	# pause : c'est le premier écran, et celui qu'on voit sans savoir où sont les
+	# options.
+	_bouton_langue().pressed.connect(_changer_langue)
+	_rafraichir_langue()
+
 	recharger()
+
+
+## La liste est dessinée à la main : elle ne se retraduirait qu'au prochain clic.
+##
+## La garde n'est pas une précaution : cette notification arrive **aussi à
+## l'entrée dans l'arbre**, avant que les `@onready` et les enfants soient là.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		_rafraichir_langue()
+		_rafraichir()
+
+
+func _bouton_langue() -> Button:
+	return $Langue as Button
+
+
+func _changer_langue() -> void:
+	Settings.cycler_langue()
+	_rafraichir_langue()
+
+
+## Le libellé s'écrit dans la langue qu'il annonce, et n'est donc jamais traduit.
+func _rafraichir_langue() -> void:
+	_bouton_langue().text = Settings.libelle_de_langue_courante()
 
 
 ## Publique : c'est aussi le point d'entrée du test, qui pose des personnages
@@ -185,10 +218,10 @@ func _deplacer(pas: int) -> void:
 func _jouer() -> void:
 	var p := selection()
 	if p == null:
-		_dire("Aucun personnage. [N] pour en créer un.")
+		_dire(Textes.t("Aucun personnage. [N] pour en créer un."))
 		return
 	if p.illisible:
-		_dire("Cette sauvegarde ne se lit pas. Son fichier est toujours là.")
+		_dire(Textes.t("Cette sauvegarde ne se lit pas. Son fichier est toujours là."))
 		return
 	Game.personnage = p
 	Game.goto_scene("res://world/zone.tscn")
@@ -207,12 +240,12 @@ func _ouvrir_creation() -> void:
 func _creer() -> void:
 	var nom := champ_nom.text.strip_edges()
 	if not Personnage.nom_valide(nom):
-		erreur_creation.text = "Nom vide ou trop long (%d au plus)." % Personnage.NOM_MAX
+		erreur_creation.text = Textes.t("Nom vide ou trop long (%d au plus).") % Personnage.NOM_MAX
 		return
 
 	var p := Sauvegarde.creer(nom, _silhouette)
 	if p == null:
-		erreur_creation.text = "Écriture impossible sur le disque."
+		erreur_creation.text = Textes.t("Écriture impossible sur le disque.")
 		return
 
 	recharger()
@@ -223,7 +256,7 @@ func _creer() -> void:
 		if _personnages[i].id == p.id:
 			_index = i
 	_rafraichir()
-	_dire("« %s » créé." % p.nom)
+	_dire(Textes.t("« %s » créé.") % p.nom)
 
 
 func _ouvrir_suppression() -> void:
@@ -234,9 +267,9 @@ func _ouvrir_suppression() -> void:
 	champ_confirmation.text = ""
 	erreur_suppression.text = ""
 	avertissement.text = "\n".join([
-		"Supprimer « %s » définitivement ?" % _nom_affiche(p),
+		Textes.t("Supprimer « %s » définitivement ?") % _nom_affiche(p),
 		"",
-		"Tapez %s pour confirmer." % _mot_a_taper(p),
+		Textes.t("Tapez %s pour confirmer.") % _mot_a_taper(p),
 	])
 	_dire("")
 	_rafraichir()
@@ -252,15 +285,15 @@ func _supprimer() -> void:
 		_retour_liste()
 		return
 	if champ_confirmation.text.strip_edges() != _mot_a_taper(p):
-		erreur_suppression.text = "Ce n'est pas ce qui était demandé."
+		erreur_suppression.text = Textes.t("Ce n'est pas ce qui était demandé.")
 		return
 
 	var nom := _nom_affiche(p)
 	if not Sauvegarde.supprimer(p.id):
-		erreur_suppression.text = "Suppression impossible."
+		erreur_suppression.text = Textes.t("Suppression impossible.")
 		return
 	recharger()
-	_dire("« %s » supprimé." % nom)
+	_dire(Textes.t("« %s » supprimé.") % nom)
 
 
 func _retour_liste() -> void:
@@ -271,14 +304,17 @@ func _retour_liste() -> void:
 	_rafraichir()
 
 
+## Le mot attendu, et **le seul endroit qui le dit** : la consigne affichée et la
+## comparaison de la saisie passent toutes deux par ici. Traduit d'un côté
+## seulement, l'écran demanderait « DELETE » et n'accepterait que « SUPPRIMER ».
 func _mot_a_taper(p: Personnage) -> String:
-	return p.nom if not p.nom.is_empty() else MOT_SANS_NOM
+	return p.nom if not p.nom.is_empty() else Textes.t(MOT_SANS_NOM)
 
 
 func _nom_affiche(p: Personnage) -> String:
 	if not p.nom.is_empty():
 		return p.nom
-	return "sauvegarde illisible"
+	return Textes.t("sauvegarde illisible")
 
 
 func _dire(texte: String) -> void:
@@ -306,7 +342,7 @@ func _rafraichir() -> void:
 	bouton_jouer.disabled = choisi == null or choisi.illisible
 	bouton_supprimer.disabled = choisi == null
 
-	titre.text = "PERSONNAGES" if en_liste else ""
+	titre.text = Textes.t("PERSONNAGES") if en_liste else ""
 	_poser_silhouettes()
 	queue_redraw()
 
@@ -366,7 +402,7 @@ func _dessiner_liste() -> void:
 	if _personnages.is_empty():
 		draw_string(
 			_font, cadre.position + Vector2(0.0, cadre.size.y * 0.5),
-			"Aucun personnage pour l'instant.", HORIZONTAL_ALIGNMENT_CENTER,
+			Textes.t("Aucun personnage pour l'instant."), HORIZONTAL_ALIGNMENT_CENTER,
 			cadre.size.x, NOM_SIZE, UiPalette.HINT
 		)
 		return
@@ -394,7 +430,7 @@ func _dessiner_ligne(p: Personnage, cadre: Rect2, i: int) -> void:
 	var x := cadre.position.x + 46.0
 	if p.illisible:
 		draw_string(
-			_font, Vector2(x, y + 16.0), "sauvegarde illisible",
+			_font, Vector2(x, y + 16.0), Textes.t("sauvegarde illisible"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, NOM_SIZE, ABIME
 		)
 		draw_string(
@@ -405,14 +441,14 @@ func _dessiner_ligne(p: Personnage, cadre: Rect2, i: int) -> void:
 
 	draw_string(
 		_font, Vector2(x, y + 16.0), p.nom,
-		HORIZONTAL_ALIGNMENT_LEFT, -1.0, NOM_SIZE, NOM_COLOR
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, NOM_SIZE, UiPalette.TEXTE
 	)
 	draw_string(
-		_font, Vector2(x, y + 27.0), "niveau %d" % p.niveau,
+		_font, Vector2(x, y + 27.0), Textes.t("niveau %d") % p.niveau,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT
 	)
 	draw_string(
-		_font, Vector2(cadre.position.x, y + 27.0), "joué le %s" % p.joue_le,
+		_font, Vector2(cadre.position.x, y + 27.0), Textes.t("joué le %s") % p.joue_le,
 		HORIZONTAL_ALIGNMENT_RIGHT, cadre.size.x - 10.0, FONT_SIZE, UiPalette.LABEL
 	)
 

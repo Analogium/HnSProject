@@ -1,6 +1,6 @@
 # Fichiers de référence
 
-`personnage_v1.json` à `personnage_v4.json` sont des sauvegardes **écrites à la
+`personnage_v1.json` à `personnage_v5.json` sont des sauvegardes **écrites à la
 main**, versionnées avec le projet, et relues à chaque campagne par
 `tests/unit/test_sauvegarde.gd`.
 
@@ -8,9 +8,15 @@ La v1 est le format d'avant le jalon 5 : elle représente les fichiers déjà su
 les disques des joueurs, et elle doit continuer de se lire — ses objets prennent
 alors le niveau 1. La v2 est celui du jalon 5, avec le niveau d'objet : relue
 aujourd'hui, elle arrive avec un râtelier vide et la barre de départ. La v3 est
-celui du jalon 6, avec les manuels, le râtelier et la barre. La v4 est le format
-qu'on écrit : une ligne d'affixe peut y porter une `portee`, le mot-clé qu'elle
-vise.
+celui du jalon 6, avec les manuels, le râtelier et la barre. La v4 est celui du
+jalon 7 : une ligne d'affixe peut y porter une `portee`, le mot-clé qu'elle vise.
+La v5 est le format qu'on écrit : une ligne de dégâts ajoutés y porte sa
+`valeur_max`.
+
+Les lignes `attack_damage` et `spell_damage` des v1 à v4 **sont converties à la
+lecture** en fourchettes aux attaques et aux sorts, et leurs tests le vérifient :
+ces fichiers ne sont donc pas relus tels qu'ils sont écrits, et c'est voulu. Ils
+restent tels qu'un joueur les a sur son disque.
 
 Elle n'est pas là pour tester la sérialisation — l'aller-retour en mémoire s'en
 charge, et il passerait tout aussi bien si les deux côtés changeaient de nom de

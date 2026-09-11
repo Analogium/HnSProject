@@ -19,6 +19,16 @@ extends Resource
 @export var min_value: float = 1.0
 @export var max_value: float = 1.0
 
+## La fourchette de la **borne haute**, pour un affixe qui ajoute des dégâts :
+## « ajoute (min_value–max_value) à (min_haut–max_haut) ». Zéro pour tous les
+## autres, qui ne tirent qu'un nombre.
+##
+## Deux fourchettes et non un écart fixe : c'est la comparaison des deux bornes qui
+## fait regarder deux objets. Elle commence au-dessus de la basse — un test
+## l'impose — pour qu'une ligne ne sorte jamais à l'envers.
+@export var min_haut: float = 0.0
+@export var max_haut: float = 0.0
+
 ## Poids de ce palier parmi ceux qui sont ouverts. **Égal par défaut**, et c'est
 ## voulu : tous les paliers atteints peuvent sortir, sinon le niveau d'objet ne
 ## serait plus une chance mais une garantie et il n'y aurait plus rien à espérer

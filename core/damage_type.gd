@@ -14,10 +14,29 @@ enum Kind { PHYSICAL, COLD, FIRE, LIGHTNING, NECROTIC, HOLY }
 ## à chaque coup porté.
 const NAMES := ["physique", "froid", "feu", "foudre", "nécrotique", "sacré"]
 
-## La couleur de chaque nature, utilisée partout où elle se montre : le nombre
-## qui s'envole, la gerbe d'éclats, la ligne de résistance de la fiche. Une seule
-## définition, sinon « le froid » finirait par être deux bleus différents selon
-## l'endroit où on le regarde.
+## L'identifiant de chaque nature dans les données, sans accent : il forme le nom
+## des statistiques de dégâts ajoutés — `degats_froid` — que les affixes visent
+## et que les sauvegardes écrivent. **Il ne change jamais** (invariant 1) ; le nom
+## lisible est dans NAMES.
+const IDS := ["physique", "froid", "feu", "foudre", "necrotique", "sacre"]
+
+## Les dégâts de chaque nature, tels qu'une ligne d'objet les écrit : « ajoute 3 à
+## 7 **dégâts de froid** ». Distinct de NAMES, l'adjectif seul, parce que le
+## français n'accorde pas « physiques » comme « de froid ».
+const LIBELLES_DE_DEGATS := [
+	"dégâts physiques",
+	"dégâts de froid",
+	"dégâts de feu",
+	"dégâts de foudre",
+	"dégâts nécrotiques",
+	"dégâts sacrés",
+]
+
+## La couleur de chaque nature, utilisée partout où elle se montre : le tir, la
+## gerbe d'éclats, les lignes de la fiche — mais pas le nombre qui s'envole, blanc
+## parce qu'il est le total de toutes les parts. Une seule définition, sinon « le
+## froid » finirait par être deux bleus différents selon l'endroit où on le
+## regarde.
 ##
 ## Choisies pour se distinguer en 32 px par la **valeur** autant que par la
 ## teinte. Aucune n'approche l'or, qui reste réservé aux critiques et aux élites.
@@ -42,3 +61,35 @@ const RESIST_FIELDS := [
 	"res_necrotic",
 	"res_holy",
 ]
+
+
+## Le nom d'une nature dans la langue du joueur. Les tables gardent leurs valeurs
+## **françaises** : ce sont elles, les clés de traduction. Lire `NAMES` directement
+## pour l'afficher donne un mot qui restera français en anglais.
+static func nom(kind: int) -> String:
+	return Textes.t(NAMES[kind])
+
+
+static func libelle_de_degats(kind: int) -> String:
+	return Textes.t(LIBELLES_DE_DEGATS[kind])
+
+
+## Une part nulle par nature : la forme des dégâts d'un coup ou d'un lancer.
+## Écrite ici pour que sa taille suive l'enum — une nature ajoutée à la fin de
+## `Kind` agrandit toutes les parts du jeu sans qu'on ait à y penser.
+static func parts_vides() -> Array[float]:
+	var parts: Array[float] = []
+	parts.resize(Kind.size())
+	parts.fill(0.0)
+	return parts
+
+
+## La nature de la part la plus forte. À égalité, la première de l'enum : des
+## parts toutes nulles restent physiques, comme un coup dont personne n'a choisi
+## l'élément.
+static func dominante(parts: Array[float]) -> Kind:
+	var plus_forte := 0
+	for i in parts.size():
+		if parts[i] > parts[plus_forte]:
+			plus_forte = i
+	return plus_forte as Kind

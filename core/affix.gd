@@ -32,3 +32,9 @@ extends Resource
 
 @export_group("Récompense")
 @export var xp_mult: float = 1.5
+
+
+## Le nom tel que le joueur le lit au-dessus de l'ennemi. `display_name` est la
+## clé française écrite dans le `.tres`.
+func nom_affiche() -> String:
+	return Textes.t(display_name)

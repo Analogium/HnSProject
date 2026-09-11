@@ -28,10 +28,50 @@ func _personnage_joue() -> Personnage:
 	p.points_a_placer = 4
 	p.attributs["strength"] = 7
 	p.sac.place(Item.new(ItemCatalog.by_id("epee"), [
-		StatMod.new("attack_damage", StatMod.Mode.FLAT, 5.0),
+		StatMod.fourchette("degats_physique", 3.0, 7.0, MotsCles.ATTAQUE),
 	] as Array[StatMod]), Vector2i(4, 1))
 	p.equipement["chest"] = Item.new(ItemCatalog.by_id("plastron"))
 	return p
+
+
+## **Le test qui garantit que la version 5 ne fait perdre de force à personne** :
+## un personnage relu d'une version 4 frappe, en moyenne, exactement comme avant
+## la mise à jour.
+##
+## Les nombres ont été **mesurés** sur l'ancien calcul, le 11 septembre 2026,
+## juste avant qu'il ne disparaisse : ce sont des points de comparaison, pas des
+## réglages. On compare le milieu de chaque fourchette, parce que les implicites
+## devenus fourchettes ont gardé leur moyenne et non leur valeur.
+func test_un_personnage_relu_d_une_version_4_frappe_comme_avant() -> void:
+	var dict := Personnage.nouveau("Ancienne", 0).vers_dict()
+	dict["version"] = 4
+	dict["attributs"]["strength"] = 4
+	dict["attributs"]["intelligence"] = 9
+	dict["equipement"] = {
+		"weapon": {"base": "epee", "niveau": 10, "affixes": [
+			{"stat": "attack_damage", "mode": 0, "valeur": 6.0, "affixe": "acere", "tier": 7},
+		]},
+		"offhand": {"base": "grimoire", "niveau": 10, "affixes": [
+			{"stat": "spell_damage", "mode": 0, "valeur": 5.0, "affixe": "arcanique", "tier": 6},
+		]},
+	}
+	_p.charger(Personnage.depuis_dict(JSON.parse_string(JSON.stringify(dict))))
+
+	# Trois points dans chaque compétence ; l'Attaque et le Trait n'en ont qu'un
+	# dans leur table, qui sert alors.
+	var mesures := {
+		CompetenceCatalog.ID_ATTAQUE: 24.8,
+		CompetenceCatalog.ID_TIR: 17.0,
+		"eclair_vif": 77.44,
+		"nova_de_foudre": 65.12,
+	}
+	for id in mesures:
+		var c := CompetenceCatalog.by_id(id)
+		var geste := _p.resoudre(c, 3)
+		assert_almost_eq(
+			(geste.total_min() + geste.total_max()) * 0.5, float(mesures[id]), 0.001,
+			"« %s »" % c.nom
+		)
 
 
 func test_charger_pose_la_progression() -> void:

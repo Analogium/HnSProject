@@ -37,9 +37,26 @@ const LIBELLES := {
 }
 
 
+## À qui s'adresse une ligne qui le dit en toutes lettres : « ajoute 3 à 7 dégâts
+## de froid **aux sorts** ». Un mot-clé absent d'ici s'écrit par son libellé, entre
+## parenthèses — la forme des autres lignes portées.
+const DESTINATAIRES := {
+	ATTAQUE: "aux attaques",
+	SORT: "aux sorts",
+}
+
+
+static func destinataire(id: String) -> String:
+	if DESTINATAIRES.has(id):
+		return Textes.t(DESTINATAIRES[id])
+	return "(%s)" % libelle(id)
+
+
 static func existe(id: String) -> bool:
 	return LIBELLES.has(id)
 
 
+## Le libellé dans la langue du joueur. La table garde ses valeurs françaises :
+## ce sont elles, les clés de traduction.
 static func libelle(id: String) -> String:
-	return LIBELLES.get(id, id)
+	return Textes.t(LIBELLES.get(id, id))

@@ -39,7 +39,6 @@ const COL := 150.0
 static func maximum_d_affixes() -> int:
 	return ItemAffixPool.COUNT_WEIGHTS.size() - 1
 
-const TEXTE := Color(0.90, 0.88, 0.95)
 const CHOISI := Color(0.52, 0.88, 0.48)
 const REFUS := Color(0.92, 0.46, 0.42)
 const SURVOL := Color(1.0, 1.0, 1.0, 0.10)
@@ -48,6 +47,10 @@ const BOUTON := Color(0.18, 0.17, 0.23)
 var _font: Font
 var _base := 0
 var _page := 0
+## La page de la liste des affixes. Un bijou en accepte plus de vingt, et une
+## liste coupée au bas du panneau cacherait des affixes qu'on croirait absents de
+## la réserve.
+var _page_affixes := 0
 var _niveau := 1
 ## Identifiant d'affixe → indice de palier, **0 étant le meilleur**, comme dans
 ## `ItemAffix.tiers`. Vidé dès que la base change : un affixe compatible avec une
@@ -114,18 +117,8 @@ func fabriquer() -> Item:
 		var index: int = _choisis[id]
 		if index < 0 or index >= affixe.tiers.size():
 			continue
-		explicits.append(RolledAffix.new(
-			id, index + 1, affixe.modificateur(_valeur(affixe, index))
-		))
+		explicits.append(RolledAffix.new(id, index + 1, affixe.au_sommet(index)))
 	return Item.new(base, explicits, _niveau)
-
-
-## Le haut de la fourchette du palier, arrondi comme le tirage l'arrondirait.
-## Le haut et non un tirage : un établi doit être reproductible, sinon deux
-## essais du même réglage ne se comparent pas.
-static func _valeur(affixe: ItemAffix, index: int) -> float:
-	var palier: ItemAffixTier = affixe.tiers[index]
-	return snappedf(palier.max_value, affixe.arrondi)
 
 
 func choisir_base(index: int) -> void:
@@ -133,6 +126,7 @@ func choisir_base(index: int) -> void:
 	if index < 0 or index >= toutes.size() or index == _base:
 		return
 	_base = index
+	_page_affixes = 0
 	# Les affixes suivaient l'ancienne base : les garder poserait un « allonge »
 	# sur une paire de bottes, c'est-à-dire exactement ce que l'établi refuse.
 	_choisis.clear()
@@ -174,6 +168,7 @@ func basculer_affixe(id: String) -> void:
 func reinitialiser() -> void:
 	_base = 0
 	_page = 0
+	_page_affixes = 0
 	_niveau = 1
 	_choisis.clear()
 
@@ -184,6 +179,26 @@ func pages() -> int:
 
 func _par_page() -> int:
 	return maxi(int((size.y - HEADER - LINE * 2.0 - PAD * 2.0) / LINE), 1)
+
+
+func pages_d_affixes() -> int:
+	return maxi(ceili(float(compatibles().size()) / float(_affixes_par_page())), 1)
+
+
+## Autant de lignes qu'il en tient entre le haut de la liste et les deux boutons
+## du bas.
+func _affixes_par_page() -> int:
+	return maxi(int((_bas_des_affixes() - _haut_des_affixes()) / LINE), 1)
+
+
+## Le haut de la liste des affixes, sous le niveau d'objet et le compte.
+func _haut_des_affixes() -> float:
+	return HEADER + LINE * 5.0 + 6.0
+
+
+## Le bas de la liste : le haut des deux boutons, moins une ligne d'air.
+func _bas_des_affixes() -> float:
+	return size.y - LINE * 2.0 - PAD
 
 
 # --------------------------------------------------------------------------
@@ -207,15 +222,15 @@ func _disposer() -> void:
 	var toutes := bases()
 	var par_page := _par_page()
 	_page = clampi(_page, 0, pages() - 1)
-	_ajouter(Rect2(PAD, HEADER, 14.0, LINE), "page:-1", "<", TEXTE)
-	_ajouter(Rect2(PAD + COL - 14.0, HEADER, 14.0, LINE), "page:1", ">", TEXTE)
+	_ajouter(Rect2(PAD, HEADER, 14.0, LINE), "page:-1", "<", UiPalette.TEXTE)
+	_ajouter(Rect2(PAD + COL - 14.0, HEADER, 14.0, LINE), "page:1", ">", UiPalette.TEXTE)
 
 	var y := HEADER + LINE + 2.0
 	for i in range(_page * par_page, mini((_page + 1) * par_page, toutes.size())):
 		var base: ItemBase = toutes[i]
 		_ajouter(
 			Rect2(PAD, y, COL, LINE), "base:%d" % i, base.display_name,
-			CHOISI if i == _base else TEXTE
+			CHOISI if i == _base else UiPalette.TEXTE
 		)
 		y += LINE
 
@@ -224,15 +239,24 @@ func _disposer() -> void:
 	var x := droite + largeur_droite - 4.0 * 18.0
 	for pas in [-10, -1, 1, 10]:
 		_ajouter(
-			Rect2(x, yd, 16.0, LINE), "niveau:%d" % pas, "%+d" % pas, TEXTE
+			Rect2(x, yd, 16.0, LINE), "niveau:%d" % pas, "%+d" % pas, UiPalette.TEXTE
 		)
 		x += 18.0
 
-	# --- les affixes ---
-	var ya := yd + LINE * 2.0 + 2.0
-	for affixe: ItemAffix in compatibles():
-		if ya > size.y - LINE * 3.0:
-			break
+	# --- les affixes, par page ---
+	var yp := yd + LINE
+	x = droite + largeur_droite - 2.0 * 18.0
+	for pas in [-1, 1]:
+		_ajouter(Rect2(x, yp, 16.0, LINE), "affixes:%d" % pas, "<" if pas < 0 else ">", UiPalette.TEXTE)
+		x += 18.0
+
+	var tous := compatibles()
+	var par_page_d_affixes := _affixes_par_page()
+	_page_affixes = clampi(_page_affixes, 0, pages_d_affixes() - 1)
+	var ya := _haut_des_affixes()
+	var debut := _page_affixes * par_page_d_affixes
+	for i in range(debut, mini(debut + par_page_d_affixes, tous.size())):
+		var affixe: ItemAffix = tous[i]
 		var ouverts := affixe.ouverts(_niveau)
 		var pris := _choisis.has(affixe.id)
 		var teinte := UiPalette.LABEL
@@ -241,28 +265,25 @@ func _disposer() -> void:
 			etat = "niv. %d" % affixe.niveau_minimum()
 		elif pris:
 			var index: int = _choisis[affixe.id]
-			var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
-			etat = "T%d  %s" % [
-				index + 1, StatMod.value_label(affixe.stat, mode, _valeur(affixe, index))
-			]
+			etat = "T%d  %s" % [index + 1, affixe.au_sommet(index).valeur_lisible()]
 			teinte = CHOISI
 		else:
-			teinte = TEXTE
-		# L'identifiant **et** la statistique : deux affixes peuvent viser le même
-		# champ — l'un à plat, l'autre en pourcentage — et la seule ligne
-		# « dégâts » ne disait pas lequel on posait.
+			teinte = UiPalette.TEXTE
+		# Le « (%) » dit lequel des deux on pose quand deux affixes visent le même
+		# champ, l'un à plat, l'autre en pourcentage. L'identifiant ne tient plus à
+		# côté d'un nom comme « dégâts nécrotiques aux attaques ».
 		_ajouter(
 			Rect2(droite, ya, largeur_droite, LINE), "affixe:%s" % affixe.id,
-			"%s · %s|%s" % [
-				affixe.id, StatMod.nom(affixe.stat, affixe.portee), etat
+			"%s%s|%s" % [
+				StatMod.nom(affixe.stat, affixe.portee), " (%)" if affixe.percent else "", etat
 			], teinte
 		)
 		ya += LINE
 
 	# --- les deux boutons ---
 	var yb := size.y - LINE - PAD
-	_ajouter(Rect2(droite, yb, 74.0, LINE), "lacher", "Lâcher au sol", TEXTE)
-	_ajouter(Rect2(droite + 80.0, yb, 66.0, LINE), "reset", "Réinitialiser", TEXTE)
+	_ajouter(Rect2(droite, yb, 74.0, LINE), "lacher", "Lâcher au sol", UiPalette.TEXTE)
+	_ajouter(Rect2(droite + 80.0, yb, 66.0, LINE), "reset", "Réinitialiser", UiPalette.TEXTE)
 
 
 func _action_sous(point: Vector2) -> String:
@@ -314,6 +335,7 @@ func _appliquer(action: String) -> void:
 	match coupe[0]:
 		"base": choisir_base(int(coupe[1]))
 		"page": _page = clampi(_page + int(coupe[1]), 0, pages() - 1)
+		"affixes": _page_affixes = clampi(_page_affixes + int(coupe[1]), 0, pages_d_affixes() - 1)
 		"niveau": changer_niveau(int(coupe[1]))
 		"affixe": basculer_affixe(coupe[1])
 		"lacher":
@@ -334,7 +356,7 @@ func _draw() -> void:
 	_disposer()
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BACK)
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BORDER, false, 1.0)
-	_texte("ÉTABLI  —  outil de réglage", Vector2(PAD, 11.0), TITLE_SIZE, Color(0.80, 0.77, 0.86))
+	_texte("ÉTABLI  —  outil de réglage", Vector2(PAD, 11.0), TITLE_SIZE, UiPalette.TITRE)
 
 	var droite := PAD + COL + PAD
 	draw_line(
@@ -353,7 +375,7 @@ func _draw() -> void:
 		if action == _survol:
 			draw_rect(r, SURVOL)
 		if action == "lacher" or action == "reset" or action.begins_with("niveau:") \
-				or action.begins_with("page:"):
+				or action.begins_with("page:") or action.begins_with("affixes:"):
 			draw_rect(r, BOUTON)
 			draw_rect(r, UiPalette.BORDER, false, 1.0)
 		# Le séparateur « | » sépare l'intitulé de son état : le premier à gauche,
@@ -383,11 +405,13 @@ func _dessiner_fiche(droite: float) -> void:
 		],
 		Vector2(droite, y + LINE), FONT_SIZE, UiPalette.LABEL
 	)
-	_texte("niveau d'objet  %d" % _niveau, Vector2(droite, y + LINE * 2.0 + 6.0), FONT_SIZE, TEXTE)
+	_texte("niveau d'objet  %d" % _niveau, Vector2(droite, y + LINE * 2.0 + 6.0), FONT_SIZE, UiPalette.TEXTE)
 
 	var pleine := _choisis.size() >= maximum_d_affixes()
 	_texte(
-		"affixes  %d/%d" % [_choisis.size(), maximum_d_affixes()],
+		"affixes  %d/%d      page %d/%d" % [
+			_choisis.size(), maximum_d_affixes(), _page_affixes + 1, pages_d_affixes()
+		],
 		Vector2(droite, y + LINE * 4.0 + 4.0), FONT_SIZE, REFUS if pleine else UiPalette.LABEL
 	)
 

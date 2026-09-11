@@ -43,6 +43,30 @@ func test_un_modificateur_porte_dit_ce_qu_il_vise() -> void:
 	)
 
 
+## Des dégâts ajoutés se lisent comme la phrase du genre, destinataire compris.
+## Des bornes égales s'écrivent comme un nombre : « ajoute 6 à 6 » se lit comme
+## une faute.
+func test_une_fourchette_se_lit_en_toutes_lettres() -> void:
+	var froid := StatMod.fourchette("degats_froid", 3.0, 7.0, MotsCles.SORT)
+	assert_eq(froid.label(), "ajoute 3 à 7 dégâts de froid aux sorts")
+	assert_eq(froid.valeur_lisible(), "3–7")
+	var force := StatMod.fourchette("degats_physique", 6.0, 6.0, MotsCles.ATTAQUE)
+	assert_eq(force.label(), "ajoute 6 dégâts physiques aux attaques")
+	assert_eq(force.valeur_lisible(), "6")
+
+
+## Chaque nature a son identifiant et son nom de dégâts : une table plus courte
+## que l'enum ferait planter la première ligne d'objet de la nature oubliée.
+func test_chaque_nature_a_son_identifiant_et_son_nom_de_degats() -> void:
+	assert_eq(DamageType.IDS.size(), DamageType.Kind.size())
+	assert_eq(DamageType.LIBELLES_DE_DEGATS.size(), DamageType.Kind.size())
+	for nature in DamageType.Kind.values():
+		assert_eq(
+			StatsDeCompetence.nature_ajoutee(StatsDeCompetence.stat_ajoutee(nature)), nature,
+			"« %s » se relit" % DamageType.IDS[nature]
+		)
+
+
 ## Le cœur de l'affaire : deux objets identiques doivent donner le même
 ## personnage quel que soit l'ordre où on les équipe.
 func test_les_plats_avant_les_pourcentages() -> void:

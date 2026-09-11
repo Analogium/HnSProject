@@ -141,3 +141,74 @@ func test_une_echelle_illisible_ne_met_pas_en_plein_ecran() -> void:
 	Settings.depuis_dict({"echelle": "grand"})
 	assert_ne(Settings.echelle, Settings.PLEIN_ECRAN, "le texte n'est pas lu comme zéro")
 	Settings.depuis_dict(avant)
+
+
+# --------------------------------------------------------------------------
+# La langue
+# --------------------------------------------------------------------------
+
+## **La campagne tourne en français quelle que soit la machine** : c'est
+## `--language fr` dans `tests/run.sh`. Sans lui, tous les tests qui affirment un
+## texte français passeraient ici et échoueraient sur un Windows anglais.
+func test_la_campagne_tourne_en_francais() -> void:
+	assert_eq(Settings.langue, Settings.FRANCAIS)
+	assert_true(
+		TranslationServer.get_locale().begins_with(Settings.FRANCAIS),
+		"la locale du moteur aussi, et non « %s »" % TranslationServer.get_locale()
+	)
+
+
+## Le premier lancement suit la langue du système, ramenée aux deux langues du
+## jeu. Un Windows en allemand ne trouverait aucune traduction allemande, et le
+## moteur afficherait ses clés : du français, mais par accident.
+func test_une_locale_inconnue_devient_l_anglais() -> void:
+	assert_eq(Settings.normaliser("fr"), Settings.FRANCAIS)
+	assert_eq(Settings.normaliser("fr_CA"), Settings.FRANCAIS, "le Québec aussi")
+	assert_eq(Settings.normaliser("FR_fr"), Settings.FRANCAIS, "la casse ne décide pas")
+	assert_eq(Settings.normaliser("de"), Settings.ANGLAIS)
+	assert_eq(Settings.normaliser("en_US"), Settings.ANGLAIS)
+	assert_eq(Settings.normaliser(""), Settings.ANGLAIS, "et l'absence de locale")
+
+
+## L'anglais est bien chargé par le projet. Une déclaration oubliée dans
+## `project.godot` ne se verrait qu'en passant le jeu en anglais : tout resterait
+## en français, sans la moindre erreur.
+func test_l_anglais_est_charge() -> void:
+	assert_has(TranslationServer.get_loaded_locales(), Settings.ANGLAIS)
+
+
+## Le repli est le **français**, et pas l'anglais d'usine. Les clés de traduction
+## sont les textes français eux-mêmes : avec le repli d'usine, un texte affiché en
+## français n'y trouverait aucune traduction française — il n'en existe pas —,
+## retomberait sur l'anglais, et le jeu parlerait anglais en français.
+func test_le_repli_est_le_francais() -> void:
+	assert_eq(
+		String(ProjectSettings.get_setting("internationalization/locale/fallback", "")),
+		Settings.FRANCAIS
+	)
+
+
+## La langue fait l'aller-retour comme les autres réglages, et la poser change la
+## locale du moteur : c'est lui qui traduit.
+func test_la_langue_fait_l_aller_retour() -> void:
+	var avant := Settings.vers_dict()
+	assert_true(avant.has("langue"), "elle part sur le disque")
+
+	Settings.depuis_dict({"langue": Settings.ANGLAIS})
+	assert_eq(Settings.langue, Settings.ANGLAIS)
+	assert_eq(TranslationServer.get_locale(), Settings.ANGLAIS, "le moteur a suivi")
+
+	# Remise en place avant de rendre la main : un test qui laisse le jeu en
+	# anglais fait échouer les suivants loin de sa propre cause.
+	Settings.depuis_dict(avant)
+	assert_eq(Settings.langue, Settings.FRANCAIS)
+	assert_eq(TranslationServer.get_locale(), Settings.FRANCAIS)
+
+
+## Une langue inconnue lue dans le fichier est ramenée plutôt que posée telle
+## quelle : le moteur chercherait des traductions qui n'existent pas.
+func test_une_langue_inconnue_dans_le_fichier_est_ramenee() -> void:
+	var avant := Settings.vers_dict()
+	Settings.depuis_dict({"langue": "de"})
+	assert_eq(Settings.langue, Settings.ANGLAIS)
+	Settings.depuis_dict(avant)

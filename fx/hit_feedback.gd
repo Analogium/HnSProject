@@ -21,16 +21,20 @@ extends Node2D
 ## qu'il ne reste jamais une référence morte après un changement de scène.
 static var current: HitFeedback
 
-## Les couleurs qui n'appartiennent pas à une nature de dégâts. Celles des coups
+## Les couleurs qui n'appartiennent pas à une nature de dégâts. Celles des éclats
 ## viennent de DamageType.COLORS, qui est leur seule définition : « le froid »
-## doit être le même bleu sur le nombre, sur la gerbe et sur la fiche.
+## doit être le même bleu sur la gerbe et sur la fiche.
 const CRIT := Color(1.00, 0.78, 0.25)      # l'or, la seule couleur réservée
 const PLAYER := Color(1.00, 0.42, 0.38)    # le joueur encaisse : rouge, lisible au coin de l'œil
+## Le nombre d'un coup porté : blanc, quelle que soit sa nature. Il est le total de
+## toutes les parts ; le teindre d'une seule ferait lire un sort de foudre chargé
+## de froid comme un sort de froid.
+const NOMBRE := Color(1.0, 1.0, 1.0)
 ## Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre : le
 ## gain qui s'envole et la barre qui monte doivent se répondre.
 const XP := Color(0.45, 0.68, 1.00)
-## Le doré du halo posé sous les objets au sol : ramasser et repérer sont la
-## même information, elles partagent la couleur.
+## Le nom de ce qu'on ramasse. Ce n'est pas la couleur du halo au sol, qui est
+## celle de la rareté de l'objet.
 const LOOT := Color(0.98, 0.86, 0.45)
 ## Un coup esquivé : gris-bleu éteint. Volontairement terne — c'est un
 ## non-événement, il doit se lire sans attirer l'œil comme un chiffre.
@@ -121,18 +125,25 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	var away := at - info.source_position
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
-	var tint := _hit_color(info, on_player)
-	_add_number(at, info.amount, info.is_crit, tint)
-	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, tint)
+	_add_number(at, info.amount, info.is_crit, couleur_du_nombre(info, on_player))
+	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _couleur_de_la_gerbe(info, on_player))
 
 	set_process(true)
 	queue_redraw()
 
 
-## La couleur d'un coup. **L'élément gagne sur tout le reste** : savoir par quoi on
-## est touché est ce qui rend les résistances jouables. Le critique reste lisible
-## sans sa couleur — il est déjà quatre points de corps plus gros.
-func _hit_color(info: DamageInfo, on_player: bool) -> Color:
+## Le rouge quand c'est le joueur qui encaisse, l'or d'un critique, et le blanc
+## pour tout le reste : aucune nature, voir `NOMBRE`.
+static func couleur_du_nombre(info: DamageInfo, on_player: bool) -> Color:
+	if on_player:
+		return PLAYER
+	return CRIT if info.is_crit else NOMBRE
+
+
+## La couleur des éclats. **L'élément gagne sur tout le reste** : depuis que le
+## nombre est blanc, c'est la gerbe qui dit par quoi on est touché, et c'est ce qui
+## rend les résistances jouables.
+func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
 	if info.type != DamageType.Kind.PHYSICAL:
 		return info.color()
 	if on_player:
@@ -145,7 +156,9 @@ func _hit_color(info: DamageInfo, on_player: bool) -> Color:
 func miss(at: Vector2, on_player: bool) -> void:
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
-		"esquive" if on_player else "raté",
+		# Un contexte : « esquive » nomme aussi la statistique de la fiche, et les
+		# deux ne se traduisent pas pareil — « evasion » là-bas, « dodged » ici.
+		Textes.t("esquive", "coup évité") if on_player else Textes.t("raté"),
 		XP_SIZE,
 		MISS,
 		1.0
@@ -160,7 +173,7 @@ func miss(at: Vector2, on_player: bool) -> void:
 func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), "+%d exp" % amount, XP_SIZE, XP, XP_RISE)
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), Textes.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
 	set_process(true)
 	queue_redraw()
 

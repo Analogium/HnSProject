@@ -101,9 +101,8 @@ const TITLE_SIZE := 9
 
 @onready var title: Label = $Title
 
-## La même source que les quatre autres panneaux du jeu : ce fichier passait par
-## get_theme_default_font(), qui rend la même police mais oblige à retester le
-## null à chaque bloc de dessin.
+## La même source que les autres panneaux du jeu : get_theme_default_font() rend
+## la même police, mais oblige à retester le null à chaque bloc de dessin.
 var _font: Font
 
 var _player: Player
@@ -146,6 +145,7 @@ var _doll_key := ""
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
+	title.add_theme_color_override("font_color", UiPalette.TITRE)
 
 
 ## Le sac ouvert prend la souris. Le drapeau doit retomber quoi qu'il arrive —
@@ -154,6 +154,14 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if visible:
 		Game.grab_ui_input(self, false)
+
+
+## La langue a changé. Ce qui est dessiné à la main ne se retraduit pas tout
+## seul, contrairement aux `Label` des scènes — et le titre, écrit par le code,
+## doit être refait plutôt que redessiné.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		_on_changed()
 
 
 func bind(player: Player) -> void:
@@ -451,7 +459,9 @@ func _refresh_doll() -> void:
 
 func _on_changed() -> void:
 	if _inventory != null:
-		title.text = "SAC  %d / %d cases" % [_inventory.used_cells(), _inventory.cell_count()]
+		title.text = Textes.t("SAC  {occupees} / {total} cases").format({
+			"occupees": _inventory.used_cells(), "total": _inventory.cell_count()
+		})
 	# L'arme portée peut avoir changé : la silhouette doit tenir celle qu'on
 	# vient d'équiper, sinon la fenêtre montre un personnage qui n'existe plus.
 	_refresh_doll()
@@ -609,10 +619,10 @@ func _draw() -> void:
 
 	if _font != null:
 		draw_string(_font, Vector2(4.0, s.y - 13.0),
-			"[clic] prendre et poser     [clic droit] équiper / retirer",
+			Textes.t("[clic] prendre et poser     [clic droit] équiper / retirer"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 		draw_string(_font, Vector2(4.0, s.y - 3.0),
-			"lâché hors du sac : jeté au sol",
+			Textes.t("lâché hors du sac : jeté au sol"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 
 
@@ -714,7 +724,7 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	var titre := item.display_name()
 	# Toujours affiché, même sur un objet blanc : c'est ce qui décide si on le
 	# garde. Les paliers, eux, ne sortent que sous Alt.
-	var niveau := "niveau d'objet %d" % item.item_level
+	var niveau := Textes.t("niveau d'objet %d") % item.item_level
 	var implicite := item.implicit_line()
 
 	var explicites := PackedStringArray()
@@ -733,7 +743,7 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	# Une bulle qui se tait sur un objet dont on vient d'ouvrir le détail se lit
 	# comme une panne. Elle dit donc pourquoi — et cette ligne disparaît d'elle
 	# même à mesure que le personnage remplace son équipement.
-	var note := "paliers inconnus : ramassé avant" if _alt and sans_provenance else ""
+	var note := Textes.t("paliers inconnus : ramassé avant") if _alt and sans_provenance else ""
 
 	# Deux colonnes : les affixes, puis leurs paliers. La gouttière est prise sur
 	# la plus large des lignes d'affixes, pas sur chacune — une colonne en

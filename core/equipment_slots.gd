@@ -66,8 +66,10 @@ static func family_of(slot: String) -> String:
 	return SLOTS[slot]["family"] if SLOTS.has(slot) else ""
 
 
+## Le nom lisible d'un emplacement, dans la langue du joueur. La table garde ses
+## valeurs françaises : ce sont elles, les clés de traduction.
 static func label(slot: String) -> String:
-	return SLOTS[slot]["label"] if SLOTS.has(slot) else slot
+	return Textes.t(SLOTS[slot]["label"]) if SLOTS.has(slot) else slot
 
 
 ## La famille d'un objet, vide s'il ne s'équipe pas. Passe par la base : c'est

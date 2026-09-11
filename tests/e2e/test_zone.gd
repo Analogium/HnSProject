@@ -47,6 +47,45 @@ func test_une_graine_redonne_la_meme_zone() -> void:
 		assert_eq(_empreinte(), premier, "relance %d identique" % (i + 1))
 
 
+## Une carte neuve remplace l'ancienne **tout de suite**, collisions comprises.
+## Les couches de tuiles ne reconstruisent les leurs qu'en fin d'image : le joueur
+## posé sur l'apparition neuve chevauchait encore un mur de l'ancienne carte, et la
+## physique l'en éjectait de seize pixels. Le cas était apparu par hasard, selon la
+## graine qu'un test précédent laissait à `Game.rng` ; il est construit ici exprès.
+func test_une_carte_neuve_ne_pousse_pas_le_joueur_hors_d_un_mur_de_l_ancienne() -> void:
+	var apparition: Vector2i = _zone.generator.get_spawn_cell()
+	var graine_muree := -1
+	for graine in range(1, 500):
+		var essai := MapGenerator.new()
+		essai.generate(graine)
+		# Un vrai mur, dans les bornes : une case hors de la carte n'a pas de
+		# collision, et le test passerait sans rien prouver.
+		if (
+			apparition.x < essai.width and apparition.y < essai.height
+			and essai.grid[apparition.y][apparition.x] != MapGenerator.FLOOR
+		):
+			graine_muree = graine
+			break
+	assert_gt(graine_muree, 0, "une carte dont un mur couvre l'apparition de la graine %d" % GRAINE)
+
+	_zone.generate_zone(graine_muree)
+	# Les murs de cette carte-là entrent dans la physique avant qu'on la remplace.
+	await wait_process_frames(2)
+	_zone.generate_zone(GRAINE)
+	var attendu := MapGenerator.cell_center(apparition)
+	assert_eq(_zone.player.global_position, attendu, "posé sur l'apparition")
+	# Sa première résolution de physique, jouée **tout de suite**. Attendre l'image
+	# suivante ne prouverait rien : selon que le moteur enchaîne d'abord une image
+	# de physique ou la fin d'image, les murs périmés ont déjà disparu ou non — et
+	# ce test passait sans le correctif.
+	_zone.player.velocity = Vector2.ZERO
+	_zone.player.move_and_slide()
+	assert_almost_eq(
+		_zone.player.global_position, attendu, Vector2.ONE,
+		"aucun mur de l'ancienne carte ne le repousse"
+	)
+
+
 ## Sans ce test, le précédent passerait aussi sur une génération cassée qui
 ## rendrait toujours la même chose.
 func test_deux_graines_donnent_deux_zones() -> void:

@@ -81,7 +81,7 @@ func _has_line_of_sight() -> bool:
 
 
 func _fire(dir: Vector2) -> void:
-	Projectile.spawn(
+	Projectile.spawn_d_une_nature(
 		manager.projectile_parent, projectile_scene,
 		global_position, dir, stats.attack_damage, self
 	)

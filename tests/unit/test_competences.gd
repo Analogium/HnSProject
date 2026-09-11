@@ -5,13 +5,10 @@ extends GutTest
 ## jalon 6, c'est la seule règle qui décide de ce que fait un coup.
 
 ## Une fiche neutre, dont chaque test ne règle que ce qu'il regarde. Les valeurs
-## par défaut de CharacterStats ne conviennent pas : elles portent déjà des
-## dégâts et une intelligence, et un test qui les subit mesure autre chose que ce
-## qu'il annonce.
+## par défaut de CharacterStats peuvent changer, et un test qui les subit
+## mesurerait autre chose que ce qu'il annonce.
 func _fiche() -> CharacterStats:
 	var f := CharacterStats.new()
-	f.attack_damage = 0.0
-	f.spell_damage = 0.0
 	f.strength = 0.0
 	f.dexterity = 0.0
 	f.intelligence = 0.0
@@ -79,13 +76,7 @@ func test_chaque_competence_qui_lance_des_projectiles_a_une_vitesse() -> void:
 ## la compétence paraît simplement faible. C'est ce test qui l'attrape, pas une
 ## partie.
 func test_chaque_competence_vise_des_champs_reels() -> void:
-	var fiche := CharacterStats.new()
 	for c in CompetenceCatalog.ALL:
-		if not c.stat_de_base.is_empty():
-			assert_true(
-				fiche.get(c.stat_de_base) != null,
-				"« %s » part de « %s », qui n'est pas dans la fiche" % [c.nom, c.stat_de_base]
-			)
 		if not c.attribut.is_empty():
 			assert_true(
 				CharacterStats.ATTRIBUTES.has(c.attribut),
@@ -193,7 +184,9 @@ func test_sans_modificateur_la_resolution_rend_la_fiche() -> void:
 	for c in CompetenceCatalog.ALL:
 		var points: int = c.points_max()
 		var r: StatsDeCompetence = c.resoudre(points, fiche)
-		assert_eq(r.degats, c.degats(points, fiche), "« %s » : dégâts" % c.nom)
+		assert_eq(r.degats_min[c.nature], c.degats(points, fiche), "« %s » : dégâts" % c.nom)
+		assert_eq(r.total_min(), c.degats(points, fiche), "« %s » : dans sa seule nature" % c.nom)
+		assert_eq(r.total_max(), r.total_min(), "« %s » : sans objet, aucune fourchette" % c.nom)
 		assert_eq(r.nombre_de_projectiles(), maxi(c.projectiles, 1), "« %s » : projectiles" % c.nom)
 		assert_eq(r.dispersion_en_degres, c.dispersion_en_degres, "« %s » : dispersion" % c.nom)
 		assert_eq(r.vitesse_de_projectile, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
@@ -241,7 +234,7 @@ func test_un_modificateur_dont_le_mot_cle_n_est_pas_porte_ne_fait_rien() -> void
 		_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE),
 	])
 	assert_eq(r.nombre_de_projectiles(), 1, "une épée ne lance rien")
-	assert_eq(r.degats, 10.0, "et une épée physique n'est pas de la foudre")
+	assert_eq(r.total_min(), 10.0, "et une épée physique n'est pas de la foudre")
 
 
 ## Un modificateur sans portée appartient à la fiche, qui l'a déjà appliqué :
@@ -257,7 +250,7 @@ func test_les_degats_d_une_nature_visee_montent() -> void:
 	var c := _competence([10.0] as Array[float])
 	c.nature = DamageType.Kind.LIGHTNING
 	var r := c.resoudre(1, _fiche(), [_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE)])
-	assert_eq(r.degats, 15.0)
+	assert_eq(r.degats_min[DamageType.Kind.LIGHTNING], 15.0)
 
 
 ## Le coût a sa propre voie — la réserve. Un modificateur qui le viserait par un
@@ -293,6 +286,157 @@ func test_la_dispersion_ne_depasse_pas_le_tour_complet() -> void:
 
 
 # --------------------------------------------------------------------------
+# Les dégâts par nature, en fourchette (jalon 8)
+# --------------------------------------------------------------------------
+
+func _ajout(nature: DamageType.Kind, bas: float, haut: float, portee := MotsCles.SORT) -> StatMod:
+	return StatMod.fourchette(StatsDeCompetence.stat_ajoutee(nature), bas, haut, portee)
+
+
+## Le froid ajouté à un sort de foudre reste du froid : c'est ce qui le laisse
+## passer quand l'ennemi résiste à la foudre.
+func test_une_fourchette_ajoutee_va_dans_sa_nature() -> void:
+	var c := _competence([10.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resoudre(1, _fiche(), [_ajout(DamageType.Kind.COLD, 3.0, 7.0)])
+	assert_eq(r.degats_min[DamageType.Kind.LIGHTNING], 10.0, "la foudre du sort")
+	assert_eq(r.degats_max[DamageType.Kind.LIGHTNING], 10.0, "sans fourchette")
+	assert_eq(r.degats_min[DamageType.Kind.COLD], 3.0, "et le froid à part")
+	assert_eq(r.degats_max[DamageType.Kind.COLD], 7.0)
+
+
+## L'attribut multiplie aussi ce que les objets ajoutent. C'était la règle des
+## dégâts de sort, et un personnage relu d'une ancienne sauvegarde ne doit pas
+## frapper moins fort parce que ses lignes ont changé de forme.
+func test_l_attribut_multiplie_aussi_les_degats_ajoutes() -> void:
+	var c := _competence([10.0] as Array[float])
+	c.attribut = "intelligence"
+	c.pourcentage_par_attribut = 4.0
+	var f := _fiche()
+	f.intelligence = 10.0
+	var r := c.resoudre(1, f, [_ajout(DamageType.Kind.COLD, 5.0, 5.0)])
+	assert_almost_eq(r.degats_min[DamageType.Kind.PHYSICAL], 14.0, 0.0001, "10 × 1,4")
+	assert_almost_eq(r.degats_min[DamageType.Kind.COLD], 7.0, 0.0001, "5 × 1,4")
+
+
+## « +50 % dégâts (Foudre) » vise la compétence, pas la part : le froid qu'elle
+## porte est multiplié avec sa foudre.
+func test_un_pourcentage_de_degats_multiplie_toutes_les_parts() -> void:
+	var c := _competence([10.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resoudre(1, _fiche(), [
+		_ajout(DamageType.Kind.COLD, 4.0, 8.0),
+		_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE),
+	])
+	assert_eq(r.degats_min[DamageType.Kind.LIGHTNING], 15.0)
+	assert_eq(r.degats_min[DamageType.Kind.COLD], 6.0)
+	assert_eq(r.degats_max[DamageType.Kind.COLD], 12.0)
+
+
+## La décomposition que la fiche du manuel affiche **refait** les dégâts du
+## lancer : la base et les ajouts, multipliés par l'attribut et l'accroissement.
+## Si elle s'en écartait, la fiche écrirait des lignes dont la somme n'est pas le
+## coup qui part.
+func test_la_decomposition_refait_les_degats() -> void:
+	var c := _competence([10.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	c.attribut = "intelligence"
+	c.pourcentage_par_attribut = 4.0
+	var f := _fiche()
+	f.intelligence = 10.0
+	var r := c.resoudre(1, f, [
+		_ajout(DamageType.Kind.COLD, 4.0, 8.0),
+		_ajout(DamageType.Kind.LIGHTNING, 1.0, 3.0),
+		_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE),
+		_mod("degats", StatMod.Mode.PERCENT, 10.0, MotsCles.SORT),
+	])
+	assert_eq(r.degats_de_base, 10.0, "la ligne de la table, avant tout multiplicateur")
+	assert_eq(r.ajoutes_min[DamageType.Kind.COLD], 4.0)
+	assert_eq(r.ajoutes_max[DamageType.Kind.LIGHTNING], 3.0, "la foudre ajoutée, à part de la base")
+	assert_almost_eq(r.facteur_d_attribut, 1.4, 1e-6)
+	assert_almost_eq(r.accroissement, 1.65, 1e-6, "1,5 × 1,1 : les accroissements se multiplient")
+
+	var facteur := r.facteur_d_attribut * r.accroissement
+	for nature in DamageType.Kind.size():
+		var base := r.degats_de_base if nature == c.nature else 0.0
+		assert_almost_eq(
+			r.degats_min[nature], (base + r.ajoutes_min[nature]) * facteur, 1e-4,
+			"borne basse, %s" % DamageType.NAMES[nature]
+		)
+		assert_almost_eq(
+			r.degats_max[nature], (base + r.ajoutes_max[nature]) * facteur, 1e-4,
+			"borne haute, %s" % DamageType.NAMES[nature]
+		)
+
+
+## L'estimation d'un lancer : le milieu de chaque fourchette, fois les projectiles,
+## puis ramenée à la seconde par l'intervalle.
+func test_l_estimation_d_un_lancer_est_la_moyenne_de_ses_projectiles() -> void:
+	var r := StatsDeCompetence.new()
+	r.poser_la_base(DamageType.Kind.LIGHTNING, 10.0)
+	r.ajouter(DamageType.Kind.COLD, 2.0, 6.0)
+	r.projectiles = 3.0
+	r.intervalle = 0.5
+	assert_almost_eq(r.moyenne_par_lancer(), 42.0, 1e-4, "14 en moyenne, trois fois")
+	assert_almost_eq(r.moyenne_par_seconde(), 84.0, 1e-4, "deux lancers par seconde")
+	r.intervalle = 0.0
+	assert_eq(r.moyenne_par_seconde(), 0.0, "sans intervalle, pas d'infini")
+
+
+## Et elle dit vrai : c'est la moyenne de ce que les tirages font réellement. Un
+## tirage local, pour ne rien prendre au fil de `Game.rng`.
+func test_l_estimation_rejoint_la_moyenne_des_tirages() -> void:
+	var r := StatsDeCompetence.new()
+	r.ajouter(DamageType.Kind.COLD, 3.0, 7.0)
+	r.ajouter(DamageType.Kind.FIRE, 1.0, 9.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var somme := 0.0
+	for i in 20000:
+		for part in r.tirer(rng):
+			somme += part
+	assert_almost_eq(somme / 20000.0, r.moyenne_par_lancer(), 0.1, "10 attendus")
+
+
+## Une fourchette ajoutée aux attaques ne touche pas un sort, et l'inverse.
+func test_une_fourchette_ne_touche_que_sa_famille() -> void:
+	var sort := _competence([10.0] as Array[float])
+	var r := sort.resoudre(1, _fiche(), [_ajout(DamageType.Kind.FIRE, 5.0, 9.0, MotsCles.ATTAQUE)])
+	assert_eq(r.total_max(), 10.0, "un sort n'est pas une attaque")
+
+
+func test_un_coup_tire_entre_ses_bornes() -> void:
+	var r := StatsDeCompetence.new()
+	r.ajouter(DamageType.Kind.COLD, 3.0, 7.0)
+	r.ajouter(DamageType.Kind.LIGHTNING, 10.0, 10.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	for i in 200:
+		var parts := r.tirer(rng)
+		assert_between(parts[DamageType.Kind.COLD], 3.0, 7.0)
+		assert_eq(parts[DamageType.Kind.LIGHTNING], 10.0, "une part sans fourchette ne varie pas")
+
+
+## **Invariant 3.** Le nombre de tirages ne dépend que des fourchettes ouvertes,
+## jamais de ce qui sort : sinon chaque coup décalerait les tirages suivants d'un
+## nombre différent.
+func test_un_coup_tire_une_fois_par_fourchette_ouverte() -> void:
+	var r := StatsDeCompetence.new()
+	r.ajouter(DamageType.Kind.COLD, 3.0, 7.0)
+	r.ajouter(DamageType.Kind.FIRE, 1.0, 2.0)
+	r.ajouter(DamageType.Kind.LIGHTNING, 10.0, 10.0)
+	for graine in [1, 2, 3]:
+		var tire := RandomNumberGenerator.new()
+		tire.seed = graine
+		var temoin := RandomNumberGenerator.new()
+		temoin.seed = graine
+		r.tirer(tire)
+		temoin.randf()
+		temoin.randf()
+		assert_eq(tire.state, temoin.state, "deux fourchettes ouvertes, deux tirages (graine %d)" % graine)
+
+
+# --------------------------------------------------------------------------
 # La formule
 # --------------------------------------------------------------------------
 
@@ -321,16 +465,6 @@ func test_au_dela_du_dernier_point_on_garde_le_dernier() -> void:
 	assert_eq(c.degats(9, _fiche()), 25.0)
 
 
-## Le terme qui garde vivants les affixes du jalon 5 : sans lui, « dégâts de
-## sort » et l'implicite du grimoire ne toucheraient aucune compétence.
-func test_la_statistique_de_la_fiche_s_ajoute_aux_degats_de_base() -> void:
-	var c := _competence([10.0] as Array[float])
-	c.stat_de_base = "spell_damage"
-	var f := _fiche()
-	f.spell_damage = 7.0
-	assert_eq(c.degats(1, f), 17.0)
-
-
 ## « +4 % par point d'intelligence », lu sur la fiche **finale** : c'est ce qui
 ## fait qu'un anneau ramassé en zone 40 change une compétence, et donc que les
 ## jalons 4 et 5 nourrissent celui-ci au lieu de vivre à côté.
@@ -342,20 +476,6 @@ func test_l_attribut_multiplie_les_degats() -> void:
 	assert_eq(c.degats(1, f), 100.0, "sans intelligence, la base seule")
 	f.intelligence = 10.0
 	assert_eq(c.degats(1, f), 140.0, "dix points d'intelligence, quarante pour cent")
-
-
-## L'échelle s'applique **après** l'addition, et pas seulement à la table : sinon
-## les dégâts de sort d'un objet échapperaient à l'attribut, et deux joueurs de
-## même fiche n'auraient pas les mêmes nombres selon l'ordre du calcul.
-func test_l_echelle_porte_aussi_sur_la_statistique_de_la_fiche() -> void:
-	var c := _competence([50.0] as Array[float])
-	c.stat_de_base = "spell_damage"
-	c.attribut = "intelligence"
-	c.pourcentage_par_attribut = 10.0
-	var f := _fiche()
-	f.spell_damage = 50.0
-	f.intelligence = 5.0
-	assert_eq(c.degats(1, f), 150.0, "(50 + 50) × 1,5")
 
 
 ## Un attribut non nommé ne multiplie rien. C'est l'état des deux attaques de
@@ -372,29 +492,26 @@ func test_sans_attribut_nomme_rien_ne_multiplie() -> void:
 # Les deux attaques de départ, qui ne doivent pas changer de valeur
 # --------------------------------------------------------------------------
 
-## Le coup d'épée rend les dégâts de la fiche, exactement. Le critique n'est pas
-## dedans : il vit dans `DamageInfo.roll()`, et une compétence ne le retire ni ne
-## le double.
-func test_le_coup_de_base_rend_les_degats_de_la_fiche() -> void:
+## Le coup d'épée rend douze, exactement : ce que la fiche du joueur lui donnait
+## avant que ce nombre n'entre dans sa table. Le critique n'est pas dedans : il vit
+## dans `DamageInfo.roll()`, et une compétence ne le retire ni ne le double.
+func test_le_coup_de_base_rend_les_degats_d_avant() -> void:
 	var c := CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE)
-	var f := _fiche()
-	f.attack_damage = 12.0
-	assert_eq(c.degats(1, f), 12.0)
+	assert_eq(c.degats(1, _fiche()), 12.0)
 	assert_eq(c.cout_en_mana, 0.0, "et il reste gratuit")
 
 
-func test_le_tir_rend_les_degats_de_sort_de_la_fiche() -> void:
+## Et le tir, sept : les dégâts de sort de l'ancienne fiche.
+func test_le_tir_rend_les_degats_d_avant() -> void:
 	var c := CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
-	var f := _fiche()
-	f.spell_damage = 33.0
-	assert_eq(c.degats(1, f), 33.0)
+	assert_eq(c.degats(1, _fiche()), 7.0)
 	assert_gt(c.cout_en_mana, 0.0, "et il coûte toujours du mana")
 
 
 ## Les deux attaques de départ ne montent avec aucun attribut, et ce n'est pas un
-## oubli : la force et l'intelligence nourrissent déjà `attack_damage` et la
-## réserve par `apply_attributes()`. Les compter ici les paierait deux fois, et
-## les nombres du jalon 1 cesseraient d'être ceux du jalon 6.
+## oubli : la force ajoute déjà ses dégâts physiques aux attaques, et
+## l'intelligence nourrit la réserve. Les compter ici les paierait deux fois, et
+## les nombres du jalon 1 cesseraient d'être ceux d'aujourd'hui.
 func test_les_attaques_de_depart_ne_montent_avec_aucun_attribut() -> void:
 	for id in [CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR]:
 		var c := CompetenceCatalog.by_id(id)

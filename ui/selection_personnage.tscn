@@ -50,6 +50,13 @@ offset_bottom = 22.0
 theme_override_font_sizes/font_size = 10
 text = "Supprimer"
 
+[node name="Langue" type="Button" parent="."]
+offset_left = 470.0
+offset_top = 14.0
+offset_right = 626.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 8
+
 [node name="Aide" type="Label" parent="."]
 anchor_right = 1.0
 offset_top = 330.0
