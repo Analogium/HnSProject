@@ -127,6 +127,30 @@ func test_un_livre_range_sans_place_est_jete() -> void:
 	assert_same(jetes[0], livre, "et c'est bien lui")
 
 
+## **La fiche passe par le même chemin que le lancer** (jalon 7, étape 5). Avec un
+## « +1 projectile » porté, elle annonce deux traits — et ce sont bien deux traits
+## qui partent. Lue sur la compétence, elle en aurait annoncé un.
+func test_la_fiche_annonce_ce_qui_part_vraiment() -> void:
+	var livre := _livre()
+	livre.manuel.gagner_experience(999999)
+	livre.manuel.investir(livre.base.manuel, "eclair_vif")
+	_joueur.etudier(livre)
+	var eclair := CompetenceCatalog.by_id("eclair_vif")
+	assert_false(_panneau._detail(eclair, 1).contains("traits"), "un trait droit ne se compte pas")
+
+	_joueur.equip(Item.new(
+		ItemCatalog.by_id("baguette"), [ItemAffixPool.by_id("fourchu").modificateur(1.0)]
+	))
+	assert_true(_panneau._detail(eclair, 1).contains("2 traits"), "la fiche en annonce deux")
+
+	var tirs := Node2D.new()
+	add_child_autofree(tirs)
+	_joueur.projectile_parent = tirs
+	_joueur.barre.poser(2, "eclair_vif")
+	assert_true(_joueur.lancer(2))
+	assert_eq(tirs.get_child_count(), 2, "et deux partent")
+
+
 ## Le dessin traverse ses trois états sans se plaindre : un emplacement vide, un
 ## livre neuf, une case pleine. Ce que ça **donne à l'œil** est du ressort de la
 ## capture ; ce qu'on vérifie ici, c'est qu'aucun de ces chemins ne plante.

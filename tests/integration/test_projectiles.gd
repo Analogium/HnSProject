@@ -31,3 +31,18 @@ func test_le_tir_nait_devant_son_lanceur() -> void:
 	)
 	assert_not_null(b)
 	assert_almost_eq(b.global_position.x, Projectile.MUZZLE, 0.001)
+
+
+## La vitesse vient de la compétence quand on la donne, de la scène sinon : les
+## tirs ennemis n'ont pas de compétence, et ils doivent garder la leur.
+func test_la_vitesse_donnee_l_emporte_sur_celle_de_la_scene() -> void:
+	var parent := Node2D.new()
+	add_child_autofree(parent)
+	var scene: PackedScene = load("res://actors/projectiles/enemy_bolt.tscn")
+	var de_la_scene: Projectile = scene.instantiate()
+	autofree(de_la_scene)
+
+	var sans := Projectile.spawn(parent, scene, Vector2.ZERO, Vector2.RIGHT, 1.0, null)
+	var avec := Projectile.spawn(parent, scene, Vector2.ZERO, Vector2.RIGHT, 1.0, null, 310.0)
+	assert_eq(sans.speed, de_la_scene.speed, "sans vitesse donnée, celle de la scène")
+	assert_eq(avec.speed, 310.0, "sinon celle qu'on donne")

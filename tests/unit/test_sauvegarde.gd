@@ -478,3 +478,64 @@ func test_le_fichier_de_reference_v3_se_relit() -> void:
 			range_dans_le_sac += 1
 			assert_eq(pose.data.manuel.points_places(), 0)
 	assert_eq(range_dans_le_sac, 1)
+
+
+# --------------------------------------------------------------------------
+# La portée d'un affixe (jalon 7, version 4)
+# --------------------------------------------------------------------------
+
+## La portée traverse le disque. Perdue, un « +1 projectile » relu deviendrait une
+## ligne de fiche visant un champ que la fiche n'a pas.
+func test_la_portee_d_un_affixe_survit_a_l_aller_retour() -> void:
+	var p := Personnage.nouveau("Portee", 0)
+	p.equipement["weapon"] = Item.new(ItemCatalog.by_id("baguette"), [
+		ItemAffixPool.by_id("fourchu").modificateur(1.0),
+		StatMod.new("spell_damage", StatMod.Mode.FLAT, 4.0),
+	])
+
+	var dict := p.vers_dict()
+	var ecrits: Array = dict["equipement"]["weapon"]["affixes"]
+	assert_eq(ecrits[0]["portee"], MotsCles.PROJECTILE, "écrite quand elle existe")
+	assert_false((ecrits[1] as Dictionary).has("portee"), "et absente d'une ligne de fiche")
+
+	var relus: Array[RolledAffix] = Personnage.depuis_dict(dict).equipement["weapon"].explicits
+	assert_eq(relus[0].mod.portee, MotsCles.PROJECTILE)
+	assert_eq(relus[0].mod.stat, "projectiles")
+	assert_eq(relus[1].mod.portee, "", "la ligne de fiche le reste")
+
+
+## Le format qu'on écrit aujourd'hui, avec une ligne de fiche et deux lignes
+## portées sur la même baguette.
+func test_le_fichier_de_reference_v4_se_relit() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v4.json", FileAccess.READ)
+	assert_not_null(fichier, "le fichier de référence est bien dans le dépôt")
+	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
+	fichier.close()
+
+	var p := Personnage.depuis_dict(contenu)
+	assert_not_null(p, "une sauvegarde de version 4 se lit")
+	assert_eq(p.nom, "Ysolde")
+
+	var baguette: Item = p.equipement["weapon"]
+	var portees := []
+	for r in baguette.explicits:
+		portees.append(r.mod.portee)
+	assert_eq(portees, ["", MotsCles.PROJECTILE, MotsCles.FOUDRE])
+	assert_eq(baguette.explicits[2].mod.stat, "degats")
+	assert_eq(baguette.explicits[2].tier, 5, "avec sa provenance")
+
+
+## Une sauvegarde de version 3 n'a que des lignes de fiche : rien ne doit y
+## gagner une portée en passant.
+func test_une_version_3_n_a_que_des_lignes_de_fiche() -> void:
+	var fichier := FileAccess.open("res://tests/fixtures/personnage_v3.json", FileAccess.READ)
+	var contenu: Variant = JSON.parse_string(fichier.get_as_text())
+	fichier.close()
+
+	var p := Personnage.depuis_dict(contenu)
+	for pose in p.sac.placed:
+		for r in pose.data.explicits:
+			assert_eq(r.mod.portee, "")
+	for emplacement in p.equipement:
+		for r in p.equipement[emplacement].explicits:
+			assert_eq(r.mod.portee, "")

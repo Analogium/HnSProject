@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_fourc"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_fourc"]
+
+[sub_resource type="Resource" id="Resource_fourchu_t1"]
+script = ExtResource("2_fourc")
+niveau_requis = 50
+min_value = 2.0
+max_value = 2.0
+
+[sub_resource type="Resource" id="Resource_fourchu_t2"]
+script = ExtResource("2_fourc")
+min_value = 1.0
+max_value = 1.0
+
+[resource]
+script = ExtResource("1_fourc")
+id = "fourchu"
+tags = PackedStringArray("caster")
+exclut = PackedStringArray()
+stat = "projectiles"
+portee = "projectile"
+tiers = Array[ExtResource("2_fourc")]([SubResource("Resource_fourchu_t1"), SubResource("Resource_fourchu_t2")])
+weight = 3

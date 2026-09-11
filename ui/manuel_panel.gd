@@ -50,6 +50,10 @@ const XP_FOND := Color(0.10, 0.09, 0.13)
 ## son porteur, et l'œil doit le reconnaître.
 const XP_PLEIN := Color(0.24, 0.45, 0.86)
 const TEXTE := Color(0.90, 0.88, 0.95)
+## Les mots-clés de la fiche : un bleu acier, ni le gris des nombres ni la couleur
+## d'une nature — « Foudre » écrit en violet se lirait comme un type de dégâts, et
+## non comme ce qui peut améliorer la compétence.
+const MOT_CLE := Color(0.62, 0.72, 0.88)
 
 var _player: Player
 var _font: Font
@@ -204,8 +208,11 @@ func _page_top() -> float:
 ## Le haut de la fiche du bas — celle qui décrit la case survolée. C'est la
 ## borne basse des cases, et le dessin comme le test la lisent ici : mesurée
 ## séparément, l'une des deux finirait par laisser les carrés descendre dessus.
+##
+## Cinq lignes : le nom, les nombres, les mots-clés, et l'air qui les sépare de
+## l'aide du bas.
 func _fiche_top() -> float:
-	return size.y - LINE * 4.0
+	return size.y - LINE * 5.0
 
 
 func _case_rect(position: Vector2i) -> Rect2:
@@ -367,22 +374,37 @@ func _draw_compte(r: Rect2, libelle: String, teinte: Color) -> void:
 	_texte(libelle, plaque.position + Vector2(2.0, LINE - 2.0), FONT_SIZE, teinte)
 
 
-## Ce que la case survolée donne, calculé par la **même** fonction que le
-## lancement : deux calculs séparés divergent d'un arrondi, et c'est l'affichage
-## qui passe alors pour un menteur.
+## Ce que la case survolée donne : son nom, ses nombres, ses mots-clés.
 func _draw_fiche(manuel: Manuel, case: CaseDeManuel) -> void:
 	var competence := case.competence
 	if competence == null or _player == null:
 		return
-	var places := maxi(manuel.points_de(competence.id), 1)
-	var degats := competence.degats(places, _player.stats)
-
 	var y := _fiche_top() + LINE
 	_texte(competence.nom, Vector2(PAD, y), FONT_SIZE, TEXTE)
-	var detail := "%d dégâts %s" % [roundi(degats), DamageType.NAMES[competence.nature]]
-	if competence.cout_en_mana > 0.0:
-		detail += "   %d mana" % roundi(competence.cout_en_mana)
-	_texte(detail, Vector2(PAD, y + LINE), FONT_SIZE, UiPalette.LABEL)
+	_texte(
+		_detail(competence, maxi(manuel.points_de(competence.id), 1)),
+		Vector2(PAD, y + LINE), FONT_SIZE, UiPalette.LABEL
+	)
+	# Ce qui peut l'améliorer. C'est ici et pas sur la barre : on regarde une page
+	# de manuel pour comprendre une compétence, et la barre pour la lancer.
+	_texte(competence.libelle_des_mots_cles(), Vector2(PAD, y + LINE * 2.0), FONT_SIZE, MOT_CLE)
+
+
+## « 20 dégâts foudre · 2 traits   8 mana » : les nombres **résolus**, par le
+## même chemin que le lancer — `Player.resoudre()`. Lus sur la compétence, ils
+## ignoreraient ce que l'équipement donne, et la page annoncerait un trait de
+## moins que ce qui part.
+##
+## Les traits ne se comptent qu'à partir de deux : « 1 trait » sur chaque sort
+## droit serait une ligne qu'on apprend à ne plus lire.
+func _detail(competence: Competence, points: int) -> String:
+	var geste := _player.resoudre(competence, points)
+	var detail := "%d dégâts %s" % [roundi(geste.degats), DamageType.NAMES[competence.nature]]
+	if geste.nombre_de_projectiles() > 1:
+		detail += " · %d traits" % geste.nombre_de_projectiles()
+	if geste.cout_en_mana > 0.0:
+		detail += "   %d mana" % roundi(geste.cout_en_mana)
+	return detail
 
 
 func _texte(texte: String, at: Vector2, taille: int, teinte: Color) -> void:

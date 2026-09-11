@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_siffl"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_siffl"]
+
+[sub_resource type="Resource" id="Resource_sifflant_t1"]
+script = ExtResource("2_siffl")
+niveau_requis = 56
+min_value = 26.0
+max_value = 32.0
+
+[sub_resource type="Resource" id="Resource_sifflant_t2"]
+script = ExtResource("2_siffl")
+niveau_requis = 42
+min_value = 20.0
+max_value = 25.0
+
+[sub_resource type="Resource" id="Resource_sifflant_t3"]
+script = ExtResource("2_siffl")
+niveau_requis = 28
+min_value = 15.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_sifflant_t4"]
+script = ExtResource("2_siffl")
+niveau_requis = 14
+min_value = 10.0
+max_value = 14.0
+
+[sub_resource type="Resource" id="Resource_sifflant_t5"]
+script = ExtResource("2_siffl")
+min_value = 5.0
+max_value = 9.0
+
+[resource]
+script = ExtResource("1_siffl")
+id = "sifflant"
+tags = PackedStringArray("caster", "gloves")
+exclut = PackedStringArray()
+stat = "vitesse_de_projectile"
+portee = "projectile"
+percent = true
+tiers = Array[ExtResource("2_siffl")]([SubResource("Resource_sifflant_t1"), SubResource("Resource_sifflant_t2"), SubResource("Resource_sifflant_t3"), SubResource("Resource_sifflant_t4"), SubResource("Resource_sifflant_t5")])
+weight = 8

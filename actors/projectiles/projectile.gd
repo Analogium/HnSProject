@@ -131,22 +131,32 @@ func _draw() -> void:
 ## depuis _physics_process, jamais depuis un callback de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
-	damage: float, source: Node2D
+	damage: float, source: Node2D, vitesse := 0.0
 ) -> Projectile:
 	if scene == null or parent == null:
 		return null
 	var bolt: Projectile = scene.instantiate()
 	parent.add_child(bolt)
 	bolt.global_position = from + dir * MUZZLE
-	bolt.setup(dir, damage, source)
+	bolt.setup(dir, damage, source, vitesse)
 	return bolt
 
 
 ## À appeler après add_child, sinon global_position ne veut rien dire.
-func setup(dir: Vector2, damage: float, source: Node2D) -> void:
+##
+## `vitesse` à zéro garde celle de la scène : c'est le cas des tirs ennemis, qui
+## n'ont pas de compétence. Le joueur passe toujours celle de la sienne, et
+## `player_bolt.tscn` n'en déclare donc plus — une valeur toujours écrasée
+## laisserait croire qu'on règle la vitesse du tir en l'y changeant.
+##
+## La durée de vie, elle, reste sur la scène : un tir plus rapide porte donc plus
+## loin, ce qui est ce qu'on attend d'un bonus de vitesse de projectile.
+func setup(dir: Vector2, damage: float, source: Node2D, vitesse := 0.0) -> void:
 	_dir = dir.normalized()
 	_damage = damage
 	_source = source
+	if vitesse > 0.0:
+		speed = vitesse
 	rotation = _dir.angle()
 
 

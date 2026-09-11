@@ -448,6 +448,113 @@ func test_un_trait_seul_part_droit_dans_la_visee() -> void:
 	)
 
 
+# --------------------------------------------------------------------------
+# Le lancer passe par la résolution (jalon 7, étape 3)
+# --------------------------------------------------------------------------
+
+## Un point dans chaque case du manuel de la foudre.
+func _livre_ouvert_partout() -> Item:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	livre.manuel.gagner_experience(999999)
+	for case in livre.base.manuel.cases:
+		livre.manuel.investir(livre.base.manuel, case.competence.id)
+	return livre
+
+
+## Les tirs lancés jusqu'ici, retirés tout de suite : le test suivant compte ceux
+## de son propre lancer.
+func _vider_les_tirs() -> void:
+	for tir in _tirs.get_children():
+		_tirs.remove_child(tir)
+		tir.free()
+
+
+## **Le test qui garantit que l'étape n'a rien changé au jeu** : sans rien porter,
+## chaque sort part avec exactement les nombres de sa fiche — combien de traits, à
+## quelle vitesse, pour quels dégâts, quel coût et quelle recharge.
+func test_chaque_sort_part_avec_les_nombres_de_sa_fiche() -> void:
+	_p.etudier(_livre_ouvert_partout())
+	_p.stats.max_mana = 999.0
+
+	for id in [CompetenceCatalog.ID_TIR, "eclair_vif", "salve_d_eclairs", "fulguration", "nova_de_foudre"]:
+		var c := CompetenceCatalog.by_id(id)
+		var points := _p.points_de_competence(id)
+		assert_gt(points, 0, "« %s » est apprise" % c.nom)
+		_p.barre.poser(4, id)
+		_p._recharges[4] = 0.0
+		_p._set_mana(999.0)
+		_vider_les_tirs()
+
+		assert_true(_p.lancer(4), "« %s » part" % c.nom)
+		assert_eq(_tirs.get_child_count(), c.projectiles, "« %s » : traits" % c.nom)
+		for tir: Projectile in _tirs.get_children():
+			assert_eq(tir._damage, c.degats(points, _p.stats), "« %s » : dégâts" % c.nom)
+			assert_eq(tir.speed, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
+		assert_eq(_p.mana, 999.0 - c.cout_en_mana, "« %s » : coût" % c.nom)
+		# À la précision d'un réel sur 32 bits, qui est celle de `_recharges` : la
+		# valeur rangée n'est pas celle calculée au bit près, et elle ne l'était pas
+		# davantage avant la résolution.
+		assert_almost_eq(
+			_p.recharge_restante(4), c.intervalle(_p.stats), 1e-6, "« %s » : recharge" % c.nom
+		)
+
+
+func test_un_tir_porte_d_un_projectile_de_plus_en_sort_deux() -> void:
+	_p.mods_de_competence.assign([
+		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, MotsCles.PROJECTILE),
+	])
+	assert_true(_p.lancer(1), "le tir de départ")
+	assert_eq(_tirs.get_child_count(), 2, "deux traits")
+	var a := (_tirs.get_child(0) as Projectile)._dir
+	var b := (_tirs.get_child(1) as Projectile)._dir
+	assert_almost_eq(
+		rad_to_deg(absf(a.angle_to(b))), StatsDeCompetence.ECART_MINIMAL, 0.01,
+		"et ils ne partent pas l'un sur l'autre"
+	)
+
+
+# --------------------------------------------------------------------------
+# L'affixe porté (jalon 7, étape 4)
+# --------------------------------------------------------------------------
+
+func _baguette(affixes: Array[String]) -> Item:
+	var mods: Array = []
+	for id in affixes:
+		var affixe := ItemAffixPool.by_id(id)
+		mods.append(affixe.modificateur(affixe.tiers[0].max_value))
+	return Item.new(ItemCatalog.by_id("baguette"), mods)
+
+
+func test_un_objet_porte_ajoute_son_projectile_et_le_retirer_le_reprend() -> void:
+	var tir := _p.competence_tir
+	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 1, "à mains nues")
+	_p.equip(_baguette(["fourchu"] as Array[String]))
+	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 3, "le T1 de « fourchu » : +2")
+	_p.unequip("weapon")
+	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 1, "et il repart avec l'objet")
+
+
+## **La confusion des deux familles**, vue depuis le joueur : un objet dont tous
+## les affixes visent un mot-clé ne change **aucun** champ de la fiche. S'il en
+## changeait un, le bonus compterait deux fois — et seulement pour certaines
+## compétences.
+func test_un_affixe_porte_n_ecrit_rien_sur_la_fiche() -> void:
+	_p.equip(_baguette([] as Array[String]))
+	var nue := _champs(_p.stats)
+	_p.equip(_baguette(["fourchu", "sifflant", "orageux"] as Array[String]))
+	assert_eq_deep(_champs(_p.stats), nue)
+	assert_eq(_p.mods_de_competence.size(), 3, "les trois partent au lancer")
+
+
+## Tous les champs d'une fiche, pour la comparer à une autre sans en oublier un.
+func _champs(fiche: CharacterStats) -> Dictionary:
+	var out := {}
+	for propriete in fiche.get_property_list():
+		if propriete["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			out[propriete["name"]] = fiche.get(propriete["name"])
+	return out
+
+
 ## Retirer un livre du râtelier vide les cases qui pointaient dessus : une case
 ## qui annonce un sort inlançable se découvre au pire moment.
 func test_ranger_un_livre_vide_les_cases_qui_le_designaient() -> void:

@@ -394,7 +394,7 @@ func _build_liste(base: ItemBase, affixes: Array) -> void:
 		var teinte := FICHE_TITRE if rang == _detail_affixe else FICHE_TEXTE
 		_etiquette(affixe.id, Vector2(LISTE_X + 3.0, r.position.y), teinte, FICHE_SIZE)
 		_etiquette(
-			StatMod.LABELS.get(affixe.stat, affixe.stat),
+			StatMod.nom(affixe.stat, affixe.portee),
 			Vector2(LISTE_X + 78.0, r.position.y), FICHE_SOURDINE, FICHE_SIZE
 		)
 		_colonne_droite(
@@ -411,7 +411,7 @@ func _build_liste(base: ItemBase, affixes: Array) -> void:
 func _build_table(base: ItemBase, affixe: ItemAffix) -> void:
 	var y := FICHE_TOP
 	_etiquette(
-		"%s  —  %s" % [affixe.id, StatMod.LABELS.get(affixe.stat, affixe.stat)],
+		"%s  —  %s" % [affixe.id, StatMod.nom(affixe.stat, affixe.portee)],
 		Vector2(TABLE_X, y), FICHE_TITRE, FICHE_TITRE_SIZE
 	)
 

@@ -29,6 +29,27 @@ enum Cadence { ARME, INCANTATION }
 
 @export var cadence: Cadence = Cadence.INCANTATION
 
+## Les mots-clés que la compétence déclare : **seulement ceux que rien d'autre ne
+## dit**. Aujourd'hui, `projectile`.
+##
+## La nature et la cadence ne se redéclarent pas — voir les deux tables
+## suivantes. Un `.tres` qui écrirait `foudre` ici en plus de sa nature porterait
+## deux vérités sur la même chose, et la première correction en oublierait une.
+@export var mots_cles_declares: PackedStringArray = PackedStringArray()
+
+## Ce que la cadence et la nature disent d'elles-mêmes.
+##
+## Une nature absente de la table ne donne **aucun** mot-clé : rien ne vise encore
+## le froid ni le feu, et les afficher enverrait le joueur chercher un objet qui
+## n'existe pas.
+const MOT_CLE_DE_CADENCE := {
+	Cadence.ARME: MotsCles.ATTAQUE,
+	Cadence.INCANTATION: MotsCles.SORT,
+}
+const MOT_CLE_DE_NATURE := {
+	DamageType.Kind.LIGHTNING: MotsCles.FOUDRE,
+}
+
 ## La recharge propre au sort, en secondes, avant `cast_speed`. Sans effet pour
 ## une compétence à la cadence de l'arme.
 @export var recharge: float = 0.0
@@ -42,6 +63,13 @@ enum Cadence { ARME, INCANTATION }
 ## une branche de plus dans le joueur.
 @export var projectiles: int = 1
 @export var dispersion_en_degres: float = 0.0
+
+## En pixels par seconde. Sur la compétence et non sur la scène du tir : deux
+## compétences qui partagent `player_bolt.tscn` auraient sinon forcément la même
+## vitesse, et aucun modificateur ne pourrait l'atteindre.
+##
+## Zéro pour ce qui ne lance rien.
+@export var vitesse_de_projectile: float = 0.0
 
 ## Ce que le lancer coûte à la réserve. Zéro pour un coup gratuit — c'est ce qui
 ## sépare le coup d'épée du sort, et c'est la raison d'être du mana.
@@ -110,6 +138,32 @@ func points_max() -> int:
 	return degats_par_point.size()
 
 
+## Les mots-clés portés, dans l'ordre de la liste : ceux qui sont déclarés, plus
+## ceux que donnent la cadence et la nature.
+##
+## Une fonction et non un champ rempli au chargement : ce qui se déduit n'est
+## écrit nulle part, donc ne peut pas diverger de la nature qu'il traduit.
+func mots_cles() -> PackedStringArray:
+	var deduits := [MOT_CLE_DE_CADENCE.get(cadence, ""), MOT_CLE_DE_NATURE.get(nature, "")]
+	var out := PackedStringArray()
+	for id: String in MotsCles.LIBELLES:
+		if deduits.has(id) or mots_cles_declares.has(id):
+			out.append(id)
+	return out
+
+
+func porte(mot_cle: String) -> bool:
+	return mots_cles().has(mot_cle)
+
+
+## « Projectile · Foudre · Sort » : la ligne que le joueur lit sur la fiche.
+func libelle_des_mots_cles() -> String:
+	var noms := PackedStringArray()
+	for id in mots_cles():
+		noms.append(MotsCles.libelle(id))
+	return " · ".join(noms)
+
+
 ## Les dégâts d'un lancer, à ce nombre de points et avec cette fiche.
 ##
 ## **La seule formule du jalon**, et l'infobulle appellera celle-ci plutôt qu'une
@@ -127,6 +181,35 @@ func degats(points: int, stats: CharacterStats) -> float:
 	var i := mini(points, points_max()) - 1
 	var base := degats_par_point[i] + _champ(stats, stat_de_base)
 	return base * (1.0 + pourcentage_par_attribut * 0.01 * _champ(stats, attribut))
+
+
+## Ce qu'un lancer fait, à ce nombre de points, avec cette fiche et ces
+## modificateurs : les nombres de la compétence, puis ceux des modificateurs dont
+## elle porte le mot-clé.
+##
+## **Le seul calcul.** Le lancer et la fiche du manuel passent tous deux par ici,
+## sinon la fiche finirait par annoncer un trait de moins que ce qui part.
+##
+## Un modificateur qui vise un nombre absent de `StatsDeCompetence.LABELS` est
+## ignoré plutôt que de planter, comme un champ inconnu dans `_champ()` : c'est un
+## test de la réserve d'affixes qui doit l'attraper, pas un combat.
+func resoudre(points: int, stats: CharacterStats, mods: Array = []) -> StatsDeCompetence:
+	var r := StatsDeCompetence.new()
+	r.degats = degats(points, stats)
+	r.projectiles = float(projectiles)
+	r.dispersion_en_degres = dispersion_en_degres
+	r.vitesse_de_projectile = vitesse_de_projectile
+	r.cout_en_mana = cout_en_mana
+	r.intervalle = intervalle(stats)
+
+	var portes := mots_cles()
+	var retenus: Array[StatMod] = []
+	for m: StatMod in mods:
+		if portes.has(m.portee) and StatsDeCompetence.LABELS.has(m.stat):
+			retenus.append(m)
+	StatMod.appliquer(r, retenus)
+	r.conclure()
+	return r
 
 
 ## Un champ de la fiche, ou zéro quand il n'est pas nommé.

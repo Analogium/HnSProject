@@ -1,0 +1,40 @@
+{
+	"version": 4,
+	"id": "p_reference_v4",
+	"nom": "Ysolde",
+	"silhouette": 1,
+	"cree_le": "2026-09-10",
+	"joue_le": "2026-09-11",
+	"niveau": 12,
+	"experience": 410,
+	"attributs": {
+		"strength": 2,
+		"dexterity": 3,
+		"intelligence": 19
+	},
+	"points_a_placer": 0,
+	"sac": [],
+	"equipement": {
+		"weapon": {
+			"base": "baguette",
+			"niveau": 12,
+			"affixes": [
+				{ "stat": "spell_damage", "mode": 0, "valeur": 5.0, "affixe": "arcanique", "tier": 6 },
+				{ "stat": "projectiles", "mode": 0, "valeur": 1.0, "affixe": "fourchu", "tier": 2, "portee": "projectile" },
+				{ "stat": "degats", "mode": 1, "valeur": 9.0, "affixe": "orageux", "tier": 5, "portee": "foudre" }
+			]
+		}
+	},
+	"ratelier": [
+		{
+			"base": "manuel_foudre",
+			"niveau": 12,
+			"affixes": [],
+			"manuel": { "exp": 120, "points": { "eclair_vif": 2 } }
+		},
+		null,
+		null
+	],
+	"barre": ["attaque", "tir", "eclair_vif", null, null],
+	"manuel_offert": true
+}

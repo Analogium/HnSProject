@@ -89,6 +89,12 @@ var barre := BarreDeCompetences.par_defaut()
 ## Le manuel de départ a-t-il déjà été donné à ce personnage.
 var manuel_offert := false
 
+## Ce que l'équipement donne aux compétences qui portent un mot-clé : « +1
+## projectile », « +20 % de dégâts de foudre ». Reconstruite d'un bloc par
+## `recompute_stats()`, comme la fiche et pour la même raison, et lue à chaque
+## lancer par `resoudre()`.
+var mods_de_competence: Array[StatMod] = []
+
 ## Les deux compétences de départ, résolues une fois plutôt qu'à chaque coup.
 ## Elles ne servent plus à lancer — la barre s'en charge — mais à **proposer** :
 ## ce sont les deux seules entrées du menu d'assignation qui ne viennent d'aucun
@@ -197,16 +203,31 @@ func lancer(index: int) -> bool:
 	if competence == null:
 		return false
 	var points := points_de_competence(competence.id)
-	if points <= 0 or mana < competence.cout_en_mana:
+	if points <= 0:
+		return false
+	var geste := resoudre(competence, points)
+	if mana < geste.cout_en_mana:
 		return false
 
-	_set_mana(mana - competence.cout_en_mana)
-	_recharges[index] = competence.intervalle(stats)
-	if competence.cadence == Competence.Cadence.ARME:
-		_swing(competence, points)
+	_set_mana(mana - geste.cout_en_mana)
+	_recharges[index] = geste.intervalle
+	# Le mot-clé et non la cadence : c'est lui qui dit ce que la compétence fait.
+	# Un sort de zone sera une incantation sans être un tir.
+	if competence.porte(MotsCles.PROJECTILE):
+		_tirer(geste)
 	else:
-		_tirer(competence, points)
+		_swing(geste, competence.nature)
 	return true
+
+
+## Ce que cette compétence fait lancée maintenant, avec ces points : la fiche du
+## personnage et les modificateurs de mot-clé qu'il porte.
+##
+## **Le chemin du lancer et celui de la page du manuel.** Si chacun appelait
+## `Competence.resoudre()` de son côté, l'un finirait par oublier la liste des
+## modificateurs, et la page annoncerait un trait de moins que ce qui part.
+func resoudre(competence: Competence, points: int) -> StatsDeCompetence:
+	return competence.resoudre(points, stats, mods_de_competence)
 
 
 ## Ce qu'il reste à attendre sur cette case, en secondes, ou zéro. Publique parce
@@ -246,9 +267,9 @@ func competences_disponibles() -> Array[Competence]:
 	return out
 
 
-func _swing(competence: Competence, points: int) -> void:
-	_degats_du_coup = competence.degats(points, stats)
-	_nature_du_coup = competence.nature
+func _swing(geste: StatsDeCompetence, nature: DamageType.Kind) -> void:
+	_degats_du_coup = geste.degats
+	_nature_du_coup = nature
 	_is_swinging = true
 	_already_hit.clear()
 	swing_arc.play(swing_duration)
@@ -265,23 +286,20 @@ func _swing(competence: Competence, points: int) -> void:
 	_is_swinging = false
 
 
-## Un ou plusieurs projectiles, répartis sur l'écart que la compétence décrit.
-##
-## Les dégâts passent par la compétence, qui y ajoute les dégâts de sort de la
-## fiche : c'est ce qui les garde atteignables par un objet — la raison pour
-## laquelle ils avaient quitté un export du nœud au jalon 5 — et ce qui les rend
-## atteignables par un point de manuel.
-func _tirer(competence: Competence, points: int) -> void:
+## Un ou plusieurs projectiles, répartis sur l'écart que le geste résolu décrit.
+## Nombre, écart, vitesse et dégâts viennent tous de `StatsDeCompetence` : le
+## lanceur ne relit rien sur la compétence, sinon un modificateur de mot-clé
+## changerait la fiche du manuel sans changer le tir.
+func _tirer(geste: StatsDeCompetence) -> void:
 	if bolt_scene == null:
 		return
 	var parent := projectile_parent if projectile_parent != null else get_parent()
-	var degats := competence.degats(points, stats)
-	var nombre := maxi(competence.projectiles, 1)
+	var nombre := geste.nombre_de_projectiles()
 
 	# Un seul projectile part droit devant, quoi qu'annonce la dispersion : le
 	# centrer sur un demi-écart le ferait tirer à côté de la visée. Pas et départ
 	# restent donc nuls, et la rotation ne fait rien.
-	var ecart := deg_to_rad(competence.dispersion_en_degres)
+	var ecart := deg_to_rad(geste.dispersion_en_degres)
 	# Le cercle complet se compte autrement que l'éventail : ses deux extrémités
 	# se rejoignent, donc l'écart se divise par le nombre de traits et non par les
 	# intervalles qui les séparent — sinon le dernier retomberait sur le premier.
@@ -295,7 +313,10 @@ func _tirer(competence: Competence, points: int) -> void:
 
 	for i in nombre:
 		var direction := facing.rotated(depart + pas * float(i))
-		Projectile.spawn(parent, bolt_scene, global_position, direction, degats, self)
+		Projectile.spawn(
+			parent, bolt_scene, global_position, direction, geste.degats, self,
+			geste.vitesse_de_projectile
+		)
 
 
 ## Vie et mana remontent en continu. Testé avant d'écrire : une fois la barre
@@ -331,16 +352,23 @@ func recompute_stats() -> void:
 	# objet donnant « +20 force » ne rapporterait pas ses quarante points de vie.
 	# Et la dérivation doit précéder le reste, pour qu'un « +10 % PV » multiplie
 	# aussi ce que la force a donné.
+	#
+	# Ce qui vise un mot-clé part à part : il n'appartient pas à la fiche, et
+	# `apply_all` l'écarterait de toute façon. Il est gardé pour le lancer.
 	var sur_attributs: Array[StatMod] = []
 	var sur_le_reste: Array[StatMod] = []
+	var sur_les_competences: Array[StatMod] = []
 	for m in mods:
-		if m.stat in CharacterStats.ATTRIBUTES:
+		if not m.portee.is_empty():
+			sur_les_competences.append(m)
+		elif m.stat in CharacterStats.ATTRIBUTES:
 			sur_attributs.append(m)
 		else:
 			sur_le_reste.append(m)
 	StatMod.apply_all(stats, sur_attributs)
 	stats.apply_attributes()
 	StatMod.apply_all(stats, sur_le_reste)
+	mods_de_competence = sur_les_competences
 
 	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
 	# sous 1 transformerait un critique en coup amorti.

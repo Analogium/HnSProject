@@ -1,7 +1,7 @@
 # Architecture
 
 Ce document dit **où vit chaque règle** et **ce qu'on ne peut pas casser**. Les
-six `hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
+`hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
 dans l'ordre où ça a été décidé ; celui-ci décrit l'état actuel, sans
 chronologie.
 
@@ -66,6 +66,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | `Tirage` | `ItemAffixPool` précharge les `.tres` d'`ItemAffix` ; un `ItemAffix` qui appellerait la réserve refermerait la boucle. |
 | `Touches` | Sept scènes lisent le clavier, aucune n'a à connaître les six autres. |
 | `ArtPalette`, `UiPalette` | Les couleurs sont lues par tout le monde et ne lisent personne. |
+| `MotsCles`, `StatsDeCompetence` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Competence` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
 
 ## Où vit chaque règle
 
@@ -85,8 +86,12 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quand l'expérience fond-elle ? | `Enemy.facteur_d_experience()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
 | Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
-| Combien fait une compétence ? | `Competence.degats()` — **la seule formule**, appelée par le lancement comme par l'affichage |
+| Combien fait une compétence ? | `Competence.degats()` — **la seule formule** des dégâts de base |
+| Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement comme par la page du manuel** : dégâts, projectiles, dispersion, vitesse, coût, intervalle |
+| Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles` |
+| Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence` |
 | À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
+| Un tir ou un coup d'arme ? | Le mot-clé `projectile`, lu par `Player.lancer()` — pas la cadence |
 | Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les quatre refus — case vide, non apprise, réserve, recharge |
 | Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne |
 | Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
@@ -100,7 +105,8 @@ compilation, et la moitié ne se voit qu'au lancement suivant.
 
 ### 1. Les identifiants écrits sur le disque ne changent jamais
 
-`ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, et les noms de
+`ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, les
+identifiants de `MotsCles` — la portée d'un affixe en nomme un — et les noms de
 champs de `Personnage.vers_dict()` sont **dans les sauvegardes des joueurs**.
 Renommer `chest` en `torse` fait disparaître le plastron de tout le monde — au
 prochain chargement seulement, sans erreur.
@@ -169,6 +175,7 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | Tous les coups reçus | `Hurtbox.take_damage()` |
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
+| La résolution d'un lancer | `Player.resoudre()` — le lancer et la fiche du manuel |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
 | Le retour visuel d'un coup | `HitFeedback.current` |
 | Le tirage pondéré | `Tirage.pondere()` |

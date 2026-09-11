@@ -112,6 +112,52 @@ func test_l_objet_fabrique_porte_ce_qui_est_regle() -> void:
 	assert_eq(pose.mod.stat, affixe.stat)
 
 
+## Un affixe porté sort de l'établi avec sa portée, comme il sortirait du tirage :
+## sans elle, le « +1 projectile » qu'on vient de poser deviendrait une ligne de
+## fiche, et l'essai porterait sur un objet que le jeu ne produit pas.
+func test_un_affixe_porte_sort_avec_sa_portee() -> void:
+	_atelier.choisir_base(_index_de("baguette"))
+	_atelier.basculer_affixe("fourchu")
+	var pose: RolledAffix = _atelier.fabriquer().explicits[0]
+	assert_eq(pose.mod.portee, MotsCles.PROJECTILE)
+
+
+## La taille que la zone donne à l'établi, lue dans sa scène et non recopiée : une
+## taille écrite ici validerait un panneau qui n'est pas celui du jeu.
+func _taille_dans_la_zone() -> Vector2:
+	var etat := (load("res://world/zone.tscn") as PackedScene).get_state()
+	for i in etat.get_node_count():
+		if etat.get_node_name(i) != "Atelier":
+			continue
+		var bords := {}
+		for j in etat.get_node_property_count(i):
+			bords[etat.get_node_property_name(i, j)] = etat.get_node_property_value(i, j)
+		return Vector2(
+			bords["offset_right"] - bords["offset_left"],
+			bords["offset_bottom"] - bords["offset_top"]
+		)
+	return Vector2.ZERO
+
+
+## Chaque affixe qu'une base accepte a sa ligne. La liste s'arrête au bas du
+## panneau **sans rien dire** : un affixe tombé dessous ne pourrait jamais être
+## posé, et on le croirait absent de la réserve.
+func test_chaque_affixe_accepte_a_sa_ligne() -> void:
+	_atelier.size = _taille_dans_la_zone()
+	assert_gt(_atelier.size.y, 0.0, "la zone donne une taille à l'établi")
+	for i in _atelier.bases().size():
+		_atelier.choisir_base(i)
+		_atelier._disposer()
+		var lignes := 0
+		for ligne in _atelier._lignes:
+			if String(ligne["action"]).begins_with("affixe:"):
+				lignes += 1
+		assert_eq(
+			lignes, _atelier.compatibles().size(),
+			"« %s » : des affixes sous le bas du panneau" % _atelier.base_courante().display_name
+		)
+
+
 ## Aucun tirage : deux fabrications du même réglage donnent la même valeur, et
 ## surtout `Game.rng` n'avance pas — il est le fil des graines de zone.
 func test_l_etabli_ne_tire_rien_au_hasard() -> void:

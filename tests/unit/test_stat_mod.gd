@@ -30,6 +30,19 @@ func test_libelles() -> void:
 	assert_eq(StatMod.new("res_fire", StatMod.Mode.FLAT, 20.0).label(), "+20 % rés. feu")
 
 
+## Une ligne portée dit ce qu'elle vise, avec **le libellé de la page du manuel** :
+## « +20 % dégâts » tout court se lirait comme la ligne de fiche du même nom.
+func test_un_modificateur_porte_dit_ce_qu_il_vise() -> void:
+	assert_eq(
+		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, MotsCles.PROJECTILE).label(),
+		"+1 nombre de projectiles (Projectile)"
+	)
+	assert_eq(
+		StatMod.new("degats", StatMod.Mode.PERCENT, 20.0, MotsCles.FOUDRE).label(),
+		"+20 % dégâts (Foudre)"
+	)
+
+
 ## Le cœur de l'affaire : deux objets identiques doivent donner le même
 ## personnage quel que soit l'ordre où on les équipe.
 func test_les_plats_avant_les_pourcentages() -> void:
@@ -48,6 +61,19 @@ func test_les_plats_avant_les_pourcentages() -> void:
 
 	assert_eq(a.max_health, 300.0, "(100 + 100) x 1,5")
 	assert_eq(b.max_health, a.max_health, "l'ordre d'équipement ne change rien")
+
+
+## **La confusion des deux familles.** Un modificateur qui vise un mot-clé ne
+## touche pas la fiche, même quand son champ y porte un nom : sinon « +20 % de
+## dégâts de foudre » deviendrait « +20 % de dégâts » pour toutes les compétences,
+## foudre comprise, qui le recevrait alors deux fois.
+func test_un_modificateur_porte_n_ecrit_rien_sur_la_fiche() -> void:
+	var fiche := CharacterStats.new()
+	var avant := fiche.attack_damage
+	StatMod.apply_all(fiche, [
+		StatMod.new("attack_damage", StatMod.Mode.FLAT, 50.0, MotsCles.FOUDRE),
+	])
+	assert_eq(fiche.attack_damage, avant)
 
 
 # --------------------------------------------------------------------------

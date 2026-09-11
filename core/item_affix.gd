@@ -28,8 +28,16 @@ extends Resource
 ## y penser, là où une liste d'autorisations l'aurait oubliée en silence.
 @export var exclut: PackedStringArray = PackedStringArray()
 
-## Le champ de CharacterStats touché. Doit exister : voir StatMod.LABELS.
+## Le champ touché. **Sans portée**, un champ de CharacterStats, qui doit être
+## dans StatMod.LABELS ; **avec**, un nombre de StatsDeCompetence, qui doit être
+## dans ses propres LABELS.
 @export var stat: String = "attack_damage"
+
+## Le mot-clé visé, ou vide pour la fiche du personnage. C'est ce qui fait de
+## « +1 projectile » un affixe comme les autres — tiré, porté, sauvegardé de la
+## même façon — qui n'agit pourtant que sur les compétences portant le mot-clé.
+## Voir `StatMod.portee`.
+@export var portee: String = ""
 
 ## Pourcentage plutôt que valeur absolue. Les deux existent pour la même
 ## statistique — « +6 dégâts » sur une arme de début vaut mieux que « +10 % »,
@@ -166,9 +174,16 @@ func roll(rng: RandomNumberGenerator, niveau: int) -> RolledAffix:
 	if index < 0:
 		return null
 	var palier: ItemAffixTier = tiers[index]
-	var mode := StatMod.Mode.PERCENT if percent else StatMod.Mode.FLAT
 	var v := snappedf(rng.randf_range(palier.min_value, palier.max_value), arrondi)
-	return RolledAffix.new(id, index + 1, StatMod.new(stat, mode, v))
+	return RolledAffix.new(id, index + 1, modificateur(v))
+
+
+## Le modificateur que donne cet affixe à cette valeur. Le tirage et l'établi
+## passent tous deux par ici : une portée oubliée d'un côté ferait d'un
+## « +1 projectile » une ligne de fiche qui vise un champ inconnu.
+func modificateur(valeur: float) -> StatMod:
+	var mode := StatMod.Mode.PERCENT if percent else StatMod.Mode.FLAT
+	return StatMod.new(stat, mode, valeur, portee)
 
 
 ## Tirage pondéré parmi les paliers ouverts. `ouverts` n'est appelé qu'une fois :

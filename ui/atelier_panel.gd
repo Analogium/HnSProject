@@ -114,9 +114,8 @@ func fabriquer() -> Item:
 		var index: int = _choisis[id]
 		if index < 0 or index >= affixe.tiers.size():
 			continue
-		var mode := StatMod.Mode.PERCENT if affixe.percent else StatMod.Mode.FLAT
 		explicits.append(RolledAffix.new(
-			id, index + 1, StatMod.new(affixe.stat, mode, _valeur(affixe, index))
+			id, index + 1, affixe.modificateur(_valeur(affixe, index))
 		))
 	return Item.new(base, explicits, _niveau)
 
@@ -255,7 +254,7 @@ func _disposer() -> void:
 		_ajouter(
 			Rect2(droite, ya, largeur_droite, LINE), "affixe:%s" % affixe.id,
 			"%s · %s|%s" % [
-				affixe.id, StatMod.LABELS.get(affixe.stat, affixe.stat), etat
+				affixe.id, StatMod.nom(affixe.stat, affixe.portee), etat
 			], teinte
 		)
 		ya += LINE

@@ -69,12 +69,24 @@ const PERCENT_POINTS := [
 var stat: String
 var mode: Mode
 var value: float
+## Le mot-clé visé, ou vide pour la fiche du personnage.
+##
+## **Vide, `stat` est un champ de `CharacterStats`** et le modificateur agit sur
+## toutes les compétences à travers la fiche. **Rempli, c'est un champ de
+## `StatsDeCompetence`**, et il n'agit que sur les compétences qui portent ce
+## mot-clé — sans jamais toucher la fiche, sinon le bonus compterait deux fois.
+##
+## Un champ ici plutôt qu'une seconde classe : un affixe est un affixe, que sa
+## ligne vise la fiche ou un mot-clé, et le tirage, l'infobulle et la sauvegarde
+## n'ont ainsi qu'une forme à connaître.
+var portee: String
 
 
-func _init(p_stat: String, p_mode: Mode, p_value: float) -> void:
+func _init(p_stat: String, p_mode: Mode, p_value: float, p_portee := "") -> void:
 	stat = p_stat
 	mode = p_mode
 	value = p_value
+	portee = p_portee
 
 
 ## Une valeur de statistique dans son unité. L'infobulle d'un affixe et la fiche
@@ -135,19 +147,48 @@ static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -
 	return "%s–%s" % [bas, haut]
 
 
+## Le nom d'une statistique à l'écran. Visée par un mot-clé, elle le dit entre
+## parenthèses : « +20 % dégâts » tout court se lirait comme la ligne de fiche du
+## même nom, qui touche toutes les compétences.
+##
+## Le libellé du mot-clé est **celui de la fiche du manuel** : le joueur doit
+## pouvoir rapprocher « (Projectile) » sur un objet de « Projectile » sur un sort
+## sans traduire.
+static func nom(stat_name: String, p_portee := "") -> String:
+	if p_portee.is_empty():
+		return LABELS.get(stat_name, stat_name)
+	return "%s (%s)" % [
+		StatsDeCompetence.LABELS.get(stat_name, stat_name), MotsCles.libelle(p_portee)
+	]
+
+
 func label() -> String:
-	return "%s %s" % [value_label(stat, mode, value), LABELS.get(stat, stat)]
+	return "%s %s" % [value_label(stat, mode, value), nom(stat, portee)]
 
 
-## Applique une liste à des statistiques, **les plats d'abord**.
+## Applique une liste à la fiche d'un personnage.
+##
+## **Ce qui vise un mot-clé est écarté ici**, et c'est le seul endroit qui écrit
+## une liste sur la fiche : un affixe porté qui l'atteindrait quand même donnerait
+## son bonus deux fois, et seulement à certaines compétences.
+static func apply_all(stats: CharacterStats, mods: Array) -> void:
+	var sur_la_fiche: Array[StatMod] = []
+	for m: StatMod in mods:
+		if m.portee.is_empty():
+			sur_la_fiche.append(m)
+	appliquer(stats, sur_la_fiche)
+
+
+## Applique une liste aux champs d'un objet — une fiche, ou le résultat d'un
+## lancer — **les plats d'abord**.
 ##
 ## En deux passes et non dans l'ordre d'arrivée : sinon un +10 plat appliqué
 ## après un +50 % vaut moins que le même +10 appliqué avant, et deux objets
 ## identiques ne donneraient pas le même résultat selon l'ordre d'équipement.
-static func apply_all(stats: CharacterStats, mods: Array) -> void:
-	for m in mods:
+static func appliquer(cible: Object, mods: Array) -> void:
+	for m: StatMod in mods:
 		if m.mode == Mode.FLAT:
-			stats.set(m.stat, float(stats.get(m.stat)) + m.value)
-	for m in mods:
+			cible.set(m.stat, float(cible.get(m.stat)) + m.value)
+	for m: StatMod in mods:
 		if m.mode == Mode.PERCENT:
-			stats.set(m.stat, float(stats.get(m.stat)) * (1.0 + m.value * 0.01))
+			cible.set(m.stat, float(cible.get(m.stat)) * (1.0 + m.value * 0.01))

@@ -108,7 +108,7 @@ func _affixes(l: PackedStringArray) -> void:
 				eligibles += 1
 		l.append("| `%s` | %s%s | %s | %s | %d | %d | %d / %d |" % [
 			a.id,
-			StatMod.LABELS.get(a.stat, a.stat),
+			StatMod.nom(a.stat, a.portee),
 			" (%)" if a.percent else "",
 			", ".join(a.tags) if a.tags.size() > 0 else "*partout*",
 			", ".join(a.exclut) if a.exclut.size() > 0 else "—",
@@ -146,7 +146,7 @@ func _echelles(l: PackedStringArray) -> void:
 		var a: ItemAffix = brut
 		var mode := StatMod.Mode.PERCENT if a.percent else StatMod.Mode.FLAT
 		l.append("**`%s`** — %s, arrondi %s" % [
-			a.id, StatMod.LABELS.get(a.stat, a.stat),
+			a.id, StatMod.nom(a.stat, a.portee),
 			("%.2f" % a.arrondi).trim_suffix("0").trim_suffix("0").trim_suffix("."),
 		])
 		l.append("")

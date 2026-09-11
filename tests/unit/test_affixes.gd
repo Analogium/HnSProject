@@ -5,11 +5,51 @@ extends GutTest
 ## rien du tout, silencieusement.
 
 
+## Les affixes de fiche seulement : ceux qui visent un mot-clé ont leur propre
+## vérification juste en dessous, contre les nombres d'un lancer.
 func test_chaque_affixe_vise_un_champ_reel_et_nomme() -> void:
 	var st := CharacterStats.new()
 	for a in ItemAffixPool.ALL:
+		if not a.portee.is_empty():
+			continue
 		assert_not_null(st.get(a.stat), "l'affixe %s vise un champ réel" % a.id)
 		assert_true(StatMod.LABELS.has(a.stat), "l'affixe %s a un libellé" % a.id)
+
+
+## **La faute de frappe silencieuse**, côté objet : une portée hors de la liste ne
+## serait portée par aucune compétence, et l'affixe ne ferait jamais rien. Un
+## nombre hors des `LABELS` serait écarté par la résolution, avec le même
+## résultat.
+func test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer() -> void:
+	var portes := 0
+	for a in ItemAffixPool.ALL:
+		if a.portee.is_empty():
+			continue
+		portes += 1
+		assert_true(MotsCles.existe(a.portee), "« %s » vise « %s », hors de la liste" % [a.id, a.portee])
+		assert_true(
+			StatsDeCompetence.LABELS.has(a.stat),
+			"« %s » vise « %s », qu'un modificateur ne peut pas toucher" % [a.id, a.stat]
+		)
+	assert_gt(portes, 0, "la réserve en contient")
+
+
+## **Le mot-clé décoratif.** Chaque mot-clé qu'une page de manuel affiche promet
+## au joueur que quelque chose l'améliore. S'il ne visait rien, le joueur
+## chercherait un objet qui n'existe pas.
+##
+## `sort` et `attaque` sont atteints par construction : `Competence.intervalle()`
+## divise la recharge d'une incantation par la vitesse d'incantation, et celle
+## d'une attaque suit la vitesse d'attaque — deux affixes de fiche qui existent.
+func test_chaque_mot_cle_est_vise_par_quelque_chose() -> void:
+	var vises := {}
+	for a in ItemAffixPool.ALL:
+		vises[a.portee] = true
+	var par_la_cadence := Competence.MOT_CLE_DE_CADENCE.values()
+	for id in MotsCles.LIBELLES:
+		if par_la_cadence.has(id):
+			continue
+		assert_true(vises.has(id), "« %s » s'affiche sur les compétences, et rien ne le vise" % id)
 
 
 func test_chaque_implicite_vise_un_champ_reel_et_nomme() -> void:
@@ -22,12 +62,17 @@ func test_chaque_implicite_vise_un_champ_reel_et_nomme() -> void:
 
 ## Tout ce qu'un objet peut donner doit se voir quelque part. Un affixe qui
 ## modifie une statistique absente de la fiche est invérifiable en jouant.
+##
+## Ce qui vise un mot-clé ne se lit pas sur la fiche du personnage mais sur celle
+## de la compétence, dans la page du manuel.
 func test_tout_ce_qui_se_modifie_se_lit_sur_la_fiche() -> void:
 	var visibles := {}
 	for groupe in StatsPanel.GROUPS:
 		for champ in groupe[1]:
 			visibles[champ] = true
 	for a in ItemAffixPool.ALL:
+		if not a.portee.is_empty():
+			continue
 		assert_true(visibles.has(a.stat), "l'affixe %s est visible sur la fiche" % a.id)
 
 

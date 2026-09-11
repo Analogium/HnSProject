@@ -17,8 +17,8 @@ extends RefCounted
 
 ## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
 ## fichier : le niveau des objets au jalon 5, les manuels et ce qu'on en a
-## appris au jalon 6.
-const VERSION := 3
+## appris au jalon 6, la portée d'un affixe au jalon 7.
+const VERSION := 4
 
 ## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité. Monter
 ## VERSION sans ajouter l'ancien numéro ici ferait passer tous les personnages
@@ -28,9 +28,10 @@ const VERSION := 3
 ## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1.
 ## Ce qu'une version 2 devient en version 3 : un râtelier vide, la barre de
 ## départ — le coup d'épée et le tir, c'est-à-dire le jeu d'avant — et un manuel
-## de départ qui n'a pas encore été offert. Un numéro **inconnu** reste refusé :
-## jamais deviner.
-const VERSIONS_LUES := [1, 2, 3]
+## de départ qui n'a pas encore été offert. Ce qu'une version 3 devient en
+## version 4 : rien, toutes ses lignes d'affixes visent la fiche. Un numéro
+## **inconnu** reste refusé : jamais deviner.
+const VERSIONS_LUES := [1, 2, 3, 4]
 
 ## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine sur
 ## une ligne. Vingt et non seize : une borne qui rejette « Jean-Luc de l'Est »
@@ -257,6 +258,11 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 	var affixes := []
 	for r in item.explicits:
 		var entree := {"stat": r.mod.stat, "mode": int(r.mod.mode), "valeur": r.mod.value}
+		# Écrite quand elle existe, **jamais déduite de l'affixe d'origine** à la
+		# relecture : un objet sans provenance la perdrait, et son « +1 projectile »
+		# deviendrait une ligne de fiche visant un champ inconnu.
+		if not r.mod.portee.is_empty():
+			entree["portee"] = r.mod.portee
 		# La provenance n'est écrite que quand on l'a. Un objet relu d'une
 		# version 1 puis resauvegardé ne doit pas se voir attribuer un palier
 		# qu'il n'a jamais eu.
@@ -296,7 +302,12 @@ static func _item_depuis_dict(source: Variant) -> Item:
 		if stat.is_empty():
 			continue
 		var mode := StatMod.Mode.PERCENT if _entier(a as Dictionary, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
-		var mod := StatMod.new(stat, mode, _reel(a as Dictionary, "valeur", 0.0))
+		# Portée absente : une ligne de fiche, ce que sont toutes celles d'avant la
+		# version 4.
+		var mod := StatMod.new(
+			stat, mode, _reel(a as Dictionary, "valeur", 0.0),
+			String((a as Dictionary).get("portee", ""))
+		)
 		# La valeur fait foi, la provenance l'accompagne. Absente — une
 		# sauvegarde de version 1, ou un affixe retiré du projet depuis — la
 		# ligne s'applique quand même : c'est l'infobulle qui n'aura rien à

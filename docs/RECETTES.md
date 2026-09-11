@@ -65,7 +65,8 @@ supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fen
    | Champ | À remplir |
    |---|---|
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
-   | `stat` | Un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS` |
+   | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `StatsDeCompetence.LABELS` |
+   | `portee` | Vide pour la fiche du personnage ; sinon **un mot-clé de `MotsCles`**, et l'affixe n'agit que sur les compétences qui le portent |
    | `percent` | Pourcentage plutôt que valeur absolue |
    | `tags` | Les étiquettes visées ; **vide = partout** |
    | `exclut` | Ce qui refuse, et **qui l'emporte** sur `tags` |
@@ -94,7 +95,10 @@ supérieur **et** donner un implicite supérieur), `test_aucune_base_n_a_une_fen
 `test_le_tier_1_est_le_meilleur`, `test_l_arrondi_est_le_meme_a_tous_les_paliers`,
 `test_aucune_etiquette_d_affixe_ne_vise_le_vide` (une étiquette qui ne
 correspond à aucune base est une faute de frappe qui ne se verrait jamais),
-`test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne`.
+`test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne`,
+`test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer` ; et
+`tests/integration/test_atelier.gd : test_chaque_affixe_accepte_a_sa_ligne`, qui
+refuse une base dont la liste déborde du bas de l'établi.
 
 ---
 
@@ -150,6 +154,10 @@ dépendance : quatre tables alignées sur un seul enum.
 
 `StatHelp` n'a **rien** à changer : sa ligne « plafonnée à 75 % » est écrite pour
 tout ce qui est dans `RESIST_FIELDS`, donc la nouvelle nature en hérite.
+
+Une nature **ne donne pas de mot-clé d'elle-même** : il faut l'entrée dans
+`Competence.MOT_CLE_DE_NATURE` et un affixe qui la vise — voir « Ajouter un
+mot-clé ». Sans eux, une compétence de feu n'affiche simplement pas « Feu ».
 
 **Ce qui refusera un oubli** — `tests/unit/test_damage_type.gd` :
 `test_les_tables_couvrent_toutes_les_natures`,
@@ -233,7 +241,9 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
    | `degats_par_point` | Un nombre **par point placé** : sa longueur est le maximum de la case |
    | `stat_de_base` | `attack_damage` ou `spell_damage` — le terme qui garde les affixes vivants |
    | `attribut` / `pourcentage_par_attribut` | Vide pour ce qui ne monte avec rien |
+   | `mots_cles_declares` | **Seulement ce que rien d'autre ne dit** — aujourd'hui `projectile`. Jamais la nature ni la cadence, qui donnent déjà `foudre`, `sort` ou `attaque` |
    | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 3 et 24 pour une salve ; 8 et 360 pour une nova |
+   | `vitesse_de_projectile` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
    | `niveau_de_manuel_requis` | À partir de quand la case accepte son premier point |
 
 2. **`core/competence_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
@@ -247,10 +257,42 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
 **Ce qui refusera un oubli** — `tests/unit/test_competences.gd` :
 `test_chaque_competence_a_un_identifiant`, `test_les_identifiants_sont_uniques`,
 `test_chaque_competence_vise_des_champs_reels`,
-`test_chaque_competence_a_de_quoi_faire_des_degats` ; et
+`test_chaque_competence_a_de_quoi_faire_des_degats`,
+`test_chaque_mot_cle_declare_appartient_a_la_liste`,
+`test_on_ne_declare_pas_ce_que_la_nature_ou_la_cadence_disent_deja`,
+`test_chaque_competence_qui_lance_des_projectiles_a_une_vitesse`,
+`test_sans_modificateur_la_resolution_rend_la_fiche` ; et
 `tests/integration/test_panneau_manuels.gd :
 test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la
 page.
+
+---
+
+## Ajouter un mot-clé
+
+Un mot-clé est une **prise** : il n'existe que parce qu'un modificateur mord
+dessus, et le joueur le lit sur la page du manuel comme une promesse. D'où la
+règle qui ressemble à celle des statistiques : **on n'ajoute pas un mot-clé
+seul.** Il arrive avec au moins un affixe qui le vise, ou il n'arrive pas.
+
+1. **`core/mots_cles.gd`** — la constante, puis son entrée dans `LIBELLES`, **à
+   sa place dans l'ordre de lecture** : ce que la compétence fait, sa nature, sa
+   famille. L'identifiant est **définitif** (invariant 1) ; le libellé se change
+   librement.
+2. **D'où il vient** :
+   - de la nature → une entrée dans `Competence.MOT_CLE_DE_NATURE` ;
+   - de la cadence → une entrée dans `Competence.MOT_CLE_DE_CADENCE` ;
+   - de rien d'autre → `mots_cles_declares` dans les `.tres` qui le portent.
+3. **Un affixe qui le vise** — `portee` dans son `.tres`, voir « Ajouter un
+   affixe d'objet ».
+4. Si ce qu'il doit modifier n'est pas encore un nombre de lancer : le champ dans
+   `StatsDeCompetence`, son entrée dans `LABELS`, et sa copie dans
+   `Competence.resoudre()`. Puis le lire là où le lancer le consomme.
+
+**Ce qui refusera un oubli** : `test_chaque_mot_cle_a_un_libelle_et_chaque_deduction_vise_la_liste`,
+`test_chaque_mot_cle_declare_appartient_a_la_liste`, et surtout
+`tests/unit/test_affixes.gd : test_chaque_mot_cle_est_vise_par_quelque_chose` —
+le mot-clé décoratif, affiché sans que rien ne le vise.
 
 ---
 

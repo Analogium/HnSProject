@@ -38,6 +38,13 @@ const ALL := [
 	preload("res://resources/item_affixes/muscle.tres"),
 	preload("res://resources/item_affixes/agile.tres"),
 	preload("res://resources/item_affixes/erudit.tres"),
+
+	# Ceux qui visent un mot-clé plutôt que la fiche : ils n'agissent que sur les
+	# compétences qui le portent. Ils rendent vrais les mots-clés que la page d'un
+	# manuel affiche — un mot-clé que rien ne vise serait une promesse non tenue.
+	preload("res://resources/item_affixes/fourchu.tres"),
+	preload("res://resources/item_affixes/sifflant.tres"),
+	preload("res://resources/item_affixes/orageux.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6. La courbe descend vite : un objet à six

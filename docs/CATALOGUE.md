@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-42 bases d'objets, 25 affixes d'objets, 5 affixes d'ennemis.
+42 bases d'objets, 28 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -79,6 +79,7 @@ Niveaux de zone : 1 à 60.
 | `cuirasse` | armure | armour | — | 9 | 9 | 19 / 42 |
 | `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 42 |
 | `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 42 |
+| `fourchu` | nombre de projectiles (Projectile) | caster | — | 3 | 2 | 5 / 42 |
 | `fuyant` | esquive | light | — | 9 | 8 | 10 / 42 |
 | `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 42 |
 | `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 42 |
@@ -88,12 +89,14 @@ Niveaux de zone : 1 à 60.
 | `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 42 |
 | `meurtrier` | dégâts (%) | melee | — | 10 | 6 | 8 / 42 |
 | `muscle` | force | *partout* | — | 8 | 6 | 41 / 42 |
+| `orageux` | dégâts (Foudre) (%) | caster, jewellery | — | 8 | 6 | 11 / 42 |
 | `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 42 |
 | `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 42 |
 | `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 42 |
 | `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 42 |
 | `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 42 |
 | `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 42 |
+| `sifflant` | vitesse de projectile (Projectile) (%) | caster, gloves | — | 8 | 5 | 8 / 42 |
 | `vif` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 42 |
 | `vigoureux` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 42 |
 
@@ -205,6 +208,13 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
+**`fourchu`** — nombre de projectiles (Projectile), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 50 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
+
 **`fuyant`** — esquive, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -301,6 +311,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
+**`orageux`** — dégâts (Foudre), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`plaque`** — armure, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -364,6 +385,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 70–90 % | 10 |
 | T4 | 12 | 45–65 % | 10 |
 | T5 | 1 | 20–40 % | 10 |
+
+**`sifflant`** — vitesse de projectile (Projectile), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 56 | 26–32 % | 10 |
+| T2 | 42 | 20–25 % | 10 |
+| T3 | 28 | 15–19 % | 10 |
+| T4 | 14 | 10–14 % | 10 |
+| T5 | 1 | 5–9 % | 10 |
 
 **`vif`** — vitesse d'attaque, arrondi 1
 

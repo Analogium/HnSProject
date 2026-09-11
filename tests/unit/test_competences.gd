@@ -66,6 +66,15 @@ func test_chaque_competence_a_de_quoi_faire_des_degats() -> void:
 		assert_gt(c.points_max(), 0, "« %s » n'a aucun point dans sa table" % c.nom)
 
 
+## Un tir à vitesse nulle naît et reste sur place. Il ne se découvre qu'en le
+## lançant, et il ressemble alors à une panne du lanceur plutôt qu'à un oubli
+## dans le `.tres`.
+func test_chaque_competence_qui_lance_des_projectiles_a_une_vitesse() -> void:
+	for c in CompetenceCatalog.ALL:
+		if c.porte(MotsCles.PROJECTILE):
+			assert_gt(c.vitesse_de_projectile, 0.0, "« %s » lance des traits immobiles" % c.nom)
+
+
 ## Un nom de champ mal orthographié dans un `.tres` rend zéro sans rien dire, et
 ## la compétence paraît simplement faible. C'est ce test qui l'attrape, pas une
 ## partie.
@@ -82,6 +91,205 @@ func test_chaque_competence_vise_des_champs_reels() -> void:
 				CharacterStats.ATTRIBUTES.has(c.attribut),
 				"« %s » monte avec « %s », qui n'est pas un attribut" % [c.nom, c.attribut]
 			)
+
+
+# --------------------------------------------------------------------------
+# Les mots-clés (jalon 7)
+# --------------------------------------------------------------------------
+
+## **La faute de frappe silencieuse** : un `projectiles` au pluriel dans un `.tres`
+## ne casse rien, le sort ne reçoit simplement jamais son bonus. C'est la raison
+## d'être de la liste fermée, et ce test en est la porte.
+func test_chaque_mot_cle_declare_appartient_a_la_liste() -> void:
+	for c in CompetenceCatalog.ALL:
+		for id in c.mots_cles_declares:
+			assert_true(
+				MotsCles.existe(id),
+				"« %s » déclare « %s », qui n'est pas dans la liste" % [c.nom, id]
+			)
+
+
+## La nature et la cadence disent déjà `foudre` et `sort`. Les écrire aussi dans
+## la déclaration, c'est deux vérités sur la même chose : le jour où la nature
+## change, l'une des deux ment.
+func test_on_ne_declare_pas_ce_que_la_nature_ou_la_cadence_disent_deja() -> void:
+	var deduits := Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values()
+	for c in CompetenceCatalog.ALL:
+		for id in c.mots_cles_declares:
+			assert_false(deduits.has(id), "« %s » déclare « %s », qui se déduit" % [c.nom, id])
+
+
+## Le joueur lit un libellé, jamais un identifiant. Et une déduction qui visait un
+## mot hors de la liste donnerait un mot-clé que la fiche ne sait pas nommer.
+func test_chaque_mot_cle_a_un_libelle_et_chaque_deduction_vise_la_liste() -> void:
+	for id in MotsCles.LIBELLES:
+		assert_false(String(MotsCles.LIBELLES[id]).is_empty(), "« %s » n'a pas de libellé" % id)
+	for id in Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values():
+		assert_true(MotsCles.existe(id), "la déduction donne « %s », hors de la liste" % id)
+
+
+func test_une_competence_de_foudre_porte_foudre_sans_l_avoir_ecrit() -> void:
+	var c := _competence([1.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	assert_true(c.mots_cles_declares.is_empty(), "rien n'est déclaré")
+	assert_true(c.porte(MotsCles.FOUDRE))
+
+
+func test_la_cadence_donne_sort_ou_attaque() -> void:
+	var c := _competence([1.0] as Array[float])
+	c.cadence = Competence.Cadence.INCANTATION
+	assert_true(c.porte(MotsCles.SORT), "une incantation est un sort")
+	assert_false(c.porte(MotsCles.ATTAQUE))
+	c.cadence = Competence.Cadence.ARME
+	assert_true(c.porte(MotsCles.ATTAQUE), "un geste à la cadence de l'arme est une attaque")
+	assert_false(c.porte(MotsCles.SORT))
+
+
+## Aucun modificateur ne vise le froid : une compétence de froid ne doit donc pas
+## l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
+func test_une_nature_que_rien_ne_vise_ne_donne_pas_de_mot_cle() -> void:
+	var c := _competence([1.0] as Array[float])
+	c.nature = DamageType.Kind.COLD
+	assert_eq(Array(c.mots_cles()), [MotsCles.SORT])
+
+
+func test_un_tir_porte_projectile_et_un_coup_d_epee_non() -> void:
+	assert_true(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).porte(MotsCles.PROJECTILE))
+	assert_false(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE).porte(MotsCles.PROJECTILE))
+
+
+## L'ordre est celui de la liste, pas celui de la déclaration ni celui de la
+## déduction : deux compétences voisines doivent se lire colonne contre colonne.
+func test_la_fiche_ecrit_les_mots_cles_dans_l_ordre_de_la_liste() -> void:
+	assert_eq(
+		CompetenceCatalog.by_id("eclair_vif").libelle_des_mots_cles(),
+		"Projectile · Foudre · Sort"
+	)
+	assert_eq(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE).libelle_des_mots_cles(), "Attaque")
+
+
+# --------------------------------------------------------------------------
+# La résolution (jalon 7)
+# --------------------------------------------------------------------------
+
+func _projectile(nombre: int, dispersion := 0.0) -> Competence:
+	var c := _competence([10.0] as Array[float])
+	c.mots_cles_declares = PackedStringArray([MotsCles.PROJECTILE])
+	c.projectiles = nombre
+	c.dispersion_en_degres = dispersion
+	return c
+
+
+func _mod(stat: String, mode: StatMod.Mode, valeur: float, portee := MotsCles.PROJECTILE) -> StatMod:
+	return StatMod.new(stat, mode, valeur, portee)
+
+
+## **Le test qui garantit que la résolution ne change pas le jeu** : sans
+## modificateur, chaque compétence du catalogue rend exactement les nombres de sa
+## fiche. Une borne mal placée dans `conclure()` le ferait tomber ici plutôt
+## qu'en jouant.
+func test_sans_modificateur_la_resolution_rend_la_fiche() -> void:
+	var fiche := CharacterStats.new()
+	for c in CompetenceCatalog.ALL:
+		var points: int = c.points_max()
+		var r: StatsDeCompetence = c.resoudre(points, fiche)
+		assert_eq(r.degats, c.degats(points, fiche), "« %s » : dégâts" % c.nom)
+		assert_eq(r.nombre_de_projectiles(), maxi(c.projectiles, 1), "« %s » : projectiles" % c.nom)
+		assert_eq(r.dispersion_en_degres, c.dispersion_en_degres, "« %s » : dispersion" % c.nom)
+		assert_eq(r.vitesse_de_projectile, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
+		assert_eq(r.cout_en_mana, c.cout_en_mana, "« %s » : coût" % c.nom)
+		assert_eq(r.intervalle, c.intervalle(fiche), "« %s » : intervalle" % c.nom)
+
+
+func test_un_projectile_de_plus() -> void:
+	var r := _projectile(1).resoudre(1, _fiche(), [_mod("projectiles", StatMod.Mode.FLAT, 1.0)])
+	assert_eq(r.nombre_de_projectiles(), 2)
+
+
+## Deux objets identiques donnent le même sort quel que soit l'ordre dans lequel
+## on les porte — la règle de `StatMod.apply_all`, pour la même raison.
+func test_les_plats_passent_avant_les_pourcentages() -> void:
+	var plat := _mod("projectiles", StatMod.Mode.FLAT, 1.0)
+	var pourcent := _mod("projectiles", StatMod.Mode.PERCENT, 50.0)
+	var c := _projectile(2, 90.0)
+	assert_eq(
+		c.resoudre(1, _fiche(), [plat, pourcent]).nombre_de_projectiles(), 5,
+		"(2 + 1) × 1,5 = 4,5, arrondi à 5 — et non 2 × 1,5 + 1 = 4"
+	)
+	assert_eq(
+		c.resoudre(1, _fiche(), [pourcent, plat]).nombre_de_projectiles(), 5,
+		"dans l'autre ordre aussi"
+	)
+
+
+func test_le_nombre_de_projectiles_s_arrondit_a_la_fin() -> void:
+	var mods := [
+		_mod("projectiles", StatMod.Mode.PERCENT, 50.0),
+		_mod("projectiles", StatMod.Mode.PERCENT, 50.0),
+	]
+	assert_eq(
+		_projectile(3, 90.0).resoudre(1, _fiche(), mods).nombre_de_projectiles(), 7,
+		"3 × 1,5 × 1,5 = 6,75, arrondi une fois — arrondi à chaque étape, on aurait 8"
+	)
+
+
+func test_un_modificateur_dont_le_mot_cle_n_est_pas_porte_ne_fait_rien() -> void:
+	var epee := _competence([10.0] as Array[float])
+	epee.cadence = Competence.Cadence.ARME
+	var r := epee.resoudre(1, _fiche(), [
+		_mod("projectiles", StatMod.Mode.FLAT, 1.0),
+		_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE),
+	])
+	assert_eq(r.nombre_de_projectiles(), 1, "une épée ne lance rien")
+	assert_eq(r.degats, 10.0, "et une épée physique n'est pas de la foudre")
+
+
+## Un modificateur sans portée appartient à la fiche, qui l'a déjà appliqué :
+## le reprendre ici le compterait deux fois.
+func test_un_modificateur_de_fiche_ne_touche_pas_la_competence() -> void:
+	var r := _projectile(1).resoudre(1, _fiche(), [
+		StatMod.new("projectiles", StatMod.Mode.FLAT, 3.0),
+	])
+	assert_eq(r.nombre_de_projectiles(), 1)
+
+
+func test_les_degats_d_une_nature_visee_montent() -> void:
+	var c := _competence([10.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resoudre(1, _fiche(), [_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE)])
+	assert_eq(r.degats, 15.0)
+
+
+## Le coût a sa propre voie — la réserve. Un modificateur qui le viserait par un
+## mot-clé est écarté, et c'est le test de la réserve d'affixes qui refuse de
+## l'écrire.
+func test_on_ne_modifie_que_ce_qui_a_un_nom() -> void:
+	var c := _projectile(1)
+	c.cout_en_mana = 8.0
+	var r := c.resoudre(1, _fiche(), [_mod("cout_en_mana", StatMod.Mode.FLAT, -8.0)])
+	assert_eq(r.cout_en_mana, 8.0)
+
+
+## Deux traits partis du même angle se superposent : on en voit un, et il frappe
+## deux fois. Le premier projectile ajouté à un trait droit ouvre donc un écart.
+func test_deux_traits_ne_partent_jamais_l_un_sur_l_autre() -> void:
+	var plus_un := [_mod("projectiles", StatMod.Mode.FLAT, 1.0)]
+	assert_eq(
+		_projectile(1, 0.0).resoudre(1, _fiche(), plus_un).dispersion_en_degres,
+		StatsDeCompetence.ECART_MINIMAL, "un trait droit s'ouvre"
+	)
+	assert_eq(
+		_projectile(3, 24.0).resoudre(1, _fiche(), plus_un).dispersion_en_degres, 24.0,
+		"une salve déjà assez large garde la sienne"
+	)
+
+
+## Au-delà du tour complet, le lanceur prendrait l'éventail pour une couronne.
+func test_la_dispersion_ne_depasse_pas_le_tour_complet() -> void:
+	var r := _projectile(8, 360.0).resoudre(1, _fiche(), [
+		_mod("projectiles", StatMod.Mode.FLAT, 60.0),
+	])
+	assert_eq(r.dispersion_en_degres, 360.0)
 
 
 # --------------------------------------------------------------------------
