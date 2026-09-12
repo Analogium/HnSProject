@@ -35,10 +35,10 @@ ouvert. Détails et frontières des suites : [tests/README.md](tests/README.md).
 | Document | Ce qu'on y trouve |
 |---|---|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Où vit chaque règle, et **les huit invariants** qui cassent en silence |
-| [docs/RECETTES.md](docs/RECETTES.md) | Ajouter une base, un affixe, une statistique, un ennemi — fichiers dans l'ordre et test qui refuse l'oubli |
-| [docs/CATALOGUE.md](docs/CATALOGUE.md) | Les 41 bases et les 25 affixes en tableaux. **Généré** par `tools/catalogue.sh` |
+| [docs/RECETTES.md](docs/RECETTES.md) | Ajouter une base, un affixe, une statistique, un ennemi, un passif, un nœud de talent — fichiers dans l'ordre et test qui refuse l'oubli |
+| [docs/CATALOGUE.md](docs/CATALOGUE.md) | Les 44 bases, les 11 compétences, les trois manuels et les 39 affixes en tableaux. **Généré** par `tools/catalogue.sh` |
 | [tests/README.md](tests/README.md) | Comment lancer la campagne, et où va un test |
-| `hack-n-slash-jalon-*.md` | Les cinq documents de jalon : ce qu'il fallait construire, et pourquoi — dans l'ordre où ça a été décidé |
+| `hack-n-slash-jalon-*.md` | Les dix documents de jalon : ce qu'il fallait construire, et pourquoi — dans l'ordre où ça a été décidé |
 
 **Commencer par les invariants** d'ARCHITECTURE.md. Ce sont les seules choses du
 projet qui ne se voient ni à la compilation, ni à l'exécution, et dont la moitié

@@ -1,0 +1,202 @@
+[gd_resource type="Resource" script_class="ManuelArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manuel_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/case_de_manuel.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/noeud_de_talent.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/ligne_de_talent.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passif.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/competences/trait_de_feu.tres" id="10_trait_de_feu"]
+[ext_resource type="Resource" path="res://resources/competences/gerbe_de_flammes.tres" id="11_gerbe_de_flammes"]
+[ext_resource type="Resource" path="res://resources/competences/comete.tres" id="12_comete"]
+
+[sub_resource type="Resource" id="L_trait_de_feu_attisement_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 13.0
+
+[sub_resource type="Resource" id="N_trait_de_feu_attisement"]
+script = ExtResource("3_noeud")
+id = "trait_de_feu_attisement"
+nom = "Attisement"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_trait_de_feu_attisement_0")])
+
+[sub_resource type="Resource" id="L_trait_de_feu_double_langue_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 1.0
+
+[sub_resource type="Resource" id="N_trait_de_feu_double_langue"]
+script = ExtResource("3_noeud")
+id = "trait_de_feu_double_langue"
+nom = "Double langue"
+position = Vector2i(1, 0)
+parent = "trait_de_feu_attisement"
+points_requis = 2
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_trait_de_feu_double_langue_0")])
+
+[sub_resource type="Resource" id="L_trait_de_feu_braises_0"]
+script = ExtResource("4_ligne")
+stat = "degats_feu"
+valeur_par_point = 4.0
+valeur_max_par_point = 9.0
+
+[sub_resource type="Resource" id="N_trait_de_feu_braises"]
+script = ExtResource("3_noeud")
+id = "trait_de_feu_braises"
+nom = "Braises"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_trait_de_feu_braises_0")])
+
+[sub_resource type="Resource" id="C_trait_de_feu"]
+script = ExtResource("2_case")
+competence = ExtResource("10_trait_de_feu")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_trait_de_feu_attisement"), SubResource("N_trait_de_feu_double_langue"), SubResource("N_trait_de_feu_braises")])
+
+[sub_resource type="Resource" id="L_gerbe_de_flammes_souffle_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="N_gerbe_de_flammes_souffle"]
+script = ExtResource("3_noeud")
+id = "gerbe_de_flammes_souffle"
+nom = "Souffle"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_gerbe_de_flammes_souffle_0")])
+
+[sub_resource type="Resource" id="L_gerbe_de_flammes_nuee_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 2.0
+
+[sub_resource type="Resource" id="N_gerbe_de_flammes_nuee"]
+script = ExtResource("3_noeud")
+id = "gerbe_de_flammes_nuee"
+nom = "Nuée"
+position = Vector2i(1, 0)
+parent = "gerbe_de_flammes_souffle"
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_gerbe_de_flammes_nuee_0")])
+
+[sub_resource type="Resource" id="L_gerbe_de_flammes_cendres_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 15.0
+
+[sub_resource type="Resource" id="N_gerbe_de_flammes_cendres"]
+script = ExtResource("3_noeud")
+id = "gerbe_de_flammes_cendres"
+nom = "Cendres"
+position = Vector2i(0, 1)
+points_requis = 3
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_gerbe_de_flammes_cendres_0")])
+convertit_vers = 4
+part_convertie_par_point = 0.50
+
+[sub_resource type="Resource" id="C_gerbe_de_flammes"]
+script = ExtResource("2_case")
+competence = ExtResource("11_gerbe_de_flammes")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_gerbe_de_flammes_souffle"), SubResource("N_gerbe_de_flammes_nuee"), SubResource("N_gerbe_de_flammes_cendres")])
+
+[sub_resource type="Resource" id="L_comete_masse_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 16.0
+
+[sub_resource type="Resource" id="N_comete_masse"]
+script = ExtResource("3_noeud")
+id = "comete_masse"
+nom = "Masse"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_comete_masse_0")])
+
+[sub_resource type="Resource" id="L_comete_fragmentation_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 3.0
+
+[sub_resource type="Resource" id="L_comete_fragmentation_1"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = -35.0
+
+[sub_resource type="Resource" id="N_comete_fragmentation"]
+script = ExtResource("3_noeud")
+id = "comete_fragmentation"
+nom = "Fragmentation"
+position = Vector2i(1, 0)
+parent = "comete_masse"
+points_requis = 3
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_comete_fragmentation_0"), SubResource("L_comete_fragmentation_1")])
+
+[sub_resource type="Resource" id="L_comete_chute_rapide_0"]
+script = ExtResource("4_ligne")
+stat = "vitesse_de_projectile"
+pourcentage = true
+valeur_par_point = 25.0
+
+[sub_resource type="Resource" id="N_comete_chute_rapide"]
+script = ExtResource("3_noeud")
+id = "comete_chute_rapide"
+nom = "Chute rapide"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_comete_chute_rapide_0")])
+
+[sub_resource type="Resource" id="C_comete"]
+script = ExtResource("2_case")
+competence = ExtResource("12_comete")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_comete_masse"), SubResource("N_comete_fragmentation"), SubResource("N_comete_chute_rapide")])
+
+[sub_resource type="Resource" id="L_coeur_de_braise_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+portee = "feu"
+pourcentage = true
+valeur_par_point = 7.0
+
+[sub_resource type="Resource" id="L_coeur_de_braise_1"]
+script = ExtResource("4_ligne")
+stat = "res_fire"
+valeur_par_point = 3.0
+
+[sub_resource type="Resource" id="P_coeur_de_braise"]
+script = ExtResource("5_passif")
+id = "coeur_de_braise"
+nom = "Cœur de braise"
+niveau_de_manuel_requis = 2
+points_max = 4
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_coeur_de_braise_0"), SubResource("L_coeur_de_braise_1")])
+
+[sub_resource type="Resource" id="C_coeur_de_braise"]
+script = ExtResource("2_case")
+passif = SubResource("P_coeur_de_braise")
+position = Vector2i(0, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "feu"
+nom = "Maître des flammes"
+cases = Array[ExtResource("2_case")]([SubResource("C_trait_de_feu"), SubResource("C_gerbe_de_flammes"), SubResource("C_comete"), SubResource("C_coeur_de_braise")])

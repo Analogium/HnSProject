@@ -111,6 +111,33 @@ func enseigne(id_competence: String) -> bool:
 	return base.manuel.case_de(id_competence) != null
 
 
+## Ce livre reconnaît-il cet identifiant, case, passif ou nœud d'arbre confondus ?
+##
+## Distinct d'`enseigne()`, qui ne répond que des compétences : c'est cette
+## question-là que se pose la relecture d'une sauvegarde, où les points des trois
+## sortes arrivent mélangés dans le même dictionnaire.
+func connait(identifiant: String) -> bool:
+	if base == null or base.manuel == null:
+		return false
+	return base.manuel.connait(identifiant)
+
+
+## Les nœuds investis de cette compétence, pour la résolution d'un lancer. Vide
+## pour ce qui n'est pas un manuel, et pour une compétence que ce livre
+## n'enseigne pas.
+func talents_investis(id_competence: String) -> Array[TalentInvesti]:
+	if manuel == null or base.manuel == null:
+		return [] as Array[TalentInvesti]
+	return manuel.talents_investis(base.manuel, id_competence)
+
+
+## Ce que les passifs de ce livre donnent au personnage qui l'étudie.
+func mods_de_passifs() -> Array[StatMod]:
+	if manuel == null or base.manuel == null:
+		return [] as Array[StatMod]
+	return manuel.mods_de_passifs(base.manuel)
+
+
 ## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul
 ## des statistiques du joueur consomme.
 func mods() -> Array[StatMod]:

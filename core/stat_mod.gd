@@ -213,7 +213,16 @@ static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -
 ## portée y est déjà.
 static func nom(stat_name: String, p_portee := "") -> String:
 	if p_portee.is_empty():
-		return Textes.t(LABELS.get(stat_name, stat_name))
+		if LABELS.has(stat_name):
+			return Textes.t(LABELS[stat_name])
+		# Sans portée et hors de la fiche, c'est la ligne d'un nœud d'arbre : il ne
+		# vise que sa propre compétence, et n'a donc pas de mot-clé à écrire. Le
+		# nom reste celui du nombre visé, sinon la fiche du nœud afficherait
+		# « degats » tel quel.
+		var nature_sans_portee := StatsDeCompetence.nature_ajoutee(stat_name)
+		if nature_sans_portee >= 0:
+			return DamageType.libelle_de_degats(nature_sans_portee)
+		return Textes.t(StatsDeCompetence.LABELS.get(stat_name, stat_name))
 	var nature := StatsDeCompetence.nature_ajoutee(stat_name)
 	if nature >= 0:
 		return "%s %s" % [

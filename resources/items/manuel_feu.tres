@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+[ext_resource type="Resource" path="res://resources/manuels/feu.tres" id="2_arch"]
+
+[resource]
+script = ExtResource("1_base")
+id = "manuel_feu"
+display_name = "Manuel des flammes"
+kind = "manuel_feu"
+family = "manual"
+tags = PackedStringArray("manual")
+grid_size = Vector2i(2, 2)
+lignee = "manuel_feu"
+palier = 1
+niveau_requis = 5
+manuel = ExtResource("2_arch")

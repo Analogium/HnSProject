@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "gerbe_de_flammes"
+nom = "Gerbe de flammes"
+nature = 2
+cadence = 1
+mots_cles_declares = PackedStringArray("projectile")
+vitesse_de_projectile = 190.0
+recharge = 0.85
+cout_en_mana = 20.0
+projectiles = 5
+dispersion_en_degres = 60.0
+degats_par_point = Array[float]([15.0, 18.0, 22.0, 27.0, 33.0])
+attribut = "intelligence"
+pourcentage_par_attribut = 4.0
+niveau_de_manuel_requis = 4

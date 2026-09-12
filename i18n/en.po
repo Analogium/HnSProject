@@ -180,6 +180,133 @@ msgstr "Fulmination"
 msgid "Nova de foudre"
 msgstr "Lightning Nova"
 
+msgid "Manuel des flammes"
+msgstr "Manual of Flames"
+
+msgid "Maître des flammes"
+msgstr "Master of Flames"
+
+msgid "Trait de feu"
+msgstr "Fire Bolt"
+
+msgid "Gerbe de flammes"
+msgstr "Flame Spray"
+
+msgid "Comète"
+msgstr "Comet"
+
+msgid "Manuel d'armes"
+msgstr "Manual of Arms"
+
+msgid "Maître d'armes"
+msgstr "Master of Arms"
+
+msgid "Frappe lourde"
+msgstr "Heavy Strike"
+
+msgid "Lames tournoyantes"
+msgstr "Whirling Blades"
+
+# ---------------------------------------------------------------------------
+# Passifs
+# ---------------------------------------------------------------------------
+
+msgid "Conducteur"
+msgstr "Conductor"
+
+msgid "Cœur de braise"
+msgstr "Heart of Embers"
+
+msgid "Garde de fer"
+msgstr "Iron Guard"
+
+# ---------------------------------------------------------------------------
+# Nœuds de talent
+#
+# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes.
+# ---------------------------------------------------------------------------
+
+msgid "Surcharge"
+msgstr "Overload"
+
+msgid "Fourche"
+msgstr "Fork"
+
+msgid "Trait de glace"
+msgstr "Glacial Bolt"
+
+msgid "Volée"
+msgstr "Volley"
+
+msgid "Empennage"
+msgstr "Fletching"
+
+msgid "Percée"
+msgstr "Breakthrough"
+
+msgid "Amplitude"
+msgstr "Amplitude"
+
+msgid "Embrasement"
+msgstr "Ignition"
+
+msgid "Éclats"
+msgstr "Splinters"
+
+msgid "Couronne"
+msgstr "Crown"
+
+msgid "Déflagration"
+msgstr "Blast"
+
+msgid "Célérité"
+msgstr "Celerity"
+
+msgid "Attisement"
+msgstr "Stoking"
+
+msgid "Double langue"
+msgstr "Forked Tongue"
+
+msgid "Braises"
+msgstr "Embers"
+
+msgid "Souffle"
+msgstr "Bellows"
+
+msgid "Nuée"
+msgstr "Swarm"
+
+msgid "Cendres"
+msgstr "Ashes"
+
+msgid "Masse"
+msgstr "Mass"
+
+msgid "Fragmentation"
+msgstr "Fragmentation"
+
+msgid "Chute rapide"
+msgstr "Swift Fall"
+
+msgid "Élan"
+msgstr "Momentum"
+
+msgid "Lame ardente"
+msgstr "Burning Blade"
+
+msgid "Saignée"
+msgstr "Bloodletting"
+
+msgid "Gerbe d'acier"
+msgstr "Steel Spray"
+
+msgid "Affûtage"
+msgstr "Whetting"
+
+msgid "Retour de lame"
+msgstr "Returning Blade"
+
 # ---------------------------------------------------------------------------
 # Affixes d'élite
 # ---------------------------------------------------------------------------
@@ -248,6 +375,9 @@ msgstr "Projectile"
 
 msgid "Foudre"
 msgstr "Lightning"
+
+msgid "Feu"
+msgstr "Fire"
 
 msgid "Sort"
 msgstr "Spell"
@@ -663,8 +793,11 @@ msgstr "MANUALS"
 msgid "aucun manuel à cet emplacement"
 msgstr "no manual in this slot"
 
-msgid "[clic] investir     [clic droit] ranger un manuel"
-msgstr "[LMB] spend a point     [RMB] put a manual away"
+msgid "[clic] ouvrir ou investir     [clic droit] ranger"
+msgstr "[LMB] open or spend     [RMB] put away"
+
+msgid "[clic] +1     [clic droit] -1     [échap] retour"
+msgstr "[LMB] +1     [RMB] -1     [esc] back"
 
 msgid "{points} point à placer"
 msgid_plural "{points} points à placer"
@@ -676,6 +809,35 @@ msgstr "no point to spend"
 
 msgid "niv. %d"
 msgstr "lv. %d"
+
+msgid "toujours actif"
+msgstr "always active"
+
+msgid "talent"
+msgstr "talent"
+
+msgid "verrouillé"
+msgstr "locked"
+
+msgid "demande"
+msgstr "requires"
+
+msgid "le talent « {nom} »"
+msgstr "the \"{nom}\" talent"
+
+msgid "{points} point dans la compétence"
+msgid_plural "{points} points dans la compétence"
+msgstr[0] "{points} point in the skill"
+msgstr[1] "{points} points in the skill"
+
+msgid "converti"
+msgstr "converted"
+
+msgid "{part} en {nature}"
+msgstr "{part} to {nature}"
+
+msgid "mot-clé"
+msgstr "keyword"
 
 msgid "points"
 msgstr "points"
@@ -728,6 +890,9 @@ msgstr "average per cast"
 
 msgid "par seconde"
 msgstr "per second"
+
+msgid "si tout touche, avant défenses"
+msgstr "if every hit lands, before defences"
 
 # ---------------------------------------------------------------------------
 # Retour de coup, butin et sauvegarde

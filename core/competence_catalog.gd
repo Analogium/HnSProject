@@ -32,6 +32,19 @@ const ALL := [
 	preload("res://resources/competences/salve_d_eclairs.tres"),
 	preload("res://resources/competences/fulguration.tres"),
 	preload("res://resources/competences/nova_de_foudre.tres"),
+
+	# Le manuel des flammes (jalon 10) : le même trio que la foudre lu autrement —
+	# un trait, un cône, un coup lourd — dans une nature que l'équipement de feu
+	# sert déjà.
+	preload("res://resources/competences/trait_de_feu.tres"),
+	preload("res://resources/competences/gerbe_de_flammes.tres"),
+	preload("res://resources/competences/comete.tres"),
+
+	# Le manuel d'armes : les deux seules compétences apprises qui suivent la
+	# cadence de l'arme. Leur allure ne se règle donc pas ici mais dans la main du
+	# joueur, et c'est ce qui les distingue des sorts.
+	preload("res://resources/competences/frappe_lourde.tres"),
+	preload("res://resources/competences/lames_tournoyantes.tres"),
 ]
 
 

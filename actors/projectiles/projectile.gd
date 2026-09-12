@@ -19,8 +19,12 @@ extends Area2D
 ## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
 @export var hit_stop_on_impact: bool = false
 ## La nature de la scène : celle que portent les tirs ennemis, qui n'ont qu'un
-## nombre, et **la couleur du tir, quoi qu'il porte**. Un éclair reste un éclair :
-## le froid qu'un objet y ajoute change ses dégâts, pas son dessin.
+## nombre, et **la couleur du tir par défaut**. Un éclair reste un éclair : le
+## froid qu'un objet y ajoute change ses dégâts, pas son dessin.
+##
+## Le joueur, lui, passe celle de son geste résolu (`setup`) : un nœud d'arbre qui
+## convertit la compétence en change la nature, et un sort devenu de feu qui
+## partirait encore violet se lirait comme un talent qui ne fait rien.
 @export var damage_type: DamageType.Kind = DamageType.Kind.PHYSICAL
 
 ## Distance à laquelle le tir naît devant son lanceur. Trop court, il apparaît
@@ -74,6 +78,10 @@ var _dir := Vector2.RIGHT
 var _parts: Array[float] = []
 var _source: Node2D
 var _life := 0.0
+## La nature que le tir montre, ou -1 pour celle de sa scène. Distincte de
+## `damage_type`, qu'elle ne remplace pas : la scène garde son défaut, et c'est
+## le lanceur qui dit ce que ce tir-là est devenu.
+var _nature := -1
 
 ## Tirage **local**, et surtout pas `Game.rng` : celui-là est le fil des tirages
 ## de la partie, et un scintillement qui y puiserait décalerait toutes les graines
@@ -114,7 +122,7 @@ func _draw() -> void:
 	# Type explicite : COLORS est un tableau non typé, donc l'indexer rend un
 	# Variant et l'inférence échoue — le même piège que `generator.grid` dans la
 	# zone.
-	var teinte: Color = DamageType.COLORS[damage_type]
+	var teinte: Color = DamageType.COLORS[_nature if _nature >= 0 else damage_type]
 	for a: Array in AUREOLES:
 		var halo := teinte
 		halo.a = float(a[1])
@@ -131,11 +139,11 @@ func _draw() -> void:
 ## depuis _physics_process, jamais depuis un callback de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
-	parts: Array[float], source: Node2D, vitesse := 0.0
+	parts: Array[float], source: Node2D, vitesse := 0.0, nature := -1
 ) -> Projectile:
 	var bolt := _naitre(parent, scene, from, dir)
 	if bolt != null:
-		bolt.setup(dir, parts, source, vitesse)
+		bolt.setup(dir, parts, source, vitesse, nature)
 	return bolt
 
 
@@ -174,12 +182,18 @@ static func _naitre(parent: Node, scene: PackedScene, from: Vector2, dir: Vector
 ## loin, ce qui est ce qu'on attend d'un bonus de vitesse de projectile.
 ##
 ## Les parts sont recopiées : le lanceur tire les suivantes dans son propre tableau.
-func setup(dir: Vector2, parts: Array[float], source: Node2D, vitesse := 0.0) -> void:
+func setup(
+	dir: Vector2, parts: Array[float], source: Node2D, vitesse := 0.0, nature := -1
+) -> void:
 	_dir = dir.normalized()
 	_parts = parts.duplicate()
 	_source = source
 	if vitesse > 0.0:
 		speed = vitesse
+	# Négative, on garde celle de la scène : c'est le cas des tirs ennemis, qui
+	# n'ont pas de geste résolu derrière eux.
+	if nature >= 0:
+		_nature = nature
 	rotation = _dir.angle()
 
 

@@ -213,6 +213,10 @@ const GEAR := [
 	# Jalon 6 : le manuel, qui ne pouvait pas réemployer le tome — celui-ci est
 	# le livre qu'on tient en main gauche, celui-là est le livre qu'on lit.
 	"manuel",
+	# Jalon 10 : deux manuels de plus. Tous trois ont le même palier, donc les
+	# mêmes rampes de couleur — c'est la **silhouette** qui doit les séparer dans
+	# un sac, et ils n'en partagent aucune.
+	"manuel_feu", "manuel_armes",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée dans le sac.
@@ -322,6 +326,36 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# Le fermoir du volume du dessus, seul accent : posé au bord gauche,
 			# là où le dos se lit, et jamais au centre où il passerait pour un titre.
 			c.capsule(Vector2(cx - 4.4, top + 8.4), Vector2(cx - 2.4, top + 8.4), 1.0, R_ACCENT)
+
+		"manuel_feu":
+			# **Un livre ouvert**, deux pages en V posées à plat. La pile est
+			# fermée et horizontale, celui-ci s'ouvre vers le haut : c'est la
+			# seule des deux formes qui laisse voir un creux au milieu, et le
+			# creux se lit à la taille d'une case.
+			# Les pages prennent la rampe du **métal**, la plus claire des trois :
+			# en étoffe, le V sortait gris sur gris et se lisait comme un oiseau.
+			c.capsule(Vector2(cx - 6.4, top + 10.8), Vector2(cx - 0.9, top + 7.2), 2.1, R_METAL, 0.20)
+			c.capsule(Vector2(cx + 6.4, top + 10.8), Vector2(cx + 0.9, top + 7.2), 2.1, R_METAL, 0.20)
+			# La reliure, sombre, tient les deux pages : sans elle, le V se lit
+			# comme deux traits séparés.
+			c.capsule(Vector2(cx, top + 8.0), Vector2(cx, top + 12.8), 1.7, R_LEATHER)
+			# Le signet, seul accent, pendu sous la reliure et décalé : au centre,
+			# il bouchait le creux qui fait tout le dessin.
+			c.capsule(Vector2(cx + 1.6, top + 11.4), Vector2(cx + 1.6, top + 14.6), 0.8, R_ACCENT)
+
+		"manuel_armes":
+			# **Un rouleau**, couché et roulé sur ses deux bâtons. Ni une pile ni
+			# un livre ouvert : un cylindre franc, qu'on reconnaît à ses deux
+			# bouts plus clairs.
+			c.capsule(Vector2(cx - 5.0, top + 10.0), Vector2(cx + 5.0, top + 10.0), 2.9, R_LEATHER)
+			c.capsule(Vector2(cx - 6.2, top + 10.0), Vector2(cx - 6.2, top + 10.0), 1.5, R_METAL)
+			c.capsule(Vector2(cx + 6.2, top + 10.0), Vector2(cx + 6.2, top + 10.0), 1.5, R_METAL)
+			# La tranche du parchemin en creux le long du haut : c'est elle qui dit
+			# « enroulé » plutôt que « bâton ».
+			c.capsule(Vector2(cx - 4.4, top + 8.2), Vector2(cx + 4.4, top + 8.2), 0.8, R_CLOTH, 0.35)
+			# Le lien qui le ferme, en travers et non au bout : au bout, il se
+			# confondrait avec un embout.
+			c.capsule(Vector2(cx - 0.6, top + 7.4), Vector2(cx - 0.6, top + 12.6), 0.9, R_ACCENT)
 
 		"hood":
 			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare

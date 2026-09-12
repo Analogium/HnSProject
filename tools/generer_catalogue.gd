@@ -20,6 +20,7 @@ func _ready() -> void:
 	var l := PackedStringArray()
 	_entete(l)
 	_bases(l)
+	_manuels(l)
 	_affixes(l)
 	_echelles(l)
 
@@ -39,8 +40,9 @@ func _entete(l: PackedStringArray) -> void:
 	l.append("")
 	l.append("<!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->")
 	l.append("")
-	l.append("%d bases d'objets, %d affixes d'objets, %d affixes d'ennemis." % [
-		ItemCatalog.ALL.size(), ItemAffixPool.ALL.size(), AffixPool.ALL.size()
+	l.append("%d bases d'objets, %d compétences, %d affixes d'objets, %d affixes d'ennemis." % [
+		ItemCatalog.ALL.size(), CompetenceCatalog.ALL.size(),
+		ItemAffixPool.ALL.size(), AffixPool.ALL.size()
 	])
 	l.append("")
 	l.append("Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête")
@@ -83,6 +85,107 @@ func _bases(l: PackedStringArray) -> void:
 			fenetre,
 		])
 	l.append("")
+
+
+## Ce que chaque manuel enseigne : ses cases, et l'arbre de chacune de ses
+## compétences.
+##
+## C'est la partie du contenu qu'on ne peut pas regarder autrement qu'en ouvrant
+## un `.tres` — vingt-sept nœuds répartis dans trois fichiers — et c'est celle
+## qu'on veut sous les yeux pour équilibrer un arbre contre un autre.
+func _manuels(l: PackedStringArray) -> void:
+	l.append("## Manuels")
+	l.append("")
+	l.append("Un manuel gagne **un point par niveau**, %d au plafond" % Manuel.NIVEAU_MAX)
+	l.append("(`Manuel.NIVEAU_MAX`), et ses cases, ses passifs et ses nœuds se servent")
+	l.append("dans le même sac : la colonne « points » dit ce que chacun accepte, et leur")
+	l.append("somme dépasse volontairement ce qu'un livre peut gagner.")
+	l.append("")
+	for brut in ItemCatalog.ALL:
+		var base: ItemBase = brut
+		if base.manuel == null:
+			continue
+		_un_manuel(l, base)
+
+
+func _un_manuel(l: PackedStringArray, base: ItemBase) -> void:
+	var arch := base.manuel
+	var budget := 0
+	l.append("### %s — `%s`" % [arch.nom, base.id])
+	l.append("")
+	l.append("| case | sorte | ouvre à | points | coût | recharge | traits | par point |")
+	l.append("|---|---|---|---|---|---|---|---|")
+	for case: CaseDeManuel in arch.cases:
+		budget += case.points_max()
+		if case.passif != null:
+			l.append("| %s | passif | niveau %d | %d | — | — | — | %s |" % [
+				case.passif.nom, case.passif.niveau_de_manuel_requis, case.passif.points_max,
+				_par_point(case.passif.lignes)
+			])
+			continue
+		var c := case.competence
+		var table := PackedStringArray()
+		for d in c.degats_par_point:
+			table.append("%d" % roundi(d))
+		l.append("| %s | %s %s | niveau %d | %d | %d mana | %s | %d | %s |" % [
+			c.nom,
+			"attaque" if c.cadence == Competence.Cadence.ARME else "sort",
+			DamageType.NAMES[c.nature],
+			c.niveau_de_manuel_requis,
+			c.points_max(),
+			roundi(c.cout_en_mana),
+			"arme" if c.cadence == Competence.Cadence.ARME else "%.2f s" % c.recharge,
+			c.projectiles,
+			" · ".join(table),
+		])
+	l.append("")
+
+	var noeuds := 0
+	var lignes := PackedStringArray()
+	for case: CaseDeManuel in arch.cases:
+		for n: NoeudDeTalent in case.talents:
+			noeuds += 1
+			budget += n.points_max
+			lignes.append("| %s | %s | %s | %s | %d | %s |" % [
+				n.nom,
+				case.competence.nom,
+				"—" if n.parent.is_empty() else case.noeud_de(n.parent).nom,
+				Textes.tn(
+					"%d point de compétence", "%d points de compétence", n.points_requis
+				) % n.points_requis,
+				n.points_max,
+				_effet_du_noeud(n),
+			])
+	if noeuds > 0:
+		l.append("| nœud | compétence | parent | demande | points | par point |")
+		l.append("|---|---|---|---|---|---|")
+		l.append_array(lignes)
+		l.append("")
+	l.append("%d destinations de points pour %d gagnés." % [budget, Manuel.NIVEAU_MAX])
+	l.append("")
+
+
+## Les lignes d'un passif ou d'un nœud, telles qu'un objet les écrirait : c'est la
+## même fonction qui les affiche en jeu, donc la référence ne peut pas annoncer
+## autre chose que la page du manuel.
+func _par_point(lignes: Array[LigneDeTalent]) -> String:
+	var out := PackedStringArray()
+	for ligne in lignes:
+		out.append(ligne.modificateur(1).label())
+	return " · ".join(out) if out.size() > 0 else "—"
+
+
+func _effet_du_noeud(n: NoeudDeTalent) -> String:
+	var out := PackedStringArray()
+	if n.lignes.size() > 0:
+		out.append(_par_point(n.lignes))
+	if n.convertit():
+		out.append("convertit %d %% en %s" % [
+			roundi(n.part_convertie_par_point * 100.0), DamageType.NAMES[n.convertit_vers]
+		])
+	for id in n.mots_cles_ajoutes:
+		out.append("donne le mot-clé %s" % MotsCles.LIBELLES.get(id, id))
+	return " · ".join(out)
 
 
 ## Les affixes d'objets, triés par identifiant : on vient en chercher un qu'on a

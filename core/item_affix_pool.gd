@@ -42,6 +42,9 @@ const ALL := [
 	preload("res://resources/item_affixes/fourchu.tres"),
 	preload("res://resources/item_affixes/sifflant.tres"),
 	preload("res://resources/item_affixes/orageux.tres"),
+	# Le pendant d'`orageux` pour le feu (jalon 10) : c'est lui qui fait du mot-clé
+	# Feu une prise plutôt qu'une décoration.
+	preload("res://resources/item_affixes/ardent.tres"),
 	preload("res://resources/item_affixes/ensorcele.tres"),
 
 	# Les dégâts ajoutés : chaque nature, aux attaques puis aux sorts. Une nature est

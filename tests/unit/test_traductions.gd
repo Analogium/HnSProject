@@ -210,8 +210,17 @@ func _attendus() -> Dictionary:
 	for brut in ItemCatalog.ALL:
 		var base: ItemBase = brut
 		out[base.display_name] = "base « %s »" % base.id
-		if base.manuel != null:
-			out[base.manuel.nom] = "manuel « %s »" % base.manuel.id
+		if base.manuel == null:
+			continue
+		out[base.manuel.nom] = "manuel « %s »" % base.manuel.id
+		# Ce qu'un manuel contient en plus de ses compétences, qui sont dans le
+		# catalogue : les passifs et les nœuds d'arbre ne sont listés nulle part
+		# ailleurs, et c'est ici qu'un nœud ajouté sans son anglais s'annonce.
+		for passif in base.manuel.passifs():
+			out[passif.nom] = "passif « %s »" % passif.id
+		for case: CaseDeManuel in base.manuel.cases:
+			for noeud: NoeudDeTalent in case.talents:
+				out[noeud.nom] = "nœud « %s »" % noeud.id
 	for brut in CompetenceCatalog.ALL:
 		var competence: Competence = brut
 		out[competence.nom] = "compétence « %s »" % competence.id

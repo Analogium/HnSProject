@@ -395,11 +395,15 @@ static func _manuel_depuis_dict(item: Item, source: Variant) -> void:
 	if not points is Dictionary:
 		return
 	for id in points:
-		# La question n'est pas « cette compétence existe-t-elle » mais « ce
-		# livre l'enseigne-t-il » : des points placés dans une case que
-		# l'archétype ne contient plus ne sont dépensables nulle part, et les
+		# La question n'est pas « cela existe-t-il dans le jeu » mais « ce livre
+		# le connaît-il » : des points placés dans une case, un passif ou un nœud
+		# que l'archétype ne contient plus ne sont dépensables nulle part, et les
 		# garder ferait un manuel qui doit des points à personne.
-		if item.enseigne(String(id)):
+		#
+		# **Les trois sortes, et pas seulement les cases** : demander `enseigne()`
+		# jetterait en silence tous les points d'arbre au premier rechargement,
+		# sur des fichiers intacts.
+		if item.connait(String(id)):
 			item.manuel.points[String(id)] = maxi(int(points[id]), 0)
 
 

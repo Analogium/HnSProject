@@ -62,6 +62,20 @@ var vitesse_de_projectile := 0.0
 var cout_en_mana := 0.0
 var intervalle := 0.0
 
+## Les mots-clés que ce lancer porte **vraiment** : ceux de la compétence, plus
+## ceux qu'un nœud d'arbre investi lui donne.
+##
+## Ici et non sur la compétence : un mot-clé qui vient d'un talent n'appartient
+## pas au sort mais à ce lancer-là. Et c'est cette liste qui a filtré les
+## modificateurs, donc la seule qui ne puisse pas annoncer autre chose que ce
+## qu'elle a appliqué.
+var mots_cles := PackedStringArray()
+
+## La nature de la compétence lancée, avant toute conversion. Posée par
+## `resoudre()` : la fiche et le tir la lisaient sur la compétence, et un jour où
+## ils ne recevront que le geste, ils auraient eu à la chercher ailleurs.
+var nature := int(DamageType.Kind.PHYSICAL)
+
 ## Ce qui compose les dégâts, pour la fiche du manuel : la ligne de la table, les
 ## fourchettes ajoutées par nature, et les deux multiplicateurs. **Écrits par les
 ## appels mêmes qui calculent** `degats_min` et `degats_max` : une fiche qui
@@ -74,6 +88,9 @@ var facteur_d_attribut := 1.0
 ## Le produit des « +% dégâts » portés : ils se multiplient entre eux, donc deux
 ## « +10 % » font 1,21 et non 1,20.
 var accroissement := 1.0
+## La part du coup qu'un nœud a déplacée, **par nature d'arrivée**, pour la fiche.
+## Le lancer n'en a pas besoin : `degats_min` et `degats_max` sont déjà déplacés.
+var convertis: Array[float] = DamageType.parts_vides()
 
 
 ## La nature qu'ajoute cette statistique, ou -1 si elle n'est pas un ajout de
@@ -107,6 +124,32 @@ func nombre_de_projectiles() -> int:
 	return int(projectiles)
 
 
+## « Projectile · Foudre · Sort », mots-clés des talents compris. Par la même
+## fonction que la fiche de la compétence : deux compositions divergeraient d'un
+## séparateur.
+func libelle_des_mots_cles() -> String:
+	return MotsCles.ligne(mots_cles)
+
+
+## La nature que ce lancer **montre** : la sienne, ou celle vers laquelle une
+## conversion a emmené la plus grande part de ses dégâts propres.
+##
+## Elle ne regarde que la base et les conversions, **jamais ce qu'un objet
+## ajoute** : c'est la décision du jalon 8 — un éclair reste un éclair, le froid
+## qu'un anneau y met change ses dégâts et pas son dessin. Une conversion, elle,
+## change ce que la compétence est.
+func nature_dominante() -> int:
+	var meilleure := nature
+	var part := 1.0
+	for p in convertis:
+		part -= p
+	for i in convertis.size():
+		if convertis[i] > part:
+			part = convertis[i]
+			meilleure = i
+	return meilleure
+
+
 ## Les dégâts propres de la compétence, dans sa nature, bornes égales.
 func poser_la_base(nature: int, montant: float) -> void:
 	degats_de_base = montant
@@ -123,6 +166,33 @@ func ajouter(nature: int, bas: float, haut: float) -> void:
 	ajoutes_max[nature] += sommet
 	degats_min[nature] += bas
 	degats_max[nature] += sommet
+
+
+## Déplace une part des dégâts d'une nature vers une autre — le nœud de
+## conversion. Appelée **après les fourchettes ajoutées** : la foudre qu'un anneau
+## ajoute à un sort de foudre part avec le reste, sinon le même objet donnerait
+## deux résultats selon l'ordre dans lequel ses lignes arrivent.
+##
+## Avant ou après les multiplicateurs, c'est numériquement pareil — ils
+## multiplient toutes les parts du même facteur.
+func convertir(source: int, cible: int, part: float) -> void:
+	var reste := clampf(part, 0.0, 1.0)
+	if source == cible or reste <= 0.0:
+		return
+	var bas := degats_min[source] * reste
+	var haut := degats_max[source] * reste
+	degats_min[source] -= bas
+	degats_max[source] -= haut
+	degats_min[cible] += bas
+	degats_max[cible] += haut
+
+	# Ce qu'on annonce est la part du coup **entier**, et non celle du reste :
+	# deux nœuds à 50 % convertissent les trois quarts, et la fiche doit dire 75 %
+	# plutôt que 100 %.
+	var deja := 0.0
+	for p in convertis:
+		deja += p
+	convertis[cible] += reste * (1.0 - deja)
 
 
 func appliquer_l_attribut(facteur: float) -> void:

@@ -21,6 +21,7 @@ class_name MotsCles
 
 const PROJECTILE := "projectile"
 const FOUDRE := "foudre"
+const FEU := "feu"
 const SORT := "sort"
 const ATTAQUE := "attaque"
 
@@ -32,6 +33,7 @@ const ATTAQUE := "attaque"
 const LIBELLES := {
 	PROJECTILE: "Projectile",
 	FOUDRE: "Foudre",
+	FEU: "Feu",
 	SORT: "Sort",
 	ATTAQUE: "Attaque",
 }
@@ -54,6 +56,32 @@ static func destinataire(id: String) -> String:
 
 static func existe(id: String) -> bool:
 	return LIBELLES.has(id)
+
+
+## Les mots-clés de cette liste, **dans l'ordre de lecture** et sans doublon :
+## ce que la compétence fait, sa nature, sa famille. Ce qui n'est pas de la liste
+## est écarté.
+##
+## Le seul endroit qui connaît cet ordre. Les mots-clés arrivent de trois sources
+## — déclarés, déduits de la nature et de la cadence, donnés par un nœud d'arbre —
+## et deux compétences voisines doivent se lire colonne contre colonne quelle que
+## soit celle qui les a fournis.
+static func ordonner(ids: PackedStringArray) -> PackedStringArray:
+	var out := PackedStringArray()
+	for id: String in LIBELLES:
+		if ids.has(id):
+			out.append(id)
+	return out
+
+
+## « Projectile · Foudre · Sort » : la ligne que le joueur lit sur une fiche. Ici
+## et non chez ses deux appelants — la compétence et le lancer résolu — parce que
+## deux compositions divergeraient d'un séparateur.
+static func ligne(ids: PackedStringArray) -> String:
+	var noms := PackedStringArray()
+	for id in ids:
+		noms.append(libelle(id))
+	return " · ".join(noms)
 
 
 ## Le libellé dans la langue du joueur. La table garde ses valeurs françaises :

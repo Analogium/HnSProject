@@ -2,33 +2,249 @@
 
 [ext_resource type="Script" path="res://core/manuel_archetype.gd" id="1_arch"]
 [ext_resource type="Script" path="res://core/case_de_manuel.gd" id="2_case"]
-[ext_resource type="Resource" path="res://resources/competences/eclair_vif.tres" id="3_eclair"]
-[ext_resource type="Resource" path="res://resources/competences/salve_d_eclairs.tres" id="4_salve"]
-[ext_resource type="Resource" path="res://resources/competences/fulguration.tres" id="5_fulgur"]
-[ext_resource type="Resource" path="res://resources/competences/nova_de_foudre.tres" id="6_nova"]
+[ext_resource type="Script" path="res://core/noeud_de_talent.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/ligne_de_talent.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passif.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/competences/eclair_vif.tres" id="10_eclair_vif"]
+[ext_resource type="Resource" path="res://resources/competences/salve_d_eclairs.tres" id="11_salve_d_eclairs"]
+[ext_resource type="Resource" path="res://resources/competences/fulguration.tres" id="12_fulguration"]
+[ext_resource type="Resource" path="res://resources/competences/nova_de_foudre.tres" id="13_nova_de_foudre"]
 
-[sub_resource type="Resource" id="Resource_eclair"]
-script = ExtResource("2_case")
-competence = ExtResource("3_eclair")
+[sub_resource type="Resource" id="L_eclair_vif_surcharge_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="N_eclair_vif_surcharge"]
+script = ExtResource("3_noeud")
+id = "eclair_vif_surcharge"
+nom = "Surcharge"
 position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_surcharge_0")])
 
-[sub_resource type="Resource" id="Resource_salve"]
+[sub_resource type="Resource" id="L_eclair_vif_fourche_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 1.0
+
+[sub_resource type="Resource" id="N_eclair_vif_fourche"]
+script = ExtResource("3_noeud")
+id = "eclair_vif_fourche"
+nom = "Fourche"
+position = Vector2i(1, 0)
+parent = "eclair_vif_surcharge"
+points_requis = 2
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_fourche_0")])
+
+[sub_resource type="Resource" id="L_eclair_vif_trait_de_glace_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 20.0
+
+[sub_resource type="Resource" id="N_eclair_vif_trait_de_glace"]
+script = ExtResource("3_noeud")
+id = "eclair_vif_trait_de_glace"
+nom = "Trait de glace"
+position = Vector2i(0, 1)
+points_requis = 3
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_trait_de_glace_0")])
+convertit_vers = 1
+part_convertie_par_point = 0.50
+
+[sub_resource type="Resource" id="C_eclair_vif"]
 script = ExtResource("2_case")
-competence = ExtResource("4_salve")
+competence = ExtResource("10_eclair_vif")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_eclair_vif_surcharge"), SubResource("N_eclair_vif_fourche"), SubResource("N_eclair_vif_trait_de_glace")])
+
+[sub_resource type="Resource" id="L_salve_d_eclairs_volee_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 1.0
+
+[sub_resource type="Resource" id="N_salve_d_eclairs_volee"]
+script = ExtResource("3_noeud")
+id = "salve_d_eclairs_volee"
+nom = "Volée"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_salve_d_eclairs_volee_0")])
+
+[sub_resource type="Resource" id="L_salve_d_eclairs_empennage_0"]
+script = ExtResource("4_ligne")
+stat = "vitesse_de_projectile"
+pourcentage = true
+valeur_par_point = 20.0
+
+[sub_resource type="Resource" id="N_salve_d_eclairs_empennage"]
+script = ExtResource("3_noeud")
+id = "salve_d_eclairs_empennage"
+nom = "Empennage"
+position = Vector2i(1, 0)
+parent = "salve_d_eclairs_volee"
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_salve_d_eclairs_empennage_0")])
+
+[sub_resource type="Resource" id="L_salve_d_eclairs_percee_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 14.0
+
+[sub_resource type="Resource" id="N_salve_d_eclairs_percee"]
+script = ExtResource("3_noeud")
+id = "salve_d_eclairs_percee"
+nom = "Percée"
+position = Vector2i(0, 1)
+points_requis = 3
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_salve_d_eclairs_percee_0")])
+
+[sub_resource type="Resource" id="C_salve_d_eclairs"]
+script = ExtResource("2_case")
+competence = ExtResource("11_salve_d_eclairs")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_salve_d_eclairs_volee"), SubResource("N_salve_d_eclairs_empennage"), SubResource("N_salve_d_eclairs_percee")])
+
+[sub_resource type="Resource" id="L_fulguration_amplitude_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 15.0
+
+[sub_resource type="Resource" id="N_fulguration_amplitude"]
+script = ExtResource("3_noeud")
+id = "fulguration_amplitude"
+nom = "Amplitude"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_fulguration_amplitude_0")])
+
+[sub_resource type="Resource" id="N_fulguration_embrasement"]
+script = ExtResource("3_noeud")
+id = "fulguration_embrasement"
+nom = "Embrasement"
+position = Vector2i(1, 0)
+parent = "fulguration_amplitude"
+points_requis = 3
+points_max = 1
+convertit_vers = 2
+part_convertie_par_point = 0.60
+mots_cles_ajoutes = PackedStringArray("feu")
+
+[sub_resource type="Resource" id="L_fulguration_eclats_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 2.0
+
+[sub_resource type="Resource" id="L_fulguration_eclats_1"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = -25.0
+
+[sub_resource type="Resource" id="N_fulguration_eclats"]
+script = ExtResource("3_noeud")
+id = "fulguration_eclats"
+nom = "Éclats"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 1
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_fulguration_eclats_0"), SubResource("L_fulguration_eclats_1")])
+
+[sub_resource type="Resource" id="C_fulguration"]
+script = ExtResource("2_case")
+competence = ExtResource("12_fulguration")
 position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_fulguration_amplitude"), SubResource("N_fulguration_embrasement"), SubResource("N_fulguration_eclats")])
 
-[sub_resource type="Resource" id="Resource_fulgur"]
-script = ExtResource("2_case")
-competence = ExtResource("5_fulgur")
-position = Vector2i(1, 1)
+[sub_resource type="Resource" id="L_nova_de_foudre_couronne_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 2.0
 
-[sub_resource type="Resource" id="Resource_nova"]
+[sub_resource type="Resource" id="N_nova_de_foudre_couronne"]
+script = ExtResource("3_noeud")
+id = "nova_de_foudre_couronne"
+nom = "Couronne"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_couronne_0")])
+
+[sub_resource type="Resource" id="L_nova_de_foudre_deflagration_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="N_nova_de_foudre_deflagration"]
+script = ExtResource("3_noeud")
+id = "nova_de_foudre_deflagration"
+nom = "Déflagration"
+position = Vector2i(1, 0)
+parent = "nova_de_foudre_couronne"
+points_requis = 3
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_deflagration_0")])
+
+[sub_resource type="Resource" id="L_nova_de_foudre_celerite_0"]
+script = ExtResource("4_ligne")
+stat = "vitesse_de_projectile"
+pourcentage = true
+valeur_par_point = 35.0
+
+[sub_resource type="Resource" id="N_nova_de_foudre_celerite"]
+script = ExtResource("3_noeud")
+id = "nova_de_foudre_celerite"
+nom = "Célérité"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_celerite_0")])
+
+[sub_resource type="Resource" id="C_nova_de_foudre"]
 script = ExtResource("2_case")
-competence = ExtResource("6_nova")
-position = Vector2i(3, 1)
+competence = ExtResource("13_nova_de_foudre")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_nova_de_foudre_couronne"), SubResource("N_nova_de_foudre_deflagration"), SubResource("N_nova_de_foudre_celerite")])
+
+[sub_resource type="Resource" id="L_conducteur_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+portee = "foudre"
+pourcentage = true
+valeur_par_point = 6.0
+
+[sub_resource type="Resource" id="L_conducteur_1"]
+script = ExtResource("4_ligne")
+stat = "max_mana"
+valeur_par_point = 10.0
+
+[sub_resource type="Resource" id="P_conducteur"]
+script = ExtResource("5_passif")
+id = "conducteur"
+nom = "Conducteur"
+niveau_de_manuel_requis = 2
+points_max = 4
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_conducteur_0"), SubResource("L_conducteur_1")])
+
+[sub_resource type="Resource" id="C_conducteur"]
+script = ExtResource("2_case")
+passif = SubResource("P_conducteur")
+position = Vector2i(0, 1)
 
 [resource]
 script = ExtResource("1_arch")
 id = "foudre"
 nom = "Maître de la foudre"
-cases = Array[ExtResource("2_case")]([SubResource("Resource_eclair"), SubResource("Resource_salve"), SubResource("Resource_fulgur"), SubResource("Resource_nova")])
+cases = Array[ExtResource("2_case")]([SubResource("C_eclair_vif"), SubResource("C_salve_d_eclairs"), SubResource("C_fulguration"), SubResource("C_nova_de_foudre"), SubResource("C_conducteur")])

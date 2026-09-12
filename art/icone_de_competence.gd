@@ -24,12 +24,21 @@ static var _cache := {}
 ## qu'aucune image n'a été produite, et l'appelant retombe alors sur le disque de
 ## couleur. Une icône manquante ne doit pas laisser une case vide.
 static func texture(competence: Competence) -> Texture2D:
-	if competence == null or competence.icone == null:
+	if competence == null:
 		return null
-	if _cache.has(competence.id):
-		return _cache[competence.id]
+	return depuis(competence.id, competence.icone)
 
-	var img := competence.icone.get_image()
+
+## La même, pour une fiche qui n'est pas une compétence — un passif de manuel.
+## L'identifiant sert de clé de cache, et c'est pourquoi il est demandé plutôt
+## que déduit : deux images rangées sous le même nom se marcheraient dessus.
+static func depuis(identifiant: String, image: Texture2D) -> Texture2D:
+	if image == null:
+		return null
+	if _cache.has(identifiant):
+		return _cache[identifiant]
+
+	var img := image.get_image()
 	if img == null or img.is_empty():
 		return null
 	img = img.duplicate()
@@ -39,7 +48,7 @@ static func texture(competence: Competence) -> Texture2D:
 	_ajuster(img)
 
 	var tex := ImageTexture.create_from_image(img)
-	_cache[competence.id] = tex
+	_cache[identifiant] = tex
 	return tex
 
 

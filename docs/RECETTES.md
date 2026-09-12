@@ -279,7 +279,17 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
 
 3. **Le manuel qui l'enseigne** — une `CaseDeManuel` de plus dans son `.tres`,
    avec sa **position sur la page**. Deux cases à la même position se
-   recouvriraient sans que rien ne le dise.
+   recouvriraient sans que rien ne le dise. La grille fait **quatre colonnes sur
+   deux rangées** : au-delà, la case sort de la fenêtre.
+
+4. **Son arbre**, s'il y en a un : voir « Ajouter un nœud de talent ». Une
+   compétence sans nœud reste jouable — sa case ouvre alors une vue qui ne montre
+   que sa racine.
+
+Deux compétences d'un même manuel doivent **se distinguer par ce qu'elles
+font** — un trait, un cône, un coup lourd — et pas seulement par leurs nombres :
+sinon c'est une seule compétence à plusieurs réglages, et l'arbre de la première
+dit déjà mieux la même chose.
 
 **Ce qui refusera un oubli** — `tests/unit/test_competences.gd` :
 `test_chaque_competence_a_un_identifiant`, `test_les_identifiants_sont_uniques`,
@@ -332,16 +342,114 @@ une ligne de dégâts ajoutés.
 
 ---
 
+## Ajouter un passif
+
+Un passif est une case de manuel qu'on ne lance pas : ses points agissent tant
+que le livre est au râtelier. Ses lignes sont **celles d'un affixe** — même
+forme, même application, même façon de s'écrire à l'écran.
+
+1. **Dans le `.tres` du manuel** — une `CaseDeManuel` de plus, avec `passif`
+   au lieu de `competence`, et sa position sur la grille. Une case porte l'un ou
+   l'autre, **jamais les deux** : les deux donneraient deux compteurs de points
+   pour un seul identifiant.
+
+   | Champ du `Passif` | À remplir |
+   |---|---|
+   | `id` | Unique dans le livre, **définitif** — il part dans les sauvegardes, dans le même dictionnaire que les cases et les nœuds (invariant 1) |
+   | `nom` | Ce que le joueur lit |
+   | `niveau_de_manuel_requis` | À partir de quel niveau du livre la case s'ouvre |
+   | `points_max` | Combien de points elle accepte. Un champ, contrairement à une compétence qui le déduit de sa table de dégâts |
+   | `lignes` | Un `LigneDeTalent` par effet : `stat`, `pourcentage`, `valeur_par_point`, et `valeur_max_par_point` pour une fourchette |
+
+2. **Ce qu'une ligne peut viser** — c'est la règle des affixes, à la lettre :
+   - `portee` **vide** → un champ réel de `CharacterStats`, présent dans
+     `StatMod.LABELS` ; il agit sur la fiche du personnage ;
+   - `portee` **remplie** → un mot-clé de `MotsCles`, et un nombre de
+     `StatsDeCompetence` (ou des dégâts ajoutés `degats_<nature>`) ; il agit sur
+     **toutes** les compétences qui portent ce mot-clé, même celles d'un autre
+     livre du râtelier.
+
+3. **Rien à écrire ailleurs.** `Player.recompute_stats()` verse déjà les passifs
+   du râtelier dans la même liste que les objets portés, et le tri qui suit
+   décide de ce qui va à la fiche et de ce qui va aux compétences.
+
+**Ce qui refusera un oubli** — `tests/unit/test_talents.gd` :
+`test_chaque_case_porte_une_chose_et_une_seule`,
+`test_les_identifiants_d_un_livre_sont_uniques`,
+`test_chaque_ligne_de_passif_vise_la_fiche_ou_un_mot_cle` (la faute de frappe qui
+ne casse rien : le point placé ne fait simplement rien),
+`test_aucun_manuel_ne_se_remplit_entierement` ; et
+`tests/integration/test_player.gd : test_un_passif_du_ratelier_entre_dans_la_fiche`
+et `test_un_passif_s_en_va_avec_son_livre`.
+
+**Et son nom anglais** dans `i18n/en.po`, plus la tenue de sa fiche dans les deux
+langues — `tests/integration/test_largeurs.gd`.
+
+---
+
+## Ajouter un nœud de talent
+
+Un nœud change **la façon dont une compétence se joue**. Il vit sur la case du
+manuel et non sur la compétence : deux manuels qui enseigneraient le même sort
+l'orienteraient chacun à leur façon.
+
+1. **Dans le `.tres` du manuel**, dans le tableau `talents` de la case.
+
+   | Champ | À remplir |
+   |---|---|
+   | `id` | **Définitif**, et unique dans le livre. La forme `<compétence>_<nœud>` le tient hors de portée d'un homonyme |
+   | `nom` | Ce que le joueur lit |
+   | `position` | Sur la petite grille de l'arbre : **trois colonnes sur deux rangées**, à droite de la racine |
+   | `parent` | L'identifiant du nœud dont il dépend, ou vide : il part alors de la compétence |
+   | `points_requis` | Combien de points dans **la compétence** l'ouvrent. Jamais zéro, jamais plus que ce que la case accepte |
+   | `points_max` | Combien de points il accepte |
+   | `lignes` | Comme celles d'un passif, mais **sans portée** : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `StatsDeCompetence` |
+   | `convertit_vers` / `part_convertie_par_point` | La nature d'arrivée et la part déplacée. **C'est la part qui dit s'il y a conversion** : l'enum commence au physique |
+   | `mots_cles_ajoutes` | Ce que le nœud donne à sa compétence — **seulement un mot-clé de nature**. `projectile`, `attaque` et `sort` décident du chemin du lancer |
+
+2. **Un échange se dit dans les deux sens** : « +2 projectiles » et
+   « −25 % dégâts » sur le même nœud. C'est le seul endroit du jeu où un point
+   placé peut faire baisser un nombre, et c'est ce qui rend un arbre intéressant
+   plutôt qu'additionnel.
+
+3. **Rien à écrire ailleurs** : `Manuel.peut_investir()` porte déjà les
+   conditions, `Player.talents_de()` les rassemble, et `Competence.resoudre()`
+   les applique — donc la page du manuel les annonce sans qu'on la touche.
+
+**Ce qui refusera un oubli** — `tests/unit/test_talents.gd` :
+`test_chaque_parent_existe_dans_le_meme_arbre`,
+`test_chaque_arbre_a_une_racine_et_reste_atteignable` (un nœud qui demande plus
+de points que la case n'en accepte ne s'ouvrirait jamais),
+`test_chaque_ligne_de_noeud_vise_un_nombre_de_lancer`,
+`test_un_noeud_ne_donne_qu_un_mot_cle_de_nature`,
+`test_chaque_conversion_vise_une_autre_nature` ; et
+`tests/integration/test_panneau_manuels.gd : test_les_cases_et_les_noeuds_tiennent_dans_le_panneau`,
+qui refuse un nœud posé hors de la fenêtre.
+
+**Et son nom anglais** dans `i18n/en.po`.
+
+---
+
 ## Ajouter un manuel
 
 Un manuel est **une base d'objet** de plus, plus un archétype.
 
 1. **`resources/manuels/<id>.tres`** — l'archétype : son nom, et une
-   `CaseDeManuel` par compétence, chacune à sa position.
+   `CaseDeManuel` par compétence **ou par passif**, chacune à sa position. Un
+   manuel sans passif est permis ; un manuel sans compétence, non — c'est un
+   objet de quatre cases de sac qui n'apprend rien à lancer.
 2. **`resources/items/manuel_<id>.tres`** — la base : `family = "manual"`,
-   `tags = ["manual"]`, `kind = "manuel"`, et le champ `manuel` qui pointe sur
-   l'archétype. Son `palier` dit sa **rareté**, pas son rang de relève.
-3. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
+   `tags = ["manual"]`, sa propre `lignee` d'un seul palier, et le champ `manuel`
+   qui pointe sur l'archétype. Son `palier` dit sa **rareté**, pas son rang de
+   relève.
+3. **Son propre `kind`**, et un cas dans `SpriteForge._gear()` plus son entrée
+   dans `GEAR` : tous les manuels ont le même palier, donc les mêmes couleurs, et
+   c'est la **silhouette** qui doit les séparer dans un sac. Trois livres au même
+   dessin sont trois objets qu'on ne distingue qu'en les survolant.
+4. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
+5. **Vérifier le budget** : `docs/CATALOGUE.md` donne, pour chaque manuel, le
+   nombre de destinations de points contre les vingt qu'un livre gagne. En
+   dessous de vingt, le manuel se remplit entièrement et cesse d'être un choix.
 
 **Ce qui refusera un oubli** — `tests/unit/test_manuels.gd` :
 `test_un_archetype_va_avec_la_famille_du_manuel` (une base porte un archétype

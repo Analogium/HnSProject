@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "lames_tournoyantes"
+nom = "Lames tournoyantes"
+nature = 0
+cadence = 0
+mots_cles_declares = PackedStringArray("projectile")
+vitesse_de_projectile = 260.0
+recharge = 0.00
+cout_en_mana = 9.0
+projectiles = 2
+dispersion_en_degres = 16.0
+degats_par_point = Array[float]([11.0, 14.0, 18.0, 22.0, 27.0])
+attribut = ""
+pourcentage_par_attribut = 0.0
+niveau_de_manuel_requis = 3

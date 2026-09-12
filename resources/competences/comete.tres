@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "comete"
+nom = "Comète"
+nature = 2
+cadence = 1
+mots_cles_declares = PackedStringArray("projectile")
+vitesse_de_projectile = 150.0
+recharge = 1.50
+cout_en_mana = 30.0
+projectiles = 1
+dispersion_en_degres = 0.0
+degats_par_point = Array[float]([62.0, 78.0, 98.0, 123.0, 154.0])
+attribut = "intelligence"
+pourcentage_par_attribut = 5.0
+niveau_de_manuel_requis = 9

@@ -40,9 +40,9 @@ func before_each() -> void:
 
 	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
 	livre.manuel.gagner_experience(999999)
-	for case in livre.base.manuel.cases:
-		for i in case.competence.points_max():
-			livre.manuel.investir(livre.base.manuel, case.competence.id)
+	for competence in livre.base.manuel.competences():
+		for i in competence.points_max():
+			livre.manuel.investir(livre.base.manuel, competence.id)
 	_joueur.etudier(livre)
 	# Des points à placer : la fiche de personnage réserve alors la place d'un
 	# bouton sur chaque ligne d'attribut, et c'est le cas le plus serré.
@@ -69,21 +69,60 @@ func test_la_fiche_de_competence_tient_dans_les_deux_langues() -> void:
 
 	for langue in [Settings.FRANCAIS, Settings.ANGLAIS]:
 		Settings.depuis_dict({"langue": langue})
-		for case in livre.base.manuel.cases:
-			var competence: Competence = case.competence
-			_tient(
-				competence.nom_affiche(), largeur, ManuelPanel.TITLE_SIZE,
-				"%s : le nom de « %s »" % [langue, competence.id]
+		for competence in livre.base.manuel.competences():
+			# La fiche telle que le dessin la monte, sous-titre compris : mesurer
+			# les mots-clés de la compétence plutôt que ceux du **geste résolu**
+			# reviendrait à mesurer un texte que la page n'écrit pas.
+			_mesure_la_fiche(
+				_fiche._fiche_de_competence(livre.manuel, competence), largeur, langue
 			)
-			_tient(
-				competence.libelle_des_mots_cles(), largeur, ManuelPanel.FONT_SIZE,
-				"%s : les mots-clés de « %s »" % [langue, competence.id]
-			)
-			for ligne in _fiche._lignes_de_fiche(livre.manuel, competence):
-				_tiennent_ensemble(
-					ligne.libelle, ligne.valeur, largeur, ManuelPanel.FONT_SIZE,
-					"%s : « %s » de « %s »" % [langue, ligne.libelle, competence.id]
-				)
+
+
+## Les fiches d'un passif et d'un nœud d'arbre, dans le même cadre étroit. Le
+## nœud est le plus exposé : « demande » et « 3 points dans Lames tournoyantes »
+## sur la même ligne, et un nom de compétence au bout.
+func test_les_fiches_de_passif_et_de_noeud_tiennent_dans_les_deux_langues() -> void:
+	var largeur := ManuelPanel.FICHE_W - ManuelPanel.FICHE_PAD * 2.0
+	for langue in [Settings.FRANCAIS, Settings.ANGLAIS]:
+		Settings.depuis_dict({"langue": langue})
+		for modele: ItemBase in ItemCatalog.ALL:
+			if modele.manuel == null:
+				continue
+			# Un livre neuf : c'est lui qui montre les lignes « demande », les plus
+			# longues des deux fiches.
+			var livre := Item.new(modele)
+			for case: CaseDeManuel in modele.manuel.cases:
+				if case.passif != null:
+					_mesure_la_fiche(
+						_fiche._fiche_de_passif(livre.manuel, case.passif), largeur, langue
+					)
+				for noeud: NoeudDeTalent in case.talents:
+					_mesure_la_fiche(
+						_fiche._fiche_de_noeud(livre.manuel, case, noeud), largeur, langue
+					)
+
+
+func _mesure_la_fiche(fiche: ManuelPanel.Fiche, largeur: float, langue: String) -> void:
+	_tient(fiche.titre, largeur, ManuelPanel.TITLE_SIZE, "%s : le titre" % langue)
+	_tient(fiche.sous_titre, largeur, ManuelPanel.FONT_SIZE, "%s : le sous-titre" % langue)
+	for ligne in fiche.lignes:
+		_tiennent_ensemble(
+			ligne.libelle, ligne.valeur, largeur, ManuelPanel.FONT_SIZE,
+			"%s : « %s » de « %s »" % [langue, ligne.libelle, fiche.titre]
+		)
+
+
+## Les deux lignes d'aide de la page des manuels, en bas de la fenêtre : elles
+## portent trois gestes, et l'anglais n'a pas les mêmes mots pour « clic droit ».
+func test_les_lignes_d_aide_de_la_page_tiennent_dans_les_deux_langues() -> void:
+	var largeur := _fiche.size.x - ManuelPanel.PAD * 2.0
+	for langue in [Settings.FRANCAIS, Settings.ANGLAIS]:
+		Settings.depuis_dict({"langue": langue})
+		for texte in [
+			Textes.t("[clic] ouvrir ou investir     [clic droit] ranger"),
+			Textes.t("[clic] +1     [clic droit] -1     [échap] retour"),
+		]:
+			_tient(texte, largeur, ManuelPanel.FONT_SIZE, "%s : l'aide de la page" % langue)
 
 
 ## La fiche de personnage : un quart de la largeur du cadrage, pour une vingtaine

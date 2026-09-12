@@ -412,6 +412,34 @@ func test_une_competence_disparue_laisse_sa_case_vide() -> void:
 	assert_eq(relu.barre.id_de(1), "", "la case de la disparue est vide")
 
 
+## **Le piège du jalon 10** : les points d'un passif et d'un nœud d'arbre entrent
+## dans le même dictionnaire que ceux des cases. Le filtre de relecture qui ne
+## connaîtrait que les compétences les jetterait en silence, au premier
+## rechargement, sur des fichiers intacts — et rien ne le dirait.
+##
+## Aucun champ neuf pour autant : **pas de version 6**, et c'est ce que la
+## première assertion vérifie.
+func test_les_points_d_un_passif_et_d_un_noeud_survivent_a_l_aller_retour() -> void:
+	var p := Personnage.nouveau("Talentueuse", 0)
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"), [], 30)
+	livre.manuel.experience = 5000
+	livre.manuel.points["eclair_vif"] = 3
+	livre.manuel.points["eclair_vif_surcharge"] = 2
+	livre.manuel.points["conducteur"] = 4
+	p.ratelier.poser(0, livre)
+
+	var source := p.vers_dict()
+	assert_eq(int(source["version"]), 5, "le format n'a pas changé de numéro")
+
+	var relu := Personnage.depuis_dict(source)
+	assert_not_null(relu)
+	var repris := relu.ratelier.a(0)
+	assert_eq(repris.manuel.points_de("eclair_vif"), 3, "la case")
+	assert_eq(repris.manuel.points_de("eclair_vif_surcharge"), 2, "le nœud d'arbre")
+	assert_eq(repris.manuel.points_de("conducteur"), 4, "et le passif")
+	assert_eq(repris.manuel.points_places(), 9)
+
+
 ## Des points placés dans une case que l'archétype n'a plus ne sont dépensables
 ## nulle part : les garder ferait un manuel qui doit des points à personne.
 func test_des_points_pour_une_competence_inconnue_sont_ignores() -> void:
@@ -421,12 +449,14 @@ func test_des_points_pour_une_competence_inconnue_sont_ignores() -> void:
 	p.sac.place(livre, Vector2i(0, 0))
 	var source := p.vers_dict()
 	source["sac"][0]["manuel"]["points"]["case_qui_n_existe_plus"] = 4
+	source["sac"][0]["manuel"]["points"]["noeud_d_un_autre_livre"] = 2
 
 	var relu := Personnage.depuis_dict(source)
 	assert_not_null(relu)
 	var repris: Item = relu.sac.placed[0].data
 	assert_eq(repris.manuel.points_de("eclair_vif"), 1, "ce que le livre enseigne reste")
 	assert_eq(repris.manuel.points_de("case_qui_n_existe_plus"), 0, "le reste est oublié")
+	assert_eq(repris.manuel.points_de("noeud_d_un_autre_livre"), 0, "un nœud étranger aussi")
 	assert_eq(repris.manuel.points_places(), 1)
 
 

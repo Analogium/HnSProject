@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "trait_de_feu"
+nom = "Trait de feu"
+nature = 2
+cadence = 1
+mots_cles_declares = PackedStringArray("projectile")
+vitesse_de_projectile = 240.0
+recharge = 0.55
+cout_en_mana = 10.0
+projectiles = 1
+dispersion_en_degres = 0.0
+degats_par_point = Array[float]([28.0, 35.0, 44.0, 54.0, 67.0])
+attribut = "intelligence"
+pourcentage_par_attribut = 4.0
+niveau_de_manuel_requis = 1

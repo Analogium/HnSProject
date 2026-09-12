@@ -94,6 +94,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_8: _tune("attack_cooldown", 0.05, 0.05)
 		KEY_9: player.shake_amount = maxf(player.shake_amount - 1.0, 0.0)
 		KEY_0: player.shake_amount += 1.0
+		# Le second réglage du gel, et celui qui ne se juge qu'en nuée : la durée
+		# se règle sur un mannequin, la période se règle sur un paquet.
+		KEY_O: Game.hit_stop_periode = maxf(Game.hit_stop_periode - 0.05, 0.0)
+		KEY_P: Game.hit_stop_periode += 0.05
 		KEY_G: _spawn_pack()
 		KEY_C: _spawn_lone_caster()
 		KEY_K: _kill_all()
@@ -123,6 +127,7 @@ func _overlay_text() -> String:
 		],
 		"",
 		"[1/2] hit-stop        %.2f s" % Game.hit_stop_duration,
+		"[O/P] entre deux gels %.2f s" % Game.hit_stop_periode,
 		"[3/4] knockback       %.0f" % player.stats.knockback_force,
 		"[5/6] duree swing     %.2f s" % player.swing_duration,
 		"[7/8] cooldown        %.2f s" % player.stats.attack_cooldown,

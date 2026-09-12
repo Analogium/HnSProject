@@ -47,6 +47,7 @@ const MOT_CLE_DE_CADENCE := {
 	Cadence.INCANTATION: MotsCles.SORT,
 }
 const MOT_CLE_DE_NATURE := {
+	DamageType.Kind.FIRE: MotsCles.FEU,
 	DamageType.Kind.LIGHTNING: MotsCles.FOUDRE,
 }
 
@@ -139,30 +140,37 @@ func points_max() -> int:
 	return degats_par_point.size()
 
 
-## Les mots-clés portés, dans l'ordre de la liste : ceux qui sont déclarés, plus
-## ceux que donnent la cadence et la nature.
+## Les mots-clés portés : ceux qui sont déclarés, plus ceux que donnent la
+## cadence et la nature. **Ceux d'un nœud d'arbre n'y sont pas** — ils
+## appartiennent à un lancer et non à la fiche, et `resoudre()` les ajoute.
 ##
 ## Une fonction et non un champ rempli au chargement : ce qui se déduit n'est
 ## écrit nulle part, donc ne peut pas diverger de la nature qu'il traduit.
 func mots_cles() -> PackedStringArray:
-	var deduits := [MOT_CLE_DE_CADENCE.get(cadence, ""), MOT_CLE_DE_NATURE.get(nature, "")]
-	var out := PackedStringArray()
-	for id: String in MotsCles.LIBELLES:
-		if deduits.has(id) or mots_cles_declares.has(id):
-			out.append(id)
-	return out
+	return _mots_cles(PackedStringArray())
+
+
+## Les mots-clés portés, ceux-ci en plus. L'ordre de lecture est celui de
+## `MotsCles` et de nulle part ailleurs.
+func _mots_cles(ajoutes: PackedStringArray) -> PackedStringArray:
+	var tous := PackedStringArray([
+		MOT_CLE_DE_CADENCE.get(cadence, ""), MOT_CLE_DE_NATURE.get(nature, "")
+	])
+	tous.append_array(mots_cles_declares)
+	tous.append_array(ajoutes)
+	return MotsCles.ordonner(tous)
 
 
 func porte(mot_cle: String) -> bool:
 	return mots_cles().has(mot_cle)
 
 
-## « Projectile · Foudre · Sort » : la ligne que le joueur lit sur la fiche.
+## « Projectile · Foudre · Sort » : les mots-clés **de la compétence**, tels que
+## le catalogue les décrit. Ce que la page du manuel affiche est la ligne du geste
+## résolu (`StatsDeCompetence.libelle_des_mots_cles`), qui porte en plus ceux d'un
+## nœud d'arbre investi.
 func libelle_des_mots_cles() -> String:
-	var noms := PackedStringArray()
-	for id in mots_cles():
-		noms.append(MotsCles.libelle(id))
-	return " · ".join(noms)
+	return MotsCles.ligne(mots_cles())
 
 
 ## Les dégâts propres de la compétence, sans objet : la ligne de la table fois
@@ -206,12 +214,27 @@ func facteur_d_attribut(stats: CharacterStats) -> float:
 ## réserve d'affixes qui doit l'attraper, pas un combat.
 ##
 ## **L'ordre des dégâts** : les dégâts propres, puis les fourchettes ajoutées,
-## puis l'attribut, puis les pourcentages. L'attribut multiplie ce que les objets
-## ajoutent, et pas seulement la table : les dégâts de sort d'un objet passaient
-## déjà par l'intelligence, et un personnage relu d'une ancienne sauvegarde ne
-## doit pas frapper moins fort parce que ses lignes ont changé de forme.
-func resoudre(points: int, stats: CharacterStats, mods: Array = []) -> StatsDeCompetence:
+## puis la conversion, puis l'attribut, puis les pourcentages. L'attribut
+## multiplie ce que les objets ajoutent, et pas seulement la table : les dégâts
+## de sort d'un objet passaient déjà par l'intelligence, et un personnage relu
+## d'une ancienne sauvegarde ne doit pas frapper moins fort parce que ses lignes
+## ont changé de forme.
+##
+## **Mesurée** : 8,1 µs par appel nue, 12,7 µs avec trois lignes d'objet, 21,6 µs
+## avec en plus deux nœuds investis. C'est ce qui permet à la page du manuel de la
+## rappeler à chaque redessin plutôt que de garder un résultat qui périmerait au
+## premier changement d'équipement.
+##
+## **Les talents ne sont pas filtrés** : un nœud ne vise que sa propre
+## compétence, et c'est tout ce qui le distingue d'un modificateur d'objet. Ses
+## mots-clés à lui, en revanche, sont posés **avant** le filtre — c'est ce qui
+## fait qu'un nœud de conversion peut rendre un affixe de feu mordant sur un sort
+## de foudre.
+func resoudre(
+	points: int, stats: CharacterStats, mods: Array = [], talents: Array = []
+) -> StatsDeCompetence:
 	var r := StatsDeCompetence.new()
+	r.nature = nature
 	r.poser_la_base(nature, _base(points))
 	r.projectiles = float(projectiles)
 	r.dispersion_en_degres = dispersion_en_degres
@@ -219,26 +242,47 @@ func resoudre(points: int, stats: CharacterStats, mods: Array = []) -> StatsDeCo
 	r.cout_en_mana = cout_en_mana
 	r.intervalle = intervalle(stats)
 
-	var portes := mots_cles()
+	var donnes := PackedStringArray()
+	for t: TalentInvesti in talents:
+		donnes.append_array(t.noeud.mots_cles_ajoutes)
+	var portes := _mots_cles(donnes)
+	r.mots_cles = portes
+
 	var champs: Array[StatMod] = []
 	var pourcents_de_degats: Array[StatMod] = []
 	for m: StatMod in mods:
-		if not portes.has(m.portee):
-			continue
-		var ajoutee := StatsDeCompetence.nature_ajoutee(m.stat)
-		if ajoutee >= 0 and m.mode == StatMod.Mode.FLAT:
-			r.ajouter(ajoutee, m.value, m.value_max)
-		elif m.stat == StatsDeCompetence.DEGATS and m.mode == StatMod.Mode.PERCENT:
-			pourcents_de_degats.append(m)
-		elif m.stat != StatsDeCompetence.DEGATS and StatsDeCompetence.LABELS.has(m.stat):
-			champs.append(m)
+		if portes.has(m.portee):
+			_ranger(r, m, champs, pourcents_de_degats)
+	for t: TalentInvesti in talents:
+		for m in t.mods():
+			_ranger(r, m, champs, pourcents_de_degats)
 
 	StatMod.appliquer(r, champs)
+	for t: TalentInvesti in talents:
+		r.convertir(nature, t.noeud.convertit_vers, t.conversion())
 	r.appliquer_l_attribut(facteur_d_attribut(stats))
 	for m in pourcents_de_degats:
 		r.accroitre(m.value)
 	r.conclure()
 	return r
+
+
+## Où va un modificateur retenu : dans les dégâts ajoutés de sa nature, dans les
+## pourcentages qu'on garde pour la fin, ou dans les champs nommés.
+##
+## Une seule fonction pour les lignes d'objet et celles des talents : deux tris
+## finiraient par ne pas traiter « +12 % dégâts » de la même façon selon qu'il
+## vient d'un anneau ou d'un nœud.
+static func _ranger(
+	r: StatsDeCompetence, m: StatMod, champs: Array[StatMod], pourcents: Array[StatMod]
+) -> void:
+	var ajoutee := StatsDeCompetence.nature_ajoutee(m.stat)
+	if ajoutee >= 0 and m.mode == StatMod.Mode.FLAT:
+		r.ajouter(ajoutee, m.value, m.value_max)
+	elif m.stat == StatsDeCompetence.DEGATS and m.mode == StatMod.Mode.PERCENT:
+		pourcents.append(m)
+	elif m.stat != StatsDeCompetence.DEGATS and StatsDeCompetence.LABELS.has(m.stat):
+		champs.append(m)
 
 
 ## Un champ de la fiche, ou zéro quand il n'est pas nommé.

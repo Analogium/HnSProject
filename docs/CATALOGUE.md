@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-42 bases d'objets, 38 affixes d'objets, 5 affixes d'ennemis.
+44 bases d'objets, 11 compétences, 39 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -64,6 +64,84 @@ Niveaux de zone : 1 à 60.
 | `bague_ouvragee` | Bague ouvragée | anneau | 2 | ring | ring, jewellery | +4 % chance critique | 1 × 1 | 16 à 40 |
 | `chevaliere` | Chevalière | anneau | 3 | ring | ring, jewellery | +6 % chance critique | 1 × 1 | 34 et au-delà |
 | `manuel_foudre` | Manuel de la foudre | manuel_foudre | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
+| `manuel_armes` | Manuel d'armes | manuel_armes | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
+| `manuel_feu` | Manuel des flammes | manuel_feu | 1 | manual | manual | — | 2 × 2 | 5 et au-delà |
+
+## Manuels
+
+Un manuel gagne **un point par niveau**, 20 au plafond
+(`Manuel.NIVEAU_MAX`), et ses cases, ses passifs et ses nœuds se servent
+dans le même sac : la colonne « points » dit ce que chacun accepte, et leur
+somme dépasse volontairement ce qu'un livre peut gagner.
+
+### Maître de la foudre — `manuel_foudre`
+
+| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+|---|---|---|---|---|---|---|---|
+| Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | 1 | 21 · 27 · 34 · 42 · 51 |
+| Salve d'éclairs | sort foudre | niveau 3 | 5 | 14 mana | 0.62 s | 3 | 16 · 19 · 23 · 28 · 34 |
+| Fulguration | sort foudre | niveau 5 | 5 | 18 mana | 0.95 s | 1 | 41 · 53 · 68 · 86 · 107 |
+| Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | 8 | 18 · 22 · 27 · 33 · 40 |
+| Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % dégâts (Foudre) · +10 mana |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Surcharge | Éclair vif | — | 1 point de compétence | 3 | +12 % dégâts |
+| Fourche | Éclair vif | Surcharge | 2 points de compétence | 1 | +1 nombre de projectiles |
+| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | +20 % dégâts · convertit 50 % en froid |
+| Volée | Salve d'éclairs | — | 1 point de compétence | 2 | +1 nombre de projectiles |
+| Empennage | Salve d'éclairs | Volée | 2 points de compétence | 2 | +20 % vitesse de projectile |
+| Percée | Salve d'éclairs | — | 3 points de compétence | 3 | +14 % dégâts |
+| Amplitude | Fulguration | — | 1 point de compétence | 3 | +15 % dégâts |
+| Embrasement | Fulguration | Amplitude | 3 points de compétence | 1 | convertit 60 % en feu · donne le mot-clé Feu |
+| Éclats | Fulguration | — | 2 points de compétence | 1 | +2 nombre de projectiles · -25 % dégâts |
+| Couronne | Nova de foudre | — | 1 point de compétence | 2 | +2 nombre de projectiles |
+| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | +12 % dégâts |
+| Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % vitesse de projectile |
+
+48 destinations de points pour 20 gagnés.
+
+### Maître d'armes — `manuel_armes`
+
+| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+|---|---|---|---|---|---|---|---|
+| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | arme | 1 | 20 · 26 · 33 · 41 · 50 |
+| Lames tournoyantes | attaque physique | niveau 3 | 5 | 9 mana | arme | 2 | 11 · 14 · 18 · 22 · 27 |
+| Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Élan | Frappe lourde | — | 1 point de compétence | 3 | +14 % dégâts |
+| Lame ardente | Frappe lourde | Élan | 2 points de compétence | 1 | convertit 40 % en feu · donne le mot-clé Feu |
+| Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
+| Gerbe d'acier | Lames tournoyantes | — | 1 point de compétence | 2 | +1 nombre de projectiles |
+| Affûtage | Lames tournoyantes | Gerbe d'acier | 2 points de compétence | 3 | +12 % dégâts |
+| Retour de lame | Lames tournoyantes | — | 2 points de compétence | 2 | +30 % vitesse de projectile |
+
+27 destinations de points pour 20 gagnés.
+
+### Maître des flammes — `manuel_feu`
+
+| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+|---|---|---|---|---|---|---|---|
+| Trait de feu | sort feu | niveau 1 | 5 | 10 mana | 0.55 s | 1 | 28 · 35 · 44 · 54 · 67 |
+| Gerbe de flammes | sort feu | niveau 4 | 5 | 20 mana | 0.85 s | 5 | 15 · 18 · 22 · 27 · 33 |
+| Comète | sort feu | niveau 9 | 5 | 30 mana | 1.50 s | 1 | 62 · 78 · 98 · 123 · 154 |
+| Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % dégâts (Feu) · +3 % rés. feu |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Attisement | Trait de feu | — | 1 point de compétence | 3 | +13 % dégâts |
+| Double langue | Trait de feu | Attisement | 2 points de compétence | 1 | +1 nombre de projectiles |
+| Braises | Trait de feu | — | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
+| Souffle | Gerbe de flammes | — | 1 point de compétence | 3 | +12 % dégâts |
+| Nuée | Gerbe de flammes | Souffle | 2 points de compétence | 2 | +2 nombre de projectiles |
+| Cendres | Gerbe de flammes | — | 3 points de compétence | 1 | +15 % dégâts · convertit 50 % en nécrotique |
+| Masse | Comète | — | 1 point de compétence | 3 | +16 % dégâts |
+| Fragmentation | Comète | Masse | 3 points de compétence | 1 | +3 nombre de projectiles · -35 % dégâts |
+| Chute rapide | Comète | — | 2 points de compétence | 2 | +25 % vitesse de projectile |
+
+37 destinations de points pour 20 gagnés.
 
 ## Affixes d'objets
 
@@ -71,44 +149,45 @@ Niveaux de zone : 1 à 60.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 42 |
-| `allonge` | allonge | melee | — | 8 | 5 | 8 / 42 |
-| `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 42 |
-| `cuirasse` | armure | armour | — | 9 | 9 | 19 / 42 |
-| `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 42 |
-| `ensorcele` | dégâts (Sort) (%) | caster | — | 8 | 6 | 5 / 42 |
-| `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 42 |
-| `feu_aux_attaques` | dégâts de feu aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `feu_aux_sorts` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `foudre_aux_attaques` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `foudre_aux_sorts` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `fourchu` | nombre de projectiles (Projectile) | caster | — | 3 | 2 | 5 / 42 |
-| `froid_aux_attaques` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `froid_aux_sorts` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `fuyant` | esquive | light | — | 9 | 8 | 10 / 42 |
-| `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 42 |
-| `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 42 |
-| `impie` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 42 |
-| `incantateur` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 42 |
-| `isole` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 42 |
-| `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 42 |
-| `muscle` | force | *partout* | — | 8 | 6 | 41 / 42 |
-| `necrotique_aux_attaques` | dégâts nécrotiques aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `necrotique_aux_sorts` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `orageux` | dégâts (Foudre) (%) | caster, jewellery | — | 8 | 6 | 11 / 42 |
-| `physique_aux_attaques` | dégâts physiques aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `physique_aux_sorts` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 42 |
-| `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 42 |
-| `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 42 |
-| `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 42 |
-| `sacre_aux_attaques` | dégâts sacrés aux attaques | melee | — | 2 | 8 | 8 / 42 |
-| `sacre_aux_sorts` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 42 |
-| `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 42 |
-| `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 42 |
-| `sifflant` | vitesse de projectile (Projectile) (%) | caster, gloves | — | 8 | 5 | 8 / 42 |
-| `vif` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 42 |
-| `vigoureux` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 42 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 44 |
+| `allonge` | allonge | melee | — | 8 | 5 | 8 / 44 |
+| `ardent` | dégâts (Feu) (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
+| `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 44 |
+| `cuirasse` | armure | armour | — | 9 | 9 | 19 / 44 |
+| `embaume` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `ensorcele` | dégâts (Sort) (%) | caster | — | 8 | 6 | 5 / 44 |
+| `erudit` | intelligence | *partout* | — | 8 | 6 | 41 / 44 |
+| `feu_aux_attaques` | dégâts de feu aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `feu_aux_sorts` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `foudre_aux_attaques` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `foudre_aux_sorts` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `fourchu` | nombre de projectiles (Projectile) | caster | — | 3 | 2 | 5 / 44 |
+| `froid_aux_attaques` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `froid_aux_sorts` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `fuyant` | esquive | light | — | 9 | 8 | 10 / 44 |
+| `givre` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `ignifuge` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `impie` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `incantateur` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 44 |
+| `isole` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `limpide` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 44 |
+| `muscle` | force | *partout* | — | 8 | 6 | 41 / 44 |
+| `necrotique_aux_attaques` | dégâts nécrotiques aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `necrotique_aux_sorts` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `orageux` | dégâts (Foudre) (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
+| `physique_aux_attaques` | dégâts physiques aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `physique_aux_sorts` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `plaque` | armure (%) | heavy | — | 8 | 6 | 9 / 44 |
+| `preste` | vitesse (%) | boots | — | 10 | 5 | 3 / 44 |
+| `regenerant` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 44 |
+| `robuste` | PV (%) | armour, belt | — | 10 | 6 | 22 / 44 |
+| `sacre_aux_attaques` | dégâts sacrés aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `sacre_aux_sorts` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
+| `sagace` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 44 |
+| `sanglant` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 44 |
+| `sifflant` | vitesse de projectile (Projectile) (%) | caster, gloves | — | 8 | 5 | 8 / 44 |
+| `vif` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 44 |
+| `vigoureux` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 44 |
 
 ### Affixes d'ennemis
 
@@ -146,6 +225,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 8–10 | 10 |
 | T4 | 12 | 5–7 | 10 |
 | T5 | 1 | 2–4 | 10 |
+
+**`ardent`** — dégâts (Feu), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
 
 **`cruel`** — chance critique, arrondi 0.01
 

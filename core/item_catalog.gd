@@ -74,6 +74,11 @@ const ALL := [
 	# lignée à deux paliers, pas d'implicite qui doit croître. La question se pose
 	# à un seul endroit, `EquipmentSlots.famille_equipable()`.
 	preload("res://resources/items/manuel_foudre.tres"),
+	# Jalon 10. Chacun sa lignée d'un seul palier — un manuel ne se relève pas, son
+	# palier dit sa rareté — et son propre `kind` : trois piles de livres
+	# identiques seraient trois objets qu'on ne distingue qu'en les survolant.
+	preload("res://resources/items/manuel_armes.tres"),
+	preload("res://resources/items/manuel_feu.tres"),
 ]
 
 

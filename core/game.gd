@@ -4,6 +4,17 @@ extends Node
 ## et 0.10 la différence est immédiate. Réglable à chaud depuis l'arène de test.
 var hit_stop_duration := 0.05
 
+## Ce qu'on laisse au jeu entre deux gels, en secondes réelles. Le gel donne son
+## poids à un coup ; enchaîné, il ne se lit plus comme de l'impact mais comme du
+## lag — c'est le même geste qui est joué au ralenti en permanence.
+##
+## Mesuré sans cette période, à trois cents ennemis et compétence tenue : un gel
+## toutes les 400 ms, soit **12 % du temps de jeu passé à 2 % de vitesse**, sans
+## qu'aucun compteur d'images par seconde ne bouge.
+##
+## Réglable à chaud depuis l'arène, comme la durée.
+var hit_stop_periode := 0.45
+
 var rng := RandomNumberGenerator.new()
 
 ## Le personnage en cours de partie, posé par l'écran de sélection et lu par la
@@ -63,7 +74,34 @@ var ui_grabs_input := false
 ## le drapeau à faux alors que l'autre tient encore la souris.
 var _ui_grabbers := {}
 
+## Le nombre de gels joués depuis le lancement. Le banc de mesure en tire leur
+## fréquence, et les tests n'ont pas d'autre prise : un `time_scale` qui dure
+## cinq centièmes de seconde ne s'observe pas depuis une assertion.
+var gels := 0
+
 var _hit_stop_active := false
+## Quand le dernier gel s'est terminé, sur l'horloge **réelle** : pendant un gel
+## le temps de jeu n'avance quasiment plus, et une période comptée dessus ne
+## s'écoulerait jamais.
+##
+## La fin et non la date du prochain gel autorisé : la période se relit à chaque
+## impact, donc la baisser depuis l'arène se sent au coup suivant et non une
+## fois l'ancienne période écoulée.
+var _hit_stop_fin := 0
+
+## La secousse en cours : la caméra visée, son amplitude de départ, ce qu'il reste
+## à jouer et sur combien. Un état et non une coroutine par appel — chaque ennemi
+## touché en lançait une, les cinq d'un balayage se disputaient le même `offset`,
+## et la première finie le remettait à zéro sous les autres.
+var _secousse_camera: Camera2D
+var _secousse_amplitude := 0.0
+var _secousse_reste := 0.0
+var _secousse_duree := 0.0
+
+## Tirage propre à la caméra. Surtout pas `rng` : la secousse est décorative, et
+## ses deux nombres par image décalaient toutes les graines de zone tirées
+## ensuite (invariant 3).
+var _rng_camera := RandomNumberGenerator.new()
 
 
 ## Déclare qu'un panneau prend la souris, ou qu'il la rend. À appeler avec le
@@ -80,6 +118,10 @@ func grab_ui_input(source: Object, grabbing: bool) -> void:
 
 func _ready() -> void:
 	rng.randomize()
+	_rng_camera.randomize()
+	# Rien à faire hors secousse : un autoload qui tourne pour rien coûte à
+	# chaque image de la partie.
+	set_process(false)
 	# Sinon la croix de la fenêtre ferme le jeu sans que personne ait pu écrire.
 	# Le pendant obligatoire est _notification : sans lui la fenêtre ne se
 	# fermerait plus du tout.
@@ -110,28 +152,69 @@ func go_back(fallback: String = "res://world/zone.tscn") -> void:
 
 
 ## Fige le jeu très brièvement à l'impact.
+##
+## **Un gel par geste et non par cible** : l'appelant n'a pas à compter ses
+## impacts, c'est `hit_stop_periode` qui écarte les suivants. Un balayage qui
+## touche cinq ennemis, une salve dont les traits arrivent ensemble et une touche
+## tenue sur une nuée ne figent donc le jeu qu'une fois.
 func hit_stop(duration: float = -1.0) -> void:
 	if _hit_stop_active:
+		return
+	# La période court depuis la **fin** du gel précédent, pas depuis son début :
+	# sinon un gel plus long qu'elle se rendrait la main à lui-même.
+	if Time.get_ticks_msec() - _hit_stop_fin < roundi(hit_stop_periode * 1000.0):
 		return
 	var d := hit_stop_duration if duration < 0.0 else duration
 	if d <= 0.0:
 		return
 	_hit_stop_active = true
+	gels += 1
 	Engine.time_scale = 0.02
 	# 4e paramètre = ignore_time_scale, sinon le timer est figé lui aussi
 	await get_tree().create_timer(d, true, false, true).timeout
 	Engine.time_scale = 1.0
+	_hit_stop_fin = Time.get_ticks_msec()
 	_hit_stop_active = false
 
 
+## Secoue la caméra. Appelée pendant une secousse, elle **reprend la plus forte
+## des deux** au lieu d'en ajouter une : un balayage qui touche cinq ennemis
+## secoue comme un coup, pas comme cinq.
 func shake_camera(camera: Camera2D, amount: float = 3.0, duration: float = 0.15) -> void:
-	var elapsed := 0.0
-	while elapsed < duration:
-		var falloff := 1.0 - (elapsed / duration)
-		camera.offset = Vector2(
-			rng.randf_range(-amount, amount),
-			rng.randf_range(-amount, amount)
-		) * falloff
-		await get_tree().process_frame
-		elapsed += get_process_delta_time()
-	camera.offset = Vector2.ZERO
+	if camera == null or amount <= 0.0 or duration <= 0.0:
+		return
+	if camera != _secousse_camera:
+		_reposer_la_camera()
+		_secousse_camera = camera
+	_secousse_amplitude = maxf(_secousse_amplitude, amount)
+	_secousse_reste = maxf(_secousse_reste, duration)
+	_secousse_duree = maxf(_secousse_duree, _secousse_reste)
+	set_process(true)
+
+
+## Le delta n'est pas dé-scalé, comme chez HitFeedback : pendant un gel la
+## secousse se fige avec le reste du jeu. Dé-scalée, elle jouerait ses quinze
+## centièmes pendant que l'image, elle, ne bouge plus.
+func _process(delta: float) -> void:
+	if not is_instance_valid(_secousse_camera):
+		_reposer_la_camera()
+		return
+	_secousse_reste = maxf(_secousse_reste - delta, 0.0)
+	if _secousse_reste <= 0.0:
+		_reposer_la_camera()
+		return
+	var falloff := _secousse_reste / _secousse_duree
+	_secousse_camera.offset = Vector2(
+		_rng_camera.randf_range(-_secousse_amplitude, _secousse_amplitude),
+		_rng_camera.randf_range(-_secousse_amplitude, _secousse_amplitude)
+	) * falloff
+
+
+func _reposer_la_camera() -> void:
+	if is_instance_valid(_secousse_camera):
+		_secousse_camera.offset = Vector2.ZERO
+	_secousse_camera = null
+	_secousse_amplitude = 0.0
+	_secousse_reste = 0.0
+	_secousse_duree = 0.0
+	set_process(false)

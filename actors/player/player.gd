@@ -104,6 +104,12 @@ var facing := Vector2.RIGHT
 ## compétence sur deux cases ne doit pas se recharger deux fois — ce que la
 ## barre interdit déjà en refusant les doublons.
 var _recharges := PackedFloat32Array()
+## Les cases dont la touche est tenue depuis un appui né en jeu. Une case ne
+## s'arme qu'au passage de la touche à l'état enfoncé, jamais parce qu'elle est
+## trouvée enfoncée : sinon le clic qui choisit une compétence dans le menu de la
+## barre — le menu se ferme sur l'appui, le bouton reste baissé un dixième de
+## seconde — la lancerait aussitôt, sans que le doigt ait rien fait de nouveau.
+var _maintenues: Array[bool] = []
 ## Ce que le coup en cours inflige, **tiré une fois au départ du geste** : la
 ## hitbox s'ouvre une image plus tard, la case de barre aura pu changer
 ## entre-temps, et tous les ennemis de l'arc reçoivent la même valeur — un
@@ -121,6 +127,7 @@ func _ready() -> void:
 	if base_stats == null:
 		base_stats = CharacterStats.new()
 	_recharges.resize(BarreDeCompetences.EMPLACEMENTS)
+	_maintenues.resize(BarreDeCompetences.EMPLACEMENTS)
 	recompute_stats()
 	xp_to_next = _needed_for(level)
 	_set_health(stats.max_health)
@@ -176,10 +183,20 @@ func _physics_process(delta: float) -> void:
 	# Les cinq cases sont lues par sondage, ce qui court-circuite le système
 	# d'entrées de l'interface : sans ce test, chaque clic dans le sac lancerait
 	# aussi la compétence de la première case.
-	if not Game.ui_grabs_input:
-		for i in BarreDeCompetences.EMPLACEMENTS:
-			if Input.is_action_just_pressed("competence_%d" % (i + 1)):
-				lancer(i)
+	#
+	# Tenue, la touche relance dès que la recharge est passée : la cadence est
+	# celle de `lancer()`, pas celle du doigt. C'est aussi ce qui rend la
+	# recharge lisible — on tient le bouton et on voit le vrai rythme de la
+	# compétence, au lieu de cliquer dans le vide entre deux lancers.
+	for i in BarreDeCompetences.EMPLACEMENTS:
+		var action := "competence_%d" % (i + 1)
+		if Game.ui_grabs_input or not Input.is_action_pressed(action):
+			_maintenues[i] = false
+			continue
+		if Input.is_action_just_pressed(action):
+			_maintenues[i] = true
+		if _maintenues[i]:
+			lancer(i)
 
 
 ## Lance la compétence de cette case, si elle en a une, qu'on l'a apprise, que la
@@ -206,7 +223,11 @@ func lancer(index: int) -> bool:
 	_recharges[index] = geste.intervalle
 	# Le mot-clé et non la cadence : c'est lui qui dit ce que la compétence fait.
 	# Un sort de zone sera une incantation sans être un tir.
-	if competence.porte(MotsCles.PROJECTILE):
+	#
+	# Lu sur le **geste résolu** et non sur la compétence : c'est lui qui connaît
+	# les mots-clés qu'un nœud d'arbre ajoute, et la fiche du manuel lit la même
+	# liste.
+	if geste.mots_cles.has(MotsCles.PROJECTILE):
 		_tirer(geste)
 	else:
 		_swing(geste)
@@ -220,7 +241,7 @@ func lancer(index: int) -> bool:
 ## `Competence.resoudre()` de son côté, l'un finirait par oublier la liste des
 ## modificateurs, et la page annoncerait un trait de moins que ce qui part.
 func resoudre(competence: Competence, points: int) -> StatsDeCompetence:
-	return competence.resoudre(points, stats, mods_de_competence)
+	return competence.resoudre(points, stats, mods_de_competence, talents_de(competence.id))
 
 
 ## Ce qu'il reste à attendre sur cette case, en secondes, ou zéro. Publique parce
@@ -239,12 +260,57 @@ func recharge_restante(index: int) -> float:
 ## alors plus rien du tout, ce qui est exactement ce qu'on veut — mais la barre
 ## vide sa case avant qu'on en arrive là.
 func points_de_competence(id_competence: String) -> int:
-	for livre in ratelier.equipes():
-		if livre.enseigne(id_competence):
-			return livre.manuel.points_de(id_competence)
+	var livre := livre_de(id_competence)
+	if livre != null:
+		return livre.manuel.points_de(id_competence)
 	if CompetenceCatalog.est_de_depart(id_competence):
 		return POINTS_DES_ATTAQUES_DE_BASE
 	return 0
+
+
+## Le manuel du râtelier qui enseigne cette compétence, ou null.
+##
+## **Le seul endroit qui le cherche** : les points placés et les nœuds investis
+## viennent tous les deux du même livre, et deux recherches finiraient par
+## répondre différemment — une compétence dont les points viennent d'un livre et
+## l'arbre d'un autre.
+func livre_de(id_competence: String) -> Item:
+	for livre in ratelier.equipes():
+		if livre.enseigne(id_competence):
+			return livre
+	return null
+
+
+## Les nœuds d'arbre investis pour cette compétence. Vides pour une attaque de
+## départ, que personne n'enseigne : elles n'ont pas de case, donc pas d'arbre.
+func talents_de(id_competence: String) -> Array[TalentInvesti]:
+	var livre := livre_de(id_competence)
+	return livre.talents_investis(id_competence) if livre != null else [] as Array[TalentInvesti]
+
+
+## Place un point dans une case, un passif ou un nœud du manuel de cet
+## emplacement, et dit si c'est fait. **Le seul chemin**, parce qu'un passif
+## change la fiche du personnage : la page des manuels ne peut pas oublier le
+## recalcul, et les conditions restent dans `Manuel`.
+func investir(emplacement: int, identifiant: String) -> bool:
+	var livre := ratelier.a(emplacement)
+	if livre == null or livre.base.manuel == null:
+		return false
+	if not livre.manuel.investir(livre.base.manuel, identifiant):
+		return false
+	_after_equipment_change()
+	return true
+
+
+## Reprend un point — d'un nœud d'arbre seulement, c'est `Manuel` qui le dit.
+func reprendre(emplacement: int, identifiant: String) -> bool:
+	var livre := ratelier.a(emplacement)
+	if livre == null or livre.base.manuel == null:
+		return false
+	if not livre.manuel.reprendre(livre.base.manuel, identifiant):
+		return false
+	_after_equipment_change()
+	return true
 
 
 ## Ce qu'on peut poser dans une case de barre : les deux attaques de départ, et
@@ -303,13 +369,15 @@ func _tirer(geste: StatsDeCompetence) -> void:
 		pas = ecart / float(nombre if referme else nombre - 1)
 		depart = -ecart * 0.5 + (pas * 0.5 if referme else 0.0)
 
+	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
+	var nature := geste.nature_dominante()
 	for i in nombre:
 		var direction := facing.rotated(depart + pas * float(i))
 		# Un tirage par trait : trois traits identiques au point près se liraient
 		# comme un seul coup recopié.
 		Projectile.spawn(
 			parent, bolt_scene, global_position, direction, geste.tirer(Game.rng), self,
-			geste.vitesse_de_projectile
+			geste.vitesse_de_projectile, nature
 		)
 
 
@@ -340,6 +408,13 @@ func recompute_stats() -> void:
 		var item: Item = equipment.get(slot)
 		if item != null:
 			mods.append_array(item.mods())
+
+	# Les passifs des manuels **à l'étude**, dans la même liste que les objets :
+	# ils passent par le même tri, donc par la même règle qui empêche un bonus de
+	# compter deux fois. Un livre rangé dans le sac ne donne rien — le râtelier
+	# est le seul endroit où un manuel agit.
+	for livre in ratelier.equipes():
+		mods.append_array(livre.mods_de_passifs())
 
 	# En trois temps, et l'ordre compte. Les attributs sont des **entrées** : ils
 	# doivent être définitifs avant qu'on en dérive quoi que ce soit, sinon un
@@ -502,7 +577,12 @@ func etudier(item: Item, index := -1) -> Item:
 			if ratelier.a(i) == null:
 				cible = i
 				break
-	return ratelier.poser(cible, item)
+	var ancien := ratelier.poser(cible, item)
+	# Un manuel porte des passifs : le poser change la fiche, exactement comme
+	# enfiler un plastron. Sans ce recalcul, le bonus n'arriverait qu'au prochain
+	# changement d'équipement.
+	_after_equipment_change()
+	return ancien
 
 
 ## Retire un manuel du râtelier et le rend, **en vidant les cases de barre qui
@@ -525,6 +605,9 @@ func cesser_d_etudier(index: int) -> Item:
 		for i in BarreDeCompetences.EMPLACEMENTS:
 			if barre.id_de(i) == competence.id:
 				barre.vider(i)
+	# Et ses passifs s'en vont avec lui : oublié, le bonus resterait sur la fiche
+	# jusqu'au prochain changement d'équipement.
+	_after_equipment_change()
 	return parti
 
 
@@ -564,6 +647,11 @@ func spend_point(attribut: String) -> bool:
 ## Les statistiques changent, donc les PV maximum aussi : retirer un plastron
 ## doit ramener la vie courante sous le nouveau plafond, sinon la barre déborde
 ## et le joueur garde des PV qu'il n'a plus.
+##
+## **Un manuel passe par ici aussi** : ses passifs entrent dans la fiche comme
+## une pièce d'armure, et un point placé dedans la change. C'est la même règle, et
+## une seconde fonction pour le râtelier aurait fini par oublier l'un des quatre
+## gestes.
 func _after_equipment_change() -> void:
 	recompute_stats()
 	_set_health(health)
@@ -653,9 +741,14 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 
 	var info := DamageInfo.roll(stats, global_position, _parts_du_coup)
 	(area as Hurtbox).take_damage(info)
-	Game.hit_stop()
-	if shake_amount > 0.0:
-		Game.shake_camera(camera, shake_amount)
+
+	# **Au premier touché seulement** : un balayage est un coup, pas cinq. Les
+	# deux fonctions savent se refuser, mais elles ne peuvent pas deviner que ces
+	# cinq impacts sont le même geste — c'est ici qu'on le sait.
+	if _already_hit.size() == 1:
+		Game.hit_stop()
+		if shake_amount > 0.0:
+			Game.shake_camera(camera, shake_amount)
 
 
 func _on_damaged(info: DamageInfo) -> void:

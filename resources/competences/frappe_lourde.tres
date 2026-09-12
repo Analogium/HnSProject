@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Competence" format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "frappe_lourde"
+nom = "Frappe lourde"
+nature = 0
+cadence = 0
+recharge = 0.00
+cout_en_mana = 6.0
+projectiles = 1
+dispersion_en_degres = 0.0
+degats_par_point = Array[float]([20.0, 26.0, 33.0, 41.0, 50.0])
+attribut = ""
+pourcentage_par_attribut = 0.0
+niveau_de_manuel_requis = 1

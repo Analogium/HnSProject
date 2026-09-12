@@ -69,6 +69,13 @@ Banc `world/stress_test.tscn`, graine 4242, en fenêtré, après chauffe.
 La zone jouée en compte 69 : environ 25× de marge. Le chiffre qui compte est
 **simulés**, pas **vivants** — au-delà de 700 px l'`EnemyManager` ne tick plus.
 
+**Le combat se mesure à part**, par `[5]` sur le même banc : le joueur lance sa
+première case sans relâche. Ce qu'il coûte ne se lit pas sur les images par
+seconde mais sur la ligne « combat auto » — les gels d'impact ne perdent aucune
+image, ils prennent du temps de jeu. À 300 ennemis, attaque tenue : **165 img/s,
+11 ms de physique, 6 % du temps figé**. Au-delà d'une dizaine de pour cent, le
+jeu se met à ressembler à du lag ; c'est `Game.hit_stop_periode` qui le tient.
+
 ## Écrire du code ici
 
 - **Une règle, un endroit.** Une valeur écrite deux fois finira par mentir d'un

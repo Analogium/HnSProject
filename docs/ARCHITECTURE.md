@@ -36,7 +36,7 @@ en PNG, retouchables dans un éditeur d'image.
 | `fx/` | Le retour visuel des coups. | `core/` |
 | `tests/` | La campagne GUT — voir [tests/README.md](../tests/README.md). | tout |
 | `tools/` | Les outils hors jeu (génération de cette documentation). | tout |
-| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels et compétences**. | — |
+| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels, compétences, passifs et arbres de talents**. | — |
 
 **Le sens de circulation ne s'inverse jamais.** `core/` ne remonte pas vers une
 scène, un nœud ou un panneau. C'est ce qui permet à la moitié de la campagne de
@@ -92,16 +92,27 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement, la page du manuel et la fiche de personnage** : dégâts par nature en fourchette et leur décomposition, projectiles, dispersion, vitesse, coût, intervalle |
 | Combien une compétence inflige-t-elle en moyenne ? | `StatsDeCompetence.moyenne_par_lancer()` et `moyenne_par_seconde()` : si tout touche, avant défenses, sans critique |
 | Combien fait un coup parti ? | `StatsDeCompetence.tirer()` : une fois par projectile, une fois par coup d'épée pour tout son arc, avec `Game.rng` et **un tirage par fourchette ouverte** |
-| Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles` |
+| Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles`. Ceux d'un **lancer** sont dans `StatsDeCompetence.mots_cles`, nœuds d'arbre compris |
+| Dans quel ordre se lisent-ils ? | `MotsCles.ordonner()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
 | Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence`, avec la force changée en dégâts physiques aux attaques |
 | À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
-| Un tir ou un coup d'arme ? | Le mot-clé `projectile`, lu par `Player.lancer()` — pas la cadence |
+| Un tir ou un coup d'arme ? | Le mot-clé `projectile`, lu par `Player.lancer()` **sur le geste résolu** — pas la cadence, et pas la compétence : un nœud d'arbre peut ajouter un mot-clé |
 | Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les quatre refus — case vide, non apprise, réserve, recharge |
+| Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_periode` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
+| Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde |
+| Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
 | Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `CompetenceCatalog.DE_DEPART` |
 | Une ligne se donne-t-elle en fourchette ? | `StatMod.stat_en_fourchette()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.depuis_definition()` |
 | Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
 | Peut-on y placer un point ? | `Manuel.peut_investir()` — les quatre conditions, jamais dans l'interface |
 | Où un manuel apprend-il ? | Au râtelier seulement, par `EnemyManager.report_kill()` |
+| Que porte une case de manuel ? | `CaseDeManuel` : une compétence **ou** un passif — jamais les deux —, sa position, et l'arbre de talents de la première |
+| D'où viennent les talents d'un lancer ? | `Player.talents_de()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Competence.resoudre()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
+| Ce qu'un passif change, et quand ? | `Manuel.mods_de_passifs()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
+| Peut-on placer un point ? | `Manuel.peut_investir()`, pour les trois sortes de destination. `est_ouvert()` porte les conditions **structurelles** seules, pour que la page distingue « verrouillé » de « plus de point à placer » |
+| Peut-on le reprendre ? | `Manuel.peut_reprendre()` : **un nœud d'arbre seulement**, et pas sous un enfant qui porte des points |
+| Où convertit-on des dégâts ? | `StatsDeCompetence.convertir()`, appelée par `resoudre()` **après les fourchettes ajoutées** ; `convertis` en garde la part pour la fiche |
+| Dans quelle nature un tir se dessine-t-il ? | `StatsDeCompetence.nature_dominante()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
 
 ## Les invariants
 
@@ -112,9 +123,11 @@ compilation, et la moitié ne se voit qu'au lancement suivant.
 
 `ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, les
 identifiants de `MotsCles` — la portée d'un affixe en nomme un —, ceux de
-`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `degats_froid` — et les
-noms de champs de `Personnage.vers_dict()` sont **dans les sauvegardes des
-joueurs**.
+`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `degats_froid` —, ceux
+de `Competence`, `Passif` et `NoeudDeTalent` — les trois partagent le
+dictionnaire de points d'un manuel, et **deux identiques dans un même livre
+partageraient un compteur** — et les noms de champs de `Personnage.vers_dict()`
+sont **dans les sauvegardes des joueurs**.
 Renommer `chest` en `torse` fait disparaître le plastron de tout le monde — au
 prochain chargement seulement, sans erreur.
 
@@ -145,6 +158,7 @@ ne peut rien reproduire.
 | La carte, les paquets d'ennemis | le RNG de zone, réamorcé sur la graine |
 | La silhouette, les affixes, le sens de rotation d'un ennemi | `hash()` de la case d'apparition |
 | **Le butin** | `Game.rng`, **et c'est voulu** |
+| La gerbe d'éclats, la secousse de caméra | leur tirage à eux — `HitFeedback._rng`, `Game._rng_camera` |
 
 Le butin est l'exception : il récompense une action, pas un lieu. Adossé à la
 case, tuer le même ennemi dans une zone qu'on revisite redonnerait toujours le
@@ -183,6 +197,7 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
 | La résolution d'un lancer | `Player.resoudre()` — le lancer et la fiche du manuel |
+| Le placement d'un point de manuel | `Player.investir()` / `reprendre()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
 | Le retour visuel d'un coup | `HitFeedback.current` |
 | Le tirage pondéré | `Tirage.pondere()` |
@@ -259,6 +274,13 @@ Rien de **calculé** n'est écrit : ni PV, ni statistiques. Elles se reconstruis
 à partir de la fiche de base, des attributs placés et de l'équipement. Les
 écrire créerait une seconde vérité qui figerait l'équilibrage du jour de la
 sauvegarde, et un rééquilibrage n'atteindrait jamais les personnages existants.
+
+Les points d'un passif et d'un nœud d'arbre voyagent dans le **même**
+dictionnaire que ceux des cases (`manuel.points`) : le jalon 10 n'a donc ajouté
+aucun champ, et aucun numéro de version. En revanche, la relecture demande à
+l'archétype s'il **connaît** l'identifiant (`ManuelArchetype.connait`) et non
+s'il l'enseigne : la question d'avant aurait jeté tous les arbres au premier
+rechargement, sur des fichiers intacts.
 
 Une ligne d'objet qui vise une statistique **disparue** est convertie à la
 lecture, dans `Personnage._ligne_actuelle()`, et seulement par une équivalence

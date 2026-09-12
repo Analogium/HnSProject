@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="ManuelArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manuel_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/case_de_manuel.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/noeud_de_talent.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/ligne_de_talent.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passif.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/competences/frappe_lourde.tres" id="10_frappe_lourde"]
+[ext_resource type="Resource" path="res://resources/competences/lames_tournoyantes.tres" id="11_lames_tournoyantes"]
+
+[sub_resource type="Resource" id="L_frappe_lourde_elan_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 14.0
+
+[sub_resource type="Resource" id="N_frappe_lourde_elan"]
+script = ExtResource("3_noeud")
+id = "frappe_lourde_elan"
+nom = "Élan"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_elan_0")])
+
+[sub_resource type="Resource" id="N_frappe_lourde_lame_ardente"]
+script = ExtResource("3_noeud")
+id = "frappe_lourde_lame_ardente"
+nom = "Lame ardente"
+position = Vector2i(1, 0)
+parent = "frappe_lourde_elan"
+points_requis = 2
+points_max = 1
+convertit_vers = 2
+part_convertie_par_point = 0.40
+mots_cles_ajoutes = PackedStringArray("feu")
+
+[sub_resource type="Resource" id="L_frappe_lourde_saignee_0"]
+script = ExtResource("4_ligne")
+stat = "degats_physique"
+valeur_par_point = 3.0
+valeur_max_par_point = 8.0
+
+[sub_resource type="Resource" id="N_frappe_lourde_saignee"]
+script = ExtResource("3_noeud")
+id = "frappe_lourde_saignee"
+nom = "Saignée"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_saignee_0")])
+
+[sub_resource type="Resource" id="C_frappe_lourde"]
+script = ExtResource("2_case")
+competence = ExtResource("10_frappe_lourde")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_frappe_lourde_elan"), SubResource("N_frappe_lourde_lame_ardente"), SubResource("N_frappe_lourde_saignee")])
+
+[sub_resource type="Resource" id="L_lames_tournoyantes_gerbe_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+valeur_par_point = 1.0
+
+[sub_resource type="Resource" id="N_lames_tournoyantes_gerbe"]
+script = ExtResource("3_noeud")
+id = "lames_tournoyantes_gerbe"
+nom = "Gerbe d'acier"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_gerbe_0")])
+
+[sub_resource type="Resource" id="L_lames_tournoyantes_affutage_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="N_lames_tournoyantes_affutage"]
+script = ExtResource("3_noeud")
+id = "lames_tournoyantes_affutage"
+nom = "Affûtage"
+position = Vector2i(1, 0)
+parent = "lames_tournoyantes_gerbe"
+points_requis = 2
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_affutage_0")])
+
+[sub_resource type="Resource" id="L_lames_tournoyantes_retour_0"]
+script = ExtResource("4_ligne")
+stat = "vitesse_de_projectile"
+pourcentage = true
+valeur_par_point = 30.0
+
+[sub_resource type="Resource" id="N_lames_tournoyantes_retour"]
+script = ExtResource("3_noeud")
+id = "lames_tournoyantes_retour"
+nom = "Retour de lame"
+position = Vector2i(0, 1)
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_retour_0")])
+
+[sub_resource type="Resource" id="C_lames_tournoyantes"]
+script = ExtResource("2_case")
+competence = ExtResource("11_lames_tournoyantes")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_lames_tournoyantes_gerbe"), SubResource("N_lames_tournoyantes_affutage"), SubResource("N_lames_tournoyantes_retour")])
+
+[sub_resource type="Resource" id="L_garde_de_fer_0"]
+script = ExtResource("4_ligne")
+stat = "armor"
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="L_garde_de_fer_1"]
+script = ExtResource("4_ligne")
+stat = "max_health"
+valeur_par_point = 14.0
+
+[sub_resource type="Resource" id="P_garde_de_fer"]
+script = ExtResource("5_passif")
+id = "garde_de_fer"
+nom = "Garde de fer"
+niveau_de_manuel_requis = 2
+points_max = 4
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_garde_de_fer_0"), SubResource("L_garde_de_fer_1")])
+
+[sub_resource type="Resource" id="C_garde_de_fer"]
+script = ExtResource("2_case")
+passif = SubResource("P_garde_de_fer")
+position = Vector2i(0, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "armes"
+nom = "Maître d'armes"
+cases = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_lames_tournoyantes"), SubResource("C_garde_de_fer")])

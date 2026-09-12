@@ -43,16 +43,18 @@ func test_un_archetype_va_avec_la_famille_du_manuel() -> void:
 			)
 
 
-## Une case vide se verrait sur la page comme un trou, et seulement là.
-func test_chaque_case_porte_une_competence() -> void:
+## Un manuel dont on ne peut rien apprendre à lancer est un objet qui occupe
+## quatre cases du sac pour rien. **Ce que porte chaque case** est l'affaire de
+## `test_talents.gd`, à qui appartient la règle « une case, une chose ».
+func test_chaque_manuel_enseigne_au_moins_une_competence() -> void:
 	for base in ItemCatalog.ALL:
 		if base.manuel == null:
 			continue
 		assert_gt(base.manuel.cases.size(), 0, "« %s » est vide" % base.display_name)
-		for c in base.manuel.cases:
-			assert_not_null(
-				c.competence, "« %s » a une case sans compétence" % base.manuel.nom
-			)
+		assert_gt(
+			base.manuel.competences().size(), 0,
+			"« %s » n'enseigne aucune compétence" % base.manuel.nom
+		)
 
 
 func test_l_archetype_retrouve_sa_case_par_l_identifiant() -> void:
@@ -61,7 +63,10 @@ func test_l_archetype_retrouve_sa_case_par_l_identifiant() -> void:
 	assert_not_null(c, "la case existe")
 	assert_eq(c.competence.id, "eclair_vif")
 	assert_null(arch.case_de("sort_qui_n_existe_pas"), "et l'inconnu ne rend rien")
-	assert_eq(arch.competences().size(), arch.cases.size(), "toutes les cases comptent")
+	assert_eq(
+		arch.competences().size(), arch.cases.size() - arch.passifs().size(),
+		"toutes les cases comptent, moins celles des passifs"
+	)
 
 
 # --------------------------------------------------------------------------

@@ -470,12 +470,13 @@ func test_un_trait_seul_part_droit_dans_la_visee() -> void:
 # Le lancer passe par la résolution (jalon 7, étape 3)
 # --------------------------------------------------------------------------
 
-## Un point dans chaque case du manuel de la foudre.
+## Un point dans chaque compétence du manuel de la foudre. Ses passifs sont
+## laissés vides : ce test regarde ce qui **part**, et un passif ne part pas.
 func _livre_ouvert_partout() -> Item:
 	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
 	livre.manuel.gagner_experience(999999)
-	for case in livre.base.manuel.cases:
-		livre.manuel.investir(livre.base.manuel, case.competence.id)
+	for competence in livre.base.manuel.competences():
+		livre.manuel.investir(livre.base.manuel, competence.id)
 	return livre
 
 
@@ -554,6 +555,102 @@ func test_chaque_trait_tire_sa_fourchette() -> void:
 	for tir: Projectile in _tirs.get_children():
 		froids[tir._parts[DamageType.Kind.COLD]] = true
 	assert_eq(froids.size(), 3, "trois traits, trois tirages")
+
+
+# --------------------------------------------------------------------------
+# Les passifs et les talents (jalon 10)
+# --------------------------------------------------------------------------
+
+## Un livre au râtelier, monté au plafond, avec ces points placés **par le seul
+## chemin** — celui qui recalcule la fiche.
+func _etudier(id_base: String, points: Array, emplacement := 0) -> Item:
+	var livre := Item.new(ItemCatalog.by_id(id_base))
+	livre.manuel.gagner_experience(999999)
+	_p.etudier(livre, emplacement)
+	for id: String in points:
+		assert_true(_p.investir(emplacement, id), "« %s »" % id)
+	return livre
+
+
+## **Un passif entre dans la fiche comme une pièce d'armure**, et par le même
+## tri : ses lignes sans portée touchent le personnage, celles qui visent un
+## mot-clé restent pour les compétences.
+func test_un_passif_du_ratelier_entre_dans_la_fiche() -> void:
+	var armure := _p.stats.armor
+	var pv := _p.stats.max_health
+	_etudier("manuel_armes", ["garde_de_fer", "garde_de_fer"])
+
+	assert_eq(_p.stats.armor, armure + 24.0, "deux points de douze")
+	assert_eq(_p.stats.max_health, pv + 28.0, "et de quatorze PV")
+
+
+## **Et il s'en va avec le livre.** Oublié, le bonus resterait sur la fiche
+## jusqu'au prochain changement d'équipement, puis disparaîtrait sans que le
+## joueur ait rien fait.
+func test_un_passif_s_en_va_avec_son_livre() -> void:
+	var armure := _p.stats.armor
+	_etudier("manuel_armes", ["garde_de_fer"])
+	assert_eq(_p.stats.armor, armure + 12.0)
+
+	var parti := _p.cesser_d_etudier(0)
+	assert_eq(_p.stats.armor, armure, "la fiche est revenue à ce qu'elle était")
+	assert_eq(parti.manuel.points_de("garde_de_fer"), 1, "et le livre a gardé son point")
+
+	# Rangé dans le sac, il ne donne rien : le râtelier est le seul endroit où un
+	# manuel agit, et c'est ce qui en fait un choix.
+	assert_true(_p.inventory.add(parti))
+	_p.recompute_stats()
+	assert_eq(_p.stats.armor, armure, "un livre dans le sac ne donne rien")
+
+
+## Un passif qui vise un mot-clé ne touche pas la fiche mais les compétences qui
+## le portent — y compris celles d'un **autre** livre du râtelier.
+func test_un_passif_de_mot_cle_sert_les_competences_d_un_autre_livre() -> void:
+	var foudre := _etudier("manuel_foudre", ["eclair_vif"], 0)
+	var sans := _p.resoudre(CompetenceCatalog.by_id("eclair_vif"), 1).total_min()
+
+	_etudier("manuel_foudre", ["conducteur", "conducteur"], 1)
+	var avec := _p.resoudre(CompetenceCatalog.by_id("eclair_vif"), 1).total_min()
+	assert_almost_eq(avec, sans * 1.12, 0.01, "deux points de 6 % de dégâts de foudre")
+	assert_eq(foudre.manuel.points_de("conducteur"), 0, "et le premier livre n'y est pour rien")
+
+
+## **La conversion se voit** : le tir part dans la nature d'arrivée, et sa couleur
+## la dit. Sans cela, le nœud le plus cher de l'arbre ne se remarquerait qu'en
+## lisant une fiche.
+func test_un_noeud_de_conversion_change_la_nature_du_tir() -> void:
+	_etudier("manuel_foudre", [
+		"fulguration", "fulguration", "fulguration",
+		"fulguration_amplitude", "fulguration_embrasement",
+	])
+	_p.stats.max_mana = 999.0
+	_p._set_mana(999.0)
+	_p.barre.poser(3, "fulguration")
+
+	assert_true(_p.lancer(3))
+	assert_eq(_tirs.get_child_count(), 1)
+	var tir := _tirs.get_child(0) as Projectile
+	assert_gt(tir._parts[DamageType.Kind.FIRE], 0.0, "les trois cinquièmes sont du feu")
+	assert_gt(
+		tir._parts[DamageType.Kind.FIRE], tir._parts[DamageType.Kind.LIGHTNING],
+		"plus que ce qui reste de foudre"
+	)
+	assert_eq(tir._nature, int(DamageType.Kind.FIRE), "et le trait se dessine en feu")
+
+
+## Ce qu'un nœud ne change pas : un ajout d'objet ne déplace pas la couleur du
+## tir. C'est la décision du jalon 8 — un éclair reste un éclair — et elle tient
+## parce que la nature montrée ne regarde que la base et les conversions.
+func test_un_objet_ne_change_pas_la_couleur_du_tir() -> void:
+	_etudier("manuel_foudre", ["eclair_vif"])
+	_p.mods_de_competence.assign([
+		StatMod.fourchette("degats_froid", 900.0, 900.0, MotsCles.SORT),
+	])
+	_p.barre.poser(3, "eclair_vif")
+	assert_true(_p.lancer(3))
+	var tir := _tirs.get_child(0) as Projectile
+	assert_gt(tir._parts[DamageType.Kind.COLD], tir._parts[DamageType.Kind.LIGHTNING])
+	assert_eq(tir._nature, int(DamageType.Kind.LIGHTNING), "le trait reste un éclair")
 
 
 ## Un coup d'épée tire **une** fois : tous les ennemis de l'arc reçoivent la même

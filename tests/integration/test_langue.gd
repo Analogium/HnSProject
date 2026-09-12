@@ -99,6 +99,6 @@ func _livre_ouvert() -> Item:
 ## Les intitulés de la fiche, dans l'ordre où elle les écrit.
 func _libelles(livre: Item, competence: Competence) -> PackedStringArray:
 	var out := PackedStringArray()
-	for ligne in _panneau._lignes_de_fiche(livre.manuel, competence):
+	for ligne in _panneau._fiche_de_competence(livre.manuel, competence).lignes:
 		out.append(ligne.libelle)
 	return out

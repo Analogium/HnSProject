@@ -31,6 +31,12 @@ const MAX_ENEMIES := 1500
 ## moteur ignore des ennemis.
 const SPAWN_RADIUS_TILES := 18
 
+## Fenêtre sur laquelle se compte la fréquence des gels, en secondes réelles. Le
+## chiffre à surveiller n'est pas leur nombre mais la part du temps qu'ils
+## prennent : un gel de cinq centièmes toutes les quatre dixièmes, et le jeu
+## passe 12 % de son temps à 2 % de vitesse sans qu'aucune image ne se perde.
+const FENETRE_DES_GELS := 2.0
+
 ## Montée automatique : on ajoute une marche toutes les RAMP_DELAY secondes tant
 ## que le jeu tient, et on s'arrête à la première chute durable.
 const RAMP_DELAY := 1.0
@@ -44,6 +50,15 @@ var _rng := RandomNumberGenerator.new()
 
 var _peak_physics := 0.0
 var _peak_enemies := 0
+## Le combat automatique : le joueur lance sa première case sans relâche, comme
+## une touche tenue. Sans lui le banc ne mesurait que des ennemis qui marchent,
+## et le coût d'un combat — les impacts, les gels, les secousses — ne se voyait
+## nulle part.
+var _combat := false
+var _gels_fenetre := 0
+var _gels_jusqua := 0
+var _gels_par_seconde := 0.0
+
 var _ramping := false
 var _ramp_cd := 0.0
 var _low_frames := 0
@@ -74,10 +89,17 @@ func _ready() -> void:
 	# se recharge, et la mesure repart de zéro.
 	_zone.player.hurtbox.invulnerable = true
 
+	# Le compteur de l'autoload court depuis le lancement du jeu : sans ce point
+	# de départ, la première fenêtre compterait les gels d'une partie précédente.
+	_gels_fenetre = Game.gels
+	_gels_jusqua = Time.get_ticks_msec() + roundi(FENETRE_DES_GELS * 1000.0)
+
 	_spawn(STEP * 2)
 
 
 func _process(delta: float) -> void:
+	_suivre_les_gels()
+
 	var physics_ms := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	_peak_physics = maxf(_peak_physics, physics_ms)
 	_peak_enemies = maxi(_peak_enemies, _count())
@@ -86,6 +108,25 @@ func _process(delta: float) -> void:
 		_advance_ramp(delta)
 
 	overlay.text = _text(physics_ms)
+
+
+## La case 0 du joueur, à chaque pas de physique. Par `lancer()` et non en
+## simulant la touche : c'est le même point de passage, et le banc n'a pas à
+## savoir sur quelle touche la case est câblée.
+func _physics_process(_delta: float) -> void:
+	if _combat and _zone != null:
+		_zone.player.lancer(0)
+
+
+## Sur l'horloge réelle, et pas sur `delta` : pendant un gel le temps de jeu
+## n'avance plus, et une fenêtre comptée dessus ne se refermerait jamais.
+func _suivre_les_gels() -> void:
+	var maintenant := Time.get_ticks_msec()
+	if maintenant < _gels_jusqua:
+		return
+	_gels_par_seconde = float(Game.gels - _gels_fenetre) / FENETRE_DES_GELS
+	_gels_fenetre = Game.gels
+	_gels_jusqua = maintenant + roundi(FENETRE_DES_GELS * 1000.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -105,6 +146,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# *physiques* W A S D, qui portent les étiquettes Z Q S D en AZERTY — la
 		# touche « A » du clavier de l'utilisateur est donc déjà move_left.
 		KEY_4: _toggle_ramp()
+		KEY_5: _combat = not _combat
 		KEY_K: _zone.kill_all()
 		KEY_R: _reset()
 		KEY_H: overlay.visible = not overlay.visible
@@ -230,6 +272,13 @@ func _text(physics_ms: float) -> String:
 		),
 		"noeuds            %d" % Performance.get_monitor(Performance.OBJECT_NODE_COUNT),
 		"",
+		# Ce que coûte le combat, et qui ne se voit sur aucun autre compteur : les
+		# gels ne perdent pas une image, ils volent du temps de jeu.
+		"combat auto       %s   (%.1f gel/s, %.0f %% du temps fige)" % [
+			"en cours" if _combat else "arrete", _gels_par_seconde,
+			100.0 * _gels_par_seconde * Game.hit_stop_duration
+		],
+		"",
 		# Le second chiffre est le seul qui compte : au delà de CULL_DISTANCE
 		# l'EnemyManager ne tick plus, donc des ennemis en trop ne coûtent que
 		# leur affichage.
@@ -240,7 +289,8 @@ func _text(physics_ms: float) -> String:
 		"montee auto       %s" % ramp,
 		"",
 		"[1/2] %d ennemis   [3] vague de %d" % [STEP, WAVE],
-		"[4] montee auto    [K] tout tuer   [R] reset",
+		"[4] montee auto    [5] combat auto",
+		"[K] tout tuer      [R] reset",
 		"[H] masquer        [F1] zone   [F2] arene",
 		"[F6] ou [ECHAP] retour",
 	])
