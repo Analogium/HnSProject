@@ -91,23 +91,33 @@ func test_chaque_competence_vise_des_champs_reels() -> void:
 ## **La faute de frappe silencieuse** : un `projectiles` au pluriel dans un `.tres`
 ## ne casse rien, le sort ne reçoit simplement jamais son bonus. C'est la raison
 ## d'être de la liste fermée, et ce test en est la porte.
+##
+## Les fautes se comptent au lieu de s'affirmer une à une : aucune compétence ne
+## déclare plus rien depuis que la forme donne `projectile`, et un test qui ne
+## parcourt qu'une liste vide n'affirme rien du tout.
 func test_chaque_mot_cle_declare_appartient_a_la_liste() -> void:
+	var fautes := PackedStringArray()
 	for c in CompetenceCatalog.ALL:
 		for id in c.mots_cles_declares:
-			assert_true(
-				MotsCles.existe(id),
-				"« %s » déclare « %s », qui n'est pas dans la liste" % [c.nom, id]
-			)
+			if not MotsCles.existe(id):
+				fautes.append("« %s » déclare « %s »" % [c.nom, id])
+	assert_eq(fautes.size(), 0, "hors de la liste : %s" % ", ".join(fautes))
 
 
 ## La nature et la cadence disent déjà `foudre` et `sort`. Les écrire aussi dans
 ## la déclaration, c'est deux vérités sur la même chose : le jour où la nature
 ## change, l'une des deux ment.
 func test_on_ne_declare_pas_ce_que_la_nature_ou_la_cadence_disent_deja() -> void:
-	var deduits := Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values()
+	var deduits := (
+		Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values()
+		+ Competence.MOT_CLE_DE_FORME.values()
+	)
+	var fautes := PackedStringArray()
 	for c in CompetenceCatalog.ALL:
 		for id in c.mots_cles_declares:
-			assert_false(deduits.has(id), "« %s » déclare « %s », qui se déduit" % [c.nom, id])
+			if deduits.has(id):
+				fautes.append("« %s » déclare « %s »" % [c.nom, id])
+	assert_eq(fautes.size(), 0, "se déduit déjà : %s" % ", ".join(fautes))
 
 
 ## Le joueur lit un libellé, jamais un identifiant. Et une déduction qui visait un
@@ -115,7 +125,10 @@ func test_on_ne_declare_pas_ce_que_la_nature_ou_la_cadence_disent_deja() -> void
 func test_chaque_mot_cle_a_un_libelle_et_chaque_deduction_vise_la_liste() -> void:
 	for id in MotsCles.LIBELLES:
 		assert_false(String(MotsCles.LIBELLES[id]).is_empty(), "« %s » n'a pas de libellé" % id)
-	for id in Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values():
+	for id in (
+		Competence.MOT_CLE_DE_CADENCE.values() + Competence.MOT_CLE_DE_NATURE.values()
+		+ Competence.MOT_CLE_DE_FORME.values()
+	):
 		assert_true(MotsCles.existe(id), "la déduction donne « %s », hors de la liste" % id)
 
 
@@ -147,6 +160,41 @@ func test_une_nature_que_rien_ne_vise_ne_donne_pas_de_mot_cle() -> void:
 func test_un_tir_porte_projectile_et_un_coup_d_epee_non() -> void:
 	assert_true(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).porte(MotsCles.PROJECTILE))
 	assert_false(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE).porte(MotsCles.PROJECTILE))
+
+
+## `projectile` se déduit de la forme (jalon 11), et d'elle seule : une chaîne ou
+## un nuage n'en sont pas, et un affixe de projectile ne doit pas les servir.
+func test_la_forme_donne_projectile() -> void:
+	var c := _competence([1.0] as Array[float])
+	for forme in Competence.Forme.values():
+		c.forme = forme
+		assert_eq(
+			c.porte(MotsCles.PROJECTILE),
+			forme in [Competence.Forme.TRAIT, Competence.Forme.BOULE],
+			"forme %s" % Competence.Forme.keys()[forme]
+		)
+
+
+## Une forme à qui manque son nombre ne plante pas : un nuage sans durée disparaît
+## à sa pose, une chaîne à une cible est un éclair. Ça se découvre en jouant, et
+## ressemble à une panne.
+func test_chaque_forme_a_les_nombres_dont_elle_a_besoin() -> void:
+	for c: Competence in CompetenceCatalog.ALL:
+		var dure := c.forme in [Competence.Forme.NUAGE, Competence.Forme.SERPENT, Competence.Forme.ORBITE]
+		var frappe_a_intervalle := dure or c.forme == Competence.Forme.AURA
+		var couvre := c.forme in [Competence.Forme.BOULE, Competence.Forme.NUAGE, Competence.Forme.AURA]
+		if dure:
+			assert_gt(c.duree, 0.0, "« %s » : une durée" % c.nom)
+		if frappe_a_intervalle:
+			assert_gt(c.periode, 0.0, "« %s » : une période" % c.nom)
+		if couvre:
+			assert_gt(c.rayon, 0.0, "« %s » : un rayon" % c.nom)
+		if c.forme == Competence.Forme.CHAINE:
+			assert_gte(c.cibles, 2, "« %s » : une chaîne saute" % c.nom)
+		if c.forme == Competence.Forme.ORBITE:
+			assert_gte(c.simultanes, 1, "« %s » : un maximum" % c.nom)
+		if c.forme == Competence.Forme.AURA:
+			assert_gt(c.brulure, 0.0, "« %s » : son prix" % c.nom)
 
 
 ## L'ordre est celui de la liste, pas celui de la déclaration ni celui de la
@@ -192,6 +240,133 @@ func test_sans_modificateur_la_resolution_rend_la_fiche() -> void:
 		assert_eq(r.vitesse_de_projectile, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
 		assert_eq(r.cout_en_mana, c.cout_en_mana, "« %s » : coût" % c.nom)
 		assert_eq(r.intervalle, c.intervalle(fiche), "« %s » : intervalle" % c.nom)
+
+
+func _forme(forme: Competence.Forme) -> Competence:
+	var c := _competence([10.0] as Array[float])
+	c.forme = forme
+	return c
+
+
+func test_la_resolution_copie_les_nombres_des_formes() -> void:
+	var c := _forme(Competence.Forme.NUAGE)
+	c.duree = 3.0
+	c.rayon = 30.0
+	c.periode = 0.5
+	c.cibles = 3
+	c.simultanes = 2
+	c.brulure = 0.03
+	var r := c.resoudre(1, _fiche())
+	assert_eq(r.duree, 3.0)
+	assert_eq(r.rayon, 30.0)
+	assert_eq(r.periode, 0.5)
+	assert_eq(r.nombre_de_cibles(), 3)
+	assert_eq(r.maximum_simultane(), 2)
+	assert_eq(r.brulure, 0.03)
+	assert_eq(r.coups, 1)
+	assert_false(r.entretenue)
+
+
+func test_un_modificateur_change_les_nombres_des_formes() -> void:
+	var c := _forme(Competence.Forme.NUAGE)
+	c.duree = 3.0
+	c.rayon = 30.0
+	c.cibles = 3
+	var r := c.resoudre(1, _fiche(), [
+		_mod("duree", StatMod.Mode.PERCENT, 50.0, MotsCles.SORT),
+		_mod("rayon", StatMod.Mode.PERCENT, 20.0, MotsCles.SORT),
+		_mod("cibles", StatMod.Mode.FLAT, 1.0, MotsCles.SORT),
+	])
+	assert_almost_eq(r.duree, 4.5, 0.0001)
+	assert_almost_eq(r.rayon, 36.0, 0.0001)
+	assert_eq(r.nombre_de_cibles(), 4)
+
+
+## Court-circuit retire une cible : il ne doit pas faire une chaîne qui ne touche
+## personne.
+func test_une_chaine_garde_sa_premiere_cible_et_une_orbite_sa_place() -> void:
+	var c := _forme(Competence.Forme.ORBITE)
+	c.simultanes = 1
+	var r := c.resoudre(1, _fiche(), [
+		_mod("cibles", StatMod.Mode.FLAT, -3.0, MotsCles.SORT),
+		_mod("simultanes", StatMod.Mode.FLAT, -5.0, MotsCles.SORT),
+	])
+	assert_eq(r.nombre_de_cibles(), 1)
+	assert_eq(r.maximum_simultane(), 1)
+
+
+func test_l_estimation_compte_les_coups_d_un_lancer() -> void:
+	var chaine := _forme(Competence.Forme.CHAINE)
+	chaine.cibles = 3
+	assert_eq(chaine.resoudre(1, _fiche()).moyenne_par_lancer(), 30.0, "trois cibles")
+
+	var croix := _forme(Competence.Forme.CROIX)
+	assert_eq(croix.resoudre(1, _fiche()).moyenne_par_lancer(), 20.0, "deux coups")
+
+	var nuage := _forme(Competence.Forme.NUAGE)
+	nuage.duree = 3.0
+	nuage.periode = 0.5
+	nuage.recharge = 2.0
+	var r := nuage.resoudre(1, _fiche())
+	assert_eq(r.moyenne_par_lancer(), 60.0, "six frappes dans la durée")
+	assert_eq(r.moyenne_par_seconde(), 30.0)
+
+
+## 3 × 1,25 ne tombe pas pile sur un multiple de 0,5 : sans marge, le nuage
+## prolongé perdrait une frappe à l'arrondi.
+func test_les_frappes_d_une_duree_prolongee_ne_se_perdent_pas_a_l_arrondi() -> void:
+	var nuage := _forme(Competence.Forme.NUAGE)
+	nuage.duree = 3.0
+	nuage.periode = 0.5
+	var r := nuage.resoudre(1, _fiche(), [_mod("duree", StatMod.Mode.PERCENT, 25.0, MotsCles.SORT)])
+	assert_eq(r.frappes_dans_la_duree(), 7)
+
+
+## La brûlure d'une aura se répartit comme ses dégâts : la conversion y compte.
+func test_la_repartition_suit_les_parts_et_la_conversion() -> void:
+	var aura := _forme(Competence.Forme.AURA)
+	aura.nature = DamageType.Kind.FIRE
+	var entiere := aura.resoudre(1, _fiche()).repartition()
+	assert_eq(entiere[DamageType.Kind.FIRE], 1.0)
+
+	var noeud := NoeudDeTalent.new()
+	noeud.convertit_vers = DamageType.Kind.NECROTIC
+	noeud.part_convertie_par_point = 0.5
+	var convertie := aura.resoudre(1, _fiche(), [], [TalentInvesti.new(noeud, 1)]).repartition()
+	assert_almost_eq(convertie[DamageType.Kind.FIRE], 0.5, 0.0001)
+	assert_almost_eq(convertie[DamageType.Kind.NECROTIC], 0.5, 0.0001)
+	var somme := 0.0
+	for part in convertie:
+		somme += part
+	assert_almost_eq(somme, 1.0, 0.0001)
+
+
+## Sans dégâts, tout va à la nature de la compétence : une répartition vide ne dirait
+## contre quoi se défendre.
+func test_une_repartition_sans_degats_va_a_la_nature() -> void:
+	var aura := _competence([0.0] as Array[float])
+	aura.nature = DamageType.Kind.COLD
+	assert_eq(aura.resoudre(1, _fiche()).repartition()[DamageType.Kind.COLD], 1.0)
+
+
+func test_une_aura_ne_s_estime_qu_a_la_seconde() -> void:
+	var aura := _forme(Competence.Forme.AURA)
+	aura.periode = 0.5
+	aura.recharge = 1.0
+	var r := aura.resoudre(1, _fiche())
+	assert_true(r.entretenue)
+	assert_eq(r.moyenne_par_lancer(), 0.0, "elle n'a pas de fin")
+	assert_eq(r.moyenne_par_seconde(), 20.0, "un coup par demi-seconde")
+
+
+## Une épée par intervalle d'arme en ferait vingt à la fois sur le papier.
+func test_une_orbite_s_estime_bornee_par_son_maximum() -> void:
+	var orbite := _forme(Competence.Forme.ORBITE)
+	orbite.cadence = Competence.Cadence.ARME
+	orbite.duree = 5.0
+	orbite.periode = 0.5
+	orbite.simultanes = 3
+	assert_eq(orbite.resoudre(1, _fiche()).moyenne_par_seconde(), 60.0, "trois épées, deux coups par seconde")
 
 
 func test_un_projectile_de_plus() -> void:

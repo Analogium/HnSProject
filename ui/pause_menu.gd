@@ -11,6 +11,8 @@ extends CanvasLayer
 @onready var options: VBoxContainer = $Root/Center/Panel/Options
 @onready var bars_check: CheckBox = $Root/Center/Panel/Options/Bars
 @onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
+@onready var subis_check: CheckBox = $Root/Center/Panel/Options/DegatsSubis
+@onready var infliges_check: CheckBox = $Root/Center/Panel/Options/DegatsInfliges
 @onready var fenetre_btn: Button = $Root/Center/Panel/Options/Fenetre
 ## Le bouton de langue. Son libellé n'est pas écrit dans la scène : il est
 ## toujours posé par le code, et **dans la langue qu'il annonce** — un joueur
@@ -29,6 +31,10 @@ func _ready() -> void:
 	bars_check.toggled.connect(func(on: bool) -> void: Settings.show_health_bars = on)
 	names_check.button_pressed = Settings.show_affix_names
 	names_check.toggled.connect(func(on: bool) -> void: Settings.show_affix_names = on)
+	subis_check.button_pressed = Settings.degats_subis_visibles
+	subis_check.toggled.connect(func(on: bool) -> void: Settings.degats_subis_visibles = on)
+	infliges_check.button_pressed = Settings.degats_infliges_visibles
+	infliges_check.toggled.connect(func(on: bool) -> void: Settings.degats_infliges_visibles = on)
 
 	# Un bouton qui tourne plutôt qu'une liste déroulante : il y a quatre valeurs
 	# au plus, le libellé dit toujours celle qu'on a, et une liste déroulante

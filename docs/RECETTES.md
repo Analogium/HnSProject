@@ -268,9 +268,15 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
    | `cout_en_mana` | 0 pour un geste gratuit |
    | `degats_par_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus |
    | `attribut` / `pourcentage_par_attribut` | Vide pour ce qui ne monte avec rien |
-   | `mots_cles_declares` | **Seulement ce que rien d'autre ne dit** — aujourd'hui `projectile`. Jamais la nature ni la cadence, qui donnent déjà `foudre`, `sort` ou `attaque` |
-   | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 3 et 24 pour une salve ; 8 et 360 pour une nova |
+   | `forme` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `TRAIT`, `FRAPPE`, `BOULE`, `CHAINE`, `NUAGE`, `AURA`, `SERPENT`, `CROIX`, `ORBITE`. `TRAIT` et `BOULE` donnent `projectile` |
+   | `mots_cles_declares` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `foudre`, `sort`, `attaque` ou `projectile` |
+   | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `vitesse_de_projectile` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
+   | `cibles` | Une chaîne : combien d'ennemis, le premier compris |
+   | `duree` / `periode` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée |
+   | `rayon` | Une boule (son explosion), un nuage, une aura |
+   | `simultanes` | Une orbite : combien à la fois. Zéro, sans limite |
+   | `brulure` | Une aura : la part des PV max qu'elle brûle au lanceur par seconde |
    | `niveau_de_manuel_requis` | À partir de quand la case accepte son premier point |
 
 2. **`core/competence_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
@@ -287,9 +293,19 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
    que sa racine.
 
 Deux compétences d'un même manuel doivent **se distinguer par ce qu'elles
-font** — un trait, un cône, un coup lourd — et pas seulement par leurs nombres :
+font** — une chaîne, un nuage, une aura — et pas seulement par leurs nombres :
 sinon c'est une seule compétence à plusieurs réglages, et l'arbre de la première
-dit déjà mieux la même chose.
+dit déjà mieux la même chose. C'est la leçon du jalon 11, qui a retiré deux sorts
+de foudre qui n'étaient qu'un éclair vif à d'autres réglages.
+
+**Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
+`Competence.Forme` (les `.tres` écrivent l'entier), son cas dans
+`Player.lancer()`, son nœud dans `actors/competences/` — qui passe par
+`Cibles` pour trouver ses cibles et par `Hurtbox.take_damage()` pour frapper —, et
+son test dans `tests/integration/test_formes.gd`. Si elle a un nombre neuf : le
+champ dans `StatsDeCompetence` et son `LABELS`, sa copie dans
+`Competence.resoudre()`, sa ligne dans la fiche du manuel, et sa condition dans
+`test_chaque_forme_a_les_nombres_dont_elle_a_besoin`.
 
 **Ce qui refusera un oubli** — `tests/unit/test_competences.gd` :
 `test_chaque_competence_a_un_identifiant`, `test_les_identifiants_sont_uniques`,
@@ -298,6 +314,7 @@ dit déjà mieux la même chose.
 `test_chaque_mot_cle_declare_appartient_a_la_liste`,
 `test_on_ne_declare_pas_ce_que_la_nature_ou_la_cadence_disent_deja`,
 `test_chaque_competence_qui_lance_des_projectiles_a_une_vitesse`,
+`test_chaque_forme_a_les_nombres_dont_elle_a_besoin`,
 `test_sans_modificateur_la_resolution_rend_la_fiche` ; et
 `tests/integration/test_panneau_manuels.gd :
 test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la

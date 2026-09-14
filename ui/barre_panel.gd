@@ -132,6 +132,16 @@ func _ouvrir(index: int) -> void:
 	queue_redraw()
 
 
+func menu_ouvert() -> bool:
+	return _menu >= 0
+
+
+## Pour Échap, que la zone traite : la barre ne lit pas le clavier.
+func fermer_le_menu() -> void:
+	if menu_ouvert():
+		_fermer()
+
+
 func _fermer() -> void:
 	_menu = -1
 	_survol_menu = -1

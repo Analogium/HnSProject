@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="Competence" format=3]
+[gd_resource type="Resource" script_class="Competence" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icones/nova_de_foudre.png" id="2_icone"]
 
 [resource]
 script = ExtResource("1_comp")
@@ -8,7 +9,7 @@ id = "nova_de_foudre"
 nom = "Nova de foudre"
 nature = 3
 cadence = 1
-mots_cles_declares = PackedStringArray("projectile")
+forme = 1
 vitesse_de_projectile = 230.0
 recharge = 1.40
 cout_en_mana = 26.0
@@ -18,3 +19,4 @@ degats_par_point = Array[float]([18.0, 22.0, 27.0, 33.0, 40.0])
 attribut = "intelligence"
 pourcentage_par_attribut = 4.0
 niveau_de_manuel_requis = 8
+icone = ExtResource("2_icone")

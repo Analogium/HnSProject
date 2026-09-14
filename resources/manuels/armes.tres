@@ -6,7 +6,8 @@
 [ext_resource type="Script" path="res://core/ligne_de_talent.gd" id="4_ligne"]
 [ext_resource type="Script" path="res://core/passif.gd" id="5_passif"]
 [ext_resource type="Resource" path="res://resources/competences/frappe_lourde.tres" id="10_frappe_lourde"]
-[ext_resource type="Resource" path="res://resources/competences/lames_tournoyantes.tres" id="11_lames_tournoyantes"]
+[ext_resource type="Resource" path="res://resources/competences/coup_en_croix.tres" id="11_coup_en_croix"]
+[ext_resource type="Resource" path="res://resources/competences/epee_spirale.tres" id="12_epee_spirale"]
 
 [sub_resource type="Resource" id="L_frappe_lourde_elan_0"]
 script = ExtResource("4_ligne")
@@ -56,56 +57,103 @@ competence = ExtResource("10_frappe_lourde")
 position = Vector2i(0, 0)
 talents = Array[ExtResource("3_noeud")]([SubResource("N_frappe_lourde_elan"), SubResource("N_frappe_lourde_lame_ardente"), SubResource("N_frappe_lourde_saignee")])
 
-[sub_resource type="Resource" id="L_lames_tournoyantes_gerbe_0"]
-script = ExtResource("4_ligne")
-stat = "projectiles"
-valeur_par_point = 1.0
-
-[sub_resource type="Resource" id="N_lames_tournoyantes_gerbe"]
-script = ExtResource("3_noeud")
-id = "lames_tournoyantes_gerbe"
-nom = "Gerbe d'acier"
-position = Vector2i(0, 0)
-points_requis = 1
-points_max = 2
-lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_gerbe_0")])
-
-[sub_resource type="Resource" id="L_lames_tournoyantes_affutage_0"]
+[sub_resource type="Resource" id="L_coup_en_croix_taille_0"]
 script = ExtResource("4_ligne")
 stat = "degats"
 pourcentage = true
 valeur_par_point = 12.0
 
-[sub_resource type="Resource" id="N_lames_tournoyantes_affutage"]
+[sub_resource type="Resource" id="N_coup_en_croix_taille"]
 script = ExtResource("3_noeud")
-id = "lames_tournoyantes_affutage"
-nom = "Affûtage"
+id = "coup_en_croix_taille"
+nom = "Taille"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 3
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_taille_0")])
+
+[sub_resource type="Resource" id="L_coup_en_croix_estoc_0"]
+script = ExtResource("4_ligne")
+stat = "degats_physique"
+valeur_par_point = 2.0
+valeur_max_par_point = 6.0
+
+[sub_resource type="Resource" id="N_coup_en_croix_estoc"]
+script = ExtResource("3_noeud")
+id = "coup_en_croix_estoc"
+nom = "Estoc"
 position = Vector2i(1, 0)
-parent = "lames_tournoyantes_gerbe"
+parent = "coup_en_croix_taille"
+points_requis = 2
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_estoc_0")])
+
+[sub_resource type="Resource" id="N_coup_en_croix_lame_sainte"]
+script = ExtResource("3_noeud")
+id = "coup_en_croix_lame_sainte"
+nom = "Lame sainte"
+position = Vector2i(0, 1)
+points_requis = 3
+points_max = 1
+convertit_vers = 5
+part_convertie_par_point = 0.50
+
+[sub_resource type="Resource" id="C_coup_en_croix"]
+script = ExtResource("2_case")
+competence = ExtResource("11_coup_en_croix")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_coup_en_croix_taille"), SubResource("N_coup_en_croix_estoc"), SubResource("N_coup_en_croix_lame_sainte")])
+
+[sub_resource type="Resource" id="L_epee_spirale_ronde_0"]
+script = ExtResource("4_ligne")
+stat = "simultanes"
+valeur_par_point = 1.0
+
+[sub_resource type="Resource" id="N_epee_spirale_ronde"]
+script = ExtResource("3_noeud")
+id = "epee_spirale_ronde"
+nom = "Ronde"
+position = Vector2i(0, 0)
+points_requis = 1
+points_max = 2
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_ronde_0")])
+
+[sub_resource type="Resource" id="L_epee_spirale_tranchant_0"]
+script = ExtResource("4_ligne")
+stat = "degats"
+pourcentage = true
+valeur_par_point = 12.0
+
+[sub_resource type="Resource" id="N_epee_spirale_tranchant"]
+script = ExtResource("3_noeud")
+id = "epee_spirale_tranchant"
+nom = "Tranchant"
+position = Vector2i(1, 0)
+parent = "epee_spirale_ronde"
 points_requis = 2
 points_max = 3
-lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_affutage_0")])
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_tranchant_0")])
 
-[sub_resource type="Resource" id="L_lames_tournoyantes_retour_0"]
+[sub_resource type="Resource" id="L_epee_spirale_endurance_0"]
 script = ExtResource("4_ligne")
-stat = "vitesse_de_projectile"
+stat = "duree"
 pourcentage = true
 valeur_par_point = 30.0
 
-[sub_resource type="Resource" id="N_lames_tournoyantes_retour"]
+[sub_resource type="Resource" id="N_epee_spirale_endurance"]
 script = ExtResource("3_noeud")
-id = "lames_tournoyantes_retour"
-nom = "Retour de lame"
+id = "epee_spirale_endurance"
+nom = "Endurance"
 position = Vector2i(0, 1)
 points_requis = 2
 points_max = 2
-lignes = Array[ExtResource("4_ligne")]([SubResource("L_lames_tournoyantes_retour_0")])
+lignes = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_endurance_0")])
 
-[sub_resource type="Resource" id="C_lames_tournoyantes"]
+[sub_resource type="Resource" id="C_epee_spirale"]
 script = ExtResource("2_case")
-competence = ExtResource("11_lames_tournoyantes")
-position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_lames_tournoyantes_gerbe"), SubResource("N_lames_tournoyantes_affutage"), SubResource("N_lames_tournoyantes_retour")])
+competence = ExtResource("12_epee_spirale")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_epee_spirale_ronde"), SubResource("N_epee_spirale_tranchant"), SubResource("N_epee_spirale_endurance")])
 
 [sub_resource type="Resource" id="L_garde_de_fer_0"]
 script = ExtResource("4_ligne")
@@ -133,5 +181,5 @@ position = Vector2i(0, 1)
 [resource]
 script = ExtResource("1_arch")
 id = "armes"
-nom = "Maître d'armes"
-cases = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_lames_tournoyantes"), SubResource("C_garde_de_fer")])
+nom = "Maître chevalier"
+cases = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_coup_en_croix"), SubResource("C_epee_spirale"), SubResource("C_garde_de_fer")])

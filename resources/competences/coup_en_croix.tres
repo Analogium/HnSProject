@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Competence" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icones/coup_en_croix.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "coup_en_croix"
+nom = "Coup en croix"
+nature = 0
+cadence = 0
+forme = 8
+cout_en_mana = 7.0
+degats_par_point = Array[float]([13.0, 17.0, 21.0, 26.0, 32.0])
+attribut = ""
+pourcentage_par_attribut = 0.0
+niveau_de_manuel_requis = 3
+icone = ExtResource("2_icone")

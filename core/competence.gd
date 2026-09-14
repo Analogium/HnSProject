@@ -29,19 +29,30 @@ enum Cadence { ARME, INCANTATION }
 
 @export var cadence: Cadence = Cadence.INCANTATION
 
-## Les mots-clés que la compétence déclare : **seulement ceux que rien d'autre ne
-## dit**. Aujourd'hui, `projectile`.
+## Ce que le lancer pose dans le monde : son comportement **et son dessin**, qui
+## vont ensemble. `FRAPPE` ne se distingue d'`ARC` que par le dessin, et c'est
+## assumé — un second champ « apparence » aurait fait deux choix à accorder pour
+## une seule chose.
 ##
-## La nature et la cadence ne se redéclarent pas — voir les deux tables
+## Lue sur la compétence et jamais sur le geste résolu : aucun nœud ne la change.
+##
+## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
+enum Forme { ARC, TRAIT, FRAPPE, BOULE, CHAINE, NUAGE, AURA, SERPENT, CROIX, ORBITE }
+
+@export var forme: Forme = Forme.ARC
+
+## Les mots-clés que la compétence déclare : **seulement ceux que rien d'autre ne
+## dit**. Aujourd'hui aucun.
+##
+## La nature, la cadence et la forme ne se redéclarent pas — voir les trois tables
 ## suivantes. Un `.tres` qui écrirait `foudre` ici en plus de sa nature porterait
 ## deux vérités sur la même chose, et la première correction en oublierait une.
 @export var mots_cles_declares: PackedStringArray = PackedStringArray()
 
-## Ce que la cadence et la nature disent d'elles-mêmes.
+## Ce que la cadence, la nature et la forme disent d'elles-mêmes.
 ##
 ## Une nature absente de la table ne donne **aucun** mot-clé : rien ne vise encore
-## le froid ni le feu, et les afficher enverrait le joueur chercher un objet qui
-## n'existe pas.
+## le froid, et l'afficher enverrait le joueur chercher un objet qui n'existe pas.
 const MOT_CLE_DE_CADENCE := {
 	Cadence.ARME: MotsCles.ATTAQUE,
 	Cadence.INCANTATION: MotsCles.SORT,
@@ -50,14 +61,23 @@ const MOT_CLE_DE_NATURE := {
 	DamageType.Kind.FIRE: MotsCles.FEU,
 	DamageType.Kind.LIGHTNING: MotsCles.FOUDRE,
 }
+const MOT_CLE_DE_FORME := {
+	Forme.TRAIT: MotsCles.PROJECTILE,
+	Forme.BOULE: MotsCles.PROJECTILE,
+}
+
+## Combien de coups un geste porte, pour les formes qui en portent plus d'un. Une
+## table et non un champ : un troisième coup en croix n'aurait pas de dessin.
+const COUPS_PAR_FORME := {
+	Forme.CROIX: 2,
+}
 
 ## La recharge propre au sort, en secondes, avant `cast_speed`. Sans effet pour
 ## une compétence à la cadence de l'arme.
 @export var recharge: float = 0.0
 
 ## Combien de projectiles part d'un lancer, et sur quel écart total en degrés.
-## Un seul et zéro : le trait droit. Trois sur vingt-deux degrés : la salve. Huit
-## sur trois cent soixante : la nova.
+## Un seul et zéro : le trait droit. Huit sur trois cent soixante : la nova.
 ##
 ## Deux nombres plutôt qu'une forme nommée par compétence : ils décrivent ce que
 ## le lanceur doit faire, et la prochaine compétence en éventail ne demandera pas
@@ -71,6 +91,26 @@ const MOT_CLE_DE_NATURE := {
 ##
 ## Zéro pour ce qui ne lance rien.
 @export var vitesse_de_projectile: float = 0.0
+
+## Les nombres des formes qui ne sont pas un tir. Chacun ne sert qu'à quelques
+## formes, et un test refuse une forme à qui manque le sien.
+##
+## `cibles` : combien d'ennemis une chaîne touche, le premier compris.
+@export var cibles: int = 1
+## En secondes : ce que vit un nuage, un serpent, une épée en orbite. Zéro pour ce
+## qui ne dure pas — et pour l'aura, qui dure tant qu'on ne l'éteint pas.
+@export var duree: float = 0.0
+## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule.
+@export var rayon: float = 0.0
+## En secondes, entre deux frappes d'un nuage ou d'une aura, ou entre deux touches
+## d'une même cible par un serpent ou une épée. **Aucun nœud ne la vise** : elle
+## change le nombre de coups sans changer ce que la fiche appelle dégâts.
+@export var periode: float = 0.0
+## Combien de ces présences peuvent exister à la fois. Zéro : sans limite.
+@export var simultanes: int = 0
+## La part des PV max qu'une aura brûle au lanceur, par seconde. Hors de portée des
+## nœuds : réduite à zéro, elle ferait de l'aura un sort sans prix.
+@export var brulure: float = 0.0
 
 ## Ce que le lancer coûte à la réserve. Zéro pour un coup gratuit — c'est ce qui
 ## sépare le coup d'épée du sort, et c'est la raison d'être du mana.
@@ -141,7 +181,7 @@ func points_max() -> int:
 
 
 ## Les mots-clés portés : ceux qui sont déclarés, plus ceux que donnent la
-## cadence et la nature. **Ceux d'un nœud d'arbre n'y sont pas** — ils
+## cadence, la nature et la forme. **Ceux d'un nœud d'arbre n'y sont pas** — ils
 ## appartiennent à un lancer et non à la fiche, et `resoudre()` les ajoute.
 ##
 ## Une fonction et non un champ rempli au chargement : ce qui se déduit n'est
@@ -154,7 +194,8 @@ func mots_cles() -> PackedStringArray:
 ## `MotsCles` et de nulle part ailleurs.
 func _mots_cles(ajoutes: PackedStringArray) -> PackedStringArray:
 	var tous := PackedStringArray([
-		MOT_CLE_DE_CADENCE.get(cadence, ""), MOT_CLE_DE_NATURE.get(nature, "")
+		MOT_CLE_DE_CADENCE.get(cadence, ""), MOT_CLE_DE_NATURE.get(nature, ""),
+		MOT_CLE_DE_FORME.get(forme, ""),
 	])
 	tous.append_array(mots_cles_declares)
 	tous.append_array(ajoutes)
@@ -239,6 +280,14 @@ func resoudre(
 	r.projectiles = float(projectiles)
 	r.dispersion_en_degres = dispersion_en_degres
 	r.vitesse_de_projectile = vitesse_de_projectile
+	r.cibles = float(cibles)
+	r.duree = duree
+	r.rayon = rayon
+	r.periode = periode
+	r.simultanes = float(simultanes)
+	r.brulure = brulure
+	r.coups = COUPS_PAR_FORME.get(forme, 1)
+	r.entretenue = forme == Forme.AURA
 	r.cout_en_mana = cout_en_mana
 	r.intervalle = intervalle(stats)
 
@@ -264,6 +313,11 @@ func resoudre(
 	for m in pourcents_de_degats:
 		r.accroitre(m.value)
 	r.conclure()
+	# Ici et non dans `conclure()`, qui ne sait plus d'où le nombre est parti : zéro
+	# veut dire « sans limite », et un nœud qui ramènerait un maximum à zéro ferait
+	# d'une orbite bornée une orbite infinie.
+	if simultanes > 0:
+		r.simultanes = maxf(r.simultanes, 1.0)
 	return r
 
 

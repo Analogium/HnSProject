@@ -105,14 +105,14 @@ func test_une_ligne_d_objet_se_lit_en_anglais() -> void:
 func test_le_contenu_se_lit_en_anglais() -> void:
 	var epee := ItemCatalog.by_id("epee")
 	var manuel := ItemCatalog.by_id("manuel_foudre")
-	var salve := CompetenceCatalog.by_id("salve_d_eclairs")
+	var nova := CompetenceCatalog.by_id("nova_de_foudre")
 
 	Settings.depuis_dict({"langue": Settings.ANGLAIS})
 	assert_eq(Item.new(epee).display_name(), "Sword")
 	assert_eq(Item.new(manuel).display_name(), "Manual of Lightning")
 	assert_eq(manuel.manuel.nom_affiche(), "Master of Lightning")
-	assert_eq(salve.nom_affiche(), "Bolt Volley")
-	assert_eq(salve.libelle_des_mots_cles(), "Projectile · Lightning · Spell")
+	assert_eq(nova.nom_affiche(), "Lightning Nova")
+	assert_eq(nova.libelle_des_mots_cles(), "Projectile · Lightning · Spell")
 	assert_eq(EquipmentSlots.label("offhand"), "OFF-HAND")
 	assert_eq(DamageType.nom(DamageType.Kind.NECROTIC), "necrotic")
 

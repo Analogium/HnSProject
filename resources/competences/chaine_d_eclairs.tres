@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Competence" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icones/chaine_d_eclairs.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "chaine_d_eclairs"
+nom = "Chaîne d'éclairs"
+nature = 3
+cadence = 1
+forme = 4
+recharge = 0.70
+cout_en_mana = 12.0
+cibles = 3
+degats_par_point = Array[float]([17.0, 22.0, 28.0, 35.0, 43.0])
+attribut = "intelligence"
+pourcentage_par_attribut = 4.0
+niveau_de_manuel_requis = 3
+icone = ExtResource("2_icone")

@@ -43,6 +43,33 @@ var show_affix_names := true:
 		changed.emit()
 		_ecrire()
 
+## Les chiffres de dégâts qui s'envolent : au-dessus du personnage pour ce qu'il
+## subit, brûlure comprise, au-dessus des ennemis pour ce qu'on leur inflige. Deux
+## cases et non une : on veut souvent lire ce qu'on inflige sans que ce qu'on
+## encaisse brouille l'écran, ou l'inverse.
+var degats_subis_visibles := true:
+	set(value):
+		if value == degats_subis_visibles:
+			return
+		degats_subis_visibles = value
+		changed.emit()
+		_ecrire()
+
+var degats_infliges_visibles := true:
+	set(value):
+		if value == degats_infliges_visibles:
+			return
+		degats_infliges_visibles = value
+		changed.emit()
+		_ecrire()
+
+
+## Faut-il écrire le chiffre d'un coup encaissé de ce côté ? Le choix entre les deux
+## cases est ici et nulle part ailleurs : le coup, l'esquive et la brûlure le posent
+## chacun.
+func montre_les_degats(sur_le_joueur: bool) -> bool:
+	return degats_subis_visibles if sur_le_joueur else degats_infliges_visibles
+
 ## La langue de l'interface, « fr » ou « en ». La poser change la locale du
 ## moteur : c'est lui qui traduit, les `Label` des scènes se retraduisent seuls et
 ## les panneaux dessinés reçoivent `NOTIFICATION_TRANSLATION_CHANGED`.
@@ -276,6 +303,8 @@ func vers_dict() -> Dictionary:
 	return {
 		"barres_de_vie": show_health_bars,
 		"noms_d_affixes": show_affix_names,
+		"degats_subis": degats_subis_visibles,
+		"degats_infliges": degats_infliges_visibles,
 		"langue": langue,
 		"echelle": echelle,
 	}
@@ -288,6 +317,8 @@ func depuis_dict(source: Dictionary) -> void:
 	_chargement = true
 	show_health_bars = bool(source.get("barres_de_vie", show_health_bars))
 	show_affix_names = bool(source.get("noms_d_affixes", show_affix_names))
+	degats_subis_visibles = bool(source.get("degats_subis", degats_subis_visibles))
+	degats_infliges_visibles = bool(source.get("degats_infliges", degats_infliges_visibles))
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	langue = String(source.get("langue", langue))
 	var lue: Variant = source.get("echelle", echelle)

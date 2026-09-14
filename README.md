@@ -14,8 +14,8 @@ Ouvrir le projet dans Godot et jouer (`F5`), ou depuis une ligne de commande :
 godot --path .
 ```
 
-Dans la zone : `I` sac, `C` fiche de personnage, `TAB` carte, `Échap` menu et
-sauvegarde. Les écrans de réglage sont sur `F2` (arène), `F3` (génération de
+Dans la zone : `I` sac, `C` fiche de personnage, `TAB` carte, `B` établi,
+`Échap` ferme ce qui est ouvert, puis ouvre le menu et la sauvegarde. Les écrans de réglage sont sur `F2` (arène), `F3` (génération de
 carte), `F4` (forge) et `F6` (banc de mesure) ; chacun se referme par la touche
 qui l'a ouvert.
 

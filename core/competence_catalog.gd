@@ -24,27 +24,20 @@ const ALL := [
 	preload("res://resources/competences/attaque.tres"),
 	preload("res://resources/competences/tir.tres"),
 
-	# Le manuel de la foudre : quatre cases, de la plus simple à la plus chère.
-	# Elles se distinguent par ce qu'elles font, pas seulement par leurs nombres —
-	# un trait, une salve, un coup lourd, une nova — sinon ce serait une seule
-	# compétence à quatre réglages.
+	# Chaque manuel, dans l'ordre de ses cases.
 	preload("res://resources/competences/eclair_vif.tres"),
-	preload("res://resources/competences/salve_d_eclairs.tres"),
-	preload("res://resources/competences/fulguration.tres"),
+	preload("res://resources/competences/chaine_d_eclairs.tres"),
+	preload("res://resources/competences/nuage_d_orage.tres"),
 	preload("res://resources/competences/nova_de_foudre.tres"),
 
-	# Le manuel des flammes (jalon 10) : le même trio que la foudre lu autrement —
-	# un trait, un cône, un coup lourd — dans une nature que l'équipement de feu
-	# sert déjà.
-	preload("res://resources/competences/trait_de_feu.tres"),
-	preload("res://resources/competences/gerbe_de_flammes.tres"),
-	preload("res://resources/competences/comete.tres"),
+	preload("res://resources/competences/boule_de_feu.tres"),
+	preload("res://resources/competences/serpent_infernal.tres"),
+	preload("res://resources/competences/immolation.tres"),
 
-	# Le manuel d'armes : les deux seules compétences apprises qui suivent la
-	# cadence de l'arme. Leur allure ne se règle donc pas ici mais dans la main du
-	# joueur, et c'est ce qui les distingue des sorts.
+	# Le chevalier : les compétences apprises qui suivent la cadence de l'arme.
 	preload("res://resources/competences/frappe_lourde.tres"),
-	preload("res://resources/competences/lames_tournoyantes.tres"),
+	preload("res://resources/competences/coup_en_croix.tres"),
+	preload("res://resources/competences/epee_spirale.tres"),
 ]
 
 

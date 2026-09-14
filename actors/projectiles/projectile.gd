@@ -116,18 +116,20 @@ func _forme(echelle: float) -> PackedVector2Array:
 	return pts
 
 
-## La couleur vient de la nature du tir, jamais réécrite ici : `DamageType.COLORS`
-## est la seule définition, celle que la gerbe d'éclats et la fiche montrent aussi.
+## La couleur que ce tir montre : la nature passée par le lanceur, sinon celle de
+## sa scène. `DamageType.COLORS` est la seule définition, celle que la gerbe
+## d'éclats et la fiche montrent aussi.
+func teinte() -> Color:
+	return DamageType.COLORS[_nature if _nature >= 0 else damage_type]
+
+
 func _draw() -> void:
-	# Type explicite : COLORS est un tableau non typé, donc l'indexer rend un
-	# Variant et l'inférence échoue — le même piège que `generator.grid` dans la
-	# zone.
-	var teinte: Color = DamageType.COLORS[_nature if _nature >= 0 else damage_type]
+	var couleur := teinte()
 	for a: Array in AUREOLES:
-		var halo := teinte
+		var halo := couleur
 		halo.a = float(a[1])
 		draw_colored_polygon(_forme(float(a[0])), halo)
-	var corps := teinte
+	var corps := couleur
 	corps.a = CORPS
 	draw_colored_polygon(_forme(1.0), corps)
 

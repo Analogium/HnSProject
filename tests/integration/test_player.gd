@@ -428,25 +428,24 @@ func test_lancer_refuse_une_case_vide_et_une_recharge_en_cours() -> void:
 	assert_false(_p.lancer(1), "et ne repart pas tant qu'il se recharge")
 
 
-## L'éventail : trois projectiles pour une salve, huit pour une nova, et un seul
-## qui part droit devant quoi qu'annonce la dispersion.
-func test_une_salve_part_en_eventail() -> void:
+## La couronne : huit projectiles pour une nova, et un seul qui part droit devant
+## quoi qu'annonce la dispersion.
+func test_une_nova_part_en_couronne() -> void:
 	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
 	livre.manuel.gagner_experience(999999)
-	livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	livre.manuel.investir(livre.base.manuel, "nova_de_foudre")
 	_p.etudier(livre)
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
 
-	_p.barre.poser(3, "salve_d_eclairs")
+	_p.barre.poser(3, "nova_de_foudre")
 	assert_true(_p.lancer(3))
-	assert_eq(_tirs.get_child_count(), 3, "trois traits")
+	assert_eq(_tirs.get_child_count(), 8, "huit traits")
 
-	var angles := []
+	var angles := {}
 	for tir in _tirs.get_children():
-		angles.append(snappedf(rad_to_deg((tir as Projectile)._dir.angle()), 0.1))
-	assert_eq(angles.size(), 3)
-	assert_ne(angles[0], angles[1], "et ils ne partent pas tous au même endroit")
+		angles[snappedf(rad_to_deg((tir as Projectile)._dir.angle()), 0.1)] = true
+	assert_eq(angles.size(), 8, "et ils ne partent pas deux au même endroit")
 
 
 ## Et l'autre bout : un projectile unique part **exactement** dans la visée.
@@ -495,7 +494,7 @@ func test_chaque_sort_part_avec_les_nombres_de_sa_fiche() -> void:
 	_p.etudier(_livre_ouvert_partout())
 	_p.stats.max_mana = 999.0
 
-	for id in [CompetenceCatalog.ID_TIR, "eclair_vif", "salve_d_eclairs", "fulguration", "nova_de_foudre"]:
+	for id in [CompetenceCatalog.ID_TIR, "eclair_vif", "nova_de_foudre"]:
 		var c := CompetenceCatalog.by_id(id)
 		var points := _p.points_de_competence(id)
 		assert_gt(points, 0, "« %s » est apprise" % c.nom)
@@ -536,12 +535,12 @@ func test_un_tir_porte_d_un_projectile_de_plus_en_sort_deux() -> void:
 	)
 
 
-## Une fourchette ajoutée se tire **par trait** : trois traits d'une salve ne
-## portent pas le même froid, sinon ils se liraient comme un coup recopié.
+## Une fourchette ajoutée se tire **par trait** : les traits d'une nova ne portent
+## pas le même froid, sinon ils se liraient comme un coup recopié.
 func test_chaque_trait_tire_sa_fourchette() -> void:
 	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
 	livre.manuel.gagner_experience(999999)
-	livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	livre.manuel.investir(livre.base.manuel, "nova_de_foudre")
 	_p.etudier(livre)
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
@@ -549,12 +548,12 @@ func test_chaque_trait_tire_sa_fourchette() -> void:
 		StatMod.fourchette("degats_froid", 1.0, 1000.0, MotsCles.SORT),
 	])
 
-	_p.barre.poser(3, "salve_d_eclairs")
+	_p.barre.poser(3, "nova_de_foudre")
 	assert_true(_p.lancer(3))
 	var froids := {}
 	for tir: Projectile in _tirs.get_children():
 		froids[tir._parts[DamageType.Kind.COLD]] = true
-	assert_eq(froids.size(), 3, "trois traits, trois tirages")
+	assert_eq(froids.size(), 8, "huit traits, huit tirages")
 
 
 # --------------------------------------------------------------------------
@@ -615,27 +614,26 @@ func test_un_passif_de_mot_cle_sert_les_competences_d_un_autre_livre() -> void:
 	assert_eq(foudre.manuel.points_de("conducteur"), 0, "et le premier livre n'y est pour rien")
 
 
-## **La conversion se voit** : le tir part dans la nature d'arrivée, et sa couleur
-## la dit. Sans cela, le nœud le plus cher de l'arbre ne se remarquerait qu'en
-## lisant une fiche.
-func test_un_noeud_de_conversion_change_la_nature_du_tir() -> void:
+## **La conversion se voit** : ce que le sort pose part dans la nature d'arrivée,
+## et sa couleur la dit. Sans cela, le nœud le plus cher de l'arbre ne se
+## remarquerait qu'en lisant une fiche.
+func test_un_noeud_de_conversion_change_la_nature_de_ce_qui_part() -> void:
 	_etudier("manuel_foudre", [
-		"fulguration", "fulguration", "fulguration",
-		"fulguration_amplitude", "fulguration_embrasement",
+		"nuage_d_orage", "nuage_d_orage", "nuage_d_orage", "nuage_d_orage_grele",
 	])
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
-	_p.barre.poser(3, "fulguration")
+	_p.barre.poser(3, "nuage_d_orage")
 
 	assert_true(_p.lancer(3))
 	assert_eq(_tirs.get_child_count(), 1)
-	var tir := _tirs.get_child(0) as Projectile
-	assert_gt(tir._parts[DamageType.Kind.FIRE], 0.0, "les trois cinquièmes sont du feu")
+	var nuage := _tirs.get_child(0) as NuageDOrage
+	var parts := nuage._geste.tirer(Game.rng)
 	assert_gt(
-		tir._parts[DamageType.Kind.FIRE], tir._parts[DamageType.Kind.LIGHTNING],
-		"plus que ce qui reste de foudre"
+		parts[DamageType.Kind.COLD], parts[DamageType.Kind.LIGHTNING],
+		"les trois cinquièmes sont du froid"
 	)
-	assert_eq(tir._nature, int(DamageType.Kind.FIRE), "et le trait se dessine en feu")
+	assert_eq(nuage._teinte, DamageType.COLORS[DamageType.Kind.COLD], "et le nuage frappe en froid")
 
 
 ## Ce qu'un nœud ne change pas : un ajout d'objet ne déplace pas la couleur du
@@ -651,6 +649,26 @@ func test_un_objet_ne_change_pas_la_couleur_du_tir() -> void:
 	var tir := _tirs.get_child(0) as Projectile
 	assert_gt(tir._parts[DamageType.Kind.COLD], tir._parts[DamageType.Kind.LIGHTNING])
 	assert_eq(tir._nature, int(DamageType.Kind.LIGHTNING), "le trait reste un éclair")
+
+
+## Une mort et une boule d'expérience récompensent par le même chemin : le joueur et
+## les manuels à l'étude apprennent du même montant.
+func test_une_recompense_nourrit_le_joueur_et_ses_manuels() -> void:
+	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
+	_p.etudier(livre)
+	var exp_du_livre := livre.manuel.experience
+	assert_eq(_p.recompenser(10.0, 1, Vector2.ZERO), 10)
+	assert_eq(_p.xp, 10)
+	assert_eq(livre.manuel.experience, exp_du_livre + 10, "le livre apprend du même montant")
+
+
+## Et le retard sur la zone la fait fondre, boule comprise : sans ça, l'établi ferait
+## monter un personnage de niveau 20 dans la zone 1 aussi vite qu'en jeu dans la 20.
+func test_une_zone_laissee_derriere_rapporte_moins() -> void:
+	_p.level = 20
+	var gain := _p.recompenser(100.0, 1, Vector2.ZERO)
+	assert_eq(gain, maxi(roundi(100.0 * Enemy.facteur_d_experience(1, 20)), 1))
+	assert_lt(gain, 100)
 
 
 ## Un coup d'épée tire **une** fois : tous les ennemis de l'arc reçoivent la même

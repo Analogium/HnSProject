@@ -27,10 +27,16 @@ extends RefCounted
 ## « nombre de projectiles » et non « projectile » : la ligne se lit
 ## « valeur + nom », comme « +25 armure », et un « +2 projectile » au singulier
 ## serait faux dès le second palier.
+##
+## `periode` et `brulure` n'y sont pas, et c'est voulu : voir `Competence`.
 const LABELS := {
 	DEGATS: "dégâts",
 	"projectiles": "nombre de projectiles",
 	"vitesse_de_projectile": "vitesse de projectile",
+	"cibles": "nombre de cibles",
+	"duree": "durée",
+	"rayon": "rayon",
+	"simultanes": "maximum simultané",
 }
 
 const DEGATS := "degats"
@@ -59,6 +65,20 @@ var degats_max: Array[float] = DamageType.parts_vides()
 var projectiles := 1.0
 var dispersion_en_degres := 0.0
 var vitesse_de_projectile := 0.0
+## Réels pendant la résolution pour la même raison que `projectiles`, arrondis
+## par `conclure()`.
+var cibles := 1.0
+var simultanes := 0.0
+var duree := 0.0
+var rayon := 0.0
+var periode := 0.0
+var brulure := 0.0
+## Les coups d'un geste, que la forme décide.
+var coups := 1
+## Vrai pour ce qui n'a pas de fin — l'aura : elle n'a pas de « par lancer », et
+## sa fiche ne donne que la seconde. Un booléen et non la forme : cette classe ne
+## nomme pas `Competence`, qui la nomme déjà.
+var entretenue := false
 var cout_en_mana := 0.0
 var intervalle := 0.0
 
@@ -122,6 +142,26 @@ static func modifiable(stat: String) -> bool:
 
 func nombre_de_projectiles() -> int:
 	return int(projectiles)
+
+
+func nombre_de_cibles() -> int:
+	return int(cibles)
+
+
+func maximum_simultane() -> int:
+	return int(simultanes)
+
+
+## Combien de fois une présence frappe dans sa durée : une impulsion à la pose,
+## puis une par période. L'epsilon absorbe l'arrondi d'une durée modifiée —
+## 3 × 1,25 ne tombe pas pile sur un multiple de 0,5 en virgule flottante.
+##
+## **Le nuage compte ses frappes par cette fonction** : l'estimation de la fiche et
+## le nombre d'impulsions réelles ne peuvent donc pas se contredire.
+func frappes_dans_la_duree() -> int:
+	if duree <= 0.0 or periode <= 0.0:
+		return 1
+	return maxi(floori(duree / periode + 0.0001), 1)
 
 
 ## « Projectile · Foudre · Sort », mots-clés des talents compris. Par la même
@@ -215,6 +255,23 @@ func _multiplier(facteur: float) -> void:
 		degats_max[i] *= facteur
 
 
+## La part de chaque nature dans ce lancer, sur le milieu des fourchettes, somme à
+## un. Tout dans la nature de la compétence quand il n'y a aucun dégât : une
+## répartition vide ne dirait à personne contre quoi se défendre.
+##
+## Ce qui vient d'un objet compte, contrairement à `nature_dominante()` : celle-ci
+## choisit une couleur, ceci dit ce que le coup **est**.
+func repartition() -> Array[float]:
+	var out := DamageType.parts_vides()
+	var total := total_min() + total_max()
+	if total <= 0.0:
+		out[nature] = 1.0
+		return out
+	for i in out.size():
+		out[i] = (degats_min[i] + degats_max[i]) / total
+	return out
+
+
 func total_min() -> float:
 	var total := 0.0
 	for part in degats_min:
@@ -229,23 +286,44 @@ func total_max() -> float:
 	return total
 
 
-## Ce qu'un lancer entier fait en moyenne, **si tout touche** : le milieu de chaque
-## fourchette — un tirage uniforme y tombe en moyenne —, fois le nombre de
-## projectiles. Avant les défenses de la cible, qu'on ne connaît pas d'avance.
+## Ce qu'un coup fait en moyenne : le milieu de chaque fourchette, qu'un tirage
+## uniforme atteint en moyenne.
+func moyenne_par_coup() -> float:
+	return (total_min() + total_max()) * 0.5
+
+
+## Ce qu'un lancer entier fait en moyenne, **si tout touche** : un coup, fois ce
+## que le lancer en porte — projectiles, cibles d'une chaîne, coups d'une croix,
+## frappes d'une présence pendant sa durée sur une cible restée dessous. Avant
+## les défenses de la cible, qu'on ne connaît pas d'avance.
+##
+## Zéro pour une aura : elle n'a pas de fin, donc pas de lancer à compter.
 ##
 ## Sans le critique : un projectile du joueur n'en fait pas, seul le coup d'arme
 ## passe par `DamageInfo.roll()`. Pour lui, l'estimation est un plancher.
 func moyenne_par_lancer() -> float:
-	return (total_min() + total_max()) * 0.5 * float(nombre_de_projectiles())
+	if entretenue:
+		return 0.0
+	var nombre := nombre_de_projectiles() * nombre_de_cibles() * coups * frappes_dans_la_duree()
+	return moyenne_par_coup() * float(nombre)
 
 
 ## La même, ramenée à la seconde par l'intervalle entre deux lancers — sans compter
-## la réserve, qu'un sort trop cher ne tiendrait pas à cette cadence. Zéro sans
-## intervalle, plutôt qu'une division qui afficherait l'infini.
+## la réserve, qu'un sort trop cher ne tiendrait pas à cette cadence. Pour une aura,
+## un coup par période. Zéro sans intervalle, plutôt qu'une division qui
+## afficherait l'infini.
+##
+## **Une orbite est bornée par son maximum** : une épée par intervalle d'arme en
+## ferait vingt à la fois sur le papier, et il n'en tourne que trois.
 func moyenne_par_seconde() -> float:
+	if entretenue:
+		return moyenne_par_coup() / periode if periode > 0.0 else 0.0
 	if intervalle <= 0.0:
 		return 0.0
-	return moyenne_par_lancer() / intervalle
+	var par_seconde := moyenne_par_lancer() / intervalle
+	if maximum_simultane() > 0 and periode > 0.0:
+		par_seconde = minf(par_seconde, moyenne_par_coup() * float(maximum_simultane()) / periode)
+	return par_seconde
 
 
 ## Les parts d'**un** coup, tirées dans leurs fourchettes.
@@ -266,9 +344,16 @@ func tirer(rng: RandomNumberGenerator) -> Array[float]:
 ##
 ## La dispersion est bornée au tour complet : au-delà, le lanceur prendrait un
 ## éventail très large pour une couronne et répartirait les traits comme telle.
+##
+## Une chaîne garde au moins sa première cible : un nœud comme Court-circuit ne
+## doit pas en faire un sort qui ne touche rien.
 func conclure() -> void:
 	var n := maxi(roundi(projectiles), 1)
 	projectiles = float(n)
 	dispersion_en_degres = clampf(
 		maxf(dispersion_en_degres, ECART_MINIMAL * float(n - 1)), 0.0, 360.0
 	)
+	cibles = float(maxi(roundi(cibles), 1))
+	simultanes = float(maxi(roundi(simultanes), 0))
+	duree = maxf(duree, 0.0)
+	rayon = maxf(rayon, 0.0)

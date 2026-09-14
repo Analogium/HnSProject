@@ -73,7 +73,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 
 | La question | La réponse |
 |---|---|
-| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
+| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances ; la défense d'une part, `attenuer()`), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
 | Quels objets tombent dans une zone ? | `ItemCatalog.disponibles()` |
 | Jusqu'à quand une base tombe-t-elle ? | `ItemCatalog.fenetre_de_chute()` |
 | Quels affixes une base peut-elle porter ? | `ItemAffix.fits()` via `ItemAffixPool.compatibles()` |
@@ -91,13 +91,19 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
 | Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement, la page du manuel et la fiche de personnage** : dégâts par nature en fourchette et leur décomposition, projectiles, dispersion, vitesse, coût, intervalle |
 | Combien une compétence inflige-t-elle en moyenne ? | `StatsDeCompetence.moyenne_par_lancer()` et `moyenne_par_seconde()` : si tout touche, avant défenses, sans critique |
-| Combien fait un coup parti ? | `StatsDeCompetence.tirer()` : une fois par projectile, une fois par coup d'épée pour tout son arc, avec `Game.rng` et **un tirage par fourchette ouverte** |
+| Combien fait un coup parti ? | `StatsDeCompetence.tirer()` : une fois par projectile, une fois par coup d'épée pour tout son arc, une fois pour une chaîne entière, une fois par impulsion d'un nuage ou d'une aura, une fois par contact d'un serpent ou d'une épée — avec `Game.rng` et **un tirage par fourchette ouverte** |
 | Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles`. Ceux d'un **lancer** sont dans `StatsDeCompetence.mots_cles`, nœuds d'arbre compris |
 | Dans quel ordre se lisent-ils ? | `MotsCles.ordonner()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
 | Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence`, avec la force changée en dégâts physiques aux attaques |
 | À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
-| Un tir ou un coup d'arme ? | Le mot-clé `projectile`, lu par `Player.lancer()` **sur le geste résolu** — pas la cadence, et pas la compétence : un nœud d'arbre peut ajouter un mot-clé |
-| Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les quatre refus — case vide, non apprise, réserve, recharge |
+| Que pose un lancer dans le monde ? | `Competence.forme`, lue par `Player.lancer()` **sur la compétence** : aucun nœud ne la change. Elle porte le comportement et le dessin ensemble, et `projectile` s'en déduit |
+| Combien de coups porte un lancer, si tout touche ? | `StatsDeCompetence.moyenne_par_lancer()` : projectiles × cibles × coups de la forme × `frappes_dans_la_duree()` — **la fonction même qui compte les impulsions du nuage**. Une aura n'a que `moyenne_par_seconde()` |
+| Quels chiffres de dégâts s'affichent ? | `Settings.montre_les_degats()`, lue par `HitFeedback` pour le coup, l'esquive et la brûlure : une case pour ce que subit le joueur, une pour ce que subissent les ennemis. Le chiffre seulement — la gerbe d'éclats reste |
+| Que ferme Échap ? | `Zone.fermer_les_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend qu'avec des points à placer |
+| Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les cinq refus — case vide, non apprise, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
+| Qui atteint un coup qui ne naît pas d'une collision ? | `Cibles.dans_le_cercle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
+| Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
+| Ce que coûte l'Immolation ? | `Player.bruler()` : répartie entre les natures comme les dégâts de l'aura (`StatsDeCompetence.repartition()`), chaque part atténuée par `CharacterStats.attenuer()` — **la règle d'un coup reçu**, donc objets et passifs compris. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
 | Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_periode` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
 | Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde |
 | Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
@@ -105,12 +111,12 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Une ligne se donne-t-elle en fourchette ? | `StatMod.stat_en_fourchette()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.depuis_definition()` |
 | Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
 | Peut-on y placer un point ? | `Manuel.peut_investir()` — les quatre conditions, jamais dans l'interface |
-| Où un manuel apprend-il ? | Au râtelier seulement, par `EnemyManager.report_kill()` |
+| Où un manuel apprend-il ? | Au râtelier seulement, par `Player.recompenser()` — le chemin d'une mort **et** d'une boule d'expérience de l'établi, avec le retard sur la zone |
 | Que porte une case de manuel ? | `CaseDeManuel` : une compétence **ou** un passif — jamais les deux —, sa position, et l'arbre de talents de la première |
 | D'où viennent les talents d'un lancer ? | `Player.talents_de()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Competence.resoudre()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
 | Ce qu'un passif change, et quand ? | `Manuel.mods_de_passifs()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
 | Peut-on placer un point ? | `Manuel.peut_investir()`, pour les trois sortes de destination. `est_ouvert()` porte les conditions **structurelles** seules, pour que la page distingue « verrouillé » de « plus de point à placer » |
-| Peut-on le reprendre ? | `Manuel.peut_reprendre()` : **un nœud d'arbre seulement**, et pas sous un enfant qui porte des points |
+| Peut-on le reprendre ? | `Manuel.peut_reprendre()`, pour les trois sortes : pas un nœud sous un enfant qui porte des points, pas une compétence sous les points qu'un de ses nœuds investis demande. `Player.reprendre()` vide la barre d'une compétence retombée à zéro |
 | Où convertit-on des dégâts ? | `StatsDeCompetence.convertir()`, appelée par `resoudre()` **après les fourchettes ajoutées** ; `convertis` en garde la part pour la fiche |
 | Dans quelle nature un tir se dessine-t-il ? | `StatsDeCompetence.nature_dominante()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
 
@@ -178,7 +184,13 @@ meurt presque toujours depuis un `area_entered`.
 - `GroundItem.spawn()` fait `add_child.call_deferred()` puis
   `set_deferred("global_position", …)` — dans cet ordre, une position globale ne
   voulant rien dire hors de l'arbre ;
-- `Player._swing()` passe par `set_deferred("monitoring", …)` ;
+- `Player._swing()` passe par `set_deferred("monitoring", …)`, et **attend une
+  image de physique** avant de rouvrir la hitbox pour le second coup d'une croix :
+  fermée puis rouverte dans la même image, elle ne coupe rien, et un ennemi déjà
+  dedans n'y *entre* pas une seconde fois ;
+- `Explosion.poser()` naît en différé et ne frappe qu'à sa première image de
+  physique : la boule qui l'appelle est dans son rappel de collision, où l'espace
+  refuse les requêtes ;
 - la mort du joueur et la montée de niveau repassent par `call_deferred`, sinon
   la liste de l'`EnemyManager` rétrécit sous ses propres pieds.
 
@@ -196,6 +208,7 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | Tous les coups reçus | `Hurtbox.take_damage()` |
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
+| La recherche des cibles d'un coup sans collision | `Cibles.dans_le_cercle()` |
 | La résolution d'un lancer | `Player.resoudre()` — le lancer et la fiche du manuel |
 | Le placement d'un point de manuel | `Player.investir()` / `reprendre()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
@@ -259,8 +272,8 @@ ailleurs, une petite classe nommée.
 
 Dans la zone : `I` sac, `C` fiche, `M` manuels, `TAB` carte, `H` bandeau,
 `F5` nouvelle zone, `G` paquet, `K` tout tuer, `Page haut/bas` niveau de la
-prochaine zone, `Échap` menu et sauvegarde. Les cinq cases de la barre se
-lancent par `competence_1` à `competence_5` — clic gauche, clic droit, `A`, `R`,
+prochaine zone, `Échap` ferme ce qui est ouvert, puis ouvre le menu et la
+sauvegarde. Les cinq cases de la barre se lancent par `competence_1` à `competence_5` — clic gauche, clic droit, `A`, `R`,
 `F` — et **la barre lit ses libellés dans la carte d'entrées**, jamais dans une
 liste réécrite à côté. Chaque aperçu se referme par la touche qui l'a
 ouvert, et par `Échap`.

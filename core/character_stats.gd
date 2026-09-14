@@ -181,6 +181,18 @@ func evade_chance() -> float:
 
 ## La résistance à une nature, déjà bornée. Le physique renvoie zéro : il passe
 ## par l'armure, et l'appelant n'a pas à connaître l'exception.
+## Ce qui reste d'une part de dégâts de cette nature après la défense qui s'y
+## oppose : l'armure pour le physique, la résistance pour tout le reste. **La seule
+## règle** : le coup reçu et la brûlure d'une aura passent tous deux par ici, et un
+## bonus de résistance porté ne doit pas servir contre l'un et oublier l'autre.
+func attenuer(kind: int, part: float) -> float:
+	if part <= 0.0:
+		return part
+	if kind == DamageType.Kind.PHYSICAL:
+		return part * (1.0 - armor_reduction(part))
+	return part * (1.0 - resistance(kind) * 0.01)
+
+
 func resistance(kind: DamageType.Kind) -> float:
 	var field: String = DamageType.RESIST_FIELDS[kind]
 	if field.is_empty():

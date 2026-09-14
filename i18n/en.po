@@ -171,11 +171,11 @@ msgstr "Bolt"
 msgid "Éclair vif"
 msgstr "Swift Bolt"
 
-msgid "Salve d'éclairs"
-msgstr "Bolt Volley"
+msgid "Chaîne d'éclairs"
+msgstr "Chain Lightning"
 
-msgid "Fulguration"
-msgstr "Fulmination"
+msgid "Nuage d'orage"
+msgstr "Storm Cloud"
 
 msgid "Nova de foudre"
 msgstr "Lightning Nova"
@@ -186,26 +186,29 @@ msgstr "Manual of Flames"
 msgid "Maître des flammes"
 msgstr "Master of Flames"
 
-msgid "Trait de feu"
-msgstr "Fire Bolt"
+msgid "Boule de feu"
+msgstr "Fireball"
 
-msgid "Gerbe de flammes"
-msgstr "Flame Spray"
+msgid "Serpent infernal"
+msgstr "Hell Snake"
 
-msgid "Comète"
-msgstr "Comet"
+msgid "Immolation"
+msgstr "Immolation"
 
-msgid "Manuel d'armes"
-msgstr "Manual of Arms"
+msgid "Manuel du chevalier"
+msgstr "Manual of the Knight"
 
-msgid "Maître d'armes"
-msgstr "Master of Arms"
+msgid "Maître chevalier"
+msgstr "Knight Master"
 
 msgid "Frappe lourde"
 msgstr "Heavy Strike"
 
-msgid "Lames tournoyantes"
-msgstr "Whirling Blades"
+msgid "Coup en croix"
+msgstr "Cross Slash"
+
+msgid "Épée spirale"
+msgstr "Spiral Sword"
 
 # ---------------------------------------------------------------------------
 # Passifs
@@ -235,23 +238,23 @@ msgstr "Fork"
 msgid "Trait de glace"
 msgstr "Glacial Bolt"
 
-msgid "Volée"
-msgstr "Volley"
+msgid "Ramification"
+msgstr "Branching"
 
-msgid "Empennage"
-msgstr "Fletching"
+msgid "Haute tension"
+msgstr "High Voltage"
 
-msgid "Percée"
-msgstr "Breakthrough"
+msgid "Court-circuit"
+msgstr "Short Circuit"
 
-msgid "Amplitude"
-msgstr "Amplitude"
+msgid "Front orageux"
+msgstr "Storm Front"
 
-msgid "Embrasement"
-msgstr "Ignition"
+msgid "Orage durable"
+msgstr "Lingering Storm"
 
-msgid "Éclats"
-msgstr "Splinters"
+msgid "Grêle"
+msgstr "Hail"
 
 msgid "Couronne"
 msgstr "Crown"
@@ -268,26 +271,26 @@ msgstr "Stoking"
 msgid "Double langue"
 msgstr "Forked Tongue"
 
-msgid "Braises"
-msgstr "Embers"
+msgid "Souffle ardent"
+msgstr "Searing Breath"
 
-msgid "Souffle"
-msgstr "Bellows"
+msgid "Longue vie"
+msgstr "Long Life"
 
-msgid "Nuée"
-msgstr "Swarm"
+msgid "Crocs"
+msgstr "Fangs"
 
-msgid "Cendres"
-msgstr "Ashes"
+msgid "Mue"
+msgstr "Molting"
 
-msgid "Masse"
-msgstr "Mass"
+msgid "Brasier"
+msgstr "Blaze"
 
-msgid "Fragmentation"
-msgstr "Fragmentation"
+msgid "Fournaise"
+msgstr "Furnace"
 
-msgid "Chute rapide"
-msgstr "Swift Fall"
+msgid "Flamme noire"
+msgstr "Black Flame"
 
 msgid "Élan"
 msgstr "Momentum"
@@ -298,14 +301,23 @@ msgstr "Burning Blade"
 msgid "Saignée"
 msgstr "Bloodletting"
 
-msgid "Gerbe d'acier"
-msgstr "Steel Spray"
+msgid "Taille"
+msgstr "Edge"
 
-msgid "Affûtage"
-msgstr "Whetting"
+msgid "Estoc"
+msgstr "Thrust"
 
-msgid "Retour de lame"
-msgstr "Returning Blade"
+msgid "Lame sainte"
+msgstr "Holy Blade"
+
+msgid "Ronde"
+msgstr "Round"
+
+msgid "Tranchant"
+msgstr "Sharpness"
+
+msgid "Endurance"
+msgstr "Endurance"
 
 # ---------------------------------------------------------------------------
 # Affixes d'élite
@@ -498,6 +510,18 @@ msgstr "projectiles"
 msgid "vitesse de projectile"
 msgstr "projectile speed"
 
+msgid "nombre de cibles"
+msgstr "targets"
+
+msgid "durée"
+msgstr "duration"
+
+msgid "rayon"
+msgstr "radius"
+
+msgid "maximum simultané"
+msgstr "max at once"
+
 # ---------------------------------------------------------------------------
 # Lignes d'objet
 # ---------------------------------------------------------------------------
@@ -626,6 +650,12 @@ msgstr "Health bars"
 
 msgid "Noms des affixes"
 msgstr "Affix names"
+
+msgid "Dégâts subis"
+msgstr "Damage taken"
+
+msgid "Dégâts infligés"
+msgstr "Damage dealt"
 
 msgid "Fenêtre"
 msgstr "Window"
@@ -793,8 +823,8 @@ msgstr "MANUALS"
 msgid "aucun manuel à cet emplacement"
 msgstr "no manual in this slot"
 
-msgid "[clic] ouvrir ou investir     [clic droit] ranger"
-msgstr "[LMB] open or spend     [RMB] put away"
+msgid "[clic] ouvrir ou +1     [clic droit] -1 ou ranger"
+msgstr "[LMB] open or +1     [RMB] -1 or put away"
 
 msgid "[clic] +1     [clic droit] -1     [échap] retour"
 msgstr "[LMB] +1     [RMB] -1     [esc] back"
@@ -877,6 +907,21 @@ msgstr "per hit"
 
 msgid "projectiles"
 msgstr "projectiles"
+
+msgid "cibles"
+msgstr "targets"
+
+msgid "coups"
+msgstr "hits"
+
+msgid "toutes les"
+msgstr "every"
+
+msgid "en même temps"
+msgstr "at once"
+
+msgid "brûlure"
+msgstr "self-burn"
 
 msgid "écart"
 msgstr "spread"

@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/projectiles/boule_de_feu.gd" id="1_boule"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_boule"]
+radius = 4.0
+
+[node name="PlayerFireball" type="Area2D"]
+collision_layer = 32
+collision_mask = 17
+script = ExtResource("1_boule")
+knockback = 0.0
+lifetime = 1.4
+hit_stop_on_impact = true
+damage_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_boule")

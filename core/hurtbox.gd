@@ -67,13 +67,7 @@ func take_damage(info: DamageInfo) -> void:
 ## par part, un coup en six natures ferait six points au lieu d'un.
 func _mitigate(info: DamageInfo) -> void:
 	for kind in info.parts.size():
-		var part := info.parts[kind]
-		if part <= 0.0:
-			continue
-		if kind == DamageType.Kind.PHYSICAL:
-			info.parts[kind] = part * (1.0 - stats.armor_reduction(part))
-		else:
-			info.parts[kind] = part * (1.0 - stats.resistance(kind) * 0.01)
+		info.parts[kind] = stats.attenuer(kind, info.parts[kind])
 	var total := info.amount
 	if total < MIN_DAMAGE:
 		info.parts[info.type] += MIN_DAMAGE - total

@@ -113,7 +113,7 @@ func _un_manuel(l: PackedStringArray, base: ItemBase) -> void:
 	var budget := 0
 	l.append("### %s — `%s`" % [arch.nom, base.id])
 	l.append("")
-	l.append("| case | sorte | ouvre à | points | coût | recharge | traits | par point |")
+	l.append("| case | sorte | ouvre à | points | coût | recharge | forme | par point |")
 	l.append("|---|---|---|---|---|---|---|---|")
 	for case: CaseDeManuel in arch.cases:
 		budget += case.points_max()
@@ -127,7 +127,7 @@ func _un_manuel(l: PackedStringArray, base: ItemBase) -> void:
 		var table := PackedStringArray()
 		for d in c.degats_par_point:
 			table.append("%d" % roundi(d))
-		l.append("| %s | %s %s | niveau %d | %d | %d mana | %s | %d | %s |" % [
+		l.append("| %s | %s %s | niveau %d | %d | %d mana | %s | %s | %s |" % [
 			c.nom,
 			"attaque" if c.cadence == Competence.Cadence.ARME else "sort",
 			DamageType.NAMES[c.nature],
@@ -135,7 +135,7 @@ func _un_manuel(l: PackedStringArray, base: ItemBase) -> void:
 			c.points_max(),
 			roundi(c.cout_en_mana),
 			"arme" if c.cadence == Competence.Cadence.ARME else "%.2f s" % c.recharge,
-			c.projectiles,
+			_forme(c),
 			" · ".join(table),
 		])
 	l.append("")
@@ -173,6 +173,27 @@ func _par_point(lignes: Array[LigneDeTalent]) -> String:
 	for ligne in lignes:
 		out.append(ligne.modificateur(1).label())
 	return " · ".join(out) if out.size() > 0 else "—"
+
+
+## La forme et les nombres qui la décrivent : « trait ×8 sur 360° », « nuage 3 s,
+## rayon 34 ». Ce qui vaut sa valeur par défaut ne s'écrit pas.
+func _forme(c: Competence) -> String:
+	var out := PackedStringArray([String(Competence.Forme.keys()[c.forme]).to_lower()])
+	if c.projectiles > 1:
+		out.append("×%d sur %d°" % [c.projectiles, roundi(c.dispersion_en_degres)])
+	if c.cibles > 1:
+		out.append("%d cibles" % c.cibles)
+	if c.duree > 0.0:
+		out.append("%.1f s" % c.duree)
+	if c.rayon > 0.0:
+		out.append("rayon %d" % roundi(c.rayon))
+	if c.periode > 0.0:
+		out.append("toutes les %.2f s" % c.periode)
+	if c.simultanes > 0:
+		out.append("%d au plus" % c.simultanes)
+	if c.brulure > 0.0:
+		out.append("brûle %d %% PV/s" % roundi(c.brulure * 100.0))
+	return " · ".join(out)
 
 
 func _effet_du_noeud(n: NoeudDeTalent) -> String:

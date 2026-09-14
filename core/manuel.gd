@@ -171,25 +171,33 @@ func investir(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return true
 
 
-## Peut-on reprendre un point ? **Seulement dans un nœud d'arbre.**
+## Peut-on reprendre un point ? Dans une case, un passif ou un nœud d'arbre.
 ##
-## Une case et un passif décident de ce qu'un personnage *sait* : les défaire,
-## c'est la répartition qu'on refait avant chaque paquet d'ennemis, refusée au
-## jalon 3 pour les attributs. Un arbre décide de ce qu'une compétence *fait* —
-## essayer une conversion et revenir est la façon dont on la comprend, et un
-## joueur qui ne peut pas revenir ne l'essaie pas.
+## **Décidé le 14 septembre 2026, sur demande**, contre la règle du jalon 10 qui
+## ne rendait que les points d'arbre : un point placé se reprend partout, et
+## revient au livre.
 ##
-## Le seul refus : un nœud dont un enfant porte encore des points, qui laisserait
-## la branche accrochée à un nœud vide.
+## Deux refus, qui empêchent chacun un arbre de rester accroché dans le vide :
+## - un nœud dont un enfant porte encore des points ;
+## - une compétence qui descendrait sous les points qu'un de ses nœuds investis
+##   demande — le nœud garderait des points qu'on ne pourrait plus y placer.
 func peut_reprendre(archetype: ManuelArchetype, identifiant: String) -> bool:
 	if archetype == null or points_de(identifiant) <= 0:
 		return false
+	if archetype.passif_de(identifiant) != null:
+		return true
+	var case := archetype.case_de(identifiant)
+	if case != null:
+		for noeud in case.talents:
+			if points_de(noeud.id) > 0 and points_de(identifiant) - 1 < noeud.points_requis:
+				return false
+		return true
 	if archetype.noeud_de(identifiant) == null:
 		return false
-	var case := archetype.case_du_noeud(identifiant)
-	if case == null:
+	var case_du_noeud := archetype.case_du_noeud(identifiant)
+	if case_du_noeud == null:
 		return false
-	for enfant in case.enfants_de(identifiant):
+	for enfant in case_du_noeud.enfants_de(identifiant):
 		if points_de(enfant.id) > 0:
 			return false
 	return true

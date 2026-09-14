@@ -43,6 +43,9 @@ const PACK_MIN_TILES := 3
 ## partagent ce chiffre — deux distances réglées séparément se mettraient à
 ## répondre différemment au même geste.
 const DEVANT_LES_PIEDS := 14.0
+## Le rayon intérieur de la couronne de boules d'expérience : hors de portée de
+## ramassage, qui est de quinze pixels du centre du joueur.
+const COURONNE_D_ORBES := 26.0
 
 ## Filet de sécurité, en secondes. Ni à chaque changement — ramasser un objet
 ## écrirait sur le disque à chaque grappe d'ennemis tués — ni seulement à la
@@ -90,6 +93,7 @@ func _ready() -> void:
 	# L'établi pose par le même chemin que tout le reste : un seul endroit sait
 	# faire tomber un objet, et l'outil de réglage n'y fait pas exception.
 	atelier.drop_requested.connect(_on_item_dropped)
+	atelier.orbes_demandees.connect(lacher_des_orbes)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -170,6 +174,19 @@ func _on_item_dropped(item: Item) -> void:
 	_poser_au_sol(item)
 
 
+## Les boules d'expérience de l'établi, en couronne autour du joueur, sur trois
+## rayons. Posées sous ses pieds, elles seraient ramassées avant d'avoir été vues ;
+## sur un seul cercle, dix boules se touchent et se lisent comme un anneau.
+##
+## Au niveau de la zone **en cours**, celui de ses ennemis — pas celui qu'on a choisi
+## pour la prochaine.
+func lacher_des_orbes(nombre: int) -> void:
+	var valeur := OrbeDExperience.valeur_pour(enemy_manager.niveau)
+	for i in nombre:
+		var ecart := Vector2.from_angle(TAU * float(i) / float(nombre)) * (COURONNE_D_ORBES + 8.0 * float(i % 3))
+		OrbeDExperience.poser(loot, player.global_position + ecart, valeur, enemy_manager.niveau)
+
+
 ## **Le seul endroit qui pose un objet au sol** : ce qu'on jette du sac, ce que le
 ## râtelier rend sans place pour l'accueillir, et le manuel de départ. Les trois
 ## écrivaient la même ligne, distance et délai compris ; il suffisait d'en corriger
@@ -187,6 +204,32 @@ func _poser_au_sol(item: Item) -> void:
 func _process(_delta: float) -> void:
 	if overlay.visible:
 		overlay.text = _overlay_text()
+
+
+## Échap ferme d'abord ce qui est ouvert, et n'ouvre le menu qu'ensuite.
+##
+## Dans `_input` et non `_unhandled_input` : le menu de pause, dernier enfant de la
+## zone, lit la touche avant elle. Et ici plutôt que dans le menu : c'est la zone qui
+## connaît ses panneaux. La page des manuels referme son arbre avant, dans son propre
+## `_input`, qu'un enfant reçoit avant son parent.
+func _input(event: InputEvent) -> void:
+	if Touches.enfoncee(event) == KEY_ESCAPE and fermer_les_interfaces():
+		get_viewport().set_input_as_handled()
+
+
+## Ferme tout ce qui est ouvert, et dit si quelque chose l'était. Par la visibilité
+## et non par `Game.ui_grabs_input` : la fiche de personnage ne prend la souris
+## que lorsqu'elle a des points à placer, et Échap la laisserait ouverte.
+func fermer_les_interfaces() -> bool:
+	var fermee := false
+	for panneau: Control in [inventory, stats_panel, manuels, atelier]:
+		if panneau.visible:
+			panneau.toggle()
+			fermee = true
+	if barre.menu_ouvert():
+		barre.fermer_le_menu()
+		fermee = true
+	return fermee
 
 
 func _unhandled_input(event: InputEvent) -> void:

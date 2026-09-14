@@ -38,6 +38,16 @@ const LEVEL_HEAL := 0.30
 ## appelant n'ait à deviner ce que « 1 » veut dire.
 const POINTS_DES_ATTAQUES_DE_BASE := 1
 
+## Jusqu'où un nuage ou un serpent se posent du personnage. Au-delà du curseur, on
+## poserait hors de l'écran à la manette ; en deçà, on se jetterait dans le paquet.
+const PORTEE_DE_POSE := 140.0
+## Ce qui distingue une frappe lourde d'un coup d'épée au toucher, en plus du dessin.
+const SECOUSSE_DE_FRAPPE := 2.0
+## La brûlure s'affiche par paquets de cette durée, en secondes : un chiffre par
+## image en ferait soixante par seconde, chacun à « 0 ». La demi-seconde est la
+## période de l'aura, donc son chiffre et ses coups vont au même rythme.
+const AFFICHAGE_DE_BRULURE := 0.5
+
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud depuis l'arène.
 @export var swing_duration: float = 0.12
 
@@ -45,6 +55,8 @@ const POINTS_DES_ATTAQUES_DE_BASE := 1
 ## Attaque à distance. Moins de dégâts que le corps à corps, mais elle
 ## n'oblige pas à entrer dans la mêlée : c'est le compromis à régler.
 @export var bolt_scene: PackedScene
+## Le tir de Boule de feu, qui explose à l'impact.
+@export var boule_scene: PackedScene
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -116,7 +128,14 @@ var _maintenues: Array[bool] = []
 ## balayage qui fait 3 à l'un et 7 à l'autre dans la même image se lit comme un
 ## bug.
 var _parts_du_coup: Array[float] = []
+var _secousse_du_coup := 0.0
 var _is_swinging := false
+## L'aura allumée, ou null. Une seule : Immolation est la seule compétence entretenue.
+var _aura: Immolation
+var _couronne: CouronneDeLames
+## Ce que la brûlure a pris depuis le dernier chiffre affiché, et depuis quand.
+var _brulure_a_afficher := 0.0
+var _brulure_depuis := 0.0
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
@@ -200,9 +219,9 @@ func _physics_process(delta: float) -> void:
 
 
 ## Lance la compétence de cette case, si elle en a une, qu'on l'a apprise, que la
-## réserve suit et que la recharge est passée. **Le seul chemin** : les cinq
-## touches, la barre à l'écran et les tests passent tous par ici, et aucun n'a à
-## refaire une de ces quatre vérifications.
+## réserve suit, que la recharge est passée et, pour une orbite, qu'il reste une
+## place. **Le seul chemin** : les cinq touches, la barre à l'écran et les tests
+## passent tous par ici, et aucun n'a à refaire une de ces cinq vérifications.
 ##
 ## Publique : c'est l'équivalent du `_swing()` d'avant pour les tests, et le
 ## point d'entrée d'une case cliquée le jour où la barre deviendra cliquable.
@@ -216,22 +235,113 @@ func lancer(index: int) -> bool:
 	if points <= 0:
 		return false
 	var geste := resoudre(competence, points)
+
+	if competence.forme == Competence.Forme.AURA:
+		# Tenir la touche n'alterne pas : une aura qui s'allume et s'éteint à chaque
+		# fin de recharge serait inutilisable.
+		_maintenues[index] = false
+		if aura_allumee():
+			# Éteindre n'est pas lancer : ni coût, et la recharge seulement pour que
+			# le rebond du doigt ne la rallume pas aussitôt.
+			_aura.eteindre()
+			_aura = null
+			_recharges[index] = geste.intervalle
+			return true
 	if mana < geste.cout_en_mana:
+		return false
+	# Refusée plutôt que de remplacer la plus ancienne : la touche tenue paierait du
+	# mana à chaque intervalle pour ne rien changer à l'écran.
+	if competence.forme == Competence.Forme.ORBITE and _couronne_de_lames().pleine(geste.maximum_simultane()):
 		return false
 
 	_set_mana(mana - geste.cout_en_mana)
 	_recharges[index] = geste.intervalle
-	# Le mot-clé et non la cadence : c'est lui qui dit ce que la compétence fait.
-	# Un sort de zone sera une incantation sans être un tir.
-	#
-	# Lu sur le **geste résolu** et non sur la compétence : c'est lui qui connaît
-	# les mots-clés qu'un nœud d'arbre ajoute, et la fiche du manuel lit la même
-	# liste.
-	if geste.mots_cles.has(MotsCles.PROJECTILE):
-		_tirer(geste)
-	else:
-		_swing(geste)
+	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
+	match competence.forme:
+		Competence.Forme.TRAIT:
+			_tirer(geste, bolt_scene)
+		Competence.Forme.BOULE:
+			_tirer(geste, boule_scene)
+		Competence.Forme.CHAINE:
+			if ChaineDEclairs.decharger(_parent_des_effets(), self, geste, facing) > 0:
+				Game.hit_stop()
+				Game.shake_camera(camera, shake_amount)
+		Competence.Forme.NUAGE:
+			NuageDOrage.poser(_parent_des_effets(), _point_vise(), geste)
+		Competence.Forme.SERPENT:
+			SerpentInfernal.lacher(_parent_des_effets(), _point_vise(), geste, facing)
+		Competence.Forme.AURA:
+			_aura = Immolation.allumer(self, competence)
+		Competence.Forme.ORBITE:
+			_couronne_de_lames().ajouter(geste)
+		Competence.Forme.FRAPPE:
+			_swing(geste, SwingArc.Style.FRAPPE)
+		Competence.Forme.CROIX:
+			_swing(geste, SwingArc.Style.CROIX)
+		_:
+			_swing(geste)
 	return true
+
+
+func aura_allumee() -> bool:
+	return is_instance_valid(_aura) and _aura.allumee()
+
+
+## Combien d'épées tournent autour du personnage.
+func epees_en_orbite() -> int:
+	return _couronne.nombre() if _couronne != null else 0
+
+
+## Ce qu'une aura coûte à son porteur, cette image-ci, réparti entre les natures
+## comme ses propres dégâts : une Immolation convertie à moitié en nécrotique brûle à
+## moitié en nécrotique. Chaque part passe par `CharacterStats.attenuer()`, la règle
+## même d'un coup reçu, donc par tout ce qui monte la résistance — objets, passifs.
+##
+## **Pas un coup** pour le reste : ni esquive, ni plancher d'un point — appliqué
+## soixante fois par seconde, il ferait de la moindre brûlure soixante PV par
+## seconde. Elle peut tuer ; c'est le prix du sort.
+##
+## L'armure se compte sur ce que la brûlure prend **par seconde** : elle protège plus
+## des petits coups, et sur la tranche d'une image elle annulerait presque tout.
+func bruler(part_par_seconde: float, repartition: Array[float], delta: float) -> void:
+	if is_dead or part_par_seconde <= 0.0:
+		return
+	var par_seconde := stats.max_health * part_par_seconde
+	var subie := 0.0
+	for kind in repartition.size():
+		subie += stats.attenuer(kind, par_seconde * repartition[kind])
+	var perte := subie * delta
+	_set_health(health - perte)
+	_brulure_a_afficher += perte
+	_brulure_depuis += delta
+	if _brulure_depuis >= AFFICHAGE_DE_BRULURE:
+		if HitFeedback.current != null:
+			HitFeedback.current.degats_sans_coup(hurtbox.global_position, _brulure_a_afficher)
+		_brulure_a_afficher = 0.0
+		_brulure_depuis = 0.0
+	if health <= 0.0:
+		_die()
+
+
+## Au curseur, à `PORTEE_DE_POSE` au plus ; à la manette, à cette distance devant.
+func _point_vise() -> Vector2:
+	var vers := facing * PORTEE_DE_POSE
+	if _aim_with_mouse:
+		vers = (get_global_mouse_position() - global_position).limit_length(PORTEE_DE_POSE)
+	return global_position + vers
+
+
+## Où naît ce que le personnage lance et laisse derrière lui : tirs, nuages,
+## serpents. À défaut d'un conteneur posé par la scène, à côté du joueur.
+func _parent_des_effets() -> Node:
+	return projectile_parent if projectile_parent != null else get_parent()
+
+
+func _couronne_de_lames() -> CouronneDeLames:
+	if _couronne == null:
+		_couronne = CouronneDeLames.new()
+		add_child(_couronne)
+	return _couronne
 
 
 ## Ce que cette compétence fait lancée maintenant, avec ces points : la fiche du
@@ -302,13 +412,15 @@ func investir(emplacement: int, identifiant: String) -> bool:
 	return true
 
 
-## Reprend un point — d'un nœud d'arbre seulement, c'est `Manuel` qui le dit.
+## Reprend un point d'une case, d'un passif ou d'un nœud — `Manuel` dit quand.
+## Une compétence retombée à zéro sort de la barre, comme quand son livre part.
 func reprendre(emplacement: int, identifiant: String) -> bool:
 	var livre := ratelier.a(emplacement)
 	if livre == null or livre.base.manuel == null:
 		return false
 	if not livre.manuel.reprendre(livre.base.manuel, identifiant):
 		return false
+	_vider_la_barre_de(livre.base.manuel.competences())
 	_after_equipment_change()
 	return true
 
@@ -326,21 +438,29 @@ func competences_disponibles() -> Array[Competence]:
 	return out
 
 
-func _swing(geste: StatsDeCompetence) -> void:
-	_parts_du_coup = geste.tirer(Game.rng)
+## Un coup par coup que le geste porte — deux pour une croix —, chacun tiré à son
+## départ et chacun avec sa hitbox : une même cible peut donc être touchée par les
+## deux.
+func _swing(geste: StatsDeCompetence, style := SwingArc.Style.ARC) -> void:
 	_is_swinging = true
-	_already_hit.clear()
-	swing_arc.play(swing_duration)
+	_secousse_du_coup = shake_amount * (SECOUSSE_DE_FRAPPE if style == SwingArc.Style.FRAPPE else 1.0)
+	swing_arc.play(swing_duration * float(geste.coups), style)
 	sprite.attack()
 
-	# set_deferred : on est dans un callback physique, on ne peut pas
-	# modifier l'état de monitoring en direct.
-	hitbox.set_deferred("monitoring", true)
-
-	# ignore_time_scale : sinon le hit-stop étire la fenêtre de swing.
-	await get_tree().create_timer(swing_duration, true, false, true).timeout
-
-	hitbox.set_deferred("monitoring", false)
+	for coup in geste.coups:
+		if coup > 0:
+			# L'ennemi déjà dans la zone n'y *entre* pas une seconde fois : la hitbox
+			# doit être réellement fermée une image de physique avant de se rouvrir,
+			# sinon le second coup ne touche personne.
+			await get_tree().physics_frame
+		_parts_du_coup = geste.tirer(Game.rng)
+		_already_hit.clear()
+		# set_deferred : on est dans un callback physique, on ne peut pas
+		# modifier l'état de monitoring en direct.
+		hitbox.set_deferred("monitoring", true)
+		# ignore_time_scale : sinon le hit-stop étire la fenêtre de swing.
+		await get_tree().create_timer(swing_duration, true, false, true).timeout
+		hitbox.set_deferred("monitoring", false)
 	_is_swinging = false
 
 
@@ -348,10 +468,10 @@ func _swing(geste: StatsDeCompetence) -> void:
 ## Nombre, écart, vitesse et dégâts viennent tous de `StatsDeCompetence` : le
 ## lanceur ne relit rien sur la compétence, sinon un modificateur de mot-clé
 ## changerait la fiche du manuel sans changer le tir.
-func _tirer(geste: StatsDeCompetence) -> void:
-	if bolt_scene == null:
+func _tirer(geste: StatsDeCompetence, scene: PackedScene) -> void:
+	if scene == null:
 		return
-	var parent := projectile_parent if projectile_parent != null else get_parent()
+	var parent := _parent_des_effets()
 	var nombre := geste.nombre_de_projectiles()
 
 	# Un seul projectile part droit devant, quoi qu'annonce la dispersion : le
@@ -375,10 +495,12 @@ func _tirer(geste: StatsDeCompetence) -> void:
 		var direction := facing.rotated(depart + pas * float(i))
 		# Un tirage par trait : trois traits identiques au point près se liraient
 		# comme un seul coup recopié.
-		Projectile.spawn(
-			parent, bolt_scene, global_position, direction, geste.tirer(Game.rng), self,
+		var tir := Projectile.spawn(
+			parent, scene, global_position, direction, geste.tirer(Game.rng), self,
 			geste.vitesse_de_projectile, nature
 		)
+		if tir is BouleDeFeu:
+			(tir as BouleDeFeu).rayon_d_explosion = geste.rayon
 
 
 ## Vie et mana remontent en continu. Testé avant d'écrire : une fois la barre
@@ -596,19 +718,24 @@ func cesser_d_etudier(index: int) -> Item:
 	if parti == null or parti.base.manuel == null:
 		return parti
 
-	for competence in parti.base.manuel.competences():
-		# Un autre livre du râtelier peut enseigner la même chose : la question
-		# est « la sait-on encore », pas « d'où venait-elle ». La réponse est lue
-		# **après** le retrait, donc elle tient compte de ce qui reste.
+	_vider_la_barre_de(parti.base.manuel.competences())
+	# Et ses passifs s'en vont avec lui : oublié, le bonus resterait sur la fiche
+	# jusqu'au prochain changement d'équipement.
+	_after_equipment_change()
+	return parti
+
+
+## Vide les cases de barre de celles de ces compétences qu'on ne sait plus lancer.
+## Un autre livre du râtelier peut enseigner la même chose : la question est « la
+## sait-on encore », pas « d'où venait-elle », et elle se pose **après** le
+## changement.
+func _vider_la_barre_de(competences: Array[Competence]) -> void:
+	for competence in competences:
 		if points_de_competence(competence.id) > 0:
 			continue
 		for i in BarreDeCompetences.EMPLACEMENTS:
 			if barre.id_de(i) == competence.id:
 				barre.vider(i)
-	# Et ses passifs s'en vont avec lui : oublié, le bonus resterait sur la fiche
-	# jusqu'au prochain changement d'équipement.
-	_after_equipment_change()
-	return parti
 
 
 func unequip(slot: String) -> Item:
@@ -714,6 +841,29 @@ func _level_up() -> void:
 	leveled_up.emit(level)
 
 
+## Ce que rapporte une mort ou une boule d'expérience de cette zone, et le montant
+## réellement gagné. **Le seul chemin** : une boule qui récompenserait de son côté
+## finirait par oublier les manuels, ou le retard sur la zone.
+##
+## L'expérience suit le niveau de la zone — celle d'un ennemi dérive de ses PV — et
+## **rien ne la borne vers le haut** : descendre plus bas rapporte mieux, comme pour
+## le butin. Elle ne fond que dans l'autre sens, sur une zone laissée loin derrière
+## soi.
+##
+## Les manuels à l'étude apprennent **du même montant** : le choix est déjà dans les
+## trois emplacements du râtelier, et diviser par trois punirait deux fois — un
+## deuxième manuel doit être une ouverture, pas un handicap. Celui qui dort dans le
+## sac, lui, n'apprend rien.
+func recompenser(brut: float, niveau_zone: int, ou: Vector2) -> int:
+	var gain := maxi(roundi(brut * Enemy.facteur_d_experience(niveau_zone, level)), 1)
+	gain_xp(gain)
+	for livre in ratelier.equipes():
+		livre.manuel.gagner_experience(gain)
+	if HitFeedback.current != null:
+		HitFeedback.current.xp_gain(ou, gain)
+	return gain
+
+
 ## Appelée par l'objet au sol quand le joueur lui passe dessus. Renvoie faux quand
 ## il ne reste pas de rectangle libre à sa taille : l'objet reste au sol, il ne
 ## doit pas s'évaporer parce que le sac est plein.
@@ -747,8 +897,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	# cinq impacts sont le même geste — c'est ici qu'on le sait.
 	if _already_hit.size() == 1:
 		Game.hit_stop()
-		if shake_amount > 0.0:
-			Game.shake_camera(camera, shake_amount)
+		Game.shake_camera(camera, _secousse_du_coup)
 
 
 func _on_damaged(info: DamageInfo) -> void:
@@ -770,6 +919,13 @@ func _die() -> void:
 	is_dead = true
 	set_physics_process(false)
 	velocity = Vector2.ZERO
+	# Ce qui frappait pour lui s'éteint avec lui : une aura qui brûlerait un corps
+	# pendant le rechargement de la zone, des épées qui tourneraient autour.
+	if aura_allumee():
+		_aura.eteindre()
+	_aura = null
+	if _couronne != null:
+		_couronne.vider()
 	died.emit()   # l'écran de fin de run se branchera ici
 
 

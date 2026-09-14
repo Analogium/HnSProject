@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_base")
 id = "manuel_armes"
-display_name = "Manuel d'armes"
+display_name = "Manuel du chevalier"
 kind = "manuel_armes"
 family = "manual"
 tags = PackedStringArray("manual")

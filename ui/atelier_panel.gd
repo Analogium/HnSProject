@@ -4,9 +4,12 @@ extends Control
 ## L'établi : fabriquer un objet précis et le poser au sol, pour régler et
 ## éprouver sans attendre qu'il tombe.
 ##
-## **Outil de réglage, à retirer avant publication.** Il tient en trois attaches :
-## le nœud `UI/Atelier` de la zone, la touche B, et le branchement de
-## `drop_requested`. Rien d'autre du jeu ne le connaît.
+## Et lâcher des boules d'expérience, pour monter de niveau sans y passer des heures
+## — mais en les ramassant, par le chemin d'une mort : les manuels apprennent avec.
+##
+## **Outil de réglage, à retirer avant publication.** Il tient en quatre attaches :
+## le nœud `UI/Atelier` de la zone, la touche B, et les branchements de
+## `drop_requested` et `orbes_demandees`. Rien d'autre du jeu ne le connaît.
 ##
 ## Il ne fabrique que des objets que le jeu **pourrait** produire : les affixes
 ## proposés sont ceux que la base accepte, les paliers ceux que le niveau d'objet
@@ -21,6 +24,9 @@ extends Control
 ## Ce qu'on fabrique et qu'on veut voir tomber. C'est la zone qui le pose, par le
 ## même chemin que ce qu'on jette du sac.
 signal drop_requested(item: Item)
+## Des boules d'expérience à poser autour du joueur. C'est la zone qui les pose : elle
+## seule connaît le niveau qui fait leur valeur.
+signal orbes_demandees(nombre: int)
 
 const PAD := 6.0
 const LINE := 10.0
@@ -280,8 +286,14 @@ func _disposer() -> void:
 		)
 		ya += LINE
 
-	# --- les deux boutons ---
+	# --- les boules d'expérience, sous la colonne des bases ---
 	var yb := size.y - LINE - PAD
+	x = PAD + COL - 2.0 * 24.0
+	for nombre in [1, 10]:
+		_ajouter(Rect2(x, yb, 22.0, LINE), "orbes:%d" % nombre, "×%d" % nombre, UiPalette.TEXTE)
+		x += 24.0
+
+	# --- les deux boutons ---
 	_ajouter(Rect2(droite, yb, 74.0, LINE), "lacher", "Lâcher au sol", UiPalette.TEXTE)
 	_ajouter(Rect2(droite + 80.0, yb, 66.0, LINE), "reset", "Réinitialiser", UiPalette.TEXTE)
 
@@ -337,6 +349,7 @@ func _appliquer(action: String) -> void:
 		"page": _page = clampi(_page + int(coupe[1]), 0, pages() - 1)
 		"affixes": _page_affixes = clampi(_page_affixes + int(coupe[1]), 0, pages_d_affixes() - 1)
 		"niveau": changer_niveau(int(coupe[1]))
+		"orbes": orbes_demandees.emit(int(coupe[1]))
 		"affixe": basculer_affixe(coupe[1])
 		"lacher":
 			var objet := fabriquer()
@@ -368,6 +381,7 @@ func _draw() -> void:
 		FONT_SIZE, UiPalette.LABEL
 	)
 	_dessiner_fiche(droite)
+	_texte("boules d'exp", Vector2(PAD, size.y - PAD - 2.0), FONT_SIZE, UiPalette.LABEL)
 
 	for ligne in _lignes:
 		var r: Rect2 = ligne["rect"]
@@ -375,7 +389,8 @@ func _draw() -> void:
 		if action == _survol:
 			draw_rect(r, SURVOL)
 		if action == "lacher" or action == "reset" or action.begins_with("niveau:") \
-				or action.begins_with("page:") or action.begins_with("affixes:"):
+				or action.begins_with("page:") or action.begins_with("affixes:") \
+				or action.begins_with("orbes:"):
 			draw_rect(r, BOUTON)
 			draw_rect(r, UiPalette.BORDER, false, 1.0)
 		# Le séparateur « | » sépare l'intitulé de son état : le premier à gauche,

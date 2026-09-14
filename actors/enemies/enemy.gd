@@ -239,10 +239,16 @@ static func facteur_d_experience(niveau_zone: int, niveau_joueur: int) -> float:
 	return clampf(1.0 - XP_PERTE_PAR_NIVEAU * float(maxi(0, ecart - XP_MARGE)), XP_PLANCHER, 1.0)
 
 
+## L'expérience que valent ces PV, avant affixes. Partagée avec la boule
+## d'expérience de l'établi, qui vaut ce que rapportent des grunts de la zone.
+static func xp_de_la_sante(max_health: float) -> float:
+	return max_health * XP_PER_HEALTH
+
+
 func xp_value() -> int:
 	# max_health porte déjà les multiplicateurs d'affixes ; xp_mult est le
 	# supplément de récompense, distinct de la robustesse.
-	var v := stats.max_health * XP_PER_HEALTH
+	var v := xp_de_la_sante(stats.max_health)
 	for a in affixes:
 		v *= a.xp_mult
 	return maxi(roundi(v), 1)

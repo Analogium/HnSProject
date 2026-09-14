@@ -23,7 +23,7 @@ func _livre_travaille() -> Item:
 	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
 	livre.manuel.gagner_experience(999999)
 	livre.manuel.investir(livre.base.manuel, "eclair_vif")
-	livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+	livre.manuel.investir(livre.base.manuel, "chaine_d_eclairs")
 	return livre
 
 

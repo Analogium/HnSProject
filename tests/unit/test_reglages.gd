@@ -109,15 +109,24 @@ func test_les_reglages_font_l_aller_retour() -> void:
 
 	Settings.show_health_bars = false
 	Settings.show_affix_names = false
+	Settings.degats_subis_visibles = false
+	Settings.degats_infliges_visibles = false
 	var ecrit := Settings.vers_dict()
 
-	Settings.depuis_dict({"barres_de_vie": true, "noms_d_affixes": true, "echelle": 1})
+	Settings.depuis_dict({
+		"barres_de_vie": true, "noms_d_affixes": true, "echelle": 1,
+		"degats_subis": true, "degats_infliges": true,
+	})
 	assert_true(Settings.show_health_bars)
 	assert_true(Settings.show_affix_names)
+	assert_true(Settings.degats_subis_visibles)
+	assert_true(Settings.degats_infliges_visibles)
 
 	Settings.depuis_dict(ecrit)
 	assert_false(Settings.show_health_bars, "les valeurs relues sont celles écrites")
 	assert_false(Settings.show_affix_names)
+	assert_false(Settings.degats_subis_visibles)
+	assert_false(Settings.degats_infliges_visibles)
 
 	Settings.depuis_dict(avant)
 

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Competence" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/competence.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icones/epee_spirale.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "epee_spirale"
+nom = "Épée spirale"
+nature = 0
+cadence = 0
+forme = 9
+cout_en_mana = 10.0
+duree = 5.0
+periode = 0.5
+simultanes = 3
+degats_par_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
+attribut = ""
+pourcentage_par_attribut = 0.0
+niveau_de_manuel_requis = 6
+icone = ExtResource("2_icone")

@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-44 bases d'objets, 11 compétences, 39 affixes d'objets, 5 affixes d'ennemis.
+44 bases d'objets, 12 compétences, 39 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -64,7 +64,7 @@ Niveaux de zone : 1 à 60.
 | `bague_ouvragee` | Bague ouvragée | anneau | 2 | ring | ring, jewellery | +4 % chance critique | 1 × 1 | 16 à 40 |
 | `chevaliere` | Chevalière | anneau | 3 | ring | ring, jewellery | +6 % chance critique | 1 × 1 | 34 et au-delà |
 | `manuel_foudre` | Manuel de la foudre | manuel_foudre | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
-| `manuel_armes` | Manuel d'armes | manuel_armes | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
+| `manuel_armes` | Manuel du chevalier | manuel_armes | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
 | `manuel_feu` | Manuel des flammes | manuel_feu | 1 | manual | manual | — | 2 × 2 | 5 et au-delà |
 
 ## Manuels
@@ -76,12 +76,12 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 ### Maître de la foudre — `manuel_foudre`
 
-| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+| case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | 1 | 21 · 27 · 34 · 42 · 51 |
-| Salve d'éclairs | sort foudre | niveau 3 | 5 | 14 mana | 0.62 s | 3 | 16 · 19 · 23 · 28 · 34 |
-| Fulguration | sort foudre | niveau 5 | 5 | 18 mana | 0.95 s | 1 | 41 · 53 · 68 · 86 · 107 |
-| Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | 8 | 18 · 22 · 27 · 33 · 40 |
+| Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | trait | 21 · 27 · 34 · 42 · 51 |
+| Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chaine · 3 cibles | 17 · 22 · 28 · 35 · 43 |
+| Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | nuage · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
+| Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | trait · ×8 sur 360° | 18 · 22 · 27 · 33 · 40 |
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % dégâts (Foudre) · +10 mana |
 
 | nœud | compétence | parent | demande | points | par point |
@@ -89,24 +89,25 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Surcharge | Éclair vif | — | 1 point de compétence | 3 | +12 % dégâts |
 | Fourche | Éclair vif | Surcharge | 2 points de compétence | 1 | +1 nombre de projectiles |
 | Trait de glace | Éclair vif | — | 3 points de compétence | 1 | +20 % dégâts · convertit 50 % en froid |
-| Volée | Salve d'éclairs | — | 1 point de compétence | 2 | +1 nombre de projectiles |
-| Empennage | Salve d'éclairs | Volée | 2 points de compétence | 2 | +20 % vitesse de projectile |
-| Percée | Salve d'éclairs | — | 3 points de compétence | 3 | +14 % dégâts |
-| Amplitude | Fulguration | — | 1 point de compétence | 3 | +15 % dégâts |
-| Embrasement | Fulguration | Amplitude | 3 points de compétence | 1 | convertit 60 % en feu · donne le mot-clé Feu |
-| Éclats | Fulguration | — | 2 points de compétence | 1 | +2 nombre de projectiles · -25 % dégâts |
+| Ramification | Chaîne d'éclairs | — | 1 point de compétence | 2 | +1 nombre de cibles |
+| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | +12 % dégâts |
+| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · +35 % dégâts |
+| Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % rayon |
+| Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % durée |
+| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % dégâts · convertit 60 % en froid |
 | Couronne | Nova de foudre | — | 1 point de compétence | 2 | +2 nombre de projectiles |
 | Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | +12 % dégâts |
 | Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % vitesse de projectile |
 
-48 destinations de points pour 20 gagnés.
+47 destinations de points pour 20 gagnés.
 
-### Maître d'armes — `manuel_armes`
+### Maître chevalier — `manuel_armes`
 
-| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+| case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | arme | 1 | 20 · 26 · 33 · 41 · 50 |
-| Lames tournoyantes | attaque physique | niveau 3 | 5 | 9 mana | arme | 2 | 11 · 14 · 18 · 22 · 27 |
+| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | arme | frappe | 20 · 26 · 33 · 41 · 50 |
+| Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | arme | croix | 13 · 17 · 21 · 26 · 32 |
+| Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | arme | orbite · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
 
 | nœud | compétence | parent | demande | points | par point |
@@ -114,34 +115,37 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Élan | Frappe lourde | — | 1 point de compétence | 3 | +14 % dégâts |
 | Lame ardente | Frappe lourde | Élan | 2 points de compétence | 1 | convertit 40 % en feu · donne le mot-clé Feu |
 | Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
-| Gerbe d'acier | Lames tournoyantes | — | 1 point de compétence | 2 | +1 nombre de projectiles |
-| Affûtage | Lames tournoyantes | Gerbe d'acier | 2 points de compétence | 3 | +12 % dégâts |
-| Retour de lame | Lames tournoyantes | — | 2 points de compétence | 2 | +30 % vitesse de projectile |
+| Taille | Coup en croix | — | 1 point de compétence | 3 | +12 % dégâts |
+| Estoc | Coup en croix | Taille | 2 points de compétence | 2 | ajoute 2 à 6 dégâts physiques |
+| Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré |
+| Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
+| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % dégâts |
+| Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % durée |
 
-27 destinations de points pour 20 gagnés.
+38 destinations de points pour 20 gagnés.
 
 ### Maître des flammes — `manuel_feu`
 
-| case | sorte | ouvre à | points | coût | recharge | traits | par point |
+| case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Trait de feu | sort feu | niveau 1 | 5 | 10 mana | 0.55 s | 1 | 28 · 35 · 44 · 54 · 67 |
-| Gerbe de flammes | sort feu | niveau 4 | 5 | 20 mana | 0.85 s | 5 | 15 · 18 · 22 · 27 · 33 |
-| Comète | sort feu | niveau 9 | 5 | 30 mana | 1.50 s | 1 | 62 · 78 · 98 · 123 · 154 |
+| Boule de feu | sort feu | niveau 1 | 5 | 11 mana | 0.60 s | boule · rayon 20 | 30 · 38 · 48 · 59 · 73 |
+| Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | serpent · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
+| Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % dégâts (Feu) · +3 % rés. feu |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Attisement | Trait de feu | — | 1 point de compétence | 3 | +13 % dégâts |
-| Double langue | Trait de feu | Attisement | 2 points de compétence | 1 | +1 nombre de projectiles |
-| Braises | Trait de feu | — | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
-| Souffle | Gerbe de flammes | — | 1 point de compétence | 3 | +12 % dégâts |
-| Nuée | Gerbe de flammes | Souffle | 2 points de compétence | 2 | +2 nombre de projectiles |
-| Cendres | Gerbe de flammes | — | 3 points de compétence | 1 | +15 % dégâts · convertit 50 % en nécrotique |
-| Masse | Comète | — | 1 point de compétence | 3 | +16 % dégâts |
-| Fragmentation | Comète | Masse | 3 points de compétence | 1 | +3 nombre de projectiles · -35 % dégâts |
-| Chute rapide | Comète | — | 2 points de compétence | 2 | +25 % vitesse de projectile |
+| Attisement | Boule de feu | — | 1 point de compétence | 3 | +13 % dégâts |
+| Souffle ardent | Boule de feu | Attisement | 2 points de compétence | 2 | +30 % rayon |
+| Double langue | Boule de feu | — | 3 points de compétence | 1 | +1 nombre de projectiles |
+| Longue vie | Serpent infernal | — | 1 point de compétence | 2 | +25 % durée |
+| Crocs | Serpent infernal | Longue vie | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
+| Mue | Serpent infernal | — | 2 points de compétence | 3 | +12 % dégâts |
+| Brasier | Immolation | — | 1 point de compétence | 2 | +20 % rayon |
+| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | +14 % dégâts |
+| Flamme noire | Immolation | — | 3 points de compétence | 1 | +15 % dégâts · convertit 50 % en nécrotique |
 
-37 destinations de points pour 20 gagnés.
+38 destinations de points pour 20 gagnés.
 
 ## Affixes d'objets
 

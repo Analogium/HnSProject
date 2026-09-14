@@ -95,7 +95,7 @@ const MANQUE := Color(0.92, 0.50, 0.44)
 ## la prendre, que coûte-t-elle, combien frappe-t-elle, comment part-elle, et ce
 ## que tout cela donne. `EFFET` est celui d'un passif et d'un nœud, qui n'ont ni
 ## coût ni portée : ce qu'ils donnent, et rien d'autre.
-enum Groupe { ETAT, EFFET, COUT, DEGATS, TIR, ESTIMATION }
+enum Groupe { ETAT, EFFET, COUT, DEGATS, FORME, ESTIMATION }
 
 
 ## Une ligne de la fiche : un intitulé à gauche, une valeur alignée à droite dans
@@ -271,17 +271,22 @@ func _clic_gauche() -> void:
 		_investir(case.passif.id)
 
 
-## Sur un dos : ranger le livre. Dans l'arbre : reprendre un point d'un nœud, ou
-## revenir à la grille quand le clic tombe à côté — le geste de retour est donc
-## le même que celui qui range, et il n'y a pas une touche de plus à connaître.
+## Le pendant exact du clic gauche : un point de moins là où il en ajoute un — une
+## case ou un passif sur la grille, la racine ou un nœud dans l'arbre. Sur un dos,
+## ranger le livre ; dans l'arbre à côté de tout, revenir à la grille.
 func _clic_droit() -> void:
 	if _survol_slot >= 0:
 		_ranger(_survol_slot)
 		return
 	var ouverte := _case_ouverte()
 	if ouverte == null:
+		var case := _case_survolee()
+		if case != null:
+			_reprendre(case.identifiant())
 		return
-	if _survol_noeud >= 0 and _survol_noeud < ouverte.talents.size():
+	if _survol_racine:
+		_reprendre(ouverte.competence.id)
+	elif _survol_noeud >= 0 and _survol_noeud < ouverte.talents.size():
 		_reprendre(ouverte.talents[_survol_noeud].id)
 	else:
 		_ouverte = ""
@@ -459,7 +464,7 @@ func _draw() -> void:
 		for case in livre.base.manuel.cases:
 			_draw_case(livre.manuel, case, _case_rect(case.position), case == _case_survolee())
 		_texte(
-			Textes.t("[clic] ouvrir ou investir     [clic droit] ranger"),
+			Textes.t("[clic] ouvrir ou +1     [clic droit] -1 ou ranger"),
 			Vector2(PAD, _aide_top() + LINE), FONT_SIZE, UiPalette.HINT
 		)
 		var survolee := _case_survolee()
@@ -833,34 +838,65 @@ func _fiche_de_competence(manuel: Manuel, competence: Competence) -> Fiche:
 
 	if projectile:
 		out.append(LigneDeFiche.new(
-			Groupe.TIR, Textes.t("projectiles"), str(geste.nombre_de_projectiles()),
+			Groupe.FORME, Textes.t("projectiles"), str(geste.nombre_de_projectiles()),
 			UiPalette.TEXTE
 		))
 		if geste.dispersion_en_degres > 0.0:
 			out.append(LigneDeFiche.new(
-				Groupe.TIR, Textes.t("écart"), "%d°" % roundi(geste.dispersion_en_degres),
+				Groupe.FORME, Textes.t("écart"), "%d°" % roundi(geste.dispersion_en_degres),
 				UiPalette.TEXTE
 			))
 		if geste.vitesse_de_projectile > 0.0:
 			out.append(LigneDeFiche.new(
 				# Un contexte : « vitesse » nomme aussi le déplacement sur la fiche
 				# de personnage, et l'anglais ne dit pas les deux pareil.
-				Groupe.TIR, Textes.t("vitesse", "fiche de compétence"),
+				Groupe.FORME, Textes.t("vitesse", "fiche de compétence"),
 				"%d px/s" % roundi(geste.vitesse_de_projectile), UiPalette.TEXTE
 			))
+	# Les nombres des autres formes, lus sur leur valeur et non sur la forme : la
+	# page ne connaît pas les formes, et une ligne qui ne dit rien ne s'écrit pas.
+	if geste.nombre_de_cibles() > 1:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("cibles"), str(geste.nombre_de_cibles()), UiPalette.TEXTE
+		))
+	if geste.coups > 1:
+		out.append(LigneDeFiche.new(Groupe.FORME, Textes.t("coups"), str(geste.coups), UiPalette.TEXTE))
+	if geste.duree > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("durée"), "%.1f s" % geste.duree, UiPalette.TEXTE
+		))
+	if geste.rayon > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("rayon"), "%d px" % roundi(geste.rayon), UiPalette.TEXTE
+		))
+	if geste.periode > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("toutes les"), "%.2f s" % geste.periode, UiPalette.TEXTE
+		))
+	if geste.maximum_simultane() > 0:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("en même temps"), str(geste.maximum_simultane()), UiPalette.TEXTE
+		))
+	if geste.brulure > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.FORME, Textes.t("brûlure"),
+			"%s %s" % [StatMod.pourcentage(roundi(geste.brulure * 100.0)), Textes.t("PV/s")], MANQUE
+		))
 
 	# Ce que la compétence inflige, la ligne qu'on cherche pour comparer deux sorts :
-	# les bornes d'un projectile ne disent pas ce que vaut une salve de quatre.
+	# les bornes d'un projectile ne disent pas ce que vaut une salve de quatre. Une
+	# aura n'a que la seconde : elle ne finit pas, il n'y a pas de lancer à compter.
 	var par_lancer := geste.moyenne_par_lancer()
+	var par_seconde := geste.moyenne_par_seconde()
 	if par_lancer > 0.0:
 		out.append(LigneDeFiche.new(
 			Groupe.ESTIMATION, Textes.t("moyenne par lancer"), str(roundi(par_lancer)), PLEINE
 		))
-		if geste.intervalle > 0.0:
-			out.append(LigneDeFiche.new(
-				Groupe.ESTIMATION, Textes.t("par seconde"),
-				str(roundi(geste.moyenne_par_seconde())), PLEINE
-			))
+	if par_seconde > 0.0:
+		out.append(LigneDeFiche.new(
+			Groupe.ESTIMATION, Textes.t("par seconde"), str(roundi(par_seconde)), PLEINE
+		))
+	if par_lancer > 0.0 or par_seconde > 0.0:
 		# Ce que les deux moyennes supposent, dit sous elles et non dans leur
 		# intitulé : une estimation qu'on croit garantie fait passer l'armure de
 		# l'ennemi pour un bug de la fiche. Sans valeur à droite — c'est une note

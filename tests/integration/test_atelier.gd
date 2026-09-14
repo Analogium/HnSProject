@@ -235,3 +235,11 @@ func test_le_dessin_ne_plante_pas() -> void:
 		_atelier.queue_redraw()
 		await wait_process_frames(2)
 	assert_true(true, "aucun plantage au dessin")
+
+
+## Le bouton ne pose rien lui-même : la zone seule connaît le niveau qui fait la
+## valeur d'une boule.
+func test_le_bouton_demande_des_boules_d_experience() -> void:
+	watch_signals(_atelier)
+	_atelier._appliquer("orbes:10")
+	assert_signal_emitted_with_parameters(_atelier, "orbes_demandees", [10])

@@ -125,7 +125,10 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	var away := at - info.source_position
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
-	_add_number(at, info.amount, info.is_crit, couleur_du_nombre(info, on_player))
+	# Le chiffre seulement : la gerbe dit qu'un coup a porté et par quelle nature,
+	# et c'est la valeur que le joueur choisit de ne plus lire.
+	if Settings.montre_les_degats(on_player):
+		_add_number(at, info.amount, info.is_crit, couleur_du_nombre(info, on_player))
 	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _couleur_de_la_gerbe(info, on_player))
 
 	set_process(true)
@@ -151,9 +154,22 @@ func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
 	return CRIT if info.is_crit else info.color()
 
 
+## Des dégâts sans coup — la brûlure d'une aura. Le chiffre rouge du joueur qui
+## encaisse, sans gerbe : rien ne l'a frappé.
+func degats_sans_coup(at: Vector2, montant: float) -> void:
+	if montant <= 0.0 or not Settings.montre_les_degats(true):
+		return
+	_add_number(at, montant, false, PLAYER)
+	set_process(true)
+	queue_redraw()
+
+
 ## Un coup esquivé. Pas de gerbe : rien n'a été touché, et des éclats sur une
-## esquive raconteraient l'inverse de ce qui vient de se passer.
+## esquive raconteraient l'inverse de ce qui vient de se passer. Soumis à la même
+## case que le chiffre qu'il remplace.
 func miss(at: Vector2, on_player: bool) -> void:
+	if not Settings.montre_les_degats(on_player):
+		return
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
 		# Un contexte : « esquive » nomme aussi la statistique de la fiche, et les

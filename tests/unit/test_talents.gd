@@ -246,15 +246,34 @@ func test_reprendre_rend_le_point_au_livre() -> void:
 	assert_true(m.investir(arch, "garde"), "il se replace ailleurs dans le même livre")
 
 
-func test_on_ne_reprend_ni_une_case_ni_un_passif() -> void:
+## Depuis le 14 septembre 2026, sur demande : une case et un passif se reprennent
+## aussi, et le point revient au livre.
+func test_une_case_et_un_passif_se_reprennent() -> void:
 	var arch := _livre_d_essai()
 	var m := _manuel(6)
 	assert_true(m.investir(arch, "sort"))
 	assert_true(m.investir(arch, "garde"))
-	assert_false(m.peut_reprendre(arch, "sort"), "ce qu'on sait est définitif")
-	assert_false(m.reprendre(arch, "garde"), "un passif aussi")
-	assert_eq(m.points_de("sort"), 1)
-	assert_eq(m.points_de("garde"), 1)
+	var restants := m.points_restants()
+	assert_true(m.reprendre(arch, "sort"))
+	assert_true(m.reprendre(arch, "garde"))
+	assert_eq(m.points_de("sort"), 0)
+	assert_eq(m.points_de("garde"), 0)
+	assert_eq(m.points_restants(), restants + 2, "les deux points reviennent")
+
+
+## Une compétence ne descend pas sous ce que demande un de ses nœuds investis : le
+## nœud garderait des points qu'on ne pourrait plus y placer.
+func test_une_competence_ne_descend_pas_sous_ses_noeuds() -> void:
+	var arch := _livre_d_essai()
+	var m := _manuel(10)
+	for id in ["sort", "sort", "sort_branche", "sort_feuille"]:
+		assert_true(m.investir(arch, id), "« %s »" % id)
+	assert_false(m.peut_reprendre(arch, "sort"), "la feuille demande deux points")
+	assert_true(m.reprendre(arch, "sort_feuille"))
+	assert_true(m.reprendre(arch, "sort"), "la branche n'en demande qu'un")
+	assert_false(m.reprendre(arch, "sort"), "et elle porte encore le sien")
+	assert_true(m.reprendre(arch, "sort_branche"))
+	assert_true(m.reprendre(arch, "sort"), "arbre vide, la compétence se vide")
 
 
 ## Reprendre sous un enfant qui porte des points laisserait la branche accrochée

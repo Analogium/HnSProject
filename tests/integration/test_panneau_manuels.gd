@@ -235,7 +235,7 @@ func test_le_clic_sur_un_noeud_place_un_point_quand_l_arbre_le_permet() -> void:
 	assert_eq(livre.manuel.points_de(branche.id), 1, "la compétence ouverte, le nœud accepte")
 
 
-## Le clic droit reprend un point de nœud — et seulement d'un nœud.
+## Le clic droit reprend un point là où le clic gauche en ajoute un.
 func test_le_clic_droit_reprend_un_point_de_noeud() -> void:
 	var livre := _ouvrir_l_arbre()
 	var branche := _case_d_eclair().talents[0]
@@ -248,7 +248,35 @@ func test_le_clic_droit_reprend_un_point_de_noeud() -> void:
 	assert_eq(livre.manuel.points_restants(), restants + 1, "et il est replaçable")
 
 	_clic_sur(_panneau._racine_rect().get_center(), MOUSE_BUTTON_RIGHT)
-	assert_eq(livre.manuel.points_de("eclair_vif"), 1, "la compétence, elle, ne se défait pas")
+	assert_eq(livre.manuel.points_de("eclair_vif"), 0, "la racine rend le point de la compétence")
+	assert_not_null(_panneau._case_ouverte(), "sans quitter l'arbre")
+
+
+## Sur la grille, le clic droit reprend le point d'un passif, et celui d'une
+## compétence sans ouvrir son arbre.
+func test_le_clic_droit_sur_la_grille_reprend_un_point() -> void:
+	var livre := _livre_riche()
+	var arch := livre.base.manuel
+	var passif: Passif = arch.passifs()[0]
+	assert_true(_joueur.investir(0, passif.id))
+	assert_true(_joueur.investir(0, "eclair_vif"))
+	for i in arch.cases.size():
+		var case: CaseDeManuel = arch.cases[i]
+		if case.identifiant() in [passif.id, "eclair_vif"]:
+			_clic_sur(_panneau._case_rect(case.position).get_center(), MOUSE_BUTTON_RIGHT)
+	assert_eq(livre.manuel.points_de(passif.id), 0)
+	assert_eq(livre.manuel.points_de("eclair_vif"), 0)
+	assert_null(_panneau._case_ouverte(), "la grille reste la grille")
+
+
+## Une compétence retombée à zéro sort de la barre : une case grisée qui annonce un
+## sort inlançable se découvre au pire moment.
+func test_une_competence_reprise_a_zero_sort_de_la_barre() -> void:
+	_livre_riche()
+	assert_true(_joueur.investir(0, "eclair_vif"))
+	_joueur.barre.poser(2, "eclair_vif")
+	assert_true(_joueur.reprendre(0, "eclair_vif"))
+	assert_eq(_joueur.barre.id_de(2), "", "la case s'est vidée")
 
 
 ## Le clic droit à côté d'un nœud revient à la grille : le geste du retour est
@@ -412,12 +440,12 @@ func test_la_fiche_d_un_noeud_dit_ce_qu_il_demande() -> void:
 ## conversion simple, et ça vaut un point de plus.
 func test_la_fiche_d_un_noeud_annonce_le_mot_cle_qu_il_donne() -> void:
 	var livre := _livre_riche()
-	var case := ItemCatalog.by_id("manuel_foudre").manuel.case_de("fulguration")
-	var embrasement := case.noeud_de("fulguration_embrasement")
-	var lignes := _panneau._fiche_de_noeud(livre.manuel, case, embrasement).lignes
+	var case := ItemCatalog.by_id("manuel_armes").manuel.case_de("frappe_lourde")
+	var lame_ardente := case.noeud_de("frappe_lourde_lame_ardente")
+	var lignes := _panneau._fiche_de_noeud(livre.manuel, case, lame_ardente).lignes
 
 	assert_eq(_valeurs(lignes, "mot-clé"), PackedStringArray(["Feu"]))
-	assert_eq(_valeurs(lignes, "converti"), PackedStringArray(["60 % en feu"]))
+	assert_eq(_valeurs(lignes, "converti"), PackedStringArray(["40 % en feu"]))
 
 
 ## **Chaque ligne vient de la résolution du lancer** : un sort à trois natures et
@@ -426,18 +454,18 @@ func test_la_fiche_d_un_noeud_annonce_le_mot_cle_qu_il_donne() -> void:
 func test_chaque_ligne_vient_de_la_resolution_du_lancer() -> void:
 	var livre := _livre_riche()
 	for i in 2:
-		livre.manuel.investir(livre.base.manuel, "salve_d_eclairs")
+		livre.manuel.investir(livre.base.manuel, "nova_de_foudre")
 	_joueur.equip(Item.new(ItemCatalog.by_id("baguette"), [
 		ItemAffixPool.by_id("froid_aux_sorts").modificateur(3.0, 7.0),
 		ItemAffixPool.by_id("feu_aux_sorts").modificateur(2.0, 5.0),
 		ItemAffixPool.by_id("fourchu").modificateur(1.0),
 		ItemAffixPool.by_id("orageux").modificateur(20.0),
 	]))
-	var salve := CompetenceCatalog.by_id("salve_d_eclairs")
-	var geste := _joueur.resoudre(salve, 2)
-	var lignes := _fiche_de(livre, "salve_d_eclairs")
+	var nova := CompetenceCatalog.by_id("nova_de_foudre")
+	var geste := _joueur.resoudre(nova, 2)
+	var lignes := _fiche_de(livre, "nova_de_foudre")
 
-	assert_eq(_valeurs(lignes, "points"), PackedStringArray(["2 / %d" % salve.points_max()]))
+	assert_eq(_valeurs(lignes, "points"), PackedStringArray(["2 / %d" % nova.points_max()]))
 	assert_eq(_valeurs(lignes, "coût"), PackedStringArray(["%d mana" % roundi(geste.cout_en_mana)]))
 	assert_eq(_valeurs(lignes, "recharge"), PackedStringArray(["%.2f s" % geste.intervalle]))
 	assert_eq(
@@ -458,7 +486,7 @@ func test_chaque_ligne_vient_de_la_resolution_du_lancer() -> void:
 	assert_eq(
 		_valeurs(lignes, "projectiles"), PackedStringArray([str(geste.nombre_de_projectiles())])
 	)
-	assert_eq(geste.nombre_de_projectiles(), salve.projectiles + 1, "la salve et son projectile de plus")
+	assert_eq(geste.nombre_de_projectiles(), nova.projectiles + 1, "la nova et son projectile de plus")
 	assert_eq(
 		_valeurs(lignes, "écart"), PackedStringArray(["%d°" % roundi(geste.dispersion_en_degres)])
 	)
