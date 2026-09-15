@@ -23,12 +23,20 @@ func test_chaque_nature_pose_un_etat_et_un_seul() -> void:
 		assert_eq(Etats.NATURES.count(nature), 1, DamageType.NAMES[nature])
 
 
-## Une pastille qui ressemble à une autre ne dit plus lequel des deux on porte.
+## Une couleur qui ressemble à une autre ne dit plus lequel des deux on porte.
 func test_chaque_etat_a_sa_couleur() -> void:
 	for a in Etats.Sorte.size():
 		for b in range(a + 1, Etats.Sorte.size()):
 			assert_ne(Etats.couleur(a), Etats.couleur(b), "%s et %s" % [Etats.NOMS[a], Etats.NOMS[b]])
 	assert_ne(Etats.couleur(Etats.Sorte.SAIGNEMENT), HealthBar.LOW, "le sang n'est pas une barre basse")
+
+
+func test_chaque_etat_a_son_icone() -> void:
+	assert_eq(IconeDEtat.MASQUES.size(), Etats.Sorte.size(), "une icône par état")
+	for sorte in Etats.Sorte.size():
+		var img := IconeDEtat.texture(sorte).get_image()
+		assert_eq(img.get_size(), Vector2i(IconeDEtat.COTE, IconeDEtat.COTE), Etats.NOMS[sorte])
+		assert_eq(img.get_pixel(4, 4).a, 1.0, "%s : le centre est peint" % Etats.NOMS[sorte])
 
 
 ## Tous les états se portent à la fois, et ce qui brûle s'additionne : seuls deux

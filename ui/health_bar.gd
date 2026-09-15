@@ -1,45 +1,31 @@
 class_name HealthBar
 extends Node2D
 
-## La barre de vie d'un acteur, dessinée à la volée — pas de texture, comme le
-## reste du projet.
-##
-## Trois règles, toutes dictées par le nombre d'acteurs à l'écran :
-##
-## - cachée à pleine vie. Trois cents barres pleines encombrent la vue sans rien
-##   dire ; une barre qui apparaît est déjà une information ;
-## - redessinée quand la vie change, jamais à chaque image. Aucun _process ;
-## - coupée à la racine quand le réglage est décoché — visible = false, donc
-##   Godot ne l'appelle plus du tout, au lieu d'une barre transparente qui
-##   continuerait de coûter.
+## La barre de vie d'un acteur, dessinée à la volée : cachée à pleine vie, redessinée
+## seulement quand la vie change, coupée à la racine quand le réglage est décoché.
 
 const WIDTH := 18.0
 const HEIGHT := 3.0
-## Au-dessus de la zone que traversent les nombres de dégâts. Ceux-ci naissent
-## à -13 et montent d'une douzaine de pixels ; en dessous de -26, la barre leur
-## coupe le passage et les deux deviennent illisibles.
+## Au-dessus de la bande où montent les nombres de dégâts (−13 à −26).
 const OFFSET_Y := -28.0
 
 const BACK := Color(0.05, 0.04, 0.07, 0.85)
 const EDGE := Color(0.02, 0.02, 0.03, 0.95)
 const FULL := Color(0.42, 0.78, 0.32)
 const LOW := Color(0.85, 0.26, 0.22)
-## En dessous, la barre passe au rouge : c'est le seuil où l'on décide de
-## reculer, il doit se voir sans lire la longueur.
+## Le seuil rouge, où l'on décide de reculer.
 const LOW_RATIO := 0.35
 
-## Une pastille par état, dans la couleur de sa nature, entre la barre et
-## l'étiquette d'affixe.
-const PASTILLE := 3.0
-const ECART_DE_PASTILLE := 3.0
+## Les icônes d'état, entre la barre et l'étiquette d'affixe : leur contour se
+## chevauche d'un pixel.
+const ECART_D_ICONE := 1.0
 
 var _ratio := 1.0
-var _couleurs: Array[Color] = []
+var _sortes: Array[int] = []
 
 
 func _ready() -> void:
-	# z_index et non l'ordre de l'arbre : le parent est Y-trié, donc un enfant
-	# placé plus haut que le corps se dessinerait derrière lui.
+	# z_index : le parent est Y-trié, l'enfant passerait derrière le corps.
 	z_index = 50
 	Settings.changed.connect(_refresh)
 	_refresh()
@@ -56,21 +42,20 @@ func set_health(current: float, maximum: float) -> void:
 
 ## Appelée par l'acteur quand un état apparaît ou prend fin, jamais à chaque image.
 func montrer_les_etats(etats: Etats) -> void:
-	_couleurs = etats.couleurs()
+	_sortes = etats.sortes()
 	_refresh()
 
 
-## Les pastilles tiennent la barre visible à pleine vie : un ennemi remonté à fond
+## Les icônes tiennent la barre visible à pleine vie : un ennemi remonté à fond
 ## reste transi, et c'est justement ce qu'on regarde.
 func _refresh() -> void:
-	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _couleurs.is_empty())
+	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _sortes.is_empty())
 	if visible:
 		queue_redraw()
 
 
 func _draw() -> void:
-	# Coordonnées entières : une barre à cheval sur deux pixels bave et trahit le
-	# rendu pixel art.
+	# Coordonnées entières : pas de bavure.
 	var x := roundf(-WIDTH * 0.5)
 	var y := roundf(OFFSET_Y)
 
@@ -82,10 +67,10 @@ func _draw() -> void:
 			LOW if _ratio <= LOW_RATIO else FULL
 		)
 
-	var pas := PASTILLE + ECART_DE_PASTILLE
-	var px := roundf(-(float(_couleurs.size()) * pas - ECART_DE_PASTILLE) * 0.5)
-	var py := y - PASTILLE - 3.0
-	for couleur in _couleurs:
-		draw_rect(Rect2(px - 1.0, py - 1.0, PASTILLE + 2.0, PASTILLE + 2.0), EDGE)
-		draw_rect(Rect2(px, py, PASTILLE, PASTILLE), couleur)
+	var cote := float(IconeDEtat.COTE)
+	var pas := cote + ECART_D_ICONE
+	var px := roundf(-(float(_sortes.size()) * pas - ECART_D_ICONE) * 0.5)
+	var py := y - cote - 1.0
+	for sorte in _sortes:
+		draw_texture(IconeDEtat.texture(sorte), Vector2(px, py))
 		px += pas

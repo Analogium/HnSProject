@@ -1,10 +1,7 @@
 extends CanvasLayer
 
-## Le menu d'échappement, et les options qu'il abrite.
-##
-## PROCESS_MODE_ALWAYS et non WHEN_PAUSED : en mode « pendant la pause », le
-## menu ne traiterait plus rien une fois le jeu repris, donc il ne pourrait plus
-## jamais s'ouvrir. Il doit vivre dans les deux états.
+## Le menu d'échappement et ses options. PROCESS_MODE_ALWAYS : en WHEN_PAUSED, il ne
+## pourrait plus s'ouvrir une fois le jeu repris.
 
 @onready var root: Control = $Root
 @onready var menu: VBoxContainer = $Root/Center/Panel/Menu
@@ -14,9 +11,7 @@ extends CanvasLayer
 @onready var subis_check: CheckBox = $Root/Center/Panel/Options/DegatsSubis
 @onready var infliges_check: CheckBox = $Root/Center/Panel/Options/DegatsInfliges
 @onready var fenetre_btn: Button = $Root/Center/Panel/Options/Fenetre
-## Le bouton de langue. Son libellé n'est pas écrit dans la scène : il est
-## toujours posé par le code, et **dans la langue qu'il annonce** — un joueur
-## perdu dans une langue qu'il ne lit pas doit reconnaître la sienne.
+## Libellé posé par le code, **dans la langue qu'il annonce**.
 @onready var langue_btn: Button = $Root/Center/Panel/Options/Langue
 
 
@@ -36,14 +31,11 @@ func _ready() -> void:
 	infliges_check.button_pressed = Settings.degats_infliges_visibles
 	infliges_check.toggled.connect(func(on: bool) -> void: Settings.degats_infliges_visibles = on)
 
-	# Un bouton qui tourne plutôt qu'une liste déroulante : il y a quatre valeurs
-	# au plus, le libellé dit toujours celle qu'on a, et une liste déroulante
-	# dessinerait sa fenêtre par-dessus le menu de pause.
+	# Un bouton qui tourne : une liste déroulante dessinerait par-dessus le menu.
 	fenetre_btn.pressed.connect(_changer_fenetre)
 	_rafraichir_fenetre()
 
-	# Une ronde, comme la fenêtre : deux langues aujourd'hui, et le bouton dira la
-	# troisième sans qu'on y revienne.
+	# Une ronde, comme la fenêtre.
 	langue_btn.pressed.connect(_changer_langue)
 	_rafraichir_langue()
 
@@ -54,13 +46,8 @@ func _ready() -> void:
 	($Root/Center/Panel/Options/Back as Button).pressed.connect(_show_menu)
 
 
-## Les deux libellés que le code écrit lui-même : Godot retraduit les textes posés
-## dans la scène, pas ceux-là. Celui de la fenêtre change de langue, celui de la
-## langue change de langue **et** de sens.
-##
-## La garde n'est pas une précaution : cette notification arrive **aussi à
-## l'entrée dans l'arbre**, avant que les `@onready` soient posés. Sans elle, le
-## menu écrit dans un bouton qui n'existe pas encore, à chaque zone chargée.
+## Les deux libellés écrits par le code, que Godot ne retraduit pas. La garde : la
+## notification arrive aussi à l'entrée dans l'arbre, avant les `@onready`.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
 		_rafraichir_fenetre()
@@ -71,8 +58,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if Touches.enfoncee(event) != KEY_ESCAPE:
 		return
 
-	# Échap depuis les options revient au menu plutôt que de tout fermer : sinon
-	# on ressort du jeu sans savoir si le réglage a été pris en compte.
+	# Échap depuis les options revient au menu.
 	if root.visible and options.visible:
 		_show_menu()
 	elif root.visible:
@@ -94,9 +80,7 @@ func close() -> void:
 	get_tree().paused = false
 
 
-## Les deux sorties passent par le même signal : quitter le jeu et revenir au
-## menu doivent écrire la partie, et un seul des deux chemins qui l'oublie suffit
-## à perdre une session.
+## Les deux sorties passent par le même signal : chacune doit écrire la partie.
 func _retour_menu() -> void:
 	Game.sauvegarde_demandee.emit()
 	# Dépausé avant de changer de scène : l'arbre reste en pause d'une scène à
@@ -110,9 +94,7 @@ func _quitter() -> void:
 	get_tree().quit()
 
 
-## Le libellé se relit sur le réglage plutôt que de retenir ce qu'on a cliqué :
-## la valeur peut avoir été bornée à l'écran de la machine, et un bouton qui
-## annonce ×4 pendant que la fenêtre est en ×3 est pire que pas de bouton.
+## Relu sur le réglage, qui a pu être borné à l'écran.
 func _changer_fenetre() -> void:
 	Settings.cycler_echelle()
 	_rafraichir_fenetre()

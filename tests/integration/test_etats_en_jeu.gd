@@ -113,6 +113,26 @@ func test_un_coup_physique_finit_par_faire_saigner() -> void:
 	assert_gt(etats.avancer(1.0), 0.0, "et il saigne")
 
 
+## Un sort de foudre qui porte un ajout de chaque nature : converti à moitié, les six
+## états finissent par tomber ; converti en entier, seul celui de la nature d'arrivée.
+func test_un_coup_converti_ne_pose_que_ce_qu_il_porte() -> void:
+	Settings.degats_infliges_visibles = false
+	for part in [0.5, 1.0]:
+		var geste := StatsDeCompetence.new()
+		geste.poser_la_base(DamageType.Kind.LIGHTNING, 100.0)
+		for nature in DamageType.Kind.size():
+			geste.ajouter(nature, 10.0, 10.0)
+		geste.convertir(DamageType.Kind.COLD, part)
+		var etats := Etats.new()
+		var hb := _zone(etats)
+		Game.rng.seed = 7
+		for i in 3000:
+			hb.take_damage(DamageInfo.en_parts(geste.tirer(Game.rng), Vector2.ZERO))
+		for sorte in Etats.Sorte.size():
+			var attendu: bool = part < 1.0 or sorte == Etats.Sorte.GEL
+			assert_eq(etats.actif(sorte), attendu, "%s, converti à %d %%" % [Etats.NOMS[sorte], roundi(part * 100.0)])
+
+
 # --------------------------------------------------------------------------
 # Les ennemis
 # --------------------------------------------------------------------------
@@ -171,9 +191,8 @@ func test_un_etat_se_voit_sur_le_corps_et_au_dessus() -> void:
 	var e := _grunt()
 	assert_false(e.health_bar.visible, "pleine vie : rien au-dessus")
 	e.etats.poser(Etats.Sorte.EMBRASEMENT, 1.0)
-	assert_true(e.health_bar.visible, "une pastille, même à pleine vie")
-	assert_eq(e.health_bar._couleurs.size(), 1)
-	assert_eq(e.health_bar._couleurs[0], DamageType.COLORS[DamageType.Kind.FIRE])
+	assert_true(e.health_bar.visible, "une icône, même à pleine vie")
+	assert_eq(e.health_bar._sortes, [Etats.Sorte.EMBRASEMENT] as Array[int])
 	assert_almost_eq(float(e.sprite.material.get_shader_parameter("teinte_force")), ActorSprite.TEINTE_D_ETAT, 0.001)
 	e.etats.avancer(10.0)
 	assert_false(e.health_bar.visible, "l'état fini, la barre se recache")

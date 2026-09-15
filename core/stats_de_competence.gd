@@ -151,26 +151,25 @@ func ajouter(nature: int, bas: float, haut: float) -> void:
 	degats_max[nature] += sommet
 
 
-## Le nœud de conversion, appelé **après les fourchettes ajoutées** : la foudre
-## qu'un anneau ajoute part avec le reste.
-## multiplient toutes les parts du même facteur.
-func convertir(source: int, cible: int, part: float) -> void:
+## Le nœud de conversion, appelé **après les fourchettes ajoutées** : il prend sa part
+## de **chaque** nature, ajouts compris. Entière, il ne reste qu'une nature, donc
+## qu'un état possible.
+func convertir(cible: int, part: float) -> void:
 	var reste := clampf(part, 0.0, 1.0)
-	if source == cible or reste <= 0.0:
+	if reste <= 0.0:
 		return
-	var bas := degats_min[source] * reste
-	var haut := degats_max[source] * reste
-	degats_min[source] -= bas
-	degats_max[source] -= haut
-	degats_min[cible] += bas
-	degats_max[cible] += haut
-
+	for source in degats_min.size():
+		if source == cible:
+			continue
+		var bas := degats_min[source] * reste
+		var haut := degats_max[source] * reste
+		degats_min[source] -= bas
+		degats_max[source] -= haut
+		degats_min[cible] += bas
+		degats_max[cible] += haut
+		convertis[source] *= 1.0 - reste
 	# La part du coup **entier** : deux nœuds à 50 % font 75 %, pas 100 %.
-	# plutôt que 100 %.
-	var deja := 0.0
-	for p in convertis:
-		deja += p
-	convertis[cible] += reste * (1.0 - deja)
+	convertis[cible] += reste * (1.0 - convertis[cible])
 
 
 func appliquer_l_attribut(facteur: float) -> void:

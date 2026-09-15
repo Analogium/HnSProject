@@ -1,29 +1,12 @@
 class_name StatHelp
 
-## Ce que chaque statistique fait, et comment elle se calcule quand ce n'est pas
-## évident. C'est le texte que la fiche de personnage montre au survol.
-##
-## Deux tables, comme la fiche a deux sortes de lignes : les champs de
-## `CharacterStats`, sous les **mêmes noms** que `StatMod.LABELS`, et les
-## compétences de départ. Un test vérifie que chaque ligne affichée par la fiche a
-## son entrée. Une entrée oubliée donnerait une infobulle vide en plein jeu plutôt
-## qu'un échec ici.
-##
-## Ici et non dans `core/` : c'est de la prose d'interface. Les règles qu'elle
-## décrit, elles, vivent dans CharacterStats — et la ligne « ce que ça vaut en ce
-## moment » est **calculée depuis la fiche**, jamais recopiée à la main. Un texte
-## qui affirmerait 75 % de plafond pendant que le code en applique 80 serait pire
-## que pas de texte du tout.
-##
-## **Ce sont des gabarits, et les nombres y entrent à la lecture.** Écrits dans la
-## table — « Chaque point donne 2 points de vie » —, ils feraient partie de la clé
-## de traduction : un rééquilibrage changerait le texte français, et l'anglais
-## tomberait sans que rien ne le dise. Les valeurs y sont donc **nommées**, parce
-## qu'une phrase n'a pas le même ordre dans les deux langues.
+## Ce que chaque statistique fait, au survol de la fiche : les champs de
+## `CharacterStats` (clés de `StatMod.LABELS`) et les compétences de départ, chacun
+## vérifié par un test. La ligne « en ce moment » est **calculée depuis la fiche**.
+## Des gabarits aux valeurs **nommées** : un nombre dans la clé ferait tomber
+## l'anglais au premier rééquilibrage.
 
-## Le coup de référence contre lequel l'armure s'explique. Le même que celui de
-## la fiche : deux valeurs différentes donneraient deux pourcentages différents
-## pour la même armure, à trois lignes d'écart.
+## Le coup de référence de l'armure, le même que la fiche.
 const COUP_LEGER := 10.0
 const COUP_LOURD := 50.0
 
@@ -55,10 +38,8 @@ const TEXTS := {
 	"move_speed": "La vitesse de déplacement, en pixels par seconde.",
 }
 
-## Les deux compétences de départ, qui ont leur ligne sur la fiche. À part de
-## `TEXTS` : ce ne sont pas des champs de `CharacterStats`, et cette table-là est
-## vérifiée champ par champ. **Sans nombre** : la ligne montre déjà les dégâts
-## résolus, et un chiffre recopié ici mentirait au premier rééquilibrage.
+## Les compétences de départ, à part de `TEXTS` et **sans nombre** : leur ligne montre
+## déjà les dégâts résolus.
 const COMPETENCES := {
 	CompetenceCatalog.ID_ATTAQUE: "Le coup d'épée : gratuit, à la cadence de l'arme. La force et tout ce qui ajoute des dégâts aux attaques le font monter.",
 	CompetenceCatalog.ID_TIR: "Le trait : un sort, qui coûte du mana et suit la vitesse d'incantation. Tout ce qui ajoute des dégâts aux sorts le fait monter.",
@@ -69,9 +50,7 @@ static func has(field: String) -> bool:
 	return TEXTS.has(field) or COMPETENCES.has(field)
 
 
-## Le texte d'une statistique : ce qu'elle fait, puis ce qu'elle vaut à cet
-## instant pour ce personnage-ci. « 40 d'armure, soit 44 % contre un coup de 10 »
-## en apprend plus que n'importe quelle formule.
+## Ce qu'elle fait, puis ce qu'elle vaut pour ce personnage-ci.
 static func lines(field: String, stats: CharacterStats) -> PackedStringArray:
 	var out := PackedStringArray()
 	if COMPETENCES.has(field):
@@ -86,10 +65,7 @@ static func lines(field: String, stats: CharacterStats) -> PackedStringArray:
 	return out
 
 
-## L'explication elle-même, ses nombres posés. Ceux-ci viennent des constantes de
-## la règle et ne sont écrits nulle part ailleurs : un texte qui annoncerait deux
-## points de vie par point de force pendant que le code en donne trois serait pire
-## que pas de texte du tout.
+## L'explication, ses nombres lus sur les constantes de la règle.
 static func _ce_que_ca_fait(field: String) -> String:
 	var texte := Textes.t(TEXTS[field])
 	match field:
@@ -111,8 +87,7 @@ static func _ce_que_ca_fait(field: String) -> String:
 	return texte
 
 
-## La ligne « en ce moment ». Vide pour les statistiques qui se lisent
-## directement — inventer une phrase pour « 90 de vitesse » n'apprendrait rien.
+## Vide pour ce qui se lit directement.
 static func _now(field: String, stats: CharacterStats) -> String:
 	match field:
 		"armor":
@@ -134,9 +109,7 @@ static func _now(field: String, stats: CharacterStats) -> String:
 				"coups": roundi(stats.crit_chance * 100.0),
 				"degats": roundi(stats.crit_multiplier * 100.0),
 			})
-	# La liste des résistances vient de DamageType, seul endroit qui sait quels
-	# éléments existent : une sixième école ajoutée là hériterait de la ligne
-	# sans qu'on y pense.
+	# Les résistances selon DamageType : une nature ajoutée hérite de la ligne.
 	if field in DamageType.RESIST_FIELDS:
 		return Textes.t("Plafonnée à {plafond} %, et elle peut devenir négative (jusqu'à {plancher} %).").format({
 			"plafond": roundi(CharacterStats.MAX_RESISTANCE),

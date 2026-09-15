@@ -216,7 +216,7 @@ func resoudre(
 
 	StatMod.appliquer(r, champs)
 	for t: TalentInvesti in talents:
-		r.convertir(nature, t.noeud.convertit_vers, t.conversion())
+		r.convertir(t.noeud.convertit_vers, t.conversion())
 	r.appliquer_l_attribut(facteur_d_attribut(stats))
 	for m in pourcents_de_degats:
 		r.accroitre(m.value)

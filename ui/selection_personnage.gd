@@ -1,61 +1,40 @@
 class_name SelectionPersonnage
 extends Control
 
-## L'écran d'accueil : choisir un personnage, en créer un, en supprimer un.
-##
-## C'est la première scène du jeu, et la seule qui existe avant qu'un
-## personnage existe. Elle ne connaît que `Sauvegarde` et `Personnage` — jamais
-## la zone, jamais le joueur : elle pose le personnage choisi sur `Game` et
-## change de scène.
-##
-## La silhouette de chaque personnage est **la sienne**, animée, et non une
-## vignette générique. La forge dessine déjà les quatre variantes ; voir son
-## personnage dans la liste vaut mieux que lire son nom. C'est la génération
-## procédurale employée comme règle de jeu, ce que le postulat du projet réclame
-## depuis le début.
+## L'écran d'accueil : choisir, créer, supprimer un personnage. Il ne connaît que
+## `Sauvegarde` et `Personnage`, pose le choix sur `Game` et change de scène. Chaque
+## personnage a **sa** silhouette animée.
 
 enum Etat { LISTE, CREATION, SUPPRESSION }
 
 const LIGNE := 34.0
-## Cinq lignes visibles : au-delà, la liste défile. Choisi sur la hauteur du
-## cadrage (360 px), pas sur un nombre de personnages supposé.
+## Cinq lignes, puis la liste défile (hauteur du cadrage).
 const VISIBLES := 5
 const LISTE_W := 340.0
 const LISTE_Y := 56.0
 
-## Le cadre de la fenêtre modale, création comme suppression. Les deux se
-## dessinent au même endroit : une seule à la fois est visible, et les voir
-## apparaître au même point évite de chercher où l'écran a changé.
+## Création et suppression au même endroit, une à la fois.
 const MODALE := Rect2(170.0, 74.0, 300.0, 196.0)
 
 const FOND := Color(0.055, 0.051, 0.075)
 const CHOISI := Color(0.20, 0.19, 0.26)
 const ACCENT := Color(0.55, 0.75, 1.0)
-## Un personnage dont le fichier ne se lit pas. Rouge éteint et non vif : ce
-## n'est pas une alerte, c'est une entrée hors service qu'on peut supprimer.
+## Entrée illisible : rouge éteint, une entrée hors service et non une alerte.
 const ABIME := Color(0.72, 0.42, 0.42)
 
 const FONT_SIZE := 8
 const NOM_SIZE := 10
 
-## Les quatre vignettes de silhouette de l'écran de création : leur taille, leur
-## écartement, et la hauteur de leur centre dans la fenêtre. Nommées parce que
-## `_vignette_rect` est le seul à s'en servir et qu'un nombre nu dans un calcul
-## de rectangle ne dit pas s'il est une largeur ou une marge.
+## Les vignettes de création : taille, écart, hauteur de leur centre.
 const VIGNETTE := Vector2(34.0, 36.0)
 const VIGNETTE_PAS := 56.0
 const VIGNETTE_Y := 104.0
 
-## Ce qu'il faut retaper pour supprimer un personnage dont on n'a pas su lire le
-## nom. Les autres se confirment en retapant le leur.
-##
-## **Traduit**, et par la même clé des deux côtés — la consigne et la
-## vérification passent toutes deux par `_mot_a_taper()`. Traduit d'un côté
-## seulement, l'écran demanderait de taper un mot que la saisie refuserait.
+## Le mot à retaper pour un personnage sans nom lisible. **Traduit**, et lu des deux
+## côtés par `_mot_a_taper()`.
 const MOT_SANS_NOM := "SUPPRIMER"
 
-## Le refus d'une saisie. Rouge franc, contrairement au gris d'une entrée
-## abîmée : celui-là s'adresse à un geste qu'on vient de faire.
+## Refus d'une saisie : rouge franc, il répond à un geste.
 const ERREUR := Color(0.92, 0.45, 0.42)
 
 @onready var titre: Label = $Titre
@@ -88,8 +67,7 @@ var _font: Font
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
-	# Les couleurs viennent d'ici et non du `.tscn` : une couleur écrite dans une
-	# scène est une seconde définition, qui ne suit pas quand la palette bouge.
+	# Couleurs d'ici et non du `.tscn`, qui ne suivrait pas la palette.
 	titre.add_theme_color_override("font_color", UiPalette.TEXTE)
 	aide.add_theme_color_override("font_color", UiPalette.HINT)
 	message.add_theme_color_override("font_color", ACCENT)
@@ -109,19 +87,15 @@ func _ready() -> void:
 	champ_nom.text_submitted.connect(func(_t: String) -> void: _creer())
 	champ_confirmation.text_submitted.connect(func(_t: String) -> void: _supprimer())
 
-	# La langue se change **avant** d'entrer en jeu, et pas seulement depuis la
-	# pause : c'est le premier écran, et celui qu'on voit sans savoir où sont les
-	# options.
+	# La langue se change dès l'accueil, avant de connaître les options.
 	_bouton_langue().pressed.connect(_changer_langue)
 	_rafraichir_langue()
 
 	recharger()
 
 
-## La liste est dessinée à la main : elle ne se retraduirait qu'au prochain clic.
-##
-## La garde n'est pas une précaution : cette notification arrive **aussi à
-## l'entrée dans l'arbre**, avant que les `@onready` et les enfants soient là.
+## Liste dessinée à la main. La garde : la notification arrive aussi à l'entrée dans
+## l'arbre.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
 		_rafraichir_langue()
@@ -142,8 +116,7 @@ func _rafraichir_langue() -> void:
 	_bouton_langue().text = Settings.libelle_de_langue_courante()
 
 
-## Publique : c'est aussi le point d'entrée du test, qui pose des personnages
-## sur le disque puis demande à l'écran de les relire.
+## Publique : le test relit l'écran après avoir posé des personnages.
 func recharger() -> void:
 	_personnages = Sauvegarde.lister()
 	_index = clampi(_index, 0, maxi(_personnages.size() - 1, 0))
@@ -179,9 +152,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Clic dans la liste : on choisit la ligne visée. Le double-clic lance la
-## partie — c'est le geste attendu d'une liste, et il évite l'aller-retour vers
-## le bouton pour l'action qu'on fait neuf fois sur dix.
+## Clic : choisir ; double-clic : jouer.
 func _gui_input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
@@ -249,9 +220,7 @@ func _creer() -> void:
 		return
 
 	recharger()
-	# On se place sur le personnage qu'on vient de créer : la liste est triée
-	# par date, et retomber sur une autre ligne donnerait l'impression que la
-	# création a échoué.
+	# Sur le personnage créé : retomber ailleurs ferait croire à un échec.
 	for i in _personnages.size():
 		if _personnages[i].id == p.id:
 			_index = i
@@ -276,9 +245,7 @@ func _ouvrir_suppression() -> void:
 	champ_confirmation.grab_focus()
 
 
-## La confirmation se tape à l'identique, majuscules comprises. C'est agaçant
-## exprès : c'est la seule action du jeu qui détruit des heures de jeu, et elle
-## est irréversible.
+## Retaper à l'identique : la seule action qui détruit des heures de jeu.
 func _supprimer() -> void:
 	var p := selection()
 	if p == null:
@@ -304,9 +271,7 @@ func _retour_liste() -> void:
 	_rafraichir()
 
 
-## Le mot attendu, et **le seul endroit qui le dit** : la consigne affichée et la
-## comparaison de la saisie passent toutes deux par ici. Traduit d'un côté
-## seulement, l'écran demanderait « DELETE » et n'accepterait que « SUPPRIMER ».
+## **Le seul endroit** qui dit le mot : consigne et vérification passent par ici.
 func _mot_a_taper(p: Personnage) -> String:
 	return p.nom if not p.nom.is_empty() else Textes.t(MOT_SANS_NOM)
 
@@ -347,10 +312,8 @@ func _rafraichir() -> void:
 	queue_redraw()
 
 
-## Les sprites sont des nœuds, pas du dessin : ils s'animent tout seuls. Ils
-## sont refaits à chaque rafraîchissement plutôt que déplacés — une poignée de
-## nœuds, et les planches viennent du cache de la forge, donc la reconstruction
-## ne redessine aucun pixel.
+## Des sprites qui s'animent seuls, refaits à chaque rafraîchissement : les planches
+## sont en cache.
 func _poser_silhouettes() -> void:
 	for enfant in silhouettes.get_children():
 		enfant.queue_free()
@@ -453,14 +416,7 @@ func _dessiner_ligne(p: Personnage, cadre: Rect2, i: int) -> void:
 	)
 
 
-## Où se trouve la vignette d'une silhouette, cadre compris.
-##
-## **Le seul endroit qui le sait.** Trois fonctions recalculaient ce rectangle
-## chacune de son côté — celle qui pose le sprite, celle qui dessine le cadre,
-## celle qui teste le clic — avec les mêmes six nombres réécrits à la main. Ce
-## genre de triplet ne se contredit pas au moment où on l'écrit : il se
-## contredit le jour où l'on décale les vignettes de deux pixels et où le clic
-## reste sur les anciennes, sans que rien ne le signale.
+## **Le seul endroit** qui sait où est une vignette : sprite, cadre et clic le lisent.
 func _vignette_rect(variante: int) -> Rect2:
 	var x0 := MODALE.position.x + MODALE.size.x * 0.5 - VIGNETTE_PAS * 1.5
 	return Rect2(
@@ -470,8 +426,7 @@ func _vignette_rect(variante: int) -> Rect2:
 	)
 
 
-## Le cadre autour de la silhouette choisie. Les sprites eux-mêmes sont des
-## nœuds posés par _poser_silhouettes ; ici on ne dessine que la sélection.
+## Le cadre de la silhouette choisie ; les sprites sont posés ailleurs.
 func _dessiner_choix_silhouette() -> void:
 	for v in SpriteForge.VARIANTS:
 		var boite := _vignette_rect(v)
@@ -479,9 +434,7 @@ func _dessiner_choix_silhouette() -> void:
 		draw_rect(boite, ACCENT if v == _silhouette else UiPalette.BORDER, false, 1.0)
 
 
-## Le choix de la silhouette se fait à la souris sur les quatre vignettes.
-## Traité ici et non par des boutons : un bouton dessinerait son propre cadre
-## par-dessus le sprite.
+## À la souris sur les vignettes : un bouton dessinerait son cadre sur le sprite.
 func _clic_silhouette(position_locale: Vector2) -> void:
 	for v in SpriteForge.VARIANTS:
 		if _vignette_rect(v).has_point(position_locale):

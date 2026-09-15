@@ -1,57 +1,35 @@
 class_name Hud
 extends Control
 
-## L'affichage tête haute : la vie, le mana, le niveau et la progression vers le
-## suivant.
-##
-## Branché par signal et non par lecture à chaque image — la barre ne bouge
-## qu'aux morts d'ennemis, soit quelques fois par seconde au plus fort d'un
-## combat, contre soixante lectures par seconde en interrogeant le joueur.
-##
-## Tout est dessiné à la volée, textes compris. Les deux Label posés dans la
-## scène ont disparu : le HUD dessinait déjà ses jauges et leurs comptes à la
-## main, et deux mécanismes de texte dans le même fichier obligeaient à rouvrir
-## l'éditeur pour déplacer une ligne d'un pixel.
+## Le HUD : vie, mana, niveau et expérience, branché par signal et dessiné à la main,
+## textes compris.
 
 const MARGIN := 12.0
 const HEIGHT := 3.0
 const BOTTOM := 8.0
 
-## Les deux jauges de ressource, empilées au-dessus de la ligne d'expérience et
-## **centrées**. Elles étaient à gauche ; la fiche de personnage occupe désormais
-## le quart gauche de l'écran sur toute sa hauteur et les recouvrait. Au centre,
-## ni elle ni le sac — qui tient le bas-droite — ne passe devant, quel que soit
-## ce qui est ouvert.
+## Les jauges, **centrées** : ni la fiche, à gauche, ni le sac, en bas à droite, ne
+## passent devant.
 const BAR_W := 104.0
-## Largeur réservée au compte en clair. Fixe et non mesurée : le texte change à
-## chaque coup reçu, et une largeur qui suit le texte ferait glisser les deux
-## jauges horizontalement à chaque point de vie perdu.
+## Fixe : une largeur qui suivrait le texte ferait glisser les jauges à chaque coup.
 const VALUE_W := 48.0
 const BAR_H := 7.0
 const HEALTH_TOP := 52.0   # depuis le bas
 const MANA_TOP := 42.0
 const VALUE_SIZE := 8
 
-## Le fond est propre au HUD — plus opaque que celui d'une barre du monde, qui se
-## pose sur du décor et non sur un bandeau. Le **liseré**, lui, vient de la barre
-## du monde, pour la même raison que les couleurs de vie plus bas : c'est le
-## cadre d'une jauge, il n'y en a qu'un dans ce jeu, et les deux fichiers le
-## déclaraient à la même valeur sans que rien ne les tienne d'accord.
+## Fond propre au HUD, plus opaque ; le **liseré** vient de la barre du monde, pour
+## qu'il n'y en ait qu'un.
 const BACK := Color(0.06, 0.05, 0.08, 0.90)
 const EDGE := HealthBar.EDGE
-## Le bleu du joueur, celui de sa tunique : la barre est sa progression à lui.
-## L'or reste réservé aux critiques et aux élites.
+## Le bleu de la tunique du joueur ; l'or reste aux critiques et aux élites.
 const FILL := Color(0.24, 0.45, 0.86)
 const FLASH := Color(1.0, 0.94, 0.76)
 const FLASH_TIME := 0.45
 
-## Le mana en bleu-vert : assez loin du bleu de l'expérience, qui est la barre
-## juste en dessous, et assez loin du cyan du froid pour qu'une jauge et un
-## dégât ne se confondent pas.
+## Bleu-vert : loin du bleu de l'expérience et du cyan du froid.
 const MANA_FILL := Color(0.28, 0.66, 0.88)
-## La vie reprend les couleurs de la barre du monde plutôt que d'en définir des
-## siennes : c'est la même information, elle doit avoir la même couleur, et le
-## seuil rouge doit basculer au même moment aux deux endroits.
+## Les couleurs de la barre du monde : même information, même seuil rouge.
 const HEALTH_FULL := HealthBar.FULL
 const HEALTH_LOW := HealthBar.LOW
 
@@ -69,10 +47,8 @@ var _mana_max := 0.0
 var _font: Font
 
 
-## Le haut du bloc de jauges sur un écran de cette hauteur : la limite basse de
-## toute fenêtre flottante. Le HUD est dessiné **après** les panneaux, et ses
-## jauges passeraient par-dessus. Une hauteur de barre au-dessus de la vie, parce
-## que le « Niv. » qui la coiffe monte jusque-là.
+## La borne basse de toute fenêtre flottante : le HUD, dessiné après les panneaux,
+## passerait par-dessus. « Niv. » compris.
 static func haut_des_jauges(hauteur: float) -> float:
 	return hauteur - HEALTH_TOP - BAR_H
 
@@ -83,8 +59,7 @@ func _ready() -> void:
 	set_process(false)
 
 
-## La langue a changé : le niveau et le compte d'expérience sont dessinés à la
-## main, et le HUD ne se repeint qu'aux signaux du joueur.
+## Dessiné à la main et repeint seulement aux signaux : à redessiner.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
 		queue_redraw()
@@ -146,8 +121,7 @@ func _draw() -> void:
 		fill = FILL.lerp(FLASH, _flash / FLASH_TIME)
 	_draw_bar(Rect2(x, roundf(size.y - BOTTOM - HEIGHT), w, HEIGHT), _ratio, fill)
 
-	# La barre et son compte sont centrés d'un bloc, pas la barre seule : sinon
-	# l'ensemble paraîtrait décalé vers la droite de la moitié du texte.
+	# Barre et compte centrés d'un bloc.
 	var gx := roundf((size.x - (BAR_W + 5.0 + VALUE_W)) * 0.5)
 	var health_ratio := StatMod.ratio(_health, _health_max)
 	_draw_gauge(
@@ -158,8 +132,7 @@ func _draw() -> void:
 		_health,
 		_health_max
 	)
-	# Une réserve nulle ne s'affiche pas du tout : une jauge vide en permanence
-	# annoncerait une ressource que ce personnage n'a pas.
+	# Une réserve nulle ne s'affiche pas.
 	if _mana_max > 0.0:
 		_draw_gauge(
 			gx, roundf(size.y - MANA_TOP), StatMod.ratio(_mana, _mana_max),
@@ -168,15 +141,11 @@ func _draw() -> void:
 
 	if _font == null:
 		return
-	# Le niveau coiffe le bloc de ressources : niveau, vie et mana sont ce qu'on
-	# consulte du coin de l'œil, ils doivent tenir dans un seul regard.
+	# Le niveau coiffe vie et mana : un seul regard.
 	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), Textes.t("Niv. %d") % _level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_COLOR)
-	# Le compte exact **au centre**, au-dessus de sa barre et sous les jauges.
-	# Il a fait les deux bords avant d'atterrir là : à droite il tombait derrière
-	# la barre de compétences, à gauche derrière la fiche de personnage — les deux
-	# seules fenêtres qui descendent jusqu'en bas. Le centre est la bande que rien
-	# n'occupe, pour la même raison qui y a mis les jauges au jalon 4.
+	# Le compte d'expérience au centre, la seule bande que ni la barre de compétences ni
+	# la fiche ne couvrent.
 	_text(
 		Vector2(roundf(MARGIN), roundf(size.y - BOTTOM - HEIGHT - 3.0)),
 		Textes.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed}),
@@ -184,18 +153,15 @@ func _draw() -> void:
 	)
 
 
-## Le cadre, le fond, le remplissage. Les trois barres de l'écran l'appellent :
-## écrits à la main trois fois, un ajustement d'un pixel n'aurait été reporté
-## que sur deux d'entre elles.
+## Le cadre, le fond, le remplissage : écrits une fois pour les trois barres.
 func _draw_bar(r: Rect2, ratio: float, fill: Color) -> void:
 	draw_rect(Rect2(r.position - Vector2.ONE, r.size + Vector2(2.0, 2.0)), EDGE)
 	draw_rect(r, BACK)
 	draw_rect(Rect2(r.position, Vector2(roundf(r.size.x * ratio), r.size.y)), fill)
 
 
-## Une jauge de ressource : la barre, et le compte en clair à sa droite. Le
-## chiffre exact compte — « il me reste de quoi tirer deux fois » ne se lit pas
-## sur une longueur.
+## La barre et le compte en clair : « de quoi tirer deux fois » ne se lit pas sur une
+## longueur.
 func _draw_gauge(
 	x: float, y: float, ratio: float, fill: Color, current: float, maximum: float
 ) -> void:
@@ -209,9 +175,7 @@ func _draw_gauge(
 	)
 
 
-## Texte cerné de noir. Quatre appelants sur cet écran, et la même raison pour
-## tous : le HUD passe sur du décor clair comme sur du sombre selon l'endroit de
-## la carte, et aucune couleur ne tient sans contour.
+## Cerné de noir : lisible sur tous les sols.
 func _text(
 	pos: Vector2, text: String, align: int, width: int, tint: Color
 ) -> void:

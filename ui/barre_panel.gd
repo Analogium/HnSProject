@@ -1,13 +1,8 @@
 class_name BarrePanel
 extends Control
 
-## Les cinq cases à portée de doigt, en bas à droite. **Permanente** : c'est le
-## seul panneau du jeu qu'on ne ferme pas, parce qu'il dit ce que font les
-## touches qu'on a sous les doigts.
-##
-## Elle ne prend la souris **que le menu ouvert**. Le joueur lit ses compétences
-## par sondage, hors du système d'entrées de l'interface : sans ce drapeau, le
-## clic qui choisit une compétence dans le menu la lancerait aussi.
+## Les cinq cases, en bas à droite, **permanentes**. La souris n'est prise que menu
+## ouvert : sinon le clic qui choisit une compétence la lancerait aussi.
 
 const PAD := 4.0
 const SLOT := 26.0
@@ -15,38 +10,29 @@ const GAP := 4.0
 const FONT_SIZE := 8
 ## Hauteur réservée sous les cases pour le libellé de touche.
 const TOUCHE_H := 10.0
-## Une entrée du menu : l'icône à la taille de sa grille, et un pixel d'air
-## dessus et dessous. Plus basse, l'icône devrait être réduite d'un facteur
-## fractionnaire, et la trame du pixel art perdrait une ligne sur trois.
+## Une entrée du menu : l'icône à sa taille de grille, sans réduction fractionnaire.
 const ENTREE_H := IconeDeCompetence.COTE + 2.0
 
 const FOND := Color(0.10, 0.09, 0.13, 0.88)
 const VIDE := Color(0.16, 0.15, 0.20, 0.85)
 ## La case dont le menu est ouvert, et celle que la souris survole.
 const CHOISIE := Color(0.95, 0.82, 0.30)
-## Le voile de recharge : il descend, il ne tourne pas — un cadran demanderait un
-## arc, et à vingt-six pixels on ne lit pas un arc.
+## Le voile de recharge descend : à vingt-six pixels, un arc ne se lit pas.
 const RECHARGE := Color(0.02, 0.02, 0.04, 0.62)
 
 var _player: Player
 var _font: Font
-## L'index de la case dont le menu est ouvert, ou -1. Le menu est modal : il
-## prend la souris, et rien d'autre ne s'affiche pendant ce temps.
+## La case dont le menu, modal, est ouvert, ou -1.
 var _menu := -1
 var _survol := -1
 var _survol_menu := -1
-## L'état dessiné à la dernière image : quelles cases sont en recharge, et
-## lesquelles la réserve ne permet pas. Retenu pour ne redessiner que lorsqu'il
-## change — une barre permanente qui se repeint soixante fois par seconde paie
-## ce dessin toute la partie, y compris debout dans un couloir vide.
+## L'état dessiné, pour ne repeindre que lorsqu'il change.
 var _etat_affiche := -1
 
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
-	# Au plus proche voisin : une icône de vingt-quatre pixels agrandie dans une
-	# case de vingt-six serait lissée par défaut, et la trame du pixel art
-	# deviendrait une bouillie grise.
+	# Au plus proche voisin : lissée, la trame du pixel art tournerait au gris.
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
@@ -55,8 +41,7 @@ func _exit_tree() -> void:
 		Game.grab_ui_input(self, false)
 
 
-## La langue a changé : les noms du menu et les libellés de touche sont dessinés
-## à la main, et la barre ne se repeint qu'au changement d'état.
+## Noms et libellés dessinés à la main.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
 		queue_redraw()
@@ -67,9 +52,7 @@ func bind(player: Player) -> void:
 	queue_redraw()
 
 
-## Les recharges descendent à chaque image et le voile doit suivre, sinon la
-## barre annonce prête une compétence qui ne part pas. Mais seulement **quand
-## quelque chose bouge** : au repos, rien ne se repeint.
+## Le voile suit les recharges, et rien ne se repeint au repos.
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
@@ -80,8 +63,7 @@ func _process(_delta: float) -> void:
 		var competence := _player.barre.competence_de(i)
 		if competence != null and _player.mana < competence.cout_en_mana:
 			etat |= 1 << (i + BarreDeCompetences.EMPLACEMENTS)
-	# Tant qu'une recharge descend, le voile change à chaque image ; le reste du
-	# temps, seul un changement d'état vaut un dessin.
+	# Une recharge qui descend repeint à chaque image ; sinon, seul un changement d'état.
 	if etat != _etat_affiche or (etat & ((1 << BarreDeCompetences.EMPLACEMENTS) - 1)) != 0:
 		_etat_affiche = etat
 		queue_redraw()
@@ -106,8 +88,7 @@ func _input(event: InputEvent) -> void:
 	_track(bouton.position)
 
 	if _menu >= 0:
-		# Un clic dans le menu choisit ; un clic ailleurs referme sans rien
-		# changer. Refermer par le dehors est le geste qu'on essaie d'abord.
+		# Dans le menu, on choisit ; ailleurs, on referme.
 		if _survol_menu >= 0:
 			_assigner(_survol_menu)
 		_fermer()
@@ -118,10 +99,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Le menu ouvert est **modal** : il a pris la souris, il possède donc tout
-## l'écran, et un clic au-dehors le referme. Le menu fermé, la barre ne répond
-## que des clics tombés sur elle — sinon elle mangerait ceux des panneaux
-## ouverts en même temps.
+## Menu ouvert : **modal**, tout l'écran. Fermé : seuls les clics tombés sur la barre.
 func _possede_le_clic(point: Vector2) -> bool:
 	return _menu >= 0 or Rect2(Vector2.ZERO, size).has_point(point)
 
@@ -149,10 +127,7 @@ func _fermer() -> void:
 	queue_redraw()
 
 
-## La première entrée vide la case ; les suivantes sont ce qu'on peut y poser.
-##
-## Une compétence déjà posée ailleurs **se déplace** au lieu de se dédoubler :
-## deux cases qui lancent la même chose sont deux touches perdues.
+## La première entrée vide la case. Une compétence posée ailleurs **se déplace**.
 func _assigner(entree: int) -> void:
 	if _menu < 0:
 		return
@@ -204,11 +179,7 @@ func _entrees() -> Array[Competence]:
 	return out
 
 
-## Le cadre du menu, **mesuré ici et nulle part ailleurs**. Le fond et les lignes
-## le calculaient chacun de leur côté à partir du nombre d'entrées ; une compétence
-## de plus, et il suffisait d'en corriger un pour que le texte déborde du cadre.
-##
-## Le menu monte depuis la barre : il n'y a rien au-dessus, et tout en dessous.
+## Le cadre du menu, **mesuré ici seulement**, qui monte depuis la barre.
 func _menu_cadre(entrees: int) -> Rect2:
 	var hauteur := float(entrees) * ENTREE_H + PAD * 2.0
 	return Rect2(PAD, -hauteur - PAD, size.x - PAD * 2.0, hauteur)
@@ -222,33 +193,24 @@ func _menu_rect(entree: int) -> Rect2:
 	)
 
 
-## La place de l'icône dans son entrée, à gauche. Le clic la lit comme le dessin :
-## c'est sur l'image qu'on vise d'abord.
+## La place de l'icône ; le clic la lit comme le dessin.
 func _icone_d_entree(entree: int) -> Rect2:
 	var r := _menu_rect(entree)
 	var cote := float(IconeDeCompetence.COTE)
 	return Rect2(r.position + Vector2(2.0, (r.size.y - cote) * 0.5), Vector2(cote, cote))
 
 
-## Le libellé de la touche, lu dans la **carte d'entrées** et non réécrit ici :
-## deux vérités sur une touche, et la barre finit par annoncer un geste qui n'est
-## plus celui qui marche.
-##
-## Le jeu lie des **positions** de touches et non des lettres — c'est ce qui fait
-## que ZQSD tombe sous les doigts d'un clavier français comme WASD sous ceux d'un
-## clavier américain. Mais une position n'a pas de nom : il faut la retraduire
-## dans la disposition **du joueur**, sinon la barre annonce « A » pour une touche
-## sur laquelle il lit « Q ». C'est le défaut qu'avait la première version.
+## Lu dans la **carte d'entrées**, jamais réécrit, et traduit dans la disposition du
+## joueur : le jeu lie des positions (ZQSD comme WASD), et la barre doit dire la
+## lettre qu'il lit.
 static func libelle_de_touche(index: int) -> String:
 	for evenement in InputMap.action_get_events("competence_%d" % (index + 1)):
 		var clavier := evenement as InputEventKey
 		if clavier != null:
 			if clavier.keycode != 0:
 				return OS.get_keycode_string(clavier.keycode)
-			# Le serveur d'affichage muet des tests n'a aucune disposition à
-			# consulter : lui demander la traduction pousse une erreur moteur, que
-			# la campagne compte — à raison — comme un échec. On garde alors le
-			# nom de la position, faute de mieux.
+			# Le serveur muet des tests n'a pas de disposition : on garde le nom de la position
+			# plutôt que de pousser une erreur moteur.
 			var lue := clavier.physical_keycode
 			if DisplayServer.get_name() != "headless":
 				var traduite := DisplayServer.keyboard_get_keycode_from_physical(lue)
@@ -285,8 +247,7 @@ func _draw_slot(index: int) -> void:
 		if _player.mana < competence.cout_en_mana:
 			draw_rect(r, RECHARGE)
 
-	# Le voile de recharge descend depuis le haut : la case se remplit à mesure
-	# qu'elle redevient disponible.
+	# Le voile descend : la case se remplit en redevenant disponible.
 	var reste := _player.recharge_restante(index)
 	if reste > 0.0 and competence != null:
 		var total := maxf(competence.intervalle(_player.stats), 0.001)
@@ -309,13 +270,8 @@ func _draw_slot(index: int) -> void:
 		)
 
 
-## Ce qui identifie la compétence dans sa case : son icône si elle en a une, à
-## défaut un disque de la couleur de sa nature.
-##
-## Le disque n'est pas un bouchon en attendant mieux : à vingt-six pixels une
-## teinte se lit d'un coup d'œil, et une compétence sans image reste jouable et
-## reconnaissable. Le menu montre la même marque, pour qu'on retrouve dans la
-## liste la silhouette qu'on voit sur la barre.
+## L'icône, à défaut un disque de la couleur de la nature, lisible à vingt-six pixels ;
+## le menu montre la même marque.
 func _draw_marque(r: Rect2, competence: Competence) -> void:
 	var cote := minf(r.size.x, r.size.y)
 	var tex := IconeDeCompetence.texture(competence)

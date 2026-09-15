@@ -1,43 +1,20 @@
 class_name InventoryPanel
 extends Control
 
-## Le sac, à la touche I : une grille rectangulaire où chaque objet occupe la
-## place qu'il prend réellement, et où on range à la souris.
-##
-## Deux gestes pour une seule mécanique : **glisser** (presser, déplacer,
-## relâcher) et **clic-clic** (cliquer pour prendre, cliquer pour poser). Un
-## relâchement qui n'a pas bougé de plus de quelques pixels est un clic, pas la fin
-## d'un glisser — c'est la seule règle qui les sépare, et elle évite de choisir à
-## la place du joueur.
-##
-## Relâché **hors du panneau**, l'objet tombe au sol ; relâché sur un emplacement,
-## il est porté si c'est le bon. Le clic droit reste le raccourci : équiper,
-## retirer, jeter ce qu'on tient.
-##
-## Il ne détient rien : le sac vit sur le joueur. Deux listes à tenir d'accord
-## finissent toujours par diverger.
+## Le sac (I) : chaque objet occupe sa place réelle. Deux gestes, glisser et
+## clic-clic ; un relâchement sans déplacement est un clic. Relâché hors du panneau,
+## l'objet tombe ; le clic droit équipe, retire ou jette. Le sac vit sur le joueur.
 
-## Ce qu'on jette du sac. Un signal plutôt qu'une référence au monde : le
-## panneau vit dans une CanvasLayer et n'a aucune raison de savoir où poser des
-## nœuds — c'est la scène qui sait.
+## Un signal : c'est la scène qui sait où poser au sol.
 signal drop_requested(item: Item)
 
 const CELL := 20.0
 const PAD := 1.0
 const HEADER := 16.0
-## Deux lignes d'aide : les gestes sont maintenant trop nombreux pour tenir sur
-## la largeur du panneau.
+## Deux lignes d'aide.
 const FOOTER := 22.0
-## La fenêtre de personnage. Chaque emplacement occupe le rectangle de cases qu'un
-## objet de sa famille occuperait dans le sac : la place que prend un objet est une
-## information de jeu, et l'équipement doit la dire aussi. Une grille de carrés
-## identiques donnait dix cases interchangeables où plus rien n'annonçait ce qui
-## allait où.
-##
-## Trois colonnes larges séparées par une gouttière d'une case, et le corps qui
-## descend : le portrait, la tête et le cou en haut ; les deux mains encadrant le
-## torse ; les gants, la ceinture et les bottes en bas ; les deux bagues dans les
-## gouttières.
+## La fenêtre de personnage : chaque emplacement occupe le rectangle qu'un objet de sa
+## famille prendrait dans le sac. Trois colonnes, les bagues dans les gouttières.
 const DOLL := {
 	"helmet": Rect2i(4, 0, 3, 2), "amulet": Rect2i(8, 0, 3, 2),
 	"weapon": Rect2i(0, 2, 3, 3), "chest": Rect2i(4, 2, 3, 3), "offhand": Rect2i(8, 2, 3, 3),
@@ -50,50 +27,33 @@ const DOLL_ROWS := 7
 const DOLL_AREA := Rect2i(0, 0, 2, 2)
 const DOLL_ANIM := "idle_down"
 
-## Un emplacement vide montre l'objet qu'il attend, peint très sombre : une
-## silhouette fantôme se comprend sans lire, là où « BAGUE G. » ne tenait même pas
-## dans sa case.
+## Un emplacement vide montre l'objet qu'il attend, très sombre : lisible sans texte.
 const GHOST := Color(1.0, 1.0, 1.0, 0.13)
-## Marge autour d'une icône dans son emplacement. Sans elle, un objet qui remplit
-## exactement son rectangle mange les lignes de la grille et on ne voit plus où
-## il commence.
+## Marge d'une icône : sans elle, l'objet mange les lignes de la grille.
 const MARGIN := 3
 
 const SLOT := Color(0.14, 0.13, 0.17)
 const SLOT_EDGE := Color(0.22, 0.20, 0.26)
-## Fond des cases occupées : c'est lui qui donne la forme de l'objet d'un coup
-## d'œil, avant même que l'icône soit lue.
+## Le fond d'un objet rangé donne sa forme avant l'icône.
 const ITEM_BACK := Color(0.22, 0.21, 0.28)
-## Le cadre d'un objet rangé prend sa couleur de rareté, assombrie pour ne pas
-## crier : le sac se lit alors d'un coup d'œil, sans survoler case par case.
+## Le cadre d'un objet rangé, dans sa rareté assombrie.
 const ITEM_EDGE_DIM := 0.3
-## Distance à partir de laquelle un relâchement est la fin d'un glisser et non
-## un clic. Quelques pixels suffisent : c'est le tremblement de la main qu'on
-## veut ignorer, pas un déplacement.
+## Au-delà, un relâchement finit un glisser ; en deçà, c'est un clic tremblé.
 const DRAG_MIN := 5.0
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
-## L'infobulle. Son fond est celui de toutes les infobulles du jeu et vit dans
-## UiPalette ; son cadre prend la couleur de rareté de l'objet — la même
-## information que le halo au sol, donc la même couleur.
-##
-## La ligne d'implicite : ce que la base garantit, avant tout tirage.
+## L'infobulle : fond d'UiPalette, cadre de la rareté. Sa ligne d'implicite :
 const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
-## Le niveau de l'objet, sous son nom. Plus effacé que l'implicite : c'est une
-## étiquette, pas une ligne de statistique, et il ne doit pas se lire comme un
-## bonus de plus.
+## Le niveau de l'objet, plus effacé : une étiquette, pas un bonus.
 const TIP_LEVEL := Color(0.46, 0.44, 0.52)
-## La colonne des paliers, sous Alt. Plus sourde que les affixes eux-mêmes :
-## c'est une note de bas de page sur la ligne, pas une deuxième ligne.
+## La colonne des paliers sous Alt, plus sourde : une note de bas de page.
 const TIP_TIER := Color(0.55, 0.53, 0.62)
-## Gouttière entre un affixe et son palier. Collés, on ne sait plus si « T4 »
-## appartient à la ligne du dessus ou du dessous.
+## Gouttière entre un affixe et son palier.
 const TIP_TIER_GAP := 10.0
 const TIP_EXPLICIT := Color(0.55, 0.75, 1.0)
 const TIP_PAD := 5.0
 const TIP_LINE := 9.0
-## Écart entre le sac et son infobulle : collée, on ne sait plus laquelle des
-## deux bordures appartient à quoi.
+## Écart entre le sac et son infobulle.
 const TIP_GAP := 5.0
 const TIP_MIN_W := 74.0
 const FONT_SIZE := 8
@@ -101,8 +61,7 @@ const TITLE_SIZE := 9
 
 @onready var title: Label = $Title
 
-## La même source que les autres panneaux du jeu : get_theme_default_font() rend
-## la même police, mais oblige à retester le null à chaque bloc de dessin.
+## Gardée : pas de null à retester à chaque dessin.
 var _font: Font
 
 var _player: Player
@@ -112,32 +71,24 @@ var _inventory: Inventory
 var _held: Item
 ## Sa case d'origine, pour le rendre là où on l'a pris si on referme le sac.
 var _from := Vector2i.ZERO
-## Quelle case de l'objet le curseur avait attrapée : sans elle, un plastron
-## saisi par son coin bas-droit sauterait sous le curseur au moment de la prise.
+## La case attrapée : sans elle, l'objet sauterait sous le curseur.
 var _grab := Vector2i.ZERO
-## Le même décalage en pixels. La case sert à viser, les pixels à dessiner :
-## l'objet suit le curseur au pixel près, seule sa destination s'aligne.
+## Le même décalage en pixels : l'objet suit au pixel, la destination à la case.
 var _grab_px := Vector2.ZERO
 ## Dernière position connue de la souris, dans le repère du panneau.
 var _mouse := Vector2.ZERO
 ## Où le bouton a été pressé, pour distinguer le glisser du clic.
 var _press := Vector2.ZERO
-## Alt maintenue : l'infobulle montre alors le palier de chaque affixe et la
-## fourchette de ce palier. Relevé dans _process, jamais posé depuis un
-## événement — voir la raison là-bas.
+## Alt tenue : paliers et fourchettes. Relevée dans _process, voir là-bas.
 var _alt := false
 var _hover := Vector2i(-1, -1)
-## L'emplacement d'équipement survolé, ou -1. Séparé de la case survolée : les
-## deux zones ne se recouvrent pas, mais un même Vector2i ne peut pas désigner
-## à la fois « case (2,1) du sac » et « emplacement torse ».
+## L'emplacement survolé, ou -1, séparé de la case du sac.
 var _hover_slot := -1
 
-## La silhouette du personnage. Dessinée par _draw et non montée comme
-## AnimatedSprite2D : un nœud enfant se peint **au-dessus** du Control, donc de
-## l'objet qu'on traîne à la souris, qui disparaîtrait en la traversant.
+## Dessinée par _draw : un enfant se peindrait par-dessus l'objet traîné.
 var _doll_frames: SpriteFrames
-## L'image affichée, et la clé de ce qui est chargé. Sans la clé, chaque
-## rafraîchissement rebâtirait les planches et relancerait l'animation.
+## La clé de ce qui est chargé : sans elle, chaque rafraîchissement relancerait
+## l'animation.
 var _doll_shown := 0
 var _doll_key := ""
 
@@ -148,17 +99,13 @@ func _ready() -> void:
 	title.add_theme_color_override("font_color", UiPalette.TITRE)
 
 
-## Le sac ouvert prend la souris. Le drapeau doit retomber quoi qu'il arrive —
-## y compris si la zone est rechargée sac ouvert, sinon le joueur se retrouve
-## incapable de frapper dans une scène où plus aucun panneau n'existe.
+## Rend la souris quoi qu'il arrive, même quand la zone est rechargée sac ouvert.
 func _exit_tree() -> void:
 	if visible:
 		Game.grab_ui_input(self, false)
 
 
-## La langue a changé. Ce qui est dessiné à la main ne se retraduit pas tout
-## seul, contrairement aux `Label` des scènes — et le titre, écrit par le code,
-## doit être refait plutôt que redessiné.
+## Dessiné à la main : titre refait, panneau redessiné.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
 		_on_changed()
@@ -170,9 +117,7 @@ func bind(player: Player) -> void:
 	_inventory.changed.connect(_on_changed)
 	player.equipment_changed.connect(_on_changed)
 
-	# La taille se déduit de la grille au lieu d'être réglée dans la scène :
-	# changer le nombre de colonnes du sac ne doit pas demander de rouvrir
-	# l'éditeur. Le coin bas-droite, lui, reste celui posé par les ancres.
+	# Taille déduite de la grille ; le coin bas-droite reste celui des ancres.
 	var s := _panel_size()
 	offset_left = offset_right - s.x
 	offset_top = offset_bottom - s.y
@@ -185,8 +130,7 @@ func toggle() -> void:
 	visible = not visible
 	Game.grab_ui_input(self, visible)
 	if visible:
-		# Sans ça, la case survolée reste celle d'avant la fermeture jusqu'au
-		# premier mouvement de souris.
+		# Sinon la case survolée reste celle d'avant la fermeture.
 		_track(get_local_mouse_position())
 	else:
 		var left := _return_held()
@@ -199,9 +143,7 @@ func _input(event: InputEvent) -> void:
 	if not visible or _inventory == null:
 		return
 
-	# La position vient de l'événement et non du curseur : c'est elle qui est vraie
-	# au moment du clic, et elle rend le geste rejouable dans un test sans avoir à
-	# déplacer la souris de l'écran.
+	# La position de l'événement : vraie au moment du clic, rejouable dans un test.
 	var souris := make_input_local(event) as InputEventMouse
 	if souris == null:
 		return
@@ -221,15 +163,13 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 
-	# Le survol est recalé sur le clic : ouvrir le sac au clavier puis cliquer
-	# sans bouger la souris ne doit pas viser la case d'avant.
+	# Recalé sur le clic : ouvert au clavier, le sac ne vise pas la case d'avant.
 	_track(button.position)
 
 	match button.button_index:
 		MOUSE_BUTTON_LEFT:
 			_press = button.position
-			# Presser en tenant quelque chose, c'est poser : le clic-clic se
-			# résout ici, le glisser au relâchement.
+			# Presser en tenant, c'est poser ; le glisser se résout au relâchement.
 			if _held != null:
 				_resolve(button.position, false)
 			else:
@@ -242,8 +182,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Relâcher ne fait quelque chose que si la souris a bougé depuis la pression :
-## sinon c'était un clic, et l'objet reste au curseur jusqu'au clic suivant.
+## Sans déplacement depuis la pression, c'était un clic : l'objet reste en main.
 func _release(point: Vector2) -> void:
 	if _held == null or point.distance_to(_press) < DRAG_MIN:
 		return
@@ -255,8 +194,7 @@ func _track(point: Vector2) -> void:
 	_mouse = point
 	var cell := _cell_at(point)
 	var slot := _slot_at(point)
-	# Un objet en main suit le curseur au pixel : il faut alors redessiner à
-	# chaque mouvement, et pas seulement quand on change de case.
+	# Un objet en main suit au pixel : redessiner à chaque mouvement.
 	if cell == _hover and slot == _hover_slot and _held == null:
 		return
 	_hover = cell
@@ -264,9 +202,7 @@ func _track(point: Vector2) -> void:
 	queue_redraw()
 
 
-## Le clic droit fait trois choses selon ce qu'il vise, et jamais deux à la
-## fois : jeter ce qu'on tient, retirer ce qui est porté, équiper ce qu'on
-## survole dans le sac.
+## Jeter ce qu'on tient, retirer ce qui est porté, ou équiper ce qu'on survole.
 func _right_click() -> void:
 	if _held != null:
 		drop_requested.emit(_held)
@@ -281,9 +217,8 @@ func _right_click() -> void:
 		_equip(_hover)
 
 
-## Équipe l'objet du sac. Il est **sorti du sac d'abord** : c'est ce qui garantit
-## que l'objet remplacé trouve au moins sa place. Ce qui déborde vraiment tombe au
-## sol plutôt que d'annuler l'échange — on a demandé à porter cet objet.
+## **Sorti du sac d'abord** : l'objet remplacé y trouve sa place ; ce qui déborde
+## tombe.
 func _equip(cell: Vector2i) -> void:
 	var index := _inventory.index_at(cell)
 	if index == Inventory.EMPTY:
@@ -296,19 +231,12 @@ func _equip(cell: Vector2i) -> void:
 	queue_redraw()
 
 
-## Porte un objet et reloge celui qu'il remplace : le sac s'il y reste de la
-## place, le sol sinon. **Le seul endroit** où le remplacement est relogé, pour le
-## clic droit comme pour le dépôt.
-##
-## `emplacement` vide au clic droit — aucune destination désignée, le joueur
-## choisit le premier doigt libre. Rempli quand l'objet a été lâché sur un
-## emplacement précis : c'est celui-là qu'on veut, même si l'autre est libre.
+## Porte un objet et reloge le remplacé, au sac ou au sol : **le seul endroit**.
+## `emplacement` vide au clic droit, imposé quand on a lâché sur un emplacement.
 func _wear(item: Item, emplacement := "") -> bool:
 	if _player == null:
 		return false
-	# Un manuel ne se porte pas, il s'étudie. Le clic droit l'envoie donc au
-	# râtelier plutôt qu'à un emplacement d'équipement, qui le refuserait — et
-	# l'objet, refusé, retournerait dans sa case sans que rien ne dise pourquoi.
+	# Un manuel s'étudie : le clic droit l'envoie au râtelier.
 	var ancien := _player.etudier(item) if Ratelier.accepte(item) else _player.equip(item, emplacement)
 	if ancien == item:
 		return false
@@ -324,8 +252,7 @@ func _unequip(slot: String) -> void:
 	queue_redraw()
 
 
-## Prendre en main ce qui est sous le curseur : un objet du sac, ou celui d'un
-## emplacement porté. Un clic dans le vide ne fait rien.
+## Un objet du sac ou d'un emplacement ; le vide ne fait rien.
 func _take(point: Vector2) -> void:
 	var slot := _slot_at(point)
 	if slot >= 0:
@@ -334,8 +261,7 @@ func _take(point: Vector2) -> void:
 			return
 		_player.unequip(EquipmentSlots.ids()[slot])
 		_held = porte
-		# Rien à quoi le rendre : la case d'origine est volontairement hors
-		# grille, `place` la refusera et `_return_held` cherchera une place.
+		# Hors grille exprès : `_return_held` cherchera une place.
 		_from = Vector2i(-1, -1)
 		_grab = Inventory.footprint(porte) / 2
 		_grab_px = _span_size(Inventory.footprint(porte)) * 0.5
@@ -353,13 +279,8 @@ func _take(point: Vector2) -> void:
 	queue_redraw()
 
 
-## Poser ce qu'on tient, là où le curseur le demande : dans un emplacement, dans
-## le sac, ou au sol si on est sorti du panneau.
-##
-## `drag` dit ce qu'il faut faire d'un geste qui échoue. Au clic, l'objet reste
-## en main — on garde la main levée plutôt que de le lâcher au hasard. Au
-## relâchement, non : le joueur a lâché le bouton, l'objet ne peut pas rester
-## collé au curseur, il retourne donc au sac.
+## Pose ce qu'on tient : emplacement, sac, ou sol hors du panneau. Un clic raté garde
+## l'objet en main ; un relâchement raté le rend au sac.
 func _resolve(point: Vector2, drag: bool) -> void:
 	if _held == null:
 		return
@@ -370,8 +291,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 			queue_redraw()
 			return
 	elif not _panel_rect().has_point(point):
-		# Hors du panneau : au sol. C'est le seul moyen de se débarrasser d'un
-		# objet, et il se lit tout seul — on l'a sorti du sac.
+		# Hors du panneau : au sol.
 		drop_requested.emit(_held)
 		_held = null
 		queue_redraw()
@@ -388,9 +308,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 	queue_redraw()
 
 
-## Porte l'objet tenu, si c'est bien son emplacement. Une épée déposée sur le
-## torse est refusée plutôt que rangée d'office dans l'emplacement d'arme : le
-## joueur a visé, on ne décide pas à sa place.
+## Refusé s'il ne va pas là : le joueur a visé, on ne range pas d'office.
 func _equip_held(slot: String) -> bool:
 	if not EquipmentSlots.accepts(slot, _held) or not _wear(_held, slot):
 		return false
@@ -398,9 +316,7 @@ func _equip_held(slot: String) -> bool:
 	return true
 
 
-## Rend au sac l'objet tenu à la main, à sa place d'origine si elle est encore
-## libre. Renvoie ce qui n'a pas pu rentrer : le sac a pu se remplir pendant
-## qu'on le tenait, et un objet ne doit jamais disparaître entre deux mains.
+## À sa place d'origine si libre ; rend ce qui ne rentre plus, jamais perdu.
 func _return_held() -> Item:
 	if _held == null:
 		return null
@@ -411,16 +327,13 @@ func _return_held() -> Item:
 	return item
 
 
-## Une image toutes les FPS d'animation, déduite de l'horloge plutôt que d'un
-## compteur, qui repartirait de zéro à chaque ouverture.
+## Image d'animation déduite de l'horloge, pas d'un compteur.
 func _process(_delta: float) -> void:
 	if not visible:
 		return
 
-	# L'état **réel** de la touche, relevé à chaque image, et non un booléen
-	# mémorisé sur l'événement : Alt est interceptée par le gestionnaire de
-	# fenêtres, et perdre le focus la touche enfoncée ne rend jamais le
-	# relâchement — l'infobulle resterait détaillée jusqu'au prochain appui.
+	# L'état **réel** d'Alt à chaque image : le gestionnaire de fenêtres avale le
+	# relâchement quand le focus part.
 	var alt := Input.is_key_pressed(KEY_ALT)
 	if alt != _alt:
 		_alt = alt
@@ -442,9 +355,7 @@ func _doll_frame_index() -> int:
 	return int(Time.get_ticks_msec() * 0.001 * fps) % n
 
 
-## Recharge les planches quand la silhouette ou l'arme portée a changé — et
-## seulement alors : SpriteForge les met en cache, mais réassigner relancerait
-## l'animation à chaque objet ramassé.
+## Seulement quand silhouette ou arme changent : réassigner relance l'animation.
 func _refresh_doll() -> void:
 	if _player == null:
 		return
@@ -462,22 +373,14 @@ func _on_changed() -> void:
 		title.text = Textes.t("SAC  {occupees} / {total} cases").format({
 			"occupees": _inventory.used_cells(), "total": _inventory.cell_count()
 		})
-	# L'arme portée peut avoir changé : la silhouette doit tenir celle qu'on
-	# vient d'équiper, sinon la fenêtre montre un personnage qui n'existe plus.
+	# L'arme portée a pu changer.
 	_refresh_doll()
 	if visible:
 		queue_redraw()
 
 
-## Le panneau entier. Sert à savoir si un point est dedans — donc si un objet
-## lâché doit tomber au sol.
-## **Un clic hors du sac ne lui appartient pas.** Le consommer quand même — ce
-## que faisait la première version — rendait sourds tous les autres panneaux
-## ouverts en même temps : la fiche de personnage et la page d'un manuel ne
-## recevaient plus rien tant que le sac était à l'écran.
-##
-## L'objet **tenu à la main** fait exception : il possède le geste jusqu'à ce
-## qu'on le lâche, y compris au-dehors — c'est comme ça qu'on jette au sol.
+## **Un clic hors du sac ne lui appartient pas**, sinon les autres panneaux
+## deviennent sourds ; sauf avec un objet en main, qu'on peut lâcher au-dehors.
 func _possede_le_clic(point: Vector2) -> bool:
 	return _held != null or _panel_rect().has_point(point)
 
@@ -499,9 +402,7 @@ func _span_size(span: Vector2i) -> Vector2:
 	return Vector2(span) * (CELL + PAD) - Vector2(PAD, PAD)
 
 
-## Le rectangle d'une zone de la grille du personnage, en pixels du panneau.
-## Même pas de grille que le sac : les deux grilles s'alignent à l'œil, et la
-## place qu'un objet prend en haut est celle qu'il prendra en bas.
+## Même pas que le sac : les deux grilles s'alignent.
 func _doll_rect(zone: Rect2i) -> Rect2:
 	return Rect2(
 		Vector2(
@@ -512,12 +413,7 @@ func _doll_rect(zone: Rect2i) -> Rect2:
 	)
 
 
-## Les deux grilles sont centrées dans le panneau, chacune de son côté : celle
-## du personnage est la plus large et fixe donc la largeur de la fenêtre ; le sac,
-## plus étroit, serait collé à gauche avec un vide à droite qui se lit comme un
-## défaut d'alignement.
-##
-## Position entière : une grille posée sur un demi-pixel rend ses lignes floues.
+## Chaque grille centrée ; position entière, sinon lignes floues.
 func _equip_left() -> float:
 	return _centered(_equip_size().x)
 
@@ -534,9 +430,7 @@ func _slot_rect(index: int) -> Rect2:
 	return _doll_rect(DOLL[EquipmentSlots.ids()[index]])
 
 
-## L'objet type d'un emplacement : celui dont on peint la silhouette quand il
-## est vide. Pris dans le catalogue, donc jamais réécrit ici — une base ajoutée
-## à une famille sans emplacement se verrait aussitôt.
+## L'objet type d'un emplacement, pris dans le catalogue.
 static func _ghost_kind(slot: String) -> String:
 	var famille := EquipmentSlots.family_of(slot)
 	for base in ItemCatalog.ALL:
@@ -563,9 +457,7 @@ func _rect_of(cell: Vector2i, span: Vector2i) -> Rect2:
 	)
 
 
-## La case sous un point. Peut sortir de la grille — c'est voulu : reposer un
-## objet à cheval sur le bord doit échouer, pas être rattrapé en douce vers
-## l'intérieur.
+## Peut sortir de la grille : poser à cheval sur le bord doit échouer.
 func _cell_at(point: Vector2) -> Vector2i:
 	return Vector2i(
 		floori((point.x - _grid_left()) / (CELL + PAD)),
@@ -601,18 +493,15 @@ func _draw() -> void:
 	if survole != Inventory.EMPTY:
 		var vise: Inventory.Placed = _inventory.placed[survole]
 		var r := _rect_of(vise.cell, vise.rect().size)
-		# Le cadre de l'objet survolé passe à sa couleur de rareté pleine, au lieu
-		# d'un gris de survol qui l'effacerait justement sur les objets rares.
+		# Survolé, le cadre prend la rareté pleine.
 		draw_rect(r, vise.data.color(), false, 1.0)
 		_draw_tooltip(vise.data, r.position.y)
 
 	if _held != null:
 		var span := Inventory.footprint(_held)
 		var at := _hover - _grab
-		# Deux choses à montrer, et il en faut deux : la **destination** calée
-		# sur la grille, verte ou rouge — dans un rangement en rectangles c'est
-		# la place qu'il prendrait qui compte — et l'**objet**, qui suit le
-		# curseur au pixel près pour qu'on sente qu'on le tient.
+		# La destination calée sur la grille, verte ou rouge, et l'objet qui suit le curseur
+		# au pixel.
 		if _hover_slot < 0 and _panel_rect().has_point(_mouse):
 			draw_rect(_rect_of(at, span), CAN_PLACE if _inventory.fits(_held, at) else BLOCKED)
 		_draw_item(_held, Rect2(_mouse - _grab_px, _span_size(span)), false)
@@ -631,10 +520,7 @@ func _doll_area_rect() -> Rect2:
 	return _doll_rect(DOLL_AREA)
 
 
-## Le personnage tel qu'il est dans le monde : sa silhouette choisie à la
-## création, et l'arme qu'il tient réellement. C'est le seul endroit du jeu où
-## on le voit en grand, et la seule façon de vérifier d'un coup d'œil que
-## l'épée qu'on vient d'équiper est bien celle qu'on porte.
+## La silhouette et l'arme réellement tenue, en grand.
 func _draw_doll() -> void:
 	var zone := _doll_area_rect()
 	_draw_case(zone)
@@ -643,14 +529,11 @@ func _draw_doll() -> void:
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
 	if tex == null:
 		return
-	# À sa taille native : le sprite fait 32 pixels et le portrait 41. L'agrandir
-	# le ferait déborder sur le casque et l'arme.
+	# Taille native : agrandi, le sprite déborderait.
 	_draw_centered(tex, zone)
 
 
-## Les emplacements portés. Ils sont dans le même panneau que le sac et non dans
-## une fenêtre à part : équiper est un geste entre les deux, et deux fenêtres
-## obligeraient à en ouvrir une seconde pour un aller-retour.
+## Dans le même panneau que le sac : équiper est un geste entre les deux.
 func _draw_equipment() -> void:
 	for i in EquipmentSlots.count():
 		var slot: String = EquipmentSlots.ids()[i]
@@ -658,9 +541,7 @@ func _draw_equipment() -> void:
 		var item: Item = _player.equipped(slot) if _player != null else null
 
 		if item != null:
-			# Le fond prend la couleur de rareté, très assombrie : c'est la même
-			# information que le cadre d'un objet rangé et que le halo au sol, et
-			# elle se lit ici sans survoler, d'un bout à l'autre de la fenêtre.
+			# Fond de la rareté très assombri, comme au sol.
 			draw_rect(r, item.color().darkened(0.80))
 			draw_rect(r, item.color().darkened(0.35), false, 1.0)
 			_draw_item(item, r, false, true)
@@ -671,19 +552,14 @@ func _draw_equipment() -> void:
 		if _hover_slot != i:
 			continue
 		if _held != null:
-			# Posée **après** l'objet porté : peinte avant, son fond opaque
-			# l'effaçait, et un emplacement occupé n'annonçait jamais s'il
-			# accepte ce qu'on lui apporte.
+			# Après l'objet porté, sinon son fond opaque effaçait la réponse.
 			draw_rect(r, CAN_PLACE if EquipmentSlots.accepts(slot, _held) else BLOCKED)
 		elif item != null:
 			draw_rect(r, item.color(), false, 1.0)
 			_draw_tooltip(item, r.position.y)
 
 
-## La silhouette de ce que l'emplacement attend, presque effacée. Elle remplace
-## le nom de l'emplacement : « CEINTURE » tenait dans sa case, « BAGUE G. » non,
-## et deux libellés tronqués au même endroit annonçaient deux emplacements
-## qu'on ne distinguait plus.
+## Remplace le nom de l'emplacement, qui se tronquait.
 func _draw_ghost(slot: String, r: Rect2) -> void:
 	var kind := _ghost_kind(slot)
 	if kind.is_empty():
@@ -691,10 +567,7 @@ func _draw_ghost(slot: String, r: Rect2) -> void:
 	_draw_centered(SpriteForge.inventory_icon(kind, Vector2i(_place_libre(r))), r, GHOST)
 
 
-## Le fond d'une case vide : le creux et son liseré. Les deux vont toujours
-## ensemble — la grille du sac, le portrait et les emplacements libres les
-## écrivaient chacun de leur côté, et il suffisait d'en oublier un pour qu'une
-## case se lise comme un trou dans le panneau.
+## Le creux d'une case vide et son liseré, toujours ensemble.
 func _draw_case(r: Rect2) -> void:
 	draw_rect(r, SLOT)
 	draw_rect(r, SLOT_EDGE, false, 1.0)
@@ -705,9 +578,7 @@ func _place_libre(r: Rect2) -> Vector2:
 	return r.size - Vector2(MARGIN, MARGIN) * 2.0
 
 
-## Une texture au milieu d'un rectangle, à sa taille native. Position entière :
-## une image à cheval sur deux pixels bave, et c'est ce que le rendu pixel art ne
-## pardonne pas.
+## À taille native, position entière.
 func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
 	if tex == null:
 		return
@@ -715,15 +586,13 @@ func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
 	draw_texture_rect(tex, Rect2(at, tex.get_size()), false, teinte)
 
 
-## Ce que porte l'objet, à côté du sac. Sans elle, un objet à six affixes et une
-## épée nue se ressemblent.
+## Ce que porte l'objet.
 func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	if _font == null:
 		return
 
 	var titre := item.display_name()
-	# Toujours affiché, même sur un objet blanc : c'est ce qui décide si on le
-	# garde. Les paliers, eux, ne sortent que sous Alt.
+	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous Alt.
 	var niveau := Textes.t("niveau d'objet %d") % item.item_level
 	var implicite := item.implicit_line()
 
@@ -733,21 +602,16 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	var sans_provenance := false
 	for r in item.explicits:
 		explicites.append(r.mod.label())
-		# Vide quand la provenance est inconnue — un objet d'avant les paliers,
-		# ou un affixe retiré du projet depuis. La ligne s'affiche sans colonne.
+		# Vide sans provenance : la ligne s'affiche sans colonne.
 		var palier := r.palier_et_plage() if _alt else ""
 		paliers.append(palier)
 		detaille = detaille or not palier.is_empty()
 		sans_provenance = sans_provenance or palier.is_empty()
 
-	# Une bulle qui se tait sur un objet dont on vient d'ouvrir le détail se lit
-	# comme une panne. Elle dit donc pourquoi — et cette ligne disparaît d'elle
-	# même à mesure que le personnage remplace son équipement.
+	# Sous Alt, dit pourquoi aucun palier ne s'affiche.
 	var note := Textes.t("paliers inconnus : ramassé avant") if _alt and sans_provenance else ""
 
-	# Deux colonnes : les affixes, puis leurs paliers. La gouttière est prise sur
-	# la plus large des lignes d'affixes, pas sur chacune — une colonne en
-	# escalier ne se lit plus comme une colonne.
+	# Deux colonnes ; la gouttière sur la plus large ligne, pas en escalier.
 	var w_affixes := 0.0
 	for ligne in explicites:
 		w_affixes = maxf(w_affixes, _font.get_string_size(
@@ -777,10 +641,7 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 	if separe:
 		h += TIP_LINE * 0.5
 
-	# Alignée sur le haut de l'objet, mais bornée dans les deux sens : vers le bas
-	# parce que les objets de la dernière ligne sortiraient de l'écran, vers la
-	# gauche parce que la bulle est dessinée à gauche du panneau et que le mode
-	# détaillé l'élargit d'un tiers.
+	# Alignée sur l'objet, bornée en bas et à gauche (le mode détaillé l'élargit).
 	var s := _panel_size()
 	var haut := minf(haut_vise, s.y - h)
 	var gauche := maxf(-w - TIP_GAP, -global_position.x)
@@ -800,9 +661,7 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), implicite,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_IMPLICIT)
 	if separe:
-		# Ce que la base garantit au-dessus du trait, ce que le tirage a donné
-		# en dessous. Sans lui, les deux se lisent comme une seule liste et
-		# l'implicite passe pour un affixe de plus.
+		# Le trait sépare ce que la base garantit de ce que le tirage a donné.
 		y += TIP_LINE * 0.5
 		draw_line(
 			Vector2(r.position.x + TIP_PAD, y - 2.0),
@@ -827,21 +686,14 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 
 
-## framed : le cadre de l'objet rangé. L'objet tenu à la main s'en passe — il
-## est déjà posé sur la teinte verte ou rouge qui dit s'il peut tomber là.
+## `framed` : le cadre d'un objet rangé ; l'objet tenu a déjà sa teinte de destination.
 func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	if framed:
 		draw_rect(r, ITEM_BACK)
 		draw_rect(r, item.color().darkened(ITEM_EDGE_DIM), false, 1.0)
 
-	# Dans le sac, l'icône est dimensionnée sur l'encombrement de l'objet : c'est
-	# lui qui dit la place qu'il prend, et une épée n'a pas à s'étirer sur la
-	# case voisine. Dans un emplacement d'équipement (`fill`), elle **remplit sa
-	# case** : celle-ci est déjà taillée à la famille de l'objet, et une baguette
-	# dessinée petite au milieu d'un grand cadre se lisait comme un oubli.
-	#
-	# Le facteur d'agrandissement reste entier et l'aspect conservé : la forge
-	# s'en charge, aucun objet n'est déformé.
+	# Dans le sac, l'icône suit l'encombrement ; dans un emplacement (`fill`), elle
+	# remplit sa case, taillée pour sa famille. Agrandissement entier, aspect conservé.
 	var place := _place_libre(r)
 	var propre := place if fill else _span_size(Inventory.footprint(item)).min(place)
 	_draw_centered(

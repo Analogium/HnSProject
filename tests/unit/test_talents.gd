@@ -433,6 +433,45 @@ func test_la_conversion_emporte_ce_qu_un_objet_ajoute() -> void:
 	assert_almost_eq(r.degats_min[DamageType.Kind.FIRE], 120.0, 1e-4, "les cent vingt sont du feu")
 
 
+## Un ajout de chaque nature : la conversion prend sa part de toutes. À moitié, chacune
+## garde la moitié de ce qu'elle portait ; entière, il ne reste que la nature d'arrivée.
+func test_la_conversion_emporte_les_ajouts_de_toutes_les_natures() -> void:
+	var ajouts: Array[StatMod] = []
+	for nature in DamageType.Kind.size():
+		ajouts.append(StatMod.fourchette(
+			StatsDeCompetence.stat_ajoutee(nature as DamageType.Kind), 10.0, 10.0, MotsCles.SORT
+		))
+	var froid := DamageType.Kind.COLD
+
+	# 110 de foudre, 10 de froid, 10 de chacune des quatre autres : 160.
+	var moitie := _sort(100.0).resoudre(1, _fiche(), ajouts, _talents([_conversion("n", froid, 0.5)]))
+	assert_almost_eq(moitie.degats_min[DamageType.Kind.LIGHTNING], 55.0, 1e-4, "la base et son ajout, à moitié")
+	for nature in [DamageType.Kind.PHYSICAL, DamageType.Kind.FIRE, DamageType.Kind.NECROTIC, DamageType.Kind.HOLY]:
+		assert_almost_eq(moitie.degats_min[nature], 5.0, 1e-4, "%s : son ajout, à moitié" % DamageType.NAMES[nature])
+	assert_almost_eq(moitie.degats_min[froid], 85.0, 1e-4, "son ajout et la moitié de tout le reste")
+	assert_almost_eq(moitie.total_min(), 160.0, 1e-4)
+
+	var entiere := _sort(100.0).resoudre(1, _fiche(), ajouts, _talents([_conversion("n", froid, 1.0)]))
+	for nature in DamageType.Kind.size():
+		if nature != froid:
+			assert_eq(entiere.degats_min[nature], 0.0, "%s : plus rien" % DamageType.NAMES[nature])
+	assert_almost_eq(entiere.degats_min[froid], 160.0, 1e-4)
+	assert_almost_eq(entiere.convertis[froid], 1.0, 1e-4)
+
+
+## Deux conversions vers deux natures : la seconde, entière, emporte aussi ce que la
+## première avait converti.
+func test_une_conversion_entiere_emporte_la_precedente() -> void:
+	var noeuds := [
+		_conversion("a", DamageType.Kind.COLD, 0.5), _conversion("b", DamageType.Kind.FIRE, 1.0)
+	]
+	var r := _sort(100.0).resoudre(1, _fiche(), [], _talents(noeuds))
+	assert_almost_eq(r.degats_min[DamageType.Kind.FIRE], 100.0, 1e-4)
+	assert_eq(r.degats_min[DamageType.Kind.COLD], 0.0)
+	assert_eq(r.convertis[DamageType.Kind.COLD], 0.0, "la fiche n'annonce plus de froid")
+	assert_almost_eq(r.convertis[DamageType.Kind.FIRE], 1.0, 1e-4)
+
+
 func test_deux_conversions_prennent_leur_part_de_ce_qui_reste() -> void:
 	var noeuds := [
 		_conversion("a", DamageType.Kind.FIRE, 0.5), _conversion("b", DamageType.Kind.FIRE, 0.5)

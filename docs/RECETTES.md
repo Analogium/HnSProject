@@ -209,13 +209,14 @@ Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saig
      règle qu'il modifie** : la mitigation dans `Hurtbox`, la marche dans
      `Enemy.vitesse_de_deplacement()`, la cadence dans `Enemy._cool_down()` et
      `Player._physics_process()`. Jamais une seconde copie de la règle.
-3. **Rien à écrire pour le montrer** : les pastilles, la teinte et l'annonce
-   lisent `Etats.couleur()`, la couleur de sa nature — sauf quand elle ne se lit
-   pas sur un corps, comme le blanc du physique : voir `Etats.SANG`.
+3. **Son icône** : un masque 7×7 dans `IconeDEtat.MASQUES`, à la même place que
+   dans `Sorte`. Le reste — la couleur de l'icône, la teinte et l'annonce — lit
+   `Etats.couleur()`, la couleur de sa nature, sauf quand elle ne se lit pas sur un
+   corps, comme le blanc du physique : voir `Etats.SANG`.
 
 **Ce qui refusera un oubli** — `tests/unit/test_etats.gd :
 test_chaque_nature_pose_un_etat_et_un_seul` (les tables alignées, chaque nature posée
-une fois), `test_chaque_etat_a_sa_couleur` ; `tests/unit/test_traductions.gd`, qui relève
+une fois), `test_chaque_etat_a_sa_couleur`, `test_chaque_etat_a_son_icone` ; `tests/unit/test_traductions.gd`, qui relève
 `Etats.NOMS`.
 
 **Et son nom anglais** dans `i18n/en.po`, section « États ».

@@ -119,8 +119,13 @@ func test_une_secousse_relancee_garde_la_plus_forte() -> void:
 	var cam := _camera()
 	Game.shake_camera(cam, 1.0, 0.4)
 	Game.shake_camera(cam, 12.0, 0.1)
-	await wait_process_frames(2)
-	assert_gt(cam.offset.length(), 1.5, "l'amplitude forte l'emporte")
+	# Le plus grand décalage sur quelques images, et non celui d'une seule : chaque
+	# image tire son décalage au hasard, et une seule peut tomber près de zéro.
+	var plus_grand := 0.0
+	for i in 6:
+		await wait_process_frames(1)
+		plus_grand = maxf(plus_grand, cam.offset.length())
+	assert_gt(plus_grand, 1.5, "l'amplitude forte l'emporte")
 	await wait_seconds(0.5)
 	assert_eq(cam.offset, Vector2.ZERO)
 

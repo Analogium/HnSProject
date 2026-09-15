@@ -143,6 +143,14 @@ func couleurs() -> Array[Color]:
 	return out
 
 
+## Les états présents, du plus ancien au plus récent.
+func sortes() -> Array[int]:
+	var out: Array[int] = []
+	for etat in _etats:
+		out.append(etat.sorte)
+	return out
+
+
 ## Sur les parts **après** défenses. **Un tirage par nature présente, quel que soit le
 ## résultat** (invariant 3).
 func subir(parts: Array[float], auteur: Etats, rng: RandomNumberGenerator) -> void:

@@ -28,7 +28,7 @@ de foudre aux mêmes nombres se jouaient pareil. Ce jalon donne à chaque nature
 - **Sur tout ce qui a une hurtbox et des états** : le joueur comme les ennemis.
   Le joueur en reçoit aujourd'hui des grunts, qui le font saigner, et du caster,
   dont le tir est de froid.
-- **Ce qui se voit** : une pastille par état au-dessus de la barre de vie, la
+- **Ce qui se voit** : une icône par état au-dessus de la barre de vie, la
   couleur du plus récent sur le corps, l'animation ralentie par le gel, le nom
   de l'état qui s'envole au-dessus du joueur atteint, et le chiffre de ce qui
   brûle.
@@ -137,11 +137,14 @@ suivre.
 
 ## 5. Ce qui se voit
 
-- **Les pastilles.** Une par état, dans la couleur de sa nature, au-dessus de la
-  barre de vie. **Sauf le saignement**, rouge sang : le blanc chaud du physique,
-  posé sur un corps, se lirait comme le flash d'un coup reçu. Elles tiennent la
+- **Les icônes.** Une par état au-dessus de la barre de vie, un masque de 7×7
+  cerné de noir — flamme, éclair, flocon, crâne, croix, goutte —, dans la couleur
+  de sa nature. **Sauf le saignement**, rouge sang : le blanc chaud du physique,
+  posé sur un corps, se lirait comme le flash d'un coup reçu. La forme porte plus
+  que la couleur, embrasement et saignement étant deux rouges. Elles tiennent la
   barre visible même à pleine vie : un ennemi remonté à fond reste transi, et
-  c'est justement ce qu'on regarde.
+  c'est justement ce qu'on regarde. Les noms d'affixes sont remontés de quatre
+  pixels pour leur laisser la place.
 - **La teinte.** La couleur du plus récent des états, mêlée au corps selon sa
   luminosité : le contour noir reste noir. **C'est l'inverse de la règle des
   affixes**, qui pose un liseré pour ne pas voler sa couleur à l'archétype, et
@@ -149,7 +152,7 @@ suivre.
   se lire d'un coup d'œil dans un paquet.
 - **Le nom de l'état, au-dessus du joueur seulement**, à l'apparition et pas au
   rafraîchissement. Sur soixante-dix ennemis, les mots couvriraient l'écran, et
-  leurs pastilles le disent déjà.
+  leurs icônes le disent déjà.
 - **Le chiffre de ce qui brûle**, par paquets d'une demi-seconde comme la brûlure
   d'Immolation : rouge sur le joueur, blanc sur un ennemi, chacun derrière la case
   de son côté dans les options. La dernière demi-seconde d'un embrasement est
@@ -179,19 +182,33 @@ cycle de dépendances.
 celle des états n'avancent pas sur la même horloge : partagé, un paquet compterait
 deux fois l'image où les deux brûlent.
 
+**La conversion prend toutes les natures du coup**, et non plus la seule nature de
+la compétence comme au jalon 10. Un sort de foudre avec un ajout de froid, converti
+à 100 % en feu, gardait son froid et pouvait donc geler : « tout converti » doit
+vouloir dire une seule nature, donc un seul état possible. À 50 %, chaque nature,
+ajouts compris, garde la moitié de ce qu'elle portait. Une conversion entière
+emporte aussi ce qu'une précédente avait converti ailleurs. C'est la forme que
+prendra un « convertit 50 % de tous les dégâts » d'un arbre de passifs, qui n'aura
+qu'à appeler `convertir()`. Rien ne change pour le contenu actuel : ses nœuds
+convertissent des compétences sans ajout d'une autre nature.
+
 ---
 
 ## 7. Ce qui refusera un oubli
 
 - `tests/unit/test_etats.gd` — les tables couvrent chaque nature une fois, chaque
-  état a sa couleur, tous se portent ensemble, un tirage par nature présente, la chance partagée selon les parts, les
+  état a sa couleur et son icône, tous se portent ensemble, un tirage par nature
+  présente, la chance partagée selon les parts, les
   facteurs, la durée et son rafraîchissement, le plus fort qui l'emporte, la
   pourriture qui soigne, les pourritures croisées qui ne fuient pas, les paquets
   d'affichage.
 - `tests/integration/test_etats_en_jeu.gd` — la hurtbox (engourdissement,
   bénédiction avant l'armure, pose, saignement d'un coup physique), l'ennemi qui
   meurt de sa brûlure et rapporte, le gel sur la marche, la recharge et
-  l'animation, le soin, les pastilles et la teinte, l'annonce au-dessus du joueur,
-  l'engourdissement sur Immolation, le tir d'un joueur béni, la mort qui vide.
+  l'animation, le soin, les icônes et la teinte, l'annonce au-dessus du joueur,
+  l'engourdissement sur Immolation, le tir d'un joueur béni, la mort qui vide, le
+  coup converti qui ne pose que ce qu'il porte.
+- `tests/unit/test_talents.gd` — la conversion qui emporte les ajouts de toutes les
+  natures, l'entière qui emporte la précédente.
 - `tests/integration/test_formes.gd : test_la_chaine_frappe_au_nom_de_son_lanceur`.
 - `tests/unit/test_traductions.gd` relève `Etats.NOMS`.

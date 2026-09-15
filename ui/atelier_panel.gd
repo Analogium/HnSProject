@@ -1,31 +1,14 @@
 class_name AtelierPanel
 extends Control
 
-## L'établi : fabriquer un objet précis et le poser au sol, pour régler et
-## éprouver sans attendre qu'il tombe.
-##
-## Et lâcher des boules d'expérience, pour monter de niveau sans y passer des heures
-## — mais en les ramassant, par le chemin d'une mort : les manuels apprennent avec.
-##
-## **Outil de réglage, à retirer avant publication.** Il tient en quatre attaches :
-## le nœud `UI/Atelier` de la zone, la touche B, et les branchements de
-## `drop_requested` et `orbes_demandees`. Rien d'autre du jeu ne le connaît.
-##
-## Il ne fabrique que des objets que le jeu **pourrait** produire : les affixes
-## proposés sont ceux que la base accepte, les paliers ceux que le niveau d'objet
-## ouvre, et le compte est borné par la table des poids. Un établi qui
-## fabriquerait l'impossible ferait chasser des bugs qui n'existent pas.
-##
-## Il ne tire **rien** au hasard : les valeurs sont le haut de la fourchette du
-## palier. Passer par `Game.rng` décalerait toutes les graines de zone tirées
-## ensuite (invariant 3), et un outil de réglage n'a pas à changer la partie
-## qu'on règle.
+## L'établi (B) : fabriquer un objet précis et le poser au sol, ou lâcher des boules
+## d'expérience. **Outil de réglage à retirer avant publication** : le nœud
+## `UI/Atelier`, la touche B et deux signaux. Il ne fabrique que ce que le jeu pourrait
+## produire, et ne tire rien au hasard (haut des fourchettes, invariant 3).
 
-## Ce qu'on fabrique et qu'on veut voir tomber. C'est la zone qui le pose, par le
-## même chemin que ce qu'on jette du sac.
+## Posé par la zone, comme ce qu'on jette du sac.
 signal drop_requested(item: Item)
-## Des boules d'expérience à poser autour du joueur. C'est la zone qui les pose : elle
-## seule connaît le niveau qui fait leur valeur.
+## Posées par la zone, qui connaît le niveau.
 signal orbes_demandees(nombre: int)
 
 const PAD := 6.0
@@ -36,12 +19,8 @@ const HEADER := 16.0
 ## Largeur de la colonne des bases. Assez pour le plus long nom du catalogue.
 const COL := 150.0
 
-## Le plafond vient de la table des poids et n'est pas réécrit ici : le jour où
-## un objet pourra porter sept affixes, l'établi le saura sans qu'on y touche.
-##
-## Une fonction et non une constante : `COUNT_WEIGHTS.size()` n'est pas repliable
-## à la compilation, et une `const` bâtie dessus reste introuvable depuis un autre
-## script — c'est le test qui l'a découvert.
+## Le plafond vient de la table des poids. Une fonction : une `const` bâtie sur
+## `size()` reste introuvable depuis un autre script.
 static func maximum_d_affixes() -> int:
 	return ItemAffixPool.COUNT_WEIGHTS.size() - 1
 
@@ -53,19 +32,12 @@ const BOUTON := Color(0.18, 0.17, 0.23)
 var _font: Font
 var _base := 0
 var _page := 0
-## La page de la liste des affixes. Un bijou en accepte plus de vingt, et une
-## liste coupée au bas du panneau cacherait des affixes qu'on croirait absents de
-## la réserve.
+## La page des affixes : un bijou en accepte plus de vingt.
 var _page_affixes := 0
 var _niveau := 1
-## Identifiant d'affixe → indice de palier, **0 étant le meilleur**, comme dans
-## `ItemAffix.tiers`. Vidé dès que la base change : un affixe compatible avec une
-## épée ne l'est pas forcément avec des bottes.
+## Affixe → palier, **0 étant le meilleur**. Vidé quand la base change.
 var _choisis := {}
-## Les zones cliquables de la dernière mise en page : rectangle, action, texte.
-## Construites par `_disposer()`, que le dessin **et** le clic appellent — deux
-## mises en page calculées séparément finiraient par ne plus se superposer, et
-## c'est le clic qui tomberait à côté.
+## Les zones cliquables, par `_disposer()` : le dessin et le clic lisent la même.
 var _lignes: Array[Dictionary] = []
 var _survol := ""
 
@@ -108,9 +80,7 @@ func compatibles() -> Array:
 	return ItemAffixPool.compatibles(base_courante())
 
 
-## L'objet tel qu'il est réglé, ou null. Reconstruit à chaque appel : c'est un
-## outil, pas une boucle de jeu, et un exemplaire retenu se désynchroniserait du
-## panneau au premier clic.
+## Reconstruit à chaque appel : un exemplaire retenu se désynchroniserait.
 func fabriquer() -> Item:
 	var base := base_courante()
 	if base == null:
@@ -133,14 +103,11 @@ func choisir_base(index: int) -> void:
 		return
 	_base = index
 	_page_affixes = 0
-	# Les affixes suivaient l'ancienne base : les garder poserait un « allonge »
-	# sur une paire de bottes, c'est-à-dire exactement ce que l'établi refuse.
+	# Les affixes suivaient l'ancienne base.
 	_choisis.clear()
 
 
-## Change le niveau d'objet et **élague** ce qui n'est plus atteignable. Sans cet
-## élagage, descendre le niveau laisserait un palier trop haut sur l'objet : il
-## sortirait de l'établi un objet que le jeu ne peut pas produire.
+## **Élague** ce qui n'est plus atteignable, sinon l'objet serait impossible.
 func changer_niveau(delta: int) -> void:
 	_niveau = clampi(_niveau + delta, 1, 100)
 	for id in _choisis.keys():
@@ -149,9 +116,7 @@ func changer_niveau(delta: int) -> void:
 			_choisis.erase(id)
 
 
-## Fait tourner un affixe : absent, puis chaque palier ouvert du meilleur au
-## pire, puis absent de nouveau. Un seul geste pour les trois questions —
-## le veut-on, à quel palier, et l'enlève-t-on.
+## Absent, chaque palier ouvert du meilleur au pire, puis absent.
 func basculer_affixe(id: String) -> void:
 	var affixe := ItemAffixPool.by_id(id)
 	if affixe == null:
@@ -216,9 +181,7 @@ func _ajouter(rect: Rect2, action: String, texte: String, teinte: Color) -> void
 	_lignes.append({"rect": rect, "action": action, "texte": texte, "teinte": teinte})
 
 
-## Construit les lignes cliquables **et** ce qu'elles affichent. Appelée par le
-## dessin et par le clic : c'est ce qui garantit qu'on clique bien sur ce qu'on
-## voit.
+## Lignes cliquables **et** texte, pour le dessin comme pour le clic.
 func _disposer() -> void:
 	_lignes.clear()
 	var droite := PAD + COL + PAD
@@ -275,9 +238,7 @@ func _disposer() -> void:
 			teinte = CHOISI
 		else:
 			teinte = UiPalette.TEXTE
-		# Le « (%) » dit lequel des deux on pose quand deux affixes visent le même
-		# champ, l'un à plat, l'autre en pourcentage. L'identifiant ne tient plus à
-		# côté d'un nom comme « dégâts nécrotiques aux attaques ».
+		# « (%) » distingue un affixe à plat de son pendant en pourcentage.
 		_ajouter(
 			Rect2(droite, ya, largeur_droite, LINE), "affixe:%s" % affixe.id,
 			"%s%s|%s" % [
@@ -328,8 +289,7 @@ func _input(event: InputEvent) -> void:
 	var bouton := souris as InputEventMouseButton
 	if not bouton.pressed or bouton.button_index != MOUSE_BUTTON_LEFT:
 		return
-	# Hors de la fenêtre, le clic ne nous appartient pas : il doit rester
-	# disponible pour le panneau ouvert à côté.
+	# Hors de la fenêtre, le clic reste au panneau voisin.
 	if not Rect2(Vector2.ZERO, size).has_point(bouton.position):
 		return
 
@@ -338,8 +298,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Le seul endroit qui traduit un clic en changement d'état. Publique pour que le
-## test rejoue les gestes sans déplacer la souris de l'écran.
+## Le seul endroit qui traduit un clic ; publique pour le test.
 func _appliquer(action: String) -> void:
 	if action.is_empty():
 		return
@@ -393,8 +352,7 @@ func _draw() -> void:
 				or action.begins_with("orbes:"):
 			draw_rect(r, BOUTON)
 			draw_rect(r, UiPalette.BORDER, false, 1.0)
-		# Le séparateur « | » sépare l'intitulé de son état : le premier à gauche,
-		# le second calé à droite, pour que la colonne des paliers s'aligne.
+		# Intitulé à gauche, état calé à droite, séparés par « | ».
 		var texte := String(ligne["texte"])
 		var teinte: Color = ligne["teinte"]
 		if texte.contains("|"):
