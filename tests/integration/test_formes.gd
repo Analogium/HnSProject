@@ -108,6 +108,21 @@ func test_la_chaine_ne_saute_pas_plus_loin_que_sa_portee() -> void:
 	assert_eq(_coups(trop_loin), 0, "hors de portée d'un saut")
 
 
+## L'auteur voyage avec les formes, qui ne naissent pas d'une collision : un lanceur
+## béni frappe moins fort par sa chaîne comme par son épée.
+func test_la_chaine_frappe_au_nom_de_son_lanceur() -> void:
+	_apprendre("manuel_foudre", ["chaine_d_eclairs"])
+	var cible := _cible(Vector2(60, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.lancer(2))
+	_p._recharges[2] = 0.0
+	_p.etats.poser(Etats.Sorte.BENEDICTION, 1.0)
+	assert_true(_p.lancer(2))
+	assert_eq(_coups(cible), 2)
+	assert_almost_eq(float(_recus[cible][1]), float(_recus[cible][0]) * (1.0 - Etats.BENEDICTION), 0.001)
+
+
 ## Sans cible dans le cône, elle part quand même : un sort payé qui ne montre rien
 ## se lirait comme une touche morte.
 func test_la_chaine_part_dans_le_vide_sans_cible_devant() -> void:

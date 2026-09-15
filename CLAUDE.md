@@ -5,6 +5,16 @@ compris pour tout ce qui est né après le jalon 3. Lire
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) avant de toucher au code : ses huit
 invariants sont les seules choses du dépôt qui cassent en silence.
 
+## La doc d'abord, le code ensuite
+
+Chercher **où vit une règle** dans la table de
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) et **comment refaire un geste** dans
+[docs/RECETTES.md](docs/RECETTES.md), puis ne lire que les lignes de code visées —
+`grep`, lecture par plage — plutôt que des fichiers entiers.
+
+**Une livraison met la doc à jour dans le même geste.** Une ligne d'ARCHITECTURE
+qui ment oblige la session suivante à relire le code pour retrouver la vérité.
+
 ## Ce qu'il ne faut jamais faire
 
 **Ne jamais lancer Godot sur le dossier de travail.** L'utilisateur a son éditeur
@@ -83,7 +93,9 @@ jeu se met à ressembler à du lag ; c'est `Game.hit_stop_periode` qui le tient.
 - **Les commentaires disent le *pourquoi*.** Ce que fait le code se lit dans le
   code. L'utilisateur trouve qu'il y en a trop : écrire le piège, le chiffre
   mesuré et l'arbitrage — pas l'historique du fichier, que git retient déjà, ni
-  la paraphrase de la ligne d'en dessous.
+  la paraphrase de la ligne d'en dessous. **Trois lignes au plus** en règle
+  générale : le raisonnement complet d'un arbitrage va dans le document du jalon,
+  et le commentaire s'y réduit à la conclusion.
 - **Un chiffre de performance s'écrit après l'avoir mesuré.** Jamais avant.
 - **Les tableaux packés se justifient par une mesure.** Partout ailleurs, une
   petite classe aux champs nommés. `p[9]` oblige à compter les colonnes.

@@ -48,9 +48,13 @@ static func a_vue(monde: World2D, de: Vector2, vers: Vector2) -> bool:
 ## Par `Hurtbox.take_damage()`, comme tous les coups du jeu (invariant 5). Les parts
 ## sont recopiées par `en_parts()` : la mitigation écrit dans les siennes, et la
 ## cible suivante recevrait sinon ce qui reste après l'armure de la première.
-static func frapper(cible: Hurtbox, parts: Array[float], depuis: Vector2) -> void:
+##
+## L'auteur voyage avec le coup : ses états changent ce qu'il inflige.
+static func frapper(cible: Hurtbox, parts: Array[float], depuis: Vector2, auteur: Etats) -> void:
 	if is_instance_valid(cible):
-		cible.take_damage(DamageInfo.en_parts(parts, depuis))
+		var info := DamageInfo.en_parts(parts, depuis)
+		info.auteur = auteur
+		cible.take_damage(info)
 
 
 ## Qui a été touché et quand il pourra l'être à nouveau, pour ce qui frappe au

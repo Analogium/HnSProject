@@ -1,75 +1,39 @@
 class_name Manuel
 extends RefCounted
 
-## Ce qu'un exemplaire de manuel a appris : son expérience, et les points placés
-## dans ses cases, ses passifs et les nœuds de ses arbres. **Un par manuel
-## ramassé.**
-##
-## Son **niveau n'est pas ici** : `niveau()` le déduit de l'expérience à chaque
-## appel. Le retenir créerait la deuxième vérité que la sauvegarde refuse partout
-## ailleurs — elle n'écrit ni PV, ni statistiques, ni total d'attributs.
-##
-## RefCounted et non Resource, pour la raison qui a fait ce choix sur `Item` et
-## `Personnage` : ceci n'est pas un fichier du projet mais l'état d'un objet de
-## la partie, et une Resource sauvegardée porte des chemins de scripts qu'elle
-## exécute au chargement.
-##
-## Il ne connaît pas son archétype. C'est l'objet qui porte les deux — sa base
-## sait quel livre c'est, son manuel sait ce qu'il en a tiré — et les règles qui
-## ont besoin des deux reçoivent l'archétype en argument, comme
-## `Competence.resoudre()` reçoit la fiche. Une référence en retour serait un
-## deuxième chemin vers la même information.
+## Ce qu'un exemplaire de manuel a appris : son expérience et ses points placés. Son
+## niveau se déduit, jamais retenu. RefCounted comme `Item` ; il ne connaît pas son
+## archétype, que les règles reçoivent en argument.
 
-## La courbe du manuel : sa propre base et sa propre puissance, sur la forme
-## partagée avec le personnage. Réglées sur ce que rapporte une zone — un grunt
-## de niveau 1 vaut onze points — pour qu'un livre neuf monte d'un niveau en une
-## poignée d'ennemis et de trois en une zone, puis ralentisse franchement.
-##
-## **Premier réglage, à sentir en jouant** : l'équilibrage fin est hors jalon, et
-## ces deux nombres sont le premier endroit où revenir quand la progression
-## paraîtra molle ou galopante.
+## La courbe du manuel. Premier réglage : un livre neuf monte d'un niveau en une
+## poignée d'ennemis, de trois en une zone.
 const XP_BASE := 90.0
 const XP_PUISSANCE := 1.25
 
-## Vingt niveaux, donc vingt points — et **un manuel ne se remplit plus** depuis
-## le jalon 10 : ses cases, son passif et les nœuds de ses arbres se servent dans
-## le même sac, et le manuel de la foudre offre soixante-quatre destinations pour
-## ces vingt points.
-##
-## C'est le plafond qui fait du livre un choix plutôt qu'une collection à
-## compléter, et c'est ce qui distingue deux exemplaires du même manuel.
+## Vingt niveaux, vingt points, pour bien plus de destinations : le plafond fait du
+## livre un choix plutôt qu'une collection.
 const NIVEAU_MAX := 20
 
-## L'expérience **totale** accumulée par ce livre. Totale et non « depuis le
-## dernier niveau » : c'est elle qu'on écrit, et le niveau s'en déduit.
+## L'expérience **totale** : c'est elle qu'on écrit.
 var experience := 0
 
-## Points placés, par identifiant : les cases, les passifs et les nœuds d'arbre
-## s'y mélangent, parce que ce sont les mêmes points. Les identifiants partent sur
-## le disque : ils ne se renomment jamais, et deux d'entre eux ne peuvent pas se
-## confondre dans un même livre (invariant 1).
-##
-## En lecture seule de fait : on y entre par `investir()` et par `reprendre()`,
-## qui portent toutes les conditions. Y écrire à la main donnerait un manuel qui
-## doit des points à personne.
+## Points placés par identifiant : cases, passifs et nœuds partagent ce dictionnaire
+## et ne doivent jamais se confondre (invariant 1). On y entre par `investir()` et
+## `reprendre()`, qui portent les conditions.
 var points := {}
 
 
-## Le niveau atteint, **déduit** de l'expérience à chaque appel. Jamais retenu :
-## deux vérités sur le même nombre, et c'est le rechargement qui choisit.
+## Déduit à chaque appel, jamais retenu.
 func niveau() -> int:
 	return Progression.niveau_atteint(experience, XP_BASE, XP_PUISSANCE, NIVEAU_MAX)
 
 
-## Ce qu'il reste à gagner avant le niveau suivant, et le coût de ce niveau —
-## de quoi dessiner la barre du haut de la page sans la recalculer à l'écran.
+## Ce qu'il reste avant le niveau suivant, et le coût de ce niveau.
 func avancement() -> Vector2i:
 	return Progression.avancement(experience, XP_BASE, XP_PUISSANCE, NIVEAU_MAX)
 
 
-## **Un point par niveau, le premier compris.** Un livre tout juste ramassé a donc
-## de quoi ouvrir une case : sans ça, sa page ne ferait rien du tout à la première
-## ouverture, ce qui se lit comme une panne plutôt que comme une attente.
+## Un point par niveau, le premier compris : un livre neuf ouvre une case.
 func points_gagnes() -> int:
 	return niveau()
 
@@ -78,8 +42,7 @@ func points_restants() -> int:
 	return points_gagnes() - points_places()
 
 
-## Le seul chemin par lequel un manuel apprend. Appelé pour chaque manuel du
-## râtelier à la mort d'un ennemi — jamais pour celui qui dort dans le sac.
+## Le seul chemin : les manuels du râtelier, à chaque récompense.
 func gagner_experience(montant: int) -> void:
 	if montant > 0:
 		experience += montant
@@ -89,8 +52,7 @@ func points_de(identifiant: String) -> int:
 	return int(points.get(identifiant, 0))
 
 
-## Le total placé, tous points confondus. Utile à la page et au test qui vérifie
-## qu'un manuel n'a pas dépensé plus qu'il n'a gagné.
+## Tous points confondus.
 func points_places() -> int:
 	var total := 0
 	for id in points:
@@ -98,14 +60,8 @@ func points_places() -> int:
 	return total
 
 
-## Peut-on placer un point de plus là ? **Toutes les conditions sont ici**, pour
-## les trois sortes de destination — une case, un passif, un nœud d'arbre — et
-## l'appelant n'en vérifie aucune de son côté : une interface qui refait le test
-## finit par en oublier un, et c'est le clic qui donne le point de trop.
-##
-## L'archétype est passé en argument plutôt que retenu : un manuel est l'état
-## d'un exemplaire, il ne connaît pas le livre dont il vient — c'est l'objet qui
-## porte les deux.
+## **Toutes les conditions sont ici**, pour les trois sortes de destination :
+## l'interface n'en vérifie aucune.
 func peut_investir(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return (
 		points_restants() > 0
@@ -114,14 +70,8 @@ func peut_investir(archetype: ManuelArchetype, identifiant: String) -> bool:
 	)
 
 
-## Les conditions **structurelles** : le niveau du livre pour une case ou un
-## passif, les points de la compétence et l'état du parent pour un nœud. Ni le
-## maximum, ni les points qui restent.
-##
-## Séparée de `peut_investir()` pour la page, qui doit distinguer « verrouillé »
-## de « ouvert, mais tu n'as plus de point à placer » — deux états qu'un joueur
-## ne lit pas de la même façon. Le distinguer dans le dessin aurait recopié la
-## règle là où elle finit par diverger.
+## Les conditions **structurelles** seules : la page distingue « verrouillé » de
+## « plus de point à placer ».
 func est_ouvert(archetype: ManuelArchetype, identifiant: String) -> bool:
 	if archetype == null:
 		return false
@@ -134,10 +84,7 @@ func est_ouvert(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return _noeud_ouvert(archetype, identifiant)
 
 
-## Un nœud s'ouvre sur les points de **sa compétence**, pas sur le niveau du
-## livre : un arbre s'achète après le sort, jamais à sa place. Et son parent doit
-## porter au moins un point — un nœud accroché à un nœud éteint s'ouvrirait sans
-## que le lien dessiné veuille dire quoi que ce soit.
+## Sur les points de sa compétence, et son parent doit en porter un.
 func _noeud_ouvert(archetype: ManuelArchetype, id_noeud: String) -> bool:
 	var noeud := archetype.noeud_de(id_noeud)
 	if noeud == null:
@@ -150,8 +97,7 @@ func _noeud_ouvert(archetype: ManuelArchetype, id_noeud: String) -> bool:
 	return noeud.parent.is_empty() or points_de(noeud.parent) > 0
 
 
-## Combien de points cet identifiant accepte, quelle que soit sa sorte. Zéro pour
-## ce que le livre ne connaît pas, ce qui suffit à tout refuser.
+## Zéro pour ce que le livre ne connaît pas.
 func _maximum(archetype: ManuelArchetype, identifiant: String) -> int:
 	var case := archetype.case_de(identifiant)
 	if case != null:
@@ -171,16 +117,9 @@ func investir(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return true
 
 
-## Peut-on reprendre un point ? Dans une case, un passif ou un nœud d'arbre.
-##
-## **Décidé le 14 septembre 2026, sur demande**, contre la règle du jalon 10 qui
-## ne rendait que les points d'arbre : un point placé se reprend partout, et
-## revient au livre.
-##
-## Deux refus, qui empêchent chacun un arbre de rester accroché dans le vide :
-## - un nœud dont un enfant porte encore des points ;
-## - une compétence qui descendrait sous les points qu'un de ses nœuds investis
-##   demande — le nœud garderait des points qu'on ne pourrait plus y placer.
+## Un point se reprend partout (décidé le 14 septembre 2026), sauf un nœud dont un
+## enfant porte des points, et une compétence qui passerait sous les points qu'un de
+## ses nœuds investis demande.
 func peut_reprendre(archetype: ManuelArchetype, identifiant: String) -> bool:
 	if archetype == null or points_de(identifiant) <= 0:
 		return false
@@ -203,11 +142,8 @@ func peut_reprendre(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return true
 
 
-## Rend le point **au livre**, jamais au personnage : il se replace ailleurs dans
-## le même manuel, et pas dans un autre.
-##
-## L'entrée est effacée à zéro plutôt que laissée à zéro : c'est ce que la
-## sauvegarde écrit, et un fichier qui liste des nœuds vides se lit mal.
+## Rend le point **au livre** ; l'entrée est effacée à zéro, comme l'écrit la
+## sauvegarde.
 func reprendre(archetype: ManuelArchetype, identifiant: String) -> bool:
 	if not peut_reprendre(archetype, identifiant):
 		return false
@@ -219,9 +155,7 @@ func reprendre(archetype: ManuelArchetype, identifiant: String) -> bool:
 	return true
 
 
-## Les nœuds de cette compétence où l'on a placé au moins un point, avec leurs
-## points. C'est ce que la résolution d'un lancer consomme, et elle n'a pas à
-## savoir qu'un nœud vide existe.
+## Les nœuds investis de cette compétence, avec leurs points.
 func talents_investis(archetype: ManuelArchetype, id_competence: String) -> Array[TalentInvesti]:
 	var out: Array[TalentInvesti] = []
 	if archetype == null:
@@ -236,9 +170,7 @@ func talents_investis(archetype: ManuelArchetype, id_competence: String) -> Arra
 	return out
 
 
-## Ce que les passifs de ce livre donnent, dans la forme qu'un objet porté donne
-## déjà : c'est le même tri qui les range ensuite entre la fiche et les
-## compétences, et donc la même règle qui les empêche de compter deux fois.
+## Dans la forme d'un objet porté : le même tri les range ensuite.
 func mods_de_passifs(archetype: ManuelArchetype) -> Array[StatMod]:
 	var out: Array[StatMod] = []
 	if archetype == null:

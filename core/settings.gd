@@ -1,27 +1,18 @@
 extends Node
 
-## Les réglages du joueur, distincts de Game qui porte l'état de la partie.
-##
-## Un signal plutôt qu'une lecture directe : avec trois cents barres de vie à
-## l'écran, faire interroger le réglage par chacune à chaque image se paierait
-## pour une valeur qui change une fois par heure.
-##
-## **Ils survivent à la fermeture du jeu.** Un réglage qui se remet à zéro à
-## chaque lancement n'est pas un réglage, c'est une case à recocher.
+## Les réglages du joueur — `Game` porte la partie —, écrits sur le disque. Par
+## signal : trois cents barres de vie n'ont pas à relire le réglage à chaque image.
 
 signal changed
 
-## Distinct des sauvegardes de personnages : ces réglages valent pour la machine,
-## et supprimer un héros ne doit pas remettre la fenêtre à sa taille d'origine.
+## Distinct des personnages : ces réglages valent pour la machine.
 const FICHIER := "user://reglages.json"
 
-## Ce que « plein écran » vaut dans `echelle`. Zéro et non -1 : c'est l'absence
-## de facteur de zoom, pas un facteur négatif.
+## Ce que « plein écran » vaut dans `echelle`.
 const PLEIN_ECRAN := 0
 
-## Les deux langues du jeu. Le **français est la langue source** : le code écrit
-## ses textes en français et ils servent de clés, donc il n'existe pas de fichier
-## de traduction française. L'anglais vit dans `i18n/en.po`.
+## Le français est la langue source : ses textes sont les clés, l'anglais vit dans
+## `i18n/en.po`.
 const FRANCAIS := "fr"
 const ANGLAIS := "en"
 
@@ -43,10 +34,8 @@ var show_affix_names := true:
 		changed.emit()
 		_ecrire()
 
-## Les chiffres de dégâts qui s'envolent : au-dessus du personnage pour ce qu'il
-## subit, brûlure comprise, au-dessus des ennemis pour ce qu'on leur inflige. Deux
-## cases et non une : on veut souvent lire ce qu'on inflige sans que ce qu'on
-## encaisse brouille l'écran, ou l'inverse.
+## Deux cases : ce que subit le joueur, brûlures comprises, et ce que subissent
+## les ennemis.
 var degats_subis_visibles := true:
 	set(value):
 		if value == degats_subis_visibles:
@@ -64,18 +53,12 @@ var degats_infliges_visibles := true:
 		_ecrire()
 
 
-## Faut-il écrire le chiffre d'un coup encaissé de ce côté ? Le choix entre les deux
-## cases est ici et nulle part ailleurs : le coup, l'esquive et la brûlure le posent
-## chacun.
+## Le choix entre les deux cases, ici et nulle part ailleurs.
 func montre_les_degats(sur_le_joueur: bool) -> bool:
 	return degats_subis_visibles if sur_le_joueur else degats_infliges_visibles
 
-## La langue de l'interface, « fr » ou « en ». La poser change la locale du
-## moteur : c'est lui qui traduit, les `Label` des scènes se retraduisent seuls et
-## les panneaux dessinés reçoivent `NOTIFICATION_TRANSLATION_CHANGED`.
-##
-## Toujours normalisée : une valeur venue d'un fichier trafiqué ferait chercher au
-## moteur des traductions qui n'existent pas.
+## « fr » ou « en », toujours normalisée. La poser change la locale du moteur, qui
+## retraduit les scènes et notifie les panneaux dessinés.
 var langue := FRANCAIS:
 	set(value):
 		var choisie := normaliser(value)
@@ -86,19 +69,9 @@ var langue := FRANCAIS:
 		changed.emit()
 		_ecrire()
 
-## Le facteur d'agrandissement de la fenêtre, ou PLEIN_ECRAN.
-##
-## **Le jeu remplit toujours la fenêtre**, quelle qu'elle soit : `stretch/mode`
-## vaut `canvas_items` et l'échelle est fractionnaire, donc redimensionner à la
-## main donne une image qui occupe tout, sans bande noire.
-##
-## Ces facteurs entiers ne sont donc pas une contrainte mais un **raccourci vers
-## les tailles nettes** : à 2,5× une ligne de pixels sur deux est doublée et
-## l'autre triplée, ce qui se voit sur un sprite de trente-deux pixels. Le bord de
-## la fenêtre reste libre pour qui préfère remplir son écran au pixel près.
-##
-## Pas de signal `changed` : les barres de vie n'ont rien à réapprendre parce que
-## la fenêtre a grandi.
+## Le facteur de la fenêtre, ou PLEIN_ECRAN. Le jeu remplit toujours la fenêtre
+## (échelle fractionnaire) : ces facteurs sont des raccourcis vers les tailles
+## nettes. Pas de signal `changed` : rien n'a à y réagir.
 var echelle := 2:
 	set(value):
 		var borne := clampi(value, PLEIN_ECRAN, echelle_maximale())
@@ -112,23 +85,14 @@ var echelle := 2:
 		_appliquer()
 		_ecrire()
 
-## Vrai pendant la lecture du fichier : sans ce garde-fou, chaque champ relu
-## réécrirait le fichier qu'on est en train de lire.
+## Pendant la lecture : sans lui, chaque champ relu réécrirait le fichier.
 var _chargement := false
 
 
-## **On n'impose la taille que si le joueur l'a choisie.**
-##
-## Sans fichier de réglages, la fenêtre reste celle que l'environnement a posée et
-## on se contente de lire le facteur qu'elle représente, pour que le bouton des
-## options ne mente pas. Autrement le jeu écraserait au démarrage toute taille
-## qu'il n'a pas décidée — celle du cadre de jeu intégré à l'éditeur, par
-## exemple, qui a son propre sélecteur.
-##
-## La langue suit la même règle : celle du système au premier lancement, celle du
-## joueur ensuite. Elle est posée **en mode chargement**, donc sans rien écrire :
-## un premier lancement qui créerait le fichier ferait passer la taille de fenêtre
-## par défaut pour un choix, dès le lancement suivant.
+## **On n'impose la taille que si le joueur l'a choisie** : sans fichier, on lit le
+## facteur de la fenêtre en place (le cadre de l'éditeur a son propre sélecteur).
+## La langue suit la même règle, posée sans écrire : un premier lancement ne doit
+## pas créer un fichier qui ferait passer les défauts pour un choix.
 func _ready() -> void:
 	var choisie := FileAccess.file_exists(FICHIER)
 
@@ -137,9 +101,7 @@ func _ready() -> void:
 	_chargement = false
 	_charger()
 
-	# Dans tous les cas, et pas seulement quand la valeur a changé : le moteur
-	# doit tourner sur « fr » ou « en » exactement, jamais sur le « fr_CA » que le
-	# système a pu poser.
+	# Toujours : le moteur doit tourner sur « fr » ou « en », jamais sur « fr_CA ».
 	TranslationServer.set_locale(langue)
 
 	if choisie:
@@ -155,22 +117,15 @@ func _ready() -> void:
 # La langue
 # --------------------------------------------------------------------------
 
-## Ramène une locale quelconque à l'une des deux langues du jeu : tout ce qui
-## commence par « fr » donne le français, tout le reste l'anglais.
-##
-## Sans elle, un Windows en allemand demanderait au moteur une traduction
-## allemande qui n'existe pas ; il afficherait alors les clés, c'est-à-dire du
-## français — la bonne langue par accident, et pour un joueur sur deux la mauvaise.
-##
-## Pure et statique : le test ne doit pas dépendre de la langue de la machine qui
-## le lance.
+## Ce qui commence par « fr » donne le français, le reste l'anglais : un système
+## allemand afficherait sinon les clés. Statique, pour que le test ne dépende pas
+## de la machine.
 static func normaliser(locale: String) -> String:
 	return FRANCAIS if locale.to_lower().begins_with(FRANCAIS) else ANGLAIS
 
 
-## Ce que le bouton affiche : la langue en cours, **écrite dans cette
-## langue-là**, et jamais traduite. Un joueur tombé dans une langue qu'il ne lit
-## pas doit reconnaître la sienne dans la ronde.
+## La langue en cours écrite dans cette langue, jamais traduite : un joueur perdu
+## doit reconnaître la sienne.
 const LIBELLES_DE_LANGUE := {
 	FRANCAIS: "Langue : Français",
 	ANGLAIS: "Language: English",
@@ -185,15 +140,12 @@ func libelle_de_langue_courante() -> String:
 	return libelle_de_langue(langue)
 
 
-## La suivante dans la ronde. Deux langues, donc une bascule — mais écrite comme
-## une ronde, pour que la troisième n'oblige pas à revoir les deux boutons qui
-## l'appellent.
+## Écrite comme une ronde : une troisième langue ne touchera pas aux boutons.
 static func langue_suivante(courante: String) -> String:
 	return ANGLAIS if normaliser(courante) == FRANCAIS else FRANCAIS
 
 
-## Passe à la langue suivante. Appelée par les Options et par l'écran des
-## personnages, les deux seuls endroits où le joueur peut changer.
+## Appelée par les options et par l'écran des personnages.
 func cycler_langue() -> void:
 	langue = langue_suivante(langue)
 
@@ -202,9 +154,7 @@ func cycler_langue() -> void:
 # La taille de la fenêtre
 # --------------------------------------------------------------------------
 
-## La taille à laquelle le jeu est dessiné, lue dans les réglages du projet et
-## non recopiée ici : c'est elle qui décide de tout le reste, et deux définitions
-## de 640 × 360 finiraient par se contredire.
+## Lue dans les réglages du projet, jamais recopiée.
 static func taille_de_base() -> Vector2i:
 	return Vector2i(
 		int(ProjectSettings.get_setting("display/window/size/viewport_width", 640)),
@@ -212,22 +162,14 @@ static func taille_de_base() -> Vector2i:
 	)
 
 
-## Le plus grand facteur entier qui tient dans cet écran. Pure et statique : le
-## test ne doit pas dépendre de l'écran de la machine qui le lance.
-##
-## Au moins 1 : une machine dont l'écran serait plus petit que le cadrage du jeu
-## doit quand même pouvoir le lancer, quitte à ce qu'il déborde.
+## Au moins 1, même sur un écran plus petit que le cadrage. Statique, pour le test.
 static func echelle_qui_tient(ecran: Vector2i, base: Vector2i) -> int:
 	if base.x <= 0 or base.y <= 0:
 		return 1
 	return maxi(mini(ecran.x / base.x, ecran.y / base.y), 1)
 
 
-## Le facteur que la fenêtre en place représente **déjà**, arrondi vers le bas.
-##
-## Même calcul que pour l'écran : « combien de fois le cadrage tient-il
-## là-dedans » est la même question, et deux formules finiraient par diverger d'un
-## pixel — le bouton annoncerait ×2 sur une fenêtre en ×3.
+## Arrondi vers le bas, par la même formule que l'écran.
 static func echelle_observee() -> int:
 	if DisplayServer.get_name() == "headless":
 		return 1
@@ -242,9 +184,7 @@ static func echelle_maximale() -> int:
 	return echelle_qui_tient(utile, taille_de_base())
 
 
-## Le facteur suivant dans la ronde : 1, 2, … jusqu'au maximum, puis plein écran,
-## puis on repart à 1. Le plein écran est **après** les facteurs : on en sort en
-## continuant d'appuyant, sans deviner qu'il faudrait revenir en arrière.
+## 1, 2, … maximum, plein écran, puis 1 : on sort du plein écran en continuant.
 static func echelle_suivante(courante: int, maximum: int) -> int:
 	if courante == PLEIN_ECRAN:
 		return 1
@@ -253,8 +193,7 @@ static func echelle_suivante(courante: int, maximum: int) -> int:
 	return courante + 1
 
 
-## Ce que le bouton des options affiche. Ici et non dans le menu : c'est le même
-## texte qu'un écran de démarrage écrira un jour.
+## Le texte du bouton des options.
 static func libelle(valeur: int, base: Vector2i) -> String:
 	if valeur == PLEIN_ECRAN:
 		return Textes.t("Fenêtre : plein écran")
@@ -272,8 +211,7 @@ func cycler_echelle() -> void:
 	echelle = echelle_suivante(echelle, echelle_maximale())
 
 
-## Pose réellement la fenêtre. Recentrée après coup : agrandie depuis son coin
-## haut-gauche, elle sort de l'écran par le bas dès le facteur 3.
+## Recentrée : agrandie depuis son coin, elle sortirait par le bas.
 func _appliquer() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
@@ -296,9 +234,7 @@ func _appliquer() -> void:
 # Le disque
 # --------------------------------------------------------------------------
 
-## Ce qui part sur le disque. Un dictionnaire nommé plutôt qu'une suite de
-## valeurs : un réglage ajouté au milieu ne doit pas décaler la lecture des
-## autres.
+## Un dictionnaire nommé : un réglage ajouté ne décale pas les autres.
 func vers_dict() -> Dictionary:
 	return {
 		"barres_de_vie": show_health_bars,
@@ -310,9 +246,7 @@ func vers_dict() -> Dictionary:
 	}
 
 
-## Un champ absent garde sa valeur par défaut plutôt que de faire échouer la
-## lecture entière : un fichier écrit par une version plus ancienne doit encore
-## servir.
+## Un champ absent garde son défaut : un fichier plus ancien sert encore.
 func depuis_dict(source: Dictionary) -> void:
 	_chargement = true
 	show_health_bars = bool(source.get("barres_de_vie", show_health_bars))
@@ -345,9 +279,8 @@ func _charger() -> void:
 	depuis_dict(lecteur.data)
 
 
-## Sans écriture atomique, contrairement aux personnages : perdre les réglages
-## coûte trois clics, perdre un héros coûte des heures. Le fichier temporaire et
-## son renommage ne se paient pas ici.
+## Sans écriture atomique, contrairement aux personnages : perdre les réglages coûte
+## trois clics.
 func _ecrire() -> void:
 	if _chargement:
 		return

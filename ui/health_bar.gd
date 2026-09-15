@@ -28,7 +28,13 @@ const LOW := Color(0.85, 0.26, 0.22)
 ## reculer, il doit se voir sans lire la longueur.
 const LOW_RATIO := 0.35
 
+## Une pastille par état, dans la couleur de sa nature, entre la barre et
+## l'étiquette d'affixe.
+const PASTILLE := 3.0
+const ECART_DE_PASTILLE := 3.0
+
 var _ratio := 1.0
+var _couleurs: Array[Color] = []
 
 
 func _ready() -> void:
@@ -48,8 +54,16 @@ func set_health(current: float, maximum: float) -> void:
 	_refresh()
 
 
+## Appelée par l'acteur quand un état apparaît ou prend fin, jamais à chaque image.
+func montrer_les_etats(etats: Etats) -> void:
+	_couleurs = etats.couleurs()
+	_refresh()
+
+
+## Les pastilles tiennent la barre visible à pleine vie : un ennemi remonté à fond
+## reste transi, et c'est justement ce qu'on regarde.
 func _refresh() -> void:
-	visible = Settings.show_health_bars and _ratio < 1.0 and _ratio > 0.0
+	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _couleurs.is_empty())
 	if visible:
 		queue_redraw()
 
@@ -60,9 +74,18 @@ func _draw() -> void:
 	var x := roundf(-WIDTH * 0.5)
 	var y := roundf(OFFSET_Y)
 
-	draw_rect(Rect2(x - 1.0, y - 1.0, WIDTH + 2.0, HEIGHT + 2.0), EDGE)
-	draw_rect(Rect2(x, y, WIDTH, HEIGHT), BACK)
-	draw_rect(
-		Rect2(x, y, roundf(WIDTH * _ratio), HEIGHT),
-		LOW if _ratio <= LOW_RATIO else FULL
-	)
+	if _ratio < 1.0:
+		draw_rect(Rect2(x - 1.0, y - 1.0, WIDTH + 2.0, HEIGHT + 2.0), EDGE)
+		draw_rect(Rect2(x, y, WIDTH, HEIGHT), BACK)
+		draw_rect(
+			Rect2(x, y, roundf(WIDTH * _ratio), HEIGHT),
+			LOW if _ratio <= LOW_RATIO else FULL
+		)
+
+	var pas := PASTILLE + ECART_DE_PASTILLE
+	var px := roundf(-(float(_couleurs.size()) * pas - ECART_DE_PASTILLE) * 0.5)
+	var py := y - PASTILLE - 3.0
+	for couleur in _couleurs:
+		draw_rect(Rect2(px - 1.0, py - 1.0, PASTILLE + 2.0, PASTILLE + 2.0), EDGE)
+		draw_rect(Rect2(px, py, PASTILLE, PASTILLE), couleur)
+		px += pas

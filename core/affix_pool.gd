@@ -16,8 +16,7 @@ const ALL := [
 const CHANCE_ONE := 0.18
 const CHANCE_TWO := 0.04
 
-## L'or de l'élite, la même couleur que les coups critiques : dans les deux cas
-## elle veut dire « ça compte plus que d'habitude ».
+## L'or de l'élite, celui des critiques : « ça compte plus ».
 const ELITE_TINT := Color(0.980, 0.800, 0.302)
 
 ## Opacité du liseré. Pleine : c'est un pixel vide qu'on colore, et un liseré
@@ -28,9 +27,7 @@ const RIM_AMOUNT := 1.0
 const ELITE_WIDTH := 2.0
 const RIM_WIDTH := 1.0
 
-## Paires qui s'annulent : Colossal ralentit et gonfle, Véloce accélère et
-## amincit. Ensemble ils donnent un ennemi ordinaire de couleur dorée, ce qui
-## ment au joueur.
+## Colossal et Véloce s'annulent : ensemble, un ennemi ordinaire doré qui ment.
 const INCOMPATIBLE := {
 	"colossal": "veloce",
 	"veloce": "colossal",
@@ -49,9 +46,8 @@ static func roll(rng: RandomNumberGenerator) -> Array[Affix]:
 	if draw >= CHANCE_TWO:
 		return out
 
-	# Deuxième affixe : on retire d'abord le premier et son incompatible, sinon
-	# une boucle de rejet rendrait le tirage dépendant du nombre d'essais et
-	# casserait la reproductibilité.
+	# On retire d'abord le premier et son incompatible : une boucle de rejet ferait
+	# dépendre le tirage du nombre d'essais.
 	var pool: Array[Affix] = []
 	for a in ALL:
 		var affix: Affix = a
@@ -63,8 +59,7 @@ static func roll(rng: RandomNumberGenerator) -> Array[Affix]:
 	return out
 
 
-## Aucun affixe : aucun liseré. Un ennemi ordinaire doit rester exactement tel
-## que la forge l'a dessiné, sinon la couleur cesse de vouloir dire quelque chose.
+## Aucun affixe, aucun liseré.
 static func tint_of(affixes: Array[Affix]) -> Color:
 	if affixes.is_empty():
 		return Color.WHITE

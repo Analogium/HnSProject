@@ -961,3 +961,25 @@ msgstr "saved"
 
 msgid "échec de la sauvegarde"
 msgstr "save failed"
+
+# ---------------------------------------------------------------------------
+# États
+# ---------------------------------------------------------------------------
+
+msgid "embrasé"
+msgstr "ignited"
+
+msgid "engourdi"
+msgstr "numbed"
+
+msgid "transi"
+msgstr "chilled"
+
+msgid "pourrissant"
+msgstr "rotting"
+
+msgid "béni"
+msgstr "blessed"
+
+msgid "saignant"
+msgstr "bleeding"

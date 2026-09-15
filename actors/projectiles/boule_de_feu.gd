@@ -44,4 +44,4 @@ func _eclater(cible_directe: Hurtbox) -> void:
 	if _eclatee:
 		return
 	_eclatee = true
-	Explosion.poser(get_parent(), global_position, _parts, rayon_d_explosion, cible_directe, teinte())
+	Explosion.poser(get_parent(), global_position, _parts, rayon_d_explosion, cible_directe, teinte(), _auteur)

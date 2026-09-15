@@ -1,55 +1,30 @@
 class_name Personnage
 extends RefCounted
 
-## Un personnage tel qu'il survit à la fermeture du jeu : un nom, une
-## silhouette, une progression, un sac, deux emplacements.
-##
-## À ne pas confondre avec le Player, qui est son **incarnation dans une scène**
-## — un corps avec une position, une vitesse, des PV du moment et une zone
-## autour de lui. Rien de tout ça n'est ici : le jalon 3 sauvegarde le
-## personnage, jamais la partie. Reprendre un personnage le fait renaître dans
-## une zone neuve, en pleine santé.
-##
-## RefCounted et non Resource, pour la raison qui a fait choisir le JSON contre
-## le `.tres` : une Resource sauvegardée porte des chemins de scripts et
-## **exécute du code** au chargement. Une sauvegarde est un fichier que le joueur
-## peut recevoir de quelqu'un d'autre.
+## Un personnage tel qu'il survit à la fermeture : nom, silhouette, progression, sac,
+## équipement, manuels — jamais la partie ; le Player est son corps en scène.
+## En JSON et non en Resource : une Resource exécute du code au chargement, et une
+## sauvegarde peut venir de quelqu'un d'autre.
 
-## Le numéro de format **écrit**. Il monte dès qu'un champ apparaît dans le
-## fichier : le niveau des objets au jalon 5, les manuels et ce qu'on en a
-## appris au jalon 6, la portée d'un affixe au jalon 7, la borne haute d'une
-## fourchette au jalon 8.
+## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
 const VERSION := 5
 
-## Les numéros qu'on sait **lire**, et c'est une liste, pas une égalité. Monter
-## VERSION sans ajouter l'ancien numéro ici ferait passer tous les personnages
-## existants en « illisible » d'un coup, alors que leurs fichiers sont intacts —
-## et cela ne se verrait qu'au premier lancement après la mise à jour.
-##
-## Ce qu'une version 1 devient en version 2 : ses objets prennent le niveau 1.
-## Ce qu'une version 2 devient en version 3 : un râtelier vide, la barre de
-## départ — le coup d'épée et le tir, c'est-à-dire le jeu d'avant — et un manuel
-## de départ qui n'a pas encore été offert. Ce qu'une version 3 devient en
-## version 4 : rien, toutes ses lignes d'affixes visent la fiche. Ce que les
-## versions 1 à 4 deviennent en version 5 : leurs dégâts plats sont convertis en
-## fourchettes — voir `_ligne_actuelle`. Un numéro **inconnu** reste refusé :
-## jamais deviner.
+## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
+## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
+## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_ligne_actuelle`.
 const VERSIONS_LUES := [1, 2, 3, 4, 5]
 
-## Les deux statistiques de dégâts plats d'avant le jalon 8. Elles ne vivent plus
-## que dans les sauvegardes, et ne sont nommées qu'ici, pour être converties.
+## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const ANCIENS_DEGATS_D_ATTAQUE := "attack_damage"
 const ANCIENS_DEGATS_DE_SORT := "spell_damage"
 
-## Longueur maximale du nom. Bornée parce que l'écran de sélection le dessine sur
-## une ligne. Vingt et non seize : une borne qui rejette « Jean-Luc de l'Est »
-## n'est pas une protection, c'est un bug.
+## Borné pour tenir sur une ligne de la sélection. Vingt et non seize : « Jean-Luc
+## de l'Est » doit passer.
 const NOM_MAX := 20
 
 var id := ""
 var nom := ""
-## L'index de variante que la forge sait dessiner. Un entier et non un chemin de
-## sprite : c'est la génération procédurale utilisée comme règle de jeu.
+## L'index de variante de la forge, pas un chemin de sprite.
 var silhouette := 0
 var cree_le := ""
 var joue_le := ""
@@ -57,37 +32,28 @@ var joue_le := ""
 var niveau := 1
 var experience := 0
 
-## Ce que le joueur a **placé**, et non ce qu'il a en tout : écrire le total
-## figerait les valeurs de départ du jour de la sauvegarde, et un rééquilibrage
-## n'atteindrait jamais les personnages existants.
+## Ce qui a été **placé**, pas le total : un rééquilibrage doit atteindre les
+## personnages existants.
 var attributs := CharacterStats.empty_attributes()
 ## Sauvegardé aussi : monter de niveau puis quitter sans répartir ne doit pas
 ## coûter les points.
 var points_a_placer := 0
 
 var sac := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
-## Ce qui est porté, par emplacement. Les noms d'emplacements ne sont pas
-## validés ici : c'est le Player qui sait lesquels existent, et il refuse déjà
-## ce qu'il ne sait pas porter.
+## Les emplacements sont validés par le Player, pas ici.
 var equipement := {}
 
-## Les manuels à l'étude. Ils ont quitté le sac pour y entrer, comme un plastron
-## qu'on enfile : ils sont donc écrits ici et **nulle part ailleurs**, sans quoi
-## il y aurait deux vérités sur leurs points et le rechargement en choisirait une.
+## Écrits ici et nulle part ailleurs, sinon deux vérités sur leurs points.
 var ratelier := Ratelier.new()
 
-## Les cinq cases de la barre. Par défaut celles du jeu d'avant, ce qui est aussi
-## ce que devient une sauvegarde de version 2.
+## Par défaut celle de départ, ce que devient aussi une sauvegarde v2.
 var barre := BarreDeCompetences.par_defaut()
 
-## Le manuel de départ a-t-il déjà été donné. Sauvegardé, et non déduit de « le
-## sac contient un manuel » : un joueur qui jette le sien en recevrait un second,
-## et le livre de départ deviendrait une monnaie.
+## Sauvegardé et non déduit du sac : un joueur qui jette le sien n'en reçoit pas un
+## second.
 var manuel_offert := false
 
-## Vrai pour l'entrée d'un fichier qu'on n'a pas su lire : l'écran de sélection la
-## montre grisée plutôt que de la faire disparaître, un personnage qui s'évapore
-## du menu ressemblant à une perte même quand son fichier est intact.
+## Un fichier qu'on n'a pas su lire : montré grisé plutôt que disparu.
 var illisible := false
 
 
@@ -108,19 +74,13 @@ static func illisible_avec(p_id: String) -> Personnage:
 	return p
 
 
-## L'identifiant est **généré**, jamais dérivé du nom saisi : deux personnages
-## peuvent porter le même nom, et un nom peut contenir des caractères qu'un
-## système de fichiers refuse.
-##
-## Tire sur le générateur global et non sur Game.rng, dont l'état est le fil des
-## tirages de la partie : lui prendre deux nombres décalerait toutes les graines
-## de zone tirées ensuite.
+## Généré, jamais dérivé du nom (homonymes, caractères interdits). Tiré sur le
+## générateur global et non sur Game.rng (invariant 3).
 static func nouvel_id() -> String:
 	return "p_%d_%04d" % [int(Time.get_unix_time_from_system()), randi() % 10000]
 
 
-## Non vide, borné, et sans caractères de contrôle — ceux-là ne se voient pas à
-## l'écran mais se retrouveraient dans le fichier et dans la liste.
+## Sans caractères de contrôle, invisibles mais écrits dans le fichier.
 static func nom_valide(p_nom: String) -> bool:
 	var n := p_nom.strip_edges()
 	if n.is_empty() or n.length() > NOM_MAX:
@@ -132,9 +92,7 @@ static func nom_valide(p_nom: String) -> bool:
 	return true
 
 
-## Ce qui part sur le disque. Aucune statistique calculée : elles se
-## **recalculent** à partir de la fiche de base, des attributs et de l'équipement,
-## et les écrire créerait une deuxième vérité.
+## Aucune statistique calculée : elles se recalculent au chargement.
 func vers_dict() -> Dictionary:
 	var objets := []
 	for pose in sac.placed:
@@ -148,14 +106,12 @@ func vers_dict() -> Dictionary:
 		if item != null and item.base != null:
 			porte[emplacement] = _item_vers_dict(item)
 
-	# Les trois emplacements sont écrits même vides : une liste de trois entrées
-	# dont deux valent null se relit sans avoir à deviner laquelle manquait.
+	# Trois entrées même vides : le fichier se relit sans deviner laquelle manquait.
 	var livres := []
 	for item in ratelier.manuels:
 		livres.append(_item_vers_dict(item) if item != null and item.base != null else null)
 
-	# Une case vide s'écrit null et non chaîne vide : le fichier se lit à l'œil,
-	# et « rien » y ressemble à rien.
+	# Une case vide s'écrit null : « rien » y ressemble à rien.
 	var cases := []
 	for i in BarreDeCompetences.EMPLACEMENTS:
 		var id := barre.id_de(i)
@@ -180,13 +136,9 @@ func vers_dict() -> Dictionary:
 	}
 
 
-## Le chemin inverse, et **le seul endroit** qui fait confiance à des données
-## venues du dehors. Tout y est reconverti explicitement : le JSON ne connaît
-## qu'un seul type de nombre, donc un niveau relu vaut 7.0 et non 7.
-##
-## Renvoie null quand le fichier n'est pas exploitable. Un champ isolé qui manque
-## reprend sa valeur par défaut : perdre un personnage entier pour un champ absent
-## est le pire des résultats possibles.
+## **Le seul endroit** qui fait confiance à des données du dehors : tout est
+## reconverti (le JSON n'a qu'un type de nombre). Null si inexploitable ; un champ
+## absent reprend son défaut plutôt que de perdre le personnage.
 static func depuis_dict(source: Dictionary) -> Personnage:
 	var version := _entier(source, "version", 0)
 	if not VERSIONS_LUES.has(version):
@@ -207,9 +159,8 @@ static func depuis_dict(source: Dictionary) -> Personnage:
 	p.experience = maxi(_entier(source, "experience", 0), 0)
 	p.points_a_placer = maxi(_entier(source, "points_a_placer", 0), 0)
 
-	# Champ par champ depuis ATTRIBUTES, et non en recopiant le dictionnaire lu :
-	# un attribut ajouté depuis part de zéro au lieu de manquer, et un nom
-	# inconnu dans le fichier est ignoré au lieu d'entrer dans la répartition.
+	# Champ par champ depuis ATTRIBUTES : un attribut nouveau part de zéro, un nom
+	# inconnu est ignoré.
 	var lus: Dictionary = source.get("attributs", {}) if source.get("attributs") is Dictionary else {}
 	for champ in CharacterStats.ATTRIBUTES:
 		p.attributs[champ] = maxi(_entier(lus, champ, 0), 0)
@@ -240,10 +191,8 @@ static func depuis_dict(source: Dictionary) -> Personnage:
 		if p.ratelier.poser(i, item) != null and not p.sac.add(item):
 			push_warning("Manuel « %s » abandonné : le râtelier l'a refusé." % item.display_name())
 
-	# **Clé absente : la barre de départ.** C'est ce que devient une sauvegarde
-	# d'avant le jalon 6, et c'est le jeu d'avant. Clé présente : ce qu'elle dit,
-	# cases vides comprises — sinon une case qu'on a délibérément vidée
-	# reviendrait remplie au chargement suivant.
+	# Clé absente : la barre de départ (sauvegarde d'avant le jalon 6). Clé présente :
+	# ce qu'elle dit, cases vides comprises.
 	if source.has("barre"):
 		p.barre = BarreDeCompetences.new()
 		var cases := _liste(source.get("barre"))
@@ -259,31 +208,25 @@ static func depuis_dict(source: Dictionary) -> Personnage:
 	return p
 
 
-## Un objet : sa base par identifiant, et ses affixes déjà résolus en valeurs.
-## Jamais la base elle-même — la sérialiser figerait les valeurs d'équilibrage
-## du jour, et les rejouerait des mois plus tard.
+## La base par identifiant et les affixes résolus, jamais la base elle-même : elle
+## figerait l'équilibrage du jour.
 static func _item_vers_dict(item: Item) -> Dictionary:
 	var affixes := []
 	for r in item.explicits:
 		var entree := {"stat": r.mod.stat, "mode": int(r.mod.mode), "valeur": r.mod.value}
-		# Écrite quand elle existe, **jamais déduite de l'affixe d'origine** à la
-		# relecture : un objet sans provenance la perdrait, et son « +1 projectile »
-		# deviendrait une ligne de fiche visant un champ inconnu.
+		# Écrite, jamais déduite de l'affixe d'origine : un objet sans provenance perdrait
+		# sa portée.
 		if not r.mod.portee.is_empty():
 			entree["portee"] = r.mod.portee
 		if r.mod.est_une_fourchette():
 			entree["valeur_max"] = r.mod.value_max
-		# La provenance n'est écrite que quand on l'a. Un objet relu d'une
-		# version 1 puis resauvegardé ne doit pas se voir attribuer un palier
-		# qu'il n'a jamais eu.
+		# La provenance seulement quand on l'a : pas de palier inventé.
 		if r.connu():
 			entree["affixe"] = r.affix_id
 			entree["tier"] = r.tier
 		affixes.append(entree)
 	var entree := {"base": item.base.id, "niveau": item.item_level, "affixes": affixes}
-	# L'état d'un manuel, quand cet objet en est un. Son **niveau ne s'écrit
-	# pas** : il se déduit de son expérience, et l'écrire créerait la deuxième
-	# vérité que ce format refuse partout ailleurs — ni PV, ni statistiques.
+	# Le niveau d'un manuel ne s'écrit pas : il se déduit de son expérience.
 	if item.manuel != null:
 		entree["manuel"] = {
 			"exp": item.manuel.experience,
@@ -292,9 +235,7 @@ static func _item_vers_dict(item: Item) -> Dictionary:
 	return entree
 
 
-## Renvoie null quand la base n'existe plus dans le projet. L'objet est alors
-## ignoré et le reste du personnage se charge : perdre une épée est désagréable,
-## perdre le personnage est inacceptable.
+## Null quand la base n'existe plus : l'objet est ignoré, le personnage se charge.
 static func _item_depuis_dict(source: Variant) -> Item:
 	if not source is Dictionary:
 		return null
@@ -328,40 +269,25 @@ static func _item_depuis_dict(source: Variant) -> Item:
 				% [identifiant, stat]
 			)
 			continue
-		# La valeur fait foi, la provenance l'accompagne. Absente — une
-		# sauvegarde de version 1, ou un affixe retiré du projet depuis — la
-		# ligne s'applique quand même : c'est l'infobulle qui n'aura rien à
-		# montrer, pas l'objet qui perd son bonus.
-		#
-		# Une ligne **convertie** perd la sienne : le palier 7 d'`acere` n'est pas
-		# un palier de l'affixe qui l'a remplacé.
+		# La valeur fait foi : sans provenance, la ligne s'applique quand même. Une ligne
+		# **convertie** perd la sienne.
 		var convertie := actuelle != mod
 		explicits.append(RolledAffix.new(
 			"" if convertie else String(ligne.get("affixe", "")),
 			0 if convertie else maxi(_entier(ligne, "tier", 0), 0),
 			actuelle
 		))
-	# Absent, il vaut 1 : c'est le cas de tous les objets d'une sauvegarde de
-	# version 1, et il n'y a pas de version à tester pour le savoir — un champ
-	# manquant vaut son défaut, ici comme partout ailleurs dans cette fonction.
+	# Absent, il vaut 1 : tous les objets d'une sauvegarde v1.
 	var niveau := _entier(objet, "niveau", 1)
 	var item := Item.new(base, explicits, niveau)
 	_manuel_depuis_dict(item, objet.get("manuel"))
 	return item
 
 
-## Ce que devient une ligne écrite avant que les dégâts plats deviennent des
-## fourchettes : la ligne elle-même quand rien n'a changé, sa conversion, ou null
-## quand plus rien ne sait l'appliquer.
-##
-## **Chaque conversion est une équivalence exacte avec le jeu d'alors**, pas une
-## supposition : la seule attaque était physique, et tous les sorts étaient de
-## foudre. Un personnage relu frappe donc exactement comme avant la mise à jour.
-## Seuls les pourcentages de dégâts de `meurtrier` n'ont plus d'équivalent.
-##
-## Sur le nom de la statistique et non sur la version : ces deux champs ont quitté
-## la fiche du joueur, et une ligne qui les viserait ne ferait plus rien, d'où
-## qu'elle vienne.
+## Une ligne d'avant les fourchettes (jalon 8) : elle-même, sa conversion, ou null
+## quand plus rien ne l'applique. **Équivalence exacte** avec le jeu d'alors — la
+## seule attaque était physique, tous les sorts de foudre ; seuls les pourcentages
+## de `meurtrier` n'ont plus d'équivalent. Testée sur le nom, pas sur la version.
 static func _ligne_actuelle(mod: StatMod) -> StatMod:
 	if not mod.portee.is_empty():
 		return mod
@@ -395,14 +321,8 @@ static func _manuel_depuis_dict(item: Item, source: Variant) -> void:
 	if not points is Dictionary:
 		return
 	for id in points:
-		# La question n'est pas « cela existe-t-il dans le jeu » mais « ce livre
-		# le connaît-il » : des points placés dans une case, un passif ou un nœud
-		# que l'archétype ne contient plus ne sont dépensables nulle part, et les
-		# garder ferait un manuel qui doit des points à personne.
-		#
-		# **Les trois sortes, et pas seulement les cases** : demander `enseigne()`
-		# jetterait en silence tous les points d'arbre au premier rechargement,
-		# sur des fichiers intacts.
+		# « Ce livre le connaît-il », pour les trois sortes : des points hors de
+		# l'archétype ne se dépensent nulle part, et `enseigne()` jetterait les arbres.
 		if item.connait(String(id)):
 			item.manuel.points[String(id)] = maxi(int(points[id]), 0)
 

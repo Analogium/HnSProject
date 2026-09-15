@@ -1,18 +1,8 @@
 class_name EquipmentSlots
 
-## Les emplacements d'équipement du personnage, et la famille d'objets que chacun
-## accepte.
-##
-## **Un emplacement n'est pas une famille.** Une base dit ce qu'elle est — un
-## anneau ; le personnage, lui, a deux doigts. Les confondre fait disparaître le
-## premier anneau dès qu'on en équipe un second, sans que rien ne le signale.
-##
-## L'ordre d'insertion est celui dans lequel le panneau les montre — un Dictionary
-## GDScript le conserve.
-##
-## **Les identifiants ne changent jamais.** Ils sont écrits dans les sauvegardes :
-## renommer `chest` en `torse` ferait disparaître le plastron de tout le monde, au
-## prochain chargement seulement. Le nom lisible, lui, se traduit librement.
+## Les emplacements et la famille que chacun accepte. **Un emplacement n'est pas une
+## famille** : un anneau, deux doigts. Dans l'ordre du panneau. **Identifiants
+## définitifs** (invariant 1).
 
 const SLOTS := {
 	"weapon": {"family": "weapon", "label": "ARME"},
@@ -23,16 +13,12 @@ const SLOTS := {
 	"boots": {"family": "boots", "label": "BOTTES"},
 	"belt": {"family": "belt", "label": "CEINTURE"},
 	"amulet": {"family": "amulet", "label": "AMULETTE"},
-	# « BAGUE » et non « ANNEAU » : à la taille du cadrage, les deux libellés en
-	# ANNEAU se faisaient tronquer au même endroit et annonçaient donc la même
-	# chose — pire que le débordement qu'on corrigeait.
+	# « BAGUE » : les deux « ANNEAU » se tronquaient au même endroit.
 	"ring_left": {"family": "ring", "label": "BAGUE G."},
 	"ring_right": {"family": "ring", "label": "BAGUE D."},
 }
 
-## Les identifiants dans l'ordre du panneau. Calculés une fois : `keys()` alloue
-## un tableau neuf à chaque appel, et le dessin du panneau le demande soixante
-## fois par seconde.
+## Calculés une fois : `keys()` alloue, et le panneau les demande à chaque image.
 static var _ids := PackedStringArray(SLOTS.keys())
 
 
@@ -48,13 +34,8 @@ static func exists(slot: String) -> bool:
 	return SLOTS.has(slot)
 
 
-## Vrai si un emplacement accepte cette famille — donc si un objet de cette
-## famille se porte.
-##
-## La question est ici et nulle part ailleurs : ce qui ne se porte pas échappe
-## aux règles écrites pour l'équipement — pas d'affixes, pas de lignée à paliers,
-## pas d'implicite qui doit croître. La poser en `family == "manual"` dans chaque
-## règle ferait de la règle suivante un oubli en puissance.
+## Un objet de cette famille se porte-t-il ? **La seule question** qui fait échapper
+## un manuel aux règles d'équipement.
 static func famille_equipable(famille: String) -> bool:
 	for id in SLOTS:
 		if SLOTS[id]["family"] == famille:
@@ -66,14 +47,12 @@ static func family_of(slot: String) -> String:
 	return SLOTS[slot]["family"] if SLOTS.has(slot) else ""
 
 
-## Le nom lisible d'un emplacement, dans la langue du joueur. La table garde ses
-## valeurs françaises : ce sont elles, les clés de traduction.
+## Dans la langue du joueur ; la table française est la clé.
 static func label(slot: String) -> String:
 	return Textes.t(SLOTS[slot]["label"]) if SLOTS.has(slot) else slot
 
 
-## La famille d'un objet, vide s'il ne s'équipe pas. Passe par la base : c'est
-## elle qui sait ce qu'est l'objet.
+## Vide si l'objet ne s'équipe pas.
 static func family_of_item(item: Item) -> String:
 	if item == null or item.base == null:
 		return ""
@@ -85,15 +64,8 @@ static func accepts(slot: String, item: Item) -> bool:
 	return not famille.is_empty() and family_of(slot) == famille
 
 
-## Où poser cet objet quand l'appelant n'impose rien : **le premier emplacement
-## libre de sa famille**, à défaut le premier de cette famille.
-##
-## C'est toute la règle des anneaux : le second va au doigt libre, le troisième
-## remplace celui de gauche, et c'est à l'interface de proposer l'autre en le
-## lâchant dessus.
-##
-## Rend une chaîne vide pour un objet qui ne s'équipe nulle part — l'appelant doit
-## alors le rendre intact, jamais le perdre.
+## Le premier emplacement libre de sa famille, à défaut le premier : la règle des
+## anneaux. Vide pour ce qui ne s'équipe pas — l'appelant le rend intact.
 static func free_for(item: Item, worn: Dictionary) -> String:
 	var famille := family_of_item(item)
 	if famille.is_empty():

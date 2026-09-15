@@ -1,45 +1,29 @@
 class_name EnemyManager
 extends Node2D
 
-## Pilote unique de tous les ennemis : aucun d'eux n'a de _physics_process. Ça
-## donne gratuitement le culling par distance, le passage aux tableaux packés le
-## jour où le profileur le demande, et le ralenti / pause / pas à pas sur les
-## ennemis seuls.
+## **Le pilote unique de tous les ennemis** : aucun n'a de _physics_process. D'où le
+## culling, et un ralenti propre aux ennemis.
 
 const CULL_DISTANCE := 700.0   # au-delà, on ne tick pas
 
-## Rayon du champ de flux, en cases. Dérivé de la distance de culling et non
-## posé à part : au-delà, l'ennemi n'est plus tické, et lui calculer un chemin
-## serait du travail pour quelqu'un de figé.
+## Dérivé du culling : au-delà, personne n'est tické.
 const FIELD_CELLS := int(CULL_DISTANCE / float(MapGenerator.TILE)) + 2
-## Délai minimal entre deux recalculs. Le joueur immobile sur une frontière de
-## cases bascule de l'une à l'autre à chaque image : sans ce délai, chaque image
-## paierait un parcours complet de la carte.
+## Délai entre deux recalculs : un joueur immobile sur une frontière de cases
+## rebâtirait le champ à chaque image.
 const FIELD_PERIOD := 0.10
 
 var enemies: Array[Enemy] = []
 var target: Node2D
 
-## Le niveau de la zone : celui des ennemis qui y naissent, et celui des objets
-## qui y tombent. Posé par la zone depuis `Game.niveau_de_zone`.
-##
-## Un champ et non une lecture de l'autoload à chaque mort : un champ se règle
-## depuis un test là où une variable globale se subit. Les scènes de réglage le
-## laissent à 1.
+## Le niveau de la zone, posé par elle. Un champ et non l'autoload : un test le règle.
 var niveau := 1
 
-## Le chemin vers la cible, partagé par tous les ennemis. **Facultatif** : null
-## dans les scènes sans carte — l'arène de réglage, le banc de stress, les tests
-## d'intégration — où les ennemis foncent en ligne droite, ce qui est
-## exactement ce qu'il faut faire dans une pièce sans mur.
+## Facultatif : null sans carte (arène, banc, tests), où la ligne droite suffit.
 var field: FlowField
 
 var _field_cd := 0.0
 
-## Nombre d'ennemis réellement tickés à la dernière image, culling déduit. Sans
-## ce chiffre, le banc de mesure ne sait pas si trois cents ennemis coûtent peu
-## parce que le code est bon ou parce que deux cent quatre-vingts sont hors
-## portée.
+## Les ennemis tickés à la dernière image, culling déduit, pour le banc.
 var ticked := 0
 
 ## Où atterrissent les projectiles. Laissé à null, ils naissent sous le manager.
@@ -58,9 +42,7 @@ func _ready() -> void:
 		loot_parent = self
 
 
-## Pose un ennemi dans le monde et l'enregistre. Le seul chemin : la zone,
-## l'arène, le banc de mesure et le peupleur passent tous par lui, et le jour où
-## poser un ennemi demandera une étape de plus, elle s'ajoutera ici.
+## **Le seul chemin** pour poser un ennemi.
 func spawn(scene: PackedScene, at: Vector2) -> Enemy:
 	if scene == null:
 		return null
@@ -74,10 +56,7 @@ func spawn(scene: PackedScene, at: Vector2) -> Enemy:
 	return enemy
 
 
-## Tue tout le monde sans récompense : un vidage n'est pas une victoire.
-##
-## Sur une copie de la liste : die() émet died, que le manager traite en
-## retirant l'ennemi — on ne parcourt pas une liste qu'on modifie.
+## Sans récompense ; sur une copie, puisque `die()` retire l'ennemi de la liste.
 func clear() -> void:
 	for e in enemies.duplicate():
 		if is_instance_valid(e):
@@ -101,12 +80,8 @@ func _physics_process(delta: float) -> void:
 	var cull_sq := CULL_DISTANCE * CULL_DISTANCE
 	ticked = 0
 
-	# Parcours à l'envers : on peut retirer des éléments sans casser l'index.
-	#
-	# Mais range() est figé à l'entrée, alors qu'un tick peut retirer d'autres
-	# ennemis que celui en cours : mort en chaîne, ou rechargement complet de
-	# la zone déclenché par la mort du joueur. La liste rétrécit donc sous nos
-	# pieds et les indices restants pointent dans le vide — d'où la revalidation.
+	# À l'envers, et revalidé : un tick peut retirer d'autres ennemis (mort en chaîne,
+	# rechargement de la zone), la liste rétrécit sous nos pieds.
 	for i in range(enemies.size() - 1, -1, -1):
 		if i >= enemies.size():
 			continue
@@ -117,13 +92,13 @@ func _physics_process(delta: float) -> void:
 		if origin.distance_squared_to(e.global_position) > cull_sq:
 			continue
 		ticked += 1
+		if not e.etats.aucun:
+			e.subir_les_etats(delta)
 		e.regen(delta)
 		e.tick(delta)
 
 
-## Recalcule le chemin quand la cible a changé de case, et pas plus souvent que
-## FIELD_PERIOD. Un champ vieux de quelques centièmes de seconde ne trompe
-## personne : il pointe vers l'endroit où le joueur était, à une case près.
+## Quand la cible a changé de case, au plus toutes les FIELD_PERIOD.
 func _update_field(delta: float) -> void:
 	if field == null:
 		return
@@ -137,21 +112,18 @@ func _update_field(delta: float) -> void:
 	_field_cd = FIELD_PERIOD
 
 
-## L'ennemi ne connaît pas le joueur, le manager si : c'est donc lui qui fait
-## remonter la récompense, plutôt que de donner à chaque ennemi une référence dont
-## il n'a besoin qu'à sa mort.
+## Le manager connaît le joueur, pas l'ennemi : c'est lui qui fait remonter la
+## récompense.
 func report_kill(enemy: Enemy) -> void:
 	var player := target as Player
 	if player == null:
 		return
-	# Au-dessus du corps et non au-dessus du joueur : c'est l'ennemi tombé qui
-	# rapporte, et on doit pouvoir attribuer le gain à la cible qu'on a choisie.
+	# Au-dessus du corps : le gain s'attribue à la cible choisie.
 	player.recompenser(float(enemy.xp_value()), niveau, enemy.global_position)
 	_drop_loot(enemy)
 
 
-## Appelée uniquement depuis report_kill, donc jamais pour un vidage de zone ni
-## pour le banc de mesure : ceux-là passent die(false).
+## Seulement depuis report_kill : jamais pour un vidage ni pour le banc.
 func _drop_loot(enemy: Enemy) -> void:
 	var item := LootTable.roll(enemy.affixes.size(), niveau)
 	if item == null:

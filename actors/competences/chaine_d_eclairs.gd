@@ -49,8 +49,9 @@ static func decharger(
 		points.append(lanceur.global_position + direction * DANS_LE_VIDE)
 
 	var parts := geste.tirer(Game.rng)
+	var auteur := Etats.de(lanceur)
 	for i in touches.size():
-		Cibles.frapper(touches[i], parts, points[i])
+		Cibles.frapper(touches[i], parts, points[i], auteur)
 
 	var trace := ChaineDEclairs.new()
 	trace._points = points

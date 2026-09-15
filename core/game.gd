@@ -4,110 +4,67 @@ extends Node
 ## et 0.10 la différence est immédiate. Réglable à chaud depuis l'arène de test.
 var hit_stop_duration := 0.05
 
-## Ce qu'on laisse au jeu entre deux gels, en secondes réelles. Le gel donne son
-## poids à un coup ; enchaîné, il ne se lit plus comme de l'impact mais comme du
-## lag — c'est le même geste qui est joué au ralenti en permanence.
-##
-## Mesuré sans cette période, à trois cents ennemis et compétence tenue : un gel
-## toutes les 400 ms, soit **12 % du temps de jeu passé à 2 % de vitesse**, sans
-## qu'aucun compteur d'images par seconde ne bouge.
-##
-## Réglable à chaud depuis l'arène, comme la durée.
+## Le temps laissé au jeu entre deux gels, en secondes réelles : enchaîné, le gel se
+## lit comme du lag. Mesuré sans elle, à trois cents ennemis et compétence tenue :
+## **12 % du temps de jeu passé à 2 % de vitesse**, sans qu'une image se perde.
 var hit_stop_periode := 0.45
 
 var rng := RandomNumberGenerator.new()
 
-## Le personnage en cours de partie, posé par l'écran de sélection et lu par la
-## zone. Null quand on lance une scène de réglage directement depuis l'éditeur :
-## la zone repart alors des valeurs par défaut du joueur, et n'écrit rien.
-##
-## Sur l'autoload parce qu'il doit survivre au changement de scène — c'est
-## exactement ce qu'un changement de scène détruit.
+## Le personnage en cours, posé par la sélection et lu par la zone. Null quand une
+## scène de réglage est lancée seule : la zone n'écrit alors rien.
 var personnage: Personnage
 
-## Le niveau de la zone en cours : celui de ses ennemis, et celui des objets qui
-## y tombent. Sur l'autoload pour la même raison que `personnage`, et posé par
-## l'écran de réglage de génération avant d'entrer dans la zone.
-##
-## 1 par défaut : l'arène, le banc de stress et la galerie n'ont pas de niveau.
+## Le niveau de la zone en cours : ses ennemis et son butin. 1 pour l'arène, le banc
+## et la galerie.
 var niveau_de_zone := 1
 
-## Les bornes du niveau. Soixante parce que c'est là que s'arrêtent les échelles
-## d'affixes : au-delà, plus rien ne s'ouvrirait et le danger monterait sans que
-## la récompense suive.
+## Soixante : là où s'arrêtent les échelles d'affixes.
 const NIVEAU_MIN := 1
 const NIVEAU_MAX := 60
 
 
-## Monte ou descend le niveau des zones à venir, et rend la valeur obtenue.
-##
-## Ici et non chez les deux écrans qui l'appellent : ils bornaient chacun de leur
-## côté, et le jour où le maximum bougera, celui qui l'aurait oublié laisserait
-## engendrer une zone dont aucun affixe ne suit.
+## Borné ici et non chez les deux écrans qui l'appellent.
 func changer_niveau_de_zone(delta: int) -> int:
 	niveau_de_zone = clampi(niveau_de_zone + delta, NIVEAU_MIN, NIVEAU_MAX)
 	return niveau_de_zone
 
-## « Quelqu'un s'apprête à partir, écris maintenant. » Émis à la fermeture de la
-## fenêtre, au retour au menu et à la sortie du jeu.
-##
-## Un signal et non un appel direct : l'autoload n'a aucune raison de connaître
-## la zone, ni le joueur, ni quel nœud tient l'état à écrire. Ceux qui ont
-## quelque chose à sauvegarder s'y abonnent.
+## Émis à la fermeture, au retour au menu et à la sortie : ceux qui ont quelque chose
+## à écrire s'y abonnent.
 signal sauvegarde_demandee
 
-## Scène d'où l'on vient, pour pouvoir ressortir d'un aperçu par la touche qui
-## l'a ouvert. Passer par goto_scene() plutôt que par change_scene_to_file()
-## directement, sinon l'historique se désynchronise.
+## D'où l'on vient, pour ressortir d'un aperçu par sa touche. Passer par goto_scene().
 var previous_scene_path := ""
 
-## Vrai quand une fenêtre d'interface s'est emparée de la souris. Un drapeau
-## global parce que le joueur lit ses attaques par sondage dans
-## _physics_process : ces lectures ne passent pas par l'arbre d'entrées, donc
-## aucune fenêtre ne peut les intercepter en consommant l'événement.
-##
-## **En lecture seule.** Passer par grab_ui_input() pour le modifier.
+## Vrai quand un panneau tient la souris : le joueur lit ses touches par sondage, hors
+## de l'arbre d'entrées. **En lecture seule** : passer par grab_ui_input().
 var ui_grabs_input := false
 
-## Qui réclame la souris. Un ensemble et non un booléen : le sac et la fiche
-## peuvent être ouverts ensemble, et le premier des deux à se fermer remettrait
-## le drapeau à faux alors que l'autre tient encore la souris.
+## Un ensemble et non un booléen : deux panneaux peuvent la tenir ensemble.
 var _ui_grabbers := {}
 
-## Le nombre de gels joués depuis le lancement. Le banc de mesure en tire leur
-## fréquence, et les tests n'ont pas d'autre prise : un `time_scale` qui dure
-## cinq centièmes de seconde ne s'observe pas depuis une assertion.
+## Le nombre de gels depuis le lancement, pour le banc et les tests.
 var gels := 0
 
 var _hit_stop_active := false
-## Quand le dernier gel s'est terminé, sur l'horloge **réelle** : pendant un gel
-## le temps de jeu n'avance quasiment plus, et une période comptée dessus ne
-## s'écoulerait jamais.
-##
-## La fin et non la date du prochain gel autorisé : la période se relit à chaque
-## impact, donc la baisser depuis l'arène se sent au coup suivant et non une
-## fois l'ancienne période écoulée.
+## La fin du dernier gel, sur l'horloge **réelle** : le temps de jeu n'avance presque
+## plus pendant un gel. La fin et non la prochaine date permise, pour qu'une période
+## changée depuis l'arène se sente au coup suivant.
 var _hit_stop_fin := 0
 
-## La secousse en cours : la caméra visée, son amplitude de départ, ce qu'il reste
-## à jouer et sur combien. Un état et non une coroutine par appel — chaque ennemi
-## touché en lançait une, les cinq d'un balayage se disputaient le même `offset`,
-## et la première finie le remettait à zéro sous les autres.
+## La secousse en cours : un état et non une coroutine par appel, qui se disputaient
+## le même `offset`.
 var _secousse_camera: Camera2D
 var _secousse_amplitude := 0.0
 var _secousse_reste := 0.0
 var _secousse_duree := 0.0
 
-## Tirage propre à la caméra. Surtout pas `rng` : la secousse est décorative, et
-## ses deux nombres par image décalaient toutes les graines de zone tirées
-## ensuite (invariant 3).
+## Surtout pas `rng` : la secousse est décorative (invariant 3).
 var _rng_camera := RandomNumberGenerator.new()
 
 
-## Déclare qu'un panneau prend la souris, ou qu'il la rend. À appeler avec le
-## même objet dans les deux sens, et **toujours** depuis _exit_tree en plus de la
-## fermeture : une scène rechargée panneau ouvert laisserait sinon le joueur
-## incapable de frapper dans une scène où plus aucun panneau n'existe.
+## Dans les deux sens avec le même objet, et **toujours** aussi depuis _exit_tree :
+## une scène rechargée panneau ouvert laisserait le joueur incapable de frapper.
 func grab_ui_input(source: Object, grabbing: bool) -> void:
 	if grabbing:
 		_ui_grabbers[source] = true
@@ -119,18 +76,13 @@ func grab_ui_input(source: Object, grabbing: bool) -> void:
 func _ready() -> void:
 	rng.randomize()
 	_rng_camera.randomize()
-	# Rien à faire hors secousse : un autoload qui tourne pour rien coûte à
-	# chaque image de la partie.
+	# Rien à faire hors secousse.
 	set_process(false)
-	# Sinon la croix de la fenêtre ferme le jeu sans que personne ait pu écrire.
-	# Le pendant obligatoire est _notification : sans lui la fenêtre ne se
-	# fermerait plus du tout.
+	# Sinon la croix ferme le jeu avant qu'on écrive ; `_notification` quitte ensuite.
 	get_tree().auto_accept_quit = false
 
 
-## La fermeture par la croix ou par Alt+F4. On laisse une dernière chance
-## d'écrire, puis **on quitte quoi qu'il arrive** : un abonné en erreur ne doit
-## pas transformer la fenêtre en piège.
+## La croix ou Alt+F4 : on écrit, puis **on quitte quoi qu'il arrive**.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		sauvegarde_demandee.emit()
@@ -144,19 +96,13 @@ func goto_scene(path: String) -> void:
 	tree.change_scene_to_file(path)
 
 
-## Revient d'où l'on venait. Comme go_back() passe elle-même par goto_scene(),
-## deux appels successifs font un aller-retour : la touche qui ouvre un aperçu
-## peut donc aussi le refermer.
+## Passe par goto_scene() : deux appels font un aller-retour.
 func go_back(fallback: String = "res://world/zone.tscn") -> void:
 	goto_scene(previous_scene_path if previous_scene_path != "" else fallback)
 
 
-## Fige le jeu très brièvement à l'impact.
-##
-## **Un gel par geste et non par cible** : l'appelant n'a pas à compter ses
-## impacts, c'est `hit_stop_periode` qui écarte les suivants. Un balayage qui
-## touche cinq ennemis, une salve dont les traits arrivent ensemble et une touche
-## tenue sur une nuée ne figent donc le jeu qu'une fois.
+## Fige le jeu brièvement. **Un gel par geste et non par cible** : `hit_stop_periode`
+## écarte les suivants, l'appelant n'a rien à compter.
 func hit_stop(duration: float = -1.0) -> void:
 	if _hit_stop_active:
 		return
@@ -177,9 +123,7 @@ func hit_stop(duration: float = -1.0) -> void:
 	_hit_stop_active = false
 
 
-## Secoue la caméra. Appelée pendant une secousse, elle **reprend la plus forte
-## des deux** au lieu d'en ajouter une : un balayage qui touche cinq ennemis
-## secoue comme un coup, pas comme cinq.
+## Relancée, elle reprend la plus forte amplitude au lieu d'en ajouter une.
 func shake_camera(camera: Camera2D, amount: float = 3.0, duration: float = 0.15) -> void:
 	if camera == null or amount <= 0.0 or duration <= 0.0:
 		return
@@ -192,9 +136,7 @@ func shake_camera(camera: Camera2D, amount: float = 3.0, duration: float = 0.15)
 	set_process(true)
 
 
-## Le delta n'est pas dé-scalé, comme chez HitFeedback : pendant un gel la
-## secousse se fige avec le reste du jeu. Dé-scalée, elle jouerait ses quinze
-## centièmes pendant que l'image, elle, ne bouge plus.
+## Delta non dé-scalé : la secousse se fige avec le jeu pendant un gel.
 func _process(delta: float) -> void:
 	if not is_instance_valid(_secousse_camera):
 		_reposer_la_camera()

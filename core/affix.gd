@@ -1,11 +1,8 @@
 class_name Affix
 extends Resource
 
-## Un modificateur porté par un ennemi, et la couleur par laquelle il s'annonce.
-## Un `.tres` par affixe, éditable dans l'inspecteur.
-##
-## Chaque affixe a une contrepartie. Un affixe sans contrepartie n'est pas un
-## affixe, c'est une barre de vie plus longue.
+## Un modificateur d'ennemi et sa couleur. Chaque affixe a une contrepartie, sinon
+## c'est une barre de vie plus longue.
 
 @export var id: String = ""
 @export var display_name: String = ""
@@ -21,11 +18,8 @@ extends Resource
 @export var cooldown_mult: float = 1.0
 
 @export_group("Effets")
-## Ajouté à la notation d'armure. Elle protège proportionnellement plus des
-## petits coups que des gros : c'est ce qui rend le harcèlement inefficace contre
-## lui, donc ce qui change la façon de l'attaquer plutôt que la durée du combat.
-## Et comme l'armure ne couvre que le physique, un tir élémentaire reste le
-## recours — voir CharacterStats.armor_reduction.
+## Ajouté à la notation d'armure : rend le harcèlement inefficace, et le tir
+## élémentaire reste le recours.
 @export var armor: float = 0.0
 ## Fraction des dégâts infligés reconvertie en soin.
 @export var lifesteal: float = 0.0
@@ -34,7 +28,6 @@ extends Resource
 @export var xp_mult: float = 1.5
 
 
-## Le nom tel que le joueur le lit au-dessus de l'ennemi. `display_name` est la
-## clé française écrite dans le `.tres`.
+## `display_name` est la clé française.
 func nom_affiche() -> String:
 	return Textes.t(display_name)

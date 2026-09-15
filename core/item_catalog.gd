@@ -1,15 +1,9 @@
 class_name ItemCatalog
 
-## Toutes les bases d'objets du projet, et **le seul endroit où elles sont
-## listées**. La table de butin y puise, la sauvegarde y retrouve une base par
-## son identifiant : deux listes séparées auraient fini par diverger, et un objet
-## qui tombe sans pouvoir être rechargé est pire qu'un objet qui ne tombe pas.
-##
-## Ajouter une base = une ligne ici et un `id` dans son `.tres`. Le test du
-## catalogue refuse un identifiant vide ou en double.
+## Toutes les bases d'objets, **le seul endroit où elles sont listées** : butin et
+## sauvegarde y puisent. Un test refuse un identifiant vide ou en double.
 
-## Rangées par lignée, puis par palier croissant : c'est ainsi qu'on les lit, et
-## une lignée à laquelle il manque un palier se voit sans compter.
+## Par lignée, puis par palier croissant : un palier manquant se voit sans compter.
 const ALL := [
 	# lame
 	preload("res://resources/items/epee.tres"),
@@ -68,44 +62,26 @@ const ALL := [
 	preload("res://resources/items/bague_ouvragee.tres"),
 	preload("res://resources/items/chevaliere.tres"),
 
-	# Les manuels (jalon 6). Ils sont dans le catalogue parce qu'ils tombent et se
-	# rechargent comme le reste — mais ils ne se **portent** pas, et les règles
-	# écrites pour l'équipement les laissent donc de côté : pas d'affixes, pas de
-	# lignée à deux paliers, pas d'implicite qui doit croître. La question se pose
-	# à un seul endroit, `EquipmentSlots.famille_equipable()`.
+	# Les manuels tombent et se rechargent, mais ne se portent pas : les règles
+	# d'équipement les laissent de côté (`EquipmentSlots.famille_equipable()`).
 	preload("res://resources/items/manuel_foudre.tres"),
-	# Jalon 10. Chacun sa lignée d'un seul palier — un manuel ne se relève pas, son
-	# palier dit sa rareté — et son propre `kind` : trois piles de livres
-	# identiques seraient trois objets qu'on ne distingue qu'en les survolant.
+	# Chacun sa lignée d'un palier, qui dit sa rareté, et son propre `kind`.
 	preload("res://resources/items/manuel_armes.tres"),
 	preload("res://resources/items/manuel_feu.tres"),
 ]
 
 
-## Le manuel qu'un personnage neuf reçoit à son premier pas. Un identifiant en
-## constante et non un tirage : un jeu qui ferait chercher son premier manuel
-## dans le butin apprendrait sa mécanique centrale par le hasard.
+## Un identifiant et non un tirage : la mécanique centrale ne s'apprend pas au hasard.
 const ID_MANUEL_DE_DEPART := "manuel_foudre"
 
-## Combien de niveaux une base continue de tomber **après** l'ouverture de celle
-## qui la remplace. C'est toute la règle de relève : une base périmée qui continue
-## de tomber n'est pas une chance de plus, c'est du bruit dans le butin.
-##
-## Six et non zéro : la bascule doit être un chevauchement, pas une falaise. Deux
-## ou trois zones pendant lesquelles on voit les deux tomber, assez pour
-## comprendre ce qui remplace quoi sans avoir rien à lire.
-##
-## Le chiffre se lit dans le jeu : la lame de guerre ouvre au niveau 34, donc
-## l'épée large cesse de tomber après la zone 40.
+## Combien de niveaux une base tombe encore **après** l'ouverture de sa remplaçante :
+## un chevauchement, pas une falaise. La lame de guerre ouvre au 34, l'épée large
+## cesse après 40.
 const MARGE_DE_RELEVE := 6
 
 
-## La base qui prend la relève de celle-ci dans sa lignée — le palier
-## immédiatement supérieur — ou null quand c'est déjà le meilleur.
-##
-## Calculée une fois pour tout le catalogue et retenue : `disponibles` la demande
-## pour chacune des quarante-deux bases, à chaque chute. Sans la table, ce
-## serait mille sept cents comparaisons par ennemi tué.
+## La relève de chaque base dans sa lignée, ou null. Retenue : `disponibles` la
+## demande pour chaque base à chaque chute.
 static var _releves: Dictionary = {}
 
 
@@ -122,13 +98,8 @@ static func releve_de(base: ItemBase) -> ItemBase:
 	return _releves.get(base.id)
 
 
-## Entre quels niveaux de zone cette base tombe : son niveau requis, et le
-## dernier niveau où elle sort encore. **Un y de zéro veut dire « sans fin »** —
-## rien ne viendra jamais la remplacer, c'est le meilleur palier de sa lignée.
-##
-## C'est la règle elle-même, pas une lecture de la règle : `disponibles` s'en
-## sert pour décider, et la fiche de la forge pour l'afficher. L'outil qui sert à
-## vérifier le catalogue ne peut donc pas dire autre chose que ce qui tombe.
+## Niveau requis et dernier niveau de chute ; **y à zéro : sans fin**. C'est la règle
+## elle-même : `disponibles` décide par elle, la forge l'affiche.
 static func fenetre_de_chute(base: ItemBase) -> Vector2i:
 	var suivante := releve_de(base)
 	return Vector2i(
@@ -137,12 +108,7 @@ static func fenetre_de_chute(base: ItemBase) -> Vector2i:
 	)
 
 
-## Les bases qu'une zone de ce niveau peut lâcher. Ici et non dans LootTable :
-## c'est le catalogue qui sait ce qu'il contient, et la table de butin n'a qu'à
-## tirer dans ce qu'on lui donne.
-##
-## Une seule règle, et c'est la fenêtre de chute : une base tombe entre son
-## niveau requis et le moment où sa remplaçante l'a chassée.
+## Les bases qu'une zone de ce niveau peut lâcher, par la fenêtre de chute.
 static func disponibles(niveau: int) -> Array:
 	var out := []
 	for base in ALL:
@@ -155,12 +121,8 @@ static func disponibles(niveau: int) -> Array:
 	return out
 
 
-## La base portant cet identifiant, ou null s'il n'existe plus. Le null n'est pas
-## une erreur de programmation mais un cas de jeu : une sauvegarde peut contenir
-## un objet dont la base a été retirée du projet depuis.
-##
-## Balayage linéaire : les appelants sont le chargement d'une sauvegarde et les
-## tests, aucun n'est dans une boucle de jeu.
+## Null pour une base retirée du projet, qu'une sauvegarde peut citer. Balayage
+## linéaire : jamais dans une boucle de jeu.
 static func by_id(id: String) -> ItemBase:
 	for base in ALL:
 		if base.id == id:

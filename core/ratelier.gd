@@ -1,23 +1,12 @@
 class_name Ratelier
 extends RefCounted
 
-## Les manuels en cours d'étude. Trois emplacements, et **c'est le seul endroit
-## où un manuel apprend** : celui qui dort dans le sac ne gagne rien.
-##
-## Trois, et pas « autant qu'on en ramasse » : c'est ce nombre qui fait du
-## râtelier un choix plutôt qu'un rangement. Il vit sur une constante pour
-## pouvoir bouger, jamais dans la mise en page d'un panneau.
-##
-## Le manuel posé ici **quitte le sac**, comme un plastron qu'on enfile. Trois
-## livres de deux cases sur deux, c'est le quart du sac immobilisé à demeure ; et
-## laisser un manuel à la fois rangé et étudié rendrait flou le seul endroit où
-## il progresse.
+## Les manuels à l'étude : trois emplacements, **le seul endroit où un manuel
+## apprend**. Trois pour que ce soit un choix ; un manuel posé ici quitte le sac.
 
 const EMPLACEMENTS := 3
 
-## Un Item par emplacement, ou null. L'Item et non le seul `Manuel` : c'est
-## l'objet entier qu'on a ramassé, avec sa base, son niveau d'objet et son
-## icône — le retirer doit le rendre au sac tel qu'il est entré.
+## Un Item par emplacement, ou null : l'objet entier, rendu tel qu'il est entré.
 var manuels: Array[Item] = []
 
 
@@ -30,11 +19,8 @@ static func accepte(item: Item) -> bool:
 	return item != null and item.manuel != null
 
 
-## Pose un manuel et rend celui qu'il remplace, ou null.
-##
-## **Rend l'objet lui-même quand il est refusé** — mauvais emplacement, ou objet
-## qui n'est pas un manuel — pour que l'appelant ne le perde jamais. C'est la
-## règle de `Player.equip()`, et pour la même raison.
+## Rend celui qu'il remplace, ou **l'objet lui-même s'il est refusé** — jamais perdu,
+## comme `Player.equip()`.
 func poser(index: int, item: Item) -> Item:
 	if item == null:
 		return null
@@ -57,8 +43,7 @@ func a(index: int) -> Item:
 	return manuels[index] if index >= 0 and index < EMPLACEMENTS else null
 
 
-## Les manuels réellement posés, sans les trous. C'est cette liste que
-## l'expérience parcourt à chaque mort d'ennemi.
+## Les manuels posés, sans les trous.
 func equipes() -> Array[Item]:
 	var out: Array[Item] = []
 	for item in manuels:

@@ -1,26 +1,12 @@
 class_name Tirage
 
-## Le tirage pondéré, et rien d'autre.
-##
-## Une classe à part et non une méthode d'ItemAffixPool : la réserve précharge
-## les `.tres` d'ItemAffix, donc un ItemAffix qui appellerait la réserve
-## refermerait le cycle de dépendances que GDScript refuse. Ici, rien ne dépend
-## de rien — c'est une feuille de l'arbre, comme DamageType.
+## Le tirage pondéré. Une feuille : dans `ItemAffixPool`, un `ItemAffix` qui
+## l'appellerait refermerait un cycle de dépendances.
 
 
-## L'index tiré dans `poids`, ou -1 quand il n'y a rien à tirer : liste vide, ou
-## que des poids nuls. Le -1 n'est pas une erreur de programmation mais un cas de
-## jeu ordinaire — un affixe dont aucun palier n'est ouvert, une réserve épuisée
-## — et l'appelant qui le reçoit ne doit pas réessayer.
-##
-## Les poids négatifs comptent pour zéro plutôt que de retrancher à leurs
-## voisins : une faute de saisie dans un `.tres` ne doit pas fausser le reste de
-## la table en silence.
-##
-## **Exactement un nombre tiré, quel que soit le résultat** — et aucun quand il
-## n'y a rien à tirer. Le hasard de ce projet est reproductible à partir d'une
-## graine : une fonction qui consommerait tantôt un tirage tantôt deux décalerait
-## tout ce qui vient après elle.
+## L'index tiré, ou -1 s'il n'y a rien à tirer — un cas de jeu, à ne pas réessayer.
+## Un poids négatif compte pour zéro. **Exactement un tirage**, aucun s'il n'y a rien
+## à tirer (invariant 3).
 static func pondere(rng: RandomNumberGenerator, poids: Array) -> int:
 	var total := 0
 	for p in poids:

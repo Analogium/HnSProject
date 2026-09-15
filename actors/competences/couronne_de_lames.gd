@@ -32,6 +32,9 @@ class Lame:
 
 var _lames: Array[Lame] = []
 var _rotation := 0.0
+## Celui qui les a lancées, pour ce que ses états changent à leurs coups. Posé une
+## fois : la couronne ne change pas de porteur.
+var auteur: Etats
 
 
 func _ready() -> void:
@@ -87,7 +90,7 @@ func _trancher() -> void:
 		var centre := to_global(_centre(lame, _rotation + lame.place))
 		for cible in cibles:
 			if centre.distance_to(cible.global_position) <= CONTACT and lame.contacts.accepte(cible):
-				Cibles.frapper(cible, lame.geste.tirer(Game.rng), centre)
+				Cibles.frapper(cible, lame.geste.tirer(Game.rng), centre, auteur)
 
 
 func _centre(lame: Lame, angle: float) -> Vector2:

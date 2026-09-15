@@ -1,23 +1,19 @@
 class_name DamageInfo
 extends RefCounted
 
-## Un coup : ce qu'il porte **par nature**, d'où il vient, et s'il est critique.
-##
-## Une part par nature et non un montant et une nature : un sort de foudre qui
-## porte trois points de froid doit perdre sa foudre contre un ennemi qui y résiste
-## et **garder son froid**. Réduire le tout par une seule résistance ferait mentir
-## l'élément écrit sur l'objet qui a donné ce froid.
+## Un coup : ses parts **par nature**, sa source, son critique. Par nature, pour qu'un
+## sort de foudre chargé de froid perde sa foudre et garde son froid.
 
-## Indexées par `DamageType.Kind`, comme les tables de `DamageType` : l'enum est
-## déjà une suite d'entiers à partir de zéro. `Hurtbox` les réduit une à une.
+## Indexées par `DamageType.Kind` ; `Hurtbox` les réduit une à une.
 var parts: Array[float] = []
 var source_position: Vector2
 var knockback: float
 var is_crit: bool
+## Les états de qui a porté le coup : sa bénédiction l'affaiblit, et la pourriture
+## qu'il pose le soigne. Null pour un coup sans auteur — le mannequin, les tests.
+var auteur: Etats
 
-## Le total des parts : ce que la vie perd et ce que le nombre affiche. Calculé et
-## non rangé à côté des parts, sinon la mitigation devrait tenir deux vérités à
-## jour, et l'une des deux finirait par mentir.
+## Le total des parts, calculé et jamais rangé : une seule vérité.
 var amount: float:
 	get:
 		var total := 0.0
@@ -31,8 +27,7 @@ var type: DamageType.Kind:
 		return DamageType.dominante(parts)
 
 
-## Un coup d'une seule nature : celui des ennemis, qui n'ont qu'un corps pour
-## frapper. Physique par défaut : c'est ce que fait une lame.
+## Un coup d'une seule nature, physique par défaut : celui des ennemis.
 func _init(
 	p_amount: float,
 	p_source: Vector2,
@@ -47,9 +42,7 @@ func _init(
 	is_crit = p_crit
 
 
-## Un coup en plusieurs parts, dans l'ordre de `DamageType.Kind`. Les parts sont
-## recopiées : `Hurtbox` écrit dedans, et le lanceur ne doit pas voir la
-## mitigation d'un ennemi revenir dans son sort.
+## Les parts sont recopiées : la mitigation d'un ennemi ne revient pas dans le sort.
 static func en_parts(
 	p_parts: Array[float], p_source: Vector2, p_knockback: float = 0.0, p_crit: bool = false
 ) -> DamageInfo:
@@ -59,24 +52,25 @@ static func en_parts(
 	return info
 
 
-## La couleur de la gerbe d'éclats. Ici et non chez celui qui dessine, pour que
-## « la part la plus forte » ne s'écrive qu'à un endroit.
+## « La part la plus forte » ne s'écrit qu'ici.
 func color() -> Color:
 	return DamageType.COLORS[type]
 
 
-## Un coup porté par le joueur : les **parts** viennent de l'appelant — du geste
-## résolu et déjà tiré — et c'est ici, et nulle part ailleurs, que le critique
-## s'applique. Il multiplie toutes les parts : un critique ne choisit pas sa
-## nature.
-##
-## **Un seul tirage, quel que soit le résultat** (invariant 3) : `Game.rng` est le
-## fil des tirages de la partie, et un coup qui consommerait tantôt un nombre
-## tantôt zéro décalerait tous les tirages suivants.
+## Toutes les parts du même facteur : un critique ne choisit pas sa nature, un
+## engourdissement non plus.
+func multiplier(facteur: float) -> void:
+	if facteur == 1.0:
+		return
+	for i in parts.size():
+		parts[i] *= facteur
+
+
+## Un coup du joueur : les parts viennent du geste tiré, et **le critique ne s'applique
+## qu'ici**. Un seul tirage, quel que soit le résultat (invariant 3).
 static func roll(stats: CharacterStats, source: Vector2, p_parts: Array[float]) -> DamageInfo:
 	var crit := Game.rng.randf() < stats.crit_chance
 	var info := DamageInfo.en_parts(p_parts, source, stats.knockback_force, crit)
 	if crit:
-		for i in info.parts.size():
-			info.parts[i] *= stats.crit_multiplier
+		info.multiplier(stats.crit_multiplier)
 	return info

@@ -1,31 +1,24 @@
 class_name Hurtbox
 extends Area2D
 
-## La zone qui encaisse. C'est le seul point par lequel passent tous les coups
-## du jeu — ceux du joueur, ceux des ennemis, ceux des projectiles — donc c'est
-## ici que se déclenchent l'esquive, la mitigation et le retour visuel, et non
-## chez chaque acteur : sinon il faudrait y penser à chaque nouvel archétype.
+## **Le seul point de passage de tous les coups** : l'esquive, la mitigation, les états
+## et le retour visuel s'y déclenchent, et non chez chaque acteur.
 
 signal damaged(info: DamageInfo)
 
-## Layer 4 du projet, « player_hurtbox » (voir project.godot). Sert uniquement à
-## teinter le retour visuel : encaisser et infliger doivent se distinguer au
-## coin de l'œil, sans lire le chiffre.
+## Layer 4, « player_hurtbox » : ne sert qu'à teinter le retour visuel.
 const PLAYER_LAYER := 1 << 3
 
-## Un coup ne descend jamais en dessous : sinon une armure suffisante rendrait
-## invincible, ce qui est une impasse et non une difficulté.
+## Plancher d'un coup : sans lui, assez d'armure rendrait invincible.
 const MIN_DAMAGE := 1.0
 
 @export var invulnerable: bool = false
 
-## La fiche de l'acteur qui porte cette zone, posée par lui. Une référence et non
-## une copie des champs défensifs : sept valeurs à recopier, et à ne pas oublier
-## de remettre à jour à chaque objet équipé.
-##
-## Laissée à null, la zone encaisse tout brut — ce qu'il faut pour un mannequin
-## de test, qui doit mesurer les dégâts et non les absorber.
+## La fiche de l'acteur, par référence. Null — le mannequin — encaisse tout brut.
 var stats: CharacterStats
+
+## Ses états. Null — le mannequin — n'en prend aucun et ne tire rien.
+var etats: Etats
 
 
 func take_damage(info: DamageInfo) -> void:
@@ -34,14 +27,14 @@ func take_damage(info: DamageInfo) -> void:
 
 	var on_player := (collision_layer & PLAYER_LAYER) != 0
 
+	# La bénédiction de l'auteur d'abord : c'est **son** coup qui est plus faible,
+	# et l'armure doit le voir comme tel.
+	if info.auteur != null:
+		info.multiplier(info.auteur.facteur_de_degats_infliges)
+
 	if stats != null:
-		# L'esquive d'abord : un coup évité n'est pas un coup à zéro, il n'a pas
-		# eu lieu. Pas de signal damaged, donc ni recul, ni flash, ni vol de vie
-		# pour l'attaquant.
-		#
-		# Le test `> 0.0` n'est pas une optimisation : sans lui, chaque coup du
-		# jeu consommerait un tirage de Game.rng même quand personne n'a
-		# d'esquive, ce qui décalerait toutes les graines de zone tirées ensuite.
+		# L'esquive d'abord : un coup évité n'a pas eu lieu, pas de signal. Le test `> 0.0`
+		# évite un tirage quand personne n'esquive (invariant 3).
 		var evade := stats.evade_chance()
 		if evade > 0.0 and Game.rng.randf() < evade:
 			if HitFeedback.current != null:
@@ -52,22 +45,21 @@ func take_damage(info: DamageInfo) -> void:
 	if HitFeedback.current != null:
 		HitFeedback.current.hit(global_position, info, on_player)
 	damaged.emit(info)
+	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
+	# ne dépend que de ce que le coup porte (invariant 3).
+	if etats != null:
+		etats.subir(info.parts, info.auteur, Game.rng)
 
 
-## Chaque part par sa propre défense : le physique par l'armure, tout le reste
-## par sa résistance. La règle de chacune vit dans CharacterStats, qui est aussi
-## ce que lit la fiche de personnage — ici on ne fait que choisir laquelle
-## s'applique.
-##
-## **L'armure se calcule sur la part physique seule.** Elle protège plus des petits
-## coups : calculée sur le total d'un sort à cinquante points dont trois
-## physiques, elle traiterait ces trois points comme un gros coup.
-##
-## **Le plancher porte sur le total**, versé à la part dominante : appliqué part
-## par part, un coup en six natures ferait six points au lieu d'un.
+## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la
+## part physique seule ; le plancher porte sur le total, versé à la part dominante.
 func _mitigate(info: DamageInfo) -> void:
 	for kind in info.parts.size():
 		info.parts[kind] = stats.attenuer(kind, info.parts[kind])
+	# L'engourdissement après les défenses : « +10 % de dégâts reçus » se lit sur ce
+	# qui passe. Avant l'armure, elle en absorberait une part.
+	if etats != null:
+		info.multiplier(etats.facteur_de_degats_subis)
 	var total := info.amount
 	if total < MIN_DAMAGE:
 		info.parts[info.type] += MIN_DAMAGE - total

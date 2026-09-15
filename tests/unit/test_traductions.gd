@@ -232,6 +232,8 @@ func _attendus() -> Dictionary:
 		out[nature] = "nature de dégâts"
 	for libelle in DamageType.LIBELLES_DE_DEGATS:
 		out[libelle] = "dégâts d'une nature"
+	for nom in Etats.NOMS:
+		out[nom] = "nom d'un état"
 	for id in MotsCles.LIBELLES:
 		out[MotsCles.LIBELLES[id]] = "mot-clé"
 	for id in MotsCles.DESTINATAIRES:

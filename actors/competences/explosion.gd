@@ -13,6 +13,7 @@ const ETINCELLES := 8
 const CHAUD := Color(1.0, 0.9, 0.5)
 
 var _parts: Array[float] = []
+var _auteur: Etats
 var _rayon := 0.0
 ## L'identifiant et non la référence : la cible directe peut être libérée avant que
 ## l'explosion ne frappe, et une référence libérée ne se compare plus.
@@ -23,9 +24,11 @@ var _a_frappe := false
 
 
 static func poser(
-	parent: Node, point: Vector2, parts: Array[float], rayon: float, exclue: Hurtbox, teinte: Color
+	parent: Node, point: Vector2, parts: Array[float], rayon: float, exclue: Hurtbox, teinte: Color,
+	auteur: Etats
 ) -> Explosion:
 	var e := Explosion.new()
+	e._auteur = auteur
 	e._parts = parts.duplicate()
 	e._rayon = rayon
 	e._exclue = exclue.get_instance_id() if exclue != null else 0
@@ -47,7 +50,7 @@ func _physics_process(delta: float) -> void:
 		_a_frappe = true
 		for cible in Cibles.dans_le_cercle(get_world_2d(), global_position, _rayon):
 			if cible.get_instance_id() != _exclue:
-				Cibles.frapper(cible, _parts, global_position)
+				Cibles.frapper(cible, _parts, global_position, _auteur)
 	_age += delta
 	queue_redraw()
 	if _age >= VIE:

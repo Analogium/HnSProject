@@ -1,30 +1,20 @@
 class_name Inventory
 extends RefCounted
 
-## Le sac : une grille de cases où chaque objet occupe un **rectangle**. Ce n'est
-## donc pas le nombre d'objets qui limite mais la place qu'ils prennent, et ranger
-## devient une décision : garder l'arme encombrante ou trois babioles.
-##
-## Modèle pur — aucun nœud, aucun dessin. Il tourne dans un test sans arbre de
-## scène.
+## Le sac : chaque objet occupe un **rectangle**, et c'est la place qui limite, pas le
+## nombre. Modèle pur, sans nœud.
 
 signal changed
 
 const EMPTY := -1
 
-## La taille du sac du joueur. Ici et non chez le Player : la sauvegarde doit
-## reconstruire la même grille sans rien savoir de l'acteur qui la porte, et le
-## jour d'un agrandissement, deux définitions feraient changer de place les objets
-## rangés au-delà de l'ancienne limite.
-##
-## Large plutôt que haut : une épée mange trois lignes, et un sac de quatre lignes
-## n'accepterait presque rien.
+## Ici et non chez le Player : la sauvegarde reconstruit la grille sans l'acteur.
+## Large plutôt que haut : une épée mange trois lignes.
 const DEFAULT_COLS := 10
 const DEFAULT_ROWS := 5
 
 
-## Un objet et le coin haut-gauche qu'il occupe. Une classe et non un
-## dictionnaire : c'est ce que toute l'interface manipule.
+## Un objet et son coin haut-gauche.
 class Placed:
 	var data: Item
 	var cell: Vector2i
@@ -43,8 +33,7 @@ var rows: int
 ## Les objets rangés, dans leur ordre d'arrivée.
 var placed: Array[Placed] = []
 
-## Case -> index dans `placed`, ou EMPTY. Redondant avec `placed`, mais sans lui
-## chaque case survolée ferait relire la liste entière des objets.
+## Case -> index dans `placed` : sans lui, chaque survol relirait la liste.
 var _cells: PackedInt32Array
 
 
@@ -55,9 +44,7 @@ func _init(p_cols: int, p_rows: int) -> void:
 	_cells.fill(EMPTY)
 
 
-## L'encombrement d'un objet, borné à une case au minimum : un .tres laissé à
-## 0×0 donnerait sinon un objet qui n'occupe rien, donc invisible et impossible
-## à reprendre.
+## Au moins une case : un `.tres` à 0×0 serait invisible et impossible à reprendre.
 static func footprint(item: Item) -> Vector2i:
 	if item == null or item.base == null:
 		return Vector2i.ONE
@@ -98,10 +85,8 @@ func place(item: Item, cell: Vector2i) -> bool:
 	return true
 
 
-## Range l'objet à la première place libre, en balayant ligne par ligne de
-## gauche à droite — l'ordre dans lequel l'œil cherche lui-même un trou.
-## Renvoie faux quand plus rien ne rentre ; l'appelant doit alors laisser
-## l'objet où il est plutôt que de le perdre.
+## À la première place libre, ligne par ligne. Faux quand rien ne rentre : l'appelant
+## laisse l'objet où il est.
 func add(item: Item) -> bool:
 	for y in rows:
 		for x in cols:
@@ -116,12 +101,8 @@ func index_at(cell: Vector2i) -> int:
 	return _cells[cell.y * cols + cell.x]
 
 
-## Retire l'objet qui couvre cette case et le rend.
-##
-## La grille d'occupation est reconstruite en entier plutôt que rapiécée : retirer
-## un élément décale l'index de tous les suivants, et recoudre ça case par case
-## finit par laisser une case fantôme occupée par un objet qui n'existe plus.
-## Cinquante cases et une poignée d'objets, on peut se le payer.
+## Rend l'objet de cette case. La grille est reconstruite en entier : la rapiécer
+## laissait des cases fantômes.
 func take_at(cell: Vector2i) -> Item:
 	var i := index_at(cell)
 	if i == EMPTY:
@@ -133,9 +114,7 @@ func take_at(cell: Vector2i) -> Item:
 	return item
 
 
-## Vide le sac. Employée au chargement d'un personnage : le panneau
-## d'inventaire tient une référence sur *cet* objet depuis son bind, et lui en
-## substituer un neuf le laisserait afficher un sac fantôme.
+## Vide le sac sans le remplacer : le panneau garde une référence sur cet objet.
 func clear() -> void:
 	if placed.is_empty():
 		return

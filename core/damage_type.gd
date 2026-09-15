@@ -1,28 +1,18 @@
 class_name DamageType
 
-## Les natures de dégâts du jeu, et la couleur par laquelle chacune s'annonce.
-##
-## Une classe à part, et non un enum posé dans DamageInfo : CharacterStats doit
-## nommer ses résistances par nature, et DamageInfo nomme déjà CharacterStats.
-## Les deux se référenceraient en rond, ce que le compilateur GDScript refuse.
-## Ici, rien ne dépend de rien — c'est la feuille de l'arbre de dépendances.
+## Les natures de dégâts et leur couleur. Une feuille sans dépendance :
+## CharacterStats et DamageInfo la nomment toutes deux.
 
 enum Kind { PHYSICAL, COLD, FIRE, LIGHTNING, NECROTIC, HOLY }
 
-## Indexés par Kind. Un tableau et non un dictionnaire : l'enum est déjà une
-## suite d'entiers à partir de zéro, et l'indexation directe évite un accès haché
-## à chaque coup porté.
+## Indexés par Kind.
 const NAMES := ["physique", "froid", "feu", "foudre", "nécrotique", "sacré"]
 
-## L'identifiant de chaque nature dans les données, sans accent : il forme le nom
-## des statistiques de dégâts ajoutés — `degats_froid` — que les affixes visent
-## et que les sauvegardes écrivent. **Il ne change jamais** (invariant 1) ; le nom
-## lisible est dans NAMES.
+## L'identifiant sans accent, qui forme `degats_froid` : **définitif** (invariant 1).
 const IDS := ["physique", "froid", "feu", "foudre", "necrotique", "sacre"]
 
-## Les dégâts de chaque nature, tels qu'une ligne d'objet les écrit : « ajoute 3 à
-## 7 **dégâts de froid** ». Distinct de NAMES, l'adjectif seul, parce que le
-## français n'accorde pas « physiques » comme « de froid ».
+## « ajoute 3 à 7 **dégâts de froid** » : distinct de NAMES, le français n'accordant
+## pas « physiques » comme « de froid ».
 const LIBELLES_DE_DEGATS := [
 	"dégâts physiques",
 	"dégâts de froid",
@@ -32,14 +22,8 @@ const LIBELLES_DE_DEGATS := [
 	"dégâts sacrés",
 ]
 
-## La couleur de chaque nature, utilisée partout où elle se montre : le tir, la
-## gerbe d'éclats, les lignes de la fiche — mais pas le nombre qui s'envole, blanc
-## parce qu'il est le total de toutes les parts. Une seule définition, sinon « le
-## froid » finirait par être deux bleus différents selon l'endroit où on le
-## regarde.
-##
-## Choisies pour se distinguer en 32 px par la **valeur** autant que par la
-## teinte. Aucune n'approche l'or, qui reste réservé aux critiques et aux élites.
+## La couleur de chaque nature, partout sauf le nombre qui s'envole — blanc, c'est un
+## total. Distinctes par la valeur autant que la teinte ; aucune n'approche l'or.
 const COLORS := [
 	Color(1.00, 0.98, 0.88),   # physique : le blanc chaud de la lame
 	Color(0.50, 0.88, 1.00),   # froid : cyan clair
@@ -49,10 +33,8 @@ const COLORS := [
 	Color(1.00, 0.72, 0.80),   # sacré : rose pâle lumineux
 ]
 
-## Le champ de CharacterStats qui résiste à chaque nature. Le physique a une
-## chaîne vide : il ne passe pas par un pourcentage mais par l'armure, dont la
-## règle est tout autre. C'est la seule exception, et elle est ici plutôt que
-## dans un `if` recopié à chaque endroit qui interroge une résistance.
+## Le champ qui résiste à chaque nature ; vide pour le physique, qui passe par
+## l'armure.
 const RESIST_FIELDS := [
 	"",
 	"res_cold",
@@ -63,9 +45,7 @@ const RESIST_FIELDS := [
 ]
 
 
-## Le nom d'une nature dans la langue du joueur. Les tables gardent leurs valeurs
-## **françaises** : ce sont elles, les clés de traduction. Lire `NAMES` directement
-## pour l'afficher donne un mot qui restera français en anglais.
+## Dans la langue du joueur : les tables françaises sont les clés.
 static func nom(kind: int) -> String:
 	return Textes.t(NAMES[kind])
 
@@ -74,9 +54,7 @@ static func libelle_de_degats(kind: int) -> String:
 	return Textes.t(LIBELLES_DE_DEGATS[kind])
 
 
-## Une part nulle par nature : la forme des dégâts d'un coup ou d'un lancer.
-## Écrite ici pour que sa taille suive l'enum — une nature ajoutée à la fin de
-## `Kind` agrandit toutes les parts du jeu sans qu'on ait à y penser.
+## Une part nulle par nature, de la taille de l'enum.
 static func parts_vides() -> Array[float]:
 	var parts: Array[float] = []
 	parts.resize(Kind.size())
@@ -84,9 +62,7 @@ static func parts_vides() -> Array[float]:
 	return parts
 
 
-## La nature de la part la plus forte. À égalité, la première de l'enum : des
-## parts toutes nulles restent physiques, comme un coup dont personne n'a choisi
-## l'élément.
+## À égalité, la première : des parts nulles restent physiques.
 static func dominante(parts: Array[float]) -> Kind:
 	var plus_forte := 0
 	for i in parts.size():

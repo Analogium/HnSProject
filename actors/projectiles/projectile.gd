@@ -1,30 +1,17 @@
 class_name Projectile
 extends Area2D
 
-## Tir générique, partagé par le caster et par le joueur : avancer, s'arrêter au
-## mur, blesser la première Hurtbox rencontrée. Ce sont les layers de collision de
-## la scène qui décident de qui il peut toucher, pas le script — d'où
-## enemy_bolt.tscn et player_bolt.tscn.
-##
-## Contrairement aux ennemis, il garde son propre _physics_process. Le jour où les
-## projectiles se compteront par centaines, c'est le même chemin de migration
-## qu'eux : une boucle unique.
+## Tir générique du caster et du joueur : avancer, s'arrêter au mur, blesser la
+## première Hurtbox. Les layers de la scène décident de qui il touche.
 
 @export var speed: float = 140.0
-## Zéro par défaut, comme CharacterStats.knockback_force : ce jeu n'a pas de
-## recul. Un nouveau projectile ne doit pas en réintroduire sans qu'on le veuille.
+## Zéro : ce jeu n'a pas de recul.
 @export var knockback: float = 0.0
 @export var lifetime: float = 3.0
-## Les tirs du joueur figent brièvement le jeu à l'impact, comme le corps à
-## corps ; ceux des ennemis non, sinon se faire tirer dessus hacherait le jeu.
+## Les tirs du joueur figent le jeu à l'impact ; ceux des ennemis non.
 @export var hit_stop_on_impact: bool = false
-## La nature de la scène : celle que portent les tirs ennemis, qui n'ont qu'un
-## nombre, et **la couleur du tir par défaut**. Un éclair reste un éclair : le
-## froid qu'un objet y ajoute change ses dégâts, pas son dessin.
-##
-## Le joueur, lui, passe celle de son geste résolu (`setup`) : un nœud d'arbre qui
-## convertit la compétence en change la nature, et un sort devenu de feu qui
-## partirait encore violet se lirait comme un talent qui ne fait rien.
+## La nature de la scène : celle des tirs ennemis, et la couleur par défaut. Le joueur
+## passe celle de son geste (`setup`), pour qu'un sort converti change de couleur.
 @export var damage_type: DamageType.Kind = DamageType.Kind.PHYSICAL
 
 ## Distance à laquelle le tir naît devant son lanceur. Trop court, il apparaît
@@ -35,38 +22,24 @@ const MUZZLE := 12.0
 # Le dessin
 # --------------------------------------------------------------------------
 
-## Le glyphe de l'éclair, sept sommets dans une boîte de 24, **pointe vers +x**.
-## Le nœud tourne déjà sur sa trajectoire — `setup()` pose sa `rotation` — donc
-## le dessin n'a rien à orienter : il travaille en repère local.
-##
-## Sept sommets et non une image : à cette taille une texture serait figée, et un
-## éclair figé a l'air mort. Ici les sommets bougent d'une image à l'autre.
+## Le glyphe de l'éclair, sept sommets dans une boîte de 24, **pointe vers +x** — le
+## nœud tourne déjà. Des sommets et non une image : c'est leur gigue qui vit.
 const GLYPHE := [
 	Vector2(-10, 5), Vector2(1, 5), Vector2(1, 2), Vector2(10, 2),
 	Vector2(-2, -5), Vector2(-2, -1), Vector2(-10, -5),
 ]
 
-## La boîte du glyphe, puis son étirement : long dans le sens de la marche,
-## mince en travers. Dix-huit pixels sur trois — un dard, pas un pictogramme.
-##
-## **C'est un choix de lecture, pas un réglage de goût** : à cette finesse le cran
-## de l'éclair se referme presque, et la forme se lit comme un trait effilé. C'est
-## celle qui a été retenue en la regardant en jeu, contre la variante large qui
-## gardait mieux son cran mais faisait la taille du torse du joueur.
+## Long et mince : un dard de dix-huit pixels sur trois. **Un choix de lecture**, fait
+## en jeu contre une variante large de la taille du torse.
 const TAILLE := 12.0
 const ALLONGE := 1.8
 const FINESSE := 0.62
 
-## Le halo est le glyphe lui-même, réempilé plus large et plus pâle. Un contour
-## épais aurait été plus court à écrire, mais les jointures d'une polyligne large
-## sont anguleuses : le halo sortait carré autour d'une forme qui ne l'est pas.
+## Le halo est le glyphe réempilé plus large : une polyligne épaisse sortait carrée.
 const AUREOLES := [[1.34, 0.10], [1.18, 0.15], [1.07, 0.20]]
 
-## Le corps est sous-alimenté exprès. En mélange additif, la teinte pleine fait
-## déborder le canal le plus clair et le tir sort **blanc**, quelle que soit sa
-## nature — le froid et la foudre deviendraient le même trait. À cette valeur, il
-## se cumule avec ses auréoles jusqu'à sa couleur sans jamais saturer, sauf au
-## croisement des passes, qui devient le cœur brûlant.
+## Sous-alimenté exprès : en additif, la teinte pleine sature en blanc et le froid se
+## confondrait avec la foudre.
 const CORPS := 0.78
 
 ## Écart des sommets d'une image à l'autre, en unités du glyphe. C'est tout le
@@ -77,16 +50,15 @@ var _dir := Vector2.RIGHT
 ## Les parts du coup, par nature, tirées au lancer.
 var _parts: Array[float] = []
 var _source: Node2D
+## Les états du lanceur, lus à la naissance du tir et gardés jusqu'à l'impact : le
+## tir d'un caster mort en vol frappe encore, et sa bénédiction avec.
+var _auteur: Etats
 var _life := 0.0
-## La nature que le tir montre, ou -1 pour celle de sa scène. Distincte de
-## `damage_type`, qu'elle ne remplace pas : la scène garde son défaut, et c'est
-## le lanceur qui dit ce que ce tir-là est devenu.
+## La nature montrée, ou -1 pour celle de la scène.
 var _nature := -1
 
-## Tirage **local**, et surtout pas `Game.rng` : celui-là est le fil des tirages
-## de la partie, et un scintillement qui y puiserait décalerait toutes les graines
-## de zone tirées ensuite (invariant 3). Semé sur l'identité du nœud, pour que
-## deux tirs d'une même salve ne grésillent pas à l'unisson.
+## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
+## l'unisson.
 var _scintille := RandomNumberGenerator.new()
 
 
@@ -94,15 +66,13 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
 	_scintille.seed = int(get_instance_id())
-	# Additif : la lumière s'ajoute au sol au lieu de le couvrir. C'est ce qui
-	# sépare un trait coloré posé sur l'image de quelque chose qui éclaire.
+	# Additif : la lumière s'ajoute au sol.
 	var m := CanvasItemMaterial.new()
 	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	material = m
 
 
-## Le glyphe à cette échelle, sommets regigotés. Reconstruit à chaque appel et
-## non mis en cache : c'est le fait qu'il change qui fait l'effet.
+## Reconstruit à chaque appel : c'est le changement qui fait l'effet.
 func _forme(echelle: float) -> PackedVector2Array:
 	var k := TAILLE * echelle / 24.0
 	var pts := PackedVector2Array()
@@ -116,9 +86,7 @@ func _forme(echelle: float) -> PackedVector2Array:
 	return pts
 
 
-## La couleur que ce tir montre : la nature passée par le lanceur, sinon celle de
-## sa scène. `DamageType.COLORS` est la seule définition, celle que la gerbe
-## d'éclats et la fiche montrent aussi.
+## La nature passée par le lanceur, sinon celle de la scène.
 func teinte() -> Color:
 	return DamageType.COLORS[_nature if _nature >= 0 else damage_type]
 
@@ -134,11 +102,8 @@ func _draw() -> void:
 	draw_colored_polygon(_forme(1.0), corps)
 
 
-## Fait partir un tir, avec le piège de l'ordre : add_child d'abord, sinon
-## global_position ne veut rien dire.
-##
-## Ajout immédiat et non différé, contrairement à GroundItem : un tir part toujours
-## depuis _physics_process, jamais depuis un callback de collision.
+## add_child d'abord, sinon global_position ne veut rien dire. Immédiat : un tir ne
+## part jamais d'un rappel de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
 	parts: Array[float], source: Node2D, vitesse := 0.0, nature := -1
@@ -149,9 +114,7 @@ static func spawn(
 	return bolt
 
 
-## Un tir d'une seule nature, celle de sa scène : le chemin des ennemis, qui ne
-## portent qu'un nombre. La nature reste ainsi écrite à un seul endroit, dans
-## l'inspecteur de `enemy_bolt.tscn`.
+## Le chemin des ennemis : la nature reste écrite dans `enemy_bolt.tscn`.
 static func spawn_d_une_nature(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
 	montant: float, source: Node2D
@@ -173,23 +136,15 @@ static func _naitre(parent: Node, scene: PackedScene, from: Vector2, dir: Vector
 	return bolt
 
 
-## À appeler après add_child, sinon global_position ne veut rien dire.
-##
-## `vitesse` à zéro garde celle de la scène : c'est le cas des tirs ennemis, qui
-## n'ont pas de compétence. Le joueur passe toujours celle de la sienne, et
-## `player_bolt.tscn` n'en déclare donc plus — une valeur toujours écrasée
-## laisserait croire qu'on règle la vitesse du tir en l'y changeant.
-##
-## La durée de vie, elle, reste sur la scène : un tir plus rapide porte donc plus
-## loin, ce qui est ce qu'on attend d'un bonus de vitesse de projectile.
-##
-## Les parts sont recopiées : le lanceur tire les suivantes dans son propre tableau.
+## Après add_child. `vitesse` à zéro garde celle de la scène (tirs ennemis) ; la durée
+## de vie reste sur la scène, donc un tir plus rapide porte plus loin. Parts recopiées.
 func setup(
 	dir: Vector2, parts: Array[float], source: Node2D, vitesse := 0.0, nature := -1
 ) -> void:
 	_dir = dir.normalized()
 	_parts = parts.duplicate()
 	_source = source
+	_auteur = Etats.de(source)
 	if vitesse > 0.0:
 		speed = vitesse
 	# Négative, on garde celle de la scène : c'est le cas des tirs ennemis, qui
@@ -202,9 +157,7 @@ func setup(
 func _physics_process(delta: float) -> void:
 	global_position += _dir * speed * delta
 	_life += delta
-	# Redessiné à chaque pas : c'est le seul endroit du jeu où repeindre en
-	# permanence se justifie, parce que c'est le changement lui-même qu'on
-	# regarde. Sept sommets et quatre polygones, sur une poignée de tirs.
+	# Redessiné à chaque pas : c'est le changement qu'on regarde.
 	queue_redraw()
 	if _life >= lifetime:
 		queue_free()
@@ -214,14 +167,10 @@ func _on_area_entered(area: Area2D) -> void:
 	if not area is Hurtbox:
 		return
 	var info := DamageInfo.en_parts(_parts, global_position, knockback)
+	info.auteur = _auteur
 	(area as Hurtbox).take_damage(info)
-	# Le tir n'est qu'un messager : c'est le lanceur qui porte l'affixe, donc
-	# c'est lui qu'on soigne, s'il est encore en vie.
-	#
-	# La validité se teste **avant** la conversion : convertir un objet déjà libéré
-	# est en soi une erreur, et elle interrompt la fonction avant son queue_free().
-	# Le tir d'un caster tué pendant que sa bille vole traverse alors le joueur en
-	# le blessant à chaque image, jusqu'à expiration.
+	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
+	# caster libéré ferait sinon traverser le joueur par son tir (invariant 4).
 	if is_instance_valid(_source):
 		var caster := _source as Enemy
 		if caster != null:

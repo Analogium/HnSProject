@@ -55,7 +55,7 @@ func tick(delta: float) -> void:
 		move = (goal - global_position).normalized() * strafe_bias
 		strafing = true
 
-	velocity = velocity.lerp(move * stats.move_speed, ACCEL)
+	velocity = velocity.lerp(move * vitesse_de_deplacement(), ACCEL)
 	move_and_slide()
 
 	# Sans ça il s'use contre les murs en tournant toujours du même côté.

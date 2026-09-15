@@ -5,13 +5,8 @@ signal died(enemy: Enemy)
 
 @export var stats: CharacterStats
 
-## Rayon auquel l'ennemi remarque sa cible : à peu près le bord de l'écran en
-## 640 × 360.
-##
-## À ne pas confondre avec CULL_DISTANCE (700 px), qui est un garde-fou de
-## performance : entre les deux l'ennemi est bien mis à jour, il ne t'a simplement
-## pas encore repéré. Les confondre ferait geler à l'écran des ennemis
-## parfaitement visibles.
+## Rayon de repérage, le bord de l'écran. À ne pas confondre avec CULL_DISTANCE
+## (700 px), le garde-fou de performance.
 @export var detection_radius: float = 350.0
 
 @onready var sprite: ActorSprite = $Sprite
@@ -24,21 +19,20 @@ var affixes: Array[Affix] = []
 ## Fraction des dégâts infligés reconvertie en soin, cumulée depuis les affixes.
 var lifesteal := 0.0
 
-## Le niveau de la zone où il naît. Posé par l'EnemyManager **avant** l'entrée
-## dans l'arbre : sa fiche est mise à l'échelle dans _ready, et le poser après
-## donnerait un ennemi de niveau 1 avec une étiquette de niveau 40.
+## Le niveau de la zone, posé par l'EnemyManager **avant** l'entrée dans l'arbre :
+## `_ready` met la fiche à l'échelle.
 var niveau := 1
 
 var health: float
-## Attente avant le prochain coup. Sur Enemy et non sur chaque archétype : le
-## grunt et le caster la décomptent de la même façon.
+## Sur Enemy : le grunt et le caster la décomptent pareil.
 var _attack_cd := 0.0
 var target: Node2D
 var is_dead := false
 var is_aggro := false
-## Posé par EnemyManager.register(). Sert aux archétypes qui doivent faire
-## naître quelque chose dans la scène (le caster et ses projectiles).
+## Posé par EnemyManager.register() ; le caster y fait naître ses tirs.
 var manager: EnemyManager
+## Ses états, neufs pour chaque ennemi.
+var etats := Etats.new()
 
 
 func _ready() -> void:
@@ -49,34 +43,26 @@ func _ready() -> void:
 	# quelque chose à écrire.
 	_tirer_affixes()
 
-	# **La copie, et une seule pour les deux écrivains.** La fiche vient d'un
-	# `.tres` partagé par tous les exemplaires de l'archétype, et aucun `.tres` du
-	# projet n'est `resource_local_to_scene` : écrire dedans multiplierait la vie
-	# de tous les grunts de la session.
-	#
-	# Mais **seulement si quelqu'un écrit**. Au niveau 1 et sans affixe il n'y a
-	# rien à changer, et sept cents fiches copiées pour rien font une ligne de
-	# cache par ennemi dans la boucle de tick : mesuré à 5,4 ms de physique contre
-	# 4,4 à sept cents ennemis simulés.
+	# **Une copie, et seulement si quelqu'un écrit** : la fiche est un `.tres` partagé
+	# (invariant 2), mais sept cents copies inutiles coûtaient 5,4 ms de physique contre
+	# 4,4 à sept cents ennemis.
 	if niveau > 1 or not affixes.is_empty():
 		stats = stats.duplicate()
 		CharacterStats.mettre_a_l_echelle(stats, niveau)
 		_appliquer_affixes()
-	# Après la mise à l'échelle et les affixes : donnée avant, la hurtbox
-	# défendrait avec la fiche d'origine et ignorerait l'armure de l'affixe.
+	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
+	hurtbox.etats = etats
+	etats.change.connect(_montrer_les_etats)
+	etats.soin.connect(_soigner)
 	_set_health(stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
 	set_physics_process(false)
 
 
-## Le tirage se déduit de la case d'apparition, comme la silhouette et le sens de
-## rotation du caster. Surtout pas Game.rng : une même graine de zone doit
-## redonner exactement les mêmes ennemis affixés.
-##
-## Séparé de l'application : c'est son résultat qui décide s'il faut copier la
-## fiche avant d'y écrire.
+## Déduit de la case d'apparition, jamais de Game.rng : une graine redonne les mêmes
+## ennemis. Séparé de l'application, qui dépend de son résultat.
 func _tirer_affixes() -> void:
 	var rng := RandomNumberGenerator.new()
 	# Décalé par rapport à la graine de silhouette, sinon la variante et
@@ -87,8 +73,7 @@ func _tirer_affixes() -> void:
 	affix_tag.set_affixes(affixes)
 
 
-## N'écrit que dans une fiche déjà copiée. Sans affixe, il n'y a rien à faire —
-## mais le liseré, lui, ne se pose que s'il y en a.
+## N'écrit que dans une fiche déjà copiée.
 func _appliquer_affixes() -> void:
 	if affixes.is_empty():
 		return
@@ -116,8 +101,7 @@ func on_damage_dealt(amount: float) -> void:
 	_set_health(health + amount * lifesteal)
 
 
-## Le seul chemin pour changer la vie : la barre suivait chaque écriture de
-## `health` à la main, et une seule oubliée la faisait mentir.
+## **Le seul chemin pour changer la vie** : la barre suit.
 func _set_health(value: float) -> void:
 	health = clampf(value, 0.0, stats.max_health)
 	health_bar.set_health(health, stats.max_health)
@@ -127,16 +111,44 @@ func setup(p_target: Node2D) -> void:
 	target = p_target
 
 
-## Appelée par l'EnemyManager avant tick(). Chez le manager et non dans tick() de
-## chaque archétype : un archétype qui oublierait de l'appeler aurait
-## silencieusement une statistique morte.
-##
-## Les ennemis culés ne régénèrent pas : à 700 px ils sont hors combat depuis
-## longtemps, et les faire remonter coûterait une boucle sur toute la liste.
+## Appelée par l'EnemyManager avant tick() : un archétype ne peut pas l'oublier. Pas
+## pour les ennemis culés.
 func regen(delta: float) -> void:
 	if stats.health_regen <= 0.0 or is_dead or health >= stats.max_health:
 		return
 	_set_health(health + stats.health_regen * delta)
+
+
+## Ce que ses états brûlent, appelée par l'EnemyManager avec la régénération. Une mort
+## par brûlure est une victoire.
+func subir_les_etats(delta: float) -> void:
+	if is_dead:
+		return
+	var perte := etats.avancer(delta)
+	if perte <= 0.0:
+		return
+	_set_health(health - perte)
+	var chiffre := etats.chiffre()
+	if chiffre > 0.0 and HitFeedback.current != null:
+		HitFeedback.current.degats_sans_coup(hurtbox.global_position, chiffre, false)
+	if health <= 0.0:
+		die()
+
+
+## Pas à un corps tombé : sa pourriture lui survit, le soin non.
+func _soigner(montant: float) -> void:
+	if not is_dead:
+		_set_health(health + montant)
+
+
+func _montrer_les_etats() -> void:
+	sprite.montrer_les_etats(etats)
+	health_bar.montrer_les_etats(etats)
+
+
+## Gel compris : les archétypes la lisent ici, jamais sur la fiche.
+func vitesse_de_deplacement() -> float:
+	return stats.move_speed * etats.facteur_de_vitesse
 
 
 ## Surchargée par chaque archétype. Appelée par l'EnemyManager.
@@ -144,16 +156,8 @@ func tick(_delta: float) -> void:
 	pass
 
 
-## Par où partir pour rejoindre la cible.
-##
-## Le champ de flux quand la zone en a un : il contourne les murs, là où la ligne
-## droite fait pousser contre la pierre un ennemi séparé du joueur par une
-## concavité.
-##
-## La ligne droite sinon, et c'est un vrai repli, pas un pis-aller : l'arène de
-## réglage et le banc de stress n'ont pas de murs. Elle sert aussi quand la case
-## courante n'a pas de direction — l'ennemi repoussé dans la pierre, ou hors du
-## rayon du champ.
+## Le champ de flux quand la zone en a un, qui contourne les murs ; la ligne droite
+## sinon (arène, banc, case sans direction).
 func heading() -> Vector2:
 	if target == null:
 		return Vector2.ZERO
@@ -164,31 +168,25 @@ func heading() -> Vector2:
 	return (target.global_position - global_position).normalized()
 
 
-## À appeler en fin de tick(). Le sprite se pilote depuis la vitesse réelle et
-## non depuis l'intention de déplacement : un ennemi qui pousse contre un mur ne
-## doit pas continuer à marcher sur place.
+## En fin de tick() : le sprite suit la vitesse réelle, pas l'intention.
 func _animate() -> void:
 	sprite.set_state(velocity.length() > 8.0, velocity)
 
 
-## À appeler une fois par tick, avant de tester `_attack_cd`. Séparé du test
-## pour qu'un ennemi hors de portée continue de recharger : glissé dans la
-## condition, l'évaluation paresseuse aurait figé son attente.
+## Une fois par tick, **hors** du test de portée, sinon l'attente se fige. Le gel
+## l'étire.
 func _cool_down(delta: float) -> void:
-	_attack_cd = maxf(_attack_cd - delta, 0.0)
+	_attack_cd = maxf(_attack_cd - delta * etats.facteur_de_vitesse, 0.0)
 
 
-## Déclenche le coup : recharge, et l'animation face à la cible. Face à elle et
-## non dans le sens de la vitesse — au contact l'ennemi ne bouge presque plus,
-## et le coup partirait dans une direction arbitraire.
+## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact.
 func _strike(facing: Vector2) -> void:
 	_attack_cd = stats.attack_interval()
 	sprite.set_state(false, facing)
 	sprite.attack()
 
 
-## À appeler en tête de tick() par chaque archétype. Une fois alerté, l'ennemi
-## le reste : sinon il ferait le yo-yo dès qu'on repasse la limite du rayon.
+## En tête de tick(). Une fois alerté, l'ennemi le reste.
 func _should_act() -> bool:
 	if target == null or is_dead:
 		return false
@@ -216,19 +214,9 @@ func _on_damaged(info: DamageInfo) -> void:
 const XP_PER_HEALTH := 0.35
 
 
-## Ce qu'on garde de l'expérience quand la zone est **en dessous** du
-## personnage. Cinq niveaux de retard sans pénalité, au-delà la récompense fond.
-##
-## **Le sens de ce plafond a été retourné au jalon 6.** Il pénalisait la zone qui
-## dépasse le personnage : un ennemi de niveau 40 vaut huit fois plus — son
-## expérience dérive de ses PV — mais un personnage de niveau 12 n'en touchait
-## presque rien. L'expérience cessait donc de suivre le niveau de l'ennemi, ce
-## qui est exactement ce qu'on attend d'elle.
-##
-## Elle le suit maintenant sans borne haute, comme le butin depuis le jalon 5 :
-## **descendre plus bas rapporte mieux**, et c'est le danger qui fait le prix.
-## Ce qui reste borné est l'autre bout — moudre une zone de niveau 1 à niveau 60
-## ne doit pas rester payant, sinon la profondeur ne serait plus qu'une option.
+## Ce qu'on garde de l'expérience d'une zone laissée **derrière** soi : cinq niveaux
+## sans pénalité, puis elle fond. Sans borne haute (jalon 6) : descendre plus bas
+## rapporte mieux, moudre une zone facile ne doit pas rester payant.
 const XP_MARGE := 5
 const XP_PERTE_PAR_NIVEAU := 0.10
 const XP_PLANCHER := 0.05
@@ -254,9 +242,7 @@ func xp_value() -> int:
 	return maxi(roundi(v), 1)
 
 
-## award = false pour les morts qui ne sont pas des victoires : la touche K de
-## débogage, le rechargement d'une zone, la scène de stress. Sans ce garde-fou,
-## vider la zone ferait monter le joueur de plusieurs niveaux d'un coup.
+## `award` faux pour les morts sans victoire : touche K, rechargement, banc.
 func die(award := true) -> void:
 	if is_dead:
 		return

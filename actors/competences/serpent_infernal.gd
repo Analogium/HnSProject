@@ -28,6 +28,7 @@ const YEUX := Color(0.15, 0.05, 0.02)
 const LANGUE := Color(0.9, 0.15, 0.1)
 
 var _geste: StatsDeCompetence
+var _auteur: Etats
 var _contacts: Cibles.Contacts
 var _teinte := Color.WHITE
 var _ancre := Vector2.ZERO
@@ -44,10 +45,11 @@ var _corps: Array[Vector2] = []
 
 
 static func lacher(
-	parent: Node, point: Vector2, geste: StatsDeCompetence, direction: Vector2
+	parent: Node, point: Vector2, geste: StatsDeCompetence, direction: Vector2, auteur: Etats
 ) -> SerpentInfernal:
 	var s := SerpentInfernal.new()
 	s._geste = geste
+	s._auteur = auteur
 	s._contacts = Cibles.Contacts.new(geste.periode)
 	s._teinte = DamageType.COLORS[geste.nature_dominante()]
 	s._ancre = point
@@ -119,7 +121,7 @@ func _mordre() -> void:
 	var portee := float(ANNEAUX) * ESPACEMENT * 0.5 + CONTACT
 	for cible in Cibles.dans_le_cercle(get_world_2d(), milieu, portee):
 		if _touche(cible.global_position) and _contacts.accepte(cible):
-			Cibles.frapper(cible, _geste.tirer(Game.rng), _tete)
+			Cibles.frapper(cible, _geste.tirer(Game.rng), _tete, _auteur)
 
 
 func _touche(point: Vector2) -> bool:

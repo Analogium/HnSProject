@@ -1,30 +1,18 @@
 class_name ManuelArchetype
 extends Resource
 
-## Le contenu d'un manuel : ce qu'on peut y apprendre, où c'est posé sur la page,
-## et ce que chaque compétence peut devenir. **Partagé par tous les
-## exemplaires** — c'est un `.tres` du disque.
-##
-## Rien de ce qu'un joueur gagne ne s'écrit ici (invariant 2). L'expérience et
-## les points vivent sur `Manuel`, un par exemplaire ramassé : les poser ici
-## donnerait à tous les manuels de foudre du jeu — et de toutes les parties
-## suivantes de la session — les points du dernier livre ouvert, et l'éditeur
-## pourrait graver le résultat sur le disque.
-##
-## Les trois fonctions de recherche — `case_de`, `passif_de`, `noeud_de` — rendent
-## null sur un identifiant inconnu, et ce n'est pas une erreur de programmation :
-## une sauvegarde peut citer ce que l'archétype ne contient plus.
+## Le contenu d'un manuel, **partagé par tous les exemplaires** : rien de ce qu'un
+## joueur gagne ne s'écrit ici (invariant 2 — c'est `Manuel`). Les recherches rendent
+## null sur un identifiant inconnu, qu'une sauvegarde peut citer.
 
 @export var id: String = ""
 @export var nom: String = ""
 
-## Les cases de la page. L'ordre est celui de la lecture, pas celui du dessin :
-## chaque case porte sa propre position.
+## Dans l'ordre de lecture ; chaque case porte sa position.
 @export var cases: Array[CaseDeManuel] = []
 
 
-## Le nom tel que le joueur le lit. `nom` est la clé française écrite dans le
-## `.tres` : une interface qui l'afficherait directement resterait en français.
+## `nom` est la clé française.
 func nom_affiche() -> String:
 	return Textes.t(nom)
 
@@ -61,11 +49,7 @@ func case_du_noeud(id_noeud: String) -> CaseDeManuel:
 	return null
 
 
-## Ce livre connaît-il cet identifiant, case, passif ou nœud confondus ?
-##
-## **La question de la relecture d'une sauvegarde** : les trois sortes partagent
-## le dictionnaire de points du manuel, et un point dont personne ne reconnaît
-## l'identifiant n'est dépensable nulle part.
+## Case, passif ou nœud confondus : la question de la relecture d'une sauvegarde.
 func connait(identifiant: String) -> bool:
 	return (
 		case_de(identifiant) != null
@@ -74,9 +58,7 @@ func connait(identifiant: String) -> bool:
 	)
 
 
-## Les compétences de ce manuel, dans l'ordre des cases. Rendues plutôt que
-## laissées à parcourir : l'appelant ne doit pas avoir à savoir qu'une case peut
-## porter autre chose.
+## Les compétences, dans l'ordre des cases.
 func competences() -> Array[Competence]:
 	var out: Array[Competence] = []
 	for c in cases:

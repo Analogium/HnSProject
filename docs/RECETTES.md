@@ -171,6 +171,7 @@ dépendance : des tables alignées sur un seul enum.
 6. **Deux affixes de dégâts ajoutés**, `<id>_aux_attaques` et `<id>_aux_sorts` :
    copier ceux d'une nature voisine, échelle comprise. Une nature est une nature
    comme les autres, même si aucune compétence n'en est encore.
+7. **Son état**, voir « Ajouter un état » : une nature en pose exactement un.
 
 `StatHelp` n'a **rien** à changer : sa ligne « plafonnée à 75 % » est écrite pour
 tout ce qui est dans `RESIST_FIELDS`, donc la nouvelle nature en hérite. La fiche
@@ -184,12 +185,40 @@ mot-clé ». Sans eux, une compétence de feu n'affiche simplement pas « Feu »
 `test_les_tables_couvrent_toutes_les_natures`,
 `test_seul_le_physique_n_a_pas_de_champ`,
 `test_aucune_couleur_ne_confond_avec_l_or` (l'or est réservé aux critiques et
-aux élites), `test_les_couleurs_sont_distinctes_entre_elles` ; et
-`tests/unit/test_affixes.gd : test_chaque_nature_s_ajoute_aux_attaques_et_aux_sorts`.
+aux élites), `test_les_couleurs_sont_distinctes_entre_elles` ;
+`tests/unit/test_affixes.gd : test_chaque_nature_s_ajoute_aux_attaques_et_aux_sorts` ; et
+`tests/unit/test_etats.gd : test_chaque_nature_pose_un_etat_et_un_seul`.
 
 **Et son anglais** : deux entrées dans `i18n/en.po`, son nom (`NAMES`) et ses
 dégâts (`LIBELLES_DE_DEGATS`) — « froid » et « dégâts de froid » se traduisent
 séparément, parce que l'anglais colle le nom au mot « damage ».
+
+---
+
+## Ajouter un état
+
+Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saignant.
+**Une nature en pose exactement un**, le physique compris.
+
+1. **`core/etats.gd`** — la valeur dans `Sorte`, **à la fin** (les tables sont
+   indexées par l'enum), puis son entrée dans `NATURES`, `NOMS` et `DUREES`.
+2. **Ce qu'il fait** :
+   - s'il brûle → son taux dans `_brulure_par_seconde()`. `avancer()` le compte
+     déjà, et le plus fort l'emporte sans rien écrire de plus ;
+   - s'il change une grandeur → un facteur dans `Etats`, **lu là où vit déjà la
+     règle qu'il modifie** : la mitigation dans `Hurtbox`, la marche dans
+     `Enemy.vitesse_de_deplacement()`, la cadence dans `Enemy._cool_down()` et
+     `Player._physics_process()`. Jamais une seconde copie de la règle.
+3. **Rien à écrire pour le montrer** : les pastilles, la teinte et l'annonce
+   lisent `Etats.couleur()`, la couleur de sa nature — sauf quand elle ne se lit
+   pas sur un corps, comme le blanc du physique : voir `Etats.SANG`.
+
+**Ce qui refusera un oubli** — `tests/unit/test_etats.gd :
+test_chaque_nature_pose_un_etat_et_un_seul` (les tables alignées, chaque nature posée
+une fois), `test_chaque_etat_a_sa_couleur` ; `tests/unit/test_traductions.gd`, qui relève
+`Etats.NOMS`.
+
+**Et son nom anglais** dans `i18n/en.po`, section « États ».
 
 ---
 

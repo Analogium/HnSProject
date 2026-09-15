@@ -30,6 +30,7 @@ class Eclair:
 
 
 var _geste: StatsDeCompetence
+var _auteur: Etats
 var _teinte := Color.WHITE
 var _age := 0.0
 var _frappes := 0
@@ -38,9 +39,10 @@ var _eclairs: Array[Eclair] = []
 var _scintille := RandomNumberGenerator.new()
 
 
-static func poser(parent: Node, point: Vector2, geste: StatsDeCompetence) -> NuageDOrage:
+static func poser(parent: Node, point: Vector2, geste: StatsDeCompetence, auteur: Etats) -> NuageDOrage:
 	var nuage := NuageDOrage.new()
 	nuage._geste = geste
+	nuage._auteur = auteur
 	nuage._teinte = DamageType.COLORS[geste.nature_dominante()]
 	parent.add_child(nuage)
 	nuage.global_position = point
@@ -87,7 +89,7 @@ func _frapper() -> void:
 	var cibles := Cibles.dans_le_cercle(get_world_2d(), global_position, _geste.rayon)
 	for cible in cibles:
 		_eclair_vers(to_local(cible.global_position))
-		Cibles.frapper(cible, parts, global_position)
+		Cibles.frapper(cible, parts, global_position, _auteur)
 	if cibles.is_empty():
 		# Un éclair au sol même sans cible : le nuage montre qu'il frappe, et où.
 		_eclair_vers(

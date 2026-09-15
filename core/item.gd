@@ -1,23 +1,13 @@
 class_name Item
 extends RefCounted
 
-## Un exemplaire d'objet : une base partagée, et les affixes qui n'appartiennent
-## qu'à lui. Deux épées ramassées à cinq secondes d'écart sont deux Item
-## différents autour du même ItemBase.
-##
-## C'est la raison d'être de la classe : sans elle, le butin rendrait la
-## ressource du disque, toutes les épées du jeu seraient **le même objet**, et y
-## écrire un affixe l'écrirait dans `epee.tres`.
-##
-## RefCounted et non Resource : un objet tiré au hasard n'a pas à savoir
-## s'enregistrer sur le disque. La sauvegarde en fait un dictionnaire de quelques
-## nombres, pas un fichier par épée.
+## Un exemplaire d'objet : une base partagée et ses propres affixes — sans lui, écrire
+## un affixe l'écrirait dans le `.tres`. RefCounted : la sauvegarde en fait un
+## dictionnaire.
 
 enum Rarity { COMMUN, MAGIQUE, RARE }
 
-## Blanc, bleu, or : les couleurs du genre, et l'or est déjà celle des critiques
-## et des élites dans ce jeu — partout, elle veut dire « ça compte plus que
-## d'habitude ».
+## Blanc, bleu, or — l'or veut dire partout « ça compte plus ».
 const RARITY_COLORS := [
 	Color(0.85, 0.85, 0.88),
 	Color(0.42, 0.62, 0.98),
@@ -29,53 +19,31 @@ var base: ItemBase
 ## provenance**. Ils ne changent plus ensuite — un objet est ce qu'il est.
 var explicits: Array[RolledAffix] = []
 
-## Le niveau de l'objet : celui de la zone où il est tombé, posé **une fois** et
-## jamais rejoué. C'est lui qui décide des tiers d'affixes qu'il a pu recevoir.
-##
-## Le niveau du personnage n'y entre pas. Adossé à lui, le butin s'améliorerait
-## en jouant longtemps ; adossé à la zone, il s'améliore en allant là où c'est
-## dangereux — et c'est la seule des deux règles qui laisse une décision à
-## prendre.
-##
-## 1 par défaut : c'est ce que vaut un objet dont personne n'a dit d'où il
-## venait — un objet de test, ou un objet d'une sauvegarde de version 1.
+## Le niveau de la zone où il est tombé, posé une fois : il décide des paliers
+## d'affixes. Pas celui du personnage — le butin s'améliore en allant au danger, pas
+## en jouant longtemps. 1 par défaut (tests, sauvegardes v1).
 var item_level: int = 1
 
-## L'état de ce manuel, quand cet objet en est un : son expérience et les points
-## qu'on y a placés. Null pour tout le reste, c'est-à-dire pour tout le catalogue
-## sauf les manuels.
-##
-## Sur l'exemplaire et **jamais sur l'archétype**, qui est un `.tres` partagé :
-## y écrire donnerait à tous les manuels de foudre du jeu les points du dernier
-## ouvert (invariant 2).
+## L'état du manuel quand l'objet en est un, sur l'exemplaire et **jamais sur
+## l'archétype** (invariant 2).
 var manuel: Manuel
 
 
-## `p_explicits` accepte les deux formes : des RolledAffix, ou de simples StatMod
-## qui deviennent alors des affixes **sans provenance**. C'est exactement l'état
-## d'un objet relu d'une sauvegarde écrite avant les paliers.
+## Des RolledAffix, ou des StatMod qui deviennent des affixes sans provenance.
 func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	base = p_base
 	explicits = []
 	for e in p_explicits:
 		explicits.append(e if e is RolledAffix else RolledAffix.orphelin(e))
 	item_level = maxi(p_level, 1)
-	# Un exemplaire de manuel naît avec son état vierge. Le créer ici plutôt qu'au
-	# premier point placé évite d'écrire le même « si null » dans les cinq
-	# endroits qui le liront.
+	# Créé ici plutôt qu'au premier point : pas de « si null » chez les lecteurs.
 	if base != null and base.manuel != null:
 		manuel = Manuel.new()
 
 
-## La rareté se **déduit** du nombre d'affixes au lieu d'être tirée à part : deux
-## sources pour la même information finiraient par se contredire, et un objet
-## doré sans affixe serait un mensonge.
+## **Déduite** du nombre d'affixes : un objet doré sans affixe serait un mensonge.
 func rarity() -> Rarity:
-	# Un manuel n'a pas d'affixes : sa rareté est celle de sa **version**, que
-	# porte le palier de sa lignée — le livre de départ est commun, ses versions
-	# plus rares viendront au-dessus. Deux branches, mais **une seule fonction** :
-	# le jour où la seconde se recopiera ailleurs, la rareté se mettra à dire deux
-	# choses différentes selon l'endroit où on la regarde.
+	# Un manuel n'a pas d'affixes : sa rareté est celle de son palier.
 	if manuel != null:
 		if base.palier <= 1:
 			return Rarity.COMMUN
@@ -91,40 +59,27 @@ func color() -> Color:
 	return RARITY_COLORS[rarity()]
 
 
-## Le nom tel que le joueur le lit. Celui de la base est la clé française : c'est
-## par cet accesseur, et pas par `base.display_name`, que passe tout affichage.
+## Le nom lu par le joueur ; tout affichage passe par ici, pas par `base.display_name`.
 func display_name() -> String:
 	return Textes.t(base.display_name)
 
 
-## Ce livre enseigne-t-il cette compétence ? Faux pour tout ce qui n'est pas un
-## manuel.
-##
-## **La question était posée à deux endroits** — le joueur, pour savoir combien de
-## points on y a mis ; le chargement d'une sauvegarde, pour décider quels points
-## garder. Deux réponses qui divergeraient donneraient des points relus qu'aucune
-## case ne saurait dépenser, ou l'inverse, et rien ne le dirait avant la partie
-## suivante.
+## Faux pour tout ce qui n'est pas un manuel. La seule réponse, pour le joueur comme
+## pour la relecture d'une sauvegarde.
 func enseigne(id_competence: String) -> bool:
 	if base == null or base.manuel == null:
 		return false
 	return base.manuel.case_de(id_competence) != null
 
 
-## Ce livre reconnaît-il cet identifiant, case, passif ou nœud d'arbre confondus ?
-##
-## Distinct d'`enseigne()`, qui ne répond que des compétences : c'est cette
-## question-là que se pose la relecture d'une sauvegarde, où les points des trois
-## sortes arrivent mélangés dans le même dictionnaire.
+## Case, passif ou nœud confondus : la question de la relecture d'une sauvegarde.
 func connait(identifiant: String) -> bool:
 	if base == null or base.manuel == null:
 		return false
 	return base.manuel.connait(identifiant)
 
 
-## Les nœuds investis de cette compétence, pour la résolution d'un lancer. Vide
-## pour ce qui n'est pas un manuel, et pour une compétence que ce livre
-## n'enseigne pas.
+## Vide hors manuel, ou pour une compétence que ce livre n'enseigne pas.
 func talents_investis(id_competence: String) -> Array[TalentInvesti]:
 	if manuel == null or base.manuel == null:
 		return [] as Array[TalentInvesti]
@@ -150,9 +105,7 @@ func mods() -> Array[StatMod]:
 	return all
 
 
-## La ligne d'implicite de l'infobulle, à part et en premier : c'est ce que la
-## base garantit, le reste est le fruit du tirage. Les explicites, eux, se
-## dessinent depuis `explicits` — l'infobulle a besoin de leur provenance.
+## L'implicite, à part et en premier : ce que la base garantit.
 func implicit_line() -> String:
 	var imp := base.implicit()
 	return "" if imp == null else imp.label()

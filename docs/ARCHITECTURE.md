@@ -68,6 +68,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | `ArtPalette`, `UiPalette` | Les couleurs sont lues par tout le monde et ne lisent personne. |
 | `Textes` | La traduction est demandée par les tables de libellés, par le contenu et par les panneaux : elle ne peut nommer aucun des trois. |
 | `MotsCles`, `StatsDeCompetence` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Competence` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
+| `Etats` | `DamageInfo` le nomme pour dire qui frappe, et `Hurtbox` pour ce que porte la victime : il reçoit des parts et un auteur, jamais un coup. |
 
 ## Où vit chaque règle
 
@@ -103,7 +104,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les cinq refus — case vide, non apprise, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
 | Qui atteint un coup qui ne naît pas d'une collision ? | `Cibles.dans_le_cercle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
 | Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
-| Ce que coûte l'Immolation ? | `Player.bruler()` : répartie entre les natures comme les dégâts de l'aura (`StatsDeCompetence.repartition()`), chaque part atténuée par `CharacterStats.attenuer()` — **la règle d'un coup reçu**, donc objets et passifs compris. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
+| Ce que coûte l'Immolation ? | `Player.bruler()` : répartie entre les natures comme les dégâts de l'aura (`StatsDeCompetence.repartition()`), chaque part atténuée par `CharacterStats.attenuer()` — **la règle d'un coup reçu**, donc objets et passifs compris, et l'engourdissement. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
 | Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_periode` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
 | Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde |
 | Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
@@ -119,6 +120,10 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Peut-on le reprendre ? | `Manuel.peut_reprendre()`, pour les trois sortes : pas un nœud sous un enfant qui porte des points, pas une compétence sous les points qu'un de ses nœuds investis demande. `Player.reprendre()` vide la barre d'une compétence retombée à zéro |
 | Où convertit-on des dégâts ? | `StatsDeCompetence.convertir()`, appelée par `resoudre()` **après les fourchettes ajoutées** ; `convertis` en garde la part pour la fiche |
 | Dans quelle nature un tir se dessine-t-il ? | `StatsDeCompetence.nature_dominante()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
+| Un coup pose-t-il un état ? | `Etats.subir()`, appelée par `Hurtbox.take_damage()` **après** l'esquive, la mitigation et le signal : 20 % pour un coup entièrement d'une nature, partagés selon ses parts, **un tirage par nature présente**, physique compris. Chance, durées et forces sont les constantes de `Etats` |
+| Qui a porté un coup ? | `DamageInfo.auteur` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `Etats.de()` |
+| Ce qu'un état change, et où ? | Les facteurs de `Etats`, lus **là où vit déjà la règle** : la bénédiction de l'auteur avant la mitigation, l'engourdissement après ; le gel dans `Enemy.vitesse_de_deplacement()`, `Enemy._cool_down()` et la cadence de `Player._physics_process()`. Ce qui brûle sort d'`Etats.avancer()` et s'ôte par `_set_health()`, chez l'ennemi depuis l'`EnemyManager`, avec la régénération |
+| Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`Etats.SANG`), sur le signal `Etats.change` : `HealthBar.montrer_les_etats()` et `ActorSprite.montrer_les_etats()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.etat()` ; ce qui brûle, par `HitFeedback.degats_sans_coup()` et les paquets d'`Etats.Paquet` |
 
 ## Les invariants
 
@@ -164,6 +169,7 @@ ne peut rien reproduire.
 | La carte, les paquets d'ennemis | le RNG de zone, réamorcé sur la graine |
 | La silhouette, les affixes, le sens de rotation d'un ennemi | `hash()` de la case d'apparition |
 | **Le butin** | `Game.rng`, **et c'est voulu** |
+| Qu'un coup pose un état | `Game.rng` : un tirage par nature présente dans le coup, physique compris |
 | La gerbe d'éclats, la secousse de caméra | leur tirage à eux — `HitFeedback._rng`, `Game._rng_camera` |
 
 Le butin est l'exception : il récompense une action, pas un lieu. Adossé à la
@@ -206,6 +212,7 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | Le tick des ennemis | `EnemyManager._physics_process` — aucun ennemi n'a de `_physics_process` |
 | L'écriture de la vie | `_set_health()` chez le joueur comme chez l'ennemi : la barre y est mise à jour |
 | Tous les coups reçus | `Hurtbox.take_damage()` |
+| La pose d'un état | `Hurtbox.take_damage()`, par `Etats.subir()` |
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
 | La recherche des cibles d'un coup sans collision | `Cibles.dans_le_cercle()` |
@@ -283,7 +290,7 @@ ouvert, et par `Échap`.
 Un fichier JSON par personnage dans `user://personnages/`, plus
 `user://reglages.json` pour les réglages de la machine.
 
-Rien de **calculé** n'est écrit : ni PV, ni statistiques. Elles se reconstruisent
+Rien de **calculé** n'est écrit : ni PV, ni statistiques, ni états. Elles se reconstruisent
 à partir de la fiche de base, des attributs placés et de l'équipement. Les
 écrire créerait une seconde vérité qui figerait l'équilibrage du jour de la
 sauvegarde, et un rééquilibrage n'atteindrait jamais les personnages existants.

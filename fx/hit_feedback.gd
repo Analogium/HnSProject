@@ -1,34 +1,17 @@
 class_name HitFeedback
 extends Node2D
 
-## Le retour visuel d'un coup : le nombre de dégâts qui s'envole, et l'éclat de
-## pixels projeté au point d'impact.
-##
-## Un seul nœud dessine tout, sur le principe de l'EnemyManager. Un nœud par
-## nombre et par particule voudrait dire une allocation par coup, alors qu'un swing
-## peut toucher cinq ennemis à la fois et qu'il y en a soixante-dix à l'écran ; ici
-## un coup n'ajoute que des flottants dans un tableau.
-##
-## Le nœud s'enregistre lui-même dans HitFeedback.current : une scène n'a qu'à le
-## contenir, il n'y a rien à câbler. Sur l'autoload il aurait fallu que Game sache
-## dessiner, et les deux scripts se seraient référencés en rond.
-##
-## Le delta n'est pas dé-scalé : pendant le hit-stop les nombres et les éclats se
-## figent avec le reste du jeu, comme la trace du swing.
+## Le retour visuel d'un coup : le nombre qui s'envole et la gerbe d'éclats. **Un seul
+## nœud dessine tout**, sans allocation par coup, et s'enregistre dans `current`. Le
+## delta n'est pas dé-scalé : tout se fige pendant un gel.
 
-## Le nœud vivant de la scène courante, ou null hors combat. Statique et non
-## posé par la scène : le mettre à jour depuis _ready / _exit_tree garantit
-## qu'il ne reste jamais une référence morte après un changement de scène.
+## Mis à jour depuis _ready / _exit_tree : jamais de référence morte.
 static var current: HitFeedback
 
-## Les couleurs qui n'appartiennent pas à une nature de dégâts. Celles des éclats
-## viennent de DamageType.COLORS, qui est leur seule définition : « le froid »
-## doit être le même bleu sur la gerbe et sur la fiche.
+## Les couleurs hors nature ; celles des éclats viennent de `DamageType.COLORS`.
 const CRIT := Color(1.00, 0.78, 0.25)      # l'or, la seule couleur réservée
 const PLAYER := Color(1.00, 0.42, 0.38)    # le joueur encaisse : rouge, lisible au coin de l'œil
-## Le nombre d'un coup porté : blanc, quelle que soit sa nature. Il est le total de
-## toutes les parts ; le teindre d'une seule ferait lire un sort de foudre chargé
-## de froid comme un sort de froid.
+## Blanc quelle que soit la nature : c'est le total de toutes les parts.
 const NOMBRE := Color(1.0, 1.0, 1.0)
 ## Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre : le
 ## gain qui s'envole et la barre qui monte doivent se répondre.
@@ -36,8 +19,7 @@ const XP := Color(0.45, 0.68, 1.00)
 ## Le nom de ce qu'on ramasse. Ce n'est pas la couleur du halo au sol, qui est
 ## celle de la rareté de l'objet.
 const LOOT := Color(0.98, 0.86, 0.45)
-## Un coup esquivé : gris-bleu éteint. Volontairement terne — c'est un
-## non-événement, il doit se lire sans attirer l'œil comme un chiffre.
+## Gris-bleu terne : un non-événement.
 const MISS := Color(0.72, 0.78, 0.88)
 
 const NUMBER_LIFE := 0.62
@@ -49,41 +31,29 @@ const NUMBER_SIZE := 9
 const CRIT_SIZE := 13
 const GRAVITY := 210.0
 
-## Le gain d'expérience part plus haut et monte moins vite que les dégâts : il
-## arrive au moment où le dernier coup s'affiche encore, et deux libellés dans
-## la même bande à la même vitesse se lisent comme un seul bloc illisible.
+## Plus haut et plus lent que les dégâts : deux libellés dans la même bande se mêlent.
 const XP_HEIGHT := 22.0
 const XP_SIZE := 8
 const XP_RISE := 0.7
 
 const PARTICLE_LIFE := 0.30
 const PARTICLE_SPEED := 92.0
-## Demi-angle du cône, en radians. Large (~86°) et non serré : un cône étroit
-## dans l'axe du coup envoie la moitié des éclats derrière le sprite, où ils ne
-## se voient pas. Ouvert, la gerbe déborde tout de suite de la silhouette.
+## Demi-angle du cône, large (~86°) : étroit, la moitié des éclats restait derrière
+## le sprite.
 const PARTICLE_SPREAD := 1.5
 const HIT_PARTICLES := 9
 const CRIT_PARTICLES := 16
-## L'éclat ne part pas du centre du corps mais de son bord, côté attaquant.
-## Au centre, il passait ses cent premières millisecondes caché derrière le
-## sprite — et sous le flash blanc, qui couvre justement ce moment-là.
+## Du bord du corps côté attaquant : au centre, l'éclat restait caché sous le flash.
 const IMPACT_OFFSET := 7.0
 
-## x, y, vx, vy, âge, durée, côté du carré, puis r, g, b.
-##
-## La couleur est stockée en clair et non en index de palette : trois flottants de
-## plus par particule — 38 Ko au pire cas mesuré, à mille ennemis — contre une
-## palette qu'il faudrait garder alignée à la main sur l'ordre de l'enum
-## DamageType.
+## x, y, vx, vy, âge, durée, côté, r, g, b. La couleur en clair : 38 Ko au pire cas
+## mesuré, contre une palette à aligner à la main.
 const P_STRIDE := 10
 
 var _p := PackedFloat32Array()
 
 
-## Un libellé qui s'envole. Une petite classe et non un tableau indexé comme les
-## particules : ils portent une chaîne, il y en a quelques dizaines là où les
-## particules se comptent par centaines, et `n.half` se relit là où `n[9]` oblige à
-## compter les colonnes.
+## Une petite classe : ils portent une chaîne et sont peu nombreux.
 class FloatingText:
 	var pos: Vector2
 	var vel: Vector2
@@ -92,15 +62,13 @@ class FloatingText:
 	var text: String
 	var tint: Color
 	var body: int
-	## Demi-largeur du texte, mesurée une fois à la création : la re-mesurer à
-	## chaque image coûterait plus cher que tout le reste du dessin.
+	## Mesurée une fois : la re-mesurer coûterait plus que tout le dessin.
 	var half: float
 
 
 var _numbers: Array[FloatingText] = []
 
-## Tirage propre à l'effet. Surtout pas Game.rng : la dispersion d'un éclat est
-## purement décorative et ne doit pas décaler le hasard dont dépend le reste.
+## Surtout pas Game.rng : décoratif (invariant 3).
 var _rng := RandomNumberGenerator.new()
 
 var _font: Font
@@ -118,15 +86,12 @@ func _exit_tree() -> void:
 		current = null
 
 
-## Le point d'entrée unique, appelé par Hurtbox — donc par tous les coups du jeu.
-## at est le point touché, info.source_position dit d'où vient le coup : l'éclat
-## part dans l'axe, ce qui suffit à faire lire la direction sans autre donnée.
+## **Le point d'entrée**, appelé par Hurtbox : l'éclat part dans l'axe du coup.
 func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	var away := at - info.source_position
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
-	# Le chiffre seulement : la gerbe dit qu'un coup a porté et par quelle nature,
-	# et c'est la valeur que le joueur choisit de ne plus lire.
+	# Le chiffre seulement : la gerbe reste.
 	if Settings.montre_les_degats(on_player):
 		_add_number(at, info.amount, info.is_crit, couleur_du_nombre(info, on_player))
 	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _couleur_de_la_gerbe(info, on_player))
@@ -143,9 +108,8 @@ static func couleur_du_nombre(info: DamageInfo, on_player: bool) -> Color:
 	return CRIT if info.is_crit else NOMBRE
 
 
-## La couleur des éclats. **L'élément gagne sur tout le reste** : depuis que le
-## nombre est blanc, c'est la gerbe qui dit par quoi on est touché, et c'est ce qui
-## rend les résistances jouables.
+## **L'élément gagne sur tout** : le nombre étant blanc, c'est la gerbe qui dit par
+## quoi on est touché.
 func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
 	if info.type != DamageType.Kind.PHYSICAL:
 		return info.color()
@@ -154,26 +118,31 @@ func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
 	return CRIT if info.is_crit else info.color()
 
 
-## Des dégâts sans coup — la brûlure d'une aura. Le chiffre rouge du joueur qui
-## encaisse, sans gerbe : rien ne l'a frappé.
-func degats_sans_coup(at: Vector2, montant: float) -> void:
-	if montant <= 0.0 or not Settings.montre_les_degats(true):
+## Des dégâts sans coup — brûlure d'aura ou d'état —, sans gerbe : rouge sur le
+## joueur, blanc sur un ennemi, chacun derrière sa case.
+func degats_sans_coup(at: Vector2, montant: float, on_player: bool) -> void:
+	if montant <= 0.0 or not Settings.montre_les_degats(on_player):
 		return
-	_add_number(at, montant, false, PLAYER)
+	_add_number(at, montant, false, PLAYER if on_player else NOMBRE)
 	set_process(true)
 	queue_redraw()
 
 
-## Un coup esquivé. Pas de gerbe : rien n'a été touché, et des éclats sur une
-## esquive raconteraient l'inverse de ce qui vient de se passer. Soumis à la même
-## case que le chiffre qu'il remplace.
+## Un état neuf, sur le joueur seulement : sur soixante-dix ennemis, les pastilles
+## suffisent.
+func etat(at: Vector2, sorte: int) -> void:
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), Etats.nom(sorte), XP_SIZE, Etats.couleur(sorte), XP_RISE)
+	set_process(true)
+	queue_redraw()
+
+
+## Pas de gerbe : rien n'a été touché. Même case que le chiffre qu'il remplace.
 func miss(at: Vector2, on_player: bool) -> void:
 	if not Settings.montre_les_degats(on_player):
 		return
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
-		# Un contexte : « esquive » nomme aussi la statistique de la fiche, et les
-		# deux ne se traduisent pas pareil — « evasion » là-bas, « dodged » ici.
+		# Un contexte : « esquive » est aussi la statistique (« evasion »).
 		Textes.t("esquive", "coup évité") if on_player else Textes.t("raté"),
 		XP_SIZE,
 		MISS,
@@ -183,9 +152,7 @@ func miss(at: Vector2, on_player: bool) -> void:
 	queue_redraw()
 
 
-## Le gain d'expérience d'un ennemi qui tombe. Pas d'éclat de pixels : ce n'est
-## pas un impact, et une gerbe sur un corps déjà mort brouillerait le coup
-## suivant.
+## Pas d'éclat : ce n'est pas un impact.
 func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
@@ -249,8 +216,7 @@ func _process(delta: float) -> void:
 	var particles_alive := _step_particles(delta)
 	var numbers_alive := _step_numbers(delta)
 	queue_redraw()
-	# On s'éteint dès qu'il n'y a plus rien : hors combat, ce nœud ne doit rien
-	# coûter du tout.
+	# Éteint hors combat.
 	if not particles_alive and not numbers_alive:
 		set_process(false)
 
@@ -305,12 +271,10 @@ func _draw() -> void:
 
 	for n in _numbers:
 		var c := n.tint
-		# Le nombre reste opaque les deux premiers tiers : s'il s'efface trop
-		# tôt on ne le lit pas, et un nombre illisible ne sert à rien.
+		# Opaque aux deux premiers tiers, pour être lu.
 		c.a = 1.0 - smoothstep(0.62, 1.0, n.age / n.life)
 		var pos := Vector2(roundf(n.pos.x - n.half), roundf(n.pos.y))
-		# Contour noir : sur un sol clair comme sur un mur sombre, le nombre doit
-		# tenir sans qu'on ait à choisir sa couleur en fonction du décor.
+		# Contour noir : lisible sur tous les sols.
 		draw_string_outline(
 			_font, pos, n.text, HORIZONTAL_ALIGNMENT_LEFT, -1, n.body, 1, Color(0, 0, 0, c.a)
 		)

@@ -1,17 +1,11 @@
 class_name ItemAffixTier
 extends Resource
 
-## Un palier d'un affixe : à partir de quel niveau d'objet il peut sortir, et
-## dans quelle fourchette il tire alors.
-##
-## Une Resource imbriquée, là où l'implicite d'une base est trois champs à plat :
-## il y a cinq à neuf paliers par affixe et ils *sont* l'affixe. À plat, ce
-## serait vingt-sept champs numérotés à la main.
+## Un palier d'affixe : son niveau d'objet minimum et sa fourchette. Une Resource
+## imbriquée : les paliers *sont* l'affixe.
 
-## Le niveau d'objet minimum. Le palier le plus bas d'une échelle exige toujours
-## 1 — le test de la réserve l'impose : sans cette règle, l'affixe n'existerait
-## pas dans les premières zones et sa première sortie ressemblerait à un ajout
-## de contenu plutôt qu'à une progression.
+## Le plus bas d'une échelle exige 1 (test de la réserve) : l'affixe doit exister dès
+## les premières zones.
 @export var niveau_requis: int = 1
 
 ## Fourchette du tirage, bornes comprises. Peut être négative : un temps de
@@ -19,18 +13,11 @@ extends Resource
 @export var min_value: float = 1.0
 @export var max_value: float = 1.0
 
-## La fourchette de la **borne haute**, pour un affixe qui ajoute des dégâts :
-## « ajoute (min_value–max_value) à (min_haut–max_haut) ». Zéro pour tous les
-## autres, qui ne tirent qu'un nombre.
-##
-## Deux fourchettes et non un écart fixe : c'est la comparaison des deux bornes qui
-## fait regarder deux objets. Elle commence au-dessus de la basse — un test
-## l'impose — pour qu'une ligne ne sorte jamais à l'envers.
+## La fourchette de la **borne haute** d'un affixe de dégâts ajoutés, au-dessus de la
+## basse (test) ; zéro pour les autres.
 @export var min_haut: float = 0.0
 @export var max_haut: float = 0.0
 
-## Poids de ce palier parmi ceux qui sont ouverts. **Égal par défaut**, et c'est
-## voulu : tous les paliers atteints peuvent sortir, sinon le niveau d'objet ne
-## serait plus une chance mais une garantie et il n'y aurait plus rien à espérer
-## en regardant tomber un objet. Le champ existe pour l'exception.
+## Égal par défaut : tout palier ouvert peut sortir, sinon le niveau serait une
+## garantie et plus une chance.
 @export var poids: int = 10

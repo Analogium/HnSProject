@@ -1,18 +1,12 @@
 class_name BarreDeCompetences
 extends RefCounted
 
-## Les cinq cases à portée de doigt, en bas à droite de l'écran.
-##
-## Elle ne retient que des **identifiants**, jamais des `Competence` : c'est ce
-## qui part sur le disque, et c'est ce qui permet à une compétence retirée du
-## projet de laisser une case vide au lieu de rendre un fichier illisible. Les
-## identifiants ne se renomment donc jamais (invariant 1).
+## Les cinq cases de la barre. Des **identifiants** et jamais des `Competence` : une
+## compétence retirée laisse une case vide, pas un fichier illisible (invariant 1).
 
 const EMPLACEMENTS := 5
 
-## Une case vide est une chaîne vide. Un `PackedStringArray` plutôt qu'un
-## tableau de null : les cinq cases existent toujours, seule leur occupation
-## change.
+## Une case vide est une chaîne vide.
 var cases := PackedStringArray()
 
 
@@ -20,8 +14,7 @@ func _init() -> void:
 	cases.resize(EMPLACEMENTS)
 
 
-## La barre d'un personnage neuf, et celle d'une sauvegarde d'avant le jalon 6 :
-## le coup d'épée et le tir, c'est-à-dire exactement le jeu d'avant.
+## La barre d'un personnage neuf, et d'une sauvegarde d'avant le jalon 6.
 static func par_defaut() -> BarreDeCompetences:
 	var b := BarreDeCompetences.new()
 	b.poser(0, CompetenceCatalog.ID_ATTAQUE)
@@ -43,8 +36,7 @@ func id_de(index: int) -> String:
 	return cases[index] if index >= 0 and index < EMPLACEMENTS else ""
 
 
-## La compétence d'une case, ou null si la case est vide — ou si son identifiant
-## ne désigne plus rien, ce qui est un cas de jeu et non une erreur.
+## Null pour une case vide, ou un identifiant qui ne désigne plus rien.
 func competence_de(index: int) -> Competence:
 	var id := id_de(index)
 	return null if id.is_empty() else CompetenceCatalog.by_id(id)

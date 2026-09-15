@@ -6,6 +6,9 @@ uniform float rim_amount : hint_range(0.0, 1.0) = 0.0;
 /// Épaisseur du liseré, en pixels de sprite. 2 pour les élites, qui doivent se
 /// repérer de plus loin.
 uniform float rim_width : hint_range(1.0, 3.0) = 1.0;
+/// La couleur d'un état — embrasé, transi… —, posée par ActorSprite.
+uniform vec3 teinte_couleur = vec3(1.0);
+uniform float teinte_force : hint_range(0.0, 1.0) = 0.0;
 
 void fragment() {
 	vec4 tex = texture(TEXTURE, UV);
@@ -32,6 +35,11 @@ void fragment() {
 			a = max(a, rim_amount);
 		}
 	}
+
+	// La teinte d'un état, sur le corps seul. Portée par la luminosité du pixel et
+	// non posée à plat : le contour noir reste noir, et le sprite garde son modelé.
+	float lum = dot(c, vec3(0.30, 0.59, 0.11));
+	c = mix(c, min(teinte_couleur * lum * 1.8, vec3(1.0)), teinte_force * solid);
 
 	// Le flash par-dessus : un ennemi qui encaisse devient blanc, quel que soit
 	// son affixe.

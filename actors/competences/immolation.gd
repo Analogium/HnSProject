@@ -70,7 +70,7 @@ func _physics_process(delta: float) -> void:
 func _frapper() -> void:
 	var parts := _geste.tirer(Game.rng)
 	for cible in Cibles.dans_le_cercle(get_world_2d(), global_position, _geste.rayon):
-		Cibles.frapper(cible, parts, global_position)
+		Cibles.frapper(cible, parts, global_position, _joueur.etats)
 
 
 func _draw() -> void:

@@ -24,6 +24,10 @@ const SIDE_BIAS := 1.15
 ## quatre secondes.
 const FLASH_TIME := 0.08
 
+## La part de la couleur d'un état dans le corps. À moitié ou presque : assez pour
+## lire « embrasé » dans une mêlée, pas assez pour qu'un grunt cesse d'être vert.
+const TEINTE_D_ETAT := 0.45
+
 var _dir := "down"
 var _anim := "idle"
 var _attacking := false
@@ -127,6 +131,22 @@ func set_rim(color: Color, amount: float, width := 1.0) -> void:
 	material.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
 	material.set_shader_parameter("rim_amount", amount)
 	material.set_shader_parameter("rim_width", width)
+
+
+## La teinte du plus récent de ses états sur tout le corps, et l'animation ralentie
+## par le gel.
+##
+## **Une teinte, contre la règle du liseré juste au-dessus**, et c'est voulu : un
+## affixe est l'identité d'un ennemi et ne doit pas lui voler sa couleur ; un état
+## dure quelques secondes et doit se lire d'un coup d'œil dans un paquet.
+func montrer_les_etats(etats: Etats) -> void:
+	speed_scale = etats.facteur_de_vitesse
+	if material == null:
+		return
+	var couleurs := etats.couleurs()
+	var c := Color.WHITE if couleurs.is_empty() else couleurs[couleurs.size() - 1]
+	material.set_shader_parameter("teinte_couleur", Vector3(c.r, c.g, c.b))
+	material.set_shader_parameter("teinte_force", 0.0 if couleurs.is_empty() else TEINTE_D_ETAT)
 
 
 ## Redemande ses planches à la forge et relance l'animation — le seul chemin, pour
