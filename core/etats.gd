@@ -39,6 +39,8 @@ const DUREES := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0]
 ## Pour un coup **entièrement** d'une nature ; un coup mêlé la partage selon ses parts
 ## (jalon 8). **Premier réglage**, comme tous les nombres de ce fichier.
 const CHANCE := 0.20
+## Ajouté à `CHANCE` par PV max retiré : à 1, un coup qui ôte toute la vie pose à coup sûr.
+const CHANCE_PAR_PV_RETIRE := 1.0
 
 ## Part du feu **reçu** brûlée par seconde : le coup se rejoue en entier sur la durée.
 const EMBRASEMENT_PAR_SECONDE := 0.25
@@ -153,7 +155,8 @@ func sortes() -> Array[int]:
 
 ## Sur les parts **après** défenses. **Un tirage par nature présente, quel que soit le
 ## résultat** (invariant 3).
-func subir(parts: Array[float], auteur: Etats, rng: RandomNumberGenerator) -> void:
+## `pv_max` à zéro : pas de bonus, faute de PV connus.
+func subir(parts: Array[float], auteur: Etats, rng: RandomNumberGenerator, pv_max := 0.0) -> void:
 	var total := 0.0
 	for part in parts:
 		total += part
@@ -161,8 +164,16 @@ func subir(parts: Array[float], auteur: Etats, rng: RandomNumberGenerator) -> vo
 		return
 	for sorte in NATURES.size():
 		var part: float = parts[NATURES[sorte]]
-		if part > 0.0 and rng.randf() < CHANCE * part / total:
+		if part > 0.0 and rng.randf() < chance(part, total, pv_max):
 			poser(sorte, part, auteur)
+
+
+## La part de la nature dans le coup, plus ce qu'elle retire des PV max : un coup de
+## feu qui ôte 30 % de la vie embrase une fois sur deux, un petit coup sur une grosse
+## cible garde ses 20 %.
+static func chance(part: float, total: float, pv_max: float) -> float:
+	var bonus := part / pv_max * CHANCE_PAR_PV_RETIRE if pv_max > 0.0 else 0.0
+	return CHANCE * part / total + bonus
 
 
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de

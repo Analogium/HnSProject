@@ -73,8 +73,9 @@ func test_un_tirage_par_nature_presente_quel_que_soit_le_resultat() -> void:
 	temoin.randf()
 	temoin.randf()
 	temoin.randf()
-	Etats.new().subir(mele, null, rng)
-	assert_eq(rng.state, temoin.state, "trois natures, trois tirages")
+	# Un PV max : chaque chance dépasse 1, tout pose, et le compte ne bouge pas.
+	Etats.new().subir(mele, null, rng, 1.0)
+	assert_eq(rng.state, temoin.state, "trois natures, trois tirages, même quand tout pose")
 
 
 ## Le froid qu'un anneau met dans un éclair ne gèle pas aussi souvent qu'un sort de
@@ -97,6 +98,24 @@ func test_la_chance_suit_la_part_de_la_nature() -> void:
 	# Fenêtres larges : on vérifie la règle, pas la qualité du générateur.
 	assert_between(pur, 680, 920, "un coup de feu pur embrase une fois sur cinq")
 	assert_between(moitie, 320, 480, "à moitié de feu, une fois sur dix")
+
+
+## Ce qu'un coup retire des PV max s'ajoute à sa chance : 10 de feu sur 50 PV, 40 %.
+func test_la_chance_croit_avec_la_part_des_pv_retiree() -> void:
+	assert_almost_eq(Etats.chance(10.0, 10.0, 0.0), Etats.CHANCE, 1e-6, "sans PV connus, la chance seule")
+	assert_almost_eq(Etats.chance(10.0, 10.0, 50.0), Etats.CHANCE + 0.2 * Etats.CHANCE_PAR_PV_RETIRE, 1e-6)
+	assert_almost_eq(
+		Etats.chance(10.0, 20.0, 1000.0), Etats.CHANCE * 0.5 + 0.01 * Etats.CHANCE_PAR_PV_RETIRE, 1e-6,
+		"un coup mêlé sur une grosse cible garde presque sa chance seule"
+	)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	var poses := 0
+	for i in 4000:
+		var e := Etats.new()
+		e.subir(_parts(DamageType.Kind.FIRE, 10.0), null, rng, 50.0)
+		poses += int(e.actif(Etats.Sorte.EMBRASEMENT))
+	assert_between(poses, 1450, 1750, "et le tirage la suit")
 
 
 func test_ce_que_changent_les_trois_etats_qui_ne_brulent_pas() -> void:

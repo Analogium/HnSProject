@@ -62,6 +62,12 @@ règle du jalon 8 — « un éclair reste un éclair » — appliquée aux état
 qu'un anneau met dans un sort de foudre ne doit pas geler aussi souvent qu'un sort
 de froid.
 
+**Plus la part des PV max qu'elle retire**, ajoutée et non multipliée. Un coup de
+feu qui ôte 30 % de la vie d'un grunt embrase une fois sur deux, un coup qui
+l'emporte entière pose à coup sûr, et un petit coup sur une cible de trois mille PV
+garde ses 20 %. Les PV **max** et non restants : le même coup a la même chance sur
+un ennemi frais ou blessé. Comptée sur ce qui a passé les défenses, comme le reste.
+
 **Un tirage de `Game.rng` par nature présente dans le coup, quel que soit le
 résultat** (invariant 3). Le physique compris, depuis le saignement : chaque coup
 de grunt et d'épée consomme un tirage de plus, et le butin tiré ensuite en est
@@ -198,7 +204,8 @@ convertissent des compétences sans ajout d'une autre nature.
 
 - `tests/unit/test_etats.gd` — les tables couvrent chaque nature une fois, chaque
   état a sa couleur et son icône, tous se portent ensemble, un tirage par nature
-  présente, la chance partagée selon les parts, les
+  présente, la chance partagée selon les parts et accrue par
+  la part des PV retirée, les
   facteurs, la durée et son rafraîchissement, le plus fort qui l'emporte, la
   pourriture qui soigne, les pourritures croisées qui ne fuient pas, les paquets
   d'affichage.

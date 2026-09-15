@@ -31,6 +31,10 @@ func before_each() -> void:
 	_fiche = ManuelPanel.new()
 	_poser(_fiche, "Manuels")
 	_perso = StatsPanel.new()
+	# Son titre vit dans `zone.tscn` ; sans lui, `_ready` colore un nœud nul.
+	var titre := Label.new()
+	titre.name = "Title"
+	_perso.add_child(titre)
 	_poser(_perso, "Stats")
 	_barre = BarrePanel.new()
 	_poser(_barre, "Barre")
