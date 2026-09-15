@@ -11,7 +11,7 @@ var knockback: float
 var is_crit: bool
 ## Les états de qui a porté le coup : sa bénédiction l'affaiblit, et la pourriture
 ## qu'il pose le soigne. Null pour un coup sans auteur — le mannequin, les tests.
-var auteur: Etats
+var author: StatusEffects
 
 ## Le total des parts, calculé et jamais rangé : une seule vérité.
 var amount: float:
@@ -24,7 +24,7 @@ var amount: float:
 ## La nature de la part la plus forte, qui donne sa couleur à la gerbe d'éclats.
 var type: DamageType.Kind:
 	get:
-		return DamageType.dominante(parts)
+		return DamageType.dominant(parts)
 
 
 ## Un coup d'une seule nature, physique par défaut : celui des ennemis.
@@ -35,7 +35,7 @@ func _init(
 	p_crit: bool = false,
 	p_type: DamageType.Kind = DamageType.Kind.PHYSICAL
 ) -> void:
-	parts = DamageType.parts_vides()
+	parts = DamageType.empty_parts()
 	parts[p_type] = p_amount
 	source_position = p_source
 	knockback = p_knockback
@@ -43,7 +43,7 @@ func _init(
 
 
 ## Les parts sont recopiées : la mitigation d'un ennemi ne revient pas dans le sort.
-static func en_parts(
+static func as_parts(
 	p_parts: Array[float], p_source: Vector2, p_knockback: float = 0.0, p_crit: bool = false
 ) -> DamageInfo:
 	var info := DamageInfo.new(0.0, p_source, p_knockback, p_crit)
@@ -59,18 +59,18 @@ func color() -> Color:
 
 ## Toutes les parts du même facteur : un critique ne choisit pas sa nature, un
 ## engourdissement non plus.
-func multiplier(facteur: float) -> void:
-	if facteur == 1.0:
+func multiplier(factor: float) -> void:
+	if factor == 1.0:
 		return
 	for i in parts.size():
-		parts[i] *= facteur
+		parts[i] *= factor
 
 
 ## Un coup du joueur : les parts viennent du geste tiré, et **le critique ne s'applique
 ## qu'ici**. Un seul tirage, quel que soit le résultat (invariant 3).
 static func roll(stats: CharacterStats, source: Vector2, p_parts: Array[float]) -> DamageInfo:
 	var crit := Game.rng.randf() < stats.crit_chance
-	var info := DamageInfo.en_parts(p_parts, source, stats.knockback_force, crit)
+	var info := DamageInfo.as_parts(p_parts, source, stats.knockback_force, crit)
 	if crit:
 		info.multiplier(stats.crit_multiplier)
 	return info

@@ -8,12 +8,12 @@ enum Kind { PHYSICAL, COLD, FIRE, LIGHTNING, NECROTIC, HOLY }
 ## Indexés par Kind.
 const NAMES := ["physique", "froid", "feu", "foudre", "nécrotique", "sacré"]
 
-## L'identifiant sans accent, qui forme `degats_froid` : **définitif** (invariant 1).
-const IDS := ["physique", "froid", "feu", "foudre", "necrotique", "sacre"]
+## L'identifiant sans accent, qui forme `damage_cold` : **définitif** (invariant 1).
+const IDS := ["physical", "cold", "fire", "lightning", "necrotic", "holy"]
 
 ## « ajoute 3 à 7 **dégâts de froid** » : distinct de NAMES, le français n'accordant
 ## pas « physiques » comme « de froid ».
-const LIBELLES_DE_DEGATS := [
+const DAMAGE_LABELS := [
 	"dégâts physiques",
 	"dégâts de froid",
 	"dégâts de feu",
@@ -46,16 +46,16 @@ const RESIST_FIELDS := [
 
 
 ## Dans la langue du joueur : les tables françaises sont les clés.
-static func nom(kind: int) -> String:
-	return Textes.t(NAMES[kind])
+static func name(kind: int) -> String:
+	return Texts.t(NAMES[kind])
 
 
-static func libelle_de_degats(kind: int) -> String:
-	return Textes.t(LIBELLES_DE_DEGATS[kind])
+static func damage_label(kind: int) -> String:
+	return Texts.t(DAMAGE_LABELS[kind])
 
 
 ## Une part nulle par nature, de la taille de l'enum.
-static func parts_vides() -> Array[float]:
+static func empty_parts() -> Array[float]:
 	var parts: Array[float] = []
 	parts.resize(Kind.size())
 	parts.fill(0.0)
@@ -63,9 +63,9 @@ static func parts_vides() -> Array[float]:
 
 
 ## À égalité, la première : des parts nulles restent physiques.
-static func dominante(parts: Array[float]) -> Kind:
-	var plus_forte := 0
+static func dominant(parts: Array[float]) -> Kind:
+	var strongest := 0
 	for i in parts.size():
-		if parts[i] > parts[plus_forte]:
-			plus_forte = i
-	return plus_forte as Kind
+		if parts[i] > parts[strongest]:
+			strongest = i
+	return strongest as Kind

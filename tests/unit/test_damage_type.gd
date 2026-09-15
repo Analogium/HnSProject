@@ -4,7 +4,7 @@ extends GutTest
 ## sixième nature donnerait un accès hors bornes en plein combat, pas ici.
 
 
-func test_les_tables_couvrent_toutes_les_natures() -> void:
+func test_tables_cover_every_nature() -> void:
 	var n: int = DamageType.Kind.size()
 	assert_eq(DamageType.NAMES.size(), n, "un nom par nature")
 	assert_eq(DamageType.COLORS.size(), n, "une couleur par nature")
@@ -12,34 +12,34 @@ func test_les_tables_couvrent_toutes_les_natures() -> void:
 
 
 ## Le physique est la seule nature sans champ de résistance, et c'est voulu.
-func test_seul_le_physique_n_a_pas_de_champ() -> void:
+func test_only_physical_has_no_field() -> void:
 	var st := CharacterStats.new()
 	for k in DamageType.Kind.size():
-		var champ: String = DamageType.RESIST_FIELDS[k]
+		var field: String = DamageType.RESIST_FIELDS[k]
 		if k == DamageType.Kind.PHYSICAL:
-			assert_true(champ.is_empty(), "le physique n'a pas de champ")
+			assert_true(field.is_empty(), "le physique n'a pas de champ")
 		else:
-			assert_false(champ.is_empty(), "%s a un champ" % DamageType.NAMES[k])
-			assert_not_null(st.get(champ), "le champ %s existe" % champ)
+			assert_false(field.is_empty(), "%s a un champ" % DamageType.NAMES[k])
+			assert_not_null(st.get(field), "le champ %s existe" % field)
 
 
 ## L'or est réservé aux critiques et aux élites : aucune nature ne doit s'en
 ## approcher, sinon un dégât de feu se lirait comme un coup critique.
-func test_aucune_couleur_ne_confond_avec_l_or() -> void:
+func test_no_color_is_mistaken_for_gold() -> void:
 	var or_crit := HitFeedback.CRIT
 	for k in DamageType.Kind.size():
 		var c: Color = DamageType.COLORS[k]
-		var ecart := absf(c.r - or_crit.r) + absf(c.g - or_crit.g) + absf(c.b - or_crit.b)
-		assert_gt(ecart, 0.35, "%s est distinct de l'or" % DamageType.NAMES[k])
+		var spread := absf(c.r - or_crit.r) + absf(c.g - or_crit.g) + absf(c.b - or_crit.b)
+		assert_gt(spread, 0.35, "%s est distinct de l'or" % DamageType.NAMES[k])
 
 
-func test_les_couleurs_sont_distinctes_entre_elles() -> void:
+func test_colors_are_distinct_from_each_other() -> void:
 	for a in DamageType.Kind.size():
 		for b in range(a + 1, DamageType.Kind.size()):
-			var ca: Color = DamageType.COLORS[a]
+			var this_one: Color = DamageType.COLORS[a]
 			var cb: Color = DamageType.COLORS[b]
-			var ecart := absf(ca.r - cb.r) + absf(ca.g - cb.g) + absf(ca.b - cb.b)
+			var spread := absf(this_one.r - cb.r) + absf(this_one.g - cb.g) + absf(this_one.b - cb.b)
 			assert_gt(
-				ecart, 0.30,
+				spread, 0.30,
 				"%s et %s se distinguent" % [DamageType.NAMES[a], DamageType.NAMES[b]]
 			)

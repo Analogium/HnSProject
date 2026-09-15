@@ -5,7 +5,7 @@ extends RefCounted
 ## un affixe l'écrirait dans le `.tres`. RefCounted : la sauvegarde en fait un
 ## dictionnaire.
 
-enum Rarity { COMMUN, MAGIQUE, RARE }
+enum Rarity { COMMON, MAGIC, RARE }
 
 ## Blanc, bleu, or — l'or veut dire partout « ça compte plus ».
 const RARITY_COLORS := [
@@ -26,7 +26,7 @@ var item_level: int = 1
 
 ## L'état du manuel quand l'objet en est un, sur l'exemplaire et **jamais sur
 ## l'archétype** (invariant 2).
-var manuel: Manuel
+var manual: Manual
 
 
 ## Des RolledAffix, ou des StatMod qui deviennent des affixes sans provenance.
@@ -34,24 +34,24 @@ func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	base = p_base
 	explicits = []
 	for e in p_explicits:
-		explicits.append(e if e is RolledAffix else RolledAffix.orphelin(e))
+		explicits.append(e if e is RolledAffix else RolledAffix.orphan(e))
 	item_level = maxi(p_level, 1)
 	# Créé ici plutôt qu'au premier point : pas de « si null » chez les lecteurs.
-	if base != null and base.manuel != null:
-		manuel = Manuel.new()
+	if base != null and base.manual != null:
+		manual = Manual.new()
 
 
 ## **Déduite** du nombre d'affixes : un objet doré sans affixe serait un mensonge.
 func rarity() -> Rarity:
 	# Un manuel n'a pas d'affixes : sa rareté est celle de son palier.
-	if manuel != null:
-		if base.palier <= 1:
-			return Rarity.COMMUN
-		return Rarity.MAGIQUE if base.palier == 2 else Rarity.RARE
+	if manual != null:
+		if base.tier <= 1:
+			return Rarity.COMMON
+		return Rarity.MAGIC if base.tier == 2 else Rarity.RARE
 	if explicits.is_empty():
-		return Rarity.COMMUN
+		return Rarity.COMMON
 	if explicits.size() <= 2:
-		return Rarity.MAGIQUE
+		return Rarity.MAGIC
 	return Rarity.RARE
 
 
@@ -61,36 +61,36 @@ func color() -> Color:
 
 ## Le nom lu par le joueur ; tout affichage passe par ici, pas par `base.display_name`.
 func display_name() -> String:
-	return Textes.t(base.display_name)
+	return Texts.t(base.display_name)
 
 
 ## Faux pour tout ce qui n'est pas un manuel. La seule réponse, pour le joueur comme
 ## pour la relecture d'une sauvegarde.
-func enseigne(id_competence: String) -> bool:
-	if base == null or base.manuel == null:
+func teaches(skill_id: String) -> bool:
+	if base == null or base.manual == null:
 		return false
-	return base.manuel.case_de(id_competence) != null
+	return base.manual.cell_of(skill_id) != null
 
 
 ## Case, passif ou nœud confondus : la question de la relecture d'une sauvegarde.
-func connait(identifiant: String) -> bool:
-	if base == null or base.manuel == null:
+func knows(identifier: String) -> bool:
+	if base == null or base.manual == null:
 		return false
-	return base.manuel.connait(identifiant)
+	return base.manual.knows(identifier)
 
 
 ## Vide hors manuel, ou pour une compétence que ce livre n'enseigne pas.
-func talents_investis(id_competence: String) -> Array[TalentInvesti]:
-	if manuel == null or base.manuel == null:
-		return [] as Array[TalentInvesti]
-	return manuel.talents_investis(base.manuel, id_competence)
+func invested_talents(skill_id: String) -> Array[InvestedTalent]:
+	if manual == null or base.manual == null:
+		return [] as Array[InvestedTalent]
+	return manual.invested_talents(base.manual, skill_id)
 
 
 ## Ce que les passifs de ce livre donnent au personnage qui l'étudie.
-func mods_de_passifs() -> Array[StatMod]:
-	if manuel == null or base.manuel == null:
+func passive_mods() -> Array[StatMod]:
+	if manual == null or base.manual == null:
 		return [] as Array[StatMod]
-	return manuel.mods_de_passifs(base.manuel)
+	return manual.passive_mods(base.manual)
 
 
 ## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul

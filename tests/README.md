@@ -5,10 +5,10 @@ tests/run.sh              # tout : ~45 s, dont 33 s de tests
 tests/run.sh unit         # ~15 s, dont 3 s de tests
 tests/run.sh integration
 tests/run.sh e2e          # lent, mais c'est lui qui attrape les surprises
-tests/run.sh equilibrage  # les couloirs du banc, hors de la suite par défaut
+tests/run.sh balance  # les couloirs du banc, hors de la suite par défaut
 ```
 
-`equilibrage/` n'est pas dans `all` : ses couloirs cassent quand un réglage
+`balance/` n'est pas dans `all` : ses couloirs cassent quand un réglage
 d'équilibrage les franchit, et un réglage en cours ne doit pas bloquer une livraison
 sans rapport. Voir `hack-n-slash-jalon-13.md`, §4.
 

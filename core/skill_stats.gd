@@ -1,0 +1,263 @@
+class_name SkillStats
+extends RefCounted
+
+## Ce qu'un lancer fait vraiment : les nombres de la compétence après modificateurs.
+## Le résultat d'un lancer, jamais gardé, donc jamais périmé. Hors de
+## `CharacterStats` : c'est la propriété d'un geste, pas d'un corps.
+
+## Ce qu'un modificateur peut viser, et son nom à l'écran — en plus des dégâts
+## ajoutés `damage_<nature>`. `damage` ne se vise qu'en pourcentage et multiplie
+## toutes les parts. Ni coût ni intervalle (la réserve et les vitesses ont leur voie),
+## ni `period` ni `self_burn` (voir `Skill`).
+const LABELS := {
+	DAMAGE: "dégâts",
+	"projectiles": "nombre de projectiles",
+	"projectile_speed": "vitesse de projectile",
+	"targets": "nombre de cibles",
+	"duration": "durée",
+	"radius": "rayon",
+	"simultaneous": "maximum simultané",
+}
+
+const DAMAGE := "damage"
+
+## Le début du nom d'une statistique de dégâts ajoutés : `damage_` puis
+## l'identifiant d'une nature.
+const ADDED_PREFIX := "damage_"
+
+## L'écart minimal entre deux traits voisins, en degrés : sans lui, « +1 projectile »
+## sur un trait droit en superposerait deux.
+const MIN_SPREAD := 8.0
+
+## Les dégâts **par nature et en fourchette**, indexés par `DamageType.Kind`.
+var damage_min: Array[float] = DamageType.empty_parts()
+var damage_max: Array[float] = DamageType.empty_parts()
+## Réels pendant la résolution, arrondis par `finalize()` : arrondir à chaque
+## modificateur ferait dépendre le résultat de leur ordre.
+var projectiles := 1.0
+var spread_in_degrees := 0.0
+var projectile_speed := 0.0
+## Réels puis arrondis, comme `projectiles`.
+var targets := 1.0
+var simultaneous := 0.0
+var duration := 0.0
+var radius := 0.0
+var period := 0.0
+var self_burn := 0.0
+## Les coups d'un geste, que la forme décide.
+var hits := 1
+## Vrai pour ce qui n'a pas de fin, l'aura : pas de « par lancer ».
+var sustained := false
+var mana_cost := 0.0
+var interval := 0.0
+
+## Les mots-clés que ce lancer porte vraiment, nœuds compris : c'est cette liste
+## qui a filtré les modificateurs.
+var keywords := PackedStringArray()
+
+## La nature de la compétence, avant conversion.
+var nature := int(DamageType.Kind.PHYSICAL)
+
+## La décomposition pour la fiche du manuel, **écrite par les appels qui calculent**
+## les dégâts : recomposée à côté, elle finirait par mentir.
+var base_damage := 0.0
+var added_min: Array[float] = DamageType.empty_parts()
+var added_max: Array[float] = DamageType.empty_parts()
+## Le produit des « +% dégâts » portés : ils se multiplient entre eux, donc deux
+## « +10 % » font 1,21 et non 1,20.
+var increase := 1.0
+## La part du coup qu'un nœud a déplacée, **par nature d'arrivée**, pour la fiche.
+## Le lancer n'en a pas besoin : `damage_min` et `damage_max` sont déjà déplacés.
+var conversions: Array[float] = DamageType.empty_parts()
+
+
+## La nature ajoutée par cette statistique, ou -1.
+static func added_nature(stat: String) -> int:
+	if not stat.begins_with(ADDED_PREFIX):
+		return -1
+	return DamageType.IDS.find(stat.trim_prefix(ADDED_PREFIX))
+
+
+static func added_stat(nature: DamageType.Kind) -> String:
+	return ADDED_PREFIX + DamageType.IDS[nature]
+
+
+## « 3–7 », ou « 23 » quand les deux bornes s'arrondissent au même nombre : des
+## dégâts résolus sont des réels, et « 29–29 » se lirait comme une faute.
+static func readable_range(low: float, top: float) -> String:
+	var b := roundi(low)
+	var h := roundi(top)
+	return str(b) if b == h else "%d–%d" % [b, h]
+
+
+## Un nombre nommé, ou des dégâts ajoutés d'une nature connue.
+static func modifiable(stat: String) -> bool:
+	return LABELS.has(stat) or added_nature(stat) >= 0
+
+
+func projectile_count() -> int:
+	return int(projectiles)
+
+
+func target_count() -> int:
+	return int(targets)
+
+
+func max_simultaneous() -> int:
+	return int(simultaneous)
+
+
+## Une impulsion à la pose, puis une par période ; l'epsilon absorbe l'arrondi d'une
+## durée modifiée. **Le nuage compte ses frappes par ici**, comme la fiche.
+func strikes_over_duration() -> int:
+	if duration <= 0.0 or period <= 0.0:
+		return 1
+	return maxi(floori(duration / period + 0.0001), 1)
+
+
+## « Projectile · Foudre · Sort », nœuds compris.
+func keywords_label() -> String:
+	return Keywords.line(keywords)
+
+
+## La nature que le lancer **montre** : la sienne, ou celle où une conversion a
+## emmené le plus de ses dégâts propres — jamais ce qu'un objet ajoute (jalon 8).
+func dominant_nature() -> int:
+	var best_one := nature
+	var part := 1.0
+	for p in conversions:
+		part -= p
+	for i in conversions.size():
+		if conversions[i] > part:
+			part = conversions[i]
+			best_one = i
+	return best_one
+
+
+## Les dégâts propres de la compétence, dans sa nature, bornes égales.
+func place_the_base(nature: int, amount: float) -> void:
+	base_damage = amount
+	damage_min[nature] += amount
+	damage_max[nature] += amount
+
+
+## La borne haute ne descend jamais sous la basse.
+func add_to(nature: int, low: float, top: float) -> void:
+	var top_point := maxf(top, low)
+	added_min[nature] += low
+	added_max[nature] += top_point
+	damage_min[nature] += low
+	damage_max[nature] += top_point
+
+
+## Le nœud de conversion, appelé **après les fourchettes ajoutées** : il prend sa part
+## de **chaque** nature, ajouts compris. Entière, il ne reste qu'une nature, donc
+## qu'un état possible.
+func apply_conversion(target: int, part: float) -> void:
+	var rest := clampf(part, 0.0, 1.0)
+	if rest <= 0.0:
+		return
+	for source in damage_min.size():
+		if source == target:
+			continue
+		var low := damage_min[source] * rest
+		var top := damage_max[source] * rest
+		damage_min[source] -= low
+		damage_max[source] -= top
+		damage_min[target] += low
+		damage_max[target] += top
+		conversions[source] *= 1.0 - rest
+	# La part du coup **entier** : deux nœuds à 50 % font 75 %, pas 100 %.
+	conversions[target] += rest * (1.0 - conversions[target])
+
+
+## Appliqué à la suite, pas sommé : deux « +10 % » font 1,21.
+func increase_by(percentage: float) -> void:
+	var factor := 1.0 + percentage * 0.01
+	increase *= factor
+	_multiplier(factor)
+
+
+func _multiplier(factor: float) -> void:
+	for i in damage_min.size():
+		damage_min[i] *= factor
+		damage_max[i] *= factor
+
+
+## La part de chaque nature, somme à un ; toute dans sa nature sans dégâts.
+## Contrairement à `dominant_nature()`, ce qu'un objet ajoute compte.
+func distribution() -> Array[float]:
+	var out := DamageType.empty_parts()
+	var total := total_min() + total_max()
+	if total <= 0.0:
+		out[nature] = 1.0
+		return out
+	for i in out.size():
+		out[i] = (damage_min[i] + damage_max[i]) / total
+	return out
+
+
+func total_min() -> float:
+	var total := 0.0
+	for part in damage_min:
+		total += part
+	return total
+
+
+func total_max() -> float:
+	var total := 0.0
+	for part in damage_max:
+		total += part
+	return total
+
+
+## Le milieu de chaque fourchette.
+func average_per_hit() -> float:
+	return (total_min() + total_max()) * 0.5
+
+
+## Un lancer entier **si tout touche**, avant défenses et sans critique :
+## projectiles × cibles × coups × frappes dans la durée. Zéro pour une aura.
+func average_per_cast() -> float:
+	if sustained:
+		return 0.0
+	var count := projectile_count() * target_count() * hits * strikes_over_duration()
+	return average_per_hit() * float(count)
+
+
+## Par l'intervalle entre deux lancers, sans compter la réserve ; pour une aura, un
+## coup par période. Une orbite est bornée par son maximum simultané.
+func average_per_second() -> float:
+	if sustained:
+		return average_per_hit() / period if period > 0.0 else 0.0
+	if interval <= 0.0:
+		return 0.0
+	var per_second := average_per_cast() / interval
+	if max_simultaneous() > 0 and period > 0.0:
+		per_second = minf(per_second, average_per_hit() * float(max_simultaneous()) / period)
+	return per_second
+
+
+## Les parts d'**un** coup : un tirage par fourchette ouverte, quel que soit le
+## résultat (invariant 3).
+func roll(rng: RandomNumberGenerator) -> Array[float]:
+	var parts := DamageType.empty_parts()
+	for i in parts.size():
+		parts[i] = damage_min[i]
+		if damage_max[i] > damage_min[i]:
+			parts[i] = rng.randf_range(damage_min[i], damage_max[i])
+	return parts
+
+
+## Les bornes, une fois tous les modificateurs appliqués : dispersion bornée au tour
+## complet, et une chaîne garde au moins une cible.
+func finalize() -> void:
+	var n := maxi(roundi(projectiles), 1)
+	projectiles = float(n)
+	spread_in_degrees = clampf(
+		maxf(spread_in_degrees, MIN_SPREAD * float(n - 1)), 0.0, 360.0
+	)
+	targets = float(maxi(roundi(targets), 1))
+	simultaneous = float(maxi(roundi(simultaneous), 0))
+	duration = maxf(duration, 0.0)
+	radius = maxf(radius, 0.0)

@@ -6,15 +6,15 @@ extends Node
 signal changed
 
 ## Distinct des personnages : ces réglages valent pour la machine.
-const FICHIER := "user://reglages.json"
+const FILE := "user://settings.json"
 
-## Ce que « plein écran » vaut dans `echelle`.
-const PLEIN_ECRAN := 0
+## Ce que « plein écran » vaut dans `scale_factor`.
+const FULLSCREEN := 0
 
 ## Le français est la langue source : ses textes sont les clés, l'anglais vit dans
 ## `i18n/en.po`.
-const FRANCAIS := "fr"
-const ANGLAIS := "en"
+const FRENCH := "fr"
+const ENGLISH := "en"
 
 ## Barres de vie au-dessus des acteurs, ennemis comme alliés.
 var show_health_bars := true:
@@ -23,7 +23,7 @@ var show_health_bars := true:
 			return
 		show_health_bars = value
 		changed.emit()
-		_ecrire()
+		_write()
 
 ## Noms des affixes empilés au-dessus des ennemis qui en portent.
 var show_affix_names := true:
@@ -32,61 +32,61 @@ var show_affix_names := true:
 			return
 		show_affix_names = value
 		changed.emit()
-		_ecrire()
+		_write()
 
 ## Deux cases : ce que subit le joueur, brûlures comprises, et ce que subissent
 ## les ennemis.
-var degats_subis_visibles := true:
+var damage_taken_visible := true:
 	set(value):
-		if value == degats_subis_visibles:
+		if value == damage_taken_visible:
 			return
-		degats_subis_visibles = value
+		damage_taken_visible = value
 		changed.emit()
-		_ecrire()
+		_write()
 
-var degats_infliges_visibles := true:
+var damage_dealt_visible := true:
 	set(value):
-		if value == degats_infliges_visibles:
+		if value == damage_dealt_visible:
 			return
-		degats_infliges_visibles = value
+		damage_dealt_visible = value
 		changed.emit()
-		_ecrire()
+		_write()
 
 
 ## Le choix entre les deux cases, ici et nulle part ailleurs.
-func montre_les_degats(sur_le_joueur: bool) -> bool:
-	return degats_subis_visibles if sur_le_joueur else degats_infliges_visibles
+func shows_damage(on_the_player: bool) -> bool:
+	return damage_taken_visible if on_the_player else damage_dealt_visible
 
 ## « fr » ou « en », toujours normalisée. La poser change la locale du moteur, qui
 ## retraduit les scènes et notifie les panneaux dessinés.
-var langue := FRANCAIS:
+var language := FRENCH:
 	set(value):
-		var choisie := normaliser(value)
-		if choisie == langue:
+		var chosen := normalize(value)
+		if chosen == language:
 			return
-		langue = choisie
-		TranslationServer.set_locale(langue)
+		language = chosen
+		TranslationServer.set_locale(language)
 		changed.emit()
-		_ecrire()
+		_write()
 
 ## Le facteur de la fenêtre, ou PLEIN_ECRAN. Le jeu remplit toujours la fenêtre
 ## (échelle fractionnaire) : ces facteurs sont des raccourcis vers les tailles
 ## nettes. Pas de signal `changed` : rien n'a à y réagir.
-var echelle := 2:
+var scale_factor := 2:
 	set(value):
-		var borne := clampi(value, PLEIN_ECRAN, echelle_maximale())
-		if borne == echelle:
+		var clamped := clampi(value, FULLSCREEN, max_scale_factor())
+		if clamped == scale_factor:
 			return
-		echelle = borne
+		scale_factor = clamped
 		# Pendant une lecture, on note la valeur sans toucher à la fenêtre :
 		# c'est `_ready` qui décide s'il faut l'appliquer.
-		if _chargement:
+		if _loading:
 			return
-		_appliquer()
-		_ecrire()
+		_apply()
+		_write()
 
 ## Pendant la lecture : sans lui, chaque champ relu réécrirait le fichier.
-var _chargement := false
+var _loading := false
 
 
 ## **On n'impose la taille que si le joueur l'a choisie** : sans fichier, on lit le
@@ -94,23 +94,23 @@ var _chargement := false
 ## La langue suit la même règle, posée sans écrire : un premier lancement ne doit
 ## pas créer un fichier qui ferait passer les défauts pour un choix.
 func _ready() -> void:
-	var choisie := FileAccess.file_exists(FICHIER)
+	var chosen := FileAccess.file_exists(FILE)
 
-	_chargement = true
-	langue = normaliser(TranslationServer.get_locale())
-	_chargement = false
-	_charger()
+	_loading = true
+	language = normalize(TranslationServer.get_locale())
+	_loading = false
+	_load()
 
 	# Toujours : le moteur doit tourner sur « fr » ou « en », jamais sur « fr_CA ».
-	TranslationServer.set_locale(langue)
+	TranslationServer.set_locale(language)
 
-	if choisie:
-		_appliquer()
+	if chosen:
+		_apply()
 		return
 
-	_chargement = true
-	echelle = echelle_observee()
-	_chargement = false
+	_loading = true
+	scale_factor = observed_scale_factor()
+	_loading = false
 
 
 # --------------------------------------------------------------------------
@@ -120,34 +120,34 @@ func _ready() -> void:
 ## Ce qui commence par « fr » donne le français, le reste l'anglais : un système
 ## allemand afficherait sinon les clés. Statique, pour que le test ne dépende pas
 ## de la machine.
-static func normaliser(locale: String) -> String:
-	return FRANCAIS if locale.to_lower().begins_with(FRANCAIS) else ANGLAIS
+static func normalize(locale: String) -> String:
+	return FRENCH if locale.to_lower().begins_with(FRENCH) else ENGLISH
 
 
 ## La langue en cours écrite dans cette langue, jamais traduite : un joueur perdu
 ## doit reconnaître la sienne.
-const LIBELLES_DE_LANGUE := {
-	FRANCAIS: "Langue : Français",
-	ANGLAIS: "Language: English",
+const LANGUAGE_LABELS := {
+	FRENCH: "Langue : Français",
+	ENGLISH: "Language: English",
 }
 
 
-static func libelle_de_langue(valeur: String) -> String:
-	return LIBELLES_DE_LANGUE.get(normaliser(valeur), "")
+static func language_label(value: String) -> String:
+	return LANGUAGE_LABELS.get(normalize(value), "")
 
 
-func libelle_de_langue_courante() -> String:
-	return libelle_de_langue(langue)
+func current_language_label() -> String:
+	return language_label(language)
 
 
 ## Écrite comme une ronde : une troisième langue ne touchera pas aux boutons.
-static func langue_suivante(courante: String) -> String:
-	return ANGLAIS if normaliser(courante) == FRANCAIS else FRANCAIS
+static func next_language(current_one: String) -> String:
+	return ENGLISH if normalize(current_one) == FRENCH else FRENCH
 
 
 ## Appelée par les options et par l'écran des personnages.
-func cycler_langue() -> void:
-	langue = langue_suivante(langue)
+func cycle_language() -> void:
+	language = next_language(language)
 
 
 # --------------------------------------------------------------------------
@@ -155,7 +155,7 @@ func cycler_langue() -> void:
 # --------------------------------------------------------------------------
 
 ## Lue dans les réglages du projet, jamais recopiée.
-static func taille_de_base() -> Vector2i:
+static func base_size() -> Vector2i:
 	return Vector2i(
 		int(ProjectSettings.get_setting("display/window/size/viewport_width", 640)),
 		int(ProjectSettings.get_setting("display/window/size/viewport_height", 360))
@@ -163,70 +163,70 @@ static func taille_de_base() -> Vector2i:
 
 
 ## Au moins 1, même sur un écran plus petit que le cadrage. Statique, pour le test.
-static func echelle_qui_tient(ecran: Vector2i, base: Vector2i) -> int:
+static func fitting_scale_factor(screen: Vector2i, base: Vector2i) -> int:
 	if base.x <= 0 or base.y <= 0:
 		return 1
-	return maxi(mini(ecran.x / base.x, ecran.y / base.y), 1)
+	return maxi(mini(screen.x / base.x, screen.y / base.y), 1)
 
 
 ## Arrondi vers le bas, par la même formule que l'écran.
-static func echelle_observee() -> int:
+static func observed_scale_factor() -> int:
 	if DisplayServer.get_name() == "headless":
 		return 1
-	return echelle_qui_tient(DisplayServer.window_get_size(), taille_de_base())
+	return fitting_scale_factor(DisplayServer.window_get_size(), base_size())
 
 
 ## Le plus grand facteur que cet écran-ci accepte.
-static func echelle_maximale() -> int:
-	var utile := DisplayServer.screen_get_usable_rect(
+static func max_scale_factor() -> int:
+	var useful := DisplayServer.screen_get_usable_rect(
 		DisplayServer.window_get_current_screen()
 	).size
-	return echelle_qui_tient(utile, taille_de_base())
+	return fitting_scale_factor(useful, base_size())
 
 
 ## 1, 2, … maximum, plein écran, puis 1 : on sort du plein écran en continuant.
-static func echelle_suivante(courante: int, maximum: int) -> int:
-	if courante == PLEIN_ECRAN:
+static func next_scale_factor(current_one: int, maximum: int) -> int:
+	if current_one == FULLSCREEN:
 		return 1
-	if courante >= maximum:
-		return PLEIN_ECRAN
-	return courante + 1
+	if current_one >= maximum:
+		return FULLSCREEN
+	return current_one + 1
 
 
 ## Le texte du bouton des options.
-static func libelle(valeur: int, base: Vector2i) -> String:
-	if valeur == PLEIN_ECRAN:
-		return Textes.t("Fenêtre : plein écran")
-	return Textes.t("Fenêtre : ×{facteur}  ({largeur} × {hauteur})").format({
-		"facteur": valeur, "largeur": base.x * valeur, "hauteur": base.y * valeur
+static func label_of(value: int, base: Vector2i) -> String:
+	if value == FULLSCREEN:
+		return Texts.t("Fenêtre : plein écran")
+	return Texts.t("Fenêtre : ×{facteur}  ({largeur} × {hauteur})").format({
+		"facteur": value, "largeur": base.x * value, "hauteur": base.y * value
 	})
 
 
-func libelle_courant() -> String:
-	return libelle(echelle, taille_de_base())
+func current_label() -> String:
+	return label_of(scale_factor, base_size())
 
 
 ## Passe au réglage suivant. Appelée par le menu des options.
-func cycler_echelle() -> void:
-	echelle = echelle_suivante(echelle, echelle_maximale())
+func cycle_scale() -> void:
+	scale_factor = next_scale_factor(scale_factor, max_scale_factor())
 
 
 ## Recentrée : agrandie depuis son coin, elle sortirait par le bas.
-func _appliquer() -> void:
+func _apply() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
-	if echelle == PLEIN_ECRAN:
+	if scale_factor == FULLSCREEN:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		return
 
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-	var base := taille_de_base()
-	DisplayServer.window_set_size(base * echelle)
-	var utile := DisplayServer.screen_get_usable_rect(
+	var base := base_size()
+	DisplayServer.window_set_size(base * scale_factor)
+	var useful := DisplayServer.screen_get_usable_rect(
 		DisplayServer.window_get_current_screen()
 	)
 	DisplayServer.window_set_position(
-		utile.position + (utile.size - base * echelle) / 2
+		useful.position + (useful.size - base * scale_factor) / 2
 	)
 
 
@@ -235,58 +235,61 @@ func _appliquer() -> void:
 # --------------------------------------------------------------------------
 
 ## Un dictionnaire nommé : un réglage ajouté ne décale pas les autres.
-func vers_dict() -> Dictionary:
+func to_dict() -> Dictionary:
 	return {
-		"barres_de_vie": show_health_bars,
-		"noms_d_affixes": show_affix_names,
-		"degats_subis": degats_subis_visibles,
-		"degats_infliges": degats_infliges_visibles,
-		"langue": langue,
-		"echelle": echelle,
+		"health_bars": show_health_bars,
+		"affix_names": show_affix_names,
+		"damage_taken": damage_taken_visible,
+		"damage_dealt": damage_dealt_visible,
+		"language": language,
+		"scale_factor": scale_factor,
 	}
 
 
 ## Un champ absent garde son défaut : un fichier plus ancien sert encore.
-func depuis_dict(source: Dictionary) -> void:
-	_chargement = true
-	show_health_bars = bool(source.get("barres_de_vie", show_health_bars))
-	show_affix_names = bool(source.get("noms_d_affixes", show_affix_names))
-	degats_subis_visibles = bool(source.get("degats_subis", degats_subis_visibles))
-	degats_infliges_visibles = bool(source.get("degats_infliges", degats_infliges_visibles))
+func from_dict(source: Dictionary) -> void:
+	_loading = true
+	show_health_bars = bool(source.get("health_bars", show_health_bars))
+	show_affix_names = bool(source.get("affix_names", show_affix_names))
+	damage_taken_visible = bool(source.get("damage_taken", damage_taken_visible))
+	damage_dealt_visible = bool(source.get("damage_dealt", damage_dealt_visible))
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
-	langue = String(source.get("langue", langue))
-	var lue: Variant = source.get("echelle", echelle)
-	if lue is float or lue is int:
+	language = String(source.get("language", language))
+	var read_value: Variant = source.get("scale_factor", scale_factor)
+	if read_value is float or read_value is int:
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand
 		# demanderait un facteur que celui-ci ne peut pas afficher.
-		echelle = clampi(int(lue), PLEIN_ECRAN, echelle_maximale())
-	_chargement = false
+		scale_factor = clampi(int(read_value), FULLSCREEN, max_scale_factor())
+	_loading = false
 
 
-func _charger() -> void:
-	var fichier := FileAccess.open(FICHIER, FileAccess.READ)
-	if fichier == null:
+func _load() -> void:
+	var file := FileAccess.open(FILE, FileAccess.READ)
+	var legacy := file == null
+	if legacy:
+		file = FileAccess.open(LegacyFrench.SETTINGS_FILE, FileAccess.READ)
+	if file == null:
 		return
-	var texte := fichier.get_as_text()
-	fichier.close()
+	var text_value := file.get_as_text()
+	file.close()
 
 	# Une instance de JSON et non la fonction statique : celle-ci journalise une
 	# erreur du moteur sur un fichier abîmé, alors que le cas est attendu ici.
-	var lecteur := JSON.new()
-	if lecteur.parse(texte) != OK or not lecteur.data is Dictionary:
+	var reader := JSON.new()
+	if reader.parse(text_value) != OK or not reader.data is Dictionary:
 		push_warning("Réglages illisibles : les valeurs par défaut s'appliquent.")
 		return
-	depuis_dict(lecteur.data)
+	from_dict(LegacyFrench.settings(reader.data) if legacy else reader.data)
 
 
 ## Sans écriture atomique, contrairement aux personnages : perdre les réglages coûte
 ## trois clics.
-func _ecrire() -> void:
-	if _chargement:
+func _write() -> void:
+	if _loading:
 		return
-	var fichier := FileAccess.open(FICHIER, FileAccess.WRITE)
-	if fichier == null:
+	var file := FileAccess.open(FILE, FileAccess.WRITE)
+	if file == null:
 		push_warning("Réglages non enregistrés : écriture impossible.")
 		return
-	fichier.store_string(JSON.stringify(vers_dict(), "\t"))
-	fichier.close()
+	file.store_string(JSON.stringify(to_dict(), "\t"))
+	file.close()

@@ -4,13 +4,13 @@
 
 [resource]
 script = ExtResource("1_3s51a")
-id = "pendentif"
+id = "pendant"
 display_name = "Pendentif"
 kind = "amulet"
 family = "amulet"
 tags = PackedStringArray("amulet", "jewellery")
-lignee = "amulette"
-palier = 3
-niveau_requis = 35
+lineage = "amulet"
+tier = 3
+required_level = 35
 implicit_stat = "max_mana"
 implicit_value = 58.0

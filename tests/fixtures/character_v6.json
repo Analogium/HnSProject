@@ -1,0 +1,46 @@
+{
+	"version": 6,
+	"id": "p_reference_v6",
+	"name": "Ysolde",
+	"silhouette": 1,
+	"created_on": "2026-09-10",
+	"played_on": "2026-09-15",
+	"level": 18,
+	"experience": 820,
+	"attributes": {
+		"strength": 12,
+		"dexterity": 3,
+		"intelligence": 21
+	},
+	"unspent_points": 0,
+	"bag": [],
+	"equipment": {
+		"weapon": {
+			"base": "sword",
+			"level": 18,
+			"affixes": [
+				{ "stat": "damage_fire", "mode": 0, "value": 3.0, "value_max": 8.0, "affix": "fire_to_attacks", "tier": 5, "scope": "attack" },
+				{ "stat": "attack_speed", "mode": 1, "value": 9.0, "affix": "quick", "tier": 4 }
+			]
+		},
+		"offhand": {
+			"base": "grimoire",
+			"level": 18,
+			"affixes": [
+				{ "stat": "damage_holy", "mode": 0, "value": 2.0, "value_max": 5.0, "affix": "holy_to_spells", "tier": 5, "scope": "spell" }
+			]
+		}
+	},
+	"rack": [
+		{
+			"base": "manual_lightning",
+			"level": 18,
+			"affixes": [],
+			"manual": { "exp": 900, "points": { "swift_bolt": 4 } }
+		},
+		null,
+		null
+	],
+	"bar": ["attack", "bolt", "swift_bolt", null, null],
+	"manual_given": true
+}

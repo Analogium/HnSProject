@@ -96,7 +96,7 @@ var _doll_key := ""
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
-	title.add_theme_color_override("font_color", UiPalette.TITRE)
+	title.add_theme_color_override("font_color", UiPalette.TITLE)
 
 
 ## Rend la souris quoi qu'il arrive, même quand la zone est rechargée sac ouvert.
@@ -144,18 +144,18 @@ func _input(event: InputEvent) -> void:
 		return
 
 	# La position de l'événement : vraie au moment du clic, rejouable dans un test.
-	var souris := make_input_local(event) as InputEventMouse
-	if souris == null:
+	var mouse := make_input_local(event) as InputEventMouse
+	if mouse == null:
 		return
 
-	if souris is InputEventMouseMotion:
-		_track(souris.position)
+	if mouse is InputEventMouseMotion:
+		_track(mouse.position)
 		return
 
-	if not _possede_le_clic(souris.position):
+	if not _owns_click(mouse.position):
 		return
 
-	var button := souris as InputEventMouseButton
+	var button := mouse as InputEventMouseButton
 	if not button.pressed:
 		if button.button_index == MOUSE_BUTTON_LEFT:
 			_track(button.position)
@@ -223,25 +223,25 @@ func _equip(cell: Vector2i) -> void:
 	var index := _inventory.index_at(cell)
 	if index == Inventory.EMPTY:
 		return
-	var origine: Vector2i = _inventory.placed[index].cell
+	var origin: Vector2i = _inventory.placed[index].cell
 	var item := _inventory.take_at(cell)
 	if not _wear(item):
 		# Rien à quoi l'attacher : il retourne exactement d'où il vient.
-		_inventory.place(item, origine)
+		_inventory.place(item, origin)
 	queue_redraw()
 
 
 ## Porte un objet et reloge le remplacé, au sac ou au sol : **le seul endroit**.
-## `emplacement` vide au clic droit, imposé quand on a lâché sur un emplacement.
-func _wear(item: Item, emplacement := "") -> bool:
+## `slot` vide au clic droit, imposé quand on a lâché sur un emplacement.
+func _wear(item: Item, slot := "") -> bool:
 	if _player == null:
 		return false
 	# Un manuel s'étudie : le clic droit l'envoie au râtelier.
-	var ancien := _player.etudier(item) if Ratelier.accepte(item) else _player.equip(item, emplacement)
-	if ancien == item:
+	var old := _player.study(item) if Rack.accepts(item) else _player.equip(item, slot)
+	if old == item:
 		return false
-	if ancien != null and not _inventory.add(ancien):
-		drop_requested.emit(ancien)
+	if old != null and not _inventory.add(old):
+		drop_requested.emit(old)
 	return true
 
 
@@ -256,15 +256,15 @@ func _unequip(slot: String) -> void:
 func _take(point: Vector2) -> void:
 	var slot := _slot_at(point)
 	if slot >= 0:
-		var porte: Item = _player.equipped(EquipmentSlots.ids()[slot]) if _player != null else null
-		if porte == null:
+		var worn: Item = _player.equipped(EquipmentSlots.ids()[slot]) if _player != null else null
+		if worn == null:
 			return
 		_player.unequip(EquipmentSlots.ids()[slot])
-		_held = porte
+		_held = worn
 		# Hors grille exprès : `_return_held` cherchera une place.
 		_from = Vector2i(-1, -1)
-		_grab = Inventory.footprint(porte) / 2
-		_grab_px = _span_size(Inventory.footprint(porte)) * 0.5
+		_grab = Inventory.footprint(worn) / 2
+		_grab_px = _span_size(Inventory.footprint(worn)) * 0.5
 		queue_redraw()
 		return
 
@@ -302,9 +302,9 @@ func _resolve(point: Vector2, drag: bool) -> void:
 		return
 
 	if drag:
-		var reste := _return_held()
-		if reste != null:
-			drop_requested.emit(reste)
+		var rest := _return_held()
+		if rest != null:
+			drop_requested.emit(rest)
 	queue_redraw()
 
 
@@ -359,18 +359,18 @@ func _doll_frame_index() -> int:
 func _refresh_doll() -> void:
 	if _player == null:
 		return
-	var variante := _player.sprite.current_variant()
-	var arme := _player.weapon_kind()
-	var cle := "%d:%s" % [variante, arme]
-	if cle == _doll_key:
+	var variant_index := _player.sprite.current_variant()
+	var weapon := _player.weapon_kind()
+	var key := "%d:%s" % [variant_index, weapon]
+	if key == _doll_key:
 		return
-	_doll_key = cle
-	_doll_frames = SpriteForge.frames("player", variante, arme)
+	_doll_key = key
+	_doll_frames = SpriteForge.frames("player", variant_index, weapon)
 
 
 func _on_changed() -> void:
 	if _inventory != null:
-		title.text = Textes.t("SAC  {occupees} / {total} cases").format({
+		title.text = Texts.t("SAC  {occupees} / {total} cases").format({
 			"occupees": _inventory.used_cells(), "total": _inventory.cell_count()
 		})
 	# L'arme portée a pu changer.
@@ -381,7 +381,7 @@ func _on_changed() -> void:
 
 ## **Un clic hors du sac ne lui appartient pas**, sinon les autres panneaux
 ## deviennent sourds ; sauf avec un objet en main, qu'on peut lâcher au-dehors.
-func _possede_le_clic(point: Vector2) -> bool:
+func _owns_click(point: Vector2) -> bool:
 	return _held != null or _panel_rect().has_point(point)
 
 
@@ -422,8 +422,8 @@ func _grid_left() -> float:
 	return _centered(_inventory.cols * (CELL + PAD) + PAD)
 
 
-func _centered(largeur: float) -> float:
-	return maxf(floorf((_panel_size().x - largeur) * 0.5), PAD)
+func _centered(width: float) -> float:
+	return maxf(floorf((_panel_size().x - width) * 0.5), PAD)
 
 
 func _slot_rect(index: int) -> Rect2:
@@ -432,9 +432,9 @@ func _slot_rect(index: int) -> Rect2:
 
 ## L'objet type d'un emplacement, pris dans le catalogue.
 static func _ghost_kind(slot: String) -> String:
-	var famille := EquipmentSlots.family_of(slot)
+	var family := EquipmentSlots.family_of(slot)
 	for base in ItemCatalog.ALL:
-		if base.family == famille:
+		if base.family == family:
 			return base.kind
 	return ""
 
@@ -482,20 +482,20 @@ func _draw() -> void:
 
 	for y in _inventory.rows:
 		for x in _inventory.cols:
-			_draw_case(_rect_of(Vector2i(x, y), Vector2i.ONE))
+			_draw_cell(_rect_of(Vector2i(x, y), Vector2i.ONE))
 
 	_draw_doll()
 	_draw_equipment()
 
-	var survole := _inventory.index_at(_hover) if _held == null else Inventory.EMPTY
+	var hovered := _inventory.index_at(_hover) if _held == null else Inventory.EMPTY
 	for p in _inventory.placed:
 		_draw_item(p.data, _rect_of(p.cell, p.rect().size), true)
-	if survole != Inventory.EMPTY:
-		var vise: Inventory.Placed = _inventory.placed[survole]
-		var r := _rect_of(vise.cell, vise.rect().size)
+	if hovered != Inventory.EMPTY:
+		var targeted: Inventory.Placed = _inventory.placed[hovered]
+		var r := _rect_of(targeted.cell, targeted.rect().size)
 		# Survolé, le cadre prend la rareté pleine.
-		draw_rect(r, vise.data.color(), false, 1.0)
-		_draw_tooltip(vise.data, r.position.y)
+		draw_rect(r, targeted.data.color(), false, 1.0)
+		_draw_tooltip(targeted.data, r.position.y)
 
 	if _held != null:
 		var span := Inventory.footprint(_held)
@@ -508,10 +508,10 @@ func _draw() -> void:
 
 	if _font != null:
 		draw_string(_font, Vector2(4.0, s.y - 13.0),
-			Textes.t("[clic] prendre et poser     [clic droit] équiper / retirer"),
+			Texts.t("[clic] prendre et poser     [clic droit] équiper / retirer"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 		draw_string(_font, Vector2(4.0, s.y - 3.0),
-			Textes.t("lâché hors du sac : jeté au sol"),
+			Texts.t("lâché hors du sac : jeté au sol"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
 
 
@@ -523,7 +523,7 @@ func _doll_area_rect() -> Rect2:
 ## La silhouette et l'arme réellement tenue, en grand.
 func _draw_doll() -> void:
 	var zone := _doll_area_rect()
-	_draw_case(zone)
+	_draw_cell(zone)
 	if _doll_frames == null or not _doll_frames.has_animation(DOLL_ANIM):
 		return
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
@@ -546,7 +546,7 @@ func _draw_equipment() -> void:
 			draw_rect(r, item.color().darkened(0.35), false, 1.0)
 			_draw_item(item, r, false, true)
 		else:
-			_draw_case(r)
+			_draw_cell(r)
 			_draw_ghost(slot, r)
 
 		if _hover_slot != i:
@@ -564,103 +564,103 @@ func _draw_ghost(slot: String, r: Rect2) -> void:
 	var kind := _ghost_kind(slot)
 	if kind.is_empty():
 		return
-	_draw_centered(SpriteForge.inventory_icon(kind, Vector2i(_place_libre(r))), r, GHOST)
+	_draw_centered(SpriteForge.inventory_icon(kind, Vector2i(_free_cell(r))), r, GHOST)
 
 
 ## Le creux d'une case vide et son liseré, toujours ensemble.
-func _draw_case(r: Rect2) -> void:
+func _draw_cell(r: Rect2) -> void:
 	draw_rect(r, SLOT)
 	draw_rect(r, SLOT_EDGE, false, 1.0)
 
 
 ## La place utile d'un rectangle, marge déduite.
-func _place_libre(r: Rect2) -> Vector2:
+func _free_cell(r: Rect2) -> Vector2:
 	return r.size - Vector2(MARGIN, MARGIN) * 2.0
 
 
 ## À taille native, position entière.
-func _draw_centered(tex: Texture2D, r: Rect2, teinte := Color.WHITE) -> void:
+func _draw_centered(tex: Texture2D, r: Rect2, tint := Color.WHITE) -> void:
 	if tex == null:
 		return
 	var at := (r.get_center() - tex.get_size() * 0.5).round()
-	draw_texture_rect(tex, Rect2(at, tex.get_size()), false, teinte)
+	draw_texture_rect(tex, Rect2(at, tex.get_size()), false, tint)
 
 
 ## Ce que porte l'objet.
-func _draw_tooltip(item: Item, haut_vise: float) -> void:
+func _draw_tooltip(item: Item, target_top: float) -> void:
 	if _font == null:
 		return
 
-	var titre := item.display_name()
+	var title_text := item.display_name()
 	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous Alt.
-	var niveau := Textes.t("niveau d'objet %d") % item.item_level
-	var implicite := item.implicit_line()
+	var level := Texts.t("niveau d'objet %d") % item.item_level
+	var implicit := item.implicit_line()
 
-	var explicites := PackedStringArray()
-	var paliers := PackedStringArray()
-	var detaille := false
-	var sans_provenance := false
+	var explicit_mods := PackedStringArray()
+	var tiers := PackedStringArray()
+	var detailed := false
+	var without_origin := false
 	for r in item.explicits:
-		explicites.append(r.mod.label())
+		explicit_mods.append(r.mod.label())
 		# Vide sans provenance : la ligne s'affiche sans colonne.
-		var palier := r.palier_et_plage() if _alt else ""
-		paliers.append(palier)
-		detaille = detaille or not palier.is_empty()
-		sans_provenance = sans_provenance or palier.is_empty()
+		var tier := r.tier_and_span() if _alt else ""
+		tiers.append(tier)
+		detailed = detailed or not tier.is_empty()
+		without_origin = without_origin or tier.is_empty()
 
 	# Sous Alt, dit pourquoi aucun palier ne s'affiche.
-	var note := Textes.t("paliers inconnus : ramassé avant") if _alt and sans_provenance else ""
+	var note := Texts.t("paliers inconnus : ramassé avant") if _alt and without_origin else ""
 
 	# Deux colonnes ; la gouttière sur la plus large ligne, pas en escalier.
 	var w_affixes := 0.0
-	for ligne in explicites:
+	for line in explicit_mods:
 		w_affixes = maxf(w_affixes, _font.get_string_size(
-			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
-	var w_paliers := 0.0
-	for ligne in paliers:
-		w_paliers = maxf(w_paliers, _font.get_string_size(
-			ligne, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+			line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	var w_tiers := 0.0
+	for line in tiers:
+		w_tiers = maxf(w_tiers, _font.get_string_size(
+			line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 
 	var w := maxf(TIP_MIN_W, _font.get_string_size(
-		titre, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
-	w = maxf(w, _font.get_string_size(niveau, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
-	var colonne := w_affixes + (TIP_TIER_GAP + w_paliers if detaille else 0.0)
-	w = maxf(w, colonne)
-	if not implicite.is_empty():
-		w = maxf(w, _font.get_string_size(implicite, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+		title_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE).x)
+	w = maxf(w, _font.get_string_size(level, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+	var column := w_affixes + (TIP_TIER_GAP + w_tiers if detailed else 0.0)
+	w = maxf(w, column)
+	if not implicit.is_empty():
+		w = maxf(w, _font.get_string_size(implicit, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	if not note.is_empty():
 		w = maxf(w, _font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
 
 	# Le titre et le niveau, puis une ligne par affixe, plus la note s'il y en a.
-	var n := explicites.size() + (1 if not implicite.is_empty() else 0)
+	var n := explicit_mods.size() + (1 if not implicit.is_empty() else 0)
 	n += 1 if not note.is_empty() else 0
 	var h := TIP_PAD * 2.0 + TIP_LINE * 2.0 + float(n) * TIP_LINE
 	# Le trait de séparation, quand il y a les deux sortes de lignes à séparer.
-	var separe := not implicite.is_empty() and not explicites.is_empty()
-	if separe:
+	var separated := not implicit.is_empty() and not explicit_mods.is_empty()
+	if separated:
 		h += TIP_LINE * 0.5
 
 	# Alignée sur l'objet, bornée en bas et à gauche (le mode détaillé l'élargit).
 	var s := _panel_size()
-	var haut := minf(haut_vise, s.y - h)
-	var gauche := maxf(-w - TIP_GAP, -global_position.x)
-	var r := Rect2(Vector2(gauche, haut), Vector2(w, h))
+	var top := minf(target_top, s.y - h)
+	var left := maxf(-w - TIP_GAP, -global_position.x)
+	var r := Rect2(Vector2(left, top), Vector2(w, h))
 
 	draw_rect(r, UiPalette.TIP_BACK)
 	draw_rect(r, item.color(), false, 1.0)
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
-	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), titre,
+	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), title_text,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE, item.color())
 	y += TIP_LINE
-	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), niveau,
+	draw_string(_font, Vector2(r.position.x + TIP_PAD, y), level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
-	if not implicite.is_empty():
+	if not implicit.is_empty():
 		y += TIP_LINE
-		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), implicite,
+		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), implicit,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_IMPLICIT)
-	if separe:
+	if separated:
 		# Le trait sépare ce que la base garantit de ce que le tirage a donné.
 		y += TIP_LINE * 0.5
 		draw_line(
@@ -668,15 +668,15 @@ func _draw_tooltip(item: Item, haut_vise: float) -> void:
 			Vector2(r.end.x - TIP_PAD, y - 2.0),
 			TIP_IMPLICIT * Color(1.0, 1.0, 1.0, 0.5), 1.0
 		)
-	for i in explicites.size():
+	for i in explicit_mods.size():
 		y += TIP_LINE
-		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), explicites[i],
+		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), explicit_mods[i],
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_EXPLICIT)
-		if paliers[i].is_empty():
+		if tiers[i].is_empty():
 			continue
 		draw_string(
 			_font,
-			Vector2(r.position.x + TIP_PAD + w_affixes + TIP_TIER_GAP, y), paliers[i],
+			Vector2(r.position.x + TIP_PAD + w_affixes + TIP_TIER_GAP, y), tiers[i],
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_TIER
 		)
 
@@ -694,8 +694,8 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 
 	# Dans le sac, l'icône suit l'encombrement ; dans un emplacement (`fill`), elle
 	# remplit sa case, taillée pour sa famille. Agrandissement entier, aspect conservé.
-	var place := _place_libre(r)
-	var propre := place if fill else _span_size(Inventory.footprint(item)).min(place)
+	var place := _free_cell(r)
+	var own := place if fill else _span_size(Inventory.footprint(item)).min(place)
 	_draw_centered(
-		SpriteForge.inventory_icon(item.base.kind, Vector2i(propre), item.base.palier), r
+		SpriteForge.inventory_icon(item.base.kind, Vector2i(own), item.base.tier), r
 	)

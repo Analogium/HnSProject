@@ -8,7 +8,7 @@ extends Control
 ## Couleurs d'UiPalette, jamais redéfinies : le sac s'ouvre à côté.
 const PAD := 6.0
 ## Resserré au minimum lisible : la fiche tient **entière** dans le cadrage
-## (`test_la_fiche_tient_dans_sa_hauteur`).
+## (`test_the_sheet_fits_its_height`).
 const LINE := 10.0
 const GROUP_GAP := 5.0
 const FONT_SIZE := 8
@@ -23,10 +23,10 @@ const BUTTON_W := 11.0
 const BUTTON_H := 9.0
 
 ## Le coup de référence de l'armure, l'ordre d'un coup de grunt.
-const ARMOR_REFERENCE_HIT := StatHelp.COUP_LEGER
+const ARMOR_REFERENCE_HIT := StatHelp.LIGHT_HIT
 
 ## La ligne survolée, à peine éclaircie.
-const SURVOL := Color(1.0, 1.0, 1.0, 0.06)
+const HOVER := Color(1.0, 1.0, 1.0, 0.06)
 
 ## L'infobulle, à **droite** du panneau collé à gauche : le seul côté libre.
 const TIP_W := 150.0
@@ -46,7 +46,7 @@ const GROUPS := [
 	[
 		"OFFENSE",
 		[
-			CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR,
+			SkillCatalog.ID_ATTACK, SkillCatalog.ID_BOLT,
 			"attack_speed", "cast_speed", "attack_range", "crit_chance", "crit_multiplier",
 		],
 	],
@@ -71,14 +71,14 @@ var _font: Font
 ## Dans le repère du panneau ; INF tant qu'elle n'y est pas entrée.
 var _mouse := Vector2.INF
 ## Remplis au dessin : ce qu'on voit est ce qu'on clique.
-var _boutons := {}
-var _lignes := {}
+var _buttons := {}
+var _lines := {}
 
 
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
-	title.add_theme_color_override("font_color", UiPalette.TITRE)
+	title.add_theme_color_override("font_color", UiPalette.TITLE)
 
 
 func bind(player: Player) -> void:
@@ -94,7 +94,7 @@ func bind(player: Player) -> void:
 
 func toggle() -> void:
 	visible = not visible
-	_saisir_la_souris()
+	_grab_mouse()
 	_refresh()
 	if visible:
 		queue_redraw()
@@ -114,10 +114,10 @@ func _notification(what: int) -> void:
 ## **STOP** avec des points à placer, le clic ne devant pas frapper ; **PASS** ouverte
 ## (survol et infobulles, clics transmis) ; **IGNORE** fermée. `ui_grabs_input` ne
 ## suit que STOP.
-func _saisir_la_souris() -> void:
-	var boutons := visible and _points_restants() > 0
-	Game.grab_ui_input(self, boutons)
-	if boutons:
+func _grab_mouse() -> void:
+	var buttons := visible and _remaining_points() > 0
+	Game.grab_ui_input(self, buttons)
+	if buttons:
 		mouse_filter = Control.MOUSE_FILTER_STOP
 	elif visible:
 		mouse_filter = Control.MOUSE_FILTER_PASS
@@ -127,25 +127,25 @@ func _saisir_la_souris() -> void:
 		_mouse = Vector2.INF
 
 
-func _points_restants() -> int:
+func _remaining_points() -> int:
 	return 0 if _player == null else _player.unspent_points
 
 
 func _gui_input(event: InputEvent) -> void:
-	var deplacement := event as InputEventMouseMotion
-	if deplacement != null:
-		_mouse = deplacement.position
+	var movement := event as InputEventMouseMotion
+	if movement != null:
+		_mouse = movement.position
 		queue_redraw()
 		return
 
-	var clic := event as InputEventMouseButton
-	if clic == null or not clic.pressed or clic.button_index != MOUSE_BUTTON_LEFT:
+	var click := event as InputEventMouseButton
+	if click == null or not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
 		return
-	for attribut in _boutons:
-		if (_boutons[attribut] as Rect2).has_point(clic.position):
-			_player.spend_point(attribut)
+	for attribute in _buttons:
+		if (_buttons[attribute] as Rect2).has_point(click.position):
+			_player.spend_point(attribute)
 			# Le dernier point placé rend la souris au jeu.
-			_saisir_la_souris()
+			_grab_mouse()
 			accept_event()
 			return
 
@@ -154,17 +154,17 @@ func _gui_input(event: InputEvent) -> void:
 func _refresh() -> void:
 	if not visible or _player == null:
 		return
-	var restants := _points_restants()
-	title.text = Textes.t("PERSONNAGE  —  NIV. %d") % _player.level
-	if restants > 0:
-		title.text += "  (+%d)" % restants
+	var remaining_all := _remaining_points()
+	title.text = Texts.t("PERSONNAGE  —  NIV. %d") % _player.level
+	if remaining_all > 0:
+		title.text += "  (+%d)" % remaining_all
 	queue_redraw()
 
 
 ## Les réserves en courant sur maximum, les notations défensives en valeur réelle.
 func _value_of(field: String) -> String:
-	if _est_une_competence(field):
-		return _degats_de(field)
+	if _is_a_skill(field):
+		return _damage_of(field)
 	var st := _player.stats
 	match field:
 		"max_health":
@@ -174,100 +174,100 @@ func _value_of(field: String) -> String:
 		"armor":
 			return "%d  (%s)" % [
 				roundi(st.armor),
-				StatMod.pourcentage(roundi(st.armor_reduction(ARMOR_REFERENCE_HIT) * 100.0)),
+				StatMod.percentage(roundi(st.armor_reduction(ARMOR_REFERENCE_HIT) * 100.0)),
 			]
 		"evasion":
 			return "%d  (%s)" % [
-				roundi(st.evasion), StatMod.pourcentage(roundi(st.evade_chance() * 100.0))
+				roundi(st.evasion), StatMod.percentage(roundi(st.evade_chance() * 100.0))
 			]
 	return StatMod.format(field, float(st.get(field)))
 
 
 ## Les attaques de départ, qu'aucune page de manuel ne décrit.
-static func _est_une_competence(field: String) -> bool:
-	return CompetenceCatalog.est_de_depart(field)
+static func _is_a_skill(field: String) -> bool:
+	return SkillCatalog.is_starting(field)
 
 
 ## Par le chemin du lancer : lue sur la compétence, la ligne ignorerait l'épée.
-func _degats_de(id: String) -> String:
-	var geste := _player.resoudre(CompetenceCatalog.by_id(id), _player.points_de_competence(id))
-	return StatsDeCompetence.fourchette_lisible(geste.total_min(), geste.total_max())
+func _damage_of(id: String) -> String:
+	var cast := _player.resolve(SkillCatalog.by_id(id), _player.skill_points(id))
+	return SkillStats.readable_range(cast.total_min(), cast.total_max())
 
 
-func _libelle_of(field: String) -> String:
-	if _est_une_competence(field):
-		return CompetenceCatalog.by_id(field).nom_affiche().to_lower()
-	return StatMod.nom(field)
+func _label_of(field: String) -> String:
+	if _is_a_skill(field):
+		return SkillCatalog.by_id(field).displayed_name().to_lower()
+	return StatMod.name(field)
 
 
 func _draw() -> void:
 	if _player == null or _font == null:
 		return
 
-	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BACK_PLEIN)
+	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BACK_FULL)
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BORDER, false, 1.0)
 
-	var restants := _points_restants()
-	_boutons.clear()
-	_lignes.clear()
+	var remaining_all := _remaining_points()
+	_buttons.clear()
+	_lines.clear()
 
 	var y := HEADER + PAD
 	for g in GROUPS:
 		draw_string(
-			_font, Vector2(PAD, y + FONT_SIZE), Textes.t(g[0]),
+			_font, Vector2(PAD, y + FONT_SIZE), Texts.t(g[0]),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.LABEL
 		)
 		# Sur le titre **français**, qui est la clé.
-		if g[0] == "ATTRIBUTS" and restants > 0:
+		if g[0] == "ATTRIBUTS" and remaining_all > 0:
 			draw_string(
-				_font, Vector2(PAD, y + FONT_SIZE), Textes.t("%d à placer") % restants,
+				_font, Vector2(PAD, y + FONT_SIZE), Texts.t("%d à placer") % remaining_all,
 				HORIZONTAL_ALIGNMENT_RIGHT, roundi(size.x - PAD * 2.0),
-				FONT_SIZE, UiPalette.A_PLACER
+				FONT_SIZE, UiPalette.TO_SPEND
 			)
 		y += LINE
 		for field in g[1]:
-			var bouton: bool = restants > 0 and field in CharacterStats.ATTRIBUTES
-			var ligne := Rect2(0.0, y, size.x, LINE)
-			_lignes[field] = ligne
-			if ligne.has_point(_mouse):
-				draw_rect(ligne, SURVOL)
-			_draw_row(y, _libelle_of(field), _value_of(field), bouton)
-			if bouton:
-				_boutons[field] = _draw_bouton(y)
+			var button: bool = remaining_all > 0 and field in CharacterStats.ATTRIBUTES
+			var line := Rect2(0.0, y, size.x, LINE)
+			_lines[field] = line
+			if line.has_point(_mouse):
+				draw_rect(line, HOVER)
+			_draw_row(y, _label_of(field), _value_of(field), button)
+			if button:
+				_buttons[field] = _draw_button(y)
 			y += LINE
 		y += GROUP_GAP
 
 	# Au-dessus de la barre d'expérience, dessinée par-dessus.
 	draw_string(
-		_font, Vector2(PAD, size.y - FOOTER), Textes.t("C pour fermer"),
+		_font, Vector2(PAD, size.y - FOOTER), Texts.t("C pour fermer"),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, UiPalette.HINT
 	)
 
 	# En dernier : l'infobulle passe par-dessus tout.
-	_draw_infobulle()
+	_draw_hint()
 
 
 ## Ce que fait la statistique survolée, et ce qu'elle vaut maintenant.
-func _draw_infobulle() -> void:
-	var champ := _survole()
-	if champ.is_empty():
+func _draw_hint() -> void:
+	var field := _hovered()
+	if field.is_empty():
 		return
-	var lignes := StatHelp.lines(champ, _player.stats)
-	if lignes.is_empty():
+	var lines := StatHelp.lines(field, _player.stats)
+	if lines.is_empty():
 		return
 
 	# Repliées à la largeur du panneau.
-	var enroulees := PackedStringArray()
-	for texte in lignes:
-		for morceau in _replier(texte, TIP_W - TIP_PAD * 2.0):
-			enroulees.append(morceau)
+	var coiled := PackedStringArray()
+	for text_value in lines:
+		for piece in _fold(text_value, TIP_W - TIP_PAD * 2.0):
+			coiled.append(piece)
 
-	var h := TIP_PAD * 2.0 + TIP_LINE * float(enroulees.size() + 1)
-	var ancre: Rect2 = _lignes[champ]
+	var h := TIP_PAD * 2.0 + TIP_LINE * float(coiled.size() + 1)
+	var anchor: Rect2 = _lines[field]
 	# À droite, au-dessus des jauges du HUD, dessinées après ce panneau.
-	var plancher := Hud.haut_des_jauges(size.y) - TIP_GAP
+	var floor_value := Hud.gauges_top(size.y) - TIP_GAP
 	var r := Rect2(
-		Vector2(size.x + TIP_GAP, clampf(ancre.position.y, PAD, plancher - h)),
+		Vector2(size.x + TIP_GAP, clampf(anchor.position.y, PAD, floor_value - h)),
 		Vector2(TIP_W, h)
 	)
 
@@ -276,62 +276,62 @@ func _draw_infobulle() -> void:
 
 	var y := r.position.y + TIP_PAD + TIP_LINE - 2.0
 	draw_string(
-		_font, Vector2(r.position.x + TIP_PAD, y), _libelle_of(champ),
+		_font, Vector2(r.position.x + TIP_PAD, y), _label_of(field),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, TITLE_SIZE, VALUE_COLOR
 	)
-	for texte in enroulees:
+	for text_value in coiled:
 		y += TIP_LINE
 		draw_string(
-			_font, Vector2(r.position.x + TIP_PAD, y), texte,
+			_font, Vector2(r.position.x + TIP_PAD, y), text_value,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, NAME_COLOR
 		)
 
 
 ## La statistique sous le curseur ; un bouton survolé n'en est pas une.
-func _survole() -> String:
+func _hovered() -> String:
 	if _mouse == Vector2.INF:
 		return ""
-	for champ in _lignes:
-		if (_lignes[champ] as Rect2).has_point(_mouse) and StatHelp.has(champ):
-			return champ
+	for field in _lines:
+		if (_lines[field] as Rect2).has_point(_mouse) and StatHelp.has(field):
+			return field
 	return ""
 
 
-## Coupe un texte en lignes qui tiennent dans `largeur`, aux espaces seulement.
-func _replier(texte: String, largeur: float) -> PackedStringArray:
+## Coupe un texte en lignes qui tiennent dans `width`, aux espaces seulement.
+func _fold(text_value: String, width: float) -> PackedStringArray:
 	var out := PackedStringArray()
-	var courante := ""
-	for mot in texte.split(" ", false):
-		var essai := mot if courante.is_empty() else courante + " " + mot
-		if _font.get_string_size(essai, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x > largeur:
-			if not courante.is_empty():
-				out.append(courante)
-			courante = mot
+	var current_one := ""
+	for word in text_value.split(" ", false):
+		var trial := word if current_one.is_empty() else current_one + " " + word
+		if _font.get_string_size(trial, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x > width:
+			if not current_one.is_empty():
+				out.append(current_one)
+			current_one = word
 		else:
-			courante = essai
-	if not courante.is_empty():
-		out.append(courante)
+			current_one = trial
+	if not current_one.is_empty():
+		out.append(current_one)
 	return out
 
 
 ## Le bouton et son rectangle, celui que le clic consultera.
-func _draw_bouton(y: float) -> Rect2:
+func _draw_button(y: float) -> Rect2:
 	var r := Rect2(
 		roundf(size.x - PAD - BUTTON_W), roundf(y + (LINE - BUTTON_H) * 0.5),
 		BUTTON_W, BUTTON_H
 	)
 	draw_rect(r, BUTTON_HOVER if r.has_point(_mouse) else BUTTON_BACK)
-	draw_rect(r, UiPalette.A_PLACER, false, 1.0)
+	draw_rect(r, UiPalette.TO_SPEND, false, 1.0)
 	draw_string(
 		_font, Vector2(r.position.x, r.position.y + BUTTON_H - 1.0), "+",
-		HORIZONTAL_ALIGNMENT_CENTER, roundi(BUTTON_W), FONT_SIZE, UiPalette.A_PLACER
+		HORIZONTAL_ALIGNMENT_CENTER, roundi(BUTTON_W), FONT_SIZE, UiPalette.TO_SPEND
 	)
 	return r
 
 
 ## Nom à gauche, valeur à droite : une colonne se compare d'un coup d'œil.
 func _draw_row(
-	y: float, name_text: String, value_text: String, place_un_bouton := false
+	y: float, name_text: String, value_text: String, place_a_button := false
 ) -> void:
 	var base := y + FONT_SIZE
 	draw_string(
@@ -339,10 +339,10 @@ func _draw_row(
 		HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, NAME_COLOR
 	)
 	# La valeur laisse la place au bouton.
-	var largeur := size.x - PAD * 2.0
-	if place_un_bouton:
-		largeur -= BUTTON_W + 3.0
+	var width := size.x - PAD * 2.0
+	if place_a_button:
+		width -= BUTTON_W + 3.0
 	draw_string(
 		_font, Vector2(PAD, base), value_text,
-		HORIZONTAL_ALIGNMENT_RIGHT, roundi(largeur), FONT_SIZE, VALUE_COLOR
+		HORIZONTAL_ALIGNMENT_RIGHT, roundi(width), FONT_SIZE, VALUE_COLOR
 	)

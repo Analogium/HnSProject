@@ -5,7 +5,7 @@ extends Resource
 ## modifié** (invariant 2).
 
 ## L'identifiant de sauvegarde, jamais affiché et **définitif** (invariant 1). Pas le
-## chemin du fichier : ranger `epee.tres` ailleurs ne doit pas effacer l'épée.
+## chemin du fichier : ranger `sword.tres` ailleurs ne doit pas effacer l'épée.
 @export var id: String = ""
 
 @export var display_name: String = ""
@@ -29,24 +29,24 @@ extends Resource
 
 ## La lignée : le même objet à plusieurs âges, unité de la relève. Un emplacement peut
 ## en avoir plusieurs (torse lourd, torse léger).
-@export var lignee: String = ""
+@export var lineage: String = ""
 
 ## Le rang dans la lignée ; un palier supérieur demande un niveau **et** un implicite
 ## supérieurs (test de monotonie).
-@export var palier: int = 1
+@export var tier: int = 1
 
 ## Le niveau de zone d'où elle tombe. Pas de plafond : le palier suivant la chasse
-## (`ItemCatalog.fenetre_de_chute`). Le premier palier vaut 1, pour habiller un
+## (`ItemCatalog.drop_window`). Le premier palier vaut 1, pour habiller un
 ## personnage dès la première zone.
-@export var niveau_requis: int = 1
+@export var required_level: int = 1
 
 ## La seule famille sans emplacement : une base porte un archétype **si et seulement
 ## si** elle en est.
-const FAMILLE_MANUEL := "manual"
+const MANUAL_FAMILY := "manual"
 
 ## L'archétype qu'ouvre cette base, ou null : un champ ici plutôt qu'un second
 ## catalogue qui divergerait.
-@export var manuel: ManuelArchetype
+@export var manual: ManualArchetype
 
 @export_group("Implicite")
 ## Le bonus de toute la famille, sans tirage. Des champs simples, un par base ;
@@ -58,12 +58,12 @@ const FAMILLE_MANUEL := "manual"
 ## physiques aux attaques ». Ignorée pour tout le reste.
 @export var implicit_value_max: float = 0.0
 ## Le mot-clé visé, comme pour un affixe : vide pour la fiche du personnage.
-@export var implicit_portee: String = ""
+@export var implicit_scope: String = ""
 
 
 func implicit() -> StatMod:
 	if implicit_stat.is_empty():
 		return null
-	return StatMod.depuis_definition(
-		implicit_stat, implicit_percent, implicit_value, implicit_value_max, implicit_portee
+	return StatMod.from_definition(
+		implicit_stat, implicit_percent, implicit_value, implicit_value_max, implicit_scope
 	)

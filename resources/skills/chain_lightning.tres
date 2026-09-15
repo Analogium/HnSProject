@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/chain_lightning.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "chain_lightning"
+name = "Chaîne d'éclairs"
+nature = 3
+cadence = 1
+shape = 4
+cooldown = 0.70
+mana_cost = 12.0
+targets = 3
+damage_per_point = Array[float]([17.0, 22.0, 28.0, 35.0, 43.0])
+required_manual_level = 3
+icon = ExtResource("2_icone")

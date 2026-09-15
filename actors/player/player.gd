@@ -8,7 +8,7 @@ signal mana_changed(current: float, maximum: float)
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
 ## Les points d'attribut non dépensés ont changé — gagnés ou placés.
-signal points_changed(restants: int)
+signal points_changed(remaining_all: int)
 signal equipment_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -29,13 +29,13 @@ const POINTS_PER_LEVEL := 3
 const LEVEL_HEAL := 0.30
 
 ## Les attaques de départ ne s'apprennent pas : leur table n'a qu'une entrée.
-const POINTS_DES_ATTAQUES_DE_BASE := 1
+const BASIC_ATTACK_POINTS := 1
 
 ## Jusqu'où un nuage ou un serpent se posent du personnage. Au-delà du curseur, on
 ## poserait hors de l'écran à la manette ; en deçà, on se jetterait dans le paquet.
-const PORTEE_DE_POSE := 140.0
+const PLACEMENT_RANGE := 140.0
 ## Ce qui distingue une frappe lourde d'un coup d'épée au toucher, en plus du dessin.
-const SECOUSSE_DE_FRAPPE := 2.0
+const STRIKE_SHAKE := 2.0
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud depuis l'arène.
 @export var swing_duration: float = 0.12
@@ -44,7 +44,7 @@ const SECOUSSE_DE_FRAPPE := 2.0
 ## Moins de dégâts que le corps à corps, sans obliger à entrer dans la mêlée.
 @export var bolt_scene: PackedScene
 ## Le tir de Boule de feu, qui explose à l'impact.
-@export var boule_scene: PackedScene
+@export var orb_scene: PackedScene
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -79,37 +79,37 @@ var inventory := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 var equipment := {}
 
 ## L'interface s'y branche, elle ne les possède pas.
-var ratelier := Ratelier.new()
-var barre := BarreDeCompetences.par_defaut()
+var rack := Rack.new()
+var bar := SkillBar.starting()
 
 ## Le manuel de départ a-t-il déjà été donné à ce personnage.
-var manuel_offert := false
+var manual_given := false
 
 ## Ce que l'équipement donne aux compétences d'un mot-clé, reconstruit par
 ## `recompute_stats()` et lu à chaque lancer.
-var mods_de_competence: Array[StatMod] = []
+var skill_mods: Array[StatMod] = []
 
 var health: float
 var mana: float
 var is_dead := false
 ## Ses états, comme ceux d'un ennemi.
-var etats := Etats.new()
+var states := StatusEffects.new()
 var facing := Vector2.RIGHT
 ## Une recharge par case : deux compétences voisines s'enchaînent.
 var _recharges := PackedFloat32Array()
 ## Les cases tenues depuis un appui **né en jeu** : sinon le clic qui choisit une
 ## compétence dans le menu de la barre la lancerait aussitôt.
-var _maintenues: Array[bool] = []
+var _held: Array[bool] = []
 ## Les parts du coup en cours, **tirées une fois au départ du geste** : tout l'arc
 ## reçoit la même valeur.
-var _parts_du_coup: Array[float] = []
-var _secousse_du_coup := 0.0
+var _hit_parts: Array[float] = []
+var _hit_shake := 0.0
 var _is_swinging := false
 ## L'aura allumée, ou null. Une seule : Immolation est la seule compétence entretenue.
 var _aura: Immolation
-var _couronne: CouronneDeLames
+var _crown: BladeCrown
 ## Ce que la brûlure d'Immolation a pris depuis le dernier chiffre affiché.
-var _brulure_a_montrer := Etats.Paquet.new()
+var _burn_to_show := StatusEffects.Pack.new()
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
@@ -119,8 +119,8 @@ func _ready() -> void:
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
 	if base_stats == null:
 		base_stats = CharacterStats.new()
-	_recharges.resize(BarreDeCompetences.EMPLACEMENTS)
-	_maintenues.resize(BarreDeCompetences.EMPLACEMENTS)
+	_recharges.resize(SkillBar.SLOT_COUNT)
+	_held.resize(SkillBar.SLOT_COUNT)
 	recompute_stats()
 	xp_to_next = _needed_for(level)
 	_set_health(stats.max_health)
@@ -128,10 +128,10 @@ func _ready() -> void:
 	hitbox.monitoring = false
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
-	hurtbox.etats = etats
-	etats.change.connect(_montrer_les_etats)
-	etats.atteint.connect(_annoncer_l_etat)
-	etats.soin.connect(_soigner)
+	hurtbox.states = states
+	states.change.connect(_show_states)
+	states.reached.connect(_announce_state)
+	states.heal.connect(_heal)
 
 
 ## La souris sert-elle à viser ? Pas déduit de sa position, qui bouge avec la caméra.
@@ -148,12 +148,12 @@ func _input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	# Le gel ralentit la recharge des cinq cases ici, la marche plus bas.
-	var cadence := etats.facteur_de_vitesse
+	var cadence := states.speed_factor
 	for i in _recharges.size():
 		_recharges[i] = maxf(_recharges[i] - delta * cadence, 0.0)
 
 	_regen(delta)
-	_subir_les_etats(delta)
+	_suffer_states(delta)
 	if is_dead:
 		return
 
@@ -179,241 +179,241 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	# Sondage des cinq cases, sauf quand un panneau tient la souris. Tenue, la touche
-	# relance à chaque fin de recharge : la cadence est celle de `lancer()`.
-	for i in BarreDeCompetences.EMPLACEMENTS:
-		var action := "competence_%d" % (i + 1)
+	# relance à chaque fin de recharge : la cadence est celle de `cast_slot()`.
+	for i in SkillBar.SLOT_COUNT:
+		var action := "skill_%d" % (i + 1)
 		if Game.ui_grabs_input or not Input.is_action_pressed(action):
-			_maintenues[i] = false
+			_held[i] = false
 			continue
 		if Input.is_action_just_pressed(action):
-			_maintenues[i] = true
-		if _maintenues[i]:
-			lancer(i)
+			_held[i] = true
+		if _held[i]:
+			cast_slot(i)
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
 ## il porte les cinq refus : case vide, non apprise, réserve, recharge, orbite pleine.
-func lancer(index: int) -> bool:
+func cast_slot(index: int) -> bool:
 	if is_dead or _recharges.size() <= index or _recharges[index] > 0.0:
 		return false
-	var competence := barre.competence_de(index)
-	if competence == null:
+	var skill := bar.skill_of(index)
+	if skill == null:
 		return false
-	var points := points_de_competence(competence.id)
+	var points := skill_points(skill.id)
 	if points <= 0:
 		return false
-	var geste := resoudre(competence, points)
+	var cast := resolve(skill, points)
 
-	if competence.forme == Competence.Forme.AURA:
+	if skill.shape == Skill.Shape.AURA:
 		# Tenir la touche n'alterne pas : une aura qui clignote serait inutilisable.
-		_maintenues[index] = false
-		if aura_allumee():
+		_held[index] = false
+		if aura_lit():
 			# Éteindre n'est pas lancer : ni coût, la recharge seulement contre le rebond.
-			_aura.eteindre()
+			_aura.extinguish()
 			_aura = null
-			_recharges[index] = geste.intervalle
+			_recharges[index] = cast.interval
 			return true
-	if mana < geste.cout_en_mana:
+	if mana < cast.mana_cost:
 		return false
 	# Refusée plutôt que de remplacer la plus ancienne : la touche tenue paierait pour
 	# rien.
-	if competence.forme == Competence.Forme.ORBITE and _couronne_de_lames().pleine(geste.maximum_simultane()):
+	if skill.shape == Skill.Shape.ORBIT and _blade_crown().full(cast.max_simultaneous()):
 		return false
 
-	_set_mana(mana - geste.cout_en_mana)
-	_recharges[index] = geste.intervalle
+	_set_mana(mana - cast.mana_cost)
+	_recharges[index] = cast.interval
 	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
-	match competence.forme:
-		Competence.Forme.TRAIT:
-			_tirer(geste, bolt_scene)
-		Competence.Forme.BOULE:
-			_tirer(geste, boule_scene)
-		Competence.Forme.CHAINE:
-			if ChaineDEclairs.decharger(_parent_des_effets(), self, geste, facing) > 0:
+	match skill.shape:
+		Skill.Shape.BOLT:
+			_roll(cast, bolt_scene)
+		Skill.Shape.BALL:
+			_roll(cast, orb_scene)
+		Skill.Shape.CHAIN:
+			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:
 				Game.hit_stop()
 				Game.shake_camera(camera, shake_amount)
-		Competence.Forme.NUAGE:
-			NuageDOrage.poser(_parent_des_effets(), _point_vise(), geste, etats)
-		Competence.Forme.SERPENT:
-			SerpentInfernal.lacher(_parent_des_effets(), _point_vise(), geste, facing, etats)
-		Competence.Forme.AURA:
-			_aura = Immolation.allumer(self, competence)
-		Competence.Forme.ORBITE:
-			_couronne_de_lames().ajouter(geste)
-		Competence.Forme.FRAPPE:
-			_swing(geste, SwingArc.Style.FRAPPE)
-		Competence.Forme.CROIX:
-			_swing(geste, SwingArc.Style.CROIX)
+		Skill.Shape.CLOUD:
+			StormCloud.put(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.SNAKE:
+			HellSnake.drop(_effects_parent(), _aim_point(), cast, facing, states)
+		Skill.Shape.AURA:
+			_aura = Immolation.ignite(self, skill)
+		Skill.Shape.ORBIT:
+			_blade_crown().add_to(cast)
+		Skill.Shape.STRIKE:
+			_swing(cast, SwingArc.Style.STRIKE)
+		Skill.Shape.CROSS:
+			_swing(cast, SwingArc.Style.CROSS)
 		_:
-			_swing(geste)
+			_swing(cast)
 	return true
 
 
-func aura_allumee() -> bool:
-	return is_instance_valid(_aura) and _aura.allumee()
+func aura_lit() -> bool:
+	return is_instance_valid(_aura) and _aura.lit()
 
 
 ## Combien d'épées tournent autour du personnage.
-func epees_en_orbite() -> int:
-	return _couronne.nombre() if _couronne != null else 0
+func orbiting_swords() -> int:
+	return _crown.count() if _crown != null else 0
 
 
 ## Ce qu'une aura coûte à son porteur cette image-ci, réparti entre les natures comme
-## ses dégâts, chaque part par `CharacterStats.attenuer()`, engourdissement compris.
+## ses dégâts, chaque part par `CharacterStats.mitigate()`, engourdissement compris.
 ## **Pas un coup** : ni esquive ni plancher. L'armure se compte sur la perte **par
 ## seconde**, pas sur la tranche d'une image. Mortelle.
-func bruler(part_par_seconde: float, repartition: Array[float], delta: float) -> void:
-	if is_dead or part_par_seconde <= 0.0:
+func burn(part_per_second: float, distribution: Array[float], delta: float) -> void:
+	if is_dead or part_per_second <= 0.0:
 		return
-	var par_seconde := stats.max_health * part_par_seconde
-	var subie := 0.0
-	for kind in repartition.size():
-		subie += stats.attenuer(kind, par_seconde * repartition[kind])
-	var perte := subie * etats.facteur_de_degats_subis * delta
-	_set_health(health - perte)
-	var chiffre := _brulure_a_montrer.ajouter(perte, delta)
-	if chiffre > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.degats_sans_coup(hurtbox.global_position, chiffre, true)
+	var per_second := stats.max_health * part_per_second
+	var taken_value := 0.0
+	for kind in distribution.size():
+		taken_value += stats.mitigate(kind, per_second * distribution[kind])
+	var loss := taken_value * states.damage_taken_factor * delta
+	_set_health(health - loss)
+	var digit := _burn_to_show.add_to(loss, delta)
+	if digit > 0.0 and HitFeedback.current != null:
+		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, true)
 	if health <= 0.0:
 		_die()
 
 
 ## Ce que les états brûlent, ôté par le seul chemin de la vie.
-func _subir_les_etats(delta: float) -> void:
-	var perte := etats.avancer(delta)
-	if perte <= 0.0:
+func _suffer_states(delta: float) -> void:
+	var loss := states.advance(delta)
+	if loss <= 0.0:
 		return
-	_set_health(health - perte)
-	var chiffre := etats.chiffre()
-	if chiffre > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.degats_sans_coup(hurtbox.global_position, chiffre, true)
+	_set_health(health - loss)
+	var digit := states.digit()
+	if digit > 0.0 and HitFeedback.current != null:
+		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, true)
 	if health <= 0.0:
 		_die()
 
 
 ## Ce que sa pourriture lui rend.
-func _soigner(montant: float) -> void:
+func _heal(amount: float) -> void:
 	if not is_dead:
-		_set_health(health + montant)
+		_set_health(health + amount)
 
 
 ## Un état neuf s'annonce : la pastille seule ne dirait pas pourquoi on ralentit.
-func _annoncer_l_etat(sorte: int) -> void:
+func _announce_state(kind: int) -> void:
 	if HitFeedback.current != null:
-		HitFeedback.current.etat(hurtbox.global_position, sorte)
+		HitFeedback.current.state(hurtbox.global_position, kind)
 
 
-func _montrer_les_etats() -> void:
-	sprite.montrer_les_etats(etats)
-	health_bar.montrer_les_etats(etats)
+func _show_states() -> void:
+	sprite.show_states(states)
+	health_bar.show_states(states)
 
 
-## Au curseur, à `PORTEE_DE_POSE` au plus ; à la manette, à cette distance devant.
-func _point_vise() -> Vector2:
-	var vers := facing * PORTEE_DE_POSE
+## Au curseur, à `PLACEMENT_RANGE` au plus ; à la manette, à cette distance devant.
+func _aim_point() -> Vector2:
+	var toward := facing * PLACEMENT_RANGE
 	if _aim_with_mouse:
-		vers = (get_global_mouse_position() - global_position).limit_length(PORTEE_DE_POSE)
-	return global_position + vers
+		toward = (get_global_mouse_position() - global_position).limit_length(PLACEMENT_RANGE)
+	return global_position + toward
 
 
 ## Où naissent tirs, nuages et serpents ; à défaut d'un conteneur, à côté du joueur.
-func _parent_des_effets() -> Node:
+func _effects_parent() -> Node:
 	return projectile_parent if projectile_parent != null else get_parent()
 
 
-func _couronne_de_lames() -> CouronneDeLames:
-	if _couronne == null:
-		_couronne = CouronneDeLames.new()
-		_couronne.auteur = etats
-		add_child(_couronne)
-	return _couronne
+func _blade_crown() -> BladeCrown:
+	if _crown == null:
+		_crown = BladeCrown.new()
+		_crown.author = states
+		add_child(_crown)
+	return _crown
 
 
 ## **Le chemin du lancer et de la page du manuel** : fiche et modificateurs de mot-clé.
-func resoudre(competence: Competence, points: int) -> StatsDeCompetence:
-	return competence.resoudre(points, stats, mods_de_competence, talents_de(competence.id))
+func resolve(skill: Skill, points: int) -> SkillStats:
+	return skill.resolve(points, stats, skill_mods, talents_of(skill.id))
 
 
 ## Publique pour le voile de la barre.
-func recharge_restante(index: int) -> float:
+func remaining_cooldown(index: int) -> float:
 	return _recharges[index] if index >= 0 and index < _recharges.size() else 0.0
 
 
 ## Les points du manuel qui l'enseigne, ou l'unique point d'une attaque de départ ;
 ## zéro si son livre a quitté le râtelier.
-func points_de_competence(id_competence: String) -> int:
-	var livre := livre_de(id_competence)
-	if livre != null:
-		return livre.manuel.points_de(id_competence)
-	if CompetenceCatalog.est_de_depart(id_competence):
-		return POINTS_DES_ATTAQUES_DE_BASE
+func skill_points(skill_id: String) -> int:
+	var book := book_of(skill_id)
+	if book != null:
+		return book.manual.points_of(skill_id)
+	if SkillCatalog.is_starting(skill_id):
+		return BASIC_ATTACK_POINTS
 	return 0
 
 
 ## **Le seul endroit qui le cherche** : points et nœuds viennent du même livre.
-func livre_de(id_competence: String) -> Item:
-	for livre in ratelier.equipes():
-		if livre.enseigne(id_competence):
-			return livre
+func book_of(skill_id: String) -> Item:
+	for book in rack.equipped_items():
+		if book.teaches(skill_id):
+			return book
 	return null
 
 
 ## Vides pour une attaque de départ, qui n'a pas de case.
-func talents_de(id_competence: String) -> Array[TalentInvesti]:
-	var livre := livre_de(id_competence)
-	return livre.talents_investis(id_competence) if livre != null else [] as Array[TalentInvesti]
+func talents_of(skill_id: String) -> Array[InvestedTalent]:
+	var book := book_of(skill_id)
+	return book.invested_talents(skill_id) if book != null else [] as Array[InvestedTalent]
 
 
 ## **Le seul chemin** : un passif change la fiche, le recalcul ne s'oublie pas.
-func investir(emplacement: int, identifiant: String) -> bool:
-	var livre := ratelier.a(emplacement)
-	if livre == null or livre.base.manuel == null:
+func invest(slot: int, identifier: String) -> bool:
+	var book := rack.at(slot)
+	if book == null or book.base.manual == null:
 		return false
-	if not livre.manuel.investir(livre.base.manuel, identifiant):
+	if not book.manual.invest(book.base.manual, identifier):
 		return false
 	_after_equipment_change()
 	return true
 
 
-## Reprend un point d'une case, d'un passif ou d'un nœud — `Manuel` dit quand.
+## Reprend un point d'une case, d'un passif ou d'un nœud — `Manual` dit quand.
 ## Une compétence retombée à zéro sort de la barre, comme quand son livre part.
-func reprendre(emplacement: int, identifiant: String) -> bool:
-	var livre := ratelier.a(emplacement)
-	if livre == null or livre.base.manuel == null:
+func refund(slot: int, identifier: String) -> bool:
+	var book := rack.at(slot)
+	if book == null or book.base.manual == null:
 		return false
-	if not livre.manuel.reprendre(livre.base.manuel, identifiant):
+	if not book.manual.refund(book.base.manual, identifier):
 		return false
-	_vider_la_barre_de(livre.base.manuel.competences())
+	_clear_bar_of(book.base.manual.skills())
 	_after_equipment_change()
 	return true
 
 
 ## Ce qu'on peut poser dans une case de barre : les deux attaques de départ, et
 ## toute case des manuels à l'étude où l'on a mis au moins un point.
-func competences_disponibles() -> Array[Competence]:
-	var out: Array[Competence] = []
-	for id: String in CompetenceCatalog.DE_DEPART:
-		out.append(CompetenceCatalog.by_id(id))
-	for livre in ratelier.equipes():
-		for competence in livre.base.manuel.competences():
-			if livre.manuel.points_de(competence.id) > 0:
-				out.append(competence)
+func available_skills() -> Array[Skill]:
+	var out: Array[Skill] = []
+	for id: String in SkillCatalog.STARTING:
+		out.append(SkillCatalog.by_id(id))
+	for book in rack.equipped_items():
+		for skill in book.base.manual.skills():
+			if book.manual.points_of(skill.id) > 0:
+				out.append(skill)
 	return out
 
 
 ## Un coup par coup du geste — deux pour une croix —, chacun tiré, avec sa hitbox.
-func _swing(geste: StatsDeCompetence, style := SwingArc.Style.ARC) -> void:
+func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 	_is_swinging = true
-	_secousse_du_coup = shake_amount * (SECOUSSE_DE_FRAPPE if style == SwingArc.Style.FRAPPE else 1.0)
-	swing_arc.play(swing_duration * float(geste.coups), style)
+	_hit_shake = shake_amount * (STRIKE_SHAKE if style == SwingArc.Style.STRIKE else 1.0)
+	swing_arc.play(swing_duration * float(cast.hits), style)
 	sprite.attack()
 
-	for coup in geste.coups:
-		if coup > 0:
+	for hit in cast.hits:
+		if hit > 0:
 			# Un ennemi déjà dedans n'y *entre* pas deux fois : la hitbox doit être fermée une
 			# image de physique avant de se rouvrir.
 			await get_tree().physics_frame
-		_parts_du_coup = geste.tirer(Game.rng)
+		_hit_parts = cast.roll(Game.rng)
 		_already_hit.clear()
 		# set_deferred : on est peut-être dans un rappel de physique.
 		hitbox.set_deferred("monitoring", true)
@@ -424,35 +424,35 @@ func _swing(geste: StatsDeCompetence, style := SwingArc.Style.ARC) -> void:
 
 
 ## Les traits répartis sur l'écart du geste résolu : tout vient de
-## `StatsDeCompetence`, rien n'est relu sur la compétence.
-func _tirer(geste: StatsDeCompetence, scene: PackedScene) -> void:
+## `SkillStats`, rien n'est relu sur la compétence.
+func _roll(cast: SkillStats, scene: PackedScene) -> void:
 	if scene == null:
 		return
-	var parent := _parent_des_effets()
-	var nombre := geste.nombre_de_projectiles()
+	var parent := _effects_parent()
+	var count := cast.projectile_count()
 
 	# Un seul trait part droit devant, quelle que soit la dispersion.
-	var ecart := deg_to_rad(geste.dispersion_en_degres)
+	var spread := deg_to_rad(cast.spread_in_degrees)
 	# Un cercle complet divise l'écart par le nombre de traits et non par les intervalles
 	# — sinon le dernier retombe sur le premier —, décalé d'un demi-pas.
-	var referme := is_equal_approx(ecart, TAU)
-	var pas := 0.0
-	var depart := 0.0
-	if nombre > 1:
-		pas = ecart / float(nombre if referme else nombre - 1)
-		depart = -ecart * 0.5 + (pas * 0.5 if referme else 0.0)
+	var closes := is_equal_approx(spread, TAU)
+	var step := 0.0
+	var start := 0.0
+	if count > 1:
+		step = spread / float(count if closes else count - 1)
+		start = -spread * 0.5 + (step * 0.5 if closes else 0.0)
 
 	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
-	var nature := geste.nature_dominante()
-	for i in nombre:
-		var direction := facing.rotated(depart + pas * float(i))
+	var nature := cast.dominant_nature()
+	for i in count:
+		var direction := facing.rotated(start + step * float(i))
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
-		var tir := Projectile.spawn(
-			parent, scene, global_position, direction, geste.tirer(Game.rng), self,
-			geste.vitesse_de_projectile, nature
+		var bolt := Projectile.spawn(
+			parent, scene, global_position, direction, cast.roll(Game.rng), self,
+			cast.projectile_speed, nature
 		)
-		if tir is BouleDeFeu:
-			(tir as BouleDeFeu).rayon_d_explosion = geste.rayon
+		if bolt is Fireball:
+			(bolt as Fireball).explosion_radius = cast.radius
 
 
 ## Testé avant d'écrire : une barre pleine n'émet rien.
@@ -466,8 +466,8 @@ func _regen(delta: float) -> void:
 ## Reconstruit la fiche **de zéro** : additionner compterait les bonus à chaque appel.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
-	for champ in CharacterStats.ATTRIBUTES:
-		stats.set(champ, float(stats.get(champ)) + float(allocated[champ]))
+	for field in CharacterStats.ATTRIBUTES:
+		stats.set(field, float(stats.get(field)) + float(allocated[field]))
 
 	# Tous les objets d'un coup : les plats avant les pourcentages, quel que soit
 	# l'ordre d'équipement.
@@ -478,32 +478,32 @@ func recompute_stats() -> void:
 			mods.append_array(item.mods())
 
 	# Les passifs du râtelier, dans la même liste et le même tri que les objets.
-	for livre in ratelier.equipes():
-		mods.append_array(livre.mods_de_passifs())
+	for book in rack.equipped_items():
+		mods.append_array(book.passive_mods())
 
 	# En trois temps — attributs, dérivation, reste — pour que « +20 force » rapporte ses
 	# PV et que « +10 % PV » les multiplie. Ce qui vise un mot-clé part à part, pour le
 	# lancer.
-	var sur_attributs: Array[StatMod] = []
-	var sur_le_reste: Array[StatMod] = []
-	var sur_les_competences: Array[StatMod] = []
+	var over_attributes: Array[StatMod] = []
+	var on_the_rest: Array[StatMod] = []
+	var on_skills: Array[StatMod] = []
 	for m in mods:
-		if not m.portee.is_empty():
-			sur_les_competences.append(m)
+		if not m.scope.is_empty():
+			on_skills.append(m)
 		elif m.stat in CharacterStats.ATTRIBUTES:
-			sur_attributs.append(m)
+			over_attributes.append(m)
 		else:
-			sur_le_reste.append(m)
-	StatMod.apply_all(stats, sur_attributs)
+			on_the_rest.append(m)
+	StatMod.apply_all(stats, over_attributes)
 	stats.apply_attributes()
-	StatMod.apply_all(stats, sur_le_reste)
+	StatMod.apply_all(stats, on_the_rest)
 
 	# La force ajoute ses dégâts aux attaques, lue sur la fiche **finale**.
-	sur_les_competences.append(StatMod.fourchette(
-		StatsDeCompetence.stat_ajoutee(DamageType.Kind.PHYSICAL),
-		stats.degats_de_force(), stats.degats_de_force(), MotsCles.ATTAQUE
+	on_skills.append(StatMod.ranged(
+		SkillStats.added_stat(DamageType.Kind.PHYSICAL),
+		stats.strength_damage(), stats.strength_damage(), Keywords.ATTACK
 	))
-	mods_de_competence = sur_les_competences
+	skill_mods = on_skills
 
 	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
 	# sous 1 transformerait un critique en coup amorti.
@@ -516,38 +516,38 @@ func recompute_stats() -> void:
 
 ## Fait entrer un personnage sauvegardé dans ce corps, après son _ready. **Recopie** et
 ## non adoption : sac, râtelier et barre restent ceux que l'interface a liés.
-func charger(personnage: Personnage) -> void:
-	if personnage == null:
+func load_character(character: Character) -> void:
+	if character == null:
 		return
 
-	level = maxi(personnage.niveau, 1)
-	xp = personnage.experience
+	level = maxi(character.level, 1)
+	xp = character.experience
 	xp_to_next = _needed_for(level)
-	unspent_points = personnage.points_a_placer
-	for champ in CharacterStats.ATTRIBUTES:
-		allocated[champ] = int(personnage.attributs.get(champ, 0))
+	unspent_points = character.unspent_points
+	for field in CharacterStats.ATTRIBUTES:
+		allocated[field] = int(character.attributes.get(field, 0))
 
 	inventory.clear()
-	for pose in personnage.sac.placed:
+	for placed in character.bag.placed:
 		# Sa place d'abord : un sac rechargé se retrouve tel qu'on l'a laissé.
-		if not inventory.place(pose.data, pose.cell):
-			inventory.add(pose.data)
+		if not inventory.place(placed.data, placed.cell):
+			inventory.add(placed.data)
 
 	equipment.clear()
-	for emplacement in personnage.equipement:
+	for slot in character.equipment:
 		# Un emplacement inconnu est écarté : il fausserait la fiche sans s'afficher.
-		if EquipmentSlots.exists(emplacement):
-			equipment[emplacement] = personnage.equipement[emplacement]
+		if EquipmentSlots.exists(slot):
+			equipment[slot] = character.equipment[slot]
 
 	# Recopiés comme le sac, pour la même raison.
-	for i in Ratelier.EMPLACEMENTS:
-		ratelier.retirer(i)
-		ratelier.poser(i, personnage.ratelier.a(i))
-	for i in BarreDeCompetences.EMPLACEMENTS:
-		barre.poser(i, personnage.barre.id_de(i))
-	manuel_offert = personnage.manuel_offert
+	for i in Rack.SLOT_COUNT:
+		rack.remove(i)
+		rack.put(i, character.rack.at(i))
+	for i in SkillBar.SLOT_COUNT:
+		bar.put(i, character.bar.id_of(i))
+	manual_given = character.manual_given
 
-	sprite.set_variant(personnage.silhouette)
+	sprite.set_variant(character.silhouette)
 	# Recalcul, plafonds et arme visible : trois choses qu'on oublierait à la main.
 	_after_equipment_change()
 	_set_health(stats.max_health)
@@ -559,83 +559,83 @@ func charger(personnage: Personnage) -> void:
 
 
 ## L'inverse, avant l'écriture : rien de calculé.
-func remplir(personnage: Personnage) -> void:
-	if personnage == null:
+func fill(character: Character) -> void:
+	if character == null:
 		return
-	personnage.niveau = level
-	personnage.experience = xp
-	personnage.points_a_placer = unspent_points
-	for champ in CharacterStats.ATTRIBUTES:
-		personnage.attributs[champ] = int(allocated[champ])
-	personnage.silhouette = sprite.current_variant()
+	character.level = level
+	character.experience = xp
+	character.unspent_points = unspent_points
+	for field in CharacterStats.ATTRIBUTES:
+		character.attributes[field] = int(allocated[field])
+	character.silhouette = sprite.current_variant()
 
-	personnage.sac = Inventory.new(inventory.cols, inventory.rows)
-	for pose in inventory.placed:
-		personnage.sac.place(pose.data, pose.cell)
-	personnage.equipement = equipment.duplicate()
+	character.bag = Inventory.new(inventory.cols, inventory.rows)
+	for placed in inventory.placed:
+		character.bag.place(placed.data, placed.cell)
+	character.equipment = equipment.duplicate()
 
-	personnage.ratelier = Ratelier.new()
-	for i in Ratelier.EMPLACEMENTS:
-		personnage.ratelier.poser(i, ratelier.a(i))
-	personnage.barre = BarreDeCompetences.new()
-	for i in BarreDeCompetences.EMPLACEMENTS:
-		personnage.barre.poser(i, barre.id_de(i))
-	personnage.manuel_offert = manuel_offert
+	character.rack = Rack.new()
+	for i in Rack.SLOT_COUNT:
+		character.rack.put(i, rack.at(i))
+	character.bar = SkillBar.new()
+	for i in SkillBar.SLOT_COUNT:
+		character.bar.put(i, bar.id_of(i))
+	character.manual_given = manual_given
 
 
-## Porte un objet et rend celui qu'il remplace. `emplacement` vide : le premier libre
+## Porte un objet et rend celui qu'il remplace. `slot` vide : le premier libre
 ## (le ramassage) ; le panneau impose le sien. Rend l'objet lui-même s'il est refusé.
-func equip(item: Item, emplacement := "") -> Item:
+func equip(item: Item, slot := "") -> Item:
 	if item == null:
 		return null
-	var cible := emplacement if not emplacement.is_empty() else EquipmentSlots.free_for(item, equipment)
-	if cible.is_empty() or not EquipmentSlots.accepts(cible, item):
+	var target := slot if not slot.is_empty() else EquipmentSlots.free_for(item, equipment)
+	if target.is_empty() or not EquipmentSlots.accepts(target, item):
 		return item
-	var ancien: Item = equipment.get(cible)
-	equipment[cible] = item
+	var old: Item = equipment.get(target)
+	equipment[target] = item
 	_after_equipment_change()
-	return ancien
+	return old
 
 
 ## Le pendant d'`equip()` pour ce qui se lit : l'objet refusé est rendu. `index` à -1 :
 ## le premier emplacement libre, à défaut le premier.
-func etudier(item: Item, index := -1) -> Item:
-	if not Ratelier.accepte(item):
+func study(item: Item, index := -1) -> Item:
+	if not Rack.accepts(item):
 		return item
-	var cible := index
-	if cible < 0:
-		cible = 0
-		for i in Ratelier.EMPLACEMENTS:
-			if ratelier.a(i) == null:
-				cible = i
+	var target := index
+	if target < 0:
+		target = 0
+		for i in Rack.SLOT_COUNT:
+			if rack.at(i) == null:
+				target = i
 				break
-	var ancien := ratelier.poser(cible, item)
+	var old := rack.put(target, item)
 	# Un manuel porte des passifs : le poser change la fiche.
 	_after_equipment_change()
-	return ancien
+	return old
 
 
 ## Retire un manuel et **vide les cases de barre de ses compétences** : une case grisée
 ## se découvre au pire moment. Le seul chemin (page, rechargement).
-func cesser_d_etudier(index: int) -> Item:
-	var parti := ratelier.retirer(index)
-	if parti == null or parti.base.manuel == null:
-		return parti
+func stop_studying(index: int) -> Item:
+	var gone := rack.remove(index)
+	if gone == null or gone.base.manual == null:
+		return gone
 
-	_vider_la_barre_de(parti.base.manuel.competences())
+	_clear_bar_of(gone.base.manual.skills())
 	# Et ses passifs s'en vont avec lui.
 	_after_equipment_change()
-	return parti
+	return gone
 
 
 ## « La sait-on encore », pas « d'où venait-elle » : un autre livre peut l'enseigner.
-func _vider_la_barre_de(competences: Array[Competence]) -> void:
-	for competence in competences:
-		if points_de_competence(competence.id) > 0:
+func _clear_bar_of(skills: Array[Skill]) -> void:
+	for skill in skills:
+		if skill_points(skill.id) > 0:
 			continue
-		for i in BarreDeCompetences.EMPLACEMENTS:
-			if barre.id_de(i) == competence.id:
-				barre.vider(i)
+		for i in SkillBar.SLOT_COUNT:
+			if bar.id_of(i) == skill.id:
+				bar.clear(i)
 
 
 func unequip(slot: String) -> Item:
@@ -653,10 +653,10 @@ func equipped(slot: String) -> Item:
 
 ## Place un point d'attribut, sans retour en arrière : une répartition défaisable serait
 ## un réglage, pas un choix.
-func spend_point(attribut: String) -> bool:
-	if unspent_points <= 0 or not allocated.has(attribut):
+func spend_point(attribute: String) -> bool:
+	if unspent_points <= 0 or not allocated.has(attribute):
 		return false
-	allocated[attribut] += 1
+	allocated[attribute] += 1
 	unspent_points -= 1
 	recompute_stats()
 	# Les plafonds ont bougé : force et intelligence montent PV et réserve.
@@ -679,8 +679,8 @@ func _after_equipment_change() -> void:
 ## L'arme visible, vide pour celle de la fiche. Publique : la fenêtre de personnage
 ## dessine la même silhouette.
 func weapon_kind() -> String:
-	var arme: Item = equipment.get("weapon")
-	return "" if arme == null else arme.base.kind
+	var weapon: Item = equipment.get("weapon")
+	return "" if weapon == null else weapon.base.kind
 
 
 ## **Le seul chemin pour changer la vie** : la barre suit, le plafond s'applique.
@@ -697,7 +697,7 @@ func _set_mana(value: float) -> void:
 
 
 func _needed_for(lvl: int) -> int:
-	return Progression.cout_du_niveau(lvl, XP_BASE, XP_POWER)
+	return Progression.level_cost(lvl, XP_BASE, XP_POWER)
 
 
 ## Appelée par l'EnemyManager quand un ennemi meurt d'un vrai coup.
@@ -727,13 +727,13 @@ func _level_up() -> void:
 ## **Le seul chemin** d'une récompense, mort ou boule d'expérience : le retard sur la
 ## zone, puis le joueur et les manuels du râtelier, **du même montant**. Rien ne la
 ## borne vers le haut : descendre plus bas rapporte mieux.
-func recompenser(brut: float, niveau_zone: int, ou: Vector2) -> int:
-	var gain := maxi(roundi(brut * Enemy.facteur_d_experience(niveau_zone, level)), 1)
+func reward(raw: float, zone_level_value: int, where: Vector2) -> int:
+	var gain := maxi(roundi(raw * Enemy.experience_factor(zone_level_value, level)), 1)
 	gain_xp(gain)
-	for livre in ratelier.equipes():
-		livre.manuel.gagner_experience(gain)
+	for book in rack.equipped_items():
+		book.manual.gain_experience(gain)
 	if HitFeedback.current != null:
-		HitFeedback.current.xp_gain(ou, gain)
+		HitFeedback.current.xp_gain(where, gain)
 	return gain
 
 
@@ -741,16 +741,16 @@ func recompenser(brut: float, niveau_zone: int, ou: Vector2) -> int:
 func pick_up(item: Item) -> bool:
 	if item == null:
 		return false
-	var pris := inventory.add(item)
+	var taken := inventory.add(item)
 	# Le livre de départ est « donné » quand il est **pris**, pas quand il tombe ; un
 	# joueur qui le jette n'en reçoit pas un second.
-	if pris and item.manuel != null:
-		manuel_offert = true
+	if taken and item.manual != null:
+		manual_given = true
 	if HitFeedback.current != null:
 		HitFeedback.current.loot_gain(
-			global_position, item.display_name() if pris else Textes.t("sac plein")
+			global_position, item.display_name() if taken else Texts.t("sac plein")
 		)
-	return pris
+	return taken
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -758,14 +758,14 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		return
 	_already_hit.append(area)   # un swing ne touche une cible qu'une fois
 
-	var info := DamageInfo.roll(stats, global_position, _parts_du_coup)
-	info.auteur = etats
+	var info := DamageInfo.roll(stats, global_position, _hit_parts)
+	info.author = states
 	(area as Hurtbox).take_damage(info)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.
 	if _already_hit.size() == 1:
 		Game.hit_stop()
-		Game.shake_camera(camera, _secousse_du_coup)
+		Game.shake_camera(camera, _hit_shake)
 
 
 func _on_damaged(info: DamageInfo) -> void:
@@ -786,20 +786,20 @@ func _die() -> void:
 	set_physics_process(false)
 	velocity = Vector2.ZERO
 	# Ce qui frappait pour lui s'éteint avec lui.
-	if aura_allumee():
-		_aura.eteindre()
+	if aura_lit():
+		_aura.extinguish()
 	_aura = null
-	if _couronne != null:
-		_couronne.vider()
+	if _crown != null:
+		_crown.clear()
 	# Un corps relevé ne se relève pas en flammes.
-	etats.vider()
+	states.clear()
 	died.emit()   # l'écran de fin de run se branchera ici
 
 
 func revive() -> void:
 	is_dead = false
 	# Un corps tombé encaisse toujours : ses tirages ont pu reposer des états.
-	etats.vider()
+	states.clear()
 	_set_health(stats.max_health)
 	_set_mana(stats.max_mana)
 	velocity = Vector2.ZERO

@@ -5,10 +5,10 @@ class_name AffixPool
 
 const ALL := [
 	preload("res://resources/affixes/colossal.tres"),
-	preload("res://resources/affixes/veloce.tres"),
+	preload("res://resources/affixes/swift.tres"),
 	preload("res://resources/affixes/brutal.tres"),
-	preload("res://resources/affixes/blinde.tres"),
-	preload("res://resources/affixes/vorace.tres"),
+	preload("res://resources/affixes/armored.tres"),
+	preload("res://resources/affixes/ravenous.tres"),
 ]
 
 ## Deux affixes doivent rester rares : c'est l'exception qui fait ralentir le
@@ -29,8 +29,8 @@ const RIM_WIDTH := 1.0
 
 ## Colossal et Véloce s'annulent : ensemble, un ennemi ordinaire doré qui ment.
 const INCOMPATIBLE := {
-	"colossal": "veloce",
-	"veloce": "colossal",
+	"colossal": "swift",
+	"swift": "colossal",
 }
 
 

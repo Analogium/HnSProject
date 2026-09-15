@@ -78,7 +78,7 @@ Le jalon 3 ne fait que tenir cette promesse.
   projet — celui des stats d'ennemis, puis de celles du joueur — et il se
   reposerait ici une troisième fois.
 
-Un fichier par personnage, `user://personnages/<id>.json`. L'identifiant est
+Un fichier par personnage, `user://characters/<id>.json`. L'identifiant est
 **généré**, jamais dérivé du nom saisi : deux personnages peuvent porter le même
 nom, et un nom peut contenir des caractères qu'un système de fichiers refuse.
 
@@ -117,12 +117,12 @@ de la base, des attributs et de l'équipement — c'est déjà ce que fait
 `recompute_stats()`, et écrire le résultat créerait une deuxième vérité qui
 finirait par contredire la première.
 
-`attributs` est la **répartition**, pas le total : ce que le joueur a placé, et
+`attributes` est la **répartition**, pas le total : ce que le joueur a placé, et
 non ce qu'il a en tout. Le total se reconstruit en y ajoutant la fiche de départ
 et l'équipement. Écrire le total figerait les valeurs de départ du jour où la
 sauvegarde a été faite.
 
-`points_a_placer` doit être sauvegardé aussi : monter de niveau puis quitter sans
+`unspent_points` doit être sauvegardé aussi : monter de niveau puis quitter sans
 répartir ne doit pas coûter les points.
 
 ### 3.3 Une base d'objet a besoin d'un identifiant
@@ -169,7 +169,7 @@ a sauvegardé, et on ferme la fenêtre en croisant les doigts.
 
 ## 5. L'écran de sélection
 
-`ui/selection_personnage.tscn`, et il devient la scène principale du projet —
+`ui/character_select.tscn`, et il devient la scène principale du projet —
 `run/main_scene` pointe aujourd'hui sur `world/test_arena.tscn`, qui est une
 scène de réglage.
 
@@ -214,14 +214,14 @@ Chaque étape doit être testée avant la suivante, avec `tests/run.sh`.
       trois bases, plus un test d'unicité et de présence. Une étape courte, mais
       tout le reste en dépend : sans elle un objet sauvegardé ne sait pas ce
       qu'il est.
-- [x] **2. Sérialisation, sans interface.** `core/sauvegarde.gd` : un personnage
+- [x] **2. Sérialisation, sans interface.** `core/save_store.gd` : un personnage
       vers un dictionnaire et retour. C'est du `core/` sans nœud, donc des tests
       **unitaires** — et c'est là que doit vivre la garantie qui compte :
       sérialiser puis désérialiser un personnage rend un personnage identique,
       sac, affixes et répartition d'attributs compris. Y compris pour les cas
       tordus : sac plein, objet à six affixes, aucun équipement, points gagnés
       mais non placés.
-- [x] **3. Lecture et écriture sur disque.** Dossier `user://personnages/`,
+- [x] **3. Lecture et écriture sur disque.** Dossier `user://characters/`,
       écriture atomique, liste des personnages, suppression. Tests
       d'intégration : écrire, relire, comparer ; et un fichier volontairement
       tronqué ou d'une version inconnue doit être **refusé proprement**, pas
@@ -246,7 +246,7 @@ Chaque étape doit être testée avant la suivante, avec `tests/run.sh`.
   (`const BACK := InventoryPanel.BACK`), avec un commentaire qui posait le
   seuil : « le jour où un troisième panneau arrive, cette palette méritera son
   propre fichier ». L'écran de sélection est le troisième.
-- **Un seul signal de départ**, `Game.sauvegarde_demandee`, plutôt que trois
+- **Un seul signal de départ**, `Game.save_requested`, plutôt que trois
   appels. Fermeture de la fenêtre, retour au menu et sortie du jeu passent tous
   par lui ; un seul de ces chemins qui oublie d'écrire suffit à perdre une
   session.
@@ -260,15 +260,15 @@ Trois écarts, tous assumés :
   pour retrouver une base par son identifiant. Deux listes qui divergent, c'est
   un objet qui tombe et ne se recharge pas. Le catalogue est le seul endroit où
   les bases sont listées, et la table de butin y puise désormais.
-- **Le modèle est séparé du disque.** `core/personnage.gd` porte le personnage
-  et sa conversion en dictionnaire, `core/sauvegarde.gd` ne fait que lire et
+- **Le modèle est séparé du disque.** `core/character.gd` porte le personnage
+  et sa conversion en dictionnaire, `core/save_store.gd` ne fait que lire et
   écrire des fichiers. Le premier se teste sans rien toucher, le second est le
   seul à connaître `user://`.
-- **`NOM_MAX` est passé de 16 à 20 caractères.** La première borne, posée au
+- **`NAME_MAX` est passé de 16 à 20 caractères.** La première borne, posée au
   jugé, refusait « Jean-Luc de l'Est ». À revérifier à l'étape 4 : c'est l'écran
   de sélection qui décide de ce qui tient sur sa ligne.
 
-Et une décision prise en chemin : **`Sauvegarde.ecrire()` date le personnage du
+Et une décision prise en chemin : **`SaveStore.write()` date le personnage du
 jour**. Laisser l'appelant le faire aurait marché deux fois sur trois — il y a
 trois points de sauvegarde, et le troisième aurait fini par l'oublier.
 

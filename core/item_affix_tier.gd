@@ -6,7 +6,7 @@ extends Resource
 
 ## Le plus bas d'une échelle exige 1 (test de la réserve) : l'affixe doit exister dès
 ## les premières zones.
-@export var niveau_requis: int = 1
+@export var required_level: int = 1
 
 ## Fourchette du tirage, bornes comprises. Peut être négative : un temps de
 ## recharge qui baisse est un bon affixe.
@@ -15,9 +15,9 @@ extends Resource
 
 ## La fourchette de la **borne haute** d'un affixe de dégâts ajoutés, au-dessus de la
 ## basse (test) ; zéro pour les autres.
-@export var min_haut: float = 0.0
-@export var max_haut: float = 0.0
+@export var min_top: float = 0.0
+@export var max_top: float = 0.0
 
 ## Égal par défaut : tout palier ouvert peut sortir, sinon le niveau serait une
 ## garantie et plus une chance.
-@export var poids: int = 10
+@export var weight: int = 10

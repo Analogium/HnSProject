@@ -41,7 +41,7 @@ Ce qui mérite un test, par ordre de rendement :
 - **ce que le joueur ne peut pas vérifier lui-même** — qu'un `.tres` du disque
   n'a pas été écrit, qu'un affixe vise un champ qui existe.
 
-Nommer les tests en français, en phrase : `test_un_objet_retire_ne_laisse_rien`
+Nommer les tests en français, en phrase : `test_a_removed_item_leaves_nothing`
 se relit dans le rapport d'échec, `test_equip_2` non.
 
 ## 2. Lancer la suite

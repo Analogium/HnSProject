@@ -109,7 +109,7 @@ qu'il refuse.**
   cuirasse ;
 - `ItemAffix.families` devient `ItemAffix.tags` : au moins une doit être portée
   par la base. Vide = partout ;
-- `ItemAffix.exclut` : une seule suffit à refuser, et **elle l'emporte** sur
+- `ItemAffix.excludes` : une seule suffit à refuser, et **elle l'emporte** sur
   `tags`. C'est elle qui écrit « partout sauf sur les armes » en une ligne au
   lieu de neuf.
 
@@ -127,10 +127,10 @@ le seul changement à relire.
 | baguettes et sceptres | `weapon` `caster` |
 | boucliers | `offhand` `armour` `heavy` |
 | grimoires | `offhand` `caster` |
-| casque, torse, gants, bottes lourds | `<famille>` `armour` `heavy` |
-| casque, torse, gants, bottes légers | `<famille>` `armour` `light` |
+| casque, torse, gants, bottes lourds | `<family>` `armour` `heavy` |
+| casque, torse, gants, bottes légers | `<family>` `armour` `light` |
 | ceinture | `belt` |
-| amulette, anneau | `<famille>` `jewellery` |
+| amulette, anneau | `<family>` `jewellery` |
 
 `heavy` et `light` ne servent à rien dans ce jalon **sauf à distinguer deux
 lignées d'armure** : la lourde donne de l'armure, la légère de l'esquive, et
@@ -144,11 +144,11 @@ mettre d'esquive sur une cuirasse.
 | vitesse de déplacement aux bottes | `tags = ["boots"]` |
 | vie et armure sur les armures | `tags = ["armour", "belt"]` |
 | esquive sur les armures légères | `tags = ["light"]` |
-| résistances partout sauf aux armes | `tags = []`, `exclut = ["weapon"]` |
+| résistances partout sauf aux armes | `tags = []`, `excludes = ["weapon"]` |
 | anneaux et ceintures tirent presque tout | rien à écrire : ils portent `jewellery` / `belt`, et la plupart des affixes les listent |
 | une baguette ne tire ni dégâts ni vitesse d'attaque | `tags = ["melee", "gloves", "jewellery"]` sur ces deux affixes-là |
 
-**Changement par rapport au jalon 4 :** `preste` (vitesse de déplacement) passe
+**Changement par rapport au jalon 4 :** `nimble` (vitesse de déplacement) passe
 des bottes *et* de la ceinture aux **bottes seules**. C'est la demande, et elle
 est juste : une statistique qui ne se trouve qu'à un endroit fait de cet
 endroit une décision.
@@ -216,25 +216,25 @@ garantie, et il n'y aurait plus rien à espérer en regardant tomber un objet.
 > 60 pouvait sortir le T8, celui des premières zones, et le meilleur objet du jeu
 > valait parfois moins que le premier ramassé. Le plancher manquait.
 >
-> `ItemAffix.PALIERS_OUVERTS := 4` : un objet qui atteint le T1 ne tire plus rien
+> `ItemAffix.OPEN_TIERS := 4` : un objet qui atteint le T1 ne tire plus rien
 > sous le T4. Ce n'est pas une garantie pour autant — quatre tiers d'écart, c'est
 > encore un objet sur quatre qui déçoit, et c'est ce qu'il faut pour qu'une bonne
 > sortie reste une bonne nouvelle.
 >
-> `ItemAffix.fenetre_du_palier` dit entre quels niveaux d'objet un tier peut
-> sortir, en interrogeant `ouverts` plutôt qu'en rejouant son raisonnement.
+> `ItemAffix.tier_window` dit entre quels niveaux d'objet un tier peut
+> sortir, en interrogeant `unlocked_tiers` plutôt qu'en rejouant son raisonnement.
 > C'est ce que la fiche de la forge affiche : un outil de réglage qui annoncerait
 > un tier que le tirage refuse serait pire qu'un outil absent.
 >
 > Et la fiche **croise les deux fenêtres**. Une base ne tombe que dans sa plage
 > de zones, et le niveau d'un objet est celui de la zone où il tombe : une épée
 > large, qui s'arrête en zone 40, n'atteint jamais un tier qui demande le niveau
-> 52. `ItemAffix.ouverts_entre` donne l'union des fenêtres d'une plage, et la
+> 52. `ItemAffix.open_between` donne l'union des fenêtres d'une plage, et la
 > fiche n'affiche que ça — huit cent vingt tiers en moins sur les quarante et
 > une bases, plus de la moitié sur celles de début. Sans ce croisement, l'écran
 > qui sert à équilibrer décrivait des objets qui ne peuvent pas exister.
 
-Poids **égal entre tiers ouverts** par défaut, avec un champ `poids` par tier
+Poids **égal entre tiers ouverts** par défaut, avec un champ `weight` par tier
 pour l'exception. Un affixe dont la fenêtre est pleine sort donc T1 une fois sur
 quatre une fois le T1 atteint. C'est volontairement généreux pour une première calibration :
 on serre en jouant, et le champ est là pour ça.
@@ -278,11 +278,11 @@ C'est l'infobulle, et elle seule, qui a besoin de la provenance.
 
 ### 4.5 Ce que la sauvegarde doit retenir, et le piège de la version
 
-`Personnage._item_vers_dict` écrit aujourd'hui `{stat, mode, valeur}` par affixe.
+`Character._item_to_dict` écrit aujourd'hui `{stat, mode, value}` par affixe.
 Il faut y ajouter l'identifiant de l'affixe et le tier, et le niveau de l'objet à
 côté de sa base.
 
-**`Personnage.VERSION` passe à 2, et `depuis_dict` doit accepter les deux.**
+**`Character.VERSION` passe à 2, et `from_dict` doit accepter les deux.**
 Le code actuel refuse tout ce qui n'est pas exactement `VERSION` — c'était la
 bonne règle tant qu'il n'existait qu'un format. Monter le numéro sans écrire la
 lecture de l'ancien **ferait disparaître tous les personnages existants de
@@ -309,10 +309,10 @@ vérifie que les objets sont là avec leurs valeurs.
 
 `ItemBase` gagne trois champs :
 
-- `lignee: String` — à quelle suite de bases celle-ci appartient
+- `lineage: String` — à quelle suite de bases celle-ci appartient
   (`"lame"`, `"cuirasse"`, `"bottes_lourdes"`…) ;
-- `palier: int` — son rang dans la lignée, 1 le plus modeste ;
-- `niveau_requis: int` — le niveau d'objet à partir duquel elle peut tomber.
+- `tier: int` — son rang dans la lignée, 1 le plus modeste ;
+- `required_level: int` — le niveau d'objet à partir duquel elle peut tomber.
 
 L'implicite monte avec le palier : c'est lui qui fait qu'une cuirasse vaut mieux
 qu'une tunique **avant même** de regarder les affixes. Un test garde la monotonie
@@ -343,7 +343,7 @@ une première calibration, à serrer en jouant.
 | anneau | — | **Anneau** (1) · Bague ouvragée (16) · Chevalière (34) |
 
 En gras, les dix bases actuelles. **Elles gardent leur `id`**, quoi qu'il arrive
-à leur nom lisible : `plastron` reste `plastron` même s'il s'appelle « Plastron
+à leur nom lisible : `breastplate` reste `breastplate` même s'il s'appelle « Plastron
 de fer » et devient le premier palier d'une lignée lourde. Le `display_name` est
 libre, l'identifiant est gravé (jalon 3, §3.3).
 
@@ -369,14 +369,14 @@ deux ou trois chutes, et ça se sent sans qu'on ait rien à lire.
 > plus, c'est du bruit dans le butin.
 >
 > La règle est maintenant une **fenêtre par base** : elle tombe de son
-> `niveau_requis` jusqu'à `MARGE_DE_RELEVE` niveaux après l'ouverture de celle
+> `required_level` jusqu'à `READING_MARGIN` niveaux après l'ouverture de celle
 > qui la remplace, et le meilleur palier d'une lignée n'est chassé par rien. À
 > six niveaux de marge, la lame de guerre ouvrant à 34, **l'épée large cesse de
 > tomber après la zone 40**.
 >
 > Le « pas plus de deux paliers à la fois » n'est plus écrit dans le code : il
 > en est devenu une *conséquence*, et c'est un test qui le tient, à chacun des
-> soixante niveaux. `ItemCatalog.fenetre_de_chute` est la règle, `disponibles`
+> soixante niveaux. `ItemCatalog.drop_window` est la règle, `available`
 > la consomme, et la fiche d'objet de la forge l'affiche — trois usages, une
 > seule écriture.
 `LootTable.roll` prend désormais le niveau de la zone en argument — il ne peut
@@ -420,7 +420,7 @@ On ne lit pas le nom d'un objet au sol.
 Un entier, de 1 à 60 pour ce jalon, qui vaut pour toute la zone : c'est le niveau
 de chaque ennemi qui y naît, et le niveau d'objet de tout ce qui y tombe.
 
-Il vit sur `Game` — comme `Game.personnage`, et pour la même raison : il doit
+Il vit sur `Game` — comme `Game.character`, et pour la même raison : il doit
 survivre au changement de scène, ce qu'un changement de scène détruit. Défaut :
 **1**. L'arène de réglage, le banc de stress et la galerie n'y touchent pas et
 n'ont rien à savoir de lui.
@@ -551,14 +551,14 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante. Les trois premiè
 sont de la structure et ne changent presque rien à ce qu'on voit ; les trois
 suivantes sont le contenu ; la dernière est l'écran.
 
-- [x] **1. Les étiquettes.** `ItemAffix.families` devient `tags`, `exclut`
-      apparaît, les dix bases reçoivent leurs étiquettes, `preste` passe aux
+- [x] **1. Les étiquettes.** `ItemAffix.families` devient `tags`, `excludes`
+      apparaît, les dix bases reçoivent leurs étiquettes, `nimble` passe aux
       bottes seules, `spell_damage` entre dans `CharacterStats` et le tir le
       lit. Aucun affixe nouveau. Tests : une baguette ne tire jamais de dégâts ni
       de vitesse d'attaque sur mille tirages ; la vitesse de déplacement ne sort
       que sur des bottes ; chaque base garde au moins deux affixes possibles.
-- [x] **2. Le niveau d'objet.** `ItemBase.niveau_requis`, `Item.item_level`,
-      `Game.niveau_de_zone` à 1, la chute qui l'estampille, la ligne dans
+- [x] **2. Le niveau d'objet.** `ItemBase.required_level`, `Item.item_level`,
+      `Game.zone_level` à 1, la chute qui l'estampille, la ligne dans
       l'infobulle, la sauvegarde en version 2 avec la lecture de la version 1.
       Tests : un fichier de version 1 se recharge avec ses objets et leurs
       valeurs ; un objet neuf porte le niveau de la zone ; un aller-retour sur le
@@ -646,7 +646,7 @@ suivantes sont le contenu ; la dernière est l'écran.
   les deux quand ils diffèrent — « niveau 1 (F5 : 21) » — et rien tant qu'ils
   coïncident, une seconde valeur permanente se lisant comme une contradiction.
 - **Les bornes ont déménagé sur `Game`**, avec la valeur, et les deux écrans
-  passent par `changer_niveau_de_zone`. Ils bornaient chacun de leur côté : le
+  passent par `change_zone_level`. Ils bornaient chacun de leur côté : le
   jour où le maximum bougera, celui qui l'aurait oublié laisserait engendrer une
   zone dont aucun affixe ne suit.
 
@@ -703,7 +703,7 @@ suivantes sont le contenu ; la dernière est l'écran.
   comparent côte à côte ou ne se comparent pas. Agrandies deux fois, comme les
   archétypes : une planche qui montre plus petit que le jeu ne sert à rien —
   la première version, à la taille native, ne permettait de juger de rien.
-- **La règle des deux paliers vit dans `ItemCatalog.disponibles`**, pas dans
+- **La règle des deux paliers vit dans `ItemCatalog.available`**, pas dans
   `LootTable` : le catalogue sait ce qu'il contient, la table de butin tire dans
   ce qu'on lui donne. Conséquence mesurable : une zone de niveau 60 ne lâche plus
   l'épée de départ, seulement l'épée large et la lame de guerre — et un test
@@ -745,7 +745,7 @@ suivantes sont le contenu ; la dernière est l'écran.
   déduisait de la borne haute — entier au-dessus de 1, centième en dessous. Une
   échelle qui traverse 1, comme celle des dégâts critiques (0,2 en bas, 1,5 en
   haut), aurait affiché « +0,35 » à un palier et « +1 » au suivant, pour le même
-  affixe. `ItemAffix.arrondi` est donc un champ, et c'est un champ de moins
+  affixe. `ItemAffix.rounded` est donc un champ, et c'est un champ de moins
   deviné.
 - **Un affixe sans provenance est un état légitime**, pas un cas à éviter.
   `Item.new` accepte aussi bien des `RolledAffix` que de simples `StatMod`, qui
@@ -772,7 +772,7 @@ suivantes sont le contenu ; la dernière est l'écran.
 ### Ce que l'étape 2 a changé au plan
 
 - **Le filtre de disponibilité vit dans le catalogue**, pas dans la table de
-  butin : `ItemCatalog.disponibles(niveau)`. C'est le catalogue qui sait ce
+  butin : `ItemCatalog.available(level)`. C'est le catalogue qui sait ce
   qu'il contient, et `LootTable` n'a qu'à tirer dans ce qu'on lui donne — c'est
   là que la règle des deux meilleurs paliers viendra se poser à l'étape 5, sans
   toucher au tirage.
@@ -784,10 +784,10 @@ suivantes sont le contenu ; la dernière est l'écran.
   est une décision et non un nettoyage.
 - **Aucune branche de version dans la lecture d'un objet.** « Niveau 1 pour une
   sauvegarde de version 1 » s'écrit sans tester le numéro : un champ absent vaut
-  son défaut, ici comme partout ailleurs dans `depuis_dict`. Le numéro ne sert
+  son défaut, ici comme partout ailleurs dans `from_dict`. Le numéro ne sert
   qu'à refuser ce qu'on ne sait pas lire — c'est ce qu'il a toujours fait, il
   compare maintenant à une liste au lieu d'une égalité.
-- **`Game.niveau_de_zone` existe et vaut 1 partout** : personne ne le pose
+- **`Game.zone_level` existe et vaut 1 partout** : personne ne le pose
   encore. C'est voulu — le consommateur avant le réglage, sinon l'étape 6
   arriverait avec un écran de choix branché sur rien.
 - **Le niveau s'affiche toujours**, sous le nom et au-dessus de l'implicite,
@@ -802,7 +802,7 @@ suivantes sont le contenu ; la dernière est l'écran.
   et une étiquette que personne ne lit est une règle qu'on croit appliquée.
   Elles arriveront avec l'esquive, à l'étape 4, en même temps que les lignées
   légères de l'étape 5.
-- **La baguette tombe à deux affixes possibles**, `cruel` et `sanglant` — et les
+- **La baguette tombe à deux affixes possibles**, `cruel` et `bloody` — et les
   tirs ne critiquent pas : `Projectile` construit son `DamageInfo` avec
   `is_crit` à faux, en dur. C'est donc à cette étape la base la plus pauvre du
   jeu : deux affixes, tous deux sans effet sur elle. C'est le prix de
@@ -816,15 +816,15 @@ suivantes sont le contenu ; la dernière est l'écran.
 - **`fits(null)` rend désormais faux.** Il rendait vrai dès que la liste était
   vide, ce qui faisait passer « pas de base du tout » pour « partout ». Aucun
   appelant ne s'y appuyait, et le test l'écrit maintenant noir sur blanc.
-- **`preste` a quitté la ceinture**, comme prévu. Celle-ci garde `vigoureux` et
-  `robuste` : deux affixes, exactement le minimum que le test du catalogue
+- **`nimble` a quitté la ceinture**, comme prévu. Celle-ci garde `vigorous` et
+  `sturdy` : deux affixes, exactement le minimum que le test du catalogue
   exige. Elle attend l'étape 4 elle aussi.
 
 ---
 
 ## 9. Ce qui peut mal tourner
 
-- **Monter `Personnage.VERSION` sans écrire la lecture de l'ancien format.**
+- **Monter `Character.VERSION` sans écrire la lecture de l'ancien format.**
   C'est la faute la plus coûteuse du jalon : tous les personnages existants
   passent « illisibles » d'un coup, alors que leurs fichiers sont intacts. À
   écrire à l'étape 2, avec son test, avant tout le reste.

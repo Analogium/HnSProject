@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://actors/projectiles/boule_de_feu.gd" id="1_boule"]
+[ext_resource type="Script" path="res://actors/projectiles/fireball.gd" id="1_boule"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_boule"]
 radius = 4.0

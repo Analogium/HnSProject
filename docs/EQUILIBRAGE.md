@@ -3,8 +3,8 @@
 <!-- Fichier généré par tools/equilibrage.sh — ne pas éditer à la main. -->
 
 Ce que chaque profil type rencontre, zone par zone. Les profils sont reconstruits
-par les règles du jeu à chaque lancement (`ProfilsDuBanc`), et le calcul passe par
-les vraies fonctions (`CalculDuBanc`). Le banc montre les écarts ; les réglages
+par les règles du jeu à chaque lancement (`BenchProfiles`), et le calcul passe par
+les vraies fonctions (`BenchCalculation`). Le banc montre les écarts ; les réglages
 restent une décision — voir `hack-n-slash-jalon-13.md`.
 
 | verdict | coups pour tuer un grunt | survie au contact |
@@ -18,7 +18,7 @@ Le verdict est le pire des deux axes. Pour lire les nombres :
 
 - **coups** : avec la compétence de la barre qui en demande le moins, critique en
   moyenne, après les défenses de l'ennemi ;
-- **secondes** : par `moyenne_par_seconde()`, *si tout touche* — les traits d'une
+- **secondes** : par `average_per_second()`, *si tout touche* — les traits d'une
   nova comptent tous sur la même cible — et sans compter la réserve de mana ;
 - **survie** : au contact de 3 grunts et 1 caster sans affixe, après armure,
   résistances et esquive, régénération déduite. ∞ : la régénération suffit.
@@ -26,7 +26,7 @@ Le verdict est le pire des deux axes. Pour lire les nombres :
 ## Niveau attendu
 
 Le niveau atteint en vidant une fois chaque zone de 1 à Z − 1, avec la population
-moyenne de l'`EnemySpawner` et le retard de `Enemy.facteur_d_experience()`.
+moyenne de l'`EnemySpawner` et le retard de `Enemy.experience_factor()`.
 
 | zone | 1 | 10 | 20 | 40 | 60 | 90 | 120 |
 |---|---|---|---|---|---|---|---|
@@ -148,18 +148,18 @@ médiocre, et c'est voulu : un plancher. Une mort recharge la zone.
 
 | build | profil | construit pour | zone jouée | niveau | tués/min | morts | sous 30 % | vidée en |
 |---|---|---|---|---|---|---|---|---|
-| Sort | Débutant | 1 | 1 | 1 | 23,0 | 19 | 23,4 s | — |
-| Sort | Nu | 40 | 40 | 34 | 35,7 | 57 | 41,6 s | — |
-| Sort | Sous-équipé | 40 | 40 | 34 | 32,0 | 31 | 15,1 s | — |
-| Sort | Équipé | 40 | 40 | 34 | 58,3 | 28 | 18,8 s | — |
-| Sort | Sur-équipé | 40 | 40 | 34 | 15,7 | 22 | 25,8 s | — |
-| Sort | Équipé | 40 | 20 | 34 | 64,3 | 19 | 22,7 s | — |
-| Sort | Équipé | 40 | 60 | 34 | 28,0 | 36 | 43,3 s | — |
-| Mêlée | Débutant | 1 | 1 | 1 | 53,0 | 16 | 33,2 s | — |
-| Mêlée | Nu | 40 | 40 | 34 | 18,7 | 34 | 34,1 s | — |
-| Mêlée | Sous-équipé | 40 | 40 | 34 | 27,3 | 13 | 35,0 s | — |
-| Mêlée | Équipé | 40 | 40 | 34 | 14,7 | 1 | 36,6 s | — |
-| Mêlée | Sur-équipé | 40 | 40 | 34 | 18,7 | 0 | 4,23 s | — |
+| Sort | Débutant | 1 | 1 | 1 | 22,0 | 20 | 21,7 s | — |
+| Sort | Nu | 40 | 40 | 34 | 35,3 | 57 | 42,7 s | — |
+| Sort | Sous-équipé | 40 | 40 | 34 | 31,7 | 31 | 19,7 s | — |
+| Sort | Équipé | 40 | 40 | 34 | 58,0 | 29 | 13,6 s | — |
+| Sort | Sur-équipé | 40 | 40 | 34 | 16,7 | 23 | 20,5 s | — |
+| Sort | Équipé | 40 | 20 | 34 | 65,0 | 19 | 18,4 s | — |
+| Sort | Équipé | 40 | 60 | 34 | 27,7 | 38 | 41,6 s | — |
+| Mêlée | Débutant | 1 | 1 | 1 | 54,7 | 17 | 33,6 s | — |
+| Mêlée | Nu | 40 | 40 | 34 | 18,0 | 34 | 34,9 s | — |
+| Mêlée | Sous-équipé | 40 | 40 | 34 | 27,7 | 13 | 42,5 s | — |
+| Mêlée | Équipé | 40 | 40 | 34 | 25,7 | 3 | 37,5 s | — |
+| Mêlée | Sur-équipé | 40 | 40 | 34 | 18,3 | 0 | 0,00 s | — |
 | Mêlée | Équipé | 40 | 20 | 34 | 14,3 | 0 | 0,00 s | — |
-| Mêlée | Équipé | 40 | 60 | 34 | 22,3 | 15 | 37,0 s | — |
+| Mêlée | Équipé | 40 | 60 | 34 | 18,7 | 15 | 39,4 s | — |
 

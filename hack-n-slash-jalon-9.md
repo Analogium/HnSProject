@@ -42,7 +42,7 @@ Ce jalon ajoute **l'anglais**, et le moyen de passer de l'un à l'autre.
 - **La console** : `push_warning` et `push_error` s'adressent à qui lit la
   console, pas au joueur.
 - **Les sauvegardes** : elles n'écrivent aucun texte affiché — des identifiants,
-  des nombres, et une date ISO (`joue_le`). Rien à convertir, pas de version 6.
+  des nombres, et une date ISO (`played_on`). Rien à convertir, pas de version 6.
 - **Une troisième langue.** Le mécanisme la permettra, mais ce jalon n'en livre
   que deux, et c'est à deux qu'on vérifie que tout tient.
 
@@ -73,8 +73,8 @@ des tests de complétude du §6, et c'est la première chose du §9.
 
 ## 3. Choisir la langue
 
-**Un réglage de plus dans `Settings`** : `langue`, « fr » ou « en », écrit dans
-`reglages.json` sous la clé `langue`. Le poser appelle
+**Un réglage de plus dans `Settings`** : `language`, « fr » ou « en », écrit dans
+`reglages.json` sous la clé `language`. Le poser appelle
 `TranslationServer.set_locale()`, émet `changed` et écrit le fichier, comme les
 autres réglages.
 
@@ -104,16 +104,16 @@ ils finissent dans leur langue.
 ## 4. Ce qui se traduit, et où
 
 **Les tables de libellés gardent leurs valeurs françaises**, et c'est leur
-**lecture** qui passe par `tr()` : `StatMod.LABELS`, `StatsDeCompetence.LABELS`,
-`DamageType.NAMES` et `LIBELLES_DE_DEGATS`, `MotsCles.LIBELLES` et
-`DESTINATAIRES`, les libellés d'`EquipmentSlots`, les titres de groupes de la
-fiche. Chaque table a déjà une fonction de lecture (`StatMod.nom()`,
-`MotsCles.libelle()`, `EquipmentSlots.label()`…) : le `tr()` va **là, et nulle part
+**lecture** qui passe par `tr()` : `StatMod.LABELS`, `SkillStats.LABELS`,
+`DamageType.NAMES` et `DAMAGE_LABELS`, `Keywords.LABELS` et
+`RECIPIENTS`, les libellés d'`EquipmentSlots`, les titres de groupes de la
+fiche. Chaque table a déjà une fonction de lecture (`StatMod.name()`,
+`Keywords.label_of()`, `EquipmentSlots.label()`…) : le `tr()` va **là, et nulle part
 ailleurs**.
 
-**Le contenu passe par un accesseur.** `display_name` et `nom` restent les champs
+**Le contenu passe par un accesseur.** `display_name` et `name` restent les champs
 français des `.tres` ; ce qu'on affiche passe par `Item.display_name()` et par un
-`nom_affiche()` sur `Competence`, `ManuelArchetype` et `Affix`. Un `competence.nom`
+`displayed_name()` sur `Skill`, `ManualArchetype` et `Affix`. Un `skill.name`
 lu directement dans une interface est un texte qui ne se traduira jamais.
 
 **Les explications de `StatHelp` deviennent des gabarits.** Elles sont aujourd'hui
@@ -188,7 +188,7 @@ l'écran demanderait de taper un mot que la vérification refuse.
 ## 6. Les tests
 
 **La campagne tourne en français, quelle que soit la machine.** `tests/run.sh` et
-`tools/catalogue.sh` lancent Godot avec `--language fr` : les tests affirment des
+`tools/catalog.sh` lancent Godot avec `--language fr` : les tests affirment des
 textes français, et le catalogue est un document français. Sans ça, la campagne
 échouerait sur un Windows anglais, et le catalogue s'y régénérerait en anglais.
 Un test qui passe à l'anglais **remet le français avant de rendre la main**.
@@ -225,13 +225,13 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante. La première ne
 change **aucun texte** du jeu.
 
 - [x] **1. La mécanique.** `i18n/en.po` avec son en-tête et ses règles de pluriel,
-      déclaré dans `project.godot` ; `Settings.langue`, sa lecture, son écriture,
+      déclaré dans `project.godot` ; `Settings.language`, sa lecture, son écriture,
       la normalisation du premier lancement ; `--language fr` dans `tests/run.sh`
-      et `tools/catalogue.sh`. Tests : sans fichier, une locale `fr_CA` donne le
+      et `tools/catalog.sh`. Tests : sans fichier, une locale `fr_CA` donne le
       français et une locale `de` l'anglais ; un choix écrit se relit au
       démarrage ; une valeur inconnue dans le fichier retombe sur la normalisation.
 - [x] **2. Les tables et le contenu.** Le `tr()` dans les fonctions de lecture des
-      tables, les accesseurs `nom_affiche()`, les gabarits de `StatHelp`, les
+      tables, les accesseurs `displayed_name()`, les gabarits de `StatHelp`, les
       phrases entières de `StatMod.label()`, le format des pourcentages ; les
       traductions du §5. Tests : complétude et orphelins sur les tables et le
       contenu ; les gabarits gardent leurs valeurs ; en anglais, « ajoute 3 à 7
@@ -267,14 +267,14 @@ passerait pour un choix du joueur dès le lancement suivant.
 ### Ce que l'étape 2 a changé au plan
 
 **`tr()` ne pouvait pas servir.** C'est une méthode d'objet, et la moitié des
-lectures de libellés du jeu sont des fonctions **statiques** — `StatMod.nom()`,
-`MotsCles.libelle()`, `EquipmentSlots.label()`. La traduction passe donc par une
-feuille, `Textes`, qui appelle `TranslationServer`. Le nom est court parce qu'il
+lectures de libellés du jeu sont des fonctions **statiques** — `StatMod.name()`,
+`Keywords.label_of()`, `EquipmentSlots.label()`. La traduction passe donc par une
+feuille, `Texts`, qui appelle `TranslationServer`. Le nom est court parce qu'il
 enveloppe chaque texte affiché, et c'est aussi la marque que les tests relèvent
 dans les sources : `Textes.t("…")` se grep, `tr()` se serait confondu avec le
 reste.
 
-`StatMod.pourcentage()` est né du même besoin : trois endroits écrivaient
+`StatMod.percentage()` est né du même besoin : trois endroits écrivaient
 « %d %% » à la main, et l'espace avant le signe est une règle française. La plage
 (« 8–11 % ») demande son unité au gabarit plutôt que de la réécrire, puisqu'elle
 change avec la langue.
@@ -334,7 +334,7 @@ l'auteur.
 
 **Le test qui oublie de remettre le français**, ou qui écrit la langue dans
 `reglages.json` : les suivants tournent en anglais, et échouent loin de la cause.
-Le même piège que `Game.niveau_de_zone` au jalon 5.
+Le même piège que `Game.zone_level` au jalon 5.
 
 **Le texte mesuré une fois.** `AffixTag` mesure ses noms à la création : après un
 changement de langue, un nom anglais plus long déborderait de sa largeur centrée,
@@ -348,8 +348,8 @@ pluriel (« 0 points »). `tr_n()` sans traduction applique la règle anglaise :
 un texte français au pluriel doit donc passer par `en.po` **et** garder, côté
 français, le cas zéro qu'il a déjà — « aucun point à placer ».
 
-**Le catalogue régénéré en anglais.** `tools/catalogue.sh` lance lui aussi Godot :
-sans `--language fr`, `StatMod.nom()` y écrirait « cold damage to spells ».
+**Le catalogue régénéré en anglais.** `tools/catalog.sh` lance lui aussi Godot :
+sans `--language fr`, `StatMod.name()` y écrirait « cold damage to spells ».
 
 **Les noms.** Le §5 est une proposition, écrite sans que personne ait joué en
 anglais. Ils se changent dans `en.po` sans toucher au code.

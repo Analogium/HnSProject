@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemBase" format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_418cp"]
+
+[resource]
+script = ExtResource("1_418cp")
+id = "ring"
+display_name = "Anneau"
+kind = "ring"
+family = "ring"
+tags = PackedStringArray("ring", "jewellery")
+lineage = "ring"
+implicit_stat = "crit_chance"
+implicit_value = 0.02

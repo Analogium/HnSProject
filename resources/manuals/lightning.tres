@@ -1,0 +1,256 @@
+[gd_resource type="Resource" script_class="ManualArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passive.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/skills/swift_bolt.tres" id="10_eclair_vif"]
+[ext_resource type="Resource" path="res://resources/skills/chain_lightning.tres" id="11_chaine_d_eclairs"]
+[ext_resource type="Resource" path="res://resources/skills/storm_cloud.tres" id="12_nuage_d_orage"]
+[ext_resource type="Resource" path="res://resources/skills/lightning_nova.tres" id="13_nova_de_foudre"]
+
+[sub_resource type="Resource" id="L_eclair_vif_surcharge_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_eclair_vif_surcharge"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_overload"
+name = "Surcharge"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_surcharge_0")])
+
+[sub_resource type="Resource" id="L_eclair_vif_fourche_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_eclair_vif_fourche"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_fork"
+name = "Fourche"
+position = Vector2i(1, 0)
+parent = "swift_bolt_overload"
+required_points = 2
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_fourche_0")])
+
+[sub_resource type="Resource" id="L_eclair_vif_trait_de_glace_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_eclair_vif_trait_de_glace"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_glacial_bolt"
+name = "Trait de glace"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_trait_de_glace_0")])
+converts_to = 1
+converted_part_per_point = 0.50
+
+[sub_resource type="Resource" id="C_eclair_vif"]
+script = ExtResource("2_case")
+skill = ExtResource("10_eclair_vif")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_eclair_vif_surcharge"), SubResource("N_eclair_vif_fourche"), SubResource("N_eclair_vif_trait_de_glace")])
+
+[sub_resource type="Resource" id="L_chaine_d_eclairs_ramification_0"]
+script = ExtResource("4_ligne")
+stat = "targets"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_chaine_d_eclairs_ramification"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_branching"
+name = "Ramification"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_ramification_0")])
+
+[sub_resource type="Resource" id="L_chaine_d_eclairs_haute_tension_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_chaine_d_eclairs_haute_tension"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_high_voltage"
+name = "Haute tension"
+position = Vector2i(1, 0)
+parent = "chain_lightning_branching"
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_haute_tension_0")])
+
+[sub_resource type="Resource" id="L_chaine_d_eclairs_court_circuit_0"]
+script = ExtResource("4_ligne")
+stat = "targets"
+value_per_point = -1.0
+
+[sub_resource type="Resource" id="L_chaine_d_eclairs_court_circuit_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 35.0
+
+[sub_resource type="Resource" id="N_chaine_d_eclairs_court_circuit"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_short_circuit"
+name = "Court-circuit"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_court_circuit_0"), SubResource("L_chaine_d_eclairs_court_circuit_1")])
+
+[sub_resource type="Resource" id="C_chaine_d_eclairs"]
+script = ExtResource("2_case")
+skill = ExtResource("11_chaine_d_eclairs")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_chaine_d_eclairs_ramification"), SubResource("N_chaine_d_eclairs_haute_tension"), SubResource("N_chaine_d_eclairs_court_circuit")])
+
+[sub_resource type="Resource" id="L_nuage_d_orage_front_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_nuage_d_orage_front"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_front"
+name = "Front orageux"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_front_0")])
+
+[sub_resource type="Resource" id="L_nuage_d_orage_orage_durable_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_nuage_d_orage_orage_durable"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_lingering_storm"
+name = "Orage durable"
+position = Vector2i(1, 0)
+parent = "storm_cloud_front"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_orage_durable_0")])
+
+[sub_resource type="Resource" id="L_nuage_d_orage_grele_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_nuage_d_orage_grele"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_hail"
+name = "Grêle"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_grele_0")])
+converts_to = 1
+converted_part_per_point = 0.60
+
+[sub_resource type="Resource" id="C_nuage_d_orage"]
+script = ExtResource("2_case")
+skill = ExtResource("12_nuage_d_orage")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_nuage_d_orage_front"), SubResource("N_nuage_d_orage_orage_durable"), SubResource("N_nuage_d_orage_grele")])
+
+[sub_resource type="Resource" id="L_nova_de_foudre_couronne_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_nova_de_foudre_couronne"]
+script = ExtResource("3_noeud")
+id = "lightning_nova_crown"
+name = "Couronne"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_couronne_0")])
+
+[sub_resource type="Resource" id="L_nova_de_foudre_deflagration_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_nova_de_foudre_deflagration"]
+script = ExtResource("3_noeud")
+id = "lightning_nova_blast"
+name = "Déflagration"
+position = Vector2i(1, 0)
+parent = "lightning_nova_crown"
+required_points = 3
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_deflagration_0")])
+
+[sub_resource type="Resource" id="L_nova_de_foudre_celerite_0"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = 35.0
+
+[sub_resource type="Resource" id="N_nova_de_foudre_celerite"]
+script = ExtResource("3_noeud")
+id = "lightning_nova_celerity"
+name = "Célérité"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_celerite_0")])
+
+[sub_resource type="Resource" id="C_nova_de_foudre"]
+script = ExtResource("2_case")
+skill = ExtResource("13_nova_de_foudre")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_nova_de_foudre_couronne"), SubResource("N_nova_de_foudre_deflagration"), SubResource("N_nova_de_foudre_celerite")])
+
+[sub_resource type="Resource" id="L_conducteur_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="L_conducteur_1"]
+script = ExtResource("4_ligne")
+stat = "max_mana"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="P_conducteur"]
+script = ExtResource("5_passif")
+id = "conductor"
+name = "Conducteur"
+required_manual_level = 2
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_conducteur_0"), SubResource("L_conducteur_1")])
+
+[sub_resource type="Resource" id="C_conducteur"]
+script = ExtResource("2_case")
+passive = SubResource("P_conducteur")
+position = Vector2i(0, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "lightning"
+name = "Maître de la foudre"
+cells = Array[ExtResource("2_case")]([SubResource("C_eclair_vif"), SubResource("C_chaine_d_eclairs"), SubResource("C_nuage_d_orage"), SubResource("C_nova_de_foudre"), SubResource("C_conducteur")])

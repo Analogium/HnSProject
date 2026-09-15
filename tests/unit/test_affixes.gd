@@ -7,10 +7,10 @@ extends GutTest
 
 ## Les affixes de fiche seulement : ceux qui visent un mot-clé ont leur propre
 ## vérification juste en dessous, contre les nombres d'un lancer.
-func test_chaque_affixe_vise_un_champ_reel_et_nomme() -> void:
+func test_each_affix_targets_a_real_named_field() -> void:
 	var st := CharacterStats.new()
 	for a in ItemAffixPool.ALL:
-		if not a.portee.is_empty():
+		if not a.scope.is_empty():
 			continue
 		assert_not_null(st.get(a.stat), "l'affixe %s vise un champ réel" % a.id)
 		assert_true(StatMod.LABELS.has(a.stat), "l'affixe %s a un libellé" % a.id)
@@ -20,43 +20,43 @@ func test_chaque_affixe_vise_un_champ_reel_et_nomme() -> void:
 ## serait portée par aucune compétence, et l'affixe ne ferait jamais rien. Un
 ## nombre hors des `LABELS` serait écarté par la résolution, avec le même
 ## résultat.
-func test_chaque_affixe_porte_vise_un_mot_cle_et_un_nombre_de_lancer() -> void:
-	var portes := 0
+func test_each_scoped_affix_targets_a_keyword_and_a_cast_number() -> void:
+	var worn_items := 0
 	for a in ItemAffixPool.ALL:
-		if a.portee.is_empty():
+		if a.scope.is_empty():
 			continue
-		portes += 1
-		assert_true(MotsCles.existe(a.portee), "« %s » vise « %s », hors de la liste" % [a.id, a.portee])
+		worn_items += 1
+		assert_true(Keywords.exists(a.scope), "« %s » vise « %s », hors de la liste" % [a.id, a.scope])
 		assert_true(
-			StatsDeCompetence.modifiable(a.stat),
+			SkillStats.modifiable(a.stat),
 			"« %s » vise « %s », qu'un modificateur ne peut pas toucher" % [a.id, a.stat]
 		)
-	assert_gt(portes, 0, "la réserve en contient")
+	assert_gt(worn_items, 0, "la réserve en contient")
 
 
 ## **Le mot-clé décoratif.** Chaque mot-clé qu'une page de manuel affiche promet
 ## au joueur que quelque chose l'améliore. S'il ne visait rien, le joueur
 ## chercherait un objet qui n'existe pas.
 ##
-## `sort` et `attaque` sont atteints par construction : `Competence.intervalle()`
+## `spell` et `attack` sont atteints par construction : `Skill.interval()`
 ## divise la recharge d'une incantation par la vitesse d'incantation, et celle
 ## d'une attaque suit la vitesse d'attaque — deux affixes de fiche qui existent.
-func test_chaque_mot_cle_est_vise_par_quelque_chose() -> void:
+func test_each_keyword_is_targeted_by_something() -> void:
 	var vises := {}
 	for a in ItemAffixPool.ALL:
-		vises[a.portee] = true
-	var par_la_cadence := Competence.MOT_CLE_DE_CADENCE.values()
-	for id in MotsCles.LIBELLES:
-		if par_la_cadence.has(id):
+		vises[a.scope] = true
+	var by_cadence := Skill.KEYWORD_OF_CADENCE.values()
+	for id in Keywords.LABELS:
+		if by_cadence.has(id):
 			continue
 		assert_true(vises.has(id), "« %s » s'affiche sur les compétences, et rien ne le vise" % id)
 
 
-func test_chaque_implicite_vise_un_champ_reel_et_nomme() -> void:
+func test_each_implicit_targets_a_real_named_field() -> void:
 	var st := CharacterStats.new()
-	for nom in ["baguette", "plastron", "bouclier"]:
-		var base: ItemBase = load("res://resources/items/%s.tres" % nom)
-		assert_not_null(st.get(base.implicit_stat), "l'implicite de %s existe" % nom)
+	for name in ["wand", "breastplate", "shield"]:
+		var base: ItemBase = load("res://resources/items/%s.tres" % name)
+		assert_not_null(st.get(base.implicit_stat), "l'implicite de %s existe" % name)
 		assert_true(StatMod.LABELS.has(base.implicit_stat), "et il a un libellé")
 
 
@@ -65,41 +65,41 @@ func test_chaque_implicite_vise_un_champ_reel_et_nomme() -> void:
 ##
 ## Ce qui vise un mot-clé ne se lit pas sur la fiche du personnage mais sur celle
 ## de la compétence, dans la page du manuel.
-func test_tout_ce_qui_se_modifie_se_lit_sur_la_fiche() -> void:
-	var visibles := {}
-	for groupe in StatsPanel.GROUPS:
-		for champ in groupe[1]:
-			visibles[champ] = true
+func test_everything_modifiable_reads_on_the_sheet() -> void:
+	var visible_ones := {}
+	for group in StatsPanel.GROUPS:
+		for field in group[1]:
+			visible_ones[field] = true
 	for a in ItemAffixPool.ALL:
-		if not a.portee.is_empty():
+		if not a.scope.is_empty():
 			continue
-		assert_true(visibles.has(a.stat), "l'affixe %s est visible sur la fiche" % a.id)
+		assert_true(visible_ones.has(a.stat), "l'affixe %s est visible sur la fiche" % a.id)
 
 
-func test_un_affixe_ne_sort_que_sur_le_bon_emplacement() -> void:
+func test_an_affix_only_rolls_on_the_right_slot() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
-	for nom in ["epee", "plastron"]:
-		var base: ItemBase = load("res://resources/items/%s.tres" % nom)
+	for name in ["sword", "breastplate"]:
+		var base: ItemBase = load("res://resources/items/%s.tres" % name)
 		for i in 400:
 			for m in ItemAffixPool.roll(rng, base, 60):
-				var trouve := false
+				var found := false
 				for a in ItemAffixPool.eligible(base, 60):
 					if a.stat == m.mod.stat:
-						trouve = true
+						found = true
 						break
-				assert_true(trouve, "%s ne reçoit que ses affixes (%s)" % [nom, m.mod.stat])
+				assert_true(found, "%s ne reçoit que ses affixes (%s)" % [name, m.mod.stat])
 
 
 ## Le nombre tiré est borné par ce que la réserve peut réellement fournir : une
 ## armure ne peut pas porter six affixes s'il n'en existe que quatre pour elle.
-func test_le_nombre_d_affixes_est_borne_par_la_reserve() -> void:
+func test_the_affix_count_is_bounded_by_the_pool() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 11
-	var plastron: ItemBase = load("res://resources/items/plastron.tres")
-	var dispo := ItemAffixPool.eligible(plastron, 60).size()
+	var breastplate: ItemBase = load("res://resources/items/breastplate.tres")
+	var available_count := ItemAffixPool.eligible(breastplate, 60).size()
 	for i in 2000:
-		assert_lte(ItemAffixPool.roll(rng, plastron, 60).size(), dispo)
+		assert_lte(ItemAffixPool.roll(rng, breastplate, 60).size(), available_count)
 
 
 ## Deux lignes strictement identiques sur un objet se liraient comme un bug.
@@ -107,39 +107,39 @@ func test_le_nombre_d_affixes_est_borne_par_la_reserve() -> void:
 ## L'unicité porte sur le couple (statistique, mode) et non sur la seule
 ## statistique : « +6 dégâts » et « +10 % dégâts » sont deux affixes distincts
 ## et cohabiter est voulu — c'est tout l'intérêt d'avoir les deux formes.
-func test_pas_de_ligne_en_double_sur_un_objet() -> void:
+func test_no_duplicate_line_on_an_item() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 3
-	var doublons := 0
-	for nom in ["epee", "plastron"]:
-		var base: ItemBase = load("res://resources/items/%s.tres" % nom)
+	var duplicates := 0
+	for name in ["sword", "breastplate"]:
+		var base: ItemBase = load("res://resources/items/%s.tres" % name)
 		for i in 1000:
-			var vus := {}
+			var seen_all := {}
 			for m in ItemAffixPool.roll(rng, base, 60):
-				var cle := "%s/%d" % [m.mod.stat, m.mod.mode]
-				if vus.has(cle):
-					doublons += 1
-				vus[cle] = true
-	assert_eq(doublons, 0, "aucune ligne répétée sur 2000 objets")
+				var key := "%s/%d" % [m.mod.stat, m.mod.mode]
+				if seen_all.has(key):
+					duplicates += 1
+				seen_all[key] = true
+	assert_eq(duplicates, 0, "aucune ligne répétée sur 2000 objets")
 
 
 ## Le même invariant, vu depuis la réserve : deux définitions qui partagent
 ## statistique **et** mode produiraient forcément des doublons un jour.
-func test_la_reserve_ne_contient_pas_deux_fois_la_meme_ligne() -> void:
-	var vus := {}
+func test_the_pool_does_not_contain_the_same_line_twice() -> void:
+	var seen_all := {}
 	for a in ItemAffixPool.ALL:
-		var cle := "%s/%s/%s/%s/%s" % [a.stat, a.portee, a.percent, a.tags, a.exclut]
-		assert_false(vus.has(cle), "%s fait doublon avec %s" % [a.id, vus.get(cle, "")])
-		vus[cle] = a.id
+		var key := "%s/%s/%s/%s/%s" % [a.stat, a.scope, a.percent, a.tags, a.excludes]
+		assert_false(seen_all.has(key), "%s fait doublon avec %s" % [a.id, seen_all.get(key, "")])
+		seen_all[key] = a.id
 
 
-func test_la_rarete_se_deduit_du_nombre_d_affixes() -> void:
-	var base: ItemBase = load("res://resources/items/epee.tres")
-	assert_eq(Item.new(base).rarity(), Item.Rarity.COMMUN, "sans affixe")
-	var un: Array[StatMod] = [StatMod.new("armor", StatMod.Mode.FLAT, 1.0)]
-	assert_eq(Item.new(base, un).rarity(), Item.Rarity.MAGIQUE)
-	var trois: Array[StatMod] = [un[0], un[0], un[0]]
-	assert_eq(Item.new(base, trois).rarity(), Item.Rarity.RARE)
+func test_rarity_is_deduced_from_the_affix_count() -> void:
+	var base: ItemBase = load("res://resources/items/sword.tres")
+	assert_eq(Item.new(base).rarity(), Item.Rarity.COMMON, "sans affixe")
+	var one: Array[StatMod] = [StatMod.new("armor", StatMod.Mode.FLAT, 1.0)]
+	assert_eq(Item.new(base, one).rarity(), Item.Rarity.MAGIC)
+	var three: Array[StatMod] = [one[0], one[0], one[0]]
+	assert_eq(Item.new(base, three).rarity(), Item.Rarity.RARE)
 
 
 # --------------------------------------------------------------------------
@@ -150,54 +150,54 @@ func test_la_rarete_se_deduit_du_nombre_d_affixes() -> void:
 ## une baguette sont toutes deux de famille `weapon` : tant que le filtre lisait
 ## la famille, il était **impossible** de donner les dégâts d'attaque à l'une et
 ## pas à l'autre, et une baguette sortait « acérée ».
-func test_une_baguette_ne_tire_jamais_d_affixe_de_melee() -> void:
+func test_a_wand_never_rolls_a_melee_affix() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242
-	var interdits := ["attack_speed", "attack_range"]
-	var baguette: ItemBase = load("res://resources/items/baguette.tres")
+	var forbidden := ["attack_speed", "attack_range"]
+	var wand: ItemBase = load("res://resources/items/wand.tres")
 	for i in 1000:
-		for m in ItemAffixPool.roll(rng, baguette, 60):
+		for m in ItemAffixPool.roll(rng, wand, 60):
 			assert_false(
-				m.mod.stat in interdits or m.mod.portee == MotsCles.ATTAQUE,
+				m.mod.stat in forbidden or m.mod.scope == Keywords.ATTACK,
 				"une baguette a tiré « %s », qui appartient au corps à corps" % m.mod.label()
 			)
 
 
 ## L'épée, elle, doit continuer de les recevoir : un filtre qui ne laisse plus
 ## rien passer passerait ce test-là sans rien dire.
-func test_une_epee_tire_encore_ses_affixes_de_melee() -> void:
+func test_a_sword_still_rolls_its_melee_affixes() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 909
-	var epee: ItemBase = load("res://resources/items/epee.tres")
-	var vus := {}
+	var sword: ItemBase = load("res://resources/items/sword.tres")
+	var seen_all := {}
 	for i in 600:
-		for m in ItemAffixPool.roll(rng, epee, 60):
-			vus[m.mod.stat] = true
-			vus[m.mod.portee] = true
-	for attendu in [MotsCles.ATTAQUE, "attack_speed", "attack_range"]:
-		assert_true(vus.has(attendu), "l'épée tire encore « %s »" % attendu)
+		for m in ItemAffixPool.roll(rng, sword, 60):
+			seen_all[m.mod.stat] = true
+			seen_all[m.mod.scope] = true
+	for expected in [Keywords.ATTACK, "attack_speed", "attack_range"]:
+		assert_true(seen_all.has(expected), "l'épée tire encore « %s »" % expected)
 
 
-## `ensorcele` ne sort que sur ce qu'on tient pour lancer : les armes et les main
+## `bewitched` ne sort que sur ce qu'on tient pour lancer : les armes et les main
 ## gauche de lanceur, jamais un bijou ni une épée. Vérifié base par base sur tout
 ## le catalogue : une étiquette `caster` posée un jour sur une capuche le ferait
 ## tomber ici, et ce serait une décision à prendre plutôt qu'un effet de bord.
-func test_les_degats_des_sorts_en_pourcentage_ne_sortent_que_sur_les_objets_de_lanceur() -> void:
-	var ensorcele := ItemAffixPool.by_id("ensorcele")
-	assert_eq(ensorcele.portee, MotsCles.SORT)
-	var de_lanceur := 0
+func test_percent_spell_damage_only_rolls_on_caster_items() -> void:
+	var bewitched := ItemAffixPool.by_id("bewitched")
+	assert_eq(bewitched.scope, Keywords.SPELL)
+	var caster_only := 0
 	for base: ItemBase in ItemCatalog.ALL:
-		var attendu: bool = base.family in ["weapon", "offhand"] and base.tags.has("caster")
-		assert_eq(ensorcele.fits(base), attendu, "« %s »" % base.id)
-		if attendu:
-			de_lanceur += 1
-	assert_gt(de_lanceur, 0, "encore faut-il qu'il existe des objets de lanceur")
+		var expected: bool = base.family in ["weapon", "offhand"] and base.tags.has("caster")
+		assert_eq(bewitched.fits(base), expected, "« %s »" % base.id)
+		if expected:
+			caster_only += 1
+	assert_gt(caster_only, 0, "encore faut-il qu'il existe des objets de lanceur")
 
 
 ## Une statistique qui ne se trouve qu'à un endroit fait de cet endroit une
 ## décision. La vitesse de déplacement est la seule du jalon 4 à être passée
 ## d'un emplacement à deux ; elle revient aux bottes seules.
-func test_la_vitesse_de_deplacement_ne_sort_que_sur_des_bottes() -> void:
+func test_movement_speed_only_rolls_on_boots() -> void:
 	for base in ItemCatalog.ALL:
 		for a in ItemAffixPool.eligible(base, 60):
 			if a.stat != "move_speed":
@@ -210,40 +210,40 @@ func test_la_vitesse_de_deplacement_ne_sort_que_sur_des_bottes() -> void:
 
 ## Le refus l'emporte sur l'autorisation, sinon « partout sauf les armes » se
 ## lirait « partout, y compris les armes qui portent une étiquette autorisée ».
-func test_une_exclusion_l_emporte_sur_une_etiquette_autorisee() -> void:
-	var epee: ItemBase = load("res://resources/items/epee.tres")
+func test_an_exclusion_wins_over_an_allowed_tag() -> void:
+	var sword: ItemBase = load("res://resources/items/sword.tres")
 	var a := ItemAffix.new()
 	a.tags = PackedStringArray(["melee"])
-	assert_true(a.fits(epee), "l'étiquette autorise")
-	a.exclut = PackedStringArray(["weapon"])
-	assert_false(a.fits(epee), "et l'exclusion referme")
+	assert_true(a.fits(sword), "l'étiquette autorise")
+	a.excludes = PackedStringArray(["weapon"])
+	assert_false(a.fits(sword), "et l'exclusion referme")
 
 
 ## C'est cette forme-là que prendront les résistances : rien à autoriser, une
 ## seule chose à refuser, et toute base ajoutée plus tard en hérite sans qu'on y
 ## pense.
-func test_un_affixe_sans_etiquette_sort_partout_sauf_ou_il_est_exclu() -> void:
+func test_an_untagged_affix_rolls_everywhere_except_where_excluded() -> void:
 	var a := ItemAffix.new()
-	a.exclut = PackedStringArray(["weapon"])
-	var armes := 0
-	var recus := 0
+	a.excludes = PackedStringArray(["weapon"])
+	var weapons := 0
+	var received_all := 0
 	for base in ItemCatalog.ALL:
 		if a.fits(base):
-			recus += 1
+			received_all += 1
 		else:
-			armes += 1
+			weapons += 1
 			assert_true(base.tags.has("weapon"), "seule une arme est refusée")
-	assert_gt(armes, 0, "il y a bien des armes dans le catalogue")
-	assert_eq(recus, ItemCatalog.ALL.size() - armes, "et tout le reste reçoit")
+	assert_gt(weapons, 0, "il y a bien des armes dans le catalogue")
+	assert_eq(received_all, ItemCatalog.ALL.size() - weapons, "et tout le reste reçoit")
 
 
 ## Une base sans étiquette ne recevrait que les affixes universels, et le
 ## constater demanderait de ramasser cent objets.
-func test_une_base_sans_etiquette_ne_recoit_pas_les_affixes_cibles() -> void:
-	var nue := ItemBase.new()
+func test_an_untagged_base_does_not_receive_targeted_affixes() -> void:
+	var bare := ItemBase.new()
 	var a := ItemAffix.new()
 	a.tags = PackedStringArray(["melee"])
-	assert_false(a.fits(nue))
+	assert_false(a.fits(bare))
 	assert_false(a.fits(null), "et pas de base du tout n'est pas « partout »")
 
 
@@ -259,27 +259,27 @@ func test_une_base_sans_etiquette_ne_recoit_pas_les_affixes_cibles() -> void:
 ## La comparaison porte sur la **valeur absolue** : un affixe dont le bon sens
 ## est négatif — un temps de recharge qui baisse — s'améliorera en descendant, et
 ## le test doit le suivre sans qu'on ait à le réécrire.
-func test_chaque_echelle_est_monotone() -> void:
+func test_each_scale_is_monotonic() -> void:
 	for a in ItemAffixPool.ALL:
 		assert_gt(a.tiers.size(), 1, "« %s » n\'a pas d\'échelle" % a.id)
 		for i in a.tiers.size():
 			var t: ItemAffixTier = a.tiers[i]
 			assert_lte(t.min_value, t.max_value, "%s T%d : fourchette à l\'envers" % [a.id, i + 1])
-			assert_gt(t.poids, 0, "%s T%d : un palier de poids nul ne sort jamais" % [a.id, i + 1])
+			assert_gt(t.weight, 0, "%s T%d : un palier de poids nul ne sort jamais" % [a.id, i + 1])
 			if i + 1 >= a.tiers.size():
 				continue
-			var pire: ItemAffixTier = a.tiers[i + 1]
+			var worst: ItemAffixTier = a.tiers[i + 1]
 			assert_gt(
-				t.niveau_requis, pire.niveau_requis,
+				t.required_level, worst.required_level,
 				"%s : T%d doit demander plus que T%d" % [a.id, i + 1, i + 2]
 			)
 			assert_gt(
-				absf(t.min_value), absf(pire.min_value),
+				absf(t.min_value), absf(worst.min_value),
 				"%s : T%d n\'est pas meilleur que T%d" % [a.id, i + 1, i + 2]
 			)
-			assert_gt(absf(t.max_value), absf(pire.max_value))
+			assert_gt(absf(t.max_value), absf(worst.max_value))
 			assert_eq(
-				signf(t.min_value), signf(pire.min_value),
+				signf(t.min_value), signf(worst.min_value),
 				"%s : deux paliers de signes contraires" % a.id
 			)
 
@@ -287,15 +287,15 @@ func test_chaque_echelle_est_monotone() -> void:
 ## Le palier le plus bas exige toujours 1. Sans cette règle, l\'affixe
 ## n\'existerait pas dans les premières zones, et sa première sortie
 ## ressemblerait à un ajout de contenu plutôt qu\'à une progression.
-func test_chaque_affixe_existe_des_le_niveau_1() -> void:
+func test_each_affix_exists_from_level_1() -> void:
 	for a in ItemAffixPool.ALL:
-		assert_eq(a.niveau_minimum(), 1, "« %s » ne sort pas dans les premières zones" % a.id)
+		assert_eq(a.minimum_level(), 1, "« %s » ne sort pas dans les premières zones" % a.id)
 		assert_eq(
-			a.ouverts(1).size(), 1,
+			a.unlocked_tiers(1).size(), 1,
 			"« %s » : un seul palier ouvert au niveau 1, le pire" % a.id
 		)
 		assert_eq(
-			a.ouverts(100).size(), mini(a.tiers.size(), ItemAffix.PALIERS_OUVERTS),
+			a.unlocked_tiers(100).size(), mini(a.tiers.size(), ItemAffix.OPEN_TIERS),
 			"« %s » : en fin de course, la fenêtre est pleine et pas davantage" % a.id
 		)
 
@@ -306,43 +306,43 @@ func test_chaque_affixe_existe_des_le_niveau_1() -> void:
 ## C\'est la moitié qui manquait. Le plafond existait depuis le jalon 5 ; sans
 ## plancher, un objet de niveau 60 pouvait sortir le palier des premières zones,
 ## et le meilleur objet du jeu valait parfois moins que le premier ramassé.
-func test_la_fenetre_de_paliers_glisse_avec_le_niveau() -> void:
-	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
-	var precedent := physique.ouverts(1)
+func test_the_tier_window_slides_with_the_level() -> void:
+	var physical: ItemAffix = ItemAffixPool.by_id("physical_to_attacks")
+	var previous := physical.unlocked_tiers(1)
 
-	for niveau in range(2, 61):
-		var courant := physique.ouverts(niveau)
+	for level in range(2, 61):
+		var current_value := physical.unlocked_tiers(level)
 		assert_lte(
-			courant.size(), ItemAffix.PALIERS_OUVERTS,
-			"niveau %d : jamais plus que la fenêtre" % niveau
+			current_value.size(), ItemAffix.OPEN_TIERS,
+			"niveau %d : jamais plus que la fenêtre" % level
 		)
-		if courant.is_empty() or precedent.is_empty():
+		if current_value.is_empty() or previous.is_empty():
 			continue
 		# Les indices vont du meilleur (0) au pire : la fenêtre ne peut que
 		# glisser vers le meilleur, jamais revenir en arrière.
 		assert_lte(
-			int(courant[0]), int(precedent[0]),
-			"niveau %d : le meilleur palier ouvert ne redescend pas" % niveau
+			int(current_value[0]), int(previous[0]),
+			"niveau %d : le meilleur palier ouvert ne redescend pas" % level
 		)
 		assert_lte(
-			int(courant[courant.size() - 1]), int(precedent[precedent.size() - 1]),
-			"niveau %d : le pire palier ouvert ne redescend pas non plus" % niveau
+			int(current_value[current_value.size() - 1]), int(previous[previous.size() - 1]),
+			"niveau %d : le pire palier ouvert ne redescend pas non plus" % level
 		)
-		precedent = courant
+		previous = current_value
 
 
 ## Vu depuis le tirage plutôt que depuis la table : le même affixe sur deux
 ## objets de niveaux éloignés ne peut pas rendre la même chose.
-func test_un_objet_de_haut_niveau_ne_tire_plus_les_paliers_de_debut() -> void:
+func test_a_high_level_item_no_longer_rolls_early_tiers() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242
-	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
-	var dernier := physique.tiers.size()
+	var physical: ItemAffix = ItemAffixPool.by_id("physical_to_attacks")
+	var last := physical.tiers.size()
 
 	for i in 500:
-		assert_eq(physique.roll(rng, 1).tier, dernier, "au niveau 1, le pire palier et lui seul")
+		assert_eq(physical.roll(rng, 1).tier, last, "au niveau 1, le pire palier et lui seul")
 		assert_lte(
-			physique.roll(rng, 60).tier, ItemAffix.PALIERS_OUVERTS,
+			physical.roll(rng, 60).tier, ItemAffix.OPEN_TIERS,
 			"au niveau 60, rien sous la fenêtre"
 		)
 
@@ -350,20 +350,20 @@ func test_un_objet_de_haut_niveau_ne_tire_plus_les_paliers_de_debut() -> void:
 ## Ce qu\'une plage de niveaux atteint, c\'est **exactement** l\'union des fenêtres
 ## de cette plage. Un palier de trop décrirait un objet qui ne peut pas exister,
 ## un de moins cacherait une sortie possible.
-func test_les_paliers_atteignables_sur_une_plage_sont_l_union_des_fenetres() -> void:
-	for brut in ItemAffixPool.ALL:
-		var a: ItemAffix = brut
-		for plage in [Vector2i(1, 22), Vector2i(34, 60)]:
-			var union := a.ouverts_entre(plage.x, plage.y)
+func test_tiers_reachable_over_a_span_are_the_union_of_windows() -> void:
+	for raw in ItemAffixPool.ALL:
+		var a: ItemAffix = raw
+		for span in [Vector2i(1, 22), Vector2i(34, 60)]:
+			var union := a.open_between(span.x, span.y)
 			for index in a.tiers.size():
-				var atteignable := false
-				for niveau in range(plage.x, plage.y + 1):
-					if a.ouverts(niveau).has(index):
-						atteignable = true
+				var reachable := false
+				for level in range(span.x, span.y + 1):
+					if a.unlocked_tiers(level).has(index):
+						reachable = true
 						break
 				assert_eq(
-					union.has(index), atteignable,
-					"« %s » T%d entre les niveaux %d et %d" % [a.id, index + 1, plage.x, plage.y]
+					union.has(index), reachable,
+					"« %s » T%d entre les niveaux %d et %d" % [a.id, index + 1, span.x, span.y]
 				)
 
 
@@ -371,23 +371,23 @@ func test_les_paliers_atteignables_sur_une_plage_sont_l_union_des_fenetres() -> 
 ## l\'épée large cesse de tomber en zone 40, et le T1 du « physique aux attaques » demande le
 ## niveau 52. Aucune épée large ne peut donc porter ce palier — l\'afficher
 ## décrivait un objet impossible.
-func test_une_base_n_atteint_pas_un_palier_hors_de_sa_fenetre() -> void:
-	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
-	var large := ItemCatalog.by_id("epee_large")
-	var fenetre := ItemCatalog.fenetre_de_chute(large)
+func test_a_base_does_not_reach_a_tier_outside_its_window() -> void:
+	var physical: ItemAffix = ItemAffixPool.by_id("physical_to_attacks")
+	var large := ItemCatalog.by_id("broadsword")
+	var window := ItemCatalog.drop_window(large)
 
-	assert_eq(physique.tiers[0].niveau_requis, 52, "le T1 du physique aux attaques demande le niveau 52")
-	assert_eq(fenetre.y, 40, "et l\'épée large cesse de tomber en zone 40")
+	assert_eq(physical.tiers[0].required_level, 52, "le T1 du physique aux attaques demande le niveau 52")
+	assert_eq(window.y, 40, "et l\'épée large cesse de tomber en zone 40")
 	assert_false(
-		physique.ouverts_entre(fenetre.x, fenetre.y).has(0),
+		physical.open_between(window.x, window.y).has(0),
 		"donc aucune épée large ne porte ce palier"
 	)
 
 	# La lame de guerre, elle, y arrive : sans ça le filtre serait simplement
 	# en train de tout couper.
-	var guerre := ItemCatalog.by_id("lame_de_guerre")
+	var war := ItemCatalog.by_id("war_blade")
 	assert_true(
-		physique.ouverts_entre(guerre.niveau_requis, Game.NIVEAU_MAX).has(0),
+		physical.open_between(war.required_level, Game.MAX_LEVEL).has(0),
 		"la lame de guerre, elle, atteint le T1"
 	)
 
@@ -395,69 +395,69 @@ func test_une_base_n_atteint_pas_un_palier_hors_de_sa_fenetre() -> void:
 ## La fenêtre d\'un palier doit dire exactement ce que le tirage accepte : c\'est
 ## elle que la fiche de la forge affiche, et une fiche qui annonce un palier que
 ## le tirage refuse est pire qu\'une fiche absente.
-func test_la_fenetre_d_un_palier_dit_ce_que_le_tirage_accepte() -> void:
-	for brut in ItemAffixPool.ALL:
-		var a: ItemAffix = brut
+func test_a_tier_window_says_what_the_roll_accepts() -> void:
+	for raw in ItemAffixPool.ALL:
+		var a: ItemAffix = raw
 		for index in a.tiers.size():
-			var fenetre := a.fenetre_du_palier(index, 1, Game.NIVEAU_MAX)
+			var window := a.tier_window(index, 1, Game.MAX_LEVEL)
 			assert_eq(
-				fenetre.x, a.tiers[index].niveau_requis,
+				window.x, a.tiers[index].required_level,
 				"« %s » T%d ouvre à son niveau requis" % [a.id, index + 1]
 			)
 			assert_true(
-				a.ouverts(fenetre.x).has(index),
-				"« %s » T%d sort au niveau %d" % [a.id, index + 1, fenetre.x]
+				a.unlocked_tiers(window.x).has(index),
+				"« %s » T%d sort au niveau %d" % [a.id, index + 1, window.x]
 			)
 			assert_true(
-				a.ouverts(fenetre.y).has(index),
-				"« %s » T%d sort encore au niveau %d" % [a.id, index + 1, fenetre.y]
+				a.unlocked_tiers(window.y).has(index),
+				"« %s » T%d sort encore au niveau %d" % [a.id, index + 1, window.y]
 			)
-			if fenetre.y >= Game.NIVEAU_MAX:
+			if window.y >= Game.MAX_LEVEL:
 				continue
 			assert_false(
-				a.ouverts(fenetre.y + 1).has(index),
-				"« %s » T%d ne sort plus au niveau %d" % [a.id, index + 1, fenetre.y + 1]
+				a.unlocked_tiers(window.y + 1).has(index),
+				"« %s » T%d ne sort plus au niveau %d" % [a.id, index + 1, window.y + 1]
 			)
 
 
 ## Bornée à une plage, la fenêtre d'un palier reste dans cette plage : c'est ce
 ## qui permet à la fiche d'annoncer « zones 19 à 22 » sur une base qui s'arrête
 ## en 22, au lieu de « 19 à 51 » qu'il faut intersecter de tête.
-func test_la_fenetre_d_un_palier_reste_dans_la_plage_demandee() -> void:
-	var physique: ItemAffix = ItemAffixPool.by_id("physique_aux_attaques")
-	var epee := ItemCatalog.by_id("epee")
-	var zones := ItemCatalog.fenetre_de_chute(epee)
+func test_a_tier_window_stays_in_the_requested_span() -> void:
+	var physical: ItemAffix = ItemAffixPool.by_id("physical_to_attacks")
+	var sword := ItemCatalog.by_id("sword")
+	var zones := ItemCatalog.drop_window(sword)
 	assert_eq(zones, Vector2i(1, 22), "l\'épée tombe des zones 1 à 22")
 
-	for brut in physique.ouverts_entre(zones.x, zones.y):
-		var index := int(brut)
-		var fenetre := physique.fenetre_du_palier(index, zones.x, zones.y)
-		assert_gte(fenetre.x, zones.x, "T%d ne commence pas avant la base" % [index + 1])
-		assert_lte(fenetre.y, zones.y, "T%d ne finit pas après elle" % [index + 1])
-		assert_lte(fenetre.x, fenetre.y, "T%d a une fenêtre non vide" % [index + 1])
+	for raw in physical.open_between(zones.x, zones.y):
+		var index := int(raw)
+		var window := physical.tier_window(index, zones.x, zones.y)
+		assert_gte(window.x, zones.x, "T%d ne commence pas avant la base" % [index + 1])
+		assert_lte(window.y, zones.y, "T%d ne finit pas après elle" % [index + 1])
+		assert_lte(window.x, window.y, "T%d a une fenêtre non vide" % [index + 1])
 
 	# Et un palier hors de portée rend une fenêtre vide plutôt qu'une fenêtre
 	# fausse : le T1 demande le niveau 52, l'épée s'arrête à 22.
-	assert_eq(physique.fenetre_du_palier(0, zones.x, zones.y), Vector2i(0, 0))
+	assert_eq(physical.tier_window(0, zones.x, zones.y), Vector2i(0, 0))
 
 
 ## Le cœur du jalon : le niveau d\'objet ne corrige pas des probabilités par une
 ## formule, il ouvre des lignes dans une table.
-func test_un_objet_de_niveau_1_ne_tire_jamais_un_palier_verrouille() -> void:
+func test_a_level_1_item_never_rolls_a_locked_tier() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 606
 	var index := {}
 	for a in ItemAffixPool.ALL:
 		index[a.id] = a
-	for nom in ["epee", "plastron", "bottes", "anneau"]:
-		var base: ItemBase = load("res://resources/items/%s.tres" % nom)
+	for name in ["sword", "breastplate", "boots", "ring"]:
+		var base: ItemBase = load("res://resources/items/%s.tres" % name)
 		for i in 300:
-			for tire in ItemAffixPool.roll(rng, base, 1):
-				var a: ItemAffix = index[tire.affix_id]
-				var palier: ItemAffixTier = a.tiers[tire.tier - 1]
+			for rolled in ItemAffixPool.roll(rng, base, 1):
+				var a: ItemAffix = index[rolled.affix_id]
+				var tier: ItemAffixTier = a.tiers[rolled.tier - 1]
 				assert_lte(
-					palier.niveau_requis, 1,
-					"« %s » a sorti son T%d sur un objet de niveau 1" % [a.id, tire.tier]
+					tier.required_level, 1,
+					"« %s » a sorti son T%d sur un objet de niveau 1" % [a.id, rolled.tier]
 				)
 
 
@@ -470,21 +470,21 @@ func test_un_objet_de_niveau_1_ne_tire_jamais_un_palier_verrouille() -> void:
 ## Ce que ce test dit maintenant et ne disait pas avant : les paliers **sous** la
 ## fenêtre ne sortent plus. Un objet de niveau 60 ne peut plus recevoir le T8,
 ## celui des premières zones.
-func test_a_haut_niveau_la_fenetre_entiere_sort_et_rien_dessous() -> void:
+func test_at_high_level_the_whole_window_drops_and_nothing_below() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 8080
-	var vigoureux: ItemAffix = load("res://resources/item_affixes/vigoureux.tres")
-	var vus := {}
+	var vigorous: ItemAffix = load("res://resources/item_affixes/vigorous.tres")
+	var seen_all := {}
 	for i in 4000:
-		vus[vigoureux.roll(rng, 60).tier] = true
+		seen_all[vigorous.roll(rng, 60).tier] = true
 
 	assert_eq(
-		vus.size(), ItemAffix.PALIERS_OUVERTS,
-		"les %d paliers de la fenêtre sortent, %d vus" % [ItemAffix.PALIERS_OUVERTS, vus.size()]
+		seen_all.size(), ItemAffix.OPEN_TIERS,
+		"les %d paliers de la fenêtre sortent, %d vus" % [ItemAffix.OPEN_TIERS, seen_all.size()]
 	)
-	for tier in vus:
+	for tier in seen_all:
 		assert_lte(
-			int(tier), ItemAffix.PALIERS_OUVERTS,
+			int(tier), ItemAffix.OPEN_TIERS,
 			"le T%d est sous la fenêtre d\'un objet de niveau 60" % tier
 		)
 
@@ -492,45 +492,45 @@ func test_a_haut_niveau_la_fenetre_entiere_sort_et_rien_dessous() -> void:
 ## La promesse du jalon, mesurée plutôt que déclarée : descendre plus bas
 ## rapporte mieux. Ce n\'est pas une garantie objet par objet — les mauvais
 ## paliers sortent encore — mais la moyenne doit bouger, et franchement.
-func test_un_objet_de_haut_niveau_tire_mieux_en_moyenne() -> void:
+func test_a_high_level_item_rolls_better_on_average() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4711
-	var vigoureux: ItemAffix = load("res://resources/item_affixes/vigoureux.tres")
-	var bas := 0.0
-	var haut := 0.0
+	var vigorous: ItemAffix = load("res://resources/item_affixes/vigorous.tres")
+	var low := 0.0
+	var top := 0.0
 	for i in 2000:
-		bas += vigoureux.roll(rng, 1).mod.value
-		haut += vigoureux.roll(rng, 60).mod.value
-	assert_gt(haut, bas * 3.0, "moyennes : %.1f au niveau 1, %.1f au niveau 60" % [bas / 2000.0, haut / 2000.0])
+		low += vigorous.roll(rng, 1).mod.value
+		top += vigorous.roll(rng, 60).mod.value
+	assert_gt(top, low * 3.0, "moyennes : %.1f au niveau 1, %.1f au niveau 60" % [low / 2000.0, top / 2000.0])
 
 
 ## Sans provenance, l\'infobulle des tiers ne peut rien montrer — et elle ne doit
 ## surtout pas la déduire de la valeur : deux paliers voisins se chevauchent.
-func test_un_affixe_tire_retient_sa_provenance() -> void:
+func test_a_rolled_affix_keeps_its_origin() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 99
-	var epee: ItemBase = load("res://resources/items/epee.tres")
-	var vus := 0
+	var sword: ItemBase = load("res://resources/items/sword.tres")
+	var seen_all := 0
 	for i in 200:
-		for tire in ItemAffixPool.roll(rng, epee, 45):
-			vus += 1
-			assert_true(tire.connu(), "un affixe fraîchement tiré sait d\'où il vient")
-			assert_false(tire.affix_id.is_empty())
-			assert_between(tire.tier, 1, 9, "un numéro de palier plausible")
-	assert_gt(vus, 0, "encore faut-il que quelque chose ait été tiré")
+		for rolled in ItemAffixPool.roll(rng, sword, 45):
+			seen_all += 1
+			assert_true(rolled.known(), "un affixe fraîchement tiré sait d\'où il vient")
+			assert_false(rolled.affix_id.is_empty())
+			assert_between(rolled.tier, 1, 9, "un numéro de palier plausible")
+	assert_gt(seen_all, 0, "encore faut-il que quelque chose ait été tiré")
 
 
 ## Un affixe dont même le dernier palier demande plus que le niveau de l\'objet
 ## n\'est pas dans la réserve. Rendre null plutôt qu\'un palier au rabais : c\'est
 ## l\'appelant qui décide, et `eligible` l\'a déjà écarté.
-func test_un_affixe_sans_palier_ouvert_ne_tire_rien() -> void:
+func test_an_affix_without_open_tier_rolls_nothing() -> void:
 	var a := ItemAffix.new()
-	a.id = "tardif"
+	a.id = "late"
 	var t := ItemAffixTier.new()
-	t.niveau_requis = 50
+	t.required_level = 50
 	a.tiers = [t]
-	assert_eq(a.niveau_minimum(), 50)
-	assert_true(a.ouverts(10).is_empty())
+	assert_eq(a.minimum_level(), 50)
+	assert_true(a.unlocked_tiers(10).is_empty())
 	assert_null(a.roll(RandomNumberGenerator.new(), 10))
 
 
@@ -538,15 +538,15 @@ func test_un_affixe_sans_palier_ouvert_ne_tire_rien() -> void:
 ## paliers le déduisait de la borne haute : les dégâts critiques, dont l\'échelle
 ## passe sous 1 en bas et au-dessus en haut, se seraient affichés « +0,35 » à un
 ## palier et « +1 » au suivant.
-func test_l_arrondi_est_le_meme_a_tous_les_paliers() -> void:
+func test_rounding_is_the_same_at_every_tier() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1234
-	var sanglant: ItemAffix = load("res://resources/item_affixes/sanglant.tres")
-	assert_almost_eq(sanglant.arrondi, 0.01, 0.0001, "une fraction, à tous ses paliers")
+	var bloody: ItemAffix = load("res://resources/item_affixes/bloody.tres")
+	assert_almost_eq(bloody.rounded, 0.01, 0.0001, "une fraction, à tous ses paliers")
 	var fractions := 0
 	for i in 500:
-		var tire := sanglant.roll(rng, 60)
-		var v: float = tire.mod.value
+		var rolled := bloody.roll(rng, 60)
+		var v: float = rolled.mod.value
 		assert_almost_eq(v, snappedf(v, 0.01), 0.0001, "arrondi au centième")
 		if not is_equal_approx(v, roundf(v)):
 			fractions += 1
@@ -562,45 +562,45 @@ func test_l_arrondi_est_le_meme_a_tous_les_paliers() -> void:
 ## va du meilleur au pire. Écrire une échelle à l\'envers dans un `.tres` ferait
 ## donc du T1 le palier des premières zones, et personne ne s\'en apercevrait
 ## avant de survoler un objet.
-func test_le_tier_1_est_le_meilleur() -> void:
+func test_tier_1_is_the_best() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2026
 	for a in ItemAffixPool.ALL:
-		var meilleur: ItemAffixTier = a.tiers[0]
-		var pire: ItemAffixTier = a.tiers[a.tiers.size() - 1]
-		var dernier: int = a.tiers.size()
+		var best: ItemAffixTier = a.tiers[0]
+		var worst: ItemAffixTier = a.tiers[a.tiers.size() - 1]
+		var last: int = a.tiers.size()
 
 		assert_gt(
-			absf(meilleur.max_value), absf(pire.max_value),
-			"« %s » : le T1 doit taper plus fort que le T%d" % [a.id, dernier]
+			absf(best.max_value), absf(worst.max_value),
+			"« %s » : le T1 doit taper plus fort que le T%d" % [a.id, last]
 		)
 		assert_gt(
-			meilleur.niveau_requis, pire.niveau_requis,
+			best.required_level, worst.required_level,
 			"« %s » : le T1 doit être le plus exigeant" % a.id
 		)
-		assert_eq(pire.niveau_requis, 1, "« %s » : le T%d est celui des premières zones" % [a.id, dernier])
+		assert_eq(worst.required_level, 1, "« %s » : le T%d est celui des premières zones" % [a.id, last])
 
 		# La même chose vue depuis le tirage, qui est ce que le joueur reçoit :
 		# au niveau 1 il ne sort que le dernier numéro, et le T1 est le dernier
 		# palier à s\'ouvrir.
-		assert_eq(a.roll(rng, 1).tier, dernier, "« %s » : au niveau 1, le pire palier" % a.id)
+		assert_eq(a.roll(rng, 1).tier, last, "« %s » : au niveau 1, le pire palier" % a.id)
 		assert_eq(
-			a.ouverts(meilleur.niveau_requis - 1).size(),
-			mini(dernier - 1, ItemAffix.PALIERS_OUVERTS),
+			a.unlocked_tiers(best.required_level - 1).size(),
+			mini(last - 1, ItemAffix.OPEN_TIERS),
 			"« %s » : le T1 est le dernier à s\'ouvrir" % a.id
 		)
 		assert_false(
-			a.ouverts(meilleur.niveau_requis - 1).has(0),
+			a.unlocked_tiers(best.required_level - 1).has(0),
 			"« %s » : juste en dessous, le T1 n\'est pas encore là" % a.id
 		)
-		assert_between(a.roll(rng, 999).tier, 1, dernier, "« %s » : un numéro de palier reste dans l'échelle" % a.id)
+		assert_between(a.roll(rng, 999).tier, 1, last, "« %s » : un numéro de palier reste dans l'échelle" % a.id)
 
 
 # --------------------------------------------------------------------------
 # La réserve élargie (jalon 5, étape 4)
 # --------------------------------------------------------------------------
 
-## L'inverse de `test_tout_ce_qui_se_modifie_se_lit_sur_la_fiche` : une
+## L'inverse de `test_everything_modifiable_reads_on_the_sheet` : une
 ## statistique que la fiche annonce et qu'aucun affixe ne touche est une ligne
 ## qu'on regarde monter de niveau en niveau sans jamais pouvoir agir dessus.
 ##
@@ -612,65 +612,65 @@ func test_le_tier_1_est_le_meilleur() -> void:
 ##
 ## Une ligne de compétence de départ est atteinte par les dégâts qui visent l'un
 ## de ses mots-clés : « dégâts de froid aux attaques » monte l'attaque.
-func test_chaque_statistique_de_la_fiche_est_atteignable_par_un_affixe() -> void:
-	var touchees := {}
+func test_each_sheet_stat_is_reachable_by_an_affix() -> void:
+	var hit_ones := {}
 	for a in ItemAffixPool.ALL:
-		touchees[a.stat] = true
-	for groupe in StatsPanel.GROUPS:
-		for champ in groupe[1]:
-			var atteinte := touchees.has(champ)
-			if StatsPanel._est_une_competence(champ):
-				atteinte = _des_degats_ajoutes_atteignent(CompetenceCatalog.by_id(champ))
+		hit_ones[a.stat] = true
+	for group in StatsPanel.GROUPS:
+		for field in group[1]:
+			var reached_value := hit_ones.has(field)
+			if StatsPanel._is_a_skill(field):
+				reached_value = _added_damage_reaches(SkillCatalog.by_id(field))
 			assert_true(
-				atteinte,
-				"« %s » s\'affiche sur la fiche mais aucun affixe ne l\'atteint" % champ
+				reached_value,
+				"« %s » s\'affiche sur la fiche mais aucun affixe ne l\'atteint" % field
 			)
 
 
-func _des_degats_ajoutes_atteignent(competence: Competence) -> bool:
+func _added_damage_reaches(skill: Skill) -> bool:
 	for a in ItemAffixPool.ALL:
-		if competence.porte(a.portee) and StatsDeCompetence.nature_ajoutee(a.stat) >= 0:
+		if skill.worn(a.scope) and SkillStats.added_nature(a.stat) >= 0:
 			return true
 	return false
 
 
 ## La règle demandée : les résistances partout **sauf** sur les armes. Écrite
 ## avec une exclusion et aucune autorisation, donc une base ajoutée plus tard en
-## hérite sans qu\'on y pense — c\'est tout l\'intérêt d\'`exclut`.
-func test_les_resistances_ne_sortent_jamais_sur_une_arme() -> void:
-	var armes := 0
-	var autres := 0
+## hérite sans qu\'on y pense — c\'est tout l\'intérêt d\'`excludes`.
+func test_resistances_never_roll_on_a_weapon() -> void:
+	var weapons := 0
+	var others := 0
 	for base in ItemCatalog.ALL:
 		# « Partout sauf sur les armes » parle de ce qu'on **porte**. Un manuel se
 		# lit : il ne reçoit aucun affixe, pas même universel, et l'attendre à
 		# cinq résistances reviendrait à demander des résistances à un livre.
-		if not EquipmentSlots.famille_equipable(base.family):
+		if not EquipmentSlots.equippable_family(base.family):
 			continue
 		var resistances := 0
 		for a in ItemAffixPool.eligible(base, 60):
 			if a.stat in DamageType.RESIST_FIELDS:
 				resistances += 1
 		if base.tags.has("weapon"):
-			armes += 1
+			weapons += 1
 			assert_eq(resistances, 0, "« %s » est une arme" % base.display_name)
 		else:
-			autres += 1
+			others += 1
 			assert_eq(resistances, 5, "« %s » doit pouvoir tirer les cinq" % base.display_name)
-	assert_gt(armes, 0, "il y a bien des armes dans le catalogue")
-	assert_gt(autres, 0, "et des objets qui n\'en sont pas")
+	assert_gt(weapons, 0, "il y a bien des armes dans le catalogue")
+	assert_gt(others, 0, "et des objets qui n\'en sont pas")
 
 
 ## Les défenses vont sur ce qui protège. Une épée qui donne des points de vie ou
 ## de l\'armure ferait de l\'arme un emplacement défensif de plus, et il n\'y
 ## aurait plus de raison de choisir entre frapper et tenir.
-func test_les_defenses_ne_sortent_jamais_sur_une_arme() -> void:
-	var defensifs := ["max_health", "armor", "evasion"]
+func test_defenses_never_roll_on_a_weapon() -> void:
+	var defensive := ["max_health", "armor", "evasion"]
 	for base in ItemCatalog.ALL:
 		if not base.tags.has("weapon"):
 			continue
 		for a in ItemAffixPool.eligible(base, 60):
 			assert_false(
-				a.stat in defensifs,
+				a.stat in defensive,
 				"« %s » peut tirer « %s » (%s)" % [base.display_name, a.stat, a.id]
 			)
 
@@ -678,34 +678,34 @@ func test_les_defenses_ne_sortent_jamais_sur_une_arme() -> void:
 ## Ce que l\'étape 1 avait cassé et que celle-ci répare : la baguette avait perdu
 ## la mêlée sans rien recevoir en échange, et ses deux seuls affixes possibles
 ## étaient des critiques, qui ne s\'appliquent pas aux tirs.
-func test_une_baguette_a_de_quoi_etre_offensive() -> void:
-	var baguette: ItemBase = load("res://resources/items/baguette.tres")
+func test_a_wand_has_what_it_takes_to_be_offensive() -> void:
+	var wand: ItemBase = load("res://resources/items/wand.tres")
 	var stats := {}
-	var portees := {}
-	for a in ItemAffixPool.eligible(baguette, 1):
+	var scopes := {}
+	for a in ItemAffixPool.eligible(wand, 1):
 		stats[a.stat] = true
-		portees[a.portee] = true
-	assert_true(portees.has(MotsCles.SORT), "des dégâts ajoutés aux sorts")
+		scopes[a.scope] = true
+	assert_true(scopes.has(Keywords.SPELL), "des dégâts ajoutés aux sorts")
 	assert_true(stats.has("cast_speed"), "et une cadence")
-	assert_false(portees.has(MotsCles.ATTAQUE), "toujours pas de mêlée")
+	assert_false(scopes.has(Keywords.ATTACK), "toujours pas de mêlée")
 	assert_false(stats.has("attack_speed"))
 
 
 ## Les attributs sont les seuls affixes volontairement universels : ils ne
 ## servent à rien par eux-mêmes et n\'existent que par ce qu\'ils dérivent, donc
 ## les réserver à un emplacement n\'apprendrait rien à personne.
-func test_les_attributs_sortent_partout() -> void:
+func test_attributes_roll_everywhere() -> void:
 	for base in ItemCatalog.ALL:
 		# « Partout » veut dire sur tout ce qui se porte : un manuel ne reçoit rien.
-		if not EquipmentSlots.famille_equipable(base.family):
+		if not EquipmentSlots.equippable_family(base.family):
 			continue
-		var vus := {}
+		var seen_all := {}
 		for a in ItemAffixPool.eligible(base, 1):
 			if a.stat in CharacterStats.ATTRIBUTES:
-				vus[a.stat] = true
+				seen_all[a.stat] = true
 		assert_eq(
-			vus.size(), CharacterStats.ATTRIBUTES.size(),
-			"« %s » ne voit que %d attribut(s)" % [base.display_name, vus.size()]
+			seen_all.size(), CharacterStats.ATTRIBUTES.size(),
+			"« %s » ne voit que %d attribut(s)" % [base.display_name, seen_all.size()]
 		)
 
 
@@ -714,9 +714,9 @@ func test_les_attributs_sortent_partout() -> void:
 ## l\'esquive va aux pièces légères, qui n\'ont pas de plaques à multiplier. Les
 ## deux affixes visaient `armour` avant, faute de porteur pour `heavy` et
 ## `light` — une étiquette sans porteur est une règle qu\'on croit appliquée.
-func test_l_armure_en_pourcentage_et_l_esquive_se_partagent_les_armures() -> void:
+func test_percent_armor_and_evasion_share_the_armors() -> void:
 	var lourdes := 0
-	var legeres := 0
+	var light_ones := 0
 	for base in ItemCatalog.ALL:
 		var stats := {}
 		for a in ItemAffixPool.eligible(base, 60):
@@ -726,59 +726,59 @@ func test_l_armure_en_pourcentage_et_l_esquive_se_partagent_les_armures() -> voi
 			assert_true(stats.has("armor"), "« %s » doit tirer de l\'armure" % base.display_name)
 			assert_false(stats.has("evasion"), "« %s » ne tire pas d\'esquive" % base.display_name)
 		elif base.tags.has("light"):
-			legeres += 1
+			light_ones += 1
 			assert_true(stats.has("evasion"), "« %s » doit tirer de l\'esquive" % base.display_name)
 	assert_gt(lourdes, 0, "il y a bien des pièces lourdes")
-	assert_gt(legeres, 0, "et des légères")
+	assert_gt(light_ones, 0, "et des légères")
 
 
 # --------------------------------------------------------------------------
 # L\'affichage des paliers (jalon 5, étape 7)
 # --------------------------------------------------------------------------
 
-func test_on_retrouve_un_affixe_par_son_identifiant() -> void:
+func test_an_affix_is_found_by_its_id() -> void:
 	for a in ItemAffixPool.ALL:
 		assert_eq(ItemAffixPool.by_id(a.id), a, "aller-retour sur « %s »" % a.id)
-	assert_null(ItemAffixPool.by_id("affixe_de_2027"), "un affixe retiré rend null")
+	assert_null(ItemAffixPool.by_id("affix_from_2027"), "un affixe retiré rend null")
 	assert_null(ItemAffixPool.by_id(""))
 
 
 ## Ce que l\'infobulle écrit à droite d\'une ligne, sous Alt : le palier et la
 ## fourchette **de ce palier**, pas celle de l\'affixe entier.
-func test_un_affixe_tire_annonce_son_palier_et_sa_plage() -> void:
-	var vigoureux: ItemAffix = load("res://resources/item_affixes/vigoureux.tres")
+func test_a_rolled_affix_announces_its_tier_and_span() -> void:
+	var vigorous: ItemAffix = load("res://resources/item_affixes/vigorous.tres")
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 314
-	var tire := vigoureux.roll(rng, 60)
-	var palier: ItemAffixTier = vigoureux.tiers[tire.tier - 1]
+	var rolled := vigorous.roll(rng, 60)
+	var tier: ItemAffixTier = vigorous.tiers[rolled.tier - 1]
 
-	var texte := tire.palier_et_plage()
-	assert_true(texte.begins_with("T%d" % tire.tier), "le numéro d\'abord : « %s »" % texte)
+	var text_value := rolled.tier_and_span()
+	assert_true(text_value.begins_with("T%d" % rolled.tier), "le numéro d\'abord : « %s »" % text_value)
 	assert_true(
-		texte.contains(StatMod.range_label(
-			tire.mod.stat, tire.mod.mode, palier.min_value, palier.max_value
+		text_value.contains(StatMod.range_label(
+			rolled.mod.stat, rolled.mod.mode, tier.min_value, tier.max_value
 		)),
-		"puis la fourchette du palier : « %s »" % texte
+		"puis la fourchette du palier : « %s »" % text_value
 	)
-	assert_between(tire.mod.value, palier.min_value, palier.max_value, "et la valeur en vient")
+	assert_between(rolled.mod.value, tier.min_value, tier.max_value, "et la valeur en vient")
 
 
 ## Un objet d\'avant les paliers n\'a pas de palier, et on ne le devine pas :
 ## deux paliers voisins se chevauchent, la déduction serait fausse une fois sur
 ## trois. Pas de colonne vaut mieux qu\'une colonne fausse.
-func test_un_affixe_sans_provenance_n_affiche_pas_de_palier() -> void:
-	var orphelin := RolledAffix.orphelin(StatMod.new("max_health", StatMod.Mode.FLAT, 40.0))
-	assert_eq(orphelin.palier_et_plage(), "")
+func test_an_affix_without_origin_shows_no_tier() -> void:
+	var orphan := RolledAffix.orphan(StatMod.new("max_health", StatMod.Mode.FLAT, 40.0))
+	assert_eq(orphan.tier_and_span(), "")
 
 
 ## Et un affixe retiré du projet depuis : sa valeur s\'applique toujours, c\'est
 ## son palier qui devient inaffichable.
-func test_un_affixe_disparu_n_affiche_pas_de_palier() -> void:
-	var perdu := RolledAffix.new("affixe_de_2027", 3, StatMod.new("armor", StatMod.Mode.FLAT, 12.0))
-	assert_eq(perdu.palier_et_plage(), "")
+func test_a_vanished_affix_shows_no_tier() -> void:
+	var lost := RolledAffix.new("affix_from_2027", 3, StatMod.new("armor", StatMod.Mode.FLAT, 12.0))
+	assert_eq(lost.tier_and_span(), "")
 	# Et un numéro de palier hors de l\'échelle, si une échelle raccourcit.
-	var vieux := RolledAffix.new("preste", 99, StatMod.new("move_speed", StatMod.Mode.PERCENT, 5.0))
-	assert_eq(vieux.palier_et_plage(), "")
+	var old_one := RolledAffix.new("nimble", 99, StatMod.new("move_speed", StatMod.Mode.PERCENT, 5.0))
+	assert_eq(old_one.tier_and_span(), "")
 
 
 # --------------------------------------------------------------------------
@@ -787,50 +787,50 @@ func test_un_affixe_disparu_n_affiche_pas_de_palier() -> void:
 
 ## Une nature est une nature comme les autres : chacune s'ajoute aux attaques et
 ## aux sorts, y compris celles qu'aucune compétence du jeu ne porte encore.
-func test_chaque_nature_s_ajoute_aux_attaques_et_aux_sorts() -> void:
+func test_each_nature_adds_to_attacks_and_spells() -> void:
 	for nature in DamageType.Kind.values():
-		for famille in [MotsCles.ATTAQUE, MotsCles.SORT]:
-			var trouve := false
+		for family in [Keywords.ATTACK, Keywords.SPELL]:
+			var found := false
 			for a in ItemAffixPool.ALL:
-				if a.stat == StatsDeCompetence.stat_ajoutee(nature) and a.portee == famille:
-					trouve = true
-			assert_true(trouve, "« %s » ne s'ajoute pas %s" % [
-				DamageType.NAMES[nature], MotsCles.destinataire(famille)
+				if a.stat == SkillStats.added_stat(nature) and a.scope == family:
+					found = true
+			assert_true(found, "« %s » ne s'ajoute pas %s" % [
+				DamageType.NAMES[nature], Keywords.recipient(family)
 			])
 
 
 ## Une fourchette ne sort jamais à l'envers : sa borne haute commence au-dessus de
 ## sa basse, et elle croît avec les paliers comme la basse.
-func test_chaque_fourchette_est_monotone_et_a_l_endroit() -> void:
+func test_each_range_is_monotonic_and_the_right_way_round() -> void:
 	for a in ItemAffixPool.ALL:
-		if not a.est_une_fourchette():
+		if not a.is_a_range():
 			continue
 		for i in a.tiers.size():
 			var t: ItemAffixTier = a.tiers[i]
-			assert_lte(t.min_haut, t.max_haut, "%s T%d : borne haute à l'envers" % [a.id, i + 1])
+			assert_lte(t.min_top, t.max_top, "%s T%d : borne haute à l'envers" % [a.id, i + 1])
 			assert_gte(
-				t.min_haut, t.max_value,
+				t.min_top, t.max_value,
 				"%s T%d : la borne haute peut sortir sous la basse" % [a.id, i + 1]
 			)
 			if i + 1 >= a.tiers.size():
 				continue
-			var pire: ItemAffixTier = a.tiers[i + 1]
+			var worst: ItemAffixTier = a.tiers[i + 1]
 			assert_gt(
-				t.min_haut, pire.min_haut,
+				t.min_top, worst.min_top,
 				"%s : T%d n'est pas meilleur que T%d" % [a.id, i + 1, i + 2]
 			)
-			assert_gt(t.max_haut, pire.max_haut)
+			assert_gt(t.max_top, worst.max_top)
 
 
 ## Un tirage donne deux nombres, chacun dans sa plage : c'est ce que la ligne
 ## « T5  (7–10 à 21–29) » de l'infobulle promet.
-func test_une_fourchette_tiree_reste_dans_ses_deux_plages() -> void:
+func test_a_rolled_range_stays_in_both_its_spans() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 808
-	var froid := ItemAffixPool.by_id("froid_aux_sorts")
+	var cold := ItemAffixPool.by_id("cold_to_spells")
 	for i in 300:
-		var tire := froid.roll(rng, 60)
-		var palier: ItemAffixTier = froid.tiers[tire.tier - 1]
-		assert_between(tire.mod.value, palier.min_value, palier.max_value)
-		assert_between(tire.mod.value_max, palier.min_haut, palier.max_haut)
-		assert_eq(tire.mod.portee, MotsCles.SORT)
+		var rolled := cold.roll(rng, 60)
+		var tier: ItemAffixTier = cold.tiers[rolled.tier - 1]
+		assert_between(rolled.mod.value, tier.min_value, tier.max_value)
+		assert_between(rolled.mod.value_max, tier.min_top, tier.max_top)
+		assert_eq(rolled.mod.scope, Keywords.SPELL)

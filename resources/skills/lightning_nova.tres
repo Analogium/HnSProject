@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/lightning_nova.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "lightning_nova"
+name = "Nova de foudre"
+nature = 3
+cadence = 1
+shape = 1
+projectile_speed = 230.0
+cooldown = 1.40
+mana_cost = 26.0
+projectiles = 8
+spread_in_degrees = 360.0
+damage_per_point = Array[float]([18.0, 22.0, 27.0, 33.0, 40.0])
+required_manual_level = 8
+icon = ExtResource("2_icone")

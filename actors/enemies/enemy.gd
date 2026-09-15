@@ -21,7 +21,7 @@ var lifesteal := 0.0
 
 ## Le niveau de la zone, posé par l'EnemyManager **avant** l'entrée dans l'arbre :
 ## `_ready` met la fiche à l'échelle.
-var niveau := 1
+var level := 1
 
 var health: float
 ## Sur Enemy : le grunt et le caster la décomptent pareil.
@@ -32,7 +32,7 @@ var is_aggro := false
 ## Posé par EnemyManager.register() ; le caster y fait naître ses tirs.
 var manager: EnemyManager
 ## Ses états, neufs pour chaque ennemi.
-var etats := Etats.new()
+var states := StatusEffects.new()
 
 
 func _ready() -> void:
@@ -41,19 +41,19 @@ func _ready() -> void:
 
 	# Le tirage d'abord, l'écriture ensuite : c'est lui qui dit s'il y aura
 	# quelque chose à écrire.
-	_tirer_affixes()
+	_roll_affixes()
 
 	# **Une copie, et seulement si quelqu'un écrit** : la fiche est un `.tres` partagé
 	# (invariant 2), mais sept cents copies inutiles coûtaient 5,4 ms de physique contre
 	# 4,4 à sept cents ennemis.
-	if niveau > 1 or not affixes.is_empty():
-		stats = fiche_de(stats, niveau, affixes)
-		_appliquer_affixes()
+	if level > 1 or not affixes.is_empty():
+		stats = sheet_of(stats, level, affixes)
+		_apply_affixes()
 	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
-	hurtbox.etats = etats
-	etats.change.connect(_montrer_les_etats)
-	etats.soin.connect(_soigner)
+	hurtbox.states = states
+	states.change.connect(_show_states)
+	states.heal.connect(_heal)
 	_set_health(stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
@@ -62,7 +62,7 @@ func _ready() -> void:
 
 ## Déduit de la case d'apparition, jamais de Game.rng : une graine redonne les mêmes
 ## ennemis. Séparé de l'application, qui dépend de son résultat.
-func _tirer_affixes() -> void:
+func _roll_affixes() -> void:
 	var rng := RandomNumberGenerator.new()
 	# Décalé par rapport à la graine de silhouette, sinon la variante et
 	# l'affixe seraient corrélés et un Colossal aurait toujours le même corps.
@@ -74,20 +74,20 @@ func _tirer_affixes() -> void:
 
 ## La fiche d'un ennemi de ce niveau et de ces affixes, **sur une copie**. Statique : le
 ## banc d'équilibrage la calcule sans corps.
-static func fiche_de(base: CharacterStats, p_niveau: int, p_affixes: Array[Affix]) -> CharacterStats:
-	var fiche: CharacterStats = base.duplicate()
-	CharacterStats.mettre_a_l_echelle(fiche, p_niveau)
+static func sheet_of(base: CharacterStats, p_level: int, p_affixes: Array[Affix]) -> CharacterStats:
+	var sheet: CharacterStats = base.duplicate()
+	CharacterStats.scale_to_level(sheet, p_level)
 	for a in p_affixes:
-		fiche.max_health *= a.health_mult
-		fiche.move_speed *= a.speed_mult
-		fiche.attack_damage *= a.damage_mult
-		fiche.attack_cooldown *= a.cooldown_mult
-		fiche.armor += a.armor
-	return fiche
+		sheet.max_health *= a.health_mult
+		sheet.move_speed *= a.speed_mult
+		sheet.attack_damage *= a.damage_mult
+		sheet.attack_cooldown *= a.cooldown_mult
+		sheet.armor += a.armor
+	return sheet
 
 
 ## Ce que les affixes font hors de la fiche.
-func _appliquer_affixes() -> void:
+func _apply_affixes() -> void:
 	if affixes.is_empty():
 		return
 
@@ -129,34 +129,34 @@ func regen(delta: float) -> void:
 
 ## Ce que ses états brûlent, appelée par l'EnemyManager avec la régénération. Une mort
 ## par brûlure est une victoire.
-func subir_les_etats(delta: float) -> void:
+func suffer_states(delta: float) -> void:
 	if is_dead:
 		return
-	var perte := etats.avancer(delta)
-	if perte <= 0.0:
+	var loss := states.advance(delta)
+	if loss <= 0.0:
 		return
-	_set_health(health - perte)
-	var chiffre := etats.chiffre()
-	if chiffre > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.degats_sans_coup(hurtbox.global_position, chiffre, false)
+	_set_health(health - loss)
+	var digit := states.digit()
+	if digit > 0.0 and HitFeedback.current != null:
+		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, false)
 	if health <= 0.0:
 		die()
 
 
 ## Pas à un corps tombé : sa pourriture lui survit, le soin non.
-func _soigner(montant: float) -> void:
+func _heal(amount: float) -> void:
 	if not is_dead:
-		_set_health(health + montant)
+		_set_health(health + amount)
 
 
-func _montrer_les_etats() -> void:
-	sprite.montrer_les_etats(etats)
-	health_bar.montrer_les_etats(etats)
+func _show_states() -> void:
+	sprite.show_states(states)
+	health_bar.show_states(states)
 
 
 ## Gel compris : les archétypes la lisent ici, jamais sur la fiche.
-func vitesse_de_deplacement() -> float:
-	return stats.move_speed * etats.facteur_de_vitesse
+func movement_speed() -> float:
+	return stats.move_speed * states.speed_factor
 
 
 ## Surchargée par chaque archétype. Appelée par l'EnemyManager.
@@ -184,7 +184,7 @@ func _animate() -> void:
 ## Une fois par tick, **hors** du test de portée, sinon l'attente se fige. Le gel
 ## l'étire.
 func _cool_down(delta: float) -> void:
-	_attack_cd = maxf(_attack_cd - delta * etats.facteur_de_vitesse, 0.0)
+	_attack_cd = maxf(_attack_cd - delta * states.speed_factor, 0.0)
 
 
 ## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact.
@@ -225,30 +225,30 @@ const XP_PER_HEALTH := 0.35
 ## Ce qu'on garde de l'expérience d'une zone laissée **derrière** soi : cinq niveaux
 ## sans pénalité, puis elle fond. Sans borne haute (jalon 6) : descendre plus bas
 ## rapporte mieux, moudre une zone facile ne doit pas rester payant.
-const XP_MARGE := 5
-const XP_PERTE_PAR_NIVEAU := 0.10
-const XP_PLANCHER := 0.05
+const XP_MARGIN := 5
+const XP_LOSS_PER_LEVEL := 0.10
+const XP_FLOOR := 0.05
 
 
-static func facteur_d_experience(niveau_zone: int, niveau_joueur: int) -> float:
-	var ecart := niveau_joueur - niveau_zone
-	return clampf(1.0 - XP_PERTE_PAR_NIVEAU * float(maxi(0, ecart - XP_MARGE)), XP_PLANCHER, 1.0)
+static func experience_factor(zone_level_value: int, player_level: int) -> float:
+	var spread := player_level - zone_level_value
+	return clampf(1.0 - XP_LOSS_PER_LEVEL * float(maxi(0, spread - XP_MARGIN)), XP_FLOOR, 1.0)
 
 
 ## L'expérience que valent ces PV, avant affixes. Partagée avec la boule
 ## d'expérience de l'établi, qui vaut ce que rapportent des grunts de la zone.
-static func xp_de_la_sante(max_health: float) -> float:
+static func xp_from_health(max_health: float) -> float:
 	return max_health * XP_PER_HEALTH
 
 
 func xp_value() -> int:
-	return experience_de(stats, affixes)
+	return experience_of(stats, affixes)
 
 
-## Statique pour le banc d'équilibrage. `fiche.max_health` porte déjà les multiplicateurs
+## Statique pour le banc d'équilibrage. `sheet.max_health` porte déjà les multiplicateurs
 ## d'affixes ; `xp_mult` est le supplément de récompense, distinct de la robustesse.
-static func experience_de(fiche: CharacterStats, p_affixes: Array[Affix]) -> int:
-	var v := xp_de_la_sante(fiche.max_health)
+static func experience_of(sheet: CharacterStats, p_affixes: Array[Affix]) -> int:
+	var v := xp_from_health(sheet.max_health)
 	for a in p_affixes:
 		v *= a.xp_mult
 	return maxi(roundi(v), 1)

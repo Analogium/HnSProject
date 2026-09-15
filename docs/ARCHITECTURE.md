@@ -63,70 +63,72 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Classe | Pourquoi elle est seule |
 |---|---|
 | `DamageType` | `CharacterStats` nomme ses résistances par nature, et `DamageInfo` nomme déjà `CharacterStats`. |
-| `Tirage` | `ItemAffixPool` précharge les `.tres` d'`ItemAffix` ; un `ItemAffix` qui appellerait la réserve refermerait la boucle. |
-| `Touches` | Sept scènes lisent le clavier, aucune n'a à connaître les six autres. |
+| `WeightedRoll` | `ItemAffixPool` précharge les `.tres` d'`ItemAffix` ; un `ItemAffix` qui appellerait la réserve refermerait la boucle. |
+| `Keys` | Sept scènes lisent le clavier, aucune n'a à connaître les six autres. |
 | `ArtPalette`, `UiPalette` | Les couleurs sont lues par tout le monde et ne lisent personne. |
-| `Textes` | La traduction est demandée par les tables de libellés, par le contenu et par les panneaux : elle ne peut nommer aucun des trois. |
-| `MotsCles`, `StatsDeCompetence` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Competence` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
-| `Etats` | `DamageInfo` le nomme pour dire qui frappe, et `Hurtbox` pour ce que porte la victime : il reçoit des parts et un auteur, jamais un coup. |
+| `Texts` | La traduction est demandée par les tables de libellés, par le contenu et par les panneaux : elle ne peut nommer aucun des trois. |
+| `Keywords`, `SkillStats` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Skill` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
+| `LegacyFrench` | `Character`, `SaveStore` et `Settings` la lisent pour relire le disque d'avant ; une table figée n'a rien à nommer. |
+| `StatusEffects` | `DamageInfo` le nomme pour dire qui frappe, et `Hurtbox` pour ce que porte la victime : il reçoit des parts et un auteur, jamais un coup. |
 
 ## Où vit chaque règle
 
 | La question | La réponse |
 |---|---|
-| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances ; la défense d'une part, `attenuer()`), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
-| Quels objets tombent dans une zone ? | `ItemCatalog.disponibles()` |
-| Comment un ennemi monte-t-il avec la zone ? | `CharacterStats.mettre_a_l_echelle()` : la vie **composée** de `VIE_PAR_NIVEAU` par niveau ; les dégâts, l'armure et les cinq résistances linéaires ; l'esquive jamais. `Enemy.fiche_de()` y ajoute les affixes, sur une copie. L'expérience suit la vie (`Enemy.xp_de_la_sante()`) |
-| Jusqu'à quand une base tombe-t-elle ? | `ItemCatalog.fenetre_de_chute()` |
+| Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances ; la défense d'une part, `mitigate()`), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
+| Quels objets tombent dans une zone ? | `ItemCatalog.available()` |
+| Comment un ennemi monte-t-il avec la zone ? | `CharacterStats.scale_to_level()` : la vie **composée** de `HEALTH_PER_LEVEL` par niveau ; les dégâts, l'armure et les cinq résistances linéaires ; l'esquive jamais. `Enemy.sheet_of()` y ajoute les affixes, sur une copie. L'expérience suit la vie (`Enemy.xp_from_health()`) |
+| Jusqu'à quand une base tombe-t-elle ? | `ItemCatalog.drop_window()` |
 | Quels affixes une base peut-elle porter ? | `ItemAffix.fits()` via `ItemAffixPool.compatibles()` |
-| Quels paliers un objet atteint-il ? | `ItemAffix.ouverts()` |
+| Quels paliers un objet atteint-il ? | `ItemAffix.unlocked_tiers()` |
 | Combien d'affixes sur un objet neuf ? | `ItemAffixPool.COUNT_WEIGHTS` |
 | Quelle rareté ? | `Item.rarity()`, **déduite** du nombre d'affixes |
 | Où va un objet équipé ? | `EquipmentSlots.free_for()` |
 | Ce qui tient dans le sac ? | `Inventory.fits()` |
-| Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `StatsDeCompetence.fourchette_lisible()` ; un pourcentage, `StatMod.pourcentage()`, dont la typographie suit la langue |
-| En quelle langue s'écrit un texte ? | `Textes.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.langue` choisit |
-| Jusqu'où descend une fenêtre flottante ? | `Hud.haut_des_jauges()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus |
-| Ce que rapporte un ennemi ? | `Enemy.experience_de()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
-| Quel niveau a un personnage qui arrive dans une zone ? | `ProfilsDuBanc.niveau_attendu()` : chaque zone d'avant vidée une fois, avec la population moyenne de l'`EnemySpawner`. Une mesure du banc, pas une règle du jeu |
-| À quel point un personnage type s'en sort-il ? | `CalculDuBanc.mesurer()`, sur un vrai `Player` : `Player.resoudre()` pour ce qui part, `Hurtbox.mitiger()` pour ce qui arrive. Les couloirs sont ses constantes, gardés par `tests/run.sh equilibrage` ; le rapport, `tools/equilibrage.sh` → [EQUILIBRAGE.md](EQUILIBRAGE.md) |
-| Quand l'expérience fond-elle ? | `Enemy.facteur_d_experience()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
+| Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `SkillStats.readable_range()` ; un pourcentage, `StatMod.percentage()`, dont la typographie suit la langue |
+| En quelle langue s'écrit un texte ? | `Texts.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.language` choisit |
+| Jusqu'où descend une fenêtre flottante ? | `Hud.gauges_top()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus |
+| Ce que rapporte un ennemi ? | `Enemy.experience_of()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
+| Quel niveau a un personnage qui arrive dans une zone ? | `BenchProfiles.expected_level()` : chaque zone d'avant vidée une fois, avec la population moyenne de l'`EnemySpawner`. Une mesure du banc, pas une règle du jeu |
+| À quel point un personnage type s'en sort-il ? | `BenchCalculation.measure()`, sur un vrai `Player` : `Player.resolve()` pour ce qui part, `Hurtbox.mitigate_part()` pour ce qui arrive. Les couloirs sont ses constantes, gardés par `tests/run.sh balance` ; le rapport, `tools/balance.sh` → [EQUILIBRAGE.md](EQUILIBRAGE.md) |
+| Quand l'expérience fond-elle ? | `Enemy.experience_factor()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
-| Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
-| Ce qu'un lancer fait vraiment ? | `Competence.resoudre()`, par `Player.resoudre()` — **appelée par le lancement, la page du manuel et la fiche de personnage** : dégâts par nature en fourchette et leur décomposition, projectiles, dispersion, vitesse, coût, intervalle |
-| Combien une compétence inflige-t-elle en moyenne ? | `StatsDeCompetence.moyenne_par_lancer()` et `moyenne_par_seconde()` : si tout touche, avant défenses, sans critique |
-| Combien fait un coup parti ? | `StatsDeCompetence.tirer()` : une fois par projectile, une fois par coup d'épée pour tout son arc, une fois pour une chaîne entière, une fois par impulsion d'un nuage ou d'une aura, une fois par contact d'un serpent ou d'une épée — avec `Game.rng` et **un tirage par fourchette ouverte** |
-| Quels mots-clés porte une compétence ? | `Competence.mots_cles()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `MotsCles`. Ceux d'un **lancer** sont dans `StatsDeCompetence.mots_cles`, nœuds d'arbre compris |
-| Dans quel ordre se lisent-ils ? | `MotsCles.ordonner()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
-| Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.portee` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `mods_de_competence`, avec la force changée en dégâts physiques aux attaques |
-| À quelle cadence se lance-t-elle ? | `Competence.intervalle()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
-| Que pose un lancer dans le monde ? | `Competence.forme`, lue par `Player.lancer()` **sur la compétence** : aucun nœud ne la change. Elle porte le comportement et le dessin ensemble, et `projectile` s'en déduit |
-| Combien de coups porte un lancer, si tout touche ? | `StatsDeCompetence.moyenne_par_lancer()` : projectiles × cibles × coups de la forme × `frappes_dans_la_duree()` — **la fonction même qui compte les impulsions du nuage**. Une aura n'a que `moyenne_par_seconde()` |
-| Quels chiffres de dégâts s'affichent ? | `Settings.montre_les_degats()`, lue par `HitFeedback` pour le coup, l'esquive et la brûlure : une case pour ce que subit le joueur, une pour ce que subissent les ennemis. Le chiffre seulement — la gerbe d'éclats reste |
-| Que ferme Échap ? | `Zone.fermer_les_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend qu'avec des points à placer |
-| Qu'est-ce qu'on peut lancer ? | `Player.lancer()`, qui porte les cinq refus — case vide, non apprise, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
-| Qui atteint un coup qui ne naît pas d'une collision ? | `Cibles.dans_le_cercle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
+| Ce qui survit à la fermeture ? | `Character.to_dict()` et `Settings.to_dict()` |
+| Comment une sauvegarde aux noms français se relit-elle ? | `LegacyFrench` : clés et identifiants des versions 1 à 5, ancien dossier, anciens réglages |
+| Ce qu'un lancer fait vraiment ? | `Skill.resolve()`, par `Player.resolve()` — **appelée par le lancement, la page du manuel et la fiche de personnage** : dégâts par nature en fourchette et leur décomposition, projectiles, dispersion, vitesse, coût, intervalle |
+| Combien une compétence inflige-t-elle en moyenne ? | `SkillStats.average_per_cast()` et `average_per_second()` : si tout touche, avant défenses, sans critique |
+| Combien fait un coup parti ? | `SkillStats.roll()` : une fois par projectile, une fois par coup d'épée pour tout son arc, une fois pour une chaîne entière, une fois par impulsion d'un nuage ou d'une aura, une fois par contact d'un serpent ou d'une épée — avec `Game.rng` et **un tirage par fourchette ouverte** |
+| Quels mots-clés porte une compétence ? | `Skill.keywords()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `Keywords`. Ceux d'un **lancer** sont dans `SkillStats.keywords`, nœuds d'arbre compris |
+| Dans quel ordre se lisent-ils ? | `Keywords.sort_in_order()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
+| Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.scope` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `skill_mods`, avec la force changée en dégâts physiques aux attaques |
+| À quelle cadence se lance-t-elle ? | `Skill.interval()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
+| Que pose un lancer dans le monde ? | `Skill.shape`, lue par `Player.cast_slot()` **sur la compétence** : aucun nœud ne la change. Elle porte le comportement et le dessin ensemble, et `projectile` s'en déduit |
+| Combien de coups porte un lancer, si tout touche ? | `SkillStats.average_per_cast()` : projectiles × cibles × coups de la forme × `strikes_over_duration()` — **la fonction même qui compte les impulsions du nuage**. Une aura n'a que `average_per_second()` |
+| Quels chiffres de dégâts s'affichent ? | `Settings.shows_damage()`, lue par `HitFeedback` pour le coup, l'esquive et la brûlure : une case pour ce que subit le joueur, une pour ce que subissent les ennemis. Le chiffre seulement — la gerbe d'éclats reste |
+| Que ferme Échap ? | `Zone.close_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend qu'avec des points à placer |
+| Qu'est-ce qu'on peut lancer ? | `Player.cast_slot()`, qui porte les cinq refus — case vide, non apprise, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
+| Qui atteint un coup qui ne naît pas d'une collision ? | `Targets.in_circle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
 | Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
-| Ce que coûte l'Immolation ? | `Player.bruler()` : répartie entre les natures comme les dégâts de l'aura (`StatsDeCompetence.repartition()`), chaque part atténuée par `CharacterStats.attenuer()` — **la règle d'un coup reçu**, donc objets et passifs compris, et l'engourdissement. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
-| Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_periode` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
+| Ce que coûte l'Immolation ? | `Player.burn()` : répartie entre les natures comme les dégâts de l'aura (`SkillStats.distribution()`), chaque part atténuée par `CharacterStats.mitigate()` — **la règle d'un coup reçu**, donc objets et passifs compris, et l'engourdissement. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
+| Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_period` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
 | Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde |
 | Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
-| Combien de points dans une compétence ? | `Player.points_de_competence()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `CompetenceCatalog.DE_DEPART` |
-| Une ligne se donne-t-elle en fourchette ? | `StatMod.stat_en_fourchette()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.depuis_definition()` |
-| Quel niveau a un manuel ? | `Manuel.niveau()`, **déduit** de son expérience par `Progression` |
-| Peut-on y placer un point ? | `Manuel.peut_investir()` — les quatre conditions, jamais dans l'interface |
-| Où un manuel apprend-il ? | Au râtelier seulement, par `Player.recompenser()` — le chemin d'une mort **et** d'une boule d'expérience de l'établi, avec le retard sur la zone |
-| Que porte une case de manuel ? | `CaseDeManuel` : une compétence **ou** un passif — jamais les deux —, sa position, et l'arbre de talents de la première |
-| D'où viennent les talents d'un lancer ? | `Player.talents_de()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Competence.resoudre()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
-| Ce qu'un passif change, et quand ? | `Manuel.mods_de_passifs()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
-| Peut-on placer un point ? | `Manuel.peut_investir()`, pour les trois sortes de destination. `est_ouvert()` porte les conditions **structurelles** seules, pour que la page distingue « verrouillé » de « plus de point à placer » |
-| Peut-on le reprendre ? | `Manuel.peut_reprendre()`, pour les trois sortes : pas un nœud sous un enfant qui porte des points, pas une compétence sous les points qu'un de ses nœuds investis demande. `Player.reprendre()` vide la barre d'une compétence retombée à zéro |
-| Où convertit-on des dégâts ? | `StatsDeCompetence.convertir()`, appelée par `resoudre()` **après les fourchettes ajoutées**, sur **toutes les natures** du coup : entière, il n'en reste qu'une, donc qu'un état possible. `convertis` en garde la part pour la fiche |
-| Dans quelle nature un tir se dessine-t-il ? | `StatsDeCompetence.nature_dominante()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
-| Un coup pose-t-il un état ? | `Etats.subir()`, appelée par `Hurtbox.take_damage()` **après** l'esquive, la mitigation et le signal : 20 % pour un coup entièrement d'une nature, partagés selon ses parts, **plus la part des PV max de la cible que la nature retire** (`Etats.chance()`), **un tirage par nature présente**, physique compris. Chance, durées et forces sont les constantes de `Etats` |
-| Qui a porté un coup ? | `DamageInfo.auteur` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `Etats.de()` |
-| Ce qu'un état change, et où ? | Les facteurs de `Etats`, lus **là où vit déjà la règle** : la bénédiction de l'auteur avant la mitigation, l'engourdissement après ; le gel dans `Enemy.vitesse_de_deplacement()`, `Enemy._cool_down()` et la cadence de `Player._physics_process()`. Ce qui brûle sort d'`Etats.avancer()` et s'ôte par `_set_health()`, chez l'ennemi depuis l'`EnemyManager`, avec la régénération |
-| Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`Etats.SANG`), sur le signal `Etats.change` : `HealthBar.montrer_les_etats()`, qui dessine l'icône de chacun (`IconeDEtat`, un masque 7×7 par état), et `ActorSprite.montrer_les_etats()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.etat()` ; ce qui brûle, par `HitFeedback.degats_sans_coup()` et les paquets d'`Etats.Paquet` |
+| Combien de points dans une compétence ? | `Player.skill_points()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `SkillCatalog.STARTING` |
+| Une ligne se donne-t-elle en fourchette ? | `StatMod.ranged_stat()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.from_definition()` |
+| Quel niveau a un manuel ? | `Manual.level()`, **déduit** de son expérience par `Progression` |
+| Peut-on y placer un point ? | `Manual.can_invest()` — les quatre conditions, jamais dans l'interface |
+| Où un manuel apprend-il ? | Au râtelier seulement, par `Player.reward()` — le chemin d'une mort **et** d'une boule d'expérience de l'établi, avec le retard sur la zone |
+| Que porte une case de manuel ? | `ManualCell` : une compétence **ou** un passif — jamais les deux —, sa position, et l'arbre de talents de la première |
+| D'où viennent les talents d'un lancer ? | `Player.talents_of()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Skill.resolve()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
+| Ce qu'un passif change, et quand ? | `Manual.passive_mods()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
+| Peut-on placer un point ? | `Manual.can_invest()`, pour les trois sortes de destination. `is_open()` porte les conditions **structurelles** seules, pour que la page distingue « verrouillé » de « plus de point à placer » |
+| Peut-on le reprendre ? | `Manual.can_refund()`, pour les trois sortes : pas un nœud sous un enfant qui porte des points, pas une compétence sous les points qu'un de ses nœuds investis demande. `Player.refund()` vide la barre d'une compétence retombée à zéro |
+| Où convertit-on des dégâts ? | `SkillStats.apply_conversion()`, appelée par `resolve()` **après les fourchettes ajoutées**, sur **toutes les natures** du coup : entière, il n'en reste qu'une, donc qu'un état possible. `conversions` en garde la part pour la fiche |
+| Dans quelle nature un tir se dessine-t-il ? | `SkillStats.dominant_nature()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
+| Un coup pose-t-il un état ? | `StatusEffects.suffer()`, appelée par `Hurtbox.take_damage()` **après** l'esquive, la mitigation et le signal : 20 % pour un coup entièrement d'une nature, partagés selon ses parts, **plus la part des PV max de la cible que la nature retire** (`StatusEffects.chance()`), **un tirage par nature présente**, physique compris. Chance, durées et forces sont les constantes de `StatusEffects` |
+| Qui a porté un coup ? | `DamageInfo.author` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `StatusEffects.of()` |
+| Ce qu'un état change, et où ? | Les facteurs de `StatusEffects`, lus **là où vit déjà la règle** : la bénédiction de l'auteur avant la mitigation, l'engourdissement après ; le gel dans `Enemy.movement_speed()`, `Enemy._cool_down()` et la cadence de `Player._physics_process()`. Ce qui brûle sort d'`StatusEffects.advance()` et s'ôte par `_set_health()`, chez l'ennemi depuis l'`EnemyManager`, avec la régénération |
+| Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`StatusEffects.BLOOD`), sur le signal `StatusEffects.change` : `HealthBar.show_states()`, qui dessine l'icône de chacun (`StatusIcon`, un masque 7×7 par état), et `ActorSprite.show_states()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.state()` ; ce qui brûle, par `HitFeedback.damage_without_hit()` et les paquets d'`StatusEffects.Pack` |
 
 ## Les invariants
 
@@ -136,18 +138,22 @@ compilation, et la moitié ne se voit qu'au lancement suivant.
 ### 1. Les identifiants écrits sur le disque ne changent jamais
 
 `ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, les
-identifiants de `MotsCles` — la portée d'un affixe en nomme un —, ceux de
-`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `degats_froid` —, ceux
-de `Competence`, `Passif` et `NoeudDeTalent` — les trois partagent le
+identifiants de `Keywords` — la portée d'un affixe en nomme un —, ceux de
+`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `damage_cold` —, ceux
+de `Skill`, `Passive` et `TalentNode` — les trois partagent le
 dictionnaire de points d'un manuel, et **deux identiques dans un même livre
-partageraient un compteur** — et les noms de champs de `Personnage.vers_dict()`
+partageraient un compteur** — et les noms de champs de `Character.to_dict()`
 sont **dans les sauvegardes des joueurs**.
-Renommer `chest` en `torse` fait disparaître le plastron de tout le monde — au
+Renommer `chest` en `torso` fait disparaître le plastron de tout le monde — au
 prochain chargement seulement, sans erreur.
 
+Ils ont changé **une fois**, quand le code est passé en anglais : les noms français
+d'avant sont figés dans `LegacyFrench`, qui les traduit à la lecture des versions 1 à 5.
+Un renommage futur fait pareil — une version de plus et sa table — ou ne se fait pas.
+
 Le nom lisible est à côté (`display_name`, `label`) et se change librement.
-`test_les_identifiants_du_jalon_4_survivent` et
-`test_les_emplacements_d_avant_gardent_leur_nom` gardent la porte.
+`test_milestone_4_ids_survive` et
+`test_former_slots_keep_their_name` gardent la porte.
 
 ### 2. Un `.tres` du disque ne s'écrit jamais
 
@@ -190,8 +196,8 @@ Godot refuse qu'on ajoute une `Area2D` à l'arbre pendant qu'il résout les
 collisions : *« Can't change this state while flushing queries »*. Or un ennemi
 meurt presque toujours depuis un `area_entered`.
 
-- `GroundItem.spawn()`, `OrbeDExperience.poser()` et `Explosion.poser()` passent
-  par `Arbre.ajouter_en_differe()` : ajout puis position, dans cet ordre, une
+- `GroundItem.spawn()`, `ExperienceOrb.put()` et `Explosion.put()` passent
+  par `DeferredTree.add_deferred()` : ajout puis position, dans cet ordre, une
   position globale ne voulant rien dire hors de l'arbre. **Un parent libéré avant
   l'appel différé libère le nœud** — sinon il fuit hors de l'arbre avec ce qu'il
   porte, comme le manuel de départ d'une zone fermée dans la même image ;
@@ -199,7 +205,7 @@ meurt presque toujours depuis un `area_entered`.
   image de physique** avant de rouvrir la hitbox pour le second coup d'une croix :
   fermée puis rouverte dans la même image, elle ne coupe rien, et un ennemi déjà
   dedans n'y *entre* pas une seconde fois ;
-- `Explosion.poser()` naît en différé et ne frappe qu'à sa première image de
+- `Explosion.put()` naît en différé et ne frappe qu'à sa première image de
   physique : la boule qui l'appelle est dans son rappel de collision, où l'espace
   refuse les requêtes ;
 - la mort du joueur et la montée de niveau repassent par `call_deferred`, sinon
@@ -217,15 +223,15 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | Le tick des ennemis | `EnemyManager._physics_process` — aucun ennemi n'a de `_physics_process` |
 | L'écriture de la vie | `_set_health()` chez le joueur comme chez l'ennemi : la barre y est mise à jour |
 | Tous les coups reçus | `Hurtbox.take_damage()` |
-| La pose d'un état | `Hurtbox.take_damage()`, par `Etats.subir()` |
+| La pose d'un état | `Hurtbox.take_damage()`, par `StatusEffects.suffer()` |
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
-| La recherche des cibles d'un coup sans collision | `Cibles.dans_le_cercle()` |
-| La résolution d'un lancer | `Player.resoudre()` — le lancer et la fiche du manuel |
-| Le placement d'un point de manuel | `Player.investir()` / `reprendre()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
+| La recherche des cibles d'un coup sans collision | `Targets.in_circle()` |
+| La résolution d'un lancer | `Player.resolve()` — le lancer et la fiche du manuel |
+| Le placement d'un point de manuel | `Player.invest()` / `refund()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
 | Le retour visuel d'un coup | `HitFeedback.current` |
-| Le tirage pondéré | `Tirage.pondere()` |
+| Le tirage pondéré | `WeightedRoll.weighted()` |
 
 Écrire `health = …` à la main plutôt que `_set_health()` ne casse rien de
 visible : la barre ment, c'est tout.
@@ -237,10 +243,10 @@ fenêtre — d'où du texte net — mais **le viewport logique reste 640 × 360*
 mises en page calculées à la main (panneaux, infobulles, HUD) comptent dessus.
 
 Deux tests gardent l'invariant, parce qu'aucune assertion n'attrape un panneau
-qui passe sous un autre : `test_la_fiche_tient_dans_sa_hauteur` et
-`test_la_fiche_d_objet_tient_dans_sa_hauteur`. Ils comparent la hauteur du
+qui passe sous un autre : `test_the_sheet_fits_its_height` et
+`test_the_item_sheet_fits_its_height`. Ils comparent la hauteur du
 contenu à celle du cadrage en passant par la **même** fonction que le dessin
-(`StatsPanel.content_height()`, `ForgeGallery.hauteur_de_fiche()`) — sinon ils
+(`StatsPanel.content_height()`, `ForgeGallery.sheet_height()`) — sinon ils
 valideraient leur propre copie du calcul.
 
 `stretch/scale_mode` reste **fractionnaire** : le jeu remplit exactement la
@@ -250,7 +256,7 @@ sans redemander.
 
 ### 7. Le format de sauvegarde se lit en arrière
 
-`Personnage.VERSION` est le numéro **écrit** ; `VERSIONS_LUES` est la liste de
+`Character.VERSION` est le numéro **écrit** ; `READABLE_VERSIONS` est la liste de
 ce qu'on sait **lire**. Monter le premier sans ajouter l'ancien à la seconde fait
 passer tous les personnages existants en « illisible » d'un coup, alors que leurs
 fichiers sont intacts — et ça ne se voit qu'au premier lancement après la mise à
@@ -275,7 +281,7 @@ ailleurs, une petite classe nommée.
 
 | Scène | Rôle | Depuis la zone |
 |---|---|---|
-| `ui/selection_personnage.tscn` | L'accueil : choisir, créer, supprimer un personnage | — |
+| `ui/character_select.tscn` | L'accueil : choisir, créer, supprimer un personnage | — |
 | `world/zone.tscn` | La partie | — |
 | `world/test_arena.tscn` | Régler le game feel à chaud | `F2` |
 | `world/map_debug.tscn` | Régler la génération de carte et le niveau de zone | `F3` |
@@ -285,15 +291,15 @@ ailleurs, une petite classe nommée.
 Dans la zone : `I` sac, `C` fiche, `M` manuels, `TAB` carte, `H` bandeau,
 `F5` nouvelle zone, `G` paquet, `K` tout tuer, `Page haut/bas` niveau de la
 prochaine zone, `Échap` ferme ce qui est ouvert, puis ouvre le menu et la
-sauvegarde. Les cinq cases de la barre se lancent par `competence_1` à `competence_5` — clic gauche, clic droit, `A`, `R`,
+sauvegarde. Les cinq cases de la barre se lancent par `skill_1` à `skill_5` — clic gauche, clic droit, `A`, `R`,
 `F` — et **la barre lit ses libellés dans la carte d'entrées**, jamais dans une
 liste réécrite à côté. Chaque aperçu se referme par la touche qui l'a
 ouvert, et par `Échap`.
 
 ## Sauvegarde
 
-Un fichier JSON par personnage dans `user://personnages/`, plus
-`user://reglages.json` pour les réglages de la machine.
+Un fichier JSON par personnage dans `user://characters/`, plus
+`user://settings.json` pour les réglages de la machine.
 
 Rien de **calculé** n'est écrit : ni PV, ni statistiques, ni états. Elles se reconstruisent
 à partir de la fiche de base, des attributs placés et de l'équipement. Les
@@ -301,14 +307,20 @@ Rien de **calculé** n'est écrit : ni PV, ni statistiques, ni états. Elles se 
 sauvegarde, et un rééquilibrage n'atteindrait jamais les personnages existants.
 
 Les points d'un passif et d'un nœud d'arbre voyagent dans le **même**
-dictionnaire que ceux des cases (`manuel.points`) : le jalon 10 n'a donc ajouté
+dictionnaire que ceux des cases (`manual.points`) : le jalon 10 n'a donc ajouté
 aucun champ, et aucun numéro de version. En revanche, la relecture demande à
-l'archétype s'il **connaît** l'identifiant (`ManuelArchetype.connait`) et non
+l'archétype s'il **connaît** l'identifiant (`ManualArchetype.knows`) et non
 s'il l'enseigne : la question d'avant aurait jeté tous les arbres au premier
 rechargement, sur des fichiers intacts.
 
+Les versions 1 à 5 et les réglages d'avant parlent français — `nom`, `epee`,
+`degats_feu`, `user://personnages`, `user://reglages.json`. `LegacyFrench` traduit
+le fichier avant `Character.from_dict()`, renomme l'ancien dossier au premier accès,
+et l'écriture suivante part en version 6. Les fichiers de référence v1 à v5 gardent
+leurs noms français exprès : voir `tests/fixtures/LISEZMOI.md`.
+
 Une ligne d'objet qui vise une statistique **disparue** est convertie à la
-lecture, dans `Personnage._ligne_actuelle()`, et seulement par une équivalence
+lecture, dans `Character._current_line()`, et seulement par une équivalence
 exacte avec le jeu d'avant : les dégâts plats des versions 1 à 4 deviennent des
 dégâts ajoutés aux attaques ou aux sorts. Ce qui n'a pas d'équivalent est retiré
 **avec un avertissement**, jamais deviné.

@@ -23,7 +23,7 @@ func tick(delta: float) -> void:
 	# Séparation : sans ça les grunts se superposent en une bouillie illisible.
 	desired += _separation() * SEPARATION_FORCE
 
-	velocity = velocity.lerp(desired.normalized() * vitesse_de_deplacement(), ACCEL)
+	velocity = velocity.lerp(desired.normalized() * movement_speed(), ACCEL)
 	move_and_slide()
 
 	_cool_down(delta)
@@ -32,7 +32,7 @@ func tick(delta: float) -> void:
 		var info := DamageInfo.new(
 			stats.attack_damage, global_position, stats.knockback_force
 		)
-		info.auteur = etats
+		info.author = states
 		(target as Player).hurtbox.take_damage(info)
 		# Après take_damage : info.amount a pu être réduit par une armure, et on
 		# ne vole que ce qu'on a réellement infligé.

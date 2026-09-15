@@ -55,7 +55,7 @@ func tick(delta: float) -> void:
 		move = (goal - global_position).normalized() * strafe_bias
 		strafing = true
 
-	velocity = velocity.lerp(move * vitesse_de_deplacement(), ACCEL)
+	velocity = velocity.lerp(move * movement_speed(), ACCEL)
 	move_and_slide()
 
 	# Sans ça il s'use contre les murs en tournant toujours du même côté.
@@ -81,7 +81,7 @@ func _has_line_of_sight() -> bool:
 
 
 func _fire(dir: Vector2) -> void:
-	Projectile.spawn_d_une_nature(
+	Projectile.spawn_of_nature(
 		manager.projectile_parent, projectile_scene,
 		global_position, dir, stats.attack_damage, self
 	)

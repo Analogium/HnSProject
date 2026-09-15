@@ -1,0 +1,198 @@
+[gd_resource type="Resource" script_class="ManualArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passive.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/skills/fireball.tres" id="10_boule_de_feu"]
+[ext_resource type="Resource" path="res://resources/skills/hell_snake.tres" id="11_serpent_infernal"]
+[ext_resource type="Resource" path="res://resources/skills/immolation.tres" id="12_immolation"]
+
+[sub_resource type="Resource" id="L_boule_de_feu_attisement_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 13.0
+
+[sub_resource type="Resource" id="N_boule_de_feu_attisement"]
+script = ExtResource("3_noeud")
+id = "fireball_stoking"
+name = "Attisement"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_attisement_0")])
+
+[sub_resource type="Resource" id="L_boule_de_feu_souffle_ardent_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_boule_de_feu_souffle_ardent"]
+script = ExtResource("3_noeud")
+id = "fireball_searing_breath"
+name = "Souffle ardent"
+position = Vector2i(1, 0)
+parent = "fireball_stoking"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_souffle_ardent_0")])
+
+[sub_resource type="Resource" id="L_boule_de_feu_double_langue_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_boule_de_feu_double_langue"]
+script = ExtResource("3_noeud")
+id = "fireball_forked_tongue"
+name = "Double langue"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_double_langue_0")])
+
+[sub_resource type="Resource" id="C_boule_de_feu"]
+script = ExtResource("2_case")
+skill = ExtResource("10_boule_de_feu")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_boule_de_feu_attisement"), SubResource("N_boule_de_feu_souffle_ardent"), SubResource("N_boule_de_feu_double_langue")])
+
+[sub_resource type="Resource" id="L_serpent_infernal_longue_vie_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_serpent_infernal_longue_vie"]
+script = ExtResource("3_noeud")
+id = "hell_snake_long_life"
+name = "Longue vie"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_longue_vie_0")])
+
+[sub_resource type="Resource" id="L_serpent_infernal_crocs_0"]
+script = ExtResource("4_ligne")
+stat = "damage_fire"
+value_per_point = 4.0
+value_max_per_point = 9.0
+
+[sub_resource type="Resource" id="N_serpent_infernal_crocs"]
+script = ExtResource("3_noeud")
+id = "hell_snake_fangs"
+name = "Crocs"
+position = Vector2i(1, 0)
+parent = "hell_snake_long_life"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_crocs_0")])
+
+[sub_resource type="Resource" id="L_serpent_infernal_mue_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_serpent_infernal_mue"]
+script = ExtResource("3_noeud")
+id = "hell_snake_molting"
+name = "Mue"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_mue_0")])
+
+[sub_resource type="Resource" id="C_serpent_infernal"]
+script = ExtResource("2_case")
+skill = ExtResource("11_serpent_infernal")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_serpent_infernal_longue_vie"), SubResource("N_serpent_infernal_crocs"), SubResource("N_serpent_infernal_mue")])
+
+[sub_resource type="Resource" id="L_immolation_brasier_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_immolation_brasier"]
+script = ExtResource("3_noeud")
+id = "immolation_blaze"
+name = "Brasier"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_brasier_0")])
+
+[sub_resource type="Resource" id="L_immolation_fournaise_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 14.0
+
+[sub_resource type="Resource" id="N_immolation_fournaise"]
+script = ExtResource("3_noeud")
+id = "immolation_furnace"
+name = "Fournaise"
+position = Vector2i(1, 0)
+parent = "immolation_blaze"
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_fournaise_0")])
+
+[sub_resource type="Resource" id="L_immolation_flamme_noire_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_immolation_flamme_noire"]
+script = ExtResource("3_noeud")
+id = "immolation_black_flame"
+name = "Flamme noire"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_flamme_noire_0")])
+converts_to = 4
+converted_part_per_point = 0.50
+
+[sub_resource type="Resource" id="C_immolation"]
+script = ExtResource("2_case")
+skill = ExtResource("12_immolation")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_immolation_brasier"), SubResource("N_immolation_fournaise"), SubResource("N_immolation_flamme_noire")])
+
+[sub_resource type="Resource" id="L_coeur_de_braise_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 7.0
+
+[sub_resource type="Resource" id="L_coeur_de_braise_1"]
+script = ExtResource("4_ligne")
+stat = "res_fire"
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="P_coeur_de_braise"]
+script = ExtResource("5_passif")
+id = "heart_of_embers"
+name = "Cœur de braise"
+required_manual_level = 2
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coeur_de_braise_0"), SubResource("L_coeur_de_braise_1")])
+
+[sub_resource type="Resource" id="C_coeur_de_braise"]
+script = ExtResource("2_case")
+passive = SubResource("P_coeur_de_braise")
+position = Vector2i(0, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "fire"
+name = "Maître des flammes"
+cells = Array[ExtResource("2_case")]([SubResource("C_boule_de_feu"), SubResource("C_serpent_infernal"), SubResource("C_immolation"), SubResource("C_coeur_de_braise")])

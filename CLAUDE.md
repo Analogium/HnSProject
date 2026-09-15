@@ -1,7 +1,9 @@
 # Consignes pour Claude Code
 
-Projet Godot 4.7, GDScript, **en français** — noms de classes et de fonctions
-compris pour tout ce qui est né après le jalon 3. Lire
+Projet Godot 4.7, GDScript. **Le code est en anglais** — classes, fonctions,
+variables, identifiants de contenu, noms de fichiers ; **les commentaires, la
+documentation et les textes affichés restent en français** (le texte français est la
+clé de traduction de `i18n/en.po`). Lire
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) avant de toucher au code : ses huit
 invariants sont les seules choses du dépôt qui cassent en silence.
 
@@ -19,7 +21,7 @@ qui ment oblige la session suivante à relire le code pour retrouver la vérité
 
 **Ne jamais lancer Godot sur le dossier de travail.** L'utilisateur a son éditeur
 ouvert dessus ; un lancement lui réimporte son cache `.godot/` sous les pieds.
-Passer par `tests/run.sh`, `tools/catalogue.sh` et `tools/equilibrage.sh`, qui recopient d'abord le
+Passer par `tests/run.sh`, `tools/catalog.sh` et `tools/balance.sh`, qui recopient d'abord le
 projet dans un dossier temporaire. Pour un essai ponctuel hors de ces scripts,
 refaire la copie à la main.
 
@@ -84,7 +86,7 @@ première case sans relâche. Ce qu'il coûte ne se lit pas sur les images par
 seconde mais sur la ligne « combat auto » — les gels d'impact ne perdent aucune
 image, ils prennent du temps de jeu. À 300 ennemis, attaque tenue : **165 img/s,
 11 ms de physique, 6 % du temps figé**. Au-delà d'une dizaine de pour cent, le
-jeu se met à ressembler à du lag ; c'est `Game.hit_stop_periode` qui le tient.
+jeu se met à ressembler à du lag ; c'est `Game.hit_stop_period` qui le tient.
 
 ## Écrire du code ici
 
@@ -114,9 +116,9 @@ le test qui refuse l'oubli : [docs/RECETTES.md](docs/RECETTES.md).
 Après avoir touché un `.tres` de contenu, régénérer la référence :
 
 ```bash
-tools/catalogue.sh          # écrit docs/CATALOGUE.md
-tools/equilibrage.sh calcul # écrit docs/EQUILIBRAGE.md, sans la simulation
-tests/run.sh equilibrage    # les couloirs, hors de la suite par défaut
+tools/catalog.sh          # écrit docs/CATALOGUE.md
+tools/balance.sh calculation # écrit docs/EQUILIBRAGE.md, sans la simulation
+tests/run.sh balance    # les couloirs, hors de la suite par défaut
 ```
 
 Un couloir d'équilibrage qui casse ne se corrige pas en changeant son chiffre :

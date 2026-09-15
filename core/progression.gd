@@ -6,37 +6,37 @@ class_name Progression
 
 ## Ce qu'il en coûte pour quitter ce niveau-là. Le personnage l'appelle pour son
 ## palier suivant, le manuel pour additionner les siens.
-static func cout_du_niveau(niveau: int, base: float, puissance: float) -> int:
-	return roundi(base * pow(float(maxi(niveau, 1)), puissance))
+static func level_cost(level: int, base: float, power: float) -> int:
+	return roundi(base * pow(float(maxi(level, 1)), power))
 
 
 ## Le niveau atteint avec cette expérience **totale**. Le personnage retient
 ## l'expérience du niveau en cours, le manuel son total ; la courbe est la même.
-static func niveau_atteint(
-	experience: int, base: float, puissance: float, niveau_max: int
+static func reached_level(
+	experience: int, base: float, power: float, max_level: int
 ) -> int:
-	return _parcourir(experience, base, puissance, niveau_max).x
+	return _walk(experience, base, power, max_level).x
 
 
 ## Ce qu'il reste avant le niveau suivant et ce qu'il coûte ; (0, 0) au maximum.
-static func avancement(
-	experience: int, base: float, puissance: float, niveau_max: int
+static func progress(
+	experience: int, base: float, power: float, max_level: int
 ) -> Vector2i:
-	var atteint := _parcourir(experience, base, puissance, niveau_max)
-	return Vector2i(atteint.y, atteint.z)
+	var reached := _walk(experience, base, power, max_level)
+	return Vector2i(reached.y, reached.z)
 
 
 ## Le parcours de la courbe, écrit une fois : niveau atteint (x), dépassement (y),
-## coût du suivant (z). Borné par `niveau_max` contre une expérience aberrante.
-static func _parcourir(
-	experience: int, base: float, puissance: float, niveau_max: int
+## coût du suivant (z). Borné par `max_level` contre une expérience aberrante.
+static func _walk(
+	experience: int, base: float, power: float, max_level: int
 ) -> Vector3i:
-	var niveau := 1
-	var reste := maxi(experience, 0)
-	while niveau < niveau_max:
-		var cout := cout_du_niveau(niveau, base, puissance)
-		if reste < cout:
-			return Vector3i(niveau, reste, cout)
-		reste -= cout
-		niveau += 1
-	return Vector3i(niveau_max, 0, 0)
+	var level := 1
+	var rest := maxi(experience, 0)
+	while level < max_level:
+		var cost := level_cost(level, base, power)
+		if rest < cost:
+			return Vector3i(level, rest, cost)
+		rest -= cost
+		level += 1
+	return Vector3i(max_level, 0, 0)

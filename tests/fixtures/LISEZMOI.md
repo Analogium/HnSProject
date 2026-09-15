@@ -1,8 +1,8 @@
 # Fichiers de référence
 
-`personnage_v1.json` à `personnage_v5.json` sont des sauvegardes **écrites à la
+`character_v1.json` à `character_v6.json` sont des sauvegardes **écrites à la
 main**, versionnées avec le projet, et relues à chaque campagne par
-`tests/unit/test_sauvegarde.gd`.
+`tests/unit/test_save.gd`.
 
 La v1 est le format d'avant le jalon 5 : elle représente les fichiers déjà sur
 les disques des joueurs, et elle doit continuer de se lire — ses objets prennent
@@ -10,8 +10,13 @@ alors le niveau 1. La v2 est celui du jalon 5, avec le niveau d'objet : relue
 aujourd'hui, elle arrive avec un râtelier vide et la barre de départ. La v3 est
 celui du jalon 6, avec les manuels, le râtelier et la barre. La v4 est celui du
 jalon 7 : une ligne d'affixe peut y porter une `portee`, le mot-clé qu'elle vise.
-La v5 est le format qu'on écrit : une ligne de dégâts ajoutés y porte sa
-`valeur_max`.
+La v5 est celui du jalon 8 : une ligne de dégâts ajoutés y porte sa
+`valeur_max`. La v6 est le format qu'on écrit : le même, aux noms anglais — clés et
+identifiants.
+
+Les v1 à v5 **gardent leurs noms français** (`nom`, `epee`, `degats_feu`…) : c'est
+ce qui est sur les disques. `LegacyFrench` les traduit à la lecture, et ces fichiers
+sont la seule preuve que la table est complète.
 
 Les lignes `attack_damage` et `spell_damage` des v1 à v4 **sont converties à la
 lecture** en fourchettes aux attaques et aux sorts, et leurs tests le vérifient :
@@ -21,12 +26,12 @@ restent tels qu'un joueur les a sur son disque.
 Elle n'est pas là pour tester la sérialisation — l'aller-retour en mémoire s'en
 charge, et il passerait tout aussi bien si les deux côtés changeaient de nom de
 champ en même temps. Elle est là pour attraper exactement ça : le jour où
-`points_a_placer` devient `points`, ce fichier-ci ne se relira plus, et c'est
+`unspent_points` devient `points`, ce fichier-ci ne se relira plus, et c'est
 toutes les sauvegardes des joueurs qui ne se seraient plus relues.
 
 **Ne pas les régénérer pour faire passer un test.** Si l'une ne se lit plus,
-soit le format a changé — et il faut alors monter `Personnage.VERSION`, ajouter
-le numéro à `Personnage.VERSIONS_LUES` et écrire un fichier de référence de plus
+soit le format a changé — et il faut alors monter `Character.VERSION`, ajouter
+le numéro à `Character.READABLE_VERSIONS` et écrire un fichier de référence de plus
 — soit c'est une régression.
 
 Le fichier de la version la plus ancienne ne se supprime que le jour où l'on

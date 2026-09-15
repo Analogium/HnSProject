@@ -30,15 +30,15 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var touche := Touches.enfoncee(event)
-	if touche == KEY_NONE:
+	var key := Keys.pressed_down(event)
+	if key == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match touche:
+	match key:
 		KEY_1: _fill = maxf(_fill - 0.01, 0.30); _regenerate(_seed)
 		KEY_2: _fill = minf(_fill + 0.01, 0.60); _regenerate(_seed)
 		KEY_3: _iterations = maxi(_iterations - 1, 0); _regenerate(_seed)
@@ -47,10 +47,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		# d'y entrer. Ici parce que c'est déjà l'endroit d'où l'on règle une zone
 		# avant d'y entrer ; un menu ailleurs pour un réglage provisoire, ce
 		# serait deux interfaces à retirer le jour où la carte du monde arrivera.
-		KEY_5: Game.changer_niveau_de_zone(-1); _update_overlay()
-		KEY_6: Game.changer_niveau_de_zone(1); _update_overlay()
-		KEY_7: Game.changer_niveau_de_zone(-10); _update_overlay()
-		KEY_8: Game.changer_niveau_de_zone(10); _update_overlay()
+		KEY_5: Game.change_zone_level(-1); _update_overlay()
+		KEY_6: Game.change_zone_level(1); _update_overlay()
+		KEY_7: Game.change_zone_level(-10); _update_overlay()
+		KEY_8: Game.change_zone_level(10); _update_overlay()
 		KEY_R: _regenerate(Game.rng.randi())
 		KEY_SPACE: _regenerate(_seed)   # même graine : vérifie le déterminisme
 		KEY_H: overlay.visible = not overlay.visible
@@ -99,7 +99,7 @@ func _update_overlay() -> void:
 	overlay.text = "\n".join([
 		"[1/2] fill_chance   %.2f" % gen.fill_chance,
 		"[3/4] iterations    %d" % gen.iterations,
-		"[5/6] [7/8] niveau  %d" % Game.niveau_de_zone,
+		"[5/6] [7/8] niveau  %d" % Game.zone_level,
 		"      ennemis et butin",
 		"",
 		"sol            %d cases (%.0f %%)" % [gen.floor_cells.size(), ratio],

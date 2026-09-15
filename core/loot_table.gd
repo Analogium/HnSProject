@@ -16,11 +16,11 @@ static func quantity_for(affix_count: int) -> float:
 
 
 ## Null quand rien ne tombe. Un exemplaire neuf, au niveau de la zone.
-static func roll(affix_count: int, niveau: int) -> Item:
-	var bases := ItemCatalog.disponibles(niveau)
+static func roll(affix_count: int, level: int) -> Item:
+	var bases := ItemCatalog.available(level)
 	if bases.is_empty():
 		return null
 	if Game.rng.randf() >= BASE_CHANCE * quantity_for(affix_count):
 		return null
 	var base: ItemBase = bases[Game.rng.randi() % bases.size()]
-	return Item.new(base, ItemAffixPool.roll(Game.rng, base, niveau), niveau)
+	return Item.new(base, ItemAffixPool.roll(Game.rng, base, level), level)

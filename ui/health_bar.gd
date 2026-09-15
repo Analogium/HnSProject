@@ -18,10 +18,10 @@ const LOW_RATIO := 0.35
 
 ## Les icônes d'état, entre la barre et l'étiquette d'affixe : leur contour se
 ## chevauche d'un pixel.
-const ECART_D_ICONE := 1.0
+const ICON_GAP := 1.0
 
 var _ratio := 1.0
-var _sortes: Array[int] = []
+var _kinds: Array[int] = []
 
 
 func _ready() -> void:
@@ -41,15 +41,15 @@ func set_health(current: float, maximum: float) -> void:
 
 
 ## Appelée par l'acteur quand un état apparaît ou prend fin, jamais à chaque image.
-func montrer_les_etats(etats: Etats) -> void:
-	_sortes = etats.sortes()
+func show_states(states: StatusEffects) -> void:
+	_kinds = states.kinds()
 	_refresh()
 
 
 ## Les icônes tiennent la barre visible à pleine vie : un ennemi remonté à fond
 ## reste transi, et c'est justement ce qu'on regarde.
 func _refresh() -> void:
-	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _sortes.is_empty())
+	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _kinds.is_empty())
 	if visible:
 		queue_redraw()
 
@@ -67,10 +67,10 @@ func _draw() -> void:
 			LOW if _ratio <= LOW_RATIO else FULL
 		)
 
-	var cote := float(IconeDEtat.COTE)
-	var pas := cote + ECART_D_ICONE
-	var px := roundf(-(float(_sortes.size()) * pas - ECART_D_ICONE) * 0.5)
-	var py := y - cote - 1.0
-	for sorte in _sortes:
-		draw_texture(IconeDEtat.texture(sorte), Vector2(px, py))
-		px += pas
+	var side := float(StatusIcon.SIDE)
+	var step := side + ICON_GAP
+	var px := roundf(-(float(_kinds.size()) * step - ICON_GAP) * 0.5)
+	var py := y - side - 1.0
+	for kind in _kinds:
+		draw_texture(StatusIcon.texture(kind), Vector2(px, py))
+		px += step

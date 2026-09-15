@@ -75,15 +75,15 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var touche := Touches.enfoncee(event)
-	if touche == KEY_NONE:
+	var key := Keys.pressed_down(event)
+	if key == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match touche:
+	match key:
 		KEY_1: Game.hit_stop_duration = maxf(Game.hit_stop_duration - 0.01, 0.0)
 		KEY_2: Game.hit_stop_duration = minf(Game.hit_stop_duration + 0.01, 0.30)
 		KEY_3: _tune("knockback_force", -20.0, 0.0)
@@ -96,8 +96,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_0: player.shake_amount += 1.0
 		# Le second réglage du gel, et celui qui ne se juge qu'en nuée : la durée
 		# se règle sur un mannequin, la période se règle sur un paquet.
-		KEY_O: Game.hit_stop_periode = maxf(Game.hit_stop_periode - 0.05, 0.0)
-		KEY_P: Game.hit_stop_periode += 0.05
+		KEY_O: Game.hit_stop_period = maxf(Game.hit_stop_period - 0.05, 0.0)
+		KEY_P: Game.hit_stop_period += 0.05
 		KEY_G: _spawn_pack()
 		KEY_C: _spawn_lone_caster()
 		KEY_K: _kill_all()
@@ -127,7 +127,7 @@ func _overlay_text() -> String:
 		],
 		"",
 		"[1/2] hit-stop        %.2f s" % Game.hit_stop_duration,
-		"[O/P] entre deux gels %.2f s" % Game.hit_stop_periode,
+		"[O/P] entre deux gels %.2f s" % Game.hit_stop_period,
 		"[3/4] knockback       %.0f" % player.stats.knockback_force,
 		"[5/6] duree swing     %.2f s" % player.swing_duration,
 		"[7/8] cooldown        %.2f s" % player.stats.attack_cooldown,

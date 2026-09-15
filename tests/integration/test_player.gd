@@ -6,7 +6,7 @@ extends GutTest
 var _p: Player
 ## Retenu et pas seulement branché : le test des dégâts de sort a besoin d'aller
 ## regarder le tir qui vient d'en sortir.
-var _tirs: Node2D
+var _bolts_fired: Node2D
 
 
 func before_each() -> void:
@@ -14,27 +14,27 @@ func before_each() -> void:
 	add_child_autofree(_p)
 	# Un parent dédié pour les tirs : sans lui ils naissent sous le script de
 	# test et y restent après coup, ce que GUT signale en enfants non libérés.
-	_tirs = Node2D.new()
-	add_child_autofree(_tirs)
-	_p.projectile_parent = _tirs
+	_bolts_fired = Node2D.new()
+	add_child_autofree(_bolts_fired)
+	_p.projectile_parent = _bolts_fired
 	await wait_physics_frames(1)
 
 
 ## Les valeurs sont exprimées à partir des constantes de dérivation et non en
 ## dur : un recalibrage des attributs ne doit pas faire échouer un test qui ne
 ## parle pas de calibrage.
-func test_reserve_pleine_a_la_naissance() -> void:
-	var attendu := 50.0 + 10.0 * CharacterStats.MANA_PER_INTELLIGENCE
-	assert_eq(_p.stats.max_mana, attendu, "réserve de base plus l'intelligence")
-	assert_eq(_p.mana, _p.stats.max_mana, "pleine")
+func test_full_pool_at_spawn() -> void:
+	var expected := 50.0 + 10.0 * CharacterStats.MANA_PER_INTELLIGENCE
+	assert_eq(_p.stats.max_mana, expected, "réserve de base plus l'intelligence")
+	assert_eq(_p.mana, _p.stats.max_mana, "full")
 	assert_eq(_p.health, _p.stats.max_health, "en pleine santé")
 
 
-func test_le_tir_coute_du_mana() -> void:
-	var avant := _p.mana
-	_p.lancer(1)
+func test_the_bolt_costs_mana() -> void:
+	var before := _p.mana
+	_p.cast_slot(1)
 	assert_eq(
-		_p.mana, avant - CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).cout_en_mana,
+		_p.mana, before - SkillCatalog.by_id(SkillCatalog.ID_BOLT).mana_cost,
 		"le coût exact, pas un de plus"
 	)
 
@@ -43,20 +43,20 @@ func test_le_tir_coute_du_mana() -> void:
 ## sur la compétence, et sur la scène du projectile. Elles disent aujourd'hui la
 ## même chose, et ce test est ce qui l'exige — le jour où la compétence deviendra
 ## seule à décider, il tombera de lui-même.
-func test_la_nature_du_tir_ne_diverge_pas_de_celle_de_la_bille() -> void:
+func test_the_bolt_nature_does_not_diverge_from_the_pellet() -> void:
 	# Hors de l'arbre : montée, la bille avancerait et se libérerait toute seule.
-	var bille: Projectile = load("res://actors/projectiles/player_bolt.tscn").instantiate()
-	var nature: int = bille.damage_type
-	bille.free()
+	var pellet: Projectile = load("res://actors/projectiles/player_bolt.tscn").instantiate()
+	var nature: int = pellet.damage_type
+	pellet.free()
 	assert_eq(
-		CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).nature, nature,
-		"« %s » et la bille annoncent la même nature" % CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR).nom
+		SkillCatalog.by_id(SkillCatalog.ID_BOLT).nature, nature,
+		"« %s » et la bille annoncent la même nature" % SkillCatalog.by_id(SkillCatalog.ID_BOLT).name
 	)
 
 
-func test_reserve_insuffisante_refuse_le_tir() -> void:
+func test_insufficient_pool_refuses_the_bolt() -> void:
 	_p._set_mana(2.0)
-	_p.lancer(1)
+	_p.cast_slot(1)
 	assert_eq(_p.mana, 2.0, "ni tir, ni prélèvement partiel")
 
 
@@ -69,7 +69,7 @@ func test_regenerations() -> void:
 	assert_eq(_p.health, 51.0, "1 PV par seconde")
 
 
-func test_la_regeneration_ne_depasse_pas_le_plafond() -> void:
+func test_regeneration_does_not_exceed_the_cap() -> void:
 	_p._regen(10.0)
 	assert_eq(_p.health, _p.stats.max_health)
 	assert_eq(_p.mana, _p.stats.max_mana)
@@ -77,67 +77,67 @@ func test_la_regeneration_ne_depasse_pas_le_plafond() -> void:
 
 ## La hurtbox reçoit la fiche courante, pas une copie périmée : recompute_stats
 ## en fabrique une neuve à chaque équipement.
-func test_la_hurtbox_suit_la_fiche() -> void:
+func test_the_hurtbox_follows_the_sheet() -> void:
 	assert_eq(_p.hurtbox.stats, _p.stats, "à la naissance")
-	_p.equip(Item.new(load("res://resources/items/plastron.tres")))
+	_p.equip(Item.new(load("res://resources/items/breastplate.tres")))
 	assert_eq(_p.hurtbox.stats, _p.stats, "après un équipement")
 	_p.unequip("chest")
 	assert_eq(_p.hurtbox.stats, _p.stats, "après un retrait")
 
 
-func test_la_baguette_accelere_l_incantation_pas_la_lame() -> void:
-	var recharge := _p.stats.attack_cooldown
-	var incantation := _p.stats.cast_speed
-	_p.equip(Item.new(load("res://resources/items/baguette.tres")))
+func test_the_wand_speeds_up_casting_not_the_blade() -> void:
+	var cooldown := _p.stats.attack_cooldown
+	var casting := _p.stats.cast_speed
+	_p.equip(Item.new(load("res://resources/items/wand.tres")))
 	# Un pourcentage, donc il multiplie ce que l'intelligence a déjà donné.
-	assert_almost_eq(_p.stats.cast_speed, incantation * 1.15, 0.001, "+15 %")
-	assert_eq(_p.stats.attack_cooldown, recharge, "le corps à corps est intact")
+	assert_almost_eq(_p.stats.cast_speed, casting * 1.15, 0.001, "+15 %")
+	assert_eq(_p.stats.attack_cooldown, cooldown, "le corps à corps est intact")
 
 
 ## Le cœur du système d'équipement : un objet retiré ne laisse rien derrière lui,
 ## parce que recompute_stats repart toujours de la ressource du disque.
-func test_un_objet_retire_ne_laisse_rien() -> void:
-	var pv := _p.stats.max_health
+func test_a_removed_item_leaves_nothing() -> void:
+	var hp := _p.stats.max_health
 	var mod := StatMod.new("armor", StatMod.Mode.FLAT, 40.0)
-	_p.equip(Item.new(load("res://resources/items/plastron.tres"), [mod]))
+	_p.equip(Item.new(load("res://resources/items/breastplate.tres"), [mod]))
 	assert_eq(_p.stats.armor, 40.0)
 	_p.unequip("chest")
 	assert_eq(_p.stats.armor, 0.0)
-	assert_eq(_p.stats.max_health, pv, "l'implicite est parti aussi")
+	assert_eq(_p.stats.max_health, hp, "l'implicite est parti aussi")
 
 
 ## Retirer un plastron baisse le plafond : la vie courante doit le suivre, sinon
 ## la barre déborde et le joueur garde des PV qu'il n'a plus.
-func test_les_pv_repassent_sous_le_nouveau_plafond() -> void:
-	var sans_plastron := _p.stats.max_health
-	_p.equip(Item.new(load("res://resources/items/plastron.tres")))
+func test_hp_go_back_under_the_new_cap() -> void:
+	var without_breastplate := _p.stats.max_health
+	_p.equip(Item.new(load("res://resources/items/breastplate.tres")))
 	_p._set_health(_p.stats.max_health)
-	assert_gt(_p.health, sans_plastron, "le plastron a bien relevé le plafond")
+	assert_gt(_p.health, without_breastplate, "le plastron a bien relevé le plafond")
 	_p.unequip("chest")
-	assert_eq(_p.health, sans_plastron, "la vie redescend avec le plafond")
+	assert_eq(_p.health, without_breastplate, "la vie redescend avec le plafond")
 
 
 ## La ressource du disque n'est jamais écrite : aucun .tres du projet n'est
 ## resource_local_to_scene, l'y toucher contaminerait toutes les parties.
-func test_la_fiche_du_disque_reste_intacte() -> void:
+func test_the_disk_sheet_stays_intact() -> void:
 	_p.equip(Item.new(
-		load("res://resources/items/plastron.tres"),
+		load("res://resources/items/breastplate.tres"),
 		[StatMod.new("max_health", StatMod.Mode.PERCENT, 50.0)]
 	))
-	var disque: CharacterStats = load("res://resources/stats/player_stats.tres")
-	assert_eq(disque.max_health, 100.0, "le fichier n'a pas bougé")
-	assert_ne(_p.stats, disque, "la copie de travail est distincte")
+	var disk: CharacterStats = load("res://resources/stats/player_stats.tres")
+	assert_eq(disk.max_health, 100.0, "le fichier n'a pas bougé")
+	assert_ne(_p.stats, disk, "la copie de travail est distincte")
 
 
-func test_le_sac_plein_laisse_l_objet_au_sol() -> void:
-	var plastron: ItemBase = load("res://resources/items/plastron.tres")
-	while _p.inventory.add(Item.new(plastron)):
+func test_a_full_bag_leaves_the_item_on_the_ground() -> void:
+	var breastplate: ItemBase = load("res://resources/items/breastplate.tres")
+	while _p.inventory.add(Item.new(breastplate)):
 		pass
-	assert_false(_p.pick_up(Item.new(plastron)), "refusé, donc il reste au sol")
+	assert_false(_p.pick_up(Item.new(breastplate)), "refusé, donc il reste au sol")
 
 
 ## Les attributs de départ arrivent bien dans la fiche, dérivation comprise.
-func test_les_attributs_de_depart_sont_derives() -> void:
+func test_starting_attributes_are_derived() -> void:
 	assert_eq(_p.stats.strength, 10.0)
 	assert_eq(
 		_p.stats.max_health, 100.0 + 10.0 * CharacterStats.HEALTH_PER_STRENGTH,
@@ -150,74 +150,74 @@ func test_les_attributs_de_depart_sont_derives() -> void:
 	assert_gt(_p.stats.evasion, 0.0, "la dextérité donne enfin une source à l'esquive")
 
 
-func test_une_montee_de_niveau_donne_des_points() -> void:
+func test_a_level_up_gives_points() -> void:
 	assert_eq(_p.unspent_points, 0, "aucun point au départ")
 	_p.gain_xp(_p.xp_to_next)
 	assert_eq(_p.level, 2)
 	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL)
 
 
-func test_placer_un_point_change_la_fiche() -> void:
+func test_placing_a_point_changes_the_sheet() -> void:
 	_p.gain_xp(_p.xp_to_next)
-	var avant := _p.stats.max_health
+	var before := _p.stats.max_health
 	assert_true(_p.spend_point("strength"))
 	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL - 1)
 	assert_eq(_p.stats.strength, 11.0)
-	assert_eq(_p.stats.max_health, avant + CharacterStats.HEALTH_PER_STRENGTH)
+	assert_eq(_p.stats.max_health, before + CharacterStats.HEALTH_PER_STRENGTH)
 
 
-func test_on_ne_place_pas_ce_qu_on_n_a_pas() -> void:
+func test_cannot_place_what_we_do_not_have() -> void:
 	assert_false(_p.spend_point("strength"), "aucun point disponible")
 	_p.gain_xp(_p.xp_to_next)
-	assert_false(_p.spend_point("charisme"), "attribut inconnu")
+	assert_false(_p.spend_point("charisma"), "attribut inconnu")
 	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL, "rien n'a été consommé")
 
 
 ## La répartition survit à un recalcul : elle est tenue sur le joueur et non sur
 ## `stats`, qui est reconstruite de zéro à chaque équipement.
-func test_la_repartition_survit_a_un_equipement() -> void:
+func test_the_distribution_survives_equipping() -> void:
 	_p.gain_xp(_p.xp_to_next)
 	_p.spend_point("dexterity")
-	var esquive := _p.stats.evasion
-	_p.equip(Item.new(load("res://resources/items/plastron.tres")))
+	var evasion_roll := _p.stats.evasion
+	_p.equip(Item.new(load("res://resources/items/breastplate.tres")))
 	_p.unequip("chest")
 	assert_eq(_p.stats.dexterity, 11.0, "le point placé est toujours là")
-	assert_eq(_p.stats.evasion, esquive)
+	assert_eq(_p.stats.evasion, evasion_roll)
 
 
 ## L'ordre du recalcul : les attributs doivent être définitifs avant qu'on en
 ## dérive quoi que ce soit, sinon un objet qui donne de la force ne rapporterait
 ## pas les points de vie correspondants.
-func test_un_objet_qui_donne_de_la_force_donne_les_pv_qui_vont_avec() -> void:
-	var avant := _p.stats.max_health
+func test_an_item_giving_strength_gives_the_matching_hp() -> void:
+	var before := _p.stats.max_health
 	_p.equip(Item.new(
-		load("res://resources/items/plastron.tres"),
+		load("res://resources/items/breastplate.tres"),
 		[StatMod.new("strength", StatMod.Mode.FLAT, 20.0)]
 	))
 	assert_eq(_p.stats.strength, 30.0)
 	assert_eq(
 		_p.stats.max_health,
-		avant + 20.0 + 20.0 * CharacterStats.HEALTH_PER_STRENGTH,
+		before + 20.0 + 20.0 * CharacterStats.HEALTH_PER_STRENGTH,
 		"l'implicite du plastron, plus ce que les 20 de force rapportent"
 	)
 
 
 ## Et la dérivation doit précéder les pourcentages, pour qu'un « +10 % PV »
 ## multiplie aussi ce que la force a donné.
-func test_un_pourcentage_multiplie_aussi_les_pv_de_la_force() -> void:
+func test_a_percentage_also_multiplies_strength_hp() -> void:
 	_p.equip(Item.new(
-		load("res://resources/items/plastron.tres"),
+		load("res://resources/items/breastplate.tres"),
 		[StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]
 	))
-	var attendu := (
+	var expected := (
 		100.0 + 10.0 * CharacterStats.HEALTH_PER_STRENGTH + 20.0
 	) * 2.0
-	assert_eq(_p.stats.max_health, attendu, "base, force et implicite, tous doublés")
+	assert_eq(_p.stats.max_health, expected, "base, force et implicite, tous doublés")
 
 
 ## Monter la force relève le plafond de vie : la barre doit suivre, sinon elle
 ## affiche un maximum que le joueur n'a pas.
-func test_placer_un_point_ne_casse_pas_les_barres() -> void:
+func test_placing_a_point_does_not_break_the_bars() -> void:
 	_p.gain_xp(_p.xp_to_next)
 	_p._set_health(10.0)
 	_p.spend_point("strength")
@@ -231,20 +231,20 @@ func test_placer_un_point_ne_casse_pas_les_barres() -> void:
 
 ## Une base fabriquée en mémoire : les bases des dix familles arrivent à l'étape
 ## suivante du jalon, la règle d'équipement doit tenir avant elles.
-func _bague(nom: String) -> Item:
+func _ring_item(name: String) -> Item:
 	var base := ItemBase.new()
-	base.id = "test_" + nom
+	base.id = "test_" + name
 	base.family = "ring"
-	base.display_name = nom
+	base.display_name = name
 	base.kind = "sword"
 	return Item.new(base)
 
 
 ## Le défaut que le jalon 4 vient corriger : avant, le second anneau écrasait le
 ## premier — silencieusement, puisque rien ne disait que le doigt était pris.
-func test_deux_anneaux_tiennent_sur_deux_doigts() -> void:
-	var a := _bague("un")
-	var b := _bague("deux")
+func test_two_rings_fit_on_two_fingers() -> void:
+	var a := _ring_item("one")
+	var b := _ring_item("two")
 	assert_null(_p.equip(a), "rien à remplacer")
 	assert_null(_p.equip(b), "le second n'en remplace aucun")
 	assert_eq(_p.equipped("ring_left"), a)
@@ -254,58 +254,58 @@ func test_deux_anneaux_tiennent_sur_deux_doigts() -> void:
 
 ## Lâché sur un emplacement précis, l'objet y va — même si l'autre doigt est
 ## libre. Sans ça, le panneau ne pourrait pas viser la main droite.
-func test_un_emplacement_impose_est_respecte() -> void:
-	var a := _bague("un")
+func test_a_forced_slot_is_respected() -> void:
+	var a := _ring_item("one")
 	_p.equip(a, "ring_right")
 	assert_eq(_p.equipped("ring_right"), a)
 	assert_null(_p.equipped("ring_left"), "le doigt gauche est resté libre")
 
 
-func test_un_emplacement_impose_de_la_mauvaise_famille_est_refuse() -> void:
-	var a := _bague("un")
+func test_a_forced_slot_of_the_wrong_family_is_refused() -> void:
+	var a := _ring_item("one")
 	assert_eq(_p.equip(a, "amulet"), a, "rendu tel quel, jamais perdu")
 	assert_eq(_p.equipment.size(), 0)
 
 
-func test_un_objet_sans_famille_est_rendu_intact() -> void:
+func test_an_item_without_family_is_returned_intact() -> void:
 	var base := ItemBase.new()
 	base.family = ""
-	var caillou := Item.new(base)
-	assert_eq(_p.equip(caillou), caillou)
+	var pebble := Item.new(base)
+	assert_eq(_p.equip(pebble), pebble)
 	assert_eq(_p.equipment.size(), 0)
 
 
 ## Les deux doigts pris, on remplace celui de gauche et l'ancien revient à
 ## l'appelant : c'est lui qui décide s'il retourne au sac ou au sol.
-func test_le_troisieme_anneau_rend_celui_qu_il_remplace() -> void:
-	var a := _bague("un")
+func test_the_third_ring_returns_the_one_it_replaces() -> void:
+	var a := _ring_item("one")
 	_p.equip(a)
-	_p.equip(_bague("deux"))
-	assert_eq(_p.equip(_bague("trois")), a, "le premier doigt est rendu")
+	_p.equip(_ring_item("two"))
+	assert_eq(_p.equip(_ring_item("three")), a, "le premier doigt est rendu")
 	assert_eq(_p.equipment.size(), 2, "toujours deux anneaux portés")
 
 
 ## Les dix emplacements entrent tous dans le calcul, pas seulement les deux
 ## d'avant : un bonus porté à un doigt doit se voir sur la fiche.
-func test_un_anneau_compte_dans_la_fiche() -> void:
+func test_a_ring_counts_in_the_sheet() -> void:
 	var base := ItemBase.new()
-	base.id = "test_anneau_armure"
+	base.id = "test_ring_armor"
 	base.family = "ring"
 	base.implicit_stat = "armor"
 	base.implicit_value = 12.0
-	var avant := _p.stats.armor
+	var before := _p.stats.armor
 	_p.equip(Item.new(base))
-	assert_eq(_p.stats.armor, avant + 12.0, "l'implicite de l'anneau est entré")
+	assert_eq(_p.stats.armor, before + 12.0, "l'implicite de l'anneau est entré")
 	_p.unequip("ring_left")
-	assert_eq(_p.stats.armor, avant, "et il repart avec lui")
+	assert_eq(_p.stats.armor, before, "et il repart avec lui")
 
 
 ## L'invariant que l'affichage trahissait : la vie ne dépasse jamais le
 ## maximum, quel que soit le chemin qui a modifié la fiche. Le modèle était
 ## sain — c'était le texte qui mentait — et ce test est là pour qu'il le reste.
-func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
-	var plastron := Item.new(load("res://resources/items/plastron.tres"))
-	_p.equip(plastron)
+func test_health_never_exceeds_the_maximum() -> void:
+	var breastplate := Item.new(load("res://resources/items/breastplate.tres"))
+	_p.equip(breastplate)
 	assert_lte(_p.health, _p.stats.max_health, "après avoir équipé")
 
 	_p.gain_xp(3000)
@@ -324,50 +324,50 @@ func test_la_vie_ne_depasse_jamais_le_maximum() -> void:
 ## Le tir reçoit ce que l'équipement ajoute aux sorts. C'est cette ligne qui rend
 ## une arme d'incantation offensive : sans elle, une baguette n'aurait rien à
 ## donner à un sort.
-func test_le_tir_recoit_ce_que_l_equipement_ajoute_aux_sorts() -> void:
-	_p.equip(Item.new(ItemCatalog.by_id("baguette"), [
-		StatMod.fourchette("degats_foudre", 33.0, 33.0, MotsCles.SORT),
+func test_the_bolt_receives_what_equipment_adds_to_spells() -> void:
+	_p.equip(Item.new(ItemCatalog.by_id("wand"), [
+		StatMod.ranged("damage_lightning", 33.0, 33.0, Keywords.SPELL),
 	]))
-	_p.lancer(1)
-	assert_eq(_tirs.get_child_count(), 1, "un tir est parti")
-	var tir := _tirs.get_child(0) as Projectile
-	assert_not_null(tir)
-	assert_eq(tir._parts[DamageType.Kind.LIGHTNING], 7.0 + 33.0, "sa table, plus la baguette")
+	_p.cast_slot(1)
+	assert_eq(_bolts_fired.get_child_count(), 1, "un tir est parti")
+	var bolt := _bolts_fired.get_child(0) as Projectile
+	assert_not_null(bolt)
+	assert_eq(bolt._parts[DamageType.Kind.LIGHTNING], 7.0 + 33.0, "sa table, plus la baguette")
 
 
 ## La force ajoute ses dégâts physiques aux attaques, et à elles seules : le Trait
 ## est un sort.
-func test_la_force_ajoute_du_physique_aux_attaques_seulement() -> void:
-	assert_gt(_p.stats.degats_de_force(), 0.0, "la fiche de départ a de la force")
-	var attaque := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
+func test_strength_adds_physical_to_attacks_only() -> void:
+	assert_gt(_p.stats.strength_damage(), 0.0, "la fiche de départ a de la force")
+	var attack := _p.resolve(SkillCatalog.by_id(SkillCatalog.ID_ATTACK), 1)
 	assert_almost_eq(
-		attaque.degats_min[DamageType.Kind.PHYSICAL], 12.0 + _p.stats.degats_de_force(), 0.0001
+		attack.damage_min[DamageType.Kind.PHYSICAL], 12.0 + _p.stats.strength_damage(), 0.0001
 	)
-	assert_eq(_p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).degats_min[DamageType.Kind.PHYSICAL], 0.0)
+	assert_eq(_p.resolve(SkillCatalog.by_id(SkillCatalog.ID_BOLT), 1).damage_min[DamageType.Kind.PHYSICAL], 0.0)
 
 
 ## **La séparation des deux familles**, vue depuis le joueur : une épée ajoute ses
 ## dégâts à l'Attaque, et le Trait n'en voit rien.
-func test_une_epee_ajoute_ses_degats_a_l_attaque_et_pas_au_trait() -> void:
-	var epee := ItemCatalog.by_id("epee")
-	var attaque_avant := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
-	var tir_avant := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).total_max()
-	_p.equip(Item.new(epee))
-	var attaque := _p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE), 1)
-	assert_almost_eq(attaque.total_min(), attaque_avant.total_min() + epee.implicit_value, 0.0001)
-	assert_almost_eq(attaque.total_max(), attaque_avant.total_max() + epee.implicit_value_max, 0.0001)
-	assert_eq(_p.resoudre(CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR), 1).total_max(), tir_avant, "le Trait n'a rien reçu")
+func test_a_sword_adds_its_damage_to_the_attack_and_not_the_bolt() -> void:
+	var sword := ItemCatalog.by_id("sword")
+	var attack_before := _p.resolve(SkillCatalog.by_id(SkillCatalog.ID_ATTACK), 1)
+	var bolt_before := _p.resolve(SkillCatalog.by_id(SkillCatalog.ID_BOLT), 1).total_max()
+	_p.equip(Item.new(sword))
+	var attack := _p.resolve(SkillCatalog.by_id(SkillCatalog.ID_ATTACK), 1)
+	assert_almost_eq(attack.total_min(), attack_before.total_min() + sword.implicit_value, 0.0001)
+	assert_almost_eq(attack.total_max(), attack_before.total_max() + sword.implicit_value_max, 0.0001)
+	assert_eq(_p.resolve(SkillCatalog.by_id(SkillCatalog.ID_BOLT), 1).total_max(), bolt_before, "le Trait n'a rien reçu")
 
 
 ## Le personnage et les manuels montent sur la **même fonction**, avec leurs
 ## propres constantes. Deux exponentielles écrites côte à côte finiraient par
 ## diverger d'un arrondi, et personne ne saurait laquelle est la bonne.
-func test_la_courbe_du_personnage_est_la_courbe_partagee() -> void:
-	for niveau in [1, 2, 7, 30]:
+func test_the_character_curve_is_the_shared_curve() -> void:
+	for level in [1, 2, 7, 30]:
 		assert_eq(
-			_p._needed_for(niveau),
-			Progression.cout_du_niveau(niveau, Player.XP_BASE, Player.XP_POWER),
-			"le palier %d" % niveau
+			_p._needed_for(level),
+			Progression.level_cost(level, Player.XP_BASE, Player.XP_POWER),
+			"le palier %d" % level
 		)
 
 
@@ -375,76 +375,76 @@ func test_la_courbe_du_personnage_est_la_courbe_partagee() -> void:
 # La barre de compétences (jalon 6, étape 6)
 # --------------------------------------------------------------------------
 
-func _livre_travaille() -> Item:
-	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
-	livre.manuel.gagner_experience(999999)
-	livre.manuel.investir(livre.base.manuel, "eclair_vif")
-	return livre
+func _worked_book() -> Item:
+	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
+	book.manual.gain_experience(999999)
+	book.manual.invest(book.base.manual, "swift_bolt")
+	return book
 
 
 ## Ce qu'on peut poser dans une case : les deux attaques de départ, et ce qu'on a
 ## réellement appris dans les livres à l'étude. Une case à zéro point n'y est pas
 ## — on ne propose pas de mettre sous les doigts ce qui ne fait rien.
-func test_ce_qu_on_peut_poser_dans_une_case() -> void:
-	var noms := []
-	for c in _p.competences_disponibles():
-		noms.append(c.id)
-	assert_eq(noms, [CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR], "les deux de départ")
+func test_what_can_be_placed_in_a_slot() -> void:
+	var names := []
+	for c in _p.available_skills():
+		names.append(c.id)
+	assert_eq(names, [SkillCatalog.ID_ATTACK, SkillCatalog.ID_BOLT], "les deux de départ")
 
-	_p.etudier(_livre_travaille())
-	noms = []
-	for c in _p.competences_disponibles():
-		noms.append(c.id)
-	assert_true(noms.has("eclair_vif"), "la case où l'on a mis un point")
-	assert_false(noms.has("nova_de_foudre"), "mais pas celles restées vides")
+	_p.study(_worked_book())
+	names = []
+	for c in _p.available_skills():
+		names.append(c.id)
+	assert_true(names.has("swift_bolt"), "la case où l'on a mis un point")
+	assert_false(names.has("lightning_nova"), "mais pas celles restées vides")
 
 
-func test_les_points_d_une_competence_viennent_du_livre_qui_l_enseigne() -> void:
-	assert_eq(_p.points_de_competence("eclair_vif"), 0, "aucun livre à l'étude")
+func test_skill_points_come_from_the_book_that_teaches_it() -> void:
+	assert_eq(_p.skill_points("swift_bolt"), 0, "aucun livre à l'étude")
 	assert_eq(
-		_p.points_de_competence(CompetenceCatalog.ID_ATTAQUE), 1,
+		_p.skill_points(SkillCatalog.ID_ATTACK), 1,
 		"les attaques de départ ne s'apprennent pas"
 	)
-	_p.etudier(_livre_travaille())
-	assert_eq(_p.points_de_competence("eclair_vif"), 1)
+	_p.study(_worked_book())
+	assert_eq(_p.skill_points("swift_bolt"), 1)
 
 
 ## Le lancement porte lui-même ses quatre refus : aucun appelant n'a à les
 ## refaire, et c'est ce qui permet à la touche, à la barre et aux tests de passer
 ## par le même chemin.
-func test_lancer_refuse_ce_qu_on_n_a_pas_appris() -> void:
-	_p.barre.poser(2, "eclair_vif")
-	assert_false(_p.lancer(2), "la compétence n'est dans aucun livre à l'étude")
-	assert_eq(_tirs.get_child_count(), 0)
+func test_cast_refuses_what_was_not_learned() -> void:
+	_p.bar.put(2, "swift_bolt")
+	assert_false(_p.cast_slot(2), "la compétence n'est dans aucun livre à l'étude")
+	assert_eq(_bolts_fired.get_child_count(), 0)
 
-	_p.etudier(_livre_travaille())
-	assert_true(_p.lancer(2), "le livre à l'étude la rend lançable")
-	assert_eq(_tirs.get_child_count(), 1)
+	_p.study(_worked_book())
+	assert_true(_p.cast_slot(2), "le livre à l'étude la rend lançable")
+	assert_eq(_bolts_fired.get_child_count(), 1)
 
 
-func test_lancer_refuse_une_case_vide_et_une_recharge_en_cours() -> void:
-	assert_false(_p.lancer(4), "la cinquième case est vide")
-	assert_true(_p.lancer(1), "le tir part")
-	assert_false(_p.lancer(1), "et ne repart pas tant qu'il se recharge")
+func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
+	assert_false(_p.cast_slot(4), "la cinquième case est vide")
+	assert_true(_p.cast_slot(1), "le tir part")
+	assert_false(_p.cast_slot(1), "et ne repart pas tant qu'il se recharge")
 
 
 ## La couronne : huit projectiles pour une nova, et un seul qui part droit devant
 ## quoi qu'annonce la dispersion.
-func test_une_nova_part_en_couronne() -> void:
-	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
-	livre.manuel.gagner_experience(999999)
-	livre.manuel.investir(livre.base.manuel, "nova_de_foudre")
-	_p.etudier(livre)
+func test_a_nova_leaves_as_a_crown() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
+	book.manual.gain_experience(999999)
+	book.manual.invest(book.base.manual, "lightning_nova")
+	_p.study(book)
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
 
-	_p.barre.poser(3, "nova_de_foudre")
-	assert_true(_p.lancer(3))
-	assert_eq(_tirs.get_child_count(), 8, "huit traits")
+	_p.bar.put(3, "lightning_nova")
+	assert_true(_p.cast_slot(3))
+	assert_eq(_bolts_fired.get_child_count(), 8, "huit traits")
 
 	var angles := {}
-	for tir in _tirs.get_children():
-		angles[snappedf(rad_to_deg((tir as Projectile)._dir.angle()), 0.1)] = true
+	for bolt in _bolts_fired.get_children():
+		angles[snappedf(rad_to_deg((bolt as Projectile)._dir.angle()), 0.1)] = true
 	assert_eq(angles.size(), 8, "et ils ne partent pas deux au même endroit")
 
 
@@ -455,12 +455,12 @@ func test_une_nova_part_en_couronne() -> void:
 ## rotation qui ne tourne pas — mais c'était vrai sans que rien ne le vérifie, et
 ## une dispersion recopiée par erreur sur le trait de base ferait tirer à côté de
 ## la souris sans qu'aucune assertion ne s'en aperçoive.
-func test_un_trait_seul_part_droit_dans_la_visee() -> void:
+func test_a_single_bolt_flies_straight_along_the_aim() -> void:
 	_p.facing = Vector2(0.6, -0.8)
-	assert_true(_p.lancer(1), "le tir de départ")
-	assert_eq(_tirs.get_child_count(), 1, "un seul trait")
+	assert_true(_p.cast_slot(1), "le tir de départ")
+	assert_eq(_bolts_fired.get_child_count(), 1, "un seul trait")
 	assert_eq(
-		(_tirs.get_child(0) as Projectile)._dir, _p.facing,
+		(_bolts_fired.get_child(0) as Projectile)._dir, _p.facing,
 		"la direction de la visée, au bit près"
 	)
 
@@ -471,89 +471,89 @@ func test_un_trait_seul_part_droit_dans_la_visee() -> void:
 
 ## Un point dans chaque compétence du manuel de la foudre. Ses passifs sont
 ## laissés vides : ce test regarde ce qui **part**, et un passif ne part pas.
-func _livre_ouvert_partout() -> Item:
-	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
-	livre.manuel.gagner_experience(999999)
-	for competence in livre.base.manuel.competences():
-		livre.manuel.investir(livre.base.manuel, competence.id)
-	return livre
+func _book_open_everywhere() -> Item:
+	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
+	book.manual.gain_experience(999999)
+	for skill in book.base.manual.skills():
+		book.manual.invest(book.base.manual, skill.id)
+	return book
 
 
 ## Les tirs lancés jusqu'ici, retirés tout de suite : le test suivant compte ceux
 ## de son propre lancer.
-func _vider_les_tirs() -> void:
-	for tir in _tirs.get_children():
-		_tirs.remove_child(tir)
-		tir.free()
+func _clear_bolts() -> void:
+	for bolt in _bolts_fired.get_children():
+		_bolts_fired.remove_child(bolt)
+		bolt.free()
 
 
 ## **Le test qui garantit que l'étape n'a rien changé au jeu** : sans rien porter,
 ## chaque sort part avec exactement les nombres de sa fiche — combien de traits, à
 ## quelle vitesse, pour quels dégâts, quel coût et quelle recharge.
-func test_chaque_sort_part_avec_les_nombres_de_sa_fiche() -> void:
-	_p.etudier(_livre_ouvert_partout())
+func test_each_spell_leaves_with_its_sheet_numbers() -> void:
+	_p.study(_book_open_everywhere())
 	_p.stats.max_mana = 999.0
 
-	for id in [CompetenceCatalog.ID_TIR, "eclair_vif", "nova_de_foudre"]:
-		var c := CompetenceCatalog.by_id(id)
-		var points := _p.points_de_competence(id)
-		assert_gt(points, 0, "« %s » est apprise" % c.nom)
-		_p.barre.poser(4, id)
+	for id in [SkillCatalog.ID_BOLT, "swift_bolt", "lightning_nova"]:
+		var c := SkillCatalog.by_id(id)
+		var points := _p.skill_points(id)
+		assert_gt(points, 0, "« %s » est apprise" % c.name)
+		_p.bar.put(4, id)
 		_p._recharges[4] = 0.0
 		_p._set_mana(999.0)
-		_vider_les_tirs()
+		_clear_bolts()
 
-		assert_true(_p.lancer(4), "« %s » part" % c.nom)
-		assert_eq(_tirs.get_child_count(), c.projectiles, "« %s » : traits" % c.nom)
-		for tir: Projectile in _tirs.get_children():
-			assert_eq(tir._parts[c.nature], c.degats(points), "« %s » : dégâts" % c.nom)
+		assert_true(_p.cast_slot(4), "« %s » part" % c.name)
+		assert_eq(_bolts_fired.get_child_count(), c.projectiles, "« %s » : traits" % c.name)
+		for bolt: Projectile in _bolts_fired.get_children():
+			assert_eq(bolt._parts[c.nature], c.damage(points), "« %s » : dégâts" % c.name)
 			assert_eq(
-				DamageInfo.en_parts(tir._parts, Vector2.ZERO).amount, c.degats(points),
-				"« %s » : et aucune autre nature" % c.nom
+				DamageInfo.as_parts(bolt._parts, Vector2.ZERO).amount, c.damage(points),
+				"« %s » : et aucune autre nature" % c.name
 			)
-			assert_eq(tir.speed, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)
-		assert_eq(_p.mana, 999.0 - c.cout_en_mana, "« %s » : coût" % c.nom)
+			assert_eq(bolt.speed, c.projectile_speed, "« %s » : vitesse" % c.name)
+		assert_eq(_p.mana, 999.0 - c.mana_cost, "« %s » : coût" % c.name)
 		# À la précision d'un réel sur 32 bits, qui est celle de `_recharges` : la
 		# valeur rangée n'est pas celle calculée au bit près, et elle ne l'était pas
 		# davantage avant la résolution.
 		assert_almost_eq(
-			_p.recharge_restante(4), c.intervalle(_p.stats), 1e-6, "« %s » : recharge" % c.nom
+			_p.remaining_cooldown(4), c.interval(_p.stats), 1e-6, "« %s » : recharge" % c.name
 		)
 
 
-func test_un_tir_porte_d_un_projectile_de_plus_en_sort_deux() -> void:
-	_p.mods_de_competence.assign([
-		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, MotsCles.PROJECTILE),
+func test_a_bolt_with_one_more_projectile_fires_two() -> void:
+	_p.skill_mods.assign([
+		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, Keywords.PROJECTILE),
 	])
-	assert_true(_p.lancer(1), "le tir de départ")
-	assert_eq(_tirs.get_child_count(), 2, "deux traits")
-	var a := (_tirs.get_child(0) as Projectile)._dir
-	var b := (_tirs.get_child(1) as Projectile)._dir
+	assert_true(_p.cast_slot(1), "le tir de départ")
+	assert_eq(_bolts_fired.get_child_count(), 2, "deux traits")
+	var a := (_bolts_fired.get_child(0) as Projectile)._dir
+	var b := (_bolts_fired.get_child(1) as Projectile)._dir
 	assert_almost_eq(
-		rad_to_deg(absf(a.angle_to(b))), StatsDeCompetence.ECART_MINIMAL, 0.01,
+		rad_to_deg(absf(a.angle_to(b))), SkillStats.MIN_SPREAD, 0.01,
 		"et ils ne partent pas l'un sur l'autre"
 	)
 
 
 ## Une fourchette ajoutée se tire **par trait** : les traits d'une nova ne portent
 ## pas le même froid, sinon ils se liraient comme un coup recopié.
-func test_chaque_trait_tire_sa_fourchette() -> void:
-	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
-	livre.manuel.gagner_experience(999999)
-	livre.manuel.investir(livre.base.manuel, "nova_de_foudre")
-	_p.etudier(livre)
+func test_each_bolt_rolls_its_range() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
+	book.manual.gain_experience(999999)
+	book.manual.invest(book.base.manual, "lightning_nova")
+	_p.study(book)
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
-	_p.mods_de_competence.assign([
-		StatMod.fourchette("degats_froid", 1.0, 1000.0, MotsCles.SORT),
+	_p.skill_mods.assign([
+		StatMod.ranged("damage_cold", 1.0, 1000.0, Keywords.SPELL),
 	])
 
-	_p.barre.poser(3, "nova_de_foudre")
-	assert_true(_p.lancer(3))
-	var froids := {}
-	for tir: Projectile in _tirs.get_children():
-		froids[tir._parts[DamageType.Kind.COLD]] = true
-	assert_eq(froids.size(), 8, "huit traits, huit tirages")
+	_p.bar.put(3, "lightning_nova")
+	assert_true(_p.cast_slot(3))
+	var colds := {}
+	for bolt: Projectile in _bolts_fired.get_children():
+		colds[bolt._parts[DamageType.Kind.COLD]] = true
+	assert_eq(colds.size(), 8, "huit traits, huit tirages")
 
 
 # --------------------------------------------------------------------------
@@ -562,135 +562,135 @@ func test_chaque_trait_tire_sa_fourchette() -> void:
 
 ## Un livre au râtelier, monté au plafond, avec ces points placés **par le seul
 ## chemin** — celui qui recalcule la fiche.
-func _etudier(id_base: String, points: Array, emplacement := 0) -> Item:
-	var livre := Item.new(ItemCatalog.by_id(id_base))
-	livre.manuel.gagner_experience(999999)
-	_p.etudier(livre, emplacement)
+func _study(base_id: String, points: Array, slot := 0) -> Item:
+	var book := Item.new(ItemCatalog.by_id(base_id))
+	book.manual.gain_experience(999999)
+	_p.study(book, slot)
 	for id: String in points:
-		assert_true(_p.investir(emplacement, id), "« %s »" % id)
-	return livre
+		assert_true(_p.invest(slot, id), "« %s »" % id)
+	return book
 
 
 ## **Un passif entre dans la fiche comme une pièce d'armure**, et par le même
 ## tri : ses lignes sans portée touchent le personnage, celles qui visent un
 ## mot-clé restent pour les compétences.
-func test_un_passif_du_ratelier_entre_dans_la_fiche() -> void:
-	var armure := _p.stats.armor
-	var pv := _p.stats.max_health
-	_etudier("manuel_armes", ["garde_de_fer", "garde_de_fer"])
+func test_a_rack_passive_enters_the_sheet() -> void:
+	var armor := _p.stats.armor
+	var hp := _p.stats.max_health
+	_study("manual_weapons", ["iron_guard", "iron_guard"])
 
-	assert_eq(_p.stats.armor, armure + 24.0, "deux points de douze")
-	assert_eq(_p.stats.max_health, pv + 28.0, "et de quatorze PV")
+	assert_eq(_p.stats.armor, armor + 24.0, "deux points de douze")
+	assert_eq(_p.stats.max_health, hp + 28.0, "et de quatorze PV")
 
 
 ## **Et il s'en va avec le livre.** Oublié, le bonus resterait sur la fiche
 ## jusqu'au prochain changement d'équipement, puis disparaîtrait sans que le
 ## joueur ait rien fait.
-func test_un_passif_s_en_va_avec_son_livre() -> void:
-	var armure := _p.stats.armor
-	_etudier("manuel_armes", ["garde_de_fer"])
-	assert_eq(_p.stats.armor, armure + 12.0)
+func test_a_passive_leaves_with_its_book() -> void:
+	var armor := _p.stats.armor
+	_study("manual_weapons", ["iron_guard"])
+	assert_eq(_p.stats.armor, armor + 12.0)
 
-	var parti := _p.cesser_d_etudier(0)
-	assert_eq(_p.stats.armor, armure, "la fiche est revenue à ce qu'elle était")
-	assert_eq(parti.manuel.points_de("garde_de_fer"), 1, "et le livre a gardé son point")
+	var gone := _p.stop_studying(0)
+	assert_eq(_p.stats.armor, armor, "la fiche est revenue à ce qu'elle était")
+	assert_eq(gone.manual.points_of("iron_guard"), 1, "et le livre a gardé son point")
 
 	# Rangé dans le sac, il ne donne rien : le râtelier est le seul endroit où un
 	# manuel agit, et c'est ce qui en fait un choix.
-	assert_true(_p.inventory.add(parti))
+	assert_true(_p.inventory.add(gone))
 	_p.recompute_stats()
-	assert_eq(_p.stats.armor, armure, "un livre dans le sac ne donne rien")
+	assert_eq(_p.stats.armor, armor, "un livre dans le sac ne donne rien")
 
 
 ## Un passif qui vise un mot-clé ne touche pas la fiche mais les compétences qui
 ## le portent — y compris celles d'un **autre** livre du râtelier.
-func test_un_passif_de_mot_cle_sert_les_competences_d_un_autre_livre() -> void:
-	var foudre := _etudier("manuel_foudre", ["eclair_vif"], 0)
-	var sans := _p.resoudre(CompetenceCatalog.by_id("eclair_vif"), 1).total_min()
+func test_a_keyword_passive_serves_another_book_skills() -> void:
+	var lightning := _study("manual_lightning", ["swift_bolt"], 0)
+	var without := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1).total_min()
 
-	_etudier("manuel_foudre", ["conducteur", "conducteur"], 1)
-	var avec := _p.resoudre(CompetenceCatalog.by_id("eclair_vif"), 1).total_min()
-	assert_almost_eq(avec, sans * 1.12, 0.01, "deux points de 6 % de dégâts de foudre")
-	assert_eq(foudre.manuel.points_de("conducteur"), 0, "et le premier livre n'y est pour rien")
+	_study("manual_lightning", ["conductor", "conductor"], 1)
+	var with_it := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1).total_min()
+	assert_almost_eq(with_it, without * 1.12, 0.01, "deux points de 6 % de dégâts de foudre")
+	assert_eq(lightning.manual.points_of("conductor"), 0, "et le premier livre n'y est pour rien")
 
 
 ## **La conversion se voit** : ce que le sort pose part dans la nature d'arrivée,
 ## et sa couleur la dit. Sans cela, le nœud le plus cher de l'arbre ne se
 ## remarquerait qu'en lisant une fiche.
-func test_un_noeud_de_conversion_change_la_nature_de_ce_qui_part() -> void:
-	_etudier("manuel_foudre", [
-		"nuage_d_orage", "nuage_d_orage", "nuage_d_orage", "nuage_d_orage_grele",
+func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
+	_study("manual_lightning", [
+		"storm_cloud", "storm_cloud", "storm_cloud", "storm_cloud_hail",
 	])
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)
-	_p.barre.poser(3, "nuage_d_orage")
+	_p.bar.put(3, "storm_cloud")
 
-	assert_true(_p.lancer(3))
-	assert_eq(_tirs.get_child_count(), 1)
-	var nuage := _tirs.get_child(0) as NuageDOrage
-	var parts := nuage._geste.tirer(Game.rng)
+	assert_true(_p.cast_slot(3))
+	assert_eq(_bolts_fired.get_child_count(), 1)
+	var cloud := _bolts_fired.get_child(0) as StormCloud
+	var parts := cloud._cast.roll(Game.rng)
 	assert_gt(
 		parts[DamageType.Kind.COLD], parts[DamageType.Kind.LIGHTNING],
 		"les trois cinquièmes sont du froid"
 	)
-	assert_eq(nuage._teinte, DamageType.COLORS[DamageType.Kind.COLD], "et le nuage frappe en froid")
+	assert_eq(cloud._tint, DamageType.COLORS[DamageType.Kind.COLD], "et le nuage frappe en froid")
 
 
 ## Ce qu'un nœud ne change pas : un ajout d'objet ne déplace pas la couleur du
 ## tir. C'est la décision du jalon 8 — un éclair reste un éclair — et elle tient
 ## parce que la nature montrée ne regarde que la base et les conversions.
-func test_un_objet_ne_change_pas_la_couleur_du_tir() -> void:
-	_etudier("manuel_foudre", ["eclair_vif"])
-	_p.mods_de_competence.assign([
-		StatMod.fourchette("degats_froid", 900.0, 900.0, MotsCles.SORT),
+func test_an_item_does_not_change_the_bolt_color() -> void:
+	_study("manual_lightning", ["swift_bolt"])
+	_p.skill_mods.assign([
+		StatMod.ranged("damage_cold", 900.0, 900.0, Keywords.SPELL),
 	])
-	_p.barre.poser(3, "eclair_vif")
-	assert_true(_p.lancer(3))
-	var tir := _tirs.get_child(0) as Projectile
-	assert_gt(tir._parts[DamageType.Kind.COLD], tir._parts[DamageType.Kind.LIGHTNING])
-	assert_eq(tir._nature, int(DamageType.Kind.LIGHTNING), "le trait reste un éclair")
+	_p.bar.put(3, "swift_bolt")
+	assert_true(_p.cast_slot(3))
+	var bolt := _bolts_fired.get_child(0) as Projectile
+	assert_gt(bolt._parts[DamageType.Kind.COLD], bolt._parts[DamageType.Kind.LIGHTNING])
+	assert_eq(bolt._nature, int(DamageType.Kind.LIGHTNING), "le trait reste un éclair")
 
 
 ## Une mort et une boule d'expérience récompensent par le même chemin : le joueur et
 ## les manuels à l'étude apprennent du même montant.
-func test_une_recompense_nourrit_le_joueur_et_ses_manuels() -> void:
-	var livre := Item.new(ItemCatalog.by_id("manuel_foudre"))
-	_p.etudier(livre)
-	var exp_du_livre := livre.manuel.experience
-	assert_eq(_p.recompenser(10.0, 1, Vector2.ZERO), 10)
+func test_a_reward_feeds_the_player_and_its_manuals() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
+	_p.study(book)
+	var book_exp := book.manual.experience
+	assert_eq(_p.reward(10.0, 1, Vector2.ZERO), 10)
 	assert_eq(_p.xp, 10)
-	assert_eq(livre.manuel.experience, exp_du_livre + 10, "le livre apprend du même montant")
+	assert_eq(book.manual.experience, book_exp + 10, "le livre apprend du même montant")
 
 
 ## Et le retard sur la zone la fait fondre, boule comprise : sans ça, l'établi ferait
 ## monter un personnage de niveau 20 dans la zone 1 aussi vite qu'en jeu dans la 20.
-func test_une_zone_laissee_derriere_rapporte_moins() -> void:
+func test_a_zone_left_behind_rewards_less() -> void:
 	_p.level = 20
-	var gain := _p.recompenser(100.0, 1, Vector2.ZERO)
-	assert_eq(gain, maxi(roundi(100.0 * Enemy.facteur_d_experience(1, 20)), 1))
+	var gain := _p.reward(100.0, 1, Vector2.ZERO)
+	assert_eq(gain, maxi(roundi(100.0 * Enemy.experience_factor(1, 20)), 1))
 	assert_lt(gain, 100)
 
 
 ## Un coup d'épée tire **une** fois : tous les ennemis de l'arc reçoivent la même
 ## valeur. Critique coupé, pour ne comparer que le tirage de la fourchette.
-func test_un_coup_d_epee_frappe_tout_l_arc_de_la_meme_valeur() -> void:
+func test_a_sword_swing_hits_the_whole_arc_for_the_same_value() -> void:
 	_p.stats.crit_chance = 0.0
-	_p.mods_de_competence.assign([
-		StatMod.fourchette("degats_feu", 1.0, 1000.0, MotsCles.ATTAQUE),
+	_p.skill_mods.assign([
+		StatMod.ranged("damage_fire", 1.0, 1000.0, Keywords.ATTACK),
 	])
-	assert_true(_p.lancer(0), "le coup de base")
+	assert_true(_p.cast_slot(0), "le coup de base")
 
-	var recus: Array[float] = []
+	var received_all: Array[float] = []
 	for i in 2:
-		var cible := Hurtbox.new()
-		add_child_autofree(cible)
-		cible.damaged.connect(
-			func(info: DamageInfo) -> void: recus.append(info.parts[DamageType.Kind.FIRE])
+		var target := Hurtbox.new()
+		add_child_autofree(target)
+		target.damaged.connect(
+			func(info: DamageInfo) -> void: received_all.append(info.parts[DamageType.Kind.FIRE])
 		)
-		_p._on_hitbox_area_entered(cible)
-	assert_eq(recus.size(), 2, "les deux cibles sont touchées")
-	assert_eq(recus[0], recus[1], "par la même valeur")
-	assert_gt(recus[0], 0.0, "et le feu ajouté est bien dedans")
+		_p._on_hitbox_area_entered(target)
+	assert_eq(received_all.size(), 2, "les deux cibles sont touchées")
+	assert_eq(received_all[0], received_all[1], "par la même valeur")
+	assert_gt(received_all[0], 0.0, "et le feu ajouté est bien dedans")
 	# Le geste attend la fin de son arc et le gel d'impact : on le laisse finir
 	# plutôt que de libérer le joueur au milieu.
 	await wait_seconds(0.4)
@@ -700,59 +700,59 @@ func test_un_coup_d_epee_frappe_tout_l_arc_de_la_meme_valeur() -> void:
 # L'affixe porté (jalon 7, étape 4)
 # --------------------------------------------------------------------------
 
-func _baguette(affixes: Array[String]) -> Item:
+func _wand(affixes: Array[String]) -> Item:
 	var mods: Array = []
 	for id in affixes:
-		var affixe := ItemAffixPool.by_id(id)
-		mods.append(affixe.modificateur(affixe.tiers[0].max_value))
-	return Item.new(ItemCatalog.by_id("baguette"), mods)
+		var affix := ItemAffixPool.by_id(id)
+		mods.append(affix.modifier(affix.tiers[0].max_value))
+	return Item.new(ItemCatalog.by_id("wand"), mods)
 
 
-func test_un_objet_porte_ajoute_son_projectile_et_le_retirer_le_reprend() -> void:
-	var tir := CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
-	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 1, "à mains nues")
-	_p.equip(_baguette(["fourchu"] as Array[String]))
-	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 3, "le T1 de « fourchu » : +2")
+func test_a_worn_item_adds_its_projectile_and_removing_it_takes_it_back() -> void:
+	var bolt := SkillCatalog.by_id(SkillCatalog.ID_BOLT)
+	assert_eq(_p.resolve(bolt, 1).projectile_count(), 1, "à mains nues")
+	_p.equip(_wand(["forked"] as Array[String]))
+	assert_eq(_p.resolve(bolt, 1).projectile_count(), 3, "le T1 de « fourchu » : +2")
 	_p.unequip("weapon")
-	assert_eq(_p.resoudre(tir, 1).nombre_de_projectiles(), 1, "et il repart avec l'objet")
+	assert_eq(_p.resolve(bolt, 1).projectile_count(), 1, "et il repart avec l'objet")
 
 
 ## **La confusion des deux familles**, vue depuis le joueur : un objet dont tous
 ## les affixes visent un mot-clé ne change **aucun** champ de la fiche. S'il en
 ## changeait un, le bonus compterait deux fois — et seulement pour certaines
 ## compétences.
-func test_un_affixe_porte_n_ecrit_rien_sur_la_fiche() -> void:
-	_p.equip(_baguette([] as Array[String]))
-	var nue := _champs(_p.stats)
-	_p.equip(_baguette(["fourchu", "sifflant", "orageux"] as Array[String]))
-	assert_eq_deep(_champs(_p.stats), nue)
-	assert_eq(_p.mods_de_competence.size(), 1 + 3, "la force, et les trois partent au lancer")
+func test_a_scoped_affix_writes_nothing_on_the_sheet() -> void:
+	_p.equip(_wand([] as Array[String]))
+	var bare := _fields(_p.stats)
+	_p.equip(_wand(["forked", "whistling", "stormy"] as Array[String]))
+	assert_eq_deep(_fields(_p.stats), bare)
+	assert_eq(_p.skill_mods.size(), 1 + 3, "la force, et les trois partent au lancer")
 
 
 ## Tous les champs d'une fiche, pour la comparer à une autre sans en oublier un.
-func _champs(fiche: CharacterStats) -> Dictionary:
+func _fields(sheet: CharacterStats) -> Dictionary:
 	var out := {}
-	for propriete in fiche.get_property_list():
-		if propriete["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
-			out[propriete["name"]] = fiche.get(propriete["name"])
+	for property in sheet.get_property_list():
+		if property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			out[property["name"]] = sheet.get(property["name"])
 	return out
 
 
 ## Retirer un livre du râtelier vide les cases qui pointaient dessus : une case
 ## qui annonce un sort inlançable se découvre au pire moment.
-func test_ranger_un_livre_vide_les_cases_qui_le_designaient() -> void:
-	_p.etudier(_livre_travaille())
-	_p.barre.poser(2, "eclair_vif")
-	_p.cesser_d_etudier(0)
-	assert_eq(_p.barre.id_de(2), "", "la case est vide")
-	assert_eq(_p.barre.id_de(0), CompetenceCatalog.ID_ATTAQUE, "les attaques de départ restent")
+func test_storing_a_book_clears_the_slots_that_pointed_to_it() -> void:
+	_p.study(_worked_book())
+	_p.bar.put(2, "swift_bolt")
+	_p.stop_studying(0)
+	assert_eq(_p.bar.id_of(2), "", "la case est vide")
+	assert_eq(_p.bar.id_of(0), SkillCatalog.ID_ATTACK, "les attaques de départ restent")
 
 
 ## Mais pas si un autre livre du râtelier l'enseigne encore : la question est
 ## « la sait-on toujours », pas « d'où venait-elle ».
-func test_un_second_livre_garde_la_case_pleine() -> void:
-	_p.etudier(_livre_travaille(), 0)
-	_p.etudier(_livre_travaille(), 1)
-	_p.barre.poser(2, "eclair_vif")
-	_p.cesser_d_etudier(0)
-	assert_eq(_p.barre.id_de(2), "eclair_vif", "l'autre livre l'enseigne toujours")
+func test_a_second_book_keeps_the_slot_full() -> void:
+	_p.study(_worked_book(), 0)
+	_p.study(_worked_book(), 1)
+	_p.bar.put(2, "swift_bolt")
+	_p.stop_studying(0)
+	assert_eq(_p.bar.id_of(2), "swift_bolt", "l'autre livre l'enseigne toujours")

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/heavy_strike.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "heavy_strike"
+name = "Frappe lourde"
+nature = 0
+cadence = 0
+shape = 2
+cooldown = 0.00
+mana_cost = 6.0
+projectiles = 1
+spread_in_degrees = 0.0
+damage_per_point = Array[float]([20.0, 26.0, 33.0, 41.0, 50.0])
+required_manual_level = 1
+icon = ExtResource("2_icone")

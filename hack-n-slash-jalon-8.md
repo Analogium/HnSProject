@@ -26,11 +26,11 @@ sorts »** — une fourchette, une nature, et une famille de compétences.
 - **Les dégâts ajoutés en fourchette** : « ajoute # à # dégâts de <nature> aux
   attaques » ou « aux sorts », tirés à chaque lancer
 - **La séparation attaque / sort** passe par les mots-clés du jalon 7 : une ligne
-  « aux attaques » est un affixe porté sur `attaque`, « aux sorts » sur `sort`
-- **Le remplacement des plats d'aujourd'hui** : `acere`, `arcanique`, les
+  « aux attaques » est un affixe porté sur `attack`, « aux sorts » sur `spell`
+- **Le remplacement des plats d'aujourd'hui** : `sharp`, `arcane`, les
   implicites des épées, des masses et des grimoires, et le bonus de force
   deviennent des fourchettes
-- **Le retrait de `meurtrier`** (+% dégâts, armes de mêlée). `orageux` (+% dégâts
+- **Le retrait de `murderous`** (+% dégâts, armes de mêlée). `stormy` (+% dégâts
   des compétences de foudre) reste
 - **La sauvegarde en version 5**, et la conversion des lignes des personnages
   existants
@@ -90,7 +90,7 @@ résultat** (invariant 3). Le nombre de tirages dépend de l'équipement, jamais
 ce qui sort.
 
 **Les dégâts propres d'une compétence restent un nombre fixe** — les
-`degats_par_point` du jalon 6. La variance vient des objets, pas du sort : ce qui
+`damage_per_point` du jalon 6. La variance vient des objets, pas du sort : ce qui
 se lit sur la page d'un manuel reste un nombre qu'on peut comparer d'un point au
 suivant.
 
@@ -108,9 +108,9 @@ le test de l'étape 2 la garde.
 | Force → +0,2 `attack_damage` par point | Force → **ajoute 0,2 à 0,2 dégâts physiques aux attaques** par point |
 | Implicite « +4 dégâts » d'une épée | « ajoute 2 à 6 dégâts physiques aux attaques » — la moyenne d'avant |
 | Implicite « +5 dégâts de sort » d'un grimoire | « ajoute 3 à 7 dégâts de foudre aux sorts » |
-| `acere` (+dégâts, mêlée) | un affixe « dégâts physiques aux attaques » |
-| `arcanique` (+dégâts de sort) | trois affixes « dégâts de <nature> aux sorts » |
-| `meurtrier` (+% dégâts, mêlée) | **retiré** |
+| `sharp` (+dégâts, mêlée) | un affixe « dégâts physiques aux attaques » |
+| `arcane` (+dégâts de sort) | trois affixes « dégâts de <nature> aux sorts » |
+| `murderous` (+% dégâts, mêlée) | **retiré** |
 
 **La force garde exactement son effet**, en changeant de forme : une fourchette
 dont les deux bornes sont égales. C'est la continuité la moins surprenante ; lui
@@ -132,8 +132,8 @@ implicite d'arme est une ligne d'objet comme une autre.
 
 ## 5. Les affixes
 
-Douze affixes remplacent `acere` et `arcanique` : **chaque nature, dans les deux
-familles**. Chacun porte un mot-clé — `attaque` ou `sort` — et une statistique
+Douze affixes remplacent `sharp` et `arcane` : **chaque nature, dans les deux
+familles**. Chacun porte un mot-clé — `attack` ou `spell` — et une statistique
 par nature :
 
 | Aux attaques | Aux sorts |
@@ -149,15 +149,15 @@ sacré.
 
 Conséquence sur le tirage : douze lignes de dégâts dans la réserve, là où il y en
 avait deux. Leurs poids sont réglés pour que **la famille** pèse ce que pesaient
-`acere` et `arcanique`, et non douze fois plus.
+`sharp` et `arcane`, et non douze fois plus.
 
-**Un « +% dégâts des sorts », `ensorcele`, sur les armes et les main gauche de
+**Un « +% dégâts des sorts », `bewitched`, sur les armes et les main gauche de
 lanceur** (décidé le 11 septembre, sur demande, après l'étape 7). Un pourcentage
-porté sur `sort`, à l'échelle et au poids d'`orageux` : il multiplie toutes les
+porté sur `spell`, à l'échelle et au poids d'`stormy` : il multiplie toutes les
 parts d'un sort, comme lui. Il ne sort que sur ce qui porte l'étiquette
 `caster` — baguettes, sceptres, grimoires, codex — et jamais sur un bijou : c'est
 l'objet qu'on tient pour lancer qui rend les sorts plus forts. Son identifiant ne
-reprend pas `arcanique`, retiré (invariant 1).
+reprend pas `arcane`, retiré (invariant 1).
 
 **Deux fourchettes par palier**, et non une : « ajoute (3–4) à (7–9) ». La borne
 basse et la borne haute se tirent chacune dans la sienne. Un seul tirage avec un
@@ -165,7 +165,7 @@ basse et la borne haute se tirent chacune dans la sienne. Un seul tirage avec un
 comparaison de deux fourchettes qui fait regarder deux objets.
 
 **Les nouveaux identifiants ne reprennent pas les anciens** (invariant 1). Une
-sauvegarde qui porte `acere` au palier 7 parle de l'échelle d'`acere` ; donner ce
+sauvegarde qui porte `sharp` au palier 7 parle de l'échelle d'`sharp` ; donner ce
 nom à une autre échelle rendrait son palier faux.
 
 ---
@@ -188,7 +188,7 @@ compétence fait — une caractéristique par ligne :
 
 Une ligne qui ne dit rien ne s'écrit pas : pas de « 0 froid », pas de « 1 trait »,
 pas de vitesse sur un coup d'épée. **Tous ses nombres viennent de la résolution**,
-par `Player.resoudre()` — la fiche est la preuve de ce que le lancer fera, pas une
+par `Player.resolve()` — la fiche est la preuve de ce que le lancer fera, pas une
 description du `.tres`.
 
 **La fiche se termine par une estimation** (décidé le 11 septembre, sur demande,
@@ -226,7 +226,7 @@ portée, en français, et deux fois la même chose sur une ligne se lit mal.
 
 ## 7. La sauvegarde, et les personnages qui existent déjà
 
-**Version 5.** Une ligne d'affixe écrit sa borne haute (`valeur_max`) quand elle
+**Version 5.** Une ligne d'affixe écrit sa borne haute (`value_max`) quand elle
 en a une. Absente, la ligne est un nombre seul, comme toutes celles d'avant.
 
 **Les lignes des versions 1 à 4 sont converties**, parce que les statistiques
@@ -240,11 +240,11 @@ le jeu d'aujourd'hui**, et non une supposition :
 | `spell_damage` plat X | ajoute X à X foudre aux sorts | **tous** les sorts du jeu sont de foudre |
 | `attack_damage` en % (meurtrier) | **retirée**, avec un avertissement | plus rien ne multiplie les dégâts d'une attaque |
 
-**La provenance des lignes converties est oubliée** : un palier 7 d'`acere` n'est
+**La provenance des lignes converties est oubliée** : un palier 7 d'`sharp` n'est
 pas un palier 7 du nouvel affixe. La ligne s'applique ; c'est l'infobulle sous
 Alt qui n'a rien à montrer, comme pour un objet d'avant les paliers.
 
-**La perte de `meurtrier` est la seule perte du jalon**, et elle touche de vrais
+**La perte de `murderous` est la seule perte du jalon**, et elle touche de vrais
 personnages. Elle est annoncée au chargement plutôt que silencieuse.
 
 ---
@@ -262,7 +262,7 @@ ne changent **aucun nombre** du jeu.
       qui garantit que l'étape ne change pas le jeu ; un coup en deux parts perd
       sa foudre et garde son froid ; l'armure ne voit que la part physique ; le
       plancher porte sur le total.
-- [x] **2. Les dégâts d'un lancer, par nature.** `StatsDeCompetence` porte ses
+- [x] **2. Les dégâts d'un lancer, par nature.** `SkillStats` porte ses
       dégâts par nature, en fourchette ; les bases de 12 et 7 entrent dans les
       tables ; `stat_de_base` et `spell_damage` disparaissent ; la force ajoute du
       physique aux attaques. Tests : sans objet, chaque compétence du catalogue
@@ -276,15 +276,15 @@ ne changent **aucun nombre** du jeu.
       valeur.
 - [x] **4. Les affixes en fourchette.** La seconde fourchette des paliers, la
       borne haute des lignes, les implicites portés, les douze affixes, le retrait
-      d'`acere`, `arcanique` et `meurtrier`. Régénérer `docs/CATALOGUE.md`.
+      d'`sharp`, `arcane` et `murderous`. Régénérer `docs/CATALOGUE.md`.
       Tests : la borne basse d'une ligne ne dépasse jamais sa borne haute ;
       chaque échelle reste monotone sur ses deux bornes ; une épée ajoute ses
       dégâts physiques à l'Attaque et pas au Trait.
 - [x] **5. La sauvegarde en version 5.** La borne haute, la conversion des lignes
-      anciennes, `personnage_v5.json`. **Avant toute interface**, comme aux jalons
+      anciennes, `character_v5.json`. **Avant toute interface**, comme aux jalons
       5 et 6. Tests : les fichiers de référence v1 à v4 se relisent, leurs lignes
       converties ; un personnage relu frappe exactement comme avant la mise à
-      jour ; une ligne de `meurtrier` est retirée et le dit.
+      jour ; une ligne de `murderous` est retirée et le dit.
 - [x] **6. La fiche de compétence au survol.** La fenêtre flottante de la page du
       manuel, qui remplace la fiche du bas. Capture en fenêtré : un sort à trois
       natures et plusieurs traits, et une case verrouillée. Tests : chaque ligne
@@ -302,7 +302,7 @@ ne changent **aucun nombre** du jeu.
 - **La ligne du tir s'appelle « trait »**, et non « tir » : c'est le nom que la
   compétence porte à l'écran, celui que le joueur lit sur la barre.
 - **Les deux lignes ont leur explication au survol**, dans
-  `StatHelp.COMPETENCES` et non dans la table des statistiques, qui est vérifiée
+  `StatHelp.SKILLS` et non dans la table des statistiques, qui est vérifiée
   champ par champ contre `CharacterStats`. Sans nombre : la ligne montre déjà la
   valeur résolue. Les deux tests d'honnêteté de la fiche les traitent pour ce
   qu'elles sont : une explication reste exigée, et elles comptent comme atteintes
@@ -311,9 +311,9 @@ ne changent **aucun nombre** du jeu.
   grille, plus un pixel d'air. Une icône ne se réduit qu'en facteur entier, et une
   entrée de dix pixels l'aurait fait déborder sur sa voisine. Le livre entier
   appris, le menu tient encore au-dessus de la barre ;
-  `test_le_menu_tient_dans_le_cadrage` le mesure depuis la place de la barre
+  `test_the_menu_stays_in_frame` le mesure depuis la place de la barre
   dans `zone.tscn`.
-- **`StatsDeCompetence.fourchette_lisible()`** écrit les dégâts résolus pour la
+- **`SkillStats.readable_range()`** écrit les dégâts résolus pour la
   page du manuel comme pour la fiche : arrondis, et un seul nombre quand les deux
   bornes s'arrondissent au même.
 - **L'infobulle et l'établi n'ont rien demandé de plus** : leurs lignes avaient
@@ -326,14 +326,14 @@ ne changent **aucun nombre** du jeu.
   et c'est le nombre qu'un « +1 projectile » modifie. Ce qui ne dit rien reste
   tu : pas d'écart pour un trait droit, pas d'accroissement sans objet qui en
   donne, pas de ligne pour une nature absente.
-- **`StatsDeCompetence` garde sa décomposition** — la ligne de la table, les
+- **`SkillStats` garde sa décomposition** — la ligne de la table, les
   ajouts par nature, le facteur d'attribut, le produit des accroissements —,
   écrite par les appels mêmes qui calculent les bornes.
-  `test_la_decomposition_refait_les_degats` vérifie qu'elle les recompose. Les
+  `test_the_breakdown_rebuilds_the_damage` vérifie qu'elle les recompose. Les
   multiplications gardent leur ordre : aucun nombre du jeu ne bouge.
 - **Sans point placé, la fiche montre le premier**, et le dit.
 - **La fiche s'arrête au-dessus des jauges du HUD**, dessinées après les
-  panneaux. La limite est sortie en `Hud.haut_des_jauges()` : l'infobulle de la
+  panneaux. La limite est sortie en `Hud.gauges_top()` : l'infobulle de la
   fiche de personnage la calculait déjà de son côté.
 - **La page du manuel raccourcit de 230 à 196 pixels** : sans la fiche du bas,
   elle gardait une bande vide. Ses tests lisent désormais sa place dans
@@ -346,22 +346,22 @@ ne changent **aucun nombre** du jeu.
   été comparés à ceux du code d'avant, puis figés en valeurs mesurées dans
   `test_personnage_joueur`.
 - **Une borne haute plus basse que la valeur est redressée** à la lecture plutôt
-  que refusée : `test_une_fourchette_a_l_envers_est_redressee`.
+  que refusée : `test_a_reversed_range_is_straightened`.
 
 ### Ce que l'étape 4 a changé au plan
 
 - **`stat_de_base` et `spell_damage` sont partis ici**, et non à l'étape 2 : tant
-  qu'`acere` et `arcanique` existaient, l'ancien terme gardait leurs lignes
+  qu'`sharp` et `arcane` existaient, l'ancien terme gardait leurs lignes
   vivantes.
 - **La force est une ligne portée que fabrique `recompute_stats()`** — « ajoute F
   à F dégâts physiques aux attaques » — à côté de celles des objets.
-  `CharacterStats.degats_de_force()` en garde la règle.
+  `CharacterStats.strength_damage()` en garde la règle.
 - **Les poids ne tiennent qu'à moitié la promesse du §5.** Chaque affixe de dégâts
-  ajoutés pèse 2. Aux attaques, la famille pèse 12, comme `acere` — mais
-  `meurtrier`, qui pesait 10, est parti sans remplaçant. Aux sorts, elle pèse 12
-  contre 10 pour `arcanique`. À reprendre avec le reste de l'équilibrage.
+  ajoutés pèse 2. Aux attaques, la famille pèse 12, comme `sharp` — mais
+  `murderous`, qui pesait 10, est parti sans remplaçant. Aux sorts, elle pèse 12
+  contre 10 pour `arcane`. À reprendre avec le reste de l'équilibrage.
 - **L'établi pagine ses affixes** : douze lignes de plus ne tenaient plus dans
-  son cadre. Une ligne s'y lit par le nom court de `StatMod.nom()`, et changer de
+  son cadre. Une ligne s'y lit par le nom court de `StatMod.name()`, et changer de
   base ramène à la première page.
 - **La fiche d'objet de la forge serre son interligne de 11 à 10 pixels** : les
   plages « 3–4 à 7–9 » la faisaient déborder de sa hauteur.
@@ -374,7 +374,7 @@ ne changent **aucun nombre** du jeu.
   porte ses parts ont été validés par la même campagne.
 - **`DamageInfo` garde `amount` et `type`**, calculés depuis les parts : le total
   et la nature dominante. Les ennemis et les tirs ennemis frappent d'une seule
-  part, par `Projectile.spawn_d_une_nature()`.
+  part, par `Projectile.spawn_of_nature()`.
 
 ---
 
@@ -398,8 +398,8 @@ le vise.
 **La mêlée illisible.** Un nombre par part ferait six chiffres par coup sur une
 nova. Le total seul, en blanc.
 
-**`orageux` sur un sort qui porte du froid.** « +12 % dégâts (Foudre) » vise les
-compétences qui portent le mot-clé `foudre` : il multiplie **toutes** leurs
+**`stormy` sur un sort qui porte du froid.** « +12 % dégâts (Foudre) » vise les
+compétences qui portent le mot-clé `lightning` : il multiplie **toutes** leurs
 parts, froid ajouté compris. C'est la lecture du jalon 7 — le mot-clé désigne la
 compétence, pas la part — et elle est gardée. Un « +% dégâts de froid » qui ne
 multiplierait que les parts de froid serait une autre statistique, et elle n'est

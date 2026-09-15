@@ -92,7 +92,7 @@ reste s'ajoute à côté.
 | `ring_right` | `ring` | idem |
 
 **`chest` et `weapon` gardent leur nom.** Ils sont déjà écrits dans les
-sauvegardes des personnages existants ; les renommer en `torse` et `arme` ferait
+sauvegardes des personnages existants ; les renommer en `torso` et `weapon` ferait
 disparaître le plastron de tous les personnages déjà créés au premier
 rechargement. Le nom lisible est déjà séparé (`Player.SLOT_NAMES`), c'est lui
 qui se traduit.
@@ -362,7 +362,7 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
   l'élargissement de la réserve, qui reste hors périmètre : aucun affixe n'a été
   ajouté. Les dix qui existaient ne visaient que `weapon` et `chest`, donc sept
   familles sur dix n'auraient jamais lâché que des objets blancs — un
-  emplacement qui existe mais ne récompense jamais rien. `preste` (vitesse) est
+  emplacement qui existe mais ne récompense jamais rien. `nimble` (vitesse) est
   passé du torse aux bottes, où il a un sens ; les autres se sont ouverts aux
   familles qui leur vont. Un test exige au moins deux affixes possibles par
   base.

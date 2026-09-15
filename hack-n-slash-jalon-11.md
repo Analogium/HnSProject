@@ -53,58 +53,58 @@ Ce jalon donne à chaque compétence **sa forme** — ce qu'elle pose dans le mo
 
 ## 2. La forme d'une compétence
 
-Jusqu'ici, `Player.lancer()` choisissait entre deux chemins sur le mot-clé
+Jusqu'ici, `Player.cast_slot()` choisissait entre deux chemins sur le mot-clé
 `projectile`. Sept chemins ne tiennent plus dans un booléen, et un mot-clé est
 une prise pour les affixes, pas un aiguillage : « Chaîne » ou « Aura » n'en sont
 pas, et n'en deviendront pas pour que le lanceur sache quoi faire.
 
-**`Competence.forme`** dit ce que le lancer pose dans le monde :
+**`Skill.shape`** dit ce que le lancer pose dans le monde :
 
 | Forme | Ce qui part | Compétences |
 |---|---|---|
 | `ARC` | le coup d'épée en arc | Attaque |
-| `TRAIT` | un ou plusieurs projectiles | Trait, Éclair vif, Nova de foudre |
-| `FRAPPE` | le coup d'arc lourd | Frappe lourde |
-| `BOULE` | un projectile qui explose à l'impact | Boule de feu |
-| `CHAINE` | une décharge de cible en cible | Chaîne d'éclairs |
-| `NUAGE` | une zone posée, qui frappe à intervalle | Nuage d'orage |
+| `BOLT` | un ou plusieurs projectiles | Trait, Éclair vif, Nova de foudre |
+| `STRIKE` | le coup d'arc lourd | Frappe lourde |
+| `BALL` | un projectile qui explose à l'impact | Boule de feu |
+| `CHAIN` | une décharge de cible en cible | Chaîne d'éclairs |
+| `CLOUD` | une zone posée, qui frappe à intervalle | Nuage d'orage |
 | `AURA` | un cercle entretenu autour du lanceur | Immolation |
-| `SERPENT` | une créature lâchée, qui frappe au contact | Serpent infernal |
-| `CROIX` | deux coups d'arc croisés | Coup en croix |
-| `ORBITE` | une lame qui tourne autour du lanceur | Épée spirale |
+| `SNAKE` | une créature lâchée, qui frappe au contact | Serpent infernal |
+| `CROSS` | deux coups d'arc croisés | Coup en croix |
+| `ORBIT` | une lame qui tourne autour du lanceur | Épée spirale |
 
-**La forme porte le dessin avec le comportement.** `FRAPPE` se comporte comme
+**La forme porte le dessin avec le comportement.** `STRIKE` se comporte comme
 `ARC` et ne s'en distingue que par le dessin et la secousse : c'est assumé. Un
 second champ « apparence » à côté de la forme aurait donné deux choix à
 accorder pour une seule chose, et la question « quel coup lourd a le dessin de
 la nova » n'a pas de réponse sensée.
 
-**`projectile` se déduit de la forme**, comme `foudre` se déduit de la nature et
-`sort` de la cadence : `TRAIT` et `BOULE` le donnent, les autres non. Il sort
-donc de `mots_cles_declares` dans tous les `.tres` — une forme et une
+**`projectile` se déduit de la forme**, comme `lightning` se déduit de la nature et
+`spell` de la cadence : `BOLT` et `BALL` le donnent, les autres non. Il sort
+donc de `declared_keywords` dans tous les `.tres` — une forme et une
 déclaration seraient deux vérités sur la même chose.
 
 **Un nœud ne change pas la forme.** C'est la règle du jalon 10 — « un nœud ne
-donne ni `projectile`, ni `sort`, ni `attaque` » — dite une fois de plus : la
-forme est lue sur la compétence, et aucun champ de `NoeudDeTalent` ne la vise.
+donne ni `projectile`, ni `spell`, ni `attack` » — dite une fois de plus : la
+forme est lue sur la compétence, et aucun champ de `TalentNode` ne la vise.
 
 ---
 
 ## 3. Les nombres neufs
 
 Une chaîne a un nombre de cibles, un nuage une durée et un rayon. Ce sont des
-**nombres de lancer**, donc des champs de `StatsDeCompetence` que la résolution
+**nombres de lancer**, donc des champs de `SkillStats` que la résolution
 copie de la compétence et que les nœuds modifient par le même
-`StatMod.appliquer()` que les projectiles :
+`StatMod.apply()` que les projectiles :
 
 | Champ | Nom à l'écran | Qui s'en sert | Un nœud peut-il le viser |
 |---|---|---|---|
-| `cibles` | nombre de cibles | Chaîne | oui |
-| `duree` | durée | Nuage, Serpent, Orbite | oui, en pourcentage |
-| `rayon` | rayon | Boule (l'explosion), Nuage, Aura | oui, en pourcentage |
-| `simultanes` | maximum simultané | Orbite | oui |
-| `periode` | — | Nuage, Aura (entre deux frappes) ; Serpent, Orbite (entre deux touches d'une même cible) | non |
-| `brulure` | — | Aura : la part des PV max perdue par seconde | non |
+| `targets` | nombre de cibles | Chaîne | oui |
+| `duration` | durée | Nuage, Serpent, Orbite | oui, en pourcentage |
+| `radius` | rayon | Boule (l'explosion), Nuage, Aura | oui, en pourcentage |
+| `simultaneous` | maximum simultané | Orbite | oui |
+| `period` | — | Nuage, Aura (entre deux frappes) ; Serpent, Orbite (entre deux touches d'une même cible) | non |
+| `self_burn` | — | Aura : la part des PV max perdue par seconde | non |
 
 **La période et la brûlure ne se modifient pas.** La période change le nombre de
 coups sans changer ce que la fiche appelle « dégâts », et une brûlure qu'un nœud
@@ -112,12 +112,12 @@ réduirait à zéro ferait de l'Immolation un sort sans prix. Ce sont des régla
 de la compétence, lus par la fiche, et c'est tout.
 
 **Les coups par geste** : Coup en croix frappe deux fois. C'est la forme qui le
-dit (`Competence.COUPS_PAR_FORME`), pas un champ : un nœud qui ajouterait un
+dit (`Skill.HITS_PER_SHAPE`), pas un champ : un nœud qui ajouterait un
 troisième coup en croix n'a pas de dessin à montrer.
 
 ### Ce que la fiche estime
 
-`StatsDeCompetence.moyenne_par_lancer()` multipliait un coup par les
+`SkillStats.average_per_cast()` multipliait un coup par les
 projectiles. Elle multiplie maintenant **par les coups qu'un lancer porte si tout
 touche** : projectiles × cibles × coups, et, pour ce qui dure, le nombre de
 frappes dans la durée. Une aura n'a pas de fin, donc pas de « par lancer » : sa
@@ -134,7 +134,7 @@ la note « si tout touche, avant défenses » dit déjà.
 
 Les coups qui ne naissent pas d'une collision — la chaîne, le nuage, l'aura, le
 serpent, l'épée, l'explosion — cherchent leurs cibles **par une requête de
-forme** sur le calque des hurtbox ennemies (`Cibles.dans_le_cercle`). Une seule
+forme** sur le calque des hurtbox ennemies (`Targets.in_circle`). Une seule
 fonction : six copies de la même requête finiraient par ne pas viser le même
 calque.
 
@@ -146,7 +146,7 @@ entière, une croix par coup), une fois par frappe pour ce qui dure (une impulsi
 du nuage ou de l'aura pour tout son cercle, un contact du serpent ou de l'épée).
 
 **Le gel d'impact** : la chaîne, la boule et les coups d'arc figent — un gel par
-geste, `Game.hit_stop_periode` fait le reste. **Ce qui dure ne fige jamais** : un
+geste, `Game.hit_stop_period` fait le reste. **Ce qui dure ne fige jamais** : un
 nuage qui gèle à chaque impulsion hacherait le jeu tant qu'il est posé, et ce
 serait exactement les 12 % de temps figé que le jalon 10 a chassés.
 
@@ -185,7 +185,7 @@ contrat du sort : on le tient par la régénération et les résistances, pas pa
 plancher qui le rendrait gratuit.
 
 Elle s'éteint seule à la mort du personnage et quand son livre quitte le
-râtelier : **elle se résout à chaque impulsion** par `Player.resoudre()`, donc un
+râtelier : **elle se résout à chaque impulsion** par `Player.resolve()`, donc un
 anneau retiré ou un point placé changent la brûlure suivante, et une compétence
 qu'on ne sait plus lancer ne brûle plus rien.
 
@@ -195,7 +195,7 @@ Le lancer envoie une épée tourner autour du personnage **cinq secondes**. Chaq
 épée a sa propre durée ; elles se répartissent régulièrement sur le cercle, et
 glissent vers leur nouvelle place quand l'une disparaît. **Trois au plus** : le
 quatrième lancer est **refusé**, sans mana ni recharge — c'est le cinquième refus
-de `lancer()`, après la case vide, la compétence non apprise, la réserve et la
+de `cast_slot()`, après la case vide, la compétence non apprise, la réserve et la
 recharge. Remplacer la plus ancienne aurait fait payer du mana à la touche tenue
 pour ne rien changer à l'écran.
 
@@ -236,7 +236,7 @@ Tous en code, comme le reste du projet — aucun fichier image.
 | Coup en croix | deux entailles droites qui se tracent l'une après l'autre, un éclat à leur croisement |
 | Épée spirale | une épée — lame, garde, poignée — tangente au cercle, suivie de deux images rémanentes |
 
-La couleur reste celle de la **nature montrée** (`nature_dominante()`) pour ce
+La couleur reste celle de la **nature montrée** (`dominant_nature()`) pour ce
 qui est de la magie ; l'acier de l'épée et du coup en croix garde sa couleur de
 métal, et seule sa traînée prend celle de la nature.
 
@@ -297,8 +297,8 @@ Rien de neuf, et **pas de version 7** : aucun champ n'entre dans le fichier.
 
 Les identifiants retirés — `salve_d_eclairs`, `fulguration`, `trait_de_feu`,
 `gerbe_de_flammes`, `comete`, `lames_tournoyantes` et leurs nœuds — sont écartés
-à la relecture par le filtre du jalon 10 (`ManuelArchetype.connait`). **Les points
-qu'ils portaient reviennent au livre** : `points_restants()` se déduit de ce qui
+à la relecture par le filtre du jalon 10 (`ManualArchetype.knows`). **Les points
+qu'ils portaient reviennent au livre** : `remaining_points()` se déduit de ce qui
 est placé, et ce qui n'est plus placé nulle part redevient disponible. Une case
 de barre qui les désignait se relit vide.
 
@@ -307,25 +307,25 @@ l'Épée spirale aurait gardé les points et la case de barre des personnages
 existants — mais sur une autre compétence, avec d'autres nœuds, et le joueur se
 serait retrouvé avec un sort qu'il n'a pas choisi.
 
-`manuel_armes` garde son identifiant (invariant 1) : seul son nom lisible devient
+`manual_weapons` garde son identifiant (invariant 1) : seul son nom lisible devient
 « Manuel du chevalier », et les livres déjà ramassés changent de nom avec lui.
 
 ---
 
 ## 8. Les tests
 
-**Le contenu, dans `test_competences.gd` :**
+**Le contenu, dans `test_skills.gd` :**
 
 - chaque forme a les nombres dont elle a besoin — une durée et une période pour ce
   qui dure, un rayon pour ce qui couvre une zone, deux cibles au moins pour une
   chaîne, un maximum pour une orbite, une brûlure pour une aura ;
 - `projectile` se déduit de la forme et **ne se déclare plus** ;
-- la résolution copie les nombres neufs, un nœud les modifie, `conclure()` borne
+- la résolution copie les nombres neufs, un nœud les modifie, `finalize()` borne
   les cibles à une et le maximum à un ;
 - l'estimation compte les coups d'un lancer : cibles, coups de la forme, frappes
   dans la durée, et « par seconde » seulement pour une aura.
 
-**Les formes, dans `tests/integration/test_formes.gd`** (neuf) — sur des cibles
+**Les formes, dans `tests/integration/test_shapes.gd`** (neuf) — sur des cibles
 posées à la main :
 
 - la chaîne touche trois ennemis alignés et pas le quatrième, ne saute pas plus
@@ -347,11 +347,11 @@ sur la nova, le nuage et la frappe lourde, **sans changer ce qu'ils vérifient**
 
 ## 9. Ordre de construction
 
-- [x] **1. La forme.** `Competence.forme`, `projectile` déduit, les nombres neufs
+- [x] **1. La forme.** `Skill.shape`, `projectile` déduit, les nombres neufs
       dans la résolution et l'estimation. Les `.tres` existants reçoivent leur
       forme ; rien ne change en jeu.
-- [x] **2. Les formes dans le monde.** `Cibles`, puis une forme à la fois dans
-      `Player.lancer()`, chacune avec son nœud et son dessin.
+- [x] **2. Les formes dans le monde.** `Targets`, puis une forme à la fois dans
+      `Player.cast_slot()`, chacune avec son nœud et son dessin.
 - [x] **3. Le contenu.** Les sept compétences, leurs arbres, les trois livres
       réécrits, l'anglais, le catalogue régénéré.
 - [x] **4. La fiche.** Les lignes des nombres neufs, dans les deux langues.
@@ -359,7 +359,7 @@ sur la nova, le nuage et la frappe lourde, **sans changer ce qu'ils vérifient**
       ne remplace.
 - [x] **6. Les icônes.** Neuf icônes générées par ComfyUI, choisies sur une planche
       où chacune est déjà réduite à 24 px — la recette est dans
-      `resources/icones/LISEZMOI.md`.
+      `resources/icons/LISEZMOI.md`.
 
 ### Ce que les captures ont changé
 
@@ -393,7 +393,7 @@ ses enfants, lit la touche avant elle dans `_unhandled_input`.
 
 **L'établi lâche des boules d'expérience**, par une ou par dix, en couronne autour
 du joueur. Une boule vaut ce que rapportent cinq grunts de la zone en cours, et se
-ramasse en marchant dessus. Elle récompense par `Player.recompenser()`, le chemin
+ramasse en marchant dessus. Elle récompense par `Player.reward()`, le chemin
 d'une mort — sorti d'`EnemyManager.report_kill()` pour cela : le retard sur la zone
 la fait fondre, et les manuels à l'étude apprennent avec le personnage.
 
@@ -414,7 +414,7 @@ d'éclats : c'est elle qui dit qu'un coup a porté et par quelle nature.
 nature dominante par une règle recopiée à côté de la `Hurtbox`. Elle se répartit
 maintenant comme les dégâts de l'aura — une Immolation convertie à moitié en
 nécrotique brûle à moitié en nécrotique — et chaque part passe par
-`CharacterStats.attenuer()`, que la `Hurtbox` appelle aussi : un bonus de
+`CharacterStats.mitigate()`, que la `Hurtbox` appelle aussi : un bonus de
 résistance ne peut plus servir contre l'un et oublier l'autre. L'esquive et le
 plancher d'un point restent hors de la brûlure, qui n'est pas un coup ; l'armure
 s'y compte sur la seconde, et non sur la tranche d'une image où elle annulerait
@@ -431,8 +431,8 @@ la barre.
 ### Ce que les tests ont changé
 
 **Un maximum simultané ramené à zéro par un nœud devenait « sans limite ».**
-`conclure()` ne pouvait pas le borner — zéro y veut dire les deux choses — et la
-borne est passée dans `Competence.resoudre()`, qui sait si la compétence en
+`finalize()` ne pouvait pas le borner — zéro y veut dire les deux choses — et la
+borne est passée dans `Skill.resolve()`, qui sait si la compétence en
 déclare un.
 
 **Deux tests de mots-clés ne vérifiaient plus rien** : aucune compétence ne

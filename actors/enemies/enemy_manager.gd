@@ -16,7 +16,7 @@ var enemies: Array[Enemy] = []
 var target: Node2D
 
 ## Le niveau de la zone, posé par elle. Un champ et non l'autoload : un test le règle.
-var niveau := 1
+var level := 1
 
 ## Facultatif : null sans carte (arène, banc, tests), où la ligne droite suffit.
 var field: FlowField
@@ -50,7 +50,7 @@ func spawn(scene: PackedScene, at: Vector2) -> Enemy:
 	enemy.position = at
 	# Avant add_child : c'est _ready qui met la fiche à l'échelle, et il part
 	# dès l'entrée dans l'arbre.
-	enemy.niveau = niveau
+	enemy.level = level
 	add_child(enemy)
 	register(enemy)
 	return enemy
@@ -92,8 +92,8 @@ func _physics_process(delta: float) -> void:
 		if origin.distance_squared_to(e.global_position) > cull_sq:
 			continue
 		ticked += 1
-		if not e.etats.aucun:
-			e.subir_les_etats(delta)
+		if not e.states.is_clear:
+			e.suffer_states(delta)
 		e.regen(delta)
 		e.tick(delta)
 
@@ -119,13 +119,13 @@ func report_kill(enemy: Enemy) -> void:
 	if player == null:
 		return
 	# Au-dessus du corps : le gain s'attribue à la cible choisie.
-	player.recompenser(float(enemy.xp_value()), niveau, enemy.global_position)
+	player.reward(float(enemy.xp_value()), level, enemy.global_position)
 	_drop_loot(enemy)
 
 
 ## Seulement depuis report_kill : jamais pour un vidage ni pour le banc.
 func _drop_loot(enemy: Enemy) -> void:
-	var item := LootTable.roll(enemy.affixes.size(), niveau)
+	var item := LootTable.roll(enemy.affixes.size(), level)
 	if item == null:
 		return
 	GroundItem.spawn(loot_parent, enemy.global_position, item)

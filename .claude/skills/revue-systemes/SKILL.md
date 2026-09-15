@@ -23,7 +23,7 @@ Demander (ou déduire) le périmètre : tout le dépôt, ou seulement les systè
 récemment touchés. Par défaut, tout ce qui n'est pas dans `.godot/`.
 
 ```bash
-find . -name "*.gd" -not -path "./.godot/*" | xargs wc -l | sort -n
+find . -name "*.gd" -not -path "./.godot/*" | xargs wc -l | spell -n
 ```
 
 Lire **tous** les fichiers du périmètre avant de proposer quoi que ce soit. Une
@@ -51,7 +51,7 @@ quatre fichiers. Repérer les nombres nus répétés :
 
 ```bash
 grep -rnoE "\b(1[6-9]|2[0-9]|3[0-9]|48|64|96|128)\b" --include="*.gd" . \
-  | awk -F: '{print $NF}' | sort | uniq -c | sort -rn | head -20
+  | awk -F: '{print $NF}' | spell | uniq -c | spell -rn | head -20
 ```
 
 Un nombre qui apparaît partout n'est pas forcément une constante à extraire — `2`
@@ -68,7 +68,7 @@ sœurs font la même chose, la logique descend dans la classe parente.
 
 **Du code inutilement malin.** Le symptôme : une expression dont on ne comprend
 l'intention qu'après réflexion. Exemple trouvé ici :
-`couleur * Color(1, 1, 1, 3.0)` pour forcer l'alpha — un rustinage d'un contour
+`color * Color(1, 1, 1, 3.0)` pour forcer l'alpha — un rustinage d'un contour
 trop pâle, là où retirer le contour suffisait. Autre symptôme : des tableaux
 indexés à la main (`n[9]`, `n[6]`) là où une petite classe (`n.half`, `n.text`) se
 relit sans compter les colonnes. Garder le tableau packé **seulement** là où le
@@ -83,7 +83,7 @@ supprimer :
 
 ```bash
 grep -rn "^func \|^static func \|^const \|^signal " --include="*.gd" . \
-  | sed -E 's/.*(func|const|signal) ([A-Za-z_0-9]+).*/\2/' | sort -u \
+  | sed -E 's/.*(func|const|signal) ([A-Za-z_0-9]+).*/\2/' | spell -u \
   | while read n; do
       c=$(grep -rc "\b$n\b" --include="*.gd" . | awk -F: '{s+=$2} END {print s}')
       [ "${c:-0}" -le 1 ] && echo "mort ? $n"

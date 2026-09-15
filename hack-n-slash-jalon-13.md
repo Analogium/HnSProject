@@ -23,7 +23,7 @@ plusieurs niveaux, et un rapport qui dit à quel point chacun s'en sort.
   - **la simulation**, un robot qui joue une vraie zone, sur quelques cases
     seulement.
 - **Un rapport lisible**, `docs/EQUILIBRAGE.md`, régénéré par
-  `tools/equilibrage.sh` comme le catalogue.
+  `tools/balance.sh` comme le catalogue.
 - **Des couloirs cibles** et les tests qui les gardent (§4), une fois les couloirs
   décidés.
 
@@ -74,8 +74,8 @@ fonctions du jeu** :
 
 **Le niveau attendu d'une zone** se déduit lui aussi des règles : c'est le niveau
 atteint en vidant une fois chaque zone de 1 à Z−1, avec l'expérience que rapporte
-leur population moyenne (`Enemy.xp_value()`, `Enemy.facteur_d_experience()`,
-`Progression.cout_du_niveau()`). Il suit donc tout seul un changement de la courbe
+leur population moyenne (`Enemy.xp_value()`, `Enemy.experience_factor()`,
+`Progression.level_cost()`). Il suit donc tout seul un changement de la courbe
 de vie, et donc de l'expérience.
 
 ---
@@ -85,8 +85,8 @@ de vie, et donc de l'expérience.
 ### Le calcul
 
 Pour chaque case profil × zone, **sans simulation physique**, en passant par les
-vraies fonctions : `Player.resoudre()` pour ce qui part, `mettre_a_l_echelle()`
-pour les ennemis, `CharacterStats.attenuer()` et l'esquive pour ce qui arrive.
+vraies fonctions : `Player.resolve()` pour ce qui part, `scale_to_level()`
+pour les ennemis, `CharacterStats.mitigate()` et l'esquive pour ce qui arrive.
 
 - **Coups pour tuer** un grunt, un caster, et un grunt Colossal, avec le meilleur
   sort de la barre ; critique compté en moyenne.
@@ -138,7 +138,7 @@ ci-dessous. Une fois décidés, ils deviennent les tests :
 après un réglage est l'alerte que le banc existe pour donner. Soit le réglage est
 à revoir, soit le couloir change par décision, écrite ici avec sa date.
 
-**Une suite à part** : `tests/run.sh equilibrage`, hors de la suite par défaut. Un
+**Une suite à part** : `tests/run.sh balance`, hors de la suite par défaut. Un
 réglage en cours ne doit pas bloquer une livraison qui n'a rien à voir.
 
 ---
@@ -158,7 +158,7 @@ d'une graine à l'autre. Le calcul répond à la plupart des questions et se rel
 quand un autre système consomme un tirage de plus.
 
 **Hors du vrai `user://`.** Le banc tourne sur une copie du projet sous un
-`config/name` distinct, comme `tools/catalogue.sh`.
+`config/name` distinct, comme `tools/catalog.sh`.
 
 ---
 
@@ -168,11 +168,11 @@ Chaque étape se livre seule et passe la suite.
 
 1. **Les profils.** Le générateur, et un test : un profil est reproductible, ses
    objets sont portables à son niveau et ses points sont tous placés.
-2. **Le calcul et le rapport.** `tools/equilibrage.sh` écrit
+2. **Le calcul et le rapport.** `tools/balance.sh` écrit
    `docs/EQUILIBRAGE.md` : une grille par build, les cases colorées par verdict.
 3. **La simulation.** Le robot, la sélection de cases, et sa section dans le
    rapport. Mesurer d'abord ce qu'elle coûte.
-4. **Les couloirs.** La suite `equilibrage`, une fois les chiffres du §4 décidés.
+4. **Les couloirs.** La suite `balance`, une fois les chiffres du §4 décidés.
 
 ---
 
@@ -184,7 +184,7 @@ Chaque étape se livre seule et passe la suite.
   personnage.
 - **Les zones de la grille** : 1, 10, 20, 40, 60, 90, 120.
 - **Le niveau attendu** : vider une fois chaque zone de 1 à Z−1. Le retard
-  (`facteur_d_experience`) est pris à l'entrée de chaque zone, pas ennemi par ennemi.
+  (`experience_factor`) est pris à l'entrée de chaque zone, pas ennemi par ennemi.
 - **Pas de troisième build** dans ce jalon.
 - **Pas de photo de « ad »** : le banc ne mesure que des profils générés.
 - **La simulation** joue chaque profil en zone 40 (le Débutant en zone 1), plus
@@ -194,14 +194,14 @@ Chaque étape se livre seule et passe la suite.
 
 - **`LootTable.roll()` n'est pas appelé** : il tire sur `Game.rng` et décide d'abord
   s'il y a chute. Les profils refont son geste — base au hasard parmi
-  `ItemCatalog.disponibles()`, puis `ItemAffixPool.roll()` — sur leur propre tirage.
+  `ItemCatalog.available()`, puis `ItemAffixPool.roll()` — sur leur propre tirage.
   Une base marquée pour l'autre build est écartée (pas d'épée pour le sort).
-- **Le manuel gagne l'expérience du personnage**, comme `Player.recompenser()` la
+- **Le manuel gagne l'expérience du personnage**, comme `Player.reward()` la
   lui verse. Ses points vont dans l'ordre du build, chaque entrée remplie avant la
   suivante ; la barre reprend ses compétences dans cet ordre.
-- **Trois accès ouverts dans le jeu pour ne rien recopier** : `Enemy.fiche_de()` et
-  `Enemy.experience_de()`, statiques, et `Hurtbox.mitiger()`, rendue publique.
-- **Les secondes pour tuer passent par `moyenne_par_seconde()`**, si tout touche :
+- **Trois accès ouverts dans le jeu pour ne rien recopier** : `Enemy.sheet_of()` et
+  `Enemy.experience_of()`, statiques, et `Hurtbox.mitigate_part()`, rendue publique.
+- **Les secondes pour tuer passent par `average_per_second()`**, si tout touche :
   les huit traits d'une nova comptent sur la même cible, et la mana ne limite rien.
 - **La simulation tourne en `--fixed-fps 60`**, une image de physique par image et
   aussi vite que la machine le permet. Son temps est du temps de jeu : un gel
@@ -215,14 +215,14 @@ Le premier rapport montrait un sort qui tue tout en moins d'un coup jusqu'en zon
 et une mêlée qui survit mais ne tue plus : 16 coups par grunt en zone 90, 86 en
 zone 120 pour l'Équipé. Deux réglages :
 
-- **Aucune compétence ne monte plus avec un attribut.** `Competence.attribut` et
+- **Aucune compétence ne monte plus avec un attribut.** `Skill.attribute` et
   `pourcentage_par_attribut` sont retirés, avec la ligne de la fiche du manuel. La
   force et l'intelligence gardent leurs réserves, leurs cadences, et la force ses
   dégâts physiques ajoutés aux attaques. Essayé d'abord dans l'autre sens — 3 % par
   point de force pour le chevalier — : la mêlée équipée devenait triviale en zones
   20 et 40, un niveau 34 portant une centaine de points de force.
 - **Les ennemis gagnent de l'armure et des résistances avec la zone** :
-  `CharacterStats.ARMURE_PAR_NIVEAU` (5) et `RESISTANCE_PAR_NIVEAU` (0,33), soit
+  `CharacterStats.ARMOR_PER_LEVEL` (5) et `RESISTANCE_PER_LEVEL` (0,33), soit
   195 d'armure et 13 % en zone 40, 595 et 39 % en zone 120. L'esquive ne monte pas.
 
 Coups pour tuer un grunt, profil Équipé, avant → après les deux :

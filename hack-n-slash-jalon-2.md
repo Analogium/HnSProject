@@ -218,7 +218,7 @@ exemplaires et n'est jamais écrite, comme `base_stats` chez le joueur.
 `Item` (en mémoire) est l'**exemplaire** ramassé : une base, plus les affixes
 tirés à sa création. Avant lui, le butin rendait directement la ressource du
 disque : toutes les épées du jeu étaient le même objet, et y écrire un affixe
-l'aurait écrit dans `epee.tres`.
+l'aurait écrit dans `sword.tres`.
 
 ```gdscript
 class_name Item

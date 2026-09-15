@@ -92,18 +92,18 @@ func rebuild(from: Vector2i, cells: int) -> void:
 			return
 
 	var queue := 0
-	var tete := 0
+	var head := 0
 	var w := _generator.width
 	var h := _generator.height
 	_dirs[_index(origin)] = HERE
 	_file[queue] = _index(origin)
 	queue += 1
 
-	while tete < queue:
-		var courant := _file[tete]
-		tete += 1
-		var cx := courant % w
-		var cy := courant / w
+	while head < queue:
+		var current_value := _file[head]
+		head += 1
+		var cx := current_value % w
+		var cy := current_value / w
 		for d in DIRS.size():
 			var nx := cx + _dx[d]
 			var ny := cy + _dy[d]

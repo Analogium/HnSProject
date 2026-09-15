@@ -8,38 +8,38 @@ extends GutTest
 ## chère à découvrir que l'image.
 
 
-func _image(variante: int) -> PackedByteArray:
+func _image(variant_index: int) -> PackedByteArray:
 	return SpriteForge.frame_image(
-		SpriteForge.config("player", variante), "down", "idle", 0
+		SpriteForge.config("player", variant_index), "down", "idle", 0
 	).get_data()
 
 
-func test_les_quatre_silhouettes_du_joueur_se_distinguent() -> void:
-	var vues := {}
+func test_the_four_player_silhouettes_are_distinguishable() -> void:
+	var views := {}
 	for v in SpriteForge.VARIANTS:
 		var pixels := _image(v)
-		for autre in vues:
+		for other in views:
 			assert_ne(
-				pixels, vues[autre],
-				"les silhouettes %d et %d sont le même dessin" % [autre, v]
+				pixels, views[other],
+				"les silhouettes %d et %d sont le même dessin" % [other, v]
 			)
-		vues[v] = pixels
+		views[v] = pixels
 
 
 ## Une silhouette choisie doit rester la même d'une partie à l'autre : c'est ce
 ## qui fait qu'on reconnaît son personnage dans la liste.
-func test_une_silhouette_redonne_toujours_le_meme_dessin() -> void:
+func test_a_silhouette_always_gives_the_same_drawing() -> void:
 	assert_eq(_image(2), _image(2), "deux appels, un seul personnage")
 
 
 ## La tenue change, l'archétype non : un joueur ne doit jamais pouvoir se
 ## confondre avec un ennemi au milieu d'une mêlée.
-func test_les_tenues_couvrent_les_variantes() -> void:
+func test_outfits_cover_the_variants() -> void:
 	assert_eq(
 		SpriteForge.PLAYER_CLOTHS.size(), SpriteForge.VARIANTS,
 		"une tenue par variante, sinon deux silhouettes partagent la même"
 	)
-	var teintes := {}
+	var tints := {}
 	for c in SpriteForge.PLAYER_CLOTHS:
-		teintes[c] = true
-	assert_eq(teintes.size(), SpriteForge.VARIANTS, "et quatre couleurs distinctes")
+		tints[c] = true
+	assert_eq(tints.size(), SpriteForge.VARIANTS, "et quatre couleurs distinctes")

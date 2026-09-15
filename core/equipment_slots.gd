@@ -36,9 +36,9 @@ static func exists(slot: String) -> bool:
 
 ## Un objet de cette famille se porte-t-il ? **La seule question** qui fait échapper
 ## un manuel aux règles d'équipement.
-static func famille_equipable(famille: String) -> bool:
+static func equippable_family(family: String) -> bool:
 	for id in SLOTS:
-		if SLOTS[id]["family"] == famille:
+		if SLOTS[id]["family"] == family:
 			return true
 	return false
 
@@ -49,7 +49,7 @@ static func family_of(slot: String) -> String:
 
 ## Dans la langue du joueur ; la table française est la clé.
 static func label(slot: String) -> String:
-	return Textes.t(SLOTS[slot]["label"]) if SLOTS.has(slot) else slot
+	return Texts.t(SLOTS[slot]["label"]) if SLOTS.has(slot) else slot
 
 
 ## Vide si l'objet ne s'équipe pas.
@@ -60,22 +60,22 @@ static func family_of_item(item: Item) -> String:
 
 
 static func accepts(slot: String, item: Item) -> bool:
-	var famille := family_of_item(item)
-	return not famille.is_empty() and family_of(slot) == famille
+	var family := family_of_item(item)
+	return not family.is_empty() and family_of(slot) == family
 
 
 ## Le premier emplacement libre de sa famille, à défaut le premier : la règle des
 ## anneaux. Vide pour ce qui ne s'équipe pas — l'appelant le rend intact.
 static func free_for(item: Item, worn: Dictionary) -> String:
-	var famille := family_of_item(item)
-	if famille.is_empty():
+	var family := family_of_item(item)
+	if family.is_empty():
 		return ""
-	var premier := ""
+	var first := ""
 	for id in SLOTS:
-		if SLOTS[id]["family"] != famille:
+		if SLOTS[id]["family"] != family:
 			continue
-		if premier.is_empty():
-			premier = id
+		if first.is_empty():
+			first = id
 		if worn.get(id) == null:
 			return id
-	return premier
+	return first

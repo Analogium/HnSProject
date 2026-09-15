@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/spiral_sword.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "spiral_sword"
+name = "Épée spirale"
+nature = 0
+cadence = 0
+shape = 9
+mana_cost = 10.0
+duration = 5.0
+period = 0.5
+simultaneous = 3
+damage_per_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
+required_manual_level = 6
+icon = ExtResource("2_icone")

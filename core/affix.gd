@@ -11,13 +11,13 @@ extends Resource
 ## apprend l'affixe : elle doit être franche, et unique dans le lot.
 @export var tint: Color = Color.WHITE
 
-@export_group("Multiplicateurs")
+@export_group("Multipliers")
 @export var health_mult: float = 1.0
 @export var speed_mult: float = 1.0
 @export var damage_mult: float = 1.0
 @export var cooldown_mult: float = 1.0
 
-@export_group("Effets")
+@export_group("Effects")
 ## Ajouté à la notation d'armure : rend le harcèlement inefficace, et le tir
 ## élémentaire reste le recours.
 @export var armor: float = 0.0
@@ -29,5 +29,5 @@ extends Resource
 
 
 ## `display_name` est la clé française.
-func nom_affiche() -> String:
-	return Textes.t(display_name)
+func displayed_name() -> String:
+	return Texts.t(display_name)

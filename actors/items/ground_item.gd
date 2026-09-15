@@ -57,7 +57,7 @@ static func spawn(parent: Node, at: Vector2, item: Item, delay := 0.0) -> Ground
 	# Posées avant l'ajout : _ready en a besoin pour construire l'icône.
 	drop.data = item
 	drop.pickup_delay = delay
-	Arbre.ajouter_en_differe(parent, drop, at)
+	DeferredTree.add_deferred(parent, drop, at)
 	return drop
 
 
@@ -67,7 +67,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	if data == null:
 		return
-	icon.texture = SpriteForge.ground_icon(data.base.kind, data.base.palier)
+	icon.texture = SpriteForge.ground_icon(data.base.kind, data.base.tier)
 	_rest_y = -icon.texture.get_height() * 0.5 - 1.0
 	_glow = data.color()
 	_glow.a = GLOW_ALPHA

@@ -20,20 +20,20 @@ func _init(p_affix_id: String, p_tier: int, p_mod: StatMod) -> void:
 
 ## Un modificateur sans provenance : un objet d'avant les paliers, ou un objet
 ## fabriqué à la main dans un test. Il s'applique exactement comme les autres.
-static func orphelin(p_mod: StatMod) -> RolledAffix:
+static func orphan(p_mod: StatMod) -> RolledAffix:
 	return RolledAffix.new("", 0, p_mod)
 
 
 ## « T4  (45–58) », ou vide sans provenance : jamais un palier déduit de la valeur,
 ## les fourchettes voisines se chevauchent.
-func palier_et_plage() -> String:
-	if not connu():
+func tier_and_span() -> String:
+	if not known():
 		return ""
 	var definition := ItemAffixPool.by_id(affix_id)
 	if definition == null or tier > definition.tiers.size():
 		return ""
-	return "T%d  (%s)" % [tier, definition.plage(tier - 1)]
+	return "T%d  (%s)" % [tier, definition.span(tier - 1)]
 
 
-func connu() -> bool:
+func known() -> bool:
 	return tier > 0 and not affix_id.is_empty()

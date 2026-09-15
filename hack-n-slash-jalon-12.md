@@ -36,7 +36,7 @@ de foudre aux mêmes nombres se jouaient pareil. Ce jalon donne à chaque nature
 **Dehors :**
 
 - **Des statistiques d'état.** Chance, durée et force sont des constantes de
-  `Etats`. « +10 % de chance d'embraser » ou « durée des états » seraient les
+  `StatusEffects`. « +10 % de chance d'embraser » ou « durée des états » seraient les
   suivantes naturelles, mais une statistique n'arrive qu'avec un affixe qui la
   vise (voir RECETTES), et ce jalon n'en ajoute aucun.
 - **Des résistances aux états.** Une résistance au feu réduit déjà le feu reçu,
@@ -45,7 +45,7 @@ de foudre aux mêmes nombres se jouaient pareil. Ce jalon donne à chaque nature
   saigner et le caster transit ; le reste ne vient que du joueur.
 - **Le mannequin de l'arène.** Il n'a ni fiche ni vie ; il ne prend pas d'état.
 - **La fiche et la page du manuel.** Elles n'annoncent aucune chance d'état.
-- **L'équilibrage.** Premiers réglages, tous dans `core/etats.gd`.
+- **L'équilibrage.** Premiers réglages, tous dans `core/status_effects.gd`.
 
 ---
 
@@ -96,7 +96,7 @@ sont deux états **de la même sorte** : un corps porte au plus un embrasement.
 La bénédiction affaiblit **celui qui la porte**, et la pourriture soigne **celui
 qui l'a posée** : pour l'une comme pour l'autre, un coup doit savoir d'où il vient.
 
-**`DamageInfo.auteur`** porte les états de qui a frappé, ou rien. C'est la seule
+**`DamageInfo.author`** porte les états de qui a frappé, ou rien. C'est la seule
 chose que la hurtbox apprend de l'attaquant — pas son nœud, pas sa fiche.
 
 | Qui frappe | D'où vient l'auteur |
@@ -104,7 +104,7 @@ chose que la hurtbox apprend de l'attaquant — pas son nœud, pas sa fiche.
 | Le coup d'arc du joueur | `Player._on_hitbox_area_entered()` |
 | Un tir, joueur ou caster | `Projectile.setup()`, par `Etats.de(source)` |
 | L'explosion d'une boule de feu | la boule, qui la pose |
-| Chaîne, nuage, aura, serpent, épée | passé à leur naissance, puis à `Cibles.frapper()` |
+| Chaîne, nuage, aura, serpent, épée | passé à leur naissance, puis à `Targets.strike()` |
 | Le coup d'un grunt | `Grunt.tick()` |
 
 **La pourriture tient son auteur par une référence faible.** Un joueur et un
@@ -118,16 +118,16 @@ encore, et sa bénédiction avec.
 
 ## 4. Où chaque état agit
 
-`Etats` ne touche à rien : il dit des facteurs et rend ce qui brûle. Chaque état
+`StatusEffects` ne touche à rien : il dit des facteurs et rend ce qui brûle. Chaque état
 s'applique **là où vit déjà la règle qu'il modifie** :
 
 | État | Où |
 |---|---|
 | Bénédiction | `Hurtbox.take_damage()`, **avant** l'armure : le coup béni est un coup plus petit, et l'armure protège mieux des petits coups |
 | Engourdissement | `Hurtbox._mitigate()`, **après** les défenses et avant le plancher ; et sur tout ce qui brûle, Immolation comprise — il dit « dégâts reçus » |
-| Gel | `Enemy.vitesse_de_deplacement()` et `_cool_down()` pour les ennemis ; la marche et la recharge des cinq cases dans `Player._physics_process()` ; `ActorSprite.speed_scale` pour l'animation |
-| Embrasement, pourriture, saignement | `Etats.avancer()` rend la perte ; `Enemy.subir_les_etats()` — appelée par l'`EnemyManager` avec la régénération — et `Player._subir_les_etats()` l'ôtent par `_set_health()` |
-| Soin de la pourriture | le signal `Etats.soin` de l'auteur, que son porteur branche sur sa vie |
+| Gel | `Enemy.movement_speed()` et `_cool_down()` pour les ennemis ; la marche et la recharge des cinq cases dans `Player._physics_process()` ; `ActorSprite.speed_scale` pour l'animation |
+| Embrasement, pourriture, saignement | `StatusEffects.advance()` rend la perte ; `Enemy.suffer_states()` — appelée par l'`EnemyManager` avec la régénération — et `Player._suffer_states()` l'ôtent par `_set_health()` |
+| Soin de la pourriture | le signal `StatusEffects.heal` de l'auteur, que son porteur branche sur sa vie |
 
 **Une mort par brûlure est une victoire** : l'embrasement vient d'un coup, et
 l'ennemi qu'il achève rapporte son expérience et son butin.
@@ -169,8 +169,8 @@ suivre.
 ## 6. Arbitrages
 
 **« États » dans le code, « effets » dans la demande.** Dans ce dépôt, un effet
-est ce qui se dessine : le joueur a un `_parent_des_effets()`, et les tests un
-nœud `_effets`. Une classe `Effets` à côté aurait donné deux sens au même mot.
+est ce qui se dessine : le joueur a un `_effects_parent()`, et les tests un
+nœud `_effects`. Une classe `Effects` à côté aurait donné deux sens au même mot.
 
 **La bénédiction réduit les dégâts infligés par son porteur**, pas ceux qu'il
 reçoit. C'est la lecture de « réduit les dégâts de 20 % de la personne qui possède
@@ -180,7 +180,7 @@ autres le sont aussi.
 **Les états ne sont pas sauvegardés.** Un personnage rechargé transi serait puni
 d'avoir quitté le jeu, et le format de sauvegarde ne bouge pas.
 
-**`Etats` ne nomme ni `DamageInfo` ni `Hurtbox`**, qui le nomment tous deux. Il
+**`StatusEffects` ne nomme ni `DamageInfo` ni `Hurtbox`**, qui le nomment tous deux. Il
 reçoit des parts et un auteur, jamais un coup : c'est ce qui le garde hors d'un
 cycle de dépendances.
 
@@ -195,21 +195,21 @@ vouloir dire une seule nature, donc un seul état possible. À 50 %, chaque natu
 ajouts compris, garde la moitié de ce qu'elle portait. Une conversion entière
 emporte aussi ce qu'une précédente avait converti ailleurs. C'est la forme que
 prendra un « convertit 50 % de tous les dégâts » d'un arbre de passifs, qui n'aura
-qu'à appeler `convertir()`. Rien ne change pour le contenu actuel : ses nœuds
+qu'à appeler `apply_conversion()`. Rien ne change pour le contenu actuel : ses nœuds
 convertissent des compétences sans ajout d'une autre nature.
 
 ---
 
 ## 7. Ce qui refusera un oubli
 
-- `tests/unit/test_etats.gd` — les tables couvrent chaque nature une fois, chaque
+- `tests/unit/test_status_effects.gd` — les tables couvrent chaque nature une fois, chaque
   état a sa couleur et son icône, tous se portent ensemble, un tirage par nature
   présente, la chance partagée selon les parts et accrue par
   la part des PV retirée, les
   facteurs, la durée et son rafraîchissement, le plus fort qui l'emporte, la
   pourriture qui soigne, les pourritures croisées qui ne fuient pas, les paquets
   d'affichage.
-- `tests/integration/test_etats_en_jeu.gd` — la hurtbox (engourdissement,
+- `tests/integration/test_status_effects_in_game.gd` — la hurtbox (engourdissement,
   bénédiction avant l'armure, pose, saignement d'un coup physique), l'ennemi qui
   meurt de sa brûlure et rapporte, le gel sur la marche, la recharge et
   l'animation, le soin, les icônes et la teinte, l'annonce au-dessus du joueur,
@@ -217,5 +217,5 @@ convertissent des compétences sans ajout d'une autre nature.
   coup converti qui ne pose que ce qu'il porte.
 - `tests/unit/test_talents.gd` — la conversion qui emporte les ajouts de toutes les
   natures, l'entière qui emporte la précédente.
-- `tests/integration/test_formes.gd : test_la_chaine_frappe_au_nom_de_son_lanceur`.
-- `tests/unit/test_traductions.gd` relève `Etats.NOMS`.
+- `tests/integration/test_shapes.gd : test_the_chain_strikes_on_behalf_of_its_caster`.
+- `tests/unit/test_translations.gd` relève `StatusEffects.NAMES`.

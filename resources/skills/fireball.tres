@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/fireball.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "fireball"
+name = "Boule de feu"
+nature = 2
+cadence = 1
+shape = 3
+projectile_speed = 200.0
+cooldown = 0.60
+mana_cost = 11.0
+projectiles = 1
+radius = 20.0
+damage_per_point = Array[float]([30.0, 38.0, 48.0, 59.0, 73.0])
+required_manual_level = 1
+icon = ExtResource("2_icone")

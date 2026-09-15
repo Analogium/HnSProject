@@ -5,31 +5,31 @@
 
 [sub_resource type="Resource" id="Resource_ardent_t1"]
 script = ExtResource("2_ard")
-niveau_requis = 57
+required_level = 57
 min_value = 34.0
 max_value = 42.0
 
 [sub_resource type="Resource" id="Resource_ardent_t2"]
 script = ExtResource("2_ard")
-niveau_requis = 45
+required_level = 45
 min_value = 26.0
 max_value = 33.0
 
 [sub_resource type="Resource" id="Resource_ardent_t3"]
 script = ExtResource("2_ard")
-niveau_requis = 33
+required_level = 33
 min_value = 19.0
 max_value = 25.0
 
 [sub_resource type="Resource" id="Resource_ardent_t4"]
 script = ExtResource("2_ard")
-niveau_requis = 22
+required_level = 22
 min_value = 13.0
 max_value = 18.0
 
 [sub_resource type="Resource" id="Resource_ardent_t5"]
 script = ExtResource("2_ard")
-niveau_requis = 11
+required_level = 11
 min_value = 8.0
 max_value = 12.0
 
@@ -42,9 +42,9 @@ max_value = 7.0
 script = ExtResource("1_ard")
 id = "ardent"
 tags = PackedStringArray("caster", "jewellery")
-exclut = PackedStringArray()
-stat = "degats"
-portee = "feu"
+excludes = PackedStringArray()
+stat = "damage"
+scope = "fire"
 percent = true
 tiers = Array[ExtResource("2_ard")]([SubResource("Resource_ardent_t1"), SubResource("Resource_ardent_t2"), SubResource("Resource_ardent_t3"), SubResource("Resource_ardent_t4"), SubResource("Resource_ardent_t5"), SubResource("Resource_ardent_t6")])
 weight = 8

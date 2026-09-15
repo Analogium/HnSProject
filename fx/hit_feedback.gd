@@ -12,7 +12,7 @@ static var current: HitFeedback
 const CRIT := Color(1.00, 0.78, 0.25)      # l'or, la seule couleur réservée
 const PLAYER := Color(1.00, 0.42, 0.38)    # le joueur encaisse : rouge, lisible au coin de l'œil
 ## Blanc quelle que soit la nature : c'est le total de toutes les parts.
-const NOMBRE := Color(1.0, 1.0, 1.0)
+const NUMBER := Color(1.0, 1.0, 1.0)
 ## Le bleu de la barre d'expérience, éclairci pour tenir sur un sol sombre : le
 ## gain qui s'envole et la barre qui monte doivent se répondre.
 const XP := Color(0.45, 0.68, 1.00)
@@ -92,25 +92,25 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
 	# Le chiffre seulement : la gerbe reste.
-	if Settings.montre_les_degats(on_player):
-		_add_number(at, info.amount, info.is_crit, couleur_du_nombre(info, on_player))
-	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _couleur_de_la_gerbe(info, on_player))
+	if Settings.shows_damage(on_player):
+		_add_number(at, info.amount, info.is_crit, number_color(info, on_player))
+	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _spray_color(info, on_player))
 
 	set_process(true)
 	queue_redraw()
 
 
 ## Le rouge quand c'est le joueur qui encaisse, l'or d'un critique, et le blanc
-## pour tout le reste : aucune nature, voir `NOMBRE`.
-static func couleur_du_nombre(info: DamageInfo, on_player: bool) -> Color:
+## pour tout le reste : aucune nature, voir `NUMBER`.
+static func number_color(info: DamageInfo, on_player: bool) -> Color:
 	if on_player:
 		return PLAYER
-	return CRIT if info.is_crit else NOMBRE
+	return CRIT if info.is_crit else NUMBER
 
 
 ## **L'élément gagne sur tout** : le nombre étant blanc, c'est la gerbe qui dit par
 ## quoi on est touché.
-func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
+func _spray_color(info: DamageInfo, on_player: bool) -> Color:
 	if info.type != DamageType.Kind.PHYSICAL:
 		return info.color()
 	if on_player:
@@ -120,30 +120,30 @@ func _couleur_de_la_gerbe(info: DamageInfo, on_player: bool) -> Color:
 
 ## Des dégâts sans coup — brûlure d'aura ou d'état —, sans gerbe : rouge sur le
 ## joueur, blanc sur un ennemi, chacun derrière sa case.
-func degats_sans_coup(at: Vector2, montant: float, on_player: bool) -> void:
-	if montant <= 0.0 or not Settings.montre_les_degats(on_player):
+func damage_without_hit(at: Vector2, amount: float, on_player: bool) -> void:
+	if amount <= 0.0 or not Settings.shows_damage(on_player):
 		return
-	_add_number(at, montant, false, PLAYER if on_player else NOMBRE)
+	_add_number(at, amount, false, PLAYER if on_player else NUMBER)
 	set_process(true)
 	queue_redraw()
 
 
 ## Un état neuf, sur le joueur seulement : sur soixante-dix ennemis, les pastilles
 ## suffisent.
-func etat(at: Vector2, sorte: int) -> void:
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), Etats.nom(sorte), XP_SIZE, Etats.couleur(sorte), XP_RISE)
+func state(at: Vector2, kind: int) -> void:
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), StatusEffects.name(kind), XP_SIZE, StatusEffects.color(kind), XP_RISE)
 	set_process(true)
 	queue_redraw()
 
 
 ## Pas de gerbe : rien n'a été touché. Même case que le chiffre qu'il remplace.
 func miss(at: Vector2, on_player: bool) -> void:
-	if not Settings.montre_les_degats(on_player):
+	if not Settings.shows_damage(on_player):
 		return
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
 		# Un contexte : « esquive » est aussi la statistique (« evasion »).
-		Textes.t("esquive", "coup évité") if on_player else Textes.t("raté"),
+		Texts.t("esquive", "coup évité") if on_player else Texts.t("raté"),
 		XP_SIZE,
 		MISS,
 		1.0
@@ -156,7 +156,7 @@ func miss(at: Vector2, on_player: bool) -> void:
 func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), Textes.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
+	_add_label(at + Vector2(0.0, -XP_HEIGHT), Texts.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
 	set_process(true)
 	queue_redraw()
 

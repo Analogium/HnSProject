@@ -32,7 +32,7 @@ collision_mask = 5
 script = ExtResource("1_player")
 base_stats = ExtResource("4_stats")
 bolt_scene = ExtResource("6_bolt")
-boule_scene = ExtResource("8_boule")
+orb_scene = ExtResource("8_boule")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_player")

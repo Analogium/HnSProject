@@ -10,9 +10,9 @@
 [ext_resource type="Script" path="res://ui/hud.gd" id="8_hud"]
 [ext_resource type="Script" path="res://ui/inventory_panel.gd" id="9_inv"]
 [ext_resource type="Script" path="res://ui/stats_panel.gd" id="10_stats"]
-[ext_resource type="Script" path="res://ui/manuel_panel.gd" id="11_manuels"]
-[ext_resource type="Script" path="res://ui/barre_panel.gd" id="12_barre"]
-[ext_resource type="Script" path="res://ui/atelier_panel.gd" id="13_atelier"]
+[ext_resource type="Script" path="res://ui/manual_panel.gd" id="11_manuels"]
+[ext_resource type="Script" path="res://ui/skill_bar_panel.gd" id="12_barre"]
+[ext_resource type="Script" path="res://ui/workbench_panel.gd" id="13_atelier"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -100,7 +100,7 @@ offset_bottom = 14.0
 theme_override_font_sizes/font_size = 9
 text = "PERSONNAGE"
 
-[node name="Manuels" type="Control" parent="UI"]
+[node name="Manuals" type="Control" parent="UI"]
 offset_left = 172.0
 offset_top = 14.0
 offset_right = 382.0
@@ -108,7 +108,7 @@ offset_bottom = 210.0
 mouse_filter = 2
 script = ExtResource("11_manuels")
 
-[node name="Atelier" type="Control" parent="UI"]
+[node name="Workbench" type="Control" parent="UI"]
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 396.0
@@ -116,7 +116,7 @@ offset_bottom = 292.0
 mouse_filter = 2
 script = ExtResource("13_atelier")
 
-[node name="Barre" type="Control" parent="UI"]
+[node name="Bar" type="Control" parent="UI"]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -129,7 +129,7 @@ offset_bottom = -14.0
 mouse_filter = 2
 script = ExtResource("12_barre")
 
-[node name="Temoin" type="Label" parent="UI"]
+[node name="Indicator" type="Label" parent="UI"]
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -110.0

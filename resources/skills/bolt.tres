@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Skill" format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "bolt"
+name = "Trait"
+nature = 3
+cadence = 1
+shape = 1
+projectile_speed = 230.0
+cooldown = 0.3
+mana_cost = 6.0
+damage_per_point = Array[float]([7.0])
+required_manual_level = 0

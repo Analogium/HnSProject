@@ -14,15 +14,15 @@ const SIZE := 8
 ## sol sombre ne se lit pas.
 const MIN_TEXT_VALUE := 0.80
 
-## Une ligne : `ligne.half` se relit, `line[2]` non.
-class Ligne:
+## Une ligne : `line.half` se relit, `line[2]` non.
+class Line:
 	var text: String
 	var tint: Color
 	## Mesurée une fois : la re-mesurer coûterait plus que tout le dessin.
 	var half: float
 
 
-var _lines: Array[Ligne] = []
+var _lines: Array[Line] = []
 ## Gardés pour re-mesurer quand la langue change.
 var _affixes: Array[Affix] = []
 var _font: Font
@@ -49,14 +49,14 @@ func set_affixes(affixes: Array[Affix]) -> void:
 	_lines.clear()
 	if _font != null:
 		for affix in affixes:
-			var ligne := Ligne.new()
-			ligne.text = affix.nom_affiche()
-			ligne.tint = affix.tint
-			ligne.tint.v = maxf(ligne.tint.v, MIN_TEXT_VALUE)
-			ligne.half = _font.get_string_size(
-				ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE
+			var line := Line.new()
+			line.text = affix.displayed_name()
+			line.tint = affix.tint
+			line.tint.v = maxf(line.tint.v, MIN_TEXT_VALUE)
+			line.half = _font.get_string_size(
+				line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE
 			).x * 0.5
-			_lines.append(ligne)
+			_lines.append(line)
 	_refresh()
 
 
@@ -68,15 +68,15 @@ func _refresh() -> void:
 
 func _draw() -> void:
 	for i in _lines.size():
-		var ligne := _lines[i]
+		var line := _lines[i]
 		# Le premier en haut, le dernier au ras de la tête.
 		var y := roundf(OFFSET_Y - float(_lines.size() - 1 - i) * LINE_H)
-		var pos := Vector2(roundf(-ligne.half), y)
+		var pos := Vector2(roundf(-line.half), y)
 		# Contour noir : lisible sur tous les sols.
 		draw_string_outline(
-			_font, pos, ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, 1,
+			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, 1,
 			Color(0, 0, 0, 0.95)
 		)
 		draw_string(
-			_font, pos, ligne.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, ligne.tint
+			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, line.tint
 		)

@@ -35,7 +35,7 @@ const SPAWN_RADIUS_TILES := 18
 ## chiffre à surveiller n'est pas leur nombre mais la part du temps qu'ils
 ## prennent : un gel de cinq centièmes toutes les quatre dixièmes, et le jeu
 ## passe 12 % de son temps à 2 % de vitesse sans qu'aucune image ne se perde.
-const FENETRE_DES_GELS := 2.0
+const FREEZE_WINDOW := 2.0
 
 ## Montée automatique : on ajoute une marche toutes les RAMP_DELAY secondes tant
 ## que le jeu tient, et on s'arrête à la première chute durable.
@@ -55,9 +55,9 @@ var _peak_enemies := 0
 ## et le coût d'un combat — les impacts, les gels, les secousses — ne se voyait
 ## nulle part.
 var _combat := false
-var _gels_fenetre := 0
-var _gels_jusqua := 0
-var _gels_par_seconde := 0.0
+var _freeze_window := 0
+var _frozen_until := 0
+var _freezes_per_second := 0.0
 
 var _ramping := false
 var _ramp_cd := 0.0
@@ -91,14 +91,14 @@ func _ready() -> void:
 
 	# Le compteur de l'autoload court depuis le lancement du jeu : sans ce point
 	# de départ, la première fenêtre compterait les gels d'une partie précédente.
-	_gels_fenetre = Game.gels
-	_gels_jusqua = Time.get_ticks_msec() + roundi(FENETRE_DES_GELS * 1000.0)
+	_freeze_window = Game.freezes
+	_frozen_until = Time.get_ticks_msec() + roundi(FREEZE_WINDOW * 1000.0)
 
 	_spawn(STEP * 2)
 
 
 func _process(delta: float) -> void:
-	_suivre_les_gels()
+	_track_freezes()
 
 	var physics_ms := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	_peak_physics = maxf(_peak_physics, physics_ms)
@@ -110,35 +110,35 @@ func _process(delta: float) -> void:
 	overlay.text = _text(physics_ms)
 
 
-## La case 0 du joueur, à chaque pas de physique. Par `lancer()` et non en
+## La case 0 du joueur, à chaque pas de physique. Par `cast_slot()` et non en
 ## simulant la touche : c'est le même point de passage, et le banc n'a pas à
 ## savoir sur quelle touche la case est câblée.
 func _physics_process(_delta: float) -> void:
 	if _combat and _zone != null:
-		_zone.player.lancer(0)
+		_zone.player.cast_slot(0)
 
 
 ## Sur l'horloge réelle, et pas sur `delta` : pendant un gel le temps de jeu
 ## n'avance plus, et une fenêtre comptée dessus ne se refermerait jamais.
-func _suivre_les_gels() -> void:
-	var maintenant := Time.get_ticks_msec()
-	if maintenant < _gels_jusqua:
+func _track_freezes() -> void:
+	var now := Time.get_ticks_msec()
+	if now < _frozen_until:
 		return
-	_gels_par_seconde = float(Game.gels - _gels_fenetre) / FENETRE_DES_GELS
-	_gels_fenetre = Game.gels
-	_gels_jusqua = maintenant + roundi(FENETRE_DES_GELS * 1000.0)
+	_freezes_per_second = float(Game.freezes - _freeze_window) / FREEZE_WINDOW
+	_freeze_window = Game.freezes
+	_frozen_until = now + roundi(FREEZE_WINDOW * 1000.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var touche := Touches.enfoncee(event)
-	if touche == KEY_NONE:
+	var key := Keys.pressed_down(event)
+	if key == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match touche:
+	match key:
 		KEY_1: _remove(STEP)
 		KEY_2: _spawn(STEP)
 		KEY_3: _spawn(WAVE)
@@ -275,8 +275,8 @@ func _text(physics_ms: float) -> String:
 		# Ce que coûte le combat, et qui ne se voit sur aucun autre compteur : les
 		# gels ne perdent pas une image, ils volent du temps de jeu.
 		"combat auto       %s   (%.1f gel/s, %.0f %% du temps fige)" % [
-			"en cours" if _combat else "arrete", _gels_par_seconde,
-			100.0 * _gels_par_seconde * Game.hit_stop_duration
+			"en cours" if _combat else "stops", _freezes_per_second,
+			100.0 * _freezes_per_second * Game.hit_stop_duration
 		],
 		"",
 		# Le second chiffre est le seul qui compte : au delà de CULL_DISTANCE

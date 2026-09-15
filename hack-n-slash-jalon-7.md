@@ -99,18 +99,18 @@ Une compétence porte déjà deux choses qui sont des mots-clés en puissance : 
 
 **Elles ne se redéclarent pas.** Un `.tres` qui écrirait à la fois
 `nature = LIGHTNING` et `tags = ["foudre"]` porterait deux vérités sur la même
-chose, et la première correction en oublierait une. `Competence.mots_cles()`
+chose, et la première correction en oublierait une. `Skill.keywords()`
 rend donc l'union de trois sources :
 
 - les mots-clés **déclarés**, ceux que rien d'autre ne sait : `projectile`,
   `zone`, `melee` ;
 - le mot-clé de la **nature**, déduit de `DamageType` ;
-- `attaque` ou `sort`, déduits de la **cadence**.
+- `attack` ou `spell`, déduits de la **cadence**.
 
 C'est un écart assumé avec `ItemBase.tags`, où la famille est déclarée à la main
 dans la liste et vérifiée par un test. La raison de l'écart : là-bas le filtre
 des affixes lit une liste plate et la famille devait y figurer ; ici,
-`mots_cles()` est une fonction, la déduction ne coûte rien, et ce qui n'est pas
+`keywords()` est une fonction, la déduction ne coûte rien, et ce qui n'est pas
 écrit ne peut pas diverger.
 
 ---
@@ -122,7 +122,7 @@ projectiles » n'y a pas sa place — ce n'est pas une propriété du personnage
 d'un geste. Deux compétences lancées par le même personnage n'en ont pas le même
 nombre, et un champ unique sur la fiche ne saurait pas les distinguer.
 
-D'où une seconde structure, `StatsDeCompetence`, qui est **le résultat d'un
+D'où une seconde structure, `SkillStats`, qui est **le résultat d'un
 lancer** et non un état conservé : dégâts, projectiles, dispersion, vitesse de
 projectile, coût en mana, intervalle. Elle naît à chaque appel et meurt avec lui.
 
@@ -135,7 +135,7 @@ modificateur ne peut y toucher.
 
 ## 6. La résolution, et son ordre
 
-`Competence.resoudre(points, stats, mods) -> StatsDeCompetence` part des valeurs
+`Skill.resolve(points, stats, mods) -> SkillStats` part des valeurs
 de la fiche, puis applique les modificateurs dont le mot-clé est porté.
 
 **Les plats d'abord, les pourcentages ensuite**, exactement comme
@@ -151,7 +151,7 @@ le résultat de l'ordre des modificateurs.
 
 ## 7. D'où viennent les modificateurs
 
-Le porteur est le joueur : `Player.mods_de_competence`, reconstruite d'un bloc
+Le porteur est le joueur : `Player.skill_mods`, reconstruite d'un bloc
 dans `recompute_stats()`, comme la fiche l'est déjà. Un seul endroit reconstruit,
 un seul endroit à ne pas oublier.
 
@@ -174,23 +174,23 @@ en ajoutant un sort.
 Chaque étape se valide avec `tests/run.sh` avant la suivante.
 
 - [x] **1. Les mots-clés, et le joueur qui les voit.** La liste fermée avec ses
-      libellés, le champ déclaré sur `Competence`, la déduction depuis `nature` et
-      `cadence`, `mots_cles()`, et **la ligne qui les affiche sur la fiche d'une
+      libellés, le champ déclaré sur `Skill`, la déduction depuis `nature` et
+      `cadence`, `keywords()`, et **la ligne qui les affiche sur la fiche d'une
       case de manuel**. Rien ne les modifie encore : l'étape ne change pas le jeu,
       elle en montre le vocabulaire. C'est voulu — un mot mal choisi se change en
       une ligne maintenant, en dix une fois qu'on a bâti dessus. Tests : chaque
       mot-clé déclaré dans un `.tres` appartient à la liste — c'est le test qui
       attrape la faute de frappe silencieuse ; chaque mot-clé de la liste a un
-      libellé ; une compétence de foudre porte `foudre` sans l'avoir écrit ; un tir
+      libellé ; une compétence de foudre porte `lightning` sans l'avoir écrit ; un tir
       porte `projectile` et un coup d'épée non.
-- [x] **2. Les statistiques de compétence.** `StatsDeCompetence`,
-      `ModDeCompetence`, et `resoudre()`. Toujours aucun effet : le joueur ne
+- [x] **2. Les statistiques de compétence.** `SkillStats`,
+      `ModDeCompetence`, et `resolve()`. Toujours aucun effet : le joueur ne
       l'appelle pas encore. Tests : sans modificateur, la résolution rend
       **exactement** les nombres de la fiche — c'est le test qui garantit qu'on
       n'a rien changé au jeu ; les plats passent avant les pourcentages ; un
       modificateur dont le mot-clé n'est pas porté ne fait rien.
-- [x] **3. Le lancer passe par la résolution.** `Player._tirer` et `_swing`
-      lisent `StatsDeCompetence` au lieu de la fiche, la vitesse de projectile
+- [x] **3. Le lancer passe par la résolution.** `Player._roll` et `_swing`
+      lisent `SkillStats` au lieu de la fiche, la vitesse de projectile
       quitte la scène pour la compétence. Tests : les quatre sorts de foudre
       partent avec exactement les mêmes nombres qu'avant ; un tir lancé avec un
       `+1 projectile` en sort deux.
@@ -208,8 +208,8 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
 
 ### Ce que l'étape 5 a changé au plan
 
-- **La fiche passe par `Player.resoudre()`, pas directement par
-  `Competence.resoudre()`.** Partager la fonction ne suffisait pas : il fallait
+- **La fiche passe par `Player.resolve()`, pas directement par
+  `Skill.resolve()`.** Partager la fonction ne suffisait pas : il fallait
   aussi la même fiche et la même liste de modificateurs. Le joueur les tient ;
   passer par lui empêche la page de résoudre « à mains nues ».
 - **Les traits ne se comptent qu'à partir de deux.** « 1 trait » sur chaque sort
@@ -219,35 +219,35 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
 
 ### Ce que l'étape 4 a changé au plan
 
-- **Un troisième affixe, `orageux`, vise `foudre`.** Le plan n'en prévoyait que
+- **Un troisième affixe, `stormy`, vise `lightning`.** Le plan n'en prévoyait que
   deux, tous deux sur `projectile`, et laissait « Foudre » affiché sur cinq sorts
   sans que rien ne le vise — exactement le mot-clé décoratif du §9.
-  `test_chaque_mot_cle_est_vise_par_quelque_chose` le refuse désormais. Il prouve
+  `test_each_keyword_is_targeted_by_something` le refuse désormais. Il prouve
   au passage que la résolution n'est pas écrite pour les seuls projectiles : c'est
   un pourcentage de dégâts, sur un autre mot-clé.
-- **`sort` et `attaque` sont atteints par construction**, sans affixe porté :
-  `intervalle()` divise la recharge par la vitesse d'incantation ou d'attaque, deux
+- **`spell` et `attack` sont atteints par construction**, sans affixe porté :
+  `interval()` divise la recharge par la vitesse d'incantation ou d'attaque, deux
   affixes de fiche qui existent déjà. Le test les exempte, et dit pourquoi.
 - **Une nature ne donne un mot-clé que si quelque chose la vise.** Le §4 déduisait
-  « le mot-clé de la nature » pour toutes ; `MOT_CLE_DE_NATURE` n'en contient
+  « le mot-clé de la nature » pour toutes ; `KEYWORD_OF_NATURE` n'en contient
   qu'une, et un sort de froid n'affichera pas « Froid » tant que rien ne le vise.
 - **La sauvegarde passe en version 4**, contrairement à ce qu'annonce le §9. Une
-  ligne portée écrit sa `portee` : relue sans elle, un « +1 projectile »
+  ligne portée écrit sa `scope` : relue sans elle, un « +1 projectile »
   deviendrait une ligne de fiche visant un champ que la fiche n'a pas. Elle n'est
   **jamais déduite de l'affixe d'origine**, qu'un objet sans provenance n'a pas.
   Une v3 se relit telle quelle — toutes ses lignes visent la fiche — et
-  `personnage_v4.json` rejoint les fichiers de référence.
-- **`fourchu` a deux paliers : +1, puis +2 au niveau 50.** Une échelle d'un seul
-  palier est refusée par `test_chaque_echelle_est_monotone`, et à raison. Le
+  `character_v4.json` rejoint les fichiers de référence.
+- **`forked` a deux paliers : +1, puis +2 au niveau 50.** Une échelle d'un seul
+  palier est refusée par `test_each_scale_is_monotonic`, et à raison. Le
   libellé est donc « nombre de projectiles » : « +2 projectile » serait faux.
 - **Une ligne portée dit ce qu'elle vise** — « +20 % dégâts (Foudre) » — avec le
   libellé exact de la page du manuel, pour que le joueur rapproche l'objet du sort
-  sans traduire. `StatMod.nom()` est le seul endroit qui l'écrit ; l'infobulle,
+  sans traduire. `StatMod.name()` est le seul endroit qui l'écrit ; l'infobulle,
   l'établi, la forge et le catalogue y passent.
-- **`ItemAffix.modificateur()` fabrique la ligne.** Le tirage et l'établi
+- **`ItemAffix.modifier()` fabrique la ligne.** Le tirage et l'établi
   construisaient chacun leur `StatMod`, et l'un des deux aurait oublié la portée.
 - **L'établi taisait les affixes qui ne tenaient pas dans son cadre** : sa liste
-  s'arrête au bas du panneau sans rien dire. `test_chaque_affixe_accepte_a_sa_ligne`
+  s'arrête au bas du panneau sans rien dire. `test_each_accepted_affix_has_its_line`
   lit sa taille dans `zone.tscn` et vérifie chaque base.
 
 ### Ce que l'étape 3 a changé au plan
@@ -266,31 +266,31 @@ Chaque étape se valide avec `tests/run.sh` avant la suivante.
 
 ### Ce que l'étape 2 a changé au plan
 
-- **`ModDeCompetence` n'existe pas : `StatMod` gagne une `portee`.** Une seconde
+- **`ModDeCompetence` n'existe pas : `StatMod` gagne une `scope`.** Une seconde
   classe aurait demandé au tirage, à l'infobulle, à l'établi et à la sauvegarde de
   connaître deux formes pour une même chose, une ligne d'affixe. La confusion des
   deux familles, que le §9 redoutait, est gardée à un seul endroit :
   `StatMod.apply_all()` écarte ce qui est porté, et c'est la seule fonction qui
   écrit une liste sur la fiche.
-- **La double passe est sortie en `StatMod.appliquer()`**, qui sert la fiche comme
+- **La double passe est sortie en `StatMod.apply()`**, qui sert la fiche comme
   le résultat d'un lancer : « les plats d'abord » n'est écrit qu'une fois.
 - **Deux traits ne partent jamais l'un sur l'autre.** Pas prévu : un « +1
   projectile » sur un trait droit en faisait partir deux au même angle — on en
-  voyait un, qui frappait deux fois. `StatsDeCompetence.ECART_MINIMAL` ouvre huit
+  voyait un, qui frappait deux fois. `SkillStats.MIN_SPREAD` ouvre huit
   degrés par trait de plus ; une salve déjà plus large garde la sienne. La borne
-  au tour complet du §9 vit au même endroit, dans `conclure()`.
+  au tour complet du §9 vit au même endroit, dans `finalize()`.
 - **Seuls trois nombres se modifient** : les dégâts, le nombre et la vitesse des
   projectiles. Le coût et l'intervalle ont déjà leurs voies ; la dispersion n'a pas
   d'affixe, donc pas de nom.
-- **`MotsCles` et `StatsDeCompetence` sont des feuilles.** `StatMod` lit leurs
-  libellés et `Competence` applique des `StatMod` : les nommer l'une dans l'autre
+- **`Keywords` et `SkillStats` sont des feuilles.** `StatMod` lit leurs
+  libellés et `Skill` applique des `StatMod` : les nommer l'une dans l'autre
   refermerait la boucle.
 
 ### Ce que l'étape 1 a changé au plan
 
-- **La liste vit dans une classe-feuille, `MotsCles`, et la déduction dans
-  `Competence`** : deux tables, `MOT_CLE_DE_CADENCE` et `MOT_CLE_DE_NATURE`. La
-  liste ne peut pas nommer `Competence.Cadence` sans que `Competence`, qui la lit,
+- **La liste vit dans une classe-feuille, `Keywords`, et la déduction dans
+  `Skill`** : deux tables, `KEYWORD_OF_CADENCE` et `KEYWORD_OF_NATURE`. La
+  liste ne peut pas nommer `Skill.Cadence` sans que `Skill`, qui la lit,
   ne se referme sur elle.
 - **L'ordre d'affichage est celui de la liste** — ce que la compétence fait, sa
   nature, sa famille — et non celui de la déclaration : deux sorts voisins se

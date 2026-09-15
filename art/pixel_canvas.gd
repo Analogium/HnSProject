@@ -31,20 +31,20 @@ var _level: PackedFloat32Array
 ##
 ## Une petite classe et non un tableau de cinq colonnes, contrairement aux
 ## particules du retour visuel : il y en a **une** par sprite, donc rien à gagner
-## à l'empaqueter, et `ombre.rayons` se relit là où `s[2]` oblige à se souvenir
+## à l'empaqueter, et `shadow.radii` se relit là où `s[2]` oblige à se souvenir
 ## de l'ordre.
-class Ombre:
-	var centre: Vector2
-	var rayons: Vector2
+class Shadow:
+	var center: Vector2
+	var radii: Vector2
 	var alpha: float
 
-	func _init(p_centre: Vector2, p_rayons: Vector2, p_alpha: float) -> void:
-		centre = p_centre
-		rayons = p_rayons
+	func _init(p_center: Vector2, p_radii: Vector2, p_alpha: float) -> void:
+		center = p_center
+		radii = p_radii
 		alpha = p_alpha
 
 
-var _shadows: Array[Ombre] = []
+var _shadows: Array[Shadow] = []
 
 ## Rectangle réellement peint. Un personnage n'occupe qu'une moitié de son image ;
 ## sans ce suivi, to_image balaierait les 1024 pixels du cadre pour en colorer
@@ -139,7 +139,7 @@ func dot_px(x: int, y: int, ramp: int, level: float) -> void:
 ## Ombre portée au sol. Indispensable en vue de dessus : sans elle, on ne sait pas
 ## si un personnage est posé ou s'il flotte, et la profondeur disparaît.
 func ground_shadow(cx: float, cy: float, rx: float, ry: float, alpha := 0.30) -> void:
-	_shadows.append(Ombre.new(Vector2(cx, cy), Vector2(rx, ry), alpha))
+	_shadows.append(Shadow.new(Vector2(cx, cy), Vector2(rx, ry), alpha))
 
 
 func _touch(x: int, y: int) -> void:
@@ -193,8 +193,8 @@ func to_image(palettes: Array) -> Image:
 
 	# Avant la boucle : les pixels vides ne sont jamais réécrits, donc l'ombre
 	# qu'ils portent survit.
-	for ombre in _shadows:
-		_paint_shadow(data, ombre)
+	for shadow in _shadows:
+		_paint_shadow(data, shadow)
 
 	# +1 de marge : le contour se pose sur les pixels vides qui touchent le bord
 	# de la silhouette, donc juste à l'extérieur du rectangle peint.
@@ -251,12 +251,12 @@ static func _pack(c: Color) -> int:
 	)
 
 
-func _paint_shadow(data: PackedByteArray, ombre: Ombre) -> void:
-	var cx := ombre.centre.x
-	var cy := ombre.centre.y
-	var rx := ombre.rayons.x
-	var ry := ombre.rayons.y
-	var alpha := int(clampf(ombre.alpha, 0.0, 1.0) * 255.0)
+func _paint_shadow(data: PackedByteArray, shadow: Shadow) -> void:
+	var cx := shadow.center.x
+	var cy := shadow.center.y
+	var rx := shadow.radii.x
+	var ry := shadow.radii.y
+	var alpha := int(clampf(shadow.alpha, 0.0, 1.0) * 255.0)
 
 	for y in range(maxi(int(cy - ry), 0), mini(int(cy + ry) + 1, height)):
 		for x in range(maxi(int(cx - rx), 0), mini(int(cx + rx) + 1, width)):

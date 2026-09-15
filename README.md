@@ -4,7 +4,7 @@ Un hack'n'slash vu de dessus, en Godot 4.7, **sans aucun asset sur le disque** :
 les sprites, les icônes d'objets et les tuiles sont dessinés par du code au
 lancement.
 
-Scène de départ : `ui/selection_personnage.tscn`.
+Scène de départ : `ui/character_select.tscn`.
 
 ## Lancer
 
@@ -36,7 +36,7 @@ ouvert. Détails et frontières des suites : [tests/README.md](tests/README.md).
 |---|---|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Où vit chaque règle, et **les huit invariants** qui cassent en silence |
 | [docs/RECETTES.md](docs/RECETTES.md) | Ajouter une base, un affixe, une statistique, un ennemi, un passif, un nœud de talent — fichiers dans l'ordre et test qui refuse l'oubli |
-| [docs/CATALOGUE.md](docs/CATALOGUE.md) | Les 44 bases, les 11 compétences, les trois manuels et les 39 affixes en tableaux. **Généré** par `tools/catalogue.sh` |
+| [docs/CATALOGUE.md](docs/CATALOGUE.md) | Les 44 bases, les 11 compétences, les trois manuels et les 39 affixes en tableaux. **Généré** par `tools/catalog.sh` |
 | [tests/README.md](tests/README.md) | Comment lancer la campagne, et où va un test |
 | `hack-n-slash-jalon-*.md` | Les dix documents de jalon : ce qu'il fallait construire, et pourquoi — dans l'ordre où ça a été décidé |
 

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/cross_slash.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "cross_slash"
+name = "Coup en croix"
+nature = 0
+cadence = 0
+shape = 8
+mana_cost = 7.0
+damage_per_point = Array[float]([13.0, 17.0, 21.0, 26.0, 32.0])
+required_manual_level = 3
+icon = ExtResource("2_icone")

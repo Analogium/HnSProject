@@ -5,7 +5,7 @@ extends GutTest
 ## faux, mais seulement si on regarde le bon objet au bon moment.
 
 
-func test_unites_d_affichage() -> void:
+func test_display_units() -> void:
 	assert_eq(StatMod.format("crit_chance", 0.05), "5 %", "fraction lue en %")
 	assert_eq(StatMod.format("attack_speed", 1.1), "110 %", "multiplicateur lu en %")
 	assert_eq(StatMod.format("crit_multiplier", 2.0), "200 %")
@@ -16,12 +16,12 @@ func test_unites_d_affichage() -> void:
 
 
 ## Confondre les deux familles donnerait « 7500 % de résistance au feu ».
-func test_les_deux_familles_d_unites_ne_se_melangent_pas() -> void:
+func test_the_two_unit_families_do_not_mix() -> void:
 	for s in StatMod.SCALED:
 		assert_false(s in StatMod.PERCENT_POINTS, "%s n'est que dans une famille" % s)
 
 
-func test_libelles() -> void:
+func test_labels() -> void:
 	assert_eq(StatMod.new("armor", StatMod.Mode.FLAT, 25.0).label(), "+25 armure")
 	assert_eq(
 		StatMod.new("attack_speed", StatMod.Mode.PERCENT, 8.0).label(),
@@ -32,13 +32,13 @@ func test_libelles() -> void:
 
 ## Une ligne portée dit ce qu'elle vise, avec **le libellé de la page du manuel** :
 ## « +20 % dégâts » tout court se lirait comme la ligne de fiche du même nom.
-func test_un_modificateur_porte_dit_ce_qu_il_vise() -> void:
+func test_a_scoped_modifier_says_what_it_targets() -> void:
 	assert_eq(
-		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, MotsCles.PROJECTILE).label(),
+		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, Keywords.PROJECTILE).label(),
 		"+1 nombre de projectiles (Projectile)"
 	)
 	assert_eq(
-		StatMod.new("degats", StatMod.Mode.PERCENT, 20.0, MotsCles.FOUDRE).label(),
+		StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.LIGHTNING).label(),
 		"+20 % dégâts (Foudre)"
 	)
 
@@ -46,30 +46,30 @@ func test_un_modificateur_porte_dit_ce_qu_il_vise() -> void:
 ## Des dégâts ajoutés se lisent comme la phrase du genre, destinataire compris.
 ## Des bornes égales s'écrivent comme un nombre : « ajoute 6 à 6 » se lit comme
 ## une faute.
-func test_une_fourchette_se_lit_en_toutes_lettres() -> void:
-	var froid := StatMod.fourchette("degats_froid", 3.0, 7.0, MotsCles.SORT)
-	assert_eq(froid.label(), "ajoute 3 à 7 dégâts de froid aux sorts")
-	assert_eq(froid.valeur_lisible(), "3–7")
-	var force := StatMod.fourchette("degats_physique", 6.0, 6.0, MotsCles.ATTAQUE)
+func test_a_range_reads_in_full_words() -> void:
+	var cold := StatMod.ranged("damage_cold", 3.0, 7.0, Keywords.SPELL)
+	assert_eq(cold.label(), "ajoute 3 à 7 dégâts de froid aux sorts")
+	assert_eq(cold.readable_value(), "3–7")
+	var force := StatMod.ranged("damage_physical", 6.0, 6.0, Keywords.ATTACK)
 	assert_eq(force.label(), "ajoute 6 dégâts physiques aux attaques")
-	assert_eq(force.valeur_lisible(), "6")
+	assert_eq(force.readable_value(), "6")
 
 
 ## Chaque nature a son identifiant et son nom de dégâts : une table plus courte
 ## que l'enum ferait planter la première ligne d'objet de la nature oubliée.
-func test_chaque_nature_a_son_identifiant_et_son_nom_de_degats() -> void:
+func test_each_nature_has_its_id_and_damage_name() -> void:
 	assert_eq(DamageType.IDS.size(), DamageType.Kind.size())
-	assert_eq(DamageType.LIBELLES_DE_DEGATS.size(), DamageType.Kind.size())
+	assert_eq(DamageType.DAMAGE_LABELS.size(), DamageType.Kind.size())
 	for nature in DamageType.Kind.values():
 		assert_eq(
-			StatsDeCompetence.nature_ajoutee(StatsDeCompetence.stat_ajoutee(nature)), nature,
+			SkillStats.added_nature(SkillStats.added_stat(nature)), nature,
 			"« %s » se relit" % DamageType.IDS[nature]
 		)
 
 
 ## Le cœur de l'affaire : deux objets identiques doivent donner le même
 ## personnage quel que soit l'ordre où on les équipe.
-func test_les_plats_avant_les_pourcentages() -> void:
+func test_flats_before_percentages() -> void:
 	var mods: Array[StatMod] = [
 		StatMod.new("max_health", StatMod.Mode.PERCENT, 50.0),
 		StatMod.new("max_health", StatMod.Mode.FLAT, 100.0),
@@ -91,13 +91,13 @@ func test_les_plats_avant_les_pourcentages() -> void:
 ## touche pas la fiche, même quand son champ y porte un nom : sinon « +20 % de
 ## dégâts de foudre » deviendrait « +20 % de dégâts » pour toutes les compétences,
 ## foudre comprise, qui le recevrait alors deux fois.
-func test_un_modificateur_porte_n_ecrit_rien_sur_la_fiche() -> void:
-	var fiche := CharacterStats.new()
-	var avant := fiche.attack_damage
-	StatMod.apply_all(fiche, [
-		StatMod.new("attack_damage", StatMod.Mode.FLAT, 50.0, MotsCles.FOUDRE),
+func test_a_scoped_modifier_writes_nothing_on_the_sheet() -> void:
+	var sheet := CharacterStats.new()
+	var before := sheet.attack_damage
+	StatMod.apply_all(sheet, [
+		StatMod.new("attack_damage", StatMod.Mode.FLAT, 50.0, Keywords.LIGHTNING),
 	])
-	assert_eq(fiche.attack_damage, avant)
+	assert_eq(sheet.attack_damage, before)
 
 
 # --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ func test_un_modificateur_porte_n_ecrit_rien_sur_la_fiche() -> void:
 ## Le défaut trouvé en jouant : 216 / 215. Les PV étaient pleins — 215,4 sur
 ## 215,4 — mais la valeur courante était arrondie vers le haut et le maximum au
 ## plus proche, chacun de son côté.
-func test_une_jauge_pleine_n_affiche_jamais_plus_que_son_maximum() -> void:
+func test_a_full_gauge_never_shows_more_than_its_maximum() -> void:
 	assert_eq(StatMod.gauge(215.4, 215.4), "215 / 215", "pleine, et fractionnaire")
 	assert_eq(StatMod.gauge(215.6, 215.6), "216 / 216")
 	assert_eq(StatMod.gauge(100.0, 100.0), "100 / 100", "le cas entier ne bouge pas")
@@ -115,17 +115,17 @@ func test_une_jauge_pleine_n_affiche_jamais_plus_que_son_maximum() -> void:
 
 ## L'autre bout de la barre, et la raison pour laquelle l'arrondi se fait vers
 ## le haut : à 0,4 PV on est vivant.
-func test_un_reste_de_vie_ne_s_affiche_pas_a_zero() -> void:
+func test_leftover_health_is_not_displayed_as_zero() -> void:
 	assert_eq(StatMod.gauge(0.4, 100.0), "1 / 100")
 	assert_eq(StatMod.gauge(0.01, 100.0), "1 / 100")
 
 
-func test_zero_reste_zero() -> void:
+func test_zero_stays_zero() -> void:
 	assert_eq(StatMod.gauge(0.0, 100.0), "0 / 100", "mort, et ça doit se voir")
 
 
 ## Un personnage sans mana : la fiche l'annonce, elle ne divise pas par zéro.
-func test_une_reserve_absente() -> void:
+func test_a_missing_pool() -> void:
 	assert_eq(StatMod.gauge(0.0, 0.0), "0 / 0")
 
 
@@ -136,7 +136,7 @@ func test_une_reserve_absente() -> void:
 ## Une plage annonce ce qu\'un affixe **peut** donner : pas de signe, et l\'unité
 ## une seule fois. « +8 %–+11 % » se lit comme deux valeurs, pas comme un
 ## intervalle.
-func test_une_plage_s_ecrit_sans_signe_et_avec_une_seule_unite() -> void:
+func test_a_span_is_written_without_sign_and_with_a_single_unit() -> void:
 	assert_eq(StatMod.range_label("max_health", StatMod.Mode.FLAT, 45.0, 58.0), "45–58")
 	assert_eq(StatMod.range_label("max_health", StatMod.Mode.PERCENT, 8.0, 11.0), "8–11 %")
 	# Une statistique rangée en fraction se lit en pourcentage, une seule fois.
@@ -147,10 +147,10 @@ func test_une_plage_s_ecrit_sans_signe_et_avec_une_seule_unite() -> void:
 
 ## Le libellé d\'un modificateur est sa valeur plus le nom de la statistique :
 ## les deux fonctions ne doivent pas diverger d\'un arrondi, d\'où le partage.
-func test_la_valeur_seule_est_celle_du_libelle() -> void:
+func test_the_bare_value_is_the_label_one() -> void:
 	var m := StatMod.new("attack_speed", StatMod.Mode.PERCENT, 9.0)
 	assert_eq(m.label(), "+9 % vitesse d\'attaque")
 	assert_eq(StatMod.value_label(m.stat, m.mode, m.value), "+9 %")
-	var plat := StatMod.new("max_health", StatMod.Mode.FLAT, 63.0)
-	assert_eq(plat.label(), "+63 PV")
-	assert_eq(StatMod.value_label(plat.stat, plat.mode, plat.value), "+63")
+	var flat := StatMod.new("max_health", StatMod.Mode.FLAT, 63.0)
+	assert_eq(flat.label(), "+63 PV")
+	assert_eq(StatMod.value_label(flat.stat, flat.mode, flat.value), "+63")

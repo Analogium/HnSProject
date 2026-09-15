@@ -113,9 +113,9 @@ première façon de perdre une semaine.
 
 | Ce que c'est | Où ça vit | Combien |
 |---|---|---|
-| **L'archétype** — le contenu du livre : ses cases, leurs compétences, leur disposition | `resources/manuels/<id>.tres`, partagé | un par version d'archétype |
+| **L'archétype** — le contenu du livre : ses cases, leurs compétences, leur disposition | `resources/manuals/<id>.tres`, partagé | un par version d'archétype |
 | **L'exemplaire** — l'objet ramassé, avec sa base et son niveau d'objet | `Item`, dans le sac | un par manuel ramassé |
-| **L'état** — l'expérience du livre et les points placés dedans | `Manuel`, porté par l'`Item` | un par exemplaire |
+| **L'état** — l'expérience du livre et les points placés dedans | `Manual`, porté par l'`Item` | un par exemplaire |
 
 **L'archétype est un `.tres` du disque, donc on n'y écrit jamais** (invariant 2).
 C'est le même piège qu'au jalon 5 avec la fiche d'un ennemi mis à l'échelle, en
@@ -140,7 +140,7 @@ chose qui le distingue est un champ nouveau sur `ItemBase` :
 ## L'archétype que cette base ouvre, ou null. Non nul si et seulement si la
 ## famille est « manual » : c'est la base qui dit ce qu'elle est, comme elle dit
 ## déjà son implicite.
-@export var manuel: ManuelArchetype
+@export var manual: ManualArchetype
 ```
 
 Un champ optionnel sur `ItemBase` plutôt qu'un second catalogue tenu en
@@ -188,7 +188,7 @@ doigts, sinon le joueur ne sait pas ce qu'un niveau vaut.
 
 ### 3.4 Ce que la sauvegarde retient
 
-Le format passe en **version 3**, et `VERSIONS_LUES` devient `[1, 2, 3]`. Un
+Le format passe en **version 3**, et `READABLE_VERSIONS` devient `[1, 2, 3]`. Un
 objet du sac gagne un champ facultatif :
 
 ```json
@@ -209,7 +209,7 @@ fois dans le sac, une fois au râtelier — créerait deux vérités sur ses poi
 le rechargement en choisirait une au hasard.
 
 **La barre retient des identifiants de compétences.** Ils partent donc sur le
-disque, et l'invariant 1 s'applique mot pour mot : `eclair_vif` ne se renomme
+disque, et l'invariant 1 s'applique mot pour mot : `swift_bolt` ne se renomme
 jamais. Le nom lisible est à côté et se change librement.
 
 Ce qu'une version 2 devient en version 3 : un sac dont aucun objet n'est un
@@ -263,24 +263,24 @@ jamais rien choisir.
 
 ### 5.1 La fiche
 
-Une `Competence` est une `Resource`, un fichier par compétence, dans
-`resources/competences/`.
+Une `Skill` est une `Resource`, un fichier par compétence, dans
+`resources/skills/`.
 
 | Champ | Ce qu'il décide |
 |---|---|
 | `id` | **Définitif** : il part dans les sauvegardes (invariant 1) |
-| `nom` | Ce que le joueur lit ; se change librement |
+| `name` | Ce que le joueur lit ; se change librement |
 | `nature` | Un `DamageType.Kind` — la foudre pour cet archétype |
-| `cout_en_mana` | 0 pour un coup gratuit, comme l'épée |
-| `recharge` | En secondes, avant la vitesse d'incantation |
-| `degats_par_point` | La courbe : un nombre par point placé, du premier au dernier |
+| `mana_cost` | 0 pour un coup gratuit, comme l'épée |
+| `cooldown` | En secondes, avant la vitesse d'incantation |
+| `damage_per_point` | La courbe : un nombre par point placé, du premier au dernier |
 | `stat_de_base` | Le champ de la fiche qui s'ajoute — `attack_damage` ou `spell_damage` |
-| `attribut` | Celui qui la fait monter : `intelligence` pour la foudre |
+| `attribute` | Celui qui la fait monter : `intelligence` pour la foudre |
 | `pourcentage_par_point` | 4.0 pour « +4 % par point d'intelligence » |
-| `niveau_de_manuel_requis` | À partir de quand la case accepte son premier point |
-| `case` | Sa position sur la page |
+| `required_manual_level` | À partir de quand la case accepte son premier point |
+| `cell` | Sa position sur la page |
 
-`degats_par_point` est une **table écrite à la main** et non une formule, pour la
+`damage_per_point` est une **table écrite à la main** et non une formule, pour la
 raison qui a fait choisir des tiers écrits au jalon 5 : une courbe calculée oblige
 à relire du code pour savoir ce que vaut le troisième point, et interdit de
 donner un bond franc au dernier.
@@ -305,7 +305,7 @@ grimoire : sans ce terme, la moitié de la réserve d'affixes deviendrait morte 
 jour de la sortie du jalon 6.
 
 **Et c'est ce qui permet de verser l'épée et le tir dans le système sans changer
-une valeur** : le coup de base est une compétence à `degats_par_point = [0]` et
+une valeur** : le coup de base est une compétence à `damage_per_point = [0]` et
 `stat_de_base = attack_damage` ; le tir est la même chose avec `spell_damage`.
 Ni l'un ni l'autre ne nomme d'attribut — la force et l'intelligence nourrissent
 déjà `attack_damage` et la réserve dans `apply_attributes()`, et les compter ici
@@ -314,7 +314,7 @@ d'aujourd'hui — le test le vérifie au dixième près, **avant le coup critiqu
 celui-ci reste où il est, dans `DamageInfo.roll()`, et une compétence ne le
 retire ni ne le double.
 
-La formule vit dans **une seule fonction**, `Competence.degats(points, stats)`,
+La formule vit dans **une seule fonction**, `Skill.damage(points, stats)`,
 appelée par le lancement *et* par l'infobulle. C'est la leçon de l'étape 7 du
 jalon 5, où `StatMod.value_label()` a dû être extraite pour que la bulle n'annonce
 pas une valeur hors de sa propre fourchette : deux calculs séparés finissent par
@@ -403,7 +403,7 @@ une zone**, au sol et non dans le sac : c'est le geste de ramassage qu'on veut
 enseigner, et un objet qui brille par terre le dit mieux qu'une ligne d'aide.
 
 Le drapeau qui dit que c'est déjà fait vit dans la sauvegarde
-(`manuel_offert`, version 3). Il n'est pas déduit de « le sac contient un
+(`manual_given`, version 3). Il n'est pas déduit de « le sac contient un
 manuel » : un joueur qui jette le sien en recevrait un second, et le manuel de
 départ deviendrait une monnaie.
 
@@ -414,15 +414,15 @@ départ deviendrait une monnaie.
 Chaque étape se valide avec `tests/run.sh` avant la suivante. Les quatre
 premières sont invisibles à l'écran ; les trois dernières sont l'interface.
 
-- [x] **1. La compétence, seule.** `Competence`, la table `degats_par_point`, la
+- [x] **1. La compétence, seule.** `Skill`, la table `damage_per_point`, la
       formule du §5.2, et les deux fiches qui remplacent le coup d'épée et le
       tir. Aucun manuel, aucune interface : le joueur lance encore par ses deux
       touches, mais les nombres viennent de la nouvelle chaîne. Tests : le coup
       de base et le tir rendent **exactement** les dégâts d'avant ; la formule
       monte avec l'attribut lu sur la fiche, objets compris ; une compétence à
       zéro point ne rend rien.
-- [x] **2. Le manuel comme objet.** `ManuelArchetype`, `Manuel`, le champ
-      `manuel` sur `ItemBase`, la base `manuel_foudre`, son `kind` et son icône
+- [x] **2. Le manuel comme objet.** `ManualArchetype`, `Manual`, le champ
+      `manual` sur `ItemBase`, la base `manual_lightning`, son `kind` et son icône
       dans la forge, la rareté qui passe par le manuel, la chute. Tests : un
       manuel ramassé tient dans le sac et ne s'équipe sur aucun emplacement ;
       **deux manuels ramassés ont des points indépendants** — c'est le test qui
@@ -496,7 +496,7 @@ disposition du joueur par `DisplayServer.keyboard_get_keycode_from_physical()`.
 clic dès qu'il était ouvert, y compris au-dehors : la fiche de personnage et la
 page d'un manuel devenaient sourdes tant qu'il était à l'écran, sans que rien ne
 le dise. Les trois panneaux qui lisent l'entrée brute portent désormais la même
-règle nommée, `_possede_le_clic()`, avec deux exceptions assumées — l'objet tenu
+règle nommée, `_owns_click()`, avec deux exceptions assumées — l'objet tenu
 à la main possède le geste jusqu'au lâcher, y compris hors du sac, et le menu de
 la barre est modal tant qu'il est ouvert.
 
@@ -506,10 +506,10 @@ personnage : ce sont les deux seules fenêtres qui descendent jusqu'en bas. Il e
 au centre, dans la bande que rien n'occupe — la même raison qui y avait mis les
 jauges au jalon 4.
 
-**La cadence est un choix, pas un nombre.** `Competence.cadence` vaut `ARME` — et
+**La cadence est un choix, pas un nombre.** `Skill.cadence` vaut `WEAPON` — et
 l'intervalle vient alors de la fiche, `attack_cooldown` divisé par
-`attack_speed`, donc une arme rapide accélère le geste — ou `INCANTATION`, et
-c'est la `recharge` du sort divisée par `cast_speed`. C'est la question que
+`attack_speed`, donc une arme rapide accélère le geste — ou `CAST`, et
+c'est la `cooldown` du sort divisée par `cast_speed`. C'est la question que
 l'étape 1 avait laissée ouverte, et elle se répond ici parce que cinq cadences
 doivent enfin coexister.
 
@@ -518,7 +518,7 @@ quel écart. Un trait, une salve de trois sur vingt-quatre degrés, une nova de
 huit sur trois cent soixante — et la prochaine compétence en éventail ne
 demandera pas une branche de plus dans le joueur.
 
-**`Player.lancer(index)` est le point de passage unique**, et il porte les quatre
+**`Player.cast_slot(index)` est le point de passage unique**, et il porte les quatre
 refus : case vide, compétence non apprise, réserve insuffisante, recharge en
 cours. Les cinq touches, la barre et les tests passent tous par là, et aucun n'a
 à refaire une seule de ces vérifications.
@@ -603,12 +603,12 @@ reçoivent le même montant.
   donc une fois, en amont, et non deux ; et le montant n'est pas divisé entre les
   trois emplacements, pour la raison du §3.3.
 - **Les constantes sont réglées sur un chiffre réel** : un grunt de niveau 1 vaut
-  onze points d'expérience, donc `XP_BASE = 90` et `XP_PUISSANCE = 1.25` font
+  onze points d'expérience, donc `XP_BASE = 90` et `XP_POWER = 1.25` font
   monter un livre neuf d'un niveau en huit ennemis et de trois en une zone, puis
-  ralentissent. `NIVEAU_MAX = 20` — de quoi remplir quatre cases à cinq points, et
+  ralentissent. `MAX_LEVEL = 20` — de quoi remplir quatre cases à cinq points, et
   pas une de plus : un manuel qu'on finit est un manuel qu'on remplace. Premier
   réglage, à sentir en jouant.
-- **Les quatre conditions de l'investissement sont dans `Manuel`, pas dans
+- **Les quatre conditions de l'investissement sont dans `Manual`, pas dans
   l'interface.** Une page qui referait le test finirait par en oublier un, et
   c'est le clic qui donnerait le point de trop.
 - **Un test d'intégration a fait fuir des objets, et c'était instructif.** Tuer un
@@ -627,22 +627,22 @@ reçoivent le même montant.
   porter. Et surtout la règle du §3.3 devient nette — un livre est **rangé ou à
   l'étude**, jamais les deux, donc « celui qui dort dans le sac n'apprend rien »
   n'a plus de cas limite. La duplication que le §3.4 redoutait est écartée de la
-  même façon qu'`equipement` l'écarte depuis le jalon 3 : il n'est écrit qu'à un
+  même façon qu'`equipment` l'écarte depuis le jalon 3 : il n'est écrit qu'à un
   seul endroit.
 - **Le niveau d'un manuel ne s'écrit pas.** Il se déduit de son expérience, et la
   sauvegarde n'écrit rien de calculé — ni PV, ni statistiques, ni total
-  d'attributs. Le champ posé à l'étape 2 a donc disparu de `Manuel` ; la
+  d'attributs. Le champ posé à l'étape 2 a donc disparu de `Manual` ; la
   déduction revient à l'étape 4, avec la courbe. Un champ stocké qui n'est pas
   sauvegardé est un piège : on l'écrit, et il s'efface au rechargement suivant.
 - **Deux petites classes plutôt que deux tableaux sur le personnage.**
-  `Ratelier` et `BarreDeCompetences` portent leurs constantes — trois
+  `Rack` et `SkillBar` portent leurs constantes — trois
   emplacements, cinq cases — là où une mise en page de panneau les aurait
   écrites en dur, et le râtelier hérite de la règle de `Player.equip()` : un
   objet refusé est **rendu**, jamais perdu.
 - **Une case de barre vide s'écrit `null`.** Le projet a choisi le JSON pour que
   la sauvegarde se lise à l'œil ; « rien » doit donc y ressembler à rien, pas à
   une chaîne vide.
-- **Clé `barre` absente : la barre de départ. Présente : ce qu'elle dit**, cases
+- **Clé `bar` absente : la barre de départ. Présente : ce qu'elle dit**, cases
   vides comprises. C'est la règle du format — un champ absent vaut son défaut —
   mais son défaut n'est pas « vide » : c'est le coup d'épée et le tir, sans quoi
   une sauvegarde de version 2 reviendrait avec un personnage incapable de
@@ -652,7 +652,7 @@ reçoivent le même montant.
   la question n'est pas « ce sort existe-t-il » mais « ce livre-là l'enseigne-t-il ».
   Les garder ferait un manuel qui doit des points à personne.
 - **Le garde-fou des champs de sauvegarde comptait sans nommer.**
-  `test_remplir_n_ecrit_aucune_statistique` vérifiait « douze champs, ni plus ni
+  `test_fill_writes_no_stat` vérifiait « douze champs, ni plus ni
   moins » : il annonce désormais lesquels. Un total seul dit qu'il y en a un de
   trop sans dire lequel, et c'est le moment où on aimerait le savoir.
 
@@ -661,33 +661,33 @@ reçoivent le même montant.
 - **Cinq règles présumaient qu'une base est de l'équipement, pas une.** Le §10
   n'en annonçait qu'une. Aux affixes par famille se sont ajoutés les résistances
   « partout sauf sur les armes », les attributs « partout », les familles qui
-  doivent avoir un emplacement, et surtout `test_chaque_lignee_est_monotone` —
+  doivent avoir un emplacement, et surtout `test_each_lineage_is_monotonic` —
   qui exige **deux paliers par lignée**, et non l'implicite croissant qu'on
   redoutait. La question est désormais posée à un seul endroit,
-  `EquipmentSlots.famille_equipable()`, et les cinq règles l'appellent.
+  `EquipmentSlots.equippable_family()`, et les cinq règles l'appellent.
 - **L'exemption a sa garde.** Exempter « ce qui ne se porte pas » ouvrait la
   porte à une faute de frappe : `family = "manaul"` aurait échappé à toutes les
-  règles en silence. `test_un_archetype_va_avec_la_famille_du_manuel` ferme la
+  règles en silence. `test_an_archetype_goes_with_the_manual_family` ferme la
   porte dans les deux sens — une base porte un archétype **si et seulement si**
   elle est de la famille des manuels, et toute autre base doit s'équiper quelque
-  part. La famille est nommée une fois, `ItemBase.FAMILLE_MANUEL`.
+  part. La famille est nommée une fois, `ItemBase.MANUAL_FAMILY`.
 - **La rareté vient du palier de la base, pas d'un champ sur l'archétype.**
   L'archétype ne peut pas nommer `Item.Rarity` : `Item` connaît `ItemBase`, qui
-  connaîtrait `ManuelArchetype`, qui connaîtrait `Item` — un cycle, que GDScript
+  connaîtrait `ManualArchetype`, qui connaîtrait `Item` — un cycle, que GDScript
   refuse. Extraire l'énumération en classe-feuille, comme `DamageType`, aurait
   été le geste habituel du projet, mais le palier disait déjà « quelle version de
   ce livre » : c'est la même information, et elle était déjà là.
-- **`Manuel` ne connaît pas son archétype.** L'objet porte les deux — sa base
+- **`Manual` ne connaît pas son archétype.** L'objet porte les deux — sa base
   sait quel livre c'est, son manuel sait ce qu'il en a tiré — et les règles qui
   ont besoin des deux recevront l'archétype en argument, comme
-  `Competence.degats()` reçoit la fiche. Une référence en retour aurait fait un
+  `Skill.damage()` reçoit la fiche. Une référence en retour aurait fait un
   second chemin vers la même information, et l'un des deux aurait fini par mentir.
 - **« Éclair vif » est écrite avec quatre étapes d'avance.** Un archétype sans
   une seule case ne se laisse pas éprouver : ni la page, ni l'investissement, ni
   ce test-ci n'auraient eu de quoi mordre. Les trois autres compétences de la
   foudre restent à l'étape 7, avec leur équilibrage.
 - **La référence de contenu annonçait une chose que le tirage refuse.**
-  `tools/generer_catalogue.gd` comptait les bases éligibles à un affixe avec
+  `tools/catalog_generator.gd` comptait les bases éligibles à un affixe avec
   `ItemAffix.fits()`, c'est-à-dire le filtre par étiquettes seul, alors que la
   règle complète vit dans `ItemAffixPool.compatibles()`. `docs/CATALOGUE.md`
   affirmait donc qu'un manuel pouvait recevoir de la dextérité — 42/42 au lieu de
@@ -712,7 +712,7 @@ reçoivent le même montant.
   donnait ; elle appartient à la **case** du manuel. Une compétence est ce qu'elle
   fait, pas l'endroit où on la trouve — et le jour où deux manuels partageront un
   sort, ils le poseront chacun où ils veulent sans se contredire.
-- **`recharge` n'est pas encore écrite.** Le coup d'épée suit `attack_speed` et
+- **`cooldown` n'est pas encore écrite.** Le coup d'épée suit `attack_speed` et
   le tir `cast_speed` : ce sont deux règles, pas deux valeurs, et une compétence
   ne sait pas encore dire laquelle elle suit. Inventer le champ maintenant, ce
   serait deviner ; il arrive avec la barre, quand cinq cadences devront coexister.
@@ -725,7 +725,7 @@ reçoivent le même montant.
   compétence ne le retire ni ne le double.
 - **La nature du tir est écrite à deux endroits**, et c'est provisoire : la
   compétence l'annonce, la bille la porte encore sur sa scène. Un test les tient
-  d'accord (`test_la_nature_du_tir_ne_diverge_pas_de_celle_de_la_bille`) jusqu'à
+  d'accord (`test_the_bolt_nature_does_not_diverge_from_the_pellet`) jusqu'à
   ce que l'étape 7 fasse de la compétence la seule à décider. Une duplication
   qu'on assume et qu'un test surveille vaut mieux qu'un détour d'architecture au
   milieu d'une étape qui ne parle pas de ça.
@@ -743,11 +743,11 @@ reçoivent le même montant.
   compris dans les tests, et l'éditeur peut graver le résultat. Le test « deux
   manuels ramassés ont des points indépendants » est là pour ça, et il s'écrit à
   l'étape 2.
-- **Monter `Personnage.VERSION` sans écrire la lecture des anciens formats.**
+- **Monter `Character.VERSION` sans écrire la lecture des anciens formats.**
   Tous les personnages existants passent « illisibles » d'un coup, fichiers
   intacts. À l'étape 3, avec son test, avant toute interface.
 - **La famille « manual » qui casse un test du catalogue.**
-  `test_chaque_famille_a_de_quoi_tirer_des_affixes` exige de **chaque** base au
+  `test_each_family_has_affixes_to_roll` exige de **chaque** base au
   moins quatre affixes tirables au niveau d'objet 1 ; un manuel n'en reçoit
   aucun. **Ce n'est pas une valeur attendue à ajuster** : c'est la règle qui doit
   apprendre qu'il existe des bases qui ne s'équipent pas et ne reçoivent pas
@@ -755,10 +755,10 @@ reçoivent le même montant.
   le monde, et les premières zones se rempliront de blanc sans que personne
   n'ait rien décidé.
   Deux voisins qu'on croira touchés ne le sont pas :
-  `test_chaque_emplacement_a_au_moins_une_base` vérifie que chaque *emplacement*
-  a une base, pas l'inverse, et `test_les_implicites_visent_des_statistiques_reelles`
+  `test_each_slot_has_at_least_one_base` vérifie que chaque *emplacement*
+  a une base, pas l'inverse, et `test_implicits_target_real_stats`
   laisse déjà passer un implicite vide. Celui qui mordra plus tard est
-  `test_chaque_lignee_est_monotone` : il exige d'un palier supérieur un implicite
+  `test_each_lineage_is_monotonic` : il exige d'un palier supérieur un implicite
   supérieur, et un manuel n'en a pas — c'est le jour de la version rare qu'il
   faudra le régler, pas maintenant.
 - **L'icône vide.** Un `kind` nouveau qui n'est ni dans `_weapon()` ni dans
@@ -785,7 +785,7 @@ reçoivent le même montant.
   `Hurtbox` teste `evade > 0.0` avant de tirer. Une compétence consomme le même
   nombre de tirages quel que soit son résultat, ou n'en consomme aucun.
 - **Un identifiant de compétence renommé.** Il est dans les sauvegardes au même
-  titre qu'un `ItemBase.id`. Renommer `eclair_vif` vide la barre de tout le
+  titre qu'un `ItemBase.id`. Renommer `swift_bolt` vide la barre de tout le
   monde, au prochain chargement seulement.
 - **Le manuel de départ qui retombe à chaque zone.** Le drapeau est dans la
   sauvegarde, pas déduit du contenu du sac.

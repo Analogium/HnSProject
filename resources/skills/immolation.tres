@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/immolation.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "immolation"
+name = "Immolation"
+nature = 2
+cadence = 1
+shape = 6
+cooldown = 1.00
+mana_cost = 25.0
+radius = 40.0
+period = 0.5
+self_burn = 0.03
+damage_per_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
+required_manual_level = 9
+icon = ExtResource("2_icone")

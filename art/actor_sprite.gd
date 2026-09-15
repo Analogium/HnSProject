@@ -26,7 +26,7 @@ const FLASH_TIME := 0.08
 
 ## La part de la couleur d'un état dans le corps. À moitié ou presque : assez pour
 ## lire « embrasé » dans une mêlée, pas assez pour qu'un grunt cesse d'être vert.
-const TEINTE_D_ETAT := 0.45
+const STATE_TINT := 0.45
 
 var _dir := "down"
 var _anim := "idle"
@@ -44,10 +44,10 @@ func _ready() -> void:
 ## Change la silhouette. Elle doit pouvoir s'appliquer **après** le _ready du
 ## sprite : le joueur est déjà dans la scène quand la sauvegarde est chargée.
 func set_variant(index: int) -> void:
-	var borne := posmod(index, SpriteForge.VARIANTS)
-	if borne == _variant:
+	var clamped := posmod(index, SpriteForge.VARIANTS)
+	if clamped == _variant:
 		return
-	_variant = borne
+	_variant = clamped
 	_rebuild()
 
 
@@ -139,14 +139,14 @@ func set_rim(color: Color, amount: float, width := 1.0) -> void:
 ## **Une teinte, contre la règle du liseré juste au-dessus**, et c'est voulu : un
 ## affixe est l'identité d'un ennemi et ne doit pas lui voler sa couleur ; un état
 ## dure quelques secondes et doit se lire d'un coup d'œil dans un paquet.
-func montrer_les_etats(etats: Etats) -> void:
-	speed_scale = etats.facteur_de_vitesse
+func show_states(states: StatusEffects) -> void:
+	speed_scale = states.speed_factor
 	if material == null:
 		return
-	var couleurs := etats.couleurs()
-	var c := Color.WHITE if couleurs.is_empty() else couleurs[couleurs.size() - 1]
-	material.set_shader_parameter("teinte_couleur", Vector3(c.r, c.g, c.b))
-	material.set_shader_parameter("teinte_force", 0.0 if couleurs.is_empty() else TEINTE_D_ETAT)
+	var colors := states.colors()
+	var c := Color.WHITE if colors.is_empty() else colors[colors.size() - 1]
+	material.set_shader_parameter("tint_color", Vector3(c.r, c.g, c.b))
+	material.set_shader_parameter("tint_strength", 0.0 if colors.is_empty() else STATE_TINT)
 
 
 ## Redemande ses planches à la forge et relance l'animation — le seul chemin, pour

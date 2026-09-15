@@ -4,7 +4,7 @@ extends GutTest
 ## c'est celle-ci — trois copies divergentes avaient été supprimées.
 
 
-func test_aller_retour_case_pixels() -> void:
+func test_round_trip_cell_pixels() -> void:
 	for x in range(-4, 5):
 		for y in range(-4, 5):
 			var cell := Vector2i(x, y)
@@ -13,10 +13,10 @@ func test_aller_retour_case_pixels() -> void:
 
 ## Le centre est bien au centre, pas au coin : un ennemi posé au coin démarre à
 ## cheval sur un mur.
-func test_le_centre_est_decale_d_une_demi_case() -> void:
+func test_the_center_is_offset_by_half_a_cell() -> void:
 	var t := float(MapGenerator.TILE)
 	assert_eq(MapGenerator.cell_center(Vector2i.ZERO), Vector2(t * 0.5, t * 0.5))
 
 
-func test_une_seule_taille_de_tuile() -> void:
+func test_a_single_tile_size() -> void:
 	assert_eq(MapGenerator.TILE, TilesetBuilder.TILE)

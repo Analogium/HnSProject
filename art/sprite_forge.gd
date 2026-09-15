@@ -108,14 +108,14 @@ static func _add_anim(
 ## planches d'export sans repasser par des textures.
 static func frame_image(cfg: Dictionary, dir: String, anim: String, index: int) -> Image:
 	var canvas := PixelCanvas.new(FRAME, FRAME)
-	var pose := _pose(cfg, dir, anim, index)
+	var placed := _pose(cfg, dir, anim, index)
 
 	if cfg["archetype"] == "dummy":
-		_draw_dummy(canvas, cfg, pose)
+		_draw_dummy(canvas, cfg, placed)
 	elif dir == "side":
-		_draw_side(canvas, cfg, pose)
+		_draw_side(canvas, cfg, placed)
 	else:
-		_draw_front(canvas, cfg, pose, dir == "down")
+		_draw_front(canvas, cfg, placed, dir == "down")
 
 	return canvas.to_image(cfg["palettes"])
 
@@ -130,8 +130,8 @@ static var _icons: Dictionary = {}
 ## L'icône d'un objet posé au sol : dessinée en diagonale, à sa taille native.
 ## En diagonale parce qu'une arme verticale dans un cadre carré laisse deux
 ## grandes marges vides et se lit plus petite qu'elle n'est.
-static func ground_icon(kind: String, palier := 1) -> Texture2D:
-	return _icon(kind, false, Vector2i.ZERO, palier)
+static func ground_icon(kind: String, tier := 1) -> Texture2D:
+	return _icon(kind, false, Vector2i.ZERO, tier)
 
 
 ## L'icône d'un objet dans le sac. Dressée à la verticale : elle épouse la forme
@@ -140,15 +140,15 @@ static func ground_icon(kind: String, palier := 1) -> Texture2D:
 ## `target` est la place disponible en pixels d'écran : le dessin y est agrandi
 ## d'un facteur **entier**, un facteur fractionnaire doublant certaines lignes de
 ## pixels et pas d'autres.
-static func inventory_icon(kind: String, target: Vector2i, palier := 1) -> Texture2D:
-	return _icon(kind, true, target, palier)
+static func inventory_icon(kind: String, target: Vector2i, tier := 1) -> Texture2D:
+	return _icon(kind, true, target, tier)
 
 
 ## Le dessin d'un objet, recadré sur ce qui est réellement peint : une épée, une
 ## baguette et un plastron ne tombent pas au centre du cadre tout seuls, et un
 ## sprite recadré est centré par construction.
-static func _icon(kind: String, upright: bool, target: Vector2i, palier := 1) -> Texture2D:
-	var key := "%s:%d:%dx%d:%d" % [kind, int(upright), target.x, target.y, palier]
+static func _icon(kind: String, upright: bool, target: Vector2i, tier := 1) -> Texture2D:
+	var key := "%s:%d:%dx%d:%d" % [kind, int(upright), target.x, target.y, tier]
 	if _icons.has(key):
 		return _icons[key]
 
@@ -161,11 +161,11 @@ static func _icon(kind: String, upright: bool, target: Vector2i, palier := 1) ->
 	# Trois des cinq rampes sont remplacées par celles du palier. L'or de
 	# l'accent, lui, ne bouge pas : c'est la couleur qui dit « ça compte » dans
 	# tout le jeu, et la faire varier ferait passer un palier pour une rareté.
-	var p := clampi(palier, 1, PALIER_METAL.size()) - 1
+	var p := clampi(tier, 1, TIER_METAL.size()) - 1
 	var palettes: Array = cfg["palettes"]
-	palettes[R_METAL] = ArtPalette.ramp(PALIER_METAL[p])
-	palettes[R_LEATHER] = ArtPalette.ramp(PALIER_LEATHER[p])
-	palettes[R_CLOTH] = ArtPalette.ramp(PALIER_CLOTH[p])
+	palettes[R_METAL] = ArtPalette.ramp(TIER_METAL[p])
+	palettes[R_LEATHER] = ArtPalette.ramp(TIER_LEATHER[p])
+	palettes[R_CLOTH] = ArtPalette.ramp(TIER_CLOTH[p])
 
 	if GEAR.has(kind):
 		_gear(canvas, kind, ICON * 0.5, 2.0)
@@ -212,11 +212,11 @@ const GEAR := [
 	"tome", "hood", "tunic",
 	# Jalon 6 : le manuel, qui ne pouvait pas réemployer le tome — celui-ci est
 	# le livre qu'on tient en main gauche, celui-là est le livre qu'on lit.
-	"manuel",
+	"manual",
 	# Jalon 10 : deux manuels de plus. Tous trois ont le même palier, donc les
 	# mêmes rampes de couleur — c'est la **silhouette** qui doit les séparer dans
 	# un sac, et ils n'en partagent aucune.
-	"manuel_feu", "manuel_armes",
+	"manual_fire", "manual_weapons",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée dans le sac.
@@ -226,13 +226,13 @@ const GEAR := [
 ## un métal plus clair, un cuir plus riche et une étoffe plus franche à chaque
 ## palier, ce qui se lit à la taille d'une case là où un détail de deux pixels se
 ## perd.
-const PALIER_METAL := [
+const TIER_METAL := [
 	Color(0.50, 0.51, 0.56), Color(0.72, 0.78, 0.86), Color(0.88, 0.93, 1.00)
 ]
-const PALIER_LEATHER := [
+const TIER_LEATHER := [
 	Color(0.31, 0.21, 0.14), Color(0.40, 0.26, 0.18), Color(0.58, 0.41, 0.23)
 ]
-const PALIER_CLOTH := [
+const TIER_CLOTH := [
 	Color(0.34, 0.36, 0.44), Color(0.30, 0.45, 0.68), Color(0.48, 0.34, 0.72)
 ]
 
@@ -308,7 +308,7 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# Les pages, en creux le long du bord libre.
 			c.capsule(Vector2(cx + 4.4, top + 6.4), Vector2(cx + 4.4, top + 12.0), 0.7, R_CLOTH, 0.35)
 
-		"manuel":
+		"manual":
 			# **Deux livres empilés**, vus de trois quarts. Le tome de la main
 			# gauche est un livre unique et debout ; une pile couchée s'en
 			# distingue par sa silhouette seule, ce qui est la seule chose qui se
@@ -327,7 +327,7 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# là où le dos se lit, et jamais au centre où il passerait pour un titre.
 			c.capsule(Vector2(cx - 4.4, top + 8.4), Vector2(cx - 2.4, top + 8.4), 1.0, R_ACCENT)
 
-		"manuel_feu":
+		"manual_fire":
 			# **Un livre ouvert**, deux pages en V posées à plat. La pile est
 			# fermée et horizontale, celui-ci s'ouvre vers le haut : c'est la
 			# seule des deux formes qui laisse voir un creux au milieu, et le
@@ -343,7 +343,7 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# il bouchait le creux qui fait tout le dessin.
 			c.capsule(Vector2(cx + 1.6, top + 11.4), Vector2(cx + 1.6, top + 14.6), 0.8, R_ACCENT)
 
-		"manuel_armes":
+		"manual_weapons":
 			# **Un rouleau**, couché et roulé sur ses deux bâtons. Ni une pile ni
 			# un livre ouvert : un cylindre franc, qu'on reconnaît à ses deux
 			# bouts plus clairs.
@@ -487,26 +487,26 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 ## swing : phase de marche (-1..1). lean : buste projeté en avant.
 ## arm : bras armé (négatif = armé en arrière, positif = tendu).
 static func _pose(cfg: Dictionary, dir: String, anim: String, index: int) -> Dictionary:
-	var pose := {"bob": 0.0, "swing": 0.0, "lean": 0.0, "arm": 0.0}
+	var placed := {"bob": 0.0, "swing": 0.0, "lean": 0.0, "arm": 0.0}
 
 	match anim:
 		"idle":
-			pose["bob"] = IDLE_BOB[index % IDLE_BOB.size()]
+			placed["bob"] = IDLE_BOB[index % IDLE_BOB.size()]
 		"walk":
-			pose["swing"] = WALK_SWING[index % WALK_SWING.size()]
-			pose["bob"] = WALK_BOB[index % WALK_BOB.size()]
+			placed["swing"] = WALK_SWING[index % WALK_SWING.size()]
+			placed["bob"] = WALK_BOB[index % WALK_BOB.size()]
 		"attack":
 			if index == 0:
 				# Armé : on recule pour donner de l'élan à l'image suivante.
-				pose["lean"] = -0.7
-				pose["arm"] = -1.0
+				placed["lean"] = -0.7
+				placed["arm"] = -1.0
 			else:
-				pose["lean"] = 1.3
-				pose["arm"] = 1.0
-				pose["bob"] = -1.0
+				placed["lean"] = 1.3
+				placed["arm"] = 1.0
+				placed["bob"] = -1.0
 
-	pose["weapon_dir"] = _weapon_dir(cfg, dir, anim, index)
-	return pose
+	placed["weapon_dir"] = _weapon_dir(cfg, dir, anim, index)
+	return placed
 
 
 ## Un bâton ne se porte pas comme une épée : tenu en biais il traverse le
@@ -534,17 +534,17 @@ static func _weapon_dir(cfg: Dictionary, dir: String, anim: String, index: int) 
 
 ## Vue de face ou de dos. `faces_camera` ne change que trois choses : le côté du
 ## bras armé, la présence du visage et la quantité de cheveux.
-static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces_camera: bool) -> void:
+static func _draw_front(c: PixelCanvas, cfg: Dictionary, placed: Dictionary, faces_camera: bool) -> void:
 	var torso_r: float = cfg["torso_r"]
 	var sh_w: float = cfg["sh_w"]
 	var hip_w: float = cfg["hip_w"]
 	var limb_r: float = cfg["limb_r"]
 	var arm_r: float = cfg["arm_r"]
 
-	var bob: float = pose["bob"]
-	var sw: float = pose["swing"]
-	var lean: float = pose["lean"]
-	var arm: float = pose["arm"]
+	var bob: float = placed["bob"]
+	var sw: float = placed["swing"]
+	var lean: float = placed["lean"]
+	var arm: float = placed["arm"]
 
 	var hip_y: float = float(cfg["hip_y"]) + bob
 	var sh_y: float = float(cfg["shoulder_y"]) + bob - lean * 0.5
@@ -585,7 +585,7 @@ static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces
 
 	# De dos, l'arme est derrière le corps : elle passe avant le buste.
 	if not faces_camera:
-		_weapon(c, cfg, weapon_hand, Vector2(pose["weapon_dir"]) * Vector2(s, 1.0), -0.18)
+		_weapon(c, cfg, weapon_hand, Vector2(placed["weapon_dir"]) * Vector2(s, 1.0), -0.18)
 
 	# --- buste
 	c.capsule(Vector2(CX, sh_y), Vector2(CX, hip_y), torso_r, R_CLOTH)
@@ -613,21 +613,21 @@ static func _draw_front(c: PixelCanvas, cfg: Dictionary, pose: Dictionary, faces
 	_draw_head(c, cfg, Vector2(CX, head_y), faces_camera, 0.0)
 
 	if faces_camera:
-		_weapon(c, cfg, weapon_hand, Vector2(pose["weapon_dir"]) * Vector2(s, 1.0), 0.0)
+		_weapon(c, cfg, weapon_hand, Vector2(placed["weapon_dir"]) * Vector2(s, 1.0), 0.0)
 
 
 ## Vue de profil, tournée vers la droite (le flip_h de l'ActorSprite fournit la
 ## gauche). Les membres arrière sont assombris : c'est le seul indice de
 ## profondeur dont on dispose sans redessiner.
-static func _draw_side(c: PixelCanvas, cfg: Dictionary, pose: Dictionary) -> void:
+static func _draw_side(c: PixelCanvas, cfg: Dictionary, placed: Dictionary) -> void:
 	var torso_r: float = cfg["torso_r"]
 	var limb_r: float = cfg["limb_r"]
 	var arm_r: float = cfg["arm_r"]
 
-	var bob: float = pose["bob"]
-	var sw: float = pose["swing"]
-	var lean: float = pose["lean"]
-	var arm: float = pose["arm"]
+	var bob: float = placed["bob"]
+	var sw: float = placed["swing"]
+	var lean: float = placed["lean"]
+	var arm: float = placed["arm"]
 
 	var hip_y: float = float(cfg["hip_y"]) + bob
 	var sh_y: float = float(cfg["shoulder_y"]) + bob - lean * 0.5
@@ -680,7 +680,7 @@ static func _draw_side(c: PixelCanvas, cfg: Dictionary, pose: Dictionary) -> voi
 
 	c.capsule(Vector2(CX + 0.4, sh_y + 0.5), front_hand, arm_r, R_CLOTH)
 	c.disc(front_hand, arm_r + (-0.25 if cfg["robe"] else 0.2), R_SKIN)
-	_weapon(c, cfg, front_hand, pose["weapon_dir"], 0.0)
+	_weapon(c, cfg, front_hand, placed["weapon_dir"], 0.0)
 
 
 ## profile > 0 ajoute un nez et un œil de côté. Sans le nez, un profil en 32 px
@@ -764,18 +764,18 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 			# Une épée en plus court et plus fin, garde comprise : c'est le
 			# rapport lame / poignée qui la distingue, pas un détail.
 			c.capsule(hand + d * 1.4, hand + d * 6.4, 0.9, R_METAL, bias)
-			var croisiere := hand + d * 2.0
-			c.capsule(croisiere - perp * 1.5, croisiere + perp * 1.5, 0.8, R_ACCENT, bias)
+			var cruising := hand + d * 2.0
+			c.capsule(cruising - perp * 1.5, cruising + perp * 1.5, 0.8, R_ACCENT, bias)
 			c.capsule(hand - d * 1.4, hand + d * 1.6, 1.0, R_LEATHER, bias)
 
 		"mace":
 			# Manche long, tête courte et large, et deux ailettes en travers :
 			# sans elles la tête se lit comme le cristal d'un bâton.
-			var tete := hand + d * 6.0
-			c.capsule(hand - d * 1.6, tete, 1.0, R_LEATHER, bias)
-			c.capsule(tete, tete + d * 3.4, 2.5, R_METAL, bias)
+			var head := hand + d * 6.0
+			c.capsule(hand - d * 1.6, head, 1.0, R_LEATHER, bias)
+			c.capsule(head, head + d * 3.4, 2.5, R_METAL, bias)
 			c.capsule(
-				tete + d * 1.7 - perp * 3.0, tete + d * 1.7 + perp * 3.0, 0.9, R_METAL, bias + 0.12
+				head + d * 1.7 - perp * 3.0, head + d * 1.7 + perp * 3.0, 0.9, R_METAL, bias + 0.12
 			)
 
 		"wand":
@@ -801,8 +801,8 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 
 ## Le mannequin n'a pas de squelette : un poteau, un sac, une cible peinte.
 ## Il ne marche pas — son unique animation est un léger balancement.
-static func _draw_dummy(c: PixelCanvas, _cfg: Dictionary, pose: Dictionary) -> void:
-	var sway: float = float(pose["bob"]) * 0.6
+static func _draw_dummy(c: PixelCanvas, _cfg: Dictionary, placed: Dictionary) -> void:
+	var sway: float = float(placed["bob"]) * 0.6
 
 	c.ground_shadow(CX, FEET + 1.5, 5.5, 2.4)
 

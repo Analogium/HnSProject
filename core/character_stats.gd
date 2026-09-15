@@ -69,24 +69,24 @@ const MAX_EVASION := 0.75
 ## Par niveau au-delà du premier. La vie se **compose** — ×8 à 40, ×23 à 60, ×585 à
 ## 120 — parce que les dégâts du joueur se multiplient entre eux ; les dégâts restent
 ## linéaires (×5,7 à 40).
-const VIE_PAR_NIVEAU := 0.055
-const DEGATS_PAR_NIVEAU := 0.12
+const HEALTH_PER_LEVEL := 0.055
+const DAMAGE_PER_LEVEL := 0.12
 ## Linéaires (décidé le 15 septembre 2026). L'armure pèse contre la taille du coup :
 ## 195 en zone 40 retirent ~22 % d'un coup de 140, 595 en zone 120 ~37 % d'un coup de
 ## 200. Les résistances : 13 % en zone 40, 39 % en zone 120.
-const ARMURE_PAR_NIVEAU := 5.0
-const RESISTANCE_PAR_NIVEAU := 0.33
+const ARMOR_PER_LEVEL := 5.0
+const RESISTANCE_PER_LEVEL := 0.33
 
 
 ## **Écrit dans la fiche donnée** : à l'appelant de l'avoir dupliquée (invariant 2).
-static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
-	var marches := float(maxi(niveau, 1) - 1)
-	stats.max_health *= pow(1.0 + VIE_PAR_NIVEAU, marches)
-	stats.attack_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
-	stats.armor += ARMURE_PAR_NIVEAU * marches
-	for champ: String in DamageType.RESIST_FIELDS:
-		if not champ.is_empty():
-			stats.set(champ, float(stats.get(champ)) + RESISTANCE_PAR_NIVEAU * marches)
+static func scale_to_level(stats: CharacterStats, level: int) -> void:
+	var marches := float(maxi(level, 1) - 1)
+	stats.max_health *= pow(1.0 + HEALTH_PER_LEVEL, marches)
+	stats.attack_damage *= 1.0 + DAMAGE_PER_LEVEL * marches
+	stats.armor += ARMOR_PER_LEVEL * marches
+	for field: String in DamageType.RESIST_FIELDS:
+		if not field.is_empty():
+			stats.set(field, float(stats.get(field)) + RESISTANCE_PER_LEVEL * marches)
 
 
 ## Cette liste sépare les modificateurs à appliquer **avant** la dérivation.
@@ -95,10 +95,10 @@ const ATTRIBUTES := ["strength", "dexterity", "intelligence"]
 
 ## Dérivée d'ATTRIBUTES : un attribut ajouté y apparaît sans qu'on y pense.
 static func empty_attributes() -> Dictionary:
-	var vide := {}
-	for champ in ATTRIBUTES:
-		vide[champ] = 0
-	return vide
+	var empty := {}
+	for field in ATTRIBUTES:
+		empty[field] = 0
+	return empty
 
 ## Chaque attribut gouverne une réserve et une cadence. À dix partout, le départ :
 ## +20 PV, +2 dégâts, 15 d'esquive, +15 mana, +4 % sur les deux cadences.
@@ -121,7 +121,7 @@ const MIN_RESISTANCE := -100.0
 
 ## Ce que la force ajoute aux attaques en dégâts physiques, versé par le joueur dans
 ## ses modificateurs de compétence.
-func degats_de_force() -> float:
+func strength_damage() -> float:
 	return strength * DAMAGE_PER_STRENGTH
 
 
@@ -141,7 +141,7 @@ func evade_chance() -> float:
 
 ## Ce qui reste d'une part après sa défense : l'armure pour le physique, la
 ## résistance sinon. **La seule règle** : coup reçu et brûlure d'aura passent ici.
-func attenuer(kind: int, part: float) -> float:
+func mitigate(kind: int, part: float) -> float:
 	if part <= 0.0:
 		return part
 	if kind == DamageType.Kind.PHYSICAL:

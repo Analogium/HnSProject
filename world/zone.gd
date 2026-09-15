@@ -29,28 +29,28 @@ const PACK_MIN_TILES := 3
 @onready var hud: Hud = $UI/Hud
 @onready var inventory: InventoryPanel = $UI/Inventory
 @onready var stats_panel: StatsPanel = $UI/Stats
-@onready var manuels: ManuelPanel = $UI/Manuels
-@onready var barre: BarrePanel = $UI/Barre
+@onready var manuals: ManualPanel = $UI/Manuals
+@onready var bar: SkillBarPanel = $UI/Bar
 ## Outil de réglage, à retirer avant publication : il tient en trois
 ## attaches — ce nœud, la touche B, et le branchement de `drop_requested`.
-@onready var atelier: AtelierPanel = $UI/Atelier
+@onready var workbench: WorkbenchPanel = $UI/Workbench
 @onready var spawner: EnemySpawner = $EnemySpawner
-@onready var temoin: Label = $UI/Temoin
+@onready var indicator: Label = $UI/Indicator
 
 ## À quelle distance devant soi tombe ce qu'on pose au sol. Posé au centre, un
 ## objet serait à moitié caché par le personnage ; plus loin, il franchirait un
 ## mur collé au dos du joueur. Le manuel de départ et ce qu'on jette du sac
 ## partagent ce chiffre — deux distances réglées séparément se mettraient à
 ## répondre différemment au même geste.
-const DEVANT_LES_PIEDS := 14.0
+const AT_THE_FEET := 14.0
 ## Le rayon intérieur de la couronne de boules d'expérience : hors de portée de
 ## ramassage, qui est de quinze pixels du centre du joueur.
-const COURONNE_D_ORBES := 26.0
+const ORB_CROWN := 26.0
 
 ## Filet de sécurité, en secondes. Ni à chaque changement — ramasser un objet
 ## écrirait sur le disque à chaque grappe d'ennemis tués — ni seulement à la
 ## fermeture, ce qui perdrait la session entière sur une coupure de courant.
-const SAUVEGARDE_PERIODE := 120.0
+const SAVE_PERIOD := 120.0
 
 var generator: MapGenerator
 
@@ -85,15 +85,15 @@ func _ready() -> void:
 	inventory.bind(player)
 	inventory.drop_requested.connect(_on_item_dropped)
 	stats_panel.bind(player)
-	manuels.bind(player)
-	barre.bind(player)
+	manuals.bind(player)
+	bar.bind(player)
 	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
 	# qu'on jette : un seul chemin pour poser un objet au sol.
-	manuels.drop_requested.connect(_on_item_dropped)
+	manuals.drop_requested.connect(_on_item_dropped)
 	# L'établi pose par le même chemin que tout le reste : un seul endroit sait
 	# faire tomber un objet, et l'outil de réglage n'y fait pas exception.
-	atelier.drop_requested.connect(_on_item_dropped)
-	atelier.orbes_demandees.connect(lacher_des_orbes)
+	workbench.drop_requested.connect(_on_item_dropped)
+	workbench.requested_orbs.connect(drop_orbs)
 
 	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
 	# qu'au moment de populate(), et ça garde les chemins au même endroit.
@@ -103,15 +103,15 @@ func _ready() -> void:
 	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
 	# seule depuis l'éditeur : le joueur garde alors sa fiche par défaut, et rien
 	# n'est écrit — une scène de réglage ne doit pas toucher aux sauvegardes.
-	if Game.personnage != null:
-		player.charger(Game.personnage)
-		player.leveled_up.connect(_on_niveau_gagne)
-		Game.sauvegarde_demandee.connect(sauvegarder)
-		var filet := Timer.new()
-		filet.wait_time = SAUVEGARDE_PERIODE
-		filet.timeout.connect(sauvegarder)
-		add_child(filet)
-		filet.start()
+	if Game.character != null:
+		player.load_character(Game.character)
+		player.leveled_up.connect(_on_level_gained)
+		Game.save_requested.connect(save)
+		var safety_net := Timer.new()
+		safety_net.wait_time = SAVE_PERIOD
+		safety_net.timeout.connect(save)
+		add_child(safety_net)
+		safety_net.start()
 
 	generate_zone(Game.rng.randi())
 
@@ -124,13 +124,13 @@ func _ready() -> void:
 ## regénérer efface le butin au sol : sans ça, un `F5` dans les premières
 ## secondes détruisait pour toujours le seul manuel du personnage, et rien ne le
 ## disait. C'est le ramassage qui pose le drapeau, pas la chute.
-func _offrir_le_premier_manuel() -> void:
-	if Game.personnage == null or player.manuel_offert:
+func _give_first_manual() -> void:
+	if Game.character == null or player.manual_given:
 		return
-	var base := ItemCatalog.by_id(ItemCatalog.ID_MANUEL_DE_DEPART)
+	var base := ItemCatalog.by_id(ItemCatalog.ID_STARTING_MANUAL)
 	if base == null:
 		return
-	_poser_au_sol(Item.new(base))
+	_drop_on_ground(Item.new(base))
 
 
 ## Écrit le personnage courant. Publique : c'est le point d'entrée des trois
@@ -138,18 +138,18 @@ func _offrir_le_premier_manuel() -> void:
 ##
 ## Sans effet quand aucun personnage n'est chargé — c'est le cas des scènes de
 ## réglage, qui partagent cette scène de zone.
-func sauvegarder() -> void:
-	if Game.personnage == null:
+func save() -> void:
+	if Game.character == null:
 		return
-	player.remplir(Game.personnage)
-	if not Sauvegarde.ecrire(Game.personnage):
+	player.fill(Game.character)
+	if not SaveStore.write(Game.character):
 		# Sans fondu, exprès : un échec d'écriture doit rester à l'écran jusqu'à
 		# la sauvegarde suivante, là où une réussite n'a pas à s'attarder.
-		_annoncer(Textes.t("échec de la sauvegarde"))
+		_announce(Texts.t("échec de la sauvegarde"))
 		return
 
-	_annoncer(Textes.t("sauvegardé"))
-	create_tween().tween_property(temoin, "modulate:a", 0.0, 1.4).set_delay(0.8)
+	_announce(Texts.t("sauvegardé"))
+	create_tween().tween_property(indicator, "modulate:a", 0.0, 1.4).set_delay(0.8)
 
 
 ## Un témoin discret, mais un témoin : sans lui on ne sait pas si le jeu a
@@ -158,20 +158,20 @@ func sauvegarder() -> void:
 ## Le texte et l'opacité vont ensemble. Écrire le texte sans relever l'opacité
 ## n'affiche rien du tout — le fondu précédent l'a laissée à zéro — et ça ne se
 ## voit qu'en jouant.
-func _annoncer(texte: String) -> void:
-	temoin.text = texte
-	temoin.modulate.a = 1.0
+func _announce(text_value: String) -> void:
+	indicator.text = text_value
+	indicator.modulate.a = 1.0
 
 
 ## En différé : la montée de niveau arrive depuis la boucle de l'EnemyManager,
 ## donc d'un rappel de physique. Rien de ce qui touche au disque ou à l'arbre ne
 ## part de là.
-func _on_niveau_gagne(_niveau: int) -> void:
-	sauvegarder.call_deferred()
+func _on_level_gained(_level: int) -> void:
+	save.call_deferred()
 
 
 func _on_item_dropped(item: Item) -> void:
-	_poser_au_sol(item)
+	_drop_on_ground(item)
 
 
 ## Les boules d'expérience de l'établi, en couronne autour du joueur, sur trois
@@ -180,11 +180,11 @@ func _on_item_dropped(item: Item) -> void:
 ##
 ## Au niveau de la zone **en cours**, celui de ses ennemis — pas celui qu'on a choisi
 ## pour la prochaine.
-func lacher_des_orbes(nombre: int) -> void:
-	var valeur := OrbeDExperience.valeur_pour(enemy_manager.niveau)
-	for i in nombre:
-		var ecart := Vector2.from_angle(TAU * float(i) / float(nombre)) * (COURONNE_D_ORBES + 8.0 * float(i % 3))
-		OrbeDExperience.poser(loot, player.global_position + ecart, valeur, enemy_manager.niveau)
+func drop_orbs(count: int) -> void:
+	var value := ExperienceOrb.value_for(enemy_manager.level)
+	for i in count:
+		var spread := Vector2.from_angle(TAU * float(i) / float(count)) * (ORB_CROWN + 8.0 * float(i % 3))
+		ExperienceOrb.put(loot, player.global_position + spread, value, enemy_manager.level)
 
 
 ## **Le seul endroit qui pose un objet au sol** : ce qu'on jette du sac, ce que le
@@ -194,9 +194,9 @@ func lacher_des_orbes(nombre: int) -> void:
 ##
 ## Le délai de ramassage vaut pour tous : sans lui, le joueur est déjà dans la zone
 ## de contact et l'objet lui revient à l'image suivante, sans qu'il ait bougé.
-func _poser_au_sol(item: Item) -> void:
+func _drop_on_ground(item: Item) -> void:
 	GroundItem.spawn(
-		loot, player.global_position + player.facing * DEVANT_LES_PIEDS, item,
+		loot, player.global_position + player.facing * AT_THE_FEET, item,
 		GroundItem.DROP_DELAY
 	)
 
@@ -213,53 +213,53 @@ func _process(_delta: float) -> void:
 ## connaît ses panneaux. La page des manuels referme son arbre avant, dans son propre
 ## `_input`, qu'un enfant reçoit avant son parent.
 func _input(event: InputEvent) -> void:
-	if Touches.enfoncee(event) == KEY_ESCAPE and fermer_les_interfaces():
+	if Keys.pressed_down(event) == KEY_ESCAPE and close_interfaces():
 		get_viewport().set_input_as_handled()
 
 
 ## Ferme tout ce qui est ouvert, et dit si quelque chose l'était. Par la visibilité
 ## et non par `Game.ui_grabs_input` : la fiche de personnage ne prend la souris
 ## que lorsqu'elle a des points à placer, et Échap la laisserait ouverte.
-func fermer_les_interfaces() -> bool:
-	var fermee := false
-	for panneau: Control in [inventory, stats_panel, manuels, atelier]:
-		if panneau.visible:
-			panneau.toggle()
-			fermee = true
-	if barre.menu_ouvert():
-		barre.fermer_le_menu()
-		fermee = true
-	return fermee
+func close_interfaces() -> bool:
+	var closed := false
+	for panel: Control in [inventory, stats_panel, manuals, workbench]:
+		if panel.visible:
+			panel.toggle()
+			closed = true
+	if bar.menu_open():
+		bar.close_menu()
+		closed = true
+	return closed
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var touche := Touches.enfoncee(event)
-	if touche == KEY_NONE:
+	var key := Keys.pressed_down(event)
+	if key == KEY_NONE:
 		return
 
 	# Retenu avant le match : un changement de scène détache ce nœud de l'arbre
 	# et get_viewport() renverrait null.
 	var vp := get_viewport()
 
-	match touche:
+	match key:
 		KEY_F5: generate_zone(Game.rng.randi())
 		# Le niveau de la **prochaine** zone. Changer celui de la zone en cours
 		# donnerait une population mêlée : les ennemis sont mis à l'échelle en
 		# naissant, ceux déjà debout ne bougeraient plus. Le bandeau annonce donc
 		# les deux quand ils diffèrent.
-		KEY_PAGEUP: Game.changer_niveau_de_zone(10 if (event as InputEventKey).shift_pressed else 1)
-		KEY_PAGEDOWN: Game.changer_niveau_de_zone(-10 if (event as InputEventKey).shift_pressed else -1)
+		KEY_PAGEUP: Game.change_zone_level(10 if (event as InputEventKey).shift_pressed else 1)
+		KEY_PAGEDOWN: Game.change_zone_level(-10 if (event as InputEventKey).shift_pressed else -1)
 		KEY_G: spawn_pack()
 		KEY_K: kill_all()
 		KEY_I: inventory.toggle()
 		KEY_C: stats_panel.toggle()
-		KEY_M: manuels.toggle()
+		KEY_M: manuals.toggle()
 		# **Pas une touche de fonction.** F5, F6, F7 et F8 sont les raccourcis de
 		# la barre d'exécution de l'éditeur — lancer, lancer la scène, pause,
 		# arrêter — et depuis Godot 4.4 la fenêtre de jeu est intégrée à
 		# l'éditeur : ils atteignent le jeu pendant qu'on y joue. F8 fermait donc
 		# la partie au lieu d'ouvrir l'établi. B comme banc d'essai.
-		KEY_B: atelier.toggle()
+		KEY_B: workbench.toggle()
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -276,7 +276,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func generate_zone(zone_seed: int) -> void:
 	_seed = zone_seed
 	zone_rng.seed = zone_seed
-	enemy_manager.niveau = Game.niveau_de_zone
+	enemy_manager.level = Game.zone_level
 	kill_all()
 
 	generator = MapGenerator.new()
@@ -311,7 +311,7 @@ func generate_zone(zone_seed: int) -> void:
 	# exactement le cas qu'on veut servir.
 	_place_and_populate()
 
-	_offrir_le_premier_manuel()
+	_give_first_manual()
 
 
 ## Remet le joueur au point d'apparition et repeuple la carte courante. Le même
@@ -409,10 +409,10 @@ func _respawn() -> void:
 ## Ce que F5 donnera, quand ce n'est pas ce qu'on a sous les pieds. Rien à
 ## afficher tant que les deux coïncident : une deuxième valeur en permanence se
 ## lirait comme une contradiction.
-func _niveau_en_attente() -> String:
-	if Game.niveau_de_zone == enemy_manager.niveau:
+func _pending_level() -> String:
+	if Game.zone_level == enemy_manager.level:
 		return ""
-	return "  (F5 : %d)" % Game.niveau_de_zone
+	return "  (F5 : %d)" % Game.zone_level
 
 
 func _overlay_text() -> String:
@@ -425,7 +425,7 @@ func _overlay_text() -> String:
 		],
 		"",
 		"zone %d  —  niveau %d%s  —  %d cases de sol" % [
-			_seed, enemy_manager.niveau, _niveau_en_attente(), generator.floor_cells.size()
+			_seed, enemy_manager.level, _pending_level(), generator.floor_cells.size()
 		],
 		"%d ennemis places en %d paquets" % [_spawned, spawner.pack_count],
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],

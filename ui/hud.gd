@@ -49,8 +49,8 @@ var _font: Font
 
 ## La borne basse de toute fenêtre flottante : le HUD, dessiné après les panneaux,
 ## passerait par-dessus. « Niv. » compris.
-static func haut_des_jauges(hauteur: float) -> float:
-	return hauteur - HEALTH_TOP - BAR_H
+static func gauges_top(height: float) -> float:
+	return height - HEALTH_TOP - BAR_H
 
 
 func _ready() -> void:
@@ -142,13 +142,13 @@ func _draw() -> void:
 	if _font == null:
 		return
 	# Le niveau coiffe vie et mana : un seul regard.
-	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), Textes.t("Niv. %d") % _level,
+	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), Texts.t("Niv. %d") % _level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_COLOR)
 	# Le compte d'expérience au centre, la seule bande que ni la barre de compétences ni
 	# la fiche ne couvrent.
 	_text(
 		Vector2(roundf(MARGIN), roundf(size.y - BOTTOM - HEIGHT - 3.0)),
-		Textes.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed}),
+		Texts.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed}),
 		HORIZONTAL_ALIGNMENT_CENTER, roundi(w), LABEL_COLOR
 	)
 

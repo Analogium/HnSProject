@@ -7,8 +7,8 @@ class_name StatHelp
 ## l'anglais au premier rééquilibrage.
 
 ## Le coup de référence de l'armure, le même que la fiche.
-const COUP_LEGER := 10.0
-const COUP_LOURD := 50.0
+const LIGHT_HIT := 10.0
+const HEAVY_HIT := 50.0
 
 const TEXTS := {
 	"strength": "La force. Chaque point donne {pv} points de vie et {degats} dégâts.",
@@ -40,78 +40,78 @@ const TEXTS := {
 
 ## Les compétences de départ, à part de `TEXTS` et **sans nombre** : leur ligne montre
 ## déjà les dégâts résolus.
-const COMPETENCES := {
-	CompetenceCatalog.ID_ATTAQUE: "Le coup d'épée : gratuit, à la cadence de l'arme. La force et tout ce qui ajoute des dégâts aux attaques le font monter.",
-	CompetenceCatalog.ID_TIR: "Le trait : un sort, qui coûte du mana et suit la vitesse d'incantation. Tout ce qui ajoute des dégâts aux sorts le fait monter.",
+const SKILLS := {
+	SkillCatalog.ID_ATTACK: "Le coup d'épée : gratuit, à la cadence de l'arme. La force et tout ce qui ajoute des dégâts aux attaques le font monter.",
+	SkillCatalog.ID_BOLT: "Le trait : un sort, qui coûte du mana et suit la vitesse d'incantation. Tout ce qui ajoute des dégâts aux sorts le fait monter.",
 }
 
 
 static func has(field: String) -> bool:
-	return TEXTS.has(field) or COMPETENCES.has(field)
+	return TEXTS.has(field) or SKILLS.has(field)
 
 
 ## Ce qu'elle fait, puis ce qu'elle vaut pour ce personnage-ci.
 static func lines(field: String, stats: CharacterStats) -> PackedStringArray:
 	var out := PackedStringArray()
-	if COMPETENCES.has(field):
-		out.append(Textes.t(COMPETENCES[field]))
+	if SKILLS.has(field):
+		out.append(Texts.t(SKILLS[field]))
 		return out
 	if not TEXTS.has(field):
 		return out
-	out.append(_ce_que_ca_fait(field))
-	var vaut := _now(field, stats)
-	if not vaut.is_empty():
-		out.append(vaut)
+	out.append(_what_it_does(field))
+	var worth := _now(field, stats)
+	if not worth.is_empty():
+		out.append(worth)
 	return out
 
 
 ## L'explication, ses nombres lus sur les constantes de la règle.
-static func _ce_que_ca_fait(field: String) -> String:
-	var texte := Textes.t(TEXTS[field])
+static func _what_it_does(field: String) -> String:
+	var text_value := Texts.t(TEXTS[field])
 	match field:
 		"strength":
-			return texte.format({
+			return text_value.format({
 				"pv": "%.0f" % CharacterStats.HEALTH_PER_STRENGTH,
 				"degats": "%.1f" % CharacterStats.DAMAGE_PER_STRENGTH,
 			})
 		"dexterity":
-			return texte.format({
+			return text_value.format({
 				"esquive": "%.1f" % CharacterStats.EVASION_PER_DEXTERITY,
 				"vitesse": "%.1f" % CharacterStats.ATTACK_SPEED_PER_DEXTERITY,
 			})
 		"intelligence":
-			return texte.format({
+			return text_value.format({
 				"mana": "%.1f" % CharacterStats.MANA_PER_INTELLIGENCE,
 				"vitesse": "%.1f" % CharacterStats.CAST_SPEED_PER_INTELLIGENCE,
 			})
-	return texte
+	return text_value
 
 
 ## Vide pour ce qui se lit directement.
 static func _now(field: String, stats: CharacterStats) -> String:
 	match field:
 		"armor":
-			return Textes.t("Ici : {legers} % sur un coup de {coup_leger}, {lourds} % sur un coup de {coup_lourd}.").format({
-				"legers": roundi(stats.armor_reduction(COUP_LEGER) * 100.0),
-				"coup_leger": int(COUP_LEGER),
-				"lourds": roundi(stats.armor_reduction(COUP_LOURD) * 100.0),
-				"coup_lourd": int(COUP_LOURD),
+			return Texts.t("Ici : {legers} % sur un coup de {coup_leger}, {lourds} % sur un coup de {coup_lourd}.").format({
+				"legers": roundi(stats.armor_reduction(LIGHT_HIT) * 100.0),
+				"coup_leger": int(LIGHT_HIT),
+				"lourds": roundi(stats.armor_reduction(HEAVY_HIT) * 100.0),
+				"coup_lourd": int(HEAVY_HIT),
 			})
 		"evasion":
-			return Textes.t("Ici : {esquive} % des coups évités, {plafond} % au plus.").format({
+			return Texts.t("Ici : {esquive} % des coups évités, {plafond} % au plus.").format({
 				"esquive": roundi(stats.evade_chance() * 100.0),
 				"plafond": roundi(CharacterStats.MAX_EVASION * 100.0),
 			})
 		"attack_speed":
-			return Textes.t("Ici : un coup toutes les %.2f s.") % stats.attack_interval()
+			return Texts.t("Ici : un coup toutes les %.2f s.") % stats.attack_interval()
 		"crit_chance":
-			return Textes.t("Ici : {coups} coups sur cent, pour {degats} % de dégâts.").format({
+			return Texts.t("Ici : {coups} coups sur cent, pour {degats} % de dégâts.").format({
 				"coups": roundi(stats.crit_chance * 100.0),
 				"degats": roundi(stats.crit_multiplier * 100.0),
 			})
 	# Les résistances selon DamageType : une nature ajoutée hérite de la ligne.
 	if field in DamageType.RESIST_FIELDS:
-		return Textes.t("Plafonnée à {plafond} %, et elle peut devenir négative (jusqu'à {plancher} %).").format({
+		return Texts.t("Plafonnée à {plafond} %, et elle peut devenir négative (jusqu'à {plancher} %).").format({
 			"plafond": roundi(CharacterStats.MAX_RESISTANCE),
 			"plancher": roundi(CharacterStats.MIN_RESISTANCE),
 		})

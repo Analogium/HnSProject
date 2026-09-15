@@ -44,8 +44,8 @@ inflige.
   on le joue*, se défait — voir §4.
 - **Un troisième chemin de lancer.** Les nœuds modifient le tir et le coup d'arc
   existants ; aucun n'invente une zone, une aura ou un sort persistant. Un nœud
-  ne peut donc pas donner `projectile`, `sort` ni `attaque` : ces trois-là
-  décident du chemin que `Player.lancer()` prend, et un nœud qui les donnerait
+  ne peut donc pas donner `projectile`, `spell` ni `attack` : ces trois-là
+  décident du chemin que `Player.cast_slot()` prend, et un nœud qui les donnerait
   ferait partir un tir depuis une compétence dont la fiche annonce un coup
   d'épée.
 - **Un arbre partagé entre deux manuels.** L'arbre appartient à la **case**, pas
@@ -66,7 +66,7 @@ Une case de manuel porte aujourd'hui une compétence et une position. Elle porte
 
 | Ce que la case porte | Ce que le joueur y fait | Où l'effet arrive |
 |---|---|---|
-| une **compétence** | l'assigne à la barre, la lance | `Competence.resoudre()` |
+| une **compétence** | l'assigne à la barre, la lance | `Skill.resolve()` |
 | ses **talents** | ouvre son arbre, y place des points | la même résolution, par la même fonction |
 | un **passif** | y place des points | `Player.recompute_stats()`, avec les objets |
 
@@ -78,7 +78,7 @@ aucune des deux.
 **Les points sortent du même sac.** Un manuel gagne un point par niveau, vingt au
 plafond, et la case, le passif et le nœud s'y servent tous. C'est ce qui fait du
 manuel un choix : le manuel de la foudre a quarante-huit destinations pour vingt
-points — `docs/CATALOGUE.md` donne le compte de chaque livre. Le commentaire de `Manuel.NIVEAU_MAX` — « vingt niveaux, donc vingt
+points — `docs/CATALOGUE.md` donne le compte de chaque livre. Le commentaire de `Manual.MAX_LEVEL` — « vingt niveaux, donc vingt
 points : de quoi remplir les quatre cases » — devient faux et se réécrit : **un
 manuel ne se remplit plus**, et ce qu'on y a mis est ce qui distingue deux
 exemplaires du même livre.
@@ -86,7 +86,7 @@ exemplaires du même livre.
 **Un identifiant, un espace.** Cases, passifs et nœuds partagent le dictionnaire
 `points` du manuel, donc leurs identifiants partagent un espace de noms, et ils
 partent tous sur le disque (invariant 1). Un nœud se nomme donc
-`<compétence>_<nœud>` — `eclair_vif_surcharge` — et un test refuse deux
+`<compétence>_<nœud>` — `swift_bolt_overload` — et un test refuse deux
 identifiants identiques dans un même livre.
 
 ---
@@ -95,7 +95,7 @@ identifiants identiques dans un même livre.
 
 **Une ligne de nœud est un modificateur, pas un cas particulier.** C'est la même
 forme que ce qu'un affixe donne — une statistique, un mode, une valeur — et elle
-est appliquée par le même `StatMod.appliquer()`. Ce qui change, c'est qui la
+est appliquée par le même `StatMod.apply()`. Ce qui change, c'est qui la
 reçoit : un affixe vise **toutes** les compétences portant un mot-clé, un nœud
 vise **la sienne** et n'a donc pas de portée à écrire.
 
@@ -122,7 +122,7 @@ qui **reste** : deux fois 50 % convertissent 75 %, et la fiche annonce 75 %, pas
 que la compétence est : une fulguration dont les dégâts passent au feu reste un
 sort de foudre pour l'équipement, et c'est ce qu'on veut par défaut — les objets
 qu'on porte pour elle continuent de la servir. Le nœud qui veut l'autre effet
-l'écrit (`mots_cles_ajoutes`), et la compétence porte alors **les deux** natures :
+l'écrit (`added_keywords`), et la compétence porte alors **les deux** natures :
 c'est le nœud le plus cher de son arbre.
 
 ---
@@ -138,7 +138,7 @@ arbre décide de ce qu'une compétence **fait** : essayer la conversion et reven
 est la façon dont on l'apprend, et un joueur qui ne peut pas revenir ne l'essaie
 pas. C'est exactement l'inverse de l'effet voulu.
 
-Deux garde-fous, et ils sont dans `Manuel` comme les conditions d'investissement :
+Deux garde-fous, et ils sont dans `Manual` comme les conditions d'investissement :
 
 - **un nœud dont un enfant porte des points ne se reprend pas.** Sans ce refus,
   un enfant resterait accroché à un nœud vide — et la page montrerait un lien
@@ -161,8 +161,8 @@ quel — ses manuels ont simplement des cases de plus à remplir.
 
 Deux conséquences à ne pas rater :
 
-- **le filtre de relecture doit s'élargir.** `Personnage._manuel_depuis_dict()`
-  garde un point si `item.enseigne(id)`, c'est-à-dire si l'archétype a une case de
+- **le filtre de relecture doit s'élargir.** `Character._manual_from_dict()`
+  garde un point si `item.teaches(id)`, c'est-à-dire si l'archétype a une case de
   ce nom. Laissé tel quel, il jetterait en silence tous les points de nœuds au
   premier rechargement. La question devient « ce livre connaît-il cet
   identifiant », cases, passifs et nœuds confondus ;
@@ -203,7 +203,7 @@ dessous.
 | Case | Ce que c'est | Niveau | Ce qui la distingue |
 |---|---|---|---|
 | **Frappe lourde** | attaque, arc | 1 | le seul coup d'arme qu'on apprenne : la cadence est celle de l'arme |
-| **Lames tournoyantes** | attaque, 2 projectiles | 3 | des lames lancées : `attaque` **et** `projectile`, donc les deux familles d'affixes la servent |
+| **Lames tournoyantes** | attaque, 2 projectiles | 3 | des lames lancées : `attack` **et** `projectile`, donc les deux familles d'affixes la servent |
 | **Garde de fer** | passif, niveau 2 | 4 points | +12 armure, +14 PV par point |
 
 **Ni l'une ni l'autre ne monte avec un attribut**, et pour la raison qui vaut
@@ -237,14 +237,14 @@ qu'additionnel.
 
 Un mot-clé n'existe que parce qu'un modificateur mord dessus. **Ardent** — « +% dégâts
 (Feu) » sur les bases d'incantateur et les bijoux — est le pendant exact
-d'`orageux`, échelle comprise. Sans lui, « Feu » serait une promesse que rien ne
+d'`stormy`, échelle comprise. Sans lui, « Feu » serait une promesse que rien ne
 tient.
 
 ### Les deux livres dans le sac
 
 Chacun sa lignée d'un seul palier, donc commun, donc sans affixe — les manuels
 échappent aux règles de l'équipement et la question ne se pose qu'à un endroit,
-`EquipmentSlots.famille_equipable()`. **Maître d'armes** tombe dès la zone 1,
+`EquipmentSlots.equippable_family()`. **Maître d'armes** tombe dès la zone 1,
 **Maître des flammes** à partir de la zone 5.
 
 Et chacun **son dessin** : `kind` distinct, un cas de plus dans la forge. Trois
@@ -299,7 +299,7 @@ ajouter un nœud), et chacun son test qui refuse l'oubli. Ce que la campagne doi
 attraper, et qu'aucune partie ne montrerait avant plusieurs heures :
 
 **Le contenu, dans `tests/unit/test_talents.gd`** (neuf) et
-`tests/unit/test_manuels.gd` :
+`tests/unit/test_manuals.gd` :
 
 - une case porte **une** chose : une compétence ou un passif, jamais les deux,
   jamais aucune ;
@@ -318,10 +318,10 @@ attraper, et qu'aucune partie ne montrerait avant plusieurs heures :
 - chaque passif a au moins une ligne, et chaque arbre au moins un nœud sans
   parent — un arbre dont tous les nœuds ont un parent est un arbre fermé.
 
-**Les règles, dans `test_manuels.gd` et `test_competences.gd` :**
+**Les règles, dans `test_manuals.gd` et `test_skills.gd` :**
 
 - investir dans un nœud demande les points de compétence **et** le parent, et
-  c'est `Manuel` qui refuse — jamais l'interface ;
+  c'est `Manual` qui refuse — jamais l'interface ;
 - reprendre rend le point au livre, refuse quand un enfant porte des points, et
   refuse tout court sur une case ou un passif ;
 - la résolution avec talents : chaque sorte de ligne, la conversion et son
@@ -332,18 +332,18 @@ attraper, et qu'aucune partie ne montrerait avant plusieurs heures :
   quand le livre quitte le râtelier** : c'est l'oubli qui laisserait un bonus
   derrière lui.
 
-**L'interface, dans `test_panneau_manuels.gd` :** l'arbre s'ouvre et se ferme,
+**L'interface, dans `test_manual_panel.gd` :** l'arbre s'ouvre et se ferme,
 les nœuds tiennent dans la fenêtre — mesurés avec **la même fonction que le
 dessin** —, la fiche d'un nœud reste dans le cadrage, et le clic retrouve ce qui
 est dessiné, racine comprise.
 
-**La sauvegarde, dans `test_sauvegarde.gd` :** des points de nœud et de passif
+**La sauvegarde, dans `test_save.gd` :** des points de nœud et de passif
 font l'aller-retour ; un identifiant inconnu du livre est jeté ; et un fichier de
 version 5 se relit sans perdre ses points de cases.
 
 **Les largeurs et l'anglais** : les noms de passifs et de nœuds entrent dans le
-relevé de `test_traductions.gd` — c'est le test qui refusera un nœud ajouté sans
-son anglais — et les lignes de leurs fiches passent par `test_largeurs.gd`.
+relevé de `test_translations.gd` — c'est le test qui refusera un nœud ajouté sans
+son anglais — et les lignes de leurs fiches passent par `test_widths.gd`.
 
 ---
 
@@ -352,14 +352,14 @@ son anglais — et les lignes de leurs fiches passent par `test_largeurs.gd`.
 Chaque étape se valide par `tests/run.sh` avant la suivante. La première ne
 change rien de ce qui se joue.
 
-- [x] **1. Les trois formes.** `LigneDeTalent`, `NoeudDeTalent`, `Passif`,
-      `TalentInvesti` ; `CaseDeManuel` qui porte l'une ou l'autre ;
-      `ManuelArchetype` qui retrouve un passif, un nœud et la case qui le
+- [x] **1. Les trois formes.** `TalentLine`, `TalentNode`, `Passive`,
+      `InvestedTalent` ; `ManualCell` qui porte l'une ou l'autre ;
+      `ManualArchetype` qui retrouve un passif, un nœud et la case qui le
       contient. Aucun `.tres` ne change encore. Tests : les formes, leurs lignes
       lisibles, et le catalogue qui passe toujours.
-- [x] **2. Les règles.** `Manuel.peut_investir` pour les trois sortes,
-      `peut_reprendre` et `reprendre` ; la conversion et les mots-clés résolus
-      dans `StatsDeCompetence` ; `Competence.resoudre()` qui prend les talents ;
+- [x] **2. Les règles.** `Manual.can_invest` pour les trois sortes,
+      `can_refund` et `refund` ; la conversion et les mots-clés résolus
+      dans `SkillStats` ; `Skill.resolve()` qui prend les talents ;
       `Player` qui les rassemble, qui applique les passifs et qui porte le seul
       chemin d'investissement. Tests : ceux du §8, sans contenu neuf — sur des
       archétypes fabriqués dans le test.
@@ -378,18 +378,18 @@ change rien de ce qui se joue.
 
 ### Ce que l'étape 2 a changé au plan
 
-**La page avait besoin d'une troisième réponse.** `peut_investir()` mêlait les
+**La page avait besoin d'une troisième réponse.** `can_invest()` mêlait les
 conditions structurelles — le niveau du livre, les points de la compétence, le
 parent — aux deux questions de comptabilité : la case est-elle pleine, reste-t-il
 un point. Or le dessin doit distinguer « verrouillé » de « ouvert, mais tu n'as
 plus de point », et il n'a pas le droit de refaire la règle pour y arriver. D'où
-`Manuel.est_ouvert()`, qui ne porte que les conditions structurelles, et
-`peut_investir()` qui l'appelle.
+`Manual.is_open()`, qui ne porte que les conditions structurelles, et
+`can_invest()` qui l'appelle.
 
-**`StatMod.nom()` ne savait pas nommer un nombre de lancer sans mot-clé.** Une
+**`StatMod.name()` ne savait pas nommer un nombre de lancer sans mot-clé.** Une
 ligne de nœud n'a pas de portée à écrire — elle ne vise que sa compétence — et la
 fonction retombait donc sur la table de la fiche, où « degats » n'existe pas :
-la fiche d'un nœud affichait `degats` tel quel. Elle regarde maintenant les deux
+la fiche d'un nœud affichait `damage` tel quel. Elle regarde maintenant les deux
 tables, dans cet ordre.
 
 ### Ce que l'étape 3 a changé au plan
@@ -401,7 +401,7 @@ y ajoute change ses dégâts, pas son dessin ». Elle vaut pour ce qu'un **objet
 ajoute, pas pour ce qu'un nœud **convertit**, et le nœud le plus cher de son arbre
 n'aurait eu aucun effet visible.
 
-D'où `StatsDeCompetence.nature_dominante()`, qui ne regarde que les dégâts propres
+D'où `SkillStats.dominant_nature()`, qui ne regarde que les dégâts propres
 de la compétence et les conversions — jamais les fourchettes ajoutées, ce qui
 laisse la décision du jalon 8 intacte —, et un argument de plus à
 `Projectile.setup()`. Un test garde les deux sens : le tir converti change de
@@ -416,7 +416,7 @@ compétence, et la règle « une case, une chose » appartient à `test_talents.
 **La fiche de survol est devenue un objet.** Trois sortes de fiche — compétence,
 passif, nœud — et un sous-titre qui dit ce que la case est : monté à part du
 contenu, il aurait fini par parler d'autre chose que les lignes en dessous. D'où
-`ManuelPanel.Fiche`, qui porte le titre, le sous-titre et les lignes, décidés au
+`ManualPanel.Sheet`, qui porte le titre, le sous-titre et les lignes, décidés au
 même endroit.
 
 **Deux retouches que seule la capture a montrées** (§8 n'en prévoyait aucune) :
@@ -459,7 +459,7 @@ dictionnaire : le point placé dans l'un s'affiche sur l'autre. Rien ne plante, 
 ça se découvre en jouant. D'où le test d'unicité par livre.
 
 **Le point de nœud jeté au rechargement.** Si le filtre de relecture reste
-`enseigne()`, tous les arbres se vident à la première sauvegarde relue — et les
+`teaches()`, tous les arbres se vident à la première sauvegarde relue — et les
 fichiers sont intacts, donc rien ne le signale. C'est le §5, et le test de
 l'aller-retour.
 
@@ -479,7 +479,7 @@ résultats selon l'ordre d'équipement. C'est le §3, et le test le vérifie sur
 somme.
 
 **La fiche qui ment.** Tous les nombres de la page passent par
-`Player.resoudre()` depuis le jalon 7. Un nœud lu directement dans le dessin — par
+`Player.resolve()` depuis le jalon 7. Un nœud lu directement dans le dessin — par
 commodité, pour afficher un « +1 projectile » — rouvrirait exactement la faille
 que cette règle a fermée.
 
@@ -490,4 +490,4 @@ sinon elle dessine les nœuds d'un livre qui n'est plus là.
 **Le manuel qui noie le butin.** Trois manuels dans la réserve de bases au lieu
 d'un, tirée uniformément : un ramassage sur dix devient un livre de deux cases sur
 deux. C'est le premier nombre à regarder si le sac paraît encombré — et la réponse
-serait un poids dans `ItemCatalog.disponibles()`, qui n'en a pas encore.
+serait un poids dans `ItemCatalog.available()`, qui n'en a pas encore.
