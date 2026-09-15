@@ -72,18 +72,6 @@ func test_chaque_competence_qui_lance_des_projectiles_a_une_vitesse() -> void:
 			assert_gt(c.vitesse_de_projectile, 0.0, "« %s » lance des traits immobiles" % c.nom)
 
 
-## Un nom de champ mal orthographié dans un `.tres` rend zéro sans rien dire, et
-## la compétence paraît simplement faible. C'est ce test qui l'attrape, pas une
-## partie.
-func test_chaque_competence_vise_des_champs_reels() -> void:
-	for c in CompetenceCatalog.ALL:
-		if not c.attribut.is_empty():
-			assert_true(
-				CharacterStats.ATTRIBUTES.has(c.attribut),
-				"« %s » monte avec « %s », qui n'est pas un attribut" % [c.nom, c.attribut]
-			)
-
-
 # --------------------------------------------------------------------------
 # Les mots-clés (jalon 7)
 # --------------------------------------------------------------------------
@@ -232,8 +220,8 @@ func test_sans_modificateur_la_resolution_rend_la_fiche() -> void:
 	for c in CompetenceCatalog.ALL:
 		var points: int = c.points_max()
 		var r: StatsDeCompetence = c.resoudre(points, fiche)
-		assert_eq(r.degats_min[c.nature], c.degats(points, fiche), "« %s » : dégâts" % c.nom)
-		assert_eq(r.total_min(), c.degats(points, fiche), "« %s » : dans sa seule nature" % c.nom)
+		assert_eq(r.degats_min[c.nature], c.degats(points), "« %s » : dégâts" % c.nom)
+		assert_eq(r.total_min(), c.degats(points), "« %s » : dans sa seule nature" % c.nom)
 		assert_eq(r.total_max(), r.total_min(), "« %s » : sans objet, aucune fourchette" % c.nom)
 		assert_eq(r.nombre_de_projectiles(), maxi(c.projectiles, 1), "« %s » : projectiles" % c.nom)
 		assert_eq(r.dispersion_en_degres, c.dispersion_en_degres, "« %s » : dispersion" % c.nom)
@@ -480,20 +468,6 @@ func test_une_fourchette_ajoutee_va_dans_sa_nature() -> void:
 	assert_eq(r.degats_max[DamageType.Kind.COLD], 7.0)
 
 
-## L'attribut multiplie aussi ce que les objets ajoutent. C'était la règle des
-## dégâts de sort, et un personnage relu d'une ancienne sauvegarde ne doit pas
-## frapper moins fort parce que ses lignes ont changé de forme.
-func test_l_attribut_multiplie_aussi_les_degats_ajoutes() -> void:
-	var c := _competence([10.0] as Array[float])
-	c.attribut = "intelligence"
-	c.pourcentage_par_attribut = 4.0
-	var f := _fiche()
-	f.intelligence = 10.0
-	var r := c.resoudre(1, f, [_ajout(DamageType.Kind.COLD, 5.0, 5.0)])
-	assert_almost_eq(r.degats_min[DamageType.Kind.PHYSICAL], 14.0, 0.0001, "10 × 1,4")
-	assert_almost_eq(r.degats_min[DamageType.Kind.COLD], 7.0, 0.0001, "5 × 1,4")
-
-
 ## « +50 % dégâts (Foudre) » vise la compétence, pas la part : le froid qu'elle
 ## porte est multiplié avec sa foudre.
 func test_un_pourcentage_de_degats_multiplie_toutes_les_parts() -> void:
@@ -509,17 +483,13 @@ func test_un_pourcentage_de_degats_multiplie_toutes_les_parts() -> void:
 
 
 ## La décomposition que la fiche du manuel affiche **refait** les dégâts du
-## lancer : la base et les ajouts, multipliés par l'attribut et l'accroissement.
+## lancer : la base et les ajouts, multipliés par l'accroissement.
 ## Si elle s'en écartait, la fiche écrirait des lignes dont la somme n'est pas le
 ## coup qui part.
 func test_la_decomposition_refait_les_degats() -> void:
 	var c := _competence([10.0] as Array[float])
 	c.nature = DamageType.Kind.LIGHTNING
-	c.attribut = "intelligence"
-	c.pourcentage_par_attribut = 4.0
-	var f := _fiche()
-	f.intelligence = 10.0
-	var r := c.resoudre(1, f, [
+	var r := c.resoudre(1, _fiche(), [
 		_ajout(DamageType.Kind.COLD, 4.0, 8.0),
 		_ajout(DamageType.Kind.LIGHTNING, 1.0, 3.0),
 		_mod("degats", StatMod.Mode.PERCENT, 50.0, MotsCles.FOUDRE),
@@ -528,10 +498,9 @@ func test_la_decomposition_refait_les_degats() -> void:
 	assert_eq(r.degats_de_base, 10.0, "la ligne de la table, avant tout multiplicateur")
 	assert_eq(r.ajoutes_min[DamageType.Kind.COLD], 4.0)
 	assert_eq(r.ajoutes_max[DamageType.Kind.LIGHTNING], 3.0, "la foudre ajoutée, à part de la base")
-	assert_almost_eq(r.facteur_d_attribut, 1.4, 1e-6)
 	assert_almost_eq(r.accroissement, 1.65, 1e-6, "1,5 × 1,1 : les accroissements se multiplient")
 
-	var facteur := r.facteur_d_attribut * r.accroissement
+	var facteur := r.accroissement
 	for nature in DamageType.Kind.size():
 		var base := r.degats_de_base if nature == c.nature else 0.0
 		assert_almost_eq(
@@ -619,16 +588,16 @@ func test_un_coup_tire_une_fois_par_fourchette_ouverte() -> void:
 ## pas. Sans ce zéro, une case vide de la barre lancerait un sort gratuit.
 func test_zero_point_ne_rend_rien() -> void:
 	var c := _competence([10.0, 20.0] as Array[float])
-	assert_eq(c.degats(0, _fiche()), 0.0)
-	assert_eq(c.degats(-3, _fiche()), 0.0, "et un nombre négatif non plus")
+	assert_eq(c.degats(0), 0.0)
+	assert_eq(c.degats(-3), 0.0, "et un nombre négatif non plus")
 
 
 func test_chaque_point_donne_la_valeur_de_sa_ligne() -> void:
 	var c := _competence([10.0, 25.0, 45.0] as Array[float])
 	var f := _fiche()
-	assert_eq(c.degats(1, f), 10.0, "le premier point")
-	assert_eq(c.degats(2, f), 25.0, "le deuxième")
-	assert_eq(c.degats(3, f), 45.0, "le troisième")
+	assert_eq(c.degats(1), 10.0, "le premier point")
+	assert_eq(c.degats(2), 25.0, "le deuxième")
+	assert_eq(c.degats(3), 45.0, "le troisième")
 	assert_eq(c.points_max(), 3, "et la table dit combien la case accepte")
 
 
@@ -637,30 +606,17 @@ func test_chaque_point_donne_la_valeur_de_sa_ligne() -> void:
 ## interrompre un combat.
 func test_au_dela_du_dernier_point_on_garde_le_dernier() -> void:
 	var c := _competence([10.0, 25.0] as Array[float])
-	assert_eq(c.degats(9, _fiche()), 25.0)
+	assert_eq(c.degats(9), 25.0)
 
 
-## « +4 % par point d'intelligence », lu sur la fiche **finale** : c'est ce qui
-## fait qu'un anneau ramassé en zone 40 change une compétence, et donc que les
-## jalons 4 et 5 nourrissent celui-ci au lieu de vivre à côté.
-func test_l_attribut_multiplie_les_degats() -> void:
-	var c := _competence([100.0] as Array[float])
-	c.attribut = "intelligence"
-	c.pourcentage_par_attribut = 4.0
-	var f := _fiche()
-	assert_eq(c.degats(1, f), 100.0, "sans intelligence, la base seule")
-	f.intelligence = 10.0
-	assert_eq(c.degats(1, f), 140.0, "dix points d'intelligence, quarante pour cent")
-
-
-## Un attribut non nommé ne multiplie rien. C'est l'état des deux attaques de
-## départ, et c'est ce qui les fait sortir exactement les nombres d'avant.
-func test_sans_attribut_nomme_rien_ne_multiplie() -> void:
+## Aucun attribut ne multiplie les dégâts d'une compétence (retiré le 15 septembre
+## 2026) : la force et l'intelligence donnent leurs réserves, pas un pourcentage.
+func test_aucun_attribut_ne_multiplie_les_degats() -> void:
 	var c := _competence([10.0] as Array[float])
 	var f := _fiche()
 	f.intelligence = 100.0
 	f.strength = 100.0
-	assert_eq(c.degats(1, f), 10.0)
+	assert_eq(c.resoudre(1, f).total_min(), 10.0)
 
 
 # --------------------------------------------------------------------------
@@ -672,28 +628,16 @@ func test_sans_attribut_nomme_rien_ne_multiplie() -> void:
 ## dans `DamageInfo.roll()`, et une compétence ne le retire ni ne le double.
 func test_le_coup_de_base_rend_les_degats_d_avant() -> void:
 	var c := CompetenceCatalog.by_id(CompetenceCatalog.ID_ATTAQUE)
-	assert_eq(c.degats(1, _fiche()), 12.0)
+	assert_eq(c.degats(1), 12.0)
 	assert_eq(c.cout_en_mana, 0.0, "et il reste gratuit")
 
 
 ## Et le tir, sept : les dégâts de sort de l'ancienne fiche.
 func test_le_tir_rend_les_degats_d_avant() -> void:
 	var c := CompetenceCatalog.by_id(CompetenceCatalog.ID_TIR)
-	assert_eq(c.degats(1, _fiche()), 7.0)
+	assert_eq(c.degats(1), 7.0)
 	assert_gt(c.cout_en_mana, 0.0, "et il coûte toujours du mana")
 
-
-## Les deux attaques de départ ne montent avec aucun attribut, et ce n'est pas un
-## oubli : la force ajoute déjà ses dégâts physiques aux attaques, et
-## l'intelligence nourrit la réserve. Les compter ici les paierait deux fois, et
-## les nombres du jalon 1 cesseraient d'être ceux d'aujourd'hui.
-func test_les_attaques_de_depart_ne_montent_avec_aucun_attribut() -> void:
-	for id in [CompetenceCatalog.ID_ATTAQUE, CompetenceCatalog.ID_TIR]:
-		var c := CompetenceCatalog.by_id(id)
-		assert_true(
-			c.attribut.is_empty(),
-			"« %s » monterait deux fois avec « %s »" % [c.nom, c.attribut]
-		)
 
 
 # --------------------------------------------------------------------------

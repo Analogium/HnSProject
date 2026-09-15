@@ -475,10 +475,7 @@ func test_chaque_ligne_vient_de_la_resolution_du_lancer() -> void:
 		_valeurs(lignes, "ajoutés"), PackedStringArray(["3–7 froid", "2–5 feu"]),
 		"une ligne par nature ajoutée, dans l'ordre des natures"
 	)
-	var attribut := PackedStringArray()
-	if not is_equal_approx(geste.facteur_d_attribut, 1.0):
-		attribut.append("%+d %%" % roundi((geste.facteur_d_attribut - 1.0) * 100.0))
-	assert_eq(_valeurs(lignes, "intelligence"), attribut)
+	assert_eq(_valeurs(lignes, "intelligence"), PackedStringArray(), "aucun attribut ne multiplie")
 	assert_eq(_valeurs(lignes, "dégâts accrus"), PackedStringArray(["+20 %"]))
 	assert_eq(_valeurs(lignes, "par projectile"), PackedStringArray([
 		"%d–%d" % [roundi(geste.total_min()), roundi(geste.total_max())]

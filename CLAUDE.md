@@ -19,7 +19,7 @@ qui ment oblige la session suivante à relire le code pour retrouver la vérité
 
 **Ne jamais lancer Godot sur le dossier de travail.** L'utilisateur a son éditeur
 ouvert dessus ; un lancement lui réimporte son cache `.godot/` sous les pieds.
-Passer par `tests/run.sh` et `tools/catalogue.sh`, qui recopient d'abord le
+Passer par `tests/run.sh`, `tools/catalogue.sh` et `tools/equilibrage.sh`, qui recopient d'abord le
 projet dans un dossier temporaire. Pour un essai ponctuel hors de ces scripts,
 refaire la copie à la main.
 
@@ -114,8 +114,13 @@ le test qui refuse l'oubli : [docs/RECETTES.md](docs/RECETTES.md).
 Après avoir touché un `.tres` de contenu, régénérer la référence :
 
 ```bash
-tools/catalogue.sh        # écrit docs/CATALOGUE.md
+tools/catalogue.sh          # écrit docs/CATALOGUE.md
+tools/equilibrage.sh calcul # écrit docs/EQUILIBRAGE.md, sans la simulation
+tests/run.sh equilibrage    # les couloirs, hors de la suite par défaut
 ```
+
+Un couloir d'équilibrage qui casse ne se corrige pas en changeant son chiffre :
+voir `hack-n-slash-jalon-13.md`, §4.
 
 ## Skills du dépôt
 

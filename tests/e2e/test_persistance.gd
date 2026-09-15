@@ -20,6 +20,9 @@ func before_each() -> void:
 	add_child_autofree(_zone)
 	await wait_physics_frames(1)
 	_zone.generate_zone(GRAINE)
+	# Le manuel de départ tombe en différé : sans cette image, un test court finit
+	# avec lui hors de l'arbre.
+	await wait_process_frames(1)
 
 
 func after_each() -> void:

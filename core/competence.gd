@@ -85,11 +85,6 @@ const COUPS_PAR_FORME := {
 ## Une table et non une formule, pour lire la valeur d'un point sans relire de code.
 @export var degats_par_point: Array[float] = []
 
-## Multiplie aussi ce que les objets ajoutent (voir `resoudre()`). Vide pour les
-## attaques de départ : force et intelligence y comptent déjà ailleurs.
-@export var attribut: String = ""
-@export var pourcentage_par_attribut: float = 0.0
-
 ## Le niveau de manuel à partir duquel la case accepte son premier point. Zéro
 ## pour ce qui ne vient d'aucun manuel.
 @export var niveau_de_manuel_requis: int = 0
@@ -147,33 +142,19 @@ func libelle_des_mots_cles() -> String:
 	return MotsCles.ligne(mots_cles())
 
 
-## Les dégâts propres sans objet, témoin des tests : aucun lancer ne passe par ici.
-func degats(points: int, stats: CharacterStats) -> float:
-	if stats == null:
-		return 0.0
-	return _base(points) * facteur_d_attribut(stats)
-
-
-## Les dégâts propres, avant l'attribut : la ligne de la table.
-func _base(points: int) -> float:
+## Les dégâts propres, sans objet : la ligne de la table. Aucun attribut ne les
+## multiplie (retiré le 15 septembre 2026).
+func degats(points: int) -> float:
 	if points <= 0 or degats_par_point.is_empty():
 		return 0.0
 	# Au-delà du dernier point, le dernier plutôt qu'une erreur d'indice.
 	return degats_par_point[mini(points, points_max()) - 1]
 
 
-## Ce que l'attribut rapporte, en multiplicateur : 1,4 pour dix points à 4 %.
-func facteur_d_attribut(stats: CharacterStats) -> float:
-	if stats == null:
-		return 1.0
-	return 1.0 + pourcentage_par_attribut * 0.01 * _champ(stats, attribut)
-
-
 ## **Le seul calcul d'un lancer** : le lancer et la fiche du manuel passent par ici.
 ##
-## Ordre des dégâts : propres, fourchettes ajoutées, conversion, attribut — qui
-## multiplie aussi les ajouts —, pourcentages. Un modificateur qui vise un nombre
-## inconnu est ignoré : c'est aux tests de l'attraper.
+## Ordre des dégâts : propres, fourchettes ajoutées, conversion, pourcentages. Un
+## modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de l'attraper.
 ##
 ## Les talents ne sont pas filtrés, mais leurs mots-clés sont posés avant le filtre :
 ## un nœud de conversion rend un affixe de feu mordant sur un sort de foudre.
@@ -184,7 +165,7 @@ func resoudre(
 ) -> StatsDeCompetence:
 	var r := StatsDeCompetence.new()
 	r.nature = nature
-	r.poser_la_base(nature, _base(points))
+	r.poser_la_base(nature, degats(points))
 	r.projectiles = float(projectiles)
 	r.dispersion_en_degres = dispersion_en_degres
 	r.vitesse_de_projectile = vitesse_de_projectile
@@ -217,7 +198,6 @@ func resoudre(
 	StatMod.appliquer(r, champs)
 	for t: TalentInvesti in talents:
 		r.convertir(t.noeud.convertit_vers, t.conversion())
-	r.appliquer_l_attribut(facteur_d_attribut(stats))
 	for m in pourcents_de_degats:
 		r.accroitre(m.value)
 	r.conclure()
@@ -241,10 +221,3 @@ static func _ranger(
 	elif m.stat != StatsDeCompetence.DEGATS and StatsDeCompetence.LABELS.has(m.stat):
 		champs.append(m)
 
-
-## Un nom inconnu rend zéro : une faute de frappe dans un `.tres` relève d'un test.
-static func _champ(stats: CharacterStats, nom: String) -> float:
-	if nom.is_empty():
-		return 0.0
-	var valeur: Variant = stats.get(nom)
-	return 0.0 if valeur == null else float(valeur)

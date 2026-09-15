@@ -12,7 +12,5 @@ cadence = 0
 forme = 8
 cout_en_mana = 7.0
 degats_par_point = Array[float]([13.0, 17.0, 21.0, 26.0, 32.0])
-attribut = ""
-pourcentage_par_attribut = 0.0
 niveau_de_manuel_requis = 3
 icone = ExtResource("2_icone")

@@ -5,6 +5,7 @@
 #   tests/run.sh unit         seulement les tests unitaires (rapide)
 #   tests/run.sh integration  seulement l'intégration
 #   tests/run.sh e2e          seulement la partie qui joue toute seule (lent)
+#   tests/run.sh equilibrage  les couloirs du banc d'équilibrage, hors de « all »
 #
 # Le projet est **recopié dans un dossier temporaire** avant d'être lancé. Deux
 # raisons, toutes deux vérifiées à leurs dépens : lancer Godot sur le dossier de
@@ -38,7 +39,9 @@ case "$SUITE" in
 	unit)        DIRS="res://tests/unit" ;;
 	integration) DIRS="res://tests/integration" ;;
 	e2e)         DIRS="res://tests/e2e" ;;
-	*) echo "suite inconnue : $SUITE (all|unit|integration|e2e)" >&2; exit 2 ;;
+	# Hors de « all » : un réglage en cours ne bloque pas une livraison sans rapport.
+	equilibrage) DIRS="res://tests/equilibrage" ;;
+	*) echo "suite inconnue : $SUITE (all|unit|integration|e2e|equilibrage)" >&2; exit 2 ;;
 esac
 
 # Nettoyage systématique, y compris si le script est interrompu : sans ça, un

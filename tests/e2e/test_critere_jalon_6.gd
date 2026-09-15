@@ -172,15 +172,12 @@ func test_le_critere_du_jalon_6() -> void:
 	assert_true(joueur.lancer(2), "l'éclair part")
 	assert_eq(_zone.projectiles.get_child_count(), avant + 1)
 
-	# --- « placer un point d'intelligence et voir le nombre monter » ---
-	var competence := CompetenceCatalog.by_id("eclair_vif")
-	var degats_avant := competence.degats(NIVEAU_VISE, joueur.stats)
+	# --- « placer un point d'intelligence et voir le nombre monter » : la réserve, depuis
+	# que les compétences ne montent plus avec un attribut (15 septembre 2026) ---
+	var reserve_avant := joueur.stats.max_mana
 	joueur.unspent_points += 1
 	assert_true(joueur.spend_point("intelligence"))
-	assert_gt(
-		competence.degats(NIVEAU_VISE, joueur.stats), degats_avant,
-		"un point d'intelligence rend l'éclair plus fort"
-	)
+	assert_gt(joueur.stats.max_mana, reserve_avant, "un point d'intelligence nourrit la réserve")
 
 	# --- « sortir le manuel du râtelier, le remettre » ---
 	var repris := joueur.cesser_d_etudier(0)

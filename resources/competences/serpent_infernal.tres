@@ -15,7 +15,5 @@ cout_en_mana = 18.0
 duree = 4.0
 periode = 0.4
 degats_par_point = Array[float]([10.0, 13.0, 16.0, 20.0, 25.0])
-attribut = "intelligence"
-pourcentage_par_attribut = 4.0
 niveau_de_manuel_requis = 4
 icone = ExtResource("2_icone")

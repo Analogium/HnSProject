@@ -19,9 +19,9 @@ var personnage: Personnage
 ## et la galerie.
 var niveau_de_zone := 1
 
-## Soixante : là où s'arrêtent les échelles d'affixes.
+## Le dernier palier d'affixe ouvre à 57 : au-delà, seuls les ennemis montent.
 const NIVEAU_MIN := 1
-const NIVEAU_MAX := 60
+const NIVEAU_MAX := 120
 
 
 ## Borné ici et non chez les deux écrans qui l'appellent.

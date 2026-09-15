@@ -16,7 +16,7 @@ pour lire les tables :
   dessous (`ItemAffix.PALIERS_OUVERTS`). La colonne « ouvre à » des échelles
   donne le plancher, pas la garantie.
 
-Niveaux de zone : 1 à 60.
+Niveaux de zone : 1 à 120.
 
 ## Bases d'objets
 

@@ -710,11 +710,6 @@ func _fiche_de_competence(manuel: Manuel, competence: Competence) -> Fiche:
 				Groupe.DEGATS, Textes.t("converti"),
 				_part_convertie(geste.convertis[nature], nature), DamageType.COLORS[nature]
 			))
-	if not is_equal_approx(geste.facteur_d_attribut, 1.0):
-		out.append(LigneDeFiche.new(
-			Groupe.DEGATS, StatMod.nom(competence.attribut),
-			_accroissement(geste.facteur_d_attribut), UiPalette.TEXTE
-		))
 	if not is_equal_approx(geste.accroissement, 1.0):
 		out.append(LigneDeFiche.new(
 			Groupe.DEGATS, Textes.t("dégâts accrus"),

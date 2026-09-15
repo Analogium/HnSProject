@@ -15,7 +15,5 @@ duree = 5.0
 periode = 0.5
 simultanes = 3
 degats_par_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
-attribut = ""
-pourcentage_par_attribut = 0.0
 niveau_de_manuel_requis = 6
 icone = ExtResource("2_icone")

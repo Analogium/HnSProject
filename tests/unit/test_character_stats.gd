@@ -76,9 +76,9 @@ func test_cadence_pas_de_division_par_zero() -> void:
 # Le niveau de zone (jalon 5, étape 6)
 # --------------------------------------------------------------------------
 
-## La mise à l\'échelle est linéaire, et c\'est un choix : une courbe
-## exponentielle demande un exposant qu\'on ne saura pas régler avant d\'avoir
-## joué, et se trompe d\'un facteur dix à la soixantième marche.
+## La vie se compose et les dégâts s\'additionnent : les dégâts du joueur se
+## multiplient entre eux, et une vie linéaire se laissait distancer. L\'exposant garde
+## les huit fois de la zone 40 d\'avant.
 func test_la_mise_a_l_echelle_suit_le_niveau() -> void:
 	var fiche := CharacterStats.new()
 	fiche.max_health = 100.0
@@ -88,22 +88,42 @@ func test_la_mise_a_l_echelle_suit_le_niveau() -> void:
 	assert_almost_eq(fiche.attack_damage, 10.0, 0.001)
 
 	CharacterStats.mettre_a_l_echelle(fiche, 40)
-	assert_almost_eq(fiche.max_health, 100.0 * (1.0 + 0.18 * 39.0), 0.01, "huit fois la vie")
+	assert_between(fiche.max_health, 780.0, 830.0, "huit fois la vie")
 	assert_almost_eq(fiche.attack_damage, 10.0 * (1.0 + 0.12 * 39.0), 0.01, "cinq fois les dégâts")
 
 
-## Ni l\'armure ni les résistances ne montent : le joueur n\'a aucun moyen de
-## percer une armure, et la faire croître transformerait une zone profonde en
-## mur plutôt qu\'en danger.
-func test_la_mise_a_l_echelle_ne_touche_pas_aux_defenses() -> void:
+## Exponentielle, pas linéaire : chaque tranche de soixante niveaux multiplie la vie
+## d'autant, là où une droite ne la doublait plus entre 60 et 120.
+func test_la_vie_se_compose_d_un_niveau_a_l_autre() -> void:
+	var vies := []
+	for niveau in [1, 61, 121]:
+		var fiche := CharacterStats.new()
+		fiche.max_health = 100.0
+		CharacterStats.mettre_a_l_echelle(fiche, niveau)
+		vies.append(fiche.max_health)
+	assert_almost_eq(vies[2] / vies[1], vies[1] / vies[0], 0.01, "le même facteur par tranche")
+	assert_gt(vies[1] / vies[0], 20.0)
+
+
+## L'armure et les résistances montent avec la zone (décidé le 15 septembre 2026), en
+## s'ajoutant à celles de la fiche ; l'esquive non, sinon une zone profonde serait une
+## loterie.
+func test_la_mise_a_l_echelle_monte_l_armure_et_les_resistances() -> void:
 	var fiche := CharacterStats.new()
 	fiche.armor = 40.0
 	fiche.evasion = 20.0
 	fiche.res_fire = 30.0
+	CharacterStats.mettre_a_l_echelle(fiche, 1)
+	assert_eq(fiche.armor, 40.0, "rien en zone 1")
+	assert_eq(fiche.res_cold, 0.0, "rien en zone 1")
+
 	CharacterStats.mettre_a_l_echelle(fiche, 60)
-	assert_eq(fiche.armor, 40.0)
-	assert_eq(fiche.evasion, 20.0)
-	assert_eq(fiche.res_fire, 30.0)
+	assert_almost_eq(fiche.armor, 40.0 + CharacterStats.ARMURE_PAR_NIVEAU * 59.0, 0.001)
+	assert_almost_eq(fiche.res_fire, 30.0 + CharacterStats.RESISTANCE_PAR_NIVEAU * 59.0, 0.001)
+	for champ: String in DamageType.RESIST_FIELDS:
+		if not champ.is_empty():
+			assert_gt(float(fiche.get(champ)), 0.0, champ)
+	assert_eq(fiche.evasion, 20.0, "l'esquive ne monte pas")
 
 
 ## Un niveau nul ou négatif ne doit pas rendre un ennemi plus faible que la

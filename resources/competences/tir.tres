@@ -13,6 +13,4 @@ vitesse_de_projectile = 230.0
 recharge = 0.3
 cout_en_mana = 6.0
 degats_par_point = Array[float]([7.0])
-attribut = ""
-pourcentage_par_attribut = 0.0
 niveau_de_manuel_requis = 0

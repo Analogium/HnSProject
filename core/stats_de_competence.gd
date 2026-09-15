@@ -63,7 +63,6 @@ var nature := int(DamageType.Kind.PHYSICAL)
 var degats_de_base := 0.0
 var ajoutes_min: Array[float] = DamageType.parts_vides()
 var ajoutes_max: Array[float] = DamageType.parts_vides()
-var facteur_d_attribut := 1.0
 ## Le produit des « +% dégâts » portés : ils se multiplient entre eux, donc deux
 ## « +10 % » font 1,21 et non 1,20.
 var accroissement := 1.0
@@ -170,11 +169,6 @@ func convertir(cible: int, part: float) -> void:
 		convertis[source] *= 1.0 - reste
 	# La part du coup **entier** : deux nœuds à 50 % font 75 %, pas 100 %.
 	convertis[cible] += reste * (1.0 - convertis[cible])
-
-
-func appliquer_l_attribut(facteur: float) -> void:
-	facteur_d_attribut *= facteur
-	_multiplier(facteur)
 
 
 ## Appliqué à la suite, pas sommé : deux « +10 % » font 1,21.

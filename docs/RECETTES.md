@@ -297,7 +297,6 @@ cliquable ne peuvent pas diverger), `test_le_panneau_tient_dans_le_cadrage`.
    | `cadence` / `recharge` | `ARME` suit la fiche (`attack_cooldown`) ; `INCANTATION` suit `recharge` divisée par `cast_speed` |
    | `cout_en_mana` | 0 pour un geste gratuit |
    | `degats_par_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus |
-   | `attribut` / `pourcentage_par_attribut` | Vide pour ce qui ne monte avec rien |
    | `forme` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `TRAIT`, `FRAPPE`, `BOULE`, `CHAINE`, `NUAGE`, `AURA`, `SERPENT`, `CROIX`, `ORBITE`. `TRAIT` et `BOULE` donnent `projectile` |
    | `mots_cles_declares` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `foudre`, `sort`, `attaque` ou `projectile` |
    | `projectiles` / `dispersion_en_degres` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
@@ -606,7 +605,14 @@ identifiants.
 
 ```bash
 tools/catalogue.sh          # docs/CATALOGUE.md, depuis les .tres
+tools/equilibrage.sh calcul # docs/EQUILIBRAGE.md, la grille seule
+tools/equilibrage.sh        # et la simulation, bien plus lente
 ```
 
-Les trois autres documents (`ARCHITECTURE.md`, `RECETTES.md`, `README.md`) sont
+Après un réglage d'équilibrage — une échelle d'affixe, la courbe des ennemis, une table
+de dégâts —, relancer le calcul puis `tests/run.sh equilibrage`. Un profil nouveau ou
+un build de plus s'ajoute dans `tools/equilibrage/profils.gd` ; son test d'étape 1,
+`tests/unit/test_profils_du_banc.gd`, refuse un profil aux points mal placés.
+
+Les autres documents (`ARCHITECTURE.md`, `RECETTES.md`, `README.md`) sont
 écrits à la main : ils décrivent des décisions, et aucune décision ne se génère.

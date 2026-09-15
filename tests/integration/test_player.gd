@@ -506,9 +506,9 @@ func test_chaque_sort_part_avec_les_nombres_de_sa_fiche() -> void:
 		assert_true(_p.lancer(4), "« %s » part" % c.nom)
 		assert_eq(_tirs.get_child_count(), c.projectiles, "« %s » : traits" % c.nom)
 		for tir: Projectile in _tirs.get_children():
-			assert_eq(tir._parts[c.nature], c.degats(points, _p.stats), "« %s » : dégâts" % c.nom)
+			assert_eq(tir._parts[c.nature], c.degats(points), "« %s » : dégâts" % c.nom)
 			assert_eq(
-				DamageInfo.en_parts(tir._parts, Vector2.ZERO).amount, c.degats(points, _p.stats),
+				DamageInfo.en_parts(tir._parts, Vector2.ZERO).amount, c.degats(points),
 				"« %s » : et aucune autre nature" % c.nom
 			)
 			assert_eq(tir.speed, c.vitesse_de_projectile, "« %s » : vitesse" % c.nom)

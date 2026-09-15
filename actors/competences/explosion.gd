@@ -33,8 +33,7 @@ static func poser(
 	e._rayon = rayon
 	e._exclue = exclue.get_instance_id() if exclue != null else 0
 	e._teinte = teinte
-	parent.add_child.call_deferred(e)
-	e.set_deferred("global_position", point)
+	Arbre.ajouter_en_differe(parent, e, point)
 	return e
 
 

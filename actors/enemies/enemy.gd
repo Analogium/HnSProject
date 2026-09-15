@@ -47,8 +47,7 @@ func _ready() -> void:
 	# (invariant 2), mais sept cents copies inutiles coûtaient 5,4 ms de physique contre
 	# 4,4 à sept cents ennemis.
 	if niveau > 1 or not affixes.is_empty():
-		stats = stats.duplicate()
-		CharacterStats.mettre_a_l_echelle(stats, niveau)
+		stats = fiche_de(stats, niveau, affixes)
 		_appliquer_affixes()
 	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
@@ -73,17 +72,26 @@ func _tirer_affixes() -> void:
 	affix_tag.set_affixes(affixes)
 
 
-## N'écrit que dans une fiche déjà copiée.
+## La fiche d'un ennemi de ce niveau et de ces affixes, **sur une copie**. Statique : le
+## banc d'équilibrage la calcule sans corps.
+static func fiche_de(base: CharacterStats, p_niveau: int, p_affixes: Array[Affix]) -> CharacterStats:
+	var fiche: CharacterStats = base.duplicate()
+	CharacterStats.mettre_a_l_echelle(fiche, p_niveau)
+	for a in p_affixes:
+		fiche.max_health *= a.health_mult
+		fiche.move_speed *= a.speed_mult
+		fiche.attack_damage *= a.damage_mult
+		fiche.attack_cooldown *= a.cooldown_mult
+		fiche.armor += a.armor
+	return fiche
+
+
+## Ce que les affixes font hors de la fiche.
 func _appliquer_affixes() -> void:
 	if affixes.is_empty():
 		return
 
 	for a in affixes:
-		stats.max_health *= a.health_mult
-		stats.move_speed *= a.speed_mult
-		stats.attack_damage *= a.damage_mult
-		stats.attack_cooldown *= a.cooldown_mult
-		stats.armor += a.armor
 		lifesteal += a.lifesteal
 
 	sprite.set_rim(
@@ -234,10 +242,14 @@ static func xp_de_la_sante(max_health: float) -> float:
 
 
 func xp_value() -> int:
-	# max_health porte déjà les multiplicateurs d'affixes ; xp_mult est le
-	# supplément de récompense, distinct de la robustesse.
-	var v := xp_de_la_sante(stats.max_health)
-	for a in affixes:
+	return experience_de(stats, affixes)
+
+
+## Statique pour le banc d'équilibrage. `fiche.max_health` porte déjà les multiplicateurs
+## d'affixes ; `xp_mult` est le supplément de récompense, distinct de la robustesse.
+static func experience_de(fiche: CharacterStats, p_affixes: Array[Affix]) -> int:
+	var v := xp_de_la_sante(fiche.max_health)
+	for a in p_affixes:
 		v *= a.xp_mult
 	return maxi(roundi(v), 1)
 

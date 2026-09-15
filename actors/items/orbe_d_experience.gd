@@ -33,8 +33,7 @@ static func valeur_pour(niveau_zone: int) -> float:
 	return Enemy.xp_de_la_sante(fiche.max_health) * float(ORBE_EN_GRUNTS)
 
 
-## Entrée dans l'arbre différée, comme `GroundItem.spawn()` : la position globale
-## s'applique après l'ajout, dans l'ordre des appels différés.
+## Entrée dans l'arbre différée, comme `GroundItem.spawn()`.
 static func poser(parent: Node, at: Vector2, p_valeur: float, p_niveau: int) -> OrbeDExperience:
 	var orbe := OrbeDExperience.new()
 	orbe.valeur = p_valeur
@@ -46,8 +45,7 @@ static func poser(parent: Node, at: Vector2, p_valeur: float, p_niveau: int) -> 
 	cercle.radius = RAYON_DE_RAMASSAGE
 	forme.shape = cercle
 	orbe.add_child(forme)
-	parent.add_child.call_deferred(orbe)
-	orbe.set_deferred("global_position", at)
+	Arbre.ajouter_en_differe(parent, orbe, at)
 	return orbe
 
 

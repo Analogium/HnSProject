@@ -57,10 +57,7 @@ static func spawn(parent: Node, at: Vector2, item: Item, delay := 0.0) -> Ground
 	# Posées avant l'ajout : _ready en a besoin pour construire l'icône.
 	drop.data = item
 	drop.pickup_delay = delay
-	parent.add_child.call_deferred(drop)
-	# Après l'ajout, dans le même ordre que les appels différés : hors de
-	# l'arbre, une position globale ne veut rien dire.
-	drop.set_deferred("global_position", at)
+	Arbre.ajouter_en_differe(parent, drop, at)
 	return drop
 
 

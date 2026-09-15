@@ -67,10 +67,14 @@ func test_un_personnage_relu_d_une_version_4_frappe_comme_avant() -> void:
 	}
 	for id in mesures:
 		var c := CompetenceCatalog.by_id(id)
+		# Les sorts ont été mesurés avec 4 % par point d'intelligence de la fiche, retirés
+		# le 15 septembre 2026 : ce retrait n'est pas la migration, qui se juge sans lui.
+		var attendu := float(mesures[id])
+		if not CompetenceCatalog.est_de_depart(id):
+			attendu /= 1.0 + 0.04 * _p.stats.intelligence
 		var geste := _p.resoudre(c, 3)
 		assert_almost_eq(
-			(geste.total_min() + geste.total_max()) * 0.5, float(mesures[id]), 0.001,
-			"« %s »" % c.nom
+			(geste.total_min() + geste.total_max()) * 0.5, attendu, 0.001, "« %s »" % c.nom
 		)
 
 

@@ -495,18 +495,13 @@ func test_une_conversion_ne_depasse_jamais_le_tout() -> void:
 ## Le multiplicateur passe sur les deux natures : converti avant ou après, le
 ## total est le même — et c'est ce qui laisse l'ordre libre.
 func test_la_conversion_et_les_multiplicateurs_commutent() -> void:
-	var c := _sort(100.0)
-	c.attribut = "intelligence"
-	c.pourcentage_par_attribut = 5.0
-	var f := _fiche()
-	f.intelligence = 10.0
-	var r := c.resoudre(
-		1, f, [StatMod.new("degats", StatMod.Mode.PERCENT, 20.0, MotsCles.SORT)],
+	var r := _sort(100.0).resoudre(
+		1, _fiche(), [StatMod.new("degats", StatMod.Mode.PERCENT, 20.0, MotsCles.SORT)],
 		_talents([_conversion("n", DamageType.Kind.FIRE, 0.5)])
 	)
-	assert_almost_eq(r.total_min(), 180.0, 1e-4, "100 × 1,5 × 1,2")
-	assert_almost_eq(r.degats_min[DamageType.Kind.FIRE], 90.0, 1e-4, "moitié-moitié")
-	assert_almost_eq(r.degats_min[DamageType.Kind.LIGHTNING], 90.0, 1e-4)
+	assert_almost_eq(r.total_min(), 120.0, 1e-4, "100 × 1,2")
+	assert_almost_eq(r.degats_min[DamageType.Kind.FIRE], 60.0, 1e-4, "moitié-moitié")
+	assert_almost_eq(r.degats_min[DamageType.Kind.LIGHTNING], 60.0, 1e-4)
 
 
 # --------------------------------------------------------------------------

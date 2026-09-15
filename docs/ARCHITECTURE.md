@@ -35,7 +35,7 @@ en PNG, retouchables dans un éditeur d'image.
 | `ui/` | Les panneaux et l'affichage tête haute. | `core/`, `art/` |
 | `fx/` | Le retour visuel des coups. | `core/` |
 | `tests/` | La campagne GUT — voir [tests/README.md](../tests/README.md). | tout |
-| `tools/` | Les outils hors jeu (génération de cette documentation). | tout |
+| `tools/` | Les outils hors jeu : génération de la documentation, banc d'équilibrage. | tout |
 | `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels, compétences, passifs et arbres de talents**. | — |
 
 **Le sens de circulation ne s'inverse jamais.** `core/` ne remonte pas vers une
@@ -76,6 +76,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 |---|---|
 | Combien un coup fait-il vraiment ? | `CharacterStats` (armure, esquive, résistances ; la défense d'une part, `attenuer()`), appliqué **part par part** par `Hurtbox` : l'armure sur la part physique, sa résistance à chaque autre nature, le plancher sur le total |
 | Quels objets tombent dans une zone ? | `ItemCatalog.disponibles()` |
+| Comment un ennemi monte-t-il avec la zone ? | `CharacterStats.mettre_a_l_echelle()` : la vie **composée** de `VIE_PAR_NIVEAU` par niveau ; les dégâts, l'armure et les cinq résistances linéaires ; l'esquive jamais. `Enemy.fiche_de()` y ajoute les affixes, sur une copie. L'expérience suit la vie (`Enemy.xp_de_la_sante()`) |
 | Jusqu'à quand une base tombe-t-elle ? | `ItemCatalog.fenetre_de_chute()` |
 | Quels affixes une base peut-elle porter ? | `ItemAffix.fits()` via `ItemAffixPool.compatibles()` |
 | Quels paliers un objet atteint-il ? | `ItemAffix.ouverts()` |
@@ -86,7 +87,9 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `StatsDeCompetence.fourchette_lisible()` ; un pourcentage, `StatMod.pourcentage()`, dont la typographie suit la langue |
 | En quelle langue s'écrit un texte ? | `Textes.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.langue` choisit |
 | Jusqu'où descend une fenêtre flottante ? | `Hud.haut_des_jauges()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus |
-| Ce que rapporte un ennemi ? | `Enemy.xp_value()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
+| Ce que rapporte un ennemi ? | `Enemy.experience_de()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
+| Quel niveau a un personnage qui arrive dans une zone ? | `ProfilsDuBanc.niveau_attendu()` : chaque zone d'avant vidée une fois, avec la population moyenne de l'`EnemySpawner`. Une mesure du banc, pas une règle du jeu |
+| À quel point un personnage type s'en sort-il ? | `CalculDuBanc.mesurer()`, sur un vrai `Player` : `Player.resoudre()` pour ce qui part, `Hurtbox.mitiger()` pour ce qui arrive. Les couloirs sont ses constantes, gardés par `tests/run.sh equilibrage` ; le rapport, `tools/equilibrage.sh` → [EQUILIBRAGE.md](EQUILIBRAGE.md) |
 | Quand l'expérience fond-elle ? | `Enemy.facteur_d_experience()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
 | Ce qui survit à la fermeture ? | `Personnage.vers_dict()` et `Settings.vers_dict()` |
@@ -187,9 +190,11 @@ Godot refuse qu'on ajoute une `Area2D` à l'arbre pendant qu'il résout les
 collisions : *« Can't change this state while flushing queries »*. Or un ennemi
 meurt presque toujours depuis un `area_entered`.
 
-- `GroundItem.spawn()` fait `add_child.call_deferred()` puis
-  `set_deferred("global_position", …)` — dans cet ordre, une position globale ne
-  voulant rien dire hors de l'arbre ;
+- `GroundItem.spawn()`, `OrbeDExperience.poser()` et `Explosion.poser()` passent
+  par `Arbre.ajouter_en_differe()` : ajout puis position, dans cet ordre, une
+  position globale ne voulant rien dire hors de l'arbre. **Un parent libéré avant
+  l'appel différé libère le nœud** — sinon il fuit hors de l'arbre avec ce qu'il
+  porte, comme le manuel de départ d'une zone fermée dans la même image ;
 - `Player._swing()` passe par `set_deferred("monitoring", …)`, et **attend une
   image de physique** avant de rouvrir la hitbox pour le second coup d'une croix :
   fermée puis rouverte dans la même image, elle ne coupe rien, et un ennemi déjà

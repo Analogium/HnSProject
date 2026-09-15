@@ -16,7 +16,5 @@ rayon = 40.0
 periode = 0.5
 brulure = 0.03
 degats_par_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
-attribut = "intelligence"
-pourcentage_par_attribut = 4.0
 niveau_de_manuel_requis = 9
 icone = ExtResource("2_icone")

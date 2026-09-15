@@ -40,7 +40,7 @@ func take_damage(info: DamageInfo) -> void:
 			if HitFeedback.current != null:
 				HitFeedback.current.miss(global_position, on_player)
 			return
-		_mitigate(info)
+		mitiger(info)
 
 	if HitFeedback.current != null:
 		HitFeedback.current.hit(global_position, info, on_player)
@@ -53,7 +53,8 @@ func take_damage(info: DamageInfo) -> void:
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la
 ## part physique seule ; le plancher porte sur le total, versé à la part dominante.
-func _mitigate(info: DamageInfo) -> void:
+## Publique : le banc d'équilibrage atténue un coup moyen, sans esquive ni tirage.
+func mitiger(info: DamageInfo) -> void:
 	for kind in info.parts.size():
 		info.parts[kind] = stats.attenuer(kind, info.parts[kind])
 	# L'engourdissement après les défenses : « +10 % de dégâts reçus » se lit sur ce

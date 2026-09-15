@@ -66,18 +66,27 @@ const EVASION_K := 60.0
 ## Au-delà, le combat devient une loterie qu'on gagne en attendant.
 const MAX_EVASION := 0.75
 
-## Ce qu'un niveau de zone ajoute à un ennemi, par niveau au-delà du premier.
-## Linéaire : à 40, huit fois la vie et cinq fois les dégâts. Ni armure ni
-## résistances ne montent — le joueur n'a aucun moyen de les percer.
-const VIE_PAR_NIVEAU := 0.18
+## Par niveau au-delà du premier. La vie se **compose** — ×8 à 40, ×23 à 60, ×585 à
+## 120 — parce que les dégâts du joueur se multiplient entre eux ; les dégâts restent
+## linéaires (×5,7 à 40).
+const VIE_PAR_NIVEAU := 0.055
 const DEGATS_PAR_NIVEAU := 0.12
+## Linéaires (décidé le 15 septembre 2026). L'armure pèse contre la taille du coup :
+## 195 en zone 40 retirent ~22 % d'un coup de 140, 595 en zone 120 ~37 % d'un coup de
+## 200. Les résistances : 13 % en zone 40, 39 % en zone 120.
+const ARMURE_PAR_NIVEAU := 5.0
+const RESISTANCE_PAR_NIVEAU := 0.33
 
 
 ## **Écrit dans la fiche donnée** : à l'appelant de l'avoir dupliquée (invariant 2).
 static func mettre_a_l_echelle(stats: CharacterStats, niveau: int) -> void:
 	var marches := float(maxi(niveau, 1) - 1)
-	stats.max_health *= 1.0 + VIE_PAR_NIVEAU * marches
+	stats.max_health *= pow(1.0 + VIE_PAR_NIVEAU, marches)
 	stats.attack_damage *= 1.0 + DEGATS_PAR_NIVEAU * marches
+	stats.armor += ARMURE_PAR_NIVEAU * marches
+	for champ: String in DamageType.RESIST_FIELDS:
+		if not champ.is_empty():
+			stats.set(champ, float(stats.get(champ)) + RESISTANCE_PAR_NIVEAU * marches)
 
 
 ## Cette liste sépare les modificateurs à appliquer **avant** la dérivation.

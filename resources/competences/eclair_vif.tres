@@ -16,7 +16,5 @@ cout_en_mana = 8.0
 projectiles = 1
 dispersion_en_degres = 0.0
 degats_par_point = Array[float]([21.0, 27.0, 34.0, 42.0, 51.0])
-attribut = "intelligence"
-pourcentage_par_attribut = 4.0
 niveau_de_manuel_requis = 1
 icone = ExtResource("2_icone")
