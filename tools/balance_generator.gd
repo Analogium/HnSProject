@@ -104,7 +104,7 @@ func _levels(l: PackedStringArray) -> void:
 
 func _grid(l: PackedStringArray, calculation: BenchCalculation, build: BenchProfiles.Build) -> void:
 	var book := ItemCatalog.by_id(build.manual)
-	l.append("## %s — %s, %s" % [build.name, book.display_name, StatMod.LABELS[build.attribute]])
+	l.append("## %s — %s, %s" % [build.name, book.display_name, _keystone_of(build)])
 	l.append("")
 	var header := "| profil |"
 	for zone in BenchProfiles.ZONES:
@@ -131,6 +131,15 @@ func _grid(l: PackedStringArray, calculation: BenchCalculation, build: BenchProf
 	l.append("")
 	l.append("</details>")
 	l.append("")
+
+
+## La clé de voûte où mène le chemin du build.
+func _keystone_of(build: BenchProfiles.Build) -> String:
+	var tree := PassiveTree.shared()
+	for id in build.path:
+		if tree.node(id).kind == PassiveNode.Kind.KEYSTONE:
+			return tree.node(id).name
+	return ""
 
 
 func _cell(m: BenchCalculation.Measurement) -> String:

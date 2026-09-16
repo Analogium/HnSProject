@@ -56,13 +56,22 @@ func test_all_points_are_placed() -> void:
 			for profile in BenchProfiles.Profile.values():
 				var p := BenchProfiles.character(build, profile, zone)
 				var case_name := "%s %s zone %d" % [build.name, BenchProfiles.PROFILE_NAMES[profile], zone]
-				var places := 0
-				for field in p.attributes:
-					places += int(p.attributes[field])
-				assert_eq(places, (p.level - 1) * Player.POINTS_PER_LEVEL, "%s : attributs" % case_name)
-				assert_eq(p.unspent_points, 0, case_name)
+				assert_eq(
+					p.passives.size(), mini(PassiveTree.points_gained(p.level), build.path.size()),
+					"%s : arbre" % case_name
+				)
 				assert_eq(p.rack.at(0).manual.remaining_points(), 0, "%s : manuel" % case_name)
 				assert_false(p.bar.id_of(0).is_empty(), "%s : de quoi lancer" % case_name)
+
+
+## Un nœud du chemin qui ne se prend pas serait sauté sans bruit.
+func test_each_path_is_taken_in_full() -> void:
+	for build in BenchProfiles.builds():
+		assert_eq(PassiveTree.shared().legal(build.path, 1000).size(), build.path.size(), build.name)
+		var taken := PackedStringArray()
+		for id in build.path:
+			assert_true(PassiveTree.shared().can_take(taken, id, 1000), "%s : « %s »" % [build.name, id])
+			taken.append(id)
 
 
 func test_the_expected_level_grows_with_the_zone() -> void:

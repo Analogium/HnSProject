@@ -7,13 +7,14 @@ extends RefCounted
 ## sauvegarde peut venir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
-const VERSION := 6
+const VERSION := 7
 
 ## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
-## noms français, traduits par `LegacyFrench`.
-const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6]
+## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
+## arbre de passifs vide.
+const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const LEGACY_ATTACK_DAMAGE := "attack_damage"
@@ -33,12 +34,8 @@ var played_on := ""
 var level := 1
 var experience := 0
 
-## Ce qui a été **placé**, pas le total : un rééquilibrage doit atteindre les
-## personnages existants.
-var attributes := CharacterStats.empty_attributes()
-## Sauvegardé aussi : monter de niveau puis quitter sans répartir ne doit pas
-## coûter les points.
-var unspent_points := 0
+## Les nœuds pris de l'arbre de passifs. Les points restants se déduisent du niveau.
+var passives := PackedStringArray()
 
 var bag := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
 ## Les emplacements sont validés par le Player, pas ici.
@@ -127,8 +124,7 @@ func to_dict() -> Dictionary:
 		"played_on": played_on,
 		"level": level,
 		"experience": experience,
-		"attributes": attributes.duplicate(),
-		"unspent_points": unspent_points,
+		"passives": Array(passives),
 		"bag": placed_items,
 		"equipment": worn,
 		"rack": books,
@@ -160,13 +156,14 @@ static func from_dict(source: Dictionary) -> Character:
 	p.played_on = String(source.get("played_on", ""))
 	p.level = maxi(_int(source, "level", 1), 1)
 	p.experience = maxi(_int(source, "experience", 0), 0)
-	p.unspent_points = maxi(_int(source, "unspent_points", 0), 0)
 
-	# Champ par champ depuis ATTRIBUTES : un attribut nouveau part de zéro, un nom
-	# inconnu est ignoré.
-	var read_attributes: Dictionary = source.get("attributes", {}) if source.get("attributes") is Dictionary else {}
-	for field in CharacterStats.ATTRIBUTES:
-		p.attributes[field] = maxi(_int(read_attributes, field, 0), 0)
+	# Les attributs placés d'avant la v7 sont abandonnés : trois points libres n'ont
+	# pas d'équivalent juste en nœuds. Relu par les règles de prise, pas cru.
+	var taken := PackedStringArray()
+	for id in _list(source.get("passives")):
+		if id is String:
+			taken.append(id)
+	p.passives = PassiveTree.shared().legal(taken, p.level)
 
 	for entry in _list(source.get("bag")):
 		var item := _item_from_dict(entry)

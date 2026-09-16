@@ -150,39 +150,87 @@ func test_starting_attributes_are_derived() -> void:
 	assert_gt(_p.stats.evasion, 0.0, "la dextérité donne enfin une source à l'esquive")
 
 
-func test_a_level_up_gives_points() -> void:
-	assert_eq(_p.unspent_points, 0, "aucun point au départ")
+func test_a_level_up_gives_a_tree_point() -> void:
+	assert_eq(_p.remaining_passive_points(), 0, "aucun point au départ")
 	_p.gain_xp(_p.xp_to_next)
 	assert_eq(_p.level, 2)
-	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL)
+	assert_eq(_p.remaining_passive_points(), 1)
 
 
-func test_placing_a_point_changes_the_sheet() -> void:
+## start — force (+10 force) — colosse (+50 % de PV amplifiés), écrit ici : le contenu
+## changera, la règle non.
+func _small_tree() -> PassiveTree:
+	var start := PassiveNode.new()
+	start.id = "start"
+	start.kind = PassiveNode.Kind.START
+	var strength := PassiveNode.new()
+	strength.id = "strength"
+	strength.links = PackedStringArray(["start"])
+	strength.lines = [_line("strength", 10.0)] as Array[TalentLine]
+	var colossus := PassiveNode.new()
+	colossus.id = "colossus"
+	colossus.kind = PassiveNode.Kind.KEYSTONE
+	colossus.links = PackedStringArray(["strength"])
+	colossus.lines = [_line("max_health", 50.0, true, true)] as Array[TalentLine]
+	var tree := PassiveTree.new()
+	tree.nodes = [start, strength, colossus] as Array[PassiveNode]
+	return tree
+
+
+func _line(stat: String, value: float, percentage := false, more := false) -> TalentLine:
+	var l := TalentLine.new()
+	l.stat = stat
+	l.value_per_point = value
+	l.percentage = percentage
+	l.more = more
+	return l
+
+
+func test_a_taken_node_changes_the_sheet_and_its_release_restores_it() -> void:
+	_p.passive_tree = _small_tree()
 	_p.gain_xp(_p.xp_to_next)
 	var before := _p.stats.max_health
-	assert_true(_p.spend_point("strength"))
-	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL - 1)
-	assert_eq(_p.stats.strength, 11.0)
-	assert_eq(_p.stats.max_health, before + CharacterStats.HEALTH_PER_STRENGTH)
+	assert_true(_p.take_passive("strength"))
+	assert_eq(_p.stats.strength, 20.0)
+	assert_eq(_p.stats.max_health, before + 10.0 * CharacterStats.HEALTH_PER_STRENGTH)
+	assert_true(_p.release_passive("strength"))
+	assert_eq(_p.stats.strength, 10.0)
+	assert_eq(_p.stats.max_health, before)
 
 
-func test_cannot_place_what_we_do_not_have() -> void:
-	assert_false(_p.spend_point("strength"), "aucun point disponible")
+func test_cannot_take_what_we_do_not_have() -> void:
+	_p.passive_tree = _small_tree()
+	assert_false(_p.take_passive("strength"), "aucun point au niveau 1")
 	_p.gain_xp(_p.xp_to_next)
-	assert_false(_p.spend_point("charisma"), "attribut inconnu")
-	assert_eq(_p.unspent_points, Player.POINTS_PER_LEVEL, "rien n'a été consommé")
+	assert_false(_p.take_passive("colossus"), "pas voisin d'un nœud pris")
+	assert_false(_p.release_passive("strength"), "pas pris")
+	assert_eq(_p.passives.size(), 0, "rien n'a été consommé")
 
 
-## La répartition survit à un recalcul : elle est tenue sur le joueur et non sur
-## `stats`, qui est reconstruite de zéro à chaque équipement.
-func test_the_distribution_survives_equipping() -> void:
+## Le « plus » d'une clé de voûte multiplie après la somme des accrus des objets.
+func test_a_more_keystone_multiplies_after_item_increases() -> void:
+	_p.passive_tree = _small_tree()
 	_p.gain_xp(_p.xp_to_next)
-	_p.spend_point("dexterity")
-	var evasion_roll := _p.stats.evasion
+	_p.gain_xp(_p.xp_to_next)
+	_p.take_passive("strength")
+	_p.take_passive("colossus")
+	_p.equip(Item.new(
+		load("res://resources/items/breastplate.tres"),
+		[StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]
+	))
+	var expected := (100.0 + 20.0 * CharacterStats.HEALTH_PER_STRENGTH + 20.0) * 2.0 * 1.5
+	assert_almost_eq(_p.stats.max_health, expected, 0.001, "base, force et implicite, doublés puis ×1,5")
+
+
+## Les nœuds pris survivent à un recalcul : tenus sur le joueur et non sur `stats`,
+## reconstruite de zéro à chaque équipement.
+func test_taken_nodes_survive_equipping() -> void:
+	_p.passive_tree = _small_tree()
+	_p.gain_xp(_p.xp_to_next)
+	_p.take_passive("strength")
 	_p.equip(Item.new(load("res://resources/items/breastplate.tres")))
 	_p.unequip("chest")
-	assert_eq(_p.stats.dexterity, 11.0, "le point placé est toujours là")
-	assert_eq(_p.stats.evasion, evasion_roll)
+	assert_eq(_p.stats.strength, 20.0, "le nœud pris est toujours là")
 
 
 ## L'ordre du recalcul : les attributs doivent être définitifs avant qu'on en
@@ -217,10 +265,11 @@ func test_a_percentage_also_multiplies_strength_hp() -> void:
 
 ## Monter la force relève le plafond de vie : la barre doit suivre, sinon elle
 ## affiche un maximum que le joueur n'a pas.
-func test_placing_a_point_does_not_break_the_bars() -> void:
+func test_taking_a_node_does_not_break_the_bars() -> void:
+	_p.passive_tree = _small_tree()
 	_p.gain_xp(_p.xp_to_next)
 	_p._set_health(10.0)
-	_p.spend_point("strength")
+	_p.take_passive("strength")
 	assert_eq(_p.health, 10.0, "la vie courante ne bouge pas")
 	assert_lt(_p.health, _p.stats.max_health, "mais le plafond a monté")
 
@@ -311,8 +360,8 @@ func test_health_never_exceeds_the_maximum() -> void:
 	_p.gain_xp(3000)
 	assert_lte(_p.health, _p.stats.max_health, "après plusieurs niveaux")
 
-	_p.spend_point("strength")
-	assert_lte(_p.health, _p.stats.max_health, "après un point de force")
+	_p.take_passive("str_1")
+	assert_lte(_p.health, _p.stats.max_health, "après un nœud de force")
 
 	_p.unequip("chest")
 	assert_lte(_p.health, _p.stats.max_health, "et après avoir retiré le plastron")

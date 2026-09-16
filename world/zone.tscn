@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="PackedScene" path="res://actors/player/player.tscn" id="2_player"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://ui/manual_panel.gd" id="11_manuels"]
 [ext_resource type="Script" path="res://ui/skill_bar_panel.gd" id="12_barre"]
 [ext_resource type="Script" path="res://ui/workbench_panel.gd" id="13_atelier"]
+[ext_resource type="Script" path="res://ui/passive_tree_panel.gd" id="14_tree"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -142,6 +143,13 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 8
 horizontal_alignment = 2
 modulate = Color(1, 1, 1, 0)
+
+[node name="PassiveTree" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("14_tree")
 
 [node name="Hud" type="Control" parent="UI"]
 anchors_preset = 15

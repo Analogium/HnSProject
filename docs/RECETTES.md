@@ -412,7 +412,7 @@ forme, même application, même façon de s'écrire à l'écran.
    | `name` | Ce que le joueur lit |
    | `required_manual_level` | À partir de quel niveau du livre la case s'ouvre |
    | `points_max` | Combien de points elle accepte. Un champ, contrairement à une compétence qui le déduit de sa table de dégâts |
-   | `lines` | Un `TalentLine` par effet : `stat`, `percentage`, `value_per_point`, et `value_max_per_point` pour une fourchette. `more` fait d'un pourcentage un « plus », qui multiplie après la somme des accrus : **réservé aux lignes `damage` des nœuds**, les passifs restent accrus (jalon 14) |
+   | `lines` | Un `TalentLine` par effet : `stat`, `percentage`, `value_per_point`, et `value_max_per_point` pour une fourchette. `more` fait d'un pourcentage un « plus », qui multiplie après la somme des accrus : **réservé aux lignes `damage` des nœuds et aux clés de voûte de l'arbre de passifs**, les passifs de manuel restent accrus (jalon 14) |
 
 2. **Ce qu'une ligne peut viser** — c'est la règle des affixes, à la lettre :
    - `scope` **vide** → un champ réel de `CharacterStats`, présent dans
@@ -437,6 +437,48 @@ et `test_a_passive_leaves_with_its_book`.
 
 **Et son nom anglais** dans `i18n/en.po`, plus la tenue de sa fiche dans les deux
 langues — `tests/integration/test_widths.gd`.
+
+---
+
+## Ajouter un nœud à l'arbre de passifs
+
+L'arbre est **un seul fichier**, `resources/passive_tree.tres` : un `PassiveTree` et ses
+`PassiveNode` en sous-ressources. Soixante nœuds liés se relisent mal dans
+l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
+
+1. **Une sous-ressource `PassiveNode`**, et sa référence dans le tableau `nodes` du
+   `[resource]`.
+
+   | Champ | À remplir |
+   |---|---|
+   | `id` | Unique, **définitif** — il part dans la liste des nœuds pris d'une sauvegarde (invariant 1) |
+   | `name` | Vide pour un petit nœud ; **obligatoire** pour un notable ou une clé de voûte, et traduit |
+   | `kind` | `1` petit (le défaut, qui ne s'écrit pas), `2` notable, `3` clé de voûte. `0` est le départ, **unique** |
+   | `position` | En cases de la grille (`PassiveTreePanel.UNIT` pixels chacune), le départ en `0, 0` ; l'intelligence vers le haut, la force en bas à gauche, la dextérité en bas à droite. Deux nœuds n'ont jamais la même case |
+   | `links` | Les identifiants voisins, **d'un seul côté** : `PassiveTree` rend le graphe symétrique |
+   | `lines` | Des `TalentLine`, pris une fois — `value_per_point` est la valeur du nœud. Les règles d'une ligne de passif de manuel (voir « Ajouter un passif »), plus `more` pour une clé de voûte. Pas de `damage` sans portée : la fiche n'a pas de champ de dégâts |
+
+2. **Le relier** : un nœud sans chemin vers le départ ne se prendra jamais.
+
+   **Son icône** se lit sur sa **première ligne** (`PassiveIcon.look_of()`) : une
+   statistique ou un mot-clé que `PassiveIcon.SHEET` et `SCOPED` ne connaissent pas
+   encore y demande une entrée — un masque de `MASKS` et une couleur.
+
+3. **Retirer ou renommer un nœud** efface ce nœud **et ceux qu'il reliait** chez tout
+   personnage qui l'avait pris (`PassiveTree.legal()`) : ne le faire qu'en le sachant.
+
+4. **Le banc** : un nœud qui change un chemin de `BenchProfiles.builds()` se vérifie
+   par `test_each_path_is_taken_in_full`, puis `tools/balance.sh calculation`.
+
+**Ce qui refusera un oubli** — `tests/unit/test_passive_tree.gd` :
+`test_the_content_ids_are_unique_and_one_start`, `test_each_link_targets_an_existing_node`,
+`test_each_node_is_reachable_from_the_start`, `test_two_nodes_never_share_a_place`,
+`test_each_line_targets_the_sheet_or_a_cast_number`, `test_each_notable_and_keystone_is_named`,
+`test_each_node_has_its_icon` ;
+`tests/unit/test_translations.gd` pour le nom.
+
+**Et son nom anglais** dans `i18n/en.po`, section « Arbre de passifs ». Puis
+`tools/catalog.sh`, qui liste l'arbre dans [CATALOGUE.md](CATALOGUE.md).
 
 ---
 
@@ -531,7 +573,7 @@ qu'au **premier lancement après la mise à jour**, sur les fichiers des joueurs
 3. **Ajouter l'ancien numéro à `READABLE_VERSIONS`**, et décider ce que devient un
    fichier de l'ancien format. Ne jamais deviner : les objets d'une v1 prennent
    le niveau 1 parce qu'on ne sait pas dans quelle zone ils sont tombés.
-4. **`tests/fixtures/personnage_v<N>.json`** — écrire à la main un fichier de
+4. **`tests/fixtures/character_v<N>.json`** — écrire à la main un fichier de
    référence du nouveau format, et **garder les anciens**.
 5. **Si une statistique disparaît**, les lignes d'objet qui la visent sont dans
    les fichiers des joueurs : les convertir dans `Character._current_line()`

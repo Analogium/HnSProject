@@ -25,8 +25,7 @@ func _played_character() -> Character:
 	var p := Character.create_new("Revenante", 2)
 	p.level = 5
 	p.experience = 33
-	p.unspent_points = 4
-	p.attributes["strength"] = 7
+	p.passives = PackedStringArray(["str_1", "str_2"])
 	p.bag.place(Item.new(ItemCatalog.by_id("sword"), [
 		StatMod.ranged("damage_physical", 3.0, 7.0, Keywords.ATTACK),
 	] as Array[StatMod]), Vector2i(4, 1))
@@ -45,8 +44,6 @@ func _played_character() -> Character:
 func test_a_character_reread_from_version_4_hits_as_before() -> void:
 	var dict := Character.create_new("Ancienne", 0).to_dict()
 	dict["version"] = 4
-	dict["attributes"]["strength"] = 4
-	dict["attributes"]["intelligence"] = 9
 	dict["equipment"] = {
 		"weapon": {"base": "sword", "level": 10, "affixes": [
 			{"stat": "attack_damage", "mode": 0, "value": 6.0, "affix": "sharp", "tier": 7},
@@ -56,6 +53,13 @@ func test_a_character_reread_from_version_4_hits_as_before() -> void:
 		]},
 	}
 	_p.load_character(Character.from_dict(JSON.parse_string(JSON.stringify(dict))))
+	# Mesuré avec 4 de force et 9 d'intelligence placés, abandonnés par la version 7
+	# (jalon 16) : ce retrait n'est pas la migration des objets, qui se juge sans lui.
+	var sheet := _p.base_stats.duplicate()
+	sheet.strength += 4.0
+	sheet.intelligence += 9.0
+	_p.base_stats = sheet
+	_p.recompute_stats()
 
 	# Trois points dans chaque compétence, un dans l'Attaque et le Trait : leur table
 	# n'en a qu'un. Au-delà, les niveaux en bonus la prolongent depuis le jalon 14,
@@ -83,24 +87,23 @@ func test_loading_sets_the_progression() -> void:
 	_p.load_character(_played_character())
 	assert_eq(_p.level, 5)
 	assert_eq(_p.xp, 33)
-	assert_eq(_p.unspent_points, 4)
-	assert_eq(_p.allocated["strength"], 7)
+	assert_eq(_p.passives, PackedStringArray(["str_1", "str_2"]))
+	assert_eq(_p.remaining_passive_points(), 2)
 	assert_eq(_p.xp_to_next, _p._needed_for(5), "le palier suit le niveau chargé")
 
 
-## La force chargée doit être **dans la fiche**, pas seulement dans le compteur
-## de points : c'est recompute_stats qui en dérive les PV, et l'oublier donnerait
-## un personnage de niveau 5 avec les points de vie d'un débutant.
+## La force des nœuds chargés doit être **dans la fiche**, pas seulement dans la liste :
+## c'est recompute_stats qui en dérive les PV, et l'oublier donnerait un personnage de
+## niveau 5 avec les points de vie d'un débutant.
 func test_loading_recomputes_the_sheet() -> void:
 	var bare := _p.stats.max_health
 	_p.load_character(_played_character())
-	# La fiche porte le **total** : la force de la fiche de départ plus les points
-	# placés. C'est la répartition seule qui est sauvegardée, pas ce total.
+	# La fiche porte le **total** ; seuls les nœuds pris sont sauvegardés.
 	assert_eq(
-		_p.stats.strength, _p.base_stats.strength + 7.0,
-		"la force de départ plus les sept points placés"
+		_p.stats.strength, _p.base_stats.strength + 10.0,
+		"la force de départ plus le nœud de force"
 	)
-	# 7 points de force et un plastron : les deux doivent se voir.
+	# Un nœud de force, un de PV et un plastron : les trois doivent se voir.
 	assert_gt(_p.stats.max_health, bare, "les PV ont suivi")
 	assert_eq(_p.health, _p.stats.max_health, "et on reprend en pleine santé")
 
@@ -140,16 +143,14 @@ func test_fill_returns_what_the_player_has_become() -> void:
 	var p := _played_character()
 	_p.load_character(p)
 	_p.gain_xp(2000)
-	_p.spend_point("dexterity")
+	_p.take_passive("dex_1")
 	_p.pick_up(Item.new(ItemCatalog.by_id("wand")))
 
 	var after := Character.create_new("empty", 0)
 	_p.fill(after)
 	assert_eq(after.level, _p.level, "le niveau gagné")
 	assert_eq(after.experience, _p.xp)
-	assert_eq(after.unspent_points, _p.unspent_points)
-	assert_eq(after.attributes["dexterity"], 1, "le point placé")
-	assert_eq(after.attributes["strength"], 7, "et ceux d'avant")
+	assert_eq(after.passives, PackedStringArray(["str_1", "str_2", "dex_1"]), "le nœud pris et ceux d'avant")
 	assert_eq(after.bag.placed.size(), 2, "l'épée chargée plus la baguette ramassée")
 	assert_eq(after.silhouette, 2)
 
@@ -169,11 +170,13 @@ func test_fill_writes_no_stat() -> void:
 	# le savoir. Ajouter une ligne ici doit rester un geste délibéré.
 	var expected_all := [
 		"version", "id", "name", "silhouette", "created_on", "played_on",
-		"level", "experience", "attributes", "unspent_points",
+		"level", "experience",
 		"bag", "equipment",
 		# Jalon 6 : ce qu'on étudie, ce qu'on a sous les doigts, et si le livre de
 		# départ a déjà été donné.
 		"rack", "bar", "manual_given",
+		# Jalon 16 : l'arbre de passifs.
+		"passives",
 	]
 	for key in expected_all:
 		assert_true(dict.has(key), "le champ « %s » a disparu du fichier" % key)

@@ -71,11 +71,12 @@ static var _cache: Array[Texture2D] = []
 static func texture(kind: int) -> Texture2D:
 	if _cache.is_empty():
 		for s in MASKS.size():
-			_cache.append(_paint(MASKS[s], StatusEffects.color(s)))
+			_cache.append(paint(MASKS[s], StatusEffects.color(s)))
 	return _cache[kind]
 
 
-static func _paint(mask: Array, color: Color) -> Texture2D:
+## Publique : les icônes de l'arbre de passifs se peignent de la même main.
+static func paint(mask: Array, color: Color) -> Texture2D:
 	var img := Image.create_empty(SIDE, SIDE, false, Image.FORMAT_RGBA8)
 	var glint := color.lightened(0.45)
 	for y in SIDE:

@@ -320,6 +320,58 @@ msgid "Endurance"
 msgstr "Endurance"
 
 # ---------------------------------------------------------------------------
+# Arbre de passifs
+#
+# Les notables et les clés de voûte, région par région : intelligence, force,
+# dextérité.
+# ---------------------------------------------------------------------------
+
+msgid "Brasier intérieur"
+msgstr "Inner Blaze"
+
+msgid "Foudre vive"
+msgstr "Quick Lightning"
+
+msgid "Puits de mana"
+msgstr "Mana Well"
+
+msgid "Savoir des arcanes"
+msgstr "Arcane Lore"
+
+msgid "Esprit d'orage"
+msgstr "Storm Mind"
+
+msgid "Force brute"
+msgstr "Brute Force"
+
+msgid "Peau de fer"
+msgstr "Iron Skin"
+
+msgid "Sang robuste"
+msgstr "Sturdy Blood"
+
+msgid "Maître d'armes"
+msgstr "Weapon Master"
+
+msgid "Colosse"
+msgstr "Colossus"
+
+msgid "Œil de lynx"
+msgstr "Lynx Eye"
+
+msgid "Vivacité"
+msgstr "Swiftness"
+
+msgid "Réflexes"
+msgstr "Reflexes"
+
+msgid "Tir précis"
+msgstr "Precise Shot"
+
+msgid "Œil du chasseur"
+msgstr "Hunter's Eye"
+
+# ---------------------------------------------------------------------------
 # Affixes d'élite
 # ---------------------------------------------------------------------------
 
@@ -776,9 +828,6 @@ msgstr "tiers unknown: picked up earlier"
 msgid "PERSONNAGE  —  NIV. %d"
 msgstr "CHARACTER  —  LV. %d"
 
-msgid "%d à placer"
-msgstr "%d to spend"
-
 msgid "C pour fermer"
 msgstr "C to close"
 
@@ -836,6 +885,14 @@ msgstr[1] "{points} points to spend"
 
 msgid "aucun point à placer"
 msgstr "no point to spend"
+
+msgid "ARBRE DE PASSIFS  —  {points} point restant"
+msgid_plural "ARBRE DE PASSIFS  —  {points} points restants"
+msgstr[0] "PASSIVE TREE  —  {points} point left"
+msgstr[1] "PASSIVE TREE  —  {points} points left"
+
+msgid "[clic] prendre     [clic droit] reprendre     [glisser] déplacer     P pour fermer"
+msgstr "[LMB] take     [RMB] release     [drag] move     P to close"
 
 msgid "niv. %d"
 msgstr "lv. %d"

@@ -247,4 +247,81 @@ Chaque étape se livre seule et passe la suite.
 
 ## 13. Ce qui a été fait, et comment
 
-*À remplir à la livraison.*
+Livré le 16 septembre 2026, les six étapes d'un bloc. Les deux détails du §9 ont pris
+la réponse par défaut : **P**, et **Colosse, Œil du chasseur, Esprit d'orage**.
+
+### Le modèle et le personnage
+
+- `core/passive_tree.gd` et `core/passive_node.gd`, comme au §2. Une fonction de plus :
+  `connected()`, le parcours en largeur que partagent `can_release()` et
+  `legal()` — ce qu'une sauvegarde peut porter : relié au départ, et **pas plus de
+  nœuds que de points**. Le §6 ne demandait que le premier ; le second coûte une ligne
+  (un préfixe d'un parcours en largeur reste relié) et ferme la même porte.
+- `Player.passive_tree` est une variable et non une constante : les tests d'intégration
+  y posent un arbre de trois nœuds.
+- La fiche ne prend plus jamais la souris : ses boutons, `Game.grab_ui_input` et la
+  mention « N à placer » sont partis. Le titre garde « (+N) ».
+- `CharacterStats.empty_attributes()` n'avait plus d'appelant : retiré.
+
+### Le contenu
+
+58 nœuds (15 par région, 4 de ceinture par intervalle, le départ), écrits par un script
+jetable qui place un gabarit de région sur trois axes. Petits nœuds, notables et clés
+de voûte comme au §5. Le notable de foudre s'appelle **Foudre vive** : « Haute
+tension » était déjà un nœud de talent, et `en.po` n'a qu'une entrée par texte.
+
+**Les clés de voûte portent un « plus » sur la fiche** (−20 % de PV atténués) : la
+règle du jalon 14, « le plus réservé aux lignes `damage` des nœuds », est élargie aux
+clés de voûte, et RECETTES le dit.
+
+### Le panneau
+
+Plein cadre, 10 pixels par case : l'arbre fait 38 cases de haut, presque tout tient à
+l'ouverture. Le clic gauche prend **au relâchement**, pour qu'un glissement ne prenne
+rien ; au-delà de 3 pixels, c'est un glissement. L'état « voisin sans point » (`WAIT`)
+est le même `can_take()` demandé avec un point de plus.
+
+Chaque nœud porte **un fond et une icône** lus sur sa première ligne
+(`art/passive_icon.gd`) : un masque 7×7 par famille — gemme d'attribut, cœur, goutte de
+mana, bouclier (armure, et résistances dans la couleur de leur nature), botte,
+sablier, étoile, épée, flèche, orbe, flamme, éclair — peint par `StatusIcon.paint()`.
+Le fond s'avive quand le nœud est pris, l'icône s'éteint hors d'atteinte ; le liseré
+garde l'état.
+
+Vérifié en capture réelle, fenêtré, en français et en anglais. **Les jauges du HUD
+passent par-dessus le bas de l'arbre** : elles sont dessinées après tous les panneaux
+(voir `Hud.gauges_top()`), l'infobulle les évite, et un glissement dégage les nœuds.
+
+### Le banc
+
+Les chemins sont dans `BenchProfiles.builds()`, et `test_each_path_is_taken_in_full`
+refuse un nœud du chemin qui ne se prendrait pas. Au-delà de leur longueur (34 et 30
+nœuds), les points restent non placés : le niveau 133 en a 132.
+
+| couloirs en échec | avant | après |
+|---|---|---|
+| Débutant en zone 1 | 2 | 2 |
+| Nu tendu dans sa zone | 12 | 9 |
+| Équipé sans mur | 6 | 4 |
+| Sur-équipé sans mur | 5 | 4 |
+| **total** | **25** | **19** |
+
+- **Attendu tenu** : plus aucun mur pour l'Équipé jusqu'à la zone 60 — le Sort Équipé
+  passe de 🟥 à 🟨 en zones 40 et 60 (3,20 → 1,66 coups ; 13,0 → 6,44).
+- **Limite annoncée, confirmée** : zones 90 et 120 en mur pour les deux builds. Le
+  Sort Équipé divise ses coups par deux (79,9 → 39,9 ; 327 → 163). La Mêlée Équipée
+  **perd** en zone 120 (159 → 173) : elle y portait 396 points de force, donc du
+  physique plat aux attaques, que l'arbre ne rend qu'en pourcentages (§3).
+- **Le Sort Nu reste un mur partout** après la zone 1, par la survie (0,6 à 2,2 s) : un
+  sort sans objet n'a ni PV ni armure, et l'Esprit d'orage lui retire 25 % d'armure.
+- La Mêlée Sur-équipée devient 🟦 triviale en zone 10 (0,28 coups).
+
+**Aucun chiffre de couloir n'a changé** (jalon 13, §4). La décision sur les couloirs
+de 90 et 120 reste à prendre, avec le jalon qui traitera ces zones.
+
+### Ce qui garde la porte
+
+Tout le §12, plus `tests/integration/test_passive_tree_panel.gd` (clic, glissement,
+clic droit sur la position dessinée) et `character_v7.json`. Le test de migration v4
+de `test_player_character.gd` rend à la main les attributs que la v7 abandonne : ses
+nombres mesurés jugent la conversion des objets, pas ce retrait.

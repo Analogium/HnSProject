@@ -7,8 +7,8 @@ signal health_changed(current: float, maximum: float)
 signal mana_changed(current: float, maximum: float)
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
-## Les points d'attribut non dépensés ont changé — gagnés ou placés.
-signal points_changed(remaining_all: int)
+## Un nœud de l'arbre pris ou repris, ou un point d'arbre gagné.
+signal passives_changed
 signal equipment_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -22,9 +22,6 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## progression à zéro.
 const XP_BASE := 40.0
 const XP_POWER := 1.5
-## Points d'attribut par niveau, et **rien d'autre** : la progression passe par une
-## grandeur que le joueur choisit.
-const POINTS_PER_LEVEL := 3
 ## Soin partiel à la montée : complet, on chercherait à monter au milieu d'un paquet.
 const LEVEL_HEAL := 0.30
 
@@ -68,9 +65,10 @@ var level := 1
 var xp := 0
 var xp_to_next := 40
 
-## Tenu ici : `stats` est reconstruite à chaque recalcul.
-var allocated := CharacterStats.empty_attributes()
-var unspent_points := 0
+## Partagé et jamais écrit ; une variable pour qu'un test y pose un petit arbre.
+var passive_tree := PassiveTree.shared()
+## Les nœuds pris, et rien d'autre : les points restants se déduisent du niveau.
+var passives := PackedStringArray()
 
 ## Le sac porte son propre signal `changed`.
 var inventory := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
@@ -466,8 +464,6 @@ func _regen(delta: float) -> void:
 ## Reconstruit la fiche **de zéro** : additionner compterait les bonus à chaque appel.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
-	for field in CharacterStats.ATTRIBUTES:
-		stats.set(field, float(stats.get(field)) + float(allocated[field]))
 
 	# Tous les objets d'un coup : les plats avant les pourcentages, quel que soit
 	# l'ordre d'équipement.
@@ -477,9 +473,11 @@ func recompute_stats() -> void:
 		if item != null:
 			mods.append_array(item.mods())
 
-	# Les passifs du râtelier, dans la même liste et le même tri que les objets.
+	# Les passifs du râtelier et de l'arbre, dans la même liste et le même tri que les
+	# objets.
 	for book in rack.equipped_items():
 		mods.append_array(book.passive_mods())
+	mods.append_array(passive_tree.mods(passives))
 
 	# En trois temps — attributs, dérivation, reste — pour que « +20 force » rapporte ses
 	# PV et que « +10 % PV » les multiplie. Ce qui vise un mot-clé part à part, pour le
@@ -523,9 +521,7 @@ func load_character(character: Character) -> void:
 	level = maxi(character.level, 1)
 	xp = character.experience
 	xp_to_next = _needed_for(level)
-	unspent_points = character.unspent_points
-	for field in CharacterStats.ATTRIBUTES:
-		allocated[field] = int(character.attributes.get(field, 0))
+	passives = character.passives.duplicate()
 
 	inventory.clear()
 	for placed in character.bag.placed:
@@ -555,7 +551,7 @@ func load_character(character: Character) -> void:
 
 	# Sans ces signaux, HUD et fiche attendraient le premier ennemi tué.
 	xp_changed.emit(xp, xp_to_next, level)
-	points_changed.emit(unspent_points)
+	passives_changed.emit()
 
 
 ## L'inverse, avant l'écriture : rien de calculé.
@@ -564,9 +560,7 @@ func fill(character: Character) -> void:
 		return
 	character.level = level
 	character.experience = xp
-	character.unspent_points = unspent_points
-	for field in CharacterStats.ATTRIBUTES:
-		character.attributes[field] = int(allocated[field])
+	character.passives = passives.duplicate()
 	character.silhouette = sprite.current_variant()
 
 	character.bag = Inventory.new(inventory.cols, inventory.rows)
@@ -651,19 +645,33 @@ func equipped(slot: String) -> Item:
 	return equipment.get(slot)
 
 
-## Place un point d'attribut, sans retour en arrière : une répartition défaisable serait
-## un réglage, pas un choix.
-func spend_point(attribute: String) -> bool:
-	if unspent_points <= 0 or not allocated.has(attribute):
+func remaining_passive_points() -> int:
+	return PassiveTree.remaining_points(passives, level)
+
+
+## Les deux seuls chemins de l'arbre ; les conditions sont dans `PassiveTree`.
+func take_passive(id: String) -> bool:
+	if not passive_tree.can_take(passives, id, level):
 		return false
-	allocated[attribute] += 1
-	unspent_points -= 1
+	passives.append(id)
+	_after_passives_change()
+	return true
+
+
+func release_passive(id: String) -> bool:
+	if not passive_tree.can_release(passives, id):
+		return false
+	passives.remove_at(passives.find(id))
+	_after_passives_change()
+	return true
+
+
+## Les plafonds ont bougé : un nœud de PV ou de mana les change.
+func _after_passives_change() -> void:
 	recompute_stats()
-	# Les plafonds ont bougé : force et intelligence montent PV et réserve.
 	_set_health(health)
 	_set_mana(mana)
-	points_changed.emit(unspent_points)
-	return true
+	passives_changed.emit()
 
 
 ## La fiche change, donc les plafonds : la vie courante redescend sous le nouveau. Un
@@ -716,9 +724,7 @@ func gain_xp(amount: int) -> void:
 func _level_up() -> void:
 	level += 1
 	xp_to_next = _needed_for(level)
-	unspent_points += POINTS_PER_LEVEL
-	points_changed.emit(unspent_points)
-	recompute_stats()
+	passives_changed.emit()
 	_set_health(health + stats.max_health * LEVEL_HEAL)
 	_set_mana(mana + stats.max_mana * LEVEL_HEAL)
 	leveled_up.emit(level)

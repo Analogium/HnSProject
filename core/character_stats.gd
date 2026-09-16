@@ -93,13 +93,6 @@ static func scale_to_level(stats: CharacterStats, level: int) -> void:
 const ATTRIBUTES := ["strength", "dexterity", "intelligence"]
 
 
-## Dérivée d'ATTRIBUTES : un attribut ajouté y apparaît sans qu'on y pense.
-static func empty_attributes() -> Dictionary:
-	var empty := {}
-	for field in ATTRIBUTES:
-		empty[field] = 0
-	return empty
-
 ## Chaque attribut gouverne une réserve et une cadence. À dix partout, le départ :
 ## +20 PV, +2 dégâts, 15 d'esquive, +15 mana, +4 % sur les deux cadences.
 const HEALTH_PER_STRENGTH := 2.0

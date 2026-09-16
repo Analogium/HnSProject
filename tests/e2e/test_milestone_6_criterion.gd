@@ -173,11 +173,12 @@ func test_the_milestone_6_criterion() -> void:
 	assert_eq(_zone.projectiles.get_child_count(), before + 1)
 
 	# --- « placer un point d'intelligence et voir le nombre monter » : la réserve, depuis
-	# que les compétences ne montent plus avec un attribut (15 septembre 2026) ---
+	# que les compétences ne montent plus avec un attribut (15 septembre 2026), par un
+	# nœud de l'arbre depuis le jalon 16 ---
 	var pool_before := player.stats.max_mana
-	player.unspent_points += 1
-	assert_true(player.spend_point("intelligence"))
-	assert_gt(player.stats.max_mana, pool_before, "un point d'intelligence nourrit la réserve")
+	player.level += 1
+	assert_true(player.take_passive("int_1"))
+	assert_gt(player.stats.max_mana, pool_before, "un nœud d'intelligence nourrit la réserve")
 
 	# --- « sortir le manuel du râtelier, le remettre » ---
 	var refunded := player.stop_studying(0)

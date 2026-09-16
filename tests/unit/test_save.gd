@@ -24,15 +24,13 @@ func _ornate_sword() -> Item:
 	] as Array[StatMod])
 
 
-## Un personnage qui a vécu : des niveaux, des points placés et d'autres en
+## Un personnage qui a vécu : des niveaux, un chemin dans l'arbre et des points en
 ## attente, trois objets rangés à des endroits choisis, un plastron sur le dos.
 func _played_character() -> Character:
 	var p := Character.create_new("Brenna", 2)
 	p.level = 7
 	p.experience = 240
-	p.attributes["strength"] = 8
-	p.attributes["intelligence"] = 6
-	p.unspent_points = 3
+	p.passives = PackedStringArray(["str_1", "str_2", "sturdy_blood"])
 	p.bag.place(_ornate_sword(), Vector2i(3, 1))
 	p.bag.place(Item.new(ItemCatalog.by_id("wand")), Vector2i(0, 0))
 	p.equipment["chest"] = Item.new(ItemCatalog.by_id("breastplate"), [
@@ -47,11 +45,9 @@ func test_a_new_character_starts_from_zero() -> void:
 	assert_eq(p.name, "Aldric")
 	assert_eq(p.level, 1)
 	assert_eq(p.experience, 0)
-	assert_eq(p.unspent_points, 0, "les points se gagnent en jouant, pas à la création")
+	assert_eq(p.passives.size(), 0, "l'arbre se prend en jouant, pas à la création")
 	assert_eq(p.bag.placed.size(), 0)
 	assert_eq(p.equipment.size(), 0)
-	for field in CharacterStats.ATTRIBUTES:
-		assert_eq(p.attributes[field], 0, "%s vierge" % field)
 
 
 ## Le nom ne fait pas l'identifiant : deux personnages peuvent s'appeler pareil,
@@ -72,9 +68,8 @@ func test_full_round_trip_through_json() -> void:
 	assert_eq(after.silhouette, 2)
 	assert_eq(after.level, 7, "un entier relu reste un entier")
 	assert_eq(after.experience, 240)
-	assert_eq(after.unspent_points, 3, "les points gagnés et non placés ne se perdent pas")
+	assert_eq(after.passives, before.passives, "les nœuds pris, dans leur ordre")
 	assert_eq(after.created_on, before.created_on)
-	assert_eq(after.attributes, before.attributes)
 	assert_eq(after.bag.placed.size(), 2)
 	assert_eq(after.equipment.size(), 1)
 
@@ -162,14 +157,14 @@ func test_a_character_with_nothing_reloads() -> void:
 	assert_eq(after.silhouette, 3)
 
 
-## On écrit ce que le joueur a **placé**, pas son total. Écrire le total figerait
-## les valeurs de départ du jour de la sauvegarde : un rééquilibrage de la fiche
-## de base n'atteindrait jamais les personnages existants.
-func test_the_distribution_is_saved_not_the_total() -> void:
-	var p := Character.create_new("Répartie", 0)
-	p.attributes["strength"] = 5
-	var dict := p.to_dict()
-	assert_eq(dict["attributes"]["strength"], 5, "les points placés, pas la force totale")
+## On écrit les nœuds pris, pas ce qu'ils donnent. Écrire le total figerait
+## l'équilibrage du jour de la sauvegarde : un rééquilibrage de l'arbre n'atteindrait
+## jamais les personnages existants.
+func test_the_taken_nodes_are_saved_not_the_total() -> void:
+	var dict := _played_character().to_dict()
+	assert_eq(dict["passives"], ["str_1", "str_2", "sturdy_blood"])
+	assert_false(dict.has("attributes"), "plus d'attributs placés")
+	assert_false(dict.has("unspent_points"), "les points restants se déduisent du niveau")
 	assert_false(dict.has("stats"), "aucune statistique calculée dans le fichier")
 	assert_false(dict.has("max_health"))
 
@@ -201,17 +196,34 @@ func test_an_item_whose_base_vanished_is_ignored() -> void:
 	assert_eq(after.equipment.size(), 0, "et le plastron inconnu n'est pas porté")
 
 
-## Un attribut ajouté au jeu après coup part de zéro au lieu de manquer, et un
-## nom inconnu dans le fichier n'entre pas dans la répartition.
-func test_attributes_are_reread_field_by_field() -> void:
+## Un nœud disparu de l'arbre est ignoré, comme une base d'objet disparue.
+func test_an_unknown_node_is_ignored() -> void:
 	var dict := _played_character().to_dict()
-	dict["attributes"].erase("dexterity")
-	dict["attributes"]["chance"] = 12
+	dict["passives"] = ["str_1", "vanished", "str_2"]
+	assert_eq(Character.from_dict(dict).passives, PackedStringArray(["str_1", "str_2"]))
 
-	var after := Character.from_dict(dict)
-	assert_eq(after.attributes["dexterity"], 0, "l'attribut absent repart de zéro")
-	assert_false(after.attributes.has("chance"), "et l'inconnu est écarté")
-	assert_eq(after.attributes.size(), CharacterStats.ATTRIBUTES.size())
+
+## Un nœud relu qui n'est plus relié au départ part avec ses suivants : une sauvegarde
+## ne contourne jamais la règle de prise.
+func test_an_orphan_node_is_removed_with_what_follows() -> void:
+	var dict := _played_character().to_dict()
+	dict["passives"] = ["str_2", "sturdy_blood", "dex_1"]
+	assert_eq(Character.from_dict(dict).passives, PackedStringArray(["dex_1"]))
+
+
+func test_no_more_nodes_than_points() -> void:
+	var dict := _played_character().to_dict()
+	dict["level"] = 2
+	assert_eq(Character.from_dict(dict).passives, PackedStringArray(["str_1"]))
+
+
+## Les attributs placés d'avant la v7 sont abandonnés : l'arbre est vide, tous les
+## points du niveau sont à placer.
+func test_a_v6_rereads_with_an_empty_tree() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v6.json"))
+	var p := Character.from_dict(content)
+	assert_eq(p.passives.size(), 0)
+	assert_eq(PassiveTree.remaining_points(p.passives, p.level), p.level - 1)
 
 
 func test_the_name_is_bounded_and_without_control_characters() -> void:
@@ -239,10 +251,7 @@ func test_the_reference_file_rereads() -> void:
 	assert_eq(p.level, 7)
 	assert_eq(p.experience, 240)
 	assert_eq(p.silhouette, 2)
-	assert_eq(p.unspent_points, 3)
-	assert_eq(p.attributes["strength"], 8)
-	assert_eq(p.attributes["dexterity"], 4)
-	assert_eq(p.attributes["intelligence"], 6)
+	assert_eq(p.passives.size(), 0, "les attributs placés sont abandonnés")
 	assert_eq(p.bag.placed.size(), 2, "l'épée et la baguette")
 	assert_ne(p.bag.index_at(Vector2i(3, 1)), Inventory.EMPTY, "l'épée à sa place")
 	assert_eq(p.equipment["chest"].base.id, "breastplate")
@@ -426,8 +435,7 @@ func test_a_vanished_skill_leaves_its_slot_empty() -> void:
 ## connaîtrait que les compétences les jetterait en silence, au premier
 ## rechargement, sur des fichiers intacts — et rien ne le dirait.
 ##
-## Aucun champ neuf pour autant : **pas de version 6**, et c'est ce que la
-## première assertion vérifie.
+## Aucun champ neuf pour autant, et c'est ce que la première assertion vérifie.
 func test_passive_and_node_points_survive_the_round_trip() -> void:
 	var p := Character.create_new("Talentueuse", 0)
 	var book := Item.new(ItemCatalog.by_id("manual_lightning"), [], 30)
@@ -438,7 +446,7 @@ func test_passive_and_node_points_survive_the_round_trip() -> void:
 	p.rack.put(0, book)
 
 	var source := p.to_dict()
-	assert_eq(int(source["version"]), 6, "le format n'a pas changé de numéro")
+	assert_eq(source["rack"][0]["manual"].keys(), ["exp", "points"], "le même dictionnaire, aucun champ neuf")
 
 	var reread := Character.from_dict(source)
 	assert_not_null(reread)
@@ -651,6 +659,14 @@ func test_the_v6_reference_file_rereads() -> void:
 	assert_eq(p.equipment["weapon"].base.id, "sword")
 	assert_eq(p.rack.at(0).manual.points["swift_bolt"], 4)
 	assert_eq(p.bar.id_of(2), "swift_bolt")
+
+
+func test_the_v7_reference_file_rereads() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v7.json"))
+	var p := Character.from_dict(content)
+	assert_not_null(p, "une sauvegarde de version 7 se lit")
+	assert_eq(p.passives, PackedStringArray(["int_1", "int_2", "int_4", "quick_lightning"]))
+	assert_eq(p.rack.at(0).manual.points["swift_bolt"], 4)
 
 
 ## La v5 et la v6 disent la même chose, l'une aux noms français, l'autre aux noms

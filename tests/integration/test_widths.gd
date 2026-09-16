@@ -48,9 +48,6 @@ func before_each() -> void:
 		for i in skill.points_max():
 			book.manual.invest(book.base.manual, skill.id)
 	_player.study(book)
-	# Des points à placer : la fiche de personnage réserve alors la place d'un
-	# bouton sur chaque ligne d'attribut, et c'est le cas le plus serré.
-	_player.unspent_points = 3
 
 
 ## Le filet du §9 : un test qui laisse le jeu en anglais fait échouer les suivants
@@ -140,19 +137,13 @@ func test_the_character_sheet_fits_in_both_languages() -> void:
 			Texts.t("C pour fermer"), width, StatsPanel.FONT_SIZE, "%s : l'aide" % language
 		)
 		for group in StatsPanel.GROUPS:
-			# Le titre du groupe et le compte des points à placer se partagent la
-			# ligne, l'un à gauche et l'autre à droite.
-			_fit_together(
-				Texts.t(group[0]), Texts.t("%d à placer") % _player.unspent_points,
-				width, StatsPanel.FONT_SIZE, "%s : le titre « %s »" % [language, group[0]]
+			_fits(
+				Texts.t(group[0]), width, StatsPanel.FONT_SIZE,
+				"%s : le titre « %s »" % [language, group[0]]
 			)
 			for field in group[1]:
-				# Les lignes d'attribut laissent la place du bouton « + ».
-				var place := width
-				if field in CharacterStats.ATTRIBUTES:
-					place -= StatsPanel.BUTTON_W + 3.0
 				_fit_together(
-					_char._label_of(field), _char._value_of(field), place,
+					_char._label_of(field), _char._value_of(field), width,
 					StatsPanel.FONT_SIZE, "%s : la ligne « %s »" % [language, field]
 				)
 

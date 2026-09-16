@@ -46,14 +46,22 @@ func test_escape_closes_open_panels_without_opening_the_menu() -> void:
 	assert_false(Game.ui_grabs_input, "et la souris est rendue au jeu")
 
 
-## La fiche ne prend la souris qu'avec des points à placer : c'est la visibilité qui
-## compte, sinon Échap la laisserait ouverte.
-func test_escape_closes_the_sheet_even_without_points_to_spend() -> void:
-	_zone.player.unspent_points = 0
+## La fiche ne prend jamais la souris : c'est la visibilité qui compte, sinon Échap la
+## laisserait ouverte.
+func test_escape_closes_the_sheet() -> void:
 	_zone.stats_panel.toggle()
 	_escape()
 	assert_false(_zone.stats_panel.visible)
 	assert_false(_menu.root.visible)
+
+
+func test_escape_closes_the_passive_tree() -> void:
+	_zone.passive_tree.toggle()
+	assert_true(Game.ui_grabs_input, "l'arbre prend la souris")
+	_escape()
+	assert_false(_zone.passive_tree.visible)
+	assert_false(_menu.root.visible, "sans ouvrir le menu")
+	assert_false(Game.ui_grabs_input, "et la rend")
 
 
 func test_escape_without_panel_opens_the_menu() -> void:

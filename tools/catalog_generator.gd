@@ -21,6 +21,7 @@ func _ready() -> void:
 	_header(l)
 	_bases(l)
 	_manuals(l)
+	_passive_tree(l)
 	_affixes(l)
 	_scales(l)
 
@@ -165,6 +166,29 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 		l.append_array(lines)
 		l.append("")
 	l.append("%d destinations de points pour %d gagnés." % [budget, Manual.MAX_LEVEL])
+	l.append("")
+
+
+func _passive_tree(l: PackedStringArray) -> void:
+	var tree := PassiveTree.shared()
+	l.append("## Arbre de passifs")
+	l.append("")
+	l.append("Un point par niveau après le premier (`PassiveTree.points_gained()`), %d nœuds" % tree.nodes.size())
+	l.append("hors du départ. Un nœud se prend voisin d'un nœud pris, se reprend tant qu'il ne")
+	l.append("coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.")
+	l.append("")
+	l.append("| nœud | sorte | case | voisins | effet |")
+	l.append("|---|---|---|---|---|")
+	for n in tree.nodes:
+		if n.kind == PassiveNode.Kind.START:
+			continue
+		l.append("| %s | %s | %d, %d | %s | %s |" % [
+			n.id if n.name.is_empty() else "**%s** `%s`" % [n.name, n.id],
+			String(PassiveNode.Kind.keys()[n.kind]).to_lower(),
+			n.position.x, n.position.y,
+			", ".join(tree.neighbors(n.id)),
+			_per_point(n.lines),
+		])
 	l.append("")
 
 

@@ -61,7 +61,7 @@ func test_the_milestone_criterion() -> void:
 	var refunded := await _recast()
 
 	assert_eq(refunded.level, level, "le niveau est là")
-	assert_eq(refunded.unspent_points, _zone.player.unspent_points, "et les points à placer")
+	assert_eq(refunded.remaining_passive_points(), _zone.player.remaining_passive_points(), "et les points d'arbre")
 	assert_eq(refunded.inventory.placed.size(), 1, "le plastron est dans le sac")
 	assert_eq(refunded.inventory.placed[0].data.base.id, "breastplate")
 	assert_almost_eq(

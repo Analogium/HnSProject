@@ -30,6 +30,7 @@ const PACK_MIN_TILES := 3
 @onready var inventory: InventoryPanel = $UI/Inventory
 @onready var stats_panel: StatsPanel = $UI/Stats
 @onready var manuals: ManualPanel = $UI/Manuals
+@onready var passive_tree: PassiveTreePanel = $UI/PassiveTree
 @onready var bar: SkillBarPanel = $UI/Bar
 ## Outil de réglage, à retirer avant publication : il tient en trois
 ## attaches — ce nœud, la touche B, et le branchement de `drop_requested`.
@@ -86,6 +87,7 @@ func _ready() -> void:
 	inventory.drop_requested.connect(_on_item_dropped)
 	stats_panel.bind(player)
 	manuals.bind(player)
+	passive_tree.bind(player)
 	bar.bind(player)
 	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
 	# qu'on jette : un seul chemin pour poser un objet au sol.
@@ -218,11 +220,11 @@ func _input(event: InputEvent) -> void:
 
 
 ## Ferme tout ce qui est ouvert, et dit si quelque chose l'était. Par la visibilité
-## et non par `Game.ui_grabs_input` : la fiche de personnage ne prend la souris
-## que lorsqu'elle a des points à placer, et Échap la laisserait ouverte.
+## et non par `Game.ui_grabs_input` : la fiche de personnage ne prend jamais la
+## souris, et Échap la laisserait ouverte.
 func close_interfaces() -> bool:
 	var closed := false
-	for panel: Control in [inventory, stats_panel, manuals, workbench]:
+	for panel: Control in [inventory, stats_panel, manuals, passive_tree, workbench]:
 		if panel.visible:
 			panel.toggle()
 			closed = true
@@ -254,6 +256,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_I: inventory.toggle()
 		KEY_C: stats_panel.toggle()
 		KEY_M: manuals.toggle()
+		KEY_P: passive_tree.toggle()
 		# **Pas une touche de fonction.** F5, F6, F7 et F8 sont les raccourcis de
 		# la barre d'exécution de l'éditeur — lancer, lancer la scène, pause,
 		# arrêter — et depuis Godot 4.4 la fenêtre de jeu est intégrée à

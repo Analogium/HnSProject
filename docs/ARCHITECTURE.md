@@ -36,7 +36,7 @@ en PNG, retouchables dans un éditeur d'image.
 | `fx/` | Le retour visuel des coups. | `core/` |
 | `tests/` | La campagne GUT — voir [tests/README.md](../tests/README.md). | tout |
 | `tools/` | Les outils hors jeu : génération de la documentation, banc d'équilibrage. | tout |
-| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels, compétences, passifs et arbres de talents**. | — |
+| `resources/` | Les `.tres` : bases d'objets, affixes, fiches d'archétypes, **manuels, compétences, passifs et arbres de talents**, l'arbre de passifs (`passive_tree.tres`). | — |
 
 **Le sens de circulation ne s'inverse jamais.** `core/` ne remonte pas vers une
 scène, un nœud ou un panneau. C'est ce qui permet à la moitié de la campagne de
@@ -102,7 +102,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quels mots-clés porte une compétence ? | `Skill.keywords()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `Keywords`. Ceux d'un **lancer** sont dans `SkillStats.keywords`, nœuds d'arbre compris |
 | Dans quel ordre se lisent-ils ? | `Keywords.sort_in_order()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
 | Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.scope` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `skill_mods`, avec la force changée en dégâts physiques aux attaques |
-| Comment des pourcentages se combinent-ils ? | `StatMod.apply()` pour la fiche et les nombres d'un lancer, `Skill.resolve()` pour ses dégâts : plats, puis **la somme des accrus** (`Mode.PERCENT`) d'un champ, puis **chaque « plus »** (`Mode.MORE`) à la suite. Les affixes et les passifs donnent de l'accru ; le « plus » vient d'une `TalentLine.more`, aujourd'hui les lignes `damage` des nœuds de talent. `SkillStats.increased` et `more` gardent les deux facteurs pour la page du manuel |
+| Comment des pourcentages se combinent-ils ? | `StatMod.apply()` pour la fiche et les nombres d'un lancer, `Skill.resolve()` pour ses dégâts : plats, puis **la somme des accrus** (`Mode.PERCENT`) d'un champ, puis **chaque « plus »** (`Mode.MORE`) à la suite. Les affixes et les passifs de manuel donnent de l'accru ; le « plus » vient d'une `TalentLine.more` : les lignes `damage` des nœuds de talent et les clés de voûte de l'arbre de passifs. `SkillStats.increased` et `more` gardent les deux facteurs pour la page du manuel |
 | Comment s'écrit un pourcentage ? | `StatMod.label()` : « +10 % d'armure **accrue** » — valeur, nom, **terme**, complément (« contre les embrasés », « (Sort) »). Le terme dit le calcul et le sens (`StatMod.term_of()` : accru, réduit, amplifié, atténué) et s'accorde par `StatMod.AGREEMENT` / `SkillStats.AGREEMENT`. Une ligne de fiche nommée par son terme : `StatMod.term_label()` |
 | Comment un terme du glossaire s'écrit-il ? | `Glossary.term()` **seulement** : le mot accordé et traduit, entouré d'une marque invisible (`Glossary.START`…`END`). Aucune clé de `en.po` n'en contient. `Glossary.plain()` la retire pour ce qui ne se dessine pas en jeu (catalogue, forge, messages de test) |
 | Qui dessine une ligne qui peut porter un terme ? | `RichText` — `draw()`, `draw_right()`, `width()`, `fold()` : le terme en gras (la police épaissie), la marque sans largeur. **Toute mesure d'une telle ligne passe par lui**, `test_widths` compris |
@@ -111,7 +111,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Que pose un lancer dans le monde ? | `Skill.shape`, lue par `Player.cast_slot()` **sur la compétence** : aucun nœud ne la change. Elle porte le comportement et le dessin ensemble, et `projectile` s'en déduit |
 | Combien de coups porte un lancer, si tout touche ? | `SkillStats.average_per_cast()` : projectiles × cibles × coups de la forme × `strikes_over_duration()` — **la fonction même qui compte les impulsions du nuage**. Une aura n'a que `average_per_second()` |
 | Quels chiffres de dégâts s'affichent ? | `Settings.shows_damage()`, lue par `HitFeedback` pour le coup, l'esquive et la brûlure : une case pour ce que subit le joueur, une pour ce que subissent les ennemis. Le chiffre seulement — la gerbe d'éclats reste |
-| Que ferme Échap ? | `Zone.close_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend qu'avec des points à placer |
+| Que ferme Échap ? | `Zone.close_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, arbre de passifs, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend jamais |
 | Qu'est-ce qu'on peut lancer ? | `Player.cast_slot()`, qui porte les cinq refus — case vide, non apprise, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
 | Qui atteint un coup qui ne naît pas d'une collision ? | `Targets.in_circle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
 | Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
@@ -126,7 +126,11 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Où un manuel apprend-il ? | Au râtelier seulement, par `Player.reward()` — le chemin d'une mort **et** d'une boule d'expérience de l'établi, avec le retard sur la zone |
 | Que porte une case de manuel ? | `ManualCell` : une compétence **ou** un passif — jamais les deux —, sa position, et l'arbre de talents de la première |
 | D'où viennent les talents d'un lancer ? | `Player.talents_of()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Skill.resolve()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
-| Ce qu'un passif change, et quand ? | `Manual.passive_mods()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
+| D'où viennent les attributs placés ? | De l'**arbre de passifs** seulement, avec les objets et les passifs de manuel : plus aucun point d'attribut. `PassiveTree.mods()` des nœuds pris (`Player.passives`), versé par `Player.recompute_stats()` dans **la même liste** que les objets — attributs avant la dérivation, mots-clés dans `skill_mods` |
+| Combien de points d'arbre ? | `PassiveTree.points_gained()` : niveau − 1, **déduit**, jamais retenu ; les restants, `remaining_points()` |
+| Peut-on prendre un nœud de l'arbre, le reprendre ? | `PassiveTree.can_take()` — un point restant, voisin d'un nœud pris ou du départ — et `can_release()` — **tous les autres nœuds pris restent reliés au départ** sans lui, par `connected()`. Gratuit. Le panneau (P) n'en vérifie aucune ; `Player.take_passive()` / `release_passive()` sont les seuls chemins |
+| Ce qu'une sauvegarde peut porter dans l'arbre ? | `PassiveTree.legal()`, à la relecture : les identifiants inconnus et les nœuds coupés du départ sont retirés, et pas plus de nœuds que de points |
+| Ce qu'un passif de manuel change, et quand ? | `Manual.passive_mods()`, versé par `Player.recompute_stats()` dans **la même liste** que les objets portés — donc trié par la même règle entre la fiche et les mots-clés. Seulement au râtelier : un livre du sac ne donne rien |
 | Peut-on placer un point ? | `Manual.can_invest()`, pour les trois sortes de destination. `is_open()` porte les conditions **structurelles** seules, pour que la page distingue « verrouillé » de « plus de point à placer » |
 | Peut-on le reprendre ? | `Manual.can_refund()`, pour les trois sortes : pas un nœud sous un enfant qui porte des points, pas une compétence sous les points qu'un de ses nœuds investis demande. `Player.refund()` vide la barre d'une compétence retombée à zéro |
 | Où convertit-on des dégâts ? | `SkillStats.apply_conversion()`, appelée par `resolve()` **après les fourchettes ajoutées**, sur **toutes les natures** du coup : entière, il n'en reste qu'une, donc qu'un état possible. `conversions` en garde la part pour la fiche |
@@ -150,7 +154,8 @@ identifiants de `Keywords` — la portée d'un affixe en nomme un —, ceux de
 `StatusEffects.IDS` — le nom des dégâts contre un état, `damage_vs_ignite` —, ceux
 de `Skill`, `Passive` et `TalentNode` — les trois partagent le
 dictionnaire de points d'un manuel, et **deux identiques dans un même livre
-partageraient un compteur** —, l'entier de `StatMod.Mode` — une valeur ne s'ajoute
+partageraient un compteur** —, ceux de `PassiveNode` — la liste des nœuds pris
+d'un personnage —, l'entier de `StatMod.Mode` — une valeur ne s'ajoute
 qu'à la fin — et les noms de champs de `Character.to_dict()`
 sont **dans les sauvegardes des joueurs**.
 Renommer `chest` en `torso` fait disparaître le plastron de tout le monde — au
@@ -238,6 +243,7 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | La recherche des cibles d'un coup sans collision | `Targets.in_circle()` |
 | La résolution d'un lancer | `Player.resolve()` — le lancer et la fiche du manuel |
 | Le placement d'un point de manuel | `Player.invest()` / `refund()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
+| La prise d'un nœud de l'arbre de passifs | `Player.take_passive()` / `release_passive()`, pour la même raison |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
 | Le retour visuel d'un coup | `HitFeedback.current` |
 | Le tirage pondéré | `WeightedRoll.weighted()` |
@@ -297,7 +303,7 @@ ailleurs, une petite classe nommée.
 | `art/forge_gallery.tscn` | Juger les sprites, et la fiche d'une base d'objet | `F4` |
 | `world/stress_test.tscn` | Banc de mesure | `F6` |
 
-Dans la zone : `I` sac, `C` fiche, `M` manuels, `TAB` carte, `H` bandeau,
+Dans la zone : `I` sac, `C` fiche, `M` manuels, `P` arbre de passifs, `TAB` carte, `H` bandeau,
 `F5` nouvelle zone, `G` paquet, `K` tout tuer, `Page haut/bas` niveau de la
 prochaine zone, `Échap` ferme ce qui est ouvert, puis ouvre le menu et la
 sauvegarde. Les cinq cases de la barre se lancent par `skill_1` à `skill_5` — clic gauche, clic droit, `A`, `R`,
@@ -311,11 +317,16 @@ Un fichier JSON par personnage dans `user://characters/`, plus
 `user://settings.json` pour les réglages de la machine.
 
 Rien de **calculé** n'est écrit : ni PV, ni statistiques, ni états. Elles se reconstruisent
-à partir de la fiche de base, des attributs placés et de l'équipement. Les
+à partir de la fiche de base, des nœuds pris de l'arbre et de l'équipement. Les
 écrire créerait une seconde vérité qui figerait l'équilibrage du jour de la
 sauvegarde, et un rééquilibrage n'atteindrait jamais les personnages existants.
 
-Les points d'un passif et d'un nœud d'arbre voyagent dans le **même**
+L'arbre de passifs s'écrit en **liste d'identifiants** (`passives`, version 7), jamais
+en points : les restants se déduisent du niveau. Les attributs placés des versions 1
+à 6 sont **abandonnés** à la relecture, sans conversion — trois points libres n'ont
+pas d'équivalent juste en nœuds — et le joueur retrouve ses niveau − 1 points.
+
+Les points d'un passif et d'un nœud de talent voyagent dans le **même**
 dictionnaire que ceux des cases (`manual.points`) : le jalon 10 n'a donc ajouté
 aucun champ, et aucun numéro de version. En revanche, la relecture demande à
 l'archétype s'il **connaît** l'identifiant (`ManualArchetype.knows`) et non

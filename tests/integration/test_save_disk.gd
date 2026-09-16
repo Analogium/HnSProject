@@ -33,8 +33,7 @@ func _played_character() -> Character:
 	var p := Character.create_new(NAME, 1)
 	p.level = 4
 	p.experience = 90
-	p.attributes["dexterity"] = 6
-	p.unspent_points = 2
+	p.passives = PackedStringArray(["dex_1", "dex_2"])
 	p.bag.place(Item.new(ItemCatalog.by_id("sword"), [
 		StatMod.ranged("damage_physical", 3.0, 7.0, Keywords.ATTACK),
 	] as Array[StatMod]), Vector2i(2, 0))
@@ -52,8 +51,7 @@ func test_write_then_reread_gives_the_same_character() -> void:
 	assert_eq(after.name, NAME)
 	assert_eq(after.level, 4)
 	assert_eq(after.experience, 90)
-	assert_eq(after.attributes["dexterity"], 6)
-	assert_eq(after.unspent_points, 2)
+	assert_eq(after.passives, PackedStringArray(["dex_1", "dex_2"]))
 	assert_eq(after.bag.placed.size(), 1)
 	assert_eq(after.bag.placed[0].cell, Vector2i(2, 0))
 	assert_eq(after.equipment["chest"].base.id, "breastplate")

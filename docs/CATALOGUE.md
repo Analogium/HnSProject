@@ -147,6 +147,72 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 38 destinations de points pour 20 gagnés.
 
+## Arbre de passifs
+
+Un point par niveau après le premier (`PassiveTree.points_gained()`), 58 nœuds
+hors du départ. Un nœud se prend voisin d'un nœud pris, se reprend tant qu'il ne
+coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
+
+| nœud | sorte | case | voisins | effet |
+|---|---|---|---|---|
+| int_1 | small | 0, -3 | start, int_2 | +10 intelligence |
+| int_2 | small | 0, -6 | int_1, int_3, int_4, mana_well | +8 % de mana accru |
+| int_3 | small | -3, -7 | int_2, inner_blaze, belt_west_1 | +8 % de dégâts accrus (Sort) |
+| int_4 | small | 3, -7 | int_2, quick_lightning, belt_east_4 | +4 % de vitesse d'incantation accrue |
+| **Brasier intérieur** `inner_blaze` | notable | -4, -10 | int_3, int_5 | +20 % de dégâts accrus (Feu) · +10 intelligence |
+| **Foudre vive** `quick_lightning` | notable | 4, -10 | int_4, int_6 | +20 % de dégâts accrus (Foudre) · +6 % de vitesse d'incantation accrue |
+| int_5 | small | -3, -13 | inner_blaze, int_7 | +8 % de dégâts accrus (Sort) |
+| int_6 | small | 3, -13 | quick_lightning, int_7 | +4 % de vitesse d'incantation accrue |
+| int_7 | small | 0, -14 | int_5, int_6, int_8, int_9 | +10 intelligence |
+| **Puits de mana** `mana_well` | notable | 0, -8 | int_2 | +20 % de mana accru · +3 mana/s |
+| int_8 | small | -3, -15 | int_7, arcane_lore | +8 % de mana accru |
+| int_9 | small | 3, -15 | int_7, arcane_lore | +10 intelligence |
+| **Savoir des arcanes** `arcane_lore` | notable | 0, -17 | int_8, int_9, int_10 | +20 % de dégâts accrus (Sort) · +10 intelligence |
+| int_10 | small | 0, -20 | arcane_lore, storm_mind | +8 % de dégâts accrus (Sort) |
+| **Esprit d'orage** `storm_mind` | keystone | 0, -22 | int_10 | +30 % de dégâts amplifiés (Sort) · -25 % d'armure réduite |
+| str_1 | small | -2, 2 | start, str_2 | +10 force |
+| str_2 | small | -4, 4 | str_1, str_3, str_4, sturdy_blood | +8 % de PV accrus |
+| str_3 | small | -7, 3 | str_2, brute_force, belt_west_4 | +8 % de dégâts accrus (Attaque) |
+| str_4 | small | -3, 7 | str_2, iron_skin | +10 % d'armure accrue |
+| **Force brute** `brute_force` | notable | -10, 4 | str_3, str_5 | +16 % de dégâts accrus (Attaque) · +10 % de PV accrus |
+| **Peau de fer** `iron_skin` | notable | -4, 10 | str_4, str_6 | +25 % d'armure accrue · +2 PV/s |
+| str_5 | small | -11, 7 | brute_force, str_7 | +8 % de dégâts accrus (Attaque) |
+| str_6 | small | -7, 11 | iron_skin, str_7, belt_south_1 | +10 % d'armure accrue |
+| str_7 | small | -10, 10 | str_5, str_6, str_8, str_9 | +10 force |
+| **Sang robuste** `sturdy_blood` | notable | -6, 6 | str_2 | +15 % de PV accrus · +3 PV/s |
+| str_8 | small | -13, 9 | str_7, weapon_master | +8 % de PV accrus |
+| str_9 | small | -9, 13 | str_7, weapon_master | +10 force |
+| **Maître d'armes** `weapon_master` | notable | -12, 12 | str_8, str_9, str_10 | +20 % de dégâts accrus (Attaque) · +8 % de vitesse d'attaque accrue |
+| str_10 | small | -14, 14 | weapon_master, colossus | +8 % de dégâts accrus (Attaque) |
+| **Colosse** `colossus` | keystone | -16, 16 | str_10 | +25 % de dégâts amplifiés (Attaque) · -15 % de vitesse d'attaque réduite |
+| dex_1 | small | 2, 2 | start, dex_2 | +10 dextérité |
+| dex_2 | small | 4, 4 | dex_1, dex_3, dex_4, reflexes | +8 % d'esquive accrue |
+| dex_3 | small | 3, 7 | dex_2, lynx_eye | +8 % de dégâts accrus (Projectile) |
+| dex_4 | small | 7, 3 | dex_2, swiftness, belt_east_1 | +4 % de vitesse d'attaque accrue |
+| **Œil de lynx** `lynx_eye` | notable | 4, 10 | dex_3, dex_5 | +3 % chance critique · +30 % dégâts critiques |
+| **Vivacité** `swiftness` | notable | 10, 4 | dex_4, dex_6 | +8 % de vitesse d'attaque accrue · +4 % de vitesse accrue |
+| dex_5 | small | 7, 11 | lynx_eye, dex_7, belt_south_4 | +8 % de dégâts accrus (Projectile) |
+| dex_6 | small | 11, 7 | swiftness, dex_7 | +4 % de vitesse d'attaque accrue |
+| dex_7 | small | 10, 10 | dex_5, dex_6, dex_8, dex_9 | +10 dextérité |
+| **Réflexes** `reflexes` | notable | 6, 6 | dex_2 | +25 % d'esquive accrue · +3 % de vitesse accrue |
+| dex_8 | small | 9, 13 | dex_7, precise_shot | +8 % d'esquive accrue |
+| dex_9 | small | 13, 9 | dex_7, precise_shot | +10 dextérité |
+| **Tir précis** `precise_shot` | notable | 12, 12 | dex_8, dex_9, dex_10 | +20 % de dégâts accrus (Projectile) · +2 % chance critique |
+| dex_10 | small | 14, 14 | precise_shot, hunter_eye | +8 % de dégâts accrus (Projectile) |
+| **Œil du chasseur** `hunter_eye` | keystone | 16, 16 | dex_10 | +25 % de dégâts amplifiés (Projectile) · -20 % de PV atténués |
+| belt_west_1 | small | -5, -6 | int_3, belt_west_2 | +8 % rés. feu |
+| belt_west_2 | small | -7, -4 | belt_west_1, belt_west_3 | +1 % chance critique |
+| belt_west_3 | small | -8, -1 | belt_west_2, belt_west_4 | +8 % rés. froid |
+| belt_west_4 | small | -8, 1 | belt_west_3, str_3 | +3 % de vitesse accrue |
+| belt_south_1 | small | -5, 12 | str_6, belt_south_2 | +8 % rés. nécrotique |
+| belt_south_2 | small | -2, 13 | belt_south_1, belt_south_3 | +3 % de vitesse accrue |
+| belt_south_3 | small | 2, 13 | belt_south_2, belt_south_4 | +1 % chance critique |
+| belt_south_4 | small | 5, 12 | belt_south_3, dex_5 | +8 % rés. sacré |
+| belt_east_1 | small | 8, 1 | dex_4, belt_east_2 | +8 % rés. foudre |
+| belt_east_2 | small | 8, -1 | belt_east_1, belt_east_3 | +1 % chance critique |
+| belt_east_3 | small | 7, -4 | belt_east_2, belt_east_4 | +8 % rés. froid |
+| belt_east_4 | small | 5, -6 | belt_east_3, int_4 | +3 % de vitesse accrue |
+
 ## Affixes d'objets
 
 `vise` vide veut dire « partout », sous réserve d'`interdit`, qui l'emporte.

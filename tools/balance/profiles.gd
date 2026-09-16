@@ -31,7 +31,8 @@ class Build:
 	var id: String
 	var name: String
 	var manual: String
-	var attribute: String
+	## Les nœuds de l'arbre de passifs, pris dans l'ordre tant qu'il reste des points.
+	var path: PackedStringArray
 	## Où vont les points du manuel, chaque entrée remplie avant la suivante. Les
 	## compétences y forment la barre, dans cet ordre.
 	var order: PackedStringArray
@@ -39,13 +40,13 @@ class Build:
 	var excluded_one: String
 
 	func _init(
-		p_id: String, p_name: String, p_manual: String, p_attribute: String,
+		p_id: String, p_name: String, p_manual: String, p_path: PackedStringArray,
 		p_order: PackedStringArray, p_excluded: String
 	) -> void:
 		id = p_id
 		name = p_name
 		manual = p_manual
-		attribute = p_attribute
+		path = p_path
 		order = p_order
 		excluded_one = p_excluded
 
@@ -64,11 +65,28 @@ static var _rolls: Array[RolledAffixes] = []
 ## qu'un débutant ait de quoi lancer.
 static func builds() -> Array[Build]:
 	return [
-		Build.new("spell", "Sort", "manual_lightning", "intelligence", PackedStringArray([
+		# Vers l'Esprit d'orage par la foudre, puis de quoi tenir : résistances, PV, esquive.
+		Build.new("spell", "Sort", "manual_lightning", PackedStringArray([
+			"int_1", "int_2", "int_4", "quick_lightning", "int_6", "int_7", "int_9",
+			"arcane_lore", "int_10", "storm_mind",
+			"int_8", "mana_well", "int_3", "int_5",
+			"belt_east_4", "belt_east_3", "belt_east_2", "belt_east_1",
+			"belt_west_1", "belt_west_2", "belt_west_3", "belt_west_4",
+			"str_3", "str_2", "sturdy_blood", "str_1",
+			"dex_4", "dex_2", "reflexes", "dex_1", "dex_3", "str_4", "iron_skin", "str_6",
+		]), PackedStringArray([
 			"chain_lightning", "lightning_nova", "storm_cloud", "conductor",
 			"swift_bolt", "chain_lightning_branching",
 		]), "melee"),
-		Build.new("melee", "Mêlée", "manual_weapons", "strength", PackedStringArray([
+		# Vers le Colosse, puis l'armure, la ceinture et la vitesse d'attaque.
+		Build.new("melee", "Mêlée", "manual_weapons", PackedStringArray([
+			"str_1", "str_2", "str_3", "brute_force", "str_5", "str_7", "str_8", "str_9",
+			"weapon_master", "str_10", "colossus",
+			"str_4", "iron_skin", "str_6", "sturdy_blood",
+			"belt_west_4", "belt_west_3", "belt_west_2", "belt_west_1",
+			"belt_south_1", "belt_south_2", "belt_south_3", "belt_south_4",
+			"dex_1", "dex_2", "reflexes", "dex_4", "swiftness", "dex_6", "dex_7",
+		]), PackedStringArray([
 			"heavy_strike", "cross_slash", "spiral_sword", "iron_guard",
 			"heavy_strike_momentum",
 		]), "caster"),
@@ -85,7 +103,12 @@ static func character(build: Build, profile: Profile, zone: int) -> Character:
 		p.experience = Progression.progress(
 			experience, Player.XP_BASE, Player.XP_POWER, LEVEL_CAP
 		).x
-	p.attributes[build.attribute] = (p.level - 1) * Player.POINTS_PER_LEVEL
+	var tree := PassiveTree.shared()
+	var taken := PackedStringArray()
+	for id in build.path:
+		if tree.can_take(taken, id, p.level):
+			taken.append(id)
+	p.passives = taken
 	p.manual_given = true
 
 	# Le manuel gagne ce que gagne le personnage : `Player.reward()` leur verse le
