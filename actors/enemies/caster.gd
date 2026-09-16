@@ -27,7 +27,7 @@ var _strafe_dir := 1.0
 ## l'autre sens change tout l'engagement, et une graine doit redonner le même.
 func setup(p_target: Node2D) -> void:
 	super(p_target)
-	_strafe_dir = 1.0 if absi(hash(Vector2i(position.round()))) % 2 == 0 else -1.0
+	_strafe_dir = 1.0 if SpawnSeed.at(position) % 2 == 0 else -1.0
 
 
 func tick(delta: float) -> void:

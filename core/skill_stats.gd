@@ -63,9 +63,10 @@ var nature := int(DamageType.Kind.PHYSICAL)
 var base_damage := 0.0
 var added_min: Array[float] = DamageType.empty_parts()
 var added_max: Array[float] = DamageType.empty_parts()
-## Le produit des « +% dégâts » portés : ils se multiplient entre eux, donc deux
-## « +10 % » font 1,21 et non 1,20.
-var increase := 1.0
+## Les « % dégâts » portés, en facteurs : les accrus sommés (deux « +10 % » font 1,20),
+## puis le produit des « plus » (deux font 1,21).
+var increased := 1.0
+var more := 1.0
 ## La part du coup qu'un nœud a déplacée, **par nature d'arrivée**, pour la fiche.
 ## Le lancer n'en a pas besoin : `damage_min` et `damage_max` sont déjà déplacés.
 var conversions: Array[float] = DamageType.empty_parts()
@@ -171,17 +172,13 @@ func apply_conversion(target: int, part: float) -> void:
 	conversions[target] += rest * (1.0 - conversions[target])
 
 
-## Appliqué à la suite, pas sommé : deux « +10 % » font 1,21.
-func increase_by(percentage: float) -> void:
-	var factor := 1.0 + percentage * 0.01
-	increase *= factor
-	_multiplier(factor)
-
-
-func _multiplier(factor: float) -> void:
+## Toutes les parts, une fois. Un accru sous −100 % ne rend pas les dégâts négatifs.
+func scale_damage(increased_percent: float, more_factor: float) -> void:
+	increased = maxf(1.0 + increased_percent * 0.01, 0.0)
+	more = more_factor
 	for i in damage_min.size():
-		damage_min[i] *= factor
-		damage_max[i] *= factor
+		damage_min[i] *= increased * more
+		damage_max[i] *= increased * more
 
 
 ## La part de chaque nature, somme à un ; toute dans sa nature sans dégâts.

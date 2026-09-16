@@ -10,10 +10,10 @@ class_name SkillIcon
 ## fiche, elle ne connaît ni les textures ni les tailles d'écran. C'est la même
 ## séparation qu'entre `ItemBase` et `SpriteForge`.
 
-## Le même cadre que `SpriteForge.ICON`, et ce n'est pas une coïncidence : une
-## icône de sort et une icône d'objet se croisent à l'écran, et deux grilles
-## différentes se verraient tout de suite.
-const SIDE := 24
+## Le cadre de `SpriteForge.ICON`, **et non un 24 recopié** : une icône de sort et
+## une icône d'objet se croisent à l'écran, et deux grilles différentes se
+## verraient tout de suite.
+const SIDE := SpriteForge.ICON
 
 static var _cache := {}
 

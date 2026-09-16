@@ -96,9 +96,6 @@ func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
 		_add_number(at, info.amount, info.is_crit, number_color(info, on_player))
 	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _spray_color(info, on_player))
 
-	set_process(true)
-	queue_redraw()
-
 
 ## Le rouge quand c'est le joueur qui encaisse, l'or d'un critique, et le blanc
 ## pour tout le reste : aucune nature, voir `NUMBER`.
@@ -120,20 +117,21 @@ func _spray_color(info: DamageInfo, on_player: bool) -> Color:
 
 ## Des dégâts sans coup — brûlure d'aura ou d'état —, sans gerbe : rouge sur le
 ## joueur, blanc sur un ennemi, chacun derrière sa case.
-func damage_without_hit(at: Vector2, amount: float, on_player: bool) -> void:
-	if amount <= 0.0 or not Settings.shows_damage(on_player):
+##
+## Statique et non appelée sur `current` : les **trois** chemins qui perdent de la
+## vie sans coup — les états d'un ennemi, ceux du joueur, sa brûlure d'aura —
+## écrivaient le même test de nullité, et l'oublier plante partout où le retour
+## visuel est simplement absent (un test, une scène de réglage).
+static func damage_without_hit(at: Vector2, amount: float, on_player: bool) -> void:
+	if amount <= 0.0 or current == null or not Settings.shows_damage(on_player):
 		return
-	_add_number(at, amount, false, PLAYER if on_player else NUMBER)
-	set_process(true)
-	queue_redraw()
+	current._add_number(at, amount, false, PLAYER if on_player else NUMBER)
 
 
 ## Un état neuf, sur le joueur seulement : sur soixante-dix ennemis, les pastilles
 ## suffisent.
 func state(at: Vector2, kind: int) -> void:
 	_add_label(at + Vector2(0.0, -XP_HEIGHT), StatusEffects.name(kind), XP_SIZE, StatusEffects.color(kind), XP_RISE)
-	set_process(true)
-	queue_redraw()
 
 
 ## Pas de gerbe : rien n'a été touché. Même case que le chiffre qu'il remplace.
@@ -148,8 +146,6 @@ func miss(at: Vector2, on_player: bool) -> void:
 		MISS,
 		1.0
 	)
-	set_process(true)
-	queue_redraw()
 
 
 ## Pas d'éclat : ce n'est pas un impact.
@@ -157,15 +153,11 @@ func xp_gain(at: Vector2, amount: int) -> void:
 	if amount <= 0:
 		return
 	_add_label(at + Vector2(0.0, -XP_HEIGHT), Texts.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
-	set_process(true)
-	queue_redraw()
 
 
 ## Le nom de l'objet ramassé, au-dessus du joueur.
 func loot_gain(at: Vector2, text: String) -> void:
 	_add_label(at + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, LOOT, XP_RISE)
-	set_process(true)
-	queue_redraw()
 
 
 func _add_number(at: Vector2, amount: float, is_crit: bool, tint: Color) -> void:
@@ -180,9 +172,15 @@ func _add_number(at: Vector2, amount: float, is_crit: bool, tint: Color) -> void
 
 ## Le libellé flottant générique — dégâts, esquive, expérience, butin. Un seul
 ## chemin : deux copies divergeraient à la première retouche de la trajectoire.
+##
+## **C'est ici que le dessin se rallume**, et non chez les cinq points d'entrée qui
+## le recopiaient : un libellé ajouté sans réveiller `_process` reste immobile et
+## invisible, ce qui ne se voit qu'en jouant.
 func _add_label(at: Vector2, text: String, body: int, tint: Color, rise: float) -> void:
 	if _font == null:
 		return
+	set_process(true)
+	queue_redraw()
 	var n := FloatingText.new()
 	n.pos = at
 	n.vel = Vector2(_rng.randf_range(-NUMBER_DRIFT, NUMBER_DRIFT), NUMBER_RISE * rise)
@@ -194,7 +192,10 @@ func _add_label(at: Vector2, text: String, body: int, tint: Color, rise: float) 
 	_numbers.append(n)
 
 
+## Même règle que `_add_label` : la gerbe rallume le dessin elle-même.
 func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: Color) -> void:
+	set_process(true)
+	queue_redraw()
 	var count := CRIT_PARTICLES if is_crit else HIT_PARTICLES
 	var base := away.angle()
 

@@ -153,8 +153,9 @@ func damage(points: int) -> float:
 
 ## **Le seul calcul d'un lancer** : le lancer et la fiche du manuel passent par ici.
 ##
-## Ordre des dégâts : propres, fourchettes ajoutées, conversion, pourcentages. Un
-## modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de l'attraper.
+## Ordre des dégâts : propres, fourchettes ajoutées, conversion, accrus sommés, puis
+## « plus ». Un modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de
+## l'attraper.
 ##
 ## Les talents ne sont pas filtrés, mais leurs mots-clés sont posés avant le filtre :
 ## un nœud de conversion rend un affixe de feu mordant sur un sort de foudre.
@@ -198,8 +199,14 @@ func resolve(
 	StatMod.apply(r, fields)
 	for t: InvestedTalent in talents:
 		r.apply_conversion(t.node.converts_to, t.conversion())
+	var increased := 0.0
+	var more := 1.0
 	for m in damage_percents:
-		r.increase_by(m.value)
+		if m.mode == StatMod.Mode.MORE:
+			more *= 1.0 + m.value * 0.01
+		else:
+			increased += m.value
+	r.scale_damage(increased, more)
 	r.finalize()
 	# Ici et non dans `finalize()` : zéro veut dire « sans limite », et un nœud ne doit
 	# pas rendre infinie une orbite bornée.
@@ -216,7 +223,7 @@ static func _store(
 	var added := SkillStats.added_nature(m.stat)
 	if added >= 0 and m.mode == StatMod.Mode.FLAT:
 		r.add_to(added, m.value, m.value_max)
-	elif m.stat == SkillStats.DAMAGE and m.mode == StatMod.Mode.PERCENT:
+	elif m.stat == SkillStats.DAMAGE and m.mode != StatMod.Mode.FLAT:
 		percents.append(m)
 	elif m.stat != SkillStats.DAMAGE and SkillStats.LABELS.has(m.stat):
 		fields.append(m)

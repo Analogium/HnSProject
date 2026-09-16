@@ -12,10 +12,25 @@ extends Resource
 @export var scope: String = ""
 
 @export var percentage: bool = false
+## Un pourcentage « en plus », qui multiplie après les accrus ; sans effet sans
+## `percentage`.
+@export var more: bool = false
 
 ## Par point ; la borne haute laissée à zéro vaut la basse.
 @export var value_per_point: float = 0.0
 @export var value_max_per_point: float = 0.0
+
+
+## Les lignes d'un passif ou d'un nœud à ce nombre de points, les nulles écartées.
+## Ici et non chez chacun des deux, qui écrivaient la même boucle : un `points <= 0`
+## oublié d'un côté afficherait un bonus que personne n'a acheté.
+static func modifiers(lines: Array[TalentLine], points: int) -> Array[StatMod]:
+	var out: Array[StatMod] = []
+	for line in lines:
+		var m := line.modifier(points)
+		if m != null:
+			out.append(m)
+	return out
 
 
 ## La ligne que ces points donnent, ou **null à zéro point** : une ligne nulle
@@ -29,5 +44,6 @@ func modifier(points: int) -> StatMod:
 		percentage,
 		value_per_point * n,
 		maxf(value_max_per_point, value_per_point) * n,
-		scope
+		scope,
+		more
 	)

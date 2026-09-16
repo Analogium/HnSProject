@@ -55,6 +55,12 @@ const SHEET_TITLE_SIZE := 9
 
 const LIST_X := 10.0
 const LIST_W := 262.0
+## Les deux colonnes de la liste, en décalage depuis son bord, comme le tableau de
+## droite. L'identifiant tenait dans 78 px jusqu'aux dégâts ajoutés par nature :
+## `lightning_to_attacks` touchait « dégâts de foudre aux attaques », et seule une
+## capture le voyait (`test_the_affix_ids_clear_their_column`).
+const COL_ID := 3.0
+const COL_STAT := 92.0
 const TABLE_X := 292.0
 const TABLE_W := 338.0
 ## Les trois colonnes du tableau de droite, en décalage depuis son bord.
@@ -395,10 +401,10 @@ func _build_list(base: ItemBase, affixes: Array) -> void:
 			_rectangle(SHEET_SELECTED, r.position, r.size)
 
 		var tint := SHEET_TITLE if rank == _affix_detail else SHEET_TEXT
-		_label(affix.id, Vector2(LIST_X + 3.0, r.position.y), tint, SHEET_SIZE)
+		_label(affix.id, Vector2(LIST_X + COL_ID, r.position.y), tint, SHEET_SIZE)
 		_label(
 			StatMod.name(affix.stat, affix.scope),
-			Vector2(LIST_X + 78.0, r.position.y), SHEET_MUTED, SHEET_SIZE
+			Vector2(LIST_X + COL_STAT, r.position.y), SHEET_MUTED, SHEET_SIZE
 		)
 		_right_column(
 			_total_span(base, affix),
@@ -422,7 +428,7 @@ func _build_table(base: ItemBase, affix: ItemAffix) -> void:
 	_label(_weight_text(base, affix), Vector2(TABLE_X, y), SHEET_MUTED, SHEET_SIZE)
 
 	y += SHEET_LINE + 6.0
-	_label("tier", Vector2(TABLE_X + COL_TIER, y), SHEET_MUTED, SHEET_SIZE)
+	_label("palier", Vector2(TABLE_X + COL_TIER, y), SHEET_MUTED, SHEET_SIZE)
 	_label("zones où il sort", Vector2(TABLE_X + COL_ZONES, y), SHEET_MUTED, SHEET_SIZE)
 	_label("valeur tirée", Vector2(TABLE_X + COL_VALUE, y), SHEET_MUTED, SHEET_SIZE)
 
@@ -540,7 +546,7 @@ static func _identity(base: ItemBase) -> String:
 	# catalogue à n'en occuper qu'une, et c'est le premier qu'on regarde.
 	var cells := base.grid_size.x * base.grid_size.y
 	pieces.append("%d × %d %s" % [
-		base.grid_size.x, base.grid_size.y, "cell" if cells <= 1 else "cells"
+		base.grid_size.x, base.grid_size.y, "case" if cells <= 1 else "cases"
 	])
 	pieces.append(_window_text(base))
 	return "   ·   ".join(pieces)

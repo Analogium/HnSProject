@@ -899,6 +899,18 @@ msgstr "added"
 msgid "dégâts accrus"
 msgstr "increased damage"
 
+msgid "dégâts en plus"
+msgstr "more damage"
+
+msgid "{valeur} en plus"
+msgstr "{valeur} more"
+
+msgid "{valeur} de {stat} en plus"
+msgstr "{valeur} more {stat}"
+
+msgid "{valeur} d'{stat} en plus"
+msgstr "{valeur} more {stat}"
+
 msgid "par projectile"
 msgstr "per projectile"
 

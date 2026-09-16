@@ -184,7 +184,7 @@ func test_a_click_in_the_void_places_nothing() -> void:
 	var book := _rich_book()
 	_click_on(Vector2(_panel.size.x - 3.0, _panel._help_top() - 2.0))
 	_panel._invest("spell_that_does_not_exist")
-	assert_eq(book.manual.points_places(), 0)
+	assert_eq(book.manual.points_spent(), 0)
 
 
 ## Sans livre à l'emplacement ouvert, aucun clic ne peut rien faire.
@@ -374,8 +374,8 @@ func test_the_sheet_announces_what_a_node_changes() -> void:
 		"le nœud de fourche en ajoute un"
 	)
 	assert_eq(
-		_values(lines, "dégâts accrus"), PackedStringArray(["+12 %"]),
-		"et la surcharge accroît les dégâts"
+		_values(lines, "dégâts en plus"), PackedStringArray(["+12 %"]),
+		"et la surcharge multiplie les dégâts : un nœud donne du « plus » (jalon 14)"
 	)
 
 

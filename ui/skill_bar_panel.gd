@@ -36,9 +36,10 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
+## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
+## par mentir (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
-	if _menu >= 0:
-		Game.grab_ui_input(self, false)
+	Game.grab_ui_input(self, false)
 
 
 ## Noms et libellés dessinés à la main.

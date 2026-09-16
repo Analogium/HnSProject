@@ -64,9 +64,9 @@ func _ready() -> void:
 ## ennemis. Séparé de l'application, qui dépend de son résultat.
 func _roll_affixes() -> void:
 	var rng := RandomNumberGenerator.new()
-	# Décalé par rapport à la graine de silhouette, sinon la variante et
+	# Salé par rapport à la graine de silhouette, sinon la variante et
 	# l'affixe seraient corrélés et un Colossal aurait toujours le même corps.
-	rng.seed = absi(hash(Vector2i(position.round()))) ^ 0xA771
+	rng.seed = SpawnSeed.at(position, 0xA771)
 	affixes = AffixPool.roll(rng)
 	# Posée dans tous les cas : sans affixe, l'étiquette se vide et se cache.
 	affix_tag.set_affixes(affixes)
@@ -137,8 +137,7 @@ func suffer_states(delta: float) -> void:
 		return
 	_set_health(health - loss)
 	var digit := states.digit()
-	if digit > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, false)
+	HitFeedback.damage_without_hit(hurtbox.global_position, digit, false)
 	if health <= 0.0:
 		die()
 

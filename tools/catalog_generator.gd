@@ -127,14 +127,17 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 		var table := PackedStringArray()
 		for d in c.damage_per_point:
 			table.append("%d" % roundi(d))
+		# Le mot-clé de la cadence par la table de `Skill`, jamais par un ternaire
+		# recopié : la colonne annonçait « attack » à côté d'une nature française.
+		var cadence := Keywords.label_of(Skill.KEYWORD_OF_CADENCE[c.cadence])
 		l.append("| %s | %s %s | niveau %d | %d | %d mana | %s | %s | %s |" % [
 			c.name,
-			"attack" if c.cadence == Skill.Cadence.WEAPON else "spell",
+			cadence.to_lower(),
 			DamageType.NAMES[c.nature],
 			c.required_manual_level,
 			c.points_max(),
 			roundi(c.mana_cost),
-			"weapon" if c.cadence == Skill.Cadence.WEAPON else "%.2f s" % c.cooldown,
+			"cadence de l'arme" if c.cadence == Skill.Cadence.WEAPON else "%.2f s" % c.cooldown,
 			_shape(c),
 			" · ".join(table),
 		])
@@ -218,7 +221,7 @@ func _affixes(l: PackedStringArray) -> void:
 	l.append("")
 	l.append("| id | statistique | vise | interdit | poids | paliers | bases éligibles |")
 	l.append("|---|---|---|---|---|---|---|")
-	for raw in _tries():
+	for raw in _sorted_affixes():
 		var a: ItemAffix = raw
 		# Par `compatibles()` et non par `fits()` : le filtre par étiquettes n'est
 		# qu'une partie de la règle, et une base qui ne se porte nulle part
@@ -266,7 +269,7 @@ func _scales(l: PackedStringArray) -> void:
 	l.append("")
 	l.append("T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.")
 	l.append("")
-	for raw in _tries():
+	for raw in _sorted_affixes():
 		var a: ItemAffix = raw
 		l.append("**`%s`** — %s, arrondi %s" % [
 			a.id, StatMod.name(a.stat, a.scope),
@@ -283,7 +286,7 @@ func _scales(l: PackedStringArray) -> void:
 		l.append("")
 
 
-func _tries() -> Array:
+func _sorted_affixes() -> Array:
 	var out := ItemAffixPool.ALL.duplicate()
 	out.sort_custom(func(a: ItemAffix, b: ItemAffix) -> bool: return a.id < b.id)
 	return out

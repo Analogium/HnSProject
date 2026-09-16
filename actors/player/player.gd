@@ -272,8 +272,7 @@ func burn(part_per_second: float, distribution: Array[float], delta: float) -> v
 	var loss := taken_value * states.damage_taken_factor * delta
 	_set_health(health - loss)
 	var digit := _burn_to_show.add_to(loss, delta)
-	if digit > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, true)
+	HitFeedback.damage_without_hit(hurtbox.global_position, digit, true)
 	if health <= 0.0:
 		_die()
 
@@ -285,8 +284,7 @@ func _suffer_states(delta: float) -> void:
 		return
 	_set_health(health - loss)
 	var digit := states.digit()
-	if digit > 0.0 and HitFeedback.current != null:
-		HitFeedback.current.damage_without_hit(hurtbox.global_position, digit, true)
+	HitFeedback.damage_without_hit(hurtbox.global_position, digit, true)
 	if health <= 0.0:
 		_die()
 

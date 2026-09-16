@@ -5,7 +5,9 @@ extends RefCounted
 ## pour les implicites, les affixes, les passifs et les nœuds. Pas une Resource : ce
 ## sont les définitions (`ItemAffix`) qui sont des `.tres`.
 
-enum Mode { FLAT, PERCENT }
+## `PERCENT` est l'**accru** : ceux d'un même champ s'additionnent. `MORE` multiplie
+## seul, après eux. **Ajouter à la fin** : l'entier est écrit dans les sauvegardes.
+enum Mode { FLAT, PERCENT, MORE }
 
 ## Le nom lisible de chaque champ de CharacterStats. L'unité fait partie du nom quand
 ## elle n'est pas évidente : « PV/s », pas « régénération ».
@@ -85,11 +87,15 @@ static func ranged_stat(p_stat: String) -> bool:
 ## La ligne d'un affixe ou d'un implicite : une fourchette s'ajoute toujours à plat,
 ## borne haute jamais sous la basse. Partagée pour que les deux s'écrivent pareil.
 static func from_definition(
-	p_stat: String, percentage: bool, value: float, value_max: float, p_scope: String
+	p_stat: String, percentage: bool, value: float, value_max: float, p_scope: String,
+	more := false
 ) -> StatMod:
 	if ranged_stat(p_stat):
 		return ranged(p_stat, value, maxf(value_max, value), p_scope)
-	return StatMod.new(p_stat, Mode.PERCENT if percentage else Mode.FLAT, value, p_scope)
+	var p_mode := Mode.FLAT
+	if percentage:
+		p_mode = Mode.MORE if more else Mode.PERCENT
+	return StatMod.new(p_stat, p_mode, value, p_scope)
 
 
 ## **Le seul endroit qui écrit un pourcentage**, selon la typographie de la langue :
@@ -130,6 +136,8 @@ static func ratio(current: float, maximum: float) -> float:
 
 ## Un pourcentage porte son unité par son mode ; une valeur absolue passe par format().
 static func value_label(stat_name: String, p_mode: Mode, v: float, signed := true) -> String:
+	if p_mode == Mode.MORE:
+		return Texts.t("{valeur} en plus").format({"valeur": percentage(roundi(v))})
 	if p_mode == Mode.PERCENT:
 		return percentage(roundi(v), signed)
 	return format(stat_name, v, signed)
@@ -185,6 +193,16 @@ func readable_value() -> String:
 
 ## « +25 armure », ou « ajoute 3 à 7 dégâts de froid aux sorts ».
 func label() -> String:
+	if mode == Mode.MORE:
+		var stat_name := name(stat, scope)
+		# L'élision : « 20 % d'armure en plus », pas « de armure ».
+		if "aeiouhéè".contains(stat_name.left(1)):
+			return Texts.t("{valeur} d'{stat} en plus").format({
+				"valeur": percentage(roundi(value)), "stat": stat_name
+			})
+		return Texts.t("{valeur} de {stat} en plus").format({
+			"valeur": percentage(roundi(value)), "stat": stat_name
+		})
 	if not is_a_range():
 		return "%s %s" % [value_label(stat, mode, value), name(stat, scope)]
 	# La phrase entière, et pas des morceaux collés : l'ordre des mots n'est pas le
@@ -208,12 +226,17 @@ static func apply_all(stats: CharacterStats, mods: Array) -> void:
 	apply(stats, on_the_sheet)
 
 
-## Les plats d'abord, puis les pourcentages : sinon le résultat dépendrait de l'ordre
-## d'équipement.
+## Les plats, puis la somme des accrus de chaque champ, puis chaque « plus » : sinon le
+## résultat dépendrait de l'ordre d'équipement.
 static func apply(target: Object, mods: Array) -> void:
+	var increased := {}
 	for m: StatMod in mods:
 		if m.mode == Mode.FLAT:
 			target.set(m.stat, float(target.get(m.stat)) + m.value)
+		elif m.mode == Mode.PERCENT:
+			increased[m.stat] = float(increased.get(m.stat, 0.0)) + m.value
+	for field: String in increased:
+		target.set(field, float(target.get(field)) * (1.0 + float(increased[field]) * 0.01))
 	for m: StatMod in mods:
-		if m.mode == Mode.PERCENT:
+		if m.mode == Mode.MORE:
 			target.set(m.stat, float(target.get(m.stat)) * (1.0 + m.value * 0.01))

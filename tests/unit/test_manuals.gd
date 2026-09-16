@@ -76,7 +76,7 @@ func test_the_archetype_finds_its_slot_by_id() -> void:
 func test_a_picked_up_manual_has_its_own_state() -> void:
 	var item := Item.new(_base())
 	assert_not_null(item.manual, "un manuel naît avec son état")
-	assert_eq(item.manual.points_places(), 0, "blank")
+	assert_eq(item.manual.points_spent(), 0, "blank")
 	assert_eq(item.manual.experience, 0)
 
 
@@ -104,7 +104,7 @@ func test_two_manuals_have_independent_points() -> void:
 	# L'archétype partagé ne porte aucun état : si la moindre ligne de points y
 	# atterrissait un jour, c'est ici qu'on le verrait.
 	var fresh := Item.new(_base())
-	assert_eq(fresh.manual.points_places(), 0, "un troisième exemplaire naît vierge")
+	assert_eq(fresh.manual.points_spent(), 0, "un troisième exemplaire naît vierge")
 
 
 # --------------------------------------------------------------------------
@@ -162,7 +162,7 @@ func test_a_manual_drops_and_arrives_whole() -> void:
 	if seen == null:
 		return
 	assert_eq(seen.item_level, 1, "avec le niveau de sa zone, comme tout le reste")
-	assert_eq(seen.manual.points_places(), 0, "et vierge")
+	assert_eq(seen.manual.points_spent(), 0, "et vierge")
 
 	# 2 × 2 dans le sac : il prend de la place, comme un objet.
 	var bag := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
@@ -266,4 +266,4 @@ func test_no_investing_in_a_missing_slot() -> void:
 	var m := Manual.new()
 	assert_false(m.invest(arch, "swift_bolt"), "pas dans ce livre")
 	assert_false(m.invest(null, "trial"), "ni sans livre du tout")
-	assert_eq(m.points_places(), 0)
+	assert_eq(m.points_spent(), 0)

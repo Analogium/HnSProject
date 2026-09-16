@@ -100,7 +100,8 @@ func toggle() -> void:
 		queue_redraw()
 
 
-## Rend la souris quoi qu'il arrive, même quand la zone est rechargée fiche ouverte.
+## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
+## par mentir (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
 	Game.grab_ui_input(self, false)
 

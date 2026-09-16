@@ -25,7 +25,7 @@ const SPAWN := 0.2
 const DISSIPATION := 0.4
 const LIGHT := Color(1.0, 0.95, 0.55)
 const EYES := Color(0.15, 0.05, 0.02)
-const LANGUAGE := Color(0.9, 0.15, 0.1)
+const TONGUE := Color(0.9, 0.15, 0.1)
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -120,11 +120,11 @@ func _bite() -> void:
 	var middle := _body[int(RINGS * 0.5)]
 	var scope := float(RINGS) * SPACING * 0.5 + CONTACT
 	for target in Targets.in_circle(get_world_2d(), middle, scope):
-		if _key_event(target.global_position) and _contacts.accepts(target):
+		if _touches(target.global_position) and _contacts.accepts(target):
 			Targets.strike(target, _cast.roll(Game.rng), _head, _author)
 
 
-func _key_event(point: Vector2) -> bool:
+func _touches(point: Vector2) -> bool:
 	for ring in _body:
 		if ring.distance_squared_to(point) <= CONTACT * CONTACT:
 			return true
@@ -156,6 +156,6 @@ func _draw() -> void:
 	if fmod(_age + _seed_of, 0.7) < 0.15:
 		var root := t + before * HEAD_RADIUS
 		var tip_end := root + before * 3.5
-		draw_line(root, tip_end, Color(LANGUAGE, fade), 1.0)
-		draw_line(tip_end, tip_end + (before + side).normalized() * 1.5, Color(LANGUAGE, fade), 1.0)
-		draw_line(tip_end, tip_end + (before - side).normalized() * 1.5, Color(LANGUAGE, fade), 1.0)
+		draw_line(root, tip_end, Color(TONGUE, fade), 1.0)
+		draw_line(tip_end, tip_end + (before + side).normalized() * 1.5, Color(TONGUE, fade), 1.0)
+		draw_line(tip_end, tip_end + (before - side).normalized() * 1.5, Color(TONGUE, fade), 1.0)

@@ -70,6 +70,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | `Keywords`, `SkillStats` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Skill` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
 | `LegacyFrench` | `Character`, `SaveStore` et `Settings` la lisent pour relire le disque d'avant ; une table figée n'a rien à nommer. |
 | `StatusEffects` | `DamageInfo` le nomme pour dire qui frappe, et `Hurtbox` pour ce que porte la victime : il reçoit des parts et un auteur, jamais un coup. |
+| `SpawnSeed` | La graine d'un point d'apparition est lue par l'ennemi, le caster et le sprite : elle ne peut connaître aucun des trois. |
 
 ## Où vit chaque règle
 
@@ -101,6 +102,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quels mots-clés porte une compétence ? | `Skill.keywords()` : les déclarés, plus ceux que donnent la nature et la cadence, sur la liste fermée de `Keywords`. Ceux d'un **lancer** sont dans `SkillStats.keywords`, nœuds d'arbre compris |
 | Dans quel ordre se lisent-ils ? | `Keywords.sort_in_order()`, et nulle part ailleurs : ils arrivent de trois sources et deux compétences voisines doivent se lire colonne contre colonne |
 | Une ligne d'affixe vise-t-elle la fiche ou un mot-clé ? | `StatMod.scope` — vide pour la fiche. `StatMod.apply_all()` écarte le reste, `Player.recompute_stats()` le range dans `skill_mods`, avec la force changée en dégâts physiques aux attaques |
+| Comment des pourcentages se combinent-ils ? | `StatMod.apply()` pour la fiche et les nombres d'un lancer, `Skill.resolve()` pour ses dégâts : plats, puis **la somme des accrus** (`Mode.PERCENT`) d'un champ, puis **chaque « plus »** (`Mode.MORE`) à la suite. Les affixes et les passifs donnent de l'accru ; le « plus » vient d'une `TalentLine.more`, aujourd'hui les lignes `damage` des nœuds de talent. `SkillStats.increased` et `more` gardent les deux facteurs pour la page du manuel |
 | À quelle cadence se lance-t-elle ? | `Skill.interval()` : la fiche pour l'arme, la recharge du sort pour l'incantation |
 | Que pose un lancer dans le monde ? | `Skill.shape`, lue par `Player.cast_slot()` **sur la compétence** : aucun nœud ne la change. Elle porte le comportement et le dessin ensemble, et `projectile` s'en déduit |
 | Combien de coups porte un lancer, si tout touche ? | `SkillStats.average_per_cast()` : projectiles × cibles × coups de la forme × `strikes_over_duration()` — **la fonction même qui compte les impulsions du nuage**. Une aura n'a que `average_per_second()` |
@@ -128,7 +130,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Un coup pose-t-il un état ? | `StatusEffects.suffer()`, appelée par `Hurtbox.take_damage()` **après** l'esquive, la mitigation et le signal : 20 % pour un coup entièrement d'une nature, partagés selon ses parts, **plus la part des PV max de la cible que la nature retire** (`StatusEffects.chance()`), **un tirage par nature présente**, physique compris. Chance, durées et forces sont les constantes de `StatusEffects` |
 | Qui a porté un coup ? | `DamageInfo.author` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `StatusEffects.of()` |
 | Ce qu'un état change, et où ? | Les facteurs de `StatusEffects`, lus **là où vit déjà la règle** : la bénédiction de l'auteur avant la mitigation, l'engourdissement après ; le gel dans `Enemy.movement_speed()`, `Enemy._cool_down()` et la cadence de `Player._physics_process()`. Ce qui brûle sort d'`StatusEffects.advance()` et s'ôte par `_set_health()`, chez l'ennemi depuis l'`EnemyManager`, avec la régénération |
-| Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`StatusEffects.BLOOD`), sur le signal `StatusEffects.change` : `HealthBar.show_states()`, qui dessine l'icône de chacun (`StatusIcon`, un masque 7×7 par état), et `ActorSprite.show_states()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.state()` ; ce qui brûle, par `HitFeedback.damage_without_hit()` et les paquets d'`StatusEffects.Pack` |
+| Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`StatusEffects.BLOOD`), sur le signal `StatusEffects.change` : `HealthBar.show_states()`, qui dessine l'icône de chacun (`StatusIcon`, un masque 7×7 par état), et `ActorSprite.show_states()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.state()` ; ce qui brûle, par `HitFeedback.damage_without_hit()` — **statique**, elle porte le test de nullité que ses trois appelants écrivaient — et les paquets d'`StatusEffects.Pack` |
 
 ## Les invariants
 
@@ -142,7 +144,8 @@ identifiants de `Keywords` — la portée d'un affixe en nomme un —, ceux de
 `DamageType.IDS` — ils forment le nom des dégâts ajoutés, `damage_cold` —, ceux
 de `Skill`, `Passive` et `TalentNode` — les trois partagent le
 dictionnaire de points d'un manuel, et **deux identiques dans un même livre
-partageraient un compteur** — et les noms de champs de `Character.to_dict()`
+partageraient un compteur** —, l'entier de `StatMod.Mode` — une valeur ne s'ajoute
+qu'à la fin — et les noms de champs de `Character.to_dict()`
 sont **dans les sauvegardes des joueurs**.
 Renommer `chest` en `torso` fait disparaître le plastron de tout le monde — au
 prochain chargement seulement, sans erreur.
@@ -176,7 +179,7 @@ ne peut rien reproduire.
 | Ce qu'on tire | Avec quoi |
 |---|---|
 | La carte, les paquets d'ennemis | le RNG de zone, réamorcé sur la graine |
-| La silhouette, les affixes, le sens de rotation d'un ennemi | `hash()` de la case d'apparition |
+| La silhouette, les affixes, le sens de rotation d'un ennemi | `SpawnSeed.at()`, le `hash()` du point d'apparition — **les trois passent par elle**, un arrondi qui divergerait casserait la reproductibilité sans rien dire |
 | **Le butin** | `Game.rng`, **et c'est voulu** |
 | Qu'un coup pose un état | `Game.rng` : un tirage par nature présente dans le coup, physique compris |
 | La gerbe d'éclats, la secousse de caméra | leur tirage à eux — `HitFeedback._rng`, `Game._rng_camera` |

@@ -100,6 +100,15 @@ func test_affixes_survive_with_their_mode() -> void:
 	assert_eq(sword.rarity(), Item.Rarity.MAGIC, "deux affixes, donc bleu")
 
 
+func test_a_more_line_stays_more() -> void:
+	var p := Character.create_new("Brenna", 2)
+	p.equipment["chest"] = Item.new(ItemCatalog.by_id("breastplate"), [
+		StatMod.new("max_health", StatMod.Mode.MORE, 12.0),
+	] as Array[StatMod])
+	var after := _round_trip(p)
+	assert_eq(after.equipment["chest"].explicits[0].mod.mode, StatMod.Mode.MORE)
+
+
 ## L'implicite n'est **pas** sauvegardé : il appartient à la base et se
 ## reconstruit. Le sauvegarder figerait les valeurs d'équilibrage du jour.
 func test_the_implicit_comes_from_the_base_not_the_file() -> void:
@@ -437,7 +446,7 @@ func test_passive_and_node_points_survive_the_round_trip() -> void:
 	assert_eq(refunded.manual.points_of("swift_bolt"), 3, "la case")
 	assert_eq(refunded.manual.points_of("swift_bolt_overload"), 2, "le nœud d'arbre")
 	assert_eq(refunded.manual.points_of("conductor"), 4, "et le passif")
-	assert_eq(refunded.manual.points_places(), 9)
+	assert_eq(refunded.manual.points_spent(), 9)
 
 
 ## Des points placés dans une case que l'archétype n'a plus ne sont dépensables
@@ -457,7 +466,7 @@ func test_points_for_an_unknown_skill_are_ignored() -> void:
 	assert_eq(refunded.manual.points_of("swift_bolt"), 1, "ce que le livre enseigne reste")
 	assert_eq(refunded.manual.points_of("cell_that_no_longer_exists"), 0, "le reste est oublié")
 	assert_eq(refunded.manual.points_of("node_from_another_book"), 0, "un nœud étranger aussi")
-	assert_eq(refunded.manual.points_places(), 1)
+	assert_eq(refunded.manual.points_spent(), 1)
 
 
 ## Une sauvegarde d'avant le jalon 6 arrive avec le jeu d'avant : rien au
@@ -508,7 +517,7 @@ func test_the_v3_reference_file_rereads() -> void:
 	for placed in p.bag.placed:
 		if placed.data.manual != null:
 			store_in_bag += 1
-			assert_eq(placed.data.manual.points_places(), 0)
+			assert_eq(placed.data.manual.points_spent(), 0)
 	assert_eq(store_in_bag, 1)
 
 

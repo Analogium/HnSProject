@@ -13,6 +13,7 @@
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 13.0
 
 [sub_resource type="Resource" id="N_boule_de_feu_attisement"]
@@ -95,6 +96,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_crocs_0")
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_serpent_infernal_mue"]
@@ -131,6 +133,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_brasier_0")])
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 14.0
 
 [sub_resource type="Resource" id="N_immolation_fournaise"]
@@ -147,6 +150,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_fournaise_0")])
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 15.0
 
 [sub_resource type="Resource" id="N_immolation_flamme_noire"]

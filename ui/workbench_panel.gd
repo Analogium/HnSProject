@@ -47,9 +47,10 @@ func _ready() -> void:
 	_font = ThemeDB.fallback_font
 
 
+## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
+## par mentir (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
-	if visible:
-		Game.grab_ui_input(self, false)
+	Game.grab_ui_input(self, false)
 
 
 func toggle() -> void:

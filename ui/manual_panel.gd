@@ -119,9 +119,10 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
+## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
+## par mentir (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
-	if visible:
-		Game.grab_ui_input(self, false)
+	Game.grab_ui_input(self, false)
 
 
 ## La page et la fiche sont dessinées à la main : à redessiner.
@@ -489,9 +490,9 @@ func _draw_cell(manual: Manual, cell: ManualCell, r: Rect2, hovered_one: bool) -
 		draw_rect(r, LOCK, false, 1.0)
 		return
 
-	var places := manual.points_of(identifier)
+	var spent := manual.points_of(identifier)
 	var maximum := cell.points_max()
-	var tint := _tint(manual, cell.required_level() <= manual.level(), places, maximum)
+	var tint := _tint(manual, cell.required_level() <= manual.level(), spent, maximum)
 	var thickness := 2.0 if hovered_one else 1.0
 
 	# Un passif se distingue par ses pans coupés.
@@ -510,8 +511,8 @@ func _draw_cell(manual: Manual, cell: ManualCell, r: Rect2, hovered_one: bool) -
 			_draw_chevron(r.position + Vector2(4.0, r.size.y - 5.0), KEYWORD)
 
 	# Verrouillée, la case annonce « niv. 4 » plutôt que « 0/5 ».
-	var label_of := "%d/%d" % [places, maximum]
-	if places == 0 and tint == LOCK:
+	var label_of := "%d/%d" % [spent, maximum]
+	if spent == 0 and tint == LOCK:
 		label_of = Texts.t("niv. %d") % cell.required_level()
 	# Rentrée dans les pans coupés : au coin, la plaque dépassait (vu sur capture).
 	_draw_count(
@@ -545,8 +546,8 @@ func _draw_node(
 	manual: Manual, arch: ManualArchetype, node: TalentNode, hovered: bool
 ) -> void:
 	var r := _node_rect(node.position)
-	var places := manual.points_of(node.id)
-	var tint := _tint(manual, manual.is_open(arch, node.id), places, node.points_max)
+	var spent := manual.points_of(node.id)
+	var tint := _tint(manual, manual.is_open(arch, node.id), spent, node.points_max)
 	draw_rect(r, CELL_BACKGROUND)
 	draw_rect(r, tint, false, 2.0 if hovered else 1.0)
 
@@ -555,14 +556,14 @@ func _draw_node(
 		draw_circle(r.position + Vector2(5.0, 5.0), 2.0, DamageType.COLORS[node.converts_to])
 
 	_draw_count(
-		r, "%d/%d" % [places, node.points_max],
+		r, "%d/%d" % [spent, node.points_max],
 		UiPalette.TEXT if tint != LOCK else UiPalette.LABEL, FONT_SIZE
 	)
 
 
 ## **Le seul endroit** qui traduit un état en couleur, cases et nœuds.
-func _tint(manual: Manual, opened: bool, places: int, maximum: int) -> Color:
-	if places >= maximum:
+func _tint(manual: Manual, opened: bool, spent: int, maximum: int) -> Color:
+	if spent >= maximum:
 		return FULL
 	if not opened:
 		return LOCK
@@ -662,13 +663,13 @@ func _cell_sheet(manual: Manual, cell: ManualCell) -> Sheet:
 ## `Player.resolve()`**, le chemin du lancer. Une ligne qui ne dit rien ne s'écrit
 ## pas ; sans point placé, ceux du premier.
 func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
-	var places := manual.points_of(skill.id)
-	var cast := _player.resolve(skill, maxi(places, 1))
+	var spent := manual.points_of(skill.id)
+	var cast := _player.resolve(skill, maxi(spent, 1))
 	var projectile := cast.keywords.has(Keywords.PROJECTILE)
 	var out: Array[SheetLine] = []
 
 	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [places, skill.points_max()],
+		Group.STATE, Texts.t("points"), "%d / %d" % [spent, skill.points_max()],
 		UiPalette.TEXT
 	))
 	if manual.level() < skill.required_manual_level:
@@ -677,7 +678,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Texts.t("niveau %d du manuel") % skill.required_manual_level,
 			MISSING
 		))
-	if places == 0:
+	if spent == 0:
 		out.append(_first_point_line())
 
 	if cast.mana_cost > 0.0:
@@ -710,10 +711,15 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 				Group.DAMAGE, Texts.t("converti"),
 				_converted_part(cast.conversions[nature], nature), DamageType.COLORS[nature]
 			))
-	if not is_equal_approx(cast.increase, 1.0):
+	if not is_equal_approx(cast.increased, 1.0):
 		out.append(SheetLine.new(
 			Group.DAMAGE, Texts.t("dégâts accrus"),
-			_increase(cast.increase), UiPalette.TEXT
+			_increase(cast.increased), UiPalette.TEXT
+		))
+	if not is_equal_approx(cast.more, 1.0):
+		out.append(SheetLine.new(
+			Group.DAMAGE, Texts.t("dégâts en plus"),
+			_increase(cast.more), UiPalette.TEXT
 		))
 	if cast.total_max() > 0.0:
 		out.append(SheetLine.new(
@@ -787,10 +793,10 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 
 ## Ce qu'un passif donne à ses points ; son sous-titre dit « toujours actif ».
 func _passive_sheet(manual: Manual, passive: Passive) -> Sheet:
-	var places := manual.points_of(passive.id)
+	var spent := manual.points_of(passive.id)
 	var out: Array[SheetLine] = []
 	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [places, passive.points_max],
+		Group.STATE, Texts.t("points"), "%d / %d" % [spent, passive.points_max],
 		UiPalette.TEXT
 	))
 	if manual.level() < passive.required_manual_level:
@@ -798,32 +804,32 @@ func _passive_sheet(manual: Manual, passive: Passive) -> Sheet:
 			Group.STATE, Texts.t("verrouillé"),
 			Texts.t("niveau %d du manuel") % passive.required_manual_level, MISSING
 		))
-	if places == 0:
+	if spent == 0:
 		out.append(_first_point_line())
-	out.append_array(_effect_lines(passive.mods(maxi(places, 1))))
+	out.append_array(_effect_lines(passive.mods(maxi(spent, 1))))
 	return Sheet.new(passive.displayed_name(), Texts.t("toujours actif"), out)
 
 
 ## Ce qu'un nœud change, et ce qu'il demande — lu sur le manuel, jamais recalculé.
 func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
-	var places := manual.points_of(node.id)
+	var spent := manual.points_of(node.id)
 	var out: Array[SheetLine] = []
 	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [places, node.points_max],
+		Group.STATE, Texts.t("points"), "%d / %d" % [spent, node.points_max],
 		UiPalette.TEXT
 	))
 	if not manual.is_open(_archetype(), node.id):
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("demande"), _what_it_requires(manual, cell, node), MISSING
 		))
-	if places == 0:
+	if spent == 0:
 		out.append(_first_point_line())
 
-	out.append_array(_effect_lines(node.mods(maxi(places, 1))))
+	out.append_array(_effect_lines(node.mods(maxi(spent, 1))))
 	if node.converts():
 		out.append(SheetLine.new(
 			Group.EFFECT, Texts.t("converti"),
-			_converted_part(node.conversion(maxi(places, 1)), node.converts_to),
+			_converted_part(node.conversion(maxi(spent, 1)), node.converts_to),
 			DamageType.COLORS[node.converts_to]
 		))
 	# Le mot-clé donné : il fait mordre l'équipement de la nature d'arrivée.

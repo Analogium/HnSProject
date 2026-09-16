@@ -5,7 +5,7 @@ extends Projectile
 ## `Projectile` ; le dessin et l'explosion sont à lui.
 
 ## Les langues de flamme qui traînent derrière la boule.
-const LANGUAGES := 3
+const TONGUES := 3
 const LIGHT := Color(1.0, 0.96, 0.7)
 
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
@@ -17,7 +17,7 @@ var _burst := false
 func _draw() -> void:
 	var t := tint()
 	# Le nœud est déjà tourné sur sa trajectoire : derrière, c'est −x.
-	for i in LANGUAGES:
+	for i in TONGUES:
 		var spread := (float(i) - 1.0) * 2.2
 		var length := 9.0 + _flicker.randf_range(-2.0, 2.5)
 		draw_colored_polygon(PackedVector2Array([

@@ -76,7 +76,7 @@ func set_weapon(kind: String) -> void:
 func _pick() -> int:
 	var body := get_parent() as Node2D
 	var at: Vector2 = body.position if body != null else position
-	return absi(hash(Vector2i(at.round()))) % SpriteForge.VARIANTS
+	return SpawnSeed.at(at) % SpriteForge.VARIANTS
 
 
 ## Appelée par l'acteur à chaque tick. facing peut être nul : on garde alors la

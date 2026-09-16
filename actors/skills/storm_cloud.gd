@@ -17,7 +17,7 @@ const BODY := Color(0.20, 0.19, 0.27)
 const ABOVE := Color(0.38, 0.36, 0.48)
 
 
-class Bouffee:
+class Puff:
 	var center: Vector2
 	var radius: float
 	var phase: float
@@ -34,7 +34,7 @@ var _author: StatusEffects
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
-var _puffs: Array[Bouffee] = []
+var _puffs: Array[Puff] = []
 var _bolts: Array[Bolt] = []
 var _flicker := RandomNumberGenerator.new()
 
@@ -54,7 +54,7 @@ func _ready() -> void:
 	_flicker.seed = int(get_instance_id())
 	var extent := _cast.radius * 0.7
 	for i in PUFFS:
-		var b := Bouffee.new()
+		var b := Puff.new()
 		var u := float(i) / float(PUFFS - 1)
 		b.center = Vector2(
 			lerpf(-extent, extent, u) + _flicker.randf_range(-2.0, 2.0),

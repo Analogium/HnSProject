@@ -80,13 +80,13 @@ const RESISTANCE_PER_LEVEL := 0.33
 
 ## **Écrit dans la fiche donnée** : à l'appelant de l'avoir dupliquée (invariant 2).
 static func scale_to_level(stats: CharacterStats, level: int) -> void:
-	var marches := float(maxi(level, 1) - 1)
-	stats.max_health *= pow(1.0 + HEALTH_PER_LEVEL, marches)
-	stats.attack_damage *= 1.0 + DAMAGE_PER_LEVEL * marches
-	stats.armor += ARMOR_PER_LEVEL * marches
+	var steps := float(maxi(level, 1) - 1)
+	stats.max_health *= pow(1.0 + HEALTH_PER_LEVEL, steps)
+	stats.attack_damage *= 1.0 + DAMAGE_PER_LEVEL * steps
+	stats.armor += ARMOR_PER_LEVEL * steps
 	for field: String in DamageType.RESIST_FIELDS:
 		if not field.is_empty():
-			stats.set(field, float(stats.get(field)) + RESISTANCE_PER_LEVEL * marches)
+			stats.set(field, float(stats.get(field)) + RESISTANCE_PER_LEVEL * steps)
 
 
 ## Cette liste sépare les modificateurs à appliquer **avant** la dérivation.

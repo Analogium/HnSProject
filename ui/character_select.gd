@@ -320,7 +320,7 @@ func _place_silhouettes() -> void:
 
 	if _state == State.CREATION:
 		for v in SpriteForge.VARIANTS:
-			_silhouette_a(_thumbnail_rect(v).get_center(), v)
+			_add_silhouette(_thumbnail_rect(v).get_center(), v)
 		return
 
 	if _state != State.LIST:
@@ -331,13 +331,13 @@ func _place_silhouettes() -> void:
 		var p := _characters[i]
 		if p.unreadable:
 			continue
-		_silhouette_a(
+		_add_silhouette(
 			Vector2(frame.position.x + 24.0, frame.position.y + LINE * float(i - _first) + LINE * 0.5),
 			p.silhouette
 		)
 
 
-func _silhouette_a(center: Vector2, variant_index: int) -> void:
+func _add_silhouette(center: Vector2, variant_index: int) -> void:
 	var s := AnimatedSprite2D.new()
 	s.sprite_frames = SpriteForge.frames("player", posmod(variant_index, SpriteForge.VARIANTS))
 	s.position = center

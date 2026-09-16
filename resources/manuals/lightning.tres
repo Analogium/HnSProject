@@ -14,6 +14,7 @@
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_eclair_vif_surcharge"]
@@ -44,6 +45,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_fourche_0")])
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 20.0
 
 [sub_resource type="Resource" id="N_eclair_vif_trait_de_glace"]
@@ -81,6 +83,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_ramificat
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_chaine_d_eclairs_haute_tension"]
@@ -102,6 +105,7 @@ value_per_point = -1.0
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 35.0
 
 [sub_resource type="Resource" id="N_chaine_d_eclairs_court_circuit"]
@@ -154,6 +158,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_orage_durabl
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 15.0
 
 [sub_resource type="Resource" id="N_nuage_d_orage_grele"]
@@ -191,6 +196,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_couronne_0"
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_nova_de_foudre_deflagration"]

@@ -378,10 +378,11 @@ func test_flats_apply_before_percentages() -> void:
 	)
 
 
+## En « plus » : deux accrus s'additionneraient (3 × 2) et n'exerceraient pas l'arrondi.
 func test_the_projectile_count_is_rounded_at_the_end() -> void:
 	var mods := [
-		_mod("projectiles", StatMod.Mode.PERCENT, 50.0),
-		_mod("projectiles", StatMod.Mode.PERCENT, 50.0),
+		_mod("projectiles", StatMod.Mode.MORE, 50.0),
+		_mod("projectiles", StatMod.Mode.MORE, 50.0),
 	]
 	assert_eq(
 		_projectile(3, 90.0).resolve(1, _sheet(), mods).projectile_count(), 7,
@@ -498,9 +499,11 @@ func test_the_breakdown_rebuilds_the_damage() -> void:
 	assert_eq(r.base_damage, 10.0, "la ligne de la table, avant tout multiplicateur")
 	assert_eq(r.added_min[DamageType.Kind.COLD], 4.0)
 	assert_eq(r.added_max[DamageType.Kind.LIGHTNING], 3.0, "la foudre ajoutée, à part de la base")
-	assert_almost_eq(r.increase, 1.65, 1e-6, "1,5 × 1,1 : les accroissements se multiplient")
+	# Jalon 14 : la règle a changé, les accrus s'additionnent (1,65 avant).
+	assert_almost_eq(r.increased, 1.60, 1e-6, "50 % + 10 % : les accrus s'additionnent")
+	assert_eq(r.more, 1.0, "aucun « plus » porté")
 
-	var factor := r.increase
+	var factor := r.increased * r.more
 	for nature in DamageType.Kind.size():
 		var base := r.base_damage if nature == c.nature else 0.0
 		assert_almost_eq(

@@ -225,7 +225,7 @@ func test_an_unknown_id_accepts_nothing() -> void:
 	var m := _manual(6)
 	assert_false(m.invest(arch, "spell_that_does_not_exist"))
 	assert_false(m.invest(null, "spell"))
-	assert_eq(m.points_places(), 0)
+	assert_eq(m.points_spent(), 0)
 
 
 # --------------------------------------------------------------------------
@@ -332,6 +332,10 @@ func test_a_talent_line_reads_like_an_item_line() -> void:
 	assert_null(_line("armor", 10.0).modifier(0), "zéro point ne donne aucune ligne")
 	assert_eq(_line("armor", 10.0).modifier(2).label(), "+20 armure")
 	assert_eq(_line("damage", 12.0, true).modifier(2).label(), "+24 % dégâts")
+	var more := _line("damage", 12.0, true)
+	more.more = true
+	assert_eq(more.modifier(2).label(), "24 % de dégâts en plus")
+	assert_eq(more.modifier(2).readable_value(), "24 % en plus", "la valeur seule, sur la page du manuel")
 	assert_eq(
 		_line("damage_fire", 4.0, false, "", 9.0).modifier(2).label(),
 		"ajoute 8 à 18 dégâts de feu",
@@ -362,7 +366,22 @@ func test_a_node_adds_damage_and_projectiles() -> void:
 	var r := c.resolve(1, _sheet(), [], _talents([n]))
 	assert_almost_eq(r.total_min(), 125.0, 1e-4)
 	assert_eq(r.projectile_count(), 2)
-	assert_almost_eq(r.increase, 1.25, 1e-6, "et la fiche sait le dire")
+	assert_almost_eq(r.increased, 1.25, 1e-6, "et la fiche sait le dire")
+
+
+## Le « plus » d'un nœud multiplie **après** la somme des accrus des objets : deux
+## sources qui se multiplient entre elles, pas une de plus dans le même total.
+func test_a_more_node_multiplies_the_sum_of_increased() -> void:
+	var c := _spell(100.0)
+	var line := _line("damage", 25.0, true)
+	line.more = true
+	var r := c.resolve(1, _sheet(), [
+		StatMod.new("damage", StatMod.Mode.PERCENT, 50.0, Keywords.SPELL),
+		StatMod.new("damage", StatMod.Mode.PERCENT, 10.0, Keywords.PROJECTILE),
+	], _talents([_node("n", [line] as Array[TalentLine])]))
+	assert_almost_eq(r.increased, 1.60, 1e-6)
+	assert_almost_eq(r.more, 1.25, 1e-6)
+	assert_almost_eq(r.total_min(), 200.0, 1e-4, "100 × 1,60 × 1,25")
 
 
 ## **Un nœud ne vise que sa compétence** : ses lignes n'ont pas de portée, et

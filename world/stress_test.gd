@@ -275,7 +275,7 @@ func _text(physics_ms: float) -> String:
 		# Ce que coûte le combat, et qui ne se voit sur aucun autre compteur : les
 		# gels ne perdent pas une image, ils volent du temps de jeu.
 		"combat auto       %s   (%.1f gel/s, %.0f %% du temps fige)" % [
-			"en cours" if _combat else "stops", _freezes_per_second,
+			"en cours" if _combat else "arrete", _freezes_per_second,
 			100.0 * _freezes_per_second * Game.hit_stop_duration
 		],
 		"",

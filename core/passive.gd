@@ -27,11 +27,4 @@ func displayed_name() -> String:
 
 
 func mods(points: int) -> Array[StatMod]:
-	var out: Array[StatMod] = []
-	if points <= 0:
-		return out
-	for line in lines:
-		var m := line.modifier(points)
-		if m != null:
-			out.append(m)
-	return out
+	return TalentLine.modifiers(lines, points)

@@ -13,6 +13,7 @@
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 14.0
 
 [sub_resource type="Resource" id="N_frappe_lourde_elan"]
@@ -61,6 +62,7 @@ talents = Array[ExtResource("3_noeud")]([SubResource("N_frappe_lourde_elan"), Su
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_coup_en_croix_taille"]
@@ -122,6 +124,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_ronde_0")])
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
+more = true
 value_per_point = 12.0
 
 [sub_resource type="Resource" id="N_epee_spirale_tranchant"]

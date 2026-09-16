@@ -85,7 +85,7 @@ static func _paint(mask: Array, color: Color) -> Texture2D:
 				img.set_pixel(x, y, color)
 			elif c == "o":
 				img.set_pixel(x, y, glint)
-			elif _key_event(mask, x - 1, y - 1):
+			elif _touches(mask, x - 1, y - 1):
 				img.set_pixel(x, y, OUTLINE)
 	return ImageTexture.create_from_image(img)
 
@@ -98,7 +98,7 @@ static func _cell(mask: Array, x: int, y: int) -> String:
 
 ## Le contour se pose autour de la silhouette entière, diagonales comprises : sans
 ## elles l'éclair se découpe en marches.
-static func _key_event(mask: Array, x: int, y: int) -> bool:
+static func _touches(mask: Array, x: int, y: int) -> bool:
 	for dy in [-1, 0, 1]:
 		for dx in [-1, 0, 1]:
 			if _cell(mask, x + dx, y + dy) != ".":

@@ -30,6 +30,12 @@ func test_labels() -> void:
 	assert_eq(StatMod.new("res_fire", StatMod.Mode.FLAT, 20.0).label(), "+20 % rés. feu")
 
 
+## « Plus » ne se lit pas comme un accru, et s'élide devant une voyelle.
+func test_a_more_line_reads_apart() -> void:
+	assert_eq(StatMod.new("max_health", StatMod.Mode.MORE, 20.0).label(), "20 % de PV en plus")
+	assert_eq(StatMod.new("armor", StatMod.Mode.MORE, 20.0).label(), "20 % d'armure en plus")
+
+
 ## Une ligne portée dit ce qu'elle vise, avec **le libellé de la page du manuel** :
 ## « +20 % dégâts » tout court se lirait comme la ligne de fiche du même nom.
 func test_a_scoped_modifier_says_what_it_targets() -> void:
@@ -85,6 +91,28 @@ func test_flats_before_percentages() -> void:
 
 	assert_eq(a.max_health, 300.0, "(100 + 100) x 1,5")
 	assert_eq(b.max_health, a.max_health, "l'ordre d'équipement ne change rien")
+
+
+## Jalon 14 : les accrus d'un champ s'additionnent, chaque « plus » multiplie ensuite,
+## quel que soit l'ordre de la liste.
+func test_increased_add_up_and_more_multiplies() -> void:
+	var mods: Array[StatMod] = [
+		StatMod.new("max_health", StatMod.Mode.MORE, 10.0),
+		StatMod.new("max_health", StatMod.Mode.PERCENT, 10.0),
+		StatMod.new("max_health", StatMod.Mode.MORE, 10.0),
+		StatMod.new("max_health", StatMod.Mode.PERCENT, 10.0),
+		StatMod.new("max_health", StatMod.Mode.FLAT, 100.0),
+	]
+	var a := CharacterStats.new()
+	a.max_health = 100.0
+	StatMod.apply_all(a, mods)
+	assert_almost_eq(a.max_health, 200.0 * 1.2 * 1.21, 1e-3, "(100 + 100) × 1,20 × 1,1 × 1,1")
+
+	mods.reverse()
+	var b := CharacterStats.new()
+	b.max_health = 100.0
+	StatMod.apply_all(b, mods)
+	assert_almost_eq(b.max_health, a.max_health, 1e-3, "l'ordre ne change rien")
 
 
 ## **La confusion des deux familles.** Un modificateur qui vise un mot-clé ne

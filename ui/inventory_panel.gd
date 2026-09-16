@@ -99,10 +99,10 @@ func _ready() -> void:
 	title.add_theme_color_override("font_color", UiPalette.TITLE)
 
 
-## Rend la souris quoi qu'il arrive, même quand la zone est rechargée sac ouvert.
+## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
+## par mentir (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
-	if visible:
-		Game.grab_ui_input(self, false)
+	Game.grab_ui_input(self, false)
 
 
 ## Dessiné à la main : titre refait, panneau redessiné.

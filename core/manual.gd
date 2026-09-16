@@ -39,7 +39,7 @@ func points_gained() -> int:
 
 
 func remaining_points() -> int:
-	return points_gained() - points_places()
+	return points_gained() - points_spent()
 
 
 ## Le seul chemin : les manuels du râtelier, à chaque récompense.
@@ -53,7 +53,7 @@ func points_of(identifier: String) -> int:
 
 
 ## Tous points confondus.
-func points_places() -> int:
+func points_spent() -> int:
 	var total := 0
 	for id in points:
 		total += int(points[id])
@@ -164,9 +164,9 @@ func invested_talents(archetype: ManualArchetype, skill_id: String) -> Array[Inv
 	if cell == null:
 		return out
 	for node in cell.talents:
-		var places := points_of(node.id)
-		if places > 0:
-			out.append(InvestedTalent.new(node, places))
+		var spent := points_of(node.id)
+		if spent > 0:
+			out.append(InvestedTalent.new(node, spent))
 	return out
 
 

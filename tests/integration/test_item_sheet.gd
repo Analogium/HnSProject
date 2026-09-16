@@ -149,6 +149,23 @@ func test_the_two_tabs_do_not_overlap() -> void:
 	)
 
 
+## Les deux colonnes de la liste elle-même. Le test d'avant ne regardait que les
+## deux volets : à l'intérieur du volet gauche, `lightning_to_attacks` touchait
+## « dégâts de foudre aux attaques », et il a fallu une capture pour le voir.
+func test_the_affix_ids_clear_their_column() -> void:
+	var font := ThemeDB.fallback_font
+	var room := ForgeGallery.COL_STAT - ForgeGallery.COL_ID
+	for raw in ItemAffixPool.ALL:
+		var affix: ItemAffix = raw
+		var width := font.get_string_size(
+			affix.id, HORIZONTAL_ALIGNMENT_LEFT, -1.0, ForgeGallery.SHEET_SIZE
+		).x
+		assert_lt(
+			width, room,
+			"« %s » : %.0f px d'identifiant pour %.0f de colonne" % [affix.id, width, room]
+		)
+
+
 # --------------------------------------------------------------------------
 # L'en-tête
 # --------------------------------------------------------------------------

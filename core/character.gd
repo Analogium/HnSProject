@@ -257,7 +257,8 @@ static func _item_from_dict(source: Variant) -> Item:
 		var stat := String(line.get("stat", ""))
 		if stat.is_empty():
 			continue
-		var mode := StatMod.Mode.PERCENT if _int(line, "mode", 0) == StatMod.Mode.PERCENT else StatMod.Mode.FLAT
+		var written := _int(line, "mode", 0)
+		var mode: StatMod.Mode = written if written in StatMod.Mode.values() else StatMod.Mode.FLAT
 		# Portée absente : une ligne de fiche, ce que sont toutes celles d'avant la
 		# version 4.
 		var value := _float(line, "value", 0.0)
@@ -305,7 +306,7 @@ static func _current_line(mod: StatMod) -> StatMod:
 			family = Keywords.SPELL
 		_:
 			return mod
-	if mod.mode == StatMod.Mode.PERCENT:
+	if mod.mode != StatMod.Mode.FLAT:
 		return null
 	return StatMod.ranged(
 		SkillStats.added_stat(nature), mod.value, mod.value, family

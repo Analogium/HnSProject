@@ -78,25 +78,25 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 | case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Éclair vif | spell foudre | niveau 1 | 5 | 8 mana | 0.42 s | bolt | 21 · 27 · 34 · 42 · 51 |
-| Chaîne d'éclairs | spell foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
-| Nuage d'orage | spell foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
-| Nova de foudre | spell foudre | niveau 8 | 5 | 26 mana | 1.40 s | bolt · ×8 sur 360° | 18 · 22 · 27 · 33 · 40 |
+| Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | bolt | 21 · 27 · 34 · 42 · 51 |
+| Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
+| Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
+| Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | bolt · ×8 sur 360° | 18 · 22 · 27 · 33 · 40 |
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % dégâts (Foudre) · +10 mana |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Surcharge | Éclair vif | — | 1 point de compétence | 3 | +12 % dégâts |
+| Surcharge | Éclair vif | — | 1 point de compétence | 3 | 12 % de dégâts en plus |
 | Fourche | Éclair vif | Surcharge | 2 points de compétence | 1 | +1 nombre de projectiles |
-| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | +20 % dégâts · convertit 50 % en froid |
+| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | 20 % de dégâts en plus · convertit 50 % en froid |
 | Ramification | Chaîne d'éclairs | — | 1 point de compétence | 2 | +1 nombre de cibles |
-| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | +12 % dégâts |
-| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · +35 % dégâts |
+| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | 12 % de dégâts en plus |
+| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · 35 % de dégâts en plus |
 | Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % rayon |
 | Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % durée |
-| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % dégâts · convertit 60 % en froid |
+| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | 15 % de dégâts en plus · convertit 60 % en froid |
 | Couronne | Nova de foudre | — | 1 point de compétence | 2 | +2 nombre de projectiles |
-| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | +12 % dégâts |
+| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | 12 % de dégâts en plus |
 | Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % vitesse de projectile |
 
 47 destinations de points pour 20 gagnés.
@@ -105,21 +105,21 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 | case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Frappe lourde | attack physique | niveau 1 | 5 | 6 mana | weapon | strike | 20 · 26 · 33 · 41 · 50 |
-| Coup en croix | attack physique | niveau 3 | 5 | 7 mana | weapon | cross | 13 · 17 · 21 · 26 · 32 |
-| Épée spirale | attack physique | niveau 6 | 5 | 10 mana | weapon | orbit · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
+| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | strike | 20 · 26 · 33 · 41 · 50 |
+| Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | cadence de l'arme | cross | 13 · 17 · 21 · 26 · 32 |
+| Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Élan | Frappe lourde | — | 1 point de compétence | 3 | +14 % dégâts |
+| Élan | Frappe lourde | — | 1 point de compétence | 3 | 14 % de dégâts en plus |
 | Lame ardente | Frappe lourde | Élan | 2 points de compétence | 1 | convertit 40 % en feu · donne le mot-clé Feu |
 | Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
-| Taille | Coup en croix | — | 1 point de compétence | 3 | +12 % dégâts |
+| Taille | Coup en croix | — | 1 point de compétence | 3 | 12 % de dégâts en plus |
 | Estoc | Coup en croix | Taille | 2 points de compétence | 2 | ajoute 2 à 6 dégâts physiques |
 | Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré |
 | Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
-| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % dégâts |
+| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | 12 % de dégâts en plus |
 | Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % durée |
 
 38 destinations de points pour 20 gagnés.
@@ -128,22 +128,22 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 | case | sorte | ouvre à | points | coût | recharge | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Boule de feu | spell feu | niveau 1 | 5 | 11 mana | 0.60 s | ball · rayon 20 | 30 · 38 · 48 · 59 · 73 |
-| Serpent infernal | spell feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
-| Immolation | spell feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
+| Boule de feu | sort feu | niveau 1 | 5 | 11 mana | 0.60 s | ball · rayon 20 | 30 · 38 · 48 · 59 · 73 |
+| Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
+| Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % dégâts (Feu) · +3 % rés. feu |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Attisement | Boule de feu | — | 1 point de compétence | 3 | +13 % dégâts |
+| Attisement | Boule de feu | — | 1 point de compétence | 3 | 13 % de dégâts en plus |
 | Souffle ardent | Boule de feu | Attisement | 2 points de compétence | 2 | +30 % rayon |
 | Double langue | Boule de feu | — | 3 points de compétence | 1 | +1 nombre de projectiles |
 | Longue vie | Serpent infernal | — | 1 point de compétence | 2 | +25 % durée |
 | Crocs | Serpent infernal | Longue vie | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
-| Mue | Serpent infernal | — | 2 points de compétence | 3 | +12 % dégâts |
+| Mue | Serpent infernal | — | 2 points de compétence | 3 | 12 % de dégâts en plus |
 | Brasier | Immolation | — | 1 point de compétence | 2 | +20 % rayon |
-| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | +14 % dégâts |
-| Flamme noire | Immolation | — | 3 points de compétence | 1 | +15 % dégâts · convertit 50 % en nécrotique |
+| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | 14 % de dégâts en plus |
+| Flamme noire | Immolation | — | 3 points de compétence | 1 | 15 % de dégâts en plus · convertit 50 % en nécrotique |
 
 38 destinations de points pour 20 gagnés.
 

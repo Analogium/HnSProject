@@ -405,7 +405,7 @@ forme, même application, même façon de s'écrire à l'écran.
    | `name` | Ce que le joueur lit |
    | `required_manual_level` | À partir de quel niveau du livre la case s'ouvre |
    | `points_max` | Combien de points elle accepte. Un champ, contrairement à une compétence qui le déduit de sa table de dégâts |
-   | `lines` | Un `TalentLine` par effet : `stat`, `percentage`, `value_per_point`, et `value_max_per_point` pour une fourchette |
+   | `lines` | Un `TalentLine` par effet : `stat`, `percentage`, `value_per_point`, et `value_max_per_point` pour une fourchette. `more` fait d'un pourcentage un « plus », qui multiplie après la somme des accrus : **réservé aux lignes `damage` des nœuds**, les passifs restent accrus (jalon 14) |
 
 2. **Ce qu'une ligne peut viser** — c'est la règle des affixes, à la lettre :
    - `scope` **vide** → un champ réel de `CharacterStats`, présent dans
