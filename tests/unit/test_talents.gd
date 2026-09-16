@@ -331,11 +331,14 @@ func test_a_passive_lines_follow_its_points() -> void:
 func test_a_talent_line_reads_like_an_item_line() -> void:
 	assert_null(_line("armor", 10.0).modifier(0), "zéro point ne donne aucune ligne")
 	assert_eq(_line("armor", 10.0).modifier(2).label(), "+20 armure")
-	assert_eq(_line("damage", 12.0, true).modifier(2).label(), "+24 % dégâts")
+	assert_eq(Glossary.plain(_line("damage", 12.0, true).modifier(2).label()), "+24 % de dégâts accrus")
 	var more := _line("damage", 12.0, true)
 	more.more = true
-	assert_eq(more.modifier(2).label(), "24 % de dégâts en plus")
-	assert_eq(more.modifier(2).readable_value(), "24 % en plus", "la valeur seule, sur la page du manuel")
+	assert_eq(Glossary.plain(more.modifier(2).label()), "+24 % de dégâts amplifiés")
+	assert_eq(
+		Glossary.plain(more.modifier(2).readable_value()), "+24 % amplifiés",
+		"la valeur seule, sur la page du manuel"
+	)
 	assert_eq(
 		_line("damage_fire", 4.0, false, "", 9.0).modifier(2).label(),
 		"ajoute 8 à 18 dégâts de feu",

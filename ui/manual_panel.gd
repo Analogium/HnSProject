@@ -645,11 +645,14 @@ func _draw_sheet(sheet: Sheet, anchor: Rect2) -> void:
 		var line := sheet.lines[i]
 		var base := y + LINE - 2.0
 		_text(line.label_of, Vector2(left, base), FONT_SIZE, UiPalette.HINT)
-		draw_string(
-			_font, Vector2(left, base), line.value,
-			HORIZONTAL_ALIGNMENT_RIGHT, width, FONT_SIZE, line.tint
-		)
+		RichText.draw_right(self, _font, Vector2(left, base), left + width, line.value, FONT_SIZE, line.tint)
 		y += LINE
+
+	var described := PackedStringArray()
+	for line in sheet.lines:
+		described.append(line.label_of)
+		described.append(line.value)
+	GlossaryBoxes.draw(self, _font, r, Rect2(Vector2.ZERO, size), described)
 
 
 ## La fiche de la case, quelle que soit sa sorte.
@@ -711,30 +714,30 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 				Group.DAMAGE, Texts.t("converti"),
 				_converted_part(cast.conversions[nature], nature), DamageType.COLORS[nature]
 			))
-	if not is_equal_approx(cast.increased, 1.0):
-		out.append(SheetLine.new(
-			Group.DAMAGE, Texts.t("dégâts accrus"),
-			_increase(cast.increased), UiPalette.TEXT
-		))
-	if not is_equal_approx(cast.more, 1.0):
-		out.append(SheetLine.new(
-			Group.DAMAGE, Texts.t("dégâts en plus"),
-			_increase(cast.more), UiPalette.TEXT
-		))
+	for percent in [
+		[StatMod.Mode.PERCENT, cast.increased], [StatMod.Mode.MORE, cast.more]
+	]:
+		var factor: float = percent[1]
+		if not is_equal_approx(factor, 1.0):
+			out.append(SheetLine.new(
+				Group.DAMAGE,
+				StatMod.term_label(SkillStats.DAMAGE, StatMod.term_of(percent[0], factor - 1.0)),
+				_increase(factor), UiPalette.TEXT
+			))
 	# Hors du total « par coup », qui reste celui d'une cible sans état.
 	for kind in StatusEffects.Kind.size():
-		var label_of := Texts.t(StatusEffects.AGAINST[kind])
-		if cast.against_increased[kind] != 0.0:
+		var stat := SkillStats.against_stat(kind)
+		var added := cast.against_increased[kind]
+		if added != 0.0:
 			out.append(SheetLine.new(
-				Group.DAMAGE, label_of,
-				StatMod.value_label("", StatMod.Mode.PERCENT, cast.against_increased[kind]),
-				StatusEffects.color(kind)
+				Group.DAMAGE, StatMod.term_label(stat, StatMod.term_of(StatMod.Mode.PERCENT, added)),
+				StatMod.value_label(stat, StatMod.Mode.PERCENT, added), StatusEffects.color(kind)
 			))
-		if not is_equal_approx(cast.against_more[kind], 1.0):
+		var more := (cast.against_more[kind] - 1.0) * 100.0
+		if not is_zero_approx(more):
 			out.append(SheetLine.new(
-				Group.DAMAGE, label_of,
-				StatMod.value_label("", StatMod.Mode.MORE, (cast.against_more[kind] - 1.0) * 100.0),
-				StatusEffects.color(kind)
+				Group.DAMAGE, StatMod.term_label(stat, StatMod.term_of(StatMod.Mode.MORE, more)),
+				StatMod.value_label(stat, StatMod.Mode.MORE, more), StatusEffects.color(kind)
 			))
 	if cast.total_max() > 0.0:
 		out.append(SheetLine.new(
@@ -929,4 +932,4 @@ static func _increase(factor: float) -> String:
 
 
 func _text(text_value: String, at: Vector2, size_value: int, tint: Color) -> void:
-	draw_string(_font, at, text_value, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size_value, tint)
+	RichText.draw(self, _font, at, text_value, size_value, tint)

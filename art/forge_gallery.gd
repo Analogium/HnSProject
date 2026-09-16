@@ -541,7 +541,7 @@ static func _identity(base: ItemBase) -> String:
 	var pieces := [", ".join(base.tags)]
 	var implicit := base.implicit()
 	if implicit != null:
-		pieces.append("implicite %s" % implicit.label())
+		pieces.append("implicite %s" % Glossary.plain(implicit.label()))
 	# « 1 × 1 case » et non « 1 × 1 cases » : l'anneau est le seul objet du
 	# catalogue à n'en occuper qu'une, et c'est le premier qu'on regarde.
 	var cells := base.grid_size.x * base.grid_size.y

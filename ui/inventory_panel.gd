@@ -614,8 +614,7 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 	# Deux colonnes ; la gouttière sur la plus large ligne, pas en escalier.
 	var w_affixes := 0.0
 	for line in explicit_mods:
-		w_affixes = maxf(w_affixes, _font.get_string_size(
-			line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+		w_affixes = maxf(w_affixes, RichText.width(_font, line, FONT_SIZE))
 	var w_tiers := 0.0
 	for line in tiers:
 		w_tiers = maxf(w_tiers, _font.get_string_size(
@@ -627,7 +626,7 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 	var column := w_affixes + (TIP_TIER_GAP + w_tiers if detailed else 0.0)
 	w = maxf(w, column)
 	if not implicit.is_empty():
-		w = maxf(w, _font.get_string_size(implicit, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
+		w = maxf(w, RichText.width(_font, implicit, FONT_SIZE))
 	if not note.is_empty():
 		w = maxf(w, _font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
@@ -658,8 +657,7 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
 	if not implicit.is_empty():
 		y += TIP_LINE
-		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), implicit,
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_IMPLICIT)
+		RichText.draw(self, _font, Vector2(r.position.x + TIP_PAD, y), implicit, FONT_SIZE, TIP_IMPLICIT)
 	if separated:
 		# Le trait sépare ce que la base garantit de ce que le tirage a donné.
 		y += TIP_LINE * 0.5
@@ -670,8 +668,7 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 		)
 	for i in explicit_mods.size():
 		y += TIP_LINE
-		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), explicit_mods[i],
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_EXPLICIT)
+		RichText.draw(self, _font, Vector2(r.position.x + TIP_PAD, y), explicit_mods[i], FONT_SIZE, TIP_EXPLICIT)
 		if tiers[i].is_empty():
 			continue
 		draw_string(
@@ -684,6 +681,10 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 		y += TIP_LINE
 		draw_string(_font, Vector2(r.position.x + TIP_PAD, y), note,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_LEVEL)
+
+	var described := explicit_mods.duplicate()
+	described.append(implicit)
+	GlossaryBoxes.draw(self, _font, r, Rect2(Vector2.ZERO, _panel_size()), described)
 
 
 ## `framed` : le cadre d'un objet rangé ; l'objet tenu a déjà sa teinte de destination.

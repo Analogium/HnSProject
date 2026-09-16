@@ -32,14 +32,15 @@ const NATURES := [
 ## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
 const IDS := ["ignite", "numb", "chill", "rot", "blessing", "bleed"]
 
-## Ce que vise une ligne de dégâts contre un état.
+## Ce qui précise des dégâts contre un état ; le terme se place avant : « dégâts accrus
+## contre les embrasés ».
 const AGAINST := [
-	"dégâts contre les embrasés",
-	"dégâts contre les engourdis",
-	"dégâts contre les transis",
-	"dégâts contre les pourrissants",
-	"dégâts contre les bénis",
-	"dégâts contre les saignants",
+	"contre les embrasés",
+	"contre les engourdis",
+	"contre les transis",
+	"contre les pourrissants",
+	"contre les bénis",
+	"contre les saignants",
 ]
 
 ## Le mot qui s'envole au-dessus du joueur atteint.

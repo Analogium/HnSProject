@@ -359,7 +359,7 @@ func _draw() -> void:
 		if text_value.contains("|"):
 			var parts := text_value.split("|")
 			_text(parts[0], r.position + Vector2(2.0, LINE - 2.0), FONT_SIZE, tint)
-			var w := _font.get_string_size(parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
+			var w := RichText.width(_font, parts[1], FONT_SIZE)
 			_text(parts[1], r.position + Vector2(r.size.x - w - 2.0, LINE - 2.0), FONT_SIZE, tint)
 		else:
 			_text(text_value, r.position + Vector2(2.0, LINE - 2.0), FONT_SIZE, tint)
@@ -391,4 +391,4 @@ func _paint_sheet(right_side: float) -> void:
 
 
 func _text(text_value: String, at: Vector2, size_value: int, tint: Color) -> void:
-	draw_string(_font, at, text_value, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size_value, tint)
+	RichText.draw(self, _font, at, text_value, size_value, tint)

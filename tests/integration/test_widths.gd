@@ -204,14 +204,17 @@ func _place(panel: Control, node_name: String) -> void:
 	add_child_autofree(panel)
 
 
+## Par `RichText`, comme le dessin : le terme en gras, la marque sans largeur.
 func _width(text_value: String, size_value: int) -> float:
-	return _police.get_string_size(text_value, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size_value).x
+	return RichText.width(_police, text_value, size_value)
 
 
 func _fits(text_value: String, width: float, size_value: int, what: String) -> void:
 	assert_lte(
 		_width(text_value, size_value), width,
-		"%s — « %s » déborde de %.0f px" % [what, text_value, _width(text_value, size_value) - width]
+		"%s — « %s » déborde de %.0f px" % [
+			what, Glossary.plain(text_value), _width(text_value, size_value) - width
+		]
 	)
 
 
@@ -224,6 +227,6 @@ func _fit_together(
 	assert_lte(
 		occupies, width,
 		"%s — « %s » et « %s » se chevauchent de %.0f px" % [
-			what, left, right_side, occupies - width
+			what, Glossary.plain(left), Glossary.plain(right_side), occupies - width
 		]
 	)

@@ -131,7 +131,9 @@ lancer. Leur explication est dans `StatHelp.SKILLS`, et elles comptent comme
 atteintes dès qu'un affixe de dégâts ajoutés vise l'un de leurs mots-clés.
 
 1. **`core/character_stats.gd`** — le champ `@export`, dans son groupe.
-2. **`core/stat_mod.gd`** — son entrée dans `LABELS` (l'unité fait partie du nom
+2. **`core/stat_mod.gd`** — son entrée dans `LABELS` **et dans `AGREEMENT`** (le genre
+   et le nombre du libellé, pour « accrue » ou « accrus » —
+   `test_each_label_has_its_agreement`) ; l'unité fait partie du nom
    quand elle n'est pas évidente : « PV/s » et non « régénération »). Puis, si
    elle se lit en pourcentage :
    - rangée en fraction ou en multiplicateur (0.05 → « 5 % ») → `SCALED` ;
@@ -561,6 +563,27 @@ abîmé et l'absence de fichier.
 
 ---
 
+## Ajouter un terme au glossaire
+
+Un mot que le joueur doit pouvoir comprendre sans quitter l'écran : en gras là où il
+apparaît, et son encadré à côté.
+
+1. **`core/glossary.gd`** — son entrée dans `TERMS` (identifiant **définitif**, il
+   voyage dans la marque ; ses quatre formes `ms`, `fs`, `mp`, `fp` ; son encadré), et
+   l'encadré dans `ENTRIES` s'il est nouveau (titre et définition, en français).
+2. **Là où le mot s'écrit** — `Glossary.term(id, accord)` dans une place `{terme}`
+   du gabarit. Jamais le mot en clair : sans marque, il n'est ni gras ni expliqué.
+3. **Là où le texte se dessine** — `RichText` pour la ligne, et
+   `GlossaryBoxes.draw()` en dernier, avec le rectangle qui montre le texte.
+4. **`i18n/en.po`** — chaque forme, le titre et la définition. `test_translations`
+   les relève dans `Glossary`.
+
+**Ce qui refusera un oubli** — `tests/unit/test_glossary.gd` : quatre formes et un
+encadré par terme, un titre et une définition par encadré, aucune marque dans
+`en.po` ; `test_translations.gd` pour l'anglais.
+
+---
+
 ## Ajouter un texte affiché
 
 **Le texte français est la clé.** Le code l'écrit en clair, `i18n/en.po` en donne
@@ -587,6 +610,9 @@ alors le français.
    `Texts.t("vitesse", "fiche de compétence")`, et un `msgctxt` dans le `.po`.
 6. **Un pourcentage** s'écrit par `StatMod.percentage()` — l'espace devant le
    signe est une règle française, et le gabarit est lui-même traduit.
+   **Un terme du glossaire** (accru, amplifié…) par `Glossary.term()`, jamais écrit
+   dans la clé : le gabarit lui réserve une place `{terme}`, et ce qui le dessine
+   passe par `RichText`.
 7. **Ce qui est dessiné à la main doit redessiner** quand la langue change :
    `_notification(NOTIFICATION_TRANSLATION_CHANGED)`. Elle arrive **aussi à
    l'entrée dans l'arbre**, donc la garder derrière `is_node_ready()` dès qu'on y

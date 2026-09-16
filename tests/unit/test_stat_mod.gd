@@ -24,16 +24,54 @@ func test_the_two_unit_families_do_not_mix() -> void:
 func test_labels() -> void:
 	assert_eq(StatMod.new("armor", StatMod.Mode.FLAT, 25.0).label(), "+25 armure")
 	assert_eq(
-		StatMod.new("attack_speed", StatMod.Mode.PERCENT, 8.0).label(),
-		"+8 % vitesse d'attaque"
+		Glossary.plain(StatMod.new("attack_speed", StatMod.Mode.PERCENT, 8.0).label()),
+		"+8 % de vitesse d'attaque accrue"
 	)
 	assert_eq(StatMod.new("res_fire", StatMod.Mode.FLAT, 20.0).label(), "+20 % rés. feu")
 
 
-## « Plus » ne se lit pas comme un accru, et s'élide devant une voyelle.
-func test_a_more_line_reads_apart() -> void:
-	assert_eq(StatMod.new("max_health", StatMod.Mode.MORE, 20.0).label(), "20 % de PV en plus")
-	assert_eq(StatMod.new("armor", StatMod.Mode.MORE, 20.0).label(), "20 % d'armure en plus")
+## Jalon 15 : le terme dit le calcul et le sens, s'accorde avec la statistique, et
+## « de » s'élide devant une voyelle.
+func test_a_percentage_names_its_term() -> void:
+	var plain := func(stat: String, mode: StatMod.Mode, v: float) -> String:
+		return Glossary.plain(StatMod.new(stat, mode, v).label())
+	assert_eq(plain.call("max_health", StatMod.Mode.MORE, 20.0), "+20 % de PV amplifiés")
+	assert_eq(plain.call("armor", StatMod.Mode.MORE, 20.0), "+20 % d'armure amplifiée")
+	assert_eq(plain.call("armor", StatMod.Mode.PERCENT, 10.0), "+10 % d'armure accrue")
+	assert_eq(plain.call("attack_speed", StatMod.Mode.PERCENT, -15.0), "-15 % de vitesse d'attaque réduite")
+	assert_eq(plain.call("max_health", StatMod.Mode.MORE, -20.0), "-20 % de PV atténués")
+
+
+func test_a_percentage_reads_in_english() -> void:
+	Settings.from_dict({"language": Settings.ENGLISH})
+	var increased := StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.LIGHTNING)
+	var less := StatMod.new("max_health", StatMod.Mode.MORE, -20.0)
+	var increased_text := Glossary.plain(increased.label())
+	var less_text := Glossary.plain(less.label())
+	Settings.from_dict({"language": Settings.FRENCH})
+	assert_eq(increased_text, "+20% increased damage (Lightning)")
+	assert_eq(less_text, "-20% less HP")
+
+
+## Le terme porte sa marque : c'est elle qui ouvre l'encadré.
+func test_a_percentage_calls_its_glossary_entry() -> void:
+	assert_eq(
+		Glossary.terms(StatMod.new("armor", StatMod.Mode.PERCENT, 10.0).label()),
+		PackedStringArray(["additive"])
+	)
+	assert_eq(
+		Glossary.terms(StatMod.new("armor", StatMod.Mode.MORE, -10.0).readable_value()),
+		PackedStringArray(["multiplicative"])
+	)
+	assert_eq(Glossary.terms(StatMod.new("armor", StatMod.Mode.FLAT, 10.0).label()), PackedStringArray())
+
+
+## Un libellé sans accord prendrait le masculin singulier en silence.
+func test_each_label_has_its_agreement() -> void:
+	for field in StatMod.LABELS:
+		assert_true(Glossary.AGREEMENTS.has(StatMod.AGREEMENT.get(field, "")), "« %s »" % field)
+	for field in SkillStats.LABELS:
+		assert_true(Glossary.AGREEMENTS.has(SkillStats.AGREEMENT.get(field, "")), "« %s »" % field)
 
 
 ## Une ligne portée dit ce qu'elle vise, avec **le libellé de la page du manuel** :
@@ -44,8 +82,8 @@ func test_a_scoped_modifier_says_what_it_targets() -> void:
 		"+1 nombre de projectiles (Projectile)"
 	)
 	assert_eq(
-		StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.LIGHTNING).label(),
-		"+20 % dégâts (Foudre)"
+		Glossary.plain(StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.LIGHTNING).label()),
+		"+20 % de dégâts accrus (Foudre)"
 	)
 
 
@@ -177,7 +215,7 @@ func test_a_span_is_written_without_sign_and_with_a_single_unit() -> void:
 ## les deux fonctions ne doivent pas diverger d\'un arrondi, d\'où le partage.
 func test_the_bare_value_is_the_label_one() -> void:
 	var m := StatMod.new("attack_speed", StatMod.Mode.PERCENT, 9.0)
-	assert_eq(m.label(), "+9 % vitesse d\'attaque")
+	assert_eq(Glossary.plain(m.label()), "+9 % de vitesse d\'attaque accrue")
 	assert_eq(StatMod.value_label(m.stat, m.mode, m.value), "+9 %")
 	var flat := StatMod.new("max_health", StatMod.Mode.FLAT, 63.0)
 	assert_eq(flat.label(), "+63 PV")

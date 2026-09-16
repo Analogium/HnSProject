@@ -80,7 +80,7 @@ func _bases(l: PackedStringArray) -> void:
 			base.tier,
 			base.family if not base.family.is_empty() else "—",
 			", ".join(base.tags),
-			"—" if imp == null else imp.label(),
+			"—" if imp == null else Glossary.plain(imp.label()),
 			base.grid_size.x, base.grid_size.y,
 			window,
 		])
@@ -174,7 +174,7 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 func _per_point(lines: Array[TalentLine]) -> String:
 	var out := PackedStringArray()
 	for line in lines:
-		out.append(line.modifier(1).label())
+		out.append(Glossary.plain(line.modifier(1).label()))
 	return " · ".join(out) if out.size() > 0 else "—"
 
 

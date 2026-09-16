@@ -35,6 +35,35 @@ const LABELS := {
 	"move_speed": "vitesse",
 }
 
+## L'accord de chaque libellé, pour le terme qui le suit : « armure accrue », « dégâts
+## accrus ». Les formes de `Glossary.AGREEMENTS` ; un test refuse un libellé oublié.
+const AGREEMENT := {
+	"strength": "fs",
+	"dexterity": "fs",
+	"intelligence": "fs",
+	"max_health": "mp",
+	"health_regen": "mp",
+	"max_mana": "ms",
+	"mana_regen": "ms",
+	"armor": "fs",
+	"evasion": "fs",
+	"res_cold": "fs",
+	"res_fire": "fs",
+	"res_lightning": "fs",
+	"res_necrotic": "fs",
+	"res_holy": "fs",
+	"attack_cooldown": "ms",
+	"attack_speed": "fs",
+	"cast_speed": "fs",
+	"attack_range": "fs",
+	"crit_chance": "fs",
+	"crit_multiplier": "mp",
+	"move_speed": "fs",
+}
+
+## « de » s'élide devant ces lettres : « d'armure », « d'esquive ».
+const ELIDING := "aeiouhéèê"
+
 ## Rangées en fraction ou en multiplicateur, lues en pourcentage : 0.05 → « 5 % ».
 const SCALED := [
 	"crit_chance",
@@ -136,9 +165,7 @@ static func ratio(current: float, maximum: float) -> float:
 
 ## Un pourcentage porte son unité par son mode ; une valeur absolue passe par format().
 static func value_label(stat_name: String, p_mode: Mode, v: float, signed := true) -> String:
-	if p_mode == Mode.MORE:
-		return Texts.t("{valeur} en plus").format({"valeur": percentage(roundi(v))})
-	if p_mode == Mode.PERCENT:
+	if p_mode != Mode.FLAT:
 		return percentage(roundi(v), signed)
 	return format(stat_name, v, signed)
 
@@ -158,23 +185,58 @@ static func range_label(stat_name: String, p_mode: Mode, lo: float, hi: float) -
 ## la fiche du manuel ; des dégâts ajoutés disent leur destinataire en toutes lettres
 ## (« dégâts de froid aux sorts »).
 static func name(stat_name: String, p_scope := "") -> String:
-	if p_scope.is_empty():
-		if LABELS.has(stat_name):
-			return Texts.t(LABELS[stat_name])
-		# Sans portée et hors de la fiche : la ligne d'un nœud, qui ne vise que sa
-		# compétence. On nomme le nombre visé.
-		var unscoped_nature := SkillStats.added_nature(stat_name)
-		if unscoped_nature >= 0:
-			return DamageType.damage_label(unscoped_nature)
-		return Texts.t(SkillStats.label_key(stat_name))
 	var nature := SkillStats.added_nature(stat_name)
 	if nature >= 0:
-		return "%s %s" % [
-			DamageType.damage_label(nature), Keywords.recipient(p_scope)
-		]
-	return "%s (%s)" % [
-		Texts.t(SkillStats.label_key(stat_name)), Keywords.label_of(p_scope)
-	]
+		# Sans portée : la ligne d'un nœud, qui ne vise que sa compétence.
+		if p_scope.is_empty():
+			return DamageType.damage_label(nature)
+		return "%s %s" % [DamageType.damage_label(nature), Keywords.recipient(p_scope)]
+	return _noun(stat_name) + _complement(stat_name, p_scope)
+
+
+## Le nom de ce qui change, sans ce qui le précise : « dégâts », « armure ».
+static func _noun(stat_name: String) -> String:
+	if LABELS.has(stat_name):
+		return Texts.t(LABELS[stat_name])
+	if SkillStats.against(stat_name) >= 0:
+		return Texts.t(SkillStats.LABELS[SkillStats.DAMAGE])
+	return Texts.t(SkillStats.LABELS.get(stat_name, stat_name))
+
+
+## Ce qui suit le nom : « contre les embrasés », puis « (Sort) ».
+static func _complement(stat_name: String, p_scope: String) -> String:
+	var out := ""
+	var kind := SkillStats.against(stat_name)
+	if kind >= 0:
+		out += " " + Texts.t(StatusEffects.AGAINST[kind])
+	if not p_scope.is_empty():
+		out += " (%s)" % Keywords.label_of(p_scope)
+	return out
+
+
+## L'accord du nom, pour le terme qui le suit.
+static func agreement(stat_name: String) -> String:
+	if AGREEMENT.has(stat_name):
+		return AGREEMENT[stat_name]
+	if SkillStats.against(stat_name) >= 0:
+		return SkillStats.AGREEMENT[SkillStats.DAMAGE]
+	return SkillStats.AGREEMENT.get(stat_name, "ms")
+
+
+## « dégâts accrus contre les embrasés » : une ligne de fiche nommée par son terme.
+static func term_label(stat_name: String, term_id: String, p_scope := "") -> String:
+	return Texts.t("{stat} {terme}{complement}").format({
+		"stat": _noun(stat_name),
+		"terme": Glossary.term(term_id, agreement(stat_name)),
+		"complement": _complement(stat_name, p_scope),
+	})
+
+
+## Le terme d'un pourcentage : additif ou multiplicatif, gain ou perte.
+static func term_of(p_mode: Mode, v: float) -> String:
+	if p_mode == Mode.MORE:
+		return "more" if v >= 0.0 else "less"
+	return "increased" if v >= 0.0 else "reduced"
 
 
 func is_a_range() -> bool:
@@ -184,6 +246,10 @@ func is_a_range() -> bool:
 ## La valeur seule : « +9 % », « 3–7 », « 6 ». Une fourchette aux bornes égales
 ## s'écrit comme un nombre — « 6–6 » se lit comme une faute.
 func readable_value() -> String:
+	if mode != Mode.FLAT:
+		return "%s %s" % [
+			value_label(stat, mode, value), Glossary.term(term_of(mode, value), agreement(stat))
+		]
 	if not is_a_range():
 		return value_label(stat, mode, value)
 	if is_equal_approx(value, value_max):
@@ -191,18 +257,20 @@ func readable_value() -> String:
 	return "%s–%s" % [format(stat, value), format(stat, value_max)]
 
 
-## « +25 armure », ou « ajoute 3 à 7 dégâts de froid aux sorts ».
+## « +25 armure », « +10 % d'armure accrue », ou « ajoute 3 à 7 dégâts de froid aux
+## sorts ».
 func label() -> String:
-	if mode == Mode.MORE:
-		var stat_name := name(stat, scope)
-		# L'élision : « 20 % d'armure en plus », pas « de armure ».
-		if "aeiouhéè".contains(stat_name.left(1)):
-			return Texts.t("{valeur} d'{stat} en plus").format({
-				"valeur": percentage(roundi(value)), "stat": stat_name
-			})
-		return Texts.t("{valeur} de {stat} en plus").format({
-			"valeur": percentage(roundi(value)), "stat": stat_name
-		})
+	if mode != Mode.FLAT:
+		var noun := _noun(stat)
+		var fields := {
+			"valeur": value_label(stat, mode, value),
+			"stat": noun,
+			"terme": Glossary.term(term_of(mode, value), agreement(stat)),
+			"complement": _complement(stat, scope),
+		}
+		if ELIDING.contains(noun.left(1).to_lower()):
+			return Texts.t("{valeur} d'{stat} {terme}{complement}").format(fields)
+		return Texts.t("{valeur} de {stat} {terme}{complement}").format(fields)
 	if stat == SkillStats.LEVELS:
 		var levels := roundi(value)
 		return "%s %s" % [

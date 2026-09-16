@@ -10,6 +10,10 @@ const BACK_FULL := Color(BACK, 1.0)
 ## Plus sombre et opaque qu'un panneau, sur lequel elle se pose.
 const TIP_BACK := Color(0.055, 0.051, 0.075, 0.98)
 const BORDER := Color(0.29, 0.27, 0.35)
+## Les encadrés du glossaire : parchemin sombre et cadre beige, distincts d'une
+## infobulle d'objet qu'ils bordent.
+const GLOSSARY_BACK := Color(0.13, 0.11, 0.08, 0.98)
+const GLOSSARY_BORDER := Color(0.86, 0.78, 0.56)
 ## Les lignes d'aide, présentes sans attirer l'œil.
 const HINT := Color(0.52, 0.50, 0.60)
 ## Les intitulés, plus sombres que le texte qu'ils annoncent.

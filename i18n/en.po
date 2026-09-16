@@ -896,20 +896,10 @@ msgstr "base"
 msgid "ajoutés"
 msgstr "added"
 
-msgid "dégâts accrus"
-msgstr "increased damage"
 
-msgid "dégâts en plus"
-msgstr "more damage"
 
-msgid "{valeur} en plus"
-msgstr "{valeur} more"
 
-msgid "{valeur} de {stat} en plus"
-msgstr "{valeur} more {stat}"
 
-msgid "{valeur} d'{stat} en plus"
-msgstr "{valeur} more {stat}"
 
 msgid "par projectile"
 msgstr "per projectile"
@@ -996,23 +986,11 @@ msgstr "blessed"
 msgid "saignant"
 msgstr "bleeding"
 
-msgid "dégâts contre les embrasés"
-msgstr "damage against ignited"
 
-msgid "dégâts contre les engourdis"
-msgstr "damage against numbed"
 
-msgid "dégâts contre les transis"
-msgstr "damage against chilled"
 
-msgid "dégâts contre les pourrissants"
-msgstr "damage against rotting"
 
-msgid "dégâts contre les bénis"
-msgstr "damage against blessed"
 
-msgid "dégâts contre les saignants"
-msgstr "damage against bleeding"
 
 msgid "niveaux de compétence"
 msgstr "skill levels"
@@ -1021,3 +999,94 @@ msgid "+{n} niveau de compétence"
 msgid_plural "+{n} niveaux de compétence"
 msgstr[0] "+{n} skill level"
 msgstr[1] "+{n} skill levels"
+
+# ---------------------------------------------------------------------------
+# Glossaire (jalon 15)
+# ---------------------------------------------------------------------------
+
+msgid "{valeur} de {stat} {terme}{complement}"
+msgstr "{valeur} {terme} {stat}{complement}"
+
+msgid "{valeur} d'{stat} {terme}{complement}"
+msgstr "{valeur} {terme} {stat}{complement}"
+
+msgid "{stat} {terme}{complement}"
+msgstr "{terme} {stat}{complement}"
+
+msgid "contre les embrasés"
+msgstr "against ignited"
+
+msgid "contre les engourdis"
+msgstr "against numbed"
+
+msgid "contre les transis"
+msgstr "against chilled"
+
+msgid "contre les pourrissants"
+msgstr "against rotting"
+
+msgid "contre les bénis"
+msgstr "against blessed"
+
+msgid "contre les saignants"
+msgstr "against bleeding"
+
+msgid "accru"
+msgstr "increased"
+
+msgid "accrue"
+msgstr "increased"
+
+msgid "accrus"
+msgstr "increased"
+
+msgid "accrues"
+msgstr "increased"
+
+msgid "réduit"
+msgstr "reduced"
+
+msgid "réduite"
+msgstr "reduced"
+
+msgid "réduits"
+msgstr "reduced"
+
+msgid "réduites"
+msgstr "reduced"
+
+msgid "amplifié"
+msgstr "more"
+
+msgid "amplifiée"
+msgstr "more"
+
+msgid "amplifiés"
+msgstr "more"
+
+msgid "amplifiées"
+msgstr "more"
+
+msgid "atténué"
+msgstr "less"
+
+msgid "atténuée"
+msgstr "less"
+
+msgid "atténués"
+msgstr "less"
+
+msgid "atténuées"
+msgstr "less"
+
+msgid "Accru, réduit"
+msgstr "Increased, reduced"
+
+msgid "Les bonus accrus et réduits d'une même statistique s'additionnent, puis s'appliquent ensemble. Deux fois +10 % accrus font +20 %."
+msgstr "Increased and reduced bonuses to the same stat add together, then apply at once. Two +10% increased make +20%."
+
+msgid "Amplifié, atténué"
+msgstr "More, less"
+
+msgid "Chaque bonus amplifié ou atténué multiplie le résultat à lui seul, après les accrus. Deux fois +10 % amplifiés font +21 %."
+msgstr "Each more or less bonus multiplies the result on its own, after the increased ones. Two +10% more make +21%."

@@ -25,14 +25,14 @@ Niveaux de zone : 1 à 120.
 | `sword` | Épée | blade | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 1 × 3 | 1 à 22 |
 | `broadsword` | Épée large | blade | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 1 × 3 | 16 à 40 |
 | `war_blade` | Lame de guerre | blade | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 1 × 3 | 34 et au-delà |
-| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % vitesse d'attaque | 1 × 2 | 1 à 30 |
-| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % vitesse d'attaque | 1 × 2 | 24 et au-delà |
+| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue | 1 × 2 | 1 à 30 |
+| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue | 1 × 2 | 24 et au-delà |
 | `mace` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 1 × 3 | 6 à 28 |
 | `battle_mace` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 1 × 3 | 22 à 46 |
 | `war_hammer` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 1 × 3 | 40 et au-delà |
-| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % vitesse d'incantation | 1 × 2 | 1 à 24 |
-| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % vitesse d'incantation | 1 × 2 | 18 à 42 |
-| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % vitesse d'incantation | 1 × 2 | 36 et au-delà |
+| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue | 1 × 2 | 1 à 24 |
+| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue | 1 × 2 | 18 à 42 |
+| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue | 1 × 2 | 36 et au-delà |
 | `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure | 2 × 2 | 1 à 21 |
 | `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure | 2 × 2 | 15 à 39 |
 | `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure | 2 × 2 | 33 et au-delà |
@@ -48,9 +48,9 @@ Niveaux de zone : 1 à 120.
 | `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 PV | 2 × 3 | 35 et au-delà |
 | `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive | 2 × 3 | 1 à 25 |
 | `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive | 2 × 3 | 19 et au-delà |
-| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +8 % vitesse d'attaque | 2 × 2 | 1 à 19 |
-| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +14 % vitesse d'attaque | 2 × 2 | 13 à 37 |
-| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +21 % vitesse d'attaque | 2 × 2 | 31 et au-delà |
+| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +8 % de vitesse d'attaque accrue | 2 × 2 | 1 à 19 |
+| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +14 % de vitesse d'attaque accrue | 2 × 2 | 13 à 37 |
+| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +21 % de vitesse d'attaque accrue | 2 × 2 | 31 et au-delà |
 | `boots` | Bottes | boots | 1 | boots | boots, armour, light | +8 vitesse | 2 × 2 | 1 à 18 |
 | `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +14 vitesse | 2 × 2 | 12 à 36 |
 | `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +20 vitesse | 2 × 2 | 30 et au-delà |
@@ -82,22 +82,22 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
 | Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
 | Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | bolt · ×8 sur 360° | 18 · 22 · 27 · 33 · 40 |
-| Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % dégâts (Foudre) · +10 mana |
+| Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % de dégâts accrus (Foudre) · +10 mana |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Surcharge | Éclair vif | — | 1 point de compétence | 3 | 12 % de dégâts en plus |
+| Surcharge | Éclair vif | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
 | Fourche | Éclair vif | Surcharge | 2 points de compétence | 1 | +1 nombre de projectiles |
-| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | 20 % de dégâts en plus · convertit 50 % en froid |
+| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | +20 % de dégâts amplifiés · convertit 50 % en froid |
 | Ramification | Chaîne d'éclairs | — | 1 point de compétence | 2 | +1 nombre de cibles |
-| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | 12 % de dégâts en plus |
-| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · 35 % de dégâts en plus |
-| Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % rayon |
-| Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % durée |
-| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | 15 % de dégâts en plus · convertit 60 % en froid |
+| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · +35 % de dégâts amplifiés |
+| Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % de rayon accru |
+| Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % de durée accrue |
+| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 60 % en froid |
 | Couronne | Nova de foudre | — | 1 point de compétence | 2 | +2 nombre de projectiles |
-| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | 12 % de dégâts en plus |
-| Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % vitesse de projectile |
+| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % de vitesse de projectile accrue |
 
 47 destinations de points pour 20 gagnés.
 
@@ -112,15 +112,15 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Élan | Frappe lourde | — | 1 point de compétence | 3 | 14 % de dégâts en plus |
+| Élan | Frappe lourde | — | 1 point de compétence | 3 | +14 % de dégâts amplifiés |
 | Lame ardente | Frappe lourde | Élan | 2 points de compétence | 1 | convertit 40 % en feu · donne le mot-clé Feu |
 | Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
-| Taille | Coup en croix | — | 1 point de compétence | 3 | 12 % de dégâts en plus |
+| Taille | Coup en croix | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
 | Estoc | Coup en croix | Taille | 2 points de compétence | 2 | ajoute 2 à 6 dégâts physiques |
 | Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré |
 | Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
-| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | 12 % de dégâts en plus |
-| Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % durée |
+| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % de durée accrue |
 
 38 destinations de points pour 20 gagnés.
 
@@ -131,19 +131,19 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Boule de feu | sort feu | niveau 1 | 5 | 11 mana | 0.60 s | ball · rayon 20 | 30 · 38 · 48 · 59 · 73 |
 | Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
 | Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
-| Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % dégâts (Feu) · +3 % rés. feu |
+| Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts accrus (Feu) · +3 % rés. feu |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
-| Attisement | Boule de feu | — | 1 point de compétence | 3 | 13 % de dégâts en plus |
-| Souffle ardent | Boule de feu | Attisement | 2 points de compétence | 2 | +30 % rayon |
+| Attisement | Boule de feu | — | 1 point de compétence | 3 | +13 % de dégâts amplifiés |
+| Souffle ardent | Boule de feu | Attisement | 2 points de compétence | 2 | +30 % de rayon accru |
 | Double langue | Boule de feu | — | 3 points de compétence | 1 | +1 nombre de projectiles |
-| Longue vie | Serpent infernal | — | 1 point de compétence | 2 | +25 % durée |
+| Longue vie | Serpent infernal | — | 1 point de compétence | 2 | +25 % de durée accrue |
 | Crocs | Serpent infernal | Longue vie | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
-| Mue | Serpent infernal | — | 2 points de compétence | 3 | 12 % de dégâts en plus |
-| Brasier | Immolation | — | 1 point de compétence | 2 | +20 % rayon |
-| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | 14 % de dégâts en plus |
-| Flamme noire | Immolation | — | 3 points de compétence | 1 | 15 % de dégâts en plus · convertit 50 % en nécrotique |
+| Mue | Serpent infernal | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Brasier | Immolation | — | 1 point de compétence | 2 | +20 % de rayon accru |
+| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | +14 % de dégâts amplifiés |
+| Flamme noire | Immolation | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 50 % en nécrotique |
 
 38 destinations de points pour 20 gagnés.
 

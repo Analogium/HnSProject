@@ -260,7 +260,7 @@ func _draw_hint() -> void:
 	# Repliées à la largeur du panneau.
 	var coiled := PackedStringArray()
 	for text_value in lines:
-		for piece in _fold(text_value, TIP_W - TIP_PAD * 2.0):
+		for piece in RichText.fold(_font, text_value, TIP_W - TIP_PAD * 2.0, FONT_SIZE):
 			coiled.append(piece)
 
 	var h := TIP_PAD * 2.0 + TIP_LINE * float(coiled.size() + 1)
@@ -282,10 +282,8 @@ func _draw_hint() -> void:
 	)
 	for text_value in coiled:
 		y += TIP_LINE
-		draw_string(
-			_font, Vector2(r.position.x + TIP_PAD, y), text_value,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, NAME_COLOR
-		)
+		RichText.draw(self, _font, Vector2(r.position.x + TIP_PAD, y), text_value, FONT_SIZE, NAME_COLOR)
+	GlossaryBoxes.draw(self, _font, r, Rect2(Vector2.ZERO, size), coiled)
 
 
 ## La statistique sous le curseur ; un bouton survolé n'en est pas une.
@@ -296,23 +294,6 @@ func _hovered() -> String:
 		if (_lines[field] as Rect2).has_point(_mouse) and StatHelp.has(field):
 			return field
 	return ""
-
-
-## Coupe un texte en lignes qui tiennent dans `width`, aux espaces seulement.
-func _fold(text_value: String, width: float) -> PackedStringArray:
-	var out := PackedStringArray()
-	var current_one := ""
-	for word in text_value.split(" ", false):
-		var trial := word if current_one.is_empty() else current_one + " " + word
-		if _font.get_string_size(trial, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x > width:
-			if not current_one.is_empty():
-				out.append(current_one)
-			current_one = word
-		else:
-			current_one = trial
-	if not current_one.is_empty():
-		out.append(current_one)
-	return out
 
 
 ## Le bouton et son rectangle, celui que le clic consultera.

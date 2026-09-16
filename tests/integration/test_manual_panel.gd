@@ -321,11 +321,12 @@ func test_changing_book_closes_the_tree() -> void:
 # --------------------------------------------------------------------------
 
 ## Les valeurs des lignes de la fiche qui portent cet intitulé, dans leur ordre.
+## Sur le texte sans marque : un terme du glossaire s'y lit comme un mot.
 func _values(lines: Array, label_of: String) -> PackedStringArray:
 	var out := PackedStringArray()
 	for line: ManualPanel.SheetLine in lines:
-		if line.label_of == label_of:
-			out.append(line.value)
+		if Glossary.plain(line.label_of) == label_of:
+			out.append(Glossary.plain(line.value))
 	return out
 
 
@@ -374,7 +375,7 @@ func test_the_sheet_announces_what_a_node_changes() -> void:
 		"le nœud de fourche en ajoute un"
 	)
 	assert_eq(
-		_values(lines, "dégâts en plus"), PackedStringArray(["+12 %"]),
+		_values(lines, "dégâts amplifiés"), PackedStringArray(["+12 %"]),
 		"et la surcharge multiplie les dégâts : un nœud donne du « plus » (jalon 14)"
 	)
 
@@ -392,7 +393,7 @@ func test_the_sheet_announces_levels_and_damage_against_a_state() -> void:
 	])
 	var lines := _sheet_of(book, "swift_bolt")
 	assert_eq(_values(lines, "points"), PackedStringArray(["1 / 5 (+2)"]))
-	assert_eq(_values(lines, "dégâts contre les engourdis"), PackedStringArray(["+30 %"]))
+	assert_eq(_values(lines, "dégâts accrus contre les engourdis"), PackedStringArray(["+30 %"]))
 
 
 ## Un nœud de conversion dit ce qu'il déplace et où : c'est la ligne qui explique

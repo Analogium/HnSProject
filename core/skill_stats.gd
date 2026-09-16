@@ -20,6 +20,18 @@ const LABELS := {
 	"simultaneous": "maximum simultané",
 }
 
+## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
+const AGREEMENT := {
+	DAMAGE: "mp",
+	LEVELS: "mp",
+	"projectiles": "ms",
+	"projectile_speed": "fs",
+	"targets": "ms",
+	"duration": "fs",
+	"radius": "ms",
+	"simultaneous": "ms",
+}
+
 const DAMAGE := "damage"
 ## Des points de compétence en plus de ceux placés, à plat et **toujours portés par un
 ## mot-clé** : la fiche n'a pas de niveau de compétence.
@@ -123,14 +135,6 @@ static func against(stat: String) -> int:
 
 static func against_stat(kind: StatusEffects.Kind) -> String:
 	return AGAINST_PREFIX + StatusEffects.IDS[kind]
-
-
-## La clé française du nom d'un nombre ; `StatMod.name()` la traduit.
-static func label_key(stat: String) -> String:
-	var kind := against(stat)
-	if kind >= 0:
-		return StatusEffects.AGAINST[kind]
-	return LABELS.get(stat, stat)
 
 
 ## Un nombre nommé, des dégâts ajoutés d'une nature connue, ou contre un état connu.

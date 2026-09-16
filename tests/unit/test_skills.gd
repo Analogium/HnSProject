@@ -669,7 +669,7 @@ func test_damage_against_a_state_adds_to_the_increased() -> void:
 
 func test_a_line_against_a_state_says_which() -> void:
 	var m := _mod(SkillStats.against_stat(StatusEffects.Kind.IGNITE), StatMod.Mode.PERCENT, 30.0, Keywords.SPELL)
-	assert_eq(m.label(), "+30 % dégâts contre les embrasés (Sort)")
+	assert_eq(Glossary.plain(m.label()), "+30 % de dégâts accrus contre les embrasés (Sort)")
 	assert_true(SkillStats.modifiable(m.stat))
 
 

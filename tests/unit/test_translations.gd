@@ -236,6 +236,12 @@ func _expected() -> Dictionary:
 		out[name] = "nom d'un état"
 	for label_of in StatusEffects.AGAINST:
 		out[label_of] = "dégâts contre un état"
+	for id in Glossary.TERMS:
+		for form in Glossary.TERMS[id]["forms"]:
+			out[form] = "forme du terme « %s »" % id
+	for entry in Glossary.ENTRIES:
+		out[Glossary.ENTRIES[entry]["title"]] = "titre de l'encadré « %s »" % entry
+		out[Glossary.ENTRIES[entry]["text"]] = "définition de « %s »" % entry
 	for id in Keywords.LABELS:
 		out[Keywords.LABELS[id]] = "mot-clé"
 	for id in Keywords.RECIPIENTS:
