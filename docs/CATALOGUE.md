@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-44 bases d'objets, 12 compétences, 39 affixes d'objets, 5 affixes d'ennemis.
+44 bases d'objets, 12 compétences, 45 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -157,13 +157,16 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | `ardent` | dégâts (Feu) (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
 | `bewitched` | dégâts (Sort) (%) | caster | — | 8 | 6 | 5 / 44 |
 | `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 44 |
+| `butchering` | dégâts contre les saignants (Attaque) (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
 | `cold_to_attacks` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 44 |
 | `cuirassed` | armure | armour | — | 9 | 9 | 19 / 44 |
+| `electrocuting` | dégâts contre les engourdis (Sort) (%) | caster, gloves | offhand | 3 | 5 | 6 / 44 |
 | `elusive` | esquive | light | — | 9 | 8 | 10 / 44 |
 | `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 44 |
 | `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 44 |
+| `fire_skill_levels` | niveaux de compétence (Feu) | caster | — | 1 | 2 | 5 / 44 |
 | `fire_to_attacks` | dégâts de feu aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 44 |
@@ -173,6 +176,7 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 44 |
 | `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `lightning_skill_levels` | niveaux de compétence (Foudre) | caster | — | 1 | 2 | 5 / 44 |
 | `lightning_to_attacks` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 44 |
@@ -186,6 +190,8 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 44 |
 | `reach` | allonge | melee | — | 8 | 5 | 8 / 44 |
 | `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 44 |
+| `scorching` | dégâts contre les embrasés (Sort) (%) | caster, gloves | offhand | 3 | 5 | 6 / 44 |
+| `shattering` | dégâts contre les transis (Attaque) (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
 | `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 44 |
 | `stormy` | dégâts (Foudre) (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
 | `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 44 |
@@ -252,6 +258,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 45–65 % | 10 |
 | T5 | 1 | 20–40 % | 10 |
 
+**`butchering`** — dégâts contre les saignants (Attaque), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 40–50 % | 10 |
+| T2 | 34 | 30–39 % | 10 |
+| T3 | 19 | 20–29 % | 10 |
+| T4 | 6 | 13–19 % | 10 |
+| T5 | 1 | 8–12 % | 10 |
+
 **`cold_to_attacks`** — dégâts de froid aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -302,6 +318,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T8 | 5 | 21–34 | 10 |
 | T9 | 1 | 12–20 | 10 |
 
+**`electrocuting`** — dégâts contre les engourdis (Sort), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 40–50 % | 10 |
+| T2 | 34 | 30–39 % | 10 |
+| T3 | 19 | 20–29 % | 10 |
+| T4 | 6 | 13–19 % | 10 |
+| T5 | 1 | 8–12 % | 10 |
+
 **`elusive`** — esquive, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -335,6 +361,13 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 12–17 | 10 |
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
+
+**`fire_skill_levels`** — niveaux de compétence (Feu), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
 
 **`fire_to_attacks`** — dégâts de feu aux attaques, arrondi 1
 
@@ -435,6 +468,13 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 16–21 % | 10 |
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
+
+**`lightning_skill_levels`** — niveaux de compétence (Foudre), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
 
 **`lightning_to_attacks`** — dégâts de foudre aux attaques, arrondi 1
 
@@ -586,6 +626,26 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 2.3–3.4 | 10 |
 | T4 | 12 | 1.3–2.2 | 10 |
 | T5 | 1 | 0.5–1.2 | 10 |
+
+**`scorching`** — dégâts contre les embrasés (Sort), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 40–50 % | 10 |
+| T2 | 34 | 30–39 % | 10 |
+| T3 | 19 | 20–29 % | 10 |
+| T4 | 6 | 13–19 % | 10 |
+| T5 | 1 | 8–12 % | 10 |
+
+**`shattering`** — dégâts contre les transis (Attaque), arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 40–50 % | 10 |
+| T2 | 34 | 30–39 % | 10 |
+| T3 | 19 | 20–29 % | 10 |
+| T4 | 6 | 13–19 % | 10 |
+| T5 | 1 | 8–12 % | 10 |
 
 **`shrewd`** — mana, arrondi 1
 

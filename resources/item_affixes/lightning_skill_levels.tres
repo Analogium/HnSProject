@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_lightn"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_lightn"]
+
+[sub_resource type="Resource" id="Resource_lightning_skill_levels_t1"]
+script = ExtResource("2_lightn")
+required_level = 60
+min_value = 2.0
+max_value = 2.0
+
+[sub_resource type="Resource" id="Resource_lightning_skill_levels_t2"]
+script = ExtResource("2_lightn")
+min_value = 1.0
+max_value = 1.0
+
+[resource]
+script = ExtResource("1_lightn")
+id = "lightning_skill_levels"
+tags = PackedStringArray("caster")
+excludes = PackedStringArray()
+stat = "skill_levels"
+scope = "lightning"
+tiers = Array[ExtResource("2_lightn")]([SubResource("Resource_lightning_skill_levels_t1"), SubResource("Resource_lightning_skill_levels_t2")])
+weight = 1

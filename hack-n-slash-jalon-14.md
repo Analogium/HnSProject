@@ -101,7 +101,8 @@ C'est un changement de règle, pas un réglage :
 
 - **Une statistique `skill_levels`, toujours portée par un mot-clé** (`StatMod.scope`),
   à plat. Sans portée, elle ne voudrait rien dire : la fiche n'a pas de niveau de
-  compétence. `SkillStats.LABELS` ne la nomme pas, ce n'est pas un nombre du lancer.
+  compétence. `SkillStats.LABELS` la nomme, mais `Skill._store()` la compte avant d'y
+  chercher un champ du lancer.
 - **Lue dans `Skill.resolve()`, et nulle part ailleurs** : c'est là que les mots-clés du
   lancer, nœuds compris, filtrent déjà les lignes d'objet. Un nœud qui convertit en feu
   rend donc « +1 aux compétences de feu » mordant, comme il le fait déjà pour les
@@ -124,12 +125,12 @@ C'est un changement de règle, pas un réglage :
 
 ### Contenu
 
-Deux affixes, rares et tardifs :
+Deux affixes, rares :
 
 | Id | Portée | Valeur | Niveau requis | Bases |
 |---|---|---|---|---|
-| `fire_skill_levels` | `fire` | +1 | 30 ; +2 au palier 60 | sceptres, baguettes, bijoux |
-| `lightning_skill_levels` | `lightning` | +1 | 30 ; +2 au palier 60 | sceptres, baguettes, bijoux |
+| `fire_skill_levels` | `fire` | +1 | 1 ; +2 au palier 60 | armes et grimoires de lanceur (`caster`) |
+| `lightning_skill_levels` | `lightning` | +1 | 1 ; +2 au palier 60 | armes et grimoires de lanceur (`caster`) |
 
 Pas d'« attaques » ni de « sorts » dans ce jalon : ils toucheraient toutes les
 compétences d'un build d'un coup, à régler après une première mesure.
@@ -148,7 +149,7 @@ compétences d'un build d'un coup, à régler après une première mesure.
   ne connaît pas sa cible ; la hurtbox ne connaît pas les lignes du lanceur. Le coup
   transporte donc la différence :
   - `SkillStats` garde, par état, l'accru et le plus conditionnels ;
-  - `SkillStats.condition_factor(states)` rend
+  - `SkillStats.against_factor(states)` rend
     `(1 + Σ accrus + Σ accrus des états présents) / (1 + Σ accrus) × Π plus des états présents` ;
     l'accru conditionnel **s'additionne aux accrus du lancer**, il ne les multiplie pas.
     C'est tout le sens du §2 ;
@@ -178,13 +179,13 @@ Un affixe par nature, dont l'état naît :
 
 | Id | Stat | Portée | Bases |
 |---|---|---|---|
-| `scorching` | `damage_vs_ignite` | `spell` | sceptres, baguettes, gants |
-| `electrocuting` | `damage_vs_numb` | `spell` | sceptres, baguettes, gants |
-| `shattering` | `damage_vs_chill` | `attack` | armes, gants |
-| `butchering` | `damage_vs_bleed` | `attack` | armes, gants |
+| `scorching` | `damage_vs_ignite` | `spell` | sceptres, baguettes, gants (pas la main gauche) |
+| `electrocuting` | `damage_vs_numb` | `spell` | sceptres, baguettes, gants (pas la main gauche) |
+| `shattering` | `damage_vs_chill` | `attack` | armes de mêlée, gants |
+| `butchering` | `damage_vs_bleed` | `attack` | armes de mêlée, gants |
 
 Pourriture et bénédiction attendent des compétences nécrotiques et sacrées.
-Premier réglage : 10–15 % au premier palier, 40–50 % au dernier.
+Premier réglage : 8–12 % au niveau 1, 40–50 % au niveau 52, en cinq paliers.
 
 **Le banc** mesure une cible sans état : il ne sait pas quelle part du temps un grunt
 passe embrasé. C'est une limite écrite, pas une omission ; la simulation, elle, les voit.
@@ -322,3 +323,49 @@ l'arbre, de le traiter.
 zone 1). §6.4 : rien à décider pour cette étape.
 
 La simulation n'a pas été relancée ; sa section d'`EQUILIBRAGE.md` date du jalon 13.
+
+### Étapes 2 à 4 — niveaux, conditions, doc, livrées le 16 septembre 2026
+
+- **Niveaux** : `SkillStats.LEVELS` (`skill_levels`) compté par `Skill._store()`, la base
+  posée **après** le tri, `Skill.damage()` prolongé par `GROWTH_PER_EXTRA_LEVEL`. Page du
+  manuel : « 1 / 5 (+2) ».
+- **Conditions** : `StatusEffects.IDS` et `AGAINST`, `SkillStats.against()` /
+  `against_factor()`, `DamageInfo.cast`, appliqué dans `Hurtbox.take_damage()` juste
+  après la bénédiction. `Targets.strike()` et `Explosion.put()` **exigent** le lancer :
+  un appelant oublié ne compile pas. La page du manuel montre chaque condition dans la
+  couleur de l'état, hors du total « par coup ».
+
+**Écarts avec le plan :**
+
+- **Aucun affixe sur les bijoux, aucun conditionnel sur la main gauche.** La fiche de
+  la forge (`ForgeGallery.sheet_height()`) tient 24 affixes par base ; les bijoux y
+  étaient déjà et les grimoires y arrivent. Paginer la forge est un chantier d'outil,
+  pas de ce jalon — noté dans RECETTES.
+- **« +1 niveau » dès le niveau 1**, et non 30 : `test_each_affix_exists_from_level_1`
+  l'exige de tout affixe. Il pèse 1 dans la réserve, contre 2 à 10 ailleurs.
+- **Libellés** : « +1 niveau de compétence (Feu) », « +30 % dégâts contre les embrasés
+  (Sort) » — la forme des autres lignes portées, `Keywords.recipient()` ne connaissant
+  que les attaques et les sorts.
+
+**Tests qui ont changé parce que la règle a changé** :
+`test_beyond_the_last_point_the_table_grows` (on gardait la dernière valeur) ;
+`test_a_character_reread_from_version_4_hits_as_before` résout l'Attaque et le Trait à
+leur point unique — la mesure d'alors prenait la dernière valeur de la table, et les
+chiffres attendus ne bougent pas. Ajoutés : niveaux portés ou non, zéro point, table
+prolongée, libellés, facteur contre un état ajouté aux accrus, identifiants des états,
+page du manuel, et **un coup réel par chemin** — chaîne (`Targets.strike`), boule
+(tir et explosion), coup d'arc — sur une cible qui saigne contre une cible nue.
+
+**Équilibrage, calcul après les étapes 2 et 3.** Les chiffres bougent, mais **par les
+tirages** : le banc tire les objets de ses profils dans la réserve, qui a six affixes de
+plus, et il ne compte pas les conditions. Deux verdicts changent, en sens contraires —
+Mêlée Sous-équipé zone 60, tendu → mur (7,92 → 8,34 coups) ; Mêlée Sur-équipé zone 60,
+mur → tendu (8,22 → 7,76). Les quatre tests de `tests/run.sh balance` échouent comme
+avant. §6.4 : **ces deux cases sont du bruit de tirage, pas un effet des règles** ; rien
+n'est réglé ici. Le mur de la zone 60 reste entier pour le banc, qui ne voit ni les
+conditions ni un +2 au-delà de la table qu'aucun profil ne tire encore à coup sûr.
+
+**Performance**, `stress_test.tscn` en fenêtré, 300 ennemis demandés (~230 simulés),
+combat automatique, 240 images de chauffe puis 900 mesurées ; base = la même copie sans
+l'application dans `Hurtbox`, alternées : **modifié 6,26 et 5,57 ms, base 5,37 et
+6,21 ms**. Aucun écart qui sorte du bruit d'un lancement à l'autre.

@@ -604,12 +604,73 @@ func test_each_point_gives_its_line_value() -> void:
 	assert_eq(c.points_max(), 3, "et la table dit combien la case accepte")
 
 
-## Demander plus de points que la table n'en contient rend le dernier, jamais une
-## erreur d'indice : l'appelant qui se trompe doit obtenir le meilleur coup, pas
-## interrompre un combat.
-func test_beyond_the_last_point_the_last_is_kept() -> void:
+## Au-delà de la table, les niveaux en bonus la prolongent, composés : la règle a
+## changé au jalon 14 (on gardait la dernière valeur), jamais une erreur d'indice.
+func test_beyond_the_last_point_the_table_grows() -> void:
 	var c := _skill([10.0, 25.0] as Array[float])
-	assert_eq(c.damage(9), 25.0)
+	assert_almost_eq(c.damage(3), 25.0 * Skill.GROWTH_PER_EXTRA_LEVEL, 1e-4)
+	assert_almost_eq(c.damage(9), 25.0 * pow(Skill.GROWTH_PER_EXTRA_LEVEL, 7), 1e-3)
+
+
+# --------------------------------------------------------------------------
+# Les niveaux en bonus et les dégâts contre un état (jalon 14)
+# --------------------------------------------------------------------------
+
+func _levels(value: float, scope: String) -> StatMod:
+	return StatMod.new(SkillStats.LEVELS, StatMod.Mode.FLAT, value, scope)
+
+
+func test_bonus_levels_only_count_with_the_worn_keyword() -> void:
+	var c := _skill([10.0, 20.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resolve(1, _sheet(), [_levels(1.0, Keywords.LIGHTNING)])
+	assert_eq(r.total_min(), 20.0, "un point placé et un en bonus")
+	assert_eq(r.bonus_levels, 1, "et la page du manuel le sait")
+	assert_eq(c.resolve(1, _sheet(), [_levels(1.0, Keywords.FIRE)]).total_min(), 10.0, "pas pour une autre nature")
+
+
+func test_bonus_levels_teach_nothing() -> void:
+	var c := _skill([10.0, 20.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	assert_eq(c.resolve(0, _sheet(), [_levels(2.0, Keywords.LIGHTNING)]).total_min(), 0.0)
+
+
+func test_bonus_levels_extend_the_table() -> void:
+	var c := _skill([10.0, 20.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resolve(2, _sheet(), [_levels(2.0, Keywords.LIGHTNING)])
+	assert_almost_eq(r.total_min(), 20.0 * 1.25 * 1.25, 1e-4)
+
+
+func test_a_level_line_reads_in_words() -> void:
+	assert_eq(_levels(1.0, Keywords.FIRE).label(), "+1 niveau de compétence (Feu)")
+	assert_eq(_levels(2.0, Keywords.SPELL).label(), "+2 niveaux de compétence aux sorts")
+
+
+## L'accru contre un état **rejoint les accrus du lancer** : +50 % partout et +50 %
+## contre les embrasés font ×2 sur un embrasé, pas ×2,25.
+func test_damage_against_a_state_adds_to_the_increased() -> void:
+	var c := _skill([10.0] as Array[float])
+	c.nature = DamageType.Kind.LIGHTNING
+	var r := c.resolve(1, _sheet(), [
+		_mod("damage", StatMod.Mode.PERCENT, 50.0, Keywords.LIGHTNING),
+		_mod(SkillStats.against_stat(StatusEffects.Kind.IGNITE), StatMod.Mode.PERCENT, 50.0, Keywords.LIGHTNING),
+		_mod(SkillStats.against_stat(StatusEffects.Kind.CHILL), StatMod.Mode.MORE, 10.0, Keywords.LIGHTNING),
+	])
+	assert_eq(r.total_min(), 15.0, "le lancer ne connaît pas sa cible")
+	var target := StatusEffects.new()
+	assert_eq(r.against_factor(target), 1.0, "sans état")
+	assert_eq(r.against_factor(null), 1.0, "sans états du tout")
+	target.put(StatusEffects.Kind.IGNITE, 1.0)
+	assert_almost_eq(r.against_factor(target) * r.total_min(), 20.0, 1e-4, "10 × (1 + 0,5 + 0,5)")
+	target.put(StatusEffects.Kind.CHILL, 1.0)
+	assert_almost_eq(r.against_factor(target) * r.total_min(), 22.0, 1e-4, "et le « plus » multiplie")
+
+
+func test_a_line_against_a_state_says_which() -> void:
+	var m := _mod(SkillStats.against_stat(StatusEffects.Kind.IGNITE), StatMod.Mode.PERCENT, 30.0, Keywords.SPELL)
+	assert_eq(m.label(), "+30 % dégâts contre les embrasés (Sort)")
+	assert_true(SkillStats.modifiable(m.stat))
 
 
 ## Aucun attribut ne multiplie les dégâts d'une compétence (retiré le 15 septembre

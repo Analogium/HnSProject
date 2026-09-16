@@ -44,4 +44,6 @@ func _explode(direct_target: Hurtbox) -> void:
 	if _burst:
 		return
 	_burst = true
-	Explosion.put(get_parent(), global_position, _parts, explosion_radius, direct_target, tint(), _author)
+	Explosion.put(
+		get_parent(), global_position, _parts, explosion_radius, direct_target, tint(), _author, _cast
+	)

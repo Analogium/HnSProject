@@ -53,6 +53,8 @@ var _source: Node2D
 ## Les états du lanceur, lus à la naissance du tir et gardés jusqu'à l'impact : le
 ## tir d'un caster mort en vol frappe encore, et sa bénédiction avec.
 var _author: StatusEffects
+## Le lancer du joueur, null pour un tir ennemi.
+var _cast: SkillStats
 var _life := 0.0
 ## La nature montrée, ou -1 pour celle de la scène.
 var _nature := -1
@@ -106,11 +108,12 @@ func _draw() -> void:
 ## part jamais d'un rappel de collision.
 static func spawn(
 	parent: Node, scene: PackedScene, from: Vector2, dir: Vector2,
-	parts: Array[float], source: Node2D, p_speed := 0.0, nature := -1
+	parts: Array[float], source: Node2D, p_speed := 0.0, nature := -1, cast: SkillStats = null
 ) -> Projectile:
 	var bolt := _spawn(parent, scene, from, dir)
 	if bolt != null:
 		bolt.setup(dir, parts, source, p_speed, nature)
+		bolt._cast = cast
 	return bolt
 
 
@@ -168,6 +171,7 @@ func _on_area_entered(area: Area2D) -> void:
 		return
 	var info := DamageInfo.as_parts(_parts, global_position, knockback)
 	info.author = _author
+	info.cast = _cast
 	(area as Hurtbox).take_damage(info)
 	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
 	# caster libéré ferait sinon traverser le joueur par son tir (invariant 4).

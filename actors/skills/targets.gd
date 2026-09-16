@@ -49,11 +49,15 @@ static func in_sight(world: World2D, of: Vector2, toward: Vector2) -> bool:
 ## sont recopiées par `as_parts()` : la mitigation écrit dans les siennes, et la
 ## cible suivante recevrait sinon ce qui reste après l'armure de la première.
 ##
-## L'auteur voyage avec le coup : ses états changent ce qu'il inflige.
-static func strike(target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects) -> void:
+## L'auteur et le lancer voyagent avec le coup : ses états et ses dégâts contre un état
+## changent ce qu'il inflige.
+static func strike(
+	target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects, cast: SkillStats
+) -> void:
 	if is_instance_valid(target):
 		var info := DamageInfo.as_parts(parts, from_value)
 		info.author = author
+		info.cast = cast
 		target.take_damage(info)
 
 

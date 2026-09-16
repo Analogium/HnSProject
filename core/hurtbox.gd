@@ -31,6 +31,9 @@ func take_damage(info: DamageInfo) -> void:
 	# et l'armure doit le voir comme tel.
 	if info.author != null:
 		info.multiplier(info.author.damage_dealt_factor)
+	# Contre les états de la cible, au même moment : c'est aussi le coup qui change.
+	if info.cast != null:
+		info.multiplier(info.cast.against_factor(states))
 
 	if stats != null:
 		# L'esquive d'abord : un coup évité n'a pas eu lieu, pas de signal. Le test `> 0.0`

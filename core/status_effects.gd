@@ -29,6 +29,19 @@ const NATURES := [
 	DamageType.Kind.PHYSICAL,
 ]
 
+## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
+const IDS := ["ignite", "numb", "chill", "rot", "blessing", "bleed"]
+
+## Ce que vise une ligne de dégâts contre un état.
+const AGAINST := [
+	"dégâts contre les embrasés",
+	"dégâts contre les engourdis",
+	"dégâts contre les transis",
+	"dégâts contre les pourrissants",
+	"dégâts contre les bénis",
+	"dégâts contre les saignants",
+]
+
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := ["embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant"]
 

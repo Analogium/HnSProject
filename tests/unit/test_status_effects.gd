@@ -24,6 +24,14 @@ func test_each_nature_applies_one_state_only() -> void:
 
 
 ## Une couleur qui ressemble à une autre ne dit plus lequel des deux on porte.
+## Invariant 1 : un affixe nomme l'état par son identifiant.
+func test_each_state_has_its_id_and_its_line() -> void:
+	assert_eq(StatusEffects.IDS.size(), StatusEffects.Kind.size())
+	assert_eq(StatusEffects.AGAINST.size(), StatusEffects.Kind.size())
+	for kind in StatusEffects.Kind.values():
+		assert_eq(SkillStats.against(SkillStats.against_stat(kind)), kind, StatusEffects.IDS[kind])
+
+
 func test_each_state_has_its_color() -> void:
 	for a in StatusEffects.Kind.size():
 		for b in range(a + 1, StatusEffects.Kind.size()):

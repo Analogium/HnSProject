@@ -43,6 +43,10 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BALL: Keywords.PROJECTILE,
 }
 
+## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
+## actuelles, environ 25 % par point (décidé au jalon 14).
+const GROWTH_PER_EXTRA_LEVEL := 1.25
+
 ## Une table et non un champ : un troisième coup en croix n'aurait pas de dessin.
 const HITS_PER_SHAPE := {
 	Shape.CROSS: 2,
@@ -147,14 +151,17 @@ func keywords_label() -> String:
 func damage(points: int) -> float:
 	if points <= 0 or damage_per_point.is_empty():
 		return 0.0
-	# Au-delà du dernier point, le dernier plutôt qu'une erreur d'indice.
-	return damage_per_point[mini(points, points_max()) - 1]
+	# Au-delà, les niveaux en bonus prolongent la table (jalon 14).
+	var extra := points - points_max()
+	if extra > 0:
+		return damage_per_point[-1] * pow(GROWTH_PER_EXTRA_LEVEL, extra)
+	return damage_per_point[points - 1]
 
 
 ## **Le seul calcul d'un lancer** : le lancer et la fiche du manuel passent par ici.
 ##
-## Ordre des dégâts : propres, fourchettes ajoutées, conversion, accrus sommés, puis
-## « plus ». Un modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de
+## Ordre des dégâts : propres — points placés et niveaux en bonus —, fourchettes
+## ajoutées, conversion, accrus sommés, puis « plus ». Un modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de
 ## l'attraper.
 ##
 ## Les talents ne sont pas filtrés, mais leurs mots-clés sont posés avant le filtre :
@@ -166,7 +173,6 @@ func resolve(
 ) -> SkillStats:
 	var r := SkillStats.new()
 	r.nature = nature
-	r.place_the_base(nature, damage(points))
 	r.projectiles = float(projectiles)
 	r.spread_in_degrees = spread_in_degrees
 	r.projectile_speed = projectile_speed
@@ -195,6 +201,9 @@ func resolve(
 	for t: InvestedTalent in talents:
 		for m in t.mods():
 			_store(r, m, fields, damage_percents)
+	# Après le tri, qui compte les niveaux en bonus ; ils n'apprennent rien à qui n'a
+	# placé aucun point.
+	r.place_the_base(nature, damage(maxi(points + r.bonus_levels, 1) if points > 0 else 0))
 
 	StatMod.apply(r, fields)
 	for t: InvestedTalent in talents:
@@ -221,7 +230,15 @@ static func _store(
 	r: SkillStats, m: StatMod, fields: Array[StatMod], percents: Array[StatMod]
 ) -> void:
 	var added := SkillStats.added_nature(m.stat)
-	if added >= 0 and m.mode == StatMod.Mode.FLAT:
+	var against := SkillStats.against(m.stat)
+	if m.stat == SkillStats.LEVELS:
+		r.bonus_levels += roundi(m.value)
+	elif against >= 0:
+		if m.mode == StatMod.Mode.MORE:
+			r.against_more[against] *= 1.0 + m.value * 0.01
+		elif m.mode == StatMod.Mode.PERCENT:
+			r.against_increased[against] += m.value
+	elif added >= 0 and m.mode == StatMod.Mode.FLAT:
 		r.add_to(added, m.value, m.value_max)
 	elif m.stat == SkillStats.DAMAGE and m.mode != StatMod.Mode.FLAT:
 		percents.append(m)

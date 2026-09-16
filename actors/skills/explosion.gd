@@ -14,6 +14,7 @@ const WARM := Color(1.0, 0.9, 0.5)
 
 var _parts: Array[float] = []
 var _author: StatusEffects
+var _cast: SkillStats
 var _radius := 0.0
 ## L'identifiant et non la référence : la cible directe peut être libérée avant que
 ## l'explosion ne frappe, et une référence libérée ne se compare plus.
@@ -25,10 +26,11 @@ var _has_struck := false
 
 static func put(
 	parent: Node, point: Vector2, parts: Array[float], radius: float, excluded: Hurtbox, tint: Color,
-	author: StatusEffects
+	author: StatusEffects, cast: SkillStats
 ) -> Explosion:
 	var e := Explosion.new()
 	e._author = author
+	e._cast = cast
 	e._parts = parts.duplicate()
 	e._radius = radius
 	e._excluded = excluded.get_instance_id() if excluded != null else 0
@@ -49,7 +51,7 @@ func _physics_process(delta: float) -> void:
 		_has_struck = true
 		for target in Targets.in_circle(get_world_2d(), global_position, _radius):
 			if target.get_instance_id() != _excluded:
-				Targets.strike(target, _parts, global_position, _author)
+				Targets.strike(target, _parts, global_position, _author, _cast)
 	_age += delta
 	queue_redraw()
 	if _age >= LIFETIME:

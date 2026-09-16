@@ -51,7 +51,7 @@ static func unload(
 	var parts := cast.roll(Game.rng)
 	var author := StatusEffects.of(caster_node)
 	for i in touches.size():
-		Targets.strike(touches[i], parts, points[i], author)
+		Targets.strike(touches[i], parts, points[i], author, cast)
 
 	var trace := ChainLightning.new()
 	trace._points = points

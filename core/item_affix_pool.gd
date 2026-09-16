@@ -51,6 +51,14 @@ const ALL := [
 	preload("res://resources/item_affixes/lightning_to_spells.tres"),
 	preload("res://resources/item_affixes/necrotic_to_spells.tres"),
 	preload("res://resources/item_affixes/holy_to_spells.tres"),
+
+	# Jalon 14 : les niveaux de compétence, rares, et les dégâts contre un état.
+	preload("res://resources/item_affixes/fire_skill_levels.tres"),
+	preload("res://resources/item_affixes/lightning_skill_levels.tres"),
+	preload("res://resources/item_affixes/scorching.tres"),
+	preload("res://resources/item_affixes/electrocuting.tres"),
+	preload("res://resources/item_affixes/shattering.tres"),
+	preload("res://resources/item_affixes/butchering.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6 : un objet sur deux sort nu, six affixes

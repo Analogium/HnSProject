@@ -68,7 +68,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
    | Champ | À remplir |
    |---|---|
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
-   | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `SkillStats.LABELS`, ou des dégâts ajoutés `damage_<id>` sur `DamageType.IDS` — ceux-là n'existent **qu'avec une portée** |
+   | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `SkillStats.LABELS` — `skill_levels` compris, à plat —, des dégâts ajoutés `damage_<id>` sur `DamageType.IDS`, ou des dégâts contre un état `damage_vs_<id>` sur `StatusEffects.IDS`, en pourcentage — ceux-là n'existent **qu'avec une portée** |
    | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, et l'affixe n'agit que sur les compétences qui le portent |
    | `percent` | Pourcentage plutôt que valeur absolue |
    | `tags` | Les étiquettes visées ; **vide = partout** |
@@ -89,7 +89,11 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
 
 3. **`core/item_affix_pool.gd`** — ajouter le `preload` dans `ALL`.
 
-4. **Préférer une exclusion à une liste d'autorisations** quand la règle est
+4. **La forge de réglage tient 24 affixes par base** (`ForgeGallery.sheet_height()`) :
+   les bijoux et les grimoires y sont déjà. Un affixe de plus pour eux demande
+   d'abord de paginer la fiche de la forge.
+
+5. **Préférer une exclusion à une liste d'autorisations** quand la règle est
    « partout sauf ». Une base ajoutée plus tard hérite du refus sans qu'on y
    pense, là où une liste d'autorisations l'aurait oubliée en silence.
 
@@ -201,7 +205,8 @@ Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saig
 **Une nature en pose exactement un**, le physique compris.
 
 1. **`core/status_effects.gd`** — la valeur dans `Kind`, **à la fin** (les tables sont
-   indexées par l'enum), puis son entrée dans `NATURES`, `NAMES` et `DURATIONS`.
+   indexées par l'enum), puis son entrée dans `NATURES`, `IDS` (**définitif**, un
+   affixe `damage_vs_<id>` le nomme), `NAMES`, `AGAINST` et `DURATIONS`.
 2. **Ce qu'il fait** :
    - s'il brûle → son taux dans `_burn_per_second()`. `advance()` le compte
      déjà, et le plus fort l'emporte sans rien écrire de plus ;
@@ -217,7 +222,7 @@ Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saig
 **Ce qui refusera un oubli** — `tests/unit/test_status_effects.gd :
 test_chaque_nature_pose_un_etat_et_un_seul` (les tables alignées, chaque nature posée
 une fois), `test_each_state_has_its_color`, `test_each_state_has_its_icon` ; `tests/unit/test_translations.gd`, qui relève
-`StatusEffects.NAMES`.
+`StatusEffects.NAMES` et `AGAINST` ; `test_each_state_has_its_id_and_its_line`.
 
 **Et son nom anglais** dans `i18n/en.po`, section « États ».
 

@@ -138,6 +138,68 @@ func test_the_chain_fires_into_the_void_without_a_target_ahead() -> void:
 
 
 # --------------------------------------------------------------------------
+# Les dégâts contre un état voyagent avec le coup (jalon 14)
+# --------------------------------------------------------------------------
+
+## Une cible qui saigne déjà, et « +100 % contre les saignants » : elle doit prendre le
+## double d'une cible nue touchée par le même geste. Le critique est retiré, qui
+## tirerait une cible sur deux.
+func _bleeding_target(position: Vector2) -> Hurtbox:
+	var h := _target(position)
+	h.states = StatusEffects.new()
+	h.states.put(StatusEffects.Kind.BLEED, 0.0)
+	return h
+
+
+func _against_bleeding(scope: String) -> void:
+	_p.stats.crit_chance = 0.0
+	_p.skill_mods.assign([StatMod.new(
+		SkillStats.against_stat(StatusEffects.Kind.BLEED), StatMod.Mode.PERCENT, 100.0, scope
+	)])
+
+
+func _assert_doubled(bleeding: Hurtbox, bare: Hurtbox, path: String) -> void:
+	assert_eq(_hits(bleeding), 1, path)
+	assert_eq(_hits(bare), 1, path)
+	if _hits(bleeding) == 1 and _hits(bare) == 1:
+		assert_almost_eq(
+			float(_received_all[bleeding][0]), float(_received_all[bare][0]) * 2.0, 0.001, path
+		)
+
+
+func test_a_chain_carries_its_damage_against_a_state() -> void:
+	_learn("manual_lightning", ["chain_lightning"])
+	_against_bleeding(Keywords.SPELL)
+	var bleeding := _bleeding_target(Vector2(60, 0))
+	var bare := _target(Vector2(120, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	_assert_doubled(bleeding, bare, "Targets.strike")
+
+
+func test_a_ball_carries_it_by_its_bolt_and_its_explosion() -> void:
+	_learn("manual_fire", ["fireball"])
+	_against_bleeding(Keywords.SPELL)
+	var bleeding := _bleeding_target(Vector2(40, 0))
+	var bare := _target(Vector2(40, 16))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.5)
+	_assert_doubled(bleeding, bare, "le tir sur l'une, l'explosion sur l'autre")
+
+
+func test_a_swing_carries_it() -> void:
+	_learn("manual_weapons", ["heavy_strike"])
+	_against_bleeding(Keywords.ATTACK)
+	var bleeding := _bleeding_target(Vector2(20, -4))
+	var bare := _target(Vector2(20, 4))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(_p.swing_duration + 0.2)
+	_assert_doubled(bleeding, bare, "le coup d'arc")
+
+
+# --------------------------------------------------------------------------
 # Nuage d'orage
 # --------------------------------------------------------------------------
 

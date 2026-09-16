@@ -89,7 +89,7 @@ func _strike() -> void:
 	var targets := Targets.in_circle(get_world_2d(), global_position, _cast.radius)
 	for target in targets:
 		_bolt_to(to_local(target.global_position))
-		Targets.strike(target, parts, global_position, _author)
+		Targets.strike(target, parts, global_position, _author, _cast)
 	if targets.is_empty():
 		# Un éclair au sol même sans cible : le nuage montre qu'il frappe, et où.
 		_bolt_to(

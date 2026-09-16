@@ -57,8 +57,9 @@ func test_a_character_reread_from_version_4_hits_as_before() -> void:
 	}
 	_p.load_character(Character.from_dict(JSON.parse_string(JSON.stringify(dict))))
 
-	# Trois points dans chaque compétence ; l'Attaque et le Trait n'en ont qu'un
-	# dans leur table, qui sert alors.
+	# Trois points dans chaque compétence, un dans l'Attaque et le Trait : leur table
+	# n'en a qu'un. Au-delà, les niveaux en bonus la prolongent depuis le jalon 14,
+	# alors que la mesure prenait sa dernière valeur.
 	var measurements := {
 		SkillCatalog.ID_ATTACK: 24.8,
 		SkillCatalog.ID_BOLT: 17.0,
@@ -72,7 +73,7 @@ func test_a_character_reread_from_version_4_hits_as_before() -> void:
 		var expected := float(measurements[id])
 		if not SkillCatalog.is_starting(id):
 			expected /= 1.0 + 0.04 * _p.stats.intelligence
-		var cast := _p.resolve(c, 3)
+		var cast := _p.resolve(c, mini(3, c.points_max()))
 		assert_almost_eq(
 			(cast.total_min() + cast.total_max()) * 0.5, expected, 0.001, "« %s »" % c.name
 		)

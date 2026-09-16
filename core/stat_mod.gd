@@ -166,14 +166,14 @@ static func name(stat_name: String, p_scope := "") -> String:
 		var unscoped_nature := SkillStats.added_nature(stat_name)
 		if unscoped_nature >= 0:
 			return DamageType.damage_label(unscoped_nature)
-		return Texts.t(SkillStats.LABELS.get(stat_name, stat_name))
+		return Texts.t(SkillStats.label_key(stat_name))
 	var nature := SkillStats.added_nature(stat_name)
 	if nature >= 0:
 		return "%s %s" % [
 			DamageType.damage_label(nature), Keywords.recipient(p_scope)
 		]
 	return "%s (%s)" % [
-		Texts.t(SkillStats.LABELS.get(stat_name, stat_name)), Keywords.label_of(p_scope)
+		Texts.t(SkillStats.label_key(stat_name)), Keywords.label_of(p_scope)
 	]
 
 
@@ -203,6 +203,14 @@ func label() -> String:
 		return Texts.t("{valeur} de {stat} en plus").format({
 			"valeur": percentage(roundi(value)), "stat": stat_name
 		})
+	if stat == SkillStats.LEVELS:
+		var levels := roundi(value)
+		return "%s %s" % [
+			Texts.tn("+{n} niveau de compétence", "+{n} niveaux de compétence", levels).format(
+				{"n": levels}
+			),
+			Keywords.recipient(scope),
+		]
 	if not is_a_range():
 		return "%s %s" % [value_label(stat, mode, value), name(stat, scope)]
 	# La phrase entière, et pas des morceaux collés : l'ordre des mots n'est pas le

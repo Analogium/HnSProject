@@ -668,10 +668,10 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	var projectile := cast.keywords.has(Keywords.PROJECTILE)
 	var out: Array[SheetLine] = []
 
-	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [spent, skill.points_max()],
-		UiPalette.TEXT
-	))
+	var points_line := "%d / %d" % [spent, skill.points_max()]
+	if cast.bonus_levels != 0:
+		points_line += " (%+d)" % cast.bonus_levels
+	out.append(SheetLine.new(Group.STATE, Texts.t("points"), points_line, UiPalette.TEXT))
 	if manual.level() < skill.required_manual_level:
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("verrouillée"),
@@ -721,6 +721,21 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.DAMAGE, Texts.t("dégâts en plus"),
 			_increase(cast.more), UiPalette.TEXT
 		))
+	# Hors du total « par coup », qui reste celui d'une cible sans état.
+	for kind in StatusEffects.Kind.size():
+		var label_of := Texts.t(StatusEffects.AGAINST[kind])
+		if cast.against_increased[kind] != 0.0:
+			out.append(SheetLine.new(
+				Group.DAMAGE, label_of,
+				StatMod.value_label("", StatMod.Mode.PERCENT, cast.against_increased[kind]),
+				StatusEffects.color(kind)
+			))
+		if not is_equal_approx(cast.against_more[kind], 1.0):
+			out.append(SheetLine.new(
+				Group.DAMAGE, label_of,
+				StatMod.value_label("", StatMod.Mode.MORE, (cast.against_more[kind] - 1.0) * 100.0),
+				StatusEffects.color(kind)
+			))
 	if cast.total_max() > 0.0:
 		out.append(SheetLine.new(
 			Group.DAMAGE, Texts.t("par projectile") if projectile else Texts.t("par coup"),

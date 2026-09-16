@@ -234,6 +234,8 @@ func _expected() -> Dictionary:
 		out[label_of] = "dégâts d'une nature"
 	for name in StatusEffects.NAMES:
 		out[name] = "nom d'un état"
+	for label_of in StatusEffects.AGAINST:
+		out[label_of] = "dégâts contre un état"
 	for id in Keywords.LABELS:
 		out[Keywords.LABELS[id]] = "mot-clé"
 	for id in Keywords.RECIPIENTS:

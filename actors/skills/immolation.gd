@@ -70,7 +70,7 @@ func _physics_process(delta: float) -> void:
 func _strike() -> void:
 	var parts := _cast.roll(Game.rng)
 	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
-		Targets.strike(target, parts, global_position, _player.states)
+		Targets.strike(target, parts, global_position, _player.states, _cast)
 
 
 func _draw() -> void:

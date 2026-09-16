@@ -115,7 +115,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_period` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
 | Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde |
 | Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
-| Combien de points dans une compétence ? | `Player.skill_points()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `SkillCatalog.STARTING` |
+| Combien de points dans une compétence ? | `Player.skill_points()` : le manuel du râtelier qui l'enseigne, ou un seul pour ce que liste `SkillCatalog.STARTING`. **Les niveaux en bonus** (`SkillStats.LEVELS`, toujours portés par un mot-clé) s'y ajoutent dans `Skill.resolve()` seulement, et seulement si un point est placé : `Manual` ne les voit jamais, ils n'ouvrent aucun nœud. Au-delà de la table, `Skill.damage()` la prolonge par `GROWTH_PER_EXTRA_LEVEL`, composé |
 | Une ligne se donne-t-elle en fourchette ? | `StatMod.ranged_stat()` ; la ligne qu'un affixe ou un implicite donne, `StatMod.from_definition()` |
 | Quel niveau a un manuel ? | `Manual.level()`, **déduit** de son expérience par `Progression` |
 | Peut-on y placer un point ? | `Manual.can_invest()` — les quatre conditions, jamais dans l'interface |
@@ -128,7 +128,8 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Où convertit-on des dégâts ? | `SkillStats.apply_conversion()`, appelée par `resolve()` **après les fourchettes ajoutées**, sur **toutes les natures** du coup : entière, il n'en reste qu'une, donc qu'un état possible. `conversions` en garde la part pour la fiche |
 | Dans quelle nature un tir se dessine-t-il ? | `SkillStats.dominant_nature()` : celle de la compétence, ou celle où une conversion a emmené le plus gros de ses dégâts **propres** — ce qu'un objet ajoute ne change pas la couleur |
 | Un coup pose-t-il un état ? | `StatusEffects.suffer()`, appelée par `Hurtbox.take_damage()` **après** l'esquive, la mitigation et le signal : 20 % pour un coup entièrement d'une nature, partagés selon ses parts, **plus la part des PV max de la cible que la nature retire** (`StatusEffects.chance()`), **un tirage par nature présente**, physique compris. Chance, durées et forces sont les constantes de `StatusEffects` |
-| Qui a porté un coup ? | `DamageInfo.author` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `StatusEffects.of()` |
+| Qui a porté un coup ? | `DamageInfo.author` — les états de l'attaquant, jamais son nœud —, posé par ce qui fabrique le coup ; un tir le lit sur son lanceur par `StatusEffects.of()`. `DamageInfo.cast`, le lancer du joueur, voyage à côté : `Targets.strike()` et `Explosion.put()` l'exigent, `Projectile.spawn()` et le coup d'arc le posent |
+| Quand un bonus contre un état s'applique-t-il ? | Résolu par `Skill.resolve()` dans `SkillStats.against_increased` / `against_more` (statistiques `damage_vs_<id>` sur `StatusEffects.IDS`), appliqué par `Hurtbox.take_damage()` **avec la bénédiction, avant l'esquive et l'armure**, par `SkillStats.against_factor()` sur les états **déjà présents**. L'accru s'ajoute aux accrus du lancer, le « plus » multiplie. La page du manuel le montre à part du total « par coup » ; le banc ne le compte pas |
 | Ce qu'un état change, et où ? | Les facteurs de `StatusEffects`, lus **là où vit déjà la règle** : la bénédiction de l'auteur avant la mitigation, l'engourdissement après ; le gel dans `Enemy.movement_speed()`, `Enemy._cool_down()` et la cadence de `Player._physics_process()`. Ce qui brûle sort d'`StatusEffects.advance()` et s'ôte par `_set_health()`, chez l'ennemi depuis l'`EnemyManager`, avec la régénération |
 | Comment un état se voit-il ? | Dans la couleur de sa nature, sauf le saignement (`StatusEffects.BLOOD`), sur le signal `StatusEffects.change` : `HealthBar.show_states()`, qui dessine l'icône de chacun (`StatusIcon`, un masque 7×7 par état), et `ActorSprite.show_states()`. Le nom au-dessus du **joueur seul**, par `HitFeedback.state()` ; ce qui brûle, par `HitFeedback.damage_without_hit()` — **statique**, elle porte le test de nullité que ses trois appelants écrivaient — et les paquets d'`StatusEffects.Pack` |
 
@@ -141,7 +142,8 @@ compilation, et la moitié ne se voit qu'au lancement suivant.
 
 `ItemBase.id`, `ItemAffix.id`, les clés de `EquipmentSlots.SLOTS`, les
 identifiants de `Keywords` — la portée d'un affixe en nomme un —, ceux de
-`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `damage_cold` —, ceux
+`DamageType.IDS` — ils forment le nom des dégâts ajoutés, `damage_cold` —, ceux de
+`StatusEffects.IDS` — le nom des dégâts contre un état, `damage_vs_ignite` —, ceux
 de `Skill`, `Passive` et `TalentNode` — les trois partagent le
 dictionnaire de points d'un manuel, et **deux identiques dans un même livre
 partageraient un compteur** —, l'entier de `StatMod.Mode` — une valeur ne s'ajoute

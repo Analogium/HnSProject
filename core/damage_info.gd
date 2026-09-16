@@ -12,6 +12,9 @@ var is_crit: bool
 ## Les états de qui a porté le coup : sa bénédiction l'affaiblit, et la pourriture
 ## qu'il pose le soigne. Null pour un coup sans auteur — le mannequin, les tests.
 var author: StatusEffects
+## Le lancer d'où vient le coup, pour ses dégâts contre un état ; null pour un coup
+## d'ennemi. Jamais modifié après sa résolution : le partager ne ment pas.
+var cast: SkillStats
 
 ## Le total des parts, calculé et jamais rangé : une seule vérité.
 var amount: float:

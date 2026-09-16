@@ -11,6 +11,7 @@ extends RefCounted
 ## ni `period` ni `self_burn` (voir `Skill`).
 const LABELS := {
 	DAMAGE: "dégâts",
+	LEVELS: "niveaux de compétence",
 	"projectiles": "nombre de projectiles",
 	"projectile_speed": "vitesse de projectile",
 	"targets": "nombre de cibles",
@@ -20,10 +21,17 @@ const LABELS := {
 }
 
 const DAMAGE := "damage"
+## Des points de compétence en plus de ceux placés, à plat et **toujours portés par un
+## mot-clé** : la fiche n'a pas de niveau de compétence.
+const LEVELS := "skill_levels"
 
 ## Le début du nom d'une statistique de dégâts ajoutés : `damage_` puis
 ## l'identifiant d'une nature.
 const ADDED_PREFIX := "damage_"
+
+## Le début du nom d'une statistique de dégâts contre un état : `damage_vs_` puis
+## l'identifiant de l'état (`StatusEffects.IDS`).
+const AGAINST_PREFIX := "damage_vs_"
 
 ## L'écart minimal entre deux traits voisins, en degrés : sans lui, « +1 projectile »
 ## sur un trait droit en superposerait deux.
@@ -55,6 +63,14 @@ var interval := 0.0
 ## qui a filtré les modificateurs.
 var keywords := PackedStringArray()
 
+## Ce que `LEVELS` a ajouté aux points placés, pour la page du manuel.
+var bonus_levels := 0
+
+## Par état de la cible, indexés par `StatusEffects.Kind` : la somme des accrus en
+## points de pourcentage, et le produit des « plus ». Lus au coup, par la hurtbox.
+var against_increased: Array[float] = []
+var against_more: Array[float] = []
+
 ## La nature de la compétence, avant conversion.
 var nature := int(DamageType.Kind.PHYSICAL)
 
@@ -70,6 +86,13 @@ var more := 1.0
 ## La part du coup qu'un nœud a déplacée, **par nature d'arrivée**, pour la fiche.
 ## Le lancer n'en a pas besoin : `damage_min` et `damage_max` sont déjà déplacés.
 var conversions: Array[float] = DamageType.empty_parts()
+
+
+func _init() -> void:
+	against_increased.resize(StatusEffects.Kind.size())
+	against_increased.fill(0.0)
+	against_more.resize(StatusEffects.Kind.size())
+	against_more.fill(1.0)
 
 
 ## La nature ajoutée par cette statistique, ou -1.
@@ -91,9 +114,28 @@ static func readable_range(low: float, top: float) -> String:
 	return str(b) if b == h else "%d–%d" % [b, h]
 
 
-## Un nombre nommé, ou des dégâts ajoutés d'une nature connue.
+## L'état visé par cette statistique, ou -1.
+static func against(stat: String) -> int:
+	if not stat.begins_with(AGAINST_PREFIX):
+		return -1
+	return StatusEffects.IDS.find(stat.trim_prefix(AGAINST_PREFIX))
+
+
+static func against_stat(kind: StatusEffects.Kind) -> String:
+	return AGAINST_PREFIX + StatusEffects.IDS[kind]
+
+
+## La clé française du nom d'un nombre ; `StatMod.name()` la traduit.
+static func label_key(stat: String) -> String:
+	var kind := against(stat)
+	if kind >= 0:
+		return StatusEffects.AGAINST[kind]
+	return LABELS.get(stat, stat)
+
+
+## Un nombre nommé, des dégâts ajoutés d'une nature connue, ou contre un état connu.
 static func modifiable(stat: String) -> bool:
-	return LABELS.has(stat) or added_nature(stat) >= 0
+	return LABELS.has(stat) or added_nature(stat) >= 0 or against(stat) >= 0
 
 
 func projectile_count() -> int:
@@ -179,6 +221,23 @@ func scale_damage(increased_percent: float, more_factor: float) -> void:
 	for i in damage_min.size():
 		damage_min[i] *= increased * more
 		damage_max[i] *= increased * more
+
+
+## Le facteur d'un coup sur cette cible : l'accru d'un état **s'ajoute aux accrus du
+## lancer** (§2 du jalon 14), le « plus » multiplie. Un pour une cible sans état, et
+## pour un lancer qui ne vise aucun état — le cas de presque tous les coups.
+func against_factor(states: StatusEffects) -> float:
+	if states == null or states.is_clear:
+		return 1.0
+	var added := 0.0
+	var product := 1.0
+	for kind in against_increased.size():
+		if (against_increased[kind] != 0.0 or against_more[kind] != 1.0) and states.active(kind):
+			added += against_increased[kind]
+			product *= against_more[kind]
+	if increased <= 0.0:
+		return product
+	return maxf(increased + added * 0.01, 0.0) / increased * product
 
 
 ## La part de chaque nature, somme à un ; toute dans sa nature sans dégâts.

@@ -103,6 +103,7 @@ var _held: Array[bool] = []
 ## Les parts du coup en cours, **tirées une fois au départ du geste** : tout l'arc
 ## reçoit la même valeur.
 var _hit_parts: Array[float] = []
+var _hit_cast: SkillStats
 var _hit_shake := 0.0
 var _is_swinging := false
 ## L'aura allumée, ou null. Une seule : Immolation est la seule compétence entretenue.
@@ -412,6 +413,7 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 			# image de physique avant de se rouvrir.
 			await get_tree().physics_frame
 		_hit_parts = cast.roll(Game.rng)
+		_hit_cast = cast
 		_already_hit.clear()
 		# set_deferred : on est peut-être dans un rappel de physique.
 		hitbox.set_deferred("monitoring", true)
@@ -447,7 +449,7 @@ func _roll(cast: SkillStats, scene: PackedScene) -> void:
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
 		var bolt := Projectile.spawn(
 			parent, scene, global_position, direction, cast.roll(Game.rng), self,
-			cast.projectile_speed, nature
+			cast.projectile_speed, nature, cast
 		)
 		if bolt is Fireball:
 			(bolt as Fireball).explosion_radius = cast.radius
@@ -758,6 +760,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 
 	var info := DamageInfo.roll(stats, global_position, _hit_parts)
 	info.author = states
+	info.cast = _hit_cast
 	(area as Hurtbox).take_damage(info)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.

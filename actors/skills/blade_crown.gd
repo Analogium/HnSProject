@@ -90,7 +90,7 @@ func _slice() -> void:
 		var center := to_global(_center(blade, _rotation + blade.place))
 		for target in targets:
 			if center.distance_to(target.global_position) <= CONTACT and blade.contacts.accepts(target):
-				Targets.strike(target, blade.cast.roll(Game.rng), center, author)
+				Targets.strike(target, blade.cast.roll(Game.rng), center, author, blade.cast)
 
 
 func _center(blade: Blade, angle: float) -> Vector2:

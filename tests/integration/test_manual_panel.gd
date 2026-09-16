@@ -379,6 +379,22 @@ func test_the_sheet_announces_what_a_node_changes() -> void:
 	)
 
 
+## Jalon 14 : ce qu'un objet ajoute contre un état se lit à part du coup, et les
+## niveaux en bonus à côté des points placés.
+func test_the_sheet_announces_levels_and_damage_against_a_state() -> void:
+	var book := _rich_book()
+	assert_true(book.manual.invest(book.base.manual, "swift_bolt"))
+	_player.skill_mods.assign([
+		StatMod.new(SkillStats.LEVELS, StatMod.Mode.FLAT, 2.0, Keywords.LIGHTNING),
+		StatMod.new(
+			SkillStats.against_stat(StatusEffects.Kind.NUMB), StatMod.Mode.PERCENT, 30.0, Keywords.SPELL
+		),
+	])
+	var lines := _sheet_of(book, "swift_bolt")
+	assert_eq(_values(lines, "points"), PackedStringArray(["1 / 5 (+2)"]))
+	assert_eq(_values(lines, "dégâts contre les engourdis"), PackedStringArray(["+30 %"]))
+
+
 ## Un nœud de conversion dit ce qu'il déplace et où : c'est la ligne qui explique
 ## à quelle résistance le coup s'oppose désormais.
 func test_the_sheet_announces_the_conversion() -> void:

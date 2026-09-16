@@ -121,7 +121,7 @@ func _bite() -> void:
 	var scope := float(RINGS) * SPACING * 0.5 + CONTACT
 	for target in Targets.in_circle(get_world_2d(), middle, scope):
 		if _touches(target.global_position) and _contacts.accepts(target):
-			Targets.strike(target, _cast.roll(Game.rng), _head, _author)
+			Targets.strike(target, _cast.roll(Game.rng), _head, _author, _cast)
 
 
 func _touches(point: Vector2) -> bool:

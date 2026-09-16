@@ -995,3 +995,29 @@ msgstr "blessed"
 
 msgid "saignant"
 msgstr "bleeding"
+
+msgid "dégâts contre les embrasés"
+msgstr "damage against ignited"
+
+msgid "dégâts contre les engourdis"
+msgstr "damage against numbed"
+
+msgid "dégâts contre les transis"
+msgstr "damage against chilled"
+
+msgid "dégâts contre les pourrissants"
+msgstr "damage against rotting"
+
+msgid "dégâts contre les bénis"
+msgstr "damage against blessed"
+
+msgid "dégâts contre les saignants"
+msgstr "damage against bleeding"
+
+msgid "niveaux de compétence"
+msgstr "skill levels"
+
+msgid "+{n} niveau de compétence"
+msgid_plural "+{n} niveaux de compétence"
+msgstr[0] "+{n} skill level"
+msgstr[1] "+{n} skill levels"

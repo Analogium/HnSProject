@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_shatte"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_shatte"]
+
+[sub_resource type="Resource" id="Resource_shattering_t1"]
+script = ExtResource("2_shatte")
+required_level = 52
+min_value = 40.0
+max_value = 50.0
+
+[sub_resource type="Resource" id="Resource_shattering_t2"]
+script = ExtResource("2_shatte")
+required_level = 34
+min_value = 30.0
+max_value = 39.0
+
+[sub_resource type="Resource" id="Resource_shattering_t3"]
+script = ExtResource("2_shatte")
+required_level = 19
+min_value = 20.0
+max_value = 29.0
+
+[sub_resource type="Resource" id="Resource_shattering_t4"]
+script = ExtResource("2_shatte")
+required_level = 6
+min_value = 13.0
+max_value = 19.0
+
+[sub_resource type="Resource" id="Resource_shattering_t5"]
+script = ExtResource("2_shatte")
+min_value = 8.0
+max_value = 12.0
+
+[resource]
+script = ExtResource("1_shatte")
+id = "shattering"
+tags = PackedStringArray("melee", "gloves")
+excludes = PackedStringArray()
+stat = "damage_vs_chill"
+scope = "attack"
+percent = true
+tiers = Array[ExtResource("2_shatte")]([SubResource("Resource_shattering_t1"), SubResource("Resource_shattering_t2"), SubResource("Resource_shattering_t3"), SubResource("Resource_shattering_t4"), SubResource("Resource_shattering_t5")])
+weight = 3
