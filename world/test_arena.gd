@@ -55,6 +55,8 @@ func _ready() -> void:
 	# (touches 3/4 et 7/8), et sans ça elle écrirait dans player_stats.tres.
 	# Les réglages trouvés se recopient ensuite à la main dans le fichier.
 	player.base_stats = player.base_stats.duplicate()
+	# Une compétence ne part qu'avec son arme.
+	player.equip(Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WEAPON)))
 
 	_build_walls()
 	_spawn_dummies()

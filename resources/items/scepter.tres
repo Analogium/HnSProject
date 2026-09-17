@@ -15,3 +15,4 @@ required_level = 18
 implicit_stat = "cast_speed"
 implicit_percent = true
 implicit_value = 24.0
+crit_chance = 0.05

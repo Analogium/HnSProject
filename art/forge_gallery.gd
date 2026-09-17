@@ -542,6 +542,8 @@ static func _identity(base: ItemBase) -> String:
 	var implicit := base.implicit()
 	if implicit != null:
 		pieces.append("implicite %s" % Glossary.plain(implicit.label()))
+	if base.family == ItemBase.WEAPON_FAMILY:
+		pieces.append("critique %s" % StatMod.format(SkillStats.CRIT_CHANCE, base.crit_chance))
 	# « 1 × 1 case » et non « 1 × 1 cases » : l'anneau est le seul objet du
 	# catalogue à n'en occuper qu'une, et c'est le premier qu'on regarde.
 	var cells := base.grid_size.x * base.grid_size.y

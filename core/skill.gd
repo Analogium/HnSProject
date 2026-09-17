@@ -108,6 +108,11 @@ func interval(stats: CharacterStats) -> float:
 	return cooldown / maxf(stats.cast_speed, 0.1)
 
 
+## Une attaque veut une arme d'attaque, un sort une arme d'incantation.
+func usable_with(weapon: ItemBase) -> bool:
+	return weapon != null and weapon.allowed_keyword() == KEYWORD_OF_CADENCE[cadence]
+
+
 ## `name` est la clé française : l'afficher directement resterait en français.
 func displayed_name() -> String:
 	return Texts.t(name)
@@ -186,6 +191,9 @@ func resolve(
 	r.sustained = shape == Shape.AURA
 	r.mana_cost = mana_cost
 	r.interval = interval(stats)
+	if stats != null:
+		r.crit_chance = stats.crit_chance
+		r.crit_multiplier = stats.crit_multiplier
 
 	var given := PackedStringArray()
 	for t: InvestedTalent in talents:
@@ -196,7 +204,7 @@ func resolve(
 	var fields: Array[StatMod] = []
 	var damage_percents: Array[StatMod] = []
 	for m: StatMod in mods:
-		if worn_items.has(m.scope):
+		if worn_items.has(m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE):
 			_store(r, m, fields, damage_percents)
 	for t: InvestedTalent in talents:
 		for m in t.mods():

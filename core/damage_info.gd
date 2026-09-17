@@ -69,11 +69,14 @@ func multiplier(factor: float) -> void:
 		parts[i] *= factor
 
 
-## Un coup du joueur : les parts viennent du geste tiré, et **le critique ne s'applique
-## qu'ici**. Un seul tirage, quel que soit le résultat (invariant 3).
-static func roll(stats: CharacterStats, source: Vector2, p_parts: Array[float]) -> DamageInfo:
-	var crit := Game.rng.randf() < stats.crit_chance
-	var info := DamageInfo.as_parts(p_parts, source, stats.knockback_force, crit)
+## Un coup d'un lancer — attaque ou sort : **le critique ne s'applique qu'ici**, un
+## tirage par coup. Sans lancer, un coup d'ennemi, ni critique ni tirage (invariant 3).
+static func roll(
+	cast: SkillStats, source: Vector2, p_parts: Array[float], p_knockback: float = 0.0
+) -> DamageInfo:
+	var crit := cast != null and Game.rng.randf() < cast.crit_chance
+	var info := DamageInfo.as_parts(p_parts, source, p_knockback, crit)
+	info.cast = cast
 	if crit:
-		info.multiplier(stats.crit_multiplier)
+		info.multiplier(cast.crit_multiplier)
 	return info

@@ -67,14 +67,14 @@ func _header(l: PackedStringArray) -> void:
 func _bases(l: PackedStringArray) -> void:
 	l.append("## Bases d'objets")
 	l.append("")
-	l.append("| id | nom | lignée | palier | famille | étiquettes | implicite | cases | tombe en zones |")
-	l.append("|---|---|---|---|---|---|---|---|---|")
+	l.append("| id | nom | lignée | palier | famille | étiquettes | implicite | critique | cases | tombe en zones |")
+	l.append("|---|---|---|---|---|---|---|---|---|---|")
 	for raw in ItemCatalog.ALL:
 		var base: ItemBase = raw
 		var imp := base.implicit()
 		var f := ItemCatalog.drop_window(base)
 		var window := "%d et au-delà" % f.x if f.y <= 0 else "%d à %d" % [f.x, f.y]
-		l.append("| `%s` | %s | %s | %d | %s | %s | %s | %d × %d | %s |" % [
+		l.append("| `%s` | %s | %s | %d | %s | %s | %s | %s | %d × %d | %s |" % [
 			base.id,
 			base.display_name,
 			base.lineage,
@@ -82,6 +82,7 @@ func _bases(l: PackedStringArray) -> void:
 			base.family if not base.family.is_empty() else "—",
 			", ".join(base.tags),
 			"—" if imp == null else Glossary.plain(imp.label()),
+			"—" if base.family != ItemBase.WEAPON_FAMILY else StatMod.format(SkillStats.CRIT_CHANCE, base.crit_chance),
 			base.grid_size.x, base.grid_size.y,
 			window,
 		])

@@ -153,7 +153,7 @@ func test_each_accepted_affix_has_its_line() -> void:
 			_workbench._apply("affixes:1" if page > 0 else "")
 			_workbench._arrange()
 			for line in _workbench._lines:
-				if not String(line["action"]).begins_with("affixe:"):
+				if not String(line["action"]).begins_with("affix:"):
 					continue
 				lines += 1
 				assert_lte(
@@ -161,6 +161,23 @@ func test_each_accepted_affix_has_its_line() -> void:
 					"« %s » : une ligne passe sous les boutons" % name
 				)
 		assert_eq(lines, _workbench.compatibles().size(), "« %s » : des affixes introuvables" % name)
+
+
+## Le clic passe par l'action **dessinée**, pas par `toggle_affix()` : une ligne dont
+## l'action ne correspond à rien de `_apply()` ne posait aucun affixe, sans erreur.
+func test_clicking_a_drawn_affix_line_selects_it() -> void:
+	_workbench.size = _size_in_zone()
+	_workbench._arrange()
+	var clicked := 0
+	for line in _workbench._lines:
+		var action := String(line["action"])
+		if not action.begins_with("affix:"):
+			continue
+		_workbench._apply(_workbench._action_under((line["rect"] as Rect2).get_center()))
+		assert_true(_workbench._selected_ones.has(action.get_slice(":", 1)), action)
+		clicked += 1
+		break
+	assert_eq(clicked, 1, "une ligne d'affixe est dessinée")
 
 
 ## Changer de base ramène à la première page : la seconde page d'un anneau n'a

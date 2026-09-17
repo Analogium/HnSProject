@@ -1,5 +1,7 @@
 extends GutTest
 
+const Weapons := preload("res://tests/weapons.gd")
+
 ## Le joueur monté dans l'arbre : réserve de mana, régénérations, équipement et
 ## recalcul de la fiche. Rien de tout ça n'existe hors scène.
 
@@ -31,6 +33,7 @@ func test_full_pool_at_spawn() -> void:
 
 
 func test_the_bolt_costs_mana() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	var before := _p.mana
 	_p.cast_slot(1)
 	assert_eq(
@@ -55,6 +58,7 @@ func test_the_bolt_nature_does_not_diverge_from_the_pellet() -> void:
 
 
 func test_insufficient_pool_refuses_the_bolt() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p._set_mana(2.0)
 	_p.cast_slot(1)
 	assert_eq(_p.mana, 2.0, "ni tir, ni prélèvement partiel")
@@ -458,10 +462,11 @@ func test_skill_points_come_from_the_book_that_teaches_it() -> void:
 	assert_eq(_p.skill_points("swift_bolt"), 1)
 
 
-## Le lancement porte lui-même ses quatre refus : aucun appelant n'a à les
+## Le lancement porte lui-même ses refus : aucun appelant n'a à les
 ## refaire, et c'est ce qui permet à la touche, à la barre et aux tests de passer
 ## par le même chemin.
 func test_cast_refuses_what_was_not_learned() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.bar.put(2, "swift_bolt")
 	assert_false(_p.cast_slot(2), "la compétence n'est dans aucun livre à l'étude")
 	assert_eq(_bolts_fired.get_child_count(), 0)
@@ -471,7 +476,21 @@ func test_cast_refuses_what_was_not_learned() -> void:
 	assert_eq(_bolts_fired.get_child_count(), 1)
 
 
+## Une attaque veut une arme d'attaque, un sort une arme d'incantation ; sans arme,
+## rien ne part.
+func test_cast_refuses_a_skill_its_weapon_does_not_allow() -> void:
+	var before := _p.mana
+	assert_false(_p.cast_slot(1), "le tir, les mains vides")
+	_p.equip(Weapons.bare(false), EquipmentSlots.WEAPON)
+	assert_false(_p.cast_slot(1), "le tir, une épée en main")
+	assert_eq(_p.mana, before, "sans rien payer")
+	assert_true(_p.cast_slot(0), "le coup d'épée part")
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
+	assert_true(_p.cast_slot(1), "le tir, une baguette en main")
+
+
 func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	assert_false(_p.cast_slot(4), "la cinquième case est vide")
 	assert_true(_p.cast_slot(1), "le tir part")
 	assert_false(_p.cast_slot(1), "et ne repart pas tant qu'il se recharge")
@@ -480,6 +499,7 @@ func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
 ## La couronne : huit projectiles pour une nova, et un seul qui part droit devant
 ## quoi qu'annonce la dispersion.
 func test_a_nova_leaves_as_a_crown() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
 	book.manual.gain_experience(999999)
 	book.manual.invest(book.base.manual, "lightning_nova")
@@ -505,6 +525,7 @@ func test_a_nova_leaves_as_a_crown() -> void:
 ## une dispersion recopiée par erreur sur le trait de base ferait tirer à côté de
 ## la souris sans qu'aucune assertion ne s'en aperçoive.
 func test_a_single_bolt_flies_straight_along_the_aim() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.facing = Vector2(0.6, -0.8)
 	assert_true(_p.cast_slot(1), "le tir de départ")
 	assert_eq(_bolts_fired.get_child_count(), 1, "un seul trait")
@@ -540,6 +561,7 @@ func _clear_bolts() -> void:
 ## chaque sort part avec exactement les nombres de sa fiche — combien de traits, à
 ## quelle vitesse, pour quels dégâts, quel coût et quelle recharge.
 func test_each_spell_leaves_with_its_sheet_numbers() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.study(_book_open_everywhere())
 	_p.stats.max_mana = 999.0
 
@@ -571,6 +593,7 @@ func test_each_spell_leaves_with_its_sheet_numbers() -> void:
 
 
 func test_a_bolt_with_one_more_projectile_fires_two() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.skill_mods.assign([
 		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, Keywords.PROJECTILE),
 	])
@@ -587,6 +610,7 @@ func test_a_bolt_with_one_more_projectile_fires_two() -> void:
 ## Une fourchette ajoutée se tire **par trait** : les traits d'une nova ne portent
 ## pas le même froid, sinon ils se liraient comme un coup recopié.
 func test_each_bolt_rolls_its_range() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
 	book.manual.gain_experience(999999)
 	book.manual.invest(book.base.manual, "lightning_nova")
@@ -667,6 +691,7 @@ func test_a_keyword_passive_serves_another_book_skills() -> void:
 ## et sa couleur la dit. Sans cela, le nœud le plus cher de l'arbre ne se
 ## remarquerait qu'en lisant une fiche.
 func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_study("manual_lightning", [
 		"storm_cloud", "storm_cloud", "storm_cloud", "storm_cloud_hail",
 	])
@@ -689,6 +714,7 @@ func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
 ## tir. C'est la décision du jalon 8 — un éclair reste un éclair — et elle tient
 ## parce que la nature montrée ne regarde que la base et les conversions.
 func test_an_item_does_not_change_the_bolt_color() -> void:
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_study("manual_lightning", ["swift_bolt"])
 	_p.skill_mods.assign([
 		StatMod.ranged("damage_cold", 900.0, 900.0, Keywords.SPELL),
@@ -723,9 +749,11 @@ func test_a_zone_left_behind_rewards_less() -> void:
 ## Un coup d'épée tire **une** fois : tous les ennemis de l'arc reçoivent la même
 ## valeur. Critique coupé, pour ne comparer que le tirage de la fourchette.
 func test_a_sword_swing_hits_the_whole_arc_for_the_same_value() -> void:
-	_p.stats.crit_chance = 0.0
+	# Avant les lignes : équiper recalcule la fiche, et les effacerait.
+	_p.equip(Weapons.bare(false), EquipmentSlots.WEAPON)
 	_p.skill_mods.assign([
 		StatMod.ranged("damage_fire", 1.0, 1000.0, Keywords.ATTACK),
+		StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0),
 	])
 	assert_true(_p.cast_slot(0), "le coup de base")
 

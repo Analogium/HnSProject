@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_tier"]
+
+[sub_resource type="Resource" id="Resource_precise_0"]
+script = ExtResource("2_tier")
+required_level = 48
+min_value = 50.0
+max_value = 60.0
+
+[sub_resource type="Resource" id="Resource_precise_1"]
+script = ExtResource("2_tier")
+required_level = 36
+min_value = 40.0
+max_value = 49.0
+
+[sub_resource type="Resource" id="Resource_precise_2"]
+script = ExtResource("2_tier")
+required_level = 24
+min_value = 30.0
+max_value = 39.0
+
+[sub_resource type="Resource" id="Resource_precise_3"]
+script = ExtResource("2_tier")
+required_level = 12
+min_value = 20.0
+max_value = 29.0
+
+[sub_resource type="Resource" id="Resource_precise_4"]
+script = ExtResource("2_tier")
+min_value = 10.0
+max_value = 19.0
+
+[resource]
+script = ExtResource("1_affix")
+id = "precise"
+tags = PackedStringArray("weapon")
+excludes = PackedStringArray()
+stat = "crit_chance"
+percent = true
+tiers = Array[ExtResource("2_tier")]([SubResource("Resource_precise_0"), SubResource("Resource_precise_1"), SubResource("Resource_precise_2"), SubResource("Resource_precise_3"), SubResource("Resource_precise_4")])
+weight = 7

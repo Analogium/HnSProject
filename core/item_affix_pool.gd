@@ -9,6 +9,8 @@ const ALL := [
 	preload("res://resources/item_affixes/nimble.tres"),
 	preload("res://resources/item_affixes/quick.tres"),
 	preload("res://resources/item_affixes/cruel.tres"),
+	preload("res://resources/item_affixes/precise.tres"),
+	preload("res://resources/item_affixes/keen.tres"),
 	preload("res://resources/item_affixes/bloody.tres"),
 	preload("res://resources/item_affixes/far_reaching.tres"),
 	preload("res://resources/item_affixes/cuirassed.tres"),

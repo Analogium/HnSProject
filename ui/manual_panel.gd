@@ -744,6 +744,16 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.DAMAGE, Texts.t("par projectile") if projectile else Texts.t("par coup"),
 			SkillStats.readable_range(cast.total_min(), cast.total_max()), FULL
 		))
+		# La chance du coup, accrus compris : plus une base, d'où son nom à part. Le
+		# multiplicateur est celui de la fiche.
+		out.append(SheetLine.new(
+			Group.DAMAGE, Texts.t("chance critique"),
+			StatMod.format(SkillStats.CRIT_CHANCE, cast.crit_chance), UiPalette.TEXT
+		))
+		out.append(SheetLine.new(
+			Group.DAMAGE, Texts.t(StatMod.LABELS["crit_multiplier"]),
+			StatMod.format("crit_multiplier", cast.crit_multiplier), UiPalette.TEXT
+		))
 
 	if projectile:
 		out.append(SheetLine.new(

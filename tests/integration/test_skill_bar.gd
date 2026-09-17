@@ -1,5 +1,7 @@
 extends GutTest
 
+const Weapons := preload("res://tests/weapons.gd")
+
 ## La barre des cinq cases : ce qu'on clique, ce qu'on y pose, et ce que les
 ## touches annoncent.
 
@@ -152,6 +154,7 @@ func test_the_first_entry_clears_the_slot() -> void:
 func test_drawing_goes_through_its_states() -> void:
 	_player.study(_worked_book())
 	_player.bar.put(2, "swift_bolt")
+	Weapons.arm(_player, SkillCatalog.ID_BOLT)
 	_player.cast_slot(1)
 	_bar._open(2)
 	_bar._track(_bar._menu_rect(1).get_center())

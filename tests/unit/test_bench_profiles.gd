@@ -39,7 +39,9 @@ func test_items_are_those_that_drop_at_their_level() -> void:
 			var level := BenchProfiles.item_level_for(profile, 60)
 			var case_name := "%s %s" % [build.name, BenchProfiles.PROFILE_NAMES[profile]]
 			if level == 0:
-				assert_true(p.equipment.is_empty(), case_name)
+				assert_eq(p.equipment.keys(), [EquipmentSlots.WEAPON], "%s : l'arme de départ seule" % case_name)
+				var weapon: Item = p.equipment[EquipmentSlots.WEAPON]
+				assert_false(weapon.base.tags.has(build.excluded_one), case_name)
 				continue
 			assert_eq(p.equipment.size(), EquipmentSlots.count(), "%s : tout est porté" % case_name)
 			for slot in p.equipment:

@@ -669,8 +669,8 @@ msgstr "The rate of bolts. It does not affect the sword swing, which follows att
 msgid "L'allonge du coup d'épée, en pixels."
 msgstr "The reach of the sword swing, in pixels."
 
-msgid "La probabilité qu'un coup soit critique."
-msgstr "The chance that a hit is critical."
+msgid "Celle de l'arme portée, seule à donner une base. Les bonus accrus la multiplient ensuite, compétence par compétence."
+msgstr "The equipped weapon's, the only source of a base. Increased bonuses then multiply it, skill by skill."
 
 msgid "Ce que multiplie un coup critique."
 msgstr "What a critical hit multiplies."
@@ -693,8 +693,23 @@ msgstr "Here: {esquive}% of hits avoided, {plafond}% at most."
 msgid "Ici : un coup toutes les %.2f s."
 msgstr "Here: one hit every %.2f s."
 
-msgid "Ici : {coups} coups sur cent, pour {degats} % de dégâts."
-msgstr "Here: {coups} hits in a hundred, for {degats}% damage."
+msgid "Ici : {coups} coups sur cent avant les bonus accrus, pour {degats} % de dégâts."
+msgstr "Here: {coups} hits in a hundred before increased bonuses, for {degats}% damage."
+
+msgid "Chance critique de base : %s"
+msgstr "Base crit chance: %s"
+
+msgid "chance critique de base"
+msgstr "base crit chance"
+
+msgid "{valeur} de {stat}"
+msgstr "{valeur} to {stat}"
+
+msgid "{valeur} d'{stat}"
+msgstr "{valeur} to {stat}"
+
+msgid " (local)"
+msgstr " (local)"
 
 msgid "Plafonnée à {plafond} %, et elle peut devenir négative (jusqu'à {plancher} %)."
 msgstr "Capped at {plafond}%, and it can go negative (down to {plancher}%)."

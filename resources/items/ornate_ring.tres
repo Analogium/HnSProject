@@ -13,4 +13,5 @@ lineage = "ring"
 tier = 2
 required_level = 16
 implicit_stat = "crit_chance"
-implicit_value = 0.04
+implicit_percent = true
+implicit_value = 14.0

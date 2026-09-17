@@ -60,6 +60,27 @@ const MANUAL_FAMILY := "manual"
 ## Le mot-clé visé, comme pour un affixe : vide pour la fiche du personnage.
 @export var implicit_scope: String = ""
 
+@export_group("Arme")
+## La chance critique de base de tout ce que lance le porteur, sous l'implicite. Zéro
+## hors des armes : **seule l'arme** donne une base, le reste ne fait que l'accroître.
+@export_range(0.0, 1.0) var crit_chance: float = 0.0
+
+const WEAPON_FAMILY := "weapon"
+## L'étiquette qui fait une arme d'incantation ; toute autre arme est d'attaque.
+const CASTER_TAG := "caster"
+
+
+## Le mot-clé des compétences que cette arme laisse lancer, vide hors des armes.
+func allowed_keyword() -> String:
+	if family != WEAPON_FAMILY:
+		return ""
+	return Keywords.SPELL if tags.has(CASTER_TAG) else Keywords.ATTACK
+
+
+## Une ligne qui monte la base de l'arme plutôt que la fiche : plate ou accrue.
+func is_local(m: StatMod) -> bool:
+	return family == WEAPON_FAMILY and m.stat == SkillStats.CRIT_CHANCE and m.mode != StatMod.Mode.MORE
+
 
 func implicit() -> StatMod:
 	if implicit_stat.is_empty():

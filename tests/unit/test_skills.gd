@@ -684,6 +684,55 @@ func test_no_attribute_multiplies_damage() -> void:
 
 
 # --------------------------------------------------------------------------
+# Le critique
+# --------------------------------------------------------------------------
+
+## La base de la fiche — l'arme et les plats —, fois les accrus : ceux qui visent la
+## compétence comme les autres.
+func test_the_crit_chance_starts_from_the_sheet() -> void:
+	var c := _skill([10.0])
+	c.cadence = Skill.Cadence.CAST
+	var sheet := CharacterStats.new()
+	sheet.crit_chance = 0.10
+	sheet.crit_multiplier = 2.5
+	assert_almost_eq(c.resolve(1, sheet).crit_chance, 0.10, 0.0001)
+	assert_eq(c.resolve(1, sheet).crit_multiplier, 2.5, "le multiplicateur de la fiche")
+	var mods := [
+		StatMod.new("crit_chance", StatMod.Mode.PERCENT, 50.0),
+		StatMod.new("crit_chance", StatMod.Mode.PERCENT, 50.0, Keywords.SPELL),
+		StatMod.new("crit_chance", StatMod.Mode.PERCENT, 500.0, Keywords.ATTACK),
+	]
+	assert_almost_eq(c.resolve(1, sheet, mods).crit_chance, 0.20, 0.0001, "l'attaque n'est pas portée")
+	mods.append(StatMod.new("crit_chance", StatMod.Mode.PERCENT, 1000.0))
+	assert_eq(c.resolve(1, sheet, mods).crit_chance, 1.0, "bornée")
+
+
+func test_a_skill_wants_the_weapon_of_its_cadence() -> void:
+	var sword := ItemCatalog.by_id("sword")
+	var wand := ItemCatalog.by_id("wand")
+	var attack := SkillCatalog.by_id(SkillCatalog.ID_ATTACK)
+	var bolt := SkillCatalog.by_id(SkillCatalog.ID_BOLT)
+	assert_true(attack.usable_with(sword))
+	assert_false(attack.usable_with(wand))
+	assert_true(bolt.usable_with(wand))
+	assert_false(bolt.usable_with(sword))
+	assert_false(bolt.usable_with(ItemCatalog.by_id("grimoire")), "une main gauche n'est pas une arme")
+	assert_false(attack.usable_with(null), "les mains vides")
+
+
+func test_a_crit_is_rolled_only_for_a_cast() -> void:
+	var cast := SkillStats.new()
+	cast.crit_chance = 1.0
+	cast.crit_multiplier = 3.0
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.FIRE] = 10.0
+	var info := DamageInfo.roll(cast, Vector2.ZERO, parts)
+	assert_true(info.is_crit)
+	assert_eq(info.amount, 30.0)
+	assert_false(DamageInfo.roll(null, Vector2.ZERO, parts).is_crit, "un coup d'ennemi")
+
+
+# --------------------------------------------------------------------------
 # Les deux attaques de départ, qui ne doivent pas changer de valeur
 # --------------------------------------------------------------------------
 

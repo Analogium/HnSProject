@@ -73,6 +73,8 @@ const ALL := [
 
 ## Un identifiant et non un tirage : la mécanique centrale ne s'apprend pas au hasard.
 const ID_STARTING_MANUAL := "manual_lightning"
+const ID_STARTING_WEAPON := "sword"
+const ID_STARTING_WAND := "wand"
 
 ## Combien de niveaux une base tombe encore **après** l'ouverture de sa remplaçante :
 ## un chevauchement, pas une falaise. La lame de guerre ouvre au 34, l'épée large

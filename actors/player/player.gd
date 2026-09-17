@@ -191,7 +191,7 @@ func _physics_process(delta: float) -> void:
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
-## il porte les cinq refus : case vide, non apprise, réserve, recharge, orbite pleine.
+## il porte les six refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite pleine.
 func cast_slot(index: int) -> bool:
 	if is_dead or _recharges.size() <= index or _recharges[index] > 0.0:
 		return false
@@ -212,6 +212,9 @@ func cast_slot(index: int) -> bool:
 			_aura = null
 			_recharges[index] = cast.interval
 			return true
+	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre une aura.
+	if not skill.usable_with(_weapon_base()):
+		return false
 	if mana < cast.mana_cost:
 		return false
 	# Refusée plutôt que de remplacer la plus ancienne : la touche tenue paierait pour
@@ -486,7 +489,8 @@ func recompute_stats() -> void:
 	var on_the_rest: Array[StatMod] = []
 	var on_skills: Array[StatMod] = []
 	for m in mods:
-		if not m.scope.is_empty():
+		# Un accru de chance critique multiplie au lancer la base que la fiche porte : l'arme et les plats.
+		if not m.scope.is_empty() or (m.stat == SkillStats.CRIT_CHANCE and m.mode != StatMod.Mode.FLAT):
 			on_skills.append(m)
 		elif m.stat in CharacterStats.ATTRIBUTES:
 			over_attributes.append(m)
@@ -503,9 +507,7 @@ func recompute_stats() -> void:
 	))
 	skill_mods = on_skills
 
-	# Une chance critique au-dessus de 1 ne veut rien dire, et le multiplicateur
-	# sous 1 transformerait un critique en coup amorti.
-	stats.crit_chance = clampf(stats.crit_chance, 0.0, 1.0)
+	# Un multiplicateur sous 1 transformerait un critique en coup amorti.
 	stats.crit_multiplier = maxf(stats.crit_multiplier, 1.0)
 
 	# Réassignée : la hurtbox défendrait sinon avec l'ancienne fiche.
@@ -687,8 +689,13 @@ func _after_equipment_change() -> void:
 ## L'arme visible, vide pour celle de la fiche. Publique : la fenêtre de personnage
 ## dessine la même silhouette.
 func weapon_kind() -> String:
-	var weapon: Item = equipment.get("weapon")
-	return "" if weapon == null else weapon.base.kind
+	var base := _weapon_base()
+	return "" if base == null else base.kind
+
+
+func _weapon_base() -> ItemBase:
+	var weapon: Item = equipment.get(EquipmentSlots.WEAPON)
+	return null if weapon == null else weapon.base
 
 
 ## **Le seul chemin pour changer la vie** : la barre suit, le plafond s'applique.
@@ -764,9 +771,8 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		return
 	_already_hit.append(area)   # un swing ne touche une cible qu'une fois
 
-	var info := DamageInfo.roll(stats, global_position, _hit_parts)
+	var info := DamageInfo.roll(_hit_cast, global_position, _hit_parts, stats.knockback_force)
 	info.author = states
-	info.cast = _hit_cast
 	(area as Hurtbox).take_damage(info)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.

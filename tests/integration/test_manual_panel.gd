@@ -396,6 +396,19 @@ func test_the_sheet_announces_levels_and_damage_against_a_state() -> void:
 	assert_eq(_values(lines, "dégâts accrus contre les engourdis"), PackedStringArray(["+30 %"]))
 
 
+## La chance critique d'un sort est celle du coup : l'arme, sa ligne locale et les accrus.
+func test_the_sheet_announces_the_crit_of_the_skill() -> void:
+	var book := _rich_book()
+	assert_true(book.manual.invest(book.base.manual, "swift_bolt"))
+	_player.equip(Item.new(
+		ItemCatalog.by_id("wand"), [StatMod.new("crit_chance", StatMod.Mode.FLAT, 0.03)]
+	))
+	_player.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 50.0, Keywords.SPELL)])
+	var lines := _sheet_of(book, "swift_bolt")
+	assert_eq(_values(lines, "chance critique"), PackedStringArray(["12 %"]), "(5 + 3) × 1,5")
+	assert_eq(_values(lines, "dégâts critiques"), PackedStringArray(["200 %"]))
+
+
 ## Un nœud de conversion dit ce qu'il déplace et où : c'est la ligne qui explique
 ## à quelle résistance le coup s'oppose désormais.
 func test_the_sheet_announces_the_conversion() -> void:

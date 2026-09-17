@@ -11,4 +11,5 @@ family = "ring"
 tags = PackedStringArray("ring", "jewellery")
 lineage = "ring"
 implicit_stat = "crit_chance"
-implicit_value = 0.02
+implicit_percent = true
+implicit_value = 8.0

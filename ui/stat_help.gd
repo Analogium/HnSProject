@@ -33,7 +33,7 @@ const TEXTS := {
 	"attack_speed": "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation.",
 	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque.",
 	"attack_range": "L'allonge du coup d'épée, en pixels.",
-	"crit_chance": "La probabilité qu'un coup soit critique.",
+	"crit_chance": "Celle de l'arme portée, seule à donner une base. Les bonus accrus la multiplient ensuite, compétence par compétence.",
 	"crit_multiplier": "Ce que multiplie un coup critique.",
 	"move_speed": "La vitesse de déplacement, en pixels par seconde.",
 }
@@ -105,7 +105,7 @@ static func _now(field: String, stats: CharacterStats) -> String:
 		"attack_speed":
 			return Texts.t("Ici : un coup toutes les %.2f s.") % stats.attack_interval()
 		"crit_chance":
-			return Texts.t("Ici : {coups} coups sur cent, pour {degats} % de dégâts.").format({
+			return Texts.t("Ici : {coups} coups sur cent avant les bonus accrus, pour {degats} % de dégâts.").format({
 				"coups": roundi(stats.crit_chance * 100.0),
 				"degats": roundi(stats.crit_multiplier * 100.0),
 			})

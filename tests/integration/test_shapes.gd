@@ -1,5 +1,7 @@
 extends GutTest
 
+const Weapons := preload("res://tests/weapons.gd")
+
 ## Les formes du jalon 11, lancées pour de vrai par `Player.cast_slot()` sur des
 ## hurtbox posées à la main : qui elles touchent, combien de fois, et quand elles
 ## s'arrêtent.
@@ -50,6 +52,7 @@ func _learn(base_id: String, points: Array) -> void:
 	for id: String in points:
 		assert_true(_p.invest(0, id), "« %s »" % id)
 	_p.bar.put(2, points[0])
+	Weapons.arm(_p, points[0])
 	_p.stats.max_mana = 9999.0
 	_p._set_mana(9999.0)
 
@@ -152,10 +155,10 @@ func _bleeding_target(position: Vector2) -> Hurtbox:
 
 
 func _against_bleeding(scope: String) -> void:
-	_p.stats.crit_chance = 0.0
-	_p.skill_mods.assign([StatMod.new(
-		SkillStats.against_stat(StatusEffects.Kind.BLEED), StatMod.Mode.PERCENT, 100.0, scope
-	)])
+	_p.skill_mods.assign([
+		StatMod.new(SkillStats.against_stat(StatusEffects.Kind.BLEED), StatMod.Mode.PERCENT, 100.0, scope),
+		StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0),
+	])
 
 
 func _assert_doubled(bleeding: Hurtbox, bare: Hurtbox, path: String) -> void:
@@ -186,6 +189,26 @@ func test_a_ball_carries_it_by_its_bolt_and_its_explosion() -> void:
 	assert_true(_p.cast_slot(2))
 	await wait_seconds(0.5)
 	_assert_doubled(bleeding, bare, "le tir sur l'une, l'explosion sur l'autre")
+
+
+## Un sort critique par chacun de ses chemins de coup : la chaîne par `Targets.strike`,
+## la boule par son tir et son explosion.
+func test_a_spell_crits_on_every_path() -> void:
+	var crits := []
+	for at in [Vector2(60, 0), Vector2(40, 40), Vector2(40, 56)]:
+		_target(at).damaged.connect(func(info: DamageInfo) -> void: crits.append(info.is_crit))
+	await wait_physics_frames(2)
+	_learn("manual_lightning", ["chain_lightning"])
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 10000.0)])
+	assert_true(_p.cast_slot(2), "la chaîne")
+	_learn("manual_fire", ["fireball"])
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 10000.0)])
+	_p.bar.put(1, "fireball")
+	_p.facing = Vector2(1, 1).normalized()
+	assert_true(_p.cast_slot(1), "la boule, sur une case qui ne recharge pas")
+	await wait_seconds(0.5)
+	assert_gt(crits.size(), 2)
+	assert_false(false in crits, "tous critiques")
 
 
 func test_a_swing_carries_it() -> void:

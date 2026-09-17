@@ -94,18 +94,48 @@ func passive_mods() -> Array[StatMod]:
 
 
 ## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul
-## des statistiques du joueur consomme.
+## des statistiques du joueur consomme. Les lignes locales n'y sont que par la
+## chance critique de l'arme, qui les contient.
 func mods() -> Array[StatMod]:
 	var all: Array[StatMod] = []
 	var imp := base.implicit()
 	if imp != null:
 		all.append(imp)
 	for r in explicits:
-		all.append(r.mod)
+		if not base.is_local(r.mod):
+			all.append(r.mod)
+	if base.family == ItemBase.WEAPON_FAMILY:
+		all.append(StatMod.new(SkillStats.CRIT_CHANCE, StatMod.Mode.FLAT, crit_chance()))
 	return all
+
+
+## Celle de la base, plus ses plats locaux, fois ses accrus locaux.
+func crit_chance() -> float:
+	var flat := base.crit_chance
+	var increased := 0.0
+	for r in explicits:
+		if not base.is_local(r.mod):
+			continue
+		if r.mod.mode == StatMod.Mode.FLAT:
+			flat += r.mod.value
+		else:
+			increased += r.mod.value
+	return maxf(flat * (1.0 + increased * 0.01), 0.0)
 
 
 ## L'implicite, à part et en premier : ce que la base garantit.
 func implicit_line() -> String:
 	var imp := base.implicit()
 	return "" if imp == null else imp.label()
+
+
+## Sous l'implicite, vide hors des armes.
+func crit_line() -> String:
+	if base.family != ItemBase.WEAPON_FAMILY:
+		return ""
+	return Texts.t("Chance critique de base : %s") % StatMod.format(SkillStats.CRIT_CHANCE, crit_chance())
+
+
+## Une ligne tirée telle que l'infobulle l'écrit.
+func explicit_line(r: RolledAffix) -> String:
+	return r.mod.label() + (Texts.t(" (local)") if base.is_local(r.mod) else "")

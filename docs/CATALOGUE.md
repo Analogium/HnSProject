@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-44 bases d'objets, 12 compétences, 45 affixes d'objets, 5 affixes d'ennemis.
+44 bases d'objets, 12 compétences, 47 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -20,52 +20,52 @@ Niveaux de zone : 1 à 120.
 
 ## Bases d'objets
 
-| id | nom | lignée | palier | famille | étiquettes | implicite | cases | tombe en zones |
-|---|---|---|---|---|---|---|---|---|
-| `sword` | Épée | blade | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 1 × 3 | 1 à 22 |
-| `broadsword` | Épée large | blade | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 1 × 3 | 16 à 40 |
-| `war_blade` | Lame de guerre | blade | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 1 × 3 | 34 et au-delà |
-| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue | 1 × 2 | 1 à 30 |
-| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue | 1 × 2 | 24 et au-delà |
-| `mace` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 1 × 3 | 6 à 28 |
-| `battle_mace` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 1 × 3 | 22 à 46 |
-| `war_hammer` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 1 × 3 | 40 et au-delà |
-| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue | 1 × 2 | 1 à 24 |
-| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue | 1 × 2 | 18 à 42 |
-| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue | 1 × 2 | 36 et au-delà |
-| `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure | 2 × 2 | 1 à 21 |
-| `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure | 2 × 2 | 15 à 39 |
-| `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure | 2 × 2 | 33 et au-delà |
-| `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | ajoute 3 à 7 dégâts de foudre aux sorts | 2 × 2 | 10 à 34 |
-| `codex` | Codex | grimoire | 2 | offhand | offhand, caster | ajoute 6 à 16 dégâts de foudre aux sorts | 2 × 2 | 28 et au-delà |
-| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 PV | 2 × 2 | 1 à 20 |
-| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 PV | 2 × 2 | 14 à 38 |
-| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 PV | 2 × 2 | 32 et au-delà |
-| `hood` | Capuche | casque_leger | 1 | helmet | helmet, armour, light | +14 esquive | 2 × 2 | 1 à 26 |
-| `masters_hood` | Capuche de maître | casque_leger | 2 | helmet | helmet, armour, light | +34 esquive | 2 × 2 | 20 et au-delà |
-| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 PV | 2 × 3 | 1 à 23 |
-| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 PV | 2 × 3 | 17 à 41 |
-| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 PV | 2 × 3 | 35 et au-delà |
-| `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive | 2 × 3 | 1 à 25 |
-| `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive | 2 × 3 | 19 et au-delà |
-| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +8 % de vitesse d'attaque accrue | 2 × 2 | 1 à 19 |
-| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +14 % de vitesse d'attaque accrue | 2 × 2 | 13 à 37 |
-| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +21 % de vitesse d'attaque accrue | 2 × 2 | 31 et au-delà |
-| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +8 vitesse | 2 × 2 | 1 à 18 |
-| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +14 vitesse | 2 × 2 | 12 à 36 |
-| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +20 vitesse | 2 × 2 | 30 et au-delà |
-| `belt` | Ceinture | belt | 1 | belt | belt | +1.5 PV/s | 2 × 1 | 1 à 17 |
-| `girdle` | Ceinturon | belt | 2 | belt | belt | +3 PV/s | 2 × 1 | 11 à 35 |
-| `baldric` | Baudrier | belt | 3 | belt | belt | +5 PV/s | 2 × 1 | 29 et au-delà |
-| `amulet` | Amulette | amulet | 1 | amulet | amulet, jewellery | +15 mana | 1 × 1 | 1 à 23 |
-| `talisman` | Talisman | amulet | 2 | amulet | amulet, jewellery | +34 mana | 1 × 1 | 17 à 41 |
-| `pendant` | Pendentif | amulet | 3 | amulet | amulet, jewellery | +58 mana | 1 × 1 | 35 et au-delà |
-| `ring` | Anneau | ring | 1 | ring | ring, jewellery | +2 % chance critique | 1 × 1 | 1 à 22 |
-| `ornate_ring` | Bague ouvragée | ring | 2 | ring | ring, jewellery | +4 % chance critique | 1 × 1 | 16 à 40 |
-| `signet_ring` | Chevalière | ring | 3 | ring | ring, jewellery | +6 % chance critique | 1 × 1 | 34 et au-delà |
-| `manual_lightning` | Manuel de la foudre | manual_lightning | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
-| `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | 2 × 2 | 1 et au-delà |
-| `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | 2 × 2 | 5 et au-delà |
+| id | nom | lignée | palier | famille | étiquettes | implicite | critique | cases | tombe en zones |
+|---|---|---|---|---|---|---|---|---|---|
+| `sword` | Épée | blade | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 10 % | 1 × 3 | 1 à 22 |
+| `broadsword` | Épée large | blade | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 10 % | 1 × 3 | 16 à 40 |
+| `war_blade` | Lame de guerre | blade | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 10 % | 1 × 3 | 34 et au-delà |
+| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue | 10 % | 1 × 2 | 1 à 30 |
+| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue | 10 % | 1 × 2 | 24 et au-delà |
+| `mace` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 10 % | 1 × 3 | 6 à 28 |
+| `battle_mace` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 10 % | 1 × 3 | 22 à 46 |
+| `war_hammer` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 10 % | 1 × 3 | 40 et au-delà |
+| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 1 à 24 |
+| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 18 à 42 |
+| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 36 et au-delà |
+| `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure | — | 2 × 2 | 1 à 21 |
+| `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure | — | 2 × 2 | 15 à 39 |
+| `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure | — | 2 × 2 | 33 et au-delà |
+| `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | ajoute 3 à 7 dégâts de foudre aux sorts | — | 2 × 2 | 10 à 34 |
+| `codex` | Codex | grimoire | 2 | offhand | offhand, caster | ajoute 6 à 16 dégâts de foudre aux sorts | — | 2 × 2 | 28 et au-delà |
+| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 PV | — | 2 × 2 | 1 à 20 |
+| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 PV | — | 2 × 2 | 14 à 38 |
+| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 PV | — | 2 × 2 | 32 et au-delà |
+| `hood` | Capuche | casque_leger | 1 | helmet | helmet, armour, light | +14 esquive | — | 2 × 2 | 1 à 26 |
+| `masters_hood` | Capuche de maître | casque_leger | 2 | helmet | helmet, armour, light | +34 esquive | — | 2 × 2 | 20 et au-delà |
+| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 PV | — | 2 × 3 | 1 à 23 |
+| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 PV | — | 2 × 3 | 17 à 41 |
+| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 PV | — | 2 × 3 | 35 et au-delà |
+| `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive | — | 2 × 3 | 1 à 25 |
+| `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive | — | 2 × 3 | 19 et au-delà |
+| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +8 % de vitesse d'attaque accrue | — | 2 × 2 | 1 à 19 |
+| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +14 % de vitesse d'attaque accrue | — | 2 × 2 | 13 à 37 |
+| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +21 % de vitesse d'attaque accrue | — | 2 × 2 | 31 et au-delà |
+| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +8 vitesse | — | 2 × 2 | 1 à 18 |
+| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +14 vitesse | — | 2 × 2 | 12 à 36 |
+| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +20 vitesse | — | 2 × 2 | 30 et au-delà |
+| `belt` | Ceinture | belt | 1 | belt | belt | +1.5 PV/s | — | 2 × 1 | 1 à 17 |
+| `girdle` | Ceinturon | belt | 2 | belt | belt | +3 PV/s | — | 2 × 1 | 11 à 35 |
+| `baldric` | Baudrier | belt | 3 | belt | belt | +5 PV/s | — | 2 × 1 | 29 et au-delà |
+| `amulet` | Amulette | amulet | 1 | amulet | amulet, jewellery | +15 mana | — | 1 × 1 | 1 à 23 |
+| `talisman` | Talisman | amulet | 2 | amulet | amulet, jewellery | +34 mana | — | 1 × 1 | 17 à 41 |
+| `pendant` | Pendentif | amulet | 3 | amulet | amulet, jewellery | +58 mana | — | 1 × 1 | 35 et au-delà |
+| `ring` | Anneau | ring | 1 | ring | ring, jewellery | +8 % de chance critique de base accrue | — | 1 × 1 | 1 à 22 |
+| `ornate_ring` | Bague ouvragée | ring | 2 | ring | ring, jewellery | +14 % de chance critique de base accrue | — | 1 × 1 | 16 à 40 |
+| `signet_ring` | Chevalière | ring | 3 | ring | ring, jewellery | +20 % de chance critique de base accrue | — | 1 × 1 | 34 et au-delà |
+| `manual_lightning` | Manuel de la foudre | manual_lightning | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
+| `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
+| `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
 
 ## Manuels
 
@@ -302,17 +302,17 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | volley_1 | small | 12, 4 | dex_5, volley_2, volley_4 | +8 % de dégâts accrus (Projectile) |
 | volley_2 | small | 10, 1 | volley_1, volley_3 | +8 % de dégâts accrus (Projectile) |
 | volley_3 | small | 10, -1 | volley_2, precise_shot | +8 % de dégâts accrus (Projectile) |
-| **Tir précis** `precise_shot` | notable | 13, -3 | volley_3 | +20 % de dégâts accrus (Projectile) · +2 % chance critique |
+| **Tir précis** `precise_shot` | notable | 13, -3 | volley_3 | +20 % de dégâts accrus (Projectile) · +20 % de chance critique de base accrue |
 | volley_4 | small | 15, 3 | volley_1, volley_5 | +6 % de vitesse de projectile accrue (Projectile) |
 | volley_5 | small | 16, 1 | volley_4, volley_shot | +6 % de vitesse de projectile accrue (Projectile) |
 | **Volée** `volley_shot` | notable | 16, -2 | volley_5 | +1 nombre de projectiles (Projectile) · +10 % de vitesse de projectile accrue (Projectile) |
-| eye_1 | small | 9, 8 | dex_5, eye_2, eye_6 | +6 % de chance critique accrue |
+| eye_1 | small | 9, 8 | dex_5, eye_2, eye_6 | +6 % de chance critique de base accrue |
 | eye_2 | small | 10, 11 | eye_1, eye_3 | +8 % de dégâts critiques accrus |
-| eye_3 | small | 8, 13 | eye_2, eye_4 | +6 % de chance critique accrue |
+| eye_3 | small | 8, 13 | eye_2, eye_4 | +6 % de chance critique de base accrue |
 | eye_4 | small | 5, 13 | eye_3, eye_5, lynx_eye | +8 % de dégâts critiques accrus |
-| eye_5 | small | 4, 10 | eye_4, eye_6 | +6 % de chance critique accrue |
+| eye_5 | small | 4, 10 | eye_4, eye_6 | +6 % de chance critique de base accrue |
 | eye_6 | small | 6, 8 | eye_5, eye_1 | +8 % de dégâts critiques accrus |
-| **Œil de lynx** `lynx_eye` | notable | 7, 11 | eye_4 | +3 % chance critique · +30 % dégâts critiques |
+| **Œil de lynx** `lynx_eye` | notable | 7, 11 | eye_4 | +30 % de chance critique de base accrue · +30 % dégâts critiques |
 | breath_1 | small | 21, -1 | outer_int_dex_5, breath_2, breath_6 | +8 % d'esquive accrue |
 | breath_2 | small | 22, -4 | breath_1, breath_3 | +8 % d'esquive accrue |
 | breath_3 | small | 25, -4 | breath_2, breath_4 | +8 % d'esquive accrue |
@@ -348,7 +348,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `butchering` | dégâts contre les saignants (Attaque) (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
 | `cold_to_attacks` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `cruel` | chance critique | weapon, gloves, jewellery | — | 7 | 5 | 20 / 44 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 44 |
 | `cuirassed` | armure | armour | — | 9 | 9 | 19 / 44 |
 | `electrocuting` | dégâts contre les engourdis (Sort) (%) | caster, gloves | offhand | 3 | 5 | 6 / 44 |
 | `elusive` | esquive | light | — | 9 | 8 | 10 / 44 |
@@ -364,6 +364,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 44 |
 | `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 44 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 44 |
 | `lightning_skill_levels` | niveaux de compétence (Foudre) | caster | — | 1 | 2 | 5 / 44 |
 | `lightning_to_attacks` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
@@ -375,6 +376,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `physical_to_attacks` | dégâts physiques aux attaques | melee | — | 2 | 8 | 8 / 44 |
 | `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 44 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 44 |
 | `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 44 |
 | `reach` | allonge | melee | — | 8 | 5 | 8 / 44 |
 | `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 44 |
@@ -482,15 +484,13 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`cruel`** — chance critique, arrondi 0.01
+**`cruel`** — chance critique de base, arrondi 0.01
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
-| T1 | 48 | 15–18 % | 10 |
-| T2 | 36 | 11–14 % | 10 |
-| T3 | 24 | 8–10 % | 10 |
-| T4 | 12 | 5–7 % | 10 |
-| T5 | 1 | 2–4 % | 10 |
+| T1 | 48 | 3–4 % | 10 |
+| T2 | 24 | 2–3 % | 10 |
+| T3 | 1 | 1–2 % | 10 |
 
 **`cuirassed`** — armure, arrondi 1
 
@@ -657,6 +657,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
+**`keen`** — chance critique de base, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 48 | 30–36 % | 10 |
+| T2 | 36 | 24–29 % | 10 |
+| T3 | 24 | 18–23 % | 10 |
+| T4 | 12 | 13–17 % | 10 |
+| T5 | 1 | 8–12 % | 10 |
+
 **`lightning_skill_levels`** — niveaux de compétence (Foudre), arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -783,6 +793,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 19–26 % | 10 |
 | T5 | 10 | 12–18 % | 10 |
 | T6 | 1 | 6–11 % | 10 |
+
+**`precise`** — chance critique de base, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 48 | 50–60 % | 10 |
+| T2 | 36 | 40–49 % | 10 |
+| T3 | 24 | 30–39 % | 10 |
+| T4 | 12 | 20–29 % | 10 |
+| T5 | 1 | 10–19 % | 10 |
 
 **`quick`** — vitesse d'attaque, arrondi 1
 

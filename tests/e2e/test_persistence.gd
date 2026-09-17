@@ -45,7 +45,9 @@ func _recast() -> Player:
 func test_a_new_character_arrives_in_the_zone() -> void:
 	assert_eq(_zone.player.level, 1)
 	assert_eq(_zone.player.sprite.current_variant(), 1, "sa silhouette, pas celle par défaut")
-	assert_eq(_zone.player.inventory.placed.size(), 0, "les mains vides")
+	assert_eq(_zone.player.weapon_kind(), "sword", "l'épée en main, pour l'attaque de départ")
+	assert_eq(_zone.player.inventory.placed.size(), 1, "la baguette au sac, pour le tir")
+	assert_eq(_zone.player.inventory.placed[0].data.base.id, ItemCatalog.ID_STARTING_WAND)
 
 
 func test_the_milestone_criterion() -> void:
@@ -62,11 +64,11 @@ func test_the_milestone_criterion() -> void:
 
 	assert_eq(refunded.level, level, "le niveau est là")
 	assert_eq(refunded.remaining_passive_points(), _zone.player.remaining_passive_points(), "et les points d'arbre")
-	assert_eq(refunded.inventory.placed.size(), 1, "le plastron est dans le sac")
-	assert_eq(refunded.inventory.placed[0].data.base.id, "breastplate")
-	assert_almost_eq(
-		refunded.inventory.placed[0].data.explicits[0].mod.value, 20.0, 0.0001, "avec son affixe"
-	)
+	assert_eq(refunded.weapon_kind(), "sword", "l'arme de départ en main")
+	assert_eq(refunded.inventory.placed.size(), 2, "le plastron est dans le sac, avec la baguette")
+	var breastplate: Item = refunded.inventory.placed[1].data
+	assert_eq(breastplate.base.id, "breastplate")
+	assert_almost_eq(breastplate.explicits[0].mod.value, 20.0, 0.0001, "avec son affixe")
 
 
 ## Monter de niveau écrit tout seul : c'est le progrès qu'on serait le plus
@@ -104,17 +106,17 @@ func test_saving_writes_the_current_state_not_the_loaded_one() -> void:
 	_zone.save()
 
 	var reread := SaveStore.read(_id)
-	assert_eq(reread.bag.placed.size(), 2, "les deux objets ramassés après la montée")
+	assert_eq(reread.bag.placed.size(), 3, "la baguette de départ et les deux objets ramassés après la montée")
 
 
 ## Le signal de départ est le seul canal : fermeture de la fenêtre, retour au
 ## menu et sortie du jeu passent tous par lui.
 func test_the_start_signal_triggers_writing() -> void:
 	_zone.player.pick_up(Item.new(ItemCatalog.by_id("sword")))
-	assert_eq(SaveStore.read(_id).bag.placed.size(), 0, "rien d'écrit pour l'instant")
+	assert_eq(SaveStore.read(_id).bag.placed.size(), 1, "rien d'écrit pour l'instant que la baguette")
 
 	Game.save_requested.emit()
-	assert_eq(SaveStore.read(_id).bag.placed.size(), 1, "l'épée est sur le disque")
+	assert_eq(SaveStore.read(_id).bag.placed.size(), 2, "l'épée est sur le disque")
 
 
 ## Une zone lancée sans personnage — les scènes de réglage, l'éditeur — ne doit

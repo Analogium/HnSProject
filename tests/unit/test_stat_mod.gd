@@ -30,6 +30,20 @@ func test_labels() -> void:
 	assert_eq(StatMod.new("res_fire", StatMod.Mode.FLAT, 20.0).label(), "+20 % rés. feu")
 
 
+## Jalon 18 : un plat monte la base, un accru l'accroît — dans les deux langues.
+func test_crit_lines_name_the_base() -> void:
+	var flat := StatMod.new("crit_chance", StatMod.Mode.FLAT, 0.04)
+	var increased := StatMod.new("crit_chance", StatMod.Mode.PERCENT, 20.0)
+	assert_eq(flat.label(), "+4 % de chance critique de base")
+	assert_eq(Glossary.plain(increased.label()), "+20 % de chance critique de base accrue")
+	Settings.from_dict({"language": Settings.ENGLISH})
+	var flat_text := flat.label()
+	var increased_text := Glossary.plain(increased.label())
+	Settings.from_dict({"language": Settings.FRENCH})
+	assert_eq(flat_text, "+4% to base crit chance")
+	assert_eq(increased_text, "+20% increased base crit chance")
+
+
 ## Jalon 15 : le terme dit le calcul et le sens, s'accorde avec la statistique, et
 ## « de » s'élide devant une voyelle.
 func test_a_percentage_names_its_term() -> void:

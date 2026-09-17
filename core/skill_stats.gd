@@ -18,6 +18,7 @@ const LABELS := {
 	"duration": "durée",
 	"radius": "rayon",
 	"simultaneous": "maximum simultané",
+	CRIT_CHANCE: "chance critique de base",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -30,9 +31,13 @@ const AGREEMENT := {
 	"duration": "fs",
 	"radius": "ms",
 	"simultaneous": "ms",
+	CRIT_CHANCE: "fs",
 }
 
 const DAMAGE := "damage"
+## Le seul nombre du lancer qu'un modificateur **sans portée** atteint : sa base est sur
+## la compétence, pas sur la fiche.
+const CRIT_CHANCE := "crit_chance"
 ## Des points de compétence en plus de ceux placés, à plat et **toujours portés par un
 ## mot-clé** : la fiche n'a pas de niveau de compétence.
 const LEVELS := "skill_levels"
@@ -70,6 +75,9 @@ var hits := 1
 var sustained := false
 var mana_cost := 0.0
 var interval := 0.0
+## Tirés à chaque coup par `DamageInfo.roll()`. Le multiplicateur est celui de la fiche.
+var crit_chance := 0.0
+var crit_multiplier := 1.0
 
 ## Les mots-clés que ce lancer porte vraiment, nœuds compris : c'est cette liste
 ## qui a filtré les modificateurs.
@@ -321,3 +329,4 @@ func finalize() -> void:
 	simultaneous = float(maxi(roundi(simultaneous), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
+	crit_chance = clampf(crit_chance, 0.0, 1.0)

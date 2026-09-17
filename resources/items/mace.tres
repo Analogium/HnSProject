@@ -15,3 +15,4 @@ implicit_stat = "damage_physical"
 implicit_value = 3.0
 implicit_value_max = 9.0
 implicit_scope = "attack"
+crit_chance = 0.1

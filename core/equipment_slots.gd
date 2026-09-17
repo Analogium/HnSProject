@@ -18,6 +18,8 @@ const SLOTS := {
 	"ring_right": {"family": "ring", "label": "BAGUE D."},
 }
 
+const WEAPON := "weapon"
+
 ## Calculés une fois : `keys()` alloue, et le panneau les demande à chaque image.
 static var _ids := PackedStringArray(SLOTS.keys())
 

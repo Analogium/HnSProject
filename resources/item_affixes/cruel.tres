@@ -6,38 +6,26 @@
 [sub_resource type="Resource" id="Resource_eoviw"]
 script = ExtResource("2_6jnwg")
 required_level = 48
-min_value = 0.15
-max_value = 0.18
-
-[sub_resource type="Resource" id="Resource_outwg"]
-script = ExtResource("2_6jnwg")
-required_level = 36
-min_value = 0.11
-max_value = 0.14
+min_value = 0.03
+max_value = 0.04
 
 [sub_resource type="Resource" id="Resource_o5scs"]
 script = ExtResource("2_6jnwg")
 required_level = 24
-min_value = 0.08
-max_value = 0.1
-
-[sub_resource type="Resource" id="Resource_vmffm"]
-script = ExtResource("2_6jnwg")
-required_level = 12
-min_value = 0.05
-max_value = 0.07
+min_value = 0.02
+max_value = 0.03
 
 [sub_resource type="Resource" id="Resource_kq8xr"]
 script = ExtResource("2_6jnwg")
-min_value = 0.02
-max_value = 0.04
+min_value = 0.01
+max_value = 0.02
 
 [resource]
 script = ExtResource("1_affix")
 id = "cruel"
-tags = PackedStringArray("weapon", "gloves", "jewellery")
+tags = PackedStringArray("weapon")
 excludes = PackedStringArray()
 stat = "crit_chance"
-tiers = Array[ExtResource("2_6jnwg")]([SubResource("Resource_eoviw"), SubResource("Resource_outwg"), SubResource("Resource_o5scs"), SubResource("Resource_vmffm"), SubResource("Resource_kq8xr")])
+tiers = Array[ExtResource("2_6jnwg")]([SubResource("Resource_eoviw"), SubResource("Resource_o5scs"), SubResource("Resource_kq8xr")])
 rounded = 0.01
 weight = 7

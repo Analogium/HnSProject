@@ -113,7 +113,7 @@ func test_the_implicit_comes_from_the_base_not_the_file() -> void:
 
 	var after := _round_trip(_played_character())
 	var sword: Item = after.bag.placed[after.bag.index_at(Vector2i(3, 1))].data
-	assert_eq(sword.mods().size(), 3, "l'implicite de l'épée plus ses deux affixes")
+	assert_eq(sword.mods().size(), 4, "l'implicite de l'épée, ses deux affixes et sa chance critique")
 
 
 ## La doctrine du projet : la base est partagée, jamais recopiée ni écrite.
@@ -641,6 +641,22 @@ func test_a_damage_percentage_is_removed() -> void:
 	])
 	assert_eq(sword.explicits.size(), 1, "seule la vitesse reste")
 	assert_eq(sword.explicits[0].mod.stat, "attack_speed")
+
+
+## Jalon 18 : une chance critique plate ne se garde que sur une arme, où elle monte la
+## base. Ailleurs elle n'a pas d'équivalent en accru, et part.
+func test_a_flat_crit_outside_a_weapon_is_removed() -> void:
+	var p := Character.create_new("Critique", 0)
+	var crit := StatMod.new("crit_chance", StatMod.Mode.FLAT, 0.05)
+	p.equipment["weapon"] = Item.new(ItemCatalog.by_id("sword"), [crit] as Array[StatMod])
+	p.equipment["gloves"] = Item.new(ItemCatalog.by_id("gloves"), [
+		crit, StatMod.new("crit_chance", StatMod.Mode.PERCENT, 20.0),
+	] as Array[StatMod])
+	var after := _round_trip(p)
+	assert_eq(after.equipment["weapon"].explicits.size(), 1, "sur l'arme, elle reste")
+	var gloves: Item = after.equipment["gloves"]
+	assert_eq(gloves.explicits.size(), 1, "sur les gants, seul l'accru reste")
+	assert_eq(gloves.explicits[0].mod.mode, StatMod.Mode.PERCENT)
 
 
 ## Une borne haute plus basse que la basse — un fichier trafiqué — ne donne pas

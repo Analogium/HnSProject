@@ -127,10 +127,10 @@ func test_the_milestone_6_criterion() -> void:
 	if is_instance_valid(on_ground):
 		player.global_position = on_ground.global_position
 		await wait_physics_frames(4)
-	assert_eq(player.inventory.placed.size(), 1, "il est dans le sac")
+	assert_eq(player.inventory.placed.size(), 2, "il est dans le sac, avec la baguette de départ")
 
 	# --- « le poser au râtelier » ---
-	player.inventory.take_at(player.inventory.placed[0].cell)
+	player.inventory.take_at(player.inventory.placed[1].cell)
 	assert_null(player.study(book), "le râtelier était vide")
 	assert_same(player.rack.at(0), book)
 
@@ -168,6 +168,11 @@ func test_the_milestone_6_criterion() -> void:
 	)
 
 	# --- « le lancer » ---
+	# Pas avec l'épée de départ : la baguette du sac, d'abord.
+	assert_false(player.cast_slot(2), "un sort ne part pas d'une épée")
+	var wand := player.inventory.take_at(player.inventory.placed[0].cell)
+	assert_eq(wand.base.id, ItemCatalog.ID_STARTING_WAND)
+	player.equip(wand)
 	var before: int = _zone.projectiles.get_child_count()
 	assert_true(player.cast_slot(2), "l'éclair part")
 	assert_eq(_zone.projectiles.get_child_count(), before + 1)

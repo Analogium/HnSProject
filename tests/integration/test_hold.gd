@@ -1,5 +1,7 @@
 extends GutTest
 
+const Weapons := preload("res://tests/weapons.gd")
+
 ## La touche d'une compétence, tenue : elle relance dès que la recharge est
 ## passée, et pas avant.
 ##
@@ -29,6 +31,7 @@ func before_each() -> void:
 	# GUT garde une seule instance du script pour tous ses tests : sans ce
 	# vidage, chaque test compterait aussi les tirs du précédent.
 	_frames.clear()
+	Weapons.arm(_p, SkillCatalog.ID_BOLT)
 	await wait_physics_frames(1)
 
 

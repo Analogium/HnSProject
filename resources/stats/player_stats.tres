@@ -16,5 +16,5 @@ attack_damage = 0.0
 attack_cooldown = 0.45
 attack_range = 28.0
 knockback_force = 0.0
-crit_chance = 0.05
+crit_chance = 0.0
 crit_multiplier = 2.0

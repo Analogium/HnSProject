@@ -241,7 +241,7 @@ func _arrange() -> void:
 			tint = UiPalette.TEXT
 		# « (%) » distingue un affixe à plat de son pendant en pourcentage.
 		_add(
-			Rect2(right_side, ya, right_width, LINE), "affixe:%s" % affix.id,
+			Rect2(right_side, ya, right_width, LINE), "affix:%s" % affix.id,
 			"%s%s|%s" % [
 				StatMod.name(affix.stat, affix.scope), " (%)" if affix.percent else "", state
 			], tint

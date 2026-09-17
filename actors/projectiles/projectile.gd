@@ -169,9 +169,8 @@ func _physics_process(delta: float) -> void:
 func _on_area_entered(area: Area2D) -> void:
 	if not area is Hurtbox:
 		return
-	var info := DamageInfo.as_parts(_parts, global_position, knockback)
+	var info := DamageInfo.roll(_cast, global_position, _parts, knockback)
 	info.author = _author
-	info.cast = _cast
 	(area as Hurtbox).take_damage(info)
 	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
 	# caster libéré ferait sinon traverser le joueur par son tir (invariant 4).

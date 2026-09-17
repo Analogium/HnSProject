@@ -121,8 +121,7 @@ func _hit(cast: SkillStats, sheet: CharacterStats) -> float:
 	for i in parts.size():
 		parts[i] = (cast.damage_min[i] + cast.damage_max[i]) * 0.5
 	var info := DamageInfo.as_parts(parts, Vector2.ZERO)
-	var s := _player.stats
-	info.multiplier(1.0 + s.crit_chance * (s.crit_multiplier - 1.0))
+	info.multiplier(1.0 + cast.crit_chance * (cast.crit_multiplier - 1.0))
 	_target.stats = sheet
 	_target.mitigate_part(info)
 	return info.amount

@@ -30,7 +30,7 @@ const LABELS := {
 	"attack_speed": "vitesse d'attaque",
 	"cast_speed": "vitesse d'incantation",
 	"attack_range": "allonge",
-	"crit_chance": "chance critique",
+	"crit_chance": "chance critique de base",
 	"crit_multiplier": "dégâts critiques",
 	"move_speed": "vitesse",
 }
@@ -60,6 +60,9 @@ const AGREEMENT := {
 	"crit_multiplier": "mp",
 	"move_speed": "fs",
 }
+
+## Les plats qui montent une base : « +4 % de chance critique de base », « +4% to … ».
+const ADDED_TO_BASE := ["crit_chance"]
 
 ## « de » s'élide devant ces lettres : « d'armure », « d'esquive ».
 const ELIDING := "aeiouhéèê"
@@ -279,6 +282,11 @@ func label() -> String:
 			),
 			Keywords.recipient(scope),
 		]
+	if stat in ADDED_TO_BASE:
+		var added := {"valeur": value_label(stat, mode, value), "stat": _noun(stat)}
+		if ELIDING.contains(added["stat"].left(1).to_lower()):
+			return Texts.t("{valeur} d'{stat}").format(added)
+		return Texts.t("{valeur} de {stat}").format(added)
 	if not is_a_range():
 		return "%s %s" % [value_label(stat, mode, value), name(stat, scope)]
 	# La phrase entière, et pas des morceaux collés : l'ordre des mots n'est pas le

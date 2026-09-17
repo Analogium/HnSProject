@@ -49,7 +49,9 @@ extends Resource
 @export var attack_range: float = 28.0
 ## Zéro : ce jeu n'a pas de recul, le mécanisme reste (touches 3/4 de l'arène).
 @export var knockback_force: float = 0.0
-@export_range(0.0, 1.0) var crit_chance: float = 0.05
+## La base de chaque lancer : celle de l'arme (`Item.crit_chance()`), plus les plats des
+## autres objets et de l'arbre. Les accrus n'y entrent pas, ils la multiplient au lancer.
+@export_range(0.0, 1.0) var crit_chance: float = 0.0
 @export var crit_multiplier: float = 2.0
 
 @export_group("Déplacement")

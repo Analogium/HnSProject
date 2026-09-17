@@ -55,9 +55,8 @@ static func strike(
 	target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects, cast: SkillStats
 ) -> void:
 	if is_instance_valid(target):
-		var info := DamageInfo.as_parts(parts, from_value)
+		var info := DamageInfo.roll(cast, from_value, parts)
 		info.author = author
-		info.cast = cast
 		target.take_damage(info)
 
 

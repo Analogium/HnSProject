@@ -1,5 +1,7 @@
 extends GutTest
 
+const Weapons := preload("res://tests/weapons.gd")
+
 ## Ce qu'un impact déclenche en dehors des dégâts : le gel et la secousse.
 ##
 ## Les deux se jugent à l'œil, et aucun test ne peut dire s'ils sont beaux. Ce
@@ -177,6 +179,7 @@ func test_a_sweep_hitting_three_targets_freezes_only_once() -> void:
 
 	var player: Player = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(player)
+	Weapons.arm(player, SkillCatalog.ID_ATTACK)
 	await wait_physics_frames(1)
 	assert_true(player.cast_slot(0), "le balayage part")
 

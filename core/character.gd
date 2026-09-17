@@ -263,11 +263,10 @@ static func _item_from_dict(source: Variant) -> Item:
 		if mod.is_a_range():
 			mod.value_max = maxf(_float(line, "value_max", value), value)
 
-		var current := _current_line(mod)
+		var current := _current_line(mod, base)
 		if current == null:
 			push_warning(
-				"« %s » : ligne « %s » en pourcentage abandonnée, plus rien ne multiplie ces dégâts."
-				% [identifier, stat]
+				"« %s » : ligne « %s » abandonnée, plus rien ne l'applique." % [identifier, stat]
 			)
 			continue
 		# La valeur fait foi : sans provenance, la ligne s'applique quand même. Une ligne
@@ -289,7 +288,13 @@ static func _item_from_dict(source: Variant) -> Item:
 ## quand plus rien ne l'applique. **Équivalence exacte** avec le jeu d'alors — la
 ## seule attaque était physique, tous les sorts de foudre ; seuls les pourcentages
 ## de `murderous` n'ont plus d'équivalent. Testée sur le nom, pas sur la version.
-static func _current_line(mod: StatMod) -> StatMod:
+##
+## Une chance critique plate hors d'une arme (jalon 18) : seule l'arme donne une base, et
+## un plat n'a pas d'équivalent en accru.
+static func _current_line(mod: StatMod, base: ItemBase) -> StatMod:
+	if mod.stat == SkillStats.CRIT_CHANCE and mod.mode == StatMod.Mode.FLAT \
+			and base.family != ItemBase.WEAPON_FAMILY:
+		return null
 	if not mod.scope.is_empty():
 		return mod
 	var nature: DamageType.Kind

@@ -54,16 +54,71 @@ func test_each_drop_is_a_fresh_copy() -> void:
 func test_mods_combine_implicit_and_affixes() -> void:
 	var base: ItemBase = load("res://resources/items/sword.tres")
 	var bare := Item.new(base)
-	assert_eq(bare.mods().size(), 1, "l'implicite seul")
+	assert_eq(bare.mods().size(), 2, "l'implicite et la chance critique de l'arme")
 
 	var two: Array[StatMod] = [
 		StatMod.new("attack_speed", StatMod.Mode.PERCENT, 8.0),
 		StatMod.new("crit_chance", StatMod.Mode.FLAT, 0.03),
 	]
 	var enriched := Item.new(base, two)
-	assert_eq(enriched.mods().size(), 3, "l'implicite plus ses deux affixes")
+	assert_eq(enriched.mods().size(), 3, "la ligne locale n'y est que par la chance de l'arme")
 	assert_eq(enriched.explicits.size(), 2, "l'infobulle ne montre que les tirés")
 	assert_false(enriched.implicit_line().is_empty(), "et l'implicite à part")
+
+
+## Une ligne de chance critique sur une arme monte la base de l'arme, et le dit ; ailleurs
+## elle reste à la fiche.
+func test_a_crit_line_is_local_on_a_weapon_only() -> void:
+	var line := StatMod.new("crit_chance", StatMod.Mode.FLAT, 0.03)
+	var sword := Item.new(ItemCatalog.by_id("sword"), [line] as Array[StatMod])
+	assert_almost_eq(sword.crit_chance(), 0.13, 0.0001, "10 % de l'épée, plus la ligne")
+	var sheet: Array[StatMod] = sword.mods().filter(func(m: StatMod) -> bool: return m.stat == "crit_chance")
+	assert_eq(sheet.size(), 1, "une seule ligne de critique vers la fiche")
+	assert_almost_eq(sheet[0].value, 0.13, 0.0001)
+	assert_true(sword.explicit_line(sword.explicits[0]).ends_with(" (local)"))
+	assert_eq(sword.crit_line(), "Chance critique de base : 13 %")
+
+	var increased := StatMod.new("crit_chance", StatMod.Mode.PERCENT, 100.0)
+	var both := Item.new(ItemCatalog.by_id("sword"), [line, increased] as Array[StatMod])
+	assert_almost_eq(both.crit_chance(), 0.26, 0.0001, "(10 + 3) × 2 : le plat, puis l'accru")
+	assert_true(both.explicit_line(both.explicits[1]).ends_with(" (local)"))
+	assert_eq(both.mods().size(), 2, "l'implicite et la base : l'accru local n'atteint pas le lancer")
+
+	var ring := Item.new(ItemCatalog.by_id("ring"), [line] as Array[StatMod])
+	assert_false(ring.explicit_line(ring.explicits[0]).ends_with(" (local)"))
+	assert_eq(ring.crit_line(), "", "pas de base hors des armes")
+
+
+## **Seule l'arme donne une base** : hors d'une arme, tout ce qui touche la chance
+## critique l'accroît — implicite, affixe, nœud de l'arbre, passif de manuel.
+func test_no_flat_crit_outside_a_weapon() -> void:
+	for base: ItemBase in ItemCatalog.ALL:
+		if base.implicit_stat == "crit_chance":
+			assert_true(base.implicit_percent, "implicite de « %s »" % base.id)
+	for affix: ItemAffix in ItemAffixPool.ALL:
+		if affix.stat != "crit_chance" or affix.percent:
+			continue
+		for base: ItemBase in ItemCatalog.ALL:
+			if affix.fits(base):
+				assert_eq(base.family, ItemBase.WEAPON_FAMILY, "« %s » plat sur « %s »" % [affix.id, base.id])
+	for n in PassiveTree.shared().nodes:
+		for m in n.mods():
+			if m.stat == "crit_chance":
+				assert_ne(m.mode, StatMod.Mode.FLAT, "nœud « %s »" % n.id)
+
+
+## Chaque arme a sa base, et son type : 10 % à l'attaque, 5 % à l'incantation.
+func test_each_weapon_has_its_crit_and_its_kind() -> void:
+	for base: ItemBase in ItemCatalog.ALL:
+		if base.family != ItemBase.WEAPON_FAMILY:
+			assert_eq(base.crit_chance, 0.0, base.id)
+			assert_eq(base.allowed_keyword(), "", base.id)
+		elif base.tags.has(ItemBase.CASTER_TAG):
+			assert_eq(base.crit_chance, 0.05, base.id)
+			assert_eq(base.allowed_keyword(), Keywords.SPELL, base.id)
+		else:
+			assert_eq(base.crit_chance, 0.1, base.id)
+			assert_eq(base.allowed_keyword(), Keywords.ATTACK, base.id)
 
 
 # --------------------------------------------------------------------------

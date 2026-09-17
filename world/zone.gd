@@ -114,6 +114,9 @@ func _ready() -> void:
 		safety_net.timeout.connect(save)
 		add_child(safety_net)
 		safety_net.start()
+	else:
+		# L'épée de départ, sans quoi le banc de mesure et l'éditeur ne lanceraient rien.
+		player.equip(Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WEAPON)))
 
 	generate_zone(Game.rng.randi())
 

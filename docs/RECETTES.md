@@ -24,11 +24,12 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    | `display_name` | Ce que le joueur lit ; se change librement |
    | `kind` | Le dessin, au sens de `SpriteForge` — voir l'étape 3 |
    | `family` | L'emplacement qui l'accepte, ou vide s'il ne s'équipe pas |
-   | `tags` | **La famille en fait partie**, plus ce qui décrit l'objet (`melee`, `heavy`, `caster`…) |
+   | `tags` | **La famille en fait partie**, plus ce qui décrit l'objet (`melee`, `heavy`, `caster`…). Sur une arme, `caster` décide ce qu'elle laisse lancer : les sorts avec, les attaques sans |
    | `lineage` / `tier` | La suite à laquelle il appartient, et son rang |
    | `required_level` | La zone à partir de laquelle il tombe |
    | `grid_size` | Son encombrement en cases |
    | `implicit_*` | Le bonus que porte toute la base, sans tirage. Pour des dégâts ajoutés : `implicit_stat = damage_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_scope` (`attack` ou `spell`) |
+   | `crit_chance` | **Arme seulement** : la chance critique de base de tout ce qu'elle lance, 0,10 à l'attaque, 0,05 à l'incantation. Zéro ailleurs ; `test_each_weapon_has_its_crit_and_its_kind` le vérifie. Un implicite de chance critique hors arme est **en pourcentage** |
 
 2. **`core/item_catalog.gd`** — ajouter le `preload` dans `ALL`, **dans le bloc
    de sa lignée et par palier croissant**. C'est le seul endroit où les bases
@@ -93,7 +94,11 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
    les bijoux et les grimoires y sont déjà. Un affixe de plus pour eux demande
    d'abord de paginer la fiche de la forge.
 
-5. **Préférer une exclusion à une liste d'autorisations** quand la règle est
+5. **Une chance critique** : plate, l'affixe ne va **que sur les armes**, où elle monte
+   la base (locale) ; partout ailleurs, `percent = true`.
+   `test_no_flat_crit_outside_a_weapon` refuse le reste.
+
+6. **Préférer une exclusion à une liste d'autorisations** quand la règle est
    « partout sauf ». Une base ajoutée plus tard hérite du refus sans qu'on y
    pense, là où une liste d'autorisations l'aurait oubliée en silence.
 

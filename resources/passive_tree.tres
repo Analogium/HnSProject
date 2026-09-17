@@ -2204,7 +2204,8 @@ value_per_point = 20.0
 [sub_resource type="Resource" id="L_precise_shot_1"]
 script = ExtResource("3_line")
 stat = "crit_chance"
-value_per_point = 0.02
+percentage = true
+value_per_point = 20.0
 
 [sub_resource type="Resource" id="N_precise_shot"]
 script = ExtResource("2_node")
@@ -2346,7 +2347,8 @@ lines = Array[ExtResource("3_line")]([SubResource("L_eye_6_0")])
 [sub_resource type="Resource" id="L_lynx_eye_0"]
 script = ExtResource("3_line")
 stat = "crit_chance"
-value_per_point = 0.03
+percentage = true
+value_per_point = 30.0
 
 [sub_resource type="Resource" id="L_lynx_eye_1"]
 script = ExtResource("3_line")

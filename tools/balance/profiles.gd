@@ -142,6 +142,12 @@ static func character(build: Build, profile: Profile, zone: int) -> Character:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = hash([SEED_KEYS.get(build.id, build.id), profile, zone])
 		_equip(p, build, level, rng)
+	else:
+		# Le débutant garde l'arme nue de départ, celle de sa voie.
+		var melee := build.excluded_one == ItemBase.CASTER_TAG
+		p.equipment[EquipmentSlots.WEAPON] = Item.new(ItemCatalog.by_id(
+			ItemCatalog.ID_STARTING_WEAPON if melee else ItemCatalog.ID_STARTING_WAND
+		))
 	return p
 
 

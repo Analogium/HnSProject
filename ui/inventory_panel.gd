@@ -595,13 +595,14 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous Alt.
 	var level := Texts.t("niveau d'objet %d") % item.item_level
 	var implicit := item.implicit_line()
+	var crit := item.crit_line()
 
 	var explicit_mods := PackedStringArray()
 	var tiers := PackedStringArray()
 	var detailed := false
 	var without_origin := false
 	for r in item.explicits:
-		explicit_mods.append(r.mod.label())
+		explicit_mods.append(item.explicit_line(r))
 		# Vide sans provenance : la ligne s'affiche sans colonne.
 		var tier := r.tier_and_span() if _alt else ""
 		tiers.append(tier)
@@ -627,16 +628,18 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 	w = maxf(w, column)
 	if not implicit.is_empty():
 		w = maxf(w, RichText.width(_font, implicit, FONT_SIZE))
+	w = maxf(w, RichText.width(_font, crit, FONT_SIZE))
 	if not note.is_empty():
 		w = maxf(w, _font.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x)
 	w += TIP_PAD * 2.0
 
 	# Le titre et le niveau, puis une ligne par affixe, plus la note s'il y en a.
 	var n := explicit_mods.size() + (1 if not implicit.is_empty() else 0)
+	n += 1 if not crit.is_empty() else 0
 	n += 1 if not note.is_empty() else 0
 	var h := TIP_PAD * 2.0 + TIP_LINE * 2.0 + float(n) * TIP_LINE
 	# Le trait de séparation, quand il y a les deux sortes de lignes à séparer.
-	var separated := not implicit.is_empty() and not explicit_mods.is_empty()
+	var separated := not (implicit + crit).is_empty() and not explicit_mods.is_empty()
 	if separated:
 		h += TIP_LINE * 0.5
 
@@ -658,6 +661,12 @@ func _draw_tooltip(item: Item, target_top: float) -> void:
 	if not implicit.is_empty():
 		y += TIP_LINE
 		RichText.draw(self, _font, Vector2(r.position.x + TIP_PAD, y), implicit, FONT_SIZE, TIP_IMPLICIT)
+	if not crit.is_empty():
+		y += TIP_LINE
+		# Dans la couleur des tirés quand une ligne locale l'a changée.
+		var raised := not is_equal_approx(item.crit_chance(), item.base.crit_chance)
+		RichText.draw(self, _font, Vector2(r.position.x + TIP_PAD, y), crit, FONT_SIZE,
+			TIP_EXPLICIT if raised else TIP_IMPLICIT)
 	if separated:
 		# Le trait sépare ce que la base garantit de ce que le tirage a donné.
 		y += TIP_LINE * 0.5
