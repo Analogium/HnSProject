@@ -30,7 +30,7 @@ func _played_character() -> Character:
 	var p := Character.create_new("Brenna", 2)
 	p.level = 7
 	p.experience = 240
-	p.passives = PackedStringArray(["str_1", "str_2", "sturdy_blood"])
+	p.passives = PackedStringArray(["str_1", "str_2", "str_3"])
 	p.bag.place(_ornate_sword(), Vector2i(3, 1))
 	p.bag.place(Item.new(ItemCatalog.by_id("wand")), Vector2i(0, 0))
 	p.equipment["chest"] = Item.new(ItemCatalog.by_id("breastplate"), [
@@ -162,7 +162,7 @@ func test_a_character_with_nothing_reloads() -> void:
 ## jamais les personnages existants.
 func test_the_taken_nodes_are_saved_not_the_total() -> void:
 	var dict := _played_character().to_dict()
-	assert_eq(dict["passives"], ["str_1", "str_2", "sturdy_blood"])
+	assert_eq(dict["passives"], ["str_1", "str_2", "str_3"])
 	assert_false(dict.has("attributes"), "plus d'attributs placés")
 	assert_false(dict.has("unspent_points"), "les points restants se déduisent du niveau")
 	assert_false(dict.has("stats"), "aucune statistique calculée dans le fichier")
@@ -207,7 +207,7 @@ func test_an_unknown_node_is_ignored() -> void:
 ## ne contourne jamais la règle de prise.
 func test_an_orphan_node_is_removed_with_what_follows() -> void:
 	var dict := _played_character().to_dict()
-	dict["passives"] = ["str_2", "sturdy_blood", "dex_1"]
+	dict["passives"] = ["str_2", "str_3", "dex_1"]
 	assert_eq(Character.from_dict(dict).passives, PackedStringArray(["dex_1"]))
 
 
@@ -665,7 +665,9 @@ func test_the_v7_reference_file_rereads() -> void:
 	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v7.json"))
 	var p := Character.from_dict(content)
 	assert_not_null(p, "une sauvegarde de version 7 se lit")
-	assert_eq(p.passives, PackedStringArray(["int_1", "int_2", "int_4", "quick_lightning"]))
+	# Écrite avant le jalon 17 : « int_4 » n'est plus voisin d'« int_2 », il part à la
+	# relecture avec ce qui le suit, et leurs points reviennent (jalon 17, §6).
+	assert_eq(p.passives, PackedStringArray(["int_1", "int_2"]))
 	assert_eq(p.rack.at(0).manual.points["swift_bolt"], 4)
 
 

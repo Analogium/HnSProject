@@ -100,10 +100,10 @@ func test_loading_recomputes_the_sheet() -> void:
 	_p.load_character(_played_character())
 	# La fiche porte le **total** ; seuls les nœuds pris sont sauvegardés.
 	assert_eq(
-		_p.stats.strength, _p.base_stats.strength + 10.0,
-		"la force de départ plus le nœud de force"
+		_p.stats.strength, _p.base_stats.strength + 20.0,
+		"la force de départ plus les deux nœuds de force"
 	)
-	# Un nœud de force, un de PV et un plastron : les trois doivent se voir.
+	# Deux nœuds de force et un plastron : les PV doivent en suivre.
 	assert_gt(_p.stats.max_health, bare, "les PV ont suivi")
 	assert_eq(_p.health, _p.stats.max_health, "et on reprend en pleine santé")
 

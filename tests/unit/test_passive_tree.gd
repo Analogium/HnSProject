@@ -179,6 +179,13 @@ func test_each_notable_and_keystone_is_named() -> void:
 			assert_false(n.name.is_empty(), "« %s » n'a pas de nom" % n.id)
 
 
+## La seule assertion qui dit « il faut choisir » : un personnage de zone 120 ne prend
+## pas tout l'arbre.
+func test_the_tree_offers_more_nodes_than_points() -> void:
+	var points := PassiveTree.points_gained(BenchProfiles.expected_level(120).x)
+	assert_gt(_game_tree().nodes.size() - 1, points)
+
+
 ## Un nœud sans icône se dessine en rond gris : on ne voit plus ce qu'il fait.
 func test_each_node_has_its_icon() -> void:
 	for n in _game_tree().nodes:

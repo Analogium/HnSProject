@@ -65,27 +65,38 @@ static var _rolls: Array[RolledAffixes] = []
 ## qu'un débutant ait de quoi lancer.
 static func builds() -> Array[Build]:
 	return [
-		# Vers l'Esprit d'orage par la foudre, puis de quoi tenir : résistances, PV, esquive.
+		# Orage, Sorts et Savoir, puis l'Esprit d'orage ; ensuite la réserve, l'onde, l'esquive
+		# et, par l'anneau intérieur, la chair.
 		Build.new("spell", "Sort", "manual_lightning", PackedStringArray([
-			"int_1", "int_2", "int_4", "quick_lightning", "int_6", "int_7", "int_9",
-			"arcane_lore", "int_10", "storm_mind",
-			"int_8", "mana_well", "int_3", "int_5",
-			"belt_east_4", "belt_east_3", "belt_east_2", "belt_east_1",
-			"belt_west_1", "belt_west_2", "belt_west_3", "belt_west_4",
-			"str_3", "str_2", "sturdy_blood", "str_1",
-			"dex_4", "dex_2", "reflexes", "dex_1", "dex_3", "str_4", "iron_skin", "str_6",
+			"int_1", "int_2", "int_3", "int_4", "int_5",
+			"storm_1", "storm_2", "storm_3", "quick_lightning", "storm_4", "storm_5", "storm_crash",
+			"int_6", "int_7", "outer_str_int_6", "outer_str_int_5",
+			"spells_1", "spells_2", "spells_3", "spells_4", "sharp_incantation", "spells_5", "spells_6",
+			"outer_int_dex_1", "outer_int_dex_2", "outer_int_dex_3",
+			"lore_1", "lore_2", "lore_3", "lore_4", "arcane_lore", "lore_5", "lore_6",
+			"int_8", "int_9", "int_10", "storm_mind",
+			"outer_str_int_4", "reserve_1", "reserve_2", "reserve_3", "reserve_4", "mana_well",
+			"wave_1", "wave_2", "wave_3", "wave_4", "wide_wave", "wave_5", "wave_6",
+			"outer_int_dex_4", "outer_int_dex_5", "breath_1", "breath_2", "breath_3", "breath_4", "reflexes",
+			"inner_str_int_3", "inner_str_int_2", "inner_str_int_1", "str_3", "str_4", "str_5",
+			"flesh_1", "flesh_2", "flesh_3", "flesh_4", "sturdy_blood",
 		]), PackedStringArray([
 			"chain_lightning", "lightning_nova", "storm_cloud", "conductor",
 			"swift_bolt", "chain_lightning_branching",
 		]), "melee"),
-		# Vers le Colosse, puis l'armure, la ceinture et la vitesse d'attaque.
+		# Frappe, Chair et Plaques, puis le Colosse ; ensuite les armes, la plaie et la
+		# repousse.
 		Build.new("melee", "Mêlée", "manual_weapons", PackedStringArray([
-			"str_1", "str_2", "str_3", "brute_force", "str_5", "str_7", "str_8", "str_9",
-			"weapon_master", "str_10", "colossus",
-			"str_4", "iron_skin", "str_6", "sturdy_blood",
-			"belt_west_4", "belt_west_3", "belt_west_2", "belt_west_1",
-			"belt_south_1", "belt_south_2", "belt_south_3", "belt_south_4",
-			"dex_1", "dex_2", "reflexes", "dex_4", "swiftness", "dex_6", "dex_7",
+			"str_1", "str_2", "str_3", "str_4", "str_5",
+			"strike_1", "strike_2", "strike_3", "strike_4", "brute_force", "strike_5", "strike_6",
+			"flesh_1", "flesh_2", "flesh_3", "flesh_4", "sturdy_blood", "flesh_5", "flesh_6",
+			"str_6", "str_7", "outer_str_int_1", "outer_str_int_2",
+			"plates_1", "plates_2", "plates_3", "plates_4", "iron_skin", "plates_5", "plates_6",
+			"str_8", "str_9", "str_10", "colossus",
+			"outer_dex_str_6", "outer_dex_str_5",
+			"arms_1", "arms_2", "arms_3", "arms_4", "weapon_master", "arms_5", "arms_6",
+			"wound_1", "wound_2", "wound_3", "wound_4", "open_wound", "wound_5", "wound_6",
+			"outer_dex_str_4", "regrowth_1", "regrowth_2", "regrowth_3", "regrowth_4", "regrowing_flesh",
 		]), PackedStringArray([
 			"heavy_strike", "cross_slash", "spiral_sword", "iron_guard",
 			"heavy_strike_momentum",

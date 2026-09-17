@@ -48,6 +48,27 @@ func test_a_click_takes_the_drawn_node() -> void:
 	assert_eq(_p.passives, PackedStringArray(["int_1"]))
 
 
+## `screen_position()` et `node_at()` doivent rester d'accord à chaque cran : au large,
+## une tolérance restée en pixels du cran normal prendrait le voisin.
+func test_a_click_finds_its_node_at_each_zoom() -> void:
+	_panel.zoom_by(-5)
+	for step in PassiveTreePanel.ZOOMS.size():
+		for id in ["int_1", "spells_4", "storm_mind"]:
+			assert_eq(_panel.node_at(_at(id)).id, id, "cran %d" % step)
+		_panel.zoom_by(1)
+
+
+func test_the_zoom_keeps_the_center_of_the_frame() -> void:
+	var from := _at("int_1")
+	_button(from, true)
+	_move(from, from + Vector2(40, 0))
+	_button(from + Vector2(40, 0), false)
+	var center := _panel.size * 0.5
+	var before := _at("storm_mind") - center
+	_panel.zoom_by(1)
+	assert_almost_eq(_at("storm_mind") - center, before * 1.5, Vector2(0.01, 0.01))
+
+
 func test_a_drag_moves_the_view_and_takes_nothing() -> void:
 	var from := _at("int_1")
 	_button(from, true)

@@ -443,8 +443,20 @@ langues — `tests/integration/test_widths.gd`.
 ## Ajouter un nœud à l'arbre de passifs
 
 L'arbre est **un seul fichier**, `resources/passive_tree.tres` : un `PassiveTree` et ses
-`PassiveNode` en sous-ressources. Soixante nœuds liés se relisent mal dans
+`PassiveNode` en sous-ressources. 180 nœuds liés se relisent mal dans
 l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
+
+**D'abord, chemin ou cluster ?**
+
+- **Un nœud de chemin** — un axe ou un anneau — ne porte **que** des attributs : +10
+  sur un axe, +5/+5 sur un anneau (celui de l'axe le plus proche en premier, pour
+  l'icône). Jamais un pourcentage : traverser l'arbre rend des attributs, pas des
+  dégâts.
+- **Un nœud de cluster** va dans un cul-de-sac branché sur **une seule** jonction du
+  squelette. Un cluster relié à deux jonctions devient un raccourci qu'on prend en
+  passant ; ne le faire qu'en le voulant.
+- **Un notable** dit le thème de son cluster plus fort, avec une seconde ligne. **Pas
+  de clé de voûte de plus** : trois « plus » suffisent (jalon 17, §8).
 
 1. **Une sous-ressource `PassiveNode`**, et sa référence dans le tableau `nodes` du
    `[resource]`.
@@ -474,7 +486,7 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 `test_the_content_ids_are_unique_and_one_start`, `test_each_link_targets_an_existing_node`,
 `test_each_node_is_reachable_from_the_start`, `test_two_nodes_never_share_a_place`,
 `test_each_line_targets_the_sheet_or_a_cast_number`, `test_each_notable_and_keystone_is_named`,
-`test_each_node_has_its_icon` ;
+`test_each_node_has_its_icon`, `test_the_tree_offers_more_nodes_than_points` ;
 `tests/unit/test_translations.gd` pour le nom.
 
 **Et son nom anglais** dans `i18n/en.po`, section « Arbre de passifs ». Puis
