@@ -960,6 +960,11 @@ msgstr "played %s"
 msgid "Niv. %d"
 msgstr "Lv. %d"
 
+msgid "{points} point d'arbre (P pour ouvrir)"
+msgid_plural "{points} points d'arbre (P pour ouvrir)"
+msgstr[0] "{points} tree point (P to open)"
+msgstr[1] "{points} tree points (P to open)"
+
 msgid "{courant} exp / {total} exp"
 msgstr "{courant} xp / {total} xp"
 

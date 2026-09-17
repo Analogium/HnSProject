@@ -35,6 +35,13 @@ const HEALTH_LOW := HealthBar.LOW
 
 const LABEL_COLOR := Color(0.86, 0.84, 0.90)
 
+## Les points d'arbre non placés, une ligne au-dessus du niveau. L'or des choses à
+## faire : rien d'autre dans le HUD ne demande une action.
+const POINTS_TOP := HEALTH_TOP + 10.0
+const POINTS_COLOR := Color(1.0, 0.82, 0.35)
+
+var _player: Player
+var _points_left := 0
 var _ratio := 0.0
 var _level := 1
 var _xp := 0
@@ -48,9 +55,10 @@ var _font: Font
 
 
 ## La borne basse de toute fenêtre flottante : le HUD, dessiné après les panneaux,
-## passerait par-dessus. « Niv. » compris.
+## passerait par-dessus. « Niv. » et l'indicateur de points compris — il monte d'une
+## ligne, et une infobulle qui le couvrirait cacherait la seule chose à faire.
 static func gauges_top(height: float) -> float:
-	return height - HEALTH_TOP - BAR_H
+	return height - POINTS_TOP - BAR_H
 
 
 func _ready() -> void:
@@ -67,6 +75,8 @@ func _notification(what: int) -> void:
 
 ## Appelée par la scène, qui est la seule à connaître les deux nœuds.
 func bind(player: Player) -> void:
+	_player = player
+	player.passives_changed.connect(_refresh_points)
 	player.xp_changed.connect(_on_xp_changed)
 	player.leveled_up.connect(_on_leveled_up)
 	player.health_changed.connect(_on_health_changed)
@@ -93,6 +103,14 @@ func _on_xp_changed(current: int, needed: int, level: int) -> void:
 	_xp = current
 	_xp_needed = needed
 	_level = level
+	# Un niveau de plus est un point de plus : le compte se refait ici aussi.
+	_refresh_points()
+
+
+## Le compte reste chez `PassiveTree` : le HUD le lit, il ne le refait pas.
+func _refresh_points() -> void:
+	if _player != null:
+		_points_left = PassiveTree.remaining_points(_player.passives, _player.level)
 	queue_redraw()
 
 
@@ -144,6 +162,16 @@ func _draw() -> void:
 	# Le niveau coiffe vie et mana : un seul regard.
 	_text(Vector2(gx, roundf(size.y - HEALTH_TOP - 3.0)), Texts.t("Niv. %d") % _level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_COLOR)
+	# Le pluriel par la traduction, comme la page du manuel. Un texte à lui : « points
+	# à placer » y désigne déjà ceux d'un manuel.
+	if _points_left > 0:
+		_text(
+			Vector2(gx, roundf(size.y - POINTS_TOP - 3.0)),
+			Texts.tn(
+				"{points} point d'arbre (P pour ouvrir)", "{points} points d'arbre  (P pour ouvrir)", _points_left
+			).format({"points": _points_left}),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, POINTS_COLOR
+		)
 	# Le compte d'expérience au centre, la seule bande que ni la barre de compétences ni
 	# la fiche ne couvrent.
 	_text(

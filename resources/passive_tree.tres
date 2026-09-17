@@ -4290,7 +4290,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_sweep_1"]
 script = ExtResource("2_node")
 id = "sweep_1"
-position = Vector2i(-25, 25)
+position = Vector2i(-26, 26)
 links = PackedStringArray("far_dex_str_10")
 lines = Array[ExtResource("3_line")]([SubResource("L_sweep_1_0")])
 
@@ -4304,7 +4304,7 @@ value_per_point = 6.0
 [sub_resource type="Resource" id="N_sweep_2"]
 script = ExtResource("2_node")
 id = "sweep_2"
-position = Vector2i(-25, 29)
+position = Vector2i(-26, 30)
 links = PackedStringArray("sweep_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_sweep_2_0")])
 
@@ -4317,7 +4317,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_sweep_3"]
 script = ExtResource("2_node")
 id = "sweep_3"
-position = Vector2i(-28, 31)
+position = Vector2i(-29, 32)
 links = PackedStringArray("sweep_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_sweep_3_0")])
 
@@ -4331,7 +4331,7 @@ value_per_point = 6.0
 [sub_resource type="Resource" id="N_sweep_4"]
 script = ExtResource("2_node")
 id = "sweep_4"
-position = Vector2i(-31, 28)
+position = Vector2i(-32, 29)
 links = PackedStringArray("sweep_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_sweep_4_0")])
 
@@ -4344,7 +4344,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_sweep_5"]
 script = ExtResource("2_node")
 id = "sweep_5"
-position = Vector2i(-29, 25)
+position = Vector2i(-30, 26)
 links = PackedStringArray("sweep_4", "sweep_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_sweep_5_0")])
 
@@ -4366,7 +4366,7 @@ script = ExtResource("2_node")
 id = "windmill"
 name = "Moulinet"
 kind = 2
-position = Vector2i(-28, 28)
+position = Vector2i(-29, 29)
 links = PackedStringArray("sweep_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_windmill_0"), SubResource("L_windmill_1")])
 
@@ -5336,7 +5336,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_falcon_1"]
 script = ExtResource("2_node")
 id = "falcon_1"
-position = Vector2i(19, 30)
+position = Vector2i(19, 31)
 links = PackedStringArray("far_dex_str_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_1_0")])
 
@@ -5350,7 +5350,7 @@ value_per_point = 6.0
 [sub_resource type="Resource" id="N_falcon_2"]
 script = ExtResource("2_node")
 id = "falcon_2"
-position = Vector2i(23, 30)
+position = Vector2i(24, 31)
 links = PackedStringArray("falcon_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_2_0")])
 
@@ -5364,7 +5364,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_falcon_3"]
 script = ExtResource("2_node")
 id = "falcon_3"
-position = Vector2i(24, 33)
+position = Vector2i(25, 34)
 links = PackedStringArray("falcon_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_3_0")])
 
@@ -5378,7 +5378,7 @@ value_per_point = 6.0
 [sub_resource type="Resource" id="N_falcon_4"]
 script = ExtResource("2_node")
 id = "falcon_4"
-position = Vector2i(23, 35)
+position = Vector2i(24, 36)
 links = PackedStringArray("falcon_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_4_0")])
 
@@ -5392,7 +5392,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_falcon_5"]
 script = ExtResource("2_node")
 id = "falcon_5"
-position = Vector2i(20, 36)
+position = Vector2i(21, 37)
 links = PackedStringArray("falcon_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_5_0")])
 
@@ -5406,7 +5406,7 @@ value_per_point = 6.0
 [sub_resource type="Resource" id="N_falcon_6"]
 script = ExtResource("2_node")
 id = "falcon_6"
-position = Vector2i(18, 33)
+position = Vector2i(18, 34)
 links = PackedStringArray("falcon_5", "falcon_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_6_0")])
 
@@ -5429,7 +5429,7 @@ script = ExtResource("2_node")
 id = "falcon_flight"
 name = "Vol du faucon"
 kind = 2
-position = Vector2i(21, 33)
+position = Vector2i(22, 34)
 links = PackedStringArray("falcon_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_falcon_flight_0"), SubResource("L_falcon_flight_1")])
 
@@ -5591,7 +5591,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_hand_1"]
 script = ExtResource("2_node")
 id = "hand_1"
-position = Vector2i(19, 19)
+position = Vector2i(15, 20)
 links = PackedStringArray("dex_bridge")
 lines = Array[ExtResource("3_line")]([SubResource("L_hand_1_0")])
 
@@ -5604,7 +5604,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_hand_2"]
 script = ExtResource("2_node")
 id = "hand_2"
-position = Vector2i(21, 21)
+position = Vector2i(17, 22)
 links = PackedStringArray("hand_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_hand_2_0")])
 
@@ -5617,7 +5617,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_hand_3"]
 script = ExtResource("2_node")
 id = "hand_3"
-position = Vector2i(22, 23)
+position = Vector2i(17, 24)
 links = PackedStringArray("hand_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_hand_3_0")])
 
@@ -5638,7 +5638,7 @@ script = ExtResource("2_node")
 id = "deft_hand"
 name = "Main leste"
 kind = 2
-position = Vector2i(24, 25)
+position = Vector2i(19, 26)
 links = PackedStringArray("hand_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_deft_hand_0"), SubResource("L_deft_hand_1")])
 
@@ -5748,7 +5748,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_hide_1"]
 script = ExtResource("2_node")
 id = "hide_1"
-position = Vector2i(-35, -6)
+position = Vector2i(-36, -6)
 links = PackedStringArray("far_str_int_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_hide_1_0")])
 
@@ -5760,7 +5760,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_hide_2"]
 script = ExtResource("2_node")
 id = "hide_2"
-position = Vector2i(-38, -3)
+position = Vector2i(-39, -3)
 links = PackedStringArray("hide_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_hide_2_0")])
 
@@ -5772,7 +5772,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_hide_3"]
 script = ExtResource("2_node")
 id = "hide_3"
-position = Vector2i(-41, -5)
+position = Vector2i(-42, -5)
 links = PackedStringArray("hide_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_hide_3_0")])
 
@@ -5784,7 +5784,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_hide_4"]
 script = ExtResource("2_node")
 id = "hide_4"
-position = Vector2i(-41, -8)
+position = Vector2i(-42, -8)
 links = PackedStringArray("hide_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_hide_4_0")])
 
@@ -5796,7 +5796,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_hide_5"]
 script = ExtResource("2_node")
 id = "hide_5"
-position = Vector2i(-37, -9)
+position = Vector2i(-38, -9)
 links = PackedStringArray("hide_4", "hide_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_hide_5_0")])
 
@@ -5815,7 +5815,7 @@ script = ExtResource("2_node")
 id = "tanned_skin"
 name = "Peau tannée"
 kind = 2
-position = Vector2i(-39, -6)
+position = Vector2i(-40, -6)
 links = PackedStringArray("hide_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_tanned_skin_0"), SubResource("L_tanned_skin_1")])
 
@@ -5828,7 +5828,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_bark_1"]
 script = ExtResource("2_node")
 id = "bark_1"
-position = Vector2i(-6, 30)
+position = Vector2i(-9, 37)
 links = PackedStringArray("far_dex_str_7")
 lines = Array[ExtResource("3_line")]([SubResource("L_bark_1_0")])
 
@@ -5841,7 +5841,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_bark_2"]
 script = ExtResource("2_node")
 id = "bark_2"
-position = Vector2i(-7, 33)
+position = Vector2i(-9, 39)
 links = PackedStringArray("bark_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_bark_2_0")])
 
@@ -5854,7 +5854,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_bark_3"]
 script = ExtResource("2_node")
 id = "bark_3"
-position = Vector2i(-8, 35)
+position = Vector2i(-8, 42)
 links = PackedStringArray("bark_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_bark_3_0")])
 
@@ -5874,7 +5874,7 @@ script = ExtResource("2_node")
 id = "bark_skin"
 name = "Écorce"
 kind = 2
-position = Vector2i(-8, 38)
+position = Vector2i(-7, 44)
 links = PackedStringArray("bark_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_bark_skin_0"), SubResource("L_bark_skin_1")])
 
@@ -6101,7 +6101,7 @@ value_per_point = 4.0
 [sub_resource type="Resource" id="N_word_1"]
 script = ExtResource("2_node")
 id = "word_1"
-position = Vector2i(24, -14)
+position = Vector2i(25, -20)
 links = PackedStringArray("far_int_dex_5")
 lines = Array[ExtResource("3_line")]([SubResource("L_word_1_0")])
 
@@ -6114,7 +6114,7 @@ value_per_point = 4.0
 [sub_resource type="Resource" id="N_word_2"]
 script = ExtResource("2_node")
 id = "word_2"
-position = Vector2i(27, -15)
+position = Vector2i(23, -20)
 links = PackedStringArray("word_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_word_2_0")])
 
@@ -6127,7 +6127,7 @@ value_per_point = 4.0
 [sub_resource type="Resource" id="N_word_3"]
 script = ExtResource("2_node")
 id = "word_3"
-position = Vector2i(29, -16)
+position = Vector2i(20, -20)
 links = PackedStringArray("word_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_word_3_0")])
 
@@ -6148,7 +6148,7 @@ script = ExtResource("2_node")
 id = "quick_word"
 name = "Verbe rapide"
 kind = 2
-position = Vector2i(31, -17)
+position = Vector2i(18, -20)
 links = PackedStringArray("word_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_quick_word_0"), SubResource("L_quick_word_1")])
 
@@ -6161,7 +6161,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_1"]
 script = ExtResource("2_node")
 id = "coord_1"
-position = Vector2i(23, -27)
+position = Vector2i(26, -28)
 links = PackedStringArray("far_int_dex_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_1_0")])
 
@@ -6174,7 +6174,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_2"]
 script = ExtResource("2_node")
 id = "coord_2"
-position = Vector2i(22, -30)
+position = Vector2i(25, -31)
 links = PackedStringArray("coord_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_2_0")])
 
@@ -6187,7 +6187,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_3"]
 script = ExtResource("2_node")
 id = "coord_3"
-position = Vector2i(24, -33)
+position = Vector2i(27, -34)
 links = PackedStringArray("coord_2")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_3_0")])
 
@@ -6200,7 +6200,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_4"]
 script = ExtResource("2_node")
 id = "coord_4"
-position = Vector2i(27, -32)
+position = Vector2i(30, -33)
 links = PackedStringArray("coord_3")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_4_0")])
 
@@ -6213,7 +6213,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_5"]
 script = ExtResource("2_node")
 id = "coord_5"
-position = Vector2i(28, -29)
+position = Vector2i(31, -30)
 links = PackedStringArray("coord_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_5_0")])
 
@@ -6226,7 +6226,7 @@ value_per_point = 3.0
 [sub_resource type="Resource" id="N_coord_6"]
 script = ExtResource("2_node")
 id = "coord_6"
-position = Vector2i(26, -27)
+position = Vector2i(29, -28)
 links = PackedStringArray("coord_5", "coord_1")
 lines = Array[ExtResource("3_line")]([SubResource("L_coord_6_0")])
 
@@ -6247,7 +6247,7 @@ script = ExtResource("2_node")
 id = "coordination"
 name = "Coordination"
 kind = 2
-position = Vector2i(25, -30)
+position = Vector2i(28, -31)
 links = PackedStringArray("coord_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_coordination_0"), SubResource("L_coordination_1")])
 

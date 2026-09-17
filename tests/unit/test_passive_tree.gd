@@ -156,6 +156,41 @@ func test_two_nodes_never_share_a_place() -> void:
 		places[n.position] = n.id
 
 
+## Deux liens qui se croisent donnent un carrefour qui n'existe pas : l'œil suit la
+## mauvaise branche et croit pouvoir passer. Seuls comptent les liens sans nœud commun
+## — deux liens d'un même nœud s'y rejoignent, c'est leur travail.
+func test_no_two_links_cross() -> void:
+	var segments := _game_segments()
+	for i in segments.size():
+		for j in range(i + 1, segments.size()):
+			var a: Array = segments[i]
+			var b: Array = segments[j]
+			if a[0] == b[0] or a[0] == b[1] or a[1] == b[0] or a[1] == b[1]:
+				continue
+			assert_false(
+				Geometry2D.segment_intersects_segment(a[2], a[3], b[2], b[3]) != null,
+				"« %s—%s » croise « %s—%s »" % [a[0], a[1], b[0], b[1]]
+			)
+
+
+## Chaque lien une fois : identifiants et positions, prêts à se croiser.
+func _game_segments() -> Array:
+	var tree := _game_tree()
+	var places := {}
+	for n in tree.nodes:
+		places[n.id] = Vector2(n.position)
+	var seen := {}
+	var out := []
+	for n in tree.nodes:
+		for other in n.links:
+			var key := "%s|%s" % ([n.id, other] if n.id < other else [other, n.id])
+			if seen.has(key) or not places.has(other):
+				continue
+			seen[key] = true
+			out.append([n.id, other, places[n.id], places[other]])
+	return out
+
+
 ## Les mêmes exigences qu'une ligne de passif de manuel (`test_talents.gd`).
 func test_each_line_targets_the_sheet_or_a_cast_number() -> void:
 	var sheet := CharacterStats.new()

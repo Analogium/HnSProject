@@ -480,6 +480,11 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 
 2. **Le relier** : un nœud sans chemin vers le départ ne se prendra jamais.
 
+   **Son lien ne doit croiser aucun autre** (`test_no_two_links_cross`) : un
+   carrefour qui n'existe pas fait suivre la mauvaise branche à l'œil. Et le garder à
+   **une case au moins** d'un lien voisin — en dessous, les deux traits se confondent
+   à l'écran ; c'est l'écart le plus serré de l'arbre actuel.
+
    **Son icône** se lit sur sa **première ligne** (`PassiveIcon.look_of()`) : une
    statistique ou un mot-clé que `PassiveIcon.SHEET` et `SCOPED` ne connaissent pas
    encore y demande une entrée — un masque de `MASKS` et une couleur.

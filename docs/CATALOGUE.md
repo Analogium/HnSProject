@@ -440,12 +440,12 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | crush_5 | small | -40, 8 | crush_4, crush_6 | +8 % de dégâts accrus (Mêlée) |
 | crush_6 | small | -37, 7 | crush_5, crush_1 | +8 % de dégâts accrus (Mêlée) |
 | **Broyeur** `crusher` | notable | -38, 10 | crush_4 | +20 % de dégâts accrus (Mêlée) · +10 force |
-| sweep_1 | small | -25, 25 | far_dex_str_10, sweep_2, sweep_5 | +3 % de vitesse d'attaque accrue |
-| sweep_2 | small | -25, 29 | sweep_1, sweep_3 | +6 % de dégâts accrus (Mêlée) |
-| sweep_3 | small | -28, 31 | sweep_2, sweep_4, windmill | +3 % de vitesse d'attaque accrue |
-| sweep_4 | small | -31, 28 | sweep_3, sweep_5 | +6 % de dégâts accrus (Mêlée) |
-| sweep_5 | small | -29, 25 | sweep_4, sweep_1 | +3 % de vitesse d'attaque accrue |
-| **Moulinet** `windmill` | notable | -28, 28 | sweep_3 | +8 % de vitesse d'attaque accrue · +12 % de dégâts accrus (Mêlée) |
+| sweep_1 | small | -26, 26 | far_dex_str_10, sweep_2, sweep_5 | +3 % de vitesse d'attaque accrue |
+| sweep_2 | small | -26, 30 | sweep_1, sweep_3 | +6 % de dégâts accrus (Mêlée) |
+| sweep_3 | small | -29, 32 | sweep_2, sweep_4, windmill | +3 % de vitesse d'attaque accrue |
+| sweep_4 | small | -32, 29 | sweep_3, sweep_5 | +6 % de dégâts accrus (Mêlée) |
+| sweep_5 | small | -30, 26 | sweep_4, sweep_1 | +3 % de vitesse d'attaque accrue |
+| **Moulinet** `windmill` | notable | -29, 29 | sweep_3 | +8 % de vitesse d'attaque accrue · +12 % de dégâts accrus (Mêlée) |
 | reach_1 | small | -23, 6 | outer_str_int_1, reach_2 | +6 % de dégâts accrus (Mêlée) |
 | reach_2 | small | -26, 6 | reach_1, reach_3 | +6 % de dégâts accrus (Mêlée) |
 | reach_3 | small | -28, 7 | reach_2, high_guard | +6 % de dégâts accrus (Mêlée) |
@@ -508,13 +508,13 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | kill_5 | small | 38, 13 | kill_4, kill_6 | +6 % de chance critique de base accrue |
 | kill_6 | small | 35, 12 | kill_5, kill_1 | +8 % de dégâts critiques accrus |
 | **Assassinat** `assassination` | notable | 38, 10 | kill_4 | +30 % de chance critique de base accrue · +20 % dégâts critiques |
-| falcon_1 | small | 19, 30 | far_dex_str_3, falcon_2, falcon_6 | +8 % de dégâts accrus (Projectile) |
-| falcon_2 | small | 23, 30 | falcon_1, falcon_3 | +6 % de vitesse de projectile accrue (Projectile) |
-| falcon_3 | small | 24, 33 | falcon_2, falcon_4 | +8 % de dégâts accrus (Projectile) |
-| falcon_4 | small | 23, 35 | falcon_3, falcon_5, falcon_flight | +6 % de vitesse de projectile accrue (Projectile) |
-| falcon_5 | small | 20, 36 | falcon_4, falcon_6 | +8 % de dégâts accrus (Projectile) |
-| falcon_6 | small | 18, 33 | falcon_5, falcon_1 | +6 % de vitesse de projectile accrue (Projectile) |
-| **Vol du faucon** `falcon_flight` | notable | 21, 33 | falcon_4 | +20 % de dégâts accrus (Projectile) · +15 % de vitesse de projectile accrue (Projectile) |
+| falcon_1 | small | 19, 31 | far_dex_str_3, falcon_2, falcon_6 | +8 % de dégâts accrus (Projectile) |
+| falcon_2 | small | 24, 31 | falcon_1, falcon_3 | +6 % de vitesse de projectile accrue (Projectile) |
+| falcon_3 | small | 25, 34 | falcon_2, falcon_4 | +8 % de dégâts accrus (Projectile) |
+| falcon_4 | small | 24, 36 | falcon_3, falcon_5, falcon_flight | +6 % de vitesse de projectile accrue (Projectile) |
+| falcon_5 | small | 21, 37 | falcon_4, falcon_6 | +8 % de dégâts accrus (Projectile) |
+| falcon_6 | small | 18, 34 | falcon_5, falcon_1 | +6 % de vitesse de projectile accrue (Projectile) |
+| **Vol du faucon** `falcon_flight` | notable | 22, 34 | falcon_4 | +20 % de dégâts accrus (Projectile) · +15 % de vitesse de projectile accrue (Projectile) |
 | flee_1 | small | 5, 25 | outer_dex_str_3, flee_2, flee_5 | +3 % de vitesse accrue |
 | flee_2 | small | 9, 27 | flee_1, flee_3 | +6 % d'esquive accrue |
 | flee_3 | small | 8, 31 | flee_2, flee_4, light_foot | +3 % de vitesse accrue |
@@ -525,10 +525,10 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | spear_2 | small | 26, 5 | spear_1, spear_3 | +6 % de dégâts accrus (Projectile) |
 | spear_3 | small | 29, 5 | spear_2, spearhead | +6 % de dégâts accrus (Projectile) |
 | **Fer de lance** `spearhead` | notable | 31, 6 | spear_3 | +15 % de dégâts accrus (Projectile) · +10 % dégâts critiques |
-| hand_1 | small | 19, 19 | dex_bridge, hand_2 | +3 % de vitesse d'attaque accrue |
-| hand_2 | small | 21, 21 | hand_1, hand_3 | +3 % de vitesse d'attaque accrue |
-| hand_3 | small | 22, 23 | hand_2, deft_hand | +3 % de vitesse d'attaque accrue |
-| **Main leste** `deft_hand` | notable | 24, 25 | hand_3 | +8 % de vitesse d'attaque accrue · +2 % de vitesse accrue |
+| hand_1 | small | 15, 20 | dex_bridge, hand_2 | +3 % de vitesse d'attaque accrue |
+| hand_2 | small | 17, 22 | hand_1, hand_3 | +3 % de vitesse d'attaque accrue |
+| hand_3 | small | 17, 24 | hand_2, deft_hand | +3 % de vitesse d'attaque accrue |
+| **Main leste** `deft_hand` | notable | 19, 26 | hand_3 | +8 % de vitesse d'attaque accrue · +2 % de vitesse accrue |
 | vigor_1 | small | -20, 18 | str_10, vigor_2, vigor_6 | +8 % de PV accrus |
 | vigor_2 | small | -19, 21 | vigor_1, vigor_3 | +8 % de PV accrus |
 | vigor_3 | small | -22, 23 | vigor_2, vigor_4 | +8 % de PV accrus |
@@ -536,16 +536,16 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | vigor_5 | small | -25, 19 | vigor_4, vigor_6 | +8 % de PV accrus |
 | vigor_6 | small | -23, 17 | vigor_5, vigor_1 | +8 % de PV accrus |
 | **Constitution** `constitution` | notable | -22, 20 | vigor_4 | +15 % de PV accrus · +2 PV/s |
-| hide_1 | small | -35, -6 | far_str_int_4, hide_2, hide_5 | +8 % rés. feu |
-| hide_2 | small | -38, -3 | hide_1, hide_3 | +8 % rés. froid |
-| hide_3 | small | -41, -5 | hide_2, hide_4, tanned_skin | +8 % rés. feu |
-| hide_4 | small | -41, -8 | hide_3, hide_5 | +8 % rés. froid |
-| hide_5 | small | -37, -9 | hide_4, hide_1 | +8 % rés. feu |
-| **Peau tannée** `tanned_skin` | notable | -39, -6 | hide_3 | +15 % rés. feu · +15 % rés. froid |
-| bark_1 | small | -6, 30 | far_dex_str_7, bark_2 | +8 % d'armure accrue |
-| bark_2 | small | -7, 33 | bark_1, bark_3 | +8 % d'armure accrue |
-| bark_3 | small | -8, 35 | bark_2, bark_skin | +8 % d'armure accrue |
-| **Écorce** `bark_skin` | notable | -8, 38 | bark_3 | +20 % d'armure accrue · +1.5 PV/s |
+| hide_1 | small | -36, -6 | far_str_int_4, hide_2, hide_5 | +8 % rés. feu |
+| hide_2 | small | -39, -3 | hide_1, hide_3 | +8 % rés. froid |
+| hide_3 | small | -42, -5 | hide_2, hide_4, tanned_skin | +8 % rés. feu |
+| hide_4 | small | -42, -8 | hide_3, hide_5 | +8 % rés. froid |
+| hide_5 | small | -38, -9 | hide_4, hide_1 | +8 % rés. feu |
+| **Peau tannée** `tanned_skin` | notable | -40, -6 | hide_3 | +15 % rés. feu · +15 % rés. froid |
+| bark_1 | small | -9, 37 | far_dex_str_7, bark_2 | +8 % d'armure accrue |
+| bark_2 | small | -9, 39 | bark_1, bark_3 | +8 % d'armure accrue |
+| bark_3 | small | -8, 42 | bark_2, bark_skin | +8 % d'armure accrue |
+| **Écorce** `bark_skin` | notable | -7, 44 | bark_3 | +20 % d'armure accrue · +1.5 PV/s |
 | heart_1 | small | -24, 31 | far_dex_str_9, heart_2 | +6 % de PV accrus |
 | heart_2 | small | -26, 33 | heart_1, heart_3 | +6 % de PV accrus |
 | heart_3 | small | -27, 35 | heart_2, hardened_heart | +6 % de PV accrus |
@@ -561,17 +561,17 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | spring_2 | small | -22, -35 | spring_1, spring_3 | +0.3 mana/s |
 | spring_3 | small | -23, -37 | spring_2, deep_spring | +0.3 mana/s |
 | **Source profonde** `deep_spring` | notable | -25, -40 | spring_3 | +2 mana/s · +10 % de mana accru |
-| word_1 | small | 24, -14 | far_int_dex_5, word_2 | +4 % de vitesse d'incantation accrue |
-| word_2 | small | 27, -15 | word_1, word_3 | +4 % de vitesse d'incantation accrue |
-| word_3 | small | 29, -16 | word_2, quick_word | +4 % de vitesse d'incantation accrue |
-| **Verbe rapide** `quick_word` | notable | 31, -17 | word_3 | +10 % de vitesse d'incantation accrue · +8 % de mana accru |
-| coord_1 | small | 23, -27 | far_int_dex_4, coord_2, coord_6 | +3 % de vitesse d'attaque accrue |
-| coord_2 | small | 22, -30 | coord_1, coord_3 | +3 % de vitesse d'incantation accrue |
-| coord_3 | small | 24, -33 | coord_2, coord_4 | +3 % de vitesse d'attaque accrue |
-| coord_4 | small | 27, -32 | coord_3, coord_5, coordination | +3 % de vitesse d'incantation accrue |
-| coord_5 | small | 28, -29 | coord_4, coord_6 | +3 % de vitesse d'attaque accrue |
-| coord_6 | small | 26, -27 | coord_5, coord_1 | +3 % de vitesse d'incantation accrue |
-| **Coordination** `coordination` | notable | 25, -30 | coord_4 | +8 % de vitesse d'attaque accrue · +8 % de vitesse d'incantation accrue |
+| word_1 | small | 25, -20 | far_int_dex_5, word_2 | +4 % de vitesse d'incantation accrue |
+| word_2 | small | 23, -20 | word_1, word_3 | +4 % de vitesse d'incantation accrue |
+| word_3 | small | 20, -20 | word_2, quick_word | +4 % de vitesse d'incantation accrue |
+| **Verbe rapide** `quick_word` | notable | 18, -20 | word_3 | +10 % de vitesse d'incantation accrue · +8 % de mana accru |
+| coord_1 | small | 26, -28 | far_int_dex_4, coord_2, coord_6 | +3 % de vitesse d'attaque accrue |
+| coord_2 | small | 25, -31 | coord_1, coord_3 | +3 % de vitesse d'incantation accrue |
+| coord_3 | small | 27, -34 | coord_2, coord_4 | +3 % de vitesse d'attaque accrue |
+| coord_4 | small | 30, -33 | coord_3, coord_5, coordination | +3 % de vitesse d'incantation accrue |
+| coord_5 | small | 31, -30 | coord_4, coord_6 | +3 % de vitesse d'attaque accrue |
+| coord_6 | small | 29, -28 | coord_5, coord_1 | +3 % de vitesse d'incantation accrue |
+| **Coordination** `coordination` | notable | 28, -31 | coord_4 | +8 % de vitesse d'attaque accrue · +8 % de vitesse d'incantation accrue |
 
 ## Affixes d'objets
 
