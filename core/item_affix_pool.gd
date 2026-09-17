@@ -61,6 +61,11 @@ const ALL := [
 	preload("res://resources/item_affixes/electrocuting.tres"),
 	preload("res://resources/item_affixes/shattering.tres"),
 	preload("res://resources/item_affixes/butchering.tres"),
+
+	# Les deux portées du jalon 19 : sans elles, « Mêlée » et « Zone » s'afficheraient
+	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).
+	preload("res://resources/item_affixes/crushing.tres"),
+	preload("res://resources/item_affixes/expansive.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6 : un objet sur deux sort nu, six affixes

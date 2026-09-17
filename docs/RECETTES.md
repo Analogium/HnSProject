@@ -450,7 +450,7 @@ langues — `tests/integration/test_widths.gd`.
 ## Ajouter un nœud à l'arbre de passifs
 
 L'arbre est **un seul fichier**, `resources/passive_tree.tres` : un `PassiveTree` et ses
-`PassiveNode` en sous-ressources. 180 nœuds liés se relisent mal dans
+`PassiveNode` en sous-ressources. 418 nœuds liés se relisent mal dans
 l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 
 **D'abord, chemin ou cluster ?**
@@ -458,7 +458,8 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 - **Un nœud de chemin** — un axe ou un anneau — ne porte **que** des attributs : +10
   sur un axe, +5/+5 sur un anneau (celui de l'axe le plus proche en premier, pour
   l'icône). Jamais un pourcentage : traverser l'arbre rend des attributs, pas des
-  dégâts.
+  dégâts. Le troisième anneau (`far_*`) est à 35 cases du départ, au-delà des clés de
+  voûte ; ses clusters pendent dehors, entre 39 et 49 cases.
 - **Un nœud de cluster** va dans un cul-de-sac branché sur **une seule** jonction du
   squelette. Un cluster relié à deux jonctions devient un raccourci qu'on prend en
   passant ; ne le faire qu'en le voulant.

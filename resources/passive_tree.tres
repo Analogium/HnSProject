@@ -2668,7 +2668,3589 @@ kind = 2
 position = Vector2i(16, 16)
 links = PackedStringArray("frost_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_frostbite_0"), SubResource("L_frostbite_1")])
+[sub_resource type="Resource" id="L_far_int_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_far_int"]
+script = ExtResource("2_node")
+id = "far_int"
+position = Vector2i(0, -35)
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_0")])
+
+[sub_resource type="Resource" id="L_far_dex_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_far_dex"]
+script = ExtResource("2_node")
+id = "far_dex"
+position = Vector2i(31, 17)
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_0")])
+
+[sub_resource type="Resource" id="L_far_str_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_far_str"]
+script = ExtResource("2_node")
+id = "far_str"
+position = Vector2i(-31, 17)
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_0")])
+
+[sub_resource type="Resource" id="L_far_int_dex_1_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_1_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_1"]
+script = ExtResource("2_node")
+id = "far_int_dex_1"
+position = Vector2i(7, -34)
+links = PackedStringArray("far_int")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_1_0"), SubResource("L_far_int_dex_1_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_2_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_2_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_2"]
+script = ExtResource("2_node")
+id = "far_int_dex_2"
+position = Vector2i(13, -33)
+links = PackedStringArray("far_int_dex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_2_0"), SubResource("L_far_int_dex_2_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_3_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_3_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_3"]
+script = ExtResource("2_node")
+id = "far_int_dex_3"
+position = Vector2i(19, -30)
+links = PackedStringArray("far_int_dex_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_3_0"), SubResource("L_far_int_dex_3_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_4_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_4_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_4"]
+script = ExtResource("2_node")
+id = "far_int_dex_4"
+position = Vector2i(24, -25)
+links = PackedStringArray("far_int_dex_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_4_0"), SubResource("L_far_int_dex_4_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_5_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_5_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_5"]
+script = ExtResource("2_node")
+id = "far_int_dex_5"
+position = Vector2i(28, -20)
+links = PackedStringArray("far_int_dex_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_5_0"), SubResource("L_far_int_dex_5_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_6_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_6_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_6"]
+script = ExtResource("2_node")
+id = "far_int_dex_6"
+position = Vector2i(32, -15)
+links = PackedStringArray("far_int_dex_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_6_0"), SubResource("L_far_int_dex_6_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_7_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_7_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_7"]
+script = ExtResource("2_node")
+id = "far_int_dex_7"
+position = Vector2i(34, -9)
+links = PackedStringArray("far_int_dex_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_7_0"), SubResource("L_far_int_dex_7_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_8_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_8_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_8"]
+script = ExtResource("2_node")
+id = "far_int_dex_8"
+position = Vector2i(35, -2)
+links = PackedStringArray("far_int_dex_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_8_0"), SubResource("L_far_int_dex_8_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_9_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_9_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_9"]
+script = ExtResource("2_node")
+id = "far_int_dex_9"
+position = Vector2i(35, 5)
+links = PackedStringArray("far_int_dex_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_9_0"), SubResource("L_far_int_dex_9_1")])
+
+[sub_resource type="Resource" id="L_far_int_dex_10_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_int_dex_10_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_int_dex_10"]
+script = ExtResource("2_node")
+id = "far_int_dex_10"
+position = Vector2i(33, 11)
+links = PackedStringArray("far_int_dex_9", "far_dex")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_int_dex_10_0"), SubResource("L_far_int_dex_10_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_1_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_1_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_1"]
+script = ExtResource("2_node")
+id = "far_dex_str_1"
+position = Vector2i(27, 23)
+links = PackedStringArray("far_dex")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_1_0"), SubResource("L_far_dex_str_1_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_2_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_2_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_2"]
+script = ExtResource("2_node")
+id = "far_dex_str_2"
+position = Vector2i(22, 27)
+links = PackedStringArray("far_dex_str_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_2_0"), SubResource("L_far_dex_str_2_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_3_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_3_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_3"]
+script = ExtResource("2_node")
+id = "far_dex_str_3"
+position = Vector2i(16, 31)
+links = PackedStringArray("far_dex_str_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_3_0"), SubResource("L_far_dex_str_3_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_4_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_4_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_4"]
+script = ExtResource("2_node")
+id = "far_dex_str_4"
+position = Vector2i(10, 34)
+links = PackedStringArray("far_dex_str_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_4_0"), SubResource("L_far_dex_str_4_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_5_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_5_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_5"]
+script = ExtResource("2_node")
+id = "far_dex_str_5"
+position = Vector2i(3, 35)
+links = PackedStringArray("far_dex_str_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_5_0"), SubResource("L_far_dex_str_5_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_6_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_6_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_6"]
+script = ExtResource("2_node")
+id = "far_dex_str_6"
+position = Vector2i(-3, 35)
+links = PackedStringArray("far_dex_str_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_6_0"), SubResource("L_far_dex_str_6_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_7_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_7_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_7"]
+script = ExtResource("2_node")
+id = "far_dex_str_7"
+position = Vector2i(-10, 34)
+links = PackedStringArray("far_dex_str_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_7_0"), SubResource("L_far_dex_str_7_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_8_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_8_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_8"]
+script = ExtResource("2_node")
+id = "far_dex_str_8"
+position = Vector2i(-16, 31)
+links = PackedStringArray("far_dex_str_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_8_0"), SubResource("L_far_dex_str_8_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_9_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_9_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_9"]
+script = ExtResource("2_node")
+id = "far_dex_str_9"
+position = Vector2i(-22, 27)
+links = PackedStringArray("far_dex_str_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_9_0"), SubResource("L_far_dex_str_9_1")])
+
+[sub_resource type="Resource" id="L_far_dex_str_10_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_dex_str_10_1"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_dex_str_10"]
+script = ExtResource("2_node")
+id = "far_dex_str_10"
+position = Vector2i(-27, 23)
+links = PackedStringArray("far_dex_str_9", "far_str")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_dex_str_10_0"), SubResource("L_far_dex_str_10_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_1_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_1_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_1"]
+script = ExtResource("2_node")
+id = "far_str_int_1"
+position = Vector2i(-33, 11)
+links = PackedStringArray("far_str")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_1_0"), SubResource("L_far_str_int_1_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_2_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_2_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_2"]
+script = ExtResource("2_node")
+id = "far_str_int_2"
+position = Vector2i(-35, 5)
+links = PackedStringArray("far_str_int_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_2_0"), SubResource("L_far_str_int_2_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_3_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_3_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_3"]
+script = ExtResource("2_node")
+id = "far_str_int_3"
+position = Vector2i(-35, -2)
+links = PackedStringArray("far_str_int_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_3_0"), SubResource("L_far_str_int_3_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_4_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_4_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_4"]
+script = ExtResource("2_node")
+id = "far_str_int_4"
+position = Vector2i(-34, -9)
+links = PackedStringArray("far_str_int_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_4_0"), SubResource("L_far_str_int_4_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_5_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_5_1"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_5"]
+script = ExtResource("2_node")
+id = "far_str_int_5"
+position = Vector2i(-32, -15)
+links = PackedStringArray("far_str_int_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_5_0"), SubResource("L_far_str_int_5_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_6_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_6_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_6"]
+script = ExtResource("2_node")
+id = "far_str_int_6"
+position = Vector2i(-28, -20)
+links = PackedStringArray("far_str_int_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_6_0"), SubResource("L_far_str_int_6_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_7_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_7_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_7"]
+script = ExtResource("2_node")
+id = "far_str_int_7"
+position = Vector2i(-24, -25)
+links = PackedStringArray("far_str_int_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_7_0"), SubResource("L_far_str_int_7_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_8_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_8_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_8"]
+script = ExtResource("2_node")
+id = "far_str_int_8"
+position = Vector2i(-19, -30)
+links = PackedStringArray("far_str_int_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_8_0"), SubResource("L_far_str_int_8_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_9_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_9_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_9"]
+script = ExtResource("2_node")
+id = "far_str_int_9"
+position = Vector2i(-13, -33)
+links = PackedStringArray("far_str_int_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_9_0"), SubResource("L_far_str_int_9_1")])
+
+[sub_resource type="Resource" id="L_far_str_int_10_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_far_str_int_10_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_far_str_int_10"]
+script = ExtResource("2_node")
+id = "far_str_int_10"
+position = Vector2i(-7, -34)
+links = PackedStringArray("far_str_int_9", "far_int")
+lines = Array[ExtResource("3_line")]([SubResource("L_far_str_int_10_0"), SubResource("L_far_str_int_10_1")])
+
+[sub_resource type="Resource" id="L_int_bridge_0"]
+script = ExtResource("3_line")
+stat = "intelligence"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_int_bridge"]
+script = ExtResource("2_node")
+id = "int_bridge"
+position = Vector2i(4, -30)
+links = PackedStringArray("int_10", "far_int")
+lines = Array[ExtResource("3_line")]([SubResource("L_int_bridge_0")])
+
+[sub_resource type="Resource" id="L_dex_bridge_0"]
+script = ExtResource("3_line")
+stat = "dexterity"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_dex_bridge"]
+script = ExtResource("2_node")
+id = "dex_bridge"
+position = Vector2i(24, 18)
+links = PackedStringArray("dex_10", "far_dex")
+lines = Array[ExtResource("3_line")]([SubResource("L_dex_bridge_0")])
+
+[sub_resource type="Resource" id="L_str_bridge_0"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_str_bridge"]
+script = ExtResource("2_node")
+id = "str_bridge"
+position = Vector2i(-28, 11)
+links = PackedStringArray("str_10", "far_str")
+lines = Array[ExtResource("3_line")]([SubResource("L_str_bridge_0")])
+
+[sub_resource type="Resource" id="L_rod_1_0"]
+script = ExtResource("3_line")
+stat = "res_lightning"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rod_1"]
+script = ExtResource("2_node")
+id = "rod_1"
+position = Vector2i(0, -39)
+links = PackedStringArray("far_int")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_1_0")])
+
+[sub_resource type="Resource" id="L_rod_2_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_rod_2"]
+script = ExtResource("2_node")
+id = "rod_2"
+position = Vector2i(-3, -40)
+links = PackedStringArray("rod_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_2_0")])
+
+[sub_resource type="Resource" id="L_rod_3_0"]
+script = ExtResource("3_line")
+stat = "res_lightning"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rod_3"]
+script = ExtResource("2_node")
+id = "rod_3"
+position = Vector2i(-3, -44)
+links = PackedStringArray("rod_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_3_0")])
+
+[sub_resource type="Resource" id="L_rod_4_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_rod_4"]
+script = ExtResource("2_node")
+id = "rod_4"
+position = Vector2i(0, -45)
+links = PackedStringArray("rod_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_4_0")])
+
+[sub_resource type="Resource" id="L_rod_5_0"]
+script = ExtResource("3_line")
+stat = "res_lightning"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rod_5"]
+script = ExtResource("2_node")
+id = "rod_5"
+position = Vector2i(3, -44)
+links = PackedStringArray("rod_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_5_0")])
+
+[sub_resource type="Resource" id="L_rod_6_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_rod_6"]
+script = ExtResource("2_node")
+id = "rod_6"
+position = Vector2i(3, -40)
+links = PackedStringArray("rod_5", "rod_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rod_6_0")])
+
+[sub_resource type="Resource" id="L_lightning_rod_0"]
+script = ExtResource("3_line")
+stat = "res_lightning"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_lightning_rod_1"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_lightning_rod"]
+script = ExtResource("2_node")
+id = "lightning_rod"
+name = "Paratonnerre"
+kind = 2
+position = Vector2i(0, -42)
+links = PackedStringArray("rod_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_lightning_rod_0"), SubResource("L_lightning_rod_1")])
+
+[sub_resource type="Resource" id="L_arc_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_arc_1"]
+script = ExtResource("2_node")
+id = "arc_1"
+position = Vector2i(19, -34)
+links = PackedStringArray("far_int_dex_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_arc_1_0")])
+
+[sub_resource type="Resource" id="L_arc_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_arc_2"]
+script = ExtResource("2_node")
+id = "arc_2"
+position = Vector2i(18, -39)
+links = PackedStringArray("arc_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_arc_2_0")])
+
+[sub_resource type="Resource" id="L_arc_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_arc_3"]
+script = ExtResource("2_node")
+id = "arc_3"
+position = Vector2i(16, -42)
+links = PackedStringArray("arc_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_arc_3_0")])
+
+[sub_resource type="Resource" id="L_arcing_current_0"]
+script = ExtResource("3_line")
+stat = "targets"
+scope = "lightning"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_arcing_current_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_arcing_current"]
+script = ExtResource("2_node")
+id = "arcing_current"
+name = "Courant en arc"
+kind = 2
+position = Vector2i(17, -46)
+links = PackedStringArray("arc_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_arcing_current_0"), SubResource("L_arcing_current_1")])
+
+[sub_resource type="Resource" id="L_arc_4_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+scope = "spell"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_arc_4"]
+script = ExtResource("2_node")
+id = "arc_4"
+position = Vector2i(25, -35)
+links = PackedStringArray("arc_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_arc_4_0")])
+
+[sub_resource type="Resource" id="L_arc_5_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+scope = "spell"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_arc_5"]
+script = ExtResource("2_node")
+id = "arc_5"
+position = Vector2i(29, -35)
+links = PackedStringArray("arc_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_arc_5_0")])
+
+[sub_resource type="Resource" id="L_spell_focus_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+scope = "spell"
+percentage = true
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="L_spell_focus_1"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_spell_focus"]
+script = ExtResource("2_node")
+id = "spell_focus"
+name = "Focalisation"
+kind = 2
+position = Vector2i(31, -38)
+links = PackedStringArray("arc_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_spell_focus_0"), SubResource("L_spell_focus_1")])
+
+[sub_resource type="Resource" id="L_blight_1_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_1"]
+script = ExtResource("2_node")
+id = "blight_1"
+position = Vector2i(34, -18)
+links = PackedStringArray("far_int_dex_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_1_0")])
+
+[sub_resource type="Resource" id="L_blight_2_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_2"]
+script = ExtResource("2_node")
+id = "blight_2"
+position = Vector2i(34, -21)
+links = PackedStringArray("blight_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_2_0")])
+
+[sub_resource type="Resource" id="L_blight_3_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_3"]
+script = ExtResource("2_node")
+id = "blight_3"
+position = Vector2i(37, -23)
+links = PackedStringArray("blight_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_3_0")])
+
+[sub_resource type="Resource" id="L_blight_4_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_4"]
+script = ExtResource("2_node")
+id = "blight_4"
+position = Vector2i(40, -21)
+links = PackedStringArray("blight_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_4_0")])
+
+[sub_resource type="Resource" id="L_blight_5_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_5"]
+script = ExtResource("2_node")
+id = "blight_5"
+position = Vector2i(40, -18)
+links = PackedStringArray("blight_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_5_0")])
+
+[sub_resource type="Resource" id="L_blight_6_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blight_6"]
+script = ExtResource("2_node")
+id = "blight_6"
+position = Vector2i(37, -17)
+links = PackedStringArray("blight_5", "blight_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_blight_6_0")])
+
+[sub_resource type="Resource" id="L_withering_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_rot"
+scope = "spell"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="L_withering_1"]
+script = ExtResource("3_line")
+stat = "damage_necrotic"
+scope = "spell"
+value_per_point = 2.0
+value_max_per_point = 5.0
+
+[sub_resource type="Resource" id="N_withering"]
+script = ExtResource("2_node")
+id = "withering"
+name = "Flétrissure"
+kind = 2
+position = Vector2i(37, -20)
+links = PackedStringArray("blight_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_withering_0"), SubResource("L_withering_1")])
+
+[sub_resource type="Resource" id="L_hunt_1_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hunt_1"]
+script = ExtResource("2_node")
+id = "hunt_1"
+position = Vector2i(39, 1)
+links = PackedStringArray("far_int_dex_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_1_0")])
+
+[sub_resource type="Resource" id="L_hunt_2_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hunt_2"]
+script = ExtResource("2_node")
+id = "hunt_2"
+position = Vector2i(40, -1)
+links = PackedStringArray("hunt_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_2_0")])
+
+[sub_resource type="Resource" id="L_hunt_3_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hunt_3"]
+script = ExtResource("2_node")
+id = "hunt_3"
+position = Vector2i(44, -1)
+links = PackedStringArray("hunt_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_3_0")])
+
+[sub_resource type="Resource" id="L_hunt_4_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hunt_4"]
+script = ExtResource("2_node")
+id = "hunt_4"
+position = Vector2i(45, 2)
+links = PackedStringArray("hunt_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_4_0")])
+
+[sub_resource type="Resource" id="L_hunt_5_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hunt_5"]
+script = ExtResource("2_node")
+id = "hunt_5"
+position = Vector2i(43, 4)
+links = PackedStringArray("hunt_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_5_0")])
+
+[sub_resource type="Resource" id="L_hunt_6_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hunt_6"]
+script = ExtResource("2_node")
+id = "hunt_6"
+position = Vector2i(40, 4)
+links = PackedStringArray("hunt_5", "hunt_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hunt_6_0")])
+
+[sub_resource type="Resource" id="L_deadly_rhythm_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_deadly_rhythm_1"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_deadly_rhythm"]
+script = ExtResource("2_node")
+id = "deadly_rhythm"
+name = "Rythme mortel"
+kind = 2
+position = Vector2i(42, 1)
+links = PackedStringArray("hunt_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_deadly_rhythm_0"), SubResource("L_deadly_rhythm_1")])
+
+[sub_resource type="Resource" id="L_rime_1_0"]
+script = ExtResource("3_line")
+stat = "damage_cold"
+scope = "projectile"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_rime_1"]
+script = ExtResource("2_node")
+id = "rime_1"
+position = Vector2i(34, 19)
+links = PackedStringArray("far_dex")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_1_0")])
+
+[sub_resource type="Resource" id="L_rime_2_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_chill"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rime_2"]
+script = ExtResource("2_node")
+id = "rime_2"
+position = Vector2i(37, 17)
+links = PackedStringArray("rime_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_2_0")])
+
+[sub_resource type="Resource" id="L_rime_3_0"]
+script = ExtResource("3_line")
+stat = "damage_cold"
+scope = "projectile"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_rime_3"]
+script = ExtResource("2_node")
+id = "rime_3"
+position = Vector2i(39, 19)
+links = PackedStringArray("rime_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_3_0")])
+
+[sub_resource type="Resource" id="L_rime_4_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_chill"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rime_4"]
+script = ExtResource("2_node")
+id = "rime_4"
+position = Vector2i(39, 22)
+links = PackedStringArray("rime_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_4_0")])
+
+[sub_resource type="Resource" id="L_rime_5_0"]
+script = ExtResource("3_line")
+stat = "damage_cold"
+scope = "projectile"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_rime_5"]
+script = ExtResource("2_node")
+id = "rime_5"
+position = Vector2i(37, 24)
+links = PackedStringArray("rime_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_5_0")])
+
+[sub_resource type="Resource" id="L_rime_6_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_chill"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_rime_6"]
+script = ExtResource("2_node")
+id = "rime_6"
+position = Vector2i(34, 22)
+links = PackedStringArray("rime_5", "rime_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rime_6_0")])
+
+[sub_resource type="Resource" id="L_frost_tips_0"]
+script = ExtResource("3_line")
+stat = "damage_cold"
+scope = "projectile"
+value_per_point = 3.0
+value_max_per_point = 7.0
+
+[sub_resource type="Resource" id="L_frost_tips_1"]
+script = ExtResource("3_line")
+stat = "projectile_speed"
+scope = "projectile"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_frost_tips"]
+script = ExtResource("2_node")
+id = "frost_tips"
+name = "Pointes de givre"
+kind = 2
+position = Vector2i(37, 21)
+links = PackedStringArray("rime_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_frost_tips_0"), SubResource("L_frost_tips_1")])
+
+[sub_resource type="Resource" id="L_guard_1_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_1"]
+script = ExtResource("2_node")
+id = "guard_1"
+position = Vector2i(0, 39)
+links = PackedStringArray("far_dex_str_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_1_0")])
+
+[sub_resource type="Resource" id="L_guard_2_0"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_2"]
+script = ExtResource("2_node")
+id = "guard_2"
+position = Vector2i(3, 40)
+links = PackedStringArray("guard_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_2_0")])
+
+[sub_resource type="Resource" id="L_guard_3_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_3"]
+script = ExtResource("2_node")
+id = "guard_3"
+position = Vector2i(3, 44)
+links = PackedStringArray("guard_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_3_0")])
+
+[sub_resource type="Resource" id="L_guard_4_0"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_4"]
+script = ExtResource("2_node")
+id = "guard_4"
+position = Vector2i(0, 45)
+links = PackedStringArray("guard_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_4_0")])
+
+[sub_resource type="Resource" id="L_guard_5_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_5"]
+script = ExtResource("2_node")
+id = "guard_5"
+position = Vector2i(-3, 44)
+links = PackedStringArray("guard_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_5_0")])
+
+[sub_resource type="Resource" id="L_guard_6_0"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_guard_6"]
+script = ExtResource("2_node")
+id = "guard_6"
+position = Vector2i(-3, 40)
+links = PackedStringArray("guard_5", "guard_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_guard_6_0")])
+
+[sub_resource type="Resource" id="L_supple_guard_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_supple_guard_1"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_supple_guard"]
+script = ExtResource("2_node")
+id = "supple_guard"
+name = "Garde souple"
+kind = 2
+position = Vector2i(0, 42)
+links = PackedStringArray("guard_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_supple_guard_0"), SubResource("L_supple_guard_1")])
+
+[sub_resource type="Resource" id="L_whirl_1_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "attack"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_whirl_1"]
+script = ExtResource("2_node")
+id = "whirl_1"
+position = Vector2i(-19, 34)
+links = PackedStringArray("far_dex_str_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_1_0")])
+
+[sub_resource type="Resource" id="L_whirl_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "attack"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_whirl_2"]
+script = ExtResource("2_node")
+id = "whirl_2"
+position = Vector2i(-18, 36)
+links = PackedStringArray("whirl_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_2_0")])
+
+[sub_resource type="Resource" id="L_whirl_3_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "attack"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_whirl_3"]
+script = ExtResource("2_node")
+id = "whirl_3"
+position = Vector2i(-19, 39)
+links = PackedStringArray("whirl_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_3_0")])
+
+[sub_resource type="Resource" id="L_whirl_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "attack"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_whirl_4"]
+script = ExtResource("2_node")
+id = "whirl_4"
+position = Vector2i(-23, 39)
+links = PackedStringArray("whirl_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_4_0")])
+
+[sub_resource type="Resource" id="L_whirl_5_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "attack"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_whirl_5"]
+script = ExtResource("2_node")
+id = "whirl_5"
+position = Vector2i(-24, 36)
+links = PackedStringArray("whirl_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_5_0")])
+
+[sub_resource type="Resource" id="L_whirl_6_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "attack"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_whirl_6"]
+script = ExtResource("2_node")
+id = "whirl_6"
+position = Vector2i(-23, 34)
+links = PackedStringArray("whirl_5", "whirl_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirl_6_0")])
+
+[sub_resource type="Resource" id="L_whirling_blades_0"]
+script = ExtResource("3_line")
+stat = "simultaneous"
+scope = "attack"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_whirling_blades_1"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "attack"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_whirling_blades"]
+script = ExtResource("2_node")
+id = "whirling_blades"
+name = "Lames tournoyantes"
+kind = 2
+position = Vector2i(-21, 36)
+links = PackedStringArray("whirl_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_whirling_blades_0"), SubResource("L_whirling_blades_1")])
+
+[sub_resource type="Resource" id="L_sanctity_1_0"]
+script = ExtResource("3_line")
+stat = "res_holy"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_1"]
+script = ExtResource("2_node")
+id = "sanctity_1"
+position = Vector2i(-34, 19)
+links = PackedStringArray("far_str")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_1_0")])
+
+[sub_resource type="Resource" id="L_sanctity_2_0"]
+script = ExtResource("3_line")
+stat = "res_necrotic"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_2"]
+script = ExtResource("2_node")
+id = "sanctity_2"
+position = Vector2i(-34, 22)
+links = PackedStringArray("sanctity_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_2_0")])
+
+[sub_resource type="Resource" id="L_sanctity_3_0"]
+script = ExtResource("3_line")
+stat = "res_holy"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_3"]
+script = ExtResource("2_node")
+id = "sanctity_3"
+position = Vector2i(-37, 24)
+links = PackedStringArray("sanctity_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_3_0")])
+
+[sub_resource type="Resource" id="L_sanctity_4_0"]
+script = ExtResource("3_line")
+stat = "res_necrotic"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_4"]
+script = ExtResource("2_node")
+id = "sanctity_4"
+position = Vector2i(-39, 22)
+links = PackedStringArray("sanctity_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_4_0")])
+
+[sub_resource type="Resource" id="L_sanctity_5_0"]
+script = ExtResource("3_line")
+stat = "res_holy"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_5"]
+script = ExtResource("2_node")
+id = "sanctity_5"
+position = Vector2i(-39, 19)
+links = PackedStringArray("sanctity_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_5_0")])
+
+[sub_resource type="Resource" id="L_sanctity_6_0"]
+script = ExtResource("3_line")
+stat = "res_necrotic"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_sanctity_6"]
+script = ExtResource("2_node")
+id = "sanctity_6"
+position = Vector2i(-37, 17)
+links = PackedStringArray("sanctity_5", "sanctity_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_sanctity_6_0")])
+
+[sub_resource type="Resource" id="L_hallowed_soul_0"]
+script = ExtResource("3_line")
+stat = "res_holy"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_hallowed_soul_1"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hallowed_soul"]
+script = ExtResource("2_node")
+id = "hallowed_soul"
+name = "Âme consacrée"
+kind = 2
+position = Vector2i(-37, 21)
+links = PackedStringArray("sanctity_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_hallowed_soul_0"), SubResource("L_hallowed_soul_1")])
+
+[sub_resource type="Resource" id="L_spellblade_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "attack"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_spellblade_1"]
+script = ExtResource("2_node")
+id = "spellblade_1"
+position = Vector2i(-34, -20)
+links = PackedStringArray("far_str_int_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_spellblade_1_0")])
+
+[sub_resource type="Resource" id="L_spellblade_2_0"]
+script = ExtResource("3_line")
+stat = "damage_fire"
+scope = "attack"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_spellblade_2"]
+script = ExtResource("2_node")
+id = "spellblade_2"
+position = Vector2i(-39, -18)
+links = PackedStringArray("spellblade_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_spellblade_2_0")])
+
+[sub_resource type="Resource" id="L_spellblade_3_0"]
+script = ExtResource("3_line")
+stat = "damage_fire"
+scope = "attack"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_spellblade_3"]
+script = ExtResource("2_node")
+id = "spellblade_3"
+position = Vector2i(-42, -16)
+links = PackedStringArray("spellblade_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_spellblade_3_0")])
+
+[sub_resource type="Resource" id="L_burning_edge_0"]
+script = ExtResource("3_line")
+stat = "damage_fire"
+scope = "attack"
+value_per_point = 3.0
+value_max_per_point = 7.0
+
+[sub_resource type="Resource" id="L_burning_edge_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_burning_edge"]
+script = ExtResource("2_node")
+id = "burning_edge"
+name = "Tranchant ardent"
+kind = 2
+position = Vector2i(-46, -17)
+links = PackedStringArray("spellblade_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_burning_edge_0"), SubResource("L_burning_edge_1")])
+
+[sub_resource type="Resource" id="L_spellblade_4_0"]
+script = ExtResource("3_line")
+stat = "damage_holy"
+scope = "attack"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_spellblade_4"]
+script = ExtResource("2_node")
+id = "spellblade_4"
+position = Vector2i(-35, -25)
+links = PackedStringArray("spellblade_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_spellblade_4_0")])
+
+[sub_resource type="Resource" id="L_spellblade_5_0"]
+script = ExtResource("3_line")
+stat = "damage_holy"
+scope = "attack"
+value_per_point = 1.0
+value_max_per_point = 3.0
+
+[sub_resource type="Resource" id="N_spellblade_5"]
+script = ExtResource("2_node")
+id = "spellblade_5"
+position = Vector2i(-35, -29)
+links = PackedStringArray("spellblade_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_spellblade_5_0")])
+
+[sub_resource type="Resource" id="L_blessed_edge_0"]
+script = ExtResource("3_line")
+stat = "damage_holy"
+scope = "attack"
+value_per_point = 3.0
+value_max_per_point = 7.0
+
+[sub_resource type="Resource" id="L_blessed_edge_1"]
+script = ExtResource("3_line")
+stat = "damage_vs_blessing"
+scope = "attack"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_blessed_edge"]
+script = ExtResource("2_node")
+id = "blessed_edge"
+name = "Tranchant béni"
+kind = 2
+position = Vector2i(-38, -31)
+links = PackedStringArray("spellblade_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_blessed_edge_0"), SubResource("L_blessed_edge_1")])
+[sub_resource type="Resource" id="L_crush_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_1"]
+script = ExtResource("2_node")
+id = "crush_1"
+position = Vector2i(-35, 9)
+links = PackedStringArray("far_str_int_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_1_0")])
+
+[sub_resource type="Resource" id="L_crush_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_2"]
+script = ExtResource("2_node")
+id = "crush_2"
+position = Vector2i(-35, 12)
+links = PackedStringArray("crush_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_2_0")])
+
+[sub_resource type="Resource" id="L_crush_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_3"]
+script = ExtResource("2_node")
+id = "crush_3"
+position = Vector2i(-38, 13)
+links = PackedStringArray("crush_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_3_0")])
+
+[sub_resource type="Resource" id="L_crush_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_4"]
+script = ExtResource("2_node")
+id = "crush_4"
+position = Vector2i(-41, 11)
+links = PackedStringArray("crush_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_4_0")])
+
+[sub_resource type="Resource" id="L_crush_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_5"]
+script = ExtResource("2_node")
+id = "crush_5"
+position = Vector2i(-40, 8)
+links = PackedStringArray("crush_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_5_0")])
+
+[sub_resource type="Resource" id="L_crush_6_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_crush_6"]
+script = ExtResource("2_node")
+id = "crush_6"
+position = Vector2i(-37, 7)
+links = PackedStringArray("crush_5", "crush_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_crush_6_0")])
+
+[sub_resource type="Resource" id="L_crusher_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_crusher_1"]
+script = ExtResource("3_line")
+stat = "strength"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_crusher"]
+script = ExtResource("2_node")
+id = "crusher"
+name = "Broyeur"
+kind = 2
+position = Vector2i(-38, 10)
+links = PackedStringArray("crush_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_crusher_0"), SubResource("L_crusher_1")])
+
+[sub_resource type="Resource" id="L_sweep_1_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_sweep_1"]
+script = ExtResource("2_node")
+id = "sweep_1"
+position = Vector2i(-25, 25)
+links = PackedStringArray("far_dex_str_10")
+lines = Array[ExtResource("3_line")]([SubResource("L_sweep_1_0")])
+
+[sub_resource type="Resource" id="L_sweep_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_sweep_2"]
+script = ExtResource("2_node")
+id = "sweep_2"
+position = Vector2i(-25, 29)
+links = PackedStringArray("sweep_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_sweep_2_0")])
+
+[sub_resource type="Resource" id="L_sweep_3_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_sweep_3"]
+script = ExtResource("2_node")
+id = "sweep_3"
+position = Vector2i(-28, 31)
+links = PackedStringArray("sweep_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_sweep_3_0")])
+
+[sub_resource type="Resource" id="L_sweep_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_sweep_4"]
+script = ExtResource("2_node")
+id = "sweep_4"
+position = Vector2i(-31, 28)
+links = PackedStringArray("sweep_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_sweep_4_0")])
+
+[sub_resource type="Resource" id="L_sweep_5_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_sweep_5"]
+script = ExtResource("2_node")
+id = "sweep_5"
+position = Vector2i(-29, 25)
+links = PackedStringArray("sweep_4", "sweep_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_sweep_5_0")])
+
+[sub_resource type="Resource" id="L_windmill_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_windmill_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_windmill"]
+script = ExtResource("2_node")
+id = "windmill"
+name = "Moulinet"
+kind = 2
+position = Vector2i(-28, 28)
+links = PackedStringArray("sweep_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_windmill_0"), SubResource("L_windmill_1")])
+
+[sub_resource type="Resource" id="L_reach_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_reach_1"]
+script = ExtResource("2_node")
+id = "reach_1"
+position = Vector2i(-23, 6)
+links = PackedStringArray("outer_str_int_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_reach_1_0")])
+
+[sub_resource type="Resource" id="L_reach_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_reach_2"]
+script = ExtResource("2_node")
+id = "reach_2"
+position = Vector2i(-26, 6)
+links = PackedStringArray("reach_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_reach_2_0")])
+
+[sub_resource type="Resource" id="L_reach_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_reach_3"]
+script = ExtResource("2_node")
+id = "reach_3"
+position = Vector2i(-28, 7)
+links = PackedStringArray("reach_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_reach_3_0")])
+
+[sub_resource type="Resource" id="L_high_guard_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_high_guard_1"]
+script = ExtResource("3_line")
+stat = "attack_range"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_high_guard"]
+script = ExtResource("2_node")
+id = "high_guard"
+name = "Grande garde"
+kind = 2
+position = Vector2i(-31, 8)
+links = PackedStringArray("reach_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_high_guard_0"), SubResource("L_high_guard_1")])
+
+[sub_resource type="Resource" id="L_gore_1_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_1"]
+script = ExtResource("2_node")
+id = "gore_1"
+position = Vector2i(-13, 34)
+links = PackedStringArray("far_dex_str_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_1_0")])
+
+[sub_resource type="Resource" id="L_gore_2_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_2"]
+script = ExtResource("2_node")
+id = "gore_2"
+position = Vector2i(-11, 37)
+links = PackedStringArray("gore_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_2_0")])
+
+[sub_resource type="Resource" id="L_gore_3_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_3"]
+script = ExtResource("2_node")
+id = "gore_3"
+position = Vector2i(-12, 40)
+links = PackedStringArray("gore_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_3_0")])
+
+[sub_resource type="Resource" id="L_gore_4_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_4"]
+script = ExtResource("2_node")
+id = "gore_4"
+position = Vector2i(-15, 40)
+links = PackedStringArray("gore_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_4_0")])
+
+[sub_resource type="Resource" id="L_gore_5_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_5"]
+script = ExtResource("2_node")
+id = "gore_5"
+position = Vector2i(-17, 38)
+links = PackedStringArray("gore_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_5_0")])
+
+[sub_resource type="Resource" id="L_gore_6_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_gore_6"]
+script = ExtResource("2_node")
+id = "gore_6"
+position = Vector2i(-16, 35)
+links = PackedStringArray("gore_5", "gore_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_gore_6_0")])
+
+[sub_resource type="Resource" id="L_bloodletting_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_bleed"
+scope = "melee"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="L_bloodletting_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "melee"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_bloodletting"]
+script = ExtResource("2_node")
+id = "bloodletting"
+name = "Ouvre-chair"
+kind = 2
+position = Vector2i(-14, 37)
+links = PackedStringArray("gore_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_bloodletting_0"), SubResource("L_bloodletting_1")])
+
+[sub_resource type="Resource" id="L_blast_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_1"]
+script = ExtResource("2_node")
+id = "blast_1"
+position = Vector2i(-9, -35)
+links = PackedStringArray("far_str_int_10")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_1_0")])
+
+[sub_resource type="Resource" id="L_blast_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_2"]
+script = ExtResource("2_node")
+id = "blast_2"
+position = Vector2i(-12, -35)
+links = PackedStringArray("blast_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_2_0")])
+
+[sub_resource type="Resource" id="L_blast_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_3"]
+script = ExtResource("2_node")
+id = "blast_3"
+position = Vector2i(-13, -38)
+links = PackedStringArray("blast_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_3_0")])
+
+[sub_resource type="Resource" id="L_blast_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_4"]
+script = ExtResource("2_node")
+id = "blast_4"
+position = Vector2i(-11, -41)
+links = PackedStringArray("blast_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_4_0")])
+
+[sub_resource type="Resource" id="L_blast_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_5"]
+script = ExtResource("2_node")
+id = "blast_5"
+position = Vector2i(-8, -40)
+links = PackedStringArray("blast_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_5_0")])
+
+[sub_resource type="Resource" id="L_blast_6_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_blast_6"]
+script = ExtResource("2_node")
+id = "blast_6"
+position = Vector2i(-7, -37)
+links = PackedStringArray("blast_5", "blast_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_blast_6_0")])
+
+[sub_resource type="Resource" id="L_detonation_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_detonation_1"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_detonation"]
+script = ExtResource("2_node")
+id = "detonation"
+name = "Éclatement"
+kind = 2
+position = Vector2i(-10, -38)
+links = PackedStringArray("blast_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_detonation_0"), SubResource("L_detonation_1")])
+
+[sub_resource type="Resource" id="L_breadth_1_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_1"]
+script = ExtResource("2_node")
+id = "breadth_1"
+position = Vector2i(9, -35)
+links = PackedStringArray("far_int_dex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_1_0")])
+
+[sub_resource type="Resource" id="L_breadth_2_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_2"]
+script = ExtResource("2_node")
+id = "breadth_2"
+position = Vector2i(7, -37)
+links = PackedStringArray("breadth_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_2_0")])
+
+[sub_resource type="Resource" id="L_breadth_3_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_3"]
+script = ExtResource("2_node")
+id = "breadth_3"
+position = Vector2i(8, -40)
+links = PackedStringArray("breadth_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_3_0")])
+
+[sub_resource type="Resource" id="L_breadth_4_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_4"]
+script = ExtResource("2_node")
+id = "breadth_4"
+position = Vector2i(11, -41)
+links = PackedStringArray("breadth_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_4_0")])
+
+[sub_resource type="Resource" id="L_breadth_5_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_5"]
+script = ExtResource("2_node")
+id = "breadth_5"
+position = Vector2i(13, -38)
+links = PackedStringArray("breadth_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_5_0")])
+
+[sub_resource type="Resource" id="L_breadth_6_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_breadth_6"]
+script = ExtResource("2_node")
+id = "breadth_6"
+position = Vector2i(12, -35)
+links = PackedStringArray("breadth_5", "breadth_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_breadth_6_0")])
+
+[sub_resource type="Resource" id="L_wide_blast_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_wide_blast_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_wide_blast"]
+script = ExtResource("2_node")
+id = "wide_blast"
+name = "Souffle élargi"
+kind = 2
+position = Vector2i(10, -38)
+links = PackedStringArray("breadth_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_wide_blast_0"), SubResource("L_wide_blast_1")])
+
+[sub_resource type="Resource" id="L_hold_1_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hold_1"]
+script = ExtResource("2_node")
+id = "hold_1"
+position = Vector2i(-5, -21)
+links = PackedStringArray("outer_str_int_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_hold_1_0")])
+
+[sub_resource type="Resource" id="L_hold_2_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hold_2"]
+script = ExtResource("2_node")
+id = "hold_2"
+position = Vector2i(-8, -23)
+links = PackedStringArray("hold_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hold_2_0")])
+
+[sub_resource type="Resource" id="L_hold_3_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hold_3"]
+script = ExtResource("2_node")
+id = "hold_3"
+position = Vector2i(-8, -27)
+links = PackedStringArray("hold_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hold_3_0")])
+
+[sub_resource type="Resource" id="L_hold_4_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hold_4"]
+script = ExtResource("2_node")
+id = "hold_4"
+position = Vector2i(-4, -27)
+links = PackedStringArray("hold_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_hold_4_0")])
+
+[sub_resource type="Resource" id="L_hold_5_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hold_5"]
+script = ExtResource("2_node")
+id = "hold_5"
+position = Vector2i(-2, -24)
+links = PackedStringArray("hold_4", "hold_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hold_5_0")])
+
+[sub_resource type="Resource" id="L_lasting_hold_0"]
+script = ExtResource("3_line")
+stat = "duration"
+scope = "area"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_lasting_hold_1"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_lasting_hold"]
+script = ExtResource("2_node")
+id = "lasting_hold"
+name = "Emprise durable"
+kind = 2
+position = Vector2i(-5, -24)
+links = PackedStringArray("hold_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_lasting_hold_0"), SubResource("L_lasting_hold_1")])
+
+[sub_resource type="Resource" id="L_pyre_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_pyre_1"]
+script = ExtResource("2_node")
+id = "pyre_1"
+position = Vector2i(-23, -28)
+links = PackedStringArray("far_str_int_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_pyre_1_0")])
+
+[sub_resource type="Resource" id="L_pyre_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_pyre_2"]
+script = ExtResource("2_node")
+id = "pyre_2"
+position = Vector2i(-26, -28)
+links = PackedStringArray("pyre_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_pyre_2_0")])
+
+[sub_resource type="Resource" id="L_pyre_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_pyre_3"]
+script = ExtResource("2_node")
+id = "pyre_3"
+position = Vector2i(-28, -31)
+links = PackedStringArray("pyre_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_pyre_3_0")])
+
+[sub_resource type="Resource" id="L_pyre_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_pyre_4"]
+script = ExtResource("2_node")
+id = "pyre_4"
+position = Vector2i(-25, -34)
+links = PackedStringArray("pyre_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_pyre_4_0")])
+
+[sub_resource type="Resource" id="L_pyre_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_pyre_5"]
+script = ExtResource("2_node")
+id = "pyre_5"
+position = Vector2i(-22, -31)
+links = PackedStringArray("pyre_4", "pyre_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_pyre_5_0")])
+
+[sub_resource type="Resource" id="L_burning_cloud_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 18.0
+
+[sub_resource type="Resource" id="L_burning_cloud_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_burning_cloud"]
+script = ExtResource("2_node")
+id = "burning_cloud"
+name = "Nuée ardente"
+kind = 2
+position = Vector2i(-25, -30)
+links = PackedStringArray("pyre_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_burning_cloud_0"), SubResource("L_burning_cloud_1")])
+
+[sub_resource type="Resource" id="L_gale_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_gale_1"]
+script = ExtResource("2_node")
+id = "gale_1"
+position = Vector2i(28, -23)
+links = PackedStringArray("far_int_dex_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_gale_1_0")])
+
+[sub_resource type="Resource" id="L_gale_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_gale_2"]
+script = ExtResource("2_node")
+id = "gale_2"
+position = Vector2i(28, -26)
+links = PackedStringArray("gale_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_gale_2_0")])
+
+[sub_resource type="Resource" id="L_gale_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_gale_3"]
+script = ExtResource("2_node")
+id = "gale_3"
+position = Vector2i(31, -28)
+links = PackedStringArray("gale_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_gale_3_0")])
+
+[sub_resource type="Resource" id="L_gale_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_gale_4"]
+script = ExtResource("2_node")
+id = "gale_4"
+position = Vector2i(34, -25)
+links = PackedStringArray("gale_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_gale_4_0")])
+
+[sub_resource type="Resource" id="L_gale_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_gale_5"]
+script = ExtResource("2_node")
+id = "gale_5"
+position = Vector2i(31, -22)
+links = PackedStringArray("gale_4", "gale_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_gale_5_0")])
+
+[sub_resource type="Resource" id="L_spread_storm_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 18.0
+
+[sub_resource type="Resource" id="L_spread_storm_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_spread_storm"]
+script = ExtResource("2_node")
+id = "spread_storm"
+name = "Orage étendu"
+kind = 2
+position = Vector2i(30, -25)
+links = PackedStringArray("gale_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_spread_storm_0"), SubResource("L_spread_storm_1")])
+
+[sub_resource type="Resource" id="L_ember_1_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_ignite"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ember_1"]
+script = ExtResource("2_node")
+id = "ember_1"
+position = Vector2i(6, -23)
+links = PackedStringArray("int_9")
+lines = Array[ExtResource("3_line")]([SubResource("L_ember_1_0")])
+
+[sub_resource type="Resource" id="L_ember_2_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_ignite"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ember_2"]
+script = ExtResource("2_node")
+id = "ember_2"
+position = Vector2i(6, -26)
+links = PackedStringArray("ember_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_ember_2_0")])
+
+[sub_resource type="Resource" id="L_ember_3_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_ignite"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ember_3"]
+script = ExtResource("2_node")
+id = "ember_3"
+position = Vector2i(7, -28)
+links = PackedStringArray("ember_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_ember_3_0")])
+
+[sub_resource type="Resource" id="L_live_coals_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_ignite"
+scope = "area"
+percentage = true
+value_per_point = 22.0
+
+[sub_resource type="Resource" id="L_live_coals_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_live_coals"]
+script = ExtResource("2_node")
+id = "live_coals"
+name = "Braise"
+kind = 2
+position = Vector2i(8, -31)
+links = PackedStringArray("ember_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_live_coals_0"), SubResource("L_live_coals_1")])
+
+[sub_resource type="Resource" id="L_shock_1_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_numb"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_shock_1"]
+script = ExtResource("2_node")
+id = "shock_1"
+position = Vector2i(9, -23)
+links = PackedStringArray("outer_int_dex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_shock_1_0")])
+
+[sub_resource type="Resource" id="L_shock_2_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_numb"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_shock_2"]
+script = ExtResource("2_node")
+id = "shock_2"
+position = Vector2i(9, -26)
+links = PackedStringArray("shock_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_shock_2_0")])
+
+[sub_resource type="Resource" id="L_shock_3_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_numb"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_shock_3"]
+script = ExtResource("2_node")
+id = "shock_3"
+position = Vector2i(10, -28)
+links = PackedStringArray("shock_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_shock_3_0")])
+
+[sub_resource type="Resource" id="L_shockwave_0"]
+script = ExtResource("3_line")
+stat = "damage_vs_numb"
+scope = "area"
+percentage = true
+value_per_point = 22.0
+
+[sub_resource type="Resource" id="L_shockwave_1"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_shockwave"]
+script = ExtResource("2_node")
+id = "shockwave"
+name = "Onde de choc"
+kind = 2
+position = Vector2i(11, -31)
+links = PackedStringArray("shock_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_shockwave_0"), SubResource("L_shockwave_1")])
+
+[sub_resource type="Resource" id="L_mastery_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_mastery_1"]
+script = ExtResource("2_node")
+id = "mastery_1"
+position = Vector2i(23, -8)
+links = PackedStringArray("outer_int_dex_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_mastery_1_0")])
+
+[sub_resource type="Resource" id="L_mastery_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_mastery_2"]
+script = ExtResource("2_node")
+id = "mastery_2"
+position = Vector2i(25, -9)
+links = PackedStringArray("mastery_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_mastery_2_0")])
+
+[sub_resource type="Resource" id="L_mastery_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_mastery_3"]
+script = ExtResource("2_node")
+id = "mastery_3"
+position = Vector2i(27, -10)
+links = PackedStringArray("mastery_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_mastery_3_0")])
+
+[sub_resource type="Resource" id="L_field_master_0"]
+script = ExtResource("3_line")
+stat = "skill_levels"
+scope = "area"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_field_master_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "area"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_field_master"]
+script = ExtResource("2_node")
+id = "field_master"
+name = "Maître des zones"
+kind = 2
+position = Vector2i(30, -11)
+links = PackedStringArray("mastery_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_field_master_0"), SubResource("L_field_master_1")])
+
+[sub_resource type="Resource" id="L_kill_1_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_kill_1"]
+script = ExtResource("2_node")
+id = "kill_1"
+position = Vector2i(35, 9)
+links = PackedStringArray("far_int_dex_10")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_1_0")])
+
+[sub_resource type="Resource" id="L_kill_2_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_kill_2"]
+script = ExtResource("2_node")
+id = "kill_2"
+position = Vector2i(37, 7)
+links = PackedStringArray("kill_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_2_0")])
+
+[sub_resource type="Resource" id="L_kill_3_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_kill_3"]
+script = ExtResource("2_node")
+id = "kill_3"
+position = Vector2i(40, 8)
+links = PackedStringArray("kill_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_3_0")])
+
+[sub_resource type="Resource" id="L_kill_4_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_kill_4"]
+script = ExtResource("2_node")
+id = "kill_4"
+position = Vector2i(41, 11)
+links = PackedStringArray("kill_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_4_0")])
+
+[sub_resource type="Resource" id="L_kill_5_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_kill_5"]
+script = ExtResource("2_node")
+id = "kill_5"
+position = Vector2i(38, 13)
+links = PackedStringArray("kill_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_5_0")])
+
+[sub_resource type="Resource" id="L_kill_6_0"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_kill_6"]
+script = ExtResource("2_node")
+id = "kill_6"
+position = Vector2i(35, 12)
+links = PackedStringArray("kill_5", "kill_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_kill_6_0")])
+
+[sub_resource type="Resource" id="L_assassination_0"]
+script = ExtResource("3_line")
+stat = "crit_chance"
+percentage = true
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="L_assassination_1"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_assassination"]
+script = ExtResource("2_node")
+id = "assassination"
+name = "Assassinat"
+kind = 2
+position = Vector2i(38, 10)
+links = PackedStringArray("kill_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_assassination_0"), SubResource("L_assassination_1")])
+
+[sub_resource type="Resource" id="L_falcon_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_falcon_1"]
+script = ExtResource("2_node")
+id = "falcon_1"
+position = Vector2i(19, 30)
+links = PackedStringArray("far_dex_str_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_1_0")])
+
+[sub_resource type="Resource" id="L_falcon_2_0"]
+script = ExtResource("3_line")
+stat = "projectile_speed"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_falcon_2"]
+script = ExtResource("2_node")
+id = "falcon_2"
+position = Vector2i(23, 30)
+links = PackedStringArray("falcon_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_2_0")])
+
+[sub_resource type="Resource" id="L_falcon_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_falcon_3"]
+script = ExtResource("2_node")
+id = "falcon_3"
+position = Vector2i(24, 33)
+links = PackedStringArray("falcon_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_3_0")])
+
+[sub_resource type="Resource" id="L_falcon_4_0"]
+script = ExtResource("3_line")
+stat = "projectile_speed"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_falcon_4"]
+script = ExtResource("2_node")
+id = "falcon_4"
+position = Vector2i(23, 35)
+links = PackedStringArray("falcon_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_4_0")])
+
+[sub_resource type="Resource" id="L_falcon_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_falcon_5"]
+script = ExtResource("2_node")
+id = "falcon_5"
+position = Vector2i(20, 36)
+links = PackedStringArray("falcon_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_5_0")])
+
+[sub_resource type="Resource" id="L_falcon_6_0"]
+script = ExtResource("3_line")
+stat = "projectile_speed"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_falcon_6"]
+script = ExtResource("2_node")
+id = "falcon_6"
+position = Vector2i(18, 33)
+links = PackedStringArray("falcon_5", "falcon_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_6_0")])
+
+[sub_resource type="Resource" id="L_falcon_flight_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_falcon_flight_1"]
+script = ExtResource("3_line")
+stat = "projectile_speed"
+scope = "projectile"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_falcon_flight"]
+script = ExtResource("2_node")
+id = "falcon_flight"
+name = "Vol du faucon"
+kind = 2
+position = Vector2i(21, 33)
+links = PackedStringArray("falcon_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_falcon_flight_0"), SubResource("L_falcon_flight_1")])
+
+[sub_resource type="Resource" id="L_flee_1_0"]
+script = ExtResource("3_line")
+stat = "move_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_flee_1"]
+script = ExtResource("2_node")
+id = "flee_1"
+position = Vector2i(5, 25)
+links = PackedStringArray("outer_dex_str_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_flee_1_0")])
+
+[sub_resource type="Resource" id="L_flee_2_0"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_flee_2"]
+script = ExtResource("2_node")
+id = "flee_2"
+position = Vector2i(9, 27)
+links = PackedStringArray("flee_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_flee_2_0")])
+
+[sub_resource type="Resource" id="L_flee_3_0"]
+script = ExtResource("3_line")
+stat = "move_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_flee_3"]
+script = ExtResource("2_node")
+id = "flee_3"
+position = Vector2i(8, 31)
+links = PackedStringArray("flee_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_flee_3_0")])
+
+[sub_resource type="Resource" id="L_flee_4_0"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_flee_4"]
+script = ExtResource("2_node")
+id = "flee_4"
+position = Vector2i(5, 31)
+links = PackedStringArray("flee_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_flee_4_0")])
+
+[sub_resource type="Resource" id="L_flee_5_0"]
+script = ExtResource("3_line")
+stat = "move_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_flee_5"]
+script = ExtResource("2_node")
+id = "flee_5"
+position = Vector2i(3, 28)
+links = PackedStringArray("flee_4", "flee_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_flee_5_0")])
+
+[sub_resource type="Resource" id="L_light_foot_0"]
+script = ExtResource("3_line")
+stat = "move_speed"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="L_light_foot_1"]
+script = ExtResource("3_line")
+stat = "evasion"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_light_foot"]
+script = ExtResource("2_node")
+id = "light_foot"
+name = "Pied léger"
+kind = 2
+position = Vector2i(6, 28)
+links = PackedStringArray("flee_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_light_foot_0"), SubResource("L_light_foot_1")])
+
+[sub_resource type="Resource" id="L_spear_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_spear_1"]
+script = ExtResource("2_node")
+id = "spear_1"
+position = Vector2i(24, 4)
+links = PackedStringArray("outer_int_dex_6")
+lines = Array[ExtResource("3_line")]([SubResource("L_spear_1_0")])
+
+[sub_resource type="Resource" id="L_spear_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_spear_2"]
+script = ExtResource("2_node")
+id = "spear_2"
+position = Vector2i(26, 5)
+links = PackedStringArray("spear_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_spear_2_0")])
+
+[sub_resource type="Resource" id="L_spear_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_spear_3"]
+script = ExtResource("2_node")
+id = "spear_3"
+position = Vector2i(29, 5)
+links = PackedStringArray("spear_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_spear_3_0")])
+
+[sub_resource type="Resource" id="L_spearhead_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "projectile"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_spearhead_1"]
+script = ExtResource("3_line")
+stat = "crit_multiplier"
+value_per_point = 0.1
+
+[sub_resource type="Resource" id="N_spearhead"]
+script = ExtResource("2_node")
+id = "spearhead"
+name = "Fer de lance"
+kind = 2
+position = Vector2i(31, 6)
+links = PackedStringArray("spear_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_spearhead_0"), SubResource("L_spearhead_1")])
+
+[sub_resource type="Resource" id="L_hand_1_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hand_1"]
+script = ExtResource("2_node")
+id = "hand_1"
+position = Vector2i(19, 19)
+links = PackedStringArray("dex_bridge")
+lines = Array[ExtResource("3_line")]([SubResource("L_hand_1_0")])
+
+[sub_resource type="Resource" id="L_hand_2_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hand_2"]
+script = ExtResource("2_node")
+id = "hand_2"
+position = Vector2i(21, 21)
+links = PackedStringArray("hand_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hand_2_0")])
+
+[sub_resource type="Resource" id="L_hand_3_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_hand_3"]
+script = ExtResource("2_node")
+id = "hand_3"
+position = Vector2i(22, 23)
+links = PackedStringArray("hand_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hand_3_0")])
+
+[sub_resource type="Resource" id="L_deft_hand_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_deft_hand_1"]
+script = ExtResource("3_line")
+stat = "move_speed"
+percentage = true
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_deft_hand"]
+script = ExtResource("2_node")
+id = "deft_hand"
+name = "Main leste"
+kind = 2
+position = Vector2i(24, 25)
+links = PackedStringArray("hand_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_deft_hand_0"), SubResource("L_deft_hand_1")])
+
+[sub_resource type="Resource" id="L_vigor_1_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_1"]
+script = ExtResource("2_node")
+id = "vigor_1"
+position = Vector2i(-20, 18)
+links = PackedStringArray("str_10")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_1_0")])
+
+[sub_resource type="Resource" id="L_vigor_2_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_2"]
+script = ExtResource("2_node")
+id = "vigor_2"
+position = Vector2i(-19, 21)
+links = PackedStringArray("vigor_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_2_0")])
+
+[sub_resource type="Resource" id="L_vigor_3_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_3"]
+script = ExtResource("2_node")
+id = "vigor_3"
+position = Vector2i(-22, 23)
+links = PackedStringArray("vigor_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_3_0")])
+
+[sub_resource type="Resource" id="L_vigor_4_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_4"]
+script = ExtResource("2_node")
+id = "vigor_4"
+position = Vector2i(-25, 22)
+links = PackedStringArray("vigor_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_4_0")])
+
+[sub_resource type="Resource" id="L_vigor_5_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_5"]
+script = ExtResource("2_node")
+id = "vigor_5"
+position = Vector2i(-25, 19)
+links = PackedStringArray("vigor_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_5_0")])
+
+[sub_resource type="Resource" id="L_vigor_6_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_vigor_6"]
+script = ExtResource("2_node")
+id = "vigor_6"
+position = Vector2i(-23, 17)
+links = PackedStringArray("vigor_5", "vigor_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_vigor_6_0")])
+
+[sub_resource type="Resource" id="L_constitution_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_constitution_1"]
+script = ExtResource("3_line")
+stat = "health_regen"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_constitution"]
+script = ExtResource("2_node")
+id = "constitution"
+name = "Constitution"
+kind = 2
+position = Vector2i(-22, 20)
+links = PackedStringArray("vigor_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_constitution_0"), SubResource("L_constitution_1")])
+
+[sub_resource type="Resource" id="L_hide_1_0"]
+script = ExtResource("3_line")
+stat = "res_fire"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hide_1"]
+script = ExtResource("2_node")
+id = "hide_1"
+position = Vector2i(-35, -6)
+links = PackedStringArray("far_str_int_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_hide_1_0")])
+
+[sub_resource type="Resource" id="L_hide_2_0"]
+script = ExtResource("3_line")
+stat = "res_cold"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hide_2"]
+script = ExtResource("2_node")
+id = "hide_2"
+position = Vector2i(-38, -3)
+links = PackedStringArray("hide_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hide_2_0")])
+
+[sub_resource type="Resource" id="L_hide_3_0"]
+script = ExtResource("3_line")
+stat = "res_fire"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hide_3"]
+script = ExtResource("2_node")
+id = "hide_3"
+position = Vector2i(-41, -5)
+links = PackedStringArray("hide_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hide_3_0")])
+
+[sub_resource type="Resource" id="L_hide_4_0"]
+script = ExtResource("3_line")
+stat = "res_cold"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hide_4"]
+script = ExtResource("2_node")
+id = "hide_4"
+position = Vector2i(-41, -8)
+links = PackedStringArray("hide_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_hide_4_0")])
+
+[sub_resource type="Resource" id="L_hide_5_0"]
+script = ExtResource("3_line")
+stat = "res_fire"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hide_5"]
+script = ExtResource("2_node")
+id = "hide_5"
+position = Vector2i(-37, -9)
+links = PackedStringArray("hide_4", "hide_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hide_5_0")])
+
+[sub_resource type="Resource" id="L_tanned_skin_0"]
+script = ExtResource("3_line")
+stat = "res_fire"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_tanned_skin_1"]
+script = ExtResource("3_line")
+stat = "res_cold"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_tanned_skin"]
+script = ExtResource("2_node")
+id = "tanned_skin"
+name = "Peau tannée"
+kind = 2
+position = Vector2i(-39, -6)
+links = PackedStringArray("hide_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_tanned_skin_0"), SubResource("L_tanned_skin_1")])
+
+[sub_resource type="Resource" id="L_bark_1_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_bark_1"]
+script = ExtResource("2_node")
+id = "bark_1"
+position = Vector2i(-6, 30)
+links = PackedStringArray("far_dex_str_7")
+lines = Array[ExtResource("3_line")]([SubResource("L_bark_1_0")])
+
+[sub_resource type="Resource" id="L_bark_2_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_bark_2"]
+script = ExtResource("2_node")
+id = "bark_2"
+position = Vector2i(-7, 33)
+links = PackedStringArray("bark_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_bark_2_0")])
+
+[sub_resource type="Resource" id="L_bark_3_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_bark_3"]
+script = ExtResource("2_node")
+id = "bark_3"
+position = Vector2i(-8, 35)
+links = PackedStringArray("bark_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_bark_3_0")])
+
+[sub_resource type="Resource" id="L_bark_skin_0"]
+script = ExtResource("3_line")
+stat = "armor"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_bark_skin_1"]
+script = ExtResource("3_line")
+stat = "health_regen"
+value_per_point = 1.5
+
+[sub_resource type="Resource" id="N_bark_skin"]
+script = ExtResource("2_node")
+id = "bark_skin"
+name = "Écorce"
+kind = 2
+position = Vector2i(-8, 38)
+links = PackedStringArray("bark_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_bark_skin_0"), SubResource("L_bark_skin_1")])
+
+[sub_resource type="Resource" id="L_heart_1_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_heart_1"]
+script = ExtResource("2_node")
+id = "heart_1"
+position = Vector2i(-24, 31)
+links = PackedStringArray("far_dex_str_9")
+lines = Array[ExtResource("3_line")]([SubResource("L_heart_1_0")])
+
+[sub_resource type="Resource" id="L_heart_2_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_heart_2"]
+script = ExtResource("2_node")
+id = "heart_2"
+position = Vector2i(-26, 33)
+links = PackedStringArray("heart_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_heart_2_0")])
+
+[sub_resource type="Resource" id="L_heart_3_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_heart_3"]
+script = ExtResource("2_node")
+id = "heart_3"
+position = Vector2i(-27, 35)
+links = PackedStringArray("heart_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_heart_3_0")])
+
+[sub_resource type="Resource" id="L_hardened_heart_0"]
+script = ExtResource("3_line")
+stat = "max_health"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="L_hardened_heart_1"]
+script = ExtResource("3_line")
+stat = "res_fire"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hardened_heart"]
+script = ExtResource("2_node")
+id = "hardened_heart"
+name = "Cœur endurci"
+kind = 2
+position = Vector2i(-29, 37)
+links = PackedStringArray("heart_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_hardened_heart_0"), SubResource("L_hardened_heart_1")])
+
+[sub_resource type="Resource" id="L_deep_1_0"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_deep_1"]
+script = ExtResource("2_node")
+id = "deep_1"
+position = Vector2i(-24, -8)
+links = PackedStringArray("outer_str_int_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_1_0")])
+
+[sub_resource type="Resource" id="L_deep_2_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_deep_2"]
+script = ExtResource("2_node")
+id = "deep_2"
+position = Vector2i(-26, -6)
+links = PackedStringArray("deep_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_2_0")])
+
+[sub_resource type="Resource" id="L_deep_3_0"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_deep_3"]
+script = ExtResource("2_node")
+id = "deep_3"
+position = Vector2i(-29, -7)
+links = PackedStringArray("deep_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_3_0")])
+
+[sub_resource type="Resource" id="L_deep_4_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_deep_4"]
+script = ExtResource("2_node")
+id = "deep_4"
+position = Vector2i(-30, -10)
+links = PackedStringArray("deep_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_4_0")])
+
+[sub_resource type="Resource" id="L_deep_5_0"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_deep_5"]
+script = ExtResource("2_node")
+id = "deep_5"
+position = Vector2i(-27, -12)
+links = PackedStringArray("deep_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_5_0")])
+
+[sub_resource type="Resource" id="L_deep_6_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_deep_6"]
+script = ExtResource("2_node")
+id = "deep_6"
+position = Vector2i(-24, -11)
+links = PackedStringArray("deep_5", "deep_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_6_0")])
+
+[sub_resource type="Resource" id="L_deep_thoughts_0"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="L_deep_thoughts_1"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_deep_thoughts"]
+script = ExtResource("2_node")
+id = "deep_thoughts"
+name = "Pensées profondes"
+kind = 2
+position = Vector2i(-27, -9)
+links = PackedStringArray("deep_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_thoughts_0"), SubResource("L_deep_thoughts_1")])
+
+[sub_resource type="Resource" id="L_spring_1_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_spring_1"]
+script = ExtResource("2_node")
+id = "spring_1"
+position = Vector2i(-21, -33)
+links = PackedStringArray("far_str_int_8")
+lines = Array[ExtResource("3_line")]([SubResource("L_spring_1_0")])
+
+[sub_resource type="Resource" id="L_spring_2_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_spring_2"]
+script = ExtResource("2_node")
+id = "spring_2"
+position = Vector2i(-22, -35)
+links = PackedStringArray("spring_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_spring_2_0")])
+
+[sub_resource type="Resource" id="L_spring_3_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_spring_3"]
+script = ExtResource("2_node")
+id = "spring_3"
+position = Vector2i(-23, -37)
+links = PackedStringArray("spring_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_spring_3_0")])
+
+[sub_resource type="Resource" id="L_deep_spring_0"]
+script = ExtResource("3_line")
+stat = "mana_regen"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="L_deep_spring_1"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_deep_spring"]
+script = ExtResource("2_node")
+id = "deep_spring"
+name = "Source profonde"
+kind = 2
+position = Vector2i(-25, -40)
+links = PackedStringArray("spring_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_deep_spring_0"), SubResource("L_deep_spring_1")])
+
+[sub_resource type="Resource" id="L_word_1_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_word_1"]
+script = ExtResource("2_node")
+id = "word_1"
+position = Vector2i(24, -14)
+links = PackedStringArray("far_int_dex_5")
+lines = Array[ExtResource("3_line")]([SubResource("L_word_1_0")])
+
+[sub_resource type="Resource" id="L_word_2_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_word_2"]
+script = ExtResource("2_node")
+id = "word_2"
+position = Vector2i(27, -15)
+links = PackedStringArray("word_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_word_2_0")])
+
+[sub_resource type="Resource" id="L_word_3_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_word_3"]
+script = ExtResource("2_node")
+id = "word_3"
+position = Vector2i(29, -16)
+links = PackedStringArray("word_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_word_3_0")])
+
+[sub_resource type="Resource" id="L_quick_word_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="L_quick_word_1"]
+script = ExtResource("3_line")
+stat = "max_mana"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_quick_word"]
+script = ExtResource("2_node")
+id = "quick_word"
+name = "Verbe rapide"
+kind = 2
+position = Vector2i(31, -17)
+links = PackedStringArray("word_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_quick_word_0"), SubResource("L_quick_word_1")])
+
+[sub_resource type="Resource" id="L_coord_1_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_1"]
+script = ExtResource("2_node")
+id = "coord_1"
+position = Vector2i(23, -27)
+links = PackedStringArray("far_int_dex_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_1_0")])
+
+[sub_resource type="Resource" id="L_coord_2_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_2"]
+script = ExtResource("2_node")
+id = "coord_2"
+position = Vector2i(22, -30)
+links = PackedStringArray("coord_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_2_0")])
+
+[sub_resource type="Resource" id="L_coord_3_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_3"]
+script = ExtResource("2_node")
+id = "coord_3"
+position = Vector2i(24, -33)
+links = PackedStringArray("coord_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_3_0")])
+
+[sub_resource type="Resource" id="L_coord_4_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_4"]
+script = ExtResource("2_node")
+id = "coord_4"
+position = Vector2i(27, -32)
+links = PackedStringArray("coord_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_4_0")])
+
+[sub_resource type="Resource" id="L_coord_5_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_5"]
+script = ExtResource("2_node")
+id = "coord_5"
+position = Vector2i(28, -29)
+links = PackedStringArray("coord_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_5_0")])
+
+[sub_resource type="Resource" id="L_coord_6_0"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_coord_6"]
+script = ExtResource("2_node")
+id = "coord_6"
+position = Vector2i(26, -27)
+links = PackedStringArray("coord_5", "coord_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_coord_6_0")])
+
+[sub_resource type="Resource" id="L_coordination_0"]
+script = ExtResource("3_line")
+stat = "attack_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_coordination_1"]
+script = ExtResource("3_line")
+stat = "cast_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_coordination"]
+script = ExtResource("2_node")
+id = "coordination"
+name = "Coordination"
+kind = 2
+position = Vector2i(25, -30)
+links = PackedStringArray("coord_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_coordination_0"), SubResource("L_coordination_1")])
 
 [resource]
 script = ExtResource("1_tree")
-nodes = Array[ExtResource("2_node")]([SubResource("N_start"), SubResource("N_int_1"), SubResource("N_int_2"), SubResource("N_int_3"), SubResource("N_int_4"), SubResource("N_int_5"), SubResource("N_int_6"), SubResource("N_int_7"), SubResource("N_int_8"), SubResource("N_int_9"), SubResource("N_int_10"), SubResource("N_storm_mind"), SubResource("N_dex_1"), SubResource("N_dex_2"), SubResource("N_dex_3"), SubResource("N_dex_4"), SubResource("N_dex_5"), SubResource("N_dex_6"), SubResource("N_dex_7"), SubResource("N_dex_8"), SubResource("N_dex_9"), SubResource("N_dex_10"), SubResource("N_hunter_eye"), SubResource("N_str_1"), SubResource("N_str_2"), SubResource("N_str_3"), SubResource("N_str_4"), SubResource("N_str_5"), SubResource("N_str_6"), SubResource("N_str_7"), SubResource("N_str_8"), SubResource("N_str_9"), SubResource("N_str_10"), SubResource("N_colossus"), SubResource("N_inner_int_dex_1"), SubResource("N_inner_int_dex_2"), SubResource("N_inner_int_dex_3"), SubResource("N_inner_dex_str_1"), SubResource("N_inner_dex_str_2"), SubResource("N_inner_dex_str_3"), SubResource("N_inner_str_int_1"), SubResource("N_inner_str_int_2"), SubResource("N_inner_str_int_3"), SubResource("N_outer_int_dex_1"), SubResource("N_outer_int_dex_2"), SubResource("N_outer_int_dex_3"), SubResource("N_outer_int_dex_4"), SubResource("N_outer_int_dex_5"), SubResource("N_outer_int_dex_6"), SubResource("N_outer_dex_str_1"), SubResource("N_outer_dex_str_2"), SubResource("N_outer_dex_str_3"), SubResource("N_outer_dex_str_4"), SubResource("N_outer_dex_str_5"), SubResource("N_outer_dex_str_6"), SubResource("N_outer_str_int_1"), SubResource("N_outer_str_int_2"), SubResource("N_outer_str_int_3"), SubResource("N_outer_str_int_4"), SubResource("N_outer_str_int_5"), SubResource("N_outer_str_int_6"), SubResource("N_blaze_1"), SubResource("N_blaze_2"), SubResource("N_blaze_3"), SubResource("N_inner_blaze"), SubResource("N_blaze_4"), SubResource("N_blaze_5"), SubResource("N_vivid_embers"), SubResource("N_storm_1"), SubResource("N_storm_2"), SubResource("N_storm_3"), SubResource("N_quick_lightning"), SubResource("N_storm_4"), SubResource("N_storm_5"), SubResource("N_storm_crash"), SubResource("N_spells_1"), SubResource("N_spells_2"), SubResource("N_spells_3"), SubResource("N_spells_4"), SubResource("N_spells_5"), SubResource("N_spells_6"), SubResource("N_sharp_incantation"), SubResource("N_wave_1"), SubResource("N_wave_2"), SubResource("N_wave_3"), SubResource("N_wave_4"), SubResource("N_wave_5"), SubResource("N_wave_6"), SubResource("N_wide_wave"), SubResource("N_reserve_1"), SubResource("N_reserve_2"), SubResource("N_reserve_3"), SubResource("N_reserve_4"), SubResource("N_reserve_5"), SubResource("N_reserve_6"), SubResource("N_mana_well"), SubResource("N_lore_1"), SubResource("N_lore_2"), SubResource("N_lore_3"), SubResource("N_lore_4"), SubResource("N_lore_5"), SubResource("N_lore_6"), SubResource("N_arcane_lore"), SubResource("N_strike_1"), SubResource("N_strike_2"), SubResource("N_strike_3"), SubResource("N_strike_4"), SubResource("N_strike_5"), SubResource("N_strike_6"), SubResource("N_brute_force"), SubResource("N_flesh_1"), SubResource("N_flesh_2"), SubResource("N_flesh_3"), SubResource("N_flesh_4"), SubResource("N_flesh_5"), SubResource("N_flesh_6"), SubResource("N_sturdy_blood"), SubResource("N_plates_1"), SubResource("N_plates_2"), SubResource("N_plates_3"), SubResource("N_plates_4"), SubResource("N_plates_5"), SubResource("N_plates_6"), SubResource("N_iron_skin"), SubResource("N_arms_1"), SubResource("N_arms_2"), SubResource("N_arms_3"), SubResource("N_arms_4"), SubResource("N_arms_5"), SubResource("N_arms_6"), SubResource("N_weapon_master"), SubResource("N_regrowth_1"), SubResource("N_regrowth_2"), SubResource("N_regrowth_3"), SubResource("N_regrowth_4"), SubResource("N_regrowth_5"), SubResource("N_regrowth_6"), SubResource("N_regrowing_flesh"), SubResource("N_wound_1"), SubResource("N_wound_2"), SubResource("N_wound_3"), SubResource("N_wound_4"), SubResource("N_wound_5"), SubResource("N_wound_6"), SubResource("N_open_wound"), SubResource("N_volley_1"), SubResource("N_volley_2"), SubResource("N_volley_3"), SubResource("N_precise_shot"), SubResource("N_volley_4"), SubResource("N_volley_5"), SubResource("N_volley_shot"), SubResource("N_eye_1"), SubResource("N_eye_2"), SubResource("N_eye_3"), SubResource("N_eye_4"), SubResource("N_eye_5"), SubResource("N_eye_6"), SubResource("N_lynx_eye"), SubResource("N_breath_1"), SubResource("N_breath_2"), SubResource("N_breath_3"), SubResource("N_breath_4"), SubResource("N_breath_5"), SubResource("N_breath_6"), SubResource("N_reflexes"), SubResource("N_run_1"), SubResource("N_run_2"), SubResource("N_run_3"), SubResource("N_run_4"), SubResource("N_run_5"), SubResource("N_run_6"), SubResource("N_swiftness"), SubResource("N_frost_1"), SubResource("N_frost_2"), SubResource("N_frost_3"), SubResource("N_frost_4"), SubResource("N_frost_5"), SubResource("N_frost_6"), SubResource("N_frostbite")])
+nodes = Array[ExtResource("2_node")]([SubResource("N_start"), SubResource("N_int_1"), SubResource("N_int_2"), SubResource("N_int_3"), SubResource("N_int_4"), SubResource("N_int_5"), SubResource("N_int_6"), SubResource("N_int_7"), SubResource("N_int_8"), SubResource("N_int_9"), SubResource("N_int_10"), SubResource("N_storm_mind"), SubResource("N_dex_1"), SubResource("N_dex_2"), SubResource("N_dex_3"), SubResource("N_dex_4"), SubResource("N_dex_5"), SubResource("N_dex_6"), SubResource("N_dex_7"), SubResource("N_dex_8"), SubResource("N_dex_9"), SubResource("N_dex_10"), SubResource("N_hunter_eye"), SubResource("N_str_1"), SubResource("N_str_2"), SubResource("N_str_3"), SubResource("N_str_4"), SubResource("N_str_5"), SubResource("N_str_6"), SubResource("N_str_7"), SubResource("N_str_8"), SubResource("N_str_9"), SubResource("N_str_10"), SubResource("N_colossus"), SubResource("N_inner_int_dex_1"), SubResource("N_inner_int_dex_2"), SubResource("N_inner_int_dex_3"), SubResource("N_inner_dex_str_1"), SubResource("N_inner_dex_str_2"), SubResource("N_inner_dex_str_3"), SubResource("N_inner_str_int_1"), SubResource("N_inner_str_int_2"), SubResource("N_inner_str_int_3"), SubResource("N_outer_int_dex_1"), SubResource("N_outer_int_dex_2"), SubResource("N_outer_int_dex_3"), SubResource("N_outer_int_dex_4"), SubResource("N_outer_int_dex_5"), SubResource("N_outer_int_dex_6"), SubResource("N_outer_dex_str_1"), SubResource("N_outer_dex_str_2"), SubResource("N_outer_dex_str_3"), SubResource("N_outer_dex_str_4"), SubResource("N_outer_dex_str_5"), SubResource("N_outer_dex_str_6"), SubResource("N_outer_str_int_1"), SubResource("N_outer_str_int_2"), SubResource("N_outer_str_int_3"), SubResource("N_outer_str_int_4"), SubResource("N_outer_str_int_5"), SubResource("N_outer_str_int_6"), SubResource("N_blaze_1"), SubResource("N_blaze_2"), SubResource("N_blaze_3"), SubResource("N_inner_blaze"), SubResource("N_blaze_4"), SubResource("N_blaze_5"), SubResource("N_vivid_embers"), SubResource("N_storm_1"), SubResource("N_storm_2"), SubResource("N_storm_3"), SubResource("N_quick_lightning"), SubResource("N_storm_4"), SubResource("N_storm_5"), SubResource("N_storm_crash"), SubResource("N_spells_1"), SubResource("N_spells_2"), SubResource("N_spells_3"), SubResource("N_spells_4"), SubResource("N_spells_5"), SubResource("N_spells_6"), SubResource("N_sharp_incantation"), SubResource("N_wave_1"), SubResource("N_wave_2"), SubResource("N_wave_3"), SubResource("N_wave_4"), SubResource("N_wave_5"), SubResource("N_wave_6"), SubResource("N_wide_wave"), SubResource("N_reserve_1"), SubResource("N_reserve_2"), SubResource("N_reserve_3"), SubResource("N_reserve_4"), SubResource("N_reserve_5"), SubResource("N_reserve_6"), SubResource("N_mana_well"), SubResource("N_lore_1"), SubResource("N_lore_2"), SubResource("N_lore_3"), SubResource("N_lore_4"), SubResource("N_lore_5"), SubResource("N_lore_6"), SubResource("N_arcane_lore"), SubResource("N_strike_1"), SubResource("N_strike_2"), SubResource("N_strike_3"), SubResource("N_strike_4"), SubResource("N_strike_5"), SubResource("N_strike_6"), SubResource("N_brute_force"), SubResource("N_flesh_1"), SubResource("N_flesh_2"), SubResource("N_flesh_3"), SubResource("N_flesh_4"), SubResource("N_flesh_5"), SubResource("N_flesh_6"), SubResource("N_sturdy_blood"), SubResource("N_plates_1"), SubResource("N_plates_2"), SubResource("N_plates_3"), SubResource("N_plates_4"), SubResource("N_plates_5"), SubResource("N_plates_6"), SubResource("N_iron_skin"), SubResource("N_arms_1"), SubResource("N_arms_2"), SubResource("N_arms_3"), SubResource("N_arms_4"), SubResource("N_arms_5"), SubResource("N_arms_6"), SubResource("N_weapon_master"), SubResource("N_regrowth_1"), SubResource("N_regrowth_2"), SubResource("N_regrowth_3"), SubResource("N_regrowth_4"), SubResource("N_regrowth_5"), SubResource("N_regrowth_6"), SubResource("N_regrowing_flesh"), SubResource("N_wound_1"), SubResource("N_wound_2"), SubResource("N_wound_3"), SubResource("N_wound_4"), SubResource("N_wound_5"), SubResource("N_wound_6"), SubResource("N_open_wound"), SubResource("N_volley_1"), SubResource("N_volley_2"), SubResource("N_volley_3"), SubResource("N_precise_shot"), SubResource("N_volley_4"), SubResource("N_volley_5"), SubResource("N_volley_shot"), SubResource("N_eye_1"), SubResource("N_eye_2"), SubResource("N_eye_3"), SubResource("N_eye_4"), SubResource("N_eye_5"), SubResource("N_eye_6"), SubResource("N_lynx_eye"), SubResource("N_breath_1"), SubResource("N_breath_2"), SubResource("N_breath_3"), SubResource("N_breath_4"), SubResource("N_breath_5"), SubResource("N_breath_6"), SubResource("N_reflexes"), SubResource("N_run_1"), SubResource("N_run_2"), SubResource("N_run_3"), SubResource("N_run_4"), SubResource("N_run_5"), SubResource("N_run_6"), SubResource("N_swiftness"), SubResource("N_frost_1"), SubResource("N_frost_2"), SubResource("N_frost_3"), SubResource("N_frost_4"), SubResource("N_frost_5"), SubResource("N_frost_6"), SubResource("N_frostbite"), SubResource("N_far_int"), SubResource("N_far_dex"), SubResource("N_far_str"), SubResource("N_far_int_dex_1"), SubResource("N_far_int_dex_2"), SubResource("N_far_int_dex_3"), SubResource("N_far_int_dex_4"), SubResource("N_far_int_dex_5"), SubResource("N_far_int_dex_6"), SubResource("N_far_int_dex_7"), SubResource("N_far_int_dex_8"), SubResource("N_far_int_dex_9"), SubResource("N_far_int_dex_10"), SubResource("N_far_dex_str_1"), SubResource("N_far_dex_str_2"), SubResource("N_far_dex_str_3"), SubResource("N_far_dex_str_4"), SubResource("N_far_dex_str_5"), SubResource("N_far_dex_str_6"), SubResource("N_far_dex_str_7"), SubResource("N_far_dex_str_8"), SubResource("N_far_dex_str_9"), SubResource("N_far_dex_str_10"), SubResource("N_far_str_int_1"), SubResource("N_far_str_int_2"), SubResource("N_far_str_int_3"), SubResource("N_far_str_int_4"), SubResource("N_far_str_int_5"), SubResource("N_far_str_int_6"), SubResource("N_far_str_int_7"), SubResource("N_far_str_int_8"), SubResource("N_far_str_int_9"), SubResource("N_far_str_int_10"), SubResource("N_int_bridge"), SubResource("N_dex_bridge"), SubResource("N_str_bridge"), SubResource("N_rod_1"), SubResource("N_rod_2"), SubResource("N_rod_3"), SubResource("N_rod_4"), SubResource("N_rod_5"), SubResource("N_rod_6"), SubResource("N_lightning_rod"), SubResource("N_arc_1"), SubResource("N_arc_2"), SubResource("N_arc_3"), SubResource("N_arcing_current"), SubResource("N_arc_4"), SubResource("N_arc_5"), SubResource("N_spell_focus"), SubResource("N_blight_1"), SubResource("N_blight_2"), SubResource("N_blight_3"), SubResource("N_blight_4"), SubResource("N_blight_5"), SubResource("N_blight_6"), SubResource("N_withering"), SubResource("N_hunt_1"), SubResource("N_hunt_2"), SubResource("N_hunt_3"), SubResource("N_hunt_4"), SubResource("N_hunt_5"), SubResource("N_hunt_6"), SubResource("N_deadly_rhythm"), SubResource("N_rime_1"), SubResource("N_rime_2"), SubResource("N_rime_3"), SubResource("N_rime_4"), SubResource("N_rime_5"), SubResource("N_rime_6"), SubResource("N_frost_tips"), SubResource("N_guard_1"), SubResource("N_guard_2"), SubResource("N_guard_3"), SubResource("N_guard_4"), SubResource("N_guard_5"), SubResource("N_guard_6"), SubResource("N_supple_guard"), SubResource("N_whirl_1"), SubResource("N_whirl_2"), SubResource("N_whirl_3"), SubResource("N_whirl_4"), SubResource("N_whirl_5"), SubResource("N_whirl_6"), SubResource("N_whirling_blades"), SubResource("N_sanctity_1"), SubResource("N_sanctity_2"), SubResource("N_sanctity_3"), SubResource("N_sanctity_4"), SubResource("N_sanctity_5"), SubResource("N_sanctity_6"), SubResource("N_hallowed_soul"), SubResource("N_spellblade_1"), SubResource("N_spellblade_2"), SubResource("N_spellblade_3"), SubResource("N_burning_edge"), SubResource("N_spellblade_4"), SubResource("N_spellblade_5"), SubResource("N_blessed_edge"), SubResource("N_crush_1"), SubResource("N_crush_2"), SubResource("N_crush_3"), SubResource("N_crush_4"), SubResource("N_crush_5"), SubResource("N_crush_6"), SubResource("N_crusher"), SubResource("N_sweep_1"), SubResource("N_sweep_2"), SubResource("N_sweep_3"), SubResource("N_sweep_4"), SubResource("N_sweep_5"), SubResource("N_windmill"), SubResource("N_reach_1"), SubResource("N_reach_2"), SubResource("N_reach_3"), SubResource("N_high_guard"), SubResource("N_gore_1"), SubResource("N_gore_2"), SubResource("N_gore_3"), SubResource("N_gore_4"), SubResource("N_gore_5"), SubResource("N_gore_6"), SubResource("N_bloodletting"), SubResource("N_blast_1"), SubResource("N_blast_2"), SubResource("N_blast_3"), SubResource("N_blast_4"), SubResource("N_blast_5"), SubResource("N_blast_6"), SubResource("N_detonation"), SubResource("N_breadth_1"), SubResource("N_breadth_2"), SubResource("N_breadth_3"), SubResource("N_breadth_4"), SubResource("N_breadth_5"), SubResource("N_breadth_6"), SubResource("N_wide_blast"), SubResource("N_hold_1"), SubResource("N_hold_2"), SubResource("N_hold_3"), SubResource("N_hold_4"), SubResource("N_hold_5"), SubResource("N_lasting_hold"), SubResource("N_pyre_1"), SubResource("N_pyre_2"), SubResource("N_pyre_3"), SubResource("N_pyre_4"), SubResource("N_pyre_5"), SubResource("N_burning_cloud"), SubResource("N_gale_1"), SubResource("N_gale_2"), SubResource("N_gale_3"), SubResource("N_gale_4"), SubResource("N_gale_5"), SubResource("N_spread_storm"), SubResource("N_ember_1"), SubResource("N_ember_2"), SubResource("N_ember_3"), SubResource("N_live_coals"), SubResource("N_shock_1"), SubResource("N_shock_2"), SubResource("N_shock_3"), SubResource("N_shockwave"), SubResource("N_mastery_1"), SubResource("N_mastery_2"), SubResource("N_mastery_3"), SubResource("N_field_master"), SubResource("N_kill_1"), SubResource("N_kill_2"), SubResource("N_kill_3"), SubResource("N_kill_4"), SubResource("N_kill_5"), SubResource("N_kill_6"), SubResource("N_assassination"), SubResource("N_falcon_1"), SubResource("N_falcon_2"), SubResource("N_falcon_3"), SubResource("N_falcon_4"), SubResource("N_falcon_5"), SubResource("N_falcon_6"), SubResource("N_falcon_flight"), SubResource("N_flee_1"), SubResource("N_flee_2"), SubResource("N_flee_3"), SubResource("N_flee_4"), SubResource("N_flee_5"), SubResource("N_light_foot"), SubResource("N_spear_1"), SubResource("N_spear_2"), SubResource("N_spear_3"), SubResource("N_spearhead"), SubResource("N_hand_1"), SubResource("N_hand_2"), SubResource("N_hand_3"), SubResource("N_deft_hand"), SubResource("N_vigor_1"), SubResource("N_vigor_2"), SubResource("N_vigor_3"), SubResource("N_vigor_4"), SubResource("N_vigor_5"), SubResource("N_vigor_6"), SubResource("N_constitution"), SubResource("N_hide_1"), SubResource("N_hide_2"), SubResource("N_hide_3"), SubResource("N_hide_4"), SubResource("N_hide_5"), SubResource("N_tanned_skin"), SubResource("N_bark_1"), SubResource("N_bark_2"), SubResource("N_bark_3"), SubResource("N_bark_skin"), SubResource("N_heart_1"), SubResource("N_heart_2"), SubResource("N_heart_3"), SubResource("N_hardened_heart"), SubResource("N_deep_1"), SubResource("N_deep_2"), SubResource("N_deep_3"), SubResource("N_deep_4"), SubResource("N_deep_5"), SubResource("N_deep_6"), SubResource("N_deep_thoughts"), SubResource("N_spring_1"), SubResource("N_spring_2"), SubResource("N_spring_3"), SubResource("N_deep_spring"), SubResource("N_word_1"), SubResource("N_word_2"), SubResource("N_word_3"), SubResource("N_quick_word"), SubResource("N_coord_1"), SubResource("N_coord_2"), SubResource("N_coord_3"), SubResource("N_coord_4"), SubResource("N_coord_5"), SubResource("N_coord_6"), SubResource("N_coordination")])

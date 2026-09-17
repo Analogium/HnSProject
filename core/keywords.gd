@@ -6,19 +6,27 @@ class_name Keywords
 ## `ItemBase.tags`, qui disent ce qu'un objet **est**. Une feuille.
 
 const PROJECTILE := "projectile"
+## Ce qui frappe une surface plutôt qu'une cible : nuage, aura, serpent. Une forme,
+## jamais une nature — un éclair peut être de zone.
+const AREA := "area"
 const LIGHTNING := "lightning"
 const FIRE := "fire"
 const SPELL := "spell"
 const ATTACK := "attack"
+## Une attaque qui ne lance rien. Sous `ATTACK` dans l'ordre de lecture : tout ce qui
+## est mêlée est aussi attaque, l'inverse est faux.
+const MELEE := "melee"
 
 ## Identifiant et libellé, dans l'ordre de lecture. **Identifiants définitifs**
 ## (invariant 1).
 const LABELS := {
 	PROJECTILE: "Projectile",
+	AREA: "Zone",
 	LIGHTNING: "Foudre",
 	FIRE: "Feu",
 	SPELL: "Sort",
 	ATTACK: "Attaque",
+	MELEE: "Mêlée",
 }
 
 

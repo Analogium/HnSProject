@@ -395,6 +395,114 @@ msgstr "Frostbite"
 msgid "Œil du chasseur"
 msgstr "Hunter's Eye"
 
+msgid "Paratonnerre"
+msgstr "Lightning Rod"
+
+msgid "Courant en arc"
+msgstr "Arcing Current"
+
+msgid "Focalisation"
+msgstr "Focus"
+
+msgid "Flétrissure"
+msgstr "Withering"
+
+msgid "Rythme mortel"
+msgstr "Deadly Rhythm"
+
+msgid "Pointes de givre"
+msgstr "Frost Tips"
+
+msgid "Garde souple"
+msgstr "Supple Guard"
+
+msgid "Lames tournoyantes"
+msgstr "Whirling Blades"
+
+msgid "Âme consacrée"
+msgstr "Hallowed Soul"
+
+msgid "Tranchant ardent"
+msgstr "Burning Edge"
+
+msgid "Tranchant béni"
+msgstr "Blessed Edge"
+
+msgid "Ouvre-chair"
+msgstr "Flesh Render"
+
+msgid "Éclatement"
+msgstr "Detonation"
+
+msgid "Broyeur"
+msgstr "Crusher"
+
+msgid "Moulinet"
+msgstr "Windmill"
+
+msgid "Grande garde"
+msgstr "High Guard"
+
+msgid "Souffle élargi"
+msgstr "Wide Blast"
+
+msgid "Emprise durable"
+msgstr "Lasting Hold"
+
+msgid "Nuée ardente"
+msgstr "Burning Cloud"
+
+msgid "Orage étendu"
+msgstr "Spread Storm"
+
+msgid "Braise"
+msgstr "Live Coals"
+
+msgid "Onde de choc"
+msgstr "Shockwave"
+
+msgid "Maître des zones"
+msgstr "Field Master"
+
+msgid "Assassinat"
+msgstr "Assassination"
+
+msgid "Vol du faucon"
+msgstr "Falcon Flight"
+
+msgid "Pied léger"
+msgstr "Light Foot"
+
+msgid "Fer de lance"
+msgstr "Spearhead"
+
+msgid "Main leste"
+msgstr "Deft Hand"
+
+msgid "Constitution"
+msgstr "Constitution"
+
+msgid "Peau tannée"
+msgstr "Tanned Skin"
+
+msgid "Écorce"
+msgstr "Bark Skin"
+
+msgid "Cœur endurci"
+msgstr "Hardened Heart"
+
+msgid "Pensées profondes"
+msgstr "Deep Thoughts"
+
+msgid "Source profonde"
+msgstr "Deep Spring"
+
+msgid "Verbe rapide"
+msgstr "Quick Word"
+
+msgid "Coordination"
+msgstr "Coordination"
+
 # ---------------------------------------------------------------------------
 # Affixes d'élite
 # ---------------------------------------------------------------------------
@@ -457,6 +565,12 @@ msgstr "holy damage"
 # ---------------------------------------------------------------------------
 # Mots-clés de compétence
 # ---------------------------------------------------------------------------
+
+msgid "Zone"
+msgstr "Area"
+
+msgid "Mêlée"
+msgstr "Melee"
 
 msgid "Projectile"
 msgstr "Projectile"

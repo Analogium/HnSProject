@@ -13,8 +13,10 @@ const TITLE_SIZE := 9
 ## Pixels par case de la grille de l'arbre au cran normal.
 const UNIT := 10.0
 ## Les crans de la molette, qui multiplient `UNIT` et les rayons. Au cran large tout
-## l'arbre tient, sans icônes : réduites, elles tourneraient au gris.
-const ZOOMS: Array[float] = [0.5, 1.0, 1.5]
+## l'arbre tient, sans icônes : réduites, elles tourneraient au gris. Le troisième
+## anneau du jalon 19 porte l'arbre à 91 cases de haut, soit 319 px au cran large
+## contre 360 de cadre : 0,5 n'en montrait plus que les deux tiers.
+const ZOOMS: Array[float] = [0.35, 1.0, 1.5]
 const DEFAULT_ZOOM := 1
 ## De quoi loger l'icône de 9 pixels de `PassiveIcon`.
 const SMALL_RADIUS := 6.0

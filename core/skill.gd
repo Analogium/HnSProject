@@ -24,8 +24,9 @@ enum Shape { ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT }
 
 @export var shape: Shape = Shape.ARC
 
-## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà
-## (aujourd'hui rien) : le redéclarer ferait deux vérités.
+## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà : le
+## redéclarer ferait deux vérités. Aujourd'hui le seul `melee` du coup d'arme, dont
+## la forme `ARC` est celle que prend toute compétence qui n'en choisit pas.
 @export var declared_keywords: PackedStringArray = PackedStringArray()
 
 ## Une nature absente ne donne aucun mot-clé : l'afficher enverrait chercher un
@@ -41,6 +42,12 @@ const KEYWORD_OF_NATURE := {
 const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
 	Shape.BALL: Keywords.PROJECTILE,
+	Shape.STRIKE: Keywords.MELEE,
+	Shape.CROSS: Keywords.MELEE,
+	Shape.ORBIT: Keywords.MELEE,
+	Shape.CLOUD: Keywords.AREA,
+	Shape.AURA: Keywords.AREA,
+	Shape.SNAKE: Keywords.AREA,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables

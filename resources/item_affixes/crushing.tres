@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_crush"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_crush"]
+
+[sub_resource type="Resource" id="Resource_crushing_t1"]
+script = ExtResource("2_crush")
+required_level = 52
+min_value = 32.0
+max_value = 40.0
+
+[sub_resource type="Resource" id="Resource_crushing_t2"]
+script = ExtResource("2_crush")
+required_level = 34
+min_value = 24.0
+max_value = 31.0
+
+[sub_resource type="Resource" id="Resource_crushing_t3"]
+script = ExtResource("2_crush")
+required_level = 19
+min_value = 16.0
+max_value = 23.0
+
+[sub_resource type="Resource" id="Resource_crushing_t4"]
+script = ExtResource("2_crush")
+required_level = 6
+min_value = 10.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_crushing_t5"]
+script = ExtResource("2_crush")
+min_value = 6.0
+max_value = 9.0
+
+[resource]
+script = ExtResource("1_crush")
+id = "crushing"
+tags = PackedStringArray("melee", "gloves")
+excludes = PackedStringArray()
+stat = "damage"
+scope = "melee"
+percent = true
+tiers = Array[ExtResource("2_crush")]([SubResource("Resource_crushing_t1"), SubResource("Resource_crushing_t2"), SubResource("Resource_crushing_t3"), SubResource("Resource_crushing_t4"), SubResource("Resource_crushing_t5")])
+weight = 3
