@@ -849,6 +849,9 @@ msgstr "Lv. %d"
 msgid "{courant} exp / {total} exp"
 msgstr "{courant} xp / {total} xp"
 
+msgid "niveau maximal"
+msgstr "max level"
+
 msgid "SAC  {occupees} / {total} cases"
 msgstr "BAG  {occupees} / {total} cells"
 

@@ -52,7 +52,7 @@ func _header(l: PackedStringArray) -> void:
 	l.append("Ce que chaque profil type rencontre, zone par zone. Les profils sont reconstruits")
 	l.append("par les règles du jeu à chaque lancement (`BenchProfiles`), et le calcul passe par")
 	l.append("les vraies fonctions (`BenchCalculation`). Le banc montre les écarts ; les réglages")
-	l.append("restent une décision — voir `hack-n-slash-jalon-13.md`.")
+	l.append("restent une décision — voir `JALONS/hack-n-slash-jalon-13.md`.")
 	l.append("")
 	l.append("| verdict | coups pour tuer un grunt | survie au contact |")
 	l.append("|---|---|---|")
@@ -81,6 +81,9 @@ func _header(l: PackedStringArray) -> void:
 		BenchCalculation.GRUNTS_IN_CONTACT, BenchCalculation.CASTERS_IN_CONTACT
 	])
 	l.append("  résistances et esquive, régénération déduite. ∞ : la régénération suffit.")
+	l.append("")
+	l.append("Un profil équipé est tiré %d fois : coups et survie sont les médianes, chacune" % BenchCalculation.ITEM_DRAWS)
+	l.append("sur son axe ; le détail est celui du tirage médian en coups.")
 	l.append("")
 
 
@@ -116,7 +119,7 @@ func _grid(l: PackedStringArray, calculation: BenchCalculation, build: BenchProf
 	for profile in BenchProfiles.Profile.values():
 		var line := "| %s |" % BenchProfiles.PROFILE_NAMES[profile]
 		for zone in BenchProfiles.ZONES:
-			var m := calculation.measure(BenchProfiles.character(build, profile, zone), zone)
+			var m := calculation.measure_profile(build, profile, zone, zone)
 			line += " %s |" % _cell(m)
 			detail.append(_detail(BenchProfiles.PROFILE_NAMES[profile], m))
 		l.append(line)

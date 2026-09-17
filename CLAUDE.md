@@ -122,7 +122,9 @@ tests/run.sh balance    # les couloirs, hors de la suite par défaut
 ```
 
 Un couloir d'équilibrage qui casse ne se corrige pas en changeant son chiffre :
-voir `hack-n-slash-jalon-13.md`, §4.
+voir `JALONS/hack-n-slash-jalon-13.md`, §4. **L'équilibrage se fait en dernier** (même
+document, §7) : `tests/run.sh balance` est un relevé de l'instant T, ses échecs
+ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 
 ## Skills du dépôt
 

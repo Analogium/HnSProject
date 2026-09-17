@@ -69,7 +69,7 @@ max_top = 6.0
 [resource]
 script = ExtResource("1_froiatt")
 id = "cold_to_attacks"
-tags = PackedStringArray("melee")
+tags = PackedStringArray("melee", "jewellery")
 excludes = PackedStringArray()
 stat = "damage_cold"
 scope = "attack"

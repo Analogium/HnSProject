@@ -1,7 +1,7 @@
 # Architecture
 
 Ce document dit **où vit chaque règle** et **ce qu'on ne peut pas casser**. Les
-`hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
+`JALONS/hack-n-slash-jalon-*.md` disent ce qu'il fallait construire et pourquoi,
 dans l'ordre où ça a été décidé ; celui-ci décrit l'état actuel, sans
 chronologie.
 
@@ -90,7 +90,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | En quelle langue s'écrit un texte ? | `Texts.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.language` choisit |
 | Jusqu'où descend une fenêtre flottante ? | `Hud.gauges_top()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus |
 | Ce que rapporte un ennemi ? | `Enemy.experience_of()`, dérivé de ses PV donc du niveau de sa zone — **sans borne haute** |
-| Quel niveau a un personnage qui arrive dans une zone ? | `BenchProfiles.expected_level()` : chaque zone d'avant vidée une fois, avec la population moyenne de l'`EnemySpawner`. Une mesure du banc, pas une règle du jeu |
+| Quel niveau a un personnage qui arrive dans une zone ? | `BenchProfiles.expected_level()` : chaque zone d'avant vidée une fois, avec la population moyenne de l'`EnemySpawner`, borné par `Player.MAX_LEVEL`. Une mesure du banc, pas une règle du jeu ; une case équipée y lit la médiane de `BenchCalculation.ITEM_DRAWS` tirages (`measure_profile()`) |
 | À quel point un personnage type s'en sort-il ? | `BenchCalculation.measure()`, sur un vrai `Player` : `Player.resolve()` pour ce qui part, `Hurtbox.mitigate_part()` pour ce qui arrive. Les couloirs sont ses constantes, gardés par `tests/run.sh balance` ; le rapport, `tools/balance.sh` → [EQUILIBRAGE.md](EQUILIBRAGE.md) |
 | Quand l'expérience fond-elle ? | `Enemy.experience_factor()` : sur une zone laissée **derrière** soi, jamais sur une zone trop haute |
 | Par où passe un ennemi ? | `FlowField`, à défaut la ligne droite |
@@ -131,6 +131,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | D'où viennent les talents d'un lancer ? | `Player.talents_of()`, qui passe par le livre du râtelier qui enseigne la compétence. Ils entrent dans `Skill.resolve()` **sans être filtrés** : un nœud ne vise que sa propre compétence, et c'est tout ce qui le distingue d'un modificateur d'objet |
 | D'où viennent les attributs placés ? | De l'**arbre de passifs** seulement, avec les objets et les passifs de manuel : plus aucun point d'attribut. `PassiveTree.mods()` des nœuds pris (`Player.passives`), versé par `Player.recompute_stats()` dans **la même liste** que les objets — attributs avant la dérivation, mots-clés dans `skill_mods` |
 | Combien de points d'arbre ? | `PassiveTree.points_gained()` : niveau − 1, **déduit**, jamais retenu ; les restants, `remaining_points()` |
+| Quel niveau maximal pour un personnage ? | `Player.MAX_LEVEL` (100) : au plafond, `xp_to_next` vaut zéro et l'expérience ne s'accumule plus. Les zones, elles, montent jusqu'à `Game.MAX_LEVEL` (120) |
 | Peut-on prendre un nœud de l'arbre, le reprendre ? | `PassiveTree.can_take()` — un point restant, voisin d'un nœud pris ou du départ — et `can_release()` — **tous les autres nœuds pris restent reliés au départ** sans lui, par `connected()`. Gratuit. Le panneau (P) n'en vérifie aucune ; `Player.take_passive()` / `release_passive()` sont les seuls chemins |
 | Quelle forme a l'arbre de passifs ? | `resources/passive_tree.tres`, 180 nœuds (jalon 17). Un **squelette** : trois axes depuis le départ — intelligence en haut, dextérité en bas à droite, force en bas à gauche —, une clé de voûte au bout de chacun, et deux anneaux qui les croisent (`inner_*`, `outer_*`). Un nœud de squelette ne porte **que** des attributs : +10 sur un axe, +5/+5 sur un anneau. Les **clusters** sont des culs-de-sac branchés sur une seule jonction, faits de petits nœuds et de leurs notables. Une **forme** du graphe, jamais un champ de `PassiveNode` |
 | Le zoom du panneau de l'arbre ? | `PassiveTreePanel.ZOOMS`, trois crans à la molette, qui multiplient `UNIT` dans `screen_position()` et les rayons dans `_radius()` — donc la tolérance de `node_at()`. `zoom_by()` garde le centre du cadre. Pas d'icône au cran large ; retour au cran normal à l'ouverture |

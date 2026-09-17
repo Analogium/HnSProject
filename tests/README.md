@@ -10,7 +10,7 @@ tests/run.sh balance  # les couloirs du banc, hors de la suite par défaut
 
 `balance/` n'est pas dans `all` : ses couloirs cassent quand un réglage
 d'équilibrage les franchit, et un réglage en cours ne doit pas bloquer une livraison
-sans rapport. Voir `hack-n-slash-jalon-13.md`, §4.
+sans rapport. Voir `JALONS/hack-n-slash-jalon-13.md`, §4.
 
 L'écart entre les deux colonnes est la recopie du projet et son import, payés
 quelle que soit la suite. C'est pourquoi l'onglet GUT de l'éditeur reste le bon

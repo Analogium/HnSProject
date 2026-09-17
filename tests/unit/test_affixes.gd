@@ -799,6 +799,19 @@ func test_each_nature_adds_to_attacks_and_spells() -> void:
 			])
 
 
+## Hors de l'arme, qui fait l'archétype, une base qui porte des dégâts ajoutés aux
+## sorts les porte aussi aux attaques, et l'inverse : un bijou ne choisit pas de camp.
+func test_added_damage_fits_the_same_bases_for_attacks_and_spells() -> void:
+	for nature in DamageType.Kind.values():
+		var tags := {}
+		for a in ItemAffixPool.ALL:
+			if a.stat == SkillStats.added_stat(nature) and a.scope in [Keywords.ATTACK, Keywords.SPELL]:
+				var shared := Array(a.tags).filter(func(t): return t not in ["melee", "caster"])
+				shared.sort()
+				tags[a.scope] = shared
+		assert_eq(tags.get(Keywords.ATTACK), tags.get(Keywords.SPELL), DamageType.NAMES[nature])
+
+
 ## Une fourchette ne sort jamais à l'envers : sa borne haute commence au-dessus de
 ## sa basse, et elle croît avec les paliers comme la basse.
 func test_each_range_is_monotonic_and_the_right_way_round() -> void:

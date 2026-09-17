@@ -148,7 +148,8 @@ func _draw() -> void:
 	# la fiche ne couvrent.
 	_text(
 		Vector2(roundf(MARGIN), roundf(size.y - BOTTOM - HEIGHT - 3.0)),
-		Texts.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed}),
+		Texts.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed})
+			if _xp_needed > 0 else Texts.t("niveau maximal"),
 		HORIZONTAL_ALIGNMENT_CENTER, roundi(w), LABEL_COLOR
 	)
 

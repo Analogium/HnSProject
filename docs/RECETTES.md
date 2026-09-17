@@ -90,9 +90,9 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
 
 3. **`core/item_affix_pool.gd`** — ajouter le `preload` dans `ALL`.
 
-4. **La forge de réglage tient 24 affixes par base** (`ForgeGallery.sheet_height()`) :
-   les bijoux et les grimoires y sont déjà. Un affixe de plus pour eux demande
-   d'abord de paginer la fiche de la forge.
+4. **La forge de réglage pagine sa liste par 24** (`ForgeGallery.LIST_ROWS`) ;
+   les bijoux en sont à 30. Seul le tableau des paliers peut encore déborder
+   (`test_the_item_sheet_fits_its_height`).
 
 5. **Une chance critique** : plate, l'affixe ne va **que sur les armes**, où elle monte
    la base (locale) ; partout ailleurs, `percent = true`.
@@ -179,8 +179,10 @@ dépendance : des tables alignées sur un seul enum.
 3. **`core/stat_mod.gd`** — `LABELS` et `PERCENT_POINTS`.
 4. **`ui/stats_panel.gd`** — dans le groupe `RÉSISTANCES`.
 5. **Un affixe** qui la donne, avec `excludes = ["weapon"]` comme ses sœurs.
-6. **Deux affixes de dégâts ajoutés**, `<id>_aux_attaques` et `<id>_aux_sorts` :
-   copier ceux d'une nature voisine, échelle comprise. Une nature est une nature
+6. **Deux affixes de dégâts ajoutés**, `<id>_to_attacks` et `<id>_to_spells` :
+   copier ceux d'une nature voisine, échelle comprise. Hors de l'étiquette d'archétype
+   (`melee` / `caster`), les deux vont sur les mêmes bases —
+   `test_added_damage_fits_the_same_bases_for_attacks_and_spells`. Une nature est une nature
    comme les autres, même si aucune compétence n'en est encore.
 7. **Son état**, voir « Ajouter un état » : une nature en pose exactement un.
 

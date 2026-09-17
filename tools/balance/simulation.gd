@@ -2,7 +2,7 @@ class_name BenchSimulation
 
 ## Un robot dans une vraie zone, à graine fixe : il marche vers l'ennemi le plus proche
 ## et lance toute sa barre dès que `Player.cast_slot()` l'accepte. Un joueur médiocre, et
-## c'est voulu : la mesure donne un plancher (hack-n-slash-jalon-13.md, §3).
+## c'est voulu : la mesure donne un plancher (JALONS/hack-n-slash-jalon-13.md, §3).
 
 const ZONE := preload("res://world/zone.tscn")
 const SEED := 4242

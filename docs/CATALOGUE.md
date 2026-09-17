@@ -346,7 +346,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `bewitched` | dégâts (Sort) (%) | caster | — | 8 | 6 | 5 / 44 |
 | `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 44 |
 | `butchering` | dégâts contre les saignants (Attaque) (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 44 |
 | `cuirassed` | armure | armour | — | 9 | 9 | 19 / 44 |
@@ -355,25 +355,25 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 44 |
 | `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 44 |
 | `fire_skill_levels` | niveaux de compétence (Feu) | caster | — | 1 | 2 | 5 / 44 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 44 |
 | `forked` | nombre de projectiles (Projectile) | caster | — | 3 | 2 | 5 / 44 |
 | `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 44 |
 | `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 44 |
 | `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 44 |
 | `lightning_skill_levels` | niveaux de compétence (Foudre) | caster | — | 1 | 2 | 5 / 44 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 44 |
 | `muscular` | force | *partout* | — | 8 | 6 | 41 / 44 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 44 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee | — | 2 | 8 | 8 / 44 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
 | `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
 | `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 44 |
 | `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 44 |

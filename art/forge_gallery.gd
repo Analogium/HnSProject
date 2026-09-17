@@ -46,10 +46,11 @@ const ITEM_SCALE := 2
 ## d'œil sur dix-sept lignes, « combien donne celui-là et quand » demande un
 ## tableau. Mélangés dans un seul damier, ils étaient illisibles.
 const SHEET_TOP := 68.0
-## Dix et non onze : les bijoux acceptent vingt-trois affixes depuis les dégâts
-## ajoutés par nature, et la liste doit tenir au-dessus de l'aide. Le test de
-## hauteur dira quand le prochain affixe la fera déborder.
+## Dix et non onze : la liste doit tenir au-dessus de l'aide.
 const SHEET_LINE := 10.0
+## Au-delà, la liste se pagine : les bijoux acceptent trente affixes, et vingt-quatre
+## lignes remplissent exactement la hauteur au-dessus de l'aide.
+const LIST_ROWS := 24
 const SHEET_SIZE := 8
 const SHEET_TITLE_SIZE := 9
 
@@ -162,7 +163,7 @@ func _affix_at(point: Vector2) -> int:
 	if _detail < 0:
 		return -1
 	var affixes := affixes_of(ItemCatalog.ALL[_detail])
-	for rank in affixes.size():
+	for rank in _visible_ranks(affixes.size()):
 		if _rank_rect(rank).has_point(point):
 			return rank
 	return -1
@@ -388,12 +389,14 @@ func _build_detail() -> void:
 ## **tout ce qu'il peut donner sur cette base**. C'est la ligne qui permet de
 ## comparer deux affixes sans ouvrir chacun.
 func _build_list(base: ItemBase, affixes: Array) -> void:
-	_label(
-		"AFFIXES POSSIBLES  (%d)" % affixes.size(),
-		Vector2(LIST_X, SHEET_TOP), SHEET_MUTED, SHEET_SIZE
-	)
+	var title := "AFFIXES POSSIBLES  (%d)" % affixes.size()
+	if affixes.size() > LIST_ROWS:
+		title += "   page %d/%d" % [
+			_affix_detail / LIST_ROWS + 1, ceili(affixes.size() / float(LIST_ROWS))
+		]
+	_label(title, Vector2(LIST_X, SHEET_TOP), SHEET_MUTED, SHEET_SIZE)
 
-	for rank in affixes.size():
+	for rank in _visible_ranks(affixes.size()):
 		var affix: ItemAffix = affixes[rank]
 		var r := _rank_rect(rank)
 
@@ -569,18 +572,25 @@ static func _window_text(base: ItemBase) -> String:
 ## Le rectangle d'une ligne de la liste, et **le seul endroit qui le sait** : le
 ## fond de la ligne choisie, son texte et le clic le visent tous les trois.
 func _rank_rect(rank: int) -> Rect2:
+	var row := rank % LIST_ROWS
 	return Rect2(
-		Vector2(LIST_X, SHEET_TOP + SHEET_LINE + 4.0 + float(rank) * SHEET_LINE),
+		Vector2(LIST_X, SHEET_TOP + SHEET_LINE + 4.0 + float(row) * SHEET_LINE),
 		Vector2(LIST_W, SHEET_LINE)
 	)
 
 
+## La page de la liste qui contient l'affixe choisi : HAUT/BAS la tournent.
+func _visible_ranks(count: int) -> Array:
+	var first := _affix_detail - _affix_detail % LIST_ROWS
+	return range(first, mini(first + LIST_ROWS, count))
+
+
 ## La hauteur qu'occupe le plus haut des deux volets. C'est elle que le test
-## compare au haut de l'aide : la liste grandit avec chaque affixe ajouté au
-## projet, et rien d'autre ne dirait qu'elle a fini par déborder.
+## compare au haut de l'aide : la liste est bornée par `LIST_ROWS`, mais le tableau
+## grandit avec les paliers, et rien d'autre ne dirait qu'il a fini par déborder.
 static func sheet_height(base: ItemBase) -> float:
 	var affixes := affixes_of(base)
-	var list := SHEET_TOP + SHEET_LINE + 4.0 + float(affixes.size()) * SHEET_LINE
+	var list := SHEET_TOP + SHEET_LINE + 4.0 + float(mini(affixes.size(), LIST_ROWS)) * SHEET_LINE
 	var table := SHEET_TOP
 	for affix in affixes:
 		table = maxf(

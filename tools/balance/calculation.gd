@@ -2,7 +2,7 @@ class_name BenchCalculation
 
 ## La mesure sans simulation : un vrai `Player` chargé du profil, ce qu'il lance par
 ## `Player.resolve()`, ce qu'il subit et ce qu'il inflige par une vraie `Hurtbox`.
-## Rien n'y recopie une formule du jeu (hack-n-slash-jalon-13.md, §5).
+## Rien n'y recopie une formule du jeu (JALONS/hack-n-slash-jalon-13.md, §5).
 
 enum Verdict { TRIVIAL, COMFORTABLE, TIGHT, WALL }
 const VERDICT_NAMES := ["trivial", "comfortable", "tight", "wall"]
@@ -14,6 +14,10 @@ const HITS_COMFORTABLE := 3.0
 const HITS_TIGHT := 8.0
 const SURVIVAL_COMFORTABLE := 10.0
 const SURVIVAL_TIGHT := 4.0
+
+## Un seul tirage d'objets divisait la survie par deux d'un réglage à l'autre
+## (jalon 13, limites) : la case lit la médiane de plusieurs.
+const ITEM_DRAWS := 9
 
 const GRUNTS_IN_CONTACT := 3
 const CASTERS_IN_CONTACT := 1
@@ -61,6 +65,24 @@ func _init(player: Player) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE and is_instance_valid(_target):
 		_target.free()
+
+
+## Coups et survie médians, chacun sur son axe ; le reste vient du tirage médian en coups.
+## Un profil sans objet n'a qu'un tirage.
+func measure_profile(
+	build: BenchProfiles.Build, profile: BenchProfiles.Profile, built_for: int, played: int
+) -> Measurement:
+	var draws := ITEM_DRAWS if BenchProfiles.item_level_for(profile, built_for) > 0 else 1
+	var all: Array[Measurement] = []
+	for draw in draws:
+		all.append(measure(BenchProfiles.character(build, profile, built_for, draw), played))
+	var survivals := all.map(func(m: Measurement) -> float: return m.survival)
+	survivals.sort()
+	all.sort_custom(func(a: Measurement, b: Measurement) -> bool: return a.grunt_hits < b.grunt_hits)
+	var m := all[draws / 2]
+	m.survival = survivals[draws / 2]
+	m.verdict = verdict(m.grunt_hits, m.survival)
+	return m
 
 
 func measure(character: Character, zone: int) -> Measurement:

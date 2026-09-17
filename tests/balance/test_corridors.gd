@@ -2,7 +2,8 @@ extends GutTest
 
 ## Les couloirs du jalon 13 (§4), sur la mesure du calcul. **Ils ne se corrigent pas en
 ## changeant leurs chiffres** : un couloir qui casse après un réglage est l'alerte que le
-## banc existe pour donner. Hors de la suite par défaut : `tests/run.sh equilibrage`.
+## banc existe pour donner. Hors de la suite par défaut : `tests/run.sh balance`, un relevé tant que l'équilibrage
+## n'est pas fait (jalon 13, §7).
 
 var _calculation: BenchCalculation
 
@@ -18,7 +19,7 @@ func after_each() -> void:
 
 
 func _measure(build: BenchProfiles.Build, profile: int, built_for: int, played: int) -> BenchCalculation.Measurement:
-	return _calculation.measure(BenchProfiles.character(build, profile, built_for), played)
+	return _calculation.measure_profile(build, profile, built_for, played)
 
 
 func _read(build: BenchProfiles.Build, profile: int, m: BenchCalculation.Measurement) -> String:

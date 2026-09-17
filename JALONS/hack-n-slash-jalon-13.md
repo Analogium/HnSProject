@@ -190,6 +190,18 @@ Chaque étape se livre seule et passe la suite.
 - **La simulation** joue chaque profil en zone 40 (le Débutant en zone 1), plus
   l'Équipé de la zone 40 joué en zones 20 et 60. Plafond : 180 s de jeu.
 
+### Décidé le 17 septembre 2026 : l'équilibrage se fait en dernier
+
+Le contenu passe d'abord ; l'équilibrage viendra à la fin, en réglant les
+multiplicateurs des ennemis et du joueur, quand l'arbre de passifs sera étoffé. D'ici
+là, **`tests/run.sh balance` est un relevé, pas une porte** : ses échecs disent ce que
+le jeu rend à l'instant T, et on ne les corrige pas au fil des jalons. Les couloirs et
+leurs chiffres restent ceux du §4 ; c'est contre eux que se fera le réglage final.
+
+État au moment de la décision, personnage plafonné au niveau 100 : 4 tests en échec
+sur 5 — le mur des zones 90 et 120 pour tous les profils, la survie du Sort nu partout,
+et le Débutant tendu en zone 1 (4,7 s).
+
 ## 8. Ce qui a été fait, et comment
 
 - **`LootTable.roll()` n'est pas appelé** : il tire sur `Game.rng` et décide d'abord
@@ -261,7 +273,9 @@ dans le total.
 
 - **Un tirage par emplacement fait du bruit.** En zone 40, le Sur-équipé du sort
   tue un grunt en 0,91 coup et l'Équipé en 0,46 : la chance d'un tirage pèse plus
-  que trente niveaux d'objet. Moyenner plusieurs graines par profil est le remède ;
-  à faire si un couloir se met à clignoter d'un réglage à l'autre.
+  que trente niveaux d'objet. **Fait le 17 septembre 2026** : le Sort équipé de la
+  zone 60 était passé en mur (survie 7,70 → 3,78 s) sur le seul rebattage des tirages
+  qu'avait causé un affixe ajouté aux bijoux. Une case équipée lit maintenant la médiane
+  de 9 tirages (`BenchCalculation.measure_profile()`), et la zone 60 redevient tendue.
 - **Aucun nœud de talent n'est investi** en dehors du dernier point de chaque
   build. Un joueur réel en place.

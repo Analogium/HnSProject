@@ -22,6 +22,8 @@ const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## progression à zéro.
 const XP_BASE := 40.0
 const XP_POWER := 1.5
+## Au plafond, l'expérience ne s'accumule plus : `xp_to_next` vaut zéro.
+const MAX_LEVEL := 100
 ## Soin partiel à la montée : complet, on chercherait à monter au milieu d'un paquet.
 const LEVEL_HEAL := 0.30
 
@@ -520,8 +522,8 @@ func load_character(character: Character) -> void:
 	if character == null:
 		return
 
-	level = maxi(character.level, 1)
-	xp = character.experience
+	level = clampi(character.level, 1, MAX_LEVEL)
+	xp = character.experience if level < MAX_LEVEL else 0
 	xp_to_next = _needed_for(level)
 	passives = character.passives.duplicate()
 
@@ -712,19 +714,21 @@ func _set_mana(value: float) -> void:
 
 
 func _needed_for(lvl: int) -> int:
-	return Progression.level_cost(lvl, XP_BASE, XP_POWER)
+	return 0 if lvl >= MAX_LEVEL else Progression.level_cost(lvl, XP_BASE, XP_POWER)
 
 
 ## Appelée par l'EnemyManager quand un ennemi meurt d'un vrai coup.
 func gain_xp(amount: int) -> void:
-	if is_dead or amount <= 0:
+	if is_dead or amount <= 0 or level >= MAX_LEVEL:
 		return
 	xp += amount
 	# Une boucle et non un test : un ennemi qui vaut beaucoup peut faire monter
 	# de deux niveaux d'un coup.
-	while xp >= xp_to_next:
+	while level < MAX_LEVEL and xp >= xp_to_next:
 		xp -= xp_to_next
 		_level_up()
+	if level >= MAX_LEVEL:
+		xp = 0
 	xp_changed.emit(xp, xp_to_next, level)
 
 

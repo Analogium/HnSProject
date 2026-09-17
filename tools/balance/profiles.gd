@@ -2,7 +2,7 @@ class_name BenchProfiles
 
 ## Les personnages types du banc d'équilibrage, **reconstruits par les règles du jeu** à
 ## chaque lancement : une sauvegarde écrite à la main garderait les objets du jour où
-## elle a été faite (hack-n-slash-jalon-13.md, §2).
+## elle a été faite (JALONS/hack-n-slash-jalon-13.md, §2).
 
 const ZONE := preload("res://world/zone.gd")
 
@@ -13,9 +13,6 @@ enum Profile { BEGINNER, BARE, UNDER_EQUIPPED, EQUIPPED, OVER_EQUIPPED }
 const PROFILE_NAMES := ["Débutant", "Nu", "Sous-équipé", "Équipé", "Sur-équipé"]
 ## Le niveau des objets portés, par rapport à la zone ; null : rien.
 const ITEM_GAP := [null, null, -20, 0, 30]
-
-## Le personnage n'a pas de niveau maximal ; `Progression` en demande un.
-const LEVEL_CAP := 1000
 
 ## Assez de tirages pour que la moyenne d'expérience d'une zone ne bouge plus au
 ## centième ; la graine fige le résultat d'un lancement à l'autre.
@@ -104,7 +101,8 @@ static func builds() -> Array[Build]:
 	] as Array[Build]
 
 
-static func character(build: Build, profile: Profile, zone: int) -> Character:
+## `draw` choisit le tirage d'objets ; le 0 garde la graine d'avant les tirages multiples.
+static func character(build: Build, profile: Profile, zone: int, draw := 0) -> Character:
 	var p := Character.create_new("%s %s %d" % [build.name, PROFILE_NAMES[profile], zone], 0)
 	var experience := 0
 	if profile != Profile.BEGINNER:
@@ -112,7 +110,7 @@ static func character(build: Build, profile: Profile, zone: int) -> Character:
 		p.level = expected.x
 		experience = expected.y
 		p.experience = Progression.progress(
-			experience, Player.XP_BASE, Player.XP_POWER, LEVEL_CAP
+			experience, Player.XP_BASE, Player.XP_POWER, Player.MAX_LEVEL
 		).x
 	var tree := PassiveTree.shared()
 	var taken := PackedStringArray()
@@ -140,7 +138,10 @@ static func character(build: Build, profile: Profile, zone: int) -> Character:
 	var level := item_level_for(profile, zone)
 	if level > 0:
 		var rng := RandomNumberGenerator.new()
-		rng.seed = hash([SEED_KEYS.get(build.id, build.id), profile, zone])
+		var key := [SEED_KEYS.get(build.id, build.id), profile, zone]
+		if draw > 0:
+			key.append(draw)
+		rng.seed = hash(key)
 		_equip(p, build, level, rng)
 	else:
 		# Le débutant garde l'arme nue de départ, celle de sa voie.
@@ -182,7 +183,7 @@ static func expected_level(zone: int) -> Vector2i:
 
 
 static func _level_of(experience: int) -> int:
-	return Progression.reached_level(experience, Player.XP_BASE, Player.XP_POWER, LEVEL_CAP)
+	return Progression.reached_level(experience, Player.XP_BASE, Player.XP_POWER, Player.MAX_LEVEL)
 
 
 ## Ce que rapporte une zone vidée une fois : la population moyenne de l'`EnemySpawner`,

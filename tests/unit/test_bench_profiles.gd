@@ -81,5 +81,8 @@ func test_the_expected_level_grows_with_the_zone() -> void:
 	var before := 1
 	for zone in BenchProfiles.ZONES.slice(1):
 		var level := BenchProfiles.expected_level(zone).x
-		assert_gt(level, before, "zone %d" % zone)
+		if before < Player.MAX_LEVEL:
+			assert_gt(level, before, "zone %d" % zone)
+		else:
+			assert_eq(level, Player.MAX_LEVEL, "zone %d : plafonné" % zone)
 		before = level

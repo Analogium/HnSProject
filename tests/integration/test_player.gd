@@ -161,6 +161,19 @@ func test_a_level_up_gives_a_tree_point() -> void:
 	assert_eq(_p.remaining_passive_points(), 1)
 
 
+## Au plafond l'expérience ne s'accumule plus, sinon la barre déborderait.
+func test_the_level_stops_at_the_cap() -> void:
+	_p.level = Player.MAX_LEVEL - 1
+	_p.xp_to_next = _p._needed_for(_p.level)
+	_p.gain_xp(_p.xp_to_next * 3)
+	assert_eq(_p.level, Player.MAX_LEVEL)
+	assert_eq(_p.xp, 0)
+	assert_eq(_p.xp_to_next, 0)
+	_p.gain_xp(1000)
+	assert_eq(_p.level, Player.MAX_LEVEL, "rien au-delà")
+	assert_eq(_p.xp, 0)
+
+
 ## start — force (+10 force) — colosse (+50 % de PV amplifiés), écrit ici : le contenu
 ## changera, la règle non.
 func _small_tree() -> PassiveTree:
