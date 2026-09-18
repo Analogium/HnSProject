@@ -41,10 +41,6 @@ func _ready() -> void:
 		_braises.append(Vector2.from_angle(rng.randf_range(0.0, TAU)) * sqrt(rng.randf()) * 0.8)
 
 
-func lit() -> bool:
-	return not is_queued_for_deletion()
-
-
 func extinguish() -> void:
 	set_physics_process(false)
 	queue_free()
@@ -53,7 +49,8 @@ func extinguish() -> void:
 func _physics_process(delta: float) -> void:
 	var points := _player.skill_points(_skill.id)
 	if points <= 0 or _player.is_dead:
-		extinguish()
+		# Par le joueur : c'est lui qui tient la liste des allumés (invariant 5).
+		_player.extinguish(_skill.id)
 		return
 	_age += delta
 	if _cast == null or _age >= _next_threshold:

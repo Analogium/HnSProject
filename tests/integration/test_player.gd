@@ -462,7 +462,7 @@ func test_what_can_be_placed_in_a_slot() -> void:
 	for c in _p.available_skills():
 		names.append(c.id)
 	assert_true(names.has("swift_bolt"), "la case où l'on a mis un point")
-	assert_false(names.has("lightning_nova"), "mais pas celles restées vides")
+	assert_false(names.has("storm_dash"), "mais pas celles restées vides")
 
 
 func test_skill_points_come_from_the_book_that_teaches_it() -> void:
@@ -509,25 +509,31 @@ func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
 	assert_false(_p.cast_slot(1), "et ne repart pas tant qu'il se recharge")
 
 
-## La couronne : huit projectiles pour une nova, et un seul qui part droit devant
-## quoi qu'annonce la dispersion.
-func test_a_nova_leaves_as_a_crown() -> void:
-	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
-	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
-	book.manual.gain_experience(999999)
-	book.manual.invest(book.base.manual, "lightning_nova")
-	_p.study(book)
-	_p.stats.max_mana = 999.0
-	_p._set_mana(999.0)
-
-	_p.bar.put(3, "lightning_nova")
-	assert_true(_p.cast_slot(3))
+## La couronne : huit projectiles sur un tour complet, chacun à son angle.
+##
+## Le lancer est monté à la main depuis que le jalon 20 a retiré la Nova de foudre :
+## plus aucune compétence ne tire en cercle, et c'est `_roll()` qu'on juge — la
+## branche du cercle fermé, où l'écart se divise par le nombre de traits et non par
+## les intervalles.
+func test_a_salvo_leaves_as_a_crown() -> void:
+	_p._roll(_crown(8, 360.0), _p.bolt_scene)
 	assert_eq(_bolts_fired.get_child_count(), 8, "huit traits")
 
 	var angles := {}
 	for bolt in _bolts_fired.get_children():
 		angles[snappedf(rad_to_deg((bolt as Projectile)._dir.angle()), 0.1)] = true
 	assert_eq(angles.size(), 8, "et ils ne partent pas deux au même endroit")
+
+
+## Une salve de foudre, sans compétence derrière : ce que la fiche d'un lancer porte.
+func _crown(count: int, spread: float) -> SkillStats:
+	var cast := SkillStats.new()
+	cast.nature = DamageType.Kind.LIGHTNING
+	cast.projectiles = float(count)
+	cast.spread_in_degrees = spread
+	cast.projectile_speed = 200.0
+	cast.place_the_base(cast.nature, 10.0)
+	return cast
 
 
 ## Et l'autre bout : un projectile unique part **exactement** dans la visée.
@@ -578,7 +584,7 @@ func test_each_spell_leaves_with_its_sheet_numbers() -> void:
 	_p.study(_book_open_everywhere())
 	_p.stats.max_mana = 999.0
 
-	for id in [SkillCatalog.ID_BOLT, "swift_bolt", "lightning_nova"]:
+	for id in [SkillCatalog.ID_BOLT, "swift_bolt"]:
 		var c := SkillCatalog.by_id(id)
 		var points := _p.skill_points(id)
 		assert_gt(points, 0, "« %s » est apprise" % c.name)
@@ -623,19 +629,12 @@ func test_a_bolt_with_one_more_projectile_fires_two() -> void:
 ## Une fourchette ajoutée se tire **par trait** : les traits d'une nova ne portent
 ## pas le même froid, sinon ils se liraient comme un coup recopié.
 func test_each_bolt_rolls_its_range() -> void:
-	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
-	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
-	book.manual.gain_experience(999999)
-	book.manual.invest(book.base.manual, "lightning_nova")
-	_p.study(book)
-	_p.stats.max_mana = 999.0
-	_p._set_mana(999.0)
-	_p.skill_mods.assign([
-		StatMod.ranged("damage_cold", 1.0, 1000.0, Keywords.SPELL),
-	])
+	var cast := _crown(8, 360.0)
+	# Large exprès : deux tirages voisins d'une fourchette étroite s'arrondiraient au
+	# même nombre, et le test dirait qu'un seul a été tiré.
+	cast.add_to(DamageType.Kind.COLD, 1.0, 1000.0)
+	_p._roll(cast, _p.bolt_scene)
 
-	_p.bar.put(3, "lightning_nova")
-	assert_true(_p.cast_slot(3))
 	var colds := {}
 	for bolt: Projectile in _bolts_fired.get_children():
 		colds[bolt._parts[DamageType.Kind.COLD]] = true

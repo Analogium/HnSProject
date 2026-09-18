@@ -14,6 +14,11 @@ signal change
 signal reached(kind: int)
 ## Ce que la pourriture posée par ce corps sur un autre lui rend.
 signal heal(amount: float)
+## **Ce corps vient de porter un coup** : où il a touché, ce qui est passé, les états de
+## la cible. Pour ce qui réagit à un coup réussi sans pouvoir vivre dans la hurtbox —
+## la charge statique. Sans type sur les parts : nommer `DamageInfo`, qui nomme cette
+## classe, refermerait la boucle.
+signal struck(at: Vector2, parts: Array, victim: StatusEffects)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED }
@@ -110,6 +115,11 @@ class Pack:
 		return to_show
 
 
+## Ce que ce corps **inflige en plus** d'embrasements, écrit par son porteur
+## (`Player.recompute_stats()`) et **jamais par `_recompute()`**, qui ne lit que les
+## états portés. 1 : la chance de base.
+var ignite_chance_factor := 1.0
+
 ## Recalculés quand les états changent et lus comme des champs : l'EnemyManager les
 ## lit pour chaque ennemi à chaque image. En lecture seule de fait.
 var is_clear := true
@@ -176,18 +186,22 @@ func suffer(parts: Array[float], author: StatusEffects, rng: RandomNumberGenerat
 		total += part
 	if total <= 0.0:
 		return
+	# Le facteur de l'auteur et non de la victime : c'est lui qui embrase mieux.
+	var better := author.ignite_chance_factor if author != null else 1.0
 	for kind in NATURES.size():
 		var part: float = parts[NATURES[kind]]
-		if part > 0.0 and rng.randf() < chance(part, total, max_hp):
+		if part <= 0.0:
+			continue
+		if rng.randf() < chance(part, total, max_hp, better if kind == Kind.IGNITE else 1.0):
 			put(kind, part, author)
 
 
 ## La part de la nature dans le coup, plus ce qu'elle retire des PV max : un coup de
 ## feu qui ôte 30 % de la vie embrase une fois sur deux, un petit coup sur une grosse
 ## cible garde ses 20 %.
-static func chance(part: float, total: float, max_hp: float) -> float:
+static func chance(part: float, total: float, max_hp: float, factor := 1.0) -> float:
 	var bonus := part / max_hp * CHANCE_PER_HP_LOST if max_hp > 0.0 else 0.0
-	return CHANCE * part / total + bonus
+	return (CHANCE * part / total + bonus) * factor
 
 
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de

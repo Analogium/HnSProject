@@ -2,9 +2,11 @@ class_name SkillIcon
 
 ## L'icône d'une compétence, ramenée à la grille du jeu.
 ##
-## Elle ne **dessine** rien : elle prend l'image fournie avec la compétence — une
-## illustration générée, une planche découpée, n'importe quoi — et la ramène à un
-## cadre de vingt-quatre pixels, comme les icônes d'objets de la forge.
+## Elle prend l'image fournie avec la compétence — une illustration générée, une
+## planche découpée, n'importe quoi — et la ramène à un cadre de vingt-quatre pixels,
+## comme les icônes d'objets de la forge. Elle la **pose** aussi (`draw_into`), parce
+## que trois panneaux montrent la même marque et que la règle du facteur entier et du
+## disque de repli n'a qu'un endroit.
 ##
 ## Une classe à part et non une méthode de `Skill` : une compétence est une
 ## fiche, elle ne connaît ni les textures ni les tailles d'écran. C'est la même
@@ -84,6 +86,19 @@ static func factor(tex: Texture2D, side: float) -> int:
 	if biggest <= 0.0:
 		return 1
 	return maxi(int(floor(side / biggest)), 1)
+
+
+## Pose l'icône au centre de ce cadre, agrandie d'un **facteur entier** ; à défaut
+## d'image, le disque de la couleur de la nature. Le cadre doit faire au moins `SIDE` :
+## le facteur ne réduit jamais.
+static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill) -> void:
+	var side := minf(r.size.x, r.size.y)
+	var tex := texture(skill)
+	if tex == null:
+		canvas.draw_circle(r.get_center(), side * 0.30, DamageType.COLORS[skill.nature])
+		return
+	var span := tex.get_size() * float(factor(tex, side))
+	canvas.draw_texture_rect(tex, Rect2(r.position + (r.size - span) * 0.5, span), false)
 
 
 ## Vide le cache. Pour les tests, qui fabriquent des icônes de toutes pièces et

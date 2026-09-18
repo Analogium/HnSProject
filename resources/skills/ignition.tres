@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/ignition.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="2_ligne"]
+
+[sub_resource type="Resource" id="L_ignition_embrasement"]
+script = ExtResource("2_ligne")
+stat = "ignite_chance"
+value_per_point = 12.5
+
+[sub_resource type="Resource" id="L_ignition_elan"]
+script = ExtResource("2_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 7.5
+
+[resource]
+script = ExtResource("1_comp")
+id = "ignition"
+name = "Ignition"
+nature = 2
+cadence = 1
+shape = 11
+cooldown = 0.60
+mana_cost = 0.0
+self_burn = 0.01
+declared_points_max = 4
+lines = Array[ExtResource("2_ligne")]([SubResource("L_ignition_embrasement"), SubResource("L_ignition_elan")])
+required_manual_level = 12
+icon = ExtResource("2_icone")

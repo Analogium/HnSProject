@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdf0w2tfwy3xf"
-path="res://.godot/imported/lightning_nova.png-94bb93542cb9e662120dd844f4f42469.ctex"
+uid="uid://bx24ss4gjllrt"
+path="res://.godot/imported/storm_dash.png-75387f92a70ff126ce10f68fa8ad8da8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/icons/lightning_nova.png"
-dest_files=["res://.godot/imported/lightning_nova.png-94bb93542cb9e662120dd844f4f42469.ctex"]
+source_file="res://resources/icons/storm_dash.png"
+dest_files=["res://.godot/imported/storm_dash.png-75387f92a70ff126ce10f68fa8ad8da8.ctex"]
 
 [params]
 

@@ -40,6 +40,15 @@ const LABEL_COLOR := Color(0.86, 0.84, 0.90)
 const POINTS_TOP := HEALTH_TOP + 10.0
 const POINTS_COLOR := Color(1.0, 0.82, 0.35)
 
+## Les gestes entretenus allumés, **à gauche des jauges** : la bande y est déjà réservée
+## aux fenêtres flottantes (`gauges_top`), donc rien n'a à reculer pour eux. Le cadre
+## fait `SkillIcon.SIDE` : en dessous, le facteur entier ne réduit pas et l'icône
+## déborderait.
+const BUFF_SIDE := float(SkillIcon.SIDE)
+const BUFF_GAP := 4.0
+## Ce qu'il reste d'un buff à durée, en voile descendant — celui de la barre.
+const BUFF_SPENT := Color(0.02, 0.02, 0.04, 0.62)
+
 var _player: Player
 var _points_left := 0
 var _ratio := 0.0
@@ -51,6 +60,9 @@ var _health := 0.0
 var _health_max := 0.0
 var _mana := 0.0
 var _mana_max := 0.0
+## Relus à chaque image tant qu'il y en a : un voile de durée descend, et une aura
+## s'éteint sans que rien ne le dise.
+var _lit: Array[Skill] = []
 var _font: Font
 
 
@@ -81,6 +93,7 @@ func bind(player: Player) -> void:
 	player.leveled_up.connect(_on_leveled_up)
 	player.health_changed.connect(_on_health_changed)
 	player.mana_changed.connect(_on_mana_changed)
+	player.buffs_changed.connect(_on_buffs_changed)
 	_on_xp_changed(player.xp, player.xp_to_next, player.level)
 	_on_health_changed(player.health, player.stats.max_health)
 	_on_mana_changed(player.mana, player.stats.max_mana)
@@ -119,11 +132,21 @@ func _on_leveled_up(_level: int) -> void:
 	set_process(true)
 
 
-## Ne tourne que pendant l'éclat de montée de niveau, puis s'éteint.
+## Un geste entretenu s'est allumé ou éteint : la liste change, et l'image doit suivre
+## tant qu'il en reste un.
+func _on_buffs_changed() -> void:
+	_lit = _player.lit_skills()
+	if not _lit.is_empty():
+		set_process(true)
+	queue_redraw()
+
+
+## Ne tourne que pendant l'éclat de montée de niveau et tant qu'un geste brûle.
 func _process(delta: float) -> void:
-	_flash -= delta
-	if _flash <= 0.0:
-		_flash = 0.0
+	if _flash > 0.0:
+		_flash = maxf(_flash - delta, 0.0)
+	_lit = _player.lit_skills()
+	if _flash <= 0.0 and _lit.is_empty():
 		set_process(false)
 	queue_redraw()
 
@@ -140,7 +163,7 @@ func _draw() -> void:
 	_draw_bar(Rect2(x, roundf(size.y - BOTTOM - HEIGHT), w, HEIGHT), _ratio, fill)
 
 	# Barre et compte centrés d'un bloc.
-	var gx := roundf((size.x - (BAR_W + 5.0 + VALUE_W)) * 0.5)
+	var gx := _gauges_x()
 	var health_ratio := StatMod.ratio(_health, _health_max)
 	_draw_gauge(
 		gx,
@@ -156,6 +179,8 @@ func _draw() -> void:
 			gx, roundf(size.y - MANA_TOP), StatMod.ratio(_mana, _mana_max),
 			MANA_FILL, _mana, _mana_max
 		)
+
+	_draw_buffs()
 
 	if _font == null:
 		return
@@ -179,6 +204,42 @@ func _draw() -> void:
 		Texts.t("{courant} exp / {total} exp").format({"courant": _xp, "total": _xp_needed})
 			if _xp_needed > 0 else Texts.t("niveau maximal"),
 		HORIZONTAL_ALIGNMENT_CENTER, roundi(w), LABEL_COLOR
+	)
+
+
+## Les gestes entretenus, de la droite vers la gauche à partir du bord des jauges : le
+## dernier allumé s'ajoute à gauche, et les autres ne bougent pas. Centrés sur le bloc
+## des deux jauges, qu'aucun ne dépasse vers le bas.
+func _draw_buffs() -> void:
+	for i in _lit.size():
+		var skill := _lit[i]
+		var r := _buff_rect(i)
+		draw_rect(r, BACK)
+		SkillIcon.draw_into(self, r, skill)
+		# Ce qu'il reste descend comme le voile de recharge de la barre ; un geste qu'on
+		# entretient n'en a pas, et son cadre le dit déjà.
+		var left := _player.lit_ratio(skill.id)
+		if left < 1.0:
+			draw_rect(
+				Rect2(r.position, Vector2(BUFF_SIDE, roundf(BUFF_SIDE * (1.0 - left)))),
+				BUFF_SPENT
+			)
+		draw_rect(r, DamageType.COLORS[skill.nature].lerp(Color.WHITE, 0.3), false, 1.0)
+
+
+## L'abscisse du bloc des jauges : le niveau, les deux barres et les gestes allumés s'y
+## accrochent.
+func _gauges_x() -> float:
+	return roundf((size.x - (BAR_W + 5.0 + VALUE_W)) * 0.5)
+
+
+## Le cadre du ième geste allumé. **La fonction du dessin** : un test qui recopierait le
+## calcul validerait sa propre copie.
+func _buff_rect(index: int) -> Rect2:
+	return Rect2(
+		roundf(_gauges_x() - float(index + 1) * (BUFF_SIDE + BUFF_GAP)),
+		roundf((size.y - HEALTH_TOP + size.y - MANA_TOP + BAR_H - BUFF_SIDE) * 0.5),
+		BUFF_SIDE, BUFF_SIDE
 	)
 
 

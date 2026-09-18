@@ -19,11 +19,14 @@ const ALL := [
 	preload("res://resources/skills/swift_bolt.tres"),
 	preload("res://resources/skills/chain_lightning.tres"),
 	preload("res://resources/skills/storm_cloud.tres"),
-	preload("res://resources/skills/lightning_nova.tres"),
+	preload("res://resources/skills/storm_dash.tres"),
+	preload("res://resources/skills/static_electricity.tres"),
 
 	preload("res://resources/skills/fireball.tres"),
 	preload("res://resources/skills/hell_snake.tres"),
 	preload("res://resources/skills/immolation.tres"),
+	preload("res://resources/skills/flame_dash.tres"),
+	preload("res://resources/skills/ignition.tres"),
 
 	# Le chevalier : les compétences apprises qui suivent la cadence de l'arme.
 	preload("res://resources/skills/heavy_strike.tres"),

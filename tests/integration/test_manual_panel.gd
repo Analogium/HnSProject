@@ -484,18 +484,18 @@ func test_a_node_sheet_announces_the_keyword_it_gives() -> void:
 func test_each_line_comes_from_the_cast_resolution() -> void:
 	var book := _rich_book()
 	for i in 2:
-		book.manual.invest(book.base.manual, "lightning_nova")
+		book.manual.invest(book.base.manual, "swift_bolt")
 	_player.equip(Item.new(ItemCatalog.by_id("wand"), [
 		ItemAffixPool.by_id("cold_to_spells").modifier(3.0, 7.0),
 		ItemAffixPool.by_id("fire_to_spells").modifier(2.0, 5.0),
 		ItemAffixPool.by_id("forked").modifier(1.0),
 		ItemAffixPool.by_id("stormy").modifier(20.0),
 	]))
-	var nova := SkillCatalog.by_id("lightning_nova")
-	var cast := _player.resolve(nova, 2)
-	var lines := _sheet_of(book, "lightning_nova")
+	var bolt := SkillCatalog.by_id("swift_bolt")
+	var cast := _player.resolve(bolt, 2)
+	var lines := _sheet_of(book, "swift_bolt")
 
-	assert_eq(_values(lines, "points"), PackedStringArray(["2 / %d" % nova.points_max()]))
+	assert_eq(_values(lines, "points"), PackedStringArray(["2 / %d" % bolt.points_max()]))
 	assert_eq(_values(lines, "coût"), PackedStringArray(["%d mana" % roundi(cast.mana_cost)]))
 	assert_eq(_values(lines, "recharge"), PackedStringArray(["%.2f s" % cast.interval]))
 	assert_eq(
@@ -513,7 +513,7 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 	assert_eq(
 		_values(lines, "projectiles"), PackedStringArray([str(cast.projectile_count())])
 	)
-	assert_eq(cast.projectile_count(), nova.projectiles + 1, "la nova et son projectile de plus")
+	assert_eq(cast.projectile_count(), bolt.projectiles + 1, "le trait et son projectile de plus")
 	assert_eq(
 		_values(lines, "écart"), PackedStringArray(["%d°" % roundi(cast.spread_in_degrees)])
 	)
@@ -554,8 +554,12 @@ func test_a_nature_without_damage_has_no_line() -> void:
 func test_a_locked_slot_says_what_it_requires() -> void:
 	var book := _book()
 	_player.study(book)
+	# Parmi celles qui frappent : un buff n'a pas de table de dégâts, donc pas de ligne
+	# « de base » à lire sous son verrou.
 	var high: Skill = null
 	for skill in book.base.manual.skills():
+		if skill.damage_per_point.is_empty():
+			continue
 		if high == null or skill.required_manual_level > high.required_manual_level:
 			high = skill
 	assert_lt(book.manual.level(), high.required_manual_level, "un livre neuf ne l'ouvre pas")

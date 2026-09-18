@@ -48,6 +48,10 @@ func take_damage(info: DamageInfo) -> void:
 	if HitFeedback.current != null:
 		HitFeedback.current.hit(global_position, info, on_player)
 	damaged.emit(info)
+	# L'auteur apprend qu'il a touché, et avec quoi : la charge statique naît de là, hors
+	# d'ici — `core/` ne fait naître aucun nœud, et on est dans un rappel de collision.
+	if info.author != null:
+		info.author.struck.emit(global_position, info.parts, states)
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:

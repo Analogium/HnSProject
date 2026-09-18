@@ -108,6 +108,29 @@ func test_chance_follows_the_nature_share() -> void:
 	assert_between(half, 320, 480, "à moitié de feu, une fois sur dix")
 
 
+## Le facteur de l'auteur multiplie la chance d'embraser, et elle seule : « accrue »
+## veut dire qu'elle ne crée rien là où la nature ne pose rien (jalon 20).
+func test_the_author_factor_multiplies_the_chance_to_ignite() -> void:
+	assert_almost_eq(
+		StatusEffects.chance(10.0, 10.0, 0.0, 1.5), StatusEffects.CHANCE * 1.5, 1e-6
+	)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 13
+	var author := StatusEffects.new()
+	author.ignite_chance_factor = 1.5
+	var ignited := 0
+	var numbed := 0
+	for i in 4000:
+		var e := StatusEffects.new()
+		e.suffer(_parts(DamageType.Kind.FIRE, 10.0), author, rng)
+		ignited += int(e.active(StatusEffects.Kind.IGNITE))
+		var f := StatusEffects.new()
+		f.suffer(_parts(DamageType.Kind.LIGHTNING, 10.0), author, rng)
+		numbed += int(f.active(StatusEffects.Kind.NUMB))
+	assert_between(ignited, 1080, 1320, "une fois sur cinq, et demie")
+	assert_between(numbed, 680, 920, "l'engourdissement garde sa chance")
+
+
 ## Ce qu'un coup retire des PV max s'ajoute à sa chance : 10 de feu sur 50 PV, 40 %.
 func test_chance_grows_with_the_share_of_hp_removed() -> void:
 	assert_almost_eq(StatusEffects.chance(10.0, 10.0, 0.0), StatusEffects.CHANCE, 1e-6, "sans PV connus, la chance seule")

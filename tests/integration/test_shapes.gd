@@ -81,6 +81,22 @@ func _hits(target: Hurtbox) -> int:
 	return (_received_all[target] as Array).size()
 
 
+## Un pan de roche, sur le calque du décor : celui que l'atterrissage d'une ruée
+## interroge, et le seul.
+func _wall(center: Vector2, extents: Vector2) -> StaticBody2D:
+	var body := StaticBody2D.new()
+	body.collision_layer = Targets.DECOR
+	body.collision_mask = 0
+	var shape := CollisionShape2D.new()
+	var box := RectangleShape2D.new()
+	box.size = extents
+	shape.shape = box
+	body.add_child(shape)
+	add_child_autofree(body)
+	body.global_position = center
+	return body
+
+
 func _children_of(cls: Variant) -> Array:
 	return _effects.get_children().filter(func(n: Node) -> bool: return is_instance_of(n, cls))
 
@@ -449,3 +465,159 @@ func test_the_ball_wounds_the_neighbor_and_the_target_once() -> void:
 	assert_eq(_hits(direct), 1, "la touche directe, sans l'explosion en plus")
 	assert_eq(_hits(neighbor), 1, "l'explosion atteint le voisin")
 	assert_eq(_hits(far), 0)
+
+
+# --------------------------------------------------------------------------
+# Les ruées et les buffs (jalon 20)
+# --------------------------------------------------------------------------
+
+## La ruée porte le joueur au bout de sa visée — la portée de pose, la même que celle
+## du nuage et du serpent.
+func test_the_dash_carries_the_player_to_the_aim() -> void:
+	_learn("manual_fire", ["flame_dash"])
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(
+		_p.global_position.distance_to(from_value), Player.PLACEMENT_RANGE, 2.0,
+		"au bout de la portée de pose"
+	)
+	assert_gt(_p.global_position.x, from_value.x, "dans la visée")
+
+
+## Et sa trace frappe le couloir, pas ce qui est à côté, jusqu'à la fin de sa durée.
+func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
+	_learn("manual_fire", ["flame_dash"])
+	var on_the_way := _target(Vector2(60, 0))
+	var aside := _target(Vector2(60, 60))
+	await wait_physics_frames(2)
+
+	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration + 0.2)
+	assert_eq(_hits(on_the_way), cast.strikes_over_duration(), "une frappe par période")
+	assert_eq(_hits(aside), 0, "et rien hors du couloir")
+	assert_eq(Game.freezes, 0, "ce qui dure ne fige jamais le jeu")
+	assert_eq(_children_of(DashTrail).size(), 0, "la trace s'est effacée")
+
+
+## Un buff s'allume, verse ses lignes dans la fiche, brûle son porteur, et s'éteint au
+## second lancer sans rien coûter.
+func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
+	_learn("manual_fire", ["ignition"])
+	var speed := _p.stats.move_speed
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("ignition"))
+	assert_eq(_p.lit_ratio("ignition"), 1.0, "entretenu, il n'a pas de compte à rebours")
+	assert_gt(_p.stats.move_speed, speed, "ses lignes sont dans la fiche")
+	await wait_physics_frames(3)
+	assert_lt(_p.health, _p.stats.max_health, "et elle brûle son porteur")
+
+	_p._recharges[2] = 0.0
+	var mana := _p.mana
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.lit("ignition"), "le second lancer éteint")
+	assert_eq(_p.mana, mana, "sans coût")
+	assert_eq(_p.stats.move_speed, speed, "et la fiche retrouve ses nombres")
+
+
+## Le mana épuisé éteint ce qui le draine — là où les PV épuisés tuent.
+func test_the_buff_goes_out_when_its_pool_is_empty() -> void:
+	_learn("manual_lightning", ["static_electricity"])
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("static_electricity"))
+
+	_p.stats.mana_regen = 0.0
+	_p._set_mana(0.0)
+	await wait_physics_frames(2)
+	assert_false(_p.lit("static_electricity"))
+
+
+## La charge statique : un coup sur un engourdi la laisse, un coup sur un ennemi sain
+## non. Le coup part par `Targets.strike()`, donc par la hurtbox, comme tous les coups.
+func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
+	_learn("manual_lightning", ["static_electricity"])
+	var numbed := _target(Vector2(30, 0))
+	numbed.states = StatusEffects.new()
+	numbed.states.put(StatusEffects.Kind.NUMB, 1.0)
+	var healthy := _target(Vector2(60, 0))
+	healthy.states = StatusEffects.new()
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	_p.stats.static_charge_chance = 100.0
+	var parts := _all_in(DamageType.Kind.LIGHTNING)
+	parts[DamageType.Kind.LIGHTNING] = 50.0
+
+	Targets.strike(numbed, parts, Vector2.ZERO, _p.states, null)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(StaticCharge).size(), 1, "une charge est restée sur l'engourdi")
+
+	Targets.strike(healthy, parts, Vector2.ZERO, _p.states, null)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(StaticCharge).size(), 1, "et rien sur un ennemi sain")
+
+
+## Elle attend, frappe une fois, et s'en va : une mine, pas un nuage.
+func test_the_static_charge_strikes_once_then_leaves() -> void:
+	var walker := _target(Vector2(40, 0))
+	var parts := _all_in(DamageType.Kind.LIGHTNING)
+	parts[DamageType.Kind.LIGHTNING] = 50.0
+	StaticCharge.put(_effects, Vector2(40, 0), Vector2.RIGHT, parts, _p.states)
+	await wait_physics_frames(2)
+	assert_eq(_hits(walker), 0, "elle ne frappe pas à la naissance")
+
+	await wait_seconds(StaticCharge.CHECK * 2.0)
+	assert_eq(_hits(walker), 1, "puis une fois")
+	assert_almost_eq(
+		(_received_all[walker] as Array)[0], 50.0 * StaticCharge.SHARE, 0.01,
+		"un cinquième de ce que le coup a fait"
+	)
+	await wait_seconds(StaticCharge.CHECK * 3.0)
+	assert_eq(_hits(walker), 1, "et pas une seconde")
+	assert_eq(_children_of(StaticCharge).size(), 0, "elle est partie avec son coup")
+
+
+## Une ruée traverse ce qui est sur le chemin : c'est **l'arrivée** qui doit être libre.
+func test_the_dash_goes_through_what_is_on_the_way() -> void:
+	_learn("manual_fire", ["flame_dash"])
+	_wall(Vector2(70, 0), Vector2(16, 120))
+	await wait_physics_frames(2)
+
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(
+		_p.global_position.distance_to(from_value), Player.PLACEMENT_RANGE, 2.0,
+		"le mur du milieu ne l'arrête pas"
+	)
+
+
+## Et une arrivée prise recule jusqu'au premier point libre, plutôt que de refuser.
+func test_a_taken_landing_backs_up_to_the_first_free_point() -> void:
+	_learn("manual_fire", ["flame_dash"])
+	_wall(Vector2(Player.PLACEMENT_RANGE, 0), Vector2(60, 120))
+	await wait_physics_frames(2)
+
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	var travelled := _p.global_position.x - from_value.x
+	assert_gt(travelled, 0.0, "elle part quand même")
+	assert_lt(travelled, Player.PLACEMENT_RANGE, "mais s'arrête devant le mur")
+
+
+## La ruée d'orage ne laisse rien au sol : elle donne de la vitesse, et pour un temps.
+func test_the_storm_dash_leaves_speed_and_no_trail() -> void:
+	_learn("manual_lightning", ["storm_dash"])
+	var speed := _p.stats.move_speed
+	var cast := _p.resolve(SkillCatalog.by_id("storm_dash"), 1)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(DashTrail).size(), 0, "rien au sol")
+	assert_true(_p.lit("storm_dash"), "mais un buff sur le lanceur")
+	assert_gt(_p.stats.move_speed, speed, "qui le presse")
+	assert_lt(_p.lit_ratio("storm_dash"), 1.0, "et dont le compte à rebours descend")
+	assert_eq(_p.lit_skills().size(), 1, "le bandeau a de quoi le montrer")
+
+	await wait_seconds(cast.duration + 0.1)
+	assert_false(_p.lit("storm_dash"), "le temps passé, il retombe")
+	assert_eq(_p.stats.move_speed, speed, "et la fiche retrouve ses nombres")

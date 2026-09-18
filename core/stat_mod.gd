@@ -32,6 +32,8 @@ const LABELS := {
 	"attack_range": "allonge",
 	"crit_chance": "chance critique de base",
 	"crit_multiplier": "dégâts critiques",
+	"ignite_chance": "chance d'embraser",
+	"static_charge_chance": "chance de charge statique",
 	"move_speed": "vitesse",
 }
 
@@ -58,6 +60,8 @@ const AGREEMENT := {
 	"attack_range": "fs",
 	"crit_chance": "fs",
 	"crit_multiplier": "mp",
+	"ignite_chance": "fs",
+	"static_charge_chance": "fs",
 	"move_speed": "fs",
 }
 
@@ -76,12 +80,12 @@ const SCALED := [
 ]
 
 ## Déjà en points de pourcentage : 75 → « 75 % ». Confondue avec SCALED, on lirait
-## « 7500 % ». Ce sont les résistances et elles seules : recopiée ici, la liste
-## laissait une nature de dégâts ajoutée se lire en fraction sans rien dire. Le champ
-## vide du physique, qui passe par l'armure, n'est le nom d'aucune statistique.
+## « 7500 % ». Les résistances — déduites, pour qu'une nature ajoutée ne se lise pas en
+## fraction, le champ vide du physique en moins —, plus les chances d'état du jalon 20,
+## qui comptent de la même façon sans être des résistances.
 static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	func(field: String) -> bool: return not field.is_empty()
-)
+) + ["ignite_chance", "static_charge_chance"]
 
 var stat: String
 var mode: Mode

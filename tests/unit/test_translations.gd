@@ -105,7 +105,7 @@ func test_an_item_line_reads_in_english() -> void:
 func test_the_content_reads_in_english() -> void:
 	var sword := ItemCatalog.by_id("sword")
 	var manual := ItemCatalog.by_id("manual_lightning")
-	var nova := SkillCatalog.by_id("lightning_nova")
+	var bolt := SkillCatalog.by_id("swift_bolt")
 
 	Settings.from_dict({"language": Settings.ENGLISH})
 	assert_eq(Item.new(sword).display_name(), "Sword")
@@ -116,8 +116,8 @@ func test_the_content_reads_in_english() -> void:
 	)
 	assert_eq(Item.new(manual).display_name(), "Manual of Lightning")
 	assert_eq(manual.manual.displayed_name(), "Master of Lightning")
-	assert_eq(nova.displayed_name(), "Lightning Nova")
-	assert_eq(nova.keywords_label(), "Projectile · Lightning · Spell")
+	assert_eq(bolt.displayed_name(), "Swift Bolt")
+	assert_eq(bolt.keywords_label(), "Projectile · Lightning · Spell")
 	assert_eq(EquipmentSlots.label("offhand"), "OFF-HAND")
 	assert_eq(DamageType.name(DamageType.Kind.NECROTIC), "necrotic")
 

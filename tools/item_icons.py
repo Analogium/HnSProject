@@ -252,13 +252,17 @@ def cmd_gen(args):
     cmd_sheets(args)
 
 
-ap = argparse.ArgumentParser()
-sub = ap.add_subparsers(dest="cmd", required=True)
-g = sub.add_parser("gen"); g.set_defaults(run=cmd_gen)
-g.add_argument("--only", default="", help="bases a refaire, separees par des virgules")
-g.add_argument("--redo", action="store_true", help="ignorer les tirages deja en cache")
-sub.add_parser("sheets").set_defaults(run=cmd_sheets)
-sub.add_parser("apply").set_defaults(run=cmd_apply)
-args = ap.parse_args()
-print("travail :", WORK)
-args.run(args)
+# Sous garde : `skill_icons.py` importe `render()`, `quant()` et les reglages, qui
+# sont les memes depuis le jalon 11. Sans elle, l'import lancerait la ligne de
+# commande des objets.
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    g = sub.add_parser("gen"); g.set_defaults(run=cmd_gen)
+    g.add_argument("--only", default="", help="bases a refaire, separees par des virgules")
+    g.add_argument("--redo", action="store_true", help="ignorer les tirages deja en cache")
+    sub.add_parser("sheets").set_defaults(run=cmd_sheets)
+    sub.add_parser("apply").set_defaults(run=cmd_apply)
+    args = ap.parse_args()
+    print("travail :", WORK)
+    args.run(args)

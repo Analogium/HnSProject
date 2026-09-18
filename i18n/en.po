@@ -177,8 +177,29 @@ msgstr "Chain Lightning"
 msgid "Nuage d'orage"
 msgstr "Storm Cloud"
 
-msgid "Nova de foudre"
-msgstr "Lightning Nova"
+msgid "Persistance"
+msgstr "Lingering"
+
+msgid "Sillage"
+msgstr "Wake"
+
+msgid "Braises"
+msgstr "Embers"
+
+msgid "Bûcher"
+msgstr "Pyre"
+
+msgid "Ruée ardente"
+msgstr "Flame Dash"
+
+msgid "Ruée d'orage"
+msgstr "Storm Dash"
+
+msgid "Ignition"
+msgstr "Ignition"
+
+msgid "Électricité statique"
+msgstr "Static Electricity"
 
 msgid "Manuel des flammes"
 msgstr "Manual of Flames"
@@ -255,15 +276,6 @@ msgstr "Lingering Storm"
 
 msgid "Grêle"
 msgstr "Hail"
-
-msgid "Couronne"
-msgstr "Crown"
-
-msgid "Déflagration"
-msgstr "Blast"
-
-msgid "Célérité"
-msgstr "Celerity"
 
 msgid "Attisement"
 msgstr "Stoking"
@@ -813,6 +825,12 @@ msgstr "Here: {coups} hits in a hundred before increased bonuses, for {degats}% 
 msgid "Chance critique de base :"
 msgstr "Base crit chance:"
 
+msgid "chance d'embraser"
+msgstr "chance to ignite"
+
+msgid "chance de charge statique"
+msgstr "static charge chance"
+
 msgid "chance critique de base"
 msgstr "base crit chance"
 
@@ -1142,6 +1160,9 @@ msgstr "every"
 
 msgid "en même temps"
 msgstr "at once"
+
+msgid "drain"
+msgstr "drain"
 
 msgid "brûlure"
 msgstr "self-burn"

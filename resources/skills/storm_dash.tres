@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/storm_dash.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="2_ligne"]
+
+[sub_resource type="Resource" id="L_ruee_d_orage_elan"]
+script = ExtResource("2_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 5.0
+
+[resource]
+script = ExtResource("1_comp")
+id = "storm_dash"
+name = "Ruée d'orage"
+nature = 3
+cadence = 1
+shape = 10
+cooldown = 2.00
+mana_cost = 10.0
+duration = 2.0
+declared_points_max = 4
+lines = Array[ExtResource("2_ligne")]([SubResource("L_ruee_d_orage_elan")])
+required_manual_level = 5
+icon = ExtResource("2_icone")

@@ -15,6 +15,7 @@ mana_cost = 25.0
 radius = 40.0
 period = 0.5
 self_burn = 0.03
+health_scaling = 0.008
 damage_per_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
 required_manual_level = 9
 icon = ExtResource("2_icone")

@@ -799,6 +799,14 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.SHAPE, Texts.t("brûlure"),
 			"%s %s" % [StatMod.percentage(roundi(cast.self_burn * 100.0)), Texts.t("PV/s")], MISSING
 		))
+	if cast.self_mana_burn > 0.0:
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("drain"),
+			"%s %s" % [StatMod.percentage(roundi(cast.self_mana_burn * 100.0)), Texts.t("mana/s")],
+			MISSING
+		))
+	# Ce qu'un buff donne tant qu'il brûle : les lignes d'un passif, par la même fonction.
+	out.append_array(_effect_lines(skill.buff_mods(maxi(spent, 1))))
 
 	# Ce qu'elle inflige, pour comparer deux sorts ; une aura n'a que la seconde.
 	var per_cast := cast.average_per_cast()

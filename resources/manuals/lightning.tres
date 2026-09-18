@@ -8,7 +8,8 @@
 [ext_resource type="Resource" path="res://resources/skills/swift_bolt.tres" id="10_eclair_vif"]
 [ext_resource type="Resource" path="res://resources/skills/chain_lightning.tres" id="11_chaine_d_eclairs"]
 [ext_resource type="Resource" path="res://resources/skills/storm_cloud.tres" id="12_nuage_d_orage"]
-[ext_resource type="Resource" path="res://resources/skills/lightning_nova.tres" id="13_nova_de_foudre"]
+[ext_resource type="Resource" path="res://resources/skills/storm_dash.tres" id="13_ruee_d_orage"]
+[ext_resource type="Resource" path="res://resources/skills/static_electricity.tres" id="14_electricite_statique"]
 
 [sub_resource type="Resource" id="L_eclair_vif_surcharge_0"]
 script = ExtResource("4_ligne")
@@ -178,57 +179,31 @@ skill = ExtResource("12_nuage_d_orage")
 position = Vector2i(2, 0)
 talents = Array[ExtResource("3_noeud")]([SubResource("N_nuage_d_orage_front"), SubResource("N_nuage_d_orage_orage_durable"), SubResource("N_nuage_d_orage_grele")])
 
-[sub_resource type="Resource" id="L_nova_de_foudre_couronne_0"]
+[sub_resource type="Resource" id="L_ruee_d_orage_persistance_0"]
 script = ExtResource("4_ligne")
-stat = "projectiles"
-value_per_point = 2.0
+stat = "duration"
+percentage = true
+value_per_point = 25.0
 
-[sub_resource type="Resource" id="N_nova_de_foudre_couronne"]
+[sub_resource type="Resource" id="N_ruee_d_orage_persistance"]
 script = ExtResource("3_noeud")
-id = "lightning_nova_crown"
-name = "Couronne"
+id = "storm_dash_lingering"
+name = "Persistance"
 position = Vector2i(0, 0)
 required_points = 1
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_couronne_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_persistance_0")])
 
-[sub_resource type="Resource" id="L_nova_de_foudre_deflagration_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-percentage = true
-more = true
-value_per_point = 12.0
-
-[sub_resource type="Resource" id="N_nova_de_foudre_deflagration"]
-script = ExtResource("3_noeud")
-id = "lightning_nova_blast"
-name = "Déflagration"
-position = Vector2i(1, 0)
-parent = "lightning_nova_crown"
-required_points = 3
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_deflagration_0")])
-
-[sub_resource type="Resource" id="L_nova_de_foudre_celerite_0"]
-script = ExtResource("4_ligne")
-stat = "projectile_speed"
-percentage = true
-value_per_point = 35.0
-
-[sub_resource type="Resource" id="N_nova_de_foudre_celerite"]
-script = ExtResource("3_noeud")
-id = "lightning_nova_celerity"
-name = "Célérité"
-position = Vector2i(0, 1)
-required_points = 2
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_de_foudre_celerite_0")])
-
-[sub_resource type="Resource" id="C_nova_de_foudre"]
+[sub_resource type="Resource" id="C_ruee_d_orage"]
 script = ExtResource("2_case")
-skill = ExtResource("13_nova_de_foudre")
+skill = ExtResource("13_ruee_d_orage")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_nova_de_foudre_couronne"), SubResource("N_nova_de_foudre_deflagration"), SubResource("N_nova_de_foudre_celerite")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_d_orage_persistance")])
+
+[sub_resource type="Resource" id="C_electricite_statique"]
+script = ExtResource("2_case")
+skill = ExtResource("14_electricite_statique")
+position = Vector2i(1, 1)
 
 [sub_resource type="Resource" id="L_conducteur_0"]
 script = ExtResource("4_ligne")
@@ -259,4 +234,4 @@ position = Vector2i(0, 1)
 script = ExtResource("1_arch")
 id = "lightning"
 name = "Maître de la foudre"
-cells = Array[ExtResource("2_case")]([SubResource("C_eclair_vif"), SubResource("C_chaine_d_eclairs"), SubResource("C_nuage_d_orage"), SubResource("C_nova_de_foudre"), SubResource("C_conducteur")])
+cells = Array[ExtResource("2_case")]([SubResource("C_eclair_vif"), SubResource("C_chaine_d_eclairs"), SubResource("C_nuage_d_orage"), SubResource("C_ruee_d_orage"), SubResource("C_conducteur"), SubResource("C_electricite_statique")])

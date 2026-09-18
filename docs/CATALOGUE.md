@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-44 bases d'objets, 12 compétences, 49 affixes d'objets, 5 affixes d'ennemis.
+44 bases d'objets, 15 compétences, 49 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -81,8 +81,9 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | bolt | 21 · 27 · 34 · 42 · 51 |
 | Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
 | Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
-| Nova de foudre | sort foudre | niveau 8 | 5 | 26 mana | 1.40 s | bolt · ×8 sur 360° | 18 · 22 · 27 · 33 · 40 |
+| Ruée d'orage | sort foudre | niveau 5 | 4 | 10 mana | 2.00 s | dash · 2.0 s | +5 % de vitesse accrue |
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % de dégâts accrus (Foudre) · +10 mana |
+| Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | 0.60 s | buff | +5 % chance de charge statique |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
@@ -95,11 +96,9 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % de rayon accru |
 | Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % de durée accrue |
 | Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 60 % en froid |
-| Couronne | Nova de foudre | — | 1 point de compétence | 2 | +2 nombre de projectiles |
-| Déflagration | Nova de foudre | Couronne | 3 points de compétence | 3 | +12 % de dégâts amplifiés |
-| Célérité | Nova de foudre | — | 2 points de compétence | 2 | +35 % de vitesse de projectile accrue |
+| Persistance | Ruée d'orage | — | 1 point de compétence | 2 | +25 % de durée accrue |
 
-47 destinations de points pour 20 gagnés.
+45 destinations de points pour 20 gagnés.
 
 ### Maître chevalier — `manual_weapons`
 
@@ -131,7 +130,9 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Boule de feu | sort feu | niveau 1 | 5 | 11 mana | 0.60 s | ball · rayon 20 | 30 · 38 · 48 · 59 · 73 |
 | Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
 | Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
+| Ruée ardente | sort feu | niveau 5 | 5 | 12 mana | 4.00 s | dash · 3.0 s · rayon 16 · toutes les 0.50 s | 4 · 5 · 6 · 8 · 10 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts accrus (Feu) · +3 % rés. feu |
+| Ignition | sort feu | niveau 12 | 4 | 0 mana | 0.60 s | buff · brûle 1 % PV/s | +13 % chance d'embraser · +8 % de vitesse accrue |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
@@ -144,8 +145,11 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Brasier | Immolation | — | 1 point de compétence | 2 | +20 % de rayon accru |
 | Fournaise | Immolation | Brasier | 2 points de compétence | 3 | +14 % de dégâts amplifiés |
 | Flamme noire | Immolation | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 50 % en nécrotique |
+| Sillage | Ruée ardente | — | 1 point de compétence | 2 | +25 % de durée accrue |
+| Braises | Ruée ardente | Sillage | 2 points de compétence | 2 | +20 % de rayon accru |
+| Bûcher | Ruée ardente | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
 
-38 destinations de points pour 20 gagnés.
+54 destinations de points pour 20 gagnés.
 
 ## Arbre de passifs
 

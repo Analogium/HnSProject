@@ -20,7 +20,7 @@ enum Cadence { WEAPON, CAST }
 ## Ce que le lancer pose dans le monde, comportement et dessin ensemble — `STRIKE`
 ## ne diffère d'`ARC` que par le dessin. Aucun nœud ne la change.
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
-enum Shape { ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT }
+enum Shape { ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF }
 
 @export var shape: Shape = Shape.ARC
 
@@ -48,6 +48,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.CLOUD: Keywords.AREA,
 	Shape.AURA: Keywords.AREA,
 	Shape.SNAKE: Keywords.AREA,
+	Shape.DASH: Keywords.AREA,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -74,8 +75,9 @@ const HITS_PER_SHAPE := {
 ## Les nombres des formes qui ne sont pas un tir ; un test refuse une forme à qui
 ## manque le sien. `targets` : les ennemis d'une chaîne, le premier compris.
 @export var targets: int = 1
-## En secondes : ce que vit un nuage, un serpent, une épée en orbite. Zéro pour ce
-## qui ne dure pas — et pour l'aura, qui dure tant qu'on ne l'éteint pas.
+## En secondes : ce que vit un nuage, un serpent, une épée en orbite, et ce qu'une ruée
+## laisse derrière elle — sa trace ou son buff. Zéro pour ce qui ne dure pas, et pour
+## l'aura, qui dure tant qu'on ne l'éteint pas.
 @export var duration: float = 0.0
 ## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule.
 @export var radius: float = 0.0
@@ -88,6 +90,17 @@ const HITS_PER_SHAPE := {
 ## La part des PV max qu'une aura brûle au lanceur, par seconde. Hors de portée des
 ## nœuds : réduite à zéro, elle ferait de l'aura un sort sans prix.
 @export var self_burn: float = 0.0
+## La part du mana max qu'un buff draine par seconde. Épuisé, il s'éteint — là où les
+## PV épuisés tuent.
+@export var self_mana_burn: float = 0.0
+
+## La part des PV max du lanceur qui s'ajoute aux dégâts propres, **par coup**. Zéro
+## pour tout ce qui ne s'adosse pas à la vie de celui qui lance.
+@export var health_scaling: float = 0.0
+
+## Ce qu'un buff donne tant qu'il brûle, **par point placé** : les lignes d'un passif,
+## au mot près. Vide sur tout ce qui frappe.
+@export var lines: Array[TalentLine] = []
 
 ## Zéro pour un coup gratuit.
 @export var mana_cost: float = 0.0
@@ -95,6 +108,10 @@ const HITS_PER_SHAPE := {
 ## Un nombre **par point placé** : sa longueur est le nombre de points de la case.
 ## Une table et non une formule, pour lire la valeur d'un point sans relire de code.
 @export var damage_per_point: Array[float] = []
+
+## Le nombre de points d'une compétence **sans table de dégâts** — un buff. Ailleurs,
+## la table le dit, et ce champ reste à zéro.
+@export var declared_points_max: int = 0
 
 ## Le niveau de manuel à partir duquel la case accepte son premier point. Zéro
 ## pour ce qui ne vient d'aucun manuel.
@@ -125,15 +142,21 @@ func displayed_name() -> String:
 	return Texts.t(name)
 
 
-## Déduit de la table, jamais saisi à côté.
+## Déduit de la table ; à défaut de table — un buff n'inflige rien —, déclaré.
 func points_max() -> int:
-	return damage_per_point.size()
+	return damage_per_point.size() if not damage_per_point.is_empty() else declared_points_max
 
 
 ## Déclarés, plus ceux de la cadence, de la nature et de la forme. Pas ceux d'un
 ## nœud : ils appartiennent au lancer, et `resolve()` les ajoute.
 func keywords() -> PackedStringArray:
 	return _keywords(PackedStringArray())
+
+
+## Ce qu'un buff allumé verse dans la fiche à ce nombre de points : les lignes d'un
+## passif, par la même fonction.
+func buff_mods(points: int) -> Array[StatMod]:
+	return TalentLine.modifiers(lines, points)
 
 
 ## Les mots-clés portés, ceux-ci en plus. L'ordre de lecture est celui de
@@ -194,8 +217,9 @@ func resolve(
 	r.period = period
 	r.simultaneous = float(simultaneous)
 	r.self_burn = self_burn
+	r.self_mana_burn = self_mana_burn
 	r.hits = HITS_PER_SHAPE.get(shape, 1)
-	r.sustained = shape == Shape.AURA
+	r.sustained = shape == Shape.AURA or shape == Shape.BUFF
 	r.mana_cost = mana_cost
 	r.interval = interval(stats)
 	if stats != null:
@@ -218,7 +242,12 @@ func resolve(
 			_store(r, m, fields, damage_percents)
 	# Après le tri, qui compte les niveaux en bonus ; ils n'apprennent rien à qui n'a
 	# placé aucun point.
-	r.place_the_base(nature, damage(maxi(points + r.bonus_levels, 1) if points > 0 else 0))
+	var own := damage(maxi(points + r.bonus_levels, 1) if points > 0 else 0)
+	# Les PV du lanceur après la table et non dedans : ils montent avec le personnage, pas
+	# avec le point placé.
+	if own > 0.0 and health_scaling > 0.0 and stats != null:
+		own += stats.max_health * health_scaling
+	r.place_the_base(nature, own)
 
 	StatMod.apply(r, fields)
 	for t: InvestedTalent in talents:

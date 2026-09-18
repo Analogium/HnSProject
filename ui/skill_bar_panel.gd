@@ -62,8 +62,12 @@ func _process(_delta: float) -> void:
 		if _player.remaining_cooldown(i) > 0.0:
 			state |= 1 << i
 		var skill := _player.bar.skill_of(i)
-		if skill != null and _player.mana < skill.mana_cost:
+		if skill == null:
+			continue
+		if _player.mana < skill.mana_cost:
 			state |= 1 << (i + SkillBar.SLOT_COUNT)
+		if _player.lit(skill.id):
+			state |= 1 << (i + SkillBar.SLOT_COUNT * 2)
 	# Une recharge qui descend repeint à chaque image ; sinon, seul un changement d'état.
 	if state != _displayed_state or (state & ((1 << SkillBar.SLOT_COUNT) - 1)) != 0:
 		_displayed_state = state
@@ -244,6 +248,12 @@ func _draw_slot(index: int) -> void:
 		tint = SELECTED_FILL
 	draw_rect(r, tint, false, 1.0)
 
+	# Un geste entretenu qui brûle : rien d'autre ne distingue une case allumée d'une
+	# case au repos, et il y en a trois depuis le jalon 20. Dans sa nature, comme le
+	# disque de repli : la case dit déjà de quoi elle brûle.
+	if skill != null and _player.lit(skill.id):
+		draw_rect(r.grow(-1.0), DamageType.COLORS[skill.nature].lerp(Color.WHITE, 0.3), false, 1.0)
+
 	var key := key_label(index)
 	if not key.is_empty():
 		var width := _font.get_string_size(
@@ -255,16 +265,10 @@ func _draw_slot(index: int) -> void:
 		)
 
 
-## L'icône, à défaut un disque de la couleur de la nature, lisible à vingt-six pixels ;
-## le menu montre la même marque.
+## L'icône, à défaut un disque de la couleur de la nature ; le menu et le bandeau
+## montrent la même marque, d'où `SkillIcon`.
 func _draw_mark(r: Rect2, skill: Skill) -> void:
-	var side := minf(r.size.x, r.size.y)
-	var tex := SkillIcon.texture(skill)
-	if tex == null:
-		draw_circle(r.get_center(), side * 0.30, DamageType.COLORS[skill.nature])
-		return
-	var size_value := tex.get_size() * float(SkillIcon.factor(tex, side))
-	draw_texture_rect(tex, Rect2(r.position + (r.size - size_value) * 0.5, size_value), false)
+	SkillIcon.draw_into(self, r, skill)
 
 
 func _draw_menu() -> void:

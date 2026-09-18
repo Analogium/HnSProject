@@ -62,6 +62,23 @@ ce qui restera à 24.
 
 L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
 
+### Le tuyau
+
+`tools/skill_icons.py` depuis le jalon 20, qui va de ComfyUI jusqu'au `.tres` :
+
+```bash
+tools/skill_icons.py gen                 # la table, trois graines chacune
+tools/skill_icons.py gen --only ignition # une seule, pour la refaire
+tools/skill_icons.py apply               # pose les tirages retenus
+```
+
+Le sujet du prompt et la graine retenue sont **la même ligne** de
+`tools/skill_icons.json`, comme pour les objets. Le moteur est celui de
+`tools/item_icons.py`, dont ce script importe le rendu et la quantification :
+**deux différences seulement**, et elles sont la raison du second fichier — une
+icône de compétence est une tuile pleine, donc recadrée au centre plutôt que
+détourée, et son fond suit la nature du sort.
+
 ### Sans icône
 
 Le champ vide est un état normal : la barre dessine alors un disque de la couleur

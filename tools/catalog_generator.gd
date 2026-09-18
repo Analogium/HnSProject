@@ -126,9 +126,13 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 			])
 			continue
 		var c := cell.skill
+		# Sans table de dégâts, la colonne dit ce que le point donne — comme pour un
+		# passif : une case qui n'annonce rien ne se relit pas.
 		var table := PackedStringArray()
 		for d in c.damage_per_point:
 			table.append("%d" % roundi(d))
+		if table.is_empty():
+			table.append(_per_point(c.lines))
 		# Le mot-clé de la cadence par la table de `Skill`, jamais par un ternaire
 		# recopié : la colonne annonçait « attack » à côté d'une nature française.
 		var cadence := Keywords.label_of(Skill.KEYWORD_OF_CADENCE[c.cadence])

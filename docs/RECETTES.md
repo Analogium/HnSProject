@@ -193,9 +193,9 @@ atteintes dès qu'un affixe de dégâts ajoutés vise l'un de leurs mots-clés.
    elle se lit en pourcentage :
    - rangée en fraction ou en multiplicateur (0.05 → « 5 % ») → `SCALED` ;
    - déjà comptée en points de pourcentage (75 → « 75 % ») → `PERCENT_POINTS`,
-     **déduit** de `DamageType.RESIST_FIELDS` : aujourd'hui seules les résistances
-     comptent ainsi, et une statistique qui compterait en points sans en être une
-     demanderait de rouvrir la liste.
+     **déduit** de `DamageType.RESIST_FIELDS`, plus les chances d'état nommées à la
+     main (jalon 20) : une statistique qui compte en points sans être une résistance
+     s'ajoute à cette courte liste, à côté du filtre.
 
    Confondre les deux donne « 7500 % de résistance au feu ».
 3. **`ui/stat_help.gd`** — son entrée dans `TEXTS` : ce qu'elle fait, en une
@@ -364,16 +364,20 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
    | `cadence` / `cooldown` | `WEAPON` suit la fiche (`attack_cooldown`) ; `CAST` suit `cooldown` divisée par `cast_speed` |
    | `mana_cost` | 0 pour un geste gratuit |
-   | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`. `BOLT` et `BALL` donnent `projectile` |
+   | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus. **Vide pour un buff**, qui n'inflige rien |
+   | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
+   | `lines` | Ce qu'un **buff** donne tant qu'il brûle, par point placé : un `TalentLine` par effet, aux règles d'un passif — voir « Ajouter un passif », §2 |
+   | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`. `BOLT` et `BALL` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
    | `targets` | Une chaîne : combien d'ennemis, le premier compris |
-   | `duration` / `period` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée |
+   | `duration` / `period` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée ; une ruée a une durée, celle de ce qu'elle laisse |
    | `radius` | Une boule (son explosion), un nuage, une aura |
    | `simultaneous` | Une orbite : combien à la fois. Zéro, sans limite |
-   | `self_burn` | Une aura : la part des PV max qu'elle brûle au lanceur par seconde |
+   | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
+   | `self_mana_burn` | Un buff : la part du mana max qu'il draine par seconde. La réserve vide **l'éteint** |
    | `required_manual_level` | À partir de quand la case accepte son premier point |
 
 2. **`core/skill_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
@@ -395,6 +399,13 @@ sinon c'est une seule compétence à plusieurs réglages, et l'arbre de la premi
 dit déjà mieux la même chose. C'est la leçon du jalon 11, qui a retiré deux sorts
 de foudre qui n'étaient qu'un éclair vif à d'autres réglages.
 
+**Une ruée** (`DASH`) porte le lanceur au curseur, à `PLACEMENT_RANGE` au plus, **murs
+et ennemis traversés** — seule l'arrivée doit être libre. Elle veut une `duration`,
+celle de ce qu'elle laisse, et **l'un ou l'autre** : un `radius` et une `period` pour
+une trace qui frappe, ou des `lines` pour un buff bref sur le lanceur. **Un buff**
+(`BUFF`) veut un drain — PV ou mana — et au moins une ligne : il n'a pas de dégâts,
+donc ni arbre de talents utile, ni « moyenne par lancer ».
+
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
 `Player.cast_slot()`, son nœud dans `actors/skills/` — qui passe par
@@ -412,6 +423,7 @@ champ dans `SkillStats` et son `LABELS`, sa copie dans
 `test_do_not_declare_what_nature_or_cadence_already_say`,
 `test_each_skill_casting_projectiles_has_a_speed`,
 `test_each_shape_has_the_numbers_it_needs`,
+`test_a_skill_without_a_damage_table_declares_its_points_and_its_lines`,
 `test_without_modifier_resolution_returns_the_sheet` ; et
 `tests/integration/test_manual_panel.gd :
 test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la

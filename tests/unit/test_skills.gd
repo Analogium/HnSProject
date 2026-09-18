@@ -63,6 +63,26 @@ func test_each_skill_has_what_it_takes_to_deal_damage() -> void:
 		assert_gt(c.points_max(), 0, "« %s » n'a aucun point dans sa table" % c.name)
 
 
+## Les PV du lanceur s'ajoutent aux dégâts propres de ce qui s'y adosse, et à rien
+## d'autre : c'est ce qui fait monter Immolation avec le personnage (jalon 20).
+func test_the_health_of_the_caster_scales_what_leans_on_it() -> void:
+	var small := CharacterStats.new()
+	small.max_health = 100.0
+	var big := CharacterStats.new()
+	big.max_health = 600.0
+	var aura := SkillCatalog.by_id("immolation")
+	assert_gt(aura.health_scaling, 0.0, "l'aura s'adosse aux PV")
+	assert_almost_eq(
+		aura.resolve(1, big).base_damage - aura.resolve(1, small).base_damage,
+		(big.max_health - small.max_health) * aura.health_scaling, 1e-4
+	)
+	var bolt := SkillCatalog.by_id("swift_bolt")
+	assert_eq(
+		bolt.resolve(1, big).base_damage, bolt.resolve(1, small).base_damage,
+		"et ce qui ne s'y adosse pas ne bouge pas"
+	)
+
+
 ## Un tir à vitesse nulle naît et reste sur place. Il ne se découvre qu'en le
 ## lançant, et il ressemble alors à une panne du lanceur plutôt qu'à un oubli
 ## dans le `.tres`.
@@ -168,14 +188,20 @@ func test_the_shape_gives_projectile() -> void:
 ## ressemble à une panne.
 func test_each_shape_has_the_numbers_it_needs() -> void:
 	for c: Skill in SkillCatalog.ALL:
-		var lasts := c.shape in [Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT]
-		var strike_at_interval := lasts or c.shape == Skill.Shape.AURA
-		var covers := c.shape in [Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA]
+		var lasts := c.shape in [
+			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH
+		]
+		var covers := c.shape in [
+			Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA, Skill.Shape.DASH
+		]
+		# Une ruée sans table de dégâts ne laisse **rien au sol** : sa durée est celle du
+		# buff qu'elle donne, et elle n'a ni rayon ni période.
+		var strikes := not c.damage_per_point.is_empty()
 		if lasts:
 			assert_gt(c.duration, 0.0, "« %s » : une durée" % c.name)
-		if strike_at_interval:
+		if (lasts and strikes) or c.shape == Skill.Shape.AURA:
 			assert_gt(c.period, 0.0, "« %s » : une période" % c.name)
-		if covers:
+		if covers and strikes:
 			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
 		if c.shape == Skill.Shape.CHAIN:
 			assert_gte(c.targets, 2, "« %s » : une chaîne saute" % c.name)
@@ -183,6 +209,41 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gte(c.simultaneous, 1, "« %s » : un maximum" % c.name)
 		if c.shape == Skill.Shape.AURA:
 			assert_gt(c.self_burn, 0.0, "« %s » : son prix" % c.name)
+		if c.shape == Skill.Shape.BUFF:
+			assert_gt(c.self_burn + c.self_mana_burn, 0.0, "« %s » : son prix" % c.name)
+
+
+## Une compétence sans table de dégâts — un buff — ne se lit pas sur ses dégâts : elle
+## déclare son nombre de points, et ses lignes sont ce qu'elle donne. Sans l'un des
+## deux, la case accepte des points qui ne font rien.
+func test_a_skill_without_a_damage_table_declares_its_points_and_its_lines() -> void:
+	var sheet := CharacterStats.new()
+	for c: Skill in SkillCatalog.ALL:
+		if not c.damage_per_point.is_empty():
+			assert_true(c.lines.is_empty(), "« %s » frappe : ses points sont sa table" % c.name)
+			continue
+		assert_gt(c.declared_points_max, 0, "« %s » n'accepte aucun point" % c.name)
+		assert_false(c.lines.is_empty(), "« %s » ne donne rien" % c.name)
+		# La règle des passifs, au mot près : la fiche ou un mot-clé.
+		for l in c.lines:
+			if l.scope.is_empty():
+				assert_true(
+					sheet.get(l.stat) != null and StatMod.LABELS.has(l.stat),
+					"« %s » vise « %s », qui n'est pas sur la fiche" % [c.name, l.stat]
+				)
+				continue
+			assert_true(Keywords.exists(l.scope), "« %s » vise « %s »" % [c.name, l.scope])
+			assert_true(SkillStats.modifiable(l.stat), "« %s » vise « %s »" % [c.name, l.stat])
+
+
+## Ce qu'un buff donne monte avec ses points, et ne donne rien à zéro point.
+func test_what_a_buff_gives_follows_its_points() -> void:
+	var ignition := SkillCatalog.by_id("ignition")
+	assert_eq(ignition.buff_mods(0).size(), 0, "aucun point, aucune ligne")
+	var one := ignition.buff_mods(1)
+	var four := ignition.buff_mods(4)
+	assert_eq(one.size(), ignition.lines.size(), "une ligne par ligne déclarée")
+	assert_almost_eq(four[0].value, one[0].value * 4.0, 1e-4, "quatre points, quatre fois")
 
 
 ## L'ordre est celui de la liste, pas celui de la déclaration ni celui de la
@@ -220,8 +281,12 @@ func test_without_modifier_resolution_returns_the_sheet() -> void:
 	for c in SkillCatalog.ALL:
 		var points: int = c.points_max()
 		var r: SkillStats = c.resolve(points, sheet)
-		assert_eq(r.damage_min[c.nature], c.damage(points), "« %s » : dégâts" % c.name)
-		assert_eq(r.total_min(), c.damage(points), "« %s » : dans sa seule nature" % c.name)
+		# Les PV du lanceur en plus de la table, pour ce qui s'y adosse (jalon 20).
+		var own: float = c.damage(points)
+		if own > 0.0:
+			own += sheet.max_health * c.health_scaling
+		assert_eq(r.damage_min[c.nature], own, "« %s » : dégâts" % c.name)
+		assert_eq(r.total_min(), own, "« %s » : dans sa seule nature" % c.name)
 		assert_eq(r.total_max(), r.total_min(), "« %s » : sans objet, aucune fourchette" % c.name)
 		assert_eq(r.projectile_count(), maxi(c.projectiles, 1), "« %s » : projectiles" % c.name)
 		assert_eq(r.spread_in_degrees, c.spread_in_degrees, "« %s » : dispersion" % c.name)

@@ -68,7 +68,6 @@ func test_a_character_reread_from_version_4_hits_as_before() -> void:
 		SkillCatalog.ID_ATTACK: 24.8,
 		SkillCatalog.ID_BOLT: 17.0,
 		"swift_bolt": 77.44,
-		"lightning_nova": 65.12,
 	}
 	for id in measurements:
 		var c := SkillCatalog.by_id(id)

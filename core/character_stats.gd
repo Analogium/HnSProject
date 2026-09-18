@@ -54,6 +54,13 @@ extends Resource
 @export_range(0.0, 1.0) var crit_chance: float = 0.0
 @export var crit_multiplier: float = 2.0
 
+## En **points de pourcentage**, qui multiplient la chance de poser l'état : à +50, une
+## chance de base de 20 % devient 30 %. Sans chance de base, ils ne font rien.
+@export var ignite_chance: float = 0.0
+## La chance, en points de pourcentage, qu'un coup porté à un engourdi laisse une charge
+## statique. Zéro : aucune.
+@export var static_charge_chance: float = 0.0
+
 @export_group("Déplacement")
 @export var move_speed: float = 90.0
 

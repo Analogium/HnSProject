@@ -8,6 +8,8 @@
 [ext_resource type="Resource" path="res://resources/skills/fireball.tres" id="10_boule_de_feu"]
 [ext_resource type="Resource" path="res://resources/skills/hell_snake.tres" id="11_serpent_infernal"]
 [ext_resource type="Resource" path="res://resources/skills/immolation.tres" id="12_immolation"]
+[ext_resource type="Resource" path="res://resources/skills/flame_dash.tres" id="13_ruee_ardente"]
+[ext_resource type="Resource" path="res://resources/skills/ignition.tres" id="14_ignition"]
 
 [sub_resource type="Resource" id="L_boule_de_feu_attisement_0"]
 script = ExtResource("4_ligne")
@@ -170,6 +172,64 @@ skill = ExtResource("12_immolation")
 position = Vector2i(2, 0)
 talents = Array[ExtResource("3_noeud")]([SubResource("N_immolation_brasier"), SubResource("N_immolation_fournaise"), SubResource("N_immolation_flamme_noire")])
 
+[sub_resource type="Resource" id="L_ruee_ardente_sillage_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_ruee_ardente_sillage"]
+script = ExtResource("3_noeud")
+id = "flame_dash_wake"
+name = "Sillage"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_sillage_0")])
+
+[sub_resource type="Resource" id="L_ruee_ardente_braises_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_ruee_ardente_braises"]
+script = ExtResource("3_noeud")
+id = "flame_dash_embers"
+name = "Braises"
+position = Vector2i(1, 0)
+parent = "flame_dash_wake"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_braises_0")])
+
+[sub_resource type="Resource" id="L_ruee_ardente_bucher_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_ruee_ardente_bucher"]
+script = ExtResource("3_noeud")
+id = "flame_dash_pyre"
+name = "Bûcher"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_bucher_0")])
+
+[sub_resource type="Resource" id="C_ruee_ardente"]
+script = ExtResource("2_case")
+skill = ExtResource("13_ruee_ardente")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_ardente_sillage"), SubResource("N_ruee_ardente_braises"), SubResource("N_ruee_ardente_bucher")])
+
+[sub_resource type="Resource" id="C_ignition"]
+script = ExtResource("2_case")
+skill = ExtResource("14_ignition")
+position = Vector2i(1, 1)
+
 [sub_resource type="Resource" id="L_coeur_de_braise_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
@@ -199,4 +259,4 @@ position = Vector2i(0, 1)
 script = ExtResource("1_arch")
 id = "fire"
 name = "Maître des flammes"
-cells = Array[ExtResource("2_case")]([SubResource("C_boule_de_feu"), SubResource("C_serpent_infernal"), SubResource("C_immolation"), SubResource("C_coeur_de_braise")])
+cells = Array[ExtResource("2_case")]([SubResource("C_boule_de_feu"), SubResource("C_serpent_infernal"), SubResource("C_immolation"), SubResource("C_ruee_ardente"), SubResource("C_coeur_de_braise"), SubResource("C_ignition")])

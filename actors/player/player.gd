@@ -9,6 +9,8 @@ signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(level: int)
 ## Un nœud de l'arbre pris ou repris, ou un point d'arbre gagné.
 signal passives_changed
+## Un geste entretenu s'est allumé ou éteint : le bandeau en montre les icônes.
+signal buffs_changed
 signal equipment_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
@@ -35,6 +37,9 @@ const BASIC_ATTACK_POINTS := 1
 const PLACEMENT_RANGE := 140.0
 ## Ce qui distingue une frappe lourde d'un coup d'épée au toucher, en plus du dessin.
 const STRIKE_SHAKE := 2.0
+## De combien on recule le long de la visée quand l'arrivée d'une ruée est prise. Huit
+## pixels : plus fin ne se voit pas, plus gros fait rater une embrasure.
+const LANDING_STEP := 8.0
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud depuis l'arène.
 @export var swing_duration: float = 0.12
@@ -54,6 +59,8 @@ const STRIKE_SHAKE := 2.0
 @onready var hitbox: Area2D = $AttackPivot/Hitbox
 @onready var swing_arc: SwingArc = $AttackPivot/SwingArc
 @onready var camera: Camera2D = $Camera2D
+## Le corps, pour chercher où une ruée peut atterrir.
+@onready var body_shape: CollisionShape2D = $CollisionShape2D
 
 ## Où atterrissent les tirs du joueur. Posé par la scène (zone ou arène) ;
 ## à défaut, ils naissent à côté du joueur.
@@ -106,8 +113,10 @@ var _hit_parts: Array[float] = []
 var _hit_cast: SkillStats
 var _hit_shake := 0.0
 var _is_swinging := false
-## L'aura allumée, ou null. Une seule : Immolation est la seule compétence entretenue.
-var _aura: Immolation
+## Les gestes entretenus allumés, par identifiant de compétence : une aura et les
+## buffs. Leurs nœuds vivent sous le joueur ; le dictionnaire dit lequel répond à
+## quelle case.
+var _lit := {}
 var _crown: BladeCrown
 ## Ce que la brûlure d'Immolation a pris depuis le dernier chiffre affiché.
 var _burn_to_show := StatusEffects.Pack.new()
@@ -130,6 +139,7 @@ func _ready() -> void:
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
 	hurtbox.states = states
+	states.struck.connect(_on_struck)
 	states.change.connect(_show_states)
 	states.reached.connect(_announce_state)
 	states.heal.connect(_heal)
@@ -209,16 +219,16 @@ func cast_slot(index: int) -> bool:
 		return false
 	var cast := resolve(skill, points)
 
-	if skill.shape == Skill.Shape.AURA:
-		# Tenir la touche n'alterne pas : une aura qui clignote serait inutilisable.
+	if _is_sustained(skill.shape):
+		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
+		# inutilisable.
 		_held[index] = false
-		if aura_lit():
+		if lit(skill.id):
 			# Éteindre n'est pas lancer : ni coût, la recharge seulement contre le rebond.
-			_aura.extinguish()
-			_aura = null
+			extinguish(skill.id)
 			_recharges[index] = cast.interval
 			return true
-	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre une aura.
+	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre ce qui brûle.
 	if not skill.usable_with(_weapon_base()):
 		return false
 	if mana < cast.mana_cost:
@@ -245,7 +255,11 @@ func cast_slot(index: int) -> bool:
 		Skill.Shape.SNAKE:
 			HellSnake.drop(_effects_parent(), _aim_point(), cast, facing, states)
 		Skill.Shape.AURA:
-			_aura = Immolation.ignite(self, skill)
+			_light(skill.id, Immolation.ignite(self, skill))
+		Skill.Shape.BUFF:
+			_light(skill.id, Buff.light(self, skill))
+		Skill.Shape.DASH:
+			_dash(skill, cast)
 		Skill.Shape.ORBIT:
 			_blade_crown().add_to(cast)
 		Skill.Shape.STRIKE:
@@ -257,8 +271,45 @@ func cast_slot(index: int) -> bool:
 	return true
 
 
+## Ce geste entretenu brûle-t-il en ce moment.
+func lit(skill_id: String) -> bool:
+	# Sans type : assigner une instance déjà libérée à une variable typée est en soi une
+	# erreur, avant même le test de validité (invariant 4).
+	var node: Variant = _lit.get(skill_id)
+	return is_instance_valid(node) and not (node as Node).is_queued_for_deletion()
+
+
+## Une aura, quelle qu'elle soit : ce que la mort et l'arène demandent.
 func aura_lit() -> bool:
-	return is_instance_valid(_aura) and _aura.lit()
+	for id: String in _lit:
+		if lit(id) and _lit[id] is Immolation:
+			return true
+	return false
+
+
+## **Le seul chemin de l'extinction**, touche ou réserve vide : le nœud s'en va et la
+## fiche perd les lignes du buff.
+func extinguish(skill_id: String) -> void:
+	var node: Variant = _lit.get(skill_id)
+	_lit.erase(skill_id)
+	if is_instance_valid(node):
+		(node as Node).extinguish()
+	_after_buff_change()
+
+
+## L'allumage, son pendant : la fiche reçoit les lignes du buff.
+func _light(skill_id: String, node: Node) -> void:
+	# Une ruée relancée avant la fin de son buff remplace le sien : sans ça le premier
+	# nœud brûlerait sans que rien ne le tienne plus.
+	var old: Variant = _lit.get(skill_id)
+	if is_instance_valid(old) and old != node:
+		(old as Node).extinguish()
+	_lit[skill_id] = node
+	_after_buff_change()
+
+
+static func _is_sustained(shape: Skill.Shape) -> bool:
+	return shape == Skill.Shape.AURA or shape == Skill.Shape.BUFF
 
 
 ## Combien d'épées tournent autour du personnage.
@@ -285,6 +336,18 @@ func burn(part_per_second: float, distribution: Array[float], delta: float) -> v
 		_die()
 
 
+## Ce qu'un buff prend à la réserve cette image-ci. Faux quand elle est vide : le buff
+## s'éteint, là où la brûlure des PV tue. Aucun drain demandé, rien à payer.
+func drain(part_per_second: float, delta: float) -> bool:
+	if part_per_second <= 0.0:
+		return true
+	var cost := stats.max_mana * part_per_second * delta
+	if mana < cost:
+		return false
+	_set_mana(mana - cost)
+	return true
+
+
 ## Ce que les états brûlent, ôté par le seul chemin de la vie.
 func _suffer_states(delta: float) -> void:
 	var loss := states.advance(delta)
@@ -303,6 +366,19 @@ func _heal(amount: float) -> void:
 		_set_health(health + amount)
 
 
+## Un coup du joueur vient de toucher : **le seul endroit** qui tire la charge statique.
+## La condition porte sur l'état — chance non nulle, cible engourdie — et jamais sur le
+## résultat, donc le nombre de tirages ne dépend pas de ce qui sort (invariant 3).
+func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
+	if stats.static_charge_chance <= 0.0 or victim == null:
+		return
+	if not victim.active(StatusEffects.Kind.NUMB):
+		return
+	if Game.rng.randf() * 100.0 >= stats.static_charge_chance:
+		return
+	StaticCharge.put(_effects_parent(), at, at - global_position, parts, states)
+
+
 ## Un état neuf s'annonce : la pastille seule ne dirait pas pourquoi on ralentit.
 func _announce_state(kind: int) -> void:
 	if HitFeedback.current != null:
@@ -312,6 +388,42 @@ func _announce_state(kind: int) -> void:
 func _show_states() -> void:
 	sprite.show_states(states)
 	health_bar.show_states(states)
+
+
+## Une ruée : on se **porte** au curseur, murs et ennemis traversés — seule l'arrivée
+## doit être libre. Ni gel ni secousse : ce qui dure ne fige jamais.
+##
+## Ce qu'elle laisse derrière, **jamais les deux** : une trace qui frappe quand elle a
+## un rayon et une période, ou un buff bref sur le lanceur quand elle a des lignes.
+func _dash(skill: Skill, cast: SkillStats) -> void:
+	var from_value := global_position
+	global_position = _landing(from_value, _aim_point())
+	if cast.period > 0.0 and cast.radius > 0.0:
+		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
+	elif not skill.lines.is_empty():
+		_light(skill.id, Buff.light(self, skill, cast.duration))
+
+
+## Le point le plus proche de la visée où le corps tient, en reculant vers le départ.
+## Le départ ferme la marche : on en vient, donc on y tient.
+func _landing(from_value: Vector2, toward: Vector2) -> Vector2:
+	var steps := maxi(ceili(from_value.distance_to(toward) / LANDING_STEP), 1)
+	for i in steps:
+		var point := toward.lerp(from_value, float(i) / float(steps))
+		if _fits_at(point):
+			return point
+	return from_value
+
+
+## **Le décor seul** : un ennemi sous les pieds se repousse de lui-même à l'image
+## suivante, la roche non.
+func _fits_at(point: Vector2) -> bool:
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = body_shape.shape
+	query.transform = Transform2D(0.0, point)
+	query.collision_mask = Targets.DECOR
+	query.collide_with_areas = false
+	return get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 
 ## Au curseur, à `PLACEMENT_RANGE` au plus ; à la manette, à cette distance devant.
@@ -483,10 +595,11 @@ func recompute_stats() -> void:
 			mods.append_array(item.mods())
 
 	# Les passifs du râtelier et de l'arbre, dans la même liste et le même tri que les
-	# objets.
+	# objets — et les buffs allumés, qui ne durent que tant qu'on les paie.
 	for book in rack.equipped_items():
 		mods.append_array(book.passive_mods())
 	mods.append_array(passive_tree.mods(passives))
+	mods.append_array(buff_mods())
 
 	# En trois temps — attributs, dérivation, reste — pour que « +20 force » rapporte ses
 	# PV et que « +10 % PV » les multiplie. Ce qui vise un mot-clé part à part, pour le
@@ -516,8 +629,51 @@ func recompute_stats() -> void:
 	# Un multiplicateur sous 1 transformerait un critique en coup amorti.
 	stats.crit_multiplier = maxf(stats.crit_multiplier, 1.0)
 
+	# Ce que le joueur inflige en plus voyage avec ses états : c'est le seul attribut de
+	# l'attaquant qui arrive jusqu'à la hurtbox de la cible.
+	states.ignite_chance_factor = 1.0 + stats.ignite_chance * 0.01
+
 	# Réassignée : la hurtbox défendrait sinon avec l'ancienne fiche.
 	hurtbox.stats = stats
+
+
+## Ce que les buffs allumés versent dans la fiche, par point placé : les lignes d'un
+## passif, par la même fonction. Un livre parti éteint la case et vide ses lignes.
+func buff_mods() -> Array[StatMod]:
+	var out: Array[StatMod] = []
+	for skill in lit_skills():
+		out.append_array(skill.buff_mods(skill_points(skill.id)))
+	return out
+
+
+## Ce qui brûle en ce moment, **dans l'ordre d'allumage** : la fiche y prend ses lignes,
+## le bandeau ses icônes.
+func lit_skills() -> Array[Skill]:
+	var out: Array[Skill] = []
+	for id: String in _lit:
+		if not lit(id):
+			continue
+		var skill := SkillCatalog.by_id(id)
+		if skill != null:
+			out.append(skill)
+	return out
+
+
+## Ce qu'il reste à ce geste, entre 0 et 1. **Un pour ce qui dure tant qu'on le paie** —
+## une aura, un buff sans durée : le bandeau n'y dessine aucun voile.
+func lit_ratio(skill_id: String) -> float:
+	var node: Variant = _lit.get(skill_id)
+	if not is_instance_valid(node) or not node is Buff:
+		return 1.0
+	return (node as Buff).remaining_ratio()
+
+
+## Les plafonds ont pu bouger avec les lignes du buff, comme à un changement d'objet.
+func _after_buff_change() -> void:
+	recompute_stats()
+	_set_health(health)
+	_set_mana(mana)
+	buffs_changed.emit()
 
 
 ## Fait entrer un personnage sauvegardé dans ce corps, après son _ready. **Recopie** et
@@ -806,10 +962,9 @@ func _die() -> void:
 	is_dead = true
 	set_physics_process(false)
 	velocity = Vector2.ZERO
-	# Ce qui frappait pour lui s'éteint avec lui.
-	if aura_lit():
-		_aura.extinguish()
-	_aura = null
+	# Ce qui brûlait pour lui s'éteint avec lui.
+	for id: String in _lit.keys():
+		extinguish(id)
 	if _crown != null:
 		_crown.clear()
 	# Un corps relevé ne se relève pas en flammes.

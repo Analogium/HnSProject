@@ -69,6 +69,7 @@ var duration := 0.0
 var radius := 0.0
 var period := 0.0
 var self_burn := 0.0
+var self_mana_burn := 0.0
 ## Les coups d'un geste, que la forme décide.
 var hits := 1
 ## Vrai pour ce qui n'a pas de fin, l'aura : pas de « par lancer ».
