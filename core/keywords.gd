@@ -30,12 +30,40 @@ const LABELS := {
 }
 
 
-## « … **aux sorts** » ; un mot-clé absent d'ici s'écrit par son libellé entre
-## parenthèses.
+## « … **aux sorts** » : à qui une ligne de dégâts ajoutés s'adresse. Un mot-clé absent
+## d'ici retombe sur son libellé entre parenthèses — un repli, pas une façon d'écrire :
+## `test_no_content_line_ends_in_parentheses` dit quand il faut lui écrire sa phrase.
 const RECIPIENTS := {
-	ATTACK: "aux attaques",
+	PROJECTILE: "aux projectiles",
+	AREA: "aux compétences de zone",
+	LIGHTNING: "aux compétences de foudre",
+	FIRE: "aux compétences de feu",
 	SPELL: "aux sorts",
+	ATTACK: "aux attaques",
+	MELEE: "aux attaques de mêlée",
 }
+
+
+## Ce qui qualifie un nom dans la phrase : « dégâts **de feu** accrus ». L'ordre des
+## mots change avec la langue — « fire damage » —, donc c'est le gabarit
+## `{stat} {qualificatif}` de `StatMod` qui les assemble, jamais une concaténation.
+##
+## Distinct de `RECIPIENTS`, qui dit à **qui** une ligne s'adresse (« aux sorts ») : ici
+## on dit de **quoi** on parle.
+const QUALIFIERS := {
+	PROJECTILE: "de projectile",
+	AREA: "de zone",
+	LIGHTNING: "de foudre",
+	FIRE: "de feu",
+	SPELL: "de sort",
+	ATTACK: "d'attaque",
+	MELEE: "de mêlée",
+}
+
+
+## Vide pour ce qui n'en a pas : la phrase se passe alors de qualificatif.
+static func qualifier(id: String) -> String:
+	return Texts.t(QUALIFIERS[id]) if QUALIFIERS.has(id) else ""
 
 
 static func recipient(id: String) -> String:

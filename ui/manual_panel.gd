@@ -801,6 +801,18 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			_in_nature(cast.base_damage, cast.base_damage, skill.nature),
 			DamageType.COLORS[skill.nature]
 		))
+	# Ce que les PV du lanceur ajoutent aux dégâts propres, et à quel taux : sans cette
+	# ligne, « de base » monte avec la vie sans que rien ne dise pourquoi.
+	if skill.health_scaling > 0.0:
+		var from_life := _player.stats.max_health * skill.health_scaling
+		out.append(SheetLine.new(
+			Group.DAMAGE, Texts.t("adossé aux PV"),
+			"%s · %s" % [
+				StatMod.percentage(skill.health_scaling * 100.0),
+				_in_nature(from_life, from_life, skill.nature)
+			],
+			DamageType.COLORS[skill.nature]
+		))
 	for nature in DamageType.Kind.size():
 		if cast.added_max[nature] > 0.0:
 			out.append(SheetLine.new(

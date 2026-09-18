@@ -271,6 +271,8 @@ func _expected() -> Dictionary:
 		out[Keywords.LABELS[id]] = "mot-clé"
 	for id in Keywords.RECIPIENTS:
 		out[Keywords.RECIPIENTS[id]] = "destinataire d'une ligne"
+	for id in Keywords.QUALIFIERS:
+		out[Keywords.QUALIFIERS[id]] = "qualificatif d'un mot-clé"
 	for id in EquipmentSlots.SLOTS:
 		out[EquipmentSlots.SLOTS[id]["label"]] = "emplacement d'équipement"
 	for field in StatMod.LABELS:

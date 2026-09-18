@@ -134,8 +134,14 @@ static func from_definition(
 
 ## **Le seul endroit qui écrit un pourcentage**, selon la typographie de la langue :
 ## « 20 % » en français, « 20% » en anglais.
-static func percentage(value: int, with_sign := false) -> String:
-	return Texts.t("{valeur} %").format({"valeur": ("%+d" if with_sign else "%d") % value})
+##
+## Une décimale **seulement quand il en faut une** : « 0,8 % » se perdrait à l'entier, et
+## « 20,0 % » annoncerait une précision qu'on n'a pas.
+static func percentage(value: float, with_sign := false) -> String:
+	var written := ("%+d" if with_sign else "%d") % roundi(value)
+	if not is_equal_approx(value, roundf(value)):
+		written = ("%+.1f" if with_sign else "%.1f") % value
+	return Texts.t("{valeur} %").format({"valeur": written})
 
 
 ## L'unité déduite du gabarit, pour qu'une plage ne la répète pas.
@@ -196,26 +202,51 @@ static func name(stat_name: String, p_scope := "") -> String:
 		if p_scope.is_empty():
 			return DamageType.damage_label(nature)
 		return "%s %s" % [DamageType.damage_label(nature), Keywords.recipient(p_scope)]
-	return _noun(stat_name) + _complement(stat_name, p_scope)
+	return _noun(stat_name, p_scope) + _complement(stat_name, p_scope)
 
 
-## Le nom de ce qui change, sans ce qui le précise : « dégâts », « armure ».
-static func _noun(stat_name: String) -> String:
+## Le nom de ce qui change, **avec le mot-clé qui le qualifie** : « dégâts de feu »,
+## « armure ». Le mot-clé entre dans la phrase et non entre parenthèses au bout : on lit
+## « dégâts de feu accrus contre les embrasés », là où « dégâts accrus contre les
+## embrasés (Feu) » se déchiffre.
+##
+## Par un gabarit, parce que l'ordre des mots change avec la langue : le qualificatif
+## suit le nom en français et le précède en anglais.
+static func _noun(stat_name: String, p_scope := "") -> String:
+	var out := ""
 	if LABELS.has(stat_name):
-		return Texts.t(LABELS[stat_name])
-	if SkillStats.against(stat_name) >= 0:
-		return Texts.t(SkillStats.LABELS[SkillStats.DAMAGE])
-	return Texts.t(SkillStats.LABELS.get(stat_name, stat_name))
+		out = Texts.t(LABELS[stat_name])
+	elif SkillStats.against(stat_name) >= 0:
+		out = Texts.t(SkillStats.LABELS[SkillStats.DAMAGE])
+	else:
+		out = Texts.t(SkillStats.LABELS.get(stat_name, stat_name))
+
+	var said := Keywords.qualifier(p_scope) if _qualifies(stat_name) else ""
+	if said.is_empty():
+		return out
+	return Texts.t("{stat} {qualificatif}").format({"stat": out, "qualificatif": said})
 
 
-## Ce qui suit le nom : « contre les embrasés », puis « (Sort) ».
-static func _complement(stat_name: String, p_scope: String) -> String:
+## **Les dégâts et les niveaux** se qualifient par leur mot-clé : « dégâts de feu » se
+## lit, « nombre de projectiles de projectile » non. Ailleurs le mot-clé ne qualifie
+## pas le nom, il dit quelles compétences sont touchées, et il reste au bout.
+static func _qualifies(stat_name: String) -> bool:
+	return (
+		stat_name == SkillStats.DAMAGE
+		or stat_name == SkillStats.LEVELS
+		or SkillStats.against(stat_name) >= 0
+	)
+
+
+## Ce qui suit le nom : « contre les embrasés », puis **à qui la ligne s'adresse** quand
+## le nom n'a pas pu prendre le mot-clé — « +10 % de rayon accru aux zones ».
+static func _complement(stat_name: String, p_scope := "") -> String:
 	var out := ""
 	var kind := SkillStats.against(stat_name)
 	if kind >= 0:
 		out += " " + Texts.t(StatusEffects.AGAINST[kind])
-	if not p_scope.is_empty():
-		out += " (%s)" % Keywords.label_of(p_scope)
+	if not p_scope.is_empty() and not _qualifies(stat_name):
+		out += " " + Keywords.recipient(p_scope)
 	return out
 
 
@@ -231,7 +262,7 @@ static func agreement(stat_name: String) -> String:
 ## « dégâts accrus contre les embrasés » : une ligne de fiche nommée par son terme.
 static func term_label(stat_name: String, term_id: String, p_scope := "") -> String:
 	return Texts.t("{stat} {terme}{complement}").format({
-		"stat": _noun(stat_name),
+		"stat": _noun(stat_name, p_scope),
 		"terme": Glossary.term(term_id, agreement(stat_name)),
 		"complement": _complement(stat_name, p_scope),
 	})
@@ -266,7 +297,7 @@ func readable_value() -> String:
 ## sorts ».
 func label() -> String:
 	if mode != Mode.FLAT:
-		var noun := _noun(stat)
+		var noun := _noun(stat, scope)
 		var fields := {
 			"valeur": value_label(stat, mode, value),
 			"stat": noun,
@@ -277,13 +308,14 @@ func label() -> String:
 			return Texts.t("{valeur} d'{stat} {terme}{complement}").format(fields)
 		return Texts.t("{valeur} de {stat} {terme}{complement}").format(fields)
 	if stat == SkillStats.LEVELS:
+		# Le **qualificatif** et non le destinataire : « +1 niveau de compétence de feu »
+		# se lit, « aux compétences de feu » redirait deux fois « compétence ».
 		var levels := roundi(value)
-		return "%s %s" % [
-			Texts.tn("+{n} niveau de compétence", "+{n} niveaux de compétence", levels).format(
-				{"n": levels}
-			),
-			Keywords.recipient(scope),
-		]
+		return Texts.tn(
+			"+{n} niveau de compétence {qualificatif}",
+			"+{n} niveaux de compétence {qualificatif}",
+			levels
+		).format({"n": levels, "qualificatif": Keywords.qualifier(scope)})
 	if stat in ADDED_TO_BASE:
 		var added := {"valeur": value_label(stat, mode, value), "stat": _noun(stat)}
 		if ELIDING.contains(added["stat"].left(1).to_lower()):

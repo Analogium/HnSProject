@@ -716,8 +716,10 @@ func test_bonus_levels_extend_the_table() -> void:
 
 
 func test_a_level_line_reads_in_words() -> void:
-	assert_eq(_levels(1.0, Keywords.FIRE).label(), "+1 niveau de compétence (Feu)")
-	assert_eq(_levels(2.0, Keywords.SPELL).label(), "+2 niveaux de compétence aux sorts")
+	# Le mot-clé qualifie la compétence dans la phrase : « aux compétences de feu »
+	# redirait deux fois « compétence » (jalon 20).
+	assert_eq(_levels(1.0, Keywords.FIRE).label(), "+1 niveau de compétence de feu")
+	assert_eq(_levels(2.0, Keywords.SPELL).label(), "+2 niveaux de compétence de sort")
 
 
 ## L'accru contre un état **rejoint les accrus du lancer** : +50 % partout et +50 %
@@ -742,7 +744,7 @@ func test_damage_against_a_state_adds_to_the_increased() -> void:
 
 func test_a_line_against_a_state_says_which() -> void:
 	var m := _mod(SkillStats.against_stat(StatusEffects.Kind.IGNITE), StatMod.Mode.PERCENT, 30.0, Keywords.SPELL)
-	assert_eq(Glossary.plain(m.label()), "+30 % de dégâts accrus contre les embrasés (Sort)")
+	assert_eq(Glossary.plain(m.label()), "+30 % de dégâts de sort accrus contre les embrasés")
 	assert_true(SkillStats.modifiable(m.stat))
 
 

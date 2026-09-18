@@ -76,6 +76,44 @@ func test_everything_modifiable_reads_on_the_sheet() -> void:
 		assert_true(visible_ones.has(a.stat), "l'affixe %s est visible sur la fiche" % a.id)
 
 
+## **Aucune ligne de dégâts ne finit entre parenthèses.** Le mot-clé entre dans la
+## phrase — « dégâts de feu accrus » — ou nomme son destinataire — « aux projectiles ».
+## Le repli de `Keywords.recipient()` écrit « (Zone) » au bout, ce qui se déchiffre au
+## lieu de se lire : ce test dit quand il faut écrire sa phrase à un mot-clé (jalon 20).
+func test_no_content_line_ends_in_parentheses() -> void:
+	var checked := 0
+	for m in _every_content_line():
+		if m.stat != SkillStats.DAMAGE and SkillStats.added_nature(m.stat) < 0 				and SkillStats.against(m.stat) < 0:
+			continue
+		checked += 1
+		assert_false(
+			Glossary.plain(m.label()).contains("("),
+			"« %s » (%s) : le mot-clé reste au bout" % [Glossary.plain(m.label()), m.scope]
+		)
+	assert_gt(checked, 0, "encore faut-il qu'il y ait des lignes de dégâts")
+
+
+## Tout ce que le contenu peut écrire comme ligne : les affixes d'objet, les nœuds de
+## l'arbre, et ce que portent les manuels — passifs, nœuds de talent, buffs.
+func _every_content_line() -> Array[StatMod]:
+	var out: Array[StatMod] = []
+	for a in ItemAffixPool.ALL:
+		out.append((a as ItemAffix).modifier(1.0, 2.0))
+	for node in PassiveTree.shared().nodes:
+		out.append_array((node as PassiveNode).mods())
+	for base: ItemBase in ItemCatalog.ALL:
+		if base.manual == null:
+			continue
+		for passive in base.manual.passives():
+			out.append_array(passive.mods(1))
+		for cell: ManualCell in base.manual.cells:
+			for talent: TalentNode in cell.talents:
+				out.append_array(talent.mods(1))
+			if cell.skill != null:
+				out.append_array(cell.skill.buff_mods(1))
+	return out
+
+
 func test_an_affix_only_rolls_on_the_right_slot() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7

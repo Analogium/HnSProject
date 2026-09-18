@@ -63,7 +63,9 @@ func test_a_percentage_reads_in_english() -> void:
 	var increased_text := Glossary.plain(increased.label())
 	var less_text := Glossary.plain(less.label())
 	Settings.from_dict({"language": Settings.FRENCH})
-	assert_eq(increased_text, "+20% increased damage (Lightning)")
+	# Le mot-clé qualifie les dégâts **dans la phrase**, et l'anglais le met avant le nom
+	# là où le français le met après (jalon 20).
+	assert_eq(increased_text, "+20% increased lightning damage")
 	assert_eq(less_text, "-20% less HP")
 
 
@@ -91,13 +93,19 @@ func test_each_label_has_its_agreement() -> void:
 ## Une ligne portée dit ce qu'elle vise, avec **le libellé de la page du manuel** :
 ## « +20 % dégâts » tout court se lirait comme la ligne de fiche du même nom.
 func test_a_scoped_modifier_says_what_it_targets() -> void:
+	# Hors des dégâts, le mot-clé ne qualifie pas le nom — « nombre de projectiles de
+	# projectile » ne se lit pas : il dit **à qui** la ligne s'adresse, au bout.
 	assert_eq(
 		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, Keywords.PROJECTILE).label(),
-		"+1 nombre de projectiles (Projectile)"
+		"+1 nombre de projectiles aux projectiles"
+	)
+	assert_eq(
+		Glossary.plain(StatMod.new("radius", StatMod.Mode.PERCENT, 10.0, Keywords.AREA).label()),
+		"+10 % de rayon accru aux compétences de zone"
 	)
 	assert_eq(
 		Glossary.plain(StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.LIGHTNING).label()),
-		"+20 % de dégâts accrus (Foudre)"
+		"+20 % de dégâts de foudre accrus"
 	)
 
 

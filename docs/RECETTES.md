@@ -449,7 +449,10 @@ seul.** Il arrive avec au moins un affixe qui le vise, ou il n'arrive pas.
 1. **`core/keywords.gd`** — la constante, puis son entrée dans `LABELS`, **à
    sa place dans l'ordre de lecture** : ce que la compétence fait, sa nature, sa
    famille. L'identifiant est **définitif** (invariant 1) ; le libellé se change
-   librement.
+   librement. Puis **ses deux phrases** : `QUALIFIERS` (« de feu »), qui qualifie les
+   dégâts et les niveaux dans la phrase, et `RECIPIENTS` (« aux compétences de feu »),
+   qui dit à qui s'adresse tout le reste. Sans elles, la ligne finit entre parenthèses
+   et `test_no_content_line_ends_in_parentheses` la refuse.
 2. **D'où il vient** :
    - de la nature → une entrée dans `Skill.KEYWORD_OF_NATURE` ;
    - de la cadence → une entrée dans `Skill.KEYWORD_OF_CADENCE` ;
@@ -465,9 +468,9 @@ seul.** Il arrive avec au moins un affixe qui le vise, ou il n'arrive pas.
 `tests/unit/test_affixes.gd : test_each_keyword_is_targeted_by_something` —
 le mot-clé décoratif, affiché sans que rien ne le vise.
 
-**Et son anglais** : son libellé dans `i18n/en.po`, plus son destinataire s'il
-en a un (« aux sorts » → « to spells »), qui est le morceau de phrase que porte
-une ligne de dégâts ajoutés.
+**Et son anglais** : son libellé dans `i18n/en.po`, son qualificatif (« de feu » →
+« fire », que le gabarit remet avant le nom) et son destinataire (« aux sorts » →
+« to spells »).
 
 ---
 

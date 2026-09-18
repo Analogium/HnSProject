@@ -357,6 +357,29 @@ func test_a_granted_buff_reads_under_its_name() -> void:
 	assert_eq(_values(lines, "durée").size(), 1, "et nulle part ailleurs")
 
 
+## Une compétence adossée aux PV le **dit** : son taux, et ce qu'il ajoute sur cette
+## fiche-là. Sans cette ligne, « de base » monte avec la vie du personnage sans que rien
+## ne l'explique (jalon 20).
+func test_a_skill_backed_by_life_says_so() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_fire"))
+	book.manual.gain_experience(999999)
+	_player.rack.remove(0)
+	_player.study(book, 0)
+	book.manual.invest(book.base.manual, "immolation")
+
+	var aura := SkillCatalog.by_id("immolation")
+	var values := _values(_sheet_of(book, "immolation"), "adossé aux PV")
+	assert_eq(values.size(), 1, "la ligne y est")
+	assert_string_contains(
+		values[0], str(roundi(_player.stats.max_health * aura.health_scaling)),
+		"avec ce qu'elle donne sur cette fiche"
+	)
+	assert_eq(
+		_values(_sheet_of(book, "fireball"), "adossé aux PV").size(), 0,
+		"et rien pour ce qui ne s'y adosse pas"
+	)
+
+
 ## Un déplacement ne touche personne : sa fiche n'annonce ni dégâts, ni forme, ni
 ## moyenne — **même l'arme à la main**, dont les fourchettes entrent dans tout ce qui
 ## porte « sort ». Le lancer les porte, la fiche ne les montre pas.

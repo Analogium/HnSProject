@@ -249,6 +249,48 @@ msgstr "Combustion"
 msgid "Champ statique"
 msgstr "Static Field"
 
+msgid "{stat} {qualificatif}"
+msgstr "{qualificatif} {stat}"
+
+msgid "de projectile"
+msgstr "projectile"
+
+msgid "de zone"
+msgstr "area"
+
+msgid "de foudre"
+msgstr "lightning"
+
+msgid "de feu"
+msgstr "fire"
+
+msgid "de sort"
+msgstr "spell"
+
+msgid "d'attaque"
+msgstr "attack"
+
+msgid "de mêlée"
+msgstr "melee"
+
+msgid "aux projectiles"
+msgstr "to projectiles"
+
+msgid "adossé aux PV"
+msgstr "backed by life"
+
+msgid "aux compétences de zone"
+msgstr "to area skills"
+
+msgid "aux compétences de foudre"
+msgstr "to lightning skills"
+
+msgid "aux compétences de feu"
+msgstr "to fire skills"
+
+msgid "aux attaques de mêlée"
+msgstr "to melee attacks"
+
 msgid "Sillage"
 msgstr "Wake"
 
@@ -1303,10 +1345,10 @@ msgstr "bleeding"
 msgid "niveaux de compétence"
 msgstr "skill levels"
 
-msgid "+{n} niveau de compétence"
-msgid_plural "+{n} niveaux de compétence"
-msgstr[0] "+{n} skill level"
-msgstr[1] "+{n} skill levels"
+msgid "+{n} niveau de compétence {qualificatif}"
+msgid_plural "+{n} niveaux de compétence {qualificatif}"
+msgstr[0] "+{n} {qualificatif} skill level"
+msgstr[1] "+{n} {qualificatif} skill levels"
 
 # ---------------------------------------------------------------------------
 # Glossaire (jalon 15)

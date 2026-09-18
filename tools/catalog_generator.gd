@@ -226,6 +226,8 @@ func _shape(c: Skill) -> String:
 		out.append("%d au plus" % c.simultaneous)
 	if c.self_burn > 0.0:
 		out.append("brûle %d %% PV/s" % roundi(c.self_burn * 100.0))
+	if c.health_scaling > 0.0:
+		out.append("adossé aux PV %.1f %%" % (c.health_scaling * 100.0))
 	return " · ".join(out)
 
 

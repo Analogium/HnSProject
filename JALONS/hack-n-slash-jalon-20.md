@@ -629,3 +629,36 @@ ruée parce qu'un modificateur porté l'avait monté, et que la fiche l'imprimai
 demander si la compétence frappait.
 
 **Suite : 799 tests, 799 passent.**
+
+---
+
+## 15. Le mot-clé entre dans la phrase
+
+**Immolation ne disait pas qu'elle monte avec les PV.** Sa ligne « de base » grossissait
+avec la vie du personnage sans que rien ne l'explique. La fiche porte maintenant
+« adossé aux PV : 0.8 % · 5 feu » — le taux, et ce qu'il donne **sur cette fiche-là** —,
+et le catalogue le dit aussi. `StatMod.percentage()` a gagné sa décimale au passage,
+**seulement quand il en faut une** : « 0,8 % » se perdait à l'entier, et « 20,0 % »
+annoncerait une précision qu'on n'a pas.
+
+**Le mot-clé d'une ligne ne se met plus entre parenthèses au bout.** Deux formes le
+remplacent, et `StatMod._qualifies()` tranche :
+
+- **les dégâts et les niveaux de compétence** le prennent comme **qualificatif**
+  (`Keywords.QUALIFIERS`) : « +25 % de dégâts **de feu** accrus contre les embrasés »,
+  « +1 niveau de compétence **de feu** » ;
+- **tout le reste** dit à qui il s'adresse (`Keywords.RECIPIENTS`) : « +10 % de rayon
+  accru **aux compétences de zone** ». Parce que « rayon de zone accru » ne se lit pas,
+  et « nombre de projectiles **de projectile** » encore moins.
+
+L'ordre des mots n'est pas le même dans les deux langues — « dégâts de feu », « fire
+damage » —, donc c'est un **gabarit** qui les assemble, `{stat} {qualificatif}`, que
+`en.po` retourne. Une concaténation aurait donné « damage fire ».
+
+Le repli entre parenthèses reste dans `Keywords.recipient()` pour un mot-clé à qui
+personne n'a encore écrit sa phrase, et **`test_no_content_line_ends_in_parentheses` dit
+quand c'est le cas** : il balaie tout ce que le contenu peut écrire — affixes d'objet,
+nœuds de l'arbre, passifs, nœuds de talent, buffs — et refuse une ligne de dégâts qui
+finirait au bout. Les sept mots-clés ont leurs deux phrases.
+
+**Suite : 801 tests, 801 passent.**
