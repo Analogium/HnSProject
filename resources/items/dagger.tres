@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemBase" format=3]
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/item_base.gd" id="1_ns7dc"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/dagger.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_ns7dc")
@@ -8,6 +9,7 @@ id = "dagger"
 display_name = "Dague"
 kind = "dagger"
 tags = PackedStringArray("weapon", "melee", "blade")
+icon = ExtResource("2_icon")
 grid_size = Vector2i(1, 2)
 lineage = "dagger"
 implicit_stat = "attack_speed"

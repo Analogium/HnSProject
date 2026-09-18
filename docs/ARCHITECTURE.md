@@ -7,15 +7,14 @@ chronologie.
 
 ## Le postulat
 
-**Aucun asset n'existe sur le disque.** Pas une image, pas une planche de tuiles.
-Les sprites, les icônes d'objets et le TileSet sont calculés par du code au
-premier appel, puis gardés en cache pour la session. Une graine dérivée du nom et
-du numéro de variante fait que le même personnage ressort identique à chaque
-lancement.
+**Tout ce qui bouge est calculé par du code.** Les sprites d'acteurs et le
+TileSet n'existent pas sur le disque : ils sont peints au premier appel, puis
+gardés en cache pour la session. Une graine dérivée du nom et du numéro de
+variante fait que le même personnage ressort identique à chaque lancement.
 
 Ça a deux conséquences que rien d'autre dans le projet ne rappelle :
 
-- **ajouter du contenu visuel, c'est écrire une fonction**, pas importer un
+- **ajouter un acteur ou une tuile, c'est écrire une fonction**, pas importer un
   fichier — voir [RECETTES.md](RECETTES.md) ;
 - **la génération procédurale est une règle de jeu**, pas une commodité. La
   silhouette d'un ennemi se déduit de sa case d'apparition, pas d'un tirage :
@@ -23,6 +22,15 @@ lancement.
 
 La porte de sortie existe : `[S]` dans la forge (F4) exporte toutes les planches
 en PNG, retouchables dans un éditeur d'image.
+
+**Ce qui ne bouge pas fait exception** : les icônes de compétences et celles des
+objets sont des PNG de `resources/icons/`, branchés sur un champ du `.tres`
+(`Skill.icon`, `ItemBase.icon`) et produits hors du jeu — voir
+[le LISEZMOI du dossier](../resources/icons/LISEZMOI.md). Une image immobile se
+juge une fois ; un sprite qui s'anime dans quatre directions et cinq variantes,
+non. **Le champ vide reste un état normal dans les deux cas** : sans image, la
+forge dessine l'objet et la barre dessine un disque, donc rien ne casse en
+attendant l'image.
 
 ## La carte
 
@@ -86,6 +94,8 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quelle rareté ? | `Item.rarity()`, **déduite** du nombre d'affixes |
 | Où va un objet équipé ? | `EquipmentSlots.free_for()` |
 | Ce qui tient dans le sac ? | `Inventory.fits()` |
+| À quoi ressemble un objet ? | `SpriteForge.inventory_icon(base, place)` dans le sac, `ground_icon(base)` au sol : l'image de `ItemBase.icon` si la base en a une, sinon le dessin de la forge d'après son `kind` et son palier. `ghost_icon(kind, place)` est le troisième chemin, celui d'un **emplacement vide** — il n'y a pas d'objet, donc pas d'image. Les trois passent par `_fit()`, qui agrandit d'un facteur **entier** |
+| Où l'arme d'un personnage est-elle dessinée ? | `SpriteForge._weapon()`, d'après `ItemBase.kind` — **le même champ** que le dessin de repli de l'icône. Une image d'objet ne le remplace pas : `test_each_base_has_a_non_empty_icon` vérifie les deux |
 | Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `SkillStats.readable_range()` ; un pourcentage, `StatMod.percentage()`, dont la typographie suit la langue |
 | En quelle langue s'écrit un texte ? | `Texts.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.language` choisit |
 | Jusqu'où descend une fenêtre flottante ? | `Hud.gauges_top()` : les jauges sont dessinées après les panneaux, et passeraient par-dessus. **« Niv. » et l'indicateur de points d'arbre compris** |

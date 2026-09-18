@@ -168,7 +168,7 @@ func _draw() -> void:
 		_text(
 			Vector2(gx, roundf(size.y - POINTS_TOP - 3.0)),
 			Texts.tn(
-				"{points} point d'arbre (P pour ouvrir)", "{points} points d'arbre  (P pour ouvrir)", _points_left
+				"{points} point d'arbre (P pour ouvrir)", "{points} points d'arbre (P pour ouvrir)", _points_left
 			).format({"points": _points_left}),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, POINTS_COLOR
 		)

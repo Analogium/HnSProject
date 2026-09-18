@@ -30,9 +30,9 @@ const ANIMS := ["idle", "walk", "attack"]
 ## du catalogue — par lignée, puis par palier — donc les trois âges d'un même
 ## objet sont voisins, et c'est exactement la comparaison qu'on vient faire.
 ##
-## Agrandies deux fois : à leur taille native l'icône fait seize pixels alors que
-## le sac l'agrandit pour remplir sa case, et une planche qui montre plus petit
-## que le jeu ne sert à rien.
+## Agrandies deux fois : à leur taille native une icône tient dans vingt-quatre
+## pixels alors que le sac l'agrandit pour remplir sa case, et une planche qui
+## montre plus petit que le jeu ne sert à rien.
 const ITEM_COLS := 6
 const ITEM_ROWS := 4
 const ITEM_CELL := Vector2(104.0, 60.0)
@@ -312,9 +312,15 @@ func _build_items() -> void:
 		var center := _item_center(rank)
 
 		var s := Sprite2D.new()
-		s.texture = SpriteForge.inventory_icon(base.kind, Vector2i.ZERO, base.tier)
+		s.texture = SpriteForge.inventory_icon(base, Vector2i.ZERO)
 		s.scale = Vector2(ITEM_SCALE, ITEM_SCALE)
-		s.position = center
+		# Posées sur un sol commun au ras de l'étiquette, et non centrées dans la
+		# case : les bases n'ont pas toutes la même hauteur, et les plus hautes
+		# passaient sous leur nom.
+		s.position = Vector2(
+			center.x,
+			center.y + ITEM_CELL.y * 0.5 - 16.0 - s.texture.get_height() * ITEM_SCALE * 0.5
+		)
 		stage.add_child(s)
 
 		var l := Label.new()
@@ -337,7 +343,9 @@ func _build_items() -> void:
 	header.text = "FORGE  —  OBJETS  %d/%d   (%d bases, par lignee puis par palier)" % [
 		page + 1, _item_pages(), ItemCatalog.ALL.size()
 	]
-	columns.text = "        palier 1 terne  |  2 acier  |  3 clair"
+	# Plus « 1 terne | 2 acier | 3 clair » : les rampes de palier ne décident plus
+	# que des bases sans image.
+	columns.text = "        palier 1 sobre  |  2 travaille  |  3 ouvrage"
 	footer.text = "\n".join([
 		"[<-] [->] page          [clic sur un objet] sa fiche : chutes, affixes, paliers",
 		"[F4] ou [ECHAP] retour",
@@ -358,7 +366,7 @@ func _build_detail() -> void:
 	columns.text = _identity(base)
 
 	var icon := Sprite2D.new()
-	icon.texture = SpriteForge.inventory_icon(base.kind, Vector2i.ZERO, base.tier)
+	icon.texture = SpriteForge.inventory_icon(base, Vector2i.ZERO)
 	icon.scale = Vector2(ITEM_SCALE, ITEM_SCALE)
 	icon.position = Vector2(size.x - 40.0, 44.0)
 	stage.add_child(icon)
@@ -644,9 +652,11 @@ func _right_column(text_value: String, at: Vector2, width: float, tint: Color) -
 ## deux pixels et où le clic reste sur l'ancienne.
 func _item_center(rank: int) -> Vector2:
 	var x0 := (size.x - ITEM_COLS * ITEM_CELL.x) * 0.5 + ITEM_CELL.x * 0.5
+	# 94 et non 76 : une icône monte jusqu'à quarante-huit pixels au-dessus de son
+	# étiquette, et la première rangée passait sous la ligne des colonnes.
 	return Vector2(
 		x0 + (rank % ITEM_COLS) * ITEM_CELL.x,
-		76.0 + (rank / ITEM_COLS) * ITEM_CELL.y
+		94.0 + (rank / ITEM_COLS) * ITEM_CELL.y
 	)
 
 

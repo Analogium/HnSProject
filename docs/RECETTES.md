@@ -22,7 +22,8 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    |---|---|
    | `id` | Unique, **définitif** — il part dans les sauvegardes (invariant 1) |
    | `display_name` | Ce que le joueur lit ; se change librement |
-   | `kind` | Le dessin, au sens de `SpriteForge` — voir l'étape 3 |
+   | `kind` | Le dessin de repli **et l'arme en main**, au sens de `SpriteForge` — voir l'étape 3 |
+   | `icon` | Son image, ou vide pour le dessin de la forge — voir l'étape 4 |
    | `family` | L'emplacement qui l'accepte, ou vide s'il ne s'équipe pas |
    | `tags` | **La famille en fait partie**, plus ce qui décrit l'objet (`melee`, `heavy`, `caster`…). Sur une arme, `caster` décide ce qu'elle laisse lancer : les sorts avec, les attaques sans |
    | `lineage` / `tier` | La suite à laquelle il appartient, et son rang |
@@ -40,9 +41,17 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    - autre chose → un cas dans `_gear()` **et** l'ajouter à la liste `GEAR`,
      qui sert d'aiguillage entre les deux.
 
-   Sans ça l'icône sort vide, et personne ne le voit avant de l'avoir ramassé.
+   À faire **même quand la base aura son image** : le `kind` est aussi l'arme
+   posée dans la main du personnage, et `test_each_base_has_a_non_empty_icon`
+   vérifie les deux séparément.
 
-4. Vérifier la **fenêtre de chute** dans `docs/CATALOGUE.md` après régénération.
+4. **Son image**, facultative — sans elle la base est jouable, dessinée par la
+   forge. Une ligne dans `tools/item_icons.json` (le sujet du prompt, la graine
+   retenue), puis `tools/item_icons.py gen --only <id>`, on choisit sur la
+   planche, et `apply` copie le PNG et branche le champ. La recette complète et
+   ses pièges : [`resources/icons/LISEZMOI.md`](../resources/icons/LISEZMOI.md).
+
+5. Vérifier la **fenêtre de chute** dans `docs/CATALOGUE.md` après régénération.
    Elle n'est écrite nulle part : elle naît de la rencontre entre `required_level`
    et le palier suivant de la lignée. Insérer un palier au milieu **raccourcit
    celui d'avant**.

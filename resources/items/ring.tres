@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemBase" format=3]
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/item_base.gd" id="1_418cp"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/ring.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_418cp")
@@ -13,3 +14,4 @@ lineage = "ring"
 implicit_stat = "crit_chance"
 implicit_percent = true
 implicit_value = 8.0
+icon = ExtResource("2_icon")

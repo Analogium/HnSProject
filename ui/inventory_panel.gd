@@ -564,7 +564,7 @@ func _draw_ghost(slot: String, r: Rect2) -> void:
 	var kind := _ghost_kind(slot)
 	if kind.is_empty():
 		return
-	_draw_centered(SpriteForge.inventory_icon(kind, Vector2i(_free_cell(r))), r, GHOST)
+	_draw_centered(SpriteForge.ghost_icon(kind, Vector2i(_free_cell(r))), r, GHOST)
 
 
 ## Le creux d'une case vide et son liseré, toujours ensemble.
@@ -706,6 +706,4 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	# remplit sa case, taillée pour sa famille. Agrandissement entier, aspect conservé.
 	var place := _free_cell(r)
 	var own := place if fill else _span_size(Inventory.footprint(item)).min(place)
-	_draw_centered(
-		SpriteForge.inventory_icon(item.base.kind, Vector2i(own), item.base.tier), r
-	)
+	_draw_centered(SpriteForge.inventory_icon(item.base, Vector2i(own)), r)

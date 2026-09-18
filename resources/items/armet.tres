@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemBase" format=3]
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/item_base.gd" id="1_r08do"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/armet.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_r08do")
@@ -9,6 +10,7 @@ display_name = "Armet"
 kind = "helmet"
 family = "helmet"
 tags = PackedStringArray("helmet", "armour", "heavy")
+icon = ExtResource("2_icon")
 grid_size = Vector2i(2, 2)
 lineage = "casque_lourd"
 tier = 3

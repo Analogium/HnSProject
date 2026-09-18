@@ -127,21 +127,49 @@ const ICON := 24
 static var _icons: Dictionary = {}
 
 
-## L'icône d'un objet posé au sol : dessinée en diagonale, à sa taille native.
-## En diagonale parce qu'une arme verticale dans un cadre carré laisse deux
-## grandes marges vides et se lit plus petite qu'elle n'est.
-static func ground_icon(kind: String, tier := 1) -> Texture2D:
-	return _icon(kind, false, Vector2i.ZERO, tier)
+## L'icône d'un objet posé au sol, à sa taille native. Le dessin de la forge y
+## part en diagonale : une arme verticale dans un cadre carré laisse deux grandes
+## marges vides et se lit plus petite qu'elle n'est. Une image, elle, garde
+## l'orientation sous laquelle elle a été produite.
+static func ground_icon(base: ItemBase) -> Texture2D:
+	return _base_icon(base, false, Vector2i.ZERO)
 
 
-## L'icône d'un objet dans le sac. Dressée à la verticale : elle épouse la forme
-## des emplacements, presque tous plus hauts que larges.
+## L'icône d'un objet dans le sac. Le dessin de la forge s'y dresse à la
+## verticale : il épouse la forme des emplacements, presque tous plus hauts que
+## larges.
 ##
-## `target` est la place disponible en pixels d'écran : le dessin y est agrandi
+## `target` est la place disponible en pixels d'écran : l'icône y est agrandie
 ## d'un facteur **entier**, un facteur fractionnaire doublant certaines lignes de
 ## pixels et pas d'autres.
-static func inventory_icon(kind: String, target: Vector2i, tier := 1) -> Texture2D:
-	return _icon(kind, true, target, tier)
+static func inventory_icon(base: ItemBase, target: Vector2i) -> Texture2D:
+	return _base_icon(base, true, target)
+
+
+## La silhouette qui remplace le nom d'un emplacement vide : il n'y a pas d'objet,
+## donc pas d'image possible — seulement le dessin de la forge, à partir du `kind`
+## que la famille suggère.
+static func ghost_icon(kind: String, target: Vector2i) -> Texture2D:
+	return _icon(kind, true, target)
+
+
+## Son image si la base en a une, le dessin de la forge sinon. Le champ vide est
+## un état normal, comme pour une compétence : une base sans image reste jouable.
+static func _base_icon(base: ItemBase, upright: bool, target: Vector2i) -> Texture2D:
+	if base.icon == null:
+		return _icon(base.kind, upright, target, base.tier)
+
+	# Le même cache que les dessins : une icône se recadre une fois, pas à chaque
+	# image. L'identifiant est unique par construction (invariant 1), et sa clé à
+	# deux champs ne peut pas rencontrer celle d'un dessin, qui en a quatre.
+	var key := "%s:%dx%d" % [base.id, target.x, target.y]
+	if _icons.has(key):
+		return _icons[key]
+	var img := base.icon.get_image()
+	_fit(img, target)
+	var tex := ImageTexture.create_from_image(img)
+	_icons[key] = tex
+	return tex
 
 
 ## Le dessin d'un objet, recadré sur ce qui est réellement peint : une épée, une
@@ -175,25 +203,30 @@ static func _icon(kind: String, upright: bool, target: Vector2i, tier := 1) -> T
 		_weapon(canvas, cfg, Vector2(6.0, 17.5), Vector2(0.72, -0.69), 0.0)
 
 	var img := canvas.to_image(cfg["palettes"]).get_region(canvas.painted_rect())
-	if target.x > 0 and target.y > 0:
-		var fit := minf(
-			float(target.x) / float(img.get_width()), float(target.y) / float(img.get_height())
-		)
-		# Agrandir : facteur entier. Réduire : facteur exact — c'est moins beau,
-		# mais une icône qui dépasse déborde sur les cases voisines et on ne sait
-		# plus lire la grille. Le cas ne se présente que si l'encombrement déclaré
-		# dans le .tres est plus petit que le dessin.
-		var factor := floorf(fit) if fit >= 1.0 else fit
-		if not is_equal_approx(factor, 1.0):
-			img.resize(
-				maxi(int(img.get_width() * factor), 1),
-				maxi(int(img.get_height() * factor), 1),
-				Image.INTERPOLATE_NEAREST
-			)
+	_fit(img, target)
 
 	var tex := ImageTexture.create_from_image(img)
 	_icons[key] = tex
 	return tex
+
+
+## Met une icône à la place disponible, en pixels d'écran. Agrandir : facteur
+## entier. Réduire : facteur exact — c'est moins beau, mais une icône qui dépasse
+## déborde sur les cases voisines et on ne sait plus lire la grille.
+static func _fit(img: Image, target: Vector2i) -> void:
+	if target.x <= 0 or target.y <= 0:
+		return
+	var ratio := minf(
+		float(target.x) / float(img.get_width()), float(target.y) / float(img.get_height())
+	)
+	var factor := floorf(ratio) if ratio >= 1.0 else ratio
+	if is_equal_approx(factor, 1.0):
+		return
+	img.resize(
+		maxi(int(img.get_width() * factor), 1),
+		maxi(int(img.get_height() * factor), 1),
+		Image.INTERPOLATE_NEAREST
+	)
 
 
 ## Les pièces d'équipement qui ne sont pas des armes : des objets posés à plat,
@@ -219,10 +252,13 @@ const GEAR := [
 	"manual_fire", "manual_weapons",
 ]
 
-## Ce qui distingue trois paliers d'une même lignée dans le sac.
+## Ce qui distingue trois paliers d'une même lignée **sans image** : depuis que
+## chaque base a la sienne, la silhouette s'en charge, et ces rampes ne servent
+## plus qu'au repli.
 ##
 ## Le nom ne suffit pas — on ne lit pas le nom d'un objet au sol — et redessiner
-## trois silhouettes par lignée serait un jalon à soi seul. Restent les couleurs :
+## trois silhouettes par lignée à la main serait un jalon à soi seul. Restent les
+## couleurs :
 ## un métal plus clair, un cuir plus riche et une étoffe plus franche à chaque
 ## palier, ce qui se lit à la taille d'une case là où un détail de deux pixels se
 ## perd.

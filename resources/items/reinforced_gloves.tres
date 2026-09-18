@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemBase" format=3]
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/item_base.gd" id="1_gm6jw"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/reinforced_gloves.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_gm6jw")
@@ -9,6 +10,7 @@ display_name = "Gants renforcés"
 kind = "gloves"
 family = "gloves"
 tags = PackedStringArray("gloves", "armour", "light")
+icon = ExtResource("2_icon")
 grid_size = Vector2i(2, 2)
 lineage = "gloves"
 tier = 2

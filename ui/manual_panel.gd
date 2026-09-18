@@ -441,7 +441,7 @@ func _draw_slot(index: int) -> void:
 	if item == null:
 		return
 	var tex := SpriteForge.inventory_icon(
-		item.base.kind, Vector2i(int(SLOT) - 8, int(SLOT) - 8), item.base.tier
+		item.base, Vector2i(int(SLOT) - 8, int(SLOT) - 8)
 	)
 	if tex != null:
 		var size_value := tex.get_size()

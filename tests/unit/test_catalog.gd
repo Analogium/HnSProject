@@ -74,11 +74,19 @@ func test_each_base_has_a_non_empty_icon() -> void:
 	for base in ItemCatalog.ALL:
 		# Le palier compris : chaque combinaison a sa propre entrée de cache, donc
 		# un palier dont l'icône ne peindrait rien passerait entre les mailles.
-		var tex := SpriteForge.inventory_icon(base.kind, Vector2i.ZERO, base.tier)
+		var tex := SpriteForge.inventory_icon(base, Vector2i.ZERO)
 		assert_not_null(tex, "« %s » n'a pas d'icône" % base.display_name)
 		assert_gt(
 			tex.get_size().x * tex.get_size().y, 0.0,
 			"l'icône de « %s » (kind « %s ») ne peint rien" % [base.display_name, base.kind]
+		)
+
+		# Une image masque le dessin de la forge mais ne le remplace pas : le
+		# `kind` est aussi l'arme en main. `ghost_icon` est le chemin qui l'ignore.
+		var drawn := SpriteForge.ghost_icon(base.kind, Vector2i.ZERO)
+		assert_gt(
+			drawn.get_size().x * drawn.get_size().y, 0.0,
+			"le kind « %s » de « %s » ne peint rien" % [base.kind, base.display_name]
 		)
 
 

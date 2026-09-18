@@ -24,6 +24,11 @@ extends Resource
 ## partie, en premier** ; un test le vérifie.
 @export var tags: PackedStringArray = PackedStringArray()
 
+## L'image de l'objet, ou null pour le dessin de `SpriteForge`. Un champ, comme
+## pour une compétence, et non un fichier retrouvé par son identifiant : un nom mal
+## tapé donnerait une case vide sans que rien ne le dise.
+@export var icon: Texture2D
+
 ## Encombrement dans le sac, en cases.
 @export var grid_size: Vector2i = Vector2i(1, 1)
 
