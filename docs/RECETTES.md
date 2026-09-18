@@ -361,12 +361,13 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    |---|---|
    | `id` | Unique, **définitif** — il part dans les barres sauvegardées (invariant 1) |
    | `name` | Ce que le joueur lit ; se change librement |
+   | `description` | Ce qu'elle **fait**, en une phrase, pour la fiche de survol : le geste, jamais ses nombres. **Deux lignes au plus** — environ soixante-cinq signes —, sinon la fiche déborde du cadrage |
    | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
    | `cadence` / `cooldown` | `WEAPON` suit la fiche (`attack_cooldown`) ; `CAST` suit `cooldown` divisée par `cast_speed` |
    | `mana_cost` | 0 pour un geste gratuit |
-   | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus. **Vide pour un buff**, qui n'inflige rien |
+   | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus. **Vide pour ce qui ne frappe pas** — un buff, un déplacement —, et la fiche n'annonce alors ni dégâts, ni forme, ni moyenne |
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
-   | `lines` | Ce qu'un **buff** donne tant qu'il brûle, par point placé : un `TalentLine` par effet, aux règles d'un passif — voir « Ajouter un passif », §2 |
+   | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
    | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`. `BOLT` et `BALL` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
@@ -402,9 +403,10 @@ de foudre qui n'étaient qu'un éclair vif à d'autres réglages.
 **Une ruée** (`DASH`) porte le lanceur au curseur, à `PLACEMENT_RANGE` au plus, **murs
 et ennemis traversés** — seule l'arrivée doit être libre. Elle veut une `duration`,
 celle de ce qu'elle laisse, et **l'un ou l'autre** : un `radius` et une `period` pour
-une trace qui frappe, ou des `lines` pour un buff bref sur le lanceur. **Un buff**
-(`BUFF`) veut un drain — PV ou mana — et au moins une ligne : il n'a pas de dégâts,
-donc ni arbre de talents utile, ni « moyenne par lancer ».
+une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. **Un buff**
+(`BUFF`) veut un drain — PV ou mana — et au moins un `SkillBuff` : il n'a pas de dégâts,
+donc ni arbre de talents utile, ni « moyenne par lancer ». Les buffs d'un lancer
+s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence.
 
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
@@ -430,7 +432,8 @@ test_les_cases_tiennent_dans_le_panneau`, qui refuse une case posée hors de la
 page, et `test_the_sheet_stays_in_frame`, qui refuse une case dont la fiche
 au survol sortirait de l'écran.
 
-**Et son nom anglais** : une entrée dans `i18n/en.po` pour son `name`. Il s'écrit
+**Et son nom anglais** : deux entrées dans `i18n/en.po` pour son `name` et sa
+`description`, une de plus par buff qu'elle pose. Il s'écrit
 en entier dans le menu de la barre et en tête de sa fiche, tous deux étroits —
 `tests/integration/test_widths.gd` refuse un nom qui déborde.
 

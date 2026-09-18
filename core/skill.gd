@@ -8,6 +8,11 @@ extends Resource
 @export var id: String = ""
 @export var name: String = ""
 
+## Ce qu'elle fait, en une phrase : **le geste**, jamais ses nombres — la fiche les
+## donne déjà, et deux vérités finiraient par diverger. Le texte français est la clé,
+## comme `name`.
+@export_multiline var description: String = ""
+
 ## La nature du coup : la résistance qui s'y oppose et sa couleur.
 @export var nature: DamageType.Kind = DamageType.Kind.PHYSICAL
 
@@ -98,9 +103,9 @@ const HITS_PER_SHAPE := {
 ## pour tout ce qui ne s'adosse pas à la vie de celui qui lance.
 @export var health_scaling: float = 0.0
 
-## Ce qu'un buff donne tant qu'il brûle, **par point placé** : les lignes d'un passif,
-## au mot près. Vide sur tout ce qui frappe.
-@export var lines: Array[TalentLine] = []
+## Ce que le lancer pose sur son lanceur : un buff nommé, ou plusieurs. Vide sur tout ce
+## qui ne fait que frapper. Ils s'allument et s'éteignent ensemble.
+@export var buffs: Array[SkillBuff] = []
 
 ## Zéro pour un coup gratuit.
 @export var mana_cost: float = 0.0
@@ -142,6 +147,11 @@ func displayed_name() -> String:
 	return Texts.t(name)
 
 
+## Vide reste un état normal : la fiche saute alors le paragraphe.
+func displayed_description() -> String:
+	return Texts.t(description) if not description.is_empty() else ""
+
+
 ## Déduit de la table ; à défaut de table — un buff n'inflige rien —, déclaré.
 func points_max() -> int:
 	return damage_per_point.size() if not damage_per_point.is_empty() else declared_points_max
@@ -153,10 +163,24 @@ func keywords() -> PackedStringArray:
 	return _keywords(PackedStringArray())
 
 
-## Ce qu'un buff allumé verse dans la fiche à ce nombre de points : les lignes d'un
-## passif, par la même fonction.
+## Ce que ses buffs allumés versent dans la fiche à ce nombre de points, tous ensemble.
 func buff_mods(points: int) -> Array[StatMod]:
-	return TalentLine.modifiers(lines, points)
+	var out: Array[StatMod] = []
+	for buff in buffs:
+		out.append_array(buff.mods(points))
+	return out
+
+
+## Frappe-t-elle ? **Sa table de dégâts, et rien d'autre** : ce qu'un objet ajoute aux
+## sorts ne rend pas offensif un déplacement qui ne touche personne.
+func strikes() -> bool:
+	return not damage_per_point.is_empty()
+
+
+## Pose-t-elle quelque chose sur son lanceur ? Lu par la ruée, qui laisse alors un buff
+## au lieu d'une trace, et par la fiche, qui lui ouvre une section.
+func grants_buffs() -> bool:
+	return not buffs.is_empty()
 
 
 ## Les mots-clés portés, ceux-ci en plus. L'ordre de lecture est celui de

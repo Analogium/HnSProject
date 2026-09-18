@@ -1,9 +1,10 @@
 class_name StaticCharge
 extends Node2D
 
-## Une étincelle laissée sur un engourdi : elle s'écarte de quelques pixels, attend, et
-## part sur le premier ennemi qui entre dans son petit rayon. **Une mine, pas un
-## nuage** : elle ne frappe qu'une fois.
+## Une étincelle laissée sur un engourdi : elle s'écarte de quelques pixels, puis frappe
+## ce qui entre dans son petit rayon. **Une fois par ennemi, et elle reste** : elle vit
+## ses deux secondes quoi qu'elle touche, et une nuée qui la traverse la paie autant de
+## fois qu'elle compte de corps.
 ##
 ## **Elle naît en différé** : le coup qui la laisse arrive dans un rappel de collision,
 ## où rien n'entre dans l'arbre et où l'espace refuse les requêtes (invariant 4). Sa
@@ -23,7 +24,11 @@ const CHECK := 0.1
 ## chacune sondant son entourage. La plus vieille cède sa place.
 const MAX_LIVE := 24
 
-const ARMS := 5
+## Les branches de l'étincelle. Elles vont jusqu'au rayon qui frappe : le dessin dit où
+## elle mord, sinon on marche dedans sans l'avoir vue.
+const ARMS := 6
+## Ce qui bat, en tours par seconde : une étincelle figée se confond avec le sol.
+const PULSE := 6.0
 
 ## Toutes celles qui vivent, dans l'ordre de naissance.
 static var _live: Array[StaticCharge] = []
@@ -34,6 +39,9 @@ var _toward := Vector2.ZERO
 var _age := 0.0
 var _next := CHECK
 var _flicker := RandomNumberGenerator.new()
+## Qui elle a déjà mordu. Sa période est sa vie entière : une cible plantée dessus ne
+## la paie pas vingt fois.
+var _bitten := Targets.Contacts.new(LIFE)
 
 
 ## `parts` est ce que le coup a **réellement** infligé : la charge est petite quand
@@ -80,19 +88,32 @@ func _physics_process(delta: float) -> void:
 	if _age < _next:
 		return
 	_next = _age + CHECK
+	_bitten.advance(CHECK)
 	for target in Targets.in_circle(get_world_2d(), global_position, RADIUS):
+		if not _bitten.accepts(target):
+			continue
 		# Sans lancer : une charge ne critique pas et ne porte aucun bonus contre un état.
 		Targets.strike(target, _parts, global_position, _author, null)
-		queue_free()
-		return
 
 
+## En violet sur un sol sombre, une étincelle de deux pixels ne se voit pas. Elle porte
+## donc un halo à son rayon — ce qu'elle mord —, un cœur presque blanc et des branches
+## qui vont jusqu'au bord, toutes battant sur la même horloge.
 func _draw() -> void:
 	var tint: Color = DamageType.COLORS[DamageType.Kind.LIGHTNING]
+	# Blanchie mais pas blanche : en mélange additif, un cœur blanc pur ressort comme un
+	# éclat physique, et l'étincelle perd la couleur de sa nature.
+	var light_color := tint.lerp(Color.WHITE, 0.55)
 	# Elle s'éteint sur le dernier tiers : disparaître d'un coup se lit comme un bug.
 	var fade := clampf((LIFE - _age) / (LIFE * 0.33), 0.0, 1.0)
-	draw_circle(Vector2.ZERO, 1.5, Color(tint.lerp(Color.WHITE, 0.6), 0.9 * fade))
+	var beat := 0.75 + 0.25 * sin(_age * PULSE)
+
+	draw_circle(Vector2.ZERO, RADIUS, Color(tint, 0.16 * fade * beat))
+	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 20, Color(tint, 0.45 * fade), 1.0)
 	for i in ARMS:
 		var angle := TAU * float(i) / float(ARMS) + _age * 2.0
-		var span := 2.5 + _flicker.randf_range(0.0, 2.0)
-		draw_line(Vector2.ZERO, Vector2.from_angle(angle) * span, Color(tint, 0.7 * fade), 1.0)
+		var span := RADIUS * (0.75 + _flicker.randf_range(0.0, 0.35))
+		var toward := Vector2.from_angle(angle) * span
+		draw_line(Vector2.ZERO, toward, Color(tint, 0.8 * fade), 1.0)
+		draw_line(Vector2.ZERO, toward * 0.6, Color(light_color, 0.9 * fade), 1.0)
+	draw_circle(Vector2.ZERO, 2.0 * beat, Color(light_color, fade))

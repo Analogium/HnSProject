@@ -6,6 +6,7 @@
 script = ExtResource("1_comp")
 id = "bolt"
 name = "Trait"
+description = "Un trait qui file droit jusqu'au premier ennemi touché."
 nature = 3
 cadence = 1
 shape = 1

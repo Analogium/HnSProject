@@ -13,6 +13,25 @@ func after_each() -> void:
 	Keybinds.apply({})
 
 
+## **Une case de barre, un déclencheur.** L'onglet des touches ne montre que le premier
+## (`Keybinds.text_of`), et l'échange de `rebound()` ne compare que celui-là : un second
+## reste invisible *et* inéchangeable. C'est ainsi qu'Espace lançait la première
+## compétence sans que rien ne le dise, un reste d'avant la barre.
+##
+## Les déplacements font exception et gardent leurs flèches : un doublon de WASD qui
+## fait la même chose, là où Espace lançait un sort à l'insu du joueur.
+func test_a_skill_slot_has_a_single_trigger() -> void:
+	Keybinds.apply({})
+	for i in SkillBar.SLOT_COUNT:
+		var action := "skill_%d" % (i + 1)
+		var triggers := PackedStringArray()
+		for event in InputMap.action_get_events(action):
+			var written := Keybinds.to_text(event)
+			if not written.is_empty():
+				triggers.append(written)
+		assert_eq(triggers.size(), 1, "« %s » en a %s" % [action, triggers])
+
+
 func test_a_key_reads_and_writes_as_text() -> void:
 	var key := InputEventKey.new()
 	key.keycode = KEY_J

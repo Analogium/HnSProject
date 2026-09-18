@@ -81,9 +81,9 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | bolt | 21 · 27 · 34 · 42 · 51 |
 | Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
 | Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
-| Ruée d'orage | sort foudre | niveau 5 | 4 | 10 mana | 2.00 s | dash · 2.0 s | +5 % de vitesse accrue |
+| Ruée d'orage | sort foudre | niveau 5 | 4 | 10 mana | 2.00 s | dash · 2.0 s | Appel du tonnerre : +5 % de vitesse accrue |
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % de dégâts accrus (Foudre) · +10 mana |
-| Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | 0.60 s | buff | +5 % chance de charge statique |
+| Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | 0.60 s | buff | Champ statique : +5 % chance de charge statique |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
@@ -132,7 +132,7 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s | 8 · 10 · 13 · 16 · 20 |
 | Ruée ardente | sort feu | niveau 5 | 5 | 12 mana | 4.00 s | dash · 3.0 s · rayon 16 · toutes les 0.50 s | 4 · 5 · 6 · 8 · 10 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts accrus (Feu) · +3 % rés. feu |
-| Ignition | sort feu | niveau 12 | 4 | 0 mana | 0.60 s | buff · brûle 1 % PV/s | +13 % chance d'embraser · +8 % de vitesse accrue |
+| Ignition | sort feu | niveau 12 | 4 | 0 mana | 0.60 s | buff · brûle 1 % PV/s | Combustion : +13 % chance d'embraser · +8 % de vitesse accrue |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|

@@ -557,8 +557,9 @@ func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
 	assert_eq(_children_of(StaticCharge).size(), 1, "et rien sur un ennemi sain")
 
 
-## Elle attend, frappe une fois, et s'en va : une mine, pas un nuage.
-func test_the_static_charge_strikes_once_then_leaves() -> void:
+## Elle attend, mord **une fois par corps**, et reste : deux ennemis qui la traversent
+## la paient tous les deux, le même deux fois non.
+func test_the_static_charge_bites_once_per_body_and_stays() -> void:
 	var walker := _target(Vector2(40, 0))
 	var parts := _all_in(DamageType.Kind.LIGHTNING)
 	parts[DamageType.Kind.LIGHTNING] = 50.0
@@ -572,9 +573,16 @@ func test_the_static_charge_strikes_once_then_leaves() -> void:
 		(_received_all[walker] as Array)[0], 50.0 * StaticCharge.SHARE, 0.01,
 		"un cinquième de ce que le coup a fait"
 	)
+	assert_eq(_children_of(StaticCharge).size(), 1, "et elle reste")
+
+	# Un second corps, posé après coup, la paie aussi ; le premier, non.
+	var second := _target(Vector2(44, 0))
 	await wait_seconds(StaticCharge.CHECK * 3.0)
-	assert_eq(_hits(walker), 1, "et pas une seconde")
-	assert_eq(_children_of(StaticCharge).size(), 0, "elle est partie avec son coup")
+	assert_eq(_hits(walker), 1, "le même corps ne la paie pas deux fois")
+	assert_eq(_hits(second), 1, "un autre, si")
+
+	await wait_seconds(StaticCharge.LIFE)
+	assert_eq(_children_of(StaticCharge).size(), 0, "sa vie passée, elle s'en va")
 
 
 ## Une ruée traverse ce qui est sur le chemin : c'est **l'arrivée** qui doit être libre.

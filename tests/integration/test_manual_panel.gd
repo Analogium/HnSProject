@@ -322,10 +322,14 @@ func test_changing_book_closes_the_tree() -> void:
 
 ## Les valeurs des lignes de la fiche qui portent cet intitulé, dans leur ordre.
 ## Sur le texte sans marque : un terme du glossaire s'y lit comme un mot.
+## L'intitulé se cherche **sous la majuscule que la fiche lui pose** : les tests
+## l'écrivent comme le contenu l'écrit, en minuscule, et la règle de capitalisation est
+## celle de `SheetLine` (jalon 20).
 func _values(lines: Array, label_of: String) -> PackedStringArray:
+	var wanted := RichText.capitalized(label_of)
 	var out := PackedStringArray()
 	for line: ManualPanel.SheetLine in lines:
-		if Glossary.plain(line.label_of) == label_of:
+		if Glossary.plain(line.label_of) == wanted:
 			out.append(Glossary.plain(line.value))
 	return out
 
@@ -334,6 +338,54 @@ func _sheet_of(book: Item, skill_id: String) -> Array:
 	return _panel._skill_sheet(
 		book.manual, SkillCatalog.by_id(skill_id)
 	).lines
+
+
+## Ce qu'un lancer pose sur son lanceur se lit **sous le nom de son buff**, et sa durée
+## avec lui : c'est la durée du buff, pas celle d'une trace au sol (jalon 20).
+func test_a_granted_buff_reads_under_its_name() -> void:
+	var book := _rich_book()
+	book.manual.invest(book.base.manual, "storm_dash")
+	var lines := _sheet_of(book, "storm_dash")
+	var buff: SkillBuff = SkillCatalog.by_id("storm_dash").buffs[0]
+
+	var under := PackedStringArray()
+	for line: ManualPanel.SheetLine in lines:
+		if line.heading == buff.displayed_name():
+			under.append(Glossary.plain(line.label_of))
+	assert_gt(under.size(), 1, "le bloc porte le nom du buff et ses lignes")
+	assert_true(under.has(RichText.capitalized(Texts.t("durée"))), "sa durée y est")
+	assert_eq(_values(lines, "durée").size(), 1, "et nulle part ailleurs")
+
+
+## Un déplacement ne touche personne : sa fiche n'annonce ni dégâts, ni forme, ni
+## moyenne — **même l'arme à la main**, dont les fourchettes entrent dans tout ce qui
+## porte « sort ». Le lancer les porte, la fiche ne les montre pas.
+func test_a_movement_skill_shows_no_damage() -> void:
+	var book := _rich_book()
+	book.manual.invest(book.base.manual, "storm_dash")
+	_player.skill_mods.assign([
+		StatMod.ranged("damage_cold", 30.0, 70.0, Keywords.SPELL),
+		StatMod.new("targets", StatMod.Mode.FLAT, 1.0, Keywords.SPELL),
+	])
+	var cast := _player.resolve(SkillCatalog.by_id("storm_dash"), 1)
+	assert_gt(cast.total_max(), 0.0, "le lancer, lui, porte ce que l'équipement ajoute")
+
+	var lines := _sheet_of(book, "storm_dash")
+	for label_of in ["ajoutés", "par coup", "chance critique", "cibles", "moyenne par lancer"]:
+		assert_eq(_values(lines, label_of).size(), 0, "« %s » n'a rien à faire là" % label_of)
+	assert_eq(_values(lines, "coût").size(), 1, "le coût reste")
+	assert_eq(_values(lines, "durée").size(), 1, "et la durée de son buff")
+
+
+## Chaque intitulé commence par une majuscule : une fiche tout en minuscules se lit
+## comme un fichier de réglage.
+func test_every_line_starts_with_a_capital() -> void:
+	var book := _rich_book()
+	book.manual.invest(book.base.manual, "swift_bolt")
+	for line: ManualPanel.SheetLine in _sheet_of(book, "swift_bolt"):
+		var plain := Glossary.plain(line.label_of)
+		assert_false(plain.is_empty(), "un intitulé vide")
+		assert_eq(plain[0], plain[0].to_upper(), "« %s »" % plain)
 
 
 ## **La fiche passe par le même chemin que le lancer** (jalon 7, étape 5). Avec un
@@ -529,7 +581,13 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 		_values(lines, "par seconde"),
 		PackedStringArray([str(roundi(cast.average_per_second()))])
 	)
-	assert_eq(_values(lines, "si tout touche, avant défenses").size(), 1, "et ce qu'elle suppose")
+	# Ce que les moyennes supposent est passé **dans le titre de leur groupe** (jalon 20) :
+	# la note sous elles coûtait une ligne à la fiche la plus haute du jeu.
+	assert_eq(_values(lines, "si tout touche, avant défenses").size(), 0, "plus de note")
+	assert_false(
+		String(ManualPanel.GROUP_TITLES[ManualPanel.Group.ESTIMATE]).is_empty(),
+		"et ce qu'elle suppose se lit sur le titre du groupe"
+	)
 
 
 ## Une nature sans dégâts n'a pas de ligne : rien d'équipé, rien d'ajouté ; un
@@ -619,7 +677,7 @@ func test_the_sheet_stays_in_frame() -> void:
 
 
 func _measure(sheet: ManualPanel.Sheet, anchor: Rect2, framing: Rect2, what: String) -> void:
-	var r: Rect2 = _panel._sheet_rect(anchor, _panel._sheet_height(sheet.lines))
+	var r: Rect2 = _panel._sheet_rect(anchor, _panel._sheet_height(sheet))
 	var on_screen := Rect2(r.position + _panel.global_position, r.size)
 	assert_true(
 		framing.encloses(on_screen), "« %s » : la fiche %s sort de %s" % [what, on_screen, framing]

@@ -7,6 +7,7 @@
 script = ExtResource("1_comp")
 id = "spiral_sword"
 name = "Épée spirale"
+description = "Une épée en orbite autour de soi, qui coupe ce qu'elle croise."
 nature = 0
 cadence = 0
 shape = 9

@@ -400,7 +400,7 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 	global_position = _landing(from_value, _aim_point())
 	if cast.period > 0.0 and cast.radius > 0.0:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
-	elif not skill.lines.is_empty():
+	elif skill.grants_buffs():
 		_light(skill.id, Buff.light(self, skill, cast.duration))
 
 

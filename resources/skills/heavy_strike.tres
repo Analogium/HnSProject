@@ -7,6 +7,7 @@
 script = ExtResource("1_comp")
 id = "heavy_strike"
 name = "Frappe lourde"
+description = "Un coup d'arme lourd, plus lent et plus fort."
 nature = 0
 cadence = 0
 shape = 2

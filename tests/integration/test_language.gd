@@ -39,15 +39,16 @@ func test_an_open_sheet_retranslates_without_being_recreated() -> void:
 	var identity := _panel.get_instance_id()
 
 	var before := _labels(book, skill)
-	assert_has(before, "coût", "en français : %s" % [before])
+	# Majuscule : la fiche la pose sur chaque intitulé depuis le jalon 20.
+	assert_has(before, "Coût", "en français : %s" % [before])
 
 	Settings.from_dict({"language": Settings.ENGLISH})
 	await wait_process_frames(1)
 
 	assert_eq(_panel.get_instance_id(), identity, "c'est le même panneau")
 	var after := _labels(book, skill)
-	assert_has(after, "cost", "en anglais : %s" % [after])
-	assert_does_not_have(after, "coût", "et plus rien de français")
+	assert_has(after, "Cost", "en anglais : %s" % [after])
+	assert_does_not_have(after, "Coût", "et plus rien de français")
 
 
 ## Et il **redessine** : sans la notification, la fiche garderait ses mots

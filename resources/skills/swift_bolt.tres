@@ -7,6 +7,7 @@
 script = ExtResource("1_comp")
 id = "swift_bolt"
 name = "Éclair vif"
+description = "Un éclair qui file droit et frappe le premier ennemi."
 nature = 3
 cadence = 1
 shape = 1

@@ -180,6 +180,75 @@ msgstr "Storm Cloud"
 msgid "Persistance"
 msgstr "Lingering"
 
+msgid "Un coup d'arme porté en arc devant soi."
+msgstr "A weapon blow swung in an arc in front of you."
+
+msgid "Un trait qui file droit jusqu'au premier ennemi touché."
+msgstr "A bolt flying straight to the first enemy it hits."
+
+msgid "Un éclair qui file droit et frappe le premier ennemi."
+msgstr "A bolt of lightning flying straight at the first enemy."
+
+msgid "Une décharge qui saute d'un ennemi au suivant, à portée."
+msgstr "A discharge leaping from one enemy to the next in range."
+
+msgid "Un nuage posé au sol, qui foudroie ce qui passe dessous."
+msgstr "A cloud set on the ground, striking what passes beneath."
+
+msgid "Une ruée au point visé, murs traversés, qui presse le pas."
+msgstr "A dash to the aimed point, through walls, quickening you."
+
+msgid "Frapper un engourdi y laisse parfois une charge qui attend."
+msgstr "Striking a numbed enemy may leave a waiting charge on it."
+
+msgid "Une boule de feu qui explose là où elle touche."
+msgstr "A ball of fire bursting where it lands."
+
+msgid "Un serpent de flammes qui rampe vers les vivants et brûle."
+msgstr "A serpent of flame crawling toward the living, burning."
+
+msgid "Un brasier autour de soi, qui brûle le cercle et son porteur."
+msgstr "A blaze around you, burning the circle and its bearer."
+
+msgid "Une ruée au point visé, murs traversés, qui laisse des flammes."
+msgstr "A dash to the aimed point, through walls, leaving flames."
+
+msgid "Une combustion qui consume son porteur, le presse et l'embrase."
+msgstr "A burn that consumes its bearer, quickens and ignites."
+
+msgid "Un coup d'arme lourd, plus lent et plus fort."
+msgstr "A heavy weapon blow, slower and stronger."
+
+msgid "Deux coups d'arme portés en croix, l'un après l'autre."
+msgstr "Two weapon blows struck crosswise, one after the other."
+
+msgid "Une épée en orbite autour de soi, qui coupe ce qu'elle croise."
+msgstr "A sword orbiting around you, cutting what it crosses."
+
+msgid "Effets"
+msgstr "Effects"
+
+msgid "Lancer"
+msgstr "Cast"
+
+msgid "Dégâts"
+msgstr "Damage"
+
+msgid "Forme"
+msgstr "Shape"
+
+msgid "En moyenne, si tout touche"
+msgstr "On average, if all hits"
+
+msgid "Appel du tonnerre"
+msgstr "Thunder Call"
+
+msgid "Combustion"
+msgstr "Combustion"
+
+msgid "Champ statique"
+msgstr "Static Field"
+
 msgid "Sillage"
 msgstr "Wake"
 
@@ -1179,9 +1248,6 @@ msgstr "average per cast"
 
 msgid "par seconde"
 msgstr "per second"
-
-msgid "si tout touche, avant défenses"
-msgstr "if every hit lands, before defences"
 
 # ---------------------------------------------------------------------------
 # Retour de coup, butin et sauvegarde

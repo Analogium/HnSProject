@@ -132,7 +132,8 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 		for d in c.damage_per_point:
 			table.append("%d" % roundi(d))
 		if table.is_empty():
-			table.append(_per_point(c.lines))
+			for buff in c.buffs:
+				table.append("%s : %s" % [buff.name, _per_point(buff.lines)])
 		# Le mot-clé de la cadence par la table de `Skill`, jamais par un ternaire
 		# recopié : la colonne annonçait « attack » à côté d'une nature française.
 		var cadence := Keywords.label_of(Skill.KEYWORD_OF_CADENCE[c.cadence])

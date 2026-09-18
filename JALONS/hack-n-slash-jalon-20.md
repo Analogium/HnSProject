@@ -522,3 +522,110 @@ une case la remplit — éteindre la vide. Et **une capture réelle en fenêtré
 gestes allumés, parce qu'aucune assertion ne voit une icône illisible.
 
 **Suite : 795 tests, 795 passent.**
+
+---
+
+## 12. Révision du 18 septembre 2026 (suite)
+
+**La charge statique se voit.** Deux pixels de violet sur un sol sombre ne se voyaient
+pas : elle porte maintenant un halo **à son rayon exact** — le dessin dit où elle mord,
+sinon on marche dedans sans l'avoir vue —, six branches qui vont jusqu'au bord et un
+cœur blanchi qui bat. Blanchi et non blanc : en mélange additif, un cœur blanc pur
+ressort comme un éclat physique et l'étincelle perd la couleur de sa nature. Jugé sur
+capture, six charges posées côte à côte.
+
+**La fiche de survol se lit comme une gemme de PoE.** Elle donnait vingt valeurs à la
+file ; elle donne maintenant, dans cet ordre : le nom, les mots-clés du geste résolu,
+**un paragraphe qui dit ce que la compétence fait**, puis les nombres en blocs, chacun
+coiffé d'un titre centré sur son filet — « Lancer », « Dégâts », « Forme », « En
+moyenne, si tout touche ». Le premier bloc n'a pas de titre : il suit l'en-tête, qui le
+dit déjà.
+
+Le paragraphe est un champ de contenu, `Skill.description`, **le geste et jamais les
+nombres** : deux vérités sur les mêmes chiffres finiraient par diverger. Quinze
+descriptions, leur anglais, et `test_each_displayed_text_has_its_english` qui les couvre
+comme les noms.
+
+**Ce que ça a coûté en hauteur, et comment il a été payé.** La fiche la plus chargée du
+jeu — le Nuage d'orage — tenait à vingt-quatre pixels près sous la borne des jauges ; le
+paragraphe et quatre titres lui en ajoutaient quarante-trois. Quatre gestes l'ont
+ramenée à trois pixels près :
+
+- les descriptions font **deux lignes au plus**, soit environ soixante-cinq signes ;
+- un titre de groupe prend `TITLE_BAND` (7 px) et non une ligne pleine ;
+- la fiche a **sa propre hauteur de ligne**, `SHEET_LINE` (9) et `SHEET_PROSE` (8),
+  plus serrées que celle de la page (10) — un pixel par ligne sur vingt lignes ;
+- **la note « si tout touche, avant défenses » est devenue le titre de son groupe**,
+  ce qui la dit mieux et coûte une ligne de moins.
+
+`test_the_sheet_stays_in_frame` a refusé chacune des trois premières tentatives, case
+par case, en nommant la compétence et les deux rectangles. C'est le test qui a réglé
+cette mise en page, pas l'œil.
+
+**Suite : 795 tests, 795 passent.**
+
+---
+
+## 13. Révision du 18 septembre 2026 (fin)
+
+**Chaque intitulé de fiche prend sa majuscule**, posée dans `SheetLine._init()` — à la
+construction et non au dessin, parce que c'est ce que les tests de largeur mesurent et
+que deux capitalisations divergeraient d'une lettre. `RichText.capitalized()`, celle de
+l'infobulle d'objet, qui saute la marque du glossaire.
+
+**Un buff est devenu du contenu nommé.** `Skill.lines` était une liste plate, sans nom :
+la fiche la versait dans un fourre-tout « Effets », et la durée d'une ruée se lisait
+sous « Forme » alors qu'elle est celle du buff. Un `SkillBuff` porte maintenant un
+identifiant, un nom et ses lignes, et une compétence en pose **un ou plusieurs**. La
+fiche leur ouvre un bloc chacun, **sous leur nom** — la Ruée d'orage n'a donc plus ni
+« Forme » ni « Effets », mais un bloc « Appel du tonnerre » avec sa durée et sa vitesse.
+
+C'est `SheetLine.heading` qui les tient ensemble : un bloc s'ouvre quand le groupe
+change **ou** quand le nom change, ce qui suffit à séparer deux buffs de suite sans
+numéroter les groupes.
+
+Trois noms posés : « Appel du tonnerre » (Ruée d'orage), « Combustion » (Ignition) et
+« Champ statique » (Électricité statique). Les deux derniers sont de moi — une case
+entretenue est son propre buff, et « Ignition : Ignition » se serait lu comme un bégaiement.
+
+**Le prix d'un geste entretenu a changé de bloc** : la brûlure et le drain se lisent
+sous « Lancer », avec le coût et la recharge. C'est un prix par seconde, pas une forme.
+
+**La charge statique ne part plus au premier contact.** Elle vit ses deux secondes quoi
+qu'elle touche, et mord **une fois par corps** — `Targets.Contacts` avec sa vie entière
+pour période, le mécanisme du serpent et de l'épée en orbite. Une nuée qui la traverse
+la paie donc autant de fois qu'elle compte de corps, là où elle ne payait qu'une : à
+surveiller au prochain passage d'équilibrage.
+
+**Suite : 797 tests, 797 passent.** Deux de plus : le bloc d'un buff se lit sous son nom
+et sa durée n'est nulle part ailleurs ; chaque intitulé commence par une majuscule.
+
+---
+
+## 14. Deux défauts trouvés en jouant
+
+**Espace lançait la première compétence.** `project.godot` liait trois événements à
+`skill_1` : le clic gauche, la manette, et **Espace** — un reste d'avant la barre. Le
+second déclencheur était invisible : `Keybinds.text_of()` ne rend que le premier, donc
+l'onglet des touches montrait « clic G » et l'échange de `rebound()` ne pouvait même pas
+le détecter. L'événement est retiré, et `test_a_skill_slot_has_a_single_trigger` refuse
+qu'une case de barre en reprenne un second. Les flèches des déplacements restent : c'est
+le seul doublon voulu, et il fait la même chose que WASD.
+
+**La Ruée d'orage annonçait des dégâts qu'elle n'inflige pas.** Sa fiche montrait des
+fourchettes ajoutées, un « par coup », une chance critique, un bloc « Forme » avec un
+nombre de cibles, et des moyennes — parce que le **lancer**, lui, porte tout ce que
+l'équipement ajoute à ce qui est « sort », et qu'un déplacement est un sort. Le lancer
+n'a pas tort ; c'est la fiche qui mentait, en décrivant un coup qui n'arrive jamais.
+
+`Skill.strikes()` tranche — **sa table de dégâts, et rien d'autre** : sans table, la
+fiche retire les blocs « Dégâts », « Forme » et « En moyenne ». La Ruée d'orage se lit
+donc en trois blocs : ses points, son coût, et son buff. Ignition et Électricité
+statique y gagnent la même clarté.
+
+Au passage, la question posée : `cibles` est le nombre d'ennemis qu'un coup atteint — la
+chaîne saute de l'un à l'autre, et c'est ce nombre qui l'arrête. Il valait 2 sur une
+ruée parce qu'un modificateur porté l'avait monté, et que la fiche l'imprimait sans se
+demander si la compétence frappait.
+
+**Suite : 799 tests, 799 passent.**

@@ -7,6 +7,7 @@
 script = ExtResource("1_comp")
 id = "flame_dash"
 name = "Ruée ardente"
+description = "Une ruée au point visé, murs traversés, qui laisse des flammes."
 nature = 2
 cadence = 1
 shape = 10

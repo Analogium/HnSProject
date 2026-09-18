@@ -6,6 +6,7 @@
 script = ExtResource("1_comp")
 id = "attack"
 name = "Attaque"
+description = "Un coup d'arme porté en arc devant soi."
 nature = 0
 cadence = 0
 # ARC est la forme par défaut de toute compétence : la mapper en mêlée taguerait

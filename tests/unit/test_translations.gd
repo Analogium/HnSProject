@@ -232,6 +232,12 @@ func _expected() -> Dictionary:
 	for raw in SkillCatalog.ALL:
 		var skill: Skill = raw
 		out[skill.name] = "compétence « %s »" % skill.id
+		# La description passe par le même chemin que le nom : elle se lit sur la fiche
+		# de survol, et un français resté seul y saute aux yeux.
+		if not skill.description.is_empty():
+			out[skill.description] = "description de « %s »" % skill.id
+		for buff: SkillBuff in skill.buffs:
+			out[buff.name] = "buff « %s »" % buff.id
 	for raw in AffixPool.ALL:
 		var affix: Affix = raw
 		out[affix.display_name] = "affixe d'élite « %s »" % affix.id
@@ -239,6 +245,10 @@ func _expected() -> Dictionary:
 		var item_affix: ItemAffix = raw
 		out[item_affix.suffix] = "suffixe de l'affixe « %s »" % item_affix.id
 
+	# Les titres de groupe de la fiche de survol : une table, donc invisible au relevé
+	# des littéraux de `Texts.t()`.
+	for title_text in ManualPanel.GROUP_TITLES.values():
+		out[title_text] = "titre de groupe de la fiche"
 	for nature in DamageType.NAMES:
 		out[nature] = "nature de dégâts"
 	for label_of in DamageType.DAMAGE_LABELS:

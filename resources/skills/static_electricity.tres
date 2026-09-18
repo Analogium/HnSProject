@@ -1,18 +1,26 @@
-[gd_resource type="Resource" script_class="Skill" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="Skill" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
 [ext_resource type="Texture2D" path="res://resources/icons/static_electricity.png" id="2_icone"]
-[ext_resource type="Script" path="res://core/talent_line.gd" id="2_ligne"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
 
-[sub_resource type="Resource" id="L_electricite_statique_charge"]
-script = ExtResource("2_ligne")
+[sub_resource type="Resource" id="L_champ_statique_charge"]
+script = ExtResource("3_ligne")
 stat = "static_charge_chance"
 value_per_point = 5.0
+
+[sub_resource type="Resource" id="B_champ_statique"]
+script = ExtResource("4_buff")
+id = "static_field"
+name = "Champ statique"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_champ_statique_charge")])
 
 [resource]
 script = ExtResource("1_comp")
 id = "static_electricity"
 name = "Électricité statique"
+description = "Frapper un engourdi y laisse parfois une charge qui attend."
 nature = 3
 cadence = 1
 shape = 11
@@ -20,6 +28,6 @@ cooldown = 0.60
 mana_cost = 0.0
 self_mana_burn = 0.01
 declared_points_max = 4
-lines = Array[ExtResource("2_ligne")]([SubResource("L_electricite_statique_charge")])
+buffs = Array[ExtResource("4_buff")]([SubResource("B_champ_statique")])
 required_manual_level = 12
 icon = ExtResource("2_icone")

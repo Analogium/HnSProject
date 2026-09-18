@@ -7,6 +7,7 @@
 script = ExtResource("1_comp")
 id = "chain_lightning"
 name = "Chaîne d'éclairs"
+description = "Une décharge qui saute d'un ennemi au suivant, à portée."
 nature = 3
 cadence = 1
 shape = 4

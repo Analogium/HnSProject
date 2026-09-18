@@ -214,26 +214,34 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 
 
 ## Une compétence sans table de dégâts — un buff — ne se lit pas sur ses dégâts : elle
-## déclare son nombre de points, et ses lignes sont ce qu'elle donne. Sans l'un des
-## deux, la case accepte des points qui ne font rien.
-func test_a_skill_without_a_damage_table_declares_its_points_and_its_lines() -> void:
+## déclare son nombre de points, et ses buffs sont ce qu'elle donne. Sans l'un des deux,
+## la case accepte des points qui ne font rien.
+##
+## Chaque buff porte **un identifiant unique et un nom** : la fiche lui ouvre un bloc à
+## son nom, et deux blocs anonymes se liraient comme un seul.
+func test_a_skill_without_a_damage_table_declares_its_points_and_its_buffs() -> void:
 	var sheet := CharacterStats.new()
+	var seen := {}
 	for c: Skill in SkillCatalog.ALL:
-		if not c.damage_per_point.is_empty():
-			assert_true(c.lines.is_empty(), "« %s » frappe : ses points sont sa table" % c.name)
-			continue
-		assert_gt(c.declared_points_max, 0, "« %s » n'accepte aucun point" % c.name)
-		assert_false(c.lines.is_empty(), "« %s » ne donne rien" % c.name)
-		# La règle des passifs, au mot près : la fiche ou un mot-clé.
-		for l in c.lines:
-			if l.scope.is_empty():
-				assert_true(
-					sheet.get(l.stat) != null and StatMod.LABELS.has(l.stat),
-					"« %s » vise « %s », qui n'est pas sur la fiche" % [c.name, l.stat]
-				)
-				continue
-			assert_true(Keywords.exists(l.scope), "« %s » vise « %s »" % [c.name, l.scope])
-			assert_true(SkillStats.modifiable(l.stat), "« %s » vise « %s »" % [c.name, l.stat])
+		if c.damage_per_point.is_empty():
+			assert_gt(c.declared_points_max, 0, "« %s » n'accepte aucun point" % c.name)
+			assert_true(c.grants_buffs(), "« %s » ne donne rien" % c.name)
+		for buff: SkillBuff in c.buffs:
+			assert_false(buff.id.is_empty(), "un buff de « %s » n'a pas d'identifiant" % c.name)
+			assert_false(seen.has(buff.id), "« %s » est porté deux fois" % buff.id)
+			seen[buff.id] = true
+			assert_false(buff.name.is_empty(), "« %s » n'a pas de nom lisible" % buff.id)
+			assert_false(buff.lines.is_empty(), "« %s » ne donne rien" % buff.id)
+			# La règle des passifs, au mot près : la fiche ou un mot-clé.
+			for l in buff.lines:
+				if l.scope.is_empty():
+					assert_true(
+						sheet.get(l.stat) != null and StatMod.LABELS.has(l.stat),
+						"« %s » vise « %s », qui n'est pas sur la fiche" % [buff.id, l.stat]
+					)
+					continue
+				assert_true(Keywords.exists(l.scope), "« %s » vise « %s »" % [buff.id, l.scope])
+				assert_true(SkillStats.modifiable(l.stat), "« %s » vise « %s »" % [buff.id, l.stat])
 
 
 ## Ce qu'un buff donne monte avec ses points, et ne donne rien à zéro point.
@@ -242,7 +250,7 @@ func test_what_a_buff_gives_follows_its_points() -> void:
 	assert_eq(ignition.buff_mods(0).size(), 0, "aucun point, aucune ligne")
 	var one := ignition.buff_mods(1)
 	var four := ignition.buff_mods(4)
-	assert_eq(one.size(), ignition.lines.size(), "une ligne par ligne déclarée")
+	assert_eq(one.size(), ignition.buffs[0].lines.size(), "une ligne par ligne déclarée")
 	assert_almost_eq(four[0].value, one[0].value * 4.0, 1e-4, "quatre points, quatre fois")
 
 
