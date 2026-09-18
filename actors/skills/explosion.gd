@@ -41,9 +41,7 @@ static func put(
 
 func _ready() -> void:
 	z_index = 3
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	material = ArtPalette.ADDITIVE
 
 
 func _physics_process(delta: float) -> void:

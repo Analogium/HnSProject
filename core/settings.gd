@@ -22,8 +22,7 @@ var show_health_bars := true:
 		if value == show_health_bars:
 			return
 		show_health_bars = value
-		changed.emit()
-		_write()
+		_announce()
 
 ## Noms des affixes empilés au-dessus des ennemis qui en portent.
 var show_affix_names := true:
@@ -31,8 +30,7 @@ var show_affix_names := true:
 		if value == show_affix_names:
 			return
 		show_affix_names = value
-		changed.emit()
-		_write()
+		_announce()
 
 ## Deux cases : ce que subit le joueur, brûlures comprises, et ce que subissent
 ## les ennemis.
@@ -41,16 +39,14 @@ var damage_taken_visible := true:
 		if value == damage_taken_visible:
 			return
 		damage_taken_visible = value
-		changed.emit()
-		_write()
+		_announce()
 
 var damage_dealt_visible := true:
 	set(value):
 		if value == damage_dealt_visible:
 			return
 		damage_dealt_visible = value
-		changed.emit()
-		_write()
+		_announce()
 
 
 ## Les touches choisies par le joueur, action → « key:76 ». **Seules celles qu'il a
@@ -62,8 +58,15 @@ var key_binds := {}:
 		Keybinds.apply(key_binds)
 		if _loading:
 			return
-		changed.emit()
-		_write()
+		_announce()
+
+
+## Un réglage vient de changer : ceux qui le lisent, puis le disque. Six setters
+## écrivaient les deux lignes à la main — sans `changed`, trois cents barres de vie
+## gardent l'ancien réglage ; sans `_write()`, le choix meurt avec la session.
+func _announce() -> void:
+	changed.emit()
+	_write()
 
 
 ## Le seul chemin d'un changement de touche : l'échange décidé par `Keybinds`, puis
@@ -90,8 +93,7 @@ var language := FRENCH:
 			return
 		language = chosen
 		TranslationServer.set_locale(language)
-		changed.emit()
-		_write()
+		_announce()
 
 ## Le facteur de la fenêtre, ou PLEIN_ECRAN. Le jeu remplit toujours la fenêtre
 ## (échelle fractionnaire) : ces facteurs sont des raccourcis vers les tailles

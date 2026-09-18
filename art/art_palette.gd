@@ -27,6 +27,18 @@ const SHADOW_STRENGTH := 0.78
 const LIGHT_STRENGTH := 0.42
 
 
+## Le mélange additif du jeu : la lumière s'ajoute au sol au lieu de le couvrir.
+## Tirs, explosions, chaînes et aura montaient chacun le même objet dans leur
+## `_ready()`. Partagé parce qu'il ne porte aucun état — personne ne l'écrit.
+static var ADDITIVE := _additive()
+
+
+static func _additive() -> CanvasItemMaterial:
+	var m := CanvasItemMaterial.new()
+	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	return m
+
+
 static func ramp(base: Color) -> PackedColorArray:
 	var out := PackedColorArray()
 	for i in LEVELS:

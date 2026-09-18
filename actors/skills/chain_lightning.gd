@@ -96,9 +96,7 @@ static func broken(
 func _ready() -> void:
 	_flicker.seed = int(get_instance_id())
 	z_index = 5
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	material = ArtPalette.ADDITIVE
 
 
 func _process(delta: float) -> void:

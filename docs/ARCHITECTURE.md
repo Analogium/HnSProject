@@ -73,7 +73,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | `DamageType` | `CharacterStats` nomme ses résistances par nature, et `DamageInfo` nomme déjà `CharacterStats`. |
 | `WeightedRoll` | `ItemAffixPool` précharge les `.tres` d'`ItemAffix` ; un `ItemAffix` qui appellerait la réserve refermerait la boucle. |
 | `Keys` | Sept scènes lisent le clavier, aucune n'a à connaître les six autres. |
-| `ArtPalette`, `UiPalette` | Les couleurs sont lues par tout le monde et ne lisent personne. |
+| `ArtPalette`, `UiPalette` | Les couleurs — et le matériau additif d'`ArtPalette` — sont lues par tout le monde et ne lisent personne. |
 | `Texts` | La traduction est demandée par les tables de libellés, par le contenu et par les panneaux : elle ne peut nommer aucun des trois. |
 | `Keywords`, `SkillStats` | `StatMod` y lit le nom de ce qu'une ligne portée vise, et `Skill` applique des `StatMod` : qu'elles nomment l'une ou l'autre, et la boucle se referme. |
 | `LegacyFrench` | `Character`, `SaveStore` et `Settings` la lisent pour relire le disque d'avant ; une table figée n'a rien à nommer. |

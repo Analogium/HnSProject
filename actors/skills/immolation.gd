@@ -34,9 +34,7 @@ static func ignite(player: Player, skill: Skill) -> Immolation:
 
 func _ready() -> void:
 	show_behind_parent = true
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	material = ArtPalette.ADDITIVE
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(get_instance_id())
 	for i in BRAISES:

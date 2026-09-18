@@ -192,7 +192,10 @@ atteintes dès qu'un affixe de dégâts ajoutés vise l'un de leurs mots-clés.
    quand elle n'est pas évidente : « PV/s » et non « régénération »). Puis, si
    elle se lit en pourcentage :
    - rangée en fraction ou en multiplicateur (0.05 → « 5 % ») → `SCALED` ;
-   - déjà comptée en points de pourcentage (75 → « 75 % ») → `PERCENT_POINTS`.
+   - déjà comptée en points de pourcentage (75 → « 75 % ») → `PERCENT_POINTS`,
+     **déduit** de `DamageType.RESIST_FIELDS` : aujourd'hui seules les résistances
+     comptent ainsi, et une statistique qui compterait en points sans en être une
+     demanderait de rouvrir la liste.
 
    Confondre les deux donne « 7500 % de résistance au feu ».
 3. **`ui/stat_help.gd`** — son entrée dans `TEXTS` : ce qu'elle fait, en une
@@ -226,7 +229,8 @@ dépendance : des tables alignées sur un seul enum.
    écrivent), `DAMAGE_LABELS`, `COLORS`, `RESIST_FIELDS`.
 2. **`core/character_stats.gd`** — le champ `res_<name>`, du même nom que dans
    `RESIST_FIELDS`.
-3. **`core/stat_mod.gd`** — `LABELS` et `PERCENT_POINTS`.
+3. **`core/stat_mod.gd`** — `LABELS` et `AGREEMENT`. Rien à ajouter à
+   `PERCENT_POINTS`, qui se déduit de `RESIST_FIELDS`.
 4. **`ui/stats_panel.gd`** — dans le groupe `RÉSISTANCES`.
 5. **Un affixe** qui la donne, avec `excludes = ["weapon"]` comme ses sœurs.
 6. **Deux affixes de dégâts ajoutés**, `<id>_to_attacks` et `<id>_to_spells` :
@@ -667,9 +671,9 @@ lui, ne se relit plus. Voir [tests/fixtures/LISEZMOI.md](../tests/fixtures/LISEZ
 
 ## Ajouter un réglage joueur
 
-1. **`core/settings.gd`** — la propriété avec son `set`, qui appelle `_write()`
-   et, si des nœuds doivent réagir, `changed.emit()`. Puis son entrée dans
-   `to_dict()` et `from_dict()`.
+1. **`core/settings.gd`** — la propriété avec son `set`, qui sort sans rien faire
+   sur une valeur inchangée puis appelle `_announce()` : ceux qui lisent le réglage,
+   puis le disque. Puis son entrée dans `to_dict()` et `from_dict()`.
 2. **`ui/pause_menu.tscn` et `.gd`** — la case ou le bouton dans le `VBox`
    `Options`. **Poser la valeur avant de connecter le signal** : dans l'autre
    sens, l'initialisation émet un `toggled` et réécrit le réglage avec lui-même.

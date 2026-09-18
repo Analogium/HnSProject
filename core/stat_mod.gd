@@ -76,14 +76,12 @@ const SCALED := [
 ]
 
 ## Déjà en points de pourcentage : 75 → « 75 % ». Confondue avec SCALED, on lirait
-## « 7500 % ».
-const PERCENT_POINTS := [
-	"res_cold",
-	"res_fire",
-	"res_lightning",
-	"res_necrotic",
-	"res_holy",
-]
+## « 7500 % ». Ce sont les résistances et elles seules : recopiée ici, la liste
+## laissait une nature de dégâts ajoutée se lire en fraction sans rien dire. Le champ
+## vide du physique, qui passe par l'armure, n'est le nom d'aucune statistique.
+static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
+	func(field: String) -> bool: return not field.is_empty()
+)
 
 var stat: String
 var mode: Mode

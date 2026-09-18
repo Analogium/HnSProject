@@ -68,10 +68,7 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
 	_flicker.seed = int(get_instance_id())
-	# Additif : la lumière s'ajoute au sol.
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	material = ArtPalette.ADDITIVE
 
 
 ## Reconstruit à chaque appel : c'est le changement qui fait l'effet.
