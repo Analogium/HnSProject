@@ -35,6 +35,7 @@ max_value = 1.2
 [resource]
 script = ExtResource("1_geqr7")
 id = "regenerating"
+suffix = "de la Régénération"
 tags = PackedStringArray("belt", "jewellery")
 excludes = PackedStringArray()
 stat = "health_regen"

@@ -35,6 +35,7 @@ max_value = 9.0
 [resource]
 script = ExtResource("1_siffl")
 id = "whistling"
+suffix = "du Sifflement"
 tags = PackedStringArray("caster", "gloves")
 excludes = PackedStringArray()
 stat = "projectile_speed"

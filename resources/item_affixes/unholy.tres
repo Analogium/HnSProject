@@ -35,6 +35,7 @@ max_value = 9.0
 [resource]
 script = ExtResource("1_pnfpt")
 id = "unholy"
+suffix = "du Blasphème"
 tags = PackedStringArray()
 excludes = PackedStringArray("weapon")
 stat = "res_holy"

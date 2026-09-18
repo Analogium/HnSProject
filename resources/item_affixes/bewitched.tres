@@ -41,6 +41,7 @@ max_value = 7.0
 [resource]
 script = ExtResource("1_ens")
 id = "bewitched"
+suffix = "du Maléfice"
 tags = PackedStringArray("caster")
 excludes = PackedStringArray()
 stat = "damage"

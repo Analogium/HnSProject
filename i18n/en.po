@@ -810,8 +810,8 @@ msgstr "Here: one hit every %.2f s."
 msgid "Ici : {coups} coups sur cent avant les bonus accrus, pour {degats} % de dégâts."
 msgstr "Here: {coups} hits in a hundred before increased bonuses, for {degats}% damage."
 
-msgid "Chance critique de base : %s"
-msgstr "Base crit chance: %s"
+msgid "Chance critique de base :"
+msgstr "Base crit chance:"
 
 msgid "chance critique de base"
 msgstr "base crit chance"
@@ -980,8 +980,8 @@ msgstr "[LMB] pick up and place     [RMB] equip / remove"
 msgid "lâché hors du sac : jeté au sol"
 msgstr "dropped outside the bag: thrown on the ground"
 
-msgid "niveau d'objet %d"
-msgstr "item level %d"
+msgid "Niveau d'objet :"
+msgstr "Item Level:"
 
 msgid "paliers inconnus : ramassé avant"
 msgstr "tiers unknown: picked up earlier"
@@ -1308,3 +1308,154 @@ msgstr "More, less"
 
 msgid "Chaque bonus amplifié ou atténué multiplie le résultat à lui seul, après les accrus. Deux fois +10 % amplifiés font +21 %."
 msgstr "Each more or less bonus multiplies the result on its own, after the increased ones. Two +10% more make +21%."
+
+# ---------------------------------------------------------------------------
+# Suffixes d'affixes d'objet : « Épée de l'Agilité »
+# ---------------------------------------------------------------------------
+
+msgid "de l'Agilité"
+msgstr "of Agility"
+
+msgid "de la Fournaise"
+msgstr "of the Furnace"
+
+msgid "du Maléfice"
+msgstr "of the Hex"
+
+msgid "du Carnage"
+msgstr "of Carnage"
+
+msgid "de la Boucherie"
+msgstr "of the Butcher"
+
+msgid "du Givre"
+msgstr "of Frost"
+
+msgid "du Blizzard"
+msgstr "of the Blizzard"
+
+msgid "de la Cruauté"
+msgstr "of Cruelty"
+
+msgid "de l'Écrasement"
+msgstr "of Crushing"
+
+msgid "de la Cuirasse"
+msgstr "of the Cuirass"
+
+msgid "de l'Électrocution"
+msgstr "of Electrocution"
+
+msgid "de l'Ombre"
+msgstr "of Shadow"
+
+msgid "de l'Embaumement"
+msgstr "of Embalming"
+
+msgid "de l'Érudition"
+msgstr "of Erudition"
+
+msgid "de l'Ampleur"
+msgstr "of Expanse"
+
+msgid "de l'Allonge"
+msgstr "of Reach"
+
+msgid "du Pyromancien"
+msgstr "of the Pyromancer"
+
+msgid "de la Braise"
+msgstr "of Embers"
+
+msgid "de l'Incendie"
+msgstr "of Conflagration"
+
+msgid "de la Salamandre"
+msgstr "of the Salamander"
+
+msgid "de la Fourche"
+msgstr "of Forking"
+
+msgid "de la Fourrure"
+msgstr "of Fur"
+
+msgid "de la Croisade"
+msgstr "of the Crusade"
+
+msgid "de la Litanie"
+msgstr "of the Litany"
+
+msgid "de l'Incantation"
+msgstr "of Incantation"
+
+msgid "du Paratonnerre"
+msgstr "of the Lightning Rod"
+
+msgid "du Tranchant"
+msgstr "of the Edge"
+
+msgid "du Foudroyeur"
+msgstr "of the Stormcaller"
+
+msgid "de l'Étincelle"
+msgstr "of the Spark"
+
+msgid "de l'Orage"
+msgstr "of the Thunderstorm"
+
+msgid "de la Lucidité"
+msgstr "of Lucidity"
+
+msgid "du Titan"
+msgstr "of the Titan"
+
+msgid "de la Charogne"
+msgstr "of Carrion"
+
+msgid "de la Peste"
+msgstr "of Pestilence"
+
+msgid "de la Célérité"
+msgstr "of Celerity"
+
+msgid "de la Brutalité"
+msgstr "of Brutality"
+
+msgid "de la Poigne"
+msgstr "of the Grip"
+
+msgid "du Rempart"
+msgstr "of the Rampart"
+
+msgid "de la Précision"
+msgstr "of Precision"
+
+msgid "de la Prestesse"
+msgstr "of Swiftness"
+
+msgid "de la Régénération"
+msgstr "of Regeneration"
+
+msgid "du Bûcher"
+msgstr "of the Pyre"
+
+msgid "de la Brisure"
+msgstr "of Shattering"
+
+msgid "de la Sagacité"
+msgstr "of Sagacity"
+
+msgid "de la Tempête"
+msgstr "of the Tempest"
+
+msgid "du Colosse"
+msgstr "of the Colossus"
+
+msgid "du Blasphème"
+msgstr "of Blasphemy"
+
+msgid "de la Vigueur"
+msgstr "of Vigor"
+
+msgid "du Sifflement"
+msgstr "of Whistling"

@@ -41,6 +41,7 @@ max_value = 6.0
 [resource]
 script = ExtResource("1_hvbt4")
 id = "muscular"
+suffix = "du Titan"
 tags = PackedStringArray()
 excludes = PackedStringArray()
 stat = "strength"

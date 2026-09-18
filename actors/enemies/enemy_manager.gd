@@ -120,15 +120,15 @@ func report_kill(enemy: Enemy) -> void:
 		return
 	# Au-dessus du corps : le gain s'attribue à la cible choisie.
 	player.reward(float(enemy.xp_value()), level, enemy.global_position)
-	_drop_loot(enemy)
+	_drop_loot(enemy, player)
 
 
 ## Seulement depuis report_kill : jamais pour un vidage ni pour le banc.
-func _drop_loot(enemy: Enemy) -> void:
+func _drop_loot(enemy: Enemy, player: Player) -> void:
 	var item := LootTable.roll(enemy.affixes.size(), level)
 	if item == null:
 		return
-	GroundItem.spawn(loot_parent, enemy.global_position, item)
+	GroundItem.spawn(loot_parent, enemy.global_position, item, player)
 
 
 func _on_enemy_died(enemy: Enemy) -> void:

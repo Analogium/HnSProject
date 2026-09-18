@@ -76,7 +76,6 @@ func test_a_crit_line_is_local_on_a_weapon_only() -> void:
 	assert_eq(sheet.size(), 1, "une seule ligne de critique vers la fiche")
 	assert_almost_eq(sheet[0].value, 0.13, 0.0001)
 	assert_true(sword.explicit_line(sword.explicits[0]).ends_with(" (local)"))
-	assert_eq(sword.crit_line(), "Chance critique de base : 13 %")
 
 	var increased := StatMod.new("crit_chance", StatMod.Mode.PERCENT, 100.0)
 	var both := Item.new(ItemCatalog.by_id("sword"), [line, increased] as Array[StatMod])
@@ -86,7 +85,7 @@ func test_a_crit_line_is_local_on_a_weapon_only() -> void:
 
 	var ring := Item.new(ItemCatalog.by_id("ring"), [line] as Array[StatMod])
 	assert_false(ring.explicit_line(ring.explicits[0]).ends_with(" (local)"))
-	assert_eq(ring.crit_line(), "", "pas de base hors des armes")
+	assert_eq(ring.crit_chance(), 0.0, "pas de base hors des armes")
 
 
 ## **Seule l'arme donne une base** : hors d'une arme, tout ce qui touche la chance

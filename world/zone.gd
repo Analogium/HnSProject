@@ -194,16 +194,10 @@ func drop_orbs(count: int) -> void:
 
 ## **Le seul endroit qui pose un objet au sol** : ce qu'on jette du sac, ce que le
 ## râtelier rend sans place pour l'accueillir, et le manuel de départ. Les trois
-## écrivaient la même ligne, distance et délai compris ; il suffisait d'en corriger
+## écrivaient la même ligne, distance comprise ; il suffisait d'en corriger
 ## deux pour que le troisième tombe ailleurs, ce qui ne se voit qu'en jouant.
-##
-## Le délai de ramassage vaut pour tous : sans lui, le joueur est déjà dans la zone
-## de contact et l'objet lui revient à l'image suivante, sans qu'il ait bougé.
 func _drop_on_ground(item: Item) -> void:
-	GroundItem.spawn(
-		loot, player.global_position + player.facing * AT_THE_FEET, item,
-		GroundItem.DROP_DELAY
-	)
+	GroundItem.spawn(loot, player.global_position + player.facing * AT_THE_FEET, item, player)
 
 
 func _process(_delta: float) -> void:
@@ -266,6 +260,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		# l'éditeur : ils atteignent le jeu pendant qu'on y joue. F8 fermait donc
 		# la partie au lieu d'ouvrir l'établi. B comme banc d'essai.
 		KEY_B: workbench.toggle()
+		# Les rallumer range les noms à nouveau : une pile qui débordait du haut de
+		# l'écran se démêle en s'étant décalé entre les deux.
+		#
+		# **Pas Z**, la touche de PoE : `Keys.pressed_down()` rend un `keycode`, et
+		# sur un clavier AZERTY la touche d'avancer — physique W — en tape un. Le
+		# joueur aurait éteint les noms à chaque pas.
+		KEY_L: GroundItem.show_labels(not GroundItem.labels_shown)
 		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
@@ -440,7 +441,7 @@ func _overlay_text() -> String:
 		"[I] inventaire   [C] fiche de personnage",
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[PAGE HAUT/BAS] niveau de la prochaine zone  (+MAJ : 10)",
-		"[H] masquer cette aide",
+		"[L] noms au sol   [H] masquer cette aide",
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
 		"[B] etabli (reglage)",

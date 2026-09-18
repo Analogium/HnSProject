@@ -59,6 +59,7 @@ max_value = 20.0
 [resource]
 script = ExtResource("1_affix")
 id = "cuirassed"
+suffix = "de la Cuirasse"
 tags = PackedStringArray("armour")
 excludes = PackedStringArray()
 stat = "armor"

@@ -41,6 +41,7 @@ max_value = 6.0
 [resource]
 script = ExtResource("1_ruilm")
 id = "erudite"
+suffix = "de l'Érudition"
 tags = PackedStringArray()
 excludes = PackedStringArray()
 stat = "intelligence"

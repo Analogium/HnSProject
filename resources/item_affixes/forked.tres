@@ -17,6 +17,7 @@ max_value = 1.0
 [resource]
 script = ExtResource("1_fourc")
 id = "forked"
+suffix = "de la Fourche"
 tags = PackedStringArray("caster")
 excludes = PackedStringArray()
 stat = "projectiles"

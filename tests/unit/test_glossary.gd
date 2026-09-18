@@ -38,6 +38,19 @@ func test_rich_text_splits_the_term_out() -> void:
 	assert_eq(pieces[2].text_value, " (Sort)")
 
 
+## L'infobulle capitalise ses lignes d'affixe. Une majuscule posée sur le brut
+## tomberait sur l'identifiant du terme, que le glossaire ne retrouverait plus.
+func test_rich_text_capitalizes_the_displayed_letter() -> void:
+	assert_eq(RichText.capitalized("ajoute 3 à 7 dégâts"), "Ajoute 3 à 7 dégâts")
+	assert_eq(RichText.capitalized("+20 % accrus"), "+20 % accrus", "rien à majusculer")
+	assert_eq(RichText.capitalized(""), "")
+	assert_eq(RichText.capitalized("état de froid"), "État de froid", "accent compris")
+
+	var termed := RichText.capitalized(Glossary.term("increased", "mp") + " et le reste")
+	assert_eq(Glossary.plain(termed), "Accrus et le reste")
+	assert_eq(Glossary.terms(termed), PackedStringArray(["additive"]), "le terme est intact")
+
+
 ## Une largeur mesurée sur la chaîne brute compterait la marque.
 func test_rich_text_measures_without_the_mark() -> void:
 	var font := ThemeDB.fallback_font

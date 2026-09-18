@@ -645,7 +645,7 @@ Un affixe apparaît sur 18 % des ennemis, deux sur 4 %.
 
 T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 
-**`agile`** — dextérité, arrondi 1
+**`agile`** — « de l'Agilité », dextérité, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -656,7 +656,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
-**`ardent`** — dégâts (Feu), arrondi 1
+**`ardent`** — « de la Fournaise », dégâts (Feu), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -667,7 +667,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`bewitched`** — dégâts (Sort), arrondi 1
+**`bewitched`** — « du Maléfice », dégâts (Sort), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -678,7 +678,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`bloody`** — dégâts critiques, arrondi 0.01
+**`bloody`** — « du Carnage », dégâts critiques, arrondi 0.01
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -688,7 +688,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 45–65 % | 10 |
 | T5 | 1 | 20–40 % | 10 |
 
-**`butchering`** — dégâts contre les saignants (Attaque), arrondi 1
+**`butchering`** — « de la Boucherie », dégâts contre les saignants (Attaque), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -698,7 +698,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
-**`cold_to_attacks`** — dégâts de froid aux attaques, arrondi 1
+**`cold_to_attacks`** — « du Givre », dégâts de froid aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -711,7 +711,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`cold_to_spells`** — dégâts de froid aux sorts, arrondi 1
+**`cold_to_spells`** — « du Blizzard », dégâts de froid aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -724,7 +724,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`cruel`** — chance critique de base, arrondi 0.01
+**`cruel`** — « de la Cruauté », chance critique de base, arrondi 0.01
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -732,7 +732,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T2 | 24 | 2–3 % | 10 |
 | T3 | 1 | 1–2 % | 10 |
 
-**`crushing`** — dégâts (Mêlée), arrondi 1
+**`crushing`** — « de l'Écrasement », dégâts (Mêlée), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -742,7 +742,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 10–15 % | 10 |
 | T5 | 1 | 6–9 % | 10 |
 
-**`cuirassed`** — armure, arrondi 1
+**`cuirassed`** — « de la Cuirasse », armure, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -756,7 +756,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T8 | 5 | 21–34 | 10 |
 | T9 | 1 | 12–20 | 10 |
 
-**`electrocuting`** — dégâts contre les engourdis (Sort), arrondi 1
+**`electrocuting`** — « de l'Électrocution », dégâts contre les engourdis (Sort), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -766,7 +766,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
-**`elusive`** — esquive, arrondi 1
+**`elusive`** — « de l'Ombre », esquive, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -779,7 +779,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 18–29 | 10 |
 | T8 | 1 | 10–17 | 10 |
 
-**`embalmed`** — rés. nécrotique, arrondi 1
+**`embalmed`** — « de l'Embaumement », rés. nécrotique, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -789,7 +789,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
-**`erudite`** — intelligence, arrondi 1
+**`erudite`** — « de l'Érudition », intelligence, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -800,7 +800,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
-**`expansive`** — dégâts (Zone), arrondi 1
+**`expansive`** — « de l'Ampleur », dégâts (Zone), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -810,14 +810,14 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 10–15 % | 10 |
 | T5 | 1 | 6–9 % | 10 |
 
-**`fire_skill_levels`** — niveaux de compétence (Feu), arrondi 1
+**`fire_skill_levels`** — « du Pyromancien », niveaux de compétence (Feu), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
 | T1 | 60 | 2–2 | 10 |
 | T2 | 1 | 1–1 | 10 |
 
-**`fire_to_attacks`** — dégâts de feu aux attaques, arrondi 1
+**`fire_to_attacks`** — « de la Braise », dégâts de feu aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -830,7 +830,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`fire_to_spells`** — dégâts de feu aux sorts, arrondi 1
+**`fire_to_spells`** — « de l'Incendie », dégâts de feu aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -843,7 +843,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`fireproof`** — rés. feu, arrondi 1
+**`fireproof`** — « de la Salamandre », rés. feu, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -853,14 +853,14 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
-**`forked`** — nombre de projectiles (Projectile), arrondi 1
+**`forked`** — « de la Fourche », nombre de projectiles (Projectile), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
 | T1 | 50 | 2–2 | 10 |
 | T2 | 1 | 1–1 | 10 |
 
-**`frosted`** — rés. froid, arrondi 1
+**`frosted`** — « de la Fourrure », rés. froid, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -870,7 +870,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
-**`holy_to_attacks`** — dégâts sacrés aux attaques, arrondi 1
+**`holy_to_attacks`** — « de la Croisade », dégâts sacrés aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -883,7 +883,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`holy_to_spells`** — dégâts sacrés aux sorts, arrondi 1
+**`holy_to_spells`** — « de la Litanie », dégâts sacrés aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -896,7 +896,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`incanting`** — vitesse d'incantation, arrondi 1
+**`incanting`** — « de l'Incantation », vitesse d'incantation, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -907,7 +907,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 8–11 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`insulated`** — rés. foudre, arrondi 1
+**`insulated`** — « du Paratonnerre », rés. foudre, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -917,7 +917,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
-**`keen`** — chance critique de base, arrondi 1
+**`keen`** — « du Tranchant », chance critique de base, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -927,14 +927,14 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 13–17 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
-**`lightning_skill_levels`** — niveaux de compétence (Foudre), arrondi 1
+**`lightning_skill_levels`** — « du Foudroyeur », niveaux de compétence (Foudre), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
 | T1 | 60 | 2–2 | 10 |
 | T2 | 1 | 1–1 | 10 |
 
-**`lightning_to_attacks`** — dégâts de foudre aux attaques, arrondi 1
+**`lightning_to_attacks`** — « de l'Étincelle », dégâts de foudre aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -947,7 +947,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`lightning_to_spells`** — dégâts de foudre aux sorts, arrondi 1
+**`lightning_to_spells`** — « de l'Orage », dégâts de foudre aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -960,7 +960,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`lucid`** — mana/s, arrondi 0.1
+**`lucid`** — « de la Lucidité », mana/s, arrondi 0.1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -970,7 +970,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 1–1.6 | 10 |
 | T5 | 1 | 0.4–0.9 | 10 |
 
-**`muscular`** — force, arrondi 1
+**`muscular`** — « du Titan », force, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -981,7 +981,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
-**`necrotic_to_attacks`** — dégâts nécrotiques aux attaques, arrondi 1
+**`necrotic_to_attacks`** — « de la Charogne », dégâts nécrotiques aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -994,7 +994,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`necrotic_to_spells`** — dégâts nécrotiques aux sorts, arrondi 1
+**`necrotic_to_spells`** — « de la Peste », dégâts nécrotiques aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1007,7 +1007,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`nimble`** — vitesse, arrondi 1
+**`nimble`** — « de la Célérité », vitesse, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1017,7 +1017,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 7–10 % | 10 |
 | T5 | 1 | 3–6 % | 10 |
 
-**`physical_to_attacks`** — dégâts physiques aux attaques, arrondi 1
+**`physical_to_attacks`** — « de la Brutalité », dégâts physiques aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1030,7 +1030,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`physical_to_spells`** — dégâts physiques aux sorts, arrondi 1
+**`physical_to_spells`** — « de la Poigne », dégâts physiques aux sorts, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1043,7 +1043,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 3–4 à 8–12 | 10 |
 | T8 | 1 | 1–2 à 3–6 | 10 |
 
-**`plated`** — armure, arrondi 1
+**`plated`** — « du Rempart », armure, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1054,7 +1054,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 12–18 % | 10 |
 | T6 | 1 | 6–11 % | 10 |
 
-**`precise`** — chance critique de base, arrondi 1
+**`precise`** — « de la Précision », chance critique de base, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1064,7 +1064,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 20–29 % | 10 |
 | T5 | 1 | 10–19 % | 10 |
 
-**`quick`** — vitesse d'attaque, arrondi 1
+**`quick`** — « de la Prestesse », vitesse d'attaque, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1075,7 +1075,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 8–11 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`reach`** — allonge, arrondi 1
+**`reach`** — « de l'Allonge », allonge, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1085,7 +1085,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 5–7 | 10 |
 | T5 | 1 | 2–4 | 10 |
 
-**`regenerating`** — PV/s, arrondi 0.1
+**`regenerating`** — « de la Régénération », PV/s, arrondi 0.1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1095,7 +1095,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 1.3–2.2 | 10 |
 | T5 | 1 | 0.5–1.2 | 10 |
 
-**`scorching`** — dégâts contre les embrasés (Sort), arrondi 1
+**`scorching`** — « du Bûcher », dégâts contre les embrasés (Sort), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1105,7 +1105,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
-**`shattering`** — dégâts contre les transis (Attaque), arrondi 1
+**`shattering`** — « de la Brisure », dégâts contre les transis (Attaque), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1115,7 +1115,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
-**`shrewd`** — mana, arrondi 1
+**`shrewd`** — « de la Sagacité », mana, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1127,7 +1127,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T6 | 8 | 12–19 | 10 |
 | T7 | 1 | 6–11 | 10 |
 
-**`stormy`** — dégâts (Foudre), arrondi 1
+**`stormy`** — « de la Tempête », dégâts (Foudre), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1138,7 +1138,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`sturdy`** — PV, arrondi 1
+**`sturdy`** — « du Colosse », PV, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1149,7 +1149,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 9–13 % | 10 |
 | T6 | 1 | 5–8 % | 10 |
 
-**`unholy`** — rés. sacré, arrondi 1
+**`unholy`** — « du Blasphème », rés. sacré, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1159,7 +1159,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
-**`vigorous`** — PV, arrondi 1
+**`vigorous`** — « de la Vigueur », PV, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1172,7 +1172,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 6 | 15–22 | 10 |
 | T8 | 1 | 8–14 | 10 |
 
-**`whistling`** — vitesse de projectile (Projectile), arrondi 1
+**`whistling`** — « du Sifflement », vitesse de projectile (Projectile), arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|

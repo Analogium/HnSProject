@@ -41,6 +41,7 @@ max_value = 7.0
 [resource]
 script = ExtResource("1_ard")
 id = "ardent"
+suffix = "de la Fournaise"
 tags = PackedStringArray("caster", "jewellery")
 excludes = PackedStringArray()
 stat = "damage"

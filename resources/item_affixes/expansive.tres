@@ -35,6 +35,7 @@ max_value = 9.0
 [resource]
 script = ExtResource("1_expan")
 id = "expansive"
+suffix = "de l'Ampleur"
 tags = PackedStringArray("caster", "gloves")
 excludes = PackedStringArray()
 stat = "damage"

@@ -41,6 +41,7 @@ max_value = 11.0
 [resource]
 script = ExtResource("1_wi2so")
 id = "plated"
+suffix = "du Rempart"
 tags = PackedStringArray("heavy")
 excludes = PackedStringArray()
 stat = "armor"

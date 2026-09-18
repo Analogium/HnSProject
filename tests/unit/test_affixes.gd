@@ -743,6 +743,42 @@ func test_an_affix_is_found_by_its_id() -> void:
 	assert_null(ItemAffixPool.by_id(""))
 
 
+## Un affixe sans suffixe donnerait un objet nommé comme un commun : la rareté se
+## verrait à la couleur, pas au nom. Uniques, sinon deux objets différents se
+## liraient pareil.
+func test_each_affix_has_its_own_suffix() -> void:
+	var seen := {}
+	for raw in ItemAffixPool.ALL:
+		var a: ItemAffix = raw
+		assert_false(a.suffix.is_empty(), "« %s » sans suffixe" % a.id)
+		assert_false(seen.has(a.suffix), "« %s » déjà pris par « %s »" % [a.suffix, seen.get(a.suffix, "")])
+		seen[a.suffix] = a.id
+
+
+## Le nom composé : la base, puis le suffixe du **meilleur** palier présent, quel
+## que soit l\'ordre des affixes. Un commun garde le nom de sa base.
+func test_an_item_is_named_after_its_best_tier() -> void:
+	var sword := ItemCatalog.by_id("sword")
+	var keen := ItemAffixPool.by_id("keen")
+	var cruel := ItemAffixPool.by_id("cruel")
+	assert_eq(Item.new(sword).display_name(), Texts.t(sword.display_name), "un commun ne prend rien")
+
+	var t3 := RolledAffix.new("keen", 3, keen.at_top(2))
+	var t1 := RolledAffix.new("cruel", 1, cruel.at_top(0))
+	var named := "%s %s" % [Texts.t(sword.display_name), cruel.suffix]
+	assert_eq(Item.new(sword, [t3, t1]).display_name(), named)
+	assert_eq(Item.new(sword, [t1, t3]).display_name(), named, "et l\'ordre n\'y fait rien")
+
+
+## Sans provenance — sauvegarde v1, affixe retiré du projet — pas de suffixe
+## deviné : le palier est inconnu, le meilleur ne se désigne pas.
+func test_an_item_without_origin_keeps_its_base_name() -> void:
+	var sword := ItemCatalog.by_id("sword")
+	var orphan := RolledAffix.orphan(StatMod.new("max_health", StatMod.Mode.FLAT, 40.0))
+	var lost := RolledAffix.new("affix_from_2027", 1, StatMod.new("armor", StatMod.Mode.FLAT, 12.0))
+	assert_eq(Item.new(sword, [orphan, lost]).display_name(), Texts.t(sword.display_name))
+
+
 ## Ce que l\'infobulle écrit à droite d\'une ligne, sous Alt : le palier et la
 ## fourchette **de ce palier**, pas celle de l\'affixe entier.
 func test_a_rolled_affix_announces_its_tier_and_span() -> void:

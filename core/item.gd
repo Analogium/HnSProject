@@ -60,8 +60,28 @@ func color() -> Color:
 
 
 ## Le nom lu par le joueur ; tout affichage passe par ici, pas par `base.display_name`.
+## Un objet affixé porte le suffixe de son meilleur palier : « Épée de l'Agilité ».
 func display_name() -> String:
-	return Texts.t(base.display_name)
+	var named := Texts.t(base.display_name)
+	var suffix := _suffix()
+	return named if suffix.is_empty() else "%s %s" % [named, suffix]
+
+
+## Le suffixe de l'affixe au meilleur palier — 1 est le meilleur. À égalité, le
+## premier tiré : deux objets identiques doivent porter le même nom. Vide quand
+## aucun affixe n'a de provenance connue (sauvegardes v1).
+func _suffix() -> String:
+	var best: ItemAffix = null
+	var best_tier := 0
+	for r in explicits:
+		if not r.known() or (best != null and r.tier >= best_tier):
+			continue
+		var definition := ItemAffixPool.by_id(r.affix_id)
+		if definition == null or definition.suffix.is_empty():
+			continue
+		best = definition
+		best_tier = r.tier
+	return "" if best == null else Texts.t(best.suffix)
 
 
 ## Faux pour tout ce qui n'est pas un manuel. La seule réponse, pour le joueur comme
@@ -127,13 +147,6 @@ func crit_chance() -> float:
 func implicit_line() -> String:
 	var imp := base.implicit()
 	return "" if imp == null else imp.label()
-
-
-## Sous l'implicite, vide hors des armes.
-func crit_line() -> String:
-	if base.family != ItemBase.WEAPON_FAMILY:
-		return ""
-	return Texts.t("Chance critique de base : %s") % StatMod.format(SkillStats.CRIT_CHANCE, crit_chance())
 
 
 ## Une ligne tirée telle que l'infobulle l'écrit.

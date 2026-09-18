@@ -296,8 +296,8 @@ func _scales(l: PackedStringArray) -> void:
 	l.append("")
 	for raw in _sorted_affixes():
 		var a: ItemAffix = raw
-		l.append("**`%s`** — %s, arrondi %s" % [
-			a.id, StatMod.name(a.stat, a.scope),
+		l.append("**`%s`** — « %s », %s, arrondi %s" % [
+			a.id, a.suffix, StatMod.name(a.stat, a.scope),
 			("%.2f" % a.rounded).trim_suffix("0").trim_suffix("0").trim_suffix("."),
 		])
 		l.append("")

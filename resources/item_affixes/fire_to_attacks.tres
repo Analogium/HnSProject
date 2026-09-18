@@ -69,6 +69,7 @@ max_top = 6.0
 [resource]
 script = ExtResource("1_feuatt")
 id = "fire_to_attacks"
+suffix = "de la Braise"
 tags = PackedStringArray("melee", "jewellery")
 excludes = PackedStringArray()
 stat = "damage_fire"

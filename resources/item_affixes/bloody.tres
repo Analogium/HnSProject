@@ -35,6 +35,7 @@ max_value = 0.4
 [resource]
 script = ExtResource("1_affix")
 id = "bloody"
+suffix = "du Carnage"
 tags = PackedStringArray("weapon", "jewellery")
 excludes = PackedStringArray()
 stat = "crit_multiplier"

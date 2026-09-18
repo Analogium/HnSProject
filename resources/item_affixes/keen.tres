@@ -35,6 +35,7 @@ max_value = 12.0
 [resource]
 script = ExtResource("1_affix")
 id = "keen"
+suffix = "du Tranchant"
 tags = PackedStringArray("gloves", "jewellery")
 excludes = PackedStringArray()
 stat = "crit_chance"

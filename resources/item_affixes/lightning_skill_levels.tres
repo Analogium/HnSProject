@@ -17,6 +17,7 @@ max_value = 1.0
 [resource]
 script = ExtResource("1_lightn")
 id = "lightning_skill_levels"
+suffix = "du Foudroyeur"
 tags = PackedStringArray("caster")
 excludes = PackedStringArray()
 stat = "skill_levels"

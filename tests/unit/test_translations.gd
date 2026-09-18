@@ -109,6 +109,11 @@ func test_the_content_reads_in_english() -> void:
 
 	Settings.from_dict({"language": Settings.ENGLISH})
 	assert_eq(Item.new(sword).display_name(), "Sword")
+	var keen := ItemAffixPool.by_id("keen")
+	assert_eq(
+		Item.new(sword, [RolledAffix.new("keen", 1, keen.at_top(0))]).display_name(),
+		"Sword of the Edge", "le suffixe se traduit avec la base"
+	)
 	assert_eq(Item.new(manual).display_name(), "Manual of Lightning")
 	assert_eq(manual.manual.displayed_name(), "Master of Lightning")
 	assert_eq(nova.displayed_name(), "Lightning Nova")
@@ -230,6 +235,9 @@ func _expected() -> Dictionary:
 	for raw in AffixPool.ALL:
 		var affix: Affix = raw
 		out[affix.display_name] = "affixe d'élite « %s »" % affix.id
+	for raw in ItemAffixPool.ALL:
+		var item_affix: ItemAffix = raw
+		out[item_affix.suffix] = "suffixe de l'affixe « %s »" % item_affix.id
 
 	for nature in DamageType.NAMES:
 		out[nature] = "nature de dégâts"

@@ -41,6 +41,7 @@ max_value = 7.0
 [resource]
 script = ExtResource("1_affix")
 id = "quick"
+suffix = "de la Prestesse"
 tags = PackedStringArray("melee", "gloves", "jewellery")
 excludes = PackedStringArray()
 stat = "attack_speed"

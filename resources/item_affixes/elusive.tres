@@ -53,6 +53,7 @@ max_value = 17.0
 [resource]
 script = ExtResource("1_4cskp")
 id = "elusive"
+suffix = "de l'Ombre"
 tags = PackedStringArray("light")
 excludes = PackedStringArray()
 stat = "evasion"

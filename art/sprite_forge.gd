@@ -127,12 +127,18 @@ const ICON := 24
 static var _icons: Dictionary = {}
 
 
-## L'icône d'un objet posé au sol, à sa taille native. Le dessin de la forge y
-## part en diagonale : une arme verticale dans un cadre carré laisse deux grandes
-## marges vides et se lit plus petite qu'elle n'est. Une image, elle, garde
-## l'orientation sous laquelle elle a été produite.
+## La place d'un objet au sol, en pixels. Sous le cadre de travail : à 24 px une
+## épée au sol pesait autant qu'un personnage (32), et six chutes faisaient un tas
+## illisible. C'est le nom, au-dessus, qui dit ce que c'est.
+const GROUND := Vector2i(18, 18)
+
+
+## L'icône d'un objet posé au sol. Le dessin de la forge y part en diagonale : une
+## arme verticale dans un cadre carré laisse deux grandes marges vides et se lit
+## plus petite qu'elle n'est. Une image, elle, garde l'orientation sous laquelle
+## elle a été produite.
 static func ground_icon(base: ItemBase) -> Texture2D:
-	return _base_icon(base, false, Vector2i.ZERO)
+	return _base_icon(base, false, GROUND)
 
 
 ## L'icône d'un objet dans le sac. Le dessin de la forge s'y dresse à la

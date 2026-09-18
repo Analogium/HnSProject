@@ -78,6 +78,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
    | Champ | À remplir |
    |---|---|
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
+   | `suffix` | Le nom que l'objet prend — « Épée **de l'Agilité** » —, préposition et article compris : le genre du mot ne se devine pas. Unique dans la réserve, et à traduire dans `i18n/en.po` |
    | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `SkillStats.LABELS` — `skill_levels` compris, à plat —, des dégâts ajoutés `damage_<id>` sur `DamageType.IDS`, ou des dégâts contre un état `damage_vs_<id>` sur `StatusEffects.IDS`, en pourcentage — ceux-là n'existent **qu'avec une portée** |
    | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, et l'affixe n'agit que sur les compétences qui le portent |
    | `percent` | Pourcentage plutôt que valeur absolue |
@@ -119,6 +120,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
 `test_no_affix_tag_targets_nothing` (une étiquette qui ne
 correspond à aucune base est une faute de frappe qui ne se verrait jamais),
 `test_the_pool_does_not_contain_the_same_line_twice`,
+`test_each_affix_has_its_own_suffix`,
 `test_each_scoped_affix_targets_a_keyword_and_a_cast_number`,
 `test_each_range_is_monotonic_and_the_right_way_round`,
 `test_a_rolled_range_stays_in_both_its_spans` ; et

@@ -35,6 +35,7 @@ max_value = 12.0
 [resource]
 script = ExtResource("1_shatte")
 id = "shattering"
+suffix = "de la Brisure"
 tags = PackedStringArray("melee", "gloves")
 excludes = PackedStringArray()
 stat = "damage_vs_chill"

@@ -102,12 +102,12 @@ func test_the_milestone_5_criterion() -> void:
 		return
 	var torso: Item = on_ground.data
 
-	# Ramassé en marchant dessus, jamais posé dans le sac à la main : c'est la
-	# moitié du trajet, et elle passe par un corps, une aire et le rangement en
+	# Ramassé d'un clic sur son nom, jamais posé dans le sac à la main : c'est la
+	# moitié du trajet, et elle passe par l'étiquette au sol et le rangement en
 	# rectangles.
 	var player: Player = _zone.player
-	player.global_position = on_ground.global_position
-	await wait_physics_frames(4)
+	assert_true(on_ground.clicked(on_ground.name_rect().get_center()), "le clic le prend")
+	await wait_process_frames(1)
 	var cell := _cell_of(player.inventory, torso)
 	assert_ne(cell, Vector2i(-1, -1), "« %s » est dans le sac" % torso.display_name())
 	if cell == Vector2i(-1, -1):

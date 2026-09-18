@@ -41,6 +41,7 @@ max_value = 7.0
 [resource]
 script = ExtResource("1_bhxbv")
 id = "incanting"
+suffix = "de l'Incantation"
 tags = PackedStringArray("caster", "gloves", "jewellery")
 excludes = PackedStringArray()
 stat = "cast_speed"

@@ -6,6 +6,11 @@ extends Resource
 
 @export var id: String = ""
 
+## Le suffixe que l'objet prend quand cet affixe y est au meilleur palier — « Épée
+## **de l'Agilité** ». La préposition et l'article en font partie : le genre du mot
+## français ne se devine pas depuis le code.
+@export var suffix: String = ""
+
 ## Les étiquettes qu'une base doit porter, **une seule suffit** (voir `ItemBase.tags`).
 ## Vide = partout, sous réserve d'`excludes`.
 @export var tags: PackedStringArray = PackedStringArray()

@@ -41,6 +41,7 @@ max_value = 7.0
 [resource]
 script = ExtResource("1_orag")
 id = "stormy"
+suffix = "de la Tempête"
 tags = PackedStringArray("caster", "jewellery")
 excludes = PackedStringArray()
 stat = "damage"

@@ -50,6 +50,20 @@ static func pieces(text_value: String) -> Array[Piece]:
 	return out
 
 
+## La ligne avec une majuscule à sa première lettre **affichée**. Une ligne peut
+## commencer par une marque : majusculer le brut renommerait l'identifiant du terme,
+## qui est définitif (invariant 1) et ne se retrouverait plus dans le glossaire.
+static func capitalized(text_value: String) -> String:
+	if text_value.is_empty():
+		return text_value
+	var at := 0
+	if text_value[0] == Glossary.START:
+		at = text_value.find(Glossary.SEPARATOR) + 1
+		if at <= 0 or at >= text_value.length():
+			return text_value
+	return text_value.left(at) + text_value[at].to_upper() + text_value.substr(at + 1)
+
+
 static func width(font: Font, text_value: String, size_value: int) -> float:
 	var total := 0.0
 	for piece in pieces(text_value):
@@ -78,6 +92,15 @@ static func draw_right(
 	size_value: int, tint: Color
 ) -> void:
 	draw(canvas, font, Vector2(right - width(font, text_value, size_value), at.y), text_value, size_value, tint)
+
+
+## Centrée sur `middle`, arrondie au pixel : un texte à cheval sur deux pixels bave.
+static func draw_centered(
+	canvas: CanvasItem, font: Font, at: Vector2, middle: float, text_value: String,
+	size_value: int, tint: Color
+) -> void:
+	var left := roundf(middle - width(font, text_value, size_value) * 0.5)
+	draw(canvas, font, Vector2(left, at.y), text_value, size_value, tint)
 
 
 ## Coupe aux espaces seulement : un terme ne contient pas d'espace, il reste entier.

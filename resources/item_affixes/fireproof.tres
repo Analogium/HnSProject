@@ -35,6 +35,7 @@ max_value = 9.0
 [resource]
 script = ExtResource("1_2mh66")
 id = "fireproof"
+suffix = "de la Salamandre"
 tags = PackedStringArray()
 excludes = PackedStringArray("weapon")
 stat = "res_fire"

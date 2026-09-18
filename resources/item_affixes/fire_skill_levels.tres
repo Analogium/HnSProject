@@ -17,6 +17,7 @@ max_value = 1.0
 [resource]
 script = ExtResource("1_fire_s")
 id = "fire_skill_levels"
+suffix = "du Pyromancien"
 tags = PackedStringArray("caster")
 excludes = PackedStringArray()
 stat = "skill_levels"

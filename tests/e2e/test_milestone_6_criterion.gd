@@ -105,8 +105,8 @@ func test_a_new_character_finds_a_manual_at_its_feet() -> void:
 func test_the_milestone_6_criterion() -> void:
 	var player: Player = _zone.player
 	# La paix, le temps de ramasser : à soixante-neuf ennemis, un personnage neuf
-	# meurt avant la fin du délai de ramassage, et la zone se recharge sous ses
-	# pieds — le livre au sol avec elle. On repeuple juste après, pour l'expérience.
+	# meurt avant d'avoir cliqué, et la zone se recharge sous ses pieds — le livre
+	# au sol avec elle. On repeuple juste après, pour l'expérience.
 	_zone.enemy_manager.clear()
 
 	# --- « ramasser le manuel tombé à ses pieds » ---
@@ -119,14 +119,10 @@ func test_the_milestone_6_criterion() -> void:
 		return
 	var book: Item = on_ground.data
 
-	# Le délai de ramassage passe d'abord. Le livre tombe à quatorze pixels des
-	# pieds du joueur, donc il se ramasse **tout seul** dès la fin du délai : on
-	# est déjà dessus. C'est ce qu'on veut en jouant — le premier manuel ne doit
-	# pas se rater — et c'est au test de s'y adapter plutôt que l'inverse.
-	await wait_physics_frames(int(GroundItem.DROP_DELAY * 60.0) + 6)
-	if is_instance_valid(on_ground):
-		player.global_position = on_ground.global_position
-		await wait_physics_frames(4)
+	# Un clic sur son nom, le seul chemin du ramassage depuis le jalon 19. Le point
+	# vient de l'étiquette elle-même : c'est ce que la souris vise.
+	assert_true(on_ground.clicked(on_ground.name_rect().get_center()), "le clic le prend")
+	await wait_process_frames(1)
 	assert_eq(player.inventory.placed.size(), 2, "il est dans le sac, avec la baguette de départ")
 
 	# --- « le poser au râtelier » ---

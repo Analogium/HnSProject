@@ -53,6 +53,7 @@ max_value = 14.0
 [resource]
 script = ExtResource("1_affix")
 id = "vigorous"
+suffix = "de la Vigueur"
 tags = PackedStringArray("armour", "belt", "jewellery")
 excludes = PackedStringArray()
 stat = "max_health"

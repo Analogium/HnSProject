@@ -34,6 +34,7 @@ max_value = 0.9
 [resource]
 script = ExtResource("1_wxxb7")
 id = "lucid"
+suffix = "de la Lucidité"
 tags = PackedStringArray("caster", "belt", "jewellery")
 excludes = PackedStringArray()
 stat = "mana_regen"

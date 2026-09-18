@@ -92,9 +92,11 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Quels paliers un objet atteint-il ? | `ItemAffix.unlocked_tiers()` |
 | Combien d'affixes sur un objet neuf ? | `ItemAffixPool.COUNT_WEIGHTS` |
 | Quelle rareté ? | `Item.rarity()`, **déduite** du nombre d'affixes |
+| Comment se lit l'infobulle d'un objet ? | `InventoryPanel._tip_lines()` monte la liste des blocs — nom sur bandeau de rareté, propriétés de la base, niveau, implicite, affixes —, `_draw_tooltip()` la mesure puis la dessine. **Une seule liste** : deux passes écrites à la main divergeaient à chaque ligne ajoutée. Les lignes d'implicite et d'affixe prennent une majuscule par `RichText.capitalized()`, qui saute la marque du glossaire |
+| Comment un objet s'appelle-t-il ? | `Item.display_name()` : le nom de la base, plus le `suffix` de l'affixe au **meilleur palier** — « Épée de l'Agilité ». Rien sans affixe de provenance connue |
 | Où va un objet équipé ? | `EquipmentSlots.free_for()` |
 | Ce qui tient dans le sac ? | `Inventory.fits()` |
-| À quoi ressemble un objet ? | `SpriteForge.inventory_icon(base, place)` dans le sac, `ground_icon(base)` au sol : l'image de `ItemBase.icon` si la base en a une, sinon le dessin de la forge d'après son `kind` et son palier. `ghost_icon(kind, place)` est le troisième chemin, celui d'un **emplacement vide** — il n'y a pas d'objet, donc pas d'image. Les trois passent par `_fit()`, qui agrandit d'un facteur **entier** |
+| À quoi ressemble un objet ? | `SpriteForge.inventory_icon(base, place)` dans le sac, `ground_icon(base)` au sol (`GROUND`, sous le cadre de travail : c'est le nom au-dessus qui identifie) : l'image de `ItemBase.icon` si la base en a une, sinon le dessin de la forge d'après son `kind` et son palier. `ghost_icon(kind, place)` est le troisième chemin, celui d'un **emplacement vide** — il n'y a pas d'objet, donc pas d'image. Les trois passent par `_fit()` : agrandissement d'un facteur **entier**, réduction au ratio exact |
 | Où l'arme d'un personnage est-elle dessinée ? | `SpriteForge._weapon()`, d'après `ItemBase.kind` — **le même champ** que le dessin de repli de l'icône. Une image d'objet ne le remplace pas : `test_each_base_has_a_non_empty_icon` vérifie les deux |
 | Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `SkillStats.readable_range()` ; un pourcentage, `StatMod.percentage()`, dont la typographie suit la langue |
 | En quelle langue s'écrit un texte ? | `Texts.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.language` choisit |
@@ -126,7 +128,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Que ferme Échap ? | `Zone.close_interfaces()`, dans `_input` : ce qui est **visible** — sac, fiche, manuels, arbre de passifs, établi, menu de la barre —, et le menu de pause seulement quand rien ne l'était. Par la visibilité et non par `Game.ui_grabs_input`, que la fiche ne prend jamais |
 | Qu'est-ce qu'on peut lancer ? | `Player.cast_slot()`, qui porte les six refus — case vide, non apprise, mauvaise arme, réserve, recharge, orbite pleine. Une aura allumée s'y **éteint** sans coût, et la touche tenue ne la rallume pas |
 | Quelle arme une compétence veut-elle ? | (jalon 18) `Skill.usable_with()` : le mot-clé de sa cadence contre `ItemBase.allowed_keyword()` — les sorts pour une arme `caster`, les attaques pour les autres, rien sans arme. La main gauche ne compte pas. L'arme de départ est posée par `SaveStore.create()` (épée en main, baguette au sac), et par la zone sans personnage |
-| Une ligne d'objet est-elle locale ? | `ItemBase.is_local()` : aujourd'hui la chance critique d'une arme, plate (`cruel`, « +4 % de chance critique de base ») ou accrue (`precise`). `Item.mods()` ne les verse pas à la fiche ; elles font `Item.crit_chance()`, que `mods()` verse en une seule ligne plate. L'infobulle l'écrit « (local) » par `Item.explicit_line()`, et la base sous l'implicite par `Item.crit_line()` |
+| Une ligne d'objet est-elle locale ? | `ItemBase.is_local()` : aujourd'hui la chance critique d'une arme, plate (`cruel`, « +4 % de chance critique de base ») ou accrue (`precise`). `Item.mods()` ne les verse pas à la fiche ; elles font `Item.crit_chance()`, que `mods()` verse en une seule ligne plate. L'infobulle l'écrit « (local) » par `Item.explicit_line()`, et la base en propriété d'en-tête |
 | Qui atteint un coup qui ne naît pas d'une collision ? | `Targets.in_circle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion. **Jamais depuis un rappel de collision** — l'espace y est verrouillé |
 | Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
 | Ce que coûte l'Immolation ? | `Player.burn()` : répartie entre les natures comme les dégâts de l'aura (`SkillStats.distribution()`), chaque part atténuée par `CharacterStats.mitigate()` — **la règle d'un coup reçu**, donc objets et passifs compris, et l'engourdissement. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
@@ -231,7 +233,9 @@ meurt presque toujours depuis un `area_entered`.
   par `DeferredTree.add_deferred()` : ajout puis position, dans cet ordre, une
   position globale ne voulant rien dire hors de l'arbre. **Un parent libéré avant
   l'appel différé libère le nœud** — sinon il fuit hors de l'arbre avec ce qu'il
-  porte, comme le manuel de départ d'une zone fermée dans la même image ;
+  porte, comme le manuel de départ d'une zone fermée dans la même image. Un objet
+  au sol n'est plus une `Area2D` depuis qu'il se ramasse au clic, mais il naît du
+  même rappel et garde le garde-fou du parent libéré ;
 - `Player._swing()` passe par `set_deferred("monitoring", …)`, et **attend une
   image de physique** avant de rouvrir la hitbox pour le second coup d'une croix :
   fermée puis rouverte dans la même image, elle ne coupe rien, et un ennemi déjà
@@ -262,6 +266,8 @@ d'un caster abattu à distance, en le blessant à chaque image.
 | Le placement d'un point de manuel | `Player.invest()` / `refund()` : un passif change la fiche, et la page ne peut pas oublier le recalcul |
 | La prise d'un nœud de l'arbre de passifs | `Player.take_passive()` / `release_passive()`, pour la même raison |
 | La pose d'un objet au sol | `GroundItem.spawn()` |
+| Le ramassage d'un objet | `GroundItem.clicked()` — le clic sur le nom, et **rien d'autre** : le contact ne prend plus rien |
+| Où se pose l'étiquette d'un objet au sol ? | `GroundItem._relayout()`, sur la liste statique de tous les objets au sol : chacune part de sa place et **monte** jusqu'à trouver de l'air, bornée par le haut de l'écran. Recalculé quand la liste change ou qu'une position bouge, jamais à chaque image. `show_labels()` (touche L) les éteint et les rallume ; le rallumage range depuis la position du joueur à cet instant, et c'est ce qui démêle une pile qui débordait. Éteints, plus rien ne se ramasse : l'étiquette **est** le bouton |
 | Le retour visuel d'un coup | `HitFeedback.current` |
 | Le tirage pondéré | `WeightedRoll.weighted()` |
 

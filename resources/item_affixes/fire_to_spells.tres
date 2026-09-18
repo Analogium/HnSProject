@@ -69,6 +69,7 @@ max_top = 6.0
 [resource]
 script = ExtResource("1_feusor")
 id = "fire_to_spells"
+suffix = "de l'Incendie"
 tags = PackedStringArray("caster", "jewellery")
 excludes = PackedStringArray()
 stat = "damage_fire"
