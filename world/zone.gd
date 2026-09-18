@@ -232,6 +232,12 @@ func close_interfaces() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Les actions d'abord : le joueur les rebinde depuis les options, et leur touche
+	# ne s'écrit donc plus ici.
+	if _zone_action(event):
+		get_viewport().set_input_as_handled()
+		return
+
 	var key := Keys.pressed_down(event)
 	if key == KEY_NONE:
 		return
@@ -250,24 +256,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_PAGEDOWN: Game.change_zone_level(-10 if (event as InputEventKey).shift_pressed else -1)
 		KEY_G: spawn_pack()
 		KEY_K: kill_all()
-		KEY_I: inventory.toggle()
-		KEY_C: stats_panel.toggle()
-		KEY_M: manuals.toggle()
-		KEY_P: passive_tree.toggle()
 		# **Pas une touche de fonction.** F5, F6, F7 et F8 sont les raccourcis de
 		# la barre d'exécution de l'éditeur — lancer, lancer la scène, pause,
 		# arrêter — et depuis Godot 4.4 la fenêtre de jeu est intégrée à
 		# l'éditeur : ils atteignent le jeu pendant qu'on y joue. F8 fermait donc
 		# la partie au lieu d'ouvrir l'établi. B comme banc d'essai.
 		KEY_B: workbench.toggle()
-		# Les rallumer range les noms à nouveau : une pile qui débordait du haut de
-		# l'écran se démêle en s'étant décalé entre les deux.
-		#
-		# **Pas Z**, la touche de PoE : `Keys.pressed_down()` rend un `keycode`, et
-		# sur un clavier AZERTY la touche d'avancer — physique W — en tape un. Le
-		# joueur aurait éteint les noms à chaque pas.
-		KEY_L: GroundItem.show_labels(not GroundItem.labels_shown)
-		KEY_TAB: map_overlay.visible = not map_overlay.visible
 		KEY_H: overlay.visible = not overlay.visible
 		KEY_F2: Game.goto_scene("res://world/test_arena.tscn")
 		KEY_F3: Game.goto_scene("res://world/map_debug.tscn")
@@ -276,6 +270,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_: return
 
 	vp.set_input_as_handled()
+
+
+## Les actions de jeu que la zone porte : vrai si l'une a répondu. Leur touche vit
+## dans `project.godot` et dans les réglages, **jamais ici** — c'est ce qui les rend
+## rebindables. Les touches de réglage restent dans le `match` ci-dessus : elles
+## ouvrent des outils, pas le jeu.
+##
+## Rallumer les noms au sol les range à nouveau : une pile qui débordait du haut de
+## l'écran se démêle en s'étant décalé entre les deux.
+func _zone_action(event: InputEvent) -> bool:
+	if event.is_action_pressed("panel_inventory"):
+		inventory.toggle()
+	elif event.is_action_pressed("panel_character"):
+		stats_panel.toggle()
+	elif event.is_action_pressed("panel_manuals"):
+		manuals.toggle()
+	elif event.is_action_pressed("panel_passives"):
+		passive_tree.toggle()
+	elif event.is_action_pressed("zone_map"):
+		map_overlay.visible = not map_overlay.visible
+	elif event.is_action_pressed("ground_labels"):
+		GroundItem.show_labels(not GroundItem.labels_shown)
+	else:
+		return false
+	return true
 
 
 ## Le niveau choisi prend effet **ici**, et nulle part ailleurs : c'est le seul
@@ -437,11 +456,14 @@ func _overlay_text() -> String:
 		"%d ennemis places en %d paquets" % [_spawned, spawner.pack_count],
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],
 		"",
-		"[TAB] carte de la zone",
-		"[I] inventaire   [C] fiche de personnage",
+		# Lues dans la carte d'entrées : rebindées, elles s'annoncent telles quelles.
+		"[%s] carte de la zone" % Keybinds.key_label("zone_map"),
+		"[%s] inventaire   [%s] fiche de personnage" % [
+			Keybinds.key_label("panel_inventory"), Keybinds.key_label("panel_character")
+		],
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[PAGE HAUT/BAS] niveau de la prochaine zone  (+MAJ : 10)",
-		"[L] noms au sol   [H] masquer cette aide",
+		"[%s] noms au sol   [H] masquer cette aide" % Keybinds.key_label("ground_labels"),
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
 		"[B] etabli (reglage)",

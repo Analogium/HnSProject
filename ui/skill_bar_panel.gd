@@ -201,27 +201,11 @@ func _entry_icon(entry: int) -> Rect2:
 	return Rect2(r.position + Vector2(2.0, (r.size.y - side) * 0.5), Vector2(side, side))
 
 
-## Lu dans la **carte d'entrées**, jamais réécrit, et traduit dans la disposition du
-## joueur : le jeu lie des positions (ZQSD comme WASD), et la barre doit dire la
-## lettre qu'il lit.
+## Le libellé de la touche d'une case. `Keybinds` sait la lire dans la carte
+## d'entrées et la traduire dans la disposition du joueur.
 static func key_label(index: int) -> String:
-	for event in InputMap.action_get_events("skill_%d" % (index + 1)):
-		var keyboard := event as InputEventKey
-		if keyboard != null:
-			if keyboard.keycode != 0:
-				return OS.get_keycode_string(keyboard.keycode)
-			# Le serveur muet des tests n'a pas de disposition : on garde le nom de la position
-			# plutôt que de pousser une erreur moteur.
-			var read_value := keyboard.physical_keycode
-			if DisplayServer.get_name() != "headless":
-				var translated := DisplayServer.keyboard_get_keycode_from_physical(read_value)
-				if translated != 0:
-					read_value = translated
-			return OS.get_keycode_string(read_value)
-		var click := event as InputEventMouseButton
-		if click != null:
-			return Texts.t("clic G") if click.button_index == MOUSE_BUTTON_LEFT else Texts.t("clic D")
-	return ""
+	var written := Keybinds.key_label("skill_%d" % (index + 1))
+	return "" if written == Keybinds.UNBOUND else written
 
 
 # --------------------------------------------------------------------------

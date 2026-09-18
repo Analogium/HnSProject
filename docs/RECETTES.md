@@ -129,6 +129,45 @@ refuse une base dont la liste déborde du bas de l'établi.
 
 ---
 
+## Ajouter une action rebindable
+
+1. **`project.godot`** — l'action et sa touche par défaut. **Ne pas taper le blob
+   sérialisé à la main** : le faire écrire par le moteur, sur une copie temporaire,
+   puis rapatrier le fichier.
+
+   ```gdscript
+   var ev := InputEventKey.new()
+   ev.keycode = KEY_J            # ou ev.physical_keycode, pour lier une position
+   ProjectSettings.set_setting("input/mon_action", {"deadzone": 0.2, "events": [ev]})
+   ProjectSettings.save()
+   ```
+
+   `keycode` lie **la lettre** que le joueur voit, `physical_keycode` **la position**
+   sur le clavier. Les déplacements sont des positions, pour que ZQSD tombe où tombe
+   WASD ; tout le reste est une lettre.
+
+2. **`core/keybinds.gd`** — l'entrée dans `ACTIONS`, identifiant **définitif**
+   (invariant 1, il part dans `settings.json`) et libellé français.
+
+3. **`i18n/en.po`** — l'anglais du libellé.
+
+4. **Celui qui écoute** : `event.is_action_pressed("mon_action")` dans un
+   `_unhandled_input`, ou `Input.is_action_pressed()` pour une touche maintenue. Un
+   `KEY_*` écrit dans un `if` ne se rebinde pas — c'est tout l'objet de la recette.
+
+L'onglet des touches se remplit seul : il lit `ACTIONS`. Au-delà de seize actions,
+vérifier qu'il tient dans les 360 px (deux colonnes aujourd'hui).
+
+**Ce qui refusera un oubli** — `tests/unit/test_keybinds.gd` :
+`test_each_action_exists_and_is_named` (l'action ajoutée d'un seul côté),
+`test_no_two_default_keys_collide` (deux actions sur la même touche), et
+`tests/unit/test_translations.gd` pour le libellé sans anglais.
+
+Les touches de **réglage** — F2 à F6, G, K, PAGE, H, B — ne sont pas des actions :
+elles ouvrent des outils et non le jeu, et `zone.gd` les lit par leur code.
+
+---
+
 ## Ajouter une statistique
 
 Deux tests forment une **bijection** qu'il faut satisfaire des deux côtés :

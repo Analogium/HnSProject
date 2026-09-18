@@ -51,7 +51,7 @@ const TIP_VALUE := Color(0.88, 0.86, 0.94)
 ## Ce qui sépare l'étiquette de sa valeur. La ponctuation est **dans** l'étiquette
 ## traduite : le français met une espace devant le deux-points, l'anglais non.
 const TIP_PROP_GAP := 3.0
-## La colonne des paliers sous Alt, plus sourde : une note de bas de page.
+## La colonne des paliers sous la touche « détails », plus sourde : une note de bas de page.
 const TIP_TIER := Color(0.55, 0.53, 0.62)
 ## Gouttière entre un affixe et son palier.
 const TIP_TIER_GAP := 10.0
@@ -84,7 +84,7 @@ class TipLine:
 	var text := ""
 	## La valeur d'une propriété, mise en avant derrière son étiquette.
 	var value := ""
-	## Le palier d'un affixe sous Alt, calé à droite de l'infobulle. Vide partout
+	## Le palier d'un affixe sous la touche « détails », calé à droite de l'infobulle. Vide partout
 	## ailleurs, et sur un affixe ramassé avant les paliers.
 	var aside := ""
 	var tint := Color.WHITE
@@ -121,8 +121,9 @@ var _grab_px := Vector2.ZERO
 var _mouse := Vector2.ZERO
 ## Où le bouton a été pressé, pour distinguer le glisser du clic.
 var _press := Vector2.ZERO
-## Alt tenue : paliers et fourchettes. Relevée dans _process, voir là-bas.
-var _alt := false
+## L'action « détails » tenue : paliers et fourchettes. Relevée dans _process,
+## voir là-bas.
+var _detailed := false
 var _hover := Vector2i(-1, -1)
 ## L'emplacement survolé, ou -1, séparé de la case du sac.
 var _hover_slot := -1
@@ -217,7 +218,7 @@ func _input(event: InputEvent) -> void:
 			else:
 				_take(button.position)
 		MOUSE_BUTTON_RIGHT:
-			_right_click()
+			_right_click(button.ctrl_pressed)
 		_:
 			return
 
@@ -244,8 +245,9 @@ func _track(point: Vector2) -> void:
 	queue_redraw()
 
 
-## Jeter ce qu'on tient, retirer ce qui est porté, ou équiper ce qu'on survole.
-func _right_click() -> void:
+## Jeter ce qu'on tient, jeter au sol avec Ctrl, retirer ce qui est porté, ou équiper
+## ce qu'on survole.
+func _right_click(to_the_ground: bool) -> void:
 	if _held != null:
 		drop_requested.emit(_held)
 		_held = null
@@ -253,10 +255,24 @@ func _right_click() -> void:
 		return
 	if _player == null:
 		return
-	if _hover_slot >= 0:
+	if to_the_ground:
+		_drop_hovered()
+	elif _hover_slot >= 0:
 		_unequip(EquipmentSlots.ids()[_hover_slot])
 	else:
 		_equip(_hover)
+
+
+## Ctrl + clic droit : au sol, sans passer par la main. Depuis le sac comme depuis un
+## emplacement — sous les yeux du joueur c'est le même geste.
+func _drop_hovered() -> void:
+	var item := (
+		_player.unequip(EquipmentSlots.ids()[_hover_slot]) if _hover_slot >= 0
+		else _inventory.take_at(_hover)
+	)
+	if item != null:
+		drop_requested.emit(item)
+	queue_redraw()
 
 
 ## **Sorti du sac d'abord** : l'objet remplacé y trouve sa place ; ce qui déborde
@@ -302,11 +318,8 @@ func _take(point: Vector2) -> void:
 		if worn == null:
 			return
 		_player.unequip(EquipmentSlots.ids()[slot])
-		_held = worn
 		# Hors grille exprès : `_return_held` cherchera une place.
-		_from = Vector2i(-1, -1)
-		_grab = Inventory.footprint(worn) / 2
-		_grab_px = _span_size(Inventory.footprint(worn)) * 0.5
+		_hold(worn, Vector2i(-1, -1))
 		queue_redraw()
 		return
 
@@ -319,6 +332,15 @@ func _take(point: Vector2) -> void:
 	_grab_px = point - _rect_of(_from, Vector2i.ONE).position
 	_held = _inventory.take_at(cell)
 	queue_redraw()
+
+
+## Un objet en main, saisi par son centre : la prise d'un emplacement d'équipement et
+## celle d'un délogé, qui n'ont pas de case attrapée sous le curseur.
+func _hold(item: Item, from: Vector2i) -> void:
+	_held = item
+	_from = from
+	_grab = Inventory.footprint(item) / 2
+	_grab_px = _span_size(Inventory.footprint(item)) * 0.5
 
 
 ## Pose ce qu'on tient : emplacement, sac, ou sol hors du panneau. Un clic raté garde
@@ -338,8 +360,7 @@ func _resolve(point: Vector2, drag: bool) -> void:
 		_held = null
 		queue_redraw()
 		return
-	elif _inventory.place(_held, _cell_at(point) - _grab):
-		_held = null
+	elif _swap_in(_cell_at(point) - _grab):
 		queue_redraw()
 		return
 
@@ -348,6 +369,35 @@ func _resolve(point: Vector2, drag: bool) -> void:
 		if rest != null:
 			drop_requested.emit(rest)
 	queue_redraw()
+
+
+## Pose l'objet tenu à cette case, en **échangeant** avec celui qui l'occupe. Vrai
+## quand il s'est posé — la main peut alors tenir le délogé, et `_resolve` ne doit
+## plus le renvoyer au sac.
+##
+## L'échange vise d'abord la place que l'objet tenu vient de quitter : deux objets
+## permutent alors sans rien déranger. À défaut — tailles différentes, objet venu
+## d'un emplacement d'équipement —, le délogé passe en main, et c'est au joueur de
+## lui trouver une place.
+func _swap_in(cell: Vector2i) -> bool:
+	if _inventory.place(_held, cell):
+		_held = null
+		return true
+	var blocker := _inventory.lone_blocker(_held, cell)
+	if blocker == Inventory.EMPTY:
+		return false
+
+	var origin: Vector2i = _inventory.placed[blocker].cell
+	var evicted := _inventory.take_at(origin)
+	if not _inventory.place(_held, cell):
+		# La place libérée ne suffisait pas : rien n'aura bougé.
+		_inventory.place(evicted, origin)
+		return false
+	if _from.x >= 0 and _inventory.place(evicted, _from):
+		_held = null
+	else:
+		_hold(evicted, origin)
+	return true
 
 
 ## Refusé s'il ne va pas là : le joueur a visé, on ne range pas d'office.
@@ -374,11 +424,11 @@ func _process(_delta: float) -> void:
 	if not visible:
 		return
 
-	# L'état **réel** d'Alt à chaque image : le gestionnaire de fenêtres avale le
-	# relâchement quand le focus part.
-	var alt := Input.is_key_pressed(KEY_ALT)
-	if alt != _alt:
-		_alt = alt
+	# L'état **réel** à chaque image, et non l'événement : le gestionnaire de
+	# fenêtres avale le relâchement quand le focus part.
+	var held := Input.is_action_pressed("item_details")
+	if held != _detailed:
+		_detailed = held
 		queue_redraw()
 
 	if _doll_frames == null:
@@ -740,7 +790,7 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 		))
 	_tip_block(out, properties)
 
-	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous Alt.
+	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous la touche « détails ».
 	_tip_block(out, [TipLine.property(
 		Texts.t("Niveau d'objet :"), str(item.item_level), TIP_VALUE
 	)] as Array[TipLine])
@@ -758,13 +808,13 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 			TipLine.Kind.MOD, RichText.capitalized(item.explicit_line(rolled)), TIP_EXPLICIT
 		)
 		# Vide sans provenance : la ligne s'affiche sans colonne.
-		line.aside = rolled.tier_and_span() if _alt else ""
+		line.aside = rolled.tier_and_span() if _detailed else ""
 		without_origin = without_origin or line.aside.is_empty()
 		mods.append(line)
 	_tip_block(out, mods)
 
-	# Sous Alt, dit pourquoi aucun palier ne s'affiche.
-	if _alt and without_origin and not mods.is_empty():
+	# Sous la touche « détails », dit pourquoi aucun palier ne s'affiche.
+	if _detailed and without_origin and not mods.is_empty():
 		_tip_block(out, [TipLine.new(
 			TipLine.Kind.TEXT, Texts.t("paliers inconnus : ramassé avant"), TIP_LABEL
 		)] as Array[TipLine])

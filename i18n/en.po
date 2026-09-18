@@ -1020,6 +1020,9 @@ msgstr "LMB"
 msgid "clic D"
 msgstr "RMB"
 
+msgid "clic M"
+msgstr "MMB"
+
 msgid "— vider la case —"
 msgstr "— clear the slot —"
 
@@ -1459,3 +1462,67 @@ msgstr "of Vigor"
 
 msgid "du Sifflement"
 msgstr "of Whistling"
+
+# ---------------------------------------------------------------------------
+# L'onglet des touches
+# ---------------------------------------------------------------------------
+
+msgid "Touches"
+msgstr "Keys"
+
+msgid "TOUCHES"
+msgstr "KEYS"
+
+msgid "Cliquer une action, puis la touche voulue"
+msgstr "Click an action, then the key you want"
+
+msgid "Rétablir les touches"
+msgstr "Reset keys"
+
+msgid "Avancer"
+msgstr "Move up"
+
+msgid "Reculer"
+msgstr "Move down"
+
+msgid "Aller à gauche"
+msgstr "Move left"
+
+msgid "Aller à droite"
+msgstr "Move right"
+
+msgid "Compétence 1"
+msgstr "Skill 1"
+
+msgid "Compétence 2"
+msgstr "Skill 2"
+
+msgid "Compétence 3"
+msgstr "Skill 3"
+
+msgid "Compétence 4"
+msgstr "Skill 4"
+
+msgid "Compétence 5"
+msgstr "Skill 5"
+
+msgid "Inventaire"
+msgstr "Inventory"
+
+msgid "Fiche de personnage"
+msgstr "Character sheet"
+
+msgid "Manuels"
+msgstr "Manuals"
+
+msgid "Arbre de passifs"
+msgstr "Passive tree"
+
+msgid "Carte de la zone"
+msgstr "Zone map"
+
+msgid "Noms des objets au sol"
+msgstr "Ground item names"
+
+msgid "Détails d'un objet (maintenu)"
+msgstr "Item details (hold)"

@@ -53,6 +53,30 @@ var damage_dealt_visible := true:
 		_write()
 
 
+## Les touches choisies par le joueur, action → « key:76 ». **Seules celles qu'il a
+## changées** y sont ; le reste vient de `project.godot`, par `Keybinds`. Posées, elles
+## réécrivent la table du moteur — c'est le seul endroit qui la touche.
+var key_binds := {}:
+	set(value):
+		key_binds = value
+		Keybinds.apply(key_binds)
+		if _loading:
+			return
+		changed.emit()
+		_write()
+
+
+## Le seul chemin d'un changement de touche : l'échange décidé par `Keybinds`, puis
+## la table du moteur et le disque, par le setter.
+func bind(action: String, event: InputEvent) -> void:
+	key_binds = Keybinds.rebound(key_binds, action, event)
+
+
+## Rend toutes les touches à `project.godot`.
+func reset_key_binds() -> void:
+	key_binds = {}
+
+
 ## Le choix entre les deux cases, ici et nulle part ailleurs.
 func shows_damage(on_the_player: bool) -> bool:
 	return damage_taken_visible if on_the_player else damage_dealt_visible
@@ -243,6 +267,7 @@ func to_dict() -> Dictionary:
 		"damage_dealt": damage_dealt_visible,
 		"language": language,
 		"scale_factor": scale_factor,
+		"key_binds": key_binds,
 	}
 
 
@@ -255,12 +280,27 @@ func from_dict(source: Dictionary) -> void:
 	damage_dealt_visible = bool(source.get("damage_dealt", damage_dealt_visible))
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	language = String(source.get("language", language))
+	key_binds = valid_binds(source.get("key_binds", {}))
 	var read_value: Variant = source.get("scale_factor", scale_factor)
 	if read_value is float or read_value is int:
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand
 		# demanderait un facteur que celui-ci ne peut pas afficher.
 		scale_factor = clampi(int(read_value), FULLSCREEN, max_scale_factor())
 	_loading = false
+
+
+## Ce qu'un fichier peut contenir de valide : une action connue, une touche lisible.
+## Le reste retombe sur le défaut — un `settings.json` retouché à la main ne doit pas
+## priver le joueur d'une touche.
+static func valid_binds(source: Variant) -> Dictionary:
+	var out := {}
+	if not source is Dictionary:
+		return out
+	for action: Variant in source:
+		var written := String(source[action])
+		if Keybinds.ACTIONS.has(action) and Keybinds.from_text(written) != null:
+			out[String(action)] = written
+	return out
 
 
 func _load() -> void:

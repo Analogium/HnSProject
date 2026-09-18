@@ -134,7 +134,7 @@ func test_the_milestone_5_criterion() -> void:
 	# l'image suivante. C'est ce sondage qu'on vient vérifier.
 	_alt_key(true)
 	await wait_process_frames(2)
-	assert_true(panel._alt, "le panneau a vu la touche")
+	assert_true(panel._detailed, "le panneau a vu la touche")
 
 	# Le dessin est relancé sous Alt : c'est le seul chemin qui construit les deux
 	# colonnes et écrit la plage du palier. Ce que ça donne à l'œil est du ressort
@@ -154,7 +154,7 @@ func test_the_milestone_5_criterion() -> void:
 
 	_alt_key(false)
 	await wait_process_frames(2)
-	assert_false(panel._alt, "et le relâchement aussi")
+	assert_false(panel._detailed, "et le relâchement aussi")
 
 
 ## « Après cent baguettes ramassées, aucune ne porte de dégâts d'attaque. »

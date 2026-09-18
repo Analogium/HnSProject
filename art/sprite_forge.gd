@@ -130,7 +130,7 @@ static var _icons: Dictionary = {}
 ## La place d'un objet au sol, en pixels. Sous le cadre de travail : à 24 px une
 ## épée au sol pesait autant qu'un personnage (32), et six chutes faisaient un tas
 ## illisible. C'est le nom, au-dessus, qui dit ce que c'est.
-const GROUND := Vector2i(18, 18)
+const GROUND := Vector2i(14, 14)
 
 
 ## L'icône d'un objet posé au sol. Le dessin de la forge y part en diagonale : une

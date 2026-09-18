@@ -9,6 +9,7 @@ extends GutTest
 ## suivants loin de sa cause.
 func after_each() -> void:
 	GroundItem.show_labels(true)
+	GroundItem.hovered = null
 
 
 func _drop(player: Player, item: Item, at: Vector2) -> GroundItem:
@@ -147,14 +148,30 @@ func test_the_labels_switch_off_and_on() -> void:
 	assert_true(under.clicked(under.name_rect().get_center()), "et redeviennent cliquables")
 
 
-## Ramassé sous le curseur, l'objet emporterait la prise de souris qu'il tenait, et
-## le joueur ne lancerait plus rien.
-func test_it_gives_the_mouse_back_when_it_leaves() -> void:
+## Le clic gauche appartient à l'étiquette survolée ; les autres touches partent
+## quand même. Avant, le survol prenait la souris entière, et un curseur posé sur un
+## nom empêchait de lancer un sort au clic droit.
+func test_a_hovered_label_holds_back_the_left_click_only() -> void:
 	var player := _player()
-	var drop: GroundItem = await _drop(player, _sword(), Vector2(60, 0))
-	Game.grab_ui_input(drop, true)
-	assert_true(Game.ui_grabs_input, "la souris est prise")
+	var drop: GroundItem = await _drop(player, _sword(), Vector2(300, 260))
+
+	GroundItem.hovered = null
+	assert_false(GroundItem.takes_the_click("skill_1"), "sans survol, rien n'est retenu")
+
+	GroundItem.hovered = drop
+	assert_true(GroundItem.takes_the_click("skill_1"), "le clic gauche ramasse, il ne lance pas")
+	assert_false(GroundItem.takes_the_click("skill_2"), "le clic droit part")
+	assert_false(GroundItem.takes_the_click("skill_3"), "et le clavier aussi")
+
+
+## Ramassé sous le curseur, l'objet retiendrait à jamais le clic gauche du joueur :
+## le survol se lâche à la sortie de l'arbre, **toujours**.
+func test_it_lets_the_click_go_when_it_leaves() -> void:
+	var player := _player()
+	var drop: GroundItem = await _drop(player, _sword(), Vector2(300, 260))
+	GroundItem.hovered = drop
+	assert_true(GroundItem.takes_the_click("skill_1"), "le clic est retenu")
 
 	drop.queue_free()
 	await wait_process_frames(1)
-	assert_false(Game.ui_grabs_input, "et rendue en partant")
+	assert_null(GroundItem.hovered, "et rendu en partant")

@@ -5,21 +5,27 @@ extends Node2D
 ## en cliquant dessus. Au contact, le sac avalait ce qu'on traversait ; depuis que
 ## les noms se composent, ce qu'on ramasse se lit d'abord et se choisit ensuite.
 
-## Halo au sol. Sans lui, une icône de 18 px posée sur des tuiles texturées se
+## Halo au sol. Sans lui, une icône de 14 px posée sur des tuiles texturées se
 ## perd — c'est le halo qu'on repère du coin de l'œil, pas l'objet. Il prend la
 ## couleur de rareté : de loin, on sait si ça vaut le détour.
+##
+## Taillé sur l'icône (`SpriteForge.GROUND`), les boules d'expérience compris : plus
+## large qu'elle, il se lit comme une flaque et on ne voit plus ce qui est posé
+## dessus.
 const GLOW_ALPHA := 0.34
-const GLOW_RX := 9.0
-const GLOW_RY := 4.5
+const GLOW_RX := 7.0
+const GLOW_RY := 3.5
 
 ## Flottement : c'est ce qui distingue un objet à ramasser d'un détail du décor.
 const BOB_SPEED := 3.2
 const BOB_AMOUNT := 1.5
 
-## L'étiquette, en pixels de la fenêtre de jeu (640×360) : la taille des gains
-## d'expérience. Plus grande, deux objets voisins n'ont plus la place de s'afficher.
-const NAME_SIZE := 8
-const NAME_PAD := Vector2(3.0, 1.0)
+## L'étiquette, en pixels de la fenêtre de jeu (640×360). Un cran sous les gains
+## d'expérience, et serrée : c'est elle qu'on voit avant l'objet, et six chutes
+## côte à côte remplissent vite l'écran. La hauteur du cadre vient de l'interligne
+## de la police, d'où la marge verticale nulle.
+const NAME_SIZE := 7
+const NAME_PAD := Vector2(2.0, 0.0)
 ## Ce qui sépare le bas de l'étiquette du haut de la plus grande icône possible.
 ## Au-dessus de `SpriteForge.GROUND` et non de l'icône réelle : à hauteur propre,
 ## deux étiquettes voisines ne s'alignent plus, et le flottement les ferait danser.
@@ -68,6 +74,9 @@ static var _dirty := false
 ## Les noms au sol s'affichent-ils ? Éteints, plus rien ne se ramasse : l'étiquette
 ## **est** le bouton. En lecture seule, passer par `show_labels()`.
 static var labels_shown := true
+
+## L'objet dont l'étiquette est sous le curseur, ou null.
+static var hovered: GroundItem = null
 
 
 ## Pose un objet dans le monde : l'ennemi qui lâche son butin et le sac qui jette
@@ -123,10 +132,11 @@ func _notification(what: int) -> void:
 		_measure()
 
 
-## La souris relâchée à la sortie de l'arbre, **toujours** : ramassé sous le
-## curseur, l'objet emporterait sa prise et le joueur ne frapperait plus jamais.
+## Le survol lâché à la sortie de l'arbre, **toujours** : ramassé sous le curseur,
+## l'objet retiendrait à jamais le clic gauche du joueur.
 func _exit_tree() -> void:
-	Game.grab_ui_input(self, false)
+	if hovered == self:
+		hovered = null
 	_all.erase(self)
 	_dirty = true
 
@@ -145,12 +155,11 @@ func _process(delta: float) -> void:
 	if _dirty and labels_shown:
 		_relayout()
 
-	var over := labels_shown and _shown.has_point(to_local(get_global_mouse_position()))
-	if over != _hovered:
-		_hovered = over
-		# Le joueur sonde sa souris hors de l'arbre d'entrées : sans cette prise,
-		# le clic qui ramasse lancerait aussi la compétence de la première case.
-		Game.grab_ui_input(self, over)
+	_hovered = labels_shown and _shown.has_point(to_local(get_global_mouse_position()))
+	if _hovered:
+		hovered = self
+	elif hovered == self:
+		hovered = null
 	queue_redraw()
 
 
@@ -178,6 +187,14 @@ func clicked(world_point: Vector2) -> bool:
 		return false
 	queue_free()
 	return true
+
+
+## Ce clic-là ramasse, il ne lance pas : le joueur sonde ses touches hors de l'arbre
+## d'entrées, donc sans ce refus il attaquerait à chaque objet ramassé. **Le clic
+## gauche seulement** — un curseur posé sur un nom n'a jamais empêché de lancer un
+## sort, et le test de `hovered` passe en premier pour ne rien lire le reste du temps.
+static func takes_the_click(action: String) -> bool:
+	return hovered != null and Keybinds.uses_left_click(action)
 
 
 ## L'étiquette dans le monde, telle qu'elle se dessine — montée comprise : c'est

@@ -253,6 +253,10 @@ func _expected() -> Dictionary:
 	for entry in Glossary.ENTRIES:
 		out[Glossary.ENTRIES[entry]["title"]] = "titre de l'encadré « %s »" % entry
 		out[Glossary.ENTRIES[entry]["text"]] = "définition de « %s »" % entry
+	for action in Keybinds.ACTIONS:
+		out[Keybinds.ACTIONS[action]] = "action « %s »" % action
+	for button in Keybinds.MOUSE_LABELS:
+		out[Keybinds.MOUSE_LABELS[button]] = "bouton de souris"
 	for id in Keywords.LABELS:
 		out[Keywords.LABELS[id]] = "mot-clé"
 	for id in Keywords.RECIPIENTS:

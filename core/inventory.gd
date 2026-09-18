@@ -76,6 +76,25 @@ func fits(item: Item, cell: Vector2i) -> bool:
 	return true
 
 
+## L'unique objet qu'une pose ici rencontrerait, ou `EMPTY`. `EMPTY` aussi quand il
+## y en a **plusieurs** : on ne déloge pas deux objets pour en poser un, et le
+## panneau rend alors l'objet tenu plutôt que de vider la moitié du sac.
+func lone_blocker(item: Item, cell: Vector2i) -> int:
+	var s := footprint(item)
+	if cell.x < 0 or cell.y < 0 or cell.x + s.x > cols or cell.y + s.y > rows:
+		return EMPTY
+	var found := EMPTY
+	for y in range(cell.y, cell.y + s.y):
+		for x in range(cell.x, cell.x + s.x):
+			var index := _cells[y * cols + x]
+			if index == EMPTY:
+				continue
+			if found != EMPTY and index != found:
+				return EMPTY
+			found = index
+	return found
+
+
 func place(item: Item, cell: Vector2i) -> bool:
 	if item == null or not fits(item, cell):
 		return false

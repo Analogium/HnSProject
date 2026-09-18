@@ -179,11 +179,15 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Sondage des cinq cases, sauf quand un panneau tient la souris. Tenue, la touche
-	# relance à chaque fin de recharge : la cadence est celle de `cast_slot()`.
+	# Sondage des cinq cases, sauf quand un panneau tient la souris ou qu'une étiquette
+	# de butin réclame le clic gauche. Tenue, la touche relance à chaque fin de
+	# recharge : la cadence est celle de `cast_slot()`.
 	for i in SkillBar.SLOT_COUNT:
 		var action := "skill_%d" % (i + 1)
-		if Game.ui_grabs_input or not Input.is_action_pressed(action):
+		if Game.ui_grabs_input or GroundItem.takes_the_click(action):
+			_held[i] = false
+			continue
+		if not Input.is_action_pressed(action):
 			_held[i] = false
 			continue
 		if Input.is_action_just_pressed(action):

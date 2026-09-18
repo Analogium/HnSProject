@@ -116,6 +116,10 @@ func test_the_chain_does_not_jump_beyond_its_range() -> void:
 func test_the_chain_strikes_on_behalf_of_its_caster() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
 	var target := _target(Vector2(60, 0))
+	# Le critique est retiré, comme pour les dégâts contre un état : il tire une
+	# salve sur deux, doublerait l'une des deux et ferait dépendre le test de la
+	# place de ce lancer dans le fil de `Game.rng`.
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
 	await wait_physics_frames(2)
 
 	assert_true(_p.cast_slot(2))

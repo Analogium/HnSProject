@@ -121,10 +121,52 @@ text = "Fenêtre"
 custom_minimum_size = Vector2(168, 0)
 theme_override_font_sizes/font_size = 10
 
+[node name="KeysBtn" type="Button" parent="Root/Center/Panel/Options"]
+custom_minimum_size = Vector2(168, 0)
+theme_override_font_sizes/font_size = 10
+text = "Touches"
+
 [node name="Spacer2" type="Control" parent="Root/Center/Panel/Options"]
 custom_minimum_size = Vector2(0, 4)
 
 [node name="Back" type="Button" parent="Root/Center/Panel/Options"]
 custom_minimum_size = Vector2(168, 0)
+theme_override_font_sizes/font_size = 10
+text = "Retour"
+
+[node name="Keys" type="VBoxContainer" parent="Root/Center/Panel"]
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Keys"]
+theme_override_colors/font_color = Color(0.85, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+text = "TOUCHES"
+
+[node name="Hint" type="Label" parent="Root/Center/Panel/Keys"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+horizontal_alignment = 1
+text = "Cliquer une action, puis la touche voulue"
+
+[node name="Rows" type="HBoxContainer" parent="Root/Center/Panel/Keys"]
+theme_override_constants/separation = 4
+
+[node name="Left" type="VBoxContainer" parent="Root/Center/Panel/Keys/Rows"]
+theme_override_constants/separation = 1
+
+[node name="Right" type="VBoxContainer" parent="Root/Center/Panel/Keys/Rows"]
+theme_override_constants/separation = 1
+
+[node name="Spacer" type="Control" parent="Root/Center/Panel/Keys"]
+custom_minimum_size = Vector2(0, 4)
+
+[node name="Reset" type="Button" parent="Root/Center/Panel/Keys"]
+custom_minimum_size = Vector2(344, 0)
+theme_override_font_sizes/font_size = 10
+text = "Rétablir les touches"
+
+[node name="Back" type="Button" parent="Root/Center/Panel/Keys"]
+custom_minimum_size = Vector2(344, 0)
 theme_override_font_sizes/font_size = 10
 text = "Retour"
