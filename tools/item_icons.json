@@ -178,5 +178,9 @@
   "manual_cold": [
     "a thick closed spellbook covered in frost with a pale blue ice crystal on the cover, upright, front view",
     4242
+  ],
+  "manual_holy": [
+    "a closed ivory white tome with a golden radiant sun emblem on its cover, front view",
+    1337
   ]
 }

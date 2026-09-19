@@ -7,8 +7,11 @@ extends RefCounted
 
 ## Ce qu'un modificateur peut viser, et son nom à l'écran — en plus des dégâts
 ## ajoutés `damage_<nature>`. `damage` ne se vise qu'en pourcentage et multiplie
-## toutes les parts. Ni coût ni intervalle (la réserve et les vitesses ont leur voie),
-## ni `period`, `self_burn` ou `status_chance_increase` (voir `Skill`).
+## toutes les parts. Ni coût, ni `period`, `self_burn` ou `status_chance_increase`
+## (voir `Skill`). **`use_time` et `recharge` y sont depuis le jalon 23** : la cadence
+## et la récupération du porteur les tiennent déjà, mais un nœud change ce que la
+## compétence demande — « plus de recharge » se dit par −100 % de `recharge`.
+## `interval` n'y est pas : il se déduit des deux, le viser mentirait.
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -19,6 +22,10 @@ const LABELS := {
 	"radius": "rayon",
 	"simultaneous": "maximum simultané",
 	CRIT_CHANCE: "chance critique de base",
+	# La page du manuel dit « temps d'attaque » ou « temps d'incantation » : elle
+	# connaît la cadence de la compétence, une ligne de modificateur non.
+	"use_time": "temps du geste",
+	"recharge": "recharge",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -32,6 +39,8 @@ const AGREEMENT := {
 	"radius": "ms",
 	"simultaneous": "ms",
 	CRIT_CHANCE: "fs",
+	"use_time": "ms",
+	"recharge": "fs",
 }
 
 const DAMAGE := "damage"

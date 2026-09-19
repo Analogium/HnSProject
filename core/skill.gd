@@ -28,7 +28,7 @@ enum Cadence { WEAPON, CAST }
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
 enum Shape {
 	ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF,
-	WAVE, CYCLONE, SPIKES, NOVA, VORTEX,
+	WAVE, CYCLONE, SPIKES, NOVA, VORTEX, BEAM, PILLAR, PULSE,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -66,6 +66,10 @@ const KEYWORD_OF_SHAPE := {
 	Shape.SPIKES: Keywords.AREA,
 	Shape.NOVA: Keywords.AREA,
 	Shape.VORTEX: Keywords.AREA,
+	# Le faisceau n'y est **pas** : une ligne n'est ni un tir ni une surface, et lui
+	# prêter `area` promettrait un affixe qui ne le servirait pas.
+	Shape.PILLAR: Keywords.AREA,
+	Shape.PULSE: Keywords.AREA,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -105,7 +109,8 @@ const HITS_PER_SHAPE := {
 ## laisse derrière elle — sa trace ou son buff. Zéro pour ce qui ne dure pas, et pour
 ## l'aura, qui dure tant qu'on ne l'éteint pas.
 @export var duration: float = 0.0
-## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule.
+## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule, et **la
+## longueur** d'un faisceau, dont la largeur est celle de son dessin.
 @export var radius: float = 0.0
 ## En secondes, entre deux frappes d'un nuage ou d'une aura, ou entre deux touches
 ## d'une même cible par un serpent ou une épée. **Aucun nœud ne la vise** : elle

@@ -63,6 +63,8 @@ extends Resource
 @export var static_charge_chance: float = 0.0
 ## Comme `ignite_chance`, pour le gel.
 @export var chill_chance: float = 0.0
+## Comme `ignite_chance`, pour la bénédiction.
+@export var blessing_chance: float = 0.0
 
 ## Ce qui **raccourcit les recharges**, en points de pourcentage : à +50, une recharge
 ## de 3 s tombe à 2 s. La seule chose qui les touche — ni la vitesse d'attaque ni celle

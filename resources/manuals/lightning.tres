@@ -194,11 +194,32 @@ required_points = 1
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_persistance_0")])
 
+[sub_resource type="Resource" id="L_ruee_d_orage_sans_repit_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -100.0
+
+[sub_resource type="Resource" id="L_ruee_d_orage_sans_repit_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 400.0
+
+[sub_resource type="Resource" id="N_ruee_d_orage_sans_repit"]
+script = ExtResource("3_noeud")
+id = "storm_dash_unbound"
+name = "Sans répit"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_sans_repit_0"), SubResource("L_ruee_d_orage_sans_repit_1")])
+
 [sub_resource type="Resource" id="C_ruee_d_orage"]
 script = ExtResource("2_case")
 skill = ExtResource("13_ruee_d_orage")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_d_orage_persistance")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_d_orage_persistance"), SubResource("N_ruee_d_orage_sans_repit")])
 
 [sub_resource type="Resource" id="C_electricite_statique"]
 script = ExtResource("2_case")

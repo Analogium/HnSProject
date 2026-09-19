@@ -258,6 +258,9 @@ const GEAR := [
 	"manual_fire", "manual_weapons",
 	# Jalon 21 : le manuel du froid, le seul livre **debout**.
 	"manual_cold",
+	# Le manuel sacré : un livre couché dans son halo, la seule silhouette du
+	# râtelier qui déborde du livre lui-même.
+	"manual_holy",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée **sans image** : depuis que
@@ -410,6 +413,18 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# Le cristal au plat de la couverture, seul accent : c'est lui qui dit « livre »
 			# plutôt que « stèle ».
 			c.disc(Vector2(cx + 0.8, top + 9.6), 1.8, R_ACCENT)
+
+		"manual_holy":
+			# **Un livre couché devant son halo.** Les quatre autres se distinguent par
+			# l'orientation du livre seul ; une cinquième s'y serait confondue, alors
+			# que la rondeur se lit à la taille d'une case. Le halo **dépasse par le
+			# haut** : centré sur la reliure, il donnait une pièce barrée d'un trait.
+			c.disc(Vector2(cx, top + 8.2), 6.4, R_METAL, 0.30)
+			c.capsule(Vector2(cx - 5.8, top + 12.6), Vector2(cx + 5.8, top + 12.6), 2.8, R_LEATHER)
+			# La tranche claire le long du bord libre : c'est elle qui dit « pages »
+			# plutôt que « socle ».
+			c.capsule(Vector2(cx - 5.0, top + 11.0), Vector2(cx + 5.0, top + 11.0), 0.9, R_METAL, 0.40)
+			c.capsule(Vector2(cx - 5.4, top + 12.6), Vector2(cx - 3.0, top + 12.6), 1.1, R_ACCENT)
 
 		"hood":
 			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare

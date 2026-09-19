@@ -38,5 +38,21 @@
   "winter_disaster": [
     "a whirlpool of jagged ice shards spiraling into a dark center",
     1337
+  ],
+  "holy_strike": [
+    "a thin sharp diagonal streak of blinding white light cutting across the frame, glowing radiance",
+    1337
+  ],
+  "sacred_pillar": [
+    "a tall narrow vertical beam of bright white light descending from above, glowing column of radiance",
+    1337
+  ],
+  "holy_pulse": [
+    "concentric rings of white holy light radiating outward from a center",
+    4242
+  ],
+  "holy_light": [
+    "a glowing golden angelic halo ring floating in the air, bright ring of light",
+    4242
   ]
 }

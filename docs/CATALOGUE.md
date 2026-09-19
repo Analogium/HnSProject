@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-45 bases d'objets, 21 compétences, 52 affixes d'objets, 5 affixes d'ennemis.
+46 bases d'objets, 25 compétences, 52 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -67,6 +67,7 @@ Niveaux de zone : 1 à 120.
 | `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
 | `manual_cold` | Manuel du froid | manual_cold | 1 | manual | manual | — | — | 2 × 2 | 10 et au-delà |
+| `manual_holy` | Manuel sacré | manual_holy | 1 | manual | manual | — | — | 2 × 2 | 15 et au-delà |
 
 ## Manuels
 
@@ -98,8 +99,9 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % de durée accrue |
 | Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 60 % en froid |
 | Persistance | Ruée d'orage | — | 1 point de compétence | 2 | +25 % de durée accrue |
+| Sans répit | Ruée d'orage | — | 2 points de compétence | 1 | -100 % de recharge réduite · +400 % de temps du geste accru |
 
-45 destinations de points pour 20 gagnés.
+46 destinations de points pour 20 gagnés.
 
 ### Maître chevalier — `manual_weapons`
 
@@ -179,9 +181,30 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 38 destinations de points pour 20 gagnés.
 
+### Maître de la lumière — `manual_holy`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Frappe sacrée | sort sacré | niveau 1 | 5 | 10 mana | 0.50 s | beam · rayon 80 | 9 · 11 · 14 · 18 · 22 |
+| Pilier sacré | sort sacré | niveau 5 | 5 | 20 mana | 1.00 s | pillar · 2.0 s · rayon 32 · toutes les 0.50 s | 8 · 10 · 13 · 16 · 20 |
+| Pulsation sacrée | sort sacré | niveau 9 | 5 | 26 mana | 0.80 s · recharge 5.00 s | pulse · 5.0 s · rayon 44 · toutes les 1.00 s | 12 · 15 · 19 · 24 · 30 |
+| Lumière sacrée | sort sacré | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · draine 5 mana/s | Grâce : +6 % rés. sacré · +13 % chance de bénir |
+| Onction | passif | niveau 2 | 4 | — | — | — | +0.4 PV/s |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Percée | Frappe sacrée | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
+| Allonge du trait | Frappe sacrée | Percée | 2 points de compétence | 2 | +10 % de rayon accru |
+| Colonne | Pilier sacré | — | 1 point de compétence | 3 | +10 % de rayon accru |
+| Jugement | Pilier sacré | Colonne | 2 points de compétence | 2 | +12 % de dégâts amplifiés |
+| Litanie | Pulsation sacrée | — | 1 point de compétence | 2 | +20 % de durée accrue |
+| Ferveur | Pulsation sacrée | Litanie | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+
+38 destinations de points pour 20 gagnés.
+
 ## Arbre de passifs
 
-Un point par niveau après le premier (`PassiveTree.points_gained()`), 418 nœuds
+Un point par niveau après le premier (`PassiveTree.points_gained()`), 476 nœuds
 hors du départ. Un nœud se prend voisin d'un nœud pris, se reprend tant qu'il ne
 coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
@@ -205,7 +228,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | dex_5 | small | 11, 6 | dex_4, dex_6, volley_1, eye_1 | +10 dextérité |
 | dex_6 | small | 13, 8 | dex_5, dex_7 | +10 dextérité |
 | dex_7 | small | 16, 9 | dex_6, dex_8, outer_int_dex_6, outer_dex_str_1 | +10 dextérité |
-| dex_8 | small | 18, 10 | dex_7, dex_9 | +10 dextérité |
+| dex_8 | small | 18, 10 | dex_7, dex_9, floe_1 | +10 dextérité |
 | dex_9 | small | 20, 11 | dex_8, dex_10, frost_1 | +10 dextérité |
 | dex_10 | small | 22, 13 | dex_9, hunter_eye, dex_bridge | +10 dextérité |
 | **Œil du chasseur** `hunter_eye` | keystone | 25, 14 | dex_10 | +25 % de dégâts de projectile amplifiés · -20 % de PV atténués |
@@ -224,7 +247,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | inner_int_dex_2 | small | 7, -4 | inner_int_dex_1, inner_int_dex_3 | +5 intelligence · +5 dextérité |
 | inner_int_dex_3 | small | 8, 0 | inner_int_dex_2, dex_3 | +5 dextérité · +5 intelligence |
 | inner_dex_str_1 | small | 4, 7 | dex_3, inner_dex_str_2 | +5 dextérité · +5 force |
-| inner_dex_str_2 | small | 0, 8 | inner_dex_str_1, inner_dex_str_3 | +5 dextérité · +5 force |
+| inner_dex_str_2 | small | 0, 8 | inner_dex_str_1, inner_dex_str_3, drill_1 | +5 dextérité · +5 force |
 | inner_dex_str_3 | small | -4, 7 | inner_dex_str_2, str_3 | +5 force · +5 dextérité |
 | inner_str_int_1 | small | -8, 0 | str_3, inner_str_int_2 | +5 force · +5 intelligence |
 | inner_str_int_2 | small | -7, -4 | inner_str_int_1, inner_str_int_3 | +5 force · +5 intelligence |
@@ -331,9 +354,9 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | wound_5 | small | -17, 18 | wound_4, wound_6 | +12 % de dégâts d'attaque accrus contre les saignants |
 | wound_6 | small | -19, 16 | wound_5, wound_1 | +12 % de dégâts d'attaque accrus contre les saignants |
 | **Plaie ouverte** `open_wound` | notable | -16, 16 | wound_4 | +25 % de dégâts d'attaque accrus contre les saignants · +10 % de dégâts d'attaque accrus |
-| volley_1 | small | 12, 4 | dex_5, volley_2, volley_4 | +8 % de dégâts de projectile accrus |
-| volley_2 | small | 10, 1 | volley_1, volley_3 | +8 % de dégâts de projectile accrus |
-| volley_3 | small | 10, -1 | volley_2, precise_shot | +8 % de dégâts de projectile accrus |
+| volley_1 | small | 12, 4 | dex_5, volley_2, volley_4 | +10 % de dégâts de projectile accrus |
+| volley_2 | small | 10, 1 | volley_1, volley_3 | +10 % de dégâts de projectile accrus |
+| volley_3 | small | 10, -1 | volley_2, precise_shot | +10 % de dégâts de projectile accrus |
 | **Tir précis** `precise_shot` | notable | 13, -3 | volley_3 | +20 % de dégâts de projectile accrus · +20 % de chance critique de base accrue |
 | volley_4 | small | 15, 3 | volley_1, volley_5 | +6 % de vitesse de projectile accrue aux projectiles |
 | volley_5 | small | 16, 1 | volley_4, volley_shot | +6 % de vitesse de projectile accrue aux projectiles |
@@ -375,12 +398,12 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | far_int_dex_4 | small | 24, -25 | far_int_dex_3, far_int_dex_5, coord_1 | +5 intelligence · +5 dextérité |
 | far_int_dex_5 | small | 28, -20 | far_int_dex_4, far_int_dex_6, gale_1, word_1 | +5 intelligence · +5 dextérité |
 | far_int_dex_6 | small | 32, -15 | far_int_dex_5, far_int_dex_7, blight_1 | +5 dextérité · +5 intelligence |
-| far_int_dex_7 | small | 34, -9 | far_int_dex_6, far_int_dex_8 | +5 dextérité · +5 intelligence |
+| far_int_dex_7 | small | 34, -9 | far_int_dex_6, far_int_dex_8, hoar_1 | +5 dextérité · +5 intelligence |
 | far_int_dex_8 | small | 35, -2 | far_int_dex_7, far_int_dex_9, hunt_1 | +5 dextérité · +5 intelligence |
-| far_int_dex_9 | small | 35, 5 | far_int_dex_8, far_int_dex_10 | +5 dextérité · +5 intelligence |
+| far_int_dex_9 | small | 35, 5 | far_int_dex_8, far_int_dex_10, respite_1 | +5 dextérité · +5 intelligence |
 | far_int_dex_10 | small | 33, 11 | far_int_dex_9, far_dex, kill_1 | +5 dextérité · +5 intelligence |
-| far_dex_str_1 | small | 27, 23 | far_dex, far_dex_str_2 | +5 dextérité · +5 force |
-| far_dex_str_2 | small | 22, 27 | far_dex_str_1, far_dex_str_3 | +5 dextérité · +5 force |
+| far_dex_str_1 | small | 27, 23 | far_dex, far_dex_str_2, spark_1 | +5 dextérité · +5 force |
+| far_dex_str_2 | small | 22, 27 | far_dex_str_1, far_dex_str_3, bless_1 | +5 dextérité · +5 force |
 | far_dex_str_3 | small | 16, 31 | far_dex_str_2, far_dex_str_4, falcon_1 | +5 dextérité · +5 force |
 | far_dex_str_4 | small | 10, 34 | far_dex_str_3, far_dex_str_5 | +5 dextérité · +5 force |
 | far_dex_str_5 | small | 3, 35 | far_dex_str_4, far_dex_str_6, guard_1 | +5 dextérité · +5 force |
@@ -390,14 +413,14 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | far_dex_str_9 | small | -22, 27 | far_dex_str_8, far_dex_str_10, heart_1 | +5 force · +5 dextérité |
 | far_dex_str_10 | small | -27, 23 | far_dex_str_9, far_str, sweep_1 | +5 force · +5 dextérité |
 | far_str_int_1 | small | -33, 11 | far_str, far_str_int_2, crush_1 | +5 force · +5 intelligence |
-| far_str_int_2 | small | -35, 5 | far_str_int_1, far_str_int_3 | +5 force · +5 intelligence |
-| far_str_int_3 | small | -35, -2 | far_str_int_2, far_str_int_4 | +5 force · +5 intelligence |
+| far_str_int_2 | small | -35, 5 | far_str_int_1, far_str_int_3, creed_1 | +5 force · +5 intelligence |
+| far_str_int_3 | small | -35, -2 | far_str_int_2, far_str_int_4, hardening_1 | +5 force · +5 intelligence |
 | far_str_int_4 | small | -34, -9 | far_str_int_3, far_str_int_5, hide_1 | +5 force · +5 intelligence |
 | far_str_int_5 | small | -32, -15 | far_str_int_4, far_str_int_6, spellblade_1 | +5 force · +5 intelligence |
-| far_str_int_6 | small | -28, -20 | far_str_int_5, far_str_int_7 | +5 intelligence · +5 force |
+| far_str_int_6 | small | -28, -20 | far_str_int_5, far_str_int_7, kindle_1 | +5 intelligence · +5 force |
 | far_str_int_7 | small | -24, -25 | far_str_int_6, far_str_int_8, pyre_1 | +5 intelligence · +5 force |
 | far_str_int_8 | small | -19, -30 | far_str_int_7, far_str_int_9, spring_1 | +5 intelligence · +5 force |
-| far_str_int_9 | small | -13, -33 | far_str_int_8, far_str_int_10 | +5 intelligence · +5 force |
+| far_str_int_9 | small | -13, -33 | far_str_int_8, far_str_int_10, relic_1 | +5 intelligence · +5 force |
 | far_str_int_10 | small | -7, -34 | far_str_int_9, far_int, blast_1 | +5 intelligence · +5 force |
 | int_bridge | small | 4, -30 | int_10, far_int | +10 intelligence |
 | dex_bridge | small | 24, 18 | dex_10, far_dex, hand_1 | +10 dextérité |
@@ -409,9 +432,9 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | rod_5 | small | 3, -44 | rod_4, rod_6 | +8 % rés. foudre |
 | rod_6 | small | 3, -40 | rod_5, rod_1 | +0.3 mana/s |
 | **Paratonnerre** `lightning_rod` | notable | 0, -42 | rod_4 | +20 % rés. foudre · +10 % de mana accru |
-| arc_1 | small | 19, -34 | far_int_dex_3, arc_2, arc_4 | +6 % de dégâts de foudre accrus |
-| arc_2 | small | 18, -39 | arc_1, arc_3 | +8 % de dégâts de foudre accrus |
-| arc_3 | small | 16, -42 | arc_2, arcing_current | +8 % de dégâts de foudre accrus |
+| arc_1 | small | 19, -34 | far_int_dex_3, arc_2, arc_4 | +10 % de dégâts de foudre accrus |
+| arc_2 | small | 18, -39 | arc_1, arc_3 | +10 % de dégâts de foudre accrus |
+| arc_3 | small | 16, -42 | arc_2, arcing_current | +10 % de dégâts de foudre accrus |
 | **Courant en arc** `arcing_current` | notable | 17, -46 | arc_3 | +1 nombre de cibles aux compétences de foudre · +10 % de dégâts de foudre accrus |
 | arc_4 | small | 25, -35 | arc_1, arc_5 | +10 % de chance critique de base accrue aux sorts |
 | arc_5 | small | 29, -35 | arc_4, spell_focus | +10 % de chance critique de base accrue aux sorts |
@@ -431,11 +454,11 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | hunt_6 | small | 40, 4 | hunt_5, hunt_1 | +6 % de dégâts critiques accrus |
 | **Rythme mortel** `deadly_rhythm` | notable | 42, 1 | hunt_4 | +8 % de vitesse d'attaque accrue · +20 % dégâts critiques |
 | rime_1 | small | 34, 19 | far_dex, rime_2, rime_6 | ajoute 1 à 3 dégâts de froid aux projectiles |
-| rime_2 | small | 37, 17 | rime_1, rime_3 | +8 % de dégâts de projectile accrus contre les transis |
+| rime_2 | small | 37, 17 | rime_1, rime_3 | +12 % de dégâts de projectile accrus contre les transis |
 | rime_3 | small | 39, 19 | rime_2, rime_4 | ajoute 1 à 3 dégâts de froid aux projectiles |
-| rime_4 | small | 39, 22 | rime_3, rime_5, frost_tips | +8 % de dégâts de projectile accrus contre les transis |
+| rime_4 | small | 39, 22 | rime_3, rime_5, frost_tips | +12 % de dégâts de projectile accrus contre les transis |
 | rime_5 | small | 37, 24 | rime_4, rime_6 | ajoute 1 à 3 dégâts de froid aux projectiles |
-| rime_6 | small | 34, 22 | rime_5, rime_1 | +8 % de dégâts de projectile accrus contre les transis |
+| rime_6 | small | 34, 22 | rime_5, rime_1 | +12 % de dégâts de projectile accrus contre les transis |
 | **Pointes de givre** `frost_tips` | notable | 37, 21 | rime_4 | ajoute 3 à 7 dégâts de froid aux projectiles · +10 % de vitesse de projectile accrue aux projectiles |
 | guard_1 | small | 0, 39 | far_dex_str_5, guard_2, guard_6 | +6 % d'armure accrue |
 | guard_2 | small | 3, 40 | guard_1, guard_3 | +6 % d'esquive accrue |
@@ -445,11 +468,11 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | guard_6 | small | -3, 40 | guard_5, guard_1 | +6 % d'esquive accrue |
 | **Garde souple** `supple_guard` | notable | 0, 42 | guard_4 | +20 % d'armure accrue · +20 % d'esquive accrue |
 | whirl_1 | small | -19, 34 | far_dex_str_8, whirl_2, whirl_6 | +6 % de durée accrue aux attaques |
-| whirl_2 | small | -18, 36 | whirl_1, whirl_3 | +5 % de dégâts d'attaque accrus |
+| whirl_2 | small | -18, 36 | whirl_1, whirl_3 | +8 % de dégâts d'attaque accrus |
 | whirl_3 | small | -19, 39 | whirl_2, whirl_4 | +6 % de durée accrue aux attaques |
-| whirl_4 | small | -23, 39 | whirl_3, whirl_5, whirling_blades | +5 % de dégâts d'attaque accrus |
+| whirl_4 | small | -23, 39 | whirl_3, whirl_5, whirling_blades | +8 % de dégâts d'attaque accrus |
 | whirl_5 | small | -24, 36 | whirl_4, whirl_6 | +6 % de durée accrue aux attaques |
-| whirl_6 | small | -23, 34 | whirl_5, whirl_1 | +5 % de dégâts d'attaque accrus |
+| whirl_6 | small | -23, 34 | whirl_5, whirl_1 | +8 % de dégâts d'attaque accrus |
 | **Lames tournoyantes** `whirling_blades` | notable | -21, 36 | whirl_4 | +1 maximum simultané aux attaques · +10 % de durée accrue aux attaques |
 | sanctity_1 | small | -34, 19 | far_str, sanctity_2, sanctity_6 | +8 % rés. sacré |
 | sanctity_2 | small | -34, 22 | sanctity_1, sanctity_3 | +8 % rés. nécrotique |
@@ -458,43 +481,43 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | sanctity_5 | small | -39, 19 | sanctity_4, sanctity_6 | +8 % rés. sacré |
 | sanctity_6 | small | -37, 17 | sanctity_5, sanctity_1 | +8 % rés. nécrotique |
 | **Âme consacrée** `hallowed_soul` | notable | -37, 21 | sanctity_4 | +15 % rés. sacré · +6 % de PV accrus |
-| spellblade_1 | small | -34, -20 | far_str_int_5, spellblade_2, spellblade_4 | +6 % de dégâts d'attaque accrus |
+| spellblade_1 | small | -34, -20 | far_str_int_5, spellblade_2, spellblade_4 | +8 % de dégâts d'attaque accrus |
 | spellblade_2 | small | -39, -18 | spellblade_1, spellblade_3 | ajoute 1 à 3 dégâts de feu aux attaques |
 | spellblade_3 | small | -42, -16 | spellblade_2, burning_edge | ajoute 1 à 3 dégâts de feu aux attaques |
 | **Tranchant ardent** `burning_edge` | notable | -46, -17 | spellblade_3 | ajoute 3 à 7 dégâts de feu aux attaques · +10 % de dégâts de feu accrus |
 | spellblade_4 | small | -35, -25 | spellblade_1, spellblade_5 | ajoute 1 à 3 dégâts sacrés aux attaques |
 | spellblade_5 | small | -35, -29 | spellblade_4, blessed_edge | ajoute 1 à 3 dégâts sacrés aux attaques |
 | **Tranchant béni** `blessed_edge` | notable | -38, -31 | spellblade_5 | ajoute 3 à 7 dégâts sacrés aux attaques · +20 % de dégâts d'attaque accrus contre les bénis |
-| crush_1 | small | -35, 9 | far_str_int_1, crush_2, crush_6 | +8 % de dégâts de mêlée accrus |
-| crush_2 | small | -35, 12 | crush_1, crush_3 | +8 % de dégâts de mêlée accrus |
-| crush_3 | small | -38, 13 | crush_2, crush_4 | +8 % de dégâts de mêlée accrus |
-| crush_4 | small | -41, 11 | crush_3, crush_5, crusher | +8 % de dégâts de mêlée accrus |
-| crush_5 | small | -40, 8 | crush_4, crush_6 | +8 % de dégâts de mêlée accrus |
-| crush_6 | small | -37, 7 | crush_5, crush_1 | +8 % de dégâts de mêlée accrus |
+| crush_1 | small | -35, 9 | far_str_int_1, crush_2, crush_6 | +10 % de dégâts de mêlée accrus |
+| crush_2 | small | -35, 12 | crush_1, crush_3 | +10 % de dégâts de mêlée accrus |
+| crush_3 | small | -38, 13 | crush_2, crush_4 | +10 % de dégâts de mêlée accrus |
+| crush_4 | small | -41, 11 | crush_3, crush_5, crusher | +10 % de dégâts de mêlée accrus |
+| crush_5 | small | -40, 8 | crush_4, crush_6 | +10 % de dégâts de mêlée accrus |
+| crush_6 | small | -37, 7 | crush_5, crush_1 | +10 % de dégâts de mêlée accrus |
 | **Broyeur** `crusher` | notable | -38, 10 | crush_4 | +20 % de dégâts de mêlée accrus · +10 force |
 | sweep_1 | small | -26, 26 | far_dex_str_10, sweep_2, sweep_5 | +3 % de vitesse d'attaque accrue |
-| sweep_2 | small | -26, 30 | sweep_1, sweep_3 | +6 % de dégâts de mêlée accrus |
+| sweep_2 | small | -26, 30 | sweep_1, sweep_3 | +10 % de dégâts de mêlée accrus |
 | sweep_3 | small | -29, 32 | sweep_2, sweep_4, windmill | +3 % de vitesse d'attaque accrue |
-| sweep_4 | small | -32, 29 | sweep_3, sweep_5 | +6 % de dégâts de mêlée accrus |
+| sweep_4 | small | -32, 29 | sweep_3, sweep_5 | +10 % de dégâts de mêlée accrus |
 | sweep_5 | small | -30, 26 | sweep_4, sweep_1 | +3 % de vitesse d'attaque accrue |
 | **Moulinet** `windmill` | notable | -29, 29 | sweep_3 | +8 % de vitesse d'attaque accrue · +12 % de dégâts de mêlée accrus |
-| reach_1 | small | -23, 6 | outer_str_int_1, reach_2 | +6 % de dégâts de mêlée accrus |
-| reach_2 | small | -26, 6 | reach_1, reach_3 | +6 % de dégâts de mêlée accrus |
-| reach_3 | small | -28, 7 | reach_2, high_guard | +6 % de dégâts de mêlée accrus |
+| reach_1 | small | -23, 6 | outer_str_int_1, reach_2 | +10 % de dégâts de mêlée accrus |
+| reach_2 | small | -26, 6 | reach_1, reach_3 | +10 % de dégâts de mêlée accrus |
+| reach_3 | small | -28, 7 | reach_2, high_guard | +10 % de dégâts de mêlée accrus |
 | **Grande garde** `high_guard` | notable | -31, 8 | reach_3 | +15 % de dégâts de mêlée accrus · +10 % d'allonge accrue |
-| gore_1 | small | -13, 34 | far_dex_str_7, gore_2, gore_6 | +10 % de dégâts de mêlée accrus contre les saignants |
-| gore_2 | small | -11, 37 | gore_1, gore_3 | +10 % de dégâts de mêlée accrus contre les saignants |
-| gore_3 | small | -12, 40 | gore_2, gore_4 | +10 % de dégâts de mêlée accrus contre les saignants |
-| gore_4 | small | -15, 40 | gore_3, gore_5, bloodletting | +10 % de dégâts de mêlée accrus contre les saignants |
-| gore_5 | small | -17, 38 | gore_4, gore_6 | +10 % de dégâts de mêlée accrus contre les saignants |
-| gore_6 | small | -16, 35 | gore_5, gore_1 | +10 % de dégâts de mêlée accrus contre les saignants |
+| gore_1 | small | -13, 34 | far_dex_str_7, gore_2, gore_6 | +12 % de dégâts de mêlée accrus contre les saignants |
+| gore_2 | small | -11, 37 | gore_1, gore_3 | +12 % de dégâts de mêlée accrus contre les saignants |
+| gore_3 | small | -12, 40 | gore_2, gore_4 | +12 % de dégâts de mêlée accrus contre les saignants |
+| gore_4 | small | -15, 40 | gore_3, gore_5, bloodletting | +12 % de dégâts de mêlée accrus contre les saignants |
+| gore_5 | small | -17, 38 | gore_4, gore_6 | +12 % de dégâts de mêlée accrus contre les saignants |
+| gore_6 | small | -16, 35 | gore_5, gore_1 | +12 % de dégâts de mêlée accrus contre les saignants |
 | **Ouvre-chair** `bloodletting` | notable | -14, 37 | gore_4 | +25 % de dégâts de mêlée accrus contre les saignants · +10 % de dégâts de mêlée accrus |
-| blast_1 | small | -9, -35 | far_str_int_10, blast_2, blast_6 | +8 % de dégâts de zone accrus |
-| blast_2 | small | -12, -35 | blast_1, blast_3 | +8 % de dégâts de zone accrus |
-| blast_3 | small | -13, -38 | blast_2, blast_4 | +8 % de dégâts de zone accrus |
-| blast_4 | small | -11, -41 | blast_3, blast_5, detonation | +8 % de dégâts de zone accrus |
-| blast_5 | small | -8, -40 | blast_4, blast_6 | +8 % de dégâts de zone accrus |
-| blast_6 | small | -7, -37 | blast_5, blast_1 | +8 % de dégâts de zone accrus |
+| blast_1 | small | -9, -35 | far_str_int_10, blast_2, blast_6 | +10 % de dégâts de zone accrus |
+| blast_2 | small | -12, -35 | blast_1, blast_3 | +10 % de dégâts de zone accrus |
+| blast_3 | small | -13, -38 | blast_2, blast_4 | +10 % de dégâts de zone accrus |
+| blast_4 | small | -11, -41 | blast_3, blast_5, detonation | +10 % de dégâts de zone accrus |
+| blast_5 | small | -8, -40 | blast_4, blast_6 | +10 % de dégâts de zone accrus |
+| blast_6 | small | -7, -37 | blast_5, blast_1 | +10 % de dégâts de zone accrus |
 | **Éclatement** `detonation` | notable | -10, -38 | blast_4 | +20 % de dégâts de zone accrus · +10 % de rayon accru aux compétences de zone |
 | breadth_1 | small | 9, -35 | far_int_dex_1, breadth_2, breadth_6 | +6 % de rayon accru aux compétences de zone |
 | breadth_2 | small | 7, -37 | breadth_1, breadth_3 | +6 % de durée accrue aux compétences de zone |
@@ -509,29 +532,29 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | hold_4 | small | -4, -27 | hold_3, hold_5 | +8 % de durée accrue aux compétences de zone |
 | hold_5 | small | -2, -24 | hold_4, hold_1 | +8 % de durée accrue aux compétences de zone |
 | **Emprise durable** `lasting_hold` | notable | -5, -24 | hold_3 | +20 % de durée accrue aux compétences de zone · +8 % de rayon accru aux compétences de zone |
-| pyre_1 | small | -23, -28 | far_str_int_7, pyre_2, pyre_5 | +8 % de dégâts de feu accrus |
-| pyre_2 | small | -26, -28 | pyre_1, pyre_3 | +8 % de dégâts de feu accrus |
-| pyre_3 | small | -28, -31 | pyre_2, pyre_4, burning_cloud | +8 % de dégâts de feu accrus |
-| pyre_4 | small | -25, -34 | pyre_3, pyre_5 | +8 % de dégâts de feu accrus |
-| pyre_5 | small | -22, -31 | pyre_4, pyre_1 | +8 % de dégâts de feu accrus |
+| pyre_1 | small | -23, -28 | far_str_int_7, pyre_2, pyre_5 | +10 % de dégâts de feu accrus |
+| pyre_2 | small | -26, -28 | pyre_1, pyre_3 | +10 % de dégâts de feu accrus |
+| pyre_3 | small | -28, -31 | pyre_2, pyre_4, burning_cloud | +10 % de dégâts de feu accrus |
+| pyre_4 | small | -25, -34 | pyre_3, pyre_5 | +10 % de dégâts de feu accrus |
+| pyre_5 | small | -22, -31 | pyre_4, pyre_1 | +10 % de dégâts de feu accrus |
 | **Nuée ardente** `burning_cloud` | notable | -25, -30 | pyre_3 | +18 % de dégâts de zone accrus · +10 % de dégâts de feu accrus |
-| gale_1 | small | 28, -23 | far_int_dex_5, gale_2, gale_5 | +8 % de dégâts de foudre accrus |
-| gale_2 | small | 28, -26 | gale_1, gale_3 | +8 % de dégâts de foudre accrus |
-| gale_3 | small | 31, -28 | gale_2, gale_4, spread_storm | +8 % de dégâts de foudre accrus |
-| gale_4 | small | 34, -25 | gale_3, gale_5 | +8 % de dégâts de foudre accrus |
-| gale_5 | small | 31, -22 | gale_4, gale_1 | +8 % de dégâts de foudre accrus |
+| gale_1 | small | 28, -23 | far_int_dex_5, gale_2, gale_5 | +10 % de dégâts de foudre accrus |
+| gale_2 | small | 28, -26 | gale_1, gale_3 | +10 % de dégâts de foudre accrus |
+| gale_3 | small | 31, -28 | gale_2, gale_4, spread_storm | +10 % de dégâts de foudre accrus |
+| gale_4 | small | 34, -25 | gale_3, gale_5 | +10 % de dégâts de foudre accrus |
+| gale_5 | small | 31, -22 | gale_4, gale_1 | +10 % de dégâts de foudre accrus |
 | **Orage étendu** `spread_storm` | notable | 30, -25 | gale_3 | +18 % de dégâts de zone accrus · +10 % de dégâts de foudre accrus |
-| ember_1 | small | 6, -23 | int_9, ember_2 | +10 % de dégâts de zone accrus contre les embrasés |
-| ember_2 | small | 6, -26 | ember_1, ember_3 | +10 % de dégâts de zone accrus contre les embrasés |
-| ember_3 | small | 7, -28 | ember_2, live_coals | +10 % de dégâts de zone accrus contre les embrasés |
+| ember_1 | small | 6, -23 | int_9, ember_2 | +12 % de dégâts de zone accrus contre les embrasés |
+| ember_2 | small | 6, -26 | ember_1, ember_3 | +12 % de dégâts de zone accrus contre les embrasés |
+| ember_3 | small | 7, -28 | ember_2, live_coals | +12 % de dégâts de zone accrus contre les embrasés |
 | **Braise** `live_coals` | notable | 8, -31 | ember_3 | +22 % de dégâts de zone accrus contre les embrasés · +10 % de dégâts de zone accrus |
-| shock_1 | small | 9, -23 | outer_int_dex_1, shock_2 | +10 % de dégâts de zone accrus contre les engourdis |
-| shock_2 | small | 9, -26 | shock_1, shock_3 | +10 % de dégâts de zone accrus contre les engourdis |
-| shock_3 | small | 10, -28 | shock_2, shockwave | +10 % de dégâts de zone accrus contre les engourdis |
+| shock_1 | small | 9, -23 | outer_int_dex_1, shock_2 | +12 % de dégâts de zone accrus contre les engourdis |
+| shock_2 | small | 9, -26 | shock_1, shock_3 | +12 % de dégâts de zone accrus contre les engourdis |
+| shock_3 | small | 10, -28 | shock_2, shockwave | +12 % de dégâts de zone accrus contre les engourdis |
 | **Onde de choc** `shockwave` | notable | 11, -31 | shock_3 | +22 % de dégâts de zone accrus contre les engourdis · +10 % de rayon accru aux compétences de zone |
-| mastery_1 | small | 23, -8 | outer_int_dex_4, mastery_2 | +6 % de dégâts de zone accrus |
-| mastery_2 | small | 25, -9 | mastery_1, mastery_3 | +6 % de dégâts de zone accrus |
-| mastery_3 | small | 27, -10 | mastery_2, field_master | +6 % de dégâts de zone accrus |
+| mastery_1 | small | 23, -8 | outer_int_dex_4, mastery_2 | +10 % de dégâts de zone accrus |
+| mastery_2 | small | 25, -9 | mastery_1, mastery_3 | +10 % de dégâts de zone accrus |
+| mastery_3 | small | 27, -10 | mastery_2, field_master | +10 % de dégâts de zone accrus |
 | **Maître des zones** `field_master` | notable | 30, -11 | mastery_3 | +1 niveau de compétence de zone · +10 % de dégâts de zone accrus |
 | kill_1 | small | 35, 9 | far_int_dex_10, kill_2, kill_6 | +6 % de chance critique de base accrue |
 | kill_2 | small | 37, 7 | kill_1, kill_3 | +8 % de dégâts critiques accrus |
@@ -540,11 +563,11 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | kill_5 | small | 38, 13 | kill_4, kill_6 | +6 % de chance critique de base accrue |
 | kill_6 | small | 35, 12 | kill_5, kill_1 | +8 % de dégâts critiques accrus |
 | **Assassinat** `assassination` | notable | 38, 10 | kill_4 | +30 % de chance critique de base accrue · +20 % dégâts critiques |
-| falcon_1 | small | 19, 31 | far_dex_str_3, falcon_2, falcon_6 | +8 % de dégâts de projectile accrus |
+| falcon_1 | small | 19, 31 | far_dex_str_3, falcon_2, falcon_6 | +10 % de dégâts de projectile accrus |
 | falcon_2 | small | 24, 31 | falcon_1, falcon_3 | +6 % de vitesse de projectile accrue aux projectiles |
-| falcon_3 | small | 25, 34 | falcon_2, falcon_4 | +8 % de dégâts de projectile accrus |
+| falcon_3 | small | 25, 34 | falcon_2, falcon_4 | +10 % de dégâts de projectile accrus |
 | falcon_4 | small | 24, 36 | falcon_3, falcon_5, falcon_flight | +6 % de vitesse de projectile accrue aux projectiles |
-| falcon_5 | small | 21, 37 | falcon_4, falcon_6 | +8 % de dégâts de projectile accrus |
+| falcon_5 | small | 21, 37 | falcon_4, falcon_6 | +10 % de dégâts de projectile accrus |
 | falcon_6 | small | 18, 34 | falcon_5, falcon_1 | +6 % de vitesse de projectile accrue aux projectiles |
 | **Vol du faucon** `falcon_flight` | notable | 22, 34 | falcon_4 | +20 % de dégâts de projectile accrus · +15 % de vitesse de projectile accrue aux projectiles |
 | flee_1 | small | 5, 25 | outer_dex_str_3, flee_2, flee_5 | +3 % de vitesse accrue |
@@ -553,9 +576,9 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | flee_4 | small | 5, 31 | flee_3, flee_5 | +6 % d'esquive accrue |
 | flee_5 | small | 3, 28 | flee_4, flee_1 | +3 % de vitesse accrue |
 | **Pied léger** `light_foot` | notable | 6, 28 | flee_3 | +5 % de vitesse accrue · +15 % d'esquive accrue |
-| spear_1 | small | 24, 4 | outer_int_dex_6, spear_2 | +6 % de dégâts de projectile accrus |
-| spear_2 | small | 26, 5 | spear_1, spear_3 | +6 % de dégâts de projectile accrus |
-| spear_3 | small | 29, 5 | spear_2, spearhead | +6 % de dégâts de projectile accrus |
+| spear_1 | small | 24, 4 | outer_int_dex_6, spear_2 | +10 % de dégâts de projectile accrus |
+| spear_2 | small | 26, 5 | spear_1, spear_3 | +10 % de dégâts de projectile accrus |
+| spear_3 | small | 29, 5 | spear_2, spearhead | +10 % de dégâts de projectile accrus |
 | **Fer de lance** `spearhead` | notable | 31, 6 | spear_3 | +15 % de dégâts de projectile accrus · +10 % dégâts critiques |
 | hand_1 | small | 15, 20 | dex_bridge, hand_2 | +3 % de vitesse d'attaque accrue |
 | hand_2 | small | 17, 22 | hand_1, hand_3 | +3 % de vitesse d'attaque accrue |
@@ -604,6 +627,64 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | coord_5 | small | 31, -30 | coord_4, coord_6 | +3 % de vitesse d'attaque accrue |
 | coord_6 | small | 29, -28 | coord_5, coord_1 | +3 % de vitesse d'incantation accrue |
 | **Coordination** `coordination` | notable | 28, -31 | coord_4 | +8 % de vitesse d'attaque accrue · +8 % de vitesse d'incantation accrue |
+| drill_1 | small | 0, 11 | inner_dex_str_2, drill_6, drill_2 | +8 % de dégâts d'attaque accrus |
+| drill_2 | small | 3, 12 | drill_1, drill_3 | +8 % de dégâts d'attaque accrus |
+| drill_3 | small | 3, 16 | drill_2, drill_4 | +8 % de dégâts d'attaque accrus |
+| drill_4 | small | 0, 17 | drill_3, drill_5, discipline | +8 % de dégâts d'attaque accrus |
+| drill_5 | small | -3, 16 | drill_4, drill_6 | +8 % de dégâts d'attaque accrus |
+| drill_6 | small | -3, 12 | drill_1, drill_5 | +8 % de dégâts d'attaque accrus |
+| **Discipline** `discipline` | notable | 0, 14 | drill_4 | +20 % de dégâts d'attaque accrus · +8 % de vitesse d'attaque accrue |
+| floe_1 | small | 20, 9 | dex_8, floe_2 | +10 % de dégâts de froid accrus |
+| floe_2 | small | 23, 9 | floe_1, floe_3 | +10 % de dégâts de froid accrus |
+| floe_3 | small | 26, 9 | floe_2, glacier_heart | +10 % de dégâts de froid accrus |
+| **Cœur de glacier** `glacier_heart` | notable | 29, 9 | floe_3 | +20 % de dégâts de froid accrus · +15 % chance de transir |
+| hardening_1 | small | -39, -1 | far_str_int_3, hardening_6, hardening_2 | -3 % dégâts subis |
+| hardening_2 | small | -39, 3 | hardening_1, hardening_3 | -3 % dégâts subis |
+| hardening_3 | small | -42, 4 | hardening_2, hardening_4 | -3 % dégâts subis |
+| hardening_4 | small | -44, 1 | hardening_3, hardening_5, thick_hide | +8 % rés. nécrotique |
+| hardening_5 | small | -44, -2 | hardening_4, hardening_6 | +8 % rés. sacré |
+| hardening_6 | small | -41, -3 | hardening_1, hardening_5 | +6 % de PV accrus |
+| **Cuir épais** `thick_hide` | notable | -42, 0 | hardening_4 | -7 % dégâts subis · +8 % de PV accrus |
+| creed_1 | small | -37, 5 | far_str_int_2, creed_2 | +8 % de dégâts de sort accrus |
+| creed_2 | small | -40, 6 | creed_1, creed_3 | +8 % de dégâts de sort accrus |
+| creed_3 | small | -43, 7 | creed_2, conviction | +8 % de dégâts de sort accrus |
+| **Conviction** `conviction` | notable | -46, 9 | creed_3 | +20 % de dégâts de sort accrus · +8 % de vitesse d'incantation accrue |
+| spark_1 | small | 29, 25 | far_dex_str_1, spark_6, spark_2 | +5 % chance de charge statique |
+| spark_2 | small | 32, 23 | spark_1, spark_3 | +10 % de dégâts de foudre accrus |
+| spark_3 | small | 35, 26 | spark_2, spark_4 | +5 % chance de charge statique |
+| spark_4 | small | 34, 29 | spark_3, spark_5, discharge | +10 % de dégâts de foudre accrus |
+| spark_5 | small | 31, 30 | spark_4, spark_6 | +5 % chance de charge statique |
+| spark_6 | small | 28, 28 | spark_1, spark_5 | +10 % de dégâts de foudre accrus |
+| **Décharge** `discharge` | notable | 32, 27 | spark_4 | +10 % chance de charge statique · +20 % de dégâts de foudre accrus |
+| bless_1 | small | 24, 28 | far_dex_str_2, bless_2 | +10 % chance de bénir |
+| bless_2 | small | 26, 30 | bless_1, bless_3 | +8 % rés. sacré |
+| bless_3 | small | 28, 33 | bless_2, anointing | +10 % chance de bénir |
+| **Onction** `anointing` | notable | 29, 36 | bless_3 | +20 % chance de bénir · +20 % de dégâts d'attaque accrus contre les bénis |
+| hoar_1 | small | 37, -10 | far_int_dex_7, hoar_6, hoar_2 | +12 % de dégâts de froid accrus contre les transis |
+| hoar_2 | small | 37, -13 | hoar_1, hoar_3 | +12 % de dégâts de froid accrus contre les transis |
+| hoar_3 | small | 41, -14 | hoar_2, hoar_4 | +12 % de dégâts de froid accrus contre les transis |
+| hoar_4 | small | 43, -11 | hoar_3, hoar_5, deep_frost | +12 % de dégâts de froid accrus contre les transis |
+| hoar_5 | small | 43, -8 | hoar_4, hoar_6 | +12 % de dégâts de froid accrus contre les transis |
+| hoar_6 | small | 39, -7 | hoar_1, hoar_5 | +12 % de dégâts de froid accrus contre les transis |
+| **Givre profond** `deep_frost` | notable | 40, -11 | hoar_4 | +25 % de dégâts de froid accrus contre les transis · +10 % de dégâts de froid accrus |
+| respite_1 | small | 37, 5 | far_int_dex_9, respite_2 | +4 % récupération de recharge |
+| respite_2 | small | 40, 6 | respite_1, respite_3 | +4 % récupération de recharge |
+| respite_3 | small | 43, 7 | respite_2, recovery | +4 % récupération de recharge |
+| **Reprise** `recovery` | notable | 46, 9 | respite_3 | +10 % récupération de recharge · +10 % de mana accru |
+| kindle_1 | small | -29, -24 | far_str_int_6, kindle_6, kindle_2 | +10 % chance d'embraser |
+| kindle_2 | small | -33, -24 | kindle_1, kindle_3 | +10 % de dégâts de feu accrus |
+| kindle_3 | small | -34, -27 | kindle_2, kindle_4 | +10 % chance d'embraser |
+| kindle_4 | small | -31, -29 | kindle_3, kindle_5, firebrand | +10 % de dégâts de feu accrus |
+| kindle_5 | small | -28, -29 | kindle_4, kindle_6 | +10 % chance d'embraser |
+| kindle_6 | small | -27, -26 | kindle_1, kindle_5 | +10 % de dégâts de feu accrus |
+| **Brandon** `firebrand` | notable | -30, -27 | kindle_4 | +20 % chance d'embraser · +20 % de dégâts de feu accrus |
+| relic_1 | small | -15, -37 | far_str_int_9, relic_6, relic_2 | +12 % de dégâts de sort accrus contre les bénis |
+| relic_2 | small | -18, -37 | relic_1, relic_3 | +12 % de dégâts de sort accrus contre les bénis |
+| relic_3 | small | -20, -41 | relic_2, relic_4 | +12 % de dégâts de sort accrus contre les bénis |
+| relic_4 | small | -18, -43 | relic_3, relic_5, judgement | +12 % de dégâts de sort accrus contre les bénis |
+| relic_5 | small | -15, -43 | relic_4, relic_6 | +12 % de dégâts de sort accrus contre les bénis |
+| relic_6 | small | -13, -40 | relic_1, relic_5 | +12 % de dégâts de sort accrus contre les bénis |
+| **Jugement** `judgement` | notable | -17, -40 | relic_4 | +25 % de dégâts de sort accrus contre les bénis · ajoute 3 à 7 dégâts sacrés aux sorts |
 
 ## Affixes d'objets
 
@@ -611,58 +692,58 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 45 |
-| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 45 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 45 |
-| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
-| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 45 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 45 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 19 / 45 |
-| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 45 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 45 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 45 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 45 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 8 / 45 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 45 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 45 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 45 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 45 |
-| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 45 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 45 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 45 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 45 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 45 |
-| `muscular` | force | *partout* | — | 8 | 6 | 41 / 45 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 45 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 45 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 45 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 45 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 45 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 45 |
-| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 6 / 45 |
-| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 9 / 45 |
-| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 45 |
-| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 45 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 45 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 45 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 8 / 45 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 46 |
+| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 46 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 46 |
+| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 46 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 46 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 19 / 46 |
+| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 46 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 46 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 46 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 46 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 8 / 46 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 46 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 46 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 46 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 46 |
+| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 46 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 46 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 46 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 46 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 46 |
+| `muscular` | force | *partout* | — | 8 | 6 | 41 / 46 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 46 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 46 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 46 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 46 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 46 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 46 |
+| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 6 / 46 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 9 / 46 |
+| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 46 |
+| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 46 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 46 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 46 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 8 / 46 |
 
 ### Affixes d'ennemis
 

@@ -1,8 +1,8 @@
 class_name Targets
 
 ## Qui un coup atteint quand il ne naît pas d'une collision : la chaîne, le nuage,
-## l'aura, le serpent, l'épée en orbite, l'explosion. Une seule requête pour les
-## six — écrite chez chacune, l'une aurait fini par viser un autre calque.
+## l'aura, le serpent, l'épée en orbite, l'explosion, le faisceau. Une seule requête
+## pour toutes — écrite chez chacune, l'une aurait fini par viser un autre calque.
 
 ## Layer 5, « enemy_hurtbox » : celui que la hitbox et les tirs du joueur masquent
 ## déjà dans leurs scènes.
@@ -20,14 +20,38 @@ const MAXIMUM := 64
 ## **Jamais depuis un rappel de collision** : l'espace physique y est verrouillé, et
 ## la requête ne rend qu'une erreur (invariant 4).
 static func in_circle(world: World2D, center: Vector2, radius: float) -> Array[Hurtbox]:
-	var out: Array[Hurtbox] = []
 	if world == null or radius <= 0.0:
-		return out
+		return [] as Array[Hurtbox]
 	var circle := CircleShape2D.new()
 	circle.radius = radius
+	return _touched(world, circle, Transform2D(0.0, center))
+
+
+## Celles qui touchent un segment épais : ce que frappe un faisceau, sur toute sa
+## ligne. Mêmes règles qu'`in_circle()`.
+static func in_capsule(
+	world: World2D, of: Vector2, toward: Vector2, width: float
+) -> Array[Hurtbox]:
+	var length := of.distance_to(toward)
+	if world == null or length <= 0.0 or width <= 0.0:
+		return [] as Array[Hurtbox]
+	var capsule := CapsuleShape2D.new()
+	capsule.radius = width * 0.5
+	# La hauteur de Godot compte les deux calottes : le segment, plus un rayon de chaque
+	# bout. Et la capsule est debout, d'où le quart de tour.
+	capsule.height = length + width
+	return _touched(
+		world, capsule,
+		Transform2D((toward - of).angle() + PI * 0.5, (of + toward) * 0.5)
+	)
+
+
+## La requête elle-même, partagée : deux copies auraient fini par viser deux calques.
+static func _touched(world: World2D, shape: Shape2D, at: Transform2D) -> Array[Hurtbox]:
+	var out: Array[Hurtbox] = []
 	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = circle
-	query.transform = Transform2D(0.0, center)
+	query.shape = shape
+	query.transform = at
 	query.collision_mask = ENEMIES
 	query.collide_with_areas = true
 	query.collide_with_bodies = false

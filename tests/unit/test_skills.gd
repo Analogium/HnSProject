@@ -191,12 +191,14 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 	for c: Skill in SkillCatalog.ALL:
 		var lasts := c.shape in [
 			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH,
-			Skill.Shape.WAVE, Skill.Shape.VORTEX
+			Skill.Shape.WAVE, Skill.Shape.VORTEX, Skill.Shape.PILLAR, Skill.Shape.PULSE
 		]
+		# Le faisceau y est : son rayon est **sa longueur**, et sans elle il ne sort pas
+		# du lanceur.
 		var covers := c.shape in [
 			Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA, Skill.Shape.DASH,
 			Skill.Shape.WAVE, Skill.Shape.CYCLONE, Skill.Shape.SPIKES, Skill.Shape.NOVA,
-			Skill.Shape.VORTEX
+			Skill.Shape.VORTEX, Skill.Shape.BEAM, Skill.Shape.PILLAR, Skill.Shape.PULSE
 		]
 		# Une ruée sans table de dégâts ne laisse **rien au sol** : sa durée est celle du
 		# buff qu'elle donne, et elle n'a ni rayon ni période.
@@ -365,6 +367,49 @@ func test_the_slot_waits_for_the_longer_of_the_two() -> void:
 	assert_almost_eq(
 		c.resolve(1, sheet).interval, 4.0, 1e-6, "le lancer résolu dit la même chose"
 	)
+
+
+## Le nœud « Sans répit » de la Ruée d'orage (jalon 23) : il **efface** la recharge par
+## un accru de −100 %, et paie en allongeant le geste. La récupération ne peut donc plus
+## rien pour cette case, la vitesse d'incantation seule la raccourcit.
+func test_a_node_may_trade_the_cooldown_for_a_longer_gesture() -> void:
+	var dash := SkillCatalog.by_id("storm_dash")
+	var node := _storm_dash_unbound()
+	var sheet := CharacterStats.new()
+	var taken := [InvestedTalent.new(node, 1)]
+
+	var bare := dash.resolve(1, sheet)
+	assert_almost_eq(bare.recharge, dash.cooldown, 1e-6, "sans le nœud, la recharge tient la case")
+	assert_almost_eq(bare.interval, dash.cooldown, 1e-6)
+
+	var freed := dash.resolve(1, sheet, [], taken)
+	assert_eq(freed.recharge, 0.0, "plus de recharge du tout")
+	assert_almost_eq(freed.use_time, dash.cast_time * 5.0, 1e-6, "le geste paie : +400 %")
+	assert_almost_eq(freed.interval, freed.use_time, 1e-6, "la case n'attend plus que le geste")
+
+	# Ce que le nœud promet : la récupération ne sert plus, la cadence oui.
+	var rested := CharacterStats.new()
+	rested.cooldown_recovery = 100.0
+	assert_almost_eq(
+		dash.resolve(1, rested, [], taken).interval, freed.interval, 1e-6,
+		"la récupération ne touche plus rien"
+	)
+	var quick := CharacterStats.new()
+	quick.cast_speed = 2.0
+	assert_almost_eq(
+		dash.resolve(1, quick, [], taken).interval, freed.interval * 0.5, 1e-6,
+		"la vitesse d'incantation, elle, coupe l'attente en deux"
+	)
+
+
+## Le nœud du contenu, pas une copie : un jour où ses lignes changeront, le test le dira.
+func _storm_dash_unbound() -> TalentNode:
+	for cell in ItemCatalog.by_id("manual_lightning").manual.cells:
+		for node: TalentNode in cell.talents:
+			if node.id == "storm_dash_unbound":
+				return node
+	fail_test("« storm_dash_unbound » n'est plus dans le manuel de foudre")
+	return null
 
 
 ## Un geste d'arme lit son temps sur l'arme : un `cast_time` posé dessus serait un

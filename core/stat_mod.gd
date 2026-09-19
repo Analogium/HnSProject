@@ -35,6 +35,7 @@ const LABELS := {
 	"ignite_chance": "chance d'embraser",
 	"static_charge_chance": "chance de charge statique",
 	"chill_chance": "chance de transir",
+	"blessing_chance": "chance de bénir",
 	"cooldown_recovery": "récupération de recharge",
 	"damage_taken": "dégâts subis",
 	"move_speed": "vitesse",
@@ -66,6 +67,7 @@ const AGREEMENT := {
 	"ignite_chance": "fs",
 	"static_charge_chance": "fs",
 	"chill_chance": "fs",
+	"blessing_chance": "fs",
 	"cooldown_recovery": "fs",
 	"damage_taken": "mp",
 	"move_speed": "fs",
@@ -91,7 +93,10 @@ const SCALED := [
 ## qui comptent de la même façon sans être des résistances.
 static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	func(field: String) -> bool: return not field.is_empty()
-) + ["ignite_chance", "static_charge_chance", "chill_chance", "damage_taken", "cooldown_recovery"]
+) + [
+	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance",
+	"damage_taken", "cooldown_recovery",
+]
 
 var stat: String
 var mode: Mode

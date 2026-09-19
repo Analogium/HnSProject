@@ -149,11 +149,22 @@ func test_each_node_is_reachable_from_the_start() -> void:
 		assert_true(id in reached, "« %s » ne se relie pas au départ" % id)
 
 
-func test_two_nodes_never_share_a_place() -> void:
-	var places := {}
-	for n in _game_tree().nodes:
-		assert_false(places.has(n.position), "« %s » sur « %s »" % [n.id, places.get(n.position)])
-		places[n.position] = n.id
+## Deux cases au moins entre deux nœuds : c'est le plancher de l'arbre du jalon 19, et
+## en dessous les deux pastilles de `PassiveTreePanel` se touchent à l'écran. La même
+## case n'en est que le cas extrême (jalon 23 : six paires posées à une case).
+const MIN_GAP := 2.0
+
+
+func test_two_nodes_never_crowd_each_other() -> void:
+	var nodes := _game_tree().nodes
+	for i in nodes.size():
+		for j in range(i + 1, nodes.size()):
+			var a: PassiveNode = nodes[i]
+			var b: PassiveNode = nodes[j]
+			assert_gte(
+				Vector2(a.position).distance_to(Vector2(b.position)), MIN_GAP,
+				"« %s » %s et « %s » %s" % [a.id, a.position, b.id, b.position]
+			)
 
 
 ## Deux liens qui se croisent donnent un carrefour qui n'existe pas : l'œil suit la
@@ -206,6 +217,40 @@ func test_each_line_targets_the_sheet_or_a_cast_number() -> void:
 				continue
 			assert_true(Keywords.exists(l.scope), "« %s » : mot-clé « %s »" % [n.id, l.scope])
 			assert_true(SkillStats.modifiable(l.stat), "« %s » vise « %s »" % [n.id, l.stat])
+
+
+## L'échelle de spécificité (jalon 23) : un petit nœud vaut ce que sa portée exige.
+## Large, il sert tout le monde et donne le moins ; conditionnel, il attend un état sur
+## la cible et le paie. Sans elle, deux clusters au même thème donnaient 5 et 10 %.
+const BROAD_SCOPES := [Keywords.ATTACK, Keywords.SPELL]
+const SCALE_BROAD := 8.0
+const SCALE_NARROW := 10.0
+const SCALE_CONDITIONAL := 12.0
+
+
+func test_each_small_damage_line_sits_on_the_specificity_scale() -> void:
+	for n in _game_tree().nodes:
+		if n.kind != PassiveNode.Kind.SMALL:
+			continue
+		for l in n.lines:
+			var expected := _scale_of(l)
+			if expected > 0.0:
+				assert_eq(
+					l.value_per_point, expected,
+					"« %s » vise « %s@%s »" % [n.id, l.stat, l.scope]
+				)
+
+
+## Le palier d'une ligne de dégâts accrus, ou zéro pour ce que l'échelle ne juge pas —
+## un notable répartit sa valeur sur deux lignes, elle ne lui dit rien.
+func _scale_of(l: TalentLine) -> float:
+	if l.scope.is_empty() or not l.percentage:
+		return 0.0
+	if l.stat.begins_with(SkillStats.AGAINST_PREFIX):
+		return SCALE_CONDITIONAL
+	if l.stat != SkillStats.DAMAGE:
+		return 0.0
+	return SCALE_BROAD if l.scope in BROAD_SCOPES else SCALE_NARROW
 
 
 func test_each_notable_and_keystone_is_named() -> void:

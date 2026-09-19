@@ -202,8 +202,14 @@ atteintes dès qu'un affixe de dégâts ajoutés vise l'un de leurs mots-clés.
    phrase. Ajouter un cas dans `_now()` seulement si le nombre affiché ne parle
    pas de lui-même — une notation d'armure, oui ; « 90 de vitesse », non.
 4. **`ui/stats_panel.gd`** — sa place dans `GROUPS`, qui est l'ordre de lecture.
-5. **Un affixe qui la vise**, voir la recette précédente.
+5. **Un affixe qui la vise**, voir la recette précédente — **seulement si elle
+   s'affiche sur la fiche** : les trois chances d'état n'y sont pas, et c'est une
+   compétence qui les donne.
 6. Si elle doit croître avec le niveau de zone : `CharacterStats.scale_to_level`.
+
+**Une chance de poser un état** en plus : sa case dans `StatusEffects.CHANCE_STATS`,
+à la place de sa sorte. C'est le seul endroit qui lie les deux — sans elle, le champ
+existe et ne sert à rien.
 
 **Ce qui refusera un oubli** : les deux tests ci-dessus, plus
 `test_each_sheet_stat_has_its_explanation`,
@@ -370,13 +376,13 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
    | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`. `BOLT` et `BALL` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`. `BOLT` et `BALL` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
    | `targets` | Une chaîne : combien d'ennemis, le premier compris |
    | `duration` / `period` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée ; une ruée a une durée, celle de ce qu'elle laisse |
-   | `radius` | Une boule (son explosion), un nuage, une aura |
+   | `radius` | Une boule (son explosion), un nuage, une aura, un pilier, une pulsation ; et **la longueur** d'un faisceau, dont la largeur est celle de son dessin |
    | `simultaneous` | Une orbite : combien à la fois. Zéro, sans limite |
    | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
    | `mana_per_second` | Un buff, un cyclone : le mana drainé par seconde, **à plat**. La réserve vide **l'éteint** |
@@ -411,6 +417,14 @@ une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. **Un b
 (`BUFF`) veut un drain — PV ou mana — et au moins un `SkillBuff` : il n'a pas de dégâts,
 donc ni arbre de talents utile, ni « moyenne par lancer ». Les buffs d'un lancer
 s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence.
+
+**Un faisceau** (`BEAM`) part du lanceur dans sa visée, frappe **une fois tout ce qui
+est sur sa ligne** — `Targets.in_capsule()`, qui ne s'arrête pas au premier corps — et
+s'efface. Il veut un `radius`, qui est sa longueur. **Un pilier** (`PILLAR`) tombe au
+curseur et **une pulsation** (`PULSE`) est portée par le lanceur : tous deux veulent
+une `duration`, une `period` et un `radius`, et frappent leur cercle à chaque
+impulsion. Une pulsation **finit seule** — elle ne se paie pas à la seconde, donc elle
+n'est pas un geste entretenu et ne s'éteint pas à la touche.
 
 **Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Player._is_sustained()` en
 décide, la case s'allume et s'éteint sur la même touche, et `SkillStats.sustained`
@@ -530,7 +544,7 @@ langues — `tests/integration/test_widths.gd`.
 ## Ajouter un nœud à l'arbre de passifs
 
 L'arbre est **un seul fichier**, `resources/passive_tree.tres` : un `PassiveTree` et ses
-`PassiveNode` en sous-ressources. 418 nœuds liés se relisent mal dans
+`PassiveNode` en sous-ressources. 476 nœuds liés se relisent mal dans
 l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 
 **D'abord, chemin ou cluster ?**
@@ -545,6 +559,23 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
   passant ; ne le faire qu'en le voulant.
 - **Un notable** dit le thème de son cluster plus fort, avec une seconde ligne. **Pas
   de clé de voûte de plus** : trois « plus » suffisent (jalon 17, §8).
+
+**Ensuite, ce que le nœud vaut.** Un petit nœud qui accroît des dégâts prend la valeur
+de sa **portée**, et rien d'autre : plus elle est étroite, moins il sert souvent, plus
+il donne (jalon 23).
+
+| Palier | Ce que la ligne exige | Valeur |
+|---|---|---|
+| large | `attack` ou `spell` | **8 %** |
+| étroit | une nature ou une forme : `fire`, `cold`, `lightning`, `melee`, `projectile`, `area` | **10 %** |
+| conditionnel | `damage_vs_<état>`, quelle que soit la portée | **12 %** |
+
+`test_each_small_damage_line_sits_on_the_specificity_scale` refuse tout le reste ; une
+valeur hors de la table est une régression, pas un réglage. Le **notable** en est
+libre : il vaut à peu près deux petits et demi, répartis comme son thème le demande —
+la table ne le juge pas. Les lignes qui ne sont pas des dégâts (résistances, vitesses,
+chances d'état) n'ont pas de palier : c'est l'affixe de la même statistique qui les
+calibre.
 
 1. **Une sous-ressource `PassiveNode`**, et sa référence dans le tableau `nodes` du
    `[resource]`.
@@ -565,6 +596,11 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
    **une case au moins** d'un lien voisin — en dessous, les deux traits se confondent
    à l'écran ; c'est l'écart le plus serré de l'arbre actuel.
 
+   **Deux cases au moins entre deux nœuds**, y compris ceux d'un autre cluster
+   (`test_two_nodes_never_crowd_each_other`) : les pastilles font 6 px de rayon pour
+   une case de 10, donc à une case elles se touchent. C'est le plancher de l'arbre,
+   mesuré : aucune paire n'est en dessous.
+
    **Son icône** se lit sur sa **première ligne** (`PassiveIcon.look_of()`) : une
    statistique ou un mot-clé que `PassiveIcon.SHEET` et `SCOPED` ne connaissent pas
    encore y demande une entrée — un masque de `MASKS` et une couleur.
@@ -577,8 +613,9 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 
 **Ce qui refusera un oubli** — `tests/unit/test_passive_tree.gd` :
 `test_the_content_ids_are_unique_and_one_start`, `test_each_link_targets_an_existing_node`,
-`test_each_node_is_reachable_from_the_start`, `test_two_nodes_never_share_a_place`,
+`test_each_node_is_reachable_from_the_start`, `test_two_nodes_never_crowd_each_other`,
 `test_each_line_targets_the_sheet_or_a_cast_number`, `test_each_notable_and_keystone_is_named`,
+`test_each_small_damage_line_sits_on_the_specificity_scale`,
 `test_each_node_has_its_icon`, `test_the_tree_offers_more_nodes_than_points` ;
 `tests/unit/test_translations.gd` pour le nom.
 
@@ -603,7 +640,7 @@ l'orienteraient chacun à leur façon.
    | `parent` | L'identifiant du nœud dont il dépend, ou vide : il part alors de la compétence |
    | `required_points` | Combien de points dans **la compétence** l'ouvrent. Jamais zéro, jamais plus que ce que la case accepte |
    | `points_max` | Combien de points il accepte |
-   | `lines` | Comme celles d'un passif, mais **sans portée** : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` |
+   | `lines` | Comme celles d'un passif, mais **sans portée** : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` — dont `use_time` et `recharge` depuis le jalon 23. **`interval` ne se vise pas**, il se déduit des deux |
    | `converts_to` / `converted_part_per_point` | La nature d'arrivée et la part déplacée. **C'est la part qui dit s'il y a conversion** : l'enum commence au physique |
    | `added_keywords` | Ce que le nœud donne à sa compétence — **seulement un mot-clé de nature**. `projectile`, `attack` et `spell` décident du chemin du lancer |
 
@@ -611,6 +648,12 @@ l'orienteraient chacun à leur façon.
    « −25 % dégâts » sur le même nœud. C'est le seul endroit du jeu où un point
    placé peut faire baisser un nombre, et c'est ce qui rend un arbre intéressant
    plutôt qu'additionnel.
+
+   **Effacer un nombre se dit par −100 %** : c'est ainsi que « Sans répit » retire
+   sa recharge à la Ruée d'orage. Un plat négatif la ferait passer sous zéro sur une
+   autre compétence ; l'accru, lui, l'annule quelle qu'elle soit. Retirer la recharge
+   coupe la case de `cooldown_recovery` et la remet à la cadence du lanceur : c'est un
+   échange, pas un cadeau, et le nœud le paie en allongeant `use_time`.
 
 3. **Rien à écrire ailleurs** : `Manual.can_invest()` porte déjà les
    conditions, `Player.talents_of()` les rassemble, et `Skill.resolve()`
@@ -644,9 +687,11 @@ Un manuel est **une base d'objet** de plus, plus un archétype.
    relève.
 3. **Son propre `kind`**, et un cas dans `SpriteForge._gear()` plus son entrée
    dans `GEAR` : tous les manuels ont le même palier, donc les mêmes couleurs, et
-   c'est la **silhouette** qui doit les séparer dans un sac. Quatre livres au même
-   dessin sont quatre objets qu'on ne distingue qu'en les survolant. Les quatre
-   d'aujourd'hui : une pile couchée, un livre ouvert en V, un rouleau, un livre debout.
+   c'est la **silhouette** qui doit les séparer dans un sac. Cinq livres au même
+   dessin sont cinq objets qu'on ne distingue qu'en les survolant. Les cinq
+   d'aujourd'hui : une pile couchée, un livre ouvert en V, un rouleau, un livre debout,
+   un livre couché dans son halo — le cinquième déborde du livre lui-même, une
+   cinquième orientation se serait confondue avec les quatre autres.
 4. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
 5. **Vérifier le budget** : `docs/CATALOGUE.md` donne, pour chaque manuel, le
    nombre de destinations de points contre les vingt qu'un livre gagne. En

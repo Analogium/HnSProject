@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/holy_light.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
+
+[sub_resource type="Resource" id="L_grace_rempart"]
+script = ExtResource("3_ligne")
+stat = "res_holy"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="L_grace_benediction"]
+script = ExtResource("3_ligne")
+stat = "blessing_chance"
+value_per_point = 12.5
+
+[sub_resource type="Resource" id="B_grace"]
+script = ExtResource("4_buff")
+id = "grace"
+name = "Grâce"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_grace_rempart"), SubResource("L_grace_benediction")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "holy_light"
+name = "Lumière sacrée"
+description = "Une clarté portée qui protège du sacré et bénit les coups."
+nature = 5
+cadence = 1
+shape = 11
+cooldown = 0.60
+mana_per_second = 5.0
+declared_points_max = 4
+buffs = Array[ExtResource("4_buff")]([SubResource("B_grace")])
+required_manual_level = 12
+icon = ExtResource("2_icone")

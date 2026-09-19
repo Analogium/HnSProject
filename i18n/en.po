@@ -180,6 +180,9 @@ msgstr "Storm Cloud"
 msgid "Persistance"
 msgstr "Lingering"
 
+msgid "Sans répit"
+msgstr "Unrelenting"
+
 msgid "Un coup d'arme porté en arc devant soi."
 msgstr "A weapon blow swung in an arc in front of you."
 
@@ -393,6 +396,39 @@ msgstr "You seal yourself in ice, which shields and mends."
 msgid "Un vortex de glace lâché sous ses pieds, qui ne cesse de croître."
 msgstr "A vortex of ice loosed underfoot, growing without pause."
 
+msgid "Manuel sacré"
+msgstr "Sacred Manual"
+
+msgid "Maître de la lumière"
+msgstr "Master of Light"
+
+msgid "Frappe sacrée"
+msgstr "Sacred Strike"
+
+msgid "Pilier sacré"
+msgstr "Sacred Pillar"
+
+msgid "Pulsation sacrée"
+msgstr "Holy Pulse"
+
+msgid "Lumière sacrée"
+msgstr "Holy Light"
+
+msgid "Grâce"
+msgstr "Grace"
+
+msgid "Un trait de lumière qui perce tout ce qui est sur sa ligne."
+msgstr "A shaft of light piercing all that stands in its line."
+
+msgid "Une colonne de lumière tombe du ciel et brûle sa zone."
+msgstr "A column of light falls from the sky and sears its ground."
+
+msgid "Une lumière émane du porteur et frappe par ondes."
+msgstr "Light pours from its bearer and strikes in waves."
+
+msgid "Une clarté portée qui protège du sacré et bénit les coups."
+msgstr "A worn radiance that wards off holy and blesses your blows."
+
 # ---------------------------------------------------------------------------
 # Passifs
 # ---------------------------------------------------------------------------
@@ -409,10 +445,13 @@ msgstr "Iron Guard"
 msgid "Morsure du gel"
 msgstr "Frostbite"
 
+msgid "Onction"
+msgstr "Unction"
+
 # ---------------------------------------------------------------------------
 # Nœuds de talent
 #
-# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes, froid.
+# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes, froid, sacré.
 # ---------------------------------------------------------------------------
 
 msgid "Surcharge"
@@ -525,6 +564,24 @@ msgstr "Blizzard"
 
 msgid "Œil du cyclone"
 msgstr "Eye of the Storm"
+
+msgid "Percée"
+msgstr "Piercing"
+
+msgid "Allonge du trait"
+msgstr "Beam Reach"
+
+msgid "Colonne"
+msgstr "Column"
+
+msgid "Jugement"
+msgstr "Judgement"
+
+msgid "Litanie"
+msgstr "Litany"
+
+msgid "Ferveur"
+msgstr "Fervour"
 
 # ---------------------------------------------------------------------------
 # Arbre de passifs
@@ -709,6 +766,36 @@ msgstr "Quick Word"
 
 msgid "Coordination"
 msgstr "Coordination"
+
+msgid "Discipline"
+msgstr "Discipline"
+
+msgid "Conviction"
+msgstr "Conviction"
+
+msgid "Cuir épais"
+msgstr "Thick Hide"
+
+msgid "Reprise"
+msgstr "Second Breath"
+
+msgid "Cœur de glacier"
+msgstr "Glacier Heart"
+
+msgid "Givre profond"
+msgstr "Deep Frost"
+
+msgid "Brandon"
+msgstr "Firebrand"
+
+msgid "Décharge"
+msgstr "Discharge"
+
+msgid "Onction"
+msgstr "Anointing"
+
+msgid "Jugement"
+msgstr "Judgement"
 
 # ---------------------------------------------------------------------------
 # Affixes d'élite
@@ -922,6 +1009,9 @@ msgstr "radius"
 msgid "maximum simultané"
 msgstr "max at once"
 
+msgid "temps du geste"
+msgstr "action time"
+
 # ---------------------------------------------------------------------------
 # Lignes d'objet
 # ---------------------------------------------------------------------------
@@ -1034,6 +1124,9 @@ msgstr "static charge chance"
 
 msgid "chance de transir"
 msgstr "chance to chill"
+
+msgid "chance de bénir"
+msgstr "chance to bless"
 
 msgid "récupération de recharge"
 msgstr "cooldown recovery"

@@ -107,6 +107,8 @@ const MASKS := {
 	"flame": StatusIcon.MASKS[StatusEffects.Kind.IGNITE],
 	"bolt": StatusIcon.MASKS[StatusEffects.Kind.NUMB],
 	"drop": StatusIcon.MASKS[StatusEffects.Kind.BLEED],
+	"frost": StatusIcon.MASKS[StatusEffects.Kind.CHILL],
+	"halo": StatusIcon.MASKS[StatusEffects.Kind.BLESSING],
 }
 
 ## Ce qu'une statistique de fiche montre : un masque et sa couleur.
@@ -125,6 +127,11 @@ const SHEET := {
 	"cast_speed": ["hourglass", Color(0.96, 0.86, 0.42)],
 	"crit_chance": ["star", Color(1.00, 0.70, 0.25)],
 	"crit_multiplier": ["star", Color(1.00, 0.70, 0.25)],
+	"cooldown_recovery": ["hourglass", Color(0.55, 0.80, 0.95)],
+	"damage_taken": ["shield", Color(0.62, 0.55, 0.72)],
+	"ignite_chance": ["flame", DamageType.COLORS[DamageType.Kind.FIRE]],
+	"static_charge_chance": ["bolt", DamageType.COLORS[DamageType.Kind.LIGHTNING]],
+	"blessing_chance": ["halo", DamageType.COLORS[DamageType.Kind.HOLY]],
 }
 
 ## Des dégâts portés, par mot-clé : la nature dans sa couleur de `DamageType`.
@@ -136,6 +143,7 @@ const SCOPED := {
 	Keywords.AREA: ["burst", Color(0.85, 0.70, 0.95)],
 	Keywords.FIRE: ["flame", DamageType.COLORS[DamageType.Kind.FIRE]],
 	Keywords.LIGHTNING: ["bolt", DamageType.COLORS[DamageType.Kind.LIGHTNING]],
+	Keywords.COLD: ["frost", DamageType.COLORS[DamageType.Kind.COLD]],
 }
 
 static var _cache := {}

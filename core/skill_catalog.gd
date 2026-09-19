@@ -33,6 +33,11 @@ const ALL := [
 	preload("res://resources/skills/frost_tomb.tres"),
 	preload("res://resources/skills/winter_disaster.tres"),
 
+	preload("res://resources/skills/holy_strike.tres"),
+	preload("res://resources/skills/sacred_pillar.tres"),
+	preload("res://resources/skills/holy_pulse.tres"),
+	preload("res://resources/skills/holy_light.tres"),
+
 	# Le chevalier : les compétences apprises qui suivent la cadence de l'arme.
 	preload("res://resources/skills/heavy_strike.tres"),
 	preload("res://resources/skills/cross_slash.tres"),

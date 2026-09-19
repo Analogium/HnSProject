@@ -53,9 +53,10 @@ const NAMES := ["embrasé", "engourdi", "transi", "pourrissant", "béni", "saign
 
 ## Le champ de `CharacterStats` qui **accroît** la chance de chaque sorte, ou vide.
 ## Une chance n'arrive que quand une compétence la demande : l'embrasement au jalon 20,
-## le gel au jalon 21. **Le seul endroit** qui lie une sorte à sa statistique — le
-## porteur y écrit ses facteurs, la page du manuel y lit son libellé.
-const CHANCE_STATS := ["ignite_chance", "", "chill_chance", "", "", ""]
+## le gel au jalon 21, la bénédiction avec le manuel sacré. **Le seul endroit** qui lie
+## une sorte à sa statistique — le porteur y écrit ses facteurs, la page du manuel y lit
+## son libellé.
+const CHANCE_STATS := ["ignite_chance", "", "chill_chance", "", "blessing_chance", ""]
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.

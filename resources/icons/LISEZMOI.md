@@ -44,8 +44,9 @@ LoRA **`pixel-art-xl-v1.1`** à pleine force, en 1024 × 1024 :
 - **un gabarit de prompt partagé** — « pixel art, 16-bit rpg ability icon, *sujet*,
   centered, single subject, bold readable silhouette, high contrast, simple solid
   *fond* background, square game icon » — où seul le sujet change, et le fond
-  suit la nature : violet pour la foudre, cramoisi pour le feu, bleu ardoise pour
-  le physique ;
+  suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour le froid,
+  prune pour le sacré — un fond doré noierait la lumière du sujet —, bleu ardoise
+  pour le physique ;
 - **les mêmes réglages pour toutes** : `dpmpp_2m`, `karras`, 30 pas, CFG 6, et la
   graine 4242 — 777 pour les trois refaites avec un sujet plus direct (Chaîne
   d'éclairs, Frappe lourde, Boule de feu). C'est ce qui remplace la planche unique,
@@ -79,6 +80,12 @@ Le sujet du prompt et la graine retenue sont **la même ligne** de
 icône de compétence est une tuile pleine, donc recadrée au centre plutôt que
 détourée, et son fond suit la nature du sort.
 
+**Un phénomène se demande comme un sujet penché.** « a vertical beam of light
+descending », « a godray onto the ground », « a cone of divine rays » sortent tous un
+chandelier ou une torche : SDXL rend un objet dès qu'on lui demande une verticale.
+Une diagonale — « a thin diagonal streak of light cutting across » — y échappe.
+Et la graine 777 raye : sur un sujet vertical elle sort des bandes horizontales.
+
 ### Sans icône
 
 Le champ vide est un état normal : la barre dessine alors un disque de la couleur
@@ -105,7 +112,7 @@ dans la main du personnage. `test_each_base_has_a_non_empty_icon` vérifie les d
 `tools/item_icons.py`, qui va de ComfyUI jusqu'au `.tres` :
 
 ```bash
-tools/item_icons.py gen                 # les 44 bases, trois graines chacune
+tools/item_icons.py gen                 # les 46 bases, trois graines chacune
 tools/item_icons.py gen --only sword    # une seule, pour la refaire
 tools/item_icons.py apply               # pose les tirages retenus
 ```
@@ -147,6 +154,10 @@ base, une colonne par graine, déjà réduites. On choisit là, jamais sur l'ima
    une planche de neuf épées ;
 3. **les miettes** — une ombre détachée au sol passe le seuil de nettoyage si
    elle pèse plus du dixième du sujet.
+
+**Un manuel se demande comme les autres manuels** : « a closed *teinte* tome with a
+*motif* emblem on its cover, front view ». Tablettes, arches et parchemins sortent en
+décor ou en plusieurs morceaux, que le détourage laisse éparpillés sur la planche.
 
 
 ## À l'import

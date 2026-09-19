@@ -236,11 +236,11 @@ func _draw_slot(index: int) -> void:
 		if _player.mana < skill.mana_cost:
 			draw_rect(r, COOLDOWN)
 
-	# Le voile descend : la case se remplit en redevenant disponible.
-	var rest := _player.remaining_cooldown(index)
-	if rest > 0.0 and skill != null:
-		var total := maxf(skill.interval(_player.stats), 0.001)
-		var ratio := clampf(rest / total, 0.0, 1.0)
+	# Le voile descend : la case se remplit en redevenant disponible. La part est celle
+	# du joueur, qui la mesure sur l'intervalle du lancer : la compétence nue ignore
+	# ses nœuds.
+	var ratio := _player.cooldown_ratio(index)
+	if ratio > 0.0 and skill != null:
 		draw_rect(Rect2(r.position, Vector2(r.size.x, r.size.y * ratio)), COOLDOWN)
 
 	var tint := UiPalette.BORDER

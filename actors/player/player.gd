@@ -104,6 +104,10 @@ var states := StatusEffects.new()
 var facing := Vector2.RIGHT
 ## Une recharge par case : deux compétences voisines s'enchaînent.
 var _recharges := PackedFloat32Array()
+## Ce que valait cette recharge au lancer, pour le voile de la barre. Gardé plutôt que
+## recalculé : un nœud peut avoir changé l'intervalle (jalon 23), et `Skill.interval()`
+## ne connaît pas les nœuds.
+var _recharge_totals := PackedFloat32Array()
 ## Les cases tenues depuis un appui **né en jeu** : sinon le clic qui choisit une
 ## compétence dans le menu de la barre la lancerait aussitôt.
 var _held: Array[bool] = []
@@ -133,6 +137,7 @@ func _ready() -> void:
 	if base_stats == null:
 		base_stats = CharacterStats.new()
 	_recharges.resize(SkillBar.SLOT_COUNT)
+	_recharge_totals.resize(SkillBar.SLOT_COUNT)
 	_held.resize(SkillBar.SLOT_COUNT)
 	recompute_stats()
 	xp_to_next = _needed_for(level)
@@ -232,7 +237,7 @@ func cast_slot(index: int) -> bool:
 		if lit(skill.id):
 			# Éteindre n'est pas lancer : ni coût, la recharge seulement contre le rebond.
 			extinguish(skill.id)
-			_recharges[index] = cast.interval
+			_start_recharge(index, cast.interval)
 			return true
 	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre ce qui brûle,
 	# et le tombeau de glace ne laisse partir que lui-même.
@@ -248,7 +253,7 @@ func cast_slot(index: int) -> bool:
 		return false
 
 	_set_mana(mana - cast.mana_cost)
-	_recharges[index] = cast.interval
+	_start_recharge(index, cast.interval)
 	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
 	match skill.shape:
 		Skill.Shape.BOLT:
@@ -286,6 +291,13 @@ func cast_slot(index: int) -> bool:
 			)
 		Skill.Shape.VORTEX:
 			IceVortex.open(_effects_parent(), global_position, cast, states)
+		Skill.Shape.BEAM:
+			HolyBeam.fire(_effects_parent(), global_position, facing, cast, states)
+		Skill.Shape.PILLAR:
+			SacredPillar.fall(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.PULSE:
+			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
+			HolyPulse.emanate(self, cast)
 		Skill.Shape.ORBIT:
 			_blade_crown().add_to(cast)
 		Skill.Shape.STRIKE:
@@ -486,9 +498,24 @@ func resolve(skill: Skill, points: int) -> SkillStats:
 	return skill.resolve(points, stats, skill_mods, talents_of(skill.id))
 
 
-## Publique pour le voile de la barre.
+## Les deux ensemble : gardés séparément, l'un finirait par ne plus décrire l'autre.
+func _start_recharge(index: int, interval: float) -> void:
+	_recharges[index] = interval
+	_recharge_totals[index] = interval
+
+
+## Ce qu'il reste à attendre, en secondes : la barre s'en sert pour savoir si elle se
+## repeint. Le voile, lui, veut une part — `cooldown_ratio()`.
 func remaining_cooldown(index: int) -> float:
 	return _recharges[index] if index >= 0 and index < _recharges.size() else 0.0
+
+
+## La part de recharge qu'il reste, de 1 à 0 : contre **l'intervalle du lancer**, le
+## seul que les nœuds de la case aient pu changer.
+func cooldown_ratio(index: int) -> float:
+	if index < 0 or index >= _recharges.size() or _recharge_totals[index] <= 0.0:
+		return 0.0
+	return clampf(_recharges[index] / _recharge_totals[index], 0.0, 1.0)
 
 
 ## Les points du manuel qui l'enseigne, ou l'unique point d'une attaque de départ ;

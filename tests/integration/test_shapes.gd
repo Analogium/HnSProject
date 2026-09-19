@@ -764,3 +764,96 @@ func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
 	await wait_seconds(cast.duration + 0.2)
 	assert_gt(_hits(on_the_edge), 0, "il a fini par l'engloutir")
 	assert_eq(_children_of(IceVortex).size(), 0, "puis s'est refermé")
+
+
+# --------------------------------------------------------------------------
+# Le manuel sacré
+# --------------------------------------------------------------------------
+
+## Le trait perce : il frappe **tout ce qui est sur sa ligne**, une fois, et rien à
+## côté. C'est ce qui le sépare d'un tir, qui s'arrête au premier corps.
+func test_the_beam_pierces_its_line_and_spares_the_side() -> void:
+	_learn("manual_holy", ["holy_strike"])
+	var cast := _p.resolve(SkillCatalog.by_id("holy_strike"), 1)
+	var near := _target(Vector2(cast.radius * 0.3, 0))
+	var far_one := _target(Vector2(cast.radius * 0.9, 0))
+	var beyond := _target(Vector2(cast.radius + 40.0, 0))
+	var aside := _target(Vector2(cast.radius * 0.5, 40.0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(_hits(near), 1, "le premier corps ne l'arrête pas")
+	assert_eq(_hits(far_one), 1)
+	assert_eq(_hits(beyond), 0, "au-delà de sa longueur")
+	assert_eq(_hits(aside), 0, "et rien hors de la ligne")
+
+	await wait_seconds(HolyBeam.LIFETIME + 0.1)
+	assert_eq(_hits(near), 1, "une seule fois : le trait ne dure pas")
+	assert_eq(_children_of(HolyBeam).size(), 0)
+
+
+## Le pilier tombe au point visé et frappe son cercle à chaque période, exactement
+## autant de fois que la fiche l'annonce.
+func test_the_pillar_strikes_its_circle_for_its_duration() -> void:
+	_learn("manual_holy", ["sacred_pillar"])
+	var cast := _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1)
+	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var below := _target(point)
+	var beside := _target(point + Vector2(0, cast.radius + 40.0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(SacredPillar)[0].global_position, point, "posé à la portée, devant")
+
+	await wait_seconds(cast.duration + 0.2)
+	assert_eq(_hits(below), cast.strikes_over_duration(), "une frappe par période")
+	assert_eq(_hits(beside), 0)
+	assert_eq(Game.freezes, 0, "ce qui dure ne fige jamais le jeu")
+	assert_eq(_children_of(SacredPillar).size(), 0, "puis il s'éteint")
+
+
+## L'émanation **suit son porteur** : une cible hors de portée au lancer est frappée
+## dès que le porteur l'a rejointe. Puis elle finit seule — elle ne se paie pas à la
+## seconde, donc elle ne s'éteint pas à la touche.
+func test_the_pulse_follows_its_caster_then_ends_on_its_own() -> void:
+	_learn("manual_holy", ["holy_pulse"])
+	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
+	var away := Vector2(400, 0)
+	var met := _target(away)
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(_hits(met), 0, "loin du lanceur, rien")
+
+	_p.global_position = away
+	await wait_seconds(cast.period + 0.1)
+	assert_gt(_hits(met), 0, "l'émanation est allée avec lui")
+
+	await wait_seconds(cast.duration)
+	var still := _p.get_children().filter(
+		func(n: Node) -> bool: return n is HolyPulse
+	)
+	assert_eq(still.size(), 0, "puis elle s'en est allée")
+
+
+## La clarté verse ses deux lignes : la résistance sur la fiche, la chance de bénir
+## dans les facteurs que la hurtbox de la cible lira.
+func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
+	_learn("manual_holy", ["holy_light"])
+	var resistance := _p.stats.res_holy
+	var blessing := _p.states.chance_factors[StatusEffects.Kind.BLESSING]
+
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("holy_light"))
+	assert_gt(_p.stats.res_holy, resistance, "la fiche résiste mieux au sacré")
+	assert_gt(
+		_p.states.chance_factors[StatusEffects.Kind.BLESSING], blessing,
+		"et ses coups bénissent plus souvent"
+	)
+
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.lit("holy_light"))
+	assert_eq(_p.stats.res_holy, resistance, "éteinte, la fiche retrouve ses nombres")
