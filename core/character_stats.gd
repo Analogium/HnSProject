@@ -40,9 +40,10 @@ extends Resource
 ## Les dégâts d'un coup **d'ennemi**, que le niveau de zone multiplie. Le joueur ne
 ## le lit pas : ses dégâts viennent de ses compétences.
 @export var attack_damage: float = 12.0
-## Le temps de base entre deux coups, propre à l'arme ; `attack_speed` en est le
-## multiplicateur porté par le personnage.
-@export var attack_cooldown: float = 0.45
+## Le temps que prend **un coup d'arme**, propre à l'arme ; `attack_speed` en est le
+## multiplicateur porté par le personnage. **Ce n'est pas une recharge** : une recharge
+## est le délai propre d'une compétence, que la cadence ne touche pas (`Skill.cooldown`).
+@export var attack_time: float = 0.45
 ## Multiplicateurs, 1.0 = cadence de base : les affixes y portent en pourcentage.
 @export var attack_speed: float = 1.0
 @export var cast_speed: float = 1.0
@@ -60,6 +61,18 @@ extends Resource
 ## La chance, en points de pourcentage, qu'un coup porté à un engourdi laisse une charge
 ## statique. Zéro : aucune.
 @export var static_charge_chance: float = 0.0
+## Comme `ignite_chance`, pour le gel.
+@export var chill_chance: float = 0.0
+
+## Ce qui **raccourcit les recharges**, en points de pourcentage : à +50, une recharge
+## de 3 s tombe à 2 s. La seule chose qui les touche — ni la vitesse d'attaque ni celle
+## d'incantation n'y peuvent rien, c'est ce qui sépare les deux notions (jalon 22).
+@export var cooldown_recovery: float = 0.0
+
+## Ce qu'on prend **en plus** de chaque coup, en points de pourcentage : négatif, on en
+## prend moins. Le tombeau de glace est le seul à l'écrire aujourd'hui. Borné à −100 :
+## l'invulnérabilité pure n'existe pas dans ce jeu.
+@export var damage_taken: float = 0.0
 
 @export_group("Déplacement")
 @export var move_speed: float = 90.0
@@ -146,9 +159,13 @@ func evade_chance() -> float:
 func mitigate(kind: int, part: float) -> float:
 	if part <= 0.0:
 		return part
+	var defended := part
 	if kind == DamageType.Kind.PHYSICAL:
-		return part * (1.0 - armor_reduction(part))
-	return part * (1.0 - resistance(kind) * 0.01)
+		defended *= 1.0 - armor_reduction(part)
+	else:
+		defended *= 1.0 - resistance(kind) * 0.01
+	# Après la défense de la nature, et sur toutes : c'est un abri, pas une résistance.
+	return defended * maxf(1.0 + damage_taken * 0.01, 0.0)
 
 ## Bornée ; zéro pour le physique, qui passe par l'armure.
 func resistance(kind: DamageType.Kind) -> float:
@@ -160,7 +177,13 @@ func resistance(kind: DamageType.Kind) -> float:
 
 ## Le plancher évite qu'une vitesse nulle fige l'attaquant.
 func attack_interval() -> float:
-	return attack_cooldown / maxf(attack_speed, 0.1)
+	return attack_time / maxf(attack_speed, 0.1)
+
+
+## Ce par quoi une recharge est divisée. Borné en bas comme les cadences : une
+## récupération de −100 % figerait la compétence pour toujours.
+func recovery_factor() -> float:
+	return maxf(1.0 + cooldown_recovery * 0.01, 0.1)
 
 
 ## Verse ce que rapportent les attributs. **Une fois par recalcul, sur une fiche

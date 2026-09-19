@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/ice_nova.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "ice_nova"
+name = "Nova de glace"
+description = "Une déflagration de glace autour de soi, qui transit vite."
+nature = 1
+cadence = 1
+shape = 15
+cast_time = 1.10
+mana_cost = 20.0
+radius = 46.0
+status_chance_increase = 50.0
+damage_per_point = Array[float]([12.0, 15.0, 19.0, 24.0, 30.0])
+required_manual_level = 3
+icon = ExtResource("2_icone")

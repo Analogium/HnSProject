@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/frost_tomb.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
+
+[sub_resource type="Resource" id="L_carapace_de_givre_abri"]
+script = ExtResource("3_ligne")
+stat = "damage_taken"
+value_per_point = -17.5
+
+[sub_resource type="Resource" id="B_carapace_de_givre"]
+script = ExtResource("4_buff")
+id = "frost_shell"
+name = "Carapace de givre"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_carapace_de_givre_abri")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "frost_tomb"
+name = "Tombeau de glace"
+description = "On s'enferme dans la glace, qui protège et soigne."
+nature = 1
+cadence = 1
+shape = 11
+cooldown = 0.60
+mana_cost = 25.0
+duration = 3.0
+mana_per_second = 3.0
+self_heal = 0.0167
+binds_caster = true
+declared_points_max = 4
+buffs = Array[ExtResource("4_buff")]([SubResource("B_carapace_de_givre")])
+required_manual_level = 8
+icon = ExtResource("2_icone")

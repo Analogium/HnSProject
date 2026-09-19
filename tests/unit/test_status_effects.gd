@@ -117,7 +117,7 @@ func test_the_author_factor_multiplies_the_chance_to_ignite() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 13
 	var author := StatusEffects.new()
-	author.ignite_chance_factor = 1.5
+	author.chance_factors[StatusEffects.Kind.IGNITE] = 1.5
 	var ignited := 0
 	var numbed := 0
 	for i in 4000:
@@ -129,6 +129,68 @@ func test_the_author_factor_multiplies_the_chance_to_ignite() -> void:
 		numbed += int(f.active(StatusEffects.Kind.NUMB))
 	assert_between(ignited, 1080, 1320, "une fois sur cinq, et demie")
 	assert_between(numbed, 680, 920, "l'engourdissement garde sa chance")
+
+
+## Les facteurs du porteur sont **par sorte** : une chance de transir ne fait pas
+## embraser mieux (jalon 21).
+func test_the_author_factors_do_not_cross_over() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 21
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.CHILL] = 2.0
+	var chilled := 0
+	var ignited := 0
+	for i in 4000:
+		var cold := StatusEffects.new()
+		cold.suffer(_parts(DamageType.Kind.COLD, 10.0), author, rng)
+		chilled += int(cold.active(StatusEffects.Kind.CHILL))
+		var fire := StatusEffects.new()
+		fire.suffer(_parts(DamageType.Kind.FIRE, 10.0), author, rng)
+		ignited += int(fire.active(StatusEffects.Kind.IGNITE))
+	assert_between(chilled, 1450, 1750, "deux fois la chance de base")
+	assert_between(ignited, 680, 920, "l'embrasement garde la sienne")
+
+
+## Ce que le **lancer** accroît à sa propre chance : la nova de glace transit mieux
+## qu'un coup de froid ordinaire, sans rien devoir à celui qui la lance (jalon 21).
+func test_the_cast_increase_raises_the_chance_of_its_state() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var chilled := 0
+	for i in 4000:
+		var e := StatusEffects.new()
+		e.suffer(_parts(DamageType.Kind.COLD, 10.0), null, rng, 0.0, 100.0)
+		chilled += int(e.active(StatusEffects.Kind.CHILL))
+	assert_between(chilled, 1450, 1750, "deux fois la chance de base")
+
+
+## **Les deux accrus s'additionnent**, comme tous les accrus du jeu : +50 porté et +50
+## du lancer font 20 → 40 %, et non les 45 % de deux multiplications à la suite.
+func test_the_two_increases_add_up_before_multiplying() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.CHILL] = 1.5
+	var chilled := 0
+	for i in 4000:
+		var e := StatusEffects.new()
+		e.suffer(_parts(DamageType.Kind.COLD, 10.0), author, rng, 0.0, 50.0)
+		chilled += int(e.active(StatusEffects.Kind.CHILL))
+	assert_between(chilled, 1480, 1720, "deux fois la chance de base, pas 2,25")
+
+
+## La table des statistiques de chance est indexée par sorte, et chaque nom qu'elle
+## donne est un champ réel de la fiche : c'est par elle que le porteur écrit ses
+## facteurs et que la page du manuel trouve son libellé.
+func test_each_chance_stat_is_a_real_field_with_a_label() -> void:
+	assert_eq(StatusEffects.CHANCE_STATS.size(), StatusEffects.Kind.size())
+	var sheet := CharacterStats.new()
+	for kind in StatusEffects.CHANCE_STATS.size():
+		var field: String = StatusEffects.CHANCE_STATS[kind]
+		if field.is_empty():
+			continue
+		assert_true(field in sheet, "« %s » n'est pas un champ de la fiche" % field)
+		assert_true(StatMod.LABELS.has(field), "« %s » n'a pas de libellé" % field)
 
 
 ## Ce qu'un coup retire des PV max s'ajoute à sa chance : 10 de feu sur 50 PV, 40 %.

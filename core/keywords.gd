@@ -11,6 +11,7 @@ const PROJECTILE := "projectile"
 const AREA := "area"
 const LIGHTNING := "lightning"
 const FIRE := "fire"
+const COLD := "cold"
 const SPELL := "spell"
 const ATTACK := "attack"
 ## Une attaque qui ne lance rien. Sous `ATTACK` dans l'ordre de lecture : tout ce qui
@@ -24,6 +25,7 @@ const LABELS := {
 	AREA: "Zone",
 	LIGHTNING: "Foudre",
 	FIRE: "Feu",
+	COLD: "Froid",
 	SPELL: "Sort",
 	ATTACK: "Attaque",
 	MELEE: "Mêlée",
@@ -38,6 +40,7 @@ const RECIPIENTS := {
 	AREA: "aux compétences de zone",
 	LIGHTNING: "aux compétences de foudre",
 	FIRE: "aux compétences de feu",
+	COLD: "aux compétences de froid",
 	SPELL: "aux sorts",
 	ATTACK: "aux attaques",
 	MELEE: "aux attaques de mêlée",
@@ -55,6 +58,7 @@ const QUALIFIERS := {
 	AREA: "de zone",
 	LIGHTNING: "de foudre",
 	FIRE: "de feu",
+	COLD: "de froid",
 	SPELL: "de sort",
 	ATTACK: "d'attaque",
 	MELEE: "de mêlée",

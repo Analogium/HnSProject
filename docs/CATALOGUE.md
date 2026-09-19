@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-44 bases d'objets, 15 compétences, 49 affixes d'objets, 5 affixes d'ennemis.
+45 bases d'objets, 21 compétences, 52 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -66,6 +66,7 @@ Niveaux de zone : 1 à 120.
 | `manual_lightning` | Manuel de la foudre | manual_lightning | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
+| `manual_cold` | Manuel du froid | manual_cold | 1 | manual | manual | — | — | 2 × 2 | 10 et au-delà |
 
 ## Manuels
 
@@ -76,14 +77,14 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 ### Maître de la foudre — `manual_lightning`
 
-| case | sorte | ouvre à | points | coût | recharge | forme | par point |
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Éclair vif | sort foudre | niveau 1 | 5 | 8 mana | 0.42 s | bolt | 21 · 27 · 34 · 42 · 51 |
 | Chaîne d'éclairs | sort foudre | niveau 3 | 5 | 12 mana | 0.70 s | chain · 3 cibles | 17 · 22 · 28 · 35 · 43 |
 | Nuage d'orage | sort foudre | niveau 5 | 5 | 22 mana | 1.60 s | cloud · 3.0 s · rayon 34 · toutes les 0.50 s | 9 · 11 · 14 · 17 · 21 |
-| Ruée d'orage | sort foudre | niveau 5 | 4 | 10 mana | 2.00 s | dash · 2.0 s | Appel du tonnerre : +5 % de vitesse accrue |
+| Ruée d'orage | sort foudre | niveau 5 | 4 | 10 mana | 0.35 s · recharge 2.00 s | dash · 2.0 s | Appel du tonnerre : +5 % de vitesse accrue |
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % de dégâts de foudre accrus · +10 mana |
-| Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | 0.60 s | buff | Champ statique : +5 % chance de charge statique |
+| Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · draine 1 mana/s | Champ statique : +5 % chance de charge statique |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
@@ -102,11 +103,13 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 ### Maître chevalier — `manual_weapons`
 
-| case | sorte | ouvre à | points | coût | recharge | forme | par point |
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | strike | 20 · 26 · 33 · 41 · 50 |
 | Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | cadence de l'arme | cross | 13 · 17 · 21 · 26 · 32 |
 | Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
+| Vague tranchante | attaque physique | niveau 4 | 5 | 8 mana | cadence de l'arme | wave · 0.5 s · rayon 20 | 11 · 14 · 18 · 22 · 27 |
+| Cyclone | attaque physique | niveau 8 | 5 | 0 mana | cadence de l'arme | cyclone · rayon 34 · toutes les 0.35 s · draine 10 mana/s | 7 · 9 · 11 · 14 · 17 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
 
 | nœud | compétence | parent | demande | points | par point |
@@ -120,19 +123,23 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
 | Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
 | Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % de durée accrue |
+| Fil de l'arc | Vague tranchante | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
+| Course | Vague tranchante | Fil de l'arc | 2 points de compétence | 2 | +25 % de durée accrue |
+| Fauchage | Cyclone | — | 1 point de compétence | 3 | +10 % de dégâts amplifiés |
+| Envergure | Cyclone | Fauchage | 2 points de compétence | 2 | +12 % de rayon accru |
 
-38 destinations de points pour 20 gagnés.
+58 destinations de points pour 20 gagnés.
 
 ### Maître des flammes — `manual_fire`
 
-| case | sorte | ouvre à | points | coût | recharge | forme | par point |
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Boule de feu | sort feu | niveau 1 | 5 | 11 mana | 0.60 s | ball · rayon 20 | 30 · 38 · 48 · 59 · 73 |
 | Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s | 10 · 13 · 16 · 20 · 25 |
-| Immolation | sort feu | niveau 9 | 5 | 25 mana | 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s · adossé aux PV 0.8 % | 8 · 10 · 13 · 16 · 20 |
-| Ruée ardente | sort feu | niveau 5 | 5 | 12 mana | 4.00 s | dash · 3.0 s · rayon 16 · toutes les 0.50 s | 4 · 5 · 6 · 8 · 10 |
+| Immolation | sort feu | niveau 9 | 5 | 25 mana | recharge 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s · adossé aux PV 0.8 % | 8 · 10 · 13 · 16 · 20 |
+| Ruée ardente | sort feu | niveau 5 | 5 | 12 mana | 0.50 s · recharge 4.00 s | dash · 3.0 s · rayon 16 · toutes les 0.50 s | 4 · 5 · 6 · 8 · 10 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts de feu accrus · +3 % rés. feu |
-| Ignition | sort feu | niveau 12 | 4 | 0 mana | 0.60 s | buff · brûle 1 % PV/s | Combustion : +13 % chance d'embraser · +8 % de vitesse accrue |
+| Ignition | sort feu | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · brûle 1 % PV/s | Combustion : +13 % chance d'embraser · +8 % de vitesse accrue |
 
 | nœud | compétence | parent | demande | points | par point |
 |---|---|---|---|---|---|
@@ -150,6 +157,27 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Bûcher | Ruée ardente | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
 
 54 destinations de points pour 20 gagnés.
+
+### Maître du froid — `manual_cold`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Pics de glace | sort froid | niveau 1 | 5 | 14 mana | 0.70 s | spikes · rayon 26 | 10 · 13 · 16 · 20 · 25 |
+| Nova de glace | sort froid | niveau 3 | 5 | 20 mana | 1.10 s | nova · rayon 46 · +50 % de chance d'état | 12 · 15 · 19 · 24 · 30 |
+| Tombeau de glace | sort froid | niveau 8 | 4 | 25 mana | recharge 0.60 s | buff · 3.0 s · draine 3 mana/s · rend 1.7 % PV/s | Carapace de givre : -18 % dégâts subis |
+| Désastre hivernal | sort froid | niveau 12 | 5 | 26 mana | 0.80 s · recharge 3.00 s | vortex · 4.0 s · rayon 52 · toutes les 0.50 s | 6 · 8 · 10 · 12 · 15 |
+| Morsure du gel | passif | niveau 2 | 4 | — | — | — | +10 % chance de transir |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Éclats | Pics de glace | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
+| Poussée | Pics de glace | Éclats | 2 points de compétence | 2 | +10 % de rayon accru |
+| Souffle | Nova de glace | — | 1 point de compétence | 3 | +10 % de rayon accru |
+| Morsure | Nova de glace | Souffle | 2 points de compétence | 2 | +12 % de dégâts amplifiés |
+| Blizzard | Désastre hivernal | — | 1 point de compétence | 2 | +20 % de durée accrue |
+| Œil du cyclone | Désastre hivernal | Blizzard | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+
+38 destinations de points pour 20 gagnés.
 
 ## Arbre de passifs
 
@@ -583,59 +611,62 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 44 |
-| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 44 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 44 |
-| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 44 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 19 / 44 |
-| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 44 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 44 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 44 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 8 / 44 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 44 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 44 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 44 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 44 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 44 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 44 |
-| `muscular` | force | *partout* | — | 8 | 6 | 41 / 44 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 44 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 44 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 44 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 44 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 44 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 44 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 44 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 44 |
-| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 6 / 44 |
-| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 11 / 44 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 44 |
-| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 44 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 44 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 44 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 44 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 8 / 44 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 45 |
+| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 45 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 45 |
+| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 45 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 45 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 19 / 45 |
+| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 45 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 45 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 45 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 45 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 8 / 45 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 45 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 45 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 45 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 45 |
+| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 45 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 45 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 45 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 45 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 45 |
+| `muscular` | force | *partout* | — | 8 | 6 | 41 / 45 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 45 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 45 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 45 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 45 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 45 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 45 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 45 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 45 |
+| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 6 / 45 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 9 / 45 |
+| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 11 / 45 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 45 |
+| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 45 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 45 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 45 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 45 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 8 / 45 |
 
 ### Affixes d'ennemis
 
-| id | nom | PV | vitesse | dégâts | recharge | armure | vol de vie | exp |
+| id | nom | PV | vitesse | dégâts | temps d'attaque | armure | vol de vie | exp |
 |---|---|---|---|---|---|---|---|---|
 | `colossal` | Colossal | ×2.00 | ×0.80 | ×1.00 | ×1.00 | +0 | 0 % | ×1.80 |
 | `swift` | Véloce | ×0.75 | ×1.45 | ×1.00 | ×1.00 | +0 | 0 % | ×1.40 |
@@ -701,6 +732,13 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 19 | 20–29 % | 10 |
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
+
+**`cold_skill_levels`** — « du Cryomancien », niveaux de compétence de froid, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
 
 **`cold_to_attacks`** — « du Givre », dégâts de froid aux attaques, arrondi 1
 
@@ -873,6 +911,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 16–21 % | 10 |
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
+
+**`glacial`** — « de la Banquise », dégâts de froid, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
 
 **`holy_to_attacks`** — « de la Croisade », dégâts sacrés aux attaques, arrondi 1
 
@@ -1108,6 +1157,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 19 | 20–29 % | 10 |
 | T4 | 6 | 13–19 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
+
+**`second_wind`** — « du Second Souffle », récupération de recharge, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 17–20 % | 10 |
+| T2 | 38 | 13–16 % | 10 |
+| T3 | 24 | 9–12 % | 10 |
+| T4 | 10 | 5–8 % | 10 |
+| T5 | 1 | 3–4 % | 10 |
 
 **`shattering`** — « de la Brisure », dégâts d'attaque contre les transis, arrondi 1
 

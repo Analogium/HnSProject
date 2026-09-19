@@ -8,6 +8,8 @@
 [ext_resource type="Resource" path="res://resources/skills/heavy_strike.tres" id="10_frappe_lourde"]
 [ext_resource type="Resource" path="res://resources/skills/cross_slash.tres" id="11_coup_en_croix"]
 [ext_resource type="Resource" path="res://resources/skills/spiral_sword.tres" id="12_epee_spirale"]
+[ext_resource type="Resource" path="res://resources/skills/wave_slash.tres" id="13_vague"]
+[ext_resource type="Resource" path="res://resources/skills/cyclone.tres" id="14_cyclone"]
 
 [sub_resource type="Resource" id="L_frappe_lourde_elan_0"]
 script = ExtResource("4_ligne")
@@ -181,8 +183,84 @@ script = ExtResource("2_case")
 passive = SubResource("P_garde_de_fer")
 position = Vector2i(0, 1)
 
+[sub_resource type="Resource" id="L_vague_fil_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_vague_fil"]
+script = ExtResource("3_noeud")
+id = "wave_slash_edge"
+name = "Fil de l'arc"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_fil_0")])
+
+[sub_resource type="Resource" id="L_vague_course_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_vague_course"]
+script = ExtResource("3_noeud")
+id = "wave_slash_reach"
+name = "Course"
+position = Vector2i(1, 0)
+parent = "wave_slash_edge"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_course_0")])
+
+[sub_resource type="Resource" id="C_vague"]
+script = ExtResource("2_case")
+skill = ExtResource("13_vague")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_vague_fil"), SubResource("N_vague_course")])
+
+[sub_resource type="Resource" id="L_cyclone_fauchage_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_cyclone_fauchage"]
+script = ExtResource("3_noeud")
+id = "cyclone_reaping"
+name = "Fauchage"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_fauchage_0")])
+
+[sub_resource type="Resource" id="L_cyclone_envergure_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_cyclone_envergure"]
+script = ExtResource("3_noeud")
+id = "cyclone_span"
+name = "Envergure"
+position = Vector2i(1, 0)
+parent = "cyclone_reaping"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_envergure_0")])
+
+[sub_resource type="Resource" id="C_cyclone"]
+script = ExtResource("2_case")
+skill = ExtResource("14_cyclone")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_cyclone_fauchage"), SubResource("N_cyclone_envergure")])
+
 [resource]
 script = ExtResource("1_arch")
 id = "weapons"
 name = "Maître chevalier"
-cells = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_coup_en_croix"), SubResource("C_epee_spirale"), SubResource("C_garde_de_fer")])
+cells = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_coup_en_croix"), SubResource("C_epee_spirale"), SubResource("C_vague"), SubResource("C_cyclone"), SubResource("C_garde_de_fer")])

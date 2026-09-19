@@ -11,7 +11,6 @@ description = "Un coup d'arme lourd, plus lent et plus fort."
 nature = 0
 cadence = 0
 shape = 2
-cooldown = 0.00
 mana_cost = 6.0
 projectiles = 1
 spread_in_degrees = 0.0

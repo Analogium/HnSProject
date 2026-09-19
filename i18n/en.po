@@ -264,6 +264,9 @@ msgstr "lightning"
 msgid "de feu"
 msgstr "fire"
 
+msgid "de froid"
+msgstr "cold"
+
 msgid "de sort"
 msgstr "spell"
 
@@ -287,6 +290,9 @@ msgstr "to lightning skills"
 
 msgid "aux compétences de feu"
 msgstr "to fire skills"
+
+msgid "aux compétences de froid"
+msgstr "to cold skills"
 
 msgid "aux attaques de mêlée"
 msgstr "to melee attacks"
@@ -342,6 +348,51 @@ msgstr "Cross Slash"
 msgid "Épée spirale"
 msgstr "Spiral Sword"
 
+msgid "Vague tranchante"
+msgstr "Cleaving Wave"
+
+msgid "Cyclone"
+msgstr "Cyclone"
+
+msgid "Un coup de taille qui détache son arc et l'envoie devant soi."
+msgstr "A slash whose arc breaks free and flies out ahead of you."
+
+msgid "Un tour d'arme entretenu, qui fauche tout ce qui approche."
+msgstr "A sustained weapon spin, reaping all that comes close."
+
+msgid "Manuel du froid"
+msgstr "Manual of Cold"
+
+msgid "Maître du froid"
+msgstr "Master of Cold"
+
+msgid "Pics de glace"
+msgstr "Ice Spikes"
+
+msgid "Nova de glace"
+msgstr "Ice Nova"
+
+msgid "Tombeau de glace"
+msgstr "Frost Tomb"
+
+msgid "Désastre hivernal"
+msgstr "Winter Disaster"
+
+msgid "Carapace de givre"
+msgstr "Rime Shell"
+
+msgid "Des pics percent le sol au point visé, puis retombent."
+msgstr "Spikes pierce the ground at the aimed point, then sink."
+
+msgid "Une déflagration de glace autour de soi, qui transit vite."
+msgstr "A blast of ice around you, quick to chill what it hits."
+
+msgid "On s'enferme dans la glace, qui protège et soigne."
+msgstr "You seal yourself in ice, which shields and mends."
+
+msgid "Un vortex de glace lâché sous ses pieds, qui ne cesse de croître."
+msgstr "A vortex of ice loosed underfoot, growing without pause."
+
 # ---------------------------------------------------------------------------
 # Passifs
 # ---------------------------------------------------------------------------
@@ -355,10 +406,13 @@ msgstr "Heart of Embers"
 msgid "Garde de fer"
 msgstr "Iron Guard"
 
+msgid "Morsure du gel"
+msgstr "Frostbite"
+
 # ---------------------------------------------------------------------------
 # Nœuds de talent
 #
-# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes.
+# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes, froid.
 # ---------------------------------------------------------------------------
 
 msgid "Surcharge"
@@ -441,6 +495,36 @@ msgstr "Sharpness"
 
 msgid "Endurance"
 msgstr "Endurance"
+
+msgid "Fil de l'arc"
+msgstr "Keen Arc"
+
+msgid "Course"
+msgstr "Travel"
+
+msgid "Fauchage"
+msgstr "Reaping"
+
+msgid "Envergure"
+msgstr "Span"
+
+msgid "Éclats"
+msgstr "Shards"
+
+msgid "Poussée"
+msgstr "Upheaval"
+
+msgid "Souffle"
+msgstr "Gust"
+
+msgid "Morsure"
+msgstr "Bite"
+
+msgid "Blizzard"
+msgstr "Blizzard"
+
+msgid "Œil du cyclone"
+msgstr "Eye of the Storm"
 
 # ---------------------------------------------------------------------------
 # Arbre de passifs
@@ -704,6 +788,9 @@ msgstr "Lightning"
 msgid "Feu"
 msgstr "Fire"
 
+msgid "Froid"
+msgstr "Cold"
+
 msgid "Sort"
 msgstr "Spell"
 
@@ -793,8 +880,8 @@ msgstr "necrotic res."
 msgid "rés. sacré"
 msgstr "holy res."
 
-msgid "temps de recharge"
-msgstr "cooldown"
+msgid "temps d'attaque"
+msgstr "attack time"
 
 msgid "vitesse d'attaque"
 msgstr "attack speed"
@@ -894,7 +981,7 @@ msgstr "Reduces necrotic damage, as a direct percentage."
 msgid "Réduit les dégâts sacrés, en pourcentage direct."
 msgstr "Reduces holy damage, as a direct percentage."
 
-msgid "Le délai de base entre deux coups, avant la vitesse d'attaque."
+msgid "Le temps que prend un coup d'arme, avant la vitesse d'attaque."
 msgstr "The base delay between two hits, before attack speed."
 
 msgid "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation."
@@ -902,6 +989,9 @@ msgstr "The rate of melee. It does not affect bolts, which follow cast speed."
 
 msgid "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque."
 msgstr "The rate of bolts. It does not affect the sword swing, which follows attack speed."
+
+msgid "Raccourcit les recharges des compétences qui en ont une. **Ni la vitesse d'attaque ni celle d'incantation n'y touchent.**"
+msgstr "Shortens the cooldowns of skills that have one. **Neither attack speed nor cast speed affects them.**"
 
 msgid "L'allonge du coup d'épée, en pixels."
 msgstr "The reach of the sword swing, in pixels."
@@ -941,6 +1031,15 @@ msgstr "chance to ignite"
 
 msgid "chance de charge statique"
 msgstr "static charge chance"
+
+msgid "chance de transir"
+msgstr "chance to chill"
+
+msgid "récupération de recharge"
+msgstr "cooldown recovery"
+
+msgid "dégâts subis"
+msgstr "damage taken"
 
 msgid "chance critique de base"
 msgstr "base crit chance"
@@ -1278,6 +1377,15 @@ msgstr "drain"
 msgid "brûlure"
 msgstr "self-burn"
 
+msgid "soin"
+msgstr "mending"
+
+msgid "temps d'incantation"
+msgstr "cast time"
+
+msgid "%d mana/s"
+msgstr "%d mana/s"
+
 msgid "écart"
 msgstr "spread"
 
@@ -1451,6 +1559,12 @@ msgstr "of Agility"
 msgid "de la Fournaise"
 msgstr "of the Furnace"
 
+msgid "de la Banquise"
+msgstr "of the Ice Floe"
+
+msgid "du Second Souffle"
+msgstr "of Second Wind"
+
 msgid "du Maléfice"
 msgstr "of the Hex"
 
@@ -1495,6 +1609,9 @@ msgstr "of Reach"
 
 msgid "du Pyromancien"
 msgstr "of the Pyromancer"
+
+msgid "du Cryomancien"
+msgstr "of the Cryomancer"
 
 msgid "de la Braise"
 msgstr "of Embers"

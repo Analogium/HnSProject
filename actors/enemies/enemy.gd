@@ -81,7 +81,7 @@ static func sheet_of(base: CharacterStats, p_level: int, p_affixes: Array[Affix]
 		sheet.max_health *= a.health_mult
 		sheet.move_speed *= a.speed_mult
 		sheet.attack_damage *= a.damage_mult
-		sheet.attack_cooldown *= a.cooldown_mult
+		sheet.attack_time *= a.attack_time_mult
 		sheet.armor += a.armor
 	return sheet
 

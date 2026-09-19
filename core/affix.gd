@@ -15,7 +15,7 @@ extends Resource
 @export var health_mult: float = 1.0
 @export var speed_mult: float = 1.0
 @export var damage_mult: float = 1.0
-@export var cooldown_mult: float = 1.0
+@export var attack_time_mult: float = 1.0
 
 @export_group("Effects")
 ## Ajouté à la notation d'armure : rend le harcèlement inefficace, et le tir

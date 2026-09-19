@@ -380,6 +380,37 @@ func test_a_skill_backed_by_life_says_so() -> void:
 	)
 
 
+## Une compétence qui transit mieux le **dit**, et dit ce que ça donne : son accru, puis
+## la chance qui en sort sur cette fiche-là, les accrus du porteur compris. Sans les deux
+## nombres, « +50 % » n'a pas de point de départ (jalon 21).
+func test_a_skill_that_chills_better_says_by_how_much() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_cold"))
+	book.manual.gain_experience(999999)
+	_player.rack.remove(0)
+	_player.study(book, 0)
+	book.manual.invest(book.base.manual, "ice_nova")
+
+	var nova := SkillCatalog.by_id("ice_nova")
+	var values := _values(_sheet_of(book, "ice_nova"), StatMod.LABELS["chill_chance"])
+	assert_eq(values.size(), 1, "la ligne y est")
+	assert_string_contains(values[0], "50", "son accru")
+	assert_string_contains(values[0], "30", "et les 30 % qu'il donne sur une chance de 20")
+
+	# Le passif du livre accroît la même chance : les deux s'additionnent, donc la
+	# seconde valeur monte sans que la première bouge.
+	for i in 4:
+		assert_true(_player.invest(0, "frostbite"))
+	var with_passive := _values(_sheet_of(book, "ice_nova"), StatMod.LABELS["chill_chance"])
+	assert_string_contains(with_passive[0], "50", "l'accru de la compétence ne bouge pas")
+	assert_string_contains(with_passive[0], "38", "20 × (1 + 0,50 + 0,40)")
+
+	assert_eq(
+		_values(_sheet_of(book, "ice_spike"), StatMod.LABELS["chill_chance"]).size(), 0,
+		"et rien pour ce qui ne transit pas mieux"
+	)
+	assert_gt(nova.status_chance_increase, 0.0)
+
+
 ## Un déplacement ne touche personne : sa fiche n'annonce ni dégâts, ni forme, ni
 ## moyenne — **même l'arme à la main**, dont les fourchettes entrent dans tout ce qui
 ## porte « sort ». Le lancer les porte, la fiche ne les montre pas.
@@ -572,7 +603,11 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 
 	assert_eq(_values(lines, "points"), PackedStringArray(["2 / %d" % bolt.points_max()]))
 	assert_eq(_values(lines, "coût"), PackedStringArray(["%d mana" % roundi(cast.mana_cost)]))
-	assert_eq(_values(lines, "recharge"), PackedStringArray(["%.2f s" % cast.interval]))
+	assert_eq(
+		_values(lines, "temps d'incantation"), PackedStringArray(["%.2f s" % cast.use_time]),
+		"un sort sans recharge n'annonce que son geste"
+	)
+	assert_eq(_values(lines, "recharge"), PackedStringArray(), "et pas de recharge")
 	assert_eq(
 		_values(lines, "de base"), PackedStringArray(["%d foudre" % roundi(cast.base_damage)])
 	)

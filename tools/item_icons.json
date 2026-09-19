@@ -1,46 +1,182 @@
 {
-  "sword": ["a plain iron straight sword, blade pointing straight up, leather grip", 1337],
-  "broadsword": ["a broad steel sword with a golden crossguard, blade pointing straight up", 4242],
-  "war_blade": ["an ornate silver greatsword with etched runes and a winged golden guard, blade pointing straight up", 777],
-  "dagger": ["a short iron dagger, blade pointing straight up, wrapped leather grip", 4242],
-  "misericorde": ["a slender polished steel stiletto dagger with a golden pommel, blade pointing straight up", 1337],
-  "mace": ["a heavy iron mace with a round studded head, handle down, upright", 1337],
-  "battle_mace": ["a steel flanged mace with a gold banded haft, handle down, upright", 777],
-  "war_hammer": ["a massive dark steel war hammer with a square blocky head, handle down, upright", 777],
-  "wand": ["a short wooden magic wand with a small blue crystal at the tip, pointing up", 4242],
-  "scepter": ["a silver scepter topped with a glowing violet gem, pointing up", 777],
-  "runic_scepter": ["an ornate golden scepter with carved runes and a radiant purple crystal, pointing up", 777],
-  "shield": ["a round wooden shield with an iron boss and rim, front view", 1337],
-  "kite_shield": ["a steel kite shield with a painted blue heraldic chevron, front view", 1337],
-  "pavise": ["a tall rectangular tower shield of riveted steel with gold trim, front view", 1337],
-  "helmet": ["a simple iron open helmet, front view", 1337],
-  "great_helm": ["a steel great helm with a narrow eye slit, front view", 1337],
-  "armet": ["an ornate polished armet helmet with a golden crest and visor, front view", 4242],
-  "hood": ["a grey cloth hood of a mage robe, empty, front view", 777],
-  "masters_hood": ["a deep blue silk hood with golden embroidery, empty, front view", 1337],
-  "breastplate": ["an iron breastplate cuirass, front view", 1337],
-  "chainmail": ["a chainmail hauberk shirt with visible rings, front view", 1337],
-  "full_plate": ["an ornate polished steel plate cuirass with gold filigree and pauldrons, front view", 4242],
-  "tunic": ["a plain brown cloth tunic, front view", 4242],
-  "jerkin": ["a studded brown leather jerkin, front view", 1337],
-  "gloves": ["a pair of brown leather gloves, front view", 1337],
-  "reinforced_gloves": ["a pair of steel studded leather gauntlets, front view", 1337],
-  "masters_gloves": ["a pair of ornate golden plate gauntlets, front view", 4242],
-  "boots": ["a pair of plain brown leather boots, side view", 777],
-  "studded_boots": ["a pair of studded leather boots with steel plates, side view", 1337],
-  "travel_boots": ["a pair of fine tall leather travelling boots with golden buckles, side view", 777],
-  "belt": ["a plain brown leather belt with an iron buckle, coiled, front view", 1337],
-  "girdle": ["a wide studded leather girdle with a steel buckle, front view", 1337],
-  "baldric": ["an ornate leather baldric shoulder belt with gold fittings, front view", 1337],
-  "amulet": ["a simple amulet, a round stone pendant on a leather cord", 4242],
-  "talisman": ["a silver talisman pendant with a blue gem on a chain", 1337],
-  "pendentif": ["an ornate golden pendant with a large radiant red gem on a chain", 777],
-  "ring": ["a plain iron ring, single ring, front view", 4242],
-  "ornate_ring": ["a silver ring set with a small blue gemstone, single ring, front view", 1337],
-  "signet_ring": ["a golden signet ring with an engraved seal, single ring, front view", 4242],
-  "grimoire": ["a closed worn leather spellbook with brass clasps", 1337],
-  "codex": ["a closed blue leather codex with silver clasps and a gem on the cover", 1337],
-  "manual_lightning": ["a closed violet tome crackling with yellow lightning on its cover", 1337],
-  "manual_fire": ["a closed crimson tome with a burning flame emblem on its cover", 1337],
-  "manual_weapons": ["a closed steel bound tome with crossed swords emblem on its cover", 1337]
+  "sword": [
+    "a plain iron straight sword, blade pointing straight up, leather grip",
+    1337
+  ],
+  "broadsword": [
+    "a broad steel sword with a golden crossguard, blade pointing straight up",
+    4242
+  ],
+  "war_blade": [
+    "an ornate silver greatsword with etched runes and a winged golden guard, blade pointing straight up",
+    777
+  ],
+  "dagger": [
+    "a short iron dagger, blade pointing straight up, wrapped leather grip",
+    4242
+  ],
+  "misericorde": [
+    "a slender polished steel stiletto dagger with a golden pommel, blade pointing straight up",
+    1337
+  ],
+  "mace": [
+    "a heavy iron mace with a round studded head, handle down, upright",
+    1337
+  ],
+  "battle_mace": [
+    "a steel flanged mace with a gold banded haft, handle down, upright",
+    777
+  ],
+  "war_hammer": [
+    "a massive dark steel war hammer with a square blocky head, handle down, upright",
+    777
+  ],
+  "wand": [
+    "a short wooden magic wand with a small blue crystal at the tip, pointing up",
+    4242
+  ],
+  "scepter": [
+    "a silver scepter topped with a glowing violet gem, pointing up",
+    777
+  ],
+  "runic_scepter": [
+    "an ornate golden scepter with carved runes and a radiant purple crystal, pointing up",
+    777
+  ],
+  "shield": [
+    "a round wooden shield with an iron boss and rim, front view",
+    1337
+  ],
+  "kite_shield": [
+    "a steel kite shield with a painted blue heraldic chevron, front view",
+    1337
+  ],
+  "pavise": [
+    "a tall rectangular tower shield of riveted steel with gold trim, front view",
+    1337
+  ],
+  "helmet": [
+    "a simple iron open helmet, front view",
+    1337
+  ],
+  "great_helm": [
+    "a steel great helm with a narrow eye slit, front view",
+    1337
+  ],
+  "armet": [
+    "an ornate polished armet helmet with a golden crest and visor, front view",
+    4242
+  ],
+  "hood": [
+    "a grey cloth hood of a mage robe, empty, front view",
+    777
+  ],
+  "masters_hood": [
+    "a deep blue silk hood with golden embroidery, empty, front view",
+    1337
+  ],
+  "breastplate": [
+    "an iron breastplate cuirass, front view",
+    1337
+  ],
+  "chainmail": [
+    "a chainmail hauberk shirt with visible rings, front view",
+    1337
+  ],
+  "full_plate": [
+    "an ornate polished steel plate cuirass with gold filigree and pauldrons, front view",
+    4242
+  ],
+  "tunic": [
+    "a plain brown cloth tunic, front view",
+    4242
+  ],
+  "jerkin": [
+    "a studded brown leather jerkin, front view",
+    1337
+  ],
+  "gloves": [
+    "a pair of brown leather gloves, front view",
+    1337
+  ],
+  "reinforced_gloves": [
+    "a pair of steel studded leather gauntlets, front view",
+    1337
+  ],
+  "masters_gloves": [
+    "a pair of ornate golden plate gauntlets, front view",
+    4242
+  ],
+  "boots": [
+    "a pair of plain brown leather boots, side view",
+    777
+  ],
+  "studded_boots": [
+    "a pair of studded leather boots with steel plates, side view",
+    1337
+  ],
+  "travel_boots": [
+    "a pair of fine tall leather travelling boots with golden buckles, side view",
+    777
+  ],
+  "belt": [
+    "a plain brown leather belt with an iron buckle, coiled, front view",
+    1337
+  ],
+  "girdle": [
+    "a wide studded leather girdle with a steel buckle, front view",
+    1337
+  ],
+  "baldric": [
+    "an ornate leather baldric shoulder belt with gold fittings, front view",
+    1337
+  ],
+  "amulet": [
+    "a simple amulet, a round stone pendant on a leather cord",
+    4242
+  ],
+  "talisman": [
+    "a silver talisman pendant with a blue gem on a chain",
+    1337
+  ],
+  "pendentif": [
+    "an ornate golden pendant with a large radiant red gem on a chain",
+    777
+  ],
+  "ring": [
+    "a plain iron ring, single ring, front view",
+    4242
+  ],
+  "ornate_ring": [
+    "a silver ring set with a small blue gemstone, single ring, front view",
+    1337
+  ],
+  "signet_ring": [
+    "a golden signet ring with an engraved seal, single ring, front view",
+    4242
+  ],
+  "grimoire": [
+    "a closed worn leather spellbook with brass clasps",
+    1337
+  ],
+  "codex": [
+    "a closed blue leather codex with silver clasps and a gem on the cover",
+    1337
+  ],
+  "manual_lightning": [
+    "a closed violet tome crackling with yellow lightning on its cover",
+    1337
+  ],
+  "manual_fire": [
+    "a closed crimson tome with a burning flame emblem on its cover",
+    1337
+  ],
+  "manual_weapons": [
+    "a closed steel bound tome with crossed swords emblem on its cover",
+    1337
+  ],
+  "manual_cold": [
+    "a thick closed spellbook covered in frost with a pale blue ice crystal on the cover, upright, front view",
+    4242
+  ]
 }

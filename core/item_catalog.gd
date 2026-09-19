@@ -68,6 +68,7 @@ const ALL := [
 	# Chacun sa lignée d'un palier, qui dit sa rareté, et son propre `kind`.
 	preload("res://resources/items/manual_weapons.tres"),
 	preload("res://resources/items/manual_fire.tres"),
+	preload("res://resources/items/manual_cold.tres"),
 ]
 
 

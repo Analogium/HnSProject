@@ -43,7 +43,8 @@ const GROUPS := [
 		"OFFENSE",
 		[
 			SkillCatalog.ID_ATTACK, SkillCatalog.ID_BOLT,
-			"attack_speed", "cast_speed", "attack_range", "crit_chance", "crit_multiplier",
+			"attack_speed", "cast_speed", "cooldown_recovery", "attack_range", "crit_chance",
+			"crit_multiplier",
 		],
 	],
 	["DÉPLACEMENT", ["move_speed"]],

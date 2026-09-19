@@ -309,6 +309,7 @@ n'a pas demandé à dépenser.
 1. **Les nouveaux manuels.** Le jalon les attend : leur nature, leurs quatre à six
    cases, leur passif. Tant qu'ils ne sont pas décrits, ce document ne porte que les
    deux manuels existants — et la section §5 est le gabarit qu'ils reprendront.
+   **Tranché au jalon 21** : le Maître du froid, plus deux cases au chevalier.
 2. **La chance d'embraser sur la fiche de personnage**, avec son affixe (gants,
    bijoux) — ou pas.
 3. **Le numéro.** `docs/ARCHITECTURE.md` cite déjà un « jalon 19 » (l'arbre à 418

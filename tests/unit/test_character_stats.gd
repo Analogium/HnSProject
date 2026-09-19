@@ -55,9 +55,23 @@ func test_physical_has_no_resistance() -> void:
 	assert_eq(st.resistance(DamageType.Kind.PHYSICAL), 0.0)
 
 
+## L'abri du tombeau de glace vient **après** la défense de la nature, et porte sur
+## toutes : une carapace ne choisit pas ce qu'elle arrête (jalon 21).
+func test_damage_taken_shelters_every_nature_after_its_defense() -> void:
+	var st := CharacterStats.new()
+	st.res_fire = 50.0
+	st.damage_taken = -70.0
+	assert_almost_eq(st.mitigate(DamageType.Kind.FIRE, 100.0), 15.0, 0.001, "moitié, puis 30 %")
+	assert_almost_eq(
+		st.mitigate(DamageType.Kind.PHYSICAL, 100.0), 30.0, 0.001, "sans armure, 30 %"
+	)
+	st.damage_taken = -400.0
+	assert_eq(st.mitigate(DamageType.Kind.FIRE, 100.0), 0.0, "jamais négatif")
+
+
 func test_cadence() -> void:
 	var st := CharacterStats.new()
-	st.attack_cooldown = 0.45
+	st.attack_time = 0.45
 	assert_almost_eq(st.attack_interval(), 0.45, 0.0001, "cadence de base")
 	st.attack_speed = 1.5
 	assert_almost_eq(st.attack_interval(), 0.3, 0.0001, "+50 % de cadence")
@@ -67,7 +81,7 @@ func test_cadence() -> void:
 ## l'attaquant pour toujours au lieu de le ralentir.
 func test_cadence_no_division_by_zero() -> void:
 	var st := CharacterStats.new()
-	st.attack_cooldown = 0.45
+	st.attack_time = 0.45
 	st.attack_speed = 0.0
 	assert_almost_eq(st.attack_interval(), 4.5, 0.0001)
 

@@ -629,3 +629,138 @@ func test_the_storm_dash_leaves_speed_and_no_trail() -> void:
 	await wait_seconds(cast.duration + 0.1)
 	assert_false(_p.lit("storm_dash"), "le temps passé, il retombe")
 	assert_eq(_p.stats.move_speed, speed, "et la fiche retrouve ses nombres")
+
+
+# --------------------------------------------------------------------------
+# Vague tranchante et cyclone (jalon 21)
+# --------------------------------------------------------------------------
+
+## La vague part de la lame et va chercher ce que le bras n'atteint pas — une fois,
+## quelle que soit la durée qu'elle passe dessus.
+func test_the_wave_travels_past_the_arm_and_bites_once() -> void:
+	_learn("manual_weapons", ["wave_slash"])
+	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
+	# Devant le départ de la vague, et hors de portée de la hitbox.
+	var ahead := _target(Vector2(SlashWave.START + cast.radius + 20.0, 0))
+	var behind := _target(Vector2(-60, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(SlashWave).size(), 1)
+	await wait_seconds(cast.duration + 0.1)
+	assert_eq(_hits(ahead), 1, "la vague l'a rattrapée, et une seule fois")
+	assert_eq(_hits(behind), 0, "elle ne part que devant")
+	assert_eq(_children_of(SlashWave).size(), 0, "et sa course finit avec sa durée")
+
+
+## Le cyclone s'allume et s'éteint comme l'aura, mais se paie en mana : la réserve
+## vide l'arrête, là où la brûlure d'Immolation tue.
+func test_the_cyclone_spins_on_mana_until_the_pool_runs_dry() -> void:
+	_learn("manual_weapons", ["cyclone"])
+	var near := _target(Vector2(20, 0))
+	var far := _target(Vector2(120, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("cyclone"))
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1, "ce qui est dans le cercle est fauché")
+	assert_eq(_hits(far), 0)
+	assert_lt(_p.mana, _p.stats.max_mana, "et le tour se paie")
+
+	_p._set_mana(0.0)
+	await wait_physics_frames(2)
+	assert_false(_p.lit("cyclone"), "la réserve vide l'arrête")
+	assert_false(_p.is_dead, "sans tuer personne")
+
+
+# --------------------------------------------------------------------------
+# Le manuel du froid (jalon 21)
+# --------------------------------------------------------------------------
+
+## Les pics frappent une fois au point visé, puis ne laissent rien.
+func test_the_spikes_strike_once_and_leave_nothing() -> void:
+	_learn("manual_cold", ["ice_spike"])
+	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var below := _target(point)
+	var beside := _target(point + Vector2(0, 80))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(IceSpikes)[0].global_position, point, "posés à la portée, devant")
+	await wait_physics_frames(3)
+	assert_eq(_hits(below), 1)
+	assert_eq(_hits(beside), 0)
+
+	await wait_seconds(IceSpikes.LIFETIME + 0.1)
+	assert_eq(_hits(below), 1, "une seule fois : ils ne restent pas")
+	assert_eq(_children_of(IceSpikes).size(), 0)
+
+
+## La nova part de soi, et **transit mieux** qu'un coup de froid ordinaire : c'est le
+## seul lancer qui porte sa propre chance d'état.
+func test_the_nova_bursts_around_the_caster_and_chills_better() -> void:
+	_learn("manual_cold", ["ice_nova"])
+	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
+	var near := _target(Vector2(30, 0))
+	var far := _target(Vector2(cast.radius + 40.0, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1, "le cercle autour de soi")
+	assert_eq(_hits(far), 0)
+	assert_gt(cast.status_chance_increase, 0.0, "et elle transit mieux que le tout-venant")
+
+
+## Le tombeau enferme : on ne bouge plus, rien d'autre ne part, et il se paie.
+func test_the_tomb_binds_its_caster_and_only_lets_itself_end() -> void:
+	_learn("manual_cold", ["frost_tomb"])
+	# Une seconde case, pour vérifier qu'elle est refusée pendant l'enfermement.
+	assert_true(_p.invest(0, "ice_spike"))
+	_p.bar.put(3, "ice_spike")
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("frost_tomb"))
+	assert_false(_p.cast_slot(3), "rien d'autre ne part")
+	assert_lt(_p.stats.damage_taken, 0.0, "et les coups portent moins")
+
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2), "seul le tombeau peut se rouvrir")
+	assert_false(_p.lit("frost_tomb"))
+
+
+## Il se referme tout seul à la fin de sa durée, et rend des PV en attendant.
+func test_the_tomb_mends_then_thaws_on_its_own() -> void:
+	_learn("manual_cold", ["frost_tomb"])
+	var cast := _p.resolve(SkillCatalog.by_id("frost_tomb"), 1)
+	_p._set_health(_p.stats.max_health * 0.5)
+	var wounded := _p.health
+
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration * 0.5)
+	assert_gt(_p.health, wounded, "la glace soigne")
+
+	await wait_seconds(cast.duration * 0.6)
+	assert_false(_p.lit("frost_tomb"), "puis elle fond")
+	assert_eq(_p.stats.damage_taken, 0.0, "et la fiche retrouve ses nombres")
+
+
+## Le vortex **grandit** : ce qui est au bord n'est pris que plus tard, et c'est ce
+## qui le sépare du nuage d'orage.
+func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
+	_learn("manual_cold", ["winter_disaster"])
+	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
+	var on_the_edge := _target(Vector2(cast.radius * 0.9, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	assert_lt(vortex.reach(), cast.radius, "il s'ouvre petit")
+	await wait_physics_frames(3)
+	assert_eq(_hits(on_the_edge), 0, "le bord n'est pas encore atteint")
+
+	await wait_seconds(cast.duration + 0.2)
+	assert_gt(_hits(on_the_edge), 0, "il a fini par l'engloutir")
+	assert_eq(_children_of(IceVortex).size(), 0, "puis s'est refermé")

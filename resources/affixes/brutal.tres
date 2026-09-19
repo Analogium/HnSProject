@@ -8,5 +8,5 @@ id = "brutal"
 display_name = "Brutal"
 tint = Color(0.847, 0.263, 0.227, 1)
 damage_mult = 1.6
-cooldown_mult = 1.2
+attack_time_mult = 1.2
 xp_mult = 1.5

@@ -55,7 +55,10 @@ func take_damage(info: DamageInfo) -> void:
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:
-		states.suffer(info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0)
+		states.suffer(
+			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
+			info.cast.status_chance_increase if info.cast != null else 0.0
+		)
 
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la

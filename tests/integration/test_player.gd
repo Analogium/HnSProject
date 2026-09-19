@@ -90,12 +90,12 @@ func test_the_hurtbox_follows_the_sheet() -> void:
 
 
 func test_the_wand_speeds_up_casting_not_the_blade() -> void:
-	var cooldown := _p.stats.attack_cooldown
+	var swing := _p.stats.attack_time
 	var casting := _p.stats.cast_speed
 	_p.equip(Item.new(load("res://resources/items/wand.tres")))
 	# Un pourcentage, donc il multiplie ce que l'intelligence a déjà donné.
 	assert_almost_eq(_p.stats.cast_speed, casting * 1.15, 0.001, "+15 %")
-	assert_eq(_p.stats.attack_cooldown, cooldown, "le corps à corps est intact")
+	assert_eq(_p.stats.attack_time, swing, "le corps à corps est intact")
 
 
 ## Le cœur du système d'équipement : un objet retiré ne laisse rien derrière lui,

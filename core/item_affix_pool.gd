@@ -7,6 +7,7 @@ const ALL := [
 	preload("res://resources/item_affixes/vigorous.tres"),
 	preload("res://resources/item_affixes/sturdy.tres"),
 	preload("res://resources/item_affixes/nimble.tres"),
+	preload("res://resources/item_affixes/second_wind.tres"),
 	preload("res://resources/item_affixes/quick.tres"),
 	preload("res://resources/item_affixes/cruel.tres"),
 	preload("res://resources/item_affixes/precise.tres"),
@@ -37,6 +38,7 @@ const ALL := [
 	preload("res://resources/item_affixes/stormy.tres"),
 	# Le pendant d'`stormy` pour le feu.
 	preload("res://resources/item_affixes/ardent.tres"),
+	preload("res://resources/item_affixes/glacial.tres"),
 	preload("res://resources/item_affixes/bewitched.tres"),
 
 	# Les dégâts ajoutés, chaque nature aux attaques puis aux sorts, sur une échelle
@@ -56,6 +58,7 @@ const ALL := [
 
 	# Jalon 14 : les niveaux de compétence, rares, et les dégâts contre un état.
 	preload("res://resources/item_affixes/fire_skill_levels.tres"),
+	preload("res://resources/item_affixes/cold_skill_levels.tres"),
 	preload("res://resources/item_affixes/lightning_skill_levels.tres"),
 	preload("res://resources/item_affixes/scorching.tres"),
 	preload("res://resources/item_affixes/electrocuting.tres"),

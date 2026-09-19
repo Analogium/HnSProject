@@ -778,9 +778,18 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.COST, Texts.t("coût"),
 			Texts.t("%d mana") % roundi(cast.mana_cost), UiPalette.TEXT
 		))
-	if cast.interval > 0.0:
+	# Le geste et la recharge **séparément** : rien ne les change ensemble, et une ruée
+	# qui part vite mais revient lentement ne se lit pas sur un seul nombre.
+	if cast.use_time > 0.0:
 		out.append(SheetLine.new(
-			Group.COST, Texts.t("recharge"), "%.2f s" % cast.interval, UiPalette.TEXT
+			Group.COST,
+			Texts.t("temps d'attaque") if skill.cadence == Skill.Cadence.WEAPON
+			else Texts.t("temps d'incantation"),
+			"%.2f s" % cast.use_time, UiPalette.TEXT
+		))
+	if cast.recharge > 0.0:
+		out.append(SheetLine.new(
+			Group.COST, Texts.t("recharge"), "%.2f s" % cast.recharge, UiPalette.TEXT
 		))
 	# Ce qu'un geste entretenu coûte **par seconde** : c'est un prix, pas une forme.
 	if cast.self_burn > 0.0:
@@ -788,11 +797,17 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.COST, Texts.t("brûlure"),
 			"%s %s" % [StatMod.percentage(roundi(cast.self_burn * 100.0)), Texts.t("PV/s")], MISSING
 		))
-	if cast.self_mana_burn > 0.0:
+	if cast.mana_per_second > 0.0:
 		out.append(SheetLine.new(
 			Group.COST, Texts.t("drain"),
-			"%s %s" % [StatMod.percentage(roundi(cast.self_mana_burn * 100.0)), Texts.t("mana/s")],
-			MISSING
+			Texts.t("%d mana/s") % roundi(cast.mana_per_second), MISSING
+		))
+
+	# Ce qu'un geste entretenu rend, dans la même colonne que ce qu'il coûte.
+	if cast.self_heal > 0.0:
+		out.append(SheetLine.new(
+			Group.COST, Texts.t("soin"),
+			"%s %s" % [StatMod.percentage(cast.self_heal * 100.0), Texts.t("PV/s")], FULL
 		))
 
 	if cast.base_damage > 0.0:
@@ -866,6 +881,24 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		out.append(SheetLine.new(
 			Group.DAMAGE, Texts.t(StatMod.LABELS["crit_multiplier"]),
 			StatMod.format("crit_multiplier", cast.crit_multiplier), UiPalette.TEXT
+		))
+
+	# Ce que ce lancer accroît à la chance de poser son état, **et ce que ça donne sur
+	# cette fiche-là** : sans le second nombre, « +50 % » n'a pas de point de départ.
+	# Les accrus du porteur y sont, comme au coup (`StatusEffects.suffer()`).
+	var state_kind := StatusEffects.NATURES.find(skill.nature)
+	var chance_stat: String = StatusEffects.CHANCE_STATS[state_kind] if state_kind >= 0 else ""
+	if cast.status_chance_increase > 0.0 and not chance_stat.is_empty():
+		var worn_factor := _player.states.chance_factors[state_kind]
+		out.append(SheetLine.new(
+			Group.DAMAGE, Texts.t(StatMod.LABELS[chance_stat]),
+			"%s · %s" % [
+				StatMod.percentage(cast.status_chance_increase, true),
+				StatMod.percentage(100.0 * StatusEffects.CHANCE * (
+					worn_factor + cast.status_chance_increase * 0.01
+				))
+			],
+			StatusEffects.color(state_kind)
 		))
 
 	if projectile:

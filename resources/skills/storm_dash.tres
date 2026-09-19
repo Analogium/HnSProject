@@ -25,6 +25,7 @@ description = "Une ruée au point visé, murs traversés, qui presse le pas."
 nature = 3
 cadence = 1
 shape = 10
+cast_time = 0.35
 cooldown = 2.00
 mana_cost = 10.0
 duration = 2.0

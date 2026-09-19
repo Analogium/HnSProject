@@ -26,7 +26,7 @@ const LABELS := {
 	"res_lightning": "rés. foudre",
 	"res_necrotic": "rés. nécrotique",
 	"res_holy": "rés. sacré",
-	"attack_cooldown": "temps de recharge",
+	"attack_time": "temps d'attaque",
 	"attack_speed": "vitesse d'attaque",
 	"cast_speed": "vitesse d'incantation",
 	"attack_range": "allonge",
@@ -34,6 +34,9 @@ const LABELS := {
 	"crit_multiplier": "dégâts critiques",
 	"ignite_chance": "chance d'embraser",
 	"static_charge_chance": "chance de charge statique",
+	"chill_chance": "chance de transir",
+	"cooldown_recovery": "récupération de recharge",
+	"damage_taken": "dégâts subis",
 	"move_speed": "vitesse",
 }
 
@@ -54,7 +57,7 @@ const AGREEMENT := {
 	"res_lightning": "fs",
 	"res_necrotic": "fs",
 	"res_holy": "fs",
-	"attack_cooldown": "ms",
+	"attack_time": "ms",
 	"attack_speed": "fs",
 	"cast_speed": "fs",
 	"attack_range": "fs",
@@ -62,6 +65,9 @@ const AGREEMENT := {
 	"crit_multiplier": "mp",
 	"ignite_chance": "fs",
 	"static_charge_chance": "fs",
+	"chill_chance": "fs",
+	"cooldown_recovery": "fs",
+	"damage_taken": "mp",
 	"move_speed": "fs",
 }
 
@@ -85,7 +91,7 @@ const SCALED := [
 ## qui comptent de la même façon sans être des résistances.
 static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	func(field: String) -> bool: return not field.is_empty()
-) + ["ignite_chance", "static_charge_chance"]
+) + ["ignite_chance", "static_charge_chance", "chill_chance", "damage_taken", "cooldown_recovery"]
 
 var stat: String
 var mode: Mode

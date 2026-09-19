@@ -51,6 +51,12 @@ const AGAINST := [
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := ["embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant"]
 
+## Le champ de `CharacterStats` qui **accroît** la chance de chaque sorte, ou vide.
+## Une chance n'arrive que quand une compétence la demande : l'embrasement au jalon 20,
+## le gel au jalon 21. **Le seul endroit** qui lie une sorte à sa statistique — le
+## porteur y écrit ses facteurs, la page du manuel y lit son libellé.
+const CHANCE_STATS := ["ignite_chance", "", "chill_chance", "", "", ""]
+
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
 const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0]
@@ -115,10 +121,11 @@ class Pack:
 		return to_show
 
 
-## Ce que ce corps **inflige en plus** d'embrasements, écrit par son porteur
+## Ce que ce corps **inflige en plus** d'états, **par sorte**, écrit par son porteur
 ## (`Player.recompute_stats()`) et **jamais par `_recompute()`**, qui ne lit que les
-## états portés. 1 : la chance de base.
-var ignite_chance_factor := 1.0
+## états portés. 1 : la chance de base. Un tableau et non un champ par sorte : la
+## deuxième chance (le gel, jalon 21) aurait fait une seconde exception de la première.
+var chance_factors := neutral_factors()
 
 ## Recalculés quand les états changent et lus comme des champs : l'EnemyManager les
 ## lit pour chaque ennemi à chaque image. En lecture seule de fait.
@@ -139,6 +146,14 @@ static func of(wearer: Object) -> StatusEffects:
 	if not is_instance_valid(wearer):
 		return null
 	return wearer.get("states") as StatusEffects
+
+
+## Un facteur neutre par sorte, de la taille de l'enum.
+static func neutral_factors() -> Array[float]:
+	var out: Array[float] = []
+	out.resize(Kind.size())
+	out.fill(1.0)
+	return out
 
 
 static func name(kind: int) -> String:
@@ -180,19 +195,26 @@ func kinds() -> Array[int]:
 ## Sur les parts **après** défenses. **Un tirage par nature présente, quel que soit le
 ## résultat** (invariant 3).
 ## `max_hp` à zéro : pas de bonus, faute de PV connus.
-func suffer(parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0) -> void:
+## `cast_increase` est ce que le lancer **accroît** à sa chance, en points de
+## pourcentage : une nova de glace transit mieux qu'un coup de froid ordinaire.
+func suffer(
+	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
+	cast_increase := 0.0
+) -> void:
 	var total := 0.0
 	for part in parts:
 		total += part
 	if total <= 0.0:
 		return
-	# Le facteur de l'auteur et non de la victime : c'est lui qui embrase mieux.
-	var better := author.ignite_chance_factor if author != null else 1.0
+	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux. Celui
+	# du lancer s'y **ajoute** avant de multiplier la chance de base — la règle de tous
+	# les accrus du jeu (`StatMod`), et non deux multiplications à la suite.
+	var better := author.chance_factors if author != null else neutral_factors()
 	for kind in NATURES.size():
 		var part: float = parts[NATURES[kind]]
 		if part <= 0.0:
 			continue
-		if rng.randf() < chance(part, total, max_hp, better if kind == Kind.IGNITE else 1.0):
+		if rng.randf() < chance(part, total, max_hp, better[kind] + cast_increase * 0.01):
 			put(kind, part, author)
 
 

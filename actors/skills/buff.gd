@@ -9,6 +9,9 @@ extends Node2D
 ## éteint ce qu'il enseignait.
 
 const HALO := 9.0
+## Le demi-côté du bloc de glace, en pixels : il couvre le corps sans mordre sur ses
+## voisins.
+const BLOCK := 11.0
 const MOTES := 6
 const RISE := 14.0
 
@@ -61,16 +64,22 @@ func _physics_process(delta: float) -> void:
 		_player.extinguish(_skill.id)
 		return
 	# Le mana épuisé éteint ; les PV épuisés tuent (`Player.burn()`, mortelle).
-	if not _player.drain(_skill.self_mana_burn, delta):
+	if not _player.drain(_skill.mana_per_second, delta):
 		_player.extinguish(_skill.id)
 		return
 	queue_redraw()
+	_player.mend(_skill.self_heal, delta)
+	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff.
 	_player.burn(_skill.self_burn, _distribution, delta)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.
+## Sauf celui qui enferme : on ne bouge plus, et rien d'autre ne le dirait.
 func _draw() -> void:
 	var tint: Color = DamageType.COLORS[_skill.nature]
+	if _skill.binds_caster:
+		_tomb(tint)
+		return
 	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
 	draw_arc(Vector2.ZERO, HALO, 0.0, TAU, 24, Color(tint, 0.10 + 0.10 * pulse), 1.0)
 	for i in MOTES:
@@ -78,3 +87,13 @@ func _draw() -> void:
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
 		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
 		draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
+
+
+## Le bloc de glace : six pans autour du porteur, cerclés de clair. Un disque plein
+## l'aurait caché ; les pans laissent voir qu'il y a quelqu'un dedans.
+func _tomb(tint: Color) -> void:
+	var pans := PackedVector2Array()
+	for i in 6:
+		pans.append(Vector2.from_angle(TAU * float(i) / 6.0 - PI * 0.5) * Vector2(BLOCK, BLOCK * 1.3))
+	draw_colored_polygon(pans, Color(tint, 0.22))
+	draw_polyline(pans + PackedVector2Array([pans[0]]), Color(tint.lerp(Color.WHITE, 0.6), 0.9), 1.0)

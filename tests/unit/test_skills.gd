@@ -157,11 +157,12 @@ func test_cadence_gives_spell_or_attack() -> void:
 	assert_false(c.worn(Keywords.SPELL))
 
 
-## Aucun modificateur ne vise le froid : une compétence de froid ne doit donc pas
-## l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
+## Aucun modificateur ne vise le nécrotique : une compétence nécrotique ne doit donc
+## pas l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
+## C'était le froid jusqu'au manuel du froid, qui est arrivé avec ses deux affixes.
 func test_a_nature_nothing_targets_gives_no_keyword() -> void:
 	var c := _skill([1.0] as Array[float])
-	c.nature = DamageType.Kind.COLD
+	c.nature = DamageType.Kind.NECROTIC
 	assert_eq(Array(c.keywords()), [Keywords.SPELL])
 
 
@@ -189,17 +190,22 @@ func test_the_shape_gives_projectile() -> void:
 func test_each_shape_has_the_numbers_it_needs() -> void:
 	for c: Skill in SkillCatalog.ALL:
 		var lasts := c.shape in [
-			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH
+			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH,
+			Skill.Shape.WAVE, Skill.Shape.VORTEX
 		]
 		var covers := c.shape in [
-			Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA, Skill.Shape.DASH
+			Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA, Skill.Shape.DASH,
+			Skill.Shape.WAVE, Skill.Shape.CYCLONE, Skill.Shape.SPIKES, Skill.Shape.NOVA,
+			Skill.Shape.VORTEX
 		]
 		# Une ruée sans table de dégâts ne laisse **rien au sol** : sa durée est celle du
 		# buff qu'elle donne, et elle n'a ni rayon ni période.
 		var strikes := not c.damage_per_point.is_empty()
 		if lasts:
 			assert_gt(c.duration, 0.0, "« %s » : une durée" % c.name)
-		if (lasts and strikes) or c.shape == Skill.Shape.AURA:
+		# La vague mord **une fois par corps** sur toute sa course : aucune période à
+		# annoncer, c'est sa vie entière qui en tient lieu.
+		if (lasts and strikes and c.shape != Skill.Shape.WAVE) or c.shape == Skill.Shape.AURA:
 			assert_gt(c.period, 0.0, "« %s » : une période" % c.name)
 		if covers and strikes:
 			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
@@ -210,7 +216,14 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 		if c.shape == Skill.Shape.AURA:
 			assert_gt(c.self_burn, 0.0, "« %s » : son prix" % c.name)
 		if c.shape == Skill.Shape.BUFF:
-			assert_gt(c.self_burn + c.self_mana_burn, 0.0, "« %s » : son prix" % c.name)
+			assert_gt(c.self_burn + c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
+		# Le cyclone se paie à la seconde comme l'aura, et frappe à la période comme elle.
+		if c.shape == Skill.Shape.CYCLONE:
+			assert_gt(c.self_burn + c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
+			assert_gt(c.period, 0.0, "« %s » : une période" % c.name)
+		# La vague avance : sans vitesse, elle mourrait sur le bras de qui la lance.
+		if c.shape == Skill.Shape.WAVE:
+			assert_gt(c.projectile_speed, 0.0, "« %s » : une vitesse" % c.name)
 
 
 ## Une compétence sans table de dégâts — un buff — ne se lit pas sur ses dégâts : elle
@@ -301,6 +314,71 @@ func test_without_modifier_resolution_returns_the_sheet() -> void:
 		assert_eq(r.projectile_speed, c.projectile_speed, "« %s » : vitesse" % c.name)
 		assert_eq(r.mana_cost, c.mana_cost, "« %s » : coût" % c.name)
 		assert_eq(r.interval, c.interval(sheet), "« %s » : intervalle" % c.name)
+
+
+# --------------------------------------------------------------------------
+# Le geste et la recharge (jalon 22)
+# --------------------------------------------------------------------------
+
+## **La règle du jalon** : la cadence du lanceur raccourcit le geste, et **jamais** la
+## recharge. Une ruée de quatre secondes ne part pas plus vite parce qu'on incante vite.
+func test_casting_speed_shortens_the_gesture_and_never_the_cooldown() -> void:
+	var dash := SkillCatalog.by_id("flame_dash")
+	var sheet := CharacterStats.new()
+	var quick := CharacterStats.new()
+	quick.cast_speed = 2.0
+
+	assert_almost_eq(dash.use_time(quick), dash.use_time(sheet) * 0.5, 1e-6, "le geste, oui")
+	assert_eq(dash.recharge(quick), dash.recharge(sheet), "la recharge, non")
+	assert_eq(dash.interval(quick), dash.cooldown, "donc la case attend toujours autant")
+
+
+## Et la récupération fait l'inverse : elle ne touche qu'à la recharge.
+func test_recovery_shortens_only_the_cooldown() -> void:
+	var dash := SkillCatalog.by_id("flame_dash")
+	var sheet := CharacterStats.new()
+	var rested := CharacterStats.new()
+	rested.cooldown_recovery = 100.0
+
+	assert_almost_eq(dash.recharge(rested), dash.cooldown * 0.5, 1e-6, "deux fois plus vite")
+	assert_eq(dash.use_time(rested), dash.use_time(sheet), "le geste ne bouge pas")
+	# Bornée : une récupération de −100 % figerait la compétence pour toujours.
+	var cursed := CharacterStats.new()
+	cursed.cooldown_recovery = -500.0
+	assert_almost_eq(dash.recharge(cursed), dash.cooldown * 10.0, 1e-6, "au pire dix fois")
+
+
+## Ce que la case attend est **le plus long des deux** : les deux courent ensemble
+## depuis le lancer, comme dans PoE.
+func test_the_slot_waits_for_the_longer_of_the_two() -> void:
+	var c := _skill([10.0] as Array[float])
+	c.cadence = Skill.Cadence.CAST
+	var sheet := CharacterStats.new()
+
+	c.cast_time = 1.0
+	c.cooldown = 0.0
+	assert_almost_eq(c.interval(sheet), 1.0, 1e-6, "sans recharge, le geste seul")
+	c.cooldown = 3.0
+	assert_almost_eq(c.interval(sheet), 3.0, 1e-6, "la recharge prend le dessus")
+	c.cast_time = 4.0
+	assert_almost_eq(c.interval(sheet), 4.0, 1e-6, "et le geste la reprend quand il est plus long")
+	assert_almost_eq(
+		c.resolve(1, sheet).interval, 4.0, 1e-6, "le lancer résolu dit la même chose"
+	)
+
+
+## Un geste d'arme lit son temps sur l'arme : un `cast_time` posé dessus serait un
+## nombre que personne ne lit. Un sort, lui, veut l'un ou l'autre — sans rien, sa case
+## repartirait à chaque image.
+func test_each_skill_declares_the_pace_its_cadence_reads() -> void:
+	for c: Skill in SkillCatalog.ALL:
+		if c.cadence == Skill.Cadence.WEAPON:
+			assert_eq(c.cast_time, 0.0, "« %s » : son temps vient de l'arme" % c.name)
+		else:
+			assert_gt(
+				c.cast_time + c.cooldown, 0.0,
+				"« %s » : sans geste ni recharge, sa case repart à chaque image" % c.name
+			)
 
 
 func _shape(shape: Skill.Shape) -> Skill:
@@ -596,10 +674,10 @@ func test_a_cast_estimate_is_the_average_of_its_projectiles() -> void:
 	r.place_the_base(DamageType.Kind.LIGHTNING, 10.0)
 	r.add_to(DamageType.Kind.COLD, 2.0, 6.0)
 	r.projectiles = 3.0
-	r.interval = 0.5
+	r.use_time = 0.5
 	assert_almost_eq(r.average_per_cast(), 42.0, 1e-4, "14 en moyenne, trois fois")
 	assert_almost_eq(r.average_per_second(), 84.0, 1e-4, "deux lancers par seconde")
-	r.interval = 0.0
+	r.use_time = 0.0
 	assert_eq(r.average_per_second(), 0.0, "sans intervalle, pas d'infini")
 
 

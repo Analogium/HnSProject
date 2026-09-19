@@ -363,13 +363,14 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `name` | Ce que le joueur lit ; se change librement |
    | `description` | Ce qu'elle **fait**, en une phrase, pour la fiche de survol : le geste, jamais ses nombres. **Deux lignes au plus** — environ soixante-cinq signes —, sinon la fiche déborde du cadrage |
    | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
-   | `cadence` / `cooldown` | `WEAPON` suit la fiche (`attack_cooldown`) ; `CAST` suit `cooldown` divisée par `cast_speed` |
+   | `cadence` / `cast_time` | Le **temps du geste**. `WEAPON` le lit sur l'arme (`attack_time` / `attack_speed`) et ignore `cast_time` ; `CAST` prend `cast_time` divisé par `cast_speed`. Un sort sans `cast_time` **ni** `cooldown` repartirait à chaque image, et `test_each_skill_declares_the_pace_its_cadence_reads` le refuse |
+   | `cooldown` | **La recharge, et rien d'autre** : un délai propre à la compétence que **ni la vitesse d'attaque ni celle d'incantation ne touchent** — seule `CharacterStats.cooldown_recovery` la raccourcit. Zéro pour la plupart des sorts ; non nulle pour ce qu'on ne doit pas enchaîner (une ruée, un vortex) et pour l'anti-rebond d'un geste entretenu. La case attend **le plus long des deux** |
    | `mana_cost` | 0 pour un geste gratuit |
    | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus. **Vide pour ce qui ne frappe pas** — un buff, un déplacement —, et la fiche n'annonce alors ni dégâts, ni forme, ni moyenne |
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
    | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`. `BOLT` et `BALL` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`. `BOLT` et `BALL` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -378,7 +379,10 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `radius` | Une boule (son explosion), un nuage, une aura |
    | `simultaneous` | Une orbite : combien à la fois. Zéro, sans limite |
    | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
-   | `self_mana_burn` | Un buff : la part du mana max qu'il draine par seconde. La réserve vide **l'éteint** |
+   | `mana_per_second` | Un buff, un cyclone : le mana drainé par seconde, **à plat**. La réserve vide **l'éteint** |
+   | `self_heal` | Ce qu'un geste entretenu **rend** par seconde, en part des PV max. Le pendant de `self_burn`, et sans mitigation : un soin ne se résiste pas |
+   | `status_chance_increase` | Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage — +50 sur la Nova de glace, qui fait passer 20 % à 30 %. Il s'additionne aux accrus du porteur. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa voisine. La fiche le montre **avec ce qu'il donne**, et seulement si la sorte a sa statistique dans `StatusEffects.CHANCE_STATS` |
+   | `binds_caster` | Ce geste enferme-t-il son lanceur : rien d'autre ne part, on ne bouge plus, et seule son extinction reste permise |
    | `required_manual_level` | À partir de quand la case accepte son premier point |
 
 2. **`core/skill_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
@@ -407,6 +411,10 @@ une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. **Un b
 (`BUFF`) veut un drain — PV ou mana — et au moins un `SkillBuff` : il n'a pas de dégâts,
 donc ni arbre de talents utile, ni « moyenne par lancer ». Les buffs d'un lancer
 s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence.
+
+**Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Player._is_sustained()` en
+décide, la case s'allume et s'éteint sur la même touche, et `SkillStats.sustained`
+retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
@@ -636,8 +644,9 @@ Un manuel est **une base d'objet** de plus, plus un archétype.
    relève.
 3. **Son propre `kind`**, et un cas dans `SpriteForge._gear()` plus son entrée
    dans `GEAR` : tous les manuels ont le même palier, donc les mêmes couleurs, et
-   c'est la **silhouette** qui doit les séparer dans un sac. Trois livres au même
-   dessin sont trois objets qu'on ne distingue qu'en les survolant.
+   c'est la **silhouette** qui doit les séparer dans un sac. Quatre livres au même
+   dessin sont quatre objets qu'on ne distingue qu'en les survolant. Les quatre
+   d'aujourd'hui : une pile couchée, un livre ouvert en V, un rouleau, un livre debout.
 4. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
 5. **Vérifier le budget** : `docs/CATALOGUE.md` donne, pour chaque manuel, le
    nombre de destinations de points contre les vingt qu'un livre gagne. En

@@ -117,6 +117,9 @@ var _is_swinging := false
 ## buffs. Leurs nœuds vivent sous le joueur ; le dictionnaire dit lequel répond à
 ## quelle case.
 var _lit := {}
+## L'identifiant du geste entretenu qui enferme son lanceur, ou vide. Tenu à jour à
+## l'allumage plutôt que relu à chaque image : il est lu par le déplacement.
+var _bound := ""
 var _crown: BladeCrown
 ## Ce que la brûlure d'Immolation a pris depuis le dernier chiffre affiché.
 var _burn_to_show := StatusEffects.Pack.new()
@@ -169,6 +172,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non.
+	if not _bound.is_empty():
+		input = Vector2.ZERO
 
 	if _aim_with_mouse:
 		var to_mouse := get_global_mouse_position() - global_position
@@ -228,7 +234,10 @@ func cast_slot(index: int) -> bool:
 			extinguish(skill.id)
 			_recharges[index] = cast.interval
 			return true
-	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre ce qui brûle.
+	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre ce qui brûle,
+	# et le tombeau de glace ne laisse partir que lui-même.
+	if not _bound.is_empty() and skill.id != _bound:
+		return false
 	if not skill.usable_with(_weapon_base()):
 		return false
 	if mana < cast.mana_cost:
@@ -257,9 +266,26 @@ func cast_slot(index: int) -> bool:
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
-			_light(skill.id, Buff.light(self, skill))
+			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie.
+			_light(skill.id, Buff.light(self, skill, cast.duration))
+		Skill.Shape.CYCLONE:
+			_light(skill.id, Cyclone.spin(self, skill))
 		Skill.Shape.DASH:
 			_dash(skill, cast)
+		Skill.Shape.WAVE:
+			_swing(cast)
+			SlashWave.send(_effects_parent(), global_position, facing, cast, states)
+		Skill.Shape.SPIKES:
+			IceSpikes.raise_at(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.NOVA:
+			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
+			# cercle et s'efface, ce qu'une nova fait exactement.
+			Explosion.put(
+				_effects_parent(), global_position, cast.roll(Game.rng), cast.radius, null,
+				DamageType.COLORS[cast.dominant_nature()], states, cast
+			)
+		Skill.Shape.VORTEX:
+			IceVortex.open(_effects_parent(), global_position, cast, states)
 		Skill.Shape.ORBIT:
 			_blade_crown().add_to(cast)
 		Skill.Shape.STRIKE:
@@ -309,7 +335,7 @@ func _light(skill_id: String, node: Node) -> void:
 
 
 static func _is_sustained(shape: Skill.Shape) -> bool:
-	return shape == Skill.Shape.AURA or shape == Skill.Shape.BUFF
+	return shape in [Skill.Shape.AURA, Skill.Shape.BUFF, Skill.Shape.CYCLONE]
 
 
 ## Combien d'épées tournent autour du personnage.
@@ -336,12 +362,20 @@ func burn(part_per_second: float, distribution: Array[float], delta: float) -> v
 		_die()
 
 
-## Ce qu'un buff prend à la réserve cette image-ci. Faux quand elle est vide : le buff
-## s'éteint, là où la brûlure des PV tue. Aucun drain demandé, rien à payer.
-func drain(part_per_second: float, delta: float) -> bool:
-	if part_per_second <= 0.0:
+## Ce qu'un geste entretenu **rend** cette image-ci, en part des PV max : le pendant de
+## `burn()`, sans mitigation — un soin ne se résiste pas.
+func mend(part_per_second: float, delta: float) -> void:
+	if part_per_second > 0.0:
+		_heal(stats.max_health * part_per_second * delta)
+
+
+## Ce qu'un geste entretenu prend à la réserve cette image-ci, **à plat**. Faux quand
+## elle est vide : le geste s'éteint, là où la brûlure des PV tue. Aucun drain demandé,
+## rien à payer.
+func drain(mana_per_second: float, delta: float) -> bool:
+	if mana_per_second <= 0.0:
 		return true
-	var cost := stats.max_mana * part_per_second * delta
+	var cost := mana_per_second * delta
 	if mana < cost:
 		return false
 	_set_mana(mana - cost)
@@ -631,7 +665,10 @@ func recompute_stats() -> void:
 
 	# Ce que le joueur inflige en plus voyage avec ses états : c'est le seul attribut de
 	# l'attaquant qui arrive jusqu'à la hurtbox de la cible.
-	states.ignite_chance_factor = 1.0 + stats.ignite_chance * 0.01
+	for kind in StatusEffects.CHANCE_STATS.size():
+		var field: String = StatusEffects.CHANCE_STATS[kind]
+		if not field.is_empty():
+			states.chance_factors[kind] = 1.0 + float(stats.get(field)) * 0.01
 
 	# Réassignée : la hurtbox défendrait sinon avec l'ancienne fiche.
 	hurtbox.stats = stats
@@ -670,6 +707,10 @@ func lit_ratio(skill_id: String) -> float:
 
 ## Les plafonds ont pu bouger avec les lignes du buff, comme à un changement d'objet.
 func _after_buff_change() -> void:
+	_bound = ""
+	for skill in lit_skills():
+		if skill.binds_caster:
+			_bound = skill.id
 	recompute_stats()
 	_set_health(health)
 	_set_mana(mana)

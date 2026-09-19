@@ -8,7 +8,7 @@ extends RefCounted
 ## Ce qu'un modificateur peut viser, et son nom à l'écran — en plus des dégâts
 ## ajoutés `damage_<nature>`. `damage` ne se vise qu'en pourcentage et multiplie
 ## toutes les parts. Ni coût ni intervalle (la réserve et les vitesses ont leur voie),
-## ni `period` ni `self_burn` (voir `Skill`).
+## ni `period`, `self_burn` ou `status_chance_increase` (voir `Skill`).
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -69,13 +69,25 @@ var duration := 0.0
 var radius := 0.0
 var period := 0.0
 var self_burn := 0.0
-var self_mana_burn := 0.0
+var mana_per_second := 0.0
+var self_heal := 0.0
+## Ce que ce lancer accroît à la chance de poser son état, en points de pourcentage.
+var status_chance_increase := 0.0
 ## Les coups d'un geste, que la forme décide.
 var hits := 1
-## Vrai pour ce qui n'a pas de fin, l'aura : pas de « par lancer ».
+## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
 var sustained := false
 var mana_cost := 0.0
-var interval := 0.0
+## Le temps du geste et la recharge, séparés parce que **rien ne les change ensemble** :
+## la cadence du lanceur agit sur le premier, la récupération sur la seconde.
+var use_time := 0.0
+var recharge := 0.0
+
+## Ce que la case attend : le plus long des deux, calculé et jamais rangé — une seule
+## vérité (`Skill.interval()` dit la même chose avant résolution).
+var interval: float:
+	get:
+		return maxf(use_time, recharge)
 ## Tirés à chaque coup par `DamageInfo.roll()`. Le multiplicateur est celui de la fiche.
 var crit_chance := 0.0
 var crit_multiplier := 1.0

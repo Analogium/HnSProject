@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/ice_spike.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "ice_spike"
+name = "Pics de glace"
+description = "Des pics percent le sol au point visé, puis retombent."
+nature = 1
+cadence = 1
+shape = 14
+cast_time = 0.70
+mana_cost = 14.0
+radius = 26.0
+damage_per_point = Array[float]([10.0, 13.0, 16.0, 20.0, 25.0])
+required_manual_level = 1
+icon = ExtResource("2_icone")

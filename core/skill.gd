@@ -16,8 +16,9 @@ extends Resource
 ## La nature du coup : la résistance qui s'y oppose et sa couleur.
 @export var nature: DamageType.Kind = DamageType.Kind.PHYSICAL
 
-## `WEAPON` : l'intervalle vient de la fiche (`attack_cooldown` / `attack_speed`), et
-## `cooldown` est ignorée. `CAST` : `cooldown` / `cast_speed`.
+## Ce qui décide du **temps du geste** : `WEAPON` le prend sur l'arme
+## (`CharacterStats.attack_interval()`) et ignore `cast_time` ; `CAST` prend `cast_time`
+## divisé par `cast_speed`. La **recharge** ne dépend d'aucune des deux.
 enum Cadence { WEAPON, CAST }
 
 @export var cadence: Cadence = Cadence.CAST
@@ -25,7 +26,10 @@ enum Cadence { WEAPON, CAST }
 ## Ce que le lancer pose dans le monde, comportement et dessin ensemble — `STRIKE`
 ## ne diffère d'`ARC` que par le dessin. Aucun nœud ne la change.
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
-enum Shape { ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF }
+enum Shape {
+	ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF,
+	WAVE, CYCLONE, SPIKES, NOVA, VORTEX,
+}
 
 @export var shape: Shape = Shape.ARC
 
@@ -43,6 +47,7 @@ const KEYWORD_OF_CADENCE := {
 const KEYWORD_OF_NATURE := {
 	DamageType.Kind.FIRE: Keywords.FIRE,
 	DamageType.Kind.LIGHTNING: Keywords.LIGHTNING,
+	DamageType.Kind.COLD: Keywords.COLD,
 }
 const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
@@ -54,6 +59,13 @@ const KEYWORD_OF_SHAPE := {
 	Shape.AURA: Keywords.AREA,
 	Shape.SNAKE: Keywords.AREA,
 	Shape.DASH: Keywords.AREA,
+	# La vague part de la lame et le cyclone tourne sur place : deux gestes d'arme,
+	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
+	Shape.WAVE: Keywords.MELEE,
+	Shape.CYCLONE: Keywords.MELEE,
+	Shape.SPIKES: Keywords.AREA,
+	Shape.NOVA: Keywords.AREA,
+	Shape.VORTEX: Keywords.AREA,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -65,7 +77,16 @@ const HITS_PER_SHAPE := {
 	Shape.CROSS: 2,
 }
 
-## En secondes, avant `cast_speed`. Ignorée à la cadence de l'arme.
+## Le temps que prend le geste, en secondes, avant `cast_speed`. Ignoré à la cadence de
+## l'arme, qui le lit sur l'arme. Zéro pour ce qui part sans délai — un geste entretenu
+## qu'on allume —, et c'est alors la recharge seule qui borne la cadence.
+@export var cast_time: float = 0.0
+
+## **La recharge, et rien d'autre** : un délai propre à la compétence, en secondes, que
+## ni la vitesse d'attaque ni celle d'incantation ne touchent — seule
+## `CharacterStats.cooldown_recovery` la raccourcit. Zéro pour la plupart des sorts, qui
+## ne sont bornés que par leur temps d'incantation ; non nulle pour ce qu'on ne doit pas
+## enchaîner — une ruée, un vortex — et pour l'anti-rebond d'un geste entretenu.
 @export var cooldown: float = 0.0
 
 ## Nombre de traits et écart total en degrés : 1 et 0 pour un trait, 8 et 360 pour
@@ -95,13 +116,29 @@ const HITS_PER_SHAPE := {
 ## La part des PV max qu'une aura brûle au lanceur, par seconde. Hors de portée des
 ## nœuds : réduite à zéro, elle ferait de l'aura un sort sans prix.
 @export var self_burn: float = 0.0
-## La part du mana max qu'un buff draine par seconde. Épuisé, il s'éteint — là où les
-## PV épuisés tuent.
-@export var self_mana_burn: float = 0.0
+## Le mana qu'un geste entretenu draine **par seconde, à plat** — et non en part de la
+## réserve : un prix qu'on lit sur la jauge sans calcul. Épuisée, elle l'éteint — là où
+## les PV épuisés tuent.
+@export var mana_per_second: float = 0.0
 
 ## La part des PV max du lanceur qui s'ajoute aux dégâts propres, **par coup**. Zéro
 ## pour tout ce qui ne s'adosse pas à la vie de celui qui lance.
 @export var health_scaling: float = 0.0
+
+## La part des PV max qu'un geste entretenu **rend** à son porteur, par seconde : le
+## pendant de `self_burn`. Zéro partout ailleurs.
+@export var self_heal: float = 0.0
+
+## Ce geste enferme-t-il son lanceur : tant qu'il brûle, rien d'autre ne part et on ne
+## bouge plus. Seul le tombeau de glace le porte, et l'éteindre reste permis.
+@export var binds_caster: bool = false
+
+## Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage :
+## +50 fait passer une chance de base de 20 % à 30 %. Il s'**additionne** aux accrus du
+## porteur (`CharacterStats.chill_chance`, `ignite_chance`), comme tous les accrus du
+## jeu. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa
+## voisine, pas un réglage qu'on achète.
+@export var status_chance_increase: float = 0.0
 
 ## Ce que le lancer pose sur son lanceur : un buff nommé, ou plusieurs. Vide sur tout ce
 ## qui ne fait que frapper. Ils s'allument et s'éteignent ensemble.
@@ -127,14 +164,30 @@ const HITS_PER_SHAPE := {
 @export var icon: Texture2D
 
 
-## Borné en bas comme `CharacterStats.attack_interval()` : une vitesse nulle
-## figerait le lanceur.
-func interval(stats: CharacterStats) -> float:
+## Le temps du geste : celui de l'arme, ou l'incantation sur la cadence du lanceur.
+## Borné en bas comme `CharacterStats.attack_interval()` : une vitesse nulle figerait le
+## lanceur.
+func use_time(stats: CharacterStats) -> float:
 	if stats == null:
-		return cooldown
+		return cast_time
 	if cadence == Cadence.WEAPON:
 		return stats.attack_interval()
-	return cooldown / maxf(stats.cast_speed, 0.1)
+	return cast_time / maxf(stats.cast_speed, 0.1)
+
+
+## La recharge, que **seule** la récupération raccourcit.
+func recharge(stats: CharacterStats) -> float:
+	if cooldown <= 0.0 or stats == null:
+		return cooldown
+	return cooldown / stats.recovery_factor()
+
+
+## Ce que la case attend avant de repartir : **le plus long des deux**, parce que les
+## deux courent ensemble depuis le lancer. Une compétence sans recharge n'est bornée que
+## par son geste, et une ruée de quatre secondes ne part pas plus vite parce qu'on
+## incante vite.
+func interval(stats: CharacterStats) -> float:
+	return maxf(use_time(stats), recharge(stats))
 
 
 ## Une attaque veut une arme d'attaque, un sort une arme d'incantation.
@@ -241,11 +294,14 @@ func resolve(
 	r.period = period
 	r.simultaneous = float(simultaneous)
 	r.self_burn = self_burn
-	r.self_mana_burn = self_mana_burn
+	r.mana_per_second = mana_per_second
+	r.self_heal = self_heal
+	r.status_chance_increase = status_chance_increase
 	r.hits = HITS_PER_SHAPE.get(shape, 1)
-	r.sustained = shape == Shape.AURA or shape == Shape.BUFF
+	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
 	r.mana_cost = mana_cost
-	r.interval = interval(stats)
+	r.use_time = use_time(stats)
+	r.recharge = recharge(stats)
 	if stats != null:
 		r.crit_chance = stats.crit_chance
 		r.crit_multiplier = stats.crit_multiplier

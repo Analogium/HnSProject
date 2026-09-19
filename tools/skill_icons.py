@@ -25,9 +25,12 @@ TMPL = ("pixel art, 16-bit rpg ability icon, {subj}, centered, single subject, "
 NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic, "
        "scenery, multiple subjects, sprite sheet, grid, frame, border")
 
-# Le fond suit la nature : violet pour la foudre, cramoisi pour le feu.
+# Le fond suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour
+# le froid. Sans entree, l'ardoise du chevalier, qui n'a pas d'element.
 BACKGROUNDS = {"flame_dash": "dark crimson", "ignition": "dark crimson",
-               "storm_dash": "dark violet", "static_electricity": "dark violet"}
+               "storm_dash": "dark violet", "static_electricity": "dark violet",
+               "ice_spike": "dark blue", "ice_nova": "dark blue",
+               "frost_tomb": "dark blue", "winter_disaster": "dark blue"}
 
 # Le sujet occupe rarement plus que ce centre ; reduite entiere, la tuile noie sa
 # silhouette dans le fond.

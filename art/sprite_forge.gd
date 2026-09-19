@@ -256,6 +256,8 @@ const GEAR := [
 	# mêmes rampes de couleur — c'est la **silhouette** qui doit les séparer dans
 	# un sac, et ils n'en partagent aucune.
 	"manual_fire", "manual_weapons",
+	# Jalon 21 : le manuel du froid, le seul livre **debout**.
+	"manual_cold",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée **sans image** : depuis que
@@ -398,6 +400,16 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			# Le lien qui le ferme, en travers et non au bout : au bout, il se
 			# confondrait avec un embout.
 			c.capsule(Vector2(cx - 0.6, top + 7.4), Vector2(cx - 0.6, top + 12.6), 0.9, R_ACCENT)
+
+		"manual_cold":
+			# **Un livre debout**, vu de face. Les trois autres sont couchés — pile,
+			# livre ouvert, rouleau — et c'est la verticale seule qui le distingue à la
+			# taille d'une case ; le dos sombre sur un bord dit de quel côté il s'ouvre.
+			c.capsule(Vector2(cx + 0.4, top + 5.2), Vector2(cx + 0.4, top + 14.4), 3.6, R_METAL, 0.20)
+			c.capsule(Vector2(cx - 3.4, top + 4.4), Vector2(cx - 3.4, top + 15.2), 1.5, R_LEATHER)
+			# Le cristal au plat de la couverture, seul accent : c'est lui qui dit « livre »
+			# plutôt que « stèle ».
+			c.disc(Vector2(cx + 0.8, top + 9.6), 1.8, R_ACCENT)
 
 		"hood":
 			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare

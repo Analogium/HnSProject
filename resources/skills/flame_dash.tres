@@ -11,6 +11,7 @@ description = "Une ruée au point visé, murs traversés, qui laisse des flammes
 nature = 2
 cadence = 1
 shape = 10
+cast_time = 0.50
 cooldown = 4.00
 mana_cost = 12.0
 duration = 3.0

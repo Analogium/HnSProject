@@ -29,8 +29,9 @@ const TEXTS := {
 	"res_necrotic": "Réduit les dégâts nécrotiques, en pourcentage direct.",
 	"res_holy": "Réduit les dégâts sacrés, en pourcentage direct.",
 
-	"attack_cooldown": "Le délai de base entre deux coups, avant la vitesse d'attaque.",
+	"attack_time": "Le temps que prend un coup d'arme, avant la vitesse d'attaque.",
 	"attack_speed": "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation.",
+	"cooldown_recovery": "Raccourcit les recharges des compétences qui en ont une. **Ni la vitesse d'attaque ni celle d'incantation n'y touchent.**",
 	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque.",
 	"attack_range": "L'allonge du coup d'épée, en pixels.",
 	"crit_chance": "Celle de l'arme portée, seule à donner une base. Les bonus accrus la multiplient ensuite, compétence par compétence.",

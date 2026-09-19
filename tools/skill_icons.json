@@ -14,5 +14,29 @@
   "static_electricity": [
     "a bright electric star burst with thick jagged arcs",
     4242
+  ],
+  "wave_slash": [
+    "a huge glowing crescent slash wave of steel, thick curved blade arc",
+    4242
+  ],
+  "cyclone": [
+    "a warrior spinning fast with a big sword, circular motion trails around him",
+    1337
+  ],
+  "ice_spike": [
+    "a cluster of tall jagged ice spikes erupting from the ground",
+    4242
+  ],
+  "ice_nova": [
+    "a ring of sharp ice shards bursting outward in a circle",
+    4242
+  ],
+  "frost_tomb": [
+    "a man frozen standing inside a thick block of ice",
+    4242
+  ],
+  "winter_disaster": [
+    "a whirlpool of jagged ice shards spiraling into a dark center",
+    1337
   ]
 }

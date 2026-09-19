@@ -1,0 +1,154 @@
+[gd_resource type="Resource" script_class="ManualArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
+[ext_resource type="Script" path="res://core/passive.gd" id="5_passif"]
+[ext_resource type="Resource" path="res://resources/skills/ice_spike.tres" id="10_pics"]
+[ext_resource type="Resource" path="res://resources/skills/ice_nova.tres" id="11_nova"]
+[ext_resource type="Resource" path="res://resources/skills/frost_tomb.tres" id="12_tombeau"]
+[ext_resource type="Resource" path="res://resources/skills/winter_disaster.tres" id="13_desastre"]
+
+[sub_resource type="Resource" id="L_pics_eclats_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_pics_eclats"]
+script = ExtResource("3_noeud")
+id = "ice_spike_shards"
+name = "Éclats"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_pics_eclats_0")])
+
+[sub_resource type="Resource" id="L_pics_poussee_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_pics_poussee"]
+script = ExtResource("3_noeud")
+id = "ice_spike_upheaval"
+name = "Poussée"
+position = Vector2i(1, 0)
+parent = "ice_spike_shards"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_pics_poussee_0")])
+
+[sub_resource type="Resource" id="C_pics"]
+script = ExtResource("2_case")
+skill = ExtResource("10_pics")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_pics_eclats"), SubResource("N_pics_poussee")])
+
+[sub_resource type="Resource" id="L_nova_souffle_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_nova_souffle"]
+script = ExtResource("3_noeud")
+id = "ice_nova_breath"
+name = "Souffle"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_souffle_0")])
+
+[sub_resource type="Resource" id="L_nova_morsure_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_nova_morsure"]
+script = ExtResource("3_noeud")
+id = "ice_nova_bite"
+name = "Morsure"
+position = Vector2i(1, 0)
+parent = "ice_nova_breath"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_morsure_0")])
+
+[sub_resource type="Resource" id="C_nova"]
+script = ExtResource("2_case")
+skill = ExtResource("11_nova")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_nova_souffle"), SubResource("N_nova_morsure")])
+
+[sub_resource type="Resource" id="C_tombeau"]
+script = ExtResource("2_case")
+skill = ExtResource("12_tombeau")
+position = Vector2i(2, 0)
+
+[sub_resource type="Resource" id="L_desastre_blizzard_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_desastre_blizzard"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_blizzard"
+name = "Blizzard"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_desastre_blizzard_0")])
+
+[sub_resource type="Resource" id="L_desastre_oeil_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_desastre_oeil"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_eye"
+name = "Œil du cyclone"
+position = Vector2i(1, 0)
+parent = "winter_disaster_blizzard"
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_desastre_oeil_0")])
+
+[sub_resource type="Resource" id="C_desastre"]
+script = ExtResource("2_case")
+skill = ExtResource("13_desastre")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_desastre_blizzard"), SubResource("N_desastre_oeil")])
+
+[sub_resource type="Resource" id="L_morsure_du_gel_0"]
+script = ExtResource("4_ligne")
+stat = "chill_chance"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="P_morsure_du_gel"]
+script = ExtResource("5_passif")
+id = "frostbite"
+name = "Morsure du gel"
+required_manual_level = 2
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_morsure_du_gel_0")])
+
+[sub_resource type="Resource" id="C_morsure_du_gel"]
+script = ExtResource("2_case")
+passive = SubResource("P_morsure_du_gel")
+position = Vector2i(0, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "cold"
+name = "Maître du froid"
+cells = Array[ExtResource("2_case")]([SubResource("C_pics"), SubResource("C_nova"), SubResource("C_tombeau"), SubResource("C_desastre"), SubResource("C_morsure_du_gel")])

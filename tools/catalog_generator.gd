@@ -115,7 +115,7 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 	var budget := 0
 	l.append("### %s — `%s`" % [arch.name, base.id])
 	l.append("")
-	l.append("| case | sorte | ouvre à | points | coût | recharge | forme | par point |")
+	l.append("| case | sorte | ouvre à | points | coût | cadence | forme | par point |")
 	l.append("|---|---|---|---|---|---|---|---|")
 	for cell: ManualCell in arch.cells:
 		budget += cell.points_max()
@@ -144,7 +144,7 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 			c.required_manual_level,
 			c.points_max(),
 			roundi(c.mana_cost),
-			"cadence de l'arme" if c.cadence == Skill.Cadence.WEAPON else "%.2f s" % c.cooldown,
+			_pace(c),
 			_shape(c),
 			" · ".join(table),
 		])
@@ -208,6 +208,18 @@ func _per_point(lines: Array[TalentLine]) -> String:
 	return " · ".join(out) if out.size() > 0 else "—"
 
 
+## Le temps du geste et la recharge : deux nombres que rien ne change ensemble.
+func _pace(c: Skill) -> String:
+	var out := PackedStringArray()
+	if c.cadence == Skill.Cadence.WEAPON:
+		out.append("cadence de l'arme")
+	elif c.cast_time > 0.0:
+		out.append("%.2f s" % c.cast_time)
+	if c.cooldown > 0.0:
+		out.append("recharge %.2f s" % c.cooldown)
+	return " · ".join(out) if out.size() > 0 else "—"
+
+
 ## La forme et les nombres qui la décrivent : « trait ×8 sur 360° », « nuage 3 s,
 ## rayon 34 ». Ce qui vaut sa valeur par défaut ne s'écrit pas.
 func _shape(c: Skill) -> String:
@@ -226,6 +238,14 @@ func _shape(c: Skill) -> String:
 		out.append("%d au plus" % c.simultaneous)
 	if c.self_burn > 0.0:
 		out.append("brûle %d %% PV/s" % roundi(c.self_burn * 100.0))
+	# Les deux autres prix d'un geste entretenu. Absents jusqu'au jalon 21, où le
+	# cyclone se paie **entièrement** au drain : la table l'aurait donné gratuit.
+	if c.mana_per_second > 0.0:
+		out.append("draine %d mana/s" % roundi(c.mana_per_second))
+	if c.self_heal > 0.0:
+		out.append("rend %.1f %% PV/s" % (c.self_heal * 100.0))
+	if c.status_chance_increase > 0.0:
+		out.append("%+d %% de chance d'état" % roundi(c.status_chance_increase))
 	if c.health_scaling > 0.0:
 		out.append("adossé aux PV %.1f %%" % (c.health_scaling * 100.0))
 	return " · ".join(out)
@@ -279,13 +299,13 @@ func _affixes(l: PackedStringArray) -> void:
 
 	l.append("### Affixes d'ennemis")
 	l.append("")
-	l.append("| id | nom | PV | vitesse | dégâts | recharge | armure | vol de vie | exp |")
+	l.append("| id | nom | PV | vitesse | dégâts | temps d'attaque | armure | vol de vie | exp |")
 	l.append("|---|---|---|---|---|---|---|---|---|")
 	for raw in AffixPool.ALL:
 		var a: Affix = raw
 		l.append("| `%s` | %s | ×%.2f | ×%.2f | ×%.2f | ×%.2f | +%.0f | %.0f %% | ×%.2f |" % [
 			a.id, a.display_name, a.health_mult, a.speed_mult, a.damage_mult,
-			a.cooldown_mult, a.armor, a.lifesteal * 100.0, a.xp_mult,
+			a.attack_time_mult, a.armor, a.lifesteal * 100.0, a.xp_mult,
 		])
 	l.append("")
 	l.append("Un affixe apparaît sur %.0f %% des ennemis, deux sur %.0f %%." % [
