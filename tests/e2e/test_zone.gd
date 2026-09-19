@@ -9,9 +9,12 @@ extends GutTest
 
 const SEED := 4242
 const FRAMES := 600
-## Mesuré à la mise en place. Un écart franc signale une régression de
-## génération ; ce n'est pas une valeur à ajuster quand le test échoue.
-const EXPECTED_ENEMIES := 69
+## Mesuré, et **attaché au réglage de la carte** : 69 du temps des cavernes
+## (`fill` 0,45), 68 depuis l'arène du jalon 24 (0,37 / 6 passes). Un écart franc
+## signale une régression de génération ; ce n'est pas une valeur à ajuster quand
+## le test échoue — elle ne bouge que si `MapGenerator.DEFAULT_FILL` bouge, et
+## alors on écrit pourquoi ici.
+const EXPECTED_ENEMIES := 68
 
 var _zone: Node2D
 ## Compteur de morts. Une variable membre et non une locale capturée par la

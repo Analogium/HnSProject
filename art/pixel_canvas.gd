@@ -127,6 +127,36 @@ func disc(center: Vector2, radius: float, ramp: int, bias := 0.0) -> void:
 
 ## Pixel posé à la main, pour les détails qu'aucune forme ne donne : un œil,
 ## une boucle de ceinture, une étincelle.
+## Pose une grille dessinée à la main : une ligne par rangée, un caractère par
+## pixel, traduit en (rampe, niveau) par `legend`. Un caractère absent de la
+## légende — le point — laisse le pixel tel quel, ce qui permet d'empiler les
+## grilles.
+##
+## C'est l'autre façon de remplir ce canevas : les capsules déduisent leurs tons
+## d'un éclairage, une grille les **choisit**. Un archétype passe par l'une ou
+## par l'autre, jamais par les deux.
+func stamp(grid: Array, origin: Vector2i, legend: Dictionary) -> void:
+	var last := float(ArtPalette.LEVELS - 1)
+	for row in grid.size():
+		var line: String = grid[row]
+		var y := origin.y + row
+		if y < 0 or y >= height:
+			continue
+		for col in line.length():
+			var ink: Variant = legend.get(line[col])
+			if ink == null:
+				continue
+			var x := origin.x + col
+			if x < 0 or x >= width:
+				continue
+			var i := y * width + x
+			_ramp[i] = int(ink[0])
+			_level[i] = float(ink[1]) / last
+	# Une fois par grille et non par pixel, comme pour les capsules.
+	_touch(origin.x, origin.y)
+	_touch(origin.x + (grid[0] as String).length() - 1, origin.y + grid.size() - 1)
+
+
 func dot_px(x: int, y: int, ramp: int, level: float) -> void:
 	if x < 0 or y < 0 or x >= width or y >= height:
 		return

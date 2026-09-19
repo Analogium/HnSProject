@@ -70,7 +70,7 @@ func _draw() -> void:
 	var light_color := _tint.lerp(Color.WHITE, 0.6)
 
 	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.10 * fade))
-	draw_arc(Vector2.ZERO, _cast.radius, 0.0, TAU, 40, Color(_tint, 0.40 * fade), 1.0)
+	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.42 * fade))
 
 	draw_colored_polygon(PackedVector2Array([
 		Vector2(-width * 0.45, -HEIGHT), Vector2(width * 0.45, -HEIGHT),

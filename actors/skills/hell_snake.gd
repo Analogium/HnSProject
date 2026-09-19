@@ -139,7 +139,7 @@ func _draw() -> void:
 	# délaverait.
 	for i in range(RINGS - 1, -1, -1):
 		var k := float(i) / float(RINGS - 1)
-		draw_circle(to_local(_body[i]), lerpf(HEAD_RADIUS, TAIL_RADIUS, k) * 1.7, Color(_tint, 0.12 * fade))
+		Glow.draw_blob(self, to_local(_body[i]), lerpf(HEAD_RADIUS, TAIL_RADIUS, k) * 2.0, Color(_tint, 0.30 * fade))
 	for i in range(RINGS - 1, -1, -1):
 		var k := float(i) / float(RINGS - 1)
 		var color := head.lerp(tail, k)

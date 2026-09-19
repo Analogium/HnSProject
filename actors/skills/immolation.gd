@@ -74,14 +74,16 @@ func _draw() -> void:
 	var r := _cast.radius * minf(_age / IGNITION, 1.0)
 	var tint: Color = DamageType.COLORS[_cast.dominant_nature()]
 	var light_color := tint.lerp(LIGHT, 0.6)
-	draw_circle(Vector2.ZERO, r, Color(tint, 0.10))
-	draw_arc(Vector2.ZERO, r, 0.0, TAU, 48, Color(tint, 0.30), 1.5)
+	draw_circle(Vector2.ZERO, r, Color(tint, 0.08))
+	Glow.draw_ring(self, Vector2.ZERO, r, Color(tint, 0.34))
 
 	for i in FLAMES:
 		var foot := Vector2.from_angle(TAU * float(i) / float(FLAMES) + _age * 0.5) * r * 0.92
 		var height := 7.0 + 3.0 * sin(_age * 9.0 + float(i) * 1.7) + 2.0 * sin(_age * 13.0 + float(i) * 0.6)
 		_flame(foot, height, 2.6, Color(tint, 0.45))
-		_flame(foot, height * 0.55, 1.3, Color(light_color, 0.55))
+		# Le cœur de la flamme passe le seuil de glow : c'est la pointe qui déborde,
+		# pas le brasier entier, sinon le joueur disparaît dans sa propre aura.
+		_flame(foot, height * 0.55, 1.3, Color(tint.lerp(LIGHT, 0.9), 0.95))
 
 	for i in BRAISES:
 		var rise := fmod(_age * 0.7 + float(i) * 0.137, 1.0)

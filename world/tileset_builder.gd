@@ -3,11 +3,11 @@ class_name TilesetBuilder
 ## Construit un TileSet complet par code : atlas de tuiles peint pixel par pixel,
 ## plus la couche physique sur la seule tuile de mur.
 ##
-## Le document suppose un TileSet fabriqué dans l'éditeur à partir d'un atlas
-## dessiné. Comme le projet n'a aucun asset, on le génère — ça débloque l'étape 9
-## sans rien inventer sur la direction artistique. Le jour où de vraies tuiles
-## existent, il suffit de remplacer _atlas() par le chargement d'une texture :
-## le reste (régions, physique, variantes) ne bouge pas.
+## Deux chemins pour l'image, jamais les deux : **l'atlas de `art/tiles/`** quand
+## il existe — six tuiles de 32 px produites par `tools/tiles.py`, qui prend la
+## matière d'un rendu ComfyUI et la ramène aux valeurs du jeu — et sinon la
+## peinture procédurale ci-dessous, qui reste la référence des couleurs. Le reste
+## (régions, physique, variantes) ne dépend d'aucun des deux.
 
 const TILE := 32
 const HALF := 16.0
@@ -25,10 +25,17 @@ const WALL_EDGE_INDEX := 5
 const TILE_COUNT := 6
 
 ## Décor sombre et désaturé, pour que le loot et les effets ressortent.
-const FLOOR_BASE := Color(0.29, 0.27, 0.25)
+##
+## Le sol était à 0,29 : la **même valeur** que 95 % des pixels d'un acteur
+## (mesuré 0,316), donc un ennemi ne se détachait de son sol par rien. Il est
+## descendu d'un cran entier, et tiré vers le violet des ombres pour que le
+## décor soit d'une autre famille que ce qui marche dessus.
+const FLOOR_BASE := Color(0.21, 0.19, 0.21)
 const FLOOR_GRAIN := 0.035
-const WALL_BASE := Color(0.13, 0.12, 0.16)
-const WALL_TOP := Color(0.24, 0.23, 0.29)
+## Les murs suivent le sol vers le bas : c'est leur **écart** avec lui qui les
+## fait lire comme des trous, pas leur valeur absolue.
+const WALL_BASE := Color(0.09, 0.08, 0.12)
+const WALL_TOP := Color(0.17, 0.16, 0.22)
 
 
 static func build() -> TileSet:
@@ -42,7 +49,7 @@ static func build() -> TileSet:
 	ts.set_physics_layer_collision_mask(0, 0)
 
 	var src := TileSetAtlasSource.new()
-	src.texture = ImageTexture.create_from_image(_atlas())
+	src.texture = _texture()
 	src.texture_region_size = Vector2i(TILE, TILE)
 	ts.add_source(src, 0)
 
@@ -60,6 +67,18 @@ static func build() -> TileSet:
 		]))
 
 	return ts
+
+
+## L'atlas produit hors du jeu s'il est là, le dessin sinon. Même partage que les
+## grilles de `SpriteForge.ART` : une image qu'on peut juger une fois est un
+## fichier, ce qui s'anime reste du code.
+const ATLAS_PATH := "res://art/tiles/atlas.png"
+
+
+static func _texture() -> Texture2D:
+	if ResourceLoader.exists(ATLAS_PATH):
+		return load(ATLAS_PATH)
+	return ImageTexture.create_from_image(_atlas())
 
 
 ## Atlas d'une seule rangée : 4 sols puis 1 mur.

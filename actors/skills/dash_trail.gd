@@ -89,8 +89,15 @@ func _draw() -> void:
 	var wide := _cast.radius * 0.5
 	draw_line(Vector2.ZERO, last, Color(_tint, 0.10 * fade), _cast.radius * 2.0)
 	draw_line(Vector2.ZERO, last, Color(_tint, 0.35 * fade), 2.0)
-	draw_circle(Vector2.ZERO, wide, Color(_tint, 0.12 * fade))
-	draw_circle(last, wide, Color(_tint, 0.12 * fade))
+	Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
+	Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
+
+	# Un arc qui court le long du couloir, refait deux fois par dixième de seconde :
+	# c'est lui qui dit que la traînée est électrique et pas juste lumineuse. Il ne
+	# frappe rien — la morsure, c'est le couloir, pas le dessin.
+	if _cast.dominant_nature() == DamageType.Kind.LIGHTNING:
+		_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
+		Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
 
 	# Les langues montent vers le haut de l'écran, comme celles d'Immolation : une
 	# traînée vue de dessus brûle vers le ciel.

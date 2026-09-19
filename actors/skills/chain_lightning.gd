@@ -79,20 +79,6 @@ static func _nearest_one(
 	return best_one
 
 
-## Un trait droit cassé en sommets déplacés au hasard. Partagé avec les éclairs du
-## nuage : deux foudres dessinées de deux façons ne se liraient pas comme la même.
-static func broken(
-	a: Vector2, b: Vector2, rng: RandomNumberGenerator, jitter_amount := JITTER
-) -> PackedVector2Array:
-	var n := maxi(ceili(a.distance_to(b) / STEP), 2)
-	var across := (b - a).orthogonal().normalized()
-	var out := PackedVector2Array([a])
-	for k in range(1, n):
-		out.append(a.lerp(b, float(k) / float(n)) + across * rng.randf_range(-jitter_amount, jitter_amount))
-	out.append(b)
-	return out
-
-
 func _ready() -> void:
 	_flicker.seed = int(get_instance_id())
 	z_index = 5
@@ -106,13 +92,16 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## La décharge ne s'éteint pas, elle **bat** : la forme tient une quinzième de
+## seconde puis saute, et l'opacité descend par paliers. Un fondu continu sur un
+## quart de seconde donne une corde qui s'efface, pas un éclair.
 func _draw() -> void:
-	var fade := clampf(1.0 - _age / LIFETIME, 0.0, 1.0)
-	var halo := Color(_tint, 0.35 * fade)
-	var heart := Color(_tint.lerp(Color.WHITE, 0.55), 0.9 * fade)
+	_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
+	var linear := clampf(1.0 - _age / LIFETIME, 0.0, 1.0)
+	var fade := ceilf(linear * 4.0) / 4.0
 	for i in _points.size() - 1:
-		var breaks := broken(to_local(_points[i]), to_local(_points[i + 1]), _flicker)
-		draw_polyline(breaks, halo, 3.0)
-		draw_polyline(breaks, heart, 1.0)
+		Lightning.draw_bolt(
+			self, to_local(_points[i]), to_local(_points[i + 1]), _flicker, _tint, fade
+		)
 	for i in range(1, _points.size()):
-		draw_circle(to_local(_points[i]), 3.5, halo)
+		Lightning.draw_strike(self, to_local(_points[i]), _tint, fade)

@@ -1,9 +1,13 @@
 class_name MapGenerator
 extends RefCounted
 
-## Automate cellulaire : des cavernes ouvertes où l'on peut tourner autour des
-## ennemis, ponctuées d'obstacles qui cassent les lignes de vue. Un donjon BSP ou
-## une marche aléatoire donneraient des couloirs, qui cassent la mêlée.
+## Automate cellulaire : **une grande aire dégagée, ponctuée d'éperons rocheux**
+## qui cassent les lignes de vue sans jamais enfermer. Un donjon BSP ou une marche
+## aléatoire donneraient des couloirs, qui cassent la mêlée.
+##
+## Le même automate donne aussi bien des cavernes étroites qu'une arène : tout
+## tient dans `fill_chance`, et le réglage ci-dessous a été **mesuré** sur quinze
+## combinaisons (jalon 24, §12), pas choisi à l'œil.
 
 const WALL := 1
 const FLOOR := 0
@@ -11,6 +15,15 @@ const FLOOR := 0
 ## Côté d'une case en pixels. Repris de la planche de tuiles, qui est ce qui les
 ## dessine réellement.
 const TILE := TilesetBuilder.TILE
+
+## Le réglage de la zone jouée. À 0,45 — l'ancien — on obtenait des cavernes :
+## 59 % de sol, une case de sol sur deux à moins de trois tuiles d'un mur. Ici
+## **83 % de sol, 17 obstacles de 20 cases de médiane**, et 62 % du sol à quatre
+## tuiles ou plus du premier mur : la place de tourner autour d'un ennemi.
+const DEFAULT_FILL := 0.37
+## Chaque passe fond les obstacles voisins. Six plutôt que cinq : à cinq, les
+## mêmes 83 % de sol se répartissent en 29 cailloux au lieu de 17 éperons.
+const DEFAULT_ITERATIONS := 6
 
 var width: int
 var height: int
@@ -25,7 +38,9 @@ var floor_cells: Array[Vector2i] = []
 var pruned_cells: int = 0
 
 
-func _init(p_width := 96, p_height := 96, p_fill := 0.45, p_iter := 5) -> void:
+func _init(
+	p_width := 96, p_height := 96, p_fill := DEFAULT_FILL, p_iter := DEFAULT_ITERATIONS
+) -> void:
 	width = p_width
 	height = p_height
 	fill_chance = p_fill

@@ -331,6 +331,19 @@ plutôt que compter sur les tests.
 4. **`art/sprite_forge.gd`** — le nom dans `ARCHETYPES`, et un cas dans
    `config()` : cinq couleurs, une dizaine de mesures, trois options. La
    silhouette doit se lire **avant** la couleur, dans une mêlée de soixante-dix.
+
+   Puis **son dessin**, par l'un des deux chemins, jamais les deux :
+
+   - **des grilles dessinées à la main** dans `ART` — un corps et trois paires de
+     jambes par direction, écrits caractère par caractère avec la légende `INK`,
+     plus le poignet d'où part l'arme. C'est le chemin des acteurs du jeu : chaque
+     pixel est posé, la palette reste paramétrable et l'animation vient du
+     décalage des grilles. Dessiner hors de Godot puis recopier — `Image.save_png`
+     tourne en `--headless`, la forge se rend donc sans écran ;
+   - **l'assemblage de capsules** de `_draw_front` / `_draw_side`, qui déduit ses
+     tons d'un éclairage. Il reste pour ce qui n'est pas un personnage (le
+     mannequin) et pour un essai rapide : un archétype absent d'`ART` y tombe
+     tout seul.
 5. **Le faire naître** : `world/enemy_spawner.gd` pour le peuplement d'une zone,
    ou une touche de `world/test_arena.gd` pour l'essayer seul.
 6. **Le juger dans la forge** (`F4`) : quatre variantes côte à côte, les défauts
@@ -434,7 +447,18 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
 `Player.cast_slot()`, son nœud dans `actors/skills/` — qui passe par
 `Targets` pour trouver ses cibles et par `Hurtbox.take_damage()` pour frapper —, et
-son test dans `tests/integration/test_shapes.gd`. Si elle a un nombre neuf : le
+son test dans `tests/integration/test_shapes.gd`.
+
+**Son dessin** se fait dans son `_draw()`, `material = ArtPalette.ADDITIVE` posé au
+`_ready()`, avec `fx/lightning.gd` si c'est de la foudre — les cinq gestes électriques
+du jeu passent par là, quatre façons de dessiner un éclair ne se liraient pas comme la
+même matière — et sinon avec les textures de `fx/glow.gd` plutôt que des primitives : un cœur
+(`Glow.draw_blob`), un bord de zone (`Glow.draw_ring`, dont la crête tombe pile sur le
+rayon qui mord), une comète (`Glow.draw_streak`, tête sur `from` — elle repose la
+transformation à l'identité, donc un appelant qui en avait posé une la repose). Un
+`draw_arc` d'un pixel se lit comme un affichage de portée, et surtout **rien ne brille
+en dessous de 0,9 de luminance** : un effet a besoin d'un cœur presque blanc, pas d'un
+aplat à alpha 0,25. Si elle a un nombre neuf : le
 champ dans `SkillStats` et son `LABELS`, sa copie dans
 `Skill.resolve()`, sa ligne dans la fiche du manuel, et sa condition dans
 `test_each_shape_has_the_numbers_it_needs`.
@@ -822,6 +846,42 @@ qui refuse un texte débordant **dans l'une des deux langues**.
 Ce qui **ne se traduit pas** : les outils de réglage (forge `F4`, arène `F2`,
 établi `B`, bandeau `H`), `CATALOGUE.md`, la console (`push_warning`), et les
 identifiants.
+
+---
+
+## Refaire les tuiles de décor
+
+```bash
+tools/tiles.py gen            # trois graines par sujet, ~10 s l'une
+tools/tiles.py make           # écrit art/tiles/atlas.png depuis les graines retenues
+```
+
+ComfyUI doit tourner ; depuis WSL il répond sur l'IP de l'hôte, pas sur
+`127.0.0.1` (variable `COMFY`). Le sujet et la graine retenue sont **la même
+ligne** de `tools/tiles.json` : refaire une tuile, c'est changer l'un des deux.
+
+Trois réglages, et ce sont les seuls qui comptent :
+
+| Constante | Ce qu'elle décide |
+|---|---|
+| `CROP` | **L'échelle de la pierre**, en part du rendu de 1024 px. À 10 %, un pavé fait six pixels dans la tuile ; à 30 %, il en fait un et il ne reste qu'un grain gris |
+| `FLOOR_LUM` / `WALL_LUM` | La luminance visée. **Plus basse que celle de la couleur de base** : à moyenne égale, une pierre appareillée se lit plus claire qu'un aplat, et les ennemis s'y noient |
+| `FLOOR_SPREAD` | Le contraste interne. C'est lui qui fait la différence entre « de la pierre » et « un damier qui crie » |
+| `FLOOR_PATCHES` | **Combien d'amas de pierre par variante, la première étant nue.** Une texture qui couvre son cadre d'un bord à l'autre est une paroi, quelle que soit sa couleur : un sol, c'est de la terre et quelques pierres. Et quatre tuiles toutes marquées se répètent visiblement dès qu'on en voit trente |
+
+Le négatif refuse explicitement la maçonnerie (`brick`, `masonry`, `mortar
+lines`, `running bond`, `wall`) : sans ça, « dungeon stone floor » sort un mur de
+briques à tous les coups, et le sol finit par être le mur repeint d'une autre
+couleur.
+
+Le modèle donne la **matière** — le grain, les fissures, la distribution des
+valeurs. Il ne décide ni la valeur du sol, ni quelle tuile de mur porte son
+dessus éclairé : ça, c'est `tools/tiles.py` et `TilesetBuilder`, et ça ne se
+délègue pas, sous peine de perdre l'écart mesuré entre le décor et les acteurs.
+
+**Ce qui refusera un oubli** : rien. Aucune assertion ne voit une tuile — juger
+sur une capture réelle en fenêtré, avec des ennemis dessus, jamais sur l'atlas
+seul.
 
 ---
 

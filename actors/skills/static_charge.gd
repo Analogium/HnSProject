@@ -109,11 +109,14 @@ func _draw() -> void:
 	var beat := 0.75 + 0.25 * sin(_age * PULSE)
 
 	draw_circle(Vector2.ZERO, RADIUS, Color(tint, 0.16 * fade * beat))
-	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 20, Color(tint, 0.45 * fade), 1.0)
+	Glow.draw_ring(self, Vector2.ZERO, RADIUS, Color(tint, 0.46 * fade))
+	_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
 	for i in ARMS:
 		var angle := TAU * float(i) / float(ARMS) + _age * 2.0
 		var span := RADIUS * (0.75 + _flicker.randf_range(0.0, 0.35))
-		var toward := Vector2.from_angle(angle) * span
-		draw_line(Vector2.ZERO, toward, Color(tint, 0.8 * fade), 1.0)
-		draw_line(Vector2.ZERO, toward * 0.6, Color(light_color, 0.9 * fade), 1.0)
-	draw_circle(Vector2.ZERO, 2.0 * beat, Color(light_color, fade))
+		# Sans fourche : les bras sont déjà nombreux, et chacun doit rester lisible
+		# jusqu'au bord du cercle qu'il annonce.
+		Lightning.draw_bolt(
+			self, Vector2.ZERO, Vector2.from_angle(angle) * span, _flicker, tint, fade, 0.6, 0
+		)
+	Glow.draw_blob(self, Vector2.ZERO, 3.0 * beat, Color(light_color, fade))

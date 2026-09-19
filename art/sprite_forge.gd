@@ -112,6 +112,8 @@ static func frame_image(cfg: Dictionary, dir: String, anim: String, index: int) 
 
 	if cfg["archetype"] == "dummy":
 		_draw_dummy(canvas, cfg, placed)
+	elif ART.has(cfg["archetype"]):
+		_draw_authored(canvas, cfg, dir, placed, anim, index)
 	elif dir == "side":
 		_draw_side(canvas, cfg, placed)
 	else:
@@ -464,11 +466,14 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 	# Graine figée : la variante 2 du grunt sera toujours le même grunt.
 	rng.seed = hash(archetype) * 7919 + variant * 104729
 
+	# Proportions caricaturales et non anatomiques : grosse tête, épaules larges,
+	# jambes courtes. En 32 px, c'est la tête qui porte la lisibilité d'un
+	# personnage — elle occupe un tiers de la hauteur du corps, pas un sixième.
 	var cfg := {
 		"archetype": archetype,
-		"head_r": 3.8, "head_y": 8.0,
-		"shoulder_y": 13.0, "hip_y": 19.5,
-		"torso_r": 4.2, "sh_w": 3.8, "hip_w": 2.3,
+		"head_r": 4.6, "head_y": 8.8,
+		"shoulder_y": 13.6, "hip_y": 20.5,
+		"torso_r": 4.5, "sh_w": 4.4, "hip_w": 2.5,
 		"limb_r": 1.7, "arm_r": 1.5,
 		"hood": false, "robe": false, "pauldrons": false, "mantle": false,
 		"weapon": "none",
@@ -496,9 +501,9 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 			# Plus trapu et plus bas que le joueur : la silhouette doit dire
 			# « masse qui fonce » avant même qu'il bouge.
 			cfg.merge({
-				"head_r": 4.0, "head_y": 9.5,
-				"shoulder_y": 14.5, "hip_y": 20.5,
-				"torso_r": 4.7, "sh_w": 4.2, "hip_w": 2.6,
+				"head_r": 5.0, "head_y": 10.2,
+				"shoulder_y": 15.0, "hip_y": 21.0,
+				"torso_r": 5.0, "sh_w": 5.0, "hip_w": 2.8,
 				"limb_r": 1.8,
 			}, true)
 			cfg["weapon"] = "cleaver" if rng.randf() < 0.5 else "club"
@@ -513,10 +518,13 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 			}
 			# Pas de jambes : une robe évasée. Le caster doit se repérer dans une
 			# mêlée à sa silhouette seule, avant sa couleur.
+			# La capuche suit la tête de près : trop grosse, elle repasse devant le
+			# buste et le caster redevient une quille. D'où +0,4 seulement, et un
+			# buste élargi d'autant.
 			cfg.merge({
-				"head_r": 3.6, "head_y": 7.5,
-				"shoulder_y": 13.0, "hip_y": 19.0,
-				"torso_r": 3.6, "sh_w": 3.4, "hip_w": 2.2,
+				"head_r": 4.0, "head_y": 8.0,
+				"shoulder_y": 13.2, "hip_y": 19.5,
+				"torso_r": 3.9, "sh_w": 3.6, "hip_w": 2.3,
 				"hood": true, "robe": true, "mantle": true,
 			}, true)
 			cfg["weapon"] = "staff"
@@ -547,6 +555,448 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 
 	return cfg
 
+
+# --------------------------------------------------------------------------
+# Pixels dessinés à la main
+# --------------------------------------------------------------------------
+
+## La légende des grilles : minuscule = ombre, majuscule = teinte de base, une
+## troisième lettre pour la lumière, et `j`/`k` pour les traits sombres qui
+## séparent un bras d'un buste. Les cinq rampes sont celles de `config()`.
+##
+## Le contour extérieur n'est **pas** dessiné dans les grilles : `to_image()` le
+## pose sur la silhouette entière, ce qui évite un contour par pièce.
+const INK := {
+	"c": [R_CLOTH, 1], "C": [R_CLOTH, 2], "L": [R_CLOTH, 3], "k": [R_CLOTH, 0],
+	"s": [R_SKIN, 1], "S": [R_SKIN, 2], "P": [R_SKIN, 3],
+	"a": [R_ACCENT, 1], "A": [R_ACCENT, 2], "E": [R_ACCENT, 3],
+	"m": [R_METAL, 1], "M": [R_METAL, 2], "H": [R_METAL, 3],
+	"t": [R_LEATHER, 1], "T": [R_LEATHER, 2], "U": [R_LEATHER, 3], "j": [R_LEATHER, 0],
+}
+
+## Rangée où commencent les jambes. Elles sont une grille à part : c'est elle
+## qui change au pas de marche, et le buste respire au-dessus sans emmener les
+## pieds. Sa première rangée est de la tunique, qui bouche le trou laissé par un
+## buste monté d'un pixel.
+const LEGS_TOP := 21
+
+## Quelle grille de jambes pour chaque temps de `WALK_SWING` : contact, passage,
+## contact opposé, passage.
+const WALK_LEGS := [1, 0, 2, 0]
+
+const BODY_DOWN := [
+	"....TTTTTT....",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"..UTSSSSSSTt..",
+	"..TPSSSSSSst..",
+	"..TPSjSSjSst..",
+	"..TPSSSSSSst..",
+	"...sSSSSSSs...",
+	"....sSSSSs....",
+	".....sSSs.....",
+	".HMMCCCCCCMMm.",
+	".HMMkLCCCckMm.",
+	"..LCkLCCCckCc.",
+	"..LCkLCCCckCc.",
+	"..LCkLCCCckCc.",
+	"..PSkLCCCckSs.",
+	"...jCCCCCCj...",
+	"..jTTTTTTTTj..",
+	"..jTTAAEATTj..",
+]
+
+const BODY_SIDE := [
+	"..TTTTTT....",
+	".TTTTTTTT...",
+	".TTTTTTTTT..",
+	".TTTSSSSSS..",
+	".TTTSSSSSSP.",
+	".TTTSjSSSSP.",
+	".TTTSSSSSSs.",
+	"..tsSSSSSs..",
+	"...sSSSSs...",
+	"....sSSs....",
+	"..mMMMMCCc..",
+	"..mMMMkLCc..",
+	"..cCCCkLCc..",
+	"..cCCCkLCc..",
+	"..cCCCkLCc..",
+	"..cCCCkPSc..",
+	"..jCCCCCCj..",
+	"..jTTTTTTj..",
+	"..jTTAETTj..",
+]
+
+const BODY_UP := [
+	"....TTTTTT....",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"..UTTTTTTTTt..",
+	"...tTTTTTTt...",
+	"....ttTTtt....",
+	".....cCCc.....",
+	".HMMCCCCCCMMm.",
+	".HMMkLCCCckMm.",
+	"..LCkLCCCckCc.",
+	"..LCkLCCCckCc.",
+	"..LCkLCCCckCc.",
+	"..PSkLCCCckSs.",
+	"...jCCCCCCj...",
+	"..jTTTTTTTTj..",
+	"..jTTTTTTTTj..",
+]
+
+const LEGS_IDLE := [
+	"...CCCCCCCC...",
+	"...CCCCCCCC...",
+	"...CCCjjCCC...",
+	"...cCCjjCCc...",
+	"...TTUjjUTt...",
+	"...TTUjjUTt...",
+	"...jTTjjTTj...",
+]
+
+const LEGS_A := [
+	"...CCCCCCCC...",
+	"...CCCCCCCC...",
+	"...CCCjjCCC...",
+	"...TTUjjCCc...",
+	"...TTUjjUTt...",
+	"...jTTjjUTt...",
+	"......jjTTj...",
+]
+
+const LEGS_B := [
+	"...CCCCCCCC...",
+	"...CCCCCCCC...",
+	"...CCCjjCCC...",
+	"...cCCjjUTT...",
+	"...TTUjjUTT...",
+	"...TTUjjTTj...",
+	"...jTTjj......",
+]
+
+const SIDE_IDLE := [
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"...cCCCCc...",
+	"...TTUUTt...",
+	"...TTUUTt...",
+	"..jTTUUTTj..",
+]
+
+const SIDE_A := [
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"..cCCCCCc...",
+	"..TTUUCCc...",
+	"..TTUjUTt...",
+	".jTTj.jTTj..",
+]
+
+const SIDE_B := [
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"...CCCCCC...",
+	"...cCCCCc...",
+	"...cCCUUTt..",
+	"...TTUjUTt..",
+	"..jTTj.jTTj.",
+]
+
+## Le grunt : trapu, épaules larges, tête basse. La silhouette doit dire « masse
+## qui fonce » avant que la couleur n'arrive.
+const GRUNT_DOWN := [
+	"......tttt......",
+	".....tttttt.....",
+	"....SSSSSSSS....",
+	"....SSSSSSSS....",
+	"....SsaSSasS....",
+	"....SSSSSSSS....",
+	"....SSjjjjSS....",
+	".....SjEEjS.....",
+	"......ssss......",
+	"..TTCCCCCCCCTT..",
+	".TTTCCLLCCCCTTT.",
+	".TTcCCLLCCCCcTT.",
+	"..ScCCLLCCCCcS..",
+	"..SSjCCCCCCjSS..",
+	"...jTTTTTTTTj...",
+	"...jCCCCCCCCj...",
+]
+
+const GRUNT_SIDE := [
+	"....tttt........",
+	"...tttttt.......",
+	"...tSSSSSS......",
+	"...tSSSSSSs.....",
+	"...tSSaSSSP.....",
+	"...tSSSSSSs.....",
+	"...tSSjjjSs.....",
+	"....sSjEjs......",
+	".....ssss.......",
+	"..TTTCCCCCc.....",
+	"..TTCCCCkLCc....",
+	"..TcCCCCkLCc....",
+	"..ScCCCCkLCc....",
+	"..SSjCCCkPSc....",
+	"...jTTTTTTj.....",
+	"...jCCCCCCj.....",
+]
+
+const GRUNT_UP := [
+	"......tttt......",
+	".....tttttt.....",
+	"....tttttttt....",
+	"....tttttttt....",
+	"....tttttttt....",
+	"....tttttttt....",
+	"....SSSSSSSS....",
+	".....ssssss.....",
+	"......ssss......",
+	"..TTCCCCCCCCTT..",
+	".TTTCCCCCCCCTTT.",
+	".TTcCCCCCCCCcTT.",
+	"..ScCCCCCCCCcS..",
+	"..SSjCCCCCCjSS..",
+	"...jTTTTTTTTj...",
+	"...jCCCCCCCCj...",
+]
+
+const GRUNT_LEGS := [
+	"...CCCCCCCCCC...",
+	"...CCCCccCCCC...",
+	"...cCCCccCCCc...",
+	"...TTCCccCCTt...",
+	"...TTUCccCUTt...",
+	"...TTUCccCUTt...",
+	"...jTTjccjTTj...",
+]
+
+const GRUNT_LEGS_A := [
+	"...CCCCCCCCCC...",
+	"...CCCCccCCCC...",
+	"...cCCCccCCCc...",
+	"...TTCCccCCTt...",
+	"...TTUCccCUTt...",
+	"...jTTjccjUTt...",
+	".........jTTj...",
+]
+
+const GRUNT_LEGS_B := [
+	"...CCCCCCCCCC...",
+	"...CCCCccCCCC...",
+	"...cCCCccCCCc...",
+	"...TTCCccCCTt...",
+	"...TTUCccCUTt...",
+	"...TTUjccjTTj...",
+	"...jTTjj........",
+]
+
+const GRUNT_SIDE_LEGS := [
+	"...CCCCCCCC.....",
+	"...CCCCCCCC.....",
+	"...cCCCCCCc.....",
+	"...cCCCCCCc.....",
+	"...TTUUUUTt.....",
+	"...TTUUUUTt.....",
+	"..jTTUUUUTTj....",
+]
+
+const GRUNT_SIDE_LEGS_A := [
+	"...CCCCCCCC.....",
+	"...CCCCCCCC.....",
+	"...cCCCCCCc.....",
+	"..cCCCCCCc......",
+	"..TTUUCCc.......",
+	"..TTUjUUTt......",
+	".jTTj.jTTj......",
+]
+
+const GRUNT_SIDE_LEGS_B := [
+	"...CCCCCCCC.....",
+	"...CCCCCCCC.....",
+	"...cCCCCCCc.....",
+	"....cCCCCCCc....",
+	".....cCUUUUTt...",
+	"....TTUjUUTt....",
+	"...jTTj.jTTj....",
+]
+
+## Le caster : une robe et une capuche pointue, aucun visage — un creux noir et
+## deux braises. C'est la silhouette qui le fait repérer dans une mêlée, et une
+## capuche plus large que le buste le rendrait à l'état de quille.
+const CASTER_DOWN := [
+	"......LL......",
+	".....LCCL.....",
+	"....LCCCCc....",
+	"....LCCCCCc...",
+	"...LCCCCCCcc..",
+	"...LCCCCCCCc..",
+	"...LCkkkkkCc..",
+	"...LCkEkkEkc..",
+	"...LCkkkkkkc..",
+	"...LCCCCCCCc..",
+	"..LCCCCCCCCcc.",
+	"..kkkkkkkkkkk.",
+	"..LCCCCCCCCcc.",
+	"..LCCCCCCCCcc.",
+	".SsLCCCCCCcsS.",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+]
+
+const CASTER_SIDE := [
+	"....LL........",
+	"...LCCL.......",
+	"..LCCCCc......",
+	"..LCCCCCc.....",
+	"..LCCCCCCc....",
+	"..LCCCCCCCc...",
+	"..LCkkkkCCc...",
+	"..LCkEkkCCc...",
+	"..LCkkkkCCc...",
+	"..LCCCCCCCc...",
+	"..LCCCCCCCCc..",
+	"..kkkkkkkkkk..",
+	"..LCCCCCCCCc..",
+	"..LCCCCCCCCc..",
+	"..LCCCCCCsSc..",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+]
+
+const CASTER_UP := [
+	"......LL......",
+	".....LCCL.....",
+	"....LCCCCc....",
+	"....LCCCCCc...",
+	"...LCCCCCCcc..",
+	"...LCCCCCCCc..",
+	"...LCCCCCCCc..",
+	"...LCCCCCCCc..",
+	"...LCCCCCCCc..",
+	"...LCCCCCCCc..",
+	"..LCCCCCCCCcc.",
+	"..kkkkkkkkkkk.",
+	"..LCCCCCCCCcc.",
+	"..LCCCCCCCCcc.",
+	".SsLCCCCCCcsS.",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+	"..jLCCCCCCcj..",
+]
+
+const CASTER_ROBE := [
+	"..LCCCCCCCCc..",
+	"..LCCCCCCCCc..",
+	".LCCCCCCCCCCc.",
+	".LCCCCCCCCCCc.",
+	"LCCCCCCCCCCCCc",
+	"LCCkCCCCCCkCCc",
+	"jTTTTTTTTTTTTj",
+]
+
+const CASTER_ROBE_A := [
+	"..LCCCCCCCCc..",
+	"..LCCCCCCCCc..",
+	".LCCCCCCCCCCc.",
+	".LCCCCCCCCCCc.",
+	"LCCCCCCCCCCCc.",
+	"LCCkCCCCCCkCc.",
+	"jTTTTTTTTTTj..",
+]
+
+const CASTER_ROBE_B := [
+	"..LCCCCCCCCc..",
+	"..LCCCCCCCCc..",
+	".LCCCCCCCCCCc.",
+	".LCCCCCCCCCCc.",
+	".LCCCCCCCCCCCc",
+	".LCCkCCCCCCkCc",
+	"..jTTTTTTTTTTj",
+]
+
+## Les archétypes dessinés pixel par pixel. Les autres restent assemblés en
+## capsules par `_draw_front` / `_draw_side` — les deux chemins cohabitent, et un
+## archétype absent de cette table n'a rien à déclarer.
+##
+## `hand` est le poignet armé, d'où part `_weapon()` : le dessin donne la
+## silhouette, l'arme reste procédurale parce qu'elle suit l'équipement.
+const ART := {
+	"player": {
+		"down": {
+			"origin": Vector2i(9, 3),
+			"hand": Vector2(20.0, 18.5),
+			"body": BODY_DOWN,
+			"legs": [LEGS_IDLE, LEGS_A, LEGS_B],
+		},
+		"side": {
+			"origin": Vector2i(10, 3),
+			# Plus en avant et plus bas que de face : de profil, une épée tenue à
+			# hauteur de ceinture traverse le visage.
+			"hand": Vector2(19.0, 19.5),
+			"body": BODY_SIDE,
+			"legs": [SIDE_IDLE, SIDE_A, SIDE_B],
+		},
+		"up": {
+			"origin": Vector2i(9, 3),
+			"hand": Vector2(11.0, 18.5),
+			"body": BODY_UP,
+			"legs": [LEGS_IDLE, LEGS_A, LEGS_B],
+		},
+	},
+	"grunt": {
+		"down": {
+			"origin": Vector2i(8, 5),
+			"hand": Vector2(21.0, 18.5),
+			"body": GRUNT_DOWN,
+			"legs": [GRUNT_LEGS, GRUNT_LEGS_A, GRUNT_LEGS_B],
+		},
+		"side": {
+			"origin": Vector2i(8, 5),
+			# Bas et en avant : le couperet est large, et tenu à hauteur d'épaule
+			# il recouvre la tête du grunt.
+			"hand": Vector2(19.5, 21.0),
+			"body": GRUNT_SIDE,
+			"legs": [GRUNT_SIDE_LEGS, GRUNT_SIDE_LEGS_A, GRUNT_SIDE_LEGS_B],
+		},
+		"up": {
+			"origin": Vector2i(8, 5),
+			"hand": Vector2(10.0, 18.5),
+			"body": GRUNT_UP,
+			"legs": [GRUNT_LEGS, GRUNT_LEGS_A, GRUNT_LEGS_B],
+		},
+	},
+	"caster": {
+		"down": {
+			"origin": Vector2i(9, 3),
+			"hand": Vector2(20.5, 17.5),
+			"body": CASTER_DOWN,
+			"legs": [CASTER_ROBE, CASTER_ROBE_A, CASTER_ROBE_B],
+		},
+		"side": {
+			"origin": Vector2i(9, 3),
+			"hand": Vector2(18.5, 17.5),
+			"body": CASTER_SIDE,
+			"legs": [CASTER_ROBE, CASTER_ROBE_A, CASTER_ROBE_B],
+		},
+		"up": {
+			"origin": Vector2i(9, 3),
+			"hand": Vector2(10.5, 17.5),
+			"body": CASTER_UP,
+			"legs": [CASTER_ROBE, CASTER_ROBE_A, CASTER_ROBE_B],
+		},
+	},
+}
 
 # --------------------------------------------------------------------------
 # Poses
@@ -600,6 +1050,43 @@ static func _weapon_dir(cfg: Dictionary, dir: String, anim: String, index: int) 
 # --------------------------------------------------------------------------
 # Dessin
 # --------------------------------------------------------------------------
+
+## Un archétype dessiné à la main : on pose les jambes, le buste par-dessus, puis
+## l'arme à la main armée. Le squelette ne sert plus qu'à trois nombres — le
+## souffle, le déport du buste et la pose de l'arme.
+static func _draw_authored(
+	c: PixelCanvas, cfg: Dictionary, dir: String, placed: Dictionary, anim: String, index: int
+) -> void:
+	var art: Dictionary = (ART[cfg["archetype"]] as Dictionary)[dir]
+	var origin: Vector2i = art["origin"]
+	var bob := roundi(placed["bob"])
+	# Le déport du buste est en pixels entiers : un demi-pixel de biais rendrait
+	# flou tout ce que la grille a de net.
+	var lean := roundi(float(placed["lean"]) * 0.8)
+
+	c.ground_shadow(CX, FEET + 1.5, float(cfg["torso_r"]) + 1.2, 2.2)
+
+	var legs: Array = art["legs"]
+	var step: int = WALK_LEGS[index % WALK_LEGS.size()] if anim == "walk" else 0
+	c.stamp(legs[step], Vector2i(origin.x, LEGS_TOP), INK)
+	c.stamp(art["body"], Vector2i(origin.x + lean, origin.y + bob), INK)
+
+	# De dos, le bras armé passe de l'autre côté de l'écran ; la grille le sait
+	# déjà pour la main, `_weapon` a besoin qu'on retourne sa direction.
+	var s := -1.0 if dir == "up" else 1.0
+	var hand: Vector2 = Vector2(art["hand"]) + Vector2(lean, bob)
+	var arm: float = placed["arm"]
+	if arm != 0.0:
+		var goal := Vector2(hand.x + s * 2.0, 13.5)
+		if arm < 0.0:
+			goal = Vector2(hand.x - s * 1.5, 21.0)
+		hand = hand.lerp(goal, absf(arm))
+		# La main suit l'arme, sinon elle reste plantée à la ceinture pendant que
+		# l'épée part en l'air.
+		c.disc(hand, 1.7, R_SKIN)
+
+	_weapon(c, cfg, hand, Vector2(placed["weapon_dir"]) * Vector2(s, 1.0), 0.0)
+
 
 ## Vue de face ou de dos. `faces_camera` ne change que trois choses : le côté du
 ## bras armé, la présence du visage et la quantité de cheveux.
@@ -785,6 +1272,9 @@ static func _draw_head(c: PixelCanvas, cfg: Dictionary, center: Vector2, face: b
 	c.disc(center + Vector2(profile * -0.5, -1.2), head_r * 0.95, R_LEATHER)
 	c.disc(center + Vector2(profile * 0.6, 0.7), head_r * 0.85, R_SKIN)
 
+	# Un œil d'un pixel, à mi-hauteur de la tête. Deux pixels par œil ont été
+	# essayés pour la tête grossie du jalon 24 : ça donne un bandeau sombre, le
+	# visage se lit renfrogné et non caricatural. Rejeté sur planche.
 	if profile > 0.0:
 		c.disc(center + Vector2(head_r * 0.80, 0.6), 0.9, R_SKIN)   # nez
 		c.dot_px(roundi(center.x) + 1, roundi(center.y), int(cfg["eye_ramp"]), cfg["eye_level"])

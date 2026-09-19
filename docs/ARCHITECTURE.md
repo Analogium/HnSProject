@@ -9,7 +9,11 @@ chronologie.
 
 **Tout ce qui bouge est calculé par du code.** Les sprites d'acteurs et le
 TileSet n'existent pas sur le disque : ils sont peints au premier appel, puis
-gardés en cache pour la session. Une graine dérivée du nom et du numéro de
+gardés en cache pour la session. « Calculé » ne veut pas dire « déduit d'une
+formule » : les trois acteurs du jeu sont des **grilles de pixels écrites à la
+main** dans `SpriteForge.ART`, que le code colorie et anime. L'assemblage de
+capsules éclairées qu'on trouve dans `_draw_front` / `_draw_side` reste pour ce
+qui n'est pas un personnage, et pour un archétype qu'on n'a pas encore dessiné. Une graine dérivée du nom et du numéro de
 variante fait que le même personnage ressort identique à chaque lancement.
 
 Ça a deux conséquences que rien d'autre dans le projet ne rappelle :
@@ -23,8 +27,18 @@ variante fait que le même personnage ressort identique à chaque lancement.
 La porte de sortie existe : `[S]` dans la forge (F4) exporte toutes les planches
 en PNG, retouchables dans un éditeur d'image.
 
-**Ce qui ne bouge pas fait exception** : les icônes de compétences et celles des
-objets sont des PNG de `resources/icons/`, branchés sur un champ du `.tres`
+**Par-dessus tout ça vit une couche de lumière**, et c'est elle qui décide de
+l'allure du jeu autant que les sprites : un `WorldEnvironment` par scène jouée
+(`world/zone.tscn`, `world/test_arena.tscn`) portant `fx/bloom.tres`, dont le
+glow fait déborder **ce qui dépasse 0,9 de luminance**. C'est un seuil de valeur
+et non un calque : rien ne peut s'en exclure. Il tient parce que le plus clair
+pixel d'un sprite est à **0,88** — le cristal du caster — et que le haut de la
+rampe d'`ArtPalette` est plafonné pour le rester : 0,02 de marge. Les trois textures de `fx/glow.gd` existent
+précisément pour donner aux effets le cœur presque blanc qui passe ce seuil.
+
+**Ce qui ne bouge pas fait exception** : les tuiles de décor (`art/tiles/atlas.png`,
+six tuiles de 32 px produites par `tools/tiles.py`) et les icônes de compétences
+et d'objets sont des PNG de `resources/icons/`, branchés sur un champ du `.tres`
 (`Skill.icon`, `ItemBase.icon`) et produits hors du jeu — voir
 [le LISEZMOI du dossier](../resources/icons/LISEZMOI.md). Une image immobile se
 juge une fois ; un sprite qui s'anime dans quatre directions et cinq variantes,
@@ -100,6 +114,13 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Que devient l'objet déjà en place ? | `InventoryPanel._swap_in()` : **ils permutent** si le délogé entre dans la case que l'autre vient de quitter, sinon il passe en main. Deux objets sous la pose (`Inventory.lone_blocker()` rend `EMPTY`) : rien ne bouge — on ne déloge pas deux objets pour en poser un |
 | Comment jeter sans passer par la main ? | **Ctrl + clic droit** dans le sac ou sur un emplacement, `InventoryPanel._drop_hovered()` |
 | À quoi ressemble un objet ? | `SpriteForge.inventory_icon(base, place)` dans le sac, `ground_icon(base)` au sol (`GROUND`, sous le cadre de travail : c'est le nom au-dessus qui identifie) : l'image de `ItemBase.icon` si la base en a une, sinon le dessin de la forge d'après son `kind` et son palier. `ghost_icon(kind, place)` est le troisième chemin, celui d'un **emplacement vide** — il n'y a pas d'objet, donc pas d'image. Les trois passent par `_fit()` : agrandissement d'un facteur **entier**, réduction au ratio exact |
+| À quoi ressemble un acteur ? | `SpriteForge.ART[archétype][direction]` quand il y est — un corps, trois paires de jambes et le poignet armé, en caractères traduits par `INK` (minuscule = ombre, majuscule = base, troisième lettre = lumière) —, sinon l'assemblage de capsules de `_draw_front` / `_draw_side`. Dans les deux cas le **contour** est posé après coup par `PixelCanvas.to_image()` sur la silhouette entière, et **l'arme reste procédurale** (`_weapon()`), parce qu'elle suit l'équipement |
+| À quoi ressemble une zone ? | `MapGenerator`, un automate cellulaire réglé par `DEFAULT_FILL` **0,37** et `DEFAULT_ITERATIONS` **6** — une grande aire dégagée, 17 éperons rocheux de 20 cases de médiane, **62 % du sol à quatre tuiles ou plus du premier mur**. C'est ce dernier chiffre qui dit « on peut tourner autour d'un ennemi » ; il valait 13 % du temps des cavernes (`fill` 0,45). Le même automate donne les deux : tout est dans `fill_chance`. L'écran de réglage (`F3`) part de ces constantes, il ne les recopie pas |
+| Combien d'ennemis dans une zone ? | `EnemySpawner`, **14 paquets** de 3 à 7, et non une densité : ouvrir la carte ne change donc pas la population (68 à la graine 4242, `test_a_seed_gives_the_same_zone_again`), seulement son étalement |
+| À quoi ressemble le sol ? | `TilesetBuilder._texture()` : l'atlas de `art/tiles/atlas.png` s'il existe, sinon la peinture procédurale de `_atlas()`, qui reste la **référence des couleurs**. Quatre sols, un mur, un mur à dessus éclairé — et c'est le code, pas l'image, qui décide lequel est éclairé et de combien. `tools/tiles.py` ramène la matière d'un rendu ComfyUI aux valeurs du jeu : `FLOOR_LUM` **0,150**, plus bas que les 0,196 de la couleur de base, parce qu'à moyenne égale une pierre appareillée se lit plus claire qu'un aplat |
+| Qu'est-ce qui brille à l'écran ? | Le glow de `fx/bloom.tres` (un `WorldEnvironment` par scène jouée), **au-dessus de 0,9 de luminance** : les cœurs d'effets, les éclairs, le texte blanc. Le jeu reste en LDR — `rendering/viewport/hdr_2d` linéarise le canevas et divise le sol par 5 (mesuré 71 → 14), voir `JALONS/hack-n-slash-jalon-24.md` §5. Le coût est de **0,05 ms de GPU par image** |
+| À quoi ressemble la foudre ? | `fx/lightning.gd` **et lui seul** — la chaîne, les éclairs du nuage, les bras de la charge statique, la traînée de la ruée et le projectile de nature foudre. Trois passes : un halo large et teinté, un corps, un filament d'un pixel presque blanc. Le violet de la foudre plafonne à **0,63 de luminance**, donc seul ce filament dépasse le seuil de glow ; et les deux passes teintées ont une largeur plancher, sans quoi un petit projectile ressort blanc, donc physique. La forme tient `1/FLICKER_HZ` seconde (`Lightning.hold`) : une forme par image n'est plus un éclair, c'est du bruit |
+| Comment un effet de compétence est-il dessiné ? | Dans son `_draw()`, en blend additif partagé (`ArtPalette.ADDITIVE`), avec les trois textures de `fx/glow.gd` — `draw_blob` un cœur, `draw_ring` un bord mou dont la crête tombe sur le rayon qui mord, `draw_streak` une comète dont la tête est sur `from`. Le dégradé de chacune a un **plateau** au maximum : sans lui aucun pixel n'atteint 1,0 et l'effet passe sous le seuil de glow |
 | Où l'arme d'un personnage est-elle dessinée ? | `SpriteForge._weapon()`, d'après `ItemBase.kind` — **le même champ** que le dessin de repli de l'icône. Une image d'objet ne le remplace pas : `test_each_base_has_a_non_empty_icon` vérifie les deux |
 | Comment s'écrit une valeur à l'écran ? | `StatMod.format()` / `gauge()` / `range_label()` ; des dégâts résolus, `SkillStats.readable_range()` ; un pourcentage, `StatMod.percentage()`, dont la typographie suit la langue |
 | En quelle langue s'écrit un texte ? | `Texts.t()`, dans la fonction qui **lit** le libellé — jamais chez celui qui le dessine. Le texte français est la clé ; l'anglais vit dans `i18n/en.po`, et `Settings.language` choisit |

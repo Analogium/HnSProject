@@ -66,5 +66,5 @@ func _draw() -> void:
 	# rien, le trait disparaissait avant d'avoir été vu.
 	draw_line(Vector2.ZERO, _tip, Color(_tint, 0.50 * fade), WIDTH * (0.5 + 0.5 * fade))
 	draw_line(Vector2.ZERO, _tip, Color(light_color, fade), 2.0)
-	draw_circle(Vector2.ZERO, WIDTH * (0.6 + 0.9 * fade), Color(light_color, 0.8 * fade))
-	draw_circle(_tip, WIDTH * 0.6 * fade, Color(light_color, 0.7 * fade))
+	Glow.draw_blob(self, Vector2.ZERO, WIDTH * (0.9 + 1.2 * fade), Color(light_color, 0.9 * fade))
+	Glow.draw_blob(self, _tip, WIDTH * 0.9 * fade, Color(light_color, 0.8 * fade))

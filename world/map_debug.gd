@@ -20,8 +20,10 @@ const SPAWN_COLOR := Color(0.35, 0.75, 1.0)
 var gen: MapGenerator
 
 var _seed := 0
-var _fill := 0.45
-var _iterations := 5
+## L'écran de réglage part de ce que joue la zone : deux valeurs écrites ici
+## finiraient par mentir sur ce qu'on règle.
+var _fill := MapGenerator.DEFAULT_FILL
+var _iterations := MapGenerator.DEFAULT_ITERATIONS
 var _gen_ms := 0.0
 
 

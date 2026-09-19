@@ -136,8 +136,8 @@ func _draw_strike() -> void:
 	# L'éclat du choc, au tout début : c'est lui qui dit « ça a porté ».
 	var flash := 1.0 - k * 4.0
 	if flash > 0.0:
-		draw_circle(Vector2.ZERO, 2.0 + 6.0 * flash, Color(WAVE, 0.8 * flash))
-	draw_arc(Vector2.ZERO, 3.0 + 9.0 * wave, 0.0, TAU, 24, Color(WAVE, 0.8 * fade_amount * fade_amount), 1.5)
+		Glow.draw_blob(self, Vector2.ZERO, 3.0 + 7.0 * flash, Color(WAVE, flash))
+	Glow.draw_ring(self, Vector2.ZERO, 3.0 + 9.0 * wave, Color(WAVE, 0.85 * fade_amount * fade_amount))
 	# Les fissures se tracent en un tiers de l'impact, puis restent le temps qu'il
 	# s'efface.
 	var trace := minf(k * 3.0, 1.0)

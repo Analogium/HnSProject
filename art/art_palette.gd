@@ -19,12 +19,17 @@ const SHADOW_TINT := Color(0.13, 0.09, 0.24)
 const LIGHT_TINT := Color(1.0, 0.94, 0.76)
 
 ## Où la couleur de base se place dans la rampe. En dessous on assombrit, au
-## dessus on éclaircit. 0.6 laisse plus de place aux ombres qu'aux lumières,
-## ce qui est le bon rapport : un sprite est majoritairement dans son ombre.
-const BASE_STOP := 0.6
+## dessus on éclaircit. Toujours plus de place aux ombres qu'aux lumières — un
+## sprite est majoritairement dans son ombre — mais 0.55 et une lumière plus
+## forte qu'avant : sur un sol descendu à 0,21, c'est le haut de la rampe qui
+## détache la silhouette.
+const BASE_STOP := 0.55
 
 const SHADOW_STRENGTH := 0.78
-const LIGHT_STRENGTH := 0.42
+## Plafonné par le seuil de glow : au-delà, le haut de la rampe passe 0,9 et les
+## sprites se mettent à déborder comme un sort. Le plus clair de tout le jeu est
+## le cristal du caster, à **0,88** — il reste 0,02 de marge, pas plus.
+const LIGHT_STRENGTH := 0.52
 
 
 ## Le mélange additif du jeu : la lumière s'ajoute au sol au lieu de le couvrir.

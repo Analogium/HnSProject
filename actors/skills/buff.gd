@@ -81,7 +81,7 @@ func _draw() -> void:
 		_tomb(tint)
 		return
 	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
-	draw_arc(Vector2.ZERO, HALO, 0.0, TAU, 24, Color(tint, 0.10 + 0.10 * pulse), 1.0)
+	Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))
 	for i in MOTES:
 		var rise := fmod(_age * 0.8 + float(i) * 0.163, 1.0)
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6

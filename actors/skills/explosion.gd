@@ -59,6 +59,9 @@ func _physics_process(delta: float) -> void:
 ## Pas de disque plein qui dure : en mélange additif sur un sol sombre, un orange
 ## peu opaque sortait **brun**, et l'explosion se lisait comme une flaque. Le cœur
 ## est chaud et s'éteint vite, l'onde et les étincelles portent le reste.
+##
+## Le cœur part à alpha plein : c'est lui qui passe le seuil de glow, donc ce qui
+## fait qu'une explosion **éclaire** au lieu d'être un rond orange.
 func _draw() -> void:
 	var k := clampf(_age / LIFETIME, 0.0, 1.0)
 	var fade := 1.0 - k
@@ -66,8 +69,8 @@ func _draw() -> void:
 	var warm := _tint.lerp(WARM, 0.55)
 	var heart := clampf(1.0 - k * 2.5, 0.0, 1.0)
 	if heart > 0.0:
-		draw_circle(Vector2.ZERO, maxf(r * 0.8, 1.0), Color(warm, 0.6 * heart))
-	draw_arc(Vector2.ZERO, maxf(r, 0.5), 0.0, TAU, 32, Color(_tint, 0.85 * fade * fade), 1.5)
+		Glow.draw_blob(self, Vector2.ZERO, maxf(r * 0.9, 1.0), Color(warm, heart))
+	Glow.draw_ring(self, Vector2.ZERO, maxf(r, 0.5), Color(_tint, 0.85 * fade * fade))
 	for i in SPARKS:
 		var d := Vector2.from_angle(TAU * float(i) / float(SPARKS) + 0.3)
-		draw_line(d * (r * 0.9), d * (r * 1.1 + 8.0 * k), Color(warm, 0.9 * fade), 1.0)
+		Glow.draw_streak(self, d * (r * 1.1 + 8.0 * k), d * (r * 0.85), 3.0, Color(warm, 0.9 * fade))

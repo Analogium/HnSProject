@@ -50,7 +50,10 @@ BG_TIGHT = 0.05
 SUBJECTS = json.load(open(os.path.join(HERE, "item_icons.json"), encoding="utf-8"))
 
 
-def workflow(prompt, seed):
+def workflow(prompt, seed, neg=None):
+    """`neg` : le negatif du tirage. Par defaut celui des objets, qui refuse entre
+    autres « tiled pattern » et « grid » -- a passer explicitement pour tout ce
+    qui, justement, doit se repeter (les tuiles de decor)."""
     return {
       "ckpt": {"class_type": "CheckpointLoaderSimple",
                "inputs": {"ckpt_name": "sdXL_v10VAEFix.safetensors"}},
@@ -59,7 +62,8 @@ def workflow(prompt, seed):
                           "strength_model": 1.0, "strength_clip": 1.0,
                           "model": ["ckpt", 0], "clip": ["ckpt", 1]}},
       "pos": {"class_type": "CLIPTextEncode", "inputs": {"text": prompt, "clip": ["lora", 1]}},
-      "neg": {"class_type": "CLIPTextEncode", "inputs": {"text": NEG, "clip": ["lora", 1]}},
+      "neg": {"class_type": "CLIPTextEncode",
+              "inputs": {"text": neg if neg is not None else NEG, "clip": ["lora", 1]}},
       "lat": {"class_type": "EmptyLatentImage",
               "inputs": {"width": 1024, "height": 1024, "batch_size": 1}},
       "ks": {"class_type": "KSampler",
@@ -77,8 +81,8 @@ def post(path, payload):
     return json.load(urllib.request.urlopen(req))
 
 
-def render(prompt, seed):
-    pid = post("/prompt", {"prompt": workflow(prompt, seed)})["prompt_id"]
+def render(prompt, seed, neg=None):
+    pid = post("/prompt", {"prompt": workflow(prompt, seed, neg)})["prompt_id"]
     while True:
         h = json.load(urllib.request.urlopen(f"{HOST}/history/{pid}"))
         if pid in h:

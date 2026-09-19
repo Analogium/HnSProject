@@ -43,3 +43,25 @@ func test_outfits_cover_the_variants() -> void:
 	for c in SpriteForge.PLAYER_CLOTHS:
 		tints[c] = true
 	assert_eq(tints.size(), SpriteForge.VARIANTS, "et quatre couleurs distinctes")
+
+
+## L'ombre au sol vit dans le canal alpha du sprite, à 30 % : c'est l'hypothèse
+## sur laquelle repose le `step(0.5, tex.a)` de `core/flash.gdshader`, et donc le
+## flash, le liseré d'affixe et la teinte d'état. Un changement de cadre ou de
+## ligne de pieds peut la casser sans qu'aucun autre test bronche.
+func test_a_sprite_carries_its_ground_shadow_in_its_alpha() -> void:
+	var img := SpriteForge.frame_image(SpriteForge.config("player", 0), "down", "idle", 0)
+	var half_transparent := 0
+	var solid := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			var a := img.get_pixel(x, y).a
+			if a > 0.0 and a < 0.5:
+				half_transparent += 1
+			elif a >= 0.5:
+				solid += 1
+	# Seize pixels sur une image de repos : l'ombre n'affleure qu'autour des pieds,
+	# le reste passe sous un corps opaque qui gagne. Les 428 pixels du jalon des
+	# assets se comptent sur la **planche** entière, pas sur une image.
+	assert_gt(half_transparent, 8, "l'ombre au sol a disparu du canal alpha")
+	assert_gt(solid, half_transparent, "le corps doit rester majoritaire sur son ombre")

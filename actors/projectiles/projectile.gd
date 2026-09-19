@@ -90,8 +90,26 @@ func tint() -> Color:
 	return DamageType.COLORS[_nature if _nature >= 0 else damage_type]
 
 
+## La nature effectivement dessinée : celle que le lanceur a passée, sinon celle
+## de la scène. Le même calcul que `tint()`, et le seul autre qui en a besoin.
+func nature() -> DamageType.Kind:
+	return _nature if _nature >= 0 else damage_type
+
+
 func _draw() -> void:
 	var color := tint()
+	# **La foudre ne se dessine pas comme une bille.** Un éclair court et fourché,
+	# couché sur la trajectoire — le nœud est déjà tourné dessus. C'est le seul
+	# écart par nature du projectile, et il est là parce que la foudre est la
+	# seule matière du jeu qui ait une *forme* propre : les autres sont des
+	# boules qui brillent.
+	if nature() == DamageType.Kind.LIGHTNING:
+		var head := Vector2(SIZE * 0.55, 0.0)
+		Lightning.draw_bolt(
+			self, Vector2(-SIZE * 1.1, 0.0), head, _flicker, color, 1.0, 0.55, 1
+		)
+		Lightning.draw_strike(self, head, color, 1.0, 4.5)
+		return
 	for a: Array in AUREOLES:
 		var halo := color
 		halo.a = float(a[1])

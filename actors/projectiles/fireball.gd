@@ -24,9 +24,10 @@ func _draw() -> void:
 			Vector2(1.0, spread - 2.0), Vector2(1.0, spread + 2.0),
 			Vector2(-length, spread * 1.6 + _flicker.randf_range(-0.8, 0.8)),
 		]), Color(t, 0.35))
-	draw_circle(Vector2.ZERO, 6.5, Color(t, 0.14))
-	draw_circle(Vector2(0.5, 0.0), 4.2, Color(t, 0.55))
-	draw_circle(Vector2(1.2, 0.0), 2.4, Color(t.lerp(LIGHT, 0.65), 0.85))
+	# Un cœur au lieu de trois disques concentriques : la retombée est dans la
+	# texture, et le centre passe le seuil de glow là où 0,85 le frôlait.
+	Glow.draw_blob(self, Vector2.ZERO, 7.0, Color(t, 0.5))
+	Glow.draw_blob(self, Vector2(1.2, 0.0), 3.4, Color(t.lerp(LIGHT, 0.7), 1.0))
 
 
 func _on_area_entered(area: Area2D) -> void:

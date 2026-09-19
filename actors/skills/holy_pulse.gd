@@ -71,12 +71,12 @@ func _strike() -> void:
 func _draw() -> void:
 	var fade := clampf((_cast.duration - _age) / CLOSING, 0.0, 1.0)
 	var light_color := _tint.lerp(Color.WHITE, 0.55)
-	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.07 * fade))
-	draw_arc(Vector2.ZERO, _cast.radius, 0.0, TAU, 40, Color(_tint, 0.25 * fade), 1.0)
+	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.06 * fade))
+	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.26 * fade))
 
 	var out := clampf(_since / (_cast.period * SPREADING), 0.0, 1.0) if _cast.period > 0.0 else 1.0
 	if out < 1.0:
-		draw_arc(
-			Vector2.ZERO, _cast.radius * out, 0.0, TAU, 44,
-			Color(light_color, 0.9 * (1.0 - out) * fade), 2.0
+		Glow.draw_ring(
+			self, Vector2.ZERO, _cast.radius * out,
+			Color(light_color, 0.9 * (1.0 - out) * fade)
 		)

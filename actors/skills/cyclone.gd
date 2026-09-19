@@ -80,7 +80,7 @@ func _draw() -> void:
 	var r := _cast.radius * minf(_age / OPENING, 1.0)
 	var tint: Color = DamageType.COLORS[_cast.dominant_nature()]
 	var light_color := tint.lerp(Color.WHITE, 0.5)
-	draw_arc(Vector2.ZERO, r, 0.0, TAU, 40, Color(tint, 0.18), 1.0)
+	Glow.draw_ring(self, Vector2.ZERO, r, Color(tint, 0.20))
 
 	for i in BLADES:
 		var angle := TAU * float(i) / float(BLADES) + _age * SPIN

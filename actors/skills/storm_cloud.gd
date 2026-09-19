@@ -108,8 +108,8 @@ func _bolt_to(point: Vector2) -> void:
 
 func _draw() -> void:
 	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / DISSIPATION, 0.0, 1.0)
-	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.08 * fade))
-	draw_arc(Vector2.ZERO, _cast.radius, 0.0, TAU, 40, Color(_tint, 0.35 * fade), 1.0)
+	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.07 * fade))
+	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.36 * fade))
 
 	var from_value := _age - float(maxi(_strikes - 1, 0)) * _cast.period
 	var flash := clampf(1.0 - from_value / FLASH_COLOR, 0.0, 1.0)
@@ -123,6 +123,7 @@ func _draw() -> void:
 
 	for e in _bolts:
 		var k := 1.0 - e.age / BOLT_LIFETIME
-		var breaks := ChainLightning.broken(e.of, e.toward, _flicker, 3.0)
-		draw_polyline(breaks, Color(_tint, 0.5 * k), 3.0)
-		draw_polyline(breaks, Color(_tint.lerp(Color.WHITE, 0.6), k), 1.0)
+		_flicker.seed = int(get_instance_id()) ^ Lightning.hold(e.age) ^ int(e.toward.x)
+		# Une seule fourche : l'éclair du nuage est court, deux le brouilleraient.
+		Lightning.draw_bolt(self, e.of, e.toward, _flicker, _tint, k, 0.75, 1)
+		Lightning.draw_strike(self, e.toward, _tint, k, 6.0)

@@ -76,7 +76,7 @@ func _draw() -> void:
 	var out := clampf(_age / (LIFETIME * RISE), 0.0, 1.0)
 	var fade := clampf((LIFETIME - _age) / (LIFETIME * 0.4), 0.0, 1.0)
 	var light_color := _tint.lerp(Color.WHITE, 0.55)
-	draw_arc(Vector2.ZERO, _cast.radius, 0.0, TAU, 32, Color(_tint, 0.30 * fade), 1.0)
+	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.32 * fade))
 	for spike in _spikes:
 		var foot := spike.foot * _cast.radius
 		var height := spike.height * out
