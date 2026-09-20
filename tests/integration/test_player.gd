@@ -67,7 +67,8 @@ func test_insufficient_pool_refuses_the_bolt() -> void:
 func test_regenerations() -> void:
 	_p._set_mana(10.0)
 	_p._regen(1.0)
-	assert_eq(_p.mana, 14.0, "4 de mana par seconde")
+	var regen := 4.0 + 10.0 * CharacterStats.MANA_REGEN_PER_INTELLIGENCE
+	assert_eq(_p.mana, 10.0 + regen, "régénération de base plus ce que l'intelligence rapporte")
 	_p._set_health(50.0)
 	_p._regen(1.0)
 	assert_eq(_p.health, 51.0, "1 PV par seconde")
@@ -93,7 +94,8 @@ func test_the_wand_speeds_up_casting_not_the_blade() -> void:
 	var swing := _p.stats.attack_time
 	var casting := _p.stats.cast_speed
 	_p.equip(Item.new(load("res://resources/items/wand.tres")))
-	# Un pourcentage, donc il multiplie ce que l'intelligence a déjà donné.
+	# Aucun attribut ne donne de cadence d'incantation : l'arme est la seule source ici.
+	assert_eq(casting, 1.0, "nue, la fiche incante à 100 %")
 	assert_almost_eq(_p.stats.cast_speed, casting * 1.15, 0.001, "+15 %")
 	assert_eq(_p.stats.attack_time, swing, "le corps à corps est intact")
 

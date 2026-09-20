@@ -1035,8 +1035,8 @@ msgstr "Strength. Each point gives {pv} hit points and {degats} damage."
 msgid "La dextérité. Chaque point donne {esquive} d'esquive et {vitesse} % de vitesse d'attaque."
 msgstr "Dexterity. Each point gives {esquive} evasion and {vitesse}% attack speed."
 
-msgid "L'intelligence. Chaque point donne {mana} de mana et {vitesse} % de vitesse d'incantation."
-msgstr "Intelligence. Each point gives {mana} mana and {vitesse}% cast speed."
+msgid "L'intelligence. Chaque point donne {mana} de mana et {regen} mana par seconde."
+msgstr "Intelligence. Each point gives {mana} mana and {regen} mana per second."
 
 msgid "Les points de vie. À zéro, la zone est perdue — jamais le personnage."
 msgstr "Hit points. At zero the zone is lost — never the character."
@@ -1077,8 +1077,8 @@ msgstr "The base delay between two hits, before attack speed."
 msgid "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation."
 msgstr "The rate of melee. It does not affect bolts, which follow cast speed."
 
-msgid "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque."
-msgstr "The rate of bolts. It does not affect the sword swing, which follows attack speed."
+msgid "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque, et **aucun attribut ne la donne** : elle vient des armes d'incantation et de l'arbre."
+msgstr "The rate of bolts. It does not affect the sword swing, which follows attack speed, and **no attribute grants it**: it comes from casting weapons and the tree."
 
 msgid "Raccourcit les recharges des compétences qui en ont une. **Ni la vitesse d'attaque ni celle d'incantation n'y touchent.**"
 msgstr "Shortens the cooldowns of skills that have one. **Neither attack speed nor cast speed affects them.**"

@@ -117,8 +117,11 @@ static func scale_to_level(stats: CharacterStats, level: int) -> void:
 const ATTRIBUTES := ["strength", "dexterity", "intelligence"]
 
 
-## Chaque attribut gouverne une réserve et une cadence. À dix partout, le départ :
-## +20 PV, +2 dégâts, 15 d'esquive, +15 mana, +4 % sur les deux cadences.
+## Chaque attribut gouverne deux choses. À dix partout, le départ : +20 PV,
+## +2 dégâts, 15 d'esquive, +4 % de vitesse d'attaque, +15 mana, +0,5 mana/s.
+## **L'intelligence ne donne pas de vitesse d'incantation** : la cadence des sorts
+## s'achète sur les objets et l'arbre, sinon elle monterait toute seule et ne serait
+## plus une statistique qu'on poursuit.
 const HEALTH_PER_STRENGTH := 2.0
 const DAMAGE_PER_STRENGTH := 0.2
 const EVASION_PER_DEXTERITY := 1.5
@@ -126,7 +129,7 @@ const EVASION_PER_DEXTERITY := 1.5
 ## font passer la cadence de 100 à 104 %.
 const ATTACK_SPEED_PER_DEXTERITY := 0.4
 const MANA_PER_INTELLIGENCE := 1.5
-const CAST_SPEED_PER_INTELLIGENCE := 0.4
+const MANA_REGEN_PER_INTELLIGENCE := 0.05
 
 ## Le plafond classique du genre. Il donne sa valeur à l'objectif « atteindre le
 ## plafond », et empêche l'immunité pure à un élément.
@@ -198,4 +201,4 @@ func apply_attributes() -> void:
 	attack_speed += dexterity * ATTACK_SPEED_PER_DEXTERITY * 0.01
 
 	max_mana += intelligence * MANA_PER_INTELLIGENCE
-	cast_speed += intelligence * CAST_SPEED_PER_INTELLIGENCE * 0.01
+	mana_regen += intelligence * MANA_REGEN_PER_INTELLIGENCE

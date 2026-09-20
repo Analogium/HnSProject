@@ -771,3 +771,361 @@ qu'elle fait ; elle n'a que l'onde, et c'est écrit.
 **837 tests, 837 passent**, aucun modifié. Le Tombeau de glace a coûté une capture vide :
 il est refusé pour réserve insuffisante, et `cast_slot()` répond `false` sans dire
 laquelle de ses six raisons — c'est le troisième piège d'atelier du même genre.
+
+## 16. Le vrai défaut des effets, et un essai — 20 septembre 2026
+
+L'utilisateur, devant les trois matières livrées : « c'est trop moche ». Il avait
+raison, et le diagnostic des §13 à §15 était **à côté**. J'ai passé trois livraisons à
+régler la lumière, les opacités et les formes d'effets qui sont tracés en polygones,
+alors que le défaut est que ce ne sont **pas des pixels**.
+
+### La mesure qui tranche
+
+Deux carrés de 55×60 pixels dans la même capture, un ennemi et une langue de flamme :
+
+| | couleurs | voisins identiques | pixels de contour |
+|---|---|---|---|
+| ennemi (sprite de la forge) | **29** | 77,5 % | **12,5 %** |
+| langue de flamme (polygones) | **423** | 58,3 % | **0 %** |
+
+Le jeu tourne en 640×360 étiré au double : un pixel d'art fait deux pixels d'écran. Un
+polygone tracé en flottants tombe **entre** deux pixels du jeu et sort anti-aliasé à la
+résolution de l'écran. Ajoutons qu'aucun effet n'a de contour, là où tout le décor en a.
+Les effets sont peints dans une autre langue que le jeu, et à une autre résolution. Rien
+ne rattrape ça au réglage — c'est le même défaut qu'au §10, où c'était *qui place les
+pixels* qui manquait, et je l'ai refait sur les effets.
+
+### ComfyUI n'y peut rien
+
+Question posée, réponse mesurée : non, et il n'y a rien à installer.
+
+1. Le défaut n'est pas le dessin mais la grille. Une image générée sort lisse et doit
+   être ramenée au pixel du jeu par le traitement des tuiles (§11) ;
+2. SDXL n'a **aucune cohérence d'une image à l'autre** : six images d'explosion générées
+   ne sont pas la même explosion. Il faudrait AnimateDiff ou ControlNet, non installés,
+   qui se battent de toute façon avec la grille ;
+3. tout ce qu'il faut est déjà là : `PixelCanvas`, `ArtPalette.ramp()`, la passe de
+   contour, les grilles dessinées à la main du §10.
+
+### L'essai : le brasier d'Immolation
+
+Un seul geste converti, pour juger avant d'engager le reste. `art/effect_forge.gd` :
+
+- **quatre temps d'une langue, dessinés à la main**, neuf pixels sur treize, montés par
+  `PixelCanvas` avec deux rampes — celle de la teinte et celle du cœur — et le contour
+  posé par la forge autour de la silhouette ;
+- **un halo de sol tramé** (Bayer 4×4, trois paliers) à la place du dégradé radial : un
+  dégradé lisse était la dernière chose de l'aura qui trahissait le vecteur ;
+- les planches se posent sur une **coordonnée entière** : posée entre deux pixels du
+  jeu, une planche se rééchantillonne et ses blocs de deux pixels se brisent ;
+- elles se dessinent dans un nœud **en mélange normal**, pas dans l'additif de l'aura :
+  un contour sombre n'ajoute rien en additif, il disparaît, et avec lui ce qui rattache
+  l'effet au décor.
+
+Dans le même carré de 18×26 : **82 couleurs et aucun contour** avant, **40 et 4,3 %**
+après. Capture à trois volets dans `21-preuve-pixels.png` — un ennemi, la langue
+d'avant, la langue forgée.
+
+**841 tests, 841 passent.** Le reste des effets est inchangé, et se voit sur la même
+capture : c'est la comparaison.
+
+### Le serpent, deuxième essai — 20 septembre 2026
+
+« C'est vrai que c'est un peu mieux » : le brasier passe, le doute reste. Deuxième
+geste converti, et le plus dur des deux, parce que **sa forme change à chaque image**.
+Une planche ne peut donc pas être gardée : il faut la refaire.
+
+Deux tentatives, la première jetée :
+
+1. **Une file de perles** — un disque forgé par anneau, posé sur la grille, avec un
+   contour en passe séparée pour que l'union soit cernée une fois. Résultat à la
+   capture : un dos **moiré et bosselé**. Seize dégradés côte à côte font du bruit, et
+   le contour d'une grosse perle ressort entre deux petites ;
+2. **le corps rastérisé en entier**, une capsule d'un anneau au suivant dans un seul
+   `PixelCanvas`, contour posé autour de l'union — exactement ce que la forge fait pour
+   un personnage. Un seul volume éclairé, une seule silhouette.
+
+**Mesuré au banc** (`capture/bench_snake.gd`, seize anneaux dans 96×96) : **0,64 ms par
+image**, dont 0,47 pour `to_image` seul et 0,17 pour la mise en capsules — **0,61 ms**
+une fois la tête, la crête et les yeux ajoutés. Refait **30
+fois par seconde** et non 60 — le serpent avance d'un pixel par image, sa forme n'en
+change pas —, ce qui ramène la dépense à **0,32 ms par serpent**. La texture est mise à
+jour et non recréée, donc le cadre est fixe (96×96) et `to_image` ne balaie de toute
+façon que ce qui est peint.
+
+Trois réglages trouvés à la capture, et un seul compte vraiment :
+
+- **une braise n'a pas d'ombre violette.** Les creux du corps tiraient au brun-violet et
+  la bête ressortait en **tronc d'arbre** : c'est `ArtPalette.SHADOW_TINT`, qui accorde
+  tous les sprites du jeu entre eux, mais qui suppose une lumière extérieure. Ce qui est
+  sa propre source prend une ombre rouge sombre — `ramp()` accepte désormais la sienne ;
+- **cinq tons le long du corps et non trois** : à trois, les changements se lisaient
+  comme deux coutures en travers du dos ;
+- **une tête d'un pixel plus large** que le premier anneau, sinon la bête est un tuyau
+  qui s'amincit et on ne sait pas par quel bout elle avance.
+
+Le corps est aussi passé de 3,8 à 5 de rayon : une silhouette cernée perd un pixel de
+matière au contour, et à trois le serpent sortait ver de terre. `CONTACT` n'a pas bougé
+— la morsure est la même.
+
+**841 tests, 841 passent.** Captures `23-serpent-forge.png` et `24-serpent-de-pres.png`.
+
+### Le serpent, troisième essai : ce qu'un volume éclairé n'invente pas
+
+« Le serpent ne me convainc pas assez. » Regardé à nouveau, et cette fois sur une image
+où il est **droit** : ce n'est pas un serpent, c'est un tuyau. Un volume éclairé donne le
+galbe, jamais l'identité — c'est le §10 pour les personnages, reposé pour les bêtes.
+
+Plutôt que de deviner ce qui manquait, **une planche de sept corps sur la même échine**,
+rendue hors du jeu (`capture/snakes.gd`, pur calcul, donc headless) : l'actuel, une tête
+sculptée, des écailles franches, un corps de charbon fendu de lave, une crête dorsale,
+et deux cumuls. Choix de l'utilisateur : **tête + crête + queue**.
+
+Les trois choses qui manquaient, et qui ne se calculent pas :
+
+- **une tête**, faite d'un crâne et d'un museau — deux capsules, donc elle tourne avec le
+  corps sans demander une planche par direction. Plus deux yeux de **deux** pixels : à un
+  seul, l'œil disparaît sur une tête de dix pixels ;
+- **une crête dorsale**, un pixel clair le long de l'échine. Vue de dessus, une bête n'a
+  pas de dos sans elle. Elle **meurt avant la queue** et s'éteint en chemin : menée
+  jusqu'au bout à pleine clarté, elle se lisait comme un ruban peint sur la bête ;
+- **une queue en pointe** — 0,8 de rayon au lieu de 2. Arrêtée net, elle donnait un tuyau
+  coupé.
+
+Le tout coûte **0,61 ms par image** au même banc, toujours refait à 30 Hz.
+
+**841 tests, 841 passent.** Planche de choix `25-serpents-a-choisir.png`, résultat en jeu
+`26-serpent-final.png` (droit et lové, les deux cas).
+
+### Le cran au-dessus : une planche d'animation — 20 septembre 2026
+
+Demandé : voir ce que donne une vraie planche dessinée **image par image**, comme un
+sprite de personnage, et non une forme qu'on anime en la déplaçant. Fait sur la **boule
+de feu** : six temps de treize pixels de côté, plus trois bouffées de traînée.
+
+Le choix du geste n'est pas libre, et c'est la découverte de ce lot : **une planche ne
+supporte ni la rotation ni le redimensionnement.** Pivotée, elle se rééchantillonne et
+ses blocs de deux pixels d'écran se brisent ; agrandie d'un facteur qui n'est pas entier,
+ses pixels deviennent inégaux. Donc :
+
+- **la boule de feu** y a droit : sa taille est une constante, et une boule n'a pas
+  d'orientation — il a suffi de lui retirer la rotation que `Projectile` pose sur tous
+  les tirs, et de placer sa traînée à la main derrière elle ;
+- **l'explosion n'y a pas droit** : son rayon est une statistique, qui va de 20 pour la
+  Boule de feu à 46 pour la Nova de glace, et qu'un nœud agrandit encore. Elle restera
+  faite de dessins **replacés** — des langues sur un cercle — ou d'un tracé.
+
+C'est la règle qui manquait, et elle range les trois chemins du dessin d'effet : planche
+d'animation pour ce qui est de taille fixe, planches replacées pour ce qui se répète,
+rastérisation par image pour ce qui change de forme.
+
+Deux détails que la planche a redemandés, et qui sont les mêmes que pour le brasier :
+**pas de mélange additif** — un contour sombre n'y ajoute rien et disparaît —, et un
+**calage sur le pixel du jeu** à chaque image.
+
+Quatorze images par seconde pour la boule : plus lent, elle clignote ; plus vite, le
+dessin se perd et il ne reste qu'un scintillement. Deux tests refusent l'oubli : les
+grilles rectangulaires, et **six temps réellement distincts** — une animation dont deux
+images sont identiques est une image fixe payée deux fois, et rien ne le dirait.
+
+**843 tests, 843 passent.** Planche `27-planche-boule-de-feu.png`, en jeu
+`28-boule-en-vol.png`.
+
+### Le brasier et le serpent, choisis sur planche — 20 septembre 2026
+
+La méthode promise au tour précédent, appliquée pour de bon : **deux planches avant
+d'écrire une ligne**. Six langues de brasier (`29-langues-a-choisir.png`, chacune seule
+puis posée en couronne à l'échelle du jeu) et six serpents, flammes comprises
+(`30-serpents-a-choisir.png`). Rendues en `--headless`, pur calcul.
+
+Retenu : **la langue au pied sombre**, et un serpent **plus fin, plus long, à écailles
+franches**.
+
+- **Le pied sombre pose la flamme.** Un dégradé vertical franc — presque noir au pied,
+  blanc à la pointe — au lieu d'une langue claire de bout en bout, qui flottait au-dessus
+  du sol. C'est la variante que la couronne à l'échelle du jeu a départagée : les autres
+  s'y lisaient comme des bougies ;
+- **la finesse fait le serpent.** Vingt anneaux de 2,85 et quatre de rayon, au lieu de
+  seize de 3,6 et cinq : le même corps cesse d'être un tuyau qui ondule. L'écart est
+  choisi pour que **la longueur totale ne bouge pas** — 54 pixels —, sinon la morsure
+  s'allongerait avec le dessin, et un changement de dessin n'a pas à toucher
+  l'équilibrage ;
+- **une bande sur deux de deux crans plus sombre** : le seul motif qui survive à la
+  taille où la bête est vue.
+
+Le corps s'étant allongé de quatre anneaux, les langues du dos sont passées d'un anneau
+sur trois à un sur quatre — à trois, le peigne que le premier réglage avait retiré
+revenait. Le corps plus fin coûte moins cher : **0,58 ms par image** au banc, contre
+0,61.
+
+Les langues du dos du serpent **gardent leur pied clair** : posées sur la bête et non au
+sol, un pied sombre y ferait un trou.
+
+**843 tests, 843 passent.**
+
+### Un trou dans la campagne, trouvé par accident
+
+En remplaçant les grilles de la langue, j'ai supprimé `EffectForge.FLAME_HZ` sans le
+voir. **`tests/run.sh unit` est passé au vert** : les tests unitaires ne chargent pas les
+nœuds de compétence, donc rien n'a vu que `Immolation` et `HellSnake` ne compilaient
+plus. C'est la capture en jeu qui l'a dit, par un `SCRIPT ERROR` dans sa sortie.
+
+La leçon vaut au-delà : **une suite unitaire verte ne dit pas que le jeu compile.** Le
+garde-fou existant de `run.sh` ne voit que les scripts *de test* qui ne compilent pas.
+Lancer la suite complète, ou une capture, reste le seul moyen de le savoir.
+
+### L'explosion et la Ruée ardente — 20 septembre 2026
+
+Deux planches encore (`33-explosions-a-choisir.png`, `34-ruees-a-choisir.png`), cinq
+souffles et quatre traînées. Retenu : **l'explosion en langues seules**, et la
+**traînée en sillon continu**.
+
+**L'explosion sans anneau.** Le choix retenu est celui que je ne recommandais pas — et
+il est le bon pour une raison que la planche ne montrait pas : c'est le seul qui ne
+mette **qu'une matière** à l'écran. Un anneau tracé à côté de langues dessinées, ce sont
+deux façons de peindre le feu dans la même image. Onze langues au lieu de cinq, parce
+que dessinées elles doivent se toucher pour faire une onde, et un **éclat en étoile** au
+centre, en trois temps : un disque blanc est un trou dans l'image, une étoile est un
+coup. Rien ne dépasse le rayon qui mord : les langues **sont** l'onde.
+
+**Le sillon.** Une file de brûlures qui se recouvrent tous les quatre pixels, et des
+langues plantées dessus. C'est ce qui remplace le ruban brun que le §14 avait déjà dû
+affaiblir : on voit enfin qu'on est passé par là.
+
+Deux corrections prises à la capture :
+
+- **une cendre grise est invisible.** Le sol du jeu est déjà à 0,21 de luminance ; la
+  brûlure ne peut pas se faire voir en étant plus sombre. Elle est donc **brune** — la
+  braise qui couve dans la terre — avec une ombre chaude, comme le serpent. Un test
+  vérifie qu'elle reste malgré tout sous le sol ;
+- **une langue tous les treize pixels faisait une palissade.** Les langues dessinées
+  font neuf pixels de large, contre trois pour les tracées d'avant : l'écart passe à
+  vingt-deux, ce qui redonne la densité de la planche.
+
+Les deux nœuds perdent leur mélange additif **quand leur nature est le feu**, et le
+gardent sinon : une planche cernée n'ajoute pas de lumière, elle en cache.
+
+**845 tests, 845 passent.**
+
+### Deux réglages demandés, et ce qu'ils ont appris
+
+« Plus instantanée et court » pour l'explosion, « plus de flammes sur le chemin » pour
+la Ruée.
+
+**Le souffle peint dure moitié moins que le tracé** : 0,16 s contre 0,30. Ce n'est pas
+un caprice de durée, c'est une conséquence du médium — un effet tracé s'éteint par un
+dégradé, un effet dessiné n'a que des images. Tenue trois dixièmes de seconde, la
+couronne de langues se mettait à ressembler à un feu de camp posé là. Trois valeurs le
+font :
+
+- l'onde atteint son **plein rayon en trois centièmes de seconde** (un cinquième de sa
+  vie) au lieu des deux tiers : c'est ce qui la rend instantanée plutôt que soufflée ;
+- la couronne reste à **pleine opacité jusqu'aux deux tiers**, puis s'éteint d'un coup.
+  Un fondu progressif se lit comme un feu qui meurt, une coupure comme un souffle — la
+  même raison qui donne son battement à la foudre ;
+- l'éclat en étoile brûle ses trois images en **un huitième de seconde** : il doit avoir
+  disparu avant que l'œil ne le détaille.
+
+**Ce qui faisait la palissade du sillon n'était pas le nombre de langues mais leur
+régularité.** Je l'avais corrigé en les espaçant — 13 px puis 22 —, ce qui vidait le
+couloir. La vraie correction est l'alternance : une grande langue, une petite, la petite
+écartée de l'axe à tour de rôle. À 11 px d'écart, le chemin est deux fois plus fourni
+qu'avant et ne s'aligne plus.
+
+**845 tests, 845 passent.**
+
+## Le manuel de glace, dessiné
+
+Le feu était entier ; restait l'autre matière qui a une forme propre. Quatre gestes :
+**Pics de glace**, **Nova de glace**, **Tombeau de glace**, **Désastre hivernal**.
+
+### La planche d'abord
+
+Six silhouettes de cristal, chacune montrée seule **et** en couronne de sept — c'est
+le geste qu'on juge, pas le dessin isolé. Deux variantes se sont éliminées toutes
+seules : le **prisme à étages** sortait en sapin (le piège que `fx/frost.gd` annonçait
+déjà : deux flancs identiques font un conifère), et l'**aiguille** en pilier.
+
+Choisie : la **lame facettée**, deux flancs francs et l'arête de givre entre les deux.
+Et deux tailles alternées plutôt qu'une, pour la raison apprise sur la Ruée — ce qui
+fait une palissade, c'est la régularité, pas le nombre.
+
+La demande qui a tout orienté ensuite : **le Désastre hivernal doit être un
+tourbillon**, pas un cercle de pics.
+
+### Ce qui se dessine, et comment
+
+| geste | ce qui le dessine |
+|---|---|
+| Pics de glace | sept cristaux alternés grand/petit, sur un givre de sol tramé |
+| Nova de glace | un anneau d'éclats qui file, puis onze cristaux debout derrière lui |
+| Tombeau de glace | un bloc de 21×29, posé à 0,8 d'alpha : le seul dessin qu'on regarde **à travers** |
+| Désastre hivernal | douze bras d'éclats couchés sur leur cap, et des flocons aspirés |
+
+Le tourbillon a demandé une chose que le feu n'avait jamais demandée : **une planche
+ne tourne pas**. Un éclat orienté sur sa tangente ne peut donc pas être pivoté — il
+faut le dessiner dans chaque sens. Deux grilles (droite, diagonale) et trois quarts de
+tour chacune donnent les **huit orientations**, le quart de tour étant la seule
+rotation qu'un dessin en pixels supporte sans se rééchantillonner. La lumière tourne
+avec, ce qui serait faux sur un sprite posé, mais un éclat emporté culbute.
+
+Même piège, autre bout : le cristal qui **sort de terre**. Une planche étirée se
+rééchantillonne, donc la sortie n'est pas un redimensionnement mais un **découpage** au
+ras du sol (`draw_texture_rect_region`) — le pied reste au sol et la pointe monte.
+
+### Les deux erreurs que seules les captures ont dites
+
+**Un cristal qui s'estompe sort gris.** C'est le retour, pour la troisième fois du
+jalon, du « orange peu opaque qui sort brun » : posée à demi-transparente sur un sol à
+0,21, une planche claire se mélange au sol et perd sa teinte. La campagne ne voit rien,
+la capture le crie. Un dessin ne s'éteint donc pas en pâlissant :
+
+- les pics et la couronne de la nova **redescendent sous terre** — le même découpage,
+  à l'envers ;
+- le tourbillon **se vide** : à mesure qu'il meurt, ses éclats disparaissent un à un
+  selon une trame stable. Un éclat en moins se lit comme un éclat en moins ; un éclat à
+  demi transparent se lit comme de la boue ;
+- ce qui s'efface encore sont le givre au sol et les flocons, qui sont faits pour ça.
+
+**Un flanc sombre vu à travers n'est pas de l'ombre, c'est de la crasse.** Le tombeau,
+dessiné sur toute la rampe comme un sprite ordinaire, sortait en caillou gris une fois
+posé sur son porteur. Sa rampe ne descend plus sous le troisième palier : la glace
+s'ombre d'un cran, pas de quatre.
+
+Dernier réglage de composition : les bras du tourbillon s'égrenaient en collier à leur
+extrémité, parce qu'un pas constant en paramètre parcourt deux fois plus de chemin au
+bord qu'au centre. Les rangs sont donc étirés vers le bord (`pow(t, 0.6)`).
+
+### Ce que la livraison a rendu mort
+
+Le manuel de feu et celui de glace étant tous deux dessinés, **plus personne ne trace
+de flamme ni de cristal** :
+
+- `Fire.tongue`, `draw_tongue`, `breath` et le profil des langues — supprimés, avec
+  leurs trois tests de forme ; `fx/fire.gd` ne garde que sa couleur et la braise
+  d'Ignition, seul geste du feu encore tracé ;
+- `Frost.shard`, `draw_shard`, `tip`, `draw_flake` et les opacités de facette —
+  supprimés ; `fx/frost.gd` devient le fichier qui **pose** les planches ;
+- `Explosion._matter()`, qui ne servait plus que ces deux natures, et les branches par
+  nature de son cœur et de son éclat ;
+- le calage sur le pixel du jeu, écrit **sept fois** depuis le début du jalon, tient
+  maintenant dans `EffectForge.snap()`.
+
+**845 tests, 845 passent.**
+
+### Douze bras plutôt que quatre
+
+Demandé après coup : « beaucoup plus de branches ». Planche de quatre densités — 4,
+6, 8, 12 — au rayon plein, et c'est **12** qui a été retenu.
+
+Ce que le nombre change n'est pas la quantité mais la **forme** : à quatre, on voit
+quatre traits qui tournent ; à douze, les bras se touchent au cœur et font une roue
+pleine, ce qui donne enfin un œil au tourbillon. Et le geste raconte alors ses deux
+temps — une roue serrée sur le lanceur au début, puis, à mesure qu'il grandit et se
+vide, une **tempête de neige** d'éclats épars qui découvre le porteur. C'est le nom
+de son premier nœud, Blizzard.
+
+Rien d'autre n'a bougé : l'espacement reste celui du dessin, donc un bras de douze
+coûte ce que coûtait un bras de quatre.
+
+**845 tests, 845 passent.**

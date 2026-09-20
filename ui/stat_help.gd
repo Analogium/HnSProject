@@ -13,7 +13,7 @@ const HEAVY_HIT := 50.0
 const TEXTS := {
 	"strength": "La force. Chaque point donne {pv} points de vie et {degats} dégâts.",
 	"dexterity": "La dextérité. Chaque point donne {esquive} d'esquive et {vitesse} % de vitesse d'attaque.",
-	"intelligence": "L'intelligence. Chaque point donne {mana} de mana et {vitesse} % de vitesse d'incantation.",
+	"intelligence": "L'intelligence. Chaque point donne {mana} de mana et {regen} mana par seconde.",
 
 	"max_health": "Les points de vie. À zéro, la zone est perdue — jamais le personnage.",
 	"health_regen": "Vie regagnée par seconde, en permanence. Elle ne s'interrompt pas au combat.",
@@ -32,7 +32,7 @@ const TEXTS := {
 	"attack_time": "Le temps que prend un coup d'arme, avant la vitesse d'attaque.",
 	"attack_speed": "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation.",
 	"cooldown_recovery": "Raccourcit les recharges des compétences qui en ont une. **Ni la vitesse d'attaque ni celle d'incantation n'y touchent.**",
-	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque.",
+	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque, et **aucun attribut ne la donne** : elle vient des armes d'incantation et de l'arbre.",
 	"attack_range": "L'allonge du coup d'épée, en pixels.",
 	"crit_chance": "Celle de l'arme portée, seule à donner une base. Les bonus accrus la multiplient ensuite, compétence par compétence.",
 	"crit_multiplier": "Ce que multiplie un coup critique.",
@@ -83,7 +83,7 @@ static func _what_it_does(field: String) -> String:
 		"intelligence":
 			return text_value.format({
 				"mana": "%.1f" % CharacterStats.MANA_PER_INTELLIGENCE,
-				"vitesse": "%.1f" % CharacterStats.CAST_SPEED_PER_INTELLIGENCE,
+				"regen": "%.2f" % CharacterStats.MANA_REGEN_PER_INTELLIGENCE,
 			})
 	return text_value
 

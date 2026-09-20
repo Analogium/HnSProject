@@ -44,13 +44,16 @@ static func _additive() -> CanvasItemMaterial:
 	return m
 
 
-static func ramp(base: Color) -> PackedColorArray:
+## `shadow` se change pour ce qui **est** sa propre source de lumière : une braise
+## n'a pas d'ombre violette. Tout le reste prend le violet froid, qui est ce qui
+## accorde les sprites entre eux.
+static func ramp(base: Color, shadow := SHADOW_TINT) -> PackedColorArray:
 	var out := PackedColorArray()
 	for i in LEVELS:
 		var t := float(i) / float(LEVELS - 1)
 		if t < BASE_STOP:
 			var k := 1.0 - t / BASE_STOP
-			out.append(base.lerp(SHADOW_TINT, k * SHADOW_STRENGTH))
+			out.append(base.lerp(shadow, k * SHADOW_STRENGTH))
 		else:
 			var k := (t - BASE_STOP) / (1.0 - BASE_STOP)
 			out.append(base.lerp(LIGHT_TINT, k * LIGHT_STRENGTH))

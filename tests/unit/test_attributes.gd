@@ -37,13 +37,24 @@ func test_dexterity_makes_evasion_really_useful() -> void:
 	assert_gt(st.evade_chance(), 0.4, "40 de dextérité protègent réellement")
 
 
-func test_intelligence_gives_mana_and_cast_speed() -> void:
+func test_intelligence_gives_mana_and_regeneration() -> void:
 	var st := CharacterStats.new()
 	st.max_mana = 50.0
 	st.intelligence = 10.0
 	st.apply_attributes()
 	assert_eq(st.max_mana, 65.0, "+1,5 de mana par point")
-	assert_almost_eq(st.cast_speed, 1.04, 0.0001, "+0,4 point de % par point")
+	assert_almost_eq(st.mana_regen, 0.5, 0.0001, "+0,05 mana par seconde et par point")
+
+
+## La cadence des sorts s'achète : une arme d'incantation, un nœud de l'arbre. Un
+## attribut qui la donnerait la ferait monter toute seule, et plus personne n'irait
+## la chercher.
+func test_no_attribute_gives_cast_speed() -> void:
+	for field in CharacterStats.ATTRIBUTES:
+		var st := CharacterStats.new()
+		st.set(field, 40.0)
+		st.apply_attributes()
+		assert_eq(st.cast_speed, 1.0, "%s ne touche pas à la vitesse d'incantation" % field)
 
 
 ## Chaque attribut doit toucher **deux** choses. Un attribut qui n'en gouverne
@@ -57,7 +68,7 @@ func test_each_attribute_governs_two_stats() -> void:
 		st.set(field, 20.0)
 		st.apply_attributes()
 		var changes := 0
-		for other in ["max_health", "evasion", "attack_speed", "max_mana", "cast_speed"]:
+		for other in ["max_health", "evasion", "attack_speed", "max_mana", "mana_regen", "cast_speed"]:
 			if not is_equal_approx(float(st.get(other)), float(indicator.get(other))):
 				changes += 1
 		# Les dégâts de la force ne sont pas un champ de la fiche mais une

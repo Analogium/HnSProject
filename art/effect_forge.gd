@@ -1,0 +1,690 @@
+class_name EffectForge
+extends RefCounted
+
+## Les images des effets, dessinées **pixel par pixel** comme les personnages, et
+## non tracées en polygones comme le reste de `fx/`.
+##
+## La raison tient en deux mesures prises sur la même capture, dans deux carrés
+## de même taille : un ennemi compte **29 couleurs et 12,5 % de pixels de
+## contour** ; une langue de flamme dessinée en polygones en comptait **423 et
+## aucun**. Les effets étaient peints dans une autre langue que le décor, et à
+## une autre résolution — un polygone tombe entre deux pixels du jeu, qui en fait
+## deux à l'écran. Rien ne rattrape ça au réglage.
+##
+## Une planche est donc **dessinée à la main**, comme les grilles d'acteurs du
+## §10 : c'est *qui place les pixels* qui décide, pas la finesse du dégradé.
+
+## Une langue de flamme, neuf pixels sur treize, en quatre temps. **Le pied ne
+## bouge pas** d'un temps à l'autre — c'est la pointe qui lèche —, sinon la flamme
+## saute au lieu d'onduler.
+##
+## Son dégradé est vertical et franc : presque noir au pied, blanc à la pointe.
+## Choisi sur planche contre cinq autres langues (jalon 24) — c'est le pied sombre
+## qui **pose** la flamme sur le sol, là où une langue claire de bout en bout
+## flotte au-dessus.
+##
+## `1` à `5` montent la rampe de la teinte, `w` est le cœur : sa propre rampe,
+## bâtie sur la couleur chaude, parce qu'un cœur pris en haut de la rampe du feu
+## reste orange. Le contour, lui, n'est pas dessiné : `PixelCanvas` le pose autour
+## de la silhouette entière.
+const FLAME := [
+	[
+		"....5....",
+		"...555...",
+		"...5w5...",
+		"..45w54..",
+		"..4www4..",
+		".44www44.",
+		".34www43.",
+		".334w433.",
+		"233444332",
+		"223333322",
+		"122333221",
+		"112222211",
+		".1122211.",
+	],
+	[
+		"..5......",
+		"..555....",
+		"..5w5....",
+		"..45w54..",
+		"..4www4..",
+		".44www44.",
+		".34www43.",
+		".334w433.",
+		"233444332",
+		"223333322",
+		"122333221",
+		"112222211",
+		".1122211.",
+	],
+	[
+		".........",
+		"....5....",
+		"...555...",
+		"..45w54..",
+		"..4www4..",
+		".44www44.",
+		".34www43.",
+		".334w433.",
+		"233444332",
+		"223333322",
+		"122333221",
+		"112222211",
+		".1122211.",
+	],
+	[
+		"......5..",
+		"....555..",
+		"....5w5..",
+		"..45w54..",
+		"..4www4..",
+		".44www44.",
+		".34www43.",
+		".334w433.",
+		"233444332",
+		"223333322",
+		"122333221",
+		"112222211",
+		".1122211.",
+	],
+]
+
+## Images de langue par seconde. Au-delà d'une douzaine, le feu grésille ; en
+## dessous de six, il saccade. La même pour tout ce qui brûle, sinon deux feux
+## voisins battent à deux rythmes.
+const FLAME_HZ := 9.0
+
+const FLAME_WIDTH := 9
+const FLAME_HEIGHT := 13
+
+## Le rang de la teinte et celui du cœur dans la palette passée à `to_image()`.
+const R_TINT := 0
+const R_CORE := 1
+
+const INK := {
+	"1": [R_TINT, 0], "2": [R_TINT, 1], "3": [R_TINT, 2], "4": [R_TINT, 3],
+	"5": [R_TINT, 4], "w": [R_CORE, 4],
+}
+
+static var _flames := {}
+
+
+## Les quatre temps d'une langue de cette teinte, dans l'ordre.
+static func flames(tint: Color) -> Array:
+	return _sheet(_flames, FLAME, FLAME_WIDTH, FLAME_HEIGHT, tint, Fire.heart(tint))
+
+
+## La matrice de Bayer 4×4, la façon dont le pixel art fait ses dégradés depuis
+## toujours : un damier ordonné plutôt qu'une rampe continue.
+const BAYER := [
+	[0, 8, 2, 10],
+	[12, 4, 14, 6],
+	[3, 11, 1, 9],
+	[15, 7, 13, 5],
+]
+
+## Les paliers du halo. Trois et pas plus : c'est le nombre de tons qu'un dégradé
+## de pixel art se permet avant de redevenir un dégradé.
+const SCORCH_STEPS := 3
+const SCORCH_ALPHA := 0.20
+
+static var _scorches := {}
+
+
+## Le halo de sol d'une aura, **tramé** : un dégradé radial lisse est la dernière
+## chose qui trahit le vecteur au milieu d'un décor en pixels. Gardé par teinte et
+## par rayon entier — un rayon ne change qu'en allumant l'aura ou en plaçant un
+## point.
+static func scorch(tint: Color, radius: int) -> Texture2D:
+	var key := "%s@%d" % [tint.to_html(false), radius]
+	if _scorches.has(key):
+		return _scorches[key]
+
+	var side := radius * 2 + 1
+	var img := Image.create(side, side, false, Image.FORMAT_RGBA8)
+	var r := float(radius)
+	for y in side:
+		var dy := float(y) - r
+		for x in side:
+			var dx := float(x) - r
+			var d := sqrt(dx * dx + dy * dy) / r
+			if d > 1.0:
+				continue
+			# Le seuil du damier décale chaque pixel d'un seizième de palier : c'est
+			# lui qui remplace la retombée continue.
+			var v := pow(1.0 - d, 1.6) * float(SCORCH_STEPS)
+			var step := int(floor(v + float(BAYER[y % 4][x % 4]) / 16.0))
+			if step <= 0:
+				continue
+			img.set_pixel(x, y, Color(
+				tint, float(mini(step, SCORCH_STEPS)) / float(SCORCH_STEPS) * SCORCH_ALPHA
+			))
+	var tex := ImageTexture.create_from_image(img)
+	_scorches[key] = tex
+	return tex
+
+
+## Une petite langue, cinq pixels sur huit, en trois temps : celle qui tient sur
+## le dos d'un serpent, où la grande — neuf sur treize — couvrait la bête.
+const FLAME_SMALL := [
+	[
+		"..5..",
+		".454.",
+		".4w4.",
+		".3w3.",
+		"23w32",
+		"23w32",
+		"13443",
+		".131.",
+	],
+	[
+		".5...",
+		"45...",
+		".4w4.",
+		".3w3.",
+		"23w32",
+		"23w32",
+		"13443",
+		".131.",
+	],
+	[
+		".....",
+		"..5..",
+		".454.",
+		".3w3.",
+		"23w32",
+		"23w32",
+		"13443",
+		".131.",
+	],
+]
+
+const SMALL_WIDTH := 5
+const SMALL_HEIGHT := 8
+
+static var _small := {}
+
+
+## Les trois temps d'une petite langue de cette teinte.
+static func small_flames(tint: Color) -> Array:
+	return _sheet(_small, FLAME_SMALL, SMALL_WIDTH, SMALL_HEIGHT, tint, Fire.heart(tint))
+
+
+## Une planche par teinte, bâtie une fois et gardée pour la session : une aura la
+## redemande soixante fois par seconde, et sa teinte ne change qu'à la conversion.
+static func _sheet(
+	cache: Dictionary, grids: Array, w: int, h: int, tint: Color, core: Color
+) -> Array:
+	var key := tint.to_html(false)
+	if not cache.has(key):
+		cache[key] = _bake(grids, w, h, tint, core)
+	return cache[key]
+
+
+## `core` est la couleur du rang `R_CORE` : le blanc chaud du feu, le givre de la
+## glace. Pris en haut de la rampe de la teinte, un cœur de feu reste orange et un
+## cœur de glace reste cyan — c'est sa **propre** rampe qu'il lui faut.
+static func _bake(grids: Array, w: int, h: int, tint: Color, core: Color) -> Array:
+	var palettes := [ArtPalette.ramp(tint), ArtPalette.ramp(core)]
+	var out: Array[Texture2D] = []
+	for grid: Array in grids:
+		var canvas := PixelCanvas.new(w, h)
+		canvas.stamp(grid, Vector2i.ZERO, INK)
+		out.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+	return out
+
+
+## La boule de feu, **six temps dessinés image par image**, treize pixels de côté.
+## Le cran au-dessus des planches précédentes : ce n'est plus une forme qu'on
+## anime en la déplaçant, c'est un dessin qui change.
+##
+## Elle ne se redimensionne jamais — sa taille est une constante, pas une
+## statistique —, et le nœud qui la porte **ne tourne pas** : une planche de pixel
+## art pivotée se rééchantillonne, et une boule n'a pas d'orientation. C'est à ce
+## prix qu'une planche remplace un tracé ; ce qui grandit avec un point de talent,
+## comme le rayon d'une explosion, n'y a pas droit.
+const BALL := [
+	[
+		".....3.......",
+		"....3333.....",
+		"...444443....",
+		"..34555543...",
+		".3455ww5543..",
+		".345wwww543..",
+		".3455www5432.",
+		"..3455554432.",
+		"..3344444332.",
+		"...33444322..",
+		"....333322...",
+		".....2222....",
+		".............",
+	],
+	[
+		".......3.....",
+		".....3333....",
+		"...3444443...",
+		"..345555543..",
+		".34455ww543..",
+		".3455wwww43..",
+		"..345wwww432.",
+		"..34555554432",
+		"..3344444332.",
+		"...33344322..",
+		"....332222...",
+		".....222.....",
+		".............",
+	],
+	[
+		".............",
+		"....33332....",
+		"...4444433...",
+		"..34555443...",
+		".345ww554432.",
+		".34wwww554332",
+		".345www55432.",
+		".23455554432.",
+		"..3444444332.",
+		"...3344432...",
+		"....333222...",
+		".....2222....",
+		".............",
+	],
+	[
+		".............",
+		".....3333....",
+		"...44555443..",
+		"..345wwww543.",
+		".345wwwwww43.",
+		".34wwwwwww43.",
+		".345wwwwww43.",
+		"..345wwww543.",
+		"..3345555432.",
+		"...33444332..",
+		"....333322...",
+		".....2222....",
+		".............",
+	],
+	[
+		".............",
+		"....3333.....",
+		"...4444433...",
+		"..34555543...",
+		".34wwwww5432.",
+		".34wwwww5432.",
+		".3455ww554432",
+		"..3455555432.",
+		"..33444443322",
+		"...334443322.",
+		"....333322...",
+		".....222.....",
+		".............",
+	],
+	[
+		".............",
+		"....33332....",
+		"..3444443....",
+		".345555443...",
+		"3455ww554432.",
+		"345wwww55432.",
+		".345www55432.",
+		"..3455554432.",
+		"..3344444332.",
+		"...33444322..",
+		"....333322...",
+		".....222.....",
+		".............",
+	],
+]
+
+const BALL_SIZE := 13
+## Images par seconde de la boule. Plus lent, elle a l'air de clignoter ; plus
+## vite, le dessin se perd et on ne voit qu'un scintillement.
+const BALL_HZ := 14.0
+
+## Les bouffées qu'elle laisse derrière elle, de la plus vive à la plus éteinte :
+## une traînée est une file de dessins qui meurent, pas un dégradé.
+const PUFF := [
+	[
+		".33..",
+		"3444.",
+		"34w43",
+		".3443",
+		"..33.",
+	],
+	[
+		".....",
+		".233.",
+		".3w32",
+		".233.",
+		".....",
+	],
+	[
+		".....",
+		"..2..",
+		".232.",
+		"..2..",
+		".....",
+	],
+]
+
+const PUFF_SIZE := 5
+
+static var _balls := {}
+static var _puffs := {}
+
+
+static func balls(tint: Color) -> Array:
+	return _sheet(_balls, BALL, BALL_SIZE, BALL_SIZE, tint, Fire.heart(tint))
+
+
+static func puffs(tint: Color) -> Array:
+	return _sheet(_puffs, PUFF, PUFF_SIZE, PUFF_SIZE, tint, Fire.heart(tint))
+
+
+## L'éclat d'un souffle, treize pixels, en trois temps : **une étoile et non un
+## disque**. Un disque blanc est un trou dans l'image ; une étoile est un coup.
+## Sa taille ne bouge pas — c'est l'éclat, pas la portée —, donc il a droit à une
+## planche d'animation là où l'onde, dont le rayon est une statistique, n'y a pas
+## droit.
+const FLASH := [
+	[
+		"......5......",
+		"......5......",
+		"..2...5...2..",
+		"...2..5..2...",
+		"....45w54....",
+		"..2.4www4.2..",
+		"5555wwwww5555",
+		"..2.4www4.2..",
+		"....45w54....",
+		"...2..5..2...",
+		"..2...5...2..",
+		"......5......",
+		"......5......",
+	],
+	[
+		".............",
+		".............",
+		"......5......",
+		"...2..5..2...",
+		"....45w54....",
+		"..2.4www4.2..",
+		".455wwwww554.",
+		"..2.4www4.2..",
+		"....45w54....",
+		"...2..5..2...",
+		"......5......",
+		".............",
+		".............",
+	],
+	[
+		".............",
+		".............",
+		".............",
+		".............",
+		".....454.....",
+		"....45w54....",
+		"....4www4....",
+		"....45w54....",
+		".....454.....",
+		".............",
+		".............",
+		".............",
+		".............",
+	],
+]
+
+const FLASH_SIZE := 13
+## L'éclat brûle ses trois images en un huitième de seconde : il doit avoir disparu
+## avant que l'œil ne le détaille.
+const FLASH_HZ := 24.0
+
+## Une brûlure au sol, sept sur cinq, en deux dessins. Posée à plat et **sombre** :
+## c'est la seule chose du feu qui ne brille pas, et c'est elle qui dit qu'on est
+## passé par là.
+const BURN := [
+	[
+		".11111.",
+		"1122211",
+		"1223221",
+		"1122211",
+		".11111.",
+	],
+	[
+		"..111..",
+		".12221.",
+		"1122211",
+		".12321.",
+		"..111..",
+	],
+]
+
+const BURN_WIDTH := 7
+const BURN_HEIGHT := 5
+## La cendre. Fixe et non teintée : une brûlure est de la cendre, quelle que soit
+## la couleur de ce qui l'a faite. **Brune et non grise** : sur un sol déjà sombre,
+## une cendre grise disparaît — c'est la braise qui couve dans la terre qu'on voit,
+## pas le noir. Son ombre est chaude, pour la même raison que celle du serpent.
+const ASH := Color(0.34, 0.16, 0.10)
+const ASH_SHADOW := Color(0.14, 0.05, 0.04)
+
+static var _flashes := {}
+static var _burns: Array = []
+
+
+static func flashes(tint: Color) -> Array:
+	return _sheet(_flashes, FLASH, FLASH_SIZE, FLASH_SIZE, tint, Fire.heart(tint))
+
+
+static func burns() -> Array:
+	if _burns.is_empty():
+		var palettes := [ArtPalette.ramp(ASH, ASH_SHADOW)]
+		for grid: Array in BURN:
+			var canvas := PixelCanvas.new(BURN_WIDTH, BURN_HEIGHT)
+			canvas.stamp(grid, Vector2i.ZERO, INK)
+			_burns.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+	return _burns
+
+
+## Le cristal du manuel de glace, neuf pixels sur quinze : deux flancs francs et
+## l'arête de givre entre les deux. Choisi sur planche contre cinq autres
+## silhouettes (jalon 24) — l'aiguille se lisait comme un pilier, le prisme à
+## étages comme un sapin, et la dalle comme un caillou.
+##
+## **Il n'a pas de temps.** Une flamme bat parce qu'elle brûle ; un cristal est
+## fixe, et ce qui l'anime est sa sortie de terre, découpée à la volée par
+## `draw_texture_rect_region`. Une planche de quatre temps de glace clignoterait.
+const SPIKE := [
+	"....w....",
+	"....w....",
+	"...4w3...",
+	"...4w3...",
+	"...4w33..",
+	"..44w33..",
+	"..44w333.",
+	".444w333.",
+	".444w3332",
+	".444w3332",
+	"4444w3322",
+	"4444w3322",
+	"4444w3222",
+	"444ww3222",
+	"44443222.",
+]
+
+const SPIKE_WIDTH := 9
+const SPIKE_HEIGHT := 15
+
+## Le petit cristal, cinq sur neuf. Alterné avec le grand plutôt que tiré au sort :
+## sept pics de la même taille font une palissade — la leçon de la Ruée ardente,
+## où le défaut n'était pas le nombre mais la **régularité**.
+const SPIKE_SMALL := [
+	"..w..",
+	"..w..",
+	".4w3.",
+	".4w3.",
+	"44w33",
+	"44w32",
+	"44w22",
+	"44w22",
+	"44322",
+]
+
+const SMALL_SPIKE_WIDTH := 5
+const SMALL_SPIKE_HEIGHT := 9
+
+## L'éclat emporté par un tourbillon, cinq pixels de côté, **pointe à droite** :
+## c'est le zéro des huit orientations. Un tourbillon dont les éclats pointent
+## tous en haut n'est qu'une chute de neige.
+const CHIP := [
+	".....",
+	"..5w.",
+	"4455w",
+	".332.",
+	".....",
+]
+
+## Le même éclat en diagonale, pointe en bas à droite : la rotation d'un quart de
+## tour ne donne jamais les diagonales, il faut les dessiner.
+const CHIP_DIAG := [
+	"ww4..",
+	"454..",
+	".554.",
+	"..532",
+	"...2.",
+]
+
+const CHIP_SIZE := 5
+## Huit orientations : quatre quarts de tour sur chacun des deux dessins. En
+## dessous, l'œil voit les éclats sauter d'une orientation à l'autre.
+const CHIP_TURNS := 8
+
+## Le flocon, trois pixels : une croix, pas un carré. Un carré est un confetti.
+const FLAKE := [
+	".w.",
+	"w5w",
+	".w.",
+]
+
+const FLAKE_SIZE := 3
+
+static var _spikes := {}
+static var _small_spikes := {}
+static var _chips := {}
+static var _flakes := {}
+
+
+## Le grand cristal de cette teinte.
+static func spike(tint: Color) -> Texture2D:
+	return _sheet(_spikes, [SPIKE], SPIKE_WIDTH, SPIKE_HEIGHT, tint, Frost.rim(tint))[0]
+
+
+## Le petit cristal de cette teinte.
+static func small_spike(tint: Color) -> Texture2D:
+	return _sheet(
+		_small_spikes, [SPIKE_SMALL], SMALL_SPIKE_WIDTH, SMALL_SPIKE_HEIGHT, tint, Frost.rim(tint)
+	)[0]
+
+
+## Les huit orientations de l'éclat, dans le sens des aiguilles à partir de la
+## droite : `chips(t)[chip_turn(angle)]`. Les grilles ne se construisent qu'au
+## premier appel — les faire tourner soixante fois par seconde pour retomber sur
+## le cache serait payer la rotation sans jamais s'en servir.
+static func chips(tint: Color) -> Array:
+	var key := tint.to_html(false)
+	if not _chips.has(key):
+		var grids: Array = []
+		var straight := CHIP
+		var diagonal := CHIP_DIAG
+		for i in CHIP_TURNS / 2:
+			grids.append(straight)
+			grids.append(diagonal)
+			straight = turned(straight)
+			diagonal = turned(diagonal)
+		_chips[key] = _bake(grids, CHIP_SIZE, CHIP_SIZE, tint, Frost.rim(tint))
+	return _chips[key]
+
+
+## L'orientation d'éclat la plus proche d'un cap.
+static func chip_turn(angle: float) -> int:
+	return posmod(int(round(angle / (TAU / float(CHIP_TURNS)))), CHIP_TURNS)
+
+
+## Le flocon de cette teinte.
+static func flake(tint: Color) -> Texture2D:
+	return _sheet(_flakes, [FLAKE], FLAKE_SIZE, FLAKE_SIZE, tint, Frost.rim(tint))[0]
+
+
+## Cale un dessin sur le pixel du jeu : posé à une demi-unité, il se
+## rééchantillonne et ses blocs de deux pixels se brisent. Le décalage se calcule
+## en monde, parce que c'est là que la caméra tombe entre deux pixels.
+static func snap(ci: CanvasItem, offset: Vector2) -> Vector2:
+	var origin := ci.get_global_transform().origin
+	return (origin + offset).round() - origin
+
+
+## Fait tourner une grille d'un quart de tour dans le sens des aiguilles : la
+## seule rotation qu'un dessin en pixels supporte sans se rééchantillonner.
+##
+## La lumière tourne avec, ce qui serait faux sur un sprite posé — mais un éclat
+## emporté par un tourbillon culbute, et une facette qui accroche la lumière d'un
+## autre côté est justement ce qu'on veut voir.
+static func turned(grid: Array) -> Array:
+	var height: int = grid.size()
+	var out: Array = []
+	for x in (grid[0] as String).length():
+		var line := ""
+		for y in range(height - 1, -1, -1):
+			line += (grid[y] as String)[x]
+		out.append(line)
+	return out
+
+
+## Le Tombeau de glace : vingt et un pixels sur vingt-neuf, le seul dessin du jeu
+## qu'on regarde **à travers**. Il se pose donc à alpha partiel, et son intérieur
+## est plein — un bloc évidé n'était que deux piliers.
+##
+## Trois fêlures de givre en travers : sans elles, les facettes font un volume
+## propre, et un bloc de glace propre est une vitre.
+const TOMB := [
+	"........wwwww........",
+	"......555555555......",
+	"....5555555555555....",
+	"..55555444333333334..",
+	"ww5555544433333333444",
+	"ww5555544433333333444",
+	"ww5w55544433333333444",
+	"ww55w5544433333333444",
+	"ww555w544433333333444",
+	"ww5555w44433333333444",
+	"ww55555w4433333333444",
+	"ww555554w433333333444",
+	"ww5555544w33333333444",
+	"ww55555444w333333w444",
+	"ww555554443w3333w3444",
+	"ww5555544433333w33444",
+	"ww555554443333w333444",
+	"ww55555444333w3333444",
+	"ww555w544433w33333444",
+	"ww5555w4443w333333444",
+	"ww55555w4433333333444",
+	"ww555554w433333333444",
+	"ww5555544w33333333444",
+	"ww55555444w3333333444",
+	"..555554443w3333334..",
+	"....5554443333333....",
+	"......333333333......",
+	"........33333........",
+	".........333.........",
+]
+
+const TOMB_WIDTH := 21
+const TOMB_HEIGHT := 29
+
+static var _tombs := {}
+
+
+## Le bloc de glace de cette teinte.
+static func tomb(tint: Color) -> Texture2D:
+	return _sheet(_tombs, [TOMB], TOMB_WIDTH, TOMB_HEIGHT, tint, Frost.rim(tint))[0]

@@ -18,31 +18,29 @@ func test_the_ridge_glows_without_losing_its_blue() -> void:
 	assert_lt(rim.r, 0.75, "sans virer au blanc")
 
 
-## Les deux flancs partagent le pied et la pointe, et rien d'autre : c'est cette
-## arête commune qui fait la facette. S'ils se recouvraient, le cristal serait plat.
-func test_the_two_flanks_share_the_foot_and_the_tip() -> void:
-	var dark := Frost.shard(Vector2.ZERO, Vector2.UP, 20.0, 4.0, 0.0, false)
-	var lit := Frost.shard(Vector2.ZERO, Vector2.UP, 20.0, 4.0, 0.0, true)
-	assert_eq(dark[0], lit[0], "même pied")
-	assert_eq(dark[dark.size() - 1], lit[lit.size() - 1], "même pointe")
-	assert_lt(dark[1].x, 0.0, "le flanc sombre est d'un côté")
-	assert_gt(lit[1].x, 0.0, "l'éclairé de l'autre")
+## Ce qui fait la glace, c'est la **facette** : une arête qui déborde et deux
+## flancs qui ne débordent pas. Un cristal dont tout passe le seuil est une
+## ampoule, un cristal dont rien ne le passe est un caillou bleu.
+func test_the_crystal_glows_by_its_ridge_only() -> void:
+	var image: Image = EffectForge.spike(COLD).get_image()
+	var lit := 0
+	var matter := 0
+	for y in image.get_height():
+		for x in image.get_width():
+			var c := image.get_pixel(x, y)
+			if c.a < 0.5:
+				continue
+			matter += 1
+			if c.get_luminance() > THRESHOLD:
+				lit += 1
+	assert_gt(lit, 0, "l'arête déborde")
+	assert_lt(float(lit) / float(matter), 0.4, "mais elle reste une arête")
 
 
-## `lean` penche les deux flancs **du même côté** : signés chacun du sien, le
-## cristal s'ouvrirait en ciseaux au lieu de pencher.
-func test_lean_tilts_both_flanks_the_same_way() -> void:
-	var dark := Frost.shard(Vector2.ZERO, Vector2.UP, 20.0, 4.0, 5.0, false)
-	var lit := Frost.shard(Vector2.ZERO, Vector2.UP, 20.0, 4.0, 5.0, true)
-	assert_almost_eq(dark[dark.size() - 1].x, 5.0, 0.001, "la pointe sombre penche")
-	assert_almost_eq(lit[lit.size() - 1].x, 5.0, 0.001, "la pointe éclairée aussi")
-
-
-## Même piège que les langues de `Fire` : un sommet en double fait échouer la
-## triangulation de Godot, qui ne dessine alors rien et crie à chaque image.
-func test_a_flank_has_no_duplicated_vertex() -> void:
-	for lit: bool in [false, true]:
-		var pts := Frost.shard(Vector2.ZERO, Vector2.UP, 3.0, 1.0, 1.0, lit)
-		for i in pts.size():
-			for j in range(i + 1, pts.size()):
-				assert_gt(pts[i].distance_to(pts[j]), 0.0001, "sommets confondus en %d/%d" % [i, j])
+## Le petit cristal est la même matière à une autre taille : alternés, c'est leur
+## différence qui casse la palissade.
+func test_the_small_crystal_is_shorter_than_the_tall_one() -> void:
+	assert_lt(
+		EffectForge.SMALL_SPIKE_HEIGHT, EffectForge.SPIKE_HEIGHT,
+		"un grand, un petit"
+	)

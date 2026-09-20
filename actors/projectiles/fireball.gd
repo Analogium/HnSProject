@@ -4,8 +4,9 @@ extends Projectile
 ## Le tir de Boule de feu. Le trajet et la touche directe sont ceux de
 ## `Projectile` ; le dessin et l'explosion sont à lui.
 
-## Les langues de flamme qui traînent derrière la boule.
-const TONGUES := 3
+## Les bouffées de la traînée, et leur écart en pixels derrière la boule.
+const TRAIL := 3
+const TRAIL_STEP := 6.0
 
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
 var explosion_radius := 0.0
@@ -13,23 +14,40 @@ var explosion_radius := 0.0
 var _burst := false
 
 
+func _ready() -> void:
+	super()
+	# **Une planche cernée ne peut pas être additive** : son contour sombre n'y
+	# ajoute rien, il disparaît, et avec lui ce qui la rattache au décor.
+	material = null
+
+
+## **La boule ne tourne pas.** `Projectile` aligne son nœud sur la trajectoire, ce
+## qui convient à un tracé et jamais à une planche : pivotée, elle se
+## rééchantillonne et ses pixels se brisent. Une boule n'a pas d'orientation, et sa
+## traînée se place à la main.
+func setup(
+	dir: Vector2, parts: Array[float], source: Node2D, p_speed := 0.0, nature := -1
+) -> void:
+	super(dir, parts, source, p_speed, nature)
+	rotation = 0.0
+
+
 func _draw() -> void:
 	var t := tint()
-	# Le nœud est tourné sur sa trajectoire : derrière, c'est −x. **La seule chose
-	# du jeu qui vole**, donc les seules langues qui ne montent pas vers le haut de
-	# l'écran : une boule de feu traîne son feu, elle ne le laisse pas monter.
-	for i in TONGUES:
-		# Le `sway` se compte sur le côté de la langue : couchée vers −x, son côté
-		# pointe vers le haut de l'écran, d'où le signe qui écarte l'éventail.
-		var spread := (float(i) - 1.0) * 2.4
-		Fire.draw_tongue(
-			self, Vector2(1.0, spread), Vector2.LEFT, 11.0 + 2.5 * Fire.breath(_life, i),
-			2.4, t, 1.0, -spread * 1.2 + 1.2 * Fire.breath(_life * 0.7, i + 4)
-		)
-	# Le cœur porte la lumière, et lui seul : `Fire.heart` le pose à 0,92 de
-	# luminance, quand le blanc local d'avant plafonnait à 0,836 — sous le seuil.
-	Glow.draw_blob(self, Vector2.ZERO, 7.5, Color(t, 0.42))
-	Glow.draw_blob(self, Vector2(1.2, 0.0), 3.4, Color(Fire.heart(t), 1.0))
+	var puffs := EffectForge.puffs(t)
+	var half := Vector2(EffectForge.PUFF_SIZE, EffectForge.PUFF_SIZE) * 0.5
+	for i in TRAIL:
+		var behind := -_dir * (TRAIL_STEP * float(i + 1))
+		_blit(puffs[mini(i, puffs.size() - 1)], behind - half)
+
+	var balls := EffectForge.balls(t)
+	var frame := int(_life * EffectForge.BALL_HZ) % balls.size()
+	_blit(balls[frame], -Vector2(EffectForge.BALL_SIZE, EffectForge.BALL_SIZE) * 0.5)
+
+
+func _blit(tex: Texture2D, offset: Vector2) -> void:
+	var corner := EffectForge.snap(self, offset)
+	draw_texture_rect(tex, Rect2(corner, Vector2(tex.get_width(), tex.get_height())), false)
 
 
 func _on_area_entered(area: Area2D) -> void:

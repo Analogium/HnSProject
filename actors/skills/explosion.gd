@@ -9,11 +9,18 @@ extends Node2D
 ## l'espace physique refuse les requêtes (invariant 4).
 
 const LIFETIME := 0.3
+## Le brasier dure **moitié moins** que les autres souffles. Tenue trois dixièmes
+## de seconde, sa couronne de langues se mettait à ressembler à un feu de camp
+## posé là — c'est un coup, pas un foyer. La nova de glace garde les trois
+## dixièmes : le froid ne souffle pas, il prend, et ce qu'il gèle doit se voir.
+const BLAZE_LIFE := 0.16
 const SPARKS := 8
-## Les panaches de matière — langues ou esquilles — que le souffle pousse : moins
-## nombreux que les étincelles, qui partent à plat. Deux gestes, deux directions,
-## c'est ce qui donne du volume.
-const PLUMES := 5
+## La couronne de matière du souffle peint — langues de feu ou cristaux de glace.
+## Onze, parce que dessinées elles doivent **se toucher** pour faire une onde.
+const CROWN := 11
+## Les éclats que la nova projette devant elle, sur le cercle qui mord : un par
+## huit pixels de circonférence, sinon l'anneau se lit comme un collier.
+const CHIP_STEP := 8.0
 
 var _parts: Array[float] = []
 var _author: StatusEffects
@@ -44,7 +51,11 @@ static func put(
 
 func _ready() -> void:
 	z_index = 3
-	material = ArtPalette.ADDITIVE
+	# Le feu et la glace sont **dessinés**, et une planche cernée ne peut pas être
+	# additive : son contour sombre n'y ajoute rien. Les natures encore tracées
+	# restent en lumière ajoutée.
+	if not _is_painted():
+		material = ArtPalette.ADDITIVE
 
 
 func _physics_process(delta: float) -> void:
@@ -55,10 +66,13 @@ func _physics_process(delta: float) -> void:
 				Targets.strike(target, _parts, global_position, _author, _cast)
 	_age += delta
 	queue_redraw()
-	if _age >= LIFETIME:
+	if _age >= _life_span():
 		queue_free()
 
 
+## Deux souffles peints — le brasier, la nova — et, pour tout le reste, l'onde
+## tracée qui suit.
+##
 ## Pas de disque plein qui dure : en mélange additif sur un sol sombre, un orange
 ## peu opaque sortait **brun**, et l'explosion se lisait comme une flaque. Le cœur
 ## est vif et s'éteint vite, l'onde et les étincelles portent le reste.
@@ -66,79 +80,117 @@ func _physics_process(delta: float) -> void:
 ## Le cœur part à alpha plein : c'est lui qui passe le seuil de glow, donc ce qui
 ## fait qu'une explosion **éclaire** au lieu d'être un rond coloré.
 func _draw() -> void:
-	var k := clampf(_age / LIFETIME, 0.0, 1.0)
+	var k := clampf(_age / _life_span(), 0.0, 1.0)
 	var fade := 1.0 - k
-	var r := _radius * (1.0 - pow(1.0 - minf(k * 1.6, 1.0), 3.0))
+	# Peinte, l'onde est à son plein rayon au bout d'un cinquième de sa vie — trois
+	# centièmes de seconde : c'est ce qui la rend instantanée plutôt que soufflée.
+	var opened: float = minf(k * 5.0, 1.0) if _nature() == DamageType.Kind.FIRE else minf(k * 1.6, 1.0)
+	var r := _radius * (1.0 - pow(1.0 - opened, 3.0))
+	match _nature():
+		DamageType.Kind.FIRE:
+			_blaze(r, k, fade)
+			return
+		DamageType.Kind.COLD:
+			_rime(r, k, fade)
+			return
+
 	# **En additif, c'est le bleu qui blanchit.** Le blanc du feu en porte 0,78 : à
 	# 0,55 de mélange, le souffle montait à 0,67 de bleu une fois posé sur le sol et
 	# sortait gris. À 0,35 il reste de sa couleur.
-	var lit := _tint.lerp(_glint(), 0.35)
+	var lit := _tint.lerp(Color.WHITE, 0.35)
 	var heart := clampf(1.0 - k * 2.5, 0.0, 1.0)
 	if heart > 0.0:
 		# **Teinté large, blanc minuscule** — la règle de l'éclat de la foudre, et pour
 		# la même raison. Serré, le cœur reste un éclat ; large, c'est une fumée.
 		Glow.draw_blob(self, Vector2.ZERO, maxf(r * 0.5, 1.0), Color(lit, heart * 0.85))
-		Glow.draw_blob(self, Vector2.ZERO, maxf(r * 0.18, 1.0), Color(_core(), heart))
+		Glow.draw_blob(self, Vector2.ZERO, maxf(r * 0.18, 1.0), Color(_tint.lerp(Color.WHITE, 0.8), heart))
 	Glow.draw_ring(self, Vector2.ZERO, maxf(r, 0.5), Color(_tint, 0.85 * fade * fade))
 	for i in SPARKS:
 		var d := Vector2.from_angle(TAU * float(i) / float(SPARKS) + 0.3)
 		Glow.draw_streak(self, d * (r * 1.1 + 8.0 * k), d * (r * 0.85), 3.0, Color(lit, 0.9 * fade))
-	_matter(r, k, fade)
 
 
-## La matière de la déflagration, qui n'appartient qu'à deux natures : le feu monte
-## en langues, le froid retombe en esquilles. Les autres n'ont que l'onde — une nova
-## nécrotique qui jetterait des flammes mentirait sur ce qu'elle fait.
+## Le souffle du feu, **entièrement dessiné** : un éclat en étoile au centre, et
+## une couronne de langues qui s'écarte avec l'onde. Pas d'anneau tracé — choisi
+## sur planche : c'est la même matière que le brasier, et deux façons de peindre le
+## feu dans le même écran ne se liraient pas comme une seule.
 ##
-## Elle arrive **après** l'onde, le cinquième de la vie : ensemble, ce ne serait
-## qu'une seule bouffée.
-func _matter(r: float, k: float, fade: float) -> void:
-	var nature := _nature()
-	if nature != DamageType.Kind.FIRE and nature != DamageType.Kind.COLD:
-		return
-	var grown := minf(k * 2.2, 1.0) * fade
-	for i in PLUMES:
-		var turn := TAU * float(i) / float(PLUMES) + 0.7
-		# Sur l'anneau et pas au centre : la matière naît là où le souffle mord, et
-		# empilée sur le cœur elle ne fait qu'ajouter du blanc.
-		var foot := Vector2.from_angle(turn) * r * 0.5
-		if nature == DamageType.Kind.FIRE:
-			Fire.draw_tongue(
-				self, foot, Vector2.UP, r * (0.60 + 0.45 * k) * (1.0 + 0.2 * Fire.breath(_age, i)),
-				r * 0.14, _tint, grown, r * 0.12 * Fire.breath(_age * 0.7, i)
-			)
-		else:
-			# Les esquilles fuient le centre : une nova de glace jette ses éclats, elle
-			# ne les fait pas pousser sur place.
-			Frost.draw_shard(
-				self, foot, Vector2.from_angle(turn), r * (0.35 + 0.30 * k),
-				r * 0.16, _tint, grown, r * 0.06
-			)
+## Rien ne dépasse le rayon qui mord : les langues **sont** l'onde.
+func _blaze(r: float, k: float, fade: float) -> void:
+	var tint := _tint
+	_ground(r, fade)
+
+	# **Pleine opacité jusqu'aux deux tiers, puis rien.** Une couronne qui se fond
+	# progressivement se lit comme un feu qui meurt ; une qui s'éteint d'un coup se
+	# lit comme un souffle. C'est la même raison qui donne son battement à la foudre.
+	var flames := EffectForge.flames(tint)
+	var half := Vector2(EffectForge.FLAME_WIDTH * 0.5, EffectForge.FLAME_HEIGHT - 2)
+	var crown := clampf((1.0 - k) * 3.0, 0.0, 1.0)
+	for i in CROWN:
+		var at := Vector2.from_angle(TAU * float(i) / float(CROWN) + 0.2) * r * 0.86
+		var frame := int(_age * EffectForge.FLAME_HZ * 2.0 + float(i) * 1.7) % flames.size()
+		draw_texture_rect(
+			flames[frame], Rect2(EffectForge.snap(self, at - half), _size_of(flames[frame])),
+			false, Color(1.0, 1.0, 1.0, crown)
+		)
+
+	# L'éclat est là **à la première image** et tient le premier tiers : c'est lui
+	# qui fait l'instantané, la couronne ne fait que l'habiller.
+	var burst := EffectForge.flashes(tint)
+	var step := int(_age * EffectForge.FLASH_HZ)
+	if step < burst.size():
+		var side := Vector2.ONE * float(EffectForge.FLASH_SIZE)
+		draw_texture_rect(burst[step], Rect2(EffectForge.snap(self, -side * 0.5), side), false)
 
 
-## Le point le plus clair du souffle, par nature. Chaque matière sait de combien
-## elle a besoin d'être éclaircie pour déborder, et c'est mesuré chez elle : le feu
-## à 0,92 de blanc chaud (0,899 en dessous, sous le seuil), le froid à moitié
-## seulement, parce que son cyan porte déjà 0,81 de luminance.
-func _core() -> Color:
-	match _nature():
-		DamageType.Kind.FIRE:
-			return Fire.heart(_tint)
-		DamageType.Kind.COLD:
-			return Frost.rim(_tint)
-		_:
-			return _tint.lerp(Color.WHITE, 0.8)
+## La nova de glace, **entièrement dessinée** : un anneau d'éclats qui file vers
+## l'extérieur, et les cristaux qu'il laisse debout derrière lui. Pas d'éclat
+## central — le givre porte déjà 0,88 de luminance et déborde tout seul, là où le
+## feu a besoin d'un cœur presque blanc pour passer le seuil.
+##
+## Le froid ne souffle pas, il **prend** : l'anneau ne vit que pendant qu'il
+## s'ouvre, et ce qui reste à l'écran est ce qu'il a gelé au passage.
+func _rime(r: float, k: float, fade: float) -> void:
+	_ground(r, fade)
+
+	var race := clampf(1.0 - k * 2.5, 0.0, 1.0)
+	if race > 0.0:
+		var chips := maxi(int(TAU * r / CHIP_STEP), 1)
+		for i in chips:
+			var angle := TAU * float(i) / float(chips)
+			Frost.chip(self, Vector2.from_angle(angle) * r, angle, _tint, race)
+
+	# Les cristaux sortent de terre dans le premier quart, tiennent, puis y
+	# redescendent : c'est l'inverse de la couronne de langues, qui naît entière et
+	# se coupe net. Ni l'une ni l'autre ne s'éteint en pâlissant.
+	var out := minf(clampf(k * 4.0, 0.0, 1.0), clampf(fade * 3.0, 0.0, 1.0))
+	for i in CROWN:
+		var foot := Vector2.from_angle(TAU * float(i) / float(CROWN) + 0.2) * r * 0.78
+		Frost.raise_spike(self, foot, i % 2 == 0, out, _tint)
 
 
-## Le blanc vers lequel le souffle et ses étincelles tirent, par nature.
-func _glint() -> Color:
-	match _nature():
-		DamageType.Kind.FIRE:
-			return Fire.WARM
-		DamageType.Kind.COLD:
-			return Frost.RIME
-		_:
-			return Color.WHITE
+## La trace au sol du souffle peint : tramée, elle s'efface avec lui.
+func _ground(r: float, fade: float) -> void:
+	draw_texture_rect(
+		EffectForge.scorch(_tint, maxi(int(round(r)), 1)),
+		Rect2(EffectForge.snap(self, -Vector2(round(r), round(r))), Vector2.ONE * (round(r) * 2.0 + 1.0)),
+		false, Color(1.0, 1.0, 1.0, fade)
+	)
+
+
+## Peint — fait de planches cernées — ou tracé en polygones : c'est ce qui décide
+## du mélange, et les deux moitiés de `_draw()`.
+func _is_painted() -> bool:
+	return _nature() == DamageType.Kind.FIRE or _nature() == DamageType.Kind.COLD
+
+
+## Combien de temps ce souffle s'affiche.
+func _life_span() -> float:
+	return BLAZE_LIFE if _nature() == DamageType.Kind.FIRE else LIFETIME
+
+
+func _size_of(tex: Texture2D) -> Vector2:
+	return Vector2(tex.get_width(), tex.get_height())
 
 
 ## −1 pour une explosion posée sans geste résolu : les tests en posent.

@@ -11,13 +11,20 @@ extends Node2D
 ## Le rayon de départ, en part du rayon final : sous un tiers, ses premières impulsions
 ## ne toucheraient que ce qui est déjà sur le personnage.
 const SEED_PART := 0.35
-## Les bras de la spirale, leur vitesse en tours par seconde, et le nombre de
-## segments de chacun — c'est leur petit nombre qui rend la spirale brisée.
-const ARMS := 4
+## Les bras de la spirale, leur vitesse en tours par seconde, et ce qu'ils
+## balaient d'angle du cœur au bord — c'est cet écart qui fait l'enroulement.
+##
+## **Douze et non quatre** (choisi sur planche, jalon 24) : au cœur ils se touchent
+## et font une roue pleine, ce qui donne enfin un œil au tourbillon. À quatre, on
+## voyait quatre traits qui tournaient.
+const ARMS := 12
 const SPIN := 1.6
-const STEPS := 5
-## Les éclats emportés par le tour.
-const SHARDS := 12
+const SWEEP := 2.2
+## Ce qui sépare deux éclats d'un bras, au plus serré : plus espacés, les bras se
+## lisent comme des colliers de perles — le défaut qu'avait le dos du serpent.
+const CHIP_STEP := 3.0
+## Les flocons aspirés vers le cœur, hors des bras.
+const FLAKES := 8
 const FADE := 0.4
 
 var _cast: SkillStats
@@ -25,7 +32,6 @@ var _author: StatusEffects
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
-var _flicker := RandomNumberGenerator.new()
 
 
 static func open(
@@ -40,10 +46,10 @@ static func open(
 	return vortex
 
 
+## Pas de lumière ajoutée : les éclats sont **dessinés**, et une planche cernée
+## ne peut pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	z_index = 3
-	material = ArtPalette.ADDITIVE
-	_flicker.seed = int(get_instance_id())
 
 
 ## Ce qu'il couvre maintenant : de `SEED_PART` à son rayon plein, linéairement.
@@ -72,37 +78,37 @@ func _strike() -> void:
 		Targets.strike(target, parts, global_position, _author, _cast)
 
 
-## Des bras en spirale plutôt qu'un disque : c'est le seul dessin qui montre à la fois
-## où il mord — le cercle au bout des bras — et qu'il tourne.
+## Un tourbillon, et non un cercle de pics : quatre bras d'éclats **couchés sur
+## leur cap**, et des flocons aspirés vers le cœur. C'est l'orientation des éclats
+## qui dit que ça tourne ; tous pointés en haut, ce ne serait qu'une chute de neige.
+##
+## Pas de givre au sol sous celui-ci, contrairement aux pics et à la nova : un
+## tourbillon ne se pose pas, et son rayon change à chaque image — une trame par
+## rayon entier se recalculerait cinquante fois par lancer.
 func _draw() -> void:
 	var r := reach()
 	var fade := clampf((_cast.duration - _age) / (_cast.duration * FADE), 0.0, 1.0)
-	var rim := Frost.rim(_tint)
-	# Un disque plein sortait comme une flaque à bord net ; le cœur de lumière a la
-	# même portée et s'éteint vers le bord, et c'est l'anneau qui dit où ça mord.
-	Glow.draw_blob(self, Vector2.ZERO, r, Color(_tint, 0.12 * fade))
-	Glow.draw_ring(self, Vector2.ZERO, r, Color(_tint, 0.42 * fade))
-
+	var steps := maxi(int(r / CHIP_STEP), 2)
 	for i in ARMS:
 		var base := TAU * float(i) / float(ARMS) + _age * SPIN
-		var curve := PackedVector2Array()
-		# Cinq segments et non neuf : une spirale lisse se lit comme un coup de
-		# pinceau, une spirale brisée comme de la glace.
-		for step in STEPS + 1:
-			var u := float(step) / float(STEPS)
-			# L'angle avance avec le rayon : c'est ce décalage qui fait la spirale.
-			curve.append(Vector2.from_angle(base + u * 1.9) * r * u)
-		# Deux passes : un bras d'un seul pixel est un tracé, pas une bourrasque.
-		draw_polyline(curve, Color(_tint, 0.32 * fade), 4.0)
-		draw_polyline(curve, Color(rim, 0.60 * fade), 1.0)
-		# Une lame au bout du bras, couchée sur la spirale : c'est elle qui donne le
-		# sens de rotation, qu'un trait qui tourne ne donne pas.
-		var last := curve[curve.size() - 1]
-		var along := (last - curve[curve.size() - 2]).normalized()
-		Frost.draw_shard(self, last - along * 9.0, along, 9.0, 2.6, _tint, fade, 1.5)
+		for step in steps:
+			# Il ne pâlit pas, il se **vide**. Un éclat en moins se lit comme un éclat
+			# en moins ; un éclat à demi transparent sur un sol sombre sort gris, le
+			# même piège que l'orange peu opaque du feu. Le tirage ne dépend que du
+			# bras et du rang : c'est une trame, pas un scintillement.
+			if fmod(float(step) * 0.618 + float(i) * 0.37, 1.0) > fade:
+				continue
+			# La racine étire les rangs vers le bord : à pas constant, le bout du bras
+			# — qui parcourt deux fois plus de chemin par rang — s'égrenait en collier.
+			var along := pow((float(step) + 1.0) / float(steps), 0.6)
+			var at := Vector2.from_angle(base + along * SWEEP) * r * along
+			# Le cap d'un éclat est la tangente de la spirale, pas le rayon : c'est
+			# la différence entre un tourbillon et une étoile.
+			var ahead := Vector2.from_angle(base + (along + 0.04) * SWEEP) * r * (along + 0.04)
+			Frost.chip(self, at, (ahead - at).angle(), _tint, 1.0)
 
-	for i in SHARDS:
-		var turn := _age * SPIN * 1.4 + TAU * float(i) / float(SHARDS)
+	for i in FLAKES:
+		var turn := _age * SPIN * 1.4 + TAU * float(i) / float(FLAKES)
 		# Ils tombent vers le cœur : un vortex aspire, il ne rayonne pas.
 		var away := 1.0 - fmod(_age * 0.6 + float(i) * 0.137, 1.0)
-		Frost.draw_flake(self, Vector2.from_angle(turn) * r * away, _tint, 0.8 * away * fade)
+		Frost.drift(self, Vector2.from_angle(turn) * r * away, _tint, 0.8 * away * fade)

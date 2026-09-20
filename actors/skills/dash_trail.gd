@@ -12,10 +12,17 @@ extends Node2D
 ## deux cercles ; en dessous, on paie des requêtes pour rien.
 const STEP := 0.9
 
-## Une langue tous les treize pixels, quatre au moins : à cinq langues pour un
-## couloir entier, on voyait le ruban brun avant de voir le feu.
-const FLAME_STEP := 13.0
+## Une langue tous les onze pixels, quatre au moins. Ce qui faisait la palissade
+## n'était pas leur nombre mais leur **régularité** : une grande et une petite en
+## alternance, écartées de l'axe à tour de rôle, se lisent comme un chemin qui
+## brûle là où douze langues identiques alignées font une clôture.
+const FLAME_STEP := 11.0
+## De combien une langue sur deux s'écarte de l'axe du couloir.
+const FLAME_SWAY := 3.0
 const FLAMES_MIN := 4
+## L'écart de deux brûlures : sous cinq pixels elles se recouvrent et font un
+## sillon continu, ce qui est le but.
+const BURN_STEP := 4.0
 const SPAWN := 0.12
 const FADE := 0.35
 
@@ -44,7 +51,10 @@ static func leave(
 
 func _ready() -> void:
 	z_index = 2
-	material = ArtPalette.ADDITIVE
+	# Le feu est dessiné, et une planche cernée ne peut pas être additive. La foudre
+	# et le reste restent en lumière ajoutée.
+	if _cast.dominant_nature() != DamageType.Kind.FIRE:
+		material = ArtPalette.ADDITIVE
 	_flicker.seed = int(get_instance_id())
 
 
@@ -91,9 +101,14 @@ func _draw() -> void:
 	var wide := _cast.radius * 0.5
 	# Le ruban large dit la portée et rien d'autre : à 0,10 d'un orange, il sortait
 	# **brun**, et on voyait un tapis avant de voir le feu (même piège qu'`Explosion`).
-	draw_line(Vector2.ZERO, last, Color(_tint, 0.06 * fade), _cast.radius * 2.0)
-	Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
-	Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
+	if _cast.dominant_nature() != DamageType.Kind.FIRE:
+		draw_line(Vector2.ZERO, last, Color(_tint, 0.06 * fade), _cast.radius * 2.0)
+
+	# Le feu n'a pas de halo : sa traînée est peinte, et un halo par-dessus la
+	# délaverait. Les autres natures gardent le leur.
+	if _cast.dominant_nature() != DamageType.Kind.FIRE:
+		Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
+		Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
 
 	# **Le couloir luit pour tout le monde ; sa matière est par nature.** Le feu
 	# lèche, la foudre grésille, le reste ne fait que luire : une ruée de glace
@@ -105,15 +120,48 @@ func _draw() -> void:
 			_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
 			Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
 		DamageType.Kind.FIRE:
-			var flames := maxi(int(last.length() / FLAME_STEP), FLAMES_MIN)
-			for i in flames:
-				var foot := last * ((float(i) + 0.5) / float(flames))
-				var tall := 6.0 + 4.0 * float((i * 7) % 5) / 4.0
-				Fire.draw_tongue(
-					self, foot, Vector2.UP, (tall + 3.0 * Fire.breath(_age, i)) * fade,
-					1.0 + wide * 0.2, _tint, fade, 1.4 * Fire.breath(_age * 0.7, i + 5)
-				)
+			_burnt_path(last, fade)
 		_:
 			# Les natures sans matière propre n'ont que ce trait : le feu et la foudre
 			# s'en passent, il leur barrait leurs propres flammes d'une ligne droite.
 			draw_line(Vector2.ZERO, last, Color(_tint, 0.30 * fade), 2.0)
+
+
+## Le sillon : une file de brûlures qui se recouvrent, et des langues plantées
+## dessus. Choisi sur planche contre trois autres traînées — c'est le seul dessin
+## qui dise qu'on est **passé par là**, et il remplace le ruban brun qui se voyait
+## avant le feu.
+##
+## Des planches posées à plat, jamais tournées : une brûlure pivotée se
+## rééchantillonne, et le couloir peut partir dans n'importe quelle direction.
+func _burnt_path(last: Vector2, fade: float) -> void:
+	var burns := EffectForge.burns()
+	var span := last.length()
+	var marks := maxi(int(span / BURN_STEP), 2)
+	var burn_half := Vector2(EffectForge.BURN_WIDTH, EffectForge.BURN_HEIGHT) * 0.5
+	for i in marks + 1:
+		var at := last * (float(i) / float(marks))
+		_blit(burns[i % burns.size()], at - burn_half, fade)
+
+	var tall := EffectForge.flames(_tint)
+	var short := EffectForge.small_flames(_tint)
+	var across := last.orthogonal().normalized()
+	var count := maxi(int(span / FLAME_STEP), FLAMES_MIN)
+	for i in count:
+		var big := i % 2 == 0
+		var sheet: Array = tall if big else short
+		var frame := int(_age * EffectForge.FLAME_HZ + float(i) * 1.7) % sheet.size()
+		var tex: Texture2D = sheet[frame]
+		var half := Vector2(tex.get_width() * 0.5, tex.get_height() - 2)
+		var foot := last * ((float(i) + 0.5) / float(count))
+		if not big:
+			foot += across * FLAME_SWAY * (1.0 if i % 4 == 1 else -1.0)
+		_blit(tex, foot - half, fade)
+
+
+func _blit(tex: Texture2D, offset: Vector2, fade: float) -> void:
+	var corner := EffectForge.snap(self, offset)
+	draw_texture_rect(
+		tex, Rect2(corner, Vector2(tex.get_width(), tex.get_height())),
+		false, Color(1.0, 1.0, 1.0, fade)
+	)

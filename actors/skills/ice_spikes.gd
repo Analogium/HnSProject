@@ -10,27 +10,21 @@ extends Node2D
 ## (invariant 4).
 
 const LIFETIME := 0.45
-## La part de sa vie que le pic met à sortir ; il reste dressé, puis s'efface.
+## Les deux bouts de la vie d'un pic : le temps qu'il met à percer, et celui qu'il
+## met à **redescendre**. Il ne s'efface pas — un cristal à demi-transparent sur un
+## sol sombre sort gris.
 const RISE := 0.25
-## Ce qui les distingue d'un cercle de traits : chacun a sa hauteur et son angle.
+const SINK := 0.3
 const SPIKES := 7
-const HEIGHT := 18.0
-
-class Spike:
-	## Dans le disque unité : le rayon change avec les nœuds, pas la répartition.
-	var foot: Vector2
-	var height: float
-	var half_width: float
-	## L'inclinaison de la pointe, en pixels.
-	var lean: float
-
 
 var _cast: SkillStats
 var _author: StatusEffects
 var _tint := Color.WHITE
 var _age := 0.0
 var _has_struck := false
-var _spikes: Array[Spike] = []
+## Les pieds dans le disque unité : le rayon change avec les nœuds, pas la
+## répartition.
+var _feet := PackedVector2Array()
 
 
 static func raise_at(
@@ -45,22 +39,17 @@ static func raise_at(
 	return spikes
 
 
+## Pas de `ArtPalette.ADDITIVE` ici : les cristaux sont **dessinés**, et une
+## planche cernée ne peut pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	z_index = 3
-	material = ArtPalette.ADDITIVE
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(get_instance_id())
 	for i in SPIKES:
-		var spike := Spike.new()
 		var angle := TAU * float(i) / float(SPIKES) + rng.randf_range(-0.3, 0.3)
-		var tall := rng.randf_range(0.6, 1.0)
-		spike.foot = Vector2.from_angle(angle) * sqrt(rng.randf_range(0.1, 1.0))
-		spike.height = HEIGHT * tall
-		# Larges : à 1,4 le pic était une esquille, et sept esquilles en rond se
-		# lisaient comme un éclat de verre, pas comme des pics qui percent le sol.
-		spike.half_width = 2.4 + 1.6 * tall
-		spike.lean = rng.randf_range(-3.0, 3.0)
-		_spikes.append(spike)
+		# La racine carrée répartit à surface égale : sans elle, tout se tasse au
+		# centre et le cercle qui mord ne se lit pas.
+		_feet.append(Vector2.from_angle(angle) * sqrt(rng.randf_range(0.1, 1.0)))
 
 
 func _physics_process(delta: float) -> void:
@@ -77,13 +66,27 @@ func _physics_process(delta: float) -> void:
 
 ## Des cristaux debout, pointe en haut : un pic vu de dessus en vue plongeante monte
 ## vers le ciel, comme les flammes d'Immolation.
+##
+## Un grand, un petit, alternés : sept pics de la même taille font une palissade —
+## la leçon de la Ruée ardente, où le défaut n'était pas le nombre mais la
+## régularité.
+##
+## Seul le givre au sol s'efface ; les cristaux, eux, **rentrent sous terre**.
 func _draw() -> void:
-	var out := clampf(_age / (LIFETIME * RISE), 0.0, 1.0)
-	var fade := clampf((LIFETIME - _age) / (LIFETIME * 0.4), 0.0, 1.0)
-	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.32 * fade))
-	for spike in _spikes:
-		# Penchés, et chacun du sien : sept pics verticaux font une palissade.
-		Frost.draw_shard(
-			self, spike.foot * _cast.radius, Vector2.UP, spike.height * out,
-			spike.half_width, _tint, fade, spike.lean
-		)
+	# Une seule valeur pour la fin du geste : les cristaux rentrent sous terre et le
+	# givre s'efface au même rythme, sinon l'un survit à l'autre.
+	var ending := clampf((LIFETIME - _age) / (LIFETIME * SINK), 0.0, 1.0)
+	var out := minf(clampf(_age / (LIFETIME * RISE), 0.0, 1.0), ending)
+	var radius := maxi(int(round(_cast.radius)), 1)
+	# Le givre au sol dit où ça mord, et il est tramé : un anneau tracé est la
+	# dernière chose qui trahit le vecteur au milieu d'un décor en pixels.
+	draw_texture_rect(
+		EffectForge.scorch(_tint, radius),
+		Rect2(
+			EffectForge.snap(self, -Vector2(radius, radius)),
+			Vector2.ONE * float(radius * 2 + 1)
+		),
+		false, Color(1.0, 1.0, 1.0, ending)
+	)
+	for i in _feet.size():
+		Frost.raise_spike(self, _feet[i] * _cast.radius, i % 2 == 0, out, _tint)

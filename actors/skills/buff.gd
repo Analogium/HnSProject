@@ -9,11 +9,12 @@ extends Node2D
 ## éteint ce qu'il enseignait.
 
 const HALO := 9.0
-## Le demi-côté du bloc de glace, en pixels : il couvre le corps sans mordre sur ses
-## voisins.
-const BLOCK := 11.0
 const MOTES := 6
 const RISE := 14.0
+## Ce qu'on voit du porteur à travers son tombeau. À 1 il disparaît dans la glace,
+## à 0,6 le bloc n'est plus qu'un reflet : c'est le seul dessin du jeu qu'on
+## regarde **à travers**, et il se pose donc à alpha partiel.
+const TOMB_ALPHA := 0.8
 
 var _player: Player
 var _skill: Skill
@@ -37,7 +38,11 @@ static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
 
 
 func _ready() -> void:
-	material = ArtPalette.ADDITIVE
+	# Le tombeau est **dessiné**, et une planche cernée ne peut pas être additive :
+	# son contour sombre n'y ajoute rien. Les autres gestes restent en lumière
+	# ajoutée — ce qu'ils montrent est une lueur, pas un objet.
+	if not _skill.binds_caster:
+		material = ArtPalette.ADDITIVE
 
 
 ## Ce qu'il reste de sa durée, entre 0 et 1 ; **1 pour celui qui n'en a pas**, et qui
@@ -93,27 +98,28 @@ func _draw() -> void:
 			DamageType.Kind.FIRE:
 				Fire.draw_ember(self, p, tint, 0.7 * (1.0 - rise))
 			DamageType.Kind.COLD:
-				Frost.draw_flake(self, p, tint, 0.7 * (1.0 - rise))
+				Frost.drift(self, p, tint, 0.7 * (1.0 - rise))
 			_:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 
 
-## Le bloc de glace : six pans autour du porteur, cerclés de givre. Un disque plein
-## l'aurait caché ; les pans laissent voir qu'il y a quelqu'un dedans.
+## Le bloc de glace, **dessiné** : vingt et un pixels sur vingt-sept, posé à
+## alpha partiel pour qu'on voie qui est dedans. Les six pans tracés d'avant
+## faisaient un hexagone, pas un volume — ce qui manquait, ce sont les facettes et
+## les fêlures, et aucune des deux ne se trace.
+##
+## Trois flocons qui montent le long du bloc : trois secondes d'image fixe se
+## lisent comme un jeu figé.
 func _tomb(tint: Color) -> void:
-	var pans := PackedVector2Array()
-	for i in 6:
-		pans.append(Vector2.from_angle(TAU * float(i) / 6.0 - PI * 0.5) * Vector2(BLOCK, BLOCK * 1.3))
-	draw_colored_polygon(pans, Color(tint, 0.18))
-	# La facette éclairée, une moitié du bloc : la règle du cristal, appliquée à
-	# grande taille. Sans elle, le tombeau est un hexagone et non un volume.
-	draw_colored_polygon(PackedVector2Array([pans[0], pans[1], pans[2], pans[3]]), Color(tint, 0.20))
-	draw_polyline(pans + PackedVector2Array([pans[0]]), Color(Frost.rim(tint), 0.9), 1.0)
-	# Trois flocons qui montent le long du bloc : trois secondes d'hexagone immobile
-	# se lisent comme une image figée.
+	var block := EffectForge.tomb(tint)
+	var size := Vector2(block.get_width(), block.get_height())
+	draw_texture_rect(
+		block, Rect2(EffectForge.snap(self, -size * 0.5), size), false,
+		Color(1.0, 1.0, 1.0, TOMB_ALPHA)
+	)
 	for i in 3:
 		var rise := fmod(_age * 0.5 + float(i) * 0.33, 1.0)
-		Frost.draw_flake(
-			self, Vector2((float(i) - 1.0) * 7.0, BLOCK - rise * BLOCK * 2.0),
+		Frost.drift(
+			self, Vector2((float(i) - 1.0) * 7.0, size.y * 0.5 - rise * size.y),
 			tint, 0.7 * (1.0 - rise)
 		)

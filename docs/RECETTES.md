@@ -449,17 +449,21 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 `Targets` pour trouver ses cibles et par `Hurtbox.take_damage()` pour frapper —, et
 son test dans `tests/integration/test_shapes.gd`.
 
-**Son dessin** se fait dans son `_draw()`, `material = ArtPalette.ADDITIVE` posé au
-`_ready()`, avec le module de sa matière quand elle en a une — `fx/lightning.gd`,
-`fx/fire.gd`, `fx/frost.gd` —, parce que quatre façons de dessiner un éclair, une flamme
-ou un cristal ne se liraient pas comme la même chose, et sinon avec les textures de
+**Son dessin** se fait dans son `_draw()`, avec le module de sa matière quand elle
+en a une — `fx/lightning.gd` (tracée), `fx/fire.gd` et `fx/frost.gd`, qui posent les
+planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
+**tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur
 (`Glow.draw_blob`), un bord de zone (`Glow.draw_ring`, dont la crête tombe pile sur le
 rayon qui mord), une comète (`Glow.draw_streak`, tête sur `from` — elle repose la
 transformation à l'identité, donc un appelant qui en avait posé une la repose). Un
 `draw_arc` d'un pixel se lit comme un affichage de portée, et surtout **rien ne brille
 en dessous de 0,9 de luminance** : un effet a besoin d'un cœur presque blanc, pas d'un
-aplat à alpha 0,25. Si elle a un nombre neuf : le
+aplat à alpha 0,25. Une matière **dessinée**, elle, ne prend **pas** l'additif — son
+contour sombre n'y ajoute rien —, se cale sur `EffectForge.snap()`, et ne s'éteint
+pas en pâlissant : une planche à demi-transparente sur un sol sombre sort grise. Elle
+se coupe, redescend sous terre ou se vide de ses pièces. Si elle a un nombre neuf : le
 champ dans `SkillStats` et son `LABELS`, sa copie dans
 `Skill.resolve()`, sa ligne dans la fiche du manuel, et sa condition dans
 `test_each_shape_has_the_numbers_it_needs`.
