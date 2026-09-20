@@ -6,7 +6,6 @@ extends Projectile
 
 ## Les langues de flamme qui traînent derrière la boule.
 const TONGUES := 3
-const LIGHT := Color(1.0, 0.96, 0.7)
 
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
 var explosion_radius := 0.0
@@ -16,18 +15,21 @@ var _burst := false
 
 func _draw() -> void:
 	var t := tint()
-	# Le nœud est déjà tourné sur sa trajectoire : derrière, c'est −x.
+	# Le nœud est tourné sur sa trajectoire : derrière, c'est −x. **La seule chose
+	# du jeu qui vole**, donc les seules langues qui ne montent pas vers le haut de
+	# l'écran : une boule de feu traîne son feu, elle ne le laisse pas monter.
 	for i in TONGUES:
-		var spread := (float(i) - 1.0) * 2.2
-		var length := 9.0 + _flicker.randf_range(-2.0, 2.5)
-		draw_colored_polygon(PackedVector2Array([
-			Vector2(1.0, spread - 2.0), Vector2(1.0, spread + 2.0),
-			Vector2(-length, spread * 1.6 + _flicker.randf_range(-0.8, 0.8)),
-		]), Color(t, 0.35))
-	# Un cœur au lieu de trois disques concentriques : la retombée est dans la
-	# texture, et le centre passe le seuil de glow là où 0,85 le frôlait.
-	Glow.draw_blob(self, Vector2.ZERO, 7.0, Color(t, 0.5))
-	Glow.draw_blob(self, Vector2(1.2, 0.0), 3.4, Color(t.lerp(LIGHT, 0.7), 1.0))
+		# Le `sway` se compte sur le côté de la langue : couchée vers −x, son côté
+		# pointe vers le haut de l'écran, d'où le signe qui écarte l'éventail.
+		var spread := (float(i) - 1.0) * 2.4
+		Fire.draw_tongue(
+			self, Vector2(1.0, spread), Vector2.LEFT, 11.0 + 2.5 * Fire.breath(_life, i),
+			2.4, t, 1.0, -spread * 1.2 + 1.2 * Fire.breath(_life * 0.7, i + 4)
+		)
+	# Le cœur porte la lumière, et lui seul : `Fire.heart` le pose à 0,92 de
+	# luminance, quand le blanc local d'avant plafonnait à 0,836 — sous le seuil.
+	Glow.draw_blob(self, Vector2.ZERO, 7.5, Color(t, 0.42))
+	Glow.draw_blob(self, Vector2(1.2, 0.0), 3.4, Color(Fire.heart(t), 1.0))
 
 
 func _on_area_entered(area: Area2D) -> void:

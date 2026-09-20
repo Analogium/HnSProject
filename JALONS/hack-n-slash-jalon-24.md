@@ -654,3 +654,120 @@ de toutes les compétences du manuel qu'on pose, donc poser la case juste après
 étude la fait effacer par la suivante. Les deux ont coûté deux captures vides avant
 qu'un `print` des points ne le dise. Pour piloter plusieurs gestes d'un même manuel :
 **un seul livre, tous les `invest`, puis les cases de barre**.
+
+## 14. Le feu — sixième livraison du 19 septembre 2026
+
+Demandé : la même chose que pour la foudre, mais pour le manuel de feu. Le défaut de
+départ était plus net encore que celui de la foudre, parce qu'il était **écrit quatre
+fois** : quatre triangles de flamme — Immolation, la Ruée ardente, la Boule de feu, et
+rien pour le Serpent — et quatre blancs chauds voisins dans quatre fichiers, tous
+différents d'un centième.
+
+**Un seul endroit, `fx/fire.gd`**, pour les cinq gestes ardents : les langues
+d'Immolation et de la Ruée ardente, les braises d'Ignition, la traînée de la Boule de
+feu, son explosion, et le dos du Serpent infernal, qui ne brûlait pas du tout.
+
+Ce qui fait le feu, et qui n'y était pas :
+
+- **un profil qui se renfle.** Une langue s'élargit jusqu'à 30 % de sa hauteur avant de
+  se fermer. Un profil qui décroît de bout en bout est un triangle, quelle que soit la
+  façon dont on l'anime — c'est ce qu'étaient les quatre d'avant ;
+- **trois couches emboîtées**, c'est-à-dire **un dégradé de température** : halo teinté
+  à 0,28, corps tiède à 0,34, cœur presque blanc à 0,85. Une langue d'une seule couleur
+  reste un triangle orange ;
+- **une pointe qui lèche**, déplacée par le carré de la hauteur : le pied ne bouge pas,
+  sinon la flamme penche d'un bloc ;
+- **une respiration commune** (`Fire.breath`), deux sinus de périodes incommensurables :
+  un seul donne un battement régulier, qui se lit comme une boucle d'animation.
+
+### Les chiffres, et ce que seule la capture a dit
+
+- **L'orange du feu plafonne à 0,57 de luminance** et le seuil de glow est à 0,9. Les
+  quatre blancs chauds remplacés donnaient des cœurs à 0,75 (l'explosion), 0,79 (le
+  serpent), 0,836 (la boule) et 0,899 (le brasier) : **aucun ne débordait**, et deux
+  d'entre eux l'affirmaient en commentaire. `Fire.heart()` monte à 0,92 ;
+- **en additif, c'est le bleu qui blanchit.** Le blanc chaud en porte 0,78. Trois
+  couches franches s'ajoutent par-dessus le sol et saturent les trois canaux avant
+  d'avoir l'air chaudes : le premier brasier capturé était une **couronne de dents
+  blanches**. Le cœur est donc une mèche — 0,22 de la largeur — et non une flamme
+  réduite, et le cœur d'explosion suit la règle de l'éclat de la foudre : teinté large,
+  blanc minuscule ;
+- **un orange peu opaque sur un sol sombre sort brun.** Le piège était déjà écrit dans
+  `Explosion`, il s'est reposé deux fois : le disque d'Immolation à 0,08 faisait une
+  flaque à bord net (remplacé par un cœur de lumière, qui s'éteint vers le bord), et le
+  ruban de la Ruée ardente à 0,10 se voyait avant ses flammes ;
+- **les opacités sont réglées pour l'additif**, celui de quatre appelants sur cinq. Le
+  Serpent se dessine en mélange normal, où rien ne s'additionne : ses premières langues,
+  à la taille de celles du brasier, étaient invisibles à la capture. Elles sont une fois
+  et demie plus grandes, et c'est écrit dans `fx/fire.gd`.
+
+### Un piège de Godot, qui se reposera
+
+**Un sommet en double fait échouer la triangulation** d'un polygone : Godot ne dessine
+rien et crie à chaque image. La pointe d'une langue est un point de largeur nulle, donc
+les deux côtés s'y rejoignaient sur le même sommet — et seules les plus fines, celles de
+la queue du serpent, le montraient. Même chose sous l'aire du pixel : `MIN_HEIGHT` et
+`MIN_WIDTH` refusent les langues qu'on ne verrait pas. `test_a_tongue_has_no_duplicated_vertex`
+refuse l'oubli.
+
+**833 tests, 833 passent**, aucun modifié.
+
+### Ce que le banc de capture a demandé
+
+Le scénario de capture est celui de la foudre, à trois choses près, toutes trouvées à
+leurs dépens : **les sorts veulent une baguette** (l'épée de départ les refuse tous, et
+`cast_slot` répond `false` sans rien dire de plus) ; **l'explosion d'un tir part où le
+tir touche**, c'est-à-dire souvent hors cadre, donc elle est posée à la main à 64 px du
+joueur, même nœud et même geste résolu ; et une capture jugée **au triple zoom**, parce
+qu'à l'échelle de l'écran une langue de huit pixels ne se juge pas.
+
+## 15. La glace — septième livraison du 19 septembre 2026
+
+Demandé : la même chose pour le manuel du froid. Ses quatre cases n'avaient pas le
+défaut des deux autres manuels — rien n'était écrit quatre fois —, elles avaient
+l'inverse : **un trait d'un pixel pour tout relief**. Un triangle plat avec une arête
+claire pour les pics, une polyligne d'un pixel pour les bras du vortex, un hexagone
+cerclé pour le tombeau, des carrés de deux pixels pour les éclats.
+
+**Un seul endroit, `fx/frost.gd`**, pour les quatre gestes froids, plus les esquilles
+de la Nova de glace, qui passe par `Explosion`.
+
+### Le chiffre qui retourne la règle des deux autres matières
+
+**Le cyan du froid porte 0,81 de luminance** — contre 0,57 pour le feu et 0,63 pour la
+foudre. C'est la matière la plus claire du jeu, et à pleine opacité sur le sol elle
+monte à **0,933** : elle dépasse le seuil de glow *sans qu'on y ajoute quoi que ce
+soit*. Tout ce que le feu et la foudre ont appris s'inverse donc :
+
+- là où une flamme a besoin d'un cœur presque blanc pour déborder, **la glace n'a besoin
+  de rien**. L'éclaircir ne fait que lui retirer sa teinte : la pointe des pics d'avant,
+  à 0,55 vers le blanc, avait 0,775 de rouge — du verre, pas de la glace ;
+- ce qui lui manquait n'était pas de la lumière mais de **l'ombre**. Et en mélange
+  additif on n'assombrit rien : ombrer veut dire **retirer de l'alpha**, pas de la
+  couleur.
+
+D'où la forme : un cristal est **deux flancs et une arête**. La même teinte à 0,34 et à
+0,62, l'arête de givre à 0,95 entre les deux. Les deux flancs diffèrent — symétriques,
+ils donnent un sapin, et sept sapins en cercle une couronne de l'avent.
+
+### Ce que les captures ont corrigé
+
+- **Les pics étaient des esquilles.** À 1,4 de demi-largeur pour 18 de haut, sept
+  cristaux en rond se lisaient comme un éclat de verre brisé. À 2,4 + 1,6 ils percent le
+  sol ;
+- **une spirale lisse est un coup de pinceau.** Les bras du vortex passent de neuf
+  segments à cinq : c'est la brisure qui dit la glace. Ils ont gagné une passe large
+  teintée sous leur pixel de givre, et **une lame au bout**, couchée sur la spirale —
+  sans elle, rien ne dit dans quel sens le vortex tourne ;
+- **le disque de fond du vortex faisait une flaque à bord net**, le même piège que le
+  brasier d'Immolation trois heures plus tôt, corrigé de la même façon : un cœur de
+  lumière à la place du disque plein.
+
+La Nova de glace a servi à ranger `Explosion` : la matière du souffle — langues pour le
+feu, esquilles pour le froid — vit maintenant dans `_matter()`, et le blanc du cœur dans
+`_core()`, **par nature**. Une nova nécrotique qui jetterait des flammes mentirait sur ce
+qu'elle fait ; elle n'a que l'onde, et c'est écrit.
+
+**837 tests, 837 passent**, aucun modifié. Le Tombeau de glace a coûté une capture vide :
+il est refusé pour réserve insuffisante, et `cast_slot()` répond `false` sans dire
+laquelle de ses six raisons — c'est le troisième piège d'atelier du même genre.

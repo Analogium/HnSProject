@@ -450,9 +450,10 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 son test dans `tests/integration/test_shapes.gd`.
 
 **Son dessin** se fait dans son `_draw()`, `material = ArtPalette.ADDITIVE` posé au
-`_ready()`, avec `fx/lightning.gd` si c'est de la foudre — les cinq gestes électriques
-du jeu passent par là, quatre façons de dessiner un éclair ne se liraient pas comme la
-même matière — et sinon avec les textures de `fx/glow.gd` plutôt que des primitives : un cœur
+`_ready()`, avec le module de sa matière quand elle en a une — `fx/lightning.gd`,
+`fx/fire.gd`, `fx/frost.gd` —, parce que quatre façons de dessiner un éclair, une flamme
+ou un cristal ne se liraient pas comme la même chose, et sinon avec les textures de
+`fx/glow.gd` plutôt que des primitives : un cœur
 (`Glow.draw_blob`), un bord de zone (`Glow.draw_ring`, dont la crête tombe pile sur le
 rayon qui mord), une comète (`Glow.draw_streak`, tête sur `from` — elle repose la
 transformation à l'identité, donc un appelant qui en avait posé une la repose). Un

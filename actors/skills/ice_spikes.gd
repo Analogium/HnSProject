@@ -21,6 +21,8 @@ class Spike:
 	var foot: Vector2
 	var height: float
 	var half_width: float
+	## L'inclinaison de la pointe, en pixels.
+	var lean: float
 
 
 var _cast: SkillStats
@@ -54,7 +56,10 @@ func _ready() -> void:
 		var tall := rng.randf_range(0.6, 1.0)
 		spike.foot = Vector2.from_angle(angle) * sqrt(rng.randf_range(0.1, 1.0))
 		spike.height = HEIGHT * tall
-		spike.half_width = 1.4 + tall
+		# Larges : à 1,4 le pic était une esquille, et sept esquilles en rond se
+		# lisaient comme un éclat de verre, pas comme des pics qui percent le sol.
+		spike.half_width = 2.4 + 1.6 * tall
+		spike.lean = rng.randf_range(-3.0, 3.0)
 		_spikes.append(spike)
 
 
@@ -70,24 +75,15 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Des triangles debout, pointe en haut : un pic vu de dessus en vue plongeante monte
+## Des cristaux debout, pointe en haut : un pic vu de dessus en vue plongeante monte
 ## vers le ciel, comme les flammes d'Immolation.
 func _draw() -> void:
 	var out := clampf(_age / (LIFETIME * RISE), 0.0, 1.0)
 	var fade := clampf((LIFETIME - _age) / (LIFETIME * 0.4), 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.55)
 	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.32 * fade))
 	for spike in _spikes:
-		var foot := spike.foot * _cast.radius
-		var height := spike.height * out
-		var half := spike.half_width
-		draw_colored_polygon(PackedVector2Array([
-			foot + Vector2(-half, 0.0),
-			foot + Vector2(half, 0.0),
-			foot + Vector2(0.0, -height),
-		]), Color(_tint, 0.70 * fade))
-		# L'arête claire sur un seul bord : sans elle, un triangle plat n'a pas de facette.
-		draw_line(
-			foot + Vector2(-half * 0.4, 0.0), foot + Vector2(0.0, -height),
-			Color(light_color, 0.9 * fade), 1.0
+		# Penchés, et chacun du sien : sept pics verticaux font une palissade.
+		Frost.draw_shard(
+			self, spike.foot * _cast.radius, Vector2.UP, spike.height * out,
+			spike.half_width, _tint, fade, spike.lean
 		)

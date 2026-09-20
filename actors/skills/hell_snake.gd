@@ -23,7 +23,6 @@ const TAIL_RADIUS := 1.4
 const SCALE_PLATE := 0.22
 const SPAWN := 0.2
 const DISSIPATION := 0.4
-const LIGHT := Color(1.0, 0.95, 0.55)
 const EYES := Color(0.15, 0.05, 0.02)
 const TONGUE := Color(0.9, 0.15, 0.1)
 
@@ -133,7 +132,10 @@ func _touches(point: Vector2) -> bool:
 
 func _draw() -> void:
 	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / DISSIPATION, 0.0, 1.0)
-	var head := _tint.lerp(LIGHT, 0.6)
+	# La tête tire vers le blanc chaud, la queue vers l'ombre : c'est le sens de la
+	# bête. **Un quart et pas plus** : à 0,6 le corps sortait beige, et un ver beige
+	# n'est pas un serpent de feu. La lumière est dans les langues, pas dans la peau.
+	var head := _tint.lerp(Fire.WARM, 0.25)
 	var tail := _tint.darkened(0.45)
 	# De la queue à la tête, halos d'abord : un halo peint après un anneau voisin le
 	# délaverait.
@@ -146,6 +148,22 @@ func _draw() -> void:
 		if i % 2 == 1:
 			color = color.darkened(SCALE_PLATE)
 		draw_circle(to_local(_body[i]), lerpf(HEAD_RADIUS, TAIL_RADIUS, k), Color(color, fade))
+
+	# Un serpent de feu brûle : une langue un anneau sur deux, décroissante vers la
+	# queue. Sans elles, c'est un tube lumineux qui ondule. Elles ne mordent pas —
+	# la morsure, ce sont les anneaux.
+	if _cast.dominant_nature() == DamageType.Kind.FIRE:
+		# La queue ne lèche pas : ses langues tomberaient sous le pixel. Et elles sont
+		# **plus grandes qu'ailleurs** : le serpent se dessine en mélange normal, où
+		# les trois couches ne s'additionnent pas — à la taille du brasier, on ne les
+		# voyait pas.
+		for i in range(0, RINGS - 4, 2):
+			var k := float(i) / float(RINGS - 1)
+			Fire.draw_tongue(
+				self, to_local(_body[i]), Vector2.UP,
+				(11.0 - 5.0 * k) + 2.5 * Fire.breath(_age, i), 3.0 - 1.4 * k,
+				_tint, fade, 1.8 * Fire.breath(_age * 0.7, i + 2)
+			)
 
 	var before := Vector2.from_angle(_cap)
 	var side := before.orthogonal()

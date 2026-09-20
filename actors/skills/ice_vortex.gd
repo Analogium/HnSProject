@@ -11,9 +11,11 @@ extends Node2D
 ## Le rayon de départ, en part du rayon final : sous un tiers, ses premières impulsions
 ## ne toucheraient que ce qui est déjà sur le personnage.
 const SEED_PART := 0.35
-## Les bras de la spirale, et leur vitesse en tours par seconde.
+## Les bras de la spirale, leur vitesse en tours par seconde, et le nombre de
+## segments de chacun — c'est leur petit nombre qui rend la spirale brisée.
 const ARMS := 4
 const SPIN := 1.6
+const STEPS := 5
 ## Les éclats emportés par le tour.
 const SHARDS := 12
 const FADE := 0.4
@@ -75,24 +77,32 @@ func _strike() -> void:
 func _draw() -> void:
 	var r := reach()
 	var fade := clampf((_cast.duration - _age) / (_cast.duration * FADE), 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.5)
-	draw_circle(Vector2.ZERO, r, Color(_tint, 0.08 * fade))
+	var rim := Frost.rim(_tint)
+	# Un disque plein sortait comme une flaque à bord net ; le cœur de lumière a la
+	# même portée et s'éteint vers le bord, et c'est l'anneau qui dit où ça mord.
+	Glow.draw_blob(self, Vector2.ZERO, r, Color(_tint, 0.12 * fade))
 	Glow.draw_ring(self, Vector2.ZERO, r, Color(_tint, 0.42 * fade))
 
 	for i in ARMS:
 		var base := TAU * float(i) / float(ARMS) + _age * SPIN
 		var curve := PackedVector2Array()
-		for step in 9:
-			var u := float(step) / 8.0
+		# Cinq segments et non neuf : une spirale lisse se lit comme un coup de
+		# pinceau, une spirale brisée comme de la glace.
+		for step in STEPS + 1:
+			var u := float(step) / float(STEPS)
 			# L'angle avance avec le rayon : c'est ce décalage qui fait la spirale.
 			curve.append(Vector2.from_angle(base + u * 1.9) * r * u)
-		draw_polyline(curve, Color(light_color, 0.75 * fade), 1.0)
+		# Deux passes : un bras d'un seul pixel est un tracé, pas une bourrasque.
+		draw_polyline(curve, Color(_tint, 0.32 * fade), 4.0)
+		draw_polyline(curve, Color(rim, 0.60 * fade), 1.0)
+		# Une lame au bout du bras, couchée sur la spirale : c'est elle qui donne le
+		# sens de rotation, qu'un trait qui tourne ne donne pas.
+		var last := curve[curve.size() - 1]
+		var along := (last - curve[curve.size() - 2]).normalized()
+		Frost.draw_shard(self, last - along * 9.0, along, 9.0, 2.6, _tint, fade, 1.5)
 
 	for i in SHARDS:
 		var turn := _age * SPIN * 1.4 + TAU * float(i) / float(SHARDS)
 		# Ils tombent vers le cœur : un vortex aspire, il ne rayonne pas.
 		var away := 1.0 - fmod(_age * 0.6 + float(i) * 0.137, 1.0)
-		draw_rect(
-			Rect2(Vector2.from_angle(turn) * r * away, Vector2.ONE * 2.0),
-			Color(light_color, 0.8 * away * fade)
-		)
+		Frost.draw_flake(self, Vector2.from_angle(turn) * r * away, _tint, 0.8 * away * fade)

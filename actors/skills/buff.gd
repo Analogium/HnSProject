@@ -86,14 +86,34 @@ func _draw() -> void:
 		var rise := fmod(_age * 0.8 + float(i) * 0.163, 1.0)
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
 		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
-		draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
+		# Ce qui monte a la matière du geste : des braises pour une combustion, des
+		# flocons pour un froid. Et rien d'autre — ce geste dure des minutes, et ce
+		# qui clignote fort finit par fatiguer.
+		match _skill.nature:
+			DamageType.Kind.FIRE:
+				Fire.draw_ember(self, p, tint, 0.7 * (1.0 - rise))
+			DamageType.Kind.COLD:
+				Frost.draw_flake(self, p, tint, 0.7 * (1.0 - rise))
+			_:
+				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 
 
-## Le bloc de glace : six pans autour du porteur, cerclés de clair. Un disque plein
+## Le bloc de glace : six pans autour du porteur, cerclés de givre. Un disque plein
 ## l'aurait caché ; les pans laissent voir qu'il y a quelqu'un dedans.
 func _tomb(tint: Color) -> void:
 	var pans := PackedVector2Array()
 	for i in 6:
 		pans.append(Vector2.from_angle(TAU * float(i) / 6.0 - PI * 0.5) * Vector2(BLOCK, BLOCK * 1.3))
-	draw_colored_polygon(pans, Color(tint, 0.22))
-	draw_polyline(pans + PackedVector2Array([pans[0]]), Color(tint.lerp(Color.WHITE, 0.6), 0.9), 1.0)
+	draw_colored_polygon(pans, Color(tint, 0.18))
+	# La facette éclairée, une moitié du bloc : la règle du cristal, appliquée à
+	# grande taille. Sans elle, le tombeau est un hexagone et non un volume.
+	draw_colored_polygon(PackedVector2Array([pans[0], pans[1], pans[2], pans[3]]), Color(tint, 0.20))
+	draw_polyline(pans + PackedVector2Array([pans[0]]), Color(Frost.rim(tint), 0.9), 1.0)
+	# Trois flocons qui montent le long du bloc : trois secondes d'hexagone immobile
+	# se lisent comme une image figée.
+	for i in 3:
+		var rise := fmod(_age * 0.5 + float(i) * 0.33, 1.0)
+		Frost.draw_flake(
+			self, Vector2((float(i) - 1.0) * 7.0, BLOCK - rise * BLOCK * 2.0),
+			tint, 0.7 * (1.0 - rise)
+		)

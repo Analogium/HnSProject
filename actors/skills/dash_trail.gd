@@ -12,7 +12,10 @@ extends Node2D
 ## deux cercles ; en dessous, on paie des requêtes pour rien.
 const STEP := 0.9
 
-const FLAMES := 5
+## Une langue tous les treize pixels, quatre au moins : à cinq langues pour un
+## couloir entier, on voyait le ruban brun avant de voir le feu.
+const FLAME_STEP := 13.0
+const FLAMES_MIN := 4
 const SPAWN := 0.12
 const FADE := 0.35
 
@@ -84,30 +87,33 @@ func _probes() -> Array[Vector2]:
 
 func _draw() -> void:
 	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / FADE, 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.5)
 	var last := _toward
 	var wide := _cast.radius * 0.5
-	draw_line(Vector2.ZERO, last, Color(_tint, 0.10 * fade), _cast.radius * 2.0)
-	draw_line(Vector2.ZERO, last, Color(_tint, 0.35 * fade), 2.0)
+	# Le ruban large dit la portée et rien d'autre : à 0,10 d'un orange, il sortait
+	# **brun**, et on voyait un tapis avant de voir le feu (même piège qu'`Explosion`).
+	draw_line(Vector2.ZERO, last, Color(_tint, 0.06 * fade), _cast.radius * 2.0)
 	Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
 	Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
 
-	# Un arc qui court le long du couloir, refait deux fois par dixième de seconde :
-	# c'est lui qui dit que la traînée est électrique et pas juste lumineuse. Il ne
-	# frappe rien — la morsure, c'est le couloir, pas le dessin.
-	if _cast.dominant_nature() == DamageType.Kind.LIGHTNING:
-		_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
-		Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
-
-	# Les langues montent vers le haut de l'écran, comme celles d'Immolation : une
-	# traînée vue de dessus brûle vers le ciel.
-	for i in FLAMES:
-		var u := (float(i) + 0.5) / float(FLAMES)
-		var foot := last * u
-		var height := 5.0 + 3.0 * sin(_age * 8.0 + float(i) * 1.9)
-		var half := 1.0 + wide * 0.2
-		draw_colored_polygon(PackedVector2Array([
-			foot + Vector2(-half, 0.0),
-			foot + Vector2(half, 0.0),
-			foot + Vector2(sin(_age * 6.0 + foot.x) * 1.2, -height * fade),
-		]), Color(light_color, 0.5 * fade))
+	# **Le couloir luit pour tout le monde ; sa matière est par nature.** Le feu
+	# lèche, la foudre grésille, le reste ne fait que luire : une ruée de glace
+	# n'avait aucune raison de laisser des flammes. Aucun de ces dessins ne frappe
+	# — la morsure, c'est le couloir.
+	match _cast.dominant_nature():
+		DamageType.Kind.LIGHTNING:
+			# Refait deux fois par dixième de seconde : c'est le grésillement.
+			_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
+			Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
+		DamageType.Kind.FIRE:
+			var flames := maxi(int(last.length() / FLAME_STEP), FLAMES_MIN)
+			for i in flames:
+				var foot := last * ((float(i) + 0.5) / float(flames))
+				var tall := 6.0 + 4.0 * float((i * 7) % 5) / 4.0
+				Fire.draw_tongue(
+					self, foot, Vector2.UP, (tall + 3.0 * Fire.breath(_age, i)) * fade,
+					1.0 + wide * 0.2, _tint, fade, 1.4 * Fire.breath(_age * 0.7, i + 5)
+				)
+		_:
+			# Les natures sans matière propre n'ont que ce trait : le feu et la foudre
+			# s'en passent, il leur barrait leurs propres flammes d'une ligne droite.
+			draw_line(Vector2.ZERO, last, Color(_tint, 0.30 * fade), 2.0)
