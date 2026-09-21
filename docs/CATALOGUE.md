@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-52 bases d'objets, 25 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
+52 bases d'objets, 26 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -118,6 +118,7 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
 | Vague tranchante | attaque physique | niveau 4 | 5 | 8 mana | cadence de l'arme | wave · 0.5 s · rayon 20 | 11 · 14 · 18 · 22 · 27 |
 | Cyclone | attaque physique | niveau 8 | 5 | 0 mana | cadence de l'arme | cyclone · rayon 34 · toutes les 0.35 s · draine 10 mana/s | 7 · 9 · 11 · 14 · 17 |
+| Ruée tranchante | attaque physique | niveau 5 | 5 | 10 mana | cadence de l'arme · recharge 3.00 s | dash · 0.3 s · rayon 12 · toutes les 0.25 s | 16 · 21 · 26 · 32 · 40 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
 
 | nœud | compétence | parent | demande | points | par point |
@@ -135,8 +136,11 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Course | Vague tranchante | Fil de l'arc | 2 points de compétence | 2 | +25 % de durée accrue |
 | Fauchage | Cyclone | — | 1 point de compétence | 3 | +10 % de dégâts amplifiés |
 | Envergure | Cyclone | Fauchage | 2 points de compétence | 2 | +12 % de rayon accru |
+| Fil tranchant | Ruée tranchante | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
+| Andain | Ruée tranchante | Fil tranchant | 2 points de compétence | 2 | +15 % de rayon accru |
+| Enchaînement | Ruée tranchante | — | 2 points de compétence | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
 
-58 destinations de points pour 20 gagnés.
+69 destinations de points pour 20 gagnés.
 
 ### Maître des flammes — `manual_fire`
 

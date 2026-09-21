@@ -25,6 +25,12 @@ const FLAMES_MIN := 4
 const BURN_STEP := 4.0
 const SPAWN := 0.12
 const FADE := 0.35
+## La coupe de la Ruée tranchante : sa demi-largeur, en part du rayon qui mord, et
+## les étincelles arrachées de part et d'autre, avec leur vitesse en pixels par
+## seconde. Ce sont elles qui bougent, la coupe ne bouge pas.
+const CUT_WIDTH := 0.45
+const SPARKS := 8
+const SPARK_SPEED := 44.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -34,6 +40,8 @@ var _toward := Vector2.ZERO
 var _age := 0.0
 var _strikes := 0
 var _flicker := RandomNumberGenerator.new()
+## La coupe d'une ruée physique, fabriquée à la naissance à l'angle exact.
+var _cut: EffectForge.Piece
 
 
 static func leave(
@@ -51,10 +59,12 @@ static func leave(
 
 func _ready() -> void:
 	z_index = 2
-	# Le feu est dessiné, et une planche cernée ne peut pas être additive. La foudre
-	# et le reste restent en lumière ajoutée.
-	if _cast.dominant_nature() != DamageType.Kind.FIRE:
+	# Le feu et la lame sont dessinés, et une planche cernée ne peut pas être
+	# additive. La foudre et le reste restent en lumière ajoutée.
+	if not _is_painted():
 		material = ArtPalette.ADDITIVE
+	if _cast.dominant_nature() == DamageType.Kind.PHYSICAL:
+		_cut = Slash.cleave(_tint, _toward, _cast.radius * CUT_WIDTH)
 	_flicker.seed = int(get_instance_id())
 
 
@@ -101,12 +111,9 @@ func _draw() -> void:
 	var wide := _cast.radius * 0.5
 	# Le ruban large dit la portée et rien d'autre : à 0,10 d'un orange, il sortait
 	# **brun**, et on voyait un tapis avant de voir le feu (même piège qu'`Explosion`).
-	if _cast.dominant_nature() != DamageType.Kind.FIRE:
+	# Les traînées peintes s'en passent, comme de halo : il les délaverait.
+	if not _is_painted():
 		draw_line(Vector2.ZERO, last, Color(_tint, 0.06 * fade), _cast.radius * 2.0)
-
-	# Le feu n'a pas de halo : sa traînée est peinte, et un halo par-dessus la
-	# délaverait. Les autres natures gardent le leur.
-	if _cast.dominant_nature() != DamageType.Kind.FIRE:
 		Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
 		Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
 
@@ -121,6 +128,8 @@ func _draw() -> void:
 			Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
 		DamageType.Kind.FIRE:
 			_burnt_path(last, fade)
+		DamageType.Kind.PHYSICAL:
+			_slashed_path(last)
 		_:
 			# Les natures sans matière propre n'ont que ce trait : le feu et la foudre
 			# s'en passent, il leur barrait leurs propres flammes d'une ligne droite.
@@ -157,6 +166,26 @@ func _burnt_path(last: Vector2, fade: float) -> void:
 		if not big:
 			foot += across * FLAME_SWAY * (1.0 if i % 4 == 1 else -1.0)
 		_blit(tex, foot - half, fade)
+
+
+## La Ruée tranchante : **un seul coup d'épée sur toute la traversée**, posé d'une
+## pièce, et des étincelles qui s'en arrachent de part et d'autre. La coupe ne pâlit
+## pas — une lame à demi transparente sur un sol sombre sort grise — : elle tient
+## son quart de seconde, puis elle n'est plus là.
+func _slashed_path(last: Vector2) -> void:
+	_cut.put(self, Vector2.ZERO)
+	var grain := EffectForge.spark(_tint)
+	var half := Vector2(grain.get_width(), grain.get_height()) * 0.5
+	var across := last.orthogonal().normalized()
+	for i in SPARKS:
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var at := last * ((float(i) + 0.5) / float(SPARKS)) + across * side * (3.0 + _age * SPARK_SPEED)
+		_blit(grain, at - half, 1.0)
+
+
+## Peinte — fait de planches cernées — ou tracée en lumière ajoutée.
+func _is_painted() -> bool:
+	return _cast.dominant_nature() in [DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL]
 
 
 func _blit(tex: Texture2D, offset: Vector2, fade: float) -> void:

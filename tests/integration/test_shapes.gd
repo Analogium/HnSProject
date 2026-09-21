@@ -500,6 +500,26 @@ func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
 	assert_eq(_children_of(DashTrail).size(), 0, "la trace s'est effacée")
 
 
+## La Ruée tranchante est une ruée dont la trace ne frappe **qu'une fois** : sa
+## période est sa durée. Tout ce qui est sur la traversée prend le coup, une seule
+## fois même sous plusieurs sondes, et rien à côté.
+func test_the_slicing_dash_cuts_its_path_once() -> void:
+	_learn("manual_weapons", ["slicing_dash"])
+	var near := _target(Vector2(30, 0))
+	var far := _target(Vector2(90, 0))
+	var aside := _target(Vector2(60, 60))
+	await wait_physics_frames(2)
+
+	var cast := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1)
+	assert_eq(cast.strikes_over_duration(), 1, "un seul coup par traversée")
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration + 0.2)
+	assert_eq(_hits(near), 1, "au début du chemin")
+	assert_eq(_hits(far), 1, "comme au bout")
+	assert_eq(_hits(aside), 0, "et rien hors du couloir")
+	assert_eq(_children_of(DashTrail).size(), 0, "la coupe s'est effacée")
+
+
 ## Un buff s'allume, verse ses lignes dans la fiche, brûle son porteur, et s'éteint au
 ## second lancer sans rien coûter.
 func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:

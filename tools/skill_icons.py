@@ -4,6 +4,7 @@
     tools/skill_icons.py gen                  toute la table, trois tirages chacune
     tools/skill_icons.py gen --only ignition  une seule, pour la refaire
     tools/skill_icons.py apply                pose les tirages retenus
+    tools/skill_icons.py apply --only ignition  n'en pose qu'une
 
 Meme moteur que les objets — `tools/item_icons.py`, dont ce script importe le
 rendu, la quantification et les reglages du jalon 11. Deux differences, et elles
@@ -100,7 +101,9 @@ def cmd_gen(args):
 def cmd_apply(args):
     """Le PNG dans resources/icons/, le champ `icon` dans le .tres."""
     dest = os.path.join(PROJ, "resources/icons")
-    for stem, (_, seed) in SUBJECTS.items():
+    only = args.only.split(",") if args.only else list(SUBJECTS)
+    for stem in only:
+        seed = SUBJECTS[stem][1]
         src = os.path.join(OUT, "%s_%d.png" % (stem, seed))
         if not os.path.exists(src):
             sys.exit("manquant : " + src)
@@ -119,7 +122,7 @@ def cmd_apply(args):
         # En derniere ligne, comme les autres competences.
         s = s.rstrip("\n") + '\nicon = ExtResource("2_icone")\n'
         open(tres, "w", encoding="utf-8").write(s)
-    print("posees :", len(SUBJECTS))
+    print("posees :", len(only))
 
 
 if __name__ == "__main__":
@@ -128,7 +131,10 @@ if __name__ == "__main__":
     g = sub.add_parser("gen"); g.set_defaults(run=cmd_gen)
     g.add_argument("--only", default="", help="competences a refaire, separees par des virgules")
     g.add_argument("--redo", action="store_true", help="ignorer les tirages deja en cache")
-    sub.add_parser("apply").set_defaults(run=cmd_apply)
+    a = sub.add_parser("apply"); a.set_defaults(run=cmd_apply)
+    # Le cache des tirages vit dans un dossier temporaire : poser une seule icône
+    # ne doit pas exiger qu'il contienne encore toutes les autres.
+    a.add_argument("--only", default="", help="competences a poser, separees par des virgules")
     args = ap.parse_args()
     print("travail :", WORK)
     args.run(args)

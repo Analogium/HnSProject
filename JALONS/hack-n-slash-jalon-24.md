@@ -1201,3 +1201,115 @@ les braises d'Ignition gardent leur fondu — elles sont tracées, c'est le dern
 geste du feu en polygones.
 
 **846 tests, 846 passent.**
+
+## Le manuel du maître d'armes, dessiné
+
+Cinq gestes — **Frappe lourde**, **Coup en croix**, **Vague tranchante**, **Épée
+spirale**, **Cyclone** — et l'**Attaque** de base, qui partage leur croissant. Le
+problème qu'ils posent ensemble est celui qu'aucun autre manuel n'avait posé à
+cette échelle : **tout y pivote**. Les arcs suivent la visée, la vague sa course,
+les lames du cyclone et l'épée leur cercle. Et une planche tournée se
+rééchantillonne.
+
+### Fabriquer au cap
+
+Le trait sacré se rastérisait une fois, à sa naissance. Un coup d'arme ne peut pas
+se le permettre : il s'anime, et il part dix fois par seconde. La réponse est un
+**cache par cap** — trente-deux, un tous les 11,25° —, rempli au premier passage :
+
+- ce qui est **géométrique** — croissant, entaille — se rastérise directement au cap ;
+- ce qui est **dessiné à la main** — l'épée — se dessine une fois, pointe à droite,
+  et se **tourne** au cap par un échantillonnage à vote : neuf points par pixel, on
+  garde l'encre la plus fréquente. Comparé sur planche au plus proche voisin, c'est
+  le vote qui garde une lame d'un pixel d'un seul tenant. Le contour se pose
+  *après* la rotation : tourner un contour le rendrait épais d'un côté.
+
+Le temps d'un coup est arrondi à l'un de ses **huit temps** : sans cela, chaque
+image fabriquerait une forme que le cache ne retrouverait jamais.
+
+Mesuré au premier passage par un cap : croissant de frappe 0,9 ms, lame du cyclone
+0,6, entaille 0,3, épée 0,8 — 1,6 avant que la rotation ne saute les pixels loin de
+la lame et ne soit gardée pour les silhouettes rémanentes (0,2 ms de plus
+chacune). Les passages suivants ne coûtent rien.
+
+### Ce qu'un test a trouvé
+
+Un quart de tour de l'épée perdait **cinq pixels sur trente-neuf**. Le cadre tourné
+n'avait pas la parité de la grille, si bien que chaque centre de pixel d'arrivée
+tombait **pile sur une frontière** de la grille de départ, et le vote tranchait au
+hasard. Le cadre prend maintenant la parité de la grille ; le test qui exige un
+quart de tour sans perte reste.
+
+### Le croissant
+
+Choisi sur planche : la **lame pleine** — fil blanc, corps teinté, **lourd en tête et
+effilé en queue**. Épais au milieu, comme le tracé d'avant, il se lisait comme une
+feuille ; c'est l'épaisseur en tête qui dit dans quel sens la lame passe.
+
+Et il ne se trame pas en finissant : sa traîne **se résorbe dans la tête**, et le coup
+s'achève sur sa pointe. Tramée, la fin du coup ressemblait à la variante en damier
+écartée sur la même planche. Ce qui se dissout, ce sont les entailles, l'impact de
+la frappe, la vague en fin de course et l'épée qui disparaît — et la dissolution se
+fait **après** le contour (`EffectForge.dissolve()`) : avant, chaque pixel restant
+serait cerné pour lui-même et le dessin tournerait en poussière noire.
+
+Les images rémanentes de l'épée sont sa silhouette, **tramée** plutôt que
+transparente — une ombre à 30 % d'opacité sur un sol sombre sort grise.
+
+**865 tests, 865 passent.**
+
+### Une compétence de plus : la Ruée tranchante
+
+Demandée en même temps : « un dash qui effectue un coup d'épée sur toute la
+traversée ». Elle prend la case libre (2, 1) du manuel, au niveau 5 comme les
+autres ruées, avec deux nœuds — **Fil tranchant** (+12 % de dégâts amplifiés par
+point) et **Andain** (+15 % de rayon accru, donc un couloir plus large).
+
+**Pas de forme neuve.** C'est une `DASH` dont la trace a une période **égale à sa
+durée** : `strikes_over_duration()` rend alors un seul coup, donné à tout le
+couloir — une cible sous deux sondes n'est frappée qu'une fois, la trace le
+garantissait déjà. Cadence de l'arme, donc un coup d'arme pour les affixes, et une
+recharge de 3 s pour qu'on ne la prenne pas pour un moyen de transport.
+
+Son dessin est la seule forme du manuel qu'on **ne peut pas** arrondir au cap le
+plus proche : la coupe court sur toute la traversée, et à 140 px, 5° d'erreur la
+feraient finir à douze pixels du joueur. Elle est donc fabriquée **à l'angle
+exact**, une fois par ruée, et jamais gardée (`Slash.cleave()`) — chaque ruée a la
+sienne, la garder ne ferait que remplir la mémoire. Mesuré : **1 ms** par ruée,
+une fois, bornée par rangée comme le trait sacré. Des étincelles s'en arrachent
+de part et d'autre ; la coupe, elle, ne pâlit pas.
+
+Les nombres (16 à 40 par point, 10 mana) sont pris aux voisines et **non
+équilibrés** : l'équilibrage se fait en dernier (jalon 13, §7). `EQUILIBRAGE.md`
+sort identique après régénération — les couloirs qui échouent échouaient déjà.
+Elle n'a **pas encore d'icône** : la case retombe sur le disque de sa couleur.
+
+**866 tests, 866 passent.**
+
+#### Son icône, et un nœud de cadence
+
+**L'icône** sort du tuyau des compétences (`tools/skill_icons.py`), sur deux
+planches de quatre sujets. Le premier tour est retombé dans le piège déjà noté :
+demander un **trait** — « a long diagonal sword slash streak » — rend une épée
+**verticale**, et la graine 777 raye. C'est le personnage saisi en pleine ruée qui
+dit le mouvement ; retenu sur la seconde planche : « a swordsman dashing
+horizontally at great speed, sword held forward, white speed lines streaking
+behind him », graine 1337, sur l'ardoise du chevalier. Refait par le tuyau, le
+tirage est identique à l'octet près à celui de la planche.
+
+`apply` a gagné un `--only` : son cache vit dans un dossier temporaire, et sans
+lui il exigeait les tirages de toutes les compétences, vidés depuis.
+
+**Le nœud « Enchaînement »** est le pendant d'arme de « Sans répit » (Ruée d'orage) :
+−100 % de recharge, +500 % de temps du geste. La recharge effacée, c'est le geste
+qui borne la case — et le geste d'une compétence d'arme se lit **sur l'arme**, donc
+c'est la **vitesse d'attaque** qui décide, là où « Sans répit » rend la main à la
+vitesse d'incantation. +500 % et non +400 : à 0,45 s par coup, la ruée repart
+toutes les 2,7 s, un peu mieux que ses 3 s de recharge — le nœud doit valoir un
+point. Même place dans l'arbre, (0, 1), deux points dans la compétence, un seul
+dans le nœud.
+
+Le test qui l'accompagne vérifie les deux côtés de la promesse : la vitesse
+d'attaque doublée coupe l'attente en deux, celle d'incantation ne touche rien.
+
+**867 tests, 867 passent.**

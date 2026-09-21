@@ -428,7 +428,9 @@ de foudre qui n'étaient qu'un éclair vif à d'autres réglages.
 **Une ruée** (`DASH`) porte le lanceur au curseur, à `PLACEMENT_RANGE` au plus, **murs
 et ennemis traversés** — seule l'arrivée doit être libre. Elle veut une `duration`,
 celle de ce qu'elle laisse, et **l'un ou l'autre** : un `radius` et une `period` pour
-une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. **Un buff**
+une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. Une
+`period` **égale à sa `duration`** donne une trace qui ne frappe qu'une fois tout le
+couloir : c'est la Ruée tranchante, un coup d'épée sur toute la traversée. **Un buff**
 (`BUFF`) veut un drain — PV ou mana — et au moins un `SkillBuff` : il n'a pas de dégâts,
 donc ni arbre de talents utile, ni « moyenne par lancer ». Les buffs d'un lancer
 s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence.
@@ -451,9 +453,10 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 `Targets` pour trouver ses cibles et par `Hurtbox.take_damage()` pour frapper —, et
 son test dans `tests/integration/test_shapes.gd`.
 
-**Son dessin** se fait dans son `_draw()`, avec le module de sa matière quand elle
-en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd` et `fx/holy.gd`,
-qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+**Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par
+l'utilisateur, puis captures réelles — et se fait dans son `_draw()`, avec le module de sa matière quand elle
+en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd` et
+`fx/slash.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
 éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
 **tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur

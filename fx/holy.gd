@@ -40,13 +40,7 @@ static func halo(tint: Color) -> Color:
 ## l'autre. Rastérisé, le trait n'a qu'une silhouette, donc **un seul contour**.
 ##
 ## Une fois à la naissance et jamais plus : un trait parti ne change plus de forme.
-class Lance:
-	var texture: Texture2D
-	## Du pied du trait au coin de la planche.
-	var offset: Vector2
-
-
-static func lance(tip: Vector2, radius: float, tint: Color) -> Lance:
+static func lance(tip: Vector2, radius: float, tint: Color) -> EffectForge.Piece:
 	var margin := maxf(radius, BURST) + 2.0
 	var corner := Vector2(minf(tip.x, 0.0), minf(tip.y, 0.0)) - Vector2(margin, margin)
 	var canvas := PixelCanvas.new(
@@ -59,12 +53,12 @@ static func lance(tip: Vector2, radius: float, tint: Color) -> Lance:
 	canvas.capsule(foot, foot + tip, radius * CORE, EffectForge.R_CORE, 1.0)
 	canvas.disc(foot, BURST * 0.45, EffectForge.R_CORE, 1.0)
 
-	var out := Lance.new()
-	out.texture = ImageTexture.create_from_image(
-		canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(halo(tint))])
+	return EffectForge.Piece.new(
+		ImageTexture.create_from_image(
+			canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(halo(tint))])
+		),
+		corner
 	)
-	out.offset = corner
-	return out
 
 
 ## Un grain de lumière : trois pixels, le cœur au milieu. Le flocon de la glace a

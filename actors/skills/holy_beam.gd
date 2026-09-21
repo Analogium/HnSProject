@@ -31,7 +31,7 @@ var _age := 0.0
 var _has_struck := false
 ## Rastérisé à la naissance et jamais plus : un trait parti ne change plus de
 ## forme. Mesuré au banc, 1,16 ms pour le pire cas — la diagonale.
-var _lance: Holy.Lance
+var _lance: EffectForge.Piece
 
 
 static func fire(
@@ -75,10 +75,7 @@ func _physics_process(delta: float) -> void:
 ## Il tient ses seize centièmes de seconde, puis il n'est plus là : c'est un coup,
 ## pas une présence.
 func _draw() -> void:
-	var size := Vector2(_lance.texture.get_width(), _lance.texture.get_height())
-	draw_texture_rect(
-		_lance.texture, Rect2(EffectForge.snap(self, _lance.offset), size), false
-	)
+	_lance.put(self, Vector2.ZERO)
 	# À pleine opacité comme le trait : un grain à demi transparent sur un sol
 	# sombre ne s'efface pas, il grisonne.
 	for i in GLINTS:

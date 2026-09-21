@@ -374,7 +374,7 @@ func test_the_slot_waits_for_the_longer_of_the_two() -> void:
 ## rien pour cette case, la vitesse d'incantation seule la raccourcit.
 func test_a_node_may_trade_the_cooldown_for_a_longer_gesture() -> void:
 	var dash := SkillCatalog.by_id("storm_dash")
-	var node := _storm_dash_unbound()
+	var node := _node_of("manual_lightning", "storm_dash_unbound")
 	var sheet := CharacterStats.new()
 	var taken := [InvestedTalent.new(node, 1)]
 
@@ -402,13 +402,40 @@ func test_a_node_may_trade_the_cooldown_for_a_longer_gesture() -> void:
 	)
 
 
+## Le pendant d'arme de « Sans répit », sur la Ruée tranchante : la recharge
+## effacée, c'est **la vitesse d'attaque** qui borne la case, puisqu'un geste d'arme
+## lit son temps sur l'arme.
+func test_the_slicing_dash_node_hands_its_pace_to_attack_speed() -> void:
+	var dash := SkillCatalog.by_id("slicing_dash")
+	var taken := [InvestedTalent.new(_node_of("manual_weapons", "slicing_dash_flow"), 1)]
+	var sheet := CharacterStats.new()
+
+	var freed := dash.resolve(1, sheet, [], taken)
+	assert_eq(freed.recharge, 0.0, "plus de recharge du tout")
+	assert_almost_eq(freed.use_time, sheet.attack_interval() * 6.0, 1e-6, "le geste paie : +500 %")
+	assert_almost_eq(freed.interval, freed.use_time, 1e-6, "la case n'attend plus que le geste")
+
+	var quick := CharacterStats.new()
+	quick.attack_speed = 2.0
+	assert_almost_eq(
+		dash.resolve(1, quick, [], taken).interval, freed.interval * 0.5, 1e-6,
+		"la vitesse d'attaque coupe l'attente en deux"
+	)
+	var spell_quick := CharacterStats.new()
+	spell_quick.cast_speed = 2.0
+	assert_almost_eq(
+		dash.resolve(1, spell_quick, [], taken).interval, freed.interval, 1e-6,
+		"celle d'incantation ne touche rien"
+	)
+
+
 ## Le nœud du contenu, pas une copie : un jour où ses lignes changeront, le test le dira.
-func _storm_dash_unbound() -> TalentNode:
-	for cell in ItemCatalog.by_id("manual_lightning").manual.cells:
+func _node_of(manual_id: String, node_id: String) -> TalentNode:
+	for cell in ItemCatalog.by_id(manual_id).manual.cells:
 		for node: TalentNode in cell.talents:
-			if node.id == "storm_dash_unbound":
+			if node.id == node_id:
 				return node
-	fail_test("« storm_dash_unbound » n'est plus dans le manuel de foudre")
+	fail_test("« %s » n'est plus dans « %s »" % [node_id, manual_id])
 	return null
 
 

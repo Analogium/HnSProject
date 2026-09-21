@@ -10,6 +10,7 @@
 [ext_resource type="Resource" path="res://resources/skills/spiral_sword.tres" id="12_epee_spirale"]
 [ext_resource type="Resource" path="res://resources/skills/wave_slash.tres" id="13_vague"]
 [ext_resource type="Resource" path="res://resources/skills/cyclone.tres" id="14_cyclone"]
+[ext_resource type="Resource" path="res://resources/skills/slicing_dash.tres" id="15_ruee"]
 
 [sub_resource type="Resource" id="L_frappe_lourde_elan_0"]
 script = ExtResource("4_ligne")
@@ -259,8 +260,67 @@ skill = ExtResource("14_cyclone")
 position = Vector2i(1, 1)
 talents = Array[ExtResource("3_noeud")]([SubResource("N_cyclone_fauchage"), SubResource("N_cyclone_envergure")])
 
+[sub_resource type="Resource" id="L_ruee_tranchant_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_ruee_tranchant"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_edge"
+name = "Fil tranchant"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_tranchant_0")])
+
+[sub_resource type="Resource" id="L_ruee_sillage_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_ruee_sillage"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_swath"
+name = "Andain"
+position = Vector2i(1, 0)
+parent = "slicing_dash_edge"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_sillage_0")])
+
+[sub_resource type="Resource" id="L_ruee_enchainement_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -100.0
+
+[sub_resource type="Resource" id="L_ruee_enchainement_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 500.0
+
+[sub_resource type="Resource" id="N_ruee_enchainement"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_flow"
+name = "Enchaînement"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_enchainement_0"), SubResource("L_ruee_enchainement_1")])
+
+[sub_resource type="Resource" id="C_ruee"]
+script = ExtResource("2_case")
+skill = ExtResource("15_ruee")
+position = Vector2i(2, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_tranchant"), SubResource("N_ruee_sillage"), SubResource("N_ruee_enchainement")])
+
 [resource]
 script = ExtResource("1_arch")
 id = "weapons"
 name = "Maître chevalier"
-cells = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_coup_en_croix"), SubResource("C_epee_spirale"), SubResource("C_vague"), SubResource("C_cyclone"), SubResource("C_garde_de_fer")])
+cells = Array[ExtResource("2_case")]([SubResource("C_frappe_lourde"), SubResource("C_coup_en_croix"), SubResource("C_epee_spirale"), SubResource("C_vague"), SubResource("C_cyclone"), SubResource("C_ruee"), SubResource("C_garde_de_fer")])

@@ -763,3 +763,90 @@ static func shaft(tint: Color) -> Texture2D:
 ## Le haut de la colonne de cette teinte.
 static func shaft_tip(tint: Color) -> Texture2D:
 	return _sheet(_tips, [SHAFT_TIP], SHAFT_WIDTH, SHAFT_TIP_HEIGHT, tint, Holy.halo(tint))[0]
+
+
+## Un dessin fabriqué à la demande et son point d'ancrage : ce qui se rastérise au
+## cap où on le demande n'a pas de cadre fixe, donc il porte le sien.
+class Piece:
+	var texture: Texture2D
+	## Du point d'ancrage au coin de la planche.
+	var offset: Vector2
+
+	func _init(p_texture: Texture2D, p_offset: Vector2) -> void:
+		texture = p_texture
+		offset = p_offset
+
+	## Posé sur `at`, calé sur le pixel du jeu.
+	func put(ci: CanvasItem, at: Vector2) -> void:
+		var size := Vector2(texture.get_width(), texture.get_height())
+		ci.draw_texture_rect(texture, Rect2(EffectForge.snap(ci, at + offset), size), false)
+
+
+## Dissout une image **après** son contour, en damier ordonné : `gone` est la part
+## qui disparaît. C'est ainsi qu'un dessin s'efface sans pâlir — une planche à
+## demi-transparente sur un sol sombre sort grise. Avant le contour, chaque pixel
+## restant serait cerné pour lui-même et le dessin tournerait en poussière noire.
+static func dissolve(img: Image, gone: float) -> void:
+	if gone <= 0.0:
+		return
+	for y in img.get_height():
+		for x in img.get_width():
+			if float(BAYER[y % 4][x % 4]) / 16.0 < gone:
+				img.set_pixel(x, y, Color(0.0, 0.0, 0.0, 0.0))
+
+
+## Tourne une grille d'un angle quelconque. Chaque pixel d'arrivée échantillonne
+## **neuf points** de la grille de départ et garde l'encre la plus fréquente : au
+## plus proche voisin, un trait d'un pixel se casse en pointillés dès qu'il passe
+## en biais. Comparé sur planche (jalon 24), c'est le vote qui garde la lame d'une
+## épée d'un seul tenant.
+##
+## Rien de ce qu'il rend n'est cerné : le contour se pose ensuite, sur la
+## silhouette tournée — tourner un contour le rendrait épais d'un côté.
+static func rotated(grid: Array, angle: float) -> Array:
+	var width: int = (grid[0] as String).length()
+	var height: int = grid.size()
+	var side := int(ceil(sqrt(float(width * width + height * height)))) + 2
+	# Le cadre prend la parité de la grille : sinon chaque centre de pixel d'arrivée
+	# tombe **sur une frontière** de la grille de départ, et le vote tranche au
+	# hasard — un quart de tour de l'épée perdait cinq pixels sur trente-neuf.
+	side += (side - width) % 2
+	var from_center := Vector2(float(width), float(height)) * 0.5
+	var to_center := Vector2(float(side), float(side)) * 0.5
+	var out: Array = []
+	for y in side:
+		var line := ""
+		for x in side:
+			# Loin de la grille, le vote est joué d'avance : une épée n'occupe qu'un
+			# cinquième de son cadre tourné, et voter partout coûtait trois fois plus.
+			var middle := (Vector2(x, y) + Vector2(0.5, 0.5) - to_center).rotated(-angle) + from_center
+			if middle.x < -1.0 or middle.y < -1.0 or middle.x > float(width) + 1.0 or middle.y > float(height) + 1.0:
+				line += "."
+				continue
+			var votes := {}
+			for sample in 9:
+				var inside := Vector2(float(sample % 3) + 0.5, float(sample / 3) + 0.5) / 3.0
+				var p := (Vector2(x, y) + inside - to_center).rotated(-angle) + from_center
+				var ink := "."
+				if p.x >= 0.0 and p.y >= 0.0 and p.x < float(width) and p.y < float(height):
+					ink = (grid[int(p.y)] as String)[int(p.x)]
+				votes[ink] = int(votes.get(ink, 0)) + 1
+			var best := "."
+			for ink: String in votes:
+				if int(votes[ink]) > int(votes.get(best, 0)):
+					best = ink
+			line += best
+		out.append(line)
+	return out
+
+
+## L'épée d'Épée spirale, **pointe à droite** — le cap zéro —, dessinée une seule
+## fois : ses trente-deux caps sont tournés au premier besoin (`rotated()`). Acier
+## sur trois tons, le fil blanc au milieu, la garde d'or, la poignée de cuir.
+const SWORD := [
+	"....g............",
+	"....gccccccccc...",
+	"hhhhGddddddddddd.",
+	"....gbbbbbbbbbb..",
+	"....g............",
+]

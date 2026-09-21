@@ -71,7 +71,12 @@ L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
 tools/skill_icons.py gen                 # la table, trois graines chacune
 tools/skill_icons.py gen --only ignition # une seule, pour la refaire
 tools/skill_icons.py apply               # pose les tirages retenus
+tools/skill_icons.py apply --only ignition # n'en pose qu'une
 ```
+
+`--only` sur `apply` n'est pas un confort : le cache des tirages vit dans un
+dossier **temporaire**, et sans lui `apply` exige les tirages de toutes les
+compétences — vidés à la première nuit.
 
 Le sujet du prompt et la graine retenue sont **la même ligne** de
 `tools/skill_icons.json`, comme pour les objets. Le moteur est celui de

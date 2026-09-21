@@ -44,6 +44,7 @@ const ALL := [
 	preload("res://resources/skills/spiral_sword.tres"),
 	preload("res://resources/skills/wave_slash.tres"),
 	preload("res://resources/skills/cyclone.tres"),
+	preload("res://resources/skills/slicing_dash.tres"),
 ]
 
 

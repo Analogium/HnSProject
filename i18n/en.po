@@ -1907,3 +1907,18 @@ msgstr "Ground item names"
 
 msgid "Détails d'un objet (maintenu)"
 msgstr "Item details (hold)"
+
+msgid "Ruée tranchante"
+msgstr "Slicing Dash"
+
+msgid "Une ruée au point visé, qui tranche tout sur son passage."
+msgstr "A dash to the aimed point, slicing everything in its path."
+
+msgid "Fil tranchant"
+msgstr "Keen Edge"
+
+msgid "Andain"
+msgstr "Swath"
+
+msgid "Enchaînement"
+msgstr "Momentum"

@@ -131,3 +131,7 @@ ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 - `/valider` — la démarche complète de validation après une fonctionnalité.
 - `/revue-systemes` — la passe de revue : une règle, un endroit ; ce qu'on
   refuse de factoriser et pourquoi.
+- `/dessiner-un-effet` — **pour tout visuel** d'effet, de compétence ou
+  d'icône : planche de variantes choisie par l'utilisateur, dessin pixel par
+  pixel dans `EffectForge`, captures réelles sur le Bureau. Ses lanceurs sont
+  `tools/planche.sh` et `tools/capture.sh`.

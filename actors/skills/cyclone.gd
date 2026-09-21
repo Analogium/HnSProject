@@ -12,9 +12,12 @@ extends Node2D
 ## Il ne ralentit pas son porteur : le tour d'épée est ce qu'on lance pour traverser un
 ## paquet, et l'arrêter sur place en ferait une seconde Immolation.
 
-## Les lames qui tournent, et leur vitesse en tours par seconde.
+## Les lames qui tournent, et leur vitesse en radians par seconde.
 const BLADES := 3
 const SPIN := 4.0
+## Ce que chaque lame traîne derrière elle, en radians, et son épaisseur.
+const TRAIL := 0.9
+const THICKNESS := 7.0
 ## Ce qui vole autour : les éclats soulevés par le tour.
 const MOTES := 8
 const OPENING := 0.12
@@ -34,9 +37,10 @@ static func spin(player: Player, skill: Skill) -> Cyclone:
 	return node
 
 
+## Pas de lumière ajoutée : les lames sont **dessinées**, et une planche cernée ne
+## peut pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	z_index = 2
-	material = ArtPalette.ADDITIVE
 
 
 ## Appelée par `Player.extinguish()`, le seul chemin.
@@ -73,26 +77,25 @@ func _strike() -> void:
 
 
 ## Des lames en rotation plutôt qu'un disque : c'est le mouvement qui dit « ça tourne »,
-## et un cercle plein au sol se lirait comme une aura de plus.
+## et un cercle plein au sol se lirait comme une aura de plus. Chaque lame est le
+## croissant d'un coup, tête devant : trois coups qui se poursuivent.
+##
+## Pas d'anneau au sol : le bout des lames dit déjà jusqu'où il fauche.
 func _draw() -> void:
 	if _cast == null:
 		return
-	var r := _cast.radius * minf(_age / OPENING, 1.0)
+	var r := floorf(_cast.radius * minf(_age / OPENING, 1.0))
+	if r < THICKNESS:
+		return
 	var tint: Color = DamageType.COLORS[_cast.dominant_nature()]
-	var light_color := tint.lerp(Color.WHITE, 0.5)
-	Glow.draw_ring(self, Vector2.ZERO, r, Color(tint, 0.20))
-
 	for i in BLADES:
-		var angle := TAU * float(i) / float(BLADES) + _age * SPIN
-		var tip := Vector2.from_angle(angle) * r
-		# La lame traîne derrière elle : sans cette seconde ligne, trois rayons figés.
-		var trail := Vector2.from_angle(angle - 0.5) * r * 0.9
-		draw_line(tip * 0.25, tip, Color(light_color, 0.85), 2.0)
-		draw_line(trail * 0.3, trail, Color(tint, 0.35), 2.0)
+		var turn := Slash.turn_of(TAU * float(i) / float(BLADES) + _age * SPIN)
+		Slash.crescent(tint, r, THICKNESS, turn, -TRAIL, 0.0, 0.0).put(self, Vector2.ZERO)
 
+	var grain := EffectForge.spark(tint)
+	var half := Vector2(grain.get_width(), grain.get_height()) * 0.5
 	for i in MOTES:
 		var turn := _age * SPIN * 0.6 + TAU * float(i) / float(MOTES)
 		var distance := r * (0.4 + 0.55 * fmod(_age * 0.9 + float(i) * 0.121, 1.0))
-		draw_rect(
-			Rect2(Vector2.from_angle(turn) * distance, Vector2.ONE), Color(light_color, 0.7)
-		)
+		var at := Vector2.from_angle(turn) * distance
+		draw_texture_rect(grain, Rect2(EffectForge.snap(self, at - half), half * 2.0), false)

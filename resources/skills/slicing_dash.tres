@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/slicing_dash.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "slicing_dash"
+name = "Ruée tranchante"
+description = "Une ruée au point visé, qui tranche tout sur son passage."
+nature = 0
+cadence = 0
+shape = 10
+cooldown = 3.00
+mana_cost = 10.0
+duration = 0.25
+period = 0.25
+radius = 12.0
+damage_per_point = Array[float]([16.0, 21.0, 26.0, 32.0, 40.0])
+required_manual_level = 5
+icon = ExtResource("2_icone")

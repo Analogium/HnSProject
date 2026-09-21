@@ -15,9 +15,10 @@ const START := 18.0
 ## L'ouverture de l'arc dessiné, en radians. Son rayon de frappe reste un cercle :
 ## `Targets.in_circle()` est le seul chemin des coups sans collision.
 const SPAN := 1.7
+## La fin de sa course, où il se dissout en damier au lieu de pâlir.
 const FADE := 0.3
-## Les traits qui suivent l'arc, du plus large au plus mince.
-const STROKES := 3
+## L'épaisseur de la lame qui vole, en son milieu.
+const THICKNESS := 5.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -41,14 +42,16 @@ static func send(
 	wave._tint = DamageType.COLORS[cast.dominant_nature()]
 	wave._bitten = Targets.Contacts.new(cast.duration)
 	parent.add_child(wave)
+	# Le nœud ne tourne pas : c'est le dessin qui est fabriqué au cap de sa course,
+	# une planche tournée se rééchantillonnant.
 	wave.global_position = from_value + wave._toward * START
-	wave.rotation = wave._toward.angle()
 	return wave
 
 
+## Pas de lumière ajoutée : la lame est **dessinée**, et une planche cernée ne peut
+## pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	z_index = 3
-	material = ArtPalette.ADDITIVE
 
 
 func _physics_process(delta: float) -> void:
@@ -63,15 +66,12 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Un croissant ouvert vers l'avant, dessiné dans le repère de sa course : trois traits
-## de plus en plus minces et clairs, comme la traîne d'une lame.
+## Un croissant ouvert vers l'avant, le fil blanc devant : l'arc du geste, détaché
+## de la lame. Il se dissout en quatre temps sur la fin de sa course.
 func _draw() -> void:
 	var fade := clampf((_cast.duration - _age) / (_cast.duration * FADE), 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.6)
-	for i in STROKES:
-		var k := float(i) / float(STROKES - 1)
-		draw_arc(
-			Vector2(-_cast.radius * 0.5, 0.0), _cast.radius * (1.0 + k * 0.12),
-			-SPAN * 0.5, SPAN * 0.5, 20,
-			Color(_tint.lerp(light_color, k), (0.85 - 0.25 * k) * fade), 3.0 - k * 2.0
-		)
+	var gone := floorf((1.0 - fade) * 4.0) / 4.0
+	var turn := Slash.turn_of(_toward.angle())
+	Slash.crescent(
+		_tint, _cast.radius, THICKNESS, turn, -SPAN * 0.5, SPAN * 0.5, gone, false
+	).put(self, -Vector2.from_angle(Slash.angle_of(turn)) * _cast.radius * 0.5)
