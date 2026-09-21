@@ -15,5 +15,5 @@ grid_size = Vector2i(2, 2)
 lineage = "casque_lourd"
 tier = 3
 required_level = 32
-implicit_stat = "max_health"
+implicit_stat = "armor"
 implicit_value = 44.0

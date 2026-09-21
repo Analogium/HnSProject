@@ -88,16 +88,18 @@ static func factor(tex: Texture2D, side: float) -> int:
 	return maxi(int(floor(side / biggest)), 1)
 
 
-## Pose l'icône au centre de ce cadre, agrandie d'un **facteur entier** ; à défaut
-## d'image, le disque de la couleur de la nature. Le cadre doit faire au moins `SIDE` :
-## le facteur ne réduit jamais.
+## Pose l'icône au centre de ce cadre, agrandie d'un **facteur entier** — ou, dans un
+## cadre plus petit qu'elle, réduite d'un **diviseur entier** (une ligne sur deux, pas
+## une sur trois ici et deux là) ; à défaut d'image, le disque de la couleur de la nature.
 static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill) -> void:
 	var side := minf(r.size.x, r.size.y)
 	var tex := texture(skill)
 	if tex == null:
 		canvas.draw_circle(r.get_center(), side * 0.30, DamageType.COLORS[skill.nature])
 		return
-	var span := tex.get_size() * float(factor(tex, side))
+	var biggest := maxf(tex.get_width(), tex.get_height())
+	var scale := float(factor(tex, side)) if biggest <= side else 1.0 / ceilf(biggest / side)
+	var span := tex.get_size() * scale
 	canvas.draw_texture_rect(tex, Rect2(r.position + (r.size - span) * 0.5, span), false)
 
 

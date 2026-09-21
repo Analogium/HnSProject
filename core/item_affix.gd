@@ -41,9 +41,13 @@ extends Resource
 @export var weight: int = 10
 
 
-## `excludes` d'abord : il l'emporte sur `tags`.
+## `excludes` d'abord : il l'emporte sur `tags`. Une pièce d'armure ne tire que sa
+## propre défense : l'esquive d'une cuirasse n'aurait aucune base à monter.
 func fits(base: ItemBase) -> bool:
 	if base == null:
+		return false
+	var own := base.defense_stat()
+	if not own.is_empty() and stat in ItemBase.LOCAL_DEFENSES and stat != own:
 		return false
 	for t in excludes:
 		if base.tags.has(t):

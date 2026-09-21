@@ -52,6 +52,7 @@ func _ready() -> void:
 	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
 	hurtbox.states = states
+	states.reports_dealt = true
 	states.change.connect(_show_states)
 	states.heal.connect(_heal)
 	_set_health(stats.max_health)
@@ -258,6 +259,8 @@ func die(award := true) -> void:
 	if is_dead:
 		return
 	is_dead = true
+	# Le paquet en cours de ce qui le brûlait : un mort ne ticke plus.
+	states.report()
 	if award and manager != null:
 		manager.report_kill(self)
 	died.emit(self)

@@ -88,6 +88,37 @@ func test_a_crit_line_is_local_on_a_weapon_only() -> void:
 	assert_eq(ring.crit_chance(), 0.0, "pas de base hors des armes")
 
 
+## Une pièce d'armure monte sa propre défense sur place — le plat, puis l'accru — et
+## verse le total à la fiche en une ligne.
+func test_a_defense_line_is_local_on_its_armour() -> void:
+	var flat := StatMod.new("armor", StatMod.Mode.FLAT, 10.0)
+	var increased := StatMod.new("armor", StatMod.Mode.PERCENT, 50.0)
+	var plate := Item.new(ItemCatalog.by_id("breastplate"), [flat, increased] as Array[StatMod])
+	assert_almost_eq(plate.defense(), 45.0, 0.0001, "(20 + 10) × 1,5")
+	var sheet: Array[StatMod] = plate.mods().filter(func(m: StatMod) -> bool: return m.stat == "armor")
+	assert_eq(sheet.size(), 1, "une seule ligne d'armure vers la fiche")
+	assert_almost_eq(sheet[0].value, 45.0, 0.0001)
+	assert_true(plate.explicit_line(plate.explicits[1]).ends_with(" (local)"))
+	assert_true(plate.implicit_line().is_empty(), "la défense s'affiche en propriété")
+
+	var belt := Item.new(ItemCatalog.by_id("belt"), [flat] as Array[StatMod])
+	assert_false(belt.explicit_line(belt.explicits[0]).ends_with(" (local)"))
+	assert_eq(belt.defense(), 0.0, "pas de défense hors des armures")
+
+
+## Casque, gants, bottes, torse : leur implicite est leur défense, et ils ne tirent
+## que la leur.
+func test_armour_pieces_roll_only_their_own_defense() -> void:
+	for base: ItemBase in ItemCatalog.ALL:
+		if not base.family in ["helmet", "gloves", "boots", "chest"]:
+			continue
+		var own := base.defense_stat()
+		assert_false(own.is_empty(), "« %s » doit avoir une défense en implicite" % base.display_name)
+		for a in ItemAffixPool.eligible(base, 60):
+			if a.stat in ItemBase.LOCAL_DEFENSES:
+				assert_eq(a.stat, own, "« %s » tire « %s »" % [base.display_name, a.id])
+
+
 ## **Seule l'arme donne une base** : hors d'une arme, tout ce qui touche la chance
 ## critique l'accroît — implicite, affixe, nœud de l'arbre, passif de manuel.
 func test_no_flat_crit_outside_a_weapon() -> void:

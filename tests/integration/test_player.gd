@@ -105,7 +105,7 @@ func test_the_wand_speeds_up_casting_not_the_blade() -> void:
 func test_a_removed_item_leaves_nothing() -> void:
 	var hp := _p.stats.max_health
 	var mod := StatMod.new("armor", StatMod.Mode.FLAT, 40.0)
-	_p.equip(Item.new(load("res://resources/items/breastplate.tres"), [mod]))
+	_p.equip(_vital_chest([mod]))
 	assert_eq(_p.stats.armor, 40.0)
 	_p.unequip("chest")
 	assert_eq(_p.stats.armor, 0.0)
@@ -116,7 +116,7 @@ func test_a_removed_item_leaves_nothing() -> void:
 ## la barre déborde et le joueur garde des PV qu'il n'a plus.
 func test_hp_go_back_under_the_new_cap() -> void:
 	var without_breastplate := _p.stats.max_health
-	_p.equip(Item.new(load("res://resources/items/breastplate.tres")))
+	_p.equip(_vital_chest())
 	_p._set_health(_p.stats.max_health)
 	assert_gt(_p.health, without_breastplate, "le plastron a bien relevé le plafond")
 	_p.unequip("chest")
@@ -178,6 +178,15 @@ func test_the_level_stops_at_the_cap() -> void:
 
 ## start — force (+10 force) — colosse (+50 % de PV amplifiés), écrit ici : le contenu
 ## changera, la règle non.
+## Un torse à +20 PV d'implicite, comme l'était le plastron : ces tests suivent la vie
+## dans le recalcul, et l'armure locale d'une vraie pièce s'y mêlerait.
+func _vital_chest(affixes: Array[StatMod] = []) -> Item:
+	var base: ItemBase = load("res://resources/items/breastplate.tres").duplicate()
+	base.implicit_stat = "max_health"
+	base.implicit_value = 20.0
+	return Item.new(base, affixes)
+
+
 func _small_tree() -> PassiveTree:
 	var start := PassiveNode.new()
 	start.id = "start"
@@ -233,10 +242,7 @@ func test_a_more_keystone_multiplies_after_item_increases() -> void:
 	_p.gain_xp(_p.xp_to_next)
 	_p.take_passive("strength")
 	_p.take_passive("colossus")
-	_p.equip(Item.new(
-		load("res://resources/items/breastplate.tres"),
-		[StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]
-	))
+	_p.equip(_vital_chest([StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]))
 	var expected := (100.0 + 20.0 * CharacterStats.HEALTH_PER_STRENGTH + 20.0) * 2.0 * 1.5
 	assert_almost_eq(_p.stats.max_health, expected, 0.001, "base, force et implicite, doublés puis ×1,5")
 
@@ -257,10 +263,7 @@ func test_taken_nodes_survive_equipping() -> void:
 ## pas les points de vie correspondants.
 func test_an_item_giving_strength_gives_the_matching_hp() -> void:
 	var before := _p.stats.max_health
-	_p.equip(Item.new(
-		load("res://resources/items/breastplate.tres"),
-		[StatMod.new("strength", StatMod.Mode.FLAT, 20.0)]
-	))
+	_p.equip(_vital_chest([StatMod.new("strength", StatMod.Mode.FLAT, 20.0)]))
 	assert_eq(_p.stats.strength, 30.0)
 	assert_eq(
 		_p.stats.max_health,
@@ -272,10 +275,7 @@ func test_an_item_giving_strength_gives_the_matching_hp() -> void:
 ## Et la dérivation doit précéder les pourcentages, pour qu'un « +10 % PV »
 ## multiplie aussi ce que la force a donné.
 func test_a_percentage_also_multiplies_strength_hp() -> void:
-	_p.equip(Item.new(
-		load("res://resources/items/breastplate.tres"),
-		[StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]
-	))
+	_p.equip(_vital_chest([StatMod.new("max_health", StatMod.Mode.PERCENT, 100.0)]))
 	var expected := (
 		100.0 + 10.0 * CharacterStats.HEALTH_PER_STRENGTH + 20.0
 	) * 2.0

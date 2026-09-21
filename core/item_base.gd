@@ -82,9 +82,24 @@ func allowed_keyword() -> String:
 	return Keywords.SPELL if tags.has(CASTER_TAG) else Keywords.ATTACK
 
 
-## Une ligne qui monte la base de l'arme plutôt que la fiche : plate ou accrue.
+## Les défenses qu'une pièce porte en implicite : c'est sa défense de base, que ses
+## affixes montent sur place, et elle refuse les affixes de l'autre.
+const LOCAL_DEFENSES := ["armor", "evasion"]
+
+
+## « armor », « evasion », ou vide pour ce qui ne protège pas.
+func defense_stat() -> String:
+	return implicit_stat if implicit_stat in LOCAL_DEFENSES else ""
+
+
+## Une ligne qui monte la base de l'objet plutôt que la fiche, plate ou accrue : la
+## chance critique d'une arme, la défense d'une pièce d'armure.
 func is_local(m: StatMod) -> bool:
-	return family == WEAPON_FAMILY and m.stat == SkillStats.CRIT_CHANCE and m.mode != StatMod.Mode.MORE
+	if m.mode == StatMod.Mode.MORE:
+		return false
+	if family == WEAPON_FAMILY:
+		return m.stat == SkillStats.CRIT_CHANCE
+	return m.scope.is_empty() and m.stat == defense_stat() and not m.stat.is_empty()
 
 
 func implicit() -> StatMod:

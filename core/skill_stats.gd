@@ -63,6 +63,9 @@ const AGAINST_PREFIX := "damage_vs_"
 ## sur un trait droit en superposerait deux.
 const MIN_SPREAD := 8.0
 
+## L'identifiant de la compétence, pour le compteur de DPS.
+var skill_id := ""
+
 ## Les dégâts **par nature et en fourchette**, indexés par `DamageType.Kind`.
 var damage_min: Array[float] = DamageType.empty_parts()
 var damage_max: Array[float] = DamageType.empty_parts()

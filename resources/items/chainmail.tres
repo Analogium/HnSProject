@@ -15,5 +15,5 @@ grid_size = Vector2i(2, 3)
 lineage = "torse_lourd"
 tier = 2
 required_level = 17
-implicit_stat = "max_health"
+implicit_stat = "armor"
 implicit_value = 42.0

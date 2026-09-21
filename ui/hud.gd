@@ -265,11 +265,18 @@ func _draw_gauge(
 	)
 
 
-## Cerné de noir : lisible sur tous les sols.
 func _text(
 	pos: Vector2, text: String, align: int, width: int, tint: Color
 ) -> void:
-	draw_string_outline(
-		_font, pos, text, align, width, VALUE_SIZE, 1, Color(0, 0, 0, 1)
+	outlined(self, _font, pos, text, align, width, tint)
+
+
+## Cerné de noir : lisible sur tous les sols. Partagée avec le compteur de DPS.
+static func outlined(
+	canvas: CanvasItem, font: Font, pos: Vector2, text: String, align: int, width: int,
+	tint: Color
+) -> void:
+	canvas.draw_string_outline(
+		font, pos, text, align, width, VALUE_SIZE, 1, Color(0, 0, 0, 1)
 	)
-	draw_string(_font, pos, text, align, width, VALUE_SIZE, tint)
+	canvas.draw_string(font, pos, text, align, width, VALUE_SIZE, tint)

@@ -29,7 +29,7 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    | `lineage` / `tier` | La suite à laquelle il appartient, et son rang |
    | `required_level` | La zone à partir de laquelle il tombe |
    | `grid_size` | Son encombrement en cases |
-   | `implicit_*` | Le bonus que porte toute la base, sans tirage. Pour des dégâts ajoutés : `implicit_stat = damage_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_scope` (`attack` ou `spell`) |
+   | `implicit_*` | Le bonus que porte toute la base, sans tirage. Pour des dégâts ajoutés : `implicit_stat = damage_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_scope` (`attack` ou `spell`). **Casque, gants, bottes, torse : `armor` ou `evasion`, plat** — c'est la défense de base de la pièce, que ses affixes montent sur place ; `test_armour_pieces_roll_only_their_own_defense` le vérifie |
    | `crit_chance` | **Arme seulement** : la chance critique de base de tout ce qu'elle lance, 0,10 à l'attaque, 0,05 à l'incantation. Zéro ailleurs ; `test_each_weapon_has_its_crit_and_its_kind` le vérifie. Un implicite de chance critique hors arme est **en pourcentage** |
 
 2. **`core/item_catalog.gd`** — ajouter le `preload` dans `ALL`, **dans le bloc
@@ -107,6 +107,8 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
 5. **Une chance critique** : plate, l'affixe ne va **que sur les armes**, où elle monte
    la base (locale) ; partout ailleurs, `percent = true`.
    `test_no_flat_crit_outside_a_weapon` refuse le reste.
+   **Une armure ou une esquive** est locale sur une pièce d'armure et n'y va que si
+   c'est sa défense : `ItemAffix.fits()` le fait seul, rien à étiqueter.
 
 6. **Préférer une exclusion à une liste d'autorisations** quand la règle est
    « partout sauf ». Une base ajoutée plus tard hérite du refus sans qu'on y
@@ -450,8 +452,8 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 son test dans `tests/integration/test_shapes.gd`.
 
 **Son dessin** se fait dans son `_draw()`, avec le module de sa matière quand elle
-en a une — `fx/lightning.gd` (tracée), `fx/fire.gd` et `fx/frost.gd`, qui posent les
-planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd` et `fx/holy.gd`,
+qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
 éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
 **tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur

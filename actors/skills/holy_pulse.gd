@@ -11,9 +11,14 @@ extends Node2D
 ## La part de la période que met une onde à atteindre le bord : au-delà, deux ondes se
 ## chevaucheraient et le cercle ne se lirait plus.
 const SPREADING := 0.8
-## Les dernières secondes où le cercle s'efface, pour qu'il ne disparaisse pas d'un
-## coup sur sa dernière impulsion.
+## Les dernières secondes où le halo au sol s'efface, pour qu'il ne disparaisse pas
+## d'un coup sur sa dernière impulsion. Lui seul s'efface : il est tramé, donc fait
+## pour ça.
 const CLOSING := 0.5
+## Les grains d'une onde. **Leur nombre ne change pas** : c'est en s'écartant les
+## uns des autres qu'ils disent que l'onde s'ouvre, et ils n'ont donc jamais besoin
+## de pâlir.
+const GRAINS := 16
 
 var _player: Player
 var _cast: SkillStats
@@ -35,9 +40,10 @@ static func emanate(player: Player, cast: SkillStats) -> HolyPulse:
 	return pulse
 
 
+## Pas de lumière ajoutée : les grains sont **dessinés**, et une planche cernée ne
+## peut pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	show_behind_parent = true
-	material = ArtPalette.ADDITIVE
 
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
@@ -65,18 +71,24 @@ func _strike() -> void:
 		Targets.strike(target, parts, global_position, _player.states, _cast)
 
 
-## Une onde qui part du porteur à chaque impulsion, et le cercle mat qui dit jusqu'où
-## elle mord. L'onde **arrive au bord**, elle ne le dépasse pas : une onde qui sort du
-## cercle promettrait une portée que le coup n'a pas.
+## Une onde de grains qui part du porteur à chaque impulsion, et le halo tramé qui
+## dit jusqu'où elle mord. L'onde **arrive au bord**, elle ne le dépasse pas : une
+## onde qui sort du cercle promettrait une portée que le coup n'a pas.
 func _draw() -> void:
 	var fade := clampf((_cast.duration - _age) / CLOSING, 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.55)
-	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.06 * fade))
-	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.26 * fade))
+	var radius := maxi(int(round(_cast.radius)), 1)
+	draw_texture_rect(
+		EffectForge.scorch(_tint, radius),
+		Rect2(
+			EffectForge.snap(self, -Vector2(radius, radius)),
+			Vector2.ONE * float(radius * 2 + 1)
+		),
+		false, Color(1.0, 1.0, 1.0, fade)
+	)
 
 	var out := clampf(_since / (_cast.period * SPREADING), 0.0, 1.0) if _cast.period > 0.0 else 1.0
-	if out < 1.0:
-		Glow.draw_ring(
-			self, Vector2.ZERO, _cast.radius * out,
-			Color(light_color, 0.9 * (1.0 - out) * fade)
-		)
+	if out >= 1.0:
+		return
+	for i in GRAINS:
+		var at := Vector2.from_angle(TAU * float(i) / float(GRAINS) + out) * _cast.radius * out
+		Holy.spark(self, at, _tint, fade)

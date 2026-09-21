@@ -1129,3 +1129,75 @@ Rien d'autre n'a bougé : l'espacement reste celui du dessin, donc un bras de do
 coûte ce que coûtait un bras de quatre.
 
 **845 tests, 845 passent.**
+
+## Le manuel sacré, dessiné
+
+Quatre gestes : **Frappe sacrée**, **Pulsation sacrée**, **Pilier sacré**,
+**Lumière sacrée**. Et un problème que ni le feu ni la glace n'avaient posé.
+
+### Le trait part dans n'importe quelle direction
+
+Une planche ne pivote pas. Pour le tourbillon, la réponse avait été de dessiner
+l'éclat dans ses huit sens ; un trait de quatre-vingts pixels ne peut pas se
+contenter de huit caps — à 11° près, sa pointe tomberait à huit pixels de ce
+qu'il mord.
+
+Planche de cinq traits. Deux chemins s'y opposaient :
+
+- le **chapelet de marques** — losanges, croix — qui part dans n'importe quelle
+  direction sans rien calculer, mais dont les planches se recouvrent : chacune
+  porte son propre contour, et le trait sort effrangé. C'est le « tas de
+  saucisses cernées » que `PixelCanvas` évite en ne cernant que la silhouette
+  **finale** ;
+- le **trait rastérisé d'un coup**, qui n'a qu'une silhouette donc un seul
+  contour, au prix d'une rastérisation par lancer.
+
+Retenu : le trait plein, avec son éclat de départ (choix de l'utilisateur), et
+les ondes de la Pulsation en **étincelles**.
+
+### Ce que la rastérisation coûtait, et ce qu'elle coûte
+
+1,78 ms pour une diagonale — trop cher pour un sort qu'on relance deux fois par
+seconde, quand une image de jeu en vaut six.
+
+Le coupable n'était pas le dessin mais le **balayage** : `to_image()` parcourait
+le rectangle englobant, et un trait en biais n'occupe que 14 % du sien.
+`PixelCanvas` borne maintenant son balayage **par rangée** et non par rectangle,
+ce qui descend le trait à **1,16 ms** et profite à tout ce que la forge dessine.
+Les bornes se tiennent en variables locales dans la boucle de capsule et ne
+s'écrivent qu'une fois par rangée : deux accès indexés par pixel auraient coûté
+plus que le balayage épargné.
+
+### Une lumière n'a pas de dessous
+
+Le trait, éclairé comme un objet — d'en haut à gauche, comme tout le reste du
+jeu —, sortait avec un flanc mauve sombre et se lisait comme un **os**. Poussé
+tout en haut de sa rampe, il s'aplatit et perd son rose. À 0,35 il garde un peu
+de volume sans avoir d'ombre : c'est la seule matière du jeu qui ait sa propre
+règle d'éclairage, parce que c'est la seule qui *soit* la lumière.
+
+Le blanc du sacré, lui, vivait dans trois fichiers à trois valeurs — 0,55, 0,60
+et 0,80 vers le blanc —, exactement le désordre des quatre blancs chauds du feu.
+Il n'y en a plus qu'un, et il est mesuré : **0,70, soit 0,91 de luminance**, juste
+au-dessus du seuil de glow.
+
+### Le reste du manuel
+
+- la **Pulsation** envoie seize grains qui s'écartent les uns des autres à mesure
+  que l'onde s'ouvre. Leur nombre ne change pas : c'est leur écartement qui dit
+  que l'onde grandit, et ils n'ont donc jamais besoin de pâlir ;
+- le **Pilier** est une tranche de colonne **carrelée**, dont la grille est pleine
+  bord à bord : `PixelCanvas` ne lui pose alors aucun contour, et deux tranches
+  posées l'une sur l'autre ne montrent pas de barre sombre entre elles. Le bord
+  de la colonne est dessiné *dans* la tranche. Elle défile d'un nombre entier de
+  pixels par image — c'est ce qui fait **couler** la lumière — et se coiffe d'une
+  pointe qui reprend exactement le profil de la tranche. Elle tombe du ciel, puis
+  se retire par le haut ;
+- la **Lumière sacrée** monte six grains autour du porteur, à pleine opacité :
+  trois pixels qui s'effacent s'éteignent en gris bien avant d'avoir disparu.
+
+Les grains dessinés de tous les manuels suivent maintenant cette règle. Seules
+les braises d'Ignition gardent leur fondu — elles sont tracées, c'est le dernier
+geste du feu en polygones.
+
+**846 tests, 846 passent.**

@@ -33,6 +33,11 @@ func change_zone_level(delta: int) -> int:
 ## à écrire s'y abonnent.
 signal save_requested
 
+## Ce que le joueur vient d'infliger, après mitigation : l'identifiant de la
+## compétence (vide sans lancer), et l'état qui brûle ou `HIT` pour un coup.
+signal damage_dealt(source: String, kind: int, amount: float)
+const HIT := -1
+
 ## D'où l'on vient, pour ressortir d'un aperçu par sa touche. Passer par goto_scene().
 var previous_scene_path := ""
 

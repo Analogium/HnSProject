@@ -48,6 +48,10 @@ func take_damage(info: DamageInfo) -> void:
 	if HitFeedback.current != null:
 		HitFeedback.current.hit(global_position, info, on_player)
 	damaged.emit(info)
+	# Un auteur, sur autre chose que le joueur : c'est le joueur qui frappe.
+	var source := info.cast.skill_id if info.cast != null else ""
+	if info.author != null and not on_player:
+		Game.damage_dealt.emit(source, Game.HIT, info.amount)
 	# L'auteur apprend qu'il a touché, et avec quoi : la charge statique naît de là, hors
 	# d'ici — `core/` ne fait naître aucun nœud, et on est dans un rappel de collision.
 	if info.author != null:
@@ -57,7 +61,7 @@ func take_damage(info: DamageInfo) -> void:
 	if states != null:
 		states.suffer(
 			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
-			info.cast.status_chance_increase if info.cast != null else 0.0
+			info.cast.status_chance_increase if info.cast != null else 0.0, source
 		)
 
 

@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
 @onready var taken_check: CheckBox = $Root/Center/Panel/Options/DamageTaken
 @onready var dealt_check: CheckBox = $Root/Center/Panel/Options/DamageDealt
+@onready var dps_check: CheckBox = $Root/Center/Panel/Options/DpsMeter
 @onready var window_btn: Button = $Root/Center/Panel/Options/Window
 ## Libellé posé par le code, **dans la langue qu'il annonce**.
 @onready var language_btn: Button = $Root/Center/Panel/Options/Language
@@ -43,6 +44,8 @@ func _ready() -> void:
 	taken_check.toggled.connect(func(on: bool) -> void: Settings.damage_taken_visible = on)
 	dealt_check.button_pressed = Settings.damage_dealt_visible
 	dealt_check.toggled.connect(func(on: bool) -> void: Settings.damage_dealt_visible = on)
+	dps_check.button_pressed = Settings.dps_meter_visible
+	dps_check.toggled.connect(func(on: bool) -> void: Settings.dps_meter_visible = on)
 
 	# Un bouton qui tourne : une liste déroulante dessinerait par-dessus le menu.
 	window_btn.pressed.connect(_change_window)

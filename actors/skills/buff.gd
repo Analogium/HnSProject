@@ -38,10 +38,11 @@ static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
 
 
 func _ready() -> void:
-	# Le tombeau est **dessiné**, et une planche cernée ne peut pas être additive :
-	# son contour sombre n'y ajoute rien. Les autres gestes restent en lumière
-	# ajoutée — ce qu'ils montrent est une lueur, pas un objet.
-	if not _skill.binds_caster:
+	# Le tombeau et la clarté sacrée sont **dessinés**, et une planche cernée ne peut
+	# pas être additive : son contour sombre n'y ajoute rien. Les deux autres — les
+	# braises d'Ignition, les grains de l'électricité — sont encore tracés et gardent
+	# la lumière ajoutée.
+	if _skill.nature != DamageType.Kind.COLD and _skill.nature != DamageType.Kind.HOLY:
 		material = ArtPalette.ADDITIVE
 
 
@@ -86,19 +87,36 @@ func _draw() -> void:
 		_tomb(tint)
 		return
 	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
-	Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))
+	if _skill.nature == DamageType.Kind.HOLY:
+		# Tramé plutôt que tracé : la clarté sacrée est dessinée de bout en bout.
+		var span := int(HALO)
+		draw_texture_rect(
+			EffectForge.scorch(tint, span),
+			Rect2(
+				EffectForge.snap(self, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)
+			),
+			false, Color(1.0, 1.0, 1.0, 0.5 + 0.5 * pulse)
+		)
+	else:
+		Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))
 	for i in MOTES:
 		var rise := fmod(_age * 0.8 + float(i) * 0.163, 1.0)
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
 		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
 		# Ce qui monte a la matière du geste : des braises pour une combustion, des
-		# flocons pour un froid. Et rien d'autre — ce geste dure des minutes, et ce
-		# qui clignote fort finit par fatiguer.
+		# flocons pour un froid, des grains pour une clarté. Et rien d'autre — ce geste
+		# dure des minutes, et ce qui clignote fort finit par fatiguer.
+		#
+		# Les grains **dessinés** montent à pleine opacité et s'éteignent d'un coup en
+		# haut de leur course : trois pixels qui s'effacent s'éteignent en gris bien
+		# avant d'avoir disparu. Les braises, tracées, gardent leur fondu.
 		match _skill.nature:
 			DamageType.Kind.FIRE:
 				Fire.draw_ember(self, p, tint, 0.7 * (1.0 - rise))
 			DamageType.Kind.COLD:
-				Frost.drift(self, p, tint, 0.7 * (1.0 - rise))
+				Frost.drift(self, p, tint, 1.0)
+			DamageType.Kind.HOLY:
+				Holy.spark(self, p, tint, 1.0)
 			_:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 
@@ -120,6 +138,5 @@ func _tomb(tint: Color) -> void:
 	for i in 3:
 		var rise := fmod(_age * 0.5 + float(i) * 0.33, 1.0)
 		Frost.drift(
-			self, Vector2((float(i) - 1.0) * 7.0, size.y * 0.5 - rise * size.y),
-			tint, 0.7 * (1.0 - rise)
+			self, Vector2((float(i) - 1.0) * 7.0, size.y * 0.5 - rise * size.y), tint, 1.0
 		)

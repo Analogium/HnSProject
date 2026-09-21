@@ -15,5 +15,5 @@ grid_size = Vector2i(2, 2)
 lineage = "boots"
 tier = 2
 required_level = 12
-implicit_stat = "move_speed"
-implicit_value = 14.0
+implicit_stat = "evasion"
+implicit_value = 20.0

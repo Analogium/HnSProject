@@ -54,6 +54,12 @@ var _y0 := 0
 var _x1 := -1
 var _y1 := -1
 
+## Et le même suivi **par rangée**, parce qu'un rectangle ne suffit pas à une
+## forme en biais : le trait de Frappe sacrée n'occupe que 14 % de son cadre, et
+## le balayer en entier coûtait 1,78 ms là où ses pixels en valent 0,63.
+var _row_x0: PackedInt32Array
+var _row_x1: PackedInt32Array
+
 
 func _init(p_width: int, p_height: int) -> void:
 	width = p_width
@@ -61,6 +67,10 @@ func _init(p_width: int, p_height: int) -> void:
 	_ramp.resize(width * height)
 	_ramp.fill(EMPTY)
 	_level.resize(width * height)
+	_row_x0.resize(height)
+	_row_x0.fill(width)
+	_row_x1.resize(height)
+	_row_x1.fill(-1)
 
 
 ## bias décale l'éclairage de la forme entière : négatif pour un membre en
@@ -94,6 +104,10 @@ func capsule(a: Vector2, b: Vector2, radius: float, ramp: int, bias := 0.0) -> v
 
 	for y in range(y0, y1 + 1):
 		var dy0 := float(y) - ay
+		# Les bornes de la rangée se tiennent en local et ne s'écrivent qu'une fois :
+		# deux accès indexés par pixel coûteraient plus que le balayage épargné.
+		var first := -1
+		var last := -1
 		for x in range(x0, x1 + 1):
 			var dx0 := float(x) - ax
 
@@ -119,6 +133,13 @@ func capsule(a: Vector2, b: Vector2, radius: float, ramp: int, bias := 0.0) -> v
 			var i := y * width + x
 			_ramp[i] = ramp
 			_level[i] = clampf(lvl + bias, 0.0, 1.0)
+			if first < 0:
+				first = x
+			last = x
+
+		if first >= 0:
+			_row_x0[y] = mini(_row_x0[y], first)
+			_row_x1[y] = maxi(_row_x1[y], last)
 
 
 func disc(center: Vector2, radius: float, ramp: int, bias := 0.0) -> void:
@@ -152,9 +173,18 @@ func stamp(grid: Array, origin: Vector2i, legend: Dictionary) -> void:
 			var i := y * width + x
 			_ramp[i] = int(ink[0])
 			_level[i] = float(ink[1]) / last
-	# Une fois par grille et non par pixel, comme pour les capsules.
+	# Une fois par grille et non par pixel, comme pour les capsules. Les rangées se
+	# bornent à la grille entière plutôt qu'à l'encre posée : une grille est pleine
+	# ou presque, et la marge se balaie pour rien une poignée de pixels.
+	var last_x := origin.x + (grid[0] as String).length() - 1
 	_touch(origin.x, origin.y)
-	_touch(origin.x + (grid[0] as String).length() - 1, origin.y + grid.size() - 1)
+	_touch(last_x, origin.y + grid.size() - 1)
+	for row in grid.size():
+		var y := origin.y + row
+		if y < 0 or y >= height:
+			continue
+		_row_x0[y] = mini(_row_x0[y], maxi(origin.x, 0))
+		_row_x1[y] = maxi(_row_x1[y], mini(last_x, width - 1))
 
 
 func dot_px(x: int, y: int, ramp: int, level: float) -> void:
@@ -164,6 +194,8 @@ func dot_px(x: int, y: int, ramp: int, level: float) -> void:
 	_ramp[i] = ramp
 	_level[i] = clampf(level, 0.0, 1.0)
 	_touch(x, y)
+	_row_x0[y] = mini(_row_x0[y], x)
+	_row_x1[y] = maxi(_row_x1[y], x)
 
 
 ## Ombre portée au sol. Indispensable en vue de dessus : sans elle, on ne sait pas
@@ -211,6 +243,10 @@ func painted_rect() -> Rect2i:
 ## réellement peint 100 µs. Sur la forge entière, 0,65 ms par image au départ
 ## contre 0,265 ms — 56 ms au lancement d'une zone au lieu de 136.
 ##
+## Le rectangle ne suffit pas à une forme **en biais** : le trait de Frappe sacrée
+## n'occupe que 14 % de son cadre, et le balayer en entier coûtait 1,78 ms contre
+## 1,16 une fois borné à l'encre de chaque rangée.
+##
 ## La passe de contour est fondue dans la même boucle : un pixel vide qui touche
 ## de la matière prend la couleur de contour de sa voisine.
 func to_image(palettes: Array) -> Image:
@@ -227,9 +263,21 @@ func to_image(palettes: Array) -> Image:
 		_paint_shadow(data, shadow)
 
 	# +1 de marge : le contour se pose sur les pixels vides qui touchent le bord
-	# de la silhouette, donc juste à l'extérieur du rectangle peint.
+	# de la silhouette, donc juste à l'extérieur de l'encre. La rangée balayée est
+	# donc l'union des trois rangées voisines, élargie d'un pixel — un pixel vide
+	# devient contour si l'un de ses quatre voisins porte de la matière.
 	for y in range(maxi(_y0 - 1, 0), mini(_y1 + 2, height)):
-		for x in range(maxi(_x0 - 1, 0), mini(_x1 + 2, width)):
+		var from_x := _row_x0[y]
+		var to_x := _row_x1[y]
+		if y > 0:
+			from_x = mini(from_x, _row_x0[y - 1])
+			to_x = maxi(to_x, _row_x1[y - 1])
+		if y + 1 < height:
+			from_x = mini(from_x, _row_x0[y + 1])
+			to_x = maxi(to_x, _row_x1[y + 1])
+		if to_x < from_x:
+			continue
+		for x in range(maxi(from_x - 1, 0), mini(to_x + 2, width)):
 			var i := y * width + x
 			var r: int = _ramp[i]
 

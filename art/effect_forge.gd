@@ -688,3 +688,78 @@ static var _tombs := {}
 ## Le bloc de glace de cette teinte.
 static func tomb(tint: Color) -> Texture2D:
 	return _sheet(_tombs, [TOMB], TOMB_WIDTH, TOMB_HEIGHT, tint, Frost.rim(tint))[0]
+
+
+## Un grain de lumière sacrée, trois pixels : le cœur au milieu et quatre pointes
+## de teinte. La croix de la glace a la forme inverse — branches de givre, centre
+## teinté —, parce qu'un cristal *accroche* la lumière quand un grain **est** la
+## lumière.
+const SPECK := [
+	".5.",
+	"5w5",
+	".5.",
+]
+
+const SPECK_SIZE := 3
+
+## La tranche de colonne du Pilier sacré, dix-sept pixels sur douze, **qui se
+## carrelle**. Sa grille est pleine bord à bord, donc `PixelCanvas` ne lui pose
+## aucun contour — deux tranches posées l'une sur l'autre montreraient sinon une
+## barre sombre tous les douze pixels. Le bord sombre de la colonne est donc
+## dessiné *dans* la tranche.
+##
+## Son cœur blanc s'élargit et se resserre d'une rangée à l'autre : défilé vers le
+## bas, c'est ce qui fait **couler** la lumière. Des rangées identiques ne
+## feraient que glisser un motif.
+const SHAFT := [
+	"1234455www5544321",
+	"123445wwwww544321",
+	"12344wwwwwww44321",
+	"123445wwwww544321",
+	"1234455www5544321",
+	"123445wwwww544321",
+	"12344wwwwwww44321",
+	"12344wwwwwww44321",
+	"123445wwwww544321",
+	"1234455www5544321",
+	"123445wwwww544321",
+	"12344wwwwwww44321",
+]
+
+## Le haut de la colonne, qui s'affine jusqu'à trois pixels. Sans lui, la colonne
+## se termine par une coupe nette et se lit comme un tube posé là ; sa dernière
+## rangée reprend exactement le profil de la tranche, donc le raccord ne se voit
+## pas.
+const SHAFT_TIP := [
+	".......www.......",
+	"......5www5......",
+	".....45www54.....",
+	"....345www543....",
+	"...2345www5432...",
+	"..12345www54321..",
+	".112344www443211.",
+	"1234455www5544321",
+]
+
+const SHAFT_WIDTH := 17
+const SHAFT_HEIGHT := 12
+const SHAFT_TIP_HEIGHT := 8
+
+static var _specks := {}
+static var _shafts := {}
+static var _tips := {}
+
+
+## Le grain de lumière de cette teinte.
+static func spark(tint: Color) -> Texture2D:
+	return _sheet(_specks, [SPECK], SPECK_SIZE, SPECK_SIZE, tint, Holy.halo(tint))[0]
+
+
+## La tranche de colonne de cette teinte.
+static func shaft(tint: Color) -> Texture2D:
+	return _sheet(_shafts, [SHAFT], SHAFT_WIDTH, SHAFT_HEIGHT, tint, Holy.halo(tint))[0]
+
+
+## Le haut de la colonne de cette teinte.
+static func shaft_tip(tint: Color) -> Texture2D:
+	return _sheet(_tips, [SHAFT_TIP], SHAFT_WIDTH, SHAFT_TIP_HEIGHT, tint, Holy.halo(tint))[0]

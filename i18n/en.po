@@ -1116,6 +1116,12 @@ msgstr "Here: {coups} hits in a hundred before increased bonuses, for {degats}% 
 msgid "Chance critique de base :"
 msgstr "Base crit chance:"
 
+msgid "Armure :"
+msgstr "Armor:"
+
+msgid "Esquive :"
+msgstr "Evasion:"
+
 msgid "chance d'embraser"
 msgstr "chance to ignite"
 
@@ -1182,6 +1188,21 @@ msgstr "Damage taken"
 
 msgid "Dégâts infligés"
 msgstr "Damage dealt"
+
+msgid "Compteur de DPS"
+msgstr "DPS meter"
+
+msgid "Autres"
+msgstr "Other"
+
+msgid "Embrasement"
+msgstr "Ignite"
+
+msgid "Pourriture"
+msgstr "Rot"
+
+msgid "Saignement"
+msgstr "Bleed"
 
 msgid "Fenêtre"
 msgstr "Window"

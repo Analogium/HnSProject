@@ -13,5 +13,5 @@ tags = PackedStringArray("chest", "armour", "heavy")
 icon = ExtResource("2_icon")
 grid_size = Vector2i(2, 3)
 lineage = "torse_lourd"
-implicit_stat = "max_health"
+implicit_stat = "armor"
 implicit_value = 20.0

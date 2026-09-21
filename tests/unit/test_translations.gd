@@ -255,6 +255,9 @@ func _expected() -> Dictionary:
 		out[label_of] = "dégâts d'une nature"
 	for name in StatusEffects.NAMES:
 		out[name] = "nom d'un état"
+	out[DpsMeter.OTHER] = "ligne du compteur de DPS"
+	for burn in StatusEffects.BURN_NAMES.values():
+		out[burn] = "ce qui brûle, au compteur de DPS"
 	for label_of in StatusEffects.AGAINST:
 		out[label_of] = "dégâts contre un état"
 	for id in Glossary.TERMS:

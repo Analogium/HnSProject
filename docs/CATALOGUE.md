@@ -38,22 +38,22 @@ Niveaux de zone : 1 à 120.
 | `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure | — | 2 × 2 | 33 et au-delà |
 | `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | ajoute 3 à 7 dégâts de foudre aux sorts | — | 2 × 2 | 10 à 34 |
 | `codex` | Codex | grimoire | 2 | offhand | offhand, caster | ajoute 6 à 16 dégâts de foudre aux sorts | — | 2 × 2 | 28 et au-delà |
-| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 PV | — | 2 × 2 | 1 à 20 |
-| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 PV | — | 2 × 2 | 14 à 38 |
-| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 PV | — | 2 × 2 | 32 et au-delà |
+| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 armure | — | 2 × 2 | 1 à 20 |
+| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 armure | — | 2 × 2 | 14 à 38 |
+| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 armure | — | 2 × 2 | 32 et au-delà |
 | `hood` | Capuche | casque_leger | 1 | helmet | helmet, armour, light | +14 esquive | — | 2 × 2 | 1 à 26 |
 | `masters_hood` | Capuche de maître | casque_leger | 2 | helmet | helmet, armour, light | +34 esquive | — | 2 × 2 | 20 et au-delà |
-| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 PV | — | 2 × 3 | 1 à 23 |
-| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 PV | — | 2 × 3 | 17 à 41 |
-| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 PV | — | 2 × 3 | 35 et au-delà |
+| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 armure | — | 2 × 3 | 1 à 23 |
+| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 armure | — | 2 × 3 | 17 à 41 |
+| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 armure | — | 2 × 3 | 35 et au-delà |
 | `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive | — | 2 × 3 | 1 à 25 |
 | `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive | — | 2 × 3 | 19 et au-delà |
-| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +8 % de vitesse d'attaque accrue | — | 2 × 2 | 1 à 19 |
-| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +14 % de vitesse d'attaque accrue | — | 2 × 2 | 13 à 37 |
-| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +21 % de vitesse d'attaque accrue | — | 2 × 2 | 31 et au-delà |
-| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +8 vitesse | — | 2 × 2 | 1 à 18 |
-| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +14 vitesse | — | 2 × 2 | 12 à 36 |
-| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +20 vitesse | — | 2 × 2 | 30 et au-delà |
+| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +10 esquive | — | 2 × 2 | 1 à 19 |
+| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +20 esquive | — | 2 × 2 | 13 à 37 |
+| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +34 esquive | — | 2 × 2 | 31 et au-delà |
+| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +10 esquive | — | 2 × 2 | 1 à 18 |
+| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +20 esquive | — | 2 × 2 | 12 à 36 |
+| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +34 esquive | — | 2 × 2 | 30 et au-delà |
 | `belt` | Ceinture | belt | 1 | belt | belt | +1.5 PV/s | — | 2 × 1 | 1 à 17 |
 | `girdle` | Ceinturon | belt | 2 | belt | belt | +3 PV/s | — | 2 × 1 | 11 à 35 |
 | `baldric` | Baudrier | belt | 3 | belt | belt | +5 PV/s | — | 2 × 1 | 29 et au-delà |
@@ -702,7 +702,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
 | `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 46 |
 | `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 19 / 46 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 9 / 46 |
 | `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 46 |
 | `elusive` | esquive | light | — | 9 | 8 | 10 / 46 |
 | `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 46 |

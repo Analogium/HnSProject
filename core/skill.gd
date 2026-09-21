@@ -303,6 +303,7 @@ func resolve(
 	r.self_heal = self_heal
 	r.status_chance_increase = status_chance_increase
 	r.hits = HITS_PER_SHAPE.get(shape, 1)
+	r.skill_id = id
 	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
 	r.mana_cost = mana_cost
 	r.use_time = use_time(stats)

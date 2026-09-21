@@ -115,26 +115,39 @@ func passive_mods() -> Array[StatMod]:
 
 ## Tout ce que l'objet donne, implicite compris : c'est cette liste que le calcul
 ## des statistiques du joueur consomme. Les lignes locales n'y sont que par la
-## chance critique de l'arme, qui les contient.
+## chance critique de l'arme ou la défense de l'armure, qui les contiennent.
 func mods() -> Array[StatMod]:
 	var all: Array[StatMod] = []
+	var defense_stat := base.defense_stat()
 	var imp := base.implicit()
-	if imp != null:
+	if imp != null and defense_stat.is_empty():
 		all.append(imp)
 	for r in explicits:
 		if not base.is_local(r.mod):
 			all.append(r.mod)
 	if base.family == ItemBase.WEAPON_FAMILY:
 		all.append(StatMod.new(SkillStats.CRIT_CHANCE, StatMod.Mode.FLAT, crit_chance()))
+	if not defense_stat.is_empty():
+		all.append(StatMod.new(defense_stat, StatMod.Mode.FLAT, defense()))
 	return all
 
 
 ## Celle de la base, plus ses plats locaux, fois ses accrus locaux.
 func crit_chance() -> float:
-	var flat := base.crit_chance
+	return _raised(SkillStats.CRIT_CHANCE, base.crit_chance)
+
+
+## L'armure ou l'esquive de la pièce, montée comme la chance critique ; zéro ailleurs.
+func defense() -> float:
+	var stat := base.defense_stat()
+	return 0.0 if stat.is_empty() else roundf(_raised(stat, base.implicit_value))
+
+
+func _raised(stat: String, start: float) -> float:
+	var flat := start
 	var increased := 0.0
 	for r in explicits:
-		if not base.is_local(r.mod):
+		if r.mod.stat != stat or not base.is_local(r.mod):
 			continue
 		if r.mod.mode == StatMod.Mode.FLAT:
 			flat += r.mod.value
@@ -143,10 +156,11 @@ func crit_chance() -> float:
 	return maxf(flat * (1.0 + increased * 0.01), 0.0)
 
 
-## L'implicite, à part et en premier : ce que la base garantit.
+## L'implicite, à part et en premier : ce que la base garantit. Vide pour une
+## défense, que l'infobulle donne en propriété, montée.
 func implicit_line() -> String:
 	var imp := base.implicit()
-	return "" if imp == null else imp.label()
+	return "" if imp == null or not base.defense_stat().is_empty() else imp.label()
 
 
 ## Une ligne tirée telle que l'infobulle l'écrit.

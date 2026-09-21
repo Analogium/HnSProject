@@ -11,9 +11,16 @@ extends Node2D
 ## La rémanence, en secondes : assez pour qu'un trait parti toutes les demi-secondes se
 ## voie, trop court pour qu'on le prenne pour une présence.
 const LIFETIME := 0.16
-## Sa largeur en pixels, celle du coup comme celle du dessin : `radius` porte sa
-## longueur, et aucun nœud ne vise l'épaisseur.
+## La largeur du coup, en pixels : `radius` porte sa longueur, et aucun nœud ne
+## vise l'épaisseur.
 const WIDTH := 6.0
+## Celle du dessin, plus fine que celle du coup : un trait ne doit jamais promettre
+## plus que ce qu'il mord.
+const DRAWN := 4.0
+## Les étincelles qui remontent le trait, et leur vitesse en longueurs par seconde.
+## Ce sont elles qui donnent le sens du tir, qu'une barre immobile ne donne pas.
+const GLINTS := 5
+const GLINT_SPEED := 2.4
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -22,6 +29,9 @@ var _tint := Color.WHITE
 var _tip := Vector2.ZERO
 var _age := 0.0
 var _has_struck := false
+## Rastérisé à la naissance et jamais plus : un trait parti ne change plus de
+## forme. Mesuré au banc, 1,16 ms pour le pire cas — la diagonale.
+var _lance: Holy.Lance
 
 
 static func fire(
@@ -37,9 +47,11 @@ static func fire(
 	return beam
 
 
+## Pas de lumière ajoutée : le trait est **dessiné**, et une planche cernée ne peut
+## pas être additive — son contour sombre n'y ajoute rien.
 func _ready() -> void:
 	z_index = 5
-	material = ArtPalette.ADDITIVE
+	_lance = Holy.lance(_tip, DRAWN, _tint)
 
 
 func _physics_process(delta: float) -> void:
@@ -54,17 +66,24 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Trois épaisseurs et **un éclat au départ**. Mesuré à la capture : les deux
-## épaisseurs de la chaîne suffisent à un trait brisé, mais donnent à un trait droit un
-## bâton gris uniforme. C'est l'éclat qui dit d'où il part, et le halo large qui lui
-## rend une gradation.
+## Le trait, **posé d'une pièce**, et les étincelles qui le remontent. Choisi sur
+## planche contre quatre autres traits (jalon 24) : le chapelet de marques partait
+## dans n'importe quelle direction sans rastérisation, mais ses contours se
+## croisaient l'un l'autre et le trait sortait effrangé.
+##
+## Il ne pâlit pas — une planche à demi-transparente sur un sol sombre sort grise.
+## Il tient ses seize centièmes de seconde, puis il n'est plus là : c'est un coup,
+## pas une présence.
 func _draw() -> void:
-	var fade := clampf(1.0 - _age / LIFETIME, 0.0, 1.0)
-	var light_color := _tint.lerp(Color.WHITE, 0.8)
-	draw_line(Vector2.ZERO, _tip, Color(_tint, 0.18 * fade), WIDTH * 1.8)
-	# Le halo garde la moitié de son épaisseur jusqu'au bout : à s'amincir jusqu'à
-	# rien, le trait disparaissait avant d'avoir été vu.
-	draw_line(Vector2.ZERO, _tip, Color(_tint, 0.50 * fade), WIDTH * (0.5 + 0.5 * fade))
-	draw_line(Vector2.ZERO, _tip, Color(light_color, fade), 2.0)
-	Glow.draw_blob(self, Vector2.ZERO, WIDTH * (0.9 + 1.2 * fade), Color(light_color, 0.9 * fade))
-	Glow.draw_blob(self, _tip, WIDTH * 0.9 * fade, Color(light_color, 0.8 * fade))
+	var size := Vector2(_lance.texture.get_width(), _lance.texture.get_height())
+	draw_texture_rect(
+		_lance.texture, Rect2(EffectForge.snap(self, _lance.offset), size), false
+	)
+	# À pleine opacité comme le trait : un grain à demi transparent sur un sol
+	# sombre ne s'efface pas, il grisonne.
+	for i in GLINTS:
+		var along := fmod(_age * GLINT_SPEED + float(i) / float(GLINTS), 1.0)
+		var across := Vector2(-_tip.y, _tip.x).normalized() * DRAWN * 1.8
+		Holy.spark(
+			self, _tip * along + across * (1.0 if i % 2 == 0 else -1.0), _tint, 1.0
+		)

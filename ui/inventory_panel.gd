@@ -777,15 +777,22 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 	var out: Array[TipLine] = []
 	out.append(TipLine.new(TipLine.Kind.TITLE, item.display_name(), item.color()))
 
-	# Ce que la base est, avant ce qu'elle a tiré. Vide hors des armes : elles seules
-	# donnent une chance critique de base.
+	# Ce que la base est, avant ce qu'elle a tiré : la chance critique d'une arme, la
+	# défense d'une armure. En avant quand une ligne locale l'a montée, en clair sinon.
 	var properties: Array[TipLine] = []
 	if item.base.family == ItemBase.WEAPON_FAMILY:
-		# En avant quand une ligne locale l'a montée, en clair sinon.
 		var raised := not is_equal_approx(item.crit_chance(), item.base.crit_chance)
 		properties.append(TipLine.property(
 			Texts.t("Chance critique de base :"),
 			StatMod.format(SkillStats.CRIT_CHANCE, item.crit_chance()),
+			TIP_EXPLICIT if raised else TIP_VALUE
+		))
+	var defense := item.base.defense_stat()
+	if not defense.is_empty():
+		var raised := not is_equal_approx(item.defense(), item.base.implicit_value)
+		properties.append(TipLine.property(
+			Texts.t("Armure :") if defense == "armor" else Texts.t("Esquive :"),
+			StatMod.format(defense, item.defense()),
 			TIP_EXPLICIT if raised else TIP_VALUE
 		))
 	_tip_block(out, properties)

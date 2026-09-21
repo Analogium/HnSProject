@@ -49,6 +49,21 @@ var damage_dealt_visible := true:
 		_announce()
 
 
+## Le compteur de DPS, masqué par défaut : un outil pour régler un build, pas une jauge.
+var dps_meter_visible := false:
+	set(value):
+		if value == dps_meter_visible:
+			return
+		dps_meter_visible = value
+		_announce()
+
+## Sa place dans le viewport logique ; `DpsMeter` la borne à l'écran.
+var dps_meter_position := Vector2(492.0, 8.0):
+	set(value):
+		if value == dps_meter_position:
+			return
+		dps_meter_position = value
+		_announce()
 ## Les touches choisies par le joueur, action → « key:76 ». **Seules celles qu'il a
 ## changées** y sont ; le reste vient de `project.godot`, par `Keybinds`. Posées, elles
 ## réécrivent la table du moteur — c'est le seul endroit qui la touche.
@@ -267,6 +282,8 @@ func to_dict() -> Dictionary:
 		"affix_names": show_affix_names,
 		"damage_taken": damage_taken_visible,
 		"damage_dealt": damage_dealt_visible,
+		"dps_meter": dps_meter_visible,
+		"dps_meter_position": [dps_meter_position.x, dps_meter_position.y],
 		"language": language,
 		"scale_factor": scale_factor,
 		"key_binds": key_binds,
@@ -280,6 +297,10 @@ func from_dict(source: Dictionary) -> void:
 	show_affix_names = bool(source.get("affix_names", show_affix_names))
 	damage_taken_visible = bool(source.get("damage_taken", damage_taken_visible))
 	damage_dealt_visible = bool(source.get("damage_dealt", damage_dealt_visible))
+	dps_meter_visible = bool(source.get("dps_meter", dps_meter_visible))
+	var place: Variant = source.get("dps_meter_position")
+	if place is Array and place.size() == 2 and _is_number(place[0]) and _is_number(place[1]):
+		dps_meter_position = Vector2(place[0], place[1])
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	language = String(source.get("language", language))
 	key_binds = valid_binds(source.get("key_binds", {}))
@@ -289,6 +310,10 @@ func from_dict(source: Dictionary) -> void:
 		# demanderait un facteur que celui-ci ne peut pas afficher.
 		scale_factor = clampi(int(read_value), FULLSCREEN, max_scale_factor())
 	_loading = false
+
+
+static func _is_number(value: Variant) -> bool:
+	return value is float or value is int
 
 
 ## Ce qu'un fichier peut contenir de valide : une action connue, une touche lisible.

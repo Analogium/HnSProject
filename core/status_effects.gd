@@ -51,6 +51,9 @@ const AGAINST := [
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := ["embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant"]
 
+## Ce qui brûle, nommé par le compteur de DPS.
+const BURN_NAMES := {Kind.IGNITE: "Embrasement", Kind.ROT: "Pourriture", Kind.BLEED: "Saignement"}
+
 ## Le champ de `CharacterStats` qui **accroît** la chance de chaque sorte, ou vide.
 ## Une chance n'arrive que quand une compétence la demande : l'embrasement au jalon 20,
 ## le gel au jalon 21, la bénédiction avec le manuel sacré. **Le seul endroit** qui lie
@@ -100,6 +103,10 @@ class State:
 	var per_second := 0.0
 	## Faible : deux pourritures croisées se tiendraient en vie (RefCounted).
 	var author: WeakRef
+	## La compétence qui l'a posé (`SkillStats.skill_id`), vide sans lancer.
+	var source := ""
+	## Brûlé depuis la dernière annonce à `Game.damage_dealt`.
+	var unreported := 0.0
 
 
 ## Des pertes sans coup, montrées par paquets. Le joueur en a deux — Immolation et
@@ -134,6 +141,13 @@ var is_clear := true
 var speed_factor := 1.0
 var damage_taken_factor := 1.0
 var damage_dealt_factor := 1.0
+
+## Vrai sur un ennemi : ce qu'il brûle, c'est le joueur qui l'inflige, et
+## `Game.damage_dealt` l'annonce compétence par compétence — **par paquets de
+## `DISPLAY_PERIOD`** : une annonce par image triplait le coût de `advance()`
+## (240 → 830 µs par image, 300 ennemis à deux états) ; par paquets, 264 → 275.
+var reports_dealt := false
+var _since_report := 0.0
 
 ## Dans l'ordre où ils se sont posés : le dernier est le plus récent.
 var _states: Array[State] = []
@@ -200,7 +214,7 @@ func kinds() -> Array[int]:
 ## pourcentage : une nova de glace transit mieux qu'un coup de froid ordinaire.
 func suffer(
 	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
-	cast_increase := 0.0
+	cast_increase := 0.0, source := ""
 ) -> void:
 	var total := 0.0
 	for part in parts:
@@ -216,7 +230,7 @@ func suffer(
 		if part <= 0.0:
 			continue
 		if rng.randf() < chance(part, total, max_hp, better[kind] + cast_increase * 0.01):
-			put(kind, part, author)
+			put(kind, part, author, source)
 
 
 ## La part de la nature dans le coup, plus ce qu'elle retire des PV max : un coup de
@@ -230,7 +244,7 @@ static func chance(part: float, total: float, max_hp: float, factor := 1.0) -> f
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de
 ## la même sorte, ce qui brûle garde le plus fort — sinon de petites braises
 ## éteindraient la grosse ; les autres retrouvent leur durée.
-func put(kind: int, part: float, author: StatusEffects = null) -> void:
+func put(kind: int, part: float, author: StatusEffects = null, source := "") -> void:
 	var per_second := part * _burn_per_second(kind)
 	var state := _state(kind)
 	var fresh := state == null
@@ -243,6 +257,7 @@ func put(kind: int, part: float, author: StatusEffects = null) -> void:
 	state.remaining = DURATIONS[kind]
 	state.per_second = per_second
 	state.author = weakref(author) if author != null else null
+	state.source = source
 	if fresh:
 		_recompute()
 		reached.emit(kind)
@@ -261,12 +276,17 @@ func advance(delta: float) -> float:
 		if state.per_second > 0.0:
 			var burns := state.per_second * minf(delta, state.remaining) * amplified
 			loss += burns
+			state.unreported += burns
 			if state.kind == Kind.ROT:
 				_heal_author(state, burns)
 		state.remaining -= delta
 		finished = finished or state.remaining <= 0.0
 	if loss > 0.0:
 		_to_show += _losses.add_to(loss, delta)
+	if reports_dealt:
+		_since_report += delta
+		if finished or _since_report >= DISPLAY_PERIOD:
+			report()
 	if finished:
 		_states = _states.filter(func(e: State) -> bool: return e.remaining > 0.0)
 		_to_show += _losses.clear()
@@ -316,6 +336,15 @@ func _burn_per_second(kind: int) -> float:
 		Kind.BLEED:
 			return BLEED_PER_SECOND
 	return 0.0
+
+
+## Aussi appelée à la mort du porteur, pour ne pas perdre le dernier paquet.
+func report() -> void:
+	_since_report = 0.0
+	for state in _states:
+		if state.unreported > 0.0:
+			Game.damage_dealt.emit(state.source, state.kind, state.unreported)
+			state.unreported = 0.0
 
 
 ## Un auteur mort rend null : personne n'est soigné.
