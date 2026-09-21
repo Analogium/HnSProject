@@ -115,6 +115,24 @@ msgstr "Master's Gloves"
 msgid "Bottes"
 msgstr "Boots"
 
+msgid "Gantelets"
+msgstr "Gauntlets"
+
+msgid "Gantelets de mailles"
+msgstr "Mail Gauntlets"
+
+msgid "Gantelets de plates"
+msgstr "Plate Gauntlets"
+
+msgid "Solerets"
+msgstr "Sabatons"
+
+msgid "Solerets de mailles"
+msgstr "Mail Sabatons"
+
+msgid "Solerets de plates"
+msgstr "Plate Sabatons"
+
 msgid "Bottes cloutées"
 msgstr "Studded Boots"
 
@@ -1789,6 +1807,9 @@ msgstr "of the Grip"
 
 msgid "du Rempart"
 msgstr "of the Rampart"
+
+msgid "de la Brume"
+msgstr "of the Mist"
 
 msgid "de la Précision"
 msgstr "of Precision"

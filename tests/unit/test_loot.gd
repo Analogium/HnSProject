@@ -99,11 +99,38 @@ func test_a_defense_line_is_local_on_its_armour() -> void:
 	assert_eq(sheet.size(), 1, "une seule ligne d'armure vers la fiche")
 	assert_almost_eq(sheet[0].value, 45.0, 0.0001)
 	assert_true(plate.explicit_line(plate.explicits[1]).ends_with(" (local)"))
-	assert_true(plate.implicit_line().is_empty(), "la défense s'affiche en propriété")
 
 	var belt := Item.new(ItemCatalog.by_id("belt"), [flat] as Array[StatMod])
 	assert_false(belt.explicit_line(belt.explicits[0]).ends_with(" (local)"))
 	assert_eq(belt.defense(), 0.0, "pas de défense hors des armures")
+
+
+## Un implicite se tire dans la plage de sa base, et la défense locale part de ce tirage.
+func test_an_implicit_rolls_within_its_base_range() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	for base: ItemBase in ItemCatalog.ALL:
+		if not base.implicit_rolls():
+			continue
+		for i in 20:
+			var value := Item.rolled(rng, base, 60).implicit_value()
+			assert_between(value, base.implicit_value, base.implicit_roll_max, base.id)
+	var plate := Item.new(
+		ItemCatalog.by_id("breastplate"),
+		[StatMod.new("armor", StatMod.Mode.PERCENT, 50.0)] as Array[StatMod]
+	)
+	plate.implicit_roll = 1.0
+	assert_almost_eq(plate.defense(), 39.0, 0.0001, "26 tirés, × 1,5")
+
+
+## Gants et bottes existent dans les deux défenses.
+func test_gloves_and_boots_come_in_both_defenses() -> void:
+	for family in ["gloves", "boots"]:
+		var seen := {}
+		for base: ItemBase in ItemCatalog.ALL:
+			if base.family == family:
+				seen[base.defense_stat()] = true
+		assert_eq(seen.keys().size(), 2, family)
 
 
 ## Casque, gants, bottes, torse : leur implicite est leur défense, et ils ne tirent

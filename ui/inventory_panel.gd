@@ -789,7 +789,7 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 		))
 	var defense := item.base.defense_stat()
 	if not defense.is_empty():
-		var raised := not is_equal_approx(item.defense(), item.base.implicit_value)
+		var raised := not is_equal_approx(item.defense(), item.implicit_value())
 		properties.append(TipLine.property(
 			Texts.t("Armure :") if defense == "armor" else Texts.t("Esquive :"),
 			StatMod.format(defense, item.defense()),
@@ -803,10 +803,14 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 	)] as Array[TipLine])
 
 	# Majuscule en tête, implicite comme tirés : ce sont les mêmes lignes, et une
-	# seule des deux sortes capitalisée se verrait.
+	# seule des deux sortes capitalisée se verrait. Une défense est déjà en propriété,
+	# montée : son implicite, la valeur d'avant les affixes, attend les détails.
 	var implicit := RichText.capitalized(item.implicit_line())
-	if not implicit.is_empty():
-		_tip_block(out, [TipLine.new(TipLine.Kind.TEXT, implicit, TIP_IMPLICIT)] as Array[TipLine])
+	if not implicit.is_empty() and (_detailed or item.base.defense_stat().is_empty()):
+		var line := TipLine.new(TipLine.Kind.MOD, implicit, TIP_IMPLICIT)
+		var span := item.base.implicit_span()
+		line.aside = "(%s)" % span if _detailed and not span.is_empty() else ""
+		_tip_block(out, [line] as Array[TipLine])
 
 	var mods: Array[TipLine] = []
 	var without_origin := false

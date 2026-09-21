@@ -29,7 +29,7 @@ Après chacune : `tests/run.sh`. Après celles qui touchent un `.tres` de conten
    | `lineage` / `tier` | La suite à laquelle il appartient, et son rang |
    | `required_level` | La zone à partir de laquelle il tombe |
    | `grid_size` | Son encombrement en cases |
-   | `implicit_*` | Le bonus que porte toute la base, sans tirage. Pour des dégâts ajoutés : `implicit_stat = damage_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_scope` (`attack` ou `spell`). **Casque, gants, bottes, torse : `armor` ou `evasion`, plat** — c'est la défense de base de la pièce, que ses affixes montent sur place ; `test_armour_pieces_roll_only_their_own_defense` le vérifie |
+   | `implicit_*` | Le bonus que porte toute la base, **tiré entre `implicit_value` (le bas) et `implicit_roll_max`** ; `implicit_roll_max` à zéro le fige. Une lignée monte sa plage avec son palier. Pour des dégâts ajoutés, jamais tirés : `implicit_stat = damage_<nature>`, les deux bornes dans `implicit_value` et `implicit_value_max`, et la famille visée dans `implicit_scope` (`attack` ou `spell`). **Casque, gants, bottes, torse : `armor` ou `evasion`, plat** — c'est la défense de base de la pièce, que ses affixes montent sur place ; `test_armour_pieces_roll_only_their_own_defense` le vérifie |
    | `crit_chance` | **Arme seulement** : la chance critique de base de tout ce qu'elle lance, 0,10 à l'attaque, 0,05 à l'incantation. Zéro ailleurs ; `test_each_weapon_has_its_crit_and_its_kind` le vérifie. Un implicite de chance critique hors arme est **en pourcentage** |
 
 2. **`core/item_catalog.gd`** — ajouter le `preload` dans `ALL`, **dans le bloc

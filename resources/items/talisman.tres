@@ -15,4 +15,5 @@ tier = 2
 required_level = 17
 implicit_stat = "max_mana"
 implicit_value = 34.0
+implicit_roll_max = 44.0
 icon = ExtResource("2_icon")

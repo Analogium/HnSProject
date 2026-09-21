@@ -225,7 +225,10 @@ static func _item_to_dict(item: Item) -> Dictionary:
 			entry["affix"] = r.affix_id
 			entry["tier"] = r.tier
 		affixes.append(entry)
-	var entry := {"base": item.base.id, "level": item.item_level, "affixes": affixes}
+	var entry := {
+		"base": item.base.id, "level": item.item_level,
+		"base_roll": item.implicit_roll, "affixes": affixes,
+	}
 	# Le niveau d'un manuel ne s'écrit pas : il se déduit de son expérience.
 	if item.manual != null:
 		entry["manual"] = {
@@ -280,6 +283,8 @@ static func _item_from_dict(source: Variant) -> Item:
 	# Absent, il vaut 1 : tous les objets d'une sauvegarde v1.
 	var level := _int(item_dict, "level", 1)
 	var item := Item.new(base, explicits, level)
+	# Absent, le bas de la plage : c'était la valeur fixe d'avant les plages.
+	item.implicit_roll = _float(item_dict, "base_roll", 0.0)
 	_manual_from_dict(item, item_dict.get("manual"))
 	return item
 

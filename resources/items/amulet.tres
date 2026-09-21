@@ -13,4 +13,5 @@ tags = PackedStringArray("amulet", "jewellery")
 lineage = "amulet"
 implicit_stat = "max_mana"
 implicit_value = 15.0
+implicit_roll_max = 20.0
 icon = ExtResource("2_icon")

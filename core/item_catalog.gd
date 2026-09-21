@@ -45,10 +45,16 @@ const ALL := [
 	preload("res://resources/items/gloves.tres"),
 	preload("res://resources/items/reinforced_gloves.tres"),
 	preload("res://resources/items/masters_gloves.tres"),
+	preload("res://resources/items/gauntlets.tres"),
+	preload("res://resources/items/mail_gauntlets.tres"),
+	preload("res://resources/items/plate_gauntlets.tres"),
 	# bottes
 	preload("res://resources/items/boots.tres"),
 	preload("res://resources/items/studded_boots.tres"),
 	preload("res://resources/items/travel_boots.tres"),
+	preload("res://resources/items/sabatons.tres"),
+	preload("res://resources/items/mail_sabatons.tres"),
+	preload("res://resources/items/plate_sabatons.tres"),
 	# ceinture
 	preload("res://resources/items/belt.tres"),
 	preload("res://resources/items/girdle.tres"),

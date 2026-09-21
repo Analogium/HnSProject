@@ -95,7 +95,9 @@ func craft() -> Item:
 		if index < 0 or index >= affix.tiers.size():
 			continue
 		explicits.append(RolledAffix.new(id, index + 1, affix.at_top(index)))
-	return Item.new(base, explicits, _level)
+	var item := Item.new(base, explicits, _level)
+	item.implicit_roll = 1.0
+	return item
 
 
 func choose_base(index: int) -> void:

@@ -15,4 +15,5 @@ lineage = "dagger"
 implicit_stat = "attack_speed"
 implicit_percent = true
 implicit_value = 10.0
+implicit_roll_max = 13.0
 crit_chance = 0.1

@@ -170,7 +170,7 @@ static func _equip(p: Character, build: Build, level: int, rng: RandomNumberGene
 		if bases.is_empty():
 			continue
 		var base := bases[rng.randi() % bases.size()]
-		p.equipment[slot] = Item.new(base, ItemAffixPool.roll(rng, base, level), level)
+		p.equipment[slot] = Item.rolled(rng, base, level)
 
 
 ## Le niveau (x) et l'expérience totale (y) d'un personnage qui a vidé une fois chaque

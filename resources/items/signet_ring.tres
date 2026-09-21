@@ -16,4 +16,5 @@ required_level = 34
 implicit_stat = "crit_chance"
 implicit_percent = true
 implicit_value = 20.0
+implicit_roll_max = 26.0
 icon = ExtResource("2_icon")

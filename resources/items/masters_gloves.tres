@@ -17,3 +17,4 @@ tier = 3
 required_level = 31
 implicit_stat = "evasion"
 implicit_value = 34.0
+implicit_roll_max = 44.0

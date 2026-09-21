@@ -17,3 +17,4 @@ tier = 3
 required_level = 32
 implicit_stat = "armor"
 implicit_value = 44.0
+implicit_roll_max = 57.0

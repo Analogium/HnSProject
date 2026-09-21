@@ -24,6 +24,7 @@ const ALL := [
 	preload("res://resources/item_affixes/unholy.tres"),
 	preload("res://resources/item_affixes/elusive.tres"),
 	preload("res://resources/item_affixes/plated.tres"),
+	preload("res://resources/item_affixes/evasive.tres"),
 	preload("res://resources/item_affixes/regenerating.tres"),
 	preload("res://resources/item_affixes/shrewd.tres"),
 	preload("res://resources/item_affixes/lucid.tres"),

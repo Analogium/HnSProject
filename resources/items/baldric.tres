@@ -17,3 +17,4 @@ tier = 3
 required_level = 29
 implicit_stat = "health_regen"
 implicit_value = 5.0
+implicit_roll_max = 7.0

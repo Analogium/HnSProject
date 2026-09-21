@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-46 bases d'objets, 25 compétences, 52 affixes d'objets, 5 affixes d'ennemis.
+52 bases d'objets, 25 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -25,44 +25,50 @@ Niveaux de zone : 1 à 120.
 | `sword` | Épée | blade | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 10 % | 1 × 3 | 1 à 22 |
 | `broadsword` | Épée large | blade | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 10 % | 1 × 3 | 16 à 40 |
 | `war_blade` | Lame de guerre | blade | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 10 % | 1 × 3 | 34 et au-delà |
-| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue | 10 % | 1 × 2 | 1 à 30 |
-| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue | 10 % | 1 × 2 | 24 et au-delà |
+| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue (10–13 %) | 10 % | 1 × 2 | 1 à 30 |
+| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue (18–23 %) | 10 % | 1 × 2 | 24 et au-delà |
 | `mace` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 10 % | 1 × 3 | 6 à 28 |
 | `battle_mace` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 10 % | 1 × 3 | 22 à 46 |
 | `war_hammer` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 10 % | 1 × 3 | 40 et au-delà |
-| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 1 à 24 |
-| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 18 à 42 |
-| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue | 5 % | 1 × 2 | 36 et au-delà |
-| `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure | — | 2 × 2 | 1 à 21 |
-| `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure | — | 2 × 2 | 15 à 39 |
-| `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure | — | 2 × 2 | 33 et au-delà |
+| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue (15–20 %) | 5 % | 1 × 2 | 1 à 24 |
+| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue (24–31 %) | 5 % | 1 × 2 | 18 à 42 |
+| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue (34–44 %) | 5 % | 1 × 2 | 36 et au-delà |
+| `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure (18–23) | — | 2 × 2 | 1 à 21 |
+| `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure (38–49) | — | 2 × 2 | 15 à 39 |
+| `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure (68–88) | — | 2 × 2 | 33 et au-delà |
 | `grimoire` | Grimoire | grimoire | 1 | offhand | offhand, caster | ajoute 3 à 7 dégâts de foudre aux sorts | — | 2 × 2 | 10 à 34 |
 | `codex` | Codex | grimoire | 2 | offhand | offhand, caster | ajoute 6 à 16 dégâts de foudre aux sorts | — | 2 × 2 | 28 et au-delà |
-| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 armure | — | 2 × 2 | 1 à 20 |
-| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 armure | — | 2 × 2 | 14 à 38 |
-| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 armure | — | 2 × 2 | 32 et au-delà |
-| `hood` | Capuche | casque_leger | 1 | helmet | helmet, armour, light | +14 esquive | — | 2 × 2 | 1 à 26 |
-| `masters_hood` | Capuche de maître | casque_leger | 2 | helmet | helmet, armour, light | +34 esquive | — | 2 × 2 | 20 et au-delà |
-| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 armure | — | 2 × 3 | 1 à 23 |
-| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 armure | — | 2 × 3 | 17 à 41 |
-| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 armure | — | 2 × 3 | 35 et au-delà |
-| `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive | — | 2 × 3 | 1 à 25 |
-| `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive | — | 2 × 3 | 19 et au-delà |
-| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +10 esquive | — | 2 × 2 | 1 à 19 |
-| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +20 esquive | — | 2 × 2 | 13 à 37 |
-| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +34 esquive | — | 2 × 2 | 31 et au-delà |
-| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +10 esquive | — | 2 × 2 | 1 à 18 |
-| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +20 esquive | — | 2 × 2 | 12 à 36 |
-| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +34 esquive | — | 2 × 2 | 30 et au-delà |
-| `belt` | Ceinture | belt | 1 | belt | belt | +1.5 PV/s | — | 2 × 1 | 1 à 17 |
-| `girdle` | Ceinturon | belt | 2 | belt | belt | +3 PV/s | — | 2 × 1 | 11 à 35 |
-| `baldric` | Baudrier | belt | 3 | belt | belt | +5 PV/s | — | 2 × 1 | 29 et au-delà |
-| `amulet` | Amulette | amulet | 1 | amulet | amulet, jewellery | +15 mana | — | 1 × 1 | 1 à 23 |
-| `talisman` | Talisman | amulet | 2 | amulet | amulet, jewellery | +34 mana | — | 1 × 1 | 17 à 41 |
-| `pendant` | Pendentif | amulet | 3 | amulet | amulet, jewellery | +58 mana | — | 1 × 1 | 35 et au-delà |
-| `ring` | Anneau | ring | 1 | ring | ring, jewellery | +8 % de chance critique de base accrue | — | 1 × 1 | 1 à 22 |
-| `ornate_ring` | Bague ouvragée | ring | 2 | ring | ring, jewellery | +14 % de chance critique de base accrue | — | 1 × 1 | 16 à 40 |
-| `signet_ring` | Chevalière | ring | 3 | ring | ring, jewellery | +20 % de chance critique de base accrue | — | 1 × 1 | 34 et au-delà |
+| `helmet` | Casque | casque_lourd | 1 | helmet | helmet, armour, heavy | +12 armure (12–16) | — | 2 × 2 | 1 à 20 |
+| `great_helm` | Heaume | casque_lourd | 2 | helmet | helmet, armour, heavy | +26 armure (26–34) | — | 2 × 2 | 14 à 38 |
+| `armet` | Armet | casque_lourd | 3 | helmet | helmet, armour, heavy | +44 armure (44–57) | — | 2 × 2 | 32 et au-delà |
+| `hood` | Capuche | casque_leger | 1 | helmet | helmet, armour, light | +14 esquive (14–18) | — | 2 × 2 | 1 à 26 |
+| `masters_hood` | Capuche de maître | casque_leger | 2 | helmet | helmet, armour, light | +34 esquive (34–44) | — | 2 × 2 | 20 et au-delà |
+| `breastplate` | Plastron | torse_lourd | 1 | chest | chest, armour, heavy | +20 armure (20–26) | — | 2 × 3 | 1 à 23 |
+| `chainmail` | Cotte de mailles | torse_lourd | 2 | chest | chest, armour, heavy | +42 armure (42–55) | — | 2 × 3 | 17 à 41 |
+| `full_plate` | Harnois | torse_lourd | 3 | chest | chest, armour, heavy | +72 armure (72–94) | — | 2 × 3 | 35 et au-delà |
+| `tunic` | Tunique | torse_leger | 1 | chest | chest, armour, light | +20 esquive (20–26) | — | 2 × 3 | 1 à 25 |
+| `jerkin` | Justaucorps | torse_leger | 2 | chest | chest, armour, light | +46 esquive (46–60) | — | 2 × 3 | 19 et au-delà |
+| `gloves` | Gants | gloves | 1 | gloves | gloves, armour, light | +10 esquive (10–13) | — | 2 × 2 | 1 à 19 |
+| `reinforced_gloves` | Gants renforcés | gloves | 2 | gloves | gloves, armour, light | +20 esquive (20–26) | — | 2 × 2 | 13 à 37 |
+| `masters_gloves` | Gants de maître | gloves | 3 | gloves | gloves, armour, light | +34 esquive (34–44) | — | 2 × 2 | 31 et au-delà |
+| `gauntlets` | Gantelets | gantelets | 1 | gloves | gloves, armour, heavy | +10 armure (10–13) | — | 2 × 2 | 1 à 19 |
+| `mail_gauntlets` | Gantelets de mailles | gantelets | 2 | gloves | gloves, armour, heavy | +20 armure (20–26) | — | 2 × 2 | 13 à 37 |
+| `plate_gauntlets` | Gantelets de plates | gantelets | 3 | gloves | gloves, armour, heavy | +34 armure (34–44) | — | 2 × 2 | 31 et au-delà |
+| `boots` | Bottes | boots | 1 | boots | boots, armour, light | +10 esquive (10–13) | — | 2 × 2 | 1 à 18 |
+| `studded_boots` | Bottes cloutées | boots | 2 | boots | boots, armour, light | +20 esquive (20–26) | — | 2 × 2 | 12 à 36 |
+| `travel_boots` | Bottes de marche | boots | 3 | boots | boots, armour, light | +34 esquive (34–44) | — | 2 × 2 | 30 et au-delà |
+| `sabatons` | Solerets | solerets | 1 | boots | boots, armour, heavy | +10 armure (10–13) | — | 2 × 2 | 1 à 18 |
+| `mail_sabatons` | Solerets de mailles | solerets | 2 | boots | boots, armour, heavy | +20 armure (20–26) | — | 2 × 2 | 12 à 36 |
+| `plate_sabatons` | Solerets de plates | solerets | 3 | boots | boots, armour, heavy | +34 armure (34–44) | — | 2 × 2 | 30 et au-delà |
+| `belt` | Ceinture | belt | 1 | belt | belt | +1.5 PV/s (1.5–2) | — | 2 × 1 | 1 à 17 |
+| `girdle` | Ceinturon | belt | 2 | belt | belt | +3 PV/s (3–4) | — | 2 × 1 | 11 à 35 |
+| `baldric` | Baudrier | belt | 3 | belt | belt | +5 PV/s (5–7) | — | 2 × 1 | 29 et au-delà |
+| `amulet` | Amulette | amulet | 1 | amulet | amulet, jewellery | +15 mana (15–20) | — | 1 × 1 | 1 à 23 |
+| `talisman` | Talisman | amulet | 2 | amulet | amulet, jewellery | +34 mana (34–44) | — | 1 × 1 | 17 à 41 |
+| `pendant` | Pendentif | amulet | 3 | amulet | amulet, jewellery | +58 mana (58–75) | — | 1 × 1 | 35 et au-delà |
+| `ring` | Anneau | ring | 1 | ring | ring, jewellery | +8 % de chance critique de base accrue (8–10 %) | — | 1 × 1 | 1 à 22 |
+| `ornate_ring` | Bague ouvragée | ring | 2 | ring | ring, jewellery | +14 % de chance critique de base accrue (14–18 %) | — | 1 × 1 | 16 à 40 |
+| `signet_ring` | Chevalière | ring | 3 | ring | ring, jewellery | +20 % de chance critique de base accrue (20–26 %) | — | 1 × 1 | 34 et au-delà |
 | `manual_lightning` | Manuel de la foudre | manual_lightning | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
@@ -692,58 +698,59 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 41 / 46 |
-| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 46 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 46 |
-| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
-| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 46 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 46 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 9 / 46 |
-| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 6 / 46 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 46 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 30 / 46 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 41 / 46 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 8 / 46 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 46 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 30 / 46 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 46 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 30 / 46 |
-| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 14 / 46 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 30 / 46 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 9 / 46 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 46 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 46 |
-| `muscular` | force | *partout* | — | 8 | 6 | 41 / 46 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 3 / 46 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 46 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 46 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 9 / 46 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 46 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 17 / 46 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 46 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 46 |
-| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 6 / 46 |
-| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 9 / 46 |
-| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 11 / 46 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 46 |
-| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 46 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 22 / 46 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 30 / 46 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 28 / 46 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 8 / 46 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 52 |
+| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 52 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 52 |
+| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 52 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 52 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 52 |
+| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 9 / 52 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 52 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 52 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 52 |
+| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 52 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 52 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 52 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 52 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 52 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 52 |
+| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 52 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 52 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 52 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 52 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 52 |
+| `muscular` | force | *partout* | — | 8 | 6 | 47 / 52 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 52 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 52 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 52 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 52 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 52 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 52 |
+| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 9 / 52 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 52 |
+| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 52 |
+| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 52 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 52 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 52 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 52 |
 
 ### Affixes d'ennemis
 
@@ -922,6 +929,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 12–17 | 10 |
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
+
+**`evasive`** — « de la Brume », esquive, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 54 | 46–58 % | 10 |
+| T2 | 42 | 36–45 % | 10 |
+| T3 | 31 | 27–35 % | 10 |
+| T4 | 20 | 19–26 % | 10 |
+| T5 | 10 | 12–18 % | 10 |
+| T6 | 1 | 6–11 % | 10 |
 
 **`expansive`** — « de l'Ampleur », dégâts de zone, arrondi 1
 

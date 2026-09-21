@@ -81,7 +81,9 @@ func _bases(l: PackedStringArray) -> void:
 			base.tier,
 			base.family if not base.family.is_empty() else "—",
 			", ".join(base.tags),
-			"—" if imp == null else Glossary.plain(imp.label()),
+			"—" if imp == null else Glossary.plain(imp.label()) + (
+				"" if base.implicit_span().is_empty() else " (%s)" % base.implicit_span()
+			),
 			"—" if base.family != ItemBase.WEAPON_FAMILY else StatMod.format(SkillStats.CRIT_CHANCE, base.crit_chance),
 			base.grid_size.x, base.grid_size.y,
 			window,

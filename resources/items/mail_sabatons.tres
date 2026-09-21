@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "mail_sabatons"
+display_name = "Solerets de mailles"
+kind = "boots"
+family = "boots"
+tags = PackedStringArray("boots", "armour", "heavy")
+grid_size = Vector2i(2, 2)
+lineage = "solerets"
+tier = 2
+required_level = 12
+implicit_stat = "armor"
+implicit_value = 20.0
+implicit_roll_max = 26.0

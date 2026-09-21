@@ -54,8 +54,8 @@ const MANUAL_FAMILY := "manual"
 @export var manual: ManualArchetype
 
 @export_group("Implicite")
-## Le bonus de toute la famille, sans tirage. Des champs simples, un par base ;
-## `implicit_stat` vide pour aucun.
+## Le bonus de toute la famille, tiré sur `implicit_value`–`implicit_roll_max`. Des
+## champs simples, un par base ; `implicit_stat` vide pour aucun.
 @export var implicit_stat: String = ""
 @export var implicit_percent: bool = false
 @export var implicit_value: float = 0.0
@@ -64,6 +64,9 @@ const MANUAL_FAMILY := "manual"
 @export var implicit_value_max: float = 0.0
 ## Le mot-clé visé, comme pour un affixe : vide pour la fiche du personnage.
 @export var implicit_scope: String = ""
+## Le haut de la plage de tirage, `implicit_value` en étant le bas — donc la valeur
+## des objets d'avant les plages. Zéro : fixe. Sans effet sur des dégâts ajoutés.
+@export var implicit_roll_max: float = 0.0
 
 @export_group("Arme")
 ## La chance critique de base de tout ce que lance le porteur, sous l'implicite. Zéro
@@ -102,9 +105,36 @@ func is_local(m: StatMod) -> bool:
 	return m.scope.is_empty() and m.stat == defense_stat() and not m.stat.is_empty()
 
 
-func implicit() -> StatMod:
+func implicit(value := implicit_value) -> StatMod:
 	if implicit_stat.is_empty():
 		return null
 	return StatMod.from_definition(
-		implicit_stat, implicit_percent, implicit_value, implicit_value_max, implicit_scope
+		implicit_stat, implicit_percent, value, implicit_value_max, implicit_scope
 	)
+
+
+func implicit_rolls() -> bool:
+	return implicit_roll_max > implicit_value and not StatMod.ranged_stat(implicit_stat)
+
+
+## Où tombe l'implicite dans sa plage, de 0 à 1. Un tirage si la base a une plage,
+## aucun sinon : le compte dépend de la base, jamais du résultat (invariant 3).
+func roll_implicit(rng: RandomNumberGenerator) -> float:
+	return rng.randf() if implicit_rolls() else 0.0
+
+
+## La valeur à cette position de la plage : au dixième si le bas en a un, sinon à
+## l'unité.
+func implicit_at(roll: float) -> float:
+	if not implicit_rolls():
+		return implicit_value
+	var step := 1.0 if is_equal_approx(implicit_value, roundf(implicit_value)) else 0.1
+	return snappedf(lerpf(implicit_value, implicit_roll_max, clampf(roll, 0.0, 1.0)), step)
+
+
+## « 18–26 », vide pour un implicite fixe : l'infobulle détaillée et le catalogue.
+func implicit_span() -> String:
+	if not implicit_rolls():
+		return ""
+	var mode := StatMod.Mode.PERCENT if implicit_percent else StatMod.Mode.FLAT
+	return StatMod.range_label(implicit_stat, mode, implicit_value, implicit_roll_max)

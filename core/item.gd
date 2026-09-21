@@ -24,6 +24,11 @@ var explicits: Array[RolledAffix] = []
 ## en jouant longtemps. 1 par défaut (tests, sauvegardes v1).
 var item_level: int = 1
 
+## Où l'implicite est tombé dans la plage de la base, de 0 à 1 — la position et
+## non la valeur, pour qu'un rééquilibrage de la base atteigne les objets déjà
+## tombés. Le bas par défaut : un objet posé par le code, ou d'avant les plages.
+var implicit_roll: float = 0.0
+
 ## L'état du manuel quand l'objet en est un, sur l'exemplaire et **jamais sur
 ## l'archétype** (invariant 2).
 var manual: Manual
@@ -39,6 +44,22 @@ func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	# Créé ici plutôt qu'au premier point : pas de « si null » chez les lecteurs.
 	if base != null and base.manual != null:
 		manual = Manual.new()
+
+
+## Un objet qui tombe : ses affixes, puis son implicite. Le butin et le banc passent
+## ici, pour tirer dans le même ordre.
+static func rolled(rng: RandomNumberGenerator, p_base: ItemBase, level: int) -> Item:
+	var item := Item.new(p_base, ItemAffixPool.roll(rng, p_base, level), level)
+	item.implicit_roll = p_base.roll_implicit(rng)
+	return item
+
+
+func implicit_value() -> float:
+	return base.implicit_at(implicit_roll)
+
+
+func implicit() -> StatMod:
+	return base.implicit(implicit_value())
 
 
 ## **Déduite** du nombre d'affixes : un objet doré sans affixe serait un mensonge.
@@ -119,7 +140,7 @@ func passive_mods() -> Array[StatMod]:
 func mods() -> Array[StatMod]:
 	var all: Array[StatMod] = []
 	var defense_stat := base.defense_stat()
-	var imp := base.implicit()
+	var imp := implicit()
 	if imp != null and defense_stat.is_empty():
 		all.append(imp)
 	for r in explicits:
@@ -140,7 +161,7 @@ func crit_chance() -> float:
 ## L'armure ou l'esquive de la pièce, montée comme la chance critique ; zéro ailleurs.
 func defense() -> float:
 	var stat := base.defense_stat()
-	return 0.0 if stat.is_empty() else roundf(_raised(stat, base.implicit_value))
+	return 0.0 if stat.is_empty() else roundf(_raised(stat, implicit_value()))
 
 
 func _raised(stat: String, start: float) -> float:
@@ -156,11 +177,10 @@ func _raised(stat: String, start: float) -> float:
 	return maxf(flat * (1.0 + increased * 0.01), 0.0)
 
 
-## L'implicite, à part et en premier : ce que la base garantit. Vide pour une
-## défense, que l'infobulle donne en propriété, montée.
+## L'implicite, à part et en premier : ce que la base garantit, avant tout affixe.
 func implicit_line() -> String:
-	var imp := base.implicit()
-	return "" if imp == null or not base.defense_stat().is_empty() else imp.label()
+	var imp := implicit()
+	return "" if imp == null else imp.label()
 
 
 ## Une ligne tirée telle que l'infobulle l'écrit.

@@ -105,7 +105,8 @@ func test_a_more_line_stays_more() -> void:
 
 
 ## L'implicite n'est **pas** sauvegardé : il appartient à la base et se
-## reconstruit. Le sauvegarder figerait les valeurs d'équilibrage du jour.
+## reconstruit, seule sa position dans la plage part au fichier. Le sauvegarder
+## figerait les valeurs d'équilibrage du jour.
 func test_the_implicit_comes_from_the_base_not_the_file() -> void:
 	var dict := _played_character().to_dict()
 	var text_value := JSON.stringify(dict)
@@ -280,6 +281,20 @@ func test_the_item_level_survives_the_round_trip() -> void:
 	assert_not_null(reread)
 	assert_eq(reread.bag.placed[0].data.item_level, 42, "l'épée garde son niveau")
 	assert_eq(reread.equipment["chest"].item_level, 28, "le plastron aussi")
+
+
+## La position de l'implicite traverse le disque ; une sauvegarde d'avant les plages
+## relit le bas, qui était la valeur fixe.
+func test_the_implicit_roll_survives_the_round_trip() -> void:
+	var p := Character.create_new("Implicits", 0)
+	var plate := Item.new(ItemCatalog.by_id("breastplate"))
+	plate.implicit_roll = 1.0
+	p.equipment["chest"] = plate
+	var data := p.to_dict()
+	assert_eq(Character.from_dict(data).equipment["chest"].implicit_value(), 26.0, "le haut de la plage")
+
+	data["equipment"]["chest"].erase("base_roll")
+	assert_eq(Character.from_dict(data).equipment["chest"].implicit_value(), 20.0, "le bas de la plage")
 
 
 ## Le format qu'on écrit aujourd'hui, figé dans le dépôt à côté de celui d'hier.
