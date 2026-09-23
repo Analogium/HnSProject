@@ -54,7 +54,7 @@ func test_the_list_shows_the_characters_on_disk() -> void:
 func test_create_writes_and_selects_it() -> void:
 	_screen._open_creation()
 	_screen.name_field.text = "Neuve"
-	_screen._silhouette = 3
+	_screen._look = 3
 	_screen._create()
 
 	assert_eq(_screen._state, CharacterSelect.State.LIST, "la fenêtre s'est refermée")
@@ -63,7 +63,26 @@ func test_create_writes_and_selects_it() -> void:
 	_created.append(selected.id)
 	assert_eq(selected.name, "Neuve", "on est placé sur celui qu'on vient de créer")
 	assert_eq(selected.silhouette, 3, "avec la silhouette choisie")
+	assert_eq(selected.character_class, Character.WARRIOR)
 	assert_true(SaveStore.exists(selected.id), "et il est déjà sur le disque")
+
+
+func test_the_last_look_creates_a_witch_wand_in_hand() -> void:
+	_screen._open_creation()
+	_screen.name_field.text = "Morgane"
+	_screen._look = CharacterSelect.LOOKS.size() - 1
+	_screen._create()
+
+	var selected := _screen.selection()
+	assert_not_null(selected)
+	_created.append(selected.id)
+	assert_eq(selected.character_class, Character.WITCH)
+	var held: Item = selected.equipment[EquipmentSlots.WEAPON]
+	assert_eq(held.base.id, ItemCatalog.ID_STARTING_WAND, "la baguette en main")
+	assert_true(
+		selected.bag.placed.any(func(p: Inventory.Placed) -> bool: return p.data.base.id == ItemCatalog.ID_STARTING_WEAPON),
+		"l'épée au sac"
+	)
 
 
 func test_an_empty_name_is_refused_without_writing() -> void:

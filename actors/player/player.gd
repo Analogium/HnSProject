@@ -254,6 +254,10 @@ func cast_slot(index: int) -> bool:
 
 	_set_mana(mana - cast.mana_cost)
 	_start_recharge(index, cast.interval)
+	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
+	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
+	if skill.shape != Skill.Shape.DASH:
+		sprite.attack()
 	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
 	match skill.shape:
 		Skill.Shape.BOLT:
@@ -369,7 +373,7 @@ func burn(part_per_second: float, distribution: Array[float], delta: float) -> v
 	var loss := taken_value * states.damage_taken_factor * delta
 	_set_health(health - loss)
 	var digit := _burn_to_show.add_to(loss, delta)
-	HitFeedback.damage_without_hit(hurtbox.global_position, digit, true)
+	HitFeedback.damage_without_hit(hurtbox.overhead(), digit, true)
 	if health <= 0.0:
 		_die()
 
@@ -401,7 +405,7 @@ func _suffer_states(delta: float) -> void:
 		return
 	_set_health(health - loss)
 	var digit := states.digit()
-	HitFeedback.damage_without_hit(hurtbox.global_position, digit, true)
+	HitFeedback.damage_without_hit(hurtbox.overhead(), digit, true)
 	if health <= 0.0:
 		_die()
 
@@ -428,7 +432,7 @@ func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
 ## Un état neuf s'annonce : la pastille seule ne dirait pas pourquoi on ralentit.
 func _announce_state(kind: int) -> void:
 	if HitFeedback.current != null:
-		HitFeedback.current.state(hurtbox.global_position, kind)
+		HitFeedback.current.state(hurtbox.overhead(), kind)
 
 
 func _show_states() -> void:
@@ -585,7 +589,6 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 	_is_swinging = true
 	_hit_shake = shake_amount * (STRIKE_SHAKE if style == SwingArc.Style.STRIKE else 1.0)
 	swing_arc.play(swing_duration * float(cast.hits), style)
-	sprite.attack()
 
 	for hit in cast.hits:
 		if hit > 0:
@@ -775,6 +778,10 @@ func load_character(character: Character) -> void:
 		bar.put(i, character.bar.id_of(i))
 	manual_given = character.manual_given
 
+	sprite.set_archetype(character.archetype())
+	var lift := SpriteForge.head_room(character.archetype())
+	health_bar.lift = lift
+	hurtbox.feedback_lift = lift
 	sprite.set_variant(character.silhouette)
 	# Recalcul, plafonds et arme visible : trois choses qu'on oublierait à la main.
 	_after_equipment_change()
@@ -993,7 +1000,7 @@ func pick_up(item: Item) -> bool:
 		manual_given = true
 	if HitFeedback.current != null:
 		HitFeedback.current.loot_gain(
-			global_position, item.display_name() if taken else Texts.t("sac plein")
+			hurtbox.overhead(), item.display_name() if taken else Texts.t("sac plein")
 		)
 	return taken
 

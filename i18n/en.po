@@ -1262,6 +1262,12 @@ msgstr "their name"
 msgid "sa silhouette"
 msgstr "their look"
 
+msgid "Guerrier"
+msgstr "Warrior"
+
+msgid "Sorcière"
+msgstr "Witch"
+
 msgid "Créer"
 msgstr "Create"
 

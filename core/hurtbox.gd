@@ -21,6 +21,15 @@ var stats: CharacterStats
 var states: StatusEffects
 
 
+## Monte les nombres d'un corps plus haut que le guerrier (`SpriteForge.head_room()`).
+var feedback_lift := 0.0
+
+
+## D'où partent les nombres et les noms d'état de ce corps.
+func overhead() -> Vector2:
+	return global_position - Vector2(0.0, feedback_lift)
+
+
 func take_damage(info: DamageInfo) -> void:
 	if invulnerable:
 		return
@@ -41,12 +50,12 @@ func take_damage(info: DamageInfo) -> void:
 		var evade := stats.evade_chance()
 		if evade > 0.0 and Game.rng.randf() < evade:
 			if HitFeedback.current != null:
-				HitFeedback.current.miss(global_position, on_player)
+				HitFeedback.current.miss(overhead(), on_player)
 			return
 		mitigate_part(info)
 
 	if HitFeedback.current != null:
-		HitFeedback.current.hit(global_position, info, on_player)
+		HitFeedback.current.hit(overhead(), info, on_player)
 	damaged.emit(info)
 	# Un auteur, sur autre chose que le joueur : c'est le joueur qui frappe.
 	var source := info.cast.skill_id if info.cast != null else ""

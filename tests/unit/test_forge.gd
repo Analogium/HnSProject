@@ -65,3 +65,64 @@ func test_a_sprite_carries_its_ground_shadow_in_its_alpha() -> void:
 	# assets se comptent sur la **planche** entière, pas sur une image.
 	assert_gt(half_transparent, 8, "l'ombre au sol a disparu du canal alpha")
 	assert_gt(solid, half_transparent, "le corps doit rester majoritaire sur son ombre")
+
+
+# --------------------------------------------------------------------------
+# Les archétypes en planche (jalon 25) : trois poses de `tools/character_forge.py`.
+# --------------------------------------------------------------------------
+
+func _witch(dir: String, anim: String, index: int, weapon := "") -> Image:
+	var cfg := SpriteForge.config("witch", 0)
+	if not weapon.is_empty():
+		cfg["weapon"] = weapon
+	return SpriteForge.frame_image(cfg, dir, anim, index)
+
+
+## Pieds sur ceux des grilles : collision, ombre et barre de vie y sont calées.
+func test_a_sheet_puts_its_feet_where_the_grids_have_theirs() -> void:
+	var img := _witch("down", "idle", 0)
+	assert_eq(img.get_size(), Vector2i(48, 48), "la case de la planche, pas celle des grilles")
+	assert_eq(SpriteForge.offset_of("witch"), Vector2(0, -10))
+	assert_eq(SpriteForge.offset_of("player"), Vector2.ZERO)
+
+
+## Si deux images d'une animation sont identiques, rien ne bouge à l'écran.
+func test_every_animation_of_a_sheet_moves() -> void:
+	var sheet := SpriteForge.sheet_of("witch")
+	for dir in SpriteForge.DIRS:
+		assert_ne(_witch(dir, "idle", 0).get_data(), _witch(dir, "idle", 2).get_data(), "souffle %s" % dir)
+		for anim in ["walk", "attack"]:
+			var seen := {}
+			for i in sheet.count(anim):
+				var pixels := _witch(dir, anim, i).get_data()
+				assert_false(seen.has(pixels), "deux images identiques (%s %s, %d)" % [anim, dir, i])
+				seen[pixels] = true
+
+
+## La marche et l'attaque de la sorcière sont des cycles générés : le jeu doit en
+## jouer toutes les images, et chaque image doit avoir sa main armée.
+func test_a_sheet_plays_its_generated_cycles() -> void:
+	var sheet := SpriteForge.sheet_of("witch")
+	var frames := SpriteForge.frames("witch", 0)
+	for anim in ["walk", "attack"]:
+		assert_gt(sheet.count(anim), 1, "le geste %s est généré" % anim)
+		assert_eq(frames.get_frame_count(anim + "_down"), sheet.count(anim))
+		for dir in SpriteForge.DIRS:
+			assert_eq((sheet.meta["anims"][anim]["hands"][dir] as Array).size(), sheet.count(anim),
+				"une main par image (%s %s)" % [anim, dir])
+
+
+## L'arme suit l'équipement : elle est posée par la forge, pas peinte dans la planche.
+func test_a_sheet_holds_the_equipped_weapon() -> void:
+	assert_ne(_witch("down", "idle", 0, "wand").get_data(), _witch("down", "idle", 0, "sword").get_data())
+
+
+func test_a_sheet_carries_its_ground_shadow_in_its_alpha() -> void:
+	var img := _witch("down", "idle", 0)
+	var half_transparent := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			var a := img.get_pixel(x, y).a
+			if a > 0.0 and a < 0.5:
+				half_transparent += 1
+	assert_gt(half_transparent, 8, "l'ombre au sol a disparu du canal alpha")

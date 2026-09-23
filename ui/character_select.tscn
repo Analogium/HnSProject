@@ -101,24 +101,24 @@ horizontal_alignment = 1
 
 [node name="Error" type="Label" parent="Creation"]
 anchor_right = 1.0
-offset_top = 126.0
-offset_bottom = 140.0
+offset_top = 136.0
+offset_bottom = 150.0
 theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 
 [node name="Create" type="Button" parent="Creation"]
 offset_left = 60.0
-offset_top = 150.0
+offset_top = 158.0
 offset_right = 145.0
-offset_bottom = 172.0
+offset_bottom = 180.0
 theme_override_font_sizes/font_size = 10
 text = "Créer"
 
 [node name="Cancel" type="Button" parent="Creation"]
 offset_left = 155.0
-offset_top = 150.0
+offset_top = 158.0
 offset_right = 240.0
-offset_bottom = 172.0
+offset_bottom = 180.0
 theme_override_font_sizes/font_size = 10
 text = "Annuler"
 
@@ -158,17 +158,17 @@ horizontal_alignment = 1
 
 [node name="Confirm" type="Button" parent="Deletion"]
 offset_left = 60.0
-offset_top = 150.0
+offset_top = 158.0
 offset_right = 145.0
-offset_bottom = 172.0
+offset_bottom = 180.0
 theme_override_font_sizes/font_size = 10
 text = "Supprimer"
 
 [node name="Cancel" type="Button" parent="Deletion"]
 offset_left = 155.0
-offset_top = 150.0
+offset_top = 158.0
 offset_right = 240.0
-offset_bottom = 172.0
+offset_bottom = 180.0
 theme_override_font_sizes/font_size = 10
 text = "Annuler"
 

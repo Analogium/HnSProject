@@ -1,0 +1,21 @@
+{
+	"version": 8,
+	"id": "p_reference_v8",
+	"name": "Morgane",
+	"class": "witch",
+	"silhouette": 0,
+	"created_on": "2026-09-22",
+	"played_on": "2026-09-22",
+	"level": 3,
+	"experience": 40,
+	"passives": ["int_1"],
+	"bag": [
+		{ "base": "sword", "level": 1, "affixes": [], "cell": [0, 0] }
+	],
+	"equipment": {
+		"weapon": { "base": "wand", "level": 1, "affixes": [] }
+	},
+	"rack": [null, null, null],
+	"bar": ["attack", "bolt", null, null, null],
+	"manual_given": false
+}

@@ -58,6 +58,14 @@ func current_variant() -> int:
 	return _variant
 
 
+## Change de corps : la classe d'un personnage chargé après le _ready du sprite.
+func set_archetype(name_value: String) -> void:
+	if name_value == archetype:
+		return
+	archetype = name_value
+	_rebuild()
+
+
 ## Change l'arme tenue, vide pour revenir à celle de l'archétype.
 ##
 ## Les planches sont refaites, pas retouchées : une arme fait partie du dessin de
@@ -154,6 +162,7 @@ func show_states(states: StatusEffects) -> void:
 ## cours reprend à zéro : sprite_frames est remplacé.
 func _rebuild() -> void:
 	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
+	offset = SpriteForge.offset_of(archetype)
 	_apply()
 
 

@@ -48,8 +48,8 @@ dossier. Vérifier le `sed` avant de lancer.
 ## Valider
 
 ```bash
-tests/run.sh              # tout : ~45 s, dont 33 s de tests
-tests/run.sh unit         # ~15 s, dont 3 s de tests
+tests/run.sh              # tout : ~2 min, dont 108 s de tests (mesuré le 22/09/2026)
+tests/run.sh unit         # ~20 s, dont 8 s de tests
 ```
 
 **Rien ne s'annonce sans que la suite soit passée.** Du code qui compile n'est
@@ -134,4 +134,5 @@ ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 - `/dessiner-un-effet` — **pour tout visuel** d'effet, de compétence ou
   d'icône : planche de variantes choisie par l'utilisateur, dessin pixel par
   pixel dans `EffectForge`, captures réelles sur le Bureau. Ses lanceurs sont
-  `tools/planche.sh` et `tools/capture.sh`.
+  `tools/planche.sh` et `tools/capture.sh`. Un **personnage joueur** passe par
+  `tools/character_forge.py` (recette : `tools/characters/LISEZMOI.md`).

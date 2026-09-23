@@ -55,6 +55,12 @@ avait été jugé immobile, alors qu'en mouvement il sortait comme un tube.
   `tools/skill_icons.json` et lancer `apply --only <id>`. ComfyUI tourne sur
   l'hôte Windows (`ip route`) : le lancer avec le bac à sable désactivé.
 
+- **Un personnage joueur** ne se dessine pas en grilles texte : trop de détails
+  à placer à l'aveugle. Il passe par `tools/character_forge.py` — concept, puis
+  face / profil / dos par IPAdapter et OpenPose, puis réduction et retouches à la
+  main (le visage). Même principe de planche à chaque étape. Recette et pièges :
+  `tools/characters/LISEZMOI.md`.
+
 ## 3. Dessiner dans la langue du décor
 
 Les règles qui ne se discutent plus :

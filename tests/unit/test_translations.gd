@@ -256,6 +256,8 @@ func _expected() -> Dictionary:
 	for name in StatusEffects.NAMES:
 		out[name] = "nom d'un état"
 	out[DpsMeter.OTHER] = "ligne du compteur de DPS"
+	for id in Character.CLASSES:
+		out[Character.CLASSES[id]["name"]] = "classe « %s »" % id
 	for burn in StatusEffects.BURN_NAMES.values():
 		out[burn] = "ce qui brûle, au compteur de DPS"
 	for label_of in StatusEffects.AGAINST:

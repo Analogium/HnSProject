@@ -7,9 +7,12 @@ extends Control
 
 enum State { LIST, CREATION, DELETION }
 
-const LINE := 34.0
-## Cinq lignes, puis la liste défile (hauteur du cadrage).
-const VISIBLE_ROWS := 5
+## Assez haute pour la case de 48 de la sorcière, pieds en bas de ligne.
+const LINE := 50.0
+## Quatre lignes, puis la liste défile : cinq passeraient sous les boutons.
+const VISIBLE_ROWS := 4
+## Les pieds d'un personnage, au-dessus du bas de sa ligne.
+const LINE_FEET := 4.0
 const LIST_W := 340.0
 const LIST_Y := 56.0
 
@@ -25,10 +28,21 @@ const DAMAGED := Color(0.72, 0.42, 0.42)
 const FONT_SIZE := 8
 const NAME_SIZE := 10
 
-## Les vignettes de création : taille, écart, hauteur de leur centre.
-const THUMBNAIL := Vector2(34.0, 36.0)
-const THUMBNAIL_STEP := 56.0
-const THUMBNAIL_Y := 104.0
+## Les vignettes de création : taille, écart, hauteur de leur centre. Assez hautes
+## pour la case de 48 de la sorcière.
+const THUMBNAIL := Vector2(40.0, 52.0)
+const THUMBNAIL_STEP := 50.0
+const THUMBNAIL_Y := 106.0
+## Les pieds sous le centre de la vignette : une sorcière posée sur les pieds des
+## guerriers y dépasse de 10 px par le haut, son chapeau sort du cadre.
+const THUMBNAIL_FEET := 9.0
+
+## Ce qu'on choisit à la création : une classe et sa tenue. Les quatre tenues du
+## guerrier, puis la sorcière, qui n'en a qu'une.
+const LOOKS := [
+	[Character.WARRIOR, 0], [Character.WARRIOR, 1], [Character.WARRIOR, 2], [Character.WARRIOR, 3],
+	[Character.WITCH, 0],
+]
 
 ## Le mot à retaper pour un personnage sans nom lisible. **Traduit**, et lu des deux
 ## côtés par `_word_to_type()`.
@@ -61,7 +75,7 @@ var _index := 0
 ## Premier personnage affiché : la liste défile quand la sélection sort du cadre.
 var _first := 0
 var _state := State.LIST
-var _silhouette := 0
+var _look := 0
 var _font: Font
 
 
@@ -200,7 +214,7 @@ func _play() -> void:
 
 func _open_creation() -> void:
 	_state = State.CREATION
-	_silhouette = 0
+	_look = 0
 	name_field.text = ""
 	creation_error.text = ""
 	_say("")
@@ -214,7 +228,7 @@ func _create() -> void:
 		creation_error.text = Texts.t("Nom vide ou trop long (%d au plus).") % Character.NAME_MAX
 		return
 
-	var p := SaveStore.create(name, _silhouette)
+	var p := SaveStore.create(name, LOOKS[_look][1], LOOKS[_look][0])
 	if p == null:
 		creation_error.text = Texts.t("Écriture impossible sur le disque.")
 		return
@@ -319,8 +333,13 @@ func _place_silhouettes() -> void:
 		child.queue_free()
 
 	if _state == State.CREATION:
-		for v in SpriteForge.VARIANTS:
-			_add_silhouette(_thumbnail_rect(v).get_center(), v)
+		for i in LOOKS.size():
+			var look: Array = LOOKS[i]
+			var at := _thumbnail_rect(i).get_center() + Vector2(0.0, THUMBNAIL_FEET)
+			_add_silhouette(at, Character.CLASSES[look[0]]["archetype"], look[1])
+		($Creation/Silhouette as Label).text = "%s — %s" % [
+			Texts.t("sa silhouette"), Texts.t(Character.CLASSES[LOOKS[_look][0]]["name"])
+		]
 		return
 
 	if _state != State.LIST:
@@ -331,15 +350,19 @@ func _place_silhouettes() -> void:
 		var p := _characters[i]
 		if p.unreadable:
 			continue
+		# Le centre de l'image est à `FEET - FRAME / 2` au-dessus des pieds, pour
+		# toutes les classes : `offset_of()` les y ramène.
+		var feet := frame.position.y + LINE * float(i - _first + 1) - LINE_FEET
 		_add_silhouette(
-			Vector2(frame.position.x + 24.0, frame.position.y + LINE * float(i - _first) + LINE * 0.5),
-			p.silhouette
+			Vector2(frame.position.x + 24.0, feet - (SpriteForge.FEET - SpriteForge.FRAME * 0.5)),
+			p.archetype(), p.silhouette
 		)
 
 
-func _add_silhouette(center: Vector2, variant_index: int) -> void:
+func _add_silhouette(center: Vector2, archetype: String, variant_index: int) -> void:
 	var s := AnimatedSprite2D.new()
-	s.sprite_frames = SpriteForge.frames("player", posmod(variant_index, SpriteForge.VARIANTS))
+	s.sprite_frames = SpriteForge.frames(archetype, posmod(variant_index, SpriteForge.VARIANTS))
+	s.offset = SpriteForge.offset_of(archetype)
 	s.position = center
 	s.play("idle_down")
 	silhouettes.add_child(s)
@@ -393,34 +416,34 @@ func _paint_line(p: Character, frame: Rect2, i: int) -> void:
 	var x := frame.position.x + 46.0
 	if p.unreadable:
 		draw_string(
-			_font, Vector2(x, y + 16.0), Texts.t("sauvegarde illisible"),
+			_font, Vector2(x, y + LINE * 0.5 - 1.0), Texts.t("sauvegarde illisible"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, NAME_SIZE, DAMAGED
 		)
 		draw_string(
-			_font, Vector2(x, y + 27.0), p.id,
+			_font, Vector2(x, y + LINE * 0.5 + 10.0), p.id,
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT
 		)
 		return
 
 	draw_string(
-		_font, Vector2(x, y + 16.0), p.name,
+		_font, Vector2(x, y + LINE * 0.5 - 1.0), p.name,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, NAME_SIZE, UiPalette.TEXT
 	)
 	draw_string(
-		_font, Vector2(x, y + 27.0), Texts.t("niveau %d") % p.level,
+		_font, Vector2(x, y + LINE * 0.5 + 10.0), Texts.t("niveau %d") % p.level,
 		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT
 	)
 	draw_string(
-		_font, Vector2(frame.position.x, y + 27.0), Texts.t("joué le %s") % p.played_on,
+		_font, Vector2(frame.position.x, y + LINE * 0.5 + 10.0), Texts.t("joué le %s") % p.played_on,
 		HORIZONTAL_ALIGNMENT_RIGHT, frame.size.x - 10.0, FONT_SIZE, UiPalette.LABEL
 	)
 
 
 ## **Le seul endroit** qui sait où est une vignette : sprite, cadre et clic le lisent.
-func _thumbnail_rect(variant_index: int) -> Rect2:
-	var x0 := MODAL.position.x + MODAL.size.x * 0.5 - THUMBNAIL_STEP * 1.5
+func _thumbnail_rect(look: int) -> Rect2:
+	var x0 := MODAL.position.x + MODAL.size.x * 0.5 - THUMBNAIL_STEP * float(LOOKS.size() - 1) * 0.5
 	return Rect2(
-		x0 + THUMBNAIL_STEP * float(variant_index) - THUMBNAIL.x * 0.5,
+		x0 + THUMBNAIL_STEP * float(look) - THUMBNAIL.x * 0.5,
 		MODAL.position.y + THUMBNAIL_Y - THUMBNAIL.y * 0.5,
 		THUMBNAIL.x, THUMBNAIL.y
 	)
@@ -428,16 +451,16 @@ func _thumbnail_rect(variant_index: int) -> Rect2:
 
 ## Le cadre de la silhouette choisie ; les sprites sont posés ailleurs.
 func _paint_silhouette_choice() -> void:
-	for v in SpriteForge.VARIANTS:
-		var box := _thumbnail_rect(v)
-		draw_rect(box, SELECTED if v == _silhouette else UiPalette.BACK_FULL)
-		draw_rect(box, ACCENT if v == _silhouette else UiPalette.BORDER, false, 1.0)
+	for i in LOOKS.size():
+		var box := _thumbnail_rect(i)
+		draw_rect(box, SELECTED if i == _look else UiPalette.BACK_FULL)
+		draw_rect(box, ACCENT if i == _look else UiPalette.BORDER, false, 1.0)
 
 
 ## À la souris sur les vignettes : un bouton dessinerait son cadre sur le sprite.
 func _silhouette_click(position_locale: Vector2) -> void:
-	for v in SpriteForge.VARIANTS:
-		if _thumbnail_rect(v).has_point(position_locale):
-			_silhouette = v
+	for i in LOOKS.size():
+		if _thumbnail_rect(i).has_point(position_locale):
+			_look = i
 			_refresh()
 			return

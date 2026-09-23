@@ -179,6 +179,20 @@ func test_an_unknown_version_is_refused() -> void:
 	assert_null(Character.from_dict(dict), "ni un fichier sans version")
 
 
+## Jalon 25 : la classe voyage, un fichier d'avant elle est un guerrier, et une
+## classe inconnue se refuse comme une version inconnue.
+func test_the_class_survives_and_defaults_to_warrior() -> void:
+	var witch := Character.create_new("Morgane", 0, Character.WITCH)
+	assert_eq(Character.from_dict(witch.to_dict()).character_class, Character.WITCH)
+	var old := witch.to_dict()
+	old.erase("class")
+	old["version"] = 7
+	assert_eq(Character.from_dict(old).character_class, Character.WARRIOR, "une sauvegarde v7 est un guerrier")
+	var odd := witch.to_dict()
+	odd["class"] = "necromancer"
+	assert_null(Character.from_dict(odd), "on ne devine pas une classe")
+
+
 func test_absurd_content_is_refused_without_crashing() -> void:
 	assert_null(Character.from_dict({}))
 	assert_null(Character.from_dict({"version": 1}), "sans identifiant, on ne sait pas quoi écraser")
@@ -700,6 +714,15 @@ func test_the_v7_reference_file_rereads() -> void:
 	# relecture avec ce qui le suit, et leurs points reviennent (jalon 17, §6).
 	assert_eq(p.passives, PackedStringArray(["int_1", "int_2"]))
 	assert_eq(p.rack.at(0).manual.points["swift_bolt"], 4)
+
+
+func test_the_v8_reference_file_rereads() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v8.json"))
+	var p := Character.from_dict(content)
+	assert_not_null(p, "une sauvegarde de version 8 se lit")
+	assert_eq(p.character_class, Character.WITCH)
+	assert_eq(p.archetype(), "witch")
+	assert_eq(p.equipment["weapon"].base.id, ItemCatalog.ID_STARTING_WAND)
 
 
 ## La v5 et la v6 disent la même chose, l'une aux noms français, l'autre aux noms

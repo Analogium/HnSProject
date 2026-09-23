@@ -30,7 +30,12 @@ const R_METAL := 3
 const R_LEATHER := 4
 
 const DIRS := ["down", "side", "up"]
-const ARCHETYPES := ["player", "grunt", "caster", "dummy"]
+const ARCHETYPES := ["player", "witch", "grunt", "caster", "dummy"]
+
+## Les archétypes dessinés hors du jeu (`tools/character_forge.py`) : trois poses
+## fixes et les gestes générés dans `<archétype>.png`, leurs repères dans
+## `<archétype>.json`. La forge y pose l'ombre et l'arme.
+const SHEET_DIR := "res://art/characters/"
 
 ## Nombre de silhouettes différentes par archétype. Chaque ennemi en tire une au
 ## hasard : c'est ce qui empêche un paquet de sept grunts de ressembler à sept
@@ -63,7 +68,78 @@ const IDLE_BOB := [0.0, -1.0]
 ## de la même constante.
 const ATTACK_FRAMES := 2
 
+## Le souffle du repos d'une planche. Sa marche et son attaque, elles, sont des
+## images générées (`tools/character_forge.py`), jouées telles quelles : un pas
+## fait de décalages restait raide et tremblait (jalon 25, §4).
+const SHEET_BREATH := [0, 0, -1, -1]
+
 static var _cache: Dictionary = {}
+static var _sheets: Dictionary = {}
+
+
+## Une planche et ses repères : taille de case, ligne des pieds, par vue la main
+## armée et le haut des pieds, et par geste généré ses rangées et ses mains.
+class Sheet:
+	var image: Image
+	var meta: Dictionary
+
+	## Les images d'un geste généré ; une seule, la pose, s'il ne l'est pas.
+	func count(anim: String) -> int:
+		var anims: Dictionary = meta.get("anims", {})
+		return int(anims[anim]["count"]) if anims.has(anim) else 1
+
+
+## Null pour un archétype en grilles ou en capsules.
+static func sheet_of(archetype: String) -> Sheet:
+	if not _sheets.has(archetype):
+		var path := SHEET_DIR + archetype + ".png"
+		var sheet: Sheet = null
+		if ResourceLoader.exists(path):
+			sheet = Sheet.new()
+			sheet.image = (load(path) as Texture2D).get_image()
+			sheet.image.convert(Image.FORMAT_RGBA8)
+			sheet.meta = (load(SHEET_DIR + archetype + ".json") as JSON).data
+		_sheets[archetype] = sheet
+	return _sheets[archetype]
+
+
+## Ce qu'un corps dépasse le guerrier par le haut, en pixels : barre de vie et
+## textes du joueur, calés sur la tête du guerrier, montent d'autant. Lu sur l'image
+## de repos elle-même, pour suivre un chapeau qu'aucun repère ne décrit.
+static func head_room(archetype: String) -> float:
+	return maxf(_top("player") - _top(archetype), 0.0)
+
+
+static var _tops: Dictionary = {}
+
+
+## La première rangée opaque de l'image de repos, repère du nœud (offset compris).
+static func _top(archetype: String) -> float:
+	if not _tops.has(archetype):
+		var img := frame_image(config(archetype, 0), "down", "idle", 0)
+		var row := 0
+		while row < img.get_height() and not _row_is_opaque(img, row):
+			row += 1
+		_tops[archetype] = row - img.get_height() * 0.5 + offset_of(archetype).y
+	return _tops[archetype]
+
+
+static func _row_is_opaque(img: Image, row: int) -> bool:
+	for x in img.get_width():
+		# Au-dessus de l'ombre au sol, à 30 % d'opacité.
+		if img.get_pixel(x, row).a > 0.5:
+			return true
+	return false
+
+
+## Pose les pieds d'une case plus grande sur ceux des grilles : collision, barre de
+## vie et ombre des acteurs sont calées sur `FEET` dans une case de `FRAME`.
+static func offset_of(archetype: String) -> Vector2:
+	var sheet := sheet_of(archetype)
+	if sheet == null:
+		return Vector2.ZERO
+	var f: float = sheet.meta["frame"]
+	return Vector2(0.0, (FEET - FRAME * 0.5) - (float(sheet.meta["feet"]) - f * 0.5))
 
 
 ## Le point d'entrée du jeu. Les SpriteFrames sont partagées entre toutes les
@@ -84,7 +160,13 @@ static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrame
 	var sf := SpriteFrames.new()
 	sf.remove_animation("default")
 
+	var sheet := sheet_of(archetype)
 	for dir in DIRS:
+		if sheet != null:
+			_add_anim(sf, cfg, "idle_" + dir, dir, "idle", SHEET_BREATH.size(), 4.0, true)
+			_add_anim(sf, cfg, "walk_" + dir, dir, "walk", sheet.count("walk"), 8.0, true)
+			_add_anim(sf, cfg, "attack_" + dir, dir, "attack", sheet.count("attack"), 11.0, false)
+			continue
 		_add_anim(sf, cfg, "idle_" + dir, dir, "idle", IDLE_BOB.size(), 3.0, true)
 		_add_anim(sf, cfg, "walk_" + dir, dir, "walk", WALK_SWING.size(), 10.0, true)
 		_add_anim(sf, cfg, "attack_" + dir, dir, "attack", ATTACK_FRAMES, 11.0, false)
@@ -107,8 +189,12 @@ static func _add_anim(
 ## Une image isolée. Publique parce que la galerie s'en sert pour composer ses
 ## planches d'export sans repasser par des textures.
 static func frame_image(cfg: Dictionary, dir: String, anim: String, index: int) -> Image:
-	var canvas := PixelCanvas.new(FRAME, FRAME)
 	var placed := _pose(cfg, dir, anim, index)
+	var sheet := sheet_of(cfg["archetype"])
+	if sheet != null:
+		return _draw_sheet(sheet, cfg, dir, placed, anim, index)
+
+	var canvas := PixelCanvas.new(FRAME, FRAME)
 
 	if cfg["archetype"] == "dummy":
 		_draw_dummy(canvas, cfg, placed)
@@ -481,6 +567,9 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 	}
 
 	var base := {}
+	# Le joueur est exclu de la variation : sa tenue est choisie à la création, et
+	# un tirage par-dessus ce choix ferait deux personnages du même numéro.
+	var amount := 1.0
 	match archetype:
 		"player":
 			base = {
@@ -491,6 +580,16 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 			}
 			cfg["weapon"] = "sword"
 			cfg["pauldrons"] = true
+			amount = 0.0
+
+		"witch":
+			var palette: Dictionary = sheet_of(archetype).meta["palette"]
+			for role in palette:
+				base[role] = Color(palette[role])
+			cfg["weapon"] = "wand"
+			# L'ombre au sol se règle sur le buste : celui d'une case de 48.
+			cfg["torso_r"] = 6.8
+			amount = 0.0
 
 		"grunt":
 			base = {
@@ -536,10 +635,7 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 				"leather": Color(0.40, 0.28, 0.18),
 			}
 
-	# Variation par instance : nuance des étoffes et de la peau, corpulence. Le
-	# joueur en est exclu — sa tenue est choisie à la création, et un tirage
-	# par-dessus ce choix ferait deux personnages du même numéro de silhouette.
-	var amount := 0.0 if archetype == "player" else 1.0
+	# Variation par instance : nuance des étoffes et de la peau, corpulence.
 	cfg["palettes"] = [
 		ArtPalette.ramp(ArtPalette.jitter(base["cloth"], rng, amount)),
 		ArtPalette.ramp(ArtPalette.jitter(base["skin"], rng, amount * 0.7)),
@@ -1086,6 +1182,50 @@ static func _draw_authored(
 		c.disc(hand, 1.7, R_SKIN)
 
 	_weapon(c, cfg, hand, Vector2(placed["weapon_dir"]) * Vector2(s, 1.0), 0.0)
+
+
+## Un archétype en planche (`tools/character_forge.py`) : la marche et l'attaque
+## sont des images générées, posées telles quelles, chacune avec sa main armée ; le
+## repos est la pose validée, qui respire. Ombre dessous, arme dessus, chacune sur
+## son canevas — `to_image()` pose l'ombre sous tout ce qu'il a peint.
+static func _draw_sheet(
+	sheet: Sheet, cfg: Dictionary, dir: String, placed: Dictionary, anim: String, index: int
+) -> Image:
+	var f: int = sheet.meta["frame"]
+	var view: Dictionary = sheet.meta["views"][dir]
+	var anims: Dictionary = sheet.meta.get("anims", {})
+
+	var under := PixelCanvas.new(f, f)
+	under.ground_shadow(f * 0.5 - 0.5, float(sheet.meta["feet"]) + 1.5, float(cfg["torso_r"]) + 1.2, 2.2)
+	var out := under.to_image(cfg["palettes"])
+
+	var hand := Vector2(view["hand"][0], view["hand"][1])
+	if anims.has(anim):
+		var cycle: Dictionary = anims[anim]
+		var i := index % int(cycle["count"])
+		var cell := Rect2i(i * f, int(cycle["rows"][dir]) * f, f, f)
+		out.blend_rect(sheet.image, cell, Vector2i.ZERO)
+		var at: Array = cycle["hands"][dir][i]
+		hand = Vector2(at[0], at[1])
+	else:
+		# Le repos : la pose validée, qui respire au-dessus des pieds. Le jour laissé
+		# sous le buste monté est bouché par sa dernière rangée.
+		var legs: int = view["legs"]
+		var bob: int = SHEET_BREATH[index % SHEET_BREATH.size()]
+		var pose := Rect2i(DIRS.find(dir) * f, 0, f, f)
+		out.blend_rect(sheet.image, Rect2i(pose.position.x, legs, f, f - legs), Vector2i(0, legs))
+		out.blend_rect(sheet.image, Rect2i(pose.position.x, 0, f, legs), Vector2i(0, bob))
+		if bob < 0:
+			out.blend_rect(sheet.image, Rect2i(pose.position.x, legs - 1, f, 1), Vector2i(0, legs - 1 + bob + 1))
+		hand.y += bob
+
+	# La main de chaque image générée est celle de son squelette : l'arme la suit sans
+	# qu'on dessine une main par-dessus.
+	var top := PixelCanvas.new(f, f)
+	var s := -1.0 if dir == "up" else 1.0
+	_weapon(top, cfg, hand, Vector2(placed["weapon_dir"]) * Vector2(s, 1.0), 0.0)
+	out.blend_rect(top.to_image(cfg["palettes"]), Rect2i(0, 0, f, f), Vector2i.ZERO)
+	return out
 
 
 ## Vue de face ou de dos. `faces_camera` ne change que trois choses : le côté du

@@ -1,6 +1,6 @@
 # Fichiers de référence
 
-`character_v1.json` à `character_v7.json` sont des sauvegardes **écrites à la
+`character_v1.json` à `character_v8.json` sont des sauvegardes **écrites à la
 main**, versionnées avec le projet, et relues à chaque campagne par
 `tests/unit/test_save.gd`.
 
@@ -11,10 +11,11 @@ aujourd'hui, elle arrive avec un râtelier vide et la barre de départ. La v3 es
 celui du jalon 6, avec les manuels, le râtelier et la barre. La v4 est celui du
 jalon 7 : une ligne d'affixe peut y porter une `portee`, le mot-clé qu'elle vise.
 La v5 est celui du jalon 8 : une ligne de dégâts ajoutés y porte sa
-`valeur_max`. La v6 est le même, aux noms anglais — clés et identifiants. La v7 est le format qu'on
-écrit, celui du jalon 16 : `attributes` et `unspent_points` y deviennent `passives`,
+`valeur_max`. La v6 est le même, aux noms anglais — clés et identifiants. La v7 est
+celui du jalon 16 : `attributes` et `unspent_points` y deviennent `passives`,
 la liste des nœuds pris de l'arbre. Relues aujourd'hui, les v1 à v6 arrivent avec un
-arbre vide : leurs attributs placés sont abandonnés.
+arbre vide : leurs attributs placés sont abandonnés. La v8 est le format qu'on
+écrit, celui du jalon 25 : la `class` du personnage. Les v1 à v7 sont des guerriers.
 
 Les v1 à v5 **gardent leurs noms français** (`nom`, `epee`, `degats_feu`…) : c'est
 ce qui est sur les disques. `LegacyFrench` les traduit à la lecture, et ces fichiers

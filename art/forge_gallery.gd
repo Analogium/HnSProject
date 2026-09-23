@@ -717,7 +717,8 @@ func _compose(rows: Array[Array]) -> Image:
 	for row in rows:
 		widest = maxi(widest, row.size())
 
-	var f := SpriteForge.FRAME
+	# La case des images elles-mêmes : un archétype en planche n'a pas celle des grilles.
+	var f := (rows[0][0] as Image).get_width()
 	var sheet := Image.create_empty(widest * f, rows.size() * f, false, Image.FORMAT_RGBA8)
 	var region := Rect2i(0, 0, f, f)
 

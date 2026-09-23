@@ -9,6 +9,12 @@ const HEIGHT := 3.0
 ## Au-dessus de la bande où montent les nombres de dégâts (−13 à −26).
 const OFFSET_Y := -28.0
 
+## Ce que le corps dépasse le guerrier par le haut (`SpriteForge.head_room()`).
+var lift := 0.0:
+	set(value):
+		lift = value
+		queue_redraw()
+
 const BACK := Color(0.05, 0.04, 0.07, 0.85)
 const EDGE := Color(0.02, 0.02, 0.03, 0.95)
 const FULL := Color(0.42, 0.78, 0.32)
@@ -57,7 +63,7 @@ func _refresh() -> void:
 func _draw() -> void:
 	# Coordonnées entières : pas de bavure.
 	var x := roundf(-WIDTH * 0.5)
-	var y := roundf(OFFSET_Y)
+	var y := roundf(OFFSET_Y - lift)
 
 	if _ratio < 1.0:
 		draw_rect(Rect2(x - 1.0, y - 1.0, WIDTH + 2.0, HEIGHT + 2.0), EDGE)

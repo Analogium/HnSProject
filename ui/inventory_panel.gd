@@ -17,15 +17,18 @@ const FOOTER := 22.0
 ## famille prendrait dans le sac. Trois colonnes, les bagues dans les gouttières.
 const DOLL := {
 	"helmet": Rect2i(4, 0, 3, 2), "amulet": Rect2i(8, 0, 3, 2),
-	"weapon": Rect2i(0, 2, 3, 3), "chest": Rect2i(4, 2, 3, 3), "offhand": Rect2i(8, 2, 3, 3),
-	"gloves": Rect2i(0, 5, 3, 2), "belt": Rect2i(4, 5, 3, 2), "boots": Rect2i(8, 5, 3, 2),
-	"ring_left": Rect2i(3, 5, 1, 2), "ring_right": Rect2i(7, 5, 1, 2),
+	"weapon": Rect2i(0, 3, 3, 3), "chest": Rect2i(4, 3, 3, 3), "offhand": Rect2i(8, 3, 3, 3),
+	"gloves": Rect2i(0, 6, 3, 2), "belt": Rect2i(4, 6, 3, 2), "boots": Rect2i(8, 6, 3, 2),
+	"ring_left": Rect2i(3, 6, 1, 2), "ring_right": Rect2i(7, 6, 1, 2),
 }
 const DOLL_COLS := 11
-const DOLL_ROWS := 7
+const DOLL_ROWS := 8
 
-const DOLL_AREA := Rect2i(0, 0, 2, 2)
+## Trois cases de haut : les 47 pixels de la sorcière n'entraient pas dans deux.
+const DOLL_AREA := Rect2i(0, 0, 3, 3)
 const DOLL_ANIM := "idle_down"
+## Les pieds sous le centre de la zone : la sorcière y gagne la place de son chapeau.
+const DOLL_FEET := 9.0
 
 ## Un emplacement vide montre l'objet qu'il attend, très sombre : lisible sans texte.
 const GHOST := Color(1.0, 1.0, 1.0, 0.13)
@@ -453,11 +456,12 @@ func _refresh_doll() -> void:
 		return
 	var variant_index := _player.sprite.current_variant()
 	var weapon := _player.weapon_kind()
-	var key := "%d:%s" % [variant_index, weapon]
+	var body := _player.sprite.archetype
+	var key := "%s:%d:%s" % [body, variant_index, weapon]
 	if key == _doll_key:
 		return
 	_doll_key = key
-	_doll_frames = SpriteForge.frames("player", variant_index, weapon)
+	_doll_frames = SpriteForge.frames(body, variant_index, weapon)
 
 
 func _on_changed() -> void:
@@ -621,8 +625,10 @@ func _draw_doll() -> void:
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
 	if tex == null:
 		return
-	# Taille native : agrandi, le sprite déborderait.
-	_draw_centered(tex, zone)
+	# Taille native, pieds calés comme en jeu : sans `offset_of()`, la sorcière,
+	# plus haute, serait posée plus bas que le guerrier.
+	var at := (zone.get_center() - tex.get_size() * 0.5 + SpriteForge.offset_of(_player.sprite.archetype)).round()
+	draw_texture(tex, at + Vector2(0.0, DOLL_FEET))
 
 
 ## Dans le même panneau que le sac : équiper est un geste entre les deux.

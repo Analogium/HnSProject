@@ -128,6 +128,14 @@ func test_loading_equips_and_changes_the_silhouette() -> void:
 	assert_eq(_p.sprite.current_variant(), 2, "la silhouette choisie à la création")
 
 
+func test_loading_a_witch_changes_the_body() -> void:
+	var p := _played_character()
+	p.character_class = Character.WITCH
+	_p.load_character(p)
+	assert_eq(_p.sprite.archetype, "witch")
+	assert_eq(_p.sprite.offset, SpriteForge.offset_of("witch"), "les pieds restent sur la collision")
+
+
 ## Un emplacement que le joueur ne sait pas porter est écarté au lieu d'entrer
 ## dans l'équipement, où il fausserait le calcul sans jamais s'afficher.
 func test_an_unknown_slot_is_not_worn() -> void:
@@ -170,6 +178,8 @@ func test_fill_writes_no_stat() -> void:
 	var expected_all := [
 		"version", "id", "name", "silhouette", "created_on", "played_on",
 		"level", "experience",
+		# Jalon 25 : la classe.
+		"class",
 		"bag", "equipment",
 		# Jalon 6 : ce qu'on étudie, ce qu'on a sous les doigts, et si le livre de
 		# départ a déjà été donné.

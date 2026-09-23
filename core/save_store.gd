@@ -99,13 +99,16 @@ static func write(character: Character) -> bool:
 
 ## Identifiant retiré jusqu'à en trouver un libre : une collision écraserait un
 ## personnage.
-static func create(name: String, silhouette: int) -> Character:
-	var character := Character.create_new(name, silhouette)
+static func create(name: String, silhouette: int, character_class := Character.WARRIOR) -> Character:
+	var character := Character.create_new(name, silhouette, character_class)
 	# Ici et non dans `create_new()`, qui fait aussi les personnages des tests et du banc.
 	# Une compétence ne part qu'avec son arme : l'épée pour l'attaque de départ, la
-	# baguette dans le sac pour le tir.
-	character.equipment[EquipmentSlots.WEAPON] = Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WEAPON))
-	character.bag.add(Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WAND)))
+	# baguette pour le tir. La sorcière tient la baguette, l'épée va au sac.
+	var sword := Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WEAPON))
+	var wand := Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WAND))
+	var witch := character_class == Character.WITCH
+	character.equipment[EquipmentSlots.WEAPON] = wand if witch else sword
+	character.bag.add(sword if witch else wand)
 	var attempts := 0
 	while exists(character.id) and attempts < 100:
 		character.id = Character.new_id()

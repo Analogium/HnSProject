@@ -7,18 +7,27 @@ extends RefCounted
 ## sauvegarde peut venir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
-const VERSION := 7
+const VERSION := 8
 
 ## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
 ## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
-## arbre de passifs vide.
-const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7]
+## arbre de passifs vide ; v1 à v7 → guerrier.
+const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const LEGACY_ATTACK_DAMAGE := "attack_damage"
 const LEGACY_SPELL_DAMAGE := "spell_damage"
+
+## Les classes jouables : l'archétype de la forge qui les dessine, et leur nom
+## affiché (clé de traduction). Le gameplay est encore le même pour toutes.
+const WARRIOR := "warrior"
+const WITCH := "witch"
+const CLASSES := {
+	WARRIOR: {"archetype": "player", "name": "Guerrier"},
+	WITCH: {"archetype": "witch", "name": "Sorcière"},
+}
 
 ## Borné pour tenir sur une ligne de la sélection. Vingt et non seize : « Jean-Luc
 ## de l'Est » doit passer.
@@ -26,6 +35,8 @@ const NAME_MAX := 20
 
 var id := ""
 var name := ""
+## Une clé de `CLASSES`.
+var character_class := WARRIOR
 ## L'index de variante de la forge, pas un chemin de sprite.
 var silhouette := 0
 var created_on := ""
@@ -55,10 +66,11 @@ var manual_given := false
 var unreadable := false
 
 
-static func create_new(p_name: String, p_silhouette: int) -> Character:
+static func create_new(p_name: String, p_silhouette: int, p_class := WARRIOR) -> Character:
 	var p := Character.new()
 	p.id = new_id()
 	p.name = p_name.strip_edges()
+	p.character_class = p_class
 	p.silhouette = p_silhouette
 	p.created_on = Time.get_date_string_from_system()
 	p.played_on = p.created_on
@@ -74,6 +86,11 @@ static func unreadable_with(p_id: String) -> Character:
 
 ## Généré, jamais dérivé du nom (homonymes, caractères interdits). Tiré sur le
 ## générateur global et non sur Game.rng (invariant 3).
+## Le corps que la forge dessine pour cette classe.
+func archetype() -> String:
+	return CLASSES[character_class]["archetype"]
+
+
 static func new_id() -> String:
 	return "p_%d_%04d" % [int(Time.get_unix_time_from_system()), randi() % 10000]
 
@@ -119,6 +136,7 @@ func to_dict() -> Dictionary:
 		"version": VERSION,
 		"id": id,
 		"name": name,
+		"class": character_class,
 		"silhouette": silhouette,
 		"created_on": created_on,
 		"played_on": played_on,
@@ -151,6 +169,10 @@ static func from_dict(source: Dictionary) -> Character:
 		return null
 
 	p.name = String(source.get("name", ""))
+	p.character_class = String(source.get("class", WARRIOR))
+	if not CLASSES.has(p.character_class):
+		push_warning("Classe « %s » inconnue : refusée." % p.character_class)
+		return null
 	p.silhouette = _int(source, "silhouette", 0)
 	p.created_on = String(source.get("created_on", ""))
 	p.played_on = String(source.get("played_on", ""))
