@@ -99,16 +99,13 @@ func nature() -> DamageType.Kind:
 func _draw() -> void:
 	var color := tint()
 	# **La foudre ne se dessine pas comme une bille.** Un éclair court et fourché,
-	# couché sur la trajectoire — le nœud est déjà tourné dessus. C'est le seul
-	# écart par nature du projectile, et il est là parce que la foudre est la
-	# seule matière du jeu qui ait une *forme* propre : les autres sont des
-	# boules qui brillent.
+	# couché sur la trajectoire au cap le plus proche. C'est le seul écart par
+	# nature de ce nœud : la foudre a une *forme* propre, les autres natures sont
+	# des boules qui brillent.
 	if nature() == DamageType.Kind.LIGHTNING:
-		var head := Vector2(SIZE * 0.55, 0.0)
-		Lightning.draw_bolt(
-			self, Vector2(-SIZE * 1.1, 0.0), head, _flicker, color, 1.0, 0.55, 1
-		)
-		Lightning.draw_strike(self, head, color, 1.0, 4.5)
+		Lightning.put(self, Lightning.dart(
+			color, Slash.turn_of(_dir.angle()), Lightning.hold(_life) + int(get_instance_id())
+		))
 		return
 	for a: Array in AUREOLES:
 		var halo := color
@@ -170,6 +167,11 @@ func setup(
 	if nature >= 0:
 		_nature = nature
 	rotation = _dir.angle()
+	# Dessinée, la foudre ne tourne pas et n'est pas additive : une planche pivotée se
+	# rééchantillonne, et son contour sombre n'ajoute rien en lumière ajoutée.
+	if self.nature() == DamageType.Kind.LIGHTNING:
+		rotation = 0.0
+		material = null
 
 
 func _physics_process(delta: float) -> void:

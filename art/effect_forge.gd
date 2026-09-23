@@ -702,6 +702,20 @@ const SPECK := [
 
 const SPECK_SIZE := 3
 
+## L'éclat d'un éclair à l'impact. Il est estampé **dans** la silhouette de l'éclair
+## (`Lightning.chain`), pas posé par-dessus : l'éclair et ses éclats n'ont qu'un
+## contour. Ses diagonales sont pointillées, sinon il couvre l'ennemi frappé.
+const STRIKE := [
+	"3..4..3",
+	".3.4.3.",
+	"..4w4..",
+	"44www44",
+	"..4w4..",
+	".3.4.3.",
+	"3..4..3",
+]
+const STRIKE_SIZE := 7
+
 ## La tranche de colonne du Pilier sacré, dix-sept pixels sur douze, **qui se
 ## carrelle**. Sa grille est pleine bord à bord, donc `PixelCanvas` ne lui pose
 ## aucun contour — deux tranches posées l'une sur l'autre montreraient sinon une
@@ -746,6 +760,7 @@ const SHAFT_HEIGHT := 12
 const SHAFT_TIP_HEIGHT := 8
 
 static var _specks := {}
+static var _lightning_specks := {}
 static var _shafts := {}
 static var _tips := {}
 
@@ -753,6 +768,14 @@ static var _tips := {}
 ## Le grain de lumière de cette teinte.
 static func spark(tint: Color) -> Texture2D:
 	return _sheet(_specks, [SPECK], SPECK_SIZE, SPECK_SIZE, tint, Holy.halo(tint))[0]
+
+
+## Le même grain en foudre : son cœur est le filament de l'éclair, pas le blanc
+## chaud du sacré.
+static func lightning_speck(tint: Color) -> Texture2D:
+	return _sheet(
+		_lightning_specks, [SPECK], SPECK_SIZE, SPECK_SIZE, tint, tint.lerp(Color.WHITE, Lightning.CORE)
+	)[0]
 
 
 ## La tranche de colonne de cette teinte.

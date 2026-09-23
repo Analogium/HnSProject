@@ -217,6 +217,31 @@ func _touch(x: int, y: int) -> void:
 	_y1 = maxi(_y1, y)
 
 
+## Un trait d'un pixel, sans trou : une capsule de rayon 0,5 saute des pixels dès
+## qu'elle passe en biais, et le filament d'un éclair se cassait en pointillés.
+func line(a: Vector2, b: Vector2, ramp: int, level: float) -> void:
+	var x := roundi(a.x)
+	var y := roundi(a.y)
+	var to_x := roundi(b.x)
+	var to_y := roundi(b.y)
+	var dx := absi(to_x - x)
+	var dy := -absi(to_y - y)
+	var sx := 1 if x < to_x else -1
+	var sy := 1 if y < to_y else -1
+	var err := dx + dy
+	while true:
+		dot_px(x, y, ramp, level)
+		if x == to_x and y == to_y:
+			return
+		var e2 := 2 * err
+		if e2 >= dy:
+			err += dy
+			x += sx
+		if e2 <= dx:
+			err += dx
+			y += sy
+
+
 func is_empty() -> bool:
 	return _x1 < _x0
 

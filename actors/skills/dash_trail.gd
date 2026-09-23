@@ -39,7 +39,6 @@ var _tint := Color.WHITE
 var _toward := Vector2.ZERO
 var _age := 0.0
 var _strikes := 0
-var _flicker := RandomNumberGenerator.new()
 ## La coupe d'une ruée physique, fabriquée à la naissance à l'angle exact.
 var _cut: EffectForge.Piece
 
@@ -60,12 +59,11 @@ static func leave(
 func _ready() -> void:
 	z_index = 2
 	# Le feu et la lame sont dessinés, et une planche cernée ne peut pas être
-	# additive. La foudre et le reste restent en lumière ajoutée.
+	# additive. Le reste reste en lumière ajoutée.
 	if not _is_painted():
 		material = ArtPalette.ADDITIVE
 	if _cast.dominant_nature() == DamageType.Kind.PHYSICAL:
 		_cut = Slash.cleave(_tint, _toward, _cast.radius * CUT_WIDTH)
-	_flicker.seed = int(get_instance_id())
 
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
@@ -118,21 +116,17 @@ func _draw() -> void:
 		Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
 
 	# **Le couloir luit pour tout le monde ; sa matière est par nature.** Le feu
-	# lèche, la foudre grésille, le reste ne fait que luire : une ruée de glace
+	# lèche, la lame tranche, le reste ne fait que luire : une ruée de glace
 	# n'avait aucune raison de laisser des flammes. Aucun de ces dessins ne frappe
 	# — la morsure, c'est le couloir.
 	match _cast.dominant_nature():
-		DamageType.Kind.LIGHTNING:
-			# Refait deux fois par dixième de seconde : c'est le grésillement.
-			_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
-			Lightning.draw_bolt(self, Vector2.ZERO, last, _flicker, _tint, 0.85 * fade, 0.7, 2)
 		DamageType.Kind.FIRE:
 			_burnt_path(last, fade)
 		DamageType.Kind.PHYSICAL:
 			_slashed_path(last)
 		_:
-			# Les natures sans matière propre n'ont que ce trait : le feu et la foudre
-			# s'en passent, il leur barrait leurs propres flammes d'une ligne droite.
+			# Les natures sans matière propre n'ont que ce trait : le feu s'en passe,
+			# il lui barrait ses propres flammes d'une ligne droite.
 			draw_line(Vector2.ZERO, last, Color(_tint, 0.30 * fade), 2.0)
 
 

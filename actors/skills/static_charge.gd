@@ -24,12 +24,6 @@ const CHECK := 0.1
 ## chacune sondant son entourage. La plus vieille cède sa place.
 const MAX_LIVE := 24
 
-## Les branches de l'étincelle. Elles vont jusqu'au rayon qui frappe : le dessin dit où
-## elle mord, sinon on marche dedans sans l'avoir vue.
-const ARMS := 6
-## Ce qui bat, en tours par seconde : une étincelle figée se confond avec le sol.
-const PULSE := 6.0
-
 ## Toutes celles qui vivent, dans l'ordre de naissance.
 static var _live: Array[StaticCharge] = []
 
@@ -38,7 +32,6 @@ var _author: StatusEffects
 var _toward := Vector2.ZERO
 var _age := 0.0
 var _next := CHECK
-var _flicker := RandomNumberGenerator.new()
 ## Qui elle a déjà mordu. Sa période est sa vie entière : une cible plantée dessus ne
 ## la paie pas vingt fois.
 var _bitten := Targets.Contacts.new(LIFE)
@@ -69,8 +62,6 @@ static func put(
 
 func _ready() -> void:
 	z_index = 3
-	material = ArtPalette.ADDITIVE
-	_flicker.seed = int(get_instance_id())
 
 
 func _exit_tree() -> void:
@@ -96,27 +87,11 @@ func _physics_process(delta: float) -> void:
 		Targets.strike(target, _parts, global_position, _author, null)
 
 
-## En violet sur un sol sombre, une étincelle de deux pixels ne se voit pas. Elle porte
-## donc un halo à son rayon — ce qu'elle mord —, un cœur presque blanc et des branches
-## qui vont jusqu'au bord, toutes battant sur la même horloge.
+## L'étoile brisée, choisie sur planche : ses bras tournent et grésillent, décalés
+## d'une charge à l'autre pour que deux voisines ne battent pas à l'unisson. Elle se
+## défait sur son dernier tiers : disparaître d'un coup se lit comme un bug.
 func _draw() -> void:
-	var tint: Color = DamageType.COLORS[DamageType.Kind.LIGHTNING]
-	# Blanchie mais pas blanche : en mélange additif, un cœur blanc pur ressort comme un
-	# éclat physique, et l'étincelle perd la couleur de sa nature.
-	var light_color := tint.lerp(Color.WHITE, 0.55)
-	# Elle s'éteint sur le dernier tiers : disparaître d'un coup se lit comme un bug.
-	var fade := clampf((LIFE - _age) / (LIFE * 0.33), 0.0, 1.0)
-	var beat := 0.75 + 0.25 * sin(_age * PULSE)
-
-	draw_circle(Vector2.ZERO, RADIUS, Color(tint, 0.16 * fade * beat))
-	Glow.draw_ring(self, Vector2.ZERO, RADIUS, Color(tint, 0.46 * fade))
-	_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
-	for i in ARMS:
-		var angle := TAU * float(i) / float(ARMS) + _age * 2.0
-		var span := RADIUS * (0.75 + _flicker.randf_range(0.0, 0.35))
-		# Sans fourche : les bras sont déjà nombreux, et chacun doit rester lisible
-		# jusqu'au bord du cercle qu'il annonce.
-		Lightning.draw_bolt(
-			self, Vector2.ZERO, Vector2.from_angle(angle) * span, _flicker, tint, fade, 0.6, 0
-		)
-	Glow.draw_blob(self, Vector2.ZERO, 3.0 * beat, Color(light_color, fade))
+	Lightning.charge(
+		DamageType.COLORS[DamageType.Kind.LIGHTNING], RADIUS,
+		Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, LIFE)
+	).put(self, Vector2.ZERO)

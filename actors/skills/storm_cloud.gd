@@ -13,20 +13,19 @@ const DISSIPATION := 0.3
 const BOLT_LIFETIME := 0.14
 ## Le nuage s'éclaire de la couleur de la foudre juste après avoir frappé.
 const FLASH_COLOR := 0.12
-const BODY := Color(0.20, 0.19, 0.27)
-const ABOVE := Color(0.38, 0.36, 0.48)
-
-
-class Puff:
-	var center: Vector2
-	var radius: float
-	var phase: float
+const FLASH_MIX := 0.35
+const CLOUD := Color(0.30, 0.28, 0.40)
 
 
 class Bolt:
 	var of: Vector2
 	var toward: Vector2
 	var age := 0.0
+	var shown := -1
+	var pieces: Array[EffectForge.Piece]
+
+
+static var _bodies := {}
 
 
 var _cast: SkillStats
@@ -34,7 +33,6 @@ var _author: StatusEffects
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
-var _puffs: Array[Puff] = []
 var _bolts: Array[Bolt] = []
 var _flicker := RandomNumberGenerator.new()
 
@@ -52,19 +50,35 @@ static func put(parent: Node, point: Vector2, cast: SkillStats, author: StatusEf
 func _ready() -> void:
 	z_index = 4
 	_flicker.seed = int(get_instance_id())
-	var extent := _cast.radius * 0.7
+
+
+## Le corps du nuage, rastérisé d'un coup — sept bosses, une silhouette, un
+## contour — et gardé : un rayon ne change qu'avec un point de talent. Choisi sur
+## planche : le nuage **bombé**, éclairé d'en haut à gauche comme le reste du jeu.
+static func body(radius: float, tint: Color, flash: bool, gone: float) -> EffectForge.Piece:
+	var key := "%s|%d|%d|%d" % [tint.to_html(false), int(radius), int(flash), int(round(gone * 16.0))]
+	if _bodies.has(key):
+		return _bodies[key]
+	# Graine fixe : le même nuage à chaque lancer, ses quatre états compris.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = PUFFS
+	var extent := radius * 0.7
+	var margin := 16.0
+	var canvas := PixelCanvas.new(int(ceil((extent + margin) * 2.0)), int(margin * 2.0))
+	var middle := Vector2(canvas.width, canvas.height) * 0.5
 	for i in PUFFS:
-		var b := Puff.new()
 		var u := float(i) / float(PUFFS - 1)
-		b.center = Vector2(
-			lerpf(-extent, extent, u) + _flicker.randf_range(-2.0, 2.0),
-			-HEIGHT + _flicker.randf_range(-4.0, 3.0)
-		)
 		# Plus gros au milieu : un nuage est bombé, une rangée de disques égaux se lit
 		# comme une chenille.
-		b.radius = lerpf(5.5, 9.5, 1.0 - absf(u - 0.5) * 2.0)
-		b.phase = _flicker.randf_range(0.0, TAU)
-		_puffs.append(b)
+		canvas.disc(
+			middle + Vector2(lerpf(-extent, extent, u) + rng.randf_range(-2.0, 2.0), rng.randf_range(-4.0, 3.0)),
+			lerpf(5.5, 9.5, 1.0 - absf(u - 0.5) * 2.0), 0
+		)
+	var img := canvas.to_image([ArtPalette.ramp(CLOUD.lerp(tint, FLASH_MIX) if flash else CLOUD)])
+	EffectForge.dissolve(img, gone)
+	var piece := EffectForge.Piece.new(ImageTexture.create_from_image(img), -middle)
+	_bodies[key] = piece
+	return piece
 
 
 ## Les frappes se comptent par `strikes_over_duration()`, la fonction même de
@@ -108,22 +122,26 @@ func _bolt_to(point: Vector2) -> void:
 
 func _draw() -> void:
 	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / DISSIPATION, 0.0, 1.0)
-	draw_circle(Vector2.ZERO, _cast.radius, Color(_tint, 0.07 * fade))
-	Glow.draw_ring(self, Vector2.ZERO, _cast.radius, Color(_tint, 0.36 * fade))
+	# Le halo au sol dit la zone : tramé, il a le droit de s'effacer. Le nuage, lui,
+	# se défait en naissant et en se dissipant.
+	var zone := EffectForge.scorch(_tint, int(round(_cast.radius)))
+	var zone_size := Vector2(zone.get_width(), zone.get_height())
+	draw_texture(zone, EffectForge.snap(self, -zone_size * 0.5), Color(1.0, 1.0, 1.0, fade))
 
-	var from_value := _age - float(maxi(_strikes - 1, 0)) * _cast.period
-	var flash := clampf(1.0 - from_value / FLASH_COLOR, 0.0, 1.0)
-	var dark := Color(BODY.lerp(_tint, 0.25 * flash), 0.9 * fade)
-	var light_color := Color(ABOVE.lerp(_tint, 0.45 * flash), 0.9 * fade)
-	for b in _puffs:
-		draw_circle(b.center + Vector2(0.0, sin(_age * 1.8 + b.phase)), b.radius, dark)
-	# Le dessus plus clair, décalé vers la lumière du jeu — en haut à gauche.
-	for b in _puffs:
-		draw_circle(b.center + Vector2(-1.0, sin(_age * 1.8 + b.phase) - 2.0), b.radius * 0.6, light_color)
+	var since := _age - float(maxi(_strikes - 1, 0)) * _cast.period
+	var bob := Vector2(0.0, roundf(sin(_age * 1.8)))
+	body(
+		_cast.radius, _tint, since < FLASH_COLOR, 0.0 if fade >= 1.0 else Lightning.GONE
+	).put(self, Vector2(0.0, -HEIGHT) + bob)
 
 	for e in _bolts:
-		var k := 1.0 - e.age / BOLT_LIFETIME
-		_flicker.seed = int(get_instance_id()) ^ Lightning.hold(e.age) ^ int(e.toward.x)
-		# Une seule fourche : l'éclair du nuage est court, deux le brouilleraient.
-		Lightning.draw_bolt(self, e.of, e.toward, _flicker, _tint, k, 0.75, 1)
-		Lightning.draw_strike(self, e.toward, _tint, k, 6.0)
+		var beat := Lightning.hold(e.age)
+		if beat != e.shown:
+			e.shown = beat
+			_flicker.seed = int(get_instance_id()) ^ beat ^ int(e.toward.x)
+			# Une seule fourche : l'éclair du nuage est court, deux le brouilleraient.
+			e.pieces = Lightning.chain(
+				PackedVector2Array([e.of, e.toward]), _flicker, _tint, 1, true,
+				Lightning.gone(e.age, BOLT_LIFETIME)
+			)
+		Lightning.put(self, e.pieces)

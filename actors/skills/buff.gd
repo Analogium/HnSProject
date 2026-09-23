@@ -38,11 +38,10 @@ static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
 
 
 func _ready() -> void:
-	# Le tombeau et la clarté sacrée sont **dessinés**, et une planche cernée ne peut
-	# pas être additive : son contour sombre n'y ajoute rien. Les deux autres — les
-	# braises d'Ignition, les grains de l'électricité — sont encore tracés et gardent
-	# la lumière ajoutée.
-	if _skill.nature != DamageType.Kind.COLD and _skill.nature != DamageType.Kind.HOLY:
+	# Le tombeau, la clarté sacrée et l'électricité sont **dessinés**, et une planche
+	# cernée ne peut pas être additive : son contour sombre n'y ajoute rien. Les
+	# braises d'Ignition sont encore tracées et gardent la lumière ajoutée.
+	if not _skill.nature in [DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING]:
 		material = ArtPalette.ADDITIVE
 
 
@@ -87,8 +86,8 @@ func _draw() -> void:
 		_tomb(tint)
 		return
 	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
-	if _skill.nature == DamageType.Kind.HOLY:
-		# Tramé plutôt que tracé : la clarté sacrée est dessinée de bout en bout.
+	if _skill.nature in [DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING]:
+		# Tramé plutôt que tracé : ces deux buffs sont dessinés de bout en bout.
 		var span := int(HALO)
 		draw_texture_rect(
 			EffectForge.scorch(tint, span),
@@ -104,8 +103,8 @@ func _draw() -> void:
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
 		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
 		# Ce qui monte a la matière du geste : des braises pour une combustion, des
-		# flocons pour un froid, des grains pour une clarté. Et rien d'autre — ce geste
-		# dure des minutes, et ce qui clignote fort finit par fatiguer.
+		# flocons pour un froid, des grains pour une clarté ou une charge. Et rien
+		# d'autre — ce geste dure des minutes, et ce qui clignote fort finit par fatiguer.
 		#
 		# Les grains **dessinés** montent à pleine opacité et s'éteignent d'un coup en
 		# haut de leur course : trois pixels qui s'effacent s'éteignent en gris bien
@@ -117,6 +116,9 @@ func _draw() -> void:
 				Frost.drift(self, p, tint, 1.0)
 			DamageType.Kind.HOLY:
 				Holy.spark(self, p, tint, 1.0)
+			DamageType.Kind.LIGHTNING:
+				var grain := EffectForge.lightning_speck(tint)
+				draw_texture(grain, EffectForge.snap(self, p - Vector2(grain.get_size()) * 0.5))
 			_:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 

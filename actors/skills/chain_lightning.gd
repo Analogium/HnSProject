@@ -13,8 +13,6 @@ const JUMP := 90.0
 ## comme une touche morte.
 const INTO_THE_VOID := 100.0
 const LIFETIME := 0.22
-const JITTER := 4.0
-const STEP := 9.0
 
 var _points := PackedVector2Array()
 var _tint := Color.WHITE
@@ -22,6 +20,9 @@ var _age := 0.0
 ## Tirage local et jamais `Game.rng` : un grésillement qui y puiserait décalerait
 ## tous les tirages de la partie (invariant 3).
 var _flicker := RandomNumberGenerator.new()
+## La forme montrée et le battement qui l'a fabriquée : une par battement, pas par image.
+var _shown := -1
+var _pieces: Array[EffectForge.Piece]
 
 
 ## Choisit les cibles, les frappe et laisse le trait. Rend le nombre d'ennemis
@@ -80,9 +81,7 @@ static func _nearest_one(
 
 
 func _ready() -> void:
-	_flicker.seed = int(get_instance_id())
 	z_index = 5
-	material = ArtPalette.ADDITIVE
 
 
 func _process(delta: float) -> void:
@@ -92,16 +91,15 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-## La décharge ne s'éteint pas, elle **bat** : la forme tient une quinzième de
-## seconde puis saute, et l'opacité descend par paliers. Un fondu continu sur un
-## quart de seconde donne une corde qui s'efface, pas un éclair.
+## La décharge ne s'éteint pas, elle **bat** : la forme tient une dix-huitième de
+## seconde puis saute, et se défait sur son dernier tiers.
 func _draw() -> void:
-	_flicker.seed = int(get_instance_id()) ^ Lightning.hold(_age)
-	var linear := clampf(1.0 - _age / LIFETIME, 0.0, 1.0)
-	var fade := ceilf(linear * 4.0) / 4.0
-	for i in _points.size() - 1:
-		Lightning.draw_bolt(
-			self, to_local(_points[i]), to_local(_points[i + 1]), _flicker, _tint, fade
-		)
-	for i in range(1, _points.size()):
-		Lightning.draw_strike(self, to_local(_points[i]), _tint, fade)
+	var beat := Lightning.hold(_age)
+	if beat != _shown:
+		_shown = beat
+		_flicker.seed = int(get_instance_id()) ^ beat
+		var local := PackedVector2Array()
+		for p in _points:
+			local.append(to_local(p))
+		_pieces = Lightning.chain(local, _flicker, _tint, 2, true, Lightning.gone(_age, LIFETIME))
+	Lightning.put(self, _pieces)

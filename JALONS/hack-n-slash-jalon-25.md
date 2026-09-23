@@ -160,3 +160,78 @@ La collision ne change pas : le gameplay des classes est encore le même.
 - **Le guerrier par l'outil**, pour qu'il ne jure pas à côté d'elle. Ses quatre
   tenues deviendront des recolorations de sa planche.
 - Le gameplay des classes.
+
+## 7. Le manuel de la foudre, dessiné — 23 septembre 2026
+
+Le dernier manuel encore tracé : polylignes en trois passes, `Glow` et lumière
+ajoutée. Même méthode que le jalon 24 (skill `/dessiner-un-effet`), cinq gestes :
+**Trait** et **Éclair vif** (le projectile), **Chaîne d'éclairs**, **Nuage d'orage**,
+**Électricité statique** et **Ruée d'orage**.
+
+### Ce qui s'est choisi sur planche
+
+Trois planches, sur le Bureau dans `hns-captures-foudre` :
+
+- `30` — six éclairs, chacun **en chaîne sur trois grunts**, sur trois temps. Retenu :
+  le **fil cerné** — corps de trois pixels, filament presque blanc, deux fourches.
+  Écartés : le zigzag franc, l'arborescent, l'effilé, les arcs discontinus, le double
+  brin. Le zigzag sortait d'abord en tuyau coudé ; ses angles ont été resserrés avant
+  de montrer la planche ;
+- `31` — quatre nuages et quatre charges. Retenus : le nuage **bombé** et l'**étoile
+  brisée**. Le quatrième nuage (trois traînées) sortait en bûches, et a été remplacé
+  par un ventre éclairé avant d'être montré ;
+- `33` — quatre buffs. Retenu : **les grains qui montent**, le geste du buff sacré
+  avec un grain de foudre.
+
+### Ce qui se dessine, et comment
+
+| geste | ce qui le dessine |
+|---|---|
+| Chaîne d'éclairs | `Lightning.chain()`, une planche par saut, refaite à chaque battement (18 Hz) |
+| Nuage d'orage | `StormCloud.body()` rastérisé une fois par rayon, halo tramé au sol, éclairs par `chain()` |
+| Trait, Éclair vif | `Lightning.dart()`, trente-deux caps × quatre formes, gardés ; le tir **ne tourne plus** |
+| Électricité statique | `Lightning.charge()`, six formes qui bouclent, gardées ; le buff prend les grains |
+| Ruée d'orage | le buff « Appel du tonnerre », les mêmes grains |
+
+Un éclair part dans n'importe quelle direction et change de forme dix-huit fois par
+seconde : il se rastérise **à l'angle exact**, comme le trait sacré. Tout ce qui s'en
+va se **dissout** sur son dernier tiers (`Lightning.gone`) au lieu de pâlir. Le
+filament passe par `PixelCanvas.line()`, un Bresenham : une capsule de rayon 0,5 se
+casse en pointillés en biais.
+
+**La Ruée d'orage ne laisse pas de traînée.** Elle n'a ni rayon ni période et donne un
+buff ; la branche foudre de `DashTrail` n'était atteinte que par une ruée convertie en
+foudre, et aucun talent ne le fait. Elle est supprimée plutôt que dessinée.
+
+### Ce que ça coûte
+
+Mesuré au banc headless :
+
+| fabrication | coût | combien de fois |
+|---|---|---|
+| chaîne, trois sauts, d'une pièce | 2,2 ms | — |
+| chaîne, trois sauts, une planche par saut | **1,3 ms** | quatre par lancer |
+| chaîne, pire cas (quatre sauts à portée maximale, en diagonale) | 2,1 ms | quatre par lancer |
+| éclair du nuage | 0,19 ms | trois par éclair |
+| projectile, par cap et par forme | 0,12 ms | une fois pour la session |
+| charge, par forme | 0,14 ms | une fois pour la session |
+
+D'une pièce, `to_image()` prenait 1,27 ms sur 2,2 : une chaîne en zigzag couvre chaque
+rangée d'un bout à l'autre, et le balayage borné par rangée traverse alors le vide
+entre les sauts. Découpée, chaque saut a sa propre silhouette ; ils se posent du
+dernier au premier, et l'éclat qui finit un saut cache la jointure avec le suivant.
+La première fabrication d'une chaîne tombe dans le gel d'impact. **Le pire cas reste
+au-dessus du millième de seconde** : ce qui coûte encore, ce sont les capsules
+(0,6 ms), pas le balayage.
+
+### Ce que les captures ont montré
+
+Captures `40` à `51`. Rien n'a demandé de correction de dessin. Deux trous dans la
+frise elle-même :
+
+- la Ruée d'orage n'a rien laissé derrière elle, et c'est ce qui a fait trouver la
+  branche morte de `DashTrail` ;
+- la charge statique ne naît qu'à 5 % par point sur un ennemi engourdi : aucune en
+  dix secondes. Le scénario les pose directement.
+
+**883 tests, 883 passent.**
