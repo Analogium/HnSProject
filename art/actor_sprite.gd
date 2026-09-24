@@ -105,10 +105,14 @@ func set_state(moving: bool, facing: Vector2) -> void:
 
 ## play() direct et non _apply() : un nouveau coup doit repartir de sa première
 ## image même si le précédent jouait encore.
-func attack() -> void:
+##
+## `spell` : un sort joue le lancer, quand le corps en a un — les grilles n'ont que
+## le coup.
+func attack(spell := false) -> void:
 	_attacking = true
 	_anim = "attack"
-	play("attack_%s" % _dir)
+	var cast := "cast_%s" % _dir
+	play(cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir)
 
 
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est l'ActorSprite qui

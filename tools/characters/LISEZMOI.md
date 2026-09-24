@@ -9,7 +9,9 @@ depuis WSL). La sorcière du jalon 25 en est le premier exemple : `witch.json` e
 
 `art/characters/<id>.png` porte en rangée 0 **trois poses fixes** — face, profil
 (tourné vers la droite), dos — dans des cases de `frame` pixels, pieds sur la rangée
-`feet` ; puis une rangée par geste généré et par vue (marche, 4 images ; attaque, 3).
+`feet` ; puis une rangée par geste généré et par vue : marche (4 images), coup d'épée
+(`attack`, 3) et lancer (`cast`, 3). **Les deux attaques pour chaque personnage** :
+l'arme suit l'équipement, et le jeu joue le lancer pour un sort.
 `art/characters/<id>.json` donne les repères de chaque vue et, par geste, la rangée de
 chaque vue et **la main armée de chaque image**. `SpriteForge._draw_sheet()` joue les
 gestes tels quels et fait respirer la pose au repos. L'arme n'est **jamais** dans la
@@ -31,9 +33,10 @@ choix.
    `views.seeds`. IPAdapter tient l'identité du concept, OpenPose impose la vue
    par des squelettes chibi écrits dans l'outil. Le prompt de `views.prompt`
    décrit le personnage **mains vides**. Puis `keep <id> views <graine>`.
-3. **Gestes** — `anim <id>` : la marche et l'attaque, chaque cycle **en une seule
-   image** (des squelettes côte à côte), pour chaque graine de `anim.seeds`, le
-   personnage décrit par `anim.who`. Un GIF par geste et par graine sur le Bureau,
+3. **Gestes** — `anim <id>` (`--only attack cast` pour n'en refaire que certains) :
+   la marche, le coup d'épée et le lancer, chaque cycle **en une seule image** (des
+   squelettes côte à côte), pour chaque graine de `anim.seeds`, le personnage décrit
+   par `anim.who`, mains vides. Un GIF par geste et par graine sur le Bureau,
    les trois vues côte à côte, la main armée marquée d'un point jaune. Puis
    `keep <id> walk all <graine>` (ou une vue : `down`, `side`, `up`).
 4. **Planche** — `build <id>` : détourage, ombre générée retirée, réduction à
@@ -61,6 +64,11 @@ choix.
   (la taille), `legs` (le haut des pieds, sous lequel rien ne respire) et `head` (le
   bas de la tête : c'est sur elle qu'une image générée se recale). Se lisent sur la
   planche agrandie.
+- **`concept_palette`** : ramène les trois vues sur les couleurs du concept. Les vues
+  tirées par IPAdapter prennent une dominante (rouge sur la Vive lame, où peau,
+  écharpe et bottes tombaient dans la même teinte) ; le concept, lui, était juste.
+- **`weapon`** : l'arme dessinée quand aucun équipement n'est donné (vignettes de
+  création, liste des personnages).
 - **`palette`** : les rampes de la forge pour ce qu'elle dessine elle-même — le
   manche de l'arme, la main à l'attaque, qui doit avoir la couleur de la peau.
 

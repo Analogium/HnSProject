@@ -6,8 +6,8 @@ tools/characters/LISEZMOI.md.
     tools/character_forge.py keep <id> concept <graine>  retient un concept
     tools/character_forge.py views <id>                planche face / profil / dos, une ligne par graine
     tools/character_forge.py keep <id> views <graine>    retient les trois vues
-    tools/character_forge.py anim <id>                 marche et attaque générées, un GIF par geste et par graine
-    tools/character_forge.py keep <id> walk <vue> <graine>   retient un cycle (walk, attack ; down, side, up)
+    tools/character_forge.py anim <id> [--only cast]   marche, coup d'épée, lancer ; un GIF par geste et par graine
+    tools/character_forge.py keep <id> walk <vue> <graine>   retient un cycle (walk, attack, cast ; down, side, up, all)
     tools/character_forge.py build <id>                art/characters/<id>.png et .json, plus l'aperçu
 
 Un personnage est décrit par `tools/characters/<id>.json` : prompts, graines,
@@ -286,6 +286,14 @@ def reshape_point(cfg, direction, x, y):
     return x, y + (feet - cut) * (1 - q)
 
 
+def concept_colors(cfg, cid):
+    """Le concept réduit à la taille du jeu : ses couleurs sont justes, là où les vues,
+    tirées par IPAdapter, prennent une dominante (rouge sur la Vive lame)."""
+    a = np.asarray(Image.open(os.path.join(CHARS, cid, "concept.png")).convert("RGB")).astype(np.float32) / 255
+    keep = silhouette(a)
+    return reduce(a, keep, cfg["height"] / (bbox(keep)[3] - bbox(keep)[1]))
+
+
 def static_cells(cfg, cid):
     """Les trois poses validées, une case chacune, pieds sur `feet`, retouches posées."""
     F, feet = cfg["frame"], cfg["feet"]
@@ -296,7 +304,10 @@ def static_cells(cfg, cid):
         # L'échelle se prend avant de tasser le corps, sinon elle le rallongerait.
         scale = cfg["height"] / (bbox(keep)[3] - bbox(keep)[1])
         a, keep, _ = slimmed(cfg, a, keep, d)
-        o = framed(recolored(cfg, reduce(a, keep, scale), d))
+        o = recolored(cfg, reduce(a, keep, scale), d)
+        if cfg.get("concept_palette"):
+            o = palette_lock(o, concept_colors(cfg, cid))
+        o = framed(o)
         cell = np.zeros((F, F, 4), "uint8")
         place(cell, o, F // 2 - o.shape[1] // 2, feet + 2 - o.shape[0])
         for p in cfg.get("patches", {}).get(d, []):
@@ -309,9 +320,11 @@ def static_cells(cfg, cid):
 # --------------------------------------------------------------------------
 # Animations générées : un cycle entier en une seule image
 # --------------------------------------------------------------------------
-ANIMS = {"walk": 4, "attack": 3}
+# L'arme suit l'équipement : chaque personnage a le coup d'épée **et** le lancer.
+ANIMS = {"walk": 4, "attack": 3, "cast": 3}
 STRIP = (1536, 640)
-MOTION = {"walk": "walking, walk cycle", "attack": "casting a spell, attack animation"}
+MOTION = {"walk": "walking, walk cycle", "attack": "slashing attack motion, sword swing",
+          "cast": "casting a spell, attack animation"}
 ANIM_PROMPT = ("pixel art, game sprite sheet, {motion}, {n} frames of the same character in a row, "
                "{view}, {who}, full body, evenly spaced, identical character")
 ANIM_NEG = ("text, watermark, blurry, photo, 3d render, realistic proportions, gradient background, "
@@ -325,9 +338,13 @@ SIDE_STRIDE = [((560, 800), (620, 905), (450, 795), (400, 900)),
                ((530, 770), (500, 850), (500, 800), (490, 910)),
                ((450, 795), (400, 900), (560, 800), (620, 905)),
                ((500, 800), (490, 910), (530, 770), (500, 850))]
-# Coude et poignet armés : armé, lancé, retour. De dos, le miroir de face.
-ATTACK_ARM = {"down": [((640, 450), (610, 380)), ((680, 515), (760, 510)), ((650, 580), (680, 640))],
-              "side": [((470, 450), (440, 380)), ((590, 500), (680, 490)), ((560, 580), (600, 630))]}
+# Coude et poignet armés, en trois temps. De dos, le miroir de face.
+# Le lancer : armé au-dessus de l'épaule, bras tendu, retour.
+CAST_ARM = {"down": [((640, 450), (610, 380)), ((680, 515), (760, 510)), ((650, 580), (680, 640))],
+            "side": [((470, 450), (440, 380)), ((590, 500), (680, 490)), ((560, 580), (600, 630))]}
+# Le coup d'épée : levé haut, abattu en travers du corps, suivi bas.
+SLASH_ARM = {"down": [((650, 430), (640, 330)), ((560, 590), (430, 650)), ((580, 620), (520, 700))],
+             "side": [((460, 440), (430, 350)), ((600, 540), (700, 610)), ((560, 600), (560, 690))]}
 
 
 def anim_pose(kind, direction, k):
@@ -344,7 +361,7 @@ def anim_pose(kind, direction, k):
                 kp[ankle] = (kp[ankle][0], kp[ankle][1] - dy)
             kp[4] = (kp[4][0], kp[4][1] + (-25, 0, 25, 0)[k])
     else:
-        arm = ATTACK_ARM["down" if direction == "up" else direction][k]
+        arm = (SLASH_ARM if kind == "attack" else CAST_ARM)["down" if direction == "up" else direction][k]
         if direction == "up":
             arm = tuple((1024 - x, y) for x, y in arm)
         kp[ARMED[1]], kp[ARMED[2]] = arm
@@ -512,7 +529,7 @@ def cmd_anim(a):
     cfg = load(a.id)
     os.makedirs(RAW, exist_ok=True)
     refs = static_cells(cfg, a.id)
-    for kind in ANIMS:
+    for kind in a.only or ANIMS:
         for seed in cfg["anim"]["seeds"]:
             by_dir, hands = [], []
             for d, ref in zip(DIRS, refs):
@@ -570,7 +587,10 @@ def cmd_build(a):
         hx, hy = reshape_point(cfg, d, *v["hand"])
         views[d] = dict(v, hand=[round(hx, 1), round(hy, 1)],
                         **{r: round(reshape_point(cfg, d, 0, v[r])[1]) for r in ("head", "waist", "legs")})
-    meta = {"frame": F, "feet": feet, "palette": cfg["palette"], "views": views, "anims": anims}
+    # `weapon` : l'arme que la forge dessine quand aucun équipement n'est donné
+    # (vignettes de création, liste des personnages).
+    meta = {"frame": F, "feet": feet, "palette": cfg["palette"], "weapon": cfg["weapon"],
+            "views": views, "anims": anims}
     json.dump(meta, open(os.path.join(out, a.id + ".json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
 
     # L'aperçu : la planche entière à côté du guerrier en grilles, agrandie.
@@ -586,8 +606,10 @@ def cmd_build(a):
 def main():
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("concept", "views", "anim", "build"):
+    for name in ("concept", "views", "build"):
         sub.add_parser(name).add_argument("id")
+    an = sub.add_parser("anim"); an.add_argument("id")
+    an.add_argument("--only", nargs="+", choices=list(ANIMS), help="ne générer que ces gestes")
     k = sub.add_parser("keep"); k.add_argument("id")
     k.add_argument("what", choices=["concept", "views", *ANIMS])
     k.add_argument("rest", nargs="+", help="<graine>, ou <vue|all> <graine> pour un geste")

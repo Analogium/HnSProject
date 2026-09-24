@@ -1,0 +1,115 @@
+{
+ "concept": {
+  "prompt": "pixel art, chibi game character sprite, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, full body, front view, standing idle, holding a sword",
+  "seeds": [
+   4242,
+   1337
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, chibi game character sprite, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "frame": 48,
+ "feet": 45,
+ "height": 45,
+ "slim": 1.0,
+ "squash": 0.8,
+ "recolor": [],
+ "colors": {
+  "S": "f9c5a4",
+  "s": "e8a484",
+  "q": "c9826e",
+  "k": "2a1a26",
+  "E": "8fb4e0",
+  "m": "a0504a",
+  "b": "f09a8a",
+  "h": "bab2bc",
+  "d": "8c7f90"
+ },
+ "patches": {
+  "down": [
+   {
+    "at": [
+     17,
+     9
+    ],
+    "grid": [
+     "hSSSSSSSSSSSSh",
+     "dSSddSSSSddSSd",
+     "SSSkESSSSEkSSs",
+     "SSSSSSSSSSSSSs",
+     "sSSbSSSSSSbSSs",
+     ".sSSSSmmSSSSs.",
+     "..qsSSSSSSsq.."
+    ]
+   }
+  ],
+  "side": [
+   {
+    "at": [
+     25,
+     8
+    ],
+    "grid": [
+     "..SSSs",
+     ".SSSSs",
+     "SSkESs",
+     "SSSSSs",
+     "SbSSSs",
+     "SSSmS.",
+     "qsSSq."
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "cloth": "2c2a33",
+  "skin": "e8b894",
+  "accent": "facc4c",
+  "metal": "b8c6dc",
+  "leather": "66422e"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    30.0,
+    27.0
+   ],
+   "waist": 29,
+   "legs": 40,
+   "head": 16
+  },
+  "side": {
+   "hand": [
+    23.0,
+    26.0
+   ],
+   "waist": 29,
+   "legs": 40,
+   "head": 15
+  },
+  "up": {
+   "hand": [
+    18.0,
+    27.0
+   ],
+   "waist": 29,
+   "legs": 40,
+   "head": 17
+  }
+ },
+ "concept_palette": true,
+ "weapon": "sword"
+}

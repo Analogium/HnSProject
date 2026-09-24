@@ -54,7 +54,7 @@ func test_the_list_shows_the_characters_on_disk() -> void:
 func test_create_writes_and_selects_it() -> void:
 	_screen._open_creation()
 	_screen.name_field.text = "Neuve"
-	_screen._look = 3
+	_screen._look = 0
 	_screen._create()
 
 	assert_eq(_screen._state, CharacterSelect.State.LIST, "la fenêtre s'est refermée")
@@ -62,8 +62,8 @@ func test_create_writes_and_selects_it() -> void:
 	assert_not_null(selected)
 	_created.append(selected.id)
 	assert_eq(selected.name, "Neuve", "on est placé sur celui qu'on vient de créer")
-	assert_eq(selected.silhouette, 3, "avec la silhouette choisie")
-	assert_eq(selected.character_class, Character.WARRIOR)
+	assert_eq(selected.silhouette, 0, "avec la silhouette choisie")
+	assert_eq(selected.character_class, Character.SWIFTBLADE)
 	assert_true(SaveStore.exists(selected.id), "et il est déjà sur le disque")
 
 

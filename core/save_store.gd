@@ -99,7 +99,7 @@ static func write(character: Character) -> bool:
 
 ## Identifiant retiré jusqu'à en trouver un libre : une collision écraserait un
 ## personnage.
-static func create(name: String, silhouette: int, character_class := Character.WARRIOR) -> Character:
+static func create(name: String, silhouette: int, character_class := Character.SWIFTBLADE) -> Character:
 	var character := Character.create_new(name, silhouette, character_class)
 	# Ici et non dans `create_new()`, qui fait aussi les personnages des tests et du banc.
 	# Une compétence ne part qu'avec son arme : l'épée pour l'attaque de départ, la

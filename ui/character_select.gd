@@ -37,12 +37,9 @@ const THUMBNAIL_Y := 106.0
 ## guerriers y dépasse de 10 px par le haut, son chapeau sort du cadre.
 const THUMBNAIL_FEET := 9.0
 
-## Ce qu'on choisit à la création : une classe et sa tenue. Les quatre tenues du
-## guerrier, puis la sorcière, qui n'en a qu'une.
-const LOOKS := [
-	[Character.WARRIOR, 0], [Character.WARRIOR, 1], [Character.WARRIOR, 2], [Character.WARRIOR, 3],
-	[Character.WITCH, 0],
-]
+## Ce qu'on choisit à la création : une classe et sa tenue. Une tenue par classe
+## pour l'instant.
+const LOOKS := [[Character.SWIFTBLADE, 0], [Character.WITCH, 0]]
 
 ## Le mot à retaper pour un personnage sans nom lisible. **Traduit**, et lu des deux
 ## côtés par `_word_to_type()`.

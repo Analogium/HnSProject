@@ -157,8 +157,8 @@ La collision ne change pas : le gameplay des classes est encore le même.
 
 ## 6. La suite
 
-- **Le guerrier par l'outil**, pour qu'il ne jure pas à côté d'elle. Ses quatre
-  tenues deviendront des recolorations de sa planche.
+- ~~Le guerrier par l'outil~~ : fait, c'est la **Vive lame** (§8).
+- Des tenues au choix par classe : des recolorations de leur planche.
 - Le gameplay des classes.
 
 ## 7. Le manuel de la foudre, dessiné — 23 septembre 2026
@@ -235,3 +235,34 @@ frise elle-même :
   dix secondes. Le scénario les pose directement.
 
 **883 tests, 883 passent.**
+
+## 8. La Vive lame — 24 septembre 2026
+
+Le guerrier est remplacé, et renommé à la demande de l'utilisateur : la **Vive lame**
+(`swiftblade`). Même outil que la sorcière, même méthode sur pièce.
+
+- **Concept** (`48`, `49`) : quatre directions, deux tirages ; retenue, le duelliste
+  aux cheveux argentés et à l'écharpe rouge — mais **moins armuré** : seconde planche
+  en tenue légère, retenu A1 (gilet de cuir sans manches sur chemise, gants, bottes).
+- **Vues** : la graine 777. Tirées par IPAdapter, elles avaient une **dominante
+  rouge** : peau, écharpe et bottes dans la même teinte. Corrigé en ramenant les vues
+  sur **les couleurs du concept** (`concept_palette`), qui étaient justes — le même
+  verrou de palette que les cycles. Visage retouché à la main, face et profil.
+- **Carrure** : le corps raccourci de la sorcière (`squash` 0,8), pour qu'ils aillent
+  ensemble (`52`).
+
+**Chaque personnage a le coup d'épée et le lancer.** Première intention : une seule
+attaque par personnage, l'épée pour la Vive lame. Refusé par l'utilisateur : l'arme
+suit l'équipement, donc les deux classes doivent avoir les deux gestes. L'outil génère
+maintenant trois gestes (`walk`, `attack`, `cast`) ; l'ancienne attaque de la sorcière,
+bras écartés, était un lancer et devient son `cast`. En jeu, `ActorSprite.attack(spell)`
+joue le lancer pour une compétence de cadence `CAST`.
+
+Retenus : Vive lame, marche, épée et lancer en 4242 ; sorcière, épée en 4242.
+
+Vu à la capture : la Vive lame toute blanche sur les images d'épée — le flash d'un coup
+encaissé à ce moment-là, pas un défaut de dessin ; le scénario rend désormais le
+personnage invulnérable. Captures `53-creation`, `54-*`.
+
+Les sauvegardes : la classe s'appelait `warrior` dans les premières v8 ; relue, elle
+devient une Vive lame (`Character.LEGACY_CLASSES`), sans nouveau numéro de version.

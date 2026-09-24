@@ -13,7 +13,7 @@ const VERSION := 8
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
 ## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
-## arbre de passifs vide ; v1 à v7 → guerrier.
+## arbre de passifs vide ; v1 à v7 → Vive lame.
 const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
@@ -22,12 +22,14 @@ const LEGACY_SPELL_DAMAGE := "spell_damage"
 
 ## Les classes jouables : l'archétype de la forge qui les dessine, et leur nom
 ## affiché (clé de traduction). Le gameplay est encore le même pour toutes.
-const WARRIOR := "warrior"
+const SWIFTBLADE := "swiftblade"
 const WITCH := "witch"
 const CLASSES := {
-	WARRIOR: {"archetype": "player", "name": "Guerrier"},
+	SWIFTBLADE: {"archetype": "swiftblade", "name": "Vive lame"},
 	WITCH: {"archetype": "witch", "name": "Sorcière"},
 }
+## Le nom qu'a porté la Vive lame dans les premières sauvegardes v8.
+const LEGACY_CLASSES := {"warrior": SWIFTBLADE}
 
 ## Borné pour tenir sur une ligne de la sélection. Vingt et non seize : « Jean-Luc
 ## de l'Est » doit passer.
@@ -36,7 +38,7 @@ const NAME_MAX := 20
 var id := ""
 var name := ""
 ## Une clé de `CLASSES`.
-var character_class := WARRIOR
+var character_class := SWIFTBLADE
 ## L'index de variante de la forge, pas un chemin de sprite.
 var silhouette := 0
 var created_on := ""
@@ -66,7 +68,7 @@ var manual_given := false
 var unreadable := false
 
 
-static func create_new(p_name: String, p_silhouette: int, p_class := WARRIOR) -> Character:
+static func create_new(p_name: String, p_silhouette: int, p_class := SWIFTBLADE) -> Character:
 	var p := Character.new()
 	p.id = new_id()
 	p.name = p_name.strip_edges()
@@ -169,7 +171,8 @@ static func from_dict(source: Dictionary) -> Character:
 		return null
 
 	p.name = String(source.get("name", ""))
-	p.character_class = String(source.get("class", WARRIOR))
+	p.character_class = String(source.get("class", SWIFTBLADE))
+	p.character_class = LEGACY_CLASSES.get(p.character_class, p.character_class)
 	if not CLASSES.has(p.character_class):
 		push_warning("Classe « %s » inconnue : refusée." % p.character_class)
 		return null

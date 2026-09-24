@@ -753,16 +753,16 @@ compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Pu
 
 1. **`core/character.gd`** — une entrée dans `CLASSES` : l'archétype de la forge
    (le nom de `art/characters/<id>.png`) et le nom affiché.
-2. **`art/sprite_forge.gd`** — l'archétype dans `ARCHETYPES`, et son cas dans
-   `config()` : palette lue dans la planche, arme par défaut, `torso_r` pour
-   l'ombre.
+2. **`art/sprite_forge.gd`** — l'archétype dans `ARCHETYPES`. Rien d'autre : palette
+   et arme par défaut sont lues dans la planche.
 3. **`core/save_store.gd`** — `create()` si la classe part avec un autre
    équipement.
 4. **`ui/character_select.gd`** — ses vignettes dans `LOOKS`.
 5. **`i18n/en.po`** — son nom ; `test_no_orphan_translation` relit `CLASSES`.
 
-`test_a_sheet_plays_its_generated_cycles` refuse une planche sans marche ni
-attaque générées, ou dont une image n'a pas sa main armée ;
+`test_a_sheet_plays_its_generated_cycles` refuse une planche sans marche, coup
+d'épée ou lancer générés, ou dont une image n'a pas sa main armée — l'ajouter à sa
+liste de corps ;
 `test_every_animation_of_a_sheet_moves`, une animation dont deux images sont
 identiques.
 

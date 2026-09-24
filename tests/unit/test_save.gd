@@ -187,7 +187,10 @@ func test_the_class_survives_and_defaults_to_warrior() -> void:
 	var old := witch.to_dict()
 	old.erase("class")
 	old["version"] = 7
-	assert_eq(Character.from_dict(old).character_class, Character.WARRIOR, "une sauvegarde v7 est un guerrier")
+	assert_eq(Character.from_dict(old).character_class, Character.SWIFTBLADE, "une sauvegarde v7 est une Vive lame")
+	var first_v8 := witch.to_dict()
+	first_v8["class"] = "warrior"
+	assert_eq(Character.from_dict(first_v8).character_class, Character.SWIFTBLADE, "l'ancien nom de la classe")
 	var odd := witch.to_dict()
 	odd["class"] = "necromancer"
 	assert_null(Character.from_dict(odd), "on ne devine pas une classe")

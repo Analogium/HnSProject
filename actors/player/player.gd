@@ -257,7 +257,7 @@ func cast_slot(index: int) -> bool:
 	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
 	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
 	if skill.shape != Skill.Shape.DASH:
-		sprite.attack()
+		sprite.attack(skill.cadence == Skill.Cadence.CAST)
 	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
 	match skill.shape:
 		Skill.Shape.BOLT:

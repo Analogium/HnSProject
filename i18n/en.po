@@ -1262,8 +1262,8 @@ msgstr "their name"
 msgid "sa silhouette"
 msgstr "their look"
 
-msgid "Guerrier"
-msgstr "Warrior"
+msgid "Vive lame"
+msgstr "Swiftblade"
 
 msgid "Sorcière"
 msgstr "Witch"

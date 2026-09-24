@@ -88,28 +88,48 @@ func test_a_sheet_puts_its_feet_where_the_grids_have_theirs() -> void:
 
 ## Si deux images d'une animation sont identiques, rien ne bouge à l'écran.
 func test_every_animation_of_a_sheet_moves() -> void:
-	var sheet := SpriteForge.sheet_of("witch")
-	for dir in SpriteForge.DIRS:
-		assert_ne(_witch(dir, "idle", 0).get_data(), _witch(dir, "idle", 2).get_data(), "souffle %s" % dir)
-		for anim in ["walk", "attack"]:
-			var seen := {}
-			for i in sheet.count(anim):
-				var pixels := _witch(dir, anim, i).get_data()
-				assert_false(seen.has(pixels), "deux images identiques (%s %s, %d)" % [anim, dir, i])
-				seen[pixels] = true
-
-
-## La marche et l'attaque de la sorcière sont des cycles générés : le jeu doit en
-## jouer toutes les images, et chaque image doit avoir sa main armée.
-func test_a_sheet_plays_its_generated_cycles() -> void:
-	var sheet := SpriteForge.sheet_of("witch")
-	var frames := SpriteForge.frames("witch", 0)
-	for anim in ["walk", "attack"]:
-		assert_gt(sheet.count(anim), 1, "le geste %s est généré" % anim)
-		assert_eq(frames.get_frame_count(anim + "_down"), sheet.count(anim))
+	for body in ["witch", "swiftblade"]:
+		var sheet := SpriteForge.sheet_of(body)
+		var cfg := SpriteForge.config(body, 0)
 		for dir in SpriteForge.DIRS:
-			assert_eq((sheet.meta["anims"][anim]["hands"][dir] as Array).size(), sheet.count(anim),
-				"une main par image (%s %s)" % [anim, dir])
+			assert_ne(SpriteForge.frame_image(cfg, dir, "idle", 0).get_data(),
+				SpriteForge.frame_image(cfg, dir, "idle", 2).get_data(), "souffle %s %s" % [body, dir])
+			for anim in ["walk", "attack", "cast"]:
+				var seen := {}
+				for i in sheet.count(anim):
+					var pixels := SpriteForge.frame_image(cfg, dir, anim, i).get_data()
+					assert_false(seen.has(pixels), "deux images identiques (%s %s %s, %d)" % [body, anim, dir, i])
+					seen[pixels] = true
+
+
+## L'arme suit l'équipement : chaque personnage en planche a la marche, le coup
+## d'épée **et** le lancer générés, et chaque image sa main armée.
+func test_a_sheet_plays_its_generated_cycles() -> void:
+	for body in ["witch", "swiftblade"]:
+		var sheet := SpriteForge.sheet_of(body)
+		var frames := SpriteForge.frames(body, 0)
+		for anim in ["walk", "attack", "cast"]:
+			assert_gt(sheet.count(anim), 1, "%s : le geste %s est généré" % [body, anim])
+			assert_eq(frames.get_frame_count(anim + "_down"), sheet.count(anim))
+			for dir in SpriteForge.DIRS:
+				assert_eq((sheet.meta["anims"][anim]["hands"][dir] as Array).size(), sheet.count(anim),
+					"une main par image (%s %s %s)" % [body, anim, dir])
+
+
+## Un sort joue le lancer, un coup d'arme le coup ; un corps sans lancer (les
+## grilles) joue le coup dans les deux cas.
+func test_a_spell_plays_the_cast() -> void:
+	var sprite := ActorSprite.new()
+	sprite.archetype = "witch"
+	sprite.variant = 0
+	add_child_autofree(sprite)
+	sprite.attack(true)
+	assert_eq(sprite.animation, &"cast_down")
+	sprite.attack(false)
+	assert_eq(sprite.animation, &"attack_down")
+	sprite.set_archetype("player")
+	sprite.attack(true)
+	assert_eq(sprite.animation, &"attack_down")
 
 
 ## L'arme suit l'équipement : elle est posée par la forge, pas peinte dans la planche.

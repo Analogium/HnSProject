@@ -30,7 +30,7 @@ const R_METAL := 3
 const R_LEATHER := 4
 
 const DIRS := ["down", "side", "up"]
-const ARCHETYPES := ["player", "witch", "grunt", "caster", "dummy"]
+const ARCHETYPES := ["player", "swiftblade", "witch", "grunt", "caster", "dummy"]
 
 ## Les archétypes dessinés hors du jeu (`tools/character_forge.py`) : trois poses
 ## fixes et les gestes générés dans `<archétype>.png`, leurs repères dans
@@ -166,6 +166,7 @@ static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrame
 			_add_anim(sf, cfg, "idle_" + dir, dir, "idle", SHEET_BREATH.size(), 4.0, true)
 			_add_anim(sf, cfg, "walk_" + dir, dir, "walk", sheet.count("walk"), 8.0, true)
 			_add_anim(sf, cfg, "attack_" + dir, dir, "attack", sheet.count("attack"), 11.0, false)
+			_add_anim(sf, cfg, "cast_" + dir, dir, "cast", sheet.count("cast"), 11.0, false)
 			continue
 		_add_anim(sf, cfg, "idle_" + dir, dir, "idle", IDLE_BOB.size(), 3.0, true)
 		_add_anim(sf, cfg, "walk_" + dir, dir, "walk", WALK_SWING.size(), 10.0, true)
@@ -582,15 +583,6 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 			cfg["pauldrons"] = true
 			amount = 0.0
 
-		"witch":
-			var palette: Dictionary = sheet_of(archetype).meta["palette"]
-			for role in palette:
-				base[role] = Color(palette[role])
-			cfg["weapon"] = "wand"
-			# L'ombre au sol se règle sur le buste : celui d'une case de 48.
-			cfg["torso_r"] = 6.8
-			amount = 0.0
-
 		"grunt":
 			base = {
 				"cloth": Color(0.42, 0.55, 0.24), "skin": Color(0.58, 0.66, 0.42),
@@ -634,6 +626,17 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 				"accent": Color(0.82, 0.30, 0.24), "metal": Color(0.62, 0.62, 0.66),
 				"leather": Color(0.40, 0.28, 0.18),
 			}
+
+	# Un archétype en planche porte sa palette et son arme par défaut, et l'ombre au
+	# sol se règle sur le buste d'une case de 48.
+	var sheet := sheet_of(archetype)
+	if sheet != null:
+		var palette: Dictionary = sheet.meta["palette"]
+		for role in palette:
+			base[role] = Color(palette[role])
+		cfg["weapon"] = sheet.meta["weapon"]
+		cfg["torso_r"] = 6.8
+		amount = 0.0
 
 	# Variation par instance : nuance des étoffes et de la peau, corpulence.
 	cfg["palettes"] = [
@@ -1131,7 +1134,8 @@ static func _pose(cfg: Dictionary, dir: String, anim: String, index: int) -> Dic
 static func _weapon_dir(cfg: Dictionary, dir: String, anim: String, index: int) -> Vector2:
 	var staff: bool = cfg["weapon"] == "staff"
 
-	if anim == "attack":
+	# Le lancer tient l'arme comme le coup : armée, puis portée en avant.
+	if anim == "attack" or anim == "cast":
 		if index == 0:
 			if staff:
 				return Vector2(-0.05, -1.0)
