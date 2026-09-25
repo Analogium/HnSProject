@@ -264,5 +264,29 @@ Vu à la capture : la Vive lame toute blanche sur les images d'épée — le fla
 encaissé à ce moment-là, pas un défaut de dessin ; le scénario rend désormais le
 personnage invulnérable. Captures `53-creation`, `54-*`.
 
+**Plus petits en jeu** : la hauteur des deux planches passe de 45 à 40 px (`height`),
+puis, « encore un peu grands et gros », à **34 px** et 15 % plus fins, choisis sur une
+planche de quatre tailles (`57-tailles.png`, captures `58-*`).
+Repères et retouches restent écrits pour 45 (`authored_height`) et suivent ; le visage
+dessiné à la main, lui, garde sa taille en pixels, et tient encore sur la tête
+réduite (`55-taille-40.png`, `56-*`). Réduire le sprite dans le jeu aurait été plus
+court, mais une échelle non entière donne des pixels de tailles inégales.
+
 Les sauvegardes : la classe s'appelait `warrior` dans les premières v8 ; relue, elle
 devient une Vive lame (`Character.LEGACY_CLASSES`), sans nouveau numéro de version.
+
+## 9. Moins zoomé — 25 septembre 2026
+
+La caméra du joueur passe à **85 %** (`Game.WORLD_ZOOM`), choisi sur quatre captures
+(`59-zoom-*` : 100, 85, 75, 67). Par la caméra et non par la zone logique : les
+panneaux sont calculés à la main sur 640 × 360, et ils n'ont pas bougé.
+
+Vu à la capture : les textes posés dans le monde rétrécissaient avec lui, illisibles à
+67 %. Compensés par la police (`Game.world_font()`), pour que les cadres des noms
+d'objets, qui servent au survol, suivent. La barre de vie et les icônes d'état, elles,
+rétrécissent : ce sont des pixels, pas du texte.
+
+Mesuré au banc (`world/stress_test.tscn`, 300 ennemis, combat tenu, 1 440 images après
+240 de chauffe), 85 % et 100 % en alternance : **165 img/s** partout ; la physique va
+de 4,7 à 7,0 ms d'une exécution à l'autre sans suivre le zoom.
+

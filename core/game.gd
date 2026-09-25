@@ -9,6 +9,18 @@ var hit_stop_duration := 0.05
 ## **12 % du temps de jeu passé à 2 % de vitesse**, sans qu'une image se perde.
 var hit_stop_period := 0.45
 
+## Le zoom de la caméra du joueur : sous 1, plus de terrain à l'écran. 85 %, choisi
+## sur capture parmi 100, 85, 75 et 67 (jalon 25).
+const WORLD_ZOOM := 0.85
+
+
+## Une taille de police pour du texte posé dans le monde, qui rétrécit avec lui :
+## compensée, elle garde à l'écran la taille d'un zoom de 1. Par la police et non
+## par l'échelle du nœud, pour que les cadres mesurés sur le texte suivent.
+static func world_font(size: int) -> int:
+	return roundi(float(size) / WORLD_ZOOM)
+
+
 var rng := RandomNumberGenerator.new()
 
 ## Le personnage en cours, posé par la sélection et lu par la zone. Null quand une

@@ -217,15 +217,15 @@ func _draw() -> void:
 	draw_rect(_shown, NAME_HOVER if _hovered else NAME_BACK)
 	draw_rect(_shown, tint, false, 1.0)
 	# La ligne de base, et non le haut du cadre : `draw_string` pose le texte dessus.
-	var baseline := _shown.position + Vector2(NAME_PAD.x, NAME_PAD.y + _font.get_ascent(NAME_SIZE))
-	draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, NAME_SIZE, tint)
+	var baseline := _shown.position + Vector2(NAME_PAD.x, NAME_PAD.y + _font.get_ascent(Game.world_font(NAME_SIZE)))
+	draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE), tint)
 
 
 ## Le nom et son cadre, centré sur l'objet, à sa place naturelle. C'est
 ## `_relayout()` qui décide ensuite de là où il tient.
 func _measure() -> void:
 	_name = data.display_name()
-	var size := _font.get_string_size(_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, NAME_SIZE)
+	var size := _font.get_string_size(_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE))
 	size = (size + NAME_PAD * 2.0).round()
 	var top := -(float(SpriteForge.GROUND.y) + NAME_GAP) - size.y
 	_label = Rect2(Vector2(roundf(-size.x * 0.5), top), size)

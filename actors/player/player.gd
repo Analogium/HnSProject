@@ -133,6 +133,7 @@ var _aim_with_mouse := true
 
 
 func _ready() -> void:
+	camera.zoom = Vector2.ONE * Game.WORLD_ZOOM
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
 	if base_stats == null:
 		base_stats = CharacterStats.new()

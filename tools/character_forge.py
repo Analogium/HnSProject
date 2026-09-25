@@ -254,7 +254,7 @@ def slimmed(cfg, a, keep, direction):
     y reste juste. Rend aussi de quoi déplacer un point de la source pareil."""
     k, q = cfg.get("slim", 1.0), cfg.get("squash", 1.0)
     x0, y0, x1, y1 = bbox(keep)
-    cut = y0 + (y1 - y0) * cfg["anchors"][direction]["head"] / cfg["height"]
+    cut = y0 + (y1 - y0) * cfg["anchors"][direction]["head"] / authored(cfg)
     cx = (x0 + x1) / 2
     move = lambda x, y: (cx + (x - cx) * k, y1 - (y1 - y) * q) if y >= cut else (x, y + (y1 - cut) * (1 - q))
     if k >= 1 and q >= 1:
@@ -275,12 +275,21 @@ def slimmed(cfg, a, keep, direction):
     return out_a, out_k, move
 
 
+def authored(cfg):
+    """La hauteur pour laquelle repères et retouches ont été écrits ; `height` peut
+    ensuite changer, ils suivent."""
+    return cfg.get("authored_height", cfg["height"])
+
+
 def reshape_point(cfg, direction, x, y):
     """Le même changement, en coordonnées de case : pour les repères et les retouches,
-    écrits sur la silhouette d'origine."""
+    écrits sur la silhouette d'origine, à la hauteur `authored_height`. D'abord la
+    mise à l'échelle autour des pieds, puis l'affinage et le tassement du corps."""
     F, feet = cfg["frame"], cfg["feet"]
+    s = cfg["height"] / authored(cfg)
+    x, y = F / 2 + (x - F / 2) * s, feet - (feet - y) * s
     k, q = cfg.get("slim", 1.0), cfg.get("squash", 1.0)
-    cut = cfg["anchors"][direction]["head"]
+    cut = feet - (feet - cfg["anchors"][direction]["head"]) * s
     if y >= cut:
         return F / 2 + (x - F / 2) * k, feet - (feet - y) * q
     return x, y + (feet - cut) * (1 - q)

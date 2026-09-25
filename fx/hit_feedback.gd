@@ -187,6 +187,7 @@ func _add_label(at: Vector2, text: String, body: int, tint: Color, rise: float) 
 	n.life = NUMBER_LIFE
 	n.text = text
 	n.tint = tint
+	body = Game.world_font(body)
 	n.body = body
 	n.half = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, body).x * 0.5
 	_numbers.append(n)

@@ -54,7 +54,7 @@ func set_affixes(affixes: Array[Affix]) -> void:
 			line.tint = affix.tint
 			line.tint.v = maxf(line.tint.v, MIN_TEXT_VALUE)
 			line.half = _font.get_string_size(
-				line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE
+				line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, Game.world_font(SIZE)
 			).x * 0.5
 			_lines.append(line)
 	_refresh()
@@ -70,13 +70,13 @@ func _draw() -> void:
 	for i in _lines.size():
 		var line := _lines[i]
 		# Le premier en haut, le dernier au ras de la tête.
-		var y := roundf(OFFSET_Y - float(_lines.size() - 1 - i) * LINE_H)
+		var y := roundf(OFFSET_Y - float(_lines.size() - 1 - i) * LINE_H / Game.WORLD_ZOOM)
 		var pos := Vector2(roundf(-line.half), y)
 		# Contour noir : lisible sur tous les sols.
 		draw_string_outline(
-			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, 1,
+			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, Game.world_font(SIZE), 1,
 			Color(0, 0, 0, 0.95)
 		)
 		draw_string(
-			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, line.tint
+			_font, pos, line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, Game.world_font(SIZE), line.tint
 		)

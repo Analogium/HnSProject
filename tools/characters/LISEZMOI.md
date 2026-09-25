@@ -50,6 +50,10 @@ choix.
 
 - **`recolor`** : ce que le prompt n'obtient pas. SDXL ignore « peau bleue » ; la
   règle repeint une plage de teinte dans une bande de hauteur en gardant la valeur.
+- **`height`** : la taille du personnage en jeu, en pixels, chapeau compris (34 pour
+  les deux classes ; 45 au départ, puis 40, jugés trop grands). Repères et retouches sont
+  écrits pour `authored_height` et suivent quand `height` change : baisser la taille
+  ne demande que ce chiffre et un `build`.
 - **`slim`** et **`squash`** : la part de largeur et de hauteur gardée **sous la
   tête** (0,8 et 0,8 pour la sorcière, trop massive sinon). La tête ne change pas de
   taille : le visage retouché y reste juste. Appliqués sur l'image source, avant

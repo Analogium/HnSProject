@@ -23,8 +23,8 @@
  },
  "frame": 48,
  "feet": 45,
- "height": 45,
- "slim": 0.8,
+ "height": 34,
+ "slim": 0.68,
  "squash": 0.8,
  "recolor": [
   {
@@ -178,5 +178,6 @@
    "head": 21
   }
  },
- "weapon": "wand"
+ "weapon": "wand",
+ "authored_height": 45
 }

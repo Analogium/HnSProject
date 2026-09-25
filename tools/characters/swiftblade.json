@@ -23,8 +23,8 @@
  },
  "frame": 48,
  "feet": 45,
- "height": 45,
- "slim": 1.0,
+ "height": 34,
+ "slim": 0.85,
  "squash": 0.8,
  "recolor": [],
  "colors": {
@@ -111,5 +111,6 @@
   }
  },
  "concept_palette": true,
- "weapon": "sword"
+ "weapon": "sword",
+ "authored_height": 45
 }
