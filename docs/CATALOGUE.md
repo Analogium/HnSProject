@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-53 bases d'objets, 32 compétences, 57 affixes d'objets, 5 affixes d'ennemis.
+53 bases d'objets, 32 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -758,14 +758,12 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 53 |
 | `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 53 |
-| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
 | `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 53 |
 | `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
 | `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 53 |
 | `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
 | `cuirassed` | armure | armour | — | 9 | 9 | 15 / 53 |
-| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 9 / 53 |
 | `elusive` | esquive | light | — | 9 | 8 | 10 / 53 |
 | `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 53 |
 | `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 53 |
@@ -801,9 +799,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 53 |
 | `reach` | allonge | melee | — | 8 | 5 | 8 / 53 |
 | `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 53 |
-| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 9 / 53 |
 | `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 53 |
-| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
 | `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 53 |
 | `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 53 |
@@ -880,16 +876,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 45–65 % | 10 |
 | T5 | 1 | 20–40 % | 10 |
 
-**`butchering`** — « de la Boucherie », dégâts d'attaque contre les saignants, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 40–50 % | 10 |
-| T2 | 34 | 30–39 % | 10 |
-| T3 | 19 | 20–29 % | 10 |
-| T4 | 6 | 13–19 % | 10 |
-| T5 | 1 | 8–12 % | 10 |
-
 **`cold_skill_levels`** — « du Cryomancien », niveaux de compétence de froid, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -954,16 +940,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T7 | 10 | 35–52 | 10 |
 | T8 | 5 | 21–34 | 10 |
 | T9 | 1 | 12–20 | 10 |
-
-**`electrocuting`** — « de l'Électrocution », dégâts de sort contre les engourdis, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 40–50 % | 10 |
-| T2 | 34 | 30–39 % | 10 |
-| T3 | 19 | 20–29 % | 10 |
-| T4 | 6 | 13–19 % | 10 |
-| T5 | 1 | 8–12 % | 10 |
 
 **`elusive`** — « de l'Ombre », esquive, arrondi 1
 
@@ -1349,16 +1325,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 1.3–2.2 | 10 |
 | T5 | 1 | 0.5–1.2 | 10 |
 
-**`scorching`** — « du Bûcher », dégâts de sort contre les embrasés, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 40–50 % | 10 |
-| T2 | 34 | 30–39 % | 10 |
-| T3 | 19 | 20–29 % | 10 |
-| T4 | 6 | 13–19 % | 10 |
-| T5 | 1 | 8–12 % | 10 |
-
 **`second_wind`** — « du Second Souffle », récupération de recharge, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1368,16 +1334,6 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 9–12 % | 10 |
 | T4 | 10 | 5–8 % | 10 |
 | T5 | 1 | 3–4 % | 10 |
-
-**`shattering`** — « de la Brisure », dégâts d'attaque contre les transis, arrondi 1
-
-| palier | ouvre à | plage | poids |
-|---|---|---|---|
-| T1 | 52 | 40–50 % | 10 |
-| T2 | 34 | 30–39 % | 10 |
-| T3 | 19 | 20–29 % | 10 |
-| T4 | 6 | 13–19 % | 10 |
-| T5 | 1 | 8–12 % | 10 |
 
 **`shrewd`** — « de la Sagacité », mana, arrondi 1
 

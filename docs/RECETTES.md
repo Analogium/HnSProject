@@ -288,7 +288,11 @@ un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer
    - s'il change une grandeur → un facteur dans `StatusEffects`, **lu là où vit déjà la
      règle qu'il modifie** : la mitigation dans `Hurtbox`, la marche dans
      `Enemy.movement_speed()`, la cadence dans `Enemy._cool_down()` et
-     `Player._physics_process()`. Jamais une seconde copie de la règle.
+     `Player._physics_process()`. Jamais une seconde copie de la règle. Sa force est
+     **une constante** (`CURSE`, `CHILL`…) : une réapplication ne fait que rafraîchir.
+     Le jour où elle se renforce (passif, talent), la porter sur `State` et la comparer
+     dans `put()` comme `per_second` — la plus forte l'emporte, la plus faible ne
+     rafraîchit rien.
 3. **Son icône** : un masque 7×7 dans `StatusIcon.MASKS`, à la même place que
    dans `Kind`. Le reste — la couleur de l'icône, la teinte et l'annonce — lit
    `StatusEffects.color()`, la couleur de sa nature, sauf quand elle ne se lit pas sur un

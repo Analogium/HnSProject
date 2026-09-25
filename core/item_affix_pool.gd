@@ -57,14 +57,10 @@ const ALL := [
 	preload("res://resources/item_affixes/necrotic_to_spells.tres"),
 	preload("res://resources/item_affixes/holy_to_spells.tres"),
 
-	# Jalon 14 : les niveaux de compétence, rares, et les dégâts contre un état.
+	# Jalon 14 : les niveaux de compétence, rares.
 	preload("res://resources/item_affixes/fire_skill_levels.tres"),
 	preload("res://resources/item_affixes/cold_skill_levels.tres"),
 	preload("res://resources/item_affixes/lightning_skill_levels.tres"),
-	preload("res://resources/item_affixes/scorching.tres"),
-	preload("res://resources/item_affixes/electrocuting.tres"),
-	preload("res://resources/item_affixes/shattering.tres"),
-	preload("res://resources/item_affixes/butchering.tres"),
 
 	# Les deux portées du jalon 19 : sans elles, « Mêlée » et « Zone » s'afficheraient
 	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).

@@ -1890,9 +1890,6 @@ msgstr "of the Hex"
 msgid "du Carnage"
 msgstr "of Carnage"
 
-msgid "de la Boucherie"
-msgstr "of the Butcher"
-
 msgid "du Givre"
 msgstr "of Frost"
 
@@ -1907,9 +1904,6 @@ msgstr "of Crushing"
 
 msgid "de la Cuirasse"
 msgstr "of the Cuirass"
-
-msgid "de l'Électrocution"
-msgstr "of Electrocution"
 
 msgid "de l'Ombre"
 msgstr "of Shadow"
@@ -2006,12 +2000,6 @@ msgstr "of Swiftness"
 
 msgid "de la Régénération"
 msgstr "of Regeneration"
-
-msgid "du Bûcher"
-msgstr "of the Pyre"
-
-msgid "de la Brisure"
-msgstr "of Shattering"
 
 msgid "de la Sagacité"
 msgstr "of Sagacity"
