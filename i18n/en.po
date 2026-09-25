@@ -273,6 +273,9 @@ msgstr "Static Field"
 msgid "{stat} {qualificatif}"
 msgstr "{qualificatif} {stat}"
 
+msgid "{famille} {nature}"
+msgstr "{nature} {famille}"
+
 msgid "de projectile"
 msgstr "projectile"
 
@@ -2097,3 +2100,54 @@ msgstr "Swath"
 
 msgid "Enchaînement"
 msgstr "Momentum"
+
+msgid "Sacré"
+msgstr "Holy"
+
+msgid "Physique"
+msgstr "Physical"
+
+msgid "aux compétences sacrées"
+msgstr "to holy skills"
+
+msgid "aux compétences physiques"
+msgstr "to physical skills"
+
+msgid "sacrés"
+msgstr "holy"
+
+msgid "physiques"
+msgstr "physical"
+
+msgid "de la Sainteté"
+msgstr "of Holiness"
+
+msgid "de l'Impact"
+msgstr "of Impact"
+
+msgid "de la Forge"
+msgstr "of the Forge"
+
+msgid "du Verglas"
+msgstr "of Black Ice"
+
+msgid "du Tonnerre"
+msgstr "of Thunder"
+
+msgid "de la Faux"
+msgstr "of the Scythe"
+
+msgid "du Paladin"
+msgstr "of the Paladin"
+
+msgid "du Bourreau"
+msgstr "of the Executioner"
+
+msgid "de la Liche"
+msgstr "of the Lich"
+
+msgid "du Hiérophante"
+msgstr "of the Hierophant"
+
+msgid "du Maître d'armes"
+msgstr "of the Weaponmaster"

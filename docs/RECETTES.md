@@ -80,7 +80,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
    | `suffix` | Le nom que l'objet prend — « Épée **de l'Agilité** » —, préposition et article compris : le genre du mot ne se devine pas. Unique dans la réserve, et à traduire dans `i18n/en.po` |
    | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `SkillStats.LABELS` — `skill_levels` compris, à plat —, des dégâts ajoutés `damage_<id>` sur `DamageType.IDS`, ou des dégâts contre un état `damage_vs_<id>` sur `StatusEffects.IDS`, en pourcentage — ceux-là n'existent **qu'avec une portée** |
-   | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, et l'affixe n'agit que sur les compétences qui le portent |
+   | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, ou deux séparés d'une espace (`fire attack`), et l'affixe n'agit que sur les compétences qui les portent **tous**. Les dégâts d'une nature en pourcentage se donnent toujours par paire, `<nature> spell` et `<nature> attack` |
    | `percent` | Pourcentage plutôt que valeur absolue |
    | `tags` | Les étiquettes visées ; **vide = partout** |
    | `excludes` | Ce qui refuse, et **qui l'emporte** sur `tags` |

@@ -18,6 +18,9 @@ const LIGHTNING := "lightning"
 const FIRE := "fire"
 const COLD := "cold"
 const NECROTIC := "necrotic"
+const HOLY := "holy"
+## Toutes les attaques du jeu, tant qu'aucune ne naît d'une autre nature.
+const PHYSICAL := "physical"
 const SPELL := "spell"
 const ATTACK := "attack"
 ## Une attaque qui ne lance rien. Sous `ATTACK` dans l'ordre de lecture : tout ce qui
@@ -36,6 +39,8 @@ const LABELS := {
 	FIRE: "Feu",
 	COLD: "Froid",
 	NECROTIC: "Nécrotique",
+	HOLY: "Sacré",
+	PHYSICAL: "Physique",
 	SPELL: "Sort",
 	ATTACK: "Attaque",
 	MELEE: "Mêlée",
@@ -55,6 +60,8 @@ const RECIPIENTS := {
 	FIRE: "aux compétences de feu",
 	COLD: "aux compétences de froid",
 	NECROTIC: "aux compétences nécrotiques",
+	HOLY: "aux compétences sacrées",
+	PHYSICAL: "aux compétences physiques",
 	SPELL: "aux sorts",
 	ATTACK: "aux attaques",
 	MELEE: "aux attaques de mêlée",
@@ -76,6 +83,8 @@ const QUALIFIERS := {
 	FIRE: "de feu",
 	COLD: "de froid",
 	NECROTIC: "nécrotiques",
+	HOLY: "sacrés",
+	PHYSICAL: "physiques",
 	SPELL: "de sort",
 	ATTACK: "d'attaque",
 	MELEE: "de mêlée",
@@ -90,9 +99,16 @@ const DAMAGE_NOUNS := {
 }
 
 
-## Vide pour ce qui n'en a pas : la phrase se passe alors de qualificatif.
-static func qualifier(id: String) -> String:
-	return Texts.t(QUALIFIERS[id]) if QUALIFIERS.has(id) else ""
+## Vide pour ce qui n'en a pas : la phrase se passe alors de qualificatif. Une portée
+## double les assemble par gabarit, l'ordre changeant avec la langue : « de sort de
+## feu », « fire spell ».
+static func qualifier(scope: String) -> String:
+	var ids := words(scope)
+	if ids.size() == 2:
+		return Texts.t("{famille} {nature}").format(
+			{"nature": qualifier(ids[0]), "famille": qualifier(ids[1])}
+		)
+	return Texts.t(QUALIFIERS[scope]) if QUALIFIERS.has(scope) else ""
 
 
 static func recipient(id: String) -> String:
@@ -103,6 +119,19 @@ static func recipient(id: String) -> String:
 
 static func exists(id: String) -> bool:
 	return LABELS.has(id)
+
+
+## Une portée nomme un mot-clé, ou plusieurs séparés d'une espace — `fire spell` : les
+## sorts de feu. **Tous** doivent être portés.
+static func words(scope: String) -> PackedStringArray:
+	return scope.split(" ", false)
+
+
+static func covered(worn: PackedStringArray, scope: String) -> bool:
+	for id in words(scope):
+		if not worn.has(id):
+			return false
+	return not scope.is_empty()
 
 
 ## Dans l'ordre de lecture et sans doublon, hors liste écartée. **Le seul endroit qui

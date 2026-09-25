@@ -158,14 +158,13 @@ func test_cadence_gives_spell_or_attack() -> void:
 	assert_false(c.worn(Keywords.SPELL))
 
 
-## Aucun modificateur ne vise le sacré : une compétence sacrée ne doit donc pas
-## l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
-## C'était le froid jusqu'au manuel du froid, puis le nécrotique jusqu'au manuel
-## nécrotique, tous deux arrivés avec leur affixe.
-func test_a_nature_nothing_targets_gives_no_keyword() -> void:
+## Les six natures ont leur mot-clé, chacune visée par ses affixes de dégâts.
+func test_each_nature_gives_its_keyword() -> void:
 	var c := _skill([1.0] as Array[float])
 	c.nature = DamageType.Kind.HOLY
-	assert_eq(Array(c.keywords()), [Keywords.SPELL])
+	assert_eq(Array(c.keywords()), [Keywords.HOLY, Keywords.SPELL])
+	for nature in DamageType.Kind.values():
+		assert_true(Skill.KEYWORD_OF_NATURE.has(nature), DamageType.IDS[nature])
 
 
 func test_a_bolt_carries_projectile_and_a_sword_swing_does_not() -> void:
@@ -293,7 +292,7 @@ func test_the_sheet_writes_keywords_in_list_order() -> void:
 		SkillCatalog.by_id("swift_bolt").keywords_label(),
 		"Projectile · Foudre · Sort"
 	)
-	assert_eq(SkillCatalog.by_id(SkillCatalog.ID_ATTACK).keywords_label(), "Attaque")
+	assert_eq(SkillCatalog.by_id(SkillCatalog.ID_ATTACK).keywords_label(), "Physique · Attaque")
 
 
 # --------------------------------------------------------------------------
@@ -913,6 +912,25 @@ func test_a_line_against_a_state_says_which() -> void:
 	var m := _mod(SkillStats.against_stat(StatusEffects.Kind.IGNITE), StatMod.Mode.PERCENT, 30.0, Keywords.SPELL)
 	assert_eq(Glossary.plain(m.label()), "+30 % de dégâts de sort accrus contre les embrasés")
 	assert_true(SkillStats.modifiable(m.stat))
+
+
+## Une portée de deux mots exige les deux : les dégâts de sort de feu ne touchent
+## pas une attaque de feu.
+func test_a_double_scope_needs_both_keywords() -> void:
+	var m := _mod("damage", StatMod.Mode.PERCENT, 50.0, "fire spell")
+	assert_eq(Glossary.plain(m.label()), "+50 % de dégâts de sort de feu accrus")
+	Settings.from_dict({"language": Settings.ENGLISH})
+	var english := Glossary.plain(m.label())
+	Settings.from_dict({"language": Settings.FRENCH})
+	assert_eq(english, "+50% increased fire spell damage")
+	var c := _skill([10.0] as Array[float])
+	c.nature = DamageType.Kind.FIRE
+	assert_eq(c.resolve(1, _sheet(), [m]).total_min(), 15.0, "sort de feu")
+	c.cadence = Skill.Cadence.WEAPON
+	assert_eq(c.resolve(1, _sheet(), [m]).total_min(), 10.0, "attaque de feu")
+	c.cadence = Skill.Cadence.CAST
+	c.nature = DamageType.Kind.COLD
+	assert_eq(c.resolve(1, _sheet(), [m]).total_min(), 10.0, "sort de froid")
 
 
 ## Aucun attribut ne multiplie les dégâts d'une compétence (retiré le 15 septembre

@@ -102,6 +102,7 @@ required_points = 3
 points_max = 1
 converts_to = 5
 converted_part_per_point = 0.50
+added_keywords = PackedStringArray("holy")
 
 [sub_resource type="Resource" id="C_coup_en_croix"]
 script = ExtResource("2_case")

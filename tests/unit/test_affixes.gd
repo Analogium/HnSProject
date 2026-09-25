@@ -26,7 +26,8 @@ func test_each_scoped_affix_targets_a_keyword_and_a_cast_number() -> void:
 		if a.scope.is_empty():
 			continue
 		worn_items += 1
-		assert_true(Keywords.exists(a.scope), "« %s » vise « %s », hors de la liste" % [a.id, a.scope])
+		for id in Keywords.words(a.scope):
+			assert_true(Keywords.exists(id), "« %s » vise « %s », hors de la liste" % [a.id, id])
 		assert_true(
 			SkillStats.modifiable(a.stat),
 			"« %s » vise « %s », qu'un modificateur ne peut pas toucher" % [a.id, a.stat]
@@ -44,7 +45,8 @@ func test_each_scoped_affix_targets_a_keyword_and_a_cast_number() -> void:
 func test_each_keyword_is_targeted_by_something() -> void:
 	var vises := {}
 	for a in ItemAffixPool.ALL:
-		vises[a.scope] = true
+		for id in Keywords.words(a.scope):
+			vises[id] = true
 	var by_cadence := Skill.KEYWORD_OF_CADENCE.values()
 	for id in Keywords.LABELS:
 		if by_cadence.has(id):
@@ -142,9 +144,9 @@ func test_the_affix_count_is_bounded_by_the_pool() -> void:
 
 ## Deux lignes strictement identiques sur un objet se liraient comme un bug.
 ##
-## L'unicité porte sur le couple (statistique, mode) et non sur la seule
-## statistique : « +6 dégâts » et « +10 % dégâts » sont deux affixes distincts
-## et cohabiter est voulu — c'est tout l'intérêt d'avoir les deux formes.
+## L'unicité porte sur (statistique, mode, portée) et non sur la seule
+## statistique : « +6 dégâts » et « +10 % dégâts » sont deux affixes distincts,
+## « dégâts de feu aux attaques » et « de froid » aussi.
 func test_no_duplicate_line_on_an_item() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 3
@@ -154,7 +156,7 @@ func test_no_duplicate_line_on_an_item() -> void:
 		for i in 1000:
 			var seen_all := {}
 			for m in ItemAffixPool.roll(rng, base, 60):
-				var key := "%s/%d" % [m.mod.stat, m.mod.mode]
+				var key := "%s/%d/%s" % [m.mod.stat, m.mod.mode, m.mod.scope]
 				if seen_all.has(key):
 					duplicates += 1
 				seen_all[key] = true

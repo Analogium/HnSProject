@@ -49,6 +49,8 @@ const KEYWORD_OF_NATURE := {
 	DamageType.Kind.LIGHTNING: Keywords.LIGHTNING,
 	DamageType.Kind.COLD: Keywords.COLD,
 	DamageType.Kind.NECROTIC: Keywords.NECROTIC,
+	DamageType.Kind.HOLY: Keywords.HOLY,
+	DamageType.Kind.PHYSICAL: Keywords.PHYSICAL,
 }
 const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
@@ -347,7 +349,7 @@ func resolve(
 	var fields: Array[StatMod] = []
 	var damage_percents: Array[StatMod] = []
 	for m: StatMod in mods:
-		if worn_items.has(m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE):
+		if Keywords.covered(worn_items, m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE):
 			_store(r, m, fields, damage_percents)
 	for t: InvestedTalent in talents:
 		for m in t.mods():

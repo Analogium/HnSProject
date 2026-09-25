@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_necrot"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_necrot"]
+
+[sub_resource type="Resource" id="Resource_necrotic_skill_levels_t1"]
+script = ExtResource("2_necrot")
+required_level = 60
+min_value = 2.0
+max_value = 2.0
+
+[sub_resource type="Resource" id="Resource_necrotic_skill_levels_t2"]
+script = ExtResource("2_necrot")
+min_value = 1.0
+max_value = 1.0
+
+[resource]
+script = ExtResource("1_necrot")
+id = "necrotic_skill_levels"
+suffix = "de la Liche"
+tags = PackedStringArray("caster")
+excludes = PackedStringArray()
+stat = "skill_levels"
+scope = "necrotic"
+tiers = Array[ExtResource("2_necrot")]([SubResource("Resource_necrotic_skill_levels_t1"), SubResource("Resource_necrotic_skill_levels_t2")])
+weight = 1

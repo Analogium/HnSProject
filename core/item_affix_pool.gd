@@ -41,6 +41,16 @@ const ALL := [
 	preload("res://resources/item_affixes/ardent.tres"),
 	preload("res://resources/item_affixes/glacial.tres"),
 	preload("res://resources/item_affixes/bewitched.tres"),
+	# Les dégâts d'une nature, en pourcentage, séparés entre sorts et attaques. Les six
+	# de chaque côté, même quand aucune compétence ne porte encore la paire.
+	preload("res://resources/item_affixes/holy_spell_dmg.tres"),
+	preload("res://resources/item_affixes/physical_spell_dmg.tres"),
+	preload("res://resources/item_affixes/fire_attack_dmg.tres"),
+	preload("res://resources/item_affixes/cold_attack_dmg.tres"),
+	preload("res://resources/item_affixes/lightning_attack_dmg.tres"),
+	preload("res://resources/item_affixes/necrotic_attack_dmg.tres"),
+	preload("res://resources/item_affixes/holy_attack_dmg.tres"),
+	preload("res://resources/item_affixes/physical_attack_dmg.tres"),
 
 	# Les dégâts ajoutés, chaque nature aux attaques puis aux sorts, sur une échelle
 	# commune ; chaque famille pèse ce que pesait l'affixe qu'elle remplace.
@@ -61,6 +71,9 @@ const ALL := [
 	preload("res://resources/item_affixes/fire_skill_levels.tres"),
 	preload("res://resources/item_affixes/cold_skill_levels.tres"),
 	preload("res://resources/item_affixes/lightning_skill_levels.tres"),
+	preload("res://resources/item_affixes/necrotic_skill_levels.tres"),
+	preload("res://resources/item_affixes/holy_skill_levels.tres"),
+	preload("res://resources/item_affixes/physical_skill_levels.tres"),
 
 	# Les deux portées du jalon 19 : sans elles, « Mêlée » et « Zone » s'afficheraient
 	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).

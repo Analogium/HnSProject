@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-53 bases d'objets, 32 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
+53 bases d'objets, 32 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -129,7 +129,7 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
 | Taille | Coup en croix | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
 | Estoc | Coup en croix | Taille | 2 points de compétence | 2 | ajoute 2 à 6 dégâts physiques |
-| Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré |
+| Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré · donne le mot-clé Sacré |
 | Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
 | Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
 | Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % de durée accrue |
@@ -755,9 +755,10 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 |---|---|---|---|---|---|---|
 | `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 53 |
 | `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
-| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `ardent` | dégâts de sort de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 53 |
 | `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 53 |
+| `cold_attack_dmg` | dégâts d'attaque de froid (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
 | `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 53 |
 | `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
@@ -769,6 +770,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 53 |
 | `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 53 |
 | `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
+| `fire_attack_dmg` | dégâts d'attaque de feu (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
 | `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 53 |
 | `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
@@ -776,32 +778,41 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 53 |
 | `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 53 |
 | `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
-| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `glacial` | dégâts de sort de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `holy_attack_dmg` | dégâts d'attaque sacrés (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
+| `holy_skill_levels` | niveaux de compétence sacrés | caster | — | 1 | 2 | 5 / 53 |
+| `holy_spell_dmg` | dégâts de sort sacrés (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
 | `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 53 |
 | `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 53 |
 | `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 53 |
+| `lightning_attack_dmg` | dégâts d'attaque de foudre (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
 | `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 53 |
 | `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
 | `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 53 |
 | `muscular` | force | *partout* | — | 8 | 6 | 47 / 53 |
 | `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
+| `necrotic_attack_dmg` | dégâts d'attaque nécrotiques (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
+| `necrotic_skill_levels` | niveaux de compétence nécrotiques | caster | — | 1 | 2 | 5 / 53 |
 | `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
 | `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 53 |
+| `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
+| `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 53 |
+| `physical_spell_dmg` | dégâts de sort physiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
 | `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
 | `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 53 |
 | `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 53 |
-| `putrefying` | dégâts nécrotiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `putrefying` | dégâts de sort nécrotiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 53 |
 | `reach` | allonge | melee | — | 8 | 5 | 8 / 53 |
 | `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 53 |
 | `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 53 |
 | `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 53 |
-| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `stormy` | dégâts de sort de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
 | `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 53 |
 | `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 53 |
 | `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 53 |
@@ -844,7 +855,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 10–15 % | 10 |
 | T5 | 1 | 6–9 % | 10 |
 
-**`ardent`** — « de la Fournaise », dégâts de feu, arrondi 1
+**`ardent`** — « de la Fournaise », dégâts de sort de feu, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -875,6 +886,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 70–90 % | 10 |
 | T4 | 12 | 45–65 % | 10 |
 | T5 | 1 | 20–40 % | 10 |
+
+**`cold_attack_dmg`** — « du Verglas », dégâts d'attaque de froid, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
 
 **`cold_skill_levels`** — « du Cryomancien », niveaux de compétence de froid, arrondi 1
 
@@ -996,6 +1018,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 6 | 10–15 % | 10 |
 | T5 | 1 | 6–9 % | 10 |
 
+**`fire_attack_dmg`** — « de la Forge », dégâts d'attaque de feu, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`fire_skill_levels`** — « du Pyromancien », niveaux de compétence de feu, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1067,7 +1100,36 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
-**`glacial`** — « de la Banquise », dégâts de froid, arrondi 1
+**`glacial`** — « de la Banquise », dégâts de sort de froid, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
+**`holy_attack_dmg`** — « du Paladin », dégâts d'attaque sacrés, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
+**`holy_skill_levels`** — « du Hiérophante », niveaux de compétence sacrés, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
+
+**`holy_spell_dmg`** — « de la Sainteté », dégâts de sort sacrés, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1135,6 +1197,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 13–17 % | 10 |
 | T5 | 1 | 8–12 % | 10 |
 
+**`lightning_attack_dmg`** — « du Tonnerre », dégâts d'attaque de foudre, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`lightning_skill_levels`** — « du Foudroyeur », niveaux de compétence de foudre, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1200,6 +1273,24 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 11 | 8–12 % | 10 |
 | T6 | 1 | 4–7 % | 10 |
 
+**`necrotic_attack_dmg`** — « de la Faux », dégâts d'attaque nécrotiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
+**`necrotic_skill_levels`** — « de la Liche », niveaux de compétence nécrotiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
+
 **`necrotic_to_attacks`** — « de la Charogne », dégâts nécrotiques aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1235,6 +1326,35 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 11–14 % | 10 |
 | T4 | 12 | 7–10 % | 10 |
 | T5 | 1 | 3–6 % | 10 |
+
+**`physical_attack_dmg`** — « du Bourreau », dégâts d'attaque physiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
+**`physical_skill_levels`** — « du Maître d'armes », niveaux de compétence physiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 60 | 2–2 | 10 |
+| T2 | 1 | 1–1 | 10 |
+
+**`physical_spell_dmg`** — « de l'Impact », dégâts de sort physiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
 
 **`physical_to_attacks`** — « de la Brutalité », dégâts physiques aux attaques, arrondi 1
 
@@ -1283,7 +1403,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 20–29 % | 10 |
 | T5 | 1 | 10–19 % | 10 |
 
-**`putrefying`** — « de la Putréfaction », dégâts nécrotiques, arrondi 1
+**`putrefying`** — « de la Putréfaction », dégâts de sort nécrotiques, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
@@ -1347,7 +1467,7 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T6 | 8 | 12–19 | 10 |
 | T7 | 1 | 6–11 | 10 |
 
-**`stormy`** — « de la Tempête », dégâts de foudre, arrondi 1
+**`stormy`** — « de la Tempête », dégâts de sort de foudre, arrondi 1
 
 | palier | ouvre à | plage | poids |
 |---|---|---|---|
