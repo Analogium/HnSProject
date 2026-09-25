@@ -27,14 +27,17 @@ NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic
        "scenery, multiple subjects, sprite sheet, grid, frame, border")
 
 # Le fond suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour
-# le froid, prune pour le sacre — un fond dore noierait la lumiere du sujet. Sans
+# le froid, vert croupi pour la necrose, prune pour le sacre — un fond dore noierait la lumiere du sujet. Sans
 # entree, l'ardoise du chevalier, qui n'a pas d'element.
 BACKGROUNDS = {"flame_dash": "dark crimson", "ignition": "dark crimson",
                "storm_dash": "dark violet", "static_electricity": "dark violet",
                "ice_spike": "dark blue", "ice_nova": "dark blue",
                "frost_tomb": "dark blue", "winter_disaster": "dark blue",
                "holy_strike": "dark plum", "sacred_pillar": "dark plum",
-               "holy_pulse": "dark plum", "holy_light": "dark plum"}
+               "holy_pulse": "dark plum", "holy_light": "dark plum",
+               "plague": "dark murky green", "rise": "dark murky green",
+               "toxic_unleash": "dark murky green", "rotting_gate": "dark murky green",
+               "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green"}
 
 # Le sujet occupe rarement plus que ce centre ; reduite entiere, la tuile noie sa
 # silhouette dans le fond.

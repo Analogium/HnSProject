@@ -7102,6 +7102,309 @@ position = Vector2i(-17, -40)
 links = PackedStringArray("relic_4")
 lines = Array[ExtResource("3_line")]([SubResource("L_judgement_0"), SubResource("L_judgement_1")])
 
+[sub_resource type="Resource" id="L_rot_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rot_1"]
+script = ExtResource("2_node")
+id = "rot_1"
+position = Vector2i(5, -38)
+links = PackedStringArray("far_int_dex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rot_1_0")])
+
+[sub_resource type="Resource" id="L_rot_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rot_2"]
+script = ExtResource("2_node")
+id = "rot_2"
+position = Vector2i(5, -42)
+links = PackedStringArray("rot_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_rot_2_0")])
+
+[sub_resource type="Resource" id="L_rot_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rot_3"]
+script = ExtResource("2_node")
+id = "rot_3"
+position = Vector2i(7, -46)
+links = PackedStringArray("rot_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_rot_3_0")])
+
+[sub_resource type="Resource" id="L_necromancy_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_necromancy_1"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "spell"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_necromancy"]
+script = ExtResource("2_node")
+id = "necromancy"
+name = "Nécromancie"
+kind = 2
+position = Vector2i(11, -48)
+links = PackedStringArray("rot_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_necromancy_0"), SubResource("L_necromancy_1")])
+
+[sub_resource type="Resource" id="L_grave_1_0"]
+script = ExtResource("3_line")
+stat = "rot_chance"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_grave_1"]
+script = ExtResource("2_node")
+id = "grave_1"
+position = Vector2i(19, -49)
+links = PackedStringArray("necromancy")
+lines = Array[ExtResource("3_line")]([SubResource("L_grave_1_0")])
+
+[sub_resource type="Resource" id="L_ossuary_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "summon"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ossuary_1"]
+script = ExtResource("2_node")
+id = "ossuary_1"
+position = Vector2i(25, -45)
+links = PackedStringArray("grave_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_1_0")])
+
+[sub_resource type="Resource" id="L_ossuary_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "summon"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ossuary_2"]
+script = ExtResource("2_node")
+id = "ossuary_2"
+position = Vector2i(28, -43)
+links = PackedStringArray("ossuary_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_2_0")])
+
+[sub_resource type="Resource" id="L_ossuary_3_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "summon"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_ossuary_3"]
+script = ExtResource("2_node")
+id = "ossuary_3"
+position = Vector2i(28, -40)
+links = PackedStringArray("ossuary_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_3_0")])
+
+[sub_resource type="Resource" id="L_ossuary_4_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "summon"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ossuary_4"]
+script = ExtResource("2_node")
+id = "ossuary_4"
+position = Vector2i(25, -39)
+links = PackedStringArray("ossuary_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_4_0")])
+
+[sub_resource type="Resource" id="L_ossuary_5_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "summon"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_ossuary_5"]
+script = ExtResource("2_node")
+id = "ossuary_5"
+position = Vector2i(22, -40)
+links = PackedStringArray("ossuary_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_5_0")])
+
+[sub_resource type="Resource" id="L_ossuary_6_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "summon"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_ossuary_6"]
+script = ExtResource("2_node")
+id = "ossuary_6"
+position = Vector2i(22, -43)
+links = PackedStringArray("ossuary_5", "ossuary_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_ossuary_6_0")])
+
+[sub_resource type="Resource" id="L_lord_of_the_dead_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "summon"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_lord_of_the_dead_1"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "summon"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_lord_of_the_dead"]
+script = ExtResource("2_node")
+id = "lord_of_the_dead"
+name = "Seigneur des morts"
+kind = 2
+position = Vector2i(25, -42)
+links = PackedStringArray("ossuary_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_lord_of_the_dead_0"), SubResource("L_lord_of_the_dead_1")])
+
+[sub_resource type="Resource" id="L_grave_2_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "dot"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_grave_2"]
+script = ExtResource("2_node")
+id = "grave_2"
+position = Vector2i(31, -48)
+links = PackedStringArray("grave_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_grave_2_0")])
+
+[sub_resource type="Resource" id="L_hex_1_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "dot"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hex_1"]
+script = ExtResource("2_node")
+id = "hex_1"
+position = Vector2i(38, -44)
+links = PackedStringArray("grave_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_1_0")])
+
+[sub_resource type="Resource" id="L_hex_2_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "curse"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hex_2"]
+script = ExtResource("2_node")
+id = "hex_2"
+position = Vector2i(41, -42)
+links = PackedStringArray("hex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_2_0")])
+
+[sub_resource type="Resource" id="L_hex_3_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "dot"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hex_3"]
+script = ExtResource("2_node")
+id = "hex_3"
+position = Vector2i(41, -39)
+links = PackedStringArray("hex_2")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_3_0")])
+
+[sub_resource type="Resource" id="L_hex_4_0"]
+script = ExtResource("3_line")
+stat = "rot_chance"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hex_4"]
+script = ExtResource("2_node")
+id = "hex_4"
+position = Vector2i(38, -38)
+links = PackedStringArray("hex_3")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_4_0")])
+
+[sub_resource type="Resource" id="L_hex_5_0"]
+script = ExtResource("3_line")
+stat = "radius"
+scope = "curse"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_hex_5"]
+script = ExtResource("2_node")
+id = "hex_5"
+position = Vector2i(35, -39)
+links = PackedStringArray("hex_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_5_0")])
+
+[sub_resource type="Resource" id="L_hex_6_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "dot"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hex_6"]
+script = ExtResource("2_node")
+id = "hex_6"
+position = Vector2i(35, -42)
+links = PackedStringArray("hex_5", "hex_1")
+lines = Array[ExtResource("3_line")]([SubResource("L_hex_6_0")])
+
+[sub_resource type="Resource" id="L_ill_death_0"]
+script = ExtResource("3_line")
+stat = "damage"
+scope = "dot"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_ill_death_1"]
+script = ExtResource("3_line")
+stat = "use_time"
+scope = "curse"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_ill_death"]
+script = ExtResource("2_node")
+id = "ill_death"
+name = "Malemort"
+kind = 2
+position = Vector2i(38, -41)
+links = PackedStringArray("hex_4")
+lines = Array[ExtResource("3_line")]([SubResource("L_ill_death_0"), SubResource("L_ill_death_1")])
+
 [resource]
 script = ExtResource("1_tree")
-nodes = Array[ExtResource("2_node")]([SubResource("N_start"), SubResource("N_int_1"), SubResource("N_int_2"), SubResource("N_int_3"), SubResource("N_int_4"), SubResource("N_int_5"), SubResource("N_int_6"), SubResource("N_int_7"), SubResource("N_int_8"), SubResource("N_int_9"), SubResource("N_int_10"), SubResource("N_storm_mind"), SubResource("N_dex_1"), SubResource("N_dex_2"), SubResource("N_dex_3"), SubResource("N_dex_4"), SubResource("N_dex_5"), SubResource("N_dex_6"), SubResource("N_dex_7"), SubResource("N_dex_8"), SubResource("N_dex_9"), SubResource("N_dex_10"), SubResource("N_hunter_eye"), SubResource("N_str_1"), SubResource("N_str_2"), SubResource("N_str_3"), SubResource("N_str_4"), SubResource("N_str_5"), SubResource("N_str_6"), SubResource("N_str_7"), SubResource("N_str_8"), SubResource("N_str_9"), SubResource("N_str_10"), SubResource("N_colossus"), SubResource("N_inner_int_dex_1"), SubResource("N_inner_int_dex_2"), SubResource("N_inner_int_dex_3"), SubResource("N_inner_dex_str_1"), SubResource("N_inner_dex_str_2"), SubResource("N_inner_dex_str_3"), SubResource("N_inner_str_int_1"), SubResource("N_inner_str_int_2"), SubResource("N_inner_str_int_3"), SubResource("N_outer_int_dex_1"), SubResource("N_outer_int_dex_2"), SubResource("N_outer_int_dex_3"), SubResource("N_outer_int_dex_4"), SubResource("N_outer_int_dex_5"), SubResource("N_outer_int_dex_6"), SubResource("N_outer_dex_str_1"), SubResource("N_outer_dex_str_2"), SubResource("N_outer_dex_str_3"), SubResource("N_outer_dex_str_4"), SubResource("N_outer_dex_str_5"), SubResource("N_outer_dex_str_6"), SubResource("N_outer_str_int_1"), SubResource("N_outer_str_int_2"), SubResource("N_outer_str_int_3"), SubResource("N_outer_str_int_4"), SubResource("N_outer_str_int_5"), SubResource("N_outer_str_int_6"), SubResource("N_blaze_1"), SubResource("N_blaze_2"), SubResource("N_blaze_3"), SubResource("N_inner_blaze"), SubResource("N_blaze_4"), SubResource("N_blaze_5"), SubResource("N_vivid_embers"), SubResource("N_storm_1"), SubResource("N_storm_2"), SubResource("N_storm_3"), SubResource("N_quick_lightning"), SubResource("N_storm_4"), SubResource("N_storm_5"), SubResource("N_storm_crash"), SubResource("N_spells_1"), SubResource("N_spells_2"), SubResource("N_spells_3"), SubResource("N_spells_4"), SubResource("N_spells_5"), SubResource("N_spells_6"), SubResource("N_sharp_incantation"), SubResource("N_wave_1"), SubResource("N_wave_2"), SubResource("N_wave_3"), SubResource("N_wave_4"), SubResource("N_wave_5"), SubResource("N_wave_6"), SubResource("N_wide_wave"), SubResource("N_reserve_1"), SubResource("N_reserve_2"), SubResource("N_reserve_3"), SubResource("N_reserve_4"), SubResource("N_reserve_5"), SubResource("N_reserve_6"), SubResource("N_mana_well"), SubResource("N_lore_1"), SubResource("N_lore_2"), SubResource("N_lore_3"), SubResource("N_lore_4"), SubResource("N_lore_5"), SubResource("N_lore_6"), SubResource("N_arcane_lore"), SubResource("N_strike_1"), SubResource("N_strike_2"), SubResource("N_strike_3"), SubResource("N_strike_4"), SubResource("N_strike_5"), SubResource("N_strike_6"), SubResource("N_brute_force"), SubResource("N_flesh_1"), SubResource("N_flesh_2"), SubResource("N_flesh_3"), SubResource("N_flesh_4"), SubResource("N_flesh_5"), SubResource("N_flesh_6"), SubResource("N_sturdy_blood"), SubResource("N_plates_1"), SubResource("N_plates_2"), SubResource("N_plates_3"), SubResource("N_plates_4"), SubResource("N_plates_5"), SubResource("N_plates_6"), SubResource("N_iron_skin"), SubResource("N_arms_1"), SubResource("N_arms_2"), SubResource("N_arms_3"), SubResource("N_arms_4"), SubResource("N_arms_5"), SubResource("N_arms_6"), SubResource("N_weapon_master"), SubResource("N_regrowth_1"), SubResource("N_regrowth_2"), SubResource("N_regrowth_3"), SubResource("N_regrowth_4"), SubResource("N_regrowth_5"), SubResource("N_regrowth_6"), SubResource("N_regrowing_flesh"), SubResource("N_wound_1"), SubResource("N_wound_2"), SubResource("N_wound_3"), SubResource("N_wound_4"), SubResource("N_wound_5"), SubResource("N_wound_6"), SubResource("N_open_wound"), SubResource("N_volley_1"), SubResource("N_volley_2"), SubResource("N_volley_3"), SubResource("N_precise_shot"), SubResource("N_volley_4"), SubResource("N_volley_5"), SubResource("N_volley_shot"), SubResource("N_eye_1"), SubResource("N_eye_2"), SubResource("N_eye_3"), SubResource("N_eye_4"), SubResource("N_eye_5"), SubResource("N_eye_6"), SubResource("N_lynx_eye"), SubResource("N_breath_1"), SubResource("N_breath_2"), SubResource("N_breath_3"), SubResource("N_breath_4"), SubResource("N_breath_5"), SubResource("N_breath_6"), SubResource("N_reflexes"), SubResource("N_run_1"), SubResource("N_run_2"), SubResource("N_run_3"), SubResource("N_run_4"), SubResource("N_run_5"), SubResource("N_run_6"), SubResource("N_swiftness"), SubResource("N_frost_1"), SubResource("N_frost_2"), SubResource("N_frost_3"), SubResource("N_frost_4"), SubResource("N_frost_5"), SubResource("N_frost_6"), SubResource("N_frostbite"), SubResource("N_far_int"), SubResource("N_far_dex"), SubResource("N_far_str"), SubResource("N_far_int_dex_1"), SubResource("N_far_int_dex_2"), SubResource("N_far_int_dex_3"), SubResource("N_far_int_dex_4"), SubResource("N_far_int_dex_5"), SubResource("N_far_int_dex_6"), SubResource("N_far_int_dex_7"), SubResource("N_far_int_dex_8"), SubResource("N_far_int_dex_9"), SubResource("N_far_int_dex_10"), SubResource("N_far_dex_str_1"), SubResource("N_far_dex_str_2"), SubResource("N_far_dex_str_3"), SubResource("N_far_dex_str_4"), SubResource("N_far_dex_str_5"), SubResource("N_far_dex_str_6"), SubResource("N_far_dex_str_7"), SubResource("N_far_dex_str_8"), SubResource("N_far_dex_str_9"), SubResource("N_far_dex_str_10"), SubResource("N_far_str_int_1"), SubResource("N_far_str_int_2"), SubResource("N_far_str_int_3"), SubResource("N_far_str_int_4"), SubResource("N_far_str_int_5"), SubResource("N_far_str_int_6"), SubResource("N_far_str_int_7"), SubResource("N_far_str_int_8"), SubResource("N_far_str_int_9"), SubResource("N_far_str_int_10"), SubResource("N_int_bridge"), SubResource("N_dex_bridge"), SubResource("N_str_bridge"), SubResource("N_rod_1"), SubResource("N_rod_2"), SubResource("N_rod_3"), SubResource("N_rod_4"), SubResource("N_rod_5"), SubResource("N_rod_6"), SubResource("N_lightning_rod"), SubResource("N_arc_1"), SubResource("N_arc_2"), SubResource("N_arc_3"), SubResource("N_arcing_current"), SubResource("N_arc_4"), SubResource("N_arc_5"), SubResource("N_spell_focus"), SubResource("N_blight_1"), SubResource("N_blight_2"), SubResource("N_blight_3"), SubResource("N_blight_4"), SubResource("N_blight_5"), SubResource("N_blight_6"), SubResource("N_withering"), SubResource("N_hunt_1"), SubResource("N_hunt_2"), SubResource("N_hunt_3"), SubResource("N_hunt_4"), SubResource("N_hunt_5"), SubResource("N_hunt_6"), SubResource("N_deadly_rhythm"), SubResource("N_rime_1"), SubResource("N_rime_2"), SubResource("N_rime_3"), SubResource("N_rime_4"), SubResource("N_rime_5"), SubResource("N_rime_6"), SubResource("N_frost_tips"), SubResource("N_guard_1"), SubResource("N_guard_2"), SubResource("N_guard_3"), SubResource("N_guard_4"), SubResource("N_guard_5"), SubResource("N_guard_6"), SubResource("N_supple_guard"), SubResource("N_whirl_1"), SubResource("N_whirl_2"), SubResource("N_whirl_3"), SubResource("N_whirl_4"), SubResource("N_whirl_5"), SubResource("N_whirl_6"), SubResource("N_whirling_blades"), SubResource("N_sanctity_1"), SubResource("N_sanctity_2"), SubResource("N_sanctity_3"), SubResource("N_sanctity_4"), SubResource("N_sanctity_5"), SubResource("N_sanctity_6"), SubResource("N_hallowed_soul"), SubResource("N_spellblade_1"), SubResource("N_spellblade_2"), SubResource("N_spellblade_3"), SubResource("N_burning_edge"), SubResource("N_spellblade_4"), SubResource("N_spellblade_5"), SubResource("N_blessed_edge"), SubResource("N_crush_1"), SubResource("N_crush_2"), SubResource("N_crush_3"), SubResource("N_crush_4"), SubResource("N_crush_5"), SubResource("N_crush_6"), SubResource("N_crusher"), SubResource("N_sweep_1"), SubResource("N_sweep_2"), SubResource("N_sweep_3"), SubResource("N_sweep_4"), SubResource("N_sweep_5"), SubResource("N_windmill"), SubResource("N_reach_1"), SubResource("N_reach_2"), SubResource("N_reach_3"), SubResource("N_high_guard"), SubResource("N_gore_1"), SubResource("N_gore_2"), SubResource("N_gore_3"), SubResource("N_gore_4"), SubResource("N_gore_5"), SubResource("N_gore_6"), SubResource("N_bloodletting"), SubResource("N_blast_1"), SubResource("N_blast_2"), SubResource("N_blast_3"), SubResource("N_blast_4"), SubResource("N_blast_5"), SubResource("N_blast_6"), SubResource("N_detonation"), SubResource("N_breadth_1"), SubResource("N_breadth_2"), SubResource("N_breadth_3"), SubResource("N_breadth_4"), SubResource("N_breadth_5"), SubResource("N_breadth_6"), SubResource("N_wide_blast"), SubResource("N_hold_1"), SubResource("N_hold_2"), SubResource("N_hold_3"), SubResource("N_hold_4"), SubResource("N_hold_5"), SubResource("N_lasting_hold"), SubResource("N_pyre_1"), SubResource("N_pyre_2"), SubResource("N_pyre_3"), SubResource("N_pyre_4"), SubResource("N_pyre_5"), SubResource("N_burning_cloud"), SubResource("N_gale_1"), SubResource("N_gale_2"), SubResource("N_gale_3"), SubResource("N_gale_4"), SubResource("N_gale_5"), SubResource("N_spread_storm"), SubResource("N_ember_1"), SubResource("N_ember_2"), SubResource("N_ember_3"), SubResource("N_live_coals"), SubResource("N_shock_1"), SubResource("N_shock_2"), SubResource("N_shock_3"), SubResource("N_shockwave"), SubResource("N_mastery_1"), SubResource("N_mastery_2"), SubResource("N_mastery_3"), SubResource("N_field_master"), SubResource("N_kill_1"), SubResource("N_kill_2"), SubResource("N_kill_3"), SubResource("N_kill_4"), SubResource("N_kill_5"), SubResource("N_kill_6"), SubResource("N_assassination"), SubResource("N_falcon_1"), SubResource("N_falcon_2"), SubResource("N_falcon_3"), SubResource("N_falcon_4"), SubResource("N_falcon_5"), SubResource("N_falcon_6"), SubResource("N_falcon_flight"), SubResource("N_flee_1"), SubResource("N_flee_2"), SubResource("N_flee_3"), SubResource("N_flee_4"), SubResource("N_flee_5"), SubResource("N_light_foot"), SubResource("N_spear_1"), SubResource("N_spear_2"), SubResource("N_spear_3"), SubResource("N_spearhead"), SubResource("N_hand_1"), SubResource("N_hand_2"), SubResource("N_hand_3"), SubResource("N_deft_hand"), SubResource("N_vigor_1"), SubResource("N_vigor_2"), SubResource("N_vigor_3"), SubResource("N_vigor_4"), SubResource("N_vigor_5"), SubResource("N_vigor_6"), SubResource("N_constitution"), SubResource("N_hide_1"), SubResource("N_hide_2"), SubResource("N_hide_3"), SubResource("N_hide_4"), SubResource("N_hide_5"), SubResource("N_tanned_skin"), SubResource("N_bark_1"), SubResource("N_bark_2"), SubResource("N_bark_3"), SubResource("N_bark_skin"), SubResource("N_heart_1"), SubResource("N_heart_2"), SubResource("N_heart_3"), SubResource("N_hardened_heart"), SubResource("N_deep_1"), SubResource("N_deep_2"), SubResource("N_deep_3"), SubResource("N_deep_4"), SubResource("N_deep_5"), SubResource("N_deep_6"), SubResource("N_deep_thoughts"), SubResource("N_spring_1"), SubResource("N_spring_2"), SubResource("N_spring_3"), SubResource("N_deep_spring"), SubResource("N_word_1"), SubResource("N_word_2"), SubResource("N_word_3"), SubResource("N_quick_word"), SubResource("N_coord_1"), SubResource("N_coord_2"), SubResource("N_coord_3"), SubResource("N_coord_4"), SubResource("N_coord_5"), SubResource("N_coord_6"), SubResource("N_coordination"), SubResource("N_drill_1"), SubResource("N_drill_2"), SubResource("N_drill_3"), SubResource("N_drill_4"), SubResource("N_drill_5"), SubResource("N_drill_6"), SubResource("N_discipline"), SubResource("N_floe_1"), SubResource("N_floe_2"), SubResource("N_floe_3"), SubResource("N_glacier_heart"), SubResource("N_hardening_1"), SubResource("N_hardening_2"), SubResource("N_hardening_3"), SubResource("N_hardening_4"), SubResource("N_hardening_5"), SubResource("N_hardening_6"), SubResource("N_thick_hide"), SubResource("N_creed_1"), SubResource("N_creed_2"), SubResource("N_creed_3"), SubResource("N_conviction"), SubResource("N_spark_1"), SubResource("N_spark_2"), SubResource("N_spark_3"), SubResource("N_spark_4"), SubResource("N_spark_5"), SubResource("N_spark_6"), SubResource("N_discharge"), SubResource("N_bless_1"), SubResource("N_bless_2"), SubResource("N_bless_3"), SubResource("N_anointing"), SubResource("N_hoar_1"), SubResource("N_hoar_2"), SubResource("N_hoar_3"), SubResource("N_hoar_4"), SubResource("N_hoar_5"), SubResource("N_hoar_6"), SubResource("N_deep_frost"), SubResource("N_respite_1"), SubResource("N_respite_2"), SubResource("N_respite_3"), SubResource("N_recovery"), SubResource("N_kindle_1"), SubResource("N_kindle_2"), SubResource("N_kindle_3"), SubResource("N_kindle_4"), SubResource("N_kindle_5"), SubResource("N_kindle_6"), SubResource("N_firebrand"), SubResource("N_relic_1"), SubResource("N_relic_2"), SubResource("N_relic_3"), SubResource("N_relic_4"), SubResource("N_relic_5"), SubResource("N_relic_6"), SubResource("N_judgement")])
+nodes = Array[ExtResource("2_node")]([SubResource("N_start"), SubResource("N_int_1"), SubResource("N_int_2"), SubResource("N_int_3"), SubResource("N_int_4"), SubResource("N_int_5"), SubResource("N_int_6"), SubResource("N_int_7"), SubResource("N_int_8"), SubResource("N_int_9"), SubResource("N_int_10"), SubResource("N_storm_mind"), SubResource("N_dex_1"), SubResource("N_dex_2"), SubResource("N_dex_3"), SubResource("N_dex_4"), SubResource("N_dex_5"), SubResource("N_dex_6"), SubResource("N_dex_7"), SubResource("N_dex_8"), SubResource("N_dex_9"), SubResource("N_dex_10"), SubResource("N_hunter_eye"), SubResource("N_str_1"), SubResource("N_str_2"), SubResource("N_str_3"), SubResource("N_str_4"), SubResource("N_str_5"), SubResource("N_str_6"), SubResource("N_str_7"), SubResource("N_str_8"), SubResource("N_str_9"), SubResource("N_str_10"), SubResource("N_colossus"), SubResource("N_inner_int_dex_1"), SubResource("N_inner_int_dex_2"), SubResource("N_inner_int_dex_3"), SubResource("N_inner_dex_str_1"), SubResource("N_inner_dex_str_2"), SubResource("N_inner_dex_str_3"), SubResource("N_inner_str_int_1"), SubResource("N_inner_str_int_2"), SubResource("N_inner_str_int_3"), SubResource("N_outer_int_dex_1"), SubResource("N_outer_int_dex_2"), SubResource("N_outer_int_dex_3"), SubResource("N_outer_int_dex_4"), SubResource("N_outer_int_dex_5"), SubResource("N_outer_int_dex_6"), SubResource("N_outer_dex_str_1"), SubResource("N_outer_dex_str_2"), SubResource("N_outer_dex_str_3"), SubResource("N_outer_dex_str_4"), SubResource("N_outer_dex_str_5"), SubResource("N_outer_dex_str_6"), SubResource("N_outer_str_int_1"), SubResource("N_outer_str_int_2"), SubResource("N_outer_str_int_3"), SubResource("N_outer_str_int_4"), SubResource("N_outer_str_int_5"), SubResource("N_outer_str_int_6"), SubResource("N_blaze_1"), SubResource("N_blaze_2"), SubResource("N_blaze_3"), SubResource("N_inner_blaze"), SubResource("N_blaze_4"), SubResource("N_blaze_5"), SubResource("N_vivid_embers"), SubResource("N_storm_1"), SubResource("N_storm_2"), SubResource("N_storm_3"), SubResource("N_quick_lightning"), SubResource("N_storm_4"), SubResource("N_storm_5"), SubResource("N_storm_crash"), SubResource("N_spells_1"), SubResource("N_spells_2"), SubResource("N_spells_3"), SubResource("N_spells_4"), SubResource("N_spells_5"), SubResource("N_spells_6"), SubResource("N_sharp_incantation"), SubResource("N_wave_1"), SubResource("N_wave_2"), SubResource("N_wave_3"), SubResource("N_wave_4"), SubResource("N_wave_5"), SubResource("N_wave_6"), SubResource("N_wide_wave"), SubResource("N_reserve_1"), SubResource("N_reserve_2"), SubResource("N_reserve_3"), SubResource("N_reserve_4"), SubResource("N_reserve_5"), SubResource("N_reserve_6"), SubResource("N_mana_well"), SubResource("N_lore_1"), SubResource("N_lore_2"), SubResource("N_lore_3"), SubResource("N_lore_4"), SubResource("N_lore_5"), SubResource("N_lore_6"), SubResource("N_arcane_lore"), SubResource("N_strike_1"), SubResource("N_strike_2"), SubResource("N_strike_3"), SubResource("N_strike_4"), SubResource("N_strike_5"), SubResource("N_strike_6"), SubResource("N_brute_force"), SubResource("N_flesh_1"), SubResource("N_flesh_2"), SubResource("N_flesh_3"), SubResource("N_flesh_4"), SubResource("N_flesh_5"), SubResource("N_flesh_6"), SubResource("N_sturdy_blood"), SubResource("N_plates_1"), SubResource("N_plates_2"), SubResource("N_plates_3"), SubResource("N_plates_4"), SubResource("N_plates_5"), SubResource("N_plates_6"), SubResource("N_iron_skin"), SubResource("N_arms_1"), SubResource("N_arms_2"), SubResource("N_arms_3"), SubResource("N_arms_4"), SubResource("N_arms_5"), SubResource("N_arms_6"), SubResource("N_weapon_master"), SubResource("N_regrowth_1"), SubResource("N_regrowth_2"), SubResource("N_regrowth_3"), SubResource("N_regrowth_4"), SubResource("N_regrowth_5"), SubResource("N_regrowth_6"), SubResource("N_regrowing_flesh"), SubResource("N_wound_1"), SubResource("N_wound_2"), SubResource("N_wound_3"), SubResource("N_wound_4"), SubResource("N_wound_5"), SubResource("N_wound_6"), SubResource("N_open_wound"), SubResource("N_volley_1"), SubResource("N_volley_2"), SubResource("N_volley_3"), SubResource("N_precise_shot"), SubResource("N_volley_4"), SubResource("N_volley_5"), SubResource("N_volley_shot"), SubResource("N_eye_1"), SubResource("N_eye_2"), SubResource("N_eye_3"), SubResource("N_eye_4"), SubResource("N_eye_5"), SubResource("N_eye_6"), SubResource("N_lynx_eye"), SubResource("N_breath_1"), SubResource("N_breath_2"), SubResource("N_breath_3"), SubResource("N_breath_4"), SubResource("N_breath_5"), SubResource("N_breath_6"), SubResource("N_reflexes"), SubResource("N_run_1"), SubResource("N_run_2"), SubResource("N_run_3"), SubResource("N_run_4"), SubResource("N_run_5"), SubResource("N_run_6"), SubResource("N_swiftness"), SubResource("N_frost_1"), SubResource("N_frost_2"), SubResource("N_frost_3"), SubResource("N_frost_4"), SubResource("N_frost_5"), SubResource("N_frost_6"), SubResource("N_frostbite"), SubResource("N_far_int"), SubResource("N_far_dex"), SubResource("N_far_str"), SubResource("N_far_int_dex_1"), SubResource("N_far_int_dex_2"), SubResource("N_far_int_dex_3"), SubResource("N_far_int_dex_4"), SubResource("N_far_int_dex_5"), SubResource("N_far_int_dex_6"), SubResource("N_far_int_dex_7"), SubResource("N_far_int_dex_8"), SubResource("N_far_int_dex_9"), SubResource("N_far_int_dex_10"), SubResource("N_far_dex_str_1"), SubResource("N_far_dex_str_2"), SubResource("N_far_dex_str_3"), SubResource("N_far_dex_str_4"), SubResource("N_far_dex_str_5"), SubResource("N_far_dex_str_6"), SubResource("N_far_dex_str_7"), SubResource("N_far_dex_str_8"), SubResource("N_far_dex_str_9"), SubResource("N_far_dex_str_10"), SubResource("N_far_str_int_1"), SubResource("N_far_str_int_2"), SubResource("N_far_str_int_3"), SubResource("N_far_str_int_4"), SubResource("N_far_str_int_5"), SubResource("N_far_str_int_6"), SubResource("N_far_str_int_7"), SubResource("N_far_str_int_8"), SubResource("N_far_str_int_9"), SubResource("N_far_str_int_10"), SubResource("N_int_bridge"), SubResource("N_dex_bridge"), SubResource("N_str_bridge"), SubResource("N_rod_1"), SubResource("N_rod_2"), SubResource("N_rod_3"), SubResource("N_rod_4"), SubResource("N_rod_5"), SubResource("N_rod_6"), SubResource("N_lightning_rod"), SubResource("N_arc_1"), SubResource("N_arc_2"), SubResource("N_arc_3"), SubResource("N_arcing_current"), SubResource("N_arc_4"), SubResource("N_arc_5"), SubResource("N_spell_focus"), SubResource("N_blight_1"), SubResource("N_blight_2"), SubResource("N_blight_3"), SubResource("N_blight_4"), SubResource("N_blight_5"), SubResource("N_blight_6"), SubResource("N_withering"), SubResource("N_hunt_1"), SubResource("N_hunt_2"), SubResource("N_hunt_3"), SubResource("N_hunt_4"), SubResource("N_hunt_5"), SubResource("N_hunt_6"), SubResource("N_deadly_rhythm"), SubResource("N_rime_1"), SubResource("N_rime_2"), SubResource("N_rime_3"), SubResource("N_rime_4"), SubResource("N_rime_5"), SubResource("N_rime_6"), SubResource("N_frost_tips"), SubResource("N_guard_1"), SubResource("N_guard_2"), SubResource("N_guard_3"), SubResource("N_guard_4"), SubResource("N_guard_5"), SubResource("N_guard_6"), SubResource("N_supple_guard"), SubResource("N_whirl_1"), SubResource("N_whirl_2"), SubResource("N_whirl_3"), SubResource("N_whirl_4"), SubResource("N_whirl_5"), SubResource("N_whirl_6"), SubResource("N_whirling_blades"), SubResource("N_sanctity_1"), SubResource("N_sanctity_2"), SubResource("N_sanctity_3"), SubResource("N_sanctity_4"), SubResource("N_sanctity_5"), SubResource("N_sanctity_6"), SubResource("N_hallowed_soul"), SubResource("N_spellblade_1"), SubResource("N_spellblade_2"), SubResource("N_spellblade_3"), SubResource("N_burning_edge"), SubResource("N_spellblade_4"), SubResource("N_spellblade_5"), SubResource("N_blessed_edge"), SubResource("N_crush_1"), SubResource("N_crush_2"), SubResource("N_crush_3"), SubResource("N_crush_4"), SubResource("N_crush_5"), SubResource("N_crush_6"), SubResource("N_crusher"), SubResource("N_sweep_1"), SubResource("N_sweep_2"), SubResource("N_sweep_3"), SubResource("N_sweep_4"), SubResource("N_sweep_5"), SubResource("N_windmill"), SubResource("N_reach_1"), SubResource("N_reach_2"), SubResource("N_reach_3"), SubResource("N_high_guard"), SubResource("N_gore_1"), SubResource("N_gore_2"), SubResource("N_gore_3"), SubResource("N_gore_4"), SubResource("N_gore_5"), SubResource("N_gore_6"), SubResource("N_bloodletting"), SubResource("N_blast_1"), SubResource("N_blast_2"), SubResource("N_blast_3"), SubResource("N_blast_4"), SubResource("N_blast_5"), SubResource("N_blast_6"), SubResource("N_detonation"), SubResource("N_breadth_1"), SubResource("N_breadth_2"), SubResource("N_breadth_3"), SubResource("N_breadth_4"), SubResource("N_breadth_5"), SubResource("N_breadth_6"), SubResource("N_wide_blast"), SubResource("N_hold_1"), SubResource("N_hold_2"), SubResource("N_hold_3"), SubResource("N_hold_4"), SubResource("N_hold_5"), SubResource("N_lasting_hold"), SubResource("N_pyre_1"), SubResource("N_pyre_2"), SubResource("N_pyre_3"), SubResource("N_pyre_4"), SubResource("N_pyre_5"), SubResource("N_burning_cloud"), SubResource("N_gale_1"), SubResource("N_gale_2"), SubResource("N_gale_3"), SubResource("N_gale_4"), SubResource("N_gale_5"), SubResource("N_spread_storm"), SubResource("N_ember_1"), SubResource("N_ember_2"), SubResource("N_ember_3"), SubResource("N_live_coals"), SubResource("N_shock_1"), SubResource("N_shock_2"), SubResource("N_shock_3"), SubResource("N_shockwave"), SubResource("N_mastery_1"), SubResource("N_mastery_2"), SubResource("N_mastery_3"), SubResource("N_field_master"), SubResource("N_kill_1"), SubResource("N_kill_2"), SubResource("N_kill_3"), SubResource("N_kill_4"), SubResource("N_kill_5"), SubResource("N_kill_6"), SubResource("N_assassination"), SubResource("N_falcon_1"), SubResource("N_falcon_2"), SubResource("N_falcon_3"), SubResource("N_falcon_4"), SubResource("N_falcon_5"), SubResource("N_falcon_6"), SubResource("N_falcon_flight"), SubResource("N_flee_1"), SubResource("N_flee_2"), SubResource("N_flee_3"), SubResource("N_flee_4"), SubResource("N_flee_5"), SubResource("N_light_foot"), SubResource("N_spear_1"), SubResource("N_spear_2"), SubResource("N_spear_3"), SubResource("N_spearhead"), SubResource("N_hand_1"), SubResource("N_hand_2"), SubResource("N_hand_3"), SubResource("N_deft_hand"), SubResource("N_vigor_1"), SubResource("N_vigor_2"), SubResource("N_vigor_3"), SubResource("N_vigor_4"), SubResource("N_vigor_5"), SubResource("N_vigor_6"), SubResource("N_constitution"), SubResource("N_hide_1"), SubResource("N_hide_2"), SubResource("N_hide_3"), SubResource("N_hide_4"), SubResource("N_hide_5"), SubResource("N_tanned_skin"), SubResource("N_bark_1"), SubResource("N_bark_2"), SubResource("N_bark_3"), SubResource("N_bark_skin"), SubResource("N_heart_1"), SubResource("N_heart_2"), SubResource("N_heart_3"), SubResource("N_hardened_heart"), SubResource("N_deep_1"), SubResource("N_deep_2"), SubResource("N_deep_3"), SubResource("N_deep_4"), SubResource("N_deep_5"), SubResource("N_deep_6"), SubResource("N_deep_thoughts"), SubResource("N_spring_1"), SubResource("N_spring_2"), SubResource("N_spring_3"), SubResource("N_deep_spring"), SubResource("N_word_1"), SubResource("N_word_2"), SubResource("N_word_3"), SubResource("N_quick_word"), SubResource("N_coord_1"), SubResource("N_coord_2"), SubResource("N_coord_3"), SubResource("N_coord_4"), SubResource("N_coord_5"), SubResource("N_coord_6"), SubResource("N_coordination"), SubResource("N_drill_1"), SubResource("N_drill_2"), SubResource("N_drill_3"), SubResource("N_drill_4"), SubResource("N_drill_5"), SubResource("N_drill_6"), SubResource("N_discipline"), SubResource("N_floe_1"), SubResource("N_floe_2"), SubResource("N_floe_3"), SubResource("N_glacier_heart"), SubResource("N_hardening_1"), SubResource("N_hardening_2"), SubResource("N_hardening_3"), SubResource("N_hardening_4"), SubResource("N_hardening_5"), SubResource("N_hardening_6"), SubResource("N_thick_hide"), SubResource("N_creed_1"), SubResource("N_creed_2"), SubResource("N_creed_3"), SubResource("N_conviction"), SubResource("N_spark_1"), SubResource("N_spark_2"), SubResource("N_spark_3"), SubResource("N_spark_4"), SubResource("N_spark_5"), SubResource("N_spark_6"), SubResource("N_discharge"), SubResource("N_bless_1"), SubResource("N_bless_2"), SubResource("N_bless_3"), SubResource("N_anointing"), SubResource("N_hoar_1"), SubResource("N_hoar_2"), SubResource("N_hoar_3"), SubResource("N_hoar_4"), SubResource("N_hoar_5"), SubResource("N_hoar_6"), SubResource("N_deep_frost"), SubResource("N_respite_1"), SubResource("N_respite_2"), SubResource("N_respite_3"), SubResource("N_recovery"), SubResource("N_kindle_1"), SubResource("N_kindle_2"), SubResource("N_kindle_3"), SubResource("N_kindle_4"), SubResource("N_kindle_5"), SubResource("N_kindle_6"), SubResource("N_firebrand"), SubResource("N_relic_1"), SubResource("N_relic_2"), SubResource("N_relic_3"), SubResource("N_relic_4"), SubResource("N_relic_5"), SubResource("N_relic_6"), SubResource("N_judgement"), SubResource("N_rot_1"), SubResource("N_rot_2"), SubResource("N_rot_3"), SubResource("N_necromancy"), SubResource("N_grave_1"), SubResource("N_ossuary_1"), SubResource("N_ossuary_2"), SubResource("N_ossuary_3"), SubResource("N_ossuary_4"), SubResource("N_ossuary_5"), SubResource("N_ossuary_6"), SubResource("N_lord_of_the_dead"), SubResource("N_grave_2"), SubResource("N_hex_1"), SubResource("N_hex_2"), SubResource("N_hex_3"), SubResource("N_hex_4"), SubResource("N_hex_5"), SubResource("N_hex_6"), SubResource("N_ill_death")])

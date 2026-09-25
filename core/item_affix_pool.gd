@@ -70,6 +70,12 @@ const ALL := [
 	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).
 	preload("res://resources/item_affixes/crushing.tres"),
 	preload("res://resources/item_affixes/expansive.tres"),
+
+	# Jalon 26 : les quatre mots-clés du manuel nécrotique.
+	preload("res://resources/item_affixes/putrefying.tres"),
+	preload("res://resources/item_affixes/necromancers.tres"),
+	preload("res://resources/item_affixes/anathema.tres"),
+	preload("res://resources/item_affixes/gangrenous.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6 : un objet sur deux sort nu, six affixes

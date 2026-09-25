@@ -797,6 +797,13 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.COST, Texts.t("brûlure"),
 			"%s %s" % [StatMod.percentage(roundi(cast.self_burn * 100.0)), Texts.t("PV/s")], MISSING
 		))
+	if skill.self_wither > 0.0:
+		out.append(SheetLine.new(
+			Group.COST, Texts.t("brûlure"),
+			"%s %s" % [
+				StatMod.percentage(skill.self_wither * 100.0), Texts.t("PV actuels/s")
+			], MISSING
+		))
 	if cast.mana_per_second > 0.0:
 		out.append(SheetLine.new(
 			Group.COST, Texts.t("drain"),
@@ -924,6 +931,15 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.hits > 1:
 		out.append(SheetLine.new(Group.SHAPE, Texts.t("coups"), str(cast.hits), UiPalette.TEXT))
+	if cast.inflicted_state >= 0:
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("état"),
+			"%s · %s" % [
+				StatusEffects.name(cast.inflicted_state),
+				StatMod.percentage(cast.inflict_chance * 100.0)
+			],
+			StatusEffects.color(cast.inflicted_state)
+		))
 	# Celle d'un lancer qui pose un buff se lit sous le nom du buff, plus bas.
 	if cast.duration > 0.0 and not skill.grants_buffs():
 		out.append(SheetLine.new(
@@ -972,10 +988,13 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	# **Un déplacement ne touche personne** : ses dégâts, sa forme et ses moyennes
 	# décrivent un coup qui n'existe pas. Le lancer les porte quand même — l'équipement
 	# ajoute ses fourchettes à tout ce qui est « sort » —, et les afficher mentirait.
+	# Une malédiction ne frappe pas non plus, mais sa zone et ce qu'elle pose sont ce
+	# qu'elle fait.
 	if not skill.strikes():
-		out.assign(out.filter(func(l: SheetLine) -> bool:
-			return not l.group in [Group.DAMAGE, Group.SHAPE, Group.ESTIMATE]
-		))
+		var hidden := [Group.DAMAGE, Group.ESTIMATE]
+		if skill.inflicted_state < 0:
+			hidden.append(Group.SHAPE)
+		out.assign(out.filter(func(l: SheetLine) -> bool: return not l.group in hidden))
 
 	return Sheet.new(
 		skill.displayed_name(), cast.keywords_label(), out, skill.displayed_description()

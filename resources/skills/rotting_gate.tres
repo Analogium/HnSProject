@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/rotting_gate.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "rotting_gate"
+name = "Porte pourrissante"
+description = "Un portail crache des créatures qui vont exploser sur les ennemis."
+nature = 4
+cadence = 1
+shape = 21
+declared_keywords = PackedStringArray("area")
+cast_time = 1.00
+cooldown = 6.00
+mana_cost = 24.0
+duration = 6.0
+period = 0.75
+radius = 22.0
+damage_per_point = Array[float]([14.0, 18.0, 22.0, 28.0, 35.0])
+required_manual_level = 8
+icon = ExtResource("2_icone")

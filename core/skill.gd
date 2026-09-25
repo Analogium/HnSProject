@@ -28,7 +28,7 @@ enum Cadence { WEAPON, CAST }
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
 enum Shape {
 	ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF,
-	WAVE, CYCLONE, SPIKES, NOVA, VORTEX, BEAM, PILLAR, PULSE,
+	WAVE, CYCLONE, SPIKES, NOVA, VORTEX, BEAM, PILLAR, PULSE, SUMMON, GATE, CURSE,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -48,6 +48,7 @@ const KEYWORD_OF_NATURE := {
 	DamageType.Kind.FIRE: Keywords.FIRE,
 	DamageType.Kind.LIGHTNING: Keywords.LIGHTNING,
 	DamageType.Kind.COLD: Keywords.COLD,
+	DamageType.Kind.NECROTIC: Keywords.NECROTIC,
 }
 const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
@@ -70,6 +71,11 @@ const KEYWORD_OF_SHAPE := {
 	# prêter `area` promettrait un affixe qui ne le servirait pas.
 	Shape.PILLAR: Keywords.AREA,
 	Shape.PULSE: Keywords.AREA,
+	# Le portail déclare `area` lui-même : ce qu'il crache se bat pour le joueur, et
+	# explose.
+	Shape.SUMMON: Keywords.SUMMON,
+	Shape.GATE: Keywords.SUMMON,
+	Shape.CURSE: Keywords.CURSE,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -109,14 +115,16 @@ const HITS_PER_SHAPE := {
 ## laisse derrière elle — sa trace ou son buff. Zéro pour ce qui ne dure pas, et pour
 ## l'aura, qui dure tant qu'on ne l'éteint pas.
 @export var duration: float = 0.0
-## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule, et **la
-## longueur** d'un faisceau, dont la largeur est celle de son dessin.
+## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule ou d'une créature
+## de portail, celle que gardent les morts-vivants autour du joueur, et **la longueur**
+## d'un faisceau, dont la largeur est celle de son dessin.
 @export var radius: float = 0.0
 ## En secondes, entre deux frappes d'un nuage ou d'une aura, ou entre deux touches
 ## d'une même cible par un serpent ou une épée. **Aucun nœud ne la vise** : elle
 ## change le nombre de coups sans changer ce que la fiche appelle dégâts.
 @export var period: float = 0.0
-## Combien de ces présences peuvent exister à la fois. Zéro : sans limite.
+## Combien de ces présences peuvent exister à la fois — épées, morts-vivants. Zéro : sans
+## limite.
 @export var simultaneous: int = 0
 ## La part des PV max qu'une aura brûle au lanceur, par seconde. Hors de portée des
 ## nœuds : réduite à zéro, elle ferait de l'aura un sort sans prix.
@@ -134,6 +142,10 @@ const HITS_PER_SHAPE := {
 ## pendant de `self_burn`. Zéro partout ailleurs.
 @export var self_heal: float = 0.0
 
+## La part des PV **actuels** qu'un buff ronge par seconde : il ne tue jamais, il
+## entame. Le pendant de `self_burn` pour ce qui ne doit pas être mortel.
+@export var self_wither: float = 0.0
+
 ## Ce geste enferme-t-il son lanceur : tant qu'il brûle, rien d'autre ne part et on ne
 ## bouge plus. Seul le tombeau de glace le porte, et l'éteindre reste permis.
 @export var binds_caster: bool = false
@@ -144,6 +156,12 @@ const HITS_PER_SHAPE := {
 ## jeu. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa
 ## voisine, pas un réglage qu'on achète.
 @export var status_chance_increase: float = 0.0
+
+## L'état qu'il **pose** à ce qu'il touche (`StatusEffects.Kind`, hors de ceux que tire
+## une nature), et sa chance ; −1 pour rien. Ce qu'il brûle part du coup, comme
+## l'embrasement : il suit donc le niveau du sort.
+@export var inflicted_state: int = -1
+@export_range(0.0, 1.0) var inflict_chance: float = 1.0
 
 ## Ce que le lancer pose sur son lanceur : un buff nommé, ou plusieurs. Vide sur tout ce
 ## qui ne fait que frapper. Ils s'allument et s'éteignent ensemble.
@@ -235,6 +253,12 @@ func strikes() -> bool:
 	return not damage_per_point.is_empty()
 
 
+## Fait-elle quelque chose sans frapper — un buff, un état posé ? Sinon, une case sans
+## table de dégâts accepterait des points qui ne font rien.
+func acts() -> bool:
+	return strikes() or grants_buffs() or inflicted_state >= 0
+
+
 ## Pose-t-elle quelque chose sur son lanceur ? Lu par la ruée, qui laisse alors un buff
 ## au lieu d'une trace, et par la fiche, qui lui ouvre une section.
 func grants_buffs() -> bool:
@@ -302,6 +326,8 @@ func resolve(
 	r.mana_per_second = mana_per_second
 	r.self_heal = self_heal
 	r.status_chance_increase = status_chance_increase
+	r.inflicted_state = inflicted_state
+	r.inflict_chance = inflict_chance
 	r.hits = HITS_PER_SHAPE.get(shape, 1)
 	r.skill_id = id
 	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE]

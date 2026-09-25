@@ -19,8 +19,10 @@ func test_each_nature_applies_one_state_only() -> void:
 	assert_eq(StatusEffects.NATURES.size(), StatusEffects.Kind.size())
 	assert_eq(StatusEffects.NAMES.size(), StatusEffects.Kind.size())
 	assert_eq(StatusEffects.DURATIONS.size(), StatusEffects.Kind.size())
+	# Ceux qu'un coup tire ; les autres, un lancer les pose (jalon 26).
+	var rolled_natures := StatusEffects.ROLLED.map(func(k: int) -> int: return StatusEffects.NATURES[k])
 	for nature in DamageType.Kind.size():
-		assert_eq(StatusEffects.NATURES.count(nature), 1, DamageType.NAMES[nature])
+		assert_eq(rolled_natures.count(nature), 1, DamageType.NAMES[nature])
 
 
 ## Une couleur qui ressemble à une autre ne dit plus lequel des deux on porte.
@@ -58,8 +60,9 @@ func test_all_states_can_be_carried_together() -> void:
 	assert_eq(e.colors().size(), StatusEffects.Kind.size())
 	var per_second := 40.0 * (
 		StatusEffects.IGNITE_PER_SECOND + StatusEffects.ROT_PER_SECOND + StatusEffects.BLEED_PER_SECOND
+		+ StatusEffects.DECAY_PER_SECOND + StatusEffects.WILTING_PER_SECOND
 	) * (1.0 + StatusEffects.NUMB)
-	assert_almost_eq(e.advance(0.5), per_second * 0.5, 0.0001, "les trois brûlures ensemble, engourdissement compris")
+	assert_almost_eq(e.advance(0.5), per_second * 0.5, 0.0001, "les cinq brûlures ensemble, engourdissement compris")
 
 
 ## **Invariant 3.** Un coup tire une fois par nature qu'il porte, physique compris,
@@ -328,3 +331,89 @@ func test_clear_erases_everything_and_says_so() -> void:
 	assert_true(e.is_clear)
 	assert_eq(_changes, 1)
 	assert_eq(e.advance(1.0), 0.0)
+
+
+# --------------------------------------------------------------------------
+# Ce que pose un lancer (jalon 26)
+# --------------------------------------------------------------------------
+
+## La décomposition rejoue le coup nécrotique entier sur sa durée, comme l'embrasement
+## le feu : elle suit donc le niveau du sort.
+func test_a_cast_inflicts_its_state_from_the_hit_in_its_nature() -> void:
+	var rng := RandomNumberGenerator.new()
+	var e := StatusEffects.new()
+	e.inflict(StatusEffects.Kind.DECAY, 1.0, _parts(DamageType.Kind.NECROTIC, 40.0), null, rng)
+	assert_true(e.active(StatusEffects.Kind.DECAY))
+	assert_almost_eq(
+		e.advance(StatusEffects.DURATIONS[StatusEffects.Kind.DECAY]), 40.0, 0.001,
+		"le coup rejoué sur quatre secondes"
+	)
+
+
+## Son jumeau : un sort converti n'a plus de part nécrotique, et une chance nulle ne
+## pose rien — mais les deux tirent une fois (invariant 3).
+func test_nothing_inflicted_without_the_nature_or_the_chance_but_one_roll_each() -> void:
+	for attempt: Array in [
+		[1.0, _parts(DamageType.Kind.FIRE, 40.0)], [0.0, _parts(DamageType.Kind.NECROTIC, 40.0)]
+	]:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 7
+		var e := StatusEffects.new()
+		e.inflict(StatusEffects.Kind.DECAY, attempt[0], attempt[1], null, rng)
+		assert_false(e.active(StatusEffects.Kind.DECAY))
+		var twin := RandomNumberGenerator.new()
+		twin.seed = 7
+		twin.randf()
+		assert_eq(rng.state, twin.state, "un tirage, quel que soit le résultat")
+
+
+## Un lancer ne pose que son état : la décomposition n'est pas tirée par la nature.
+func test_a_necrotic_hit_never_rolls_decay() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	var e := StatusEffects.new()
+	for i in 50:
+		e.suffer(_parts(DamageType.Kind.NECROTIC, 1000.0), null, rng)
+	assert_true(e.active(StatusEffects.Kind.ROT), "la pourriture, oui")
+	assert_false(e.active(StatusEffects.Kind.DECAY), "la décomposition, jamais")
+
+
+func test_each_decay_tick_rolls_rot_on_behalf_of_its_author() -> void:
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.ROT] = 100.0
+	_heals = 0.0
+	author.heal.connect(func(amount: float) -> void: _heals += amount)
+	var e := StatusEffects.new()
+	e.put(StatusEffects.Kind.DECAY, 40.0, author)
+	e.advance(StatusEffects.DOT_TICK * 0.5)
+	assert_false(e.active(StatusEffects.Kind.ROT), "pas avant l'à-coup")
+	e.advance(StatusEffects.DOT_TICK * 0.5)
+	assert_true(e.active(StatusEffects.Kind.ROT), "à l'à-coup, à coup sûr ici")
+	e.advance(0.5)
+	assert_gt(_heals, 0.0, "et c'est l'auteur qu'elle soigne")
+
+
+## Son jumeau : sans chance, les à-coups ne pourrissent jamais.
+func test_decay_does_not_rot_without_a_chance() -> void:
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.ROT] = 0.0
+	var e := StatusEffects.new()
+	e.put(StatusEffects.Kind.DECAY, 40.0, author)
+	for i in 8:
+		e.advance(StatusEffects.DOT_TICK)
+	assert_false(e.active(StatusEffects.Kind.ROT))
+
+
+## Avant le plafond : un ennemi à 0 % passe à −20 %, donc prend 20 % de plus.
+func test_the_curse_lowers_necrotic_resistance_only() -> void:
+	var e := StatusEffects.new()
+	assert_eq(e.resistance_lost(DamageType.Kind.NECROTIC), 0.0, "sans malédiction, rien")
+	e.put(StatusEffects.Kind.CURSED, 0.0)
+	assert_eq(e.resistance_lost(DamageType.Kind.NECROTIC), StatusEffects.CURSE)
+	assert_eq(e.resistance_lost(DamageType.Kind.FIRE), 0.0, "le feu n'y perd rien")
+	var sheet := CharacterStats.new()
+	assert_almost_eq(
+		sheet.mitigate(DamageType.Kind.NECROTIC, 100.0, e.resistance_lost(DamageType.Kind.NECROTIC)),
+		120.0, 0.001
+	)
+	assert_eq(e.advance(1.0), 0.0, "et elle ne brûle rien")

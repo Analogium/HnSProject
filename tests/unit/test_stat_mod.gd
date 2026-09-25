@@ -242,3 +242,14 @@ func test_the_bare_value_is_the_label_one() -> void:
 	var flat := StatMod.new("max_health", StatMod.Mode.FLAT, 63.0)
 	assert_eq(flat.label(), "+63 PV")
 	assert_eq(StatMod.value_label(flat.stat, flat.mode, flat.value), "+63")
+
+
+## « damage over time » ne se coupe pas : le gabarit anglais, qui pose le qualificatif
+## devant le nom, écrirait sinon « damage over time damage ».
+func test_damage_over_time_reads_as_one_noun_in_both_languages() -> void:
+	var line := StatMod.new("damage", StatMod.Mode.PERCENT, 10.0, Keywords.DOT)
+	Settings.from_dict({"language": Settings.FRENCH})
+	assert_string_contains(Glossary.plain(line.label()), "dégâts continus accrus")
+	Settings.from_dict({"language": Settings.ENGLISH})
+	assert_string_contains(Glossary.plain(line.label()), "increased damage over time")
+	Settings.from_dict({"language": Settings.FRENCH})

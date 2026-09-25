@@ -1,0 +1,270 @@
+[gd_resource type="Resource" script_class="ManualArchetype" format=3]
+
+[ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
+[ext_resource type="Resource" path="res://resources/skills/plague.tres" id="10_peste"]
+[ext_resource type="Resource" path="res://resources/skills/rise.tres" id="11_releve"]
+[ext_resource type="Resource" path="res://resources/skills/toxic_unleash.tres" id="12_deferlante"]
+[ext_resource type="Resource" path="res://resources/skills/rotting_gate.tres" id="13_porte"]
+[ext_resource type="Resource" path="res://resources/skills/putrid_curse.tres" id="14_malediction"]
+[ext_resource type="Resource" path="res://resources/skills/advanced_necrosis.tres" id="15_necrose"]
+
+[sub_resource type="Resource" id="L_plague_virulence_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 13.0
+
+[sub_resource type="Resource" id="N_plague_virulence"]
+script = ExtResource("3_noeud")
+id = "plague_virulence"
+name = "Virulence"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_virulence_0")])
+
+[sub_resource type="Resource" id="L_plague_doom_0"]
+script = ExtResource("4_ligne")
+stat = "damage_vs_cursed"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_plague_doom"]
+script = ExtResource("3_noeud")
+id = "plague_doom"
+name = "Condamnation"
+position = Vector2i(1, 0)
+parent = "plague_virulence"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_doom_0")])
+
+[sub_resource type="Resource" id="L_plague_contagion_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_plague_contagion"]
+script = ExtResource("3_noeud")
+id = "plague_contagion"
+name = "Contagion"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_contagion_0")])
+
+[sub_resource type="Resource" id="C_peste"]
+script = ExtResource("2_case")
+skill = ExtResource("10_peste")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_plague_virulence"), SubResource("N_plague_doom"), SubResource("N_plague_contagion")])
+
+[sub_resource type="Resource" id="L_rise_marrow_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_rise_marrow"]
+script = ExtResource("3_noeud")
+id = "rise_marrow"
+name = "Moelle"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_marrow_0")])
+
+[sub_resource type="Resource" id="L_rise_vigil_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_rise_vigil"]
+script = ExtResource("3_noeud")
+id = "rise_vigil"
+name = "Guet"
+position = Vector2i(1, 0)
+parent = "rise_marrow"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_vigil_0")])
+
+[sub_resource type="Resource" id="L_rise_bone_legion_0"]
+script = ExtResource("4_ligne")
+stat = "simultaneous"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rise_bone_legion"]
+script = ExtResource("3_noeud")
+id = "rise_bone_legion"
+name = "Légion d'os"
+position = Vector2i(0, 1)
+required_points = 3
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_bone_legion_0")])
+
+[sub_resource type="Resource" id="C_releve"]
+script = ExtResource("2_case")
+skill = ExtResource("11_releve")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rise_marrow"), SubResource("N_rise_vigil"), SubResource("N_rise_bone_legion")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_miasma_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_miasma"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_miasma"
+name = "Miasme"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_miasma_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_caustic_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 14.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_caustic"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_caustic"
+name = "Caustique"
+position = Vector2i(1, 0)
+parent = "toxic_unleash_miasma"
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_caustic_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_desiccation_0"]
+script = ExtResource("4_ligne")
+stat = "damage_vs_wilting"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_desiccation"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_desiccation"
+name = "Dessiccation"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_desiccation_0")])
+
+[sub_resource type="Resource" id="C_deferlante"]
+script = ExtResource("2_case")
+skill = ExtResource("12_deferlante")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_toxic_unleash_miasma"), SubResource("N_toxic_unleash_caustic"), SubResource("N_toxic_unleash_desiccation")])
+
+[sub_resource type="Resource" id="L_rotting_gate_brood_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_rotting_gate_brood"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_brood"
+name = "Couvée"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_brood_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_bloating_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_rotting_gate_bloating"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_bloating"
+name = "Boursouflure"
+position = Vector2i(1, 0)
+parent = "rotting_gate_brood"
+required_points = 2
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_bloating_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_swarm_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_rotting_gate_swarm"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_swarm"
+name = "Essaim"
+position = Vector2i(0, 1)
+required_points = 2
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_swarm_0")])
+
+[sub_resource type="Resource" id="C_porte"]
+script = ExtResource("2_case")
+skill = ExtResource("13_porte")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rotting_gate_brood"), SubResource("N_rotting_gate_bloating"), SubResource("N_rotting_gate_swarm")])
+
+[sub_resource type="Resource" id="L_putrid_curse_spreading_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_putrid_curse_spreading"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_spreading"
+name = "Anathème"
+position = Vector2i(0, 0)
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_spreading_0")])
+
+[sub_resource type="Resource" id="L_putrid_curse_swift_0"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_putrid_curse_swift"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_swift"
+name = "Malédiction prompte"
+position = Vector2i(1, 0)
+parent = "putrid_curse_spreading"
+required_points = 1
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_swift_0")])
+
+[sub_resource type="Resource" id="C_malediction"]
+script = ExtResource("2_case")
+skill = ExtResource("14_malediction")
+position = Vector2i(0, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_putrid_curse_spreading"), SubResource("N_putrid_curse_swift")])
+
+[sub_resource type="Resource" id="C_necrose"]
+script = ExtResource("2_case")
+skill = ExtResource("15_necrose")
+position = Vector2i(1, 1)
+
+[resource]
+script = ExtResource("1_arch")
+id = "necrotic"
+name = "Maître de la nécromancie"
+cells = Array[ExtResource("2_case")]([SubResource("C_peste"), SubResource("C_releve"), SubResource("C_deferlante"), SubResource("C_porte"), SubResource("C_malediction"), SubResource("C_necrose")])

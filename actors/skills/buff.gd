@@ -15,6 +15,10 @@ const RISE := 14.0
 ## à 0,6 le bloc n'est plus qu'un reflet : c'est le seul dessin du jeu qu'on
 ## regarde **à travers**, et il se pose donc à alpha partiel.
 const TOMB_ALPHA := 0.8
+const DRAWN := [
+	DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING,
+	DamageType.Kind.NECROTIC,
+]
 
 var _player: Player
 var _skill: Skill
@@ -38,10 +42,10 @@ static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
 
 
 func _ready() -> void:
-	# Le tombeau, la clarté sacrée et l'électricité sont **dessinés**, et une planche
-	# cernée ne peut pas être additive : son contour sombre n'y ajoute rien. Les
+	# Le tombeau, la clarté sacrée, l'électricité et la nécrose sont **dessinés**, et une
+	# planche cernée ne peut pas être additive : son contour sombre n'y ajoute rien. Les
 	# braises d'Ignition sont encore tracées et gardent la lumière ajoutée.
-	if not _skill.nature in [DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING]:
+	if not _skill.nature in DRAWN:
 		material = ArtPalette.ADDITIVE
 
 
@@ -74,8 +78,10 @@ func _physics_process(delta: float) -> void:
 		return
 	queue_redraw()
 	_player.mend(_skill.self_heal, delta)
-	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff.
-	_player.burn(_skill.self_burn, _distribution, delta)
+	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff. Ce qu'il
+	# ronge des PV **actuels** s'y ramène en part des PV max, et ne tue donc jamais.
+	var withered := _skill.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
+	_player.burn(_skill.self_burn + withered, _distribution, delta)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.
@@ -96,14 +102,16 @@ func _draw() -> void:
 			),
 			false, Color(1.0, 1.0, 1.0, 0.5 + 0.5 * pulse)
 		)
-	else:
+	# La nécrose n'a pas de halo : elle ne rayonne pas, elle ronge — ses spores suffisent.
+	elif _skill.nature != DamageType.Kind.NECROTIC:
 		Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))
 	for i in MOTES:
 		var rise := fmod(_age * 0.8 + float(i) * 0.163, 1.0)
 		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
 		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
 		# Ce qui monte a la matière du geste : des braises pour une combustion, des
-		# flocons pour un froid, des grains pour une clarté ou une charge. Et rien
+		# flocons pour un froid, des grains pour une clarté ou une charge, des spores
+		# pour ce qui ronge. Et rien
 		# d'autre — ce geste dure des minutes, et ce qui clignote fort finit par fatiguer.
 		#
 		# Les grains **dessinés** montent à pleine opacité et s'éteignent d'un coup en
@@ -119,6 +127,8 @@ func _draw() -> void:
 			DamageType.Kind.LIGHTNING:
 				var grain := EffectForge.lightning_speck(tint)
 				draw_texture(grain, EffectForge.snap(self, p - Vector2(grain.get_size()) * 0.5))
+			DamageType.Kind.NECROTIC:
+				Necrotic.centered(self, EffectForge.spore(tint), p)
 			_:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 

@@ -65,6 +65,8 @@ extends Resource
 @export var chill_chance: float = 0.0
 ## Comme `ignite_chance`, pour la bénédiction.
 @export var blessing_chance: float = 0.0
+## Comme `ignite_chance`, pour la pourriture — les à-coups de décomposition compris.
+@export var rot_chance: float = 0.0
 
 ## Ce qui **raccourcit les recharges**, en points de pourcentage : à +50, une recharge
 ## de 3 s tombe à 2 s. La seule chose qui les touche — ni la vitesse d'attaque ni celle
@@ -161,23 +163,25 @@ func evade_chance() -> float:
 
 ## Ce qui reste d'une part après sa défense : l'armure pour le physique, la
 ## résistance sinon. **La seule règle** : coup reçu et brûlure d'aura passent ici.
-func mitigate(kind: int, part: float) -> float:
+## `lost` : les points de résistance qu'un état retire — la malédiction.
+func mitigate(kind: int, part: float, lost := 0.0) -> float:
 	if part <= 0.0:
 		return part
 	var defended := part
 	if kind == DamageType.Kind.PHYSICAL:
 		defended *= 1.0 - armor_reduction(part)
 	else:
-		defended *= 1.0 - resistance(kind) * 0.01
+		defended *= 1.0 - resistance(kind, lost) * 0.01
 	# Après la défense de la nature, et sur toutes : c'est un abri, pas une résistance.
 	return defended * maxf(1.0 + damage_taken * 0.01, 0.0)
 
-## Bornée ; zéro pour le physique, qui passe par l'armure.
-func resistance(kind: DamageType.Kind) -> float:
+## Bornée, ce que retire une malédiction **avant** la borne ; zéro pour le physique, qui
+## passe par l'armure.
+func resistance(kind: DamageType.Kind, lost := 0.0) -> float:
 	var field: String = DamageType.RESIST_FIELDS[kind]
 	if field.is_empty():
 		return 0.0
-	return clampf(float(get(field)), MIN_RESISTANCE, MAX_RESISTANCE)
+	return clampf(float(get(field)) - lost, MIN_RESISTANCE, MAX_RESISTANCE)
 
 
 ## Le plancher évite qu'une vitesse nulle fige l'attaquant.

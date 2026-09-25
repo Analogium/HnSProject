@@ -58,5 +58,29 @@
   "slicing_dash": [
     "a swordsman dashing horizontally at great speed, sword held forward, white speed lines streaking behind him",
     1337
+  ],
+  "plague": [
+    "a green skull made of toxic smoke flying forward",
+    4242
+  ],
+  "rise": [
+    "a skeletal hand bursting out of the ground",
+    4242
+  ],
+  "toxic_unleash": [
+    "a ring of poisonous green smoke clouds expanding in a circle",
+    4242
+  ],
+  "rotting_gate": [
+    "a gaping fleshy maw portal oozing green slime",
+    4242
+  ],
+  "putrid_curse": [
+    "a sinister purple evil eye inside a magic circle",
+    4242
+  ],
+  "advanced_necrosis": [
+    "a rotting green heart with black veins of necrosis",
+    1337
   ]
 }

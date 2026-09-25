@@ -45,7 +45,7 @@ LoRA **`pixel-art-xl-v1.1`** à pleine force, en 1024 × 1024 :
   centered, single subject, bold readable silhouette, high contrast, simple solid
   *fond* background, square game icon » — où seul le sujet change, et le fond
   suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour le froid,
-  prune pour le sacré — un fond doré noierait la lumière du sujet —, bleu ardoise
+  vert croupi pour la nécrose, prune pour le sacré — un fond doré noierait la lumière du sujet —, bleu ardoise
   pour le physique ;
 - **les mêmes réglages pour toutes** : `dpmpp_2m`, `karras`, 30 pas, CFG 6, et la
   graine 4242 — 777 pour les trois refaites avec un sujet plus direct (Chaîne
@@ -120,6 +120,7 @@ dans la main du personnage. `test_each_base_has_a_non_empty_icon` vérifie les d
 tools/item_icons.py gen                 # les 46 bases, trois graines chacune
 tools/item_icons.py gen --only sword    # une seule, pour la refaire
 tools/item_icons.py apply               # pose les tirages retenus
+tools/item_icons.py apply --only manual_necrotic  # n'en pose qu'une
 ```
 
 Le sujet du prompt et la graine retenue d'une base sont **la même ligne** de

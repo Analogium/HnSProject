@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/plague.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "plague"
+name = "Peste"
+description = "Un trait lent qui laisse ce qu'il touche se décomposer."
+nature = 4
+cadence = 1
+shape = 1
+projectile_speed = 150.0
+cast_time = 0.50
+mana_cost = 9.0
+inflicted_state = 6
+damage_per_point = Array[float]([18.0, 23.0, 29.0, 36.0, 44.0])
+required_manual_level = 1
+icon = ExtResource("2_icone")

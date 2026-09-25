@@ -285,6 +285,18 @@ msgstr "lightning"
 msgid "de feu"
 msgstr "fire"
 
+msgid "nécrotiques"
+msgstr "necrotic"
+
+msgid "d'invocation"
+msgstr "summon"
+
+msgid "de malédiction"
+msgstr "curse"
+
+msgid "dégâts continus"
+msgstr "damage over time"
+
 msgid "de froid"
 msgstr "cold"
 
@@ -311,6 +323,18 @@ msgstr "to lightning skills"
 
 msgid "aux compétences de feu"
 msgstr "to fire skills"
+
+msgid "aux compétences nécrotiques"
+msgstr "to necrotic skills"
+
+msgid "aux invocations"
+msgstr "to summons"
+
+msgid "aux malédictions"
+msgstr "to curses"
+
+msgid "aux compétences à dégâts continus"
+msgstr "to damage over time skills"
 
 msgid "aux compétences de froid"
 msgstr "to cold skills"
@@ -420,6 +444,51 @@ msgstr "Sacred Manual"
 msgid "Maître de la lumière"
 msgstr "Master of Light"
 
+msgid "Manuel de magie nécrotique"
+msgstr "Necrotic Magic Manual"
+
+msgid "Maître de la nécromancie"
+msgstr "Master of Necromancy"
+
+msgid "Peste"
+msgstr "Plague"
+
+msgid "Un trait lent qui laisse ce qu'il touche se décomposer."
+msgstr "A slow bolt that leaves whatever it strikes to decay."
+
+msgid "Relève"
+msgstr "Rise"
+
+msgid "Deux morts-vivants se lèvent et gardent les abords du lanceur."
+msgstr "Two undead rise and guard the caster's surroundings."
+
+msgid "Déferlante toxique"
+msgstr "Toxic Unleash"
+
+msgid "Un souffle de gaz autour de soi, qui flétrit une fois sur deux."
+msgstr "A burst of gas around you that wilts half the time."
+
+msgid "Porte pourrissante"
+msgstr "Rotting Gate"
+
+msgid "Un portail crache des créatures qui vont exploser sur les ennemis."
+msgstr "A portal spews creatures that burst on enemies."
+
+msgid "Malédiction putride"
+msgstr "Putrid Curse"
+
+msgid "Maudit une zone : la nécrose y mord plus profond."
+msgstr "Curses an area: necrosis bites deeper there."
+
+msgid "Nécrose avancée"
+msgstr "Advanced Necrosis"
+
+msgid "Le corps se ronge lui-même, et ce qu'il touche pourrit plus souvent."
+msgstr "The body gnaws at itself, and what it strikes rots more often."
+
+msgid "Nécrose"
+msgstr "Necrosis"
+
 msgid "Frappe sacrée"
 msgstr "Sacred Strike"
 
@@ -469,7 +538,7 @@ msgstr "Unction"
 # ---------------------------------------------------------------------------
 # Nœuds de talent
 #
-# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes, froid, sacré.
+# Un nœud par ligne, dans l'ordre des arbres : foudre, feu, armes, froid, sacré, nécrose.
 # ---------------------------------------------------------------------------
 
 msgid "Surcharge"
@@ -601,12 +670,67 @@ msgstr "Litany"
 msgid "Ferveur"
 msgstr "Fervour"
 
+# Nécrose
+
+msgid "Virulence"
+msgstr "Virulence"
+
+msgid "Condamnation"
+msgstr "Doom"
+
+msgid "Contagion"
+msgstr "Contagion"
+
+msgid "Moelle"
+msgstr "Marrow"
+
+msgid "Guet"
+msgstr "Vigil"
+
+msgid "Légion d'os"
+msgstr "Bone Legion"
+
+msgid "Miasme"
+msgstr "Miasma"
+
+msgid "Caustique"
+msgstr "Caustic"
+
+msgid "Dessiccation"
+msgstr "Desiccation"
+
+msgid "Couvée"
+msgstr "Brood"
+
+msgid "Boursouflure"
+msgstr "Bloating"
+
+msgid "Essaim"
+msgstr "Swarm"
+
+msgid "Anathème"
+msgstr "Anathema"
+
+msgid "Malédiction prompte"
+msgstr "Swift Curse"
+
 # ---------------------------------------------------------------------------
 # Arbre de passifs
 #
 # Les notables et les clés de voûte, région par région : intelligence, force,
 # dextérité.
 # ---------------------------------------------------------------------------
+
+# Nécrose, au-delà du haut de l'arbre (jalon 26)
+
+msgid "Nécromancie"
+msgstr "Necromancy"
+
+msgid "Seigneur des morts"
+msgstr "Lord of the Dead"
+
+msgid "Malemort"
+msgstr "Ill Death"
 
 msgid "Brasier intérieur"
 msgstr "Inner Blaze"
@@ -893,6 +1017,18 @@ msgstr "Lightning"
 msgid "Feu"
 msgstr "Fire"
 
+msgid "Nécrotique"
+msgstr "Necrotic"
+
+msgid "Invocation"
+msgstr "Summon"
+
+msgid "Malédiction"
+msgstr "Curse"
+
+msgid "Dégâts continus"
+msgstr "Damage over Time"
+
 msgid "Froid"
 msgstr "Cold"
 
@@ -957,6 +1093,9 @@ msgstr "HP"
 
 msgid "PV/s"
 msgstr "HP/s"
+
+msgid "PV actuels/s"
+msgstr "current HP/s"
 
 msgid "mana"
 msgstr "mana"
@@ -1152,6 +1291,9 @@ msgstr "chance to chill"
 msgid "chance de bénir"
 msgstr "chance to bless"
 
+msgid "chance de pourrir"
+msgstr "chance to rot"
+
 msgid "récupération de recharge"
 msgstr "cooldown recovery"
 
@@ -1218,6 +1360,12 @@ msgstr "Ignite"
 
 msgid "Pourriture"
 msgstr "Rot"
+
+msgid "Décomposition"
+msgstr "Decay"
+
+msgid "Flétrissement"
+msgstr "Wilting"
 
 msgid "Saignement"
 msgstr "Bleed"
@@ -1512,6 +1660,9 @@ msgstr "at once"
 msgid "drain"
 msgstr "drain"
 
+msgid "état"
+msgstr "state"
+
 msgid "brûlure"
 msgstr "self-burn"
 
@@ -1576,6 +1727,15 @@ msgstr "chilled"
 msgid "pourrissant"
 msgstr "rotting"
 
+msgid "décomposé"
+msgstr "decaying"
+
+msgid "flétri"
+msgstr "wilted"
+
+msgid "maudit"
+msgstr "cursed"
+
 msgid "béni"
 msgstr "blessed"
 
@@ -1620,6 +1780,15 @@ msgstr "against chilled"
 
 msgid "contre les pourrissants"
 msgstr "against rotting"
+
+msgid "contre les décomposés"
+msgstr "against decaying"
+
+msgid "contre les flétris"
+msgstr "against wilted"
+
+msgid "contre les maudits"
+msgstr "against cursed"
 
 msgid "contre les bénis"
 msgstr "against blessed"
@@ -1696,6 +1865,18 @@ msgstr "of Agility"
 
 msgid "de la Fournaise"
 msgstr "of the Furnace"
+
+msgid "de la Putréfaction"
+msgstr "of Putrefaction"
+
+msgid "du Nécromant"
+msgstr "of the Necromancer"
+
+msgid "de l'Anathème"
+msgstr "of Anathema"
+
+msgid "de la Gangrène"
+msgstr "of Gangrene"
 
 msgid "de la Banquise"
 msgstr "of the Ice Floe"

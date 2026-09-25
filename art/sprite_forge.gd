@@ -30,7 +30,7 @@ const R_METAL := 3
 const R_LEATHER := 4
 
 const DIRS := ["down", "side", "up"]
-const ARCHETYPES := ["player", "swiftblade", "witch", "grunt", "caster", "dummy"]
+const ARCHETYPES := ["player", "swiftblade", "witch", "grunt", "caster", "dummy", "undead"]
 
 ## Les archétypes dessinés hors du jeu (`tools/character_forge.py`) : trois poses
 ## fixes et les gestes générés dans `<archétype>.png`, leurs repères dans
@@ -350,6 +350,9 @@ const GEAR := [
 	# Le manuel sacré : un livre couché dans son halo, la seule silhouette du
 	# râtelier qui déborde du livre lui-même.
 	"manual_holy",
+	# Jalon 26 : le manuel nécrotique, un livre couché **sous un crâne** — la seule
+	# silhouette du râtelier qui a un œil.
+	"manual_necrotic",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée **sans image** : depuis que
@@ -515,6 +518,17 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 			c.capsule(Vector2(cx - 5.0, top + 11.0), Vector2(cx + 5.0, top + 11.0), 0.9, R_METAL, 0.40)
 			c.capsule(Vector2(cx - 5.4, top + 12.6), Vector2(cx - 3.0, top + 12.6), 1.1, R_ACCENT)
 
+		"manual_necrotic":
+			# **Un crâne posé sur un livre couché.** Le halo du sacré déborde du livre par
+			# une rondeur claire ; le crâne en déborde aussi, mais ses deux orbites
+			# creusées le distinguent à la taille d'une case.
+			c.capsule(Vector2(cx - 5.8, top + 13.0), Vector2(cx + 5.8, top + 13.0), 2.6, R_LEATHER)
+			c.capsule(Vector2(cx - 5.0, top + 11.4), Vector2(cx + 5.0, top + 11.4), 0.9, R_METAL, 0.40)
+			c.disc(Vector2(cx, top + 6.6), 3.8, R_METAL, 0.20)
+			c.capsule(Vector2(cx - 1.4, top + 9.6), Vector2(cx + 1.4, top + 9.6), 1.6, R_METAL, 0.20)
+			c.disc(Vector2(cx - 1.5, top + 6.8), 1.0, R_LEATHER, -0.40)
+			c.disc(Vector2(cx + 1.5, top + 6.8), 1.0, R_LEATHER, -0.40)
+
 		"hood":
 			# Une pointe et une ouverture : c'est le sommet effilé qui la sépare
 			# du dôme d'un casque, et l'ouverture creusée qui dit qu'on y entre
@@ -619,6 +633,16 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 				"hood": true, "robe": true, "mantle": true,
 			}, true)
 			cfg["weapon"] = "staff"
+
+		"undead":
+			# Des os et rien d'autre : un allié ne doit jamais se confondre avec le grunt
+			# vert, et c'est le blanc de l'os, plus que les orbites, qui le sépare.
+			base = {
+				"cloth": Color(0.40, 0.36, 0.30), "skin": Color(0.86, 0.84, 0.74),
+				"accent": Color(0.62, 0.95, 0.35), "metal": Color(0.55, 0.52, 0.46),
+				"leather": Color(0.30, 0.24, 0.20),
+			}
+			amount = 0.3
 
 		_:
 			base = {
@@ -1030,6 +1054,126 @@ const CASTER_ROBE_B := [
 ##
 ## `hand` est le poignet armé, d'où part `_weapon()` : le dessin donne la
 ## silhouette, l'arme reste procédurale parce qu'elle suit l'équipement.
+## Le mort-vivant de la Relève (jalon 26) : un squelette nu, des os séparés par le vide,
+## les orbites vertes. Choisi sur planche contre un soldat en armure, un revenant
+## encapuchonné et un zombie — le seul qu'on ne confonde avec aucun ennemi.
+const UNDEAD_DOWN := [
+	"......PPPP......",
+	".....PSSSSP.....",
+	"....PSSSSSSP....",
+	"....SSSSSSSS....",
+	"....SEaSSaES....",
+	"....SSSjjSSS....",
+	".....SSSSSS.....",
+	".....sjsjsjs....",
+	"......ssss......",
+	"...SS.SSSS.SS...",
+	"..S.sSjSSjSs.S..",
+	"..S..SjSSjS..S..",
+	"..s..sSjjSs..s..",
+	"..S...SSSS...S..",
+	"..P...jSSj...P..",
+	"......SSSS......",
+]
+
+const UNDEAD_SIDE := [
+	"....PPPP........",
+	"...PSSSSP.......",
+	"...SSSSSSP......",
+	"...SSSSSSS......",
+	"...SSSSaES......",
+	"...SSSSSjS......",
+	"...sSSSSSS......",
+	"....sSjsjs......",
+	".....sss........",
+	".....SSS........",
+	"....SsSjS.......",
+	"....SSjS.S......",
+	"....sSjS.S......",
+	".....SS..P......",
+	".....jS.........",
+	".....SS.........",
+]
+
+const UNDEAD_UP := [
+	"......PPPP......",
+	".....PSSSSP.....",
+	"....PSSSSSSP....",
+	"....SSSSSSSS....",
+	"....SSSSSSSS....",
+	"....sSSSSSSs....",
+	".....sSSSSs.....",
+	"......ssss......",
+	"......ssss......",
+	"...SS.SjjS.SS...",
+	"..S.sSjSSjSs.S..",
+	"..S..SjSSjS..S..",
+	"..s..sSjjSs..s..",
+	"..S...SSSS...S..",
+	"..P...jSSj...P..",
+	"......SSSS......",
+]
+
+const UNDEAD_LEGS := [
+	"......SSSS......",
+	".....SS..SS.....",
+	".....S....S.....",
+	".....S....S.....",
+	".....s....s.....",
+	".....S....S.....",
+	"....SS....SS....",
+]
+
+const UNDEAD_LEGS_A := [
+	"......SSSS......",
+	".....SS..SS.....",
+	".....S....S.....",
+	".....S....S.....",
+	".....s...SS.....",
+	".....S..........",
+	"....SS..........",
+]
+
+const UNDEAD_LEGS_B := [
+	"......SSSS......",
+	".....SS..SS.....",
+	".....S....S.....",
+	".....S....S.....",
+	".....SS...s.....",
+	"..........S.....",
+	"..........SS....",
+]
+
+const UNDEAD_SIDE_LEGS := [
+	".....SS.........",
+	".....SS.........",
+	".....S.S........",
+	".....S.S........",
+	".....s.s........",
+	".....S.S........",
+	"....SS.SS.......",
+]
+
+const UNDEAD_SIDE_LEGS_A := [
+	".....SS.........",
+	".....SS.........",
+	"....S..S........",
+	"...S....S.......",
+	"...s....s.......",
+	"..S......S......",
+	"..SS.....SS.....",
+]
+
+const UNDEAD_SIDE_LEGS_B := [
+	".....SS.........",
+	".....SS.........",
+	".....SS.........",
+	".....SS.........",
+	"....s.s.........",
+	"....S..S........",
+	"...SS..SS.......",
+]
+
 const ART := {
 	"player": {
 		"down": {
@@ -1073,6 +1217,26 @@ const ART := {
 			"hand": Vector2(10.0, 18.5),
 			"body": GRUNT_UP,
 			"legs": [GRUNT_LEGS, GRUNT_LEGS_A, GRUNT_LEGS_B],
+		},
+	},
+	"undead": {
+		"down": {
+			"origin": Vector2i(8, 5),
+			"hand": Vector2(21.0, 19.5),
+			"body": UNDEAD_DOWN,
+			"legs": [UNDEAD_LEGS, UNDEAD_LEGS_A, UNDEAD_LEGS_B],
+		},
+		"side": {
+			"origin": Vector2i(8, 5),
+			"hand": Vector2(17.5, 18.5),
+			"body": UNDEAD_SIDE,
+			"legs": [UNDEAD_SIDE_LEGS, UNDEAD_SIDE_LEGS_A, UNDEAD_SIDE_LEGS_B],
+		},
+		"up": {
+			"origin": Vector2i(8, 5),
+			"hand": Vector2(10.0, 19.5),
+			"body": UNDEAD_UP,
+			"legs": [UNDEAD_LEGS, UNDEAD_LEGS_A, UNDEAD_LEGS_B],
 		},
 	},
 	"caster": {

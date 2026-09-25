@@ -36,6 +36,7 @@ const LABELS := {
 	"static_charge_chance": "chance de charge statique",
 	"chill_chance": "chance de transir",
 	"blessing_chance": "chance de bénir",
+	"rot_chance": "chance de pourrir",
 	"cooldown_recovery": "récupération de recharge",
 	"damage_taken": "dégâts subis",
 	"move_speed": "vitesse",
@@ -68,6 +69,7 @@ const AGREEMENT := {
 	"static_charge_chance": "fs",
 	"chill_chance": "fs",
 	"blessing_chance": "fs",
+	"rot_chance": "fs",
 	"cooldown_recovery": "fs",
 	"damage_taken": "mp",
 	"move_speed": "fs",
@@ -94,7 +96,7 @@ const SCALED := [
 static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	func(field: String) -> bool: return not field.is_empty()
 ) + [
-	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance",
+	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance", "rot_chance",
 	"damage_taken", "cooldown_recovery",
 ]
 
@@ -232,6 +234,9 @@ static func _noun(stat_name: String, p_scope := "") -> String:
 	else:
 		out = Texts.t(SkillStats.LABELS.get(stat_name, stat_name))
 
+	var damage := stat_name == SkillStats.DAMAGE or SkillStats.against(stat_name) >= 0
+	if damage and Keywords.DAMAGE_NOUNS.has(p_scope):
+		return Texts.t(Keywords.DAMAGE_NOUNS[p_scope])
 	var said := Keywords.qualifier(p_scope) if _qualifies(stat_name) else ""
 	if said.is_empty():
 		return out

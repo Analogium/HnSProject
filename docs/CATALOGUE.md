@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
 
-52 bases d'objets, 26 compétences, 53 affixes d'objets, 5 affixes d'ennemis.
+53 bases d'objets, 32 compétences, 57 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -74,6 +74,7 @@ Niveaux de zone : 1 à 120.
 | `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
 | `manual_cold` | Manuel du froid | manual_cold | 1 | manual | manual | — | — | 2 × 2 | 10 et au-delà |
 | `manual_holy` | Manuel sacré | manual_holy | 1 | manual | manual | — | — | 2 × 2 | 15 et au-delà |
+| `manual_necrotic` | Manuel de magie nécrotique | manual_necrotic | 1 | manual | manual | — | — | 2 × 2 | 20 et au-delà |
 
 ## Manuels
 
@@ -212,9 +213,39 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 
 38 destinations de points pour 20 gagnés.
 
+### Maître de la nécromancie — `manual_necrotic`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Peste | sort nécrotique | niveau 1 | 5 | 9 mana | 0.50 s | bolt | 18 · 23 · 29 · 36 · 44 |
+| Relève | sort nécrotique | niveau 3 | 5 | 22 mana | 1.00 s | summon · rayon 110 · toutes les 0.80 s · 2 au plus | 10 · 13 · 16 · 20 · 25 |
+| Déferlante toxique | sort nécrotique | niveau 5 | 5 | 18 mana | 0.90 s | nova · rayon 48 | 12 · 15 · 19 · 24 · 30 |
+| Porte pourrissante | sort nécrotique | niveau 8 | 5 | 24 mana | 1.00 s · recharge 6.00 s | gate · 6.0 s · rayon 22 · toutes les 0.75 s | 14 · 18 · 22 · 28 · 35 |
+| Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s | curse · rayon 48 |  |
+| Nécrose avancée | sort nécrotique | niveau 12 | 3 | 0 mana | recharge 0.60 s | buff | Nécrose : +10 % chance de pourrir |
+
+| nœud | compétence | parent | demande | points | par point |
+|---|---|---|---|---|---|
+| Virulence | Peste | — | 1 point de compétence | 3 | +13 % de dégâts amplifiés |
+| Condamnation | Peste | Virulence | 2 points de compétence | 2 | +20 % de dégâts accrus contre les maudits |
+| Contagion | Peste | — | 3 points de compétence | 1 | +1 nombre de projectiles |
+| Moelle | Relève | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
+| Guet | Relève | Moelle | 2 points de compétence | 2 | +20 % de rayon accru |
+| Légion d'os | Relève | — | 3 points de compétence | 1 | +1 maximum simultané |
+| Miasme | Déferlante toxique | — | 1 point de compétence | 2 | +20 % de rayon accru |
+| Caustique | Déferlante toxique | Miasme | 2 points de compétence | 3 | +14 % de dégâts amplifiés |
+| Dessiccation | Déferlante toxique | — | 2 points de compétence | 2 | +25 % de dégâts accrus contre les flétris |
+| Couvée | Porte pourrissante | — | 1 point de compétence | 2 | +25 % de durée accrue |
+| Boursouflure | Porte pourrissante | Couvée | 2 points de compétence | 2 | +20 % de rayon accru |
+| Essaim | Porte pourrissante | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Anathème | Malédiction putride | — | 1 point de compétence | 2 | +25 % de rayon accru |
+| Malédiction prompte | Malédiction putride | Anathème | 1 point de compétence | 2 | -15 % de temps du geste réduit |
+
+54 destinations de points pour 20 gagnés.
+
 ## Arbre de passifs
 
-Un point par niveau après le premier (`PassiveTree.points_gained()`), 476 nœuds
+Un point par niveau après le premier (`PassiveTree.points_gained()`), 496 nœuds
 hors du départ. Un nœud se prend voisin d'un nœud pris, se reprend tant qu'il ne
 coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
@@ -402,7 +433,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | far_int | small | 0, -35 | far_int_dex_1, far_str_int_10, int_bridge, rod_1 | +10 intelligence |
 | far_dex | small | 31, 17 | far_int_dex_10, far_dex_str_1, dex_bridge, rime_1 | +10 dextérité |
 | far_str | small | -31, 17 | far_dex_str_10, far_str_int_1, str_bridge, sanctity_1 | +10 force |
-| far_int_dex_1 | small | 7, -34 | far_int, far_int_dex_2, breadth_1 | +5 intelligence · +5 dextérité |
+| far_int_dex_1 | small | 7, -34 | far_int, far_int_dex_2, breadth_1, rot_1 | +5 intelligence · +5 dextérité |
 | far_int_dex_2 | small | 13, -33 | far_int_dex_1, far_int_dex_3 | +5 intelligence · +5 dextérité |
 | far_int_dex_3 | small | 19, -30 | far_int_dex_2, far_int_dex_4, arc_1 | +5 intelligence · +5 dextérité |
 | far_int_dex_4 | small | 24, -25 | far_int_dex_3, far_int_dex_5, coord_1 | +5 intelligence · +5 dextérité |
@@ -695,6 +726,26 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | relic_5 | small | -15, -43 | relic_4, relic_6 | +12 % de dégâts de sort accrus contre les bénis |
 | relic_6 | small | -13, -40 | relic_1, relic_5 | +12 % de dégâts de sort accrus contre les bénis |
 | **Jugement** `judgement` | notable | -17, -40 | relic_4 | +25 % de dégâts de sort accrus contre les bénis · ajoute 3 à 7 dégâts sacrés aux sorts |
+| rot_1 | small | 5, -38 | far_int_dex_1, rot_2 | +10 % de dégâts nécrotiques accrus |
+| rot_2 | small | 5, -42 | rot_1, rot_3 | +10 % de dégâts nécrotiques accrus |
+| rot_3 | small | 7, -46 | rot_2, necromancy | +10 % de dégâts nécrotiques accrus |
+| **Nécromancie** `necromancy` | notable | 11, -48 | rot_3, grave_1 | +15 % de dégâts nécrotiques accrus · +10 % de dégâts de sort accrus |
+| grave_1 | small | 19, -49 | necromancy, ossuary_1, grave_2 | +10 % chance de pourrir |
+| ossuary_1 | small | 25, -45 | grave_1, ossuary_2, ossuary_6 | +10 % de dégâts d'invocation accrus |
+| ossuary_2 | small | 28, -43 | ossuary_1, ossuary_3 | +10 % de dégâts d'invocation accrus |
+| ossuary_3 | small | 28, -40 | ossuary_2, ossuary_4 | +6 % de rayon accru aux invocations |
+| ossuary_4 | small | 25, -39 | ossuary_3, ossuary_5, lord_of_the_dead | +10 % de dégâts d'invocation accrus |
+| ossuary_5 | small | 22, -40 | ossuary_4, ossuary_6 | +10 % de dégâts d'invocation accrus |
+| ossuary_6 | small | 22, -43 | ossuary_5, ossuary_1 | +6 % de rayon accru aux invocations |
+| **Seigneur des morts** `lord_of_the_dead` | notable | 25, -42 | ossuary_4 | +15 % de dégâts d'invocation accrus · +15 % de rayon accru aux invocations |
+| grave_2 | small | 31, -48 | grave_1, hex_1 | +10 % de dégâts continus accrus |
+| hex_1 | small | 38, -44 | grave_2, hex_2, hex_6 | +10 % de dégâts continus accrus |
+| hex_2 | small | 41, -42 | hex_1, hex_3 | +6 % de rayon accru aux malédictions |
+| hex_3 | small | 41, -39 | hex_2, hex_4 | +10 % de dégâts continus accrus |
+| hex_4 | small | 38, -38 | hex_3, hex_5, ill_death | +10 % chance de pourrir |
+| hex_5 | small | 35, -39 | hex_4, hex_6 | +6 % de rayon accru aux malédictions |
+| hex_6 | small | 35, -42 | hex_5, hex_1 | +10 % de dégâts continus accrus |
+| **Malemort** `ill_death` | notable | 38, -41 | hex_4 | +15 % de dégâts continus accrus · -10 % de temps du geste réduit aux malédictions |
 
 ## Affixes d'objets
 
@@ -702,59 +753,63 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 52 |
-| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 52 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 52 |
-| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
-| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 52 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 52 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 52 |
-| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 9 / 52 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 52 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 52 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 52 |
-| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 52 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 52 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 52 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 52 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 52 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 52 |
-| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 52 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 52 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 52 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 52 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 52 |
-| `muscular` | force | *partout* | — | 8 | 6 | 47 / 52 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 52 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 52 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 52 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 52 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 52 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 52 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 52 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 52 |
-| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 9 / 52 |
-| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 52 |
-| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 14 / 52 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 52 |
-| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 52 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 52 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 52 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 52 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 52 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 53 |
+| `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
+| `ardent` | dégâts de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 53 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 53 |
+| `butchering` | dégâts d'attaque contre les saignants (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 53 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 53 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 53 |
+| `electrocuting` | dégâts de sort contre les engourdis (%) | caster, gloves | offhand | 3 | 5 | 9 / 53 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 53 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 53 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 53 |
+| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 53 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 53 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 53 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 53 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 53 |
+| `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
+| `glacial` | dégâts de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 53 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 53 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 53 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 53 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 53 |
+| `muscular` | force | *partout* | — | 8 | 6 | 47 / 53 |
+| `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 53 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 53 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 53 |
+| `putrefying` | dégâts nécrotiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 53 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 53 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 53 |
+| `scorching` | dégâts de sort contre les embrasés (%) | caster, gloves | offhand | 3 | 5 | 9 / 53 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 53 |
+| `shattering` | dégâts d'attaque contre les transis (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 53 |
+| `stormy` | dégâts de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 53 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 53 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 53 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 53 |
 
 ### Affixes d'ennemis
 
@@ -782,6 +837,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 12–17 | 10 |
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
+
+**`anathema`** — « de l'Anathème », rayon aux malédictions, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 32–40 % | 10 |
+| T2 | 34 | 24–31 % | 10 |
+| T3 | 19 | 16–23 % | 10 |
+| T4 | 6 | 10–15 % | 10 |
+| T5 | 1 | 6–9 % | 10 |
 
 **`ardent`** — « de la Fournaise », dégâts de feu, arrondi 1
 
@@ -1015,6 +1080,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
 
+**`gangrenous`** — « de la Gangrène », dégâts continus, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`glacial`** — « de la Banquise », dégâts de froid, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1137,6 +1213,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T5 | 10 | 7–11 | 10 |
 | T6 | 1 | 3–6 | 10 |
 
+**`necromancers`** — « du Nécromant », dégâts d'invocation, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
+
 **`necrotic_to_attacks`** — « de la Charogne », dégâts nécrotiques aux attaques, arrondi 1
 
 | palier | ouvre à | plage | poids |
@@ -1219,6 +1306,17 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 30–39 % | 10 |
 | T4 | 12 | 20–29 % | 10 |
 | T5 | 1 | 10–19 % | 10 |
+
+**`putrefying`** — « de la Putréfaction », dégâts nécrotiques, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 57 | 34–42 % | 10 |
+| T2 | 45 | 26–33 % | 10 |
+| T3 | 33 | 19–25 % | 10 |
+| T4 | 22 | 13–18 % | 10 |
+| T5 | 11 | 8–12 % | 10 |
+| T6 | 1 | 4–7 % | 10 |
 
 **`quick`** — « de la Prestesse », vitesse d'attaque, arrondi 1
 

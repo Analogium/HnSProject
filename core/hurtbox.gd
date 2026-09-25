@@ -72,6 +72,11 @@ func take_damage(info: DamageInfo) -> void:
 			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
 			info.cast.status_chance_increase if info.cast != null else 0.0, source
 		)
+		if info.cast != null and info.cast.inflicted_state >= 0:
+			states.inflict(
+				info.cast.inflicted_state, info.cast.inflict_chance, info.parts, info.author,
+				Game.rng, source
+			)
 
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la
@@ -79,7 +84,8 @@ func take_damage(info: DamageInfo) -> void:
 ## Publique : le banc d'équilibrage atténue un coup moyen, sans esquive ni tirage.
 func mitigate_part(info: DamageInfo) -> void:
 	for kind in info.parts.size():
-		info.parts[kind] = stats.mitigate(kind, info.parts[kind])
+		var lost := states.resistance_lost(kind) if states != null else 0.0
+		info.parts[kind] = stats.mitigate(kind, info.parts[kind], lost)
 	# L'engourdissement après les défenses : « +10 % de dégâts reçus » se lit sur ce
 	# qui passe. Avant l'armure, elle en absorberait une part.
 	if states != null:

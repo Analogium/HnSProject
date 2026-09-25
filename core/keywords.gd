@@ -9,9 +9,15 @@ const PROJECTILE := "projectile"
 ## Ce qui frappe une surface plutôt qu'une cible : nuage, aura, serpent. Une forme,
 ## jamais une nature — un éclair peut être de zone.
 const AREA := "area"
+## Ce qui se bat pour le personnage : ce qu'il lève, ce qu'un portail crache.
+const SUMMON := "summon"
+const CURSE := "curse"
+## Ce qui continue de blesser après le coup — un état qu'un lancer pose. Déclaré.
+const DOT := "dot"
 const LIGHTNING := "lightning"
 const FIRE := "fire"
 const COLD := "cold"
+const NECROTIC := "necrotic"
 const SPELL := "spell"
 const ATTACK := "attack"
 ## Une attaque qui ne lance rien. Sous `ATTACK` dans l'ordre de lecture : tout ce qui
@@ -23,9 +29,13 @@ const MELEE := "melee"
 const LABELS := {
 	PROJECTILE: "Projectile",
 	AREA: "Zone",
+	SUMMON: "Invocation",
+	CURSE: "Malédiction",
+	DOT: "Dégâts continus",
 	LIGHTNING: "Foudre",
 	FIRE: "Feu",
 	COLD: "Froid",
+	NECROTIC: "Nécrotique",
 	SPELL: "Sort",
 	ATTACK: "Attaque",
 	MELEE: "Mêlée",
@@ -38,9 +48,13 @@ const LABELS := {
 const RECIPIENTS := {
 	PROJECTILE: "aux projectiles",
 	AREA: "aux compétences de zone",
+	SUMMON: "aux invocations",
+	CURSE: "aux malédictions",
+	DOT: "aux compétences à dégâts continus",
 	LIGHTNING: "aux compétences de foudre",
 	FIRE: "aux compétences de feu",
 	COLD: "aux compétences de froid",
+	NECROTIC: "aux compétences nécrotiques",
 	SPELL: "aux sorts",
 	ATTACK: "aux attaques",
 	MELEE: "aux attaques de mêlée",
@@ -56,12 +70,23 @@ const RECIPIENTS := {
 const QUALIFIERS := {
 	PROJECTILE: "de projectile",
 	AREA: "de zone",
+	SUMMON: "d'invocation",
+	CURSE: "de malédiction",
 	LIGHTNING: "de foudre",
 	FIRE: "de feu",
 	COLD: "de froid",
+	NECROTIC: "nécrotiques",
 	SPELL: "de sort",
 	ATTACK: "d'attaque",
 	MELEE: "de mêlée",
+}
+
+
+## Ce qui forme **avec les dégâts un seul nom**, traduit d'un bloc : « damage over
+## time » ne se coupe pas en qualificatif, et le gabarit anglais, qui le poserait
+## devant, écrirait « damage over time damage ».
+const DAMAGE_NOUNS := {
+	DOT: "dégâts continus",
 }
 
 

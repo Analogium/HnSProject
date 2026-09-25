@@ -85,6 +85,9 @@ var mana_per_second := 0.0
 var self_heal := 0.0
 ## Ce que ce lancer accroît à la chance de poser son état, en points de pourcentage.
 var status_chance_increase := 0.0
+## L'état qu'il pose à ce qu'il touche, et sa chance (`Skill.inflicted_state`).
+var inflicted_state := -1
+var inflict_chance := 1.0
 ## Les coups d'un geste, que la forme décide.
 var hits := 1
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».

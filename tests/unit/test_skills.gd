@@ -114,14 +114,15 @@ func test_each_declared_keyword_belongs_to_the_list() -> void:
 
 ## La nature et la cadence disent déjà `lightning` et `spell`. Les écrire aussi dans
 ## la déclaration, c'est deux vérités sur la même chose : le jour où la nature
-## change, l'une des deux ment.
+## change, l'une des deux ment. **Ce que la compétence déduit elle-même** : le portail
+## déclare `area`, que sa forme ne donne pas (jalon 26).
 func test_do_not_declare_what_nature_or_cadence_already_say() -> void:
-	var deduced := (
-		Skill.KEYWORD_OF_CADENCE.values() + Skill.KEYWORD_OF_NATURE.values()
-		+ Skill.KEYWORD_OF_SHAPE.values()
-	)
 	var faults := PackedStringArray()
 	for c in SkillCatalog.ALL:
+		var deduced := [
+			Skill.KEYWORD_OF_CADENCE.get(c.cadence), Skill.KEYWORD_OF_NATURE.get(c.nature),
+			Skill.KEYWORD_OF_SHAPE.get(c.shape),
+		]
 		for id in c.declared_keywords:
 			if deduced.has(id):
 				faults.append("« %s » déclare « %s »" % [c.name, id])
@@ -157,12 +158,13 @@ func test_cadence_gives_spell_or_attack() -> void:
 	assert_false(c.worn(Keywords.SPELL))
 
 
-## Aucun modificateur ne vise le nécrotique : une compétence nécrotique ne doit donc
-## pas l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
-## C'était le froid jusqu'au manuel du froid, qui est arrivé avec ses deux affixes.
+## Aucun modificateur ne vise le sacré : une compétence sacrée ne doit donc pas
+## l'afficher. Un mot-clé montré est une promesse, et celle-ci ne serait pas tenue.
+## C'était le froid jusqu'au manuel du froid, puis le nécrotique jusqu'au manuel
+## nécrotique, tous deux arrivés avec leur affixe.
 func test_a_nature_nothing_targets_gives_no_keyword() -> void:
 	var c := _skill([1.0] as Array[float])
-	c.nature = DamageType.Kind.NECROTIC
+	c.nature = DamageType.Kind.HOLY
 	assert_eq(Array(c.keywords()), [Keywords.SPELL])
 
 
@@ -218,7 +220,22 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 		if c.shape == Skill.Shape.AURA:
 			assert_gt(c.self_burn, 0.0, "« %s » : son prix" % c.name)
 		if c.shape == Skill.Shape.BUFF:
-			assert_gt(c.self_burn + c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
+			assert_gt(
+				c.self_burn + c.self_wither + c.mana_per_second, 0.0, "« %s » : son prix" % c.name
+			)
+		# La Relève : ce qu'ils gardent, leur cadence, combien ; le portail : ce qu'il dure,
+		# sa cadence et le souffle de ses créatures.
+		if c.shape in [Skill.Shape.SUMMON, Skill.Shape.GATE]:
+			assert_gt(c.period, 0.0, "« %s » : une période" % c.name)
+			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
+		if c.shape == Skill.Shape.SUMMON:
+			assert_gte(c.simultaneous, 1, "« %s » : un maximum" % c.name)
+		if c.shape == Skill.Shape.GATE:
+			assert_gt(c.duration, 0.0, "« %s » : une durée" % c.name)
+		# Une malédiction ne frappe pas : sa zone et l'état qu'elle pose sont tout ce qu'elle fait.
+		if c.shape == Skill.Shape.CURSE:
+			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
+			assert_gte(c.inflicted_state, 0, "« %s » : un état" % c.name)
 		# Le cyclone se paie à la seconde comme l'aura, et frappe à la période comme elle.
 		if c.shape == Skill.Shape.CYCLONE:
 			assert_gt(c.self_burn + c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
@@ -228,9 +245,9 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gt(c.projectile_speed, 0.0, "« %s » : une vitesse" % c.name)
 
 
-## Une compétence sans table de dégâts — un buff — ne se lit pas sur ses dégâts : elle
-## déclare son nombre de points, et ses buffs sont ce qu'elle donne. Sans l'un des deux,
-## la case accepte des points qui ne font rien.
+## Une compétence sans table de dégâts — un buff, une malédiction — ne se lit pas sur ses
+## dégâts : elle déclare son nombre de points, et ses buffs ou l'état qu'elle pose sont ce
+## qu'elle donne. Sans l'un des deux, la case accepte des points qui ne font rien.
 ##
 ## Chaque buff porte **un identifiant unique et un nom** : la fiche lui ouvre un bloc à
 ## son nom, et deux blocs anonymes se liraient comme un seul.
@@ -240,7 +257,7 @@ func test_a_skill_without_a_damage_table_declares_its_points_and_its_buffs() -> 
 	for c: Skill in SkillCatalog.ALL:
 		if c.damage_per_point.is_empty():
 			assert_gt(c.declared_points_max, 0, "« %s » n'accepte aucun point" % c.name)
-			assert_true(c.grants_buffs(), "« %s » ne donne rien" % c.name)
+			assert_true(c.acts(), "« %s » ne donne rien" % c.name)
 		for buff: SkillBuff in c.buffs:
 			assert_false(buff.id.is_empty(), "un buff de « %s » n'a pas d'identifiant" % c.name)
 			assert_false(seen.has(buff.id), "« %s » est porté deux fois" % buff.id)

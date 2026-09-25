@@ -136,8 +136,10 @@ static var _scorches := {}
 ## chose qui trahit le vecteur au milieu d'un décor en pixels. Gardé par teinte et
 ## par rayon entier — un rayon ne change qu'en allumant l'aura ou en plaçant un
 ## point.
-static func scorch(tint: Color, radius: int) -> Texture2D:
-	var key := "%s@%d" % [tint.to_html(false), radius]
+## `alpha` : l'opacité du palier le plus dense — la malédiction marque plus fort
+## qu'une aura.
+static func scorch(tint: Color, radius: int, alpha := SCORCH_ALPHA) -> Texture2D:
+	var key := "%s@%d@%.2f" % [tint.to_html(false), radius, alpha]
 	if _scorches.has(key):
 		return _scorches[key]
 
@@ -158,7 +160,7 @@ static func scorch(tint: Color, radius: int) -> Texture2D:
 			if step <= 0:
 				continue
 			img.set_pixel(x, y, Color(
-				tint, float(mini(step, SCORCH_STEPS)) / float(SCORCH_STEPS) * SCORCH_ALPHA
+				tint, float(mini(step, SCORCH_STEPS)) / float(SCORCH_STEPS) * alpha
 			))
 	var tex := ImageTexture.create_from_image(img)
 	_scorches[key] = tex
@@ -809,13 +811,51 @@ class Piece:
 ## qui disparaît. C'est ainsi qu'un dessin s'efface sans pâlir — une planche à
 ## demi-transparente sur un sol sombre sort grise. Avant le contour, chaque pixel
 ## restant serait cerné pour lui-même et le dessin tournerait en poussière noire.
+##
+## Par un masque natif et non pixel par pixel : un `set_pixel()` par pixel coûtait
+## 1,1 ms sur l'anneau de 113 pixels du mur de gaz (jalon 26).
 static func dissolve(img: Image, gone: float) -> void:
 	if gone <= 0.0:
 		return
-	for y in img.get_height():
-		for x in img.get_width():
-			if float(BAYER[y % 4][x % 4]) / 16.0 < gone:
-				img.set_pixel(x, y, Color(0.0, 0.0, 0.0, 0.0))
+	var size := img.get_size()
+	var kept := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+	kept.blit_rect_mask(
+		img.duplicate() if img.get_format() == Image.FORMAT_RGBA8 else _rgba(img),
+		_keep_mask(gone, size).get_region(Rect2i(Vector2i.ZERO, size)), Rect2i(Vector2i.ZERO, size),
+		Vector2i.ZERO
+	)
+	img.copy_from(kept)
+
+
+static func _rgba(img: Image) -> Image:
+	var copy := img.duplicate()
+	copy.convert(Image.FORMAT_RGBA8)
+	return copy
+
+
+## Le côté de départ des masques gardés ; ils grandissent si une pièce les dépasse.
+const MASK_SIDE := 128
+static var _masks := {}
+
+
+## Les pixels que la dissolution **garde** à ce degré, au moins de cette taille : le
+## damier de Bayer, bâti une fois par seuil. Seize seuils possibles, pas plus.
+static func _keep_mask(gone: float, at_least: Vector2i) -> Image:
+	var threshold := ceili(gone * 16.0)
+	var held: Image = _masks.get(threshold)
+	if held == null or held.get_width() < at_least.x or held.get_height() < at_least.y:
+		var side := maxi(MASK_SIDE, maxi(at_least.x, at_least.y) + 3) / 4 * 4 + 4
+		var tile := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+		for y in 4:
+			for x in 4:
+				if BAYER[y][x] >= threshold:
+					tile.set_pixel(x, y, Color.WHITE)
+		var mask := Image.create_empty(side, side, false, Image.FORMAT_RGBA8)
+		for y in range(0, side, 4):
+			for x in range(0, side, 4):
+				mask.blit_rect(tile, Rect2i(0, 0, 4, 4), Vector2i(x, y))
+		_masks[threshold] = mask
+	return _masks[threshold]
 
 
 ## Tourne une grille d'un angle quelconque. Chaque pixel d'arrivée échantillonne
@@ -873,3 +913,136 @@ const SWORD := [
 	"....gbbbbbbbbbb..",
 	"....g............",
 ]
+
+
+# --------------------------------------------------------------------------
+# La nécrose (jalon 26)
+# --------------------------------------------------------------------------
+
+## Le rang de la troisième rampe : l'ombre des orbites, la chair d'une faille. Le feu
+## et la glace n'en ont pas besoin — une matière qui ronge a un dedans.
+const R_SHADE := 2
+
+## `INK`, plus la troisième rampe : `x` `y` `z` en bas, `c` `d` au milieu.
+const INK_SHADE := {
+	"1": [R_TINT, 0], "2": [R_TINT, 1], "3": [R_TINT, 2], "4": [R_TINT, 3],
+	"5": [R_TINT, 4], "w": [R_CORE, 4],
+	"x": [R_SHADE, 0], "y": [R_SHADE, 1], "z": [R_SHADE, 2], "c": [R_SHADE, 2], "d": [R_SHADE, 3],
+}
+
+## Le projectile de la Peste : un crâne de fumée, neuf pixels sur huit, en quatre
+## temps. **Il ne bouge pas, ses orbites palpitent** — choisi sur planche contre une
+## bulle, une nuée de spores, une glaire et un orbe noir (jalon 26) : c'est la seule
+## forme qui dit « peste » avant la couleur.
+const PLAGUE := [
+	["..33333..", ".3444443.", "345555543", "341151143", "345515543", ".3455543.", "..3w5w3..", "..33333.."],
+	["..33333..", ".3444443.", "345555543", "34yy5yy43", "345515543", ".3455543.", "..3w5w3..", "..33333.."],
+	["..33333..", ".3444443.", "345555543", "34ww5ww43", "345515543", ".3455543.", "..3w5w3..", "..33333.."],
+	["..33333..", ".3444443.", "345555543", "34yy5yy43", "345515543", ".3455543.", "..3w5w3..", "..33333.."],
+]
+const PLAGUE_WIDTH := 9
+const PLAGUE_HEIGHT := 8
+const PLAGUE_HZ := 8.0
+
+## La fumée qu'il laisse, de la plus proche à la plus lointaine : trois volutes de
+## tailles différentes, **dissoutes** de plus en plus — une traînée qui meurt n'est
+## pas une traînée qui pâlit.
+const FUMES := [["..33.", ".3443", "34443", ".333."], [".33.", "3443", ".33."], [".3.", "333"]]
+## Laquelle, et combien dissoute, pour chaque rang de la traînée.
+const FUME_TRAIL := [[0, 0.0], [0, 0.15], [1, 0.3], [1, 0.45], [2, 0.6]]
+
+## La faille de la Porte pourrissante : une fente de chair debout, neuf pixels sur
+## seize, où tourne le vert d'un autre monde. Les reflets `w` descendent d'un temps
+## à l'autre.
+const RIFT := [
+	["...ccc...", "..cdddc..", ".cd343dc.", ".c34543c.", "cd35w53dc", "cd34543dc", "c3455543c", "c3455543c", "c3455543c", "c345w543c", "cd34543dc", "cd35553dc", ".c34543c.", ".cd343dc.", "..cdddc..", "...ccc..."],
+	["...ccc...", "..cdddc..", ".cd343dc.", ".c34543c.", "cd35553dc", "cd34543dc", "c345w543c", "c3455543c", "c3455543c", "c3455543c", "cd34543dc", "cd35w53dc", ".c34543c.", ".cd343dc.", "..cdddc..", "...ccc..."],
+	["...ccc...", "..cdddc..", ".cd343dc.", ".c34543c.", "cd35553dc", "cd34543dc", "c3455543c", "c3455543c", "c345w543c", "c3455543c", "cd34543dc", "cd35553dc", ".c34w43c.", ".cd343dc.", "..cdddc..", "...ccc..."],
+]
+const RIFT_WIDTH := 9
+const RIFT_HEIGHT := 16
+const RIFT_HZ := 6.0
+
+## Une créature de la Porte : une bulle à deux yeux, qui sautille — assise, puis
+## tassée. Sept pixels : elle doit se lire en amas de six autour de la faille.
+const CRAWLER := [
+	["..333..", ".34443.", "34w4w43", "34x4x43", "3455543", ".34443.", "..333.."],
+	[".......", "..333..", ".3w4w3.", "34x4x43", "3455543", "3444443", ".33333."],
+]
+const CRAWLER_SIZE := 7
+const CRAWLER_HZ := 6.0
+
+## L'œil de la Malédiction putride, fermé, entrouvert puis ouvert : vingt et un
+## pixels sur neuf, posé au-dessus de la zone qu'il maudit.
+const EYE := [
+	[".....................", ".....................", ".....................", ".....................", "333444444444444444333", ".....................", ".....................", ".....................", "....................."],
+	[".....................", ".....................", ".....................", "...333444444444333...", "3344555xxxwxxx5554433", "...333444444444333...", ".....................", ".....................", "....................."],
+	[".......3333333.......", "....3334444444333....", "..33445555555554433..", ".3445555xxxxx5555443.", "3445555xxxwxxx5555443", ".3445555xxxxx5555443.", "..33445555555554433..", "....3334444444333....", ".......3333333......."],
+]
+const EYE_WIDTH := 21
+const EYE_HEIGHT := 9
+
+## Une spore de la Nécrose avancée, qui monte autour de celui qu'elle ronge.
+const SPORE := [".3.", "3w3", ".3."]
+const SPORE_SIZE := 3
+
+static var _plagues := {}
+static var _fumes := {}
+static var _rifts := {}
+static var _crawlers := {}
+static var _eyes := {}
+static var _spores := {}
+
+
+static func plagues(tint: Color) -> Array:
+	return _shaded(_plagues, PLAGUE, PLAGUE_WIDTH, PLAGUE_HEIGHT, tint, Necrotic.SHADE)
+
+
+## Les cinq volutes de la traînée, déjà dissoutes : `FUME_TRAIL` dans l'ordre.
+static func fumes(tint: Color) -> Array:
+	var key := tint.to_html(false)
+	if not _fumes.has(key):
+		var pieces: Array[Texture2D] = []
+		for rank: Array in FUME_TRAIL:
+			var grid: Array = FUMES[rank[0]]
+			var canvas := PixelCanvas.new((grid[0] as String).length(), grid.size())
+			canvas.stamp(grid, Vector2i.ZERO, INK)
+			var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(Necrotic.core(tint))])
+			dissolve(img, rank[1])
+			pieces.append(ImageTexture.create_from_image(img))
+		_fumes[key] = pieces
+	return _fumes[key]
+
+
+static func rifts(tint: Color) -> Array:
+	return _shaded(_rifts, RIFT, RIFT_WIDTH, RIFT_HEIGHT, tint, Necrotic.FLESH)
+
+
+static func crawlers(tint: Color) -> Array:
+	return _shaded(_crawlers, CRAWLER, CRAWLER_SIZE, CRAWLER_SIZE, tint, Necrotic.SHADE)
+
+
+static func eyes(tint: Color) -> Array:
+	return _shaded(_eyes, EYE, EYE_WIDTH, EYE_HEIGHT, tint, Necrotic.SHADE)
+
+
+static func spore(tint: Color) -> Texture2D:
+	return _shaded(_spores, [SPORE], SPORE_SIZE, SPORE_SIZE, tint, Necrotic.SHADE)[0]
+
+
+## `_sheet()` à trois rampes : la teinte, son cœur maladif, et `shade`.
+static func _shaded(
+	cache: Dictionary, grids: Array, w: int, h: int, tint: Color, shade: Color
+) -> Array:
+	var key := tint.to_html(false)
+	if not cache.has(key):
+		var palettes := [
+			ArtPalette.ramp(tint), ArtPalette.ramp(Necrotic.core(tint)), ArtPalette.ramp(shade)
+		]
+		var out: Array[Texture2D] = []
+		for grid: Array in grids:
+			var canvas := PixelCanvas.new(w, h)
+			canvas.stamp(grid, Vector2i.ZERO, INK_SHADE)
+			out.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+		cache[key] = out
+	return cache[key]

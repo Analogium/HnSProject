@@ -219,7 +219,8 @@ func _physics_process(delta: float) -> void:
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
-## il porte les six refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite pleine.
+## il porte les sept refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite
+## pleine, morts-vivants au complet.
 func cast_slot(index: int) -> bool:
 	if is_dead or _recharges.size() <= index or _recharges[index] > 0.0:
 		return false
@@ -251,6 +252,9 @@ func cast_slot(index: int) -> bool:
 	# Refusée plutôt que de remplacer la plus ancienne : la touche tenue paierait pour
 	# rien.
 	if skill.shape == Skill.Shape.ORBIT and _blade_crown().full(cast.max_simultaneous()):
+		return false
+	if skill.shape == Skill.Shape.SUMMON \
+			and Minion.count_of(self, skill.id) >= cast.max_simultaneous():
 		return false
 
 	_set_mana(mana - cast.mana_cost)
@@ -305,6 +309,12 @@ func cast_slot(index: int) -> bool:
 			HolyPulse.emanate(self, cast)
 		Skill.Shape.ORBIT:
 			_blade_crown().add_to(cast)
+		Skill.Shape.SUMMON:
+			Minion.raise(self, cast, _effects_parent())
+		Skill.Shape.GATE:
+			RottingGate.open(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.CURSE:
+			PutridCurse.fall(_effects_parent(), _aim_point(), cast, states)
 		Skill.Shape.STRIKE:
 			_swing(cast, SwingArc.Style.STRIKE)
 		Skill.Shape.CROSS:

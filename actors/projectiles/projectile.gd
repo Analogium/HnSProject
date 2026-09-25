@@ -46,6 +46,13 @@ const BODY := 0.78
 ## grésillement : sans lui le tir est un autocollant qui glisse.
 const JITTER := 0.4
 
+## Les natures **dessinées** : planches cernées, qui ne tournent pas et ne sont pas
+## additives. Les autres restent des glyphes tracés.
+const DRAWN := [DamageType.Kind.LIGHTNING, DamageType.Kind.NECROTIC]
+## L'écart entre deux volutes de la traînée de la Peste, et leur tangage.
+const FUME_STEP := 7.0
+const FUME_SWAY := 1.5
+
 var _dir := Vector2.RIGHT
 ## Les parts du coup, par nature, tirées au lancer.
 var _parts: Array[float] = []
@@ -99,13 +106,16 @@ func nature() -> DamageType.Kind:
 func _draw() -> void:
 	var color := tint()
 	# **La foudre ne se dessine pas comme une bille.** Un éclair court et fourché,
-	# couché sur la trajectoire au cap le plus proche. C'est le seul écart par
-	# nature de ce nœud : la foudre a une *forme* propre, les autres natures sont
-	# des boules qui brillent.
+	# couché sur la trajectoire au cap le plus proche. La nécrose, elle, est un crâne.
+	# Ce sont les deux écarts par nature de ce nœud : les autres natures sont des
+	# boules qui brillent.
 	if nature() == DamageType.Kind.LIGHTNING:
 		Lightning.put(self, Lightning.dart(
 			color, Slash.turn_of(_dir.angle()), Lightning.hold(_life) + int(get_instance_id())
 		))
+		return
+	if nature() == DamageType.Kind.NECROTIC:
+		_plague(color)
 		return
 	for a: Array in AUREOLES:
 		var halo := color
@@ -114,6 +124,17 @@ func _draw() -> void:
 	var body := color
 	body.a = BODY
 	draw_colored_polygon(_shape(1.0), body)
+
+
+## Le crâne de la Peste et ses fumées, qui ondulent de part et d'autre de la course.
+func _plague(color: Color) -> void:
+	var fumes := EffectForge.fumes(color)
+	var side := _dir.orthogonal()
+	for i in fumes.size():
+		var behind := -_dir * FUME_STEP * float(i + 1) + side * FUME_SWAY * (1.0 if i % 2 == 0 else -1.0)
+		Necrotic.centered(self, fumes[i], behind)
+	var skulls := EffectForge.plagues(color)
+	Necrotic.centered(self, skulls[int(_life * EffectForge.PLAGUE_HZ) % skulls.size()], Vector2.ZERO)
 
 
 ## add_child d'abord, sinon global_position ne veut rien dire. Immédiat : un tir ne
@@ -167,9 +188,10 @@ func setup(
 	if nature >= 0:
 		_nature = nature
 	rotation = _dir.angle()
-	# Dessinée, la foudre ne tourne pas et n'est pas additive : une planche pivotée se
-	# rééchantillonne, et son contour sombre n'ajoute rien en lumière ajoutée.
-	if self.nature() == DamageType.Kind.LIGHTNING:
+	# Dessinées, la foudre et la nécrose ne tournent pas et ne sont pas additives : une
+	# planche pivotée se rééchantillonne, et son contour sombre n'ajoute rien en lumière
+	# ajoutée.
+	if self.nature() in DRAWN:
 		rotation = 0.0
 		material = null
 

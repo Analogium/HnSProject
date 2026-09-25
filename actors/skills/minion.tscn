@@ -1,0 +1,46 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://actors/skills/minion.gd" id="1_minion"]
+[ext_resource type="Script" path="res://art/actor_sprite.gd" id="2_sprite"]
+[ext_resource type="Shader" path="res://core/flash.gdshader" id="3_flash"]
+[ext_resource type="Script" path="res://core/hurtbox.gd" id="4_hurtbox"]
+[ext_resource type="Script" path="res://ui/health_bar.gd" id="5_bar"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_minion"]
+resource_local_to_scene = true
+shader = ExtResource("3_flash")
+shader_parameter/flash_amount = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 6.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 8.0
+
+[node name="Minion" type="CharacterBody2D"]
+y_sort_enabled = true
+collision_layer = 0
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1_minion")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_minion")
+script = ExtResource("2_sprite")
+archetype = "undead"
+variant = 0
+
+[node name="HealthBar" type="Node2D" parent="."]
+script = ExtResource("5_bar")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3)
+shape = SubResource("CircleShape2D_body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_hurt")

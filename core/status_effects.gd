@@ -2,7 +2,8 @@ class_name StatusEffects
 extends RefCounted
 
 ## Ce qu'un coup laisse sur ce qu'il touche — embrasement, engourdissement, gel,
-## pourriture, bénédiction, saignement —, un par corps, posé sur sa hurtbox. « États »
+## pourriture, bénédiction, saignement, et ce que pose un lancer : décomposition,
+## flétrissement, malédiction —, un par sorte et par corps, posé sur sa hurtbox. « États »
 ## et non « effets », qui désignent ici ce qui se dessine. Tirés par
 ## `Hurtbox.take_damage()` ; chaque porteur applique les facteurs là où vit la règle.
 ## Tous se portent à la fois ; seuls deux de la même sorte ne se cumulent pas. Jamais
@@ -21,10 +22,9 @@ signal heal(amount: float)
 signal struck(at: Vector2, parts: Array, victim: StatusEffects)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
-enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED }
+enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED }
 
-## La nature qui pose chaque état. **Chaque nature en pose exactement un**, le
-## physique compris : le saignement est ce que laisse une lame.
+## La nature de chaque état : ce qu'il brûle, et sa couleur.
 const NATURES := [
 	DamageType.Kind.FIRE,
 	DamageType.Kind.LIGHTNING,
@@ -32,10 +32,24 @@ const NATURES := [
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.HOLY,
 	DamageType.Kind.PHYSICAL,
+	DamageType.Kind.NECROTIC,
+	DamageType.Kind.NECROTIC,
+	DamageType.Kind.NECROTIC,
 ]
 
+## Ceux qu'un coup **tire** : **chaque nature en pose exactement un**, le physique
+## compris — le saignement est ce que laisse une lame. Les autres, c'est un lancer qui
+## les pose (`inflict()`), ou une malédiction (jalon 26).
+const ROLLED := [Kind.IGNITE, Kind.NUMB, Kind.CHILL, Kind.ROT, Kind.BLESSING, Kind.BLEED]
+
+## Ceux qui brûlent **par à-coups** : chaque à-coup est un petit coup nécrotique, et
+## tire la pourriture comme lui.
+const TICKING := [Kind.DECAY, Kind.WILTING]
+
 ## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
-const IDS := ["ignite", "numb", "chill", "rot", "blessing", "bleed"]
+const IDS := [
+	"ignite", "numb", "chill", "rot", "blessing", "bleed", "decay", "wilting", "cursed",
+]
 
 ## Ce qui précise des dégâts contre un état ; le terme se place avant : « dégâts accrus
 ## contre les embrasés ».
@@ -46,24 +60,35 @@ const AGAINST := [
 	"contre les pourrissants",
 	"contre les bénis",
 	"contre les saignants",
+	"contre les décomposés",
+	"contre les flétris",
+	"contre les maudits",
 ]
 
 ## Le mot qui s'envole au-dessus du joueur atteint.
-const NAMES := ["embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant"]
+const NAMES := [
+	"embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant", "décomposé", "flétri",
+	"maudit",
+]
 
 ## Ce qui brûle, nommé par le compteur de DPS.
-const BURN_NAMES := {Kind.IGNITE: "Embrasement", Kind.ROT: "Pourriture", Kind.BLEED: "Saignement"}
+const BURN_NAMES := {
+	Kind.IGNITE: "Embrasement", Kind.ROT: "Pourriture", Kind.BLEED: "Saignement",
+	Kind.DECAY: "Décomposition", Kind.WILTING: "Flétrissement",
+}
 
 ## Le champ de `CharacterStats` qui **accroît** la chance de chaque sorte, ou vide.
 ## Une chance n'arrive que quand une compétence la demande : l'embrasement au jalon 20,
 ## le gel au jalon 21, la bénédiction avec le manuel sacré. **Le seul endroit** qui lie
 ## une sorte à sa statistique — le porteur y écrit ses facteurs, la page du manuel y lit
 ## son libellé.
-const CHANCE_STATS := ["ignite_chance", "", "chill_chance", "", "blessing_chance", ""]
+const CHANCE_STATS := [
+	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "",
+]
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
-const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0]
+const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0]
 
 ## Pour un coup **entièrement** d'une nature ; un coup mêlé la partage selon ses parts
 ## (jalon 8). **Premier réglage**, comme tous les nombres de ce fichier.
@@ -77,6 +102,14 @@ const IGNITE_PER_SECOND := 0.25
 const ROT_PER_SECOND := 0.10
 ## La part de ce que brûle la pourriture qui revient à celui qui l'a posée.
 const ROT_HEAL := 0.5
+## Le coup nécrotique rejoué en entier sur les quatre secondes de la décomposition, et
+## aux quatre cinquièmes par le flétrissement — la Peste frappe moins fort à l'impact.
+const DECAY_PER_SECOND := 0.25
+const WILTING_PER_SECOND := 0.20
+## L'écart entre deux à-coups de ce qui brûle par à-coups — celui des paquets affichés.
+const DOT_TICK := 0.5
+## Les points de résistance nécrotique que perd le maudit, **avant le plafond**.
+const CURSE := 20.0
 ## Les dégâts reçus par l'engourdi, en plus.
 const NUMB := 0.10
 ## La vitesse d'action retirée au transi : déplacement, attaque et incantation.
@@ -86,9 +119,16 @@ const BLESSING := 0.20
 ## Part du physique reçu par seconde, la moitié du coup : moins que l'embrasement, le
 ## physique frappant bien plus souvent.
 const BLEED_PER_SECOND := 0.125
-## **La seule couleur qui ne vient pas de sa nature** : le blanc du physique se lirait
-## comme un flash. Plus sombre que la barre de vie basse.
+## **Les couleurs qui ne viennent pas de leur nature** : le blanc du physique se lirait
+## comme un flash — le sang est plus sombre que la barre de vie basse —, et les quatre
+## états nécrotiques ne se distingueraient plus.
 const BLOOD := Color(0.70, 0.08, 0.12)
+const OWN_COLORS := {
+	Kind.BLEED: BLOOD,
+	Kind.DECAY: Color(0.62, 0.60, 0.20),
+	Kind.WILTING: Color(0.30, 0.52, 0.40),
+	Kind.CURSED: Color(0.58, 0.30, 0.62),
+}
 
 ## Les pertes sans coup s'affichent par paquets : un chiffre par image en ferait
 ## soixante, à « 0 ». C'est aussi la période d'Immolation.
@@ -107,6 +147,8 @@ class State:
 	var source := ""
 	## Brûlé depuis la dernière annonce à `Game.damage_dealt`.
 	var unreported := 0.0
+	## Jusqu'au prochain à-coup, pour ce qui brûle par à-coups (`TICKING`).
+	var until_tick := DOT_TICK
 
 
 ## Des pertes sans coup, montrées par paquets. Le joueur en a deux — Immolation et
@@ -175,11 +217,9 @@ static func name(kind: int) -> String:
 	return Texts.t(NAMES[kind])
 
 
-## `DamageType.COLORS`, sauf le saignement (`BLOOD`).
+## `DamageType.COLORS`, sauf `OWN_COLORS`.
 static func color(kind: int) -> Color:
-	if kind == Kind.BLEED:
-		return BLOOD
-	return DamageType.COLORS[NATURES[kind]]
+	return OWN_COLORS.get(kind, DamageType.COLORS[NATURES[kind]])
 
 
 func active(kind: int) -> bool:
@@ -225,12 +265,31 @@ func suffer(
 	# du lancer s'y **ajoute** avant de multiplier la chance de base — la règle de tous
 	# les accrus du jeu (`StatMod`), et non deux multiplications à la suite.
 	var better := author.chance_factors if author != null else neutral_factors()
-	for kind in NATURES.size():
+	for kind: int in ROLLED:
 		var part: float = parts[NATURES[kind]]
 		if part <= 0.0:
 			continue
 		if rng.randf() < chance(part, total, max_hp, better[kind] + cast_increase * 0.01):
 			put(kind, part, author, source)
+
+
+## Ce qu'un **lancer** pose à ce qu'il touche, à sa chance : la décomposition de la
+## Peste. Une part nulle dans sa nature — un sort converti — ne pose rien. Un tirage,
+## quel que soit le résultat (invariant 3).
+func inflict(
+	kind: int, chance_value: float, parts: Array[float], author: StatusEffects,
+	rng: RandomNumberGenerator, source := ""
+) -> void:
+	var part: float = parts[NATURES[kind]]
+	if rng.randf() < chance_value and part > 0.0:
+		put(kind, part, author, source)
+
+
+## Les points de résistance que ses états retirent à cette nature : la malédiction.
+func resistance_lost(nature: int) -> float:
+	if nature == DamageType.Kind.NECROTIC and not is_clear and active(Kind.CURSED):
+		return CURSE
+	return 0.0
 
 
 ## La part de la nature dans le coup, plus ce qu'elle retire des PV max : un coup de
@@ -272,6 +331,7 @@ func advance(delta: float) -> float:
 	var amplified := damage_taken_factor
 	var loss := 0.0
 	var finished := false
+	var due := false
 	for state in _states:
 		if state.per_second > 0.0:
 			var burns := state.per_second * minf(delta, state.remaining) * amplified
@@ -279,8 +339,19 @@ func advance(delta: float) -> float:
 			state.unreported += burns
 			if state.kind == Kind.ROT:
 				_heal_author(state, burns)
+		if state.kind in TICKING:
+			state.until_tick -= delta
+			due = due or state.until_tick <= 0.0
 		state.remaining -= delta
 		finished = finished or state.remaining <= 0.0
+	# Hors de la boucle : la pourriture posée s'ajoute à la liste qu'elle parcourt. Un
+	# drapeau et non une liste, qu'il faudrait allouer à chaque image et chaque porteur.
+	if due:
+		for kind: int in TICKING:
+			var state := _state(kind)
+			if state != null and state.until_tick <= 0.0:
+				state.until_tick += DOT_TICK
+				_rot_from(state, amplified)
 	if loss > 0.0:
 		_to_show += _losses.add_to(loss, delta)
 	if reports_dealt:
@@ -335,7 +406,20 @@ func _burn_per_second(kind: int) -> float:
 			return ROT_PER_SECOND
 		Kind.BLEED:
 			return BLEED_PER_SECOND
+		Kind.DECAY:
+			return DECAY_PER_SECOND
+		Kind.WILTING:
+			return WILTING_PER_SECOND
 	return 0.0
+
+
+## Un à-coup est un coup **entièrement** nécrotique : il tire la pourriture à la chance
+## de base, fois celle de l'auteur. Un tirage par à-coup (invariant 3).
+func _rot_from(state: State, amplified: float) -> void:
+	var author := state.author.get_ref() as StatusEffects if state.author != null else null
+	var factor := author.chance_factors[Kind.ROT] if author != null else 1.0
+	if Game.rng.randf() < CHANCE * factor:
+		put(Kind.ROT, state.per_second * DOT_TICK * amplified, author, state.source)
 
 
 ## Aussi appelée à la mort du porteur, pour ne pas perdre le dernier paquet.

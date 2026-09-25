@@ -38,6 +38,13 @@ const ALL := [
 	preload("res://resources/skills/holy_pulse.tres"),
 	preload("res://resources/skills/holy_light.tres"),
 
+	preload("res://resources/skills/plague.tres"),
+	preload("res://resources/skills/rise.tres"),
+	preload("res://resources/skills/toxic_unleash.tres"),
+	preload("res://resources/skills/rotting_gate.tres"),
+	preload("res://resources/skills/putrid_curse.tres"),
+	preload("res://resources/skills/advanced_necrosis.tres"),
+
 	# Le chevalier : les compétences apprises qui suivent la cadence de l'arme.
 	preload("res://resources/skills/heavy_strike.tres"),
 	preload("res://resources/skills/cross_slash.tres"),

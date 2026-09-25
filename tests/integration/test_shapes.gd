@@ -877,3 +877,130 @@ func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
 	assert_true(_p.cast_slot(2))
 	assert_false(_p.lit("holy_light"))
 	assert_eq(_p.stats.res_holy, resistance, "éteinte, la fiche retrouve ses nombres")
+
+
+# --------------------------------------------------------------------------
+# Manuel nécrotique (jalon 26)
+# --------------------------------------------------------------------------
+
+## Une cible qui porte des états : la Peste et la malédiction en posent.
+func _wearing_target(position: Vector2) -> Hurtbox:
+	var h := _target(position)
+	h.states = StatusEffects.new()
+	return h
+
+
+var _authors: Array[StatusEffects] = []
+
+
+func _on_authored(info: DamageInfo) -> void:
+	_authors.append(info.author)
+
+
+func test_plague_leaves_decay_on_what_it_strikes() -> void:
+	_learn("manual_necrotic", ["plague"])
+	var target := _wearing_target(_p.global_position + Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(target), 1)
+	assert_true(target.states.active(StatusEffects.Kind.DECAY), "décomposée")
+
+
+func test_the_curse_marks_its_circle_without_striking() -> void:
+	_learn("manual_necrotic", ["putrid_curse"])
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var inside := _wearing_target(aim + Vector2(30, 0))
+	var outside := _wearing_target(aim + Vector2(90, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_true(inside.states.active(StatusEffects.Kind.CURSED), "maudite")
+	assert_false(outside.states.active(StatusEffects.Kind.CURSED), "hors du cercle, non")
+	assert_eq(_hits(inside), 0, "une malédiction ne frappe pas")
+
+
+func test_rise_raises_two_undead_then_refuses_a_third() -> void:
+	_learn("manual_necrotic", ["rise"])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_eq(Minion.count_of(_p, "rise"), 2)
+	_p._recharges[2] = 0.0
+	var mana := _p.mana
+	assert_false(_p.cast_slot(2), "au complet : refusée")
+	assert_eq(_p.mana, mana, "sans rien prendre")
+
+
+## Un nœud atteint le lancer, donc le plafond : Légion d'os en lève un de plus.
+func test_bone_legion_raises_a_third() -> void:
+	_learn("manual_necrotic", ["rise", "rise", "rise", "rise_bone_legion"])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_eq(Minion.count_of(_p, "rise"), 3)
+
+
+func test_the_undead_strike_on_behalf_of_the_player() -> void:
+	_learn("manual_necrotic", ["rise"])
+	var target := _wearing_target(_p.global_position + Vector2(60, 0))
+	_authors.clear()
+	target.damaged.connect(_on_authored)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.5)
+	assert_gt(_hits(target), 0, "ils vont frapper ce qui entre dans la zone")
+	assert_eq(_authors[0], _p.states, "au nom du joueur : sa pourriture le soignera")
+
+
+## Son jumeau : ce qui reste hors de la zone du joueur n'est pas poursuivi.
+func test_the_undead_leave_alone_what_stays_outside_the_zone() -> void:
+	_learn("manual_necrotic", ["rise"])
+	var target := _target(_p.global_position + Vector2(200, 0))
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.5)
+	assert_eq(_hits(target), 0)
+
+
+func test_the_undead_fall_when_their_book_leaves_the_rack() -> void:
+	_learn("manual_necrotic", ["rise"])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	_p.stop_studying(0)
+	await wait_physics_frames(2)
+	assert_eq(Minion.count_of(_p, "rise"), 0)
+
+
+## Un ennemi frappe le plus proche : le mort-vivant entre lui et le joueur.
+func test_an_enemy_turns_on_the_closer_undead() -> void:
+	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
+	add_child_autofree(grunt)
+	grunt.setup(_p)
+	grunt.global_position = _p.global_position + Vector2(-100, 0)
+	assert_eq(grunt.foe(), _p, "sans mort-vivant, le joueur")
+	_learn("manual_necrotic", ["rise"])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_true(grunt.foe() is Minion, "le mort-vivant, plus proche")
+
+
+func test_the_gate_spews_creatures_that_burst_on_an_enemy_in_sight() -> void:
+	_learn("manual_necrotic", ["rotting_gate"])
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var seen := _target(aim + Vector2(60, 0))
+	var unseen := _target(aim + Vector2(0, 200))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.5)
+	assert_gt(_hits(seen), 0, "elles vont exploser dessus")
+	assert_eq(_hits(unseen), 0, "hors de vue, elles l'ignorent")
+
+
+func test_necrosis_gnaws_current_health_and_raises_the_chance_to_rot() -> void:
+	_learn("manual_necrotic", ["advanced_necrosis"])
+	var before := _p.states.chance_factors[StatusEffects.Kind.ROT]
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_almost_eq(_p.states.chance_factors[StatusEffects.Kind.ROT], before + 0.10, 0.0001)
+	_p.stats.health_regen = 0.0
+	var health := _p.health
+	await wait_seconds(1.0)
+	assert_lt(_p.health, health, "il ronge")
+	assert_gt(_p.health, health * 0.985, "un pour cent par seconde, pas davantage")

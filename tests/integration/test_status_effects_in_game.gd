@@ -128,7 +128,7 @@ func test_a_converted_hit_only_applies_what_it_carries() -> void:
 		Game.rng.seed = 7
 		for i in 3000:
 			hb.take_damage(DamageInfo.as_parts(cast.roll(Game.rng), Vector2.ZERO))
-		for kind in StatusEffects.Kind.size():
+		for kind: int in StatusEffects.ROLLED:
 			var expected: bool = part < 1.0 or kind == StatusEffects.Kind.CHILL
 			assert_eq(states.active(kind), expected, "%s, converti à %d %%" % [StatusEffects.NAMES[kind], roundi(part * 100.0)])
 

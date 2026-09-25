@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_anath"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_anath"]
+
+[sub_resource type="Resource" id="Resource_anathema_t1"]
+script = ExtResource("2_anath")
+required_level = 52
+min_value = 32.0
+max_value = 40.0
+
+[sub_resource type="Resource" id="Resource_anathema_t2"]
+script = ExtResource("2_anath")
+required_level = 34
+min_value = 24.0
+max_value = 31.0
+
+[sub_resource type="Resource" id="Resource_anathema_t3"]
+script = ExtResource("2_anath")
+required_level = 19
+min_value = 16.0
+max_value = 23.0
+
+[sub_resource type="Resource" id="Resource_anathema_t4"]
+script = ExtResource("2_anath")
+required_level = 6
+min_value = 10.0
+max_value = 15.0
+
+[sub_resource type="Resource" id="Resource_anathema_t5"]
+script = ExtResource("2_anath")
+min_value = 6.0
+max_value = 9.0
+
+[resource]
+script = ExtResource("1_anath")
+id = "anathema"
+suffix = "de l'Anathème"
+tags = PackedStringArray("caster", "gloves")
+excludes = PackedStringArray()
+stat = "radius"
+scope = "curse"
+percent = true
+tiers = Array[ExtResource("2_anath")]([SubResource("Resource_anathema_t1"), SubResource("Resource_anathema_t2"), SubResource("Resource_anathema_t3"), SubResource("Resource_anathema_t4"), SubResource("Resource_anathema_t5")])
+weight = 3

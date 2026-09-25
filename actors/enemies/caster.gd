@@ -34,7 +34,8 @@ func tick(delta: float) -> void:
 	if not _should_act():
 		return
 
-	var to_target := target.global_position - global_position
+	var victim := foe()
+	var to_target := victim.global_position - global_position
 	var dist := to_target.length()
 	var dir := to_target.normalized()
 
@@ -50,8 +51,8 @@ func tick(delta: float) -> void:
 		# tangente : avec elle, le retard du lerp (ACCEL est volontairement très
 		# bas) fait spiraler le caster vers l'extérieur, ce qui se lit comme une
 		# fuite lente.
-		var offset := global_position - target.global_position
-		var goal := target.global_position + offset.rotated(_strafe_dir * orbit_step)
+		var offset := global_position - victim.global_position
+		var goal := victim.global_position + offset.rotated(_strafe_dir * orbit_step)
 		move = (goal - global_position).normalized() * strafe_bias
 		strafing = true
 
@@ -63,7 +64,7 @@ func tick(delta: float) -> void:
 		_strafe_dir = -_strafe_dir
 
 	_cool_down(delta)
-	if dist < preferred_distance * 1.4 and _attack_cd <= 0.0 and _has_line_of_sight():
+	if dist < preferred_distance * 1.4 and _attack_cd <= 0.0 and _has_line_of_sight(victim):
 		_strike(dir)
 		_fire(dir)
 	else:
@@ -72,9 +73,9 @@ func tick(delta: float) -> void:
 
 ## Pas dans le document, mais une arène à piliers rend l'absence de test
 ## immédiatement visible : sans lui le caster tire à travers les murs.
-func _has_line_of_sight() -> bool:
+func _has_line_of_sight(victim: Node2D) -> bool:
 	var params := PhysicsRayQueryParameters2D.create(
-		global_position, target.global_position, 1   # layer 1 = décor
+		global_position, victim.global_position, 1   # layer 1 = décor
 	)
 	params.collide_with_areas = false
 	return get_world_2d().direct_space_state.intersect_ray(params).is_empty()

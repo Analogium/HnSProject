@@ -14,11 +14,12 @@ func tick(delta: float) -> void:
 	if not _should_act():
 		return
 
-	var to_target := target.global_position - global_position
+	var victim := foe()
+	var to_target := victim.global_position - global_position
 	var dist := to_target.length()
 	# La distance reste à vol d'oiseau — c'est elle qui décide s'il est au
 	# contact — mais la direction suit le chemin, qui contourne les murs.
-	var desired := heading()
+	var desired := heading() if victim == target else to_target.normalized()
 
 	# Séparation : sans ça les grunts se superposent en une bouillie illisible.
 	desired += _separation() * SEPARATION_FORCE
@@ -33,7 +34,7 @@ func tick(delta: float) -> void:
 			stats.attack_damage, global_position, stats.knockback_force
 		)
 		info.author = states
-		(target as Player).hurtbox.take_damage(info)
+		(victim.get("hurtbox") as Hurtbox).take_damage(info)
 		# Après take_damage : info.amount a pu être réduit par une armure, et on
 		# ne vole que ce qu'on a réellement infligé.
 		on_damage_dealt(info.amount)

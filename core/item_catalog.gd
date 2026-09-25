@@ -76,6 +76,7 @@ const ALL := [
 	preload("res://resources/items/manual_fire.tres"),
 	preload("res://resources/items/manual_cold.tres"),
 	preload("res://resources/items/manual_holy.tres"),
+	preload("res://resources/items/manual_necrotic.tres"),
 ]
 
 

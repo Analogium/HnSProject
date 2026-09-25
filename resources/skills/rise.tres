@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/rise.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "rise"
+name = "Relève"
+description = "Deux morts-vivants se lèvent et gardent les abords du lanceur."
+nature = 4
+cadence = 1
+shape = 20
+cast_time = 1.00
+mana_cost = 22.0
+period = 0.80
+radius = 110.0
+simultaneous = 2
+damage_per_point = Array[float]([10.0, 13.0, 16.0, 20.0, 25.0])
+required_manual_level = 3
+icon = ExtResource("2_icone")

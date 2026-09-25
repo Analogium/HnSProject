@@ -164,6 +164,21 @@ func tick(_delta: float) -> void:
 	pass
 
 
+## Ce qu'il attaque : le joueur, ou un mort-vivant plus proche que lui. La marche suit
+## toujours le champ, qui mène au joueur — ses morts-vivants sont à côté.
+func foe() -> Node2D:
+	var best := target
+	if Minion.living.is_empty():
+		return best
+	var best_d := global_position.distance_squared_to(target.global_position)
+	for minion in Minion.living:
+		var d := global_position.distance_squared_to(minion.global_position)
+		if d < best_d:
+			best = minion
+			best_d = d
+	return best
+
+
 ## Le champ de flux quand la zone en a un, qui contourne les murs ; la ligne droite
 ## sinon (arène, banc, case sans direction).
 func heading() -> Vector2:

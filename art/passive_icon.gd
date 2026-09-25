@@ -104,11 +104,24 @@ const MASKS := {
 		"..#....",
 		"..#....",
 	],
+	# Une pierre tombale et sa croix : ce qu'on relève.
+	"tomb": [
+		"..###..",
+		".##o##.",
+		".#ooo#.",
+		".##o##.",
+		".##o##.",
+		".#####.",
+		"#######",
+	],
 	"flame": StatusIcon.MASKS[StatusEffects.Kind.IGNITE],
 	"bolt": StatusIcon.MASKS[StatusEffects.Kind.NUMB],
 	"drop": StatusIcon.MASKS[StatusEffects.Kind.BLEED],
 	"frost": StatusIcon.MASKS[StatusEffects.Kind.CHILL],
 	"halo": StatusIcon.MASKS[StatusEffects.Kind.BLESSING],
+	"skull": StatusIcon.MASKS[StatusEffects.Kind.ROT],
+	"bubbles": StatusIcon.MASKS[StatusEffects.Kind.DECAY],
+	"eye": StatusIcon.MASKS[StatusEffects.Kind.CURSED],
 }
 
 ## Ce qu'une statistique de fiche montre : un masque et sa couleur.
@@ -132,6 +145,7 @@ const SHEET := {
 	"ignite_chance": ["flame", DamageType.COLORS[DamageType.Kind.FIRE]],
 	"static_charge_chance": ["bolt", DamageType.COLORS[DamageType.Kind.LIGHTNING]],
 	"blessing_chance": ["halo", DamageType.COLORS[DamageType.Kind.HOLY]],
+	"rot_chance": ["skull", DamageType.COLORS[DamageType.Kind.NECROTIC]],
 }
 
 ## Des dégâts portés, par mot-clé : la nature dans sa couleur de `DamageType`.
@@ -144,6 +158,10 @@ const SCOPED := {
 	Keywords.FIRE: ["flame", DamageType.COLORS[DamageType.Kind.FIRE]],
 	Keywords.LIGHTNING: ["bolt", DamageType.COLORS[DamageType.Kind.LIGHTNING]],
 	Keywords.COLD: ["frost", DamageType.COLORS[DamageType.Kind.COLD]],
+	Keywords.NECROTIC: ["skull", DamageType.COLORS[DamageType.Kind.NECROTIC]],
+	Keywords.SUMMON: ["tomb", Color(0.86, 0.84, 0.74)],
+	Keywords.CURSE: ["eye", StatusEffects.OWN_COLORS[StatusEffects.Kind.CURSED]],
+	Keywords.DOT: ["bubbles", StatusEffects.OWN_COLORS[StatusEffects.Kind.DECAY]],
 }
 
 static var _cache := {}

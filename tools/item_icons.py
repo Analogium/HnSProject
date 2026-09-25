@@ -202,7 +202,9 @@ def cmd_apply(args):
     `icon` dans le .tres, pour la graine retenue dans item_icons.json."""
     dest = os.path.join(PROJ, "resources/icons/items")
     os.makedirs(dest, exist_ok=True)
-    for stem, (_, seed) in SUBJECTS.items():
+    only = args.only.split(",") if args.only else list(SUBJECTS)
+    for stem in only:
+        seed = SUBJECTS[stem][1]
         src = os.path.join(OUT, "%s_%d.png" % (stem, seed))
         if not os.path.exists(src):
             sys.exit("manquant : " + src)
@@ -225,7 +227,7 @@ def cmd_apply(args):
         else:
             s = s.rstrip("\n") + "\n" + line
         open(tres, "w", encoding="utf-8").write(s)
-    print("posees :", len(SUBJECTS))
+    print("posees :", len(only))
 
 
 def cmd_sheets(args):
@@ -266,7 +268,10 @@ if __name__ == "__main__":
     g.add_argument("--only", default="", help="bases a refaire, separees par des virgules")
     g.add_argument("--redo", action="store_true", help="ignorer les tirages deja en cache")
     sub.add_parser("sheets").set_defaults(run=cmd_sheets)
-    sub.add_parser("apply").set_defaults(run=cmd_apply)
+    a = sub.add_parser("apply"); a.set_defaults(run=cmd_apply)
+    # Le cache des tirages vit dans un dossier temporaire : poser une seule icone
+    # ne doit pas exiger qu'il contienne encore toutes les autres.
+    a.add_argument("--only", default="", help="bases a poser, separees par des virgules")
     args = ap.parse_args()
     print("travail :", WORK)
     args.run(args)

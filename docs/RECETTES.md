@@ -273,11 +273,15 @@ séparément, parce que l'anglais colle le nom au mot « damage ».
 ## Ajouter un état
 
 Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saignant.
-**Une nature en pose exactement un**, le physique compris.
+Deux sortes : ceux qu'un coup **tire** par sa nature — **une nature en pose exactement
+un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer pose**
+(`Skill.inflicted_state`, la décomposition de la Peste) ou qu'une malédiction pose.
 
 1. **`core/status_effects.gd`** — la valeur dans `Kind`, **à la fin** (les tables sont
-   indexées par l'enum), puis son entrée dans `NATURES`, `IDS` (**définitif**, un
-   affixe `damage_vs_<id>` le nomme), `NAMES`, `AGAINST` et `DURATIONS`.
+   indexées par l'enum), puis son entrée dans `NATURES` (sa couleur et la part qu'il
+   brûle), `IDS` (**définitif**, un affixe `damage_vs_<id>` le nomme), `NAMES`,
+   `AGAINST`, `DURATIONS` et `CHANCE_STATS`. Tiré par une nature : dans `ROLLED`. S'il
+   brûle par à-coups qui pourrissent : dans `TICKING`.
 2. **Ce qu'il fait** :
    - s'il brûle → son taux dans `_burn_per_second()`. `advance()` le compte
      déjà, et le plus fort l'emporte sans rien écrire de plus ;
@@ -288,7 +292,8 @@ Un état est ce qu'un coup laisse sur ce qu'il touche — embrasé, transi, saig
 3. **Son icône** : un masque 7×7 dans `StatusIcon.MASKS`, à la même place que
    dans `Kind`. Le reste — la couleur de l'icône, la teinte et l'annonce — lit
    `StatusEffects.color()`, la couleur de sa nature, sauf quand elle ne se lit pas sur un
-   corps, comme le blanc du physique : voir `StatusEffects.BLOOD`.
+   corps, comme le blanc du physique, ou qu'elle se confondrait avec un autre état de
+   la même nature : voir `StatusEffects.OWN_COLORS`.
 
 **Ce qui refusera un oubli** — `tests/unit/test_status_effects.gd :
 test_chaque_nature_pose_un_etat_et_un_seul` (les tables alignées, chaque nature posée
@@ -391,7 +396,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
    | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`. `BOLT` et `BALL` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`. `BOLT` et `BALL` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -402,6 +407,8 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
    | `mana_per_second` | Un buff, un cyclone : le mana drainé par seconde, **à plat**. La réserve vide **l'éteint** |
    | `self_heal` | Ce qu'un geste entretenu **rend** par seconde, en part des PV max. Le pendant de `self_burn`, et sans mitigation : un soin ne se résiste pas |
+   | `self_wither` | Un buff : la part des PV **actuels** qu'il ronge par seconde. Jamais mortelle |
+   | `inflicted_state` / `inflict_chance` | L'état qu'elle **pose** à ce qu'elle touche (`StatusEffects.Kind`, hors de `ROLLED`) et sa chance ; −1 pour rien. Ce qu'il brûle part du coup, donc du niveau du sort. Une malédiction n'a que ça |
    | `status_chance_increase` | Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage — +50 sur la Nova de glace, qui fait passer 20 % à 30 %. Il s'additionne aux accrus du porteur. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa voisine. La fiche le montre **avec ce qu'il donne**, et seulement si la sorte a sa statistique dans `StatusEffects.CHANCE_STATS` |
    | `binds_caster` | Ce geste enferme-t-il son lanceur : rien d'autre ne part, on ne bouge plus, et seule son extinction reste permise |
    | `required_manual_level` | À partir de quand la case accepte son premier point |
@@ -443,6 +450,12 @@ une `duration`, une `period` et un `radius`, et frappent leur cercle à chaque
 impulsion. Une pulsation **finit seule** — elle ne se paie pas à la seconde, donc elle
 n'est pas un geste entretenu et ne s'éteint pas à la touche.
 
+**Une invocation** (`SUMMON`) relève des `Minion` jusqu'à `simultaneous`, qui gardent
+le `radius` autour du joueur et frappent à la `period` — au nom du joueur. **Un portail**
+(`GATE`) tombe au curseur, vit `duration` et crache une créature par `period`, qui
+explose au `radius`. **Une malédiction** (`CURSE`) n'a ni dégâts ni buff : un `radius`
+et un `inflicted_state`, posé d'un coup sur son cercle, avec `declared_points_max`.
+
 **Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Player._is_sustained()` en
 décide, la case s'allume et s'éteint sur la même touche, et `SkillStats.sustained`
 retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
@@ -455,8 +468,8 @@ son test dans `tests/integration/test_shapes.gd`.
 
 **Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par
 l'utilisateur, puis captures réelles — et se fait dans son `_draw()`, avec le module de sa matière quand elle
-en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd` et
-`fx/slash.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd`,
+`fx/slash.gd` et `fx/necrotic.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
 éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
 **tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur
@@ -507,7 +520,9 @@ seul.** Il arrive avec au moins un affixe qui le vise, ou il n'arrive pas.
    famille. L'identifiant est **définitif** (invariant 1) ; le libellé se change
    librement. Puis **ses deux phrases** : `QUALIFIERS` (« de feu »), qui qualifie les
    dégâts et les niveaux dans la phrase, et `RECIPIENTS` (« aux compétences de feu »),
-   qui dit à qui s'adresse tout le reste. Sans elles, la ligne finit entre parenthèses
+   qui dit à qui s'adresse tout le reste. Si le mot-clé fait **avec les dégâts un seul
+   nom** qu'une langue ne coupe pas — « damage over time » —, il va dans `DAMAGE_NOUNS`
+   à la place de `QUALIFIERS`. Sans elles, la ligne finit entre parenthèses
    et `test_no_content_line_ends_in_parentheses` la refuse.
 2. **D'où il vient** :
    - de la nature → une entrée dans `Skill.KEYWORD_OF_NATURE` ;
@@ -578,7 +593,7 @@ langues — `tests/integration/test_widths.gd`.
 ## Ajouter un nœud à l'arbre de passifs
 
 L'arbre est **un seul fichier**, `resources/passive_tree.tres` : un `PassiveTree` et ses
-`PassiveNode` en sous-ressources. 476 nœuds liés se relisent mal dans
+`PassiveNode` en sous-ressources. 496 nœuds liés se relisent mal dans
 l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 
 **D'abord, chemin ou cluster ?**
@@ -591,6 +606,11 @@ l'inspecteur ; retoucher le texte du `.tres` est le geste attendu.
 - **Un nœud de cluster** va dans un cul-de-sac branché sur **une seule** jonction du
   squelette. Un cluster relié à deux jonctions devient un raccourci qu'on prend en
   passant ; ne le faire qu'en le voulant.
+- **La place manque** depuis le jalon 26 : la couronne des clusters est pleine sur tout
+  le haut, et l'arbre ne peut plus grandir en hauteur sans sortir du zoom large (−49 à
+  +46 remplissent déjà le cadre). Chercher un tracé **par le calcul** — distances et
+  croisements contre tous les nœuds — avant de l'écrire ; en largeur, il reste de la
+  marge.
 - **Un notable** dit le thème de son cluster plus fort, avec une seconde ligne. **Pas
   de clé de voûte de plus** : trois « plus » suffisent (jalon 17, §8).
 
@@ -722,10 +742,11 @@ Un manuel est **une base d'objet** de plus, plus un archétype.
 3. **Son propre `kind`**, et un cas dans `SpriteForge._gear()` plus son entrée
    dans `GEAR` : tous les manuels ont le même palier, donc les mêmes couleurs, et
    c'est la **silhouette** qui doit les séparer dans un sac. Cinq livres au même
-   dessin sont cinq objets qu'on ne distingue qu'en les survolant. Les cinq
+   dessin sont cinq objets qu'on ne distingue qu'en les survolant. Les six
    d'aujourd'hui : une pile couchée, un livre ouvert en V, un rouleau, un livre debout,
-   un livre couché dans son halo — le cinquième déborde du livre lui-même, une
-   cinquième orientation se serait confondue avec les quatre autres.
+   un livre couché dans son halo, un livre couché sous un crâne — les deux derniers
+   débordent du livre lui-même, une orientation de plus se serait confondue avec les
+   quatre autres.
 4. **`core/item_catalog.gd`** — le `preload` dans le bloc des manuels.
 5. **Vérifier le budget** : `docs/CATALOGUE.md` donne, pour chaque manuel, le
    nombre de destinations de points contre les vingt qu'un livre gagne. En

@@ -51,9 +51,9 @@ static func put(
 
 func _ready() -> void:
 	z_index = 3
-	# Le feu et la glace sont **dessinés**, et une planche cernée ne peut pas être
-	# additive : son contour sombre n'y ajoute rien. Les natures encore tracées
-	# restent en lumière ajoutée.
+	# Le feu, la glace et la nécrose sont **dessinés**, et une planche cernée ne peut
+	# pas être additive : son contour sombre n'y ajoute rien. Les natures encore
+	# tracées restent en lumière ajoutée.
 	if not _is_painted():
 		material = ArtPalette.ADDITIVE
 
@@ -70,8 +70,9 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Deux souffles peints — le brasier, la nova — et, pour tout le reste, l'onde
-## tracée qui suit.
+## Trois souffles peints — le brasier, la nova, le mur de gaz de la nécrose, qui se
+## rastérise d'un tenant (`Necrotic.miasma()`) — et, pour tout le reste, l'onde tracée
+## qui suit.
 ##
 ## Pas de disque plein qui dure : en mélange additif sur un sol sombre, un orange
 ## peu opaque sortait **brun**, et l'explosion se lisait comme une flaque. Le cœur
@@ -92,6 +93,9 @@ func _draw() -> void:
 			return
 		DamageType.Kind.COLD:
 			_rime(r, k, fade)
+			return
+		DamageType.Kind.NECROTIC:
+			Necrotic.put_band(self, Necrotic.miasma(_tint, _radius, k), Vector2.ZERO)
 			return
 
 	# **En additif, c'est le bleu qui blanchit.** Le blanc du feu en porte 0,78 : à
@@ -181,7 +185,7 @@ func _ground(r: float, fade: float) -> void:
 ## Peint — fait de planches cernées — ou tracé en polygones : c'est ce qui décide
 ## du mélange, et les deux moitiés de `_draw()`.
 func _is_painted() -> bool:
-	return _nature() == DamageType.Kind.FIRE or _nature() == DamageType.Kind.COLD
+	return _nature() in [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.NECROTIC]
 
 
 ## Combien de temps ce souffle s'affiche.

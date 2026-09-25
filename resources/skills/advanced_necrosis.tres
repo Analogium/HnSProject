@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/advanced_necrosis.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="2_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="3_buff"]
+
+[sub_resource type="Resource" id="L_necrose_pourriture"]
+script = ExtResource("2_ligne")
+stat = "rot_chance"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="B_necrose"]
+script = ExtResource("3_buff")
+id = "necrosis"
+name = "Nécrose"
+lines = Array[ExtResource("2_ligne")]([SubResource("L_necrose_pourriture")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "advanced_necrosis"
+name = "Nécrose avancée"
+description = "Le corps se ronge lui-même, et ce qu'il touche pourrit plus souvent."
+nature = 4
+cadence = 1
+shape = 11
+cooldown = 0.60
+self_wither = 0.01
+declared_points_max = 3
+buffs = Array[ExtResource("3_buff")]([SubResource("B_necrose")])
+required_manual_level = 12
+icon = ExtResource("2_icone")
