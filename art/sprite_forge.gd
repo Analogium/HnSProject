@@ -30,7 +30,10 @@ const R_METAL := 3
 const R_LEATHER := 4
 
 const DIRS := ["down", "side", "up"]
-const ARCHETYPES := ["player", "swiftblade", "witch", "grunt", "caster", "dummy", "undead"]
+const ARCHETYPES := [
+	"player", "swiftblade", "witch", "grunt", "caster", "dummy", "undead",
+	"charger", "mortar", "bloater", "brute",
+]
 
 ## Les archétypes dessinés hors du jeu (`tools/character_forge.py`) : trois poses
 ## fixes et les gestes générés dans `<archétype>.png`, leurs repères dans
@@ -150,6 +153,10 @@ static func offset_of(archetype: String) -> Vector2:
 ## l'équipement visible. Elle entre dans la clé du cache, sinon équiper une
 ## baguette changerait l'arme de tous les personnages de cette variante.
 static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrames:
+	# Une planche ne varie pas : quatre copies pour un ennemi en planche, c'étaient
+	# quatre fabrications au premier paquet.
+	if sheet_of(archetype) != null:
+		variant = 0
 	var key := "%s:%d:%s" % [archetype, variant, weapon]
 	if _cache.has(key):
 		return _cache[key]

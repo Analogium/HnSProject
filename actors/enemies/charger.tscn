@@ -1,0 +1,51 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/charger.gd" id="1_charger"]
+[ext_resource type="Script" path="res://art/actor_sprite.gd" id="5_sprite"]
+[ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
+[ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Resource" path="res://resources/stats/charger_stats.tres" id="4_stats"]
+[ext_resource type="Script" path="res://ui/health_bar.gd" id="9_bar"]
+[ext_resource type="Script" path="res://ui/affix_tag.gd" id="10_tag"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_charger"]
+resource_local_to_scene = true
+shader = ExtResource("2_flash")
+shader_parameter/flash_amount = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 7.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 10.0
+
+[node name="Charger" type="CharacterBody2D"]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 7
+motion_mode = 1
+script = ExtResource("1_charger")
+stats = ExtResource("4_stats")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_charger")
+script = ExtResource("5_sprite")
+archetype = "charger"
+
+[node name="HealthBar" type="Node2D" parent="."]
+script = ExtResource("9_bar")
+
+[node name="AffixTag" type="Node2D" parent="."]
+script = ExtResource("10_tag")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3)
+shape = SubResource("CircleShape2D_body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("3_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_hurt")

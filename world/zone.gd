@@ -24,6 +24,7 @@ const PACK_MIN_TILES := 3
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
 @onready var projectiles: Node2D = $Entities/Projectiles
 @onready var loot: Node2D = $Entities/Loot
+@onready var ground: Node2D = $Ground
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
 @onready var hud: Hud = $UI/Hud
@@ -77,6 +78,7 @@ func _ready() -> void:
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
 	enemy_manager.loot_parent = loot
+	enemy_manager.ground_parent = ground
 	player.died.connect(_on_player_died)
 
 	player.projectile_parent = projectiles
@@ -97,10 +99,6 @@ func _ready() -> void:
 	workbench.drop_requested.connect(_on_item_dropped)
 	workbench.requested_orbs.connect(drop_orbs)
 
-	# Les scènes sont posées ici et pas dans le .tscn : le spawner n'en a besoin
-	# qu'au moment de populate(), et ça garde les chemins au même endroit.
-	spawner.grunt_scene = GRUNT_SCENE
-	spawner.caster_scene = CASTER_SCENE
 
 	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
 	# seule depuis l'éditeur : le joueur garde alors sa fiche par défaut, et rien
@@ -415,6 +413,8 @@ func kill_all() -> void:
 	enemy_manager.clear()
 	for p in projectiles.get_children():
 		p.queue_free()
+	for z in ground.get_children():
+		z.queue_free()
 	# Le butin est posé sur le sol de *cette* carte : le garder d'une zone à
 	# l'autre laisserait des objets flotter dans les murs de la suivante.
 	for l in loot.get_children():

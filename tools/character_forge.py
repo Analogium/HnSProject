@@ -79,6 +79,15 @@ POSES = {
 }
 
 
+HEAD = (0, 14, 15, 16, 17)
+
+
+def widened(kp, width):
+    """Le squelette élargi sous la tête : le prompt n'obtient pas une carrure que le
+    squelette dément, un colosse sortait aussi fin que la sorcière."""
+    return {i: (x if i in HEAD else 512 + (x - 512) * width, y) for i, (x, y) in kp.items()}
+
+
 def skeleton(kp):
     im = Image.new("RGB", (1024, 1024)); d = ImageDraw.Draw(im)
     for i, (a, b) in enumerate(LIMBS):
@@ -123,7 +132,7 @@ def view_graph(cfg, concept, direction, seed):
     wf.update({
         "ref": {"class_type": "LoadImage", "inputs": {"image": concept}},
         "pimg": {"class_type": "LoadImage",
-                 "inputs": {"image": upload(skeleton(POSES[direction]), f"hns_pose_{direction}.png")}},
+                 "inputs": {"image": upload(skeleton(widened(POSES[direction], cfg.get("width", 1.0))), f"hns_pose_{direction}.png")}},
         "ipm": {"class_type": "IPAdapterModelLoader",
                 "inputs": {"ipadapter_file": "ip-adapter-plus_sdxl_vit-h.safetensors"}},
         "cv": {"class_type": "CLIPVisionLoader",
@@ -356,7 +365,7 @@ SLASH_ARM = {"down": [((650, 430), (640, 330)), ((560, 590), (430, 650)), ((580,
              "side": [((460, 440), (430, 350)), ((600, 540), (700, 610)), ((560, 600), (560, 690))]}
 
 
-def anim_pose(kind, direction, k):
+def anim_pose(kind, direction, k, width=1.0):
     kp = dict(POSES[direction])
     if kind == "walk":
         if direction == "side":
@@ -374,18 +383,18 @@ def anim_pose(kind, direction, k):
         if direction == "up":
             arm = tuple((1024 - x, y) for x, y in arm)
         kp[ARMED[1]], kp[ARMED[2]] = arm
-    return kp
+    return widened(kp, width)
 
 
 def columns(n):
     return STRIP[0] // n
 
 
-def strip_skeleton(kind, direction):
+def strip_skeleton(kind, direction, width):
     n = ANIMS[kind]; cw = columns(n)
     im = Image.new("RGB", STRIP)
     for k in range(n):
-        one = skeleton(anim_pose(kind, direction, k)).resize((round(1024 * 0.6), STRIP[1]))
+        one = skeleton(anim_pose(kind, direction, k, width)).resize((round(1024 * 0.6), STRIP[1]))
         im.paste(one, (k * cw + (cw - one.width) // 2, 0), one.convert("L").point(lambda v: 255 if v else 0))
     return im
 
@@ -402,7 +411,7 @@ def anim_graph(cfg, cid, kind, direction, seed):
     wf["pos"]["inputs"]["text"] = ANIM_PROMPT.format(
         motion=MOTION[kind], n=ANIMS[kind], view=VIEW_WORDS[direction], who=cfg["anim"]["who"]) + TAIL
     wf["neg"]["inputs"]["text"] = ANIM_NEG
-    wf["pimg"]["inputs"]["image"] = upload(strip_skeleton(kind, direction), f"hns_{kind}_{direction}.png")
+    wf["pimg"]["inputs"]["image"] = upload(strip_skeleton(kind, direction, cfg.get("width", 1.0)), f"hns_{kind}_{direction}.png")
     wf["lat"]["inputs"].update(width=STRIP[0], height=STRIP[1])
     return wf
 
@@ -464,7 +473,7 @@ def anim_cells(cfg, path, kind, direction, ref):
             x, y = reshape_point(cfg, direction, *p["at"])
             patch(cell, dict(p, at=[round(x) + dx, round(y) + dy]), cfg["colors"])
         bx0, by0, _, _ = bbox(keep)
-        wx, wy = move(*strip_to_column(kind, *anim_pose(kind, direction, k)[ARMED[2]], k))
+        wx, wy = move(*strip_to_column(kind, *anim_pose(kind, direction, k, cfg.get("width", 1.0))[ARMED[2]], k))
         hands.append([round((wx - bx0) * scale + 1 + x0, 1), round((wy - by0) * scale + 1 + y0, 1)])
         cells.append(cell)
     return cells, hands

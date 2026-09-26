@@ -32,13 +32,16 @@ var _excluded := 0
 var _tint := Color.WHITE
 var _age := 0.0
 var _has_struck := false
+## Qui elle frappe : les ennemis, ou le camp du joueur quand c'est un ennemi qui explose.
+var _mask := Targets.ENEMIES
 
 
 static func put(
 	parent: Node, point: Vector2, parts: Array[float], radius: float, excluded: Hurtbox, tint: Color,
-	author: StatusEffects, cast: SkillStats
+	author: StatusEffects, cast: SkillStats, mask := Targets.ENEMIES
 ) -> Explosion:
 	var e := Explosion.new()
+	e._mask = mask
 	e._author = author
 	e._cast = cast
 	e._parts = parts.duplicate()
@@ -61,7 +64,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
-		for target in Targets.in_circle(get_world_2d(), global_position, _radius):
+		for target in Targets.in_circle(get_world_2d(), global_position, _radius, _mask):
 			if target.get_instance_id() != _excluded:
 				Targets.strike(target, _parts, global_position, _author, _cast)
 	_age += delta

@@ -10,6 +10,13 @@ extends Node2D
 const DUMMY_SCENE := preload("res://actors/dummy/training_dummy.tscn")
 const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
 const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
+## Les quatre du jalon 27, un par touche, pour les juger seuls.
+const LONE_SCENES := {
+	KEY_V: preload("res://actors/enemies/charger.tscn"),
+	KEY_M: preload("res://actors/enemies/mortar.tscn"),
+	KEY_N: preload("res://actors/enemies/bloater.tscn"),
+	KEY_B: preload("res://actors/enemies/brute.tscn"),
+}
 
 const ARENA_SIZE := Vector2(640, 480)
 const WALL_THICKNESS := 16.0
@@ -45,6 +52,7 @@ const CASTER_DISTANCE := 190.0
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
 @onready var projectiles: Node2D = $Entities/Projectiles
+@onready var ground: Node2D = $Ground
 @onready var overlay: Label = $UI/Overlay
 
 var _dummies: Array[TrainingDummy] = []
@@ -67,6 +75,7 @@ func _ready() -> void:
 	# passe à setup() sur chaque ennemi.
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
+	enemy_manager.ground_parent = ground
 	player.projectile_parent = projectiles
 	_spawn_pack()
 
@@ -101,7 +110,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_O: Game.hit_stop_period = maxf(Game.hit_stop_period - 0.05, 0.0)
 		KEY_P: Game.hit_stop_period += 0.05
 		KEY_G: _spawn_pack()
-		KEY_C: _spawn_lone_caster()
+		KEY_C: _spawn_lone(CASTER_SCENE)
+		KEY_V, KEY_M, KEY_N, KEY_B: _spawn_lone(LONE_SCENES[key])
 		KEY_K: _kill_all()
 		KEY_R: _reset_arena()
 		KEY_F1: Game.goto_scene("res://world/zone.tscn")
@@ -135,6 +145,7 @@ func _overlay_text() -> String:
 		"[7/8] temps d'attaque %.2f s" % player.stats.attack_time,
 		"[9/0] shake camera    %.0f" % player.shake_amount,
 		"[G] paquet mixte  [C] caster seul  [K] tout tuer",
+		"[V] chargeur  [M] mortier  [N] gonfle  [B] colosse",
 		"[R] reset arene   [H] masquer",
 		"[F1] zone jouable   [F3] carte debug",
 		"[F4] forge          [F6] stress test",
@@ -201,10 +212,10 @@ func _spawn_pack() -> void:
 		_add_enemy(scene, origin + Vector2.from_angle(angle) * radius)
 
 
-## Un caster seul, pour juger son comportement sans la mêlée autour.
-func _spawn_lone_caster() -> void:
+## Un ennemi seul, pour juger son comportement sans la mêlée autour.
+func _spawn_lone(scene: PackedScene) -> void:
 	var angle := Game.rng.randf() * TAU
-	_add_enemy(CASTER_SCENE, player.global_position + Vector2.from_angle(angle) * CASTER_DISTANCE)
+	_add_enemy(scene, player.global_position + Vector2.from_angle(angle) * CASTER_DISTANCE)
 
 
 func _add_enemy(scene: PackedScene, pos: Vector2) -> void:
@@ -220,6 +231,8 @@ func _kill_all() -> void:
 	# Les tirs déjà partis ne sont pas dans la liste du manager.
 	for p in projectiles.get_children():
 		p.queue_free()
+	for z in ground.get_children():
+		z.queue_free()
 
 
 func _reset_arena() -> void:

@@ -321,7 +321,7 @@ plutôt que compter sur les tests.
    func tick(delta: float) -> void:
        if not _should_act():      # en tête, toujours
            return
-       # … décider et se déplacer …
+       # … décider et se déplacer : _close_in(victime, accel) pour marcher …
        _cool_down(delta)          # une fois par tick, hors du test de portée
        if <à portée> and _attack_cd <= 0.0:
            _strike(direction)     # recharge et anime le coup
@@ -343,7 +343,15 @@ plutôt que compter sur les tests.
    `config()` : cinq couleurs, une dizaine de mesures, trois options. La
    silhouette doit se lire **avant** la couleur, dans une mêlée de soixante-dix.
 
-   Puis **son dessin**, par l'un des deux chemins, jamais les deux :
+   Puis **son dessin**, par l'un des trois chemins, jamais deux :
+
+   - **une planche** (`art/characters/<nom>.png`), par `tools/character_forge.py`
+     — le chemin des quatre ennemis du jalon 27, quand l'utilisateur veut du
+     style et du détail. Recette : `tools/characters/LISEZMOI.md`. `weapon` à
+     `none`, et ne générer que les gestes que son attaque joue (`anim --only`).
+     Un corps massif demande `width` (le squelette élargi), sinon il sort aussi
+     fin que la sorcière. Rien à écrire dans `config()` : la palette vient de la
+     planche ;
 
    - **des grilles dessinées à la main** dans `ART` — un corps et trois paires de
      jambes par direction, écrits caractère par caractère avec la légende `INK`,
@@ -355,9 +363,14 @@ plutôt que compter sur les tests.
      tons d'un éclairage. Il reste pour ce qui n'est pas un personnage (le
      mannequin) et pour un essai rapide : un archétype absent d'`ART` y tombe
      tout seul.
-5. **Le faire naître** : `world/enemy_spawner.gd` pour le peuplement d'une zone,
-   ou une touche de `world/test_arena.gd` pour l'essayer seul.
-6. **Le juger dans la forge** (`F4`) : quatre variantes côte à côte, les défauts
+5. **Le faire naître** : une ligne dans `EnemySpawner.POPULATION` (scène → poids)
+   pour le peuplement d'une zone — le banc d'équilibrage la lit aussi —, et une
+   touche de `LONE_SCENES` dans `world/test_arena.gd` pour l'essayer seul.
+6. **Son attaque**, si elle ne se fait pas au contact : une `DangerZone`
+   (disque, couloir ou cône) dans `manager.ground()`, avec ses `parts` ; elle
+   frappe seule quand elle est pleine, et `bound = self` l'annule s'il meurt
+   avant. Ne pas inventer un autre télégraphe : le joueur n'en apprend qu'un.
+7. **Le juger dans la forge** (`F4`) : quatre variantes côte à côte, les défauts
    de proportion sautent aux yeux.
 
 ---

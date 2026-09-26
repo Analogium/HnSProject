@@ -1,6 +1,8 @@
-# Personnages joueurs
+# Personnages joueurs, et ennemis en planche
 
-Un personnage jouable, d'un prompt jusqu'au jeu. Le tuyau : `tools/character_forge.py`,
+Un personnage jouable, d'un prompt jusqu'au jeu — et, depuis le jalon 27, un ennemi
+(`charger`, `mortar`, `bloater`, `brute`) : même tuyau, sans arme, avec les seuls
+gestes qu'il joue. Le tuyau : `tools/character_forge.py`,
 avec ComfyUI sur l'hôte Windows (voir `resources/icons/LISEZMOI.md` pour le joindre
 depuis WSL). La sorcière du jalon 25 en est le premier exemple : `witch.json` et
 `witch/`.
@@ -54,6 +56,10 @@ choix.
   les deux classes ; 45 au départ, puis 40, jugés trop grands). Repères et retouches sont
   écrits pour `authored_height` et suivent quand `height` change : baisser la taille
   ne demande que ce chiffre et un `build`.
+- **`width`** : l'élargissement du squelette OpenPose sous la tête, pour les vues
+  **et** les gestes (1,6 pour le colosse, 1,45 pour le gobelin, 1,4 pour le
+  chevalier). Le prompt n'obtient pas une carrure que le squelette dément ; et y
+  écrire « very bulky, wide shoulders » fait sortir le profil de face.
 - **`slim`** et **`squash`** : la part de largeur et de hauteur gardée **sous la
   tête** (0,8 et 0,8 pour la sorcière, trop massive sinon). La tête ne change pas de
   taille : le visage retouché y reste juste. Appliqués sur l'image source, avant

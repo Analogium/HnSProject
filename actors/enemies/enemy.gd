@@ -49,6 +49,11 @@ func _ready() -> void:
 	if level > 1 or not affixes.is_empty():
 		stats = sheet_of(stats, level, affixes)
 		_apply_affixes()
+	# Un corps en planche (jalon 27) dépasse le grunt : barre, nombres et affixes montent.
+	var lift := SpriteForge.head_room(sprite.archetype)
+	health_bar.lift = lift
+	hurtbox.feedback_lift = lift
+	affix_tag.position.y -= lift
 	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
 	hurtbox.states = states
@@ -189,6 +194,37 @@ func heading() -> Vector2:
 		if d != Vector2.ZERO:
 			return d
 	return (target.global_position - global_position).normalized()
+
+
+const SEPARATION_RADIUS := 18.0
+const SEPARATION_FORCE := 0.35
+
+
+## Marcher sur la victime : le champ quand c'est le joueur, la ligne droite vers un
+## mort-vivant, qui est à côté de lui.
+func _close_in(victim: Node2D, accel: float) -> void:
+	var desired := heading() if victim == target else (victim.global_position - global_position).normalized()
+	# Séparation : sans ça les corps se superposent en une bouillie illisible.
+	desired += _separation() * SEPARATION_FORCE
+	velocity = velocity.lerp(desired.normalized() * movement_speed(), accel)
+	move_and_slide()
+
+
+## Repousse les voisins proches. Approximation grossière mais suffisante :
+## on interroge les corps déjà en contact plutôt que de faire une requête spatiale.
+##
+## Ne renvoie quelque chose que si les ennemis se percutent réellement, donc leur
+## masque de collision doit inclure leur propre layer (voir grunt.tscn) — sinon
+## get_slide_collision ne voit rien et la séparation est silencieusement morte.
+func _separation() -> Vector2:
+	var push := Vector2.ZERO
+	for i in get_slide_collision_count():
+		var other := get_slide_collision(i).get_collider()
+		if other is Enemy:
+			var away: Vector2 = global_position - (other as Node2D).global_position
+			if away.length() < SEPARATION_RADIUS:
+				push += away.normalized()
+	return push
 
 
 ## En fin de tick() : le sprite suit la vitesse réelle, pas l'intention.

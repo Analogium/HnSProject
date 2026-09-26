@@ -1,0 +1,69 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, armored juggernaut, closed great helm, massive spiked steel pauldrons, dark leather, glowing red eye slit, chain skirt, full body, front view, standing idle, two arms two legs, empty hands",
+  "seeds": [
+   403
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, armored juggernaut, grey steel great helm with glowing red eye slits, dark crimson plate armor, two huge curved dark blades rising from its back like horns, leather loincloth, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777,
+   101
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, armored juggernaut, grey steel great helm with glowing red eye slits, dark crimson plate armor, two huge curved dark blades rising from its back like horns, leather loincloth, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "width": 1.6,
+ "frame": 48,
+ "feet": 45,
+ "height": 42,
+ "recolor": [],
+ "palette": {
+  "cloth": "8a2a22",
+  "skin": "8a2a22",
+  "accent": "ff3030",
+  "metal": "9a9aa2",
+  "leather": "4a2a20"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    36.6,
+    31
+   ],
+   "waist": 31,
+   "legs": 39,
+   "head": 22
+  },
+  "side": {
+   "hand": [
+    30.3,
+    31
+   ],
+   "waist": 31,
+   "legs": 39,
+   "head": 22
+  },
+  "up": {
+   "hand": [
+    11.4,
+    31
+   ],
+   "waist": 31,
+   "legs": 39,
+   "head": 22
+  }
+ },
+ "concept_palette": true,
+ "weapon": "none",
+ "colors": {},
+ "patches": {}
+}

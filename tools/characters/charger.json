@@ -1,0 +1,106 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, ram-horned armored knight, closed iron helmet with curled golden ram horns, crimson tabard, dented steel plates, glowing red visor slit, full body, front view, standing idle, two arms two legs, empty hands",
+  "seeds": [
+   103
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, ram knight monster, closed crimson great helm with big curled ivory ram horns, glowing yellow eyes in the visor, crimson and steel plate armor, crimson tabard with steel trim, steel gauntlets, steel greaves, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777,
+   101
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, ram knight monster, closed crimson great helm with big curled ivory ram horns, glowing yellow eyes in the visor, crimson and steel plate armor, crimson tabard with steel trim, steel gauntlets, steel greaves, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "width": 1.4,
+ "frame": 48,
+ "feet": 45,
+ "height": 36,
+ "recolor": [],
+ "palette": {
+  "cloth": "b02a2a",
+  "skin": "9aa0aa",
+  "accent": "f0d890",
+  "metal": "b8c0cc",
+  "leather": "5a3a2a"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    34.8,
+    33
+   ],
+   "waist": 33,
+   "legs": 40,
+   "head": 25
+  },
+  "side": {
+   "hand": [
+    29.4,
+    33
+   ],
+   "waist": 33,
+   "legs": 40,
+   "head": 25
+  },
+  "up": {
+   "hand": [
+    13.200000000000001,
+    33
+   ],
+   "waist": 33,
+   "legs": 40,
+   "head": 25
+  }
+ },
+ "concept_palette": true,
+ "weapon": "none",
+ "colors": {
+  "Y": "ffd040",
+  "R": "b02a2a",
+  "r": "7a1a1e",
+  "L": "d8483a",
+  "k": "3a0c10"
+ },
+ "patches": {
+  "down": [
+   {
+    "at": [
+     20,
+     21
+    ],
+    "grid": [
+     "YY....YY"
+    ]
+   }
+  ],
+  "up": [
+   {
+    "at": [
+     20,
+     16
+    ],
+    "grid": [
+     "rRRRLRRRr",
+     "rRRRLRRRr",
+     "rRRRLRRRr",
+     "rRRkLkRRr",
+     "rRRRLRRRr",
+     "rRRRLRRRr",
+     "rrRRLRRrr",
+     ".rRRLRRr.",
+     "..rrrrr.."
+    ]
+   }
+  ]
+ }
+}

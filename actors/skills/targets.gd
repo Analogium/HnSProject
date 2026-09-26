@@ -7,6 +7,9 @@ class_name Targets
 ## Layer 5, « enemy_hurtbox » : celui que la hitbox et les tirs du joueur masquent
 ## déjà dans leurs scènes.
 const ENEMIES := 1 << 4
+## Layer 4, « player_hurtbox » : le joueur et ses morts-vivants — ce que visent les
+## attaques de zone des ennemis.
+const PLAYER_SIDE := 1 << 3
 ## Layer 1, « decor ».
 const DECOR := 1
 
@@ -15,16 +18,18 @@ const DECOR := 1
 const MAXIMUM := 64
 
 
-## Les hurtbox ennemies qui touchent ce cercle.
+## Les hurtbox qui touchent ce cercle, ennemies sauf `mask` contraire.
 ##
 ## **Jamais depuis un rappel de collision** : l'espace physique y est verrouillé, et
 ## la requête ne rend qu'une erreur (invariant 4).
-static func in_circle(world: World2D, center: Vector2, radius: float) -> Array[Hurtbox]:
+static func in_circle(
+	world: World2D, center: Vector2, radius: float, mask := ENEMIES
+) -> Array[Hurtbox]:
 	if world == null or radius <= 0.0:
 		return [] as Array[Hurtbox]
 	var circle := CircleShape2D.new()
 	circle.radius = radius
-	return _touched(world, circle, Transform2D(0.0, center))
+	return _touched(world, circle, Transform2D(0.0, center), mask)
 
 
 ## Celles qui touchent un segment épais : ce que frappe un faisceau, sur toute sa
@@ -47,12 +52,14 @@ static func in_capsule(
 
 
 ## La requête elle-même, partagée : deux copies auraient fini par viser deux calques.
-static func _touched(world: World2D, shape: Shape2D, at: Transform2D) -> Array[Hurtbox]:
+static func _touched(
+	world: World2D, shape: Shape2D, at: Transform2D, mask := ENEMIES
+) -> Array[Hurtbox]:
 	var out: Array[Hurtbox] = []
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
 	query.transform = at
-	query.collision_mask = ENEMIES
+	query.collision_mask = mask
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	for result in world.direct_space_state.intersect_shape(query, MAXIMUM):

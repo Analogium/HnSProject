@@ -193,9 +193,11 @@ static func zone_experience(zone: int) -> float:
 		return _experience_per_zone[zone]
 	var spawner := EnemySpawner.new()
 	var count := spawner.pack_count * (spawner.pack_size_min + spawner.pack_size_max) * 0.5
-	var weight := {ZONE.GRUNT_SCENE: spawner.grunt_weight, ZONE.CASTER_SCENE: spawner.caster_weight}
-	var sum := float(spawner.grunt_weight + spawner.caster_weight)
 	spawner.free()
+	var weight := EnemySpawner.POPULATION
+	var sum := 0.0
+	for w: int in weight.values():
+		sum += w
 
 	var per_enemy := 0.0
 	for scene: PackedScene in weight:

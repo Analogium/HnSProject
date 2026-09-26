@@ -1,0 +1,105 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, fat mushroom creature, bulbous purple cap with glowing yellow spots, pale stubby body, small black eyes, puffing spores, full body, front view, standing idle, two arms two legs, empty hands",
+  "seeds": [
+   303
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, fat mushroom creature, big bulbous purple mushroom cap with small glowing speckles, glowing yellow eyes under the cap, small fangs, chubby purple body, stubby legs, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, fat mushroom creature, big bulbous purple mushroom cap with small glowing speckles, glowing yellow eyes under the cap, small fangs, chubby purple body, stubby legs, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "frame": 48,
+ "feet": 45,
+ "height": 28,
+ "recolor": [],
+ "palette": {
+  "cloth": "6a3aa8",
+  "skin": "9a5ad0",
+  "accent": "ffd040",
+  "metal": "8a8a90",
+  "leather": "3a2250"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    32.4,
+    35
+   ],
+   "waist": 35,
+   "legs": 41,
+   "head": 30
+  },
+  "side": {
+   "hand": [
+    28.2,
+    35
+   ],
+   "waist": 35,
+   "legs": 41,
+   "head": 30
+  },
+  "up": {
+   "hand": [
+    15.6,
+    35
+   ],
+   "waist": 35,
+   "legs": 41,
+   "head": 30
+  }
+ },
+ "concept_palette": true,
+ "weapon": "none",
+ "colors": {
+  "Y": "ffe040",
+  "K": "16101e",
+  "W": "f0e8c8"
+ },
+ "patches": {
+  "down": [
+   {
+    "at": [
+     21,
+     25
+    ],
+    "grid": [
+     "YY...YY",
+     "YK...KY"
+    ]
+   },
+   {
+    "at": [
+     22,
+     28
+    ],
+    "grid": [
+     "KWKWK"
+    ]
+   }
+  ],
+  "side": [
+   {
+    "at": [
+     27,
+     25
+    ],
+    "grid": [
+     "YY",
+     "KY"
+    ]
+   }
+  ]
+ }
+}

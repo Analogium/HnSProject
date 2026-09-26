@@ -20,6 +20,8 @@ mouse_filter = 2
 
 [node name="Walls" type="Node2D" parent="."]
 
+[node name="Ground" type="Node2D" parent="."]
+
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
 

@@ -30,6 +30,10 @@ var ticked := 0
 ## L'arène lui donne un conteneur dédié pour pouvoir les balayer d'un coup.
 var projectile_parent: Node2D
 
+## Où se posent les zones de danger (jalon 27) : sous les corps, au-dessus du sol.
+## Lu par `ground()`, qui retombe sur les projectiles.
+var ground_parent: Node2D
+
 ## Où atterrit le butin. Même principe, et séparé des projectiles : on balaie
 ## les tirs au rechargement d'une zone, jamais les objets au sol.
 var loot_parent: Node2D
@@ -40,6 +44,11 @@ func _ready() -> void:
 		projectile_parent = self
 	if loot_parent == null:
 		loot_parent = self
+
+
+## Lu à l'emploi et non posé dans `_ready` : la scène règle ses conteneurs après.
+func ground() -> Node2D:
+	return ground_parent if ground_parent != null else projectile_parent
 
 
 ## **Le seul chemin** pour poser un ennemi.

@@ -1,0 +1,137 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, goblin artillerist, ochre tunic, big iron mortar tube strapped on its back pointing to the sky, brass goggles on forehead, lit orange fuse, soot on face, full body, front view, standing idle, two arms two legs, empty hands",
+  "seeds": [
+   211
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, bald goblin with orange skin, two bent copper pipes sticking out of the sides of its head like horns, yellow eyes, chunky, brown leather tunic with belt, bare feet, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, bald goblin with orange skin, two bent copper pipes sticking out of the sides of its head like horns, yellow eyes, brown leather tunic with belt, bare feet, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "frame": 48,
+ "feet": 45,
+ "height": 30,
+ "recolor": [],
+ "palette": {
+  "cloth": "6a4a2a",
+  "skin": "e08a2a",
+  "accent": "c8662a",
+  "metal": "8a8a90",
+  "leather": "4a3222"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    33.0,
+    35
+   ],
+   "waist": 35,
+   "legs": 40,
+   "head": 28
+  },
+  "side": {
+   "hand": [
+    28.5,
+    35
+   ],
+   "waist": 35,
+   "legs": 40,
+   "head": 28
+  },
+  "up": {
+   "hand": [
+    15.0,
+    35
+   ],
+   "waist": 35,
+   "legs": 40,
+   "head": 28
+  }
+ },
+ "concept_palette": true,
+ "weapon": "none",
+ "colors": {
+  "a": "16101e",
+  "b": "ed7d2b",
+  "c": "b75b26",
+  "d": "c5612e",
+  "f": "ab4d25",
+  "g": "d77227",
+  "h": "c06516",
+  "i": "ca6821",
+  "j": "c46716",
+  "l": "a04924",
+  "n": "904224",
+  "o": "994727",
+  "p": "a15d35",
+  "r": "7c4a2d",
+  "t": "855943",
+  "Y": "e6f25a",
+  "K": "16101e"
+ },
+ "patches": {
+  "down": [
+   {
+    "at": [
+     14,
+     14
+    ],
+    "grid": [
+     "......................",
+     "..aaa............aa...",
+     ".abcba..........acba..",
+     "abdaa............adba.",
+     "afba.............abfa.",
+     "afba.a.........a.agfa.",
+     "abhbaa.........aabcba.",
+     ".achhg.........ihjfa..",
+     "..alnl.........oofa...",
+     "..abpr.........tga...."
+    ]
+   },
+   {
+    "at": [
+     21,
+     22
+    ],
+    "grid": [
+     "YY...YY",
+     "K......"
+    ]
+   },
+   {
+    "at": [
+     23,
+     25
+    ],
+    "grid": [
+     "KKK"
+    ]
+   }
+  ],
+  "side": [
+   {
+    "at": [
+     26,
+     21
+    ],
+    "grid": [
+     "YY"
+    ]
+   }
+  ]
+ },
+ "width": 1.45
+}

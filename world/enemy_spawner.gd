@@ -18,12 +18,17 @@ extends Node
 @export var min_distance_from_spawn_tiles: int = 8
 @export var min_distance_between_packs_tiles: int = 6
 
-@export var grunt_scene: PackedScene
-@export var caster_scene: PackedScene
-
-## Poids relatifs. Un caster pour ~3 grunts.
-@export var grunt_weight: int = 75
-@export var caster_weight: int = 25
+## Qui peuple une zone, en poids relatifs : la masse des grunts, puis un caster pour
+## trois grunts, puis les quatre du jalon 27 — rares, chacun change l'engagement.
+## Lue aussi par le banc d'équilibrage (`BenchProfiles.zone_experience()`).
+const POPULATION := {
+	preload("res://actors/enemies/grunt.tscn"): 50,
+	preload("res://actors/enemies/caster.tscn"): 17,
+	preload("res://actors/enemies/charger.tscn"): 9,
+	preload("res://actors/enemies/mortar.tscn"): 8,
+	preload("res://actors/enemies/bloater.tscn"): 9,
+	preload("res://actors/enemies/brute.tscn"): 7,
+}
 
 ## Tirage propre à la zone, réamorcé par populate(). Surtout pas Game.rng : son
 ## état dépend de tout ce qui a été tiré avant dans la session, donc une même
@@ -110,7 +115,4 @@ func _spawn_pack(
 
 
 func _pick_scene() -> PackedScene:
-	var total := grunt_weight + caster_weight
-	if total <= 0:
-		return grunt_scene
-	return caster_scene if _rng.randi() % total >= grunt_weight else grunt_scene
+	return POPULATION.keys()[WeightedRoll.weighted(_rng, POPULATION.values())]

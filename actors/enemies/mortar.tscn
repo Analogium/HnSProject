@@ -1,0 +1,52 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/mortar.gd" id="1_mortar"]
+[ext_resource type="Script" path="res://art/actor_sprite.gd" id="6_sprite"]
+[ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
+[ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Resource" path="res://resources/stats/mortar_stats.tres" id="4_stats"]
+[ext_resource type="Script" path="res://ui/health_bar.gd" id="9_bar"]
+[ext_resource type="Script" path="res://ui/affix_tag.gd" id="10_tag"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mortar"]
+resource_local_to_scene = true
+shader = ExtResource("2_flash")
+shader_parameter/flash_amount = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 6.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 9.0
+
+[node name="Mortar" type="CharacterBody2D"]
+y_sort_enabled = true
+collision_layer = 4
+collision_mask = 7
+motion_mode = 1
+script = ExtResource("1_mortar")
+stats = ExtResource("4_stats")
+preferred_distance = 190.0
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_mortar")
+script = ExtResource("6_sprite")
+archetype = "mortar"
+
+[node name="HealthBar" type="Node2D" parent="."]
+script = ExtResource("9_bar")
+
+[node name="AffixTag" type="Node2D" parent="."]
+script = ExtResource("10_tag")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CircleShape2D_body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("3_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_hurt")

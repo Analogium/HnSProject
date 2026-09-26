@@ -26,6 +26,8 @@ environment = ExtResource("15_bloom")
 [node name="FloorLayer" type="TileMapLayer" parent="."]
 texture_filter = 1
 
+[node name="Ground" type="Node2D" parent="."]
+
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
 
