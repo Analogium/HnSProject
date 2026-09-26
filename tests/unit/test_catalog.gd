@@ -71,7 +71,7 @@ func test_each_slot_has_at_least_one_base() -> void:
 ## une pièce d'équipement, soit une arme : un `kind` qui n'est ni l'un ni l'autre
 ## produit un dessin sans un seul pixel peint.
 func test_each_base_has_a_non_empty_icon() -> void:
-	for base in ItemCatalog.ALL:
+	for base in ItemCatalog.ALL + Character.class_manual_bases():
 		# Le palier compris : chaque combinaison a sa propre entrée de cache, donc
 		# un palier dont l'icône ne peindrait rien passerait entre les mailles.
 		var tex := SpriteForge.inventory_icon(base, Vector2i.ZERO)

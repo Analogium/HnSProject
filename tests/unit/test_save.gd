@@ -520,7 +520,11 @@ func test_a_version_2_arrives_with_the_former_game() -> void:
 
 	var p := Character.from_dict(content)
 	assert_not_null(p)
-	assert_true(p.rack.empty(), "aucun manuel à l'étude")
+	for i in Rack.CLASS_SLOT:
+		assert_null(p.rack.at(i), "aucun manuel à l'étude")
+	var class_book := p.rack.at(Rack.CLASS_SLOT)
+	assert_eq(class_book.base.id, "manual_swiftblade", "celui de la classe, une Vive lame")
+	assert_eq(class_book.manual.experience, 0, "neuf")
 	assert_eq(p.bar.id_of(0), SkillCatalog.ID_ATTACK, "le coup d'épée")
 	assert_eq(p.bar.id_of(1), SkillCatalog.ID_BOLT, "et le tir")
 	assert_eq(p.bar.id_of(2), "", "rien d'autre")
@@ -726,6 +730,44 @@ func test_the_v8_reference_file_rereads() -> void:
 	assert_eq(p.character_class, Character.WITCH)
 	assert_eq(p.archetype(), "witch")
 	assert_eq(p.equipment["weapon"].base.id, ItemCatalog.ID_STARTING_WAND)
+	var class_book := p.rack.at(Rack.CLASS_SLOT)
+	assert_eq(class_book.base.id, "manual_witch", "le manuel de sa classe, qu'une v8 ignorait")
+	assert_eq(class_book.manual.experience, 0, "neuf")
+
+
+func test_the_v9_reference_file_rereads() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v9.json"))
+	var p := Character.from_dict(content)
+	assert_not_null(p, "une sauvegarde de version 9 se lit")
+	var class_book := p.rack.at(Rack.CLASS_SLOT)
+	assert_eq(class_book.base.id, "manual_witch")
+	assert_eq(class_book.manual.experience, 500)
+	assert_eq(class_book.manual.points, {"elemental_projectile": 2}, "ce que le livre ne connaît pas est oublié")
+	assert_eq(p.bar.id_of(2), "elemental_projectile")
+
+
+## Le manuel de classe est écrit **par son état seul**, hors des trois entrées du
+## râtelier : sa base se déduit de la classe, et un fichier qui en nommerait une autre
+## n'aurait rien à dire.
+func test_the_class_manual_survives_the_round_trip() -> void:
+	var p := Character.create_new("Lame", 0)
+	var book := p.rack.at(Rack.CLASS_SLOT)
+	book.manual.experience = 900
+	book.manual.points["quick_strike"] = 3
+	var written := p.to_dict()
+	assert_eq(written["rack"].size(), Rack.CLASS_SLOT, "trois entrées, comme avant")
+	var reread := Character.from_dict(written).rack.at(Rack.CLASS_SLOT)
+	assert_eq(reread.base.id, "manual_swiftblade")
+	assert_eq(reread.manual.experience, 900)
+	assert_eq(reread.manual.points_of("quick_strike"), 3)
+
+
+func test_a_new_character_carries_the_manual_of_its_class() -> void:
+	for id: String in Character.CLASSES:
+		var p := Character.create_new("Nouveau", 0, id)
+		var book := p.rack.at(Rack.CLASS_SLOT)
+		assert_eq(book.base, Character.CLASSES[id]["manual"], "« %s »" % id)
+		assert_eq(book.manual.remaining_points(), 1, "un livre neuf ouvre une case")
 
 
 ## La v5 et la v6 disent la même chose, l'une aux noms français, l'autre aux noms

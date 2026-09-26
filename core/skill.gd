@@ -16,6 +16,10 @@ extends Resource
 ## La nature du coup : la résistance qui s'y oppose et sa couleur.
 @export var nature: DamageType.Kind = DamageType.Kind.PHYSICAL
 
+## Des natures prises **à tour de rôle**, un lancer chacune (le Projectile élémentaire) ;
+## vide pour la plupart. Le tour est compté par le lanceur, la compétence n'en sait rien.
+@export var nature_cycle: Array[int] = []
+
 ## Ce qui décide du **temps du geste** : `WEAPON` le prend sur l'arme
 ## (`CharacterStats.attack_interval()`) et ignore `cast_time` ; `CAST` prend `cast_time`
 ## divisé par `cast_speed`. La **recharge** ne dépend d'aucune des deux.
@@ -24,11 +28,12 @@ enum Cadence { WEAPON, CAST }
 @export var cadence: Cadence = Cadence.CAST
 
 ## Ce que le lancer pose dans le monde, comportement et dessin ensemble — `STRIKE`
-## ne diffère d'`ARC` que par le dessin. Aucun nœud ne la change.
+## ne diffère d'`ARC` que par le dessin, `COMET` de `BOLT` de même. Aucun nœud ne la change.
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
 enum Shape {
 	ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF,
 	WAVE, CYCLONE, SPIKES, NOVA, VORTEX, BEAM, PILLAR, PULSE, SUMMON, GATE, CURSE,
+	LUNGE, COMET,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -55,6 +60,7 @@ const KEYWORD_OF_NATURE := {
 const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
 	Shape.BALL: Keywords.PROJECTILE,
+	Shape.COMET: Keywords.PROJECTILE,
 	Shape.STRIKE: Keywords.MELEE,
 	Shape.CROSS: Keywords.MELEE,
 	Shape.ORBIT: Keywords.MELEE,
@@ -78,6 +84,8 @@ const KEYWORD_OF_SHAPE := {
 	Shape.SUMMON: Keywords.SUMMON,
 	Shape.GATE: Keywords.SUMMON,
 	Shape.CURSE: Keywords.CURSE,
+	# On se jette sur une cible pour la frapper à l'arme : de la mêlée, d'où qu'on parte.
+	Shape.LUNGE: Keywords.MELEE,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -113,13 +121,13 @@ const HITS_PER_SHAPE := {
 ## Les nombres des formes qui ne sont pas un tir ; un test refuse une forme à qui
 ## manque le sien. `targets` : les ennemis d'une chaîne, le premier compris.
 @export var targets: int = 1
-## En secondes : ce que vit un nuage, un serpent, une épée en orbite, et ce qu'une ruée
-## laisse derrière elle — sa trace ou son buff. Zéro pour ce qui ne dure pas, et pour
-## l'aura, qui dure tant qu'on ne l'éteint pas.
+## En secondes : ce que vit un nuage, un serpent, une épée en orbite, un buff lancé, et
+## ce qu'une ruée laisse derrière elle — sa trace ou son buff. Zéro pour ce qui ne dure
+## pas, et pour l'aura ou le buff entretenus, qui durent tant qu'on ne les éteint pas.
 @export var duration: float = 0.0
 ## En pixels : la zone d'un nuage, d'une aura, l'explosion d'une boule ou d'une créature
-## de portail, celle que gardent les morts-vivants autour du joueur, et **la longueur**
-## d'un faisceau, dont la largeur est celle de son dessin.
+## de portail, celle que gardent les morts-vivants autour du joueur, **la longueur**
+## d'un faisceau, dont la largeur est celle de son dessin, et la portée d'une frappe vive.
 @export var radius: float = 0.0
 ## En secondes, entre deux frappes d'un nuage ou d'une aura, ou entre deux touches
 ## d'une même cible par un serpent ou une épée. **Aucun nœud ne la vise** : elle
@@ -168,6 +176,13 @@ const HITS_PER_SHAPE := {
 ## Ce que le lancer pose sur son lanceur : un buff nommé, ou plusieurs. Vide sur tout ce
 ## qui ne fait que frapper. Ils s'allument et s'éteignent ensemble.
 @export var buffs: Array[SkillBuff] = []
+
+## Un buff **à charges** (la Soif de sang) : ses lignes comptent une fois par charge, et
+## une charge naît de chaque ennemi tué par une attaque, jusqu'à ce nombre. Zéro : un
+## buff ordinaire, dont les lignes comptent une fois.
+@export var stacks_max: int = 0
+## Ce que vivent les charges après la dernière gagnée, en secondes.
+@export var stack_duration: float = 0.0
 
 ## Zéro pour un coup gratuit.
 @export var mana_cost: float = 0.0
@@ -220,6 +235,13 @@ func usable_with(weapon: ItemBase) -> bool:
 	return weapon != null and weapon.allowed_keyword() == KEYWORD_OF_CADENCE[cadence]
 
 
+## La nature de ce tour-là : `nature`, ou son rang dans `nature_cycle`.
+func nature_at(turn: int) -> DamageType.Kind:
+	if nature_cycle.is_empty():
+		return nature
+	return nature_cycle[posmod(turn, nature_cycle.size())] as DamageType.Kind
+
+
 ## `name` est la clé française : l'afficher directement resterait en français.
 func displayed_name() -> String:
 	return Texts.t(name)
@@ -236,9 +258,10 @@ func points_max() -> int:
 
 
 ## Déclarés, plus ceux de la cadence, de la nature et de la forme. Pas ceux d'un
-## nœud : ils appartiennent au lancer, et `resolve()` les ajoute.
+## nœud : ils appartiennent au lancer, et `resolve()` les ajoute. Ceux du premier tour
+## pour une nature qui tourne.
 func keywords() -> PackedStringArray:
-	return _keywords(PackedStringArray())
+	return _keywords(PackedStringArray(), nature)
 
 
 ## Ce que ses buffs allumés versent dans la fiche à ce nombre de points, tous ensemble.
@@ -261,6 +284,14 @@ func acts() -> bool:
 	return strikes() or grants_buffs() or inflicted_state >= 0
 
 
+## Un buff **lancé** : une durée et aucun prix à la seconde. Il se paie au lancer, s'éteint
+## seul, et la touche le relance au lieu de l'éteindre. Le tombeau a une durée mais se
+## paie à la seconde : il reste entretenu.
+func is_cast_buff() -> bool:
+	return shape == Shape.BUFF and duration > 0.0 \
+		and self_burn + self_wither + mana_per_second <= 0.0
+
+
 ## Pose-t-elle quelque chose sur son lanceur ? Lu par la ruée, qui laisse alors un buff
 ## au lieu d'une trace, et par la fiche, qui lui ouvre une section.
 func grants_buffs() -> bool:
@@ -269,9 +300,9 @@ func grants_buffs() -> bool:
 
 ## Les mots-clés portés, ceux-ci en plus. L'ordre de lecture est celui de
 ## `Keywords` et de nulle part ailleurs.
-func _keywords(added: PackedStringArray) -> PackedStringArray:
+func _keywords(added: PackedStringArray, own_nature: DamageType.Kind) -> PackedStringArray:
 	var all_keywords := PackedStringArray([
-		KEYWORD_OF_CADENCE.get(cadence, ""), KEYWORD_OF_NATURE.get(nature, ""),
+		KEYWORD_OF_CADENCE.get(cadence, ""), KEYWORD_OF_NATURE.get(own_nature, ""),
 		KEYWORD_OF_SHAPE.get(shape, ""),
 	])
 	all_keywords.append_array(declared_keywords)
@@ -308,14 +339,16 @@ func damage(points: int) -> float:
 ## l'attraper.
 ##
 ## Les talents ne sont pas filtrés, mais leurs mots-clés sont posés avant le filtre :
-## un nœud de conversion rend un affixe de feu mordant sur un sort de foudre.
+## un nœud de conversion rend un affixe de feu mordant sur un sort de foudre. `turn`
+## choisit la nature d'une compétence qui en change à chaque lancer.
 ##
 ## Mesuré : 8,1 µs nue, 21,6 µs avec trois lignes d'objet et deux nœuds.
 func resolve(
-	points: int, stats: CharacterStats, mods: Array = [], talents: Array = []
+	points: int, stats: CharacterStats, mods: Array = [], talents: Array = [], turn := 0
 ) -> SkillStats:
+	var own_nature := nature_at(turn)
 	var r := SkillStats.new()
-	r.nature = nature
+	r.nature = own_nature
 	r.projectiles = float(projectiles)
 	r.spread_in_degrees = spread_in_degrees
 	r.projectile_speed = projectile_speed
@@ -332,7 +365,7 @@ func resolve(
 	r.inflict_chance = inflict_chance
 	r.hits = HITS_PER_SHAPE.get(shape, 1)
 	r.skill_id = id
-	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
+	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE] and not is_cast_buff()
 	r.mana_cost = mana_cost
 	r.use_time = use_time(stats)
 	r.recharge = recharge(stats)
@@ -343,7 +376,7 @@ func resolve(
 	var given := PackedStringArray()
 	for t: InvestedTalent in talents:
 		given.append_array(t.node.added_keywords)
-	var worn_items := _keywords(given)
+	var worn_items := _keywords(given, own_nature)
 	r.keywords = worn_items
 
 	var fields: Array[StatMod] = []
@@ -361,7 +394,7 @@ func resolve(
 	# avec le point placé.
 	if own > 0.0 and health_scaling > 0.0 and stats != null:
 		own += stats.max_health * health_scaling
-	r.place_the_base(nature, own)
+	r.place_the_base(own_nature, own)
 
 	StatMod.apply(r, fields)
 	for t: InvestedTalent in talents:

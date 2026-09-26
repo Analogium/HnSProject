@@ -267,3 +267,33 @@ func test_no_investing_in_a_missing_slot() -> void:
 	assert_false(m.invest(arch, "swift_bolt"), "pas dans ce livre")
 	assert_false(m.invest(null, "trial"), "ni sans livre du tout")
 	assert_eq(m.points_spent(), 0)
+
+
+# --------------------------------------------------------------------------
+# Le manuel de classe (jalon 28)
+# --------------------------------------------------------------------------
+
+## Le quatrième emplacement ne se donne et ne se reprend que par `seat()` : ni le sac,
+## ni la page, ni une sauvegarde trafiquée n'y posent ou n'en retirent rien.
+func test_the_class_slot_neither_takes_nor_gives() -> void:
+	var rack := Rack.new()
+	var own := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	rack.seat(own)
+	var other := Item.new(_base())
+	assert_same(rack.put(Rack.CLASS_SLOT, other), other, "refusé, rendu tel quel")
+	assert_null(rack.remove(Rack.CLASS_SLOT), "rien ne sort")
+	assert_same(rack.at(Rack.CLASS_SLOT), own, "il est toujours là")
+	for i in Rack.CLASS_SLOT:
+		rack.put(i, Item.new(_base()))
+	assert_eq(rack.free_slot(), 0, "plein, le premier — jamais celui de la classe")
+
+
+## Hors du catalogue : il ne tombe pas, l'établi ne le propose pas, et une sauvegarde
+## qui le citerait comme un objet ordinaire ne le retrouve pas.
+func test_a_class_manual_is_outside_the_catalog() -> void:
+	for base in Character.class_manual_bases():
+		assert_false(base in ItemCatalog.ALL, "« %s » ne tombe pas" % base.id)
+		assert_null(ItemCatalog.by_id(base.id), "« %s »" % base.id)
+		assert_not_null(base.manual, "« %s » porte un archétype" % base.id)
+		assert_eq(base.family, ItemBase.MANUAL_FAMILY)
+		assert_false(base.manual.skills().is_empty(), "« %s » apprend à lancer" % base.id)

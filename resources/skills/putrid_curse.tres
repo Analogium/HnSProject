@@ -13,6 +13,7 @@ cadence = 1
 shape = 22
 declared_keywords = PackedStringArray("area")
 cast_time = 0.40
+cooldown = 5.0
 mana_cost = 12.0
 radius = 48.0
 inflicted_state = 8

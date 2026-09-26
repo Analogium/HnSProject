@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-53 bases d'objets, 32 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
+53 bases d'objets, 36 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -221,7 +221,7 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Relève | sort nécrotique | niveau 3 | 5 | 22 mana | 1.00 s | summon · rayon 110 · toutes les 0.80 s · 2 au plus | 10 · 13 · 16 · 20 · 25 |
 | Déferlante toxique | sort nécrotique | niveau 5 | 5 | 18 mana | 0.90 s | nova · rayon 48 | 12 · 15 · 19 · 24 · 30 |
 | Porte pourrissante | sort nécrotique | niveau 8 | 5 | 24 mana | 1.00 s · recharge 6.00 s | gate · 6.0 s · rayon 22 · toutes les 0.75 s | 14 · 18 · 22 · 28 · 35 |
-| Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s | curse · rayon 48 |  |
+| Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s · recharge 5.00 s | curse · rayon 48 |  |
 | Nécrose avancée | sort nécrotique | niveau 12 | 3 | 0 mana | recharge 0.60 s | buff | Nécrose : +10 % chance de pourrir |
 
 | nœud | compétence | parent | demande | points | par point |
@@ -242,6 +242,30 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Malédiction prompte | Malédiction putride | Anathème | 1 point de compétence | 2 | -15 % de temps du geste réduit |
 
 54 destinations de points pour 20 gagnés.
+
+### Manuels de classe
+
+Hors du catalogue : un par classe, au quatrième emplacement du râtelier, qui
+ne tombe pas et ne se range pas (`Character.CLASSES`). Ils n'ont pas encore de
+quoi dépenser leurs vingt points, et c'est accepté (jalon 28).
+
+### Manuel du Vive lame — `manual_swiftblade`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Frappe vive | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | lunge · rayon 130 | 24 · 31 · 39 · 48 · 58 |
+| Soif de sang | attaque physique | niveau 3 | 1 | 0 mana | cadence de l'arme · recharge 0.60 s | buff · 5 charges de 3.0 s | Frénésie : +5 % de vitesse d'attaque accrue |
+
+6 destinations de points pour 20 gagnés.
+
+### Manuel de la sorcière — `manual_witch`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Projectile élémentaire | sort feu | niveau 1 | 5 | 7 mana | 0.45 s | comet · +200 % de chance d'état · tour à tour feu, froid, foudre | 18 · 23 · 29 · 36 · 44 |
+| Amplification des sorts | sort foudre | niveau 3 | 1 | 20 mana | 0.30 s · recharge 10.00 s | buff · 10.0 s | Sorts amplifiés : +20 % de dégâts de sort amplifiés |
+
+6 destinations de points pour 20 gagnés.
 
 ## Arbre de passifs
 

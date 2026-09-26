@@ -25,9 +25,12 @@ var _skill: Skill
 ## Tout dans la nature du buff : il n'inflige rien, donc sa brûlure n'a qu'une part.
 var _distribution: Array[float] = []
 var _age := 0.0
-## Zéro : il brûle jusqu'à ce qu'on l'éteigne. Sinon c'est ce qu'une ruée laisse
-## derrière elle, en secondes.
+## Zéro : il brûle jusqu'à ce qu'on l'éteigne. Sinon, en secondes, ce qu'une ruée
+## laisse derrière elle ou ce que dure un buff lancé.
 var _lifetime := 0.0
+## Les charges d'un buff à charges (`Skill.stacks_max`), et depuis quand la dernière.
+var stacks := 0
+var _since_stack := 0.0
 
 
 static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
@@ -50,12 +53,24 @@ func _ready() -> void:
 		material = ArtPalette.ADDITIVE
 
 
-## Ce qu'il reste de sa durée, entre 0 et 1 ; **1 pour celui qui n'en a pas**, et qui
-## brûle tant qu'on le paie.
+## Ce qu'il reste de sa durée, entre 0 et 1 ; celle de ses charges s'il en porte ; **1
+## pour celui qui n'en a pas**, et qui brûle tant qu'on le paie.
 func remaining_ratio() -> float:
+	if stacks > 0:
+		return clampf(1.0 - _since_stack / _skill.stack_duration, 0.0, 1.0)
 	if _lifetime <= 0.0:
 		return 1.0
 	return clampf(1.0 - _age / _lifetime, 0.0, 1.0)
+
+
+## Une charge de plus, jusqu'au plafond, et **toutes** repartent pour leur durée. Faux
+## pour un buff qui n'en porte pas.
+func stack() -> bool:
+	if _skill.stacks_max <= 0:
+		return false
+	stacks = mini(stacks + 1, _skill.stacks_max)
+	_since_stack = 0.0
+	return true
 
 
 ## Appelée par `Player.extinguish()`, le seul chemin : le joueur reprend ses lignes à
@@ -73,6 +88,11 @@ func _physics_process(delta: float) -> void:
 	if _lifetime > 0.0 and _age >= _lifetime:
 		_player.extinguish(_skill.id)
 		return
+	if stacks > 0:
+		_since_stack += delta
+		if _since_stack >= _skill.stack_duration:
+			stacks = 0
+			_player.after_buff_change()
 	# Le mana épuisé éteint ; les PV épuisés tuent (`Player.burn()`, mortelle).
 	if not _player.drain(_skill.mana_per_second, delta):
 		_player.extinguish(_skill.id)

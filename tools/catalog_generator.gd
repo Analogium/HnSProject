@@ -110,6 +110,14 @@ func _manuals(l: PackedStringArray) -> void:
 		if base.manual == null:
 			continue
 		_a_manual(l, base)
+	l.append("### Manuels de classe")
+	l.append("")
+	l.append("Hors du catalogue : un par classe, au quatrième emplacement du râtelier, qui")
+	l.append("ne tombe pas et ne se range pas (`Character.CLASSES`). Ils n'ont pas encore de")
+	l.append("quoi dépenser leurs vingt points, et c'est accepté (jalon 28).")
+	l.append("")
+	for base in Character.class_manual_bases():
+		_a_manual(l, base)
 
 
 func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
@@ -250,6 +258,12 @@ func _shape(c: Skill) -> String:
 		out.append("%+d %% de chance d'état" % roundi(c.status_chance_increase))
 	if c.health_scaling > 0.0:
 		out.append("adossé aux PV %.1f %%" % (c.health_scaling * 100.0))
+	if not c.nature_cycle.is_empty():
+		out.append("tour à tour %s" % ", ".join(c.nature_cycle.map(
+			func(kind: int) -> String: return DamageType.NAMES[kind]
+		)))
+	if c.stacks_max > 0:
+		out.append("%d charges de %.1f s" % [c.stacks_max, c.stack_duration])
 	return " · ".join(out)
 
 

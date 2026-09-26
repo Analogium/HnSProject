@@ -79,6 +79,20 @@ func test_the_skill_sheet_fits_in_both_languages() -> void:
 			)
 
 
+## La fenêtre des déclenchements, même largeur que la fiche, pour chaque compétence de
+## chaque livre — la charge statique comprise, la plus longue de ses lignes.
+func test_the_trigger_details_fit_in_both_languages() -> void:
+	var width := ManualPanel.SHEET_W - ManualPanel.SHEET_PAD * 2.0
+	_player.stats.static_charge_chance = 20.0
+	for language in [Settings.FRENCH, Settings.ENGLISH]:
+		Settings.from_dict({"language": language})
+		for model: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
+			if model.manual == null:
+				continue
+			for skill in model.manual.skills():
+				_measure_sheet(_sheet._trigger_sheet(skill), width, language)
+
+
 ## Les fiches d'un passif et d'un nœud d'arbre, dans le même cadre étroit. Le
 ## nœud est le plus exposé : « demande » et « 3 points dans Lames tournoyantes »
 ## sur la même ligne, et un nom de compétence au bout.
@@ -86,7 +100,7 @@ func test_passive_and_node_sheets_fit_in_both_languages() -> void:
 	var width := ManualPanel.SHEET_W - ManualPanel.SHEET_PAD * 2.0
 	for language in [Settings.FRENCH, Settings.ENGLISH]:
 		Settings.from_dict({"language": language})
-		for model: ItemBase in ItemCatalog.ALL:
+		for model: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 			if model.manual == null:
 				continue
 			# Un livre neuf : c'est lui qui montre les lignes « demande », les plus

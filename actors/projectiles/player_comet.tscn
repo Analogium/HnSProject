@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://actors/projectiles/comet_bolt.gd" id="1_comete"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_comete"]
+radius = 3.0
+
+[node name="PlayerComet" type="Area2D"]
+collision_layer = 32
+collision_mask = 17
+script = ExtResource("1_comete")
+knockback = 0.0
+lifetime = 1.4
+hit_stop_on_impact = true
+damage_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_comete")

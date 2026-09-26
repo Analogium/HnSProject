@@ -200,3 +200,37 @@ func test_the_character_gains_exactly_what_it_used_to() -> void:
 	await wait_physics_frames(1)
 
 	assert_eq(player.xp, expected, "la règle d'avant, inchangée")
+
+
+## Ce que la mort d'un ennemi a reçu, par `StatusEffects.slew`. Un membre : une lambda
+## capture par valeur.
+var _slain_with: Array = []
+
+
+func _on_slew(keywords: PackedStringArray) -> void:
+	_slain_with.append(keywords)
+
+
+## La victime annonce à son auteur qu'elle meurt, et avec quels mots-clés : la Soif de
+## sang y compte ses charges (jalon 28). Un coup qui ne tue pas n'annonce rien.
+func test_a_kill_tells_its_author_the_keywords_of_the_blow() -> void:
+	var scene := await _kill_scene()
+	var grunt: Enemy = scene[2]
+	var author := StatusEffects.new()
+	author.slew.connect(_on_slew)
+	var cast := SkillCatalog.by_id("quick_strike").resolve(1, CharacterStats.new())
+	cast.crit_chance = 0.0
+
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.PHYSICAL] = 1.0
+	var info := DamageInfo.roll(cast, Vector2.ZERO, parts)
+	info.author = author
+	grunt.hurtbox.take_damage(info)
+	assert_eq(_slain_with.size(), 0, "un coup qui ne tue pas")
+
+	parts[DamageType.Kind.PHYSICAL] = grunt.stats.max_health * 10.0
+	info = DamageInfo.roll(cast, Vector2.ZERO, parts)
+	info.author = author
+	grunt.hurtbox.take_damage(info)
+	assert_eq(_slain_with.size(), 1, "le coup qui tue")
+	assert_true((_slain_with[0] as PackedStringArray).has(Keywords.ATTACK))

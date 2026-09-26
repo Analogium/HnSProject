@@ -225,6 +225,13 @@ func _draw_buffs() -> void:
 				BUFF_SPENT
 			)
 		draw_rect(r, DamageType.COLORS[skill.nature].lerp(Color.WHITE, 0.3), false, 1.0)
+		# Les charges en bas à droite, comme le compte d'une case de manuel.
+		var stacks := _player.lit_stacks(skill.id)
+		if stacks > 0:
+			_text(
+				Vector2(r.position.x, r.end.y - 2.0), str(stacks), HORIZONTAL_ALIGNMENT_RIGHT,
+				int(BUFF_SIDE) - 2, Color.WHITE
+			)
 
 
 ## L'abscisse du bloc des jauges : le niveau, les deux barres et les gestes allumés s'y

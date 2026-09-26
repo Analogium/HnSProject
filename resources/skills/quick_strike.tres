@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/quick_strike.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "quick_strike"
+name = "Frappe vive"
+description = "Se jette d'un coup sur l'ennemi visé à portée et le frappe."
+nature = 0
+cadence = 0
+shape = 23
+mana_cost = 6.0
+radius = 130.0
+damage_per_point = Array[float]([24.0, 31.0, 39.0, 48.0, 58.0])
+required_manual_level = 1
+icon = ExtResource("2_icone")

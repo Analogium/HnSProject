@@ -20,6 +20,10 @@ signal heal(amount: float)
 ## la charge statique. Sans type sur les parts : nommer `DamageInfo`, qui nomme cette
 ## classe, refermerait la boucle.
 signal struck(at: Vector2, parts: Array, victim: StatusEffects)
+## **Ce corps vient de tuer**, d'un coup qui portait ces mots-clés — ceux du lancer, vides
+## sans lancer. La Soif de sang y compte ses charges. Émis par la victime, qui seule sait
+## qu'elle meurt.
+signal slew(keywords: PackedStringArray)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED }
@@ -85,6 +89,9 @@ const BURN_NAMES := {
 const CHANCE_STATS := [
 	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "",
 ]
+## Le libellé de la chance d'une sorte **sans statistique** : un lancer peut l'accroître
+## (le Projectile élémentaire, jalon 28) et la page doit pouvoir le dire.
+const UNWORN_CHANCES := {Kind.NUMB: "chance d'engourdir", Kind.BLEED: "chance de faire saigner"}
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
@@ -418,12 +425,17 @@ func _burn_per_second(kind: int) -> float:
 	return 0.0
 
 
+## La chance qu'un à-coup pourrisse : la page du manuel la lit ici, comme le tirage.
+static func tick_rot_chance(factor: float) -> float:
+	return CHANCE * factor
+
+
 ## Un à-coup est un coup **entièrement** nécrotique : il tire la pourriture à la chance
 ## de base, fois celle de l'auteur. Un tirage par à-coup (invariant 3).
 func _rot_from(state: State, amplified: float) -> void:
 	var author := state.author.get_ref() as StatusEffects if state.author != null else null
 	var factor := author.chance_factors[Kind.ROT] if author != null else 1.0
-	if Game.rng.randf() < CHANCE * factor:
+	if Game.rng.randf() < tick_rot_chance(factor):
 		put(Kind.ROT, state.per_second * DOT_TICK * amplified, author, state.source)
 
 

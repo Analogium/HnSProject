@@ -408,27 +408,29 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `name` | Ce que le joueur lit ; se change librement |
    | `description` | Ce qu'elle **fait**, en une phrase, pour la fiche de survol : le geste, jamais ses nombres. **Deux lignes au plus** — environ soixante-cinq signes —, sinon la fiche déborde du cadrage |
    | `nature` | Un `DamageType.Kind` : la résistance qui s'y oppose et la couleur du disque de la barre |
+   | `nature_cycle` | Des natures prises **à tour de rôle**, un lancer chacune (le Projectile élémentaire) ; vide partout ailleurs. Le premier est `nature` — `test_each_shape_has_the_numbers_it_needs` le vérifie |
    | `cadence` / `cast_time` | Le **temps du geste**. `WEAPON` le lit sur l'arme (`attack_time` / `attack_speed`) et ignore `cast_time` ; `CAST` prend `cast_time` divisé par `cast_speed`. Un sort sans `cast_time` **ni** `cooldown` repartirait à chaque image, et `test_each_skill_declares_the_pace_its_cadence_reads` le refuse |
-   | `cooldown` | **La recharge, et rien d'autre** : un délai propre à la compétence que **ni la vitesse d'attaque ni celle d'incantation ne touchent** — seule `CharacterStats.cooldown_recovery` la raccourcit. Zéro pour la plupart des sorts ; non nulle pour ce qu'on ne doit pas enchaîner (une ruée, un vortex) et pour l'anti-rebond d'un geste entretenu. La case attend **le plus long des deux** |
+   | `cooldown` | **La recharge, et rien d'autre** : un délai propre à la compétence que **ni la vitesse d'attaque ni celle d'incantation ne touchent** — seule `CharacterStats.cooldown_recovery` la raccourcit. Zéro pour la plupart des sorts, et **toujours zéro pour une attaque faite pour les dégâts** — sa cadence est la vitesse d'attaque ; **toujours non nulle pour un buff, une aura ou une malédiction** ; non nulle aussi pour ce qu'on ne doit pas enchaîner (une ruée, un vortex). `test_attacks_ride_the_attack_speed_and_buffs_wait` tient la règle. La case attend **le plus long des deux** |
    | `mana_cost` | 0 pour un geste gratuit |
    | `damage_per_point` | Un nombre **par point placé**, dans la nature de la compétence : sa longueur est le maximum de la case. Les objets ajoutent leurs fourchettes par-dessus. **Vide pour ce qui ne frappe pas** — un buff, un déplacement —, et la fiche n'annonce alors ni dégâts, ni forme, ni moyenne |
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
    | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
+   | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`. `BOLT` et `BALL` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`. `BOLT`, `BALL` et `COMET` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
    | `targets` | Une chaîne : combien d'ennemis, le premier compris |
    | `duration` / `period` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée ; une ruée a une durée, celle de ce qu'elle laisse |
-   | `radius` | Une boule (son explosion), un nuage, une aura, un pilier, une pulsation ; et **la longueur** d'un faisceau, dont la largeur est celle de son dessin |
+   | `radius` | Une boule (son explosion), un nuage, une aura, un pilier, une pulsation ; **la longueur** d'un faisceau, dont la largeur est celle de son dessin ; la portée d'une frappe vive |
    | `simultaneous` | Une orbite : combien à la fois. Zéro, sans limite |
    | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
    | `mana_per_second` | Un buff, un cyclone : le mana drainé par seconde, **à plat**. La réserve vide **l'éteint** |
    | `self_heal` | Ce qu'un geste entretenu **rend** par seconde, en part des PV max. Le pendant de `self_burn`, et sans mitigation : un soin ne se résiste pas |
    | `self_wither` | Un buff : la part des PV **actuels** qu'il ronge par seconde. Jamais mortelle |
    | `inflicted_state` / `inflict_chance` | L'état qu'elle **pose** à ce qu'elle touche (`StatusEffects.Kind`, hors de `ROLLED`) et sa chance ; −1 pour rien. Ce qu'il brûle part du coup, donc du niveau du sort. Une malédiction n'a que ça |
-   | `status_chance_increase` | Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage — +50 sur la Nova de glace, qui fait passer 20 % à 30 %. Il s'additionne aux accrus du porteur. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa voisine. La fiche le montre **avec ce qu'il donne**, et seulement si la sorte a sa statistique dans `StatusEffects.CHANCE_STATS` |
+   | `status_chance_increase` | Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage — +50 sur la Nova de glace, qui fait passer 20 % à 30 %. Il s'additionne aux accrus du porteur. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa voisine. La fiche le montre **avec ce qu'il donne**, sous le libellé de la statistique de la sorte (`StatusEffects.CHANCE_STATS`) ou, sans statistique, sous celui de `UNWORN_CHANCES` |
    | `binds_caster` | Ce geste enferme-t-il son lanceur : rien d'autre ne part, on ne bouge plus, et seule son extinction reste permise |
    | `required_manual_level` | À partir de quand la case accepte son premier point |
 
@@ -459,7 +461,14 @@ une trace qui frappe, ou des `buffs` pour ce qu'elle pose sur le lanceur. Une
 couloir : c'est la Ruée tranchante, un coup d'épée sur toute la traversée. **Un buff**
 (`BUFF`) veut un drain — PV ou mana — et au moins un `SkillBuff` : il n'a pas de dégâts,
 donc ni arbre de talents utile, ni « moyenne par lancer ». Les buffs d'un lancer
-s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence.
+s'allument et s'éteignent **ensemble**, sous l'identifiant de la compétence. Deux
+exceptions au drain : **le buff lancé** — une `duration`, un `mana_cost` et aucun prix à
+la seconde (`Skill.is_cast_buff()`) : il s'éteint seul, et la touche le relance au lieu de
+l'éteindre — et **le buff à charges**, gratuit à entretenir parce qu'il ne donne rien
+tant qu'on ne tue pas.
+
+**Une frappe vive** (`LUNGE`) veut un `radius`, sa portée : elle se jette sur l'ennemi
+à portée le plus proche de la visée et le frappe seul, et refuse de partir sans cible.
 
 **Un faisceau** (`BEAM`) part du lanceur dans sa visée, frappe **une fois tout ce qui
 est sur sa ligne** — `Targets.in_capsule()`, qui ne s'arrête pas au premier corps — et
@@ -475,7 +484,7 @@ le `radius` autour du joueur et frappent à la `period` — au nom du joueur. **
 explose au `radius`. **Une malédiction** (`CURSE`) n'a ni dégâts ni buff : un `radius`
 et un `inflicted_state`, posé d'un coup sur son cercle, avec `declared_points_max`.
 
-**Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Skill.resolve()` en décide
+**Un geste entretenu** est `AURA`, `BUFF` (hors buff lancé) ou `CYCLONE` : `Skill.resolve()` en décide
 (`SkillStats.sustained`), et ce seul booléen allume et éteint la case sur la même
 touche et retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 
@@ -782,6 +791,8 @@ Un manuel est **une base d'objet** de plus, plus un archétype.
 la page, et celui de la base, que le sac affiche. Ce sont deux textes différents
 — « Maître de la foudre » et « Manuel de la foudre ».
 
+**Un manuel de classe** ne suit pas cette recette : voir « Ajouter une classe jouable ».
+
 Un manuel échappe aux règles écrites pour l'équipement — affixes, lignée à
 paliers, implicite croissant — et la question se pose à un seul endroit :
 `EquipmentSlots.equippable_family()`.
@@ -800,7 +811,15 @@ compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Pu
 3. **`core/save_store.gd`** — `create()` si la classe part avec un autre
    équipement.
 4. **`ui/character_select.gd`** — ses vignettes dans `LOOKS`.
-5. **`i18n/en.po`** — son nom ; `test_no_orphan_translation` relit `CLASSES`.
+5. **Son manuel de classe** — un archétype `resources/manuals/<id>.tres` et sa base
+   `resources/items/manual_<id>.tres`, écrits comme ceux d'un manuel ordinaire (voir
+   « Ajouter un manuel », §1 et 2) mais **sans entrée dans `ItemCatalog`** : il ne tombe
+   pas. La base va dans l'entrée `"manual"` de `CLASSES`, et c'est tout — le quatrième
+   emplacement, la sauvegarde, les tests de contenu et le catalogue le trouvent par
+   `Character.class_manual_bases()`. Archétype et base portent le même nom, « Manuel
+   de/du <classe> ».
+6. **`i18n/en.po`** — son nom et celui de son manuel ; `test_no_orphan_translation` relit
+   `CLASSES`.
 
 `test_a_sheet_plays_its_generated_cycles` refuse une planche sans marche, coup
 d'épée ou lancer générés, ou dont une image n'a pas sa main armée — l'ajouter à sa

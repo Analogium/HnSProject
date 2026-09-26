@@ -82,5 +82,21 @@
   "advanced_necrosis": [
     "a rotting green heart with black veins of necrosis",
     1337
+  ],
+  "elemental_projectile": [
+    "three small glowing orbs of fire, ice and lightning swirling around each other",
+    4242
+  ],
+  "spell_amplification": [
+    "a glowing violet magic rune circle with a bright upward arrow, arcane power surge",
+    4242
+  ],
+  "quick_strike": [
+    "a glowing arrow-shaped streak of steel shooting diagonally into a red target mark, sharp motion lines",
+    4242
+  ],
+  "bloodlust": [
+    "a glowing red eye of rage with dripping blood",
+    4242
   ]
 }

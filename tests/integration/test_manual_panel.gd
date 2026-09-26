@@ -112,6 +112,22 @@ func test_storing_returns_the_book_to_the_bag_with_its_points() -> void:
 	assert_eq(book.manual.points_of("swift_bolt"), 1, "avec ce qu'il a appris")
 
 
+## Le manuel de la classe ne se range pas : le clic droit sur son dos ne fait rien, et
+## son dos tient dans la fenêtre avec les trois autres.
+func test_the_class_manual_does_not_leave_its_slot() -> void:
+	var own := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	_player.rack.seat(own)
+	_click_on(_panel._slot_rect(Rack.CLASS_SLOT).get_center(), MOUSE_BUTTON_RIGHT)
+	assert_same(_player.rack.at(Rack.CLASS_SLOT), own, "toujours là")
+	assert_eq(_player.inventory.placed.size(), 0, "rien n'est venu au sac")
+	assert_true(
+		Rect2(Vector2.ZERO, _panel.size).encloses(_panel._slot_rect(Rack.CLASS_SLOT)),
+		"son dos tient dans la fenêtre"
+	)
+	_click_on(_panel._slot_rect(Rack.CLASS_SLOT).get_center())
+	assert_same(_panel._book(), own, "et il s'ouvre comme les autres")
+
+
 ## Le sac plein, le livre tombe plutôt que de s'évaporer.
 func test_a_book_stored_without_room_is_discarded() -> void:
 	var book := _book()
@@ -144,7 +160,7 @@ func test_slots_and_nodes_fit_in_the_panel() -> void:
 	var frame := Rect2(
 		0.0, _panel._page_top(), _panel.size.x, _panel._help_top() - _panel._page_top()
 	)
-	for base: ItemBase in ItemCatalog.ALL:
+	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual == null:
 			continue
 		for cell: ManualCell in base.manual.cells:
@@ -409,6 +425,140 @@ func test_a_skill_that_chills_better_says_by_how_much() -> void:
 		"et rien pour ce qui ne transit pas mieux"
 	)
 	assert_gt(nova.status_chance_increase, 0.0)
+
+
+## Un état **sans statistique** qui l'accroisse se dit aussi : le tir de foudre du
+## Projectile élémentaire engourdit à 60 %, et sa fiche le taisait quand celles du feu et
+## de la glace l'écrivaient (jalon 28).
+func test_a_better_numbing_is_said_too() -> void:
+	var book := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	book.manual.gain_experience(999999)
+	_player.rack.seat(book)
+	book.manual.invest(book.base.manual, "elemental_projectile")
+	var label_of: String = StatusEffects.UNWORN_CHANCES[StatusEffects.Kind.NUMB]
+	_player._turns["elemental_projectile"] = 2
+	var values := _values(_sheet_of(book, "elemental_projectile"), label_of)
+	assert_eq(values.size(), 1, "la ligne y est, au tour de la foudre")
+	assert_string_contains(values[0], "200", "son accru")
+	assert_string_contains(values[0], "60", "et les 60 % qu'il donne sur une chance de 20")
+	_player._turns["elemental_projectile"] = 0
+	assert_eq(_values(_sheet_of(book, "elemental_projectile"), label_of).size(), 0, "pas au tour du feu")
+
+
+# --------------------------------------------------------------------------
+# La fenêtre des déclenchements (touche des détails)
+# --------------------------------------------------------------------------
+
+func _studied(base_id: String, skill_id: String) -> Item:
+	var book := Item.new(ItemCatalog.by_id(base_id))
+	book.manual.gain_experience(999999)
+	_player.rack.remove(0)
+	_player.study(book, 0)
+	assert_true(_player.invest(0, skill_id), skill_id)
+	return book
+
+
+func _triggers(skill_id: String) -> Array:
+	return _panel._trigger_sheet(SkillCatalog.by_id(skill_id)).lines
+
+
+## **La vraie chance** : un pic de glace ne transit qu'à la part de froid de son coup.
+## Des dégâts de feu ajoutés par l'arme lui donnent une chance d'embraser, et prennent
+## leur part à celle de transir — la fenêtre lit le coup résolu, pas la compétence.
+func test_the_details_follow_what_the_hit_really_carries() -> void:
+	_studied("manual_cold", "ice_spike")
+	var chill := StatusEffects.name(StatusEffects.Kind.CHILL)
+	var ignite := StatusEffects.name(StatusEffects.Kind.IGNITE)
+	assert_eq(_values(_triggers("ice_spike"), chill), PackedStringArray(["20 %"]), "tout le coup est froid")
+	assert_eq(_values(_triggers("ice_spike"), ignite).size(), 0, "et rien n'embrase")
+
+	_player.equip(Item.new(ItemCatalog.by_id("wand"), [
+		ItemAffixPool.by_id("fire_to_spells").modifier(20.0, 60.0)
+	]))
+	var cast := _player.resolve(SkillCatalog.by_id("ice_spike"), 1)
+	var shares := cast.distribution()
+	assert_gt(cast.crit_chance, 0.0, "la baguette porte une chance critique")
+	assert_eq(
+		_values(_triggers("ice_spike"), Texts.t("coup critique")),
+		PackedStringArray([StatMod.percentage(roundi(cast.crit_chance * 100.0))]),
+		"le critique du lancer, celui que la fiche annonce"
+	)
+	var expected := StatusEffects.chance(shares[DamageType.Kind.FIRE], 1.0, 0.0, 1.0)
+	var fire := _values(_triggers("ice_spike"), ignite)
+	assert_eq(fire.size(), 1, "le feu ajouté embrase")
+	assert_eq(fire[0], StatMod.percentage(roundi(expected * 100.0)), "à la part du feu dans le coup")
+	var cold := _values(_triggers("ice_spike"), chill)[0]
+	assert_eq(cold, StatMod.percentage(roundi(StatusEffects.chance(shares[DamageType.Kind.COLD], 1.0, 0.0, 1.0) * 100.0)),
+		"et le froid garde sa part")
+
+
+## Le tour de la foudre du Projectile élémentaire : 20 % fois 1 + 200 %.
+func test_the_details_read_the_next_turn() -> void:
+	var book := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	book.manual.gain_experience(999999)
+	_player.rack.seat(book)
+	assert_true(_player.invest(Rack.CLASS_SLOT, "elemental_projectile"))
+	_player._turns["elemental_projectile"] = 2
+	var numb := StatusEffects.name(StatusEffects.Kind.NUMB)
+	assert_eq(_values(_triggers("elemental_projectile"), numb), PackedStringArray(["60 %"]))
+
+
+## Une malédiction pose son état sans tirage ; la Peste décompose, et chaque à-coup de
+## sa décomposition peut pourrir.
+func test_curses_and_ticks_are_listed() -> void:
+	_studied("manual_necrotic", "putrid_curse")
+	var cursed := StatusEffects.name(StatusEffects.Kind.CURSED)
+	assert_eq(_values(_triggers("putrid_curse"), cursed), PackedStringArray(["100 %"]))
+
+	_studied("manual_necrotic", "plague")
+	var lines := _triggers("plague")
+	assert_eq(_values(lines, StatusEffects.name(StatusEffects.Kind.DECAY)).size(), 1, "la décomposition")
+	var ticking := lines.filter(func(l: ManualPanel.SheetLine) -> bool: return l.group == ManualPanel.Group.ON_TICK)
+	assert_eq(ticking.size(), 1, "et la pourriture de ses à-coups")
+	assert_eq(Glossary.plain(ticking[0].value), StatMod.percentage(roundi(StatusEffects.tick_rot_chance(1.0) * 100.0)))
+
+
+## Une attaque dit ce qu'elle rapporte à la mort quand un buff à charges est appris ; un
+## sort, non.
+func test_a_kill_trigger_shows_on_attacks_only() -> void:
+	var book := Item.new(Character.CLASSES[Character.SWIFTBLADE]["manual"])
+	book.manual.gain_experience(999999)
+	_player.rack.seat(book)
+	assert_true(_player.invest(Rack.CLASS_SLOT, "quick_strike"))
+	assert_true(_player.invest(Rack.CLASS_SLOT, "bloodlust"))
+	var frenzy: String = SkillCatalog.by_id("bloodlust").buffs[0].displayed_name()
+	assert_eq(_values(_triggers("quick_strike"), frenzy), PackedStringArray(["100 %"]))
+	assert_eq(_values(_triggers("bolt"), frenzy).size(), 0, "le tir est un sort")
+
+
+## La fenêtre tient dans le cadrage au-dessus des jauges, **de l'autre côté du panneau**
+## que la fiche : l'une ne cache jamais l'autre. Pour chaque compétence de chaque livre.
+func test_the_details_stay_in_frame_beside_the_sheet() -> void:
+	var base_screen := Vector2(Settings.base_size())
+	var framing := Rect2(0.0, 0.0, base_screen.x, Hud.gauges_top(base_screen.y))
+	var measured := 0
+	for model: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
+		if model.manual == null:
+			continue
+		var book := Item.new(model)
+		book.manual.gain_experience(999999)
+		_player.rack.remove(0)
+		_player.study(book, 0)
+		for cell: ManualCell in model.manual.cells:
+			if cell.skill == null:
+				continue
+			var anchor := _panel._cell_rect(cell.position)
+			var details := _panel._trigger_sheet(cell.skill)
+			if details.lines.is_empty():
+				continue
+			var sheet := _panel._cell_sheet(book.manual, cell)
+			var main := _panel._sheet_rect(anchor, _panel._sheet_height(sheet))
+			var aside := _panel._sheet_rect(anchor, _panel._sheet_height(details), true)
+			var on_screen := Rect2(aside.position + _panel.global_position, aside.size)
+			assert_true(framing.encloses(on_screen), "« %s » : les détails sortent du cadrage" % cell.skill.id)
+			assert_false(main.intersects(aside), "« %s » : les détails couvrent la fiche" % cell.skill.id)
+			measured += 1
+	assert_gt(measured, 20, "toutes les compétences qui touchent")
 
 
 ## Un déplacement ne touche personne : sa fiche n'annonce ni dégâts, ni forme, ni
@@ -713,7 +863,7 @@ func test_the_sheet_stays_in_frame() -> void:
 	var base_screen := Vector2(Settings.base_size())
 	var framing := Rect2(0.0, 0.0, base_screen.x, Hud.gauges_top(base_screen.y))
 	var measured := 0
-	for model: ItemBase in ItemCatalog.ALL:
+	for model: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if model.manual == null:
 			continue
 		var book := Item.new(model)

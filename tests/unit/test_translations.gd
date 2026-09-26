@@ -212,7 +212,7 @@ func _literal(raw: String) -> String:
 ## fichier à corriger.
 func _expected() -> Dictionary:
 	var out := {}
-	for raw in ItemCatalog.ALL:
+	for raw in ItemCatalog.ALL + Character.class_manual_bases():
 		var base: ItemBase = raw
 		out[base.display_name] = "base « %s »" % base.id
 		if base.manual == null:
@@ -255,6 +255,8 @@ func _expected() -> Dictionary:
 		out[label_of] = "dégâts d'une nature"
 	for name in StatusEffects.NAMES:
 		out[name] = "nom d'un état"
+	for label_of in StatusEffects.UNWORN_CHANCES.values():
+		out[label_of] = "chance d'un état sans statistique"
 	out[DpsMeter.OTHER] = "ligne du compteur de DPS"
 	for id in Character.CLASSES:
 		out[Character.CLASSES[id]["name"]] = "classe « %s »" % id

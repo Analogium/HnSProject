@@ -186,5 +186,13 @@
   "manual_necrotic": [
     "a closed dark purple tome with a green skull and crossbones emblem on its cover, front view",
     777
+  ],
+  "manual_witch": [
+    "a closed deep purple tome with a golden witch hat emblem on its cover, front view",
+    4242
+  ],
+  "manual_swiftblade": [
+    "a closed dark red leather tome with a silver dagger emblem on its cover, front view",
+    1337
   ]
 }

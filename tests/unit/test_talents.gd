@@ -576,10 +576,11 @@ func test_without_talent_keywords_are_those_of_the_skill() -> void:
 # Le contenu du jeu
 # --------------------------------------------------------------------------
 
-## Les archétypes du catalogue, avec leur base pour que l'échec nomme le livre.
+## Les archétypes du catalogue et des classes, avec leur base pour que l'échec nomme le
+## livre.
 func _books() -> Array[ItemBase]:
 	var out: Array[ItemBase] = []
-	for base: ItemBase in ItemCatalog.ALL:
+	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual != null:
 			out.append(base)
 	return out
@@ -737,9 +738,12 @@ func test_each_conversion_targets_another_nature() -> void:
 
 ## **Un manuel ne se remplit plus** (jalon 10) : c'est ce qui fait du livre un
 ## choix et non une collection à compléter, et c'est la décision qu'un contenu
-## ajouté sans y penser déferait.
+## ajouté sans y penser déferait. Les manuels de classe en sont exemptés tant qu'ils
+## n'ont qu'une compétence et un buff : le surplus est accepté (jalon 28, §1).
 func test_no_manual_fills_up_entirely() -> void:
 	for base in _books():
+		if base in Character.class_manual_bases():
+			continue
 		var destinations := 0
 		for c in base.manual.cells:
 			destinations += c.points_max()

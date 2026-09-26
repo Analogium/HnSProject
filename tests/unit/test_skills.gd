@@ -180,7 +180,7 @@ func test_the_shape_gives_projectile() -> void:
 		c.shape = shape
 		assert_eq(
 			c.worn(Keywords.PROJECTILE),
-			shape in [Skill.Shape.BOLT, Skill.Shape.BALL],
+			shape in [Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET],
 			"forme %s" % Skill.Shape.keys()[shape]
 		)
 
@@ -218,10 +218,22 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gte(c.simultaneous, 1, "« %s » : un maximum" % c.name)
 		if c.shape == Skill.Shape.AURA:
 			assert_gt(c.self_burn, 0.0, "« %s » : son prix" % c.name)
-		if c.shape == Skill.Shape.BUFF:
+		# Un buff entretenu se paie à la seconde, sauf celui dont les charges se gagnent en
+		# tuant ; un buff lancé se paie au lancer et s'éteint seul.
+		if c.shape == Skill.Shape.BUFF and c.duration <= 0.0 and c.stacks_max <= 0:
 			assert_gt(
 				c.self_burn + c.self_wither + c.mana_per_second, 0.0, "« %s » : son prix" % c.name
 			)
+		if c.is_cast_buff():
+			assert_gt(c.mana_cost, 0.0, "« %s » : son prix" % c.name)
+		if c.stacks_max > 0:
+			assert_gt(c.stack_duration, 0.0, "« %s » : ce que vivent ses charges" % c.name)
+		if c.shape == Skill.Shape.LUNGE:
+			assert_gt(c.radius, 0.0, "« %s » : sa portée" % c.name)
+		for kind in c.nature_cycle:
+			assert_true(kind in DamageType.Kind.values(), "« %s » : une nature" % c.name)
+		if not c.nature_cycle.is_empty():
+			assert_eq(c.nature_cycle[0], c.nature, "« %s » part de sa nature" % c.name)
 		# La Relève : ce qu'ils gardent, leur cadence, combien ; le portail : ce qu'il dure,
 		# sa cadence et le souffle de ses créatures.
 		if c.shape in [Skill.Shape.SUMMON, Skill.Shape.GATE]:
@@ -455,6 +467,18 @@ func _node_of(manual_id: String, node_id: String) -> TalentNode:
 	return null
 
 
+## **La règle des recharges** (jalon 28) : une attaque faite pour les dégâts n'en a pas,
+## sa cadence est la vitesse d'attaque ; un buff, une aura ou une malédiction en a
+## toujours une. La ruée est l'exception assumée : un geste utilitaire, qui garde la
+## sienne même quand elle tranche.
+func test_attacks_ride_the_attack_speed_and_buffs_wait() -> void:
+	for c: Skill in SkillCatalog.ALL:
+		if c.cadence == Skill.Cadence.WEAPON and c.strikes() and c.shape != Skill.Shape.DASH:
+			assert_eq(c.cooldown, 0.0, "« %s » : une attaque suit la vitesse d'attaque" % c.name)
+		if c.shape in [Skill.Shape.BUFF, Skill.Shape.AURA, Skill.Shape.CURSE]:
+			assert_gt(c.cooldown, 0.0, "« %s » : un buff ou une malédiction attend" % c.name)
+
+
 ## Un geste d'arme lit son temps sur l'arme : un `cast_time` posé dessus serait un
 ## nombre que personne ne lit. Un sort, lui, veut l'un ou l'autre — sans rien, sa case
 ## repartirait à chaque image.
@@ -574,6 +598,38 @@ func test_a_distribution_without_damage_goes_to_the_nature() -> void:
 	var aura := _skill([0.0] as Array[float])
 	aura.nature = DamageType.Kind.COLD
 	assert_eq(aura.resolve(1, _sheet()).distribution()[DamageType.Kind.COLD], 1.0)
+
+
+## Un buff sans durée s'entretient et s'éteint à la touche ; avec une durée et sans prix à
+## la seconde, il se lance, s'éteint seul, et la touche le relance au lieu de l'éteindre.
+func test_a_buff_with_a_duration_is_cast_not_sustained() -> void:
+	var buff := _shape(Skill.Shape.BUFF)
+	assert_true(buff.resolve(1, _sheet()).sustained, "entretenu")
+	buff.duration = 10.0
+	assert_false(buff.resolve(1, _sheet()).sustained, "lancé")
+	buff.mana_per_second = 3.0
+	assert_true(buff.resolve(1, _sheet()).sustained, "payé à la seconde, comme le tombeau")
+
+
+## Le tour choisit la nature : ses dégâts, ses mots-clés — donc les affixes qui y
+## mordent — et la couleur du tir. Le quatrième retombe sur le premier.
+func test_a_cycling_nature_takes_its_turn() -> void:
+	var c := _shape(Skill.Shape.BOLT)
+	c.nature = DamageType.Kind.FIRE
+	c.nature_cycle = [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING]
+	var expected := [
+		[DamageType.Kind.FIRE, Keywords.FIRE], [DamageType.Kind.COLD, Keywords.COLD],
+		[DamageType.Kind.LIGHTNING, Keywords.LIGHTNING], [DamageType.Kind.FIRE, Keywords.FIRE],
+	]
+	var cold_spells := StatMod.new(SkillStats.DAMAGE, StatMod.Mode.PERCENT, 50.0, Keywords.COLD)
+	for turn in expected.size():
+		var r := c.resolve(1, _sheet(), [cold_spells], [], turn)
+		var kind: int = expected[turn][0]
+		assert_eq(r.nature, kind, "tour %d" % turn)
+		assert_eq(r.dominant_nature(), kind, "tour %d : la couleur" % turn)
+		assert_true(r.keywords.has(expected[turn][1]), "tour %d : son mot-clé" % turn)
+		assert_almost_eq(r.total_min(), 15.0 if kind == DamageType.Kind.COLD else 10.0, 1e-4,
+			"tour %d : l'affixe de froid ne mord que sur le froid" % turn)
 
 
 func test_an_aura_is_only_estimated_per_second() -> void:

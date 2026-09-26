@@ -519,6 +519,44 @@ msgstr "Light pours from its bearer and strikes in waves."
 msgid "Une clarté portée qui protège du sacré et bénit les coups."
 msgstr "A worn radiance that wards off holy and blesses your blows."
 
+# Manuels de classe (jalon 28)
+
+msgid "Manuel de la sorcière"
+msgstr "Witch's Manual"
+
+msgid "Manuel du Vive lame"
+msgstr "Swiftblade's Manual"
+
+msgid "Projectile élémentaire"
+msgstr "Elemental Projectile"
+
+msgid "Un trait qui change d'élément à chaque lancer : feu, glace, foudre."
+msgstr "A bolt that changes element with each cast: fire, ice, lightning."
+
+msgid "Amplification des sorts"
+msgstr "Spell Amplification"
+
+msgid "Un temps, les sorts frappent plus fort."
+msgstr "For a while, spells hit harder."
+
+msgid "Sorts amplifiés"
+msgstr "Amplified Spells"
+
+msgid "Frappe vive"
+msgstr "Quick Strike"
+
+msgid "Se jette d'un coup sur l'ennemi visé à portée et le frappe."
+msgstr "Leaps at the targeted enemy in range and strikes it."
+
+msgid "Soif de sang"
+msgstr "Bloodlust"
+
+msgid "Chaque ennemi tué par une attaque donne une charge de Frénésie."
+msgstr "Each enemy killed by an attack grants a Frenzy charge."
+
+msgid "Frénésie"
+msgstr "Frenzy"
+
 # ---------------------------------------------------------------------------
 # Passifs
 # ---------------------------------------------------------------------------
@@ -1163,8 +1201,40 @@ msgstr "targets"
 msgid "durée"
 msgstr "duration"
 
+# La fenêtre des déclenchements d'une compétence (touche des détails)
+
+msgid "Ce qu'elle peut déclencher"
+msgstr "What it can trigger"
+
+msgid "Par coup moyen, sur une cible saine. Un coup qui lui retire une grosse part de ses PV pose plus souvent."
+msgstr "Per average hit, on a healthy target. A hit that takes a large share of its life applies more often."
+
+msgid "coup critique"
+msgstr "critical strike"
+
+msgid "charge statique"
+msgstr "static charge"
+
+msgid "{chance} sur engourdi"
+msgstr "{chance} on numbed"
+
+msgid "À chaque à-coup"
+msgstr "On each tick"
+
+msgid "À chaque ennemi tué"
+msgstr "On each kill"
+
+msgid "charges"
+msgstr "charges"
+
+msgid "%d au plus, %.1f s"
+msgstr "up to %d, %.1f s"
+
 msgid "rayon"
 msgstr "radius"
+
+msgid "portée"
+msgstr "range"
 
 msgid "maximum simultané"
 msgstr "max at once"
@@ -1296,6 +1366,12 @@ msgstr "chance to bless"
 
 msgid "chance de pourrir"
 msgstr "chance to rot"
+
+msgid "chance d'engourdir"
+msgstr "chance to numb"
+
+msgid "chance de faire saigner"
+msgstr "chance to bleed"
 
 msgid "récupération de recharge"
 msgstr "cooldown recovery"
@@ -2098,8 +2174,8 @@ msgstr "Zone map"
 msgid "Noms des objets au sol"
 msgstr "Ground item names"
 
-msgid "Détails d'un objet (maintenu)"
-msgstr "Item details (hold)"
+msgid "Détails (maintenu)"
+msgstr "Details (hold)"
 
 msgid "Ruée tranchante"
 msgstr "Slicing Dash"

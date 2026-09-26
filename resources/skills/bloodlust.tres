@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/bloodlust.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
+
+[sub_resource type="Resource" id="L_frenesie_vitesse"]
+script = ExtResource("3_ligne")
+stat = "attack_speed"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="B_frenesie"]
+script = ExtResource("4_buff")
+id = "frenzy"
+name = "Frénésie"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_frenesie_vitesse")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "bloodlust"
+name = "Soif de sang"
+description = "Chaque ennemi tué par une attaque donne une charge de Frénésie."
+nature = 0
+cadence = 0
+shape = 11
+cooldown = 0.60
+mana_cost = 0.0
+stacks_max = 5
+stack_duration = 3.0
+declared_points_max = 1
+buffs = Array[ExtResource("4_buff")]([SubResource("B_frenesie")])
+required_manual_level = 3
+icon = ExtResource("2_icone")

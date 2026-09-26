@@ -186,6 +186,8 @@ func test_fill_writes_no_stat() -> void:
 		"rack", "bar", "manual_given",
 		# Jalon 16 : l'arbre de passifs.
 		"passives",
+		# Jalon 28 : l'état du manuel de la classe.
+		"class_manual",
 	]
 	for key in expected_all:
 		assert_true(dict.has(key), "le champ « %s » a disparu du fichier" % key)

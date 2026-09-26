@@ -37,7 +37,9 @@ BACKGROUNDS = {"flame_dash": "dark crimson", "ignition": "dark crimson",
                "holy_pulse": "dark plum", "holy_light": "dark plum",
                "plague": "dark murky green", "rise": "dark murky green",
                "toxic_unleash": "dark murky green", "rotting_gate": "dark murky green",
-               "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green"}
+               "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green",
+               # La sorcière : le violet de la foudre, même pour le trait qui change d'élément.
+               "elemental_projectile": "dark violet", "spell_amplification": "dark violet"}
 
 # Le sujet occupe rarement plus que ce centre ; reduite entiere, la tuile noie sa
 # silhouette dans le fond.

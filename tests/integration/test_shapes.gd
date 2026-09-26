@@ -1004,3 +1004,120 @@ func test_necrosis_gnaws_current_health_and_raises_the_chance_to_rot() -> void:
 	await wait_seconds(1.0)
 	assert_lt(_p.health, health, "il ronge")
 	assert_gt(_p.health, health * 0.985, "un pour cent par seconde, pas davantage")
+
+
+# --------------------------------------------------------------------------
+# Les manuels de classe (jalon 28)
+# --------------------------------------------------------------------------
+
+## Le manuel de la classe à sa place, au plafond, ces points placés, la première
+## compétence sur la troisième case.
+func _learn_class(class_id: String, points: Array) -> void:
+	var book := Item.new(Character.CLASSES[class_id]["manual"])
+	book.manual.gain_experience(999999)
+	_p.rack.seat(book)
+	for id: String in points:
+		assert_true(_p.invest(Rack.CLASS_SLOT, id), "« %s »" % id)
+	_p.bar.put(2, points[0])
+	Weapons.arm(_p, points[0])
+	_p.stats.max_mana = 9999.0
+	_p._set_mana(9999.0)
+
+
+func test_the_elemental_projectile_takes_each_element_in_turn() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile"])
+	var seen: Array[int] = []
+	for i in 4:
+		_p._recharges[2] = 0.0
+		assert_true(_p.cast_slot(2))
+		var bolts := _children_of(Projectile)
+		seen.append((bolts[-1] as Projectile).nature())
+	assert_eq(seen, [
+		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING, DamageType.Kind.FIRE
+	] as Array[int], "le quatrième reprend au feu")
+
+
+## Personne à portée : refusée, et rien n'est payé.
+func test_the_quick_strike_needs_a_prey_in_range() -> void:
+	_learn_class(Character.SWIFTBLADE, ["quick_strike"])
+	var cast := _p.resolve(SkillCatalog.by_id("quick_strike"), 1)
+	var far := _target(Vector2(cast.radius + 40.0, 0))
+	await wait_physics_frames(2)
+	var mana := _p.mana
+	assert_false(_p.cast_slot(2))
+	assert_eq(_p.mana, mana, "rien n'est payé")
+	assert_eq(_p.remaining_cooldown(2), 0.0, "ni la recharge")
+	assert_eq(_hits(far), 0)
+
+
+## Deux à portée : la visée choisit. On arrive contre elle, et elle seule est frappée.
+func test_the_quick_strike_lands_on_the_prey_nearest_the_aim() -> void:
+	_learn_class(Character.SWIFTBLADE, ["quick_strike"])
+	var above := _target(Vector2(80, -50))
+	var below := _target(Vector2(80, 50))
+	_p.facing = Vector2(1.0, 0.6).normalized()
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(below), 1, "celle que la visée désigne")
+	assert_eq(_hits(above), 0, "pas sa voisine")
+	assert_almost_eq(
+		_p.global_position.distance_to(below.global_position), Player.LUNGE_REACH, 1.0,
+		"contre elle"
+	)
+	assert_eq(_children_of(LungeTrail).size(), 1, "un fil et une entaille")
+	await wait_seconds(LungeTrail.LIFETIME + 0.1)
+	assert_eq(_children_of(LungeTrail).size(), 0, "qui s'effacent seuls")
+
+
+## Une charge par ennemi tué **par une attaque**, cinq au plus, et toutes tombent
+## ensemble après leur durée. Chacune donne sa part de vitesse d'attaque.
+func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
+	_learn_class(Character.SWIFTBLADE, ["bloodlust"])
+	var skill := SkillCatalog.by_id("bloodlust")
+	var base_speed := _p.stats.attack_speed
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("bloodlust"))
+	assert_eq(_p.lit_stacks("bloodlust"), 0)
+	assert_eq(_p.stats.attack_speed, base_speed, "allumée sans charge, rien")
+
+	_p.states.slew.emit(PackedStringArray([Keywords.SPELL]))
+	assert_eq(_p.lit_stacks("bloodlust"), 0, "un sort ne compte pas")
+	_p.states.slew.emit(PackedStringArray([Keywords.ATTACK]))
+	assert_eq(_p.lit_stacks("bloodlust"), 1)
+	var one := _p.stats.attack_speed
+	assert_gt(one, base_speed, "une charge accélère")
+	for i in skill.stacks_max + 2:
+		_p.states.slew.emit(PackedStringArray([Keywords.ATTACK]))
+	assert_eq(_p.lit_stacks("bloodlust"), skill.stacks_max, "pas plus que le plafond")
+	assert_almost_eq(
+		_p.stats.attack_speed - base_speed, (one - base_speed) * skill.stacks_max, 1e-4,
+		"autant de fois la part d'une charge"
+	)
+
+	(_p._lit["bloodlust"] as Buff)._since_stack = skill.stack_duration - 0.001
+	await wait_physics_frames(2)
+	assert_eq(_p.lit_stacks("bloodlust"), 0, "tombées ensemble")
+	assert_eq(_p.stats.attack_speed, base_speed, "et la fiche retrouve ses nombres")
+	assert_true(_p.lit("bloodlust"), "la Soif de sang, elle, reste allumée")
+
+
+## Un buff lancé : il se paie, dure, et le relancer le **refait** au lieu de l'éteindre.
+func test_spell_amplification_is_cast_and_refreshed() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "spell_amplification"])
+	_p.bar.put(3, "spell_amplification")
+	var projectile := SkillCatalog.by_id("elemental_projectile")
+	var before := _p.resolve(projectile, 1).total_min()
+
+	var mana := _p.mana
+	assert_true(_p.cast_slot(3))
+	assert_true(_p.lit("spell_amplification"))
+	assert_lt(_p.mana, mana, "il se paie")
+	assert_almost_eq(_p.resolve(projectile, 1).total_min(), before * 1.2, 1e-3, "20 % amplifiés")
+	await wait_physics_frames(10)
+	assert_lt(_p.lit_ratio("spell_amplification"), 1.0, "le temps passe")
+
+	_p._recharges[3] = 0.0
+	assert_true(_p.cast_slot(3))
+	assert_true(_p.lit("spell_amplification"), "relancé, il ne s'éteint pas")
+	assert_almost_eq(_p.lit_ratio("spell_amplification"), 1.0, 1e-3, "il repart à zéro")

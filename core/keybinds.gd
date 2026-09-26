@@ -26,7 +26,8 @@ const ACTIONS := {
 	"panel_passives": "Arbre de passifs",
 	"zone_map": "Carte de la zone",
 	"ground_labels": "Noms des objets au sol",
-	"item_details": "Détails d'un objet (maintenu)",
+	# Les objets du sac et les compétences des manuels : une seule touche de détails.
+	"item_details": "Détails (maintenu)",
 }
 
 ## Ce que le joueur lit sur un bouton de souris ; les autres ne se bindent pas. La

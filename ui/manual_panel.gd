@@ -1,8 +1,8 @@
 class_name ManualPanel
 extends Control
 
-## Le râtelier et la page du manuel choisi (M) : les trois dos en haut, la page
-## dessous. **On n'investit que d'ici**, donc dans un livre étudié : équiper est
+## Le râtelier et la page du manuel choisi (M) : les trois dos en haut, celui de la
+## classe à l'écart, la page dessous. **On n'investit que d'ici**, donc dans un livre étudié : équiper est
 ## l'engagement. Deux vues de même taille, la grille et l'arbre d'une compétence.
 
 ## Ce qu'on jette faute de place, comme le sac : c'est la zone qui le pose au sol.
@@ -81,7 +81,7 @@ const DESCRIPTION := Color(0.80, 0.75, 0.66)
 
 ## Les groupes de la fiche, dans l'ordre des questions. `EFFECT` : passif et nœud, qui
 ## n'ont ni coût ni portée.
-enum Group { STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF }
+enum Group { STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF, ON_HIT, ON_TICK, ON_KILL }
 
 ## Le titre que porte le filet d'un groupe. La fiche se lit alors par blocs — ce qu'elle
 ## coûte, ce qu'elle inflige, ce qu'elle pose — au lieu d'une liste d'une vingtaine de
@@ -94,6 +94,9 @@ const GROUP_TITLES := {
 	# Ce que les moyennes supposent se dit dans leur titre : en note sous elles, c'était
 	# une ligne de plus dans la fiche la plus haute du jeu.
 	Group.ESTIMATE: "En moyenne, si tout touche",
+	# La fenêtre des déclenchements : ce qu'un coup, un à-coup ou une mort peut poser.
+	Group.ON_TICK: "À chaque à-coup",
+	Group.ON_KILL: "À chaque ennemi tué",
 }
 
 
@@ -152,6 +155,9 @@ var _hover_node := -1
 var _hover_root := false
 ## Pour ne redessiner que quand elle bouge : la page reste ouverte en combat.
 var _displayed_exp := -1
+## La touche des détails tenue (`item_details`, celle du sac) : la fenêtre des
+## déclenchements s'ouvre à côté de la fiche d'une compétence.
+var _detailed := false
 
 
 func _ready() -> void:
@@ -193,6 +199,11 @@ func _process(_delta: float) -> void:
 	var current_exp := book.manual.experience if book != null else -1
 	if current_exp != _displayed_exp:
 		_displayed_exp = current_exp
+		queue_redraw()
+	# L'état **réel** à chaque image, comme le sac : le relâchement peut être avalé.
+	var held := Input.is_action_pressed("item_details")
+	if held != _detailed:
+		_detailed = held
 		queue_redraw()
 
 
@@ -376,11 +387,16 @@ func _track(point: Vector2) -> void:
 	queue_redraw()
 
 
+## Celui de la classe un écart plus loin : il ne se range pas, et ne doit pas se lire
+## comme un quatrième choix.
 func _slot_rect(index: int) -> Rect2:
-	return Rect2(PAD + float(index) * (SLOT + SLOT_GAP), HEADER, SLOT, SLOT)
+	var x := PAD + float(index) * (SLOT + SLOT_GAP)
+	if index == Rack.CLASS_SLOT:
+		x += SLOT_GAP
+	return Rect2(x, HEADER, SLOT, SLOT)
 
 
-## Le haut de la page : sous les trois dos, avec de l'air.
+## Le haut de la page : sous les dos, avec de l'air.
 func _page_top() -> float:
 	return HEADER + SLOT + PAD * 2.0
 
@@ -437,6 +453,8 @@ func _draw() -> void:
 	var open_cell := _open_cell()
 	var sheet: Sheet = null
 	var anchor := Rect2()
+	# La compétence survolée, s'il y en a une : c'est elle qui a une fenêtre de détails.
+	var skill: Skill = null
 	if open_cell == null:
 		_draw_header(book, book.base.manual.displayed_name(), book.color())
 		for cell in book.base.manual.cells:
@@ -449,6 +467,7 @@ func _draw() -> void:
 		if hovered_one != null:
 			sheet = _cell_sheet(book.manual, hovered_one)
 			anchor = _cell_rect(hovered_one.position)
+			skill = hovered_one.skill
 	else:
 		# Le chevron dit d'où l'on revient ; le clic droit fait le retour.
 		_draw_header(book, "‹ %s" % open_cell.skill.displayed_name(), UiPalette.TEXT)
@@ -460,14 +479,21 @@ func _draw() -> void:
 		if _hover_root:
 			sheet = _skill_sheet(book.manual, open_cell.skill)
 			anchor = _root_rect()
+			skill = open_cell.skill
 		elif _hover_node >= 0 and _hover_node < open_cell.talents.size():
 			var node := open_cell.talents[_hover_node]
 			sheet = _node_sheet(book.manual, open_cell, node)
 			anchor = _node_rect(node.position)
 
-	# En dernier : la fiche passe par-dessus tout, le sac compris.
+	# En dernier : la fiche passe par-dessus tout, le sac compris. Les détails la
+	# remplacent auprès du glossaire : ses encadrés se poseraient sur eux.
+	var details := _trigger_sheet(skill) if _detailed and skill != null else null
+	if details != null and details.lines.is_empty():
+		details = null
 	if sheet != null:
-		_draw_sheet(sheet, anchor)
+		_draw_sheet(sheet, anchor, false, details == null)
+	if details != null:
+		_draw_sheet(details, anchor, true, false)
 
 
 func _draw_slot(index: int) -> void:
@@ -667,8 +693,9 @@ func _draw_count(r: Rect2, label_of: String, tint: Color, size_value: int) -> vo
 
 
 ## La fiche de la case survolée : à trente-quatre pixels, un nom se tronque.
-func _draw_sheet(sheet: Sheet, anchor: Rect2) -> void:
-	var r := _sheet_rect(anchor, _sheet_height(sheet))
+## `aside` : de l'autre côté du panneau, là où se pose la fenêtre des détails.
+func _draw_sheet(sheet: Sheet, anchor: Rect2, aside := false, glossary := true) -> void:
+	var r := _sheet_rect(anchor, _sheet_height(sheet), aside)
 	draw_rect(r, UiPalette.TIP_BACK)
 	draw_rect(r, UiPalette.BORDER, false, 1.0)
 
@@ -699,6 +726,8 @@ func _draw_sheet(sheet: Sheet, anchor: Rect2) -> void:
 		RichText.draw_right(self, _font, Vector2(left, base), left + width, line.value, FONT_SIZE, line.tint)
 		y += SHEET_LINE
 
+	if not glossary:
+		return
 	var described := PackedStringArray()
 	for line in sheet.lines:
 		described.append(line.label_of)
@@ -817,11 +846,12 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			"%s %s" % [StatMod.percentage(cast.self_heal * 100.0), Texts.t("PV/s")], FULL
 		))
 
+	# La nature **du lancer** : celle d'une compétence qui en change est celle du prochain.
 	if cast.base_damage > 0.0:
 		out.append(SheetLine.new(
 			Group.DAMAGE, Texts.t("de base"),
-			_in_nature(cast.base_damage, cast.base_damage, skill.nature),
-			DamageType.COLORS[skill.nature]
+			_in_nature(cast.base_damage, cast.base_damage, cast.nature),
+			DamageType.COLORS[cast.nature]
 		))
 	# Ce que les PV du lanceur ajoutent aux dégâts propres, et à quel taux : sans cette
 	# ligne, « de base » monte avec la vie sans que rien ne dise pourquoi.
@@ -831,9 +861,9 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.DAMAGE, Texts.t("adossé aux PV"),
 			"%s · %s" % [
 				StatMod.percentage(skill.health_scaling * 100.0),
-				_in_nature(from_life, from_life, skill.nature)
+				_in_nature(from_life, from_life, cast.nature)
 			],
-			DamageType.COLORS[skill.nature]
+			DamageType.COLORS[cast.nature]
 		))
 	for nature in DamageType.Kind.size():
 		if cast.added_max[nature] > 0.0:
@@ -893,12 +923,15 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	# Ce que ce lancer accroît à la chance de poser son état, **et ce que ça donne sur
 	# cette fiche-là** : sans le second nombre, « +50 % » n'a pas de point de départ.
 	# Les accrus du porteur y sont, comme au coup (`StatusEffects.suffer()`).
-	var state_kind := StatusEffects.NATURES.find(skill.nature)
+	var state_kind := StatusEffects.NATURES.find(cast.nature)
 	var chance_stat: String = StatusEffects.CHANCE_STATS[state_kind] if state_kind >= 0 else ""
-	if cast.status_chance_increase > 0.0 and not chance_stat.is_empty():
+	var chance_label: String = StatMod.LABELS.get(
+		chance_stat, StatusEffects.UNWORN_CHANCES.get(state_kind, "")
+	)
+	if cast.status_chance_increase > 0.0 and not chance_label.is_empty():
 		var worn_factor := _player.states.chance_factors[state_kind]
 		out.append(SheetLine.new(
-			Group.DAMAGE, Texts.t(StatMod.LABELS[chance_stat]),
+			Group.DAMAGE, Texts.t(chance_label),
 			"%s · %s" % [
 				StatMod.percentage(cast.status_chance_increase, true),
 				StatMod.percentage(100.0 * StatusEffects.chance(
@@ -947,7 +980,9 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.radius > 0.0:
 		out.append(SheetLine.new(
-			Group.SHAPE, Texts.t("rayon"), "%d px" % roundi(cast.radius), UiPalette.TEXT
+			# Celui d'une frappe vive n'est pas une zone : c'est jusqu'où elle va chercher.
+			Group.SHAPE, Texts.t("portée") if skill.shape == Skill.Shape.LUNGE else Texts.t("rayon"),
+			"%d px" % roundi(cast.radius), UiPalette.TEXT
 		))
 	if cast.period > 0.0:
 		out.append(SheetLine.new(
@@ -966,6 +1001,13 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		if cast.duration > 0.0:
 			block.append(SheetLine.new(
 				Group.BUFF, Texts.t("durée"), "%.1f s" % cast.duration, UiPalette.TEXT, heading
+			))
+		# Ce que valent les lignes dessous : une charge.
+		if skill.stacks_max > 0:
+			block.append(SheetLine.new(
+				Group.BUFF, Texts.t("charges"),
+				Texts.t("%d au plus, %.1f s") % [skill.stacks_max, skill.stack_duration],
+				UiPalette.TEXT, heading
 			))
 		for m in buff.mods(maxi(spent, 1)):
 			block.append(SheetLine.new(
@@ -1074,6 +1116,75 @@ func _effect_lines(mods: Array[StatMod]) -> Array[SheetLine]:
 
 
 ## Une case vide annonce les nombres du premier point.
+## **Tout ce que ce lancer peut poser ou déclencher**, avec sa vraie chance : les états
+## que tirent les natures de son coup — conversions et dégâts ajoutés compris, par
+## `distribution()` —, facteurs du porteur et accru du lancer ajoutés comme au coup
+## (`StatusEffects.chance()`), l'état qu'il pose, la pourriture de ses à-coups, la
+## charge statique, les charges d'un buff à la mort. Vide pour ce qui ne touche rien.
+func _trigger_sheet(skill: Skill) -> Sheet:
+	var cast := _player.resolve(skill, maxi(_player.skill_points(skill.id), 1))
+	var factors := _player.states.chance_factors
+	var shares := cast.distribution()
+	var strikes := cast.total_max() > 0.0
+	var out: Array[SheetLine] = []
+
+	if strikes:
+		out.append(SheetLine.new(
+			Group.ON_HIT, Texts.t("coup critique"), _chance(cast.crit_chance), UiPalette.TEXT
+		))
+		for kind: int in StatusEffects.ROLLED:
+			var share: float = shares[StatusEffects.NATURES[kind]]
+			if share <= 0.0:
+				continue
+			var factor := StatusEffects.factor_of(factors[kind], cast.status_chance_increase)
+			out.append(SheetLine.new(
+				Group.ON_HIT, StatusEffects.name(kind),
+				_chance(StatusEffects.chance(share, 1.0, 0.0, factor)), StatusEffects.color(kind)
+			))
+	var posed := cast.inflicted_state
+	if posed >= 0:
+		# La malédiction pose son état sur tout son cercle, sans tirage.
+		var sure := skill.shape == Skill.Shape.CURSE
+		if sure or shares[StatusEffects.NATURES[posed]] > 0.0:
+			out.append(SheetLine.new(
+				Group.ON_HIT, StatusEffects.name(posed),
+				_chance(1.0 if sure else cast.inflict_chance), StatusEffects.color(posed)
+			))
+	if strikes and _player.stats.static_charge_chance > 0.0:
+		out.append(SheetLine.new(
+			Group.ON_HIT, Texts.t("charge statique"),
+			Texts.t("{chance} sur engourdi").format({
+				"chance": _chance(_player.stats.static_charge_chance * 0.01)
+			}),
+			StatusEffects.color(StatusEffects.Kind.NUMB)
+		))
+
+	if posed in StatusEffects.TICKING and shares[StatusEffects.NATURES[posed]] > 0.0:
+		var rot := StatusEffects.Kind.ROT
+		out.append(SheetLine.new(
+			Group.ON_TICK, StatusEffects.name(rot),
+			_chance(StatusEffects.tick_rot_chance(factors[rot])), StatusEffects.color(rot)
+		))
+
+	if strikes and cast.keywords.has(Keywords.ATTACK):
+		for other in _player.available_skills():
+			if other.stacks_max <= 0:
+				continue
+			for buff in other.buffs:
+				out.append(SheetLine.new(Group.ON_KILL, buff.displayed_name(), _chance(1.0), FULL))
+
+	return Sheet.new(
+		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,
+		Texts.t("Par coup moyen, sur une cible saine. Un coup qui lui retire une grosse part de ses PV pose plus souvent.")
+		if strikes else ""
+	)
+
+
+## Une chance, bornée à 100 %.
+static func _chance(value: float) -> String:
+	return StatMod.percentage(roundi(minf(value, 1.0) * 100.0))
+
+
 func _first_point_line() -> SheetLine:
 	return SheetLine.new(
 		Group.STATE, Texts.t("nombres du premier point"), "", UiPalette.TEXT
@@ -1105,12 +1216,13 @@ func _sheet_height(sheet: Sheet) -> float:
 
 
 ## À droite de ce qu'elle décrit, **tenue dans le cadrage** au-dessus du HUD ; à
-## gauche quand la droite manque.
-func _sheet_rect(anchor: Rect2, height: float) -> Rect2:
+## gauche quand la droite manque. `aside` prend l'autre côté : la fiche et ses
+## détails encadrent le panneau.
+func _sheet_rect(anchor: Rect2, height: float, aside := false) -> Rect2:
 	var screen := Vector2(Settings.base_size())
-	var x := size.x + SHEET_GAP
-	if global_position.x + x + SHEET_W > screen.x:
-		x = -SHEET_GAP - SHEET_W
+	var right := global_position.x + size.x + SHEET_GAP + SHEET_W <= screen.x
+	var x := size.x + SHEET_GAP if right != aside else -SHEET_GAP - SHEET_W
+	x = clampf(x, -global_position.x, screen.x - global_position.x - SHEET_W)
 	var floor_value := Hud.gauges_top(screen.y) - global_position.y
 	var y := minf(anchor.position.y, floor_value - height)
 	return Rect2(x, maxf(y, -global_position.y), SHEET_W, height)

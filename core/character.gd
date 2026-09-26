@@ -7,26 +7,32 @@ extends RefCounted
 ## sauvegarde peut venir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
-const VERSION := 8
+const VERSION := 9
 
 ## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
 ## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
-## arbre de passifs vide ; v1 à v7 → Vive lame.
-const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8]
+## arbre de passifs vide ; v1 à v7 → Vive lame ; v1 à v8 → manuel de classe neuf.
+const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const LEGACY_ATTACK_DAMAGE := "attack_damage"
 const LEGACY_SPELL_DAMAGE := "spell_damage"
 
-## Les classes jouables : l'archétype de la forge qui les dessine, et leur nom
-## affiché (clé de traduction). Le gameplay est encore le même pour toutes.
+## Les classes jouables : l'archétype de la forge qui les dessine, leur nom affiché
+## (clé de traduction), et le manuel qui n'appartient qu'à elles (jalon 28).
 const SWIFTBLADE := "swiftblade"
 const WITCH := "witch"
 const CLASSES := {
-	SWIFTBLADE: {"archetype": "swiftblade", "name": "Vive lame"},
-	WITCH: {"archetype": "witch", "name": "Sorcière"},
+	SWIFTBLADE: {
+		"archetype": "swiftblade", "name": "Vive lame",
+		"manual": preload("res://resources/items/manual_swiftblade.tres"),
+	},
+	WITCH: {
+		"archetype": "witch", "name": "Sorcière",
+		"manual": preload("res://resources/items/manual_witch.tres"),
+	},
 }
 ## Le nom qu'a porté la Vive lame dans les premières sauvegardes v8.
 const LEGACY_CLASSES := {"warrior": SWIFTBLADE}
@@ -76,6 +82,7 @@ static func create_new(p_name: String, p_silhouette: int, p_class := SWIFTBLADE)
 	p.silhouette = p_silhouette
 	p.created_on = Time.get_date_string_from_system()
 	p.played_on = p.created_on
+	p._seat_class_manual()
 	return p
 
 
@@ -89,6 +96,20 @@ static func unreadable_with(p_id: String) -> Character:
 ## Le corps que la forge dessine pour cette classe.
 func archetype() -> String:
 	return CLASSES[character_class]["archetype"]
+
+
+## Les bases des manuels de classe, **hors du catalogue** : elles ne tombent pas, ne
+## s'achètent pas à l'établi et ne quittent jamais leur emplacement.
+static func class_manual_bases() -> Array[ItemBase]:
+	var out: Array[ItemBase] = []
+	for id: String in CLASSES:
+		out.append(CLASSES[id]["manual"])
+	return out
+
+
+## Neuf : la relecture le remplit ensuite.
+func _seat_class_manual() -> void:
+	rack.seat(Item.new(CLASSES[character_class]["manual"]))
 
 
 ## Généré, jamais dérivé du nom (homonymes, caractères interdits). Tiré sur le
@@ -123,10 +144,13 @@ func to_dict() -> Dictionary:
 		if item != null and item.base != null:
 			worn[slot] = _item_to_dict(item)
 
-	# Trois entrées même vides : le fichier se relit sans deviner laquelle manquait.
+	# Trois entrées même vides : le fichier se relit sans deviner laquelle manquait. Le
+	# manuel de classe à part, par son seul état : sa base se déduit de la classe.
 	var books := []
-	for item in rack.manuals:
+	for i in Rack.CLASS_SLOT:
+		var item := rack.at(i)
 		books.append(_item_to_dict(item) if item != null and item.base != null else null)
+	var class_book := rack.at(Rack.CLASS_SLOT)
 
 	# Une case vide s'écrit null : « rien » y ressemble à rien.
 	var cells := []
@@ -148,6 +172,7 @@ func to_dict() -> Dictionary:
 		"bag": placed_items,
 		"equipment": worn,
 		"rack": books,
+		"class_manual": _manual_to_dict(class_book.manual) if class_book != null else null,
 		"bar": cells,
 		"manual_given": manual_given,
 	}
@@ -207,7 +232,7 @@ static func from_dict(source: Dictionary) -> Character:
 			p.equipment[String(slot)] = item
 
 	var books := _list(source.get("rack"))
-	for i in mini(books.size(), Rack.SLOT_COUNT):
+	for i in mini(books.size(), Rack.CLASS_SLOT):
 		var item := _item_from_dict(books[i])
 		if item == null:
 			continue
@@ -215,6 +240,9 @@ static func from_dict(source: Dictionary) -> Character:
 		# retombe dans le sac plutôt que de disparaître.
 		if p.rack.put(i, item) != null and not p.bag.add(item):
 			push_warning("Manuel « %s » abandonné : le râtelier l'a refusé." % item.display_name())
+	# Absent avant la v9 : un manuel neuf, comme à la création.
+	p._seat_class_manual()
+	_manual_from_dict(p.rack.at(Rack.CLASS_SLOT), source.get("class_manual"))
 
 	# Clé absente : la barre de départ (sauvegarde d'avant le jalon 6). Clé présente :
 	# ce qu'elle dit, cases vides comprises.
@@ -254,13 +282,14 @@ static func _item_to_dict(item: Item) -> Dictionary:
 		"base": item.base.id, "level": item.item_level,
 		"base_roll": item.implicit_roll, "affixes": affixes,
 	}
-	# Le niveau d'un manuel ne s'écrit pas : il se déduit de son expérience.
 	if item.manual != null:
-		entry["manual"] = {
-			"exp": item.manual.experience,
-			"points": item.manual.points.duplicate(),
-		}
+		entry["manual"] = _manual_to_dict(item.manual)
 	return entry
+
+
+## Le niveau d'un manuel ne s'écrit pas : il se déduit de son expérience.
+static func _manual_to_dict(manual: Manual) -> Dictionary:
+	return {"exp": manual.experience, "points": manual.points.duplicate()}
 
 
 ## Null quand la base n'existe plus : l'objet est ignoré, le personnage se charge.

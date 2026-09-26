@@ -40,6 +40,9 @@ const STRIKE_SHAKE := 2.0
 ## De combien on recule le long de la visée quand l'arrivée d'une ruée est prise. Huit
 ## pixels : plus fin ne se voit pas, plus gros fait rater une embrasure.
 const LANDING_STEP := 8.0
+## Où une frappe vive s'arrête devant sa cible, de centre à centre : les deux corps se
+## touchent sans se chevaucher.
+const LUNGE_REACH := 14.0
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud depuis l'arène.
 @export var swing_duration: float = 0.12
@@ -49,6 +52,8 @@ const LANDING_STEP := 8.0
 @export var bolt_scene: PackedScene
 ## Le tir de Boule de feu, qui explose à l'impact.
 @export var orb_scene: PackedScene
+## Le tir du Projectile élémentaire : une comète dessinée, de la teinte de l'élément.
+@export var comet_scene: PackedScene
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -121,6 +126,9 @@ var _is_swinging := false
 ## buffs. Leurs nœuds vivent sous le joueur ; le dictionnaire dit lequel répond à
 ## quelle case.
 var _lit := {}
+## Le prochain tour des compétences qui changent de nature à chaque lancer, par
+## identifiant. Jamais sauvegardé : on recommence par le premier élément.
+var _turns := {}
 ## L'identifiant du geste entretenu qui enferme son lanceur, ou vide. Tenu à jour à
 ## l'allumage plutôt que relu à chaque image : il est lu par le déplacement.
 var _bound := ""
@@ -150,6 +158,7 @@ func _ready() -> void:
 	hurtbox.damaged.connect(_on_damaged)
 	hurtbox.states = states
 	states.struck.connect(_on_struck)
+	states.slew.connect(_on_slew)
 	states.change.connect(_show_states)
 	states.reached.connect(_announce_state)
 	states.heal.connect(_heal)
@@ -221,8 +230,8 @@ func _physics_process(delta: float) -> void:
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
-## il porte les sept refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite
-## pleine, morts-vivants au complet.
+## il porte les huit refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite
+## pleine, morts-vivants au complet, frappe vive sans personne à portée.
 func cast_slot(index: int) -> bool:
 	if is_dead or _recharges.size() <= index or _recharges[index] > 0.0:
 		return false
@@ -258,9 +267,14 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.SUMMON \
 			and Minion.count_of(self, skill.id) >= cast.max_simultaneous():
 		return false
+	var prey: Hurtbox = _lunge_target(cast) if skill.shape == Skill.Shape.LUNGE else null
+	if skill.shape == Skill.Shape.LUNGE and prey == null:
+		return false
 
 	_set_mana(mana - cast.mana_cost)
 	_start_recharge(index, cast.interval)
+	if not skill.nature_cycle.is_empty():
+		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
 	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
 	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
 	if skill.shape != Skill.Shape.DASH:
@@ -271,6 +285,8 @@ func cast_slot(index: int) -> bool:
 			_roll(cast, bolt_scene)
 		Skill.Shape.BALL:
 			_roll(cast, orb_scene)
+		Skill.Shape.COMET:
+			_roll(cast, comet_scene)
 		Skill.Shape.CHAIN:
 			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:
 				Game.hit_stop()
@@ -321,6 +337,8 @@ func cast_slot(index: int) -> bool:
 			_swing(cast, SwingArc.Style.STRIKE)
 		Skill.Shape.CROSS:
 			_swing(cast, SwingArc.Style.CROSS)
+		Skill.Shape.LUNGE:
+			_lunge(cast, prey)
 		_:
 			_swing(cast)
 	return true
@@ -349,7 +367,7 @@ func extinguish(skill_id: String) -> void:
 	_lit.erase(skill_id)
 	if is_instance_valid(node):
 		(node as Node).extinguish()
-	_after_buff_change()
+	after_buff_change()
 
 
 ## L'allumage, son pendant : la fiche reçoit les lignes du buff.
@@ -360,7 +378,7 @@ func _light(skill_id: String, node: Node) -> void:
 	if is_instance_valid(old) and old != node:
 		(old as Node).extinguish()
 	_lit[skill_id] = node
-	_after_buff_change()
+	after_buff_change()
 
 
 ## Combien d'épées tournent autour du personnage.
@@ -438,6 +456,19 @@ func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
 	StaticCharge.put(_effects_parent(), at, at - global_position, parts, states)
 
 
+## Un ennemi tué par une attaque : chaque buff à charges allumé en gagne une. Depuis un
+## rappel de collision, mais rien n'y naît : la fiche seule est refaite.
+func _on_slew(keywords: PackedStringArray) -> void:
+	if not keywords.has(Keywords.ATTACK):
+		return
+	var gained := false
+	for id: String in _lit:
+		if lit(id) and _lit[id] is Buff:
+			gained = (_lit[id] as Buff).stack() or gained
+	if gained:
+		after_buff_change()
+
+
 ## Un état neuf s'annonce : la pastille seule ne dirait pas pourquoi on ralentit.
 func _announce_state(kind: int) -> void:
 	if HitFeedback.current != null:
@@ -461,6 +492,32 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
 	elif skill.grants_buffs():
 		_light(skill.id, Buff.light(self, skill, cast.duration))
+
+
+## La cible d'une frappe vive : parmi les ennemis à sa portée, **le plus proche de la
+## visée**. Null sans personne à portée, et le lancer est refusé.
+func _lunge_target(cast: SkillStats) -> Hurtbox:
+	var aim := _aim_point()
+	var best: Hurtbox = null
+	for candidate in Targets.in_circle(get_world_2d(), global_position, cast.radius):
+		if best == null or candidate.global_position.distance_squared_to(aim) \
+				< best.global_position.distance_squared_to(aim):
+			best = candidate
+	return best
+
+
+## Une frappe vive : on se porte **contre** la cible, murs traversés comme une ruée, et on
+## frappe elle seule — pas un arc, qui prendrait ses voisins. Gel et secousse d'une frappe.
+func _lunge(cast: SkillStats, prey: Hurtbox) -> void:
+	var toward := prey.global_position
+	var from_value := global_position
+	global_position = _landing(from_value, toward - from_value.direction_to(toward) * LUNGE_REACH)
+	if global_position != toward:
+		facing = global_position.direction_to(toward)
+	LungeTrail.leave(_effects_parent(), from_value, global_position, toward)
+	Targets.strike(prey, cast.roll(Game.rng), global_position, states, cast)
+	Game.hit_stop()
+	Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
 
 
 ## Le point le plus proche de la visée où le corps tient, en reculant vers le départ.
@@ -508,8 +565,11 @@ func _blade_crown() -> BladeCrown:
 
 
 ## **Le chemin du lancer et de la page du manuel** : fiche et modificateurs de mot-clé.
+## Au tour du prochain lancer : la page montre la nature qui partira.
 func resolve(skill: Skill, points: int) -> SkillStats:
-	return skill.resolve(points, stats, skill_mods, talents_of(skill.id))
+	return skill.resolve(
+		points, stats, skill_mods, talents_of(skill.id), int(_turns.get(skill.id, 0))
+	)
 
 
 ## Les deux ensemble : gardés séparément, l'un finirait par ne plus décrire l'autre.
@@ -719,7 +779,9 @@ func recompute_stats() -> void:
 func buff_mods() -> Array[StatMod]:
 	var out: Array[StatMod] = []
 	for skill in lit_skills():
-		out.append_array(skill.buff_mods(skill_points(skill.id)))
+		# Une ligne est linéaire en points : ses charges la multiplient de la même façon.
+		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else 1
+		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
 	return out
 
 
@@ -745,8 +807,17 @@ func lit_ratio(skill_id: String) -> float:
 	return (node as Buff).remaining_ratio()
 
 
+## Les charges d'un buff à charges allumé ; zéro pour tout le reste.
+func lit_stacks(skill_id: String) -> int:
+	var node: Variant = _lit.get(skill_id)
+	if not is_instance_valid(node) or not node is Buff:
+		return 0
+	return (node as Buff).stacks
+
+
 ## Les plafonds ont pu bouger avec les lignes du buff, comme à un changement d'objet.
-func _after_buff_change() -> void:
+## Publique : un buff dont les charges tombent la rappelle.
+func after_buff_change() -> void:
 	_bound = ""
 	for skill in lit_skills():
 		if skill.binds_caster:
@@ -788,9 +859,7 @@ func load_character(character: Character) -> void:
 			equipment[slot] = character.equipment[slot]
 
 	# Recopiés comme le sac, pour la même raison.
-	for i in Rack.SLOT_COUNT:
-		rack.remove(i)
-		rack.put(i, character.rack.at(i))
+	rack.copy_from(character.rack)
 	for i in SkillBar.SLOT_COUNT:
 		bar.put(i, character.bar.id_of(i))
 	manual_given = character.manual_given
@@ -825,8 +894,7 @@ func fill(character: Character) -> void:
 	character.equipment = equipment.duplicate()
 
 	character.rack = Rack.new()
-	for i in Rack.SLOT_COUNT:
-		character.rack.put(i, rack.at(i))
+	character.rack.copy_from(rack)
 	character.bar = SkillBar.new()
 	for i in SkillBar.SLOT_COUNT:
 		character.bar.put(i, bar.id_of(i))
@@ -848,18 +916,11 @@ func equip(item: Item, slot := "") -> Item:
 
 
 ## Le pendant d'`equip()` pour ce qui se lit : l'objet refusé est rendu. `index` à -1 :
-## le premier emplacement libre, à défaut le premier.
+## le premier emplacement libre, à défaut le premier — jamais celui de la classe.
 func study(item: Item, index := -1) -> Item:
 	if not Rack.accepts(item):
 		return item
-	var target := index
-	if target < 0:
-		target = 0
-		for i in Rack.SLOT_COUNT:
-			if rack.at(i) == null:
-				target = i
-				break
-	var old := rack.put(target, item)
+	var old := rack.put(index if index >= 0 else rack.free_slot(), item)
 	# Un manuel porte des passifs : le poser change la fiche.
 	_after_equipment_change()
 	return old
