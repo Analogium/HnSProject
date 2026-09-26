@@ -62,8 +62,8 @@ func _ready() -> void:
 ## pilier : la fiche annonce une explosion par créature.
 func _physics_process(delta: float) -> void:
 	_age += delta
-	var total := _cast.strikes_over_duration()
-	while _born < total and _age >= float(_born) * _cast.period:
+	var due := _cast.strikes_due(_age)
+	while _born < due:
 		_born += 1
 		var c := Crawler.new()
 		c.at = global_position

@@ -1,6 +1,6 @@
 # Référence des données
 
-<!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->
+<!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
 53 bases d'objets, 32 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
 

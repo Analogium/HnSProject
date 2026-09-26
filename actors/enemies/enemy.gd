@@ -24,7 +24,7 @@ var lifesteal := 0.0
 var level := 1
 
 var health: float
-## Sur Enemy : le grunt et le caster la décomptent pareil.
+## Sur Enemy : tous les archétypes la décomptent pareil.
 var _attack_cd := 0.0
 var target: Node2D
 var is_dead := false
@@ -243,6 +243,28 @@ func _strike(facing: Vector2) -> void:
 	_attack_cd = stats.attack_interval()
 	sprite.set_state(false, facing)
 	sprite.attack()
+
+
+## Un coup au contact, porté en son nom. Le vol de vie se prend sur ce qui a passé
+## l'armure, donc après le coup. Le grunt et le chevalier l'écrivaient chacun.
+func _hurt(hurtbox: Hurtbox, source: Vector2) -> void:
+	var info := DamageInfo.new(stats.attack_damage, source, stats.knockback_force)
+	info.author = states
+	hurtbox.take_damage(info)
+	on_damage_dealt(info.amount)
+
+
+## Une zone qui frappera en son nom, dans cette nature. Le gonfle, le mortier et le
+## colosse l'armaient chacun ; sans `author`, sa bénédiction ne l'affaiblirait plus.
+func _danger(
+	at: Vector2, shape: DangerZone.Shape, reach: float, delay: float, nature: DamageType.Kind,
+	facing := Vector2.RIGHT, spread := 0.0
+) -> DangerZone:
+	var zone := DangerZone.put(manager.ground(), at, shape, reach, delay, facing, spread)
+	zone.parts = DamageType.empty_parts()
+	zone.parts[nature] = stats.attack_damage
+	zone.author = states
+	return zone
 
 
 ## En tête de tick(). Une fois alerté, l'ennemi le reste.

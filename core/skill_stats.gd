@@ -198,6 +198,17 @@ func strikes_over_duration() -> int:
 	return maxi(floori(duration / period + 0.0001), 1)
 
 
+## Combien d'impulsions un geste qui dure doit avoir données à cet âge : la n-ième part
+## à n périodes, jusqu'à `strikes_over_duration()`. Le nuage, le pilier, la pulsation,
+## le vortex, la trace d'une ruée et le portail l'écrivaient chacun.
+func strikes_due(age: float) -> int:
+	var total := strikes_over_duration()
+	var due := 0
+	while due < total and age >= float(due) * period:
+		due += 1
+	return due
+
+
 ## « Projectile · Foudre · Sort », nœuds compris.
 func keywords_label() -> String:
 	return Keywords.line(keywords)

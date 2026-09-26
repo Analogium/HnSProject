@@ -234,7 +234,7 @@ func cast_slot(index: int) -> bool:
 		return false
 	var cast := resolve(skill, points)
 
-	if _is_sustained(skill.shape):
+	if cast.sustained:
 		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
 		# inutilisable.
 		_held[index] = false
@@ -334,7 +334,7 @@ func lit(skill_id: String) -> bool:
 	return is_instance_valid(node) and not (node as Node).is_queued_for_deletion()
 
 
-## Une aura, quelle qu'elle soit : ce que la mort et l'arène demandent.
+## Une aura, quelle qu'elle soit. Pour les tests de forme.
 func aura_lit() -> bool:
 	for id: String in _lit:
 		if lit(id) and _lit[id] is Immolation:
@@ -361,10 +361,6 @@ func _light(skill_id: String, node: Node) -> void:
 		(old as Node).extinguish()
 	_lit[skill_id] = node
 	_after_buff_change()
-
-
-static func _is_sustained(shape: Skill.Shape) -> bool:
-	return shape in [Skill.Shape.AURA, Skill.Shape.BUFF, Skill.Shape.CYCLONE]
 
 
 ## Combien d'épées tournent autour du personnage.
@@ -755,10 +751,17 @@ func _after_buff_change() -> void:
 	for skill in lit_skills():
 		if skill.binds_caster:
 			_bound = skill.id
+	_restat()
+	buffs_changed.emit()
+
+
+## La fiche refaite, et la vie et la réserve ramenées sous les nouveaux plafonds.
+## Trois chemins écrivaient les trois lignes ; en oublier une laisserait la vie
+## au-dessus d'un maximum qui vient de baisser.
+func _restat() -> void:
 	recompute_stats()
 	_set_health(health)
 	_set_mana(mana)
-	buffs_changed.emit()
 
 
 ## Fait entrer un personnage sauvegardé dans ce corps, après son _ready. **Recopie** et
@@ -921,18 +924,14 @@ func release_passive(id: String) -> bool:
 
 ## Les plafonds ont bougé : un nœud de PV ou de mana les change.
 func _after_passives_change() -> void:
-	recompute_stats()
-	_set_health(health)
-	_set_mana(mana)
+	_restat()
 	passives_changed.emit()
 
 
 ## La fiche change, donc les plafonds : la vie courante redescend sous le nouveau. Un
 ## manuel passe par ici aussi, ses passifs étant une pièce d'armure.
 func _after_equipment_change() -> void:
-	recompute_stats()
-	_set_health(health)
-	_set_mana(mana)
+	_restat()
 	sprite.set_weapon(weapon_kind())
 	equipment_changed.emit()
 

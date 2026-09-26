@@ -78,16 +78,8 @@ func _draw() -> void:
 	# givre s'efface au même rythme, sinon l'un survit à l'autre.
 	var ending := clampf((LIFETIME - _age) / (LIFETIME * SINK), 0.0, 1.0)
 	var out := minf(clampf(_age / (LIFETIME * RISE), 0.0, 1.0), ending)
-	var radius := maxi(int(round(_cast.radius)), 1)
 	# Le givre au sol dit où ça mord, et il est tramé : un anneau tracé est la
 	# dernière chose qui trahit le vecteur au milieu d'un décor en pixels.
-	draw_texture_rect(
-		EffectForge.scorch(_tint, radius),
-		Rect2(
-			EffectForge.snap(self, -Vector2(radius, radius)),
-			Vector2.ONE * float(radius * 2 + 1)
-		),
-		false, Color(1.0, 1.0, 1.0, ending)
-	)
+	EffectForge.put_scorch(self, _tint, maxi(roundi(_cast.radius), 1), ending)
 	for i in _feet.size():
 		Frost.raise_spike(self, _feet[i] * _cast.radius, i % 2 == 0, out, _tint)

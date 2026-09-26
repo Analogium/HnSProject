@@ -95,14 +95,7 @@ func _draw() -> void:
 	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
 	if _skill.nature in [DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING]:
 		# Tramé plutôt que tracé : ces deux buffs sont dessinés de bout en bout.
-		var span := int(HALO)
-		draw_texture_rect(
-			EffectForge.scorch(tint, span),
-			Rect2(
-				EffectForge.snap(self, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)
-			),
-			false, Color(1.0, 1.0, 1.0, 0.5 + 0.5 * pulse)
-		)
+		EffectForge.put_scorch(self, tint, int(HALO), 0.5 + 0.5 * pulse)
 	# La nécrose n'a pas de halo : elle ne rayonne pas, elle ronge — ses spores suffisent.
 	elif _skill.nature != DamageType.Kind.NECROTIC:
 		Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))

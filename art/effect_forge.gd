@@ -167,6 +167,18 @@ static func scorch(tint: Color, radius: int, alpha := SCORCH_ALPHA) -> Texture2D
 	return tex
 
 
+## Pose le halo centré sur l'origine de `ci`. Sept effets écrivaient ce cadre à la
+## main : il doit suivre l'image de `scorch()`, `2 × span + 1` de côté, coin à `-span`.
+static func put_scorch(
+	ci: CanvasItem, tint: Color, span: int, fade := 1.0, alpha := SCORCH_ALPHA
+) -> void:
+	ci.draw_texture_rect(
+		scorch(tint, span, alpha),
+		Rect2(snap(ci, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
+		false, Color(1.0, 1.0, 1.0, fade)
+	)
+
+
 ## Une petite langue, cinq pixels sur huit, en trois temps : celle qui tient sur
 ## le dos d'un serpent, où la grande — neuf sur treize — couvrait la bête.
 const FLAME_SMALL := [

@@ -188,7 +188,8 @@ func _spawn(count: int) -> void:
 		if not gen.is_walkable(cell):
 			continue
 
-		# Même proportion que l'EnemySpawner : un caster pour trois grunts.
+		# Un caster pour trois grunts, et eux seuls : c'est sur ce mélange qu'est
+		# mesuré le tableau de référence, que les quatre du jalon 27 fausseraient.
 		var scene := CASTER_SCENE if _rng.randi() % 4 == 0 else GRUNT_SCENE
 		_zone.enemy_manager.spawn(scene, MapGenerator.cell_center(cell))
 		placed += 1

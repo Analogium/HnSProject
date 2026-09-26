@@ -180,11 +180,7 @@ func _rime(r: float, k: float, fade: float) -> void:
 
 ## La trace au sol du souffle peint : tramée, elle s'efface avec lui.
 func _ground(r: float, fade: float) -> void:
-	draw_texture_rect(
-		EffectForge.scorch(_tint, maxi(int(round(r)), 1)),
-		Rect2(EffectForge.snap(self, -Vector2(round(r), round(r))), Vector2.ONE * (round(r) * 2.0 + 1.0)),
-		false, Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_scorch(self, _tint, maxi(roundi(r), 1), fade)
 
 
 ## Peint — fait de planches cernées — ou tracé en polygones : c'est ce qui décide
@@ -202,6 +198,7 @@ func _size_of(tex: Texture2D) -> Vector2:
 	return Vector2(tex.get_width(), tex.get_height())
 
 
-## −1 pour une explosion posée sans geste résolu : les tests en posent.
+## Sans lancer, la part la plus forte : l'obus du mortier et l'éclatement du gonfle
+## soufflent dans leur nature eux aussi.
 func _nature() -> int:
-	return _cast.dominant_nature() if _cast != null else -1
+	return _cast.dominant_nature() if _cast != null else DamageType.dominant(_parts)

@@ -50,11 +50,7 @@ func _swell(delta: float) -> void:
 
 ## Non liée à lui : elle frappe même s'il meurt en enflant.
 func _burst(fuse: float) -> DangerZone:
-	var zone := DangerZone.put(manager.ground(), global_position, DangerZone.Shape.DISC, BLAST, fuse)
-	zone.parts = DamageType.empty_parts()
-	zone.parts[DamageType.Kind.NECROTIC] = stats.attack_damage
-	zone.author = states
-	return zone
+	return _danger(global_position, DangerZone.Shape.DISC, BLAST, fuse, DamageType.Kind.NECROTIC)
 
 
 ## Une mort sans victoire (vidage, rechargement) n'éclate pas : la zone suivante

@@ -60,13 +60,8 @@ func _physics_process(delta: float) -> void:
 ## fait pour ça —, le cercle se dissout, l'œil se referme.
 func _draw() -> void:
 	var k := clampf(_age / LIFETIME, 0.0, 1.0)
-	var span := int(_cast.radius)
 	var fade := 1.0 - clampf((k - 0.55) * 2.2, 0.0, 1.0)
-	draw_texture_rect(
-		EffectForge.scorch(_tint, span, FILL),
-		Rect2(EffectForge.snap(self, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
-		false, Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_scorch(self, _tint, int(_cast.radius), fade, FILL)
 	Necrotic.put_band(self, Necrotic.ring(_tint, _cast.radius, 1.0 - fade), Vector2.ZERO)
 	var eyes := EffectForge.eyes(_tint)
 	var open := 0

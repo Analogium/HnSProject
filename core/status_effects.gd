@@ -261,15 +261,13 @@ func suffer(
 		total += part
 	if total <= 0.0:
 		return
-	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux. Celui
-	# du lancer s'y **ajoute** avant de multiplier la chance de base — la règle de tous
-	# les accrus du jeu (`StatMod`), et non deux multiplications à la suite.
+	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux.
 	var better := author.chance_factors if author != null else neutral_factors()
 	for kind: int in ROLLED:
 		var part: float = parts[NATURES[kind]]
 		if part <= 0.0:
 			continue
-		if rng.randf() < chance(part, total, max_hp, better[kind] + cast_increase * 0.01):
+		if rng.randf() < chance(part, total, max_hp, factor_of(better[kind], cast_increase)):
 			put(kind, part, author, source)
 
 
@@ -298,6 +296,13 @@ func resistance_lost(nature: int) -> float:
 static func chance(part: float, total: float, max_hp: float, factor := 1.0) -> float:
 	var bonus := part / max_hp * CHANCE_PER_HP_LOST if max_hp > 0.0 else 0.0
 	return (CHANCE * part / total + bonus) * factor
+
+
+## Le facteur d'un coup : celui du lancer, en points de pourcentage, **s'ajoute** à celui
+## du porteur avant de multiplier la chance — la règle de tous les accrus du jeu, et non
+## deux multiplications. Le coup et la page du manuel passent ici.
+static func factor_of(worn: float, cast_increase: float) -> float:
+	return worn + cast_increase * 0.01
 
 
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de

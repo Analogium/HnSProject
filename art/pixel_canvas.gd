@@ -146,8 +146,6 @@ func disc(center: Vector2, radius: float, ramp: int, bias := 0.0) -> void:
 	capsule(center, center, radius, ramp, bias)
 
 
-## Pixel posé à la main, pour les détails qu'aucune forme ne donne : un œil,
-## une boucle de ceinture, une étincelle.
 ## Pose une grille dessinée à la main : une ligne par rangée, un caractère par
 ## pixel, traduit en (rampe, niveau) par `legend`. Un caractère absent de la
 ## légende — le point — laisse le pixel tel quel, ce qui permet d'empiler les
@@ -187,6 +185,8 @@ func stamp(grid: Array, origin: Vector2i, legend: Dictionary) -> void:
 		_row_x1[y] = maxi(_row_x1[y], mini(last_x, width - 1))
 
 
+## Pixel posé à la main, pour les détails qu'aucune forme ne donne : un œil,
+## une boucle de ceinture, une étincelle.
 func dot_px(x: int, y: int, ramp: int, level: float) -> void:
 	if x < 0 or y < 0 or x >= width or y >= height:
 		return

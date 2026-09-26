@@ -86,13 +86,13 @@ static func unreadable_with(p_id: String) -> Character:
 	return p
 
 
-## Généré, jamais dérivé du nom (homonymes, caractères interdits). Tiré sur le
-## générateur global et non sur Game.rng (invariant 3).
 ## Le corps que la forge dessine pour cette classe.
 func archetype() -> String:
 	return CLASSES[character_class]["archetype"]
 
 
+## Généré, jamais dérivé du nom (homonymes, caractères interdits). Tiré sur le
+## générateur global et non sur Game.rng (invariant 3).
 static func new_id() -> String:
 	return "p_%d_%04d" % [int(Time.get_unix_time_from_system()), randi() % 10000]
 

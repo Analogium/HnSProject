@@ -92,13 +92,12 @@ func _shape(scale_factor: float) -> PackedVector2Array:
 	return pts
 
 
-## La nature passée par le lanceur, sinon celle de la scène.
 func tint() -> Color:
-	return DamageType.COLORS[_nature if _nature >= 0 else damage_type]
+	return DamageType.COLORS[nature()]
 
 
 ## La nature effectivement dessinée : celle que le lanceur a passée, sinon celle
-## de la scène. Le même calcul que `tint()`, et le seul autre qui en a besoin.
+## de la scène.
 func nature() -> DamageType.Kind:
 	return _nature if _nature >= 0 else damage_type
 

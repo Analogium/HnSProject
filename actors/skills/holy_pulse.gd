@@ -55,13 +55,13 @@ func _physics_process(delta: float) -> void:
 		return
 	_age += delta
 	_since += delta
-	var total := _cast.strikes_over_duration()
-	while _strikes < total and _age >= float(_strikes) * _cast.period:
+	var due := _cast.strikes_due(_age)
+	while _strikes < due:
 		_strike()
 		_strikes += 1
 		_since = 0.0
 	queue_redraw()
-	if _age >= _cast.duration and _strikes >= total:
+	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		queue_free()
 
 
@@ -77,15 +77,7 @@ func _strike() -> void:
 ## onde qui sort du cercle promettrait une portée que le coup n'a pas.
 func _draw() -> void:
 	var fade := clampf((_cast.duration - _age) / CLOSING, 0.0, 1.0)
-	var radius := maxi(int(round(_cast.radius)), 1)
-	draw_texture_rect(
-		EffectForge.scorch(_tint, radius),
-		Rect2(
-			EffectForge.snap(self, -Vector2(radius, radius)),
-			Vector2.ONE * float(radius * 2 + 1)
-		),
-		false, Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_scorch(self, _tint, maxi(roundi(_cast.radius), 1), fade)
 
 	var out := clampf(_since / (_cast.period * SPREADING), 0.0, 1.0) if _cast.period > 0.0 else 1.0
 	if out >= 1.0:

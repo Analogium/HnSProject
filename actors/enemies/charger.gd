@@ -83,10 +83,7 @@ func _charge() -> void:
 			continue
 		_hit.append(hurtbox)
 		# La source derrière lui : le recul part dans le sens de la charge.
-		var info := DamageInfo.new(stats.attack_damage, global_position - _dir, stats.knockback_force)
-		info.author = states
-		hurtbox.take_damage(info)
-		on_damage_dealt(info.amount)
+		_hurt(hurtbox, global_position - _dir)
 	for i in get_slide_collision_count():
 		# Un corps l'arrête sans l'étourdir ; le décor, si.
 		if not get_slide_collision(i).get_collider() is CharacterBody2D:

@@ -2,9 +2,10 @@ class_name SpriteForge
 
 ## La forge de personnages : (archétype, variante) -> SpriteFrames animées.
 ##
-## Aucun fichier image n'existe sur le disque. Les pixels sont calculés au premier
-## appel puis gardés en cache pour la session ; la graine étant dérivée du nom et
-## du numéro de variante, le même personnage ressort identique à chaque lancement.
+## Hors des planches de `art/characters/`, aucun fichier image n'existe sur le
+## disque. Les pixels sont calculés au premier appel puis gardés en cache pour la
+## session ; la graine étant dérivée du nom et du numéro de variante, le même
+## personnage ressort identique à chaque lancement.
 ##
 ## Un personnage n'est pas un dessin mais un **squelette** : une dizaine de points
 ## d'ancrage reliés par des capsules. Animer revient à déplacer ces points, pas à

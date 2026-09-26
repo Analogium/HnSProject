@@ -92,10 +92,7 @@ func _draw() -> void:
 	# Un halo **tramé** et calé sur la grille : un disque plein sortait brun avec
 	# un bord net, et un dégradé lisse reste la seule chose de l'aura qui ne soit
 	# pas du pixel art.
-	var span := int(round(r))
-	var scorch := EffectForge.scorch(tint, span)
-	var corner := EffectForge.snap(self, -Vector2(span, span))
-	draw_texture_rect(scorch, Rect2(corner, Vector2(span * 2 + 1, span * 2 + 1)), false)
+	EffectForge.put_scorch(self, tint, roundi(r))
 	Glow.draw_ring(self, Vector2.ZERO, r, Color(tint, 0.34))
 
 	for i in BRAISES:

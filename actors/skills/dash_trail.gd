@@ -71,12 +71,12 @@ func _ready() -> void:
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
-	var total := _cast.strikes_over_duration()
-	while _strikes < total and _age >= float(_strikes) * _cast.period:
+	var due := _cast.strikes_due(_age)
+	while _strikes < due:
 		_strike()
 		_strikes += 1
 	queue_redraw()
-	if _age >= _cast.duration and _strikes >= total:
+	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		queue_free()
 
 

@@ -58,13 +58,13 @@ const PAN := 7.0
 const SHEET_W := 170.0
 const SHEET_PAD := 6.0
 const SHEET_GAP := 4.0
-## Le nom et les mots-clés, au-dessus des lignes.
 ## La hauteur d'une ligne de fiche, **plus serrée que celle de la page** : la fiche la
 ## plus chargée du jeu tient tout juste au-dessus des jauges, et c'est ce pixel par
 ## ligne qui lui laisse son paragraphe.
 const SHEET_LINE := 9.0
 ## Une ligne de paragraphe, plus serrée encore : de la prose, pas un tableau de valeurs.
 const SHEET_PROSE := 8.0
+## Le nom et les mots-clés, au-dessus des lignes.
 const SHEET_HEADER := SHEET_LINE * 2.0
 ## Le filet entre deux groupes. Serré, comme tout le reste de la fiche : la plus haute
 ## du jeu — le nuage — tient à trois pixels près au-dessus des jauges.
@@ -901,8 +901,8 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.DAMAGE, Texts.t(StatMod.LABELS[chance_stat]),
 			"%s · %s" % [
 				StatMod.percentage(cast.status_chance_increase, true),
-				StatMod.percentage(100.0 * StatusEffects.CHANCE * (
-					worn_factor + cast.status_chance_increase * 0.01
+				StatMod.percentage(100.0 * StatusEffects.chance(
+					1.0, 1.0, 0.0, StatusEffects.factor_of(worn_factor, cast.status_chance_increase)
 				))
 			],
 			StatusEffects.color(state_kind)

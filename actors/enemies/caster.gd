@@ -74,11 +74,7 @@ func tick(delta: float) -> void:
 ## Pas dans le document, mais une arène à piliers rend l'absence de test
 ## immédiatement visible : sans lui le caster tire à travers les murs.
 func _has_line_of_sight(victim: Node2D) -> bool:
-	var params := PhysicsRayQueryParameters2D.create(
-		global_position, victim.global_position, 1   # layer 1 = décor
-	)
-	params.collide_with_areas = false
-	return get_world_2d().direct_space_state.intersect_ray(params).is_empty()
+	return Targets.in_sight(get_world_2d(), global_position, victim.global_position)
 
 
 func _fire(dir: Vector2) -> void:

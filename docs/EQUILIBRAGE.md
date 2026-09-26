@@ -1,6 +1,6 @@
 # Banc d'équilibrage
 
-<!-- Fichier généré par tools/equilibrage.sh — ne pas éditer à la main. -->
+<!-- Fichier généré par tools/balance.sh — ne pas éditer à la main. -->
 
 Ce que chaque profil type rencontre, zone par zone. Les profils sont reconstruits
 par les règles du jeu à chaque lancement (`BenchProfiles`), et le calcul passe par

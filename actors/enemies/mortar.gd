@@ -18,10 +18,7 @@ func _has_line_of_sight(_victim: Node2D) -> bool:
 
 func _fire(_dir: Vector2) -> void:
 	var at := foe().global_position
-	var zone := DangerZone.put(manager.ground(), at, DangerZone.Shape.DISC, BLAST, FLIGHT)
-	zone.parts = DamageType.empty_parts()
-	zone.parts[DamageType.Kind.FIRE] = stats.attack_damage
-	zone.author = states
+	_danger(at, DangerZone.Shape.DISC, BLAST, FLIGHT, DamageType.Kind.FIRE)
 	var shell := Shell.new()
 	shell.from = global_position
 	shell.to = at

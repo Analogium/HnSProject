@@ -23,7 +23,7 @@ Demander (ou déduire) le périmètre : tout le dépôt, ou seulement les systè
 récemment touchés. Par défaut, tout ce qui n'est pas dans `.godot/`.
 
 ```bash
-find . -name "*.gd" -not -path "./.godot/*" | xargs wc -l | spell -n
+find . -name "*.gd" -not -path "./.godot/*" | xargs wc -l | sort -n
 ```
 
 Lire **tous** les fichiers du périmètre avant de proposer quoi que ce soit. Une
@@ -51,7 +51,7 @@ quatre fichiers. Repérer les nombres nus répétés :
 
 ```bash
 grep -rnoE "\b(1[6-9]|2[0-9]|3[0-9]|48|64|96|128)\b" --include="*.gd" . \
-  | awk -F: '{print $NF}' | spell | uniq -c | spell -rn | head -20
+  | awk -F: '{print $NF}' | sort | uniq -c | sort -rn | head -20
 ```
 
 Un nombre qui apparaît partout n'est pas forcément une constante à extraire — `2`
@@ -83,7 +83,7 @@ supprimer :
 
 ```bash
 grep -rn "^func \|^static func \|^const \|^signal " --include="*.gd" . \
-  | sed -E 's/.*(func|const|signal) ([A-Za-z_0-9]+).*/\2/' | spell -u \
+  | sed -E 's/.*(func|const|signal) ([A-Za-z_0-9]+).*/\2/' | sort -u \
   | while read n; do
       c=$(grep -rc "\b$n\b" --include="*.gd" . | awk -F: '{s+=$2} END {print s}')
       [ "${c:-0}" -le 1 ] && echo "mort ? $n"
@@ -147,8 +147,8 @@ revient à la revue suivante.
 Le code qui compile n'est pas du code vérifié. Le projet a une suite versionnée :
 
 ```bash
-tests/run.sh              # tout (~22 s)
-tests/run.sh unit         # unitaires seuls (<1 s), pendant qu'on itère
+tests/run.sh              # tout (~2 min, voir CLAUDE.md)
+tests/run.sh unit         # unitaires seuls (~20 s), pendant qu'on itère
 ```
 
 Le lanceur recopie le projet dans un dossier temporaire avant de l'exécuter — il

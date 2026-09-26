@@ -51,12 +51,12 @@ func _ready() -> void:
 ## l'estimation : la fiche et le pilier ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
-	var total := _cast.strikes_over_duration()
-	while _strikes < total and _age >= float(_strikes) * _cast.period:
+	var due := _cast.strikes_due(_age)
+	while _strikes < due:
 		_strike()
 		_strikes += 1
 	queue_redraw()
-	if _age >= _cast.duration and _strikes >= total:
+	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		queue_free()
 
 
@@ -80,15 +80,7 @@ func _draw() -> void:
 	# pâlissant sort grise sur un sol sombre, comme tout ce qui est dessiné. Seul le
 	# halo au sol s'efface, parce qu'il est tramé et fait pour ça.
 	var fallen := minf(clampf(_age / OPENING, 0.0, 1.0), fade)
-	var radius := maxi(int(round(_cast.radius)), 1)
-	draw_texture_rect(
-		EffectForge.scorch(_tint, radius),
-		Rect2(
-			EffectForge.snap(self, -Vector2(radius, radius)),
-			Vector2.ONE * float(radius * 2 + 1)
-		),
-		false, Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_scorch(self, _tint, maxi(roundi(_cast.radius), 1), fade)
 	_column(fallen)
 
 	# **Autour** de la colonne et non dedans : un grain posé sur un cœur blanc n'est

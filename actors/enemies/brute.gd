@@ -37,13 +37,11 @@ func tick(delta: float) -> void:
 		_dir = to_victim.normalized()
 		velocity = Vector2.ZERO
 		sprite.set_state(false, _dir)
-		_zone = DangerZone.put(
-			manager.ground(), global_position, DangerZone.Shape.CONE, REACH, WINDUP, _dir, SPREAD
+		_zone = _danger(
+			global_position, DangerZone.Shape.CONE, REACH, WINDUP, DamageType.Kind.PHYSICAL,
+			_dir, SPREAD
 		)
-		_zone.parts = DamageType.empty_parts()
-		_zone.parts[DamageType.Kind.PHYSICAL] = stats.attack_damage
 		_zone.knockback = stats.knockback_force
-		_zone.author = states
 		_zone.bound = self
 		_timer = WINDUP
 		return

@@ -4,7 +4,7 @@ extends Node
 ##
 ## Une référence **générée** et non tenue à la main : elle décrit soixante-six
 ## `.tres`, et une table recopiée à la main serait fausse à la première retouche
-## d'équilibrage sans que rien ne le signale. Lancer `tools/catalogue.sh` après
+## d'équilibrage sans que rien ne le signale. Lancer `tools/catalog.sh` après
 ## avoir touché un `.tres`.
 ##
 ## Une scène et non un `--script` : `--script` n'enregistre pas les autoloads, et
@@ -39,7 +39,7 @@ func _ready() -> void:
 func _header(l: PackedStringArray) -> void:
 	l.append("# Référence des données")
 	l.append("")
-	l.append("<!-- Fichier généré par tools/catalogue.sh — ne pas éditer à la main. -->")
+	l.append("<!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->")
 	l.append("")
 	l.append("%d bases d'objets, %d compétences, %d affixes d'objets, %d affixes d'ennemis." % [
 		ItemCatalog.ALL.size(), SkillCatalog.ALL.size(),

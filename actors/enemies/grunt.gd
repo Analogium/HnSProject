@@ -22,13 +22,6 @@ func tick(delta: float) -> void:
 	_cool_down(delta)
 	if dist < stats.attack_range and _attack_cd <= 0.0:
 		_strike(to_target)
-		var info := DamageInfo.new(
-			stats.attack_damage, global_position, stats.knockback_force
-		)
-		info.author = states
-		(victim.get("hurtbox") as Hurtbox).take_damage(info)
-		# Après take_damage : info.amount a pu être réduit par une armure, et on
-		# ne vole que ce qu'on a réellement infligé.
-		on_damage_dealt(info.amount)
+		_hurt(victim.get("hurtbox") as Hurtbox, global_position)
 	else:
 		_animate()

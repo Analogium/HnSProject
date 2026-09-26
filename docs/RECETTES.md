@@ -366,8 +366,8 @@ plutôt que compter sur les tests.
 5. **Le faire naître** : une ligne dans `EnemySpawner.POPULATION` (scène → poids)
    pour le peuplement d'une zone — le banc d'équilibrage la lit aussi —, et une
    touche de `LONE_SCENES` dans `world/test_arena.gd` pour l'essayer seul.
-6. **Son attaque**, si elle ne se fait pas au contact : une `DangerZone`
-   (disque, couloir ou cône) dans `manager.ground()`, avec ses `parts` ; elle
+6. **Son attaque** : au contact, `Enemy._hurt()` ; sinon une `DangerZone`
+   (disque, couloir ou cône) armée par `Enemy._danger()` — nature, dégâts, auteur ; elle
    frappe seule quand elle est pleine, et `bound = self` l'annule s'il meurt
    avant. Ne pas inventer un autre télégraphe : le joueur n'en apprend qu'un. Un
    visuel d'attaque qui n'en est pas une (le tir, l'obus du mortier) appelle
@@ -475,9 +475,9 @@ le `radius` autour du joueur et frappent à la `period` — au nom du joueur. **
 explose au `radius`. **Une malédiction** (`CURSE`) n'a ni dégâts ni buff : un `radius`
 et un `inflicted_state`, posé d'un coup sur son cercle, avec `declared_points_max`.
 
-**Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Player._is_sustained()` en
-décide, la case s'allume et s'éteint sur la même touche, et `SkillStats.sustained`
-retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
+**Un geste entretenu** est `AURA`, `BUFF` ou `CYCLONE` : `Skill.resolve()` en décide
+(`SkillStats.sustained`), et ce seul booléen allume et éteint la case sur la même
+touche et retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans

@@ -86,15 +86,15 @@ static func body(radius: float, tint: Color, flash: bool, gone: float) -> Effect
 ## l'estimation : la fiche et le nuage ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
-	var total := _cast.strikes_over_duration()
-	while _strikes < total and _age >= float(_strikes) * _cast.period:
+	var due := _cast.strikes_due(_age)
+	while _strikes < due:
 		_strike()
 		_strikes += 1
 	for e in _bolts:
 		e.age += delta
 	_bolts = _bolts.filter(func(e: Bolt) -> bool: return e.age < BOLT_LIFETIME)
 	queue_redraw()
-	if _age >= _cast.duration and _strikes >= total:
+	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		queue_free()
 
 
