@@ -40,6 +40,7 @@ static func ignite(player: Player, skill: Skill) -> Immolation:
 	aura._player = player
 	aura._skill = skill
 	player.add_child(aura)
+	Settings.veil(aura, Settings.SPELLS)
 	return aura
 
 

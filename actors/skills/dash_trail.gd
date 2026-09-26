@@ -52,6 +52,7 @@ static func leave(
 	trail._toward = to - from_value
 	trail._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(trail)
+	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
 	return trail
 

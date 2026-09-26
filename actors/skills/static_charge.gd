@@ -56,6 +56,7 @@ static func put(
 	_live.append(charge)
 	if _live.size() > MAX_LIVE:
 		_live.pop_front().queue_free()
+	Settings.veil(charge, Settings.SPELLS)
 	DeferredTree.add_deferred(parent, charge, at)
 	return charge
 

@@ -64,6 +64,28 @@ var dps_meter_position := Vector2(492.0, 8.0):
 			return
 		dps_meter_position = value
 		_announce()
+
+## Les groupes des visuels que les deux curseurs d'opacité voilent.
+const SPELLS := &"spell_fx"
+const ENEMY_ATTACKS := &"enemy_attack_fx"
+
+## Opacité des sorts du joueur et des attaques ennemies, de 0 à 1.
+var spell_opacity := 1.0:
+	set(value):
+		value = clampf(value, 0.0, 1.0)
+		if value == spell_opacity:
+			return
+		spell_opacity = value
+		_reveil(SPELLS)
+
+var enemy_attack_opacity := 1.0:
+	set(value):
+		value = clampf(value, 0.0, 1.0)
+		if value == enemy_attack_opacity:
+			return
+		enemy_attack_opacity = value
+		_reveil(ENEMY_ATTACKS)
+
 ## Les touches choisies par le joueur, action → « key:76 ». **Seules celles qu'il a
 ## changées** y sont ; le reste vient de `project.godot`, par `Keybinds`. Posées, elles
 ## réécrivent la table du moteur — c'est le seul endroit qui la touche.
@@ -93,6 +115,24 @@ func bind(action: String, event: InputEvent) -> void:
 ## Rend toutes les touches à `project.godot`.
 func reset_key_binds() -> void:
 	key_binds = {}
+
+
+## Au visuel qui naît : l'opacité de son groupe, et le groupe lui-même, pour qu'un
+## curseur bougé atteigne aussi ce qui dure — l'aura, la couronne, l'arc d'arme.
+func veil(node: CanvasItem, group: StringName) -> void:
+	node.add_to_group(group)
+	node.modulate.a = opacity_of(group)
+
+
+func opacity_of(group: StringName) -> float:
+	return spell_opacity if group == SPELLS else enemy_attack_opacity
+
+
+func _reveil(group: StringName) -> void:
+	if is_inside_tree():
+		for node: CanvasItem in get_tree().get_nodes_in_group(group):
+			node.modulate.a = opacity_of(group)
+	_announce()
 
 
 ## Le choix entre les deux cases, ici et nulle part ailleurs.
@@ -284,6 +324,8 @@ func to_dict() -> Dictionary:
 		"damage_dealt": damage_dealt_visible,
 		"dps_meter": dps_meter_visible,
 		"dps_meter_position": [dps_meter_position.x, dps_meter_position.y],
+		"spell_opacity": spell_opacity,
+		"enemy_attack_opacity": enemy_attack_opacity,
 		"language": language,
 		"scale_factor": scale_factor,
 		"key_binds": key_binds,
@@ -301,6 +343,9 @@ func from_dict(source: Dictionary) -> void:
 	var place: Variant = source.get("dps_meter_position")
 	if place is Array and place.size() == 2 and _is_number(place[0]) and _is_number(place[1]):
 		dps_meter_position = Vector2(place[0], place[1])
+	for key in ["spell_opacity", "enemy_attack_opacity"]:
+		if _is_number(source.get(key)):
+			set(key, float(source[key]))
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	language = String(source.get("language", language))
 	key_binds = valid_binds(source.get("key_binds", {}))

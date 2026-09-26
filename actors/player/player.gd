@@ -134,6 +134,7 @@ var _aim_with_mouse := true
 
 func _ready() -> void:
 	camera.zoom = Vector2.ONE * Game.WORLD_ZOOM
+	Settings.veil(swing_arc, Settings.SPELLS)
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
 	if base_stats == null:
 		base_stats = CharacterStats.new()
@@ -178,8 +179,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non.
-	if not _bound.is_empty():
+	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
+	# ZQSD tapé dans un champ de texte — la recherche de l'arbre — ne fait pas marcher.
+	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit:
 		input = Vector2.ZERO
 
 	if _aim_with_mouse:
@@ -505,6 +507,7 @@ func _blade_crown() -> BladeCrown:
 		_crown = BladeCrown.new()
 		_crown.author = states
 		add_child(_crown)
+		Settings.veil(_crown, Settings.SPELLS)
 	return _crown
 
 

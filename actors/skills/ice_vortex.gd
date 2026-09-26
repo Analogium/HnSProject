@@ -42,6 +42,7 @@ static func open(
 	vortex._author = author
 	vortex._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(vortex)
+	Settings.veil(vortex, Settings.SPELLS)
 	vortex.global_position = point
 	return vortex
 

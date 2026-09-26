@@ -34,6 +34,7 @@ static func spin(player: Player, skill: Skill) -> Cyclone:
 	node._player = player
 	node._skill = skill
 	player.add_child(node)
+	Settings.veil(node, Settings.SPELLS)
 	return node
 
 

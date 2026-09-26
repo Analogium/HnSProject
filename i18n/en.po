@@ -1355,6 +1355,15 @@ msgstr "Damage dealt"
 msgid "Compteur de DPS"
 msgstr "DPS meter"
 
+msgid "Compétences"
+msgstr "Skills"
+
+msgid "Rechercher…"
+msgstr "Search…"
+
+msgid "Attaques ennemies"
+msgstr "Enemy attacks"
+
 msgid "Autres"
 msgstr "Other"
 
@@ -1539,6 +1548,12 @@ msgstr "RMB"
 
 msgid "clic M"
 msgstr "MMB"
+
+msgid "clic 4"
+msgstr "MB4"
+
+msgid "clic 5"
+msgstr "MB5"
 
 msgid "— vider la case —"
 msgstr "— clear the slot —"

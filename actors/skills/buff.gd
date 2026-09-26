@@ -38,6 +38,7 @@ static func light(player: Player, skill: Skill, lifetime := 0.0) -> Buff:
 	buff._distribution = DamageType.empty_parts()
 	buff._distribution[skill.nature] = 1.0
 	player.add_child(buff)
+	Settings.veil(buff, Settings.SPELLS)
 	return buff
 
 

@@ -42,6 +42,7 @@ static func send(
 	wave._tint = DamageType.COLORS[cast.dominant_nature()]
 	wave._bitten = Targets.Contacts.new(cast.duration)
 	parent.add_child(wave)
+	Settings.veil(wave, Settings.SPELLS)
 	# Le nœud ne tourne pas : c'est le dessin qui est fabriqué au cap de sa course,
 	# une planche tournée se rééchantillonnant.
 	wave.global_position = from_value + wave._toward * START

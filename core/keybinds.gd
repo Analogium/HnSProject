@@ -29,13 +29,15 @@ const ACTIONS := {
 	"item_details": "Détails d'un objet (maintenu)",
 }
 
-## Ce que le joueur lit sur un bouton de souris. Les autres n'ont pas de nom court
-## et ne se bindent pas : la molette se tient mal, et un cinquième bouton ne
-## s'écrirait pas mieux que « bouton 5 ».
+## Ce que le joueur lit sur un bouton de souris ; les autres ne se bindent pas. La
+## molette en est exclue : un cran n'a ni enfoncé ni relâché, et une touche tenue
+## relance à chaque recharge.
 const MOUSE_LABELS := {
 	MOUSE_BUTTON_LEFT: "clic G",
 	MOUSE_BUTTON_RIGHT: "clic D",
 	MOUSE_BUTTON_MIDDLE: "clic M",
+	MOUSE_BUTTON_XBUTTON1: "clic 4",
+	MOUSE_BUTTON_XBUTTON2: "clic 5",
 }
 
 ## Faute de touche : une action peut rester sans rien le temps d'un échange.

@@ -86,6 +86,7 @@ static func drop(
 	s._trace.append(point)
 	s._body = s._rings()
 	parent.add_child(s)
+	Settings.veil(s, Settings.SPELLS)
 	return s
 
 

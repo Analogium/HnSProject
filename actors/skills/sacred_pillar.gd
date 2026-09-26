@@ -36,6 +36,7 @@ static func fall(
 	pillar._author = author
 	pillar._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(pillar)
+	Settings.veil(pillar, Settings.SPELLS)
 	pillar.global_position = point
 	return pillar
 

@@ -46,6 +46,8 @@ func _ready() -> void:
 	dealt_check.toggled.connect(func(on: bool) -> void: Settings.damage_dealt_visible = on)
 	dps_check.button_pressed = Settings.dps_meter_visible
 	dps_check.toggled.connect(func(on: bool) -> void: Settings.dps_meter_visible = on)
+	_bind_opacity($Root/Center/Panel/Options/SpellOpacity, "spell_opacity")
+	_bind_opacity($Root/Center/Panel/Options/EnemyOpacity, "enemy_attack_opacity")
 
 	# Un bouton qui tourne : une liste déroulante dessinerait par-dessus le menu.
 	window_btn.pressed.connect(_change_window)
@@ -65,6 +67,18 @@ func _ready() -> void:
 	($Root/Center/Panel/Keys/Reset as Button).pressed.connect(func() -> void:
 		Settings.reset_key_binds()
 		_refresh_key_rows()
+	)
+
+
+## Un curseur de 0 à 100 sur un réglage de 0 à 1, et son pourcentage à côté.
+func _bind_opacity(row: Control, setting: String) -> void:
+	var slider: HSlider = row.get_node("Slider")
+	var percent: Label = row.get_node("Percent")
+	slider.value = Settings.get(setting) * 100.0
+	percent.text = StatMod.percentage(slider.value)
+	slider.value_changed.connect(func(value: float) -> void:
+		Settings.set(setting, value / 100.0)
+		percent.text = StatMod.percentage(value)
 	)
 
 

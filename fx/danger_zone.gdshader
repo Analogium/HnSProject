@@ -59,5 +59,6 @@ void fragment() {
 	if (c.a <= 0.0) {
 		discard;
 	}
-	COLOR = c;
+	// Le COLOR reçu porte le `modulate` du nœud : l'opacité des attaques ennemies.
+	COLOR = c * COLOR;
 }

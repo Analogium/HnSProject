@@ -43,6 +43,7 @@ static func put(parent: Node, point: Vector2, cast: SkillStats, author: StatusEf
 	cloud._author = author
 	cloud._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(cloud)
+	Settings.veil(cloud, Settings.SPELLS)
 	cloud.global_position = point
 	return cloud
 

@@ -152,6 +152,29 @@ func test_an_unreadable_scale_does_not_go_fullscreen() -> void:
 	Settings.from_dict(before)
 
 
+## Un curseur bougé atteint aussi ce qui brûle déjà — l'aura reste des minutes —, et
+## chaque famille garde la sienne.
+func test_an_opacity_reaches_the_living_visuals() -> void:
+	var before := Settings.to_dict()
+	var spell: Node2D = add_child_autofree(Node2D.new())
+	var attack: Node2D = add_child_autofree(Node2D.new())
+	Settings.spell_opacity = 0.5
+	Settings.veil(spell, Settings.SPELLS)
+	Settings.veil(attack, Settings.ENEMY_ATTACKS)
+	assert_almost_eq(spell.modulate.a, 0.5, 0.001, "posée à la naissance")
+	assert_almost_eq(attack.modulate.a, 1.0, 0.001, "l'autre famille n'a pas bougé")
+
+	Settings.enemy_attack_opacity = 0.2
+	Settings.spell_opacity = 7.0
+	assert_almost_eq(attack.modulate.a, 0.2, 0.001, "reprise sur ce qui vit")
+	assert_almost_eq(spell.modulate.a, 1.0, 0.001, "bornée à 1")
+
+	Settings.from_dict({"spell_opacity": 0.3, "enemy_attack_opacity": "abîmé"})
+	assert_almost_eq(Settings.spell_opacity, 0.3, 0.001, "relue")
+	assert_almost_eq(Settings.enemy_attack_opacity, 0.2, 0.001, "un texte ne l'écrase pas")
+	Settings.from_dict(before)
+
+
 # --------------------------------------------------------------------------
 # La langue
 # --------------------------------------------------------------------------

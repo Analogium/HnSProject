@@ -369,7 +369,9 @@ plutôt que compter sur les tests.
 6. **Son attaque**, si elle ne se fait pas au contact : une `DangerZone`
    (disque, couloir ou cône) dans `manager.ground()`, avec ses `parts` ; elle
    frappe seule quand elle est pleine, et `bound = self` l'annule s'il meurt
-   avant. Ne pas inventer un autre télégraphe : le joueur n'en apprend qu'un.
+   avant. Ne pas inventer un autre télégraphe : le joueur n'en apprend qu'un. Un
+   visuel d'attaque qui n'en est pas une (le tir, l'obus du mortier) appelle
+   `Settings.veil(nœud, Settings.ENEMY_ATTACKS)`.
 7. **Le juger dans la forge** (`F4`) : quatre variantes côte à côte, les défauts
    de proportion sautent aux yeux.
 
@@ -480,7 +482,9 @@ retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
 `Player.cast_slot()`, son nœud dans `actors/skills/` — qui passe par
-`Targets` pour trouver ses cibles et par `Hurtbox.take_damage()` pour frapper —, et
+`Targets` pour trouver ses cibles, par `Hurtbox.take_damage()` pour frapper et
+par `Settings.veil(nœud, Settings.SPELLS)` à sa naissance pour suivre le curseur
+d'opacité des sorts —, et
 son test dans `tests/integration/test_shapes.gd`.
 
 **Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par

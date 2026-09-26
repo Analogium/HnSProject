@@ -47,6 +47,18 @@ func test_a_key_reads_and_writes_as_text() -> void:
 	)
 
 
+## Les boutons latéraux se bindent ; la molette, non.
+func test_the_side_buttons_bind_but_not_the_wheel() -> void:
+	for button in [MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2]:
+		var click := InputEventMouseButton.new()
+		click.button_index = button
+		assert_eq(Keybinds.to_text(click), "mouse:%d" % button)
+		assert_eq((Keybinds.from_text("mouse:%d" % button) as InputEventMouseButton).button_index, button)
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	assert_eq(Keybinds.to_text(wheel), "")
+
+
 ## Une position, faute de code de disposition : c'est ainsi que `project.godot` lie
 ## les déplacements, et c'est la position qui doit partir dans les réglages.
 func test_a_position_is_written_when_there_is_no_layout_code() -> void:

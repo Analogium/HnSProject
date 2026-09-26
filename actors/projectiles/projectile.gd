@@ -147,6 +147,7 @@ static func spawn(
 	if bolt != null:
 		bolt.setup(dir, parts, source, p_speed, nature)
 		bolt._cast = cast
+		Settings.veil(bolt, Settings.SPELLS)
 	return bolt
 
 
@@ -160,6 +161,7 @@ static func spawn_of_nature(
 		var parts := DamageType.empty_parts()
 		parts[bolt.damage_type] = amount
 		bolt.setup(dir, parts, source)
+		Settings.veil(bolt, Settings.ENEMY_ATTACKS)
 	return bolt
 
 

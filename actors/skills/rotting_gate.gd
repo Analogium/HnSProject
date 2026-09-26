@@ -48,6 +48,7 @@ static func open(
 	gate._author = author
 	gate._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(gate)
+	Settings.veil(gate, Settings.SPELLS)
 	gate.global_position = point
 	return gate
 

@@ -35,6 +35,7 @@ static func raise_at(
 	spikes._author = author
 	spikes._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(spikes)
+	Settings.veil(spikes, Settings.SPELLS)
 	spikes.global_position = point
 	return spikes
 

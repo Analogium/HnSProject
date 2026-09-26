@@ -48,6 +48,8 @@ static func put(
 	e._radius = radius
 	e._excluded = excluded.get_instance_id() if excluded != null else 0
 	e._tint = tint
+	# Ce que le souffle frappe dit à qui il est : le joueur, c'est une attaque ennemie.
+	Settings.veil(e, Settings.ENEMY_ATTACKS if mask == Targets.PLAYER_SIDE else Settings.SPELLS)
 	DeferredTree.add_deferred(parent, e, point)
 	return e
 

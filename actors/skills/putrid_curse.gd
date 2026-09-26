@@ -33,6 +33,7 @@ static func fall(
 	curse._author = author
 	curse._tint = StatusEffects.color(cast.inflicted_state)
 	parent.add_child(curse)
+	Settings.veil(curse, Settings.SPELLS)
 	curse.global_position = point
 	return curse
 

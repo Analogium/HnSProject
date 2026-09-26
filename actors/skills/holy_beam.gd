@@ -43,6 +43,7 @@ static func fire(
 	beam._tint = DamageType.COLORS[cast.dominant_nature()]
 	beam._tip = direction.normalized() * cast.radius
 	parent.add_child(beam)
+	Settings.veil(beam, Settings.SPELLS)
 	beam.global_position = of
 	return beam
 

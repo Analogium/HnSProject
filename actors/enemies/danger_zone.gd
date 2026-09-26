@@ -48,6 +48,7 @@ static func put(
 	z.spread = p_spread
 	# En différé : le gonfle la pose en mourant, parfois depuis un rappel de collision
 	# (invariant 4). Sur le pixel du monde : le shader compte depuis l'origine du nœud.
+	Settings.veil(z, Settings.ENEMY_ATTACKS)
 	DeferredTree.add_deferred(parent, z, at.round())
 	return z
 

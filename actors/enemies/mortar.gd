@@ -26,6 +26,7 @@ func _fire(_dir: Vector2) -> void:
 	shell.from = global_position
 	shell.to = at
 	manager.projectile_parent.add_child(shell)
+	Settings.veil(shell, Settings.ENEMY_ATTACKS)
 
 
 ## La boule de feu du joueur, en cloche : la planche existe déjà, et le souffle qui

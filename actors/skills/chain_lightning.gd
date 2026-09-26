@@ -58,6 +58,7 @@ static func unload(
 	trace._points = points
 	trace._tint = DamageType.COLORS[cast.dominant_nature()]
 	parent.add_child(trace)
+	Settings.veil(trace, Settings.SPELLS)
 	return touches.size()
 
 

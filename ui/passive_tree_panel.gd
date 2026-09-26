@@ -12,12 +12,15 @@ const TITLE_SIZE := 9
 
 ## Pixels par case de la grille de l'arbre au cran normal.
 const UNIT := 10.0
-## Les crans de la molette, qui multiplient `UNIT` et les rayons. Au cran large tout
-## l'arbre tient, sans icônes : réduites, elles tourneraient au gris. Le troisième
-## anneau du jalon 19 porte l'arbre à 91 cases de haut, soit 319 px au cran large
-## contre 360 de cadre : 0,5 n'en montrait plus que les deux tiers.
-const ZOOMS: Array[float] = [0.35, 1.0, 1.5]
-const DEFAULT_ZOOM := 1
+## Les bornes du zoom, qui multiplie `UNIT` et les rayons. Au plus large tout l'arbre
+## tient : 91 cases de haut, soit 319 px contre 360 de cadre.
+const MIN_ZOOM := 0.35
+const MAX_ZOOM := 1.5
+## Ce qu'un cran de molette multiplie : quinze crans d'un bout à l'autre.
+const ZOOM_STEP := 1.1
+## En dessous, pas d'icônes : la pastille devient plus petite que leurs 9 pixels, et
+## réduites elles tourneraient au gris.
+const ICON_ZOOM := 0.75
 ## De quoi loger l'icône de 9 pixels de `PassiveIcon`.
 const SMALL_RADIUS := 6.0
 const NOTABLE_RADIUS := 8.0
@@ -32,15 +35,24 @@ const TIP_GAP := 8.0
 
 const NODE_BACKGROUND := Color(0.14, 0.13, 0.18)
 
+const SEARCH_W := 120.0
+## Le halo d'un nœud trouvé, et ce qui reste d'un nœud éteint par la recherche.
+const FOUND := Color(1.0, 0.95, 0.65)
+const UNFOUND_ALPHA := 0.25
+
 var _player: Player
 var _font: Font
 ## Le déplacement de la vue ; nul à l'ouverture, le départ au centre.
 var _pan := Vector2.ZERO
-var _zoom_index := DEFAULT_ZOOM
+var _zoom_factor := 1.0
 var _mouse := Vector2.INF
 ## Là où le bouton gauche s'est enfoncé, INF sinon.
 var _pressed_at := Vector2.INF
 var _dragging := false
+var _search: LineEdit
+## Les identifiants que la recherche retient. Calculés à la frappe et non au dessin :
+## les lignes de 496 nœuds à chaque image.
+var _found := {}
 
 
 func _ready() -> void:
@@ -50,6 +62,17 @@ func _ready() -> void:
 	# Au plus proche voisin : lissées, les icônes tourneraient au gris.
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
+	_search = LineEdit.new()
+	_search.add_theme_font_size_override("font_size", FONT_SIZE)
+	_search.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_search.offset_left = -PAD - SEARCH_W
+	_search.offset_right = -PAD
+	_search.offset_top = 2.0
+	_search.text_changed.connect(func(_query: String) -> void: _find())
+	_search.text_submitted.connect(func(_query: String) -> void: _search.release_focus())
+	add_child(_search)
+	_retranslate()
+
 
 ## Sans garde : effacer une prise absente ne coûte rien (voir `Game.grab_ui_input`).
 func _exit_tree() -> void:
@@ -58,7 +81,16 @@ func _exit_tree() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		if _search != null:
+			_retranslate()
 		queue_redraw()
+
+
+## Le fantôme du champ, écrit par le code ; et le nom et les lignes changent de
+## langue, donc ce qu'on trouvait aussi.
+func _retranslate() -> void:
+	_search.placeholder_text = Texts.t("Rechercher…")
+	_find()
 
 
 func bind(player: Player) -> void:
@@ -71,10 +103,41 @@ func toggle() -> void:
 	Game.grab_ui_input(self, visible)
 	mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
 	_pan = Vector2.ZERO
-	_zoom_index = DEFAULT_ZOOM
+	_zoom_factor = 1.0
 	_pressed_at = Vector2.INF
 	_dragging = false
 	_mouse = get_local_mouse_position() if visible else Vector2.INF
+	# La recherche reste d'une ouverture à l'autre, la frappe non.
+	_search.release_focus()
+	queue_redraw()
+
+
+## Publique : le test tape ici. Chaque mot doit se trouver, dans le nom du nœud ou
+## dans ses lignes telles que l'info-bulle les écrit, sans égard à la casse.
+func search(query: String) -> void:
+	_search.text = query
+	_find()
+
+
+func is_found(n: PassiveNode) -> bool:
+	return _found.has(n.id)
+
+
+func _searching() -> bool:
+	return not _search.text.strip_edges().is_empty()
+
+
+func _find() -> void:
+	_found.clear()
+	var words := _search.text.to_lower().split(" ", false)
+	if _player != null and not words.is_empty():
+		for n in _player.passive_tree.nodes:
+			var text := n.displayed_name()
+			for m in n.mods():
+				text += "\n" + Glossary.plain(m.label())
+			text = text.to_lower()
+			if Array(words).all(func(word: String) -> bool: return text.contains(word)):
+				_found[n.id] = true
 	queue_redraw()
 
 
@@ -92,15 +155,15 @@ func node_at(point: Vector2) -> PassiveNode:
 
 ## Garde le centre du cadre : zoomer sur le curseur demanderait un point d'ancrage, et
 ## le glissement recadre déjà.
-func zoom_by(steps: int) -> void:
-	var before := _zoom()
-	_zoom_index = clampi(_zoom_index + steps, 0, ZOOMS.size() - 1)
-	_pan *= _zoom() / before
+func zoom_by(notches: float) -> void:
+	var before := _zoom_factor
+	_zoom_factor = clampf(before * pow(ZOOM_STEP, notches), MIN_ZOOM, MAX_ZOOM)
+	_pan *= _zoom_factor / before
 	queue_redraw()
 
 
 func _zoom() -> float:
-	return ZOOMS[_zoom_index]
+	return _zoom_factor
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -124,6 +187,8 @@ func _gui_input(event: InputEvent) -> void:
 	# Au relâchement : un glissement ne prend rien.
 	if button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
+			# Rend les touches au jeu : le champ garderait sinon ZQSD.
+			_search.release_focus()
 			_pressed_at = button.position
 			_dragging = false
 		else:
@@ -137,9 +202,9 @@ func _gui_input(event: InputEvent) -> void:
 		if n != null:
 			_player.release_passive(n.id)
 	elif button.button_index == MOUSE_BUTTON_WHEEL_UP and button.pressed:
-		zoom_by(1)
+		zoom_by(_notches(button))
 	elif button.button_index == MOUSE_BUTTON_WHEEL_DOWN and button.pressed:
-		zoom_by(-1)
+		zoom_by(-_notches(button))
 	queue_redraw()
 	accept_event()
 
@@ -156,10 +221,10 @@ func _draw() -> void:
 			if other == null:
 				continue
 			var lit := _is_taken(n) and _is_taken(other)
-			draw_line(
-				screen_position(n), screen_position(other),
-				ManualPanel.LINK_BRIGHT if lit else ManualPanel.LINK, 1.0
-			)
+			var link := ManualPanel.LINK_BRIGHT if lit else ManualPanel.LINK
+			if _searching():
+				link.a = UNFOUND_ALPHA
+			draw_line(screen_position(n), screen_position(other), link, 1.0)
 	for n in tree.nodes:
 		_draw_node(n)
 
@@ -201,6 +266,11 @@ func _tint(n: PassiveNode) -> Color:
 	return ManualPanel.LOCK
 
 
+## Un pavé tactile envoie des fractions de cran ; une molette, 1 ou rien.
+static func _notches(wheel: InputEventMouseButton) -> float:
+	return wheel.factor if wheel.factor > 0.0 else 1.0
+
+
 func _radius(n: PassiveNode) -> float:
 	match n.kind:
 		PassiveNode.Kind.NOTABLE, PassiveNode.Kind.START:
@@ -219,6 +289,12 @@ func _draw_node(n: PassiveNode) -> void:
 	var fill := NODE_BACKGROUND
 	if not look.is_empty():
 		fill = (look[1] as Color).darkened(0.4 if _is_taken(n) else 0.75)
+	var dimmed := _searching() and not is_found(n)
+	if dimmed:
+		fill.a = UNFOUND_ALPHA
+		tint.a = UNFOUND_ALPHA
+	elif _searching():
+		draw_arc(at, r + 2.0, 0.0, TAU, 24, FOUND, 2.0)
 	if n.kind == PassiveNode.Kind.KEYSTONE:
 		var diamond := PackedVector2Array([
 			at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0), at + Vector2(0, -r)
@@ -228,10 +304,12 @@ func _draw_node(n: PassiveNode) -> void:
 	else:
 		draw_circle(at, r, fill)
 		draw_arc(at, r, 0.0, TAU, 20, tint, 1.0)
-	var icon := PassiveIcon.texture(n) if _zoom_index > 0 else null
+	var icon := PassiveIcon.texture(n) if _zoom_factor >= ICON_ZOOM else null
 	if icon != null:
 		# Éteinte hors d'atteinte : l'œil va d'abord à ce qu'on peut prendre.
 		var shade := Color(1, 1, 1, 0.45) if tint == ManualPanel.LOCK else Color.WHITE
+		if dimmed:
+			shade.a = UNFOUND_ALPHA * 0.6
 		draw_texture(icon, at - Vector2(Vector2i(icon.get_size()) / 2), shade)
 
 
