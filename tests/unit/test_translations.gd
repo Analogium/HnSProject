@@ -288,6 +288,8 @@ func _expected() -> Dictionary:
 		out[LootFilter.FAMILIES[id]] = "type d'objet du filtre de butin"
 	for label_of in LootFilter.ACTION_LABELS:
 		out[label_of] = "action d'une règle du filtre"
+	for key in LootFilterPanel.BLOCK_TITLES:
+		out[LootFilterPanel.BLOCK_TITLES[key]] = "bloc de conditions du filtre"
 	for label_of in Item.RARITY_LABELS:
 		out[label_of] = "rareté"
 	for field in StatMod.LABELS:

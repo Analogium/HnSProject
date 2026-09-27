@@ -149,8 +149,13 @@ var loot_filter_on := true:
 		loot_filter_on = value
 		_announce()
 
-## Modifié en place par la page du filtre, qui appelle ensuite `loot_filter_edited()`.
-var loot_filter := LootFilter.new()
+## Les filtres du joueur, jamais vide ; `loot_filter` est celui qui décide au sol.
+## Modifiés en place par la page, qui appelle ensuite `loot_filter_edited()`.
+var loot_filters: Array[LootFilter] = [_named(LootFilter.new(), 1)]
+var loot_filter_index := 0
+var loot_filter: LootFilter:
+	get:
+		return loot_filters[clampi(loot_filter_index, 0, loot_filters.size() - 1)]
 
 
 ## La règle qui décide de cet objet au sol, ou null : filtre éteint, ou aucune règle
@@ -161,6 +166,35 @@ func loot_rule(item: Item) -> LootFilter.Rule:
 
 func loot_filter_edited() -> void:
 	_announce()
+
+
+## Ajouté en dernier, et c'est lui qui décide désormais : on crée ou on importe un
+## filtre pour s'en servir.
+func add_loot_filter(filter: LootFilter) -> void:
+	if filter.name.strip_edges().is_empty():
+		_named(filter, loot_filters.size() + 1)
+	loot_filters.append(filter)
+	choose_loot_filter(loot_filters.size() - 1)
+
+
+func choose_loot_filter(index: int) -> void:
+	loot_filter_index = clampi(index, 0, loot_filters.size() - 1)
+	_announce()
+
+
+## Le dernier ne part pas : le sol a toujours un filtre à qui demander.
+func remove_loot_filter(index: int) -> void:
+	if loot_filters.size() <= 1 or index < 0 or index >= loot_filters.size():
+		return
+	loot_filters.remove_at(index)
+	if loot_filter_index >= index:
+		loot_filter_index = maxi(loot_filter_index - 1, 0)
+	_announce()
+
+
+static func _named(filter: LootFilter, number: int) -> LootFilter:
+	filter.name = Texts.t("Filtre {n}").format({"n": number})
+	return filter
 
 ## « fr » ou « en », toujours normalisée. La poser change la locale du moteur, qui
 ## retraduit les scènes et notifie les panneaux dessinés.
@@ -353,7 +387,8 @@ func to_dict() -> Dictionary:
 		"scale_factor": scale_factor,
 		"key_binds": key_binds,
 		"loot_filter_on": loot_filter_on,
-		"loot_filter": loot_filter.to_list(),
+		"loot_filters": loot_filters.map(func(f: LootFilter) -> Dictionary: return f.to_dict()),
+		"loot_filter_index": loot_filter_index,
 	}
 
 
@@ -375,8 +410,23 @@ func from_dict(source: Dictionary) -> void:
 	language = String(source.get("language", language))
 	key_binds = valid_binds(source.get("key_binds", {}))
 	loot_filter_on = bool(source.get("loot_filter_on", loot_filter_on))
-	if source.has("loot_filter"):
-		loot_filter = LootFilter.from_list(source["loot_filter"])
+	var read: Array[LootFilter] = []
+	if source.get("loot_filters") is Array:
+		for one: Variant in source["loot_filters"]:
+			if one is Dictionary:
+				read.append(LootFilter.from_dict(one))
+	elif source.has("loot_filter"):
+		# L'ancienne forme, un seul filtre sans nom.
+		read.append(LootFilter.from_list(source["loot_filter"]))
+	for i in read.size():
+		if read[i].name.strip_edges().is_empty():
+			_named(read[i], i + 1)
+	if not read.is_empty():
+		loot_filters = read
+	if _is_number(source.get("loot_filter_index")):
+		loot_filter_index = clampi(int(source["loot_filter_index"]), 0, loot_filters.size() - 1)
+	elif not read.is_empty():
+		loot_filter_index = 0
 	var read_value: Variant = source.get("scale_factor", scale_factor)
 	if read_value is float or read_value is int:
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand

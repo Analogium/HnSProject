@@ -46,6 +46,9 @@ const FAMILIES := {
 ## Une règle : ce qu'elle fait, et ses conditions, **toutes** requises. Une
 ## condition vide ne restreint rien.
 class Rule:
+	## Éteinte, la règle reste à sa place et ne décide plus rien : on l'essaie sans
+	## la perdre.
+	var enabled := true
 	var action := Action.SHOW
 	var color: Color = COLORS[0]
 	## Des `Item.Rarity`.
@@ -53,6 +56,8 @@ class Rule:
 	## Des clés de `FAMILIES`. Des tableaux et non des tableaux packés : la page les
 	## modifie en place, et un tableau packé se copie à chaque passage.
 	var families: Array[String] = []
+	## Des identifiants d'`ItemBase` : « l'Épée large », pas toutes les armes.
+	var bases: Array[String] = []
 	## Des identifiants d'`ItemAffix`, dont l'objet doit porter au moins `min_count`,
 	## chacun à `best_tier` ou mieux — le palier 1 est le meilleur, 0 les prend tous.
 	var affixes: Array[String] = []
@@ -63,6 +68,8 @@ class Rule:
 		if not rarities.is_empty() and not rarities.has(item.rarity()):
 			return false
 		if not families.is_empty() and not families.has(item.base.family):
+			return false
+		if not bases.is_empty() and not bases.has(item.base.id):
 			return false
 		return affixes.is_empty() or _matching_affixes(item) >= min_count
 
@@ -78,10 +85,12 @@ class Rule:
 		for rarity in rarities:
 			rarity_ids.append(LootFilter.rarity_id(rarity))
 		return {
+			"enabled": enabled,
 			"action": ACTION_IDS[action],
 			"color": color.to_html(false),
 			"rarities": rarity_ids,
 			"families": families,
+			"bases": bases,
 			"affixes": affixes,
 			"min_count": min_count,
 			"best_tier": best_tier,
@@ -90,6 +99,7 @@ class Rule:
 	## Ce qu'un fichier retouché à la main contient de faux retombe sur le défaut.
 	static func from_dict(source: Dictionary) -> Rule:
 		var rule := Rule.new()
+		rule.enabled = bool(source.get("enabled", true))
 		rule.action = maxi(ACTION_IDS.find(String(source.get("action", ""))), 0) as Action
 		var written := String(source.get("color", ""))
 		if Color.html_is_valid(written):
@@ -101,33 +111,64 @@ class Rule:
 		for id in LootFilter.strings(source.get("families")):
 			if FAMILIES.has(id):
 				rule.families.append(id)
+		for id in LootFilter.strings(source.get("bases")):
+			if ItemCatalog.by_id(id) != null:
+				rule.bases.append(id)
 		rule.affixes = LootFilter.strings(source.get("affixes"))
 		rule.min_count = maxi(int(LootFilter.number(source.get("min_count"), 1)), 1)
 		rule.best_tier = maxi(int(LootFilter.number(source.get("best_tier"), 0)), 0)
 		return rule
 
 
+## Le nom que le joueur lui donne : il en garde plusieurs, un seul décide au sol.
+var name := ""
 var rules: Array[Rule] = []
 
 
 ## La règle qui décide pour cet objet, ou null.
 func rule_for(item: Item) -> Rule:
 	for rule in rules:
-		if rule.matches(item):
+		if rule.enabled and rule.matches(item):
 			return rule
 	return null
 
 
-## Les affixes qu'un objet de ces types peut porter — tous sans type choisi. Par
-## `ItemAffixPool.compatibles()`, que le tirage suit : la page ne propose rien qui ne
-## tombe jamais.
-static func possible_affixes(families: Array[String]) -> Array:
-	if families.is_empty():
-		return ItemAffixPool.ALL
-	var out := []
+## Ce que devient un objet sous la règle qui décide de lui (null : aucune). Le sol et
+## la page le lisent ici tous deux : l'aperçu ne doit pas mentir sur le jeu.
+static func hides(rule: Rule) -> bool:
+	return rule != null and rule.action == Action.HIDE
+
+
+static func color_for(item: Item, rule: Rule) -> Color:
+	return rule.color if rule != null and rule.action == Action.RECOLOR else item.color()
+
+
+## Les bases que ces types regroupent — toutes sans type choisi —, par type puis par
+## palier : l'ordre où la page les propose.
+static func possible_bases(families: Array[String]) -> Array[ItemBase]:
+	var out: Array[ItemBase] = []
 	for raw in ItemCatalog.ALL:
 		var base: ItemBase = raw
-		if not families.has(base.family):
+		if families.is_empty() or families.has(base.family):
+			out.append(base)
+	var order := FAMILIES.keys()
+	out.sort_custom(func(a: ItemBase, b: ItemBase) -> bool:
+		if a.family != b.family:
+			return order.find(a.family) < order.find(b.family)
+		return a.required_level < b.required_level
+	)
+	return out
+
+
+## Les affixes que la règle peut encore viser : ceux de ses bases, sinon de ses types,
+## sinon tous. Par `ItemAffixPool.compatibles()`, que le tirage suit : la page ne
+## propose rien qui ne tombe jamais.
+static func possible_affixes(rule: Rule) -> Array:
+	if rule.bases.is_empty() and rule.families.is_empty():
+		return ItemAffixPool.ALL
+	var out := []
+	for base in possible_bases(rule.families):
+		if not rule.bases.is_empty() and not rule.bases.has(base.id):
 			continue
 		for affix: ItemAffix in ItemAffixPool.compatibles(base):
 			if not out.has(affix):
@@ -135,14 +176,61 @@ static func possible_affixes(families: Array[String]) -> Array:
 	return out
 
 
-## Monte (`step` = −1) ou descend une règle ; rien au bord de la liste.
-func move(index: int, step: int) -> void:
-	var target := index + step
-	if index < 0 or index >= rules.size() or target < 0 or target >= rules.size():
+## Pose la règle `from` au rang `to`, les autres se décalant : le geste d'une carte
+## glissée sur une autre.
+func move_to(from: int, to: int) -> void:
+	if from < 0 or from >= rules.size() or to < 0 or to >= rules.size():
 		return
-	var rule := rules[index]
-	rules[index] = rules[target]
-	rules[target] = rule
+	var rule := rules[from]
+	rules.remove_at(from)
+	rules.insert(to, rule)
+
+
+## Le code d'un filtre, à copier ou à écrire dans un fichier : le préfixe et sa
+## version, puis le JSON en base64. **Sans compression** : un code tronqué au
+## copier-coller échoue proprement à la lecture du JSON, là où un flux compressé
+## coupé fait crier le décompresseur.
+const CODE_PREFIX := "HNSF1:"
+static var _base64 := RegEx.create_from_string("^[A-Za-z0-9+/]*={0,2}$")
+
+
+func to_code() -> String:
+	return CODE_PREFIX + Marshalls.utf8_to_base64(JSON.stringify(to_dict()))
+
+
+## null si le texte n'est pas un code de filtre. Les blancs et retours à la ligne
+## d'un copier-coller ne comptent pas ; ce qu'une règle a de faux retombe sur le
+## défaut, comme à la lecture des réglages.
+static func from_code(text_value: String) -> LootFilter:
+	var code := "".join(text_value.split("\n")).replace("\r", "").replace(" ", "").strip_edges()
+	if not code.begins_with(CODE_PREFIX):
+		return null
+	var body := code.trim_prefix(CODE_PREFIX)
+	# Vérifié avant le décodage, qui journalise une erreur du moteur sur un texte faux.
+	if body.is_empty() or body.length() % 4 != 0 or _base64.search(body) == null:
+		return null
+	var reader := JSON.new()
+	if reader.parse(Marshalls.base64_to_utf8(body)) != OK:
+		return null
+	# Une liste nue : les premiers codes, d'avant les filtres nommés.
+	if reader.data is Array:
+		return from_list(reader.data)
+	return from_dict(reader.data) if reader.data is Dictionary and reader.data.get("rules") is Array else null
+
+
+func to_dict() -> Dictionary:
+	return {"name": name, "rules": to_list()}
+
+
+static func from_dict(source: Dictionary) -> LootFilter:
+	var out := from_list(source.get("rules"))
+	out.name = String(source.get("name", "")) if source.get("name") is String else ""
+	return out
+
+
+## Une copie qui ne partage aucune règle : modifier l'une ne touche pas l'autre.
+func duplicated() -> LootFilter:
+	return from_dict(to_dict())
 
 
 func to_list() -> Array:

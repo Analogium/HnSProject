@@ -21,14 +21,9 @@ extends CanvasLayer
 ## **Deux colonnes** : seize lignes en une seule dépassent du cadre de 360 px, et le
 ## bouton « Retour » se retrouve hors de l'écran.
 @onready var key_rows: HBoxContainer = $Root/Center/Panel/Keys/Rows
-@onready var loot: VBoxContainer = $Root/Center/Panel/Loot
-@onready var loot_active: CheckBox = $Root/Center/Panel/Loot/Active
-@onready var loot_rules: VBoxContainer = $Root/Center/Panel/Loot/Columns/RulesSide/RulesScroll/Rules
-@onready var loot_form: VBoxContainer = $Root/Center/Panel/Loot/Columns/Editor/Form
-@onready var loot_empty: Label = $Root/Center/Panel/Loot/Columns/Editor/Empty
-
-## La règle ouverte dans l'éditeur, −1 sans règle choisie.
-var _rule_index := -1
+@onready var center: CenterContainer = $Root/Center
+## Hors du cadre centré : la page du filtre prend tout l'écran.
+@onready var loot: LootFilterPanel = $Root/LootPage
 
 ## L'action dont on attend la touche, vide hors capture. Un seul champ : deux lignes
 ## ne peuvent pas écouter en même temps.
@@ -74,9 +69,7 @@ func _ready() -> void:
 	($Root/Center/Panel/Options/Pages/KeysBtn as Button).pressed.connect(_show_keys)
 	($Root/Center/Panel/Keys/Back as Button).pressed.connect(_show_options)
 	($Root/Center/Panel/Options/Pages/LootBtn as Button).pressed.connect(_show_loot)
-	($Root/Center/Panel/Loot/Back as Button).pressed.connect(_show_options)
-	loot_active.toggled.connect(func(on: bool) -> void: Settings.loot_filter_on = on)
-	_connect_loot_editor()
+	loot.closed.connect(_show_options)
 	($Root/Center/Panel/Keys/Reset as Button).pressed.connect(func() -> void:
 		Settings.reset_key_binds()
 		_refresh_key_rows()
@@ -196,12 +189,13 @@ func _show_keys() -> void:
 
 func _show_loot() -> void:
 	_show_page(loot)
-	_build_loot()
+	loot.open()
 
 
 func _show_page(shown: Control) -> void:
 	for page: Control in [menu, options, keys, loot]:
 		page.visible = page == shown
+	center.visible = shown != loot
 	# Quitter la page des touches finit la capture : la garder ouverte ferait manger
 	# la première touche de la page suivante.
 	_capturing = ""
@@ -258,292 +252,3 @@ func _wants(event: InputEvent) -> bool:
 		return true
 	var click := event as InputEventMouseButton
 	return click != null and click.pressed and Keybinds.MOUSE_LABELS.has(click.button_index)
-
-
-# --------------------------------------------------------------------------
-# Le filtre de butin
-# --------------------------------------------------------------------------
-
-
-## Relue à chaque ouverture : la touche du filtre a pu l'éteindre, et la langue changer.
-func _build_loot() -> void:
-	loot_active.set_pressed_no_signal(Settings.loot_filter_on)
-	loot_active.text = Texts.t("Filtre actif  ({touche})").format({"touche": Keybinds.key_label("loot_filter")})
-	_select_rule(mini(_rule_index, Settings.loot_filter.rules.size() - 1))
-
-
-func _connect_loot_editor() -> void:
-	var buttons := "Root/Center/Panel/Loot/Columns/RulesSide/RuleButtons/"
-	(get_node(buttons + "Add") as Button).pressed.connect(func() -> void:
-		Settings.loot_filter.rules.append(LootFilter.Rule.new())
-		_select_rule(Settings.loot_filter.rules.size() - 1)
-		Settings.loot_filter_edited()
-	)
-	(get_node(buttons + "Up") as Button).pressed.connect(_move_rule.bind(-1))
-	(get_node(buttons + "Down") as Button).pressed.connect(_move_rule.bind(1))
-	(get_node(buttons + "Delete") as Button).pressed.connect(func() -> void:
-		if _rule() == null:
-			return
-		Settings.loot_filter.rules.remove_at(_rule_index)
-		_select_rule(mini(_rule_index, Settings.loot_filter.rules.size() - 1))
-		Settings.loot_filter_edited()
-	)
-	# Des boutons qui tournent, comme la fenêtre : une liste déroulante dessinerait
-	# par-dessus le menu.
-	_loot_button("Head/Action").pressed.connect(func() -> void:
-		_rule().action = wrapi(_rule().action + 1, 0, LootFilter.Action.size()) as LootFilter.Action
-		_rule_edited()
-	)
-	_loot_button("Count/MinCount").pressed.connect(func() -> void:
-		_rule().min_count = wrapi(_rule().min_count + 1, 1, maxi(_rule().affixes.size(), 1) + 1)
-		_rule_edited()
-	)
-	_loot_button("Count/BestTier").pressed.connect(func() -> void:
-		_rule().best_tier = wrapi(_rule().best_tier + 1, 0, _deepest_tier() + 1)
-		_rule_edited()
-	)
-
-
-func _loot_button(path: String) -> Button:
-	return loot_form.get_node(path)
-
-
-func _rule() -> LootFilter.Rule:
-	var rules := Settings.loot_filter.rules
-	return rules[_rule_index] if _rule_index >= 0 and _rule_index < rules.size() else null
-
-
-func _move_rule(step: int) -> void:
-	if _rule() == null:
-		return
-	Settings.loot_filter.move(_rule_index, step)
-	_select_rule(clampi(_rule_index + step, 0, Settings.loot_filter.rules.size() - 1))
-	Settings.loot_filter_edited()
-
-
-## L'éditeur n'est rempli qu'ici : le refaire à chaque case cochée remonterait la
-## liste des affixes en haut sous le curseur.
-func _select_rule(index: int) -> void:
-	_rule_index = index
-	var rule := _rule()
-	loot_form.visible = rule != null
-	loot_empty.visible = rule == null
-	_fill_rules()
-	if rule == null:
-		return
-	_fill_colors(rule)
-	_fill_checks(loot_form.get_node("Rarities"), _rarity_choices(), rule.rarities)
-	_fill_checks(loot_form.get_node("Families"), _family_choices(), rule.families, _families_changed.bind(rule))
-	_fill_affixes(rule)
-	_refresh_rule_buttons()
-
-
-## Un bouton par règle, de la plus prioritaire à la dernière, qui la résume.
-func _fill_rules() -> void:
-	_clear(loot_rules)
-	var rules := Settings.loot_filter.rules
-	for i in rules.size():
-		var row := Button.new()
-		row.text = "%d. %s" % [i + 1, rule_summary(rules[i])]
-		row.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		row.clip_text = true
-		row.custom_minimum_size.x = 190.0
-		row.add_theme_font_size_override("font_size", 8)
-		row.add_theme_color_override("font_color", _summary_color(rules[i]))
-		row.toggle_mode = true
-		row.set_pressed_no_signal(i == _rule_index)
-		row.pressed.connect(_select_rule.bind(i))
-		loot_rules.add_child(row)
-
-
-## Vide une liste que l'on remplit à nouveau. **Détachés puis libérés en différé** :
-## la liste se refait souvent depuis le signal d'un de ses propres boutons — cliquer
-## une règle refait la liste des règles —, et Godot refuse de libérer un nœud qui émet.
-static func _clear(box: Node) -> void:
-	for old in box.get_children():
-		box.remove_child(old)
-		old.queue_free()
-
-
-func _summary_color(rule: LootFilter.Rule) -> Color:
-	match rule.action:
-		LootFilter.Action.HIDE:
-			return Color(0.55, 0.52, 0.6)
-		LootFilter.Action.RECOLOR:
-			return rule.color
-	return Color.WHITE
-
-
-## « Masquer : Magique · Anneaux, Amulettes · 2 sur 3 affixes ».
-static func rule_summary(rule: LootFilter.Rule) -> String:
-	var parts := PackedStringArray()
-	if not rule.rarities.is_empty():
-		parts.append(", ".join(rule.rarities.map(func(r: int) -> String: return Texts.t(Item.RARITY_LABELS[r]))))
-	if rule.families.size() > 2:
-		parts.append(Texts.tn("{n} type", "{n} types", rule.families.size()).format({"n": rule.families.size()}))
-	elif not rule.families.is_empty():
-		parts.append(", ".join(rule.families.map(func(f: String) -> String: return Texts.t(LootFilter.FAMILIES[f]))))
-	if not rule.affixes.is_empty():
-		parts.append(_count_label(rule))
-	if parts.is_empty():
-		parts.append(Texts.t("tout"))
-	return "%s : %s" % [Texts.t(LootFilter.ACTION_LABELS[rule.action]), " · ".join(parts)]
-
-
-static func _count_label(rule: LootFilter.Rule) -> String:
-	return Texts.t("{n} sur {total} affixes").format({"n": rule.min_count, "total": rule.affixes.size()})
-
-
-static func _tier_label(rule: LootFilter.Rule) -> String:
-	if rule.best_tier == 0:
-		return Texts.t("Tous paliers")
-	return Texts.t("Palier T{t} ou mieux").format({"t": rule.best_tier})
-
-
-## Les textes que change un clic : l'action, le compte, le palier, et le résumé.
-func _rule_edited() -> void:
-	var rule := _rule()
-	rule.min_count = clampi(rule.min_count, 1, maxi(rule.affixes.size(), 1))
-	_refresh_rule_buttons()
-	_fill_rules()
-	Settings.loot_filter_edited()
-
-
-func _refresh_rule_buttons() -> void:
-	var rule := _rule()
-	_loot_button("Head/Action").text = Texts.t(LootFilter.ACTION_LABELS[rule.action])
-	(loot_form.get_node("Head/Colors") as Control).visible = rule.action == LootFilter.Action.RECOLOR
-	for swatch: Button in loot_form.get_node("Head/Colors").get_children():
-		swatch.set_pressed_no_signal(swatch.get_meta("color") == rule.color)
-	_loot_button("Count/MinCount").text = _count_label(rule)
-	_loot_button("Count/BestTier").text = _tier_label(rule)
-	(loot_form.get_node("Count") as Control).visible = not rule.affixes.is_empty()
-
-
-func _fill_colors(rule: LootFilter.Rule) -> void:
-	var box: HBoxContainer = loot_form.get_node("Head/Colors")
-	_clear(box)
-	for color: Color in LootFilter.COLORS:
-		var swatch := Button.new()
-		swatch.custom_minimum_size = Vector2(12, 12)
-		swatch.toggle_mode = true
-		swatch.set_meta("color", color)
-		for state in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
-			var style := StyleBoxFlat.new()
-			style.bg_color = color
-			# Le cadre blanc dit la couleur choisie ; les autres n'en ont pas.
-			if state.contains("pressed"):
-				style.set_border_width_all(1)
-				style.border_color = Color.WHITE
-			swatch.add_theme_stylebox_override(state, style)
-		swatch.pressed.connect(func() -> void:
-			rule.color = color
-			_rule_edited()
-		)
-		box.add_child(swatch)
-
-
-## `choices` : valeur → libellé ; `chosen` est le tableau de la règle, modifié en place,
-## et `after` ce qui en dépend.
-func _fill_checks(box: Container, choices: Dictionary, chosen: Variant, after := Callable()) -> void:
-	_clear(box)
-	for value: Variant in choices:
-		var check := CheckBox.new()
-		check.text = choices[value]
-		check.add_theme_font_size_override("font_size", 8)
-		check.button_pressed = chosen.has(value)
-		check.toggled.connect(func(on: bool) -> void:
-			if on:
-				chosen.append(value)
-			else:
-				chosen.remove_at(chosen.find(value))
-			if after.is_valid():
-				after.call()
-			_rule_edited()
-		)
-		box.add_child(check)
-
-
-func _rarity_choices() -> Dictionary:
-	var out := {}
-	for rarity in Item.RARITY_LABELS.size():
-		out[rarity] = Texts.t(Item.RARITY_LABELS[rarity])
-	return out
-
-
-func _family_choices() -> Dictionary:
-	var out := {}
-	for family: String in LootFilter.FAMILIES:
-		out[family] = Texts.t(LootFilter.FAMILIES[family])
-	return out
-
-
-## Un type retiré emporte les affixes que plus rien de coché ne porte : gardés, ils
-## compteraient dans « N sur M » sans pouvoir jamais tomber.
-func _families_changed(rule: LootFilter.Rule) -> void:
-	var possible := LootFilter.possible_affixes(rule.families).map(func(a: ItemAffix) -> String: return a.id)
-	for i in range(rule.affixes.size() - 1, -1, -1):
-		if not possible.has(rule.affixes[i]):
-			rule.affixes.remove_at(i)
-	_fill_affixes(rule)
-
-
-## Par nom et non par affixe : « chance critique accrue » d'arme et de bijou sont
-## deux affixes, et une seule ligne pour qui cherche la statistique. Seuls ceux que
-## les types choisis peuvent porter.
-func _fill_affixes(rule: LootFilter.Rule) -> void:
-	var box: VBoxContainer = loot_form.get_node("AffixScroll/Affixes")
-	_clear(box)
-	var possible := LootFilter.possible_affixes(rule.families)
-	if possible.is_empty():
-		var none := Label.new()
-		none.text = Texts.t("Aucun affixe sur ces types")
-		none.add_theme_font_size_override("font_size", 8)
-		none.add_theme_color_override("font_color", Color(0.52, 0.5, 0.6))
-		box.add_child(none)
-		return
-	var ids_by_name := {}
-	for affix: ItemAffix in possible:
-		var written := affix_name(affix)
-		ids_by_name[written] = ids_by_name.get(written, []) + [affix.id]
-	# Les cochées en tête, à l'ouverture seulement : ce que vise la règle se lit sans
-	# faire défiler, et une case cochée ensuite ne saute pas sous le curseur.
-	var sorted: Array = ids_by_name.keys()
-	sorted.sort_custom(func(a: String, b: String) -> bool:
-		var a_on := rule.affixes.has(ids_by_name[a][0])
-		if a_on != rule.affixes.has(ids_by_name[b][0]):
-			return a_on
-		return a.naturalnocasecmp_to(b) < 0
-	)
-	for written: String in sorted:
-		var ids: Array = ids_by_name[written]
-		var check := CheckBox.new()
-		check.text = written
-		check.add_theme_font_size_override("font_size", 8)
-		check.button_pressed = rule.affixes.has(ids[0])
-		check.toggled.connect(func(on: bool) -> void:
-			for id in ids:
-				var at := rule.affixes.find(id)
-				if on and at < 0:
-					rule.affixes.append(id)
-				elif not on and at >= 0:
-					rule.affixes.remove_at(at)
-			_rule_edited()
-		)
-		box.add_child(check)
-
-
-## Le palier le plus profond d'un affixe : la borne du bouton des paliers.
-static func _deepest_tier() -> int:
-	var deepest := 1
-	for affix: ItemAffix in ItemAffixPool.ALL:
-		deepest = maxi(deepest, affix.tiers.size())
-	return deepest
-
-
-## « armure » et « armure accrue » : le nom de la statistique ne suffit pas, un plat
-## et un pourcentage la visent tous deux.
-static func affix_name(affix: ItemAffix) -> String:
-	if affix.percent:
-		return Glossary.plain(StatMod.term_label(affix.stat, "increased", affix.scope))
-	return StatMod.name(affix.stat, affix.scope)

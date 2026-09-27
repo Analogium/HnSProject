@@ -2328,8 +2328,6 @@ msgstr "Loot Filter"
 msgid "FILTRE DE BUTIN"
 msgstr "LOOT FILTER"
 
-msgid "Filtre actif  ({touche})"
-msgstr "Filter active  ({touche})"
 
 msgid "Montrer"
 msgstr "Show"
@@ -2340,17 +2338,9 @@ msgstr "Hide"
 msgid "Recolorer"
 msgstr "Recolor"
 
-msgid "La plus haute règle qui vise un objet décide"
-msgstr "The highest rule matching an item decides"
 
-msgid "Ajouter"
-msgstr "Add"
 
-msgid "Monter"
-msgstr "Up"
 
-msgid "Descendre"
-msgstr "Down"
 
 msgid "Choisir une règle, ou en ajouter une"
 msgstr "Pick a rule, or add one"
@@ -2383,3 +2373,130 @@ msgstr "Tier T{t} or better"
 
 msgid "Aucun affixe sur ces types"
 msgstr "No affix on these types"
+
+msgid "La plus haute règle qui vise un objet décide ; glisser une carte la déplace"
+msgstr "The highest rule matching an item decides; drag a card to move it"
+
+msgid "Ajouter une règle"
+msgstr "Add a rule"
+
+msgid "BANC D'ESSAI"
+msgstr "TEST BENCH"
+
+msgid "Autres exemples"
+msgstr "Other samples"
+
+msgid "Filtre actif  [{touche}]"
+msgstr "Filter on  [{touche}]"
+
+msgid "Filtre éteint  [{touche}]"
+msgstr "Filter off  [{touche}]"
+
+msgid "Objets du banc que cette règle décide"
+msgstr "Bench items this rule decides"
+
+msgid "Allumer ou éteindre la règle"
+msgstr "Turn the rule on or off"
+
+msgid "RÈGLE {n}"
+msgstr "RULE {n}"
+
+msgid "Condition :"
+msgstr "Condition:"
+
+msgid "Au sol :"
+msgstr "On the ground:"
+
+msgid "(exemple)"
+msgstr "(sample)"
+
+msgid "Retirer la condition"
+msgstr "Remove the condition"
+
+msgid "Rechercher un affixe…"
+msgstr "Search an affix…"
+
+msgid "Aucun affixe trouvé"
+msgstr "No affix found"
+
+msgid "Au moins {n} sur {total}"
+msgstr "At least {n} of {total}"
+
+msgid "Niveau de zone {n} · survol : affixes, [{touche}] : paliers"
+msgstr "Zone level {n} · hover: affixes, [{touche}]: tiers"
+
+msgid "Bases"
+msgstr "Bases"
+
+msgid "Tombe dès le niveau {n}"
+msgstr "Drops from level {n}"
+
+msgid "{n} base"
+msgid_plural "{n} bases"
+msgstr[0] "{n} base"
+msgstr[1] "{n} bases"
+
+
+msgid "Exporter"
+msgstr "Export"
+
+msgid "Copier le code"
+msgstr "Copy the code"
+
+msgid "Enregistrer un fichier…"
+msgstr "Save a file…"
+
+msgid "Importer"
+msgstr "Import"
+
+msgid "Coller un code"
+msgstr "Paste a code"
+
+msgid "Ouvrir un fichier…"
+msgstr "Open a file…"
+
+msgid "Le presse-papiers ne contient pas de code de filtre"
+msgstr "The clipboard holds no filter code"
+
+msgid "Écriture impossible : {chemin}"
+msgstr "Cannot write: {chemin}"
+
+msgid "Filtre enregistré : {fichier}"
+msgstr "Filter saved: {fichier}"
+
+msgid "Ce fichier n'est pas un filtre de butin"
+msgstr "This file is not a loot filter"
+
+
+msgid "Code copié : {n} règle"
+msgid_plural "Code copié : {n} règles"
+msgstr[0] "Code copied: {n} rule"
+msgstr[1] "Code copied: {n} rules"
+
+msgid "Filtre {n}"
+msgstr "Filter {n}"
+
+msgid "Nouveau filtre"
+msgstr "New filter"
+
+msgid "Dupliquer ce filtre"
+msgstr "Duplicate this filter"
+
+msgid "Renommer…"
+msgstr "Rename…"
+
+msgid "Supprimer ce filtre"
+msgstr "Delete this filter"
+
+msgid "{nom} (copie)"
+msgstr "{nom} (copy)"
+
+msgid "« {nom} » importé : {n} règle"
+msgid_plural "« {nom} » importé : {n} règles"
+msgstr[0] "“{nom}” imported: {n} rule"
+msgstr[1] "“{nom}” imported: {n} rules"
+
+msgid "Supprimer « {nom} » et sa règle ?"
+msgid_plural "Supprimer « {nom} » et ses {n} règles ?"
+msgstr[0] "Delete “{nom}” and its rule?"
+msgstr[1] "Delete “{nom}” and its {n} rules?"

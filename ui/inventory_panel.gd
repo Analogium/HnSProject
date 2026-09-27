@@ -46,64 +46,9 @@ const ITEM_EDGE_DIM := 0.3
 const DRAG_MIN := 5.0
 const CAN_PLACE := Color(0.35, 0.85, 0.45, 0.28)
 const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
-## L'infobulle : fond d'UiPalette, cadre de la rareté. Sa ligne d'implicite :
-const TIP_IMPLICIT := Color(0.62, 0.60, 0.68)
-## L'étiquette d'une propriété et la note du bas, effacées : ce ne sont pas des
-## bonus. La valeur, elle, sort en clair — c'est ce qu'on vient lire.
-const TIP_LABEL := Color(0.46, 0.44, 0.52)
-const TIP_VALUE := Color(0.88, 0.86, 0.94)
-## Ce qui sépare l'étiquette de sa valeur. La ponctuation est **dans** l'étiquette
-## traduite : le français met une espace devant le deux-points, l'anglais non.
-const TIP_PROP_GAP := 3.0
-## La colonne des paliers sous la touche « détails », plus sourde : une note de bas de page.
-const TIP_TIER := Color(0.55, 0.53, 0.62)
-## Gouttière entre un affixe et son palier.
-const TIP_TIER_GAP := 10.0
-const TIP_EXPLICIT := Color(0.55, 0.75, 1.0)
-const TIP_PAD := 5.0
-const TIP_LINE := 9.0
-## Le bandeau du nom, collé au cadre comme celui de PoE : c'est lui qui donne le
-## haut de l'infobulle, sans marge au-dessus.
-const TIP_BAND := 14.0
-const TIP_BAND_ALPHA := 0.17
-## La hauteur d'un trait de séparation, gouttières comprises.
-const TIP_RULE := 6.0
-## Écart entre le sac et son infobulle.
+## Écart entre le sac et son infobulle, dessinée par `ItemTooltip`.
 const TIP_GAP := 5.0
-const TIP_MIN_W := 74.0
 const FONT_SIZE := 8
-const TITLE_SIZE := 9
-
-
-## Une ligne d'infobulle. Les blocs — nom, propriétés, exigences, implicite, affixes
-## — se construisent en liste, puis se mesurent et se dessinent en la relisant : deux
-## passes écrites à la main divergeaient à chaque ligne ajoutée.
-class TipLine:
-	## `MOD` est une ligne d'affixe, la seule qui porte une colonne de palier ; c'est
-	## ce qui la sépare d'un `TEXT`.
-	enum Kind { TITLE, PROPERTY, TEXT, MOD, RULE }
-
-	var kind: Kind
-	## Le texte, ou l'étiquette d'une propriété.
-	var text := ""
-	## La valeur d'une propriété, mise en avant derrière son étiquette.
-	var value := ""
-	## Le palier d'un affixe sous la touche « détails », calé à droite de l'infobulle. Vide partout
-	## ailleurs, et sur un affixe ramassé avant les paliers.
-	var aside := ""
-	var tint := Color.WHITE
-	var value_tint := Color.WHITE
-
-	func _init(p_kind: Kind, p_text := "", p_tint := Color.WHITE) -> void:
-		kind = p_kind
-		text = p_text
-		tint = p_tint
-
-	static func property(label_text: String, value_text: String, value_color: Color) -> TipLine:
-		var line := TipLine.new(Kind.PROPERTY, label_text, InventoryPanel.TIP_LABEL)
-		line.value = value_text
-		line.value_tint = value_color
-		return line
 
 @onready var title: Label = $Title
 
@@ -727,204 +672,17 @@ func _draw_centered(tex: Texture2D, r: Rect2, tint := Color.WHITE) -> void:
 	draw_texture_rect(tex, Rect2(at, tex.get_size()), false, tint)
 
 
-## Ce que porte l'objet, en blocs séparés : le nom sur son bandeau de rareté, les
-## propriétés de la base, le niveau, l'implicite, puis les affixes.
+## L'infobulle, alignée sur l'objet et bornée en bas et à gauche : le mode détaillé
+## l'élargit.
 func _draw_tooltip(item: Item, target_top: float) -> void:
 	if _font == null:
 		return
-
-	var lines := _tip_lines(item)
-
-	# La colonne des paliers est réservée une fois pour toutes : les affixes se
-	# centrent sur ce qu'elle leur laisse, et ne peuvent plus la rencontrer.
-	var aside_col := 0.0
-	for line in lines:
-		if line.kind == TipLine.Kind.MOD and not line.aside.is_empty():
-			aside_col = maxf(aside_col, _tip_span(line.aside))
-	if aside_col > 0.0:
-		aside_col += TIP_TIER_GAP
-
-	var w := TIP_MIN_W
-	# Pas de marge en haut : le bandeau du nom touche le cadre.
-	var h := TIP_PAD
-	for line in lines:
-		var need := _tip_width(line)
-		if line.kind == TipLine.Kind.MOD:
-			need += aside_col
-		w = maxf(w, need)
-		h += _tip_height(line.kind)
-	w += TIP_PAD * 2.0
-
-	# Alignée sur l'objet, bornée en bas et à gauche (le mode détaillé l'élargit).
-	var s := _panel_size()
-	var top := minf(target_top, s.y - h)
-	var left := maxf(-w - TIP_GAP, -global_position.x)
-	var r := Rect2(Vector2(left, top), Vector2(w, h))
-
-	draw_rect(r, UiPalette.TIP_BACK)
-	draw_rect(r, item.color(), false, 1.0)
-
-	var middle := r.position.x + w * 0.5
-	var mod_middle := r.position.x + (w - aside_col) * 0.5
-	var y := r.position.y
-	for line in lines:
-		var baseline := y + TIP_LINE - 2.0
-		match line.kind:
-			TipLine.Kind.TITLE:
-				_draw_tip_title(line, Rect2(r.position, Vector2(w, TIP_BAND)), middle)
-			TipLine.Kind.RULE:
-				draw_line(
-					Vector2(r.position.x + TIP_PAD, y + TIP_RULE * 0.5),
-					Vector2(r.end.x - TIP_PAD, y + TIP_RULE * 0.5),
-					Color(TIP_IMPLICIT, 0.35), 1.0
-				)
-			TipLine.Kind.PROPERTY:
-				var x := roundf(middle - _tip_width(line) * 0.5)
-				draw_string(_font, Vector2(x, baseline), line.text,
-					HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, line.tint)
-				draw_string(
-					_font, Vector2(x + _tip_span(line.text) + TIP_PROP_GAP, baseline), line.value,
-					HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, line.value_tint
-				)
-			TipLine.Kind.MOD:
-				RichText.draw_centered(
-					self, _font, Vector2(0.0, baseline), mod_middle, line.text, FONT_SIZE, line.tint
-				)
-				if not line.aside.is_empty():
-					draw_string(
-						_font, Vector2(r.end.x - TIP_PAD - _tip_span(line.aside), baseline),
-						line.aside, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_TIER
-					)
-			_:
-				RichText.draw_centered(
-					self, _font, Vector2(0.0, baseline), middle, line.text, FONT_SIZE, line.tint
-				)
-		y += _tip_height(line.kind)
-
-	var described := PackedStringArray()
-	for line in lines:
-		if line.kind == TipLine.Kind.MOD or line.kind == TipLine.Kind.TEXT:
-			described.append(line.text)
-	GlossaryBoxes.draw(self, _font, r, Rect2(Vector2.ZERO, _panel_size()), described)
-
-
-## Le nom sur son bandeau, teinté de la rareté et fermé par un trait : c'est lui
-## qui donne à l'infobulle son en-tête, avant même qu'on lise une ligne.
-func _draw_tip_title(line: TipLine, band: Rect2, middle: float) -> void:
-	draw_rect(Rect2(band.position + Vector2.ONE, band.size - Vector2(2.0, 1.0)),
-		Color(line.tint, TIP_BAND_ALPHA))
-	draw_line(Vector2(band.position.x, band.end.y), Vector2(band.end.x, band.end.y),
-		Color(line.tint, 0.45), 1.0)
-	var x := roundf(middle - _tip_span(line.text, TITLE_SIZE) * 0.5)
-	draw_string(_font, Vector2(x, band.end.y - 4.0), line.text,
-		HORIZONTAL_ALIGNMENT_LEFT, -1.0, TITLE_SIZE, line.tint)
-
-
-## Les lignes dans l'ordre où elles se lisent. Un bloc vide ne laisse pas de trait
-## derrière lui : c'est `_tip_block()` qui en décide.
-func _tip_lines(item: Item) -> Array[TipLine]:
-	var out: Array[TipLine] = []
-	out.append(TipLine.new(TipLine.Kind.TITLE, item.display_name(), item.color()))
-
-	# Ce que la base est, avant ce qu'elle a tiré : la chance critique d'une arme, la
-	# défense d'une armure. En avant quand une ligne locale l'a montée, en clair sinon.
-	var properties: Array[TipLine] = []
-	if item.base.family == ItemBase.WEAPON_FAMILY:
-		var raised := not is_equal_approx(item.crit_chance(), item.base.crit_chance)
-		properties.append(TipLine.property(
-			Texts.t("Chance critique de base :"),
-			StatMod.format(SkillStats.CRIT_CHANCE, item.crit_chance()),
-			TIP_EXPLICIT if raised else TIP_VALUE
-		))
-	var defense := item.base.defense_stat()
-	if not defense.is_empty():
-		var raised := not is_equal_approx(item.defense(), item.implicit_value())
-		properties.append(TipLine.property(
-			Texts.t("Armure :") if defense == "armor" else Texts.t("Esquive :"),
-			StatMod.format(defense, item.defense()),
-			TIP_EXPLICIT if raised else TIP_VALUE
-		))
-	_tip_block(out, properties)
-
-	# Ni niveau ni affixes : sa pile, ce qu'elle fait, et comment.
-	if Currency.is_coin(item):
-		_tip_block(out, [TipLine.property(
-			Texts.t("Pile :"), "%d / %d" % [item.count, item.base.stack_max], TIP_VALUE
-		)] as Array[TipLine])
-		_tip_block(out, [
-			TipLine.new(TipLine.Kind.TEXT, Currency.effect(item.base), TIP_VALUE),
-			TipLine.new(TipLine.Kind.TEXT, Texts.t("clic droit, puis clic sur l'objet"), TIP_LABEL),
-		] as Array[TipLine])
-		return out
-
-	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous la touche « détails ».
-	_tip_block(out, [TipLine.property(
-		Texts.t("Niveau d'objet :"), str(item.item_level), TIP_VALUE
-	)] as Array[TipLine])
-
-	# Majuscule en tête, implicite comme tirés : ce sont les mêmes lignes, et une
-	# seule des deux sortes capitalisée se verrait. Une défense est déjà en propriété,
-	# montée : son implicite, la valeur d'avant les affixes, attend les détails.
-	var implicit := RichText.capitalized(item.implicit_line())
-	if not implicit.is_empty() and (_detailed or item.base.defense_stat().is_empty()):
-		var line := TipLine.new(TipLine.Kind.MOD, implicit, TIP_IMPLICIT)
-		var span := item.base.implicit_span()
-		line.aside = "(%s)" % span if _detailed and not span.is_empty() else ""
-		_tip_block(out, [line] as Array[TipLine])
-
-	var mods: Array[TipLine] = []
-	var without_origin := false
-	for rolled in item.explicits:
-		var line := TipLine.new(
-			TipLine.Kind.MOD, RichText.capitalized(item.explicit_line(rolled)), TIP_EXPLICIT
-		)
-		# Vide sans provenance : la ligne s'affiche sans colonne.
-		line.aside = rolled.tier_and_span() if _detailed else ""
-		without_origin = without_origin or line.aside.is_empty()
-		mods.append(line)
-	_tip_block(out, mods)
-
-	# Sous la touche « détails », dit pourquoi aucun palier ne s'affiche.
-	if _detailed and without_origin and not mods.is_empty():
-		_tip_block(out, [TipLine.new(
-			TipLine.Kind.TEXT, Texts.t("paliers inconnus : ramassé avant"), TIP_LABEL
-		)] as Array[TipLine])
-	return out
-
-
-## Un bloc derrière son trait de séparation, ou rien s'il est vide : un trait qui ne
-## sépare rien est une ligne perdue.
-func _tip_block(into: Array[TipLine], block: Array[TipLine]) -> void:
-	if block.is_empty():
-		return
-	into.append(TipLine.new(TipLine.Kind.RULE))
-	into.append_array(block)
-
-
-func _tip_height(kind: TipLine.Kind) -> float:
-	match kind:
-		TipLine.Kind.TITLE:
-			return TIP_BAND
-		TipLine.Kind.RULE:
-			return TIP_RULE
-	return TIP_LINE
-
-
-## Ce que la ligne réclame, colonne des paliers non comprise.
-func _tip_width(line: TipLine) -> float:
-	match line.kind:
-		TipLine.Kind.TITLE:
-			return _tip_span(line.text, TITLE_SIZE)
-		TipLine.Kind.PROPERTY:
-			return _tip_span(line.text) + TIP_PROP_GAP + _tip_span(line.value)
-		TipLine.Kind.RULE:
-			return 0.0
-	return RichText.width(_font, line.text, FONT_SIZE)
-
-
-## Un texte sans terme de glossaire : étiquette, valeur, palier, nom.
-func _tip_span(text_value: String, size_value := FONT_SIZE) -> float:
-	return _font.get_string_size(text_value, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size_value).x
+	var lines := ItemTooltip.lines(item, _detailed)
+	var size := ItemTooltip.size_of(_font, lines)
+	var bounds := Rect2(Vector2.ZERO, _panel_size())
+	var top := minf(target_top, bounds.size.y - size.y)
+	var left := maxf(-size.x - TIP_GAP, -global_position.x)
+	ItemTooltip.draw(self, _font, item, lines, Vector2(left, top), bounds)
 
 
 ## `framed` : le cadre d'un objet rangé ; l'objet tenu a déjà sa teinte de destination.
@@ -941,4 +699,4 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	# Dans le coin haut-gauche, par-dessus l'icône, comme PoE.
 	if item.count > 1 and _font != null:
 		draw_string(_font, r.position + Vector2(2.0, FONT_SIZE), str(item.count),
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_VALUE)
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, ItemTooltip.VALUE)

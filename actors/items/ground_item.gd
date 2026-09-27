@@ -131,8 +131,8 @@ func _ready() -> void:
 ## touche du filtre le rend.
 func _filter() -> void:
 	var rule := Settings.loot_rule(data)
-	visible = rule == null or rule.action != LootFilter.Action.HIDE
-	_tint = rule.color if rule != null and rule.action == LootFilter.Action.RECOLOR else data.color()
+	visible = not LootFilter.hides(rule)
+	_tint = LootFilter.color_for(data, rule)
 	_glow = Color(_tint, GLOW_ALPHA)
 	if not visible and hovered == self:
 		hovered = null
