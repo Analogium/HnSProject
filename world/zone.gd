@@ -290,6 +290,8 @@ func _zone_action(event: InputEvent) -> bool:
 		map_overlay.visible = not map_overlay.visible
 	elif event.is_action_pressed("ground_labels"):
 		GroundItem.show_labels(not GroundItem.labels_shown)
+	elif event.is_action_pressed("loot_filter"):
+		Settings.loot_filter_on = not Settings.loot_filter_on
 	else:
 		return false
 	return true
@@ -463,7 +465,9 @@ func _overlay_text() -> String:
 		],
 		"[F5] nouvelle zone   [G] paquet   [K] tout tuer",
 		"[PAGE HAUT/BAS] niveau de la prochaine zone  (+MAJ : 10)",
-		"[%s] noms au sol   [H] masquer cette aide" % Keybinds.key_label("ground_labels"),
+		"[%s] noms au sol   [%s] filtre de butin   [H] masquer cette aide" % [
+			Keybinds.key_label("ground_labels"), Keybinds.key_label("loot_filter")
+		],
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
 		"[B] etabli (reglage)",

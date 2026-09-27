@@ -3,7 +3,8 @@ extends Control
 
 ## Le sac (I) : chaque objet occupe sa place réelle. Deux gestes, glisser et
 ## clic-clic ; un relâchement sans déplacement est un clic. Relâché hors du panneau,
-## l'objet tombe ; le clic droit équipe, retire ou jette. Le sac vit sur le joueur.
+## l'objet tombe ; le clic droit équipe, retire, jette ou prend une pièce de monnaie,
+## que le clic suivant applique. Le sac vit sur le joueur.
 
 ## Un signal : c'est la scène qui sait où poser au sol.
 signal drop_requested(item: Item)
@@ -120,6 +121,10 @@ var _from := Vector2i.ZERO
 var _grab := Vector2i.ZERO
 ## Le même décalage en pixels : l'objet suit au pixel, la destination à la case.
 var _grab_px := Vector2.ZERO
+## La pièce de monnaie choisie au clic droit, restée dans le sac jusqu'à ce que le
+## clic suivant l'applique ; null hors de ce geste.
+var _coin: Item
+var _coin_cell := Vector2i.ZERO
 ## Dernière position connue de la souris, dans le repère du panneau.
 var _mouse := Vector2.ZERO
 ## Où le bouton a été pressé, pour distinguer le glisser du clic.
@@ -179,6 +184,7 @@ func toggle() -> void:
 		# Sinon la case survolée reste celle d'avant la fermeture.
 		_track(get_local_mouse_position())
 	else:
+		_coin = null
 		var left := _return_held()
 		if left != null:
 			drop_requested.emit(left)
@@ -216,7 +222,9 @@ func _input(event: InputEvent) -> void:
 		MOUSE_BUTTON_LEFT:
 			_press = button.position
 			# Presser en tenant, c'est poser ; le glisser se résout au relâchement.
-			if _held != null:
+			if _coin != null:
+				_use_coin(button.position)
+			elif _held != null:
 				_resolve(button.position, false)
 			else:
 				_take(button.position)
@@ -241,16 +249,20 @@ func _track(point: Vector2) -> void:
 	var cell := _cell_at(point)
 	var slot := _slot_at(point)
 	# Un objet en main suit au pixel : redessiner à chaque mouvement.
-	if cell == _hover and slot == _hover_slot and _held == null:
+	if cell == _hover and slot == _hover_slot and _held == null and _coin == null:
 		return
 	_hover = cell
 	_hover_slot = slot
 	queue_redraw()
 
 
-## Jeter ce qu'on tient, jeter au sol avec Ctrl, retirer ce qui est porté, ou équiper
-## ce qu'on survole.
+## Jeter ce qu'on tient, jeter au sol avec Ctrl, retirer ce qui est porté, prendre la
+## pièce survolée ou équiper l'objet survolé. Une pièce déjà prise se repose.
 func _right_click(to_the_ground: bool) -> void:
+	if _coin != null:
+		_coin = null
+		queue_redraw()
+		return
 	if _held != null:
 		drop_requested.emit(_held)
 		_held = null
@@ -262,8 +274,26 @@ func _right_click(to_the_ground: bool) -> void:
 		_drop_hovered()
 	elif _hover_slot >= 0:
 		_unequip(EquipmentSlots.ids()[_hover_slot])
+	elif Currency.is_coin(_item_at(_hover)):
+		_coin = _item_at(_hover)
+		_coin_cell = _inventory.placed[_inventory.index_at(_hover)].cell
+		queue_redraw()
 	else:
 		_equip(_hover)
+
+
+## Le clic qui suit le clic droit sur une pièce : dépensée si l'objet visé l'accepte.
+## Dans tous les cas le geste se termine — seul un objet du sac se vise.
+func _use_coin(point: Vector2) -> void:
+	if Currency.apply(_coin.base, _item_at(_cell_at(point)), Game.rng):
+		_inventory.spend_one(_coin_cell)
+	_coin = null
+	queue_redraw()
+
+
+func _item_at(cell: Vector2i) -> Item:
+	var index := _inventory.index_at(cell)
+	return null if index == Inventory.EMPTY else _inventory.placed[index].data
 
 
 ## Ctrl + clic droit : au sol, sans passer par la main. Depuis le sac comme depuis un
@@ -389,6 +419,11 @@ func _swap_in(cell: Vector2i) -> bool:
 	var blocker := _inventory.lone_blocker(_held, cell)
 	if blocker == Inventory.EMPTY:
 		return false
+	# Sur une pile de même base qui a de la place : on verse au lieu d'échanger.
+	if _inventory.stack_onto(blocker, _held):
+		if _held.count == 0:
+			_held = null
+		return true
 
 	var origin: Vector2i = _inventory.placed[blocker].cell
 	var evicted := _inventory.take_at(origin)
@@ -476,9 +511,10 @@ func _on_changed() -> void:
 
 
 ## **Un clic hors du sac ne lui appartient pas**, sinon les autres panneaux
-## deviennent sourds ; sauf avec un objet en main, qu'on peut lâcher au-dehors.
+## deviennent sourds ; sauf avec un objet en main, qu'on peut lâcher au-dehors, ou
+## une pièce prise, que ce clic repose au lieu de lancer une attaque.
 func _owns_click(point: Vector2) -> bool:
-	return _held != null or _panel_rect().has_point(point)
+	return _held != null or _coin != null or _panel_rect().has_point(point)
 
 
 func _panel_rect() -> Rect2:
@@ -591,7 +627,14 @@ func _draw() -> void:
 		var r := _rect_of(targeted.cell, targeted.rect().size)
 		# Survolé, le cadre prend la rareté pleine.
 		draw_rect(r, targeted.data.color(), false, 1.0)
+		if _coin != null:
+			draw_rect(r, CAN_PLACE if Currency.accepts(_coin.base, targeted.data) else BLOCKED)
 		_draw_tooltip(targeted.data, r.position.y)
+	if _coin != null:
+		# À côté du curseur et non dessous : la cible reste visible. L'icône seule, sans
+		# le nombre de la pile : on n'en applique qu'une.
+		var at := Rect2(_mouse + Vector2(4.0, 4.0), _span_size(Vector2i.ONE))
+		_draw_centered(SpriteForge.inventory_icon(_coin.base, Vector2i(_free_cell(at))), at)
 
 	if _held != null:
 		var span := Inventory.footprint(_held)
@@ -803,6 +846,17 @@ func _tip_lines(item: Item) -> Array[TipLine]:
 		))
 	_tip_block(out, properties)
 
+	# Ni niveau ni affixes : sa pile, ce qu'elle fait, et comment.
+	if Currency.is_coin(item):
+		_tip_block(out, [TipLine.property(
+			Texts.t("Pile :"), "%d / %d" % [item.count, item.base.stack_max], TIP_VALUE
+		)] as Array[TipLine])
+		_tip_block(out, [
+			TipLine.new(TipLine.Kind.TEXT, Currency.effect(item.base), TIP_VALUE),
+			TipLine.new(TipLine.Kind.TEXT, Texts.t("clic droit, puis clic sur l'objet"), TIP_LABEL),
+		] as Array[TipLine])
+		return out
+
 	# Toujours affiché : c'est ce qui décide si on le garde. Les paliers sous la touche « détails ».
 	_tip_block(out, [TipLine.property(
 		Texts.t("Niveau d'objet :"), str(item.item_level), TIP_VALUE
@@ -884,3 +938,7 @@ func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
 	var place := _free_cell(r)
 	var own := place if fill else _span_size(Inventory.footprint(item)).min(place)
 	_draw_centered(SpriteForge.inventory_icon(item.base, Vector2i(own)), r)
+	# Dans le coin haut-gauche, par-dessus l'icône, comme PoE.
+	if item.count > 1 and _font != null:
+		draw_string(_font, r.position + Vector2(2.0, FONT_SIZE), str(item.count),
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, TIP_VALUE)

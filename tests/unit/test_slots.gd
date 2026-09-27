@@ -107,11 +107,11 @@ func test_catalog_bases_target_known_families() -> void:
 	for base in ItemCatalog.ALL:
 		if base.family.is_empty():
 			continue
-		# La famille des manuels est la seule qui n'a pas d'emplacement, et ce
-		# n'est pas une porte ouverte aux fautes de frappe : c'est
+		# Manuels et pièces sont les seules familles sans emplacement, et ce n'est
+		# pas une porte ouverte aux fautes de frappe : c'est
 		# `test_an_archetype_goes_with_the_manual_family` qui interdit une base
-		# non équipable qui ne serait pas un manuel.
-		if base.family == ItemBase.MANUAL_FAMILY:
+		# non équipable qui ne serait ni l'un ni l'autre.
+		if base.family in [ItemBase.MANUAL_FAMILY, ItemBase.CURRENCY_FAMILY]:
 			continue
 		assert_true(
 			families.has(base.family),

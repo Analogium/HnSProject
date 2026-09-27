@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/coin_silver.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_base")
+id = "coin_silver"
+display_name = "Pièce d'argent"
+kind = "coin"
+family = "currency"
+tags = PackedStringArray("currency")
+icon = ExtResource("2_icon")
+grid_size = Vector2i(1, 1)
+stack_max = 20
+lineage = "coin_silver"
+tier = 1
+required_level = 1

@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-53 bases d'objets, 36 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
+59 bases d'objets, 36 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -75,6 +75,12 @@ Niveaux de zone : 1 à 120.
 | `manual_cold` | Manuel du froid | manual_cold | 1 | manual | manual | — | — | 2 × 2 | 10 et au-delà |
 | `manual_holy` | Manuel sacré | manual_holy | 1 | manual | manual | — | — | 2 × 2 | 15 et au-delà |
 | `manual_necrotic` | Manuel de magie nécrotique | manual_necrotic | 1 | manual | manual | — | — | 2 × 2 | 20 et au-delà |
+| `coin_copper` | Pièce de cuivre | coin_copper | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
+| `coin_bronze` | Pièce de bronze | coin_bronze | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
+| `coin_silver` | Pièce d'argent | coin_silver | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
+| `coin_gold` | Pièce d'or | coin_gold | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
+| `coin_platinum` | Pièce de platine | coin_platinum | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
+| `coin_diamond` | Pièce de diamant | coin_diamond | 1 | currency | currency | — | — | 1 × 1 | 1 et au-delà |
 
 ## Manuels
 
@@ -777,70 +783,70 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 53 |
-| `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
-| `ardent` | dégâts de sort de feu (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 53 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 53 |
-| `cold_attack_dmg` | dégâts d'attaque de froid (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 53 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 53 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 53 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 53 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 53 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 53 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 53 |
-| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 53 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 53 |
-| `fire_attack_dmg` | dégâts d'attaque de feu (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 53 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 53 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 53 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 53 |
-| `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
-| `glacial` | dégâts de sort de froid (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `holy_attack_dmg` | dégâts d'attaque sacrés (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `holy_skill_levels` | niveaux de compétence sacrés | caster | — | 1 | 2 | 5 / 53 |
-| `holy_spell_dmg` | dégâts de sort sacrés (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 53 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 53 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 53 |
-| `lightning_attack_dmg` | dégâts d'attaque de foudre (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 53 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 53 |
-| `muscular` | force | *partout* | — | 8 | 6 | 47 / 53 |
-| `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 53 |
-| `necrotic_attack_dmg` | dégâts d'attaque nécrotiques (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `necrotic_skill_levels` | niveaux de compétence nécrotiques | caster | — | 1 | 2 | 5 / 53 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 53 |
-| `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee, jewellery | — | 8 | 6 | 14 / 53 |
-| `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 53 |
-| `physical_spell_dmg` | dégâts de sort physiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 53 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 53 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 53 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 53 |
-| `putrefying` | dégâts de sort nécrotiques (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 53 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 53 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 53 |
-| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 53 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 53 |
-| `stormy` | dégâts de sort de foudre (%) | caster, jewellery | — | 8 | 6 | 11 / 53 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 53 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 53 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 53 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 53 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 59 |
+| `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 59 |
+| `ardent` | dégâts de sort de feu (%) | caster | — | 8 | 6 | 5 / 59 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 59 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 59 |
+| `cold_attack_dmg` | dégâts d'attaque de froid (%) | melee | — | 8 | 6 | 8 / 59 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 59 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 59 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 59 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 59 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 59 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 59 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 59 |
+| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 59 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 59 |
+| `fire_attack_dmg` | dégâts d'attaque de feu (%) | melee | — | 8 | 6 | 8 / 59 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 59 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 59 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 59 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 59 |
+| `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 59 |
+| `glacial` | dégâts de sort de froid (%) | caster | — | 8 | 6 | 5 / 59 |
+| `holy_attack_dmg` | dégâts d'attaque sacrés (%) | melee | — | 8 | 6 | 8 / 59 |
+| `holy_skill_levels` | niveaux de compétence sacrés | caster | — | 1 | 2 | 5 / 59 |
+| `holy_spell_dmg` | dégâts de sort sacrés (%) | caster | — | 8 | 6 | 5 / 59 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 59 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 59 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 59 |
+| `lightning_attack_dmg` | dégâts d'attaque de foudre (%) | melee | — | 8 | 6 | 8 / 59 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 59 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 59 |
+| `muscular` | force | *partout* | — | 8 | 6 | 47 / 59 |
+| `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 59 |
+| `necrotic_attack_dmg` | dégâts d'attaque nécrotiques (%) | melee | — | 8 | 6 | 8 / 59 |
+| `necrotic_skill_levels` | niveaux de compétence nécrotiques | caster | — | 1 | 2 | 5 / 59 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 59 |
+| `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee | — | 8 | 6 | 8 / 59 |
+| `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 59 |
+| `physical_spell_dmg` | dégâts de sort physiques (%) | caster | — | 8 | 6 | 5 / 59 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 59 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 59 |
+| `putrefying` | dégâts de sort nécrotiques (%) | caster | — | 8 | 6 | 5 / 59 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 59 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 59 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 59 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 59 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 59 |
+| `stormy` | dégâts de sort de foudre (%) | caster | — | 8 | 6 | 5 / 59 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 59 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 59 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 59 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 59 |
 
 ### Affixes d'ennemis
 

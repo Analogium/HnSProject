@@ -118,8 +118,11 @@ func minimum_level() -> int:
 ## Un exemplaire pour un objet de ce niveau, ou null si aucun palier n'est ouvert.
 func roll(rng: RandomNumberGenerator, level: int) -> RolledAffix:
 	var index := _pick_tier(rng, level)
-	if index < 0:
-		return null
+	return null if index < 0 else roll_tier(rng, index)
+
+
+## Une valeur neuve dans ce palier : le tirage, et la pièce de diamant qui garde le palier.
+func roll_tier(rng: RandomNumberGenerator, index: int) -> RolledAffix:
 	var tier: ItemAffixTier = tiers[index]
 	var v := snappedf(rng.randf_range(tier.min_value, tier.max_value), rounded)
 	# Un tirage de plus pour la borne haute d'une fourchette. Le compte dépend de

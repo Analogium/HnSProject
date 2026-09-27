@@ -746,6 +746,37 @@ func test_the_v9_reference_file_rereads() -> void:
 	assert_eq(p.bar.id_of(2), "elemental_projectile")
 
 
+func test_the_v10_reference_file_rereads() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v10.json"))
+	var p := Character.from_dict(content)
+	assert_not_null(p, "une sauvegarde de version 10 se lit")
+	var bag := {}
+	for placed in p.bag.placed:
+		bag[placed.data.base.id] = placed.data
+	assert_eq(bag["coin_copper"].count, 7)
+	assert_eq(bag["coin_gold"].count, 20, "une pile trafiquée est bornée par sa base")
+	assert_eq(bag["ring"].rarity(), Item.Rarity.RARE, "rare à deux affixes, par une pièce d'argent")
+
+
+## Une pile et un rare à deux affixes, l'aller-retour ; un objet ordinaire n'écrit
+## ni l'un ni l'autre.
+func test_a_stack_and_a_forced_rare_survive_the_round_trip() -> void:
+	var p := Character.create_new("Piles", 0)
+	p.bag.clear()
+	var coins := Item.new(ItemCatalog.by_id(Currency.SILVER))
+	coins.count = 5
+	var ring := Item.new(ItemCatalog.by_id("ring"), [StatMod.new("armor", StatMod.Mode.FLAT, 3.0)])
+	ring.rare = true
+	p.bag.add(coins)
+	p.bag.add(ring)
+	var written := p.to_dict()
+	for entry in written["bag"]:
+		assert_eq(entry.has("count"), entry["base"] == Currency.SILVER, "count pour la pile seule")
+	var reread := Character.from_dict(written)
+	assert_eq(reread.bag.placed[0].data.count, 5)
+	assert_true(reread.bag.placed[1].data.rare)
+
+
 ## Le manuel de classe est écrit **par son état seul**, hors des trois entrées du
 ## râtelier : sa base se déduit de la classe, et un fichier qui en nommerait une autre
 ## n'aurait rien à dire.

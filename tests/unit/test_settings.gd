@@ -244,3 +244,4 @@ func test_an_unknown_language_in_the_file_is_brought_back() -> void:
 	Settings.from_dict({"language": "of"})
 	assert_eq(Settings.language, Settings.ENGLISH)
 	Settings.from_dict(before)
+

@@ -80,7 +80,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
    | `id` | Unique, **définitif** — il part dans les sauvegardes |
    | `suffix` | Le nom que l'objet prend — « Épée **de l'Agilité** » —, préposition et article compris : le genre du mot ne se devine pas. Unique dans la réserve, et à traduire dans `i18n/en.po` |
    | `stat` | Sans portée : un champ **réel** de `CharacterStats`, présent dans `StatMod.LABELS`. Avec : un nombre de `SkillStats.LABELS` — `skill_levels` compris, à plat —, des dégâts ajoutés `damage_<id>` sur `DamageType.IDS`, ou des dégâts contre un état `damage_vs_<id>` sur `StatusEffects.IDS`, en pourcentage — ceux-là n'existent **qu'avec une portée** |
-   | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, ou deux séparés d'une espace (`fire attack`), et l'affixe n'agit que sur les compétences qui les portent **tous**. Les dégâts d'une nature en pourcentage se donnent toujours par paire, `<nature> spell` et `<nature> attack` |
+   | `scope` | Vide pour la fiche du personnage ; sinon **un mot-clé de `Keywords`**, ou deux séparés d'une espace (`fire attack`), et l'affixe n'agit que sur les compétences qui les portent **tous**. Les dégâts d'une nature en pourcentage se donnent toujours par paire, `<nature> spell` et `<nature> attack`, **étiquetés `melee` ou `caster` seulement** : sur un bijou, douze lignes de plus noyaient ce qu'on cherche (43 affixes par anneau). Les bijoux gardent les % génériques et les dégâts ajoutés |
    | `percent` | Pourcentage plutôt que valeur absolue |
    | `tags` | Les étiquettes visées ; **vide = partout** |
    | `excludes` | Ce qui refuse, et **qui l'emporte** sur `tags` |
@@ -101,7 +101,7 @@ supérieur **et** donner un implicite supérieur), `test_no_base_has_an_empty_wi
 3. **`core/item_affix_pool.gd`** — ajouter le `preload` dans `ALL`.
 
 4. **La forge de réglage pagine sa liste par 24** (`ForgeGallery.LIST_ROWS`) ;
-   les bijoux en sont à 30. Seul le tableau des paliers peut encore déborder
+   les bijoux en sont à 31, les objets de lanceur à 35. Seul le tableau des paliers peut encore déborder
    (`test_the_item_sheet_fits_its_height`).
 
 5. **Une chance critique** : plate, l'affixe ne va **que sur les armes**, où elle monte
@@ -157,8 +157,8 @@ refuse une base dont la liste déborde du bas de l'établi.
    `_unhandled_input`, ou `Input.is_action_pressed()` pour une touche maintenue. Un
    `KEY_*` écrit dans un `if` ne se rebinde pas — c'est tout l'objet de la recette.
 
-L'onglet des touches se remplit seul : il lit `ACTIONS`. Au-delà de seize actions,
-vérifier qu'il tient dans les 360 px (deux colonnes aujourd'hui).
+L'onglet des touches se remplit seul : il lit `ACTIONS`. Dix-sept actions tiennent
+dans les 360 px (deux colonnes, vérifié sur capture) ; au-delà, revérifier.
 
 **Ce qui refusera un oubli** — `tests/unit/test_keybinds.gd` :
 `test_each_action_exists_and_is_named` (l'action ajoutée d'un seul côté),
@@ -796,6 +796,27 @@ la page, et celui de la base, que le sac affiche. Ce sont deux textes différent
 Un manuel échappe aux règles écrites pour l'équipement — affixes, lignée à
 paliers, implicite croissant — et la question se pose à un seul endroit :
 `EquipmentSlots.equippable_family()`.
+
+---
+
+## Ajouter une pièce de monnaie
+
+1. **`resources/items/coin_<id>.tres`** — la base : `family = "currency"`,
+   `tags = ["currency"]`, `kind = "coin"`, une case, `stack_max = 20`, sa propre
+   `lineage`. Son
+   image dans `icon` (voir `/dessiner-un-effet`) : le `kind` est commun, c'est
+   l'image qui dit le métal.
+2. **`core/item_catalog.gd`** — le `preload` dans le bloc des pièces.
+3. **`core/currency.gd`** — l'identifiant en constante, son poids dans
+   `DROP_WEIGHTS`, son cas dans `effect()`, `accepts()` et `apply()`. Une pièce
+   qui ajoute ou retire des affixes passe par `ItemAffixPool.draw()` et
+   `roll_count()`, jamais par un tirage à elle.
+4. **`i18n/en.po`** — son nom et son effet.
+
+**Ce qui refusera un oubli** — `tests/unit/test_currency.gd` :
+`test_each_coin_has_a_weight_and_each_weight_a_coin` (poids, effet, une case) et
+`test_each_coin_stacks_and_nothing_else_does` ;
+`test_translations.gd` pour l'anglais.
 
 ---
 

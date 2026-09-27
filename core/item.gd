@@ -13,10 +13,16 @@ const RARITY_COLORS := [
 	Color(0.42, 0.62, 0.98),
 	Color(0.95, 0.82, 0.30),
 ]
+const RARITY_LABELS := ["Commun", "Magique", "Rare"]
+## Une pièce de monnaie n'a pas de rareté à dire : le beige de PoE, hors de la gamme.
+const CURRENCY_COLOR := Color(0.78, 0.70, 0.54)
+
+## Au-delà, un objet est rare. Les pièces de monnaie le lisent aussi.
+const MAGIC_MAX := 2
 
 var base: ItemBase
 ## Les affixes tirés à la création, déjà résolus en valeurs, **et leur
-## provenance**. Ils ne changent plus ensuite — un objet est ce qu'il est.
+## provenance**. Seule une pièce de monnaie les change ensuite (`Currency.apply()`).
 var explicits: Array[RolledAffix] = []
 
 ## Le niveau de la zone où il est tombé, posé une fois : il décide des paliers
@@ -28,6 +34,12 @@ var item_level: int = 1
 ## non la valeur, pour qu'un rééquilibrage de la base atteigne les objets déjà
 ## tombés. Le bas par défaut : un objet posé par le code, ou d'avant les plages.
 var implicit_roll: float = 0.0
+
+## Rare quel que soit son nombre d'affixes : la pièce d'argent en fait un de deux.
+var rare := false
+
+## Combien d'exemplaires porte cette case du sac, jusqu'à `base.stack_max`.
+var count := 1
 
 ## L'état du manuel quand l'objet en est un, sur l'exemplaire et **jamais sur
 ## l'archétype** (invariant 2).
@@ -62,7 +74,8 @@ func implicit() -> StatMod:
 	return base.implicit(implicit_value())
 
 
-## **Déduite** du nombre d'affixes : un objet doré sans affixe serait un mensonge.
+## **Déduite** du nombre d'affixes, sauf `rare` : un objet doré sans affixe serait un
+## mensonge.
 func rarity() -> Rarity:
 	# Un manuel n'a pas d'affixes : sa rareté est celle de son palier.
 	if manual != null:
@@ -71,13 +84,26 @@ func rarity() -> Rarity:
 		return Rarity.MAGIC if base.tier == 2 else Rarity.RARE
 	if explicits.is_empty():
 		return Rarity.COMMON
-	if explicits.size() <= 2:
-		return Rarity.MAGIC
-	return Rarity.RARE
+	if rare or explicits.size() > MAGIC_MAX:
+		return Rarity.RARE
+	return Rarity.MAGIC
 
 
 func color() -> Color:
+	if base.family == ItemBase.CURRENCY_FAMILY:
+		return CURRENCY_COLOR
 	return RARITY_COLORS[rarity()]
+
+
+## Verse dans cette pile ce qu'elle peut prendre de `other`, de la même base ; rend
+## combien d'exemplaires ont changé de pile.
+func absorb(other: Item) -> int:
+	if other == self or other.base != base:
+		return 0
+	var moved := clampi(base.stack_max - count, 0, other.count)
+	count += moved
+	other.count -= moved
+	return moved
 
 
 ## Le nom lu par le joueur ; tout affichage passe par ici, pas par `base.display_name`.

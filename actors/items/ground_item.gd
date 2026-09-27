@@ -62,6 +62,8 @@ var _shown := Rect2()
 ## dit que le rangement est à refaire.
 var _laid_at := Vector2(NAN, NAN)
 var _hovered := false
+## La couleur du nom : celle de la rareté, ou celle d'une règle qui recolore.
+var _tint := Color.WHITE
 
 static var _scene: PackedScene
 
@@ -119,10 +121,21 @@ func _ready() -> void:
 	_font = ThemeDB.fallback_font
 	icon.texture = SpriteForge.ground_icon(data.base)
 	_rest_y = -icon.texture.get_height() * 0.5 - 1.0
-	_glow = data.color()
-	_glow.a = GLOW_ALPHA
 	_measure()
 	_all.append(self)
+	Settings.changed.connect(_filter)
+	_filter()
+
+
+## Masqué par le filtre, l'objet reste au sol, invisible et hors du rangement : la
+## touche du filtre le rend.
+func _filter() -> void:
+	var rule := Settings.loot_rule(data)
+	visible = rule == null or rule.action != LootFilter.Action.HIDE
+	_tint = rule.color if rule != null and rule.action == LootFilter.Action.RECOLOR else data.color()
+	_glow = Color(_tint, GLOW_ALPHA)
+	if not visible and hovered == self:
+		hovered = null
 	_dirty = true
 
 
@@ -148,14 +161,15 @@ func _process(delta: float) -> void:
 	icon.position.y = roundf(sin(_t) * BOB_AMOUNT + _rest_y)
 
 	# Posé, ou déplacé par une zone qui se régénère : les étiquettes se rangent.
-	if _laid_at != global_position:
+	# Un masqué n'est jamais rangé : sa position ne dirait jamais qu'il l'est.
+	if visible and _laid_at != global_position:
 		_dirty = true
 	# Rien à ranger tant qu'elles sont éteintes : le rangement attend le rallumage,
 	# et c'est bien pour ça qu'il s'y produit.
 	if _dirty and labels_shown:
 		_relayout()
 
-	_hovered = labels_shown and _shown.has_point(to_local(get_global_mouse_position()))
+	_hovered = labels_shown and visible and _shown.has_point(to_local(get_global_mouse_position()))
 	if _hovered:
 		hovered = self
 	elif hovered == self:
@@ -179,11 +193,13 @@ func _unhandled_input(event: InputEvent) -> void:
 ## L'objet ne disparaît que si le sac l'a réellement pris : sac plein, il reste au
 ## sol et son nom reste cliquable.
 func clicked(world_point: Vector2) -> bool:
-	if data == null or taker == null or not labels_shown:
+	if data == null or taker == null or not labels_shown or not visible:
 		return false
 	if not name_rect().has_point(world_point):
 		return false
 	if not taker.pick_up(data):
+		# Sac plein, une pile a pu y verser une partie : le nom dit ce qui reste.
+		_measure()
 		return false
 	queue_free()
 	return true
@@ -213,18 +229,17 @@ func _draw() -> void:
 
 	if _font == null or _name.is_empty() or not labels_shown:
 		return
-	var tint := data.color()
 	draw_rect(_shown, NAME_HOVER if _hovered else NAME_BACK)
-	draw_rect(_shown, tint, false, 1.0)
+	draw_rect(_shown, _tint, false, 1.0)
 	# La ligne de base, et non le haut du cadre : `draw_string` pose le texte dessus.
 	var baseline := _shown.position + Vector2(NAME_PAD.x, NAME_PAD.y + _font.get_ascent(Game.world_font(NAME_SIZE)))
-	draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE), tint)
+	draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE), _tint)
 
 
 ## Le nom et son cadre, centré sur l'objet, à sa place naturelle. C'est
 ## `_relayout()` qui décide ensuite de là où il tient.
 func _measure() -> void:
-	_name = data.display_name()
+	_name = data.display_name() if data.count <= 1 else "%d × %s" % [data.count, data.display_name()]
 	var size := _font.get_string_size(_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE))
 	size = (size + NAME_PAD * 2.0).round()
 	var top := -(float(SpriteForge.GROUND.y) + NAME_GAP) - size.y
@@ -244,21 +259,25 @@ func _measure() -> void:
 static func _relayout() -> void:
 	_dirty = false
 	var live: Array[GroundItem] = []
+	# Les masqués restent dans la liste, pas dans le rangement.
+	var shown: Array[GroundItem] = []
 	for one in _all:
 		if is_instance_valid(one) and one.is_inside_tree():
 			live.append(one)
+			if one.visible:
+				shown.append(one)
 	_all = live
 	# L'abscisse départage : à ordonnée égale, un ordre stable évite que deux
 	# étiquettes échangent leur place d'une image à l'autre.
-	live.sort_custom(func(a: GroundItem, b: GroundItem) -> bool:
+	shown.sort_custom(func(a: GroundItem, b: GroundItem) -> bool:
 		if is_equal_approx(a.global_position.y, b.global_position.y):
 			return a.global_position.x < b.global_position.x
 		return a.global_position.y > b.global_position.y
 	)
 
-	var ceiling := _visible_top(live)
+	var ceiling := _visible_top(shown)
 	var taken: Array[Rect2] = []
-	for one in live:
+	for one in shown:
 		one._laid_at = one.global_position
 		var r := Rect2(one.global_position + one._label.position, one._label.size)
 		# Chaque tour passe au-dessus de la plus haute gêne, donc en libère au moins

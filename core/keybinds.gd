@@ -26,6 +26,7 @@ const ACTIONS := {
 	"panel_passives": "Arbre de passifs",
 	"zone_map": "Carte de la zone",
 	"ground_labels": "Noms des objets au sol",
+	"loot_filter": "Filtre de butin",
 	# Les objets du sac et les compétences des manuels : une seule touche de détails.
 	"item_details": "Détails (maintenu)",
 }

@@ -77,6 +77,15 @@ const ALL := [
 	preload("res://resources/items/manual_cold.tres"),
 	preload("res://resources/items/manual_holy.tres"),
 	preload("res://resources/items/manual_necrotic.tres"),
+
+	# Les pièces de monnaie, du plus commun au plus rare. Hors d'`available()` : elles
+	# tombent par `Currency.DROP_WEIGHTS`, pas comme une base parmi d'autres.
+	preload("res://resources/items/coin_copper.tres"),
+	preload("res://resources/items/coin_bronze.tres"),
+	preload("res://resources/items/coin_silver.tres"),
+	preload("res://resources/items/coin_gold.tres"),
+	preload("res://resources/items/coin_platinum.tres"),
+	preload("res://resources/items/coin_diamond.tres"),
 ]
 
 
@@ -123,6 +132,8 @@ static func drop_window(base: ItemBase) -> Vector2i:
 static func available(level: int) -> Array:
 	var out := []
 	for base in ALL:
+		if base.family == ItemBase.CURRENCY_FAMILY:
+			continue
 		var window := drop_window(base)
 		if level < window.x:
 			continue

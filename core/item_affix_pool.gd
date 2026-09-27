@@ -91,6 +91,21 @@ const ALL := [
 ## restent une histoire. La réserve compatible borne le maximum réel.
 const COUNT_WEIGHTS := [46, 24, 14, 8, 5, 2, 1]
 
+## Le butin penche vers les rares avec le niveau : le poids de i affixes est multiplié
+## par 1 + i × `RARITY_PER_LEVEL` × (niveau − 1). Rares : 16 % au niveau 1, 25 % au 30,
+## 37 % au 120. Provisoire.
+const RARITY_PER_LEVEL := 0.01
+
+
+## En centièmes : les poids restent entiers (`WeightedRoll`) sans que l'arrondi mange
+## la pente des petits poids.
+static func count_weights(level: int) -> Array:
+	var tilt := RARITY_PER_LEVEL * float(maxi(level - 1, 0))
+	var out := []
+	for i in COUNT_WEIGHTS.size():
+		out.append(roundi(100.0 * COUNT_WEIGHTS[i] * (1.0 + tilt * i)))
+	return out
+
 
 ## Null pour un affixe retiré du projet : sa valeur s'applique, son palier ne
 ## s'affiche plus.
@@ -125,17 +140,33 @@ static func eligible(base: ItemBase, level: int) -> Array:
 	return out
 
 
-## Borné par la réserve disponible : pas de lignes vides.
-static func roll_count(rng: RandomNumberGenerator, available: int) -> int:
-	var i := WeightedRoll.weighted(rng, COUNT_WEIGHTS)
-	return 0 if i < 0 else mini(i, available)
+## Le plus d'affixes qu'un objet porte, pièces de monnaie comprises : le dernier
+## index de `COUNT_WEIGHTS`, ce que `test_currency.gd` vérifie.
+const MAX_COUNT := 6
 
 
-## Tirés distincts : deux fois « acéré » se lirait comme un bug.
+## Borné par la réserve disponible : pas de lignes vides. `low`–`high` restreint le
+## tirage à une rareté (les pièces de bronze et d'or), aux poids d'une chute de niveau
+## `level` — 1 pour les pièces, que le niveau de l'objet n'avantage pas.
+static func roll_count(
+	rng: RandomNumberGenerator, available: int, low := 0, high := MAX_COUNT, level := 1
+) -> int:
+	var i := WeightedRoll.weighted(rng, count_weights(level).slice(low, high + 1))
+	return 0 if i < 0 else mini(low + i, available)
+
+
 static func roll(rng: RandomNumberGenerator, base: ItemBase, level: int) -> Array[RolledAffix]:
-	var results: Array[RolledAffix] = []
 	var rest := eligible(base, level)
-	for i in roll_count(rng, rest.size()):
+	return draw(rng, rest, roll_count(rng, rest.size(), 0, MAX_COUNT, level), level)
+
+
+## `count` affixes tirés **distincts** dans `rest`, qui perd ce qu'on y prend : deux
+## fois « acéré » se lirait comme un bug.
+static func draw(
+	rng: RandomNumberGenerator, rest: Array, count: int, level: int
+) -> Array[RolledAffix]:
+	var results: Array[RolledAffix] = []
+	for i in count:
 		var selected := _pick(rng, rest)
 		if selected == null:
 			break

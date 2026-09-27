@@ -2242,3 +2242,144 @@ msgstr "of the Hierophant"
 
 msgid "du Maître d'armes"
 msgstr "of the Weaponmaster"
+
+# ---------------------------------------------------------------------------
+# Pièces de monnaie (jalon 29)
+# ---------------------------------------------------------------------------
+
+msgid "Pièce de cuivre"
+msgstr "Copper Coin"
+
+msgid "Pièce de bronze"
+msgstr "Bronze Coin"
+
+msgid "Pièce d'argent"
+msgstr "Silver Coin"
+
+msgid "Pièce d'or"
+msgstr "Gold Coin"
+
+msgid "Pièce de platine"
+msgstr "Platinum Coin"
+
+msgid "Pièce de diamant"
+msgstr "Diamond Coin"
+
+msgid "Rend magique un objet normal"
+msgstr "Makes a normal item magic"
+
+msgid "Change les affixes d'un objet magique"
+msgstr "Rerolls the affixes of a magic item"
+
+msgid "Rend rare un objet magique"
+msgstr "Makes a magic item rare"
+
+msgid "Change les affixes d'un objet rare"
+msgstr "Rerolls the affixes of a rare item"
+
+msgid "Ajoute un affixe à un objet rare"
+msgstr "Adds an affix to a rare item"
+
+msgid "Change les valeurs des affixes d'un objet"
+msgstr "Rerolls the values of an item's affixes"
+
+msgid "clic droit, puis clic sur l'objet"
+msgstr "right-click, then click the item"
+
+msgid "Pile :"
+msgstr "Stack Size:"
+
+msgid "Commun"
+msgstr "Common"
+
+msgid "Magique"
+msgstr "Magic"
+
+msgid "Rare"
+msgstr "Rare"
+
+msgid "Armes"
+msgstr "Weapons"
+
+msgid "Mains gauches"
+msgstr "Off-hands"
+
+msgid "Casques"
+msgstr "Helmets"
+
+msgid "Torses"
+msgstr "Body Armours"
+
+msgid "Ceintures"
+msgstr "Belts"
+
+msgid "Amulettes"
+msgstr "Amulets"
+
+msgid "Anneaux"
+msgstr "Rings"
+
+msgid "Monnaie"
+msgstr "Currency"
+
+msgid "Filtre de butin"
+msgstr "Loot Filter"
+
+msgid "FILTRE DE BUTIN"
+msgstr "LOOT FILTER"
+
+msgid "Filtre actif  ({touche})"
+msgstr "Filter active  ({touche})"
+
+msgid "Montrer"
+msgstr "Show"
+
+msgid "Masquer"
+msgstr "Hide"
+
+msgid "Recolorer"
+msgstr "Recolor"
+
+msgid "La plus haute règle qui vise un objet décide"
+msgstr "The highest rule matching an item decides"
+
+msgid "Ajouter"
+msgstr "Add"
+
+msgid "Monter"
+msgstr "Up"
+
+msgid "Descendre"
+msgstr "Down"
+
+msgid "Choisir une règle, ou en ajouter une"
+msgstr "Pick a rule, or add one"
+
+msgid "Rareté"
+msgstr "Rarity"
+
+msgid "Type d'objet"
+msgstr "Item type"
+
+msgid "Affixes"
+msgstr "Affixes"
+
+msgid "tout"
+msgstr "everything"
+
+msgid "{n} type"
+msgid_plural "{n} types"
+msgstr[0] "{n} type"
+msgstr[1] "{n} types"
+
+msgid "{n} sur {total} affixes"
+msgstr "{n} of {total} affixes"
+
+msgid "Tous paliers"
+msgstr "Any tier"
+
+msgid "Palier T{t} ou mieux"
+msgstr "Tier T{t} or better"
+
+msgid "Aucun affixe sur ces types"
+msgstr "No affix on these types"

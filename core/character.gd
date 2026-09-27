@@ -7,14 +7,15 @@ extends RefCounted
 ## sauvegarde peut venir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
-const VERSION := 9
+const VERSION := 10
 
 ## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
 ## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
-## arbre de passifs vide ; v1 à v7 → Vive lame ; v1 à v8 → manuel de classe neuf.
-const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8, 9]
+## arbre de passifs vide ; v1 à v7 → Vive lame ; v1 à v8 → manuel de classe neuf ;
+## v1 à v9 → piles d'un exemplaire, rareté déduite des affixes.
+const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const LEGACY_ATTACK_DAMAGE := "attack_damage"
@@ -284,6 +285,11 @@ static func _item_to_dict(item: Item) -> Dictionary:
 	}
 	if item.manual != null:
 		entry["manual"] = _manual_to_dict(item.manual)
+	# Seulement quand ils disent quelque chose : un objet ordinaire s'écrit comme en v9.
+	if item.count > 1:
+		entry["count"] = item.count
+	if item.rare:
+		entry["rare"] = true
 	return entry
 
 
@@ -339,6 +345,9 @@ static func _item_from_dict(source: Variant) -> Item:
 	var item := Item.new(base, explicits, level)
 	# Absent, le bas de la plage : c'était la valeur fixe d'avant les plages.
 	item.implicit_roll = _float(item_dict, "base_roll", 0.0)
+	# Borné par la base : une pile trafiquée ne dépasse pas ce qu'une case porte.
+	item.count = clampi(_int(item_dict, "count", 1), 1, base.stack_max)
+	item.rare = item_dict.get("rare", false) == true
 	_manual_from_dict(item, item_dict.get("manual"))
 	return item
 

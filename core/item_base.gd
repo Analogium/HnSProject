@@ -32,6 +32,9 @@ extends Resource
 ## Encombrement dans le sac, en cases.
 @export var grid_size: Vector2i = Vector2i(1, 1)
 
+## Combien d'exemplaires une case porte : plus d'un pour une pièce de monnaie.
+@export var stack_max: int = 1
+
 ## La lignée : le même objet à plusieurs âges, unité de la relève. Un emplacement peut
 ## en avoir plusieurs (torse lourd, torse léger).
 @export var lineage: String = ""
@@ -48,6 +51,8 @@ extends Resource
 ## La seule famille sans emplacement : une base porte un archétype **si et seulement
 ## si** elle en est.
 const MANUAL_FAMILY := "manual"
+## Les pièces de monnaie : elles ne s'équipent pas, elles s'appliquent (`Currency`).
+const CURRENCY_FAMILY := "currency"
 
 ## L'archétype qu'ouvre cette base, ou null : un champ ici plutôt qu'un second
 ## catalogue qui divergerait.

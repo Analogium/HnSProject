@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_pause"]
 
@@ -17,6 +17,16 @@ corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tight"]
+
+[sub_resource type="Theme" id="Theme_loot"]
+CheckBox/styles/disabled = SubResource("StyleBoxEmpty_tight")
+CheckBox/styles/focus = SubResource("StyleBoxEmpty_tight")
+CheckBox/styles/hover = SubResource("StyleBoxEmpty_tight")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_tight")
+CheckBox/styles/normal = SubResource("StyleBoxEmpty_tight")
+CheckBox/styles/pressed = SubResource("StyleBoxEmpty_tight")
 
 [node name="PauseMenu" type="CanvasLayer"]
 layer = 10
@@ -164,10 +174,18 @@ text = "Fenêtre"
 custom_minimum_size = Vector2(168, 0)
 theme_override_font_sizes/font_size = 10
 
-[node name="KeysBtn" type="Button" parent="Root/Center/Panel/Options"]
-custom_minimum_size = Vector2(168, 0)
+[node name="Pages" type="HBoxContainer" parent="Root/Center/Panel/Options"]
+theme_override_constants/separation = 4
+
+[node name="KeysBtn" type="Button" parent="Root/Center/Panel/Options/Pages"]
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 10
 text = "Touches"
+
+[node name="LootBtn" type="Button" parent="Root/Center/Panel/Options/Pages"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+text = "Filtre de butin"
 
 [node name="Spacer2" type="Control" parent="Root/Center/Panel/Options"]
 custom_minimum_size = Vector2(0, 4)
@@ -211,5 +229,133 @@ text = "Rétablir les touches"
 
 [node name="Back" type="Button" parent="Root/Center/Panel/Keys"]
 custom_minimum_size = Vector2(344, 0)
+theme_override_font_sizes/font_size = 10
+text = "Retour"
+
+[node name="Loot" type="VBoxContainer" parent="Root/Center/Panel"]
+theme = SubResource("Theme_loot")
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Loot"]
+theme_override_colors/font_color = Color(0.85, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+text = "FILTRE DE BUTIN"
+
+[node name="Active" type="CheckBox" parent="Root/Center/Panel/Loot"]
+theme_override_font_sizes/font_size = 10
+
+[node name="Columns" type="HBoxContainer" parent="Root/Center/Panel/Loot"]
+theme_override_constants/separation = 10
+
+[node name="RulesSide" type="VBoxContainer" parent="Root/Center/Panel/Loot/Columns"]
+theme_override_constants/separation = 2
+
+[node name="Hint" type="Label" parent="Root/Center/Panel/Loot/Columns/RulesSide"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+text = "La plus haute règle qui vise un objet décide"
+
+[node name="RulesScroll" type="ScrollContainer" parent="Root/Center/Panel/Loot/Columns/RulesSide"]
+custom_minimum_size = Vector2(200, 196)
+horizontal_scroll_mode = 0
+
+[node name="Rules" type="VBoxContainer" parent="Root/Center/Panel/Loot/Columns/RulesSide/RulesScroll"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="RuleButtons" type="HBoxContainer" parent="Root/Center/Panel/Loot/Columns/RulesSide"]
+theme_override_constants/separation = 2
+
+[node name="Add" type="Button" parent="Root/Center/Panel/Loot/Columns/RulesSide/RuleButtons"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "Ajouter"
+
+[node name="Up" type="Button" parent="Root/Center/Panel/Loot/Columns/RulesSide/RuleButtons"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "Monter"
+
+[node name="Down" type="Button" parent="Root/Center/Panel/Loot/Columns/RulesSide/RuleButtons"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "Descendre"
+
+[node name="Delete" type="Button" parent="Root/Center/Panel/Loot/Columns/RulesSide/RuleButtons"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "Supprimer"
+
+[node name="Editor" type="VBoxContainer" parent="Root/Center/Panel/Loot/Columns"]
+custom_minimum_size = Vector2(290, 0)
+theme_override_constants/separation = 2
+
+[node name="Empty" type="Label" parent="Root/Center/Panel/Loot/Columns/Editor"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+text = "Choisir une règle, ou en ajouter une"
+
+[node name="Form" type="VBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor"]
+theme_override_constants/separation = 2
+
+[node name="Head" type="HBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_constants/separation = 4
+
+[node name="Action" type="Button" parent="Root/Center/Panel/Loot/Columns/Editor/Form/Head"]
+custom_minimum_size = Vector2(80, 0)
+theme_override_font_sizes/font_size = 9
+text = "Montrer"
+
+[node name="Colors" type="HBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form/Head"]
+theme_override_constants/separation = 2
+
+[node name="RarityTitle" type="Label" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+text = "Rareté"
+
+[node name="Rarities" type="HBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_constants/separation = 8
+
+[node name="FamilyTitle" type="Label" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+text = "Type d'objet"
+
+[node name="Families" type="GridContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 0
+columns = 4
+
+[node name="AffixTitle" type="Label" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_colors/font_color = Color(0.52, 0.5, 0.6, 1)
+theme_override_font_sizes/font_size = 8
+text = "Affixes"
+
+[node name="AffixScroll" type="ScrollContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+custom_minimum_size = Vector2(290, 80)
+horizontal_scroll_mode = 0
+
+[node name="Affixes" type="VBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form/AffixScroll"]
+theme_override_constants/separation = 0
+
+[node name="Count" type="HBoxContainer" parent="Root/Center/Panel/Loot/Columns/Editor/Form"]
+theme_override_constants/separation = 4
+
+[node name="MinCount" type="Button" parent="Root/Center/Panel/Loot/Columns/Editor/Form/Count"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = ""
+
+[node name="BestTier" type="Button" parent="Root/Center/Panel/Loot/Columns/Editor/Form/Count"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = ""
+
+[node name="Spacer" type="Control" parent="Root/Center/Panel/Loot"]
+custom_minimum_size = Vector2(0, 4)
+
+[node name="Back" type="Button" parent="Root/Center/Panel/Loot"]
 theme_override_font_sizes/font_size = 10
 text = "Retour"

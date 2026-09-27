@@ -148,6 +148,40 @@ func test_the_labels_switch_off_and_on() -> void:
 	assert_true(under.clicked(under.name_rect().get_center()), "et redeviennent cliquables")
 
 
+## Masqué par une règle, l'objet reste au sol mais ne se voit, ne se range ni ne se
+## ramasse ; la touche du filtre le rend tel quel. Une règle qui recolore teint le nom.
+func test_the_loot_filter_hides_without_destroying() -> void:
+	var before := Settings.to_dict()
+	var hide := LootFilter.Rule.new()
+	hide.action = LootFilter.Action.HIDE
+	hide.families = ["weapon"]
+	var recolor := LootFilter.Rule.new()
+	recolor.action = LootFilter.Action.RECOLOR
+	recolor.color = LootFilter.COLORS[4]
+	Settings.from_dict({"loot_filter_on": true, "loot_filter": [hide.to_dict(), recolor.to_dict()]})
+	var player := _player()
+	var ground := Node2D.new()
+	add_child_autofree(ground)
+	var hidden := GroundItem.spawn(ground, Vector2(300, 260), _sword(), player)
+	var other := GroundItem.spawn(ground, Vector2(302, 260), Item.new(ItemCatalog.by_id("ring")), player)
+	await wait_process_frames(2)
+
+	assert_false(hidden.visible, "l'épée disparaît")
+	assert_false(hidden.clicked(hidden.name_rect().get_center()), "et ne se ramasse plus")
+	assert_true(other.visible, "l'anneau reste")
+	assert_eq(other._tint, LootFilter.COLORS[4], "teint par la règle du dessous")
+	assert_false(other.name_rect().intersects(hidden.name_rect()) and other._shown != other._label,
+		"et ne monte pas au-dessus d'un masqué")
+
+	Settings.loot_filter_on = false
+	await wait_process_frames(2)
+	assert_true(hidden.visible, "filtre éteint, elle revient")
+	assert_eq(other._tint, other.data.color(), "et l'anneau reprend sa couleur")
+	assert_true(hidden.clicked(hidden.name_rect().get_center()), "et elle se ramasse")
+	Settings.from_dict(before)
+	Settings.changed.emit()
+
+
 ## Le clic gauche appartient à l'étiquette survolée ; les autres touches partent
 ## quand même. Avant, le survol prenait la souris entière, et un curseur posé sur un
 ## nom empêchait de lancer un sort au clic droit.

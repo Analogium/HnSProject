@@ -1,6 +1,6 @@
 # Fichiers de référence
 
-`character_v1.json` à `character_v9.json` sont des sauvegardes **écrites à la
+`character_v1.json` à `character_v10.json` sont des sauvegardes **écrites à la
 main**, versionnées avec le projet, et relues à chaque campagne par
 `tests/unit/test_save.gd`.
 
@@ -15,9 +15,12 @@ La v5 est celui du jalon 8 : une ligne de dégâts ajoutés y porte sa
 celui du jalon 16 : `attributes` et `unspent_points` y deviennent `passives`,
 la liste des nœuds pris de l'arbre. Relues aujourd'hui, les v1 à v6 arrivent avec un
 arbre vide : leurs attributs placés sont abandonnés. La v8 est celui du jalon 25 :
-la `class` du personnage. Les v1 à v7 sont des guerriers. La v9 est le format qu'on écrit,
-celui du jalon 28 : `class_manual`, l'expérience et les points du manuel de la classe,
-hors des trois entrées de `rack`. Les v1 à v8 reçoivent un manuel de classe neuf.
+la `class` du personnage. Les v1 à v7 sont des guerriers. La v9 est celui du jalon 28 :
+`class_manual`, l'expérience et les points du manuel de la classe, hors des trois
+entrées de `rack`. Les v1 à v8 reçoivent un manuel de classe neuf. La v10 est le format
+qu'on écrit, celui du jalon 29 : un objet peut porter `count`, sa pile de pièces, et
+`rare`, rare quel que soit son nombre d'affixes. Absents, une pile d'un et la rareté
+déduite des affixes.
 
 Les v1 à v5 **gardent leurs noms français** (`nom`, `epee`, `degats_feu`…) : c'est
 ce qui est sur les disques. `LegacyFrench` les traduit à la lecture, et ces fichiers

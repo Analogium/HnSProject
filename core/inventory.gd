@@ -104,14 +104,42 @@ func place(item: Item, cell: Vector2i) -> bool:
 	return true
 
 
-## À la première place libre, ligne par ligne. Faux quand rien ne rentre : l'appelant
-## laisse l'objet où il est.
+## Sur les piles de même base d'abord, puis à la première place libre, ligne par
+## ligne. Faux quand rien ne rentre : l'appelant laisse où il est ce qui reste de
+## l'objet — `item.count` a pu baisser.
 func add(item: Item) -> bool:
+	var stacked := 0
+	for p in placed:
+		stacked += p.data.absorb(item)
+	if stacked > 0:
+		changed.emit()
+	if item.count == 0:
+		return true
 	for y in rows:
 		for x in cols:
 			if fits(item, Vector2i(x, y)):
 				return place(item, Vector2i(x, y))
 	return false
+
+
+## Verse `item` sur la pile d'index `index` ; faux si rien n'a changé de pile.
+func stack_onto(index: int, item: Item) -> bool:
+	if placed[index].data.absorb(item) == 0:
+		return false
+	changed.emit()
+	return true
+
+
+## Retire un exemplaire de la pile de cette case, et la case avec le dernier.
+func spend_one(cell: Vector2i) -> void:
+	var i := index_at(cell)
+	if i == EMPTY:
+		return
+	placed[i].data.count -= 1
+	if placed[i].data.count <= 0:
+		take_at(cell)
+	else:
+		changed.emit()
 
 
 func index_at(cell: Vector2i) -> int:

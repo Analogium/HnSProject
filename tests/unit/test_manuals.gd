@@ -36,10 +36,10 @@ func test_an_archetype_goes_with_the_manual_family() -> void:
 			"« %s » : famille « %s » et archétype ne disent pas la même chose"
 				% [base.display_name, base.family]
 		)
-		if not is_manual:
+		if not is_manual and base.family != ItemBase.CURRENCY_FAMILY:
 			assert_true(
 				EquipmentSlots.equippable_family(base.family),
-				"« %s » ne se porte nulle part et n'est pas un manuel" % base.display_name
+				"« %s » ne se porte nulle part et n'est ni un manuel ni une pièce" % base.display_name
 			)
 
 

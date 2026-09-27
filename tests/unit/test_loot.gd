@@ -6,8 +6,54 @@ extends GutTest
 
 
 func test_quantity_grows_with_affixes() -> void:
-	assert_eq(LootTable.quantity_for(0), 1.0, "un ennemi ordinaire")
-	assert_almost_eq(LootTable.quantity_for(2), 1.2, 0.0001, "+10 % par affixe")
+	assert_eq(LootTable.quantity_for(0, 1), 1.0, "un ennemi ordinaire")
+	assert_almost_eq(LootTable.quantity_for(2, 1), 1.2, 0.0001, "+10 % par affixe")
+
+
+## Le niveau multiplie les affixes, il ne s'y ajoute pas : l'élite garde son avance.
+func test_quantity_grows_with_the_zone_level() -> void:
+	assert_almost_eq(LootTable.quantity_for(0, 120), 2.19, 0.0001, "+1 % par niveau")
+	assert_almost_eq(LootTable.quantity_for(2, 51), 1.2 * 1.5, 0.0001)
+
+
+func test_a_deeper_zone_drops_more_often() -> void:
+	Game.rng.seed = 1201
+	var shallow := 0
+	var deep := 0
+	for i in 20000:
+		if LootTable.roll(0, 1) != null:
+			shallow += 1
+		if LootTable.roll(0, 120) != null:
+			deep += 1
+	# 0,20 × 2,19, puis × 1,085 : les pièces rares que la profondeur ajoute.
+	var rate := float(deep) / 20000.0
+	assert_between(rate, 0.455, 0.495, "0,475 attendu, mesuré %.3f" % rate)
+	assert_gt(deep, shallow)
+
+
+## Au niveau 1, les poids du jalon tels quels ; plus haut, chaque nombre d'affixes
+## gagne sur le précédent.
+func test_rarity_tilts_with_the_zone_level() -> void:
+	var flat := ItemAffixPool.count_weights(1)
+	for i in flat.size():
+		assert_eq(flat[i], 100 * ItemAffixPool.COUNT_WEIGHTS[i])
+	var steep := ItemAffixPool.count_weights(120)
+	for i in range(1, steep.size()):
+		assert_gt(float(steep[i]) / flat[i], float(steep[i - 1]) / flat[i - 1], "%d affixes" % i)
+
+
+func test_a_deeper_zone_drops_more_rares() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3030
+	var shallow := 0
+	var deep := 0
+	for i in 20000:
+		if ItemAffixPool.roll_count(rng, 99) > Item.MAGIC_MAX:
+			shallow += 1
+		if ItemAffixPool.roll_count(rng, 99, 0, ItemAffixPool.MAX_COUNT, 120) > Item.MAGIC_MAX:
+			deep += 1
+	assert_between(float(shallow) / 20000.0, 0.145, 0.175, "16 % de rares au niveau 1")
+	assert_between(float(deep) / 20000.0, 0.355, 0.385, "37 % de rares au niveau 120")
 
 
 ## Le taux réel, mesuré et non déclaré. Fenêtre large : on vérifie l'ordre de

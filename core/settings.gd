@@ -139,6 +139,29 @@ func _reveil(group: StringName) -> void:
 func shows_damage(on_the_player: bool) -> bool:
 	return damage_taken_visible if on_the_player else damage_dealt_visible
 
+
+## Éteint par sa touche, le filtre laisse le butin tel que le jeu le tire : masqué
+## n'est jamais détruit.
+var loot_filter_on := true:
+	set(value):
+		if value == loot_filter_on:
+			return
+		loot_filter_on = value
+		_announce()
+
+## Modifié en place par la page du filtre, qui appelle ensuite `loot_filter_edited()`.
+var loot_filter := LootFilter.new()
+
+
+## La règle qui décide de cet objet au sol, ou null : filtre éteint, ou aucune règle
+## ne le vise.
+func loot_rule(item: Item) -> LootFilter.Rule:
+	return loot_filter.rule_for(item) if loot_filter_on else null
+
+
+func loot_filter_edited() -> void:
+	_announce()
+
 ## « fr » ou « en », toujours normalisée. La poser change la locale du moteur, qui
 ## retraduit les scènes et notifie les panneaux dessinés.
 var language := FRENCH:
@@ -329,6 +352,8 @@ func to_dict() -> Dictionary:
 		"language": language,
 		"scale_factor": scale_factor,
 		"key_binds": key_binds,
+		"loot_filter_on": loot_filter_on,
+		"loot_filter": loot_filter.to_list(),
 	}
 
 
@@ -349,6 +374,9 @@ func from_dict(source: Dictionary) -> void:
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	language = String(source.get("language", language))
 	key_binds = valid_binds(source.get("key_binds", {}))
+	loot_filter_on = bool(source.get("loot_filter_on", loot_filter_on))
+	if source.has("loot_filter"):
+		loot_filter = LootFilter.from_list(source["loot_filter"])
 	var read_value: Variant = source.get("scale_factor", scale_factor)
 	if read_value is float or read_value is int:
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand

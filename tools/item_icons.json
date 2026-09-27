@@ -194,5 +194,29 @@
   "manual_swiftblade": [
     "a closed dark red leather tome with a silver dagger emblem on its cover, front view",
     1337
+  ],
+  "coin_copper": [
+    "a single round shiny reddish-orange copper coin stamped with a crown, front view",
+    1337
+  ],
+  "coin_bronze": [
+    "a single round dull dark brown bronze coin stamped with a crown, front view",
+    1337
+  ],
+  "coin_silver": [
+    "a single round bright polished silver coin stamped with a crown, front view",
+    1337
+  ],
+  "coin_gold": [
+    "a single round gleaming yellow gold coin stamped with a crown, front view",
+    1337
+  ],
+  "coin_platinum": [
+    "a single round pale bluish-white platinum coin stamped with a crown, front view",
+    1337
+  ],
+  "coin_diamond": [
+    "a single round coin stamped with a crown, made of clear icy blue faceted diamond crystal, front view",
+    777
   ]
 }

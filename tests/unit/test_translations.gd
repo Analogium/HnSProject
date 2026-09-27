@@ -284,6 +284,12 @@ func _expected() -> Dictionary:
 		out[Keywords.DAMAGE_NOUNS[id]] = "dégâts d'un mot-clé, d'un seul nom"
 	for id in EquipmentSlots.SLOTS:
 		out[EquipmentSlots.SLOTS[id]["label"]] = "emplacement d'équipement"
+	for id in LootFilter.FAMILIES:
+		out[LootFilter.FAMILIES[id]] = "type d'objet du filtre de butin"
+	for label_of in LootFilter.ACTION_LABELS:
+		out[label_of] = "action d'une règle du filtre"
+	for label_of in Item.RARITY_LABELS:
+		out[label_of] = "rareté"
 	for field in StatMod.LABELS:
 		out[StatMod.LABELS[field]] = "nom de statistique"
 	for field in SkillStats.LABELS:

@@ -209,3 +209,71 @@ func test_right_click_without_control_still_equips() -> void:
 
 	assert_eq(_player.inventory.placed.size(), 0, "il a quitté le sac")
 	assert_same(_player.equipped("ring_left"), ring, "pour le doigt")
+
+
+# --------------------------------------------------------------------------
+# Les pièces de monnaie (jalon 29)
+# --------------------------------------------------------------------------
+
+## Un clic de souris sur une case, par `_input` : le chemin du joueur.
+func _click(button: MouseButton, cell: Vector2i) -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = button
+	click.pressed = true
+	click.position = (
+		_panel.get_global_transform_with_canvas()
+		* _panel._rect_of(cell, Vector2i.ONE).get_center()
+	)
+	_panel._input(click)
+
+
+## Clic droit sur la pièce, clic sur l'objet : l'objet change, la pièce est dépensée.
+func test_a_coin_is_right_clicked_then_applied() -> void:
+	_panel.visible = true
+	_put(Currency.COPPER, Vector2i(0, 0))
+	var ring := _put("ring", Vector2i(2, 1))
+
+	_click(MOUSE_BUTTON_RIGHT, Vector2i(0, 0))
+	assert_not_null(_panel._coin, "la pièce est prise")
+	assert_null(_player.equipped("ring_left"), "l'anneau n'a pas été équipé au passage")
+	_click(MOUSE_BUTTON_LEFT, Vector2i(2, 1))
+
+	assert_eq(ring.rarity(), Item.Rarity.MAGIC, "l'anneau est devenu magique")
+	assert_eq(_player.inventory.placed.size(), 1, "la pièce a été dépensée")
+	assert_null(_panel._coin, "et le geste est fini")
+
+
+## Sur un objet qui la refuse, la pièce reste dans le sac et le geste s'arrête.
+func test_a_refused_coin_is_kept() -> void:
+	_panel.visible = true
+	_put(Currency.BRONZE, Vector2i(0, 0))
+	var ring := _put("ring", Vector2i(2, 1))
+
+	_click(MOUSE_BUTTON_RIGHT, Vector2i(0, 0))
+	_click(MOUSE_BUTTON_LEFT, Vector2i(2, 1))
+
+	assert_eq(ring.rarity(), Item.Rarity.COMMON, "le bronze ne touche pas un objet normal")
+	assert_eq(_player.inventory.placed.size(), 2, "la pièce est gardée")
+	assert_null(_panel._coin)
+
+
+## Une pile posée sur une pile de même base s'y verse au lieu d'échanger.
+func test_a_held_stack_pours_into_its_twin() -> void:
+	var target := _put(Currency.COPPER, Vector2i(0, 0))
+	var held := _put(Currency.COPPER, Vector2i(3, 0))
+	held.count = 4
+	_drag(Vector2i(3, 0), Vector2i(0, 0))
+	assert_eq(target.count, 5)
+	assert_eq(_player.inventory.placed.size(), 1, "la pile tenue s'est vidée")
+	assert_null(_panel._held)
+
+
+## Appliquée depuis une pile, une pièce n'en retire qu'une.
+func test_applying_from_a_stack_spends_one() -> void:
+	_panel.visible = true
+	var coins := _put(Currency.COPPER, Vector2i(0, 0))
+	coins.count = 3
+	_put("ring", Vector2i(2, 1))
+	_click(MOUSE_BUTTON_RIGHT, Vector2i(0, 0))
+	_click(MOUSE_BUTTON_LEFT, Vector2i(2, 1))
+	assert_eq(coins.count, 2)

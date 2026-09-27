@@ -172,6 +172,7 @@ GROUPS = {
   "pieds": "boots studded_boots travel_boots belt girdle baldric",
   "bijoux": "amulet talisman pendentif ring ornate_ring signet_ring",
   "livres": "grimoire codex manual_lightning manual_fire manual_weapons",
+  "monnaie": "coin_copper coin_bronze coin_silver coin_gold coin_platinum coin_diamond",
 }
 ZOOM = 5
 

@@ -330,6 +330,9 @@ func test_the_window_opens_at_the_required_level() -> void:
 ## personne ne verra jamais, et rien d\'autre ne le signalerait.
 func test_every_base_drops_at_some_point() -> void:
 	for base in ItemCatalog.ALL:
+		# Une pièce tombe par son poids, que `test_currency.gd` exige.
+		if base.family == ItemBase.CURRENCY_FAMILY:
+			continue
 		var view := false
 		for level in range(1, 61):
 			if ItemCatalog.available(level).has(base):
