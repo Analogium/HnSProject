@@ -65,11 +65,8 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Un tirage par impulsion, qu'elle touche ou non : c'est un geste de l'émanation.
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
-		Targets.strike(target, parts, global_position, _player.states, _cast)
+	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _player.states)
 
 
 ## Une onde de grains qui part du porteur à chaque impulsion, et le halo tramé qui

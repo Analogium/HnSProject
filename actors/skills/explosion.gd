@@ -148,8 +148,7 @@ func _blaze(r: float, k: float, fade: float) -> void:
 	var burst := EffectForge.flashes(tint)
 	var step := int(_age * EffectForge.FLASH_HZ)
 	if step < burst.size():
-		var side := Vector2.ONE * float(EffectForge.FLASH_SIZE)
-		draw_texture_rect(burst[step], Rect2(EffectForge.snap(self, -side * 0.5), side), false)
+		EffectForge.put_centered(self, burst[step], Vector2.ZERO)
 
 
 ## La nova de glace, **entièrement dessinée** : un anneau d'éclats qui file vers

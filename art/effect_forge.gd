@@ -638,6 +638,15 @@ static func snap(ci: CanvasItem, offset: Vector2) -> Vector2:
 	return (origin + offset).round() - origin
 
 
+## Pose une planche **par son centre**, calée, `fade` pour ce qui a le droit de
+## s'effacer. Grains, flocons, éclats et boules écrivaient ce cadre à la main, dix fois.
+static func put_centered(ci: CanvasItem, tex: Texture2D, at: Vector2, fade := 1.0) -> void:
+	if fade <= 0.0:
+		return
+	var size := Vector2(tex.get_size())
+	ci.draw_texture_rect(tex, Rect2(snap(ci, at - size * 0.5), size), false, Color(1.0, 1.0, 1.0, fade))
+
+
 ## Fait tourner une grille d'un quart de tour dans le sens des aiguilles : la
 ## seule rotation qu'un dessin en pixels supporte sans se rééchantillonner.
 ##

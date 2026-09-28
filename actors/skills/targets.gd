@@ -91,6 +91,19 @@ static func strike(
 		target.take_damage(info)
 
 
+## Une impulsion : **un tirage pour tout le cercle**, qu'il touche ou non (invariant 3),
+## puis chaque cible frappée depuis le centre. Rend les cibles. Sept gestes qui durent ou
+## qui tombent écrivaient ces trois lignes.
+static func strike_circle(
+	world: World2D, center: Vector2, radius: float, cast: SkillStats, author: StatusEffects
+) -> Array[Hurtbox]:
+	var parts := cast.roll(Game.rng)
+	var targets := in_circle(world, center, radius)
+	for target in targets:
+		strike(target, parts, center, author, cast)
+	return targets
+
+
 ## Qui a été touché et quand il pourra l'être à nouveau, pour ce qui frappe au
 ## contact : un contact dure plusieurs images, et ne doit compter qu'une fois par
 ## période.

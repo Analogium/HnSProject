@@ -35,19 +35,11 @@ func setup(
 func _draw() -> void:
 	var t := tint()
 	var puffs := EffectForge.puffs(t)
-	var half := Vector2(EffectForge.PUFF_SIZE, EffectForge.PUFF_SIZE) * 0.5
 	for i in TRAIL:
-		var behind := -_dir * (TRAIL_STEP * float(i + 1))
-		_blit(puffs[mini(i, puffs.size() - 1)], behind - half)
+		EffectForge.put_centered(self, puffs[mini(i, puffs.size() - 1)], -_dir * (TRAIL_STEP * float(i + 1)))
 
 	var balls := EffectForge.balls(t)
-	var frame := int(_life * EffectForge.BALL_HZ) % balls.size()
-	_blit(balls[frame], -Vector2(EffectForge.BALL_SIZE, EffectForge.BALL_SIZE) * 0.5)
-
-
-func _blit(tex: Texture2D, offset: Vector2) -> void:
-	var corner := EffectForge.snap(self, offset)
-	draw_texture_rect(tex, Rect2(corner, Vector2(tex.get_width(), tex.get_height())), false)
+	EffectForge.put_centered(self, balls[int(_life * EffectForge.BALL_HZ) % balls.size()], Vector2.ZERO)
 
 
 func _on_area_entered(area: Area2D) -> void:

@@ -56,9 +56,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
-		var parts := _cast.roll(Game.rng)
-		for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
-			Targets.strike(target, parts, global_position, _author, _cast)
+		Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
 	_age += delta
 	queue_redraw()
 	if _age >= LIFETIME:

@@ -70,11 +70,8 @@ func _physics_process(delta: float) -> void:
 	_player.burn(_cast.self_burn, _cast.distribution(), delta)
 
 
-## Un tirage par impulsion, qu'elle touche ou non : c'est un geste du cyclone.
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
-		Targets.strike(target, parts, global_position, _player.states, _cast)
+	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _player.states)
 
 
 ## Des lames en rotation plutôt qu'un disque : c'est le mouvement qui dit « ça tourne »,
@@ -94,9 +91,7 @@ func _draw() -> void:
 		Slash.crescent(tint, r, THICKNESS, turn, -TRAIL, 0.0, 0.0).put(self, Vector2.ZERO)
 
 	var grain := EffectForge.spark(tint)
-	var half := Vector2(grain.get_width(), grain.get_height()) * 0.5
 	for i in MOTES:
 		var turn := _age * SPIN * 0.6 + TAU * float(i) / float(MOTES)
 		var distance := r * (0.4 + 0.55 * fmod(_age * 0.9 + float(i) * 0.121, 1.0))
-		var at := Vector2.from_angle(turn) * distance
-		draw_texture_rect(grain, Rect2(EffectForge.snap(self, at - half), half * 2.0), false)
+		EffectForge.put_centered(self, grain, Vector2.from_angle(turn) * distance)

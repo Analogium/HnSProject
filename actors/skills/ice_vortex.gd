@@ -72,11 +72,8 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Un tirage par impulsion, qu'elle touche ou non : c'est un geste du vortex.
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
-	for target in Targets.in_circle(get_world_2d(), global_position, reach()):
-		Targets.strike(target, parts, global_position, _author, _cast)
+	Targets.strike_circle(get_world_2d(), global_position, reach(), _cast, _author)
 
 
 ## Un tourbillon, et non un cercle de pics : quatre bras d'éclats **couchés sur

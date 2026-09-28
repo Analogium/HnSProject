@@ -71,8 +71,8 @@ Les règles qui ne se discutent plus :
    dessinée.
 2. **Pas d'additif** : un contour sombre n'ajoute rien en lumière ajoutée. Le
    nœud ne pose `ArtPalette.ADDITIVE` que pour les natures encore tracées.
-3. **Calé sur le pixel** : toujours passer par `EffectForge.snap()` ou
-   `EffectForge.Piece.put()`.
+3. **Calé sur le pixel** : toujours passer par `EffectForge.snap()`,
+   `EffectForge.put_centered()` ou `EffectForge.Piece.put()`.
 4. **Ni rotation ni étirement d'une planche.** Selon le cas :
    - planche d'animation, si la taille est fixe ;
    - planches replacées une à une, si la forme se répète à toute taille ;

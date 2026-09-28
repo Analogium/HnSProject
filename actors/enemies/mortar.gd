@@ -49,6 +49,4 @@ class Shell:
 
 	func _draw() -> void:
 		var balls := EffectForge.balls(DamageType.COLORS[DamageType.Kind.FIRE])
-		var tex: Texture2D = balls[int(_age * EffectForge.BALL_HZ) % balls.size()]
-		var corner := EffectForge.snap(self, -Vector2(EffectForge.BALL_SIZE, EffectForge.BALL_SIZE) * 0.5)
-		draw_texture_rect(tex, Rect2(corner, tex.get_size()), false)
+		EffectForge.put_centered(self, balls[int(_age * EffectForge.BALL_HZ) % balls.size()], Vector2.ZERO)

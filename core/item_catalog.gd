@@ -150,3 +150,12 @@ static func by_id(id: String) -> ItemBase:
 		if base.id == id:
 			return base
 	return null
+
+
+## La première base de cette famille dans l'ordre du catalogue, ou null : celle qui
+## la représente — l'emplacement vide du sac, l'icône d'un type dans le filtre.
+static func first_of(family: String) -> ItemBase:
+	for base in ALL:
+		if base.family == family:
+			return base
+	return null

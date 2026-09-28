@@ -49,7 +49,7 @@ static func list_all() -> Array[Character]:
 ## Null pour un fichier absent, tronqué ou de version inconnue ; jamais d'exception.
 static func read(id: String) -> Character:
 	LegacyFrench.move_save_folder(FOLDER)
-	var data: Variant = _read_json(path(id))
+	var data: Variant = read_json(path(id))
 	return Character.from_dict(data) if data != null else null
 
 
@@ -58,7 +58,7 @@ static func write(character: Character) -> bool:
 	if character == null or character.id.is_empty() or character.unreadable:
 		return false
 	character.played_on = Time.get_date_string_from_system()
-	return _write_json(path(character.id), character.to_dict())
+	return write_json(path(character.id), character.to_dict())
 
 
 ## Un coffre vide au premier lancement ; **marqué illisible** quand le fichier existe
@@ -66,7 +66,7 @@ static func write(character: Character) -> bool:
 static func read_stash() -> Stash:
 	if not FileAccess.file_exists(STASH):
 		return Stash.new()
-	var data: Variant = _read_json(STASH)
+	var data: Variant = read_json(STASH)
 	var stash := Stash.from_dict(data) if data != null else null
 	if stash == null:
 		stash = Stash.new()
@@ -77,11 +77,12 @@ static func read_stash() -> Stash:
 static func write_stash(stash: Stash) -> bool:
 	if stash == null or stash.unreadable:
 		return false
-	return _write_json(STASH, stash.to_dict())
+	return write_json(STASH, stash.to_dict())
 
 
 ## Null pour un fichier absent ou abîmé, avec un avertissement pour le second.
-static func _read_json(file_path: String) -> Variant:
+## Personnages, coffre et réglages se lisent et s'écrivent par ces deux-là.
+static func read_json(file_path: String) -> Variant:
 	var file := FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
 		return null
@@ -104,7 +105,7 @@ static func _read_json(file_path: String) -> Variant:
 
 ## En deux temps, un `.tmp` fermé puis renommé, pour qu'une coupure ne laisse jamais
 ## un fichier tronqué.
-static func _write_json(file_path: String, data: Dictionary) -> bool:
+static func write_json(file_path: String, data: Dictionary) -> bool:
 	var folder_path := file_path.get_base_dir()
 	if DirAccess.make_dir_recursive_absolute(folder_path) != OK:
 		push_error("Impossible de créer %s" % folder_path)

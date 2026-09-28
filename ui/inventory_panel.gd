@@ -216,8 +216,7 @@ func _close_storage() -> void:
 			unsold.append(p.data)
 		_storage.clear()
 		for item in unsold:
-			if not _inventory.add(item):
-				drop_requested.emit(item)
+			_stow(item)
 	_pages = []
 	_storage = null
 	_selling = false
@@ -407,16 +406,20 @@ func _wear(item: Item, slot := "") -> bool:
 	var old := _player.study(item) if Rack.accepts(item) else _player.equip(item, slot)
 	if old == item:
 		return false
-	if old != null and not _inventory.add(old):
-		drop_requested.emit(old)
+	_stow(old)
 	return true
 
 
 func _unequip(slot: String) -> void:
-	var item := _player.unequip(slot)
+	_stow(_player.unequip(slot))
+	queue_redraw()
+
+
+## Au sac, au sol s'il est plein : **rien ne se perd**. L'étal refermé, l'objet
+## délogé d'un emplacement et celui qu'on retire l'écrivaient chacun.
+func _stow(item: Item) -> void:
 	if item != null and not _inventory.add(item):
 		drop_requested.emit(item)
-	queue_redraw()
 
 
 ## Un objet du sac ou d'un emplacement ; le vide ne fait rien.
@@ -694,11 +697,8 @@ func _slot_rect(index: int) -> Rect2:
 
 ## L'objet type d'un emplacement, pris dans le catalogue.
 static func _ghost_kind(slot: String) -> String:
-	var family := EquipmentSlots.family_of(slot)
-	for base in ItemCatalog.ALL:
-		if base.family == family:
-			return base.kind
-	return ""
+	var base := ItemCatalog.first_of(EquipmentSlots.family_of(slot))
+	return base.kind if base != null else ""
 
 
 ## L'encombrement de la grille du personnage, en pixels.

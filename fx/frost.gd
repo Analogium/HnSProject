@@ -53,20 +53,10 @@ static func raise_spike(
 ## Un éclat couché sur son cap, pris parmi les huit orientations : c'est lui qui
 ## dit qu'un tourbillon tourne. Tous pointés en haut, ce serait une chute de neige.
 static func chip(ci: CanvasItem, at: Vector2, heading: float, tint: Color, fade: float) -> void:
-	_put(ci, EffectForge.chips(tint)[EffectForge.chip_turn(heading)], at, fade)
+	EffectForge.put_centered(ci, EffectForge.chips(tint)[EffectForge.chip_turn(heading)], at, fade)
 
 
 ## Un flocon emporté : une croix de trois pixels, pas un carré. Un carré est un
 ## confetti.
 static func drift(ci: CanvasItem, at: Vector2, tint: Color, fade: float) -> void:
-	_put(ci, EffectForge.flake(tint), at, fade)
-
-
-static func _put(ci: CanvasItem, tex: Texture2D, at: Vector2, fade: float) -> void:
-	if fade <= 0.0:
-		return
-	var size := Vector2(tex.get_width(), tex.get_height())
-	ci.draw_texture_rect(
-		tex, Rect2(EffectForge.snap(ci, at - size * 0.5), size), false,
-		Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_centered(ci, EffectForge.flake(tint), at, fade)

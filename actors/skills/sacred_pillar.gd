@@ -60,11 +60,8 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Un tirage par impulsion, qu'elle touche ou non : c'est un geste du pilier.
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
-		Targets.strike(target, parts, global_position, _author, _cast)
+	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
 
 
 ## La colonne **tombe du ciel** : elle se découvre du haut vers le bas au lieu de

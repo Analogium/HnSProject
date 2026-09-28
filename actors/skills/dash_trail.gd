@@ -142,10 +142,8 @@ func _burnt_path(last: Vector2, fade: float) -> void:
 	var burns := EffectForge.burns()
 	var span := last.length()
 	var marks := maxi(int(span / BURN_STEP), 2)
-	var burn_half := Vector2(EffectForge.BURN_WIDTH, EffectForge.BURN_HEIGHT) * 0.5
 	for i in marks + 1:
-		var at := last * (float(i) / float(marks))
-		_blit(burns[i % burns.size()], at - burn_half, fade)
+		EffectForge.put_centered(self, burns[i % burns.size()], last * (float(i) / float(marks)), fade)
 
 	var tall := EffectForge.flames(_tint)
 	var short := EffectForge.small_flames(_tint)
@@ -170,12 +168,11 @@ func _burnt_path(last: Vector2, fade: float) -> void:
 func _slashed_path(last: Vector2) -> void:
 	_cut.put(self, Vector2.ZERO)
 	var grain := EffectForge.spark(_tint)
-	var half := Vector2(grain.get_width(), grain.get_height()) * 0.5
 	var across := last.orthogonal().normalized()
 	for i in SPARKS:
 		var side := 1.0 if i % 2 == 0 else -1.0
 		var at := last * ((float(i) + 0.5) / float(SPARKS)) + across * side * (3.0 + _age * SPARK_SPEED)
-		_blit(grain, at - half, 1.0)
+		EffectForge.put_centered(self, grain, at)
 
 
 ## Peinte — fait de planches cernées — ou tracée en lumière ajoutée.

@@ -428,7 +428,7 @@ func from_dict(source: Dictionary) -> void:
 	elif not read.is_empty():
 		loot_filter_index = 0
 	var read_value: Variant = source.get("scale_factor", scale_factor)
-	if read_value is float or read_value is int:
+	if _is_number(read_value):
 		# Bornée à la lecture : un fichier écrit sur un écran plus grand
 		# demanderait un facteur que celui-ci ne peut pas afficher.
 		scale_factor = clampi(int(read_value), FULLSCREEN, max_scale_factor())
@@ -453,33 +453,16 @@ static func valid_binds(source: Variant) -> Dictionary:
 	return out
 
 
+## Illisible, les valeurs en place restent : `read_json()` le signale.
 func _load() -> void:
-	var file := FileAccess.open(FILE, FileAccess.READ)
-	var legacy := file == null
-	if legacy:
-		file = FileAccess.open(LegacyFrench.SETTINGS_FILE, FileAccess.READ)
-	if file == null:
-		return
-	var text_value := file.get_as_text()
-	file.close()
-
-	# Une instance de JSON et non la fonction statique : celle-ci journalise une
-	# erreur du moteur sur un fichier abîmé, alors que le cas est attendu ici.
-	var reader := JSON.new()
-	if reader.parse(text_value) != OK or not reader.data is Dictionary:
-		push_warning("Réglages illisibles : les valeurs par défaut s'appliquent.")
-		return
-	from_dict(LegacyFrench.settings(reader.data) if legacy else reader.data)
+	var legacy := not FileAccess.file_exists(FILE)
+	var data: Variant = SaveStore.read_json(LegacyFrench.SETTINGS_FILE if legacy else FILE)
+	if data != null:
+		from_dict(LegacyFrench.settings(data) if legacy else data)
 
 
-## Sans écriture atomique, contrairement aux personnages : perdre les réglages coûte
-## trois clics.
+## Par le `.tmp` renommé des personnages : les filtres de butin y sont, et une coupure
+## en pleine écriture les perdrait.
 func _write() -> void:
-	if _loading:
-		return
-	var file := FileAccess.open(FILE, FileAccess.WRITE)
-	if file == null:
-		push_warning("Réglages non enregistrés : écriture impossible.")
-		return
-	file.store_string(JSON.stringify(to_dict(), "\t"))
-	file.close()
+	if not _loading:
+		SaveStore.write_json(FILE, to_dict())

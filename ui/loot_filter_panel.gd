@@ -680,7 +680,7 @@ func _fill_preview() -> void:
 	if shown > 0:
 		return
 	var example: ItemBase = ItemCatalog.by_id(rule.bases[0]) if not rule.bases.is_empty() \
-		else base_of(rule.families[0] if not rule.families.is_empty() else "ring")
+		else ItemCatalog.first_of(rule.families[0] if not rule.families.is_empty() else "ring")
 	var rarity: int = rule.rarities[0] if not rule.rarities.is_empty() else Item.Rarity.COMMON
 	var color: Color = rule.color if rule.action == LootFilter.Action.RECOLOR else Item.RARITY_COLORS[rarity]
 	_preview.add_child(_nameplate(Texts.t(example.display_name), color, LootFilter.hides(rule)))
@@ -780,7 +780,7 @@ func _family_icons(rule: LootFilter.Rule) -> Control:
 	grid.add_theme_constant_override("h_separation", 1)
 	for family: String in LootFilter.FAMILIES:
 		var icon := Button.new()
-		icon.icon = SpriteForge.ground_icon(base_of(family))
+		icon.icon = SpriteForge.ground_icon(ItemCatalog.first_of(family))
 		icon.toggle_mode = true
 		icon.button_pressed = rule.families.has(family)
 		icon.tooltip_text = Texts.t(LootFilter.FAMILIES[family])
@@ -1111,13 +1111,6 @@ static func _deepest_tier() -> int:
 	return deepest
 
 
-static func base_of(family: String) -> ItemBase:
-	for raw in ItemCatalog.ALL:
-		if (raw as ItemBase).family == family:
-			return raw
-	return null
-
-
 static func _toggle(list: Array, value: Variant, on: bool) -> void:
 	if on and not list.has(value):
 		list.append(value)
@@ -1136,7 +1129,7 @@ static func _clear(box: Node) -> void:
 
 func _icon(family: String, size: int) -> Control:
 	var t := TextureRect.new()
-	t.texture = SpriteForge.ground_icon(base_of(family))
+	t.texture = SpriteForge.ground_icon(ItemCatalog.first_of(family))
 	t.custom_minimum_size = Vector2(size, size)
 	t.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	t.mouse_filter = MOUSE_FILTER_IGNORE

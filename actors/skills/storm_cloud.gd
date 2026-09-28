@@ -98,13 +98,10 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Un tirage par impulsion, qu'elle touche ou non : c'est un geste du nuage.
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
-	var targets := Targets.in_circle(get_world_2d(), global_position, _cast.radius)
+	var targets := Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
 	for target in targets:
 		_bolt_to(to_local(target.global_position))
-		Targets.strike(target, parts, global_position, _author, _cast)
 	if targets.is_empty():
 		# Un éclair au sol même sans cible : le nuage montre qu'il frappe, et où.
 		_bolt_to(

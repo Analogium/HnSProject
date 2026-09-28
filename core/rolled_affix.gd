@@ -27,13 +27,18 @@ static func orphan(p_mod: StatMod) -> RolledAffix:
 ## « T4  (45–58) », ou vide sans provenance : jamais un palier déduit de la valeur,
 ## les fourchettes voisines se chevauchent.
 func tier_and_span() -> String:
-	if not known():
-		return ""
-	var definition := ItemAffixPool.by_id(affix_id)
-	if definition == null or tier > definition.tiers.size():
-		return ""
-	return "T%d  (%s)" % [tier, definition.span(tier - 1)]
+	var origin := definition()
+	return "" if origin == null else "T%d  (%s)" % [tier, origin.span(tier - 1)]
 
 
 func known() -> bool:
 	return tier > 0 and not affix_id.is_empty()
+
+
+## L'affixe d'origine, **si son palier existe encore** ; null sinon. L'infobulle et la
+## pièce de diamant posaient chacune la question.
+func definition() -> ItemAffix:
+	if not known():
+		return null
+	var origin := ItemAffixPool.by_id(affix_id)
+	return origin if origin != null and tier <= origin.tiers.size() else null

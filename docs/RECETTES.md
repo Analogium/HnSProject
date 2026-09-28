@@ -491,7 +491,8 @@ touche et retire la « moyenne par lancer ». Les trois veulent un prix par seco
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
 `Player.cast_slot()`, son nœud dans `actors/skills/` — qui passe par
-`Targets` pour trouver ses cibles, par `Hurtbox.take_damage()` pour frapper et
+`Targets` pour trouver ses cibles — `Targets.strike_circle()` pour une impulsion sur un
+cercle, un tirage pour tout le geste —, par `Hurtbox.take_damage()` pour frapper et
 par `Settings.veil(nœud, Settings.SPELLS)` à sa naissance pour suivre le curseur
 d'opacité des sorts —, et
 son test dans `tests/integration/test_shapes.gd`.

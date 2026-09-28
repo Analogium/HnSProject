@@ -232,7 +232,7 @@ func _draw_slot(index: int) -> void:
 
 	var skill := _player.bar.skill_of(index)
 	if skill != null:
-		_draw_mark(r, skill)
+		SkillIcon.draw_into(self, r, skill)
 		if _player.mana < skill.mana_cost:
 			draw_rect(r, COOLDOWN)
 
@@ -265,12 +265,6 @@ func _draw_slot(index: int) -> void:
 		)
 
 
-## L'icône, à défaut un disque de la couleur de la nature ; le menu et le bandeau
-## montrent la même marque, d'où `SkillIcon`.
-func _draw_mark(r: Rect2, skill: Skill) -> void:
-	SkillIcon.draw_into(self, r, skill)
-
-
 func _draw_menu() -> void:
 	var entries := _entries()
 	var frame := _menu_frame(entries.size())
@@ -290,7 +284,7 @@ func _draw_menu() -> void:
 			)
 			continue
 		var icon := _entry_icon(i)
-		_draw_mark(icon, skill)
+		SkillIcon.draw_into(self, icon, skill)
 		draw_string(
 			_font, Vector2(icon.end.x + 5.0, base), skill.displayed_name(),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.TEXT

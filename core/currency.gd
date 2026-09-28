@@ -86,7 +86,7 @@ static func accepts(coin: ItemBase, target: Item) -> bool:
 			)
 		DIAMOND:
 			for r in target.explicits:
-				if _definition(r) != null:
+				if r.definition() != null:
 					return true
 	return false
 
@@ -107,7 +107,7 @@ static func apply(coin: ItemBase, target: Item, rng: RandomNumberGenerator) -> b
 			_reroll(target, rng, Item.MAGIC_MAX + 1, ItemAffixPool.MAX_COUNT)
 		DIAMOND:
 			for i in target.explicits.size():
-				var definition := _definition(target.explicits[i])
+				var definition := target.explicits[i].definition()
 				# Sans provenance, on ne sait pas dans quel palier tirer : la ligne reste.
 				if definition != null:
 					target.explicits[i] = definition.roll_tier(rng, target.explicits[i].tier - 1)
@@ -127,11 +127,3 @@ static func _reroll(target: Item, rng: RandomNumberGenerator, low: int, high: in
 	var pool := ItemAffixPool.eligible(target.base, target.item_level)
 	var count := ItemAffixPool.roll_count(rng, pool.size(), low, high)
 	target.explicits = ItemAffixPool.draw(rng, pool, count, target.item_level)
-
-
-## L'affixe d'origine, si son palier existe encore.
-static func _definition(r: RolledAffix) -> ItemAffix:
-	if not r.known():
-		return null
-	var definition := ItemAffixPool.by_id(r.affix_id)
-	return definition if definition != null and r.tier <= definition.tiers.size() else null

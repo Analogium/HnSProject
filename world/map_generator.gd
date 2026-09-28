@@ -65,8 +65,7 @@ static func town(p_width: int, p_height: int) -> MapGenerator:
 	for y in p_height:
 		var row := []
 		for x in p_width:
-			var is_border := x < 2 or y < 2 or x >= p_width - 2 or y >= p_height - 2
-			row.append(WALL if is_border else FLOOR)
+			row.append(WALL if map._is_border(x, y) else FLOOR)
 		map.grid.append(row)
 	map._collect_floor_cells()
 	return map
@@ -78,9 +77,13 @@ func _noise_fill(rng: RandomNumberGenerator) -> void:
 	for y in height:
 		var row := []
 		for x in width:
-			var is_border := x < 2 or y < 2 or x >= width - 2 or y >= height - 2
-			row.append(WALL if is_border or rng.randf() < fill_chance else FLOOR)
+			row.append(WALL if _is_border(x, y) or rng.randf() < fill_chance else FLOOR)
 		grid.append(row)
+
+
+## Deux cases de mur tout autour, la zone comme la ville.
+func _is_border(x: int, y: int) -> bool:
+	return x < 2 or y < 2 or x >= width - 2 or y >= height - 2
 
 
 ## Règle 4-5 : un mur reste mur s'il a ≥4 voisins murs,

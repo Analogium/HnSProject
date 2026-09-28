@@ -158,8 +158,7 @@ func _draw_strike() -> void:
 	var burst := EffectForge.flashes(WAVE)
 	var step := int(k * 4.0 * float(burst.size()))
 	if step < burst.size():
-		var side := Vector2.ONE * float(EffectForge.FLASH_SIZE)
-		draw_texture_rect(burst[step], Rect2(EffectForge.snap(self, center - side * 0.5), side), false)
+		EffectForge.put_centered(self, burst[step], center)
 
 
 ## Un temps de l'impact, **posé au sol** : une onde écrasée en hauteur qui ne tourne
@@ -219,8 +218,7 @@ func _draw_cross() -> void:
 		var center: Vector2 = ((CROSS[0][0] + CROSS[0][1]) * 0.5).rotated(global_rotation)
 		var burst := EffectForge.flashes(CROSS_COLOR)
 		var step := clampi(int((1.0 - flash) * float(burst.size())), 0, burst.size() - 1)
-		var side := Vector2.ONE * float(EffectForge.FLASH_SIZE)
-		draw_texture_rect(burst[step], Rect2(EffectForge.snap(self, center - side * 0.5), side), false)
+		EffectForge.put_centered(self, burst[step], center)
 
 
 ## Le croissant du balayage, à ces proportions. `t` va de 0 à 1 sur sa propre durée ;

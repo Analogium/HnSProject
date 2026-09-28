@@ -65,11 +65,4 @@ static func lance(tip: Vector2, radius: float, tint: Color) -> EffectForge.Piece
 ## la forme inverse — ses branches brillent et son centre est de la teinte —,
 ## parce qu'un cristal accroche la lumière quand un grain **est** la lumière.
 static func spark(ci: CanvasItem, at: Vector2, tint: Color, fade: float) -> void:
-	if fade <= 0.0:
-		return
-	var tex := EffectForge.spark(tint)
-	var size := Vector2(tex.get_width(), tex.get_height())
-	ci.draw_texture_rect(
-		tex, Rect2(EffectForge.snap(ci, at - size * 0.5), size), false,
-		Color(1.0, 1.0, 1.0, fade)
-	)
+	EffectForge.put_centered(ci, EffectForge.spark(tint), at, fade)

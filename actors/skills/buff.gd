@@ -139,8 +139,7 @@ func _draw() -> void:
 			DamageType.Kind.HOLY:
 				Holy.spark(self, p, tint, 1.0)
 			DamageType.Kind.LIGHTNING:
-				var grain := EffectForge.lightning_speck(tint)
-				draw_texture(grain, EffectForge.snap(self, p - Vector2(grain.get_size()) * 0.5))
+				EffectForge.put_centered(self, EffectForge.lightning_speck(tint), p)
 			DamageType.Kind.NECROTIC:
 				Necrotic.centered(self, EffectForge.spore(tint), p)
 			_:
@@ -156,11 +155,8 @@ func _draw() -> void:
 ## lisent comme un jeu figé.
 func _tomb(tint: Color) -> void:
 	var block := EffectForge.tomb(tint)
-	var size := Vector2(block.get_width(), block.get_height())
-	draw_texture_rect(
-		block, Rect2(EffectForge.snap(self, -size * 0.5), size), false,
-		Color(1.0, 1.0, 1.0, TOMB_ALPHA)
-	)
+	var size := Vector2(block.get_size())
+	EffectForge.put_centered(self, block, Vector2.ZERO, TOMB_ALPHA)
 	for i in 3:
 		var rise := fmod(_age * 0.5 + float(i) * 0.33, 1.0)
 		Frost.drift(
