@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/plate_gauntlets.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_base")
@@ -15,3 +16,4 @@ required_level = 31
 implicit_stat = "armor"
 implicit_value = 34.0
 implicit_roll_max = 44.0
+icon = ExtResource("2_icon")

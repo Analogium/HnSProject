@@ -104,8 +104,16 @@ paliers d'une lignée par leur silhouette, là où la forge ne pouvait les sépa
 que par la couleur de leurs rampes. Branchée sur le champ `icon` du `.tres` de
 `resources/items/`.
 
-`SpriteForge.inventory_icon()` et `ground_icon()` la posent à la place
-disponible, agrandie d'un facteur **entier**. Le champ vide reste un état normal :
+**Taillée à la case de sa famille** (jalon 31) : la place utile de son encombrement
+dans le sac — 14 × 56 pour une arme, 35 × 56 pour un torse, 35 × 35 pour un casque,
+14 × 14 pour un anneau —, un pixel d'image par pixel logique. Le tuyau lit ce cadre
+dans le jeu (`ItemBase.GRID_SIZES`, `CELL`, `PAD` et `MARGIN` d'`InventoryPanel`) :
+changer la taille des cases, c'est relancer `gen`. Dans le sac, `inventory_icon()` la
+pose donc **sans l'agrandir**, emplacement d'équipement compris ; `ground_icon()` la
+réduit en Lanczos. Jusqu'au jalon 30 elles faisaient 24 px et le sac les agrandissait :
+quatre pixels d'écran par pixel d'image, ce que l'utilisateur trouvait trop pixelisé.
+
+Le champ vide reste un état normal :
 sans image, la forge dessine l'objet comme avant. C'est ce repli qui fait qu'une
 base ajoutée sans image reste jouable.
 
@@ -117,7 +125,7 @@ dans la main du personnage. `test_each_base_has_a_non_empty_icon` vérifie les d
 `tools/item_icons.py`, qui va de ComfyUI jusqu'au `.tres` :
 
 ```bash
-tools/item_icons.py gen                 # les 46 bases, trois graines chacune
+tools/item_icons.py gen                 # les 61 bases, trois graines chacune
 tools/item_icons.py gen --only sword    # une seule, pour la refaire
 tools/item_icons.py apply               # pose les tirages retenus
 tools/item_icons.py apply --only manual_necrotic  # n'en pose qu'une
@@ -128,8 +136,11 @@ Le sujet du prompt et la graine retenue d'une base sont **la même ligne** de
 
 Mêmes réglages que le jalon 11 — SDXL 1.0, LoRA `pixel-art-xl-v1.1` à pleine
 force, 1024 × 1024, `dpmpp_2m`, `karras`, 30 pas, CFG 6 — avec un gabarit de
-prompt partagé où seul le sujet change. Trois enseignements, tous payés d'un
-tirage raté :
+prompt partagé où seul le sujet change. Le gabarit demande depuis le jalon 31 du
+détail, des couleurs saturées et une lumière de bord ; et **aucun sujet n'est « plain »
+ou « simple »**, même au palier 1 : c'est ce que SDXL rendait, des objets gris et
+plats. Un palier 1 est en fer usé, mais il a une garde en bronze, un cuir rouge, des
+rivets. Trois enseignements, tous payés d'un tirage raté :
 
 - **le fond ne se commande pas par sa couleur.** « fond magenta plat » donne un
   fond gris, et teinte le contour de l'objet en bordeaux. On demande seulement un
@@ -154,7 +165,7 @@ autre graine. Trois sur cent trente-deux.
 base, une colonne par graine, déjà réduites. On choisit là, jamais sur l'image de
 1024 px. Ce qu'on y regarde, dans l'ordre :
 
-1. **l'escalade de la lignée** — palier 1 terne, 3 ouvragé, et les trois
+1. **l'escalade de la lignée** — palier 1 rustique, 3 ouvragé, et les trois
    distinguables d'un coup d'œil ;
 2. **le sujet seul** — SDXL glisse volontiers un personnage dans une capuche ou
    une planche de neuf épées ;

@@ -381,13 +381,14 @@ plutôt que compter sur les tests.
 1. **`core/equipment_slots.gd`** — l'entrée dans `SLOTS` : `family` et `label`.
    La clé est **définitive** (invariant 1). L'ordre d'insertion est celui dans
    lequel le panneau les montre.
-2. **`ui/inventory_panel.gd`** — l'entrée dans `DOLL`, un `Rect2i` en cases : le
-   rectangle qu'un objet de cette famille occuperait dans le sac. Ajuster
-   `DOLL_COLS` / `DOLL_ROWS` si la grille s'élargit.
+2. **`ui/inventory_panel.gd`** — l'entrée dans `DOLL`, un `Rect2i` en cases, **au
+   moins** le rectangle qu'un objet de cette famille occuperait dans le sac : son
+   icône y est posée à 1:1. Ajuster `DOLL_COLS` / `DOLL_ROWS` si la grille s'élargit.
 3. **Au moins une base** de cette famille, à tous les niveaux de zone.
 
 **Ce qui refusera un oubli** : `test_the_table_is_complete`,
 `test_former_slots_keep_their_name`,
+`test_each_slot_holds_its_family_footprint`,
 `test_each_slot_has_at_least_one_base`,
 `test_each_slot_has_a_base_at_every_level`,
 `test_the_click_finds_the_drawn_slot` (l'endroit dessiné et l'endroit

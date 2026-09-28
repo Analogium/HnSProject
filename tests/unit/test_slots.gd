@@ -158,6 +158,18 @@ func test_no_slot_lands_on_the_portrait() -> void:
 		)
 
 
+## Les icônes sont taillées à l'encombrement de leur famille dans le sac : un emplacement
+## plus petit les réduirait, et une image réduite perd son trait.
+func test_each_slot_holds_its_family_footprint() -> void:
+	for id in InventoryPanel.DOLL:
+		var span: Vector2i = ItemBase.GRID_SIZES.get(EquipmentSlots.family_of(id), Vector2i.ONE)
+		var zone: Rect2i = InventoryPanel.DOLL[id]
+		assert_true(
+			zone.size.x >= span.x and zone.size.y >= span.y,
+			"« %s » : %s pour un objet de %s" % [id, zone.size, span]
+		)
+
+
 func test_the_grid_does_not_overflow_its_columns() -> void:
 	var frame := Rect2i(0, 0, InventoryPanel.DOLL_COLS, InventoryPanel.DOLL_ROWS)
 	for id in InventoryPanel.DOLL:

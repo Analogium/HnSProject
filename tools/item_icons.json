@@ -1,175 +1,175 @@
 {
   "sword": [
-    "a plain iron straight sword, blade pointing straight up, leather grip",
-    1337
+    "a sturdy iron longsword with a bronze crossguard, a red leather wrapped grip and a round pommel, blade pointing straight up",
+    4242
   ],
   "broadsword": [
-    "a broad steel sword with a golden crossguard, blade pointing straight up",
-    4242
-  ],
-  "war_blade": [
-    "an ornate silver greatsword with etched runes and a winged golden guard, blade pointing straight up",
+    "a broad polished steel sword with a heavy golden crossguard, a blue leather grip and a gem pommel, blade pointing straight up",
     777
   ],
+  "war_blade": [
+    "an ornate silver greatsword with glowing blue etched runes and a winged golden guard, blade pointing straight up",
+    1337
+  ],
   "dagger": [
-    "a short iron dagger, blade pointing straight up, wrapped leather grip",
-    4242
+    "a short iron dagger with a bronze guard and a worn brown leather wrapped grip, blade pointing straight up",
+    777
   ],
   "misericorde": [
-    "a slender polished steel stiletto dagger with a golden pommel, blade pointing straight up",
+    "a slender polished steel stiletto dagger with a golden guard, a black grip and a red gem pommel, blade pointing straight up",
     1337
   ],
   "mace": [
-    "a heavy iron mace with a round studded head, handle down, upright",
-    1337
+    "a heavy iron mace with a round riveted head on a wooden haft wrapped in leather, handle down, upright",
+    4242
   ],
   "battle_mace": [
-    "a steel flanged mace with a gold banded haft, handle down, upright",
+    "a steel flanged mace with sharp flanges and a gold banded haft with a red leather grip, handle down, upright",
     777
   ],
   "war_hammer": [
-    "a massive dark steel war hammer with a square blocky head, handle down, upright",
-    777
-  ],
-  "wand": [
-    "a short wooden magic wand with a small blue crystal at the tip, pointing up",
+    "a massive dark steel war hammer with a square blocky head, golden rims and a spike on top, handle down, upright",
     4242
   ],
+  "wand": [
+    "a short twisted wooden magic wand with a small glowing blue crystal at the tip bound by copper wire, pointing up",
+    1337
+  ],
   "scepter": [
-    "a silver scepter topped with a glowing violet gem, pointing up",
+    "a silver scepter with a leather grip topped with a glowing violet gem in silver claws, pointing up",
     777
   ],
   "runic_scepter": [
-    "an ornate golden scepter with carved runes and a radiant purple crystal, pointing up",
-    777
+    "an ornate golden scepter with carved glowing runes and a large radiant purple crystal, pointing up",
+    1337
   ],
   "shield": [
-    "a round wooden shield with an iron boss and rim, front view",
-    1337
+    "a round wooden shield with red painted planks, an iron boss and an iron rim, front view",
+    4242
   ],
   "kite_shield": [
-    "a steel kite shield with a painted blue heraldic chevron, front view",
-    1337
+    "a steel kite shield with a painted blue heraldic chevron and a bronze rim, front view",
+    4242
   ],
   "pavise": [
-    "a tall rectangular tower shield of riveted steel with gold trim, front view",
-    1337
+    "a tall rectangular tower shield of riveted dark steel with gold trim and a red heraldic cross, front view",
+    777
   ],
   "helmet": [
-    "a simple iron open helmet, front view",
+    "a battered iron nasal helmet with a bronze rim and a leather chin strap, front view",
     1337
   ],
   "great_helm": [
-    "a steel great helm with a narrow eye slit, front view",
-    1337
+    "a steel great helm with a narrow eye slit, breathing holes and a bronze cross on the face, front view",
+    777
   ],
   "armet": [
-    "an ornate polished armet helmet with a golden crest and visor, front view",
-    4242
+    "an ornate polished armet helmet with a golden crest, a visor and a red plume, front view",
+    777
   ],
   "hood": [
-    "a grey cloth hood of a mage robe, empty, front view",
+    "an empty grey wool hood with a pointed tip and a copper clasp, just the hood alone, front view",
     777
   ],
   "masters_hood": [
-    "a deep blue silk hood with golden embroidery, empty, front view",
-    1337
+    "a deep blue silk hood with golden embroidery and a glowing sapphire clasp, empty, front view",
+    4242
   ],
   "breastplate": [
-    "an iron breastplate cuirass, front view",
+    "a dented iron breastplate cuirass with brown leather straps and bronze rivets, front view",
     1337
   ],
   "chainmail": [
-    "a chainmail hauberk shirt with visible rings, front view",
+    "a chainmail hauberk shirt with visible steel rings, a leather collar and a belt, front view",
     1337
   ],
   "full_plate": [
-    "an ornate polished steel plate cuirass with gold filigree and pauldrons, front view",
+    "an ornate polished steel plate cuirass with gold filigree, large pauldrons and a red tabard, front view",
     4242
   ],
   "tunic": [
-    "a plain brown cloth tunic, front view",
-    4242
-  ],
-  "jerkin": [
-    "a studded brown leather jerkin, front view",
+    "a brown linen tunic with a rope belt and patched sleeves, front view",
     1337
   ],
+  "jerkin": [
+    "a studded brown leather jerkin with brass studs and laced front, front view",
+    777
+  ],
   "gloves": [
-    "a pair of brown leather gloves, front view",
+    "a pair of worn brown leather gloves with stitched cuffs, front view",
     1337
   ],
   "reinforced_gloves": [
-    "a pair of steel studded leather gauntlets, front view",
-    1337
+    "a pair of leather gauntlets reinforced with steel plates and rivets on the knuckles, front view",
+    777
   ],
   "masters_gloves": [
-    "a pair of ornate golden plate gauntlets, front view",
-    4242
+    "a pair of ornate golden plate gauntlets with engraved patterns and blue gems, front view",
+    777
   ],
   "boots": [
-    "a pair of plain brown leather boots, side view",
+    "a pair of worn brown leather boots with laces and a folded cuff, side view",
     777
   ],
   "studded_boots": [
-    "a pair of studded leather boots with steel plates, side view",
+    "a pair of studded leather boots with steel shin plates and buckles, side view",
     1337
   ],
   "travel_boots": [
-    "a pair of fine tall leather travelling boots with golden buckles, side view",
+    "a pair of fine tall dark leather travelling boots with golden buckles and a fur trim, side view",
     777
   ],
   "belt": [
-    "a plain brown leather belt with an iron buckle, coiled, front view",
+    "a brown leather belt with an iron buckle and a small pouch, coiled, front view",
     1337
   ],
   "girdle": [
-    "a wide studded leather girdle with a steel buckle, front view",
+    "a wide studded leather girdle with a large steel buckle and brass studs, front view",
     1337
   ],
   "baldric": [
-    "an ornate leather baldric shoulder belt with gold fittings, front view",
+    "an ornate red leather baldric shoulder belt with gold fittings and a gem, front view",
     1337
   ],
   "amulet": [
-    "a simple amulet, a round stone pendant on a leather cord",
+    "a simple amulet, a carved round green stone pendant on a leather cord",
     4242
   ],
   "talisman": [
-    "a silver talisman pendant with a blue gem on a chain",
+    "a silver talisman pendant with a glowing blue gem on a fine chain",
     1337
   ],
   "pendentif": [
-    "an ornate golden pendant with a large radiant red gem on a chain",
-    777
-  ],
-  "ring": [
-    "a plain iron ring, single ring, front view",
+    "an ornate golden pendant with a large radiant red gem on a golden chain",
     4242
   ],
-  "ornate_ring": [
-    "a silver ring set with a small blue gemstone, single ring, front view",
+  "ring": [
+    "a thick iron ring set with a small red garnet, single ring, three-quarter view",
     1337
   ],
+  "ornate_ring": [
+    "a silver ring set with a glowing blue sapphire, single ring, three-quarter view",
+    777
+  ],
   "signet_ring": [
-    "a golden signet ring with an engraved seal, single ring, front view",
+    "a heavy golden signet ring with an engraved seal and a ruby, single ring, three-quarter view",
     4242
   ],
   "grimoire": [
-    "a closed worn leather spellbook with brass clasps",
-    1337
+    "a closed worn brown leather spellbook with brass clasps and corners",
+    4242
   ],
   "codex": [
-    "a closed blue leather codex with silver clasps and a gem on the cover",
-    1337
+    "a closed blue leather codex with silver clasps and a glowing gem on the cover",
+    777
   ],
   "manual_lightning": [
     "a closed violet tome crackling with yellow lightning on its cover",
-    1337
+    777
   ],
   "manual_fire": [
     "a closed crimson tome with a burning flame emblem on its cover",
-    1337
+    777
   ],
   "manual_weapons": [
     "a closed steel bound tome with crossed swords emblem on its cover",
@@ -177,11 +177,11 @@
   ],
   "manual_cold": [
     "a thick closed spellbook covered in frost with a pale blue ice crystal on the cover, upright, front view",
-    4242
+    777
   ],
   "manual_holy": [
     "a closed ivory white tome with a golden radiant sun emblem on its cover, front view",
-    1337
+    777
   ],
   "manual_necrotic": [
     "a closed dark purple tome with a green skull and crossbones emblem on its cover, front view",
@@ -189,15 +189,15 @@
   ],
   "manual_witch": [
     "a closed deep purple tome with a golden witch hat emblem on its cover, front view",
-    4242
+    1337
   ],
   "manual_swiftblade": [
     "a closed dark red leather tome with a silver dagger emblem on its cover, front view",
-    1337
+    777
   ],
   "coin_copper": [
     "a single round shiny reddish-orange copper coin stamped with a crown, front view",
-    1337
+    4242
   ],
   "coin_bronze": [
     "a single round dull dark brown bronze coin stamped with a crown, front view",
@@ -205,18 +205,42 @@
   ],
   "coin_silver": [
     "a single round bright polished silver coin stamped with a crown, front view",
-    1337
+    4242
   ],
   "coin_gold": [
     "a single round gleaming yellow gold coin stamped with a crown, front view",
-    1337
+    4242
   ],
   "coin_platinum": [
     "a single round pale bluish-white platinum coin stamped with a crown, front view",
-    1337
+    4242
   ],
   "coin_diamond": [
     "a single round coin stamped with a crown, made of clear icy blue faceted diamond crystal, front view",
+    1337
+  ],
+  "gauntlets": [
+    "a pair of iron gauntlets with leather cuffs and bronze buckles, front view",
+    4242
+  ],
+  "mail_gauntlets": [
+    "a pair of chainmail gauntlets with steel knuckle plates and leather cuffs, front view",
     777
+  ],
+  "plate_gauntlets": [
+    "a pair of polished steel plate gauntlets with golden trim and pointed fingers, front view",
+    1337
+  ],
+  "sabatons": [
+    "a pair of iron sabatons armored boots with leather straps, side view",
+    777
+  ],
+  "mail_sabatons": [
+    "a pair of chainmail sabatons with steel toe caps and knee plates, side view",
+    1337
+  ],
+  "plate_sabatons": [
+    "a pair of polished steel plate sabatons with golden trim and knee guards, side view",
+    1337
   ]
 }

@@ -24,6 +24,13 @@ func test_the_bag_is_drawn_over_the_help_overlay() -> void:
 	assert_gt(_zone.inventory.get_index(), _zone.overlay.get_index())
 
 
+## Sac et coffre prennent toute la hauteur (jalon 31) : jauges et barre passent dessous,
+## comme dans Hero Siege. Dessiné avant eux, le sac serait troué par le HUD.
+func test_the_bag_is_drawn_over_the_hud() -> void:
+	assert_gt(_zone.inventory.get_index(), _zone.hud.get_index(), "les jauges")
+	assert_gt(_zone.inventory.get_index(), _zone.get_node("UI/Bar").get_index(), "la barre")
+
+
 func test_the_panels_open_together_over_the_tree() -> void:
 	for panel: Control in [_zone.passive_tree, _zone.inventory, _zone.stats_panel, _zone.manuals]:
 		panel.toggle()

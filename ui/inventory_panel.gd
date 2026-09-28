@@ -15,19 +15,26 @@ signal drop_requested(item: Item)
 
 const CELL := 20.0
 const PAD := 1.0
+## Une ligne de titre : celui du sac sous l'équipement, celui du coffre en tête.
 const HEADER := 16.0
 ## Deux lignes d'aide.
 const FOOTER := 22.0
-## La fenêtre de personnage : chaque emplacement occupe le rectangle qu'un objet de sa
-## famille prendrait dans le sac. Trois colonnes, les bagues dans les gouttières.
+## Le vide entre le bord d'un panneau et ce qu'il contient, et celui entre le cadre de
+## l'équipement et ses emplacements.
+const EDGE := 6.0
+const FRAME := 6.0
+## La fenêtre de personnage, à la manière de Hero Siege (jalon 31) : l'arme et la main
+## gauche en grandes cartes de part et d'autre, tête, torse et ceinture au milieu. Chaque
+## emplacement tient au moins l'encombrement de sa famille dans le sac, dont l'icône est
+## taillée à 1:1 (`test_each_slot_holds_its_family_footprint`).
 const DOLL := {
-	"helmet": Rect2i(4, 0, 3, 2), "amulet": Rect2i(8, 0, 3, 2),
-	"weapon": Rect2i(0, 3, 3, 3), "chest": Rect2i(4, 3, 3, 3), "offhand": Rect2i(8, 3, 3, 3),
-	"gloves": Rect2i(0, 6, 3, 2), "belt": Rect2i(4, 6, 3, 2), "boots": Rect2i(8, 6, 3, 2),
-	"ring_left": Rect2i(3, 6, 1, 2), "ring_right": Rect2i(7, 6, 1, 2),
+	"helmet": Rect2i(4, 0, 2, 2), "amulet": Rect2i(8, 0, 2, 2),
+	"weapon": Rect2i(0, 3, 2, 4), "chest": Rect2i(4, 2, 2, 3), "offhand": Rect2i(8, 3, 2, 4),
+	"ring_left": Rect2i(3, 5, 1, 1), "belt": Rect2i(4, 5, 2, 1), "ring_right": Rect2i(6, 5, 1, 1),
+	"gloves": Rect2i(0, 7, 2, 2), "boots": Rect2i(8, 7, 2, 2),
 }
-const DOLL_COLS := 11
-const DOLL_ROWS := 8
+const DOLL_COLS := 10
+const DOLL_ROWS := 9
 
 ## Trois cases de haut : les 47 pixels de la sorcière n'entraient pas dans deux.
 const DOLL_AREA := Rect2i(0, 0, 3, 3)
@@ -40,10 +47,23 @@ const GHOST := Color(1.0, 1.0, 1.0, 0.13)
 ## Marge d'une icône : sans elle, l'objet mange les lignes de la grille.
 const MARGIN := 3
 
-const SLOT := Color(0.14, 0.13, 0.17)
-const SLOT_EDGE := Color(0.22, 0.20, 0.26)
-## Le fond d'un objet rangé donne sa forme avant l'icône.
-const ITEM_BACK := Color(0.22, 0.21, 0.28)
+## La palette cramoisie du sac et du coffre, choisie sur planche (jalon 31) ; les autres
+## panneaux gardent celle de `UiPalette`.
+## Opaque : pleine hauteur, le panneau recouvre le bandeau d'aide et les jauges.
+const BACK := Color(0.118, 0.075, 0.082)
+const TRIM := Color(0.463, 0.118, 0.165)
+const TRIM_DARK := Color(0.227, 0.055, 0.078)
+const FRAME_BACK := Color(0.173, 0.094, 0.106)
+const INK := Color(0.87, 0.80, 0.64)
+const INK_DIM := Color(0.59, 0.50, 0.43)
+const CELL_BACK := Color(0.059, 0.059, 0.094)
+const CELL_EDGE := Color(0.173, 0.133, 0.157)
+const SLOT := Color(0.078, 0.055, 0.067)
+const SLOT_EDGE := Color(0.275, 0.149, 0.173)
+## Le fond d'un objet donne sa forme et sa rareté avant l'icône : cramoisi pour un
+## objet commun, sa couleur de rareté assombrie sinon.
+const ITEM_BACK := Color(0.275, 0.094, 0.118)
+const RARITY_BACK_DIM := 0.68
 ## Le cadre d'un objet rangé, dans sa rareté assombrie.
 const ITEM_EDGE_DIM := 0.3
 ## Au-delà, un relâchement finit un glisser ; en deçà, c'est un clic tremblé.
@@ -54,15 +74,15 @@ const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
 const TIP_GAP := 5.0
 const FONT_SIZE := 8
 
-## Le coin haut-gauche du coffre et de l'étal, à l'écran : ses douze rangées finissent
-## juste au-dessus des jauges (`Hud.gauges_top()`).
-const STORAGE_AT := Vector2(8.0, 6.0)
-## Une ligne d'aide sous la grille.
-const STORAGE_FOOTER := 12.0
-const TAB := Vector2(14.0, 11.0)
+## Le coffre et l'étal occupent le bord gauche de l'écran, sur toute sa hauteur, comme le
+## sac le bord droit : jauges et barre passent dessous (jalon 31).
+const STORAGE_AT := Vector2.ZERO
+## Les onglets, en rangée sous le titre.
+const TAB := Vector2(30.0, 12.0)
 const TAB_GAP := 2.0
-const SELL := Vector2(40.0, 11.0)
-const TAB_ON := Color(0.30, 0.28, 0.38)
+const SELL := Vector2(48.0, 12.0)
+const TAB_BACK := Color(0.361, 0.086, 0.125)
+const TAB_ON := Color(0.588, 0.133, 0.196)
 
 @onready var title: Label = $Title
 
@@ -115,7 +135,7 @@ var _doll_key := ""
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
-	title.add_theme_color_override("font_color", UiPalette.TITLE)
+	title.add_theme_color_override("font_color", INK)
 
 
 ## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
@@ -142,7 +162,9 @@ func bind(player: Player) -> void:
 	var s := _panel_size()
 	offset_left = offset_right - s.x
 	offset_top = offset_bottom - s.y
-	title.offset_right = s.x - 4.0
+	# Le titre et le compte de cases, juste au-dessus de la grille qu'ils décrivent.
+	title.position = Vector2(_grid_left(), _grid_top() - HEADER)
+	title.size = Vector2(s.x - _grid_left() - EDGE, HEADER)
 
 	_on_changed()
 
@@ -589,22 +611,21 @@ func _storage_rect() -> Rect2:
 		return Rect2()
 	return Rect2(
 		STORAGE_AT - global_position,
-		Vector2(_storage.cols * (CELL + PAD) + PAD, HEADER + _storage.rows * (CELL + PAD) + PAD + STORAGE_FOOTER)
+		Vector2(_storage.cols * (CELL + PAD) + PAD + EDGE * 2.0, _screen_height())
 	)
 
 
-## Les onglets, alignés à droite de l'en-tête ; aucun pour l'étal.
+## Les onglets, en rangée sous le titre ; aucun pour l'étal.
 func _tab_rect(index: int) -> Rect2:
 	if _selling:
 		return Rect2()
 	var box := _storage_rect()
-	var right := box.end.x - PAD - float(_pages.size() - index) * (TAB.x + TAB_GAP) + TAB_GAP
-	return Rect2(Vector2(right, box.position.y + 2.0), TAB)
+	return Rect2(box.position + Vector2(EDGE + float(index) * (TAB.x + TAB_GAP), HEADER + 2.0), TAB)
 
 
+## Le bouton « Vendre », à la place des onglets.
 func _sell_rect() -> Rect2:
-	var box := _storage_rect()
-	return Rect2(Vector2(box.end.x - PAD - SELL.x, box.position.y + 2.0), SELL)
+	return Rect2(_storage_rect().position + Vector2(EDGE, HEADER + 2.0), SELL)
 
 
 ## La grille sous ce point : l'onglet ouvert s'il le couvre, le sac sinon — dont les
@@ -621,15 +642,27 @@ func _grid_or_bag(grid: Inventory) -> Inventory:
 func _grid_origin(grid: Inventory) -> Vector2:
 	if grid == _inventory:
 		return Vector2(_grid_left(), _grid_top() + PAD)
-	return _storage_rect().position + Vector2(PAD, HEADER + PAD)
+	return _storage_rect().position + Vector2(EDGE + PAD, HEADER + TAB.y + EDGE + PAD)
 
 
-## Le plus large des deux : la grille du sac, ou celle du personnage.
+## Le plus large des deux, la grille du sac ou le cadre de l'équipement ; toute la
+## hauteur de l'écran, comme Hero Siege.
 func _panel_size() -> Vector2:
-	return Vector2(
-		maxf(_inventory.cols * (CELL + PAD) + PAD, _equip_size().x + PAD * 2.0),
-		_grid_top() + _inventory.rows * (CELL + PAD) + PAD + FOOTER
-	)
+	return Vector2(_panel_width(), _screen_height())
+
+
+func _panel_width() -> float:
+	return maxf(_inventory.cols * (CELL + PAD) + PAD, _equip_size().x + FRAME * 2.0) + EDGE * 2.0
+
+
+## Centré en haut du panneau ; position entière, sinon lignes floues.
+func _frame_rect() -> Rect2:
+	var inner := _equip_size() + Vector2(FRAME, FRAME) * 2.0
+	return Rect2(Vector2(floorf((_panel_width() - inner.x) * 0.5), EDGE), inner)
+
+
+func _screen_height() -> float:
+	return get_viewport_rect().size.y
 
 
 ## Un rectangle de cases, en pixels — la mesure de base de tout le panneau.
@@ -640,18 +673,12 @@ func _span_size(span: Vector2i) -> Vector2:
 ## Même pas que le sac : les deux grilles s'alignent.
 func _doll_rect(zone: Rect2i) -> Rect2:
 	return Rect2(
-		Vector2(
-			_equip_left() + float(zone.position.x) * (CELL + PAD),
-			HEADER + PAD + float(zone.position.y) * (CELL + PAD)
-		),
+		_frame_rect().position + Vector2(FRAME, FRAME) + Vector2(zone.position) * (CELL + PAD),
 		_span_size(zone.size)
 	)
 
 
 ## Chaque grille centrée ; position entière, sinon lignes floues.
-func _equip_left() -> float:
-	return _centered(_equip_size().x)
-
 
 func _grid_left() -> float:
 	return _centered(_inventory.cols * (CELL + PAD) + PAD)
@@ -679,9 +706,9 @@ func _equip_size() -> Vector2:
 	return _span_size(Vector2i(DOLL_COLS, DOLL_ROWS))
 
 
-## Où commence le sac : sous la zone d'équipement.
+## Où commence le sac : sous le cadre de l'équipement et le titre.
 func _grid_top() -> float:
-	return HEADER + _equip_size().y + PAD + 6.0
+	return _frame_rect().end.y + EDGE + HEADER
 
 
 ## Un rectangle de cases d'une grille — le sac par défaut —, en pixels du panneau.
@@ -706,8 +733,8 @@ func _draw() -> void:
 		return
 
 	var s := _panel_size()
-	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BACK)
-	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BORDER, false, 1.0)
+	_draw_panel(Rect2(Vector2.ZERO, s))
+	_draw_frame(_frame_rect())
 
 	if _storage != null:
 		_draw_storage()
@@ -741,12 +768,31 @@ func _draw() -> void:
 		_draw_item(_held, Rect2(_mouse - _grab_px, _span_size(span)), false)
 
 	if _font != null:
-		draw_string(_font, Vector2(4.0, s.y - 13.0),
+		draw_string(_font, Vector2(EDGE, s.y - 13.0),
 			Texts.t("[clic] prendre et poser     [clic droit] équiper / retirer"),
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
-		draw_string(_font, Vector2(4.0, s.y - 3.0),
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, INK_DIM)
+		draw_string(_font, Vector2(EDGE, s.y - 3.0),
 			Texts.t("lâché hors du sac : jeté au sol"),
-			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
+			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, INK_DIM)
+
+
+## Le fond d'un panneau et son double liseré.
+func _draw_panel(r: Rect2) -> void:
+	draw_rect(r, BACK)
+	draw_rect(r, TRIM_DARK, false, 1.0)
+	draw_rect(r.grow(-1.0), TRIM, false, 1.0)
+
+
+## Le cadre de l'équipement : double liseré, et un carré plein à chaque coin.
+func _draw_frame(r: Rect2) -> void:
+	draw_rect(r, FRAME_BACK)
+	draw_rect(r, TRIM_DARK, false, 1.0)
+	draw_rect(r.grow(-2.0), TRIM, false, 1.0)
+	var corner := Vector2(4.0, 4.0)
+	var inner := r.grow(-2.0)
+	for at in [inner.position, Vector2(inner.end.x - corner.x, inner.position.y),
+			Vector2(inner.position.x, inner.end.y - corner.y), inner.end - corner]:
+		draw_rect(Rect2(at, corner), TRIM)
 
 
 ## Les cases d'une grille et ce qui y est rangé.
@@ -761,29 +807,28 @@ func _draw_grid(grid: Inventory) -> void:
 ## Le coffre ou l'étal : son cadre, son titre, ses onglets ou son bouton, sa grille.
 func _draw_storage() -> void:
 	var box := _storage_rect()
-	draw_rect(box, UiPalette.BACK)
-	draw_rect(box, UiPalette.BORDER, false, 1.0)
+	_draw_panel(box)
 	_draw_grid(_storage)
 	if _font == null:
 		return
-	draw_string(_font, box.position + Vector2(4.0, 11.0),
+	draw_string(_font, box.position + Vector2(0.0, 12.0),
 		Texts.t("MARCHAND") if _selling else Texts.t("COFFRE"),
-		HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, UiPalette.TITLE)
+		HORIZONTAL_ALIGNMENT_CENTER, box.size.x, 10, INK)
 	if _selling:
 		_draw_button(_sell_rect(), Texts.t("Vendre"), _sell_rect().has_point(_mouse))
 	else:
 		for i in _pages.size():
 			_draw_button(_tab_rect(i), str(i + 1), _pages[i] == _storage)
-	draw_string(_font, Vector2(box.position.x + 4.0, box.end.y - 3.0),
+	draw_string(_font, Vector2(box.position.x + EDGE, box.end.y - 3.0),
 		Texts.t("[ctrl + clic] d'une grille à l'autre"),
-		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, INK_DIM)
 
 
 func _draw_button(r: Rect2, text_value: String, lit: bool) -> void:
-	draw_rect(r, TAB_ON if lit else SLOT)
-	draw_rect(r, UiPalette.BORDER, false, 1.0)
-	draw_string(_font, Vector2(r.position.x, r.end.y - 2.0), text_value,
-		HORIZONTAL_ALIGNMENT_CENTER, r.size.x, FONT_SIZE, UiPalette.TEXT if lit else UiPalette.HINT)
+	draw_rect(r, TAB_ON if lit else TAB_BACK)
+	draw_rect(r, TRIM_DARK, false, 1.0)
+	draw_string(_font, Vector2(r.position.x, r.end.y - 3.0), text_value,
+		HORIZONTAL_ALIGNMENT_CENTER, r.size.x, FONT_SIZE, INK if lit else INK_DIM)
 
 
 ## Le rectangle du portrait, dans le coin que les emplacements laissent libre.
@@ -791,10 +836,9 @@ func _doll_area_rect() -> Rect2:
 	return _doll_rect(DOLL_AREA)
 
 
-## La silhouette et l'arme réellement tenue, en grand.
+## La silhouette et l'arme réellement tenue, en grand, à même le cadre.
 func _draw_doll() -> void:
 	var zone := _doll_area_rect()
-	_draw_cell(zone)
 	if _doll_frames == null or not _doll_frames.has_animation(DOLL_ANIM):
 		return
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)
@@ -814,12 +858,9 @@ func _draw_equipment() -> void:
 		var item: Item = _player.equipped(slot) if _player != null else null
 
 		if item != null:
-			# Fond de la rareté très assombri, comme au sol.
-			draw_rect(r, item.color().darkened(0.80))
-			draw_rect(r, item.color().darkened(0.35), false, 1.0)
-			_draw_item(item, r, false, true)
+			_draw_item(item, r, true)
 		else:
-			_draw_cell(r)
+			_draw_cell(r, SLOT, SLOT_EDGE)
 			_draw_ghost(slot, r)
 
 		if _hover_slot != i:
@@ -841,9 +882,9 @@ func _draw_ghost(slot: String, r: Rect2) -> void:
 
 
 ## Le creux d'une case vide et son liseré, toujours ensemble.
-func _draw_cell(r: Rect2) -> void:
-	draw_rect(r, SLOT)
-	draw_rect(r, SLOT_EDGE, false, 1.0)
+func _draw_cell(r: Rect2, back := CELL_BACK, edge := CELL_EDGE) -> void:
+	draw_rect(r, back)
+	draw_rect(r, edge, false, 1.0)
 
 
 ## La place utile d'un rectangle, marge déduite.
@@ -874,15 +915,14 @@ func _draw_tooltip(item: Item, target_top: float, in_storage := false) -> void:
 
 
 ## `framed` : le cadre d'un objet rangé ; l'objet tenu a déjà sa teinte de destination.
-func _draw_item(item: Item, r: Rect2, framed: bool, fill := false) -> void:
+func _draw_item(item: Item, r: Rect2, framed: bool) -> void:
 	if framed:
-		draw_rect(r, ITEM_BACK)
+		draw_rect(r, ITEM_BACK if item.rarity() == Item.Rarity.COMMON else item.color().darkened(RARITY_BACK_DIM))
 		draw_rect(r, item.color().darkened(ITEM_EDGE_DIM), false, 1.0)
 
-	# Dans le sac, l'icône suit l'encombrement ; dans un emplacement (`fill`), elle
-	# remplit sa case, taillée pour sa famille. Agrandissement entier, aspect conservé.
-	var place := _free_cell(r)
-	var own := place if fill else _span_size(Inventory.footprint(item)).min(place)
+	# L'icône est taillée à l'encombrement de sa famille : un emplacement plus grand la
+	# centre sans l'agrandir, ce qui la repixeliserait.
+	var own := _span_size(Inventory.footprint(item)).min(_free_cell(r))
 	_draw_centered(SpriteForge.inventory_icon(item.base, Vector2i(own)), r)
 	# Dans le coin haut-gauche, par-dessus l'icône, comme PoE.
 	if item.count > 1 and _font != null:

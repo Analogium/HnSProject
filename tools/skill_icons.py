@@ -14,7 +14,9 @@ nature du sort.
 """
 import argparse, json, io, os, re, shutil, sys, time
 from PIL import Image, ImageDraw
-from item_icons import HOST, PROJ, SEEDS, SIDE, WORK, render, quant
+from item_icons import HOST, PROJ, SEEDS, WORK, render, quant
+
+SIDE = 24  # le cadre de SkillIcon
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RAW, OUT = os.path.join(WORK, "skill_raw"), os.path.join(WORK, "skill_out")

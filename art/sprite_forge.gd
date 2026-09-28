@@ -315,7 +315,8 @@ static func _icon(kind: String, upright: bool, target: Vector2i, tier := 1) -> T
 
 ## Met une icône à la place disponible, en pixels d'écran. Agrandir : facteur
 ## entier. Réduire : facteur exact — c'est moins beau, mais une icône qui dépasse
-## déborde sur les cases voisines et on ne sait plus lire la grille.
+## déborde sur les cases voisines et on ne sait plus lire la grille. Réduite au plus
+## proche voisin, une image du sac ne garde qu'un pixel sur quatre au sol : Lanczos.
 static func _fit(img: Image, target: Vector2i) -> void:
 	if target.x <= 0 or target.y <= 0:
 		return
@@ -328,7 +329,7 @@ static func _fit(img: Image, target: Vector2i) -> void:
 	img.resize(
 		maxi(int(img.get_width() * factor), 1),
 		maxi(int(img.get_height() * factor), 1),
-		Image.INTERPOLATE_NEAREST
+		Image.INTERPOLATE_NEAREST if factor >= 1.0 else Image.INTERPOLATE_LANCZOS
 	)
 
 

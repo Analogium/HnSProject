@@ -112,26 +112,6 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 8
 text = "..."
 
-[node name="Inventory" type="Control" parent="UI"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -219.0
-offset_top = -192.0
-offset_right = -8.0
-offset_bottom = -58.0
-mouse_filter = 2
-script = ExtResource("9_inv")
-
-[node name="Title" type="Label" parent="UI/Inventory"]
-offset_left = 4.0
-offset_right = 207.0
-offset_bottom = 14.0
-theme_override_font_sizes/font_size = 9
-text = "SAC  0 / 50 cases"
-
 [node name="Stats" type="Control" parent="UI"]
 anchor_right = 0.25
 anchor_bottom = 1.0
@@ -195,5 +175,23 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("8_hud")
+
+[node name="Inventory" type="Control" parent="UI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -233.0
+offset_top = -360.0
+mouse_filter = 2
+script = ExtResource("9_inv")
+
+[node name="Title" type="Label" parent="UI/Inventory"]
+offset_left = 4.0
+offset_right = 207.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 9
+text = "SAC  0 / 50 cases"
 
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]

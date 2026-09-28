@@ -26,16 +26,40 @@ SEEDS = [4242, 777, 1337]
 # Le gabarit partage : seul le sujet change. On ne demande pas une couleur de
 # fond precise -- SDXL l'ignore -- seulement qu'il soit *plat* : le detourage se
 # fait ensuite par remplissage depuis les bords, quelle que soit sa teinte.
-TMPL = ("pixel art, 16-bit rpg inventory item icon, {subj}, centered, one single object, "
-        "bold readable silhouette, high contrast, thick dark outline, "
-        "isolated on a plain flat neutral grey background, empty background, "
-        "no shadow, no ground, square game icon")
+# « detailed », les couleurs et la lumiere de bord depuis le jalon 31 : l'ancien
+# gabarit, avec des sujets « plain iron », sortait des objets gris et plats.
+TMPL = ("detailed pixel art, dark fantasy action rpg inventory item icon, {subj}, centered, "
+        "one single object, rich saturated colors, strong rim lighting, crisp dark outline, "
+        "detailed shading, isolated on a plain flat neutral grey background, empty background, "
+        "no shadow, no ground")
 NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic, "
        "gradient background, scenery, room, table, wall, multiple objects, collection, "
        "sprite sheet, grid, tiled pattern, hands, person, character, "
        "drop shadow, frame, border")
 
-SIDE = 24  # le cadre de SpriteForge.ICON
+
+def _gd_const(path, name):
+    return re.search(r"^const %s := (.+)$" % name, open(os.path.join(PROJ, path), encoding="utf-8").read(), re.M).group(1)
+
+
+# Le cadre d'une icone est la place utile de sa case dans le sac, lue dans le code du
+# jeu : un pixel d'image par pixel logique, sans agrandissement (jalon 31).
+_CELL = float(_gd_const("ui/inventory_panel.gd", "CELL"))
+_PAD = float(_gd_const("ui/inventory_panel.gd", "PAD"))
+_MARGIN = int(_gd_const("ui/inventory_panel.gd", "MARGIN"))
+_BASE_GD = open(os.path.join(PROJ, "core/item_base.gd"), encoding="utf-8").read()
+_GRID = {f: (int(c), int(r)) for f, c, r in re.findall(
+    r'"(\w+)": Vector2i\((\d+), (\d+)\)', re.search(r"const GRID_SIZES := \{(.*?)\}", _BASE_GD, re.S).group(1))}
+# Une base qui n'ecrit pas sa famille a celle par defaut : les armes.
+_FAMILY = re.search(r'var family: String = "(\w+)"', _BASE_GD).group(1)
+
+
+def box_of(stem):
+    tres = open(os.path.join(PROJ, "resources/items", stem + ".tres"), encoding="utf-8").read()
+    found = re.search(r'^family = "(\w+)"', tres, re.M)
+    cols, rows = _GRID.get(found.group(1) if found else _FAMILY, (1, 1))
+    return tuple(int(n * (_CELL + _PAD) - _PAD) - 2 * _MARGIN for n in (cols, rows))
+
 # Ecart de couleur en deca duquel un pixel de bord est encore du fond. 0,20 laisse
 # passer le leger degrade que SDXL pose sur un fond « plat ».
 BG_TOL = 0.20
@@ -94,8 +118,8 @@ def render(prompt, seed, neg=None):
     return Image.open(io.BytesIO(urllib.request.urlopen(f"{HOST}/view?{q}").read())).convert("RGB")
 
 
-def cut(img):
-    """Detoure le fond, recadre sur l'objet, reduit a SIDE par moyenne de zone.
+def cut(img, frame):
+    """Detoure le fond, recadre sur l'objet, le reduit dans `frame` par moyenne de zone.
 
     Le fond se reconnait a ce qu'il touche les bords, pas a sa couleur : SDXL
     ignore la couleur demandee mais obeit a « plat ». Un remplissage depuis le
@@ -146,7 +170,7 @@ def cut(img):
     box = (slice(ys.min(), ys.max() + 1), slice(xs.min(), xs.max() + 1))
     a, m = a[box], keep[box].astype(np.float32)
     h, w = m.shape
-    f = SIDE / max(h, w)
+    f = min(frame[0] / w, frame[1] / h)
     pre = Image.fromarray((np.dstack([a * m[..., None], m]) * 255).astype(np.uint8), "RGBA")
     pre = pre.resize((max(1, round(w * f)), max(1, round(h * f))), Image.BOX)
     s = np.asarray(pre).astype(np.float32) / 255.0
@@ -157,7 +181,7 @@ def cut(img):
         "RGBA")
 
 
-def quant(im, colors=24):
+def quant(im, colors=32):
     """Palette reduite : c'est ce qui fait tenir l'icone avec le reste du jeu."""
     al = im.getchannel("A")
     q = im.convert("RGB").quantize(colors=colors, method=Image.MEDIANCUT).convert("RGB")
@@ -168,17 +192,20 @@ def quant(im, colors=24):
 GROUPS = {
   "armes": "sword broadsword war_blade dagger misericorde mace battle_mace war_hammer wand scepter runic_scepter",
   "tetes": "shield kite_shield pavise helmet great_helm armet hood masters_hood",
-  "torses": "breastplate chainmail full_plate tunic jerkin gloves reinforced_gloves masters_gloves",
-  "pieds": "boots studded_boots travel_boots belt girdle baldric",
+  "mains": "gloves reinforced_gloves masters_gloves gauntlets mail_gauntlets plate_gauntlets",
+  "torses": "breastplate chainmail full_plate tunic jerkin",
+  "pieds": "boots studded_boots travel_boots sabatons mail_sabatons plate_sabatons belt girdle baldric",
   "bijoux": "amulet talisman pendentif ring ornate_ring signet_ring",
-  "livres": "grimoire codex manual_lightning manual_fire manual_weapons",
+  "livres": "grimoire codex manual_lightning manual_fire manual_weapons manual_cold manual_holy",
+  "livres2": "manual_necrotic manual_witch manual_swiftblade",
   "monnaie": "coin_copper coin_bronze coin_silver coin_gold coin_platinum coin_diamond",
 }
-ZOOM = 5
+ZOOM = 3
+TILE = 56  # le plus grand cote de cadre, celui d'une arme ou d'un torse
 
 
 def build_sheet(name, stems):
-    cw = SIDE * ZOOM + 10
+    cw = TILE * ZOOM + 10
     sh = Image.new("RGBA", (130 + cw * len(SEEDS), 18 + cw * len(stems)), (40, 40, 46, 255))
     d = ImageDraw.Draw(sh)
     for col, seed in enumerate(SEEDS):
@@ -251,7 +278,7 @@ def cmd_gen(args):
                 img = render(TMPL.format(subj=SUBJECTS[name][0]), seed)
                 img.save(raw_path)
                 print("  %s  %.1fs" % (tag, time.time() - t0), flush=True)
-            im = cut(img)
+            im = cut(img, box_of(name))
             # Un fond que le remplissage n'a pas mordu ne se rattrape pas : le
             # tirage manque a la planche, on en choisit un autre.
             if im is not None:
