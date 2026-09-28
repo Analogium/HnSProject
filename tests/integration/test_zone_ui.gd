@@ -19,6 +19,11 @@ func test_the_passive_tree_is_drawn_under_the_other_panels() -> void:
 		assert_gt(panel.get_index(), under, "%s passerait sous l'arbre" % panel.name)
 
 
+## Le coffre et l'étal s'ouvrent en haut à gauche, là où s'écrit le bandeau d'aide (H).
+func test_the_bag_is_drawn_over_the_help_overlay() -> void:
+	assert_gt(_zone.inventory.get_index(), _zone.overlay.get_index())
+
+
 func test_the_panels_open_together_over_the_tree() -> void:
 	for panel: Control in [_zone.passive_tree, _zone.inventory, _zone.stats_panel, _zone.manuals]:
 		panel.toggle()

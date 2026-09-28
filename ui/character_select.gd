@@ -206,6 +206,8 @@ func _play() -> void:
 		_say(Texts.t("Cette sauvegarde ne se lit pas. Son fichier est toujours là."))
 		return
 	Game.character = p
+	if Game.stash == null:
+		Game.stash = SaveStore.read_stash()
 	Game.goto_scene("res://world/zone.tscn")
 
 

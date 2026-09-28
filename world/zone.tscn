@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="Environment" path="res://fx/bloom.tres" id="15_bloom"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://ui/workbench_panel.gd" id="13_atelier"]
 [ext_resource type="Script" path="res://ui/passive_tree_panel.gd" id="14_tree"]
 [ext_resource type="Script" path="res://ui/dps_meter.gd" id="16_dps"]
+[ext_resource type="Script" path="res://actors/town/interactable.gd" id="17_town"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -48,6 +49,33 @@ y_sort_enabled = true
 [node name="Loot" type="Node2D" parent="Entities"]
 y_sort_enabled = true
 
+[node name="Town" type="Node2D" parent="Entities"]
+visible = false
+y_sort_enabled = true
+
+[node name="Merchant" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+
+[node name="Stash" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+look = 1
+
+[node name="Gate" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+look = 3
+
+[node name="WayBack" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+look = 2
+
+[node name="Loot" type="Node2D" parent="Entities/Town"]
+y_sort_enabled = true
+
+[node name="Portal" type="Node2D" parent="Entities"]
+visible = false
+script = ExtResource("17_town")
+look = 2
+
 [node name="HitFeedback" type="Node2D" parent="."]
 z_index = 100
 script = ExtResource("6_fx")
@@ -66,6 +94,23 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("14_tree")
+
+[node name="MapOverlay" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_map")
+
+[node name="Overlay" type="Label" parent="UI"]
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 300.0
+offset_bottom = 110.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 8
+text = "..."
 
 [node name="Inventory" type="Control" parent="UI"]
 anchors_preset = 3
@@ -86,23 +131,6 @@ offset_right = 207.0
 offset_bottom = 14.0
 theme_override_font_sizes/font_size = 9
 text = "SAC  0 / 50 cases"
-
-[node name="MapOverlay" type="Control" parent="UI"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-script = ExtResource("4_map")
-
-[node name="Overlay" type="Label" parent="UI"]
-offset_left = 6.0
-offset_top = 4.0
-offset_right = 300.0
-offset_bottom = 110.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 8
-text = "..."
 
 [node name="Stats" type="Control" parent="UI"]
 anchor_right = 0.25

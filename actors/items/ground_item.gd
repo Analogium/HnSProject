@@ -259,12 +259,13 @@ func _measure() -> void:
 static func _relayout() -> void:
 	_dirty = false
 	var live: Array[GroundItem] = []
-	# Les masqués restent dans la liste, pas dans le rangement.
+	# Les masqués restent dans la liste, pas dans le rangement — ni le butin d'une zone
+	# figée, qui partage ses coordonnées avec la ville.
 	var shown: Array[GroundItem] = []
 	for one in _all:
 		if is_instance_valid(one) and one.is_inside_tree():
 			live.append(one)
-			if one.visible:
+			if one.is_visible_in_tree():
 				shown.append(one)
 	_all = live
 	# L'abscisse départage : à ordonnée égale, un ordre stable évite que deux

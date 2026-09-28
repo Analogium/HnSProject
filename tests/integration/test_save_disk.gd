@@ -188,3 +188,39 @@ func test_the_old_save_folder_is_moved() -> void:
 
 	assert_true(SaveStore.ids().has(p.id), "listé depuis le nouveau dossier")
 	assert_false(DirAccess.dir_exists_absolute(LegacyFrench.SAVE_FOLDER), "l'ancien n'existe plus")
+
+
+# --------------------------------------------------------------------------
+# Le coffre
+# --------------------------------------------------------------------------
+
+
+## Premier lancement : pas de fichier, un coffre vide et bon à écrire.
+func test_no_stash_file_gives_an_empty_stash() -> void:
+	DirAccess.remove_absolute(SaveStore.STASH)
+	var stash := SaveStore.read_stash()
+	assert_false(stash.unreadable)
+	assert_eq(stash.tabs[0].placed.size(), 0)
+
+
+func test_a_stash_survives_the_disk() -> void:
+	var stash := Stash.new()
+	stash.tabs[3].place(Item.new(ItemCatalog.by_id("ring")), Vector2i(5, 6))
+	assert_true(SaveStore.write_stash(stash))
+	var reread := SaveStore.read_stash()
+	assert_eq(reread.tabs[3].placed.size(), 1)
+	assert_eq(reread.tabs[3].placed[0].cell, Vector2i(5, 6))
+	DirAccess.remove_absolute(SaveStore.STASH)
+
+
+## Un coffre qu'on n'a pas su lire reste tel quel sur le disque : c'est la seule
+## copie de ce que tous les personnages y ont rangé.
+func test_a_damaged_stash_is_never_overwritten() -> void:
+	var file := FileAccess.open(SaveStore.STASH, FileAccess.WRITE)
+	file.store_string("{ coupé")
+	file.close()
+	var stash := SaveStore.read_stash()
+	assert_true(stash.unreadable)
+	assert_false(SaveStore.write_stash(stash))
+	assert_eq(FileAccess.get_file_as_string(SaveStore.STASH), "{ coupé", "le fichier est intact")
+	DirAccess.remove_absolute(SaveStore.STASH)

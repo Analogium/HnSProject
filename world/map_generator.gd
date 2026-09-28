@@ -58,6 +58,20 @@ func generate(rng_seed: int) -> void:
 	_collect_floor_cells()
 
 
+## La ville : une salle nue, fermée par la même bordure de deux cases, et sans
+## tirage — elle est la même à chaque visite.
+static func town(p_width: int, p_height: int) -> MapGenerator:
+	var map := MapGenerator.new(p_width, p_height)
+	for y in p_height:
+		var row := []
+		for x in p_width:
+			var is_border := x < 2 or y < 2 or x >= p_width - 2 or y >= p_height - 2
+			row.append(WALL if is_border else FLOOR)
+		map.grid.append(row)
+	map._collect_floor_cells()
+	return map
+
+
 ## Bruit initial. Les bords sont forcés en mur pour fermer la zone.
 func _noise_fill(rng: RandomNumberGenerator) -> void:
 	grid = []

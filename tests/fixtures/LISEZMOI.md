@@ -22,6 +22,10 @@ qu'on écrit, celui du jalon 29 : un objet peut porter `count`, sa pile de pièc
 `rare`, rare quel que soit son nombre d'affixes. Absents, une pile d'un et la rareté
 déduite des affixes.
 
+`stash_v1.json` est le coffre de la ville (jalon 30), un fichier à part partagé par
+tous les personnages, avec son propre numéro de version : cinq onglets, chacun la
+liste d'objets d'un sac. Relu par `tests/unit/test_stash.gd`.
+
 Les v1 à v5 **gardent leurs noms français** (`nom`, `epee`, `degats_feu`…) : c'est
 ce qui est sur les disques. `LegacyFrench` les traduit à la lecture, et ces fichiers
 sont la seule preuve que la table est complète.

@@ -2500,3 +2500,33 @@ msgid "Supprimer « {nom} » et sa règle ?"
 msgid_plural "Supprimer « {nom} » et ses {n} règles ?"
 msgstr[0] "Delete “{nom}” and its rule?"
 msgstr[1] "Delete “{nom}” and its {n} rules?"
+
+msgid "Portail vers la ville"
+msgstr "Town Portal"
+
+msgid "Marchand"
+msgstr "Merchant"
+
+msgid "Coffre"
+msgstr "Stash"
+
+msgid "Portail"
+msgstr "Portal"
+
+msgid "MARCHAND"
+msgstr "MERCHANT"
+
+msgid "COFFRE"
+msgstr "STASH"
+
+msgid "Vendre"
+msgstr "Sell"
+
+msgid "[ctrl + clic] d'une grille à l'autre"
+msgstr "[ctrl + click] move between grids"
+
+msgid "coffre illisible"
+msgstr "stash unreadable"
+
+msgid "Nouvelle zone"
+msgstr "New Area"

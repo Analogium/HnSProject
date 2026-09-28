@@ -27,6 +27,10 @@ var rng := RandomNumberGenerator.new()
 ## scène de réglage est lancée seule : la zone n'écrit alors rien.
 var character: Character
 
+## Le coffre partagé, lu une fois par la sélection avec le personnage. Null hors
+## d'elle : la ville en prend un vide, jamais écrit.
+var stash: Stash
+
 ## Le niveau de la zone en cours : ses ennemis et son butin. 1 pour l'arène, le banc
 ## et la galerie.
 var zone_level := 1

@@ -133,12 +133,6 @@ static func valid_name(p_name: String) -> bool:
 
 ## Aucune statistique calculée : elles se recalculent au chargement.
 func to_dict() -> Dictionary:
-	var placed_items := []
-	for placed in bag.placed:
-		var entry := _item_to_dict(placed.data)
-		entry["cell"] = [placed.cell.x, placed.cell.y]
-		placed_items.append(entry)
-
 	var worn := {}
 	for slot in equipment:
 		var item: Item = equipment[slot]
@@ -170,7 +164,7 @@ func to_dict() -> Dictionary:
 		"level": level,
 		"experience": experience,
 		"passives": Array(passives),
-		"bag": placed_items,
+		"bag": grid_to_list(bag),
 		"equipment": worn,
 		"rack": books,
 		"class_manual": _manual_to_dict(class_book.manual) if class_book != null else null,
@@ -216,15 +210,7 @@ static func from_dict(source: Dictionary) -> Character:
 			taken.append(id)
 	p.passives = PassiveTree.shared().legal(taken, p.level)
 
-	for entry in _list(source.get("bag")):
-		var item := _item_from_dict(entry)
-		if item == null:
-			continue
-		var cell := _cell(entry)
-		# Sa place d'abord, n'importe laquelle ensuite : si la grille a rétréci
-		# ou si deux objets se recouvrent, on les range plutôt que de les perdre.
-		if not p.bag.place(item, cell) and not p.bag.add(item):
-			push_warning("Objet « %s » abandonné : plus de place dans le sac." % item.display_name())
+	grid_from_list(p.bag, source.get("bag"))
 
 	var worn: Dictionary = source.get("equipment", {}) if source.get("equipment") is Dictionary else {}
 	for slot in worn:
@@ -260,6 +246,28 @@ static func from_dict(source: Dictionary) -> Character:
 	p.manual_given = source.get("manual_given", false) == true
 
 	return p
+
+
+## Les objets d'une grille, chacun avec sa case : le sac et les onglets du coffre
+## s'écrivent pareil.
+static func grid_to_list(grid: Inventory) -> Array:
+	var entries := []
+	for placed in grid.placed:
+		var entry := _item_to_dict(placed.data)
+		entry["cell"] = [placed.cell.x, placed.cell.y]
+		entries.append(entry)
+	return entries
+
+
+static func grid_from_list(grid: Inventory, entries: Variant) -> void:
+	for entry in _list(entries):
+		var item := _item_from_dict(entry)
+		if item == null:
+			continue
+		# Sa place d'abord, n'importe laquelle ensuite : si la grille a rétréci
+		# ou si deux objets se recouvrent, on les range plutôt que de les perdre.
+		if not grid.place(item, _cell(entry)) and not grid.add(item):
+			push_warning("Objet « %s » abandonné : plus de place dans la grille." % item.display_name())
 
 
 ## La base par identifiant et les affixes résolus, jamais la base elle-même : elle

@@ -1,0 +1,17 @@
+{
+	"version": 1,
+	"tabs": [
+		[
+			{ "base": "ring", "level": 12, "rare": true, "cell": [2, 3], "affixes": [
+				{ "stat": "armor", "mode": 0, "value": 12.0 },
+				{ "stat": "max_health", "mode": 0, "value": 20.0 }
+			] }
+		],
+		[],
+		[],
+		[],
+		[
+			{ "base": "coin_gold", "level": 12, "affixes": [], "count": 9, "cell": [11, 11] }
+		]
+	]
+}

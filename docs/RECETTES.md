@@ -157,7 +157,7 @@ refuse une base dont la liste déborde du bas de l'établi.
    `_unhandled_input`, ou `Input.is_action_pressed()` pour une touche maintenue. Un
    `KEY_*` écrit dans un `if` ne se rebinde pas — c'est tout l'objet de la recette.
 
-L'onglet des touches se remplit seul : il lit `ACTIONS`. Dix-sept actions tiennent
+L'onglet des touches se remplit seul : il lit `ACTIONS`. Dix-huit actions tiennent
 dans les 360 px (deux colonnes, vérifié sur capture) ; au-delà, revérifier.
 
 **Ce qui refusera un oubli** — `tests/unit/test_keybinds.gd` :

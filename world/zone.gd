@@ -23,7 +23,8 @@ const PACK_MIN_TILES := 3
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
 @onready var projectiles: Node2D = $Entities/Projectiles
-@onready var loot: Node2D = $Entities/Loot
+@onready var zone_loot: Node2D = $Entities/Loot
+@onready var town_loot: Node2D = $Entities/Town/Loot
 @onready var ground: Node2D = $Ground
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
@@ -38,6 +39,14 @@ const PACK_MIN_TILES := 3
 @onready var workbench: WorkbenchPanel = $UI/Workbench
 @onready var spawner: EnemySpawner = $EnemySpawner
 @onready var indicator: Label = $UI/Indicator
+@onready var town: Node2D = $Entities/Town
+@onready var merchant: Interactable = $Entities/Town/Merchant
+@onready var stash_chest: Interactable = $Entities/Town/Stash
+@onready var town_gate: Interactable = $Entities/Town/Gate
+## Le portail de la ville qui ramène dans la zone quittée ; là seulement quand il y en a une.
+@onready var way_back: Interactable = $Entities/Town/WayBack
+## Le portail qu'on ouvre hors de la ville : un seul, déplacé à chaque ouverture.
+@onready var portal: Interactable = $Entities/Portal
 
 ## À quelle distance devant soi tombe ce qu'on pose au sol. Posé au centre, un
 ## objet serait à moitié caché par le personnage ; plus loin, il franchirait un
@@ -54,6 +63,20 @@ const ORB_CROWN := 26.0
 ## fermeture, ce qui perdrait la session entière sur une coupure de courant.
 const SAVE_PERIOD := 120.0
 
+## La ville, en cases, bordure comprise : tout s'y voit d'un écran au zoom du jeu.
+const TOWN_SIZE := Vector2i(24, 16)
+## On arrive au milieu (`MapGenerator.get_spawn_cell()`) ; le marchand à gauche, le
+## coffre à droite, le portail vers la zone au-dessus.
+const MERCHANT_CELL := Vector2i(7, 7)
+const STASH_CELL := Vector2i(16, 7)
+const GATE_CELL := Vector2i(12, 4)
+## Sous le point d'arrivée : on ressort de la ville par où l'on y est entré.
+const WAY_BACK_CELL := Vector2i(12, 11)
+## Le sol de la ville est tiré sur cette graine : la même salle à chaque visite.
+const TOWN_SEED := 1
+## Assez loin devant soi pour que le portail ouvert ne se cache pas sous le joueur.
+const PORTAL_AHEAD := 28.0
+
 var generator: MapGenerator
 
 ## Tirage propre à la zone : tout ce qui la dessine ou la peuple passe par lui.
@@ -63,6 +86,16 @@ var generator: MapGenerator
 var zone_rng := RandomNumberGenerator.new()
 
 var _seed := 0
+## Vrai en ville : ni ennemis ni portail à ouvrir, un marchand et le coffre.
+var in_town := false
+## Le coffre partagé de la session ; un coffre vide et jamais écrit sans personnage.
+var stash: Stash
+## Où tombe ce qu'on pose : le sol de la ville, ou celui de la zone.
+var loot: Node2D
+## La zone quittée par un portail, figée en attendant qu'on y revienne, et l'endroit
+## d'où l'on est parti ; null quand il n'y en a pas.
+var _left_zone: MapGenerator
+var _left_at := Vector2.ZERO
 var _gen_ms := 0.0
 var _paint_ms := 0.0
 var _spawned := 0
@@ -77,7 +110,8 @@ func _ready() -> void:
 
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
-	enemy_manager.loot_parent = loot
+	loot = zone_loot
+	enemy_manager.loot_parent = zone_loot
 	enemy_manager.ground_parent = ground
 	player.died.connect(_on_player_died)
 
@@ -99,6 +133,16 @@ func _ready() -> void:
 	workbench.drop_requested.connect(_on_item_dropped)
 	workbench.requested_orbs.connect(drop_orbs)
 
+	stash = Game.stash if Game.stash != null else Stash.new()
+	merchant.used.connect(inventory.open_merchant)
+	stash_chest.used.connect(_open_stash)
+	town_gate.used.connect(new_zone)
+	way_back.used.connect(return_to_zone)
+	portal.used.connect(enter_town)
+	merchant.position = MapGenerator.cell_center(MERCHANT_CELL)
+	stash_chest.position = MapGenerator.cell_center(STASH_CELL)
+	town_gate.position = MapGenerator.cell_center(GATE_CELL)
+	way_back.position = MapGenerator.cell_center(WAY_BACK_CELL)
 
 	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
 	# seule depuis l'éditeur : le joueur garde alors sa fiche par défaut, et rien
@@ -116,7 +160,11 @@ func _ready() -> void:
 		# L'épée de départ, sans quoi le banc de mesure et l'éditeur ne lanceraient rien.
 		player.equip(Item.new(ItemCatalog.by_id(ItemCatalog.ID_STARTING_WEAPON)))
 
-	generate_zone(Game.rng.randi())
+	# Un personnage arrive en ville ; une scène de réglage, directement dans une zone.
+	if Game.character != null:
+		enter_town()
+	else:
+		new_zone()
 
 
 ## Un manuel aux pieds d'un personnage neuf, **au sol** et non dans le sac : c'est
@@ -145,7 +193,12 @@ func save() -> void:
 	if Game.character == null:
 		return
 	player.fill(Game.character)
-	if not SaveStore.write(Game.character):
+	var written := SaveStore.write(Game.character)
+	# Avec le personnage, toujours : un objet passé du sac au coffre ne doit exister ni
+	# deux fois ni zéro. Illisible, le coffre n'est jamais écrit.
+	if not stash.unreadable:
+		written = SaveStore.write_stash(stash) and written
+	if not written:
 		# Sans fondu, exprès : un échec d'écriture doit rester à l'écran jusqu'à
 		# la sauvegarde suivante, là où une réussite n'a pas à s'attarder.
 		_announce(Texts.t("échec de la sauvegarde"))
@@ -245,7 +298,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var vp := get_viewport()
 
 	match key:
-		KEY_F5: generate_zone(Game.rng.randi())
+		KEY_F5: new_zone()
 		# Le niveau de la **prochaine** zone. Changer celui de la zone en cours
 		# donnerait une population mêlée : les ennemis sont mis à l'échelle en
 		# naissant, ceux déjà debout ne bougeraient plus. Le bandeau annonce donc
@@ -292,14 +345,25 @@ func _zone_action(event: InputEvent) -> bool:
 		GroundItem.show_labels(not GroundItem.labels_shown)
 	elif event.is_action_pressed("loot_filter"):
 		Settings.loot_filter_on = not Settings.loot_filter_on
+	elif event.is_action_pressed("town_portal"):
+		open_portal()
 	else:
 		return false
 	return true
 
 
+## Une zone neuve, au niveau choisi : `F5` et le portail d'en haut de la ville. Celle
+## qu'on avait quittée par un portail est abandonnée.
+func new_zone() -> void:
+	generate_zone(Game.rng.randi())
+
+
 ## Le niveau choisi prend effet **ici**, et nulle part ailleurs : c'est le seul
 ## moment où l'on peut peupler une carte d'ennemis tous nés au même niveau.
 func generate_zone(zone_seed: int) -> void:
+	_set_town(false)
+	_left_zone = null
+	_freeze_zone(false)
 	_seed = zone_seed
 	zone_rng.seed = zone_seed
 	enemy_manager.level = Game.zone_level
@@ -310,7 +374,97 @@ func generate_zone(zone_seed: int) -> void:
 	generator.generate(_seed)
 	_gen_ms = float(Time.get_ticks_usec() - t0) / 1000.0
 
-	t0 = Time.get_ticks_usec()
+	_lay_out()
+
+	# **Après** le placement, jamais avant : c'est `_place_and_populate()` qui pose
+	# le joueur sur le point d'apparition de la carte neuve. Offert plus tôt, le
+	# livre tombait à l'endroit où le joueur était encore — le coin de la scène
+	# pour un personnage qui entre en jeu pour la première fois, c'est-à-dire
+	# exactement le cas qu'on veut servir.
+	_place_and_populate()
+
+	_give_first_manual()
+
+
+## La ville : la même salle à chaque visite, sans ennemis. On y arrive en se
+## connectant et par le portail qu'on ouvre en zone — la zone se fige alors, et le
+## portail de retour y ramène.
+func enter_town() -> void:
+	if not in_town and generator != null:
+		_left_zone = generator
+		_left_at = player.global_position
+		_freeze_zone(true)
+	_set_town(true)
+	zone_rng.seed = TOWN_SEED
+	generator = MapGenerator.town(TOWN_SIZE.x, TOWN_SIZE.y)
+	_lay_out()
+	player.revive()
+	player.global_position = MapGenerator.cell_center(generator.get_spawn_cell())
+	way_back.visible = _left_zone != null
+	# Pas quand une zone attend : le sien y est encore au sol, et l'on en ramasserait deux.
+	if _left_zone == null:
+		_give_first_manual()
+
+
+## La zone quittée, telle qu'on l'a laissée : mêmes murs, mêmes ennemis, même butin.
+## On y reparaît là où l'on a pris le portail, qui se referme derrière soi.
+func return_to_zone() -> void:
+	if _left_zone == null:
+		return
+	_set_town(false)
+	generator = _left_zone
+	_left_zone = null
+	# Le sol se repeint à l'identique : sa peinture est le premier tirage de la graine.
+	zone_rng.seed = _seed
+	_lay_out()
+	_freeze_zone(false)
+	player.global_position = _left_at
+
+
+## Le portail vers la ville, devant le joueur : un seul à la fois, comme dans PoE.
+func open_portal() -> void:
+	if in_town:
+		return
+	portal.global_position = player.global_position + player.facing * PORTAL_AHEAD
+	portal.show()
+
+
+## Le portail ouvert se referme dès qu'on change de lieu : il a servi, ou sa zone
+## n'est plus. Quitter la ville referme le coffre ou l'étal, qui n'y ont plus de sens.
+## Les tirs en vol partent : ils voleraient dans les murs de l'autre carte. Le sol de
+## la ville se vide aussi, dans les deux sens : caché mais pas figé, son butin se
+## cliquerait encore depuis la zone.
+func _set_town(on: bool) -> void:
+	in_town = on
+	town.visible = on
+	loot = town_loot if on else zone_loot
+	portal.hide()
+	for node in projectiles.get_children() + town_loot.get_children():
+		node.queue_free()
+	if not on and inventory.storage_open():
+		inventory.toggle()
+
+
+## Une zone quittée ne vit plus : désactivés, ses ennemis sortent aussi de la physique
+## (`CollisionObject2D.disable_mode`), leurs coups au sol ne frappent plus, et rien ne
+## s'en voit depuis la ville, qui partage ses coordonnées.
+func _freeze_zone(frozen: bool) -> void:
+	for part: Node2D in [enemy_manager, ground, zone_loot]:
+		part.process_mode = Node.PROCESS_MODE_DISABLED if frozen else Node.PROCESS_MODE_INHERIT
+		part.visible = not frozen
+
+
+func _open_stash() -> void:
+	if stash.unreadable:
+		# Sans fondu, comme un échec de sauvegarde : le fichier attend qu'on le répare.
+		_announce(Texts.t("coffre illisible"))
+		return
+	inventory.open_stash(stash.tabs)
+
+
+## Pose la carte de `generator` : tuiles, collisions, carte superposée, champ de flux.
+func _lay_out() -> void:
+	var t0 := Time.get_ticks_usec()
 	_paint()
 	_paint_ms = float(Time.get_ticks_usec() - t0) / 1000.0
 
@@ -329,15 +483,6 @@ func generate_zone(zone_seed: int) -> void:
 	# Le champ de flux appartient à la carte : un nouveau générateur, un nouveau
 	# champ. Le garder ferait poursuivre les ennemis à travers l'ancienne.
 	enemy_manager.field = FlowField.new(generator)
-
-	# **Après** le placement, jamais avant : c'est `_place_and_populate()` qui pose
-	# le joueur sur le point d'apparition de la carte neuve. Offert plus tôt, le
-	# livre tombait à l'endroit où le joueur était encore — le coin de la scène
-	# pour un personnage qui entre en jeu pour la première fois, c'est-à-dire
-	# exactement le cas qu'on veut servir.
-	_place_and_populate()
-
-	_give_first_manual()
 
 
 ## Remet le joueur au point d'apparition et repeuple la carte courante. Le même
@@ -386,8 +531,11 @@ func _random_floor_tile() -> Vector2i:
 	return Vector2i(0, 0)
 
 
-## Paquet mixte autour du joueur, sur des cases praticables uniquement.
+## Paquet mixte autour du joueur, sur des cases praticables uniquement. Pas en ville :
+## il naîtrait dans la zone figée.
 func spawn_pack() -> void:
+	if in_town:
+		return
 	var origin := MapGenerator.cell_at(player.global_position)
 	var total := PACK_GRUNTS + PACK_CASTERS
 	var placed := 0
@@ -419,7 +567,7 @@ func kill_all() -> void:
 		z.queue_free()
 	# Le butin est posé sur le sol de *cette* carte : le garder d'une zone à
 	# l'autre laisserait des objets flotter dans les murs de la suivante.
-	for l in loot.get_children():
+	for l in zone_loot.get_children():
 		l.queue_free()
 
 
@@ -429,7 +577,11 @@ func _on_player_died() -> void:
 	_respawn.call_deferred()
 
 
+## En ville, on y revient : la repeupler y ferait naître des ennemis.
 func _respawn() -> void:
+	if in_town:
+		enter_town()
+		return
 	kill_all()
 	_place_and_populate()
 
@@ -452,6 +604,7 @@ func _overlay_text() -> String:
 			player.level, player.xp, player.xp_to_next, enemy_manager.enemies.size()
 		],
 		"",
+		("ville  —  prochaine zone : niveau %d" % Game.zone_level) if in_town else
 		"zone %d  —  niveau %d%s  —  %d cases de sol" % [
 			_seed, enemy_manager.level, _pending_level(), generator.floor_cells.size()
 		],
@@ -468,6 +621,7 @@ func _overlay_text() -> String:
 		"[%s] noms au sol   [%s] filtre de butin   [H] masquer cette aide" % [
 			Keybinds.key_label("ground_labels"), Keybinds.key_label("loot_filter")
 		],
+		"[%s] portail vers la ville" % Keybinds.key_label("town_portal"),
 		"[F2] arene de reglage   [F3] reglage generation",
 		"[F4] forge              [F6] stress test",
 		"[B] etabli (reglage)",

@@ -62,7 +62,8 @@ func _draw() -> void:
 	var origin := ((size - span) * 0.5).floor()
 	draw_texture_rect(_tex, Rect2(origin, span), false)
 
-	if enemy_manager != null:
+	# Caché, il est la zone figée derrière un portail : ses ennemis ne sont pas ici.
+	if enemy_manager != null and enemy_manager.visible:
 		for e in enemy_manager.enemies:
 			if is_instance_valid(e) and not e.is_dead:
 				_marker(origin, zoom, e.global_position,

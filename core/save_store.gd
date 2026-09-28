@@ -8,6 +8,8 @@ const EXTENSION := ".json"
 ## Le suffixe d'écriture avant renommage ; un `.tmp` qui traîne n'est pas un
 ## personnage.
 const TEMPORARY := ".tmp"
+## Hors de `FOLDER` : un coffre n'est pas un personnage, et `ids()` le prendrait pour un.
+const STASH := "user://stash.json"
 
 
 static func path(id: String) -> String:
@@ -47,7 +49,40 @@ static func list_all() -> Array[Character]:
 ## Null pour un fichier absent, tronqué ou de version inconnue ; jamais d'exception.
 static func read(id: String) -> Character:
 	LegacyFrench.move_save_folder(FOLDER)
-	var file := FileAccess.open(path(id), FileAccess.READ)
+	var data: Variant = _read_json(path(id))
+	return Character.from_dict(data) if data != null else null
+
+
+## Écrit et **date du jour** : sauvegarder, c'est avoir joué.
+static func write(character: Character) -> bool:
+	if character == null or character.id.is_empty() or character.unreadable:
+		return false
+	character.played_on = Time.get_date_string_from_system()
+	return _write_json(path(character.id), character.to_dict())
+
+
+## Un coffre vide au premier lancement ; **marqué illisible** quand le fichier existe
+## mais ne se relit pas — il reste alors intact sur le disque.
+static func read_stash() -> Stash:
+	if not FileAccess.file_exists(STASH):
+		return Stash.new()
+	var data: Variant = _read_json(STASH)
+	var stash := Stash.from_dict(data) if data != null else null
+	if stash == null:
+		stash = Stash.new()
+		stash.unreadable = true
+	return stash
+
+
+static func write_stash(stash: Stash) -> bool:
+	if stash == null or stash.unreadable:
+		return false
+	return _write_json(STASH, stash.to_dict())
+
+
+## Null pour un fichier absent ou abîmé, avec un avertissement pour le second.
+static func _read_json(file_path: String) -> Variant:
+	var file := FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
 		return null
 	var text_value := file.get_as_text()
@@ -57,40 +92,37 @@ static func read(id: String) -> Character:
 	# fichier abîmé, cas attendu ici.
 	var reader := JSON.new()
 	if reader.parse(text_value) != OK:
-		push_warning("Sauvegarde « %s » illisible : %s, ligne %d." % [
-			id, reader.get_error_message(), reader.get_error_line()
+		push_warning("« %s » illisible : %s, ligne %d." % [
+			file_path, reader.get_error_message(), reader.get_error_line()
 		])
 		return null
 	if not reader.data is Dictionary:
-		push_warning("Sauvegarde « %s » illisible : ce n'est pas un objet JSON." % id)
+		push_warning("« %s » illisible : ce n'est pas un objet JSON." % file_path)
 		return null
-	return Character.from_dict(reader.data)
+	return reader.data
 
 
-## Écrit et **date du jour** : sauvegarder, c'est avoir joué. En deux temps, un `.tmp`
-## fermé puis renommé, pour qu'une coupure ne laisse jamais un fichier tronqué.
-static func write(character: Character) -> bool:
-	if character == null or character.id.is_empty() or character.unreadable:
+## En deux temps, un `.tmp` fermé puis renommé, pour qu'une coupure ne laisse jamais
+## un fichier tronqué.
+static func _write_json(file_path: String, data: Dictionary) -> bool:
+	var folder_path := file_path.get_base_dir()
+	if DirAccess.make_dir_recursive_absolute(folder_path) != OK:
+		push_error("Impossible de créer %s" % folder_path)
 		return false
-	if DirAccess.make_dir_recursive_absolute(FOLDER) != OK:
-		push_error("Impossible de créer %s" % FOLDER)
-		return false
 
-	character.played_on = Time.get_date_string_from_system()
-
-	var temp_path := path(character.id) + TEMPORARY
+	var temp_path := file_path + TEMPORARY
 	var file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if file == null:
 		push_error("Écriture impossible : %s" % temp_path)
 		return false
 	# Indenté : se diagnostique à l'œil.
-	file.store_string(JSON.stringify(character.to_dict(), "\t"))
+	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
 
-	var folder := DirAccess.open(FOLDER)
+	var folder := DirAccess.open(folder_path)
 	if folder == null:
 		return false
-	if folder.rename(temp_path.get_file(), path(character.id).get_file()) != OK:
+	if folder.rename(temp_path.get_file(), file_path.get_file()) != OK:
 		push_error("Renommage impossible : %s" % temp_path)
 		folder.remove(temp_path.get_file())
 		return false

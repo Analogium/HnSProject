@@ -5,6 +5,10 @@ extends Control
 ## clic-clic ; un relâchement sans déplacement est un clic. Relâché hors du panneau,
 ## l'objet tombe ; le clic droit équipe, retire, jette ou prend une pièce de monnaie,
 ## que le clic suivant applique. Le sac vit sur le joueur.
+##
+## En ville, **une seconde grille** s'ouvre à gauche de l'écran — un onglet du coffre,
+## ou l'étal du marchand — et les mêmes gestes y valent : glisser, échanger, empiler.
+## Ctrl + clic passe un objet d'une grille à l'autre.
 
 ## Un signal : c'est la scène qui sait où poser au sol.
 signal drop_requested(item: Item)
@@ -50,6 +54,16 @@ const BLOCKED := Color(0.90, 0.30, 0.28, 0.28)
 const TIP_GAP := 5.0
 const FONT_SIZE := 8
 
+## Le coin haut-gauche du coffre et de l'étal, à l'écran : ses douze rangées finissent
+## juste au-dessus des jauges (`Hud.gauges_top()`).
+const STORAGE_AT := Vector2(8.0, 6.0)
+## Une ligne d'aide sous la grille.
+const STORAGE_FOOTER := 12.0
+const TAB := Vector2(14.0, 11.0)
+const TAB_GAP := 2.0
+const SELL := Vector2(40.0, 11.0)
+const TAB_ON := Color(0.30, 0.28, 0.38)
+
 @onready var title: Label = $Title
 
 ## Gardée : pas de null à retester à chaque dessin.
@@ -70,6 +84,15 @@ var _grab_px := Vector2.ZERO
 ## clic suivant l'applique ; null hors de ce geste.
 var _coin: Item
 var _coin_cell := Vector2i.ZERO
+## Les onglets du coffre, ou l'étal seul ; vide hors de la ville.
+var _pages: Array[Inventory] = []
+## L'onglet montré : la grille que visent les gestes.
+var _storage: Inventory
+## L'étal : « Vendre » le vide, et le refermer rend au sac ce qu'il porte encore.
+var _selling := false
+## La grille survolée, et celle d'où vient l'objet tenu : le sac ou `_storage`.
+var _hover_grid: Inventory
+var _from_grid: Inventory
 ## Dernière position connue de la souris, dans le repère du panneau.
 var _mouse := Vector2.ZERO
 ## Où le bouton a été pressé, pour distinguer le glisser du clic.
@@ -110,6 +133,8 @@ func _notification(what: int) -> void:
 func bind(player: Player) -> void:
 	_player = player
 	_inventory = player.inventory
+	_hover_grid = _inventory
+	_from_grid = _inventory
 	_inventory.changed.connect(_on_changed)
 	player.equipment_changed.connect(_on_changed)
 
@@ -133,7 +158,54 @@ func toggle() -> void:
 		var left := _return_held()
 		if left != null:
 			drop_requested.emit(left)
+		_close_storage()
 	_on_changed()
+
+
+## Le coffre, un onglet à la fois, à côté du sac.
+func open_stash(tabs: Array[Inventory]) -> void:
+	_open_storage(tabs, false)
+
+
+## L'étal du marchand, vide à chaque ouverture.
+func open_merchant() -> void:
+	_open_storage([Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)], true)
+
+
+func storage_open() -> bool:
+	return _storage != null
+
+
+func _open_storage(pages: Array[Inventory], selling: bool) -> void:
+	if visible:
+		toggle()
+	_pages = pages
+	_storage = pages[0]
+	_selling = selling
+	toggle()
+
+
+## **Rien ne se perd** : ce que l'étal porte encore revient au sac, et au sol s'il
+## est plein. On n'a pas vendu.
+func _close_storage() -> void:
+	if _selling:
+		var unsold: Array[Item] = []
+		for p in _storage.placed:
+			unsold.append(p.data)
+		_storage.clear()
+		for item in unsold:
+			if not _inventory.add(item):
+				drop_requested.emit(item)
+	_pages = []
+	_storage = null
+	_selling = false
+	_hover_grid = _inventory
+
+
+## Ce que l'étal porte disparaît. Il ne rapporte rien encore.
+func _sell() -> void:
+	_storage.clear()
+	queue_redraw()
 
 
 func _input(event: InputEvent) -> void:
@@ -169,8 +241,12 @@ func _input(event: InputEvent) -> void:
 			# Presser en tenant, c'est poser ; le glisser se résout au relâchement.
 			if _coin != null:
 				_use_coin(button.position)
+			elif _storage_click(button.position):
+				pass   # un objet en main se range dans l'onglet qu'on vient d'ouvrir
 			elif _held != null:
 				_resolve(button.position, false)
+			elif button.ctrl_pressed and _storage != null:
+				_transfer(button.position)
 			else:
 				_take(button.position)
 		MOUSE_BUTTON_RIGHT:
@@ -191,11 +267,13 @@ func _release(point: Vector2) -> void:
 ## Ce que la souris survole, sac et emplacements ensemble.
 func _track(point: Vector2) -> void:
 	_mouse = point
-	var cell := _cell_at(point)
+	var grid := _grid_at(point)
+	var cell := _cell_at(point, grid)
 	var slot := _slot_at(point)
 	# Un objet en main suit au pixel : redessiner à chaque mouvement.
-	if cell == _hover and slot == _hover_slot and _held == null and _coin == null:
+	if grid == _hover_grid and cell == _hover and slot == _hover_slot and _held == null and _coin == null:
 		return
+	_hover_grid = grid
 	_hover = cell
 	_hover_slot = slot
 	queue_redraw()
@@ -219,6 +297,9 @@ func _right_click(to_the_ground: bool) -> void:
 		_drop_hovered()
 	elif _hover_slot >= 0:
 		_unequip(EquipmentSlots.ids()[_hover_slot])
+	elif _hover_grid != _inventory:
+		# Ni pièce ni équipement depuis le coffre : il faut d'abord le sortir.
+		return
 	elif Currency.is_coin(_item_at(_hover)):
 		_coin = _item_at(_hover)
 		_coin_cell = _inventory.placed[_inventory.index_at(_hover)].cell
@@ -230,7 +311,7 @@ func _right_click(to_the_ground: bool) -> void:
 ## Le clic qui suit le clic droit sur une pièce : dépensée si l'objet visé l'accepte.
 ## Dans tous les cas le geste se termine — seul un objet du sac se vise.
 func _use_coin(point: Vector2) -> void:
-	if Currency.apply(_coin.base, _item_at(_cell_at(point)), Game.rng):
+	if _grid_at(point) == _inventory and Currency.apply(_coin.base, _item_at(_cell_at(point)), Game.rng):
 		_inventory.spend_one(_coin_cell)
 	_coin = null
 	queue_redraw()
@@ -241,12 +322,40 @@ func _item_at(cell: Vector2i) -> Item:
 	return null if index == Inventory.EMPTY else _inventory.placed[index].data
 
 
+## Un onglet ou le bouton « Vendre » : vrai si le clic l'a touché.
+func _storage_click(point: Vector2) -> bool:
+	for i in _pages.size():
+		if _tab_rect(i).has_point(point):
+			_storage = _pages[i]
+			_track(point)
+			return true
+	if _selling and _sell_rect().has_point(point):
+		_sell()
+		return true
+	return false
+
+
+## Ctrl + clic : d'une grille à l'autre sans passer par la main, comme PoE. Sur les
+## piles de l'autre d'abord ; ce qui n'y tient pas reste où il était.
+func _transfer(point: Vector2) -> void:
+	var from := _grid_at(point)
+	var to := _inventory if from == _storage else _storage
+	var index := from.index_at(_cell_at(point, from))
+	if index == Inventory.EMPTY:
+		return
+	var origin: Vector2i = from.placed[index].cell
+	var item := from.take_at(origin)
+	if not to.add(item):
+		from.place(item, origin)
+	queue_redraw()
+
+
 ## Ctrl + clic droit : au sol, sans passer par la main. Depuis le sac comme depuis un
 ## emplacement — sous les yeux du joueur c'est le même geste.
 func _drop_hovered() -> void:
 	var item := (
 		_player.unequip(EquipmentSlots.ids()[_hover_slot]) if _hover_slot >= 0
-		else _inventory.take_at(_hover)
+		else _hover_grid.take_at(_hover)
 	)
 	if item != null:
 		drop_requested.emit(item)
@@ -297,26 +406,29 @@ func _take(point: Vector2) -> void:
 			return
 		_player.unequip(EquipmentSlots.ids()[slot])
 		# Hors grille exprès : `_return_held` cherchera une place.
-		_hold(worn, Vector2i(-1, -1))
+		_hold(worn, Vector2i(-1, -1), _inventory)
 		queue_redraw()
 		return
 
-	var cell := _cell_at(point)
-	var index := _inventory.index_at(cell)
+	var grid := _grid_at(point)
+	var cell := _cell_at(point, grid)
+	var index := grid.index_at(cell)
 	if index == Inventory.EMPTY:
 		return
-	_from = _inventory.placed[index].cell
+	_from = grid.placed[index].cell
+	_from_grid = grid
 	_grab = cell - _from
-	_grab_px = point - _rect_of(_from, Vector2i.ONE).position
-	_held = _inventory.take_at(cell)
+	_grab_px = point - _rect_of(_from, Vector2i.ONE, grid).position
+	_held = grid.take_at(cell)
 	queue_redraw()
 
 
 ## Un objet en main, saisi par son centre : la prise d'un emplacement d'équipement et
 ## celle d'un délogé, qui n'ont pas de case attrapée sous le curseur.
-func _hold(item: Item, from: Vector2i) -> void:
+func _hold(item: Item, from: Vector2i, grid: Inventory) -> void:
 	_held = item
 	_from = from
+	_from_grid = grid
 	_grab = Inventory.footprint(item) / 2
 	_grab_px = _span_size(Inventory.footprint(item)) * 0.5
 
@@ -328,17 +440,18 @@ func _resolve(point: Vector2, drag: bool) -> void:
 		return
 
 	var slot := _slot_at(point)
+	var grid := _grid_at(point)
 	if slot >= 0:
 		if _equip_held(EquipmentSlots.ids()[slot]):
 			queue_redraw()
 			return
-	elif not _panel_rect().has_point(point):
-		# Hors du panneau : au sol.
+	elif not _owns_point(point):
+		# Hors des panneaux : au sol.
 		drop_requested.emit(_held)
 		_held = null
 		queue_redraw()
 		return
-	elif _swap_in(_cell_at(point) - _grab):
+	elif _swap_in(_cell_at(point, grid) - _grab, grid):
 		queue_redraw()
 		return
 
@@ -357,29 +470,29 @@ func _resolve(point: Vector2, drag: bool) -> void:
 ## permutent alors sans rien déranger. À défaut — tailles différentes, objet venu
 ## d'un emplacement d'équipement —, le délogé passe en main, et c'est au joueur de
 ## lui trouver une place.
-func _swap_in(cell: Vector2i) -> bool:
-	if _inventory.place(_held, cell):
+func _swap_in(cell: Vector2i, grid: Inventory) -> bool:
+	if grid.place(_held, cell):
 		_held = null
 		return true
-	var blocker := _inventory.lone_blocker(_held, cell)
+	var blocker := grid.lone_blocker(_held, cell)
 	if blocker == Inventory.EMPTY:
 		return false
 	# Sur une pile de même base qui a de la place : on verse au lieu d'échanger.
-	if _inventory.stack_onto(blocker, _held):
+	if grid.stack_onto(blocker, _held):
 		if _held.count == 0:
 			_held = null
 		return true
 
-	var origin: Vector2i = _inventory.placed[blocker].cell
-	var evicted := _inventory.take_at(origin)
-	if not _inventory.place(_held, cell):
+	var origin: Vector2i = grid.placed[blocker].cell
+	var evicted := grid.take_at(origin)
+	if not grid.place(_held, cell):
 		# La place libérée ne suffisait pas : rien n'aura bougé.
-		_inventory.place(evicted, origin)
+		grid.place(evicted, origin)
 		return false
-	if _from.x >= 0 and _inventory.place(evicted, _from):
+	if _from.x >= 0 and _from_grid.place(evicted, _from):
 		_held = null
 	else:
-		_hold(evicted, origin)
+		_hold(evicted, origin, grid)
 	return true
 
 
@@ -397,7 +510,7 @@ func _return_held() -> Item:
 		return null
 	var item := _held
 	_held = null
-	if _inventory.place(item, _from) or _inventory.add(item):
+	if _from_grid.place(item, _from) or _inventory.add(item):
 		return null
 	return item
 
@@ -459,11 +572,56 @@ func _on_changed() -> void:
 ## deviennent sourds ; sauf avec un objet en main, qu'on peut lâcher au-dehors, ou
 ## une pièce prise, que ce clic repose au lieu de lancer une attaque.
 func _owns_click(point: Vector2) -> bool:
-	return _held != null or _coin != null or _panel_rect().has_point(point)
+	return _held != null or _coin != null or _owns_point(point)
+
+
+func _owns_point(point: Vector2) -> bool:
+	return _panel_rect().has_point(point) or _storage_rect().has_point(point)
 
 
 func _panel_rect() -> Rect2:
 	return Rect2(Vector2.ZERO, _panel_size())
+
+
+## Le coffre ou l'étal, dans le repère du panneau ; vide quand rien n'est ouvert.
+func _storage_rect() -> Rect2:
+	if _storage == null:
+		return Rect2()
+	return Rect2(
+		STORAGE_AT - global_position,
+		Vector2(_storage.cols * (CELL + PAD) + PAD, HEADER + _storage.rows * (CELL + PAD) + PAD + STORAGE_FOOTER)
+	)
+
+
+## Les onglets, alignés à droite de l'en-tête ; aucun pour l'étal.
+func _tab_rect(index: int) -> Rect2:
+	if _selling:
+		return Rect2()
+	var box := _storage_rect()
+	var right := box.end.x - PAD - float(_pages.size() - index) * (TAB.x + TAB_GAP) + TAB_GAP
+	return Rect2(Vector2(right, box.position.y + 2.0), TAB)
+
+
+func _sell_rect() -> Rect2:
+	var box := _storage_rect()
+	return Rect2(Vector2(box.end.x - PAD - SELL.x, box.position.y + 2.0), SELL)
+
+
+## La grille sous ce point : l'onglet ouvert s'il le couvre, le sac sinon — dont les
+## cases hors grille disent déjà « rien ».
+func _grid_at(point: Vector2) -> Inventory:
+	return _storage if _storage_rect().has_point(point) else _inventory
+
+
+func _grid_or_bag(grid: Inventory) -> Inventory:
+	return grid if grid != null else _inventory
+
+
+## Le coin haut-gauche de la case (0, 0) d'une grille.
+func _grid_origin(grid: Inventory) -> Vector2:
+	if grid == _inventory:
+		return Vector2(_grid_left(), _grid_top() + PAD)
+	return _storage_rect().position + Vector2(PAD, HEADER + PAD)
 
 
 ## Le plus large des deux : la grille du sac, ou celle du personnage.
@@ -526,20 +684,14 @@ func _grid_top() -> float:
 	return HEADER + _equip_size().y + PAD + 6.0
 
 
-## Le coin haut-gauche d'un rectangle de cases du sac, en pixels du panneau.
-func _rect_of(cell: Vector2i, span: Vector2i) -> Rect2:
-	return Rect2(
-		Vector2(_grid_left() + cell.x * (CELL + PAD), _grid_top() + PAD + cell.y * (CELL + PAD)),
-		_span_size(span)
-	)
+## Un rectangle de cases d'une grille — le sac par défaut —, en pixels du panneau.
+func _rect_of(cell: Vector2i, span: Vector2i, grid: Inventory = null) -> Rect2:
+	return Rect2(_grid_origin(_grid_or_bag(grid)) + Vector2(cell) * (CELL + PAD), _span_size(span))
 
 
 ## Peut sortir de la grille : poser à cheval sur le bord doit échouer.
-func _cell_at(point: Vector2) -> Vector2i:
-	return Vector2i(
-		floori((point.x - _grid_left()) / (CELL + PAD)),
-		floori((point.y - _grid_top() - PAD) / (CELL + PAD))
-	)
+func _cell_at(point: Vector2, grid: Inventory = null) -> Vector2i:
+	return Vector2i(((point - _grid_origin(_grid_or_bag(grid))) / (CELL + PAD)).floor())
 
 
 func _slot_at(point: Vector2) -> int:
@@ -557,24 +709,22 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BACK)
 	draw_rect(Rect2(Vector2.ZERO, s), UiPalette.BORDER, false, 1.0)
 
-	for y in _inventory.rows:
-		for x in _inventory.cols:
-			_draw_cell(_rect_of(Vector2i(x, y), Vector2i.ONE))
-
+	if _storage != null:
+		_draw_storage()
+	_draw_grid(_inventory)
 	_draw_doll()
 	_draw_equipment()
 
-	var hovered := _inventory.index_at(_hover) if _held == null else Inventory.EMPTY
-	for p in _inventory.placed:
-		_draw_item(p.data, _rect_of(p.cell, p.rect().size), true)
+	var hovered := _hover_grid.index_at(_hover) if _held == null else Inventory.EMPTY
 	if hovered != Inventory.EMPTY:
-		var targeted: Inventory.Placed = _inventory.placed[hovered]
-		var r := _rect_of(targeted.cell, targeted.rect().size)
+		var targeted: Inventory.Placed = _hover_grid.placed[hovered]
+		var r := _rect_of(targeted.cell, targeted.rect().size, _hover_grid)
 		# Survolé, le cadre prend la rareté pleine.
 		draw_rect(r, targeted.data.color(), false, 1.0)
 		if _coin != null:
-			draw_rect(r, CAN_PLACE if Currency.accepts(_coin.base, targeted.data) else BLOCKED)
-		_draw_tooltip(targeted.data, r.position.y)
+			var accepted := _hover_grid == _inventory and Currency.accepts(_coin.base, targeted.data)
+			draw_rect(r, CAN_PLACE if accepted else BLOCKED)
+		_draw_tooltip(targeted.data, r.position.y, _hover_grid != _inventory)
 	if _coin != null:
 		# À côté du curseur et non dessous : la cible reste visible. L'icône seule, sans
 		# le nombre de la pile : on n'en applique qu'une.
@@ -586,8 +736,8 @@ func _draw() -> void:
 		var at := _hover - _grab
 		# La destination calée sur la grille, verte ou rouge, et l'objet qui suit le curseur
 		# au pixel.
-		if _hover_slot < 0 and _panel_rect().has_point(_mouse):
-			draw_rect(_rect_of(at, span), CAN_PLACE if _inventory.fits(_held, at) else BLOCKED)
+		if _hover_slot < 0 and _owns_point(_mouse):
+			draw_rect(_rect_of(at, span, _hover_grid), CAN_PLACE if _hover_grid.fits(_held, at) else BLOCKED)
 		_draw_item(_held, Rect2(_mouse - _grab_px, _span_size(span)), false)
 
 	if _font != null:
@@ -597,6 +747,43 @@ func _draw() -> void:
 		draw_string(_font, Vector2(4.0, s.y - 3.0),
 			Texts.t("lâché hors du sac : jeté au sol"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
+
+
+## Les cases d'une grille et ce qui y est rangé.
+func _draw_grid(grid: Inventory) -> void:
+	for y in grid.rows:
+		for x in grid.cols:
+			_draw_cell(_rect_of(Vector2i(x, y), Vector2i.ONE, grid))
+	for p in grid.placed:
+		_draw_item(p.data, _rect_of(p.cell, p.rect().size, grid), true)
+
+
+## Le coffre ou l'étal : son cadre, son titre, ses onglets ou son bouton, sa grille.
+func _draw_storage() -> void:
+	var box := _storage_rect()
+	draw_rect(box, UiPalette.BACK)
+	draw_rect(box, UiPalette.BORDER, false, 1.0)
+	_draw_grid(_storage)
+	if _font == null:
+		return
+	draw_string(_font, box.position + Vector2(4.0, 11.0),
+		Texts.t("MARCHAND") if _selling else Texts.t("COFFRE"),
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, UiPalette.TITLE)
+	if _selling:
+		_draw_button(_sell_rect(), Texts.t("Vendre"), _sell_rect().has_point(_mouse))
+	else:
+		for i in _pages.size():
+			_draw_button(_tab_rect(i), str(i + 1), _pages[i] == _storage)
+	draw_string(_font, Vector2(box.position.x + 4.0, box.end.y - 3.0),
+		Texts.t("[ctrl + clic] d'une grille à l'autre"),
+		HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, UiPalette.HINT)
+
+
+func _draw_button(r: Rect2, text_value: String, lit: bool) -> void:
+	draw_rect(r, TAB_ON if lit else SLOT)
+	draw_rect(r, UiPalette.BORDER, false, 1.0)
+	draw_string(_font, Vector2(r.position.x, r.end.y - 2.0), text_value,
+		HORIZONTAL_ALIGNMENT_CENTER, r.size.x, FONT_SIZE, UiPalette.TEXT if lit else UiPalette.HINT)
 
 
 ## Le rectangle du portrait, dans le coin que les emplacements laissent libre.
@@ -673,15 +860,16 @@ func _draw_centered(tex: Texture2D, r: Rect2, tint := Color.WHITE) -> void:
 
 
 ## L'infobulle, alignée sur l'objet et bornée en bas et à gauche : le mode détaillé
-## l'élargit.
-func _draw_tooltip(item: Item, target_top: float) -> void:
+## l'élargit. Celle d'un objet du coffre part à droite de lui, vers le milieu de
+## l'écran.
+func _draw_tooltip(item: Item, target_top: float, in_storage := false) -> void:
 	if _font == null:
 		return
 	var lines := ItemTooltip.lines(item, _detailed)
 	var size := ItemTooltip.size_of(_font, lines)
-	var bounds := Rect2(Vector2.ZERO, _panel_size())
-	var top := minf(target_top, bounds.size.y - size.y)
-	var left := maxf(-size.x - TIP_GAP, -global_position.x)
+	var bounds := _storage_rect() if in_storage else _panel_rect()
+	var top := minf(target_top, bounds.end.y - size.y)
+	var left := bounds.end.x + TIP_GAP if in_storage else maxf(-size.x - TIP_GAP, -global_position.x)
 	ItemTooltip.draw(self, _font, item, lines, Vector2(left, top), bounds)
 
 
