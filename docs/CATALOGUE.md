@@ -25,14 +25,14 @@ Niveaux de zone : 1 à 120.
 | `sword` | Épée | blade | 1 | weapon | weapon, melee, blade | ajoute 2 à 6 dégâts physiques aux attaques | 10 % | 1 × 3 | 1 à 22 |
 | `broadsword` | Épée large | blade | 2 | weapon | weapon, melee, blade | ajoute 5 à 13 dégâts physiques aux attaques | 10 % | 1 × 3 | 16 à 40 |
 | `war_blade` | Lame de guerre | blade | 3 | weapon | weapon, melee, blade | ajoute 8 à 24 dégâts physiques aux attaques | 10 % | 1 × 3 | 34 et au-delà |
-| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue (10–13 %) | 10 % | 1 × 2 | 1 à 30 |
-| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue (18–23 %) | 10 % | 1 × 2 | 24 et au-delà |
+| `dagger` | Dague | dagger | 1 | weapon | weapon, melee, blade | +10 % de vitesse d'attaque accrue (10–13 %) | 10 % | 1 × 3 | 1 à 30 |
+| `misericorde` | Miséricorde | dagger | 2 | weapon | weapon, melee, blade | +18 % de vitesse d'attaque accrue (18–23 %) | 10 % | 1 × 3 | 24 et au-delà |
 | `mace` | Masse | contondante | 1 | weapon | weapon, melee, blunt | ajoute 3 à 9 dégâts physiques aux attaques | 10 % | 1 × 3 | 6 à 28 |
 | `battle_mace` | Masse d'armes | contondante | 2 | weapon | weapon, melee, blunt | ajoute 6 à 18 dégâts physiques aux attaques | 10 % | 1 × 3 | 22 à 46 |
 | `war_hammer` | Marteau de guerre | contondante | 3 | weapon | weapon, melee, blunt | ajoute 10 à 32 dégâts physiques aux attaques | 10 % | 1 × 3 | 40 et au-delà |
-| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue (15–20 %) | 5 % | 1 × 2 | 1 à 24 |
-| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue (24–31 %) | 5 % | 1 × 2 | 18 à 42 |
-| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue (34–44 %) | 5 % | 1 × 2 | 36 et au-delà |
+| `wand` | Baguette | focus | 1 | weapon | weapon, caster | +15 % de vitesse d'incantation accrue (15–20 %) | 5 % | 1 × 3 | 1 à 24 |
+| `scepter` | Sceptre | focus | 2 | weapon | weapon, caster | +24 % de vitesse d'incantation accrue (24–31 %) | 5 % | 1 × 3 | 18 à 42 |
+| `runic_scepter` | Sceptre runique | focus | 3 | weapon | weapon, caster | +34 % de vitesse d'incantation accrue (34–44 %) | 5 % | 1 × 3 | 36 et au-delà |
 | `shield` | Bouclier | shield | 1 | offhand | offhand, armour, heavy | +18 armure (18–23) | — | 2 × 2 | 1 à 21 |
 | `kite_shield` | Écu | shield | 2 | offhand | offhand, armour, heavy | +38 armure (38–49) | — | 2 × 2 | 15 à 39 |
 | `pavise` | Pavois | shield | 3 | offhand | offhand, armour, heavy | +68 armure (68–88) | — | 2 × 2 | 33 et au-delà |

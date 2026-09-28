@@ -29,8 +29,16 @@ extends Resource
 ## tapé donnerait une case vide sans que rien ne le dise.
 @export var icon: Texture2D
 
-## Encombrement dans le sac, en cases.
-@export var grid_size: Vector2i = Vector2i(1, 1)
+## Encombrement dans le sac, en cases : **par famille**, jamais par base — toutes les
+## armes se rangent pareil. Une famille absente tient dans une case.
+const GRID_SIZES := {
+	"weapon": Vector2i(1, 3), "offhand": Vector2i(2, 2), "chest": Vector2i(2, 3),
+	"helmet": Vector2i(2, 2), "gloves": Vector2i(2, 2), "boots": Vector2i(2, 2),
+	"belt": Vector2i(2, 1), "manual": Vector2i(2, 2),
+}
+var grid_size: Vector2i:
+	get:
+		return GRID_SIZES.get(family, Vector2i.ONE)
 
 ## Combien d'exemplaires une case porte : plus d'un pour une pièce de monnaie.
 @export var stack_max: int = 1

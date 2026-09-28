@@ -12,7 +12,6 @@ kind = "manual_fire"
 family = "manual"
 tags = PackedStringArray("manual")
 icon = ExtResource("2_icon")
-grid_size = Vector2i(2, 2)
 lineage = "manual_fire"
 tier = 1
 required_level = 5

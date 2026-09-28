@@ -9,7 +9,6 @@ id = "sword"
 display_name = "Épée"
 tags = PackedStringArray("weapon", "melee", "blade")
 icon = ExtResource("2_icon")
-grid_size = Vector2i(1, 3)
 lineage = "blade"
 implicit_stat = "damage_physical"
 implicit_value = 2.0

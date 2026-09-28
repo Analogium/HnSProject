@@ -11,7 +11,6 @@ kind = "gloves"
 family = "gloves"
 tags = PackedStringArray("gloves", "armour", "light")
 icon = ExtResource("2_icon")
-grid_size = Vector2i(2, 2)
 lineage = "gloves"
 tier = 3
 required_level = 31

@@ -9,7 +9,6 @@ display_name = "Solerets de mailles"
 kind = "boots"
 family = "boots"
 tags = PackedStringArray("boots", "armour", "heavy")
-grid_size = Vector2i(2, 2)
 lineage = "solerets"
 tier = 2
 required_level = 12
