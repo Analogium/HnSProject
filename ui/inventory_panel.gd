@@ -26,18 +26,21 @@ const FRAME := 6.0
 ## La fenêtre de personnage, à la manière de Hero Siege (jalon 31) : l'arme et la main
 ## gauche en grandes cartes de part et d'autre, tête, torse et ceinture au milieu. Chaque
 ## emplacement tient au moins l'encombrement de sa famille dans le sac, dont l'icône est
-## taillée à 1:1 (`test_each_slot_holds_its_family_footprint`).
+## taillée à 1:1 (`test_each_slot_holds_its_family_footprint`). En cases, **demi-cases
+## permises** : les cinq flacons (jalon 32) se centrent sous la ceinture, sur l'axe.
 const DOLL := {
-	"helmet": Rect2i(4, 0, 2, 2), "amulet": Rect2i(8, 0, 2, 2),
-	"weapon": Rect2i(0, 3, 2, 4), "chest": Rect2i(4, 2, 2, 3), "offhand": Rect2i(8, 3, 2, 4),
-	"ring_left": Rect2i(3, 5, 1, 1), "belt": Rect2i(4, 5, 2, 1), "ring_right": Rect2i(6, 5, 1, 1),
-	"gloves": Rect2i(0, 7, 2, 2), "boots": Rect2i(8, 7, 2, 2),
+	"helmet": Rect2(4, 0, 2, 2), "amulet": Rect2(8, 0, 2, 2),
+	"weapon": Rect2(0, 3, 2, 4), "chest": Rect2(4, 2, 2, 3), "offhand": Rect2(8, 3, 2, 4),
+	"ring_left": Rect2(3, 5, 1, 1), "belt": Rect2(4, 5, 2, 1), "ring_right": Rect2(6, 5, 1, 1),
+	"gloves": Rect2(0, 7, 2, 2), "boots": Rect2(8, 7, 2, 2),
+	"flask_1": Rect2(2.5, 6, 1, 2), "flask_2": Rect2(3.5, 6, 1, 2), "flask_3": Rect2(4.5, 6, 1, 2),
+	"flask_4": Rect2(5.5, 6, 1, 2), "flask_5": Rect2(6.5, 6, 1, 2),
 }
 const DOLL_COLS := 10
 const DOLL_ROWS := 9
 
 ## Trois cases de haut : les 47 pixels de la sorcière n'entraient pas dans deux.
-const DOLL_AREA := Rect2i(0, 0, 3, 3)
+const DOLL_AREA := Rect2(0, 0, 3, 3)
 const DOLL_ANIM := "idle_down"
 ## Les pieds sous le centre de la zone : la sorcière y gagne la place de son chapeau.
 const DOLL_FEET := 9.0
@@ -673,11 +676,12 @@ func _span_size(span: Vector2i) -> Vector2:
 	return Vector2(span) * (CELL + PAD) - Vector2(PAD, PAD)
 
 
-## Même pas que le sac : les deux grilles s'alignent.
-func _doll_rect(zone: Rect2i) -> Rect2:
+## Même pas que le sac : les deux grilles s'alignent. Une demi-case tombe sur un
+## demi-pixel, arrondi : sinon lignes floues.
+func _doll_rect(zone: Rect2) -> Rect2:
 	return Rect2(
-		_frame_rect().position + Vector2(FRAME, FRAME) + Vector2(zone.position) * (CELL + PAD),
-		_span_size(zone.size)
+		(_frame_rect().position + Vector2(FRAME, FRAME) + zone.position * (CELL + PAD)).floor(),
+		_span_size(Vector2i(zone.size))
 	)
 
 

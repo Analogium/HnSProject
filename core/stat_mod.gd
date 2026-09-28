@@ -40,6 +40,12 @@ const LABELS := {
 	"cooldown_recovery": "récupération de recharge",
 	"damage_taken": "dégâts subis",
 	"move_speed": "vitesse",
+	# Ce qu'un flacon monte sur lui-même (`ItemBase.FLASK_STATS`) : jamais sur la fiche.
+	"flask_recovery": "récupération",
+	"flask_duration": "durée",
+	"flask_charges": "charges max.",
+	"flask_charges_used": "charges consommées",
+	"flask_charge_gain": "charges gagnées",
 }
 
 ## L'accord de chaque libellé, pour le terme qui le suit : « armure accrue », « dégâts
@@ -73,6 +79,11 @@ const AGREEMENT := {
 	"cooldown_recovery": "fs",
 	"damage_taken": "mp",
 	"move_speed": "fs",
+	"flask_recovery": "fs",
+	"flask_duration": "fs",
+	"flask_charges": "fp",
+	"flask_charges_used": "fp",
+	"flask_charge_gain": "fp",
 }
 
 ## Les plats qui montent une base : « +4 % de chance critique de base », « +4% to … ».

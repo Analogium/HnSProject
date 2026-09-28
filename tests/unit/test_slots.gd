@@ -24,7 +24,7 @@ func _base_of_family(family: String) -> ItemBase:
 
 
 func test_the_table_is_complete() -> void:
-	assert_eq(EquipmentSlots.count(), 10, "les dix emplacements du jalon 4")
+	assert_eq(EquipmentSlots.count(), 15, "les dix emplacements du jalon 4, et cinq flacons")
 	assert_eq(EquipmentSlots.ids().size(), EquipmentSlots.count())
 	for id in EquipmentSlots.ids():
 		assert_false(EquipmentSlots.family_of(id).is_empty(), "%s a une famille" % id)
@@ -163,7 +163,7 @@ func test_no_slot_lands_on_the_portrait() -> void:
 func test_each_slot_holds_its_family_footprint() -> void:
 	for id in InventoryPanel.DOLL:
 		var span: Vector2i = ItemBase.GRID_SIZES.get(EquipmentSlots.family_of(id), Vector2i.ONE)
-		var zone: Rect2i = InventoryPanel.DOLL[id]
+		var zone: Rect2 = InventoryPanel.DOLL[id]
 		assert_true(
 			zone.size.x >= span.x and zone.size.y >= span.y,
 			"« %s » : %s pour un objet de %s" % [id, zone.size, span]
@@ -171,7 +171,7 @@ func test_each_slot_holds_its_family_footprint() -> void:
 
 
 func test_the_grid_does_not_overflow_its_columns() -> void:
-	var frame := Rect2i(0, 0, InventoryPanel.DOLL_COLS, InventoryPanel.DOLL_ROWS)
+	var frame := Rect2(0, 0, InventoryPanel.DOLL_COLS, InventoryPanel.DOLL_ROWS)
 	for id in InventoryPanel.DOLL:
 		assert_true(
 			frame.encloses(InventoryPanel.DOLL[id]),

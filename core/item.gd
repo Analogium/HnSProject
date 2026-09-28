@@ -45,6 +45,10 @@ var count := 1
 ## l'archétype** (invariant 2).
 var manual: Manual
 
+## Les charges d'un flacon, fractionnaires : un gain accru en donne des morceaux. **Pas
+## sauvegardées** — la ville remplit les flacons, et c'est là qu'on arrive.
+var charges := 0.0
+
 
 ## Des RolledAffix, ou des StatMod qui deviennent des affixes sans provenance.
 func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
@@ -56,6 +60,9 @@ func _init(p_base: ItemBase, p_explicits: Array = [], p_level: int = 1) -> void:
 	# Créé ici plutôt qu'au premier point : pas de « si null » chez les lecteurs.
 	if base != null and base.manual != null:
 		manual = Manual.new()
+	# Un flacon neuf est plein.
+	if is_flask():
+		charges = charges_max()
 
 
 ## Un objet qui tombe : ses affixes, puis son implicite. Le butin et le banc passent
@@ -184,6 +191,38 @@ func crit_chance() -> float:
 	return _raised(SkillStats.CRIT_CHANCE, base.crit_chance)
 
 
+func is_flask() -> bool:
+	return base != null and base.family == ItemBase.FLASK_FAMILY
+
+
+## Ce que le flacon porte et rend, monté par ses lignes locales comme la chance
+## critique d'une arme. Zéro hors des flacons.
+func charges_max() -> int:
+	return roundi(_raised("flask_charges", base.flask_charges))
+
+
+## Jamais moins d'une : un flacon gratuit se boirait sans fin.
+func charges_per_use() -> int:
+	return maxi(roundi(_raised("flask_charges_used", base.flask_charges_per_use)), 1)
+
+
+func flask_duration() -> float:
+	return _raised("flask_duration", base.flask_duration)
+
+
+func flask_life() -> float:
+	return _raised("flask_recovery", base.flask_life)
+
+
+func flask_mana() -> float:
+	return _raised("flask_recovery", base.flask_mana)
+
+
+## Le multiplicateur des charges qu'une mise à mort lui donne.
+func charge_gain() -> float:
+	return _raised("flask_charge_gain", 1.0)
+
+
 ## L'armure ou l'esquive de la pièce, montée comme la chance critique ; zéro ailleurs.
 func defense() -> float:
 	var stat := base.defense_stat()
@@ -206,9 +245,14 @@ func _raised(stat: String, start: float) -> float:
 ## L'implicite, à part et en premier : ce que la base garantit, avant tout affixe.
 func implicit_line() -> String:
 	var imp := implicit()
-	return "" if imp == null else imp.label()
+	if imp == null:
+		return ""
+	return imp.label() + (Texts.t(" pendant l'effet") if is_flask() else "")
 
 
-## Une ligne tirée telle que l'infobulle l'écrit.
+## Une ligne tirée telle que l'infobulle l'écrit. Sur un flacon, ce qui n'est pas local
+## ne vaut que pendant l'effet.
 func explicit_line(r: RolledAffix) -> String:
+	if is_flask():
+		return r.mod.label() + ("" if base.is_local(r.mod) else Texts.t(" pendant l'effet"))
 	return r.mod.label() + (Texts.t(" (local)") if base.is_local(r.mod) else "")

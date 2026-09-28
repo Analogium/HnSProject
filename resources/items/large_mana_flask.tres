@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "large_mana_flask"
+display_name = "Grande fiole de mana"
+kind = "flask"
+family = "flask"
+tags = PackedStringArray("flask", "mana_flask")
+lineage = "mana_flask"
+tier = 3
+required_level = 22
+flask_mana = 170.0
+flask_duration = 5.0
+flask_charges = 27
+flask_charges_per_use = 9

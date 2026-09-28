@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "amethyst_flask"
+display_name = "Flacon d'améthyste"
+kind = "flask"
+family = "flask"
+tags = PackedStringArray("flask", "utility_flask")
+lineage = "amethyst_flask"
+required_level = 40
+implicit_stat = "res_necrotic"
+implicit_value = 40.0
+flask_duration = 5.0
+flask_charges = 40
+flask_charges_per_use = 20

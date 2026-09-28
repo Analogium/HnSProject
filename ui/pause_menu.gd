@@ -206,11 +206,11 @@ func _show_page(shown: Control) -> void:
 # --------------------------------------------------------------------------
 
 
-## Un bouton par action, dans l'ordre de la table. Construit une fois : seul le
-## libellé change ensuite.
+## Un bouton par action, dans l'ordre de la table, colonne après colonne. Construit une
+## fois : seul le libellé change ensuite.
 func _build_key_rows() -> void:
 	var columns := key_rows.get_children()
-	var half := int(ceilf(Keybinds.ACTIONS.size() / float(columns.size())))
+	var per_column := int(ceilf(Keybinds.ACTIONS.size() / float(columns.size())))
 	var placed := 0
 	for action: String in Keybinds.ACTIONS:
 		var row := Button.new()
@@ -218,7 +218,7 @@ func _build_key_rows() -> void:
 		row.custom_minimum_size = Vector2(170.0, 0.0)
 		row.add_theme_font_size_override("font_size", 9)
 		row.pressed.connect(_capture.bind(action))
-		columns[mini(placed / half, columns.size() - 1)].add_child(row)
+		columns[mini(placed / per_column, columns.size() - 1)].add_child(row)
 		placed += 1
 	_refresh_key_rows()
 

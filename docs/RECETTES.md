@@ -156,8 +156,10 @@ refuse une base dont la liste déborde du bas de l'établi.
    `_unhandled_input`, ou `Input.is_action_pressed()` pour une touche maintenue. Un
    `KEY_*` écrit dans un `if` ne se rebinde pas — c'est tout l'objet de la recette.
 
-L'onglet des touches se remplit seul : il lit `ACTIONS`. Dix-huit actions tiennent
-dans les 360 px (deux colonnes, vérifié sur capture) ; au-delà, revérifier.
+L'onglet des touches se remplit seul : il lit `ACTIONS`, colonne après colonne, sur
+autant de colonnes que `Keys/Rows` a d'enfants dans `ui/pause_menu.tscn`. Vingt-trois
+actions tiennent sur trois colonnes de huit (jalon 32, vérifié sur capture) ; au-delà
+de vingt-quatre, revérifier.
 
 **Ce qui refusera un oubli** — `tests/unit/test_keybinds.gd` :
 `test_each_action_exists_and_is_named` (l'action ajoutée d'un seul côté),
@@ -381,9 +383,9 @@ plutôt que compter sur les tests.
 1. **`core/equipment_slots.gd`** — l'entrée dans `SLOTS` : `family` et `label`.
    La clé est **définitive** (invariant 1). L'ordre d'insertion est celui dans
    lequel le panneau les montre.
-2. **`ui/inventory_panel.gd`** — l'entrée dans `DOLL`, un `Rect2i` en cases, **au
-   moins** le rectangle qu'un objet de cette famille occuperait dans le sac : son
-   icône y est posée à 1:1. Ajuster `DOLL_COLS` / `DOLL_ROWS` si la grille s'élargit.
+2. **`ui/inventory_panel.gd`** — l'entrée dans `DOLL`, un `Rect2` en cases — demi-cases
+   permises, pour centrer sur l'axe —, **au moins** le rectangle qu'un objet de cette
+   famille occuperait dans le sac : son icône y est posée à 1:1. Ajuster `DOLL_COLS` / `DOLL_ROWS` si la grille s'élargit.
 3. **Au moins une base** de cette famille, à tous les niveaux de zone.
 
 **Ce qui refusera un oubli** : `test_the_table_is_complete`,
@@ -818,6 +820,31 @@ paliers, implicite croissant — et la question se pose à un seul endroit :
 `test_each_coin_has_a_weight_and_each_weight_a_coin` (poids, effet, une case) et
 `test_each_coin_stacks_and_nothing_else_does` ;
 `test_translations.gd` pour l'anglais.
+
+---
+
+## Ajouter un flacon
+
+1. **`resources/items/<id>.tres`** — copier un voisin : `family = "flask"`, `kind =
+   "flask"`, les étiquettes `flask` puis `life_flask`, `mana_flask` ou `utility_flask` —
+   les affixes de flacon visent celles-là. Le groupe « Flacon » : `flask_life` ou
+   `flask_mana` (rendus sur `flask_duration`), `flask_charges`, `flask_charges_per_use`.
+   **Un utilitaire** n'a ni vie ni mana : son effet est l'**implicite**, appliqué pendant
+   la durée, et il n'a qu'un palier — sa lignée est son identifiant. Un effet qui
+   vieillirait avec le niveau (une armure plate) n'a rien à faire là : en pourcentage ou
+   en points de résistance.
+2. **`core/item_catalog.gd`** — le `preload`, dans le bloc des flacons.
+3. **Son image**, comme toute base (`tools/item_icons.json`, taille 1 × 2).
+4. **`i18n/en.po`** — son nom.
+
+Un **affixe de flacon** est un affixe ordinaire étiqueté pour les flacons : sa
+statistique est dans `ItemBase.FLASK_STATS` (locale, lue par `Item.charges_max()`,
+`flask_life()`…) ou c'est une ligne de fiche, qui vaudra pendant l'effet.
+
+**Ce qui refusera un oubli** — `tests/unit/test_flasks.gd` :
+`test_each_flask_can_be_drunk` (une durée, une gorgée qui tient dans la réserve, vie ou
+mana **ou** implicite) ; `test_each_lineage_is_monotonic`, qui compare ce que rendent
+deux paliers ; `test_flask_stats_roll_only_on_flasks`.
 
 ---
 

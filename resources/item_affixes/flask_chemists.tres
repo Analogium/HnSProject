@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_affix"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_tier"]
+
+[sub_resource type="Resource" id="Resource_t1"]
+script = ExtResource("2_tier")
+required_level = 45
+min_value = -30.0
+max_value = -26.0
+
+[sub_resource type="Resource" id="Resource_t2"]
+script = ExtResource("2_tier")
+required_level = 22
+min_value = -25.0
+max_value = -21.0
+
+[sub_resource type="Resource" id="Resource_t3"]
+script = ExtResource("2_tier")
+min_value = -20.0
+max_value = -15.0
+
+[resource]
+script = ExtResource("1_affix")
+id = "flask_chemists"
+suffix = "de l'Alchimiste"
+tags = PackedStringArray("flask")
+excludes = PackedStringArray()
+stat = "flask_charges_used"
+percent = true
+tiers = Array[ExtResource("2_tier")]([SubResource("Resource_t1"), SubResource("Resource_t2"), SubResource("Resource_t3")])
+weight = 10

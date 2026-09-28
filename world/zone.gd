@@ -34,6 +34,7 @@ const PACK_MIN_TILES := 3
 @onready var manuals: ManualPanel = $UI/Manuals
 @onready var passive_tree: PassiveTreePanel = $UI/PassiveTree
 @onready var bar: SkillBarPanel = $UI/Bar
+@onready var flasks: FlaskBar = $UI/Flasks
 ## Outil de réglage, à retirer avant publication : il tient en trois
 ## attaches — ce nœud, la touche B, et le branchement de `drop_requested`.
 @onready var workbench: WorkbenchPanel = $UI/Workbench
@@ -125,6 +126,7 @@ func _ready() -> void:
 	manuals.bind(player)
 	passive_tree.bind(player)
 	bar.bind(player)
+	flasks.bind(player)
 	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
 	# qu'on jette : un seul chemin pour poser un objet au sol.
 	manuals.drop_requested.connect(_on_item_dropped)
@@ -399,6 +401,7 @@ func enter_town() -> void:
 	generator = MapGenerator.town(TOWN_SIZE.x, TOWN_SIZE.y)
 	_lay_out()
 	player.revive()
+	player.refill_flasks()
 	player.global_position = MapGenerator.cell_center(generator.get_spawn_cell())
 	way_back.visible = _left_zone != null
 	# Pas quand une zone attend : le sien y est encore au sol, et l'on en ramasserait deux.

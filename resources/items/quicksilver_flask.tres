@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "quicksilver_flask"
+display_name = "Flacon de vif-argent"
+kind = "flask"
+family = "flask"
+tags = PackedStringArray("flask", "utility_flask")
+lineage = "quicksilver_flask"
+required_level = 4
+implicit_stat = "move_speed"
+implicit_percent = true
+implicit_value = 40.0
+flask_duration = 4.0
+flask_charges = 45
+flask_charges_per_use = 15

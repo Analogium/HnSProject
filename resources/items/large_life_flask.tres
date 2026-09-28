@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "large_life_flask"
+display_name = "Grande fiole de vie"
+kind = "flask"
+family = "flask"
+tags = PackedStringArray("flask", "life_flask")
+lineage = "life_flask"
+tier = 3
+required_level = 22
+flask_life = 320.0
+flask_duration = 4.0
+flask_charges = 27
+flask_charges_per_use = 9

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+
+[resource]
+script = ExtResource("1_base")
+id = "granite_flask"
+display_name = "Flacon de granit"
+kind = "flask"
+family = "flask"
+tags = PackedStringArray("flask", "utility_flask")
+lineage = "granite_flask"
+required_level = 27
+implicit_stat = "armor"
+implicit_percent = true
+implicit_value = 100.0
+flask_duration = 5.0
+flask_charges = 40
+flask_charges_per_use = 20

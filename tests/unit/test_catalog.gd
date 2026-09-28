@@ -240,6 +240,13 @@ func test_each_lineage_is_monotonic() -> void:
 				base.required_level, below.required_level,
 				"« %s » doit se mériter plus que « %s »" % [base.display_name, below.display_name]
 			)
+			# Une fiole promet ce qu'elle rend, pas un implicite.
+			if base.family == ItemBase.FLASK_FAMILY:
+				assert_gt(
+					base.flask_life + base.flask_mana, below.flask_life + below.flask_mana,
+					"« %s » rend moins que « %s »" % [base.display_name, below.display_name]
+				)
+				continue
 			assert_eq(
 				base.implicit_stat, below.implicit_stat,
 				"lignée « %s » : deux paliers ne promettent pas la même chose" % name
@@ -253,7 +260,10 @@ func test_each_lineage_is_monotonic() -> void:
 				"« %s » monte moins haut que « %s »" % [base.display_name, below.display_name]
 			)
 		# Une lignée n\'a de sens qu\'à partir de deux paliers : à un seul, c\'est
-		# une base isolée et le champ ment sur ce qu\'il décrit.
+		# une base isolée et le champ ment sur ce qu\'il décrit. Sauf un flacon utilitaire :
+		# son effet ne dépend pas du niveau, il ne vieillit pas (jalon 32).
+		if (limbs[0] as ItemBase).is_utility_flask():
+			continue
 		assert_gte(limbs.size(), 2, "lignée « %s » : un seul palier" % name)
 
 

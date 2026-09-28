@@ -38,6 +38,7 @@ const FAMILIES := {
 	"belt": "Ceintures",
 	"amulet": "Amulettes",
 	"ring": "Anneaux",
+	"flask": "Flacons",
 	"manual": "Manuels",
 	"currency": "Monnaie",
 }

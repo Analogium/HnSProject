@@ -71,7 +71,13 @@ func test_deeper_zones_add_rare_coins_without_taking_common_ones() -> void:
 	var quantity := LootTable.quantity_for(0, 120)
 	var copper: float = counts[1][Currency.COPPER] / quantity / counts[0][Currency.COPPER]
 	assert_between(copper, 0.93, 1.07, "le cuivre par chute, mesuré ×%.2f" % copper)
-	var diamond: float = counts[1].get(Currency.DIAMOND, 0) / quantity / counts[0].get(Currency.DIAMOND, 1)
+	# Au niveau 1, l'espérance et non le compte : une quinzaine de diamants font un
+	# dénominateur à ±30 %, que le moindre tirage de plus dans le butin déplace — mesuré
+	# de ×4,5 à ×8,6 selon la graine au jalon 32.
+	var flat_weights := Currency.drop_weights(1)
+	var expected_flat: float = 60000.0 * LootTable.BASE_CHANCE * LootTable.CURRENCY_SHARE \
+		* flat_weights[ids.find(Currency.DIAMOND)] / flat_weights.reduce(func(a, b): return a + b, 0)
+	var diamond: float = counts[1].get(Currency.DIAMOND, 0) / quantity / expected_flat
 	assert_between(diamond, 4.0, 7.5, "le diamant par chute, ×5,76 attendu, mesuré ×%.2f" % diamond)
 
 

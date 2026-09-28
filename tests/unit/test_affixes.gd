@@ -12,8 +12,11 @@ func test_each_affix_targets_a_real_named_field() -> void:
 	for a in ItemAffixPool.ALL:
 		if not a.scope.is_empty():
 			continue
-		assert_not_null(st.get(a.stat), "l'affixe %s vise un champ réel" % a.id)
 		assert_true(StatMod.LABELS.has(a.stat), "l'affixe %s a un libellé" % a.id)
+		# Ce qu'un flacon monte sur lui-même n'est pas sur la fiche (voir plus bas).
+		if a.stat in ItemBase.FLASK_STATS:
+			continue
+		assert_not_null(st.get(a.stat), "l'affixe %s vise un champ réel" % a.id)
 
 
 ## **La faute de frappe silencieuse**, côté objet : une portée hors de la liste ne
@@ -73,9 +76,32 @@ func test_everything_modifiable_reads_on_the_sheet() -> void:
 		for field in group[1]:
 			visible_ones[field] = true
 	for a in ItemAffixPool.ALL:
-		if not a.scope.is_empty():
+		if not a.scope.is_empty() or a.stat in ItemBase.FLASK_STATS:
 			continue
 		assert_true(visible_ones.has(a.stat), "l'affixe %s est visible sur la fiche" % a.id)
+
+
+## **Le pendant des deux tests d'avant.** Une statistique de flacon n'est pas sur la
+## fiche : elle n'a le droit d'exister que sur un flacon, où elle est locale et se lit
+## dans son infobulle. Ailleurs, elle ne ferait rien.
+func test_flask_stats_roll_only_on_flasks() -> void:
+	var flask_ones := 0
+	for base in ItemCatalog.ALL:
+		for a in ItemAffixPool.compatibles(base):
+			if not a.stat in ItemBase.FLASK_STATS:
+				continue
+			flask_ones += 1
+			assert_eq(base.family, ItemBase.FLASK_FAMILY, "« %s » sur « %s »" % [a.id, base.id])
+			assert_true(base.is_local(a.modifier(1.0)), "« %s » est local" % a.id)
+	assert_gt(flask_ones, 0, "encore faut-il qu'il y en ait")
+
+
+## Un flacon ne tire que ses affixes : « partout » veut dire tout ce qu'on porte.
+func test_a_flask_rolls_only_its_own_affixes() -> void:
+	var flask := ItemCatalog.by_id("small_life_flask")
+	for a in ItemAffixPool.compatibles(flask):
+		assert_true(a.tags.has("flask") or a.tags.has("life_flask"), a.id)
+	assert_false(ItemAffixPool.compatibles(flask).is_empty())
 
 
 ## **Aucune ligne de dégâts ne finit entre parenthèses.** Le mot-clé entre dans la
@@ -236,9 +262,12 @@ func test_percent_spell_damage_only_rolls_on_caster_items() -> void:
 
 ## Une statistique qui ne se trouve qu'à un endroit fait de cet endroit une
 ## décision. La vitesse de déplacement est la seule du jalon 4 à être passée
-## d'un emplacement à deux ; elle revient aux bottes seules.
+## d'un emplacement à deux ; elle revient aux bottes seules. Un flacon la donne aussi,
+## mais le temps d'une gorgée : ce n'est pas un emplacement de vitesse.
 func test_movement_speed_only_rolls_on_boots() -> void:
 	for base in ItemCatalog.ALL:
+		if base.family == ItemBase.FLASK_FAMILY:
+			continue
 		for a in ItemAffixPool.eligible(base, 60):
 			if a.stat != "move_speed":
 				continue
@@ -261,20 +290,23 @@ func test_an_exclusion_wins_over_an_allowed_tag() -> void:
 
 ## C'est cette forme-là que prendront les résistances : rien à autoriser, une
 ## seule chose à refuser, et toute base ajoutée plus tard en hérite sans qu'on y
-## pense.
+## pense. Sauf un flacon, qui ne tire que les siens.
 func test_an_untagged_affix_rolls_everywhere_except_where_excluded() -> void:
 	var a := ItemAffix.new()
 	a.excludes = PackedStringArray(["weapon"])
-	var weapons := 0
+	var refused := 0
 	var received_all := 0
 	for base in ItemCatalog.ALL:
 		if a.fits(base):
 			received_all += 1
 		else:
-			weapons += 1
-			assert_true(base.tags.has("weapon"), "seule une arme est refusée")
-	assert_gt(weapons, 0, "il y a bien des armes dans le catalogue")
-	assert_eq(received_all, ItemCatalog.ALL.size() - weapons, "et tout le reste reçoit")
+			refused += 1
+			assert_true(
+				base.tags.has("weapon") or base.family == ItemBase.FLASK_FAMILY,
+				"seuls une arme et un flacon sont refusés"
+			)
+	assert_gt(refused, 0, "il y a bien des armes dans le catalogue")
+	assert_eq(received_all, ItemCatalog.ALL.size() - refused, "et tout le reste reçoit")
 
 
 ## Une base sans étiquette ne recevrait que les affixes universels, et le
@@ -683,8 +715,9 @@ func test_resistances_never_roll_on_a_weapon() -> void:
 	for base in ItemCatalog.ALL:
 		# « Partout sauf sur les armes » parle de ce qu'on **porte**. Un manuel se
 		# lit : il ne reçoit aucun affixe, pas même universel, et l'attendre à
-		# cinq résistances reviendrait à demander des résistances à un livre.
-		if not EquipmentSlots.equippable_family(base.family):
+		# cinq résistances reviendrait à demander des résistances à un livre. Un
+		# flacon se boit, et ne tire que les siens.
+		if not EquipmentSlots.equippable_family(base.family) or base.family == ItemBase.FLASK_FAMILY:
 			continue
 		var resistances := 0
 		for a in ItemAffixPool.eligible(base, 60):
@@ -736,8 +769,9 @@ func test_a_wand_has_what_it_takes_to_be_offensive() -> void:
 ## les réserver à un emplacement n\'apprendrait rien à personne.
 func test_attributes_roll_everywhere() -> void:
 	for base in ItemCatalog.ALL:
-		# « Partout » veut dire sur tout ce qui se porte : un manuel ne reçoit rien.
-		if not EquipmentSlots.equippable_family(base.family):
+		# « Partout » veut dire sur tout ce qui se porte : un manuel ne reçoit rien, un
+		# flacon que les siens.
+		if not EquipmentSlots.equippable_family(base.family) or base.family == ItemBase.FLASK_FAMILY:
 			continue
 		var seen_all := {}
 		for a in ItemAffixPool.eligible(base, 1):

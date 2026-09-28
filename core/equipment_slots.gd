@@ -16,16 +16,30 @@ const SLOTS := {
 	# « BAGUE » : les deux « ANNEAU » se tronquaient au même endroit.
 	"ring_left": {"family": "ring", "label": "BAGUE G."},
 	"ring_right": {"family": "ring", "label": "BAGUE D."},
+	# Jalon 32 : sous la ceinture, une touche chacun (`flask_1` … `flask_5`).
+	"flask_1": {"family": "flask", "label": "FLACON"},
+	"flask_2": {"family": "flask", "label": "FLACON"},
+	"flask_3": {"family": "flask", "label": "FLACON"},
+	"flask_4": {"family": "flask", "label": "FLACON"},
+	"flask_5": {"family": "flask", "label": "FLACON"},
 }
 
 const WEAPON := "weapon"
 
 ## Calculés une fois : `keys()` alloue, et le panneau les demande à chaque image.
 static var _ids := PackedStringArray(SLOTS.keys())
+static var _flasks := PackedStringArray(SLOTS.keys().filter(
+	func(id: String) -> bool: return SLOTS[id]["family"] == ItemBase.FLASK_FAMILY
+))
 
 
 static func ids() -> PackedStringArray:
 	return _ids
+
+
+## Dans l'ordre des touches : le premier est bu par `flask_1`.
+static func flasks() -> PackedStringArray:
+	return _flasks
 
 
 static func count() -> int:

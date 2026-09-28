@@ -207,6 +207,9 @@ theme_override_constants/separation = 4
 [node name="Left" type="VBoxContainer" parent="Root/Center/Panel/Keys/Rows"]
 theme_override_constants/separation = 1
 
+[node name="Middle" type="VBoxContainer" parent="Root/Center/Panel/Keys/Rows"]
+theme_override_constants/separation = 1
+
 [node name="Right" type="VBoxContainer" parent="Root/Center/Panel/Keys/Rows"]
 theme_override_constants/separation = 1
 

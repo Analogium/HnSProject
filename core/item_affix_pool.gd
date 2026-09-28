@@ -85,6 +85,17 @@ const ALL := [
 	preload("res://resources/item_affixes/necromancers.tres"),
 	preload("res://resources/item_affixes/anathema.tres"),
 	preload("res://resources/item_affixes/gangrenous.tres"),
+
+	# Jalon 32 : les flacons, qui ne tirent que les leurs. Locaux d'abord — ce que le
+	# flacon rend et porte —, puis ce qu'il donne pendant l'effet.
+	preload("res://resources/item_affixes/flask_ample.tres"),
+	preload("res://resources/item_affixes/flask_chemists.tres"),
+	preload("res://resources/item_affixes/flask_perpetual.tres"),
+	preload("res://resources/item_affixes/flask_saturated.tres"),
+	preload("res://resources/item_affixes/flask_experimenters.tres"),
+	preload("res://resources/item_affixes/flask_adrenaline.tres"),
+	preload("res://resources/item_affixes/flask_iron_skin.tres"),
+	preload("res://resources/item_affixes/flask_reflexes.tres"),
 ]
 
 ## Poids du nombre d'affixes, de 0 à 6 : un objet sur deux sort nu, six affixes
@@ -155,9 +166,14 @@ static func roll_count(
 	return 0 if i < 0 else mini(low + i, available)
 
 
+## Un flacon reste magique, comme dans PoE.
+static func max_count(base: ItemBase) -> int:
+	return Item.MAGIC_MAX if base.family == ItemBase.FLASK_FAMILY else MAX_COUNT
+
+
 static func roll(rng: RandomNumberGenerator, base: ItemBase, level: int) -> Array[RolledAffix]:
 	var rest := eligible(base, level)
-	return draw(rng, rest, roll_count(rng, rest.size(), 0, MAX_COUNT, level), level)
+	return draw(rng, rest, roll_count(rng, rest.size(), 0, max_count(base), level), level)
 
 
 ## `count` affixes tirés **distincts** dans `rest`, qui perd ce qu'on y prend : deux

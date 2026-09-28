@@ -43,7 +43,10 @@ func test_items_are_those_that_drop_at_their_level() -> void:
 				var weapon: Item = p.equipment[EquipmentSlots.WEAPON]
 				assert_false(weapon.base.tags.has(build.excluded_one), case_name)
 				continue
-			assert_eq(p.equipment.size(), EquipmentSlots.count(), "%s : tout est porté" % case_name)
+			assert_eq(
+				p.equipment.size(), EquipmentSlots.count() - EquipmentSlots.flasks().size(),
+				"%s : tout est porté, sauf ce qui se boit" % case_name
+			)
 			for slot in p.equipment:
 				var item: Item = p.equipment[slot]
 				assert_true(EquipmentSlots.accepts(slot, item), "%s : %s" % [case_name, slot])

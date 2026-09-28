@@ -160,9 +160,12 @@ static func item_level_for(profile: Profile, zone: int) -> int:
 
 
 ## Un objet par emplacement, tiré comme `LootTable.roll()` le tire — base au hasard parmi
-## ce qui tombe, puis ses affixes —, mais sur le tirage du profil (invariant 3).
+## ce qui tombe, puis ses affixes —, mais sur le tirage du profil (invariant 3). Pas de
+## flacon : le banc mesure ce qu'on porte, pas ce qu'on boit.
 static func _equip(p: Character, build: Build, level: int, rng: RandomNumberGenerator) -> void:
 	for slot in EquipmentSlots.ids():
+		if slot in EquipmentSlots.flasks():
+			continue
 		var bases: Array[ItemBase] = []
 		for base: ItemBase in ItemCatalog.available(level):
 			if base.family == EquipmentSlots.family_of(slot) and not base.tags.has(build.excluded_one):

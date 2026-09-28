@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="Environment" path="res://fx/bloom.tres" id="15_bloom"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://ui/passive_tree_panel.gd" id="14_tree"]
 [ext_resource type="Script" path="res://ui/dps_meter.gd" id="16_dps"]
 [ext_resource type="Script" path="res://actors/town/interactable.gd" id="17_town"]
+[ext_resource type="Script" path="res://ui/flask_bar.gd" id="18_flasks"]
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
@@ -111,6 +112,17 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 8
 text = "..."
+
+[node name="Flasks" type="Control" parent="UI"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -14.0
+offset_right = 8.0
+offset_bottom = -14.0
+mouse_filter = 2
+script = ExtResource("18_flasks")
 
 [node name="Stats" type="Control" parent="UI"]
 anchor_right = 0.25

@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-59 bases d'objets, 36 compétences, 64 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 36 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -69,6 +69,23 @@ Niveaux de zone : 1 à 120.
 | `ring` | Anneau | ring | 1 | ring | ring, jewellery | +8 % de chance critique de base accrue (8–10 %) | — | 1 × 1 | 1 à 22 |
 | `ornate_ring` | Bague ouvragée | ring | 2 | ring | ring, jewellery | +14 % de chance critique de base accrue (14–18 %) | — | 1 × 1 | 16 à 40 |
 | `signet_ring` | Chevalière | ring | 3 | ring | ring, jewellery | +20 % de chance critique de base accrue (20–26 %) | — | 1 × 1 | 34 et au-delà |
+| `small_life_flask` | Petite fiole de vie | life_flask | 1 | flask | flask, life_flask | — | — | 1 × 2 | 1 à 16 |
+| `life_flask` | Fiole de vie | life_flask | 2 | flask | flask, life_flask | — | — | 1 × 2 | 10 à 28 |
+| `large_life_flask` | Grande fiole de vie | life_flask | 3 | flask | flask, life_flask | — | — | 1 × 2 | 22 à 42 |
+| `greater_life_flask` | Fiole de vie supérieure | life_flask | 4 | flask | flask, life_flask | — | — | 1 × 2 | 36 à 60 |
+| `sacred_life_flask` | Fiole de vie sacrée | life_flask | 5 | flask | flask, life_flask | — | — | 1 × 2 | 54 et au-delà |
+| `small_mana_flask` | Petite fiole de mana | mana_flask | 1 | flask | flask, mana_flask | — | — | 1 × 2 | 1 à 16 |
+| `mana_flask` | Fiole de mana | mana_flask | 2 | flask | flask, mana_flask | — | — | 1 × 2 | 10 à 28 |
+| `large_mana_flask` | Grande fiole de mana | mana_flask | 3 | flask | flask, mana_flask | — | — | 1 × 2 | 22 à 42 |
+| `greater_mana_flask` | Fiole de mana supérieure | mana_flask | 4 | flask | flask, mana_flask | — | — | 1 × 2 | 36 à 60 |
+| `sacred_mana_flask` | Fiole de mana sacrée | mana_flask | 5 | flask | flask, mana_flask | — | — | 1 × 2 | 54 et au-delà |
+| `quicksilver_flask` | Flacon de vif-argent | quicksilver_flask | 1 | flask | flask, utility_flask | +40 % de vitesse accrue | — | 1 × 2 | 4 et au-delà |
+| `ruby_flask` | Flacon de rubis | ruby_flask | 1 | flask | flask, utility_flask | +40 % rés. feu | — | 1 × 2 | 18 et au-delà |
+| `sapphire_flask` | Flacon de saphir | sapphire_flask | 1 | flask | flask, utility_flask | +40 % rés. froid | — | 1 × 2 | 18 et au-delà |
+| `topaz_flask` | Flacon de topaze | topaz_flask | 1 | flask | flask, utility_flask | +40 % rés. foudre | — | 1 × 2 | 18 et au-delà |
+| `granite_flask` | Flacon de granit | granite_flask | 1 | flask | flask, utility_flask | +100 % d'armure accrue | — | 1 × 2 | 27 et au-delà |
+| `jade_flask` | Flacon de jade | jade_flask | 1 | flask | flask, utility_flask | +100 % d'esquive accrue | — | 1 × 2 | 27 et au-delà |
+| `amethyst_flask` | Flacon d'améthyste | amethyst_flask | 1 | flask | flask, utility_flask | +40 % rés. nécrotique | — | 1 × 2 | 40 et au-delà |
 | `manual_lightning` | Manuel de la foudre | manual_lightning | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_weapons` | Manuel du chevalier | manual_weapons | 1 | manual | manual | — | — | 2 × 2 | 1 et au-delà |
 | `manual_fire` | Manuel des flammes | manual_fire | 1 | manual | manual | — | — | 2 × 2 | 5 et au-delà |
@@ -783,70 +800,78 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 
 | id | statistique | vise | interdit | poids | paliers | bases éligibles |
 |---|---|---|---|---|---|---|
-| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 59 |
-| `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 59 |
-| `ardent` | dégâts de sort de feu (%) | caster | — | 8 | 6 | 5 / 59 |
-| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 59 |
-| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 59 |
-| `cold_attack_dmg` | dégâts d'attaque de froid (%) | melee | — | 8 | 6 | 8 / 59 |
-| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 59 |
-| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 59 |
-| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 59 |
-| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 59 |
-| `elusive` | esquive | light | — | 9 | 8 | 10 / 59 |
-| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 59 |
-| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 59 |
-| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 59 |
-| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 59 |
-| `fire_attack_dmg` | dégâts d'attaque de feu (%) | melee | — | 8 | 6 | 8 / 59 |
-| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 59 |
-| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 59 |
-| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 59 |
-| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 59 |
-| `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 59 |
-| `glacial` | dégâts de sort de froid (%) | caster | — | 8 | 6 | 5 / 59 |
-| `holy_attack_dmg` | dégâts d'attaque sacrés (%) | melee | — | 8 | 6 | 8 / 59 |
-| `holy_skill_levels` | niveaux de compétence sacrés | caster | — | 1 | 2 | 5 / 59 |
-| `holy_spell_dmg` | dégâts de sort sacrés (%) | caster | — | 8 | 6 | 5 / 59 |
-| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 59 |
-| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 59 |
-| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 59 |
-| `lightning_attack_dmg` | dégâts d'attaque de foudre (%) | melee | — | 8 | 6 | 8 / 59 |
-| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 59 |
-| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 59 |
-| `muscular` | force | *partout* | — | 8 | 6 | 47 / 59 |
-| `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 59 |
-| `necrotic_attack_dmg` | dégâts d'attaque nécrotiques (%) | melee | — | 8 | 6 | 8 / 59 |
-| `necrotic_skill_levels` | niveaux de compétence nécrotiques | caster | — | 1 | 2 | 5 / 59 |
-| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 59 |
-| `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee | — | 8 | 6 | 8 / 59 |
-| `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 59 |
-| `physical_spell_dmg` | dégâts de sort physiques (%) | caster | — | 8 | 6 | 5 / 59 |
-| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 59 |
-| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 59 |
-| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 59 |
-| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 59 |
-| `putrefying` | dégâts de sort nécrotiques (%) | caster | — | 8 | 6 | 5 / 59 |
-| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 59 |
-| `reach` | allonge | melee | — | 8 | 5 | 8 / 59 |
-| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 59 |
-| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 59 |
-| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 59 |
-| `stormy` | dégâts de sort de foudre (%) | caster | — | 8 | 6 | 5 / 59 |
-| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 59 |
-| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 59 |
-| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 59 |
-| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 59 |
+| `agile` | dextérité | *partout* | — | 8 | 6 | 47 / 76 |
+| `anathema` | rayon aux malédictions (%) | caster, gloves | — | 3 | 5 | 11 / 76 |
+| `ardent` | dégâts de sort de feu (%) | caster | — | 8 | 6 | 5 / 76 |
+| `bewitched` | dégâts de sort (%) | caster | — | 8 | 6 | 5 / 76 |
+| `bloody` | dégâts critiques | weapon, jewellery | — | 6 | 5 | 17 / 76 |
+| `cold_attack_dmg` | dégâts d'attaque de froid (%) | melee | — | 8 | 6 | 8 / 76 |
+| `cold_skill_levels` | niveaux de compétence de froid | caster | — | 1 | 2 | 5 / 76 |
+| `cold_to_attacks` | dégâts de froid aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `cold_to_spells` | dégâts de froid aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `cruel` | chance critique de base | weapon | — | 7 | 3 | 11 / 76 |
+| `crushing` | dégâts de mêlée (%) | melee, gloves | — | 3 | 5 | 14 / 76 |
+| `cuirassed` | armure | armour | — | 9 | 9 | 15 / 76 |
+| `elusive` | esquive | light | — | 9 | 8 | 10 / 76 |
+| `embalmed` | rés. nécrotique | *partout* | weapon | 9 | 5 | 36 / 76 |
+| `erudite` | intelligence | *partout* | — | 8 | 6 | 47 / 76 |
+| `evasive` | esquive (%) | light | — | 8 | 6 | 10 / 76 |
+| `expansive` | dégâts de zone (%) | caster, gloves | — | 3 | 5 | 11 / 76 |
+| `fire_attack_dmg` | dégâts d'attaque de feu (%) | melee | — | 8 | 6 | 8 / 76 |
+| `fire_skill_levels` | niveaux de compétence de feu | caster | — | 1 | 2 | 5 / 76 |
+| `fire_to_attacks` | dégâts de feu aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `fire_to_spells` | dégâts de feu aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `fireproof` | rés. feu | *partout* | weapon | 9 | 5 | 36 / 76 |
+| `flask_adrenaline` | vitesse (%) | flask | — | 10 | 3 | 17 / 76 |
+| `flask_ample` | charges max. | flask | — | 10 | 3 | 17 / 76 |
+| `flask_chemists` | charges consommées (%) | flask | — | 10 | 3 | 17 / 76 |
+| `flask_experimenters` | durée (%) | utility_flask | — | 10 | 3 | 7 / 76 |
+| `flask_iron_skin` | armure (%) | flask | — | 10 | 3 | 17 / 76 |
+| `flask_perpetual` | charges gagnées (%) | flask | — | 10 | 3 | 17 / 76 |
+| `flask_reflexes` | esquive (%) | flask | — | 10 | 3 | 17 / 76 |
+| `flask_saturated` | récupération (%) | life_flask, mana_flask | — | 10 | 3 | 10 / 76 |
+| `forked` | nombre de projectiles aux projectiles | caster | — | 3 | 2 | 5 / 76 |
+| `frosted` | rés. froid | *partout* | weapon | 9 | 5 | 36 / 76 |
+| `gangrenous` | dégâts continus (%) | caster, jewellery | — | 4 | 6 | 11 / 76 |
+| `glacial` | dégâts de sort de froid (%) | caster | — | 8 | 6 | 5 / 76 |
+| `holy_attack_dmg` | dégâts d'attaque sacrés (%) | melee | — | 8 | 6 | 8 / 76 |
+| `holy_skill_levels` | niveaux de compétence sacrés | caster | — | 1 | 2 | 5 / 76 |
+| `holy_spell_dmg` | dégâts de sort sacrés (%) | caster | — | 8 | 6 | 5 / 76 |
+| `holy_to_attacks` | dégâts sacrés aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `holy_to_spells` | dégâts sacrés aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `incanting` | vitesse d'incantation (%) | caster, gloves, jewellery | — | 8 | 6 | 17 / 76 |
+| `insulated` | rés. foudre | *partout* | weapon | 9 | 5 | 36 / 76 |
+| `keen` | chance critique de base (%) | gloves, jewellery | — | 7 | 5 | 12 / 76 |
+| `lightning_attack_dmg` | dégâts d'attaque de foudre (%) | melee | — | 8 | 6 | 8 / 76 |
+| `lightning_skill_levels` | niveaux de compétence de foudre | caster | — | 1 | 2 | 5 / 76 |
+| `lightning_to_attacks` | dégâts de foudre aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `lightning_to_spells` | dégâts de foudre aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `lucid` | mana/s | caster, belt, jewellery | — | 6 | 5 | 14 / 76 |
+| `muscular` | force | *partout* | — | 8 | 6 | 47 / 76 |
+| `necromancers` | dégâts d'invocation (%) | caster, jewellery | — | 4 | 6 | 11 / 76 |
+| `necrotic_attack_dmg` | dégâts d'attaque nécrotiques (%) | melee | — | 8 | 6 | 8 / 76 |
+| `necrotic_skill_levels` | niveaux de compétence nécrotiques | caster | — | 1 | 2 | 5 / 76 |
+| `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 76 |
+| `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee | — | 8 | 6 | 8 / 76 |
+| `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 76 |
+| `physical_spell_dmg` | dégâts de sort physiques (%) | caster | — | 8 | 6 | 5 / 76 |
+| `physical_to_attacks` | dégâts physiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
+| `physical_to_spells` | dégâts physiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
+| `plated` | armure (%) | heavy | — | 8 | 6 | 15 / 76 |
+| `precise` | chance critique de base (%) | weapon | — | 7 | 5 | 11 / 76 |
+| `putrefying` | dégâts de sort nécrotiques (%) | caster | — | 8 | 6 | 5 / 76 |
+| `quick` | vitesse d'attaque (%) | melee, gloves, jewellery | — | 8 | 6 | 20 / 76 |
+| `reach` | allonge | melee | — | 8 | 5 | 8 / 76 |
+| `regenerating` | PV/s | belt, jewellery | — | 6 | 5 | 9 / 76 |
+| `second_wind` | récupération de recharge | boots, jewellery | — | 5 | 5 | 12 / 76 |
+| `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 16 / 76 |
+| `stormy` | dégâts de sort de foudre (%) | caster | — | 8 | 6 | 5 / 76 |
+| `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 76 |
+| `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 76 |
+| `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 76 |
+| `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 11 / 76 |
 
 ### Affixes d'ennemis
 
@@ -1101,6 +1126,70 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 16–21 % | 10 |
 | T4 | 12 | 10–15 % | 10 |
 | T5 | 1 | 5–9 % | 10 |
+
+**`flask_adrenaline`** — « de l'Adrénaline », vitesse, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 21–25 % | 10 |
+| T2 | 22 | 15–20 % | 10 |
+| T3 | 1 | 8–14 % | 10 |
+
+**`flask_ample`** — « de l'Abondance », charges max., arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 14–18 | 10 |
+| T2 | 22 | 9–13 | 10 |
+| T3 | 1 | 5–8 | 10 |
+
+**`flask_chemists`** — « de l'Alchimiste », charges consommées, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | -30–-26 % | 10 |
+| T2 | 22 | -25–-21 % | 10 |
+| T3 | 1 | -20–-15 % | 10 |
+
+**`flask_experimenters`** — « de la Patience », durée, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 31–40 % | 10 |
+| T2 | 22 | 21–30 % | 10 |
+| T3 | 1 | 10–20 % | 10 |
+
+**`flask_iron_skin`** — « de la Peau de fer », armure, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 71–90 % | 10 |
+| T2 | 22 | 51–70 % | 10 |
+| T3 | 1 | 30–50 % | 10 |
+
+**`flask_perpetual`** — « de la Constance », charges gagnées, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 41–55 % | 10 |
+| T2 | 22 | 26–40 % | 10 |
+| T3 | 1 | 15–25 % | 10 |
+
+**`flask_reflexes`** — « des Réflexes », esquive, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 71–90 % | 10 |
+| T2 | 22 | 51–70 % | 10 |
+| T3 | 1 | 30–50 % | 10 |
+
+**`flask_saturated`** — « de la Plénitude », récupération, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 45 | 41–55 % | 10 |
+| T2 | 22 | 26–40 % | 10 |
+| T3 | 1 | 15–25 % | 10 |
 
 **`forked`** — « de la Fourche », nombre de projectiles aux projectiles, arrondi 1
 

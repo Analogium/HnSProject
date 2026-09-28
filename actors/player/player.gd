@@ -12,6 +12,8 @@ signal passives_changed
 ## Un geste entretenu s'est allumé ou éteint : le bandeau en montre les icônes.
 signal buffs_changed
 signal equipment_changed
+## Une gorgée prise ou finie, des charges gagnées : le bandeau des flacons.
+signal flasks_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
@@ -43,6 +45,11 @@ const LANDING_STEP := 8.0
 ## Où une frappe vive s'arrête devant sa cible, de centre à centre : les deux corps se
 ## touchent sans se chevaucher.
 const LUNGE_REACH := 14.0
+
+## Ce qu'une mise à mort verse à chaque flacon porté, plus par affixe de l'ennemi : une
+## élite remplit plus vite, comme la rareté d'un monstre de PoE. Provisoire.
+const CHARGES_PER_KILL := 1.0
+const CHARGES_PER_AFFIX := 1.0
 
 ## Durée pendant laquelle la hitbox est active. Réglable à chaud depuis l'arène.
 @export var swing_duration: float = 0.12
@@ -140,6 +147,16 @@ var _already_hit: Array[Node] = []
 var _aim_with_mouse := true
 
 
+## Une gorgée en cours. Deux gorgées de vie se cumulent, comme dans PoE 1.
+class Sip:
+	var flask: Item
+	var left: float
+	var life_per_second: float
+	var mana_per_second: float
+
+var _sips: Array[Sip] = []
+
+
 func _ready() -> void:
 	camera.zoom = Vector2.ONE * Game.WORLD_ZOOM
 	Settings.veil(swing_arc, Settings.SPELLS)
@@ -176,6 +193,13 @@ func _input(event: InputEvent) -> void:
 			_aim_with_mouse = false
 
 
+## Un champ de texte qui a le focus garde ses chiffres : la recherche de l'arbre ne boit pas.
+func _unhandled_input(event: InputEvent) -> void:
+	for i in EquipmentSlots.flasks().size():
+		if event.is_action_pressed("flask_%d" % (i + 1)):
+			use_flask(i)
+
+
 func _physics_process(delta: float) -> void:
 	# Le gel ralentit la recharge des cinq cases ici, la marche plus bas.
 	var cadence := states.speed_factor
@@ -183,6 +207,7 @@ func _physics_process(delta: float) -> void:
 		_recharges[i] = maxf(_recharges[i] - delta * cadence, 0.0)
 
 	_regen(delta)
+	_drink(delta)
 	_suffer_states(delta)
 	if is_dead:
 		return
@@ -725,8 +750,10 @@ func recompute_stats() -> void:
 	var mods: Array[StatMod] = []
 	for slot in EquipmentSlots.ids():
 		var item: Item = equipment.get(slot)
-		if item != null:
+		if item != null and not item.is_flask():
 			mods.append_array(item.mods())
+	# Un flacon ne compte que pendant qu'on le boit.
+	mods.append_array(flask_mods())
 
 	# Les passifs du râtelier et de l'arbre, dans la même liste et le même tri que les
 	# objets — et les buffs allumés, qui ne durent que tant qu'on les paie.
@@ -813,6 +840,102 @@ func lit_stacks(skill_id: String) -> int:
 	if not is_instance_valid(node) or not node is Buff:
 		return 0
 	return (node as Buff).stacks
+
+
+## Le flacon de cet emplacement, dans l'ordre des touches, ou null.
+func flask_in(index: int) -> Item:
+	return equipment.get(EquipmentSlots.flasks()[index])
+
+
+## Boit le flacon de cet emplacement. **Le seul chemin** — touche, tests. Refusé sans
+## flacon, sans assez de charges, ou pour un utilitaire dont l'effet dure encore.
+func use_flask(index: int) -> bool:
+	var flask := flask_in(index)
+	if is_dead or flask == null or flask.charges < flask.charges_per_use():
+		return false
+	var already := drinking(flask)
+	if already and flask.base.is_utility_flask():
+		return false
+	flask.charges -= flask.charges_per_use()
+	var sip := Sip.new()
+	sip.flask = flask
+	sip.left = flask.flask_duration()
+	sip.life_per_second = flask.flask_life() / sip.left
+	sip.mana_per_second = flask.flask_mana() / sip.left
+	_sips.append(sip)
+	# Ses lignes entrent dans la fiche, une fois par flacon quel que soit le nombre de gorgées.
+	if not already and not flask.mods().is_empty():
+		_restat()
+	flasks_changed.emit()
+	return true
+
+
+## Ce que rendent les gorgées en cours. Une gorgée finie retire ses lignes à la fiche.
+func _drink(delta: float) -> void:
+	if _sips.is_empty():
+		return
+	var life := 0.0
+	var mana_back := 0.0
+	var ended := false
+	for sip in _sips:
+		var step := minf(delta, sip.left)
+		life += sip.life_per_second * step
+		mana_back += sip.mana_per_second * step
+		sip.left -= delta
+		ended = ended or sip.left <= 0.0
+	if life > 0.0:
+		_set_health(health + life)
+	if mana_back > 0.0:
+		_set_mana(mana + mana_back)
+	if ended:
+		_sips = _sips.filter(func(s: Sip) -> bool: return s.left > 0.0)
+		_restat()
+		flasks_changed.emit()
+
+
+func drinking(flask: Item) -> bool:
+	return _sips.any(func(s: Sip) -> bool: return s.flask == flask)
+
+
+## Ce qu'il reste de l'effet le plus long de ce flacon, entre 0 et 1 ; zéro s'il ne coule pas.
+func flask_left(flask: Item) -> float:
+	var out := 0.0
+	for sip in _sips:
+		if sip.flask == flask:
+			out = maxf(out, sip.left / flask.flask_duration())
+	return out
+
+
+## Les lignes des flacons en cours, une fois par flacon : l'effet d'un utilitaire et ce
+## que ses affixes donnent pendant l'effet.
+func flask_mods() -> Array[StatMod]:
+	var out: Array[StatMod] = []
+	var counted: Array[Item] = []
+	for sip in _sips:
+		if sip.flask in counted:
+			continue
+		counted.append(sip.flask)
+		out.append_array(sip.flask.mods())
+	return out
+
+
+## Une mise à mort remplit chaque flacon porté. Depuis `EnemyManager.report_kill()`.
+func gain_flask_charges(enemy_affixes: int) -> void:
+	var gained := CHARGES_PER_KILL + CHARGES_PER_AFFIX * float(enemy_affixes)
+	for slot in EquipmentSlots.flasks():
+		var flask: Item = equipment.get(slot)
+		if flask != null:
+			flask.charges = minf(flask.charges + gained * flask.charge_gain(), flask.charges_max())
+	flasks_changed.emit()
+
+
+## La ville remplit tout, comme dans PoE.
+func refill_flasks() -> void:
+	for slot in EquipmentSlots.flasks():
+		var flask: Item = equipment.get(slot)
+		if flask != null:
+			flask.charges = flask.charges_max()
+	flasks_changed.emit()
 
 
 ## Les plafonds ont pu bouger avec les lignes du buff, comme à un changement d'objet.
@@ -1116,8 +1239,12 @@ func _die() -> void:
 		extinguish(id)
 	if _crown != null:
 		_crown.clear()
-	# Un corps relevé ne se relève pas en flammes.
+	# Un corps relevé ne se relève pas en flammes, ni une gorgée à la main.
 	states.clear()
+	if not _sips.is_empty():
+		_sips.clear()
+		_restat()
+		flasks_changed.emit()
 	died.emit()   # l'écran de fin de run se branchera ici
 
 

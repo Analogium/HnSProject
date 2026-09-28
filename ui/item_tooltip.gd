@@ -87,6 +87,8 @@ static func lines(item: Item, detailed: bool) -> Array[Line]:
 			StatMod.format(defense, item.defense()),
 			EXPLICIT if raised else VALUE
 		))
+	if item.is_flask():
+		properties.append_array(_flask_properties(item))
 	_block(out, properties)
 
 	# Ni niveau ni affixes : sa pile, ce qu'elle fait, et comment.
@@ -133,6 +135,43 @@ static func lines(item: Item, detailed: bool) -> Array[Line]:
 			Line.Kind.TEXT, Texts.t("paliers inconnus : ramassé avant"), LABEL
 		)] as Array[Line])
 	return out
+
+
+## Ce que rend une gorgée, combien de temps, et ses charges : en avant ce que ses
+## lignes locales ont monté, comme la chance critique d'une arme.
+static func _flask_properties(item: Item) -> Array[Line]:
+	var base := item.base
+	var seconds := "%s s" % String.num(item.flask_duration(), 1)
+	var out: Array[Line] = []
+	if base.flask_life > 0.0:
+		var life := {"n": roundi(item.flask_life()), "duree": seconds}
+		out.append(Line.property(
+			Texts.t("Rend :"), Texts.t("{n} PV en {duree}").format(life),
+			_tint_of(item.flask_life(), base.flask_life)
+		))
+	if base.flask_mana > 0.0:
+		var mana := {"n": roundi(item.flask_mana()), "duree": seconds}
+		out.append(Line.property(
+			Texts.t("Rend :"), Texts.t("{n} mana en {duree}").format(mana),
+			_tint_of(item.flask_mana(), base.flask_mana)
+		))
+	if base.is_utility_flask():
+		out.append(Line.property(
+			Texts.t("Durée :"), seconds, _tint_of(item.flask_duration(), base.flask_duration)
+		))
+	out.append(Line.property(
+		Texts.t("Charges :"), "%d / %d" % [floori(item.charges), item.charges_max()],
+		_tint_of(item.charges_max(), base.flask_charges)
+	))
+	out.append(Line.property(
+		Texts.t("Par gorgée :"), str(item.charges_per_use()),
+		_tint_of(item.charges_per_use(), base.flask_charges_per_use)
+	))
+	return out
+
+
+static func _tint_of(now: float, bare: float) -> Color:
+	return VALUE if is_equal_approx(now, bare) else EXPLICIT
 
 
 ## La taille du cadre, bandeau et marges compris.

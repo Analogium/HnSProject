@@ -67,6 +67,25 @@ const ALL := [
 	preload("res://resources/items/ring.tres"),
 	preload("res://resources/items/ornate_ring.tres"),
 	preload("res://resources/items/signet_ring.tres"),
+	# fioles de vie et de mana (jalon 32)
+	preload("res://resources/items/small_life_flask.tres"),
+	preload("res://resources/items/life_flask.tres"),
+	preload("res://resources/items/large_life_flask.tres"),
+	preload("res://resources/items/greater_life_flask.tres"),
+	preload("res://resources/items/sacred_life_flask.tres"),
+	preload("res://resources/items/small_mana_flask.tres"),
+	preload("res://resources/items/mana_flask.tres"),
+	preload("res://resources/items/large_mana_flask.tres"),
+	preload("res://resources/items/greater_mana_flask.tres"),
+	preload("res://resources/items/sacred_mana_flask.tres"),
+	# Les flacons utilitaires, un palier chacun : leur effet ne vieillit pas.
+	preload("res://resources/items/quicksilver_flask.tres"),
+	preload("res://resources/items/ruby_flask.tres"),
+	preload("res://resources/items/sapphire_flask.tres"),
+	preload("res://resources/items/topaz_flask.tres"),
+	preload("res://resources/items/granite_flask.tres"),
+	preload("res://resources/items/jade_flask.tres"),
+	preload("res://resources/items/amethyst_flask.tres"),
 
 	# Les manuels tombent et se rechargent, mais ne se portent pas : les règles
 	# d'équipement les laissent de côté (`EquipmentSlots.equippable_family()`).

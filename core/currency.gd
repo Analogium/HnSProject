@@ -76,7 +76,10 @@ static func accepts(coin: ItemBase, target: Item) -> bool:
 		BRONZE:
 			return rarity == Item.Rarity.MAGIC
 		SILVER:
-			return rarity == Item.Rarity.MAGIC and not _free(target).is_empty()
+			return (
+				rarity == Item.Rarity.MAGIC and ItemAffixPool.max_count(target.base) > Item.MAGIC_MAX
+				and not _free(target).is_empty()
+			)
 		GOLD:
 			return rarity == Item.Rarity.RARE and pool.size() > Item.MAGIC_MAX
 		PLATINUM:

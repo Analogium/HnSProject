@@ -20,6 +20,11 @@ const ACTIONS := {
 	"skill_3": "Compétence 3",
 	"skill_4": "Compétence 4",
 	"skill_5": "Compétence 5",
+	"flask_1": "Flacon 1",
+	"flask_2": "Flacon 2",
+	"flask_3": "Flacon 3",
+	"flask_4": "Flacon 4",
+	"flask_5": "Flacon 5",
 	"panel_inventory": "Inventaire",
 	"panel_character": "Fiche de personnage",
 	"panel_manuals": "Manuels",
@@ -177,6 +182,10 @@ static func label_of(action: String) -> String:
 static func _keycode_label(code: int, physical: bool) -> String:
 	if code == 0:
 		return UNBOUND
+	# La rangée des chiffres porte ses chiffres sur tous les claviers ; traduite, celle
+	# d'un AZERTY s'écrirait « Ampersand ».
+	if physical and code >= KEY_0 and code <= KEY_9:
+		return OS.get_keycode_string(code)
 	if physical and DisplayServer.get_name() != "headless":
 		var translated := DisplayServer.keyboard_get_keycode_from_physical(code)
 		if translated != 0:

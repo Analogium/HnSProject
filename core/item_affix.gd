@@ -52,8 +52,9 @@ func fits(base: ItemBase) -> bool:
 	for t in excludes:
 		if base.tags.has(t):
 			return false
+	# « Partout » veut dire tout ce qu'on porte : un flacon ne tire que ses affixes.
 	if tags.is_empty():
-		return true
+		return base.family != ItemBase.FLASK_FAMILY
 	for t in tags:
 		if base.tags.has(t):
 			return true

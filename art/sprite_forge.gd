@@ -365,6 +365,8 @@ const GEAR := [
 	# Jalon 29 : les pièces de monnaie, une seule silhouette — c'est leur image qui
 	# dit le métal.
 	"coin",
+	# Jalon 32 : les flacons, une seule fiole — provisoire, en attendant leurs images.
+	"flask",
 ]
 
 ## Ce qui distingue trois paliers d'une même lignée **sans image** : depuis que
@@ -533,6 +535,13 @@ static func _gear(c: PixelCanvas, kind: String, cx: float, top: float) -> void:
 		"coin":
 			c.disc(Vector2(cx, top + 8.0), 4.0, R_ACCENT)
 			c.disc(Vector2(cx - 1.2, top + 6.8), 1.2, R_METAL, 0.40)
+
+		"flask":
+			# Panse ronde, col étroit, bouchon : le col est ce qui la sépare d'une pièce.
+			c.disc(Vector2(cx, top + 12.0), 4.6, R_CLOTH)
+			c.capsule(Vector2(cx, top + 4.8), Vector2(cx, top + 8.6), 1.6, R_METAL, 0.30)
+			c.capsule(Vector2(cx - 0.8, top + 3.2), Vector2(cx + 0.8, top + 3.2), 1.6, R_LEATHER)
+			c.disc(Vector2(cx - 1.6, top + 10.6), 1.1, R_METAL, 0.45)
 
 		"manual_necrotic":
 			# **Un crâne posé sur un livre couché.** Le halo du sacré déborde du livre par

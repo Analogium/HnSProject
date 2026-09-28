@@ -34,7 +34,7 @@ extends Resource
 const GRID_SIZES := {
 	"weapon": Vector2i(1, 3), "offhand": Vector2i(2, 2), "chest": Vector2i(2, 3),
 	"helmet": Vector2i(2, 2), "gloves": Vector2i(2, 2), "boots": Vector2i(2, 2),
-	"belt": Vector2i(2, 1), "manual": Vector2i(2, 2),
+	"belt": Vector2i(2, 1), "manual": Vector2i(2, 2), "flask": Vector2i(1, 2),
 }
 var grid_size: Vector2i:
 	get:
@@ -61,6 +61,8 @@ var grid_size: Vector2i:
 const MANUAL_FAMILY := "manual"
 ## Les pièces de monnaie : elles ne s'équipent pas, elles s'appliquent (`Currency`).
 const CURRENCY_FAMILY := "currency"
+## Les flacons : portés, mais qui ne comptent que pendant qu'on les boit (`Player.flask_mods()`).
+const FLASK_FAMILY := "flask"
 
 ## L'archétype qu'ouvre cette base, ou null : un champ ici plutôt qu'un second
 ## catalogue qui divergerait.
@@ -86,6 +88,26 @@ const CURRENCY_FAMILY := "currency"
 ## hors des armes : **seule l'arme** donne une base, le reste ne fait que l'accroître.
 @export_range(0.0, 1.0) var crit_chance: float = 0.0
 
+@export_group("Flacon")
+## Ce que rend une gorgée, étalé sur `flask_duration`. Les deux à zéro : un flacon
+## utilitaire, dont l'effet est l'implicite.
+@export var flask_life: float = 0.0
+@export var flask_mana: float = 0.0
+@export var flask_duration: float = 0.0
+@export var flask_charges: int = 0
+@export var flask_charges_per_use: int = 0
+
+## Ce qu'un flacon monte sur lui-même, ses « préfixes » de PoE : locaux, jamais sur la
+## fiche. Ni champ de `CharacterStats` ni ligne de fiche — l'infobulle du flacon les lit.
+const FLASK_STATS := [
+	"flask_recovery", "flask_duration", "flask_charges", "flask_charges_used", "flask_charge_gain",
+]
+
+
+func is_utility_flask() -> bool:
+	return family == FLASK_FAMILY and flask_life <= 0.0 and flask_mana <= 0.0
+
+
 const WEAPON_FAMILY := "weapon"
 ## L'étiquette qui fait une arme d'incantation ; toute autre arme est d'attaque.
 const CASTER_TAG := "caster"
@@ -105,14 +127,19 @@ const LOCAL_DEFENSES := ["armor", "evasion"]
 
 ## « armor », « evasion », ou vide pour ce qui ne protège pas.
 func defense_stat() -> String:
+	# Le granit et le jade donnent de l'armure et de l'esquive, bus : ce n'est pas la leur.
+	if family == FLASK_FAMILY:
+		return ""
 	return implicit_stat if implicit_stat in LOCAL_DEFENSES else ""
 
 
 ## Une ligne qui monte la base de l'objet plutôt que la fiche, plate ou accrue : la
-## chance critique d'une arme, la défense d'une pièce d'armure.
+## chance critique d'une arme, la défense d'une pièce d'armure, ce que rend un flacon.
 func is_local(m: StatMod) -> bool:
 	if m.mode == StatMod.Mode.MORE:
 		return false
+	if family == FLASK_FAMILY:
+		return m.stat in FLASK_STATS
 	if family == WEAPON_FAMILY:
 		return m.stat == SkillStats.CRIT_CHANCE
 	return m.scope.is_empty() and m.stat == defense_stat() and not m.stat.is_empty()

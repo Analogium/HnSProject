@@ -2530,3 +2530,133 @@ msgstr "stash unreadable"
 
 msgid "Nouvelle zone"
 msgstr "New Area"
+
+# Jalon 32 : les flacons.
+msgid "FLACON"
+msgstr "FLASK"
+
+msgid "Flacons"
+msgstr "Flasks"
+
+msgid "Flacon 1"
+msgstr "Flask 1"
+
+msgid "Flacon 2"
+msgstr "Flask 2"
+
+msgid "Flacon 3"
+msgstr "Flask 3"
+
+msgid "Flacon 4"
+msgstr "Flask 4"
+
+msgid "Flacon 5"
+msgstr "Flask 5"
+
+msgid " pendant l'effet"
+msgstr " during effect"
+
+msgid "Rend :"
+msgstr "Recovers:"
+
+msgid "{n} PV en {duree}"
+msgstr "{n} life over {duree}"
+
+msgid "{n} mana en {duree}"
+msgstr "{n} mana over {duree}"
+
+msgid "Durée :"
+msgstr "Duration:"
+
+msgid "Charges :"
+msgstr "Charges:"
+
+msgid "Par gorgée :"
+msgstr "Per use:"
+
+msgid "récupération"
+msgstr "recovery"
+
+msgid "charges max."
+msgstr "max charges"
+
+msgid "charges consommées"
+msgstr "charges used"
+
+msgid "charges gagnées"
+msgstr "charges gained"
+
+msgid "Petite fiole de vie"
+msgstr "Small Life Flask"
+
+msgid "Fiole de vie"
+msgstr "Life Flask"
+
+msgid "Grande fiole de vie"
+msgstr "Large Life Flask"
+
+msgid "Fiole de vie supérieure"
+msgstr "Greater Life Flask"
+
+msgid "Fiole de vie sacrée"
+msgstr "Sacred Life Flask"
+
+msgid "Petite fiole de mana"
+msgstr "Small Mana Flask"
+
+msgid "Fiole de mana"
+msgstr "Mana Flask"
+
+msgid "Grande fiole de mana"
+msgstr "Large Mana Flask"
+
+msgid "Fiole de mana supérieure"
+msgstr "Greater Mana Flask"
+
+msgid "Fiole de mana sacrée"
+msgstr "Sacred Mana Flask"
+
+msgid "Flacon de vif-argent"
+msgstr "Quicksilver Flask"
+
+msgid "Flacon de rubis"
+msgstr "Ruby Flask"
+
+msgid "Flacon de saphir"
+msgstr "Sapphire Flask"
+
+msgid "Flacon de topaze"
+msgstr "Topaz Flask"
+
+msgid "Flacon de granit"
+msgstr "Granite Flask"
+
+msgid "Flacon de jade"
+msgstr "Jade Flask"
+
+msgid "Flacon d'améthyste"
+msgstr "Amethyst Flask"
+
+msgid "de l'Abondance"
+msgstr "of Abundance"
+
+msgid "de l'Alchimiste"
+msgstr "of the Alchemist"
+
+msgid "de la Constance"
+msgstr "of Constancy"
+
+msgid "de la Plénitude"
+msgstr "of Plenty"
+
+msgid "de la Patience"
+msgstr "of Patience"
+
+msgid "de l'Adrénaline"
+msgstr "of Adrenaline"
+
+msgid "de la Peau de fer"
+msgstr "of Iron Skin"
+
+msgid "des Réflexes"
+msgstr "of Reflexes"
