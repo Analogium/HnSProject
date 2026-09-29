@@ -288,7 +288,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	sprite.flash()
 	if health <= 0.0:
 		if info.author != null:
-			info.author.slew.emit(info.cast.keywords if info.cast != null else PackedStringArray())
+			info.author.slew.emit(info.cast, global_position, states)
 		die()
 
 

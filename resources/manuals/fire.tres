@@ -11,219 +11,693 @@
 [ext_resource type="Resource" path="res://resources/skills/flame_dash.tres" id="13_ruee_ardente"]
 [ext_resource type="Resource" path="res://resources/skills/ignition.tres" id="14_ignition"]
 
-[sub_resource type="Resource" id="L_boule_de_feu_attisement_0"]
+[sub_resource type="Resource" id="L_fireball_stoking_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 13.0
+value_per_point = 8.0
 
-[sub_resource type="Resource" id="N_boule_de_feu_attisement"]
+[sub_resource type="Resource" id="N_fireball_stoking"]
 script = ExtResource("3_noeud")
 id = "fireball_stoking"
 name = "Attisement"
+description = "La boule inflige plus de dégâts, à la touche directe comme à l'explosion."
 position = Vector2i(0, 0)
-required_points = 1
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_attisement_0")])
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_stoking_0")])
 
-[sub_resource type="Resource" id="L_boule_de_feu_souffle_ardent_0"]
+[sub_resource type="Resource" id="L_fireball_searing_breath_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
-value_per_point = 30.0
+value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_boule_de_feu_souffle_ardent"]
+[sub_resource type="Resource" id="N_fireball_searing_breath"]
 script = ExtResource("3_noeud")
 id = "fireball_searing_breath"
 name = "Souffle ardent"
+description = "L'explosion à l'impact s'élargit et atteint des ennemis plus éloignés du point d'impact."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_searing_breath_0")])
+
+[sub_resource type="Resource" id="L_fireball_velocity_0"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_fireball_velocity"]
+script = ExtResource("3_noeud")
+id = "fireball_velocity"
+name = "Vélocité"
+description = "La boule vole plus vite. Sa durée de vol ne change pas : elle porte donc plus loin."
+position = Vector2i(0, 2)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_velocity_0")])
+
+[sub_resource type="Resource" id="L_fireball_ardor_0"]
+script = ExtResource("4_ligne")
+stat = "crit_chance"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_fireball_ardor"]
+script = ExtResource("3_noeud")
+id = "fireball_ardor"
+name = "Ardeur"
+description = "Augmente la chance de coup critique de la boule, touche directe et explosion comprises."
 position = Vector2i(1, 0)
 parent = "fireball_stoking"
-required_points = 2
+required_points = 5
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_souffle_ardent_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_ardor_0")])
 
-[sub_resource type="Resource" id="L_boule_de_feu_double_langue_0"]
+[sub_resource type="Resource" id="L_fireball_scattered_embers_0"]
+script = ExtResource("4_ligne")
+stat = "ground_duration"
+value_per_point = 1.5
+first_point_bonus = 0.5
+
+[sub_resource type="Resource" id="N_fireball_scattered_embers"]
+script = ExtResource("3_noeud")
+id = "fireball_scattered_embers"
+name = "Braises dispersées"
+description = "Chaque explosion laisse au sol une plaque de feu de rayon {rayon_sol}. Elle brûle les ennemis qui s'y tiennent — {part_sol} % des dégâts de la boule toutes les {rythme_sol} s — pendant la durée indiquée."
+position = Vector2i(1, 1)
+parent = "fireball_searing_breath"
+required_points = 5
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_scattered_embers_0")])
+
+[sub_resource type="Resource" id="L_fireball_forked_tongue_0"]
 script = ExtResource("4_ligne")
 stat = "projectiles"
 value_per_point = 1.0
 
-[sub_resource type="Resource" id="N_boule_de_feu_double_langue"]
+[sub_resource type="Resource" id="L_fireball_forked_tongue_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_fireball_forked_tongue"]
 script = ExtResource("3_noeud")
 id = "fireball_forked_tongue"
 name = "Double langue"
-position = Vector2i(0, 1)
-required_points = 3
+description = "Chaque sort lance une boule de plus, en éventail. En échange, chaque boule inflige moins de dégâts."
+position = Vector2i(1, 2)
+parent = "fireball_velocity"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_forked_tongue_0"), SubResource("L_fireball_forked_tongue_1")])
+
+[sub_resource type="Resource" id="L_fireball_piercing_0"]
+script = ExtResource("4_ligne")
+stat = "pierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_fireball_piercing"]
+script = ExtResource("3_noeud")
+id = "fireball_piercing"
+name = "Perforation"
+description = "La boule ne s'arrête plus au premier ennemi : elle le traverse, explose sur lui, et continue. Elle s'arrête sur l'ennemi suivant celui qu'elle a traversé en dernier. Elle ne frappe jamais deux fois le même ennemi."
+position = Vector2i(1, 3)
+parent = "fireball_velocity"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_piercing_0")])
+
+[sub_resource type="Resource" id="N_fireball_frost"]
+script = ExtResource("3_noeud")
+id = "fireball_frost"
+name = "Givre"
+description = "La boule devient entièrement de glace : des dégâts de froid, le mot-clé Froid au lieu de Feu. Elle transit au lieu d'embraser, et ce sont les bonus de froid de l'équipement qui s'y appliquent, et non plus ceux de feu."
+position = Vector2i(2, 0)
+parent = "fireball_ardor"
+required_points = 10
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_boule_de_feu_double_langue_0")])
+lines = Array[ExtResource("4_ligne")]([])
+converts = true
+converts_to = 1
 
-[sub_resource type="Resource" id="C_boule_de_feu"]
-script = ExtResource("2_case")
-skill = ExtResource("10_boule_de_feu")
+[sub_resource type="Resource" id="L_fireball_kindling_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_fireball_kindling"]
+script = ExtResource("3_noeud")
+id = "fireball_kindling"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
+position = Vector2i(2, 1)
+parent = "fireball_scattered_embers"
+required_points = 10
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_kindling_0")])
+
+[sub_resource type="Resource" id="L_fireball_fragmentation_0"]
+script = ExtResource("4_ligne")
+stat = "splits"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_fireball_fragmentation"]
+script = ExtResource("3_noeud")
+id = "fireball_fragmentation"
+name = "Fragmentation"
+description = "La boule éclate en petites boules qui partent en étoile : sur chaque ennemi qu'elle traverse, et au bout de sa course — sur un ennemi, un mur ou à portée maximale. Chacune inflige {part_eclat} % des dégâts et explose deux fois plus petit. Elles traversent sans les frapper les ennemis que la boule a déjà touchés."
+position = Vector2i(2, 3)
+parent = "fireball_piercing"
+required_points = 10
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_fragmentation_0")])
+
+[sub_resource type="Resource" id="L_fireball_chain_reaction_0"]
+script = ExtResource("4_ligne")
+stat = "kill_burst"
+value_per_point = 24.0
+
+[sub_resource type="Resource" id="N_fireball_chain_reaction"]
+script = ExtResource("3_noeud")
+id = "fireball_chain_reaction"
+name = "Réaction en chaîne"
+description = "Un ennemi embrasé que la boule tue explose : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
+position = Vector2i(3, 1)
+parent = "fireball_kindling"
+required_points = 15
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_chain_reaction_0")])
+
+[sub_resource type="Resource" id="L_hell_snake_molting_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hell_snake_molting"]
+script = ExtResource("3_noeud")
+id = "hell_snake_molting"
+name = "Mue"
+description = "Chaque morsure du serpent inflige plus de dégâts."
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_boule_de_feu_attisement"), SubResource("N_boule_de_feu_souffle_ardent"), SubResource("N_boule_de_feu_double_langue")])
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_molting_0")])
 
-[sub_resource type="Resource" id="L_serpent_infernal_longue_vie_0"]
+[sub_resource type="Resource" id="L_hell_snake_long_life_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
-value_per_point = 25.0
+value_per_point = 20.0
 
-[sub_resource type="Resource" id="N_serpent_infernal_longue_vie"]
+[sub_resource type="Resource" id="N_hell_snake_long_life"]
 script = ExtResource("3_noeud")
 id = "hell_snake_long_life"
 name = "Longue vie"
-position = Vector2i(0, 0)
-required_points = 1
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_longue_vie_0")])
+description = "Le serpent reste plus longtemps en jeu avant de disparaître."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_long_life_0")])
 
-[sub_resource type="Resource" id="L_serpent_infernal_crocs_0"]
+[sub_resource type="Resource" id="L_hell_snake_fangs_0"]
 script = ExtResource("4_ligne")
 stat = "damage_fire"
 value_per_point = 4.0
 value_max_per_point = 9.0
 
-[sub_resource type="Resource" id="N_serpent_infernal_crocs"]
+[sub_resource type="Resource" id="N_hell_snake_fangs"]
 script = ExtResource("3_noeud")
 id = "hell_snake_fangs"
 name = "Crocs"
+description = "Ajoute des dégâts de feu à chaque morsure."
+position = Vector2i(0, 2)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_fangs_0")])
+
+[sub_resource type="Resource" id="L_hell_snake_swift_0"]
+script = ExtResource("4_ligne")
+stat = "crawl_speed"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_hell_snake_swift_1"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = -8.0
+
+[sub_resource type="Resource" id="N_hell_snake_swift"]
+script = ExtResource("3_noeud")
+id = "hell_snake_swift"
+name = "Vif"
+description = "Le serpent rampe plus vite et parcourt plus de terrain, mais disparaît plus tôt."
 position = Vector2i(1, 0)
+parent = "hell_snake_molting"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_swift_0"), SubResource("L_hell_snake_swift_1")])
+
+[sub_resource type="Resource" id="L_hell_snake_flame_tail_0"]
+script = ExtResource("4_ligne")
+stat = "ground_duration"
+value_per_point = 1.5
+first_point_bonus = 0.5
+
+[sub_resource type="Resource" id="N_hell_snake_flame_tail"]
+script = ExtResource("3_noeud")
+id = "hell_snake_flame_tail"
+name = "Queue de flammes"
+description = "Le serpent laisse derrière lui un sillon de plaques de feu. Elles brûlent les ennemis — {part_sol} % des dégâts d'une morsure toutes les {rythme_sol} s — pendant la durée indiquée."
+position = Vector2i(1, 1)
 parent = "hell_snake_long_life"
-required_points = 2
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_crocs_0")])
-
-[sub_resource type="Resource" id="L_serpent_infernal_mue_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-percentage = true
-more = true
-value_per_point = 12.0
-
-[sub_resource type="Resource" id="N_serpent_infernal_mue"]
-script = ExtResource("3_noeud")
-id = "hell_snake_molting"
-name = "Mue"
-position = Vector2i(0, 1)
-required_points = 2
+required_points = 5
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_serpent_infernal_mue_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_flame_tail_0")])
 
-[sub_resource type="Resource" id="C_serpent_infernal"]
-script = ExtResource("2_case")
-skill = ExtResource("11_serpent_infernal")
-position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_serpent_infernal_longue_vie"), SubResource("N_serpent_infernal_crocs"), SubResource("N_serpent_infernal_mue")])
-
-[sub_resource type="Resource" id="L_immolation_brasier_0"]
+[sub_resource type="Resource" id="L_hell_snake_hunter_0"]
 script = ExtResource("4_ligne")
-stat = "radius"
-percentage = true
-value_per_point = 20.0
+stat = "seek_radius"
+value_per_point = 120.0
 
-[sub_resource type="Resource" id="N_immolation_brasier"]
+[sub_resource type="Resource" id="N_hell_snake_hunter"]
 script = ExtResource("3_noeud")
-id = "immolation_blaze"
-name = "Brasier"
-position = Vector2i(0, 0)
-required_points = 1
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_brasier_0")])
+id = "hell_snake_hunter"
+name = "Chasseur"
+description = "Le serpent ne rôde plus autour de l'endroit où il est tombé : il se dirige vers l'ennemi le plus proche de sa tête dans ce rayon, et le suit."
+position = Vector2i(1, 2)
+parent = "hell_snake_fangs"
+required_points = 5
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_hunter_0")])
 
-[sub_resource type="Resource" id="L_immolation_fournaise_0"]
+[sub_resource type="Resource" id="L_hell_snake_brood_0"]
+script = ExtResource("4_ligne")
+stat = "brood"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_hell_snake_brood_1"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 14.0
+value_per_point = -15.0
 
-[sub_resource type="Resource" id="N_immolation_fournaise"]
+[sub_resource type="Resource" id="N_hell_snake_brood"]
+script = ExtResource("3_noeud")
+id = "hell_snake_brood"
+name = "Couvée"
+description = "Chaque sort fait tomber un serpent de plus, en éventail. En échange, chaque serpent inflige moins de dégâts."
+position = Vector2i(2, 0)
+parent = "hell_snake_swift"
+required_points = 10
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_brood_0"), SubResource("L_hell_snake_brood_1")])
+
+[sub_resource type="Resource" id="L_hell_snake_bursting_molt_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hell_snake_bursting_molt"]
+script = ExtResource("3_noeud")
+id = "hell_snake_bursting_molt"
+name = "Mue explosive"
+description = "Quand le serpent disparaît, il explose là où se trouve sa tête, avec les dégâts d'une morsure, dans ce rayon."
+position = Vector2i(2, 1)
+parent = "hell_snake_flame_tail"
+required_points = 10
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_bursting_molt_0")])
+
+[sub_resource type="Resource" id="N_hell_snake_venom"]
+script = ExtResource("3_noeud")
+id = "hell_snake_venom"
+name = "Venin"
+description = "Le serpent devient nécrotique : des dégâts nécrotiques, le mot-clé Nécrotique au lieu de Feu. Sa morsure fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
+position = Vector2i(2, 2)
+parent = "hell_snake_hunter"
+required_points = 10
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([])
+converts = true
+converts_to = 4
+
+[sub_resource type="Resource" id="L_hell_snake_hydra_0"]
+script = ExtResource("4_ligne")
+stat = "hatchlings"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_hell_snake_hydra"]
+script = ExtResource("3_noeud")
+id = "hell_snake_hydra"
+name = "Hydre"
+description = "Quand le serpent disparaît, de petits serpents en naissent et partent chacun dans une direction. Ils vivent {vie_petit} s, infligent {part_eclat} % des dégâts, et ne se divisent pas à leur tour."
+position = Vector2i(3, 1)
+parent = "hell_snake_bursting_molt"
+required_points = 15
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_hydra_0")])
+
+[sub_resource type="Resource" id="L_immolation_furnace_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_immolation_furnace"]
 script = ExtResource("3_noeud")
 id = "immolation_furnace"
 name = "Fournaise"
-position = Vector2i(1, 0)
-parent = "immolation_blaze"
-required_points = 2
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_fournaise_0")])
+description = "Chaque impulsion du brasier inflige plus de dégâts."
+position = Vector2i(0, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_furnace_0")])
 
-[sub_resource type="Resource" id="L_immolation_flamme_noire_0"]
+[sub_resource type="Resource" id="L_immolation_blaze_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_immolation_blaze"]
+script = ExtResource("3_noeud")
+id = "immolation_blaze"
+name = "Brasier"
+description = "Le cercle de flammes s'élargit."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_blaze_0")])
+
+[sub_resource type="Resource" id="L_immolation_lukewarm_heart_0"]
+script = ExtResource("4_ligne")
+stat = "self_burn"
+percentage = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_immolation_lukewarm_heart"]
+script = ExtResource("3_noeud")
+id = "immolation_lukewarm_heart"
+name = "Cœur tiède"
+description = "Le brasier vous brûle moins chaque seconde."
+position = Vector2i(0, 2)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_lukewarm_heart_0")])
+
+[sub_resource type="Resource" id="L_immolation_slow_pulse_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="L_immolation_slow_pulse_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 60.0
+
+[sub_resource type="Resource" id="N_immolation_slow_pulse"]
+script = ExtResource("3_noeud")
+id = "immolation_slow_pulse"
+name = "Pouls lent"
+description = "Le brasier frappe moins souvent, mais chaque impulsion frappe bien plus fort : beaucoup plus de dégâts par coup, et un peu plus par seconde."
+position = Vector2i(1, 0)
+parent = "immolation_furnace"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_slow_pulse_0"), SubResource("L_immolation_slow_pulse_1")])
+
+[sub_resource type="Resource" id="L_immolation_kindling_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_immolation_kindling"]
+script = ExtResource("3_noeud")
+id = "immolation_kindling"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
+position = Vector2i(1, 1)
+parent = "immolation_blaze"
+required_points = 5
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_kindling_0")])
+
+[sub_resource type="Resource" id="L_immolation_phoenix_0"]
+script = ExtResource("4_ligne")
+stat = "self_burn"
+percentage = true
+value_per_point = 100.0
+
+[sub_resource type="Resource" id="L_immolation_phoenix_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_immolation_phoenix"]
+script = ExtResource("3_noeud")
+id = "immolation_phoenix"
+name = "Phénix"
+description = "Le brasier vous brûle deux fois plus, mais inflige nettement plus de dégâts."
+position = Vector2i(1, 2)
+parent = "immolation_lukewarm_heart"
+required_points = 5
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_phoenix_0"), SubResource("L_immolation_phoenix_1")])
+
+[sub_resource type="Resource" id="L_immolation_black_flame_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_immolation_flamme_noire"]
+[sub_resource type="Resource" id="N_immolation_black_flame"]
 script = ExtResource("3_noeud")
 id = "immolation_black_flame"
 name = "Flamme noire"
-position = Vector2i(0, 1)
-required_points = 3
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_flamme_noire_0")])
-converts_to = 4
-converted_part_per_point = 0.50
-
-[sub_resource type="Resource" id="C_immolation"]
-script = ExtResource("2_case")
-skill = ExtResource("12_immolation")
+description = "Le brasier inflige plus de dégâts et devient nécrotique : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_immolation_brasier"), SubResource("N_immolation_fournaise"), SubResource("N_immolation_flamme_noire")])
+parent = "immolation_slow_pulse"
+required_points = 10
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_black_flame_0")])
+converts = true
+converts_to = 4
 
-[sub_resource type="Resource" id="L_ruee_ardente_sillage_0"]
+[sub_resource type="Resource" id="L_immolation_living_ashes_0"]
+script = ExtResource("4_ligne")
+stat = "ground_duration"
+value_per_point = 1.5
+first_point_bonus = 0.5
+
+[sub_resource type="Resource" id="N_immolation_living_ashes"]
+script = ExtResource("3_noeud")
+id = "immolation_living_ashes"
+name = "Cendres vivantes"
+description = "Chaque ennemi tué par le brasier laisse une plaque de feu à sa place. Elle brûle les ennemis — {part_sol} % des dégâts d'une impulsion toutes les {rythme_sol} s — pendant la durée indiquée."
+position = Vector2i(2, 1)
+parent = "immolation_kindling"
+required_points = 10
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_living_ashes_0")])
+
+[sub_resource type="Resource" id="L_immolation_fiery_contagion_0"]
+script = ExtResource("4_ligne")
+stat = "kill_burst"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_immolation_fiery_contagion"]
+script = ExtResource("3_noeud")
+id = "immolation_fiery_contagion"
+name = "Contagion ardente"
+description = "Un ennemi embrasé que le brasier tue explose : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
+position = Vector2i(3, 1)
+parent = "immolation_living_ashes"
+required_points = 15
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_fiery_contagion_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_wake_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
 value_per_point = 25.0
 
-[sub_resource type="Resource" id="N_ruee_ardente_sillage"]
+[sub_resource type="Resource" id="N_flame_dash_wake"]
 script = ExtResource("3_noeud")
 id = "flame_dash_wake"
 name = "Sillage"
+description = "La traînée de feu que laisse la ruée brûle plus longtemps."
 position = Vector2i(0, 0)
-required_points = 1
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_sillage_0")])
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_wake_0")])
 
-[sub_resource type="Resource" id="L_ruee_ardente_braises_0"]
+[sub_resource type="Resource" id="L_flame_dash_embers_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
 value_per_point = 20.0
 
-[sub_resource type="Resource" id="N_ruee_ardente_braises"]
+[sub_resource type="Resource" id="N_flame_dash_embers"]
 script = ExtResource("3_noeud")
 id = "flame_dash_embers"
 name = "Braises"
-position = Vector2i(1, 0)
-parent = "flame_dash_wake"
-required_points = 2
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_braises_0")])
+description = "La traînée de feu est plus large."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_embers_0")])
 
-[sub_resource type="Resource" id="L_ruee_ardente_bucher_0"]
+[sub_resource type="Resource" id="L_flame_dash_pyre_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 12.0
+value_per_point = 8.0
 
-[sub_resource type="Resource" id="N_ruee_ardente_bucher"]
+[sub_resource type="Resource" id="N_flame_dash_pyre"]
 script = ExtResource("3_noeud")
 id = "flame_dash_pyre"
 name = "Bûcher"
-position = Vector2i(0, 1)
-required_points = 2
+description = "La traînée, et l'explosion d'arrivée si vous l'avez, infligent plus de dégâts."
+position = Vector2i(0, 2)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_pyre_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_momentum_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_flame_dash_momentum"]
+script = ExtResource("3_noeud")
+id = "flame_dash_momentum"
+name = "Élan"
+description = "La ruée se recharge plus vite."
+position = Vector2i(1, 0)
+parent = "flame_dash_wake"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_momentum_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_landing_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_flame_dash_landing"]
+script = ExtResource("3_noeud")
+id = "flame_dash_landing"
+name = "Atterrissage"
+description = "À l'arrivée, la ruée explose autour de vous, dans ce rayon, avec les dégâts d'une impulsion de la traînée."
+position = Vector2i(1, 1)
+parent = "flame_dash_embers"
+required_points = 5
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_ardente_bucher_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_landing_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_brand_0"]
+script = ExtResource("4_ligne")
+stat = "damage_vs_ignite"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_flame_dash_brand"]
+script = ExtResource("3_noeud")
+id = "flame_dash_brand"
+name = "Tison"
+description = "La traînée et l'explosion d'arrivée infligent plus de dégâts aux ennemis embrasés."
+position = Vector2i(1, 2)
+parent = "flame_dash_pyre"
+required_points = 5
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_brand_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_scorcher_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="L_flame_dash_scorcher_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_flame_dash_scorcher"]
+script = ExtResource("3_noeud")
+id = "flame_dash_scorcher"
+name = "Brûle-pavé"
+description = "La traînée dure bien plus longtemps, mais brûle moins fort."
+position = Vector2i(2, 0)
+parent = "flame_dash_momentum"
+required_points = 10
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_scorcher_0"), SubResource("L_flame_dash_scorcher_1")])
+
+[sub_resource type="Resource" id="L_flame_dash_shockwave_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_flame_dash_shockwave"]
+script = ExtResource("3_noeud")
+id = "flame_dash_shockwave"
+name = "Onde de choc"
+description = "L'explosion d'arrivée s'élargit."
+position = Vector2i(2, 1)
+parent = "flame_dash_landing"
+required_points = 10
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_shockwave_0")])
+
+[sub_resource type="Resource" id="L_flame_dash_kindling_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_flame_dash_kindling"]
+script = ExtResource("3_noeud")
+id = "flame_dash_kindling"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
+position = Vector2i(2, 2)
+parent = "flame_dash_brand"
+required_points = 10
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_kindling_0")])
+[sub_resource type="Resource" id="C_boule_de_feu"]
+script = ExtResource("2_case")
+skill = ExtResource("10_boule_de_feu")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_fireball_stoking"), SubResource("N_fireball_searing_breath"), SubResource("N_fireball_velocity"), SubResource("N_fireball_ardor"), SubResource("N_fireball_scattered_embers"), SubResource("N_fireball_forked_tongue"), SubResource("N_fireball_piercing"), SubResource("N_fireball_frost"), SubResource("N_fireball_kindling"), SubResource("N_fireball_fragmentation"), SubResource("N_fireball_chain_reaction")])
+
+[sub_resource type="Resource" id="C_serpent_infernal"]
+script = ExtResource("2_case")
+skill = ExtResource("11_serpent_infernal")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_hell_snake_molting"), SubResource("N_hell_snake_long_life"), SubResource("N_hell_snake_fangs"), SubResource("N_hell_snake_swift"), SubResource("N_hell_snake_flame_tail"), SubResource("N_hell_snake_hunter"), SubResource("N_hell_snake_brood"), SubResource("N_hell_snake_bursting_molt"), SubResource("N_hell_snake_venom"), SubResource("N_hell_snake_hydra")])
+
+[sub_resource type="Resource" id="C_immolation"]
+script = ExtResource("2_case")
+skill = ExtResource("12_immolation")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_immolation_furnace"), SubResource("N_immolation_blaze"), SubResource("N_immolation_lukewarm_heart"), SubResource("N_immolation_slow_pulse"), SubResource("N_immolation_kindling"), SubResource("N_immolation_phoenix"), SubResource("N_immolation_black_flame"), SubResource("N_immolation_living_ashes"), SubResource("N_immolation_fiery_contagion")])
 
 [sub_resource type="Resource" id="C_ruee_ardente"]
 script = ExtResource("2_case")
 skill = ExtResource("13_ruee_ardente")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_ardente_sillage"), SubResource("N_ruee_ardente_braises"), SubResource("N_ruee_ardente_bucher")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_flame_dash_wake"), SubResource("N_flame_dash_embers"), SubResource("N_flame_dash_pyre"), SubResource("N_flame_dash_momentum"), SubResource("N_flame_dash_landing"), SubResource("N_flame_dash_brand"), SubResource("N_flame_dash_scorcher"), SubResource("N_flame_dash_shockwave"), SubResource("N_flame_dash_kindling")])
 
 [sub_resource type="Resource" id="C_ignition"]
 script = ExtResource("2_case")

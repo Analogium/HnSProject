@@ -573,7 +573,8 @@ func test_strikes_of_an_extended_duration_are_not_lost_to_rounding() -> void:
 	assert_eq(r.strikes_over_duration(), 7)
 
 
-## La brûlure d'une aura se répartit comme ses dégâts : la conversion y compte.
+## La brûlure d'une aura se répartit comme ses dégâts : la conversion y compte — la
+## Flamme noire brûle son porteur en nécrotique.
 func test_the_distribution_follows_parts_and_conversion() -> void:
 	var aura := _shape(Skill.Shape.AURA)
 	aura.nature = DamageType.Kind.FIRE
@@ -581,15 +582,11 @@ func test_the_distribution_follows_parts_and_conversion() -> void:
 	assert_eq(whole[DamageType.Kind.FIRE], 1.0)
 
 	var node := TalentNode.new()
+	node.converts = true
 	node.converts_to = DamageType.Kind.NECROTIC
-	node.converted_part_per_point = 0.5
 	var converted_one := aura.resolve(1, _sheet(), [], [InvestedTalent.new(node, 1)]).distribution()
-	assert_almost_eq(converted_one[DamageType.Kind.FIRE], 0.5, 0.0001)
-	assert_almost_eq(converted_one[DamageType.Kind.NECROTIC], 0.5, 0.0001)
-	var sum := 0.0
-	for part in converted_one:
-		sum += part
-	assert_almost_eq(sum, 1.0, 0.0001)
+	assert_eq(converted_one[DamageType.Kind.NECROTIC], 1.0)
+	assert_eq(converted_one[DamageType.Kind.FIRE], 0.0)
 
 
 ## Sans dégâts, tout va à la nature de la compétence : une répartition vide ne dirait
@@ -626,7 +623,7 @@ func test_a_cycling_nature_takes_its_turn() -> void:
 		var r := c.resolve(1, _sheet(), [cold_spells], [], turn)
 		var kind: int = expected[turn][0]
 		assert_eq(r.nature, kind, "tour %d" % turn)
-		assert_eq(r.dominant_nature(), kind, "tour %d : la couleur" % turn)
+		assert_eq(r.nature, kind, "tour %d : la couleur" % turn)
 		assert_true(r.keywords.has(expected[turn][1]), "tour %d : son mot-clé" % turn)
 		assert_almost_eq(r.total_min(), 15.0 if kind == DamageType.Kind.COLD else 10.0, 1e-4,
 			"tour %d : l'affixe de froid ne mord que sur le froid" % turn)

@@ -34,7 +34,7 @@ static func fall(
 	var pillar := SacredPillar.new()
 	pillar._cast = cast
 	pillar._author = author
-	pillar._tint = DamageType.COLORS[cast.dominant_nature()]
+	pillar._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(pillar)
 	Settings.veil(pillar, Settings.SPELLS)
 	pillar.global_position = point

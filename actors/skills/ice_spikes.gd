@@ -33,7 +33,7 @@ static func raise_at(
 	var spikes := IceSpikes.new()
 	spikes._cast = cast
 	spikes._author = author
-	spikes._tint = DamageType.COLORS[cast.dominant_nature()]
+	spikes._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(spikes)
 	Settings.veil(spikes, Settings.SPELLS)
 	spikes.global_position = point

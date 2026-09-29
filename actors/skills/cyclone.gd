@@ -85,7 +85,7 @@ func _draw() -> void:
 	var r := floorf(_cast.radius * minf(_age / OPENING, 1.0))
 	if r < THICKNESS:
 		return
-	var tint: Color = DamageType.COLORS[_cast.dominant_nature()]
+	var tint: Color = DamageType.COLORS[_cast.nature]
 	for i in BLADES:
 		var turn := Slash.turn_of(TAU * float(i) / float(BLADES) + _age * SPIN)
 		Slash.crescent(tint, r, THICKNESS, turn, -TRAIL, 0.0, 0.0).put(self, Vector2.ZERO)

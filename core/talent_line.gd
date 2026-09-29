@@ -19,6 +19,9 @@ extends Resource
 ## Par point ; la borne haute laissée à zéro vaut la basse.
 @export var value_per_point: float = 0.0
 @export var value_max_per_point: float = 0.0
+## Ce que le **premier** point donne en plus (jalon 34) : un sol brûlant de 2 s au premier
+## point, 5 s au troisième, se dit 1,5 par point et 0,5 au premier.
+@export var first_point_bonus: float = 0.0
 
 
 ## Les lignes d'un passif ou d'un nœud à ce nombre de points, les nulles écartées.
@@ -42,8 +45,8 @@ func modifier(points: int) -> StatMod:
 	return StatMod.from_definition(
 		stat,
 		percentage,
-		value_per_point * n,
-		maxf(value_max_per_point, value_per_point) * n,
+		value_per_point * n + first_point_bonus,
+		maxf(value_max_per_point, value_per_point) * n + first_point_bonus,
 		scope,
 		more
 	)

@@ -56,7 +56,7 @@ static func unload(
 
 	var trace := ChainLightning.new()
 	trace._points = points
-	trace._tint = DamageType.COLORS[cast.dominant_nature()]
+	trace._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(trace)
 	Settings.veil(trace, Settings.SPELLS)
 	return touches.size()

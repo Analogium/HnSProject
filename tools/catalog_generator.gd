@@ -101,9 +101,10 @@ func _manuals(l: PackedStringArray) -> void:
 	l.append("## Manuels")
 	l.append("")
 	l.append("Un manuel gagne **un point par niveau**, %d au plafond" % Manual.MAX_LEVEL)
-	l.append("(`Manual.MAX_LEVEL`), et ses cases, ses passifs et ses nœuds se servent")
-	l.append("dans le même sac : la colonne « points » dit ce que chacun accepte, et leur")
-	l.append("somme dépasse volontairement ce qu'un livre peut gagner.")
+	l.append("(`Manual.MAX_LEVEL`), pour ses cases et ses passifs : la colonne « points » dit")
+	l.append("ce que chacun accepte, et leur somme dépasse volontairement ce qu'un livre peut")
+	l.append("gagner. **Chaque arbre de compétence a son propre pool**, autant de points que")
+	l.append("le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profonds.")
 	l.append("")
 	for raw in ItemCatalog.ALL:
 		var base: ItemBase = raw
@@ -165,23 +166,25 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 	for cell: ManualCell in arch.cells:
 		for n: TalentNode in cell.talents:
 			nodes += 1
-			budget += n.points_max
 			lines.append("| %s | %s | %s | %s | %d | %s |" % [
 				n.name,
 				cell.skill.name,
 				"—" if n.parent.is_empty() else cell.node_of(n.parent).name,
-				Texts.tn(
-					"%d point de compétence", "%d points de compétence", n.required_points
+				"—" if n.required_points == 0 else Texts.tn(
+					"%d point dans l'arbre", "%d points dans l'arbre", n.required_points
 				) % n.required_points,
 				n.points_max,
 				_node_effect(n),
 			])
 	if nodes > 0:
-		l.append("| nœud | compétence | parent | demande | points | par point |")
+		l.append("| nœud | compétence | parent | palier | points | par point |")
 		l.append("|---|---|---|---|---|---|")
 		l.append_array(lines)
 		l.append("")
-	l.append("%d destinations de points pour %d gagnés." % [budget, Manual.MAX_LEVEL])
+	l.append(
+		"%d destinations de points pour %d gagnés ; chaque arbre a son propre pool de %d."
+			% [budget, Manual.MAX_LEVEL, Manual.MAX_LEVEL]
+	)
 	l.append("")
 
 
@@ -214,7 +217,10 @@ func _passive_tree(l: PackedStringArray) -> void:
 func _per_point(lines: Array[TalentLine]) -> String:
 	var out := PackedStringArray()
 	for line in lines:
-		out.append(Glossary.plain(line.modifier(1).label()))
+		var first := Glossary.plain(line.modifier(1).label())
+		if line.first_point_bonus != 0.0:
+			first += " au premier point, puis %s par point" % StatMod.format(line.stat, line.value_per_point, true)
+		out.append(first)
 	return " · ".join(out) if out.size() > 0 else "—"
 
 
@@ -271,12 +277,8 @@ func _node_effect(n: TalentNode) -> String:
 	var out := PackedStringArray()
 	if n.lines.size() > 0:
 		out.append(_per_point(n.lines))
-	if n.converts():
-		out.append("convertit %d %% en %s" % [
-			roundi(n.converted_part_per_point * 100.0), DamageType.NAMES[n.converts_to]
-		])
-	for id in n.added_keywords:
-		out.append("donne le mot-clé %s" % Keywords.LABELS.get(id, id))
+	if n.converts:
+		out.append("devient %s" % DamageType.NAMES[n.converts_to])
 	return " · ".join(out)
 
 

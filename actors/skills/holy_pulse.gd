@@ -35,7 +35,7 @@ static func emanate(player: Player, cast: SkillStats) -> HolyPulse:
 	var pulse := HolyPulse.new()
 	pulse._player = player
 	pulse._cast = cast
-	pulse._tint = DamageType.COLORS[cast.dominant_nature()]
+	pulse._tint = DamageType.COLORS[cast.nature]
 	player.add_child(pulse)
 	Settings.veil(pulse, Settings.SPELLS)
 	return pulse

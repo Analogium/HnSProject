@@ -418,6 +418,7 @@ static func _manual_from_dict(item: Item, source: Variant) -> void:
 		# l'archétype ne se dépensent nulle part, et `teaches()` jetterait les arbres.
 		if item.knows(String(id)):
 			item.manual.points[String(id)] = maxi(int(points[id]), 0)
+	item.manual.release_broken_trees(item.base.manual)
 
 
 static func _cell(source: Variant) -> Vector2i:

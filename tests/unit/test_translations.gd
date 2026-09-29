@@ -226,6 +226,8 @@ func _expected() -> Dictionary:
 		for cell: ManualCell in base.manual.cells:
 			for node: TalentNode in cell.talents:
 				out[node.name] = "nœud « %s »" % node.id
+				if not node.description.is_empty():
+					out[node.description] = "description du nœud « %s »" % node.id
 	for node in PassiveTree.shared().nodes:
 		if not node.name.is_empty():
 			out[node.name] = "nœud de l'arbre de passifs « %s »" % node.id

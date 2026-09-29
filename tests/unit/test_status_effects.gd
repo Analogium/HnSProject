@@ -89,33 +89,33 @@ func test_one_roll_per_present_nature_whatever_the_result() -> void:
 	assert_eq(rng.state, indicator.state, "trois natures, trois tirages, même quand tout pose")
 
 
-## Le froid qu'un anneau met dans un éclair ne gèle pas aussi souvent qu'un sort de
-## froid : la chance se partage selon les parts.
-func test_chance_follows_the_nature_share() -> void:
+## Les mêmes dégâts de feu embrasent aussi souvent, seuls ou noyés dans un coup physique
+## (jalon 34) : la chance ne regarde pas la part de la nature dans le coup.
+func test_chance_ignores_the_nature_share() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	var melee_hit := DamageType.empty_parts()
 	melee_hit[DamageType.Kind.FIRE] = 10.0
-	melee_hit[DamageType.Kind.PHYSICAL] = 10.0
+	melee_hit[DamageType.Kind.PHYSICAL] = 90.0
 	var pure := 0
-	var half := 0
+	var drowned := 0
 	for i in 4000:
 		var a := StatusEffects.new()
 		a.suffer(_parts(DamageType.Kind.FIRE, 10.0), null, rng)
 		pure += int(a.active(StatusEffects.Kind.IGNITE))
 		var b := StatusEffects.new()
 		b.suffer(melee_hit, null, rng)
-		half += int(b.active(StatusEffects.Kind.IGNITE))
+		drowned += int(b.active(StatusEffects.Kind.IGNITE))
 	# Fenêtres larges : on vérifie la règle, pas la qualité du générateur.
 	assert_between(pure, 680, 920, "un coup de feu pur embrase une fois sur cinq")
-	assert_between(half, 320, 480, "à moitié de feu, une fois sur dix")
+	assert_between(drowned, 680, 920, "dix de feu dans un coup de cent aussi")
 
 
 ## Le facteur de l'auteur multiplie la chance d'embraser, et elle seule : « accrue »
 ## veut dire qu'elle ne crée rien là où la nature ne pose rien (jalon 20).
 func test_the_author_factor_multiplies_the_chance_to_ignite() -> void:
 	assert_almost_eq(
-		StatusEffects.chance(10.0, 10.0, 0.0, 1.5), StatusEffects.CHANCE * 1.5, 1e-6
+		StatusEffects.chance(10.0, 0.0, 1.5), StatusEffects.CHANCE * 1.5, 1e-6
 	)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 13
@@ -198,11 +198,11 @@ func test_each_chance_stat_is_a_real_field_with_a_label() -> void:
 
 ## Ce qu'un coup retire des PV max s'ajoute à sa chance : 10 de feu sur 50 PV, 40 %.
 func test_chance_grows_with_the_share_of_hp_removed() -> void:
-	assert_almost_eq(StatusEffects.chance(10.0, 10.0, 0.0), StatusEffects.CHANCE, 1e-6, "sans PV connus, la chance seule")
-	assert_almost_eq(StatusEffects.chance(10.0, 10.0, 50.0), StatusEffects.CHANCE + 0.2 * StatusEffects.CHANCE_PER_HP_LOST, 1e-6)
+	assert_almost_eq(StatusEffects.chance(10.0, 0.0), StatusEffects.CHANCE, 1e-6, "sans PV connus, la chance seule")
+	assert_almost_eq(StatusEffects.chance(10.0, 50.0), StatusEffects.CHANCE + 0.2 * StatusEffects.CHANCE_PER_HP_LOST, 1e-6)
 	assert_almost_eq(
-		StatusEffects.chance(10.0, 20.0, 1000.0), StatusEffects.CHANCE * 0.5 + 0.01 * StatusEffects.CHANCE_PER_HP_LOST, 1e-6,
-		"un coup mêlé sur une grosse cible garde presque sa chance seule"
+		StatusEffects.chance(10.0, 1000.0), StatusEffects.CHANCE + 0.01 * StatusEffects.CHANCE_PER_HP_LOST, 1e-6,
+		"un petit coup sur une grosse cible garde presque sa chance seule"
 	)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 11

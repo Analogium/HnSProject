@@ -46,7 +46,7 @@ static func open(
 	var gate := RottingGate.new()
 	gate._cast = cast
 	gate._author = author
-	gate._tint = DamageType.COLORS[cast.dominant_nature()]
+	gate._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(gate)
 	Settings.veil(gate, Settings.SPELLS)
 	gate.global_position = point

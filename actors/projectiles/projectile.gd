@@ -65,6 +65,10 @@ var _cast: SkillStats
 var _life := 0.0
 ## La nature montrée, ou -1 pour celle de la scène.
 var _nature := -1
+## Ce qu'il a déjà frappé, par identifiant : un tir qui traverse ne frappe pas deux fois
+## la même cible, et ses éclats non plus.
+var _struck := {}
+var _pierced := 0
 
 ## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
 ## l'unisson.
@@ -203,12 +207,18 @@ func _physics_process(delta: float) -> void:
 	# Redessiné à chaque pas : c'est le changement qu'on regarde.
 	queue_redraw()
 	if _life >= lifetime:
-		queue_free()
+		_finish()
+
+
+## Hors de `_on_area_entered` : `Fireball` décide d'exploser avant l'appel parent.
+func strikes(area: Area2D) -> bool:
+	return area is Hurtbox and not _struck.has(area.get_instance_id())
 
 
 func _on_area_entered(area: Area2D) -> void:
-	if not area is Hurtbox:
+	if not strikes(area):
 		return
+	_struck[area.get_instance_id()] = true
 	var info := DamageInfo.roll(_cast, global_position, _parts, knockback)
 	info.author = _author
 	(area as Hurtbox).take_damage(info)
@@ -220,10 +230,59 @@ func _on_area_entered(area: Area2D) -> void:
 			caster.on_damage_dealt(info.amount)
 	if hit_stop_on_impact:
 		Game.hit_stop()
-	queue_free()
+	if _cast != null and _pierced < int(_cast.pierce):
+		_pierced += 1
+		_shatter(true)
+		return
+	_finish()
 
 
 ## Le masque ne retient que le décor pour les corps : le tir s'arrête au mur,
 ## et traverse les autres ennemis sans les toucher.
 func _on_body_entered(_body: Node2D) -> void:
+	_finish()
+
+
+## La fin de course, quelle qu'elle soit — cible, mur, portée.
+func _finish() -> void:
+	if is_queued_for_deletion():
+		return
+	_shatter()
 	queue_free()
+
+
+## Les éclats partent de chaque ennemi traversé et de la fin de course. Ils emportent
+## la liste de ce qui a été frappé **à cet instant** : une copie, que le tir qui continue
+## ne rallonge pas sous eux. **Traversé, l'étoile tourne d'un demi-pas** : le tir garde
+## l'axe, et un éclat qui l'y suivrait frapperait deux fois l'ennemi suivant.
+func _shatter(pierced := false) -> void:
+	if _cast == null or _cast.splits <= 0.0:
+		return
+	var count := int(_cast.splits)
+	var dir := _dir.rotated(PI / float(count)) if pierced else _dir
+	Projectile._split.call_deferred(
+		get_parent(), load(scene_file_path), global_position, dir, speed, _nature,
+		_source, _cast.shard(), count, _struck.duplicate()
+	)
+
+
+## En étoile, le premier dans `dir`. **Différé** : la fin de course arrive d'un
+## rappel de collision, où un tir ne naît pas (invariant 4). Statique, parce que le tir
+## est déjà libéré quand l'appel arrive ; `source` sans type pour la même raison.
+static func _split(
+	parent: Node, scene: PackedScene, at: Vector2, dir: Vector2, p_speed: float,
+	nature: int, source, shard: SkillStats, count: int, struck: Dictionary
+) -> void:
+	if not is_instance_valid(parent):
+		return
+	var author: Node2D = source if is_instance_valid(source) else null
+	for i in count:
+		var toward := dir.rotated(TAU * float(i) / float(count))
+		var bolt := spawn(
+			parent, scene, at - toward * MUZZLE, toward, shard.roll(Game.rng), author,
+			p_speed, nature, shard
+		)
+		if bolt != null:
+			bolt._struck = struck.duplicate()
+			if bolt is Fireball:
+				(bolt as Fireball).explosion_radius = shard.radius

@@ -86,7 +86,7 @@ func _draw() -> void:
 	if _cast == null:
 		return
 	var r := _cast.radius * minf(_age / IGNITION, 1.0)
-	var tint: Color = DamageType.COLORS[_cast.dominant_nature()]
+	var tint: Color = DamageType.COLORS[_cast.nature]
 	# Un halo **tramé** et calé sur la grille : un disque plein sortait brun avec
 	# un bord net, et un dégradé lisse reste la seule chose de l'aura qui ne soit
 	# pas du pixel art.
@@ -105,7 +105,7 @@ func paint_flames(ci: CanvasItem) -> void:
 	if _cast == null:
 		return
 	var r := _cast.radius * minf(_age / IGNITION, 1.0)
-	var frames := EffectForge.flames(DamageType.COLORS[_cast.dominant_nature()])
+	var frames := EffectForge.flames(DamageType.COLORS[_cast.nature])
 	var size := Vector2(EffectForge.FLAME_WIDTH, EffectForge.FLAME_HEIGHT)
 	for i in FLAMES:
 		# Deux couronnes emboîtées : toutes les langues sur le bord font une palissade.

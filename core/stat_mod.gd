@@ -108,7 +108,8 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	func(field: String) -> bool: return not field.is_empty()
 ) + [
 	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance", "rot_chance",
-	"damage_taken", "cooldown_recovery",
+	"damage_taken", "cooldown_recovery", "status_chance_increase",
+	"crawl_speed",
 ]
 
 var stat: String

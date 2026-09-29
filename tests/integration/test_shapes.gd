@@ -500,6 +500,29 @@ func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
 	assert_eq(_children_of(DashTrail).size(), 0, "la trace s'est effacée")
 
 
+## Le sillon de feu se dessine aussi large qu'il frappe (jalon 34) : l'ancienne file
+## unique n'en montrait que le tiers, et Braises ne se voyait pas.
+func test_the_fire_trail_is_drawn_as_wide_as_it_strikes() -> void:
+	var widest: Array[float] = []
+	for radius in [16.0, 25.6]:
+		var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
+		cast.radius = radius
+		var trail := DashTrail.new()
+		trail._cast = cast
+		trail._toward = Vector2(100.0, 0.0)
+		trail._lay_out_the_fire()
+		var reach := 0.0
+		for t in trail._tongues:
+			assert_lt(
+				DashTrail._off_axis(t.foot.x, t.foot.y, 100.0), radius, "aucune langue hors du couloir"
+			)
+			reach = maxf(reach, absf(t.foot.y))
+		widest.append(reach)
+		trail.free()
+	assert_gt(widest[0], 16.0 * 0.5, "les franges passent la moitié du rayon")
+	assert_gt(widest[1], widest[0], "Braises élargit le dessin")
+
+
 ## La Ruée tranchante est une ruée dont la trace ne frappe **qu'une fois** : sa
 ## période est sa durée. Tout ce qui est sur la traversée prend le coup, une seule
 ## fois même sous plusieurs sondes, et rien à côté.
@@ -1012,6 +1035,13 @@ func test_necrosis_gnaws_current_health_and_raises_the_chance_to_rot() -> void:
 
 ## Le manuel de la classe à sa place, au plafond, ces points placés, la première
 ## compétence sur la troisième case.
+## Un lancer qui ne porte que ce mot-clé, pour annoncer une mort.
+func _blow(keyword: String) -> SkillStats:
+	var cast := SkillStats.new()
+	cast.keywords = PackedStringArray([keyword])
+	return cast
+
+
 func _learn_class(class_id: String, points: Array) -> void:
 	var book := Item.new(Character.CLASSES[class_id]["manual"])
 	book.manual.gain_experience(999999)
@@ -1081,14 +1111,14 @@ func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
 	assert_eq(_p.lit_stacks("bloodlust"), 0)
 	assert_eq(_p.stats.attack_speed, base_speed, "allumée sans charge, rien")
 
-	_p.states.slew.emit(PackedStringArray([Keywords.SPELL]))
+	_p.states.slew.emit(_blow(Keywords.SPELL), Vector2.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), 0, "un sort ne compte pas")
-	_p.states.slew.emit(PackedStringArray([Keywords.ATTACK]))
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), 1)
 	var one := _p.stats.attack_speed
 	assert_gt(one, base_speed, "une charge accélère")
 	for i in skill.stacks_max + 2:
-		_p.states.slew.emit(PackedStringArray([Keywords.ATTACK]))
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), skill.stacks_max, "pas plus que le plafond")
 	assert_almost_eq(
 		_p.stats.attack_speed - base_speed, (one - base_speed) * skill.stacks_max, 1e-4,
@@ -1121,3 +1151,229 @@ func test_spell_amplification_is_cast_and_refreshed() -> void:
 	assert_true(_p.cast_slot(3))
 	assert_true(_p.lit("spell_amplification"), "relancé, il ne s'éteint pas")
 	assert_almost_eq(_p.lit_ratio("spell_amplification"), 1.0, 1e-3, "il repart à zéro")
+
+
+# --------------------------------------------------------------------------
+# Les mécaniques des nœuds (jalon 34)
+# --------------------------------------------------------------------------
+
+## Le livre de `_learn()`, mais sur une **copie** de son archétype qui porte ce nœud
+## d'essai sous la compétence : le contenu partagé ne bouge pas, et le lancer passe par
+## le vrai chemin — investissement, résolution, `cast_slot()`.
+func _learn_with(base_id: String, skill_id: String, lines: Array, transforms_to := -1) -> void:
+	var base: ItemBase = ItemCatalog.by_id(base_id).duplicate()
+	base.manual = base.manual.duplicate()
+	var cells: Array[ManualCell] = []
+	for cell in base.manual.cells:
+		var copy: ManualCell = cell.duplicate()
+		if cell.skill != null and cell.skill.id == skill_id:
+			var node := TalentNode.new()
+			node.id = "trial_node"
+			node.name = "trial_node"
+			node.points_max = 1
+			for pair: Array in lines:
+				var line := TalentLine.new()
+				line.stat = pair[0]
+				line.value_per_point = pair[1]
+				line.percentage = pair.size() > 2
+				node.lines.append(line)
+			if transforms_to >= 0:
+				node.transforms = true
+				node.shape = transforms_to
+			copy.talents = [node] as Array[TalentNode]
+		cells.append(copy)
+	base.manual.cells = cells
+	var book := Item.new(base)
+	book.manual.gain_experience(999999)
+	_p.study(book, 0)
+	assert_true(_p.invest(0, skill_id))
+	assert_true(_p.invest(0, "trial_node"))
+	_p.bar.put(2, skill_id)
+	Weapons.arm(_p, skill_id)
+	_p.stats.max_mana = 9999.0
+	_p._set_mana(9999.0)
+
+
+func test_a_piercing_bolt_goes_through_one_and_stops_on_the_next() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.PIERCE, 1.0]])
+	var first := _target(Vector2(40, 0))
+	var second := _target(Vector2(80, 0))
+	var third := _target(Vector2(120, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(first), 1, "traversée")
+	assert_eq(_hits(second), 1, "frappée, et le tir s'y arrête")
+	assert_eq(_hits(third), 0)
+
+
+func test_a_splitting_bolt_throws_its_shards_past_the_target_once() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.SPLITS, 3.0]])
+	var first := _target(Vector2(40, 0))
+	var behind := _target(Vector2(90, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(12)
+	assert_eq(_children_of(Projectile).size(), 3, "trois éclats en étoile, le tir parti")
+	await wait_seconds(0.5)
+	assert_eq(_hits(first), 1, "un éclat ne revient pas sur la cible du tir")
+	assert_eq(_hits(behind), 1, "l'éclat de l'axe va plus loin")
+	var bolt := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	assert_lt(
+		(_received_all[behind] as Array)[0], bolt.total_max() * SkillStats.SPLIT_PART + 0.01,
+		"à la part d'un éclat"
+	)
+	for shard: Projectile in _children_of(Projectile):
+		assert_eq(shard._cast.splits, 0.0, "un éclat ne se fend pas")
+
+
+func test_a_ball_leaves_burning_ground_where_it_bursts() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.GROUND, 1.0]])
+	var direct := _target(Vector2(40, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.3)
+	assert_eq(_children_of(DashTrail).size(), 1, "le sol brûle")
+	await wait_seconds(1.2)
+	assert_gt(_hits(direct), 1, "et mord ce qui y reste")
+	assert_eq(_children_of(DashTrail).size(), 0, "puis s'éteint")
+
+
+## Traversée, la boule éclate aussi : sur chaque ennemi traversé, en étoile tournée d'un
+## demi-pas pour laisser l'axe au tir, qui continue et frappe seul l'ennemi suivant.
+func test_a_piercing_bolt_also_splits_on_what_it_goes_through() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.PIERCE, 1.0], [SkillStats.SPLITS, 3.0]])
+	var first := _target(Vector2(40, 0))
+	var second := _target(Vector2(160, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(12)
+	assert_eq(_hits(first), 1)
+	assert_eq(_children_of(Projectile).size(), 4, "le tir continue, trois éclats partis de la cible traversée")
+	for bolt: Projectile in _children_of(Projectile):
+		if bolt._cast.splits == 0.0:
+			assert_gt(absf(bolt._dir.angle()), 0.1, "aucun éclat dans l'axe du tir")
+	await wait_seconds(0.8)
+	assert_eq(_hits(second), 1, "l'ennemi suivant, frappé par le tir seul")
+
+
+## La transformation : le lancer se pose par sa forme, et ses mots-clés la suivent. Elle
+## apporte les nombres de sa forme — un trait n'a pas de rayon.
+func test_a_transformed_bolt_bursts_around_its_caster() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [["radius", 40.0]], Skill.Shape.NOVA)
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	assert_eq(cast.shape, Skill.Shape.NOVA)
+	assert_false(cast.keywords.has(Keywords.PROJECTILE), "plus un projectile")
+	assert_true(cast.keywords.has(Keywords.AREA), "une surface")
+
+	var beside := _target(Vector2(0, 20))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(_children_of(Projectile).size(), 0, "aucun tir")
+	assert_eq(_hits(beside), 1, "la nova frappe à côté")
+
+
+func test_a_brood_drops_two_snakes_fanned_on_the_aim() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.BROOD, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var snakes := _children_of(HellSnake)
+	assert_eq(snakes.size(), 2)
+	assert_ne((snakes[0] as HellSnake)._cap, (snakes[1] as HellSnake)._cap, "en éventail")
+
+
+## Vif : sa vitesse à lui, accrue en points de pourcentage — pas celle d'un projectile.
+func test_a_swift_snake_crawls_faster() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.CRAWL_SPEED, 100.0]])
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	var travelled := 0.0
+	var last := snake._head
+	var from_frame := Engine.get_physics_frames()
+	for i in 10:
+		await wait_physics_frames(1)
+		travelled += snake._head.distance_to(last)
+		last = snake._head
+	var frames := Engine.get_physics_frames() - from_frame
+	var expected := HellSnake.SPEED * 2.0 * float(frames) / float(Engine.physics_ticks_per_second)
+	assert_almost_eq(travelled, expected, expected * 0.05, "deux fois la vitesse")
+
+
+func test_a_hunting_snake_takes_the_nearest_enemy_for_anchor() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.SEEK, 200.0]])
+	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 90))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	assert_eq(snake._anchor, prey.global_position)
+
+
+## Sa mort : l'explosion finale et les petits, qui n'en relâchent pas d'autres.
+func test_a_dying_snake_bursts_and_hatches() -> void:
+	_learn_with("manual_fire", "hell_snake", [
+		[SkillStats.END_BURST, 30.0], [SkillStats.HATCHLINGS, 2.0], ["duration", -90.0, true],
+	])
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	while is_instance_valid(snake):
+		await wait_physics_frames(1)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1, "l'explosion finale")
+	assert_eq(_children_of(HellSnake).size(), 2, "deux petits")
+	var hatchling: HellSnake = _children_of(HellSnake)[0]
+	assert_eq(hatchling._cast.hatchlings, 0.0, "qui ne se diviseront pas")
+	assert_eq(hatchling._cast.duration, SkillStats.HATCHLING_LIFE)
+
+
+func test_a_dash_bursts_where_it_lands() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var burst: Array = _children_of(Explosion)
+	assert_eq(burst.size(), 1)
+	assert_eq((burst[0] as Explosion).global_position, _p.global_position, "à l'arrivée")
+
+
+func _ignited() -> StatusEffects:
+	var victim := StatusEffects.new()
+	victim.put(StatusEffects.Kind.IGNITE, 1.0)
+	return victim
+
+
+## L'explosion d'un tué : seulement sous un embrasé, à la part d'un coup.
+func test_an_ignited_kill_bursts() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	cast.kill_burst = 30.0
+	var near := _target(Vector2(50, 0))
+	await wait_physics_frames(2)
+
+	_p.states.slew.emit(cast, Vector2(40, 0), StatusEffects.new())
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 0, "un tué qui ne brûlait pas n'explose pas")
+	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1)
+	assert_lt(
+		(_received_all[near] as Array)[0],
+		cast.total_max() * SkillStats.KILL_BURST_PART * cast.crit_multiplier + 0.01
+	)
+
+
+func test_an_aura_leaves_burning_ground_under_what_it_kills() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
+	cast.ground_duration = 1.0
+	_p.states.slew.emit(cast, Vector2(40, 0), null)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(DashTrail).size(), 1)
+
+	var ball := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	ball.ground_duration = 1.0
+	_p.states.slew.emit(ball, Vector2(40, 0), null)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(DashTrail).size(), 1, "la boule pose le sien en éclatant, pas au tué")
+

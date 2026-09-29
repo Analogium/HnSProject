@@ -486,7 +486,8 @@ func test_passive_and_node_points_survive_the_round_trip() -> void:
 	assert_eq(refunded.manual.points_of("swift_bolt"), 3, "la case")
 	assert_eq(refunded.manual.points_of("swift_bolt_overload"), 2, "le nœud d'arbre")
 	assert_eq(refunded.manual.points_of("conductor"), 4, "et le passif")
-	assert_eq(refunded.manual.points_spent(), 9)
+	assert_eq(refunded.manual.points_spent(refunded.base.manual), 7, "le nœud paie sur son arbre")
+	assert_eq(refunded.manual.tree_points_spent(refunded.base.manual.cell_of("swift_bolt")), 2)
 
 
 ## Des points placés dans une case que l'archétype n'a plus ne sont dépensables
@@ -506,7 +507,7 @@ func test_points_for_an_unknown_skill_are_ignored() -> void:
 	assert_eq(refunded.manual.points_of("swift_bolt"), 1, "ce que le livre enseigne reste")
 	assert_eq(refunded.manual.points_of("cell_that_no_longer_exists"), 0, "le reste est oublié")
 	assert_eq(refunded.manual.points_of("node_from_another_book"), 0, "un nœud étranger aussi")
-	assert_eq(refunded.manual.points_spent(), 1)
+	assert_eq(refunded.manual.points_spent(refunded.base.manual), 1)
 
 
 ## Une sauvegarde d'avant le jalon 6 arrive avec le jeu d'avant : rien au
@@ -561,7 +562,7 @@ func test_the_v3_reference_file_rereads() -> void:
 	for placed in p.bag.placed:
 		if placed.data.manual != null:
 			store_in_bag += 1
-			assert_eq(placed.data.manual.points_spent(), 0)
+			assert_eq(placed.data.manual.points_spent(placed.data.base.manual), 0)
 	assert_eq(store_in_bag, 1)
 
 
@@ -814,7 +815,7 @@ func test_a_new_character_carries_the_manual_of_its_class() -> void:
 		var p := Character.create_new("Nouveau", 0, id)
 		var book := p.rack.at(Rack.CLASS_SLOT)
 		assert_eq(book.base, Character.CLASSES[id]["manual"], "« %s »" % id)
-		assert_eq(book.manual.remaining_points(), 1, "un livre neuf ouvre une case")
+		assert_eq(book.manual.remaining_points(book.base.manual), 1, "un livre neuf ouvre une case")
 
 
 ## La v5 et la v6 disent la même chose, l'une aux noms français, l'autre aux noms

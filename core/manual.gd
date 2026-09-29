@@ -33,13 +33,14 @@ func progress() -> Vector2i:
 	return Progression.progress(experience, XP_BASE, XP_POWER, MAX_LEVEL)
 
 
-## Un point par niveau, le premier compris : un livre neuf ouvre une case.
+## Un point par niveau, le premier compris : un livre neuf ouvre une case. **Autant
+## pour chaque arbre** (jalon 34) : le livre dit quels sorts, l'arbre comment ils se jouent.
 func points_gained() -> int:
 	return level()
 
 
-func remaining_points() -> int:
-	return points_gained() - points_spent()
+func remaining_points(archetype: ManualArchetype) -> int:
+	return points_gained() - points_spent(archetype)
 
 
 ## Le seul chemin : les manuels du râtelier, à chaque récompense.
@@ -52,22 +53,34 @@ func points_of(identifier: String) -> int:
 	return int(points.get(identifier, 0))
 
 
-## Tous points confondus.
-func points_spent() -> int:
+## Ce que les cases et les passifs ont pris au livre : un nœud paie sur son arbre.
+## Sans archétype, aucun identifiant n'est reconnu comme nœud.
+func points_spent(archetype: ManualArchetype) -> int:
 	var total := 0
 	for id in points:
-		total += int(points[id])
+		if archetype == null or archetype.node_of(id) == null:
+			total += int(points[id])
 	return total
+
+
+func tree_points_spent(cell: ManualCell) -> int:
+	var total := 0
+	for node in cell.talents:
+		total += points_of(node.id)
+	return total
+
+
+func tree_remaining(cell: ManualCell) -> int:
+	return points_gained() - tree_points_spent(cell)
 
 
 ## **Toutes les conditions sont ici**, pour les trois sortes de destination :
 ## l'interface n'en vérifie aucune.
 func can_invest(archetype: ManualArchetype, identifier: String) -> bool:
-	return (
-		remaining_points() > 0
-		and is_open(archetype, identifier)
-		and points_of(identifier) < _maximum(archetype, identifier)
-	)
+	if not is_open(archetype, identifier) or points_of(identifier) >= _maximum(archetype, identifier):
+		return false
+	var cell := archetype.cell_of_node(identifier)
+	return (tree_remaining(cell) if cell != null else remaining_points(archetype)) > 0
 
 
 ## Les conditions **structurelles** seules : la page distingue « verrouillé » de
@@ -81,20 +94,36 @@ func is_open(archetype: ManualArchetype, identifier: String) -> bool:
 	var passive := archetype.passive_of(identifier)
 	if passive != null:
 		return level() >= passive.required_manual_level
-	return _open_node(archetype, identifier)
+	cell = archetype.cell_of_node(identifier)
+	return cell != null and _node_open(cell, cell.node_of(identifier))
 
 
-## Sur les points de sa compétence, et son parent doit en porter un.
-func _open_node(archetype: ManualArchetype, node_id: String) -> bool:
-	var node := archetype.node_of(node_id)
-	if node == null:
-		return false
-	var cell := archetype.cell_of_node(node_id)
-	if cell == null or cell.skill == null:
-		return false
-	if points_of(cell.skill.id) < node.required_points:
-		return false
-	return node.parent.is_empty() or points_of(node.parent) > 0
+## Un point dans la compétence, le palier, et un point dans le parent.
+func _node_open(cell: ManualCell, node: TalentNode) -> bool:
+	return (
+		cell.skill != null
+		and points_of(cell.skill.id) > 0
+		and _points_below(cell, node.required_points) >= node.required_points
+		and (node.parent.is_empty() or points_of(node.parent) > 0)
+	)
+
+
+## Le palier se paie avec les nœuds **moins profonds** : sinon un nœud profond, une fois
+## pris, tiendrait ouvert son propre palier et tout ce qui est dessous se reprendrait.
+func _points_below(cell: ManualCell, gate: int) -> int:
+	var total := 0
+	for node in cell.talents:
+		if node.required_points < gate:
+			total += points_of(node.id)
+	return total
+
+
+## Chaque nœud investi de l'arbre tient-il encore debout.
+func _tree_holds(cell: ManualCell) -> bool:
+	for node in cell.talents:
+		if points_of(node.id) > 0 and not _node_open(cell, node):
+			return false
+	return true
 
 
 ## Zéro pour ce que le livre ne connaît pas.
@@ -117,29 +146,22 @@ func invest(archetype: ManualArchetype, identifier: String) -> bool:
 	return true
 
 
-## Un point se reprend partout (décidé le 14 septembre 2026), sauf un nœud dont un
-## enfant porte des points, et une compétence qui passerait sous les points qu'un de
-## ses nœuds investis demande.
+## Un point se reprend partout (décidé le 14 septembre 2026) tant que l'arbre qu'il
+## touche tient encore : ni enfant orphelin, ni palier tombé, ni arbre sans sort.
+## Vérifié en retirant le point pour de bon puis en le rendant — une seule règle,
+## celle qui ouvre les nœuds.
 func can_refund(archetype: ManualArchetype, identifier: String) -> bool:
-	if archetype == null or points_of(identifier) <= 0:
+	if archetype == null or points_of(identifier) <= 0 or not archetype.knows(identifier):
 		return false
-	if archetype.passive_of(identifier) != null:
-		return true
 	var cell := archetype.cell_of(identifier)
-	if cell != null:
-		for node in cell.talents:
-			if points_of(node.id) > 0 and points_of(identifier) - 1 < node.required_points:
-				return false
+	if cell == null:
+		cell = archetype.cell_of_node(identifier)
+	if cell == null:
 		return true
-	if archetype.node_of(identifier) == null:
-		return false
-	var cell_of_node := archetype.cell_of_node(identifier)
-	if cell_of_node == null:
-		return false
-	for child in cell_of_node.children_of(identifier):
-		if points_of(child.id) > 0:
-			return false
-	return true
+	points[identifier] = points_of(identifier) - 1
+	var holds := _tree_holds(cell)
+	points[identifier] = points_of(identifier) + 1
+	return holds
 
 
 ## Rend le point **au livre** ; l'entrée est effacée à zéro, comme l'écrit la
@@ -153,6 +175,18 @@ func refund(archetype: ManualArchetype, identifier: String) -> bool:
 	else:
 		points[identifier] = remaining
 	return true
+
+
+## À la relecture : un arbre qui dépasse son pool ou dont un palier ne tient plus est
+## rendu **en entier** — il se replace en quelques clics, le nœud fautif se chercherait.
+func release_broken_trees(archetype: ManualArchetype) -> void:
+	if archetype == null:
+		return
+	for cell in archetype.cells:
+		if tree_remaining(cell) >= 0 and _tree_holds(cell):
+			continue
+		for node in cell.talents:
+			points.erase(node.id)
 
 
 ## Les nœuds investis de cette compétence, avec leurs points.

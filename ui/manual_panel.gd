@@ -23,10 +23,13 @@ const XP_H := 5.0
 const CELL := 34.0
 const CELL_GAP := 6.0
 
-## Un nœud, plus petit qu'une case, et l'écart où passent les liens. Trois colonnes
-## sur deux rangées à droite de la racine.
+## Un nœud, plus petit qu'une case, et l'écart où passent les liens. Une colonne par
+## palier (0, 5, 10, 15) sur quatre rangées, à droite de la racine (jalon 34) : l'écart
+## est ce qui reste des 210 pixels de la fenêtre.
 const NODE := 28.0
-const NODE_GAP := 16.0
+const NODE_GAP := 12.0
+const TREE_COLUMNS := 4
+const TREE_ROWS := 4
 
 ## Les états d'une case, lus au liseré **sans lire** le texte. Verrouillée : le
 ## niveau du livre n'y donne pas encore droit.
@@ -53,9 +56,9 @@ const LINK_BRIGHT := Color(0.52, 0.62, 0.55)
 ## Les pans coupés d'un passif : la forme dit « toujours actif ».
 const PAN := 7.0
 
-## La fiche de survol : assez large pour « par projectile   123–456 », pas plus — elle
-## couvre le sac.
-const SHEET_W := 170.0
+## La fiche de survol : assez large pour « Dégâts contre les embrasés   +12 % accrus »
+## (Tison, jalon 34), pas plus — elle couvre le sac.
+const SHEET_W := 176.0
 const SHEET_PAD := 6.0
 const SHEET_GAP := 4.0
 ## La hauteur d'une ligne de fiche, **plus serrée que celle de la page** : la fiche la
@@ -128,8 +131,8 @@ class Sheet:
 	var title_text: String
 	## Sous le nom, la sorte : mots-clés, « toujours actif » ou « talent ».
 	var subtitle: String
-	## Ce que le geste fait, en une phrase, avant les nombres. Vide pour un passif et
-	## pour un nœud, dont les lignes **sont** la description.
+	## Ce que le geste fait, en une phrase, avant les nombres. Vide pour un passif, dont
+	## les lignes **sont** la description ; un nœud en a une depuis le jalon 34.
 	var description: String
 	var lines: Array[SheetLine]
 
@@ -146,8 +149,15 @@ var _font: Font
 ## L'emplacement ouvert ; zéro, pour montrer quelque chose dès l'ouverture.
 var _selected := 0
 ## La compétence dont l'arbre est ouvert, ou vide pour la grille. Un identifiant :
-## `_open_cell()` retombe sur la grille si le livre change.
-var _opened := ""
+## `_open_cell()` retombe sur la grille si le livre change. **Ouvert, la fenêtre descend
+## jusqu'aux jauges** : quatre rangées de nœuds ne tiennent pas dans la page de la grille.
+var _opened := "":
+	set(value):
+		_opened = value
+		if _grid_height > 0.0:
+			size.y = _grid_height if value.is_empty() else _tree_height()
+## La hauteur de la scène, celle de la grille.
+var _grid_height := 0.0
 var _hover_slot := -1
 var _hover_cell := -1
 ## Le nœud survolé dans l'arbre ouvert, et le survol de la racine.
@@ -162,6 +172,7 @@ var _detailed := false
 
 func _ready() -> void:
 	visible = false
+	_grid_height = size.y
 	_font = ThemeDB.fallback_font
 	# Au plus proche voisin : lissée, la trame du pixel art tournerait au gris.
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -415,10 +426,15 @@ func _cell_rect(position: Vector2i) -> Rect2:
 	return Rect2(_origin() + Vector2(position) * (CELL + CELL_GAP), Vector2(CELL, CELL))
 
 
-## La racine de l'arbre : la case de la compétence, à gauche, centrée sur les deux
-## rangées de nœuds.
+## Jusqu'au-dessus des jauges, qui sont dessinées après les panneaux.
+func _tree_height() -> float:
+	return Hud.gauges_top(get_viewport_rect().size.y) - position.y
+
+
+## La racine de l'arbre : la case de la compétence, à gauche, centrée sur les rangées
+## de nœuds.
 func _root_rect() -> Rect2:
-	var band := NODE * 2.0 + NODE_GAP
+	var band := NODE * TREE_ROWS + NODE_GAP * (TREE_ROWS - 1)
 	return Rect2(_origin() + Vector2(0.0, (band - CELL) * 0.5), Vector2(CELL, CELL))
 
 
@@ -470,7 +486,7 @@ func _draw() -> void:
 			skill = hovered_one.skill
 	else:
 		# Le chevron dit d'où l'on revient ; le clic droit fait le retour.
-		_draw_header(book, "‹ %s" % open_cell.skill.displayed_name(), UiPalette.TEXT)
+		_draw_header(book, "‹ %s" % open_cell.skill.displayed_name(), UiPalette.TEXT, open_cell)
 		_draw_tree(book.manual, book.base.manual, open_cell)
 		_text(
 			Texts.t("[clic] +1     [clic droit] -1     [échap] retour"),
@@ -517,13 +533,17 @@ func _draw_slot(index: int) -> void:
 
 
 ## Titre, niveau, points restants et barre d'expérience, **les mêmes dans les deux
-## vues** : on doit savoir dans l'arbre si l'on a de quoi payer.
-func _draw_header(book: Item, title_text: String, tint: Color) -> void:
+## vues** : on doit savoir dans l'arbre si l'on a de quoi payer. Dans l'arbre, c'est
+## son propre pool qu'on annonce (jalon 34).
+func _draw_header(book: Item, title_text: String, tint: Color, tree: ManualCell = null) -> void:
 	var manual := book.manual
 	var y := _page_top() + 8.0
 	_text(title_text, Vector2(PAD, y), TITLE_SIZE, tint)
 
-	var remaining_all := manual.remaining_points()
+	var remaining_all := (
+		manual.tree_remaining(tree) if tree != null
+		else manual.remaining_points(book.base.manual)
+	)
 	# Le pluriel par la traduction ; zéro a sa propre phrase.
 	var to_spend := Texts.tn(
 		"{points} point à placer", "{points} points à placer", remaining_all
@@ -560,7 +580,10 @@ func _draw_cell(manual: Manual, cell: ManualCell, r: Rect2, hovered_one: bool) -
 
 	var spent := manual.points_of(identifier)
 	var maximum := cell.points_max()
-	var tint := _tint(manual, cell.required_level() <= manual.level(), spent, maximum)
+	var tint := _tint(
+		cell.required_level() <= manual.level(), spent, maximum,
+		manual.remaining_points(_archetype())
+	)
 	var thickness := 2.0 if hovered_one else 1.0
 
 	# Un passif se distingue par ses pans coupés.
@@ -615,12 +638,15 @@ func _draw_node(
 ) -> void:
 	var r := _node_rect(node.position)
 	var spent := manual.points_of(node.id)
-	var tint := _tint(manual, manual.is_open(arch, node.id), spent, node.points_max)
+	var tint := _tint(
+		manual.is_open(arch, node.id), spent, node.points_max,
+		manual.tree_remaining(arch.cell_of_node(node.id))
+	)
 	draw_rect(r, CELL_BACKGROUND)
 	draw_rect(r, tint, false, 2.0 if hovered else 1.0)
 
 	# Pastille de la nature d'arrivée d'une conversion : seul effet lisible en couleur.
-	if node.converts():
+	if node.converts:
 		draw_circle(r.position + Vector2(5.0, 5.0), 2.0, DamageType.COLORS[node.converts_to])
 
 	_draw_count(
@@ -630,12 +656,12 @@ func _draw_node(
 
 
 ## **Le seul endroit** qui traduit un état en couleur, cases et nœuds.
-func _tint(manual: Manual, opened: bool, spent: int, maximum: int) -> Color:
+func _tint(opened: bool, spent: int, maximum: int, remaining: int) -> Color:
 	if spent >= maximum:
 		return FULL
 	if not opened:
 		return LOCK
-	return OPEN if manual.remaining_points() > 0 else WAIT
+	return OPEN if remaining > 0 else WAIT
 
 
 ## `loop` ferme le contour.
@@ -872,13 +898,6 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 				_in_nature(cast.added_min[nature], cast.added_max[nature], nature),
 				DamageType.COLORS[nature]
 			))
-	# Ce qu'une conversion a déplacé, dans la couleur d'arrivée.
-	for nature in DamageType.Kind.size():
-		if cast.conversions[nature] > 0.0:
-			out.append(SheetLine.new(
-				Group.DAMAGE, Texts.t("converti"),
-				_converted_part(cast.conversions[nature], nature), DamageType.COLORS[nature]
-			))
 	for percent in [
 		[StatMod.Mode.PERCENT, cast.increased], [StatMod.Mode.MORE, cast.more]
 	]:
@@ -935,7 +954,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			"%s · %s" % [
 				StatMod.percentage(cast.status_chance_increase, true),
 				StatMod.percentage(100.0 * StatusEffects.chance(
-					1.0, 1.0, 0.0, StatusEffects.factor_of(worn_factor, cast.status_chance_increase)
+					1.0, 0.0, StatusEffects.factor_of(worn_factor, cast.status_chance_increase)
 				))
 			],
 			StatusEffects.color(state_kind)
@@ -1078,29 +1097,28 @@ func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 		out.append(_first_point_line())
 
 	out.append_array(_effect_lines(node.mods(maxi(spent, 1))))
-	if node.converts():
+	# Le mot-clé d'arrivée : c'est lui qui fait mordre l'équipement de la nouvelle nature.
+	if node.converts:
 		out.append(SheetLine.new(
-			Group.EFFECT, Texts.t("converti"),
-			_converted_part(node.conversion(maxi(spent, 1)), node.converts_to),
+			Group.EFFECT, Texts.t("devient"), Keywords.label_of(Skill.KEYWORD_OF_NATURE[node.converts_to]),
 			DamageType.COLORS[node.converts_to]
 		))
-	# Le mot-clé donné : il fait mordre l'équipement de la nature d'arrivée.
-	for id in node.added_keywords:
-		out.append(SheetLine.new(
-			Group.EFFECT, Texts.t("mot-clé"), Keywords.label_of(id), KEYWORD
-		))
-	return Sheet.new(node.displayed_name(), Texts.t("talent"), out)
+	return Sheet.new(node.displayed_name(), Texts.t("talent"), out, node.displayed_description())
 
 
-## Le parent vide d'abord, sinon les points de la compétence.
+## Dans l'ordre où `Manual._node_open()` refuse : la compétence, le parent, le palier.
 func _what_it_requires(manual: Manual, cell: ManualCell, node: TalentNode) -> String:
+	# « dans la compétence » et non son nom, que l'en-tête écrit déjà : il débordait
+	# (mesuré par `test_largeurs`).
+	if manual.points_of(cell.skill.id) <= 0:
+		return Texts.tn(
+			"{points} point dans la compétence", "{points} points dans la compétence", 1
+		).format({"points": 1})
 	if not node.parent.is_empty() and manual.points_of(node.parent) <= 0:
 		var parent := cell.node_of(node.parent)
 		return Texts.t("le talent « {nom} »").format({"nom": parent.displayed_name()})
-	# « dans la compétence » et non son nom, que l'en-tête écrit déjà : il débordait
-	# (mesuré par `test_largeurs`).
 	return Texts.tn(
-		"{points} point dans la compétence", "{points} points dans la compétence",
+		"{points} point dans l'arbre", "{points} points dans l'arbre",
 		node.required_points
 	).format({"points": node.required_points})
 
@@ -1117,8 +1135,7 @@ func _effect_lines(mods: Array[StatMod]) -> Array[SheetLine]:
 
 ## Une case vide annonce les nombres du premier point.
 ## **Tout ce que ce lancer peut poser ou déclencher**, avec sa vraie chance : les états
-## que tirent les natures de son coup — conversions et dégâts ajoutés compris, par
-## `distribution()` —, facteurs du porteur et accru du lancer ajoutés comme au coup
+## que tirent les natures de son coup — dégâts ajoutés compris, par `distribution()` —, facteurs du porteur et accru du lancer ajoutés comme au coup
 ## (`StatusEffects.chance()`), l'état qu'il pose, la pourriture de ses à-coups, la
 ## charge statique, les charges d'un buff à la mort. Vide pour ce qui ne touche rien.
 func _trigger_sheet(skill: Skill) -> Sheet:
@@ -1139,7 +1156,7 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 			var factor := StatusEffects.factor_of(factors[kind], cast.status_chance_increase)
 			out.append(SheetLine.new(
 				Group.ON_HIT, StatusEffects.name(kind),
-				_chance(StatusEffects.chance(share, 1.0, 0.0, factor)), StatusEffects.color(kind)
+				_chance(StatusEffects.chance(share, 0.0, factor)), StatusEffects.color(kind)
 			))
 	var posed := cast.inflicted_state
 	if posed >= 0:
@@ -1232,13 +1249,6 @@ func _sheet_rect(anchor: Rect2, height: float, aside := false) -> Rect2:
 ## nombre.
 static func _in_nature(low: float, top: float, nature: int) -> String:
 	return "%s %s" % [SkillStats.readable_range(low, top), DamageType.name(nature)]
-
-
-## « 60 % en feu » : la part d'un coup qu'une conversion emmène, et où.
-static func _converted_part(part: float, nature: int) -> String:
-	return Texts.t("{part} en {nature}").format({
-		"part": StatMod.percentage(roundi(part * 100.0)), "nature": DamageType.name(nature)
-	})
 
 
 ## « +40 % », par **la même fonction** qu'un objet.

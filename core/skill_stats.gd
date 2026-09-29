@@ -7,11 +7,12 @@ extends RefCounted
 
 ## Ce qu'un modificateur peut viser, et son nom à l'écran — en plus des dégâts
 ## ajoutés `damage_<nature>`. `damage` ne se vise qu'en pourcentage et multiplie
-## toutes les parts. Ni coût, ni `period`, `self_burn` ou `status_chance_increase`
-## (voir `Skill`). **`use_time` et `recharge` y sont depuis le jalon 23** : la cadence
-## et la récupération du porteur les tiennent déjà, mais un nœud change ce que la
-## compétence demande — « plus de recharge » se dit par −100 % de `recharge`.
-## `interval` n'y est pas : il se déduit des deux, le viser mentirait.
+## toutes les parts. Pas de coût. **`use_time` et `recharge` y sont depuis le
+## jalon 23** : la cadence et la récupération du porteur les tiennent déjà, mais un
+## nœud change ce que la compétence demande — « plus de recharge » se dit par −100 %
+## de `recharge`. `interval` n'y est pas : il se déduit des deux. Depuis le jalon 34,
+## les **nombres de mécanique** — zéro sur la compétence, un nœud les allume, la forme
+## les lit — et `period`, `self_burn`, `status_chance_increase`, que ses échanges visent.
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -26,6 +27,18 @@ const LABELS := {
 	# connaît la cadence de la compétence, une ligne de modificateur non.
 	"use_time": "temps du geste",
 	"recharge": "recharge",
+	"period": "intervalle des frappes",
+	"self_burn": "brûlure subie",
+	"status_chance_increase": "chance d'état",
+	PIERCE: "nombre d'ennemis traversés",
+	SPLITS: "nombre d'éclats",
+	GROUND: "secondes de sol brûlant",
+	END_BURST: "rayon de l'explosion finale",
+	KILL_BURST: "rayon de l'explosion des tués",
+	SEEK: "rayon de chasse",
+	BROOD: "nombre de serpents",
+	CRAWL_SPEED: "vitesse du serpent",
+	HATCHLINGS: "nombre de petits serpents",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -41,7 +54,44 @@ const AGREEMENT := {
 	CRIT_CHANCE: "fs",
 	"use_time": "ms",
 	"recharge": "fs",
+	"period": "ms",
+	"self_burn": "fs",
+	"status_chance_increase": "fs",
+	PIERCE: "ms",
+	SPLITS: "ms",
+	GROUND: "fp",
+	END_BURST: "ms",
+	KILL_BURST: "ms",
+	SEEK: "ms",
+	BROOD: "ms",
+	CRAWL_SPEED: "fs",
+	HATCHLINGS: "ms",
 }
+
+## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
+## et **seulement par elles** : ARCHITECTURE, « Que pose un lancer », dit lesquelles.
+const PIERCE := "pierce"
+const SPLITS := "splits"
+const GROUND := "ground_duration"
+const END_BURST := "end_burst"
+const KILL_BURST := "kill_burst"
+const SEEK := "seek_radius"
+## Ceux du serpent, **pas ceux des projectiles** : il n'en est pas un, et « +1 projectile »
+## sur un serpent ferait croire que les affixes de projectile le touchent. Des serpents en
+## plus du premier, sa vitesse accrue en points de pourcentage, ses petits à sa mort.
+const BROOD := "brood"
+const CRAWL_SPEED := "crawl_speed"
+const HATCHLINGS := "hatchlings"
+
+## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
+## d'un coup que rend l'explosion d'un tué.
+const GROUND_PART := 0.25
+const GROUND_PERIOD := 0.5
+const GROUND_RADIUS := 14.0
+const KILL_BURST_PART := 0.5
+const SPLIT_PART := 0.4
+## La vie des petits qu'un serpent relâche (`SPLITS` sur `HellSnake`).
+const HATCHLING_LIFE := 2.0
 
 const DAMAGE := "damage"
 ## Le seul nombre du lancer qu'un modificateur **sans portée** atteint : sa base est sur
@@ -90,6 +140,19 @@ var inflicted_state := -1
 var inflict_chance := 1.0
 ## Les coups d'un geste, que la forme décide.
 var hits := 1
+## Celle de la compétence, ou celle qu'un nœud lui a substituée : **le lancer se pose
+## par elle**, jamais par `Skill.shape`.
+var shape := 0
+## Les nombres de mécanique, à zéro tant qu'aucun nœud ne les allume.
+var pierce := 0.0
+var splits := 0.0
+var ground_duration := 0.0
+var end_burst := 0.0
+var kill_burst := 0.0
+var seek_radius := 0.0
+var brood := 0.0
+var crawl_speed := 0.0
+var hatchlings := 0.0
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
 var sustained := false
 var mana_cost := 0.0
@@ -119,7 +182,8 @@ var bonus_levels := 0
 var against_increased: Array[float] = []
 var against_more: Array[float] = []
 
-## La nature de la compétence, avant conversion.
+## La nature du lancer : celle de la compétence, ou celle où une conversion l'a
+## emmenée (jalon 34 : tout ou rien). Ce qu'un objet ajoute garde la sienne.
 var nature := int(DamageType.Kind.PHYSICAL)
 
 ## La décomposition pour la fiche du manuel, **écrite par les appels qui calculent**
@@ -131,9 +195,6 @@ var added_max: Array[float] = DamageType.empty_parts()
 ## puis le produit des « plus » (deux font 1,21).
 var increased := 1.0
 var more := 1.0
-## La part du coup qu'un nœud a déplacée, **par nature d'arrivée**, pour la fiche.
-## Le lancer n'en a pas besoin : `damage_min` et `damage_max` sont déjà déplacés.
-var conversions: Array[float] = DamageType.empty_parts()
 
 
 func _init() -> void:
@@ -214,20 +275,6 @@ func keywords_label() -> String:
 	return Keywords.line(keywords)
 
 
-## La nature que le lancer **montre** : la sienne, ou celle où une conversion a
-## emmené le plus de ses dégâts propres — jamais ce qu'un objet ajoute (jalon 8).
-func dominant_nature() -> int:
-	var best_one := nature
-	var part := 1.0
-	for p in conversions:
-		part -= p
-	for i in conversions.size():
-		if conversions[i] > part:
-			part = conversions[i]
-			best_one = i
-	return best_one
-
-
 ## Les dégâts propres de la compétence, dans sa nature, bornes égales.
 func place_the_base(nature: int, amount: float) -> void:
 	base_damage = amount
@@ -242,27 +289,6 @@ func add_to(nature: int, low: float, top: float) -> void:
 	added_max[nature] += top_point
 	damage_min[nature] += low
 	damage_max[nature] += top_point
-
-
-## Le nœud de conversion, appelé **après les fourchettes ajoutées** : il prend sa part
-## de **chaque** nature, ajouts compris. Entière, il ne reste qu'une nature, donc
-## qu'un état possible.
-func apply_conversion(target: int, part: float) -> void:
-	var rest := clampf(part, 0.0, 1.0)
-	if rest <= 0.0:
-		return
-	for source in damage_min.size():
-		if source == target:
-			continue
-		var low := damage_min[source] * rest
-		var top := damage_max[source] * rest
-		damage_min[source] -= low
-		damage_max[source] -= top
-		damage_min[target] += low
-		damage_max[target] += top
-		conversions[source] *= 1.0 - rest
-	# La part du coup **entier** : deux nœuds à 50 % font 75 %, pas 100 %.
-	conversions[target] += rest * (1.0 - conversions[target])
 
 
 ## Toutes les parts, une fois. Un accru sous −100 % ne rend pas les dégâts négatifs.
@@ -292,7 +318,7 @@ func against_factor(states: StatusEffects) -> float:
 
 
 ## La part de chaque nature, somme à un ; toute dans sa nature sans dégâts.
-## Contrairement à `dominant_nature()`, ce qu'un objet ajoute compte.
+## Ce qu'un objet ajoute compte.
 func distribution() -> Array[float]:
 	var out := DamageType.empty_parts()
 	var total := total_min() + total_max()
@@ -316,6 +342,60 @@ func total_max() -> float:
 	for part in damage_max:
 		total += part
 	return total
+
+
+## Les chiffres des mécaniques, pour les descriptions des nœuds (`{part_sol}`…) : lus
+## ici, sur les constantes mêmes qui les appliquent.
+static func facts() -> Dictionary:
+	return {
+		"part_sol": roundi(GROUND_PART * 100.0),
+		"rythme_sol": GROUND_PERIOD,
+		"rayon_sol": roundi(GROUND_RADIUS),
+		"part_eclat": roundi(SPLIT_PART * 100.0),
+		"part_tue": roundi(KILL_BURST_PART * 100.0),
+		"vie_petit": roundi(HATCHLING_LIFE),
+	}
+
+
+## Le lancer du sol brûlant qu'il laisse : un lancer dérivé, rythmé comme un sillage.
+func ground() -> SkillStats:
+	var g := _derived(GROUND_PART)
+	g.duration = ground_duration
+	g.period = GROUND_PERIOD
+	g.radius = GROUND_RADIUS
+	return g
+
+
+## Le lancer d'un éclat : la moitié du rayon, pour qu'une explosion d'éclat ne se lise pas
+## comme celle du tir.
+func shard() -> SkillStats:
+	var g := _derived(SPLIT_PART)
+	g.projectile_speed = projectile_speed
+	g.radius = radius * 0.5
+	return g
+
+
+## Un lancer né d'un autre, à une part de ses dégâts : ce qui qualifie un coup —
+## mots-clés, critique, chances d'état, bonus contre un état — et **rien de ce qui en
+## ferait naître un autre** (ni sol, ni éclat, ni explosion, ni état posé), sinon un sol
+## en poserait un autre.
+func _derived(part: float) -> SkillStats:
+	var g := SkillStats.new()
+	g.skill_id = skill_id
+	g.nature = nature
+	g.shape = shape
+	g.keywords = keywords
+	for i in damage_min.size():
+		g.damage_min[i] = damage_min[i] * part
+		g.damage_max[i] = damage_max[i] * part
+	g.increased = increased
+	g.against_increased = against_increased.duplicate()
+	g.against_more = against_more.duplicate()
+	g.crit_chance = crit_chance
+	g.crit_multiplier = crit_multiplier
+	g.status_chance_increase = status_chance_increase
+	g.crawl_speed = crawl_speed
+	return g
 
 
 ## Le milieu de chaque fourchette.
@@ -366,6 +446,10 @@ func finalize() -> void:
 	)
 	targets = float(maxi(roundi(targets), 1))
 	simultaneous = float(maxi(roundi(simultaneous), 0))
+	pierce = float(maxi(roundi(pierce), 0))
+	splits = float(maxi(roundi(splits), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
+	period = maxf(period, 0.0)
+	self_burn = maxf(self_burn, 0.0)
 	crit_chance = clampf(crit_chance, 0.0, 1.0)

@@ -10,8 +10,9 @@ const TRAIL_STEP := 6.0
 
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
 var explosion_radius := 0.0
-## Deux hurtbox entrées dans le même pas ne font pas deux explosions.
-var _burst := false
+## Deux hurtbox entrées dans le même pas ne font pas deux explosions ; une boule qui
+## traverse en fait une par cible, à des pas différents.
+var _burst_frame := -1
 
 
 func _ready() -> void:
@@ -43,7 +44,7 @@ func _draw() -> void:
 
 
 func _on_area_entered(area: Area2D) -> void:
-	if area is Hurtbox:
+	if strikes(area):
 		_explode(area as Hurtbox)
 	super(area)
 
@@ -54,9 +55,11 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func _explode(direct_target: Hurtbox) -> void:
-	if _burst:
+	if _burst_frame == Engine.get_physics_frames():
 		return
-	_burst = true
+	_burst_frame = Engine.get_physics_frames()
 	Explosion.put(
 		get_parent(), global_position, _parts, explosion_radius, direct_target, tint(), _author, _cast
 	)
+	if _cast != null and _cast.ground_duration > 0.0:
+		DashTrail.patch(get_parent(), global_position, _cast.ground(), _author)

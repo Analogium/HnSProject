@@ -12,17 +12,23 @@ extends Node2D
 ## deux cercles ; en dessous, on paie des requêtes pour rien.
 const STEP := 0.9
 
-## Une langue tous les onze pixels, quatre au moins. Ce qui faisait la palissade
-## n'était pas leur nombre mais leur **régularité** : une grande et une petite en
-## alternance, écartées de l'axe à tour de rôle, se lisent comme un chemin qui
-## brûle là où douze langues identiques alignées font une clôture.
+## Le sillon « cœur et franges » (jalon 34, choisi sur planche) couvre **la largeur du
+## couloir qui frappe**, que l'ancienne file unique réduisait au tiers : un Braises à
+## trois points ne se voyait pas. Au cœur, une grande langue tous les onze pixels,
+## écartée de l'axe à tour de rôle ; autour, de petites langues semées jusqu'au bord.
 const FLAME_STEP := 11.0
-## De combien une langue sur deux s'écarte de l'axe du couloir.
-const FLAME_SWAY := 3.0
-const FLAMES_MIN := 4
-## L'écart de deux brûlures : sous cinq pixels elles se recouvrent et font un
-## sillon continu, ce qui est le but.
-const BURN_STEP := 4.0
+const CORE_SWAY := 2.0
+## Les franges : au plus une langue par case, **pas un tirage libre**, qui faisait des
+## paquets sur la planche ; ni dans le cœur, ni à moins de `FRINGE_MARGIN` du bord.
+const FRINGE_CELL := 8.0
+const FRINGE_CHANCE := 0.55
+const CORE_WIDTH := 5.0
+const FRINGE_MARGIN := 4.0
+## Le lit de brûlures : un essai tous les 4 × 3 px, d'autant plus rare qu'on s'écarte
+## de l'axe — un rectangle plein se lisait en tapis de briques.
+const BURN_ALONG := 4.0
+const BURN_ACROSS := 3.0
+const BURN_DENSITY := 0.5
 const SPAWN := 0.12
 const FADE := 0.35
 ## La coupe de la Ruée tranchante : sa demi-largeur, en part du rayon qui mord, et
@@ -41,6 +47,21 @@ var _age := 0.0
 var _strikes := 0
 ## La coupe d'une ruée physique, fabriquée à la naissance à l'angle exact.
 var _cut: EffectForge.Piece
+## Le sillon de feu, tiré **une fois** à la naissance : il ne bouge pas.
+var _burns_at: Array[Vector2] = []
+var _tongues: Array[Tongue] = []
+
+
+class Tongue:
+	var foot: Vector2
+	var big: bool
+	## Le décalage d'animation : deux langues voisines ne battent pas ensemble.
+	var phase: float
+
+	func _init(p_foot: Vector2, p_big: bool, p_phase: float) -> void:
+		foot = p_foot
+		big = p_big
+		phase = p_phase
 
 
 static func leave(
@@ -50,10 +71,24 @@ static func leave(
 	trail._cast = cast
 	trail._author = author
 	trail._toward = to - from_value
-	trail._tint = DamageType.COLORS[cast.dominant_nature()]
+	trail._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
+	return trail
+
+
+## Le **sol brûlant** (jalon 34) : un sillage sans longueur, posé sur place. Différé,
+## parce qu'il naît aussi d'une mort, donc d'un rappel de collision.
+static func patch(
+	parent: Node, at: Vector2, ground: SkillStats, author: StatusEffects
+) -> DashTrail:
+	var trail := DashTrail.new()
+	trail._cast = ground
+	trail._author = author
+	trail._tint = DamageType.COLORS[ground.nature]
+	Settings.veil(trail, Settings.SPELLS)
+	DeferredTree.add_deferred(parent, trail, at)
 	return trail
 
 
@@ -63,8 +98,10 @@ func _ready() -> void:
 	# additive. Le reste reste en lumière ajoutée.
 	if not _is_painted():
 		material = ArtPalette.ADDITIVE
-	if _cast.dominant_nature() == DamageType.Kind.PHYSICAL:
+	if _cast.nature == DamageType.Kind.PHYSICAL:
 		_cut = Slash.cleave(_tint, _toward, _cast.radius * CUT_WIDTH)
+	elif _cast.nature == DamageType.Kind.FIRE:
+		_lay_out_the_fire()
 
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
@@ -120,9 +157,9 @@ func _draw() -> void:
 	# lèche, la lame tranche, le reste ne fait que luire : une ruée de glace
 	# n'avait aucune raison de laisser des flammes. Aucun de ces dessins ne frappe
 	# — la morsure, c'est le couloir.
-	match _cast.dominant_nature():
+	match _cast.nature:
 		DamageType.Kind.FIRE:
-			_burnt_path(last, fade)
+			_burnt_path(fade)
 		DamageType.Kind.PHYSICAL:
 			_slashed_path(last)
 		_:
@@ -131,34 +168,67 @@ func _draw() -> void:
 			draw_line(Vector2.ZERO, last, Color(_tint, 0.30 * fade), 2.0)
 
 
-## Le sillon : une file de brûlures qui se recouvrent, et des langues plantées
-## dessus. Choisi sur planche contre trois autres traînées — c'est le seul dessin
-## qui dise qu'on est **passé par là**, et il remplace le ruban brun qui se voyait
-## avant le feu.
-##
-## Des planches posées à plat, jamais tournées : une brûlure pivotée se
+## Le sillon : un lit de brûlures et des langues plantées dessus, sur toute la largeur
+## du couloir. Des planches posées à plat, jamais tournées : une brûlure pivotée se
 ## rééchantillonne, et le couloir peut partir dans n'importe quelle direction.
-func _burnt_path(last: Vector2, fade: float) -> void:
+func _burnt_path(fade: float) -> void:
 	var burns := EffectForge.burns()
-	var span := last.length()
-	var marks := maxi(int(span / BURN_STEP), 2)
-	for i in marks + 1:
-		EffectForge.put_centered(self, burns[i % burns.size()], last * (float(i) / float(marks)), fade)
-
+	for i in _burns_at.size():
+		EffectForge.put_centered(self, burns[i % burns.size()], _burns_at[i], fade)
 	var tall := EffectForge.flames(_tint)
 	var short := EffectForge.small_flames(_tint)
-	var across := last.orthogonal().normalized()
-	var count := maxi(int(span / FLAME_STEP), FLAMES_MIN)
+	for t in _tongues:
+		var sheet: Array = tall if t.big else short
+		var tex: Texture2D = sheet[int(_age * EffectForge.FLAME_HZ + t.phase) % sheet.size()]
+		_blit(tex, t.foot - Vector2(tex.get_width() * 0.5, tex.get_height() - 2), fade)
+
+
+## Dans le repère du couloir — `a` le long, `b` en travers —, puis tourné vers `_toward`.
+## Un tirage **local**, semé sur le nœud (invariant 3). Sans longueur — le sol brûlant —,
+## la gélule devient un disque et le cœur une seule langue.
+func _lay_out_the_fire() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(get_instance_id())
+	var r := _cast.radius
+	var span := _toward.length()
+	var along := _toward / span if span > 0.0 else Vector2.RIGHT
+	var across := along.orthogonal()
+
+	var b := -r
+	while b <= r:
+		var a := -r
+		while a <= span + r:
+			var d := _off_axis(a, b, span) / r
+			if d < 1.0 and rng.randf() < BURN_DENSITY * (1.0 - d * d):
+				_burns_at.append(
+					along * (a + rng.randf_range(-1.5, 1.5)) + across * (b + rng.randf_range(-1.0, 1.0))
+				)
+			a += BURN_ALONG
+		b += BURN_ACROSS
+
+	var count := maxi(int(span / FLAME_STEP), 1)
 	for i in count:
-		var big := i % 2 == 0
-		var sheet: Array = tall if big else short
-		var frame := int(_age * EffectForge.FLAME_HZ + float(i) * 1.7) % sheet.size()
-		var tex: Texture2D = sheet[frame]
-		var half := Vector2(tex.get_width() * 0.5, tex.get_height() - 2)
-		var foot := last * ((float(i) + 0.5) / float(count))
-		if not big:
-			foot += across * FLAME_SWAY * (1.0 if i % 4 == 1 else -1.0)
-		_blit(tex, foot - half, fade)
+		var sway := CORE_SWAY * (1.0 if i % 2 == 0 else -1.0)
+		_tongues.append(Tongue.new(
+			along * span * (float(i) + 0.5) / float(count) + across * sway, true, float(i) * 1.7
+		))
+	b = -r
+	while b < r:
+		var a := -r
+		while a < span + r:
+			var p := Vector2(a + rng.randf() * FRINGE_CELL, b + rng.randf() * FRINGE_CELL)
+			if absf(p.y) > CORE_WIDTH and _off_axis(p.x, p.y, span) <= r - FRINGE_MARGIN \
+					and rng.randf() < FRINGE_CHANCE:
+				_tongues.append(Tongue.new(along * p.x + across * p.y, false, rng.randf() * 3.0))
+			a += FRINGE_CELL
+		b += FRINGE_CELL
+	# Le plus bas passe devant : une langue du bord proche ne se cache pas derrière le cœur.
+	_tongues.sort_custom(func(t1: Tongue, t2: Tongue) -> bool: return t1.foot.y < t2.foot.y)
+
+
+## La distance d'un point au segment [0, span] de l'axe, dans le repère du couloir.
+static func _off_axis(a: float, b: float, span: float) -> float:
+	return Vector2(a - clampf(a, 0.0, span), b).length()
 
 
 ## La Ruée tranchante : **un seul coup d'épée sur toute la traversée**, posé d'une
@@ -177,7 +247,7 @@ func _slashed_path(last: Vector2) -> void:
 
 ## Peinte — fait de planches cernées — ou tracée en lumière ajoutée.
 func _is_painted() -> bool:
-	return _cast.dominant_nature() in [DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL]
+	return _cast.nature in [DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL]
 
 
 func _blit(tex: Texture2D, offset: Vector2, fade: float) -> void:

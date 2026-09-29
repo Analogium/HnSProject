@@ -40,7 +40,7 @@ static func open(
 	var vortex := IceVortex.new()
 	vortex._cast = cast
 	vortex._author = author
-	vortex._tint = DamageType.COLORS[cast.dominant_nature()]
+	vortex._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(vortex)
 	Settings.veil(vortex, Settings.SPELLS)
 	vortex.global_position = point

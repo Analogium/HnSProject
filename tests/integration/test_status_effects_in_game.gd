@@ -113,24 +113,23 @@ func test_a_physical_hit_eventually_causes_bleeding() -> void:
 	assert_gt(states.advance(1.0), 0.0, "et il saigne")
 
 
-## Un sort de foudre qui porte un ajout de chaque nature : converti à moitié, les six
-## états finissent par tomber ; converti en entier, seul celui de la nature d'arrivée.
-func test_a_converted_hit_only_applies_what_it_carries() -> void:
+## Une boule de feu convertie en froid est un sort de froid (jalon 34) : elle transit,
+## et n'embrase jamais.
+func test_a_converted_hit_only_applies_its_new_nature() -> void:
 	Settings.damage_dealt_visible = false
-	for part in [0.5, 1.0]:
-		var cast := SkillStats.new()
-		cast.place_the_base(DamageType.Kind.LIGHTNING, 100.0)
-		for nature in DamageType.Kind.size():
-			cast.add_to(nature, 10.0, 10.0)
-		cast.apply_conversion(DamageType.Kind.COLD, part)
-		var states := StatusEffects.new()
-		var hb := _zone(states)
-		Game.rng.seed = 7
-		for i in 3000:
-			hb.take_damage(DamageInfo.as_parts(cast.roll(Game.rng), Vector2.ZERO))
-		for kind: int in StatusEffects.ROLLED:
-			var expected: bool = part < 1.0 or kind == StatusEffects.Kind.CHILL
-			assert_eq(states.active(kind), expected, "%s, converti à %d %%" % [StatusEffects.NAMES[kind], roundi(part * 100.0)])
+	var frost := TalentNode.new()
+	frost.converts = true
+	frost.converts_to = DamageType.Kind.COLD
+	var cast := SkillCatalog.by_id("fireball").resolve(
+		5, CharacterStats.new(), [], [InvestedTalent.new(frost, 1)]
+	)
+	var states := StatusEffects.new()
+	var hb := _zone(states)
+	Game.rng.seed = 7
+	for i in 3000:
+		hb.take_damage(DamageInfo.as_parts(cast.roll(Game.rng), Vector2.ZERO))
+	for kind: int in StatusEffects.ROLLED:
+		assert_eq(states.active(kind), kind == StatusEffects.Kind.CHILL, StatusEffects.NAMES[kind])
 
 
 # --------------------------------------------------------------------------

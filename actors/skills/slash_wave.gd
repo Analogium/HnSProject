@@ -39,7 +39,7 @@ static func send(
 	wave._author = author
 	wave._parts = cast.roll(Game.rng)
 	wave._toward = toward.normalized()
-	wave._tint = DamageType.COLORS[cast.dominant_nature()]
+	wave._tint = DamageType.COLORS[cast.nature]
 	wave._bitten = Targets.Contacts.new(cast.duration)
 	parent.add_child(wave)
 	Settings.veil(wave, Settings.SPELLS)

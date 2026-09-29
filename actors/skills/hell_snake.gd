@@ -11,6 +11,7 @@ extends Node2D
 ## le dessin.
 const RINGS := 20
 const SPACING := 2.85
+## Avant `SkillStats.CRAWL_SPEED`, qui l'accroît.
 const SPEED := 62.0
 ## Au-delà de la moitié, il tourne vers son point de chute ; à la laisse entière, de
 ## toutes ses forces. Sans rappel, un cap au hasard l'emmène hors de l'écran en
@@ -40,6 +41,11 @@ const R_CREST := 6
 ## La part du corps que la crête parcourt, de la tête vers la queue.
 const CREST_PART := 0.6
 const TONGUE := Color(0.9, 0.15, 0.1)
+## L'écart de deux plaques de sol brûlant le long de sa trace : sous le rayon d'une
+## plaque, le sillon est continu.
+const GROUND_STEP := 12.0
+## L'écart de deux serpents d'un même lancer, en radians.
+const BROOD_SPREAD := 0.9
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -50,6 +56,7 @@ var _head := Vector2.ZERO
 var _cap := 0.0
 var _age := 0.0
 var _seed_of := 0.0
+var _since_ground := 0.0
 ## Les positions passées de la tête, la plus récente à la fin. Le corps s'y pose à
 ## intervalles de longueur réguliers : il ondule dans les pas de la tête au lieu de
 ## pivoter d'un bloc.
@@ -76,7 +83,7 @@ static func drop(
 	s._cast = cast
 	s._author = author
 	s._contacts = Targets.Contacts.new(cast.period)
-	s._tint = DamageType.COLORS[cast.dominant_nature()]
+	s._tint = DamageType.COLORS[cast.nature]
 	s._anchor = point
 	s._head = point
 	s._cap = direction.angle()
@@ -121,10 +128,43 @@ func _physics_process(delta: float) -> void:
 		_rasterise()
 	queue_redraw()
 	if _age >= _cast.duration:
-		queue_free()
+		_die()
+
+
+## Ce que sa mort laisse : l'explosion finale et les petits (`HATCHLINGS`), qui ne se
+## divisent pas — `shard()` ne les recopie pas. Hors d'un rappel de
+## collision, ils naissent tout de suite.
+func _die() -> void:
+	queue_free()
+	if _cast.end_burst > 0.0:
+		Explosion.put(
+			get_parent(), _head, _cast.roll(Game.rng), _cast.end_burst, null, _tint, _author, _cast
+		)
+	var brood := int(_cast.hatchlings)
+	if brood <= 0:
+		return
+	var hatchling := _cast.shard()
+	hatchling.duration = SkillStats.HATCHLING_LIFE
+	hatchling.period = _cast.period
+	for i in brood:
+		var toward := Vector2.from_angle(_cap + TAU * float(i) / float(brood))
+		drop(get_parent(), _head, hatchling, toward, _author)
+
+
+## Le **chasseur** (`SkillStats.SEEK`) prend pour point de chute l'ennemi le plus proche
+## de sa tête : il rôde autour de lui au lieu de rôder où on l'a lâché.
+func _hunt() -> void:
+	var best := INF
+	for target in Targets.in_circle(get_world_2d(), _head, _cast.seek_radius):
+		var d := _head.distance_squared_to(target.global_position)
+		if d < best:
+			best = d
+			_anchor = target.global_position
 
 
 func _ramp(delta: float) -> void:
+	if _cast.seek_radius > 0.0:
+		_hunt()
 	var turn := sin(_age * 2.6 + _seed_of) * 2.2 + sin(_age * 1.1 + _seed_of * 3.0) * 1.4
 	var toward_anchor := _anchor - _head
 	var beyond := toward_anchor.length() - LEASH * 0.5
@@ -132,8 +172,14 @@ func _ramp(delta: float) -> void:
 		var force := minf(beyond / (LEASH * 0.5), 1.0)
 		turn += angle_difference(_cap, toward_anchor.angle()) * REMINDER * force
 	_cap += turn * delta
-	_head += Vector2.from_angle(_cap) * SPEED * delta
+	var step := SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta
+	_head += Vector2.from_angle(_cap) * step
 	_trace.append(_head)
+	if _cast.ground_duration > 0.0:
+		_since_ground += step
+		if _since_ground >= GROUND_STEP:
+			_since_ground = 0.0
+			DashTrail.patch(get_parent(), _head, _cast.ground(), _author)
 
 
 ## Pose les anneaux le long de la trace, et oublie ce qui est derrière la queue.
@@ -196,7 +242,7 @@ func _draw() -> void:
 	# Un serpent de feu brûle : une langue un anneau sur trois, jamais sur la queue,
 	# où elle serait plus large que la bête. Elles ne mordent pas — la morsure, ce
 	# sont les anneaux.
-	if _cast.dominant_nature() == DamageType.Kind.FIRE:
+	if _cast.nature == DamageType.Kind.FIRE:
 		var flames := EffectForge.small_flames(_tint)
 		var offset := Vector2(EffectForge.SMALL_WIDTH * 0.5, EffectForge.SMALL_HEIGHT - 2)
 		# Un anneau sur quatre : le corps ayant gagné quatre anneaux, un sur trois

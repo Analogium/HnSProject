@@ -104,7 +104,7 @@ func _draw() -> void:
 		var angle := _rotation + blade.place
 		var fade := clampf((blade.cast.duration - blade.age) / VANISH, 0.0, 1.0)
 		var gone := floorf((1.0 - fade) * 4.0) / 4.0
-		var tint: Color = DamageType.COLORS[blade.cast.dominant_nature()]
+		var tint: Color = DamageType.COLORS[blade.cast.nature]
 		for r: Array in AFTERIMAGES:
 			var delay := angle - float(r[0])
 			Slash.sword(

@@ -207,8 +207,8 @@ func test_the_character_gains_exactly_what_it_used_to() -> void:
 var _slain_with: Array = []
 
 
-func _on_slew(keywords: PackedStringArray) -> void:
-	_slain_with.append(keywords)
+func _on_slew(cast: RefCounted, _at: Vector2, _victim: StatusEffects) -> void:
+	_slain_with.append((cast as SkillStats).keywords)
 
 
 ## La victime annonce à son auteur qu'elle meurt, et avec quels mots-clés : la Soif de

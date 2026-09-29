@@ -21,7 +21,3 @@ func _init(p_node: TalentNode, p_points: int) -> void:
 
 func mods() -> Array[StatMod]:
 	return node.mods(points)
-
-
-func conversion() -> float:
-	return node.conversion(points)

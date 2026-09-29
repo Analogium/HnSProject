@@ -40,7 +40,7 @@ static func fire(
 	var beam := HolyBeam.new()
 	beam._cast = cast
 	beam._author = author
-	beam._tint = DamageType.COLORS[cast.dominant_nature()]
+	beam._tint = DamageType.COLORS[cast.nature]
 	beam._tip = direction.normalized() * cast.radius
 	parent.add_child(beam)
 	Settings.veil(beam, Settings.SPELLS)

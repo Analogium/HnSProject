@@ -23,7 +23,6 @@ script = ExtResource("3_noeud")
 id = "swift_bolt_overload"
 name = "Surcharge"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_surcharge_0")])
 
@@ -38,7 +37,6 @@ id = "swift_bolt_fork"
 name = "Fourche"
 position = Vector2i(1, 0)
 parent = "swift_bolt_overload"
-required_points = 2
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_fourche_0")])
 
@@ -54,11 +52,10 @@ script = ExtResource("3_noeud")
 id = "swift_bolt_glacial_bolt"
 name = "Trait de glace"
 position = Vector2i(0, 1)
-required_points = 3
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_trait_de_glace_0")])
 converts_to = 1
-converted_part_per_point = 0.50
+converts = true
 
 [sub_resource type="Resource" id="C_eclair_vif"]
 script = ExtResource("2_case")
@@ -76,7 +73,6 @@ script = ExtResource("3_noeud")
 id = "chain_lightning_branching"
 name = "Ramification"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_ramification_0")])
 
@@ -93,7 +89,6 @@ id = "chain_lightning_high_voltage"
 name = "Haute tension"
 position = Vector2i(1, 0)
 parent = "chain_lightning_branching"
-required_points = 2
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_haute_tension_0")])
 
@@ -114,7 +109,6 @@ script = ExtResource("3_noeud")
 id = "chain_lightning_short_circuit"
 name = "Court-circuit"
 position = Vector2i(0, 1)
-required_points = 3
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_court_circuit_0"), SubResource("L_chaine_d_eclairs_court_circuit_1")])
 
@@ -135,7 +129,6 @@ script = ExtResource("3_noeud")
 id = "storm_cloud_front"
 name = "Front orageux"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_front_0")])
 
@@ -151,7 +144,6 @@ id = "storm_cloud_lingering_storm"
 name = "Orage durable"
 position = Vector2i(1, 0)
 parent = "storm_cloud_front"
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_orage_durable_0")])
 
@@ -167,11 +159,10 @@ script = ExtResource("3_noeud")
 id = "storm_cloud_hail"
 name = "Grêle"
 position = Vector2i(0, 1)
-required_points = 3
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_grele_0")])
 converts_to = 1
-converted_part_per_point = 0.60
+converts = true
 
 [sub_resource type="Resource" id="C_nuage_d_orage"]
 script = ExtResource("2_case")
@@ -190,7 +181,6 @@ script = ExtResource("3_noeud")
 id = "storm_dash_lingering"
 name = "Persistance"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_persistance_0")])
 
@@ -211,7 +201,6 @@ script = ExtResource("3_noeud")
 id = "storm_dash_unbound"
 name = "Sans répit"
 position = Vector2i(0, 1)
-required_points = 2
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_sans_repit_0"), SubResource("L_ruee_d_orage_sans_repit_1")])
 

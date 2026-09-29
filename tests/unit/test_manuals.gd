@@ -76,7 +76,7 @@ func test_the_archetype_finds_its_slot_by_id() -> void:
 func test_a_picked_up_manual_has_its_own_state() -> void:
 	var item := Item.new(_base())
 	assert_not_null(item.manual, "un manuel naît avec son état")
-	assert_eq(item.manual.points_spent(), 0, "blank")
+	assert_eq(item.manual.points_spent(item.base.manual), 0, "blank")
 	assert_eq(item.manual.experience, 0)
 
 
@@ -104,7 +104,7 @@ func test_two_manuals_have_independent_points() -> void:
 	# L'archétype partagé ne porte aucun état : si la moindre ligne de points y
 	# atterrissait un jour, c'est ici qu'on le verrait.
 	var fresh := Item.new(_base())
-	assert_eq(fresh.manual.points_spent(), 0, "un troisième exemplaire naît vierge")
+	assert_eq(fresh.manual.points_spent(fresh.base.manual), 0, "un troisième exemplaire naît vierge")
 
 
 # --------------------------------------------------------------------------
@@ -162,7 +162,7 @@ func test_a_manual_drops_and_arrives_whole() -> void:
 	if seen == null:
 		return
 	assert_eq(seen.item_level, 1, "avec le niveau de sa zone, comme tout le reste")
-	assert_eq(seen.manual.points_spent(), 0, "et vierge")
+	assert_eq(seen.manual.points_spent(seen.base.manual), 0, "et vierge")
 
 	# 2 × 2 dans le sac : il prend de la place, comme un objet.
 	var bag := Inventory.new(Inventory.DEFAULT_COLS, Inventory.DEFAULT_ROWS)
@@ -201,14 +201,14 @@ func test_a_fresh_manual_already_has_a_point() -> void:
 	var m := Manual.new()
 	assert_eq(m.level(), 1)
 	assert_eq(m.points_gained(), 1)
-	assert_eq(m.remaining_points(), 1)
+	assert_eq(m.remaining_points(null), 1)
 
 
 func test_level_and_points_rise_with_experience() -> void:
 	var m := Manual.new()
 	m.gain_experience(Manual.XP_BASE)
 	assert_eq(m.level(), 2, "le premier palier est franchi")
-	assert_eq(m.remaining_points(), 2, "et il donne un point de plus")
+	assert_eq(m.remaining_points(null), 2, "et il donne un point de plus")
 
 
 func test_experience_does_not_go_down() -> void:
@@ -223,7 +223,7 @@ func test_invest_places_a_point() -> void:
 	var m := Manual.new()
 	assert_true(m.invest(arch, "trial"))
 	assert_eq(m.points_of("trial"), 1)
-	assert_eq(m.remaining_points(), 0, "le point est dépensé")
+	assert_eq(m.remaining_points(arch), 0, "le point est dépensé")
 
 
 ## Le garde-fou qui compte : on ne place pas ce qu'on n'a pas gagné.
@@ -244,7 +244,7 @@ func test_a_slot_maximum_is_not_exceeded() -> void:
 	assert_true(m.invest(arch, "trial"))
 	assert_false(m.invest(arch, "trial"), "la case est pleine")
 	assert_eq(m.points_of("trial"), 2)
-	assert_gt(m.remaining_points(), 0, "il reste des points, mais pas où les mettre")
+	assert_gt(m.remaining_points(arch), 0, "il reste des points, mais pas où les mettre")
 
 
 ## Une case qui demande un niveau que le livre n'a pas refuse le point, et le
@@ -266,7 +266,7 @@ func test_no_investing_in_a_missing_slot() -> void:
 	var m := Manual.new()
 	assert_false(m.invest(arch, "swift_bolt"), "pas dans ce livre")
 	assert_false(m.invest(null, "trial"), "ni sans livre du tout")
-	assert_eq(m.points_spent(), 0)
+	assert_eq(m.points_spent(arch), 0)
 
 
 # --------------------------------------------------------------------------

@@ -20,10 +20,11 @@ signal heal(amount: float)
 ## la charge statique. Sans type sur les parts : nommer `DamageInfo`, qui nomme cette
 ## classe, refermerait la boucle.
 signal struck(at: Vector2, parts: Array, victim: StatusEffects)
-## **Ce corps vient de tuer**, d'un coup qui portait ces mots-clés — ceux du lancer, vides
-## sans lancer. La Soif de sang y compte ses charges. Émis par la victime, qui seule sait
-## qu'elle meurt.
-signal slew(keywords: PackedStringArray)
+## **Ce corps vient de tuer** : le lancer du coup (`SkillStats`, null sans lancer), où, et
+## les états de la victime. La Soif de sang y compte ses charges, les explosions des tués
+## y naissent. Émis par la victime, qui seule sait qu'elle meurt. Le lancer sans type,
+## pour la même boucle que `struck`.
+signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED }
@@ -97,8 +98,10 @@ const UNWORN_CHANCES := {Kind.NUMB: "chance d'engourdir", Kind.BLEED: "chance de
 ## du lag.
 const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0]
 
-## Pour un coup **entièrement** d'une nature ; un coup mêlé la partage selon ses parts
-## (jalon 8). **Premier réglage**, comme tous les nombres de ce fichier.
+## Pour **chaque nature présente** dans le coup, quelle que soit sa part (jalon 34, à la
+## PoE 1) : les mêmes dégâts physiques font saigner aussi souvent sur toutes les
+## compétences. Un petit ajout pose donc son état, mais faible — la force suit la part.
+## **Premier réglage**, comme tous les nombres de ce fichier.
 const CHANCE := 0.20
 ## Ajouté à `CHANCE` par PV max retiré : à 1, un coup qui ôte toute la vie pose à coup sûr.
 const CHANCE_PER_HP_LOST := 1.0
@@ -263,18 +266,13 @@ func suffer(
 	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
 	cast_increase := 0.0, source := ""
 ) -> void:
-	var total := 0.0
-	for part in parts:
-		total += part
-	if total <= 0.0:
-		return
 	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux.
 	var better := author.chance_factors if author != null else neutral_factors()
 	for kind: int in ROLLED:
 		var part: float = parts[NATURES[kind]]
 		if part <= 0.0:
 			continue
-		if rng.randf() < chance(part, total, max_hp, factor_of(better[kind], cast_increase)):
+		if rng.randf() < chance(part, max_hp, factor_of(better[kind], cast_increase)):
 			put(kind, part, author, source)
 
 
@@ -297,12 +295,13 @@ func resistance_lost(nature: int) -> float:
 	return 0.0
 
 
-## La part de la nature dans le coup, plus ce qu'elle retire des PV max : un coup de
-## feu qui ôte 30 % de la vie embrase une fois sur deux, un petit coup sur une grosse
-## cible garde ses 20 %.
-static func chance(part: float, total: float, max_hp: float, factor := 1.0) -> float:
+## La chance de base, plus ce que ces dégâts retirent des PV max : un coup de feu qui ôte
+## 30 % de la vie embrase une fois sur deux, un petit coup sur une grosse cible garde ses
+## 20 %. **Pas la part de la nature dans le coup** (jalon 34) : un physique noyé dans un
+## gros coup de feu saignait moins souvent que le même physique seul.
+static func chance(part: float, max_hp: float, factor := 1.0) -> float:
 	var bonus := part / max_hp * CHANCE_PER_HP_LOST if max_hp > 0.0 else 0.0
-	return (CHANCE * part / total + bonus) * factor
+	return (CHANCE + bonus) * factor
 
 
 ## Le facteur d'un coup : celui du lancer, en points de pourcentage, **s'ajoute** à celui

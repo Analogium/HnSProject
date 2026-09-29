@@ -93,6 +93,18 @@ const KEYWORD_OF_SHAPE := {
 const GROWTH_PER_EXTRA_LEVEL := 1.25
 
 ## Une table et non un champ : un troisième coup en croix n'aurait pas de dessin.
+## Ce qui brûle tant qu'on l'entretient : ni « par lancer », ni transformation.
+const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
+
+## Ce qu'une transformation peut quitter et rejoindre (jalon 34) : ce qui se pose et
+## s'oublie. Le reste tient un état chez le lanceur — ce qui brûle, la couronne, les
+## morts-vivants, la cible de la frappe vive — qu'un nœud rendrait orphelin.
+const TRANSFORMABLE: Array[Shape] = [
+	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
+	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
+	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH,
+]
+
 const HITS_PER_SHAPE := {
 	Shape.CROSS: 2,
 }
@@ -261,7 +273,7 @@ func points_max() -> int:
 ## nœud : ils appartiennent au lancer, et `resolve()` les ajoute. Ceux du premier tour
 ## pour une nature qui tourne.
 func keywords() -> PackedStringArray:
-	return _keywords(PackedStringArray(), nature)
+	return _keywords(nature, shape)
 
 
 ## Ce que ses buffs allumés versent dans la fiche à ce nombre de points, tous ensemble.
@@ -300,13 +312,14 @@ func grants_buffs() -> bool:
 
 ## Les mots-clés portés, ceux-ci en plus. L'ordre de lecture est celui de
 ## `Keywords` et de nulle part ailleurs.
-func _keywords(added: PackedStringArray, own_nature: DamageType.Kind) -> PackedStringArray:
+## Ceux du lancer : sa nature et sa forme, qu'une conversion et une transformation ont
+## pu changer (jalon 34).
+func _keywords(own_nature: DamageType.Kind, cast_shape: Shape) -> PackedStringArray:
 	var all_keywords := PackedStringArray([
 		KEYWORD_OF_CADENCE.get(cadence, ""), KEYWORD_OF_NATURE.get(own_nature, ""),
-		KEYWORD_OF_SHAPE.get(shape, ""),
+		KEYWORD_OF_SHAPE.get(cast_shape, ""),
 	])
 	all_keywords.append_array(declared_keywords)
-	all_keywords.append_array(added)
 	return Keywords.sort_in_order(all_keywords)
 
 
@@ -335,18 +348,25 @@ func damage(points: int) -> float:
 ## **Le seul calcul d'un lancer** : le lancer et la fiche du manuel passent par ici.
 ##
 ## Ordre des dégâts : propres — points placés et niveaux en bonus —, fourchettes
-## ajoutées, conversion, accrus sommés, puis « plus ». Un modificateur qui vise un nombre inconnu est ignoré : c'est aux tests de
-## l'attraper.
+## ajoutées, accrus sommés, puis « plus ». Un modificateur qui vise un nombre inconnu
+## est ignoré : c'est aux tests de l'attraper.
 ##
-## Les talents ne sont pas filtrés, mais leurs mots-clés sont posés avant le filtre :
-## un nœud de conversion rend un affixe de feu mordant sur un sort de foudre. `turn`
-## choisit la nature d'une compétence qui en change à chaque lancer.
+## Les talents ne sont pas filtrés. **Une conversion change la nature du lancer avant
+## le filtre** : la boule de feu gelée est un sort de froid, que les affixes de froid
+## mordent et ceux de feu non. `turn` choisit la nature d'une compétence qui en change
+## à chaque lancer ; une conversion l'emporte.
 ##
 ## Mesuré : 8,1 µs nue, 21,6 µs avec trois lignes d'objet et deux nœuds.
 func resolve(
 	points: int, stats: CharacterStats, mods: Array = [], talents: Array = [], turn := 0
 ) -> SkillStats:
 	var own_nature := nature_at(turn)
+	var cast_shape := shape
+	for t: InvestedTalent in talents:
+		if t.node.converts:
+			own_nature = t.node.converts_to
+		if t.node.transforms:
+			cast_shape = t.node.shape
 	var r := SkillStats.new()
 	r.nature = own_nature
 	r.projectiles = float(projectiles)
@@ -363,9 +383,10 @@ func resolve(
 	r.status_chance_increase = status_chance_increase
 	r.inflicted_state = inflicted_state
 	r.inflict_chance = inflict_chance
-	r.hits = HITS_PER_SHAPE.get(shape, 1)
+	r.shape = cast_shape
+	r.hits = HITS_PER_SHAPE.get(cast_shape, 1)
 	r.skill_id = id
-	r.sustained = shape in [Shape.AURA, Shape.BUFF, Shape.CYCLONE] and not is_cast_buff()
+	r.sustained = cast_shape in SUSTAINED_SHAPES and not is_cast_buff()
 	r.mana_cost = mana_cost
 	r.use_time = use_time(stats)
 	r.recharge = recharge(stats)
@@ -373,10 +394,7 @@ func resolve(
 		r.crit_chance = stats.crit_chance
 		r.crit_multiplier = stats.crit_multiplier
 
-	var given := PackedStringArray()
-	for t: InvestedTalent in talents:
-		given.append_array(t.node.added_keywords)
-	var worn_items := _keywords(given, own_nature)
+	var worn_items := _keywords(own_nature, cast_shape)
 	r.keywords = worn_items
 
 	var fields: Array[StatMod] = []
@@ -397,8 +415,6 @@ func resolve(
 	r.place_the_base(own_nature, own)
 
 	StatMod.apply(r, fields)
-	for t: InvestedTalent in talents:
-		r.apply_conversion(t.node.converts_to, t.conversion())
 	var increased := 0.0
 	var more := 1.0
 	for m in damage_percents:

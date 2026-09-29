@@ -102,9 +102,10 @@ Niveaux de zone : 1 à 120.
 ## Manuels
 
 Un manuel gagne **un point par niveau**, 20 au plafond
-(`Manual.MAX_LEVEL`), et ses cases, ses passifs et ses nœuds se servent
-dans le même sac : la colonne « points » dit ce que chacun accepte, et leur
-somme dépasse volontairement ce qu'un livre peut gagner.
+(`Manual.MAX_LEVEL`), pour ses cases et ses passifs : la colonne « points » dit
+ce que chacun accepte, et leur somme dépasse volontairement ce qu'un livre peut
+gagner. **Chaque arbre de compétence a son propre pool**, autant de points que
+le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profonds.
 
 ### Maître de la foudre — `manual_lightning`
 
@@ -117,21 +118,21 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Conducteur | passif | niveau 2 | 4 | — | — | — | +6 % de dégâts de foudre accrus · +10 mana |
 | Électricité statique | sort foudre | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · draine 1 mana/s | Champ statique : +5 % chance de charge statique |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Surcharge | Éclair vif | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Fourche | Éclair vif | Surcharge | 2 points de compétence | 1 | +1 nombre de projectiles |
-| Trait de glace | Éclair vif | — | 3 points de compétence | 1 | +20 % de dégâts amplifiés · convertit 50 % en froid |
-| Ramification | Chaîne d'éclairs | — | 1 point de compétence | 2 | +1 nombre de cibles |
-| Haute tension | Chaîne d'éclairs | Ramification | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
-| Court-circuit | Chaîne d'éclairs | — | 3 points de compétence | 1 | -1 nombre de cibles · +35 % de dégâts amplifiés |
-| Front orageux | Nuage d'orage | — | 1 point de compétence | 2 | +20 % de rayon accru |
-| Orage durable | Nuage d'orage | Front orageux | 2 points de compétence | 2 | +25 % de durée accrue |
-| Grêle | Nuage d'orage | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 60 % en froid |
-| Persistance | Ruée d'orage | — | 1 point de compétence | 2 | +25 % de durée accrue |
-| Sans répit | Ruée d'orage | — | 2 points de compétence | 1 | -100 % de recharge réduite · +400 % de temps du geste accru |
+| Surcharge | Éclair vif | — | — | 3 | +12 % de dégâts amplifiés |
+| Fourche | Éclair vif | Surcharge | — | 1 | +1 nombre de projectiles |
+| Trait de glace | Éclair vif | — | — | 1 | +20 % de dégâts amplifiés · devient froid |
+| Ramification | Chaîne d'éclairs | — | — | 2 | +1 nombre de cibles |
+| Haute tension | Chaîne d'éclairs | Ramification | — | 3 | +12 % de dégâts amplifiés |
+| Court-circuit | Chaîne d'éclairs | — | — | 1 | -1 nombre de cibles · +35 % de dégâts amplifiés |
+| Front orageux | Nuage d'orage | — | — | 2 | +20 % de rayon accru |
+| Orage durable | Nuage d'orage | Front orageux | — | 2 | +25 % de durée accrue |
+| Grêle | Nuage d'orage | — | — | 1 | +15 % de dégâts amplifiés · devient froid |
+| Persistance | Ruée d'orage | — | — | 2 | +25 % de durée accrue |
+| Sans répit | Ruée d'orage | — | — | 1 | -100 % de recharge réduite · +400 % de temps du geste accru |
 
-46 destinations de points pour 20 gagnés.
+27 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître chevalier — `manual_weapons`
 
@@ -145,26 +146,26 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Ruée tranchante | attaque physique | niveau 5 | 5 | 10 mana | cadence de l'arme · recharge 3.00 s | dash · 0.3 s · rayon 12 · toutes les 0.25 s | 16 · 21 · 26 · 32 · 40 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Élan | Frappe lourde | — | 1 point de compétence | 3 | +14 % de dégâts amplifiés |
-| Lame ardente | Frappe lourde | Élan | 2 points de compétence | 1 | convertit 40 % en feu · donne le mot-clé Feu |
-| Saignée | Frappe lourde | — | 2 points de compétence | 2 | ajoute 3 à 8 dégâts physiques |
-| Taille | Coup en croix | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Estoc | Coup en croix | Taille | 2 points de compétence | 2 | ajoute 2 à 6 dégâts physiques |
-| Lame sainte | Coup en croix | — | 3 points de compétence | 1 | convertit 50 % en sacré · donne le mot-clé Sacré |
-| Ronde | Épée spirale | — | 1 point de compétence | 2 | +1 maximum simultané |
-| Tranchant | Épée spirale | Ronde | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
-| Endurance | Épée spirale | — | 2 points de compétence | 2 | +30 % de durée accrue |
-| Fil de l'arc | Vague tranchante | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Course | Vague tranchante | Fil de l'arc | 2 points de compétence | 2 | +25 % de durée accrue |
-| Fauchage | Cyclone | — | 1 point de compétence | 3 | +10 % de dégâts amplifiés |
-| Envergure | Cyclone | Fauchage | 2 points de compétence | 2 | +12 % de rayon accru |
-| Fil tranchant | Ruée tranchante | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Andain | Ruée tranchante | Fil tranchant | 2 points de compétence | 2 | +15 % de rayon accru |
-| Enchaînement | Ruée tranchante | — | 2 points de compétence | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
+| Élan | Frappe lourde | — | — | 3 | +14 % de dégâts amplifiés |
+| Lame ardente | Frappe lourde | Élan | — | 1 | devient feu |
+| Saignée | Frappe lourde | — | — | 2 | ajoute 3 à 8 dégâts physiques |
+| Taille | Coup en croix | — | — | 3 | +12 % de dégâts amplifiés |
+| Estoc | Coup en croix | Taille | — | 2 | ajoute 2 à 6 dégâts physiques |
+| Lame sainte | Coup en croix | — | — | 1 | devient sacré |
+| Ronde | Épée spirale | — | — | 2 | +1 maximum simultané |
+| Tranchant | Épée spirale | Ronde | — | 3 | +12 % de dégâts amplifiés |
+| Endurance | Épée spirale | — | — | 2 | +30 % de durée accrue |
+| Fil de l'arc | Vague tranchante | — | — | 3 | +12 % de dégâts amplifiés |
+| Course | Vague tranchante | Fil de l'arc | — | 2 | +25 % de durée accrue |
+| Fauchage | Cyclone | — | — | 3 | +10 % de dégâts amplifiés |
+| Envergure | Cyclone | Fauchage | — | 2 | +12 % de rayon accru |
+| Fil tranchant | Ruée tranchante | — | — | 3 | +12 % de dégâts amplifiés |
+| Andain | Ruée tranchante | Fil tranchant | — | 2 | +15 % de rayon accru |
+| Enchaînement | Ruée tranchante | — | — | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
 
-69 destinations de points pour 20 gagnés.
+34 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître des flammes — `manual_fire`
 
@@ -177,22 +178,49 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts de feu accrus · +3 % rés. feu |
 | Ignition | sort feu | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · brûle 1 % PV/s | Combustion : +13 % chance d'embraser · +8 % de vitesse accrue |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Attisement | Boule de feu | — | 1 point de compétence | 3 | +13 % de dégâts amplifiés |
-| Souffle ardent | Boule de feu | Attisement | 2 points de compétence | 2 | +30 % de rayon accru |
-| Double langue | Boule de feu | — | 3 points de compétence | 1 | +1 nombre de projectiles |
-| Longue vie | Serpent infernal | — | 1 point de compétence | 2 | +25 % de durée accrue |
-| Crocs | Serpent infernal | Longue vie | 2 points de compétence | 2 | ajoute 4 à 9 dégâts de feu |
-| Mue | Serpent infernal | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
-| Brasier | Immolation | — | 1 point de compétence | 2 | +20 % de rayon accru |
-| Fournaise | Immolation | Brasier | 2 points de compétence | 3 | +14 % de dégâts amplifiés |
-| Flamme noire | Immolation | — | 3 points de compétence | 1 | +15 % de dégâts amplifiés · convertit 50 % en nécrotique |
-| Sillage | Ruée ardente | — | 1 point de compétence | 2 | +25 % de durée accrue |
-| Braises | Ruée ardente | Sillage | 2 points de compétence | 2 | +20 % de rayon accru |
-| Bûcher | Ruée ardente | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Attisement | Boule de feu | — | — | 4 | +8 % de dégâts amplifiés |
+| Souffle ardent | Boule de feu | — | — | 3 | +15 % de rayon accru |
+| Vélocité | Boule de feu | — | — | 2 | +20 % de vitesse de projectile accrue |
+| Ardeur | Boule de feu | Attisement | 5 points dans l'arbre | 2 | +25 % de chance critique de base accrue |
+| Braises dispersées | Boule de feu | Souffle ardent | 5 points dans l'arbre | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Double langue | Boule de feu | Vélocité | 5 points dans l'arbre | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
+| Perforation | Boule de feu | Vélocité | 5 points dans l'arbre | 2 | +1 nombre d'ennemis traversés |
+| Givre | Boule de feu | Ardeur | 10 points dans l'arbre | 1 | devient froid |
+| Étincelles | Boule de feu | Braises dispersées | 10 points dans l'arbre | 3 | +15 % chance d'état |
+| Fragmentation | Boule de feu | Perforation | 10 points dans l'arbre | 3 | +1 nombre d'éclats |
+| Réaction en chaîne | Boule de feu | Étincelles | 15 points dans l'arbre | 1 | +24 rayon de l'explosion des tués |
+| Mue | Serpent infernal | — | — | 4 | +8 % de dégâts amplifiés |
+| Longue vie | Serpent infernal | — | — | 3 | +20 % de durée accrue |
+| Crocs | Serpent infernal | — | — | 2 | ajoute 4 à 9 dégâts de feu |
+| Vif | Serpent infernal | Mue | 5 points dans l'arbre | 2 | +15 % vitesse du serpent · -8 % de durée réduite |
+| Queue de flammes | Serpent infernal | Longue vie | 5 points dans l'arbre | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Chasseur | Serpent infernal | Crocs | 5 points dans l'arbre | 1 | +120 rayon de chasse |
+| Couvée | Serpent infernal | Vif | 10 points dans l'arbre | 2 | +1 nombre de serpents · -15 % de dégâts atténués |
+| Mue explosive | Serpent infernal | Queue de flammes | 10 points dans l'arbre | 3 | +10 rayon de l'explosion finale |
+| Venin | Serpent infernal | Chasseur | 10 points dans l'arbre | 1 | devient nécrotique |
+| Hydre | Serpent infernal | Mue explosive | 15 points dans l'arbre | 1 | +2 nombre de petits serpents |
+| Fournaise | Immolation | — | — | 5 | +8 % de dégâts amplifiés |
+| Brasier | Immolation | — | — | 4 | +15 % de rayon accru |
+| Cœur tiède | Immolation | — | — | 3 | -20 % de brûlure subie réduite |
+| Pouls lent | Immolation | Fournaise | 5 points dans l'arbre | 2 | +50 % d'intervalle des frappes accru · +60 % de dégâts amplifiés |
+| Étincelles | Immolation | Brasier | 5 points dans l'arbre | 3 | +15 % chance d'état |
+| Phénix | Immolation | Cœur tiède | 5 points dans l'arbre | 1 | +100 % de brûlure subie accrue · +40 % de dégâts amplifiés |
+| Flamme noire | Immolation | Pouls lent | 10 points dans l'arbre | 1 | +15 % de dégâts amplifiés · devient nécrotique |
+| Cendres vivantes | Immolation | Étincelles | 10 points dans l'arbre | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Contagion ardente | Immolation | Cendres vivantes | 15 points dans l'arbre | 1 | +30 rayon de l'explosion des tués |
+| Sillage | Ruée ardente | — | — | 3 | +25 % de durée accrue |
+| Braises | Ruée ardente | — | — | 3 | +20 % de rayon accru |
+| Bûcher | Ruée ardente | — | — | 4 | +8 % de dégâts amplifiés |
+| Élan | Ruée ardente | Sillage | 5 points dans l'arbre | 2 | -10 % de recharge réduite |
+| Atterrissage | Ruée ardente | Braises | 5 points dans l'arbre | 3 | +10 rayon de l'explosion finale |
+| Tison | Ruée ardente | Bûcher | 5 points dans l'arbre | 2 | +12 % de dégâts accrus contre les embrasés |
+| Brûle-pavé | Ruée ardente | Élan | 10 points dans l'arbre | 2 | +50 % de durée accrue · -15 % de dégâts atténués |
+| Onde de choc | Ruée ardente | Atterrissage | 10 points dans l'arbre | 2 | +25 % de rayon de l'explosion finale accru |
+| Étincelles | Ruée ardente | Tison | 10 points dans l'arbre | 3 | +15 % chance d'état |
 
-54 destinations de points pour 20 gagnés.
+28 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître du froid — `manual_cold`
 
@@ -204,16 +232,16 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Désastre hivernal | sort froid | niveau 12 | 5 | 26 mana | 0.80 s · recharge 3.00 s | vortex · 4.0 s · rayon 52 · toutes les 0.50 s | 6 · 8 · 10 · 12 · 15 |
 | Morsure du gel | passif | niveau 2 | 4 | — | — | — | +10 % chance de transir |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Éclats | Pics de glace | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Poussée | Pics de glace | Éclats | 2 points de compétence | 2 | +10 % de rayon accru |
-| Souffle | Nova de glace | — | 1 point de compétence | 3 | +10 % de rayon accru |
-| Morsure | Nova de glace | Souffle | 2 points de compétence | 2 | +12 % de dégâts amplifiés |
-| Blizzard | Désastre hivernal | — | 1 point de compétence | 2 | +20 % de durée accrue |
-| Œil du cyclone | Désastre hivernal | Blizzard | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Éclats | Pics de glace | — | — | 3 | +12 % de dégâts amplifiés |
+| Poussée | Pics de glace | Éclats | — | 2 | +10 % de rayon accru |
+| Souffle | Nova de glace | — | — | 3 | +10 % de rayon accru |
+| Morsure | Nova de glace | Souffle | — | 2 | +12 % de dégâts amplifiés |
+| Blizzard | Désastre hivernal | — | — | 2 | +20 % de durée accrue |
+| Œil du cyclone | Désastre hivernal | Blizzard | — | 3 | +12 % de dégâts amplifiés |
 
-38 destinations de points pour 20 gagnés.
+23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître de la lumière — `manual_holy`
 
@@ -225,16 +253,16 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Lumière sacrée | sort sacré | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · draine 5 mana/s | Grâce : +6 % rés. sacré · +13 % chance de bénir |
 | Onction | passif | niveau 2 | 4 | — | — | — | +0.4 PV/s |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Percée | Frappe sacrée | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Allonge du trait | Frappe sacrée | Percée | 2 points de compétence | 2 | +10 % de rayon accru |
-| Colonne | Pilier sacré | — | 1 point de compétence | 3 | +10 % de rayon accru |
-| Jugement | Pilier sacré | Colonne | 2 points de compétence | 2 | +12 % de dégâts amplifiés |
-| Litanie | Pulsation sacrée | — | 1 point de compétence | 2 | +20 % de durée accrue |
-| Ferveur | Pulsation sacrée | Litanie | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
+| Percée | Frappe sacrée | — | — | 3 | +12 % de dégâts amplifiés |
+| Allonge du trait | Frappe sacrée | Percée | — | 2 | +10 % de rayon accru |
+| Colonne | Pilier sacré | — | — | 3 | +10 % de rayon accru |
+| Jugement | Pilier sacré | Colonne | — | 2 | +12 % de dégâts amplifiés |
+| Litanie | Pulsation sacrée | — | — | 2 | +20 % de durée accrue |
+| Ferveur | Pulsation sacrée | Litanie | — | 3 | +12 % de dégâts amplifiés |
 
-38 destinations de points pour 20 gagnés.
+23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître de la nécromancie — `manual_necrotic`
 
@@ -247,24 +275,24 @@ somme dépasse volontairement ce qu'un livre peut gagner.
 | Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s · recharge 5.00 s | curse · rayon 48 |  |
 | Nécrose avancée | sort nécrotique | niveau 12 | 3 | 0 mana | recharge 0.60 s | buff | Nécrose : +10 % chance de pourrir |
 
-| nœud | compétence | parent | demande | points | par point |
+| nœud | compétence | parent | palier | points | par point |
 |---|---|---|---|---|---|
-| Virulence | Peste | — | 1 point de compétence | 3 | +13 % de dégâts amplifiés |
-| Condamnation | Peste | Virulence | 2 points de compétence | 2 | +20 % de dégâts accrus contre les maudits |
-| Contagion | Peste | — | 3 points de compétence | 1 | +1 nombre de projectiles |
-| Moelle | Relève | — | 1 point de compétence | 3 | +12 % de dégâts amplifiés |
-| Guet | Relève | Moelle | 2 points de compétence | 2 | +20 % de rayon accru |
-| Légion d'os | Relève | — | 3 points de compétence | 1 | +1 maximum simultané |
-| Miasme | Déferlante toxique | — | 1 point de compétence | 2 | +20 % de rayon accru |
-| Caustique | Déferlante toxique | Miasme | 2 points de compétence | 3 | +14 % de dégâts amplifiés |
-| Dessiccation | Déferlante toxique | — | 2 points de compétence | 2 | +25 % de dégâts accrus contre les flétris |
-| Couvée | Porte pourrissante | — | 1 point de compétence | 2 | +25 % de durée accrue |
-| Boursouflure | Porte pourrissante | Couvée | 2 points de compétence | 2 | +20 % de rayon accru |
-| Essaim | Porte pourrissante | — | 2 points de compétence | 3 | +12 % de dégâts amplifiés |
-| Anathème | Malédiction putride | — | 1 point de compétence | 2 | +25 % de rayon accru |
-| Malédiction prompte | Malédiction putride | Anathème | 1 point de compétence | 2 | -15 % de temps du geste réduit |
+| Virulence | Peste | — | — | 3 | +13 % de dégâts amplifiés |
+| Condamnation | Peste | Virulence | — | 2 | +20 % de dégâts accrus contre les maudits |
+| Contagion | Peste | — | — | 1 | +1 nombre de projectiles |
+| Moelle | Relève | — | — | 3 | +12 % de dégâts amplifiés |
+| Guet | Relève | Moelle | — | 2 | +20 % de rayon accru |
+| Légion d'os | Relève | — | — | 1 | +1 maximum simultané |
+| Miasme | Déferlante toxique | — | — | 2 | +20 % de rayon accru |
+| Caustique | Déferlante toxique | Miasme | — | 3 | +14 % de dégâts amplifiés |
+| Dessiccation | Déferlante toxique | — | — | 2 | +25 % de dégâts accrus contre les flétris |
+| Couvée | Porte pourrissante | — | — | 2 | +25 % de durée accrue |
+| Boursouflure | Porte pourrissante | Couvée | — | 2 | +20 % de rayon accru |
+| Essaim | Porte pourrissante | — | — | 3 | +12 % de dégâts amplifiés |
+| Anathème | Malédiction putride | — | — | 2 | +25 % de rayon accru |
+| Malédiction prompte | Malédiction putride | Anathème | — | 2 | -15 % de temps du geste réduit |
 
-54 destinations de points pour 20 gagnés.
+24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Manuels de classe
 
@@ -279,7 +307,7 @@ quoi dépenser leurs vingt points, et c'est accepté (jalon 28).
 | Frappe vive | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | lunge · rayon 130 | 24 · 31 · 39 · 48 · 58 |
 | Soif de sang | attaque physique | niveau 3 | 1 | 0 mana | cadence de l'arme · recharge 0.60 s | buff · 5 charges de 3.0 s | Frénésie : +5 % de vitesse d'attaque accrue |
 
-6 destinations de points pour 20 gagnés.
+6 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Manuel de la sorcière — `manual_witch`
 
@@ -288,7 +316,7 @@ quoi dépenser leurs vingt points, et c'est accepté (jalon 28).
 | Projectile élémentaire | sort feu | niveau 1 | 5 | 7 mana | 0.45 s | comet · +200 % de chance d'état · tour à tour feu, froid, foudre | 18 · 23 · 29 · 36 · 44 |
 | Amplification des sorts | sort foudre | niveau 3 | 1 | 20 mana | 0.30 s · recharge 10.00 s | buff · 10.0 s | Sorts amplifiés : +20 % de dégâts de sort amplifiés |
 
-6 destinations de points pour 20 gagnés.
+6 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ## Arbre de passifs
 

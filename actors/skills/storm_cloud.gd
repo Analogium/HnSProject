@@ -41,7 +41,7 @@ static func put(parent: Node, point: Vector2, cast: SkillStats, author: StatusEf
 	var cloud := StormCloud.new()
 	cloud._cast = cast
 	cloud._author = author
-	cloud._tint = DamageType.COLORS[cast.dominant_nature()]
+	cloud._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(cloud)
 	Settings.veil(cloud, Settings.SPELLS)
 	cloud.global_position = point

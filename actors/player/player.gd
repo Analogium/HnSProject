@@ -302,10 +302,10 @@ func cast_slot(index: int) -> bool:
 		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
 	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
 	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
-	if skill.shape != Skill.Shape.DASH:
+	if cast.shape != Skill.Shape.DASH:
 		sprite.attack(skill.cadence == Skill.Cadence.CAST)
-	# La forme de la compétence et non celle du geste : aucun nœud ne la change.
-	match skill.shape:
+	# La forme du lancer : un nœud peut l'avoir transformée (jalon 34).
+	match cast.shape:
 		Skill.Shape.BOLT:
 			_roll(cast, bolt_scene)
 		Skill.Shape.BALL:
@@ -319,7 +319,11 @@ func cast_slot(index: int) -> bool:
 		Skill.Shape.CLOUD:
 			StormCloud.put(_effects_parent(), _aim_point(), cast, states)
 		Skill.Shape.SNAKE:
-			HellSnake.drop(_effects_parent(), _aim_point(), cast, facing, states)
+			# Une couvée part en éventail, centrée sur la visée.
+			var brood := 1 + int(cast.brood)
+			for i in brood:
+				var turn := (float(i) - float(brood - 1) * 0.5) * HellSnake.BROOD_SPREAD
+				HellSnake.drop(_effects_parent(), _aim_point(), cast, facing.rotated(turn), states)
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
@@ -339,7 +343,7 @@ func cast_slot(index: int) -> bool:
 			# cercle et s'efface, ce qu'une nova fait exactement.
 			Explosion.put(
 				_effects_parent(), global_position, cast.roll(Game.rng), cast.radius, null,
-				DamageType.COLORS[cast.dominant_nature()], states, cast
+				DamageType.COLORS[cast.nature], states, cast
 			)
 		Skill.Shape.VORTEX:
 			IceVortex.open(_effects_parent(), global_position, cast, states)
@@ -481,11 +485,28 @@ func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
 	StaticCharge.put(_effects_parent(), at, at - global_position, parts, states)
 
 
-## Un ennemi tué par une attaque : chaque buff à charges allumé en gagne une. Depuis un
-## rappel de collision, mais rien n'y naît : la fiche seule est refaite.
-func _on_slew(keywords: PackedStringArray) -> void:
-	if not keywords.has(Keywords.ATTACK):
+## Un ennemi tué. **Depuis un rappel de collision** : ce qui naît ici passe par
+## `DeferredTree` (invariant 4) — l'explosion et le sol le font d'eux-mêmes.
+func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
+	if cast == null:
 		return
+	if cast.kill_burst > 0.0 and victim != null and victim.active(StatusEffects.Kind.IGNITE):
+		var parts := cast.roll(Game.rng)
+		for i in parts.size():
+			parts[i] *= SkillStats.KILL_BURST_PART
+		Explosion.put(
+			_effects_parent(), at, parts, cast.kill_burst, null,
+			DamageType.COLORS[cast.nature], states, cast
+		)
+	# L'aura n'a pas d'impact où poser son sol : elle le pose sous ce qu'elle tue.
+	if cast.ground_duration > 0.0 and cast.shape == Skill.Shape.AURA:
+		DashTrail.patch(_effects_parent(), at, cast.ground(), states)
+	if cast.keywords.has(Keywords.ATTACK):
+		_stack_on_kill()
+
+
+## Chaque buff à charges allumé en gagne une. Rien n'y naît : la fiche seule est refaite.
+func _stack_on_kill() -> void:
 	var gained := false
 	for id: String in _lit:
 		if lit(id) and _lit[id] is Buff:
@@ -517,6 +538,11 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
 	elif skill.grants_buffs():
 		_light(skill.id, Buff.light(self, skill, cast.duration))
+	if cast.end_burst > 0.0:
+		Explosion.put(
+			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
+			DamageType.COLORS[cast.nature], states, cast
+		)
 
 
 ## La cible d'une frappe vive : parmi les ennemis à sa portée, **le plus proche de la
@@ -721,7 +747,7 @@ func _roll(cast: SkillStats, scene: PackedScene) -> void:
 		start = -spread * 0.5 + (step * 0.5 if closes else 0.0)
 
 	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
-	var nature := cast.dominant_nature()
+	var nature := cast.nature
 	for i in count:
 		var direction := facing.rotated(start + step * float(i))
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.

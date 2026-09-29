@@ -156,24 +156,35 @@ func test_a_book_stored_without_room_is_discarded() -> void:
 ## Tout ce que la page dessine tient dans la fenêtre. Aucune assertion ne voit un
 ## carré qui déborde ; celle-ci le calcule avec **les mêmes fonctions** que le
 ## dessin, sinon elle validerait sa propre copie.
+func _page() -> Rect2:
+	return Rect2(0.0, _panel._page_top(), _panel.size.x, _panel._help_top() - _panel._page_top())
+
+
+## Les cases dans la page de la grille ; les nœuds, et la grille d'arbre entière, dans
+## la fenêtre agrandie d'un arbre ouvert (jalon 34).
 func test_slots_and_nodes_fit_in_the_panel() -> void:
-	var frame := Rect2(
-		0.0, _panel._page_top(), _panel.size.x, _panel._help_top() - _panel._page_top()
-	)
+	var grid := _page()
+	_panel._opened = "swift_bolt"
+	var tree := _page()
+	assert_gt(tree.size.y, grid.size.y, "l'arbre ouvert agrandit la fenêtre")
 	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual == null:
 			continue
 		for cell: ManualCell in base.manual.cells:
 			assert_true(
-				frame.encloses(_panel._cell_rect(cell.position)),
+				grid.encloses(_panel._cell_rect(cell.position)),
 				"« %s » : la case %s sort de la page" % [cell.identifier(), cell.position]
 			)
 			for node: TalentNode in cell.talents:
 				assert_true(
-					frame.encloses(_panel._node_rect(node.position)),
-					"« %s » : le nœud %s sort de la page" % [node.id, node.position]
+					node.position.x < ManualPanel.TREE_COLUMNS and node.position.y < ManualPanel.TREE_ROWS,
+					"« %s » : le nœud %s sort de la grille" % [node.id, node.position]
 				)
-	assert_true(frame.encloses(_panel._root_rect()), "et la racine d'un arbre y tient")
+	var corner := Vector2i(ManualPanel.TREE_COLUMNS - 1, ManualPanel.TREE_ROWS - 1)
+	assert_true(tree.encloses(_panel._node_rect(corner)), "le coin de la grille tient")
+	assert_true(tree.encloses(_panel._root_rect()), "et la racine d'un arbre y tient")
+	_panel._opened = ""
+	assert_eq(_page().size.y, grid.size.y, "refermé, elle reprend sa taille")
 
 
 ## Le clic sur une case de compétence **ouvre son arbre** : c'est là que se
@@ -200,7 +211,7 @@ func test_a_click_in_the_void_places_nothing() -> void:
 	var book := _rich_book()
 	_click_on(Vector2(_panel.size.x - 3.0, _panel._help_top() - 2.0))
 	_panel._invest("spell_that_does_not_exist")
-	assert_eq(book.manual.points_spent(), 0)
+	assert_eq(book.manual.points_spent(book.base.manual), 0)
 
 
 ## Sans livre à l'emplacement ouvert, aucun clic ne peut rien faire.
@@ -257,11 +268,11 @@ func test_right_click_refunds_a_node_point() -> void:
 	var branch := _bolt_cell().talents[0]
 	_click_on(_panel._root_rect().get_center())
 	_click_on(_panel._node_rect(branch.position).get_center())
-	var remaining_all := book.manual.remaining_points()
+	var remaining_all := book.manual.tree_remaining(_bolt_cell())
 
 	_click_on(_panel._node_rect(branch.position).get_center(), MOUSE_BUTTON_RIGHT)
 	assert_eq(book.manual.points_of(branch.id), 0, "le point est reparti")
-	assert_eq(book.manual.remaining_points(), remaining_all + 1, "et il est replaçable")
+	assert_eq(book.manual.tree_remaining(_bolt_cell()), remaining_all + 1, "et il est replaçable")
 
 	_click_on(_panel._root_rect().get_center(), MOUSE_BUTTON_RIGHT)
 	assert_eq(book.manual.points_of("swift_bolt"), 0, "la racine rend le point de la compétence")
@@ -462,9 +473,9 @@ func _triggers(skill_id: String) -> Array:
 	return _panel._trigger_sheet(SkillCatalog.by_id(skill_id)).lines
 
 
-## **La vraie chance** : un pic de glace ne transit qu'à la part de froid de son coup.
-## Des dégâts de feu ajoutés par l'arme lui donnent une chance d'embraser, et prennent
-## leur part à celle de transir — la fenêtre lit le coup résolu, pas la compétence.
+## **La vraie chance** : des dégâts de feu ajoutés par l'arme donnent au pic de glace
+## une chance d'embraser, **entière** (jalon 34), sans rien ôter à celle de transir — la
+## fenêtre lit le coup résolu, pas la compétence.
 func test_the_details_follow_what_the_hit_really_carries() -> void:
 	_studied("manual_cold", "ice_spike")
 	var chill := StatusEffects.name(StatusEffects.Kind.CHILL)
@@ -483,13 +494,10 @@ func test_the_details_follow_what_the_hit_really_carries() -> void:
 		PackedStringArray([StatMod.percentage(roundi(cast.crit_chance * 100.0))]),
 		"le critique du lancer, celui que la fiche annonce"
 	)
-	var expected := StatusEffects.chance(shares[DamageType.Kind.FIRE], 1.0, 0.0, 1.0)
+	assert_gt(shares[DamageType.Kind.FIRE], 0.0)
 	var fire := _values(_triggers("ice_spike"), ignite)
-	assert_eq(fire.size(), 1, "le feu ajouté embrase")
-	assert_eq(fire[0], StatMod.percentage(roundi(expected * 100.0)), "à la part du feu dans le coup")
-	var cold := _values(_triggers("ice_spike"), chill)[0]
-	assert_eq(cold, StatMod.percentage(roundi(StatusEffects.chance(shares[DamageType.Kind.COLD], 1.0, 0.0, 1.0) * 100.0)),
-		"et le froid garde sa part")
+	assert_eq(fire, PackedStringArray(["20 %"]), "le feu ajouté embrase, quelle que soit sa part")
+	assert_eq(_values(_triggers("ice_spike"), chill), PackedStringArray(["20 %"]), "et le froid garde sa chance")
 
 
 ## Le tour de la foudre du Projectile élémentaire : 20 % fois 1 + 200 %.
@@ -665,16 +673,19 @@ func test_the_sheet_announces_the_crit_of_the_skill() -> void:
 	assert_eq(_values(lines, "dégâts critiques"), PackedStringArray(["200 %"]))
 
 
-## Un nœud de conversion dit ce qu'il déplace et où : c'est la ligne qui explique
-## à quelle résistance le coup s'oppose désormais.
+## Converti, le sort **est** de sa nouvelle nature (jalon 34) : ses dégâts de base s'y
+## écrivent, et le nœud dit ce qu'il devient.
 func test_the_sheet_announces_the_conversion() -> void:
 	var book := _rich_book()
 	for id in ["swift_bolt", "swift_bolt", "swift_bolt", "swift_bolt_glacial_bolt"]:
 		assert_true(book.manual.invest(book.base.manual, id), "« %s »" % id)
 
-	assert_eq(
-		_values(_sheet_of(book, "swift_bolt"), "converti"), PackedStringArray(["50 % en froid"])
-	)
+	var base := _values(_sheet_of(book, "swift_bolt"), "de base")
+	assert_eq(base.size(), 1)
+	assert_true(base[0].ends_with("froid"), base[0])
+	var node := book.base.manual.node_of("swift_bolt_glacial_bolt")
+	var sheet := _panel._node_sheet(book.manual, book.base.manual.cell_of("swift_bolt"), node)
+	assert_eq(_values(sheet.lines, "devient"), PackedStringArray(["Froid"]))
 
 
 ## La fiche d'un passif dit ce qu'il donne, **avec les mots de l'infobulle d'un
@@ -722,16 +733,15 @@ func test_a_node_sheet_says_what_it_requires() -> void:
 	)
 
 
-## Un nœud qui donne un mot-clé le dit : c'est ce qui le distingue d'un nœud de
-## conversion simple, et ça vaut un point de plus.
-func test_a_node_sheet_announces_the_keyword_it_gives() -> void:
+## Un nœud de conversion dit ce que la compétence devient : c'est ce mot-clé qui fait
+## mordre l'équipement de la nature d'arrivée.
+func test_a_node_sheet_announces_what_the_skill_becomes() -> void:
 	var book := _rich_book()
 	var cell := ItemCatalog.by_id("manual_weapons").manual.cell_of("heavy_strike")
 	var burning_blade := cell.node_of("heavy_strike_burning_blade")
 	var lines := _panel._node_sheet(book.manual, cell, burning_blade).lines
 
-	assert_eq(_values(lines, "mot-clé"), PackedStringArray(["Feu"]))
-	assert_eq(_values(lines, "converti"), PackedStringArray(["40 % en feu"]))
+	assert_eq(_values(lines, "devient"), PackedStringArray(["Feu"]))
 
 
 ## **Chaque ligne vient de la résolution du lancer** : un sort à trois natures et

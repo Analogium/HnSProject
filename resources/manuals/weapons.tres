@@ -24,7 +24,6 @@ script = ExtResource("3_noeud")
 id = "heavy_strike_momentum"
 name = "Élan"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_elan_0")])
 
@@ -34,11 +33,9 @@ id = "heavy_strike_burning_blade"
 name = "Lame ardente"
 position = Vector2i(1, 0)
 parent = "heavy_strike_momentum"
-required_points = 2
 points_max = 1
 converts_to = 2
-converted_part_per_point = 0.40
-added_keywords = PackedStringArray("fire")
+converts = true
 
 [sub_resource type="Resource" id="L_frappe_lourde_saignee_0"]
 script = ExtResource("4_ligne")
@@ -51,7 +48,6 @@ script = ExtResource("3_noeud")
 id = "heavy_strike_bloodletting"
 name = "Saignée"
 position = Vector2i(0, 1)
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_saignee_0")])
 
@@ -73,7 +69,6 @@ script = ExtResource("3_noeud")
 id = "cross_slash_edge"
 name = "Taille"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_taille_0")])
 
@@ -89,7 +84,6 @@ id = "cross_slash_thrust"
 name = "Estoc"
 position = Vector2i(1, 0)
 parent = "cross_slash_edge"
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_estoc_0")])
 
@@ -98,11 +92,9 @@ script = ExtResource("3_noeud")
 id = "cross_slash_holy_blade"
 name = "Lame sainte"
 position = Vector2i(0, 1)
-required_points = 3
 points_max = 1
 converts_to = 5
-converted_part_per_point = 0.50
-added_keywords = PackedStringArray("holy")
+converts = true
 
 [sub_resource type="Resource" id="C_coup_en_croix"]
 script = ExtResource("2_case")
@@ -120,7 +112,6 @@ script = ExtResource("3_noeud")
 id = "spiral_sword_round"
 name = "Ronde"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_ronde_0")])
 
@@ -137,7 +128,6 @@ id = "spiral_sword_sharpness"
 name = "Tranchant"
 position = Vector2i(1, 0)
 parent = "spiral_sword_round"
-required_points = 2
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_tranchant_0")])
 
@@ -152,7 +142,6 @@ script = ExtResource("3_noeud")
 id = "spiral_sword_endurance"
 name = "Endurance"
 position = Vector2i(0, 1)
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_endurance_0")])
 
@@ -197,7 +186,6 @@ script = ExtResource("3_noeud")
 id = "wave_slash_edge"
 name = "Fil de l'arc"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_fil_0")])
 
@@ -213,7 +201,6 @@ id = "wave_slash_reach"
 name = "Course"
 position = Vector2i(1, 0)
 parent = "wave_slash_edge"
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_course_0")])
 
@@ -235,7 +222,6 @@ script = ExtResource("3_noeud")
 id = "cyclone_reaping"
 name = "Fauchage"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_fauchage_0")])
 
@@ -251,7 +237,6 @@ id = "cyclone_span"
 name = "Envergure"
 position = Vector2i(1, 0)
 parent = "cyclone_reaping"
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_envergure_0")])
 
@@ -273,7 +258,6 @@ script = ExtResource("3_noeud")
 id = "slicing_dash_edge"
 name = "Fil tranchant"
 position = Vector2i(0, 0)
-required_points = 1
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_tranchant_0")])
 
@@ -289,7 +273,6 @@ id = "slicing_dash_swath"
 name = "Andain"
 position = Vector2i(1, 0)
 parent = "slicing_dash_edge"
-required_points = 2
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_sillage_0")])
 
@@ -310,7 +293,6 @@ script = ExtResource("3_noeud")
 id = "slicing_dash_flow"
 name = "Enchaînement"
 position = Vector2i(0, 1)
-required_points = 2
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_enchainement_0"), SubResource("L_ruee_enchainement_1")])
 

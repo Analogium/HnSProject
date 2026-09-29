@@ -200,4 +200,4 @@ func _size_of(tex: Texture2D) -> Vector2:
 ## Sans lancer, la part la plus forte : l'obus du mortier et l'éclatement du gonfle
 ## soufflent dans leur nature eux aussi.
 func _nature() -> int:
-	return _cast.dominant_nature() if _cast != null else DamageType.dominant(_parts)
+	return _cast.nature if _cast != null else DamageType.dominant(_parts)

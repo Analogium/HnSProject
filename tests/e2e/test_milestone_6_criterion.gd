@@ -148,7 +148,7 @@ func test_the_milestone_6_criterion() -> void:
 	for i in TARGET_LEVEL:
 		assert_true(book.manual.invest(book.base.manual, "swift_bolt"), "point %d" % (i + 1))
 	assert_eq(book.manual.points_of("swift_bolt"), TARGET_LEVEL)
-	assert_eq(book.manual.remaining_points(), 0, "tout est dépensé")
+	assert_eq(book.manual.remaining_points(book.base.manual), 0, "tout est dépensé")
 
 	# --- « l'assigner à la touche A » ---
 	# La troisième case, celle que la carte d'entrées appelle competence_3.

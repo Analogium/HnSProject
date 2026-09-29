@@ -65,7 +65,11 @@ func test_all_points_are_placed() -> void:
 					p.passives.size(), mini(PassiveTree.points_gained(p.level), build.path.size()),
 					"%s : arbre" % case_name
 				)
-				assert_eq(p.rack.at(0).manual.remaining_points(), 0, "%s : manuel" % case_name)
+				# Pas « zéro point restant » : depuis que les nœuds paient sur leur arbre
+				# (jalon 34), un livre dont l'ordre est pris en entier en garde un.
+				var book := p.rack.at(0)
+				for id in build.order:
+					assert_false(book.manual.can_invest(book.base.manual, id), "%s : %s" % [case_name, id])
 				assert_false(p.bar.id_of(0).is_empty(), "%s : de quoi lancer" % case_name)
 
 

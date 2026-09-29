@@ -40,7 +40,7 @@ func _skill(id: String, table: Array[float], nature := DamageType.Kind.LIGHTNING
 	return c
 
 
-func _node(id: String, lines: Array[TalentLine], required := 1, maximum := 1, parent := "") -> TalentNode:
+func _node(id: String, lines: Array[TalentLine], required := 0, maximum := 1, parent := "") -> TalentNode:
 	var n := TalentNode.new()
 	n.id = id
 	n.name = id
@@ -79,16 +79,17 @@ func _archetype(cells: Array[ManualCell]) -> ManualArchetype:
 	return a
 
 
-## Le livre des règles : une compétence à cinq points avec deux nœuds — l'un
-## enfant de l'autre — et un passif.
+## Le livre des règles : une compétence à cinq points et son arbre — une branche et un
+## côté au palier 0, une feuille au palier 2 sous la branche —, et un passif.
 func _trial_book() -> ManualArchetype:
 	var spell := _skill("spell", [10.0, 20.0, 30.0, 40.0, 50.0] as Array[float])
-	var branch := _node("branch_spell", [_line("damage", 10.0, true)] as Array[TalentLine], 1, 3)
+	var branch := _node("branch_spell", [_line("damage", 10.0, true)] as Array[TalentLine], 0, 3)
+	var side := _node("side_spell", [_line("radius", 10.0, true)] as Array[TalentLine], 0, 2)
 	var leaf := _node(
 		"leaf_spell", [_line("projectiles", 1.0)] as Array[TalentLine], 2, 1, "branch_spell"
 	)
 	return _archetype([
-		_cell(spell, [branch, leaf] as Array[TalentNode]),
+		_cell(spell, [branch, side, leaf] as Array[TalentNode]),
 		_cell(_passive("guard", [_line("armor", 10.0)] as Array[TalentLine], 2, 3)),
 	] as Array[ManualCell])
 
@@ -139,7 +140,7 @@ func test_the_archetype_finds_the_three_kinds() -> void:
 ## partagent le dictionnaire de points, et ce qu'aucune ne reconnaît est jeté.
 func test_the_book_recognizes_its_three_kinds_of_ids() -> void:
 	var arch := _trial_book()
-	for id in ["spell", "guard", "branch_spell", "leaf_spell"]:
+	for id in ["spell", "guard", "branch_spell", "side_spell", "leaf_spell"]:
 		assert_true(arch.knows(id), "« %s » est de ce livre" % id)
 	assert_false(arch.knows("swift_bolt"), "une compétence d'un autre livre, non")
 	assert_false(arch.knows(""), "ni rien du tout")
@@ -150,7 +151,7 @@ func test_a_node_knows_its_children() -> void:
 	assert_eq(cell.children_of("branch_spell").size(), 1, "la branche porte la feuille")
 	assert_eq(cell.children_of("branch_spell")[0].id, "leaf_spell")
 	assert_eq(cell.children_of("leaf_spell").size(), 0, "et la feuille ne porte rien")
-	assert_eq(cell.children_of("").size(), 1, "les nœuds sans parent partent de la compétence")
+	assert_eq(cell.children_of("").size(), 2, "les nœuds sans parent partent de la compétence")
 
 
 # --------------------------------------------------------------------------
@@ -191,11 +192,24 @@ func test_a_node_requires_points_in_its_skill() -> void:
 func test_a_node_requires_its_parent() -> void:
 	var arch := _trial_book()
 	var m := _manual(8)
+	assert_true(m.invest(arch, "spell"))
 	for i in 2:
-		assert_true(m.invest(arch, "spell"))
-	assert_false(m.can_invest(arch, "leaf_spell"), "la branche est vide")
+		assert_true(m.invest(arch, "side_spell"))
+	assert_false(m.can_invest(arch, "leaf_spell"), "le palier est payé, la branche est vide")
 	assert_true(m.invest(arch, "branch_spell"))
 	assert_true(m.invest(arch, "leaf_spell"), "la branche portant un point, la feuille s'ouvre")
+
+
+## Le palier (jalon 34) : des points placés **plus haut** dans l'arbre, pas dans la
+## compétence — elle n'en demande qu'un pour ouvrir l'arbre entier.
+func test_a_node_requires_its_gate() -> void:
+	var arch := _trial_book()
+	var m := _manual(8)
+	assert_true(m.invest(arch, "spell"))
+	assert_true(m.invest(arch, "branch_spell"))
+	assert_false(m.can_invest(arch, "leaf_spell"), "un point sur deux")
+	assert_true(m.invest(arch, "side_spell"), "un point ailleurs compte aussi")
+	assert_true(m.invest(arch, "leaf_spell"))
 
 
 func test_a_node_does_not_exceed_its_maximum() -> void:
@@ -207,17 +221,19 @@ func test_a_node_does_not_exceed_its_maximum() -> void:
 	assert_false(m.invest(arch, "branch_spell"), "et pas un de plus")
 
 
-## Les points sortent du même sac que les cases : c'est ce qui fait du manuel un
-## choix plutôt qu'une collection à compléter.
-func test_a_node_is_paid_with_manual_points() -> void:
+## Chaque arbre a son pool, un point par niveau du livre (jalon 34) : le livre dit
+## quels sorts, l'arbre comment ils se jouent.
+func test_a_node_is_paid_from_its_own_tree() -> void:
 	var arch := _trial_book()
+	var cell := arch.cell_of("spell")
 	var m := _manual(2)
-	assert_eq(m.remaining_points(), 2)
 	assert_true(m.invest(arch, "spell"))
 	assert_true(m.invest(arch, "branch_spell"))
-	assert_eq(m.remaining_points(), 0, "les deux points sont dépensés")
-	assert_false(m.can_invest(arch, "branch_spell"), "et plus rien n'entre nulle part")
-	assert_false(m.can_invest(arch, "guard"))
+	assert_true(m.invest(arch, "branch_spell"))
+	assert_eq(m.remaining_points(arch), 1, "le livre n'a payé que la case")
+	assert_eq(m.tree_remaining(cell), 0, "l'arbre a payé ses deux nœuds")
+	assert_false(m.can_invest(arch, "side_spell"), "et il est vide")
+	assert_true(m.invest(arch, "guard"), "le livre, lui, paie encore")
 
 
 func test_an_unknown_id_accepts_nothing() -> void:
@@ -225,25 +241,26 @@ func test_an_unknown_id_accepts_nothing() -> void:
 	var m := _manual(6)
 	assert_false(m.invest(arch, "spell_that_does_not_exist"))
 	assert_false(m.invest(null, "spell"))
-	assert_eq(m.points_spent(), 0)
+	assert_eq(m.points_spent(arch), 0)
 
 
 # --------------------------------------------------------------------------
 # Reprendre
 # --------------------------------------------------------------------------
 
-func test_refund_returns_the_point_to_the_book() -> void:
+func test_refund_returns_the_point_to_its_tree() -> void:
 	var arch := _trial_book()
+	var cell := arch.cell_of("spell")
 	var m := _manual(4)
 	assert_true(m.invest(arch, "spell"))
 	assert_true(m.invest(arch, "branch_spell"))
-	var remaining_all := m.remaining_points()
+	var remaining_all := m.tree_remaining(cell)
 
 	assert_true(m.refund(arch, "branch_spell"))
 	assert_eq(m.points_of("branch_spell"), 0)
-	assert_eq(m.remaining_points(), remaining_all + 1, "le point revient")
+	assert_eq(m.tree_remaining(cell), remaining_all + 1, "le point revient")
 	assert_false(m.points.has("branch_spell"), "et l'entrée vide disparaît")
-	assert_true(m.invest(arch, "guard"), "il se replace ailleurs dans le même livre")
+	assert_true(m.invest(arch, "side_spell"), "il se replace ailleurs dans l'arbre")
 
 
 ## Depuis le 14 septembre 2026, sur demande : une case et un passif se reprennent
@@ -253,27 +270,56 @@ func test_a_slot_and_a_passive_can_be_refunded() -> void:
 	var m := _manual(6)
 	assert_true(m.invest(arch, "spell"))
 	assert_true(m.invest(arch, "guard"))
-	var remaining_all := m.remaining_points()
+	var remaining_all := m.remaining_points(arch)
 	assert_true(m.refund(arch, "spell"))
 	assert_true(m.refund(arch, "guard"))
 	assert_eq(m.points_of("spell"), 0)
 	assert_eq(m.points_of("guard"), 0)
-	assert_eq(m.remaining_points(), remaining_all + 2, "les deux points reviennent")
+	assert_eq(m.remaining_points(arch), remaining_all + 2, "les deux points reviennent")
 
 
-## Une compétence ne descend pas sous ce que demande un de ses nœuds investis : le
-## nœud garderait des points qu'on ne pourrait plus y placer.
-func test_a_skill_does_not_go_below_its_nodes() -> void:
+## Une compétence garde un point tant que son arbre en porte : c'est lui qui l'ouvre.
+func test_a_skill_keeps_a_point_under_its_tree() -> void:
 	var arch := _trial_book()
 	var m := _manual(10)
-	for id in ["spell", "spell", "branch_spell", "leaf_spell"]:
+	for id in ["spell", "spell", "branch_spell"]:
 		assert_true(m.invest(arch, id), "« %s »" % id)
-	assert_false(m.can_refund(arch, "spell"), "la feuille demande deux points")
-	assert_true(m.refund(arch, "leaf_spell"))
-	assert_true(m.refund(arch, "spell"), "la branche n'en demande qu'un")
-	assert_false(m.refund(arch, "spell"), "et elle porte encore le sien")
+	assert_true(m.refund(arch, "spell"), "de deux à un")
+	assert_false(m.can_refund(arch, "spell"), "l'arbre en dépend")
 	assert_true(m.refund(arch, "branch_spell"))
 	assert_true(m.refund(arch, "spell"), "arbre vide, la compétence se vide")
+
+
+## Un nœud profond ne paie pas son propre palier : sinon, une fois pris, tout ce qui
+## est au-dessus se reprendrait sous lui.
+func test_a_gate_does_not_fall_under_an_invested_node() -> void:
+	var arch := _trial_book()
+	var m := _manual(10)
+	for id in ["spell", "branch_spell", "side_spell", "side_spell", "leaf_spell"]:
+		assert_true(m.invest(arch, id), "« %s »" % id)
+	assert_true(m.refund(arch, "side_spell"), "trois points au-dessus, un de trop")
+	assert_false(m.can_refund(arch, "side_spell"), "le palier tomberait")
+	assert_true(m.refund(arch, "leaf_spell"))
+	assert_true(m.refund(arch, "side_spell"))
+
+
+## La relecture rend l'arbre entier quand il ne tient plus — pool dépassé ou palier
+## tombé —, et ne touche ni à la case ni au passif.
+func test_a_broken_tree_is_released_whole() -> void:
+	var arch := _trial_book()
+	var m := _manual(2)
+	m.points = {"spell": 1, "guard": 1, "branch_spell": 3}
+	m.release_broken_trees(arch)
+	assert_eq(m.points, {"spell": 1, "guard": 1}, "trois points pour un pool de deux")
+
+	m = _manual(10)
+	m.points = {"spell": 1, "branch_spell": 1, "leaf_spell": 1}
+	m.release_broken_trees(arch)
+	assert_eq(m.points, {"spell": 1}, "un point sous un palier de deux")
+
+	m.points = {"spell": 1, "branch_spell": 2, "leaf_spell": 1}
+	m.release_broken_trees(arch)
+	assert_eq(m.points_of("leaf_spell"), 1, "un arbre qui tient reste")
 
 
 ## Reprendre sous un enfant qui porte des points laisserait la branche accrochée
@@ -281,9 +327,10 @@ func test_a_skill_does_not_go_below_its_nodes() -> void:
 func test_cannot_refund_under_an_invested_child() -> void:
 	var arch := _trial_book()
 	var m := _manual(10)
-	for id in ["spell", "spell", "branch_spell", "leaf_spell"]:
+	for id in ["spell", "branch_spell", "branch_spell", "side_spell", "leaf_spell"]:
 		assert_true(m.invest(arch, id), "« %s »" % id)
 
+	assert_true(m.refund(arch, "branch_spell"), "le palier tient, la branche garde un point")
 	assert_false(m.can_refund(arch, "branch_spell"), "la feuille en dépend")
 	assert_true(m.refund(arch, "leaf_spell"), "la feuille, elle, se reprend")
 	assert_true(m.refund(arch, "branch_spell"), "et la branche ensuite")
@@ -326,6 +373,16 @@ func test_a_passive_lines_follow_its_points() -> void:
 	assert_eq(mods.size(), 1)
 	assert_eq(mods[0].stat, "armor")
 	assert_eq(mods[0].value, 20.0, "deux points à dix")
+
+
+## 2 s au premier point, 5 s au troisième : la ligne donne 1,5 par point et 0,5 au premier.
+func test_a_first_point_bonus_counts_once() -> void:
+	var line := _line(SkillStats.GROUND, 1.5)
+	line.first_point_bonus = 0.5
+	assert_null(line.modifier(0), "zéro point, rien")
+	assert_eq(line.modifier(1).value, 2.0)
+	assert_eq(line.modifier(2).value, 3.5)
+	assert_eq(line.modifier(3).value, 5.0)
 
 
 func test_a_talent_line_reads_like_an_item_line() -> void:
@@ -374,6 +431,62 @@ func test_a_node_adds_damage_and_projectiles() -> void:
 
 ## Le « plus » d'un nœud multiplie **après** la somme des accrus des objets : deux
 ## sources qui se multiplient entre elles, pas une de plus dans le même total.
+## Les nombres de mécanique (jalon 34) sont des nombres de lancer comme les autres : un
+## nœud les allume, zéro sans lui.
+func test_a_node_lights_the_mechanic_numbers() -> void:
+	var spell := _skill("spell", [10.0] as Array[float])
+	var bare := spell.resolve(1, _sheet())
+	for field in [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.GROUND, SkillStats.KILL_BURST]:
+		assert_eq(bare.get(field), 0.0, "« %s » éteint sans nœud" % field)
+	var node := _node("mech", [
+		_line(SkillStats.PIERCE, 2.0), _line(SkillStats.GROUND, 1.5),
+		_line("status_chance_increase", 30.0), _line("period", 100.0, true),
+	] as Array[TalentLine])
+	spell.period = 0.5
+	var cast := spell.resolve(1, _sheet(), [], _talents([node]))
+	assert_eq(cast.pierce, 2.0)
+	assert_eq(cast.ground_duration, 1.5)
+	assert_eq(cast.status_chance_increase, 30.0, "la chance d'état, hors de portée avant le jalon 34")
+	assert_almost_eq(cast.period, 1.0, 1e-6, "l'intervalle des frappes, doublé")
+
+
+func test_a_transforming_node_changes_the_shape_and_its_keywords() -> void:
+	var spell := _skill("spell", [10.0] as Array[float])
+	spell.shape = Skill.Shape.BOLT
+	var node := _node("becomes", [] as Array[TalentLine])
+	node.transforms = true
+	node.shape = Skill.Shape.CROSS
+	assert_eq(spell.resolve(1, _sheet()).shape, Skill.Shape.BOLT, "sans le nœud")
+	var cast := spell.resolve(1, _sheet(), [], _talents([node]))
+	assert_eq(cast.shape, Skill.Shape.CROSS)
+	assert_eq(cast.hits, 2, "les coups de sa nouvelle forme")
+	assert_false(cast.keywords.has(Keywords.PROJECTILE))
+	assert_true(cast.keywords.has(Keywords.MELEE))
+	assert_true(spell.keywords().has(Keywords.PROJECTILE), "la compétence, elle, reste un tir")
+
+
+## Un lancer dérivé — sol, éclat — garde ce qui qualifie un coup et rien de ce qui en
+## ferait naître un autre.
+func test_a_derived_cast_keeps_the_blow_and_drops_the_mechanics() -> void:
+	var spell := _skill("spell", [100.0] as Array[float], DamageType.Kind.FIRE)
+	var node := _node("mech", [
+		_line(SkillStats.SPLITS, 3.0), _line(SkillStats.GROUND, 2.0),
+		_line(SkillStats.KILL_BURST, 20.0), _line("status_chance_increase", 30.0),
+	] as Array[TalentLine])
+	var cast := spell.resolve(1, _sheet(), [], _talents([node]))
+	var ground := cast.ground()
+	assert_almost_eq(ground.total_min(), cast.total_min() * SkillStats.GROUND_PART, 1e-4)
+	assert_eq(ground.duration, 2.0, "la durée du sol")
+	assert_eq(ground.keywords, cast.keywords)
+	assert_eq(ground.status_chance_increase, 30.0)
+	var shard := cast.shard()
+	assert_almost_eq(shard.total_min(), cast.total_min() * SkillStats.SPLIT_PART, 1e-4)
+	for derived: SkillStats in [ground, shard]:
+		assert_eq(derived.splits, 0.0)
+		assert_eq(derived.ground_duration, 0.0)
+		assert_eq(derived.kill_burst, 0.0)
+
+
 func test_a_more_node_multiplies_the_sum_of_increased() -> void:
 	var c := _spell(100.0)
 	var line := _line("damage", 25.0, true)
@@ -424,140 +537,51 @@ func test_a_node_can_cost_damage() -> void:
 # La conversion
 # --------------------------------------------------------------------------
 
-func _conversion(id: String, toward: DamageType.Kind, part: float, lines: Array[TalentLine] = []) -> TalentNode:
+func _conversion(id: String, toward: DamageType.Kind, lines: Array[TalentLine] = []) -> TalentNode:
 	var n := _node(id, lines)
+	n.converts = true
 	n.converts_to = toward
-	n.converted_part_per_point = part
 	return n
 
 
-func test_a_node_converts_a_share_of_damage() -> void:
+## **Tout ou rien** (jalon 34) : la compétence devient de la nature d'arrivée, ses
+## dégâts propres entiers, et son mot-clé remplace l'ancien.
+func test_a_conversion_changes_the_whole_nature_of_the_skill() -> void:
 	var r := _spell(100.0).resolve(
-		1, _sheet(), [], _talents([_conversion("n", DamageType.Kind.COLD, 0.5)])
+		1, _sheet(), [], _talents([_conversion("n", DamageType.Kind.COLD)])
 	)
-	assert_almost_eq(r.damage_min[DamageType.Kind.LIGHTNING], 50.0, 1e-4, "la moitié reste")
-	assert_almost_eq(r.damage_min[DamageType.Kind.COLD], 50.0, 1e-4, "l'autre part")
-	assert_almost_eq(r.total_min(), 100.0, 1e-4, "et rien ne se perd en route")
-	assert_almost_eq(r.conversions[DamageType.Kind.COLD], 0.5, 1e-4, "la fiche sait le dire")
+	assert_eq(r.nature, DamageType.Kind.COLD)
+	assert_almost_eq(r.damage_min[DamageType.Kind.COLD], 100.0, 1e-4)
+	assert_eq(r.damage_min[DamageType.Kind.LIGHTNING], 0.0, "plus rien de foudre")
+	assert_true(r.keywords.has(Keywords.COLD))
+	assert_false(r.keywords.has(Keywords.LIGHTNING), "le mot-clé de départ tombe")
 
 
-## Convertie **après** les ajouts : la foudre qu'un anneau ajoute à un sort de
-## foudre part avec le reste. Convertie avant, le même objet donnerait deux
-## résultats selon l'ordre dans lequel ses lignes arrivent.
-func test_conversion_carries_what_an_item_adds() -> void:
+## Un sort converti est un sort de sa nouvelle nature, comme un autre : ce qu'un objet
+## **ajoute** garde la sienne, et ce sont les affixes de la nature d'arrivée qui mordent.
+func test_a_converted_skill_is_like_any_skill_of_its_new_nature() -> void:
 	var addition := StatMod.ranged(
 		SkillStats.added_stat(DamageType.Kind.LIGHTNING), 20.0, 20.0, Keywords.SPELL
 	)
+	var of_cold := StatMod.new("damage", StatMod.Mode.PERCENT, 50.0, Keywords.COLD)
+	var of_lightning := StatMod.new("damage", StatMod.Mode.PERCENT, 50.0, Keywords.LIGHTNING)
 	var r := _spell(100.0).resolve(
-		1, _sheet(), [addition], _talents([_conversion("n", DamageType.Kind.FIRE, 1.0)])
+		1, _sheet(), [addition, of_cold, of_lightning],
+		_talents([_conversion("n", DamageType.Kind.COLD)])
 	)
-	assert_almost_eq(r.damage_min[DamageType.Kind.LIGHTNING], 0.0, 1e-4, "plus rien de foudre")
-	assert_almost_eq(r.damage_min[DamageType.Kind.FIRE], 120.0, 1e-4, "les cent vingt sont du feu")
-
-
-## Un ajout de chaque nature : la conversion prend sa part de toutes. À moitié, chacune
-## garde la moitié de ce qu'elle portait ; entière, il ne reste que la nature d'arrivée.
-func test_conversion_carries_additions_of_every_nature() -> void:
-	var additions: Array[StatMod] = []
-	for nature in DamageType.Kind.size():
-		additions.append(StatMod.ranged(
-			SkillStats.added_stat(nature as DamageType.Kind), 10.0, 10.0, Keywords.SPELL
-		))
-	var cold := DamageType.Kind.COLD
-
-	# 110 de foudre, 10 de froid, 10 de chacune des quatre autres : 160.
-	var half := _spell(100.0).resolve(1, _sheet(), additions, _talents([_conversion("n", cold, 0.5)]))
-	assert_almost_eq(half.damage_min[DamageType.Kind.LIGHTNING], 55.0, 1e-4, "la base et son ajout, à moitié")
-	for nature in [DamageType.Kind.PHYSICAL, DamageType.Kind.FIRE, DamageType.Kind.NECROTIC, DamageType.Kind.HOLY]:
-		assert_almost_eq(half.damage_min[nature], 5.0, 1e-4, "%s : son ajout, à moitié" % DamageType.NAMES[nature])
-	assert_almost_eq(half.damage_min[cold], 85.0, 1e-4, "son ajout et la moitié de tout le reste")
-	assert_almost_eq(half.total_min(), 160.0, 1e-4)
-
-	var whole := _spell(100.0).resolve(1, _sheet(), additions, _talents([_conversion("n", cold, 1.0)]))
-	for nature in DamageType.Kind.size():
-		if nature != cold:
-			assert_eq(whole.damage_min[nature], 0.0, "%s : plus rien" % DamageType.NAMES[nature])
-	assert_almost_eq(whole.damage_min[cold], 160.0, 1e-4)
-	assert_almost_eq(whole.conversions[cold], 1.0, 1e-4)
-
-
-## Deux conversions vers deux natures : la seconde, entière, emporte aussi ce que la
-## première avait converti.
-func test_a_full_conversion_carries_the_previous_one() -> void:
-	var nodes := [
-		_conversion("a", DamageType.Kind.COLD, 0.5), _conversion("b", DamageType.Kind.FIRE, 1.0)
-	]
-	var r := _spell(100.0).resolve(1, _sheet(), [], _talents(nodes))
-	assert_almost_eq(r.damage_min[DamageType.Kind.FIRE], 100.0, 1e-4)
-	assert_eq(r.damage_min[DamageType.Kind.COLD], 0.0)
-	assert_eq(r.conversions[DamageType.Kind.COLD], 0.0, "la fiche n'annonce plus de froid")
-	assert_almost_eq(r.conversions[DamageType.Kind.FIRE], 1.0, 1e-4)
-
-
-func test_two_conversions_take_their_share_of_what_remains() -> void:
-	var nodes := [
-		_conversion("a", DamageType.Kind.FIRE, 0.5), _conversion("b", DamageType.Kind.FIRE, 0.5)
-	]
-	var r := _spell(100.0).resolve(1, _sheet(), [], _talents(nodes))
-	assert_almost_eq(r.damage_min[DamageType.Kind.FIRE], 75.0, 1e-4, "deux fois la moitié")
-	assert_almost_eq(r.damage_min[DamageType.Kind.LIGHTNING], 25.0, 1e-4)
+	assert_almost_eq(r.damage_min[DamageType.Kind.COLD], 150.0, 1e-4, "l'affixe de froid mord")
 	assert_almost_eq(
-		r.conversions[DamageType.Kind.FIRE], 0.75, 1e-4, "et la fiche annonce 75 %, pas 100 %"
+		r.damage_min[DamageType.Kind.LIGHTNING], 30.0, 1e-4,
+		"l'ajout reste foudre, et l'affixe de foudre ne mord plus"
 	)
-
-
-func test_a_conversion_never_exceeds_the_whole() -> void:
-	var r := _spell(100.0).resolve(
-		1, _sheet(), [], _talents([_conversion("n", DamageType.Kind.FIRE, 0.8)], 3)
-	)
-	assert_almost_eq(r.damage_min[DamageType.Kind.FIRE], 100.0, 1e-4, "trois points à 80 %")
-	assert_almost_eq(r.total_min(), 100.0, 1e-4)
-
-
-## Le multiplicateur passe sur les deux natures : converti avant ou après, le
-## total est le même — et c'est ce qui laisse l'ordre libre.
-func test_conversion_and_multipliers_commute() -> void:
-	var r := _spell(100.0).resolve(
-		1, _sheet(), [StatMod.new("damage", StatMod.Mode.PERCENT, 20.0, Keywords.SPELL)],
-		_talents([_conversion("n", DamageType.Kind.FIRE, 0.5)])
-	)
-	assert_almost_eq(r.total_min(), 120.0, 1e-4, "100 × 1,2")
-	assert_almost_eq(r.damage_min[DamageType.Kind.FIRE], 60.0, 1e-4, "moitié-moitié")
-	assert_almost_eq(r.damage_min[DamageType.Kind.LIGHTNING], 60.0, 1e-4)
-
-
-# --------------------------------------------------------------------------
-# Les mots-clés qu'un nœud donne
-# --------------------------------------------------------------------------
-
-## Le nœud le plus cher de son arbre : il ne convertit pas seulement les dégâts,
-## il fait mordre l'équipement de la nature d'arrivée.
-func test_a_node_can_give_the_keyword_of_its_target_nature() -> void:
-	var ardent := StatMod.new("damage", StatMod.Mode.PERCENT, 50.0, Keywords.FIRE)
-	var c := _spell(100.0)
-	assert_almost_eq(
-		c.resolve(1, _sheet(), [ardent]).total_min(), 100.0, 1e-4,
-		"sans le nœud, un affixe de feu ne mord pas sur un sort de foudre"
-	)
-
-	var n := _conversion("n", DamageType.Kind.FIRE, 1.0)
-	n.added_keywords = PackedStringArray([Keywords.FIRE])
-	var r := c.resolve(1, _sheet(), [ardent], _talents([n]))
-	assert_almost_eq(r.total_min(), 150.0, 1e-4, "avec lui, oui")
-	assert_true(r.keywords.has(Keywords.FIRE), "et la fiche l'affiche")
-	assert_true(r.keywords.has(Keywords.LIGHTNING), "sans perdre celui de la compétence")
 
 
 ## L'ordre est celui de la liste fermée, pas celui de la source : deux compétences
 ## voisines doivent se lire colonne contre colonne.
 func test_resolved_keywords_keep_reading_order() -> void:
-	var n := _conversion("n", DamageType.Kind.FIRE, 1.0)
-	n.added_keywords = PackedStringArray([Keywords.FIRE])
-	var r := _spell(100.0).resolve(1, _sheet(), [], _talents([n]))
-	assert_eq(
-		Array(r.keywords), [Keywords.PROJECTILE, Keywords.LIGHTNING, Keywords.FIRE, Keywords.SPELL]
-	)
-	assert_eq(r.keywords_label(), "Projectile · Foudre · Feu · Sort")
+	var r := _spell(100.0).resolve(1, _sheet(), [], _talents([_conversion("n", DamageType.Kind.FIRE)]))
+	assert_eq(Array(r.keywords), [Keywords.PROJECTILE, Keywords.FIRE, Keywords.SPELL])
+	assert_eq(r.keywords_label(), "Projectile · Feu · Sort")
 
 
 ## Sans talent, la liste est exactement celle de la compétence. C'est le pendant
@@ -568,8 +592,7 @@ func test_without_talent_keywords_are_those_of_the_skill() -> void:
 		var r := c.resolve(c.points_max(), CharacterStats.new())
 		assert_eq(Array(r.keywords), Array(c.keywords()), "« %s »" % c.name)
 		assert_eq(r.keywords_label(), c.keywords_label())
-		for part in r.conversions:
-			assert_eq(part, 0.0, "« %s » : rien n'est converti" % c.name)
+		assert_eq(r.nature, c.nature, "« %s » : rien n'est converti" % c.name)
 
 
 # --------------------------------------------------------------------------
@@ -624,7 +647,7 @@ func test_each_node_has_a_name_and_effects() -> void:
 			for n in c.talents:
 				assert_false(n.name.is_empty(), "« %s » n'a pas de nom lisible" % n.id)
 				assert_true(
-					n.lines.size() > 0 or n.converts(),
+					n.lines.size() > 0 or n.converts,
 					"« %s » ne fait rien du tout" % n.id
 				)
 				assert_gte(n.points_max, 1, "« %s » n'accepte aucun point" % n.id)
@@ -656,12 +679,30 @@ func test_each_tree_has_a_root_and_stays_reachable() -> void:
 			for n in c.talents:
 				if n.parent.is_empty():
 					roots += 1
-				assert_between(
-					n.required_points, 1, c.points_max(),
-					"« %s » demande %d points dans une case qui en accepte %d"
-						% [n.id, n.required_points, c.points_max()]
+				var above := 0
+				for other in c.talents:
+					if other.required_points < n.required_points:
+						above += other.points_max
+				assert_true(
+					n.required_points <= mini(above, Manual.MAX_LEVEL - 1),
+					"« %s » demande un palier de %d, l'arbre au-dessus n'en offre que %d"
+						% [n.id, n.required_points, above]
 				)
 			assert_gt(roots, 0, "« %s » : aucun nœud ne part de la compétence" % c.identifier())
+
+
+## Une transformation ne quitte et ne rejoint que ce qui se pose et s'oublie
+## (`Skill.TRANSFORMABLE`) : ce qui brûle, la couronne ou les morts-vivants tiennent un
+## état chez le lanceur, qu'elle rendrait orphelin.
+func test_each_transformation_stays_among_posed_shapes() -> void:
+	for base in _books():
+		for c in base.manual.cells:
+			for n in c.talents:
+				if not n.transforms:
+					continue
+				assert_has(Skill.TRANSFORMABLE, c.skill.shape, "« %s » quitte une forme qui tient" % n.id)
+				assert_has(Skill.TRANSFORMABLE, n.shape, "« %s » rejoint une forme qui tient" % n.id)
+				assert_ne(n.shape, c.skill.shape, "« %s » ne change rien" % n.id)
 
 
 ## La faute de frappe silencieuse, celle des affixes : une ligne qui vise un
@@ -708,32 +749,22 @@ func test_each_passive_line_targets_the_sheet_or_a_keyword() -> void:
 ## `projectile`, `attack` et `spell` décident du chemin que prend le lancer : un
 ## nœud qui les donnerait ferait partir un tir d'une compétence dont la fiche
 ## annonce un coup d'arc.
-func test_a_node_gives_only_one_nature_keyword() -> void:
-	var natures := Skill.KEYWORD_OF_NATURE.values()
+## Tout ou rien : un point suffit, et deux conversions dans un arbre se disputeraient la
+## nature — la dernière l'emporterait sans que rien ne le dise.
+func test_each_conversion_is_one_point_and_alone_in_its_tree() -> void:
 	for base in _books():
 		for c in base.manual.cells:
+			var count := 0
 			for n in c.talents:
-				for id in n.added_keywords:
-					assert_true(
-						natures.has(id),
-						"« %s » donne « %s », qui n'est pas un mot-clé de nature" % [n.id, id]
-					)
-
-
-func test_each_conversion_targets_another_nature() -> void:
-	for base in _books():
-		for c in base.manual.cells:
-			for n in c.talents:
-				if not n.converts():
+				if not n.converts:
 					continue
-				assert_between(
-					n.converted_part_per_point, 0.01, 1.0,
-					"« %s » convertit une part hors des bornes" % n.id
-				)
+				count += 1
+				assert_eq(n.points_max, 1, "« %s » : une conversion ne se prend qu'une fois" % n.id)
 				assert_ne(
 					int(n.converts_to), int(c.skill.nature),
 					"« %s » convertit vers la nature qu'elle a déjà" % n.id
 				)
+			assert_lt(count, 2, "« %s » : deux conversions dans un arbre" % c.identifier())
 
 
 ## **Un manuel ne se remplit plus** (jalon 10) : c'est ce qui fait du livre un
@@ -754,3 +785,80 @@ func test_no_manual_fills_up_entirely() -> void:
 			"« %s » offre %d points de destination pour %d gagnés"
 				% [base.manual.name, destinations, Manual.MAX_LEVEL]
 		)
+
+
+## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
+## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
+const SHALLOW_TREES := [
+	"manual_lightning", "manual_weapons", "manual_cold", "manual_holy", "manual_necrotic",
+]
+## Les points d'arbre qui séparent deux colonnes.
+const TREE_GATE := 5
+
+
+## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.
+func test_no_tree_fills_up_entirely() -> void:
+	for base in _books():
+		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
+			continue
+		for c in base.manual.cells:
+			if c.talents.is_empty():
+				continue
+			var offered := 0
+			for n in c.talents:
+				offered += n.points_max
+			assert_gt(
+				offered, Manual.MAX_LEVEL,
+				"« %s » offre %d points pour un pool de %d" % [c.identifier(), offered, Manual.MAX_LEVEL]
+			)
+
+
+## Un lien ne saute pas de colonne : il passerait sous le nœud du milieu, et « Mue →
+## Couvée » se lisait « Mue → Vif → Couvée » (capture du jalon 34).
+func test_each_parent_sits_in_the_previous_column() -> void:
+	for base in _books():
+		for c in base.manual.cells:
+			for n in c.talents:
+				var column := 0 if n.parent.is_empty() else c.node_of(n.parent).position.x + 1
+				assert_eq(n.position.x, column, "« %s » : son lien saute une colonne" % n.id)
+
+
+## Dans un arbre repris, une colonne est un palier : 0, 5, 10, 15.
+func test_each_column_is_a_gate() -> void:
+	for base in _books():
+		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
+			continue
+		for c in base.manual.cells:
+			for n in c.talents:
+				assert_eq(n.required_points, TREE_GATE * n.position.x, "« %s »" % n.id)
+
+
+## Un nœud qui change le jeu ne se comprend pas à ses lignes : « +24 rayon de l'explosion
+## des tués » ne dit ni qui explose, ni quand. Chaque nœud d'un arbre repris le décrit,
+## et chaque `{champ}` de sa description existe dans `SkillStats.facts()`.
+func test_each_reworked_node_says_what_it_does() -> void:
+	for base in _books():
+		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
+			continue
+		for c in base.manual.cells:
+			for n in c.talents:
+				assert_false(n.description.is_empty(), "« %s » ne dit pas ce qu'il fait" % n.id)
+				assert_false(
+					n.displayed_description().contains("{"),
+					"« %s » : un chiffre de sa description n'existe pas" % n.id
+				)
+
+
+## « +1 projectile » sur un serpent ferait croire que les affixes de projectile le
+## touchent : les nombres de projectile ne se visent que sur un projectile (jalon 34).
+func test_projectile_numbers_only_on_a_projectile() -> void:
+	for base in _books():
+		for c in base.manual.cells:
+			for n in c.talents:
+				for l in n.lines:
+					if l.stat in ["projectiles", "projectile_speed"]:
+						assert_true(
+							c.skill.worn(Keywords.PROJECTILE),
+							"« %s » vise « %s » sur ce qui n'est pas un projectile" % [n.id, l.stat]
+						)
+
