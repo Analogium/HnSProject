@@ -758,6 +758,22 @@ func test_the_v10_reference_file_rereads() -> void:
 	assert_eq(bag["ring"].rarity(), Item.Rarity.RARE, "rare à deux affixes, par une pièce d'argent")
 
 
+## Les waypoints de la v11 : un doublon et le rang 0 — la ville, jamais écrite —
+## sont écartés à la lecture, l'ordre d'activation gardé.
+func test_the_v11_reference_file_rereads() -> void:
+	var content: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/character_v11.json"))
+	var p := Character.from_dict(content)
+	assert_not_null(p, "une sauvegarde de version 11 se lit")
+	assert_eq(p.waypoints, [2, 1] as Array[int])
+
+
+func test_waypoints_survive_the_round_trip() -> void:
+	var p := Character.create_new("Voyageuse", 0)
+	assert_eq(p.waypoints, [] as Array[int], "aucun à la création")
+	p.waypoints.append(1)
+	assert_eq(Character.from_dict(p.to_dict()).waypoints, [1] as Array[int])
+
+
 ## Une pile et un rare à deux affixes, l'aller-retour ; un objet ordinaire n'écrit
 ## ni l'un ni l'autre.
 func test_a_stack_and_a_forced_rare_survive_the_round_trip() -> void:

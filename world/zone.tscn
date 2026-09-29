@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="Environment" path="res://fx/bloom.tres" id="15_bloom"]
@@ -18,12 +18,19 @@
 [ext_resource type="Script" path="res://ui/dps_meter.gd" id="16_dps"]
 [ext_resource type="Script" path="res://actors/town/interactable.gd" id="17_town"]
 [ext_resource type="Script" path="res://ui/flask_bar.gd" id="18_flasks"]
+[ext_resource type="Shader" path="res://world/vignette.gdshader" id="19_vignette"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
+shader = ExtResource("19_vignette")
 
 [node name="Zone" type="Node2D"]
 script = ExtResource("1_zone")
 
 [node name="Glow" type="WorldEnvironment" parent="."]
 environment = ExtResource("15_bloom")
+
+[node name="Beyond" type="ColorRect" parent="."]
+mouse_filter = 2
 
 [node name="FloorLayer" type="TileMapLayer" parent="."]
 texture_filter = 1
@@ -34,6 +41,10 @@ texture_filter = 1
 y_sort_enabled = true
 
 [node name="WallLayer" type="TileMapLayer" parent="Entities"]
+texture_filter = 1
+y_sort_enabled = true
+
+[node name="Decor" type="Node2D" parent="Entities"]
 texture_filter = 1
 y_sort_enabled = true
 
@@ -69,8 +80,23 @@ look = 3
 script = ExtResource("17_town")
 look = 2
 
+[node name="Waypoint" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+look = 4
+
 [node name="Loot" type="Node2D" parent="Entities/Town"]
 y_sort_enabled = true
+
+[node name="Area" type="Node2D" parent="Entities"]
+y_sort_enabled = true
+
+[node name="Waypoint" type="Node2D" parent="Entities/Area"]
+script = ExtResource("17_town")
+look = 4
+
+[node name="Exit" type="Node2D" parent="Entities/Area"]
+script = ExtResource("17_town")
+look = 3
 
 [node name="Portal" type="Node2D" parent="Entities"]
 visible = false
@@ -83,6 +109,17 @@ script = ExtResource("6_fx")
 
 [node name="EnemySpawner" type="Node" parent="."]
 script = ExtResource("5_spawner")
+
+[node name="Vignette" type="CanvasLayer" parent="."]
+
+[node name="Shade" type="ColorRect" parent="Vignette"]
+material = SubResource("ShaderMaterial_vignette")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="UI" type="CanvasLayer" parent="."]
 

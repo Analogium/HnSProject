@@ -1,0 +1,28 @@
+{
+	"version": 11,
+	"id": "p_reference_v10",
+	"name": "Morgane",
+	"class": "witch",
+	"silhouette": 0,
+	"created_on": "2026-09-27",
+	"played_on": "2026-09-27",
+	"level": 3,
+	"experience": 40,
+	"passives": ["int_1"],
+	"bag": [
+		{ "base": "coin_copper", "level": 12, "affixes": [], "count": 7, "cell": [0, 0] },
+		{ "base": "coin_gold", "level": 12, "affixes": [], "count": 99, "cell": [1, 0] },
+		{ "base": "ring", "level": 12, "rare": true, "cell": [2, 0], "affixes": [
+			{ "stat": "armor", "mode": 0, "value": 12.0 },
+			{ "stat": "max_health", "mode": 0, "value": 20.0 }
+		] }
+	],
+	"equipment": {
+		"weapon": { "base": "wand", "level": 1, "affixes": [] }
+	},
+	"rack": [null, null, null],
+	"class_manual": { "exp": 0, "points": {} },
+	"bar": ["attack", "bolt", null, null, null],
+	"manual_given": false,
+	"waypoints": [2, 1, 2, 0]
+}

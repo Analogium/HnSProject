@@ -1,6 +1,6 @@
 # Fichiers de référence
 
-`character_v1.json` à `character_v10.json` sont des sauvegardes **écrites à la
+`character_v1.json` à `character_v11.json` sont des sauvegardes **écrites à la
 main**, versionnées avec le projet, et relues à chaque campagne par
 `tests/unit/test_save.gd`.
 
@@ -17,10 +17,11 @@ la liste des nœuds pris de l'arbre. Relues aujourd'hui, les v1 à v6 arrivent a
 arbre vide : leurs attributs placés sont abandonnés. La v8 est celui du jalon 25 :
 la `class` du personnage. Les v1 à v7 sont des guerriers. La v9 est celui du jalon 28 :
 `class_manual`, l'expérience et les points du manuel de la classe, hors des trois
-entrées de `rack`. Les v1 à v8 reçoivent un manuel de classe neuf. La v10 est le format
-qu'on écrit, celui du jalon 29 : un objet peut porter `count`, sa pile de pièces, et
-`rare`, rare quel que soit son nombre d'affixes. Absents, une pile d'un et la rareté
-déduite des affixes.
+entrées de `rack`. Les v1 à v8 reçoivent un manuel de classe neuf. La v10 est celui du
+jalon 29 : un objet peut porter `count`, sa pile de pièces, et `rare`, rare quel que
+soit son nombre d'affixes. Absents, une pile d'un et la rareté déduite des affixes. La
+v11 est le format qu'on écrit, celui du jalon 33 : `waypoints`, les rangs des zones
+dont le waypoint est activé. Les v1 à v10 n'en ont aucun.
 
 `stash_v1.json` est le coffre de la ville (jalon 30), un fichier à part partagé par
 tous les personnages, avec son propre numéro de version : cinq onglets, chacun la

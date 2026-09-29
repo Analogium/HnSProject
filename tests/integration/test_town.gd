@@ -66,6 +66,83 @@ func test_the_gate_leads_to_a_new_zone() -> void:
 	assert_gt(_zone.enemy_manager.enemies.size(), 0, "une zone peuplée")
 
 
+## Le portail d'en haut mène à la première zone, par l'entrée de sa route ; chaque
+## sortie à la suivante, un niveau plus haut. La dernière n'en a pas.
+func test_the_road_chains_three_zones() -> void:
+	Game.zone_level = 4
+	_use(_zone.town_gate)
+	assert_eq(_zone.area, 1)
+	assert_eq(_zone.enemy_manager.level, 4, "le niveau choisi")
+	assert_eq(MapGenerator.cell_at(_zone.player.global_position), _zone.generator.road[0], "à l'entrée")
+	assert_eq(MapGenerator.cell_at(_zone.area_exit.global_position), _zone.generator.road.back())
+	_use(_zone.area_exit)
+	assert_eq(_zone.area, 2)
+	assert_eq(_zone.enemy_manager.level, 5, "un niveau de plus")
+	_use(_zone.area_exit)
+	assert_eq(_zone.area, 3)
+	assert_eq(_zone.enemy_manager.level, 6)
+	assert_false(
+		_zone.area_exit.clicked(_zone.area_exit.global_position + Interactable.HIT.get_center()),
+		"pas de sortie après la dernière"
+	)
+
+
+## La carte (TAB) montre la route, le waypoint et la sortie de la zone — pas ceux
+## d'une zone figée derrière un portail.
+func test_the_map_shows_the_road_and_its_marks() -> void:
+	_use(_zone.town_gate)
+	var img: Image = _zone.map_overlay._tex.get_image()
+	var road := MapOverlay.ROAD_COLOR
+	for cell: Vector2i in _zone.generator.road:
+		var c := img.get_pixelv(cell)
+		assert_almost_eq(Vector3(c.r, c.g, c.b), Vector3(road.r, road.g, road.b), Vector3.ONE / 255.0,
+			"route en %s" % cell)
+	var shown: Array = _zone.map_overlay.marks.filter(func(m: Interactable) -> bool: return m.is_visible_in_tree())
+	assert_eq(shown, [_zone.area_waypoint, _zone.area_exit])
+	_zone.open_portal()
+	_use(_zone.portal)
+	shown = _zone.map_overlay.marks.filter(func(m: Interactable) -> bool: return m.is_visible_in_tree())
+	assert_eq(shown, [_zone.town_waypoint, _zone.town_gate], "en ville, ceux de la ville")
+
+
+## Marcher dessus suffit, et c'est pour de bon : sur le personnage et sur le disque.
+func test_walking_onto_a_waypoint_activates_it_for_good() -> void:
+	_use(_zone.town_gate)
+	assert_false(_zone.area_waypoint.lit)
+	_zone.player.global_position = _zone.area_waypoint.global_position
+	await wait_process_frames(1)
+	assert_true(_zone.area_waypoint.lit)
+	assert_eq(Game.character.waypoints, [1] as Array[int], "sur le personnage")
+	assert_eq(SaveStore.read(_id).waypoints, [1] as Array[int], "écrit tout de suite")
+
+
+## La liste ne propose que les waypoints activés, et un waypoint éteint n'en ouvre pas.
+func test_only_activated_waypoints_are_offered() -> void:
+	_zone.waypoints.append(3)
+	_use(_zone.town_waypoint)
+	var menu: PopupMenu = _zone._waypoint_menu
+	assert_eq(menu.item_count, 1)
+	assert_eq(menu.get_item_id(0), 3)
+	menu.hide()
+	_use(_zone.town_gate)
+	_use(_zone.area_waypoint)
+	assert_false(menu.visible, "éteint, il ne mène nulle part")
+
+
+## On arrive sur le waypoint d'une carte neuve ; rentrer par un waypoint abandonne la
+## zone — seul le portail de ville la fige.
+func test_a_waypoint_travels_and_abandons_the_zone() -> void:
+	_zone.waypoints.append(2)
+	_zone.travel(2)
+	assert_eq(_zone.area, 2)
+	assert_eq(MapGenerator.cell_at(_zone.player.global_position), _zone.generator.waypoint_cell())
+	assert_true(_zone.area_waypoint.lit)
+	_zone.travel(0)
+	assert_true(_zone.in_town)
+	assert_false(_zone.way_back.visible, "rien qui attende")
+	assert_eq(_zone.enemy_manager.enemies.size(), 0)
+
+
 func test_a_portal_opened_in_the_zone_leads_to_town() -> void:
 	_zone.generate_zone(SEED)
 	_zone.open_portal()
@@ -111,15 +188,26 @@ func test_the_way_back_returns_to_the_same_zone() -> void:
 	assert_false(_zone.portal.visible, "le portail s'est refermé derrière soi")
 
 
-## Le sol de la zone se repeint à l'identique : même graine, même tuile à chaque case.
+## Le sol de la zone se repeint à l'identique : mêmes taches, même décor, aux
+## mêmes places. La ville, elle, n'a pas de décor.
 func test_the_zone_floor_comes_back_identical() -> void:
 	_zone.generate_zone(SEED)
-	var floor_layer: TileMapLayer = _zone.floor_layer
-	var before := floor_layer.tile_map_data
+	var before := _scenery()
+	assert_gt(before.size(), 100, "la zone a son décor")
 	_zone.open_portal()
 	_use(_zone.portal)
+	assert_eq(_zone.decor.get_child_count(), 0, "pas de décor en ville")
 	_use(_zone.way_back)
-	assert_eq(floor_layer.tile_map_data, before)
+	assert_eq(_scenery(), before)
+
+
+## Ce que la graine dessine : le masque des taches et chaque pièce de décor.
+func _scenery() -> Array:
+	var mask: ImageTexture = _zone.floor_layer.material.get_shader_parameter("mask")
+	var out: Array = [mask.get_image().get_data()]
+	for sprite: Sprite2D in _zone.decor.get_children():
+		out.append([sprite.texture.resource_path, sprite.position, sprite.flip_h])
+	return out
 
 
 ## Le portail d'en haut donne une zone neuve : celle qu'on avait laissée est abandonnée.

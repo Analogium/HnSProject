@@ -24,6 +24,11 @@ const DEFAULT_FILL := 0.37
 ## Chaque passe fond les obstacles voisins. Six plutôt que cinq : à cinq, les
 ## mêmes 83 % de sol se répartissent en 29 cailloux au lieu de 17 éperons.
 const DEFAULT_ITERATIONS := 6
+## L'ampleur des lacets de la route, en cycles par case.
+const ROAD_BEND := 0.04
+const STEPS: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+]
 
 var width: int
 var height: int
@@ -36,6 +41,10 @@ var floor_cells: Array[Vector2i] = []
 ## Nombre de cases de sol supprimées par _keep_largest_region(). Sert au réglage :
 ## si ce chiffre est énorme, la carte se fragmente en poches isolées.
 var pruned_cells: int = 0
+
+## La route de la zone (jalon 33), de l'entrée — le sol le plus à l'ouest — à la
+## sortie — la case la plus loin à pied. Vide en ville.
+var road: Array[Vector2i] = []
 
 
 func _init(
@@ -56,6 +65,7 @@ func generate(rng_seed: int) -> void:
 		_smooth()
 	_keep_largest_region()
 	_collect_floor_cells()
+	_trace_road(rng_seed)
 
 
 ## La ville : une salle nue, fermée par la même bordure de deux cases, et sans
@@ -155,6 +165,59 @@ func _keep_largest_region() -> void:
 	pruned_cells = total_floor - best.size()
 
 
+## La sortie est la case la plus loin de l'entrée **à pied**, pas à vol d'oiseau :
+## un éperon entre les deux ne raccourcit pas la route. Puis on marche de l'entrée,
+## toujours vers une case plus proche de la sortie, et parmi elles vers celle que
+## préfère un bruit lent : la route avance à chaque pas et serpente quand même. Un
+## plus court chemin brut, sur une carte ouverte à 83 %, tirait des L à la règle.
+func _trace_road(rng_seed: int) -> void:
+	road.clear()
+	if floor_cells.is_empty():
+		return
+	var entry := floor_cells[0]
+	for c in floor_cells:
+		if c.x < entry.x or (c.x == entry.x and absi(c.y - height / 2) < absi(entry.y - height / 2)):
+			entry = c
+	var from_entry := _distances(entry)
+	var exit := entry
+	for c: Vector2i in from_entry:
+		if from_entry[c] > from_entry[exit]:
+			exit = c
+	var to_exit := _distances(exit)
+
+	var bend := FastNoiseLite.new()
+	bend.seed = rng_seed
+	bend.frequency = ROAD_BEND
+	road.append(entry)
+	var at := entry
+	while at != exit:
+		var best := at
+		for offset: Vector2i in STEPS:
+			var n := at + offset
+			if to_exit.get(n, -1) == to_exit[at] - 1 and (
+				best == at or bend.get_noise_2dv(n) > bend.get_noise_2dv(best)
+			):
+				best = n
+		at = best
+		road.append(at)
+
+
+## La distance à pied de `start` à chaque case de sol, en pas de quatre voisins.
+func _distances(start: Vector2i) -> Dictionary:
+	var dist := {start: 0}
+	var queue: Array[Vector2i] = [start]
+	var head := 0
+	while head < queue.size():
+		var cell := queue[head]
+		head += 1
+		for offset: Vector2i in STEPS:
+			var n := cell + offset
+			if is_walkable(n) and not dist.has(n):
+				dist[n] = dist[cell] + 1
+				queue.append(n)
+	return dist
+
+
 func _flood_fill(start: Vector2i, visited: Dictionary) -> Array[Vector2i]:
 	var region: Array[Vector2i] = []
 	var queue: Array[Vector2i] = [start]
@@ -187,8 +250,18 @@ func _collect_floor_cells() -> void:
 				floor_cells.append(Vector2i(x, y))
 
 
-## Point d'apparition : la case de sol la plus proche du centre de la carte.
+## Point d'apparition : le début de la route, ou le centre quand il n'y en a pas.
 func get_spawn_cell() -> Vector2i:
+	return road[0] if not road.is_empty() else center_cell()
+
+
+## Au milieu de la route : il faut en avoir fait la moitié pour le prendre.
+func waypoint_cell() -> Vector2i:
+	return road[road.size() / 2]
+
+
+## La case de sol la plus proche du centre de la carte.
+func center_cell() -> Vector2i:
 	# Un fill_chance trop élevé peut ne laisser aucun sol du tout.
 	if floor_cells.is_empty():
 		return Vector2i(width / 2, height / 2)

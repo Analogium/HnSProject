@@ -1,10 +1,12 @@
 {
-  "floor": [
-    "packed dirt ground, dry cracked earth with scattered flat pebbles and gravel",
-    4242
-  ],
   "wall": [
     "rough broken rock surface seen from directly above, jagged boulders and rubble, deep shadows between them",
     4242
-  ]
+  ],
+  "decor": {
+    "tree_a": ["gnarled dead leafless tree with twisted black branches", 777, [110, 120]],
+    "tree_b": ["gnarled dead leafless tree with twisted black branches", 4242, [96, 104]],
+    "bush": ["small dry dead thorny bush with dark bare twigs", 1337, [30, 30]],
+    "rock": ["cracked dark reddish boulder", 1337, [28, 24]]
+  }
 }

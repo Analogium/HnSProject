@@ -85,6 +85,7 @@ func _ready() -> void:
 	# on la refait sur la graine figée, puis on la vide de ses propres paquets.
 	_zone.generate_zone(SEED)
 	_zone.kill_all()
+	_center()
 	# Sans ça le joueur meurt en deux secondes sous trois cents ennemis, la zone
 	# se recharge, et la mesure repart de zéro.
 	_zone.player.hurtbox.invulnerable = true
@@ -237,11 +238,18 @@ func _advance_ramp(delta: float) -> void:
 		_spawn(STEP)
 
 
+## Au centre de la carte, où les relevés de référence ont été pris : l'entrée de la
+## route est contre le bord, et la moitié des vagues y tomberait dans le mur.
+func _center() -> void:
+	_zone.player.global_position = MapGenerator.cell_center(_zone.generator.center_cell())
+
+
 ## Même ordre que _ready : generate_zone repeuple la zone avec ses propres
 ## paquets, donc le vidage vient après elle, jamais avant.
 func _reset() -> void:
 	_zone.generate_zone(SEED)
 	_zone.kill_all()
+	_center()
 	_zone.player.hurtbox.invulnerable = true
 	_peak_physics = 0.0
 	_peak_enemies = 0

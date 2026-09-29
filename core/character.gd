@@ -7,15 +7,16 @@ extends RefCounted
 ## sauvegarde peut venir de quelqu'un d'autre.
 
 ## Le numéro de format **écrit** ; il monte avec chaque champ nouveau.
-const VERSION := 10
+const VERSION := 11
 
 ## Les numéros qu'on sait **lire** (invariant 7) ; un numéro inconnu est refusé.
 ## v1 → objets de niveau 1 ; v2 → râtelier vide, barre de départ, manuel pas encore
 ## offert ; v3 → rien ; v1 à v4 → dégâts plats convertis par `_current_line` ; v1 à v5 →
 ## noms français, traduits par `LegacyFrench` ; v1 à v6 → attributs placés abandonnés,
 ## arbre de passifs vide ; v1 à v7 → Vive lame ; v1 à v8 → manuel de classe neuf ;
-## v1 à v9 → piles d'un exemplaire, rareté déduite des affixes.
-const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+## v1 à v9 → piles d'un exemplaire, rareté déduite des affixes ; v1 à v10 → aucun
+## waypoint activé.
+const READABLE_VERSIONS := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 ## Les dégâts plats d'avant le jalon 8, nommés ici pour être convertis.
 const LEGACY_ATTACK_DAMAGE := "attack_damage"
@@ -53,6 +54,10 @@ var played_on := ""
 
 var level := 1
 var experience := 0
+
+## Les zones dont le waypoint est activé, par leur rang sur la route (1 = la
+## première) ; la ville n'y est jamais, elle l'est toujours.
+var waypoints: Array[int] = []
 
 ## Les nœuds pris de l'arbre de passifs. Les points restants se déduisent du niveau.
 var passives := PackedStringArray()
@@ -170,6 +175,7 @@ func to_dict() -> Dictionary:
 		"class_manual": _manual_to_dict(class_book.manual) if class_book != null else null,
 		"bar": cells,
 		"manual_given": manual_given,
+		"waypoints": waypoints,
 	}
 
 
@@ -211,6 +217,11 @@ static func from_dict(source: Dictionary) -> Character:
 	p.passives = PassiveTree.shared().legal(taken, p.level)
 
 	grid_from_list(p.bag, source.get("bag"))
+
+	# Un rang de trop n'est pas refusé ici : c'est la zone qui sait combien il y en a.
+	for value in _list(source.get("waypoints")):
+		if (value is float or value is int) and int(value) >= 1 and not p.waypoints.has(int(value)):
+			p.waypoints.append(int(value))
 
 	var worn: Dictionary = source.get("equipment", {}) if source.get("equipment") is Dictionary else {}
 	for slot in worn:

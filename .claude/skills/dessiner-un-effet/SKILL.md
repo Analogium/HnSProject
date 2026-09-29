@@ -39,7 +39,7 @@ avait été jugé immobile, alors qu'en mouvement il sortait comme un tube.
 - Écrire un script `extends SceneTree` dans le dossier de travail. Il dessine
   avec `PixelCanvas` et les grilles de `EffectForge`, puis appelle
   `Image.save_png("user://….png")`. Poser les variantes sur le sol du jeu
-  (`Color(0.21, 0.19, 0.21)`), les numéroter avec des chiffres en pixels, et
+  (`art/tiles/ground_base.png`, ou `TilesetBuilder.FLOOR_BASE` en aplat), les numéroter avec des chiffres en pixels, et
   agrandir le tout ×4 à ×6 au plus proche voisin.
 - `tools/planche.sh <script.gd> <sujet>` le rend en headless et dépose le
   résultat dans `C:\Users\Theo\Desktop\hns-captures-<sujet>\`.

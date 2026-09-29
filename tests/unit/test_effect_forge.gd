@@ -88,7 +88,7 @@ func test_flash_and_burn_grids_are_rectangular() -> void:
 
 
 ## La brûlure est **plus sombre que le sol**, sinon elle se lit comme une lueur et
-## non comme une trace. Le sol du jeu est à 0,21 de luminance (`TilesetBuilder`).
+## non comme une trace. Le ton dominant du sol est `TilesetBuilder.FLOOR_BASE`.
 func test_a_burn_is_darker_than_the_floor() -> void:
 	var image: Image = EffectForge.burns()[0].get_image()
 	var brightest := 0.0
@@ -97,7 +97,7 @@ func test_a_burn_is_darker_than_the_floor() -> void:
 			var c := image.get_pixel(x, y)
 			if c.a > 0.5:
 				brightest = maxf(brightest, c.get_luminance())
-	assert_lt(brightest, 0.21, "la cendre reste sous le sol")
+	assert_lt(brightest, TilesetBuilder.FLOOR_BASE.get_luminance(), "la cendre reste sous le sol")
 
 
 ## Les grilles de la glace. Une ligne mal alignée décale toute la colonne suivante

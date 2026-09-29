@@ -188,6 +188,8 @@ func test_fill_writes_no_stat() -> void:
 		"passives",
 		# Jalon 28 : l'état du manuel de la classe.
 		"class_manual",
+		# Jalon 33 : les waypoints activés.
+		"waypoints",
 	]
 	for key in expected_all:
 		assert_true(dict.has(key), "le champ « %s » a disparu du fichier" % key)

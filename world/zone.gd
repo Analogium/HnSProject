@@ -18,7 +18,25 @@ const PACK_CASTERS := 1
 const PACK_RADIUS_TILES := 6
 const PACK_MIN_TILES := 3
 
+## Le décor du biome, semé par case (jalon 33). Les arbres poussent sur le bord sud
+## des murs, où l'on ne marche jamais : ils ne portent pas de collision, et le
+## champ de flux n'a pas à les connaître. Buissons et rochers se traversent.
+const TREES: Array[Texture2D] = [preload("res://art/decor/tree_a.png"), preload("res://art/decor/tree_b.png")]
+const BUSH := preload("res://art/decor/bush.png")
+const ROCK := preload("res://art/decor/rock.png")
+## Par case de bord de mur, puis par case de sol : 7 buissons et 3 rochers pour
+## 225 cases sur la planche.
+const TREE_CHANCE := 0.15
+const BUSH_CHANCE := 0.03
+const ROCK_CHANCE := 0.013
+## Assez pour casser l'alignement sur la grille, pas assez pour qu'un rocher
+## déborde sur un mur.
+const DECOR_JITTER := 8.0
+
 @onready var floor_layer: TileMapLayer = $FloorLayer
+## Ce qu'on voit au-delà de la carte : la route touche les bords, et la caméra
+## montrait là le gris du fond.
+@onready var beyond: ColorRect = $Beyond
 @onready var wall_layer: TileMapLayer = $Entities/WallLayer
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
@@ -26,6 +44,7 @@ const PACK_MIN_TILES := 3
 @onready var zone_loot: Node2D = $Entities/Loot
 @onready var town_loot: Node2D = $Entities/Town/Loot
 @onready var ground: Node2D = $Ground
+@onready var decor: Node2D = $Entities/Decor
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
 @onready var hud: Hud = $UI/Hud
@@ -48,6 +67,11 @@ const PACK_MIN_TILES := 3
 @onready var way_back: Interactable = $Entities/Town/WayBack
 ## Le portail qu'on ouvre hors de la ville : un seul, déplacé à chaque ouverture.
 @onready var portal: Interactable = $Entities/Portal
+@onready var town_waypoint: Interactable = $Entities/Town/Waypoint
+## Ce que chaque zone pose sur sa route : son waypoint, et le passage vers la suivante.
+@onready var area_marks: Node2D = $Entities/Area
+@onready var area_waypoint: Interactable = $Entities/Area/Waypoint
+@onready var area_exit: Interactable = $Entities/Area/Exit
 
 ## À quelle distance devant soi tombe ce qu'on pose au sol. Posé au centre, un
 ## objet serait à moitié caché par le personnage ; plus loin, il franchirait un
@@ -78,15 +102,28 @@ const TOWN_SEED := 1
 ## Assez loin devant soi pour que le portail ouvert ne se cache pas sous le joueur.
 const PORTAL_AHEAD := 28.0
 
+## Les lieux du biome, dans l'ordre de la route (jalon 33) : la ville, puis trois
+## zones qu'on traverse de l'entrée à la sortie. Le rang est ce que le personnage
+## garde de ses waypoints ; la dernière zone n'a pas de sortie.
+const AREAS := ["Ville", "Friches brûlées", "Val calciné", "Lande morte"]
+const TOWN_WAYPOINT_CELL := Vector2i(7, 11)
+## Le waypoint s'active quand on marche dessus : à moins d'une demi-case de son centre.
+const WAYPOINT_REACH := 16.0
+
 var generator: MapGenerator
 
 ## Tirage propre à la zone : tout ce qui la dessine ou la peuple passe par lui.
 ## C'est ce qui fait qu'une graine redonne exactement la même zone — mêmes murs,
-## mêmes tuiles, mêmes ennemis, mêmes silhouettes. Choisir une *nouvelle* graine
+## même sol, même décor, mêmes ennemis, mêmes silhouettes. Choisir une *nouvelle* graine
 ## reste, lui, un tirage global.
 var zone_rng := RandomNumberGenerator.new()
 
 var _seed := 0
+## Le rang de la zone dans `AREAS` : celui de la dernière quittée tant qu'on est en ville.
+var area := 1
+## Les waypoints activés ; ceux du personnage chargé, la même liste.
+var waypoints: Array[int] = []
+var _waypoint_menu := PopupMenu.new()
 ## Vrai en ville : ni ennemis ni portail à ouvrir, un marchand et le coffre.
 var in_town := false
 ## Le coffre partagé de la session ; un coffre vide et jamais écrit sans personnage.
@@ -119,6 +156,7 @@ func _ready() -> void:
 	player.projectile_parent = projectiles
 	map_overlay.player = player
 	map_overlay.enemy_manager = enemy_manager
+	map_overlay.marks = [area_waypoint, area_exit, town_waypoint, town_gate]
 	hud.bind(player)
 	inventory.bind(player)
 	inventory.drop_requested.connect(_on_item_dropped)
@@ -138,19 +176,32 @@ func _ready() -> void:
 	stash = Game.stash if Game.stash != null else Stash.new()
 	merchant.used.connect(inventory.open_merchant)
 	stash_chest.used.connect(_open_stash)
-	town_gate.used.connect(new_zone)
+	town_gate.used.connect(enter_area.bind(1))
+	town_gate.title = AREAS[1]
 	way_back.used.connect(return_to_zone)
 	portal.used.connect(enter_town)
+	area_exit.used.connect(func() -> void: enter_area(area + 1))
+	town_waypoint.used.connect(_open_waypoints)
+	area_waypoint.used.connect(_open_waypoints)
+	town_waypoint.lit = true
 	merchant.position = MapGenerator.cell_center(MERCHANT_CELL)
 	stash_chest.position = MapGenerator.cell_center(STASH_CELL)
 	town_gate.position = MapGenerator.cell_center(GATE_CELL)
 	way_back.position = MapGenerator.cell_center(WAY_BACK_CELL)
+	town_waypoint.position = MapGenerator.cell_center(TOWN_WAYPOINT_CELL)
+	# Comme les menus du filtre de butin : la police du jeu, et des noms déjà traduits.
+	_waypoint_menu.auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED
+	_waypoint_menu.add_theme_font_size_override("font_size", 8)
+	$UI.add_child(_waypoint_menu)
+	_waypoint_menu.id_pressed.connect(travel)
+	beyond.color = TilesetBuilder.WALL_BASE
 
 	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
 	# seule depuis l'éditeur : le joueur garde alors sa fiche par défaut, et rien
 	# n'est écrit — une scène de réglage ne doit pas toucher aux sauvegardes.
 	if Game.character != null:
 		player.load_character(Game.character)
+		waypoints = Game.character.waypoints
 		player.leveled_up.connect(_on_level_gained)
 		Game.save_requested.connect(save)
 		var safety_net := Timer.new()
@@ -254,6 +305,11 @@ func _drop_on_ground(item: Item) -> void:
 
 
 func _process(_delta: float) -> void:
+	if (
+		not in_town and not area_waypoint.lit
+		and player.global_position.distance_to(area_waypoint.position) < WAYPOINT_REACH
+	):
+		_activate_waypoint()
 	if overlay.visible:
 		overlay.text = _overlay_text()
 
@@ -354,10 +410,58 @@ func _zone_action(event: InputEvent) -> bool:
 	return true
 
 
-## Une zone neuve, au niveau choisi : `F5` et le portail d'en haut de la ville. Celle
-## qu'on avait quittée par un portail est abandonnée.
+## Une carte neuve pour la zone où l'on est : `F5`. Celle qu'on avait quittée par
+## un portail est abandonnée.
 func new_zone() -> void:
 	generate_zone(Game.rng.randi())
+
+
+## La zone de rang `index`, sur une carte neuve à chaque entrée : par l'entrée de sa
+## route, ou sur son waypoint quand on y voyage.
+func enter_area(index: int, at_waypoint := false) -> void:
+	area = clampi(index, 1, AREAS.size() - 1)
+	generate_zone(Game.rng.randi())
+	if at_waypoint:
+		player.global_position = MapGenerator.cell_center(generator.waypoint_cell())
+	_announce(Texts.t(AREAS[area]))
+	create_tween().tween_property(indicator, "modulate:a", 0.0, 1.4).set_delay(1.2)
+
+
+## Le voyage d'un waypoint : le rang 0 est la ville. La zone qu'on quitte ainsi est
+## abandonnée, comme par le portail d'en haut — seul le portail de ville la garde.
+func travel(index: int) -> void:
+	if index == 0:
+		enter_town(false)
+	else:
+		enter_area(index, true)
+
+
+## La liste des waypoints activés, sauf celui où l'on est. Un waypoint éteint ne
+## mène nulle part : il faut d'abord marcher dessus.
+func _open_waypoints() -> void:
+	if not in_town and not area_waypoint.lit:
+		return
+	_waypoint_menu.clear()
+	if not in_town:
+		_waypoint_menu.add_item(Texts.t(AREAS[0]), 0)
+	for index in range(1, AREAS.size()):
+		if waypoints.has(index) and (in_town or index != area):
+			_waypoint_menu.add_item(Texts.t(AREAS[index]), index)
+	if _waypoint_menu.item_count == 0:
+		_announce(Texts.t("aucun autre waypoint activé"))
+		create_tween().tween_property(indicator, "modulate:a", 0.0, 1.4).set_delay(0.8)
+		return
+	_waypoint_menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
+
+
+## Activé pour de bon, donc écrit tout de suite : le personnage ne doit pas le
+## reperdre sur une fermeture avant la sauvegarde suivante.
+func _activate_waypoint() -> void:
+	waypoints.append(area)
+	area_waypoint.lit = true
+	save()
+	_announce(Texts.t("waypoint activé"))
+	create_tween().tween_property(indicator, "modulate:a", 0.0, 1.4).set_delay(0.8)
 
 
 ## Le niveau choisi prend effet **ici**, et nulle part ailleurs : c'est le seul
@@ -368,7 +472,7 @@ func generate_zone(zone_seed: int) -> void:
 	_freeze_zone(false)
 	_seed = zone_seed
 	zone_rng.seed = zone_seed
-	enemy_manager.level = Game.zone_level
+	enemy_manager.level = _area_level()
 	kill_all()
 
 	generator = MapGenerator.new()
@@ -384,18 +488,35 @@ func generate_zone(zone_seed: int) -> void:
 	# pour un personnage qui entre en jeu pour la première fois, c'est-à-dire
 	# exactement le cas qu'on veut servir.
 	_place_and_populate()
+	_place_marks()
 
 	_give_first_manual()
 
 
+## Le niveau choisi, plus un par zone franchie depuis la première.
+func _area_level() -> int:
+	return Game.zone_level + area - 1
+
+
+func _place_marks() -> void:
+	area_waypoint.position = MapGenerator.cell_center(generator.waypoint_cell())
+	area_waypoint.lit = waypoints.has(area)
+	area_exit.position = MapGenerator.cell_center(generator.road.back())
+	area_exit.title = AREAS[mini(area + 1, AREAS.size() - 1)]
+	area_exit.visible = area < AREAS.size() - 1
+
+
 ## La ville : la même salle à chaque visite, sans ennemis. On y arrive en se
 ## connectant et par le portail qu'on ouvre en zone — la zone se fige alors, et le
-## portail de retour y ramène.
-func enter_town() -> void:
-	if not in_town and generator != null:
+## portail de retour y ramène. Par un waypoint, `keep_zone` est faux : elle est abandonnée.
+func enter_town(keep_zone := true) -> void:
+	if not in_town and generator != null and keep_zone:
 		_left_zone = generator
 		_left_at = player.global_position
 		_freeze_zone(true)
+	elif not in_town:
+		_left_zone = null
+		kill_all()
 	_set_town(true)
 	zone_rng.seed = TOWN_SEED
 	generator = MapGenerator.town(TOWN_SIZE.x, TOWN_SIZE.y)
@@ -440,6 +561,7 @@ func open_portal() -> void:
 func _set_town(on: bool) -> void:
 	in_town = on
 	town.visible = on
+	area_marks.visible = not on
 	loot = town_loot if on else zone_loot
 	portal.hide()
 	for node in projectiles.get_children() + town_loot.get_children():
@@ -503,16 +625,56 @@ func _place_and_populate() -> void:
 
 
 func _paint() -> void:
+	var map_px := Vector2(generator.width, generator.height) * MapGenerator.TILE
+	var screen := get_viewport_rect().size
+	beyond.position = -screen
+	beyond.size = map_px + screen * 2.0
 	floor_layer.clear()
 	wall_layer.clear()
+	# `free` et non `queue_free` : une zone repeinte deux fois dans la même image
+	# garderait sinon le décor de la première.
+	for node in decor.get_children():
+		node.free()
+	floor_layer.material = TilesetBuilder.ground_material(
+		Vector2i(generator.width, generator.height), zone_rng.randi(), generator.road
+	)
+	# Rien ne pousse sur la route.
+	var on_road := {}
+	for cell in generator.road:
+		on_road[cell] = true
 
 	for y in generator.height:
 		for x in generator.width:
 			var cell := Vector2i(x, y)
 			if generator.grid[y][x] == MapGenerator.FLOOR:
-				floor_layer.set_cell(cell, 0, _random_floor_tile())
+				floor_layer.set_cell(cell, 0, Vector2i(TilesetBuilder.FLOOR_INDEX, 0))
+				if in_town or on_road.has(cell):
+					continue
+				var roll := zone_rng.randf()
+				if roll < ROCK_CHANCE:
+					_plant(ROCK, cell)
+				elif roll < ROCK_CHANCE + BUSH_CHANCE:
+					_plant(BUSH, cell)
 			else:
-				wall_layer.set_cell(cell, 0, Vector2i(_wall_tile(x, y), 0))
+				var tile := _wall_tile(x, y)
+				wall_layer.set_cell(cell, 0, Vector2i(tile, 0))
+				if tile == TilesetBuilder.WALL_EDGE_INDEX and not in_town and zone_rng.randf() < TREE_CHANCE:
+					_plant(TREES[zone_rng.randi() % TREES.size()], cell, false)
+
+
+## Le pied de l'image sur le bas de la case : c'est lui qui trie le décor avec les
+## corps. Un arbre ne bouge pas de son mur ; le reste se décale un peu.
+func _plant(texture: Texture2D, cell: Vector2i, jitter := true) -> void:
+	var sprite := Sprite2D.new()
+	sprite.texture = texture
+	sprite.centered = false
+	sprite.offset = Vector2(-texture.get_width() / 2.0, -texture.get_height())
+	sprite.flip_h = zone_rng.randf() < 0.5
+	var at := MapGenerator.cell_center(cell) + Vector2(0, MapGenerator.TILE / 2.0)
+	if jitter:
+		at += Vector2(zone_rng.randf_range(-1, 1), zone_rng.randf_range(-1, 0)) * DECOR_JITTER
+	sprite.position = at.round()
+	decor.add_child(sprite)
 
 
 ## Le dessus n'est éclairé que si la case au-dessus est du sol : sinon on est
@@ -523,15 +685,6 @@ func _wall_tile(x: int, y: int) -> int:
 	# Variant et l'inférence échoue.
 	var above_is_floor: bool = y > 0 and generator.grid[y - 1][x] == MapGenerator.FLOOR
 	return TilesetBuilder.WALL_EDGE_INDEX if above_is_floor else TilesetBuilder.WALL_INDEX
-
-
-## Variation visuelle : 85 % de tuile neutre, 15 % de variantes.
-## Les bornes viennent de TilesetBuilder et ne sont pas réécrites ici : ajouter
-## une variante à l'atlas doit suffire à la voir apparaître dans la zone.
-func _random_floor_tile() -> Vector2i:
-	if zone_rng.randf() < 0.15:
-		return Vector2i(zone_rng.randi_range(1, TilesetBuilder.FLOOR_VARIANTS - 1), 0)
-	return Vector2i(0, 0)
 
 
 ## Paquet mixte autour du joueur, sur des cases praticables uniquement. Pas en ville :
@@ -593,9 +746,9 @@ func _respawn() -> void:
 ## afficher tant que les deux coïncident : une deuxième valeur en permanence se
 ## lirait comme une contradiction.
 func _pending_level() -> String:
-	if Game.zone_level == enemy_manager.level:
+	if _area_level() == enemy_manager.level:
 		return ""
-	return "  (F5 : %d)" % Game.zone_level
+	return "  (F5 : %d)" % _area_level()
 
 
 func _overlay_text() -> String:
@@ -608,8 +761,8 @@ func _overlay_text() -> String:
 		],
 		"",
 		("ville  —  prochaine zone : niveau %d" % Game.zone_level) if in_town else
-		"zone %d  —  niveau %d%s  —  %d cases de sol" % [
-			_seed, enemy_manager.level, _pending_level(), generator.floor_cells.size()
+		"%s %d  —  niveau %d%s  —  %d cases de sol" % [
+			AREAS[area], _seed, enemy_manager.level, _pending_level(), generator.floor_cells.size()
 		],
 		"%d ennemis places en %d paquets" % [_spawned, spawner.pack_count],
 		"generation %.0f ms  peinture %.0f ms" % [_gen_ms, _paint_ms],

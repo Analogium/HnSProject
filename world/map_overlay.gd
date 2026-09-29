@@ -11,6 +11,8 @@ extends Control
 const BACKDROP := Color(0.03, 0.03, 0.04, 0.72)
 const WALL_COLOR := Color(0.17, 0.16, 0.21)
 const FLOOR_COLOR := Color(0.44, 0.42, 0.38)
+## Le sable de la route, plus clair que le sol comme en jeu.
+const ROAD_COLOR := Color(0.76, 0.60, 0.40)
 const PLAYER_COLOR := Color(0.45, 0.80, 1.00)
 const GRUNT_COLOR := Color(0.52, 0.76, 0.33)
 const CASTER_COLOR := Color(0.82, 0.47, 0.92)
@@ -21,6 +23,8 @@ const FIT := 0.88
 
 var player: Node2D
 var enemy_manager: EnemyManager
+## Waypoints et passages : montrés quand ils le sont en jeu, à leur couleur.
+var marks: Array[Interactable] = []
 
 var _tex: ImageTexture
 var _grid := Vector2i.ZERO
@@ -39,7 +43,10 @@ func build(gen: MapGenerator, tile_size: int) -> void:
 	_grid = Vector2i(gen.width, gen.height)
 	_tile_size = tile_size
 
-	_tex = ImageTexture.create_from_image(gen.to_image(FLOOR_COLOR, WALL_COLOR))
+	var img := gen.to_image(FLOOR_COLOR, WALL_COLOR)
+	for cell in gen.road:
+		img.set_pixelv(cell, ROAD_COLOR)
+	_tex = ImageTexture.create_from_image(img)
 	queue_redraw()
 
 
@@ -69,8 +76,21 @@ func _draw() -> void:
 				_marker(origin, zoom, e.global_position,
 					CASTER_COLOR if e is Caster else GRUNT_COLOR, 1.0)
 
+	# Un cadre creux et non un carré plein : le waypoint allumé a le cyan du joueur,
+	# l'éteint le gris du sol ; c'est la forme qui les distingue.
+	for mark in marks:
+		if mark.is_visible_in_tree():
+			_marker(origin, zoom, mark.global_position, _color_of(mark), 4.0)
+			_marker(origin, zoom, mark.global_position, OUTLINE, 1.0)
+
 	if player != null:
 		_marker(origin, zoom, player.global_position, PLAYER_COLOR, 2.0)
+
+
+func _color_of(mark: Interactable) -> Color:
+	if mark.look == Interactable.Look.WAYPOINT:
+		return Interactable.RUNE_ON if mark.lit else Interactable.RUNE_OFF
+	return Interactable.GATE
 
 
 ## Échelle entière : à l'échelle fractionnaire les pixels de la carte bavent.

@@ -2528,8 +2528,30 @@ msgstr "[ctrl + click] move between grids"
 msgid "coffre illisible"
 msgstr "stash unreadable"
 
-msgid "Nouvelle zone"
-msgstr "New Area"
+msgid "Passage"
+msgstr "Passage"
+
+# Jalon 33 : les zones du premier biome et leurs waypoints.
+msgid "Ville"
+msgstr "Town"
+
+msgid "Friches brûlées"
+msgstr "Scorched Wastes"
+
+msgid "Val calciné"
+msgstr "Charred Vale"
+
+msgid "Lande morte"
+msgstr "Dead Moor"
+
+msgid "Waypoint"
+msgstr "Waypoint"
+
+msgid "waypoint activé"
+msgstr "waypoint activated"
+
+msgid "aucun autre waypoint activé"
+msgstr "no other waypoint activated"
 
 # Jalon 32 : les flacons.
 msgid "FLACON"

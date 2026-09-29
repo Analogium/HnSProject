@@ -272,6 +272,8 @@ func _expected() -> Dictionary:
 		out[Glossary.ENTRIES[entry]["text"]] = "définition de « %s »" % entry
 	for title_text in Interactable.TITLES.values():
 		out[title_text] = "nom d'un objet de la ville"
+	for area_name in preload("res://world/zone.gd").AREAS:
+		out[area_name] = "nom d'un lieu"
 	for action in Keybinds.ACTIONS:
 		out[Keybinds.ACTIONS[action]] = "action « %s »" % action
 	for button in Keybinds.MOUSE_LABELS:

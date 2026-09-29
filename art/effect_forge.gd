@@ -480,7 +480,7 @@ const BURN_HEIGHT := 5
 ## la couleur de ce qui l'a faite. **Brune et non grise** : sur un sol déjà sombre,
 ## une cendre grise disparaît — c'est la braise qui couve dans la terre qu'on voit,
 ## pas le noir. Son ombre est chaude, pour la même raison que celle du serpent.
-const ASH := Color(0.34, 0.16, 0.10)
+const ASH := Color(0.29, 0.135, 0.085)
 const ASH_SHADOW := Color(0.14, 0.05, 0.04)
 
 static var _flashes := {}
