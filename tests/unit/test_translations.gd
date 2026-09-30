@@ -302,6 +302,8 @@ func _expected() -> Dictionary:
 		out[StatMod.LABELS[field]] = "nom de statistique"
 	for field in SkillStats.LABELS:
 		out[SkillStats.LABELS[field]] = "nombre de compétence"
+	for kind in TalentNode.KINDS:
+		out[kind] = "sorte de nœud"
 	for field in StatHelp.TEXTS:
 		out[StatHelp.TEXTS[field]] = "explication de « %s »" % field
 	for field in StatHelp.SKILLS:

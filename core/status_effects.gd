@@ -223,6 +223,15 @@ static func neutral_factors() -> Array[float]:
 	return out
 
 
+## L'état qu'un coup de cette nature tire : l'embrasement du feu, la pourriture de la
+## nécrose. Celui dont un tué explose (`kill_burst`) : il suit la conversion.
+static func rolled_by(nature: int) -> int:
+	for kind: int in ROLLED:
+		if NATURES[kind] == nature:
+			return kind
+	return -1
+
+
 static func name(kind: int) -> String:
 	return Texts.t(NAMES[kind])
 

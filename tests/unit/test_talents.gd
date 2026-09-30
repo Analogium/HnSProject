@@ -40,14 +40,13 @@ func _skill(id: String, table: Array[float], nature := DamageType.Kind.LIGHTNING
 	return c
 
 
-func _node(id: String, lines: Array[TalentLine], required := 0, maximum := 1, parent := "") -> TalentNode:
+func _node(id: String, lines: Array[TalentLine], maximum := 1, parents: Dictionary[String, int] = {}) -> TalentNode:
 	var n := TalentNode.new()
 	n.id = id
 	n.name = id
 	n.lines = lines
-	n.required_points = required
 	n.points_max = maximum
-	n.parent = parent
+	n.parents = parents
 	return n
 
 
@@ -80,13 +79,15 @@ func _archetype(cells: Array[ManualCell]) -> ManualArchetype:
 
 
 ## Le livre des règles : une compétence à cinq points et son arbre — une branche et un
-## côté au palier 0, une feuille au palier 2 sous la branche —, et un passif.
+## côté reliés au sort, une feuille reliée aux deux, qui demande deux points dans l'un —,
+## et un passif.
 func _trial_book() -> ManualArchetype:
 	var spell := _skill("spell", [10.0, 20.0, 30.0, 40.0, 50.0] as Array[float])
-	var branch := _node("branch_spell", [_line("damage", 10.0, true)] as Array[TalentLine], 0, 3)
-	var side := _node("side_spell", [_line("radius", 10.0, true)] as Array[TalentLine], 0, 2)
+	var branch := _node("branch_spell", [_line("damage", 10.0, true)] as Array[TalentLine], 3)
+	var side := _node("side_spell", [_line("radius", 10.0, true)] as Array[TalentLine], 2)
 	var leaf := _node(
-		"leaf_spell", [_line("projectiles", 1.0)] as Array[TalentLine], 2, 1, "branch_spell"
+		"leaf_spell", [_line("projectiles", 1.0)] as Array[TalentLine], 1,
+		{"branch_spell": 2, "side_spell": 2} as Dictionary[String, int]
 	)
 	return _archetype([
 		_cell(spell, [branch, side, leaf] as Array[TalentNode]),
@@ -146,14 +147,6 @@ func test_the_book_recognizes_its_three_kinds_of_ids() -> void:
 	assert_false(arch.knows(""), "ni rien du tout")
 
 
-func test_a_node_knows_its_children() -> void:
-	var cell := _trial_book().cells[0]
-	assert_eq(cell.children_of("branch_spell").size(), 1, "la branche porte la feuille")
-	assert_eq(cell.children_of("branch_spell")[0].id, "leaf_spell")
-	assert_eq(cell.children_of("leaf_spell").size(), 0, "et la feuille ne porte rien")
-	assert_eq(cell.children_of("").size(), 2, "les nœuds sans parent partent de la compétence")
-
-
 # --------------------------------------------------------------------------
 # Ce qu'un point coûte et ce qu'il demande
 # --------------------------------------------------------------------------
@@ -189,27 +182,26 @@ func test_a_node_requires_points_in_its_skill() -> void:
 	assert_true(m.invest(arch, "branch_spell"), "et la branche s'ouvre")
 
 
-func test_a_node_requires_its_parent() -> void:
+## Un lien demande ses points dans le parent, pas un seul (jalon 34, les « ••• » de
+## Last Epoch).
+func test_a_link_asks_for_its_points() -> void:
+	var arch := _trial_book()
+	var m := _manual(8)
+	assert_true(m.invest(arch, "spell"))
+	assert_true(m.invest(arch, "branch_spell"))
+	assert_false(m.can_invest(arch, "leaf_spell"), "un point sur les deux demandés")
+	assert_true(m.invest(arch, "branch_spell"))
+	assert_true(m.invest(arch, "leaf_spell"), "le lien est payé")
+
+
+## **Un seul lien suffit** : c'est ce qui fait un réseau plutôt que des couloirs.
+func test_any_link_opens_a_node() -> void:
 	var arch := _trial_book()
 	var m := _manual(8)
 	assert_true(m.invest(arch, "spell"))
 	for i in 2:
 		assert_true(m.invest(arch, "side_spell"))
-	assert_false(m.can_invest(arch, "leaf_spell"), "le palier est payé, la branche est vide")
-	assert_true(m.invest(arch, "branch_spell"))
-	assert_true(m.invest(arch, "leaf_spell"), "la branche portant un point, la feuille s'ouvre")
-
-
-## Le palier (jalon 34) : des points placés **plus haut** dans l'arbre, pas dans la
-## compétence — elle n'en demande qu'un pour ouvrir l'arbre entier.
-func test_a_node_requires_its_gate() -> void:
-	var arch := _trial_book()
-	var m := _manual(8)
-	assert_true(m.invest(arch, "spell"))
-	assert_true(m.invest(arch, "branch_spell"))
-	assert_false(m.can_invest(arch, "leaf_spell"), "un point sur deux")
-	assert_true(m.invest(arch, "side_spell"), "un point ailleurs compte aussi")
-	assert_true(m.invest(arch, "leaf_spell"))
+	assert_true(m.invest(arch, "leaf_spell"), "par le côté, la branche vide")
 
 
 func test_a_node_does_not_exceed_its_maximum() -> void:
@@ -290,21 +282,20 @@ func test_a_skill_keeps_a_point_under_its_tree() -> void:
 	assert_true(m.refund(arch, "spell"), "arbre vide, la compétence se vide")
 
 
-## Un nœud profond ne paie pas son propre palier : sinon, une fois pris, tout ce qui
-## est au-dessus se reprendrait sous lui.
-func test_a_gate_does_not_fall_under_an_invested_node() -> void:
+## Un lien peut se défaire tant qu'un autre tient le nœud ; le dernier, non.
+func test_the_last_link_holding_a_node_stays() -> void:
 	var arch := _trial_book()
 	var m := _manual(10)
-	for id in ["spell", "branch_spell", "side_spell", "side_spell", "leaf_spell"]:
+	for id in ["spell", "branch_spell", "branch_spell", "side_spell", "side_spell", "leaf_spell"]:
 		assert_true(m.invest(arch, id), "« %s »" % id)
-	assert_true(m.refund(arch, "side_spell"), "trois points au-dessus, un de trop")
-	assert_false(m.can_refund(arch, "side_spell"), "le palier tomberait")
+	assert_true(m.refund(arch, "branch_spell"), "le côté tient encore la feuille")
+	assert_false(m.can_refund(arch, "side_spell"), "plus rien ne la tiendrait")
 	assert_true(m.refund(arch, "leaf_spell"))
 	assert_true(m.refund(arch, "side_spell"))
 
 
-## La relecture rend l'arbre entier quand il ne tient plus — pool dépassé ou palier
-## tombé —, et ne touche ni à la case ni au passif.
+## La relecture rend l'arbre entier quand il ne tient plus — pool dépassé ou nœud
+## coupé de ses liens —, et ne touche ni à la case ni au passif.
 func test_a_broken_tree_is_released_whole() -> void:
 	var arch := _trial_book()
 	var m := _manual(2)
@@ -315,7 +306,7 @@ func test_a_broken_tree_is_released_whole() -> void:
 	m = _manual(10)
 	m.points = {"spell": 1, "branch_spell": 1, "leaf_spell": 1}
 	m.release_broken_trees(arch)
-	assert_eq(m.points, {"spell": 1}, "un point sous un palier de deux")
+	assert_eq(m.points, {"spell": 1}, "un point sur un lien qui en demande deux")
 
 	m.points = {"spell": 1, "branch_spell": 2, "leaf_spell": 1}
 	m.release_broken_trees(arch)
@@ -327,10 +318,10 @@ func test_a_broken_tree_is_released_whole() -> void:
 func test_cannot_refund_under_an_invested_child() -> void:
 	var arch := _trial_book()
 	var m := _manual(10)
-	for id in ["spell", "branch_spell", "branch_spell", "side_spell", "leaf_spell"]:
+	for id in ["spell", "branch_spell", "branch_spell", "branch_spell", "side_spell", "leaf_spell"]:
 		assert_true(m.invest(arch, id), "« %s »" % id)
 
-	assert_true(m.refund(arch, "branch_spell"), "le palier tient, la branche garde un point")
+	assert_true(m.refund(arch, "branch_spell"), "trois points pour un lien de deux")
 	assert_false(m.can_refund(arch, "branch_spell"), "la feuille en dépend")
 	assert_true(m.refund(arch, "leaf_spell"), "la feuille, elle, se reprend")
 	assert_true(m.refund(arch, "branch_spell"), "et la branche ensuite")
@@ -653,42 +644,38 @@ func test_each_node_has_a_name_and_effects() -> void:
 				assert_gte(n.points_max, 1, "« %s » n'accepte aucun point" % n.id)
 
 
-## Un nœud dont le parent n'est pas dans le même arbre ne s'ouvrirait jamais, et
-## rien à l'écran ne dirait pourquoi.
-func test_each_parent_exists_in_the_same_tree() -> void:
+## Un lien vers un nœud hors de l'arbre, ou qui demande plus que le parent n'offre, ne
+## s'ouvrirait jamais, et rien à l'écran ne dirait pourquoi.
+func test_each_link_can_be_paid_in_the_same_tree() -> void:
 	for base in _books():
 		for c in base.manual.cells:
 			for n in c.talents:
-				if n.parent.is_empty():
-					continue
-				assert_ne(n.parent, n.id, "« %s » est son propre parent" % n.id)
-				assert_not_null(
-					c.node_of(n.parent),
-					"« %s » dépend de « %s », qui n'est pas dans son arbre" % [n.id, n.parent]
-				)
+				for parent: String in n.parents:
+					assert_ne(parent, n.id, "« %s » est relié à lui-même" % n.id)
+					var from_value := c.node_of(parent)
+					assert_not_null(from_value, "« %s » est relié à « %s », hors de son arbre" % [n.id, parent])
+					if from_value != null:
+						assert_between(
+							n.parents[parent], 1, from_value.points_max,
+							"« %s » demande %d points à « %s »" % [n.id, n.parents[parent], parent]
+						)
 
 
-## Un arbre dont tous les nœuds ont un parent est un arbre fermé : rien n'y
-## accroche le premier point.
-func test_each_tree_has_a_root_and_stays_reachable() -> void:
+## Tous les liens mènent à la compétence, **sans boucle** : deux nœuds reliés l'un à
+## l'autre se tiendraient ouverts, et l'arbre se reprendrait sous eux.
+func test_links_lead_to_the_root() -> void:
 	for base in _books():
 		for c in base.manual.cells:
-			if c.talents.is_empty():
-				continue
-			var roots := 0
+			var placed := {}
+			var progress := true
+			while progress:
+				progress = false
+				for n in c.talents:
+					if not placed.has(n.id) and n.parents.keys().all(func(p: String) -> bool: return placed.has(p)):
+						placed[n.id] = true
+						progress = true
 			for n in c.talents:
-				if n.parent.is_empty():
-					roots += 1
-				var above := 0
-				for other in c.talents:
-					if other.required_points < n.required_points:
-						above += other.points_max
-				assert_true(
-					n.required_points <= mini(above, Manual.MAX_LEVEL - 1),
-					"« %s » demande un palier de %d, l'arbre au-dessus n'en offre que %d"
-						% [n.id, n.required_points, above]
-				)
-			assert_gt(roots, 0, "« %s » : aucun nœud ne part de la compétence" % c.identifier())
+				assert_true(placed.has(n.id), "« %s » : ses liens tournent en rond" % n.id)
 
 
 ## Une transformation ne quitte et ne rejoint que ce qui se pose et s'oublie
@@ -707,18 +694,23 @@ func test_each_transformation_stays_among_posed_shapes() -> void:
 
 ## La faute de frappe silencieuse, celle des affixes : une ligne qui vise un
 ## champ inexistant ne casse rien, le point placé ne fait simplement rien.
+## Sur un buff (jalon 34), une ligne qui ne vise pas un nombre du lancer est une ligne
+## de ce buff, aux règles d'un passif : un champ de la fiche, ou une portée.
 func test_each_node_line_targets_a_cast_number() -> void:
+	var sheet := CharacterStats.new()
 	for base in _books():
 		for c in base.manual.cells:
+			var buff := c.skill != null and c.skill.grants_buffs()
 			for n in c.talents:
 				for l in n.lines:
-					assert_true(
-						l.scope.is_empty(),
-						"« %s » : un nœud ne vise que sa compétence" % n.id
+					var cast_line := l.scope.is_empty() and SkillStats.modifiable(l.stat)
+					var buff_line := buff and (
+						(not l.scope.is_empty() and SkillStats.modifiable(l.stat))
+						or (l.stat in sheet and StatMod.LABELS.has(l.stat))
 					)
 					assert_true(
-						SkillStats.modifiable(l.stat),
-						"« %s » vise « %s », qui n'est pas un nombre de lancer" % [n.id, l.stat]
+						cast_line or buff_line,
+						"« %s » vise « %s », ni nombre du lancer, ni ligne de buff" % [n.id, l.stat]
 					)
 
 
@@ -792,8 +784,6 @@ func test_no_manual_fills_up_entirely() -> void:
 const SHALLOW_TREES := [
 	"manual_lightning", "manual_weapons", "manual_cold", "manual_holy", "manual_necrotic",
 ]
-## Les points d'arbre qui séparent deux colonnes.
-const TREE_GATE := 5
 
 
 ## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.
@@ -811,26 +801,6 @@ func test_no_tree_fills_up_entirely() -> void:
 				offered, Manual.MAX_LEVEL,
 				"« %s » offre %d points pour un pool de %d" % [c.identifier(), offered, Manual.MAX_LEVEL]
 			)
-
-
-## Un lien ne saute pas de colonne : il passerait sous le nœud du milieu, et « Mue →
-## Couvée » se lisait « Mue → Vif → Couvée » (capture du jalon 34).
-func test_each_parent_sits_in_the_previous_column() -> void:
-	for base in _books():
-		for c in base.manual.cells:
-			for n in c.talents:
-				var column := 0 if n.parent.is_empty() else c.node_of(n.parent).position.x + 1
-				assert_eq(n.position.x, column, "« %s » : son lien saute une colonne" % n.id)
-
-
-## Dans un arbre repris, une colonne est un palier : 0, 5, 10, 15.
-func test_each_column_is_a_gate() -> void:
-	for base in _books():
-		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
-			continue
-		for c in base.manual.cells:
-			for n in c.talents:
-				assert_eq(n.required_points, TREE_GATE * n.position.x, "« %s »" % n.id)
 
 
 ## Un nœud qui change le jeu ne se comprend pas à ses lignes : « +24 rayon de l'explosion
@@ -861,4 +831,22 @@ func test_projectile_numbers_only_on_a_projectile() -> void:
 							c.skill.worn(Keywords.PROJECTILE),
 							"« %s » vise « %s » sur ce qui n'est pas un projectile" % [n.id, l.stat]
 						)
+
+
+## Une perte : ce qui baisse là où monter est un gain, ou ce qui monte là où baisser l'est.
+func test_a_loss_is_read_by_what_the_number_is_for() -> void:
+	assert_true(StatMod.new("damage", StatMod.Mode.MORE, -10.0).is_loss(), "moins de dégâts")
+	assert_false(StatMod.new("damage", StatMod.Mode.MORE, 10.0).is_loss())
+	assert_true(StatMod.new("use_time", StatMod.Mode.PERCENT, 60.0).is_loss(), "un geste plus long")
+	assert_false(StatMod.new("recharge", StatMod.Mode.PERCENT, -10.0).is_loss(), "une recharge plus courte")
+	assert_true(StatMod.new("self_burn", StatMod.Mode.PERCENT, 100.0).is_loss(), "brûler plus")
+
+
+func test_a_node_says_what_kind_it_is() -> void:
+	var numbers := _node("n", [_line("damage", 10.0, true)] as Array[TalentLine])
+	assert_eq(numbers.kind(), "", "des nombres, rien à signaler")
+	assert_eq(_node("m", [_line(SkillStats.PIERCE, 1.0)] as Array[TalentLine]).kind(), "mécanique")
+	var shaped := _node("t", [] as Array[TalentLine])
+	shaped.transforms = true
+	assert_eq(shaped.kind(), "transformation")
 

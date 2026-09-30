@@ -167,14 +167,15 @@ static func scorch(tint: Color, radius: int, alpha := SCORCH_ALPHA) -> Texture2D
 	return tex
 
 
-## Pose le halo centré sur l'origine de `ci`. Sept effets écrivaient ce cadre à la
-## main : il doit suivre l'image de `scorch()`, `2 × span + 1` de côté, coin à `-span`.
+## Pose le halo centré sur `at`, l'origine de `ci` par défaut. Sept effets écrivaient ce
+## cadre à la main : il doit suivre l'image de `scorch()`, `2 × span + 1` de côté.
 static func put_scorch(
-	ci: CanvasItem, tint: Color, span: int, fade := 1.0, alpha := SCORCH_ALPHA
+	ci: CanvasItem, tint: Color, span: int, fade := 1.0, alpha := SCORCH_ALPHA,
+	at := Vector2.ZERO
 ) -> void:
 	ci.draw_texture_rect(
 		scorch(tint, span, alpha),
-		Rect2(snap(ci, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
+		Rect2(snap(ci, at - Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
 		false, Color(1.0, 1.0, 1.0, fade)
 	)
 
@@ -239,12 +240,14 @@ static func _sheet(
 ## `core` est la couleur du rang `R_CORE` : le blanc chaud du feu, le givre de la
 ## glace. Pris en haut de la rampe de la teinte, un cœur de feu reste orange et un
 ## cœur de glace reste cyan — c'est sa **propre** rampe qu'il lui faut.
-static func _bake(grids: Array, w: int, h: int, tint: Color, core: Color) -> Array:
+static func _bake(
+	grids: Array, w: int, h: int, tint: Color, core: Color, legend: Dictionary = INK
+) -> Array:
 	var palettes := [ArtPalette.ramp(tint), ArtPalette.ramp(core)]
 	var out: Array[Texture2D] = []
 	for grid: Array in grids:
 		var canvas := PixelCanvas.new(w, h)
-		canvas.stamp(grid, Vector2i.ZERO, INK)
+		canvas.stamp(grid, Vector2i.ZERO, legend)
 		out.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
 	return out
 
@@ -387,6 +390,20 @@ const PUFF_SIZE := 5
 static var _balls := {}
 static var _puffs := {}
 
+## L'éclat de Fragmentation (jalon 34, choisi sur planche) : une boule de sept pixels,
+## un seul temps — elle file trop vite pour qu'une animation se voie.
+const SHARD := [[
+	"...3...",
+	"..3443.",
+	".34w543",
+	".3www43",
+	".34w432",
+	"..3432.",
+	"...22..",
+]]
+const SHARD_SIZE := 7
+static var _shards := {}
+
 
 static func balls(tint: Color) -> Array:
 	return _sheet(_balls, BALL, BALL_SIZE, BALL_SIZE, tint, Fire.heart(tint))
@@ -394,6 +411,10 @@ static func balls(tint: Color) -> Array:
 
 static func puffs(tint: Color) -> Array:
 	return _sheet(_puffs, PUFF, PUFF_SIZE, PUFF_SIZE, tint, Fire.heart(tint))
+
+
+static func shard(tint: Color) -> Texture2D:
+	return _sheet(_shards, SHARD, SHARD_SIZE, SHARD_SIZE, tint, Fire.heart(tint))[0]
 
 
 ## L'éclat d'un souffle, treize pixels, en trois temps : **une étoile et non un
@@ -499,6 +520,28 @@ static func burns() -> Array:
 			canvas.stamp(grid, Vector2i.ZERO, INK)
 			_burns.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
 	return _burns
+
+
+## Le sol d'une compétence convertie (jalon 34, choisi sur planche) : **la brûlure
+## reprise dans une autre matière**, posée par `DashTrail` sur le même lit. Le givre :
+## le milieu de la rampe du froid, un cœur de givre. La pourriture : le bord dans
+## l'ombre violette, le dedans vert.
+const FROST_STAIN_INK := {"1": [R_TINT, 1], "2": [R_TINT, 2], "3": [R_CORE, 3]}
+const ROT_STAIN_INK := {"1": [R_SHADE, 1], "2": [R_TINT, 1], "3": [R_TINT, 2]}
+
+static var _frost_stains := {}
+static var _rot_stains := {}
+
+
+static func frost_stains(tint: Color) -> Array:
+	var key := tint.to_html(false)
+	if not _frost_stains.has(key):
+		_frost_stains[key] = _bake(BURN, BURN_WIDTH, BURN_HEIGHT, tint, Frost.rim(tint), FROST_STAIN_INK)
+	return _frost_stains[key]
+
+
+static func rot_stains(tint: Color) -> Array:
+	return _shaded(_rot_stains, BURN, BURN_WIDTH, BURN_HEIGHT, tint, Necrotic.SHADE, ROT_STAIN_INK)
 
 
 ## Le cristal du manuel de glace, neuf pixels sur quinze : deux flancs francs et
@@ -1053,7 +1096,8 @@ static func spore(tint: Color) -> Texture2D:
 
 ## `_sheet()` à trois rampes : la teinte, son cœur maladif, et `shade`.
 static func _shaded(
-	cache: Dictionary, grids: Array, w: int, h: int, tint: Color, shade: Color
+	cache: Dictionary, grids: Array, w: int, h: int, tint: Color, shade: Color,
+	legend: Dictionary = INK_SHADE
 ) -> Array:
 	var key := tint.to_html(false)
 	if not cache.has(key):
@@ -1063,7 +1107,7 @@ static func _shaded(
 		var out: Array[Texture2D] = []
 		for grid: Array in grids:
 			var canvas := PixelCanvas.new(w, h)
-			canvas.stamp(grid, Vector2i.ZERO, INK_SHADE)
+			canvas.stamp(grid, Vector2i.ZERO, legend)
 			out.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
 		cache[key] = out
 	return cache[key]

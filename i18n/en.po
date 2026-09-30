@@ -612,6 +612,69 @@ msgstr "Hail"
 msgid "Attisement"
 msgstr "Stoking"
 
+msgid "Braise vive"
+msgstr "Live Ember"
+
+msgid "Tant que la combustion brûle, vos dégâts de feu sont accrus."
+msgstr "While the combustion burns, your fire damage is increased."
+
+msgid "Cendres froides"
+msgstr "Cold Ashes"
+
+msgid "La combustion vous brûle moins chaque seconde."
+msgstr "The combustion burns you less each second."
+
+msgid "Allure"
+msgstr "Stride"
+
+msgid "Tant que la combustion brûle, vous vous déplacez plus vite."
+msgstr "While the combustion burns, you move faster."
+
+msgid "Tant que la combustion brûle, vos coups embrasent plus souvent."
+msgstr "While the combustion burns, your hits ignite more often."
+
+msgid "Peau de braise"
+msgstr "Ember Skin"
+
+msgid "Tant que la combustion brûle, vous résistez mieux au feu — le sien compris."
+msgstr "While the combustion burns, you resist fire better — its own included."
+
+msgid "Emballement"
+msgstr "Frenzy"
+
+msgid "Tant que la combustion brûle, vous lancez vos sorts plus vite."
+msgstr "While the combustion burns, you cast your spells faster."
+
+msgid "Feu dévorant"
+msgstr "Devouring Fire"
+
+msgid "Tant que la combustion brûle, vos dégâts de feu sont bien plus accrus — mais elle vous brûle deux fois plus."
+msgstr "While the combustion burns, your fire damage is increased much more — but it burns you twice as hard."
+
+msgid "Cendres fertiles"
+msgstr "Fertile Ashes"
+
+msgid "Tant que la combustion brûle, vous regagnez des points de vie chaque seconde."
+msgstr "While the combustion burns, you regain life every second."
+
+msgid "Holocauste"
+msgstr "Holocaust"
+
+msgid "Tant que la combustion brûle, vos dégâts de feu sont amplifiés."
+msgstr "While the combustion burns, your fire damage is amplified."
+
+msgid "Météore"
+msgstr "Meteor"
+
+msgid "Bond"
+msgstr "Leap"
+
+msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et plus large — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
+msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there harder and wider — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
+
+msgid "La ruée devient un saut : elle ne laisse plus de traînée de feu, mais son explosion d'arrivée frappe bien plus fort et plus large."
+msgstr "The dash becomes a leap: it no longer leaves a trail of fire, but its landing explosion hits much harder and wider."
+
 msgid "La boule inflige plus de dégâts, à la touche directe comme à l'explosion."
 msgstr "The ball deals more damage, both on the direct hit and in the explosion."
 
@@ -642,8 +705,8 @@ msgstr "Raises the chance for this spell to apply the state of its nature to wha
 msgid "La boule éclate en petites boules qui partent en étoile : sur chaque ennemi qu'elle traverse, et au bout de sa course — sur un ennemi, un mur ou à portée maximale. Chacune inflige {part_eclat} % des dégâts et explose deux fois plus petit. Elles traversent sans les frapper les ennemis que la boule a déjà touchés."
 msgstr "The ball bursts into small balls flying out in a star: on each enemy it pierces, and at the end of its flight — on an enemy, a wall or at maximum range. Each deals {part_eclat}% of the damage and explodes half as wide. They pass through the enemies the ball already hit without striking them."
 
-msgid "Un ennemi embrasé que la boule tue explose : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
-msgstr "An ignited enemy killed by the ball explodes: {part_tue}% of the damage of one of the ball's hits, within this radius around it. An ignited enemy killed by that explosion explodes in turn."
+msgid "Un ennemi que la boule tue explose s'il porte l'état de sa nature — embrasé, ou transi une fois la boule devenue de glace : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
+msgstr "An enemy killed by the ball explodes if it bears the state of the ball's nature — ignited, or chilled once the ball has turned to ice: {part_tue}% of the damage of one of the ball's hits, within this radius around it. An enemy in that state killed by that explosion explodes in turn."
 
 msgid "Chaque morsure du serpent inflige plus de dégâts."
 msgstr "Each of the snake's bites deals more damage."
@@ -696,8 +759,8 @@ msgstr "The blaze deals more damage and turns necrotic: the Necrotic keyword ins
 msgid "Chaque ennemi tué par le brasier laisse une plaque de feu à sa place. Elle brûle les ennemis — {part_sol} % des dégâts d'une impulsion toutes les {rythme_sol} s — pendant la durée indiquée."
 msgstr "Each enemy killed by the blaze leaves a patch of fire where it fell. It burns enemies — {part_sol}% of a pulse's damage every {rythme_sol} s — for the listed duration."
 
-msgid "Un ennemi embrasé que le brasier tue explose : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
-msgstr "An ignited enemy killed by the blaze explodes: {part_tue}% of a pulse's damage, within this radius around it. An ignited enemy killed by that explosion explodes in turn."
+msgid "Un ennemi que le brasier tue explose s'il porte l'état de sa nature — embrasé, ou pourrissant une fois le brasier devenu nécrotique : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
+msgstr "An enemy killed by the blaze explodes if it bears the state of the blaze's nature — ignited, or rotting once the blaze has turned necrotic: {part_tue}% of a pulse's damage, within this radius around it. An enemy in that state killed by that explosion explodes in turn."
 
 msgid "La traînée de feu que laisse la ruée brûle plus longtemps."
 msgstr "The trail of fire left by the dash burns longer."
@@ -1894,21 +1957,31 @@ msgstr "locked"
 msgid "demande"
 msgstr "requires"
 
-msgid "le talent « {nom} »"
-msgstr "the \"{nom}\" talent"
+msgid "ou"
+msgstr "or"
+
+msgid "sans effet avec"
+msgstr "no effect with"
 
 msgid "{points} point dans la compétence"
 msgid_plural "{points} points dans la compétence"
 msgstr[0] "{points} point in the skill"
 msgstr[1] "{points} points in the skill"
 
-msgid "{points} point dans l'arbre"
-msgid_plural "{points} points dans l'arbre"
-msgstr[0] "{points} point in the tree"
-msgstr[1] "{points} points in the tree"
+msgid "« {nom} » à {points}"
+msgstr "\"{nom}\" at {points}"
 
 msgid "devient"
 msgstr "becomes"
+
+msgid "transformation"
+msgstr "transformation"
+
+msgid "mécanique"
+msgstr "mechanic"
+
+msgid "conversion"
+msgstr "conversion"
 
 
 

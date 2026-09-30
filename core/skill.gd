@@ -34,6 +34,8 @@ enum Shape {
 	ARC, BOLT, STRIKE, BALL, CHAIN, CLOUD, AURA, SNAKE, CROSS, ORBIT, DASH, BUFF,
 	WAVE, CYCLONE, SPIKES, NOVA, VORTEX, BEAM, PILLAR, PULSE, SUMMON, GATE, CURSE,
 	LUNGE, COMET,
+	# Jalon 34 : des formes que seule une transformation donne — le Météore, le Bond.
+	METEOR, LEAP,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -68,6 +70,8 @@ const KEYWORD_OF_SHAPE := {
 	Shape.AURA: Keywords.AREA,
 	Shape.SNAKE: Keywords.AREA,
 	Shape.DASH: Keywords.AREA,
+	Shape.LEAP: Keywords.AREA,
+	Shape.METEOR: Keywords.AREA,
 	# La vague part de la lame et le cyclone tourne sur place : deux gestes d'arme,
 	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
 	Shape.WAVE: Keywords.MELEE,
@@ -102,8 +106,16 @@ const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
 const TRANSFORMABLE: Array[Shape] = [
 	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
 	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
-	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH,
+	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 ]
+
+## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
+## l'écrit en rouge plutôt que de laisser payer un point pour rien. Rien à traverser
+## pour un météore ; le Bond ne laisse pas de traînée.
+const IGNORED_BY_SHAPE := {
+	Shape.METEOR: [SkillStats.PIERCE],
+	Shape.LEAP: ["duration", "radius"],
+}
 
 const HITS_PER_SHAPE := {
 	Shape.CROSS: 2,
@@ -404,7 +416,8 @@ func resolve(
 			_store(r, m, fields, damage_percents)
 	for t: InvestedTalent in talents:
 		for m in t.mods():
-			_store(r, m, fields, damage_percents)
+			if not is_buff_line(m):
+				_store(r, m, fields, damage_percents)
 	# Après le tri, qui compte les niveaux en bonus ; ils n'apprennent rien à qui n'a
 	# placé aucun point.
 	var own := damage(maxi(points + r.bonus_levels, 1) if points > 0 else 0)
@@ -429,6 +442,12 @@ func resolve(
 	if simultaneous > 0:
 		r.simultaneous = maxf(r.simultaneous, 1.0)
 	return r
+
+
+## Sur une compétence qui pose un buff, la ligne d'un nœud qui **ne vise pas un nombre du
+## lancer** — une portée, ou un champ de la fiche — est une ligne de ce buff (jalon 34).
+static func is_buff_line(m: StatMod) -> bool:
+	return not m.scope.is_empty() or not SkillStats.modifiable(m.stat)
 
 
 ## Une seule fonction pour les lignes d'objet et de talent, sinon « +12 % dégâts »

@@ -165,8 +165,8 @@ descend jusqu'aux jauges** tant qu'un arbre est ouvert. Grille de quatre colonne
 les paliers 0 / 5 / 10 / 15 — sur quatre rangées, écart de 12 px pour tenir dans les
 210 px de large ; l'en-tête annonce le pool **de l'arbre**. Vu sur capture fenêtrée.
 
-**Reporté** : le signe par sorte de nœud et les échanges en rouge. La capture se lit
-sans eux ; à reprendre si le joueur s'y perd.
+**Repris ensuite** (§6 octies) : la pastille par sorte de nœud, les pertes en rouge,
+et la ligne « Demande » qui dit tout ce qui manque.
 
 ## 6 bis. Ce que la capture et la campagne ont corrigé
 
@@ -256,6 +256,113 @@ la part des PV max retirée**, qui existait déjà et suit les dégâts réels. 
 connaissance de cause : un objet qui ajoute un peu de chaque nature pose tous les états,
 faibles. La base se réglera avec l'équilibrage.
 
+## 6 octies. Ce qui restait : banc, planches, Ignition, lisibilité
+
+**Le banc de combat** (`world/stress_test.tscn` patché sur une copie, 300 ennemis tenus,
+5 paires alternées de 1 440 images après 240 de chauffe) : la Boule de feu nue contre la
+même au maximum de son arbre — Double langue, Perforation 2, Fragmentation 3, Braises
+dispersées 3, Étincelles 3, Réaction en chaîne. Au pic, **59 tirs en vol contre 24,
+20 plaques de sol, 11 explosions**. **165 img/s des deux côtés, physique 5,76 → 6,40 ms
+en moyenne (+0,6 ms), 7 % du temps figé des deux côtés.**
+
+**Trois planches** (`Bureau\hns-captures-formes-feu\`), choisies par l'utilisateur :
+- **Météore, « crinière »** — la boule tombe droit du ciel en 0,45 s, trois langues
+  dressées au-dessus d'elle, une ombre tramée qui grandit au sol, puis l'éclatement de
+  la boule (`Fireball.burst()`, sorti de `Fireball` pour servir aux deux). Nouvelle forme
+  `METEOR`. À la capture, l'ombre au réglage d'une aura disparaissait sur la terre
+  sombre : poussée à 0,6. Le rocher de la première planche se lisait en bougie sur un
+  caillou, remplacé avant de la montrer.
+- **Bond, « arc et cratère »** — la ruée reste instantanée ; un arc de bouffées qui
+  s'éteint depuis le départ, un cratère de brûlures à l'arrivée (`LeapArc`, décoratif :
+  la morsure est l'explosion d'arrivée). Nouvelle forme `LEAP`.
+- **Éclats, « mini-boule »** — une boule de sept pixels et deux bouffées
+  (`EffectForge.SHARD`, `Fireball.is_shard`), au lieu de la boule entière.
+
+**L'arbre d'Ignition.** Un buff n'a pas de nombres de lancer à viser. Une règle, sans
+champ neuf : **sur une compétence qui pose un buff, la ligne d'un nœud qui ne vise pas un
+nombre du lancer est une ligne de ce buff** (`Skill.is_buff_line()`), aux règles d'un
+passif, versée par `Player.buff_mods()` tant qu'il brûle. La brûlure d'un buff se lit
+désormais sur le lancer résolu, pour que Cendres froides et Feu dévorant comptent. Neuf
+nœuds, 21 points pour 20.
+
+**La lisibilité de l'arbre** : une pastille violette sur une transformation, orange sur
+un nœud de mécanique (`SkillStats.MECHANICS`), la sorte dans le sous-titre de la fiche ;
+**les pertes en rouge** (`StatMod.is_loss()`, avec `LOWER_IS_BETTER` — une recharge qui
+baisse est un gain) ; **tout ce qui manque** sous « Demande », et non le premier manque.
+
+## 6 nonies. Un réseau plutôt que des couloirs, sans paliers
+
+**La demande** : à l'usage, les arbres étaient trois couloirs parallèles — un parent par
+nœud, une colonne par palier. Fragmentation ne servait à rien sous Météore, et Météore
+n'était accessible qu'en passant par la conversion en froid. L'utilisateur veut le
+système de Last Epoch (capture de l'arbre de « Rive » à l'appui), **paliers compris
+retirés**.
+
+**La règle** (`Manual._node_open()`) : `TalentNode.parent` et `required_points`
+disparaissent au profit de `parents`, un dictionnaire nœud → points demandés. **Un seul
+lien payé suffit.** La profondeur, ce sont les liens et leurs points, dessinés en grains
+sur le lien comme les « ••• » de Last Epoch. Deux gardes, parce qu'un réseau peut
+mentir là où un arbre ne le pouvait pas : **pas de boucle** (`test_links_lead_to_the_root`
+— deux nœuds reliés l'un à l'autre se tiendraient ouverts, et l'arbre se reprendrait
+sous eux) et **pas de lien sous un nœud** (`test_nodes_and_links_do_not_overlap`).
+
+**La fenêtre, choisie sur planche** (`hns-captures-arbre-reseau`, quatre variantes :
+centre en cases, centre en pastilles, centre élargi, gauche vers droite) : **« centre,
+élargi »** — la compétence au centre, les nœuds de 28 px autour, sept colonnes sur trois
+rangées. La fenêtre passe de 210 à 300 px le temps de l'arbre, **vers la gauche** : à
+droite, le sac l'aurait couverte. **Vu à la capture** : les liens transparaissaient à
+travers les nœuds, dont le fond est à 0,9 d'opacité — un fond plein dessous. « 2 points
+dans « Cendres vivantes » » débordait la fiche de 11 px (`test_largeurs`) : la ligne dit
+« « Cendres vivantes » à 2 ».
+
+**Les transformations gardent leur arbre.** Sous Météore, Double langue fait tomber
+**une rangée** de météores en travers de la visée (`Meteor.SPACING`), et Fragmentation
+fait jaillir l'étoile d'éclats **du point d'impact** (`Projectile.split()`, rendue
+publique). Ce qui reste sans effet — Perforation sous Météore ; Sillage et Braises,
+la traînée, sous Bond — est déclaré une fois dans `Skill.IGNORED_BY_SHAPE`, et la fiche
+du nœud l'écrit en rouge, « sans effet avec Météore », avant qu'on paie. Choix de
+l'utilisateur, plutôt qu'un effet inventé.
+
+**Les cinq arbres de feu refaits en réseau** (positions et liens dans `fire.tres`,
+lignes inchangées) : trois nœuds reliés au sort — à gauche la puissance et la
+conversion, en haut la zone, à droite le vol ou la mécanique —, des nœuds à deux liens
+aux carrefours (Étincelles, Fragmentation, Météore, Hydre…). **Météore** s'ouvre par
+Attisement à 3 ou Double langue à 1 ; **Givre** est une branche de côté, plus un passage.
+Les autres manuels, pas encore repris, ont été convertis tels quels : leur parent devient
+un lien à 1 point, leurs nœuds glissent d'une case à droite du sort.
+
+## 6 decies. Le sol d'une compétence convertie
+
+**La demande** : la Boule de feu gelée ou le Serpent passé au Venin laissaient un sol
+qu'on ne voyait pas — hors du feu, `DashTrail` ne traçait qu'un trait et deux taches
+de lumière à 0,3, et un sol sans longueur n'a pas de trait.
+
+**Choisi sur planche** (`hns-captures-sols-convertis`, trois pistes par nature, le sol
+brûlant en référence) : **« givre et flocons »** pour le froid, **« taches et spores »**
+pour la nécrose. Le lit de brûlures, repris dans la rampe de la nature ; un halo tramé
+dessous ; des flocons ou des spores qui montent de huit pixels et recommencent. Écartés :
+le champ de cristaux (haut, il cachait ce qui s'y tient), la plaque de glace et la
+flaque de bile — en traînée, chaque plaque gardait son contour et le serpent laissait
+une pile de pièces.
+
+**Vu à la capture** (`hns-captures-sols-convertis-jeu`) : sans ennemi, le serpent tourne
+sur place et repasse sur ses plaques ; à la densité des brûlures, les taches claires et
+cernées faisaient un tapis. `STAIN_DENSITY` les divise par deux — la cendre, sombre,
+se lisait en terre brûlée, pas elles.
+
+**Et sous les corps.** `DashTrail` se relevait à `z_index` 2, au-dessus de tout corps :
+on marchait sous sa propre traînée (remarqué par l'utilisateur). Traînées et sols vont
+désormais sur la couche `Ground` de la scène, entre le sol et les corps, déjà celle des
+zones de danger (`test_a_trail_lies_under_the_bodies`).
+
+## 6 undecies. L'explosion des tués suit la conversion
+
+Contagion ardente (Immolation) et Réaction en chaîne (Boule de feu) ne faisaient
+exploser que les **embrasés** : sous Flamme noire ou Givre, le lancer ne pose plus
+l'embrasement, et le nœud ne faisait plus rien. Un tué explose désormais s'il porte
+**l'état que tire la nature du lancer** (`StatusEffects.rolled_by()`) — pourrissant
+pour un brasier nécrotique, transi pour une boule de glace. Les descriptions le disent.
+
 ## 6 ter. Relevé d'équilibrage, avant → après
 
 `tests/run.sh balance`, sur le commit du jalon 33 puis ici : **les quatre mêmes tests
@@ -266,8 +373,9 @@ en zone 20, trivial (0,49 coup). Non corrigé : l'équilibrage se fait en dernie
 
 ## 7. Le déroulé
 
-**Fait** : 1, 2, 3, et le 4 sans Météore ni Bond. **Reste** : Météore, Bond et le
-dessin des éclats — les trois planches —, puis le 5.
+**Fait** : 1 à 5, l'arbre d'Ignition, et le réseau sans paliers (§6 nonies).
+**Reste** : l'équilibrage, en dernier — les liens rendent les nœuds profonds bien moins
+chers qu'aux paliers (l'Hydre : 5 points au lieu de 15).
 
 
 1. **Ce document**, et la validation des arbres du §5 par l'utilisateur.

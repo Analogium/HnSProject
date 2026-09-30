@@ -23,13 +23,16 @@ const XP_H := 5.0
 const CELL := 34.0
 const CELL_GAP := 6.0
 
-## Un nœud, plus petit qu'une case, et l'écart où passent les liens. Une colonne par
-## palier (0, 5, 10, 15) sur quatre rangées, à droite de la racine (jalon 34) : l'écart
-## est ce qui reste des 210 pixels de la fenêtre.
+## L'arbre ouvert (jalon 34, « centre, élargi » choisi sur planche) : la compétence au
+## centre, ses nœuds en réseau autour, jusqu'à `TREE_SPAN` cases de chaque côté. La
+## fenêtre s'élargit à `TREE_W` le temps de l'arbre : à 210 pixels, les nœuds collaient.
 const NODE := 28.0
-const NODE_GAP := 12.0
-const TREE_COLUMNS := 4
-const TREE_ROWS := 4
+const TREE_STEP := Vector2(42.0, 44.0)
+const TREE_SPAN := Vector2i(3, 1)
+const TREE_W := 300.0
+## Un grain par point demandé dans le parent, sur le lien, dès deux.
+const GRAIN := 2.0
+const GRAIN_STEP := 5.0
 
 ## Les états d'une case, lus au liseré **sans lire** le texte. Verrouillée : le
 ## niveau du livre n'y donne pas encore droit.
@@ -78,6 +81,14 @@ const SHEET_SEPARATION := 4.0
 const TITLE_BAND := 7.0
 ## Ce qui manque pour ouvrir : « pas encore », pas une erreur.
 const MISSING := Color(0.92, 0.50, 0.44)
+## Ce qu'un échange coûte : le rouge de ce qui manque, lu de la même façon.
+const LOSS := MISSING
+## Les pastilles d'un nœud qui change le jeu, en haut à droite : une transformation, une
+## mécanique. La conversion garde la sienne, de sa nature, en haut à gauche.
+const KIND_COLORS := {
+	"transformation": Color(0.78, 0.60, 0.98),
+	"mécanique": Color(0.98, 0.70, 0.32),
+}
 ## Le paragraphe de description : plus chaud que les intitulés, plus éteint que les
 ## valeurs. Il se lit une fois, les nombres se relisent.
 const DESCRIPTION := Color(0.80, 0.75, 0.66)
@@ -156,8 +167,14 @@ var _opened := "":
 		_opened = value
 		if _grid_height > 0.0:
 			size.y = _grid_height if value.is_empty() else _tree_height()
-## La hauteur de la scène, celle de la grille.
+			# Vers la gauche : à droite, le sac l'aurait recouvert.
+			var grow := 0.0 if value.is_empty() else TREE_W - _grid_width
+			position.x = _grid_left - grow
+			size.x = _grid_width + grow
+## La place de la scène, celle de la grille.
 var _grid_height := 0.0
+var _grid_width := 0.0
+var _grid_left := 0.0
 var _hover_slot := -1
 var _hover_cell := -1
 ## Le nœud survolé dans l'arbre ouvert, et le survol de la racine.
@@ -173,6 +190,8 @@ var _detailed := false
 func _ready() -> void:
 	visible = false
 	_grid_height = size.y
+	_grid_width = size.x
+	_grid_left = position.x
 	_font = ThemeDB.fallback_font
 	# Au plus proche voisin : lissée, la trame du pixel art tournerait au gris.
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -431,18 +450,18 @@ func _tree_height() -> float:
 	return Hud.gauges_top(get_viewport_rect().size.y) - position.y
 
 
-## La racine de l'arbre : la case de la compétence, à gauche, centrée sur les rangées
-## de nœuds.
+## Le centre de l'arbre, où se tient la compétence : entre l'en-tête et l'aide.
+func _tree_center() -> Vector2:
+	return Vector2(size.x * 0.5, (_origin().y + _help_top()) * 0.5).floor()
+
+
 func _root_rect() -> Rect2:
-	var band := NODE * TREE_ROWS + NODE_GAP * (TREE_ROWS - 1)
-	return Rect2(_origin() + Vector2(0.0, (band - CELL) * 0.5), Vector2(CELL, CELL))
+	return Rect2(_tree_center() - Vector2(CELL, CELL) * 0.5, Vector2(CELL, CELL))
 
 
 func _node_rect(position: Vector2i) -> Rect2:
-	var start := _origin() + Vector2(CELL + NODE_GAP + 4.0, 0.0)
-	return Rect2(
-		start + Vector2(position) * (NODE + NODE_GAP), Vector2(NODE, NODE)
-	)
+	var center := _tree_center() + Vector2(position) * TREE_STEP
+	return Rect2(center - Vector2(NODE, NODE) * 0.5, Vector2(NODE, NODE))
 
 
 # --------------------------------------------------------------------------
@@ -612,22 +631,25 @@ func _draw_cell(manual: Manual, cell: ManualCell, r: Rect2, hovered_one: bool) -
 	)
 
 
-## Racine, liens puis nœuds : les nœuds couvrent les bouts des liens.
+## Liens, racine puis nœuds : les nœuds couvrent les bouts des liens.
 func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void:
 	var root := _root_rect()
 	for node in cell.talents:
-		var r := _node_rect(node.position)
-		var from_value := root if node.parent.is_empty() else _node_rect(
-			cell.node_of(node.parent).position
-		)
-		# Le lien s'allume quand le nœud porte un point.
-		var quick := manual.points_of(node.id) > 0
-		draw_line(
-			Vector2(from_value.end.x, from_value.get_center().y),
-			Vector2(r.position.x, r.get_center().y),
-			LINK_BRIGHT if quick else LINK, 1.0
-		)
+		var to := _node_rect(node.position).get_center()
+		var invested := manual.points_of(node.id) > 0
+		if node.parents.is_empty():
+			draw_line(root.get_center(), to, LINK_BRIGHT if invested else LINK, 1.0)
+		for parent: String in node.parents:
+			var need: int = node.parents[parent]
+			var from_value := _node_rect(cell.node_of(parent).position).get_center()
+			# Le lien s'allume sur le chemin réellement pris.
+			var held := manual.points_of(parent)
+			draw_line(from_value, to, LINK_BRIGHT if invested and held >= need else LINK, 1.0)
+			if need > 1:
+				_draw_grains(from_value, to, need, held)
 
+	# Opaques sous leur fond à 0,9 : les liens passaient au travers (vu à la capture).
+	draw_rect(root, UiPalette.BACK_FULL)
 	_draw_cell(manual, cell, root, _hover_root)
 	for i in cell.talents.size():
 		_draw_node(manual, arch, cell.talents[i], i == _hover_node)
@@ -642,17 +664,32 @@ func _draw_node(
 		manual.is_open(arch, node.id), spent, node.points_max,
 		manual.tree_remaining(arch.cell_of_node(node.id))
 	)
+	draw_rect(r, UiPalette.BACK_FULL)
 	draw_rect(r, CELL_BACKGROUND)
 	draw_rect(r, tint, false, 2.0 if hovered else 1.0)
 
 	# Pastille de la nature d'arrivée d'une conversion : seul effet lisible en couleur.
 	if node.converts:
 		draw_circle(r.position + Vector2(5.0, 5.0), 2.0, DamageType.COLORS[node.converts_to])
+	var kind := node.kind()
+	if KIND_COLORS.has(kind):
+		draw_circle(r.position + Vector2(r.size.x - 5.0, 5.0), 2.0, KIND_COLORS[kind])
 
 	_draw_count(
 		r, "%d/%d" % [spent, node.points_max],
 		UiPalette.TEXT if tint != LOCK else UiPalette.LABEL, FONT_SIZE
 	)
+
+
+## Les « ••• » de Last Epoch : les points que le parent doit porter, au milieu du lien,
+## allumés à mesure qu'il les porte.
+func _draw_grains(from_value: Vector2, to: Vector2, need: int, held: int) -> void:
+	var along := from_value.direction_to(to)
+	var middle := (from_value + to) * 0.5
+	for k in need:
+		var at := (middle + along * (float(k) - float(need - 1) * 0.5) * GRAIN_STEP).floor()
+		draw_rect(Rect2(at - Vector2(GRAIN, GRAIN), Vector2(GRAIN, GRAIN) * 2.0), UiPalette.BACK_FULL)
+		draw_rect(Rect2(at - Vector2(GRAIN, GRAIN) * 0.5, Vector2(GRAIN, GRAIN)), FULL if held > k else WAIT)
 
 
 ## **Le seul endroit** qui traduit un état en couleur, cases et nœuds.
@@ -1089,38 +1126,58 @@ func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 		Group.STATE, Texts.t("points"), "%d / %d" % [spent, node.points_max],
 		UiPalette.TEXT
 	))
-	if not manual.is_open(_archetype(), node.id):
-		out.append(SheetLine.new(
-			Group.STATE, Texts.t("demande"), _what_it_requires(manual, cell, node), MISSING
-		))
+	out.append_array(_requirement_lines(manual, cell, node))
 	if spent == 0:
 		out.append(_first_point_line())
 
 	out.append_array(_effect_lines(node.mods(maxi(spent, 1))))
+	# Ce qu'une transformation de l'arbre ne lit pas, dit avant qu'on paie.
+	for other in cell.talents:
+		var ignored: Array = Skill.IGNORED_BY_SHAPE.get(other.shape, []) if other.transforms else []
+		if node.lines.any(func(l: TalentLine) -> bool: return l.stat in ignored):
+			out.append(SheetLine.new(
+				Group.EFFECT, Texts.t("sans effet avec"), other.displayed_name(), LOSS
+			))
 	# Le mot-clé d'arrivée : c'est lui qui fait mordre l'équipement de la nouvelle nature.
 	if node.converts:
 		out.append(SheetLine.new(
-			Group.EFFECT, Texts.t("devient"), Keywords.label_of(Skill.KEYWORD_OF_NATURE[node.converts_to]),
+			Group.EFFECT, Texts.t("devient"),
+			Keywords.label_of(Skill.KEYWORD_OF_NATURE[node.converts_to]),
 			DamageType.COLORS[node.converts_to]
 		))
-	return Sheet.new(node.displayed_name(), Texts.t("talent"), out, node.displayed_description())
+	var subtitle := Texts.t("talent")
+	if not node.kind().is_empty():
+		subtitle = "%s · %s" % [subtitle, Texts.t(node.kind())]
+	return Sheet.new(node.displayed_name(), subtitle, out, node.displayed_description())
 
 
-## Dans l'ordre où `Manual._node_open()` refuse : la compétence, le parent, le palier.
-func _what_it_requires(manual: Manual, cell: ManualCell, node: TalentNode) -> String:
+## **Tout ce qui manque**, dans l'ordre où `Manual._node_open()` refuse : la compétence,
+## puis les liens, dont un seul suffit — le premier « demande », les suivants « ou ».
+func _requirement_lines(manual: Manual, cell: ManualCell, node: TalentNode) -> Array[SheetLine]:
+	var out: Array[SheetLine] = []
 	# « dans la compétence » et non son nom, que l'en-tête écrit déjà : il débordait
 	# (mesuré par `test_largeurs`).
 	if manual.points_of(cell.skill.id) <= 0:
-		return Texts.tn(
+		out.append(SheetLine.new(Group.STATE, Texts.t("demande"), Texts.tn(
 			"{points} point dans la compétence", "{points} points dans la compétence", 1
-		).format({"points": 1})
-	if not node.parent.is_empty() and manual.points_of(node.parent) <= 0:
-		var parent := cell.node_of(node.parent)
-		return Texts.t("le talent « {nom} »").format({"nom": parent.displayed_name()})
-	return Texts.tn(
-		"{points} point dans l'arbre", "{points} points dans l'arbre",
-		node.required_points
-	).format({"points": node.required_points})
+		).format({"points": 1}), MISSING))
+	var linked := node.parents.keys().any(
+		func(parent: String) -> bool: return manual.points_of(parent) >= node.parents[parent]
+	)
+	if node.parents.is_empty() or linked:
+		return out
+	var first := true
+	for parent: String in node.parents:
+		var need: int = node.parents[parent]
+		out.append(SheetLine.new(
+			Group.STATE, Texts.t("demande") if first else Texts.t("ou"),
+			# « à 2 » et non « 2 points dans » : la ligne débordait de la fiche (`test_largeurs`).
+			Texts.t("« {nom} » à {points}").format({
+				"points": need, "nom": cell.node_of(parent).displayed_name()
+			}), MISSING
+		))
+		first = false
+	return out
 
 
 ## Par la **même fonction que l'infobulle d'un objet**.
@@ -1128,7 +1185,8 @@ func _effect_lines(mods: Array[StatMod]) -> Array[SheetLine]:
 	var out: Array[SheetLine] = []
 	for m in mods:
 		out.append(SheetLine.new(
-			Group.EFFECT, StatMod.name(m.stat, m.scope), m.readable_value(), UiPalette.TEXT
+			Group.EFFECT, StatMod.name(m.stat, m.scope), m.readable_value(),
+			LOSS if m.is_loss() else UiPalette.TEXT
 		))
 	return out
 

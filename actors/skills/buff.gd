@@ -102,7 +102,11 @@ func _physics_process(delta: float) -> void:
 	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff. Ce qu'il
 	# ronge des PV **actuels** s'y ramène en part des PV max, et ne tue donc jamais.
 	var withered := _skill.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
-	_player.burn(_skill.self_burn + withered, _distribution, delta)
+	# Le lancer résolu et non la compétence : un nœud d'arbre la change (jalon 34).
+	var burning := 0.0
+	if _skill.self_burn > 0.0:
+		burning = _player.resolve(_skill, _player.skill_points(_skill.id)).self_burn
+	_player.burn(burning + withered, _distribution, delta)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.

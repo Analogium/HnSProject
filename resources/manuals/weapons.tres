@@ -23,7 +23,7 @@ value_per_point = 14.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_momentum"
 name = "Élan"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_elan_0")])
 
@@ -31,8 +31,10 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_elan_0")])
 script = ExtResource("3_noeud")
 id = "heavy_strike_burning_blade"
 name = "Lame ardente"
-position = Vector2i(1, 0)
-parent = "heavy_strike_momentum"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"heavy_strike_momentum": 1
+})
 points_max = 1
 converts_to = 2
 converts = true
@@ -47,7 +49,7 @@ value_max_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_bloodletting"
 name = "Saignée"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_lourde_saignee_0")])
 
@@ -68,7 +70,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "cross_slash_edge"
 name = "Taille"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_taille_0")])
 
@@ -82,8 +84,10 @@ value_max_per_point = 6.0
 script = ExtResource("3_noeud")
 id = "cross_slash_thrust"
 name = "Estoc"
-position = Vector2i(1, 0)
-parent = "cross_slash_edge"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"cross_slash_edge": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_estoc_0")])
 
@@ -91,7 +95,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_en_croix_estoc_0")])
 script = ExtResource("3_noeud")
 id = "cross_slash_holy_blade"
 name = "Lame sainte"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 1
 converts_to = 5
 converts = true
@@ -111,7 +115,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_round"
 name = "Ronde"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_ronde_0")])
 
@@ -126,8 +130,10 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_sharpness"
 name = "Tranchant"
-position = Vector2i(1, 0)
-parent = "spiral_sword_round"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"spiral_sword_round": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_tranchant_0")])
 
@@ -141,7 +147,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_endurance"
 name = "Endurance"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_epee_spirale_endurance_0")])
 
@@ -185,7 +191,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "wave_slash_edge"
 name = "Fil de l'arc"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_fil_0")])
 
@@ -199,8 +205,10 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "wave_slash_reach"
 name = "Course"
-position = Vector2i(1, 0)
-parent = "wave_slash_edge"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"wave_slash_edge": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_vague_course_0")])
 
@@ -221,7 +229,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "cyclone_reaping"
 name = "Fauchage"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_fauchage_0")])
 
@@ -235,8 +243,10 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "cyclone_span"
 name = "Envergure"
-position = Vector2i(1, 0)
-parent = "cyclone_reaping"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"cyclone_reaping": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_envergure_0")])
 
@@ -257,7 +267,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_edge"
 name = "Fil tranchant"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_tranchant_0")])
 
@@ -271,8 +281,10 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_swath"
 name = "Andain"
-position = Vector2i(1, 0)
-parent = "slicing_dash_edge"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"slicing_dash_edge": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_sillage_0")])
 
@@ -292,7 +304,7 @@ value_per_point = 500.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_flow"
 name = "Enchaînement"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_enchainement_0"), SubResource("L_ruee_enchainement_1")])
 

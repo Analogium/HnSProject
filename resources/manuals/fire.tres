@@ -23,7 +23,7 @@ script = ExtResource("3_noeud")
 id = "fireball_stoking"
 name = "Attisement"
 description = "La boule inflige plus de dégâts, à la touche directe comme à l'explosion."
-position = Vector2i(0, 0)
+position = Vector2i(-1, 0)
 points_max = 4
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_stoking_0")])
 
@@ -38,7 +38,7 @@ script = ExtResource("3_noeud")
 id = "fireball_searing_breath"
 name = "Souffle ardent"
 description = "L'explosion à l'impact s'élargit et atteint des ennemis plus éloignés du point d'impact."
-position = Vector2i(0, 1)
+position = Vector2i(0, -1)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_searing_breath_0")])
 
@@ -53,7 +53,7 @@ script = ExtResource("3_noeud")
 id = "fireball_velocity"
 name = "Vélocité"
 description = "La boule vole plus vite. Sa durée de vol ne change pas : elle porte donc plus loin."
-position = Vector2i(0, 2)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_velocity_0")])
 
@@ -68,9 +68,10 @@ script = ExtResource("3_noeud")
 id = "fireball_ardor"
 name = "Ardeur"
 description = "Augmente la chance de coup critique de la boule, touche directe et explosion comprises."
-position = Vector2i(1, 0)
-parent = "fireball_stoking"
-required_points = 5
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"fireball_stoking": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_ardor_0")])
 
@@ -85,9 +86,10 @@ script = ExtResource("3_noeud")
 id = "fireball_scattered_embers"
 name = "Braises dispersées"
 description = "Chaque explosion laisse au sol une plaque de feu de rayon {rayon_sol}. Elle brûle les ennemis qui s'y tiennent — {part_sol} % des dégâts de la boule toutes les {rythme_sol} s — pendant la durée indiquée."
-position = Vector2i(1, 1)
-parent = "fireball_searing_breath"
-required_points = 5
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"fireball_searing_breath": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_scattered_embers_0")])
 
@@ -108,9 +110,10 @@ script = ExtResource("3_noeud")
 id = "fireball_forked_tongue"
 name = "Double langue"
 description = "Chaque sort lance une boule de plus, en éventail. En échange, chaque boule inflige moins de dégâts."
-position = Vector2i(1, 2)
-parent = "fireball_velocity"
-required_points = 5
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"fireball_velocity": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_forked_tongue_0"), SubResource("L_fireball_forked_tongue_1")])
 
@@ -124,9 +127,10 @@ script = ExtResource("3_noeud")
 id = "fireball_piercing"
 name = "Perforation"
 description = "La boule ne s'arrête plus au premier ennemi : elle le traverse, explose sur lui, et continue. Elle s'arrête sur l'ennemi suivant celui qu'elle a traversé en dernier. Elle ne frappe jamais deux fois le même ennemi."
-position = Vector2i(1, 3)
-parent = "fireball_velocity"
-required_points = 5
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"fireball_velocity": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_piercing_0")])
 
@@ -135,9 +139,10 @@ script = ExtResource("3_noeud")
 id = "fireball_frost"
 name = "Givre"
 description = "La boule devient entièrement de glace : des dégâts de froid, le mot-clé Froid au lieu de Feu. Elle transit au lieu d'embraser, et ce sont les bonus de froid de l'équipement qui s'y appliquent, et non plus ceux de feu."
-position = Vector2i(2, 0)
-parent = "fireball_ardor"
-required_points = 10
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"fireball_ardor": 1
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([])
 converts = true
@@ -153,9 +158,11 @@ script = ExtResource("3_noeud")
 id = "fireball_kindling"
 name = "Étincelles"
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
-position = Vector2i(2, 1)
-parent = "fireball_scattered_embers"
-required_points = 10
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"fireball_searing_breath": 1,
+"fireball_ardor": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_kindling_0")])
 
@@ -169,9 +176,11 @@ script = ExtResource("3_noeud")
 id = "fireball_fragmentation"
 name = "Fragmentation"
 description = "La boule éclate en petites boules qui partent en étoile : sur chaque ennemi qu'elle traverse, et au bout de sa course — sur un ennemi, un mur ou à portée maximale. Chacune inflige {part_eclat} % des dégâts et explose deux fois plus petit. Elles traversent sans les frapper les ennemis que la boule a déjà touchés."
-position = Vector2i(2, 3)
-parent = "fireball_piercing"
-required_points = 10
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"fireball_piercing": 1,
+"fireball_forked_tongue": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_fragmentation_0")])
 
@@ -184,10 +193,11 @@ value_per_point = 24.0
 script = ExtResource("3_noeud")
 id = "fireball_chain_reaction"
 name = "Réaction en chaîne"
-description = "Un ennemi embrasé que la boule tue explose : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
-position = Vector2i(3, 1)
-parent = "fireball_kindling"
-required_points = 15
+description = "Un ennemi que la boule tue explose s'il porte l'état de sa nature — embrasé, ou transi une fois la boule devenue de glace : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"fireball_kindling": 3
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_chain_reaction_0")])
 
@@ -203,7 +213,7 @@ script = ExtResource("3_noeud")
 id = "hell_snake_molting"
 name = "Mue"
 description = "Chaque morsure du serpent inflige plus de dégâts."
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 4
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_molting_0")])
 
@@ -218,7 +228,7 @@ script = ExtResource("3_noeud")
 id = "hell_snake_long_life"
 name = "Longue vie"
 description = "Le serpent reste plus longtemps en jeu avant de disparaître."
-position = Vector2i(0, 1)
+position = Vector2i(0, -1)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_long_life_0")])
 
@@ -233,7 +243,7 @@ script = ExtResource("3_noeud")
 id = "hell_snake_fangs"
 name = "Crocs"
 description = "Ajoute des dégâts de feu à chaque morsure."
-position = Vector2i(0, 2)
+position = Vector2i(-1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_fangs_0")])
 
@@ -253,9 +263,11 @@ script = ExtResource("3_noeud")
 id = "hell_snake_swift"
 name = "Vif"
 description = "Le serpent rampe plus vite et parcourt plus de terrain, mais disparaît plus tôt."
-position = Vector2i(1, 0)
-parent = "hell_snake_molting"
-required_points = 5
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"hell_snake_long_life": 1,
+"hell_snake_molting": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_swift_0"), SubResource("L_hell_snake_swift_1")])
 
@@ -270,9 +282,11 @@ script = ExtResource("3_noeud")
 id = "hell_snake_flame_tail"
 name = "Queue de flammes"
 description = "Le serpent laisse derrière lui un sillon de plaques de feu. Elles brûlent les ennemis — {part_sol} % des dégâts d'une morsure toutes les {rythme_sol} s — pendant la durée indiquée."
-position = Vector2i(1, 1)
-parent = "hell_snake_long_life"
-required_points = 5
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"hell_snake_long_life": 1,
+"hell_snake_hunter": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_flame_tail_0")])
 
@@ -286,9 +300,10 @@ script = ExtResource("3_noeud")
 id = "hell_snake_hunter"
 name = "Chasseur"
 description = "Le serpent ne rôde plus autour de l'endroit où il est tombé : il se dirige vers l'ennemi le plus proche de sa tête dans ce rayon, et le suit."
-position = Vector2i(1, 2)
-parent = "hell_snake_fangs"
-required_points = 5
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"hell_snake_fangs": 1
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_hunter_0")])
 
@@ -310,8 +325,9 @@ id = "hell_snake_brood"
 name = "Couvée"
 description = "Chaque sort fait tomber un serpent de plus, en éventail. En échange, chaque serpent inflige moins de dégâts."
 position = Vector2i(2, 0)
-parent = "hell_snake_swift"
-required_points = 10
+parents = Dictionary[String, int]({
+"hell_snake_molting": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_brood_0"), SubResource("L_hell_snake_brood_1")])
 
@@ -325,9 +341,10 @@ script = ExtResource("3_noeud")
 id = "hell_snake_bursting_molt"
 name = "Mue explosive"
 description = "Quand le serpent disparaît, il explose là où se trouve sa tête, avec les dégâts d'une morsure, dans ce rayon."
-position = Vector2i(2, 1)
-parent = "hell_snake_flame_tail"
-required_points = 10
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"hell_snake_swift": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_bursting_molt_0")])
 
@@ -336,9 +353,10 @@ script = ExtResource("3_noeud")
 id = "hell_snake_venom"
 name = "Venin"
 description = "Le serpent devient nécrotique : des dégâts nécrotiques, le mot-clé Nécrotique au lieu de Feu. Sa morsure fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
-position = Vector2i(2, 2)
-parent = "hell_snake_hunter"
-required_points = 10
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"hell_snake_fangs": 2
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([])
 converts = true
@@ -354,9 +372,11 @@ script = ExtResource("3_noeud")
 id = "hell_snake_hydra"
 name = "Hydre"
 description = "Quand le serpent disparaît, de petits serpents en naissent et partent chacun dans une direction. Ils vivent {vie_petit} s, infligent {part_eclat} % des dégâts, et ne se divisent pas à leur tour."
-position = Vector2i(3, 1)
-parent = "hell_snake_bursting_molt"
-required_points = 15
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"hell_snake_brood": 2,
+"hell_snake_bursting_molt": 2
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_hell_snake_hydra_0")])
 
@@ -372,7 +392,7 @@ script = ExtResource("3_noeud")
 id = "immolation_furnace"
 name = "Fournaise"
 description = "Chaque impulsion du brasier inflige plus de dégâts."
-position = Vector2i(0, 0)
+position = Vector2i(-1, 0)
 points_max = 5
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_furnace_0")])
 
@@ -387,7 +407,7 @@ script = ExtResource("3_noeud")
 id = "immolation_blaze"
 name = "Brasier"
 description = "Le cercle de flammes s'élargit."
-position = Vector2i(0, 1)
+position = Vector2i(0, -1)
 points_max = 4
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_blaze_0")])
 
@@ -402,7 +422,7 @@ script = ExtResource("3_noeud")
 id = "immolation_lukewarm_heart"
 name = "Cœur tiède"
 description = "Le brasier vous brûle moins chaque seconde."
-position = Vector2i(0, 2)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_lukewarm_heart_0")])
 
@@ -424,9 +444,10 @@ script = ExtResource("3_noeud")
 id = "immolation_slow_pulse"
 name = "Pouls lent"
 description = "Le brasier frappe moins souvent, mais chaque impulsion frappe bien plus fort : beaucoup plus de dégâts par coup, et un peu plus par seconde."
-position = Vector2i(1, 0)
-parent = "immolation_furnace"
-required_points = 5
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"immolation_furnace": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_slow_pulse_0"), SubResource("L_immolation_slow_pulse_1")])
 
@@ -440,9 +461,11 @@ script = ExtResource("3_noeud")
 id = "immolation_kindling"
 name = "Étincelles"
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
-position = Vector2i(1, 1)
-parent = "immolation_blaze"
-required_points = 5
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"immolation_blaze": 1,
+"immolation_furnace": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_kindling_0")])
 
@@ -464,9 +487,10 @@ script = ExtResource("3_noeud")
 id = "immolation_phoenix"
 name = "Phénix"
 description = "Le brasier vous brûle deux fois plus, mais inflige nettement plus de dégâts."
-position = Vector2i(1, 2)
-parent = "immolation_lukewarm_heart"
-required_points = 5
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"immolation_lukewarm_heart": 2
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_phoenix_0"), SubResource("L_immolation_phoenix_1")])
 
@@ -482,9 +506,10 @@ script = ExtResource("3_noeud")
 id = "immolation_black_flame"
 name = "Flamme noire"
 description = "Le brasier inflige plus de dégâts et devient nécrotique : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
-position = Vector2i(2, 0)
-parent = "immolation_slow_pulse"
-required_points = 10
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"immolation_slow_pulse": 1
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_black_flame_0")])
 converts = true
@@ -501,9 +526,10 @@ script = ExtResource("3_noeud")
 id = "immolation_living_ashes"
 name = "Cendres vivantes"
 description = "Chaque ennemi tué par le brasier laisse une plaque de feu à sa place. Elle brûle les ennemis — {part_sol} % des dégâts d'une impulsion toutes les {rythme_sol} s — pendant la durée indiquée."
-position = Vector2i(2, 1)
-parent = "immolation_kindling"
-required_points = 10
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"immolation_blaze": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_living_ashes_0")])
 
@@ -516,10 +542,12 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "immolation_fiery_contagion"
 name = "Contagion ardente"
-description = "Un ennemi embrasé que le brasier tue explose : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi embrasé tué par cette explosion explose à son tour."
-position = Vector2i(3, 1)
-parent = "immolation_living_ashes"
-required_points = 15
+description = "Un ennemi que le brasier tue explose s'il porte l'état de sa nature — embrasé, ou pourrissant une fois le brasier devenu nécrotique : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"immolation_living_ashes": 2,
+"immolation_phoenix": 1
+})
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_immolation_fiery_contagion_0")])
 
@@ -534,7 +562,7 @@ script = ExtResource("3_noeud")
 id = "flame_dash_wake"
 name = "Sillage"
 description = "La traînée de feu que laisse la ruée brûle plus longtemps."
-position = Vector2i(0, 0)
+position = Vector2i(0, -1)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_wake_0")])
 
@@ -549,7 +577,10 @@ script = ExtResource("3_noeud")
 id = "flame_dash_embers"
 name = "Braises"
 description = "La traînée de feu est plus large."
-position = Vector2i(0, 1)
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"flame_dash_wake": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_embers_0")])
 
@@ -565,7 +596,7 @@ script = ExtResource("3_noeud")
 id = "flame_dash_pyre"
 name = "Bûcher"
 description = "La traînée, et l'explosion d'arrivée si vous l'avez, infligent plus de dégâts."
-position = Vector2i(0, 2)
+position = Vector2i(-1, 0)
 points_max = 4
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_pyre_0")])
 
@@ -581,8 +612,6 @@ id = "flame_dash_momentum"
 name = "Élan"
 description = "La ruée se recharge plus vite."
 position = Vector2i(1, 0)
-parent = "flame_dash_wake"
-required_points = 5
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_momentum_0")])
 
@@ -596,9 +625,10 @@ script = ExtResource("3_noeud")
 id = "flame_dash_landing"
 name = "Atterrissage"
 description = "À l'arrivée, la ruée explose autour de vous, dans ce rayon, avec les dégâts d'une impulsion de la traînée."
-position = Vector2i(1, 1)
-parent = "flame_dash_embers"
-required_points = 5
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"flame_dash_momentum": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_landing_0")])
 
@@ -613,9 +643,10 @@ script = ExtResource("3_noeud")
 id = "flame_dash_brand"
 name = "Tison"
 description = "La traînée et l'explosion d'arrivée infligent plus de dégâts aux ennemis embrasés."
-position = Vector2i(1, 2)
-parent = "flame_dash_pyre"
-required_points = 5
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"flame_dash_pyre": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_brand_0")])
 
@@ -637,9 +668,11 @@ script = ExtResource("3_noeud")
 id = "flame_dash_scorcher"
 name = "Brûle-pavé"
 description = "La traînée dure bien plus longtemps, mais brûle moins fort."
-position = Vector2i(2, 0)
-parent = "flame_dash_momentum"
-required_points = 10
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"flame_dash_wake": 1,
+"flame_dash_pyre": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_scorcher_0"), SubResource("L_flame_dash_scorcher_1")])
 
@@ -654,9 +687,10 @@ script = ExtResource("3_noeud")
 id = "flame_dash_shockwave"
 name = "Onde de choc"
 description = "L'explosion d'arrivée s'élargit."
-position = Vector2i(2, 1)
-parent = "flame_dash_landing"
-required_points = 10
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"flame_dash_landing": 2
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_shockwave_0")])
 
@@ -670,16 +704,243 @@ script = ExtResource("3_noeud")
 id = "flame_dash_kindling"
 name = "Étincelles"
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
-position = Vector2i(2, 2)
-parent = "flame_dash_brand"
-required_points = 10
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"flame_dash_scorcher": 1,
+"flame_dash_brand": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_kindling_0")])
+
+[sub_resource type="Resource" id="L_fireball_meteor_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 60.0
+
+[sub_resource type="Resource" id="L_fireball_meteor_1"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="L_fireball_meteor_2"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 60.0
+
+[sub_resource type="Resource" id="N_fireball_meteor"]
+script = ExtResource("3_noeud")
+id = "fireball_meteor"
+name = "Météore"
+description = "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et plus large — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
+position = Vector2i(0, 1)
+parents = Dictionary[String, int]({
+"fireball_stoking": 3,
+"fireball_forked_tongue": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_meteor_0"), SubResource("L_fireball_meteor_1"), SubResource("L_fireball_meteor_2")])
+transforms = true
+shape = 25
+
+[sub_resource type="Resource" id="L_flame_dash_leap_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 150.0
+
+[sub_resource type="Resource" id="L_flame_dash_leap_1"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+percentage = true
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="N_flame_dash_leap"]
+script = ExtResource("3_noeud")
+id = "flame_dash_leap"
+name = "Bond"
+description = "La ruée devient un saut : elle ne laisse plus de traînée de feu, mais son explosion d'arrivée frappe bien plus fort et plus large."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"flame_dash_landing": 1,
+"flame_dash_momentum": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_leap_0"), SubResource("L_flame_dash_leap_1")])
+transforms = true
+shape = 26
+
+[sub_resource type="Resource" id="L_ignition_embers_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_ignition_embers"]
+script = ExtResource("3_noeud")
+id = "ignition_embers"
+name = "Braise vive"
+description = "Tant que la combustion brûle, vos dégâts de feu sont accrus."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_embers_0")])
+
+[sub_resource type="Resource" id="L_ignition_cold_ashes_0"]
+script = ExtResource("4_ligne")
+stat = "self_burn"
+percentage = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_ignition_cold_ashes"]
+script = ExtResource("3_noeud")
+id = "ignition_cold_ashes"
+name = "Cendres froides"
+description = "La combustion vous brûle moins chaque seconde."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_cold_ashes_0")])
+
+[sub_resource type="Resource" id="L_ignition_haste_0"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_ignition_haste"]
+script = ExtResource("3_noeud")
+id = "ignition_haste"
+name = "Allure"
+description = "Tant que la combustion brûle, vous vous déplacez plus vite."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_haste_0")])
+
+[sub_resource type="Resource" id="L_ignition_inner_blaze_0"]
+script = ExtResource("4_ligne")
+stat = "ignite_chance"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_ignition_inner_blaze"]
+script = ExtResource("3_noeud")
+id = "ignition_inner_blaze"
+name = "Brasier intérieur"
+description = "Tant que la combustion brûle, vos coups embrasent plus souvent."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"ignition_embers": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_inner_blaze_0")])
+
+[sub_resource type="Resource" id="L_ignition_ember_skin_0"]
+script = ExtResource("4_ligne")
+stat = "res_fire"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_ignition_ember_skin"]
+script = ExtResource("3_noeud")
+id = "ignition_ember_skin"
+name = "Peau de braise"
+description = "Tant que la combustion brûle, vous résistez mieux au feu — le sien compris."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"ignition_cold_ashes": 1,
+"ignition_embers": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_ember_skin_0")])
+
+[sub_resource type="Resource" id="L_ignition_frenzy_0"]
+script = ExtResource("4_ligne")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_ignition_frenzy"]
+script = ExtResource("3_noeud")
+id = "ignition_frenzy"
+name = "Emballement"
+description = "Tant que la combustion brûle, vous lancez vos sorts plus vite."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"ignition_haste": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_frenzy_0")])
+
+[sub_resource type="Resource" id="L_ignition_devouring_fire_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "fire"
+percentage = true
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="L_ignition_devouring_fire_1"]
+script = ExtResource("4_ligne")
+stat = "self_burn"
+percentage = true
+value_per_point = 100.0
+
+[sub_resource type="Resource" id="N_ignition_devouring_fire"]
+script = ExtResource("3_noeud")
+id = "ignition_devouring_fire"
+name = "Feu dévorant"
+description = "Tant que la combustion brûle, vos dégâts de feu sont bien plus accrus — mais elle vous brûle deux fois plus."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"ignition_inner_blaze": 1,
+"ignition_ember_skin": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_devouring_fire_0"), SubResource("L_ignition_devouring_fire_1")])
+
+[sub_resource type="Resource" id="L_ignition_fertile_ashes_0"]
+script = ExtResource("4_ligne")
+stat = "health_regen"
+value_per_point = 1.5
+
+[sub_resource type="Resource" id="N_ignition_fertile_ashes"]
+script = ExtResource("3_noeud")
+id = "ignition_fertile_ashes"
+name = "Cendres fertiles"
+description = "Tant que la combustion brûle, vous regagnez des points de vie chaque seconde."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"ignition_cold_ashes": 1,
+"ignition_haste": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_fertile_ashes_0")])
+
+[sub_resource type="Resource" id="L_ignition_holocaust_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "fire"
+percentage = true
+more = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_ignition_holocaust"]
+script = ExtResource("3_noeud")
+id = "ignition_holocaust"
+name = "Holocauste"
+description = "Tant que la combustion brûle, vos dégâts de feu sont amplifiés."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"ignition_devouring_fire": 1,
+"ignition_inner_blaze": 3
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_holocaust_0")])
 [sub_resource type="Resource" id="C_boule_de_feu"]
 script = ExtResource("2_case")
 skill = ExtResource("10_boule_de_feu")
-position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_fireball_stoking"), SubResource("N_fireball_searing_breath"), SubResource("N_fireball_velocity"), SubResource("N_fireball_ardor"), SubResource("N_fireball_scattered_embers"), SubResource("N_fireball_forked_tongue"), SubResource("N_fireball_piercing"), SubResource("N_fireball_frost"), SubResource("N_fireball_kindling"), SubResource("N_fireball_fragmentation"), SubResource("N_fireball_chain_reaction")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_fireball_stoking"), SubResource("N_fireball_searing_breath"), SubResource("N_fireball_velocity"), SubResource("N_fireball_ardor"), SubResource("N_fireball_scattered_embers"), SubResource("N_fireball_forked_tongue"), SubResource("N_fireball_piercing"), SubResource("N_fireball_frost"), SubResource("N_fireball_kindling"), SubResource("N_fireball_fragmentation"), SubResource("N_fireball_chain_reaction"), SubResource("N_fireball_meteor")])
 
 [sub_resource type="Resource" id="C_serpent_infernal"]
 script = ExtResource("2_case")
@@ -697,12 +958,13 @@ talents = Array[ExtResource("3_noeud")]([SubResource("N_immolation_furnace"), Su
 script = ExtResource("2_case")
 skill = ExtResource("13_ruee_ardente")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_flame_dash_wake"), SubResource("N_flame_dash_embers"), SubResource("N_flame_dash_pyre"), SubResource("N_flame_dash_momentum"), SubResource("N_flame_dash_landing"), SubResource("N_flame_dash_brand"), SubResource("N_flame_dash_scorcher"), SubResource("N_flame_dash_shockwave"), SubResource("N_flame_dash_kindling")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_flame_dash_wake"), SubResource("N_flame_dash_embers"), SubResource("N_flame_dash_pyre"), SubResource("N_flame_dash_momentum"), SubResource("N_flame_dash_landing"), SubResource("N_flame_dash_brand"), SubResource("N_flame_dash_scorcher"), SubResource("N_flame_dash_shockwave"), SubResource("N_flame_dash_kindling"), SubResource("N_flame_dash_leap")])
 
 [sub_resource type="Resource" id="C_ignition"]
 script = ExtResource("2_case")
 skill = ExtResource("14_ignition")
 position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ignition_embers"), SubResource("N_ignition_cold_ashes"), SubResource("N_ignition_haste"), SubResource("N_ignition_inner_blaze"), SubResource("N_ignition_ember_skin"), SubResource("N_ignition_frenzy"), SubResource("N_ignition_devouring_fire"), SubResource("N_ignition_fertile_ashes"), SubResource("N_ignition_holocaust")])
 
 [sub_resource type="Resource" id="L_coeur_de_braise_0"]
 script = ExtResource("4_ligne")

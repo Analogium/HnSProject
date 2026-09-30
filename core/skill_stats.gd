@@ -82,6 +82,9 @@ const SEEK := "seek_radius"
 const BROOD := "brood"
 const CRAWL_SPEED := "crawl_speed"
 const HATCHLINGS := "hatchlings"
+## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
+## signale avant qu'on le survole.
+const MECHANICS := [PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS]
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
 ## d'un coup que rend l'explosion d'un tué.

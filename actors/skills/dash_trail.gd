@@ -29,12 +29,26 @@ const FRINGE_MARGIN := 4.0
 const BURN_ALONG := 4.0
 const BURN_ACROSS := 3.0
 const BURN_DENSITY := 0.5
+## Le sol d'une compétence convertie (jalon 34, choisi sur planche) : le même lit, en
+## givre ou en pourriture, sous un halo tramé ; des flocons ou des spores y montent de
+## `MOTE_RISE` pixels et recommencent. Un par `MOTE_AREA` pixels carrés du couloir.
+const STAIN_HALO := 0.30
+## Moitié moins dense que les brûlures : claires et cernées, les taches d'un serpent qui
+## repasse sur ses plaques faisaient un tapis (vu à la capture), là où la cendre sombre
+## se lit en terre brûlée.
+const STAIN_DENSITY := 0.25
+const MOTE_AREA := 150.0
+const MOTE_RISE := 8.0
+const MOTE_SPEED := 10.0
 const SPAWN := 0.12
 const FADE := 0.35
 ## La coupe de la Ruée tranchante : sa demi-largeur, en part du rayon qui mord, et
 ## les étincelles arrachées de part et d'autre, avec leur vitesse en pixels par
 ## seconde. Ce sont elles qui bougent, la coupe ne bouge pas.
 const CUT_WIDTH := 0.45
+## La couche sous les corps, au-dessus du sol (`Zone.ground`, où se posent aussi les
+## zones de danger). Sans elle, le couloir retombe chez qui le pose.
+const GROUND_LAYER := "ground_layer"
 const SPARKS := 8
 const SPARK_SPEED := 44.0
 
@@ -47,8 +61,10 @@ var _age := 0.0
 var _strikes := 0
 ## La coupe d'une ruée physique, fabriquée à la naissance à l'angle exact.
 var _cut: EffectForge.Piece
-## Le sillon de feu, tiré **une fois** à la naissance : il ne bouge pas.
-var _burns_at: Array[Vector2] = []
+## Le lit du sillon, tiré **une fois** à la naissance : il ne bouge pas. Des brûlures
+## pour le feu, des taches pour le froid et la nécrose.
+var _bed_at: Array[Vector2] = []
+## Les langues du feu, ou les flocons et les spores d'un sol converti.
 var _tongues: Array[Tongue] = []
 
 
@@ -72,7 +88,7 @@ static func leave(
 	trail._author = author
 	trail._toward = to - from_value
 	trail._tint = DamageType.COLORS[cast.nature]
-	parent.add_child(trail)
+	_layer(parent).add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
 	return trail
@@ -88,20 +104,26 @@ static func patch(
 	trail._author = author
 	trail._tint = DamageType.COLORS[ground.nature]
 	Settings.veil(trail, Settings.SPELLS)
-	DeferredTree.add_deferred(parent, trail, at)
+	DeferredTree.add_deferred(_layer(parent), trail, at)
 	return trail
 
 
+## **Sous les corps** : au-dessus d'eux, on marchait sous sa propre traînée ; parmi les
+## tirs, elle se triait en Y avec les corps et passait devant qui se tenait au-dessus.
+static func _layer(parent: Node) -> Node:
+	var ground := parent.get_tree().get_first_node_in_group(GROUND_LAYER) if parent.is_inside_tree() else null
+	return ground if ground != null else parent
+
+
 func _ready() -> void:
-	z_index = 2
 	# Le feu et la lame sont dessinés, et une planche cernée ne peut pas être
 	# additive. Le reste reste en lumière ajoutée.
 	if not _is_painted():
 		material = ArtPalette.ADDITIVE
 	if _cast.nature == DamageType.Kind.PHYSICAL:
 		_cut = Slash.cleave(_tint, _toward, _cast.radius * CUT_WIDTH)
-	elif _cast.nature == DamageType.Kind.FIRE:
-		_lay_out_the_fire()
+	elif _is_painted():
+		_lay_out_the_bed()
 
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
@@ -160,6 +182,10 @@ func _draw() -> void:
 	match _cast.nature:
 		DamageType.Kind.FIRE:
 			_burnt_path(fade)
+		DamageType.Kind.COLD:
+			_stained_path(fade, EffectForge.frost_stains(_tint), EffectForge.flake(_tint))
+		DamageType.Kind.NECROTIC:
+			_stained_path(fade, EffectForge.rot_stains(_tint), EffectForge.spore(_tint))
 		DamageType.Kind.PHYSICAL:
 			_slashed_path(last)
 		_:
@@ -173,8 +199,8 @@ func _draw() -> void:
 ## rééchantillonne, et le couloir peut partir dans n'importe quelle direction.
 func _burnt_path(fade: float) -> void:
 	var burns := EffectForge.burns()
-	for i in _burns_at.size():
-		EffectForge.put_centered(self, burns[i % burns.size()], _burns_at[i], fade)
+	for i in _bed_at.size():
+		EffectForge.put_centered(self, burns[i % burns.size()], _bed_at[i], fade)
 	var tall := EffectForge.flames(_tint)
 	var short := EffectForge.small_flames(_tint)
 	for t in _tongues:
@@ -183,28 +209,54 @@ func _burnt_path(fade: float) -> void:
 		_blit(tex, t.foot - Vector2(tex.get_width() * 0.5, tex.get_height() - 2), fade)
 
 
+## Le givre et la pourriture : le halo tramé le long du couloir, le lit de taches, et
+## les flocons ou les spores qui montent — coupés en haut de leur course, jamais pâlis.
+func _stained_path(fade: float, stains: Array, mote: Texture2D) -> void:
+	var r := int(_cast.radius)
+	var span := _toward.length()
+	var halos := maxi(ceili(span / float(maxi(r, 1))), 0)
+	for i in halos + 1:
+		var at := _toward * (float(i) / float(halos)) if halos > 0 else Vector2.ZERO
+		EffectForge.put_scorch(self, _tint, r, fade, STAIN_HALO, at)
+	for i in _bed_at.size():
+		EffectForge.put_centered(self, stains[i % stains.size()], _bed_at[i], fade)
+	for t in _tongues:
+		var rise := fmod(t.phase + _age * MOTE_SPEED, MOTE_RISE)
+		EffectForge.put_centered(self, mote, t.foot - Vector2(0.0, rise), fade)
+
+
 ## Dans le repère du couloir — `a` le long, `b` en travers —, puis tourné vers `_toward`.
 ## Un tirage **local**, semé sur le nœud (invariant 3). Sans longueur — le sol brûlant —,
 ## la gélule devient un disque et le cœur une seule langue.
-func _lay_out_the_fire() -> void:
+func _lay_out_the_bed() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(get_instance_id())
 	var r := _cast.radius
 	var span := _toward.length()
 	var along := _toward / span if span > 0.0 else Vector2.RIGHT
 	var across := along.orthogonal()
+	var density := BURN_DENSITY if _cast.nature == DamageType.Kind.FIRE else STAIN_DENSITY
 
 	var b := -r
 	while b <= r:
 		var a := -r
 		while a <= span + r:
 			var d := _off_axis(a, b, span) / r
-			if d < 1.0 and rng.randf() < BURN_DENSITY * (1.0 - d * d):
-				_burns_at.append(
+			if d < 1.0 and rng.randf() < density * (1.0 - d * d):
+				_bed_at.append(
 					along * (a + rng.randf_range(-1.5, 1.5)) + across * (b + rng.randf_range(-1.0, 1.0))
 				)
 			a += BURN_ALONG
 		b += BURN_ACROSS
+
+	if _cast.nature != DamageType.Kind.FIRE:
+		var motes := maxi(int((span + 2.0 * r) * 2.0 * r / MOTE_AREA), 1)
+		while _tongues.size() < motes:
+			var p := Vector2(rng.randf_range(-r, span + r), rng.randf_range(-r, r))
+			# En part du rayon et non à une marge fixe : à rayon nul, la boucle ne finirait pas.
+			if _off_axis(p.x, p.y, span) <= r * 0.75:
+				_tongues.append(Tongue.new(along * p.x + across * p.y, false, rng.randf() * MOTE_RISE))
+		return
 
 	var count := maxi(int(span / FLAME_STEP), 1)
 	for i in count:
@@ -245,9 +297,12 @@ func _slashed_path(last: Vector2) -> void:
 		EffectForge.put_centered(self, grain, at)
 
 
-## Peinte — fait de planches cernées — ou tracée en lumière ajoutée.
+## Peinte — fait de planches cernées — ou tracée en lumière ajoutée. La foudre et le
+## sacré n'ont pas encore de sol dessiné : leur couloir ne fait que luire.
 func _is_painted() -> bool:
-	return _cast.nature in [DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL]
+	return _cast.nature in [
+		DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL, DamageType.Kind.COLD, DamageType.Kind.NECROTIC
+	]
 
 
 func _blit(tex: Texture2D, offset: Vector2, fade: float) -> void:

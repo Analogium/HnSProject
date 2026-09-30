@@ -13,17 +13,13 @@ extends Resource
 ## `SkillStats.facts()`, jamais en dur : ils mentiraient au premier réglage.
 @export_multiline var description: String = ""
 
-## En cases de la grille de l'arbre, pas en pixels.
+## En cases autour de la compétence, qui tient `(0, 0)` : un réseau, pas des colonnes
+## (jalon 34, Last Epoch). Pas en pixels.
 @export var position: Vector2i = Vector2i.ZERO
 
-## Le nœud parent, ou vide pour partir de la compétence. Un parent porte un point pour
-## ouvrir l'enfant, et ne se reprend pas tant que l'enfant en porte.
-@export var parent: String = ""
-
-## Le palier (jalon 34) : combien de points placés dans les nœuds **moins profonds** de
-## l'arbre l'ouvrent. Zéro pour la première colonne ; l'arbre entier attend un point
-## dans la compétence.
-@export var required_points: int = 0
+## Les nœuds reliés en amont, avec les points que chacun doit porter : **un seul**
+## suffit à ouvrir celui-ci. Vide : relié à la compétence, qui demande un point.
+@export var parents: Dictionary[String, int] = {}
 @export var points_max: int = 1
 
 @export var lines: Array[TalentLine] = []
@@ -42,6 +38,22 @@ extends Resource
 
 func displayed_name() -> String:
 	return Texts.t(name)
+
+
+## Les sortes d'un nœud qui change le jeu plutôt qu'un nombre, **clés de traduction**.
+const KINDS := ["transformation", "conversion", "mécanique"]
+
+
+## Sa sorte, ou vide pour un nœud de nombres.
+func kind() -> String:
+	if transforms:
+		return KINDS[0]
+	if converts:
+		return KINDS[1]
+	for line in lines:
+		if line.stat in SkillStats.MECHANICS:
+			return KINDS[2]
+	return ""
 
 
 func displayed_description() -> String:

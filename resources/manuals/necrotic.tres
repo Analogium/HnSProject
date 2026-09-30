@@ -22,7 +22,7 @@ value_per_point = 13.0
 script = ExtResource("3_noeud")
 id = "plague_virulence"
 name = "Virulence"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_virulence_0")])
 
@@ -36,8 +36,10 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "plague_doom"
 name = "Condamnation"
-position = Vector2i(1, 0)
-parent = "plague_virulence"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"plague_virulence": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_doom_0")])
 
@@ -50,7 +52,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "plague_contagion"
 name = "Contagion"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_contagion_0")])
 
@@ -71,7 +73,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "rise_marrow"
 name = "Moelle"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_marrow_0")])
 
@@ -85,8 +87,10 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "rise_vigil"
 name = "Guet"
-position = Vector2i(1, 0)
-parent = "rise_marrow"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rise_marrow": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_vigil_0")])
 
@@ -99,7 +103,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "rise_bone_legion"
 name = "Légion d'os"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_bone_legion_0")])
 
@@ -119,7 +123,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "toxic_unleash_miasma"
 name = "Miasme"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_miasma_0")])
 
@@ -134,8 +138,10 @@ value_per_point = 14.0
 script = ExtResource("3_noeud")
 id = "toxic_unleash_caustic"
 name = "Caustique"
-position = Vector2i(1, 0)
-parent = "toxic_unleash_miasma"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"toxic_unleash_miasma": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_caustic_0")])
 
@@ -149,7 +155,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "toxic_unleash_desiccation"
 name = "Dessiccation"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_desiccation_0")])
 
@@ -169,7 +175,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "rotting_gate_brood"
 name = "Couvée"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_brood_0")])
 
@@ -183,8 +189,10 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "rotting_gate_bloating"
 name = "Boursouflure"
-position = Vector2i(1, 0)
-parent = "rotting_gate_brood"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rotting_gate_brood": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_bloating_0")])
 
@@ -199,7 +207,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "rotting_gate_swarm"
 name = "Essaim"
-position = Vector2i(0, 1)
+position = Vector2i(1, 1)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_swarm_0")])
 
@@ -219,7 +227,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "putrid_curse_spreading"
 name = "Anathème"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_spreading_0")])
 
@@ -233,8 +241,10 @@ value_per_point = -15.0
 script = ExtResource("3_noeud")
 id = "putrid_curse_swift"
 name = "Malédiction prompte"
-position = Vector2i(1, 0)
-parent = "putrid_curse_spreading"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"putrid_curse_spreading": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_swift_0")])
 

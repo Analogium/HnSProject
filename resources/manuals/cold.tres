@@ -21,7 +21,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "ice_spike_shards"
 name = "Éclats"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_pics_eclats_0")])
 
@@ -35,8 +35,10 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "ice_spike_upheaval"
 name = "Poussée"
-position = Vector2i(1, 0)
-parent = "ice_spike_shards"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"ice_spike_shards": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_pics_poussee_0")])
 
@@ -56,7 +58,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "ice_nova_breath"
 name = "Souffle"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_souffle_0")])
 
@@ -71,8 +73,10 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "ice_nova_bite"
 name = "Morsure"
-position = Vector2i(1, 0)
-parent = "ice_nova_breath"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"ice_nova_breath": 1
+})
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_nova_morsure_0")])
 
@@ -97,7 +101,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_blizzard"
 name = "Blizzard"
-position = Vector2i(0, 0)
+position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_desastre_blizzard_0")])
 
@@ -112,8 +116,10 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_eye"
 name = "Œil du cyclone"
-position = Vector2i(1, 0)
-parent = "winter_disaster_blizzard"
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"winter_disaster_blizzard": 1
+})
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_desastre_oeil_0")])
 

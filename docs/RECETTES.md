@@ -724,9 +724,8 @@ l'orienteraient chacun à leur façon.
    | `id` | **Définitif**, et unique dans le livre. La forme `<compétence>_<nœud>` le tient hors de portée d'un homonyme |
    | `name` | Ce que le joueur lit |
    | `description` | **Ce que le nœud fait en jeu**, une ou deux phrases, en tête de sa fiche de survol : qui, quand, où — les lignes ne disent que de combien. Les chiffres des mécaniques s'écrivent `{part_sol}`, `{part_tue}`… (`SkillStats.facts()`), jamais en dur. Obligatoire dans un arbre repris (`test_each_reworked_node_says_what_it_does`), traduite dans `i18n/en.po` |
-   | `position` | Sur la grille de l'arbre : **quatre colonnes sur quatre rangées** (`ManualPanel.TREE_COLUMNS`, `TREE_ROWS`), à droite de la racine. **La colonne est le palier** — 0, 5, 10, 15 —, et le parent est dans la colonne précédente : un lien qui saute une colonne passe sous le nœud du milieu |
-   | `parent` | L'identifiant du nœud dont il dépend, ou vide : il part alors de la compétence, et se pose en colonne 0 |
-   | `required_points` | **Le palier** (jalon 34) : combien de points placés dans les nœuds **moins profonds** de l'arbre l'ouvrent. `5 × colonne` dans un arbre repris |
+   | `position` | En cases **autour de la compétence**, qui tient `(0, 0)` : jusqu'à `ManualPanel.TREE_SPAN` de chaque côté (sept colonnes, trois rangées). Ni sur une case prise, ni là où un lien passerait sous un autre nœud |
+   | `parents` | Les nœuds reliés en amont, **chacun avec les points qu'il doit porter** (`{"fireball_velocity": 2}` : les grains sur le lien). **Un seul suffit.** Vide : relié à la compétence. Pas de paliers (jalon 34, Last Epoch) : la profondeur, ce sont les liens et leurs points |
    | `points_max` | Combien de points il accepte |
    | `lines` | Comme celles d'un passif, mais **sans portée** — et `first_point_bonus`, ce que le premier point donne en plus : 2 s de sol au premier point et 5 s au troisième se disent 1,5 par point et 0,5 au premier : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` — dont `use_time` et `recharge` depuis le jalon 23. **`interval` ne se vise pas**, il se déduit des deux |
    | `converts` / `converts_to` | **Une conversion, tout ou rien** (jalon 34) : la compétence devient de cette nature — dégâts, mot-clé, état, couleur. `points_max = 1`, et une seule par arbre. Le drapeau dit s'il y a conversion : l'enum commence au physique |
@@ -749,17 +748,23 @@ l'orienteraient chacun à leur façon.
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
    le dit : avant d'en poser une, vérifier que la forme de la compétence la lit, ou
-   y ajouter la lecture — une fois, dans la forme, jamais dans le nœud.
+   y ajouter la lecture — une fois, dans la forme, jamais dans le nœud. Une
+   **transformation** qui ne lit pas un nombre de son arbre le déclare dans
+   `Skill.IGNORED_BY_SHAPE` : la fiche du nœud concerné écrit « sans effet avec … ».
 
-4. **Rien à écrire ailleurs** : `Manual.can_invest()` porte déjà les
+4. **Sur un buff** (Ignition), une ligne qui ne vise pas un nombre du lancer — une
+   portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,
+   qui ne vaut que tant qu'il brûle. Rien à déclarer : `Skill.is_buff_line()` trie.
+
+5. **Rien à écrire ailleurs** : `Manual.can_invest()` porte déjà les
    conditions, `Player.talents_of()` les rassemble, et `Skill.resolve()`
    les applique — donc la page du manuel les annonce sans qu'on la touche.
 
 **Ce qui refusera un oubli** — `tests/unit/test_talents.gd` :
-`test_each_parent_exists_in_the_same_tree`,
-`test_each_tree_has_a_root_and_stays_reachable` (un palier plus haut que ce que
-l'arbre au-dessus offre ne s'ouvrirait jamais),
-`test_each_parent_sits_in_the_previous_column`, `test_each_column_is_a_gate`,
+`test_each_link_can_be_paid_in_the_same_tree` (un lien qui demande plus que le parent
+n'offre ne s'ouvrirait jamais), `test_links_lead_to_the_root` (sans boucle : deux
+nœuds reliés l'un à l'autre se tiendraient ouverts) ; dans `test_manual_panel.gd`,
+`test_nodes_and_links_do_not_overlap` et `test_slots_and_nodes_fit_in_the_panel`,
 `test_no_tree_fills_up_entirely` (un arbre offre plus que son pool — sauf les
 manuels de `SHALLOW_TREES`, pas encore repris),
 `test_each_transformation_stays_among_posed_shapes`,

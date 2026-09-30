@@ -161,12 +161,15 @@ func _page() -> Rect2:
 
 
 ## Les cases dans la page de la grille ; les nœuds, et la grille d'arbre entière, dans
-## la fenêtre agrandie d'un arbre ouvert (jalon 34).
+## la fenêtre élargie d'un arbre ouvert (jalon 34) — vers la gauche, le sac est à droite.
 func test_slots_and_nodes_fit_in_the_panel() -> void:
 	var grid := _page()
+	var right := _panel.position.x + _panel.size.x
 	_panel._opened = "swift_bolt"
 	var tree := _page()
 	assert_gt(tree.size.y, grid.size.y, "l'arbre ouvert agrandit la fenêtre")
+	assert_eq(_panel.size.x, ManualPanel.TREE_W, "et l'élargit")
+	assert_eq(_panel.position.x + _panel.size.x, right, "sans avancer sur le sac")
 	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual == null:
 			continue
@@ -177,14 +180,50 @@ func test_slots_and_nodes_fit_in_the_panel() -> void:
 			)
 			for node: TalentNode in cell.talents:
 				assert_true(
-					node.position.x < ManualPanel.TREE_COLUMNS and node.position.y < ManualPanel.TREE_ROWS,
+					absi(node.position.x) <= ManualPanel.TREE_SPAN.x
+						and absi(node.position.y) <= ManualPanel.TREE_SPAN.y,
 					"« %s » : le nœud %s sort de la grille" % [node.id, node.position]
 				)
-	var corner := Vector2i(ManualPanel.TREE_COLUMNS - 1, ManualPanel.TREE_ROWS - 1)
-	assert_true(tree.encloses(_panel._node_rect(corner)), "le coin de la grille tient")
+	for corner in [-ManualPanel.TREE_SPAN, ManualPanel.TREE_SPAN]:
+		assert_true(tree.encloses(_panel._node_rect(corner)), "le coin %s de la grille tient" % corner)
 	assert_true(tree.encloses(_panel._root_rect()), "et la racine d'un arbre y tient")
 	_panel._opened = ""
-	assert_eq(_page().size.y, grid.size.y, "refermé, elle reprend sa taille")
+	assert_eq(_page().size, grid.size, "refermé, elle reprend sa place")
+	assert_eq(_panel.position.x + _panel.size.x, right)
+
+
+## Deux nœuds sur la même case se cachent, et un lien qui passe sous un troisième se lit
+## comme passant par lui (« Mue → Couvée » lu « Mue → Vif → Couvée », capture du jalon 34).
+func test_nodes_and_links_do_not_overlap() -> void:
+	_panel._opened = "swift_bolt"
+	var half := ManualPanel.NODE * 0.5 + 1.0
+	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
+		if base.manual == null:
+			continue
+		for cell: ManualCell in base.manual.cells:
+			var taken := {Vector2i.ZERO: "la compétence"}
+			for node: TalentNode in cell.talents:
+				assert_false(taken.has(node.position), "« %s » est posé sur %s" % [node.id, taken.get(node.position)])
+				taken[node.position] = node.id
+			for node: TalentNode in cell.talents:
+				var ends: Array[Vector2i] = []
+				if node.parents.is_empty():
+					ends.append(Vector2i.ZERO)
+				for parent: String in node.parents:
+					ends.append(cell.node_of(parent).position)
+				for from_cell: Vector2i in ends:
+					var a := _panel._node_rect(from_cell).get_center()
+					var b := _panel._node_rect(node.position).get_center()
+					for at: Vector2i in taken:
+						if at == from_cell or at == node.position:
+							continue
+						var c := _panel._node_rect(at).get_center()
+						var near := Geometry2D.get_closest_point_to_segment(c, a, b)
+						# Le nœud est carré : l'écart se mesure sur l'axe le plus lâche.
+						assert_gt(
+							maxf(absf(near.x - c.x), absf(near.y - c.y)), half, "« %s » : son lien passe sous « %s »" % [node.id, taken[at]]
+						)
+	_panel._opened = ""
 
 
 ## Le clic sur une case de compétence **ouvre son arbre** : c'est là que se
@@ -722,8 +761,8 @@ func test_a_node_sheet_says_what_it_requires() -> void:
 	book.manual.invest(book.base.manual, "swift_bolt")
 	assert_eq(
 		_values(_panel._node_sheet(book.manual, cell, leaf).lines, "demande"),
-		PackedStringArray(["le talent « %s »" % branch.displayed_name()]),
-		"le parent d'abord : c'est la condition qu'on peut satisfaire tout de suite"
+		PackedStringArray(["« %s » à 1" % branch.displayed_name()]),
+		"le lien et ce qu'il demande"
 	)
 
 	book.manual.invest(book.base.manual, branch.id)
@@ -949,3 +988,45 @@ func test_a_click_outside_is_left_to_other_panels() -> void:
 		_panel._owns_click(Vector2(_panel.size.x + 30.0, _panel.size.y * 0.5)),
 		"à droite, là où le sac est ouvert"
 	)
+
+
+## Tout ce qui manque, pas le premier seulement : la compétence, puis chacun des liens de
+## l'Hydre — un seul suffit, le second se lit « ou » (jalon 34).
+func test_a_node_sheet_lists_everything_it_requires() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_fire"))
+	book.manual.gain_experience(999999)
+	_player.study(book)
+	var cell := book.base.manual.cell_of("hell_snake")
+	var hydra := cell.node_of("hell_snake_hydra")
+	var lines := _panel._node_sheet(book.manual, cell, hydra).lines
+	assert_eq(_values(lines, "demande").size(), 2, "la compétence et le premier lien")
+	assert_eq(_values(lines, "ou").size(), 1, "et l'autre lien")
+	assert_true(book.manual.invest(book.base.manual, "hell_snake"))
+	lines = _panel._node_sheet(book.manual, cell, hydra).lines
+	assert_eq(_values(lines, "demande"), PackedStringArray(["« Couvée » à 2"]))
+
+
+## Ce qu'une transformation de l'arbre ne lit pas est écrit sur le nœud, avant qu'on paie :
+## rien à traverser pour un météore.
+func test_a_node_says_what_a_transformation_ignores() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_fire"))
+	var cell := book.base.manual.cell_of("fireball")
+	var piercing := _panel._node_sheet(book.manual, cell, cell.node_of("fireball_piercing"))
+	assert_eq(_values(piercing.lines, "sans effet avec"), PackedStringArray(["Météore"]))
+	var splits := _panel._node_sheet(book.manual, cell, cell.node_of("fireball_fragmentation"))
+	assert_eq(_values(splits.lines, "sans effet avec").size(), 0, "les éclats jaillissent de l'impact")
+
+
+## Ce qu'un échange coûte s'écrit en rouge ; ce qu'il donne, non.
+func test_a_trade_writes_its_loss_in_red() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_fire"))
+	_player.study(book)
+	var cell := book.base.manual.cell_of("immolation")
+	var phoenix := cell.node_of("immolation_phoenix")
+	var lines := _panel._node_sheet(book.manual, cell, phoenix).lines
+	var tints := {}
+	for l in lines:
+		if l.group == ManualPanel.Group.EFFECT:
+			tints[l.label_of] = l.tint
+	assert_eq(tints.values().count(ManualPanel.LOSS), 1, "la brûlure doublée, et elle seule")
+

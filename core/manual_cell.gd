@@ -50,14 +50,3 @@ func node_of(node_id: String) -> TalentNode:
 		if n.id == node_id:
 			return n
 	return null
-
-
-## Les nœuds qui dépendent de celui-ci. Le dessin en tire ses liens, et la
-## reprise d'un point s'en sert pour refuser de couper une branche sous un nœud
-## qui porte encore des points.
-func children_of(node_id: String) -> Array[TalentNode]:
-	var out: Array[TalentNode] = []
-	for n in talents:
-		if n.parent == node_id:
-			out.append(n)
-	return out

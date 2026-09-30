@@ -260,7 +260,7 @@ func _shatter(pierced := false) -> void:
 		return
 	var count := int(_cast.splits)
 	var dir := _dir.rotated(PI / float(count)) if pierced else _dir
-	Projectile._split.call_deferred(
+	Projectile.split.call_deferred(
 		get_parent(), load(scene_file_path), global_position, dir, speed, _nature,
 		_source, _cast.shard(), count, _struck.duplicate()
 	)
@@ -269,7 +269,7 @@ func _shatter(pierced := false) -> void:
 ## En étoile, le premier dans `dir`. **Différé** : la fin de course arrive d'un
 ## rappel de collision, où un tir ne naît pas (invariant 4). Statique, parce que le tir
 ## est déjà libéré quand l'appel arrive ; `source` sans type pour la même raison.
-static func _split(
+static func split(
 	parent: Node, scene: PackedScene, at: Vector2, dir: Vector2, p_speed: float,
 	nature: int, source, shard: SkillStats, count: int, struck: Dictionary
 ) -> void:
@@ -286,3 +286,4 @@ static func _split(
 			bolt._struck = struck.duplicate()
 			if bolt is Fireball:
 				(bolt as Fireball).explosion_radius = shard.radius
+				(bolt as Fireball).is_shard = true

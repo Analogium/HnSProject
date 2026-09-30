@@ -309,6 +309,19 @@ func is_a_range() -> bool:
 
 ## La valeur seule : « +9 % », « 3–7 », « 6 ». Une fourchette aux bornes égales
 ## s'écrit comme un nombre — « 6–6 » se lit comme une faute.
+## Ce qui gagne à baisser : un nœud qui l'accroît paie un échange (jalon 34).
+const LOWER_IS_BETTER := [
+	"recharge", "use_time", "self_burn", "period", "damage_taken", "attack_time",
+	"flask_charges_used",
+]
+
+
+## Une perte — ce que la fiche écrit en rouge : un nombre qui baisse là où monter est un
+## gain, ou l'inverse.
+func is_loss() -> bool:
+	return value != 0.0 and (value < 0.0) != (stat in LOWER_IS_BETTER)
+
+
 func readable_value() -> String:
 	if mode != Mode.FLAT:
 		return "%s %s" % [

@@ -510,7 +510,7 @@ func test_the_fire_trail_is_drawn_as_wide_as_it_strikes() -> void:
 		var trail := DashTrail.new()
 		trail._cast = cast
 		trail._toward = Vector2(100.0, 0.0)
-		trail._lay_out_the_fire()
+		trail._lay_out_the_bed()
 		var reach := 0.0
 		for t in trail._tongues:
 			assert_lt(
@@ -521,6 +521,36 @@ func test_the_fire_trail_is_drawn_as_wide_as_it_strikes() -> void:
 		trail.free()
 	assert_gt(widest[0], 16.0 * 0.5, "les franges passent la moitié du rayon")
 	assert_gt(widest[1], widest[0], "Braises élargit le dessin")
+
+
+## Une traînée se couche **sous les corps**, sur la couche du sol : au-dessus d'eux, on
+## marchait sous sa propre traînée.
+func test_a_trail_lies_under_the_bodies() -> void:
+	var layer := Node2D.new()
+	layer.add_to_group(DashTrail.GROUND_LAYER)
+	add_child_autofree(layer)
+	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
+	var trail := DashTrail.leave(self, Vector2.ZERO, Vector2(40.0, 0.0), cast, _p.states)
+	assert_eq(trail.get_parent(), layer, "sur la couche du sol, pas parmi les tirs")
+	assert_eq(trail.z_index, 0, "et pas relevée au-dessus des corps")
+
+
+## Le sol d'une compétence convertie se voit autant que le sol brûlant (jalon 34) : un lit
+## de givre ou de pourriture, des flocons ou des spores, et rien d'additif — il ne
+## luisait qu'en deux taches à 0,3, invisibles sur la terre.
+func test_a_converted_ground_is_drawn_like_the_fire() -> void:
+	for nature in [DamageType.Kind.COLD, DamageType.Kind.NECROTIC]:
+		var ground := _p.resolve(SkillCatalog.by_id("fireball"), 1).ground()
+		ground.nature = nature
+		var patch := DashTrail.new()
+		patch._cast = ground
+		add_child_autofree(patch)
+		assert_null(patch.material, "%s : dessiné, pas en lumière ajoutée" % DamageType.name(nature))
+		# Tiré au hasard, et moitié moins dense que la cendre : présent, pas compté.
+		assert_gt(patch._bed_at.size(), 0, "un lit de taches")
+		assert_gt(patch._tongues.size(), 0, "et ce qui en monte")
+		for t in patch._tongues:
+			assert_lt(t.foot.length(), ground.radius, "dans le cercle qui mord")
 
 
 ## La Ruée tranchante est une ruée dont la trace ne frappe **qu'une fois** : sa
@@ -561,6 +591,33 @@ func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
 	assert_false(_p.lit("ignition"), "le second lancer éteint")
 	assert_eq(_p.mana, mana, "sans coût")
 	assert_eq(_p.stats.move_speed, speed, "et la fiche retrouve ses nombres")
+
+
+## L'arbre d'un buff (jalon 34) : la ligne d'un nœud qui vise la fiche est une ligne du
+## buff — elle compte allumée, plus éteinte —, et sa brûlure suit les nœuds.
+func test_a_buff_node_gives_its_lines_while_lit() -> void:
+	_learn_with("manual_fire", "ignition", [["move_speed", 50.0, true], ["self_burn", -100.0, true]])
+	var speed := _p.stats.move_speed
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("ignition"))
+	var lit_speed := _p.stats.move_speed
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	var out_speed := _p.stats.move_speed
+	assert_eq(out_speed, speed, "éteint, la fiche retrouve ses nombres")
+
+	_learn("manual_fire", ["ignition"])
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	var bare_speed := _p.stats.move_speed
+	assert_gt(lit_speed, bare_speed, "le nœud s'ajoute au buff")
+
+
+func test_a_buff_node_can_put_out_its_burn() -> void:
+	_learn_with("manual_fire", "ignition", [["self_burn", -100.0, true]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(5)
+	assert_eq(_p.health, _p.stats.max_health, "sans brûlure, plus rien ne ronge")
 
 
 ## Le mana épuisé éteint ce qui le draine — là où les PV épuisés tuent.
@@ -1278,6 +1335,76 @@ func test_a_transformed_bolt_bursts_around_its_caster() -> void:
 	assert_eq(_hits(beside), 1, "la nova frappe à côté")
 
 
+## Le Météore : rien pendant la chute, puis l'éclatement de la boule au point visé.
+func test_a_meteor_falls_then_bursts_on_the_aim() -> void:
+	_learn_with("manual_fire", "fireball", [], Skill.Shape.METEOR)
+	var below := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	var aside := _target(Vector2(0, 60))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(Meteor).size(), 1)
+	assert_eq(_children_of(Projectile).size(), 0, "rien ne vole")
+	await wait_seconds(Meteor.FALL * 0.5)
+	assert_eq(_hits(below), 0, "pas pendant la chute")
+	await wait_seconds(Meteor.FALL)
+	assert_eq(_hits(below), 1, "l'éclatement, une fois")
+	assert_eq(_hits(aside), 0)
+	assert_eq(_children_of(Meteor).size(), 0)
+
+
+## Double langue sur un météore : une rangée en travers de la visée, pas un seul plus fort.
+func test_extra_balls_fall_as_a_row_of_meteors() -> void:
+	_learn_with("manual_fire", "fireball", [["projectiles", 2.0]], Skill.Shape.METEOR)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var meteors := _children_of(Meteor)
+	assert_eq(meteors.size(), 3)
+	var gap: float = meteors[0].global_position.distance_to(meteors[1].global_position)
+	assert_almost_eq(gap, Meteor.SPACING, 0.01, "côte à côte, à leur écart")
+
+
+## Fragmentation sur un météore : l'étoile d'éclats jaillit du point d'impact.
+func test_a_meteor_throws_its_shards_from_the_impact() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]], Skill.Shape.METEOR)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var impact: Vector2 = _children_of(Meteor)[0].global_position
+	await wait_seconds(Meteor.FALL + 0.05)
+	var shards := _children_of(Fireball)
+	assert_eq(shards.size(), 3)
+	for shard: Fireball in shards:
+		assert_true(shard.is_shard)
+		assert_lt(shard.global_position.distance_to(impact), 40.0, "partis de l'impact")
+
+
+## Le Bond : ni traînée ni coup en chemin, l'arc et l'explosion à l'arrivée.
+func test_a_leap_leaves_no_trail_and_bursts_where_it_lands() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0]], Skill.Shape.LEAP)
+	var on_the_way := _target(Vector2(40, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(DashTrail).size(), 0, "pas de traînée")
+	assert_eq(_children_of(LeapArc).size(), 1)
+	assert_eq(_children_of(Explosion).size(), 1)
+	await wait_seconds(0.5)
+	assert_eq(_hits(on_the_way), 0, "rien ne frappe en chemin")
+
+
+## Les éclats de la boule sont des mini-boules, pas des boules entières.
+func test_the_shards_of_a_ball_are_drawn_small() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]])
+	_target(Vector2(40, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(14)
+	var shards := _children_of(Fireball)
+	assert_eq(shards.size(), 3)
+	for shard: Fireball in shards:
+		assert_true(shard.is_shard)
+
+
 func test_a_brood_drops_two_snakes_fanned_on_the_aim() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.BROOD, 1.0]])
 	assert_true(_p.cast_slot(2))
@@ -1362,6 +1489,25 @@ func test_an_ignited_kill_bursts() -> void:
 		(_received_all[near] as Array)[0],
 		cast.total_max() * SkillStats.KILL_BURST_PART * cast.crit_multiplier + 0.01
 	)
+
+
+## Converti, le lancer fait exploser les tués qui portent **l'état de sa nature** : un
+## brasier devenu nécrotique, les pourrissants — plus les embrasés (jalon 34).
+func test_a_converted_kill_burst_follows_the_nature() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
+	cast.kill_burst = 30.0
+	cast.nature = DamageType.Kind.NECROTIC
+	var near := _target(Vector2(50, 0))
+	await wait_physics_frames(2)
+
+	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 0, "un embrasé n'explose plus")
+	var rotting := StatusEffects.new()
+	rotting.put(StatusEffects.Kind.ROT, 1.0)
+	_p.states.slew.emit(cast, Vector2(40, 0), rotting)
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1, "un pourrissant, si")
 
 
 func test_an_aura_leaves_burning_ground_under_what_it_kills() -> void:

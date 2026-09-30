@@ -98,24 +98,18 @@ func is_open(archetype: ManualArchetype, identifier: String) -> bool:
 	return cell != null and _node_open(cell, cell.node_of(identifier))
 
 
-## Un point dans la compétence, le palier, et un point dans le parent.
+## Un point dans la compétence, et assez de points dans **un** des nœuds reliés (jalon
+## 34 : un réseau sans paliers). Les liens vont toujours vers la racine (test
+## `test_links_lead_to_the_root`) : sans quoi deux nœuds se tiendraient ouverts l'un l'autre.
 func _node_open(cell: ManualCell, node: TalentNode) -> bool:
-	return (
-		cell.skill != null
-		and points_of(cell.skill.id) > 0
-		and _points_below(cell, node.required_points) >= node.required_points
-		and (node.parent.is_empty() or points_of(node.parent) > 0)
-	)
-
-
-## Le palier se paie avec les nœuds **moins profonds** : sinon un nœud profond, une fois
-## pris, tiendrait ouvert son propre palier et tout ce qui est dessous se reprendrait.
-func _points_below(cell: ManualCell, gate: int) -> int:
-	var total := 0
-	for node in cell.talents:
-		if node.required_points < gate:
-			total += points_of(node.id)
-	return total
+	if cell.skill == null or points_of(cell.skill.id) <= 0:
+		return false
+	if node.parents.is_empty():
+		return true
+	for parent: String in node.parents:
+		if points_of(parent) >= node.parents[parent]:
+			return true
+	return false
 
 
 ## Chaque nœud investi de l'arbre tient-il encore debout.
@@ -147,7 +141,7 @@ func invest(archetype: ManualArchetype, identifier: String) -> bool:
 
 
 ## Un point se reprend partout (décidé le 14 septembre 2026) tant que l'arbre qu'il
-## touche tient encore : ni enfant orphelin, ni palier tombé, ni arbre sans sort.
+## touche tient encore : ni nœud coupé de ses liens, ni arbre sans sort.
 ## Vérifié en retirant le point pour de bon puis en le rendant — une seule règle,
 ## celle qui ouvre les nœuds.
 func can_refund(archetype: ManualArchetype, identifier: String) -> bool:
@@ -177,7 +171,7 @@ func refund(archetype: ManualArchetype, identifier: String) -> bool:
 	return true
 
 
-## À la relecture : un arbre qui dépasse son pool ou dont un palier ne tient plus est
+## À la relecture : un arbre qui dépasse son pool ou dont un nœud ne tient plus est
 ## rendu **en entier** — il se replace en quelques clics, le nœud fautif se chercherait.
 func release_broken_trees(archetype: ManualArchetype) -> void:
 	if archetype == null:

@@ -302,7 +302,7 @@ func cast_slot(index: int) -> bool:
 		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
 	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
 	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
-	if cast.shape != Skill.Shape.DASH:
+	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		sprite.attack(skill.cadence == Skill.Cadence.CAST)
 	# La forme du lancer : un nœud peut l'avoir transformée (jalon 34).
 	match cast.shape:
@@ -312,6 +312,12 @@ func cast_slot(index: int) -> bool:
 			_roll(cast, orb_scene)
 		Skill.Shape.COMET:
 			_roll(cast, comet_scene)
+		Skill.Shape.METEOR:
+			# Plusieurs boules deviennent une rangée de météores en travers de la visée.
+			var count := cast.projectile_count()
+			for i in count:
+				var across := facing.orthogonal() * (float(i) - float(count - 1) * 0.5) * Meteor.SPACING
+				Meteor.fall(_effects_parent(), _aim_point() + across, cast, states, self, orb_scene)
 		Skill.Shape.CHAIN:
 			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:
 				Game.hit_stop()
@@ -331,7 +337,7 @@ func cast_slot(index: int) -> bool:
 			_light(skill.id, Buff.light(self, skill, cast.duration))
 		Skill.Shape.CYCLONE:
 			_light(skill.id, Cyclone.spin(self, skill))
-		Skill.Shape.DASH:
+		Skill.Shape.DASH, Skill.Shape.LEAP:
 			_dash(skill, cast)
 		Skill.Shape.WAVE:
 			_swing(cast)
@@ -490,7 +496,8 @@ func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
 func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 	if cast == null:
 		return
-	if cast.kill_burst > 0.0 and victim != null and victim.active(StatusEffects.Kind.IGNITE):
+	# L'état de la nature du lancer : un brasier devenu nécrotique fait exploser les pourrissants.
+	if cast.kill_burst > 0.0 and victim != null and victim.active(StatusEffects.rolled_by(cast.nature)):
 		var parts := cast.roll(Game.rng)
 		for i in parts.size():
 			parts[i] *= SkillStats.KILL_BURST_PART
@@ -534,7 +541,10 @@ func _show_states() -> void:
 func _dash(skill: Skill, cast: SkillStats) -> void:
 	var from_value := global_position
 	global_position = _landing(from_value, _aim_point())
-	if cast.period > 0.0 and cast.radius > 0.0:
+	# Le Bond (jalon 34) : un saut, qui ne laisse que son arc et son cratère.
+	if cast.shape == Skill.Shape.LEAP:
+		LeapArc.leave(_effects_parent(), from_value, global_position, cast)
+	elif cast.period > 0.0 and cast.radius > 0.0:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
 	elif skill.grants_buffs():
 		_light(skill.id, Buff.light(self, skill, cast.duration))
@@ -835,6 +845,12 @@ func buff_mods() -> Array[StatMod]:
 		# Une ligne est linéaire en points : ses charges la multiplient de la même façon.
 		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else 1
 		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
+		# Les lignes de ses nœuds qui ne visent pas un nombre du lancer (jalon 34) : des
+		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle.
+		for t in talents_of(skill.id):
+			for m in t.mods():
+				if Skill.is_buff_line(m):
+					out.append(m)
 	return out
 
 

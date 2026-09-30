@@ -166,19 +166,19 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 	for cell: ManualCell in arch.cells:
 		for n: TalentNode in cell.talents:
 			nodes += 1
-			lines.append("| %s | %s | %s | %s | %d | %s |" % [
+			var links := PackedStringArray()
+			for parent: String in n.parents:
+				links.append("%s (%d)" % [cell.node_of(parent).name, n.parents[parent]])
+			lines.append("| %s | %s | %s | %d | %s |" % [
 				n.name,
 				cell.skill.name,
-				"—" if n.parent.is_empty() else cell.node_of(n.parent).name,
-				"—" if n.required_points == 0 else Texts.tn(
-					"%d point dans l'arbre", "%d points dans l'arbre", n.required_points
-				) % n.required_points,
+				"—" if links.is_empty() else " ou ".join(links),
 				n.points_max,
 				_node_effect(n),
 			])
 	if nodes > 0:
-		l.append("| nœud | compétence | parent | palier | points | par point |")
-		l.append("|---|---|---|---|---|---|")
+		l.append("| nœud | compétence | relié à (points demandés) | points | par point |")
+		l.append("|---|---|---|---|---|")
 		l.append_array(lines)
 		l.append("")
 	l.append(
