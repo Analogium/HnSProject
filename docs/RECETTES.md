@@ -284,7 +284,7 @@ un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer
    `AGAINST`, `DURATIONS` et `CHANCE_STATS`. Tiré par une nature : dans `ROLLED`. S'il
    brûle par à-coups qui pourrissent : dans `TICKING`.
 2. **Ce qu'il fait** :
-   - s'il brûle → son taux dans `_burn_per_second()`. `advance()` le compte
+   - s'il brûle → son taux dans `burn_per_second()`. `advance()` le compte
      déjà, et le plus fort l'emporte sans rien écrire de plus ;
    - s'il change une grandeur → un facteur dans `StatusEffects`, **lu là où vit déjà la
      règle qu'il modifie** : la mitigation dans `Hurtbox`, la marche dans
@@ -299,6 +299,9 @@ un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer
    `StatusEffects.color()`, la couleur de sa nature, sauf quand elle ne se lit pas sur un
    corps, comme le blanc du physique, ou qu'elle se confondrait avec un autre état de
    la même nature : voir `StatusEffects.OWN_COLORS`.
+4. **Son article du guide** : sa ligne dans `GuidePage.STATE_TEXTS`, au même rang, et
+   sa force dans `GuidePage._state_text()` s'il en a une. Voir « Ajouter un article
+   au guide ».
 
 **Ce qui refusera un oubli** — `tests/unit/test_status_effects.gd :
 test_chaque_nature_pose_un_etat_et_un_seul` (les tables alignées, chaque nature posée
@@ -957,6 +960,26 @@ apparaît, et son encadré à côté.
 **Ce qui refusera un oubli** — `tests/unit/test_glossary.gd` : quatre formes et un
 encadré par terme, un titre et une définition par encadré, aucune marque dans
 `en.po` ; `test_translations.gd` pour l'anglais.
+
+---
+
+## Ajouter un article au guide
+
+Le guide du menu de pause (`ui/guide_page.gd`) explique une mécanique au joueur.
+
+1. **`GuidePage.ARTICLES`** — titre et texte, en français, des valeurs **nommées**
+   (`{duree}`) pour chaque nombre ou touche. Un nombre écrit en clair mentira au
+   premier rééquilibrage.
+2. **`GuidePage.chapters()`** — `_article(id, valeurs)` dans son chapitre, chaque
+   valeur **lue sur sa règle** (`StatusEffects.CHANCE`, `Keybinds.key_label()`…). Ce
+   qui a déjà son texte ailleurs — `Glossary`, `StatHelp`, `Currency.effect()` — se
+   reprend, ne se réécrit pas. Un état ajouté à `StatusEffects.Kind` veut sa ligne
+   dans `STATE_TEXTS`, au même rang.
+3. **`i18n/en.po`** — le titre et le texte, valeurs gardées.
+
+**Ce qui refusera un oubli** — `test_translations.gd` : l'anglais de chaque article,
+et `test_the_guide_keeps_its_numbers_in_both_languages`, aucune valeur laissée en place.
+Un état sans ligne dans `STATE_TEXTS` fait planter `chapters()`, donc ce test.
 
 ---
 

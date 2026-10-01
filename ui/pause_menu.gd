@@ -25,6 +25,7 @@ extends CanvasLayer
 @onready var center: CenterContainer = $Root/Center
 ## Hors du cadre centré : la page du filtre prend tout l'écran.
 @onready var loot: LootFilterPanel = $Root/LootPage
+@onready var guide: GuidePage = $Root/Center/Panel/Guide
 
 ## L'action dont on attend la touche, vide hors capture. Un seul champ : deux lignes
 ## ne peuvent pas écouter en même temps.
@@ -37,6 +38,7 @@ func _ready() -> void:
 	options.visible = false
 	keys.visible = false
 	loot.visible = false
+	guide.visible = false
 	_build_key_rows()
 
 	# La valeur est posée avant la connexion : dans l'autre sens, l'initialisation
@@ -65,6 +67,8 @@ func _ready() -> void:
 	_refresh_language()
 
 	($Root/Center/Panel/Menu/Resume as Button).pressed.connect(close)
+	($Root/Center/Panel/Menu/GuideBtn as Button).pressed.connect(_show_guide)
+	guide.closed.connect(_show_menu)
 	($Root/Center/Panel/Menu/OptionsBtn as Button).pressed.connect(_show_options)
 	($Root/Center/Panel/Menu/Return as Button).pressed.connect(_back_to_menu)
 	($Root/Center/Panel/Menu/Quit as Button).pressed.connect(_quit)
@@ -121,7 +125,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Échap depuis une sous-page revient d'un cran.
 	if root.visible and (keys.visible or loot.visible):
 		_show_options()
-	elif root.visible and options.visible:
+	elif root.visible and (options.visible or guide.visible):
 		_show_menu()
 	elif root.visible:
 		close()
@@ -175,7 +179,7 @@ func _refresh_language() -> void:
 	language_btn.text = Settings.current_language_label()
 
 
-## Les trois pages sont exclusives, et chacune le dit **en entier** : `open()` repasse
+## Les pages sont exclusives, et chacune le dit **en entier** : `open()` repasse
 ## par le menu, et une page laissée visible s'afficherait par-dessus lui.
 func _show_menu() -> void:
 	_show_page(menu)
@@ -190,13 +194,18 @@ func _show_keys() -> void:
 	_refresh_key_rows()
 
 
+func _show_guide() -> void:
+	_show_page(guide)
+	guide.open()
+
+
 func _show_loot() -> void:
 	_show_page(loot)
 	loot.open()
 
 
 func _show_page(shown: Control) -> void:
-	for page: Control in [menu, options, keys, loot]:
+	for page: Control in [menu, options, keys, loot, guide]:
 		page.visible = page == shown
 	center.visible = shown != loot
 	# Quitter la page des touches finit la capture : la garder ouverte ferait manger

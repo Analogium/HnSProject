@@ -163,10 +163,14 @@ static func from_definition(
 ## Une décimale **seulement quand il en faut une** : « 0,8 % » se perdrait à l'entier, et
 ## « 20,0 % » annoncerait une précision qu'on n'a pas.
 static func percentage(value: float, with_sign := false) -> String:
-	var written := ("%+d" if with_sign else "%d") % roundi(value)
+	return Texts.t("{valeur} %").format({"valeur": number(value, with_sign)})
+
+
+## Un nombre sans unité, à la même règle de décimale que `percentage()`.
+static func number(value: float, with_sign := false) -> String:
 	if not is_equal_approx(value, roundf(value)):
-		written = ("%+.1f" if with_sign else "%.1f") % value
-	return Texts.t("{valeur} %").format({"valeur": written})
+		return ("%+.1f" if with_sign else "%.1f") % value
+	return ("%+d" if with_sign else "%d") % roundi(value)
 
 
 ## L'unité déduite du gabarit, pour qu'une plage ne la répète pas.

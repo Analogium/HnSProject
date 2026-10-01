@@ -16,6 +16,8 @@ Chercher **où vit une règle** dans la table de
 
 **Une livraison met la doc à jour dans le même geste.** Une ligne d'ARCHITECTURE
 qui ment oblige la session suivante à relire le code pour retrouver la vérité.
+Un **jalon terminé** relit aussi le guide du jeu (menu Échap) : ce que le joueur
+doit savoir du jalon y est-il, et rien n'y est-il devenu faux ? Voir `/valider`, §6.
 
 ## Ce qu'il ne faut jamais faire
 

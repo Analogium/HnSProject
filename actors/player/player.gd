@@ -1082,11 +1082,15 @@ func equip(item: Item, slot := "") -> Item:
 
 
 ## Le pendant d'`equip()` pour ce qui se lit : l'objet refusé est rendu. `index` à -1 :
-## le premier emplacement libre, à défaut le premier — jamais celui de la classe.
+## la place de son double s'il est posé, puis le premier emplacement libre, à défaut le
+## premier — jamais celui de la classe.
 func study(item: Item, index := -1) -> Item:
 	if not Rack.accepts(item):
 		return item
-	var old := rack.put(index if index >= 0 else rack.free_slot(), item)
+	if index < 0:
+		var twin := rack.slot_of(item)
+		index = twin if twin >= 0 else rack.free_slot()
+	var old := rack.put(index, item)
 	# Un manuel porte des passifs : le poser change la fiche.
 	_after_equipment_change()
 	return old
@@ -1105,7 +1109,7 @@ func stop_studying(index: int) -> Item:
 	return gone
 
 
-## « La sait-on encore », pas « d'où venait-elle » : un autre livre peut l'enseigner.
+## « La sait-on encore » : un remboursement laisse en barre ce qui garde un point.
 func _clear_bar_of(skills: Array[Skill]) -> void:
 	for skill in skills:
 		if skill_points(skill.id) > 0:

@@ -163,6 +163,20 @@ func test_an_explanation_keeps_its_numbers_in_english() -> void:
 	assert_false(text_value.contains("{"), "et aucune valeur laissée en place")
 
 
+## Le guide lit ses nombres dans les règles, et n'en laisse aucun en place.
+func test_the_guide_keeps_its_numbers_in_both_languages() -> void:
+	for language in [Settings.FRENCH, Settings.ENGLISH]:
+		Settings.from_dict({"language": language})
+		var ignite := ""
+		for chapter: Dictionary in GuidePage.chapters():
+			for article: Array in chapter["articles"]:
+				assert_false(article[0].is_empty() or article[1].is_empty(), "article vide : %s" % [article])
+				assert_false(article[1].contains("{"), "valeur laissée en place : %s" % article[0])
+				if article[0] == RichText.capitalized(StatusEffects.name(StatusEffects.Kind.IGNITE)):
+					ignite = article[1]
+		assert_string_contains(ignite, StatMod.percentage(StatusEffects.IGNITE_PER_SECOND * 100.0))
+
+
 # --------------------------------------------------------------------------
 # Les outils
 # --------------------------------------------------------------------------
@@ -308,6 +322,11 @@ func _expected() -> Dictionary:
 		out[StatHelp.TEXTS[field]] = "explication de « %s »" % field
 	for field in StatHelp.SKILLS:
 		out[StatHelp.SKILLS[field]] = "explication de « %s »" % field
+	for id in GuidePage.ARTICLES:
+		for text_value in GuidePage.ARTICLES[id]:
+			out[text_value] = "article du guide « %s »" % id
+	for text_value in GuidePage.STATE_TEXTS:
+		out[text_value] = "état, dans le guide"
 
 	# Les titres de groupes de la fiche et le mot de la suppression : traduits par
 	# une variable, donc invisibles au relevé des littéraux.

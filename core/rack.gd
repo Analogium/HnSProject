@@ -24,11 +24,11 @@ static func accepts(item: Item) -> bool:
 
 
 ## Rend celui qu'il remplace, ou **l'objet lui-même s'il est refusé** — jamais perdu,
-## comme `Player.equip()`.
+## comme `Player.equip()`. Deux fois le même manuel : refusé, sauf à la place de son double.
 func put(index: int, item: Item) -> Item:
 	if item == null:
 		return null
-	if index < 0 or index >= CLASS_SLOT or not accepts(item):
+	if index < 0 or index >= CLASS_SLOT or not accepts(item) or slot_of(item) not in [-1, index]:
 		return item
 	var old := manuals[index]
 	manuals[index] = item
@@ -46,6 +46,14 @@ func remove(index: int) -> Item:
 ## Le seul chemin vers l'emplacement de la classe.
 func seat(item: Item) -> void:
 	manuals[CLASS_SLOT] = item
+
+
+## L'emplacement qui porte déjà ce manuel — la même base —, sinon -1.
+func slot_of(item: Item) -> int:
+	for i in SLOT_COUNT:
+		if manuals[i] != null and manuals[i].base == item.base:
+			return i
+	return -1
 
 
 ## Le premier des trois emplacements libres, sinon le premier.

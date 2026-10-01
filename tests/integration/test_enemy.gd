@@ -168,7 +168,7 @@ func test_three_manuals_each_receive_the_whole() -> void:
 	var manager: EnemyManager = scene[1]
 	var grunt: Enemy = scene[2]
 
-	var books := [_book(), _book(), _book()]
+	var books := [_book(), Item.new(ItemCatalog.by_id("manual_fire")), Item.new(ItemCatalog.by_id("manual_cold"))]
 	for i in books.size():
 		player.rack.put(i, books[i])
 	manager.report_kill(grunt)

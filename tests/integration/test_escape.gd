@@ -67,3 +67,15 @@ func test_escape_closes_the_passive_tree() -> void:
 func test_escape_without_panel_opens_the_menu() -> void:
 	_escape()
 	assert_true(_menu.root.visible)
+
+
+## Le guide est une page du menu : Échap en revient d'un cran, sans reprendre le jeu.
+func test_escape_from_the_guide_returns_to_the_menu() -> void:
+	_escape()
+	_menu._show_guide()
+	assert_true(_menu.guide.visible)
+	assert_gt(_menu.guide._index.get_child_count(), 0, "l'index est rempli à l'ouverture")
+	_escape()
+	assert_false(_menu.guide.visible)
+	assert_true(_menu.menu.visible, "retour au menu")
+	assert_true(get_tree().paused, "toujours en pause")

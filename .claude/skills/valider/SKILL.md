@@ -121,7 +121,24 @@ nombre présent à l'écran dépend du rythme du jeu, pas du code. Comparer au
 tableau de référence de la scène de stress (`world/stress_test.tscn`, touche F6,
 en fenêtré).
 
-## 6. Rendre un compte honnête
+## 6. Si un jalon se termine : relire le guide du jeu
+
+Le guide du menu de pause (`ui/guide_page.gd`) est ce que le joueur lit pour
+comprendre une mécanique. **À la fin de chaque jalon**, se demander ce que le
+jalon a apporté qu'un joueur devrait savoir — une mécanique nouvelle, un geste,
+une règle qui a changé — et le confronter aux articles :
+
+- **un article ment** (une règle a changé, un geste n'existe plus) → le corriger
+  dans la même livraison ;
+- **une mécanique manque** → proposer l'article à l'utilisateur, avec son texte,
+  puis l'écrire selon « Ajouter un article au guide » dans `docs/RECETTES.md` ;
+- **rien à dire** → l'écrire dans le compte rendu, pour qu'on sache que la
+  question a été posée.
+
+Ce qui est chiffré dans le guide se met à jour tout seul ; ce sont les phrases
+qui vieillissent.
+
+## 7. Rendre un compte honnête
 
 - Les chiffres réellement obtenus, pas ceux attendus. « 65 tests, 0 échec » se
   vérifie ; « tout fonctionne » ne veut rien dire.

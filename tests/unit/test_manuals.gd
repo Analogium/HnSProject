@@ -283,9 +283,21 @@ func test_the_class_slot_neither_takes_nor_gives() -> void:
 	assert_same(rack.put(Rack.CLASS_SLOT, other), other, "refusé, rendu tel quel")
 	assert_null(rack.remove(Rack.CLASS_SLOT), "rien ne sort")
 	assert_same(rack.at(Rack.CLASS_SLOT), own, "il est toujours là")
-	for i in Rack.CLASS_SLOT:
-		rack.put(i, Item.new(_base()))
+	for id in ["manual_lightning", "manual_fire", "manual_cold"]:
+		rack.put(rack.free_slot(), Item.new(ItemCatalog.by_id(id)))
 	assert_eq(rack.free_slot(), 0, "plein, le premier — jamais celui de la classe")
+
+
+## Le même manuel deux fois doublerait ses passifs : refusé ailleurs, accepté à la
+## place de son double.
+func test_the_same_manual_is_not_studied_twice() -> void:
+	var rack := Rack.new()
+	var first := Item.new(_base())
+	var twin := Item.new(_base())
+	assert_null(rack.put(0, first))
+	assert_same(rack.put(1, twin), twin, "refusé, rendu tel quel")
+	assert_null(rack.at(1), "l'emplacement reste vide")
+	assert_same(rack.put(0, twin), first, "à la place de son double")
 
 
 ## Hors du catalogue : il ne tombe pas, l'établi ne le propose pas, et une sauvegarde

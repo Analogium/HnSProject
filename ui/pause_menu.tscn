@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_pause"]
 [ext_resource type="Script" path="res://ui/loot_filter_panel.gd" id="2_loot"]
+[ext_resource type="Script" path="res://ui/guide_page.gd" id="3_guide"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 18.0
@@ -61,6 +62,11 @@ custom_minimum_size = Vector2(0, 6)
 custom_minimum_size = Vector2(132, 0)
 theme_override_font_sizes/font_size = 10
 text = "Reprendre"
+
+[node name="GuideBtn" type="Button" parent="Root/Center/Panel/Menu"]
+custom_minimum_size = Vector2(132, 0)
+theme_override_font_sizes/font_size = 10
+text = "Guide"
 
 [node name="OptionsBtn" type="Button" parent="Root/Center/Panel/Menu"]
 custom_minimum_size = Vector2(132, 0)
@@ -235,6 +241,9 @@ text = "Rétablir les touches"
 custom_minimum_size = Vector2(344, 0)
 theme_override_font_sizes/font_size = 10
 text = "Retour"
+
+[node name="Guide" type="VBoxContainer" parent="Root/Center/Panel"]
+script = ExtResource("3_guide")
 
 [node name="LootPage" type="Control" parent="Root"]
 anchors_preset = 15

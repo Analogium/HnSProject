@@ -324,7 +324,7 @@ static func factor_of(worn: float, cast_increase: float) -> float:
 ## la même sorte, ce qui brûle garde le plus fort — sinon de petites braises
 ## éteindraient la grosse ; les autres retrouvent leur durée.
 func put(kind: int, part: float, author: StatusEffects = null, source := "") -> void:
-	var per_second := part * _burn_per_second(kind)
+	var per_second := part * burn_per_second(kind)
 	var state := _state(kind)
 	var fresh := state == null
 	if fresh:
@@ -418,7 +418,7 @@ func _state(kind: int) -> State:
 	return null
 
 
-func _burn_per_second(kind: int) -> float:
+static func burn_per_second(kind: int) -> float:
 	match kind:
 		Kind.IGNITE:
 			return IGNITE_PER_SECOND

@@ -467,6 +467,16 @@ func test_what_can_be_placed_in_a_slot() -> void:
 	assert_false(names.has("storm_dash"), "mais pas celles restées vides")
 
 
+## Le clic droit sur un double ne le refuse pas : il remplace celui qui est posé.
+func test_studying_a_twin_replaces_it() -> void:
+	var first := _worked_book()
+	_p.study(first)
+	var twin := Item.new(first.base)
+	assert_same(_p.study(twin), first, "le premier revient au sac")
+	assert_same(_p.rack.at(0), twin)
+	assert_null(_p.rack.at(1), "pas de second exemplaire")
+
+
 func test_skill_points_come_from_the_book_that_teaches_it() -> void:
 	assert_eq(_p.skill_points("swift_bolt"), 0, "aucun livre à l'étude")
 	assert_eq(
@@ -690,15 +700,18 @@ func test_a_passive_leaves_with_its_book() -> void:
 
 
 ## Un passif qui vise un mot-clé ne touche pas la fiche mais les compétences qui
-## le portent — y compris celles d'un **autre** livre du râtelier.
+## le portent — y compris celles d'un **autre** livre du râtelier : ici le feu du
+## manuel de feu sur le Projectile élémentaire du manuel de la sorcière.
 func test_a_keyword_passive_serves_another_book_skills() -> void:
-	var lightning := _study("manual_lightning", ["swift_bolt"], 0)
-	var without := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1).total_min()
+	var witch := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	_p.rack.seat(witch)
+	var projectile := SkillCatalog.by_id("elemental_projectile")
+	var without := _p.resolve(projectile, 1).total_min()
 
-	_study("manual_lightning", ["conductor", "conductor"], 1)
-	var with_it := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1).total_min()
-	assert_almost_eq(with_it, without * 1.12, 0.01, "deux points de 6 % de dégâts de foudre")
-	assert_eq(lightning.manual.points_of("conductor"), 0, "et le premier livre n'y est pour rien")
+	_study("manual_fire", ["heart_of_embers", "heart_of_embers"], 0)
+	var with_it := _p.resolve(projectile, 1).total_min()
+	assert_almost_eq(with_it, without * 1.14, 0.01, "deux points de 7 % de dégâts de feu")
+	assert_eq(witch.manual.points_of("heart_of_embers"), 0, "et l'autre livre n'y est pour rien")
 
 
 ## **La conversion se voit** : ce que le sort pose part dans la nature d'arrivée,
@@ -837,13 +850,3 @@ func test_storing_a_book_clears_the_slots_that_pointed_to_it() -> void:
 	_p.stop_studying(0)
 	assert_eq(_p.bar.id_of(2), "", "la case est vide")
 	assert_eq(_p.bar.id_of(0), SkillCatalog.ID_ATTACK, "les attaques de départ restent")
-
-
-## Mais pas si un autre livre du râtelier l'enseigne encore : la question est
-## « la sait-on toujours », pas « d'où venait-elle ».
-func test_a_second_book_keeps_the_slot_full() -> void:
-	_p.study(_worked_book(), 0)
-	_p.study(_worked_book(), 1)
-	_p.bar.put(2, "swift_bolt")
-	_p.stop_studying(0)
-	assert_eq(_p.bar.id_of(2), "swift_bolt", "l'autre livre l'enseigne toujours")

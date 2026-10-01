@@ -2973,3 +2973,115 @@ msgstr "of Iron Skin"
 
 msgid "des Réflexes"
 msgstr "of Reflexes"
+
+# ---------------------------------------------------------------------------
+# Guide du menu de pause
+# ---------------------------------------------------------------------------
+
+msgid "Les états"
+msgstr "States"
+
+msgid "Chaque nature de dégâts pose son état : le feu embrase, la foudre engourdit, le froid transit, la nécrose fait pourrir, le sacré bénit, le physique fait saigner. Un coup a {chance} de chance de poser l'état de chaque nature qu'il porte, quelle que soit sa part, plus la part des points de vie maximum que cette nature retire. La force de l'état suit la part du coup.\n\nTous les états se portent à la fois. Deux du même ne se cumulent pas : un nouveau, au moins aussi fort, remet sa durée à zéro ; un plus faible ne change rien. Ce qui brûle ne s'esquive pas, et les ennemis en posent aussi."
+msgstr "Each damage nature applies its state: fire ignites, lightning numbs, cold chills, necrotic rots, holy blesses, physical bleeds. A hit has a {chance} chance to apply the state of each nature it carries, whatever its share, plus the share of maximum life that nature removes. The state's strength follows the hit's share.\n\nAll states can be carried at once. Two of the same do not stack: a new one, at least as strong, resets the duration; a weaker one changes nothing. What burns cannot be evaded, and enemies apply states too."
+
+msgid "Le râtelier"
+msgstr "The rack"
+
+msgid "Un manuel ne fait rien dans le sac : il s'étudie au râtelier, qui a {places} emplacements — clic droit sur le manuel. Seuls les manuels du râtelier apprennent, et seuls leurs passifs comptent. Un même manuel ne s'étudie pas deux fois.\n\nLa touche {manuels} ouvre les manuels."
+msgstr "A manual does nothing in the bag: it is studied on the rack, which has {places} slots — right-click the manual. Only manuals on the rack learn, and only their passives count. The same manual cannot be studied twice.\n\nThe {manuels} key opens the manuals."
+
+msgid "Le manuel de classe"
+msgstr "The class manual"
+
+msgid "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres."
+msgstr "One more slot holds the class manual. It never drops and cannot be removed, but it learns, reads and takes points like the others."
+
+msgid "Expérience et niveaux"
+msgstr "Experience and levels"
+
+msgid "Chaque ennemi tué donne à chaque manuel du râtelier autant d'expérience qu'au personnage. Un manuel monte jusqu'au niveau {max}, et chaque niveau lui donne un point."
+msgstr "Each enemy killed gives every manual on the rack as much experience as the character. A manual rises up to level {max}, and each level gives it a point."
+
+msgid "Les cases"
+msgstr "Cells"
+
+msgid "Une case porte une compétence ou un passif. Elle s'ouvre au niveau de manuel qu'elle demande ; un clic sur un passif y place un point, un clic sur une compétence ouvre son arbre. Un point se reprend d'un clic droit, tant que rien de ce qu'il ouvre n'en dépend."
+msgstr "A cell holds a skill or a passive. It opens at the manual level it requires; clicking a passive places a point in it, clicking a skill opens its tree. A point is taken back with a right-click, as long as nothing it opens depends on it."
+
+msgid "Les arbres de talents"
+msgstr "Talent trees"
+
+msgid "Chaque compétence a son arbre, et ses propres points : un par niveau du manuel, en plus de ceux du livre. Le centre de l'arbre est la compétence, payée par le livre.\n\nUn nœud s'ouvre quand la compétence a un point et qu'un des nœuds qui y mènent en porte assez — les grains sur le lien. Certains nœuds transforment la compétence, d'autres en convertissent les dégâts : ceux-là sont tout ou rien.\n\nTenir {details} sur une compétence montre ce qu'elle peut déclencher, avec les vraies chances."
+msgstr "Each skill has its tree, and its own points: one per manual level, on top of the book's. The center of the tree is the skill, paid by the book.\n\nA node opens when the skill has a point and one of the nodes leading to it holds enough — the beads on the link. Some nodes transform the skill, others convert its damage: those are all or nothing.\n\nHolding {details} over a skill shows what it can trigger, with the real chances."
+
+msgid "Résistances"
+msgstr "Resistances"
+
+msgid "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège."
+msgstr "Each nature other than physical is reduced by its resistance, as a direct percentage, up to {plafond}. A curse removes some before the cap: a resistance above it protects against that."
+
+msgid "Les flacons"
+msgstr "Flasks"
+
+msgid "Sous la ceinture, bus par les touches {touches}. Une gorgée coûte des charges ; chaque ennemi tué en rend à tous les flacons portés, une élite davantage. La ville les remplit.\n\nLes gorgées de vie et de mana rendent sur la durée et se cumulent. Un flacon utilitaire ne se reboit pas tant que son effet dure. Mourir vide les gorgées en cours."
+msgstr "Worn under the belt, drunk with the keys {touches}. A sip costs charges; each enemy killed refills every worn flask, an elite more so. Town fills them up.\n\nLife and mana sips restore over time and stack. A utility flask cannot be drunk again while its effect lasts. Dying empties the sips in progress."
+
+msgid "Les pièces"
+msgstr "Coins"
+
+msgid "Une pièce s'applique à un objet du sac : clic droit sur la pièce, puis clic sur l'objet. Un objet qui ne porte pas d'affixes, comme un manuel, n'en accepte aucune."
+msgstr "A coin is applied to an item in the bag: right-click the coin, then click the item. An item without affixes, such as a manual, accepts none."
+
+msgid "Le portail"
+msgstr "The portal"
+
+msgid "La touche {portail} ouvre un portail vers la ville. La zone attend, figée : le portail bleu de la ville y ramène, avec les mêmes ennemis et le même butin.\n\nLe portail doré de la ville et les waypoints mènent ailleurs, et la zone qui attendait est perdue. Rien d'une zone ne survit à la fermeture du jeu."
+msgstr "The {portail} key opens a portal to town. The area waits, frozen: the blue portal in town leads back to it, with the same enemies and the same loot.\n\nThe golden portal in town and the waypoints lead elsewhere, and the waiting area is lost. Nothing of an area survives closing the game."
+
+msgid "Les waypoints"
+msgstr "Waypoints"
+
+msgid "Un par zone, au milieu de la route, et un en ville. Marcher dessus l'allume pour le personnage, pour de bon. Cliquer un waypoint allumé ouvre la liste des autres."
+msgstr "One per area, halfway along the road, and one in town. Walking on it lights it for the character, for good. Clicking a lit waypoint opens the list of the others."
+
+msgid "Posé par le feu. Brûle {part} par seconde du feu reçu, pendant {duree} s : {total} du coup en tout."
+msgstr "Applied by fire. Burns {part} of the fire taken per second, for {duree} s: {total} of the hit in all."
+
+msgid "Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s."
+msgstr "Applied by lightning. The numbed take {force} more damage, for {duree} s."
+
+msgid "Posé par le froid. Le transi perd {force} de vitesse — déplacement, attaque et incantation —, pendant {duree} s."
+msgstr "Applied by cold. The chilled lose {force} speed — movement, attack and casting —, for {duree} s."
+
+msgid "Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle."
+msgstr "Applied by necrotic. Burns {part} of the necrotic taken per second, for {duree} s, and gives its author {soin} of what it burns."
+
+msgid "Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s."
+msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s."
+
+msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s."
+msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s."
+
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir."
+msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot."
+
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s."
+msgstr "Applied by some skills, never by an ordinary hit. The cursed lose {force} points of necrotic resistance, before the cap, for {duree} s."
+
+msgid "États"
+msgstr "States"
+
+msgid "Bonus"
+msgstr "Bonuses"
+
+msgid "Défenses"
+msgstr "Defenses"
+
+msgid "Voyage"
+msgstr "Travel"
+
+msgid "GUIDE"
+msgstr "GUIDE"
+
+msgid "Guide"
+msgstr "Guide"
