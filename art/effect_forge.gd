@@ -405,6 +405,40 @@ const SHARD_SIZE := 7
 static var _shards := {}
 
 
+## Le Météore (jalon 34, « grosse boule » choisie sur planche) : vingt et un pixels,
+## une fois et demie la boule. **Bosselé, le cœur en deux taches** : lisse et le cœur
+## centré, il sortait en ballon de plage. Un seul temps — c'est la crinière qui bat.
+const METEOR := [[
+	"....55.5544544.......",
+	"...544454454434......",
+	"..544433444332443....",
+	"..4433324443244333...",
+	"..5332www44443335544.",
+	".5442wwwww4433355443.",
+	".444wwwwwww3333444333",
+	"4444wwwwwww3333433322",
+	"5444wwwww55333333322.",
+	"4332wwww55www3332222.",
+	"33243w555wwww5222222.",
+	"424333555ww555225442.",
+	"43333333335552244443.",
+	".3333333332222244433.",
+	".3554433222222244332.",
+	"..544332222222233322.",
+	"..44333222252221222..",
+	"..333222224432111....",
+	"...322222443311......",
+	".......222332........",
+]]
+const METEOR_WIDTH := 21
+const METEOR_HEIGHT := 20
+static var _meteors := {}
+
+
+static func meteor(tint: Color) -> Texture2D:
+	return _sheet(_meteors, METEOR, METEOR_WIDTH, METEOR_HEIGHT, tint, Fire.heart(tint))[0]
+
+
 static func balls(tint: Color) -> Array:
 	return _sheet(_balls, BALL, BALL_SIZE, BALL_SIZE, tint, Fire.heart(tint))
 

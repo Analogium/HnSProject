@@ -669,8 +669,8 @@ msgstr "Meteor"
 msgid "Bond"
 msgstr "Leap"
 
-msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et plus large — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
-msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there harder and wider — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
+msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate bien plus fort et deux fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
+msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there much harder and twice as wide, shaking the ground — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
 
 msgid "La ruée devient un saut : elle ne laisse plus de traînée de feu, mais son explosion d'arrivée frappe bien plus fort et plus large."
 msgstr "The dash becomes a leap: it no longer leaves a trail of fire, but its landing explosion hits much harder and wider."
@@ -1703,6 +1703,9 @@ msgstr "Damage taken"
 
 msgid "Dégâts infligés"
 msgstr "Damage dealt"
+
+msgid "Secousses d'écran"
+msgstr "Screen shake"
 
 msgid "Compteur de DPS"
 msgstr "DPS meter"

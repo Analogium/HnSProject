@@ -6,11 +6,12 @@ extends CanvasLayer
 @onready var root: Control = $Root
 @onready var menu: VBoxContainer = $Root/Center/Panel/Menu
 @onready var options: VBoxContainer = $Root/Center/Panel/Options
-@onready var bars_check: CheckBox = $Root/Center/Panel/Options/Bars
-@onready var names_check: CheckBox = $Root/Center/Panel/Options/Names
-@onready var taken_check: CheckBox = $Root/Center/Panel/Options/DamageTaken
-@onready var dealt_check: CheckBox = $Root/Center/Panel/Options/DamageDealt
-@onready var dps_check: CheckBox = $Root/Center/Panel/Options/DpsMeter
+@onready var bars_check: CheckBox = $Root/Center/Panel/Options/Checks/Bars
+@onready var names_check: CheckBox = $Root/Center/Panel/Options/Checks/Names
+@onready var taken_check: CheckBox = $Root/Center/Panel/Options/Checks/DamageTaken
+@onready var dealt_check: CheckBox = $Root/Center/Panel/Options/Checks/DamageDealt
+@onready var dps_check: CheckBox = $Root/Center/Panel/Options/Checks/DpsMeter
+@onready var shake_check: CheckBox = $Root/Center/Panel/Options/Checks/ScreenShake
 @onready var window_btn: Button = $Root/Center/Panel/Options/Window
 ## Libellé posé par le code, **dans la langue qu'il annonce**.
 @onready var language_btn: Button = $Root/Center/Panel/Options/Language
@@ -50,6 +51,8 @@ func _ready() -> void:
 	dealt_check.toggled.connect(func(on: bool) -> void: Settings.damage_dealt_visible = on)
 	dps_check.button_pressed = Settings.dps_meter_visible
 	dps_check.toggled.connect(func(on: bool) -> void: Settings.dps_meter_visible = on)
+	shake_check.button_pressed = Settings.screen_shake
+	shake_check.toggled.connect(func(on: bool) -> void: Settings.screen_shake = on)
 	_bind_opacity($Root/Center/Panel/Options/SpellOpacity, "spell_opacity")
 	_bind_opacity($Root/Center/Panel/Options/EnemyOpacity, "enemy_attack_opacity")
 

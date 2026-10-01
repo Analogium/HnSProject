@@ -316,7 +316,7 @@ dans « Cendres vivantes » » débordait la fiche de 11 px (`test_largeurs`) : 
 « « Cendres vivantes » à 2 ».
 
 **Les transformations gardent leur arbre.** Sous Météore, Double langue fait tomber
-**une rangée** de météores en travers de la visée (`Meteor.SPACING`), et Fragmentation
+**une rangée** de météores en travers de la visée, et Fragmentation
 fait jaillir l'étoile d'éclats **du point d'impact** (`Projectile.split()`, rendue
 publique). Ce qui reste sans effet — Perforation sous Météore ; Sillage et Braises,
 la traînée, sous Bond — est déclaré une fois dans `Skill.IGNORED_BY_SHAPE`, et la fiche
@@ -362,6 +362,25 @@ exploser que les **embrasés** : sous Flamme noire ou Givre, le lancer ne pose p
 l'embrasement, et le nœud ne faisait plus rien. Un tué explose désormais s'il porte
 **l'état que tire la nature du lancer** (`StatusEffects.rolled_by()`) — pourrissant
 pour un brasier nécrotique, transi pour une boule de glace. Les descriptions le disent.
+
+## 6 duodecies. Un Météore qui vaut d'être pris
+
+**Le constat de l'utilisateur** : il ne servait à rien. Le calcul le confirme : +60 %
+de dégâts pour +60 % de temps de lancement, soit **les mêmes dégâts par seconde** que
+la boule, contre un retard de 0,45 s et la perte du vol — pour un rayon de 30 au lieu
+de 20.
+
+**Choisi par l'utilisateur, « frappe lourde »** : +150 % de dégâts plus (≈ +55 % de
+dégâts par seconde sur la boule), **rayon doublé** (40), et l'impact se sent — gel
+d'impact et secousse de deux fois celle d'un lancer. Le prix reste le lancement plus
+long et la chute. Une rangée de Double langue espace ses météores d'un rayon : à
+l'écart fixe de 28 px d'avant, des explosions de 40 se couvraient presque entières.
+
+**Le dessin, choisi sur planche** (`hns-captures-meteore-gros`, quatre variantes : grosse
+boule, rocher en feu, comète, boule croûtée) : **« grosse boule »**, 21 px au lieu de 13,
+une crinière de cinq langues. Rastérisée sur la planche puis relevée en grille dans
+`EffectForge.METEOR`. **Vu sur la planche** : lisse et le cœur centré, elle sortait en
+ballon de plage — bord bosselé, cœur en deux taches.
 
 ## 6 ter. Relevé d'équilibrage, avant → après
 

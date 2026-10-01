@@ -104,6 +104,16 @@ func test_the_shake_moves_the_camera_then_settles_it() -> void:
 	assert_eq(cam.offset, Vector2.ZERO, "et revient exactement à sa place")
 
 
+## L'option coupe toutes les secousses à leur seule entrée.
+func test_the_option_turns_the_shake_off() -> void:
+	var cam := _camera()
+	Settings.screen_shake = false
+	Game.shake_camera(cam, 4.0, 0.1)
+	await wait_process_frames(2)
+	Settings.screen_shake = true
+	assert_eq(cam.offset, Vector2.ZERO, "la caméra ne bouge pas")
+
+
 ## Cinq ennemis touchés par le même balayage lançaient cinq secousses, qui se
 ## disputaient le même `offset` : la première finie le remettait à zéro sous les
 ## autres, et la caméra s'arrêtait net au milieu du geste.

@@ -313,10 +313,11 @@ func cast_slot(index: int) -> bool:
 		Skill.Shape.COMET:
 			_roll(cast, comet_scene)
 		Skill.Shape.METEOR:
-			# Plusieurs boules deviennent une rangée de météores en travers de la visée.
+			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
+			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
 			var count := cast.projectile_count()
 			for i in count:
-				var across := facing.orthogonal() * (float(i) - float(count - 1) * 0.5) * Meteor.SPACING
+				var across := facing.orthogonal() * (float(i) - float(count - 1) * 0.5) * cast.radius
 				Meteor.fall(_effects_parent(), _aim_point() + across, cast, states, self, orb_scene)
 		Skill.Shape.CHAIN:
 			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:

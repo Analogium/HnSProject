@@ -1347,8 +1347,12 @@ func test_a_meteor_falls_then_bursts_on_the_aim() -> void:
 	assert_eq(_children_of(Projectile).size(), 0, "rien ne vole")
 	await wait_seconds(Meteor.FALL * 0.5)
 	assert_eq(_hits(below), 0, "pas pendant la chute")
+	Game.hit_stop_duration = 0.05
+	Game.hit_stop_period = 0.0
+	var freezes := Game.freezes
 	await wait_seconds(Meteor.FALL)
 	assert_eq(_hits(below), 1, "l'éclatement, une fois")
+	assert_gt(Game.freezes, freezes, "et l'impact se sent")
 	assert_eq(_hits(aside), 0)
 	assert_eq(_children_of(Meteor).size(), 0)
 
@@ -1361,7 +1365,8 @@ func test_extra_balls_fall_as_a_row_of_meteors() -> void:
 	var meteors := _children_of(Meteor)
 	assert_eq(meteors.size(), 3)
 	var gap: float = meteors[0].global_position.distance_to(meteors[1].global_position)
-	assert_almost_eq(gap, Meteor.SPACING, 0.01, "côte à côte, à leur écart")
+	var radius := _p.resolve(SkillCatalog.by_id("fireball"), 1).radius
+	assert_almost_eq(gap, radius, 0.01, "à un rayon l'un de l'autre")
 
 
 ## Fragmentation sur un météore : l'étoile d'éclats jaillit du point d'impact.

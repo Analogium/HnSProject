@@ -146,7 +146,7 @@ func hit_stop(duration: float = -1.0) -> void:
 
 ## Relancée, elle reprend la plus forte amplitude au lieu d'en ajouter une.
 func shake_camera(camera: Camera2D, amount: float = 3.0, duration: float = 0.15) -> void:
-	if camera == null or amount <= 0.0 or duration <= 0.0:
+	if camera == null or amount <= 0.0 or duration <= 0.0 or not Settings.screen_shake:
 		return
 	if camera != _shake_camera:
 		_settle_camera()

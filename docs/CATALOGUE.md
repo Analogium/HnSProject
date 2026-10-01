@@ -191,7 +191,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Étincelles | Boule de feu | Souffle ardent (1) ou Ardeur (1) | 3 | +15 % chance d'état |
 | Fragmentation | Boule de feu | Perforation (1) ou Double langue (1) | 3 | +1 nombre d'éclats |
 | Réaction en chaîne | Boule de feu | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
-| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +60 % de dégâts amplifiés · +50 % de rayon accru · +60 % de temps du geste accru |
+| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +150 % de dégâts amplifiés · +100 % de rayon accru · +60 % de temps du geste accru |
 | Mue | Serpent infernal | — | 4 | +8 % de dégâts amplifiés |
 | Longue vie | Serpent infernal | — | 3 | +20 % de durée accrue |
 | Crocs | Serpent infernal | — | 2 | ajoute 4 à 9 dégâts de feu |

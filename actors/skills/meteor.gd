@@ -12,15 +12,19 @@ const HEIGHT := 70.0
 const FALL := 0.45
 ## Les bouffées au-dessus de la crinière, et leur écart.
 const TRAIL := 3
-const TRAIL_STEP := 6.0
-## L'ombre, du point de départ à l'impact.
-const SHADOW_FROM := 4
-const SHADOW_TO := 12
+const TRAIL_STEP := 7.0
+## La crinière : cinq langues, une grande sur deux, l'écart entre deux pieds.
+const MANE := 5
+const MANE_STEP := 5.0
+## L'ombre, du point de départ à l'impact : celle d'une boule de 21 px.
+const SHADOW_FROM := 7
+const SHADOW_TO := 20
 const SHADOW := Color(0.06, 0.03, 0.02)
-## Au réglage d'une aura, l'ombre disparaissait sur la terre sombre (vu à la capture).
-const SHADOW_ALPHA := 0.6
-## L'écart entre deux météores d'une rangée : leurs explosions se touchent sans se couvrir.
-const SPACING := 28.0
+## Au réglage d'une aura, l'ombre disparaissait sur la terre sombre (vu à la capture) ;
+## à 0,6, la boule de 21 px en couvrait tout le cœur dense.
+const SHADOW_ALPHA := 0.9
+## La secousse de l'impact, en part de celle d'un lancer du joueur.
+const IMPACT_SHAKE := 2.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -58,6 +62,10 @@ func _physics_process(delta: float) -> void:
 		Fireball.burst(
 			get_parent(), global_position, _cast.roll(Game.rng), _cast.radius, null, _tint, _author, _cast
 		)
+		# Le poids de la chute : l'impact se sent, ce qui le sépare d'une boule de plus.
+		if _source is Player:
+			Game.hit_stop()
+			Game.shake_camera((_source as Player).camera, (_source as Player).shake_amount * IMPACT_SHAKE)
 		# Fragmentation : l'étoile d'éclats part du point d'impact.
 		if _cast.splits > 0.0 and _shards != null:
 			Projectile.split(
@@ -75,15 +83,16 @@ func _draw() -> void:
 	var at := Vector2(0.0, -HEIGHT * (1.0 - landed))
 	var puffs := EffectForge.puffs(_tint)
 	for i in TRAIL:
-		EffectForge.put_centered(self, puffs[i], at + Vector2(0.0, -12.0 - TRAIL_STEP * float(i)))
+		EffectForge.put_centered(self, puffs[i], at + Vector2(0.0, -20.0 - TRAIL_STEP * float(i)))
 	var frame := int(_age * EffectForge.FLAME_HZ)
 	var short := EffectForge.small_flames(_tint)
 	var tall := EffectForge.flames(_tint)
-	_foot(short[frame % short.size()], at + Vector2(-5.0, -2.0))
-	_foot(short[(frame + 1) % short.size()], at + Vector2(5.0, -2.0))
-	_foot(tall[frame % tall.size()], at + Vector2(0.0, -3.0))
-	var balls := EffectForge.balls(_tint)
-	EffectForge.put_centered(self, balls[int(_age * EffectForge.BALL_HZ) % balls.size()], at)
+	# Plantées sur le haut de la boule, qui s'arrondit : les langues du bord descendent.
+	for k in MANE:
+		var dx := (float(k) - float(MANE - 1) * 0.5) * MANE_STEP
+		var sheet: Array = tall if k % 2 == 0 else short
+		_foot(sheet[(frame + k) % sheet.size()], at + Vector2(dx, -6.0 + absf(dx) * 0.4))
+	EffectForge.put_centered(self, EffectForge.meteor(_tint), at)
 
 
 func _foot(tex: Texture2D, at: Vector2) -> void:
