@@ -109,7 +109,7 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 ) + [
 	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance", "rot_chance",
 	"damage_taken", "cooldown_recovery", "status_chance_increase",
-	"crawl_speed",
+	"crawl_speed", "jump_gain",
 ]
 
 var stat: String
@@ -315,7 +315,7 @@ func is_a_range() -> bool:
 ## s'écrit comme un nombre — « 6–6 » se lit comme une faute.
 ## Ce qui gagne à baisser : un nœud qui l'accroît paie un échange (jalon 34).
 const LOWER_IS_BETTER := [
-	"recharge", "use_time", "self_burn", "period", "damage_taken", "attack_time",
+	"recharge", "use_time", "self_burn", "period", "damage_taken", "attack_time", "mana_per_second",
 	"flask_charges_used",
 ]
 

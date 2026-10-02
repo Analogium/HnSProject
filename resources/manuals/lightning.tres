@@ -11,215 +11,942 @@
 [ext_resource type="Resource" path="res://resources/skills/storm_dash.tres" id="13_ruee_d_orage"]
 [ext_resource type="Resource" path="res://resources/skills/static_electricity.tres" id="14_electricite_statique"]
 
-[sub_resource type="Resource" id="L_eclair_vif_surcharge_0"]
+[sub_resource type="Resource" id="L_swift_bolt_overload_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 12.0
+value_per_point = 8.0
 
-[sub_resource type="Resource" id="N_eclair_vif_surcharge"]
+[sub_resource type="Resource" id="N_swift_bolt_overload"]
 script = ExtResource("3_noeud")
 id = "swift_bolt_overload"
 name = "Surcharge"
+description = "Chaque éclair inflige plus de dégâts."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_overload_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_celerity_0"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_swift_bolt_celerity"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_celerity"
+name = "Célérité"
+description = "L'éclair file plus vite : il atteint sa cible plus tôt et porte plus loin."
 position = Vector2i(1, 0)
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_surcharge_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_celerity_0")])
 
-[sub_resource type="Resource" id="L_eclair_vif_fourche_0"]
+[sub_resource type="Resource" id="L_swift_bolt_hot_spot_0"]
+script = ExtResource("4_ligne")
+stat = "crit_chance"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_swift_bolt_hot_spot"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_hot_spot"
+name = "Point chaud"
+description = "L'éclair inflige plus souvent un coup critique."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_hot_spot_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_fork_0"]
 script = ExtResource("4_ligne")
 stat = "projectiles"
 value_per_point = 1.0
 
-[sub_resource type="Resource" id="N_eclair_vif_fourche"]
+[sub_resource type="Resource" id="L_swift_bolt_fork_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_swift_bolt_fork"]
 script = ExtResource("3_noeud")
 id = "swift_bolt_fork"
 name = "Fourche"
-position = Vector2i(2, 0)
+description = "Chaque lancer tire un éclair de plus, en éventail, chacun un peu moins fort."
+position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
 "swift_bolt_overload": 1
 })
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_fourche_0")])
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_fork_0"), SubResource("L_swift_bolt_fork_1")])
 
-[sub_resource type="Resource" id="L_eclair_vif_trait_de_glace_0"]
+[sub_resource type="Resource" id="L_swift_bolt_sparks_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_swift_bolt_sparks"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_sparks"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'engourdissement pour la foudre, qui fait subir plus de dégâts à l'ennemi."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"swift_bolt_overload": 2,
+"swift_bolt_hot_spot": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_sparks_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_piercing_0"]
+script = ExtResource("4_ligne")
+stat = "pierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_swift_bolt_piercing"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_piercing"
+name = "Transpercement"
+description = "L'éclair traverse les premiers ennemis qu'il touche au lieu de s'y arrêter, et ne frappe chacun qu'une fois."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"swift_bolt_celerity": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_piercing_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_bounce_0"]
+script = ExtResource("4_ligne")
+stat = "bounces"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_swift_bolt_bounce"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_bounce"
+name = "Rebond"
+description = "Au lieu de s'éteindre sur l'ennemi touché, l'éclair repart vers l'ennemi non touché le plus proche, dans n'importe quelle direction, tant qu'il lui reste de la course pour l'atteindre. S'il n'en trouve pas, il s'éteint."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"swift_bolt_celerity": 2,
+"swift_bolt_fork": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_bounce_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_splinters_0"]
+script = ExtResource("4_ligne")
+stat = "splits"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_swift_bolt_splinters"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_splinters"
+name = "Éclats"
+description = "En fin de course, l'éclair se brise en éclats qui partent en étoile, à {part_eclat} % de ses dégâts — et sur chaque ennemi qu'il traverse."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"swift_bolt_piercing": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_splinters_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_glacial_bolt_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 20.0
 
-[sub_resource type="Resource" id="N_eclair_vif_trait_de_glace"]
+[sub_resource type="Resource" id="N_swift_bolt_glacial_bolt"]
 script = ExtResource("3_noeud")
 id = "swift_bolt_glacial_bolt"
 name = "Trait de glace"
-position = Vector2i(1, 1)
+description = "L'éclair devient de glace : dégâts de froid, mot-clé Froid, et il transit au lieu d'engourdir."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"swift_bolt_overload": 2
+})
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_eclair_vif_trait_de_glace_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_glacial_bolt_0")])
 converts_to = 1
 converts = true
+
+[sub_resource type="Resource" id="L_swift_bolt_surge_0"]
+script = ExtResource("4_ligne")
+stat = "kill_burst"
+value_per_point = 24.0
+
+[sub_resource type="Resource" id="N_swift_bolt_surge"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_surge"
+name = "Surtension"
+description = "Un ennemi que l'éclair tue explose s'il porte l'état de sa nature — engourdi, ou transi une fois l'éclair devenu de glace : {part_tue} % des dégâts d'un coup de l'éclair, dans ce rayon autour de lui."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"swift_bolt_sparks": 3
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_surge_0")])
+
+[sub_resource type="Resource" id="L_swift_bolt_static_orb_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -50.0
+
+[sub_resource type="Resource" id="L_swift_bolt_static_orb_1"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = -60.0
+
+[sub_resource type="Resource" id="N_swift_bolt_static_orb"]
+script = ExtResource("3_noeud")
+id = "swift_bolt_static_orb"
+name = "Orbe statique"
+description = "L'éclair devient un orbe lent qui file droit, traverse les ennemis et foudroie à intervalles réguliers tout ce qui passe près de lui ; un mur l'éteint. Chaque décharge est moins forte qu'un éclair. La perforation, les éclats et les rebonds ne servent plus."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"swift_bolt_bounce": 2,
+"swift_bolt_hot_spot": 3
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_swift_bolt_static_orb_0"), SubResource("L_swift_bolt_static_orb_1")])
+transforms = true
+shape = 27
 
 [sub_resource type="Resource" id="C_eclair_vif"]
 script = ExtResource("2_case")
 skill = ExtResource("10_eclair_vif")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_eclair_vif_surcharge"), SubResource("N_eclair_vif_fourche"), SubResource("N_eclair_vif_trait_de_glace")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_swift_bolt_overload"), SubResource("N_swift_bolt_celerity"), SubResource("N_swift_bolt_hot_spot"), SubResource("N_swift_bolt_fork"), SubResource("N_swift_bolt_sparks"), SubResource("N_swift_bolt_piercing"), SubResource("N_swift_bolt_bounce"), SubResource("N_swift_bolt_splinters"), SubResource("N_swift_bolt_glacial_bolt"), SubResource("N_swift_bolt_surge"), SubResource("N_swift_bolt_static_orb")])
 
-[sub_resource type="Resource" id="L_chaine_d_eclairs_ramification_0"]
-script = ExtResource("4_ligne")
-stat = "targets"
-value_per_point = 1.0
-
-[sub_resource type="Resource" id="N_chaine_d_eclairs_ramification"]
-script = ExtResource("3_noeud")
-id = "chain_lightning_branching"
-name = "Ramification"
-position = Vector2i(1, 0)
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_ramification_0")])
-
-[sub_resource type="Resource" id="L_chaine_d_eclairs_haute_tension_0"]
+[sub_resource type="Resource" id="L_chain_lightning_high_voltage_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 12.0
+value_per_point = 8.0
 
-[sub_resource type="Resource" id="N_chaine_d_eclairs_haute_tension"]
+[sub_resource type="Resource" id="N_chain_lightning_high_voltage"]
 script = ExtResource("3_noeud")
 id = "chain_lightning_high_voltage"
 name = "Haute tension"
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"chain_lightning_branching": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_haute_tension_0")])
+description = "Chaque décharge inflige plus de dégâts."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_high_voltage_0")])
 
-[sub_resource type="Resource" id="L_chaine_d_eclairs_court_circuit_0"]
+[sub_resource type="Resource" id="L_chain_lightning_branching_0"]
+script = ExtResource("4_ligne")
+stat = "targets"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_chain_lightning_branching"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_branching"
+name = "Ramification"
+description = "La décharge saute sur un ennemi de plus."
+position = Vector2i(1, 0)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_branching_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_reflex_0"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_chain_lightning_reflex"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_reflex"
+name = "Réflexe"
+description = "Le sort se lance plus vite."
+position = Vector2i(0, -1)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_reflex_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_short_circuit_0"]
 script = ExtResource("4_ligne")
 stat = "targets"
 value_per_point = -1.0
 
-[sub_resource type="Resource" id="L_chaine_d_eclairs_court_circuit_1"]
+[sub_resource type="Resource" id="L_chain_lightning_short_circuit_1"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 35.0
 
-[sub_resource type="Resource" id="N_chaine_d_eclairs_court_circuit"]
+[sub_resource type="Resource" id="N_chain_lightning_short_circuit"]
 script = ExtResource("3_noeud")
 id = "chain_lightning_short_circuit"
 name = "Court-circuit"
-position = Vector2i(1, 1)
+description = "La décharge saute sur un ennemi de moins, mais frappe chacun bien plus fort."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"chain_lightning_high_voltage": 2
+})
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_chaine_d_eclairs_court_circuit_0"), SubResource("L_chaine_d_eclairs_court_circuit_1")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_short_circuit_0"), SubResource("L_chain_lightning_short_circuit_1")])
+
+[sub_resource type="Resource" id="L_chain_lightning_taut_arc_0"]
+script = ExtResource("4_ligne")
+stat = "jump_reach"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_chain_lightning_taut_arc"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_taut_arc"
+name = "Arc tendu"
+description = "La décharge saute plus loin d'un ennemi au suivant : elle trouve des cibles plus dispersées."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"chain_lightning_branching": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_taut_arc_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_sparks_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_chain_lightning_sparks"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_sparks"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'engourdissement pour la foudre, qui fait subir plus de dégâts à l'ennemi."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"chain_lightning_high_voltage": 1,
+"chain_lightning_reflex": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_sparks_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_crescendo_0"]
+script = ExtResource("4_ligne")
+stat = "jump_gain"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_chain_lightning_crescendo"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_crescendo"
+name = "Crescendo"
+description = "Chaque saut frappe plus fort que le précédent : la dernière cible de la chaîne prend le plus gros coup."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"chain_lightning_branching": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_crescendo_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_hot_spot_0"]
+script = ExtResource("4_ligne")
+stat = "crit_chance"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_chain_lightning_hot_spot"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_hot_spot"
+name = "Point chaud"
+description = "La décharge inflige plus souvent un coup critique."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"chain_lightning_reflex": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_hot_spot_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_last_strike_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_chain_lightning_last_strike"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_last_strike"
+name = "Foudre au bout"
+description = "La dernière cible de la chaîne éclate : les ennemis autour d'elle, dans ce rayon, prennent le coup qu'elle vient de prendre."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"chain_lightning_taut_arc": 1,
+"chain_lightning_crescendo": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_last_strike_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_surge_0"]
+script = ExtResource("4_ligne")
+stat = "kill_burst"
+value_per_point = 24.0
+
+[sub_resource type="Resource" id="N_chain_lightning_surge"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_surge"
+name = "Surtension"
+description = "Un ennemi que la décharge tue explose s'il porte l'état de sa nature — l'engourdissement pour la foudre : {part_tue} % des dégâts d'un coup de la chaîne, dans ce rayon autour de lui."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"chain_lightning_sparks": 3
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_surge_0")])
+
+[sub_resource type="Resource" id="L_chain_lightning_web_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_chain_lightning_web"]
+script = ExtResource("3_noeud")
+id = "chain_lightning_web"
+name = "Toile d'arcs"
+description = "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc, un peu moins fort. Arc tendu et Crescendo ne servent plus."
+position = Vector2i(0, 1)
+parents = Dictionary[String, int]({
+"chain_lightning_branching": 2,
+"chain_lightning_short_circuit": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_chain_lightning_web_0")])
+transforms = true
+shape = 28
 
 [sub_resource type="Resource" id="C_chaine_d_eclairs"]
 script = ExtResource("2_case")
 skill = ExtResource("11_chaine_d_eclairs")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_chaine_d_eclairs_ramification"), SubResource("N_chaine_d_eclairs_haute_tension"), SubResource("N_chaine_d_eclairs_court_circuit")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_chain_lightning_high_voltage"), SubResource("N_chain_lightning_branching"), SubResource("N_chain_lightning_reflex"), SubResource("N_chain_lightning_short_circuit"), SubResource("N_chain_lightning_taut_arc"), SubResource("N_chain_lightning_sparks"), SubResource("N_chain_lightning_crescendo"), SubResource("N_chain_lightning_hot_spot"), SubResource("N_chain_lightning_last_strike"), SubResource("N_chain_lightning_surge"), SubResource("N_chain_lightning_web")])
 
-[sub_resource type="Resource" id="L_nuage_d_orage_front_0"]
+[sub_resource type="Resource" id="L_storm_cloud_cumulonimbus_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_storm_cloud_cumulonimbus"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_cumulonimbus"
+name = "Cumulonimbus"
+description = "Chaque frappe du nuage inflige plus de dégâts."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_cumulonimbus_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_front_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
-value_per_point = 20.0
+value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_nuage_d_orage_front"]
+[sub_resource type="Resource" id="N_storm_cloud_front"]
 script = ExtResource("3_noeud")
 id = "storm_cloud_front"
 name = "Front orageux"
-position = Vector2i(1, 0)
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_front_0")])
+description = "Le nuage couvre une zone plus large."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_front_0")])
 
-[sub_resource type="Resource" id="L_nuage_d_orage_orage_durable_0"]
+[sub_resource type="Resource" id="L_storm_cloud_lingering_storm_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
-value_per_point = 25.0
+value_per_point = 20.0
 
-[sub_resource type="Resource" id="N_nuage_d_orage_orage_durable"]
+[sub_resource type="Resource" id="N_storm_cloud_lingering_storm"]
 script = ExtResource("3_noeud")
 id = "storm_cloud_lingering_storm"
 name = "Orage durable"
-position = Vector2i(2, 0)
+description = "Le nuage reste plus longtemps avant de se dissiper."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_lingering_storm_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_downpour_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="L_storm_cloud_downpour_1"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_storm_cloud_downpour"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_downpour"
+name = "Averse"
+description = "Le nuage frappe plus souvent, mais se dissipe un peu plus tôt."
+position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
-"storm_cloud_front": 1
+"storm_cloud_cumulonimbus": 1
 })
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_orage_durable_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_downpour_0"), SubResource("L_storm_cloud_downpour_1")])
 
-[sub_resource type="Resource" id="L_nuage_d_orage_grele_0"]
+[sub_resource type="Resource" id="L_storm_cloud_sparks_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_storm_cloud_sparks"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_sparks"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'engourdissement pour la foudre, qui fait subir plus de dégâts à l'ennemi."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"storm_cloud_front": 1,
+"storm_cloud_cumulonimbus": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_sparks_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_wandering_0"]
+script = ExtResource("4_ligne")
+stat = "seek_radius"
+value_per_point = 120.0
+
+[sub_resource type="Resource" id="N_storm_cloud_wandering"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_wandering"
+name = "Orage errant"
+description = "Le nuage ne reste plus en place : à chaque frappe, il prend pour cible l'ennemi le plus proche dans ce rayon et dérive vers lui."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"storm_cloud_lingering_storm": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_wandering_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_thunderclap_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_storm_cloud_thunderclap"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_thunderclap"
+name = "Coup de tonnerre"
+description = "En se dissipant, le nuage éclate d'un dernier coup de tonnerre, qui frappe tout ce qui est dans ce rayon des dégâts d'une de ses frappes."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"storm_cloud_lingering_storm": 2,
+"storm_cloud_front": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_thunderclap_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_hot_spot_0"]
+script = ExtResource("4_ligne")
+stat = "crit_chance"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_storm_cloud_hot_spot"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_hot_spot"
+name = "Point chaud"
+description = "Les frappes du nuage infligent plus souvent un coup critique."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"storm_cloud_downpour": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_hot_spot_0")])
+
+[sub_resource type="Resource" id="L_storm_cloud_hail_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_nuage_d_orage_grele"]
+[sub_resource type="Resource" id="N_storm_cloud_hail"]
 script = ExtResource("3_noeud")
 id = "storm_cloud_hail"
 name = "Grêle"
-position = Vector2i(1, 1)
+description = "Le nuage devient de grêle : dégâts de froid, mot-clé Froid, et il transit au lieu d'engourdir."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"storm_cloud_cumulonimbus": 2
+})
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_nuage_d_orage_grele_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_hail_0")])
 converts_to = 1
 converts = true
+
+[sub_resource type="Resource" id="L_storm_cloud_tempest_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 100.0
+
+[sub_resource type="Resource" id="L_storm_cloud_tempest_1"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="N_storm_cloud_tempest"]
+script = ExtResource("3_noeud")
+id = "storm_cloud_tempest"
+name = "Orage portatif"
+description = "Le nuage ne se pose plus au point visé : il se forme au-dessus de vous et vous suit, plus longtemps mais sur une zone plus étroite. L'orage errant ne sert plus."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"storm_cloud_lingering_storm": 2,
+"storm_cloud_thunderclap": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_tempest_0"), SubResource("L_storm_cloud_tempest_1")])
+transforms = true
+shape = 29
 
 [sub_resource type="Resource" id="C_nuage_d_orage"]
 script = ExtResource("2_case")
 skill = ExtResource("12_nuage_d_orage")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_nuage_d_orage_front"), SubResource("N_nuage_d_orage_orage_durable"), SubResource("N_nuage_d_orage_grele")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_storm_cloud_cumulonimbus"), SubResource("N_storm_cloud_front"), SubResource("N_storm_cloud_lingering_storm"), SubResource("N_storm_cloud_downpour"), SubResource("N_storm_cloud_sparks"), SubResource("N_storm_cloud_wandering"), SubResource("N_storm_cloud_thunderclap"), SubResource("N_storm_cloud_hot_spot"), SubResource("N_storm_cloud_hail"), SubResource("N_storm_cloud_tempest")])
 
-[sub_resource type="Resource" id="L_ruee_d_orage_persistance_0"]
+[sub_resource type="Resource" id="L_storm_dash_lingering_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
 value_per_point = 25.0
 
-[sub_resource type="Resource" id="N_ruee_d_orage_persistance"]
+[sub_resource type="Resource" id="N_storm_dash_lingering"]
 script = ExtResource("3_noeud")
 id = "storm_dash_lingering"
 name = "Persistance"
+description = "L'appel du tonnerre dure plus longtemps après la ruée."
+position = Vector2i(-1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_lingering_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_momentum_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_storm_dash_momentum"]
+script = ExtResource("3_noeud")
+id = "storm_dash_momentum"
+name = "Élan"
+description = "La ruée se recharge plus vite."
 position = Vector2i(1, 0)
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_persistance_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_momentum_0")])
 
-[sub_resource type="Resource" id="L_ruee_d_orage_sans_repit_0"]
+[sub_resource type="Resource" id="L_storm_dash_stride_0"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_storm_dash_stride"]
+script = ExtResource("3_noeud")
+id = "storm_dash_stride"
+name = "Foulée"
+description = "Tant que l'appel du tonnerre dure, vous courez encore plus vite."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_stride_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_reflexes_0"]
+script = ExtResource("4_ligne")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_storm_dash_reflexes"]
+script = ExtResource("3_noeud")
+id = "storm_dash_reflexes"
+name = "Réflexes"
+description = "Tant que l'appel du tonnerre dure, vos sorts se lancent plus vite."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"storm_dash_lingering": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_reflexes_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_elusive_0"]
+script = ExtResource("4_ligne")
+stat = "evasion"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_storm_dash_elusive"]
+script = ExtResource("3_noeud")
+id = "storm_dash_elusive"
+name = "Insaisissable"
+description = "Tant que l'appel du tonnerre dure, vous esquivez plus souvent."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"storm_dash_stride": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_elusive_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_thunderclap_0"]
+script = ExtResource("4_ligne")
+stat = "damage_lightning"
+value_per_point = 6.0
+value_max_per_point = 14.0
+
+[sub_resource type="Resource" id="L_storm_dash_thunderclap_1"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_storm_dash_thunderclap"]
+script = ExtResource("3_noeud")
+id = "storm_dash_thunderclap"
+name = "Coup de tonnerre"
+description = "La ruée frappe à l'arrivée : une explosion de foudre dans ce rayon autour de vous."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"storm_dash_momentum": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_thunderclap_0"), SubResource("L_storm_dash_thunderclap_1")])
+
+[sub_resource type="Resource" id="L_storm_dash_sparks_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_storm_dash_sparks"]
+script = ExtResource("3_noeud")
+id = "storm_dash_sparks"
+name = "Étincelles"
+description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'engourdissement pour la foudre, qui fait subir plus de dégâts à l'ennemi."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"storm_dash_thunderclap": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_sparks_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_static_wake_0"]
+script = ExtResource("4_ligne")
+stat = "trail_charges"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_storm_dash_static_wake"]
+script = ExtResource("3_noeud")
+id = "storm_dash_static_wake"
+name = "Sillage statique"
+description = "La ruée sème des charges statiques le long de son trajet. Chacune frappe une fois chaque ennemi qui y passe, à {part_charge} % d'un coup de la ruée."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"storm_dash_thunderclap": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_static_wake_0")])
+
+[sub_resource type="Resource" id="L_storm_dash_unbound_0"]
 script = ExtResource("4_ligne")
 stat = "recharge"
 percentage = true
 value_per_point = -100.0
 
-[sub_resource type="Resource" id="L_ruee_d_orage_sans_repit_1"]
+[sub_resource type="Resource" id="L_storm_dash_unbound_1"]
 script = ExtResource("4_ligne")
 stat = "use_time"
 percentage = true
 value_per_point = 400.0
 
-[sub_resource type="Resource" id="N_ruee_d_orage_sans_repit"]
+[sub_resource type="Resource" id="N_storm_dash_unbound"]
 script = ExtResource("3_noeud")
 id = "storm_dash_unbound"
 name = "Sans répit"
+description = "La ruée n'a plus de recharge et se relance aussitôt, mais elle prend bien plus de temps à partir."
 position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"storm_dash_momentum": 2
+})
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ruee_d_orage_sans_repit_0"), SubResource("L_ruee_d_orage_sans_repit_1")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_dash_unbound_0"), SubResource("L_storm_dash_unbound_1")])
 
 [sub_resource type="Resource" id="C_ruee_d_orage"]
 script = ExtResource("2_case")
 skill = ExtResource("13_ruee_d_orage")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ruee_d_orage_persistance"), SubResource("N_ruee_d_orage_sans_repit")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_storm_dash_lingering"), SubResource("N_storm_dash_momentum"), SubResource("N_storm_dash_stride"), SubResource("N_storm_dash_reflexes"), SubResource("N_storm_dash_elusive"), SubResource("N_storm_dash_thunderclap"), SubResource("N_storm_dash_sparks"), SubResource("N_storm_dash_static_wake"), SubResource("N_storm_dash_unbound")])
+
+[sub_resource type="Resource" id="L_static_electricity_live_charge_0"]
+script = ExtResource("4_ligne")
+stat = "static_charge_chance"
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_static_electricity_live_charge"]
+script = ExtResource("3_noeud")
+id = "static_electricity_live_charge"
+name = "Charge vive"
+description = "Tant que le champ statique est actif, vos coups sur un engourdi y laissent plus souvent une charge statique."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_live_charge_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_potential_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "lightning"
+percentage = true
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_static_electricity_potential"]
+script = ExtResource("3_noeud")
+id = "static_electricity_potential"
+name = "Potentiel"
+description = "Tant que le champ statique est actif, vos dégâts de foudre augmentent."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_potential_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_insulation_0"]
+script = ExtResource("4_ligne")
+stat = "res_lightning"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_static_electricity_insulation"]
+script = ExtResource("3_noeud")
+id = "static_electricity_insulation"
+name = "Isolant"
+description = "Tant que le champ statique est actif, vous résistez mieux à la foudre."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_insulation_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_high_frequency_0"]
+script = ExtResource("4_ligne")
+stat = "cooldown_recovery"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_static_electricity_high_frequency"]
+script = ExtResource("3_noeud")
+id = "static_electricity_high_frequency"
+name = "Haute fréquence"
+description = "Tant que le champ statique est actif, vos compétences se rechargent plus vite."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"static_electricity_potential": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_high_frequency_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_frugal_0"]
+script = ExtResource("4_ligne")
+stat = "mana_per_second"
+percentage = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="N_static_electricity_frugal"]
+script = ExtResource("3_noeud")
+id = "static_electricity_frugal"
+name = "Sobriété"
+description = "Le champ statique draine moins de mana pour rester actif."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"static_electricity_insulation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_frugal_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_influx_0"]
+script = ExtResource("4_ligne")
+stat = "mana_regen"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_static_electricity_influx"]
+script = ExtResource("3_noeud")
+id = "static_electricity_influx"
+name = "Influx"
+description = "Tant que le champ statique est actif, votre mana se régénère plus vite."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"static_electricity_frugal": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_influx_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_reflexes_0"]
+script = ExtResource("4_ligne")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_static_electricity_reflexes"]
+script = ExtResource("3_noeud")
+id = "static_electricity_reflexes"
+name = "Réflexes"
+description = "Tant que le champ statique est actif, vos sorts se lancent plus vite."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"static_electricity_live_charge": 1,
+"static_electricity_insulation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_reflexes_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_searing_arc_0"]
+script = ExtResource("4_ligne")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_static_electricity_searing_arc"]
+script = ExtResource("3_noeud")
+id = "static_electricity_searing_arc"
+name = "Arc brûlant"
+description = "Tant que le champ statique est actif, vos coups critiques frappent plus fort."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"static_electricity_high_frequency": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_searing_arc_0")])
+
+[sub_resource type="Resource" id="L_static_electricity_inner_storm_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "lightning"
+percentage = true
+more = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_static_electricity_inner_storm"]
+script = ExtResource("3_noeud")
+id = "static_electricity_inner_storm"
+name = "Orage intérieur"
+description = "Tant que le champ statique est actif, vos dégâts de foudre sont multipliés."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"static_electricity_live_charge": 4,
+"static_electricity_reflexes": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_static_electricity_inner_storm_0")])
 
 [sub_resource type="Resource" id="C_electricite_statique"]
 script = ExtResource("2_case")
 skill = ExtResource("14_electricite_statique")
 position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_static_electricity_live_charge"), SubResource("N_static_electricity_potential"), SubResource("N_static_electricity_insulation"), SubResource("N_static_electricity_high_frequency"), SubResource("N_static_electricity_frugal"), SubResource("N_static_electricity_influx"), SubResource("N_static_electricity_reflexes"), SubResource("N_static_electricity_searing_arc"), SubResource("N_static_electricity_inner_storm")])
 
 [sub_resource type="Resource" id="L_conducteur_0"]
 script = ExtResource("4_ligne")

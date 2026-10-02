@@ -154,12 +154,9 @@ func _die() -> void:
 ## Le **chasseur** (`SkillStats.SEEK`) prend pour point de chute l'ennemi le plus proche
 ## de sa tête : il rôde autour de lui au lieu de rôder où on l'a lâché.
 func _hunt() -> void:
-	var best := INF
-	for target in Targets.in_circle(get_world_2d(), _head, _cast.seek_radius):
-		var d := _head.distance_squared_to(target.global_position)
-		if d < best:
-			best = d
-			_anchor = target.global_position
+	var prey := Targets.nearest(get_world_2d(), _head, _cast.seek_radius)
+	if prey != null:
+		_anchor = prey.global_position
 
 
 func _ramp(delta: float) -> void:

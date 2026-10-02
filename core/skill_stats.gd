@@ -12,7 +12,8 @@ extends RefCounted
 ## nœud change ce que la compétence demande — « plus de recharge » se dit par −100 %
 ## de `recharge`. `interval` n'y est pas : il se déduit des deux. Depuis le jalon 34,
 ## les **nombres de mécanique** — zéro sur la compétence, un nœud les allume, la forme
-## les lit — et `period`, `self_burn`, `status_chance_increase`, que ses échanges visent.
+## les lit — et `period`, `self_burn`, `status_chance_increase`, que ses échanges visent ;
+## `mana_per_second` depuis le jalon 35, que le buff draine depuis son lancer résolu.
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -30,6 +31,7 @@ const LABELS := {
 	"period": "intervalle des frappes",
 	"self_burn": "brûlure subie",
 	"status_chance_increase": "chance d'état",
+	"mana_per_second": "mana drainé",
 	PIERCE: "nombre d'ennemis traversés",
 	SPLITS: "nombre d'éclats",
 	GROUND: "secondes de sol brûlant",
@@ -39,6 +41,10 @@ const LABELS := {
 	BROOD: "nombre de serpents",
 	CRAWL_SPEED: "vitesse du serpent",
 	HATCHLINGS: "nombre de petits serpents",
+	BOUNCES: "nombre de rebonds",
+	JUMP_REACH: "portée des sauts",
+	JUMP_GAIN: "dégâts en plus par saut",
+	TRAIL_CHARGES: "charges statiques semées",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -57,6 +63,7 @@ const AGREEMENT := {
 	"period": "ms",
 	"self_burn": "fs",
 	"status_chance_increase": "fs",
+	"mana_per_second": "ms",
 	PIERCE: "ms",
 	SPLITS: "ms",
 	GROUND: "fp",
@@ -66,6 +73,10 @@ const AGREEMENT := {
 	BROOD: "ms",
 	CRAWL_SPEED: "fs",
 	HATCHLINGS: "ms",
+	BOUNCES: "ms",
+	JUMP_REACH: "fs",
+	JUMP_GAIN: "mp",
+	TRAIL_CHARGES: "fp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -82,9 +93,19 @@ const SEEK := "seek_radius"
 const BROOD := "brood"
 const CRAWL_SPEED := "crawl_speed"
 const HATCHLINGS := "hatchlings"
+## Ceux de la foudre (jalon 35) : les rebonds d'un tir, la portée d'un saut de chaîne et
+## ce que chaque saut ajoute en « plus » (en points de pourcentage), les charges statiques
+## qu'une ruée sème sur son trajet.
+const BOUNCES := "bounces"
+const JUMP_REACH := "jump_reach"
+const JUMP_GAIN := "jump_gain"
+const TRAIL_CHARGES := "trail_charges"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
-const MECHANICS := [PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS]
+const MECHANICS := [
+	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
+	BOUNCES, JUMP_GAIN, TRAIL_CHARGES,
+]
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
 ## d'un coup que rend l'explosion d'un tué.
@@ -93,6 +114,8 @@ const GROUND_PERIOD := 0.5
 const GROUND_RADIUS := 14.0
 const KILL_BURST_PART := 0.5
 const SPLIT_PART := 0.4
+## La part d'un coup de la ruée que porte chaque charge de son sillage statique.
+const TRAIL_CHARGE_PART := 0.5
 ## La vie des petits qu'un serpent relâche (`SPLITS` sur `HellSnake`).
 const HATCHLING_LIFE := 2.0
 
@@ -156,6 +179,10 @@ var seek_radius := 0.0
 var brood := 0.0
 var crawl_speed := 0.0
 var hatchlings := 0.0
+var bounces := 0.0
+var jump_reach := 0.0
+var jump_gain := 0.0
+var trail_charges := 0.0
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
 var sustained := false
 var mana_cost := 0.0
@@ -357,6 +384,7 @@ static func facts() -> Dictionary:
 		"part_eclat": roundi(SPLIT_PART * 100.0),
 		"part_tue": roundi(KILL_BURST_PART * 100.0),
 		"vie_petit": roundi(HATCHLING_LIFE),
+		"part_charge": roundi(TRAIL_CHARGE_PART * 100.0),
 	}
 
 
@@ -451,6 +479,8 @@ func finalize() -> void:
 	simultaneous = float(maxi(roundi(simultaneous), 0))
 	pierce = float(maxi(roundi(pierce), 0))
 	splits = float(maxi(roundi(splits), 0))
+	bounces = float(maxi(roundi(bounces), 0))
+	trail_charges = float(maxi(roundi(trail_charges), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
 	period = maxf(period, 0.0)

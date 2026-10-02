@@ -29,37 +29,59 @@ var _pieces: Array[EffectForge.Piece]
 ## touchés : le lanceur ne fige le jeu que s'il y en a.
 ##
 ## **Toutes les cibles sont choisies avant le premier coup** : une mort en cours de
-## chaîne changerait ce que la requête suivante trouve.
+## chaîne changerait ce que la requête suivante trouve. La Toile d'arcs (`WEB`, jalon 35)
+## ne saute pas : chaque cible part du lanceur, et un trait par cible.
 static func unload(
 	parent: Node, caster_node: Node2D, cast: SkillStats, direction: Vector2
 ) -> int:
 	var world := caster_node.get_world_2d()
-	var points := PackedVector2Array([caster_node.global_position])
+	var origin := caster_node.global_position
+	var web := cast.shape == Skill.Shape.WEB
+	var points := PackedVector2Array([origin])
 	var touches: Array[Hurtbox] = []
 	for i in cast.target_count():
-		var from_value := points[points.size() - 1]
+		var from_value := origin if web else points[points.size() - 1]
 		var target := _nearest_one(
-			world, from_value, SCOPE if i == 0 else JUMP, touches,
-			direction if i == 0 else Vector2.ZERO
+			world, from_value, SCOPE if web or i == 0 else JUMP + cast.jump_reach, touches,
+			direction if i == 0 and not web else Vector2.ZERO
 		)
 		if target == null:
 			break
 		touches.append(target)
 		points.append(target.global_position)
 	if touches.is_empty():
-		points.append(caster_node.global_position + direction * INTO_THE_VOID)
+		points.append(origin + direction * INTO_THE_VOID)
 
 	var parts := cast.roll(Game.rng)
 	var author := StatusEffects.of(caster_node)
+	var hit := parts
 	for i in touches.size():
-		Targets.strike(touches[i], parts, points[i], author, cast)
+		# Crescendo : chaque saut déjà fait ajoute sa part de « plus » au coup suivant.
+		hit = parts.duplicate()
+		for n in hit.size():
+			hit[n] *= 1.0 + cast.jump_gain * 0.01 * float(0 if web else i)
+		Targets.strike(touches[i], hit, points[i] if not web else origin, author, cast)
+	if cast.end_burst > 0.0 and not touches.is_empty():
+		Explosion.put(
+			parent, touches[-1].global_position, hit, cast.end_burst, touches[-1],
+			DamageType.COLORS[cast.nature], author, cast
+		)
 
+	var tint: Color = DamageType.COLORS[cast.nature]
+	if web and not touches.is_empty():
+		for i in range(1, points.size()):
+			_trace(parent, PackedVector2Array([origin, points[i]]), tint)
+	else:
+		_trace(parent, points, tint)
+	return touches.size()
+
+
+static func _trace(parent: Node, points: PackedVector2Array, tint: Color) -> void:
 	var trace := ChainLightning.new()
 	trace._points = points
-	trace._tint = DamageType.COLORS[cast.nature]
+	trace._tint = tint
 	parent.add_child(trace)
 	Settings.veil(trace, Settings.SPELLS)
-	return touches.size()
 
 
 ## `cone` nul : pas de contrainte d'angle, c'est un saut.

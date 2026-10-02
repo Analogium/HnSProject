@@ -77,6 +77,18 @@ func test_the_charge_loops_on_its_forms() -> void:
 	assert_ne(a, Lightning.charge(VIOLET, 7.0, 2, 0.0), "deux formes voisines diffèrent")
 
 
+## L'orbe boucle sur ses formes comme la charge, et sa boule ne grésille pas : son cœur
+## est au même pixel d'une forme à l'autre.
+func test_the_orb_loops_and_keeps_its_ball() -> void:
+	var a := Lightning.orb(VIOLET, 1, 0.0)
+	assert_same(a, Lightning.orb(VIOLET, 1 + Lightning.ORB_FORMS, 0.0), "la boucle retombe")
+	var b := Lightning.orb(VIOLET, 2, 0.0)
+	assert_ne(a, b, "deux formes voisines diffèrent")
+	for piece: EffectForge.Piece in [a, b]:
+		var center := Vector2i(-piece.offset) - Vector2i.ONE
+		assert_gt(piece.texture.get_image().get_pixelv(center).get_luminance(), THRESHOLD, "le cœur blanc")
+
+
 ## Entier, puis défait sur son dernier tiers : un éclair ne pâlit pas.
 func test_a_bolt_comes_apart_on_its_last_third() -> void:
 	assert_eq(Lightning.gone(0.5, 1.0), 0.0, "entier à mi-vie")

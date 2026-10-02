@@ -32,6 +32,23 @@ static func in_circle(
 	return _touched(world, circle, Transform2D(0.0, center), mask)
 
 
+## La plus proche du centre dans ce cercle, ou null : le serpent qui chasse, le nuage qui
+## erre, le tir qui rebondit. `skipped` : les identifiants déjà frappés ; `sighted` :
+## sans mur entre les deux, un rayon de plus par candidat.
+static func nearest(
+	world: World2D, center: Vector2, radius: float, skipped := {}, sighted := false
+) -> Hurtbox:
+	var best: Hurtbox = null
+	var best_distance := INF
+	for target in in_circle(world, center, radius):
+		var distance := center.distance_squared_to(target.global_position)
+		if distance < best_distance and not skipped.has(target.get_instance_id()) \
+				and (not sighted or in_sight(world, center, target.global_position)):
+			best = target
+			best_distance = distance
+	return best
+
+
 ## Celles qui touchent un segment épais : ce que frappe un faisceau, sur toute sa
 ## ligne. Mêmes règles qu'`in_circle()`.
 static func in_capsule(

@@ -36,6 +36,8 @@ enum Shape {
 	LUNGE, COMET,
 	# Jalon 34 : des formes que seule une transformation donne — le Météore, le Bond.
 	METEOR, LEAP,
+	# Jalon 35 : l'Orbe statique, la Toile d'arcs, l'Orage portatif.
+	ORB, WEB, TEMPEST,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -63,6 +65,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BOLT: Keywords.PROJECTILE,
 	Shape.BALL: Keywords.PROJECTILE,
 	Shape.COMET: Keywords.PROJECTILE,
+	Shape.ORB: Keywords.PROJECTILE,
 	Shape.STRIKE: Keywords.MELEE,
 	Shape.CROSS: Keywords.MELEE,
 	Shape.ORBIT: Keywords.MELEE,
@@ -72,6 +75,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.DASH: Keywords.AREA,
 	Shape.LEAP: Keywords.AREA,
 	Shape.METEOR: Keywords.AREA,
+	Shape.TEMPEST: Keywords.AREA,
 	# La vague part de la lame et le cyclone tourne sur place : deux gestes d'arme,
 	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
 	Shape.WAVE: Keywords.MELEE,
@@ -107,6 +111,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
 	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
+	Shape.ORB, Shape.WEB, Shape.TEMPEST,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -115,6 +120,16 @@ const TRANSFORMABLE: Array[Shape] = [
 const IGNORED_BY_SHAPE := {
 	Shape.METEOR: [SkillStats.PIERCE],
 	Shape.LEAP: ["duration", "radius"],
+	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES],
+	Shape.WEB: [SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN],
+	Shape.TEMPEST: [SkillStats.SEEK],
+}
+
+## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
+## devenu orbe n'a ni durée, ni rayon, ni rythme. Sans eux, la ligne du nœud qui les
+## donnerait s'écrirait en perte — « +0,3 intervalle des frappes » en rouge.
+const SHAPE_NUMBERS := {
+	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.25},
 }
 
 const HITS_PER_SHAPE := {
@@ -396,6 +411,10 @@ func resolve(
 	r.inflicted_state = inflicted_state
 	r.inflict_chance = inflict_chance
 	r.shape = cast_shape
+	var brought: Dictionary = SHAPE_NUMBERS.get(cast_shape, {})
+	for number: String in brought:
+		if is_zero_approx(float(r.get(number))):
+			r.set(number, brought[number])
 	r.hits = HITS_PER_SHAPE.get(cast_shape, 1)
 	r.skill_id = id
 	r.sustained = cast_shape in SUSTAINED_SHAPES and not is_cast_buff()

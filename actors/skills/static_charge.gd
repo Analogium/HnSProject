@@ -38,16 +38,17 @@ var _bitten := Targets.Contacts.new(LIFE)
 
 
 ## `parts` est ce que le coup a **réellement** infligé : la charge est petite quand
-## l'armure a mangé le coup.
+## l'armure a mangé le coup. Celles qu'une ruée sème portent leur propre part.
 static func put(
-	parent: Node, at: Vector2, direction: Vector2, parts: Array, author: StatusEffects
+	parent: Node, at: Vector2, direction: Vector2, parts: Array, author: StatusEffects,
+	share := SHARE
 ) -> StaticCharge:
 	var charge := StaticCharge.new()
 	var total := 0.0
 	for part in parts:
 		total += float(part)
 	charge._parts = DamageType.empty_parts()
-	charge._parts[DamageType.Kind.LIGHTNING] = total * SHARE
+	charge._parts[DamageType.Kind.LIGHTNING] = total * share
 	charge._author = author
 	charge._toward = direction.normalized() * DRIFT
 	# Le filtre plutôt que la seule sortie d'arbre : une charge dont le parent a disparu

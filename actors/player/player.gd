@@ -312,6 +312,9 @@ func cast_slot(index: int) -> bool:
 			_roll(cast, orb_scene)
 		Skill.Shape.COMET:
 			_roll(cast, comet_scene)
+		Skill.Shape.ORB:
+			for direction in _spread(cast):
+				StaticOrb.send(_effects_parent(), global_position, direction, cast, states)
 		Skill.Shape.METEOR:
 			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
@@ -319,12 +322,14 @@ func cast_slot(index: int) -> bool:
 			for i in count:
 				var across := facing.orthogonal() * (float(i) - float(count - 1) * 0.5) * cast.radius
 				Meteor.fall(_effects_parent(), _aim_point() + across, cast, states, self, orb_scene)
-		Skill.Shape.CHAIN:
+		Skill.Shape.CHAIN, Skill.Shape.WEB:
 			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:
 				Game.hit_stop()
 				Game.shake_camera(camera, shake_amount)
 		Skill.Shape.CLOUD:
 			StormCloud.put(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.TEMPEST:
+			StormCloud.put(_effects_parent(), global_position, cast, states, self)
 		Skill.Shape.SNAKE:
 			# Une couvée part en éventail, centrée sur la visée.
 			var brood := 1 + int(cast.brood)
@@ -549,6 +554,14 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
 	elif skill.grants_buffs():
 		_light(skill.id, Buff.light(self, skill, cast.duration))
+	# Sillage statique (jalon 35) : réparties sur le trajet, à la part d'un coup de la ruée.
+	var charges := int(cast.trail_charges)
+	for i in charges:
+		StaticCharge.put(
+			_effects_parent(), from_value.lerp(global_position, (float(i) + 0.5) / float(charges)),
+			(global_position - from_value).orthogonal() * (1.0 if i % 2 == 0 else -1.0),
+			cast.roll(Game.rng), states, SkillStats.TRAIL_CHARGE_PART
+		)
 	if cast.end_burst > 0.0:
 		Explosion.put(
 			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
@@ -743,10 +756,22 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 func _roll(cast: SkillStats, scene: PackedScene) -> void:
 	if scene == null:
 		return
-	var parent := _effects_parent()
-	var count := cast.projectile_count()
+	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
+	var nature := cast.nature
+	for direction in _spread(cast):
+		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
+		var bolt := Projectile.spawn(
+			_effects_parent(), scene, global_position, direction, cast.roll(Game.rng), self,
+			cast.projectile_speed, nature, cast
+		)
+		if bolt is Fireball:
+			(bolt as Fireball).explosion_radius = cast.radius
 
-	# Un seul trait part droit devant, quelle que soit la dispersion.
+
+## Un cap par projectile, sur l'écart du geste. Un seul part droit devant, quelle que
+## soit la dispersion.
+func _spread(cast: SkillStats) -> Array[Vector2]:
+	var count := cast.projectile_count()
 	var spread := deg_to_rad(cast.spread_in_degrees)
 	# Un cercle complet divise l'écart par le nombre de traits et non par les intervalles
 	# — sinon le dernier retombe sur le premier —, décalé d'un demi-pas.
@@ -756,18 +781,10 @@ func _roll(cast: SkillStats, scene: PackedScene) -> void:
 	if count > 1:
 		step = spread / float(count if closes else count - 1)
 		start = -spread * 0.5 + (step * 0.5 if closes else 0.0)
-
-	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
-	var nature := cast.nature
+	var out: Array[Vector2] = []
 	for i in count:
-		var direction := facing.rotated(start + step * float(i))
-		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
-		var bolt := Projectile.spawn(
-			parent, scene, global_position, direction, cast.roll(Game.rng), self,
-			cast.projectile_speed, nature, cast
-		)
-		if bolt is Fireball:
-			(bolt as Fireball).explosion_radius = cast.radius
+		out.append(facing.rotated(start + step * float(i)))
+	return out
 
 
 ## Testé avant d'écrire : une barre pleine n'émet rien.

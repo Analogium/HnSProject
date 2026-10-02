@@ -120,17 +120,56 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Surcharge | Éclair vif | — | 3 | +12 % de dégâts amplifiés |
-| Fourche | Éclair vif | Surcharge (1) | 1 | +1 nombre de projectiles |
-| Trait de glace | Éclair vif | — | 1 | +20 % de dégâts amplifiés · devient froid |
+| Surcharge | Éclair vif | — | 4 | +8 % de dégâts amplifiés |
+| Célérité | Éclair vif | — | 3 | +20 % de vitesse de projectile accrue |
+| Point chaud | Éclair vif | — | 3 | +25 % de chance critique de base accrue |
+| Fourche | Éclair vif | Surcharge (1) | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
+| Étincelles | Éclair vif | Surcharge (2) ou Point chaud (1) | 3 | +15 % chance d'état |
+| Transpercement | Éclair vif | Célérité (1) | 2 | +1 nombre d'ennemis traversés |
+| Rebond | Éclair vif | Célérité (2) ou Fourche (1) | 3 | +1 nombre de rebonds |
+| Éclats | Éclair vif | Transpercement (1) | 2 | +1 nombre d'éclats |
+| Trait de glace | Éclair vif | Surcharge (2) | 1 | +20 % de dégâts amplifiés · devient froid |
+| Surtension | Éclair vif | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
+| Orbe statique | Éclair vif | Rebond (2) ou Point chaud (3) | 1 | -50 % de dégâts atténués · -60 % de vitesse de projectile réduite |
+| Haute tension | Chaîne d'éclairs | — | 4 | +8 % de dégâts amplifiés |
 | Ramification | Chaîne d'éclairs | — | 2 | +1 nombre de cibles |
-| Haute tension | Chaîne d'éclairs | Ramification (1) | 3 | +12 % de dégâts amplifiés |
-| Court-circuit | Chaîne d'éclairs | — | 1 | -1 nombre de cibles · +35 % de dégâts amplifiés |
-| Front orageux | Nuage d'orage | — | 2 | +20 % de rayon accru |
-| Orage durable | Nuage d'orage | Front orageux (1) | 2 | +25 % de durée accrue |
-| Grêle | Nuage d'orage | — | 1 | +15 % de dégâts amplifiés · devient froid |
-| Persistance | Ruée d'orage | — | 2 | +25 % de durée accrue |
-| Sans répit | Ruée d'orage | — | 1 | -100 % de recharge réduite · +400 % de temps du geste accru |
+| Réflexe | Chaîne d'éclairs | — | 2 | -10 % de temps du geste réduit |
+| Court-circuit | Chaîne d'éclairs | Haute tension (2) | 1 | -1 nombre de cibles · +35 % de dégâts amplifiés |
+| Arc tendu | Chaîne d'éclairs | Ramification (1) | 2 | +25 portée des sauts |
+| Étincelles | Chaîne d'éclairs | Haute tension (1) ou Réflexe (1) | 3 | +15 % chance d'état |
+| Crescendo | Chaîne d'éclairs | Ramification (2) | 3 | +10 % dégâts en plus par saut |
+| Point chaud | Chaîne d'éclairs | Réflexe (1) | 3 | +25 % de chance critique de base accrue |
+| Foudre au bout | Chaîne d'éclairs | Arc tendu (1) ou Crescendo (1) | 3 | +10 rayon de l'explosion finale |
+| Surtension | Chaîne d'éclairs | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
+| Toile d'arcs | Chaîne d'éclairs | Ramification (2) ou Court-circuit (1) | 1 | -20 % de dégâts atténués |
+| Cumulonimbus | Nuage d'orage | — | 4 | +8 % de dégâts amplifiés |
+| Front orageux | Nuage d'orage | — | 3 | +15 % de rayon accru |
+| Orage durable | Nuage d'orage | — | 3 | +20 % de durée accrue |
+| Averse | Nuage d'orage | Cumulonimbus (1) | 2 | -15 % d'intervalle des frappes réduit · -10 % de durée réduite |
+| Étincelles | Nuage d'orage | Front orageux (1) ou Cumulonimbus (1) | 3 | +15 % chance d'état |
+| Orage errant | Nuage d'orage | Orage durable (1) | 1 | +120 rayon de chasse |
+| Coup de tonnerre | Nuage d'orage | Orage durable (2) ou Front orageux (2) | 3 | +12 rayon de l'explosion finale |
+| Point chaud | Nuage d'orage | Averse (1) | 3 | +25 % de chance critique de base accrue |
+| Grêle | Nuage d'orage | Cumulonimbus (2) | 1 | +15 % de dégâts amplifiés · devient froid |
+| Orage portatif | Nuage d'orage | Orage durable (2) ou Coup de tonnerre (1) | 1 | +100 % de durée accrue · -25 % de rayon réduit |
+| Persistance | Ruée d'orage | — | 3 | +25 % de durée accrue |
+| Élan | Ruée d'orage | — | 2 | -10 % de recharge réduite |
+| Foulée | Ruée d'orage | — | 3 | +4 % de vitesse accrue |
+| Réflexes | Ruée d'orage | Persistance (1) | 3 | +4 % de vitesse d'incantation accrue |
+| Insaisissable | Ruée d'orage | Foulée (1) | 2 | +10 % d'esquive accrue |
+| Coup de tonnerre | Ruée d'orage | Élan (1) | 3 | ajoute 6 à 14 dégâts de foudre · +10 rayon de l'explosion finale |
+| Étincelles | Ruée d'orage | Coup de tonnerre (1) | 3 | +15 % chance d'état |
+| Sillage statique | Ruée d'orage | Coup de tonnerre (1) | 2 | +2 charges statiques semées |
+| Sans répit | Ruée d'orage | Élan (2) | 1 | -100 % de recharge réduite · +400 % de temps du geste accru |
+| Charge vive | Électricité statique | — | 4 | +3 % chance de charge statique |
+| Potentiel | Électricité statique | — | 3 | +6 % de dégâts de foudre accrus |
+| Isolant | Électricité statique | — | 3 | +8 % rés. foudre |
+| Haute fréquence | Électricité statique | Potentiel (2) | 3 | +6 % récupération de recharge |
+| Sobriété | Électricité statique | Isolant (1) | 2 | -25 % de mana drainé réduit |
+| Influx | Électricité statique | Sobriété (1) | 2 | +0.5 mana/s |
+| Réflexes | Électricité statique | Charge vive (1) ou Isolant (1) | 2 | +4 % de vitesse d'incantation accrue |
+| Arc brûlant | Électricité statique | Haute fréquence (2) | 2 | +10 % de dégâts critiques accrus |
+| Orage intérieur | Électricité statique | Charge vive (4) ou Réflexes (2) | 1 | +20 % de dégâts de foudre amplifiés |
 
 27 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

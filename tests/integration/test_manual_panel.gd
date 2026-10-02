@@ -667,19 +667,21 @@ func test_the_sheet_announces_what_really_leaves() -> void:
 ## talent lu dans le dessin rouvrirait la faille que le jalon 7 a fermée.
 func test_the_sheet_announces_what_a_node_changes() -> void:
 	var book := _rich_book()
-	# La fourche demande deux points dans la compétence et un dans sa branche :
-	# l'ordre compte, et c'est `Manual` qui refuserait le raccourci.
-	for id in ["swift_bolt", "swift_bolt", "swift_bolt_overload", "swift_bolt_fork"]:
+	# La surcharge seule d'abord : la fourche paie son projectile en « moins », et les deux
+	# se fondraient en une ligne.
+	for id in ["swift_bolt", "swift_bolt", "swift_bolt_overload"]:
 		assert_true(book.manual.invest(book.base.manual, id), "« %s »" % id)
-
-	var lines := _sheet_of(book, "swift_bolt")
+	var overload := book.base.manual.node_of("swift_bolt_overload")
 	assert_eq(
-		_values(lines, "projectiles"), PackedStringArray(["2"]),
-		"le nœud de fourche en ajoute un"
+		_values(_sheet_of(book, "swift_bolt"), "dégâts amplifiés"),
+		PackedStringArray(["+%d %%" % int(overload.lines[0].value_per_point)]),
+		"la surcharge multiplie les dégâts : un nœud donne du « plus » (jalon 14)"
 	)
+	# La fourche demande un point dans sa branche : c'est `Manual` qui refuserait le raccourci.
+	assert_true(book.manual.invest(book.base.manual, "swift_bolt_fork"))
 	assert_eq(
-		_values(lines, "dégâts amplifiés"), PackedStringArray(["+12 %"]),
-		"et la surcharge multiplie les dégâts : un nœud donne du « plus » (jalon 14)"
+		_values(_sheet_of(book, "swift_bolt"), "projectiles"), PackedStringArray(["2"]),
+		"le nœud de fourche en ajoute un"
 	)
 
 
@@ -716,7 +718,10 @@ func test_the_sheet_announces_the_crit_of_the_skill() -> void:
 ## écrivent, et le nœud dit ce qu'il devient.
 func test_the_sheet_announces_the_conversion() -> void:
 	var book := _rich_book()
-	for id in ["swift_bolt", "swift_bolt", "swift_bolt", "swift_bolt_glacial_bolt"]:
+	for id in [
+		"swift_bolt", "swift_bolt", "swift_bolt",
+		"swift_bolt_overload", "swift_bolt_overload", "swift_bolt_glacial_bolt",
+	]:
 		assert_true(book.manual.invest(book.base.manual, id), "« %s »" % id)
 
 	var base := _values(_sheet_of(book, "swift_bolt"), "de base")
@@ -751,7 +756,7 @@ func test_a_node_sheet_says_what_it_requires() -> void:
 	var book := _rich_book()
 	var cell := _bolt_cell()
 	var branch := cell.talents[0]
-	var leaf := cell.talents[1]
+	var leaf := cell.node_of("swift_bolt_fork")
 
 	assert_eq(
 		_values(_panel._node_sheet(book.manual, cell, branch).lines, "demande"),

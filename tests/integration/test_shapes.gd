@@ -1528,3 +1528,193 @@ func test_an_aura_leaves_burning_ground_under_what_it_kills() -> void:
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 1, "la boule pose le sien en éclatant, pas au tué")
 
+
+
+# --------------------------------------------------------------------------
+# Les arbres de la foudre (jalon 35)
+# --------------------------------------------------------------------------
+
+## Rebond : le tir repart de l'ennemi touché vers le plus proche qu'il n'a pas frappé.
+func test_a_bouncing_bolt_leaps_to_the_nearest_unstruck_enemy() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
+	var first := _target(Vector2(40, 0))
+	var off_axis := _target(Vector2(60, 60))
+	var behind := _target(Vector2(200, 0))
+	await wait_physics_frames(2)
+
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.8)
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(off_axis), 1, "le rebond, hors de l'axe du tir")
+	assert_eq(_hits(behind), 0, "un seul rebond, et le tir s'y arrête")
+
+
+## Ni portée de saut : le rebond va plus loin que les 90 px d'un saut de chaîne, tant que
+## la course du tir l'y porte.
+func test_a_bolt_bounces_beyond_a_chain_jump() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
+	var first := _target(Vector2(60, 0))
+	var far_aside := _target(Vector2(60, ChainLightning.JUMP + 60.0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.2)
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(far_aside), 1)
+
+
+## Sans cône : le rebond repart aussi vers l'arrière, à plus de 90°.
+func test_a_bolt_bounces_backward() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
+	var first := _target(Vector2(60, 0))
+	var behind_it := _target(Vector2(20, 45))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.8)
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(behind_it), 1, "à 132° de l'axe du tir")
+
+
+## Le Trait de glace est dessiné — ni pivoté, ni additif ; le tir de froid d'un caster
+## reste tracé, pour qu'on le distingue du sien (jalon 35).
+func test_the_glacial_bolt_is_drawn_and_the_enemy_bolt_is_not() -> void:
+	_learn("manual_lightning", [
+		"swift_bolt", "swift_bolt_overload", "swift_bolt_overload", "swift_bolt_glacial_bolt",
+	])
+	_p.facing = Vector2(1.0, 1.0).normalized()
+	assert_true(_p.cast_slot(2))
+	var bolt: Projectile = _children_of(Projectile)[0]
+	assert_eq(bolt.nature(), DamageType.Kind.COLD)
+	assert_eq(bolt.rotation, 0.0, "une planche ne pivote pas")
+	assert_null(bolt.material, "ni lumière ajoutée")
+
+	var enemy := Projectile.spawn_of_nature(
+		_effects, load("res://actors/projectiles/enemy_bolt.tscn"), Vector2(0, 80), Vector2(1, 1), 5.0, null
+	)
+	assert_eq(enemy.nature(), DamageType.Kind.COLD)
+	assert_ne(enemy.rotation, 0.0, "le tir ennemi reste un tracé qui pivote")
+
+
+func test_a_taut_arc_jumps_farther() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.JUMP_REACH, 40.0]])
+	var near := _target(Vector2(60, 0))
+	var far := _target(Vector2(60 + ChainLightning.JUMP + 20.0, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(near), 1)
+	assert_eq(_hits(far), 1, "au-delà d'un saut ordinaire")
+
+
+## Crescendo : le même tirage, plus fort à chaque saut.
+func test_each_jump_of_a_crescendo_hits_harder() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.JUMP_GAIN, 50.0]])
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
+	var targets := [_target(Vector2(60, 0)), _target(Vector2(120, 0)), _target(Vector2(180, 0))]
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var first := float(_received_all[targets[0]][0])
+	assert_almost_eq(float(_received_all[targets[1]][0]), first * 1.5, 0.001)
+	assert_almost_eq(float(_received_all[targets[2]][0]), first * 2.0, 0.001)
+
+
+## Deux cibles : avec trois, la voisine de la dernière serait la troisième.
+func test_the_last_target_of_the_chain_bursts() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [["targets", -1.0], [SkillStats.END_BURST, 30.0]])
+	var first := _target(Vector2(60, 0))
+	var last := _target(Vector2(120, 0))
+	var beside_the_last := _target(Vector2(120, 25))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(last), 1, "l'éclatement épargne la cible qui éclate")
+	assert_eq(_hits(beside_the_last), 1, "l'éclatement seul")
+
+
+## La Toile d'arcs : pas de cône ni de saut, les plus proches autour du lanceur.
+func test_an_arc_web_strikes_the_nearest_all_around() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [], Skill.Shape.WEB)
+	var ahead := _target(Vector2(60, 0))
+	var behind := _target(Vector2(-60, 0))
+	var far_from_all := _target(Vector2(0, ChainLightning.SCOPE + 30.0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(ahead), 1)
+	assert_eq(_hits(behind), 1, "derrière, hors du cône d'une chaîne")
+	assert_eq(_hits(far_from_all), 0)
+	assert_eq(_children_of(ChainLightning).size(), 2, "un arc par cible")
+
+
+func test_a_wandering_cloud_drifts_toward_the_nearest_enemy() -> void:
+	_learn_with("manual_lightning", "storm_cloud", [[SkillStats.SEEK, 200.0]])
+	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 100))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var cloud: StormCloud = _children_of(StormCloud)[0]
+	var before := cloud.global_position.distance_to(prey.global_position)
+	await wait_seconds(0.5)
+	assert_lt(cloud.global_position.distance_to(prey.global_position), before - 10.0)
+
+
+func test_a_dissipating_cloud_bursts() -> void:
+	_learn_with("manual_lightning", "storm_cloud", [[SkillStats.END_BURST, 30.0], ["duration", -80.0, true]])
+	assert_true(_p.cast_slot(2))
+	var cloud: StormCloud = _children_of(StormCloud)[0]
+	while is_instance_valid(cloud):
+		await wait_physics_frames(1)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1)
+
+
+## L'Orage portatif se forme sur le lanceur et le suit.
+func test_a_portable_storm_follows_its_caster() -> void:
+	_learn_with("manual_lightning", "storm_cloud", [], Skill.Shape.TEMPEST)
+	assert_true(_p.cast_slot(2))
+	var cloud: StormCloud = _children_of(StormCloud)[0]
+	assert_eq(cloud.global_position, _p.global_position)
+	_p.global_position += Vector2(50, 20)
+	await wait_physics_frames(2)
+	assert_eq(cloud.global_position, _p.global_position)
+
+
+## L'Orbe statique : rien ne vole en tir, et l'orbe frappe en passant sans s'arrêter.
+## Ses nombres viennent de sa forme (`Skill.SHAPE_NUMBERS`) : un trait n'en a pas.
+func test_a_static_orb_shocks_what_it_passes_by() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [["projectile_speed", -60.0, true]], Skill.Shape.ORB)
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	assert_gt(cast.duration, 0.0)
+	assert_gt(cast.period, 0.0)
+	assert_true(cast.keywords.has(Keywords.PROJECTILE))
+	var on_the_way := _target(Vector2(80, 10))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
+	var orb: StaticOrb = _children_of(StaticOrb)[0]
+	await wait_seconds(1.4)
+	assert_gt(_hits(on_the_way), 1, "plusieurs décharges en passant")
+	assert_true(is_instance_valid(orb), "et l'orbe continue")
+	assert_gt(orb.global_position.x, 110.0)
+
+
+func test_a_storm_dash_scatters_static_charges_on_its_path() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.TRAIL_CHARGES, 4.0]])
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var charges := _children_of(StaticCharge)
+	assert_eq(charges.size(), 4)
+	for charge: StaticCharge in charges:
+		assert_lt(charge.global_position.x, _p.global_position.x, "sur le trajet")
+		assert_gt(charge.global_position.x, from_value.x)
+
+
+## Le drain d'un buff se lit sur le lancer résolu : un nœud le change.
+func test_a_buff_drains_what_its_tree_leaves() -> void:
+	_learn_with("manual_lightning", "static_electricity", [["mana_per_second", -50.0, true]])
+	assert_true(_p.cast_slot(2))
+	# Après l'allumage, qui refait la fiche et sa régénération.
+	_p.stats.mana_regen = 0.0
+	var mana := _p.mana
+	await wait_seconds(1.0)
+	var drained := mana - _p.mana
+	var full := SkillCatalog.by_id("static_electricity").mana_per_second
+	assert_almost_eq(drained, full * 0.5, full * 0.1)

@@ -7,6 +7,8 @@ extends Node2D
 
 ## Le nuage flotte au-dessus de sa zone ; c'est le cercle au sol qui dit où elle est.
 const HEIGHT := 22.0
+## Porté par l'Orage portatif : à la hauteur d'un nuage posé, il cachait la tête du lanceur.
+const HEIGHT_CARRIED := 40.0
 const PUFFS := 7
 const SPAWN := 0.2
 const DISSIPATION := 0.3
@@ -15,6 +17,9 @@ const BOLT_LIFETIME := 0.14
 const FLASH_COLOR := 0.12
 const FLASH_MIX := 0.35
 const CLOUD := Color(0.30, 0.28, 0.40)
+## Orage errant (`seek_radius`, jalon 35), en px/s : assez lent pour qu'un nuage posé
+## reste un nuage posé, assez vif pour rattraper un ennemi qui marche.
+const DRIFT_SPEED := 40.0
 
 
 class Bolt:
@@ -35,12 +40,19 @@ var _age := 0.0
 var _strikes := 0
 var _bolts: Array[Bolt] = []
 var _flicker := RandomNumberGenerator.new()
+## Orage portatif (`TEMPEST`) : celui qu'il suit. Sinon, l'ennemi vers lequel il dérive,
+## choisi à chaque frappe.
+var _follow: Node2D
+var _prey := Vector2.INF
 
 
-static func put(parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects) -> StormCloud:
+static func put(
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null
+) -> StormCloud:
 	var cloud := StormCloud.new()
 	cloud._cast = cast
 	cloud._author = author
+	cloud._follow = follow
 	cloud._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(cloud)
 	Settings.veil(cloud, Settings.SPELLS)
@@ -86,6 +98,10 @@ static func body(radius: float, tint: Color, flash: bool, gone: float) -> Effect
 ## l'estimation : la fiche et le nuage ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
+	if is_instance_valid(_follow):
+		global_position = _follow.global_position
+	elif _prey != Vector2.INF:
+		global_position = global_position.move_toward(_prey, DRIFT_SPEED * delta)
 	var due := _cast.strikes_due(_age)
 	while _strikes < due:
 		_strike()
@@ -95,10 +111,19 @@ func _physics_process(delta: float) -> void:
 	_bolts = _bolts.filter(func(e: Bolt) -> bool: return e.age < BOLT_LIFETIME)
 	queue_redraw()
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
+		if _cast.end_burst > 0.0:
+			Explosion.put(
+				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
+				_tint, _author, _cast
+			)
 		queue_free()
 
 
 func _strike() -> void:
+	if _cast.seek_radius > 0.0 and not is_instance_valid(_follow):
+		# Personne en vue : le nuage s'arrête.
+		var prey := Targets.nearest(get_world_2d(), global_position, _cast.seek_radius)
+		_prey = prey.global_position if prey != null else Vector2.INF
 	var targets := Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
 	for target in targets:
 		_bolt_to(to_local(target.global_position))
@@ -110,10 +135,14 @@ func _strike() -> void:
 		)
 
 
+func _height() -> float:
+	return HEIGHT_CARRIED if is_instance_valid(_follow) else HEIGHT
+
+
 func _bolt_to(point: Vector2) -> void:
 	var e := Bolt.new()
 	var edge := _cast.radius * 0.6
-	e.of = Vector2(clampf(point.x, -edge, edge), -HEIGHT + 4.0)
+	e.of = Vector2(clampf(point.x, -edge, edge), -_height() + 4.0)
 	e.toward = point
 	_bolts.append(e)
 
@@ -130,7 +159,7 @@ func _draw() -> void:
 	var bob := Vector2(0.0, roundf(sin(_age * 1.8)))
 	body(
 		_cast.radius, _tint, since < FLASH_COLOR, 0.0 if fade >= 1.0 else Lightning.GONE
-	).put(self, Vector2(0.0, -HEIGHT) + bob)
+	).put(self, Vector2(0.0, -_height()) + bob)
 
 	for e in _bolts:
 		var beat := Lightning.hold(e.age)

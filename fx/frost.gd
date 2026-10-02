@@ -19,6 +19,13 @@ const RIME := Color(0.86, 0.97, 1.00)
 const RIM := 0.5
 
 
+## Le Trait de glace (jalon 35), « javelot » choisi sur planche : un cristal couché en
+## losange, large au tiers arrière et effilé aux deux bouts — un tube se lisait en
+## crayon. Rastérisé au cap (`Slash.TURNS`) une fois, comme le trait de foudre.
+const JAVELIN_FRAME := 28
+static var _javelins := {}
+
+
 ## Le givre d'un cristal de cette teinte : le seul trait qui a le droit de briller.
 static func rim(tint: Color) -> Color:
 	return tint.lerp(RIME, RIM)
@@ -60,3 +67,21 @@ static func chip(ci: CanvasItem, at: Vector2, heading: float, tint: Color, fade:
 ## confetti.
 static func drift(ci: CanvasItem, at: Vector2, tint: Color, fade: float) -> void:
 	EffectForge.put_centered(ci, EffectForge.flake(tint), at, fade)
+
+
+## Le javelot au cap `turn`, centré sur le tir. L'arête court sur un flanc, pas au milieu.
+static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
+	var key := "%s|%d" % [tint.to_html(false), posmod(turn, Slash.TURNS)]
+	if not _javelins.has(key):
+		var d := Vector2.from_angle(Slash.angle_of(turn))
+		var side := d.orthogonal()
+		var at := Vector2.ONE * float(JAVELIN_FRAME) * 0.5
+		var canvas := PixelCanvas.new(JAVELIN_FRAME, JAVELIN_FRAME)
+		canvas.capsule(at - d * 9.0, at - d * 4.0, 0.8, EffectForge.R_TINT)
+		canvas.capsule(at - d * 4.0, at + d * 1.0, 2.2, EffectForge.R_TINT)
+		canvas.capsule(at + d * 1.0, at + d * 6.0, 1.3, EffectForge.R_TINT)
+		canvas.capsule(at + d * 6.0, at + d * 10.0, 0.6, EffectForge.R_TINT, Holy.LIT)
+		canvas.line(at - d * 6.0 - side, at + d * 10.0, EffectForge.R_CORE, 1.0)
+		var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(rim(tint))])
+		_javelins[key] = EffectForge.Piece.new(ImageTexture.create_from_image(img), -at)
+	return _javelins[key]

@@ -180,7 +180,7 @@ func test_the_shape_gives_projectile() -> void:
 		c.shape = shape
 		assert_eq(
 			c.worn(Keywords.PROJECTILE),
-			shape in [Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET],
+			shape in [Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET, Skill.Shape.ORB],
 			"forme %s" % Skill.Shape.keys()[shape]
 		)
 

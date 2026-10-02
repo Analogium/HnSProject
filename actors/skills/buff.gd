@@ -93,8 +93,13 @@ func _physics_process(delta: float) -> void:
 		if _since_stack >= _skill.stack_duration:
 			stacks = 0
 			_player.after_buff_change()
+	# Le lancer résolu et non la compétence : un nœud d'arbre change sa brûlure (jalon 34)
+	# et son drain (jalon 35).
+	var cast: SkillStats = null
+	if _skill.self_burn > 0.0 or _skill.mana_per_second > 0.0:
+		cast = _player.resolve(_skill, _player.skill_points(_skill.id))
 	# Le mana épuisé éteint ; les PV épuisés tuent (`Player.burn()`, mortelle).
-	if not _player.drain(_skill.mana_per_second, delta):
+	if not _player.drain(cast.mana_per_second if cast != null else 0.0, delta):
 		_player.extinguish(_skill.id)
 		return
 	queue_redraw()
@@ -102,10 +107,7 @@ func _physics_process(delta: float) -> void:
 	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff. Ce qu'il
 	# ronge des PV **actuels** s'y ramène en part des PV max, et ne tue donc jamais.
 	var withered := _skill.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
-	# Le lancer résolu et non la compétence : un nœud d'arbre la change (jalon 34).
-	var burning := 0.0
-	if _skill.self_burn > 0.0:
-		burning = _player.resolve(_skill, _player.skill_points(_skill.id)).self_burn
+	var burning := cast.self_burn if cast != null else 0.0
 	_player.burn(burning + withered, _distribution, delta)
 
 

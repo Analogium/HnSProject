@@ -782,7 +782,7 @@ func test_no_manual_fills_up_entirely() -> void:
 ## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
 ## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
 const SHALLOW_TREES := [
-	"manual_lightning", "manual_weapons", "manual_cold", "manual_holy", "manual_necrotic",
+	"manual_weapons", "manual_cold", "manual_holy", "manual_necrotic",
 ]
 
 

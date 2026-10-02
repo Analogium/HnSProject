@@ -720,7 +720,8 @@ func test_a_keyword_passive_serves_another_book_skills() -> void:
 func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_study("manual_lightning", [
-		"storm_cloud", "storm_cloud", "storm_cloud", "storm_cloud_hail",
+		"storm_cloud", "storm_cloud", "storm_cloud",
+		"storm_cloud_cumulonimbus", "storm_cloud_cumulonimbus", "storm_cloud_hail",
 	])
 	_p.stats.max_mana = 999.0
 	_p._set_mana(999.0)

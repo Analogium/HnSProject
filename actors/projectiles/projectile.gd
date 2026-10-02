@@ -69,6 +69,7 @@ var _nature := -1
 ## la même cible, et ses éclats non plus.
 var _struck := {}
 var _pierced := 0
+var _bounced := 0
 
 ## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
 ## l'unisson.
@@ -80,6 +81,13 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_flicker.seed = int(get_instance_id())
 	material = ArtPalette.ADDITIVE
+
+
+## Dessiné plutôt que tracé : la foudre, la nécrose, et le froid **du joueur** — le
+## Trait de glace (jalon 35). Le tir des casters reste tracé, au choix de
+## l'utilisateur : on le distingue du sien en combat.
+func _drawn() -> bool:
+	return nature() in DRAWN or (nature() == DamageType.Kind.COLD and _cast != null)
 
 
 ## Reconstruit à chaque appel : c'est le changement qui fait l'effet.
@@ -120,6 +128,9 @@ func _draw() -> void:
 	if nature() == DamageType.Kind.NECROTIC:
 		_plague(color)
 		return
+	if _drawn():
+		Frost.javelin(color, Slash.turn_of(_dir.angle())).put(self, Vector2.ZERO)
+		return
 	for a: Array in AUREOLES:
 		var halo := color
 		halo.a = float(a[1])
@@ -148,8 +159,9 @@ static func spawn(
 ) -> Projectile:
 	var bolt := _spawn(parent, scene, from, dir)
 	if bolt != null:
-		bolt.setup(dir, parts, source, p_speed, nature)
+		# Avant `setup()`, qui lit le lancer pour savoir si le tir est dessiné.
 		bolt._cast = cast
+		bolt.setup(dir, parts, source, p_speed, nature)
 		Settings.veil(bolt, Settings.SPELLS)
 	return bolt
 
@@ -193,10 +205,9 @@ func setup(
 	if nature >= 0:
 		_nature = nature
 	rotation = _dir.angle()
-	# Dessinées, la foudre et la nécrose ne tournent pas et ne sont pas additives : une
-	# planche pivotée se rééchantillonne, et son contour sombre n'ajoute rien en lumière
-	# ajoutée.
-	if self.nature() in DRAWN:
+	# Dessinées, elles ne tournent pas et ne sont pas additives : une planche pivotée se
+	# rééchantillonne, et son contour sombre n'ajoute rien en lumière ajoutée.
+	if _drawn():
 		rotation = 0.0
 		material = null
 
@@ -234,7 +245,28 @@ func _on_area_entered(area: Area2D) -> void:
 		_pierced += 1
 		_shatter(true)
 		return
+	if _cast != null and _bounced < int(_cast.bounces):
+		_bounced += 1
+		_bounce.call_deferred()
+		return
 	_finish()
+
+
+## Repart vers l'ennemi non frappé le plus proche, **dans tout le reste de sa course** et
+## dans toutes les directions : la portée d'un saut de chaîne (90 px) faisait échouer le
+## rebond dès que les ennemis s'espaçaient. Différé : l'impact arrive d'un rappel de
+## collision, où l'espace refuse les requêtes (invariant 4).
+func _bounce() -> void:
+	if is_queued_for_deletion():
+		return
+	var reach := speed * (lifetime - _life)
+	var best := Targets.nearest(get_world_2d(), global_position, reach, _struck, true)
+	if best == null:
+		_finish()
+		return
+	_dir = global_position.direction_to(best.global_position)
+	if not _drawn():
+		rotation = _dir.angle()
 
 
 ## Le masque ne retient que le décor pour les corps : le tir s'arrête au mur,

@@ -44,3 +44,24 @@ func test_the_small_crystal_is_shorter_than_the_tall_one() -> void:
 		EffectForge.SMALL_SPIKE_HEIGHT, EffectForge.SPIKE_HEIGHT,
 		"un grand, un petit"
 	)
+
+
+## Le javelot du Trait de glace : fabriqué une fois par cap, et le tour complet retombe
+## sur le premier. Il reste une facette — l'arête claire, des flancs qui ne débordent pas.
+func test_the_javelin_is_made_once_per_heading() -> void:
+	var a := Frost.javelin(COLD, 3)
+	assert_same(a, Frost.javelin(COLD, 3 + Slash.TURNS), "deux demandes, une fabrication")
+	assert_ne(a, Frost.javelin(COLD, 4), "deux caps voisins diffèrent")
+	var image: Image = a.texture.get_image()
+	var bright := 0
+	var matter := 0
+	for y in image.get_height():
+		for x in image.get_width():
+			var c := image.get_pixel(x, y)
+			if c.a < 0.5:
+				continue
+			matter += 1
+			if c.get_luminance() > 0.85:
+				bright += 1
+	assert_gt(bright, 0, "l'arête")
+	assert_lt(float(bright) / float(matter), 0.5, "et des flancs")

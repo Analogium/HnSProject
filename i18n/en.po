@@ -609,6 +609,225 @@ msgstr "Lingering Storm"
 msgid "Grêle"
 msgstr "Hail"
 
+msgid "Chaque éclair inflige plus de dégâts."
+msgstr "Each bolt deals more damage."
+
+msgid "Célérité"
+msgstr "Celerity"
+
+msgid "L'éclair file plus vite : il atteint sa cible plus tôt et porte plus loin."
+msgstr "The bolt flies faster: it reaches its target sooner and carries farther."
+
+msgid "Point chaud"
+msgstr "Hot Spot"
+
+msgid "L'éclair inflige plus souvent un coup critique."
+msgstr "The bolt lands critical hits more often."
+
+msgid "Chaque lancer tire un éclair de plus, en éventail, chacun un peu moins fort."
+msgstr "Each cast fires one more bolt, fanned out, each a little weaker."
+
+msgid "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'engourdissement pour la foudre, qui fait subir plus de dégâts à l'ennemi."
+msgstr "Raises the chance for this spell to apply the state of its nature to what it hits — numb for lightning, which makes the enemy take more damage."
+
+msgid "Transpercement"
+msgstr "Transfixion"
+
+msgid "L'éclair traverse les premiers ennemis qu'il touche au lieu de s'y arrêter, et ne frappe chacun qu'une fois."
+msgstr "The bolt passes through the first enemies it hits instead of stopping, and hits each only once."
+
+msgid "Rebond"
+msgstr "Ricochet"
+
+msgid "Au lieu de s'éteindre sur l'ennemi touché, l'éclair repart vers l'ennemi non touché le plus proche, dans n'importe quelle direction, tant qu'il lui reste de la course pour l'atteindre. S'il n'en trouve pas, il s'éteint."
+msgstr "Instead of dying on the enemy it hits, the bolt leaps to the nearest enemy not yet hit, in any direction, as long as it has enough flight left to reach it. If it finds none, it fades."
+
+msgid "En fin de course, l'éclair se brise en éclats qui partent en étoile, à {part_eclat} % de ses dégâts — et sur chaque ennemi qu'il traverse."
+msgstr "At the end of its flight, the bolt shatters into shards flying out in a star, at {part_eclat}% of its damage — and on each enemy it passes through."
+
+msgid "L'éclair devient de glace : dégâts de froid, mot-clé Froid, et il transit au lieu d'engourdir."
+msgstr "The bolt turns to ice: cold damage, Cold keyword, and it chills instead of numbing."
+
+msgid "Surtension"
+msgstr "Surge"
+
+msgid "Un ennemi que l'éclair tue explose s'il porte l'état de sa nature — engourdi, ou transi une fois l'éclair devenu de glace : {part_tue} % des dégâts d'un coup de l'éclair, dans ce rayon autour de lui."
+msgstr "An enemy killed by the bolt explodes if it bears the state of the bolt's nature — numbed, or chilled once the bolt has turned to ice: {part_tue}% of the damage of one of the bolt's hits, within this radius around it."
+
+msgid "Orbe statique"
+msgstr "Static Orb"
+
+msgid "L'éclair devient un orbe lent qui file droit, traverse les ennemis et foudroie à intervalles réguliers tout ce qui passe près de lui ; un mur l'éteint. Chaque décharge est moins forte qu'un éclair. La perforation, les éclats et les rebonds ne servent plus."
+msgstr "The bolt becomes a slow orb that flies straight, passes through enemies and shocks everything near it at regular intervals; a wall puts it out. Each discharge is weaker than a bolt. Piercing, shards and ricochets no longer apply."
+
+msgid "Chaque décharge inflige plus de dégâts."
+msgstr "Each discharge deals more damage."
+
+msgid "La décharge saute sur un ennemi de plus."
+msgstr "The discharge jumps to one more enemy."
+
+msgid "Réflexe"
+msgstr "Reflex"
+
+msgid "Le sort se lance plus vite."
+msgstr "The spell casts faster."
+
+msgid "La décharge saute sur un ennemi de moins, mais frappe chacun bien plus fort."
+msgstr "The discharge jumps to one fewer enemy, but hits each much harder."
+
+msgid "Arc tendu"
+msgstr "Taut Arc"
+
+msgid "La décharge saute plus loin d'un ennemi au suivant : elle trouve des cibles plus dispersées."
+msgstr "The discharge jumps farther from one enemy to the next: it reaches more scattered targets."
+
+msgid "Crescendo"
+msgstr "Crescendo"
+
+msgid "Chaque saut frappe plus fort que le précédent : la dernière cible de la chaîne prend le plus gros coup."
+msgstr "Each jump hits harder than the last: the final target of the chain takes the biggest hit."
+
+msgid "La décharge inflige plus souvent un coup critique."
+msgstr "The discharge lands critical hits more often."
+
+msgid "Foudre au bout"
+msgstr "Final Strike"
+
+msgid "La dernière cible de la chaîne éclate : les ennemis autour d'elle, dans ce rayon, prennent le coup qu'elle vient de prendre."
+msgstr "The last target of the chain bursts: enemies around it, within this radius, take the hit it just took."
+
+msgid "Un ennemi que la décharge tue explose s'il porte l'état de sa nature — l'engourdissement pour la foudre : {part_tue} % des dégâts d'un coup de la chaîne, dans ce rayon autour de lui."
+msgstr "An enemy killed by the discharge explodes if it bears the state of its nature — numb for lightning: {part_tue}% of the damage of one of the chain's hits, within this radius around it."
+
+msgid "Toile d'arcs"
+msgstr "Arc Web"
+
+msgid "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc, un peu moins fort. Arc tendu et Crescendo ne servent plus."
+msgstr "The discharge no longer jumps: it strikes the nearest enemies around you all at once, each with its own arc, a little weaker. Taut Arc and Crescendo no longer apply."
+
+msgid "Cumulonimbus"
+msgstr "Cumulonimbus"
+
+msgid "Chaque frappe du nuage inflige plus de dégâts."
+msgstr "Each strike of the cloud deals more damage."
+
+msgid "Le nuage couvre une zone plus large."
+msgstr "The cloud covers a wider area."
+
+msgid "Le nuage reste plus longtemps avant de se dissiper."
+msgstr "The cloud lasts longer before it dissipates."
+
+msgid "Averse"
+msgstr "Downpour"
+
+msgid "Le nuage frappe plus souvent, mais se dissipe un peu plus tôt."
+msgstr "The cloud strikes more often, but dissipates a little sooner."
+
+msgid "Orage errant"
+msgstr "Wandering Storm"
+
+msgid "Le nuage ne reste plus en place : à chaque frappe, il prend pour cible l'ennemi le plus proche dans ce rayon et dérive vers lui."
+msgstr "The cloud no longer stays put: on each strike, it targets the nearest enemy within this radius and drifts toward it."
+
+msgid "Coup de tonnerre"
+msgstr "Thunderclap"
+
+msgid "En se dissipant, le nuage éclate d'un dernier coup de tonnerre, qui frappe tout ce qui est dans ce rayon des dégâts d'une de ses frappes."
+msgstr "As it dissipates, the cloud bursts in a last thunderclap, hitting everything within this radius for the damage of one of its strikes."
+
+msgid "Les frappes du nuage infligent plus souvent un coup critique."
+msgstr "The cloud's strikes land critical hits more often."
+
+msgid "Le nuage devient de grêle : dégâts de froid, mot-clé Froid, et il transit au lieu d'engourdir."
+msgstr "The cloud turns to hail: cold damage, Cold keyword, and it chills instead of numbing."
+
+msgid "Orage portatif"
+msgstr "Portable Storm"
+
+msgid "Le nuage ne se pose plus au point visé : il se forme au-dessus de vous et vous suit, plus longtemps mais sur une zone plus étroite. L'orage errant ne sert plus."
+msgstr "The cloud no longer settles where you aim: it forms above you and follows you, longer but over a narrower area. Wandering Storm no longer applies."
+
+msgid "L'appel du tonnerre dure plus longtemps après la ruée."
+msgstr "Thunder Call lasts longer after the dash."
+
+msgid "Foulée"
+msgstr "Stride"
+
+msgid "Tant que l'appel du tonnerre dure, vous courez encore plus vite."
+msgstr "While Thunder Call lasts, you run even faster."
+
+msgid "Tant que l'appel du tonnerre dure, vos sorts se lancent plus vite."
+msgstr "While Thunder Call lasts, your spells cast faster."
+
+msgid "Insaisissable"
+msgstr "Elusive"
+
+msgid "Tant que l'appel du tonnerre dure, vous esquivez plus souvent."
+msgstr "While Thunder Call lasts, you evade more often."
+
+msgid "La ruée frappe à l'arrivée : une explosion de foudre dans ce rayon autour de vous."
+msgstr "The dash strikes on arrival: a lightning explosion within this radius around you."
+
+msgid "Sillage statique"
+msgstr "Static Wake"
+
+msgid "La ruée sème des charges statiques le long de son trajet. Chacune frappe une fois chaque ennemi qui y passe, à {part_charge} % d'un coup de la ruée."
+msgstr "The dash scatters static charges along its path. Each hits every enemy that walks into it once, at {part_charge}% of a hit of the dash."
+
+msgid "La ruée n'a plus de recharge et se relance aussitôt, mais elle prend bien plus de temps à partir."
+msgstr "The dash no longer has a cooldown and can be used again at once, but it takes much longer to set off."
+
+msgid "Charge vive"
+msgstr "Live Charge"
+
+msgid "Tant que le champ statique est actif, vos coups sur un engourdi y laissent plus souvent une charge statique."
+msgstr "While Static Field is active, your hits on a numbed enemy leave a static charge more often."
+
+msgid "Potentiel"
+msgstr "Potential"
+
+msgid "Tant que le champ statique est actif, vos dégâts de foudre augmentent."
+msgstr "While Static Field is active, your lightning damage increases."
+
+msgid "Isolant"
+msgstr "Insulation"
+
+msgid "Tant que le champ statique est actif, vous résistez mieux à la foudre."
+msgstr "While Static Field is active, you resist lightning better."
+
+msgid "Haute fréquence"
+msgstr "High Frequency"
+
+msgid "Tant que le champ statique est actif, vos compétences se rechargent plus vite."
+msgstr "While Static Field is active, your skills recharge faster."
+
+msgid "Sobriété"
+msgstr "Frugality"
+
+msgid "Le champ statique draine moins de mana pour rester actif."
+msgstr "Static Field drains less mana to stay active."
+
+msgid "Influx"
+msgstr "Influx"
+
+msgid "Tant que le champ statique est actif, votre mana se régénère plus vite."
+msgstr "While Static Field is active, your mana regenerates faster."
+
+msgid "Tant que le champ statique est actif, vos sorts se lancent plus vite."
+msgstr "While Static Field is active, your spells cast faster."
+
+msgid "Arc brûlant"
+msgstr "Searing Arc"
+
+msgid "Tant que le champ statique est actif, vos coups critiques frappent plus fort."
+msgstr "While Static Field is active, your critical hits strike harder."
+
+msgid "Orage intérieur"
+msgstr "Inner Storm"
+
+msgid "Tant que le champ statique est actif, vos dégâts de foudre sont multipliés."
+msgstr "While Static Field is active, your lightning damage is multiplied."
+
 msgid "Attisement"
 msgstr "Stoking"
 
@@ -1514,6 +1733,21 @@ msgstr "snake speed"
 
 msgid "nombre de petits serpents"
 msgstr "hatchlings"
+
+msgid "mana drainé"
+msgstr "mana drained"
+
+msgid "nombre de rebonds"
+msgstr "ricochets"
+
+msgid "portée des sauts"
+msgstr "jump range"
+
+msgid "dégâts en plus par saut"
+msgstr "more damage per jump"
+
+msgid "charges statiques semées"
+msgstr "static charges scattered"
 
 msgid "temps du geste"
 msgstr "action time"

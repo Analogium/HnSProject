@@ -2,7 +2,7 @@ class_name Lightning
 extends RefCounted
 
 ## La foudre du jeu, **dessinée** en un seul endroit : la chaîne, les éclairs du
-## nuage, la charge statique, la traînée de la ruée et le projectile.
+## nuage, la charge statique, l'orbe statique, la traînée de la ruée et le projectile.
 ##
 ## Le **fil cerné**, choisi sur planche contre cinq autres (jalon 24) : un corps de
 ## trois pixels, un filament presque blanc au milieu, deux fourches courtes. Un
@@ -40,11 +40,19 @@ const DART_FORMS := 4
 const ARMS := 6
 const CHARGE_FORMS := 6
 
+## L'Orbe statique (jalon 35), « boule de plasma » choisie sur planche : une boule pleine
+## au cœur blanc et deux ou trois arcs longs et maigres — quatre courts en couronne
+## faisaient des pattes, et l'étoile de la charge le confondait avec elle.
+const ORB_RADIUS := 4.5
+const ORB_ARC := 0.5
+const ORB_FORMS := 6
+
 const R_TINT := EffectForge.R_TINT
 const R_CORE := EffectForge.R_CORE
 
 static var _darts := {}
 static var _charges := {}
+static var _orbs := {}
 
 
 ## Un trait brisé à rastériser : ses sommets, son rayon, et s'il porte le filament.
@@ -139,6 +147,22 @@ static func charge(tint: Color, radius: float, form: int, gone_part: float) -> E
 	return _charges[key]
 
 
+## L'orbe dans sa forme `form` : ses arcs changent d'une forme à l'autre, la boule reste.
+static func orb(tint: Color, form: int, gone_part: float) -> EffectForge.Piece:
+	var turn := posmod(form, ORB_FORMS)
+	var key := "%s|%d|%d" % [tint.to_html(false), turn, int(round(gone_part * 16.0))]
+	if not _orbs.has(key):
+		var rng := RandomNumberGenerator.new()
+		rng.seed = turn
+		var strokes: Array[Stroke] = []
+		for i in 2 + turn % 2:
+			var angle := rng.randf() * TAU
+			var tip := Vector2.from_angle(angle + rng.randf_range(-0.6, 0.6)) * rng.randf_range(11.0, 14.0)
+			strokes.append(Stroke.new(path(Vector2.from_angle(angle) * ORB_RADIUS, tip, rng, 1.5, 4.0), ORB_ARC, true))
+		_orbs[key] = _bake(strokes, PackedVector2Array(), tint, gone_part, ORB_RADIUS)
+	return _orbs[key]
+
+
 static func _bolt(
 	strokes: Array[Stroke], a: Vector2, b: Vector2, rng: RandomNumberGenerator, forks: int
 ) -> void:
@@ -156,18 +180,23 @@ static func _bolt(
 
 
 ## Tous les corps d'abord, les filaments ensuite : une fourche posée après le trait
-## principal lui mangerait son filament là où elle en part.
+## principal lui mangerait son filament là où elle en part. `ball` : la boule d'un orbe
+## à l'origine, sous les arcs, et son cœur blanc par-dessus tout.
 static func _bake(
-	strokes: Array[Stroke], struck: PackedVector2Array, tint: Color, gone_part: float
+	strokes: Array[Stroke], struck: PackedVector2Array, tint: Color, gone_part: float, ball := 0.0
 ) -> EffectForge.Piece:
 	var box := Rect2(strokes[0].points[0], Vector2.ZERO)
 	for s in strokes:
 		for p in s.points:
 			box = box.expand(p)
+	if ball > 0.0:
+		box = box.expand(Vector2.ONE * ball).expand(-Vector2.ONE * ball)
 	var margin := Vector2.ONE * (float(EffectForge.STRIKE_SIZE / 2) + 2.0)
 	var corner := (box.position - margin).floor()
 	var size := (box.end + margin - corner).ceil()
 	var canvas := PixelCanvas.new(int(size.x), int(size.y))
+	if ball > 0.0:
+		canvas.disc(-corner, ball, R_TINT, Holy.LIT)
 	for s in strokes:
 		for j in s.points.size() - 1:
 			canvas.capsule(s.points[j] - corner, s.points[j + 1] - corner, s.radius, R_TINT, Holy.LIT)
@@ -175,6 +204,8 @@ static func _bake(
 		if s.core:
 			for j in s.points.size() - 1:
 				canvas.line(s.points[j] - corner, s.points[j + 1] - corner, R_CORE, 1.0)
+	if ball > 0.0:
+		canvas.disc(-corner - Vector2.ONE, ball * 0.45, R_CORE, 1.0)
 	var half := Vector2i.ONE * (EffectForge.STRIKE_SIZE / 2)
 	for at in struck:
 		canvas.stamp(EffectForge.STRIKE, Vector2i((at - corner).round()) - half, EffectForge.INK)
