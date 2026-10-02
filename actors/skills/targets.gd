@@ -100,24 +100,26 @@ static func in_sight(world: World2D, of: Vector2, toward: Vector2) -> bool:
 ## L'auteur et le lancer voyagent avec le coup : ses états et ses dégâts contre un état
 ## changent ce qu'il inflige.
 static func strike(
-	target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects, cast: SkillStats
+	target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects, cast: SkillStats,
+	knockback := 0.0
 ) -> void:
 	if is_instance_valid(target):
-		var info := DamageInfo.roll(cast, from_value, parts)
+		var info := DamageInfo.roll(cast, from_value, parts, knockback)
 		info.author = author
 		target.take_damage(info)
 
 
 ## Une impulsion : **un tirage pour tout le cercle**, qu'il touche ou non (invariant 3),
 ## puis chaque cible frappée depuis le centre. Rend les cibles. Sept gestes qui durent ou
-## qui tombent écrivaient ces trois lignes.
+## qui tombent écrivaient ces trois lignes. Un recul négatif tire vers le centre.
 static func strike_circle(
-	world: World2D, center: Vector2, radius: float, cast: SkillStats, author: StatusEffects
+	world: World2D, center: Vector2, radius: float, cast: SkillStats, author: StatusEffects,
+	knockback := 0.0
 ) -> Array[Hurtbox]:
 	var parts := cast.roll(Game.rng)
 	var targets := in_circle(world, center, radius)
 	for target in targets:
-		strike(target, parts, center, author, cast)
+		strike(target, parts, center, author, cast, knockback)
 	return targets
 
 

@@ -223,7 +223,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Souffle ardent | Boule de feu | — | 3 | +15 % de rayon accru |
 | Vélocité | Boule de feu | — | 2 | +20 % de vitesse de projectile accrue |
 | Ardeur | Boule de feu | Attisement (2) | 2 | +25 % de chance critique de base accrue |
-| Braises dispersées | Boule de feu | Souffle ardent (1) | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Braises dispersées | Boule de feu | Souffle ardent (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Double langue | Boule de feu | Vélocité (2) | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
 | Perforation | Boule de feu | Vélocité (1) | 2 | +1 nombre d'ennemis traversés |
 | Givre | Boule de feu | Ardeur (1) | 1 | devient froid |
@@ -235,7 +235,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Longue vie | Serpent infernal | — | 3 | +20 % de durée accrue |
 | Crocs | Serpent infernal | — | 2 | ajoute 4 à 9 dégâts de feu |
 | Vif | Serpent infernal | Longue vie (1) ou Mue (1) | 2 | +15 % vitesse du serpent · -8 % de durée réduite |
-| Queue de flammes | Serpent infernal | Longue vie (1) ou Chasseur (1) | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Queue de flammes | Serpent infernal | Longue vie (1) ou Chasseur (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Chasseur | Serpent infernal | Crocs (1) | 1 | +120 rayon de chasse |
 | Couvée | Serpent infernal | Mue (2) | 2 | +1 nombre de serpents · -15 % de dégâts atténués |
 | Mue explosive | Serpent infernal | Vif (1) | 3 | +10 rayon de l'explosion finale |
@@ -248,7 +248,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Étincelles | Immolation | Brasier (1) ou Fournaise (1) | 3 | +15 % chance d'état |
 | Phénix | Immolation | Cœur tiède (2) | 1 | +100 % de brûlure subie accrue · +40 % de dégâts amplifiés |
 | Flamme noire | Immolation | Pouls lent (1) | 1 | +15 % de dégâts amplifiés · devient nécrotique |
-| Cendres vivantes | Immolation | Brasier (1) | 3 | +2 secondes de sol brûlant au premier point, puis +1.5 par point |
+| Cendres vivantes | Immolation | Brasier (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Contagion ardente | Immolation | Cendres vivantes (2) ou Phénix (1) | 1 | +30 rayon de l'explosion des tués |
 | Sillage | Ruée ardente | — | 3 | +25 % de durée accrue |
 | Braises | Ruée ardente | Sillage (1) | 3 | +20 % de rayon accru |
@@ -284,12 +284,45 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Éclats | Pics de glace | — | 3 | +12 % de dégâts amplifiés |
-| Poussée | Pics de glace | Éclats (1) | 2 | +10 % de rayon accru |
+| Tranchant | Pics de glace | — | 4 | +8 % de dégâts amplifiés |
+| Poussée | Pics de glace | — | 2 | +10 % de rayon accru |
+| Réflexe | Pics de glace | — | 3 | -8 % de temps du geste réduit |
+| Engelure | Pics de glace | Tranchant (1) ou Réflexe (1) | 3 | +15 % chance d'état |
+| Éclats | Pics de glace | Tranchant (2) | 2 | +2 nombre d'éclats |
+| Givre persistant | Pics de glace | Poussée (1) | 2 | +1 secondes de sol laissé |
+| Froid mordant | Pics de glace | Engelure (1) | 3 | +10 % effet du transi |
+| Acharnement | Pics de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
+| Bris | Pics de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Sillon de glace | Pics de glace | Poussée (2) ou Éclats (1) | 1 | -30 % de rayon réduit |
+| Morsure | Nova de glace | — | 4 | +8 % de dégâts amplifiés |
 | Souffle | Nova de glace | — | 3 | +10 % de rayon accru |
-| Morsure | Nova de glace | Souffle (1) | 2 | +12 % de dégâts amplifiés |
+| Réflexe | Nova de glace | — | 2 | -10 % de temps du geste réduit |
+| Engelure | Nova de glace | Morsure (1) | 3 | +15 % chance d'état |
+| Froid mordant | Nova de glace | Souffle (1) ou Engelure (1) | 3 | +10 % effet du transi |
+| Givre persistant | Nova de glace | Souffle (2) | 2 | +1 secondes de sol laissé |
+| Acharnement | Nova de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
+| Bris | Nova de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Onde de givre | Nova de glace | Souffle (2) ou Réflexe (2) | 1 | -20 % de dégâts atténués |
+| Glace épaisse | Tombeau de glace | — | 4 | -3 % dégâts subis |
+| Dégel | Tombeau de glace | — | 3 | +20 % de soin accru |
+| Longue nuit | Tombeau de glace | — | 3 | +20 % de durée accrue |
+| Isolant | Tombeau de glace | Glace épaisse (1) | 3 | +8 % rés. froid |
+| Sobriété | Tombeau de glace | Longue nuit (1) | 2 | -25 % de mana drainé réduit |
+| Éclatement | Tombeau de glace | Glace épaisse (2) ou Longue nuit (2) | 3 | ajoute 8 à 16 dégâts de froid · +12 rayon de l'explosion finale |
+| Engelure | Tombeau de glace | Éclatement (1) | 3 | +15 % chance d'état |
+| Froid mordant | Tombeau de glace | Éclatement (1) | 2 | +10 % effet du transi |
+| Bris | Tombeau de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Armure de givre | Tombeau de glace | Dégel (2) ou Sobriété (1) | 1 | -50 % de durée réduite |
+| Œil du cyclone | Désastre hivernal | — | 4 | +8 % de dégâts amplifiés |
 | Blizzard | Désastre hivernal | — | 2 | +20 % de durée accrue |
-| Œil du cyclone | Désastre hivernal | Blizzard (1) | 3 | +12 % de dégâts amplifiés |
+| Bourrasque | Désastre hivernal | — | 3 | +10 % de rayon accru |
+| Rafales | Désastre hivernal | Œil du cyclone (1) | 2 | -15 % d'intervalle des frappes réduit · -10 % de durée réduite |
+| Engelure | Désastre hivernal | Œil du cyclone (1) ou Bourrasque (1) | 3 | +15 % chance d'état |
+| Aspiration | Désastre hivernal | Bourrasque (1) | 3 | +60 force d'aspiration |
+| Froid mordant | Désastre hivernal | Engelure (1) | 3 | +10 % effet du transi |
+| Avalanche | Désastre hivernal | Blizzard (1) | 3 | +15 rayon de l'explosion finale |
+| Bris | Désastre hivernal | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Implosion | Désastre hivernal | Aspiration (2) ou Avalanche (1) | 1 | -30 % de durée réduite |
 
 23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

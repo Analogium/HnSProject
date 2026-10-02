@@ -340,7 +340,7 @@ func cast_slot(index: int) -> bool:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
 			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie.
-			_light(skill.id, Buff.light(self, skill, cast.duration))
+			_light(skill.id, Buff.light(self, skill, cast.duration, cast.binds_caster))
 		Skill.Shape.CYCLONE:
 			_light(skill.id, Cyclone.spin(self, skill))
 		Skill.Shape.DASH, Skill.Shape.LEAP:
@@ -349,15 +349,21 @@ func cast_slot(index: int) -> bool:
 			_swing(cast)
 			SlashWave.send(_effects_parent(), global_position, facing, cast, states)
 		Skill.Shape.SPIKES:
-			IceSpikes.raise_at(_effects_parent(), _aim_point(), cast, states)
+			IceSpikes.raise_at(_effects_parent(), _aim_point(), cast, states, self, bolt_scene)
+		Skill.Shape.FISSURE:
+			IceSpikes.fissure(_effects_parent(), global_position, _aim_point(), cast, states, self, bolt_scene)
 		Skill.Shape.NOVA:
 			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
-			# cercle et s'efface, ce qu'une nova fait exactement.
+			# cercle et s'efface, ce qu'une nova fait exactement. Son sol a sa taille.
 			Explosion.put(
 				_effects_parent(), global_position, cast.roll(Game.rng), cast.radius, null,
 				DamageType.COLORS[cast.nature], states, cast
 			)
-		Skill.Shape.VORTEX:
+			if cast.ground_duration > 0.0:
+				DashTrail.patch(_effects_parent(), global_position, cast.ground(cast.radius), states)
+		Skill.Shape.RING:
+			FrostRing.spread(_effects_parent(), global_position, cast, states)
+		Skill.Shape.VORTEX, Skill.Shape.IMPLOSION:
 			IceVortex.open(_effects_parent(), global_position, cast, states)
 		Skill.Shape.BEAM:
 			HolyBeam.fire(_effects_parent(), global_position, facing, cast, states)
@@ -408,7 +414,22 @@ func extinguish(skill_id: String) -> void:
 	_lit.erase(skill_id)
 	if is_instance_valid(node):
 		(node as Node).extinguish()
+		if node is Buff and not is_dead:
+			_shatter(SkillCatalog.by_id(skill_id))
 	after_buff_change()
+
+
+## L'Éclatement du Tombeau (jalon 36) : un buff lancé qui s'éteint éclate. Pas celui
+## d'une ruée, qui a déjà éclaté à l'arrivée.
+func _shatter(skill: Skill) -> void:
+	if skill == null or skill.shape != Skill.Shape.BUFF:
+		return
+	var cast := resolve(skill, skill_points(skill.id))
+	if cast.end_burst > 0.0:
+		Explosion.put(
+			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
+			DamageType.COLORS[cast.nature], states, cast
+		)
 
 
 ## L'allumage, son pendant : la fiche reçoit les lignes du buff.
@@ -1002,9 +1023,9 @@ func refill_flasks() -> void:
 ## Publique : un buff dont les charges tombent la rappelle.
 func after_buff_change() -> void:
 	_bound = ""
-	for skill in lit_skills():
-		if skill.binds_caster:
-			_bound = skill.id
+	for id: String in _lit:
+		if lit(id) and _lit[id] is Buff and (_lit[id] as Buff).binds:
+			_bound = id
 	_restat()
 	buffs_changed.emit()
 

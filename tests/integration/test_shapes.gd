@@ -1718,3 +1718,167 @@ func test_a_buff_drains_what_its_tree_leaves() -> void:
 	var drained := mana - _p.mana
 	var full := SkillCatalog.by_id("static_electricity").mana_per_second
 	assert_almost_eq(drained, full * 0.5, full * 0.1)
+
+
+# --------------------------------------------------------------------------
+# Les arbres du froid (jalon 36)
+# --------------------------------------------------------------------------
+
+## Éclats : en retombant, l'étoile part du cercle et épargne ce qu'il a mordu.
+func test_sinking_spikes_throw_shards_that_spare_the_bitten() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 3.0]])
+	var bitten := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(IceSpikes.LIFETIME + 0.05)
+	assert_eq(_children_of(Projectile).size(), 3)
+	await wait_seconds(0.3)
+	assert_eq(_hits(bitten), 1, "les éclats l'épargnent")
+
+
+func test_spikes_leave_frozen_ground() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.GROUND, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(DashTrail).size(), 1)
+
+
+func test_a_frozen_nova_leaves_ground_under_its_caster() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.GROUND, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	var ground: Array = _children_of(DashTrail)
+	assert_eq(ground.size(), 1)
+	assert_eq((ground[0] as Node2D).global_position, _p.global_position)
+	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
+	assert_eq((ground[0] as DashTrail)._cast.radius, cast.radius, "de la taille de la nova")
+
+
+## Le Sillon : des cercles en ligne jusqu'au point visé, chacun mord une fois.
+func test_an_ice_furrow_raises_spikes_in_a_line_to_the_aim() -> void:
+	_learn_with("manual_cold", "ice_spike", [], Skill.Shape.FISSURE)
+	var near := _target(Vector2(30, 0))
+	var far := _target(Vector2(Player.PLACEMENT_RANGE - 20.0, 0))
+	var aside := _target(Vector2(80, 60))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_gt(_children_of(IceSpikes).size(), 2)
+	await wait_seconds(0.6)
+	assert_eq(_hits(near), 1)
+	assert_eq(_hits(far), 1)
+	assert_eq(_hits(aside), 0, "hors de la ligne")
+
+
+## Avec Éclats, chaque cercle du Sillon projette les siens en retombant.
+func test_each_circle_of_a_furrow_throws_its_shards() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 2.0]], Skill.Shape.FISSURE)
+	assert_true(_p.cast_slot(2))
+	var circles := _children_of(IceSpikes).size()
+	assert_gt(circles, 1)
+	await wait_seconds(IceSpikes.FISSURE_STEP * float(circles) + IceSpikes.LIFETIME + 0.05)
+	assert_eq(_children_of(Projectile).size(), circles * 2)
+
+
+## L'Onde de givre : plus loin qu'une nova, une fois chacun.
+func test_a_frost_wave_reaches_three_radii_once_each() -> void:
+	_learn_with("manual_cold", "ice_nova", [], Skill.Shape.RING)
+	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
+	var close := _target(Vector2(20, 0))
+	var far := _target(Vector2(-cast.radius * 2.5, 0))
+	var beyond := _target(Vector2(0, cast.radius * FrostRing.REACH + 30.0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(FrostRing.LIFETIME + 0.1)
+	assert_eq(_hits(close), 1)
+	assert_eq(_hits(far), 1, "au-delà du rayon d'une nova")
+	assert_eq(_hits(beyond), 0)
+
+
+## L'Aspiration : chaque impulsion tire vers le cœur, par un recul négatif.
+func test_a_sucking_vortex_pulls_toward_its_heart() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.PULL, 120.0]])
+	var prey := _target(Vector2(15, 0))
+	var pulls := []
+	prey.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(pulls, [-120.0])
+
+
+func test_an_avalanche_bursts_when_the_vortex_ends() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.END_BURST, 30.0], ["duration", -80.0, true]])
+	assert_true(_p.cast_slot(2))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	while is_instance_valid(vortex):
+		await wait_physics_frames(1)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1)
+
+
+## L'Implosion se resserre, puis éclate de tout son rayon — sans nœud d'Avalanche.
+func test_an_implosion_closes_in_then_bursts_whole() -> void:
+	_learn_with("manual_cold", "winter_disaster", [["duration", -80.0, true]], Skill.Shape.IMPLOSION)
+	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
+	assert_true(_p.cast_slot(2))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	assert_almost_eq(vortex.reach(), cast.radius, 0.01, "il part à pleine taille")
+	await wait_seconds(cast.duration * 0.5)
+	assert_lt(vortex.reach(), cast.radius * 0.7, "et se resserre")
+	var edge := _target(Vector2(cast.radius * 0.9, 0))
+	while is_instance_valid(vortex):
+		await wait_physics_frames(1)
+	await wait_physics_frames(2)
+	assert_eq(_hits(edge), 1, "l'éclatement final prend tout le rayon")
+
+
+## Éclatement : en sortant du tombeau, de soi-même, il éclate.
+func test_leaving_the_tomb_shatters_it() -> void:
+	_learn_with("manual_cold", "frost_tomb", [["damage_cold", 10.0], [SkillStats.END_BURST, 30.0]])
+	var near := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.lit("frost_tomb"))
+	await wait_physics_frames(2)
+	assert_eq(_hits(near), 1)
+
+
+## Un buff de ruée ne rééclate pas en finissant : il a éclaté à l'arrivée.
+func test_only_a_cast_buff_shatters() -> void:
+	_learn_with("manual_lightning", "storm_dash", [["damage_lightning", 10.0], [SkillStats.END_BURST, 30.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var bursts := _children_of(Explosion).size()
+	_p.extinguish("storm_dash")
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), bursts)
+
+
+## L'Armure de givre : le tombeau protège sans enfermer.
+func test_frost_armor_protects_without_binding() -> void:
+	_learn("manual_cold", [
+		"frost_tomb", "frost_tomb_thaw", "frost_tomb_thaw", "frost_tomb_frost_armor",
+	])
+	assert_true(_p.invest(0, "ice_spike"))
+	_p.bar.put(3, "ice_spike")
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit("frost_tomb"))
+	assert_lt(_p.stats.damage_taken, 0.0, "il protège")
+	assert_true(_p.cast_slot(3), "et les autres sorts partent")
+
+
+## Dégel : le soin du tombeau se lit sur le lancer résolu.
+func test_the_tomb_mends_what_its_tree_gives() -> void:
+	_learn_with("manual_cold", "frost_tomb", [["self_heal", 100.0, true]])
+	var tomb := SkillCatalog.by_id("frost_tomb")
+	_p._set_health(_p.stats.max_health * 0.2)
+	var wounded := _p.health
+	assert_true(_p.cast_slot(2))
+	_p.stats.health_regen = 0.0
+	await wait_seconds(1.0)
+	var mended := _p.health - wounded
+	var full := _p.stats.max_health * tomb.self_heal
+	assert_almost_eq(mended, full * 2.0, full * 0.2)

@@ -1713,8 +1713,8 @@ msgstr "enemies pierced"
 msgid "nombre d'éclats"
 msgstr "shards"
 
-msgid "secondes de sol brûlant"
-msgstr "seconds of burning ground"
+msgid "secondes de sol laissé"
+msgstr "seconds of ground left behind"
 
 msgid "rayon de l'explosion finale"
 msgstr "final explosion radius"
@@ -3284,8 +3284,8 @@ msgstr "Applied by fire. Burns {part} of the fire taken per second, for {duree} 
 msgid "Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s."
 msgstr "Applied by lightning. The numbed take {force} more damage, for {duree} s."
 
-msgid "Posé par le froid. Le transi perd {force} de vitesse — déplacement, attaque et incantation —, pendant {duree} s."
-msgstr "Applied by cold. The chilled lose {force} speed — movement, attack and casting —, for {duree} s."
+msgid "Posé par le froid. Le transi perd {force} de vitesse — déplacement, attaque et incantation —, pendant {duree} s. Certains nœuds du Maître du froid le rendent plus fort."
+msgstr "Applied by cold. The chilled lose {force} speed — movement, attack and casting —, for {duree} s. Some nodes of the Master of Cold make it stronger."
 
 msgid "Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle."
 msgstr "Applied by necrotic. Burns {part} of the necrotic taken per second, for {duree} s, and gives its author {soin} of what it burns."
@@ -3319,3 +3319,153 @@ msgstr "GUIDE"
 
 msgid "Guide"
 msgstr "Guide"
+
+msgid "Les pics frappent plus fort."
+msgstr "The spikes hit harder."
+
+msgid "Les pics percent sur un cercle plus large."
+msgstr "The spikes break through over a wider circle."
+
+msgid "Les pics se lancent plus vite."
+msgstr "The spikes are cast faster."
+
+msgid "Engelure"
+msgstr "Chilblain"
+
+msgid "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
+msgstr "Increases the chance that this spell applies the state of its nature to what it hits — chill for cold, which slows the enemy."
+
+msgid "En retombant, les pics projettent des éclats de glace en étoile, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
+msgstr "As they sink back, the spikes throw ice shards in a star, which spare what they have already bitten. Each shard carries {part_eclat}% of the damage."
+
+msgid "Givre persistant"
+msgstr "Lingering Frost"
+
+msgid "Les pics laissent un sol gelé, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts, dans un rayon de {rayon_sol}."
+msgstr "The spikes leave frozen ground, which hits whatever stands on it every {rythme_sol} s for {part_sol}% of the damage, within a radius of {rayon_sol}."
+
+msgid "Froid mordant"
+msgstr "Biting Cold"
+
+msgid "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
+msgstr "The chill this spell applies slows more. A weaker chill neither replaces nor extends it."
+
+msgid "Acharnement"
+msgstr "Relentless"
+
+msgid "Ce sort frappe plus fort un ennemi transi."
+msgstr "This spell hits a chilled enemy harder."
+
+msgid "Bris"
+msgstr "Shatter"
+
+msgid "Un ennemi tué par les pics explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by the spikes explodes if it bears the state of their nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
+
+msgid "Un ennemi tué par la nova explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by the nova explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
+
+msgid "Un ennemi tué par l'éclatement explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by the shattering explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
+
+msgid "Un ennemi tué par le vortex explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by the vortex explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
+
+msgid "Sillon de glace"
+msgstr "Ice Furrow"
+
+msgid "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre. Avec Éclats, chaque cercle projette les siens."
+msgstr "The spikes no longer break through at the aimed point: they rise in a line, from you to it, one circle after another. With Shards, each circle throws its own."
+
+msgid "La nova frappe plus fort."
+msgstr "The nova hits harder."
+
+msgid "La nova porte plus loin."
+msgstr "The nova reaches farther."
+
+msgid "La nova se lance plus vite."
+msgstr "The nova is cast faster."
+
+msgid "La nova laisse sous vous un sol gelé de sa taille, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts."
+msgstr "The nova leaves frozen ground of its own size under you, which hits whatever stands on it every {rythme_sol} s for {part_sol}% of the damage."
+
+msgid "Onde de givre"
+msgstr "Frost Wave"
+
+msgid "La nova devient un anneau qui s'élargit depuis vous jusqu'à trois fois son rayon, et frappe une fois chaque ennemi qu'il passe. Le sol gelé ne sert plus."
+msgstr "The nova becomes a ring that widens from you up to three times its radius, and hits each enemy it passes once. Frozen ground no longer applies."
+
+msgid "Glace épaisse"
+msgstr "Thick Ice"
+
+msgid "Tant que le tombeau tient, vous subissez moins de dégâts."
+msgstr "While the tomb holds, you take less damage."
+
+msgid "Dégel"
+msgstr "Thaw"
+
+msgid "Le tombeau vous soigne plus vite."
+msgstr "The tomb heals you faster."
+
+msgid "Longue nuit"
+msgstr "Long Night"
+
+msgid "Le tombeau tient plus longtemps."
+msgstr "The tomb holds longer."
+
+msgid "Tant que le tombeau tient, vous résistez mieux au froid."
+msgstr "While the tomb holds, you resist cold better."
+
+msgid "Le tombeau draine moins de mana."
+msgstr "The tomb drains less mana."
+
+msgid "Quand vous sortez du tombeau, à sa fin ou de vous-même, il éclate : une explosion de froid dans ce rayon autour de vous."
+msgstr "When you leave the tomb, at its end or by yourself, it shatters: a cold explosion within this radius around you."
+
+msgid "Armure de givre"
+msgstr "Frost Armor"
+
+msgid "Le tombeau ne vous enferme plus : vous marchez et lancez vos autres sorts sous sa protection et son soin. Mais il tient moitié moins, et sa recharge est fixée à {recharge_libre} s, quoi que vous portiez."
+msgstr "The tomb no longer locks you in: you walk and cast your other spells under its protection and healing. But it holds half as long, and its cooldown is fixed at {recharge_libre} s, whatever you wear."
+
+msgid "Le vortex frappe plus fort."
+msgstr "The vortex hits harder."
+
+msgid "Le vortex dure plus longtemps, et grandit plus lentement."
+msgstr "The vortex lasts longer, and grows more slowly."
+
+msgid "Bourrasque"
+msgstr "Gust"
+
+msgid "Le vortex atteint un rayon plus large."
+msgstr "The vortex reaches a wider radius."
+
+msgid "Rafales"
+msgstr "Squalls"
+
+msgid "Le vortex frappe plus souvent, mais dure moins longtemps."
+msgstr "The vortex hits more often, but lasts less long."
+
+msgid "Aspiration"
+msgstr "Suction"
+
+msgid "Chaque impulsion du vortex tire les ennemis qu'elle frappe vers son cœur."
+msgstr "Each pulse of the vortex pulls the enemies it hits toward its heart."
+
+msgid "Avalanche"
+msgstr "Avalanche"
+
+msgid "Le vortex éclate en finissant : une explosion de froid dans ce rayon autour de son cœur."
+msgstr "The vortex bursts as it ends: a cold explosion within this radius around its heart."
+
+msgid "Implosion"
+msgstr "Implosion"
+
+msgid "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon. L'avalanche ne sert plus."
+msgstr "The vortex starts at full size and closes in to its heart, where it bursts with its whole radius. Avalanche no longer applies."
+
+msgid "effet du transi"
+msgstr "chill effect"
+
+msgid "force d'aspiration"
+msgstr "suction strength"

@@ -26,6 +26,8 @@ const CHIP_STEP := 3.0
 ## Les flocons aspirés vers le cœur, hors des bras.
 const FLAKES := 8
 const FADE := 0.4
+## L'Implosion (jalon 36) : jusqu'où elle se resserre avant d'éclater de tout son rayon.
+const IMPLODED_PART := 0.15
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -56,6 +58,8 @@ func _ready() -> void:
 ## Ce qu'il couvre maintenant : de `SEED_PART` à son rayon plein, linéairement.
 func reach() -> float:
 	var grown := clampf(_age / _cast.duration, 0.0, 1.0) if _cast.duration > 0.0 else 1.0
+	if _cast.shape == Skill.Shape.IMPLOSION:
+		return _cast.radius * lerpf(1.0, IMPLODED_PART, grown)
 	return _cast.radius * lerpf(SEED_PART, 1.0, grown)
 
 
@@ -69,11 +73,22 @@ func _physics_process(delta: float) -> void:
 		_strikes += 1
 	queue_redraw()
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
+		_end()
 		queue_free()
 
 
+## L'Implosion éclate de tout son rayon ; l'Avalanche, du sien.
+func _end() -> void:
+	var burst := _cast.radius if _cast.shape == Skill.Shape.IMPLOSION else _cast.end_burst
+	if burst > 0.0:
+		Explosion.put(
+			get_parent(), global_position, _cast.roll(Game.rng), burst, null, _tint, _author, _cast
+		)
+
+
+## L'Aspiration : chaque impulsion tire vers le cœur, par un recul inversé.
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, reach(), _cast, _author)
+	Targets.strike_circle(get_world_2d(), global_position, reach(), _cast, _author, -_cast.pull)
 
 
 ## Un tourbillon, et non un cercle de pics : quatre bras d'éclats **couchés sur

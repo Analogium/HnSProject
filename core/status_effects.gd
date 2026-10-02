@@ -151,6 +151,9 @@ class State:
 	## Ce qu'il brûle par seconde, avant l'engourdissement. Zéro pour les trois qui
 	## ne blessent pas.
 	var per_second := 0.0
+	## Le facteur de son effet, 1 à la base : un transi « plus fort » ralentit davantage
+	## (jalon 36). Comparé dans `put()` comme `per_second`.
+	var strength := 1.0
 	## Faible : deux pourritures croisées se tiendraient en vie (RefCounted).
 	var author: WeakRef
 	## La compétence qui l'a posé (`SkillStats.skill_id`), vide sans lancer.
@@ -271,9 +274,10 @@ func kinds() -> Array[int]:
 ## `max_hp` à zéro : pas de bonus, faute de PV connus.
 ## `cast_increase` est ce que le lancer **accroît** à sa chance, en points de
 ## pourcentage : une nova de glace transit mieux qu'un coup de froid ordinaire.
+## `chill_effect` accroît la force du transi qu'il pose, en points de pourcentage.
 func suffer(
 	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
-	cast_increase := 0.0, source := ""
+	cast_increase := 0.0, source := "", chill_effect := 0.0
 ) -> void:
 	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux.
 	var better := author.chance_factors if author != null else neutral_factors()
@@ -282,7 +286,8 @@ func suffer(
 		if part <= 0.0:
 			continue
 		if rng.randf() < chance(part, max_hp, factor_of(better[kind], cast_increase)):
-			put(kind, part, author, source)
+			var strength := 1.0 + chill_effect * 0.01 if kind == Kind.CHILL else 1.0
+			put(kind, part, author, source, strength)
 
 
 ## Ce qu'un **lancer** pose à ce qu'il touche, à sa chance : la décomposition de la
@@ -321,9 +326,11 @@ static func factor_of(worn: float, cast_increase: float) -> float:
 
 
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de
-## la même sorte, ce qui brûle garde le plus fort — sinon de petites braises
-## éteindraient la grosse ; les autres retrouvent leur durée.
-func put(kind: int, part: float, author: StatusEffects = null, source := "") -> void:
+## la même sorte, le plus fort reste — sinon de petites braises éteindraient la grosse,
+## et un transi ordinaire effacerait celui d'un nœud ; à force égale, la durée repart.
+func put(
+	kind: int, part: float, author: StatusEffects = null, source := "", strength := 1.0
+) -> void:
 	var per_second := part * burn_per_second(kind)
 	var state := _state(kind)
 	var fresh := state == null
@@ -331,16 +338,20 @@ func put(kind: int, part: float, author: StatusEffects = null, source := "") -> 
 		state = State.new()
 		state.kind = kind
 		_states.append(state)
-	elif per_second < state.per_second:
+	elif per_second < state.per_second or strength < state.strength:
 		return
+	var stronger := strength > state.strength
 	state.remaining = DURATIONS[kind]
 	state.per_second = per_second
+	state.strength = strength
 	state.author = weakref(author) if author != null else null
 	state.source = source
 	if fresh:
 		_recompute()
 		reached.emit(kind)
 		change.emit()
+	elif stronger:
+		_recompute()
 
 
 ## Rend ce que les états ont brûlé pendant ce pas, **à ôter par l'appelant**
@@ -406,7 +417,8 @@ func clear() -> void:
 
 func _recompute() -> void:
 	is_clear = _states.is_empty()
-	speed_factor = 1.0 - CHILL if active(Kind.CHILL) else 1.0
+	var chill := _state(Kind.CHILL)
+	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
 	damage_taken_factor = 1.0 + NUMB if active(Kind.NUMB) else 1.0
 	damage_dealt_factor = 1.0 - BLESSING if active(Kind.BLESSING) else 1.0
 

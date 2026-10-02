@@ -290,10 +290,11 @@ un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer
      règle qu'il modifie** : la mitigation dans `Hurtbox`, la marche dans
      `Enemy.movement_speed()`, la cadence dans `Enemy._cool_down()` et
      `Player._physics_process()`. Jamais une seconde copie de la règle. Sa force est
-     **une constante** (`CURSE`, `CHILL`…) : une réapplication ne fait que rafraîchir.
-     Le jour où elle se renforce (passif, talent), la porter sur `State` et la comparer
-     dans `put()` comme `per_second` — la plus forte l'emporte, la plus faible ne
-     rafraîchit rien.
+     **une constante** (`CURSE`, `CHILL`…), multipliée par `State.strength` — 1 sauf
+     pour le transi d'un lancer qui le renforce (`chill_effect`, jalon 36). `put()` la
+     compare comme `per_second` : la plus forte l'emporte, la plus faible ne rafraîchit
+     rien. Un état qui se renforce à son tour lit `strength` dans `_recompute()` et
+     reçoit la sienne de `suffer()`.
 3. **Son icône** : un masque 7×7 dans `StatusIcon.MASKS`, à la même place que
    dans `Kind`. Le reste — la couleur de l'icône, la teinte et l'annonce — lit
    `StatusEffects.color()`, la couleur de sa nature, sauf quand elle ne se lit pas sur un
@@ -733,6 +734,7 @@ l'orienteraient chacun à leur façon.
    | `lines` | Comme celles d'un passif, mais **sans portée** — et `first_point_bonus`, ce que le premier point donne en plus : 2 s de sol au premier point et 5 s au troisième se disent 1,5 par point et 0,5 au premier : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` — dont `use_time` et `recharge` depuis le jalon 23. **`interval` ne se vise pas**, il se déduit des deux |
    | `converts` / `converts_to` | **Une conversion, tout ou rien** (jalon 34) : la compétence devient de cette nature — dégâts, mot-clé, état, couleur. `points_max = 1`, et une seule par arbre. Le drapeau dit s'il y a conversion : l'enum commence au physique |
    | `transforms` / `shape` | **Une transformation** : la forme qui remplace celle de la compétence au lancer. Les deux formes dans `Skill.TRANSFORMABLE`, et le nœud **apporte les nombres de la sienne** — un rayon pour une nova, une durée pour un nuage — ou `Skill.SHAPE_NUMBERS`, quand la ligne qui les donnerait s'écrirait en perte (l'intervalle d'un orbe). Une forme neuve se branche dans `Player.cast_slot()`, `KEYWORD_OF_SHAPE` et `TRANSFORMABLE`, et ce qu'elle ignore de son arbre dans `IGNORED_BY_SHAPE` |
+   | `frees` | **L'affranchissement** (jalon 36, l'Armure de givre) : le geste n'enferme plus son lanceur, et sa recharge est fixée à `SkillStats.FREED_RECHARGE`, quoi qu'il porte. Un buff ne se transforme pas, d'où ce drapeau à part ; il compte comme une mécanique pour la pastille |
 
 2. **Un échange se dit dans les deux sens** : « +2 projectiles » et
    « −25 % dégâts » sur le même nœud. C'est le seul endroit du jeu où un point
@@ -747,8 +749,9 @@ l'orienteraient chacun à leur façon.
 
 3. **Changer le jeu plutôt qu'un nombre** (jalon 34) : une ligne peut allumer un
    **nombre de mécanique** — `pierce`, `splits`, `ground_duration`, `end_burst`,
-   `kill_burst`, `seek_radius`, et pour la foudre `bounces`, `jump_reach`, `jump_gain`,
-   `trail_charges` (`SkillStats.PIERCE` et suivants). Chacun n'est lu
+   `kill_burst`, `seek_radius`, pour la foudre `bounces`, `jump_reach`, `jump_gain`,
+   `trail_charges`, pour le froid `chill_effect` et `pull` (`SkillStats.PIERCE` et
+   suivants). Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
    le dit : avant d'en poser une, vérifier que la forme de la compétence la lit, ou

@@ -243,6 +243,35 @@ func test_a_state_refreshes_then_leaves() -> void:
 	assert_eq(_changes, 2, "et sa fin se voit")
 
 
+## Froid mordant (jalon 36) : un transi plus fort ralentit plus, et un plus faible ne
+## l'écrase ni ne le prolonge — la règle des brûlures.
+func test_a_stronger_chill_holds_against_a_weaker_one() -> void:
+	var e := StatusEffects.new()
+	e.put(StatusEffects.Kind.CHILL, 1.0, null, "", 1.4)
+	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.4, 0.0001)
+	e.advance(1.0)
+	e.put(StatusEffects.Kind.CHILL, 1.0)
+	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.4, 0.0001, "pas écrasé")
+	assert_lt(e.remaining(StatusEffects.Kind.CHILL), StatusEffects.DURATIONS[StatusEffects.Kind.CHILL], "ni prolongé")
+	e.advance(StatusEffects.DURATIONS[StatusEffects.Kind.CHILL])
+	e.put(StatusEffects.Kind.CHILL, 1.0)
+	assert_almost_eq(e.speed_factor, 0.75, 0.0001, "fini, un ordinaire reprend")
+	e.put(StatusEffects.Kind.CHILL, 1.0, null, "", 1.2)
+	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.2, 0.0001, "un plus fort remplace")
+
+
+## Le coup porte la force de son lancer jusqu'au transi qu'il pose.
+func test_a_cast_chill_effect_reaches_the_chill_it_puts() -> void:
+	var e := StatusEffects.new()
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.COLD] = 10.0
+	var always := RandomNumberGenerator.new()
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.CHILL] = 100.0
+	e.suffer(parts, author, always, 0.0, 0.0, "", 30.0)
+	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.3, 0.0001)
+
+
 func test_ignite_replays_the_fire_received_over_its_duration() -> void:
 	var e := StatusEffects.new()
 	e.put(StatusEffects.Kind.IGNITE, 20.0)

@@ -109,7 +109,7 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 ) + [
 	"ignite_chance", "static_charge_chance", "chill_chance", "blessing_chance", "rot_chance",
 	"damage_taken", "cooldown_recovery", "status_chance_increase",
-	"crawl_speed", "jump_gain",
+	"crawl_speed", "jump_gain", "chill_effect",
 ]
 
 var stat: String

@@ -13,7 +13,8 @@ extends RefCounted
 ## de `recharge`. `interval` n'y est pas : il se déduit des deux. Depuis le jalon 34,
 ## les **nombres de mécanique** — zéro sur la compétence, un nœud les allume, la forme
 ## les lit — et `period`, `self_burn`, `status_chance_increase`, que ses échanges visent ;
-## `mana_per_second` depuis le jalon 35, que le buff draine depuis son lancer résolu.
+## `mana_per_second` depuis le jalon 35, `self_heal` depuis le 36, que le buff draine et
+## rend depuis son lancer résolu.
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -32,9 +33,11 @@ const LABELS := {
 	"self_burn": "brûlure subie",
 	"status_chance_increase": "chance d'état",
 	"mana_per_second": "mana drainé",
+	"self_heal": "soin",
+	CHILL_EFFECT: "effet du transi",
 	PIERCE: "nombre d'ennemis traversés",
 	SPLITS: "nombre d'éclats",
-	GROUND: "secondes de sol brûlant",
+	GROUND: "secondes de sol laissé",
 	END_BURST: "rayon de l'explosion finale",
 	KILL_BURST: "rayon de l'explosion des tués",
 	SEEK: "rayon de chasse",
@@ -45,6 +48,7 @@ const LABELS := {
 	JUMP_REACH: "portée des sauts",
 	JUMP_GAIN: "dégâts en plus par saut",
 	TRAIL_CHARGES: "charges statiques semées",
+	PULL: "force d'aspiration",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -64,6 +68,8 @@ const AGREEMENT := {
 	"self_burn": "fs",
 	"status_chance_increase": "fs",
 	"mana_per_second": "ms",
+	"self_heal": "ms",
+	CHILL_EFFECT: "ms",
 	PIERCE: "ms",
 	SPLITS: "ms",
 	GROUND: "fp",
@@ -77,6 +83,7 @@ const AGREEMENT := {
 	JUMP_REACH: "fs",
 	JUMP_GAIN: "mp",
 	TRAIL_CHARGES: "fp",
+	PULL: "fs",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -100,11 +107,15 @@ const BOUNCES := "bounces"
 const JUMP_REACH := "jump_reach"
 const JUMP_GAIN := "jump_gain"
 const TRAIL_CHARGES := "trail_charges"
+## Ceux du froid (jalon 36) : la force du transi posé, en points de pourcentage, et la
+## vitesse vers le cœur que donne chaque impulsion du vortex (un recul inversé).
+const CHILL_EFFECT := "chill_effect"
+const PULL := "pull"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
-	BOUNCES, JUMP_GAIN, TRAIL_CHARGES,
+	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL,
 ]
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
@@ -116,6 +127,9 @@ const KILL_BURST_PART := 0.5
 const SPLIT_PART := 0.4
 ## La part d'un coup de la ruée que porte chaque charge de son sillage statique.
 const TRAIL_CHARGE_PART := 0.5
+## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
+## récupération ne la bougent. Le prix de marcher sous sa protection.
+const FREED_RECHARGE := 5.0
 ## La vie des petits qu'un serpent relâche (`SPLITS` sur `HellSnake`).
 const HATCHLING_LIFE := 2.0
 
@@ -183,6 +197,10 @@ var bounces := 0.0
 var jump_reach := 0.0
 var jump_gain := 0.0
 var trail_charges := 0.0
+var chill_effect := 0.0
+var pull := 0.0
+## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
+var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
 var sustained := false
 var mana_cost := 0.0
@@ -385,15 +403,17 @@ static func facts() -> Dictionary:
 		"part_tue": roundi(KILL_BURST_PART * 100.0),
 		"vie_petit": roundi(HATCHLING_LIFE),
 		"part_charge": roundi(TRAIL_CHARGE_PART * 100.0),
+		"recharge_libre": roundi(FREED_RECHARGE),
 	}
 
 
 ## Le lancer du sol brûlant qu'il laisse : un lancer dérivé, rythmé comme un sillage.
-func ground() -> SkillStats:
+## `GROUND_RADIUS` sous un impact ; la nova pose le sien à sa taille (jalon 36).
+func ground(p_radius := GROUND_RADIUS) -> SkillStats:
 	var g := _derived(GROUND_PART)
 	g.duration = ground_duration
 	g.period = GROUND_PERIOD
-	g.radius = GROUND_RADIUS
+	g.radius = p_radius
 	return g
 
 
@@ -425,6 +445,7 @@ func _derived(part: float) -> SkillStats:
 	g.crit_chance = crit_chance
 	g.crit_multiplier = crit_multiplier
 	g.status_chance_increase = status_chance_increase
+	g.chill_effect = chill_effect
 	g.crawl_speed = crawl_speed
 	return g
 

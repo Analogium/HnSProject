@@ -782,7 +782,7 @@ func test_no_manual_fills_up_entirely() -> void:
 ## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
 ## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
 const SHALLOW_TREES := [
-	"manual_weapons", "manual_cold", "manual_holy", "manual_necrotic",
+	"manual_weapons", "manual_holy", "manual_necrotic",
 ]
 
 
@@ -850,3 +850,29 @@ func test_a_node_says_what_kind_it_is() -> void:
 	shaped.transforms = true
 	assert_eq(shaped.kind(), "transformation")
 
+	var freeing := _node("f", [] as Array[TalentLine])
+	freeing.frees = true
+	assert_eq(freeing.kind(), "mécanique", "l'affranchissement change le jeu")
+
+
+## L'Armure de givre (jalon 36) : le tombeau n'enferme plus, sur le lancer seulement.
+func test_a_freeing_node_unbinds_the_cast() -> void:
+	var tomb := SkillCatalog.by_id("frost_tomb")
+	assert_true(tomb.resolve(1, null).binds_caster)
+	var node := _node("f", [] as Array[TalentLine])
+	node.frees = true
+	var invested := InvestedTalent.new(node, 1)
+	assert_false(tomb.resolve(1, null, [], [invested]).binds_caster)
+	assert_true(tomb.binds_caster, "la compétence ne change pas")
+
+
+## Et sa recharge est fixe : ni ligne ni récupération ne la bougent.
+func test_a_freed_cast_has_a_fixed_recharge() -> void:
+	var tomb := SkillCatalog.by_id("frost_tomb")
+	var stats := CharacterStats.new()
+	stats.cooldown_recovery = 80.0
+	var node := _node("f", [_line("recharge", -50.0, true)] as Array[TalentLine])
+	node.frees = true
+	var cast := tomb.resolve(1, stats, [], [InvestedTalent.new(node, 1)])
+	assert_eq(cast.recharge, SkillStats.FREED_RECHARGE)
+	assert_eq(cast.interval, SkillStats.FREED_RECHARGE)

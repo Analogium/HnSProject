@@ -35,6 +35,11 @@ extends Resource
 @export var transforms := false
 @export var shape: Skill.Shape = Skill.Shape.ARC
 
+## L'affranchissement (jalon 36) : le geste n'enferme plus son lanceur, et sa recharge
+## est fixée à `SkillStats.FREED_RECHARGE` — l'Armure de givre. Un buff ne se transforme
+## pas (`Skill.TRANSFORMABLE`), d'où un drapeau à part.
+@export var frees := false
+
 
 func displayed_name() -> String:
 	return Texts.t(name)
@@ -50,6 +55,8 @@ func kind() -> String:
 		return KINDS[0]
 	if converts:
 		return KINDS[1]
+	if frees:
+		return KINDS[2]
 	for line in lines:
 		if line.stat in SkillStats.MECHANICS:
 			return KINDS[2]

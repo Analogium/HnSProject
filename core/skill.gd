@@ -38,6 +38,8 @@ enum Shape {
 	METEOR, LEAP,
 	# Jalon 35 : l'Orbe statique, la Toile d'arcs, l'Orage portatif.
 	ORB, WEB, TEMPEST,
+	# Jalon 36 : le Sillon de glace, l'Onde de givre, l'Implosion.
+	FISSURE, RING, IMPLOSION,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -83,6 +85,9 @@ const KEYWORD_OF_SHAPE := {
 	Shape.SPIKES: Keywords.AREA,
 	Shape.NOVA: Keywords.AREA,
 	Shape.VORTEX: Keywords.AREA,
+	Shape.FISSURE: Keywords.AREA,
+	Shape.RING: Keywords.AREA,
+	Shape.IMPLOSION: Keywords.AREA,
 	# Le faisceau n'y est **pas** : une ligne n'est ni un tir ni une surface, et lui
 	# prêter `area` promettrait un affixe qui ne le servirait pas.
 	Shape.PILLAR: Keywords.AREA,
@@ -111,7 +116,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
 	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
-	Shape.ORB, Shape.WEB, Shape.TEMPEST,
+	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -123,6 +128,9 @@ const IGNORED_BY_SHAPE := {
 	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES],
 	Shape.WEB: [SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN],
 	Shape.TEMPEST: [SkillStats.SEEK],
+	# L'onde passe sans se poser : nulle part où laisser un sol. L'implosion éclate déjà.
+	Shape.RING: [SkillStats.GROUND],
+	Shape.IMPLOSION: [SkillStats.END_BURST],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
@@ -389,7 +397,9 @@ func resolve(
 ) -> SkillStats:
 	var own_nature := nature_at(turn)
 	var cast_shape := shape
+	var freed := false
 	for t: InvestedTalent in talents:
+		freed = freed or t.node.frees
 		if t.node.converts:
 			own_nature = t.node.converts_to
 		if t.node.transforms:
@@ -410,6 +420,7 @@ func resolve(
 	r.status_chance_increase = status_chance_increase
 	r.inflicted_state = inflicted_state
 	r.inflict_chance = inflict_chance
+	r.binds_caster = binds_caster and not freed
 	r.shape = cast_shape
 	var brought: Dictionary = SHAPE_NUMBERS.get(cast_shape, {})
 	for number: String in brought:
@@ -447,6 +458,8 @@ func resolve(
 	r.place_the_base(own_nature, own)
 
 	StatMod.apply(r, fields)
+	if freed:
+		r.recharge = SkillStats.FREED_RECHARGE
 	var increased := 0.0
 	var more := 1.0
 	for m in damage_percents:
