@@ -66,6 +66,8 @@ var _cut: EffectForge.Piece
 var _bed_at: Array[Vector2] = []
 ## Les langues du feu, ou les flocons et les spores d'un sol converti.
 var _tongues: Array[Tongue] = []
+## Un sol (`patch()`) et non le couloir d'une ruée : lui seul ne cumule pas.
+var _ground := false
 
 
 class Tongue:
@@ -102,6 +104,7 @@ static func patch(
 	var trail := DashTrail.new()
 	trail._cast = ground
 	trail._author = author
+	trail._ground = true
 	trail._tint = DamageType.COLORS[ground.nature]
 	Settings.veil(trail, Settings.SPELLS)
 	DeferredTree.add_deferred(_layer(parent), trail, at)
@@ -147,10 +150,22 @@ func _strike() -> void:
 	for point in _probes():
 		for target in Targets.in_circle(get_world_2d(), point, _cast.radius):
 			var id := target.get_instance_id()
-			if struck.has(id):
+			if struck.has(id) or (_ground and not _first_ground_on(target)):
 				continue
 			struck[id] = true
 			Targets.strike(target, parts, point, _author, _cast)
+
+
+## **Un sol ne cumule pas** (jalon 37) : une cible déjà frappée par un sol de la même
+## compétence dans la période en cours ne l'est pas une seconde fois. Le Serpent en
+## empilait des dizaines sous une cible immobile — ×19 en duel au banc des arbres.
+func _first_ground_on(target: Hurtbox) -> bool:
+	var key := StringName("ground_" + _cast.skill_id)
+	var now := Engine.get_physics_frames()
+	if now - int(target.get_meta(key, -1_000_000)) < roundi(_cast.period * Engine.physics_ticks_per_second):
+		return false
+	target.set_meta(key, now)
+	return true
 
 
 ## Les centres des sondes, en repère global : les deux bouts au moins.

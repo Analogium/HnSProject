@@ -137,7 +137,7 @@ const IGNORED_BY_SHAPE := {
 ## devenu orbe n'a ni durée, ni rayon, ni rythme. Sans eux, la ligne du nœud qui les
 ## donnerait s'écrirait en perte — « +0,3 intervalle des frappes » en rouge.
 const SHAPE_NUMBERS := {
-	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.25},
+	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.33},
 }
 
 const HITS_PER_SHAPE := {

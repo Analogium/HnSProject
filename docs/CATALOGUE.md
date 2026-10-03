@@ -141,7 +141,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Point chaud | Chaîne d'éclairs | Réflexe (1) | 3 | +25 % de chance critique de base accrue |
 | Foudre au bout | Chaîne d'éclairs | Arc tendu (1) ou Crescendo (1) | 3 | +10 rayon de l'explosion finale |
 | Surtension | Chaîne d'éclairs | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
-| Toile d'arcs | Chaîne d'éclairs | Ramification (2) ou Court-circuit (1) | 1 | -20 % de dégâts atténués |
+| Toile d'arcs | Chaîne d'éclairs | Ramification (2) ou Court-circuit (1) | 1 | +5 % de dégâts amplifiés |
 | Cumulonimbus | Nuage d'orage | — | 4 | +8 % de dégâts amplifiés |
 | Front orageux | Nuage d'orage | — | 3 | +15 % de rayon accru |
 | Orage durable | Nuage d'orage | — | 3 | +20 % de durée accrue |
@@ -150,8 +150,8 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Orage errant | Nuage d'orage | Orage durable (1) | 1 | +120 rayon de chasse |
 | Coup de tonnerre | Nuage d'orage | Orage durable (2) ou Front orageux (2) | 3 | +12 rayon de l'explosion finale |
 | Point chaud | Nuage d'orage | Averse (1) | 3 | +25 % de chance critique de base accrue |
-| Grêle | Nuage d'orage | Cumulonimbus (2) | 1 | +15 % de dégâts amplifiés · devient froid |
-| Orage portatif | Nuage d'orage | Orage durable (2) ou Coup de tonnerre (1) | 1 | +100 % de durée accrue · -25 % de rayon réduit |
+| Grêle | Nuage d'orage | Cumulonimbus (2) | 1 | devient froid |
+| Orage portatif | Nuage d'orage | Orage durable (2) ou Coup de tonnerre (1) | 1 | +25 % de durée accrue · -15 % de rayon réduit |
 | Persistance | Ruée d'orage | — | 3 | +25 % de durée accrue |
 | Élan | Ruée d'orage | — | 2 | -10 % de recharge réduite |
 | Foulée | Ruée d'orage | — | 3 | +4 % de vitesse accrue |
@@ -230,7 +230,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Étincelles | Boule de feu | Souffle ardent (1) ou Ardeur (1) | 3 | +15 % chance d'état |
 | Fragmentation | Boule de feu | Perforation (1) ou Double langue (1) | 3 | +1 nombre d'éclats |
 | Réaction en chaîne | Boule de feu | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
-| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +150 % de dégâts amplifiés · +100 % de rayon accru · +60 % de temps du geste accru |
+| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +25 % de dégâts amplifiés · +200 % de rayon accru · +60 % de temps du geste accru |
 | Mue | Serpent infernal | — | 4 | +8 % de dégâts amplifiés |
 | Longue vie | Serpent infernal | — | 3 | +20 % de durée accrue |
 | Crocs | Serpent infernal | — | 2 | ajoute 4 à 9 dégâts de feu |
@@ -247,7 +247,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Pouls lent | Immolation | Fournaise (2) | 2 | +50 % d'intervalle des frappes accru · +60 % de dégâts amplifiés |
 | Étincelles | Immolation | Brasier (1) ou Fournaise (1) | 3 | +15 % chance d'état |
 | Phénix | Immolation | Cœur tiède (2) | 1 | +100 % de brûlure subie accrue · +40 % de dégâts amplifiés |
-| Flamme noire | Immolation | Pouls lent (1) | 1 | +15 % de dégâts amplifiés · devient nécrotique |
+| Flamme noire | Immolation | Pouls lent (1) | 1 | -5 % de dégâts atténués · devient nécrotique |
 | Cendres vivantes | Immolation | Brasier (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Contagion ardente | Immolation | Cendres vivantes (2) ou Phénix (1) | 1 | +30 rayon de l'explosion des tués |
 | Sillage | Ruée ardente | — | 3 | +25 % de durée accrue |
@@ -259,7 +259,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Brûle-pavé | Ruée ardente | Sillage (1) ou Bûcher (1) | 2 | +50 % de durée accrue · -15 % de dégâts atténués |
 | Onde de choc | Ruée ardente | Atterrissage (2) | 2 | +25 % de rayon de l'explosion finale accru |
 | Étincelles | Ruée ardente | Brûle-pavé (1) ou Tison (1) | 3 | +15 % chance d'état |
-| Bond | Ruée ardente | Atterrissage (1) ou Élan (2) | 1 | +150 % de dégâts amplifiés · +50 % de rayon de l'explosion finale accru |
+| Bond | Ruée ardente | Atterrissage (1) ou Élan (2) | 1 | +1000 % de dégâts amplifiés · +50 % de rayon de l'explosion finale accru |
 | Braise vive | Ignition | — | 4 | +6 % de dégâts de feu accrus |
 | Cendres froides | Ignition | — | 3 | -20 % de brûlure subie réduite |
 | Allure | Ignition | — | 3 | +4 % de vitesse accrue |
@@ -293,7 +293,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Froid mordant | Pics de glace | Engelure (1) | 3 | +10 % effet du transi |
 | Acharnement | Pics de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
 | Bris | Pics de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
-| Sillon de glace | Pics de glace | Poussée (2) ou Éclats (1) | 1 | -30 % de rayon réduit |
+| Sillon de glace | Pics de glace | Poussée (2) ou Éclats (1) | 1 | -30 % de rayon réduit · -40 % de dégâts atténués |
 | Morsure | Nova de glace | — | 4 | +8 % de dégâts amplifiés |
 | Souffle | Nova de glace | — | 3 | +10 % de rayon accru |
 | Réflexe | Nova de glace | — | 2 | -10 % de temps du geste réduit |
@@ -302,7 +302,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Givre persistant | Nova de glace | Souffle (2) | 2 | +1 secondes de sol laissé |
 | Acharnement | Nova de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
 | Bris | Nova de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
-| Onde de givre | Nova de glace | Souffle (2) ou Réflexe (2) | 1 | -20 % de dégâts atténués |
+| Onde de givre | Nova de glace | Souffle (2) ou Réflexe (2) | 1 | -30 % de dégâts atténués |
 | Glace épaisse | Tombeau de glace | — | 4 | -3 % dégâts subis |
 | Dégel | Tombeau de glace | — | 3 | +20 % de soin accru |
 | Longue nuit | Tombeau de glace | — | 3 | +20 % de durée accrue |

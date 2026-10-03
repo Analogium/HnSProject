@@ -166,18 +166,25 @@ stat = "radius"
 percentage = true
 value_per_point = -30.0
 
+[sub_resource type="Resource" id="L_ice_spike_fissure_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -40.0
+
 [sub_resource type="Resource" id="N_ice_spike_fissure"]
 script = ExtResource("3_noeud")
 id = "ice_spike_fissure"
 name = "Sillon de glace"
-description = "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre. Avec Éclats, chaque cercle projette les siens."
+description = "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre, chacun moins fort. Avec Éclats, chaque cercle projette les siens."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
 "ice_spike_upheaval": 2,
 "ice_spike_shards": 1
 })
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_fissure_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_fissure_0"), SubResource("L_ice_spike_fissure_1")])
 transforms = true
 shape = 30
 
@@ -325,7 +332,7 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = -20.0
+value_per_point = -30.0
 
 [sub_resource type="Resource" id="N_ice_nova_frost_wave"]
 script = ExtResource("3_noeud")
@@ -694,7 +701,7 @@ value_per_point = -30.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_implosion"
 name = "Implosion"
-description = "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon. L'avalanche ne sert plus."
+description = "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion. L'avalanche ne sert plus."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
 "winter_disaster_suction": 2,

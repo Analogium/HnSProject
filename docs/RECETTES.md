@@ -1111,7 +1111,12 @@ seul.
 tools/catalog.sh          # docs/CATALOGUE.md, depuis les .tres
 tools/balance.sh calculation # docs/EQUILIBRAGE.md, la grille seule
 tools/balance.sh        # et la simulation, bien plus lente
+tools/balance.sh trees  # docs/ARBRES.md, le banc des arbres (3 min 30, en parallèle)
+tools/balance.sh trees only=fireball,ice_nova   # ces compétences seules
 ```
+
+Après un réglage d'arbre — un nœud, une transformation, une conversion —, relancer le
+banc des arbres sur les compétences touchées et comparer aux critères du jalon 37.
 
 Après un réglage d'équilibrage — une échelle d'affixe, la courbe des ennemis, une table
 de dégâts —, relancer le calcul puis `tests/run.sh balance`. Un profil nouveau ou

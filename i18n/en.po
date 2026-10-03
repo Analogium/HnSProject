@@ -702,8 +702,8 @@ msgstr "An enemy killed by the discharge explodes if it bears the state of its n
 msgid "Toile d'arcs"
 msgstr "Arc Web"
 
-msgid "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc, un peu moins fort. Arc tendu et Crescendo ne servent plus."
-msgstr "The discharge no longer jumps: it strikes the nearest enemies around you all at once, each with its own arc, a little weaker. Taut Arc and Crescendo no longer apply."
+msgid "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc. Arc tendu et Crescendo ne servent plus."
+msgstr "The discharge no longer jumps: it strikes the nearest enemies around you all at once, each with its own arc. Taut Arc and Crescendo no longer apply."
 
 msgid "Cumulonimbus"
 msgstr "Cumulonimbus"
@@ -888,8 +888,8 @@ msgstr "Meteor"
 msgid "Bond"
 msgstr "Leap"
 
-msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate bien plus fort et deux fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
-msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there much harder and twice as wide, shaking the ground — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
+msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et trois fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
+msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there harder and three times as wide, shaking the ground — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
 
 msgid "La ruée devient un saut : elle ne laisse plus de traînée de feu, mais son explosion d'arrivée frappe bien plus fort et plus large."
 msgstr "The dash becomes a leap: it no longer leaves a trail of fire, but its landing explosion hits much harder and wider."
@@ -972,8 +972,8 @@ msgstr "The blaze strikes less often, but each pulse hits much harder: far more 
 msgid "Le brasier vous brûle deux fois plus, mais inflige nettement plus de dégâts."
 msgstr "The blaze burns you twice as much, but deals much more damage."
 
-msgid "Le brasier inflige plus de dégâts et devient nécrotique : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
-msgstr "The blaze deals more damage and turns necrotic: the Necrotic keyword instead of Fire. It rots instead of igniting, and your gear's necrotic bonuses apply to it, no longer the fire ones."
+msgid "Le brasier devient nécrotique, un peu moins fort : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
+msgstr "The blaze turns necrotic, slightly weaker: the Necrotic keyword instead of Fire. It rots instead of igniting, and your gear's necrotic bonuses apply to it, no longer the fire ones."
 
 msgid "Chaque ennemi tué par le brasier laisse une plaque de feu à sa place. Elle brûle les ennemis — {part_sol} % des dégâts d'une impulsion toutes les {rythme_sol} s — pendant la durée indiquée."
 msgstr "Each enemy killed by the blaze leaves a patch of fire where it fell. It burns enemies — {part_sol}% of a pulse's damage every {rythme_sol} s — for the listed duration."
@@ -3374,8 +3374,8 @@ msgstr "An enemy killed by the vortex explodes if it bears the state of its natu
 msgid "Sillon de glace"
 msgstr "Ice Furrow"
 
-msgid "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre. Avec Éclats, chaque cercle projette les siens."
-msgstr "The spikes no longer break through at the aimed point: they rise in a line, from you to it, one circle after another. With Shards, each circle throws its own."
+msgid "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre, chacun moins fort. Avec Éclats, chaque cercle projette les siens."
+msgstr "The spikes no longer break through at the aimed point: they rise in a line, from you to it, one circle after another, each one weaker. With Shards, each circle throws its own."
 
 msgid "La nova frappe plus fort."
 msgstr "The nova hits harder."
@@ -3461,8 +3461,8 @@ msgstr "The vortex bursts as it ends: a cold explosion within this radius around
 msgid "Implosion"
 msgstr "Implosion"
 
-msgid "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon. L'avalanche ne sert plus."
-msgstr "The vortex starts at full size and closes in to its heart, where it bursts with its whole radius. Avalanche no longer applies."
+msgid "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion. L'avalanche ne sert plus."
+msgstr "The vortex starts at full size and closes in to its heart, where it bursts with its whole radius, far harder than a pulse. Avalanche no longer applies."
 
 msgid "effet du transi"
 msgstr "chill effect"

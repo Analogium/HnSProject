@@ -121,6 +121,7 @@ Après avoir touché un `.tres` de contenu, régénérer la référence :
 tools/catalog.sh          # écrit docs/CATALOGUE.md
 tools/balance.sh calculation # écrit docs/EQUILIBRAGE.md, sans la simulation
 tests/run.sh balance    # les couloirs, hors de la suite par défaut
+tools/balance.sh trees only=<compétence>  # docs/ARBRES.md, après un nœud d'arbre touché
 ```
 
 Un couloir d'équilibrage qui casse ne se corrige pas en changeant son chiffre :

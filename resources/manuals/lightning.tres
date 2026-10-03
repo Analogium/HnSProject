@@ -402,13 +402,13 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = -20.0
+value_per_point = 5.0
 
 [sub_resource type="Resource" id="N_chain_lightning_web"]
 script = ExtResource("3_noeud")
 id = "chain_lightning_web"
 name = "Toile d'arcs"
-description = "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc, un peu moins fort. Arc tendu et Crescendo ne servent plus."
+description = "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc. Arc tendu et Crescendo ne servent plus."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
 "chain_lightning_branching": 2,
@@ -566,13 +566,6 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_hot_spot_0")])
 
-[sub_resource type="Resource" id="L_storm_cloud_hail_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-percentage = true
-more = true
-value_per_point = 15.0
-
 [sub_resource type="Resource" id="N_storm_cloud_hail"]
 script = ExtResource("3_noeud")
 id = "storm_cloud_hail"
@@ -583,7 +576,6 @@ parents = Dictionary[String, int]({
 "storm_cloud_cumulonimbus": 2
 })
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_storm_cloud_hail_0")])
 converts_to = 1
 converts = true
 
@@ -591,13 +583,13 @@ converts = true
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
-value_per_point = 100.0
+value_per_point = 25.0
 
 [sub_resource type="Resource" id="L_storm_cloud_tempest_1"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
-value_per_point = -25.0
+value_per_point = -15.0
 
 [sub_resource type="Resource" id="N_storm_cloud_tempest"]
 script = ExtResource("3_noeud")

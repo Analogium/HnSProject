@@ -26,8 +26,11 @@ const CHIP_STEP := 3.0
 ## Les flocons aspirés vers le cœur, hors des bras.
 const FLAKES := 8
 const FADE := 0.4
-## L'Implosion (jalon 36) : jusqu'où elle se resserre avant d'éclater de tout son rayon.
+## L'Implosion (jalon 36) : jusqu'où elle se resserre avant d'éclater de tout son rayon,
+## et combien d'impulsions vaut l'éclatement — à 1, elle rendait ×0,43 du meilleur
+## Désastre au paquet (banc des arbres, jalon 37).
 const IMPLODED_PART := 0.15
+const IMPLOSION_BURST := 4.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -79,11 +82,15 @@ func _physics_process(delta: float) -> void:
 
 ## L'Implosion éclate de tout son rayon ; l'Avalanche, du sien.
 func _end() -> void:
-	var burst := _cast.radius if _cast.shape == Skill.Shape.IMPLOSION else _cast.end_burst
-	if burst > 0.0:
-		Explosion.put(
-			get_parent(), global_position, _cast.roll(Game.rng), burst, null, _tint, _author, _cast
-		)
+	var imploding := _cast.shape == Skill.Shape.IMPLOSION
+	var burst := _cast.radius if imploding else _cast.end_burst
+	if burst <= 0.0:
+		return
+	var parts := _cast.roll(Game.rng)
+	if imploding:
+		for i in parts.size():
+			parts[i] *= IMPLOSION_BURST
+	Explosion.put(get_parent(), global_position, parts, burst, null, _tint, _author, _cast)
 
 
 ## L'Aspiration : chaque impulsion tire vers le cœur, par un recul inversé.

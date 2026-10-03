@@ -124,7 +124,8 @@ func _physics_process(delta: float) -> void:
 	_ramp(delta)
 	_body = _rings()
 	_bite()
-	if _age - _rasterised >= REDRAW:
+	# Caché, rien à peindre : le banc des arbres en fait jouer des centaines sans écran.
+	if _age - _rasterised >= REDRAW and is_visible_in_tree():
 		_rasterise()
 	queue_redraw()
 	if _age >= _cast.duration:

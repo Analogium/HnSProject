@@ -499,13 +499,13 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 15.0
+value_per_point = -5.0
 
 [sub_resource type="Resource" id="N_immolation_black_flame"]
 script = ExtResource("3_noeud")
 id = "immolation_black_flame"
 name = "Flamme noire"
-description = "Le brasier inflige plus de dégâts et devient nécrotique : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
+description = "Le brasier devient nécrotique, un peu moins fort : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
 position = Vector2i(-3, 0)
 parents = Dictionary[String, int]({
 "immolation_slow_pulse": 1
@@ -717,13 +717,13 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 150.0
+value_per_point = 25.0
 
 [sub_resource type="Resource" id="L_fireball_meteor_1"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
-value_per_point = 100.0
+value_per_point = 200.0
 
 [sub_resource type="Resource" id="L_fireball_meteor_2"]
 script = ExtResource("4_ligne")
@@ -735,7 +735,7 @@ value_per_point = 60.0
 script = ExtResource("3_noeud")
 id = "fireball_meteor"
 name = "Météore"
-description = "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate bien plus fort et deux fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
+description = "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et trois fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
 "fireball_stoking": 3,
@@ -751,7 +751,7 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = 150.0
+value_per_point = 1000.0
 
 [sub_resource type="Resource" id="L_flame_dash_leap_1"]
 script = ExtResource("4_ligne")

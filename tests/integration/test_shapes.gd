@@ -1882,3 +1882,22 @@ func test_the_tomb_mends_what_its_tree_gives() -> void:
 	var mended := _p.health - wounded
 	var full := _p.stats.max_health * tomb.self_heal
 	assert_almost_eq(mended, full * 2.0, full * 0.2)
+
+
+## Un sol ne cumule pas (jalon 37) : deux plaques de la même compétence sous une cible ne
+## la frappent qu'une fois par impulsion ; une autre compétence frappe pour son compte.
+func test_grounds_of_one_skill_do_not_stack() -> void:
+	var target := _target(Vector2(40, 0))
+	await wait_physics_frames(2)
+	var ball := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	ball.ground_duration = 0.4
+	for i in 3:
+		DashTrail.patch(_effects, Vector2(40, 0), ball.ground(), _p.states)
+	await wait_seconds(0.3)
+	assert_eq(_hits(target), 1, "trois plaques, une seule frappe")
+
+	var nova := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
+	nova.ground_duration = 0.4
+	DashTrail.patch(_effects, Vector2(40, 0), nova.ground(), _p.states)
+	await wait_seconds(0.3)
+	assert_eq(_hits(target), 2, "une autre compétence frappe aussi")

@@ -13,6 +13,9 @@ const SIMULATED_SPREAD := 20
 
 
 func _ready() -> void:
+	if "trees" in OS.get_cmdline_user_args():
+		await _trees()
+		return
 	var l := PackedStringArray()
 	_header(l)
 	_levels(l)
@@ -190,6 +193,153 @@ func _simulation(l: PackedStringArray) -> void:
 				"%s s" % _n(r.time_value) if r.emptied else "—",
 			])
 	l.append("")
+
+
+## Le banc des arbres (jalon 37) : `tools/balance.sh trees`, qui écrit `docs/ARBRES.md`.
+## `only=<compétence>,<compétence>` n'en mesure que celles-là, `probe` s'arrête aux compétences nues.
+const TREE_PARTS := "user://arbres"
+const TREE_MANUALS := ["manual_fire", "manual_lightning", "manual_cold"]
+
+
+func _trees() -> void:
+	var args := OS.get_cmdline_user_args()
+	var only := ""
+	for a in args:
+		if a.begins_with("only="):
+			only = a.trim_prefix("only=")
+	# Sans gel : il ralentit le temps de jeu, et le banc compte en secondes de jeu.
+	Game.hit_stop_duration = 0.0
+	var bench := BenchTrees.new(self)
+	print("arbres réserve : %.0f mana, %.1f/s" % [bench.mana_pool, bench.mana_regen])
+	# `measure=<manuel>:<compétence>:<nœud>,<nœud>…` : un build, scène par scène et
+	# distance par distance, pour regarder de près ce que le rapport résume.
+	for a in args:
+		if a.begins_with("measure="):
+			var parts := a.trim_prefix("measure=").split(":")
+			var nodes := Array(parts[2].split(",", false)) if parts.size() > 2 else []
+			for scene in [BenchTrees.Scene.PACK, BenchTrees.Scene.DUEL]:
+				for distance in [BenchTrees.NEAR, BenchTrees.FAR]:
+					var m: BenchTrees.Measure = await bench._run(parts[0], parts[1], nodes, scene, distance)
+					print("arbres mesure %s %d px : %.1f/s, %d morts" % [
+						BenchTrees.SCENE_NAMES[scene], distance, m.per_second, m.kills
+					])
+			get_tree().quit()
+			return
+	# `part=<i>/<n>` : ce processus ne prend qu'une compétence sur n, la i-ème en
+	# alternance — le Serpent ne tombe pas avec ses voisines. Chaque section va dans
+	# son propre fichier, que `tools/balance.sh` rassemble dans l'ordre.
+	var part := Vector2i(0, 1)
+	for a in args:
+		if a.begins_with("part="):
+			var split := a.trim_prefix("part=").split("/")
+			part = Vector2i(int(split[0]), int(split[1]))
+	DirAccess.make_dir_recursive_absolute(TREE_PARTS)
+	if part.x == 0:
+		var head := PackedStringArray()
+		_trees_header(head, bench)
+		_write(TREE_PARTS.path_join("00.md"), head)
+	var index := 0
+	for manual_id: String in TREE_MANUALS:
+		var book := ItemCatalog.by_id(manual_id)
+		var first_of_manual := true
+		for cell in book.manual.cells:
+			if cell.skill == null or cell.talents.is_empty() or cell.skill.shape == Skill.Shape.BUFF:
+				continue
+			if not only.is_empty() and not cell.skill.id in only.split(","):
+				continue
+			index += 1
+			var mine := (index - 1) % part.y == part.x
+			var l := PackedStringArray()
+			if first_of_manual:
+				l.append("## %s" % book.display_name)
+				l.append("")
+				first_of_manual = false
+			if not mine:
+				continue
+			var start := Time.get_ticks_msec()
+			var runs := bench.runs
+			await _tree(l, bench, manual_id, cell, "probe" in args)
+			_write(TREE_PARTS.path_join("%02d.md" % index), l)
+			print("arbres %s : %d ms, %d simulations" % [cell.skill.id, Time.get_ticks_msec() - start, bench.runs - runs])
+	get_tree().quit()
+
+
+func _write(path: String, l: PackedStringArray) -> void:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string("\n".join(l) + "\n")
+	f.close()
+
+
+func _trees_header(l: PackedStringArray, bench: BenchTrees) -> void:
+	l.append("# Banc des arbres")
+	l.append("")
+	l.append("<!-- Fichier généré par tools/balance.sh trees — ne pas éditer à la main. -->")
+	l.append("")
+	l.append("Chaque compétence de dégâts des manuels repris, lancée sans relâche sur des cibles")
+	l.append("immobiles par les vraies fonctions du jeu (`BenchTrees`) : **paquet**, %d grunts de" % (BenchTrees.PACK_RING + 1))
+	l.append("zone %d qui renaissent à leur mort ; **duel**, une cible qui ne meurt pas. Au contact" % BenchTrees.ZONE)
+	l.append("(%d px) ou au point visé (%d px), la meilleure des deux. Dégâts par seconde après" % [BenchTrees.NEAR, BenchTrees.FAR])
+	l.append("défenses, brûlures comprises, sur %d s après %d s de chauffe, avec la réserve du Sort" % [BenchTrees.SECONDS, BenchTrees.WARM_UP])
+	l.append("« Équipé » de zone %d : %d mana et %s/s. Compétence à 5 points, arbre à %d." % [
+		BenchTrees.MANA_ZONE, roundi(bench.mana_pool), _n(bench.mana_regen), Manual.MAX_LEVEL
+	])
+	l.append("")
+	l.append("Les builds sont **cherchés** et non écrits : à chaque pas, le nœud — avec le chemin le")
+	l.append("moins cher qui l'ouvre — qui rend le plus par point dans la scène visée. Une")
+	l.append("transformation ou une conversion est prise d'abord, puis la recherche reprend. ×N :")
+	l.append("le rapport à la compétence sans arbre, dans la même scène. Les buffs (Ignition,")
+	l.append("Électricité statique, Tombeau de glace) ne sont pas mesurés : ce qu'ils valent se lit")
+	l.append("sur une autre compétence. Ce que le banc ne voit pas — ralentir, tirer, esquiver,")
+	l.append("survivre — ne rend rien ici.")
+	l.append("")
+
+
+func _tree(l: PackedStringArray, bench: BenchTrees, manual_id: String, cell: ManualCell, probe: bool) -> void:
+	l.append("### %s" % cell.skill.name)
+	l.append("")
+	l.append("| build | points | paquet | duel |")
+	l.append("|---|---|---|---|")
+	var bare := BenchTrees.Build.new()
+	await bench.complete(manual_id, cell, bare)
+	l.append("| sans arbre | — | %s | %s |" % [_dps(bare.pack, null), _dps(bare.duel, null)])
+	if probe:
+		l.append("")
+		return
+	var chosen: Array[BenchTrees.Build] = []
+	for scene in [BenchTrees.Scene.PACK, BenchTrees.Scene.DUEL]:
+		var b: BenchTrees.Build = await bench.best_build(manual_id, cell, scene)
+		await bench.complete(manual_id, cell, b)
+		chosen.append(b)
+		l.append("| meilleur au %s | %s | %s | %s |" % [
+			BenchTrees.SCENE_NAMES[scene], b.label(cell), _dps(b.pack, bare.pack), _dps(b.duel, bare.duel)
+		])
+	for node in cell.talents:
+		if not (node.transforms or node.converts or node.frees):
+			continue
+		var forced := bench.opening(cell, node)
+		for scene in [BenchTrees.Scene.PACK, BenchTrees.Scene.DUEL]:
+			var b: BenchTrees.Build = await bench.best_build(manual_id, cell, scene, forced)
+			await bench.complete(manual_id, cell, b)
+			chosen.append(b)
+			l.append("| %s au %s (%s) | %s | %s | %s |" % [
+				node.name, BenchTrees.SCENE_NAMES[scene],
+				"transformation" if node.transforms else "conversion", b.label(cell),
+				_dps(b.pack, bare.pack), _dps(b.duel, bare.duel)
+			])
+	var never := PackedStringArray()
+	for node in cell.talents:
+		if chosen.all(func(b: BenchTrees.Build) -> bool: return b.count(node.id) == 0):
+			never.append(node.name)
+	l.append("")
+	l.append("Jamais pris : %s." % (", ".join(never) if not never.is_empty() else "aucun"))
+	l.append("")
+
+
+func _dps(m: BenchTrees.Measure, bare: BenchTrees.Measure) -> String:
+	var text_value := "%s/s" % _n(m.per_second)
+	if bare != null and bare.per_second > 0.0:
+		text_value += " ×%s" % _n(m.per_second / bare.per_second)
+	return text_value
 
 
 ## Deux décimales sous 10, une sous 100, aucune au-delà ; virgule décimale.
