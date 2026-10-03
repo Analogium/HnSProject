@@ -2,9 +2,9 @@ class_name Necrotic
 extends RefCounted
 
 ## La nécrose, **posée** en un seul endroit : sa couleur, le mur de gaz de la
-## Déferlante toxique et des créatures de la Porte, le cercle de la Malédiction
-## putride. Ses planches — crâne, fumées, faille, créature, œil, spore — sont dans
-## `EffectForge`, choisies sur planche au jalon 26.
+## Déferlante toxique et des créatures de la Porte, celui de l'Haleine, le cercle de
+## la Malédiction putride. Ses planches — crâne, fumées, faille, créature, œil, spore —
+## sont dans `EffectForge`, choisies sur planche au jalon 26.
 ##
 ## **La nécrose ronge, elle n'éclaire pas** : son cœur est un jaune maladif, et elle a
 ## un dedans — l'ombre des orbites, la chair d'une faille —, là où le feu et le sacré
@@ -87,6 +87,29 @@ static func ring(tint: Color, radius: float, gone: float) -> Array:
 	return _rings[key]
 
 
+## Le mur de l'Haleine (jalon 38), « mur de gaz en arc » choisi sur planche : celui de la
+## Déferlante sur l'arc du cône, **à l'angle exact** du geste — arrondi, il mentirait sur le
+## cône qui frappe. Sans cache : l'Haleine garde les siens, un par cran, 1,5 ms chacun.
+static func breath(tint: Color, front: float, half_angle: float, axis: float, k: float) -> Array:
+	if front < 6.0:
+		return []
+	var n := maxi(int(2.0 * half_angle * front / 6.0), 3)
+	var thick := 2.4 + k * 1.5
+	var discs: Array[Vector3] = []
+	var puffs: Array[Vector3] = []
+	for i in n + 1:
+		var a := axis + (float(i) / float(n) * 2.0 - 1.0) * half_angle
+		var at := Vector2.from_angle(a) * (front - 2.0 * sin(float(i) * 2.7))
+		var r := thick + sin(float(i) * 1.9)
+		discs.append(Vector3(at.x, at.y, r))
+		if i % 2 == 0:
+			var out := Vector2.from_angle(a) * r * 0.7
+			puffs.append(Vector3(at.x + out.x, at.y + out.y, r * 0.9))
+	var glint := Vector2.from_angle(axis) * front
+	var gone := clampf((k - 0.6) * 2.5, 0.0, 1.0)
+	return _band(tint, discs, [glint] as Array[Vector2], 0.3, gone, puffs, false)
+
+
 ## Pose les secteurs d'un anneau autour de `at`.
 static func put_band(ci: CanvasItem, pieces: Array, at: Vector2) -> void:
 	for piece: EffectForge.Piece in pieces:
@@ -94,7 +117,7 @@ static func put_band(ci: CanvasItem, pieces: Array, at: Vector2) -> void:
 
 
 ## Un anneau autour du centre, par ses disques dans l'ordre — plus des bouffées posées
-## dessus —, **en quatre quadrants** coupés le long des
+## dessus ; un arc, s'il n'est pas `closed` —, **en quatre quadrants** coupés le long des
 ## axes. D'un bloc, `to_image()` balayait tout le vide du milieu — une rangée se
 ## balaie du premier pixel peint au dernier —, 1,2 ms au rayon 48 ; un quadrant ne
 ## balaie que l'arc qui le traverse. Chacun est peint **un pixel plus large** que sa
@@ -102,7 +125,7 @@ static func put_band(ci: CanvasItem, pieces: Array, at: Vector2) -> void:
 ## les quadrants se raccordent sans couture.
 static func _band(
 	tint: Color, discs: Array[Vector3], glints: Array[Vector2], bias: float, gone: float,
-	puffs: Array[Vector3] = []
+	puffs: Array[Vector3] = [], closed := true
 ) -> Array:
 	var reach := 0.0
 	for d in discs + puffs:
@@ -122,7 +145,7 @@ static func _band(
 		# En capsules d'un disque au suivant, et non en disques : chaque disque prend
 		# son propre éclairage, et l'anneau se lisait comme un collier de perles.
 		var area := Rect2(corner, Vector2(wide.size))
-		for i in discs.size():
+		for i in discs.size() - (0 if closed else 1):
 			var d := discs[i]
 			var e := discs[(i + 1) % discs.size()]
 			var from := Vector2(d.x + c, d.y + c)

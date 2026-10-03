@@ -14,7 +14,7 @@ extends RefCounted
 ## les **nombres de mécanique** — zéro sur la compétence, un nœud les allume, la forme
 ## les lit — et `period`, `self_burn`, `status_chance_increase`, que ses échanges visent ;
 ## `mana_per_second` depuis le jalon 35, `self_heal` depuis le 36, que le buff draine et
-## rend depuis son lancer résolu.
+## rend depuis son lancer résolu ; `self_wither` et `inflict_chance` depuis le 38.
 const LABELS := {
 	DAMAGE: "dégâts",
 	LEVELS: "niveaux de compétence",
@@ -34,6 +34,8 @@ const LABELS := {
 	"status_chance_increase": "chance d'état",
 	"mana_per_second": "mana drainé",
 	"self_heal": "soin",
+	"self_wither": "vie rongée",
+	"inflict_chance": "chance de l'état posé",
 	CHILL_EFFECT: "effet du transi",
 	PIERCE: "nombre d'ennemis traversés",
 	SPLITS: "nombre d'éclats",
@@ -42,13 +44,22 @@ const LABELS := {
 	KILL_BURST: "rayon de l'explosion des tués",
 	SEEK: "rayon de chasse",
 	BROOD: "nombre de serpents",
-	CRAWL_SPEED: "vitesse du serpent",
-	HATCHLINGS: "nombre de petits serpents",
+	CRAWL_SPEED: "vitesse de reptation",
+	HATCHLINGS: "nombre de petits",
 	BOUNCES: "nombre de rebonds",
 	JUMP_REACH: "portée des sauts",
 	JUMP_GAIN: "dégâts en plus par saut",
 	TRAIL_CHARGES: "charges statiques semées",
 	PULL: "force d'aspiration",
+	DECAY_EFFECT: "effet de la décomposition",
+	WILTING_WEAKNESS: "affaiblissement du flétri",
+	CURSE_EFFECT: "effet de la malédiction",
+	CONTAGION: "rayon de contagion",
+	MINION_LIFE: "PV des morts-vivants",
+	BONE_WALL: "dégâts subis retirés par mort-vivant",
+	COLOSSUS: "rayon de frappe du colosse",
+	TRIBUTE: "mana par ennemi maudit",
+	SHARED_BURDEN: "rayon du fardeau partagé",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -69,6 +80,8 @@ const AGREEMENT := {
 	"status_chance_increase": "fs",
 	"mana_per_second": "ms",
 	"self_heal": "ms",
+	"self_wither": "fs",
+	"inflict_chance": "fs",
 	CHILL_EFFECT: "ms",
 	PIERCE: "ms",
 	SPLITS: "ms",
@@ -84,6 +97,15 @@ const AGREEMENT := {
 	JUMP_GAIN: "mp",
 	TRAIL_CHARGES: "fp",
 	PULL: "fs",
+	DECAY_EFFECT: "ms",
+	WILTING_WEAKNESS: "ms",
+	CURSE_EFFECT: "ms",
+	CONTAGION: "ms",
+	MINION_LIFE: "mp",
+	BONE_WALL: "mp",
+	COLOSSUS: "ms",
+	TRIBUTE: "ms",
+	SHARED_BURDEN: "ms",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -111,11 +133,26 @@ const TRAIL_CHARGES := "trail_charges"
 ## vitesse vers le cœur que donne chaque impulsion du vortex (un recul inversé).
 const CHILL_EFFECT := "chill_effect"
 const PULL := "pull"
+## Ceux de la nécrose (jalon 38). La force de l'état **posé** par le lancer, en points de
+## pourcentage — `StatusEffects.State.strength`, comme le transi —, une par état : chacun
+## n'est visé que par un arbre. Puis la décomposition qui gagne les voisins (un rayon),
+## les morts-vivants (PV accrus, abri par tête, le cercle du colosse), le tribut de la malédiction
+## (mana par maudit) et le fardeau de la Nécrose (le rayon où frappe ce qu'elle ronge).
+const DECAY_EFFECT := "decay_effect"
+const WILTING_WEAKNESS := "wilting_weakness"
+const CURSE_EFFECT := "curse_effect"
+const CONTAGION := "contagion"
+const MINION_LIFE := "minion_life"
+const BONE_WALL := "bone_wall"
+const COLOSSUS := "colossus"
+const TRIBUTE := "tribute"
+const SHARED_BURDEN := "shared_burden"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
-	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL,
+	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
+	SHARED_BURDEN,
 ]
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
@@ -132,6 +169,16 @@ const TRAIL_CHARGE_PART := 0.5
 const FREED_RECHARGE := 5.0
 ## La vie des petits qu'un serpent relâche (`SPLITS` sur `HellSnake`).
 const HATCHLING_LIFE := 2.0
+## Le Colosse d'os : ses PV, en multiple de ceux d'un mort-vivant, et son échelle. Le
+## cercle qu'il frappe est le nombre lui-même ; ses dégâts, une ligne du nœud.
+const COLOSSUS_LIFE := 3.0
+const COLOSSUS_SCALE := 1.7
+## Le fardeau partagé : ce que la Nécrose ronge, rendu à ce multiple aux ennemis proches,
+## tous les combien.
+const BURDEN_FACTOR := 4.0
+const BURDEN_PERIOD := 1.0
+## La Marque de mort : combien elle maudit plus fort qu'un sceau.
+const MARK_FACTOR := 2.0
 
 const DAMAGE := "damage"
 ## Le seul nombre du lancer qu'un modificateur **sans portée** atteint : sa base est sur
@@ -173,6 +220,7 @@ var period := 0.0
 var self_burn := 0.0
 var mana_per_second := 0.0
 var self_heal := 0.0
+var self_wither := 0.0
 ## Ce que ce lancer accroît à la chance de poser son état, en points de pourcentage.
 var status_chance_increase := 0.0
 ## L'état qu'il pose à ce qu'il touche, et sa chance (`Skill.inflicted_state`).
@@ -199,6 +247,15 @@ var jump_gain := 0.0
 var trail_charges := 0.0
 var chill_effect := 0.0
 var pull := 0.0
+var decay_effect := 0.0
+var wilting_weakness := 0.0
+var curse_effect := 0.0
+var contagion := 0.0
+var minion_life := 0.0
+var bone_wall := 0.0
+var colossus := 0.0
+var tribute := 0.0
+var shared_burden := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -404,6 +461,10 @@ static func facts() -> Dictionary:
 		"vie_petit": roundi(HATCHLING_LIFE),
 		"part_charge": roundi(TRAIL_CHARGE_PART * 100.0),
 		"recharge_libre": roundi(FREED_RECHARGE),
+		"vie_colosse": roundi(COLOSSUS_LIFE),
+		"fardeau": roundi(BURDEN_FACTOR),
+		"rythme_fardeau": BURDEN_PERIOD,
+		"force_marque": roundi(MARK_FACTOR),
 	}
 
 
@@ -448,6 +509,26 @@ func _derived(part: float) -> SkillStats:
 	g.chill_effect = chill_effect
 	g.crawl_speed = crawl_speed
 	return g
+
+
+## Le multiplicateur d'effet de cet état quand ce lancer le pose : 1, plus ce que l'arbre
+## y ajoute — le transi qu'il tire, l'état qu'il pose (jalon 38) —, fois deux sous la
+## Marque de mort. **Le seul calcul** : la fiche l'affiche, le coup et le sceau le posent.
+func strength_of(kind: int) -> float:
+	var effect := 0.0
+	match kind:
+		StatusEffects.Kind.CHILL:
+			effect = chill_effect
+		StatusEffects.Kind.DECAY:
+			effect = decay_effect
+		StatusEffects.Kind.WILTING:
+			effect = wilting_weakness
+		StatusEffects.Kind.CURSED:
+			effect = curse_effect
+	var factor := 1.0 + effect * 0.01
+	if kind == inflicted_state and shape == Skill.Shape.MARK:
+		factor *= MARK_FACTOR
+	return factor
 
 
 ## Le milieu de chaque fourchette.
@@ -506,4 +587,6 @@ func finalize() -> void:
 	radius = maxf(radius, 0.0)
 	period = maxf(period, 0.0)
 	self_burn = maxf(self_burn, 0.0)
+	self_wither = maxf(self_wither, 0.0)
+	inflict_chance = clampf(inflict_chance, 0.0, 1.0)
 	crit_chance = clampf(crit_chance, 0.0, 1.0)

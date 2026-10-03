@@ -274,10 +274,10 @@ func kinds() -> Array[int]:
 ## `max_hp` à zéro : pas de bonus, faute de PV connus.
 ## `cast_increase` est ce que le lancer **accroît** à sa chance, en points de
 ## pourcentage : une nova de glace transit mieux qu'un coup de froid ordinaire.
-## `chill_effect` accroît la force du transi qu'il pose, en points de pourcentage.
+## `chill_strength` : la force du transi qu'il pose (`SkillStats.strength_of()`).
 func suffer(
 	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
-	cast_increase := 0.0, source := "", chill_effect := 0.0
+	cast_increase := 0.0, source := "", chill_strength := 1.0
 ) -> void:
 	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux.
 	var better := author.chance_factors if author != null else neutral_factors()
@@ -286,26 +286,43 @@ func suffer(
 		if part <= 0.0:
 			continue
 		if rng.randf() < chance(part, max_hp, factor_of(better[kind], cast_increase)):
-			var strength := 1.0 + chill_effect * 0.01 if kind == Kind.CHILL else 1.0
+			var strength := chill_strength if kind == Kind.CHILL else 1.0
 			put(kind, part, author, source, strength)
 
 
 ## Ce qu'un **lancer** pose à ce qu'il touche, à sa chance : la décomposition de la
 ## Peste. Une part nulle dans sa nature — un sort converti — ne pose rien. Un tirage,
-## quel que soit le résultat (invariant 3).
+## quel que soit le résultat (invariant 3). Ce qui brûle se renforce **en brûlant
+## davantage**, et garde la force 1 : `per_second` se compare déjà dans `put()`.
 func inflict(
 	kind: int, chance_value: float, parts: Array[float], author: StatusEffects,
-	rng: RandomNumberGenerator, source := ""
+	rng: RandomNumberGenerator, source := "", strength := 1.0
 ) -> void:
 	var part: float = parts[NATURES[kind]]
 	if rng.randf() < chance_value and part > 0.0:
-		put(kind, part, author, source)
+		if burn_per_second(kind) > 0.0:
+			put(kind, part * strength, author, source)
+		else:
+			put(kind, part, author, source, strength)
 
 
-## Les points de résistance que ses états retirent à cette nature : la malédiction.
+## Le même état, recopié sur un autre corps à pleine durée : la Contagion de la Peste.
+func pass_on(kind: int, other: StatusEffects) -> void:
+	var state := _state(kind)
+	if state == null or other == self:
+		return
+	var author := state.author.get_ref() as StatusEffects if state.author != null else null
+	var burn := burn_per_second(kind)
+	other.put(kind, state.per_second / burn if burn > 0.0 else 0.0, author, state.source, state.strength)
+
+
+## Les points de résistance que ses états retirent à cette nature : la malédiction, à sa
+## force (Malédiction profonde, la Marque de mort).
 func resistance_lost(nature: int) -> float:
-	if nature == DamageType.Kind.NECROTIC and not is_clear and active(Kind.CURSED):
-		return CURSE
+	if nature == DamageType.Kind.NECROTIC and not is_clear:
+		var curse := _state(Kind.CURSED)
+		if curse != null:
+			return CURSE * curse.strength
 	return 0.0
 
 
@@ -328,8 +345,10 @@ static func factor_of(worn: float, cast_increase: float) -> float:
 ## Pose ou rafraîchit ; `part` est ce que le coup a porté dans sa nature. Entre deux de
 ## la même sorte, le plus fort reste — sinon de petites braises éteindraient la grosse,
 ## et un transi ordinaire effacerait celui d'un nœud ; à force égale, la durée repart.
+## `duration` à zéro : celle de la sorte. Une malédiction allongée la porte (jalon 38).
 func put(
-	kind: int, part: float, author: StatusEffects = null, source := "", strength := 1.0
+	kind: int, part: float, author: StatusEffects = null, source := "", strength := 1.0,
+	duration := 0.0
 ) -> void:
 	var per_second := part * burn_per_second(kind)
 	var state := _state(kind)
@@ -341,7 +360,7 @@ func put(
 	elif per_second < state.per_second or strength < state.strength:
 		return
 	var stronger := strength > state.strength
-	state.remaining = DURATIONS[kind]
+	state.remaining = duration if duration > 0.0 else DURATIONS[kind]
 	state.per_second = per_second
 	state.strength = strength
 	state.author = weakref(author) if author != null else null
@@ -421,6 +440,10 @@ func _recompute() -> void:
 	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
 	damage_taken_factor = 1.0 + NUMB if active(Kind.NUMB) else 1.0
 	damage_dealt_factor = 1.0 - BLESSING if active(Kind.BLESSING) else 1.0
+	# Le flétri n'est affaibli que par la force que son arbre ajoute (Asphyxie, jalon 38).
+	var wilting := _state(Kind.WILTING)
+	if wilting != null:
+		damage_dealt_factor *= maxf(2.0 - wilting.strength, 0.0)
 
 
 func _state(kind: int) -> State:

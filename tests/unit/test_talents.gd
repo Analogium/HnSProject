@@ -782,8 +782,45 @@ func test_no_manual_fills_up_entirely() -> void:
 ## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
 ## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
 const SHALLOW_TREES := [
-	"manual_weapons", "manual_holy", "manual_necrotic",
+	"manual_weapons", "manual_holy",
 ]
+
+
+## La nécromancie (jalon 38) : **aucune ligne ni aucun nom ne revient d'un arbre à
+## l'autre**. Aux jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
+## Seuls les leviers de base y échappent, un par arbre au plus.
+const UNIQUE_TREES := ["manual_necrotic"]
+const BASE_LEVERS := ["damage", "radius", "duration"]
+
+
+func test_unique_trees_share_no_line_and_no_name() -> void:
+	for base in _books():
+		if not base.id in UNIQUE_TREES:
+			continue
+		var line_owner := {}
+		var name_owner := {}
+		for c in base.manual.cells:
+			var levers := {}
+			for n in c.talents:
+				assert_false(
+					name_owner.has(n.name),
+					"« %s » porte le nom de « %s »" % [n.id, name_owner.get(n.name, "")]
+				)
+				name_owner[n.name] = n.id
+				for l in n.lines:
+					var key := "%s@%s" % [l.stat, l.scope]
+					if l.stat in BASE_LEVERS and l.scope.is_empty():
+						# Ni un échange, qui prend, ni le prix d'un nœud qui change le jeu (le
+						# Colosse) : ce ne sont pas des seconds leviers.
+						if l.value_per_point > 0.0 and n.kind().is_empty():
+							assert_false(levers.has(key), "« %s » : deux nœuds de %s" % [n.id, l.stat])
+							levers[key] = true
+						continue
+					assert_false(
+						line_owner.has(key) and line_owner[key] != c.identifier(),
+						"« %s » vise « %s », déjà visé dans « %s »" % [n.id, key, line_owner.get(key, "")]
+					)
+					line_owner[key] = c.identifier()
 
 
 ## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.

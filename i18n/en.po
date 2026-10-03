@@ -1728,10 +1728,10 @@ msgstr "hunting radius"
 msgid "nombre de serpents"
 msgstr "snakes"
 
-msgid "vitesse du serpent"
-msgstr "snake speed"
+msgid "vitesse de reptation"
+msgstr "crawling speed"
 
-msgid "nombre de petits serpents"
+msgid "nombre de petits"
 msgstr "hatchlings"
 
 msgid "mana drainé"
@@ -2278,9 +2278,6 @@ msgstr "at once"
 
 msgid "drain"
 msgstr "drain"
-
-msgid "état"
-msgstr "state"
 
 msgid "brûlure"
 msgstr "self-burn"
@@ -3296,11 +3293,14 @@ msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s."
 msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s."
 msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s."
 
-msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir."
-msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot."
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite."
+msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy make it gnaw faster."
 
-msgid "Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s."
-msgstr "Applied by some skills, never by an ordinary hit. The cursed lose {force} points of necrotic resistance, before the cap, for {duree} s."
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts."
+msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy also make the withered deal less damage."
+
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue."
+msgstr "Applied by some skills, never by an ordinary hit. The cursed lose {force} points of necrotic resistance, before the cap, for {duree} s. Some nodes of the Master of Necromancy make it stronger or longer."
 
 msgid "États"
 msgstr "States"
@@ -3469,3 +3469,312 @@ msgstr "chill effect"
 
 msgid "force d'aspiration"
 msgstr "suction strength"
+
+msgid "vie rongée"
+msgstr "life gnawed"
+
+msgid "chance de l'état posé"
+msgstr "inflicted state chance"
+
+msgid "effet de la décomposition"
+msgstr "decay effect"
+
+msgid "affaiblissement du flétri"
+msgstr "wilting weakness"
+
+msgid "effet de la malédiction"
+msgstr "curse effect"
+
+msgid "rayon de contagion"
+msgstr "contagion radius"
+
+msgid "PV des morts-vivants"
+msgstr "undead HP"
+
+msgid "dégâts subis retirés par mort-vivant"
+msgstr "damage taken removed per undead"
+
+msgid "rayon de frappe du colosse"
+msgstr "colossus strike radius"
+
+msgid "mana par ennemi maudit"
+msgstr "mana per cursed enemy"
+
+msgid "rayon du fardeau partagé"
+msgstr "shared burden radius"
+
+msgid "Le trait frappe plus fort, et la décomposition qu'il pose suit le coup."
+msgstr "The bolt hits harder, and the decay it leaves follows the hit."
+
+msgid "Fléau rampant"
+msgstr "Creeping Plague"
+
+msgid "Le trait traverse un ennemi de plus par point, et décompose chacun."
+msgstr "The bolt passes through one more enemy per point, and decays each of them."
+
+msgid "Ce sort frappe plus fort un ennemi maudit."
+msgstr "This spell hits a cursed enemy harder."
+
+msgid "Incubation"
+msgstr "Incubation"
+
+msgid "La décomposition posée par la Peste ronge plus vite."
+msgstr "The decay left by Plague gnaws faster."
+
+msgid "À chaque impact, la décomposition de la cible gagne les ennemis autour d'elle, dans ce rayon, sans les frapper."
+msgstr "On each impact, the target's decay spreads to the enemies around it, within this radius, without hitting them."
+
+msgid "Fléaux jumeaux"
+msgstr "Twin Plagues"
+
+msgid "Un trait de plus par point, en éventail."
+msgstr "One more bolt per point, fanned out."
+
+msgid "Bubons"
+msgstr "Buboes"
+
+msgid "Un ennemi tué par la Peste explose s'il pourrit : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by Plague explodes if it is rotting: {part_tue}% of a hit's damage, within this radius around it."
+
+msgid "Nuée"
+msgstr "Swarm"
+
+msgid "Le trait devient un essaim lent qui file droit, traverse les ennemis et mord son cercle à chaque période. Fléau rampant et Contagion ne servent plus."
+msgstr "The bolt becomes a slow swarm that flies straight, passes through enemies and bites its circle every period. Creeping Plague and Contagion no longer apply."
+
+msgid "Les morts-vivants frappent plus fort."
+msgstr "The undead hit harder."
+
+msgid "Ils gardent une zone plus large autour de vous."
+msgstr "They guard a wider area around you."
+
+msgid "Ossature"
+msgstr "Frame"
+
+msgid "Ils se lèvent avec plus de PV."
+msgstr "They rise with more HP."
+
+msgid "Un mort-vivant de plus se lève."
+msgstr "One more undead rises."
+
+msgid "Ils frappent plus souvent."
+msgstr "They hit more often."
+
+msgid "Rempart d'os"
+msgstr "Bone Rampart"
+
+msgid "Tant qu'ils sont debout, chacun retire ce pourcentage aux dégâts que vous subissez."
+msgstr "While they stand, each one removes this percentage from the damage you take."
+
+msgid "Dernier souffle"
+msgstr "Last Breath"
+
+msgid "Un mort-vivant qui tombe explose d'un coup de la Relève, dans ce rayon."
+msgstr "An undead that falls explodes with a Rise hit, within this radius."
+
+msgid "Colosse d'os"
+msgstr "Bone Colossus"
+
+msgid "Un seul mort-vivant se lève, géant : {vie_colosse} fois ses PV, des coups bien plus lourds, et chacun frappe tout ce rayon autour de lui. Légion d'os ne sert plus."
+msgstr "A single undead rises, a giant: {vie_colosse} times its HP, far heavier blows, and each one hits this whole radius around it. Bone Legion no longer applies."
+
+msgid "Le souffle frappe plus fort."
+msgstr "The blast hits harder."
+
+msgid "Le souffle porte plus loin."
+msgstr "The blast reaches farther."
+
+msgid "Haleine fétide"
+msgstr "Fetid Breath"
+
+msgid "Le souffle flétrit plus souvent."
+msgstr "The blast withers more often."
+
+msgid "Ce sort frappe plus fort un ennemi flétri."
+msgstr "This spell hits a withered enemy harder."
+
+msgid "Asphyxie"
+msgstr "Asphyxia"
+
+msgid "Le flétrissement posé par la Déferlante affaiblit : le flétri inflige d'autant moins de dégâts."
+msgstr "The wilting left by Toxic Unleash weakens: the withered enemy deals that much less damage."
+
+msgid "Marais"
+msgstr "Marsh"
+
+msgid "La Déferlante laisse sous vous un sol toxique de sa taille, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts."
+msgstr "Toxic Unleash leaves toxic ground of its own size under you, which hits whatever stands on it every {rythme_sol} s for {part_sol}% of the damage."
+
+msgid "Haleine"
+msgstr "Breath"
+
+msgid "Le souffle devient un cône devant vous, deux fois et demie plus long que son rayon, qui frappe une fois chaque ennemi qu'il atteint. Le Marais ne sert plus."
+msgstr "The blast becomes a cone in front of you, two and a half times as long as its radius, which hits each enemy it reaches once. Marsh no longer applies."
+
+msgid "Les créatures explosent plus fort."
+msgstr "The creatures explode harder."
+
+msgid "Le portail reste ouvert plus longtemps, et en crache davantage."
+msgstr "The gate stays open longer, and spits out more of them."
+
+msgid "Leurs explosions sont plus larges."
+msgstr "Their explosions are wider."
+
+msgid "Rampants véloces"
+msgstr "Swift Crawlers"
+
+msgid "Les créatures courent plus vite sur leur proie."
+msgstr "The creatures run at their prey faster."
+
+msgid "Flair"
+msgstr "Scent"
+
+msgid "Elles voient les ennemis de plus loin."
+msgstr "They spot enemies from farther away."
+
+msgid "Progéniture"
+msgstr "Progeny"
+
+msgid "Chaque créature, en éclatant, lâche des petits qui chassent à leur tour et explosent à {part_eclat} % des dégâts, sur un demi-rayon."
+msgstr "Each creature, as it bursts, releases young that hunt in turn and explode for {part_eclat}% of the damage, over half the radius."
+
+msgid "Nid porté"
+msgstr "Carried Nest"
+
+msgid "Le portail s'ouvre à votre épaule et vous suit : les créatures partent de vous. Mais il reste ouvert moins longtemps."
+msgstr "The gate opens at your shoulder and follows you: the creatures leave from you. But it stays open for less time."
+
+msgid "Le sceau maudit une zone plus large."
+msgstr "The seal curses a wider area."
+
+msgid "Le sceau se pose plus vite."
+msgstr "The seal is laid faster."
+
+msgid "Malédiction profonde"
+msgstr "Deep Curse"
+
+msgid "La malédiction retire davantage de résistance nécrotique."
+msgstr "The curse removes more necrotic resistance."
+
+msgid "Longue malédiction"
+msgstr "Long Curse"
+
+msgid "La malédiction dure plus longtemps."
+msgstr "The curse lasts longer."
+
+msgid "Tribut"
+msgstr "Tribute"
+
+msgid "Chaque ennemi maudit vous rend du mana."
+msgstr "Each cursed enemy gives you back mana."
+
+msgid "Marque de mort"
+msgstr "Death Mark"
+
+msgid "La malédiction ne couvre plus une zone : elle marque l'ennemi le plus proche du point visé, {force_marque} fois plus fort, et passe au plus proche quand il meurt, jusqu'au bout d'une durée plus courte. Anathème ne sert plus."
+msgstr "The curse no longer covers an area: it marks the enemy closest to the aimed point, {force_marque} times as strongly, and moves to the closest one when it dies, until a shorter duration runs out. Anathema no longer applies."
+
+msgid "Gangrène"
+msgstr "Gangrene"
+
+msgid "Tant que la Nécrose brûle, vos coups pourrissent plus souvent."
+msgstr "While Necrosis burns, your hits rot more often."
+
+msgid "Endurcissement"
+msgstr "Hardening"
+
+msgid "La Nécrose ronge moins de vie."
+msgstr "Necrosis gnaws less life."
+
+msgid "Sang noir"
+msgstr "Black Blood"
+
+msgid "Tant que la Nécrose brûle, vos PV se refont."
+msgstr "While Necrosis burns, your HP regenerate."
+
+msgid "Chair morte"
+msgstr "Dead Flesh"
+
+msgid "Tant que la Nécrose brûle, vous résistez mieux au nécrotique."
+msgstr "While Necrosis burns, you resist necrotic damage better."
+
+msgid "Pacte"
+msgstr "Pact"
+
+msgid "Tant que la Nécrose brûle, vos sorts nécrotiques frappent plus fort — et elle ronge davantage."
+msgstr "While Necrosis burns, your necrotic spells hit harder — and it gnaws more."
+
+msgid "Fardeau partagé"
+msgstr "Shared Burden"
+
+msgid "Toutes les {rythme_fardeau} s, ce que la Nécrose vous a rongé frappe {fardeau} fois plus fort les ennemis dans ce rayon."
+msgstr "Every {rythme_fardeau} s, what Necrosis gnawed from you hits the enemies within this radius {fardeau} times as hard."
+
+msgid "état"
+msgstr "state"
+
+msgid "effet"
+msgstr "effect"
+
+msgid "explosion"
+msgstr "explosion"
+
+msgid "petits"
+msgstr "young"
+
+msgid "portail"
+msgstr "gate"
+
+msgid "garde"
+msgstr "guards"
+
+msgid "vue"
+msgstr "sight"
+
+msgid "course"
+msgstr "speed"
+
+msgid "cible"
+msgstr "target"
+
+msgid "contagion"
+msgstr "contagion"
+
+msgid "debout"
+msgstr "standing"
+
+msgid "Créatures"
+msgstr "Creatures"
+
+msgid "Morts-vivants"
+msgstr "Undead"
+
+msgid "brûle par seconde"
+msgstr "burns per second"
+
+msgid "%s du coup"
+msgstr "%s of the hit"
+
+msgid "dégâts infligés"
+msgstr "damage dealt"
+
+msgid "un seul ennemi"
+msgstr "a single enemy"
+
+msgid "frappe toutes les"
+msgstr "hits every"
+
+msgid "frappe en cercle"
+msgstr "hits a circle"
+
+msgid "explose en tombant"
+msgstr "bursts on falling"
+
+msgid "dégâts subis, par tête"
+msgstr "damage taken, each"
+
+msgid "une toutes les"
+msgstr "one every"
+
+msgid "à votre épaule"
+msgstr "at your shoulder"

@@ -40,6 +40,8 @@ enum Shape {
 	ORB, WEB, TEMPEST,
 	# Jalon 36 : le Sillon de glace, l'Onde de givre, l'Implosion.
 	FISSURE, RING, IMPLOSION,
+	# Jalon 38 : l'Haleine, le Nid porté, la Marque de mort.
+	BREATH, NEST, MARK,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -88,6 +90,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.FISSURE: Keywords.AREA,
 	Shape.RING: Keywords.AREA,
 	Shape.IMPLOSION: Keywords.AREA,
+	Shape.BREATH: Keywords.AREA,
 	# Le faisceau n'y est **pas** : une ligne n'est ni un tir ni une surface, et lui
 	# prêter `area` promettrait un affixe qui ne le servirait pas.
 	Shape.PILLAR: Keywords.AREA,
@@ -96,7 +99,9 @@ const KEYWORD_OF_SHAPE := {
 	# explose.
 	Shape.SUMMON: Keywords.SUMMON,
 	Shape.GATE: Keywords.SUMMON,
+	Shape.NEST: Keywords.SUMMON,
 	Shape.CURSE: Keywords.CURSE,
+	Shape.MARK: Keywords.CURSE,
 	# On se jette sur une cible pour la frapper à l'arme : de la mêlée, d'où qu'on parte.
 	Shape.LUNGE: Keywords.MELEE,
 }
@@ -110,13 +115,14 @@ const GROWTH_PER_EXTRA_LEVEL := 1.25
 const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
 
 ## Ce qu'une transformation peut quitter et rejoindre (jalon 34) : ce qui se pose et
-## s'oublie. Le reste tient un état chez le lanceur — ce qui brûle, la couronne, les
+## s'oublie — la malédiction aussi, depuis le jalon 38. Le reste tient un état chez le lanceur — ce qui brûle, la couronne, les
 ## morts-vivants, la cible de la frappe vive — qu'un nœud rendrait orphelin.
 const TRANSFORMABLE: Array[Shape] = [
 	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
 	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
+	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -125,12 +131,15 @@ const TRANSFORMABLE: Array[Shape] = [
 const IGNORED_BY_SHAPE := {
 	Shape.METEOR: [SkillStats.PIERCE],
 	Shape.LEAP: ["duration", "radius"],
-	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES],
+	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION],
 	Shape.WEB: [SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN],
 	Shape.TEMPEST: [SkillStats.SEEK],
 	# L'onde passe sans se poser : nulle part où laisser un sol. L'implosion éclate déjà.
 	Shape.RING: [SkillStats.GROUND],
 	Shape.IMPLOSION: [SkillStats.END_BURST],
+	# Le cône souffle et passe ; la marque ne couvre qu'un ennemi.
+	Shape.BREATH: [SkillStats.GROUND],
+	Shape.MARK: ["radius"],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
@@ -417,6 +426,7 @@ func resolve(
 	r.self_burn = self_burn
 	r.mana_per_second = mana_per_second
 	r.self_heal = self_heal
+	r.self_wither = self_wither
 	r.status_chance_increase = status_chance_increase
 	r.inflicted_state = inflicted_state
 	r.inflict_chance = inflict_chance

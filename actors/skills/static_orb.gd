@@ -6,6 +6,8 @@ extends Node2D
 ## et traverse les ennemis ; un mur l'éteint.
 
 const BOLT_LIFETIME := 0.14
+## Les spores d'une nuée nécrotique.
+const SWARM := 12
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -66,6 +68,9 @@ func _strike() -> void:
 
 
 func _draw() -> void:
+	if _cast.nature == DamageType.Kind.NECROTIC:
+		_swarm()
+		return
 	Lightning.orb(
 		_tint, Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, _cast.duration)
 	).put(self, Vector2.ZERO)
@@ -79,3 +84,14 @@ func _draw() -> void:
 				Lightning.gone(e.age, BOLT_LIFETIME)
 			)
 		Lightning.put(self, e.pieces)
+
+
+## La Nuée de la Peste (jalon 38), « spores en orbite » choisi sur planche contre un crâne
+## cerné de mouches ou de volutes, une ronde de crânes et des traînées : des spores qui
+## tournent chacune sur son orbite, dans les deux sens, dans le cercle qu'il mord.
+func _swarm() -> void:
+	var spore := EffectForge.spore(_tint)
+	for i in SWARM:
+		var orbit := _cast.radius * (0.2 + 0.4 * fmod(float(i) * 0.618034, 1.0))
+		var angle := float(i) * 2.399963 + _age * (3.0 if i % 2 == 0 else -2.2)
+		Necrotic.centered(self, spore, Vector2.from_angle(angle) * orbit)

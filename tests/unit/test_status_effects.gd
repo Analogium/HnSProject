@@ -268,8 +268,57 @@ func test_a_cast_chill_effect_reaches_the_chill_it_puts() -> void:
 	var always := RandomNumberGenerator.new()
 	var author := StatusEffects.new()
 	author.chance_factors[StatusEffects.Kind.CHILL] = 100.0
-	e.suffer(parts, author, always, 0.0, 0.0, "", 30.0)
+	var cast := SkillStats.new()
+	cast.chill_effect = 30.0
+	e.suffer(parts, author, always, 0.0, 0.0, "", cast.strength_of(StatusEffects.Kind.CHILL))
 	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.3, 0.0001)
+
+
+## Les états posés par la nécrose (jalon 38) : leur force vient du lancer. Ce qui brûle
+## brûle davantage ; la malédiction retire plus ; le flétri frappe moins fort.
+func test_a_cast_strengthens_the_state_it_inflicts() -> void:
+	var always := RandomNumberGenerator.new()
+	var parts := _parts(DamageType.Kind.NECROTIC, 10.0)
+	var plain := StatusEffects.new()
+	plain.inflict(StatusEffects.Kind.DECAY, 1.0, parts, null, always)
+	var strong := StatusEffects.new()
+	strong.inflict(StatusEffects.Kind.DECAY, 1.0, parts, null, always, "", 1.5)
+	assert_almost_eq(strong.advance(1.0), plain.advance(1.0) * 1.5, 0.0001, "la décomposition ronge plus vite")
+
+	var cursed := StatusEffects.new()
+	cursed.put(StatusEffects.Kind.CURSED, 0.0, null, "", 1.5, 2.0)
+	assert_almost_eq(cursed.resistance_lost(DamageType.Kind.NECROTIC), StatusEffects.CURSE * 1.5, 0.0001)
+	assert_almost_eq(cursed.remaining(StatusEffects.Kind.CURSED), 2.0, 0.0001, "à la durée du lancer")
+
+	var wilted := StatusEffects.new()
+	wilted.put(StatusEffects.Kind.WILTING, 10.0)
+	assert_eq(wilted.damage_dealt_factor, 1.0, "le flétrissement seul n'affaiblit pas")
+	wilted.put(StatusEffects.Kind.WILTING, 10.0, null, "", 1.15)
+	assert_almost_eq(wilted.damage_dealt_factor, 0.85, 0.0001, "Asphyxie, si")
+
+
+## La Malédiction putride porte sa durée sur le lancer, que Longue malédiction allonge ;
+## le guide lit celle de la sorte. Les deux doivent dire la même chose sans nœud.
+func test_the_curse_lasts_as_the_guide_says() -> void:
+	assert_eq(
+		SkillCatalog.by_id("putrid_curse").duration,
+		StatusEffects.DURATIONS[StatusEffects.Kind.CURSED]
+	)
+
+
+## La Contagion recopie l'état, sa force et son auteur, à pleine durée.
+func test_a_state_passes_on_whole() -> void:
+	var author := StatusEffects.new()
+	var sick := StatusEffects.new()
+	sick.put(StatusEffects.Kind.DECAY, 20.0, author, "plague", 1.0)
+	var next := StatusEffects.new()
+	sick.pass_on(StatusEffects.Kind.DECAY, next)
+	assert_almost_eq(next.remaining(StatusEffects.Kind.DECAY), StatusEffects.DURATIONS[StatusEffects.Kind.DECAY], 0.0001)
+	# Avant le premier à-coup : la pourriture qu'il tire brouillerait la comparaison.
+	assert_almost_eq(next.advance(0.4), sick.advance(0.4), 0.0001, "au même rythme")
+	var clean := StatusEffects.new()
+	clean.pass_on(StatusEffects.Kind.DECAY, next)
+	assert_true(next.active(StatusEffects.Kind.DECAY), "rien à passer, rien ne change")
 
 
 func test_ignite_replays_the_fire_received_over_its_duration() -> void:

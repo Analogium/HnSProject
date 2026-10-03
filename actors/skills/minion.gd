@@ -41,17 +41,41 @@ var _cooldown := 0.0
 
 ## Relève ce qui manque pour atteindre le maximum du lancer ; rend combien.
 static func raise(player: Player, cast: SkillStats, parent: Node) -> int:
-	var missing := cast.max_simultaneous() - count_of(player, cast.skill_id)
+	var missing := cap(cast) - count_of(player, cast.skill_id)
+	var giant := cast.colossus > 0.0
 	for i in missing:
 		var minion: Minion = (load(SCENE) as PackedScene).instantiate()
 		minion._player = player
 		minion._cast = cast
 		minion._angle = TAU * float(i) / float(maxi(missing, 1)) + player.facing.angle()
-		minion.max_health = maxf(player.stats.max_health * LIFE, 1.0)
+		minion.max_health = maxf(player.stats.max_health * life_part(cast), 1.0)
 		minion.health = minion.max_health
 		parent.add_child(minion)
+		# Le dessin seul : un corps physique mis à l'échelle déforme ses collisions.
+		if giant:
+			minion.sprite.scale *= SkillStats.COLOSSUS_SCALE
 		minion.global_position = minion._post()
 	return maxi(missing, 0)
+
+
+## La part des PV max du lanceur que reçoit chacun : la levée et la fiche lisent celle-ci.
+static func life_part(cast: SkillStats) -> float:
+	var part := LIFE * (1.0 + cast.minion_life * 0.01)
+	return part * SkillStats.COLOSSUS_LIFE if cast.colossus > 0.0 else part
+
+
+## Combien ce lancer en tient debout : un seul colosse, quoi que dise Légion d'os.
+static func cap(cast: SkillStats) -> int:
+	return 1 if cast.colossus > 0.0 else cast.max_simultaneous()
+
+
+## Rempart d'os (jalon 38) : les points de dégâts subis que retirent ceux de ce joueur.
+static func wall_of(player: Player) -> float:
+	var wall := 0.0
+	for minion in living:
+		if minion._player == player:
+			wall += minion._cast.bone_wall
+	return wall
 
 
 ## Ceux de ce joueur levés par cette compétence.
@@ -63,12 +87,20 @@ static func count_of(player: Player, skill_id: String) -> int:
 	return n
 
 
+## Le rempart change avec chaque mort-vivant levé ou tombé : la fiche du joueur se refait.
 func _enter_tree() -> void:
 	living.append(self)
+	_raise_the_wall()
 
 
 func _exit_tree() -> void:
 	living.erase(self)
+	_raise_the_wall()
+
+
+func _raise_the_wall() -> void:
+	if _cast != null and _cast.bone_wall > 0.0 and is_instance_valid(_player):
+		_player.recompute_stats()
 
 
 func _ready() -> void:
@@ -128,12 +160,25 @@ func _strike(toward: Vector2) -> void:
 	_cooldown = _cast.period
 	sprite.set_state(false, toward)
 	sprite.attack()
-	Targets.strike(_foe, _cast.roll(Game.rng), global_position, _player.states, _cast)
+	if _cast.colossus > 0.0:
+		Targets.strike_circle(get_world_2d(), global_position, _cast.colossus, _cast, _player.states)
+	else:
+		Targets.strike(_foe, _cast.roll(Game.rng), global_position, _player.states, _cast)
 
 
 func _on_damaged(info: DamageInfo) -> void:
+	# Tombé, il attend sa libération : deux coups de la même image l'auraient fait
+	# éclater deux fois.
+	if health <= 0.0:
+		return
 	health = maxf(health - info.amount, 0.0)
 	health_bar.set_health(health, max_health)
 	sprite.flash()
 	if health <= 0.0:
+		# Dernier souffle : en différé, la blessure arrive d'un rappel de collision.
+		if _cast.end_burst > 0.0:
+			Explosion.put(
+				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
+				DamageType.COLORS[_cast.nature], _player.states, _cast
+			)
 		queue_free()

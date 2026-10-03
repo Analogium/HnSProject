@@ -37,9 +37,9 @@ const STATE_TEXTS := [
 	"Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle.",
 	"Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s.",
 	"Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s.",
-	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir.",
-	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir.",
-	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s.",
+	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite.",
+	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts.",
+	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue.",
 ]
 
 var _index: VBoxContainer

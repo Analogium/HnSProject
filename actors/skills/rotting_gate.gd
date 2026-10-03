@@ -22,6 +22,8 @@ const SEARCH_PERIOD := 0.2
 ## Ce que la faille met à s'ouvrir et à se refermer, en secondes.
 const OPENING := 0.2
 const CLOSING := 0.3
+## Le Nid porté (jalon 38) : où la faille se tient par rapport au joueur, à son épaule.
+const NEST_OFFSET := Vector2(-12.0, -4.0)
 
 
 class Crawler:
@@ -29,6 +31,8 @@ class Crawler:
 	var prey: Hurtbox
 	## Sa place dans l'amas, en angle.
 	var angle: float
+	## Un petit de Progéniture : une part du coup, un demi-rayon, et rien après lui.
+	var small := false
 
 
 var _cast: SkillStats
@@ -38,12 +42,14 @@ var _age := 0.0
 var _born := 0
 var _search := 0.0
 var _crawlers: Array[Crawler] = []
+var _follow: Node2D
 
 
 static func open(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null
 ) -> RottingGate:
 	var gate := RottingGate.new()
+	gate._follow = follow
 	gate._cast = cast
 	gate._author = author
 	gate._tint = DamageType.COLORS[cast.nature]
@@ -61,6 +67,8 @@ func _ready() -> void:
 ## Les naissances se comptent par `strikes_over_duration()`, comme les impulsions du
 ## pilier : la fiche annonce une explosion par créature.
 func _physics_process(delta: float) -> void:
+	if is_instance_valid(_follow):
+		global_position = _follow.global_position + NEST_OFFSET
 	_age += delta
 	var due := _cast.strikes_due(_age)
 	while _born < due:
@@ -82,7 +90,7 @@ func _physics_process(delta: float) -> void:
 
 ## Chaque créature sans proie prend l'ennemi à portée le plus proche d'elle.
 func _hunt() -> void:
-	var seen := Targets.in_circle(get_world_2d(), global_position, SIGHT)
+	var seen := Targets.in_circle(get_world_2d(), global_position, SIGHT + _cast.seek_radius)
 	if seen.is_empty():
 		return
 	for c in _crawlers:
@@ -101,12 +109,28 @@ func _crawl(c: Crawler, delta: float) -> void:
 	if is_instance_valid(c.prey):
 		goal = c.prey.global_position
 		if c.at.distance_to(goal) <= CONTACT:
-			_crawlers.erase(c)
-			Explosion.put(
-				get_parent(), c.at, _cast.roll(Game.rng), _cast.radius, null, _tint, _author, _cast
-			)
+			_burst(c)
 			return
-	c.at = c.at.move_toward(goal, SPEED * delta)
+	c.at = c.at.move_toward(goal, SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta)
+
+
+## Elle éclate ; Progéniture en lâche des petits là où elle était, qui chassent à leur tour.
+func _burst(c: Crawler) -> void:
+	_crawlers.erase(c)
+	var parts := _cast.roll(Game.rng)
+	if c.small:
+		for i in parts.size():
+			parts[i] *= SkillStats.SPLIT_PART
+	var radius := _cast.radius * (0.5 if c.small else 1.0)
+	Explosion.put(get_parent(), c.at, parts, radius, null, _tint, _author, _cast)
+	if c.small:
+		return
+	for i in int(_cast.hatchlings):
+		var young := Crawler.new()
+		young.at = c.at
+		young.angle = c.angle + float(i + 1) * 2.4
+		young.small = true
+		_crawlers.append(young)
 
 
 ## La faille **debout**, sa base sur le point visé, qui s'ouvre et se referme en se

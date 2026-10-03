@@ -234,13 +234,13 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Mue | Serpent infernal | — | 4 | +8 % de dégâts amplifiés |
 | Longue vie | Serpent infernal | — | 3 | +20 % de durée accrue |
 | Crocs | Serpent infernal | — | 2 | ajoute 4 à 9 dégâts de feu |
-| Vif | Serpent infernal | Longue vie (1) ou Mue (1) | 2 | +15 % vitesse du serpent · -8 % de durée réduite |
+| Vif | Serpent infernal | Longue vie (1) ou Mue (1) | 2 | +15 % vitesse de reptation · -8 % de durée réduite |
 | Queue de flammes | Serpent infernal | Longue vie (1) ou Chasseur (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Chasseur | Serpent infernal | Crocs (1) | 1 | +120 rayon de chasse |
 | Couvée | Serpent infernal | Mue (2) | 2 | +1 nombre de serpents · -15 % de dégâts atténués |
 | Mue explosive | Serpent infernal | Vif (1) | 3 | +10 rayon de l'explosion finale |
 | Venin | Serpent infernal | Crocs (2) | 1 | devient nécrotique |
-| Hydre | Serpent infernal | Couvée (2) ou Mue explosive (2) | 1 | +2 nombre de petits serpents |
+| Hydre | Serpent infernal | Couvée (2) ou Mue explosive (2) | 1 | +2 nombre de petits |
 | Fournaise | Immolation | — | 5 | +8 % de dégâts amplifiés |
 | Brasier | Immolation | — | 4 | +15 % de rayon accru |
 | Cœur tiède | Immolation | — | 3 | -20 % de brûlure subie réduite |
@@ -355,25 +355,53 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Relève | sort nécrotique | niveau 3 | 5 | 22 mana | 1.00 s | summon · rayon 110 · toutes les 0.80 s · 2 au plus | 10 · 13 · 16 · 20 · 25 |
 | Déferlante toxique | sort nécrotique | niveau 5 | 5 | 18 mana | 0.90 s | nova · rayon 48 | 12 · 15 · 19 · 24 · 30 |
 | Porte pourrissante | sort nécrotique | niveau 8 | 5 | 24 mana | 1.00 s · recharge 6.00 s | gate · 6.0 s · rayon 22 · toutes les 0.75 s | 14 · 18 · 22 · 28 · 35 |
-| Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s · recharge 5.00 s | curse · rayon 48 |  |
+| Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s · recharge 5.00 s | curse · 5.0 s · rayon 48 |  |
 | Nécrose avancée | sort nécrotique | niveau 12 | 3 | 0 mana | recharge 0.60 s | buff | Nécrose : +10 % chance de pourrir |
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Virulence | Peste | — | 3 | +13 % de dégâts amplifiés |
-| Condamnation | Peste | Virulence (1) | 2 | +20 % de dégâts accrus contre les maudits |
-| Contagion | Peste | — | 1 | +1 nombre de projectiles |
-| Moelle | Relève | — | 3 | +12 % de dégâts amplifiés |
-| Guet | Relève | Moelle (1) | 2 | +20 % de rayon accru |
+| Virulence | Peste | — | 5 | +13 % de dégâts amplifiés |
+| Fléau rampant | Peste | — | 2 | +1 nombre d'ennemis traversés |
+| Condamnation | Peste | Virulence (1) | 3 | +20 % de dégâts accrus contre les maudits |
+| Incubation | Peste | Virulence (1) | 4 | +15 % effet de la décomposition |
+| Contagion | Peste | Fléau rampant (1) ou Incubation (1) | 3 | +20 rayon de contagion |
+| Fléaux jumeaux | Peste | Fléau rampant (2) | 2 | +1 nombre de projectiles |
+| Bubons | Peste | Incubation (2) | 3 | +15 rayon de l'explosion des tués |
+| Nuée | Peste | Virulence (2) ou Condamnation (1) | 1 | -25 % de dégâts atténués · -60 % de vitesse de projectile réduite |
+| Moelle | Relève | — | 5 | +12 % de dégâts amplifiés |
+| Guet | Relève | — | 3 | +20 % de rayon accru |
+| Ossature | Relève | — | 4 | +25 % PV des morts-vivants |
 | Légion d'os | Relève | — | 1 | +1 maximum simultané |
-| Miasme | Déferlante toxique | — | 2 | +20 % de rayon accru |
-| Caustique | Déferlante toxique | Miasme (1) | 3 | +14 % de dégâts amplifiés |
-| Dessiccation | Déferlante toxique | — | 2 | +25 % de dégâts accrus contre les flétris |
-| Couvée | Porte pourrissante | — | 2 | +25 % de durée accrue |
-| Boursouflure | Porte pourrissante | Couvée (1) | 2 | +20 % de rayon accru |
-| Essaim | Porte pourrissante | — | 3 | +12 % de dégâts amplifiés |
-| Anathème | Malédiction putride | — | 2 | +25 % de rayon accru |
-| Malédiction prompte | Malédiction putride | Anathème (1) | 2 | -15 % de temps du geste réduit |
+| Frénésie | Relève | Moelle (1) | 3 | -10 % d'intervalle des frappes réduit |
+| Rempart d'os | Relève | Ossature (1) | 3 | +2 % dégâts subis retirés par mort-vivant |
+| Dernier souffle | Relève | Ossature (2) | 3 | +15 rayon de l'explosion finale |
+| Colosse d'os | Relève | Moelle (2) ou Dernier souffle (1) | 1 | +24 rayon de frappe du colosse · +150 % de dégâts amplifiés |
+| Caustique | Déferlante toxique | — | 5 | +14 % de dégâts amplifiés |
+| Miasme | Déferlante toxique | — | 3 | +20 % de rayon accru |
+| Haleine fétide | Déferlante toxique | — | 4 | +15 % de chance de l'état posé accrue |
+| Dessiccation | Déferlante toxique | Haleine fétide (1) | 3 | +25 % de dégâts accrus contre les flétris |
+| Asphyxie | Déferlante toxique | Haleine fétide (2) | 4 | +5 % affaiblissement du flétri |
+| Marais | Déferlante toxique | Miasme (1) | 3 | +1 secondes de sol laissé |
+| Haleine | Déferlante toxique | Miasme (2) ou Asphyxie (1) | 1 | -15 % de dégâts atténués |
+| Essaim | Porte pourrissante | — | 5 | +12 % de dégâts amplifiés |
+| Couvée | Porte pourrissante | — | 4 | +25 % de durée accrue |
+| Boursouflure | Porte pourrissante | Essaim (1) | 3 | +20 % de rayon accru |
+| Rampants véloces | Porte pourrissante | Couvée (1) | 3 | +25 % vitesse de reptation |
+| Flair | Porte pourrissante | Rampants véloces (1) | 3 | +30 rayon de chasse |
+| Progéniture | Porte pourrissante | Boursouflure (1) | 3 | +1 nombre de petits |
+| Nid porté | Porte pourrissante | Rampants véloces (2) ou Couvée (2) | 1 | -30 % de durée réduite |
+| Anathème | Malédiction putride | — | 3 | +25 % de rayon accru |
+| Malédiction prompte | Malédiction putride | — | 3 | -12 % de temps du geste réduit |
+| Malédiction profonde | Malédiction putride | — | 5 | +15 % effet de la malédiction |
+| Longue malédiction | Malédiction putride | Malédiction profonde (1) | 4 | +20 % de durée accrue |
+| Tribut | Malédiction putride | Anathème (1) | 5 | +1 mana par ennemi maudit |
+| Marque de mort | Malédiction putride | Malédiction profonde (2) ou Tribut (1) | 1 | -25 % de durée réduite |
+| Gangrène | Nécrose avancée | — | 5 | +4 % chance de pourrir |
+| Endurcissement | Nécrose avancée | — | 3 | -20 % de vie rongée réduite |
+| Sang noir | Nécrose avancée | Gangrène (1) | 4 | +1.5 PV/s |
+| Chair morte | Nécrose avancée | Endurcissement (1) | 4 | +8 % rés. nécrotique |
+| Pacte | Nécrose avancée | Gangrène (2) | 4 | +15 % de dégâts nécrotiques accrus · +25 % de vie rongée accrue |
+| Fardeau partagé | Nécrose avancée | Pacte (1) ou Sang noir (2) | 1 | +48 rayon du fardeau partagé |
 
 24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

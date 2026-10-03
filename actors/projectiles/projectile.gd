@@ -241,6 +241,8 @@ func _on_area_entered(area: Area2D) -> void:
 			caster.on_damage_dealt(info.amount)
 	if hit_stop_on_impact:
 		Game.hit_stop()
+	if _cast != null and _cast.contagion > 0.0 and _cast.inflicted_state >= 0:
+		Projectile.contaminate.call_deferred(area, _cast.inflicted_state, _cast.contagion)
 	if _cast != null and _pierced < int(_cast.pierce):
 		_pierced += 1
 		_shatter(true)
@@ -296,6 +298,20 @@ func _shatter(pierced := false) -> void:
 		get_parent(), load(scene_file_path), global_position, dir, speed, _nature,
 		_source, _cast.shard(), count, _struck.duplicate()
 	)
+
+
+## La Contagion (jalon 38) : l'état que le tir a posé gagne les voisins de sa cible,
+## sans coup. Différée et statique : l'impact est un rappel de collision, et le tir peut
+## être libéré quand l'appel arrive.
+static func contaminate(target, kind: int, radius: float) -> void:
+	if not is_instance_valid(target):
+		return
+	var from_target := target as Hurtbox
+	if from_target.states == null:
+		return
+	for other in Targets.in_circle(from_target.get_world_2d(), from_target.global_position, radius):
+		if other.states != null:
+			from_target.states.pass_on(kind, other.states)
 
 
 ## En étoile, le premier dans `dir`. **Différé** : la fin de course arrive d'un

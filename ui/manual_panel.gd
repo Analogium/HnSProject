@@ -95,7 +95,11 @@ const DESCRIPTION := Color(0.80, 0.75, 0.66)
 
 ## Les groupes de la fiche, dans l'ordre des questions. `EFFECT` : passif et nœud, qui
 ## n'ont ni coût ni portée.
-enum Group { STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF, ON_HIT, ON_TICK, ON_KILL }
+enum Group {
+	STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF, ON_HIT, ON_TICK, ON_KILL,
+	# Jalon 38 : l'état qu'un lancer pose, et ce qu'il fait lever — sous leur nom.
+	INFLICTED, SUMMONED,
+}
 
 ## Le titre que porte le filet d'un groupe. La fiche se lit alors par blocs — ce qu'elle
 ## coûte, ce qu'elle inflige, ce qu'elle pose — au lieu d'une liste d'une vingtaine de
@@ -889,11 +893,11 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.COST, Texts.t("brûlure"),
 			"%s %s" % [StatMod.percentage(roundi(cast.self_burn * 100.0)), Texts.t("PV/s")], MISSING
 		))
-	if skill.self_wither > 0.0:
+	if cast.self_wither > 0.0:
 		out.append(SheetLine.new(
 			Group.COST, Texts.t("brûlure"),
 			"%s %s" % [
-				StatMod.percentage(skill.self_wither * 100.0), Texts.t("PV actuels/s")
+				StatMod.percentage(cast.self_wither * 100.0), Texts.t("PV actuels/s")
 			], MISSING
 		))
 	if cast.mana_per_second > 0.0:
@@ -1020,21 +1024,14 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.hits > 1:
 		out.append(SheetLine.new(Group.SHAPE, Texts.t("coups"), str(cast.hits), UiPalette.TEXT))
-	if cast.inflicted_state >= 0:
-		out.append(SheetLine.new(
-			Group.SHAPE, Texts.t("état"),
-			"%s · %s" % [
-				StatusEffects.name(cast.inflicted_state),
-				StatMod.percentage(cast.inflict_chance * 100.0)
-			],
-			StatusEffects.color(cast.inflicted_state)
-		))
 	# Celle d'un lancer qui pose un buff se lit sous le nom du buff, plus bas.
-	if cast.duration > 0.0 and not skill.grants_buffs():
+	# Celle d'une malédiction se lit dans son bloc : c'est celle de l'état.
+	if cast.duration > 0.0 and not skill.grants_buffs() \
+			and cast.inflicted_state != StatusEffects.Kind.CURSED:
 		out.append(SheetLine.new(
 			Group.SHAPE, Texts.t("durée"), "%.1f s" % cast.duration, UiPalette.TEXT
 		))
-	if cast.radius > 0.0:
+	if cast.radius > 0.0 and cast.shape != Skill.Shape.MARK:
 		out.append(SheetLine.new(
 			# Celui d'une frappe vive n'est pas une zone : c'est jusqu'où elle va chercher.
 			Group.SHAPE, Texts.t("portée") if skill.shape == Skill.Shape.LUNGE else Texts.t("rayon"),
@@ -1048,6 +1045,20 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		out.append(SheetLine.new(
 			Group.SHAPE, Texts.t("en même temps"), str(cast.max_simultaneous()), UiPalette.TEXT
 		))
+	# L'état posé tient en une ligne, son multiplicateur compris ; son détail est dans la
+	# fenêtre des déclenchements — sauf pour ce qui ne frappe pas, qui a la place.
+	if cast.inflicted_state >= 0 and skill.strikes():
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("état"),
+			"%s · %s · %s" % [
+				StatusEffects.name(cast.inflicted_state),
+				StatMod.percentage(roundi(cast.inflict_chance * 100.0)),
+				_times(cast.strength_of(cast.inflicted_state))
+			],
+			StatusEffects.color(cast.inflicted_state)
+		))
+	elif cast.inflicted_state >= 0:
+		out.append_array(_inflicted_lines(cast))
 
 	# Ce que le lancer pose sur son lanceur : **un bloc par buff**, sous son nom. Un
 	# geste entretenu n'y met pas de durée : il tient tant qu'on le paie.
@@ -1097,6 +1108,94 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	return Sheet.new(
 		skill.displayed_name(), cast.keywords_label(), out, skill.displayed_description()
 	)
+
+
+## L'état que le lancer pose, **sous son nom** : ce qu'il fait concrètement, et le
+## multiplicateur d'effet que l'arbre — ou plus tard un objet — lui donne (jalon 38).
+func _inflicted_lines(cast: SkillStats) -> Array[SheetLine]:
+	var out: Array[SheetLine] = []
+	var kind := cast.inflicted_state
+	if kind < 0:
+		return out
+	var heading := RichText.capitalized(StatusEffects.name(kind))
+	var tint := StatusEffects.color(kind)
+	var strength := cast.strength_of(kind)
+	var lines := []
+	var lasts: float = StatusEffects.DURATIONS[kind]
+	if kind == StatusEffects.Kind.CURSED:
+		lasts = cast.duration
+	lines.append([Texts.t("durée"), "%.1f s" % lasts])
+	var burn := StatusEffects.burn_per_second(kind)
+	if burn > 0.0:
+		lines.append([
+			Texts.t("brûle par seconde"),
+			Texts.t("%s du coup") % StatMod.percentage(roundi(burn * strength * 100.0))
+		])
+	if kind == StatusEffects.Kind.WILTING and strength > 1.0:
+		lines.append([
+			Texts.t("dégâts infligés"), StatMod.percentage(-roundi((strength - 1.0) * 100.0), true)
+		])
+	if kind == StatusEffects.Kind.CURSED:
+		lines.append([
+			StatMod.name("res_necrotic"),
+			StatMod.format("res_necrotic", -StatusEffects.CURSE * strength, true)
+		])
+	if cast.shape == Skill.Shape.MARK:
+		lines.append([Texts.t("cible"), Texts.t("un seul ennemi")])
+	if cast.contagion > 0.0 and not SkillStats.CONTAGION in Skill.IGNORED_BY_SHAPE.get(cast.shape, []):
+		lines.append([Texts.t("contagion"), "%d px" % roundi(cast.contagion)])
+	lines.append([Texts.t("effet"), _times(strength)])
+	for pair: Array in lines:
+		out.append(SheetLine.new(Group.INFLICTED, pair[0], pair[1], tint, heading))
+	return out
+
+
+## Ce que le lancer fait lever, **sous son nom** : les morts-vivants de la Relève, les
+## créatures de la Porte — leurs nombres ne se lisaient nulle part (jalon 38).
+func _summoned_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
+	var lines := []
+	var heading := ""
+	if skill.shape == Skill.Shape.SUMMON:
+		heading = Texts.t("Colosse") if cast.colossus > 0.0 else Texts.t("Morts-vivants")
+		lines.append([Texts.t("debout"), str(Minion.cap(cast))])
+		var life := _player.stats.max_health * Minion.life_part(cast)
+		lines.append([Texts.t("PV"), str(roundi(life))])
+		lines.append([Texts.t("frappe toutes les"), "%.2f s" % cast.period])
+		lines.append([Texts.t("garde"), "%d px" % roundi(cast.radius)])
+		if cast.colossus > 0.0:
+			lines.append([Texts.t("frappe en cercle"), "%d px" % roundi(cast.colossus)])
+		if cast.end_burst > 0.0:
+			lines.append([Texts.t("explose en tombant"), "%d px" % roundi(cast.end_burst)])
+		if cast.bone_wall > 0.0:
+			lines.append([
+				Texts.t("dégâts subis, par tête"), StatMod.percentage(-cast.bone_wall, true)
+			])
+	elif skill.shape == Skill.Shape.GATE:
+		heading = Texts.t("Créatures")
+		if cast.shape == Skill.Shape.NEST:
+			lines.append([Texts.t("portail"), Texts.t("à votre épaule")])
+		lines.append([Texts.t("une toutes les"), "%.2f s" % cast.period])
+		lines.append([Texts.t("explosion"), "%d px" % roundi(cast.radius)])
+		lines.append([Texts.t("vue"), "%d px" % roundi(RottingGate.SIGHT + cast.seek_radius)])
+		lines.append([
+			Texts.t("course"), "%d px/s" % roundi(RottingGate.SPEED * (1.0 + cast.crawl_speed * 0.01))
+		])
+		if cast.hatchlings > 0.0:
+			lines.append([
+				Texts.t("petits"),
+				"%d · %s" % [
+					int(cast.hatchlings), StatMod.percentage(roundi(SkillStats.SPLIT_PART * 100.0))
+				]
+			])
+	var out: Array[SheetLine] = []
+	for pair: Array in lines:
+		out.append(SheetLine.new(Group.SUMMONED, pair[0], pair[1], UiPalette.TEXT, heading))
+	return out
+
+
+## « ×1.15 » : un multiplicateur, pas un accru — il s'applique tel quel à l'effet.
+static func _times(factor: float) -> String:
+	return "×%.2f" % factor
 
 
 ## Ce qu'un passif donne à ses points ; son sous-titre dit « toujours actif ».
@@ -1216,6 +1315,12 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 				Group.ON_HIT, StatusEffects.name(kind),
 				_chance(StatusEffects.chance(share, 0.0, factor)), StatusEffects.color(kind)
 			))
+			# Le transi a une force, que l'arbre ou un objet accroît : elle se lit dessous.
+			if kind == StatusEffects.Kind.CHILL:
+				out.append(SheetLine.new(
+					Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.CHILL_EFFECT]),
+					_times(cast.strength_of(kind)), StatusEffects.color(kind)
+				))
 	var posed := cast.inflicted_state
 	if posed >= 0:
 		# La malédiction pose son état sur tout son cercle, sans tirage.
@@ -1247,6 +1352,11 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 				continue
 			for buff in other.buffs:
 				out.append(SheetLine.new(Group.ON_KILL, buff.displayed_name(), _chance(1.0), FULL))
+
+	# Le détail de l'état posé et des créatures levées (jalon 38) : la fiche n'a pas la place.
+	if posed >= 0 and skill.strikes():
+		out.append_array(_inflicted_lines(cast))
+	out.append_array(_summoned_lines(skill, cast))
 
 	return Sheet.new(
 		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,

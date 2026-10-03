@@ -290,7 +290,7 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.ORBIT and _blade_crown().full(cast.max_simultaneous()):
 		return false
 	if skill.shape == Skill.Shape.SUMMON \
-			and Minion.count_of(self, skill.id) >= cast.max_simultaneous():
+			and Minion.count_of(self, skill.id) >= Minion.cap(cast):
 		return false
 	var prey: Hurtbox = _lunge_target(cast) if skill.shape == Skill.Shape.LUNGE else null
 	if skill.shape == Skill.Shape.LUNGE and prey == null:
@@ -378,8 +378,12 @@ func cast_slot(index: int) -> bool:
 			Minion.raise(self, cast, _effects_parent())
 		Skill.Shape.GATE:
 			RottingGate.open(_effects_parent(), _aim_point(), cast, states)
-		Skill.Shape.CURSE:
-			PutridCurse.fall(_effects_parent(), _aim_point(), cast, states)
+		Skill.Shape.NEST:
+			RottingGate.open(_effects_parent(), global_position, cast, states, self)
+		Skill.Shape.CURSE, Skill.Shape.MARK:
+			PutridCurse.fall(_effects_parent(), _aim_point(), cast, states, self)
+		Skill.Shape.BREATH:
+			ToxicBreath.exhale(_effects_parent(), global_position, facing, cast, states)
 		Skill.Shape.STRIKE:
 			_swing(cast, SwingArc.Style.STRIKE)
 		Skill.Shape.CROSS:
@@ -485,6 +489,12 @@ func drain(mana_per_second: float, delta: float) -> bool:
 		return false
 	_set_mana(mana - cost)
 	return true
+
+
+## Ce qu'un geste rend à la réserve : le Tribut de la malédiction (jalon 38).
+func gain_mana(amount: float) -> void:
+	if amount > 0.0 and not is_dead:
+		_set_mana(mana + amount)
 
 
 ## Ce que les états brûlent, ôté par le seul chemin de la vie.
@@ -836,6 +846,10 @@ func recompute_stats() -> void:
 		mods.append_array(book.passive_mods())
 	mods.append_array(passive_tree.mods(passives))
 	mods.append_array(buff_mods())
+	# Rempart d'os : tant qu'ils sont debout, pas un buff qu'on allume.
+	var wall := Minion.wall_of(self)
+	if wall > 0.0:
+		mods.append(StatMod.new("damage_taken", StatMod.Mode.FLAT, -wall))
 
 	# En trois temps — attributs, dérivation, reste — pour que « +20 force » rapporte ses
 	# PV et que « +10 % PV » les multiplie. Ce qui vise un mot-clé part à part, pour le

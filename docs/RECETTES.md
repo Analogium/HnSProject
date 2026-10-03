@@ -750,7 +750,9 @@ l'orienteraient chacun à leur façon.
 3. **Changer le jeu plutôt qu'un nombre** (jalon 34) : une ligne peut allumer un
    **nombre de mécanique** — `pierce`, `splits`, `ground_duration`, `end_burst`,
    `kill_burst`, `seek_radius`, pour la foudre `bounces`, `jump_reach`, `jump_gain`,
-   `trail_charges`, pour le froid `chill_effect` et `pull` (`SkillStats.PIERCE` et
+   `trail_charges`, pour le froid `chill_effect` et `pull`, pour la nécrose
+   `decay_effect`, `wilting_weakness`, `curse_effect`, `contagion`, `minion_life`,
+   `bone_wall`, `colossus`, `tribute` et `shared_burden` (`SkillStats.PIERCE` et
    suivants). Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
@@ -776,7 +778,10 @@ nœuds reliés l'un à l'autre se tiendraient ouverts) ; dans `test_manual_panel
 manuels de `SHALLOW_TREES`, pas encore repris),
 `test_each_transformation_stays_among_posed_shapes`,
 `test_each_node_line_targets_a_cast_number`,
-`test_each_conversion_is_one_point_and_alone_in_its_tree` ; et
+`test_each_conversion_is_one_point_and_alone_in_its_tree`,
+`test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
+nécromancie depuis le jalon 38 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
+un nœud de dégâts, de rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.
 

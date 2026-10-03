@@ -1901,3 +1901,196 @@ func test_grounds_of_one_skill_do_not_stack() -> void:
 	DashTrail.patch(_effects, Vector2(40, 0), nova.ground(), _p.states)
 	await wait_seconds(0.3)
 	assert_eq(_hits(target), 2, "une autre compétence frappe aussi")
+
+
+# --------------------------------------------------------------------------
+# Les arbres de la nécromancie (jalon 38)
+# --------------------------------------------------------------------------
+
+## Contagion : la décomposition de la cible gagne son voisin, qui n'est pas frappé.
+func test_contagion_spreads_decay_without_striking() -> void:
+	_learn_with("manual_necrotic", "plague", [[SkillStats.CONTAGION, 30.0]])
+	var struck := _wearing_target(Vector2(60, 0))
+	var beside := _wearing_target(Vector2(60, 24))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(struck), 1)
+	assert_eq(_hits(beside), 0, "le voisin n'est pas frappé")
+	assert_true(beside.states.active(StatusEffects.Kind.DECAY), "mais il se décompose")
+
+
+## La Nuée : un essaim lent qui mord en passant et décompose ce qu'il mord.
+func test_a_plague_swarm_decays_what_it_passes_by() -> void:
+	_learn_with("manual_necrotic", "plague", [], Skill.Shape.ORB)
+	var on_the_way := _wearing_target(Vector2(80, 10))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.4)
+	assert_gt(_hits(on_the_way), 1, "plusieurs morsures en passant")
+	assert_true(on_the_way.states.active(StatusEffects.Kind.DECAY))
+
+
+func _undead() -> Minion:
+	for minion in Minion.living:
+		if minion._player == _p:
+			return minion
+	return null
+
+
+## Ossature : des PV accrus à la levée.
+func test_ossature_raises_sturdier_undead() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.MINION_LIFE, 100.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_almost_eq(_undead().max_health, _p.stats.max_health * Minion.LIFE * 2.0, 0.01)
+
+
+## Le Colosse d'os : un seul, plus solide, qui frappe tout un cercle.
+func test_a_bone_colossus_stands_alone_and_strikes_a_circle() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0]])
+	var first := _target(Vector2(40, 0))
+	var next := _target(Vector2(40, 18))
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_eq(Minion.count_of(_p, "rise"), 1)
+	assert_almost_eq(
+		_undead().max_health, _p.stats.max_health * Minion.LIFE * SkillStats.COLOSSUS_LIFE, 0.01
+	)
+	_p._recharges[2] = 0.0
+	assert_false(_p.cast_slot(2), "un colosse, pas deux")
+	await wait_seconds(1.5)
+	assert_gt(_hits(first), 0)
+	assert_gt(_hits(next), 0, "son coup prend aussi le voisin")
+
+
+## Dernier souffle : un mort-vivant qui tombe éclate.
+func test_a_falling_undead_bursts() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.END_BURST, 30.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = minion.max_health * 10.0
+	minion.hurtbox.take_damage(DamageInfo.roll(null, minion.global_position, blow))
+	minion.hurtbox.take_damage(DamageInfo.roll(null, minion.global_position, blow))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1, "une fois, même frappé deux fois en tombant")
+
+
+## Rempart d'os : chaque mort-vivant debout retire ses points aux dégâts subis.
+func test_a_bone_rampart_shields_by_the_head() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.BONE_WALL, 5.0]])
+	var bare := _p.stats.damage_taken
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_almost_eq(_p.stats.damage_taken, bare - 10.0, 0.001, "deux debout")
+	_undead().queue_free()
+	await wait_physics_frames(1)
+	assert_almost_eq(_p.stats.damage_taken, bare - 5.0, 0.001, "un tombé")
+
+
+## L'Haleine : un cône devant, plus long que la nova, rien derrière ni de côté.
+func test_a_toxic_breath_strikes_its_cone_only() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [], Skill.Shape.BREATH)
+	var cast := _p.resolve(SkillCatalog.by_id("toxic_unleash"), 1)
+	var far_ahead := _target(Vector2(cast.radius * 2.2, 0))
+	var behind := _target(Vector2(-20, 0))
+	var aside := _target(Vector2(0, 40))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(ToxicBreath.LIFETIME + 0.1)
+	assert_eq(_hits(far_ahead), 1, "au-delà du rayon d'une nova, une fois")
+	assert_eq(_hits(behind), 0)
+	assert_eq(_hits(aside), 0)
+
+
+## Progéniture : une créature qui éclate lâche des petits.
+func test_a_bursting_creature_releases_young() -> void:
+	_learn_with("manual_necrotic", "rotting_gate", [[SkillStats.HATCHLINGS, 2.0]])
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var prey := _target(aim + Vector2(50, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var gate: RottingGate = _children_of(RottingGate)[0]
+	var waited := 0.0
+	while _hits(prey) == 0 and waited < 2.0:
+		await wait_physics_frames(1)
+		waited += 1.0 / Engine.physics_ticks_per_second
+	assert_gt(_hits(prey), 0)
+	var young := gate._crawlers.filter(func(c: RottingGate.Crawler) -> bool: return c.small)
+	assert_eq(young.size(), 2)
+
+
+## Le Nid porté : le portail suit le joueur.
+func test_a_carried_nest_follows_its_caster() -> void:
+	_learn_with("manual_necrotic", "rotting_gate", [], Skill.Shape.NEST)
+	assert_true(_p.cast_slot(2))
+	var gate: RottingGate = _children_of(RottingGate)[0]
+	_p.global_position += Vector2(60, 0)
+	await wait_physics_frames(2)
+	assert_almost_eq(gate.global_position, _p.global_position + RottingGate.NEST_OFFSET, Vector2.ONE)
+
+
+## Malédiction profonde, Longue malédiction et Tribut, d'un même sceau.
+func test_a_deep_long_curse_pays_its_tribute() -> void:
+	_learn_with("manual_necrotic", "putrid_curse", [
+		[SkillStats.CURSE_EFFECT, 50.0], [SkillStats.TRIBUTE, 3.0], ["duration", 100.0, true],
+	])
+	var cast := _p.resolve(SkillCatalog.by_id("putrid_curse"), 1)
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var one := _wearing_target(aim + Vector2(10, 0))
+	var two := _wearing_target(aim + Vector2(-10, 0))
+	await wait_physics_frames(2)
+	_p._set_mana(100.0)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(_p.mana, 100.0 - cast.mana_cost + 6.0, 0.5, "trois de mana par maudit")
+	assert_almost_eq(one.states.resistance_lost(DamageType.Kind.NECROTIC), StatusEffects.CURSE * 1.5, 0.001)
+	assert_gt(two.states.remaining(StatusEffects.Kind.CURSED), StatusEffects.DURATIONS[StatusEffects.Kind.CURSED])
+
+
+## La Marque de mort : un seul ennemi, deux fois plus fort, et elle passe à sa mort.
+func test_a_death_mark_takes_one_then_moves_on() -> void:
+	_learn_with("manual_necrotic", "putrid_curse", [], Skill.Shape.MARK)
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var marked := _wearing_target(aim + Vector2(10, 0))
+	var next := _wearing_target(aim + Vector2(50, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(
+		marked.states.resistance_lost(DamageType.Kind.NECROTIC),
+		StatusEffects.CURSE * SkillStats.MARK_FACTOR, 0.001
+	)
+	assert_false(next.states.active(StatusEffects.Kind.CURSED), "un seul")
+	marked.states.clear()
+	await wait_physics_frames(2)
+	assert_true(next.states.active(StatusEffects.Kind.CURSED), "elle passe au plus proche")
+	assert_false(marked.states.active(StatusEffects.Kind.CURSED), "et ne revient pas")
+	assert_eq(_hits(next), 0)
+
+
+## Endurcissement : la vie rongée se lit sur le lancer.
+func test_hardening_gnaws_less() -> void:
+	_learn_with("manual_necrotic", "advanced_necrosis", [["self_wither", -50.0, true]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	_p.stats.health_regen = 0.0
+	var health := _p.health
+	await wait_seconds(1.0)
+	var gnawed := health - _p.health
+	var full := health * SkillCatalog.by_id("advanced_necrosis").self_wither
+	assert_almost_eq(gnawed, full * 0.5, full * 0.15)
+
+
+## Le Fardeau partagé : ce que la Nécrose ronge frappe autour.
+func test_a_shared_burden_strikes_around() -> void:
+	_learn_with("manual_necrotic", "advanced_necrosis", [[SkillStats.SHARED_BURDEN, 48.0]])
+	var near := _target(Vector2(20, 0))
+	var far := _target(Vector2(90, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.BURDEN_PERIOD + 0.2)
+	assert_eq(_hits(near), 1)
+	assert_eq(_hits(far), 0)

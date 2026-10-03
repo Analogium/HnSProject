@@ -406,6 +406,52 @@ func _sheet_of(book: Item, skill_id: String) -> Array:
 	).lines
 
 
+func _necrotic_book() -> Item:
+	var book := Item.new(ItemCatalog.by_id("manual_necrotic"))
+	book.manual.gain_experience(999999)
+	_player.rack.remove(0)
+	_player.study(book, 0)
+	return book
+
+
+## L'état qu'un lancer pose porte son multiplicateur d'effet sur la fiche, et son détail
+## — ce qu'il brûle — dans la fenêtre des déclenchements : sans lui, « +15 % effet de la
+## décomposition » ne se vérifie nulle part (jalon 38).
+func test_an_inflicted_state_shows_its_multiplier_and_what_it_does() -> void:
+	var book := _necrotic_book()
+	assert_true(_player.invest(0, "plague"))
+	var plague := SkillCatalog.by_id("plague")
+	assert_string_contains(_values(_sheet_of(book, "plague"), "état")[0], "×1.00")
+	assert_eq(Array(_values(_panel._trigger_sheet(plague).lines, "effet")), ["×1.00"])
+	assert_string_contains(_values(_panel._trigger_sheet(plague).lines, "brûle par seconde")[0], "25")
+	for id in ["plague_virulence", "plague_incubation", "plague_incubation"]:
+		assert_true(_player.invest(0, id), id)
+	assert_string_contains(_values(_sheet_of(book, "plague"), "état")[0], "×1.30")
+	assert_string_contains(_values(_panel._trigger_sheet(plague).lines, "brûle par seconde")[0], "33")
+
+
+## Une malédiction dit enfin ce qu'elle retire, et combien de temps.
+func test_a_curse_says_what_it_takes() -> void:
+	var book := _necrotic_book()
+	assert_true(_player.invest(0, "putrid_curse"))
+	var lines := _sheet_of(book, "putrid_curse")
+	assert_string_contains(_values(lines, StatMod.name("res_necrotic"))[0], "20")
+	assert_eq(Array(_values(lines, "durée")), ["5.0 s"], "une seule fois, dans son bloc")
+
+
+## Les morts-vivants de la Relève se lisent dans la fenêtre des déclenchements : combien,
+## leurs PV, leur rythme.
+func test_the_undead_show_their_numbers() -> void:
+	_necrotic_book()
+	assert_true(_player.invest(0, "rise"))
+	var lines := _panel._trigger_sheet(SkillCatalog.by_id("rise")).lines
+	assert_eq(Array(_values(lines, "debout")), ["2"])
+	assert_eq(
+		Array(_values(lines, "PV")), [str(roundi(_player.stats.max_health * Minion.LIFE))]
+	)
+	assert_eq(_values(lines, "garde").size(), 1)
+
+
 ## Ce qu'un lancer pose sur son lanceur se lit **sous le nom de son buff**, et sa durée
 ## avec lui : c'est la durée du buff, pas celle d'une trace au sol (jalon 20).
 func test_a_granted_buff_reads_under_its_name() -> void:

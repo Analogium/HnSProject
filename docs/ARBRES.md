@@ -12,9 +12,9 @@ défenses, brûlures comprises, sur 12 s après 6 s de chauffe, avec la réserve
 Les builds sont **cherchés** et non écrits : à chaque pas, le nœud — avec le chemin le
 moins cher qui l'ouvre — qui rend le plus par point dans la scène visée. Une
 transformation ou une conversion est prise d'abord, puis la recherche reprend. ×N :
-le rapport à la compétence sans arbre, dans la même scène. Les buffs (Ignition,
-Électricité statique, Tombeau de glace) ne sont pas mesurés : ce qu'ils valent se lit
-sur une autre compétence. Ce que le banc ne voit pas — ralentir, tirer, esquiver,
+le rapport à la compétence sans arbre, dans la même scène. Ce qui ne frappe pas —
+les buffs, la Malédiction putride — n'est pas mesuré : ce qu'ils valent se lit sur une
+autre compétence. Ce que le banc ne voit pas — ralentir, tirer, esquiver,
 survivre — ne rend rien ici.
 
 ## Manuel des flammes
@@ -37,13 +37,13 @@ Jamais pris : aucun.
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 91,3/s | 103/s |
-| meilleur au paquet | Mue 2, Couvée 2, Hydre 1, Crocs 2, Longue vie 3, Vif 2 | 1066/s ×11,7 | 262/s ×2,54 |
-| meilleur au duel | Mue 4, Couvée 2, Crocs 2, Hydre 1, Longue vie 3, Queue de flammes 3 | 1031/s ×11,3 | 620/s ×6,00 |
-| Venin au paquet (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Queue de flammes 3 | 1097/s ×12,0 | 599/s ×5,79 |
-| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Vif 1, Mue explosive 3 | 1173/s ×12,8 | 622/s ×6,01 |
+| sans arbre | — | 149/s | 87,1/s |
+| meilleur au paquet | Mue 4, Couvée 2, Hydre 1, Crocs 2, Longue vie 3, Queue de flammes 3, Vif 1, Mue explosive 3 | 1151/s ×7,74 | 560/s ×6,43 |
+| meilleur au duel | Crocs 2, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Chasseur 1 | 797/s ×5,35 | 622/s ×7,14 |
+| Venin au paquet (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Queue de flammes 3, Vif 1, Mue explosive 3 | 1125/s ×7,56 | 582/s ×6,68 |
+| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Queue de flammes 3 | 1110/s ×7,46 | 627/s ×7,20 |
 
-Jamais pris : Chasseur.
+Jamais pris : aucun.
 
 ### Immolation
 
@@ -111,16 +111,6 @@ Jamais pris : aucun.
 
 Jamais pris : aucun.
 
-### Ruée d'orage
-
-| build | points | paquet | duel |
-|---|---|---|---|
-| sans arbre | — | 0,00/s | 0,00/s |
-| meilleur au paquet | Élan 2, Coup de tonnerre 3 | 54,4/s | 17,1/s |
-| meilleur au duel | Élan 2, Coup de tonnerre 3, Sillage statique 2, Étincelles 3 | 51,5/s | 20,7/s |
-
-Jamais pris : Persistance, Foulée, Réflexes, Insaisissable, Sans répit.
-
 ## Manuel du froid
 
 ### Pics de glace
@@ -158,4 +148,52 @@ Jamais pris : aucun.
 | Implosion au duel (transformation) | Blizzard 2, Avalanche 1, Implosion 1, Œil du cyclone 4, Rafales 2, Bourrasque 3 | 232/s ×3,61 | 89,1/s ×2,41 |
 
 Jamais pris : Aspiration, Froid mordant.
+
+## Manuel de magie nécrotique
+
+### Peste
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 90,2/s | 96,4/s |
+| meilleur au paquet | Fléau rampant 2, Fléaux jumeaux 2, Virulence 5, Incubation 4, Bubons 3 | 1125/s ×12,5 | 445/s ×4,62 |
+| meilleur au duel | Fléau rampant 2, Fléaux jumeaux 2, Virulence 5, Incubation 4 | 726/s ×8,05 | 445/s ×4,62 |
+| Nuée au paquet (transformation) | Virulence 5, Nuée 1, Fléau rampant 2, Fléaux jumeaux 2, Incubation 2, Bubons 3 | 1542/s ×17,1 | 941/s ×9,76 |
+| Nuée au duel (transformation) | Virulence 5, Nuée 1, Fléau rampant 2, Fléaux jumeaux 2, Incubation 4 | 1456/s ×16,1 | 948/s ×9,84 |
+
+Jamais pris : Condamnation, Contagion.
+
+### Relève
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 56,7/s | 60,3/s |
+| meilleur au paquet | Moelle 5, Colosse d'os 1, Frénésie 3 | 292/s ×5,15 | 168/s ×2,78 |
+| meilleur au duel | Légion d'os 1, Moelle 5, Frénésie 3, Guet 3 | 182/s ×3,21 | 201/s ×3,33 |
+
+Jamais pris : Ossature, Rempart d'os, Dernier souffle.
+
+### Déferlante toxique
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 89,4/s | 37,5/s |
+| meilleur au paquet | Miasme 3, Marais 3, Caustique 5, Haleine fétide 4, Dessiccation 3 | 815/s ×9,13 | 141/s ×3,75 |
+| meilleur au duel | Haleine fétide 2, Dessiccation 3, Caustique 5, Miasme 1, Marais 3, Asphyxie 4 | 413/s ×4,62 | 144/s ×3,83 |
+| Haleine au paquet (transformation) | Miasme 3, Haleine 1, Caustique 5, Haleine fétide 4, Dessiccation 3, Asphyxie 4 | 610/s ×6,82 | 97,5/s ×2,60 |
+| Haleine au duel (transformation) | Miasme 2, Haleine 1, Haleine fétide 2, Dessiccation 3, Caustique 5, Asphyxie 4 | 276/s ×3,09 | 97,5/s ×2,60 |
+
+Jamais pris : aucun.
+
+### Porte pourrissante
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 87,3/s | 45,5/s |
+| meilleur au paquet | Couvée 4, Essaim 5, Boursouflure 3, Progéniture 3, Rampants véloces 3 | 726/s ×8,32 | 303/s ×6,67 |
+| meilleur au duel | Essaim 5, Boursouflure 1, Progéniture 3, Couvée 4 | 530/s ×6,07 | 303/s ×6,67 |
+| Nid porté au paquet (transformation) | Couvée 4, Nid porté 1, Essaim 5, Boursouflure 3, Progéniture 3, Rampants véloces 1, Flair 3 | 499/s ×5,72 | 253/s ×5,56 |
+| Nid porté au duel (transformation) | Couvée 4, Nid porté 1, Essaim 5, Boursouflure 1, Progéniture 3, Rampants véloces 1, Flair 3 | 361/s ×4,14 | 253/s ×5,56 |
+
+Jamais pris : aucun.
 

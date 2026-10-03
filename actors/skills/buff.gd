@@ -33,6 +33,9 @@ var stacks := 0
 var _since_stack := 0.0
 ## Enferme-t-il son porteur : celui du lancer, qu'un nœud affranchit (l'Armure de givre).
 var binds := false
+## Ce que la Nécrose a rongé depuis le dernier Fardeau partagé, en PV, et depuis quand.
+var _burden := 0.0
+var _since_burden := 0.0
 
 
 static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false) -> Buff:
@@ -97,9 +100,9 @@ func _physics_process(delta: float) -> void:
 			stacks = 0
 			_player.after_buff_change()
 	# Le lancer résolu et non la compétence : un nœud d'arbre change sa brûlure (jalon 34),
-	# son drain (jalon 35) et son soin (jalon 36).
+	# son drain (jalon 35), son soin (jalon 36) et ce qu'il ronge (jalon 38).
 	var cast: SkillStats = null
-	if _skill.self_burn > 0.0 or _skill.mana_per_second > 0.0 or _skill.self_heal > 0.0:
+	if _skill.self_burn + _skill.mana_per_second + _skill.self_heal + _skill.self_wither > 0.0:
 		cast = _player.resolve(_skill, _player.skill_points(_skill.id))
 	# Le mana épuisé éteint ; les PV épuisés tuent (`Player.burn()`, mortelle).
 	if not _player.drain(cast.mana_per_second if cast != null else 0.0, delta):
@@ -109,9 +112,32 @@ func _physics_process(delta: float) -> void:
 	_player.mend(cast.self_heal if cast != null else 0.0, delta)
 	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff. Ce qu'il
 	# ronge des PV **actuels** s'y ramène en part des PV max, et ne tue donc jamais.
-	var withered := _skill.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
-	var burning := cast.self_burn if cast != null else 0.0
+	var withered := 0.0
+	var burning := 0.0
+	if cast != null:
+		withered = cast.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
+		burning = cast.self_burn
+		_share_the_burden(cast, withered * _player.stats.max_health * delta, delta)
 	_player.burn(burning + withered, _distribution, delta)
+
+
+## Le Fardeau partagé (jalon 38) : ce que la Nécrose a rongé, rendu aux ennemis proches
+## par le souffle d'une explosion — qui frappe et se dessine déjà dans la nature du buff.
+func _share_the_burden(cast: SkillStats, gnawed: float, delta: float) -> void:
+	if cast.shared_burden <= 0.0:
+		return
+	_burden += gnawed
+	_since_burden += delta
+	if _since_burden < SkillStats.BURDEN_PERIOD:
+		return
+	var parts := DamageType.empty_parts()
+	parts[cast.nature] = _burden * SkillStats.BURDEN_FACTOR
+	_burden = 0.0
+	_since_burden = 0.0
+	Explosion.put(
+		_player._effects_parent(), _player.global_position, parts, cast.shared_burden, null,
+		DamageType.COLORS[cast.nature], _player.states, cast
+	)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.

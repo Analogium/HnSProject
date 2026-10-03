@@ -198,7 +198,7 @@ func _simulation(l: PackedStringArray) -> void:
 ## Le banc des arbres (jalon 37) : `tools/balance.sh trees`, qui écrit `docs/ARBRES.md`.
 ## `only=<compétence>,<compétence>` n'en mesure que celles-là, `probe` s'arrête aux compétences nues.
 const TREE_PARTS := "user://arbres"
-const TREE_MANUALS := ["manual_fire", "manual_lightning", "manual_cold"]
+const TREE_MANUALS := ["manual_fire", "manual_lightning", "manual_cold", "manual_necrotic"]
 
 
 func _trees() -> void:
@@ -243,7 +243,7 @@ func _trees() -> void:
 		var book := ItemCatalog.by_id(manual_id)
 		var first_of_manual := true
 		for cell in book.manual.cells:
-			if cell.skill == null or cell.talents.is_empty() or cell.skill.shape == Skill.Shape.BUFF:
+			if cell.skill == null or cell.talents.is_empty() or not cell.skill.strikes():
 				continue
 			if not only.is_empty() and not cell.skill.id in only.split(","):
 				continue
@@ -287,9 +287,9 @@ func _trees_header(l: PackedStringArray, bench: BenchTrees) -> void:
 	l.append("Les builds sont **cherchés** et non écrits : à chaque pas, le nœud — avec le chemin le")
 	l.append("moins cher qui l'ouvre — qui rend le plus par point dans la scène visée. Une")
 	l.append("transformation ou une conversion est prise d'abord, puis la recherche reprend. ×N :")
-	l.append("le rapport à la compétence sans arbre, dans la même scène. Les buffs (Ignition,")
-	l.append("Électricité statique, Tombeau de glace) ne sont pas mesurés : ce qu'ils valent se lit")
-	l.append("sur une autre compétence. Ce que le banc ne voit pas — ralentir, tirer, esquiver,")
+	l.append("le rapport à la compétence sans arbre, dans la même scène. Ce qui ne frappe pas —")
+	l.append("les buffs, la Malédiction putride — n'est pas mesuré : ce qu'ils valent se lit sur une")
+	l.append("autre compétence. Ce que le banc ne voit pas — ralentir, tirer, esquiver,")
 	l.append("survivre — ne rend rien ici.")
 	l.append("")
 

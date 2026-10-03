@@ -71,12 +71,12 @@ func take_damage(info: DamageInfo) -> void:
 		states.suffer(
 			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
 			info.cast.status_chance_increase if info.cast != null else 0.0, source,
-			info.cast.chill_effect if info.cast != null else 0.0
+			info.cast.strength_of(StatusEffects.Kind.CHILL) if info.cast != null else 1.0
 		)
 		if info.cast != null and info.cast.inflicted_state >= 0:
 			states.inflict(
 				info.cast.inflicted_state, info.cast.inflict_chance, info.parts, info.author,
-				Game.rng, source
+				Game.rng, source, info.cast.strength_of(info.cast.inflicted_state)
 			)
 
 

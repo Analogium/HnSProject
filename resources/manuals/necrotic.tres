@@ -22,9 +22,24 @@ value_per_point = 13.0
 script = ExtResource("3_noeud")
 id = "plague_virulence"
 name = "Virulence"
-position = Vector2i(1, 0)
-points_max = 3
+description = "Le trait frappe plus fort, et la décomposition qu'il pose suit le coup."
+position = Vector2i(-1, 0)
+points_max = 5
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_virulence_0")])
+
+[sub_resource type="Resource" id="L_plague_creeping_0"]
+script = ExtResource("4_ligne")
+stat = "pierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_plague_creeping"]
+script = ExtResource("3_noeud")
+id = "plague_creeping"
+name = "Fléau rampant"
+description = "Le trait traverse un ennemi de plus par point, et décompose chacun."
+position = Vector2i(1, 0)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_creeping_0")])
 
 [sub_resource type="Resource" id="L_plague_doom_0"]
 script = ExtResource("4_ligne")
@@ -36,31 +51,116 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "plague_doom"
 name = "Condamnation"
-position = Vector2i(2, 0)
+description = "Ce sort frappe plus fort un ennemi maudit."
+position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "plague_virulence": 1
 })
-points_max = 2
+points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_doom_0")])
+
+[sub_resource type="Resource" id="L_plague_incubation_0"]
+script = ExtResource("4_ligne")
+stat = "decay_effect"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_plague_incubation"]
+script = ExtResource("3_noeud")
+id = "plague_incubation"
+name = "Incubation"
+description = "La décomposition posée par la Peste ronge plus vite."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"plague_virulence": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_incubation_0")])
 
 [sub_resource type="Resource" id="L_plague_contagion_0"]
 script = ExtResource("4_ligne")
-stat = "projectiles"
-value_per_point = 1.0
+stat = "contagion"
+value_per_point = 20.0
 
 [sub_resource type="Resource" id="N_plague_contagion"]
 script = ExtResource("3_noeud")
 id = "plague_contagion"
 name = "Contagion"
-position = Vector2i(1, 1)
-points_max = 1
+description = "À chaque impact, la décomposition de la cible gagne les ennemis autour d'elle, dans ce rayon, sans les frapper."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"plague_creeping": 1,
+"plague_incubation": 1
+})
+points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_contagion_0")])
+
+[sub_resource type="Resource" id="L_plague_twins_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_plague_twins"]
+script = ExtResource("3_noeud")
+id = "plague_twins"
+name = "Fléaux jumeaux"
+description = "Un trait de plus par point, en éventail."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"plague_creeping": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_twins_0")])
+
+[sub_resource type="Resource" id="L_plague_buboes_0"]
+script = ExtResource("4_ligne")
+stat = "kill_burst"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_plague_buboes"]
+script = ExtResource("3_noeud")
+id = "plague_buboes"
+name = "Bubons"
+description = "Un ennemi tué par la Peste explose s'il pourrit : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"plague_incubation": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_buboes_0")])
+
+[sub_resource type="Resource" id="L_plague_swarm_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="L_plague_swarm_1"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = -60.0
+
+[sub_resource type="Resource" id="N_plague_swarm"]
+script = ExtResource("3_noeud")
+id = "plague_swarm"
+name = "Nuée"
+description = "Le trait devient un essaim lent qui file droit, traverse les ennemis et mord son cercle à chaque période. Fléau rampant et Contagion ne servent plus."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"plague_virulence": 2,
+"plague_doom": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_plague_swarm_0"), SubResource("L_plague_swarm_1")])
+transforms = true
+shape = 27
 
 [sub_resource type="Resource" id="C_peste"]
 script = ExtResource("2_case")
 skill = ExtResource("10_peste")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_plague_virulence"), SubResource("N_plague_doom"), SubResource("N_plague_contagion")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_plague_virulence"), SubResource("N_plague_creeping"), SubResource("N_plague_doom"), SubResource("N_plague_incubation"), SubResource("N_plague_contagion"), SubResource("N_plague_twins"), SubResource("N_plague_buboes"), SubResource("N_plague_swarm")])
 
 [sub_resource type="Resource" id="L_rise_marrow_0"]
 script = ExtResource("4_ligne")
@@ -73,8 +173,9 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "rise_marrow"
 name = "Moelle"
-position = Vector2i(1, 0)
-points_max = 3
+description = "Les morts-vivants frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_marrow_0")])
 
 [sub_resource type="Resource" id="L_rise_vigil_0"]
@@ -87,12 +188,24 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "rise_vigil"
 name = "Guet"
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"rise_marrow": 1
-})
-points_max = 2
+description = "Ils gardent une zone plus large autour de vous."
+position = Vector2i(1, 0)
+points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_vigil_0")])
+
+[sub_resource type="Resource" id="L_rise_ossature_0"]
+script = ExtResource("4_ligne")
+stat = "minion_life"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_rise_ossature"]
+script = ExtResource("3_noeud")
+id = "rise_ossature"
+name = "Ossature"
+description = "Ils se lèvent avec plus de PV."
+position = Vector2i(0, -1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_ossature_0")])
 
 [sub_resource type="Resource" id="L_rise_bone_legion_0"]
 script = ExtResource("4_ligne")
@@ -103,29 +216,93 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "rise_bone_legion"
 name = "Légion d'os"
-position = Vector2i(1, 1)
+description = "Un mort-vivant de plus se lève."
+position = Vector2i(0, 1)
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_bone_legion_0")])
+
+[sub_resource type="Resource" id="L_rise_frenzy_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_rise_frenzy"]
+script = ExtResource("3_noeud")
+id = "rise_frenzy"
+name = "Frénésie"
+description = "Ils frappent plus souvent."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"rise_marrow": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_frenzy_0")])
+
+[sub_resource type="Resource" id="L_rise_bone_wall_0"]
+script = ExtResource("4_ligne")
+stat = "bone_wall"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_rise_bone_wall"]
+script = ExtResource("3_noeud")
+id = "rise_bone_wall"
+name = "Rempart d'os"
+description = "Tant qu'ils sont debout, chacun retire ce pourcentage aux dégâts que vous subissez."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"rise_ossature": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_bone_wall_0")])
+
+[sub_resource type="Resource" id="L_rise_last_breath_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rise_last_breath"]
+script = ExtResource("3_noeud")
+id = "rise_last_breath"
+name = "Dernier souffle"
+description = "Un mort-vivant qui tombe explose d'un coup de la Relève, dans ce rayon."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"rise_ossature": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_last_breath_0")])
+
+[sub_resource type="Resource" id="L_rise_colossus_0"]
+script = ExtResource("4_ligne")
+stat = "colossus"
+value_per_point = 24.0
+
+[sub_resource type="Resource" id="L_rise_colossus_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 150.0
+
+[sub_resource type="Resource" id="N_rise_colossus"]
+script = ExtResource("3_noeud")
+id = "rise_colossus"
+name = "Colosse d'os"
+description = "Un seul mort-vivant se lève, géant : {vie_colosse} fois ses PV, des coups bien plus lourds, et chacun frappe tout ce rayon autour de lui. Légion d'os ne sert plus."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"rise_marrow": 2,
+"rise_last_breath": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rise_colossus_0"), SubResource("L_rise_colossus_1")])
 
 [sub_resource type="Resource" id="C_releve"]
 script = ExtResource("2_case")
 skill = ExtResource("11_releve")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_rise_marrow"), SubResource("N_rise_vigil"), SubResource("N_rise_bone_legion")])
-
-[sub_resource type="Resource" id="L_toxic_unleash_miasma_0"]
-script = ExtResource("4_ligne")
-stat = "radius"
-percentage = true
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_toxic_unleash_miasma"]
-script = ExtResource("3_noeud")
-id = "toxic_unleash_miasma"
-name = "Miasme"
-position = Vector2i(1, 0)
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_miasma_0")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rise_marrow"), SubResource("N_rise_vigil"), SubResource("N_rise_ossature"), SubResource("N_rise_bone_legion"), SubResource("N_rise_frenzy"), SubResource("N_rise_bone_wall"), SubResource("N_rise_last_breath"), SubResource("N_rise_colossus")])
 
 [sub_resource type="Resource" id="L_toxic_unleash_caustic_0"]
 script = ExtResource("4_ligne")
@@ -138,12 +315,40 @@ value_per_point = 14.0
 script = ExtResource("3_noeud")
 id = "toxic_unleash_caustic"
 name = "Caustique"
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"toxic_unleash_miasma": 1
-})
-points_max = 3
+description = "Le souffle frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
 lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_caustic_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_miasma_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_miasma"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_miasma"
+name = "Miasme"
+description = "Le souffle porte plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_miasma_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_fetid_0"]
+script = ExtResource("4_ligne")
+stat = "inflict_chance"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_fetid"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_fetid"
+name = "Haleine fétide"
+description = "Le souffle flétrit plus souvent."
+position = Vector2i(0, -1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_fetid_0")])
 
 [sub_resource type="Resource" id="L_toxic_unleash_desiccation_0"]
 script = ExtResource("4_ligne")
@@ -155,46 +360,75 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "toxic_unleash_desiccation"
 name = "Dessiccation"
-position = Vector2i(1, 1)
-points_max = 2
+description = "Ce sort frappe plus fort un ennemi flétri."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"toxic_unleash_fetid": 1
+})
+points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_desiccation_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_asphyxia_0"]
+script = ExtResource("4_ligne")
+stat = "wilting_weakness"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_asphyxia"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_asphyxia"
+name = "Asphyxie"
+description = "Le flétrissement posé par la Déferlante affaiblit : le flétri inflige d'autant moins de dégâts."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"toxic_unleash_fetid": 2
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_asphyxia_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_marsh_0"]
+script = ExtResource("4_ligne")
+stat = "ground_duration"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_marsh"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_marsh"
+name = "Marais"
+description = "La Déferlante laisse sous vous un sol toxique de sa taille, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"toxic_unleash_miasma": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_marsh_0")])
+
+[sub_resource type="Resource" id="L_toxic_unleash_breath_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_toxic_unleash_breath"]
+script = ExtResource("3_noeud")
+id = "toxic_unleash_breath"
+name = "Haleine"
+description = "Le souffle devient un cône devant vous, deux fois et demie plus long que son rayon, qui frappe une fois chaque ennemi qu'il atteint. Le Marais ne sert plus."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"toxic_unleash_miasma": 2,
+"toxic_unleash_asphyxia": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_toxic_unleash_breath_0")])
+transforms = true
+shape = 33
 
 [sub_resource type="Resource" id="C_deferlante"]
 script = ExtResource("2_case")
 skill = ExtResource("12_deferlante")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_toxic_unleash_miasma"), SubResource("N_toxic_unleash_caustic"), SubResource("N_toxic_unleash_desiccation")])
-
-[sub_resource type="Resource" id="L_rotting_gate_brood_0"]
-script = ExtResource("4_ligne")
-stat = "duration"
-percentage = true
-value_per_point = 25.0
-
-[sub_resource type="Resource" id="N_rotting_gate_brood"]
-script = ExtResource("3_noeud")
-id = "rotting_gate_brood"
-name = "Couvée"
-position = Vector2i(1, 0)
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_brood_0")])
-
-[sub_resource type="Resource" id="L_rotting_gate_bloating_0"]
-script = ExtResource("4_ligne")
-stat = "radius"
-percentage = true
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_rotting_gate_bloating"]
-script = ExtResource("3_noeud")
-id = "rotting_gate_bloating"
-name = "Boursouflure"
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"rotting_gate_brood": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_bloating_0")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_toxic_unleash_caustic"), SubResource("N_toxic_unleash_miasma"), SubResource("N_toxic_unleash_fetid"), SubResource("N_toxic_unleash_desiccation"), SubResource("N_toxic_unleash_asphyxia"), SubResource("N_toxic_unleash_marsh"), SubResource("N_toxic_unleash_breath")])
 
 [sub_resource type="Resource" id="L_rotting_gate_swarm_0"]
 script = ExtResource("4_ligne")
@@ -207,15 +441,121 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "rotting_gate_swarm"
 name = "Essaim"
-position = Vector2i(1, 1)
-points_max = 3
+description = "Les créatures explosent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
 lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_swarm_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_brood_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_rotting_gate_brood"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_brood"
+name = "Couvée"
+description = "Le portail reste ouvert plus longtemps, et en crache davantage."
+position = Vector2i(1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_brood_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_bloating_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_rotting_gate_bloating"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_bloating"
+name = "Boursouflure"
+description = "Leurs explosions sont plus larges."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"rotting_gate_swarm": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_bloating_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_crawlers_0"]
+script = ExtResource("4_ligne")
+stat = "crawl_speed"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_rotting_gate_crawlers"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_crawlers"
+name = "Rampants véloces"
+description = "Les créatures courent plus vite sur leur proie."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"rotting_gate_brood": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_crawlers_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_scent_0"]
+script = ExtResource("4_ligne")
+stat = "seek_radius"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_rotting_gate_scent"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_scent"
+name = "Flair"
+description = "Elles voient les ennemis de plus loin."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"rotting_gate_crawlers": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_scent_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_progeny_0"]
+script = ExtResource("4_ligne")
+stat = "hatchlings"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rotting_gate_progeny"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_progeny"
+name = "Progéniture"
+description = "Chaque créature, en éclatant, lâche des petits qui chassent à leur tour et explosent à {part_eclat} % des dégâts, sur un demi-rayon."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"rotting_gate_bloating": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_progeny_0")])
+
+[sub_resource type="Resource" id="L_rotting_gate_nest_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = -30.0
+
+[sub_resource type="Resource" id="N_rotting_gate_nest"]
+script = ExtResource("3_noeud")
+id = "rotting_gate_nest"
+name = "Nid porté"
+description = "Le portail s'ouvre à votre épaule et vous suit : les créatures partent de vous. Mais il reste ouvert moins longtemps."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rotting_gate_crawlers": 2,
+"rotting_gate_brood": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rotting_gate_nest_0")])
+transforms = true
+shape = 34
 
 [sub_resource type="Resource" id="C_porte"]
 script = ExtResource("2_case")
 skill = ExtResource("13_porte")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_rotting_gate_brood"), SubResource("N_rotting_gate_bloating"), SubResource("N_rotting_gate_swarm")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rotting_gate_swarm"), SubResource("N_rotting_gate_brood"), SubResource("N_rotting_gate_bloating"), SubResource("N_rotting_gate_crawlers"), SubResource("N_rotting_gate_scent"), SubResource("N_rotting_gate_progeny"), SubResource("N_rotting_gate_nest")])
 
 [sub_resource type="Resource" id="L_putrid_curse_spreading_0"]
 script = ExtResource("4_ligne")
@@ -227,37 +567,213 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "putrid_curse_spreading"
 name = "Anathème"
-position = Vector2i(1, 0)
-points_max = 2
+description = "Le sceau maudit une zone plus large."
+position = Vector2i(-1, 0)
+points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_spreading_0")])
 
 [sub_resource type="Resource" id="L_putrid_curse_swift_0"]
 script = ExtResource("4_ligne")
 stat = "use_time"
 percentage = true
-value_per_point = -15.0
+value_per_point = -12.0
 
 [sub_resource type="Resource" id="N_putrid_curse_swift"]
 script = ExtResource("3_noeud")
 id = "putrid_curse_swift"
 name = "Malédiction prompte"
-position = Vector2i(2, 0)
+description = "Le sceau se pose plus vite."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_swift_0")])
+
+[sub_resource type="Resource" id="L_putrid_curse_deep_0"]
+script = ExtResource("4_ligne")
+stat = "curse_effect"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_putrid_curse_deep"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_deep"
+name = "Malédiction profonde"
+description = "La malédiction retire davantage de résistance nécrotique."
+position = Vector2i(0, -1)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_deep_0")])
+
+[sub_resource type="Resource" id="L_putrid_curse_long_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_putrid_curse_long"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_long"
+name = "Longue malédiction"
+description = "La malédiction dure plus longtemps."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"putrid_curse_deep": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_long_0")])
+
+[sub_resource type="Resource" id="L_putrid_curse_tribute_0"]
+script = ExtResource("4_ligne")
+stat = "tribute"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_putrid_curse_tribute"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_tribute"
+name = "Tribut"
+description = "Chaque ennemi maudit vous rend du mana."
+position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "putrid_curse_spreading": 1
 })
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_swift_0")])
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_tribute_0")])
+
+[sub_resource type="Resource" id="L_putrid_curse_mark_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="N_putrid_curse_mark"]
+script = ExtResource("3_noeud")
+id = "putrid_curse_mark"
+name = "Marque de mort"
+description = "La malédiction ne couvre plus une zone : elle marque l'ennemi le plus proche du point visé, {force_marque} fois plus fort, et passe au plus proche quand il meurt, jusqu'au bout d'une durée plus courte. Anathème ne sert plus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"putrid_curse_deep": 2,
+"putrid_curse_tribute": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_putrid_curse_mark_0")])
+transforms = true
+shape = 35
 
 [sub_resource type="Resource" id="C_malediction"]
 script = ExtResource("2_case")
 skill = ExtResource("14_malediction")
 position = Vector2i(0, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_putrid_curse_spreading"), SubResource("N_putrid_curse_swift")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_putrid_curse_spreading"), SubResource("N_putrid_curse_swift"), SubResource("N_putrid_curse_deep"), SubResource("N_putrid_curse_long"), SubResource("N_putrid_curse_tribute"), SubResource("N_putrid_curse_mark")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_gangrene_0"]
+script = ExtResource("4_ligne")
+stat = "rot_chance"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_advanced_necrosis_gangrene"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_gangrene"
+name = "Gangrène"
+description = "Tant que la Nécrose brûle, vos coups pourrissent plus souvent."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_gangrene_0")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_hardening_0"]
+script = ExtResource("4_ligne")
+stat = "self_wither"
+percentage = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_advanced_necrosis_hardening"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_hardening"
+name = "Endurcissement"
+description = "La Nécrose ronge moins de vie."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_hardening_0")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_black_blood_0"]
+script = ExtResource("4_ligne")
+stat = "health_regen"
+value_per_point = 1.5
+
+[sub_resource type="Resource" id="N_advanced_necrosis_black_blood"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_black_blood"
+name = "Sang noir"
+description = "Tant que la Nécrose brûle, vos PV se refont."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"advanced_necrosis_gangrene": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_black_blood_0")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_dead_flesh_0"]
+script = ExtResource("4_ligne")
+stat = "res_necrotic"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_advanced_necrosis_dead_flesh"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_dead_flesh"
+name = "Chair morte"
+description = "Tant que la Nécrose brûle, vous résistez mieux au nécrotique."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"advanced_necrosis_hardening": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_dead_flesh_0")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_pact_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="L_advanced_necrosis_pact_1"]
+script = ExtResource("4_ligne")
+stat = "self_wither"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_advanced_necrosis_pact"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_pact"
+name = "Pacte"
+description = "Tant que la Nécrose brûle, vos sorts nécrotiques frappent plus fort — et elle ronge davantage."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"advanced_necrosis_gangrene": 2
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_pact_0"), SubResource("L_advanced_necrosis_pact_1")])
+
+[sub_resource type="Resource" id="L_advanced_necrosis_burden_0"]
+script = ExtResource("4_ligne")
+stat = "shared_burden"
+value_per_point = 48.0
+
+[sub_resource type="Resource" id="N_advanced_necrosis_burden"]
+script = ExtResource("3_noeud")
+id = "advanced_necrosis_burden"
+name = "Fardeau partagé"
+description = "Toutes les {rythme_fardeau} s, ce que la Nécrose vous a rongé frappe {fardeau} fois plus fort les ennemis dans ce rayon."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"advanced_necrosis_pact": 1,
+"advanced_necrosis_black_blood": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_advanced_necrosis_burden_0")])
 
 [sub_resource type="Resource" id="C_necrose"]
 script = ExtResource("2_case")
 skill = ExtResource("15_necrose")
 position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_advanced_necrosis_gangrene"), SubResource("N_advanced_necrosis_hardening"), SubResource("N_advanced_necrosis_black_blood"), SubResource("N_advanced_necrosis_dead_flesh"), SubResource("N_advanced_necrosis_pact"), SubResource("N_advanced_necrosis_burden")])
 
 [resource]
 script = ExtResource("1_arch")
