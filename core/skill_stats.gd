@@ -60,6 +60,14 @@ const LABELS := {
 	COLOSSUS: "rayon de frappe du colosse",
 	TRIBUTE: "mana par ennemi maudit",
 	SHARED_BURDEN: "rayon du fardeau partagé",
+	BLEED_EFFECT: "effet du saignement",
+	KNOCKBACK: "recul",
+	LIFE_ON_HIT: "PV par ennemi touché",
+	MANA_ON_HIT: "mana par ennemi touché",
+	BLADE_WARD: "dégâts subis retirés par épée",
+	SWORD_VOLLEY: "portée de la volée d'épées",
+	WAVES: "nombre de vagues",
+	EXTRA_SWORDS: "nombre d'épées en plus par lancer",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -106,6 +114,14 @@ const AGREEMENT := {
 	COLOSSUS: "ms",
 	TRIBUTE: "ms",
 	SHARED_BURDEN: "ms",
+	BLEED_EFFECT: "ms",
+	KNOCKBACK: "ms",
+	LIFE_ON_HIT: "mp",
+	MANA_ON_HIT: "ms",
+	BLADE_WARD: "mp",
+	SWORD_VOLLEY: "fs",
+	WAVES: "ms",
+	EXTRA_SWORDS: "ms",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -147,13 +163,36 @@ const BONE_WALL := "bone_wall"
 const COLOSSUS := "colossus"
 const TRIBUTE := "tribute"
 const SHARED_BURDEN := "shared_burden"
+## Ceux du chevalier (jalon 39) : la force du saignement tiré, le recul d'un coup (une
+## vitesse, comme `knockback_force`), ce que rend chaque ennemi touché, l'abri par épée
+## de la couronne (comme le Rempart d'os), la portée de la volée de ses épées, les épées
+## qu'un lancer fait naître en plus, et des vagues en plus — pas des projectiles, une vague
+## n'en est pas un.
+const BLEED_EFFECT := "bleed_effect"
+const KNOCKBACK := "knockback"
+const LIFE_ON_HIT := "life_on_hit"
+const MANA_ON_HIT := "mana_on_hit"
+const BLADE_WARD := "blade_ward"
+const SWORD_VOLLEY := "sword_volley"
+const WAVES := "waves"
+const EXTRA_SWORDS := "extra_swords"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
 	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
-	SHARED_BURDEN,
+	SHARED_BURDEN, KNOCKBACK, LIFE_ON_HIT, MANA_ON_HIT, BLADE_WARD, SWORD_VOLLEY, WAVES,
+	EXTRA_SWORDS,
 ]
+## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
+## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
+const EFFECT_OF := {
+	StatusEffects.Kind.CHILL: CHILL_EFFECT,
+	StatusEffects.Kind.BLEED: BLEED_EFFECT,
+	StatusEffects.Kind.DECAY: DECAY_EFFECT,
+	StatusEffects.Kind.WILTING: WILTING_WEAKNESS,
+	StatusEffects.Kind.CURSED: CURSE_EFFECT,
+}
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
 ## d'un coup que rend l'explosion d'un tué.
@@ -256,6 +295,14 @@ var bone_wall := 0.0
 var colossus := 0.0
 var tribute := 0.0
 var shared_burden := 0.0
+var bleed_effect := 0.0
+var knockback := 0.0
+var life_on_hit := 0.0
+var mana_on_hit := 0.0
+var blade_ward := 0.0
+var sword_volley := 0.0
+var waves := 0.0
+var extra_swords := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -515,16 +562,7 @@ func _derived(part: float) -> SkillStats:
 ## y ajoute — le transi qu'il tire, l'état qu'il pose (jalon 38) —, fois deux sous la
 ## Marque de mort. **Le seul calcul** : la fiche l'affiche, le coup et le sceau le posent.
 func strength_of(kind: int) -> float:
-	var effect := 0.0
-	match kind:
-		StatusEffects.Kind.CHILL:
-			effect = chill_effect
-		StatusEffects.Kind.DECAY:
-			effect = decay_effect
-		StatusEffects.Kind.WILTING:
-			effect = wilting_weakness
-		StatusEffects.Kind.CURSED:
-			effect = curse_effect
+	var effect := float(get(EFFECT_OF[kind])) if EFFECT_OF.has(kind) else 0.0
 	var factor := 1.0 + effect * 0.01
 	if kind == inflicted_state and shape == Skill.Shape.MARK:
 		factor *= MARK_FACTOR
@@ -537,11 +575,11 @@ func average_per_hit() -> float:
 
 
 ## Un lancer entier **si tout touche**, avant défenses et sans critique :
-## projectiles × cibles × coups × frappes dans la durée. Zéro pour une aura.
+## projectiles × vagues × cibles × coups × frappes dans la durée. Zéro pour une aura.
 func average_per_cast() -> float:
 	if sustained:
 		return 0.0
-	var count := projectile_count() * target_count() * hits * strikes_over_duration()
+	var count := projectile_count() * (1 + int(waves)) * target_count() * hits * strikes_over_duration()
 	return average_per_hit() * float(count)
 
 
@@ -583,6 +621,8 @@ func finalize() -> void:
 	splits = float(maxi(roundi(splits), 0))
 	bounces = float(maxi(roundi(bounces), 0))
 	trail_charges = float(maxi(roundi(trail_charges), 0))
+	waves = float(maxi(roundi(waves), 0))
+	extra_swords = float(maxi(roundi(extra_swords), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
 	period = maxf(period, 0.0)

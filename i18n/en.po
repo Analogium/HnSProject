@@ -1101,9 +1101,6 @@ msgstr "Momentum"
 msgid "Lame ardente"
 msgstr "Burning Blade"
 
-msgid "Saignée"
-msgstr "Bloodletting"
-
 msgid "Taille"
 msgstr "Edge"
 
@@ -3290,8 +3287,8 @@ msgstr "Applied by necrotic. Burns {part} of the necrotic taken per second, for 
 msgid "Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s."
 msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s."
 
-msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s."
-msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s."
+msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s. Certains nœuds du Maître chevalier le font saigner plus vite."
+msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s. Some Knight Master nodes make it bleed faster."
 
 msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite."
 msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy make it gnaw faster."
@@ -3778,3 +3775,228 @@ msgstr "one every"
 
 msgid "à votre épaule"
 msgstr "at your shoulder"
+
+msgid "Pesée"
+msgstr "Heft"
+
+msgid "Le coup tombe plus souvent juste : sa chance de coup critique est accrue."
+msgstr "The blow lands true more often: its critical strike chance is increased."
+
+msgid "Coup de bélier"
+msgstr "Battering Blow"
+
+msgid "Chaque ennemi touché est repoussé loin de vous."
+msgstr "Each enemy hit is knocked away from you."
+
+msgid "Hargne"
+msgstr "Fury"
+
+msgid "Chaque ennemi touché vous rend des PV."
+msgstr "Each enemy hit restores some of your health."
+
+msgid "La frappe porte plus fort."
+msgstr "The strike hits harder."
+
+msgid "La lame s'embrase : la frappe devient un coup de feu, qui embrase au lieu de faire saigner."
+msgstr "The blade catches fire: the strike becomes a fire blow, which ignites instead of making bleed."
+
+msgid "Brise-sol"
+msgstr "Groundbreaker"
+
+msgid "La lame s'abat sur le sol devant vous et frappe tout ce qui se tient autour du point d'impact, une seule fois ; le recul part du centre. En échange, chaque coup porte un peu moins."
+msgstr "The blade crashes into the ground in front of you and hits everything around the point of impact, once; knockback pushes from the centre. In exchange, each blow hits a little less hard."
+
+msgid "Cratère"
+msgstr "Crater"
+
+msgid "Le Brise-sol frappe un cercle plus large."
+msgstr "Groundbreaker hits a wider circle."
+
+msgid "Les deux coups portent plus fort."
+msgstr "Both blows hit harder."
+
+msgid "Entaille"
+msgstr "Gash"
+
+msgid "Augmente la chance que les coups fassent saigner ce qu'ils touchent."
+msgstr "Increases the chance that the blows make what they hit bleed."
+
+msgid "Chaque coup ajoute des dégâts physiques — de quoi faire saigner plus fort."
+msgstr "Each blow adds physical damage — enough to make the bleeding stronger."
+
+msgid "Les coups frappent plus fort un ennemi qui saigne."
+msgstr "The blows hit a bleeding enemy harder."
+
+msgid "Hémorragie"
+msgstr "Haemorrhage"
+
+msgid "Le saignement que posent les coups saigne plus vite."
+msgstr "The bleeding the blows inflict drains faster."
+
+msgid "Gerbe de sang"
+msgstr "Blood Spray"
+
+msgid "Un ennemi tué par le Coup en croix explose s'il saigne : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
+msgstr "An enemy killed by Cross Slash explodes if it is bleeding: {part_tue}% of a blow's damage, within this radius around it."
+
+msgid "La lame devient sacrée : les coups bénissent au lieu de faire saigner, et ce que l'arbre donne au saignement ne sert plus."
+msgstr "The blade becomes holy: the blows bless instead of making bleed, and what the tree gives to bleeding no longer applies."
+
+msgid "Les épées frappent plus fort."
+msgstr "The swords hit harder."
+
+msgid "Une épée de plus peut tourner autour de vous."
+msgstr "One more sword can circle around you."
+
+msgid "Les épées tournent plus longtemps."
+msgstr "The swords circle for longer."
+
+msgid "Bouclier de lames"
+msgstr "Blade Shield"
+
+msgid "Tant qu'elles tournent, chaque épée vous retire une part des dégâts subis."
+msgstr "While they circle, each sword removes a share of the damage you take."
+
+msgid "Orbite large"
+msgstr "Wide Orbit"
+
+msgid "Les épées tournent plus loin de vous."
+msgstr "The swords circle farther from you."
+
+msgid "Volée d'épées"
+msgstr "Sword Volley"
+
+msgid "Au bout de sa durée, chaque épée quitte la ronde et file vers l'ennemi le plus proche, en traversant tout ce qu'elle croise jusqu'à cette portée. En échange, elles tournent moins longtemps."
+msgstr "At the end of its duration, each sword leaves the circle and flies toward the nearest enemy, passing through everything in its way up to this range. In exchange, they circle for less time."
+
+msgid "La vague frappe plus fort."
+msgstr "The wave hits harder."
+
+msgid "La vague vole plus longtemps, donc plus loin."
+msgstr "The wave flies for longer, so farther."
+
+msgid "Grand arc"
+msgstr "Great Arc"
+
+msgid "La vague est plus large."
+msgstr "The wave is wider."
+
+msgid "Vagues jumelles"
+msgstr "Twin Waves"
+
+msgid "Une vague de plus par point, en éventail."
+msgstr "One more wave per point, in a fan."
+
+msgid "Sillon d'acier"
+msgstr "Steel Furrow"
+
+msgid "Au bout de sa course, la vague laisse derrière elle un couloir tranchant qui frappe ce qui s'y tient : {part_sol} % des dégâts toutes les {rythme_sol} s."
+msgstr "At the end of its run, the wave leaves a cutting corridor behind it that hits whatever stands in it: {part_sol}% of the damage every {rythme_sol} s."
+
+msgid "Ressac"
+msgstr "Backwash"
+
+msgid "Au bout de sa course, la vague revient vers vous et mord une seconde fois ce qu'elle traverse. En échange, chaque morsure porte moins."
+msgstr "At the end of its run, the wave comes back to you and bites what it crosses a second time. In exchange, each bite hits less hard."
+
+msgid "Le tour frappe plus fort."
+msgstr "The spin hits harder."
+
+msgid "Le tour fauche plus large."
+msgstr "The spin reaps wider."
+
+msgid "Souffle long"
+msgstr "Long Breath"
+
+msgid "Le tour draine moins de mana."
+msgstr "The spin drains less mana."
+
+msgid "Le tour frappe plus souvent."
+msgstr "The spin hits more often."
+
+msgid "Tourbillon"
+msgstr "Whirlpool"
+
+msgid "Chaque frappe du tour attire les ennemis vers vous."
+msgstr "Each hit of the spin pulls enemies toward you."
+
+msgid "Fauche vorace"
+msgstr "Hungry Reaping"
+
+msgid "Chaque ennemi pris dans une frappe du tour vous rend du mana : au cœur d'un paquet, le tour s'entretient de lui-même."
+msgstr "Each enemy caught in a hit of the spin restores some of your mana: in the middle of a pack, the spin sustains itself."
+
+msgid "Le couloir de la ruée frappe plus fort."
+msgstr "The dash's corridor hits harder."
+
+msgid "Le couloir de la ruée est plus large."
+msgstr "The dash's corridor is wider."
+
+msgid "Charge"
+msgstr "Charge"
+
+msgid "Lame traînante"
+msgstr "Trailing Blade"
+
+msgid "Le couloir reste plus longtemps, et frappe une fois de plus par point."
+msgstr "The corridor lasts longer, and hits one more time per point."
+
+msgid "Choc d'arrivée"
+msgstr "Landing Shock"
+
+msgid "À l'arrivée, la ruée frappe tout ce qui se tient autour de vous, dans ce rayon."
+msgstr "On arrival, the dash hits everything standing around you, within this radius."
+
+msgid "La ruée n'a plus de recharge, mais elle prend bien plus de temps à lancer : on enchaîne les ruées à la cadence du geste."
+msgstr "The dash no longer has a cooldown, but takes much longer to use: dashes chain at the pace of the motion."
+
+msgid "Saut de guerre"
+msgstr "War Leap"
+
+msgid "La ruée devient un bond : plus de couloir, mais l'arrivée frappe tout autour de vous. En échange, le geste est plus long."
+msgstr "The dash becomes a leap: no more corridor, but the landing hits all around you. In exchange, the motion is longer."
+
+msgid "effet du saignement"
+msgstr "bleed effect"
+
+msgid "recul"
+msgstr "knockback"
+
+msgid "PV par ennemi touché"
+msgstr "life per enemy hit"
+
+msgid "mana par ennemi touché"
+msgstr "mana per enemy hit"
+
+msgid "dégâts subis retirés par épée"
+msgstr "damage taken removed per sword"
+
+msgid "portée de la volée d'épées"
+msgstr "sword volley range"
+
+msgid "nombre de vagues"
+msgstr "number of waves"
+
+msgid "vagues"
+msgstr "waves"
+
+msgid "Épées"
+msgstr "Swords"
+
+msgid "dégâts subis, par épée"
+msgstr "damage taken, each"
+
+msgid "volée, à leur fin"
+msgstr "volley, when they end"
+
+msgid "Arsenal"
+msgstr "Arsenal"
+
+msgid "Chaque lancer fait naître une épée de plus par point, d'un coup — dans la limite des épées qui peuvent tourner ensemble."
+msgstr "Each cast summons one more sword per point at once — up to the number of swords that can circle together."
+
+msgid "nombre d'épées en plus par lancer"
+msgstr "number of extra swords per cast"
+
+msgid "épées par lancer"
+msgstr "swords per cast"

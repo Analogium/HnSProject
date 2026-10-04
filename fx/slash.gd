@@ -27,6 +27,10 @@ const R_EDGE := EffectForge.R_CORE
 const STEEL := Color(0.80, 0.84, 0.92)
 const GOLD := Color(0.86, 0.68, 0.30)
 const LEATHER := Color(0.40, 0.26, 0.16)
+## Le dedans d'une faille du Brise-sol, et ses tracés.
+const CRACK := Color(0.16, 0.11, 0.09)
+const R_CRACK := 2
+const FISSURE_PATTERNS := 4
 ## L'acier sur trois tons, l'or, le cuir ; `s` pour la silhouette d'une image
 ## rémanente, qui n'a que la teinte du coup.
 const SWORD_INK := {
@@ -111,6 +115,39 @@ static func stroke(
 	if not _pieces.has(key):
 		var facing := angle_of(turn)
 		_pieces[key] = _spindle(tint, from_value.rotated(facing), to.rotated(facing), half_width, gone)
+	return _pieces[key]
+
+
+## Le sol fendu du Brise-sol (jalon 39, « fissures » choisies sur planche) : cinq failles
+## sombres et fourchues qui courent au rayon depuis l'impact. Fabriqué **au rayon**, qu'un
+## nœud agrandit, sur l'un des `FISSURE_PATTERNS` tracés, et gardé. `step` : 0 l'impact
+## (failles à mi-course, éclair au cœur), 1 et 2 les failles entières, 3 à demi dissoutes.
+static func fissures(tint: Color, radius: float, pattern: int, step: int) -> EffectForge.Piece:
+	var key := "f%s|%d|%d|%d" % [tint.to_html(false), roundi(radius), pattern, step]
+	if _pieces.has(key):
+		return _pieces[key]
+	var side := roundi(radius) * 2 + 8
+	var o := Vector2(side, side) * 0.5
+	var canvas := PixelCanvas.new(side, side)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = pattern
+	var reach := radius * (0.55 if step == 0 else 1.0)
+	for k in 5:
+		var a := TAU * k / 5.0 + rng.randf_range(-0.3, 0.3)
+		var length := reach * rng.randf_range(0.75, 1.0)
+		var bend := o + Vector2.from_angle(a + rng.randf_range(-0.15, 0.15)) * length * 0.55
+		var tip := o + Vector2.from_angle(a + rng.randf_range(-0.15, 0.15)) * length
+		canvas.capsule(o, bend, 1.0, R_CRACK, -0.8)
+		canvas.line(bend, tip, R_CRACK, 0.0)
+		canvas.line(bend, bend + Vector2.from_angle(a + 0.6) * length * 0.3, R_CRACK, 0.0)
+	canvas.disc(o, 4.0 if step < 2 else 3.0, R_CRACK, -0.6)
+	if step == 0:
+		canvas.disc(o, 3.0, R_EDGE, 1.0)
+	var img := canvas.to_image([
+		ArtPalette.ramp(tint), ArtPalette.ramp(tint.lerp(EDGE, EDGE_MIX)), ArtPalette.ramp(CRACK),
+	])
+	EffectForge.dissolve(img, 0.5 if step == 3 else 0.0)
+	_pieces[key] = EffectForge.Piece.new(ImageTexture.create_from_image(img), -o)
 	return _pieces[key]
 
 

@@ -274,10 +274,11 @@ func kinds() -> Array[int]:
 ## `max_hp` à zéro : pas de bonus, faute de PV connus.
 ## `cast_increase` est ce que le lancer **accroît** à sa chance, en points de
 ## pourcentage : une nova de glace transit mieux qu'un coup de froid ordinaire.
-## `chill_strength` : la force du transi qu'il pose (`SkillStats.strength_of()`).
+## `cast` donne la force de ce qu'il tire (`SkillStats.strength_of()`) : le transi, le
+## saignement. Ce qui brûle se renforce en brûlant davantage, comme dans `inflict()`.
 func suffer(
 	parts: Array[float], author: StatusEffects, rng: RandomNumberGenerator, max_hp := 0.0,
-	cast_increase := 0.0, source := "", chill_strength := 1.0
+	cast_increase := 0.0, source := "", cast: SkillStats = null
 ) -> void:
 	# Les facteurs de l'auteur et non de la victime : c'est lui qui embrase mieux.
 	var better := author.chance_factors if author != null else neutral_factors()
@@ -286,8 +287,11 @@ func suffer(
 		if part <= 0.0:
 			continue
 		if rng.randf() < chance(part, max_hp, factor_of(better[kind], cast_increase)):
-			var strength := chill_strength if kind == Kind.CHILL else 1.0
-			put(kind, part, author, source, strength)
+			var strength := cast.strength_of(kind) if cast != null else 1.0
+			if burn_per_second(kind) > 0.0:
+				put(kind, part * strength, author, source)
+			else:
+				put(kind, part, author, source, strength)
 
 
 ## Ce qu'un **lancer** pose à ce qu'il touche, à sa chance : la décomposition de la

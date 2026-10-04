@@ -42,6 +42,8 @@ enum Shape {
 	FISSURE, RING, IMPLOSION,
 	# Jalon 38 : l'Haleine, le Nid porté, la Marque de mort.
 	BREATH, NEST, MARK,
+	# Jalon 39 : le Brise-sol, le Ressac.
+	SLAM, BOOMERANG,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -84,6 +86,9 @@ const KEYWORD_OF_SHAPE := {
 	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
 	Shape.WAVE: Keywords.MELEE,
 	Shape.CYCLONE: Keywords.MELEE,
+	Shape.BOOMERANG: Keywords.MELEE,
+	# La lame s'abat devant soi : un coup d'arme, même s'il frappe un cercle.
+	Shape.SLAM: Keywords.MELEE,
 	Shape.SPIKES: Keywords.AREA,
 	Shape.NOVA: Keywords.AREA,
 	Shape.VORTEX: Keywords.AREA,
@@ -122,7 +127,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
-	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK,
+	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre

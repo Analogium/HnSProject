@@ -198,7 +198,9 @@ func _simulation(l: PackedStringArray) -> void:
 ## Le banc des arbres (jalon 37) : `tools/balance.sh trees`, qui écrit `docs/ARBRES.md`.
 ## `only=<compétence>,<compétence>` n'en mesure que celles-là, `probe` s'arrête aux compétences nues.
 const TREE_PARTS := "user://arbres"
-const TREE_MANUALS := ["manual_fire", "manual_lightning", "manual_cold", "manual_necrotic"]
+const TREE_MANUALS := [
+	"manual_fire", "manual_lightning", "manual_cold", "manual_necrotic", "manual_weapons",
+]
 
 
 func _trees() -> void:

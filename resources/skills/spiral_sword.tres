@@ -15,6 +15,7 @@ mana_cost = 10.0
 duration = 5.0
 period = 0.5
 simultaneous = 3
+radius = 26.0
 damage_per_point = Array[float]([8.0, 10.0, 13.0, 16.0, 20.0])
 required_manual_level = 6
 icon = ExtResource("2_icone")

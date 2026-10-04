@@ -327,6 +327,35 @@ func test_cannot_refund_under_an_invested_child() -> void:
 	assert_true(m.refund(arch, "branch_spell"), "et la branche ensuite")
 
 
+## Un lien se prend dans les deux sens (jalon 39), comme la Vague : le Ressac, ouvert par
+## la Course, ouvre les Vagues jumelles qui l'ouvrent aussi. Mais l'un ne tient pas
+## l'autre : sans la Course, aucun des deux n'est relié à la compétence.
+func test_a_link_is_taken_both_ways_without_holding_itself() -> void:
+	var spell := _skill("spell", [10.0, 20.0, 30.0, 40.0, 50.0] as Array[float])
+	var edge := _node("edge", [_line("damage", 10.0, true)] as Array[TalentLine], 5)
+	var reach := _node("reach", [_line("duration", 10.0, true)] as Array[TalentLine], 4)
+	var twins := _node(
+		"twins", [_line("radius", 10.0, true)] as Array[TalentLine], 3,
+		{"edge": 2} as Dictionary[String, int]
+	)
+	var backwash := _node(
+		"backwash", [_line("period", -10.0, true)] as Array[TalentLine], 1,
+		{"reach": 2, "twins": 1} as Dictionary[String, int]
+	)
+	var arch := _archetype([
+		_cell(spell, [edge, reach, twins, backwash] as Array[TalentNode]),
+	] as Array[ManualCell])
+	var m := _manual(10)
+	for id in ["spell", "reach", "reach", "backwash"]:
+		assert_true(m.invest(arch, id), "« %s »" % id)
+	assert_true(m.is_open(arch, "twins"), "par l'enfant, sans passer par edge")
+	assert_true(m.invest(arch, "twins"))
+	assert_false(m.can_refund(arch, "reach"), "le Ressac et les Vagues ne se tiennent pas l'un l'autre")
+	assert_true(m.invest(arch, "edge"))
+	assert_true(m.invest(arch, "edge"))
+	assert_true(m.refund(arch, "reach"), "Edge tient désormais les Vagues, qui tiennent le Ressac")
+
+
 func test_cannot_refund_what_has_no_point() -> void:
 	var arch := _trial_book()
 	var m := _manual(4)
@@ -782,14 +811,14 @@ func test_no_manual_fills_up_entirely() -> void:
 ## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
 ## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
 const SHALLOW_TREES := [
-	"manual_weapons", "manual_holy",
+	"manual_holy",
 ]
 
 
-## La nécromancie (jalon 38) : **aucune ligne ni aucun nom ne revient d'un arbre à
+## La nécromancie (jalon 38) et le chevalier (jalon 39) : **aucune ligne ni aucun nom ne revient d'un arbre à
 ## l'autre**. Aux jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
 ## Seuls les leviers de base y échappent, un par arbre au plus.
-const UNIQUE_TREES := ["manual_necrotic"]
+const UNIQUE_TREES := ["manual_necrotic", "manual_weapons"]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 
@@ -913,3 +942,20 @@ func test_a_freed_cast_has_a_fixed_recharge() -> void:
 	var cast := tomb.resolve(1, stats, [], [InvestedTalent.new(node, 1)])
 	assert_eq(cast.recharge, SkillStats.FREED_RECHARGE)
 	assert_eq(cast.interval, SkillStats.FREED_RECHARGE)
+
+
+## Les trois formes du chevalier (jalon 39) sont portées par les vrais nœuds : les tests
+## de forme passent par un nœud d'essai, et un Ressac sans forme n'y paraissait pas.
+func test_the_knight_transformations_carry_their_shapes() -> void:
+	var expected := {
+		"heavy_strike_shatter": Skill.Shape.SLAM,
+		"wave_slash_backwash": Skill.Shape.BOOMERANG,
+		"slicing_dash_war_leap": Skill.Shape.LEAP,
+	}
+	for c in ItemCatalog.by_id("manual_weapons").manual.cells:
+		for n in c.talents:
+			if expected.has(n.id):
+				assert_true(n.transforms, n.id)
+				assert_eq(n.shape, expected[n.id], n.id)
+				expected.erase(n.id)
+	assert_true(expected.is_empty(), "introuvables : %s" % [expected.keys()])

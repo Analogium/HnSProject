@@ -427,7 +427,7 @@ func test_spiral_sword_refuses_the_fourth_without_taking_anything() -> void:
 func test_the_sword_strikes_while_spinning_then_vanishes() -> void:
 	_learn("manual_weapons", ["spiral_sword"])
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
-	var on_the_circle := _target(Vector2(BladeCrown.RADIUS, 0))
+	var on_the_circle := _target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
 	await wait_physics_frames(2)
 
 	assert_true(_p.cast_slot(2))
@@ -2094,3 +2094,148 @@ func test_a_shared_burden_strikes_around() -> void:
 	await wait_seconds(SkillStats.BURDEN_PERIOD + 0.2)
 	assert_eq(_hits(near), 1)
 	assert_eq(_hits(far), 0)
+
+
+# --------------------------------------------------------------------------
+# Le chevalier (jalon 39)
+# --------------------------------------------------------------------------
+
+func _knockbacks_on(target: Hurtbox) -> Array:
+	var seen := []
+	target.damaged.connect(func(info: DamageInfo) -> void: seen.append(info.knockback))
+	return seen
+
+
+## Le Brise-sol : tout le cercle autour de l'impact, une fois, rien derrière soi.
+func test_a_groundbreaker_strikes_the_circle_of_its_impact() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [["radius", 28.0]], Skill.Shape.SLAM)
+	var beyond := _target(Vector2(Player.SLAM_REACH + 20.0, 0))
+	var aside := _target(Vector2(Player.SLAM_REACH, 24))
+	var behind := _target(Vector2(-30, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.3)
+	assert_eq(_hits(beyond), 1)
+	assert_eq(_hits(aside), 1, "de côté de l'impact aussi")
+	assert_eq(_hits(behind), 0)
+
+
+## Coup de bélier et Hargne : le recul voyage avec le coup, et chaque touché rend des PV.
+func test_a_ramming_furious_strike_pushes_and_heals() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.KNOCKBACK, 120.0], [SkillStats.LIFE_ON_HIT, 5.0]])
+	var one := _target(Vector2(20, -4))
+	var two := _target(Vector2(20, 4))
+	var pushes := _knockbacks_on(one)
+	await wait_physics_frames(2)
+	_p.stats.health_regen = 0.0
+	_p._set_health(_p.stats.max_health - 50.0)
+	var health := _p.health
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(_p.swing_duration + 0.2)
+	assert_eq(_hits(two), 1)
+	assert_eq(pushes, [120.0])
+	assert_almost_eq(_p.health, health + 10.0, 0.5, "cinq PV par touché")
+
+
+## Bouclier de lames : l'abri suit les épées qui tournent.
+func test_a_blade_shield_lasts_while_the_swords_spin() -> void:
+	# La durée par le nœud : l'abri refait la fiche, et avec elle les modificateurs de mot-clé.
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.BLADE_WARD, 5.0], ["duration", -80.0, true]])
+	var bare := _p.stats.damage_taken
+	assert_true(_p.cast_slot(2))
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(_p.stats.damage_taken, bare - 10.0, 0.001, "deux épées")
+	await wait_seconds(1.3)
+	assert_eq(_p.orbiting_swords(), 0)
+	assert_almost_eq(_p.stats.damage_taken, bare, 0.001, "parties, plus d'abri")
+
+
+## La Volée d'épées : à sa fin, l'épée file sur l'ennemi que la ronde n'atteint pas.
+func test_a_sword_volley_flies_to_the_nearest_enemy() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.SWORD_VOLLEY, 160.0]])
+	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
+	var far := _target(Vector2(120, 30))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.6)
+	assert_eq(_hits(far), 1)
+	assert_eq(_children_of(FlyingSword).size(), 0, "et sa course finit à la portée")
+
+
+## Orbite large : les épées tournent au rayon du lancer.
+func test_a_wide_orbit_reaches_farther() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [["radius", 100.0, true]])
+	var radius := SkillCatalog.by_id("spiral_sword").radius * 2.0
+	var on_the_circle := _target(Vector2(radius, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.5)
+	assert_gt(_hits(on_the_circle), 0)
+
+
+## Vagues jumelles : un éventail ; le Ressac : la vague revient et remord.
+func test_twin_waves_fan_out_and_a_backwash_bites_twice() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.WAVES, 1.0]], Skill.Shape.BOOMERANG)
+	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
+	var ahead := _target(Vector2(SlashWave.START + cast.radius + 20.0, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(SlashWave).size(), 2)
+	await wait_seconds(cast.duration * 2.0 + 0.2)
+	assert_eq(_hits(ahead), 4, "deux vagues, aller et retour")
+	assert_eq(_children_of(SlashWave).size(), 0)
+
+
+## Le Sillon d'acier : au bout de sa course, la vague laisse un couloir qui frappe.
+func test_a_steel_furrow_cuts_behind_the_wave() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.GROUND, 1.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
+	var on_the_way := _target(Vector2(SlashWave.START + 20.0, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration + 0.1)
+	var after_the_wave := _hits(on_the_way)
+	assert_eq(_children_of(DashTrail).size(), 1)
+	await wait_seconds(0.6)
+	assert_gt(_hits(on_the_way), after_the_wave, "le couloir frappe après la vague")
+
+
+## Sous le Ressac, le retour est un passage comme l'aller : il pose son propre sillon.
+func test_a_backwash_lays_a_furrow_on_each_pass() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.GROUND, 2.0]], Skill.Shape.BOOMERANG)
+	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration + 0.1)
+	assert_eq(_children_of(DashTrail).size(), 1, "au bout de l'aller")
+	await wait_seconds(cast.duration + 0.1)
+	assert_eq(_children_of(DashTrail).size(), 2, "et au bout du retour")
+
+
+## Tourbillon et Fauche vorace : le tour attire, et rend du mana par fauché.
+func test_a_hungry_whirlpool_pulls_and_feeds() -> void:
+	_learn_with("manual_weapons", "cyclone", [
+		[SkillStats.PULL, 50.0], [SkillStats.MANA_ON_HIT, 5.0], ["mana_per_second", -100.0, true],
+	])
+	var one := _target(Vector2(20, 0))
+	_target(Vector2(-20, 0))
+	var pulls := _knockbacks_on(one)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	# Après l'allumage, qui refait la fiche ; avant la première frappe.
+	_p.stats.max_mana = 9999.0
+	_p._set_mana(100.0)
+	await wait_physics_frames(1)
+	assert_eq(pulls, [-50.0], "vers le cœur")
+	assert_almost_eq(_p.mana, 110.0, 1.0, "cinq de mana par fauché")
+
+
+## Arsenal : un lancer fait naître ses épées en plus d'un coup, sans dépasser la ronde.
+func test_an_arsenal_summons_its_swords_at_once_within_the_round() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.EXTRA_SWORDS, 1.0]])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p.orbiting_swords(), 2)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p.orbiting_swords(), SkillCatalog.by_id("spiral_sword").simultaneous, "pas au-delà")

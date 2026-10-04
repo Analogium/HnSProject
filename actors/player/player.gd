@@ -45,6 +45,9 @@ const LANDING_STEP := 8.0
 ## Où une frappe vive s'arrête devant sa cible, de centre à centre : les deux corps se
 ## touchent sans se chevaucher.
 const LUNGE_REACH := 14.0
+## Où tombe le Brise-sol, devant le corps : au bout de la hitbox (20 px), là où la lame
+## frapperait.
+const SLAM_REACH := 24.0
 
 ## Ce qu'une mise à mort verse à chaque flacon porté, plus par affixe de l'ennemi : une
 ## élite remplit plus vite, comme la rareté d'un monstre de PoE. Provisoire.
@@ -345,9 +348,15 @@ func cast_slot(index: int) -> bool:
 			_light(skill.id, Cyclone.spin(self, skill))
 		Skill.Shape.DASH, Skill.Shape.LEAP:
 			_dash(skill, cast)
-		Skill.Shape.WAVE:
+		Skill.Shape.WAVE, Skill.Shape.BOOMERANG:
 			_swing(cast)
-			SlashWave.send(_effects_parent(), global_position, facing, cast, states)
+			# Vagues jumelles : en éventail, centrées sur la visée, comme une couvée.
+			var count := 1 + int(cast.waves)
+			for i in count:
+				var turn := (float(i) - float(count - 1) * 0.5) * SlashWave.FAN
+				SlashWave.send(_effects_parent(), global_position, facing.rotated(turn), cast, states, self)
+		Skill.Shape.SLAM:
+			_slam(cast)
 		Skill.Shape.SPIKES:
 			IceSpikes.raise_at(_effects_parent(), _aim_point(), cast, states, self, bolt_scene)
 		Skill.Shape.FISSURE:
@@ -373,7 +382,12 @@ func cast_slot(index: int) -> bool:
 			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
 			HolyPulse.emanate(self, cast)
 		Skill.Shape.ORBIT:
-			_blade_crown().add_to(cast)
+			# Arsenal : des épées en plus à chaque lancer, dans la limite de la ronde.
+			var crown := _blade_crown()
+			for i in 1 + int(cast.extra_swords):
+				if crown.full(cast.max_simultaneous()):
+					break
+				crown.add_to(cast)
 		Skill.Shape.SUMMON:
 			Minion.raise(self, cast, _effects_parent())
 		Skill.Shape.GATE:
@@ -600,6 +614,20 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		)
 
 
+## Le Brise-sol (jalon 39) : la lame s'abat devant soi et frappe tout le cercle de
+## l'impact, le recul partant de son centre. Un geste : un gel, une secousse de frappe.
+func _slam(cast: SkillStats) -> void:
+	var impact := global_position + facing * SLAM_REACH
+	var struck := Targets.strike_circle(
+		get_world_2d(), impact, cast.radius, cast, states, stats.knockback_force + cast.knockback
+	)
+	GroundSlam.leave(_effects_parent(), impact, cast)
+	_heal(cast.life_on_hit * float(struck.size()))
+	if not struck.is_empty():
+		Game.hit_stop()
+		Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
+
+
 ## La cible d'une frappe vive : parmi les ennemis à sa portée, **le plus proche de la
 ## visée**. Null sans personne à portée, et le lancer est refusé.
 func _lunge_target(cast: SkillStats) -> Hurtbox:
@@ -665,6 +693,7 @@ func _blade_crown() -> BladeCrown:
 	if _crown == null:
 		_crown = BladeCrown.new()
 		_crown.author = states
+		_crown.effects = _effects_parent()
 		add_child(_crown)
 		Settings.veil(_crown, Settings.SPELLS)
 	return _crown
@@ -846,8 +875,8 @@ func recompute_stats() -> void:
 		mods.append_array(book.passive_mods())
 	mods.append_array(passive_tree.mods(passives))
 	mods.append_array(buff_mods())
-	# Rempart d'os : tant qu'ils sont debout, pas un buff qu'on allume.
-	var wall := Minion.wall_of(self)
+	# Rempart d'os et Bouclier de lames : tant qu'ils sont debout, pas un buff qu'on allume.
+	var wall := Minion.wall_of(self) + (_crown.ward() if _crown != null else 0.0)
 	if wall > 0.0:
 		mods.append(StatMod.new("damage_taken", StatMod.Mode.FLAT, -wall))
 
@@ -1306,9 +1335,12 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		return
 	_already_hit.append(area)   # un swing ne touche une cible qu'une fois
 
-	var info := DamageInfo.roll(_hit_cast, global_position, _hit_parts, stats.knockback_force)
+	var info := DamageInfo.roll(
+		_hit_cast, global_position, _hit_parts, stats.knockback_force + _hit_cast.knockback
+	)
 	info.author = states
 	(area as Hurtbox).take_damage(info)
+	_heal(_hit_cast.life_on_hit)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.
 	if _already_hit.size() == 1:

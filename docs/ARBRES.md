@@ -37,11 +37,11 @@ Jamais pris : aucun.
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 149/s | 87,1/s |
-| meilleur au paquet | Mue 4, Couvée 2, Hydre 1, Crocs 2, Longue vie 3, Queue de flammes 3, Vif 1, Mue explosive 3 | 1151/s ×7,74 | 560/s ×6,43 |
-| meilleur au duel | Crocs 2, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Chasseur 1 | 797/s ×5,35 | 622/s ×7,14 |
-| Venin au paquet (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Queue de flammes 3, Vif 1, Mue explosive 3 | 1125/s ×7,56 | 582/s ×6,68 |
-| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Queue de flammes 3 | 1110/s ×7,46 | 627/s ×7,20 |
+| sans arbre | — | 178/s | 105/s |
+| meilleur au paquet | Mue 4, Couvée 2, Hydre 1, Crocs 2, Longue vie 3, Vif 1, Mue explosive 3 | 1240/s ×6,97 | 581/s ×5,52 |
+| meilleur au duel | Mue 4, Couvée 2, Crocs 2, Hydre 1, Longue vie 3, Queue de flammes 3, Chasseur 1 | 916/s ×5,15 | 638/s ×6,06 |
+| Venin au paquet (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Queue de flammes 3 | 1136/s ×6,39 | 632/s ×6,00 |
+| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Queue de flammes 3 | 1136/s ×6,39 | 632/s ×6,00 |
 
 Jamais pris : aucun.
 
@@ -196,4 +196,76 @@ Jamais pris : aucun.
 | Nid porté au duel (transformation) | Couvée 4, Nid porté 1, Essaim 5, Boursouflure 1, Progéniture 3, Rampants véloces 1, Flair 3 | 361/s ×4,14 | 253/s ×5,56 |
 
 Jamais pris : aucun.
+
+## Manuel du chevalier
+
+### Frappe lourde
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 85,7/s | 80,7/s |
+| meilleur au paquet | Élan 5, Brise-sol 1, Cratère 3, Pesée 3 | 409/s ×4,77 | 111/s ×1,38 |
+| meilleur au duel | Élan 5 | 216/s ×2,52 | 152/s ×1,89 |
+| Lame ardente au paquet (conversion) | Élan 5, Lame ardente 1, Brise-sol 1, Cratère 3, Pesée 3 | 539/s ×6,28 | 185/s ×2,30 |
+| Lame ardente au duel (conversion) | Élan 5, Lame ardente 1, Pesée 3 | 262/s ×3,06 | 192/s ×2,38 |
+| Brise-sol au paquet (transformation) | Élan 5, Brise-sol 1, Cratère 3, Pesée 3 | 409/s ×4,77 | 111/s ×1,38 |
+| Brise-sol au duel (transformation) | Élan 5, Brise-sol 1 | 208/s ×2,42 | 111/s ×1,38 |
+
+Jamais pris : Coup de bélier, Hargne.
+
+### Coup en croix
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 84,8/s | 82,7/s |
+| meilleur au paquet | Taille 5, Plaie ouverte 3, Estoc 3, Entaille 3, Hémorragie 3, Gerbe de sang 3 | 692/s ×8,16 | 458/s ×5,53 |
+| meilleur au duel | Taille 5, Plaie ouverte 3, Estoc 3, Entaille 3, Hémorragie 4 | 443/s ×5,23 | 460/s ×5,56 |
+| Lame sainte au paquet (conversion) | Taille 5, Lame sainte 1, Estoc 3, Plaie ouverte 3, Entaille 3, Hémorragie 2, Gerbe de sang 3 | 615/s ×7,25 | 439/s ×5,30 |
+| Lame sainte au duel (conversion) | Taille 5, Lame sainte 1, Plaie ouverte 3, Estoc 3, Entaille 1, Hémorragie 4 | 441/s ×5,20 | 440/s ×5,32 |
+
+Jamais pris : aucun.
+
+### Épée spirale
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 38,6/s | 20,7/s |
+| meilleur au paquet | Tranchant 5, Volée d'épées 1, Ronde 3 | 192/s ×4,98 | 94,1/s ×4,55 |
+| meilleur au duel | Tranchant 5, Volée d'épées 1, Ronde 3, Arsenal 3 | 189/s ×4,90 | 109/s ×5,28 |
+
+Jamais pris : Endurance, Bouclier de lames, Orbite large.
+
+### Vague tranchante
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 150/s | 64,8/s |
+| meilleur au paquet | Fil de l'arc 5, Vagues jumelles 3, Grand arc 4, Course 4 | 1204/s ×8,03 | 318/s ×4,90 |
+| meilleur au duel | Fil de l'arc 5, Vagues jumelles 3, Course 1, Sillon d'acier 4 | 934/s ×6,23 | 319/s ×4,92 |
+| Ressac au paquet (transformation) | Course 4, Ressac 1, Fil de l'arc 5, Vagues jumelles 3, Grand arc 4 | 1644/s ×11,0 | 410/s ×6,33 |
+| Ressac au duel (transformation) | Course 2, Ressac 1, Fil de l'arc 5, Vagues jumelles 3 | 1074/s ×7,16 | 413/s ×6,37 |
+
+Jamais pris : aucun.
+
+### Cyclone
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 48,3/s | 20,5/s |
+| meilleur au paquet | Fauchage 5, Envergure 3, Tourbillon 3, Moulinet 3 | 150/s ×3,10 | 55,1/s ×2,69 |
+| meilleur au duel | Fauchage 5, Moulinet 3 | 81,5/s ×1,69 | 55,1/s ×2,69 |
+
+Jamais pris : Souffle long, Fauche vorace.
+
+### Ruée tranchante
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 27,7/s | 9,07/s |
+| meilleur au paquet | Andain 3, Choc d'arrivée 4, Fil tranchant 5, Charge 4, Lame traînante 3 | 207/s ×7,47 | 122/s ×13,4 |
+| meilleur au duel | Andain 1, Lame traînante 3, Fil tranchant 5, Charge 4, Choc d'arrivée 4 | 202/s ×7,32 | 122/s ×13,4 |
+| Saut de guerre au paquet (transformation) | Fil tranchant 2, Saut de guerre 1, Andain 1, Choc d'arrivée 4 | 107/s ×3,87 | 12,4/s ×1,37 |
+| Saut de guerre au duel (transformation) | Fil tranchant 5, Saut de guerre 1, Charge 4 | 68,4/s ×2,47 | 29,1/s ×3,21 |
+
+Jamais pris : Enchaînement.
 

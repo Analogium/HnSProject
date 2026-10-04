@@ -646,9 +646,9 @@ func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void
 		for parent: String in node.parents:
 			var need: int = node.parents[parent]
 			var from_value := _node_rect(cell.node_of(parent).position).get_center()
-			# Le lien s'allume sur le chemin réellement pris.
+			# Le lien s'allume sur le chemin réellement pris, dans un sens ou dans l'autre.
 			var held := manual.points_of(parent)
-			draw_line(from_value, to, LINK_BRIGHT if invested and held >= need else LINK, 1.0)
+			draw_line(from_value, to, LINK_BRIGHT if invested and held > 0 else LINK, 1.0)
 			if need > 1:
 				_draw_grains(from_value, to, need, held)
 
@@ -1024,6 +1024,14 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.hits > 1:
 		out.append(SheetLine.new(Group.SHAPE, Texts.t("coups"), str(cast.hits), UiPalette.TEXT))
+	if cast.waves > 0.0:
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("vagues"), str(1 + int(cast.waves)), UiPalette.TEXT
+		))
+	if cast.extra_swords > 0.0:
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("épées par lancer"), str(1 + int(cast.extra_swords)), UiPalette.TEXT
+		))
 	# Celle d'un lancer qui pose un buff se lit sous le nom du buff, plus bas.
 	# Celle d'une malédiction se lit dans son bloc : c'est celle de l'état.
 	if cast.duration > 0.0 and not skill.grants_buffs() \
@@ -1170,6 +1178,14 @@ func _summoned_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
 			lines.append([
 				Texts.t("dégâts subis, par tête"), StatMod.percentage(-cast.bone_wall, true)
 			])
+	elif skill.shape == Skill.Shape.ORBIT and (cast.blade_ward > 0.0 or cast.sword_volley > 0.0):
+		heading = Texts.t("Épées")
+		if cast.blade_ward > 0.0:
+			lines.append([
+				Texts.t("dégâts subis, par épée"), StatMod.percentage(-cast.blade_ward, true)
+			])
+		if cast.sword_volley > 0.0:
+			lines.append([Texts.t("volée, à leur fin"), "%d px" % roundi(cast.sword_volley)])
 	elif skill.shape == Skill.Shape.GATE:
 		heading = Texts.t("Créatures")
 		if cast.shape == Skill.Shape.NEST:
@@ -1250,8 +1266,9 @@ func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 	return Sheet.new(node.displayed_name(), subtitle, out, node.displayed_description())
 
 
-## **Tout ce qui manque**, dans l'ordre où `Manual._node_open()` refuse : la compétence,
-## puis les liens, dont un seul suffit — le premier « demande », les suivants « ou ».
+## **Tout ce qui manque**, dans l'ordre où `Manual.node_open()` refuse : la compétence,
+## puis les liens, dont un seul suffit — le premier « demande », les suivants « ou » —,
+## les parents à leurs points, puis les enfants, à un point.
 func _requirement_lines(manual: Manual, cell: ManualCell, node: TalentNode) -> Array[SheetLine]:
 	var out: Array[SheetLine] = []
 	# « dans la compétence » et non son nom, que l'en-tête écrit déjà : il débordait
@@ -1260,19 +1277,21 @@ func _requirement_lines(manual: Manual, cell: ManualCell, node: TalentNode) -> A
 		out.append(SheetLine.new(Group.STATE, Texts.t("demande"), Texts.tn(
 			"{points} point dans la compétence", "{points} points dans la compétence", 1
 		).format({"points": 1}), MISSING))
-	var linked := node.parents.keys().any(
-		func(parent: String) -> bool: return manual.points_of(parent) >= node.parents[parent]
-	)
-	if node.parents.is_empty() or linked:
+	if node.parents.is_empty() or manual.node_open(cell, node):
 		return out
-	var first := true
+	var links := {}
 	for parent: String in node.parents:
-		var need: int = node.parents[parent]
+		links[cell.node_of(parent)] = node.parents[parent]
+	for child in cell.talents:
+		if child.parents.has(node.id):
+			links[child] = 1
+	var first := true
+	for linked: TalentNode in links:
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("demande") if first else Texts.t("ou"),
 			# « à 2 » et non « 2 points dans » : la ligne débordait de la fiche (`test_largeurs`).
 			Texts.t("« {nom} » à {points}").format({
-				"points": need, "nom": cell.node_of(parent).displayed_name()
+				"points": links[linked], "nom": linked.displayed_name()
 			}), MISSING
 		))
 		first = false
@@ -1315,11 +1334,20 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 				Group.ON_HIT, StatusEffects.name(kind),
 				_chance(StatusEffects.chance(share, 0.0, factor)), StatusEffects.color(kind)
 			))
-			# Le transi a une force, que l'arbre ou un objet accroît : elle se lit dessous.
-			if kind == StatusEffects.Kind.CHILL:
+			# Le transi et le saignement ont une force, que l'arbre ou un objet accroît :
+			# elle se lit dessous.
+			if SkillStats.EFFECT_OF.has(kind):
 				out.append(SheetLine.new(
-					Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.CHILL_EFFECT]),
+					Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.EFFECT_OF[kind]]),
 					_times(cast.strength_of(kind)), StatusEffects.color(kind)
+				))
+		# Ce que rend ou fait chaque ennemi touché (jalon 39).
+		for number: String in [SkillStats.KNOCKBACK, SkillStats.LIFE_ON_HIT, SkillStats.MANA_ON_HIT]:
+			var value := float(cast.get(number))
+			if value > 0.0:
+				out.append(SheetLine.new(
+					Group.ON_HIT, Texts.t(SkillStats.LABELS[number]), str(snappedf(value, 0.1)),
+					UiPalette.TEXT
 				))
 	var posed := cast.inflicted_state
 	if posed >= 0:

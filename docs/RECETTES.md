@@ -729,7 +729,7 @@ l'orienteraient chacun à leur façon.
    | `name` | Ce que le joueur lit |
    | `description` | **Ce que le nœud fait en jeu**, une ou deux phrases, en tête de sa fiche de survol : qui, quand, où — les lignes ne disent que de combien. Les chiffres des mécaniques s'écrivent `{part_sol}`, `{part_tue}`… (`SkillStats.facts()`), jamais en dur. Obligatoire dans un arbre repris (`test_each_reworked_node_says_what_it_does`), traduite dans `i18n/en.po` |
    | `position` | En cases **autour de la compétence**, qui tient `(0, 0)` : jusqu'à `ManualPanel.TREE_SPAN` de chaque côté (sept colonnes, trois rangées). Ni sur une case prise, ni là où un lien passerait sous un autre nœud |
-   | `parents` | Les nœuds reliés en amont, **chacun avec les points qu'il doit porter** (`{"fireball_velocity": 2}` : les grains sur le lien). **Un seul suffit.** Vide : relié à la compétence. Pas de paliers (jalon 34, Last Epoch) : la profondeur, ce sont les liens et leurs points |
+   | `parents` | Les nœuds reliés en amont, **chacun avec les points qu'il doit porter** (`{"fireball_velocity": 2}` : les grains sur le lien). **Un seul suffit**, et le lien se prend aussi dans l'autre sens, depuis l'enfant à un point (jalon 39) : un parent qui ne doit s'ouvrir que par son propre chemin ne se relie pas à un nœud ouvert ailleurs. Vide : relié à la compétence. Pas de paliers (jalon 34, Last Epoch) : la profondeur, ce sont les liens et leurs points |
    | `points_max` | Combien de points il accepte |
    | `lines` | Comme celles d'un passif, mais **sans portée** — et `first_point_bonus`, ce que le premier point donne en plus : 2 s de sol au premier point et 5 s au troisième se disent 1,5 par point et 0,5 au premier : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` — dont `use_time` et `recharge` depuis le jalon 23. **`interval` ne se vise pas**, il se déduit des deux |
    | `converts` / `converts_to` | **Une conversion, tout ou rien** (jalon 34) : la compétence devient de cette nature — dégâts, mot-clé, état, couleur. `points_max = 1`, et une seule par arbre. Le drapeau dit s'il y a conversion : l'enum commence au physique |
@@ -752,8 +752,10 @@ l'orienteraient chacun à leur façon.
    `kill_burst`, `seek_radius`, pour la foudre `bounces`, `jump_reach`, `jump_gain`,
    `trail_charges`, pour le froid `chill_effect` et `pull`, pour la nécrose
    `decay_effect`, `wilting_weakness`, `curse_effect`, `contagion`, `minion_life`,
-   `bone_wall`, `colossus`, `tribute` et `shared_burden` (`SkillStats.PIERCE` et
-   suivants). Chacun n'est lu
+   `bone_wall`, `colossus`, `tribute` et `shared_burden`, pour le chevalier
+   `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
+   `sword_volley`, `extra_swords` et `waves` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
+   un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
    le dit : avant d'en poser une, vérifier que la forme de la compétence la lit, ou
@@ -780,7 +782,7 @@ manuels de `SHALLOW_TREES`, pas encore repris),
 `test_each_node_line_targets_a_cast_number`,
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
 `test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
-nécromancie depuis le jalon 38 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
+nécromancie depuis le jalon 38 et le chevalier depuis le 39 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
 un nœud de dégâts, de rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.

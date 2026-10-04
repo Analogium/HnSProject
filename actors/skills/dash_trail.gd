@@ -82,15 +82,18 @@ class Tongue:
 		phase = p_phase
 
 
+## `ground` : un sol en long — le Sillon d'acier d'une vague —, qui ne cumule pas.
 static func leave(
-	parent: Node, from_value: Vector2, to: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, from_value: Vector2, to: Vector2, cast: SkillStats, author: StatusEffects,
+	ground := false
 ) -> DashTrail:
 	var trail := DashTrail.new()
 	trail._cast = cast
 	trail._author = author
+	trail._ground = ground
 	trail._toward = to - from_value
 	trail._tint = DamageType.COLORS[cast.nature]
-	_layer(parent).add_child(trail)
+	layer(parent).add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
 	return trail
@@ -107,13 +110,13 @@ static func patch(
 	trail._ground = true
 	trail._tint = DamageType.COLORS[ground.nature]
 	Settings.veil(trail, Settings.SPELLS)
-	DeferredTree.add_deferred(_layer(parent), trail, at)
+	DeferredTree.add_deferred(layer(parent), trail, at)
 	return trail
 
 
 ## **Sous les corps** : au-dessus d'eux, on marchait sous sa propre traînée ; parmi les
 ## tirs, elle se triait en Y avec les corps et passait devant qui se tenait au-dessus.
-static func _layer(parent: Node) -> Node:
+static func layer(parent: Node) -> Node:
 	var ground := parent.get_tree().get_first_node_in_group(GROUND_LAYER) if parent.is_inside_tree() else null
 	return ground if ground != null else parent
 

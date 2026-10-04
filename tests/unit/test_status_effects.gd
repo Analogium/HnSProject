@@ -270,8 +270,23 @@ func test_a_cast_chill_effect_reaches_the_chill_it_puts() -> void:
 	author.chance_factors[StatusEffects.Kind.CHILL] = 100.0
 	var cast := SkillStats.new()
 	cast.chill_effect = 30.0
-	e.suffer(parts, author, always, 0.0, 0.0, "", cast.strength_of(StatusEffects.Kind.CHILL))
+	e.suffer(parts, author, always, 0.0, 0.0, "", cast)
 	assert_almost_eq(e.speed_factor, 1.0 - StatusEffects.CHILL * 1.3, 0.0001)
+
+
+## Hémorragie (jalon 39) : le saignement qu'un coup tire saigne plus vite.
+func test_a_cast_bleed_effect_makes_the_bleed_it_rolls_burn_faster() -> void:
+	var always := RandomNumberGenerator.new()
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.BLEED] = 100.0
+	var parts := _parts(DamageType.Kind.PHYSICAL, 10.0)
+	var plain := StatusEffects.new()
+	plain.suffer(parts, author, always)
+	var cast := SkillStats.new()
+	cast.bleed_effect = 30.0
+	var strong := StatusEffects.new()
+	strong.suffer(parts, author, always, 0.0, 0.0, "", cast)
+	assert_almost_eq(strong.advance(1.0), plain.advance(1.0) * 1.3, 0.0001)
 
 
 ## Les états posés par la nécrose (jalon 38) : leur force vient du lancer. Ce qui brûle

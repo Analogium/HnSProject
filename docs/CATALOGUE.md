@@ -179,7 +179,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 |---|---|---|---|---|---|---|---|
 | Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | strike | 20 · 26 · 33 · 41 · 50 |
 | Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | cadence de l'arme | cross | 13 · 17 · 21 · 26 · 32 |
-| Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
+| Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · rayon 26 · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
 | Vague tranchante | attaque physique | niveau 4 | 5 | 8 mana | cadence de l'arme | wave · 0.5 s · rayon 20 | 11 · 14 · 18 · 22 · 27 |
 | Cyclone | attaque physique | niveau 8 | 5 | 0 mana | cadence de l'arme | cyclone · rayon 34 · toutes les 0.35 s · draine 10 mana/s | 7 · 9 · 11 · 14 · 17 |
 | Ruée tranchante | attaque physique | niveau 5 | 5 | 10 mana | cadence de l'arme · recharge 3.00 s | dash · 0.3 s · rayon 12 · toutes les 0.25 s | 16 · 21 · 26 · 32 · 40 |
@@ -187,22 +187,46 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Élan | Frappe lourde | — | 3 | +14 % de dégâts amplifiés |
+| Élan | Frappe lourde | — | 5 | +12 % de dégâts amplifiés |
+| Pesée | Frappe lourde | — | 3 | +25 % de chance critique de base accrue |
+| Coup de bélier | Frappe lourde | — | 4 | +40 recul |
+| Hargne | Frappe lourde | Élan (1) | 4 | +2 PV par ennemi touché |
 | Lame ardente | Frappe lourde | Élan (1) | 1 | devient feu |
-| Saignée | Frappe lourde | — | 2 | ajoute 3 à 8 dégâts physiques |
-| Taille | Coup en croix | — | 3 | +12 % de dégâts amplifiés |
-| Estoc | Coup en croix | Taille (1) | 2 | ajoute 2 à 6 dégâts physiques |
-| Lame sainte | Coup en croix | — | 1 | devient sacré |
-| Ronde | Épée spirale | — | 2 | +1 maximum simultané |
-| Tranchant | Épée spirale | Ronde (1) | 3 | +12 % de dégâts amplifiés |
-| Endurance | Épée spirale | — | 2 | +30 % de durée accrue |
-| Fil de l'arc | Vague tranchante | — | 3 | +12 % de dégâts amplifiés |
-| Course | Vague tranchante | Fil de l'arc (1) | 2 | +25 % de durée accrue |
-| Fauchage | Cyclone | — | 3 | +10 % de dégâts amplifiés |
-| Envergure | Cyclone | Fauchage (1) | 2 | +12 % de rayon accru |
-| Fil tranchant | Ruée tranchante | — | 3 | +12 % de dégâts amplifiés |
-| Andain | Ruée tranchante | Fil tranchant (1) | 2 | +15 % de rayon accru |
-| Enchaînement | Ruée tranchante | — | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
+| Brise-sol | Frappe lourde | Élan (2) ou Coup de bélier (2) | 1 | +28 rayon · -15 % de dégâts atténués |
+| Cratère | Frappe lourde | Brise-sol (1) | 3 | +20 % de rayon accru |
+| Taille | Coup en croix | — | 5 | +12 % de dégâts amplifiés |
+| Entaille | Coup en croix | — | 3 | +15 % chance d'état |
+| Estoc | Coup en croix | Taille (1) | 3 | ajoute 2 à 6 dégâts physiques |
+| Plaie ouverte | Coup en croix | Taille (1) | 3 | +20 % de dégâts accrus contre les saignants |
+| Hémorragie | Coup en croix | Entaille (1) | 4 | +15 % effet du saignement |
+| Gerbe de sang | Coup en croix | Hémorragie (2) | 3 | +15 rayon de l'explosion des tués |
+| Lame sainte | Coup en croix | Taille (2) | 1 | devient sacré |
+| Tranchant | Épée spirale | — | 5 | +12 % de dégâts amplifiés |
+| Ronde | Épée spirale | — | 3 | +1 maximum simultané |
+| Endurance | Épée spirale | — | 4 | +20 % de durée accrue |
+| Bouclier de lames | Épée spirale | Ronde (1) | 5 | +2 % dégâts subis retirés par épée |
+| Orbite large | Épée spirale | Tranchant (1) | 3 | +20 % de rayon accru |
+| Volée d'épées | Épée spirale | Tranchant (2) ou Bouclier de lames (2) | 1 | +160 portée de la volée d'épées · -30 % de durée réduite |
+| Arsenal | Épée spirale | Ronde (1) | 3 | +1 nombre d'épées en plus par lancer |
+| Fil de l'arc | Vague tranchante | — | 5 | +12 % de dégâts amplifiés |
+| Course | Vague tranchante | — | 4 | +20 % de durée accrue |
+| Grand arc | Vague tranchante | — | 4 | +15 % de rayon accru |
+| Vagues jumelles | Vague tranchante | Fil de l'arc (2) | 3 | +1 nombre de vagues |
+| Sillon d'acier | Vague tranchante | Course (1) | 4 | +1 secondes de sol laissé |
+| Ressac | Vague tranchante | Course (2) ou Vagues jumelles (1) | 1 | -20 % de dégâts atténués |
+| Fauchage | Cyclone | — | 5 | +10 % de dégâts amplifiés |
+| Envergure | Cyclone | — | 3 | +15 % de rayon accru |
+| Souffle long | Cyclone | — | 4 | -15 % de mana drainé réduit |
+| Moulinet | Cyclone | Fauchage (1) | 3 | -10 % d'intervalle des frappes réduit |
+| Tourbillon | Cyclone | Envergure (1) | 3 | +40 force d'aspiration |
+| Fauche vorace | Cyclone | Souffle long (2) ou Moulinet (1) | 3 | +0.4 mana par ennemi touché |
+| Fil tranchant | Ruée tranchante | — | 5 | +12 % de dégâts amplifiés |
+| Andain | Ruée tranchante | — | 3 | +15 % de rayon accru |
+| Charge | Ruée tranchante | Fil tranchant (1) | 4 | -8 % de recharge réduite |
+| Lame traînante | Ruée tranchante | Andain (1) | 3 | +100 % de durée accrue |
+| Choc d'arrivée | Ruée tranchante | Andain (1) | 4 | +12 rayon de l'explosion finale |
+| Enchaînement | Ruée tranchante | Charge (2) | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
+| Saut de guerre | Ruée tranchante | Fil tranchant (2) ou Choc d'arrivée (1) | 1 | +32 rayon de l'explosion finale · +40 % de temps du geste accru |
 
 34 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

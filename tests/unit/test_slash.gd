@@ -21,6 +21,15 @@ func test_the_same_crescent_is_made_once() -> void:
 	assert_same(a, b, "deux demandes, une fabrication")
 
 
+## Le sol fendu du Brise-sol : une fabrication par rayon et par temps, à la taille du
+## rayon qu'un nœud agrandit.
+func test_the_fissures_are_made_once_at_their_radius() -> void:
+	var a := Slash.fissures(STEEL, 28.0, 1, 2)
+	assert_same(Slash.fissures(STEEL, 28.0, 1, 2), a, "deux demandes, une fabrication")
+	var wide := Slash.fissures(STEEL, 45.0, 1, 2)
+	assert_gt(wide.texture.get_width(), a.texture.get_width(), "Cratère les allonge")
+
+
 ## Un quart de tour ne perd ni n'invente d'encre : le vote tombe juste quand les
 ## pixels tombent juste. S'il en perdait, l'épée de l'Épée spirale changerait de
 ## silhouette selon son cap.

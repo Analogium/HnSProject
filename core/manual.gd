@@ -95,27 +95,53 @@ func is_open(archetype: ManualArchetype, identifier: String) -> bool:
 	if passive != null:
 		return level() >= passive.required_manual_level
 	cell = archetype.cell_of_node(identifier)
-	return cell != null and _node_open(cell, cell.node_of(identifier))
+	return cell != null and node_open(cell, cell.node_of(identifier))
 
 
-## Un point dans la compétence, et assez de points dans **un** des nœuds reliés (jalon
-## 34 : un réseau sans paliers). Les liens vont toujours vers la racine (test
-## `test_links_lead_to_the_root`) : sans quoi deux nœuds se tiendraient ouverts l'un l'autre.
-func _node_open(cell: ManualCell, node: TalentNode) -> bool:
+## Un point dans la compétence, et un lien tenu (jalon 34 : un réseau sans paliers).
+## **Un lien se prend dans les deux sens** (jalon 39) : par le parent, qui porte les
+## points demandés, ou par l'enfant, qui a payé son propre lien pour être là — le Ressac
+## ouvre les Vagues jumelles qui l'ouvrent.
+func node_open(cell: ManualCell, node: TalentNode) -> bool:
 	if cell.skill == null or points_of(cell.skill.id) <= 0:
 		return false
+	return _linked(cell, node, _reached(cell))
+
+
+## Un lien tenu vers ce nœud par un nœud déjà atteint, ou la racine.
+func _linked(cell: ManualCell, node: TalentNode, reached: Dictionary) -> bool:
 	if node.parents.is_empty():
 		return true
 	for parent: String in node.parents:
-		if points_of(parent) >= node.parents[parent]:
+		if reached.has(parent) and points_of(parent) >= node.parents[parent]:
+			return true
+	for child in cell.talents:
+		if reached.has(child.id) and child.parents.has(node.id):
 			return true
 	return false
 
 
+## Les nœuds investis reliés à la compétence, **gagnés de proche en proche depuis elle** :
+## deux nœuds reliés ne se tiennent pas ouverts l'un l'autre.
+func _reached(cell: ManualCell) -> Dictionary:
+	var reached := {}
+	var progress := true
+	while progress:
+		progress = false
+		for node in cell.talents:
+			if not reached.has(node.id) and points_of(node.id) > 0 and _linked(cell, node, reached):
+				reached[node.id] = true
+				progress = true
+	return reached
+
+
 ## Chaque nœud investi de l'arbre tient-il encore debout.
 func _tree_holds(cell: ManualCell) -> bool:
+	if cell.skill != null and points_of(cell.skill.id) <= 0:
+		return tree_points_spent(cell) == 0
+	var reached := _reached(cell)
 	for node in cell.talents:
-		if points_of(node.id) > 0 and not _node_open(cell, node):
+		if points_of(node.id) > 0 and not reached.has(node.id):
 			return false
 	return true
 

@@ -70,8 +70,13 @@ func _physics_process(delta: float) -> void:
 	_player.burn(_cast.self_burn, _cast.distribution(), delta)
 
 
+## Tourbillon (jalon 39) tire vers le cœur, comme le vortex ; Fauche vorace rend du mana
+## par ennemi pris dans le tour.
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _player.states)
+	var struck := Targets.strike_circle(
+		get_world_2d(), global_position, _cast.radius, _cast, _player.states, -_cast.pull
+	)
+	_player.gain_mana(_cast.mana_on_hit * float(struck.size()))
 
 
 ## Des lames en rotation plutôt qu'un disque : c'est le mouvement qui dit « ça tourne »,
