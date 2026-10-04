@@ -196,10 +196,12 @@ func _simulation(l: PackedStringArray) -> void:
 
 
 ## Le banc des arbres (jalon 37) : `tools/balance.sh trees`, qui écrit `docs/ARBRES.md`.
-## `only=<compétence>,<compétence>` n'en mesure que celles-là, `probe` s'arrête aux compétences nues.
+## `only=<compétence>,<compétence>` n'en mesure que celles-là et recopie les autres du rapport
+## précédent ; `probe` s'arrête aux compétences nues.
 const TREE_PARTS := "user://arbres"
 const TREE_MANUALS := [
 	"manual_fire", "manual_lightning", "manual_cold", "manual_necrotic", "manual_weapons",
+	"manual_holy",
 ]
 
 
@@ -240,14 +242,13 @@ func _trees() -> void:
 		var head := PackedStringArray()
 		_trees_header(head, bench)
 		_write(TREE_PARTS.path_join("00.md"), head)
+	var previous := _previous_sections() if not only.is_empty() else {}
 	var index := 0
 	for manual_id: String in TREE_MANUALS:
 		var book := ItemCatalog.by_id(manual_id)
 		var first_of_manual := true
 		for cell in book.manual.cells:
 			if cell.skill == null or cell.talents.is_empty() or not cell.skill.strikes():
-				continue
-			if not only.is_empty() and not cell.skill.id in only.split(","):
 				continue
 			index += 1
 			var mine := (index - 1) % part.y == part.x
@@ -258,12 +259,46 @@ func _trees() -> void:
 				first_of_manual = false
 			if not mine:
 				continue
+			# Hors de `only=`, la section du rapport précédent, à sa place : `balance.sh` réécrit
+			# tout le fichier, et il n'en restait que les compétences mesurées.
+			if not only.is_empty() and not cell.skill.id in only.split(","):
+				if not previous.has(cell.skill.name):
+					print("arbres %s : absent du rapport précédent, relancer sans only=" % cell.skill.id)
+				l.append_array(previous.get(cell.skill.name, PackedStringArray()))
+				_write(TREE_PARTS.path_join("%02d.md" % index), l)
+				continue
 			var start := Time.get_ticks_msec()
 			var runs := bench.runs
 			await _tree(l, bench, manual_id, cell, "probe" in args)
 			_write(TREE_PARTS.path_join("%02d.md" % index), l)
 			print("arbres %s : %d ms, %d simulations" % [cell.skill.id, Time.get_ticks_msec() - start, bench.runs - runs])
 	get_tree().quit()
+
+
+## Les sections de `docs/ARBRES.md` (la copie du banc), par titre de compétence, sans le
+## titre de manuel, que la boucle réécrit. Normalisées à une ligne vide finale, comme
+## celles que `_tree()` écrit.
+func _previous_sections() -> Dictionary:
+	var out := {}
+	var f := FileAccess.open("res://docs/ARBRES.md", FileAccess.READ)
+	if f == null:
+		return out
+	var current := ""
+	for line in f.get_as_text().split("\n"):
+		if line.begins_with("## "):
+			current = ""
+		elif line.begins_with("### "):
+			current = line.trim_prefix("### ")
+			out[current] = []
+		if not current.is_empty():
+			(out[current] as Array).append(line)
+	for title: String in out:
+		var lines: Array = out[title]
+		while not lines.is_empty() and (lines[-1] as String).is_empty():
+			lines.pop_back()
+		lines.append("")
+		out[title] = PackedStringArray(lines)
+	return out
 
 
 func _write(path: String, l: PackedStringArray) -> void:

@@ -3284,8 +3284,8 @@ msgstr "Applied by cold. The chilled lose {force} speed — movement, attack and
 msgid "Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle."
 msgstr "Applied by necrotic. Burns {part} of the necrotic taken per second, for {duree} s, and gives its author {soin} of what it burns."
 
-msgid "Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s."
-msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s."
+msgid "Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s. Certains nœuds du Maître de la lumière l'affaiblissent davantage, ou bénissent sans frapper."
+msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s. Some nodes of the Master of Light weaken them further, or bless without striking."
 
 msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s. Certains nœuds du Maître chevalier le font saigner plus vite."
 msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s. Some Knight Master nodes make it bleed faster."
@@ -4000,3 +4000,150 @@ msgstr "number of extra swords per cast"
 
 msgid "épées par lancer"
 msgstr "swords per cast"
+
+msgid "Le trait frappe plus fort."
+msgstr "The beam hits harder."
+
+msgid "Le trait porte plus loin."
+msgstr "The beam reaches farther."
+
+msgid "Sanctification"
+msgstr "Sanctification"
+
+msgid "Le trait bénit plus souvent ce qu'il touche."
+msgstr "The beam blesses what it hits more often."
+
+msgid "Réprobation"
+msgstr "Reproof"
+
+msgid "Le trait frappe plus fort les ennemis bénis."
+msgstr "The beam hits blessed enemies harder."
+
+msgid "Bénédiction profonde"
+msgstr "Deep Blessing"
+
+msgid "La bénédiction que pose le trait affaiblit davantage : le béni inflige encore moins de dégâts."
+msgstr "The blessing the beam lays weakens more: the blessed deal even less damage."
+
+msgid "Réfraction"
+msgstr "Refraction"
+
+msgid "Au bout de sa course, le trait repart vers l'ennemi le plus proche qu'il n'a pas encore frappé, une fois par point. Personne n'est frappé deux fois par un même lancer."
+msgstr "At the end of its course, the beam sets off again toward the nearest enemy it has not hit yet, once per point. No one is hit twice by the same cast."
+
+msgid "Croix de lumière"
+msgstr "Cross of Light"
+
+msgid "Le trait part dans les quatre directions autour de vous, droit sur les axes, sans viser. Un ennemi au croisement n'est frappé qu'une fois. En échange, chaque bras est plus court."
+msgstr "The beam shoots in the four directions around you, straight along the axes, without aiming. An enemy at the crossing is hit only once. In exchange, each arm is shorter."
+
+msgid "La colonne frappe plus fort."
+msgstr "The column hits harder."
+
+msgid "La colonne mord un cercle plus large."
+msgstr "The column bites a wider circle."
+
+msgid "Veille"
+msgstr "Vigil"
+
+msgid "La colonne brûle plus longtemps."
+msgstr "The column burns longer."
+
+msgid "Glas"
+msgstr "Knell"
+
+msgid "La colonne frappe plus souvent."
+msgstr "The column strikes more often."
+
+msgid "Appel céleste"
+msgstr "Heavenly Call"
+
+msgid "Chaque impulsion de la colonne attire les ennemis vers son cœur."
+msgstr "Each pulse of the column pulls enemies toward its heart."
+
+msgid "Effondrement"
+msgstr "Collapse"
+
+msgid "En s'éteignant, la colonne éclate et frappe tout autour d'elle."
+msgstr "As it fades, the column bursts and hits everything around it."
+
+msgid "Pilier errant"
+msgstr "Wandering Pillar"
+
+msgid "La colonne glisse vers l'ennemi le plus proche et le suit, au lieu de rester où elle est tombée. En échange, elle mord un cercle plus étroit."
+msgstr "The column glides toward the nearest enemy and follows it, instead of staying where it fell. In exchange, it bites a narrower circle."
+
+msgid "Les ondes frappent plus fort."
+msgstr "The waves hit harder."
+
+msgid "La pulsation dure plus longtemps."
+msgstr "The pulse lasts longer."
+
+msgid "Rayonnement"
+msgstr "Radiance"
+
+msgid "Les ondes portent plus loin autour de vous."
+msgstr "The waves reach farther around you."
+
+msgid "Cantique"
+msgstr "Canticle"
+
+msgid "Les ondes portent des dégâts sacrés en plus."
+msgstr "The waves carry extra holy damage."
+
+msgid "Absolution"
+msgstr "Absolution"
+
+msgid "Chaque ennemi touché par une onde vous rend des points de vie."
+msgstr "Each enemy hit by a wave restores life to you."
+
+msgid "Exaltation"
+msgstr "Exaltation"
+
+msgid "Chaque onde frappe plus fort que la précédente : la dernière d'une longue litanie porte le gain de toutes celles déjà parties."
+msgstr "Each wave hits harder than the one before: the last of a long litany carries the gain of all those already gone."
+
+msgid "Zèle"
+msgstr "Zeal"
+
+msgid "Tant que la lumière brûle, vos dégâts sacrés sont plus forts."
+msgstr "While the light burns, your holy damage is higher."
+
+msgid "Recueillement"
+msgstr "Recollection"
+
+msgid "La lumière draine moins de mana."
+msgstr "The light drains less mana."
+
+msgid "Sérénité"
+msgstr "Serenity"
+
+msgid "Tant que la lumière brûle, vous subissez moins de dégâts."
+msgstr "While the light burns, you take less damage."
+
+msgid "Cuirasse de foi"
+msgstr "Cuirass of Faith"
+
+msgid "Tant que la lumière brûle, votre armure augmente."
+msgstr "While the light burns, your armor increases."
+
+msgid "Allégresse"
+msgstr "Elation"
+
+msgid "Tant que la lumière brûle, vous lancez vos sorts plus vite."
+msgstr "While the light burns, you cast spells faster."
+
+msgid "Auréole"
+msgstr "Aureole"
+
+msgid "Tant que la lumière brûle, les ennemis qui s'approchent de vous sont bénis : ils infligent moins de dégâts."
+msgstr "While the light burns, enemies who come near you are blessed: they deal less damage."
+
+msgid "effet de la bénédiction"
+msgstr "blessing effect"
+
+msgid "dégâts en plus par onde"
+msgstr "more damage per wave"
+
+msgid "rayon de l'auréole"
+msgstr "aureole radius"

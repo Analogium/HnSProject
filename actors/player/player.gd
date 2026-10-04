@@ -181,7 +181,7 @@ func _ready() -> void:
 	states.slew.connect(_on_slew)
 	states.change.connect(_show_states)
 	states.reached.connect(_announce_state)
-	states.heal.connect(_heal)
+	states.heal.connect(heal)
 
 
 ## La souris sert-elle à viser ? Pas déduit de sa position, qui bouge avec la caméra.
@@ -376,7 +376,12 @@ func cast_slot(index: int) -> bool:
 			IceVortex.open(_effects_parent(), global_position, cast, states)
 		Skill.Shape.BEAM:
 			HolyBeam.fire(_effects_parent(), global_position, facing, cast, states)
-		Skill.Shape.PILLAR:
+		Skill.Shape.HOLY_CROSS:
+			# Droit sur les axes, sans viser ; un ennemi au croisement n'est frappé qu'une fois.
+			var struck := {}
+			for direction in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
+				HolyBeam.fire(_effects_parent(), global_position, direction, cast, states, struck)
+		Skill.Shape.PILLAR, Skill.Shape.DRIFT:
 			SacredPillar.fall(_effects_parent(), _aim_point(), cast, states)
 		Skill.Shape.PULSE:
 			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
@@ -489,7 +494,7 @@ func burn(part_per_second: float, distribution: Array[float], delta: float) -> v
 ## `burn()`, sans mitigation — un soin ne se résiste pas.
 func mend(part_per_second: float, delta: float) -> void:
 	if part_per_second > 0.0:
-		_heal(stats.max_health * part_per_second * delta)
+		heal(stats.max_health * part_per_second * delta)
 
 
 ## Ce qu'un geste entretenu prend à la réserve cette image-ci, **à plat**. Faux quand
@@ -523,8 +528,8 @@ func _suffer_states(delta: float) -> void:
 		_die()
 
 
-## Ce que sa pourriture lui rend.
-func _heal(amount: float) -> void:
+## Ce que sa pourriture lui rend, et ce que rend chaque ennemi touché (Hargne, Absolution).
+func heal(amount: float) -> void:
 	if not is_dead:
 		_set_health(health + amount)
 
@@ -622,7 +627,7 @@ func _slam(cast: SkillStats) -> void:
 		get_world_2d(), impact, cast.radius, cast, states, stats.knockback_force + cast.knockback
 	)
 	GroundSlam.leave(_effects_parent(), impact, cast)
-	_heal(cast.life_on_hit * float(struck.size()))
+	heal(cast.life_on_hit * float(struck.size()))
 	if not struck.is_empty():
 		Game.hit_stop()
 		Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
@@ -1340,7 +1345,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	)
 	info.author = states
 	(area as Hurtbox).take_damage(info)
-	_heal(_hit_cast.life_on_hit)
+	heal(_hit_cast.life_on_hit)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.
 	if _already_hit.size() == 1:

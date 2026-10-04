@@ -2239,3 +2239,97 @@ func test_an_arsenal_summons_its_swords_at_once_within_the_round() -> void:
 	_p._recharges[2] = 0.0
 	assert_true(_p.cast_slot(2))
 	assert_eq(_p.orbiting_swords(), SkillCatalog.by_id("spiral_sword").simultaneous, "pas au-delà")
+
+
+# --------------------------------------------------------------------------
+# Le sacré (jalon 40)
+# --------------------------------------------------------------------------
+
+## La Croix de lumière : les quatre axes, sans viser ; rien en diagonale.
+func test_a_holy_cross_strikes_the_four_axes() -> void:
+	_learn_with("manual_holy", "holy_strike", [], Skill.Shape.HOLY_CROSS)
+	var arms := [
+		_target(Vector2(40, 0)), _target(Vector2(0, 40)), _target(Vector2(-40, 0)), _target(Vector2(0, -40))
+	]
+	var aslant := _target(Vector2(40, 40))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	for arm: Hurtbox in arms:
+		assert_eq(_hits(arm), 1)
+	assert_eq(_hits(aslant), 0)
+
+
+## La Réfraction : du bout du trait vers l'ennemi non frappé le plus proche, une fois.
+func test_a_refracted_beam_leaps_to_the_nearest_unstruck_enemy() -> void:
+	_learn_with("manual_holy", "holy_strike", [[SkillStats.BOUNCES, 1.0]])
+	var first := _target(Vector2(40, 0))
+	var off_axis := _target(Vector2(90, 40))
+	var after := _target(Vector2(99, 140))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(4)
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(off_axis), 1, "le rebond, hors de l'axe")
+	assert_eq(_hits(after), 0, "un seul rebond")
+
+
+func test_a_drifting_pillar_follows_the_nearest_enemy() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [], Skill.Shape.DRIFT)
+	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 80))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var pillar: SacredPillar = _children_of(SacredPillar)[0]
+	var before := pillar.global_position.distance_to(prey.global_position)
+	await wait_seconds(0.5)
+	assert_lt(pillar.global_position.distance_to(prey.global_position), before - 10.0)
+
+
+## Appel céleste et Effondrement : chaque impulsion tire vers le cœur, la fin éclate.
+func test_a_calling_pillar_pulls_then_collapses() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [
+		[SkillStats.PULL, 40.0], [SkillStats.END_BURST, 30.0], ["duration", -70.0, true]
+	])
+	var prey := _target(Vector2(Player.PLACEMENT_RANGE + 15.0, 0))
+	var pulls := _knockbacks_on(prey)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var pillar: SacredPillar = _children_of(SacredPillar)[0]
+	await wait_physics_frames(2)
+	assert_eq(pulls, [-40.0])
+	while is_instance_valid(pillar):
+		await wait_physics_frames(1)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1)
+
+
+## Exaltation et Absolution : la seconde onde porte le gain de la première, et chaque
+## touché rend ses PV.
+func test_an_exalted_pulse_swells_and_absolves() -> void:
+	_learn_with("manual_holy", "holy_pulse", [[SkillStats.WAVE_GAIN, 50.0], [SkillStats.LIFE_ON_HIT, 5.0]])
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
+	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
+	var near := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	_p.stats.health_regen = 0.0
+	_p._set_health(_p.stats.max_health - 50.0)
+	var health := _p.health
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.period + 0.1)
+	var received: Array = _received_all[near]
+	assert_eq(received.size(), 2)
+	assert_almost_eq(float(received[1]), float(received[0]) * 1.5, 0.001)
+	assert_almost_eq(_p.health, health + 10.0, 0.5, "cinq PV par touché, deux ondes")
+
+
+## L'Auréole bénit ce qui s'approche, sans le frapper.
+func test_an_aureole_blesses_what_comes_near() -> void:
+	_learn_with("manual_holy", "holy_light", [[SkillStats.AUREOLE, 40.0]])
+	var near := _wearing_target(Vector2(20, 0))
+	var far := _wearing_target(Vector2(90, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.AUREOLE_PERIOD + 0.1)
+	assert_true(near.states.active(StatusEffects.Kind.BLESSING))
+	assert_eq(_hits(near), 0, "béni, pas frappé")
+	assert_false(far.states.active(StatusEffects.Kind.BLESSING))

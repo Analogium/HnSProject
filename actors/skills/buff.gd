@@ -15,6 +15,12 @@ const RISE := 14.0
 ## à 0,6 le bloc n'est plus qu'un reflet : c'est le seul dessin du jeu qu'on
 ## regarde **à travers**, et il se pose donc à alpha partiel.
 const TOMB_ALPHA := 0.8
+## L'Auréole, « couronne de grains » choisie sur planche (jalon 40) : l'écart entre deux
+## grains, gardé à tout rayon — à 20 px, trente-six grains feraient un anneau plein —,
+## leur écart au cercle, qui casse la palissade, et la vitesse du tour en radians/s.
+const CROWN_SPACING := 10.5
+const CROWN_JITTER := [0.0, 2.0, -1.0, 1.0, -2.0, 0.5]
+const CROWN_TURN := 0.3
 const DRAWN := [
 	DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING,
 	DamageType.Kind.NECROTIC,
@@ -36,6 +42,9 @@ var binds := false
 ## Ce que la Nécrose a rongé depuis le dernier Fardeau partagé, en PV, et depuis quand.
 var _burden := 0.0
 var _since_burden := 0.0
+## Depuis la dernière fois que l'Auréole a béni, et son rayon, pour le dessin.
+var _since_blessing := 0.0
+var _aureole := 0.0
 
 
 static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false) -> Buff:
@@ -118,6 +127,7 @@ func _physics_process(delta: float) -> void:
 		withered = cast.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
 		burning = cast.self_burn
 		_share_the_burden(cast, withered * _player.stats.max_health * delta, delta)
+		_bless(cast, delta)
 	_player.burn(burning + withered, _distribution, delta)
 
 
@@ -138,6 +148,22 @@ func _share_the_burden(cast: SkillStats, gnawed: float, delta: float) -> void:
 		_player._effects_parent(), _player.global_position, parts, cast.shared_burden, null,
 		DamageType.COLORS[cast.nature], _player.states, cast
 	)
+
+
+## L'Auréole (jalon 40) : ce qui entre dans son cercle est béni, pour la durée de l'état.
+## Elle ne frappe pas — comme la malédiction, elle pose l'état elle-même.
+func _bless(cast: SkillStats, delta: float) -> void:
+	_aureole = cast.aureole
+	if _aureole <= 0.0:
+		return
+	_since_blessing += delta
+	if _since_blessing < SkillStats.AUREOLE_PERIOD:
+		return
+	_since_blessing = 0.0
+	var strength := cast.strength_of(StatusEffects.Kind.BLESSING)
+	for target in Targets.in_circle(get_world_2d(), _player.global_position, _aureole):
+		if target.states != null:
+			target.states.put(StatusEffects.Kind.BLESSING, 0.0, _player.states, cast.skill_id, strength)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.
@@ -179,6 +205,21 @@ func _draw() -> void:
 				Necrotic.centered(self, EffectForge.spore(tint), p)
 			_:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
+	if _aureole > 0.0:
+		_crown(tint)
+
+
+## Un grain de lumière sur deux, un pixel de son cœur entre eux : grand et petit en
+## alternance, qui tournent lentement sur le cercle où l'Auréole bénit.
+func _crown(tint: Color) -> void:
+	var count := maxi(roundi(TAU * _aureole / CROWN_SPACING), 6)
+	for i in count:
+		var p := Vector2.from_angle(TAU * float(i) / float(count) + _age * CROWN_TURN) \
+			* (_aureole + float(CROWN_JITTER[i % CROWN_JITTER.size()]))
+		if i % 2 == 0:
+			Holy.spark(self, p, tint, 1.0)
+		else:
+			draw_rect(Rect2(EffectForge.snap(self, p), Vector2.ONE), Holy.halo(tint))
 
 
 ## Le bloc de glace, **dessiné** : vingt et un pixels sur vingt-sept, posé à

@@ -10,124 +10,463 @@
 [ext_resource type="Resource" path="res://resources/skills/holy_pulse.tres" id="12_pulsation"]
 [ext_resource type="Resource" path="res://resources/skills/holy_light.tres" id="13_lumiere"]
 
-[sub_resource type="Resource" id="L_frappe_percee_0"]
+[sub_resource type="Resource" id="L_holy_strike_piercing_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 12.0
 
-[sub_resource type="Resource" id="N_frappe_percee"]
+[sub_resource type="Resource" id="N_holy_strike_piercing"]
 script = ExtResource("3_noeud")
 id = "holy_strike_piercing"
 name = "Percée"
-position = Vector2i(1, 0)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_percee_0")])
+description = "Le trait frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_piercing_0")])
 
-[sub_resource type="Resource" id="L_frappe_portee_0"]
+[sub_resource type="Resource" id="L_holy_strike_reach_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
-value_per_point = 10.0
+value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_frappe_portee"]
+[sub_resource type="Resource" id="N_holy_strike_reach"]
 script = ExtResource("3_noeud")
 id = "holy_strike_reach"
 name = "Allonge du trait"
-position = Vector2i(2, 0)
+description = "Le trait porte plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_reach_0")])
+
+[sub_resource type="Resource" id="L_holy_strike_sanctification_0"]
+script = ExtResource("4_ligne")
+stat = "status_chance_increase"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_holy_strike_sanctification"]
+script = ExtResource("3_noeud")
+id = "holy_strike_sanctification"
+name = "Sanctification"
+description = "Le trait bénit plus souvent ce qu'il touche."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_sanctification_0")])
+
+[sub_resource type="Resource" id="L_holy_strike_reproof_0"]
+script = ExtResource("4_ligne")
+stat = "damage_vs_blessing"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_holy_strike_reproof"]
+script = ExtResource("3_noeud")
+id = "holy_strike_reproof"
+name = "Réprobation"
+description = "Le trait frappe plus fort les ennemis bénis."
+position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "holy_strike_piercing": 1
 })
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_reproof_0")])
+
+[sub_resource type="Resource" id="L_holy_strike_deep_blessing_0"]
+script = ExtResource("4_ligne")
+stat = "blessing_effect"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_holy_strike_deep_blessing"]
+script = ExtResource("3_noeud")
+id = "holy_strike_deep_blessing"
+name = "Bénédiction profonde"
+description = "La bénédiction que pose le trait affaiblit davantage : le béni inflige encore moins de dégâts."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"holy_strike_sanctification": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_deep_blessing_0")])
+
+[sub_resource type="Resource" id="L_holy_strike_refraction_0"]
+script = ExtResource("4_ligne")
+stat = "bounces"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_strike_refraction"]
+script = ExtResource("3_noeud")
+id = "holy_strike_refraction"
+name = "Réfraction"
+description = "Au bout de sa course, le trait repart vers l'ennemi le plus proche qu'il n'a pas encore frappé, une fois par point. Personne n'est frappé deux fois par un même lancer."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"holy_strike_reach": 1
+})
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_frappe_portee_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_refraction_0")])
+
+[sub_resource type="Resource" id="L_holy_strike_cross_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = -30.0
+
+[sub_resource type="Resource" id="N_holy_strike_cross"]
+script = ExtResource("3_noeud")
+id = "holy_strike_cross"
+name = "Croix de lumière"
+description = "Le trait part dans les quatre directions autour de vous, droit sur les axes, sans viser. Un ennemi au croisement n'est frappé qu'une fois. En échange, chaque bras est plus court."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"holy_strike_piercing": 2,
+"holy_strike_refraction": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_cross_0")])
+transforms = true
+shape = 38
 
 [sub_resource type="Resource" id="C_frappe"]
 script = ExtResource("2_case")
 skill = ExtResource("10_frappe")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_frappe_percee"), SubResource("N_frappe_portee")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_strike_piercing"), SubResource("N_holy_strike_reach"), SubResource("N_holy_strike_sanctification"), SubResource("N_holy_strike_reproof"), SubResource("N_holy_strike_deep_blessing"), SubResource("N_holy_strike_refraction"), SubResource("N_holy_strike_cross")])
 
-[sub_resource type="Resource" id="L_pilier_colonne_0"]
-script = ExtResource("4_ligne")
-stat = "radius"
-percentage = true
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_pilier_colonne"]
-script = ExtResource("3_noeud")
-id = "sacred_pillar_column"
-name = "Colonne"
-position = Vector2i(1, 0)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_pilier_colonne_0")])
-
-[sub_resource type="Resource" id="L_pilier_jugement_0"]
+[sub_resource type="Resource" id="L_sacred_pillar_judgement_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 12.0
 
-[sub_resource type="Resource" id="N_pilier_jugement"]
+[sub_resource type="Resource" id="N_sacred_pillar_judgement"]
 script = ExtResource("3_noeud")
 id = "sacred_pillar_judgement"
 name = "Jugement"
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"sacred_pillar_column": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_pilier_jugement_0")])
+description = "La colonne frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_judgement_0")])
 
-[sub_resource type="Resource" id="C_pilier"]
-script = ExtResource("2_case")
-skill = ExtResource("11_pilier")
+[sub_resource type="Resource" id="L_sacred_pillar_column_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_column"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_column"
+name = "Colonne"
+description = "La colonne mord un cercle plus large."
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_pilier_colonne"), SubResource("N_pilier_jugement")])
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_column_0")])
 
-[sub_resource type="Resource" id="L_pulsation_litanie_0"]
+[sub_resource type="Resource" id="L_sacred_pillar_vigil_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
 percentage = true
 value_per_point = 20.0
 
-[sub_resource type="Resource" id="N_pulsation_litanie"]
+[sub_resource type="Resource" id="N_sacred_pillar_vigil"]
 script = ExtResource("3_noeud")
-id = "holy_pulse_litany"
-name = "Litanie"
-position = Vector2i(1, 0)
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_pulsation_litanie_0")])
+id = "sacred_pillar_vigil"
+name = "Veille"
+description = "La colonne brûle plus longtemps."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_vigil_0")])
 
-[sub_resource type="Resource" id="L_pulsation_ferveur_0"]
+[sub_resource type="Resource" id="L_sacred_pillar_knell_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_knell"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_knell"
+name = "Glas"
+description = "La colonne frappe plus souvent."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"sacred_pillar_judgement": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_knell_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_call_0"]
+script = ExtResource("4_ligne")
+stat = "pull"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_call"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_call"
+name = "Appel céleste"
+description = "Chaque impulsion de la colonne attire les ennemis vers son cœur."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"sacred_pillar_column": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_call_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_collapse_0"]
+script = ExtResource("4_ligne")
+stat = "end_burst"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_collapse"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_collapse"
+name = "Effondrement"
+description = "En s'éteignant, la colonne éclate et frappe tout autour d'elle."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"sacred_pillar_vigil": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_collapse_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_drift_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_drift"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_drift"
+name = "Pilier errant"
+description = "La colonne glisse vers l'ennemi le plus proche et le suit, au lieu de rester où elle est tombée. En échange, elle mord un cercle plus étroit."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"sacred_pillar_judgement": 2,
+"sacred_pillar_vigil": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_drift_0")])
+transforms = true
+shape = 39
+
+[sub_resource type="Resource" id="C_pilier"]
+script = ExtResource("2_case")
+skill = ExtResource("11_pilier")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_sacred_pillar_judgement"), SubResource("N_sacred_pillar_column"), SubResource("N_sacred_pillar_vigil"), SubResource("N_sacred_pillar_knell"), SubResource("N_sacred_pillar_call"), SubResource("N_sacred_pillar_collapse"), SubResource("N_sacred_pillar_drift")])
+
+[sub_resource type="Resource" id="L_holy_pulse_fervour_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 12.0
 
-[sub_resource type="Resource" id="N_pulsation_ferveur"]
+[sub_resource type="Resource" id="N_holy_pulse_fervour"]
 script = ExtResource("3_noeud")
 id = "holy_pulse_fervour"
 name = "Ferveur"
+description = "Les ondes frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_fervour_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_litany_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_holy_pulse_litany"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_litany"
+name = "Litanie"
+description = "La pulsation dure plus longtemps."
+position = Vector2i(1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_litany_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_radiance_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_holy_pulse_radiance"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_radiance"
+name = "Rayonnement"
+description = "Les ondes portent plus loin autour de vous."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_radiance_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_canticle_0"]
+script = ExtResource("4_ligne")
+stat = "damage_holy"
+value_per_point = 2.0
+value_max_per_point = 5.0
+
+[sub_resource type="Resource" id="N_holy_pulse_canticle"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_canticle"
+name = "Cantique"
+description = "Les ondes portent des dégâts sacrés en plus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"holy_pulse_fervour": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_canticle_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_absolution_0"]
+script = ExtResource("4_ligne")
+stat = "life_on_hit"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_pulse_absolution"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_absolution"
+name = "Absolution"
+description = "Chaque ennemi touché par une onde vous rend des points de vie."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
 "holy_pulse_litany": 1
 })
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_pulsation_ferveur_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_absolution_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_exaltation_0"]
+script = ExtResource("4_ligne")
+stat = "wave_gain"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_holy_pulse_exaltation"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_exaltation"
+name = "Exaltation"
+description = "Chaque onde frappe plus fort que la précédente : la dernière d'une longue litanie porte le gain de toutes celles déjà parties."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"holy_pulse_canticle": 1,
+"holy_pulse_litany": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_exaltation_0")])
 
 [sub_resource type="Resource" id="C_pulsation"]
 script = ExtResource("2_case")
 skill = ExtResource("12_pulsation")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_pulsation_litanie"), SubResource("N_pulsation_ferveur")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_pulse_fervour"), SubResource("N_holy_pulse_litany"), SubResource("N_holy_pulse_radiance"), SubResource("N_holy_pulse_canticle"), SubResource("N_holy_pulse_absolution"), SubResource("N_holy_pulse_exaltation")])
+
+[sub_resource type="Resource" id="L_holy_light_zeal_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "holy"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_holy_light_zeal"]
+script = ExtResource("3_noeud")
+id = "holy_light_zeal"
+name = "Zèle"
+description = "Tant que la lumière brûle, vos dégâts sacrés sont plus forts."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_zeal_0")])
+
+[sub_resource type="Resource" id="L_holy_light_recollection_0"]
+script = ExtResource("4_ligne")
+stat = "mana_per_second"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_holy_light_recollection"]
+script = ExtResource("3_noeud")
+id = "holy_light_recollection"
+name = "Recueillement"
+description = "La lumière draine moins de mana."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_recollection_0")])
+
+[sub_resource type="Resource" id="L_holy_light_serenity_0"]
+script = ExtResource("4_ligne")
+stat = "damage_taken"
+value_per_point = -2.0
+
+[sub_resource type="Resource" id="N_holy_light_serenity"]
+script = ExtResource("3_noeud")
+id = "holy_light_serenity"
+name = "Sérénité"
+description = "Tant que la lumière brûle, vous subissez moins de dégâts."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_serenity_0")])
+
+[sub_resource type="Resource" id="L_holy_light_cuirass_0"]
+script = ExtResource("4_ligne")
+stat = "armor"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_holy_light_cuirass"]
+script = ExtResource("3_noeud")
+id = "holy_light_cuirass"
+name = "Cuirasse de foi"
+description = "Tant que la lumière brûle, votre armure augmente."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"holy_light_serenity": 1
+})
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_cuirass_0")])
+
+[sub_resource type="Resource" id="L_holy_light_elation_0"]
+script = ExtResource("4_ligne")
+stat = "cast_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_holy_light_elation"]
+script = ExtResource("3_noeud")
+id = "holy_light_elation"
+name = "Allégresse"
+description = "Tant que la lumière brûle, vous lancez vos sorts plus vite."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"holy_light_zeal": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_elation_0")])
+
+[sub_resource type="Resource" id="L_holy_light_aureole_0"]
+script = ExtResource("4_ligne")
+stat = "aureole"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_holy_light_aureole"]
+script = ExtResource("3_noeud")
+id = "holy_light_aureole"
+name = "Auréole"
+description = "Tant que la lumière brûle, les ennemis qui s'approchent de vous sont bénis : ils infligent moins de dégâts."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"holy_light_zeal": 2,
+"holy_light_serenity": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_aureole_0")])
 
 [sub_resource type="Resource" id="C_lumiere"]
 script = ExtResource("2_case")
 skill = ExtResource("13_lumiere")
 position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_light_zeal"), SubResource("N_holy_light_recollection"), SubResource("N_holy_light_serenity"), SubResource("N_holy_light_cuirass"), SubResource("N_holy_light_elation"), SubResource("N_holy_light_aureole")])
 
 [sub_resource type="Resource" id="L_onction_0"]
 script = ExtResource("4_ligne")

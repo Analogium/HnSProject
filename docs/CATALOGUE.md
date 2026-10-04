@@ -362,12 +362,32 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Percée | Frappe sacrée | — | 3 | +12 % de dégâts amplifiés |
-| Allonge du trait | Frappe sacrée | Percée (1) | 2 | +10 % de rayon accru |
-| Colonne | Pilier sacré | — | 3 | +10 % de rayon accru |
-| Jugement | Pilier sacré | Colonne (1) | 2 | +12 % de dégâts amplifiés |
-| Litanie | Pulsation sacrée | — | 2 | +20 % de durée accrue |
-| Ferveur | Pulsation sacrée | Litanie (1) | 3 | +12 % de dégâts amplifiés |
+| Percée | Frappe sacrée | — | 5 | +12 % de dégâts amplifiés |
+| Allonge du trait | Frappe sacrée | — | 3 | +15 % de rayon accru |
+| Sanctification | Frappe sacrée | — | 4 | +15 % chance d'état |
+| Réprobation | Frappe sacrée | Percée (1) | 3 | +20 % de dégâts accrus contre les bénis |
+| Bénédiction profonde | Frappe sacrée | Sanctification (1) | 4 | +15 % effet de la bénédiction |
+| Réfraction | Frappe sacrée | Allonge du trait (1) | 2 | +1 nombre de rebonds |
+| Croix de lumière | Frappe sacrée | Percée (2) ou Réfraction (1) | 1 | -30 % de rayon réduit |
+| Jugement | Pilier sacré | — | 5 | +12 % de dégâts amplifiés |
+| Colonne | Pilier sacré | — | 3 | +15 % de rayon accru |
+| Veille | Pilier sacré | — | 4 | +20 % de durée accrue |
+| Glas | Pilier sacré | Jugement (1) | 3 | -10 % d'intervalle des frappes réduit |
+| Appel céleste | Pilier sacré | Colonne (1) | 3 | +40 force d'aspiration |
+| Effondrement | Pilier sacré | Veille (1) | 3 | +15 rayon de l'explosion finale |
+| Pilier errant | Pilier sacré | Jugement (2) ou Veille (2) | 1 | -25 % de rayon réduit |
+| Ferveur | Pulsation sacrée | — | 5 | +12 % de dégâts amplifiés |
+| Litanie | Pulsation sacrée | — | 4 | +20 % de durée accrue |
+| Rayonnement | Pulsation sacrée | — | 3 | +15 % de rayon accru |
+| Cantique | Pulsation sacrée | Ferveur (1) | 3 | ajoute 2 à 5 dégâts sacrés |
+| Absolution | Pulsation sacrée | Litanie (1) | 3 | +1 PV par ennemi touché |
+| Exaltation | Pulsation sacrée | Cantique (1) ou Litanie (2) | 3 | +4 % dégâts en plus par onde |
+| Zèle | Lumière sacrée | — | 5 | +4 % de dégâts sacrés accrus |
+| Recueillement | Lumière sacrée | — | 3 | -15 % de mana drainé réduit |
+| Sérénité | Lumière sacrée | — | 4 | -2 % dégâts subis |
+| Cuirasse de foi | Lumière sacrée | Sérénité (1) | 4 | +30 armure |
+| Allégresse | Lumière sacrée | Zèle (1) | 3 | +4 % de vitesse d'incantation accrue |
+| Auréole | Lumière sacrée | Zèle (2) ou Sérénité (2) | 3 | +20 rayon de l'auréole |
 
 23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

@@ -443,7 +443,8 @@ func _recompute() -> void:
 	var chill := _state(Kind.CHILL)
 	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
 	damage_taken_factor = 1.0 + NUMB if active(Kind.NUMB) else 1.0
-	damage_dealt_factor = 1.0 - BLESSING if active(Kind.BLESSING) else 1.0
+	var blessing := _state(Kind.BLESSING)
+	damage_dealt_factor = maxf(1.0 - BLESSING * blessing.strength, 0.0) if blessing != null else 1.0
 	# Le flétri n'est affaibli que par la force que son arbre ajoute (Asphyxie, jalon 38).
 	var wilting := _state(Kind.WILTING)
 	if wilting != null:

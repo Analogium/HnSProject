@@ -44,6 +44,8 @@ enum Shape {
 	BREATH, NEST, MARK,
 	# Jalon 39 : le Brise-sol, le Ressac.
 	SLAM, BOOMERANG,
+	# Jalon 40 : la Croix de lumière, le Pilier errant.
+	HOLY_CROSS, DRIFT,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -98,7 +100,9 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BREATH: Keywords.AREA,
 	# Le faisceau n'y est **pas** : une ligne n'est ni un tir ni une surface, et lui
 	# prêter `area` promettrait un affixe qui ne le servirait pas.
+	# La croix non plus : quatre lignes.
 	Shape.PILLAR: Keywords.AREA,
+	Shape.DRIFT: Keywords.AREA,
 	Shape.PULSE: Keywords.AREA,
 	# Le portail déclare `area` lui-même : ce qu'il crache se bat pour le joueur, et
 	# explose.
@@ -128,6 +132,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
+	Shape.HOLY_CROSS, Shape.DRIFT,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre

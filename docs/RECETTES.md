@@ -291,7 +291,8 @@ un**, le physique compris, et ils sont dans `ROLLED` —, et ceux qu'un **lancer
      `Enemy.movement_speed()`, la cadence dans `Enemy._cool_down()` et
      `Player._physics_process()`. Jamais une seconde copie de la règle. Sa force est
      **une constante** (`CURSE`, `CHILL`…), multipliée par `State.strength` — 1 sauf
-     pour le transi d'un lancer qui le renforce (`chill_effect`, jalon 36). `put()` la
+     quand un lancer le renforce (`SkillStats.EFFECT_OF` : le transi, le saignement, la
+     bénédiction, les trois états nécrotiques ; seul l'engourdissement n'en a pas). `put()` la
      compare comme `per_second` : la plus forte l'emporte, la plus faible ne rafraîchit
      rien. Un état qui se renforce à son tour lit `strength` dans `_recompute()` et
      reçoit la sienne de `suffer()`.
@@ -754,7 +755,8 @@ l'orienteraient chacun à leur façon.
    `decay_effect`, `wilting_weakness`, `curse_effect`, `contagion`, `minion_life`,
    `bone_wall`, `colossus`, `tribute` et `shared_burden`, pour le chevalier
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
-   `sword_volley`, `extra_swords` et `waves` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
+   `sword_volley`, `extra_swords` et `waves`, pour le sacré `blessing_effect`,
+   `wave_gain` et `aureole` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
@@ -776,13 +778,13 @@ l'orienteraient chacun à leur façon.
 n'offre ne s'ouvrirait jamais), `test_links_lead_to_the_root` (sans boucle : deux
 nœuds reliés l'un à l'autre se tiendraient ouverts) ; dans `test_manual_panel.gd`,
 `test_nodes_and_links_do_not_overlap` et `test_slots_and_nodes_fit_in_the_panel`,
-`test_no_tree_fills_up_entirely` (un arbre offre plus que son pool — sauf les
-manuels de `SHALLOW_TREES`, pas encore repris),
+`test_no_tree_fills_up_entirely` (un arbre offre plus que son pool ; tous les manuels
+sont repris depuis le jalon 40),
 `test_each_transformation_stays_among_posed_shapes`,
 `test_each_node_line_targets_a_cast_number`,
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
 `test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
-nécromancie depuis le jalon 38 et le chevalier depuis le 39 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
+nécromancie depuis le jalon 38, le chevalier depuis le 39 et le sacré depuis le 40 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
 un nœud de dégâts, de rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.

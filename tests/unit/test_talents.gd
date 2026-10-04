@@ -808,17 +808,10 @@ func test_no_manual_fills_up_entirely() -> void:
 		)
 
 
-## Les manuels dont l'arbre n'a pas encore été repris (jalon 34, §3) : deux ou trois nœuds
-## que vingt points remplissent. **La liste ne fait que rétrécir**, un manuel par jalon.
-const SHALLOW_TREES := [
-	"manual_holy",
-]
-
-
-## La nécromancie (jalon 38) et le chevalier (jalon 39) : **aucune ligne ni aucun nom ne revient d'un arbre à
-## l'autre**. Aux jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
+## La nécromancie (jalon 38), le chevalier (jalon 39) et le sacré (jalon 40) : **aucune
+## ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
 ## Seuls les leviers de base y échappent, un par arbre au plus.
-const UNIQUE_TREES := ["manual_necrotic", "manual_weapons"]
+const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy"]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 
@@ -855,7 +848,7 @@ func test_unique_trees_share_no_line_and_no_name() -> void:
 ## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.
 func test_no_tree_fills_up_entirely() -> void:
 	for base in _books():
-		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
+		if base in Character.class_manual_bases():
 			continue
 		for c in base.manual.cells:
 			if c.talents.is_empty():
@@ -874,7 +867,7 @@ func test_no_tree_fills_up_entirely() -> void:
 ## et chaque `{champ}` de sa description existe dans `SkillStats.facts()`.
 func test_each_reworked_node_says_what_it_does() -> void:
 	for base in _books():
-		if base.id in SHALLOW_TREES or base in Character.class_manual_bases():
+		if base in Character.class_manual_bases():
 			continue
 		for c in base.manual.cells:
 			for n in c.talents:
@@ -953,6 +946,20 @@ func test_the_knight_transformations_carry_their_shapes() -> void:
 		"slicing_dash_war_leap": Skill.Shape.LEAP,
 	}
 	for c in ItemCatalog.by_id("manual_weapons").manual.cells:
+		for n in c.talents:
+			if expected.has(n.id):
+				assert_true(n.transforms, n.id)
+				assert_eq(n.shape, expected[n.id], n.id)
+				expected.erase(n.id)
+	assert_true(expected.is_empty(), "introuvables : %s" % [expected.keys()])
+
+
+func test_the_holy_transformations_carry_their_shapes() -> void:
+	var expected := {
+		"holy_strike_cross": Skill.Shape.HOLY_CROSS,
+		"sacred_pillar_drift": Skill.Shape.DRIFT,
+	}
+	for c in ItemCatalog.by_id("manual_holy").manual.cells:
 		for n in c.talents:
 			if expected.has(n.id):
 				assert_true(n.transforms, n.id)

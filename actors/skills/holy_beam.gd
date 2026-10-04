@@ -29,17 +29,25 @@ var _tint := Color.WHITE
 var _tip := Vector2.ZERO
 var _age := 0.0
 var _has_struck := false
+## Les identifiants de ceux qu'un trait du même lancer a déjà frappés — les bras de la
+## croix, les rebonds de la Réfraction —, partagés : personne n'est frappé deux fois.
+var _struck := {}
+## Les rebonds qu'il lui reste (`bounces`, la Réfraction).
+var _bounces := 0
 ## Rastérisé à la naissance et jamais plus : un trait parti ne change plus de
 ## forme. Mesuré au banc, 1,16 ms pour le pire cas — la diagonale.
 var _lance: EffectForge.Piece
 
 
 static func fire(
-	parent: Node, of: Vector2, direction: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, of: Vector2, direction: Vector2, cast: SkillStats, author: StatusEffects,
+	struck := {}, bounces := -1
 ) -> HolyBeam:
 	var beam := HolyBeam.new()
 	beam._cast = cast
 	beam._author = author
+	beam._struck = struck
+	beam._bounces = int(cast.bounces) if bounces < 0 else bounces
 	beam._tint = DamageType.COLORS[cast.nature]
 	beam._tip = direction.normalized() * cast.radius
 	parent.add_child(beam)
@@ -60,11 +68,28 @@ func _physics_process(delta: float) -> void:
 		_has_struck = true
 		var parts := _cast.roll(Game.rng)
 		for target in Targets.in_capsule(get_world_2d(), global_position, to_global(_tip), WIDTH):
-			Targets.strike(target, parts, global_position, _author, _cast)
+			if not _struck.has(target.get_instance_id()):
+				_struck[target.get_instance_id()] = true
+				Targets.strike(target, parts, global_position, _author, _cast)
+		_refract()
 	_age += delta
 	queue_redraw()
 	if _age >= LIFETIME:
 		queue_free()
+
+
+## La Réfraction (jalon 40) : du bout du trait, un nouveau trait vers l'ennemi non frappé
+## le plus proche, à portée d'un trait. Rien en vue : le rebond se perd.
+func _refract() -> void:
+	if _bounces <= 0:
+		return
+	var tip := to_global(_tip)
+	var next := Targets.nearest(get_world_2d(), tip, _cast.radius, _struck, true)
+	if next != null:
+		HolyBeam.fire(
+			get_parent(), tip, tip.direction_to(next.global_position), _cast, _author, _struck,
+			_bounces - 1
+		)
 
 
 ## Le trait, **posé d'une pièce**, et les étincelles qui le remontent. Choisi sur

@@ -269,3 +269,39 @@ Jamais pris : Souffle long, Fauche vorace.
 
 Jamais pris : Enchaînement.
 
+## Manuel sacré
+
+### Frappe sacrée
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 113/s | 39,9/s |
+| meilleur au paquet | Allonge du trait 1, Réfraction 2, Percée 5, Réprobation 3 | 363/s ×3,21 | 101/s ×2,52 |
+| meilleur au duel | Percée 5, Réprobation 3 | 191/s ×1,69 | 101/s ×2,52 |
+| Croix de lumière au paquet (transformation) | Percée 5, Croix de lumière 1, Allonge du trait 3, Réfraction 2 | 476/s ×4,20 | 63,9/s ×1,60 |
+| Croix de lumière au duel (transformation) | Percée 5, Croix de lumière 1, Réprobation 3 | 161/s ×1,42 | 101/s ×2,52 |
+
+Jamais pris : Sanctification, Bénédiction profonde.
+
+### Pilier sacré
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 126/s | 74,1/s |
+| meilleur au paquet | Colonne 3, Veille 4, Jugement 1, Glas 3, Effondrement 3 | 637/s ×5,08 | 221/s ×2,99 |
+| meilleur au duel | Veille 4, Jugement 5, Glas 3, Effondrement 3 | 370/s ×2,95 | 316/s ×4,27 |
+| Pilier errant au paquet (transformation) | Jugement 5, Pilier errant 1, Colonne 3, Veille 4, Glas 3, Effondrement 3 | 1038/s ×8,27 | 316/s ×4,27 |
+| Pilier errant au duel (transformation) | Jugement 5, Pilier errant 1, Veille 4, Glas 3, Effondrement 3 | 581/s ×4,63 | 316/s ×4,27 |
+
+Jamais pris : Appel céleste.
+
+### Pulsation sacrée
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 108/s | 24,0/s |
+| meilleur au paquet | Litanie 4, Ferveur 1, Cantique 3 | 238/s ×2,20 | 67,7/s ×2,83 |
+| meilleur au duel | Litanie 4, Exaltation 3, Ferveur 5, Cantique 3 | 358/s ×3,32 | 145/s ×6,06 |
+
+Jamais pris : Rayonnement, Absolution.
+

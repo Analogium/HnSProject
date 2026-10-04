@@ -111,12 +111,15 @@ static func strike(
 
 ## Une impulsion : **un tirage pour tout le cercle**, qu'il touche ou non (invariant 3),
 ## puis chaque cible frappée depuis le centre. Rend les cibles. Sept gestes qui durent ou
-## qui tombent écrivaient ces trois lignes. Un recul négatif tire vers le centre.
+## qui tombent écrivaient ces trois lignes. Un recul négatif tire vers le centre ;
+## `factor` multiplie le tirage (l'Exaltation de la pulsation).
 static func strike_circle(
 	world: World2D, center: Vector2, radius: float, cast: SkillStats, author: StatusEffects,
-	knockback := 0.0
+	knockback := 0.0, factor := 1.0
 ) -> Array[Hurtbox]:
 	var parts := cast.roll(Game.rng)
+	for n in parts.size():
+		parts[n] *= factor
 	var targets := in_circle(world, center, radius)
 	for target in targets:
 		strike(target, parts, center, author, cast, knockback)

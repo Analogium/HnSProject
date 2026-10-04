@@ -311,6 +311,13 @@ func test_a_cast_strengthens_the_state_it_inflicts() -> void:
 	wilted.put(StatusEffects.Kind.WILTING, 10.0, null, "", 1.15)
 	assert_almost_eq(wilted.damage_dealt_factor, 0.85, 0.0001, "Asphyxie, si")
 
+	var blessed := StatusEffects.new()
+	blessed.put(StatusEffects.Kind.BLESSING, 10.0, null, "", 1.5)
+	assert_almost_eq(
+		blessed.damage_dealt_factor, 1.0 - StatusEffects.BLESSING * 1.5, 0.0001,
+		"Bénédiction profonde : le béni inflige encore moins"
+	)
+
 
 ## La Malédiction putride porte sa durée sur le lancer, que Longue malédiction allonge ;
 ## le guide lit celle de la sorte. Les deux doivent dire la même chose sans nœud.

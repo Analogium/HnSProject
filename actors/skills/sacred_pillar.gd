@@ -20,12 +20,19 @@ const RISE := 40.0
 ## du carrelage qui fait **couler** la lumière ; sans lui, la colonne est un
 ## panneau. Entier, parce qu'un carrelage posé sur un demi-pixel se rééchantillonne.
 const FLOW := 24
+## Le Pilier errant (jalon 40) : sa vitesse vers l'ennemi le plus proche, en pixels par
+## seconde, et jusqu'où il le cherche. Premier réglage.
+const DRIFT_SPEED := 40.0
+const DRIFT_SIGHT := 160.0
 
 var _cast: SkillStats
 var _author: StatusEffects
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
+## Ce que suit le Pilier errant, choisi à chaque impulsion. Sans type : il peut mourir
+## entre deux, et `is_instance_valid()` passe avant tout usage (invariant 4).
+var _prey: Variant = null
 
 
 static func fall(
@@ -55,13 +62,26 @@ func _physics_process(delta: float) -> void:
 	while _strikes < due:
 		_strike()
 		_strikes += 1
+	if is_instance_valid(_prey):
+		global_position = global_position.move_toward(
+			(_prey as Node2D).global_position, DRIFT_SPEED * delta
+		)
 	queue_redraw()
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
+		# L'Effondrement : en s'éteignant, la colonne éclate.
+		if _cast.end_burst > 0.0:
+			Explosion.put(
+				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
+				_tint, _author, _cast
+			)
 		queue_free()
 
 
+## L'Appel céleste tire vers le cœur, par un recul négatif.
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
+	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author, -_cast.pull)
+	if _cast.shape == Skill.Shape.DRIFT:
+		_prey = Targets.nearest(get_world_2d(), global_position, DRIFT_SIGHT)
 
 
 ## La colonne **tombe du ciel** : elle se découvre du haut vers le bas au lieu de

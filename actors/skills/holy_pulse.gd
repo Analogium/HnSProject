@@ -65,8 +65,14 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
+## L'Exaltation : l'onde porte le gain de celles déjà parties. L'Absolution : chaque
+## ennemi touché rend ses PV.
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _player.states)
+	var struck := Targets.strike_circle(
+		get_world_2d(), global_position, _cast.radius, _cast, _player.states, 0.0,
+		_cast.wave_factor(_strikes)
+	)
+	_player.heal(_cast.life_on_hit * float(struck.size()))
 
 
 ## Une onde de grains qui part du porteur à chaque impulsion, et le halo tramé qui

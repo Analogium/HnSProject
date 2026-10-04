@@ -68,6 +68,9 @@ const LABELS := {
 	SWORD_VOLLEY: "portée de la volée d'épées",
 	WAVES: "nombre de vagues",
 	EXTRA_SWORDS: "nombre d'épées en plus par lancer",
+	BLESSING_EFFECT: "effet de la bénédiction",
+	WAVE_GAIN: "dégâts en plus par onde",
+	AUREOLE: "rayon de l'auréole",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -122,6 +125,9 @@ const AGREEMENT := {
 	SWORD_VOLLEY: "fs",
 	WAVES: "ms",
 	EXTRA_SWORDS: "ms",
+	BLESSING_EFFECT: "ms",
+	WAVE_GAIN: "mp",
+	AUREOLE: "ms",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -176,19 +182,26 @@ const BLADE_WARD := "blade_ward"
 const SWORD_VOLLEY := "sword_volley"
 const WAVES := "waves"
 const EXTRA_SWORDS := "extra_swords"
+## Ceux du sacré (jalon 40) : la force de la bénédiction tirée, ce que chaque onde de la
+## pulsation ajoute en « plus » (en points de pourcentage, comme `jump_gain`), et le rayon
+## où la Lumière bénit tant qu'elle brûle.
+const BLESSING_EFFECT := "blessing_effect"
+const WAVE_GAIN := "wave_gain"
+const AUREOLE := "aureole"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
 	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
 	SHARED_BURDEN, KNOCKBACK, LIFE_ON_HIT, MANA_ON_HIT, BLADE_WARD, SWORD_VOLLEY, WAVES,
-	EXTRA_SWORDS,
+	EXTRA_SWORDS, WAVE_GAIN, AUREOLE,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
 const EFFECT_OF := {
 	StatusEffects.Kind.CHILL: CHILL_EFFECT,
 	StatusEffects.Kind.BLEED: BLEED_EFFECT,
+	StatusEffects.Kind.BLESSING: BLESSING_EFFECT,
 	StatusEffects.Kind.DECAY: DECAY_EFFECT,
 	StatusEffects.Kind.WILTING: WILTING_WEAKNESS,
 	StatusEffects.Kind.CURSED: CURSE_EFFECT,
@@ -218,6 +231,8 @@ const BURDEN_FACTOR := 4.0
 const BURDEN_PERIOD := 1.0
 ## La Marque de mort : combien elle maudit plus fort qu'un sceau.
 const MARK_FACTOR := 2.0
+## L'Auréole : tous les combien elle bénit ce qui est dans son cercle.
+const AUREOLE_PERIOD := 0.5
 
 const DAMAGE := "damage"
 ## Le seul nombre du lancer qu'un modificateur **sans portée** atteint : sa base est sur
@@ -303,6 +318,9 @@ var blade_ward := 0.0
 var sword_volley := 0.0
 var waves := 0.0
 var extra_swords := 0.0
+var blessing_effect := 0.0
+var wave_gain := 0.0
+var aureole := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -579,8 +597,18 @@ func average_per_hit() -> float:
 func average_per_cast() -> float:
 	if sustained:
 		return 0.0
-	var count := projectile_count() * (1 + int(waves)) * target_count() * hits * strikes_over_duration()
-	return average_per_hit() * float(count)
+	var strikes := 0.0
+	for i in strikes_over_duration():
+		strikes += wave_factor(i)
+	var count := projectile_count() * (1 + int(waves)) * target_count() * hits
+	return average_per_hit() * float(count) * strikes
+
+
+## Ce que porte la frappe `index` d'un geste qui dure, sous l'Exaltation (jalon 40) :
+## chaque onde déjà partie ajoute son gain. Le seul calcul, que la pulsation et
+## l'estimation lisent.
+func wave_factor(index: int) -> float:
+	return 1.0 + wave_gain * 0.01 * float(index)
 
 
 ## Par l'intervalle entre deux lancers, sans compter la réserve ; pour une aura, un
