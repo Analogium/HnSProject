@@ -8,6 +8,10 @@ enum Kind { PHYSICAL, COLD, FIRE, LIGHTNING, NECROTIC, HOLY }
 ## Indexés par Kind.
 const NAMES := ["physique", "froid", "feu", "foudre", "nécrotique", "sacré"]
 
+## Le tour de la sorcière, feu, froid, foudre : ce que l'Accord parfait répartit et ce que
+## le Contre-chant fait avancer (jalon 41).
+const ELEMENTS: Array[int] = [Kind.FIRE, Kind.COLD, Kind.LIGHTNING]
+
 ## L'identifiant sans accent, qui forme `damage_cold` : **définitif** (invariant 1).
 const IDS := ["physical", "cold", "fire", "lightning", "necrotic", "holy"]
 

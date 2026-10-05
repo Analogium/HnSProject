@@ -423,8 +423,9 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `declared_points_max` | Le nombre de points d'une compétence **sans table de dégâts**, comme un passif. Zéro partout ailleurs |
    | `buffs` | Ce que le lancer pose **sur son lanceur** : un `SkillBuff` par buff — un identifiant, un nom, et des `TalentLine` par point placé, aux règles d'un passif (voir « Ajouter un passif », §2). La fiche ouvre **un bloc par buff, sous son nom** |
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
+   | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`. `BOLT`, `BALL` et `COMET` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`. `BOLT`, `BALL` et `COMET` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -497,7 +498,7 @@ touche et retire la « moyenne par lancer ». Les trois veulent un prix par seco
 
 **Une forme neuve** est un geste à part : une valeur de plus **à la fin** de
 `Skill.Shape` (les `.tres` écrivent l'entier), son cas dans
-`Player.cast_slot()`, son nœud dans `actors/skills/` — qui passe par
+`Player._pose()` — depuis l'`origin`, le cap et le point visé qu'il reçoit, jamais `self`, sans quoi le Familier ne la rejouerait pas de son épaule (et dans `Familiar.ECHOED` si elle se pose et s'oublie) —, son nœud dans `actors/skills/` — qui passe par
 `Targets` pour trouver ses cibles — `Targets.strike_circle()` pour une impulsion sur un
 cercle, un tirage pour tout le geste —, par `Hurtbox.take_damage()` pour frapper et
 par `Settings.veil(nœud, Settings.SPELLS)` à sa naissance pour suivre le curseur
@@ -507,7 +508,7 @@ son test dans `tests/integration/test_shapes.gd`.
 **Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par
 l'utilisateur, puis captures réelles — et se fait dans son `_draw()`, avec le module de sa matière quand elle
 en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd`,
-`fx/slash.gd` et `fx/necrotic.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+`fx/slash.gd`, `fx/necrotic.gd` et `fx/witchcraft.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
 éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
 **tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur
@@ -734,7 +735,7 @@ l'orienteraient chacun à leur façon.
    | `points_max` | Combien de points il accepte |
    | `lines` | Comme celles d'un passif, mais **sans portée** — et `first_point_bonus`, ce que le premier point donne en plus : 2 s de sol au premier point et 5 s au troisième se disent 1,5 par point et 0,5 au premier : un nœud ne vise que sa compétence, et ne peut donc viser qu'un nombre de `SkillStats` — dont `use_time` et `recharge` depuis le jalon 23. **`interval` ne se vise pas**, il se déduit des deux |
    | `converts` / `converts_to` | **Une conversion, tout ou rien** (jalon 34) : la compétence devient de cette nature — dégâts, mot-clé, état, couleur. `points_max = 1`, et une seule par arbre. Le drapeau dit s'il y a conversion : l'enum commence au physique |
-   | `transforms` / `shape` | **Une transformation** : la forme qui remplace celle de la compétence au lancer. Les deux formes dans `Skill.TRANSFORMABLE`, et le nœud **apporte les nombres de la sienne** — un rayon pour une nova, une durée pour un nuage — ou `Skill.SHAPE_NUMBERS`, quand la ligne qui les donnerait s'écrirait en perte (l'intervalle d'un orbe). Une forme neuve se branche dans `Player.cast_slot()`, `KEYWORD_OF_SHAPE` et `TRANSFORMABLE`, et ce qu'elle ignore de son arbre dans `IGNORED_BY_SHAPE` |
+   | `transforms` / `shape` | **Une transformation** : la forme qui remplace celle de la compétence au lancer. Les deux formes dans `Skill.TRANSFORMABLE`, et le nœud **apporte les nombres de la sienne** — un rayon pour une nova, une durée pour un nuage — ou `Skill.SHAPE_NUMBERS`, quand la ligne qui les donnerait s'écrirait en perte (l'intervalle d'un orbe). Une forme neuve se branche dans `Player._pose()`, `KEYWORD_OF_SHAPE` et `TRANSFORMABLE`, et ce qu'elle ignore de son arbre dans `IGNORED_BY_SHAPE` |
    | `frees` | **L'affranchissement** (jalon 36, l'Armure de givre) : le geste n'enferme plus son lanceur, et sa recharge est fixée à `SkillStats.FREED_RECHARGE`, quoi qu'il porte. Un buff ne se transforme pas, d'où ce drapeau à part ; il compte comme une mécanique pour la pastille |
 
 2. **Un échange se dit dans les deux sens** : « +2 projectiles » et
@@ -756,7 +757,7 @@ l'orienteraient chacun à leur façon.
    `bone_wall`, `colossus`, `tribute` et `shared_burden`, pour le chevalier
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
    `sword_volley`, `extra_swords` et `waves`, pour le sacré `blessing_effect`,
-   `wave_gain` et `aureole` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
+   `wave_gain` et `aureole`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `doll_life`, `grudge`, `transfer`, `lure`, `echo_power`, `echoes` et `countersong` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
@@ -768,6 +769,7 @@ l'orienteraient chacun à leur façon.
 4. **Sur un buff** (Ignition), une ligne qui ne vise pas un nombre du lancer — une
    portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,
    qui ne vaut que tant qu'il brûle. Rien à déclarer : `Skill.is_buff_line()` trie.
+   Sur un **buff à charges** (Trinité), elle compte **par charge**.
 
 5. **Rien à écrire ailleurs** : `Manual.can_invest()` porte déjà les
    conditions, `Player.talents_of()` les rassemble, et `Skill.resolve()`
@@ -784,7 +786,7 @@ sont repris depuis le jalon 40),
 `test_each_node_line_targets_a_cast_number`,
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
 `test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
-nécromancie depuis le jalon 38, le chevalier depuis le 39 et le sacré depuis le 40 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
+nécromancie depuis le jalon 38, le chevalier depuis le 39, le sacré depuis le 40 et la sorcière depuis le 41 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
 un nœud de dégâts, de rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.

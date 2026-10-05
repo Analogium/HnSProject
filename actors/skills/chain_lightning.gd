@@ -70,13 +70,13 @@ static func unload(
 	var tint: Color = DamageType.COLORS[cast.nature]
 	if web and not touches.is_empty():
 		for i in range(1, points.size()):
-			_trace(parent, PackedVector2Array([origin, points[i]]), tint)
+			trace(parent, PackedVector2Array([origin, points[i]]), tint)
 	else:
-		_trace(parent, points, tint)
+		trace(parent, points, tint)
 	return touches.size()
 
 
-static func _trace(parent: Node, points: PackedVector2Array, tint: Color) -> void:
+static func trace(parent: Node, points: PackedVector2Array, tint: Color) -> void:
 	var trace := ChainLightning.new()
 	trace._points = points
 	trace._tint = tint

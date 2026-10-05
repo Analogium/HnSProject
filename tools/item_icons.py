@@ -11,7 +11,7 @@ l'hôte Windows (`ip route`, la ligne `default via`), d'où la variable COMFY.
 Les images intermédiaires vont dans un dossier de travail hors du dépôt : cent
 trente tirages de 1024 px n'ont rien à y faire, seuls les retenus y entrent.
 """
-import argparse, json, io, os, re, shutil, sys, time, urllib.request, urllib.parse
+import argparse, json, io, os, re, shutil, sys, time, urllib.request, urllib.parse, uuid
 from PIL import Image, ImageDraw
 import numpy as np
 from scipy import ndimage
@@ -74,11 +74,12 @@ BG_TIGHT = 0.05
 SUBJECTS = json.load(open(os.path.join(HERE, "item_icons.json"), encoding="utf-8"))
 
 
-def workflow(prompt, seed, neg=None):
+def workflow(prompt, seed, neg=None, image=None, denoise=1.0):
     """`neg` : le negatif du tirage. Par defaut celui des objets, qui refuse entre
     autres « tiled pattern » et « grid » -- a passer explicitement pour tout ce
-    qui, justement, doit se repeter (les tuiles de decor)."""
-    return {
+    qui, justement, doit se repeter (les tuiles de decor). `image` : le nom d'un
+    calque deja envoye, que SDXL habille a `denoise` au lieu de partir du bruit."""
+    wf = {
       "ckpt": {"class_type": "CheckpointLoaderSimple",
                "inputs": {"ckpt_name": "sdXL_v10VAEFix.safetensors"}},
       "lora": {"class_type": "LoraLoader",
@@ -97,6 +98,11 @@ def workflow(prompt, seed, neg=None):
       "vae": {"class_type": "VAEDecode", "inputs": {"samples": ["ks", 0], "vae": ["ckpt", 2]}},
       "save": {"class_type": "SaveImage", "inputs": {"images": ["vae", 0], "filename_prefix": "hns_item"}},
     }
+    if image is not None:
+        wf["load"] = {"class_type": "LoadImage", "inputs": {"image": image}}
+        wf["lat"] = {"class_type": "VAEEncode", "inputs": {"pixels": ["load", 0], "vae": ["ckpt", 2]}}
+        wf["ks"]["inputs"]["denoise"] = denoise
+    return wf
 
 
 def post(path, payload):
@@ -105,8 +111,23 @@ def post(path, payload):
     return json.load(urllib.request.urlopen(req))
 
 
-def render(prompt, seed, neg=None):
-    pid = post("/prompt", {"prompt": workflow(prompt, seed, neg)})["prompt_id"]
+def upload(img):
+    """Envoie un calque a ComfyUI ; rend le nom sous lequel `LoadImage` le trouve."""
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    b = uuid.uuid4().hex
+    body = (("--%s\r\nContent-Disposition: form-data; name=\"image\"; filename=\"hns_calque_%s.png\"\r\n"
+             "Content-Type: image/png\r\n\r\n" % (b, b[:8])).encode() + buf.getvalue()
+            + ("\r\n--%s--\r\n" % b).encode())
+    req = urllib.request.Request(HOST + "/upload/image", body,
+                                 {"Content-Type": "multipart/form-data; boundary=" + b})
+    return json.load(urllib.request.urlopen(req))["name"]
+
+
+def render(prompt, seed, neg=None, layout=None, denoise=1.0):
+    """`layout` : un calque PIL a habiller (img2img) plutot qu'un tirage depuis le bruit."""
+    image = upload(layout) if layout is not None else None
+    pid = post("/prompt", {"prompt": workflow(prompt, seed, neg, image, denoise)})["prompt_id"]
     while True:
         h = json.load(urllib.request.urlopen(f"{HOST}/history/{pid}"))
         if pid in h:

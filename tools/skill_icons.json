@@ -98,5 +98,40 @@
   "bloodlust": [
     "a glowing red eye of rage with dripping blood",
     4242
+  ],
+  "trinity": [
+    "a fire flame, an ice snowflake and a lightning bolt arranged in a magic triangle",
+    4242,
+    {
+      "layout": true,
+      "denoise": 0.4,
+      "crisp": true
+    }
+  ],
+  "catalysis": [
+    "a fire orb and an ice orb colliding in a bright white burst",
+    4242,
+    {
+      "layout": true,
+      "denoise": 0.4,
+      "crisp": true
+    }
+  ],
+  "rag_doll": [
+    "a burlap voodoo rag doll with black button eyes, stitched mouth and a pin",
+    4242,
+    {
+      "layout": true,
+      "denoise": 0.4,
+      "crisp": true
+    }
+  ],
+  "familiar": [
+    "a black raven in flight with spread wings and a glowing violet eye, side view",
+    1337,
+    {
+      "crisp": true,
+      "violet": true
+    }
   ]
 }

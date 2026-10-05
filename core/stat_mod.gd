@@ -111,7 +111,8 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"damage_taken", "cooldown_recovery", "status_chance_increase",
 	"crawl_speed", "jump_gain", "chill_effect", "decay_effect", "wilting_weakness",
 	"curse_effect", "minion_life", "bone_wall", "bleed_effect", "blade_ward", "blessing_effect",
-	"wave_gain",
+	"wave_gain", "numb_effect", "perfect_chord", "reaction_power", "doll_life", "grudge",
+	"transfer", "echo_power",
 ]
 
 var stat: String

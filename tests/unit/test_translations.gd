@@ -278,6 +278,8 @@ func _expected() -> Dictionary:
 		out[Character.CLASSES[id]["name"]] = "classe « %s »" % id
 	for burn in StatusEffects.BURN_NAMES.values():
 		out[burn] = "ce qui brûle, au compteur de DPS"
+	for reaction in Catalysis.NAMES.values():
+		out[reaction] = "réaction de la Catalyse"
 	for label_of in StatusEffects.AGAINST:
 		out[label_of] = "dégâts contre un état"
 	for id in Glossary.TERMS:

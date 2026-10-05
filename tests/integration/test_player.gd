@@ -528,7 +528,8 @@ func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
 ## branche du cercle fermé, où l'écart se divise par le nombre de traits et non par
 ## les intervalles.
 func test_a_salvo_leaves_as_a_crown() -> void:
-	_p._roll(_crown(8, 360.0), _p.bolt_scene)
+	var salvo: Array[SkillStats] = [_crown(8, 360.0)]
+	_p._roll(salvo, _p.bolt_scene, _p, _p.facing)
 	assert_eq(_bolts_fired.get_child_count(), 8, "huit traits")
 
 	var angles := {}
@@ -645,7 +646,8 @@ func test_each_bolt_rolls_its_range() -> void:
 	# Large exprès : deux tirages voisins d'une fourchette étroite s'arrondiraient au
 	# même nombre, et le test dirait qu'un seul a été tiré.
 	cast.add_to(DamageType.Kind.COLD, 1.0, 1000.0)
-	_p._roll(cast, _p.bolt_scene)
+	var salvo: Array[SkillStats] = [cast]
+	_p._roll(salvo, _p.bolt_scene, _p, _p.facing)
 
 	var colds := {}
 	for bolt: Projectile in _bolts_fired.get_children():

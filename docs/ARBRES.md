@@ -305,3 +305,37 @@ Jamais pris : Appel céleste.
 
 Jamais pris : Rayonnement, Absolution.
 
+## Manuel de la sorcière
+
+### Projectile élémentaire
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 97,2/s | 111/s |
+| meilleur au paquet | Fulgurance 4, Ricochet 2, Prisme 2, Arcanes 5, Affinité croisée 3, Électrochoc 4 | 807/s ×8,30 | 602/s ×5,40 |
+| meilleur au duel | Fulgurance 1, Ricochet 1, Prisme 2, Arcanes 5, Affinité croisée 3, Électrochoc 4 | 507/s ×5,21 | 602/s ×5,40 |
+| Triade au paquet (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Électrochoc 4 | 363/s ×3,74 | 259/s ×2,32 |
+| Triade au duel (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Électrochoc 4 | 363/s ×3,74 | 259/s ×2,32 |
+
+Jamais pris : aucun.
+
+### Catalyse
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 372/s | 54,0/s |
+| meilleur au paquet | Concentré 5, Amorce 1, Grand cercle 3, Exothermie 4, Nappe brûlante 3 | 1816/s ×4,87 | 271/s ×5,01 |
+| meilleur au duel | Concentré 5, Amorce 1, Exothermie 4, Nappe brûlante 3 | 1159/s ×3,11 | 271/s ×5,01 |
+
+Jamais pris : Arc fourchu, Conductivité.
+
+### Poupée de chiffon
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 82,1/s | 18,5/s |
+| meilleur au paquet | Appeau 2, Jumelles 1, Bourre de poudre 5 | 121/s ×1,47 | 27,8/s ×1,50 |
+| meilleur au duel | Bourre de poudre 5 | 80,5/s ×0,98 | 27,8/s ×1,50 |
+
+Jamais pris : Rembourrage, Rancune, Transfert.
+

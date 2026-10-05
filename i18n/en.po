@@ -3275,8 +3275,8 @@ msgstr "One per area, halfway along the road, and one in town. Walking on it lig
 msgid "Posé par le feu. Brûle {part} par seconde du feu reçu, pendant {duree} s : {total} du coup en tout."
 msgstr "Applied by fire. Burns {part} of the fire taken per second, for {duree} s: {total} of the hit in all."
 
-msgid "Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s."
-msgstr "Applied by lightning. The numbed take {force} more damage, for {duree} s."
+msgid "Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s. Certains nœuds du manuel de la sorcière le rendent plus fort."
+msgstr "Applied by lightning. The numbed take {force} more damage, for {duree} s. Some nodes of the witch's manual make it stronger."
 
 msgid "Posé par le froid. Le transi perd {force} de vitesse — déplacement, attaque et incantation —, pendant {duree} s. Certains nœuds du Maître du froid le rendent plus fort."
 msgstr "Applied by cold. The chilled lose {force} speed — movement, attack and casting —, for {duree} s. Some nodes of the Master of Cold make it stronger."
@@ -4147,3 +4147,410 @@ msgstr "more damage per wave"
 
 msgid "rayon de l'auréole"
 msgstr "aureole radius"
+
+msgid "Arcanes"
+msgstr "Arcana"
+
+msgid "Fulgurance"
+msgstr "Swiftness"
+
+msgid "Le trait file plus vite."
+msgstr "The bolt flies faster."
+
+msgid "Électrochoc"
+msgstr "Electroshock"
+
+msgid "L'engourdi que pose le trait est plus fort : l'ennemi subit davantage de dégâts en plus."
+msgstr "The numb the bolt inflicts is stronger: the enemy takes even more extra damage."
+
+msgid "Affinité croisée"
+msgstr "Cross Affinity"
+
+msgid "Le trait frappe plus fort ce qui brûle, gèle ou grésille déjà : de quoi alterner les éléments sur une même cible."
+msgstr "The bolt hits harder what is already burning, freezing or crackling: a reason to alternate elements on one target."
+
+msgid "Ricochet"
+msgstr "Ricochet"
+
+msgid "Après avoir touché, le trait rebondit vers l'ennemi le plus proche, une fois par point."
+msgstr "After hitting, the bolt bounces to the nearest enemy, once per point."
+
+msgid "Prisme"
+msgstr "Prism"
+
+msgid "Un trait de plus par point, en éventail. Chaque trait de la salve prend l'élément suivant : feu, glace, foudre. En échange, chacun frappe moins fort."
+msgstr "One more bolt per point, in a fan. Each bolt of the volley takes the next element: fire, ice, lightning. In exchange, each hits less hard."
+
+msgid "Triade"
+msgstr "Triad"
+
+msgid "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. En échange, le geste est plus lent."
+msgstr "Three comets, one per element, form around you and meet at the aimed point. On the way, each pierces what it crosses and strikes it with its element; where they meet, they burst together: the hit carries all three elements, a third each, and can inflict all three states. In exchange, the cast is slower."
+
+msgid "Surpuissance"
+msgstr "Overpower"
+
+msgid "Tant que l'amplification dure, vos sorts frappent encore plus fort."
+msgstr "While the amplification lasts, your spells hit even harder."
+
+msgid "Volubilité"
+msgstr "Volubility"
+
+msgid "Tant que l'amplification dure, vous incantez plus vite."
+msgstr "While the amplification lasts, you cast faster."
+
+msgid "Rémanence"
+msgstr "Remanence"
+
+msgid "L'amplification dure plus longtemps."
+msgstr "The amplification lasts longer."
+
+msgid "Siphon"
+msgstr "Siphon"
+
+msgid "Tant que l'amplification dure, chaque ennemi tué par un sort vous rend du mana."
+msgstr "While the amplification lasts, each enemy killed by a spell restores mana."
+
+msgid "Résonance"
+msgstr "Resonance"
+
+msgid "Chaque sort qui frappe, lancé sous l'amplification, la prolonge de ces secondes, sans jamais dépasser sa durée entière."
+msgstr "Each damaging spell cast under the amplification extends it by these seconds, never beyond its full duration."
+
+msgid "Contrecoup"
+msgstr "Backlash"
+
+msgid "Quand l'amplification prend fin, elle éclate autour de vous : une explosion de foudre dans ce rayon."
+msgstr "When the amplification ends, it bursts around you: a lightning explosion within this radius."
+
+msgid "Trinité"
+msgstr "Trinity"
+
+msgid "Un sort qui frappe dans un autre élément que le sort précédent donne une charge d'Harmonie, qui renforce vos sorts. Répéter le même élément n'en donne pas."
+msgstr "A damaging spell of a different element than the previous one grants a Harmony charge, which empowers your spells. Repeating the same element grants none."
+
+msgid "Harmonie"
+msgstr "Harmony"
+
+msgid "Catalyse"
+msgstr "Catalysis"
+
+msgid "Un ennemi qui porte deux états élémentaires les perd et réagit : embrasé et transi explose, embrasé et engourdi foudroie ses voisins, transi et engourdi gèle les siens. Puis la zone est frappée."
+msgstr "An enemy carrying two elemental states loses them and reacts: ignited and chilled explodes, ignited and numbed shocks its neighbors, chilled and numbed freezes them. Then the area is struck."
+
+msgid "Poupée de chiffon"
+msgstr "Rag Doll"
+
+msgid "Un fétiche que les ennemis frappent à votre place ; il éclate."
+msgstr "A fetish enemies strike instead of you; it bursts."
+
+msgid "Familier"
+msgstr "Familiar"
+
+msgid "Un corbeau qui rejoue vos sorts, moins fort, un instant après."
+msgstr "A raven that recasts your spells, weaker, a moment later."
+
+msgid "effet de l'engourdi"
+msgstr "numb effect"
+
+msgid "secondes gagnées par sort"
+msgstr "seconds gained per spell"
+
+msgid "mana par ennemi tué"
+msgstr "mana per enemy killed"
+
+msgid "À chaque sort lancé"
+msgstr "On each spell cast"
+
+msgid "Réactions"
+msgstr "Reactions"
+
+msgid "si l'élément change"
+msgstr "if the element changes"
+
+msgid "Poupée"
+msgstr "Doll"
+
+msgid "éclate"
+msgstr "bursts"
+
+msgid "Échos"
+msgstr "Echoes"
+
+msgid "rejoue"
+msgstr "recasts"
+
+msgid "%s des dégâts"
+msgstr "%s of the damage"
+
+msgid "après"
+msgstr "after"
+
+msgid "par réaction"
+msgstr "per reaction"
+
+msgid "%s d'un coup"
+msgstr "%s of a hit"
+
+msgid "Vapeur"
+msgstr "Steam"
+
+msgid "Arc ardent"
+msgstr "Searing Arc"
+
+msgid "Givre conducteur"
+msgstr "Conductive Frost"
+
+msgid "souffle de %d px"
+msgstr "%d px blast"
+
+msgid "%d voisins à %d px"
+msgstr "%d neighbors within %d px"
+
+msgid "transit à %d px"
+msgstr "chills within %d px"
+
+# Jalon 41 : les arbres de Trinité, de la Catalyse, de la Poupée et du Familier.
+
+msgid "Accord parfait"
+msgstr "Perfect Chord"
+
+msgid "Ailes noires"
+msgstr "Black Wings"
+
+msgid "Amorce"
+msgstr "Primer"
+
+msgid "Appeau"
+msgstr "Decoy Call"
+
+msgid "Arc fourchu"
+msgstr "Forked Arc"
+
+msgid "Bourre de poudre"
+msgstr "Powder Stuffing"
+
+msgid "Concentré"
+msgstr "Concentrate"
+
+msgid "Conductivité"
+msgstr "Conductivity"
+
+msgid "Contre-chant"
+msgstr "Countersong"
+
+msgid "Dissonance"
+msgstr "Dissonance"
+
+msgid "Exothermie"
+msgstr "Exothermy"
+
+msgid "Frugalité"
+msgstr "Frugality"
+
+msgid "Gamme"
+msgstr "Scale"
+
+msgid "Grand cercle"
+msgstr "Wide Circle"
+
+msgid "Jumelles"
+msgstr "Twins"
+
+msgid "Mesure"
+msgstr "Measure"
+
+msgid "Nappe brûlante"
+msgstr "Scalding Mist"
+
+msgid "Point d'orgue"
+msgstr "Fermata"
+
+msgid "Rancune"
+msgstr "Grudge"
+
+msgid "Rembourrage"
+msgstr "Padding"
+
+msgid "Ressassement"
+msgstr "Rumination"
+
+msgid "Tempo"
+msgstr "Tempo"
+
+msgid "Transfert"
+msgstr "Transfer"
+
+msgid "Écho fidèle"
+msgstr "Faithful Echo"
+
+msgid "Œil du corbeau"
+msgstr "Raven's Eye"
+
+msgid "Chaque charge d'Harmonie rend vos sorts plus aptes à poser leur état."
+msgstr "Each Harmony charge makes your spells more likely to inflict their state."
+
+msgid "Chaque charge d'Harmonie vous protège du feu, du froid et de la foudre."
+msgstr "Each Harmony charge protects you from fire, cold and lightning."
+
+msgid "Les charges d'Harmonie tiennent plus longtemps."
+msgstr "Harmony charges last longer."
+
+msgid "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre."
+msgstr "One more Harmony charge at most, per point. In exchange, a spell that repeats the previous one's element loses them all."
+
+msgid "Chaque sort qui donne ou ravive l'Harmonie raccourcit les recharges en cours de vos compétences à recharge."
+msgstr "Each spell that grants or refreshes Harmony shortens the running cooldowns of your skills that have one."
+
+msgid "À pleines charges, votre sort suivant les consomme toutes : il part dans les trois éléments, un tiers chacun, et frappe plus fort."
+msgstr "At full charges, your next spell consumes them all: it is cast in all three elements, a third each, and hits harder."
+
+msgid "La Catalyse frappe plus fort, et ses réactions avec elle."
+msgstr "Catalysis hits harder, and its reactions with it."
+
+msgid "Les réactions frappent plus fort."
+msgstr "Reactions hit harder."
+
+msgid "Le cercle de la Catalyse s'élargit."
+msgstr "Catalysis's circle widens."
+
+msgid "La Vapeur laisse au sol une nappe de feu et de froid. Elle frappe les ennemis qui s'y tiennent — {part_sol} % d'un coup de la Catalyse toutes les {rythme_sol} s — pendant la durée indiquée."
+msgstr "Steam leaves a mist of fire and cold on the ground. It hits enemies standing in it — {part_sol}% of a Catalysis hit every {rythme_sol} s — for the listed duration."
+
+msgid "L'Arc ardent gagne un voisin de plus par point."
+msgstr "Burning Arc reaches one more neighbor per point."
+
+msgid "Le Givre conducteur transit des voisins plus lointains."
+msgstr "Conductive Frost chills neighbors farther away."
+
+msgid "La Catalyse prête son élément : un ennemi qui ne porte qu'un état d'un autre élément réagit avec lui. Seul l'état qu'il portait est consommé."
+msgstr "Catalysis lends its element: an enemy carrying a single state of another element reacts with it. Only the state it carried is consumed."
+
+msgid "L'éclat de la poupée frappe plus fort."
+msgstr "The doll's burst hits harder."
+
+msgid "La poupée a plus de PV."
+msgstr "The doll has more HP."
+
+msgid "Les ennemis la croient plus proche qu'elle n'est : ils la préfèrent à vous de plus loin."
+msgstr "Enemies believe it closer than it is: they prefer it to you from farther away."
+
+msgid "En éclatant, la poupée rend une part de ce qu'elle a encaissé, dans l'élément de son tour."
+msgstr "When it bursts, the doll returns part of what it absorbed, in the element of its turn."
+
+msgid "Tant qu'elle tient, la poupée prend pour elle une part des dégâts que vous subissez."
+msgstr "While it stands, the doll takes part of the damage you suffer."
+
+msgid "Deux poupées tiennent à la fois ; en poser une troisième fait éclater la plus ancienne."
+msgstr "Two dolls can stand at once; placing a third bursts the oldest."
+
+msgid "Le corbeau rejoue vos sorts plus fort."
+msgstr "The raven replays your spells harder."
+
+msgid "Le corbeau coûte moins de mana à entretenir."
+msgstr "The raven costs less mana to sustain."
+
+msgid "Tant que le corbeau vole, vous vous déplacez plus vite."
+msgstr "While the raven flies, you move faster."
+
+msgid "L'écho ne part plus vers le point visé mais vers l'ennemi le plus proche de lui, dans ce rayon."
+msgstr "The echo no longer heads for the aimed point but for the enemy closest to it, within this radius."
+
+msgid "Le corbeau rejoue chaque sort une fois de plus par point, un instant après l'écho précédent. En échange, chaque écho est plus faible."
+msgstr "The raven replays each spell one more time per point, a moment after the previous echo. In exchange, each echo is weaker."
+
+msgid "L'écho prend l'élément suivant du tour : un sort de feu revient en froid, de froid en foudre, de foudre en feu."
+msgstr "The echo takes the next element of the turn: a fire spell comes back as cold, cold as lightning, lightning as fire."
+
+msgid "secondes de tenue des charges"
+msgstr "seconds of charge duration"
+
+msgid "nombre de charges"
+msgstr "number of charges"
+
+msgid "secondes de recharge rendues"
+msgstr "seconds of cooldown returned"
+
+msgid "dégâts en plus de l'accord"
+msgstr "more damage of the chord"
+
+msgid "puissance des réactions"
+msgstr "reaction power"
+
+msgid "état prêté"
+msgstr "lent state"
+
+msgid "PV de la poupée"
+msgstr "doll HP"
+
+msgid "dégâts encaissés rendus"
+msgstr "absorbed damage returned"
+
+msgid "dégâts subis détournés"
+msgstr "damage taken diverted"
+
+msgid "portée de l'appeau"
+msgstr "decoy range"
+
+msgid "dégâts rejoués"
+msgstr "replayed damage"
+
+msgid "nombre d'échos"
+msgstr "number of echoes"
+
+msgid "élément d'avance de l'écho"
+msgstr "element shift of the echo"
+
+msgid "même élément"
+msgstr "same element"
+
+msgid "perd toutes les charges"
+msgstr "loses all charges"
+
+msgid "recharges"
+msgstr "cooldowns"
+
+msgid "-%.1f s par charge"
+msgstr "-%.1f s per charge"
+
+msgid "pleines charges"
+msgstr "full charges"
+
+msgid "trois éléments, %s"
+msgstr "three elements, %s"
+
+msgid "éclat, en plus"
+msgstr "burst, added"
+
+msgid "%s de ce qu'elle encaisse"
+msgstr "%s of what it absorbs"
+
+msgid "prend pour vous"
+msgstr "takes for you"
+
+msgid "%s de vos dégâts"
+msgstr "%s of your damage"
+
+msgid "paraît plus proche de"
+msgstr "seems closer by"
+
+msgid "échos"
+msgstr "echoes"
+
+msgid "vise l'ennemi à"
+msgstr "aims at an enemy within"
+
+msgid "élément"
+msgstr "element"
+
+msgid "le suivant du tour"
+msgstr "the next of the turn"
+
+msgid "souffle de %d px, nappe de %.1f s"
+msgstr "%d px blast, %.1f s mist"
+
+msgid "amorce"
+msgstr "primer"
+
+msgid "un état suffit"
+msgstr "one state is enough"

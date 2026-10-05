@@ -1145,3 +1145,96 @@ static func _shaded(
 			out.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
 		cache[key] = out
 	return cache[key]
+
+
+# ---------------------------------------------------------------- la sorcière (jalon 41)
+
+## Le corbeau du Familier, « corbeau en vol » choisi sur planche : deux battements, ailes
+## hautes puis basses. Dessiné tourné vers la droite ; vers la gauche, ses grilles
+## renversées rangée par rangée — un miroir ne rééchantillonne rien.
+const CROW := [[
+	"kk...........kk",
+	".KKk.......kKK.",
+	"..KKKk.kKkKKK..",
+	"....KKKKeKyy...",
+	".....kKKKk.....",
+	"......kgk......",
+	".......k.......",
+], [
+	"...............",
+	"........kKyy...",
+	".....kkKKeK....",
+	"..kKKKKKKKKKk..",
+	".kKKgkKKKkgKKk.",
+	"kKk...kgk...kKk",
+	".......k.......",
+]]
+const CROW_WIDTH := 15
+const CROW_HEIGHT := 7
+## Plumes, bec, œil — l'œil au violet de la sorcière.
+const CROW_INK := {"k": [0, 0], "K": [0, 1], "g": [0, 3], "y": [1, 3], "e": [2, 4]}
+const FEATHER := Color(0.20, 0.17, 0.26)
+const BEAK := Color(0.85, 0.66, 0.22)
+
+## La Poupée de chiffon, « boutons » choisie sur planche : la toile, les yeux-boutons,
+## la robe à la teinte de son tour.
+const DOLL := [
+	"...ccccc....",
+	"..cCCCCCc...",
+	"..cbCCbCc...",
+	"..cCCCCCc...",
+	"..cCSSSCc...",
+	"...cCCCc....",
+	"..sSSSSSs...",
+	".sSSSSSSSs..",
+	"sSS.SSS.SSs.",
+	"..sSSSSSs...",
+	"..cc...cc...",
+	"..cc...cc...",
+]
+const DOLL_WIDTH := 12
+const DOLL_HEIGHT := 12
+const DOLL_INK := {"c": [0, 1], "C": [0, 2], "b": [1, 1], "s": [2, 2], "S": [2, 4]}
+const CLOTH := Color(0.72, 0.60, 0.44)
+const BUTTON := Color(0.12, 0.08, 0.10)
+
+static var _crows: Array = []
+static var _dolls := {}
+
+
+## Les deux battements, vers la droite puis vers la gauche : `[droite, gauche]`.
+static func crow() -> Array:
+	if _crows.is_empty():
+		var palettes := [
+			ArtPalette.ramp(FEATHER), ArtPalette.ramp(BEAK),
+			ArtPalette.ramp(DamageType.COLORS[DamageType.Kind.LIGHTNING]),
+		]
+		for mirrored in [false, true]:
+			var frames: Array[Texture2D] = []
+			for grid: Array in CROW:
+				var rows := grid
+				if mirrored:
+					rows = grid.map(func(row: String) -> String: return _reversed(row))
+				var canvas := PixelCanvas.new(CROW_WIDTH, CROW_HEIGHT)
+				canvas.stamp(rows, Vector2i.ZERO, CROW_INK)
+				frames.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+			_crows.append(frames)
+	return _crows
+
+
+static func doll(tint: Color) -> Texture2D:
+	var key := tint.to_html(false)
+	if not _dolls.has(key):
+		var canvas := PixelCanvas.new(DOLL_WIDTH, DOLL_HEIGHT)
+		canvas.stamp(DOLL, Vector2i.ZERO, DOLL_INK)
+		_dolls[key] = ImageTexture.create_from_image(canvas.to_image([
+			ArtPalette.ramp(CLOTH), ArtPalette.ramp(BUTTON), ArtPalette.ramp(tint),
+		]))
+	return _dolls[key]
+
+
+static func _reversed(row: String) -> String:
+	var out := ""
+	for i in range(row.length() - 1, -1, -1):
+		out += row[i]
+	return out

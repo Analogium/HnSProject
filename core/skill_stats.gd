@@ -71,6 +71,22 @@ const LABELS := {
 	BLESSING_EFFECT: "effet de la bénédiction",
 	WAVE_GAIN: "dégâts en plus par onde",
 	AUREOLE: "rayon de l'auréole",
+	NUMB_EFFECT: "effet de l'engourdi",
+	RESONANCE: "secondes gagnées par sort",
+	SIPHON: "mana par ennemi tué",
+	STACK_HOLD: "secondes de tenue des charges",
+	DISSONANCE: "nombre de charges",
+	TEMPO: "secondes de recharge rendues",
+	PERFECT_CHORD: "dégâts en plus de l'accord",
+	REACTION_POWER: "puissance des réactions",
+	PRIMER: "état prêté",
+	DOLL_LIFE: "PV de la poupée",
+	GRUDGE: "dégâts encaissés rendus",
+	TRANSFER: "dégâts subis détournés",
+	LURE: "portée de l'appeau",
+	ECHO_POWER: "dégâts rejoués",
+	ECHOES: "nombre d'échos",
+	COUNTERSONG: "élément d'avance de l'écho",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -128,6 +144,22 @@ const AGREEMENT := {
 	BLESSING_EFFECT: "ms",
 	WAVE_GAIN: "mp",
 	AUREOLE: "ms",
+	NUMB_EFFECT: "ms",
+	RESONANCE: "fp",
+	SIPHON: "ms",
+	STACK_HOLD: "fp",
+	DISSONANCE: "ms",
+	TEMPO: "fp",
+	PERFECT_CHORD: "mp",
+	REACTION_POWER: "fs",
+	PRIMER: "ms",
+	DOLL_LIFE: "mp",
+	GRUDGE: "mp",
+	TRANSFER: "mp",
+	LURE: "fs",
+	ECHO_POWER: "mp",
+	ECHOES: "ms",
+	COUNTERSONG: "ms",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -188,18 +220,41 @@ const EXTRA_SWORDS := "extra_swords"
 const BLESSING_EFFECT := "blessing_effect"
 const WAVE_GAIN := "wave_gain"
 const AUREOLE := "aureole"
+## Ceux de la sorcière (jalon 41) : la force de l'engourdi tiré, ce que chaque sort lancé
+## rend de durée à l'Amplification, le mana que rend chaque ennemi tué d'un sort sous elle.
+const NUMB_EFFECT := "numb_effect"
+const RESONANCE := "resonance"
+const SIPHON := "siphon"
+## Ceux des arbres de Trinité, de la Catalyse, de la Poupée et du Familier (jalon 41). En
+## points de pourcentage : l'accord, les réactions, les PV de la poupée, ce qu'elle rend et
+## détourne, la part d'un écho.
+const STACK_HOLD := "stack_hold"
+const DISSONANCE := "dissonance"
+const TEMPO := "tempo"
+const PERFECT_CHORD := "perfect_chord"
+const REACTION_POWER := "reaction_power"
+const PRIMER := "primer"
+const DOLL_LIFE := "doll_life"
+const GRUDGE := "grudge"
+const TRANSFER := "transfer"
+const LURE := "lure"
+const ECHO_POWER := "echo_power"
+const ECHOES := "echoes"
+const COUNTERSONG := "countersong"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,
 	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
 	SHARED_BURDEN, KNOCKBACK, LIFE_ON_HIT, MANA_ON_HIT, BLADE_WARD, SWORD_VOLLEY, WAVES,
-	EXTRA_SWORDS, WAVE_GAIN, AUREOLE,
+	EXTRA_SWORDS, WAVE_GAIN, AUREOLE, RESONANCE, SIPHON, DISSONANCE, TEMPO, PERFECT_CHORD,
+	PRIMER, GRUDGE, TRANSFER, LURE, ECHOES, COUNTERSONG,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
 const EFFECT_OF := {
 	StatusEffects.Kind.CHILL: CHILL_EFFECT,
+	StatusEffects.Kind.NUMB: NUMB_EFFECT,
 	StatusEffects.Kind.BLEED: BLEED_EFFECT,
 	StatusEffects.Kind.BLESSING: BLESSING_EFFECT,
 	StatusEffects.Kind.DECAY: DECAY_EFFECT,
@@ -321,6 +376,22 @@ var extra_swords := 0.0
 var blessing_effect := 0.0
 var wave_gain := 0.0
 var aureole := 0.0
+var numb_effect := 0.0
+var resonance := 0.0
+var siphon := 0.0
+var stack_hold := 0.0
+var dissonance := 0.0
+var tempo := 0.0
+var perfect_chord := 0.0
+var reaction_power := 0.0
+var primer := 0.0
+var doll_life := 0.0
+var grudge := 0.0
+var transfer := 0.0
+var lure := 0.0
+var echo_power := 0.0
+var echoes := 0.0
+var countersong := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -572,8 +643,36 @@ func _derived(part: float) -> SkillStats:
 	g.crit_multiplier = crit_multiplier
 	g.status_chance_increase = status_chance_increase
 	g.chill_effect = chill_effect
+	g.numb_effect = numb_effect
 	g.crawl_speed = crawl_speed
 	return g
+
+
+## Le même lancer à une part de ses dégâts, **tout compris** : ce que rejoue le Familier
+## (jalon 41) est le sort entier, son sol, ses éclats et son état posé avec.
+func echoed(part: float) -> SkillStats:
+	var g := SkillStats.new()
+	for p in get_property_list():
+		# `interval` se déduit : il n'a rien à recopier.
+		if p["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE and p["name"] != "interval":
+			var value: Variant = get(p["name"])
+			g.set(p["name"], value.duplicate() if value is Array else value)
+	for i in damage_min.size():
+		g.damage_min[i] *= part
+		g.damage_max[i] *= part
+	return g
+
+
+## Les dégâts répartis à parts égales entre ces natures : la Triade, dont les trois comètes
+## portent chacune son élément (jalon 41). La fiche et le tirage des états lisent ces parts.
+func blend(natures: Array[int]) -> void:
+	var low := total_min() / float(natures.size())
+	var top := total_max() / float(natures.size())
+	damage_min.fill(0.0)
+	damage_max.fill(0.0)
+	for n in natures:
+		damage_min[n] += low
+		damage_max[n] += top
 
 
 ## Le multiplicateur d'effet de cet état quand ce lancer le pose : 1, plus ce que l'arbre

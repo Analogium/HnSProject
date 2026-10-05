@@ -139,6 +139,8 @@ var _lit := {}
 ## Le prochain tour des compétences qui changent de nature à chaque lancer, par
 ## identifiant. Jamais sauvegardé : on recommence par le premier élément.
 var _turns := {}
+## La nature du dernier sort qui a frappé, pour les charges d'Harmonie ; −1 avant le premier.
+var _last_spell_nature := -1
 ## L'identifiant du geste entretenu qui enferme son lanceur, ou vide. Tenu à jour à
 ## l'allumage plutôt que relu à chaque image : il est lu par le déplacement.
 var _bound := ""
@@ -301,44 +303,77 @@ func cast_slot(index: int) -> bool:
 
 	_set_mana(mana - cast.mana_cost)
 	_start_recharge(index, cast.interval)
+	var salvo := _salvo(skill, points, cast)
+	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
+	if spell:
+		_chord(salvo)
 	if not skill.nature_cycle.is_empty():
 		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
 	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
 	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		sprite.attack(skill.cadence == Skill.Cadence.CAST)
+	var aim := _aim_point()
+	_pose(skill, salvo, self, facing, aim, prey)
+	if spell:
+		_after_spell(skill, salvo, aim)
+	return true
+
+
+## Un lancer par projectile : ceux d'une compétence à nature tournante prennent chacun le
+## tour suivant (le Prisme, jalon 41) ; partout ailleurs, le même lancer.
+func _salvo(skill: Skill, points: int, cast: SkillStats) -> Array[SkillStats]:
+	var out: Array[SkillStats] = [cast]
+	if skill.nature_cycle.is_empty():
+		return out
+	var turn := int(_turns.get(skill.id, 0))
+	for i in range(1, cast.projectile_count()):
+		out.append(skill.resolve(points, stats, skill_mods, talents_of(skill.id), turn + i))
+	return out
+
+
+## **Ce qu'un lancer pose dans le monde**, depuis `origin` vers `toward` et le point visé :
+## le joueur, ou l'épaule du Familier qui rejoue un sort (jalon 41). Le premier lancer de
+## la salve sert à tout ce qui n'est pas une volée de projectiles.
+func _pose(
+	skill: Skill, salvo: Array[SkillStats], origin: Node2D, toward: Vector2, aim: Vector2,
+	prey: Hurtbox = null
+) -> void:
+	var cast := salvo[0]
+	var at := origin.global_position
+	var parent := _effects_parent()
 	# La forme du lancer : un nœud peut l'avoir transformée (jalon 34).
 	match cast.shape:
 		Skill.Shape.BOLT:
-			_roll(cast, bolt_scene)
+			_roll(salvo, bolt_scene, origin, toward)
 		Skill.Shape.BALL:
-			_roll(cast, orb_scene)
+			_roll(salvo, orb_scene, origin, toward)
 		Skill.Shape.COMET:
-			_roll(cast, comet_scene)
+			_roll(salvo, comet_scene, origin, toward)
 		Skill.Shape.ORB:
-			for direction in _spread(cast):
-				StaticOrb.send(_effects_parent(), global_position, direction, cast, states)
+			for direction in _spread(cast, toward):
+				StaticOrb.send(parent, at, direction, cast, states)
 		Skill.Shape.METEOR:
 			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
 			var count := cast.projectile_count()
 			for i in count:
-				var across := facing.orthogonal() * (float(i) - float(count - 1) * 0.5) * cast.radius
-				Meteor.fall(_effects_parent(), _aim_point() + across, cast, states, self, orb_scene)
+				var across := toward.orthogonal() * (float(i) - float(count - 1) * 0.5) * cast.radius
+				Meteor.fall(parent, aim + across, cast, states, origin, orb_scene)
 		Skill.Shape.CHAIN, Skill.Shape.WEB:
-			if ChainLightning.unload(_effects_parent(), self, cast, facing) > 0:
+			if ChainLightning.unload(parent, origin, cast, toward) > 0:
 				Game.hit_stop()
 				Game.shake_camera(camera, shake_amount)
 		Skill.Shape.CLOUD:
-			StormCloud.put(_effects_parent(), _aim_point(), cast, states)
+			StormCloud.put(parent, aim, cast, states)
 		Skill.Shape.TEMPEST:
-			StormCloud.put(_effects_parent(), global_position, cast, states, self)
+			StormCloud.put(parent, global_position, cast, states, self)
 		Skill.Shape.SNAKE:
 			# Une couvée part en éventail, centrée sur la visée.
 			var brood := 1 + int(cast.brood)
 			for i in brood:
 				var turn := (float(i) - float(brood - 1) * 0.5) * HellSnake.BROOD_SPREAD
-				HellSnake.drop(_effects_parent(), _aim_point(), cast, facing.rotated(turn), states)
+				HellSnake.drop(parent, aim, cast, toward.rotated(turn), states)
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
@@ -346,6 +381,8 @@ func cast_slot(index: int) -> bool:
 			_light(skill.id, Buff.light(self, skill, cast.duration, cast.binds_caster))
 		Skill.Shape.CYCLONE:
 			_light(skill.id, Cyclone.spin(self, skill))
+		Skill.Shape.FAMILIAR:
+			_light(skill.id, Familiar.summon(self, skill))
 		Skill.Shape.DASH, Skill.Shape.LEAP:
 			_dash(skill, cast)
 		Skill.Shape.WAVE, Skill.Shape.BOOMERANG:
@@ -354,35 +391,35 @@ func cast_slot(index: int) -> bool:
 			var count := 1 + int(cast.waves)
 			for i in count:
 				var turn := (float(i) - float(count - 1) * 0.5) * SlashWave.FAN
-				SlashWave.send(_effects_parent(), global_position, facing.rotated(turn), cast, states, self)
+				SlashWave.send(parent, global_position, facing.rotated(turn), cast, states, self)
 		Skill.Shape.SLAM:
 			_slam(cast)
 		Skill.Shape.SPIKES:
-			IceSpikes.raise_at(_effects_parent(), _aim_point(), cast, states, self, bolt_scene)
+			IceSpikes.raise_at(parent, aim, cast, states, origin, bolt_scene)
 		Skill.Shape.FISSURE:
-			IceSpikes.fissure(_effects_parent(), global_position, _aim_point(), cast, states, self, bolt_scene)
+			IceSpikes.fissure(parent, at, aim, cast, states, origin, bolt_scene)
 		Skill.Shape.NOVA:
 			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
 			# cercle et s'efface, ce qu'une nova fait exactement. Son sol a sa taille.
 			Explosion.put(
-				_effects_parent(), global_position, cast.roll(Game.rng), cast.radius, null,
+				parent, at, cast.roll(Game.rng), cast.radius, null,
 				DamageType.COLORS[cast.nature], states, cast
 			)
 			if cast.ground_duration > 0.0:
-				DashTrail.patch(_effects_parent(), global_position, cast.ground(cast.radius), states)
+				DashTrail.patch(parent, at, cast.ground(cast.radius), states)
 		Skill.Shape.RING:
-			FrostRing.spread(_effects_parent(), global_position, cast, states)
+			FrostRing.spread(parent, at, cast, states)
 		Skill.Shape.VORTEX, Skill.Shape.IMPLOSION:
-			IceVortex.open(_effects_parent(), global_position, cast, states)
+			IceVortex.open(parent, at, cast, states)
 		Skill.Shape.BEAM:
-			HolyBeam.fire(_effects_parent(), global_position, facing, cast, states)
+			HolyBeam.fire(parent, at, toward, cast, states)
 		Skill.Shape.HOLY_CROSS:
 			# Droit sur les axes, sans viser ; un ennemi au croisement n'est frappé qu'une fois.
 			var struck := {}
 			for direction in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
-				HolyBeam.fire(_effects_parent(), global_position, direction, cast, states, struck)
+				HolyBeam.fire(parent, at, direction, cast, states, struck)
 		Skill.Shape.PILLAR, Skill.Shape.DRIFT:
-			SacredPillar.fall(_effects_parent(), _aim_point(), cast, states)
+			SacredPillar.fall(parent, aim, cast, states)
 		Skill.Shape.PULSE:
 			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
 			HolyPulse.emanate(self, cast)
@@ -394,15 +431,21 @@ func cast_slot(index: int) -> bool:
 					break
 				crown.add_to(cast)
 		Skill.Shape.SUMMON:
-			Minion.raise(self, cast, _effects_parent())
+			Minion.raise(self, cast, parent)
 		Skill.Shape.GATE:
-			RottingGate.open(_effects_parent(), _aim_point(), cast, states)
+			RottingGate.open(parent, aim, cast, states)
 		Skill.Shape.NEST:
-			RottingGate.open(_effects_parent(), global_position, cast, states, self)
+			RottingGate.open(parent, global_position, cast, states, self)
 		Skill.Shape.CURSE, Skill.Shape.MARK:
-			PutridCurse.fall(_effects_parent(), _aim_point(), cast, states, self)
+			PutridCurse.fall(parent, aim, cast, states, self)
 		Skill.Shape.BREATH:
-			ToxicBreath.exhale(_effects_parent(), global_position, facing, cast, states)
+			ToxicBreath.exhale(parent, at, toward, cast, states)
+		Skill.Shape.CATALYSIS:
+			Catalysis.burst(parent, aim, cast, states)
+		Skill.Shape.TRIAD:
+			Triad.converge(parent, at, aim, cast, states)
+		Skill.Shape.DOLL:
+			RagDoll.place(self, aim, cast, parent)
 		Skill.Shape.STRIKE:
 			_swing(cast, SwingArc.Style.STRIKE)
 		Skill.Shape.CROSS:
@@ -411,7 +454,83 @@ func cast_slot(index: int) -> bool:
 			_lunge(cast, prey)
 		_:
 			_swing(cast)
-	return true
+
+
+## Ce qu'un sort qui frappe déclenche chez son lanceur (jalon 41) : une charge d'Harmonie
+## s'il change de nature — le Tempo avec elle —, leur perte s'il la répète sous la
+## Dissonance, ce que la Résonance rend à un buff lancé, l'écho du Familier.
+func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector2) -> void:
+	var nature := salvo[0].nature
+	var alternated := _last_spell_nature >= 0 and nature != _last_spell_nature
+	var repeated := nature == _last_spell_nature
+	_last_spell_nature = nature
+	var changed := false
+	for id: String in _lit:
+		if not lit(id):
+			continue
+		if _lit[id] is Familiar:
+			(_lit[id] as Familiar).echo(skill, salvo, aim)
+			continue
+		if not _lit[id] is Buff:
+			continue
+		var buff := _lit[id] as Buff
+		var own := resolve(SkillCatalog.by_id(id), skill_points(id))
+		if alternated and buff.stack(Skill.StackTrigger.ALTERNATION, own):
+			changed = true
+			_hasten(own.tempo)
+		elif repeated and own.dissonance > 0.0 and buff.stacks > 0:
+			buff.stacks = 0
+			changed = true
+		if own.resonance > 0.0:
+			buff.prolong(own.resonance)
+	if changed:
+		after_buff_change()
+
+
+## Le Tempo (jalon 41) : les recharges en cours des compétences **à recharge** perdent ces
+## secondes. Celles qui n'ont que leur temps de geste n'y gagnent rien : ce serait de la
+## vitesse d'incantation.
+func _hasten(seconds: float) -> void:
+	if seconds <= 0.0:
+		return
+	for i in _recharges.size():
+		var other := bar.skill_of(i)
+		if other != null and other.cooldown > 0.0:
+			_recharges[i] = maxf(_recharges[i] - seconds, 0.0)
+
+
+## L'Accord parfait (jalon 41) : un buff à pleines charges qui le porte les consomme
+## toutes, et le sort part dans les trois éléments, un tiers chacun, plus fort.
+func _chord(salvo: Array[SkillStats]) -> void:
+	for id: String in _lit:
+		if not lit(id) or not _lit[id] is Buff:
+			continue
+		var skill := SkillCatalog.by_id(id)
+		var own := resolve(skill, skill_points(id))
+		var buff := _lit[id] as Buff
+		if own.perfect_chord <= 0.0 or buff.stacks < Buff.cap_of(skill, own):
+			continue
+		buff.stacks = 0
+		var factor := 1.0 + own.perfect_chord * 0.01
+		for cast in salvo:
+			cast.blend(DamageType.ELEMENTS)
+			cast.more *= factor
+			for i in cast.damage_min.size():
+				cast.damage_min[i] *= factor
+				cast.damage_max[i] *= factor
+		after_buff_change()
+		return
+
+
+## Le Familier rejoue un sort : la même pose depuis son épaule, vers le point visé au
+## lancer. **Pas un lancer** — ni coût, ni tour, ni charge, ni écho de l'écho.
+func echo(skill: Skill, salvo: Array[SkillStats], origin: Node2D, aim: Vector2) -> void:
+	if is_dead:
+		return
+	var toward := origin.global_position.direction_to(aim)
+	if toward == Vector2.ZERO:
+		toward = facing
+	_pose(skill, salvo, origin, toward, aim)
 
 
 ## Ce geste entretenu brûle-t-il en ce moment.
@@ -566,6 +685,14 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		DashTrail.patch(_effects_parent(), at, cast.ground(), states)
 	if cast.keywords.has(Keywords.ATTACK):
 		_stack_on_kill()
+	elif cast.keywords.has(Keywords.SPELL):
+		_siphon()
+
+
+## Le Siphon (jalon 41) : un ennemi tué d'un sort rend du mana, sous le buff qui le porte.
+func _siphon() -> void:
+	for skill in lit_skills():
+		gain_mana(resolve(skill, skill_points(skill.id)).siphon)
 
 
 ## Chaque buff à charges allumé en gagne une. Rien n'y naît : la fiche seule est refaite.
@@ -573,7 +700,7 @@ func _stack_on_kill() -> void:
 	var gained := false
 	for id: String in _lit:
 		if lit(id) and _lit[id] is Buff:
-			gained = (_lit[id] as Buff).stack() or gained
+			gained = (_lit[id] as Buff).stack(Skill.StackTrigger.KILL) or gained
 	if gained:
 		after_buff_change()
 
@@ -818,16 +945,17 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 
 ## Les traits répartis sur l'écart du geste résolu : tout vient de
 ## `SkillStats`, rien n'est relu sur la compétence.
-func _roll(cast: SkillStats, scene: PackedScene) -> void:
+## `salvo` : un lancer par trait, ou un seul pour tous (`_salvo()`).
+func _roll(salvo: Array[SkillStats], scene: PackedScene, origin: Node2D, toward: Vector2) -> void:
 	if scene == null:
 		return
-	# Une fois pour la salve : la nature que le tir montre ne dépend pas du trait.
-	var nature := cast.nature
-	for direction in _spread(cast):
+	var directions := _spread(salvo[0], toward)
+	for i in directions.size():
+		var cast := salvo[i % salvo.size()]
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
 		var bolt := Projectile.spawn(
-			_effects_parent(), scene, global_position, direction, cast.roll(Game.rng), self,
-			cast.projectile_speed, nature, cast
+			_effects_parent(), scene, origin.global_position, directions[i], cast.roll(Game.rng),
+			origin, cast.projectile_speed, cast.nature, cast
 		)
 		if bolt is Fireball:
 			(bolt as Fireball).explosion_radius = cast.radius
@@ -835,7 +963,7 @@ func _roll(cast: SkillStats, scene: PackedScene) -> void:
 
 ## Un cap par projectile, sur l'écart du geste. Un seul part droit devant, quelle que
 ## soit la dispersion.
-func _spread(cast: SkillStats) -> Array[Vector2]:
+func _spread(cast: SkillStats, toward: Vector2) -> Array[Vector2]:
 	var count := cast.projectile_count()
 	var spread := deg_to_rad(cast.spread_in_degrees)
 	# Un cercle complet divise l'écart par le nombre de traits et non par les intervalles
@@ -848,7 +976,7 @@ func _spread(cast: SkillStats) -> Array[Vector2]:
 		start = -spread * 0.5 + (step * 0.5 if closes else 0.0)
 	var out: Array[Vector2] = []
 	for i in count:
-		out.append(facing.rotated(start + step * float(i)))
+		out.append(toward.rotated(start + step * float(i)))
 	return out
 
 
@@ -933,11 +1061,13 @@ func buff_mods() -> Array[StatMod]:
 		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else 1
 		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
 		# Les lignes de ses nœuds qui ne visent pas un nombre du lancer (jalon 34) : des
-		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle.
+		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle — et
+		# **par charge** sur un buff à charges (jalon 41).
 		for t in talents_of(skill.id):
 			for m in t.mods():
 				if Skill.is_buff_line(m):
-					out.append(m)
+					for i in times:
+						out.append(m)
 	return out
 
 
@@ -1356,7 +1486,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
-	_set_health(health - info.amount)
+	_set_health(health - info.amount + RagDoll.shoulder(self, info.amount))
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:

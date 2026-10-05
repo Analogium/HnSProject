@@ -56,6 +56,11 @@ const ALL := [
 	# Les manuels de classe (jalon 28).
 	preload("res://resources/skills/elemental_projectile.tres"),
 	preload("res://resources/skills/spell_amplification.tres"),
+	# La sorcière remplie (jalon 41).
+	preload("res://resources/skills/trinity.tres"),
+	preload("res://resources/skills/catalysis.tres"),
+	preload("res://resources/skills/rag_doll.tres"),
+	preload("res://resources/skills/familiar.tres"),
 	preload("res://resources/skills/quick_strike.tres"),
 	preload("res://resources/skills/bloodlust.tres"),
 ]

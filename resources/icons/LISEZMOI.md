@@ -63,6 +63,26 @@ ce qui restera à 24.
 
 L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
 
+#### La recette du jalon 41 : plus nette, et composée
+
+Les quatre icônes neuves de la sorcière (Trinité, Catalyse, Poupée de chiffon,
+Familier) ont été jugées floues et illogiques par l'utilisateur. Deux causes, deux
+remèdes, réglés par un troisième champ facultatif de `tools/skill_icons.json` :
+
+- **`crisp`** — la réduction par **couleur dominante** (`crisp()`) : l'image est
+  ramenée à 14 couleurs, puis chaque pixel prend la plus fréquente du cœur de son
+  bloc. La moyenne de zone mélangeait deux couleurs voisines en une troisième ;
+- **`layout` et `denoise`** — SDXL de base **ignore la composition** : « une flamme,
+  un flocon et un éclair en triangle » sortait sans flocon ni éclair, la poupée de
+  chiffon en fillette. Le sujet est donc posé à la main en grandes formes plates
+  éclairées en haut à gauche (`tools/icon_layouts.py`), et SDXL l'habille en
+  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs ;
+- **`violet`** — le fond qui touche les bords ramené au violet sombre de la
+  sorcière : le corbeau sortait sur du blanc ou du gris.
+
+Choisis sur planche (`Bureau\hns-captures-sorciere-jalon41\22-icones-nettes.png`).
+Un corbeau sombre perd en contraste sur ce fond : à surveiller dans la barre.
+
 ### Le tuyau
 
 `tools/skill_icons.py` depuis le jalon 20, qui va de ComfyUI jusqu'au `.tres` :

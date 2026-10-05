@@ -790,11 +790,11 @@ func test_each_conversion_is_one_point_and_alone_in_its_tree() -> void:
 
 ## **Un manuel ne se remplit plus** (jalon 10) : c'est ce qui fait du livre un
 ## choix et non une collection à compléter, et c'est la décision qu'un contenu
-## ajouté sans y penser déferait. Les manuels de classe en sont exemptés tant qu'ils
-## n'ont qu'une compétence et un buff : le surplus est accepté (jalon 28, §1).
+## ajouté sans y penser déferait. Un manuel de classe en est exempté tant qu'il n'a
+## qu'une compétence et un buff — le Vive lame : le surplus est accepté (jalon 28, §1).
 func test_no_manual_fills_up_entirely() -> void:
 	for base in _books():
-		if base in Character.class_manual_bases():
+		if base in Character.class_manual_bases() and base.manual.cells.size() <= 2:
 			continue
 		var destinations := 0
 		for c in base.manual.cells:
@@ -808,10 +808,11 @@ func test_no_manual_fills_up_entirely() -> void:
 		)
 
 
-## La nécromancie (jalon 38), le chevalier (jalon 39) et le sacré (jalon 40) : **aucune
-## ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
+## La nécromancie (jalon 38), le chevalier (jalon 39), le sacré (jalon 40) et la sorcière
+## (jalon 41) : **aucune ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons
+## 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
 ## Seuls les leviers de base y échappent, un par arbre au plus.
-const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy"]
+const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy", "manual_witch"]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 
@@ -848,8 +849,6 @@ func test_unique_trees_share_no_line_and_no_name() -> void:
 ## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.
 func test_no_tree_fills_up_entirely() -> void:
 	for base in _books():
-		if base in Character.class_manual_bases():
-			continue
 		for c in base.manual.cells:
 			if c.talents.is_empty():
 				continue
@@ -867,8 +866,6 @@ func test_no_tree_fills_up_entirely() -> void:
 ## et chaque `{champ}` de sa description existe dans `SkillStats.facts()`.
 func test_each_reworked_node_says_what_it_does() -> void:
 	for base in _books():
-		if base in Character.class_manual_bases():
-			continue
 		for c in base.manual.cells:
 			for n in c.talents:
 				assert_false(n.description.is_empty(), "« %s » ne dit pas ce qu'il fait" % n.id)
@@ -966,3 +963,14 @@ func test_the_holy_transformations_carry_their_shapes() -> void:
 				assert_eq(n.shape, expected[n.id], n.id)
 				expected.erase(n.id)
 	assert_true(expected.is_empty(), "introuvables : %s" % [expected.keys()])
+
+
+func test_the_witch_transformation_carries_its_shape() -> void:
+	var found := false
+	for c in Character.CLASSES[Character.WITCH]["manual"].manual.cells:
+		for n in c.talents:
+			if n.id == "elemental_projectile_triad":
+				assert_true(n.transforms)
+				assert_eq(n.shape, Skill.Shape.TRIAD)
+				found = true
+	assert_true(found, "la Triade")

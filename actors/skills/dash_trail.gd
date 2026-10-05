@@ -42,6 +42,8 @@ const MOTE_RISE := 8.0
 const MOTE_SPEED := 10.0
 const SPAWN := 0.12
 const FADE := 0.35
+## Les paliers du fondu : un sol ne se redessine que quand son image change (`_look()`).
+const FADE_STEPS := 8.0
 ## La coupe de la Ruée tranchante : sa demi-largeur, en part du rayon qui mord, et
 ## les étincelles arrachées de part et d'autre, avec leur vitesse en pixels par
 ## seconde. Ce sont elles qui bougent, la coupe ne bouge pas.
@@ -68,12 +70,24 @@ var _bed_at: Array[Vector2] = []
 var _tongues: Array[Tongue] = []
 ## Un sol (`patch()`) et non le couloir d'une ruée : lui seul ne cumule pas.
 var _ground := false
+## L'image dessinée en dernier, telle que `_look()` la résume.
+var _drawn := -1
+## Sa case dans `_laid`, pour un sol : où il se tient, de quelle compétence et de quelle nature.
+var _key := ""
+
+## Les sols vivants par case : **un sol ne se pose pas sur un sol** de la même compétence et
+## de la même nature, il le ravive. Ils ne cumulent pas leurs coups ; sans cela, 144 serpents
+## en tenaient 1 800, 52 ms par image (jalon 41).
+static var _laid := {}
+## Le côté d'une case, en part du rayon : un sol ravivé est au plus à 0,7 rayon de celui qu'on posait.
+const LAID_CELL := 0.5
 
 
 class Tongue:
 	var foot: Vector2
 	var big: bool
-	## Le décalage d'animation : deux langues voisines ne battent pas ensemble.
+	## Le décalage d'animation, en images entières : deux langues voisines ne battent pas
+	## ensemble, mais changent au même instant — le sol n'a qu'un rythme à redessiner.
 	var phase: float
 
 	func _init(p_foot: Vector2, p_big: bool, p_phase: float) -> void:
@@ -104,7 +118,15 @@ static func leave(
 static func patch(
 	parent: Node, at: Vector2, ground: SkillStats, author: StatusEffects
 ) -> DashTrail:
+	var cell := Vector2i((at / maxf(ground.radius * LAID_CELL, 1.0)).floor())
+	var key := "%s@%d@%d@%d" % [ground.skill_id, ground.nature, cell.x, cell.y]
+	var laid: DashTrail = _laid.get(key)
+	if is_instance_valid(laid) and not laid.is_queued_for_deletion():
+		laid._renew()
+		return laid
 	var trail := DashTrail.new()
+	trail._key = key
+	_laid[key] = trail
 	trail._cast = ground
 	trail._author = author
 	trail._ground = true
@@ -132,6 +154,18 @@ func _ready() -> void:
 		_lay_out_the_bed()
 
 
+## Ravivé par un sol posé sur lui : il repart pour sa durée, déjà paru, et frappe aussitôt —
+## sans doubler un coup, un sol ne frappant qu'une fois par période (`_first_ground_on()`).
+func _renew() -> void:
+	_age = SPAWN
+	_strikes = 0
+
+
+func _exit_tree() -> void:
+	if _laid.get(_key) == self:
+		_laid.erase(_key)
+
+
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
@@ -140,7 +174,10 @@ func _physics_process(delta: float) -> void:
 	while _strikes < due:
 		_strike()
 		_strikes += 1
-	queue_redraw()
+	var look := _look()
+	if look != _drawn:
+		_drawn = look
+		queue_redraw()
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		queue_free()
 
@@ -171,6 +208,26 @@ func _first_ground_on(target: Hurtbox) -> bool:
 	return true
 
 
+## Ce qui change l'image : le pas de son animation et le palier de son fondu. Redessinées à
+## chaque pas, les 580 plaques d'un Serpent rejoué par le Familier coûtaient 82 ms par image
+## (jalon 41). Les étincelles d'une coupe bougent à chaque image.
+func _look() -> int:
+	if _cast.nature == DamageType.Kind.PHYSICAL:
+		return Engine.get_physics_frames()
+	var hz := 0.0
+	match _cast.nature:
+		DamageType.Kind.FIRE:
+			hz = EffectForge.FLAME_HZ
+		DamageType.Kind.COLD, DamageType.Kind.NECROTIC:
+			hz = MOTE_SPEED
+	return int(_age * hz) * 16 + roundi(_fade() * FADE_STEPS)
+
+
+func _fade() -> float:
+	var f := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / FADE, 0.0, 1.0)
+	return roundf(f * FADE_STEPS) / FADE_STEPS
+
+
 ## Les centres des sondes, en repère global : les deux bouts au moins.
 func _probes() -> Array[Vector2]:
 	var out: Array[Vector2] = []
@@ -182,7 +239,7 @@ func _probes() -> Array[Vector2]:
 
 
 func _draw() -> void:
-	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / FADE, 0.0, 1.0)
+	var fade := _fade()
 	var last := _toward
 	var wide := _cast.radius * 0.5
 	# Le ruban large dit la portée et rien d'autre : à 0,10 d'un orange, il sortait
@@ -239,7 +296,7 @@ func _stained_path(fade: float, stains: Array, mote: Texture2D) -> void:
 	for i in _bed_at.size():
 		EffectForge.put_centered(self, stains[i % stains.size()], _bed_at[i], fade)
 	for t in _tongues:
-		var rise := fmod(t.phase + _age * MOTE_SPEED, MOTE_RISE)
+		var rise := floorf(fmod(t.phase + _age * MOTE_SPEED, MOTE_RISE))
 		EffectForge.put_centered(self, mote, t.foot - Vector2(0.0, rise), fade)
 
 
@@ -273,14 +330,14 @@ func _lay_out_the_bed() -> void:
 			var p := Vector2(rng.randf_range(-r, span + r), rng.randf_range(-r, r))
 			# En part du rayon et non à une marge fixe : à rayon nul, la boucle ne finirait pas.
 			if _off_axis(p.x, p.y, span) <= r * 0.75:
-				_tongues.append(Tongue.new(along * p.x + across * p.y, false, rng.randf() * MOTE_RISE))
+				_tongues.append(Tongue.new(along * p.x + across * p.y, false, float(rng.randi_range(0, int(MOTE_RISE) - 1))))
 		return
 
 	var count := maxi(int(span / FLAME_STEP), 1)
 	for i in count:
 		var sway := CORE_SWAY * (1.0 if i % 2 == 0 else -1.0)
 		_tongues.append(Tongue.new(
-			along * span * (float(i) + 0.5) / float(count) + across * sway, true, float(i) * 1.7
+			along * span * (float(i) + 0.5) / float(count) + across * sway, true, float(i * 2)
 		))
 	b = -r
 	while b < r:
@@ -289,7 +346,7 @@ func _lay_out_the_bed() -> void:
 			var p := Vector2(a + rng.randf() * FRINGE_CELL, b + rng.randf() * FRINGE_CELL)
 			if absf(p.y) > CORE_WIDTH and _off_axis(p.x, p.y, span) <= r - FRINGE_MARGIN \
 					and rng.randf() < FRINGE_CHANCE:
-				_tongues.append(Tongue.new(along * p.x + across * p.y, false, rng.randf() * 3.0))
+				_tongues.append(Tongue.new(along * p.x + across * p.y, false, float(rng.randi_range(0, 2))))
 			a += FRINGE_CELL
 		b += FRINGE_CELL
 	# Le plus bas passe devant : une langue du bord proche ne se cache pas derrière le cœur.

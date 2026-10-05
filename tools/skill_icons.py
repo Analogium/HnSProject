@@ -13,8 +13,11 @@ pleine**, donc pas de detourage mais un recadrage au centre ; et son fond suit l
 nature du sort.
 """
 import argparse, json, io, os, re, shutil, sys, time
+import numpy as np
+from scipy import ndimage
 from PIL import Image, ImageDraw
-from item_icons import HOST, PROJ, SEEDS, WORK, render, quant
+from item_icons import HOST, PROJ, SEEDS, WORK, BG_TOL, render, quant
+from icon_layouts import BG as VIOLET, layout
 
 SIDE = 24  # le cadre de SkillIcon
 
@@ -41,7 +44,9 @@ BACKGROUNDS = {"flame_dash": "dark crimson", "ignition": "dark crimson",
                "toxic_unleash": "dark murky green", "rotting_gate": "dark murky green",
                "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green",
                # La sorcière : le violet de la foudre, même pour le trait qui change d'élément.
-               "elemental_projectile": "dark violet", "spell_amplification": "dark violet"}
+               "elemental_projectile": "dark violet", "spell_amplification": "dark violet",
+               "trinity": "dark violet", "catalysis": "dark violet", "rag_doll": "dark violet",
+               "familiar": "dark violet"}
 
 # Le sujet occupe rarement plus que ce centre ; reduite entiere, la tuile noie sa
 # silhouette dans le fond.
@@ -61,6 +66,41 @@ def shrink(img):
     left = (img.width - side) // 2
     top = (img.height - side) // 2
     return img.crop((left, top, left + side, top + side)).resize((SIDE, SIDE), Image.BOX)
+
+
+def crisp(img, colors=14):
+    """Recadre au centre puis reduit a SIDE par la couleur **dominante** de chaque bloc
+    (jalon 41) : la moyenne de zone melangeait deux couleurs voisines en une troisieme,
+    et l'icone sortait floue. Le bord de chaque bloc, ou deux pixels du dessin se
+    touchent, n'est pas compte.
+    """
+    side = int(min(img.size) * CROP)
+    left = (img.width - side) // 2
+    top = (img.height - side) // 2
+    q = img.crop((left, top, left + side, top + side)).quantize(colors=colors, method=Image.MEDIANCUT)
+    a, pal = np.asarray(q), q.getpalette()
+    step, margin = side / SIDE, side / SIDE * 0.2
+    out = Image.new("RGBA", (SIDE, SIDE))
+    for y in range(SIDE):
+        for x in range(SIDE):
+            block = a[int(y * step + margin):int((y + 1) * step - margin),
+                      int(x * step + margin):int((x + 1) * step - margin)]
+            v = int(np.bincount(block.ravel()).argmax())
+            out.putpixel((x, y), tuple(pal[v * 3:v * 3 + 3]) + (255,))
+    return out
+
+
+def to_violet(img):
+    """Le fond qui touche les bords ramene au violet de la sorciere : SDXL sortait le
+    corbeau sur du blanc ou du gris, qui jurait avec le reste du manuel."""
+    a = np.asarray(img).astype(np.float32) / 255.0
+    ring = np.concatenate([a[:4].reshape(-1, 3), a[-4:].reshape(-1, 3),
+                           a[:, :4].reshape(-1, 3), a[:, -4:].reshape(-1, 3)])
+    lab, _ = ndimage.label(np.linalg.norm(a - np.median(ring, 0), axis=2) < BG_TOL)
+    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    out = np.asarray(img).copy()
+    out[np.isin(lab, list(edge))] = VIOLET
+    return Image.fromarray(out)
 
 
 def build_sheet():
@@ -90,6 +130,10 @@ def cmd_gen(args):
     os.makedirs(RAW, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
     for name in (args.only.split(",") if args.only else list(SUBJECTS)):
+        # Le troisieme champ, facultatif (jalon 41) : `layout` et `denoise` pour un
+        # calque d'`icon_layouts.py`, `crisp` pour la reduction nette, `violet` pour
+        # ramener le fond.
+        opts = SUBJECTS[name][2] if len(SUBJECTS[name]) > 2 else {}
         for seed in SEEDS:
             tag = "%s_%d" % (name, seed)
             raw = os.path.join(RAW, tag + ".png")
@@ -98,10 +142,16 @@ def cmd_gen(args):
             else:
                 start = time.time()
                 prompt = TMPL.format(subj=SUBJECTS[name][0], bg=BACKGROUNDS.get(name, "slate blue"))
-                img = render(prompt, seed)
+                if opts.get("layout"):
+                    img = render(prompt, seed, layout=layout(name), denoise=opts["denoise"])
+                else:
+                    img = render(prompt, seed)
                 img.save(raw)
                 print("  %s  %.1fs" % (tag, time.time() - start), flush=True)
-            quant(shrink(img).convert("RGBA")).save(os.path.join(OUT, tag + ".png"))
+            if opts.get("violet"):
+                img = to_violet(img)
+            small = crisp(img) if opts.get("crisp") else quant(shrink(img).convert("RGBA"))
+            small.save(os.path.join(OUT, tag + ".png"))
     build_sheet()
 
 

@@ -99,6 +99,8 @@ enum Group {
 	STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF, ON_HIT, ON_TICK, ON_KILL,
 	# Jalon 38 : l'état qu'un lancer pose, et ce qu'il fait lever — sous leur nom.
 	INFLICTED, SUMMONED,
+	# Jalon 41 : ce qu'un sort charge en partant, et les réactions de la Catalyse.
+	ON_CAST, REACTIONS,
 }
 
 ## Le titre que porte le filet d'un groupe. La fiche se lit alors par blocs — ce qu'elle
@@ -115,6 +117,8 @@ const GROUP_TITLES := {
 	# La fenêtre des déclenchements : ce qu'un coup, un à-coup ou une mort peut poser.
 	Group.ON_TICK: "À chaque à-coup",
 	Group.ON_KILL: "À chaque ennemi tué",
+	Group.ON_CAST: "À chaque sort lancé",
+	Group.REACTIONS: "Réactions",
 }
 
 
@@ -1077,13 +1081,26 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			block.append(SheetLine.new(
 				Group.BUFF, Texts.t("durée"), "%.1f s" % cast.duration, UiPalette.TEXT, heading
 			))
-		# Ce que valent les lignes dessous : une charge.
+		# Ce que valent les lignes dessous : une charge. Puis ce que l'arbre de Trinité
+		# fait des charges (jalon 41).
 		if skill.stacks_max > 0:
 			block.append(SheetLine.new(
 				Group.BUFF, Texts.t("charges"),
-				Texts.t("%d au plus, %.1f s") % [skill.stacks_max, skill.stack_duration],
+				Texts.t("%d au plus, %.1f s") % [Buff.cap_of(skill, cast), Buff.hold_of(skill, cast)],
 				UiPalette.TEXT, heading
 			))
+			var said := []
+			if cast.dissonance > 0.0:
+				said.append([Texts.t("même élément"), Texts.t("perd toutes les charges")])
+			if cast.tempo > 0.0:
+				said.append([Texts.t("recharges"), Texts.t("-%.1f s par charge") % cast.tempo])
+			if cast.perfect_chord > 0.0:
+				said.append([
+					Texts.t("pleines charges"),
+					Texts.t("trois éléments, %s") % StatMod.percentage(roundi(cast.perfect_chord), true)
+				])
+			for pair: Array in said:
+				block.append(SheetLine.new(Group.BUFF, pair[0], pair[1], UiPalette.TEXT, heading))
 		for m in buff.mods(maxi(spent, 1)):
 			block.append(SheetLine.new(
 				Group.BUFF, StatMod.name(m.stat, m.scope), m.readable_value(),
@@ -1203,9 +1220,68 @@ func _summoned_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
 					int(cast.hatchlings), StatMod.percentage(roundi(SkillStats.SPLIT_PART * 100.0))
 				]
 			])
+	elif skill.shape == Skill.Shape.DOLL:
+		heading = Texts.t("Poupée")
+		if cast.max_simultaneous() > 1:
+			lines.append([Texts.t("debout"), str(cast.max_simultaneous())])
+		lines.append([Texts.t("PV"), str(roundi(_player.stats.max_health * RagDoll.life_part(cast)))])
+		lines.append([Texts.t("éclate"), "%d px" % roundi(cast.radius)])
+		if cast.grudge > 0.0:
+			lines.append([
+				Texts.t("éclat, en plus"),
+				Texts.t("%s de ce qu'elle encaisse") % StatMod.percentage(roundi(cast.grudge))
+			])
+		if cast.transfer > 0.0:
+			lines.append([
+				Texts.t("prend pour vous"),
+				Texts.t("%s de vos dégâts") % StatMod.percentage(roundi(minf(cast.transfer, 100.0)))
+			])
+		if cast.lure > 0.0:
+			lines.append([Texts.t("paraît plus proche de"), "%d px" % roundi(cast.lure)])
+	elif skill.shape == Skill.Shape.FAMILIAR:
+		heading = Texts.t("Échos")
+		lines.append([
+			Texts.t("rejoue"),
+			Texts.t("%s des dégâts") % StatMod.percentage(roundi(Familiar.echo_part(cast) * 100.0))
+		])
+		if cast.echoes > 0.0:
+			lines.append([Texts.t("échos"), str(1 + int(cast.echoes))])
+		lines.append([Texts.t("après"), "%.2f s" % Familiar.ECHO_DELAY])
+		if cast.seek_radius > 0.0:
+			lines.append([Texts.t("vise l'ennemi à"), "%d px" % roundi(cast.seek_radius)])
+		if cast.countersong > 0.0:
+			lines.append([Texts.t("élément"), Texts.t("le suivant du tour")])
 	var out: Array[SheetLine] = []
 	for pair: Array in lines:
 		out.append(SheetLine.new(Group.SUMMONED, pair[0], pair[1], UiPalette.TEXT, heading))
+	return out
+
+
+## Ce que fait chaque paire d'états sous la Catalyse (jalon 41), son arbre compris.
+func _reaction_lines(cast: SkillStats) -> Array[SheetLine]:
+	var tint := UiPalette.TEXT
+	var out: Array[SheetLine] = [
+		SheetLine.new(
+			Group.REACTIONS, Texts.t("par réaction"),
+			Texts.t("%s d'un coup") % StatMod.percentage(roundi(Catalysis.reaction_part(cast) * 100.0)), tint
+		),
+		SheetLine.new(
+			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.VAPOR]),
+			(Texts.t("souffle de %d px, nappe de %.1f s") % [roundi(Catalysis.VAPOR_RADIUS), cast.ground_duration])
+			if cast.ground_duration > 0.0 else Texts.t("souffle de %d px") % roundi(Catalysis.VAPOR_RADIUS),
+			tint
+		),
+		SheetLine.new(
+			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.ARC]),
+			Texts.t("%d voisins à %d px") % [Catalysis.arcs(cast), roundi(Catalysis.ARC_REACH)], tint
+		),
+		SheetLine.new(
+			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.CONDUCTION]),
+			Texts.t("transit à %d px") % roundi(Catalysis.spread_reach(cast)), tint
+		),
+	]
+	if cast.primer > 0.0:
+		out.append(SheetLine.new(Group.REACTIONS, Texts.t("amorce"), Texts.t("un état suffit"), tint))
 	return out
 
 
@@ -1374,17 +1450,26 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 			_chance(StatusEffects.tick_rot_chance(factors[rot])), StatusEffects.color(rot)
 		))
 
-	if strikes and cast.keywords.has(Keywords.ATTACK):
-		for other in _player.available_skills():
-			if other.stacks_max <= 0:
-				continue
-			for buff in other.buffs:
+	# Les charges d'un buff : la Soif de sang à chaque mise à mort d'une attaque, l'Harmonie
+	# à chaque sort qui change d'élément (jalon 41).
+	for other in _player.available_skills():
+		if other.stacks_max <= 0 or not strikes:
+			continue
+		for buff in other.buffs:
+			if other.stack_trigger == Skill.StackTrigger.KILL and cast.keywords.has(Keywords.ATTACK):
 				out.append(SheetLine.new(Group.ON_KILL, buff.displayed_name(), _chance(1.0), FULL))
+			elif other.stack_trigger == Skill.StackTrigger.ALTERNATION \
+					and skill.cadence == Skill.Cadence.CAST:
+				out.append(SheetLine.new(
+					Group.ON_CAST, buff.displayed_name(), Texts.t("si l'élément change"), FULL
+				))
 
 	# Le détail de l'état posé et des créatures levées (jalon 38) : la fiche n'a pas la place.
 	if posed >= 0 and skill.strikes():
 		out.append_array(_inflicted_lines(cast))
 	out.append_array(_summoned_lines(skill, cast))
+	if cast.shape == Skill.Shape.CATALYSIS:
+		out.append_array(_reaction_lines(cast))
 
 	return Sheet.new(
 		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,

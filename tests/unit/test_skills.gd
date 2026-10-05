@@ -230,6 +230,14 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gt(c.stack_duration, 0.0, "« %s » : ce que vivent ses charges" % c.name)
 		if c.shape == Skill.Shape.LUNGE:
 			assert_gt(c.radius, 0.0, "« %s » : sa portée" % c.name)
+		# La sorcière (jalon 41) : le cercle qui réagit, le fétiche qui dure et éclate, le
+		# corbeau qui se paie à la seconde.
+		if c.shape in [Skill.Shape.CATALYSIS, Skill.Shape.DOLL]:
+			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
+		if c.shape == Skill.Shape.DOLL:
+			assert_gt(c.duration, 0.0, "« %s » : une durée" % c.name)
+		if c.shape == Skill.Shape.FAMILIAR:
+			assert_gt(c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
 		for kind in c.nature_cycle:
 			assert_true(kind in DamageType.Kind.values(), "« %s » : une nature" % c.name)
 		if not c.nature_cycle.is_empty():
@@ -1149,3 +1157,28 @@ func test_the_provided_image_is_not_modified() -> void:
 func test_the_icon_frame_fits_the_smallest_slot() -> void:
 	assert_lte(float(SkillIcon.SIDE), SkillBarPanel.SLOT, "la case de la barre")
 	assert_lte(float(SkillIcon.SIDE), ManualPanel.CELL, "la case du manuel")
+
+
+## L'écho du Familier (jalon 41) : le lancer entier, mécaniques comprises, à une part de
+## ses dégâts — et sans toucher à l'original.
+func test_an_echo_keeps_everything_but_a_part_of_the_damage() -> void:
+	var cast := SkillCatalog.by_id("elemental_projectile").resolve(3, CharacterStats.new())
+	cast.ground_duration = 2.0
+	var echo := cast.echoed(0.4)
+	assert_almost_eq(echo.total_min(), cast.total_min() * 0.4, 1e-4)
+	assert_eq(echo.shape, cast.shape)
+	assert_eq(echo.skill_id, cast.skill_id)
+	assert_eq(echo.ground_duration, 2.0)
+	echo.damage_min.fill(0.0)
+	assert_gt(cast.total_min(), 0.0, "l'original garde ses dégâts")
+
+
+## La Triade (jalon 41) : tout le coup, à parts égales entre les natures du tour.
+func test_a_blend_shares_the_damage_between_natures() -> void:
+	var cast := SkillStats.new()
+	cast.place_the_base(DamageType.Kind.FIRE, 30.0)
+	var natures: Array[int] = [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING]
+	cast.blend(natures)
+	for n in natures:
+		assert_almost_eq(cast.damage_min[n], 10.0, 1e-4)
+	assert_almost_eq(cast.total_max(), 30.0, 1e-4)

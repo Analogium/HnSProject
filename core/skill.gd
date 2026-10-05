@@ -46,6 +46,8 @@ enum Shape {
 	SLAM, BOOMERANG,
 	# Jalon 40 : la Croix de lumière, le Pilier errant.
 	HOLY_CROSS, DRIFT,
+	# Jalon 41, la sorcière : la Catalyse, la Poupée de chiffon, le Familier, la Triade.
+	CATALYSIS, DOLL, FAMILIAR, TRIAD,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -84,6 +86,10 @@ const KEYWORD_OF_SHAPE := {
 	Shape.LEAP: Keywords.AREA,
 	Shape.METEOR: Keywords.AREA,
 	Shape.TEMPEST: Keywords.AREA,
+	Shape.CATALYSIS: Keywords.AREA,
+	Shape.TRIAD: Keywords.AREA,
+	# Le fétiche ne frappe qu'en éclatant.
+	Shape.DOLL: Keywords.AREA,
 	# La vague part de la lame et le cyclone tourne sur place : deux gestes d'arme,
 	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
 	Shape.WAVE: Keywords.MELEE,
@@ -121,7 +127,7 @@ const GROWTH_PER_EXTRA_LEVEL := 1.25
 
 ## Une table et non un champ : un troisième coup en croix n'aurait pas de dessin.
 ## Ce qui brûle tant qu'on l'entretient : ni « par lancer », ni transformation.
-const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE]
+const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE, Shape.FAMILIAR]
 
 ## Ce qu'une transformation peut quitter et rejoindre (jalon 34) : ce qui se pose et
 ## s'oublie — la malédiction aussi, depuis le jalon 38. Le reste tient un état chez le lanceur — ce qui brûle, la couronne, les
@@ -132,7 +138,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
-	Shape.HOLY_CROSS, Shape.DRIFT,
+	Shape.HOLY_CROSS, Shape.DRIFT, Shape.CATALYSIS, Shape.TRIAD,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -150,6 +156,9 @@ const IGNORED_BY_SHAPE := {
 	# Le cône souffle et passe ; la marque ne couvre qu'un ennemi.
 	Shape.BREATH: [SkillStats.GROUND],
 	Shape.MARK: ["radius"],
+	# Les trois comètes ne sont pas des tirs : elles naissent autour du lanceur et se
+	# rejoignent au point visé.
+	Shape.TRIAD: ["projectiles", "projectile_speed", SkillStats.BOUNCES],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
@@ -249,6 +258,12 @@ const HITS_PER_SHAPE := {
 @export var stacks_max: int = 0
 ## Ce que vivent les charges après la dernière gagnée, en secondes.
 @export var stack_duration: float = 0.0
+
+## Ce qui donne une charge à un buff à charges : l'ennemi tué d'une attaque (la Soif de
+## sang), ou le sort d'une autre nature que le sort précédent (Trinité, jalon 41).
+enum StackTrigger { KILL, ALTERNATION }
+
+@export var stack_trigger: StackTrigger = StackTrigger.KILL
 
 ## Zéro pour un coup gratuit.
 @export var mana_cost: float = 0.0
@@ -488,6 +503,9 @@ func resolve(
 		else:
 			increased += m.value
 	r.scale_damage(increased, more)
+	# La Triade (jalon 41) : les trois comètes portent chacune son élément du tour.
+	if cast_shape == Shape.TRIAD and not nature_cycle.is_empty():
+		r.blend(nature_cycle)
 	r.finalize()
 	# Ici et non dans `finalize()` : zéro veut dire « sans limite », et un nœud ne doit
 	# pas rendre infinie une orbite bornée.

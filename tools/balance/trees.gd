@@ -109,6 +109,18 @@ var runs := 0
 var _measured := {}
 
 
+
+## Un livre du catalogue, ou un manuel de classe — la sorcière, jalon 41 —, qui n'y est pas.
+static func book_base(id: String) -> ItemBase:
+	var base := ItemCatalog.by_id(id)
+	if base != null:
+		return base
+	for one in Character.class_manual_bases():
+		if one.id == id:
+			return one
+	return null
+
+
 func _init(host: Node) -> void:
 	_host = host
 	var without_affix: Array[Affix] = []
@@ -160,7 +172,7 @@ func _play(manual_id: String, skill_id: String, nodes: Array, scene: Scene, dist
 	player.facing = Vector2.RIGHT
 	player.hurtbox.invulnerable = true
 
-	var book := Item.new(ItemCatalog.by_id(manual_id))
+	var book := Item.new(book_base(manual_id))
 	book.manual.gain_experience(999999)
 	player.study(book, 0)
 	while player.invest(0, skill_id):

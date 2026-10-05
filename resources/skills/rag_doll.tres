@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/rag_doll.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "rag_doll"
+name = "Poupée de chiffon"
+description = "Un fétiche que les ennemis frappent à votre place ; il éclate."
+nature = 2
+nature_cycle = Array[int]([2, 1, 3])
+cadence = 1
+shape = 41
+cast_time = 0.50
+cooldown = 3.0
+mana_cost = 16.0
+duration = 8.0
+radius = 40.0
+simultaneous = 1
+damage_per_point = Array[float]([20.0, 26.0, 33.0, 41.0, 50.0])
+required_manual_level = 7
+icon = ExtResource("2_icone")

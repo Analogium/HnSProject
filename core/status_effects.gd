@@ -120,7 +120,7 @@ const WILTING_PER_SECOND := 0.20
 const DOT_TICK := 0.5
 ## Les points de résistance nécrotique que perd le maudit, **avant le plafond**.
 const CURSE := 20.0
-## Les dégâts reçus par l'engourdi, en plus.
+## Les dégâts reçus par l'engourdi, en plus, fois sa force (Électrochoc, jalon 41).
 const NUMB := 0.10
 ## La vitesse d'action retirée au transi : déplacement, attaque et incantation.
 const CHILL := 0.25
@@ -320,6 +320,21 @@ func pass_on(kind: int, other: StatusEffects) -> void:
 	other.put(kind, state.per_second / burn if burn > 0.0 else 0.0, author, state.source, state.strength)
 
 
+## Ôte cet état s'il est là : ce que consomme une réaction de la Catalyse (jalon 41).
+## Rend s'il y était.
+func remove(kind: int) -> bool:
+	var state := _state(kind)
+	if state == null:
+		return false
+	# Ce qu'il a brûlé depuis la dernière annonce reste au compteur de DPS.
+	if reports_dealt and state.unreported > 0.0:
+		Game.damage_dealt.emit(state.source, state.kind, state.unreported)
+	_states.erase(state)
+	_recompute()
+	change.emit()
+	return true
+
+
 ## Les points de résistance que ses états retirent à cette nature : la malédiction, à sa
 ## force (Malédiction profonde, la Marque de mort).
 func resistance_lost(nature: int) -> float:
@@ -442,7 +457,8 @@ func _recompute() -> void:
 	is_clear = _states.is_empty()
 	var chill := _state(Kind.CHILL)
 	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
-	damage_taken_factor = 1.0 + NUMB if active(Kind.NUMB) else 1.0
+	var numb := _state(Kind.NUMB)
+	damage_taken_factor = 1.0 + NUMB * numb.strength if numb != null else 1.0
 	var blessing := _state(Kind.BLESSING)
 	damage_dealt_factor = maxf(1.0 - BLESSING * blessing.strength, 0.0) if blessing != null else 1.0
 	# Le flétri n'est affaibli que par la force que son arbre ajoute (Asphyxie, jalon 38).

@@ -34,9 +34,11 @@ var _age := 0.0
 ## Zéro : il brûle jusqu'à ce qu'on l'éteigne. Sinon, en secondes, ce qu'une ruée
 ## laisse derrière elle ou ce que dure un buff lancé.
 var _lifetime := 0.0
-## Les charges d'un buff à charges (`Skill.stacks_max`), et depuis quand la dernière.
+## Les charges d'un buff à charges (`Skill.stacks_max`), depuis quand la dernière, et ce
+## qu'elles tiennent depuis elle.
 var stacks := 0
 var _since_stack := 0.0
+var _hold := 0.0
 ## Enferme-t-il son porteur : celui du lancer, qu'un nœud affranchit (l'Armure de givre).
 var binds := false
 ## Ce que la Nécrose a rongé depuis le dernier Fardeau partagé, en PV, et depuis quand.
@@ -72,20 +74,38 @@ func _ready() -> void:
 ## pour celui qui n'en a pas**, et qui brûle tant qu'on le paie.
 func remaining_ratio() -> float:
 	if stacks > 0:
-		return clampf(1.0 - _since_stack / _skill.stack_duration, 0.0, 1.0)
+		return clampf(1.0 - _since_stack / _hold, 0.0, 1.0)
 	if _lifetime <= 0.0:
 		return 1.0
 	return clampf(1.0 - _age / _lifetime, 0.0, 1.0)
 
 
 ## Une charge de plus, jusqu'au plafond, et **toutes** repartent pour leur durée. Faux
-## pour un buff qui n'en porte pas.
-func stack() -> bool:
-	if _skill.stacks_max <= 0:
+## pour un buff qui n'en porte pas, ou que ce déclencheur ne charge pas. `own` : son
+## lancer résolu, dont l'arbre peut hausser le plafond et la tenue (jalon 41).
+func stack(trigger: Skill.StackTrigger, own: SkillStats = null) -> bool:
+	if _skill.stacks_max <= 0 or _skill.stack_trigger != trigger:
 		return false
-	stacks = mini(stacks + 1, _skill.stacks_max)
+	stacks = mini(stacks + 1, cap_of(_skill, own))
 	_since_stack = 0.0
+	_hold = hold_of(_skill, own)
 	return true
+
+
+## Le plafond des charges et leur tenue : **le seul calcul**, que la fiche lit aussi.
+static func cap_of(skill: Skill, own: SkillStats) -> int:
+	return skill.stacks_max + (int(own.dissonance) if own != null else 0)
+
+
+static func hold_of(skill: Skill, own: SkillStats) -> float:
+	return skill.stack_duration + (own.stack_hold if own != null else 0.0)
+
+
+## La Résonance (jalon 41) : un buff lancé regagne ces secondes, jamais au-delà de sa
+## durée entière.
+func prolong(seconds: float) -> void:
+	if _lifetime > 0.0:
+		_age = maxf(_age - seconds, 0.0)
 
 
 ## Appelée par `Player.extinguish()`, le seul chemin : le joueur reprend ses lignes à
@@ -105,7 +125,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if stacks > 0:
 		_since_stack += delta
-		if _since_stack >= _skill.stack_duration:
+		if _since_stack >= _hold:
 			stacks = 0
 			_player.after_buff_change()
 	# Le lancer résolu et non la compétence : un nœud d'arbre change sa brûlure (jalon 34),

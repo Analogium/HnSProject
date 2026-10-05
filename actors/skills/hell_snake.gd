@@ -74,6 +74,8 @@ var _body_tex: ImageTexture
 ## Le coin de l'image du corps, en repère global et en pixels entiers.
 var _corner := Vector2.ZERO
 var _rasterised := -1.0
+## Son tour dans le roulement de peinture.
+var _slot := 0
 
 
 static func drop(
@@ -124,12 +126,36 @@ func _physics_process(delta: float) -> void:
 	_ramp(delta)
 	_body = _rings()
 	_bite()
-	# Caché, rien à peindre : le banc des arbres en fait jouer des centaines sans écran.
-	if _age - _rasterised >= REDRAW and is_visible_in_tree():
-		_rasterise()
-	queue_redraw()
 	if _age >= _cast.duration:
 		_die()
+
+
+func _enter_tree() -> void:
+	crawling += 1
+	_slot = _next_slot
+	_next_slot += 1
+
+
+func _exit_tree() -> void:
+	crawling -= 1
+
+
+## Son tour de peinture à cette image : un serpent sur `ceil(crawling / PAINTED_PER_IMAGE)`.
+static func on_turn(slot: int, image: int) -> bool:
+	return (image + slot) % maxi(ceili(float(crawling) / float(PAINTED_PER_IMAGE)), 1) == 0
+
+
+## La peinture suit l'image, pas le pas de physique : quand le jeu rame, Godot enchaîne
+## jusqu'à huit pas par image, et rastériser à chacun nourrissait le ralentissement (jalon 41).
+## Caché, rien à peindre : le banc des arbres en fait jouer des centaines.
+func _process(_delta: float) -> void:
+	if _body.is_empty():
+		return
+	var due := _body_tex == null \
+			or (_age - _rasterised >= REDRAW and on_turn(_slot, Engine.get_process_frames()))
+	if due and is_visible_in_tree():
+		_rasterise()
+	queue_redraw()
 
 
 ## Ce que sa mort laisse : l'explosion finale et les petits (`HATCHLINGS`), qui ne se
@@ -230,6 +256,14 @@ func _touches(point: Vector2) -> bool:
 ## retombe à 0,32 ms.
 const CANVAS := 96
 const REDRAW := 1.0 / 30.0
+## Au plus tant de corps repeints par image, chacun à son tour : au-delà, un corps avance
+## par petits sauts plutôt que de faire ramer le jeu — 144 serpents coûtaient 22 ms par
+## image (jalon 41). Plafonné par seconde de jeu, le coût grossissait avec le ralentissement.
+const PAINTED_PER_IMAGE := 8
+
+## Combien rampent en ce moment, et le tour du prochain né.
+static var crawling := 0
+static var _next_slot := 0
 
 
 func _draw() -> void:

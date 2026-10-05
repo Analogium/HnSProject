@@ -32,7 +32,7 @@ const ARTICLES := {
 ## Un par `StatusEffects.Kind`, dans son ordre. Le titre est le nom de l'état.
 const STATE_TEXTS := [
 	"Posé par le feu. Brûle {part} par seconde du feu reçu, pendant {duree} s : {total} du coup en tout.",
-	"Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s.",
+	"Posé par la foudre. L'engourdi reçoit {force} de dégâts en plus, pendant {duree} s. Certains nœuds du manuel de la sorcière le rendent plus fort.",
 	"Posé par le froid. Le transi perd {force} de vitesse — déplacement, attaque et incantation —, pendant {duree} s. Certains nœuds du Maître du froid le rendent plus fort.",
 	"Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle.",
 	"Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s. Certains nœuds du Maître de la lumière l'affaiblissent davantage, ou bénissent sans frapper.",

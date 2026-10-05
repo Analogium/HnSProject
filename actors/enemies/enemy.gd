@@ -169,17 +169,24 @@ func tick(_delta: float) -> void:
 	pass
 
 
-## Ce qu'il attaque : le joueur, ou un mort-vivant plus proche que lui. La marche suit
-## toujours le champ, qui mène au joueur — ses morts-vivants sont à côté.
+## Ce qu'il attaque : le joueur, ou un mort-vivant ou une poupée de chiffon plus proche
+## que lui. Vers le joueur, la marche suit le champ ; vers un autre, la ligne droite.
 func foe() -> Node2D:
 	var best := target
-	if Minion.living.is_empty():
+	if Minion.living.is_empty() and RagDoll.standing.is_empty():
 		return best
 	var best_d := global_position.distance_squared_to(target.global_position)
 	for minion in Minion.living:
 		var d := global_position.distance_squared_to(minion.global_position)
 		if d < best_d:
 			best = minion
+			best_d = d
+	for doll in RagDoll.standing:
+		# L'Appeau la rapproche, sans la faire passer derrière soi.
+		var d := maxf(global_position.distance_to(doll.global_position) - doll.lure, 0.0)
+		d *= d
+		if d < best_d:
+			best = doll
 			best_d = d
 	return best
 

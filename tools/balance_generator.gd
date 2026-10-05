@@ -201,7 +201,7 @@ func _simulation(l: PackedStringArray) -> void:
 const TREE_PARTS := "user://arbres"
 const TREE_MANUALS := [
 	"manual_fire", "manual_lightning", "manual_cold", "manual_necrotic", "manual_weapons",
-	"manual_holy",
+	"manual_holy", "manual_witch",
 ]
 
 
@@ -245,7 +245,7 @@ func _trees() -> void:
 	var previous := _previous_sections() if not only.is_empty() else {}
 	var index := 0
 	for manual_id: String in TREE_MANUALS:
-		var book := ItemCatalog.by_id(manual_id)
+		var book := BenchTrees.book_base(manual_id)
 		var first_of_manual := true
 		for cell in book.manual.cells:
 			if cell.skill == null or cell.talents.is_empty() or not cell.skill.strikes():

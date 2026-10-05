@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/trinity.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
+
+[sub_resource type="Resource" id="L_harmonie_sorts"]
+script = ExtResource("3_ligne")
+stat = "damage"
+scope = "spell"
+percentage = true
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="B_harmonie"]
+script = ExtResource("4_buff")
+id = "harmony"
+name = "Harmonie"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_harmonie_sorts")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "trinity"
+name = "Trinité"
+description = "Un sort qui frappe dans un autre élément que le sort précédent donne une charge d'Harmonie, qui renforce vos sorts. Répéter le même élément n'en donne pas."
+nature = 3
+cadence = 1
+shape = 11
+cooldown = 0.60
+mana_cost = 0.0
+stacks_max = 3
+stack_duration = 4.0
+stack_trigger = 1
+declared_points_max = 4
+buffs = Array[ExtResource("4_buff")]([SubResource("B_harmonie")])
+required_manual_level = 2
+icon = ExtResource("2_icone")

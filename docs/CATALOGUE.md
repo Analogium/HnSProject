@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 36 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 40 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -452,8 +452,9 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 ### Manuels de classe
 
 Hors du catalogue : un par classe, au quatrième emplacement du râtelier, qui
-ne tombe pas et ne se range pas (`Character.CLASSES`). Ils n'ont pas encore de
-quoi dépenser leurs vingt points, et c'est accepté (jalon 28).
+ne tombe pas et ne se range pas (`Character.CLASSES`). Celui du Vive lame n'a
+pas encore de quoi dépenser ses vingt points, et c'est accepté (jalon 28) ; celui
+de la sorcière est rempli depuis le jalon 41.
 
 ### Manuel du Vive lame — `manual_swiftblade`
 
@@ -470,8 +471,53 @@ quoi dépenser leurs vingt points, et c'est accepté (jalon 28).
 |---|---|---|---|---|---|---|---|
 | Projectile élémentaire | sort feu | niveau 1 | 5 | 7 mana | 0.45 s | comet · +200 % de chance d'état · tour à tour feu, froid, foudre | 18 · 23 · 29 · 36 · 44 |
 | Amplification des sorts | sort foudre | niveau 3 | 1 | 20 mana | 0.30 s · recharge 10.00 s | buff · 10.0 s | Sorts amplifiés : +20 % de dégâts de sort amplifiés |
+| Catalyse | sort feu | niveau 5 | 5 | 14 mana | 0.60 s | catalysis · rayon 36 · tour à tour feu, froid, foudre | 12 · 15 · 19 · 24 · 30 |
+| Poupée de chiffon | sort feu | niveau 7 | 5 | 16 mana | 0.50 s · recharge 3.00 s | doll · 8.0 s · rayon 40 · 1 au plus · tour à tour feu, froid, foudre | 20 · 26 · 33 · 41 · 50 |
+| Trinité | sort foudre | niveau 2 | 4 | 0 mana | recharge 0.60 s | buff · 3 charges de 4.0 s | Harmonie : +5 % de dégâts de sort accrus |
+| Familier | sort foudre | niveau 10 | 4 | 0 mana | recharge 0.60 s | familiar · draine 4 mana/s | Familier : +3 % de vitesse d'incantation accrue |
 
-6 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+| nœud | compétence | relié à (points demandés) | points | par point |
+|---|---|---|---|---|
+| Arcanes | Projectile élémentaire | — | 5 | +12 % de dégâts amplifiés |
+| Fulgurance | Projectile élémentaire | — | 4 | +15 % de vitesse de projectile accrue |
+| Électrochoc | Projectile élémentaire | — | 4 | +15 % effet de l'engourdi |
+| Affinité croisée | Projectile élémentaire | Arcanes (1) | 3 | +8 % de dégâts accrus contre les embrasés · +8 % de dégâts accrus contre les transis · +8 % de dégâts accrus contre les engourdis |
+| Ricochet | Projectile élémentaire | Fulgurance (1) | 2 | +1 nombre de rebonds |
+| Prisme | Projectile élémentaire | Ricochet (1) | 2 | +1 nombre de projectiles · -15 % de dégâts atténués |
+| Triade | Projectile élémentaire | Arcanes (2) ou Électrochoc (2) | 1 | +30 rayon · +25 % de temps du geste accru |
+| Surpuissance | Amplification des sorts | — | 5 | +3 % de dégâts de sort amplifiés |
+| Volubilité | Amplification des sorts | — | 4 | +4 % de vitesse d'incantation accrue |
+| Rémanence | Amplification des sorts | — | 3 | +15 % de durée accrue |
+| Siphon | Amplification des sorts | Surpuissance (1) | 3 | +2 mana par ennemi tué |
+| Résonance | Amplification des sorts | Volubilité (1) | 3 | +0.3 secondes gagnées par sort |
+| Contrecoup | Amplification des sorts | Rémanence (1) ou Résonance (2) | 3 | ajoute 6 à 14 dégâts de foudre · +15 rayon de l'explosion finale |
+| Concentré | Catalyse | — | 5 | +10 % de dégâts amplifiés |
+| Exothermie | Catalyse | — | 4 | +25 % puissance des réactions |
+| Grand cercle | Catalyse | — | 3 | +15 % de rayon accru |
+| Nappe brûlante | Catalyse | Exothermie (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
+| Arc fourchu | Catalyse | Exothermie (1) | 2 | +1 nombre de cibles |
+| Conductivité | Catalyse | Exothermie (1) | 3 | +16 rayon de contagion |
+| Amorce | Catalyse | Concentré (2) ou Grand cercle (2) | 1 | +1 état prêté |
+| Bourre de poudre | Poupée de chiffon | — | 5 | +10 % de dégâts amplifiés |
+| Rembourrage | Poupée de chiffon | — | 5 | +20 % PV de la poupée |
+| Appeau | Poupée de chiffon | — | 3 | +20 portée de l'appeau |
+| Rancune | Poupée de chiffon | Bourre de poudre (1) | 4 | +15 % dégâts encaissés rendus |
+| Transfert | Poupée de chiffon | Rembourrage (1) | 3 | +10 % dégâts subis détournés |
+| Jumelles | Poupée de chiffon | Appeau (2) ou Rembourrage (3) | 1 | +1 maximum simultané |
+| Gamme | Trinité | — | 5 | +4 % chance d'état aux sorts |
+| Mesure | Trinité | — | 4 | +2 % rés. feu · +2 % rés. froid · +2 % rés. foudre |
+| Point d'orgue | Trinité | — | 4 | +0.5 secondes de tenue des charges |
+| Dissonance | Trinité | Gamme (1) | 2 | +1 nombre de charges |
+| Tempo | Trinité | Point d'orgue (1) | 5 | +0.1 secondes de recharge rendues |
+| Accord parfait | Trinité | Dissonance (1) ou Point d'orgue (2) | 1 | +30 % dégâts en plus de l'accord |
+| Écho fidèle | Familier | — | 5 | +6 % dégâts rejoués |
+| Frugalité | Familier | — | 4 | -10 % de mana drainé réduit |
+| Ailes noires | Familier | — | 5 | +2 % de vitesse accrue |
+| Œil du corbeau | Familier | Écho fidèle (1) | 4 | +15 rayon de chasse |
+| Ressassement | Familier | Écho fidèle (2) | 2 | +1 nombre d'échos · -10 % dégâts rejoués |
+| Contre-chant | Familier | Frugalité (2) ou Ressassement (1) | 1 | +1 élément d'avance de l'écho |
+
+24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ## Arbre de passifs
 

@@ -517,3 +517,26 @@ func test_the_curse_lowers_necrotic_resistance_only() -> void:
 		120.0, 0.001
 	)
 	assert_eq(e.advance(1.0), 0.0, "et elle ne brûle rien")
+
+
+## Électrochoc (jalon 41) : l'engourdi tiré porte la force du lancer, et fait subir
+## davantage.
+func test_a_cast_numb_effect_strengthens_the_numb_it_rolls() -> void:
+	var always := RandomNumberGenerator.new()
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.NUMB] = 100.0
+	var cast := SkillStats.new()
+	cast.numb_effect = 50.0
+	var e := StatusEffects.new()
+	e.suffer(_parts(DamageType.Kind.LIGHTNING, 10.0), author, always, 0.0, 0.0, "", cast)
+	assert_almost_eq(e.damage_taken_factor, 1.0 + StatusEffects.NUMB * 1.5, 0.0001)
+
+
+## Ce que consomme la Catalyse (jalon 41) : l'état s'en va, et ce qu'il faisait avec lui.
+func test_a_removed_state_stops_acting() -> void:
+	var e := StatusEffects.new()
+	e.put(StatusEffects.Kind.NUMB, 1.0)
+	assert_true(e.remove(StatusEffects.Kind.NUMB))
+	assert_false(e.active(StatusEffects.Kind.NUMB))
+	assert_eq(e.damage_taken_factor, 1.0)
+	assert_false(e.remove(StatusEffects.Kind.NUMB), "plus rien à retirer")
