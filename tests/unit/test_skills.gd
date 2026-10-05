@@ -719,7 +719,7 @@ func test_damage_of_a_targeted_nature_rises() -> void:
 
 ## Le coût a sa propre voie — la réserve. Un modificateur qui le viserait par un
 ## mot-clé est écarté, et c'est le test de la réserve d'affixes qui refuse de
-## l'écrire.
+## l'écrire. Seul un nœud d'arbre le change (le Météore, jalon 42).
 func test_only_named_things_are_modified() -> void:
 	var c := _projectile(1)
 	c.mana_cost = 8.0

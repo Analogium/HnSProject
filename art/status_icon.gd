@@ -90,6 +90,15 @@ const MASKS := [
 		"..###..",
 		".......",
 	],
+	[  # surchauffe : un soleil (jalon 42, choisi sur planche) — un thermomètre se lisait flamme
+		"...#...",
+		".#...#.",
+		"..###..",
+		"#.#o#.#",
+		"..###..",
+		".#...#.",
+		"...#...",
+	],
 ]
 
 static var _cache: Array[Texture2D] = []

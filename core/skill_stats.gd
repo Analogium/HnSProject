@@ -36,6 +36,7 @@ const LABELS := {
 	"self_heal": "soin",
 	"self_wither": "vie rongée",
 	"inflict_chance": "chance de l'état posé",
+	"mana_cost": "coût en mana",
 	CHILL_EFFECT: "effet du transi",
 	PIERCE: "nombre d'ennemis traversés",
 	SPLITS: "nombre d'éclats",
@@ -87,6 +88,43 @@ const LABELS := {
 	ECHO_POWER: "dégâts rejoués",
 	ECHOES: "nombre d'échos",
 	COUNTERSONG: "élément d'avance de l'écho",
+	SWELL: "dégâts et rayon par 100 px",
+	OVERHEAT: "dégâts en plus par surchauffe",
+	STOKED: "dégâts et rayon attisés",
+	METEOR_SHOWER: "nombre de mini-météorites",
+	SPLIT_CASCADE: "cascade d'éclats",
+	POWDER_KEG: "état assuré aux explosions",
+	CONVERGE: "convergence des boules",
+	WIDE_BLAST: "zone appliquée au rayon",
+	GIRTH: "taille en plus par 100 px",
+	GLUTTONY: "dégâts en plus par proie",
+	GROWTH_MOLT: "mue à la dernière proie",
+	CONSTRICT: "étreinte de la proie",
+	VISE: "proie immobilisée",
+	OUROBOROS: "anneau de feu",
+	SPIRAL: "anneau qui se resserre",
+	SPIT: "dégâts du crachat",
+	SPIT_FAN: "boules crachées en plus",
+	HATCHLING_TIME: "secondes de vie des petits",
+	HATCHLING_BITE: "dégâts des petits",
+	ROT_HOLD: "secondes de pourriture rendues",
+	IGNITE_EFFECT: "effet de l'embrasement",
+	MELT: "résistance au feu fondue",
+	CAMPFIRE: "montée du feu de camp",
+	EMBERS: "nombre d'escarbilles",
+	REBIRTH: "renaissance",
+	PHOENIX_ASHES: "cendres du phénix",
+	VIGIL: "PV rendus par seconde",
+	EYE: "dégâts en plus au cœur",
+	SOUL_FEAST: "PV rendus par tué",
+	FLYING_START: "explosion au départ",
+	WICK: "dégâts de la mèche",
+	SHORT_FUSE: "mèche à l'arrivée",
+	SECOND_STRIDE: "seconde ruée gratuite",
+	STRIDE_FIRE: "dégâts de la seconde ruée",
+	CHARMER: "serpent à l'arrivée",
+	SNAKE_DANCE: "serpents rappelés",
+	BURNING_WAVE: "dégâts de l'onde brûlante",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -109,6 +147,7 @@ const AGREEMENT := {
 	"self_heal": "ms",
 	"self_wither": "fs",
 	"inflict_chance": "fs",
+	"mana_cost": "ms",
 	CHILL_EFFECT: "ms",
 	PIERCE: "ms",
 	SPLITS: "ms",
@@ -160,6 +199,43 @@ const AGREEMENT := {
 	ECHO_POWER: "mp",
 	ECHOES: "ms",
 	COUNTERSONG: "ms",
+	SWELL: "mp",
+	OVERHEAT: "mp",
+	STOKED: "mp",
+	METEOR_SHOWER: "ms",
+	SPLIT_CASCADE: "fs",
+	POWDER_KEG: "ms",
+	CONVERGE: "fs",
+	WIDE_BLAST: "fs",
+	GIRTH: "fs",
+	GLUTTONY: "mp",
+	GROWTH_MOLT: "fs",
+	CONSTRICT: "fs",
+	VISE: "fs",
+	OUROBOROS: "ms",
+	SPIRAL: "ms",
+	SPIT: "mp",
+	SPIT_FAN: "fp",
+	HATCHLING_TIME: "fp",
+	HATCHLING_BITE: "mp",
+	ROT_HOLD: "fp",
+	IGNITE_EFFECT: "ms",
+	MELT: "fs",
+	CAMPFIRE: "fs",
+	EMBERS: "ms",
+	REBIRTH: "fs",
+	PHOENIX_ASHES: "fp",
+	VIGIL: "mp",
+	EYE: "mp",
+	SOUL_FEAST: "mp",
+	FLYING_START: "fs",
+	WICK: "mp",
+	SHORT_FUSE: "fs",
+	SECOND_STRIDE: "fs",
+	STRIDE_FIRE: "mp",
+	CHARMER: "ms",
+	SNAKE_DANCE: "mp",
+	BURNING_WAVE: "mp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -241,6 +317,56 @@ const LURE := "lure"
 const ECHO_POWER := "echo_power"
 const ECHOES := "echoes"
 const COUNTERSONG := "countersong"
+## Ceux de la Boule de feu (jalon 42). La Prise d'air et la Surchauffe en points de
+## pourcentage « plus », par 100 px volés et par charge ; le Feu nourri, ce que la boule
+## gagne en dégâts et en rayon sous l'Immolation. Les trois derniers sont des drapeaux.
+const SWELL := "swell"
+const OVERHEAT := "overheat"
+const STOKED := "stoked"
+const METEOR_SHOWER := "meteor_shower"
+const SPLIT_CASCADE := "split_cascade"
+const POWDER_KEG := "powder_keg"
+const CONVERGE := "converge"
+## Les deux suites de la Prise d'air : la Déflagration, un drapeau que `Skill.resolve()` lit
+## avant les lignes d'objet, et le Gonflement, la taille gagnée par 100 px volés.
+const WIDE_BLAST := "wide_blast"
+const GIRTH := "girth"
+## Ceux du Serpent infernal (jalon 42). La Gloutonnerie en points de pourcentage « plus »
+## par proie, le Crachat en part d'une morsure, la Morsure nécrosante en secondes ; le
+## Venin d'hydre, la vie et les dégâts « plus » des petits. Les autres sont des drapeaux.
+const GLUTTONY := "gluttony"
+const GROWTH_MOLT := "growth_molt"
+const CONSTRICT := "constrict"
+const VISE := "vise"
+const OUROBOROS := "ouroboros"
+const SPIRAL := "spiral"
+const SPIT := "spit"
+const SPIT_FAN := "spit_fan"
+const HATCHLING_TIME := "hatchling_time"
+const HATCHLING_BITE := "hatchling_bite"
+const ROT_HOLD := "rot_hold"
+## Ceux de l'Immolation (jalon 42). La force de l'embrasement en points de pourcentage, la
+## Fonte en points de résistance ; le Feu de camp, la Veillée, l'Œil du brasier et les
+## Âmes consumées en points de pourcentage ; les escarbilles en nombre ; deux drapeaux.
+const IGNITE_EFFECT := "ignite_effect"
+const MELT := "melt"
+const CAMPFIRE := "campfire"
+const EMBERS := "embers"
+const REBIRTH := "rebirth"
+const PHOENIX_ASHES := "phoenix_ashes"
+const VIGIL := "vigil"
+const EYE := "eye"
+const SOUL_FEAST := "soul_feast"
+## Ceux de la Ruée ardente (jalon 42). Le Départ en trombe, la Mèche, la Foulée de feu et
+## l'Onde brûlante en points de pourcentage d'un coup ; les autres sont des drapeaux.
+const FLYING_START := "flying_start"
+const WICK := "wick"
+const SHORT_FUSE := "short_fuse"
+const SECOND_STRIDE := "second_stride"
+const STRIDE_FIRE := "stride_fire"
+const CHARMER := "charmer"
+const SNAKE_DANCE := "snake_dance"
+const BURNING_WAVE := "burning_wave"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -248,11 +374,16 @@ const MECHANICS := [
 	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
 	SHARED_BURDEN, KNOCKBACK, LIFE_ON_HIT, MANA_ON_HIT, BLADE_WARD, SWORD_VOLLEY, WAVES,
 	EXTRA_SWORDS, WAVE_GAIN, AUREOLE, RESONANCE, SIPHON, DISSONANCE, TEMPO, PERFECT_CHORD,
-	PRIMER, GRUDGE, TRANSFER, LURE, ECHOES, COUNTERSONG,
+	PRIMER, GRUDGE, TRANSFER, LURE, ECHOES, COUNTERSONG, SWELL, OVERHEAT, STOKED,
+	METEOR_SHOWER, SPLIT_CASCADE, POWDER_KEG, CONVERGE, WIDE_BLAST, GIRTH, GLUTTONY,
+	GROWTH_MOLT, CONSTRICT, VISE, OUROBOROS, SPIRAL, SPIT, SPIT_FAN, ROT_HOLD, MELT,
+	CAMPFIRE, EMBERS, REBIRTH, PHOENIX_ASHES, VIGIL, EYE, SOUL_FEAST, FLYING_START, WICK,
+	SHORT_FUSE, SECOND_STRIDE, STRIDE_FIRE, CHARMER, SNAKE_DANCE, BURNING_WAVE,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
 const EFFECT_OF := {
+	StatusEffects.Kind.IGNITE: IGNITE_EFFECT,
 	StatusEffects.Kind.CHILL: CHILL_EFFECT,
 	StatusEffects.Kind.NUMB: NUMB_EFFECT,
 	StatusEffects.Kind.BLEED: BLEED_EFFECT,
@@ -271,6 +402,50 @@ const KILL_BURST_PART := 0.5
 const SPLIT_PART := 0.4
 ## La part d'un coup de la ruée que porte chaque charge de son sillage statique.
 const TRAIL_CHARGE_PART := 0.5
+## La Prise d'air : le pas de vol qui donne un gain. La Surchauffe : ses charges au plus.
+## La Pluie de météorites : la part et le rayon d'une mini-météorite, l'écart au point
+## d'impact en part du rayon. La Convergence : l'écart entre deux boules au départ.
+const SWELL_STEP := 100.0
+const OVERHEAT_MOST := 3
+const SHOWER_PART := 0.3
+const SHOWER_RADIUS := 1.0 / 3.0
+const SHOWER_SPREAD := 0.7
+const CONVERGE_GAP := 10.0
+## Le Gonflement : la taille la plus grande qu'une boule atteint, en multiple de la sienne.
+const GIRTH_MOST := 2.0
+## La chance d'état ajoutée par la Poudrière, en points de pourcentage : ×6 sur les 20 %
+## de base, de quoi passer 100 %.
+const SURE_STATE := 500.0
+## La Gloutonnerie : la vie gagnée et la taille prise par proie, et les proies au plus. La
+## Mue de croissance : le rayon de sa gerbe. Le Crachat : son rythme, sa portée, le rayon
+## de sa petite explosion, l'écart de deux boules de la Gerbe (en radians).
+const GLUTTONY_LIFE := 0.5
+const GLUTTONY_GROWTH := 0.08
+const GLUTTONY_MOST := 5
+const MOLT_RADIUS := 40.0
+const SPIT_PERIOD := 1.5
+const SPIT_REACH := 100.0
+const SPIT_SPREAD := 0.35
+## Le rayon de la petite explosion d'une étincelle (`spark()`) : crachat, escarbille.
+const SPARK_RADIUS := 12.0
+## Le Feu de camp : les secondes d'immobilité qui le montent au plus. Les Escarbilles : leur
+## part d'une impulsion, et leur portée en multiple du rayon. L'Œil du brasier : la part
+## centrale du rayon. La Renaissance : son attente, la vie qu'elle laisse, la portée de son
+## explosion en multiple du rayon ; les Cendres du phénix : leur durée, leur « plus ».
+const CAMPFIRE_MOST := 3.0
+const EMBER_PART := 0.4
+const EMBER_REACH := 2.0
+const EYE_PART := 1.0 / 3.0
+const REBIRTH_PERIOD := 60.0
+const REBIRTH_HEALTH := 0.2
+const REBIRTH_REACH := 2.0
+const ASHES_TIME := 4.0
+const ASHES_MORE := 50.0
+## La Seconde foulée : la fenêtre où la ruée se relance gratuite. Le Charmeur : la compétence
+## qu'il fait surgir. L'Onde brûlante : sa portée, en multiple du rayon de l'atterrissage.
+const STRIDE_WINDOW := 1.5
+const CHARMED_SKILL := "hell_snake"
+const BURNING_WAVE_REACH := 2.0
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -392,6 +567,43 @@ var lure := 0.0
 var echo_power := 0.0
 var echoes := 0.0
 var countersong := 0.0
+var swell := 0.0
+var overheat := 0.0
+var stoked := 0.0
+var meteor_shower := 0.0
+var split_cascade := 0.0
+var powder_keg := 0.0
+var converge := 0.0
+var wide_blast := 0.0
+var girth := 0.0
+var gluttony := 0.0
+var growth_molt := 0.0
+var constrict := 0.0
+var vise := 0.0
+var ouroboros := 0.0
+var spiral := 0.0
+var spit := 0.0
+var spit_fan := 0.0
+var hatchling_time := 0.0
+var hatchling_bite := 0.0
+var rot_hold := 0.0
+var ignite_effect := 0.0
+var melt := 0.0
+var campfire := 0.0
+var embers := 0.0
+var rebirth := 0.0
+var phoenix_ashes := 0.0
+var vigil := 0.0
+var eye := 0.0
+var soul_feast := 0.0
+var flying_start := 0.0
+var wick := 0.0
+var short_fuse := 0.0
+var second_stride := 0.0
+var stride_fire := 0.0
+var charmer := 0.0
+var snake_dance := 0.0
+var burning_wave := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -553,6 +765,9 @@ func against_factor(states: StatusEffects) -> float:
 		if (against_increased[kind] != 0.0 or against_more[kind] != 1.0) and states.active(kind):
 			added += against_increased[kind]
 			product *= against_more[kind]
+	# La Surchauffe : un « plus » par charge, lu avant que ce coup n'en pose une autre.
+	if overheat > 0.0:
+		product *= 1.0 + overheat * 0.01 * states.strength(StatusEffects.Kind.OVERHEAT)
 	if increased <= 0.0:
 		return product
 	return maxf(increased + added * 0.01, 0.0) / increased * product
@@ -601,6 +816,26 @@ static func facts() -> Dictionary:
 		"fardeau": roundi(BURDEN_FACTOR),
 		"rythme_fardeau": BURDEN_PERIOD,
 		"force_marque": roundi(MARK_FACTOR),
+		"pas_vol": roundi(SWELL_STEP),
+		"charges_surchauffe": OVERHEAT_MOST,
+		"duree_surchauffe": roundi(StatusEffects.DURATIONS[StatusEffects.Kind.OVERHEAT]),
+		"part_pluie": roundi(SHOWER_PART * 100.0),
+		"taille_max": roundi(GIRTH_MOST * 100.0),
+		"vie_proie": GLUTTONY_LIFE,
+		"proies_max": GLUTTONY_MOST,
+		"rayon_mue": roundi(MOLT_RADIUS),
+		"rythme_crachat": SPIT_PERIOD,
+		"portee_crachat": roundi(SPIT_REACH),
+		"montee_max": roundi(CAMPFIRE_MOST),
+		"part_escarbille": roundi(EMBER_PART * 100.0),
+		"portee_escarbille": roundi(EMBER_REACH),
+		"attente_renaissance": roundi(REBIRTH_PERIOD),
+		"vie_renaissance": roundi(REBIRTH_HEALTH * 100.0),
+		"portee_renaissance": roundi(REBIRTH_REACH),
+		"duree_cendres": roundi(ASHES_TIME),
+		"plus_cendres": roundi(ASHES_MORE),
+		"fenetre_foulee": STRIDE_WINDOW,
+		"portee_onde": roundi(BURNING_WAVE_REACH),
 	}
 
 
@@ -615,11 +850,39 @@ func ground(p_radius := GROUND_RADIUS) -> SkillStats:
 
 
 ## Le lancer d'un éclat : la moitié du rayon, pour qu'une explosion d'éclat ne se lise pas
-## comme celle du tir.
+## comme celle du tir. En cascade, il éclate à son tour — une fois : `_derived()` ne
+## recopie pas la cascade.
 func shard() -> SkillStats:
 	var g := _derived(SPLIT_PART)
 	g.projectile_speed = projectile_speed
 	g.radius = radius * 0.5
+	if split_cascade > 0.0:
+		g.splits = splits
+	return g
+
+
+## Un petit de l'Hydre : un éclat qui vit `HATCHLING_LIFE`, plus longtemps et plus fort
+## sous le Venin d'hydre — et ne se divise pas, `_derived()` ne recopiant pas les petits.
+func hatchling() -> SkillStats:
+	var g := _derived(SPLIT_PART * (1.0 + hatchling_bite * 0.01))
+	g.duration = HATCHLING_LIFE + hatchling_time
+	g.period = period
+	return g
+
+
+## Une étincelle (`Fireball.spark()`) : une part du coup, une petite explosion — le crachat
+## du serpent, les escarbilles du brasier.
+func spark(part: float) -> SkillStats:
+	var g := _derived(part)
+	g.radius = SPARK_RADIUS
+	return g
+
+
+## Une mini-météorite de la Pluie : une part des dégâts, un tiers du rayon, et rien qui en
+## ferait tomber d'autres.
+func shower() -> SkillStats:
+	var g := _derived(SHOWER_PART)
+	g.radius = radius * SHOWER_RADIUS
 	return g
 
 
@@ -643,6 +906,7 @@ func _derived(part: float) -> SkillStats:
 	g.crit_multiplier = crit_multiplier
 	g.status_chance_increase = status_chance_increase
 	g.chill_effect = chill_effect
+	g.ignite_effect = ignite_effect
 	g.numb_effect = numb_effect
 	g.crawl_speed = crawl_speed
 	return g
@@ -746,6 +1010,9 @@ func finalize() -> void:
 	simultaneous = float(maxi(roundi(simultaneous), 0))
 	pierce = float(maxi(roundi(pierce), 0))
 	splits = float(maxi(roundi(splits), 0))
+	meteor_shower = float(maxi(roundi(meteor_shower), 0))
+	spit_fan = float(maxi(roundi(spit_fan), 0))
+	embers = float(maxi(roundi(embers), 0))
 	bounces = float(maxi(roundi(bounces), 0))
 	trail_charges = float(maxi(roundi(trail_charges), 0))
 	waves = float(maxi(roundi(waves), 0))

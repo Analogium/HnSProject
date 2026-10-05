@@ -27,7 +27,8 @@ signal struck(at: Vector2, parts: Array, victim: StatusEffects)
 signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
-enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED }
+## OVERHEAT : la Surchauffe de la Boule de feu (jalon 42), des charges que porte sa force.
+enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED, OVERHEAT }
 
 ## La nature de chaque état : ce qu'il brûle, et sa couleur.
 const NATURES := [
@@ -40,6 +41,7 @@ const NATURES := [
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.NECROTIC,
+	DamageType.Kind.FIRE,
 ]
 
 ## Ceux qu'un coup **tire** : **chaque nature en pose exactement un**, le physique
@@ -54,6 +56,7 @@ const TICKING := [Kind.DECAY, Kind.WILTING]
 ## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
 const IDS := [
 	"ignite", "numb", "chill", "rot", "blessing", "bleed", "decay", "wilting", "cursed",
+	"overheat",
 ]
 
 ## Ce qui précise des dégâts contre un état ; le terme se place avant : « dégâts accrus
@@ -68,12 +71,13 @@ const AGAINST := [
 	"contre les décomposés",
 	"contre les flétris",
 	"contre les maudits",
+	"contre les surchauffés",
 ]
 
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := [
 	"embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant", "décomposé", "flétri",
-	"maudit",
+	"maudit", "surchauffé",
 ]
 
 ## Ce qui brûle, nommé par le compteur de DPS.
@@ -88,7 +92,7 @@ const BURN_NAMES := {
 ## une sorte à sa statistique — le porteur y écrit ses facteurs, la page du manuel y lit
 ## son libellé.
 const CHANCE_STATS := [
-	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "",
+	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "", "",
 ]
 ## Le libellé de la chance d'une sorte **sans statistique** : un lancer peut l'accroître
 ## (le Projectile élémentaire, jalon 28) et la page doit pouvoir le dire.
@@ -96,7 +100,7 @@ const UNWORN_CHANCES := {Kind.NUMB: "chance d'engourdir", Kind.BLEED: "chance de
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
-const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0]
+const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 3.0]
 
 ## Pour **chaque nature présente** dans le coup, quelle que soit sa part (jalon 34, à la
 ## PoE 1) : les mêmes dégâts physiques font saigner aussi souvent sur toutes les
@@ -138,6 +142,8 @@ const OWN_COLORS := {
 	Kind.DECAY: Color(0.62, 0.60, 0.20),
 	Kind.WILTING: Color(0.30, 0.52, 0.40),
 	Kind.CURSED: Color(0.58, 0.30, 0.62),
+	# Le blanc jaune de la chaleur : l'orange est déjà celui de l'embrasement.
+	Kind.OVERHEAT: Color(1.0, 0.88, 0.50),
 }
 
 ## Les pertes sans coup s'affichent par paquets : un chiffre par image en ferait
@@ -162,6 +168,8 @@ class State:
 	var unreported := 0.0
 	## Jusqu'au prochain à-coup, pour ce qui brûle par à-coups (`TICKING`).
 	var until_tick := DOT_TICK
+	## La résistance au feu que cet embrasement fait fondre (la Fonte, jalon 42).
+	var melt := 0.0
 
 
 ## Des pertes sans coup, montrées par paquets. Le joueur en a deux — Immolation et
@@ -207,6 +215,8 @@ var _since_report := 0.0
 ## Dans l'ordre où ils se sont posés : le dernier est le plus récent.
 var _states: Array[State] = []
 var _losses := Pack.new()
+## Les serpents qui le tiennent : deux peuvent l'enlacer, le premier parti ne le lâche pas.
+var _holds := 0
 var _to_show := 0.0
 
 
@@ -320,6 +330,32 @@ func pass_on(kind: int, other: StatusEffects) -> void:
 	other.put(kind, state.per_second / burn if burn > 0.0 else 0.0, author, state.source, state.strength)
 
 
+## Une charge de plus de cet état, `most` au plus, à pleine durée : la Surchauffe. Les
+## charges sont sa force, que `strength()` relit.
+func charge(kind: int, most: int, author: StatusEffects, source := "") -> void:
+	put(kind, 0.0, author, source, minf(strength(kind) + 1.0, float(most)))
+
+
+## Rend du temps à cet état, jamais plus que sa pleine durée : la Morsure nécrosante.
+func extend(kind: int, seconds: float) -> void:
+	var state := _state(kind)
+	if state != null:
+		state.remaining = minf(state.remaining + seconds, DURATIONS[kind])
+
+
+## Enlacé par un serpent sous l'Étau (jalon 42), ou relâché. Tenu, il ne bouge ni
+## n'attaque : `speed_factor` à zéro, que lisent la marche et la recharge des attaques.
+func hold(on: bool) -> void:
+	_holds += 1 if on else -1
+	_recompute()
+
+
+## La force de cet état, zéro s'il n'est pas là.
+func strength(kind: int) -> float:
+	var state := _state(kind)
+	return state.strength if state != null else 0.0
+
+
 ## Ôte cet état s'il est là : ce que consomme une réaction de la Catalyse (jalon 41).
 ## Rend s'il y était.
 func remove(kind: int) -> bool:
@@ -338,11 +374,25 @@ func remove(kind: int) -> bool:
 ## Les points de résistance que ses états retirent à cette nature : la malédiction, à sa
 ## force (Malédiction profonde, la Marque de mort).
 func resistance_lost(nature: int) -> float:
-	if nature == DamageType.Kind.NECROTIC and not is_clear:
+	if is_clear:
+		return 0.0
+	if nature == DamageType.Kind.NECROTIC:
 		var curse := _state(Kind.CURSED)
 		if curse != null:
 			return CURSE * curse.strength
+	elif nature == DamageType.Kind.FIRE:
+		var ignite := _state(Kind.IGNITE)
+		if ignite != null:
+			return ignite.melt
 	return 0.0
+
+
+## La Fonte : un embrasement déjà là fait fondre autant de résistance au feu, le plus fort
+## l'emporte. Il s'en va avec lui.
+func melt(amount: float) -> void:
+	var ignite := _state(Kind.IGNITE)
+	if ignite != null:
+		ignite.melt = maxf(ignite.melt, amount)
 
 
 ## La chance de base, plus ce que ces dégâts retirent des PV max : un coup de feu qui ôte
@@ -457,6 +507,8 @@ func _recompute() -> void:
 	is_clear = _states.is_empty()
 	var chill := _state(Kind.CHILL)
 	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
+	if _holds > 0:
+		speed_factor = 0.0
 	var numb := _state(Kind.NUMB)
 	damage_taken_factor = 1.0 + NUMB * numb.strength if numb != null else 1.0
 	var blessing := _state(Kind.BLESSING)

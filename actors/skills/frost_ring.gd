@@ -14,6 +14,9 @@ const JAVELIN_STEP := 16.0
 const GOLDEN := 2.399963
 ## La dernière part de sa vie, où il se vide un javelot après l'autre au lieu de pâlir.
 const EMPTYING := 0.35
+## L'Onde brûlante du Bond (jalon 42), le même anneau en feu : « couronne alternée »,
+## choisie sur planche — une grande langue, une petite, tous les quatorze pixels.
+const FLAME_STEP := 14.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -22,12 +25,15 @@ var _age := 0.0
 ## Un tirage pour tout l'anneau (invariant 3), au premier pas de physique.
 var _parts: Array[float] = []
 var _struck := {}
+## Sa portée, en multiple du rayon de son lancer.
+var _reach := REACH
 
 
 static func spread(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, reach_factor := REACH
 ) -> FrostRing:
 	var ring := FrostRing.new()
+	ring._reach = reach_factor
 	ring._cast = cast
 	ring._author = author
 	ring._tint = DamageType.COLORS[cast.nature]
@@ -44,7 +50,7 @@ func _ready() -> void:
 ## Ce qu'il couvre maintenant : vite au départ, lent au bout — une onde qui s'épuise.
 func reach() -> float:
 	var k := clampf(_age / LIFETIME, 0.0, 1.0)
-	return _cast.radius * REACH * (1.0 - pow(1.0 - k, 2.0))
+	return _cast.radius * _reach * (1.0 - pow(1.0 - k, 2.0))
 
 
 func _physics_process(delta: float) -> void:
@@ -66,9 +72,27 @@ func _physics_process(delta: float) -> void:
 func _draw() -> void:
 	var r := reach()
 	var left := clampf((LIFETIME - _age) / (LIFETIME * EMPTYING), 0.0, 1.0)
+	if _cast.nature == DamageType.Kind.FIRE:
+		_crown(r, left)
+		return
 	for i in maxi(int(TAU * r / JAVELIN_STEP), 1):
 		if fmod(float(i) * 0.618, 1.0) > left:
 			continue
 		var angle := float(i) * GOLDEN
 		var out := Vector2.from_angle(angle)
 		Frost.javelin(_tint, Slash.turn_of(angle)).put(self, out * (r + 4.0 * sin(float(i) * 7.1)))
+
+
+## Les langues, pieds sur le cercle, et qui s'éteignent une à une comme les javelots.
+func _crown(r: float, left: float) -> void:
+	var big := EffectForge.flames(_tint)
+	var small := EffectForge.small_flames(_tint)
+	var n := maxi(int(TAU * r / FLAME_STEP), 6)
+	for i in n:
+		if fmod(float(i) * 0.618, 1.0) > left:
+			continue
+		var frames := big if i % 2 == 0 else small
+		var tex: Texture2D = frames[int(_age * EffectForge.FLAME_HZ + float(i) * 1.7) % frames.size()]
+		var foot := Vector2.from_angle(TAU * float(i) / float(n)) * r
+		var size := Vector2(tex.get_width(), tex.get_height())
+		draw_texture_rect(tex, Rect2(EffectForge.snap(self, foot - Vector2(size.x * 0.5, size.y)), size), false)

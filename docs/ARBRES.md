@@ -24,50 +24,50 @@ survivre — ne rend rien ici.
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 147/s | 125/s |
-| meilleur au paquet | Vélocité 2, Perforation 2, Double langue 2, Souffle ardent 3, Fragmentation 3 | 1816/s ×12,4 | 280/s ×2,23 |
-| meilleur au duel | Vélocité 2, Double langue 2, Attisement 4, Souffle ardent 1, Braises dispersées 3, Ardeur 2, Étincelles 3 | 733/s ×5,00 | 425/s ×3,39 |
-| Givre au paquet (conversion) | Attisement 4, Ardeur 1, Givre 1, Vélocité 2, Perforation 2, Double langue 2, Souffle ardent 3, Braises dispersées 3, Fragmentation 2 | 1816/s ×12,4 | 386/s ×3,08 |
-| Givre au duel (conversion) | Attisement 4, Ardeur 2, Givre 1, Vélocité 2, Double langue 2, Souffle ardent 1, Braises dispersées 3 | 657/s ×4,48 | 397/s ×3,17 |
-| Météore au paquet (transformation) | Attisement 4, Météore 1, Vélocité 2, Double langue 2, Souffle ardent 1, Étincelles 3, Réaction en chaîne 1, Braises dispersées 3, Ardeur 2 | 1807/s ×12,3 | 357/s ×2,85 |
-| Météore au duel (transformation) | Attisement 4, Météore 1, Vélocité 2, Double langue 2, Fragmentation 3, Souffle ardent 1, Braises dispersées 3, Ardeur 2, Étincelles 2 | 1243/s ×8,48 | 488/s ×3,89 |
+| meilleur au paquet | Attisement 3, Météore 1, Chute libre 1, Souffle ardent 1, Étincelles 3, Réaction en chaîne 1, Vélocité 2, Double langue 1, Convergence 1, Noyau dense 1, Surchauffe 3, Fragmentation 2 | 3450/s ×23,5 | 862/s ×6,88 |
+| meilleur au duel | Attisement 4, Noyau dense 1, Surchauffe 3, Vélocité 2, Double langue 2, Météore 1, Chute libre 1, Fragmentation 3, Ardeur 2, Étincelles 1 | 1816/s ×12,4 | 1513/s ×12,1 |
+| Givre au paquet (conversion) | Attisement 3, Ardeur 1, Givre 1, Météore 1, Chute libre 1, Étincelles 3, Réaction en chaîne 1, Vélocité 2, Double langue 1, Convergence 1, Noyau dense 1, Surchauffe 3 | 3450/s ×23,5 | 801/s ×6,39 |
+| Givre au duel (conversion) | Attisement 4, Ardeur 2, Givre 1, Noyau dense 1, Vélocité 2, Double langue 2, Surchauffe 3, Météore 1, Chute libre 1, Fragmentation 3 | 1816/s ×12,4 | 1442/s ×11,5 |
+| Météore au paquet (transformation) | Attisement 3, Météore 1, Chute libre 1, Souffle ardent 1, Étincelles 3, Réaction en chaîne 1, Vélocité 2, Double langue 1, Convergence 1, Noyau dense 1, Surchauffe 3, Fragmentation 2 | 3450/s ×23,5 | 862/s ×6,88 |
+| Météore au duel (transformation) | Attisement 4, Météore 1, Noyau dense 1, Chute libre 1, Vélocité 2, Double langue 2, Surchauffe 3, Fragmentation 3, Ardeur 2, Étincelles 1 | 1816/s ×12,4 | 1513/s ×12,1 |
 
-Jamais pris : aucun.
+Jamais pris : Perforation, Prise d'air, Feu nourri, Pluie de météorites, Gel intense, Éclats en cascade, Poudrière.
 
 ### Serpent infernal
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 139/s | 113/s |
-| meilleur au paquet | Crocs 2, Mue 4, Longue vie 1, Queue de flammes 3, Chasseur 1 | 455/s ×3,28 | 211/s ×1,87 |
-| meilleur au duel | Crocs 2, Mue 4, Couvée 2, Longue vie 1, Queue de flammes 3, Hydre 1, Vif 1, Mue explosive 3 | 343/s ×2,47 | 279/s ×2,48 |
-| Venin au paquet (conversion) | Crocs 2, Venin 1, Longue vie 3, Queue de flammes 3, Mue 4, Chasseur 1 | 443/s ×3,20 | 220/s ×1,95 |
-| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 1, Queue de flammes 3, Chasseur 1 | 401/s ×2,89 | 270/s ×2,40 |
+| sans arbre | — | 128/s | 98,0/s |
+| meilleur au paquet | Crocs 1, Chasseur 1, Queue de flammes 3, Mue 4, Sifflement 3, Crachat 1, Gerbe 2 | 520/s ×4,07 | 291/s ×2,97 |
+| meilleur au duel | Crocs 2, Chasseur 1, Constriction 1, Mue 4, Sifflement 3, Crachat 2, Gerbe 2, Queue de flammes 3 | 395/s ×3,10 | 1030/s ×10,5 |
+| Venin au paquet (conversion) | Crocs 2, Venin 1, Chasseur 1, Queue de flammes 3, Sifflement 1, Crachat 1, Gerbe 2 | 464/s ×3,64 | 191/s ×1,95 |
+| Venin au duel (conversion) | Crocs 2, Venin 1, Chasseur 1, Constriction 1, Mue 4, Sifflement 3, Crachat 2, Gerbe 2, Queue de flammes 3, Gloutonnerie 1 | 396/s ×3,10 | 1027/s ×10,5 |
 
-Jamais pris : aucun.
+Jamais pris : Longue vie, Vif, Couvée, Hydre, Ouroboros, Spirale, Étau, Mue de croissance, Venin d'hydre, Morsure nécrosante.
 
 ### Immolation
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 95,6/s | 42,4/s |
-| meilleur au paquet | Brasier 4, Cœur tiède 2, Phénix 1, Fournaise 5, Contagion ardente 1, Cendres vivantes 3, Pouls lent 2, Étincelles 2 | 518/s ×5,42 | 96,7/s ×2,28 |
-| meilleur au duel | Cœur tiède 2, Phénix 1, Fournaise 5, Pouls lent 2 | 182/s ×1,91 | 96,7/s ×2,28 |
-| Flamme noire au paquet (conversion) | Fournaise 2, Pouls lent 2, Flamme noire 1, Brasier 4, Cœur tiède 2, Phénix 1, Contagion ardente 1, Cendres vivantes 3 | 476/s ×4,98 | 70,7/s ×1,67 |
-| Flamme noire au duel (conversion) | Fournaise 5, Pouls lent 2, Flamme noire 1, Cœur tiède 2, Phénix 1 | 175/s ×1,83 | 85,4/s ×2,02 |
+| meilleur au paquet | Brasier 4, Feu de camp 3, Escarbilles 3, Cœur tiède 2, Phénix 1, Fournaise 5, Brûlure profonde 2 | 767/s ×8,03 | 124/s ×2,93 |
+| meilleur au duel | Cœur tiède 2, Phénix 1, Brasier 2, Feu de camp 3, Fournaise 5, Pouls lent 2, Tirage 2, Œil du brasier 2, Brûlure profonde 1 | 413/s ×4,33 | 177/s ×4,18 |
+| Flamme noire au paquet (conversion) | Fournaise 2, Pouls lent 2, Flamme noire 1, Feu de camp 3, Brasier 4, Cœur tiède 2, Phénix 1, Escarbilles 3 | 725/s ×7,59 | 103/s ×2,42 |
+| Flamme noire au duel (conversion) | Fournaise 5, Pouls lent 2, Flamme noire 1, Feu de camp 3, Cœur tiède 2, Phénix 1 | 270/s ×2,83 | 124/s ×2,92 |
 
-Jamais pris : aucun.
+Jamais pris : Offrandes, Fonte, Renaissance, Cendres du phénix, Veillée, Âmes consumées.
 
 ### Ruée ardente
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 83,6/s | 15,5/s |
-| meilleur au paquet | Sillage 3, Braises 3, Brûle-pavé 2, Élan 2, Bûcher 2, Tison 2, Étincelles 3 | 361/s ×4,32 | 50,1/s ×3,23 |
-| meilleur au duel | Sillage 3, Élan 2, Bûcher 4, Tison 2, Brûle-pavé 2, Atterrissage 3, Étincelles 3 | 47,3/s ×0,57 | 59,3/s ×3,82 |
-| Bond au paquet (transformation) | Élan 2, Atterrissage 3, Bond 1, Onde de choc 2, Bûcher 4 | 363/s ×4,35 | 63,3/s ×4,08 |
-| Bond au duel (transformation) | Élan 2, Atterrissage 1, Bond 1, Bûcher 4, Tison 2 | 89,0/s ×1,06 | 68,3/s ×4,40 |
+| meilleur au paquet | Sillage 3, Braises 3, Brûle-pavé 2, Élan 2, Mèche 3, Bûcher 4, Tison 2, Seconde foulée 1 | 527/s ×6,31 | 129/s ×8,28 |
+| meilleur au duel | Élan 2, Atterrissage 1, Bond 1, Onde brûlante 2, Seconde foulée 1, Foulée de feu 2, Bûcher 4, Tison 2 | 202/s ×2,41 | 263/s ×17,0 |
+| Bond au paquet (transformation) | Élan 2, Atterrissage 3, Bond 1, Seconde foulée 1, Onde brûlante 2, Onde de choc 2, Sillage 1, Brûle-pavé 1, Mèche 1, Mèche courte 1 | 754/s ×9,03 | 119/s ×7,67 |
+| Bond au duel (transformation) | Élan 2, Atterrissage 1, Bond 1, Seconde foulée 1, Onde brûlante 2, Foulée de feu 2, Bûcher 4, Tison 2 | 202/s ×2,41 | 263/s ×17,0 |
 
-Jamais pris : aucun.
+Jamais pris : Départ en trombe, Charmeur, Danse du charmeur.
 
 ## Manuel de la foudre
 

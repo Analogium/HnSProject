@@ -33,6 +33,9 @@ var _next_threshold := 0.0
 ## avec les nœuds, pas leur répartition.
 var _braises: Array[Vector2] = []
 var _flames: Flames
+## Le Feu de camp (jalon 42) : les secondes passées sans bouger, et où le porteur était.
+var _still := 0.0
+var _was_at := Vector2.INF
 
 
 static func ignite(player: Player, skill: Skill) -> Immolation:
@@ -68,18 +71,69 @@ func _physics_process(delta: float) -> void:
 		_player.extinguish(_skill.id)
 		return
 	_age += delta
+	_still = _still + delta if global_position == _was_at else 0.0
+	_was_at = global_position
 	if _cast == null or _age >= _next_threshold:
 		_cast = _player.resolve(_skill, points)
+		_cast.radius *= _rise()
 		_next_threshold = _age + _cast.period
 		_strike()
 	queue_redraw()
 	_flames.queue_redraw()
-	# En dernier : la brûlure peut tuer le porteur, qui éteint alors l'aura.
-	_player.burn(_cast.self_burn, _cast.distribution(), delta)
+	# La Veillée : à pleine montée du feu de camp, le brasier soigne.
+	if _still >= SkillStats.CAMPFIRE_MOST:
+		_player.mend(_cast.vigil * 0.01, delta)
+	# En dernier : la brûlure peut tuer le porteur, qui éteint alors l'aura. Les Cendres du
+	# phénix l'en dispensent.
+	if _player.phoenix_ashes <= 0.0:
+		_player.burn(_cast.self_burn, _cast.distribution(), delta)
 
 
+## Ce que le Feu de camp ajoute, en multiple : son « plus » par seconde immobile, au plus
+## `CAMPFIRE_MOST` secondes. Au rayon comme aux dégâts.
+func _rise() -> float:
+	return 1.0 + _cast.campfire * 0.01 * minf(_still, SkillStats.CAMPFIRE_MOST)
+
+
+## Une impulsion : **un tirage** pour tout le cercle (invariant 3), comme
+## `Targets.strike_circle()` — écrit à la main pour l'Œil du brasier, qui frappe plus fort
+## au cœur, et le Tirage, qui y ramène (un recul négatif).
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _player.states)
+	var parts := _cast.roll(Game.rng)
+	var factor := _rise()
+	if _player.phoenix_ashes > 0.0:
+		factor *= 1.0 + _cast.phoenix_ashes * SkillStats.ASHES_MORE * 0.01
+	for i in parts.size():
+		parts[i] *= factor
+	var core := _cast.radius * SkillStats.EYE_PART
+	var eyed := parts.duplicate()
+	for i in eyed.size():
+		eyed[i] *= 1.0 + _cast.eye * 0.01
+	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+		var inside := target.global_position.distance_to(global_position) <= core
+		Targets.strike(
+			target, eyed if inside else parts, global_position, _player.states, _cast, -_cast.pull
+		)
+	if _cast.embers > 0.0:
+		_scatter(factor)
+
+
+## Les Escarbilles : une étincelle par point vers un ennemi **hors** du cercle, jusqu'à
+## `EMBER_REACH` fois son rayon, partie de son bord — à la force de l'impulsion.
+func _scatter(factor: float) -> void:
+	var left := int(_cast.embers)
+	var spark := _cast.spark(SkillStats.EMBER_PART * factor)
+	var reach := _cast.radius * SkillStats.EMBER_REACH
+	for target in Targets.in_circle(get_world_2d(), global_position, reach):
+		if left <= 0:
+			return
+		var toward := global_position.direction_to(target.global_position)
+		if target.global_position.distance_to(global_position) > _cast.radius:
+			Fireball.spark(
+				_player._effects_parent(), global_position + toward * _cast.radius, toward, spark,
+				_player.states
+			)
+			left -= 1
 
 
 func _draw() -> void:

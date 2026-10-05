@@ -53,6 +53,8 @@ const CUT_WIDTH := 0.45
 const GROUND_LAYER := "ground_layer"
 const SPARKS := 8
 const SPARK_SPEED := 44.0
+## La Mèche (jalon 42) : le temps entre deux plaques qui explosent, du départ à l'arrivée.
+const WICK_DELAY := 0.05
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -74,6 +76,11 @@ var _ground := false
 var _drawn := -1
 ## Sa case dans `_laid`, pour un sol : où il se tient, de quelle compétence et de quelle nature.
 var _key := ""
+## Où posent ses explosions — au-dessus des corps, pas sur sa couche. Le temps depuis que
+## la Mèche s'est allumée, et les plaques déjà parties.
+var _effects: Node
+var _fuse := 0.0
+var _fused := 0
 
 ## Les sols vivants par case : **un sol ne se pose pas sur un sol** de la même compétence et
 ## de la même nature, il le ravive. Ils ne cumulent pas leurs coups ; sans cela, 144 serpents
@@ -107,6 +114,7 @@ static func leave(
 	trail._ground = ground
 	trail._toward = to - from_value
 	trail._tint = DamageType.COLORS[cast.nature]
+	trail._effects = parent
 	layer(parent).add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
@@ -178,8 +186,30 @@ func _physics_process(delta: float) -> void:
 	if look != _drawn:
 		_drawn = look
 		queue_redraw()
-	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
+	var spent := _age >= _cast.duration and _strikes >= _cast.strikes_over_duration()
+	# La Mèche brûle quand la traînée s'éteint ; la Mèche courte dès qu'elle est posée, et
+	# la traînée part avec elle.
+	if _cast.wick > 0.0 and not _ground and (spent or _cast.short_fuse > 0.0):
+		if not _burn_fuse(delta):
+			queue_free()
+	elif spent:
 		queue_free()
+
+
+## Une explosion par plaque — une sonde sur deux, qu'elles ne se chevauchent pas —, à la
+## part `wick` d'une impulsion, un tirage chacune. Vrai tant qu'il en reste à faire partir.
+func _burn_fuse(delta: float) -> bool:
+	_fuse += delta
+	var points := _probes()
+	var plates := ceili(float(points.size()) / 2.0)
+	var due := mini(int(_fuse / WICK_DELAY) + 1, plates)
+	while _fused < due:
+		var parts := _cast.roll(Game.rng)
+		for i in parts.size():
+			parts[i] *= _cast.wick * 0.01
+		Explosion.put(_effects, points[_fused * 2], parts, _cast.radius, null, _tint, _author, _cast)
+		_fused += 1
+	return _fused < plates
 
 
 ## Un tirage par impulsion et non par cercle : c'est un geste de la trace, pas un coup

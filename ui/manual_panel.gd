@@ -24,21 +24,22 @@ const CELL := 34.0
 const CELL_GAP := 6.0
 
 ## L'arbre ouvert (jalon 34, « centre, élargi » choisi sur planche) : la compétence au
-## centre, ses nœuds en réseau autour, jusqu'à `TREE_SPAN` cases de chaque côté. La
-## fenêtre s'élargit à `TREE_W` le temps de l'arbre : à 210 pixels, les nœuds collaient.
-## `NODE` est la zone qu'on survole ; ce qui s'y dessine dépend de la sorte du nœud.
-const NODE := 28.0
-const SIMPLE_NODE := 22.0
-const DIAMOND := 15.0
-const SUITE_DIAMOND := 11.0
+## centre, ses nœuds en réseau autour, jusqu'à `TREE_SPAN` cases de chaque côté. **En plein
+## écran** (jalon 42, planche B), à `TREE_MARGIN` des bords, par-dessus le sac : les dos des
+## livres s'effacent le temps de l'arbre. `NODE` est la zone qu'on survole ; ce qui s'y
+## dessine dépend de la sorte du nœud.
+const NODE := 32.0
+const SIMPLE_NODE := 26.0
+const DIAMOND := 18.0
+const SUITE_DIAMOND := 13.0
 ## Le tireté qui mène à une suite, et son assombrissement tant qu'elle n'est pas prise.
 const SUITE_DASH := 4.0
 const SUITE_DIM := 0.55
-## ±2 rangées (jalon 42) : à ±1, vingt places, et la Boule de feu en demande vingt et une.
-## La page n'a que 164 px de haut entre l'en-tête et l'aide : d'où 32 px entre deux rangées.
-const TREE_STEP := Vector2(42.0, 32.0)
-const TREE_SPAN := Vector2i(3, 2)
-const TREE_W := 300.0
+## ±4 colonnes et ±2 rangées : la page plein écran a 216 px de haut entre l'en-tête et
+## l'aide, cinq rangées à 44 px et un losange y tiennent.
+const TREE_STEP := Vector2(64.0, 44.0)
+const TREE_SPAN := Vector2i(4, 2)
+const TREE_MARGIN := 8.0
 ## Un grain par point demandé dans le parent, sur le lien, dès deux.
 const GRAIN := 2.0
 const GRAIN_STEP := 5.0
@@ -182,16 +183,18 @@ var _selected := 0
 var _opened := "":
 	set(value):
 		_opened = value
-		if _grid_height > 0.0:
-			size.y = _grid_height if value.is_empty() else _tree_height()
-			# Vers la gauche : à droite, le sac l'aurait recouvert.
-			var grow := 0.0 if value.is_empty() else TREE_W - _grid_width
-			position.x = _grid_left - grow
-			size.x = _grid_width + grow
+		if _grid.size.y <= 0.0:
+			return
+		if value.is_empty():
+			position = _grid.position
+			size = _grid.size
+			return
+		position = Vector2.ONE * TREE_MARGIN
+		size = Vector2(get_viewport_rect().size.x - TREE_MARGIN * 2.0, _tree_height())
+		# Au-dessus du sac, qu'il couvre : dessinée après lui, et servie avant lui en entrée.
+		get_parent().move_child(self, -1)
 ## La place de la scène, celle de la grille.
-var _grid_height := 0.0
-var _grid_width := 0.0
-var _grid_left := 0.0
+var _grid := Rect2()
 var _hover_slot := -1
 var _hover_cell := -1
 ## Le nœud survolé dans l'arbre ouvert, et le survol de la racine.
@@ -206,9 +209,7 @@ var _detailed := false
 
 func _ready() -> void:
 	visible = false
-	_grid_height = size.y
-	_grid_width = size.x
-	_grid_left = position.x
+	_grid = Rect2(position, size)
 	_font = ThemeDB.fallback_font
 	# Au plus proche voisin : lissée, la trame du pixel art tournerait au gris.
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -435,17 +436,20 @@ func _track(point: Vector2) -> void:
 
 
 ## Celui de la classe un écart plus loin : il ne se range pas, et ne doit pas se lire
-## comme un quatrième choix.
+## comme un quatrième choix. Vide quand un arbre est ouvert : ni dessiné, ni survolé.
 func _slot_rect(index: int) -> Rect2:
+	if _open_cell() != null:
+		return Rect2()
 	var x := PAD + float(index) * (SLOT + SLOT_GAP)
 	if index == Rack.CLASS_SLOT:
 		x += SLOT_GAP
 	return Rect2(x, HEADER, SLOT, SLOT)
 
 
-## Le haut de la page : sous les dos, avec de l'air.
+## Le haut de la page : sous les dos, avec de l'air — sous le titre seul quand un arbre
+## est ouvert, les dos effacés.
 func _page_top() -> float:
-	return HEADER + SLOT + PAD * 2.0
+	return HEADER + PAD if _open_cell() != null else HEADER + SLOT + PAD * 2.0
 
 
 ## Le haut de la ligne d'aide, borne basse des cases : lu ici par le dessin et le test.
@@ -491,8 +495,9 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.BORDER, false, 1.0)
 	_text(Texts.t("MANUELS"), Vector2(PAD, 11.0), TITLE_SIZE, UiPalette.TITLE)
 
-	for i in Rack.SLOT_COUNT:
-		_draw_slot(i)
+	if _open_cell() == null:
+		for i in Rack.SLOT_COUNT:
+			_draw_slot(i)
 
 	var book := _book()
 	if book == null:
@@ -1397,8 +1402,9 @@ func _requirement_lines(manual: Manual, cell: ManualCell, node: TalentNode) -> A
 	var links := {}
 	for parent: String in node.parents:
 		links[cell.node_of(parent)] = node.parents[parent]
+	# Une suite ne s'atteint que par ce nœud : la proposer comme entrée serait mentir.
 	for child in cell.talents:
-		if child.parents.has(node.id):
+		if child.parents.has(node.id) and not cell.is_suite(child):
 			links[child] = 1
 	var first := true
 	for linked: TalentNode in links:
@@ -1456,6 +1462,18 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 					Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.EFFECT_OF[kind]]),
 					_times(cast.strength_of(kind)), StatusEffects.color(kind)
 				))
+		# La Surchauffe (jalon 42) : posée à chaque coup, sans tirage, et ce que vaut une charge.
+		if cast.overheat > 0.0:
+			var heat := StatusEffects.Kind.OVERHEAT
+			out.append(SheetLine.new(
+				Group.ON_HIT, StatusEffects.name(heat), _chance(1.0), StatusEffects.color(heat)
+			))
+			out.append(SheetLine.new(
+				Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.OVERHEAT]),
+				Texts.t("{part} par charge, {charges} au plus").format({
+					"part": _increase(1.0 + cast.overheat * 0.01), "charges": SkillStats.OVERHEAT_MOST,
+				}), StatusEffects.color(heat)
+			))
 		# Ce que rend ou fait chaque ennemi touché (jalon 39).
 		for number: String in [SkillStats.KNOCKBACK, SkillStats.LIFE_ON_HIT, SkillStats.MANA_ON_HIT]:
 			var value := float(cast.get(number))
@@ -1557,8 +1575,16 @@ func _sheet_height(sheet: Sheet) -> float:
 ## détails encadrent le panneau.
 func _sheet_rect(anchor: Rect2, height: float, aside := false) -> Rect2:
 	var screen := Vector2(Settings.base_size())
-	var right := global_position.x + size.x + SHEET_GAP + SHEET_W <= screen.x
-	var x := size.x + SHEET_GAP if right != aside else -SHEET_GAP - SHEET_W
+	var x: float
+	if _open_cell() != null:
+		# Plein écran : à côté du nœud, du côté où il y a la place ; les détails au-delà.
+		var toward := 1.0 if anchor.get_center().x < size.x * 0.5 else -1.0
+		x = anchor.end.x + SHEET_GAP if toward > 0.0 else anchor.position.x - SHEET_GAP - SHEET_W
+		if aside:
+			x += (SHEET_W + SHEET_GAP) * toward
+	else:
+		var right := global_position.x + size.x + SHEET_GAP + SHEET_W <= screen.x
+		x = size.x + SHEET_GAP if right != aside else -SHEET_GAP - SHEET_W
 	x = clampf(x, -global_position.x, screen.x - global_position.x - SHEET_W)
 	var floor_value := Hud.gauges_top(screen.y) - global_position.y
 	var y := minf(anchor.position.y, floor_value - height)

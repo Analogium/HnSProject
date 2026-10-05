@@ -888,8 +888,8 @@ msgstr "Meteor"
 msgid "Bond"
 msgstr "Leap"
 
-msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et trois fois plus large, en secouant le sol — sol brûlant et réactions en chaîne compris. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer, et la perforation ne sert plus."
-msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there harder and three times as wide, shaking the ground — burning ground and chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast, and piercing no longer applies."
+msgid "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et trois fois plus large, en secouant le sol — réactions en chaîne comprises. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer et coûte plus de mana, et la perforation ne sert plus."
+msgstr "The ball no longer flies: it falls from the sky onto the aimed point and bursts there harder and three times as wide, shaking the ground — chain reactions included. Extra balls fall in a row across the aim, and shards burst out of the impact point. In exchange, the spell takes longer to cast and costs more mana, and piercing no longer applies."
 
 msgid "La ruée devient un saut : elle ne laisse plus de traînée de feu, mais son explosion d'arrivée frappe bien plus fort et plus large."
 msgstr "The dash becomes a leap: it no longer leaves a trail of fire, but its landing explosion hits much harder and wider."
@@ -905,9 +905,6 @@ msgstr "The ball flies faster. Its flight time does not change, so it also reach
 
 msgid "Augmente la chance de coup critique de la boule, touche directe et explosion comprises."
 msgstr "Raises the ball's critical strike chance, on the direct hit and the explosion alike."
-
-msgid "Chaque explosion laisse au sol une plaque de feu de rayon {rayon_sol}. Elle brûle les ennemis qui s'y tiennent — {part_sol} % des dégâts de la boule toutes les {rythme_sol} s — pendant la durée indiquée."
-msgstr "Each explosion leaves a patch of fire on the ground, radius {rayon_sol}. It burns enemies standing in it — {part_sol}% of the ball's damage every {rythme_sol} s — for the listed duration."
 
 msgid "Chaque sort lance une boule de plus, en éventail. En échange, chaque boule inflige moins de dégâts."
 msgstr "Each cast throws one more ball, fanned out. In exchange, each ball deals less damage."
@@ -948,9 +945,6 @@ msgstr "The snake no longer prowls around where it landed: it heads for the enem
 msgid "Chaque sort fait tomber un serpent de plus, en éventail. En échange, chaque serpent inflige moins de dégâts."
 msgstr "Each cast drops one more snake, fanned out. In exchange, each snake deals less damage."
 
-msgid "Quand le serpent disparaît, il explose là où se trouve sa tête, avec les dégâts d'une morsure, dans ce rayon."
-msgstr "When the snake vanishes, it explodes where its head is, with the damage of one bite, within this radius."
-
 msgid "Le serpent devient nécrotique : des dégâts nécrotiques, le mot-clé Nécrotique au lieu de Feu. Sa morsure fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
 msgstr "The snake turns necrotic: necrotic damage, the Necrotic keyword instead of Fire. Its bite rots instead of igniting, and your gear's necrotic bonuses apply to it, no longer the fire ones."
 
@@ -974,12 +968,6 @@ msgstr "The blaze burns you twice as much, but deals much more damage."
 
 msgid "Le brasier devient nécrotique, un peu moins fort : le mot-clé Nécrotique au lieu de Feu. Il fait pourrir au lieu d'embraser, et ce sont les bonus nécrotiques de l'équipement qui s'y appliquent, et non plus ceux de feu."
 msgstr "The blaze turns necrotic, slightly weaker: the Necrotic keyword instead of Fire. It rots instead of igniting, and your gear's necrotic bonuses apply to it, no longer the fire ones."
-
-msgid "Chaque ennemi tué par le brasier laisse une plaque de feu à sa place. Elle brûle les ennemis — {part_sol} % des dégâts d'une impulsion toutes les {rythme_sol} s — pendant la durée indiquée."
-msgstr "Each enemy killed by the blaze leaves a patch of fire where it fell. It burns enemies — {part_sol}% of a pulse's damage every {rythme_sol} s — for the listed duration."
-
-msgid "Un ennemi que le brasier tue explose s'il porte l'état de sa nature — embrasé, ou pourrissant une fois le brasier devenu nécrotique : {part_tue} % des dégâts d'une impulsion, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
-msgstr "An enemy killed by the blaze explodes if it bears the state of the blaze's nature — ignited, or rotting once the blaze has turned necrotic: {part_tue}% of a pulse's damage, within this radius around it. An enemy in that state killed by that explosion explodes in turn."
 
 msgid "La traînée de feu que laisse la ruée brûle plus longtemps."
 msgstr "The trail of fire left by the dash burns longer."
@@ -1011,9 +999,6 @@ msgstr "Ardor"
 msgid "Vélocité"
 msgstr "Velocity"
 
-msgid "Braises dispersées"
-msgstr "Scattered Embers"
-
 msgid "Perforation"
 msgstr "Piercing"
 
@@ -1038,9 +1023,6 @@ msgstr "Flame Tail"
 msgid "Chasseur"
 msgstr "Hunter"
 
-msgid "Mue explosive"
-msgstr "Bursting Molt"
-
 msgid "Venin"
 msgstr "Venom"
 
@@ -1053,14 +1035,8 @@ msgstr "Lukewarm Heart"
 msgid "Pouls lent"
 msgstr "Slow Pulse"
 
-msgid "Cendres vivantes"
-msgstr "Living Ashes"
-
 msgid "Phénix"
 msgstr "Phoenix"
-
-msgid "Contagion ardente"
-msgstr "Fiery Contagion"
 
 msgid "Atterrissage"
 msgstr "Landing"
@@ -4554,3 +4530,381 @@ msgstr "primer"
 
 msgid "un état suffit"
 msgstr "one state is enough"
+
+msgid "Noyau dense"
+msgstr "Dense Core"
+
+msgid "La boule n'explose presque plus : son explosion rétrécit à peu de chose, mais elle frappe bien plus fort, touche directe comprise. La cible contre la zone."
+msgstr "The ball barely explodes anymore: its blast shrinks to almost nothing, but it hits much harder, direct hit included. The target over the area."
+
+msgid "Prise d'air"
+msgstr "Updraft"
+
+msgid "La boule enfle en volant : son explosion gagne en dégâts et en rayon pour chaque tranche de {pas_vol} px parcourue avant d'éclater. Tirer de loin."
+msgstr "The ball swells as it flies: its explosion gains damage and radius for every {pas_vol} px travelled before it bursts. Shoot from afar."
+
+msgid "Surchauffe"
+msgstr "Overheat"
+
+msgid "Chaque coup de la boule surchauffe ce qu'il touche pendant {duree_surchauffe} s, jusqu'à {charges_surchauffe} charges : la boule suivante y frappe plus fort pour chaque charge. Marteler une même cible."
+msgstr "Each hit of the ball overheats what it touches for {duree_surchauffe} s, up to {charges_surchauffe} charges: the next ball hits it harder for each charge. Hammer a single target."
+
+msgid "Feu nourri"
+msgstr "Fed Fire"
+
+msgid "Une boule lancée pendant que votre Immolation brûle sort attisée du brasier : elle inflige plus de dégâts et explose plus large. Il faut savoir lancer l'Immolation, et l'avoir allumée."
+msgstr "A ball cast while your Immolation burns leaves the blaze stoked: it deals more damage and explodes wider. You must know Immolation, and have it lit."
+
+msgid "Pluie de météorites"
+msgstr "Meteor Shower"
+
+msgid "Après l'impact du météore, des mini-météorites retombent en couronne autour du point visé, une par point : {part_pluie} % des dégâts chacune, et une explosion trois fois plus petite."
+msgstr "After the meteor lands, mini-meteorites rain down in a ring around the aimed point, one per point: {part_pluie} % of the damage each, and an explosion three times smaller."
+
+msgid "Chute libre"
+msgstr "Free Fall"
+
+msgid "Le météore ne se fait plus attendre : le sort se lance aussi vite qu'une boule."
+msgstr "The meteor no longer keeps you waiting: the spell casts as fast as a ball."
+
+msgid "Gel intense"
+msgstr "Hard Freeze"
+
+msgid "La boule de glace transit plus fort : le transi qu'elle pose ralentit davantage."
+msgstr "The ice ball chills harder: the chill it applies slows more."
+
+msgid "Éclats en cascade"
+msgstr "Cascading Shards"
+
+msgid "Chaque éclat de la Fragmentation éclate à son tour au bout de sa course, une fois : de plus petites boules encore, en étoile, à {part_eclat} % de ses dégâts."
+msgstr "Each Fragmentation shard splits in turn at the end of its course, once: even smaller balls, in a star, at {part_eclat} % of its damage."
+
+msgid "Poudrière"
+msgstr "Powder Keg"
+
+msgid "L'explosion d'un ennemi tué pose à coup sûr l'état de la boule sur ce qu'elle touche — l'embrasement, ou le transi une fois la boule de glace : la réaction en chaîne ne s'arrête plus faute d'embrasés."
+msgstr "A slain enemy's explosion always applies the ball's state to what it touches — ignite, or chill once the ball is ice: the chain reaction no longer stops for lack of ignited enemies."
+
+msgid "Convergence"
+msgstr "Convergence"
+
+msgid "Les boules ne partent plus en éventail : elles naissent côte à côte et se rejoignent au point visé, où un même ennemi les prend toutes."
+msgstr "The balls no longer fan out: they start side by side and meet at the aimed point, where a single enemy takes them all."
+
+msgid "surchauffé"
+msgstr "overheated"
+
+msgid "contre les surchauffés"
+msgstr "against overheated enemies"
+
+msgid "dégâts et rayon par 100 px"
+msgstr "damage and radius per 100 px"
+
+msgid "dégâts en plus par surchauffe"
+msgstr "more damage per overheat charge"
+
+msgid "dégâts et rayon attisés"
+msgstr "stoked damage and radius"
+
+msgid "nombre de mini-météorites"
+msgstr "number of mini-meteorites"
+
+msgid "cascade d'éclats"
+msgstr "shard cascade"
+
+msgid "état assuré aux explosions"
+msgstr "guaranteed burst state"
+
+msgid "convergence des boules"
+msgstr "ball convergence"
+
+msgid "Posé par la Surchauffe de la Boule de feu, jamais par un coup ordinaire. Chaque coup de la boule en ajoute une charge, jusqu'à {charges}, pendant {duree} s : la boule suivante y frappe plus fort pour chaque charge."
+msgstr "Applied by the Fireball's Overheat, never by an ordinary hit. Each hit of the ball adds a charge, up to {charges}, for {duree} s: the next ball hits harder for each charge."
+
+msgid "coût en mana"
+msgstr "mana cost"
+
+msgid "zone appliquée au rayon"
+msgstr "area applied to radius"
+
+msgid "taille en plus par 100 px"
+msgstr "size per 100 px"
+
+msgid "Déflagration"
+msgstr "Deflagration"
+
+msgid "L'explosion de la boule devient une vraie zone : son rayon profite aussi de ce qui accroît la zone d'effet — objets et passifs. Les dégâts de zone, eux, ne s'y appliquent pas."
+msgstr "The ball's explosion becomes a true area: its radius also benefits from what increases area of effect — items and passives. Area damage still does not apply to it."
+
+msgid "Gonflement"
+msgstr "Swelling"
+
+msgid "La boule grossit en volant : elle touche plus large pour chaque tranche de {pas_vol} px parcourue, jusqu'à {taille_max} % de sa taille."
+msgstr "The ball grows as it flies: it hits wider for every {pas_vol} px travelled, up to {taille_max} % of its size."
+
+msgid "{part} par charge, {charges} au plus"
+msgstr "{part} per charge, up to {charges}"
+
+msgid "Sifflement"
+msgstr "Hiss"
+
+msgid "Le serpent mord plus souvent ce qu'il touche."
+msgstr "The snake bites what it touches more often."
+
+msgid "Gloutonnerie"
+msgstr "Gluttony"
+
+msgid "Chaque ennemi que la morsure du serpent tue le nourrit : il grossit, vit {vie_proie} s de plus et mord plus fort — jusqu'à {proies_max} proies."
+msgstr "Each enemy the snake's bite kills feeds it: it grows, lives {vie_proie} s longer and bites harder — up to {proies_max} prey."
+
+msgid "Constriction"
+msgstr "Constriction"
+
+msgid "Le serpent s'enroule autour du premier ennemi qu'il mord et ne le lâche plus : il cesse de rôder et mord deux fois plus vite, jusqu'à la mort de sa proie. Puis il repart."
+msgstr "The snake coils around the first enemy it bites and won't let go: it stops prowling and bites twice as fast until its prey dies. Then it moves on."
+
+msgid "Ouroboros"
+msgstr "Ouroboros"
+
+msgid "Le serpent se mord la queue : il tourne en rond autour du point visé, sans chasser. Avec la Queue de flammes, il trace un anneau de feu."
+msgstr "The snake bites its own tail: it circles the targeted point instead of hunting. With Flame Tail, it draws a ring of fire."
+
+msgid "Crachat"
+msgstr "Spit"
+
+msgid "Toutes les {rythme_crachat} s, le serpent crache une petite boule de feu vers l'ennemi le plus proche, à {portee_crachat} px au plus. Elle inflige cette part d'une morsure."
+msgstr "Every {rythme_crachat} s, the snake spits a small fireball at the nearest enemy within {portee_crachat} px. It deals this share of a bite."
+
+msgid "Spirale"
+msgstr "Spiral"
+
+msgid "L'anneau se resserre en tournant, de son rayon jusqu'au centre sur la vie du serpent, et chaque morsure rabat sa proie vers le milieu."
+msgstr "The ring tightens as it turns, from its radius to the center over the snake's life, and each bite drags its prey toward the middle."
+
+msgid "Étau"
+msgstr "Vise"
+
+msgid "L'ennemi enlacé ne bouge plus et n'attaque plus tant que le serpent le tient."
+msgstr "The coiled enemy can neither move nor attack while the snake holds it."
+
+msgid "Mue de croissance"
+msgstr "Growth Molt"
+
+msgid "À sa {proies_max}e proie, le serpent mue : il éclate en une gerbe de feu de {rayon_mue} px, de la force d'une morsure repue, puis reprend sa taille et sa vie entière, et recommence à grossir."
+msgstr "At its {proies_max}th prey, the snake molts: it bursts into a {rayon_mue} px spray of fire, as strong as a sated bite, then returns to its size and full life, and starts growing again."
+
+msgid "Gerbe"
+msgstr "Spray"
+
+msgid "Le crachat part en éventail : une boule de plus par point."
+msgstr "The spit fans out: one more ball per point."
+
+msgid "Venin d'hydre"
+msgstr "Hydra Venom"
+
+msgid "Les petits de l'Hydre vivent plus longtemps et mordent plus fort."
+msgstr "The Hydra's young live longer and bite harder."
+
+msgid "Morsure nécrosante"
+msgstr "Necrotic Bite"
+
+msgid "Chaque morsure sur un pourrissant lui rend du temps de pourriture, sans dépasser sa pleine durée."
+msgstr "Each bite on a rotting enemy gives back rot time, never beyond its full duration."
+
+msgid "dégâts en plus par proie"
+msgstr "more damage per prey"
+
+msgid "mue à la dernière proie"
+msgstr "molt at the last prey"
+
+msgid "étreinte de la proie"
+msgstr "prey coiling"
+
+msgid "proie immobilisée"
+msgstr "prey held still"
+
+msgid "anneau de feu"
+msgstr "ring of fire"
+
+msgid "anneau qui se resserre"
+msgstr "tightening ring"
+
+msgid "dégâts du crachat"
+msgstr "spit damage"
+
+msgid "boules crachées en plus"
+msgstr "extra spat balls"
+
+msgid "secondes de vie des petits"
+msgstr "seconds of young's life"
+
+msgid "dégâts des petits"
+msgstr "young's damage"
+
+msgid "secondes de pourriture rendues"
+msgstr "seconds of rot given back"
+
+msgid "Brûlure profonde"
+msgstr "Deep Burn"
+
+msgid "L'embrasement que pose le brasier brûle plus fort."
+msgstr "The ignite the blaze applies burns harder."
+
+msgid "Tirage"
+msgstr "Draught"
+
+msgid "Le brasier aspire l'air : chaque impulsion attire vers vous les ennemis qu'elle frappe."
+msgstr "The blaze draws in the air: each pulse pulls the enemies it hits toward you."
+
+msgid "Feu de camp"
+msgstr "Campfire"
+
+msgid "Immobile, le brasier monte : chaque seconde sans bouger ajoute ce « plus » à ses dégâts et à son rayon, {montee_max} s au plus. Il retombe dès que vous bougez."
+msgstr "Standing still, the blaze rises: each second without moving adds this \"more\" to its damage and radius, {montee_max} s at most. It dies down as soon as you move."
+
+msgid "Escarbilles"
+msgstr "Cinders"
+
+msgid "À chaque impulsion, une escarbille par point jaillit du bord du cercle vers un ennemi hors de lui, jusqu'à {portee_escarbille} fois son rayon : {part_escarbille} % d'une impulsion."
+msgstr "On each pulse, one cinder per point leaps from the edge of the circle toward an enemy outside it, up to {portee_escarbille} times its radius: {part_escarbille} % of a pulse."
+
+msgid "Offrandes"
+msgstr "Offerings"
+
+msgid "Tant que le brasier brûle, chaque ennemi tué par un sort vous rend du mana."
+msgstr "While the blaze burns, each enemy killed by a spell gives you mana."
+
+msgid "Fonte"
+msgstr "Melting"
+
+msgid "L'embrasement fait fondre les défenses : tant qu'il brûle, l'ennemi que le brasier frappe perd de la résistance au feu."
+msgstr "Ignite melts defenses: while it burns, an enemy the blaze hits loses fire resistance."
+
+msgid "Renaissance"
+msgstr "Rebirth"
+
+msgid "Une fois toutes les {attente_renaissance} s, tant que le brasier brûle, un coup fatal ne vous tue pas : vous restez à {vie_renaissance} % de vos PV, et le brasier explose de toute sa force, à {portee_renaissance} fois son rayon."
+msgstr "Once every {attente_renaissance} s, while the blaze burns, a fatal blow does not kill you: you stay at {vie_renaissance} % of your HP, and the blaze explodes with all its strength, at {portee_renaissance} times its radius."
+
+msgid "Cendres du phénix"
+msgstr "Phoenix Ashes"
+
+msgid "Après une renaissance, pendant {duree_cendres} s, le brasier ne vous brûle plus et frappe {plus_cendres} % plus fort."
+msgstr "After a rebirth, for {duree_cendres} s, the blaze no longer burns you and strikes {plus_cendres} % harder."
+
+msgid "Veillée"
+msgstr "Vigil"
+
+msgid "À pleine montée du feu de camp, le brasier vous soigne de cette part de vos PV max chaque seconde."
+msgstr "At the campfire's full rise, the blaze heals you for this share of your max HP each second."
+
+msgid "Œil du brasier"
+msgstr "Eye of the Blaze"
+
+msgid "Les ennemis du tiers central du cercle subissent plus de dégâts — là où le Tirage les amène."
+msgstr "Enemies in the central third of the circle take more damage — where Draught brings them."
+
+msgid "Âmes consumées"
+msgstr "Consumed Souls"
+
+msgid "Le brasier nécrotique se nourrit : chaque ennemi qu'il tue vous rend cette part de vos PV max."
+msgstr "The necrotic blaze feeds: each enemy it kills gives you back this share of your max HP."
+
+msgid "effet de l'embrasement"
+msgstr "ignite effect"
+
+msgid "résistance au feu fondue"
+msgstr "fire resistance melted"
+
+msgid "montée du feu de camp"
+msgstr "campfire rise"
+
+msgid "nombre d'escarbilles"
+msgstr "number of cinders"
+
+msgid "renaissance"
+msgstr "rebirth"
+
+msgid "cendres du phénix"
+msgstr "phoenix ashes"
+
+msgid "PV rendus par seconde"
+msgstr "HP restored per second"
+
+msgid "dégâts en plus au cœur"
+msgstr "more damage at the core"
+
+msgid "PV rendus par tué"
+msgstr "HP restored per kill"
+
+msgid "Départ en trombe"
+msgstr "Flying Start"
+
+msgid "L'explosion d'arrivée éclate aussi là d'où vous partez, à cette part de sa force."
+msgstr "The landing explosion also bursts where you set off from, at this share of its strength."
+
+msgid "Mèche"
+msgstr "Fuse"
+
+msgid "Quand la traînée s'éteint, elle s'embrase d'un bout à l'autre : de votre départ à votre arrivée, chaque plaque explose à son tour, à cette part d'une impulsion."
+msgstr "When the trail goes out, it flares from end to end: from where you set off to where you landed, each patch explodes in turn, at this share of a pulse."
+
+msgid "Mèche courte"
+msgstr "Short Fuse"
+
+msgid "La mèche s'allume dès votre arrivée au lieu d'attendre l'extinction — mais la traînée disparaît avec elle."
+msgstr "The fuse lights as soon as you land instead of waiting for the trail to go out — but the trail vanishes with it."
+
+msgid "Seconde foulée"
+msgstr "Second Stride"
+
+msgid "Dans les {fenetre_foulee} s qui suivent une ruée, la relancer est gratuit et ne relance pas la recharge — une fois."
+msgstr "Within {fenetre_foulee} s of a dash, casting it again is free and does not restart the cooldown — once."
+
+msgid "Foulée de feu"
+msgstr "Fire Stride"
+
+msgid "La seconde ruée, celle qui est gratuite, frappe plus fort : sa traînée comme son explosion."
+msgstr "The second dash, the free one, hits harder: its trail as well as its explosion."
+
+msgid "Charmeur"
+msgstr "Charmer"
+
+msgid "À l'arrivée, un Serpent infernal surgit des flammes si vous savez le lancer : avec vos points et votre arbre du serpent, sans coût, compté dans sa limite de trois."
+msgstr "On landing, a Hell Snake rises from the flames if you know how to cast it: with your points and your snake tree, at no cost, counted in its limit of three."
+
+msgid "Danse du charmeur"
+msgstr "Charmer's Dance"
+
+msgid "À l'arrivée, vos serpents déjà en jeu se ruent vers vous et rôdent autour de votre point d'arrivée."
+msgstr "On landing, your snakes already in play rush to you and prowl around where you landed."
+
+msgid "Onde brûlante"
+msgstr "Burning Wave"
+
+msgid "L'atterrissage du bond projette un anneau de flammes qui s'étend jusqu'à {portee_onde} fois son rayon et frappe chaque ennemi qu'il passe, à cette part du coup."
+msgstr "The leap's landing throws out a ring of flames that spreads to {portee_onde} times its radius and strikes each enemy it passes, at this share of the hit."
+
+msgid "explosion au départ"
+msgstr "explosion at the start"
+
+msgid "dégâts de la mèche"
+msgstr "fuse damage"
+
+msgid "mèche à l'arrivée"
+msgstr "fuse on landing"
+
+msgid "seconde ruée gratuite"
+msgstr "free second dash"
+
+msgid "dégâts de la seconde ruée"
+msgstr "second dash damage"
+
+msgid "serpent à l'arrivée"
+msgstr "snake on landing"
+
+msgid "serpents rappelés"
+msgstr "snakes recalled"
+
+msgid "dégâts de l'onde brûlante"
+msgstr "burning wave damage"

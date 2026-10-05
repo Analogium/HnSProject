@@ -49,6 +49,11 @@ const TONGUE := Color(0.9, 0.15, 0.1)
 const GROUND_STEP := 12.0
 ## L'écart de deux serpents d'un même lancer, en radians.
 const BROOD_SPREAD := 0.9
+## L'Ouroboros : le rayon de son anneau autour du point visé. Le rayon où il serre sa proie
+## (Constriction), où la Spirale finit, et la vitesse à laquelle elle rabat ce qu'elle mord.
+const OUROBOROS_RING := 40.0
+const COIL := 9.0
+const SPIRAL_PULL := 60.0
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -87,6 +92,13 @@ var _owner_id := 0
 var _vanishing := false
 ## Son tour dans le roulement de peinture.
 var _slot := 0
+## La Gloutonnerie : ses proies depuis sa dernière mue, et la vie qu'elles lui ont donnée.
+var _preys := 0
+var _life_bonus := 0.0
+## La proie qu'il enlace (Constriction), et les états qu'il tient sous l'Étau.
+var _coiled: Hurtbox
+var _held: StatusEffects
+var _since_spit := 0.0
 
 
 ## `owner` : qui le lâche, et dont il compte dans la limite ; null pour un petit.
@@ -102,21 +114,34 @@ static func drop(
 		brood.append(s)
 		while cast.max_simultaneous() > 0 and brood.size() > cast.max_simultaneous():
 			(brood.pop_front() as HellSnake)._vanish()
-	s._cast = cast
+	# La Gloutonnerie reconnaît ses proies au lancer qui les tue : à chacun le sien, la
+	# couvée partage celui du sort.
+	s._cast = cast.echoed(1.0) if cast.gluttony > 0.0 else cast
 	s._author = author
 	s._contacts = Targets.Contacts.new(cast.period)
 	s._tint = DamageType.COLORS[cast.nature]
 	s._anchor = point
+	# L'Ouroboros naît sur son anneau, lancé le long de lui.
 	s._head = point
+	if cast.ouroboros > 0.0:
+		s._head -= direction.normalized().orthogonal() * OUROBOROS_RING
 	s._cap = direction.angle()
 	# Déjà étendu derrière la tête : né en un point, il se lirait comme une braise.
 	for i in range(RINGS, 0, -1):
-		s._trace.append(point - direction.normalized() * SPACING * size * float(i))
-	s._trace.append(point)
+		s._trace.append(s._head - direction.normalized() * SPACING * size * float(i))
+	s._trace.append(s._head)
+	if cast.gluttony > 0.0 and author != null:
+		author.slew.connect(s._on_slew)
 	s._body = s._rings()
 	parent.add_child(s)
 	Settings.veil(s, Settings.SPELLS)
 	return s
+
+
+## La Danse du charmeur (jalon 42) : ceux de ce lanceur rôdent désormais autour de ce point.
+static func recall(owner: Node, point: Vector2) -> void:
+	for snake: HellSnake in _broods.get(owner.get_instance_id(), []):
+		snake._anchor = point
 
 
 func _ready() -> void:
@@ -142,19 +167,29 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_age += delta
-	_contacts.advance(delta)
+	if _coiled != null and not is_instance_valid(_coiled):
+		_uncoil()
+	# Enlacé, il mord deux fois plus vite : l'horloge de ses contacts court double.
+	_contacts.advance(delta * (2.0 if _coiled != null else 1.0))
 	_ramp(delta)
 	_body = _rings()
 	if not _vanishing:
 		_bite()
-	if _age >= _cast.duration:
+		if _cast.spit > 0.0:
+			_spit(delta)
+	if _age >= lifetime():
 		_die()
+
+
+## Sa vie, et ce que ses proies y ont ajouté.
+func lifetime() -> float:
+	return _cast.duration + _life_bonus
 
 
 ## Sa dissolution, tout de suite : le fondu de sa fin, puis rien.
 func _vanish() -> void:
 	_vanishing = true
-	_age = maxf(_age, _cast.duration - DISSIPATION)
+	_age = maxf(_age, lifetime() - DISSIPATION)
 
 
 func _enter_tree() -> void:
@@ -165,6 +200,7 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	crawling -= 1
+	_uncoil()
 	var brood: Array = _broods.get(_owner_id, [])
 	brood.erase(self)
 	if brood.is_empty():
@@ -189,23 +225,16 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
-## Ce que sa mort laisse : l'explosion finale et les petits (`HATCHLINGS`), qui ne se
-## divisent pas — `shard()` ne les recopie pas. Hors d'un rappel de
+## Ce que sa mort laisse : les petits de l'Hydre (`HATCHLINGS`). Hors d'un rappel de
 ## collision, ils naissent tout de suite.
 func _die() -> void:
 	queue_free()
 	if _vanishing:
 		return
-	if _cast.end_burst > 0.0:
-		Explosion.put(
-			get_parent(), _head, _cast.roll(Game.rng), _cast.end_burst, null, _tint, _author, _cast
-		)
 	var brood := int(_cast.hatchlings)
 	if brood <= 0:
 		return
-	var hatchling := _cast.shard()
-	hatchling.duration = SkillStats.HATCHLING_LIFE
-	hatchling.period = _cast.period
+	var hatchling := _cast.hatchling()
 	for i in brood:
 		var toward := Vector2.from_angle(_cap + TAU * float(i) / float(brood))
 		drop(get_parent(), _head, hatchling, toward, _author, null, HATCHLING_SIZE)
@@ -219,7 +248,25 @@ func _hunt() -> void:
 		_anchor = prey.global_position
 
 
+## Il rôde ; enlacé, il tourne autour de sa proie ; en Ouroboros, autour du point visé —
+## sans chasser.
 func _ramp(delta: float) -> void:
+	var step := SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta
+	if _coiled != null:
+		_circle(step, _coiled.global_position, COIL)
+	elif _cast.ouroboros > 0.0:
+		_circle(step, _anchor, _ring())
+	else:
+		_prowl(delta, step)
+	_trace.append(_head)
+	if _cast.ground_duration > 0.0 and not _vanishing:
+		_since_ground += step
+		if _since_ground >= GROUND_STEP:
+			_since_ground = 0.0
+			DashTrail.patch(get_parent(), _head, _cast.ground(), _author)
+
+
+func _prowl(delta: float, step: float) -> void:
 	if _cast.seek_radius > 0.0:
 		_hunt()
 	var turn := sin(_age * 2.6 + _seed_of) * 2.2 + sin(_age * 1.1 + _seed_of * 3.0) * 1.4
@@ -229,14 +276,23 @@ func _ramp(delta: float) -> void:
 		var force := minf(beyond / (LEASH * 0.5), 1.0)
 		turn += angle_difference(_cap, toward_anchor.angle()) * REMINDER * force
 	_cap += turn * delta
-	var step := SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta
 	_head += Vector2.from_angle(_cap) * step
-	_trace.append(_head)
-	if _cast.ground_duration > 0.0 and not _vanishing:
-		_since_ground += step
-		if _since_ground >= GROUND_STEP:
-			_since_ground = 0.0
-			DashTrail.patch(get_parent(), _head, _cast.ground(), _author)
+
+
+## Un pas sur ce cercle, dans le sens où il allait.
+func _circle(step: float, center: Vector2, ring: float) -> void:
+	var from_center := _head - center
+	var spin := 1.0 if from_center.cross(Vector2.from_angle(_cap)) >= 0.0 else -1.0
+	var phase := from_center.angle() + spin * step / ring
+	_head = center + Vector2.from_angle(phase) * ring
+	_cap = phase + spin * PI * 0.5
+
+
+## Le rayon de l'anneau : la Spirale le resserre jusqu'au centre sur la vie du serpent.
+func _ring() -> float:
+	if _cast.spiral <= 0.0:
+		return OUROBOROS_RING
+	return lerpf(OUROBOROS_RING, COIL, minf(_age / lifetime(), 1.0))
 
 
 ## Pose les anneaux le long de la trace, et oublie ce qui est derrière la queue.
@@ -268,7 +324,83 @@ func _bite() -> void:
 	var scope := float(RINGS) * SPACING * _size * 0.5 + CONTACT
 	for target in Targets.in_circle(get_world_2d(), middle, scope):
 		if _touches(target.global_position) and _contacts.accepts(target):
-			Targets.strike(target, _cast.roll(Game.rng), _head, _author, _cast)
+			_bite_one(target)
+
+
+func _bite_one(target: Hurtbox) -> void:
+	# Avant le coup : la pourriture que la morsure pose ne se prolonge pas d'elle-même.
+	if _cast.rot_hold > 0.0 and target.states != null:
+		target.states.extend(StatusEffects.Kind.ROT, _cast.rot_hold)
+	# La Spirale mord depuis le centre, et un recul négatif y rabat la proie.
+	if _cast.spiral > 0.0:
+		Targets.strike(target, _bite_parts(), _anchor, _author, _cast, -SPIRAL_PULL)
+	else:
+		Targets.strike(target, _bite_parts(), _head, _author, _cast)
+	if _cast.constrict > 0.0 and _coiled == null and is_instance_valid(target):
+		_coiled = target
+		if _cast.vise > 0.0 and target.states != null:
+			_held = target.states
+			_held.hold(true)
+
+
+## Le tirage d'une morsure, grossi par ses proies.
+func _bite_parts() -> Array[float]:
+	var parts := _cast.roll(Game.rng)
+	var appetite := 1.0 + _cast.gluttony * 0.01 * float(_preys)
+	for i in parts.size():
+		parts[i] *= appetite
+	return parts
+
+
+func _uncoil() -> void:
+	_coiled = null
+	if _held != null:
+		_held.hold(false)
+		_held = null
+
+
+## Le Crachat : toutes les `SPIT_PERIOD`, des étincelles vers la proie la plus proche, s'il
+## y en a une à portée ; sinon il guette.
+func _spit(delta: float) -> void:
+	_since_spit += delta
+	if _since_spit < SkillStats.SPIT_PERIOD:
+		return
+	var prey := Targets.nearest(get_world_2d(), _head, SkillStats.SPIT_REACH)
+	if prey == null:
+		return
+	_since_spit = 0.0
+	var spat := _cast.spark(_cast.spit * 0.01)
+	var toward := _head.direction_to(prey.global_position)
+	var count := 1 + int(_cast.spit_fan)
+	for i in count:
+		var heading := toward.rotated((float(i) - float(count - 1) * 0.5) * SkillStats.SPIT_SPREAD)
+		Fireball.spark(get_parent(), _head, heading, spat, _author)
+
+
+## Une proie de sa morsure : la Gloutonnerie le grossit, `GLUTTONY_MOST` fois au plus.
+## Depuis le coup qui tue — l'explosion de la mue se pose d'elle-même en différé.
+func _on_slew(cast: SkillStats, _at: Vector2, _victim: StatusEffects) -> void:
+	if cast != _cast or _vanishing or _preys >= SkillStats.GLUTTONY_MOST:
+		return
+	_preys += 1
+	_life_bonus += SkillStats.GLUTTONY_LIFE
+	_size = 1.0 + SkillStats.GLUTTONY_GROWTH * float(_preys)
+	if _preys == SkillStats.GLUTTONY_MOST and _cast.growth_molt > 0.0:
+		_molt()
+
+
+## La Mue de croissance : une gerbe de la force d'une morsure repue, puis le serpent
+## repart de zéro — taille, vie, proies. La gerbe a son propre lancer : ses tués ne le
+## nourrissent pas, sinon une mue en déclencherait une autre dans la même meute.
+func _molt() -> void:
+	Explosion.put(
+		get_parent(), _head, _bite_parts(), SkillStats.MOLT_RADIUS, null, _tint, _author,
+		_cast.echoed(1.0)
+	)
+	_preys = 0
+	_life_bonus = 0.0
+	_size = 1.0
+	_age = 0.0
 
 
 func _touches(point: Vector2) -> bool:
@@ -300,7 +432,7 @@ static var _next_slot := 0
 
 
 func _draw() -> void:
-	var fade := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / DISSIPATION, 0.0, 1.0)
+	var fade := minf(_age / SPAWN, 1.0) * clampf((lifetime() - _age) / DISSIPATION, 0.0, 1.0)
 	if _body_tex != null:
 		_blit(_body_tex, _corner, fade)
 

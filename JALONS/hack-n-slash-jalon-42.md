@@ -259,3 +259,277 @@ d'une suite se confondait avec les grains « ••• » des points demandés a
 (`SUITE_DASH`), il s'en distingue. Le test des liens qui passent sous un nœud mesure
 désormais contre la silhouette dessinée — carré sur l'axe le plus lâche, losange en somme
 des deux —, plus contre le carré de survol.
+
+## 5. La Boule de feu — livrée
+
+L'arbre du §3, **21 nœuds, 43 points**, sur la grille ±3 × ±2 :
+
+```
+              Feu nourri
+ Poudrière  Réaction  Étincelles  Souffle  Prise d'air  Perforation
+ Givre      Ardeur    Attisement  [BOULE]  Vélocité     Fragmentation  Cascade
+ Gel intense Surchauffe Noyau dense Météore   ·          Double langue  Convergence
+                                  Pluie     Chute libre
+```
+
+**Écarts avec la proposition** :
+
+- **« Givre profond » devient Gel intense** : le nom était déjà celui d'un nœud de l'arbre
+  de passifs.
+- **La Convergence n'est pas une suite** au sens de la page : son parent, Double langue, est
+  un nœud de nombres. Elle se dessine en grand losange, comme toute mécanique.
+- **Le sol brûlant quitte la boule** avec Braises dispersées : `Fireball.burst()`, qui ne
+  faisait plus que l'explosion, disparaît — la boule et le Météore appellent `Explosion.put()`.
+- **Trois libellés raccourcis** pour tenir sur la fiche (le test des largeurs) : « dégâts et
+  rayon par 100 px », « dégâts et rayon attisés », « état assuré aux explosions ».
+- **La Poudrière ajoute de la chance** (`SURE_STATE`, 500 points : ×6 sur les 20 % de base)
+  plutôt que de contourner le tirage : le nombre de tirages ne change pas (invariant 3).
+
+**Ce qui est neuf dans le moteur** : sept nombres de `SkillStats` (ARCHITECTURE, « Qu'est-ce
+qu'un nœud peut allumer ? ») et **l'état `OVERHEAT`**, le dixième — des charges portées par sa
+force, posées par `StatusEffects.charge()`, lues par `against_factor()`. Il a son icône, son
+article du guide et sa couleur. **L'icône, choisie sur planche** (`planche-surchauffe.png`) :
+le **soleil** ; le thermomètre d'abord posé avait, à 9 px, la silhouette de la flamme de
+l'embrasement — vu à la capture, juste à côté d'elle sur la barre de vie.
+
+**Captures** (`hns-captures-boule-de-feu`) : l'arbre tient sur ses cinq rangées ; les
+mini-météorites (la boule de 13 px, trois petites langues, sans secousse) tombent en couronne
+après l'impact, leur ombre grandit au sol.
+
+**Le banc** (`only=fireball`), relevé avant → après, **sans rien corriger** (§7 du jalon 13) :
+
+| build | avant | après |
+|---|---|---|
+| meilleur au paquet | ×12,4 | ×23,5 |
+| meilleur au duel | ×3,39 | ×12,1 |
+
+Le duel est porté par **Noyau dense + Surchauffe + Météore + Chute libre** : la Chute libre
+efface tout le prix du Météore, qui n'est plus qu'un gain. Jamais pris : Perforation, Prise
+d'air, Feu nourri (le banc n'allume pas d'Immolation), Pluie de météorites, Gel intense (le
+banc ne voit pas le ralenti), Éclats en cascade, Poudrière. À reprendre à l'équilibrage.
+
+## 6. Les retours sur la Boule de feu
+
+L'utilisateur, après la livraison du §5 :
+
+1. **« Agrandir l'interface des manuels »**. Choisi sur planche (`hns-captures-interface-manuels`,
+   trois dispositions sur une vraie capture) : **B, plein écran**. L'arbre ouvert prend
+   624 × 283 px, à 8 px des bords, par-dessus le sac ; les dos des livres s'effacent le
+   temps de l'arbre — on change de livre depuis la grille. Grille ±4 × ±2, pas de 64 × 44,
+   nœuds à 26 / 18 / 13 px. Ce qui remplace le §4 : les 32 px entre deux rangées étaient
+   le prix d'une page de 164 px. La fiche d'un nœud se pose à côté de lui, du côté où il y
+   a la place : hors du panneau, il n'y en a plus.
+2. **Une suite de la Prise d'air qui fait grossir la boule** : le **Gonflement** (2 points,
+   +15 % de taille par point et par 100 px volés, ×2 au plus). La forme de touche grandit —
+   une copie de celle de la scène, jamais elle (invariant 2). **Le dessin, choisi sur
+   planche** (`planche-gonflement.png`) : la boule **fabriquée à sa taille** dans la rampe de
+   la boule dessinée (`EffectForge.grown_balls()`), plutôt qu'une couronne de braises ou le
+   palier de la planche du Météore. **Mesuré** : la cuisson coûte 0,6 ms à 15 px, 1,5 ms à
+   21 px, 1,9 ms à 27 px, **une fois** par teinte et par taille (2 µs en relecture) ; sept
+   tailles au plus, cuites une à une au premier vol.
+3. **Une suite d'un point qui fait suivre au rayon les bonus de zone** : la
+   **Déflagration**. Les lignes de rayon qui visent la zone s'appliquent à la boule ; ses
+   dégâts de zone non, et la boule ne prend pas le mot-clé.
+4. **La Surchauffe dans la fenêtre Alt** : posée à chaque coup (100 %), et ce que vaut une
+   charge.
+5. **Le Météore coûte 50 % de mana en plus.** Le coût devient un nombre que les nœuds
+   peuvent viser — **les nœuds seuls** : la règle qui écarte toute ligne d'objet visant le
+   coût tient (`test_only_named_things_are_modified`). La barre grise sa case sur le coût
+   résolu (`Player.cost_of()`).
+6. **Le Noyau dense ne se sentait pas** sous le Météore : −75 % **accrus** s'ajoutaient aux
+   +200 % de la chute (83 → 68 px relevés par l'utilisateur). Il devient un **« moins »**, qui
+   multiplie après les accrus : le quart du rayon, Météore ou non.
+
+Au passage : la Prise d'air, la Surchauffe, le Feu nourri et le Gonflement s'affichent en
+pourcentage sur la fiche (`StatMod.PERCENT_POINTS`) — « +30 » se lisait comme des pixels.
+
+L'arbre compte **23 nœuds, 46 points** : la Déflagration (1, −2) et le Gonflement (2, −2),
+au-dessus de la Prise d'air.
+
+## 7. Le Serpent infernal — livré
+
+L'arbre du §3, **20 nœuds, 38 points**, sur la grille ±4 × ±2 :
+
+```
+ Spirale    Ouroboros  Queue      Longue vie  Vif
+ Étau  Constriction  Chasseur  Crocs  [SERPENT]  Mue  Couvée  Hydre  Venin d'hydre
+ Morsure nécr.  Venin      ·      Sifflement  Crachat  Gloutonnerie
+                                              Gerbe    Mue de croissance
+```
+
+**Écarts avec la proposition** :
+
+- **Le Sifflement vise l'intervalle des morsures** (−8 % par point), plus le temps du geste :
+  celui-ci est déjà la ligne de la Chute libre, et le manuel du feu entrera dans
+  `UNIQUE_TREES`.
+- **Le Crachat ne s'ouvre que par le Sifflement** : venu du Vif, son lien traversait la Mue.
+- **L'Hydre se lit en suite** sur la page : ses deux parents, la Couvée et la Gloutonnerie,
+  changent le jeu (`ManualCell.is_suite()`). Son Venin d'hydre est la suite d'une suite.
+- **Une suite n'est plus proposée comme entrée de son parent** sur la fiche : « ou Venin
+  d'hydre à 1 » s'affichait sous l'Hydre, alors qu'on n'atteint le Venin que par elle
+  (`ManualPanel._requirement_lines()`). Le test de la fiche de l'Hydre l'a vu.
+- **La Mue explosive part, et le code qui la portait** : `HellSnake._die()` ne lit plus
+  `end_burst`. Le test de la mort du serpent ne garde que les petits.
+- **L'Étau n'est pas un état** : un compteur de prises (`StatusEffects.hold()`) qui met
+  `speed_factor` à zéro. Pas d'icône à dessiner, et deux serpents sur la même proie ne la
+  lâchent qu'au départ du second. Sa limite : le gonflement du Bloater et l'élan de la
+  Brute ne lisent pas le gel, ils continuent.
+- **La Morsure nécrosante plafonne à la pleine durée** : sans plafond, une morsure toutes
+  les 0,4 s qui rend 1 s rendait la pourriture éternelle.
+
+**Ce qui est neuf dans le moteur** : onze nombres de `SkillStats` (ARCHITECTURE, « Qu'est-ce
+qu'un nœud peut allumer ? »), deux lancers dérivés (`hatchling()`, `spark()`, que les Escarbilles reprennent au §8),
+`StatusEffects.extend()` et `hold()`. **Rien de dessiné** : l'anneau, l'étreinte et la spirale
+sont des trajectoires du corps existant (`HellSnake._circle()`), le crachat est l'éclat de la
+Fragmentation, la gerbe de la mue une `Explosion`, et la Gloutonnerie grossit le serpent par
+`_size`, l'échelle des petits de l'Hydre.
+
+**La Gloutonnerie reconnaît ses proies au lancer qui les tue.** La couvée partageait un même
+lancer pour ses trois serpents : un tué aurait nourri les trois. Sous la Gloutonnerie, chaque
+serpent a sa copie (`SkillStats.echoed()`). La gerbe de la mue a aussi la sienne : ses tués
+nourrissant le serpent, une mue en aurait déclenché une autre dans la même meute.
+
+**Captures** (`hns-captures-serpent`) : l'arbre, la fiche posée à côté du nœud des deux côtés ;
+l'**anneau de feu** se ferme en une seconde et demie, le serpent passe ensuite à l'intérieur
+de son propre anneau (la Spirale), et les boules crachées en sortent vers le paquet ;
+l'**étreinte** fait un anneau de braise autour de la proie, qui ne bouge plus. **Vu à la
+capture** : au niveau 1 de zone, une proie meurt en une ou deux morsures, l'étreinte ne se
+voit qu'un instant — la capture a gonflé les PV du paquet pour la montrer. Et le Chasseur va
+au plus proche de sa tête, souvent le lanceur ennemi qui tient sa distance, pas la mêlée
+collée au joueur.
+
+**Le banc** (`only=hell_snake`), relevé avant → après, **sans rien corriger** :
+
+| build | avant | après |
+|---|---|---|
+| sans arbre | 139/s, 113/s | 128/s, 98/s |
+| meilleur au paquet | ×3,28 | ×4,07 |
+| meilleur au duel | ×2,48 | **×10,5** |
+
+Le duel est porté par la **Constriction** : la cible du banc ne meurt jamais, le serpent ne la
+lâche plus et mord deux fois plus vite toute sa vie, avec le **Crachat** et sa **Gerbe** par
+dessus. Le paquet prend Sifflement, Crachat et Gerbe. Jamais pris : Longue vie, Vif, Couvée,
+Hydre, Ouroboros, Spirale, Étau (le banc ne voit pas l'immobilité), Mue de croissance, Venin
+d'hydre, Morsure nécrosante. La base sans arbre bouge d'environ 10 % sans qu'aucun nœud n'y
+soit : à vérifier à l'équilibrage, le bruit connu du serpent est de ±0,1 sur un rapport.
+
+## 8. L'Immolation — livrée
+
+L'arbre du §3, **17 nœuds, 43 points** :
+
+```
+                       Veillée    Escarbilles  Œil du brasier
+                       Feu de camp  Brasier    Tirage
+ Âmes  Flamme noire  Pouls lent  Fournaise  [BRASIER]  Cœur tiède  Phénix  Renaissance  Cendres
+                       Brûlure prof.            Offrandes
+                       Fonte
+```
+
+**Écarts avec la proposition** :
+
+- **Les Offrandes sont le Siphon de la sorcière** (`siphon`) : le brasier est un geste
+  allumé, `Player._siphon()` le lisait déjà. Elles rendent donc du mana pour tout ennemi tué
+  **par un sort** tant que le brasier brûle, pas seulement par lui — sans une ligne de code.
+- **La Renaissance laisse 20 % des PV**, plus 1 PV : à 1 PV, la brûlure du brasier — doublée
+  sous le Phénix — tuait dans les huit images suivantes, et le nœud ne valait rien sans sa
+  suite.
+- **Le Feu de camp porte un seul nombre**, +5 % par point et par seconde, aux dégâts comme au
+  rayon (la proposition disait 6 et 5).
+- **La Fonte et la Renaissance se dessinent en grands losanges**, pas en suites : leurs
+  parents, la Brûlure profonde et le Phénix, sont des nœuds de nombres. La Brûlure profonde
+  est une force d'état, comme le Froid mordant ; le Phénix, un échange.
+- **Le sol sous les tués d'une aura disparaît** avec les Cendres vivantes
+  (`Player._on_slew()`), et son test : plus aucun nœud ne le donnait.
+- **L'impulsion n'est plus `Targets.strike_circle()`** : l'Œil du brasier frappe plus fort au
+  cœur sur le même tirage, et le Tirage y ramène par un recul négatif. Toujours un tirage
+  par impulsion (invariant 3).
+
+**Ce qui est neuf dans le moteur** : neuf nombres de `SkillStats`, l'embrasement dans
+`EFFECT_OF` (le dernier état sans force), `StatusEffects.melt()` et le `melt` de son état,
+`Player._reborn()` en tête de `_die()` et `Player.phoenix_ashes`. **`Fireball.spark()`**
+rassemble ce que le Crachat du serpent écrivait seul : la petite boule des éclats, sans gel,
+l'auteur posé à la main — les Escarbilles s'en servent, et `SkillStats.spat()` devient
+`spark(part)`. **Rien de dessiné** : le brasier qui monte est son propre rayon, les
+escarbilles des étincelles, la renaissance une `Explosion`.
+
+**Captures** (`hns-captures-immolation`) : l'arbre ; le brasier qui s'élargit tant qu'on ne
+bouge pas, les ennemis tirés vers le cœur, et les escarbilles qui partent du bord vers ceux
+restés dehors. **Vu à la capture** : le rayon monte par paliers, à chaque impulsion
+(0,5 s) — il se résout à l'impulsion, comme tout le brasier.
+
+**Le banc** (`only=immolation`), relevé avant → après, **sans rien corriger** :
+
+| build | avant | après |
+|---|---|---|
+| meilleur au paquet | ×5,42 | ×8,03 |
+| meilleur au duel | ×2,28 | ×4,18 |
+
+Le paquet est porté par le **Feu de camp** et les **Escarbilles** — le banc ne bouge jamais,
+le feu de camp y est toujours à pleine montée. Le duel prend aussi le Tirage et l'Œil du
+brasier. Jamais pris : Offrandes, Fonte, Renaissance, Cendres du phénix, Veillée, Âmes
+consumées — le banc est aveugle au mana, aux PV et à la mort ; la Fonte ne joue que sur un
+embrasé, à 15 points de résistance.
+
+## 9. La Ruée ardente — livrée
+
+L'arbre du §3, **17 nœuds, 35 points** :
+
+```
+                                              Danse du charmeur
+ Mèche courte  Mèche  Brûle-pavé  Sillage  Braises  Charmeur  Départ en trombe
+               Tison  Bûcher  [RUÉE]  Élan  Atterrissage  Onde de choc
+                                      Seconde foulée  Bond  Onde brûlante
+                                      Foulée de feu
+```
+
+**Écarts avec la proposition** :
+
+- **La Mèche fait exploser une sonde sur deux** du couloir : à chaque sonde (0,9 rayon), les
+  explosions se chevauchaient et une cible en prenait trois.
+- **La Foulée de feu renforce toute la seconde ruée** — traînée, explosion d'arrivée, onde —
+  par une copie du lancer (`echoed()`), plutôt que la traînée seule.
+- **L'Onde brûlante est l'anneau de `FrostRing`**, qui prend désormais sa portée
+  (`spread(…, reach_factor)`) et se dessine en feu quand sa nature l'est.
+- **La Seconde foulée demande un nouvel appui.** Relevé par l'utilisateur : « elle ne marche
+  pas ». La touche tenue relance la case à chaque image où elle le peut, et la ruée gratuite
+  partait l'image d'après la première, au même point — invisible et dépensée. Le test
+  appelait `cast_slot()` sans passer par la touche ; il passe maintenant par elle.
+- **La barre ne montre pas la Seconde foulée** : la case reste voilée par sa recharge pendant
+  la fenêtre où elle se relance gratuitement.
+
+**Choisi sur planche** (`hns-captures-onde-brulante`, cinq partis pris à trois moments de
+l'onde) : **la couronne alternée**, une grande langue, une petite, tous les 14 px, qui
+s'éteignent une à une comme les javelots de l'Onde de givre. Écartées : la double couronne,
+le front serré de petites langues, les éclats projetés, les langues suivies de bouffées. Les
+trois premières versions de la planche — bouffées, brûlures au sol, sol roussi — ne se
+lisaient pas sur la terre et ont été remplacées avant d'être montrées.
+
+**Captures** (`hns-captures-ruee`) : l'arbre ; l'onde du Bond qui s'étend et s'éteint ; les
+deux explosions du Départ en trombe ; le serpent du Charmeur à l'arrivée ; la Mèche qui court
+du départ vers l'arrivée. **Vu à la capture** : le paquet rendu résistant pour la capture
+tuait le joueur avant l'extinction de la traînée — la capture le rend invulnérable.
+
+**Le banc** (`only=flame_dash`), relevé avant → après, **sans rien corriger** :
+
+| build | avant | après |
+|---|---|---|
+| meilleur au paquet | ×4,32 | ×6,31 |
+| meilleur au duel | ×3,82 | **×17,0** |
+| Bond au paquet | ×4,35 | ×9,03 |
+
+Le duel est porté par **le Bond, l'Onde brûlante, la Seconde foulée et la Foulée de feu** :
+deux bonds par recharge, dont un plus fort, chacun avec son onde. Jamais pris : Départ en
+trombe, Charmeur, Danse du charmeur — le banc n'apprend pas le Serpent. Le Bond au paquet
+prend la Mèche et la Mèche courte, qu'il ignore : des points restés sans meilleur usage.
+
+## 10. Le manuel des flammes — clos sans l'Ignition
+
+L'utilisateur : « pas besoin de faire ignition, je ne pense pas garder le spell à l'avenir ».
+Son arbre reste tel quel.
+
+**`UNIQUE_TREES` exempte les échanges entiers** (§2) : un nœud dont une ligne est une perte
+(`StatMod.is_loss()`) n'est pas un second levier — le Pouls lent, le Phénix, Vif, Brûle-pavé.
+Essayé avec le feu, le test ne relève plus qu'**une** ligne : les Cendres froides de
+l'Ignition visent la brûlure subie, comme le Cœur tiède de l'Immolation. **Le feu entre dans
+`UNIQUE_TREES` quand l'Ignition sort**, plutôt qu'une exception écrite pour un sort qui part.
+

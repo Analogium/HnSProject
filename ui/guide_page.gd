@@ -40,6 +40,7 @@ const STATE_TEXTS := [
 	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite.",
 	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts.",
 	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue.",
+	"Posé par la Surchauffe de la Boule de feu, jamais par un coup ordinaire. Chaque coup de la boule en ajoute une charge, jusqu'à {charges}, pendant {duree} s : la boule suivante y frappe plus fort pour chaque charge.",
 ]
 
 var _index: VBoxContainer
@@ -191,6 +192,7 @@ static func _state_text(kind: int) -> String:
 		"force": strength.get(kind, ""),
 		"soin": StatMod.percentage(StatusEffects.ROT_HEAL * 100.0),
 		"ticks": StatMod.number(1.0 / StatusEffects.DOT_TICK),
+		"charges": SkillStats.OVERHEAT_MOST,
 	})
 
 

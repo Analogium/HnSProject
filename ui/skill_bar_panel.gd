@@ -67,7 +67,7 @@ func _process(_delta: float) -> void:
 		var skill := _player.bar.skill_of(i)
 		if skill == null:
 			continue
-		if _player.mana < skill.mana_cost:
+		if _player.mana < _player.cost_of(skill):
 			state |= 1 << (i + SkillBar.SLOT_COUNT)
 		if _player.lit(skill.id):
 			state |= 1 << (i + SkillBar.SLOT_COUNT * 2)
@@ -246,7 +246,7 @@ func _draw_slot(index: int) -> void:
 	var skill := _player.bar.skill_of(index)
 	if skill != null:
 		SkillIcon.draw_into(self, r, skill)
-		if _player.mana < skill.mana_cost:
+		if _player.mana < _player.cost_of(skill):
 			draw_rect(r, COOLDOWN)
 
 	# Le voile descend : la case se remplit en redevenant disponible. La part est celle

@@ -314,6 +314,99 @@ func test_the_aura_does_not_flicker_while_the_key_is_held() -> void:
 	assert_true(_p.aura_lit(), "la touche tenue ne l'éteint pas")
 
 
+## Le Tirage : chaque impulsion tire vers le porteur — un recul négatif.
+func test_a_draught_pulls_what_the_aura_strikes() -> void:
+	_learn_with("manual_fire", "immolation", [[SkillStats.PULL, 40.0]])
+	var near := _target(Vector2(30, 0))
+	var knocks := []
+	near.damaged.connect(func(info: DamageInfo) -> void: knocks.append(info.knockback))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(knocks, [-40.0])
+
+
+## Le Feu de camp monte tant qu'on ne bouge pas, et retombe au premier pas ; à pleine
+## montée, la Veillée soigne plus que le brasier ne brûle.
+func test_a_campfire_rises_while_still_and_keeps_vigil() -> void:
+	_learn_with("manual_fire", "immolation", [[SkillStats.CAMPFIRE, 50.0], [SkillStats.VIGIL, 10.0]])
+	var base := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
+	assert_true(_p.cast_slot(2))
+	var aura: Immolation = _p._lit["immolation"]
+	await wait_seconds(1.1)
+	var risen := aura._cast.radius
+	assert_gt(risen, base * 1.3, "monté")
+	# Il remonte dès qu'on s'arrête : à l'impulsion suivante, il est reparti de zéro.
+	_p.global_position += Vector2(10, 0)
+	await wait_seconds(aura._cast.period + 0.05)
+	assert_lt(aura._cast.radius, risen * 0.9, "retombé au premier pas")
+	aura._still = SkillStats.CAMPFIRE_MOST
+	_p._set_health(_p.stats.max_health * 0.5)
+	var before := _p.health
+	await wait_physics_frames(10)
+	assert_gt(_p.health, before, "la Veillée soigne")
+
+
+## Les Escarbilles : une étincelle vers l'ennemi hors du cercle, aucune sans lui.
+func test_cinders_leap_to_an_enemy_outside_the_circle() -> void:
+	_learn_with("manual_fire", "immolation", [[SkillStats.EMBERS, 2.0]])
+	var radius := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
+	_target(Vector2(radius * 0.5, 0))
+	var outside := _target(Vector2(0, radius * 1.6))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var aura: Immolation = _p._lit["immolation"]
+	await wait_physics_frames(1)
+	for spark: Fireball in _children_of(Fireball):
+		spark.free()
+	aura._strike()
+	var sparks := _children_of(Fireball)
+	assert_eq(sparks.size(), 1, "une par ennemi dehors, pas plus")
+	assert_true((sparks[0] as Fireball).is_shard)
+	await wait_seconds(0.3)
+	assert_gt(_hits(outside), 0, "elle l'atteint")
+
+
+## L'Œil du brasier : au cœur du cercle, le même tirage frappe plus fort.
+func test_the_eye_of_the_blaze_strikes_harder_at_the_core() -> void:
+	_learn_with("manual_fire", "immolation", [[SkillStats.EYE, 24.0]])
+	var radius := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
+	var core := _target(Vector2(radius * 0.2, 0))
+	var edge := _target(Vector2(0, radius * 0.8))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_almost_eq(_received_all[core][0] / _received_all[edge][0], 1.24, 0.001)
+
+
+## La Renaissance retient un coup fatal, une fois par minute, et le brasier explose ; les
+## Cendres du phénix suspendent sa brûlure.
+func test_rebirth_holds_back_one_death_a_minute() -> void:
+	_learn_with("manual_fire", "immolation", [[SkillStats.REBIRTH, 1.0], [SkillStats.PHOENIX_ASHES, 1.0]])
+	assert_true(_p.cast_slot(2))
+	_p._set_health(0.0)
+	_p._die()
+	assert_false(_p.is_dead, "retenu")
+	assert_almost_eq(_p.health, _p.stats.max_health * SkillStats.REBIRTH_HEALTH, 0.01)
+	assert_eq(_p.phoenix_ashes, SkillStats.ASHES_TIME)
+	var health := _p.health
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1, "le brasier explose")
+	assert_gte(_p.health, health, "les cendres : il ne brûle plus")
+	_p._set_health(0.0)
+	_p._die()
+	assert_true(_p.is_dead, "pas deux fois dans la minute")
+
+
+## Les Âmes consumées : un tué du brasier rend une part des PV max.
+func test_consumed_souls_heal_on_each_kill() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
+	cast.soul_feast = 10.0
+	_p._set_health(_p.stats.max_health * 0.5)
+	_p.states.slew.emit(cast, Vector2.ZERO, null)
+	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.01)
+
+
 func _all_in(nature: DamageType.Kind) -> Array[float]:
 	var parts := DamageType.empty_parts()
 	parts[nature] = 1.0
@@ -1326,17 +1419,155 @@ func test_a_splitting_bolt_throws_its_shards_past_the_target_once() -> void:
 		assert_eq(shard._cast.splits, 0.0, "un éclat ne se fend pas")
 
 
-func test_a_ball_leaves_burning_ground_where_it_bursts() -> void:
-	_learn_with("manual_fire", "fireball", [[SkillStats.GROUND, 1.0]])
-	var direct := _target(Vector2(40, 0))
+## La Prise d'air (jalon 42) : plus la boule a volé, plus son explosion est large.
+func test_a_swelling_ball_bursts_wider_the_farther_it_flew() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.SWELL, 100.0]])
+	_target(Vector2(150, 0))
 	await wait_physics_frames(2)
+	var radius := _p.resolve(SkillCatalog.by_id("fireball"), 1).radius
 
+	# Relevée à la naissance : une explosion ne dure que trois dixièmes de seconde.
+	var seen: Array[float] = []
+	_effects.child_entered_tree.connect(func(n: Node) -> void:
+		if n is Explosion:
+			seen.append((n as Explosion)._radius))
 	assert_true(_p.cast_slot(2))
-	await wait_seconds(0.3)
-	assert_eq(_children_of(DashTrail).size(), 1, "le sol brûle")
-	await wait_seconds(1.2)
-	assert_gt(_hits(direct), 1, "et mord ce qui y reste")
-	assert_eq(_children_of(DashTrail).size(), 0, "puis s'éteint")
+	await wait_seconds(1.0)
+	assert_eq(seen.size(), 1)
+	assert_gt(seen[0], radius * 2.0, "plus de 100 px volés : plus du double")
+
+
+## La Surchauffe : chaque coup pose une charge, et la suivante frappe plus fort par charge.
+func test_an_overheating_ball_stacks_its_charges() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.OVERHEAT, 10.0]])
+	var target := _target(Vector2(40, 0))
+	target.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	assert_eq(cast.against_factor(target.states), 1.0, "rien avant la première boule")
+
+	for i in SkillStats.OVERHEAT_MOST + 1:
+		assert_true(_p.cast_slot(2))
+		await wait_seconds(0.9)
+	var charges := target.states.strength(StatusEffects.Kind.OVERHEAT)
+	assert_eq(charges, float(SkillStats.OVERHEAT_MOST), "pas au-delà du plafond")
+	assert_almost_eq(cast.against_factor(target.states), 1.3, 0.001, "10 % plus par charge")
+
+
+## Le Feu nourri : sous un brasier allumé, la boule part plus forte et plus large.
+func test_a_fed_ball_grows_only_under_a_lit_aura() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.STOKED, 50.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	assert_eq(_p._stoke([cast] as Array[SkillStats])[0], cast, "sans brasier, le même lancer")
+
+	var aura := Node2D.new()
+	add_child_autofree(aura)
+	_p._lit["immolation"] = aura
+	var fed := _p._stoke([cast] as Array[SkillStats])[0]
+	assert_almost_eq(fed.total_max(), cast.total_max() * 1.5, 0.01)
+	assert_almost_eq(fed.radius, cast.radius * 1.5, 0.01)
+
+
+## La Convergence : côte à côte au départ, toutes vers le point visé.
+func test_converging_balls_meet_on_the_aim() -> void:
+	_learn_with("manual_fire", "fireball", [["projectiles", 2.0], [SkillStats.CONVERGE, 1.0]])
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var aim := _p.global_position + Vector2.RIGHT * Player.PLACEMENT_RANGE
+	var balls := _children_of(Fireball)
+	assert_eq(balls.size(), 3)
+	for ball: Fireball in balls:
+		var toward := ball.global_position.direction_to(aim)
+		assert_almost_eq(ball._dir.dot(toward), 1.0, 0.001, "chacune vise le même point")
+	assert_ne(balls[0].global_position, balls[2].global_position, "parties côte à côte")
+
+
+## La Pluie de météorites : après l'impact, une couronne de mini-météorites qui tombent.
+func test_a_meteor_rains_small_ones_around_its_impact() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.METEOR_SHOWER, 3.0]], Skill.Shape.METEOR)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(Meteor.FALL + 0.05)
+	var rain := _children_of(Meteor)
+	assert_eq(rain.size(), 3)
+	for small: Meteor in rain:
+		assert_true(small.small)
+		assert_eq(small._cast.meteor_shower, 0.0, "une retombée n'en fait pas tomber d'autres")
+
+
+## Le Noyau dense sur un Météore : un « moins », que les +200 % de la chute ne noient pas.
+func test_a_dense_core_shrinks_even_a_meteor() -> void:
+	_learn("manual_fire", ["fireball", "fireball_stoking", "fireball_stoking", "fireball_stoking", "fireball_meteor"])
+	var skill := SkillCatalog.by_id("fireball")
+	var meteor := _p.resolve(skill, 1)
+	assert_true(_p.invest(0, "fireball_dense_core"))
+	assert_almost_eq(_p.resolve(skill, 1).radius, meteor.radius * 0.25, 0.01)
+
+
+## Le Météore coûte la moitié en plus, et la barre le sait.
+func test_a_meteor_costs_half_again() -> void:
+	_learn("manual_fire", ["fireball", "fireball_stoking", "fireball_stoking", "fireball_stoking"])
+	var skill := SkillCatalog.by_id("fireball")
+	var cost := _p.cost_of(skill)
+	assert_true(_p.invest(0, "fireball_meteor"))
+	assert_almost_eq(_p.resolve(skill, 1).mana_cost, cost * 1.5, 0.01)
+	assert_almost_eq(_p.cost_of(skill), cost * 1.5, 0.01, "le cache de la barre est vidé")
+
+
+## La Déflagration : le rayon de l'explosion suit ce qui vise la zone, ses dégâts non.
+func test_a_deflagration_opens_the_radius_to_area_lines() -> void:
+	var skill := SkillCatalog.by_id("fireball")
+	_learn_with("manual_fire", "fireball", [[SkillStats.WIDE_BLAST, 1.0]])
+	var plain := _p.resolve(skill, 1)
+	_p.skill_mods.assign([
+		StatMod.new("radius", StatMod.Mode.PERCENT, 100.0, Keywords.AREA),
+		StatMod.new("damage", StatMod.Mode.PERCENT, 100.0, Keywords.AREA),
+	])
+	var wide := _p.resolve(skill, 1)
+	assert_almost_eq(wide.radius, plain.radius * 2.0, 0.01)
+	assert_almost_eq(wide.total_max(), plain.total_max(), 0.01, "les dégâts de zone restent dehors")
+	assert_false(wide.keywords.has(Keywords.AREA), "et la boule ne devient pas une zone")
+
+
+## Le Gonflement : la boule touche plus large en volant, sans toucher la forme de la scène.
+func test_a_swelling_ball_grows_its_hit_shape() -> void:
+	_learn_with("manual_fire", "fireball", [[SkillStats.GIRTH, 100.0]])
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.4)
+	var ball: Fireball = _children_of(Fireball)[0]
+	assert_gt(ball.size(), 1.5)
+	assert_almost_eq(ball._hit_shape.radius, ball._hit_radius * ball.size(), 0.01)
+	await wait_seconds(0.8)
+	assert_eq(ball.size(), SkillStats.GIRTH_MOST, "plafonnée")
+	var probe := (load("res://actors/projectiles/player_fireball.tscn") as PackedScene).instantiate()
+	var scene_radius: float = (probe.get_node("CollisionShape2D").shape as CircleShape2D).radius
+	probe.free()
+	assert_eq(scene_radius, ball._hit_radius, "la forme de la scène n'a pas grandi")
+
+
+## Les Éclats en cascade : un éclat se fend à son tour, une fois.
+func test_cascading_shards_split_once_more() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	cast.splits = 3.0
+	assert_eq(cast.shard().splits, 0.0, "sans cascade, un éclat ne se fend pas")
+	cast.split_cascade = 1.0
+	assert_eq(cast.shard().splits, 3.0)
+	assert_eq(cast.shard().shard().splits, 0.0, "une seule fois")
+
+
+## La Poudrière : l'explosion d'un tué embrase à coup sûr ce qu'elle touche.
+func test_a_powder_keg_burst_always_ignites() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	cast.kill_burst = 30.0
+	cast.powder_keg = 1.0
+	var near := _target(Vector2(50, 0))
+	near.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1)
+	assert_true(near.states.active(StatusEffects.Kind.IGNITE), "embrasé, sans tirage perdu")
 
 
 ## Traversée, la boule éclate aussi : sur chaque ennemi traversé, en étoile tournée d'un
@@ -1485,22 +1716,125 @@ func test_a_hunting_snake_takes_the_nearest_enemy_for_anchor() -> void:
 	assert_eq(snake._anchor, prey.global_position)
 
 
-## Sa mort : l'explosion finale et les petits, qui n'en relâchent pas d'autres.
-func test_a_dying_snake_bursts_and_hatches() -> void:
+## Sa mort : les petits, qui n'en relâchent pas d'autres. L'explosion finale est partie à la
+## Ruée ardente avec la Mue explosive (jalon 42).
+func test_a_dying_snake_hatches() -> void:
 	_learn_with("manual_fire", "hell_snake", [
-		[SkillStats.END_BURST, 30.0], [SkillStats.HATCHLINGS, 2.0], ["duration", -90.0, true],
+		[SkillStats.HATCHLINGS, 2.0], ["duration", -90.0, true],
 	])
 	assert_true(_p.cast_slot(2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	while is_instance_valid(snake):
 		await wait_physics_frames(1)
 	await wait_physics_frames(1)
-	assert_eq(_children_of(Explosion).size(), 1, "l'explosion finale")
+	assert_eq(_children_of(Explosion).size(), 0, "plus d'explosion finale")
 	assert_eq(_children_of(HellSnake).size(), 2, "deux petits")
 	var hatchling: HellSnake = _children_of(HellSnake)[0]
 	assert_eq(hatchling._cast.hatchlings, 0.0, "qui ne se diviseront pas")
 	assert_eq(hatchling._cast.duration, SkillStats.HATCHLING_LIFE)
 	assert_eq(hatchling._size, HellSnake.HATCHLING_SIZE, "plus petits que leur parent")
+
+
+## Le Venin d'hydre : des petits qui vivent et mordent plus.
+func test_hydra_venom_feeds_the_young() -> void:
+	_learn_with("manual_fire", "hell_snake", [
+		[SkillStats.HATCHLINGS, 2.0], [SkillStats.HATCHLING_TIME, 1.0], [SkillStats.HATCHLING_BITE, 50.0],
+	])
+	var cast := _p.resolve(SkillCatalog.by_id("hell_snake"), 1)
+	var young := cast.hatchling()
+	assert_eq(young.duration, SkillStats.HATCHLING_LIFE + 1.0)
+	assert_almost_eq(young.total_max(), cast.total_max() * SkillStats.SPLIT_PART * 1.5, 1e-3)
+	assert_eq(young.hatchling_bite, 0.0, "le venin ne passe pas aux petits des petits")
+
+
+## La Gloutonnerie : chaque proie de **ce** serpent le grossit, cinq au plus — les tués d'un
+## autre lancer ne comptent pas, fût-ce son frère de couvée.
+func test_a_gluttonous_snake_grows_on_its_own_prey() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.GLUTTONY, 10.0], [SkillStats.BROOD, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var snakes := _children_of(HellSnake)
+	var fed: HellSnake = snakes[0]
+	var other: HellSnake = snakes[1]
+	assert_ne(fed._cast, other._cast, "chacun son lancer")
+	var life := fed.lifetime()
+	for i in SkillStats.GLUTTONY_MOST + 2:
+		_p.states.slew.emit(fed._cast, Vector2.ZERO, null)
+	assert_eq(fed._preys, SkillStats.GLUTTONY_MOST, "cinq proies au plus")
+	assert_eq(other._preys, 0)
+	assert_almost_eq(fed.lifetime(), life + SkillStats.GLUTTONY_LIFE * SkillStats.GLUTTONY_MOST, 1e-4)
+	assert_gt(fed._size, 1.0, "il grossit")
+	var before := Game.rng.state
+	var plain := fed._cast.roll(Game.rng)
+	Game.rng.state = before
+	assert_almost_eq(fed._bite_parts()[DamageType.Kind.FIRE], plain[DamageType.Kind.FIRE] * 1.5, 1e-3, "et mord plus fort")
+
+
+## La Mue de croissance : à la cinquième proie, une gerbe, et tout recommence.
+func test_a_sated_snake_molts() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.GLUTTONY, 10.0], [SkillStats.GROWTH_MOLT, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	await wait_physics_frames(10)
+	for i in SkillStats.GLUTTONY_MOST:
+		_p.states.slew.emit(snake._cast, Vector2.ZERO, null)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1, "la gerbe")
+	assert_eq(snake._preys, 0, "il recommence à grossir")
+	assert_eq(snake._size, 1.0)
+	assert_lt(snake._age, 0.1, "sa vie entière")
+
+
+## La Constriction : il s'enroule autour de sa première proie et y mord deux fois plus
+## vite ; sous l'Étau, elle ne bouge plus — jusqu'à ce qu'il la lâche.
+func test_a_constricting_snake_coils_and_holds_its_prey() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.CONSTRICT, 1.0], [SkillStats.VISE, 1.0]])
+	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	prey.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	await wait_physics_frames(3)
+	assert_eq(snake._coiled, prey, "la première mordue")
+	assert_eq(prey.states.speed_factor, 0.0, "tenue")
+	await wait_seconds(1.0)
+	assert_almost_eq(snake._head.distance_to(prey.global_position), HellSnake.COIL, 0.5, "enroulé")
+	assert_almost_eq(float(_hits(prey)), 1.0 + 1.0 / (snake._cast.period * 0.5), 1.0, "deux fois plus vite")
+	snake.free()
+	assert_eq(prey.states.speed_factor, 1.0, "lâchée")
+
+
+## L'Ouroboros tourne autour du point visé ; la Spirale resserre l'anneau.
+func test_an_ouroboros_circles_the_aim_and_a_spiral_tightens() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.OUROBOROS, 1.0], [SkillStats.SEEK, 300.0]])
+	_target(Vector2(Player.PLACEMENT_RANGE + 150, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	var aim := snake._anchor
+	for i in 10:
+		await wait_physics_frames(6)
+		assert_almost_eq(snake._head.distance_to(aim), HellSnake.OUROBOROS_RING, 0.5, "sur l'anneau, sans chasser")
+	snake._cast.spiral = 1.0
+	snake._age = snake.lifetime() * 0.5
+	await wait_physics_frames(1)
+	assert_lt(snake._head.distance_to(aim), HellSnake.OUROBOROS_RING * 0.7, "resserré")
+
+
+## Le Crachat : une petite boule vers la proie à portée, en éventail sous la Gerbe — et rien
+## sans proie.
+func test_a_spitting_snake_fires_at_the_nearest_prey() -> void:
+	_learn_with("manual_fire", "hell_snake", [[SkillStats.SPIT, 30.0], [SkillStats.SPIT_FAN, 2.0]])
+	assert_true(_p.cast_slot(2))
+	var snake: HellSnake = _children_of(HellSnake)[0]
+	await wait_seconds(SkillStats.SPIT_PERIOD + 0.1)
+	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
+	_target(snake._head + Vector2(0, SkillStats.SPIT_REACH * 0.8))
+	await wait_physics_frames(3)
+	var balls := _children_of(Fireball)
+	assert_eq(balls.size(), 3, "une boule et deux de Gerbe")
+	var ball: Fireball = balls[0]
+	assert_true(ball.is_shard, "la petite boule")
+	assert_between(ball._parts[DamageType.Kind.FIRE], snake._cast.total_min() * 0.3, snake._cast.total_max() * 0.3, "30 % d'une morsure")
 
 
 ## Trois serpents par lanceur : relancer dissout les plus anciens, sans éclat ni petits.
@@ -1549,6 +1883,102 @@ func test_a_dash_bursts_where_it_lands() -> void:
 	assert_eq((burst[0] as Explosion).global_position, _p.global_position, "à l'arrivée")
 
 
+## Le Départ en trombe : la même explosion, aussi d'où l'on part, à une part de sa force.
+func test_a_flying_start_bursts_at_both_ends() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.FLYING_START, 50.0]])
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var at := _children_of(Explosion).map(func(e: Explosion) -> Vector2: return e.global_position)
+	assert_eq(at.size(), 2)
+	assert_true(at.has(from_value), "au départ")
+	assert_true(at.has(_p.global_position), "et à l'arrivée")
+
+
+## La Mèche : la traînée éteinte, ses plaques explosent l'une après l'autre, du départ à
+## l'arrivée ; la Mèche courte l'allume tout de suite, et la traînée part avec elle.
+func test_a_wick_runs_along_the_spent_trail() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.WICK, 50.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
+	var from_value := _p.global_position
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration - 0.1)
+	assert_eq(_children_of(Explosion).size(), 0, "pas avant l'extinction")
+	for i in 30:
+		if not _children_of(Explosion).is_empty():
+			break
+		await wait_physics_frames(1)
+	var first: Array = _children_of(Explosion)
+	assert_eq(first.size(), 1, "la première plaque")
+	assert_eq((first[0] as Explosion).global_position, from_value, "au départ")
+	await wait_seconds(0.5)
+	assert_eq(_children_of(DashTrail).size(), 0, "la traînée finit avec sa mèche")
+
+	var trail := DashTrail.leave(_effects, Vector2.ZERO, Vector2(100, 0), cast, _p.states)
+	cast.short_fuse = 1.0
+	await wait_physics_frames(2)
+	assert_gt(_children_of(Explosion).size(), 0, "la mèche courte, tout de suite")
+	await wait_seconds(0.5)
+	assert_false(is_instance_valid(trail), "et la traînée part avec elle")
+
+
+## La Seconde foulée : relancer dans la fenêtre est gratuit et ne relance pas la recharge,
+## une fois ; la Foulée de feu la rend plus forte.
+func test_a_second_stride_is_free_once() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.SECOND_STRIDE, 1.0], [SkillStats.STRIDE_FIRE, 50.0]])
+	assert_true(_p.cast_slot(2))
+	var mana := _p.mana
+	var left := _p.remaining_cooldown(2)
+	assert_gt(left, 0.0)
+	assert_true(_p.cast_slot(2), "relancée pendant la recharge")
+	assert_eq(_p.mana, mana, "sans coût")
+	assert_almost_eq(_p.remaining_cooldown(2), left, 0.001, "sans relancer la recharge")
+	assert_false(_p.cast_slot(2), "une fois")
+
+
+## La touche tenue relance à chaque image où elle le peut : elle dépensait la seconde ruée
+## juste après la première, au même point. Il faut un nouvel appui.
+func test_a_held_key_keeps_the_second_stride_for_a_new_press() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.SECOND_STRIDE, 1.0]])
+	var press := InputEventAction.new()
+	press.action = "skill_3"
+	press.pressed = true
+	Input.parse_input_event(press)
+	await wait_physics_frames(5)
+	assert_gt(_p.remaining_cooldown(2), 0.0, "la première ruée est partie")
+	assert_true(_p._strides.has(2), "la seconde attend un nouvel appui")
+	Input.action_release("skill_3")
+	await wait_physics_frames(1)
+	Input.parse_input_event(press)
+	await wait_physics_frames(2)
+	assert_false(_p._strides.has(2), "le nouvel appui la lance")
+
+
+## Le Charmeur : un serpent surgit à l'arrivée si l'on sait le lancer ; la Danse du
+## charmeur rappelle ceux qui sont déjà en jeu.
+func test_a_charmer_raises_a_snake_where_it_lands() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.CHARMER, 1.0], [SkillStats.SNAKE_DANCE, 1.0]])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(HellSnake).size(), 0, "sans Serpent infernal appris, rien")
+	assert_true(_p.invest(0, "hell_snake"))
+	var old := HellSnake.drop(_effects, Vector2(-200, 0), _p.resolve(SkillCatalog.by_id("hell_snake"), 1), Vector2.RIGHT, _p.states, _p)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(HellSnake).size(), 2, "un de plus, à l'arrivée")
+	assert_eq(old._anchor, _p.global_position, "l'ancien rappelé")
+
+
+## L'Onde brûlante : l'atterrissage du bond projette l'anneau de feu, à deux rayons.
+func test_a_burning_wave_spreads_from_the_leap() -> void:
+	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.BURNING_WAVE, 40.0]], Skill.Shape.LEAP)
+	assert_true(_p.cast_slot(2))
+	var rings := _children_of(FrostRing)
+	assert_eq(rings.size(), 1)
+	var ring: FrostRing = rings[0]
+	await wait_seconds(FrostRing.LIFETIME - 0.05)
+	assert_almost_eq(ring.reach(), 30.0 * SkillStats.BURNING_WAVE_REACH, 1.0)
+
+
 func _ignited() -> StatusEffects:
 	var victim := StatusEffects.new()
 	victim.put(StatusEffects.Kind.IGNITE, 1.0)
@@ -1591,20 +2021,6 @@ func test_a_converted_kill_burst_follows_the_nature() -> void:
 	_p.states.slew.emit(cast, Vector2(40, 0), rotting)
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1, "un pourrissant, si")
-
-
-func test_an_aura_leaves_burning_ground_under_what_it_kills() -> void:
-	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
-	cast.ground_duration = 1.0
-	_p.states.slew.emit(cast, Vector2(40, 0), null)
-	await wait_physics_frames(2)
-	assert_eq(_children_of(DashTrail).size(), 1)
-
-	var ball := _p.resolve(SkillCatalog.by_id("fireball"), 1)
-	ball.ground_duration = 1.0
-	_p.states.slew.emit(ball, Vector2(40, 0), null)
-	await wait_physics_frames(2)
-	assert_eq(_children_of(DashTrail).size(), 1, "la boule pose le sien en éclatant, pas au tué")
 
 
 

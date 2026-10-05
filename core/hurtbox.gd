@@ -77,6 +77,10 @@ func take_damage(info: DamageInfo) -> void:
 				info.cast.inflicted_state, info.cast.inflict_chance, info.parts, info.author,
 				Game.rng, source, info.cast.strength_of(info.cast.inflicted_state)
 			)
+		if info.cast != null and info.cast.overheat > 0.0:
+			states.charge(StatusEffects.Kind.OVERHEAT, SkillStats.OVERHEAT_MOST, info.author, source)
+		if info.cast != null and info.cast.melt > 0.0:
+			states.melt(info.cast.melt)
 
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la

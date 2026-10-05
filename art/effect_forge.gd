@@ -447,6 +447,55 @@ static func puffs(tint: Color) -> Array:
 	return _sheet(_puffs, PUFF, PUFF_SIZE, PUFF_SIZE, tint, Fire.heart(tint))
 
 
+## La boule du Gonflement (jalon 42, planche « fabriquée à la taille ») : **fabriquée** à
+## la taille demandée, impaire, dans la langue de `BALL` — lumière en haut à gauche, cœur
+## blanc, bord sombre en bas à droite, un bord qui lèche. Quatre temps, cuits une fois par
+## teinte et par taille : sept tailles de 15 à 27 px au plus.
+static func grown_balls(tint: Color, side: int) -> Array:
+	var key := "%s/%d" % [tint.to_html(false), side]
+	if not _grown.has(key):
+		var grids: Array = []
+		for frame in GROWN_FRAMES:
+			grids.append(_ball_grid(side, side * GROWN_FRAMES + frame))
+		_grown[key] = _bake(grids, side, side, tint, Fire.heart(tint))
+	return _grown[key]
+
+
+const GROWN_FRAMES := 4
+static var _grown := {}
+
+
+## Les seuils de la rampe, de la lumière au bord : posés à l'œil sur la planche.
+static func _ball_grid(side: int, seed_value: int) -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var middle := float(side - 1) * 0.5
+	var r := float(side) * 0.5
+	var out: Array = []
+	for y in side:
+		var line := ""
+		for x in side:
+			var dx := float(x) - middle
+			var dy := float(y) - middle
+			var d := sqrt(dx * dx + dy * dy) / r
+			if d > 0.92 + rng.randf() * 0.12:
+				line += "."
+				continue
+			var v := (1.0 - d) * 0.85 + (-dx - dy) / (r * 1.414) * 0.35
+			if v > 0.62:
+				line += "w"
+			elif v > 0.42:
+				line += "5"
+			elif v > 0.22:
+				line += "4"
+			elif v > 0.04:
+				line += "3"
+			else:
+				line += "2"
+		out.append(line)
+	return out
+
+
 static func shard(tint: Color) -> Texture2D:
 	return _sheet(_shards, SHARD, SHARD_SIZE, SHARD_SIZE, tint, Fire.heart(tint))[0]
 

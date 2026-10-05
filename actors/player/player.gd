@@ -139,6 +139,7 @@ var _lit := {}
 ## Le prochain tour des compétences qui changent de nature à chaque lancer, par
 ## identifiant. Jamais sauvegardé : on recommence par le premier élément.
 var _turns := {}
+var _costs := {}
 ## La nature du dernier sort qui a frappé, pour les charges d'Harmonie ; −1 avant le premier.
 var _last_spell_nature := -1
 ## L'identifiant du geste entretenu qui enferme son lanceur, ou vide. Tenu à jour à
@@ -147,6 +148,12 @@ var _bound := ""
 var _crown: BladeCrown
 ## Ce que la brûlure d'Immolation a pris depuis le dernier chiffre affiché.
 var _burn_to_show := StatusEffects.Pack.new()
+## La Renaissance (jalon 42) : les secondes avant qu'elle puisse revenir. Les Cendres du
+## phénix : celles qui leur restent, que le brasier lit.
+var _rebirth_wait := 0.0
+var phoenix_ashes := 0.0
+## La Seconde foulée : par case, le temps qui reste pour relancer la ruée sans payer.
+var _strides := {}
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
@@ -215,6 +222,12 @@ func _physics_process(delta: float) -> void:
 	var cadence := states.speed_factor
 	for i in _recharges.size():
 		_recharges[i] = maxf(_recharges[i] - delta * cadence, 0.0)
+	_rebirth_wait = maxf(_rebirth_wait - delta, 0.0)
+	for index: int in _strides.keys():
+		_strides[index] -= delta
+		if _strides[index] <= 0.0:
+			_strides.erase(index)
+	phoenix_ashes = maxf(phoenix_ashes - delta, 0.0)
 
 	_regen(delta)
 	_drink(delta)
@@ -266,7 +279,9 @@ func _physics_process(delta: float) -> void:
 ## il porte les huit refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite
 ## pleine, morts-vivants au complet, frappe vive sans personne à portée.
 func cast_slot(index: int) -> bool:
-	if is_dead or _recharges.size() <= index or _recharges[index] > 0.0:
+	# La Seconde foulée passe outre la recharge et le coût, une fois.
+	var stride := _strides.has(index)
+	if is_dead or _recharges.size() <= index or (_recharges[index] > 0.0 and not stride):
 		return false
 	var skill := bar.skill_of(index)
 	if skill == null:
@@ -291,7 +306,7 @@ func cast_slot(index: int) -> bool:
 		return false
 	if not skill.usable_with(_weapon_base()):
 		return false
-	if mana < cast.mana_cost:
+	if mana < cast.mana_cost and not stride:
 		return false
 	# Refusée plutôt que de remplacer la plus ancienne : la touche tenue paierait pour
 	# rien.
@@ -304,8 +319,17 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.LUNGE and prey == null:
 		return false
 
-	_set_mana(mana - cast.mana_cost)
-	_start_recharge(index, cast.interval)
+	if stride:
+		_strides.erase(index)
+		# La Foulée de feu : la seconde ruée frappe plus fort, traînée et explosions.
+		cast = cast.echoed(1.0 + cast.stride_fire * 0.01)
+	else:
+		_set_mana(mana - cast.mana_cost)
+		_start_recharge(index, cast.interval)
+		if cast.second_stride > 0.0:
+			_strides[index] = SkillStats.STRIDE_WINDOW
+			# Un nouvel appui : la touche encore tenue la dépensait à l'image suivante.
+			_held[index] = false
 	var salvo := _salvo(skill, points, cast)
 	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
 	if spell:
@@ -321,6 +345,27 @@ func cast_slot(index: int) -> bool:
 	if spell:
 		_after_spell(skill, salvo, aim)
 	return true
+
+
+## Le Feu nourri (jalon 42) : sous un brasier allumé, la boule en sort attisée — dégâts et
+## rayon. Une copie : le lancer résolu se relit ailleurs.
+func _stoke(salvo: Array[SkillStats]) -> Array[SkillStats]:
+	if salvo[0].stoked <= 0.0 or not _lit_shape(Skill.Shape.AURA):
+		return salvo
+	var out: Array[SkillStats] = []
+	for cast in salvo:
+		var gain := 1.0 + cast.stoked * 0.01
+		var fed := cast.echoed(gain)
+		fed.radius *= gain
+		out.append(fed)
+	return out
+
+
+func _lit_shape(shape: Skill.Shape) -> bool:
+	for skill in lit_skills():
+		if skill.shape == shape:
+			return true
+	return false
 
 
 ## Un lancer par projectile : ceux d'une compétence à nature tournante prennent chacun le
@@ -342,6 +387,7 @@ func _pose(
 	skill: Skill, salvo: Array[SkillStats], origin: Node2D, toward: Vector2, aim: Vector2,
 	prey: Hurtbox = null
 ) -> void:
+	salvo = _stoke(salvo)
 	var cast := salvo[0]
 	var at := origin.global_position
 	var parent := _effects_parent()
@@ -350,7 +396,7 @@ func _pose(
 		Skill.Shape.BOLT:
 			_roll(salvo, bolt_scene, origin, toward)
 		Skill.Shape.BALL:
-			_roll(salvo, orb_scene, origin, toward)
+			_roll(salvo, orb_scene, origin, toward, aim)
 		Skill.Shape.COMET:
 			_roll(salvo, comet_scene, origin, toward)
 		Skill.Shape.ORB:
@@ -679,13 +725,19 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		var parts := cast.roll(Game.rng)
 		for i in parts.size():
 			parts[i] *= SkillStats.KILL_BURST_PART
+		# La Poudrière (jalon 42) : l'explosion pose son état à coup sûr, et la chaîne ne
+		# s'arrête plus faute d'embrasés. Une copie, que la suite de la chaîne reprend.
+		var blast := cast
+		if cast.powder_keg > 0.0:
+			blast = cast.echoed(1.0)
+			blast.status_chance_increase += SkillStats.SURE_STATE
 		Explosion.put(
 			_effects_parent(), at, parts, cast.kill_burst, null,
-			DamageType.COLORS[cast.nature], states, cast
+			DamageType.COLORS[cast.nature], states, blast
 		)
-	# L'aura n'a pas d'impact où poser son sol : elle le pose sous ce qu'elle tue.
-	if cast.ground_duration > 0.0 and cast.shape == Skill.Shape.AURA:
-		DashTrail.patch(_effects_parent(), at, cast.ground(), states)
+	# Les Âmes consumées (jalon 42) : chaque tué rend une part des PV max.
+	if cast.soul_feast > 0.0:
+		heal(stats.max_health * cast.soul_feast * 0.01)
 	if cast.keywords.has(Keywords.ATTACK):
 		_stack_on_kill()
 	elif cast.keywords.has(Keywords.SPELL):
@@ -747,6 +799,33 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
 			DamageType.COLORS[cast.nature], states, cast
 		)
+		# Le Départ en trombe (jalon 42) : la même explosion, à une part, d'où l'on part.
+		if cast.flying_start > 0.0:
+			Explosion.put(
+				_effects_parent(), from_value, cast.echoed(cast.flying_start * 0.01).roll(Game.rng),
+				cast.end_burst, null, DamageType.COLORS[cast.nature], states, cast
+			)
+	# L'Onde brûlante : l'atterrissage du bond projette un anneau, à une part du coup.
+	if cast.burning_wave > 0.0 and cast.shape == Skill.Shape.LEAP:
+		var wave := cast.echoed(cast.burning_wave * 0.01)
+		wave.radius = cast.end_burst
+		FrostRing.spread(
+			_effects_parent(), global_position, wave, states, SkillStats.BURNING_WAVE_REACH
+		)
+	_charm(cast)
+
+
+## Le Charmeur (jalon 42) : à l'arrivée, un Serpent infernal surgit — avec vos points et
+## votre arbre du serpent, sans coût, compté dans la limite. La Danse du charmeur rappelle
+## ceux déjà en jeu au point d'arrivée.
+func _charm(cast: SkillStats) -> void:
+	if cast.snake_dance > 0.0:
+		HellSnake.recall(self, global_position)
+	var points := skill_points(SkillStats.CHARMED_SKILL)
+	if cast.charmer <= 0.0 or points <= 0:
+		return
+	var snake := resolve(SkillCatalog.by_id(SkillStats.CHARMED_SKILL), points)
+	HellSnake.drop(_effects_parent(), global_position, snake, facing, states, self)
 
 
 ## Le Brise-sol (jalon 39) : la lame s'abat devant soi et frappe tout le cercle de
@@ -836,6 +915,14 @@ func _blade_crown() -> BladeCrown:
 
 ## **Le chemin du lancer et de la page du manuel** : fiche et modificateurs de mot-clé.
 ## Au tour du prochain lancer : la page montre la nature qui partira.
+## Le coût d'un lancer, nœuds compris — le Météore le renchérit. La barre le relit à chaque
+## image : d'où le cache, vidé à chaque recalcul de la fiche (points, objets, buffs).
+func cost_of(skill: Skill) -> float:
+	if not _costs.has(skill.id):
+		_costs[skill.id] = resolve(skill, maxi(skill_points(skill.id), 1)).mana_cost
+	return _costs[skill.id]
+
+
 func resolve(skill: Skill, points: int) -> SkillStats:
 	return skill.resolve(
 		points, stats, skill_mods, talents_of(skill.id), int(_turns.get(skill.id, 0))
@@ -949,15 +1036,25 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 ## Les traits répartis sur l'écart du geste résolu : tout vient de
 ## `SkillStats`, rien n'est relu sur la compétence.
 ## `salvo` : un lancer par trait, ou un seul pour tous (`_salvo()`).
-func _roll(salvo: Array[SkillStats], scene: PackedScene, origin: Node2D, toward: Vector2) -> void:
+func _roll(
+	salvo: Array[SkillStats], scene: PackedScene, origin: Node2D, toward: Vector2,
+	aim := Vector2.INF
+) -> void:
 	if scene == null:
 		return
 	var directions := _spread(salvo[0], toward)
-	for i in directions.size():
+	var count := directions.size()
+	for i in count:
 		var cast := salvo[i % salvo.size()]
+		var from := origin.global_position
+		var heading := directions[i]
+		# La Convergence (jalon 42) : côte à côte au départ, toutes vers le point visé.
+		if cast.converge > 0.0 and aim != Vector2.INF:
+			from += toward.orthogonal() * (float(i) - float(count - 1) * 0.5) * SkillStats.CONVERGE_GAP
+			heading = from.direction_to(aim)
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
 		var bolt := Projectile.spawn(
-			_effects_parent(), scene, origin.global_position, directions[i], cast.roll(Game.rng),
+			_effects_parent(), scene, from, heading, cast.roll(Game.rng),
 			origin, cast.projectile_speed, cast.nature, cast
 		)
 		if bolt is Fireball:
@@ -994,6 +1091,7 @@ func _regen(delta: float) -> void:
 ## Reconstruit la fiche **de zéro** : additionner compterait les bonus à chaque appel.
 func recompute_stats() -> void:
 	stats = base_stats.duplicate()
+	_costs.clear()
 
 	# Tous les objets d'un coup : les plats avant les pourcentages, quel que soit
 	# l'ordre d'équipement.
@@ -1498,7 +1596,7 @@ func _on_damaged(info: DamageInfo) -> void:
 
 ## Le drapeau évite plusieurs `died` : plusieurs grunts frappent dans la même image.
 func _die() -> void:
-	if is_dead:
+	if is_dead or _reborn():
 		return
 	is_dead = true
 	set_physics_process(false)
@@ -1515,6 +1613,28 @@ func _die() -> void:
 		_restat()
 		flasks_changed.emit()
 	died.emit()   # l'écran de fin de run se branchera ici
+
+
+## La Renaissance : un brasier allumé qui la porte retient le coup fatal, une fois par
+## `REBIRTH_PERIOD`, et explose de toute sa force. **Depuis un rappel de collision**
+## parfois : l'explosion se pose d'elle-même en différé.
+func _reborn() -> bool:
+	if _rebirth_wait > 0.0:
+		return false
+	for skill in lit_skills():
+		var cast := resolve(skill, skill_points(skill.id))
+		if cast.rebirth <= 0.0:
+			continue
+		_rebirth_wait = SkillStats.REBIRTH_PERIOD
+		_set_health(stats.max_health * SkillStats.REBIRTH_HEALTH)
+		if cast.phoenix_ashes > 0.0:
+			phoenix_ashes = SkillStats.ASHES_TIME
+		Explosion.put(
+			_effects_parent(), global_position, cast.roll(Game.rng),
+			cast.radius * SkillStats.REBIRTH_REACH, null, DamageType.COLORS[cast.nature], states, cast
+		)
+		return true
+	return false
 
 
 func revive() -> void:

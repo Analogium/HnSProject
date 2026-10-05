@@ -4,6 +4,7 @@ extends Projectile
 ## Le tir de Boule de feu. Le trajet et la touche directe sont ceux de
 ## `Projectile` ; le dessin et l'explosion sont à lui.
 
+const SCENE := "res://actors/projectiles/player_fireball.tscn"
 ## Les bouffées de la traînée, et leur écart en pixels derrière la boule.
 const TRAIL := 3
 const TRAIL_STEP := 6.0
@@ -16,6 +17,26 @@ var is_shard := false
 ## Deux hurtbox entrées dans le même pas ne font pas deux explosions ; une boule qui
 ## traverse en fait une par cible, à des pas différents.
 var _burst_frame := -1
+## Le Gonflement (jalon 42) : sa propre forme de touche, que la boule agrandit en volant —
+## celle de la scène est partagée par toutes les boules (invariant 2).
+var _hit_shape: CircleShape2D
+var _hit_radius := 0.0
+
+
+## Une étincelle lancée par ce qui n'a pas de corps à états : le crachat du serpent, les
+## escarbilles du brasier. La petite boule des éclats, sans gel — ce qui dure ne fige
+## jamais —, l'auteur posé à la main. Chargée à l'appel : la scène porte ce script.
+static func spark(
+	parent: Node, from: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects
+) -> Fireball:
+	var ball := Projectile.spawn(
+		parent, load(SCENE), from, toward, cast.roll(Game.rng), null, 0.0, cast.nature, cast
+	) as Fireball
+	ball.is_shard = true
+	ball.explosion_radius = cast.radius
+	ball.hit_stop_on_impact = false
+	ball._author = author
+	return ball
 
 
 func _ready() -> void:
@@ -44,11 +65,35 @@ func _draw() -> void:
 		EffectForge.put_centered(self, puffs[2], -_dir * 9.0)
 		EffectForge.put_centered(self, EffectForge.shard(t), Vector2.ZERO)
 		return
+	# Gonflée, la boule est fabriquée à sa taille, impaire, et sa traînée recule d'autant.
+	var side := 2 * floori(EffectForge.BALL_SIZE * 0.5 * size()) + 1
+	var behind := float(side - EffectForge.BALL_SIZE) * 0.5
 	for i in TRAIL:
-		EffectForge.put_centered(self, puffs[mini(i, puffs.size() - 1)], -_dir * (TRAIL_STEP * float(i + 1)))
+		EffectForge.put_centered(
+			self, puffs[mini(i, puffs.size() - 1)], -_dir * (behind + TRAIL_STEP * float(i + 1))
+		)
 
-	var balls := EffectForge.balls(t)
+	var balls := EffectForge.balls(t) if side <= EffectForge.BALL_SIZE else EffectForge.grown_balls(t, side)
 	EffectForge.put_centered(self, balls[int(_life * EffectForge.BALL_HZ) % balls.size()], Vector2.ZERO)
+
+
+func _physics_process(delta: float) -> void:
+	super(delta)
+	if _cast == null or _cast.girth <= 0.0:
+		return
+	if _hit_shape == null:
+		var holder := get_node("CollisionShape2D") as CollisionShape2D
+		_hit_shape = holder.shape.duplicate()
+		holder.shape = _hit_shape
+		_hit_radius = _hit_shape.radius
+	_hit_shape.radius = _hit_radius * size()
+
+
+## Sa taille, en multiple de la sienne : un sous le Gonflement, plafonnée à `GIRTH_MOST`.
+func size() -> float:
+	if _cast == null or _cast.girth <= 0.0:
+		return 1.0
+	return minf(1.0 + _cast.girth * 0.01 * speed * _life / SkillStats.SWELL_STEP, SkillStats.GIRTH_MOST)
 
 
 func _on_area_entered(area: Area2D) -> void:
@@ -66,15 +111,12 @@ func _explode(direct_target: Hurtbox) -> void:
 	if _burst_frame == Engine.get_physics_frames():
 		return
 	_burst_frame = Engine.get_physics_frames()
-	burst(get_parent(), global_position, _parts, explosion_radius, direct_target, tint(), _author, _cast)
-
-
-## **L'éclatement de la boule**, où qu'elle éclate : en vol ou tombée du ciel (le
-## Météore). L'explosion, puis le sol brûlant qu'un nœud lui fait laisser.
-static func burst(
-	parent: Node, at: Vector2, parts: Array[float], radius: float, excluded: Hurtbox,
-	tint_of: Color, author: StatusEffects, cast: SkillStats
-) -> void:
-	Explosion.put(parent, at, parts, radius, excluded, tint_of, author, cast)
-	if cast != null and cast.ground_duration > 0.0:
-		DashTrail.patch(parent, at, cast.ground(), author)
+	var parts: Array[float] = _parts.duplicate()
+	var radius := explosion_radius
+	# La Prise d'air (jalon 42) : plus la boule a volé, plus elle éclate fort et large.
+	if _cast != null and _cast.swell > 0.0:
+		var gain := 1.0 + _cast.swell * 0.01 * speed * _life / SkillStats.SWELL_STEP
+		for i in parts.size():
+			parts[i] *= gain
+		radius *= gain
+	Explosion.put(get_parent(), global_position, parts, radius, direct_target, tint(), _author, _cast)

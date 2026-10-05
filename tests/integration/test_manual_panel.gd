@@ -161,15 +161,11 @@ func _page() -> Rect2:
 
 
 ## Les cases dans la page de la grille ; les nœuds, et la grille d'arbre entière, dans
-## la fenêtre élargie d'un arbre ouvert (jalon 34) — vers la gauche, le sac est à droite.
+## la fenêtre d'un arbre ouvert — en plein écran depuis le jalon 42, par-dessus le sac.
 func test_slots_and_nodes_fit_in_the_panel() -> void:
+	_rich_book()
 	var grid := _page()
 	var right := _panel.position.x + _panel.size.x
-	_panel._opened = "swift_bolt"
-	var tree := _page()
-	assert_gt(tree.size.y, grid.size.y, "l'arbre ouvert agrandit la fenêtre")
-	assert_eq(_panel.size.x, ManualPanel.TREE_W, "et l'élargit")
-	assert_eq(_panel.position.x + _panel.size.x, right, "sans avancer sur le sac")
 	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual == null:
 			continue
@@ -184,6 +180,12 @@ func test_slots_and_nodes_fit_in_the_panel() -> void:
 						and absi(node.position.y) <= ManualPanel.TREE_SPAN.y,
 					"« %s » : le nœud %s sort de la grille" % [node.id, node.position]
 				)
+	_panel._opened = "swift_bolt"
+	var tree := _page()
+	var screen := _panel.get_viewport_rect().size
+	assert_gt(tree.size.y, grid.size.y, "l'arbre ouvert agrandit la fenêtre")
+	assert_eq(_panel.size.x, screen.x - ManualPanel.TREE_MARGIN * 2.0, "à toute la largeur")
+	assert_eq(_panel.get_index(), _panel.get_parent().get_child_count() - 1, "par-dessus le sac")
 	for corner in [-ManualPanel.TREE_SPAN, ManualPanel.TREE_SPAN]:
 		assert_true(tree.encloses(_panel._node_rect(corner)), "le coin %s de la grille tient" % corner)
 	assert_true(tree.encloses(_panel._root_rect()), "et la racine d'un arbre y tient")
@@ -379,11 +381,16 @@ func test_storing_the_book_closes_its_tree() -> void:
 	assert_null(_panel._book())
 
 
-## Choisir un autre livre referme l'arbre : celui du premier ne veut rien dire
-## sur la page du second.
-func test_changing_book_closes_the_tree() -> void:
-	_open_tree()
+## Les dos des livres s'effacent le temps de l'arbre (jalon 42, plein écran) : un clic à
+## leur place ne change pas de livre. Revenu à la grille, on en choisit un autre.
+func test_the_tree_hides_the_books() -> void:
 	_player.study(Item.new(ItemCatalog.by_id("manual_weapons")), 1)
+	var second := _panel._slot_rect(1).get_center()
+	_open_tree()
+	assert_eq(_panel._slot_rect(1), Rect2(), "ni dessiné, ni survolé")
+	_click_on(second)
+	assert_eq(_panel._selected, 0)
+	_panel._opened = ""
 	_click_on(_panel._slot_rect(1).get_center())
 	assert_eq(_panel._selected, 1)
 	assert_null(_panel._open_cell())
@@ -590,6 +597,21 @@ func test_the_details_follow_what_the_hit_really_carries() -> void:
 	var fire := _values(_triggers("ice_spike"), ignite)
 	assert_eq(fire, PackedStringArray(["20 %"]), "le feu ajouté embrase, quelle que soit sa part")
 	assert_eq(_values(_triggers("ice_spike"), chill), PackedStringArray(["20 %"]), "et le froid garde sa chance")
+
+
+## La Surchauffe (jalon 42) : un état que la boule pose à chaque coup, et ce que vaut une
+## charge — la fenêtre le dit dès que le nœud est pris, et pas avant.
+func test_the_details_show_the_overheat_once_taken() -> void:
+	_studied("manual_fire", "fireball")
+	var heat := StatusEffects.name(StatusEffects.Kind.OVERHEAT)
+	assert_eq(_values(_triggers("fireball"), heat).size(), 0, "rien sans le nœud")
+	for id in ["fireball_stoking", "fireball_stoking", "fireball_dense_core", "fireball_overheat"]:
+		assert_true(_player.invest(0, id), id)
+	assert_eq(_values(_triggers("fireball"), heat), PackedStringArray(["100 %"]), "posée à chaque coup")
+	var per_charge := _values(_triggers("fireball"), SkillStats.LABELS[SkillStats.OVERHEAT])
+	assert_eq(per_charge.size(), 1)
+	assert_string_contains(per_charge[0], "8")
+	assert_string_contains(per_charge[0], str(SkillStats.OVERHEAT_MOST))
 
 
 ## Le tour de la foudre du Projectile élémentaire : 20 % fois 1 + 200 %.

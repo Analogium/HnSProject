@@ -74,6 +74,21 @@ func test_the_ball_actually_changes_from_frame_to_frame() -> void:
 	assert_eq(seen.size(), EffectForge.BALL.size(), "six temps distincts")
 
 
+## La boule du Gonflement (jalon 42) : fabriquée à sa taille, une fois par taille, ses
+## temps distincts, et son cœur dans le blanc chaud du feu.
+func test_a_grown_ball_is_forged_once_at_its_size() -> void:
+	var frames := EffectForge.grown_balls(FIRE, 21)
+	assert_eq(frames, EffectForge.grown_balls(FIRE, 21), "deux appels, une cuisson")
+	assert_eq(frames.size(), EffectForge.GROWN_FRAMES)
+	var seen := {}
+	for tex: Texture2D in frames:
+		assert_eq(tex.get_size(), Vector2(21, 21))
+		seen[tex.get_image().get_data()] = true
+	assert_eq(seen.size(), EffectForge.GROWN_FRAMES, "des temps distincts")
+	var image: Image = frames[0].get_image()
+	assert_gt(image.get_pixel(9, 9).get_luminance(), 0.9, "le cœur blanc, en haut à gauche du centre")
+
+
 ## Les deux dernières planches : l'éclat du souffle et la brûlure au sol. Une
 ## grille mal alignée décale toute la colonne suivante sans rien casser.
 func test_flash_and_burn_grids_are_rectangular() -> void:

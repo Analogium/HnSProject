@@ -540,3 +540,60 @@ func test_a_removed_state_stops_acting() -> void:
 	assert_false(e.active(StatusEffects.Kind.NUMB))
 	assert_eq(e.damage_taken_factor, 1.0)
 	assert_false(e.remove(StatusEffects.Kind.NUMB), "plus rien à retirer")
+
+
+## La Morsure nécrosante rend du temps à la pourriture, jamais plus que sa pleine durée.
+func test_an_extended_state_never_outlasts_its_full_duration() -> void:
+	var e := StatusEffects.new()
+	e.extend(StatusEffects.Kind.ROT, 1.0)
+	assert_false(e.active(StatusEffects.Kind.ROT), "rien à prolonger")
+	e.put(StatusEffects.Kind.ROT, 10.0)
+	e.advance(1.5)
+	e.extend(StatusEffects.Kind.ROT, 0.5)
+	var full: float = StatusEffects.DURATIONS[StatusEffects.Kind.ROT]
+	assert_almost_eq(e.remaining(StatusEffects.Kind.ROT), full - 1.0, 1e-4)
+	e.extend(StatusEffects.Kind.ROT, 9.0)
+	assert_eq(e.remaining(StatusEffects.Kind.ROT), full)
+
+
+## L'Étau : tenu par deux serpents, il le reste tant que le second ne l'a pas lâché — et
+## son transi revient ensuite.
+func test_a_held_body_stays_still_until_every_hold_lets_go() -> void:
+	var e := StatusEffects.new()
+	e.put(StatusEffects.Kind.CHILL, 0.0)
+	var chilled := e.speed_factor
+	e.hold(true)
+	e.hold(true)
+	assert_eq(e.speed_factor, 0.0)
+	e.hold(false)
+	assert_eq(e.speed_factor, 0.0, "le second le tient encore")
+	e.hold(false)
+	assert_eq(e.speed_factor, chilled)
+
+
+## La Fonte : un embrasement fait perdre la résistance au feu qu'on lui a posée, et rien
+## sans lui.
+func test_a_melting_ignite_lowers_fire_resistance() -> void:
+	var e := StatusEffects.new()
+	e.melt(10.0)
+	assert_eq(e.resistance_lost(DamageType.Kind.FIRE), 0.0, "rien à faire fondre sans embrasement")
+	e.put(StatusEffects.Kind.IGNITE, 1.0)
+	e.melt(10.0)
+	e.melt(5.0)
+	assert_eq(e.resistance_lost(DamageType.Kind.FIRE), 10.0, "le plus fort reste")
+	assert_eq(e.resistance_lost(DamageType.Kind.COLD), 0.0)
+
+
+## La Brûlure profonde : l'embrasement tiré brûle d'autant plus fort.
+func test_a_deeper_burn_ignites_harder() -> void:
+	var author := StatusEffects.new()
+	author.chance_factors[StatusEffects.Kind.IGNITE] = 1000.0
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.FIRE] = 10.0
+	var plain := StatusEffects.new()
+	plain.suffer(parts, author, Game.rng, 0.0, 0.0, "", SkillStats.new())
+	var cast := SkillStats.new()
+	cast.ignite_effect = 50.0
+	var deep := StatusEffects.new()
+	deep.suffer(parts, author, Game.rng, 0.0, 0.0, "", cast)
+	assert_almost_eq(deep._state(StatusEffects.Kind.IGNITE).per_second, plain._state(StatusEffects.Kind.IGNITE).per_second * 1.5, 1e-4)

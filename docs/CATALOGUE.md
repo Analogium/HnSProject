@@ -247,14 +247,25 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Souffle ardent | Boule de feu | — | 3 | +15 % de rayon accru |
 | Vélocité | Boule de feu | — | 2 | +20 % de vitesse de projectile accrue |
 | Ardeur | Boule de feu | Attisement (2) | 2 | +25 % de chance critique de base accrue |
-| Braises dispersées | Boule de feu | Souffle ardent (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Double langue | Boule de feu | Vélocité (2) | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
 | Perforation | Boule de feu | Vélocité (1) | 2 | +1 nombre d'ennemis traversés |
 | Givre | Boule de feu | Ardeur (1) | 1 | devient froid |
 | Étincelles | Boule de feu | Souffle ardent (1) ou Ardeur (1) | 3 | +15 % chance d'état |
 | Fragmentation | Boule de feu | Perforation (1) ou Double langue (1) | 3 | +1 nombre d'éclats |
 | Réaction en chaîne | Boule de feu | Étincelles (3) | 1 | +24 rayon de l'explosion des tués |
-| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +25 % de dégâts amplifiés · +200 % de rayon accru · +60 % de temps du geste accru |
+| Météore | Boule de feu | Attisement (3) ou Double langue (1) | 1 | +25 % de dégâts amplifiés · +200 % de rayon accru · +60 % de temps du geste accru · +50 % de coût en mana accru |
+| Noyau dense | Boule de feu | Attisement (2) | 1 | -75 % de rayon atténué · +50 % de dégâts amplifiés |
+| Prise d'air | Boule de feu | Vélocité (1) | 3 | +10 % dégâts et rayon par 100 px |
+| Surchauffe | Boule de feu | Noyau dense (1) ou Ardeur (1) | 3 | +8 % dégâts en plus par surchauffe |
+| Feu nourri | Boule de feu | Souffle ardent (2) | 2 | +15 % dégâts et rayon attisés |
+| Pluie de météorites | Boule de feu | Météore (1) | 3 | +1 nombre de mini-météorites |
+| Chute libre | Boule de feu | Météore (1) | 1 | -60 % de temps du geste réduit |
+| Gel intense | Boule de feu | Givre (1) | 3 | +15 % effet du transi |
+| Éclats en cascade | Boule de feu | Fragmentation (2) | 1 | +1 cascade d'éclats |
+| Poudrière | Boule de feu | Réaction en chaîne (1) | 1 | +1 état assuré aux explosions |
+| Convergence | Boule de feu | Double langue (1) | 1 | +1 convergence des boules |
+| Déflagration | Boule de feu | Prise d'air (1) | 1 | +1 zone appliquée au rayon |
+| Gonflement | Boule de feu | Prise d'air (1) | 2 | +15 % taille en plus par 100 px |
 | Mue | Serpent infernal | — | 4 | +8 % de dégâts amplifiés |
 | Longue vie | Serpent infernal | — | 3 | +20 % de durée accrue |
 | Crocs | Serpent infernal | — | 2 | ajoute 4 à 9 dégâts de feu |
@@ -262,18 +273,36 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Queue de flammes | Serpent infernal | Longue vie (1) ou Chasseur (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
 | Chasseur | Serpent infernal | Crocs (1) | 1 | +120 rayon de chasse |
 | Couvée | Serpent infernal | Mue (2) | 2 | +1 nombre de serpents · -15 % de dégâts atténués |
-| Mue explosive | Serpent infernal | Vif (1) | 3 | +10 rayon de l'explosion finale |
 | Venin | Serpent infernal | Crocs (2) | 1 | devient nécrotique |
-| Hydre | Serpent infernal | Couvée (2) ou Mue explosive (2) | 1 | +2 nombre de petits |
+| Hydre | Serpent infernal | Couvée (2) ou Gloutonnerie (2) | 1 | +2 nombre de petits |
+| Sifflement | Serpent infernal | — | 3 | -8 % d'intervalle des frappes réduit |
+| Gloutonnerie | Serpent infernal | Mue (1) | 3 | +5 % dégâts en plus par proie |
+| Constriction | Serpent infernal | Chasseur (1) | 1 | +1 étreinte de la proie |
+| Ouroboros | Serpent infernal | Queue de flammes (2) | 1 | +1 anneau de feu |
+| Crachat | Serpent infernal | Sifflement (1) | 2 | +30 % dégâts du crachat |
+| Spirale | Serpent infernal | Ouroboros (1) | 1 | +1 anneau qui se resserre |
+| Étau | Serpent infernal | Constriction (1) | 1 | +1 proie immobilisée |
+| Mue de croissance | Serpent infernal | Gloutonnerie (3) | 1 | +1 mue à la dernière proie |
+| Gerbe | Serpent infernal | Crachat (1) | 2 | +1 boules crachées en plus |
+| Venin d'hydre | Serpent infernal | Hydre (1) | 2 | +0.5 secondes de vie des petits · +15 % dégâts des petits |
+| Morsure nécrosante | Serpent infernal | Venin (1) | 2 | +0.5 secondes de pourriture rendues |
 | Fournaise | Immolation | — | 5 | +8 % de dégâts amplifiés |
 | Brasier | Immolation | — | 4 | +15 % de rayon accru |
 | Cœur tiède | Immolation | — | 3 | -20 % de brûlure subie réduite |
 | Pouls lent | Immolation | Fournaise (2) | 2 | +50 % d'intervalle des frappes accru · +60 % de dégâts amplifiés |
-| Étincelles | Immolation | Brasier (1) ou Fournaise (1) | 3 | +15 % chance d'état |
 | Phénix | Immolation | Cœur tiède (2) | 1 | +100 % de brûlure subie accrue · +40 % de dégâts amplifiés |
 | Flamme noire | Immolation | Pouls lent (1) | 1 | -5 % de dégâts atténués · devient nécrotique |
-| Cendres vivantes | Immolation | Brasier (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
-| Contagion ardente | Immolation | Cendres vivantes (2) ou Phénix (1) | 1 | +30 rayon de l'explosion des tués |
+| Brûlure profonde | Immolation | Fournaise (1) | 4 | +15 % effet de l'embrasement |
+| Tirage | Immolation | Brasier (1) | 3 | +40 force d'aspiration |
+| Feu de camp | Immolation | Brasier (2) ou Pouls lent (1) | 3 | +5 % montée du feu de camp |
+| Escarbilles | Immolation | Brasier (1) ou Tirage (1) | 3 | +1 nombre d'escarbilles |
+| Offrandes | Immolation | Cœur tiède (1) | 3 | +1 mana par ennemi tué |
+| Fonte | Immolation | Brûlure profonde (2) | 3 | +5 résistance au feu fondue |
+| Renaissance | Immolation | Phénix (1) | 1 | +1 renaissance |
+| Cendres du phénix | Immolation | Renaissance (1) | 1 | +1 cendres du phénix |
+| Veillée | Immolation | Feu de camp (3) | 2 | +1 % PV rendus par seconde |
+| Œil du brasier | Immolation | Tirage (2) | 2 | +12 % dégâts en plus au cœur |
+| Âmes consumées | Immolation | Flamme noire (1) | 2 | +1 % PV rendus par tué |
 | Sillage | Ruée ardente | — | 3 | +25 % de durée accrue |
 | Braises | Ruée ardente | Sillage (1) | 3 | +20 % de rayon accru |
 | Bûcher | Ruée ardente | — | 4 | +8 % de dégâts amplifiés |
@@ -282,8 +311,15 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Tison | Ruée ardente | Bûcher (2) | 2 | +12 % de dégâts accrus contre les embrasés |
 | Brûle-pavé | Ruée ardente | Sillage (1) ou Bûcher (1) | 2 | +50 % de durée accrue · -15 % de dégâts atténués |
 | Onde de choc | Ruée ardente | Atterrissage (2) | 2 | +25 % de rayon de l'explosion finale accru |
-| Étincelles | Ruée ardente | Brûle-pavé (1) ou Tison (1) | 3 | +15 % chance d'état |
 | Bond | Ruée ardente | Atterrissage (1) ou Élan (2) | 1 | +1000 % de dégâts amplifiés · +50 % de rayon de l'explosion finale accru |
+| Départ en trombe | Ruée ardente | Atterrissage (1) | 2 | +35 % explosion au départ |
+| Mèche | Ruée ardente | Brûle-pavé (1) ou Tison (1) | 3 | +50 % dégâts de la mèche |
+| Mèche courte | Ruée ardente | Mèche (1) | 1 | +1 mèche à l'arrivée |
+| Seconde foulée | Ruée ardente | Élan (2) | 1 | +1 seconde ruée gratuite |
+| Foulée de feu | Ruée ardente | Seconde foulée (1) | 2 | +20 % dégâts de la seconde ruée |
+| Charmeur | Ruée ardente | Atterrissage (2) | 1 | +1 serpent à l'arrivée |
+| Danse du charmeur | Ruée ardente | Charmeur (1) | 1 | +1 serpents rappelés |
+| Onde brûlante | Ruée ardente | Bond (1) | 2 | +40 % dégâts de l'onde brûlante |
 | Braise vive | Ignition | — | 4 | +6 % de dégâts de feu accrus |
 | Cendres froides | Ignition | — | 3 | -20 % de brûlure subie réduite |
 | Allure | Ignition | — | 3 | +4 % de vitesse accrue |

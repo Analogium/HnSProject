@@ -3,8 +3,7 @@ extends Node2D
 
 ## La Boule de feu devenue Météore (jalon 34, « crinière » choisie sur planche) : elle
 ## tombe droit du ciel sur le point visé et y éclate **comme la boule** — même
-## explosion, même sol brûlant (`Fireball.burst()`). Son ombre grandit au sol : c'est
-## elle qui dit où.
+## explosion (`Explosion.put()`). Son ombre grandit au sol : c'est elle qui dit où.
 
 ## D'où elle tombe, en pixels, et en combien de temps. Assez pour se voir venir, pas
 ## assez pour qu'un ennemi sorte du cercle en marchant.
@@ -33,6 +32,9 @@ var _source: Node2D
 var _shards: PackedScene
 var _tint := Color.WHITE
 var _age := 0.0
+## Une mini-météorite de la Pluie (jalon 42) : la boule de 13 px et trois langues, sans
+## secousse — la grande se sent, ses retombées non.
+var small := false
 
 
 static func fall(
@@ -59,11 +61,12 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	queue_redraw()
 	if _age >= FALL:
-		Fireball.burst(
+		Explosion.put(
 			get_parent(), global_position, _cast.roll(Game.rng), _cast.radius, null, _tint, _author, _cast
 		)
+		_rain()
 		# Le poids de la chute : l'impact se sent, ce qui le sépare d'une boule de plus.
-		if _source is Player:
+		if _source is Player and not small:
 			Game.hit_stop()
 			Game.shake_camera((_source as Player).camera, (_source as Player).shake_amount * IMPACT_SHAKE)
 		# Fragmentation : l'étoile d'éclats part du point d'impact.
@@ -75,24 +78,43 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
+## La Pluie de météorites : les retombées partent de l'impact, en couronne, et tombent à
+## leur tour. Leur lancer n'en fait pas tomber d'autres (`SkillStats.shower()`).
+func _rain() -> void:
+	var count := int(_cast.meteor_shower)
+	if count <= 0:
+		return
+	var fallout := _cast.shower()
+	for i in count:
+		var at := global_position + Vector2.from_angle(TAU * float(i) / float(count)) \
+			* _cast.radius * SkillStats.SHOWER_SPREAD
+		Meteor.fall(get_parent(), at, fallout, _author, _source).small = true
+
+
 ## La crinière : trois langues plantées sur la boule, pointe vers le ciel — elle
 ## tombe, donc sa flamme traîne au-dessus d'elle.
 func _draw() -> void:
 	var landed := clampf(_age / FALL, 0.0, 1.0)
-	EffectForge.put_scorch(self, SHADOW, roundi(lerpf(SHADOW_FROM, SHADOW_TO, landed)), 1.0, SHADOW_ALPHA)
+	var shadow_to := SHADOW_TO / 2 if small else SHADOW_TO
+	EffectForge.put_scorch(self, SHADOW, roundi(lerpf(SHADOW_FROM, shadow_to, landed)), 1.0, SHADOW_ALPHA)
 	var at := Vector2(0.0, -HEIGHT * (1.0 - landed))
 	var puffs := EffectForge.puffs(_tint)
-	for i in TRAIL:
+	for i in TRAIL - 1 if small else TRAIL:
 		EffectForge.put_centered(self, puffs[i], at + Vector2(0.0, -20.0 - TRAIL_STEP * float(i)))
 	var frame := int(_age * EffectForge.FLAME_HZ)
 	var short := EffectForge.small_flames(_tint)
 	var tall := EffectForge.flames(_tint)
+	var mane := MANE - 2 if small else MANE
 	# Plantées sur le haut de la boule, qui s'arrondit : les langues du bord descendent.
-	for k in MANE:
-		var dx := (float(k) - float(MANE - 1) * 0.5) * MANE_STEP
-		var sheet: Array = tall if k % 2 == 0 else short
-		_foot(sheet[(frame + k) % sheet.size()], at + Vector2(dx, -6.0 + absf(dx) * 0.4))
-	EffectForge.put_centered(self, EffectForge.meteor(_tint), at)
+	for k in mane:
+		var dx := (float(k) - float(mane - 1) * 0.5) * MANE_STEP
+		var sheet: Array = short if small or k % 2 == 1 else tall
+		_foot(sheet[(frame + k) % sheet.size()], at + Vector2(dx, (-3.0 if small else -6.0) + absf(dx) * 0.4))
+	if small:
+		var balls := EffectForge.balls(_tint)
+		EffectForge.put_centered(self, balls[int(_age * EffectForge.BALL_HZ) % balls.size()], at)
+	else:
+		EffectForge.put_centered(self, EffectForge.meteor(_tint), at)
 
 
 func _foot(tex: Texture2D, at: Vector2) -> void:

@@ -143,10 +143,11 @@ const TRANSFORMABLE: Array[Shape] = [
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
 ## l'écrit en rouge plutôt que de laisser payer un point pour rien. Rien à traverser
-## pour un météore ; le Bond ne laisse pas de traînée.
+## pour un météore, qui ne vole pas — ni prise d'air ni convergence ; le Bond ne laisse
+## pas de traînée.
 const IGNORED_BY_SHAPE := {
-	Shape.METEOR: [SkillStats.PIERCE],
-	Shape.LEAP: ["duration", "radius"],
+	Shape.METEOR: [SkillStats.PIERCE, SkillStats.SWELL, SkillStats.CONVERGE],
+	Shape.LEAP: ["duration", "radius", SkillStats.WICK],
 	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION],
 	Shape.WEB: [SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN],
 	Shape.TEMPEST: [SkillStats.SEEK],
@@ -473,11 +474,20 @@ func resolve(
 
 	var worn_items := _keywords(own_nature, cast_shape)
 	r.keywords = worn_items
+	# La Déflagration (jalon 42) : le rayon suit aussi ce qui vise la zone, sans que le
+	# reste de la zone — ses dégâts — ne s'applique.
+	var reach := worn_items.duplicate()
+	if _widens(talents):
+		reach.append(Keywords.AREA)
 
 	var fields: Array[StatMod] = []
 	var damage_percents: Array[StatMod] = []
 	for m: StatMod in mods:
-		if Keywords.covered(worn_items, m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE):
+		# Le coût a sa voie, la réserve : un objet ne le vise pas. Un nœud, si (le Météore).
+		if m.stat == "mana_cost":
+			continue
+		if Keywords.covered(worn_items, m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE) \
+				or (m.stat == "radius" and Keywords.covered(reach, m.scope)):
 			_store(r, m, fields, damage_percents)
 	for t: InvestedTalent in talents:
 		for m in t.mods():
@@ -512,6 +522,14 @@ func resolve(
 	if simultaneous > 0:
 		r.simultaneous = maxf(r.simultaneous, 1.0)
 	return r
+
+
+static func _widens(talents: Array) -> bool:
+	for t: InvestedTalent in talents:
+		for m in t.mods():
+			if m.stat == SkillStats.WIDE_BLAST:
+				return true
+	return false
 
 
 ## Sur une compétence qui pose un buff, la ligne d'un nœud qui **ne vise pas un nombre du

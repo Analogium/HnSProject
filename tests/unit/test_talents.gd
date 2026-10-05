@@ -811,7 +811,10 @@ func test_no_manual_fills_up_entirely() -> void:
 ## La nécromancie (jalon 38), le chevalier (jalon 39), le sacré (jalon 40) et la sorcière
 ## (jalon 41) : **aucune ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons
 ## 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
-## Seuls les leviers de base y échappent, un par arbre au plus.
+## Seuls les leviers de base y échappent, un par arbre au plus, et les échanges entiers : le
+## Pouls lent (−50 % de cadence ⇄ +60 % plus) n'est pas un second nœud de dégâts (jalon 42).
+## Le feu y entrera sans l'Ignition, appelée à partir : ses Cendres froides visent la
+## brûlure subie, comme le Cœur tiède de l'Immolation — la seule ligne qui y revient.
 const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy", "manual_witch"]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
@@ -830,6 +833,8 @@ func test_unique_trees_share_no_line_and_no_name() -> void:
 					"« %s » porte le nom de « %s »" % [n.id, name_owner.get(n.name, "")]
 				)
 				name_owner[n.name] = n.id
+				if _is_trade(n):
+					continue
 				for l in n.lines:
 					var key := "%s@%s" % [l.stat, l.scope]
 					if l.stat in BASE_LEVERS and l.scope.is_empty():
@@ -844,6 +849,13 @@ func test_unique_trees_share_no_line_and_no_name() -> void:
 						"« %s » vise « %s », déjà visé dans « %s »" % [n.id, key, line_owner.get(key, "")]
 					)
 					line_owner[key] = c.identifier()
+
+
+func _is_trade(node: TalentNode) -> bool:
+	for l in node.lines:
+		if l.modifier(1).is_loss():
+			return true
+	return false
 
 
 ## Un arbre qu'on remplit ne demande aucun choix : chacun offre plus que son pool.
