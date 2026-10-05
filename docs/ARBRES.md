@@ -37,11 +37,11 @@ Jamais pris : aucun.
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 178/s | 105/s |
-| meilleur au paquet | Mue 4, Couvée 2, Hydre 1, Crocs 2, Longue vie 3, Vif 1, Mue explosive 3 | 1240/s ×6,97 | 581/s ×5,52 |
-| meilleur au duel | Mue 4, Couvée 2, Crocs 2, Hydre 1, Longue vie 3, Queue de flammes 3, Chasseur 1 | 916/s ×5,15 | 638/s ×6,06 |
-| Venin au paquet (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Hydre 1, Longue vie 3, Queue de flammes 3 | 1136/s ×6,39 | 632/s ×6,00 |
-| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 3, Hydre 1, Queue de flammes 3 | 1136/s ×6,39 | 632/s ×6,00 |
+| sans arbre | — | 139/s | 113/s |
+| meilleur au paquet | Crocs 2, Mue 4, Longue vie 1, Queue de flammes 3, Chasseur 1 | 455/s ×3,28 | 211/s ×1,87 |
+| meilleur au duel | Crocs 2, Mue 4, Couvée 2, Longue vie 1, Queue de flammes 3, Hydre 1, Vif 1, Mue explosive 3 | 343/s ×2,47 | 279/s ×2,48 |
+| Venin au paquet (conversion) | Crocs 2, Venin 1, Longue vie 3, Queue de flammes 3, Mue 4, Chasseur 1 | 443/s ×3,20 | 220/s ×1,95 |
+| Venin au duel (conversion) | Crocs 2, Venin 1, Mue 4, Couvée 2, Longue vie 1, Queue de flammes 3, Chasseur 1 | 401/s ×2,89 | 270/s ×2,40 |
 
 Jamais pris : aucun.
 

@@ -51,6 +51,25 @@ func test_the_list_shows_the_characters_on_disk() -> void:
 	assert_false(_screen.play_button.disabled)
 
 
+## La molette fait défiler la vue, et la sélection reste dedans : `_refresh()`
+## ramènerait sinon la vue sur elle et annulerait le cran.
+func test_the_wheel_scrolls_the_list() -> void:
+	for i in CharacterSelect.VISIBLE_ROWS + 2:
+		_place("Perso %d" % i)
+	_screen.reload()
+	var wheel := InputEventMouseButton.new()
+	wheel.pressed = true
+	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	for i in 5:
+		_screen._gui_input(wheel)
+	assert_eq(_screen._first, 2, "la vue descend jusqu'au dernier cadre, pas au-delà")
+	assert_between(_screen._index, 2, CharacterSelect.VISIBLE_ROWS + 1, "la sélection reste visible")
+
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	_screen._gui_input(wheel)
+	assert_eq(_screen._first, 1, "et remonte d'un cran")
+
+
 func test_create_writes_and_selects_it() -> void:
 	_screen._open_creation()
 	_screen.name_field.text = "Neuve"

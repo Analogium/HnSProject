@@ -199,10 +199,15 @@ func _input(event: InputEvent) -> void:
 
 
 ## Un champ de texte qui a le focus garde ses chiffres : la recherche de l'arbre ne boit pas.
+## Une case ne s'arme qu'ici : un clic que l'interface a pris n'arrive jamais jusque-là,
+## même quand le menu de la barre rend la souris dans la même image.
 func _unhandled_input(event: InputEvent) -> void:
 	for i in EquipmentSlots.flasks().size():
 		if event.is_action_pressed("flask_%d" % (i + 1)):
 			use_flask(i)
+	for i in SkillBar.SLOT_COUNT:
+		if event.is_action_pressed("skill_%d" % (i + 1)):
+			_held[i] = true
 
 
 func _physics_process(delta: float) -> void:
@@ -253,8 +258,6 @@ func _physics_process(delta: float) -> void:
 		if not Input.is_action_pressed(action):
 			_held[i] = false
 			continue
-		if Input.is_action_just_pressed(action):
-			_held[i] = true
 		if _held[i]:
 			cast_slot(i)
 
@@ -373,7 +376,7 @@ func _pose(
 			var brood := 1 + int(cast.brood)
 			for i in brood:
 				var turn := (float(i) - float(brood - 1) * 0.5) * HellSnake.BROOD_SPREAD
-				HellSnake.drop(parent, aim, cast, toward.rotated(turn), states)
+				HellSnake.drop(parent, aim, cast, toward.rotated(turn), states, origin)
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:

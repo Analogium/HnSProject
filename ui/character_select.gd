@@ -163,12 +163,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Clic : choisir ; double-clic : jouer.
+## Clic : choisir ; double-clic : jouer ; molette : défiler.
 func _gui_input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
 	var click := event as InputEventMouseButton
-	if not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
+	if not click.pressed:
+		return
+	if _state == State.LIST and click.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_scroll(-1 if click.button_index == MOUSE_BUTTON_WHEEL_UP else 1)
+		return
+	if click.button_index != MOUSE_BUTTON_LEFT:
 		return
 
 	if _state == State.CREATION:
@@ -194,6 +199,16 @@ func _move(step: int) -> void:
 	if _characters.is_empty():
 		return
 	_index = clampi(_index + step, 0, _characters.size() - 1)
+	_refresh()
+
+
+## La vue défile et la sélection la suit : `_refresh()` ramène toujours la vue sur
+## la sélection, une sélection laissée hors cadre annulerait le défilement.
+func _scroll(step: int) -> void:
+	if _characters.is_empty():
+		return
+	_first = clampi(_first + step, 0, maxi(_characters.size() - VISIBLE_ROWS, 0))
+	_index = clampi(_index, _first, mini(_first + VISIBLE_ROWS, _characters.size()) - 1)
 	_refresh()
 
 

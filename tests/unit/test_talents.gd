@@ -974,3 +974,24 @@ func test_the_witch_transformation_carries_its_shape() -> void:
 				assert_eq(n.shape, Skill.Shape.TRIAD)
 				found = true
 	assert_true(found, "la Triade")
+
+
+## Une suite se déduit des liens (jalon 42) : tous ses parents changent le jeu ou en sont
+## une. Un seul parent de nombres suffit à en faire un nœud ordinaire.
+func test_a_suite_is_read_from_its_parents() -> void:
+	var cell := ManualCell.new()
+	var numbers := _node("numbers", [_line("damage", 1.0)])
+	var meteor := _node("meteor", [])
+	meteor.transforms = true
+	var rain := _node("rain", [_line("damage", 1.0)], 1, {"meteor": 1})
+	var deeper := _node("deeper", [_line("radius", 1.0)], 1, {"rain": 1})
+	var mixed := _node("mixed", [_line("damage", 1.0)], 1, {"meteor": 1, "numbers": 1})
+	cell.talents.assign([numbers, meteor, rain, deeper, mixed])
+	assert_false(cell.is_suite(numbers), "relié à la compétence")
+	assert_false(cell.is_suite(meteor), "ce qui change le jeu n'est pas une suite")
+	assert_true(cell.is_suite(rain), "derrière la transformation seule")
+	assert_true(cell.is_suite(deeper), "la suite d'une suite")
+	assert_false(cell.is_suite(mixed), "ouvert aussi par un nœud de nombres")
+	assert_eq(cell.lineage_head(deeper), meteor, "colorée par ce qu'elle prolonge")
+	assert_eq(cell.lineage_head(numbers), numbers)
+

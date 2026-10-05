@@ -26,9 +26,18 @@ const CELL_GAP := 6.0
 ## L'arbre ouvert (jalon 34, « centre, élargi » choisi sur planche) : la compétence au
 ## centre, ses nœuds en réseau autour, jusqu'à `TREE_SPAN` cases de chaque côté. La
 ## fenêtre s'élargit à `TREE_W` le temps de l'arbre : à 210 pixels, les nœuds collaient.
+## `NODE` est la zone qu'on survole ; ce qui s'y dessine dépend de la sorte du nœud.
 const NODE := 28.0
-const TREE_STEP := Vector2(42.0, 44.0)
-const TREE_SPAN := Vector2i(3, 1)
+const SIMPLE_NODE := 22.0
+const DIAMOND := 15.0
+const SUITE_DIAMOND := 11.0
+## Le tireté qui mène à une suite, et son assombrissement tant qu'elle n'est pas prise.
+const SUITE_DASH := 4.0
+const SUITE_DIM := 0.55
+## ±2 rangées (jalon 42) : à ±1, vingt places, et la Boule de feu en demande vingt et une.
+## La page n'a que 164 px de haut entre l'en-tête et l'aide : d'où 32 px entre deux rangées.
+const TREE_STEP := Vector2(42.0, 32.0)
+const TREE_SPAN := Vector2i(3, 2)
 const TREE_W := 300.0
 ## Un grain par point demandé dans le parent, sur le lien, dès deux.
 const GRAIN := 2.0
@@ -83,8 +92,8 @@ const TITLE_BAND := 7.0
 const MISSING := Color(0.92, 0.50, 0.44)
 ## Ce qu'un échange coûte : le rouge de ce qui manque, lu de la même façon.
 const LOSS := MISSING
-## Les pastilles d'un nœud qui change le jeu, en haut à droite : une transformation, une
-## mécanique. La conversion garde la sienne, de sa nature, en haut à gauche.
+## La pastille d'un nœud qui change le jeu, à la pointe de son losange : une transformation,
+## une mécanique. Celle d'une conversion est de sa nature d'arrivée.
 const KIND_COLORS := {
 	"transformation": Color(0.78, 0.60, 0.98),
 	"mécanique": Color(0.98, 0.70, 0.32),
@@ -645,6 +654,7 @@ func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void
 	for node in cell.talents:
 		var to := _node_rect(node.position).get_center()
 		var invested := manual.points_of(node.id) > 0
+		var suite := cell.is_suite(node)
 		if node.parents.is_empty():
 			draw_line(root.get_center(), to, LINK_BRIGHT if invested else LINK, 1.0)
 		for parent: String in node.parents:
@@ -652,7 +662,14 @@ func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void
 			var from_value := _node_rect(cell.node_of(parent).position).get_center()
 			# Le lien s'allume sur le chemin réellement pris, dans un sens ou dans l'autre.
 			var held := manual.points_of(parent)
-			draw_line(from_value, to, LINK_BRIGHT if invested and held > 0 else LINK, 1.0)
+			var lit := invested and held > 0
+			if suite:
+				# Le tireté de la sorte : la suite prolonge son parent (jalon 42, planche 3). À 2 px,
+				# il se confondait avec les grains (vu à la capture).
+				var tint := _kind_color(cell.lineage_head(node))
+				draw_dashed_line(from_value, to, tint if lit else tint.darkened(SUITE_DIM), 1.0, SUITE_DASH)
+			else:
+				draw_line(from_value, to, LINK_BRIGHT if lit else LINK, 1.0)
 			if need > 1:
 				_draw_grains(from_value, to, need, held)
 
@@ -660,33 +677,55 @@ func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void
 	draw_rect(root, UiPalette.BACK_FULL)
 	_draw_cell(manual, cell, root, _hover_root)
 	for i in cell.talents.size():
-		_draw_node(manual, arch, cell.talents[i], i == _hover_node)
+		_draw_node(manual, arch, cell, cell.talents[i], i == _hover_node)
 
 
+## Trois silhouettes (jalon 42, planche 3) : le petit carré d'un nœud de nombres, le grand
+## losange de ce qui change le jeu, le petit losange de sa suite. Le liseré garde l'état.
 func _draw_node(
-	manual: Manual, arch: ManualArchetype, node: TalentNode, hovered: bool
+	manual: Manual, arch: ManualArchetype, cell: ManualCell, node: TalentNode, hovered: bool
 ) -> void:
 	var r := _node_rect(node.position)
 	var spent := manual.points_of(node.id)
 	var tint := _tint(
 		manual.is_open(arch, node.id), spent, node.points_max,
-		manual.tree_remaining(arch.cell_of_node(node.id))
+		manual.tree_remaining(cell)
 	)
-	draw_rect(r, UiPalette.BACK_FULL)
-	draw_rect(r, CELL_BACKGROUND)
-	draw_rect(r, tint, false, 2.0 if hovered else 1.0)
-
-	# Pastille de la nature d'arrivée d'une conversion : seul effet lisible en couleur.
-	if node.converts:
-		draw_circle(r.position + Vector2(5.0, 5.0), 2.0, DamageType.COLORS[node.converts_to])
-	var kind := node.kind()
-	if KIND_COLORS.has(kind):
-		draw_circle(r.position + Vector2(r.size.x - 5.0, 5.0), 2.0, KIND_COLORS[kind])
+	var thickness := 2.0 if hovered else 1.0
+	var plain := r.grow(SIMPLE_NODE * 0.5 - NODE * 0.5)
+	var head := cell.lineage_head(node)
+	if head.kind().is_empty():
+		draw_rect(plain, UiPalette.BACK_FULL)
+		draw_rect(plain, CELL_BACKGROUND)
+		draw_rect(plain, tint, false, thickness)
+	else:
+		var radius := SUITE_DIAMOND if cell.is_suite(node) else DIAMOND
+		var shape := _diamond(r.get_center(), radius)
+		draw_colored_polygon(shape, UiPalette.BACK_FULL)
+		draw_colored_polygon(shape, CELL_BACKGROUND)
+		shape.append(shape[0])
+		draw_polyline(shape, tint, thickness)
+		# La pastille de la sorte à la pointe : la nature d'arrivée pour une conversion.
+		draw_circle(r.get_center() + Vector2(0.0, 5.0 - radius), 2.0, _kind_color(head))
 
 	_draw_count(
-		r, "%d/%d" % [spent, node.points_max],
+		plain, "%d/%d" % [spent, node.points_max],
 		UiPalette.TEXT if tint != LOCK else UiPalette.LABEL, FONT_SIZE
 	)
+
+
+## La couleur de ce qu'un nœud change : sa nature d'arrivée pour une conversion.
+static func _kind_color(node: TalentNode) -> Color:
+	if node.converts:
+		return DamageType.COLORS[node.converts_to]
+	return KIND_COLORS[node.kind()]
+
+
+static func _diamond(center: Vector2, radius: float) -> PackedVector2Array:
+	return PackedVector2Array([
+		center + Vector2(0.0, -radius), center + Vector2(radius, 0.0),
+		center + Vector2(0.0, radius), center + Vector2(-radius, 0.0),
+	])
 
 
 ## Les « ••• » de Last Epoch : les points que le parent doit porter, au milieu du lien,

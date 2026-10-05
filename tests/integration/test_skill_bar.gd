@@ -84,9 +84,9 @@ func test_the_menu_click_lands_on_the_drawn_entry() -> void:
 			assert_eq(_bar._hover_menu, i, "entrée %d, point %s" % [i, point])
 
 
-## Le haut de la barre à l'écran, lu dans la scène de zone : elle est ancrée en bas
-## à droite, et c'est de là que le menu monte.
-func _bar_top_in_zone() -> float:
+## Le coin haut gauche de la barre à l'écran, lu dans la scène de zone : elle est
+## ancrée en bas à droite, et c'est de là que le menu monte et s'élargit.
+func _bar_corner_in_zone() -> Vector2:
 	var state := (load("res://world/zone.tscn") as PackedScene).get_state()
 	for i in state.get_node_count():
 		if state.get_node_name(i) != "Bar":
@@ -94,11 +94,12 @@ func _bar_top_in_zone() -> float:
 		var properties := {}
 		for j in state.get_node_property_count(i):
 			properties[state.get_node_property_name(i, j)] = state.get_node_property_value(i, j)
-		return (
-			float(properties.get("anchor_top", 0.0)) * float(Settings.base_size().y)
-			+ float(properties["offset_top"])
+		var base := Vector2(Settings.base_size())
+		return Vector2(
+			float(properties.get("anchor_left", 0.0)) * base.x + float(properties["offset_left"]),
+			float(properties.get("anchor_top", 0.0)) * base.y + float(properties["offset_top"])
 		)
-	return -INF
+	return -Vector2.INF
 
 
 ## Le menu monte au-dessus de la barre et tient dans le cadrage, livre entier
@@ -113,8 +114,9 @@ func test_the_menu_stays_in_frame() -> void:
 	var entries := _bar._entries().size()
 	assert_eq(entries, 3 + book.base.manual.skills().size(), "tout le livre est proposé")
 
-	var top := _bar_top_in_zone() + _bar._menu_frame(entries).position.y
-	assert_gte(top, 0.0, "le menu sort par le haut de l'écran")
+	var corner := _bar_corner_in_zone() + _bar._menu_frame(entries).position
+	assert_gte(corner.y, 0.0, "le menu sort par le haut de l'écran")
+	assert_gte(corner.x, 0.0, "le menu sort par la gauche de l'écran")
 
 
 func test_opening_and_closing_the_menu_takes_and_returns_the_mouse() -> void:

@@ -337,3 +337,26 @@ et paie plus de corps. Deux bornes, sans rien changer au jeu :
 
 À 288 serpents, ce qui reste est leur morsure : 8 ms par image, une requête de cercle par
 serpent et par pas.
+
+## 10. Trois serpents par lanceur
+
+L'utilisateur : « il faut limiter le nombre d'entités qu'un joueur peut invoquer par skill ;
+pour l'instant, trois serpents simultanés — la Couvée atteint la limite en un clic —, les petits
+de l'Hydre hors du compte (et plus petits) ; le corbeau qui rejoue a sa propre limite de trois,
+six en tout ».
+
+- **`simultaneous = 3`** sur `hell_snake.tres`, compté **par lanceur** : `Player._pose()` passe
+  son origine — le joueur, ou le corbeau — à `HellSnake.drop()`, qui tient les serpents de
+  chacun dans `HellSnake._broods`. La fiche le dit déjà (« en même temps »).
+- **Au-delà, les plus anciens se dissolvent** (choisi parmi « le plus ancien meurt », avec son
+  éclat et ses petits, et « lancer refusé ») : le fondu de leur fin, sans morsure, sans sol,
+  sans explosion finale ni petits. Relancer replace ses serpents ; ça ne les fait pas éclater.
+- **Les petits de l'Hydre à 60 %**, langues comprises (planche 23 sur le Bureau, choisis parmi
+  75 %, 60 % sans langue et 50 % sans langue). Le corps prend une échelle (`HellSnake._size`) :
+  rayons, écart des anneaux, crâne et yeux — rastérisé à sa taille, jamais étiré. La morsure
+  garde son `CONTACT`. `_paint()` rend l'image du corps, pour que la planche la lise.
+
+**Le banc des arbres** (`only=hell_snake`) : le meilleur build passe de ×6,97 à **×3,28** au
+paquet et de ×6,06 à **×2,48** au duel ; sans arbre, 178/s → 139/s. Un lancer tous les 1,2 s
+pour des serpents de 4 s et plus : sans limite, la Couvée en tenait une dizaine. À régler avec
+l'équilibrage, en dernier.

@@ -12,6 +12,9 @@ const FONT_SIZE := 8
 const KEY_H := 10.0
 ## Une entrée du menu : l'icône à sa taille de grille, sans réduction fractionnaire.
 const ENTRY_H := SkillIcon.SIDE + 2.0
+## Le menu se range par lignes de trois : en une colonne, un livre entier appris
+## sortait par le haut de l'écran.
+const MENU_COLUMNS := 3
 
 const BACKGROUND := Color(0.10, 0.09, 0.13, 0.88)
 const EMPTY := Color(0.16, 0.15, 0.20, 0.85)
@@ -184,17 +187,27 @@ func _entries() -> Array[Skill]:
 	return out
 
 
-## Le cadre du menu, **mesuré ici seulement**, qui monte depuis la barre.
+## Le cadre du menu, **mesuré ici seulement**, qui monte depuis la barre et
+## s'élargit vers la gauche : la barre est ancrée au bord droit.
 func _menu_frame(entries: int) -> Rect2:
-	var height := float(entries) * ENTRY_H + PAD * 2.0
-	return Rect2(PAD, -height - PAD, size.x - PAD * 2.0, height)
+	var rows := ceili(float(entries) / MENU_COLUMNS)
+	var width := float(mini(entries, MENU_COLUMNS)) * _menu_column()
+	var height := float(rows) * ENTRY_H + PAD * 2.0
+	return Rect2(size.x - PAD - width, -height - PAD, width, height)
+
+
+## Une colonne a la largeur de la barre : c'est elle que les noms ont été mesurés à tenir.
+func _menu_column() -> float:
+	return size.x - PAD * 2.0
 
 
 func _menu_rect(entry: int) -> Rect2:
 	var frame := _menu_frame(_entries().size())
+	var row := floorf(float(entry) / MENU_COLUMNS)
 	return Rect2(
-		frame.position.x, frame.position.y + PAD + float(entry) * ENTRY_H,
-		frame.size.x, ENTRY_H
+		frame.position.x + float(entry % MENU_COLUMNS) * _menu_column(),
+		frame.position.y + PAD + row * ENTRY_H,
+		_menu_column(), ENTRY_H
 	)
 
 

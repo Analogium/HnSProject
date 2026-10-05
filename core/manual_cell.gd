@@ -50,3 +50,23 @@ func node_of(node_id: String) -> TalentNode:
 		if n.id == node_id:
 			return n
 	return null
+
+
+## **Une suite** (jalon 42) : tous ses parents changent le jeu, ou en sont eux-mêmes une.
+## Elle ne s'ouvre que par ce qu'elle prolonge — déduite des liens, jamais déclarée.
+func is_suite(node: TalentNode) -> bool:
+	if node.parents.is_empty():
+		return false
+	for parent: String in node.parents:
+		var p := node_of(parent)
+		if p.kind().is_empty() and not is_suite(p):
+			return false
+	return true
+
+
+## Le nœud qui change le jeu au bout de la lignée d'une suite — le nœud lui-même s'il en
+## change un : c'est sa sorte qui colore la suite.
+func lineage_head(node: TalentNode) -> TalentNode:
+	if not is_suite(node):
+		return node
+	return lineage_head(node_of(node.parents.keys()[0]))

@@ -30,6 +30,9 @@ const HEAD_RADIUS := 4.0
 const TAIL_RADIUS := 0.8
 const SPAWN := 0.2
 const DISSIPATION := 0.4
+## Les petits de l'Hydre, à cette échelle : à pleine taille, on ne les distinguait pas de leur
+## parent (choisi sur planche, jalon 41).
+const HATCHLING_SIZE := 0.6
 const EMBER_SHADOW := Color(0.32, 0.05, 0.03)
 const EYES := Color(0.15, 0.05, 0.02)
 ## La crête du dos, plus claire que le corps : c'est elle qui dit de quel côté on
@@ -74,14 +77,31 @@ var _body_tex: ImageTexture
 ## Le coin de l'image du corps, en repère global et en pixels entiers.
 var _corner := Vector2.ZERO
 var _rasterised := -1.0
+## Son échelle de dessin et de longueur : 1 pour un serpent, moins pour un petit de l'Hydre.
+var _size := 1.0
+## Ceux de chaque lanceur — le joueur, le corbeau qui rejoue —, du plus ancien au plus jeune :
+## `simultaneous` au plus chacun (jalon 41). Les petits de l'Hydre n'en sont pas.
+static var _broods := {}
+var _owner_id := 0
+## Effacé par un plus jeune : il se dissout sans mordre, sans éclat ni petits.
+var _vanishing := false
 ## Son tour dans le roulement de peinture.
 var _slot := 0
 
 
+## `owner` : qui le lâche, et dont il compte dans la limite ; null pour un petit.
 static func drop(
-	parent: Node, point: Vector2, cast: SkillStats, direction: Vector2, author: StatusEffects
+	parent: Node, point: Vector2, cast: SkillStats, direction: Vector2, author: StatusEffects,
+	owner: Node = null, size := 1.0
 ) -> HellSnake:
 	var s := HellSnake.new()
+	s._size = size
+	if owner != null:
+		s._owner_id = owner.get_instance_id()
+		var brood: Array = _broods.get_or_add(s._owner_id, [])
+		brood.append(s)
+		while cast.max_simultaneous() > 0 and brood.size() > cast.max_simultaneous():
+			(brood.pop_front() as HellSnake)._vanish()
 	s._cast = cast
 	s._author = author
 	s._contacts = Targets.Contacts.new(cast.period)
@@ -91,7 +111,7 @@ static func drop(
 	s._cap = direction.angle()
 	# Déjà étendu derrière la tête : né en un point, il se lirait comme une braise.
 	for i in range(RINGS, 0, -1):
-		s._trace.append(point - direction.normalized() * SPACING * float(i))
+		s._trace.append(point - direction.normalized() * SPACING * size * float(i))
 	s._trace.append(point)
 	s._body = s._rings()
 	parent.add_child(s)
@@ -125,9 +145,16 @@ func _physics_process(delta: float) -> void:
 	_contacts.advance(delta)
 	_ramp(delta)
 	_body = _rings()
-	_bite()
+	if not _vanishing:
+		_bite()
 	if _age >= _cast.duration:
 		_die()
+
+
+## Sa dissolution, tout de suite : le fondu de sa fin, puis rien.
+func _vanish() -> void:
+	_vanishing = true
+	_age = maxf(_age, _cast.duration - DISSIPATION)
 
 
 func _enter_tree() -> void:
@@ -138,6 +165,10 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	crawling -= 1
+	var brood: Array = _broods.get(_owner_id, [])
+	brood.erase(self)
+	if brood.is_empty():
+		_broods.erase(_owner_id)
 
 
 ## Son tour de peinture à cette image : un serpent sur `ceil(crawling / PAINTED_PER_IMAGE)`.
@@ -163,6 +194,8 @@ func _process(_delta: float) -> void:
 ## collision, ils naissent tout de suite.
 func _die() -> void:
 	queue_free()
+	if _vanishing:
+		return
 	if _cast.end_burst > 0.0:
 		Explosion.put(
 			get_parent(), _head, _cast.roll(Game.rng), _cast.end_burst, null, _tint, _author, _cast
@@ -175,7 +208,7 @@ func _die() -> void:
 	hatchling.period = _cast.period
 	for i in brood:
 		var toward := Vector2.from_angle(_cap + TAU * float(i) / float(brood))
-		drop(get_parent(), _head, hatchling, toward, _author)
+		drop(get_parent(), _head, hatchling, toward, _author, null, HATCHLING_SIZE)
 
 
 ## Le **chasseur** (`SkillStats.SEEK`) prend pour point de chute l'ennemi le plus proche
@@ -199,7 +232,7 @@ func _ramp(delta: float) -> void:
 	var step := SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta
 	_head += Vector2.from_angle(_cap) * step
 	_trace.append(_head)
-	if _cast.ground_duration > 0.0:
+	if _cast.ground_duration > 0.0 and not _vanishing:
 		_since_ground += step
 		if _since_ground >= GROUND_STEP:
 			_since_ground = 0.0
@@ -211,14 +244,14 @@ func _rings() -> Array[Vector2]:
 	var current_value := _trace[_trace.size() - 1]
 	var out: Array[Vector2] = [current_value]
 	var i := _trace.size() - 2
-	var rest := SPACING
+	var rest := SPACING * _size
 	while out.size() < RINGS and i >= 0:
 		var next_item := _trace[i]
 		var d := current_value.distance_to(next_item)
 		if d >= rest:
 			current_value = current_value.move_toward(next_item, rest)
 			out.append(current_value)
-			rest = SPACING
+			rest = SPACING * _size
 		else:
 			rest -= d
 			current_value = next_item
@@ -232,7 +265,7 @@ func _rings() -> Array[Vector2]:
 
 func _bite() -> void:
 	var middle := _body[int(RINGS * 0.5)]
-	var scope := float(RINGS) * SPACING * 0.5 + CONTACT
+	var scope := float(RINGS) * SPACING * _size * 0.5 + CONTACT
 	for target in Targets.in_circle(get_world_2d(), middle, scope):
 		if _touches(target.global_position) and _contacts.accepts(target):
 			Targets.strike(target, _cast.roll(Game.rng), _head, _author, _cast)
@@ -289,7 +322,7 @@ func _draw() -> void:
 	if fmod(_age + _seed_of, 0.7) < 0.15:
 		var before := Vector2.from_angle(_cap)
 		var side := before.orthogonal()
-		var root := _body[0] + before * (HEAD_RADIUS + 3.0)
+		var root := _body[0] + before * (HEAD_RADIUS + 3.0) * _size
 		for step in 3:
 			_pixel(root + before * float(step), TONGUE, fade)
 		var tip_end := root + before * 3.0
@@ -303,6 +336,14 @@ func _draw() -> void:
 ## est peint.
 func _rasterise() -> void:
 	_rasterised = _age
+	var img := _paint()
+	if _body_tex == null:
+		_body_tex = ImageTexture.create_from_image(img)
+	else:
+		_body_tex.update(img)
+
+
+func _paint() -> Image:
 	var middle := (_body[0] + _body[RINGS - 1]) * 0.5
 	_corner = (middle - Vector2(CANVAS, CANVAS) * 0.5).round()
 	var canvas := PixelCanvas.new(CANVAS, CANVAS)
@@ -310,8 +351,9 @@ func _rasterise() -> void:
 	var forward := (_body[0] - _body[1]).normalized()
 	# **Un crâne et un museau**, pas un disque : deux capsules, donc la tête tourne
 	# avec le corps sans demander une planche par direction.
-	canvas.capsule(skull, skull - forward * 2.5, HEAD_RADIUS + 1.5, 0)
-	canvas.capsule(skull + forward * 5.0, skull + forward * 1.0, 3.2, 0)
+	var k := _size
+	canvas.capsule(skull, skull - forward * 2.5 * k, (HEAD_RADIUS + 1.5) * k, 0)
+	canvas.capsule(skull + forward * 5.0 * k, skull + forward * 1.0 * k, 3.2 * k, 0)
 	for i in RINGS - 1:
 		# Une bande sur deux de deux crans plus sombre : les écailles. C'est le seul
 		# motif qui survive à la taille où la bête est vue.
@@ -320,7 +362,7 @@ func _rasterise() -> void:
 			tone = mini(tone + 2, _tones.size() - 1)
 		canvas.capsule(
 			_body[i] - _corner, _body[i + 1] - _corner,
-			lerpf(HEAD_RADIUS, TAIL_RADIUS, float(i) / float(RINGS - 1)), tone
+			lerpf(HEAD_RADIUS, TAIL_RADIUS, float(i) / float(RINGS - 1)) * k, tone
 		)
 
 	# La crête, posée après le corps : un pixel clair le long de l'échine. Sans
@@ -340,13 +382,9 @@ func _rasterise() -> void:
 	var side := forward.orthogonal()
 	for sign_value: float in [-1.0, 1.0]:
 		for step in 2:
-			var eye: Vector2 = skull + forward * (1.6 + float(step)) + side * 3.4 * sign_value
+			var eye: Vector2 = skull + forward * (1.6 * k + float(step)) + side * 3.4 * k * sign_value
 			canvas.dot_px(int(round(eye.x)), int(round(eye.y)), R_EYE, 0.5)
-	var img := canvas.to_image(_palettes)
-	if _body_tex == null:
-		_body_tex = ImageTexture.create_from_image(img)
-	else:
-		_body_tex.update(img)
+	return canvas.to_image(_palettes)
 
 
 ## Trois tons du corps et non seize : le dégradé fin est dans le volume éclairé,

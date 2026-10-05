@@ -303,7 +303,11 @@ func test_the_aura_lights_strikes_burns_and_goes_out_for_free() -> void:
 ## aura qui s'allume et s'éteint en boucle serait inutilisable.
 func test_the_aura_does_not_flicker_while_the_key_is_held() -> void:
 	_learn("manual_fire", ["immolation"])
-	Input.action_press("skill_3")
+	# Un appui qui traverse l'arbre d'entrées : seul celui-là arme la case.
+	var press := InputEventAction.new()
+	press.action = "skill_3"
+	press.pressed = true
+	Input.parse_input_event(press)
 	await wait_physics_frames(2)
 	assert_true(_p.aura_lit(), "l'appui l'allume")
 	await wait_seconds(_p.resolve(SkillCatalog.by_id("immolation"), 1).interval * 2.5)
@@ -1496,6 +1500,44 @@ func test_a_dying_snake_bursts_and_hatches() -> void:
 	var hatchling: HellSnake = _children_of(HellSnake)[0]
 	assert_eq(hatchling._cast.hatchlings, 0.0, "qui ne se diviseront pas")
 	assert_eq(hatchling._cast.duration, SkillStats.HATCHLING_LIFE)
+	assert_eq(hatchling._size, HellSnake.HATCHLING_SIZE, "plus petits que leur parent")
+
+
+## Trois serpents par lanceur : relancer dissout les plus anciens, sans éclat ni petits.
+func test_a_fourth_snake_dissolves_the_oldest() -> void:
+	_learn("manual_fire", [
+		"hell_snake", "hell_snake_molting", "hell_snake_molting", "hell_snake_brood",
+		"hell_snake_brood", "hell_snake_hydra",
+	])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_crawling().size(), 3, "la Couvée remplit la limite d'un coup")
+	var first: Array = _crawling()
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_crawling().size(), 3)
+	for old: HellSnake in first:
+		assert_true(old._vanishing, "les trois plus anciens")
+	await wait_seconds(HellSnake.DISSIPATION + 0.1)
+	assert_eq(_children_of(HellSnake).size(), 3, "dissous, sans petits")
+	assert_eq(_children_of(Explosion).size(), 0)
+
+
+## Le corbeau qui rejoue le Serpent a sa propre limite : six en tout.
+func test_the_familiar_has_its_own_three_snakes() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"])
+	_p.bar.put(3, "familiar")
+	assert_true(_p.cast_slot(3))
+	_learn("manual_fire", ["hell_snake", "hell_snake_molting", "hell_snake_molting", "hell_snake_brood", "hell_snake_brood"])
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(Familiar.ECHO_DELAY + 0.05)
+	assert_eq(_crawling().size(), 6, "trois à vous, trois au corbeau")
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_crawling().size(), 6, "les vôtres seuls se renouvellent")
+
+
+func _crawling() -> Array:
+	return _children_of(HellSnake).filter(func(s: HellSnake) -> bool: return not s._vanishing)
 
 
 func test_a_dash_bursts_where_it_lands() -> void:

@@ -46,6 +46,15 @@ func _record(_bolt: Node) -> void:
 	_frames.append(Engine.get_physics_frames())
 
 
+## Un appui qui traverse l'arbre d'entrées, comme au clavier. `Input.action_press`
+## baisse la touche sans événement : c'est le clic que l'interface a pris.
+func _press() -> void:
+	var event := InputEventAction.new()
+	event.action = ACTION
+	event.pressed = true
+	Input.parse_input_event(event)
+
+
 ## L'intervalle du trait, en images physiques. Demandé à la compétence et non
 ## recopié : un trait ralenti par un affixe reste testé au bon rythme.
 func _cooldown_in_frames() -> int:
@@ -55,7 +64,7 @@ func _cooldown_in_frames() -> int:
 
 func test_the_held_key_recasts_at_cooldown_pace() -> void:
 	var cooldown := _cooldown_in_frames()
-	Input.action_press(ACTION)
+	_press()
 	await wait_physics_frames(cooldown * 3 + 2)
 
 	assert_gt(_frames.size(), 2, "la touche tenue relance sans qu'on la relâche")
@@ -70,7 +79,7 @@ func test_the_held_key_recasts_at_cooldown_pace() -> void:
 
 
 func test_the_released_key_no_longer_recasts() -> void:
-	Input.action_press(ACTION)
+	_press()
 	await wait_physics_frames(2)
 	Input.action_release(ACTION)
 	await wait_physics_frames(_cooldown_in_frames() * 2 + 2)
@@ -93,6 +102,15 @@ func test_a_button_already_down_when_the_ui_releases_casts_nothing() -> void:
 
 	Input.action_release(ACTION)
 	await wait_physics_frames(1)
-	Input.action_press(ACTION)
-	await wait_physics_frames(1)
+	_press()
+	await wait_physics_frames(2)
 	assert_eq(_frames.size(), 1, "il faut un nouvel appui, et celui-là part")
+
+
+## Le menu de la barre rend la souris **dans l'image même** du clic qui pose la
+## compétence : aucun panneau ne la tient plus quand le sondage passe. Seul l'appui
+## que l'interface a gardé pour elle — touche baissée, aucun événement reçu — le dit.
+func test_a_click_taken_by_the_ui_casts_nothing() -> void:
+	Input.action_press(ACTION)
+	await wait_physics_frames(_cooldown_in_frames() + 2)
+	assert_eq(_frames.size(), 0, "le clic de l'interface ne part pas en jeu")

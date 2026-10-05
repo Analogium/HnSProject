@@ -167,12 +167,12 @@ func test_the_character_sheet_fits_in_both_languages() -> void:
 func test_the_bar_menu_fits_in_both_languages() -> void:
 	for language in [Settings.FRENCH, Settings.ENGLISH]:
 		Settings.from_dict({"language": language})
-		var frame := _bar._menu_frame(_bar._entries().size())
+		var cell: float = _bar._menu_rect(0).size.x
 		# Le nom commence après l'icône, et l'entrée garde son air à droite.
-		var width := frame.size.x - float(SkillIcon.SIDE) - 10.0
+		var width := cell - float(SkillIcon.SIDE) - 10.0
 
 		_fits(
-			Texts.t("— vider la case —"), frame.size.x - 6.0, SkillBarPanel.FONT_SIZE,
+			Texts.t("— vider la case —"), cell - 6.0, SkillBarPanel.FONT_SIZE,
 			"%s : l'entrée qui vide" % language
 		)
 		for skill in _player.available_skills():

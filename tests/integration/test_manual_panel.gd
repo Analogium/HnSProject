@@ -196,7 +196,6 @@ func test_slots_and_nodes_fit_in_the_panel() -> void:
 ## comme passant par lui (« Mue → Couvée » lu « Mue → Vif → Couvée », capture du jalon 34).
 func test_nodes_and_links_do_not_overlap() -> void:
 	_panel._opened = "swift_bolt"
-	var half := ManualPanel.NODE * 0.5 + 1.0
 	for base: ItemBase in ItemCatalog.ALL + Character.class_manual_bases():
 		if base.manual == null:
 			continue
@@ -218,11 +217,19 @@ func test_nodes_and_links_do_not_overlap() -> void:
 						if at == from_cell or at == node.position:
 							continue
 						var c := _panel._node_rect(at).get_center()
-						var near := Geometry2D.get_closest_point_to_segment(c, a, b)
-						# Le nœud est carré : l'écart se mesure sur l'axe le plus lâche.
-						assert_gt(
-							maxf(absf(near.x - c.x), absf(near.y - c.y)), half, "« %s » : son lien passe sous « %s »" % [node.id, taken[at]]
-						)
+						var gap := Geometry2D.get_closest_point_to_segment(c, a, b) - c
+						# Contre la silhouette dessinée (jalon 42) : un carré se mesure sur l'axe le
+						# plus lâche, un losange en somme des deux.
+						var under := false
+						if at != Vector2i.ZERO:
+							var other := cell.node_of(taken[at])
+							if cell.lineage_head(other).kind().is_empty():
+								under = maxf(absf(gap.x), absf(gap.y)) <= ManualPanel.SIMPLE_NODE * 0.5 + 1.0
+							else:
+								under = absf(gap.x) + absf(gap.y) <= ManualPanel.DIAMOND + 1.0
+						else:
+							under = maxf(absf(gap.x), absf(gap.y)) <= ManualPanel.CELL * 0.5 + 1.0
+						assert_false(under, "« %s » : son lien passe sous « %s »" % [node.id, taken[at]])
 	_panel._opened = ""
 
 
