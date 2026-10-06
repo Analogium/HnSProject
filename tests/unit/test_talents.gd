@@ -808,14 +808,13 @@ func test_no_manual_fills_up_entirely() -> void:
 		)
 
 
-## La nécromancie (jalon 38), le chevalier (jalon 39), le sacré (jalon 40) et la sorcière
-## (jalon 41) : **aucune ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons
+## La nécromancie (jalon 38), le chevalier (jalon 39), le sacré (jalon 40), la sorcière
+## (jalon 41) et le feu (jalon 42) : **aucune ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons
 ## 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
 ## Seuls les leviers de base y échappent, un par arbre au plus, et les échanges entiers : le
 ## Pouls lent (−50 % de cadence ⇄ +60 % plus) n'est pas un second nœud de dégâts (jalon 42).
-## Le feu y entrera sans l'Ignition, appelée à partir : ses Cendres froides visent la
-## brûlure subie, comme le Cœur tiède de l'Immolation — la seule ligne qui y revient.
-const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy", "manual_witch"]
+## Le feu depuis le jalon 42, l'Ignition partie au profit du Brasero.
+const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy", "manual_witch", "manual_fire"]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bombgsrap6i2j"
-path="res://.godot/imported/ignition.png-4a423c4cde701f48738453ebab4e2a06.ctex"
+uid="uid://cm56kt56rc0ne"
+path="res://.godot/imported/brazier.png-30e63c501a9aaf5b8341c56b4a76df48.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/icons/ignition.png"
-dest_files=["res://.godot/imported/ignition.png-4a423c4cde701f48738453ebab4e2a06.ctex"]
+source_file="res://resources/icons/brazier.png"
+dest_files=["res://.godot/imported/brazier.png-30e63c501a9aaf5b8341c56b4a76df48.ctex"]
 
 [params]
 

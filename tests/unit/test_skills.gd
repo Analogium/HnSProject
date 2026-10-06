@@ -173,14 +173,18 @@ func test_a_bolt_carries_projectile_and_a_sword_swing_does_not() -> void:
 
 
 ## `projectile` se déduit de la forme (jalon 11), et d'elle seule : une chaîne ou
-## un nuage n'en sont pas, et un affixe de projectile ne doit pas les servir.
+## un nuage n'en sont pas, et un affixe de projectile ne doit pas les servir. Le
+## Brasero, si : il tire des boules (jalon 42).
 func test_the_shape_gives_projectile() -> void:
 	var c := _skill([1.0] as Array[float])
 	for shape in Skill.Shape.values():
 		c.shape = shape
 		assert_eq(
 			c.worn(Keywords.PROJECTILE),
-			shape in [Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET, Skill.Shape.ORB],
+			shape in [
+				Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET, Skill.Shape.ORB,
+				Skill.Shape.TURRET,
+			],
 			"forme %s" % Skill.Shape.keys()[shape]
 		)
 
@@ -297,11 +301,11 @@ func test_a_skill_without_a_damage_table_declares_its_points_and_its_buffs() -> 
 
 ## Ce qu'un buff donne monte avec ses points, et ne donne rien à zéro point.
 func test_what_a_buff_gives_follows_its_points() -> void:
-	var ignition := SkillCatalog.by_id("ignition")
-	assert_eq(ignition.buff_mods(0).size(), 0, "aucun point, aucune ligne")
-	var one := ignition.buff_mods(1)
-	var four := ignition.buff_mods(4)
-	assert_eq(one.size(), ignition.buffs[0].lines.size(), "une ligne par ligne déclarée")
+	var necrosis := SkillCatalog.by_id("advanced_necrosis")
+	assert_eq(necrosis.buff_mods(0).size(), 0, "aucun point, aucune ligne")
+	var one := necrosis.buff_mods(1)
+	var four := necrosis.buff_mods(4)
+	assert_eq(one.size(), necrosis.buffs[0].lines.size(), "une ligne par ligne déclarée")
 	assert_almost_eq(four[0].value, one[0].value * 4.0, 1e-4, "quatre points, quatre fois")
 
 

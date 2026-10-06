@@ -69,6 +69,18 @@ Jamais pris : Offrandes, Fonte, Renaissance, Cendres du phénix, Veillée, Âmes
 
 Jamais pris : Départ en trombe, Charmeur, Danse du charmeur.
 
+### Brasero
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 31,0/s | 31,2/s |
+| meilleur au paquet | Tisonnier 4, Salve 2, Mitraille 1, Soufflet 3, Bûches 2, Batterie 2, Triangulation 1, Lanterne d'orage 1, Électrisé 2, Vigie 1, Phare 1 | 602/s ×19,4 | 468/s ×15,0 |
+| meilleur au duel | Tisonnier 4, Salve 2, Soufflet 3, Bûches 2, Batterie 2, Triangulation 1, Lanterne d'orage 1, Électrisé 2 | 348/s ×11,2 | 468/s ×15,0 |
+| Lanterne d'orage au paquet (conversion) | Soufflet 3, Lanterne d'orage 1, Tisonnier 4, Salve 2, Mitraille 1, Bûches 2, Batterie 2, Triangulation 1, Électrisé 2, Vigie 1, Phare 1 | 602/s ×19,4 | 468/s ×15,0 |
+| Lanterne d'orage au duel (conversion) | Soufflet 3, Lanterne d'orage 1, Tisonnier 4, Salve 2, Bûches 2, Batterie 2, Triangulation 1, Électrisé 2 | 348/s ×11,2 | 468/s ×15,0 |
+
+Jamais pris : Feu sacré, Dernières braises, Foyer du mage, Main d'appoint, Brasier ravivé.
+
 ## Manuel de la foudre
 
 ### Éclair vif

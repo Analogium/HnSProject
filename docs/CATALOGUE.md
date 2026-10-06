@@ -238,8 +238,8 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Serpent infernal | sort feu | niveau 4 | 5 | 18 mana | 1.20 s | snake · 4.0 s · toutes les 0.40 s · 3 au plus | 10 · 13 · 16 · 20 · 25 |
 | Immolation | sort feu | niveau 9 | 5 | 25 mana | recharge 1.00 s | aura · rayon 40 · toutes les 0.50 s · brûle 3 % PV/s · adossé aux PV 0.8 % | 8 · 10 · 13 · 16 · 20 |
 | Ruée ardente | sort feu | niveau 5 | 5 | 12 mana | 0.50 s · recharge 4.00 s | dash · 3.0 s · rayon 16 · toutes les 0.50 s | 4 · 5 · 6 · 8 · 10 |
+| Brasero | sort feu | niveau 12 | 5 | 20 mana | 0.50 s | turret · 8.0 s · toutes les 0.90 s · 2 au plus | 6 · 8 · 10 · 13 · 16 |
 | Cœur de braise | passif | niveau 2 | 4 | — | — | — | +7 % de dégâts de feu accrus · +3 % rés. feu |
-| Ignition | sort feu | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · brûle 1 % PV/s | Combustion : +13 % chance d'embraser · +8 % de vitesse accrue |
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
@@ -320,17 +320,24 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Charmeur | Ruée ardente | Atterrissage (2) | 1 | +1 serpent à l'arrivée |
 | Danse du charmeur | Ruée ardente | Charmeur (1) | 1 | +1 serpents rappelés |
 | Onde brûlante | Ruée ardente | Bond (1) | 2 | +40 % dégâts de l'onde brûlante |
-| Braise vive | Ignition | — | 4 | +6 % de dégâts de feu accrus |
-| Cendres froides | Ignition | — | 3 | -20 % de brûlure subie réduite |
-| Allure | Ignition | — | 3 | +4 % de vitesse accrue |
-| Brasier intérieur | Ignition | Braise vive (2) | 3 | +8 % chance d'embraser |
-| Peau de braise | Ignition | Cendres froides (1) ou Braise vive (1) | 2 | +8 % rés. feu |
-| Emballement | Ignition | Allure (1) | 2 | +4 % de vitesse d'incantation accrue |
-| Feu dévorant | Ignition | Brasier intérieur (1) ou Peau de braise (1) | 1 | +30 % de dégâts de feu accrus · +100 % de brûlure subie accrue |
-| Cendres fertiles | Ignition | Cendres froides (1) ou Allure (1) | 2 | +1.5 PV/s |
-| Holocauste | Ignition | Feu dévorant (1) ou Brasier intérieur (3) | 1 | +20 % de dégâts de feu amplifiés |
+| Tisonnier | Brasero | — | 4 | +8 % de dégâts amplifiés |
+| Bûches | Brasero | — | 3 | +20 % de durée accrue |
+| Soufflet | Brasero | — | 3 | -15 % d'intervalle des frappes réduit · -10 % de durée réduite |
+| Vigie | Brasero | Soufflet (1) | 2 | +40 portée de visée |
+| Salve | Brasero | Tisonnier (2) | 2 | +1 nombre de projectiles |
+| Batterie | Brasero | Bûches (2) | 2 | +1 maximum simultané · -15 % de dégâts atténués |
+| Feu sacré | Brasero | Bûches (1) ou Tisonnier (1) | 3 | +0.5 secondes rendues par tué |
+| Phare | Brasero | Vigie (1) | 1 | +1 phare |
+| Dernières braises | Brasero | Bûches (2) | 2 | +60 % dégâts des dernières braises |
+| Foyer du mage | Brasero | Salve (1) ou Tisonnier (3) | 1 | +1 foyer du mage |
+| Lanterne d'orage | Brasero | Soufflet (2) | 1 | devient foudre |
+| Main d'appoint | Brasero | Foyer du mage (1) | 1 | +1 main d'appoint |
+| Triangulation | Brasero | Batterie (1) | 1 | +1 triangulation |
+| Mitraille | Brasero | Salve (2) | 1 | +1 nombre de rebonds |
+| Brasier ravivé | Brasero | Feu sacré (2) | 2 | +1 tirs ravivés par seconde |
+| Électrisé | Brasero | Lanterne d'orage (1) | 2 | +15 % effet de l'engourdi |
 
-28 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+29 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître du froid — `manual_cold`
 

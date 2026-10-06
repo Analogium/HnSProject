@@ -342,6 +342,8 @@ func cast_slot(index: int) -> bool:
 		sprite.attack(skill.cadence == Skill.Cadence.CAST)
 	var aim := _aim_point()
 	_pose(skill, salvo, self, facing, aim, prey)
+	if skill.id == SkillStats.HEARTH_SKILL:
+		Brazier.assist(self, aim)
 	if spell:
 		_after_spell(skill, salvo, aim)
 	return true
@@ -493,6 +495,8 @@ func _pose(
 			Catalysis.burst(parent, aim, cast, states)
 		Skill.Shape.TRIAD:
 			Triad.converge(parent, at, aim, cast, states)
+		Skill.Shape.TURRET:
+			Brazier.place(self, aim, cast, parent)
 		Skill.Shape.DOLL:
 			RagDoll.place(self, aim, cast, parent)
 		Skill.Shape.STRIKE:
@@ -679,6 +683,14 @@ func drain(mana_per_second: float, delta: float) -> bool:
 
 
 ## Ce qu'un geste rend à la réserve : le Tribut de la malédiction (jalon 38).
+## Paie ce montant s'il est là, et dit s'il l'était : le Foyer du mage ne tire qu'à ce prix.
+func spend_mana(amount: float) -> bool:
+	if is_dead or mana < amount:
+		return false
+	_set_mana(mana - amount)
+	return true
+
+
 func gain_mana(amount: float) -> void:
 	if amount > 0.0 and not is_dead:
 		_set_mana(mana + amount)
@@ -923,10 +935,13 @@ func cost_of(skill: Skill) -> float:
 	return _costs[skill.id]
 
 
-func resolve(skill: Skill, points: int) -> SkillStats:
-	return skill.resolve(
-		points, stats, skill_mods, talents_of(skill.id), int(_turns.get(skill.id, 0))
-	)
+## `plain` : sans les nœuds qui la transforment — la Boule de feu que tire le Foyer du mage
+## reste une boule, Météore pris ou non (jalon 42).
+func resolve(skill: Skill, points: int, plain := false) -> SkillStats:
+	var talents: Array = talents_of(skill.id)
+	if plain:
+		talents = talents.filter(func(t: InvestedTalent) -> bool: return not t.node.transforms)
+	return skill.resolve(points, stats, skill_mods, talents, int(_turns.get(skill.id, 0)))
 
 
 ## Les deux ensemble : gardés séparément, l'un finirait par ne plus décrire l'autre.

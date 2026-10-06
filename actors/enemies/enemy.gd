@@ -173,7 +173,7 @@ func tick(_delta: float) -> void:
 ## que lui. Vers le joueur, la marche suit le champ ; vers un autre, la ligne droite.
 func foe() -> Node2D:
 	var best := target
-	if Minion.living.is_empty() and RagDoll.standing.is_empty():
+	if Minion.living.is_empty() and RagDoll.standing.is_empty() and Brazier.beacons.is_empty():
 		return best
 	var best_d := global_position.distance_squared_to(target.global_position)
 	for minion in Minion.living:
@@ -187,6 +187,11 @@ func foe() -> Node2D:
 		d *= d
 		if d < best_d:
 			best = doll
+			best_d = d
+	for beacon in Brazier.beacons:
+		var d := global_position.distance_squared_to(beacon.global_position)
+		if d < best_d:
+			best = beacon
 			best_d = d
 	return best
 

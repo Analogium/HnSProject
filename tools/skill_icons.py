@@ -2,9 +2,9 @@
 """Les icones de competences, de ComfyUI jusqu'au .tres. Recette : resources/icons/LISEZMOI.md.
 
     tools/skill_icons.py gen                  toute la table, trois tirages chacune
-    tools/skill_icons.py gen --only ignition  une seule, pour la refaire
+    tools/skill_icons.py gen --only brazier  une seule, pour la refaire
     tools/skill_icons.py apply                pose les tirages retenus
-    tools/skill_icons.py apply --only ignition  n'en pose qu'une
+    tools/skill_icons.py apply --only brazier  n'en pose qu'une
 
 Meme moteur que les objets — `tools/item_icons.py`, dont ce script importe le
 rendu, la quantification et les reglages du jalon 11. Deux differences, et elles
@@ -34,7 +34,7 @@ NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic
 # Le fond suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour
 # le froid, vert croupi pour la necrose, prune pour le sacre — un fond dore noierait la lumiere du sujet. Sans
 # entree, l'ardoise du chevalier, qui n'a pas d'element.
-BACKGROUNDS = {"flame_dash": "dark crimson", "ignition": "dark crimson",
+BACKGROUNDS = {"flame_dash": "dark crimson", "brazier": "dark crimson",
                "storm_dash": "dark violet", "static_electricity": "dark violet",
                "ice_spike": "dark blue", "ice_nova": "dark blue",
                "frost_tomb": "dark blue", "winter_disaster": "dark blue",

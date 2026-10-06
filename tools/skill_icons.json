@@ -7,10 +7,6 @@
     "the silhouette of a leaping man made of lightning",
     1337
   ],
-  "ignition": [
-    "a burning heart wreathed in rising flames",
-    1337
-  ],
   "static_electricity": [
     "a bright electric star burst with thick jagged arcs",
     4242
@@ -132,6 +128,15 @@
     {
       "crisp": true,
       "violet": true
+    }
+  ],
+  "brazier": [
+    "an iron brazier on a tripod with roaring flames, spitting a fireball",
+    777,
+    {
+      "layout": true,
+      "denoise": 0.7,
+      "crisp": true
     }
   ]
 }

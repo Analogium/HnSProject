@@ -706,48 +706,49 @@ func test_the_slicing_dash_cuts_its_path_once() -> void:
 	assert_eq(_children_of(DashTrail).size(), 0, "la coupe s'est effacée")
 
 
-## Un buff s'allume, verse ses lignes dans la fiche, brûle son porteur, et s'éteint au
-## second lancer sans rien coûter.
+## Un buff s'allume, verse ses lignes dans la fiche, ronge son porteur, et s'éteint au
+## second lancer sans rien coûter. La Nécrose avancée, depuis que l'Ignition est partie
+## (jalon 42) : le seul buff qui se payait en PV.
 func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
-	_learn("manual_fire", ["ignition"])
-	var speed := _p.stats.move_speed
+	_learn("manual_necrotic", ["advanced_necrosis"])
+	var rot := _p.stats.rot_chance
 	assert_true(_p.cast_slot(2))
-	assert_true(_p.lit("ignition"))
-	assert_eq(_p.lit_ratio("ignition"), 1.0, "entretenu, il n'a pas de compte à rebours")
-	assert_gt(_p.stats.move_speed, speed, "ses lignes sont dans la fiche")
+	assert_true(_p.lit("advanced_necrosis"))
+	assert_eq(_p.lit_ratio("advanced_necrosis"), 1.0, "entretenu, il n'a pas de compte à rebours")
+	assert_gt(_p.stats.rot_chance, rot, "ses lignes sont dans la fiche")
 	await wait_physics_frames(3)
-	assert_lt(_p.health, _p.stats.max_health, "et elle brûle son porteur")
+	assert_lt(_p.health, _p.stats.max_health, "et il ronge son porteur")
 
 	_p._recharges[2] = 0.0
 	var mana := _p.mana
 	assert_true(_p.cast_slot(2))
-	assert_false(_p.lit("ignition"), "le second lancer éteint")
+	assert_false(_p.lit("advanced_necrosis"), "le second lancer éteint")
 	assert_eq(_p.mana, mana, "sans coût")
-	assert_eq(_p.stats.move_speed, speed, "et la fiche retrouve ses nombres")
+	assert_eq(_p.stats.rot_chance, rot, "et la fiche retrouve ses nombres")
 
 
 ## L'arbre d'un buff (jalon 34) : la ligne d'un nœud qui vise la fiche est une ligne du
 ## buff — elle compte allumée, plus éteinte —, et sa brûlure suit les nœuds.
 func test_a_buff_node_gives_its_lines_while_lit() -> void:
-	_learn_with("manual_fire", "ignition", [["move_speed", 50.0, true], ["self_burn", -100.0, true]])
-	var speed := _p.stats.move_speed
+	_learn_with("manual_necrotic", "advanced_necrosis", [["rot_chance", 50.0], ["self_wither", -100.0, true]])
+	var rot := _p.stats.rot_chance
 	assert_true(_p.cast_slot(2))
-	assert_true(_p.lit("ignition"))
-	var lit_speed := _p.stats.move_speed
+	assert_true(_p.lit("advanced_necrosis"))
+	var lit_rot := _p.stats.rot_chance
 	_p._recharges[2] = 0.0
 	assert_true(_p.cast_slot(2))
-	var out_speed := _p.stats.move_speed
-	assert_eq(out_speed, speed, "éteint, la fiche retrouve ses nombres")
+	var out_rot := _p.stats.rot_chance
+	assert_eq(out_rot, rot, "éteint, la fiche retrouve ses nombres")
 
-	_learn("manual_fire", ["ignition"])
+	_learn("manual_necrotic", ["advanced_necrosis"])
 	_p._recharges[2] = 0.0
 	assert_true(_p.cast_slot(2))
-	var bare_speed := _p.stats.move_speed
-	assert_gt(lit_speed, bare_speed, "le nœud s'ajoute au buff")
+	var bare_rot := _p.stats.rot_chance
+	assert_gt(lit_rot, bare_rot, "le nœud s'ajoute au buff")
 
 
 func test_a_buff_node_can_put_out_its_burn() -> void:
-	_learn_with("manual_fire", "ignition", [["self_burn", -100.0, true]])
+	_learn_with("manual_necrotic", "advanced_necrosis", [["self_wither", -100.0, true]])
 	assert_true(_p.cast_slot(2))
 	await wait_physics_frames(5)
 	assert_eq(_p.health, _p.stats.max_health, "sans brûlure, plus rien ne ronge")
@@ -3322,3 +3323,133 @@ func test_the_familiar_and_the_doll_leave_with_their_points() -> void:
 	assert_false(_p.lit("familiar"))
 	assert_eq(_children_of(RagDoll).size(), 0)
 	assert_eq(_children_of(Explosion).size(), 0, "sans éclat")
+
+
+# --------------------------------------------------------------------------
+# Brasero (jalon 42)
+# --------------------------------------------------------------------------
+
+func _brazier() -> Brazier:
+	var lit := _children_of(Brazier)
+	return lit.back() if not lit.is_empty() else null
+
+
+## Planté au point visé, il crache une boule vers l'ennemi le plus proche à portée, à chaque
+## période ; personne à portée, il attend.
+func test_the_brazier_spits_at_the_nearest_enemy() -> void:
+	_learn("manual_fire", ["brazier"])
+	assert_true(_p.cast_slot(2))
+	var b := _brazier()
+	assert_eq(b.global_position, _aim())
+	var cast := _p.resolve(SkillCatalog.by_id("brazier"), 1)
+	await wait_seconds(cast.period + 0.1)
+	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
+	var prey := _target(_aim() + Vector2(0, 60))
+	await wait_physics_frames(2)
+	var balls := _children_of(Fireball)
+	assert_eq(balls.size(), 1, "une boule, aussitôt")
+	assert_true((balls[0] as Fireball).is_shard, "la petite boule")
+	await wait_seconds(0.6)
+	assert_gt(_hits(prey), 0, "elle l'atteint")
+	assert_eq(_children_of(Explosion).size(), 0, "sans dégâts de zone : la touche directe seule")
+
+
+## Deux à la fois : un troisième éteint le plus ancien, sans dernières braises.
+func test_a_third_brazier_puts_out_the_oldest() -> void:
+	_learn_with("manual_fire", "brazier", [[SkillStats.LAST_BREATH, 60.0]])
+	assert_true(_p.cast_slot(2))
+	var first := _brazier()
+	_cast_again(2)
+	_cast_again(2)
+	await wait_physics_frames(1)
+	assert_false(is_instance_valid(first), "le plus ancien s'éteint")
+	assert_eq(_children_of(Brazier).size(), 2)
+	assert_eq(_children_of(Fireball).size(), 0, "remplacé, il ne crache rien")
+
+
+## Le Foyer du mage : il tire la Boule de feu du joueur, son arbre compris, mais jamais le
+## Météore ; la Main d'appoint la fait partir avec la vôtre.
+func test_the_hearth_fires_your_fireball_without_its_meteor() -> void:
+	_learn_with("manual_fire", "brazier", [[SkillStats.HEARTH, 1.0], [SkillStats.HELPING_HAND, 1.0]])
+	for id in ["fireball", "fireball_stoking", "fireball_stoking", "fireball_stoking", "fireball_meteor"]:
+		assert_true(_p.invest(0, id), id)
+	var fireball := SkillCatalog.by_id("fireball")
+	assert_eq(_p.resolve(fireball, 1).shape, Skill.Shape.METEOR)
+	assert_eq(_p.resolve(fireball, 1, true).shape, Skill.Shape.BALL, "sans sa transformation")
+	assert_true(_p.cast_slot(2))
+	var b := _brazier()
+	assert_eq(b._ball.shape, Skill.Shape.BALL)
+	assert_almost_eq(b._ball.total_max(), _p.resolve(fireball, 1, true).total_max(), 0.01, "vos points, votre arbre")
+	_p.bar.put(3, "fireball")
+	var mana := _p.mana
+	Brazier.assist(_p, _aim() + Vector2(100, 0))
+	assert_almost_eq(_p.mana, mana - b._ball.mana_cost, 0.01, "le tir paie la Boule de feu")
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Fireball).size(), 1, "la Main d'appoint : une boule, pas un météore")
+	_p._set_mana(b._ball.mana_cost * 0.5)
+	assert_false(b._shoot(_aim() + Vector2(100, 0)), "à court de mana, rien ne part")
+
+
+## Sous le Foyer du mage, la Salve et la Mitraille restent au brasero : des boules en plus,
+## et un rebond.
+func test_the_hearth_keeps_the_volley_and_the_grapeshot() -> void:
+	_learn_with("manual_fire", "brazier", [
+		[SkillStats.HEARTH, 1.0], ["projectiles", 1.0], [SkillStats.BOUNCES, 1.0],
+	])
+	assert_true(_p.invest(0, "fireball"))
+	assert_true(_p.cast_slot(2))
+	var b := _brazier()
+	assert_eq(b._ball.projectile_count(), 2, "la Salve")
+	assert_eq(b._ball.bounces, 1.0, "la Mitraille")
+	assert_gt(b._ball.spread_in_degrees, 0.0, "en éventail")
+
+
+## Le Phare : des PV, une hurtbox du côté du joueur, et les ennemis s'en prennent à lui ;
+## abattu, il crache ses dernières braises.
+func test_a_beacon_draws_the_blows_and_falls_in_embers() -> void:
+	_learn_with("manual_fire", "brazier", [[SkillStats.BEACON, 1.0], [SkillStats.LAST_BREATH, 60.0]])
+	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
+	add_child_autofree(grunt)
+	grunt.setup(_p)
+	grunt.global_position = _aim() + Vector2(30, 0)
+	assert_true(_p.cast_slot(2))
+	var b := _brazier()
+	await wait_physics_frames(1)
+	assert_almost_eq(b.max_health, _p.stats.max_health * SkillStats.BEACON_LIFE, 0.01)
+	assert_eq(grunt.foe(), b, "le brasero, plus proche")
+	b._on_damaged(DamageInfo.new(b.max_health + 1.0, grunt.global_position))
+	await wait_physics_frames(2)
+	assert_false(is_instance_valid(b), "abattu")
+	assert_eq(_children_of(Fireball).size(), SkillStats.LAST_BREATH_BALLS, "ses dernières braises")
+	assert_eq(grunt.foe(), _p, "et le joueur redevient la cible")
+
+
+## Le Feu sacré et le Brasier ravivé : un tué de ses boules lui rend du temps et le fait
+## tirer aussitôt — pas un tué d'un autre lancer.
+func test_a_kill_rekindles_the_brazier() -> void:
+	_learn_with("manual_fire", "brazier", [[SkillStats.REKINDLE, 1.0], [SkillStats.QUICKFIRE, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var b := _brazier()
+	var life := b.lifetime()
+	_p.states.slew.emit(_p.resolve(SkillCatalog.by_id("brazier"), 1), Vector2.ZERO, null)
+	assert_eq(b.lifetime(), life, "le tué d'un autre lancer")
+	_p.states.slew.emit(b._cast, Vector2.ZERO, null)
+	assert_eq(b.lifetime(), life + 1.0)
+	assert_true(b._quick, "un tir dû tout de suite")
+
+
+## La Triangulation : le second brasero relie ses flammes au premier.
+func test_triangulated_braziers_burn_the_line_between_them() -> void:
+	_learn_with("manual_fire", "brazier", [[SkillStats.TRIANGULATION, 1.0]])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(DashTrail).size(), 0, "seul, rien à relier")
+	var first := _brazier()
+	_p.global_position += Vector2(0, 60)
+	_cast_again(2)
+	var trails := _children_of(DashTrail)
+	assert_eq(trails.size(), 1)
+	var trail: DashTrail = trails[0]
+	assert_eq(trail.global_position, first.global_position, "du premier")
+	first._go_out(false)
+	await wait_physics_frames(1)
+	assert_false(is_instance_valid(trail), "l'un des deux parti, le trait s'éteint")

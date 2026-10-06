@@ -32,7 +32,7 @@ func _lit(ids: Array) -> void:
 ## À gauche des jauges, dans le cadrage, et jamais l'un sur l'autre : trois icônes
 ## côte à côte sont le pire cas du jeu — une aura et deux buffs.
 func test_the_lit_row_stays_left_of_the_gauges() -> void:
-	_lit(["immolation", "ignition", "static_electricity"])
+	_lit(["immolation", "advanced_necrosis", "static_electricity"])
 	var previous := Rect2()
 	for i in 3:
 		var r := _hud._buff_rect(i)
@@ -58,16 +58,16 @@ func test_the_row_sits_on_the_gauges_block() -> void:
 ## l'éteindre la vide.
 func test_lighting_a_gesture_fills_the_row() -> void:
 	assert_eq(_hud._lit.size(), 0, "rien d'allumé au départ")
-	var book := Item.new(ItemCatalog.by_id("manual_fire"))
+	var book := Item.new(ItemCatalog.by_id("manual_necrotic"))
 	book.manual.gain_experience(999999)
 	_p.study(book, 0)
-	assert_true(_p.invest(0, "ignition"))
-	_p.bar.put(2, "ignition")
+	assert_true(_p.invest(0, "advanced_necrosis"))
+	_p.bar.put(2, "advanced_necrosis")
 	_p.equip(Item.new(ItemCatalog.by_id("wand")), EquipmentSlots.WEAPON)
 
 	assert_true(_p.cast_slot(2))
 	assert_eq(_hud._lit.size(), 1, "la ligne montre le geste allumé")
-	assert_eq(_hud._lit[0].id, "ignition")
+	assert_eq(_hud._lit[0].id, "advanced_necrosis")
 
 	_p._recharges[2] = 0.0
 	assert_true(_p.cast_slot(2))

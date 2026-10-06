@@ -76,7 +76,11 @@ remèdes, réglés par un troisième champ facultatif de `tools/skill_icons.json
   un flocon et un éclair en triangle » sortait sans flocon ni éclair, la poupée de
   chiffon en fillette. Le sujet est donc posé à la main en grandes formes plates
   éclairées en haut à gauche (`tools/icon_layouts.py`), et SDXL l'habille en
-  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs ;
+  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs. **Le Brasero**
+  (jalon 42) fait exception : à 0,4, ses aplats de fer restaient plats à côté des
+  icônes du manuel du feu, et 0,7 lui a donné leur grain sans perdre le trépied. Un
+  calque a son fond (`icon_layouts.BACKGROUNDS`) : le cramoisi du feu pour lui, le
+  violet de la sorcière par défaut ;
 - **`violet`** — le fond qui touche les bords ramené au violet sombre de la
   sorcière : le corbeau sortait sur du blanc ou du gris.
 
@@ -89,9 +93,9 @@ Un corbeau sombre perd en contraste sur ce fond : à surveiller dans la barre.
 
 ```bash
 tools/skill_icons.py gen                 # la table, trois graines chacune
-tools/skill_icons.py gen --only ignition # une seule, pour la refaire
+tools/skill_icons.py gen --only brazier  # une seule, pour la refaire
 tools/skill_icons.py apply               # pose les tirages retenus
-tools/skill_icons.py apply --only ignition # n'en pose qu'une
+tools/skill_icons.py apply --only brazier # n'en pose qu'une
 ```
 
 `--only` sur `apply` n'est pas un confort : le cache des tirages vit dans un

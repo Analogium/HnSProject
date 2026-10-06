@@ -1282,6 +1282,40 @@ static func doll(tint: Color) -> Texture2D:
 	return _dolls[key]
 
 
+## Le Brasero (jalon 42), « trépied de fer » choisi sur planche : une coupe large sur trois
+## pieds fins, ses braises à la teinte du lancer. Le contour se pose autour de l'union.
+const BRAZIER := [
+	"...............",
+	".eyeeyeyeeyeye.",
+	".lllllllllllll.",
+	"..mmmmmmmmmmm..",
+	"...ddddddddd...",
+	".......d.......",
+	".....d.d.d.....",
+	"....d..d..d....",
+	"...d...d...d...",
+	"..d...ddd...d..",
+	"...............",
+]
+const BRAZIER_WIDTH := 15
+const BRAZIER_HEIGHT := 11
+const BRAZIER_INK := {"d": [0, 1], "m": [0, 2], "l": [0, 3], "e": [1, 3], "y": [1, 4]}
+const IRON := Color(0.33, 0.29, 0.31)
+
+static var _braziers := {}
+
+
+static func brazier(tint: Color) -> Texture2D:
+	var key := tint.to_html(false)
+	if not _braziers.has(key):
+		var canvas := PixelCanvas.new(BRAZIER_WIDTH, BRAZIER_HEIGHT)
+		canvas.stamp(BRAZIER, Vector2i.ZERO, BRAZIER_INK)
+		_braziers[key] = ImageTexture.create_from_image(canvas.to_image([
+			ArtPalette.ramp(IRON), ArtPalette.ramp(tint),
+		]))
+	return _braziers[key]
+
+
 static func _reversed(row: String) -> String:
 	var out := ""
 	for i in range(row.length() - 1, -1, -1):

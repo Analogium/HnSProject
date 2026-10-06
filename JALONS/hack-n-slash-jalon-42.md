@@ -533,3 +533,130 @@ Essayé avec le feu, le test ne relève plus qu'**une** ligne : les Cendres froi
 l'Ignition visent la brûlure subie, comme le Cœur tiède de l'Immolation. **Le feu entre dans
 `UNIQUE_TREES` quand l'Ignition sort**, plutôt qu'une exception écrite pour un sort qui part.
 
+
+## 11. Le Brasero, à la place de l'Ignition — la proposition
+
+L'utilisateur : « remplacer l'Ignition par un nouveau skill avec son arbre complet ». Cinq
+pistes proposées (mur de flammes, souffle canalisé, brasero, marque, éruption) ; retenu : le
+**Brasero**, avec « un nœud qui transforme sa boule de feu en la Boule de feu du manuel, si
+elle est allouée, et sans que Météore marche ».
+
+**La compétence** : un sort, posé au point visé (`PLACEMENT_RANGE`). Un brasero planté au sol
+crache une petite boule de feu vers l'ennemi le plus proche à 150 px, toutes les 0,9 s,
+pendant 8 s. **Deux à la fois** par lanceur, le plus ancien s'éteint (la limite des
+invocations). Niveau de manuel 12 et case (1, 1), ceux de l'Ignition. Premier réglage : 20 de
+mana, 0,5 s d'incantation, 6 à 16 de dégâts par point.
+
+| nœud | pts | effet | relié à |
+|---|---|---|---|
+| Tisonnier | 4 | +8 % dégâts plus | — |
+| Bûches | 3 | +20 % durée | — |
+| Soufflet | 3 | −10 % intervalle des tirs | — |
+| Vigie | 2 | +40 px de portée de visée | Soufflet (1) |
+| **Salve** *(neuf)* | 2 | **+1 boule par tir**, en éventail vers la cible | Tisonnier (2) |
+| **Batterie** ⇄ | 2 | **+1 brasero à la fois** ⇄ −15 % plus | Bûches (2) |
+| **Feu sacré** *(neuf)* | 3 | **chaque ennemi que le brasero tue lui rend 0,5 s par point** | Bûches (1) ou Tisonnier (1) |
+| **Phare** *(neuf)* | 1 | **les ennemis proches s'en prennent au brasero plutôt qu'à vous** : il a des PV (une part des vôtres) et tombe s'ils l'abattent — comme la Poupée de chiffon | Vigie (1) |
+| **Dernier souffle** *(neuf)* | 2 | **à son extinction, il crache d'un coup une couronne de boules**, une par seconde qui lui restait à tirer, à 60 % par point | Bûches (2) |
+| **Foyer du mage** 🔗 *(neuf)* | 1 | **ses boules deviennent votre Boule de feu**, si vous la savez lancer : vos points, votre arbre — Prise d'air, Fragmentation, Surchauffe… — **sans le Météore**, qui reste une boule. Le brasero n'y ajoute que son rythme et son nombre de tirs ⇄ ses propres nœuds de dégâts ne comptent plus | Salve (1) ou Tisonnier (3) |
+| **Lanterne d'orage** | 1 | conversion à la foudre : des éclairs au lieu des boules | Soufflet (2) |
+| ↳ **Main d'appoint** 🔗 *(neuf)* | 1 | **quand vous lancez la Boule de feu, chaque brasero en tire une avec vous**, vers votre visée | Foyer du mage (1) |
+| ↳ **Triangulation** *(neuf)* | 1 | **deux braseros relient leurs flammes** : un trait de feu entre eux brûle ce qui le traverse | Batterie (1) |
+| ↳ **Mitraille** *(neuf)* | 1 | les boules de la salve **rebondissent une fois** vers un autre ennemi | Salve (2) |
+| ↳ **Brasier ravivé** *(neuf)* | 2 | chaque tué le fait **tirer aussitôt**, sans attendre son intervalle — une fois par seconde au plus, puis deux | Feu sacré (2) |
+| ↳ **Électrisé** | 2 | la lanterne engourdit plus fort : +15 % d'effet de l'engourdi par point | Lanterne d'orage (1) |
+
+**16 nœuds, 31 points**, pour un pool de 20.
+
+**Les interactions** : le Foyer du mage et sa Main d'appoint font **trois arbres sur cinq** avec
+une interaction (la Boule de feu par le Feu nourri, la Ruée par le Charmeur) — au-delà des deux
+du §2. C'est la demande de l'utilisateur ; le Feu nourri ou le Charmeur pourraient céder la
+place, à lui de dire.
+
+**Ce que demande le moteur** : une forme neuve (la tourelle, sur le modèle du serpent pour la
+limite et de la Poupée de chiffon pour les PV du Phare) ; « résoudre la Boule de feu sans sa
+transformation » pour le Foyer du mage ; le dessin du brasero, **sur planche**. La boule, elle,
+est celle de la forge.
+
+**Ce qui part avec l'Ignition** : sa compétence, son arbre, ses références dans les tests et le
+catalogue. Le feu entre alors dans `UNIQUE_TREES` (§10).
+
+## 12. Le Brasero — livré
+
+L'arbre du §11, **16 nœuds, 31 points** ; l'Ignition est partie, sa compétence, son arbre, son
+icône et ses vingt traductions. Une vieille sauvegarde perd ses points d'Ignition sans erreur :
+`Character._manual_from_dict()` ne garde que ce que le livre connaît, et ils reviennent à
+placer.
+
+```
+                         Dernières braises
+ Brasier ravivé  Feu sacré  Bûches   Batterie  Triangulation
+ Mitraille  Salve  Tisonnier  [BRASERO]  Soufflet  Vigie  Phare
+ Main d'appoint  Foyer du mage          Lanterne d'orage  Électrisé
+```
+
+**Choisis sur planche** :
+
+- **le dessin**, `planche-brasero.png` (cinq silhouettes à côté de la sorcière) : le
+  **trépied de fer** (`EffectForge.brazier()`), contre la vasque de pierre, la jarre fendue,
+  le bûcher et la torchère ;
+- **l'icône**, `planche-icone-brasero.png` : les quatre sujets de SDXL seul sortaient sur
+  fond gris, la silhouette noyée. Refaits **sur calque** (`icon_layouts.brazier`, sur le
+  cramoisi du feu), à `denoise` 0,7 — à 0,4 et 0,55, les aplats restaient plats à côté des
+  icônes du manuel. Graine 777.
+
+**Écarts avec la proposition** :
+
+- **Dernier souffle devient Dernières braises** : le nom était déjà celui d'un nœud de la
+  nécromancie.
+- **Le Soufflet est un échange** (−15 % d'intervalle ⇄ −10 % de durée) : l'intervalle est
+  déjà la ligne du Sifflement du serpent.
+- **La Vigie a son propre nombre** (`sight`) : `seek_radius` est la ligne du Chasseur.
+- **Les boules du Brasero ont l'explosion des étincelles** (`SPARK_RADIUS`), plus un rayon
+  de la compétence : la fiche du Brasero, la plus haute du jeu, sortait du cadrage de 23 px.
+- **La fiche écrit l'écart sur la ligne des projectiles** (« 2 · 8° ») : la ligne qui
+  manquait encore, pour toutes les compétences à plusieurs projectiles. Trois assertions de
+  `test_manual_panel` lisent ce format.
+- **Le Brasero porte `projectile`** (`KEYWORD_OF_SHAPE`) : la Salve et la Mitraille sont
+  `projectiles` et `bounces`, que l'étincelle lit déjà.
+
+**Vu en route** : retirer les nœuds de l'Ignition a emporté la ligne de rayon du Noyau
+dense, collée sans ligne vide derrière le dernier d'entre eux — `test_talents` ne l'a pas
+vu, le chargement du manuel si. Rendue (−75 % « moins », §6).
+
+**`UNIQUE_TREES` compte le feu** (§10) : ses cinq arbres ne partagent plus ni nom ni ligne.
+
+**Captures** (`hns-captures-brasero`) : l'arbre ; deux braseros reliés par le trait de la
+Triangulation, que les ennemis frappent sous le Phare ; sous le Foyer du mage, le brasero
+tire de vraies Boules de feu, et la Main d'appoint en ajoute une au Météore du joueur.
+
+**Le banc** (`only=brazier`), relevé **sans rien corriger** :
+
+| build | paquet | duel |
+|---|---|---|
+| sans arbre | 31/s | 31/s |
+| meilleur au paquet | ×32,4 | ×26,6 |
+| meilleur au duel | ×23,3 | ×30,3 |
+
+Les deux portent la **Batterie et la Triangulation** : chaque brasero relance un trait de
+feu à pleine force, et le banc relance sans cesse. Jamais pris : Vigie, Phare, Dernières
+braises (le banc ne voit ni la portée, ni les coups reçus, ni les fins), Foyer du mage et
+Main d'appoint (il n'apprend pas la Boule de feu).
+
+## 13. Les retours sur le Brasero
+
+1. **Ses boules ne font plus de dégâts de zone** : `Fireball.spark(…, burst = false)`, la
+   touche directe seule — les Dernières braises aussi. Une `Fireball` sans rayon n'explose
+   plus.
+2. **Le trait de la Triangulation s'éteint avec le premier de ses deux braseros**, remplacé,
+   abattu ou consumé : chacun le garde et l'éteint en partant. Avant, il durait jusqu'à la
+   fin prévue du premier, sans voir le Feu sacré ni le Phare.
+3. **Le Foyer du mage a un prix** : chaque tir paie le mana de la Boule de feu — Main
+   d'appoint comprise —, et à court, rien ne part ; le brasero retente au pas suivant.
+4. **La Mitraille ne marchait pas sous le Foyer**, et la Salve non plus : la boule tirée
+   était celle du joueur, sans les nœuds du brasero. Elles s'y ajoutent désormais — des
+   boules en plus, en éventail, et un rebond. Ses nœuds de dégâts, non.
+
+Le banc (`only=brazier`), relevé après : **×19,4 au paquet, ×15,0 au duel** (×32,4 et ×30,3
+au §12). Le trait qui s'éteint avec son brasero et la fin des éclaboussures en ont repris
+la moitié ; la Triangulation reste dans tous les meilleurs builds.

@@ -744,7 +744,7 @@ func test_the_sheet_announces_what_really_leaves() -> void:
 		ItemCatalog.by_id("wand"), [ItemAffixPool.by_id("forked").modifier(1.0)]
 	))
 	assert_eq(
-		_values(_sheet_of(book, "swift_bolt"), "projectiles"), PackedStringArray(["2"]),
+		_values(_sheet_of(book, "swift_bolt"), "projectiles")[0].get_slice(" · ", 0), "2",
 		"la fiche en annonce deux"
 	)
 
@@ -773,7 +773,7 @@ func test_the_sheet_announces_what_a_node_changes() -> void:
 	# La fourche demande un point dans sa branche : c'est `Manual` qui refuserait le raccourci.
 	assert_true(book.manual.invest(book.base.manual, "swift_bolt_fork"))
 	assert_eq(
-		_values(_sheet_of(book, "swift_bolt"), "projectiles"), PackedStringArray(["2"]),
+		_values(_sheet_of(book, "swift_bolt"), "projectiles")[0].get_slice(" · ", 0), "2",
 		"le nœud de fourche en ajoute un"
 	)
 
@@ -917,13 +917,11 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 	assert_eq(_values(lines, "par projectile"), PackedStringArray([
 		"%d–%d" % [roundi(cast.total_min()), roundi(cast.total_max())]
 	]))
-	assert_eq(
-		_values(lines, "projectiles"), PackedStringArray([str(cast.projectile_count())])
-	)
+	# L'écart sur la ligne du nombre (jalon 42).
+	assert_eq(_values(lines, "projectiles"), PackedStringArray([
+		"%d · %d°" % [cast.projectile_count(), roundi(cast.spread_in_degrees)]
+	]))
 	assert_eq(cast.projectile_count(), bolt.projectiles + 1, "le trait et son projectile de plus")
-	assert_eq(
-		_values(lines, "écart"), PackedStringArray(["%d°" % roundi(cast.spread_in_degrees)])
-	)
 	assert_eq(
 		_values(lines, "vitesse"),
 		PackedStringArray(["%d px/s" % roundi(cast.projectile_speed)])
@@ -953,7 +951,7 @@ func test_a_nature_without_damage_has_no_line() -> void:
 	var bare := _sheet_of(book, "swift_bolt")
 	assert_eq(_values(bare, "ajoutés").size(), 0, "rien d'équipé, rien d'ajouté")
 	assert_eq(_values(bare, "dégâts accrus").size(), 0)
-	assert_eq(_values(bare, "écart").size(), 0, "un trait droit n'a pas d'écart")
+	assert_eq(_values(bare, "projectiles"), PackedStringArray(["1"]), "un trait droit n'a pas d'écart")
 	assert_eq(_values(bare, "converti").size(), 0, "et rien n'est converti")
 
 	_player.equip(Item.new(

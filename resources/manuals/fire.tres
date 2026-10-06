@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://resources/skills/hell_snake.tres" id="11_serpent_infernal"]
 [ext_resource type="Resource" path="res://resources/skills/immolation.tres" id="12_immolation"]
 [ext_resource type="Resource" path="res://resources/skills/flame_dash.tres" id="13_ruee_ardente"]
-[ext_resource type="Resource" path="res://resources/skills/ignition.tres" id="14_ignition"]
+[ext_resource type="Resource" path="res://resources/skills/brazier.tres" id="14_brasero"]
 
 [sub_resource type="Resource" id="L_fireball_stoking_0"]
 script = ExtResource("4_ligne")
@@ -1189,169 +1189,6 @@ parents = Dictionary[String, int]({
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_flame_dash_burning_wave_0")])
 
-[sub_resource type="Resource" id="L_ignition_embers_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-scope = "fire"
-percentage = true
-value_per_point = 6.0
-
-[sub_resource type="Resource" id="N_ignition_embers"]
-script = ExtResource("3_noeud")
-id = "ignition_embers"
-name = "Braise vive"
-description = "Tant que la combustion brûle, vos dégâts de feu sont accrus."
-position = Vector2i(-1, 0)
-points_max = 4
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_embers_0")])
-
-[sub_resource type="Resource" id="L_ignition_cold_ashes_0"]
-script = ExtResource("4_ligne")
-stat = "self_burn"
-percentage = true
-value_per_point = -20.0
-
-[sub_resource type="Resource" id="N_ignition_cold_ashes"]
-script = ExtResource("3_noeud")
-id = "ignition_cold_ashes"
-name = "Cendres froides"
-description = "La combustion vous brûle moins chaque seconde."
-position = Vector2i(0, -1)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_cold_ashes_0")])
-
-[sub_resource type="Resource" id="L_ignition_haste_0"]
-script = ExtResource("4_ligne")
-stat = "move_speed"
-percentage = true
-value_per_point = 4.0
-
-[sub_resource type="Resource" id="N_ignition_haste"]
-script = ExtResource("3_noeud")
-id = "ignition_haste"
-name = "Allure"
-description = "Tant que la combustion brûle, vous vous déplacez plus vite."
-position = Vector2i(1, 0)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_haste_0")])
-
-[sub_resource type="Resource" id="L_ignition_inner_blaze_0"]
-script = ExtResource("4_ligne")
-stat = "ignite_chance"
-value_per_point = 8.0
-
-[sub_resource type="Resource" id="N_ignition_inner_blaze"]
-script = ExtResource("3_noeud")
-id = "ignition_inner_blaze"
-name = "Brasier intérieur"
-description = "Tant que la combustion brûle, vos coups embrasent plus souvent."
-position = Vector2i(-2, 0)
-parents = Dictionary[String, int]({
-"ignition_embers": 2
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_inner_blaze_0")])
-
-[sub_resource type="Resource" id="L_ignition_ember_skin_0"]
-script = ExtResource("4_ligne")
-stat = "res_fire"
-value_per_point = 8.0
-
-[sub_resource type="Resource" id="N_ignition_ember_skin"]
-script = ExtResource("3_noeud")
-id = "ignition_ember_skin"
-name = "Peau de braise"
-description = "Tant que la combustion brûle, vous résistez mieux au feu — le sien compris."
-position = Vector2i(-1, -1)
-parents = Dictionary[String, int]({
-"ignition_cold_ashes": 1,
-"ignition_embers": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_ember_skin_0")])
-
-[sub_resource type="Resource" id="L_ignition_frenzy_0"]
-script = ExtResource("4_ligne")
-stat = "cast_speed"
-percentage = true
-value_per_point = 4.0
-
-[sub_resource type="Resource" id="N_ignition_frenzy"]
-script = ExtResource("3_noeud")
-id = "ignition_frenzy"
-name = "Emballement"
-description = "Tant que la combustion brûle, vous lancez vos sorts plus vite."
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"ignition_haste": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_frenzy_0")])
-
-[sub_resource type="Resource" id="L_ignition_devouring_fire_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-scope = "fire"
-percentage = true
-value_per_point = 30.0
-
-[sub_resource type="Resource" id="L_ignition_devouring_fire_1"]
-script = ExtResource("4_ligne")
-stat = "self_burn"
-percentage = true
-value_per_point = 100.0
-
-[sub_resource type="Resource" id="N_ignition_devouring_fire"]
-script = ExtResource("3_noeud")
-id = "ignition_devouring_fire"
-name = "Feu dévorant"
-description = "Tant que la combustion brûle, vos dégâts de feu sont bien plus accrus — mais elle vous brûle deux fois plus."
-position = Vector2i(-2, -1)
-parents = Dictionary[String, int]({
-"ignition_inner_blaze": 1,
-"ignition_ember_skin": 1
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_devouring_fire_0"), SubResource("L_ignition_devouring_fire_1")])
-
-[sub_resource type="Resource" id="L_ignition_fertile_ashes_0"]
-script = ExtResource("4_ligne")
-stat = "health_regen"
-value_per_point = 1.5
-
-[sub_resource type="Resource" id="N_ignition_fertile_ashes"]
-script = ExtResource("3_noeud")
-id = "ignition_fertile_ashes"
-name = "Cendres fertiles"
-description = "Tant que la combustion brûle, vous regagnez des points de vie chaque seconde."
-position = Vector2i(1, -1)
-parents = Dictionary[String, int]({
-"ignition_cold_ashes": 1,
-"ignition_haste": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_fertile_ashes_0")])
-
-[sub_resource type="Resource" id="L_ignition_holocaust_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-scope = "fire"
-percentage = true
-more = true
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_ignition_holocaust"]
-script = ExtResource("3_noeud")
-id = "ignition_holocaust"
-name = "Holocauste"
-description = "Tant que la combustion brûle, vos dégâts de feu sont amplifiés."
-position = Vector2i(-3, 0)
-parents = Dictionary[String, int]({
-"ignition_devouring_fire": 1,
-"ignition_inner_blaze": 3
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ignition_holocaust_0")])
 [sub_resource type="Resource" id="L_fireball_dense_core_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
@@ -1590,11 +1427,290 @@ skill = ExtResource("13_ruee_ardente")
 position = Vector2i(3, 0)
 talents = Array[ExtResource("3_noeud")]([SubResource("N_flame_dash_wake"), SubResource("N_flame_dash_embers"), SubResource("N_flame_dash_pyre"), SubResource("N_flame_dash_momentum"), SubResource("N_flame_dash_landing"), SubResource("N_flame_dash_brand"), SubResource("N_flame_dash_scorcher"), SubResource("N_flame_dash_shockwave"), SubResource("N_flame_dash_leap"), SubResource("N_flame_dash_flying_start"), SubResource("N_flame_dash_wick"), SubResource("N_flame_dash_short_fuse"), SubResource("N_flame_dash_second_stride"), SubResource("N_flame_dash_stride_fire"), SubResource("N_flame_dash_charmer"), SubResource("N_flame_dash_snake_dance"), SubResource("N_flame_dash_burning_wave")])
 
-[sub_resource type="Resource" id="C_ignition"]
-script = ExtResource("2_case")
-skill = ExtResource("14_ignition")
+[sub_resource type="Resource" id="L_brazier_poker_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_brazier_poker"]
+script = ExtResource("3_noeud")
+id = "brazier_poker"
+name = "Tisonnier"
+description = "Chaque boule du brasero inflige plus de dégâts."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_poker_0")])
+
+[sub_resource type="Resource" id="L_brazier_logs_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_brazier_logs"]
+script = ExtResource("3_noeud")
+id = "brazier_logs"
+name = "Bûches"
+description = "Le brasero brûle plus longtemps."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_logs_0")])
+
+[sub_resource type="Resource" id="L_brazier_bellows_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="L_brazier_bellows_1"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_brazier_bellows"]
+script = ExtResource("3_noeud")
+id = "brazier_bellows"
+name = "Soufflet"
+description = "Le brasero tire plus souvent, mais se consume plus vite."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_bellows_0"), SubResource("L_brazier_bellows_1")])
+
+[sub_resource type="Resource" id="L_brazier_lookout_0"]
+script = ExtResource("4_ligne")
+stat = "sight"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_brazier_lookout"]
+script = ExtResource("3_noeud")
+id = "brazier_lookout"
+name = "Vigie"
+description = "Le brasero vise plus loin : au-delà de ses {portee_brasero} px."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"brazier_bellows": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_lookout_0")])
+
+[sub_resource type="Resource" id="L_brazier_volley_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_volley"]
+script = ExtResource("3_noeud")
+id = "brazier_volley"
+name = "Salve"
+description = "Chaque tir du brasero lâche une boule de plus, en éventail vers sa cible."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"brazier_poker": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_volley_0")])
+
+[sub_resource type="Resource" id="L_brazier_battery_0"]
+script = ExtResource("4_ligne")
+stat = "simultaneous"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_brazier_battery_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_brazier_battery"]
+script = ExtResource("3_noeud")
+id = "brazier_battery"
+name = "Batterie"
+description = "Un brasero de plus peut brûler à la fois. En échange, chacun inflige moins de dégâts."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"brazier_logs": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_battery_0"), SubResource("L_brazier_battery_1")])
+
+[sub_resource type="Resource" id="L_brazier_sacred_fire_0"]
+script = ExtResource("4_ligne")
+stat = "rekindle"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_brazier_sacred_fire"]
+script = ExtResource("3_noeud")
+id = "brazier_sacred_fire"
+name = "Feu sacré"
+description = "Chaque ennemi que tue le brasero lui rend du temps à brûler."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"brazier_logs": 1,
+"brazier_poker": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_sacred_fire_0")])
+
+[sub_resource type="Resource" id="L_brazier_beacon_0"]
+script = ExtResource("4_ligne")
+stat = "beacon"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_beacon"]
+script = ExtResource("3_noeud")
+id = "brazier_beacon"
+name = "Phare"
+description = "Les ennemis proches s'en prennent au brasero plutôt qu'à vous. Il reçoit {vie_phare} % de vos PV max, et s'éteint s'ils l'abattent."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"brazier_lookout": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_beacon_0")])
+
+[sub_resource type="Resource" id="L_brazier_last_breath_0"]
+script = ExtResource("4_ligne")
+stat = "last_breath"
+value_per_point = 60.0
+
+[sub_resource type="Resource" id="N_brazier_last_breath"]
+script = ExtResource("3_noeud")
+id = "brazier_last_breath"
+name = "Dernières braises"
+description = "Quand le brasero s'éteint ou tombe, il crache d'un coup une couronne de {boules_souffle} boules, à cette part d'un tir."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"brazier_logs": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_last_breath_0")])
+
+[sub_resource type="Resource" id="L_brazier_hearth_0"]
+script = ExtResource("4_ligne")
+stat = "hearth"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_hearth"]
+script = ExtResource("3_noeud")
+id = "brazier_hearth"
+name = "Foyer du mage"
+description = "Le brasero tire votre Boule de feu, si vous savez la lancer : avec vos points et votre arbre de la boule — sauf le Météore, qui reste une boule. Chaque tir en paie le mana ; à court, il ne tire rien. Sa Salve et sa Mitraille s'y ajoutent, pas ses nœuds de dégâts."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"brazier_volley": 1,
+"brazier_poker": 3
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_hearth_0")])
+
+[sub_resource type="Resource" id="N_brazier_storm_lantern"]
+script = ExtResource("3_noeud")
+id = "brazier_storm_lantern"
+name = "Lanterne d'orage"
+description = "Le brasero devient une lanterne de foudre : des dégâts de foudre, le mot-clé Foudre au lieu de Feu. Ses boules engourdissent au lieu d'embraser, et ce sont les bonus de foudre de l'équipement qui s'y appliquent, et non plus ceux de feu."
 position = Vector2i(1, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ignition_embers"), SubResource("N_ignition_cold_ashes"), SubResource("N_ignition_haste"), SubResource("N_ignition_inner_blaze"), SubResource("N_ignition_ember_skin"), SubResource("N_ignition_frenzy"), SubResource("N_ignition_devouring_fire"), SubResource("N_ignition_fertile_ashes"), SubResource("N_ignition_holocaust")])
+parents = Dictionary[String, int]({
+"brazier_bellows": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([])
+converts = true
+converts_to = 3
+
+[sub_resource type="Resource" id="L_brazier_helping_hand_0"]
+script = ExtResource("4_ligne")
+stat = "helping_hand"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_helping_hand"]
+script = ExtResource("3_noeud")
+id = "brazier_helping_hand"
+name = "Main d'appoint"
+description = "Quand vous lancez la Boule de feu, chaque brasero en tire une avec vous, vers votre visée."
+position = Vector2i(-3, 1)
+parents = Dictionary[String, int]({
+"brazier_hearth": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_helping_hand_0")])
+
+[sub_resource type="Resource" id="L_brazier_triangulation_0"]
+script = ExtResource("4_ligne")
+stat = "triangulation"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_triangulation"]
+script = ExtResource("3_noeud")
+id = "brazier_triangulation"
+name = "Triangulation"
+description = "Un brasero posé relie ses flammes au plus jeune des autres : un trait de feu entre eux brûle ce qui le traverse, tant qu'ils brûlent tous deux."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"brazier_battery": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_triangulation_0")])
+
+[sub_resource type="Resource" id="L_brazier_grapeshot_0"]
+script = ExtResource("4_ligne")
+stat = "bounces"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_grapeshot"]
+script = ExtResource("3_noeud")
+id = "brazier_grapeshot"
+name = "Mitraille"
+description = "Les boules du brasero rebondissent une fois vers un autre ennemi."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"brazier_volley": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_grapeshot_0")])
+
+[sub_resource type="Resource" id="L_brazier_rekindled_0"]
+script = ExtResource("4_ligne")
+stat = "quickfire"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_brazier_rekindled"]
+script = ExtResource("3_noeud")
+id = "brazier_rekindled"
+name = "Brasier ravivé"
+description = "Chaque ennemi que tue le brasero le fait tirer aussitôt, sans attendre son intervalle — une fois par seconde au plus par point."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"brazier_sacred_fire": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_rekindled_0")])
+
+[sub_resource type="Resource" id="L_brazier_electrified_0"]
+script = ExtResource("4_ligne")
+stat = "numb_effect"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_brazier_electrified"]
+script = ExtResource("3_noeud")
+id = "brazier_electrified"
+name = "Électrisé"
+description = "La lanterne engourdit plus fort : l'engourdi qu'elle pose amplifie davantage les dégâts subis."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"brazier_storm_lantern": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_brazier_electrified_0")])
+
+[sub_resource type="Resource" id="C_brasero"]
+script = ExtResource("2_case")
+skill = ExtResource("14_brasero")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_brazier_poker"), SubResource("N_brazier_logs"), SubResource("N_brazier_bellows"), SubResource("N_brazier_lookout"), SubResource("N_brazier_volley"), SubResource("N_brazier_battery"), SubResource("N_brazier_sacred_fire"), SubResource("N_brazier_beacon"), SubResource("N_brazier_last_breath"), SubResource("N_brazier_hearth"), SubResource("N_brazier_storm_lantern"), SubResource("N_brazier_helping_hand"), SubResource("N_brazier_triangulation"), SubResource("N_brazier_grapeshot"), SubResource("N_brazier_rekindled"), SubResource("N_brazier_electrified")])
 
 [sub_resource type="Resource" id="L_coeur_de_braise_0"]
 script = ExtResource("4_ligne")
@@ -1625,4 +1741,4 @@ position = Vector2i(0, 1)
 script = ExtResource("1_arch")
 id = "fire"
 name = "Maître des flammes"
-cells = Array[ExtResource("2_case")]([SubResource("C_boule_de_feu"), SubResource("C_serpent_infernal"), SubResource("C_immolation"), SubResource("C_ruee_ardente"), SubResource("C_coeur_de_braise"), SubResource("C_ignition")])
+cells = Array[ExtResource("2_case")]([SubResource("C_boule_de_feu"), SubResource("C_serpent_infernal"), SubResource("C_immolation"), SubResource("C_ruee_ardente"), SubResource("C_brasero"), SubResource("C_coeur_de_braise")])

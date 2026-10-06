@@ -125,6 +125,14 @@ const LABELS := {
 	CHARMER: "serpent à l'arrivée",
 	SNAKE_DANCE: "serpents rappelés",
 	BURNING_WAVE: "dégâts de l'onde brûlante",
+	SIGHT: "portée de visée",
+	REKINDLE: "secondes rendues par tué",
+	BEACON: "phare",
+	LAST_BREATH: "dégâts des dernières braises",
+	HEARTH: "foyer du mage",
+	HELPING_HAND: "main d'appoint",
+	TRIANGULATION: "triangulation",
+	QUICKFIRE: "tirs ravivés par seconde",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -236,6 +244,14 @@ const AGREEMENT := {
 	CHARMER: "ms",
 	SNAKE_DANCE: "mp",
 	BURNING_WAVE: "mp",
+	SIGHT: "fs",
+	REKINDLE: "fp",
+	BEACON: "ms",
+	LAST_BREATH: "mp",
+	HEARTH: "ms",
+	HELPING_HAND: "fs",
+	TRIANGULATION: "fs",
+	QUICKFIRE: "mp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -367,6 +383,18 @@ const STRIDE_FIRE := "stride_fire"
 const CHARMER := "charmer"
 const SNAKE_DANCE := "snake_dance"
 const BURNING_WAVE := "burning_wave"
+## Ceux du Brasero (jalon 42) : sa portée de visée en px, ce qu'un tué lui rend en
+## secondes, les Dernières braises en points de pourcentage d'un tir, les tirs ravivés par
+## seconde au plus ; le Phare, le Foyer du mage, la Main d'appoint et la Triangulation
+## sont des drapeaux.
+const SIGHT := "sight"
+const REKINDLE := "rekindle"
+const BEACON := "beacon"
+const LAST_BREATH := "last_breath"
+const HEARTH := "hearth"
+const HELPING_HAND := "helping_hand"
+const TRIANGULATION := "triangulation"
+const QUICKFIRE := "quickfire"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -378,7 +406,8 @@ const MECHANICS := [
 	METEOR_SHOWER, SPLIT_CASCADE, POWDER_KEG, CONVERGE, WIDE_BLAST, GIRTH, GLUTTONY,
 	GROWTH_MOLT, CONSTRICT, VISE, OUROBOROS, SPIRAL, SPIT, SPIT_FAN, ROT_HOLD, MELT,
 	CAMPFIRE, EMBERS, REBIRTH, PHOENIX_ASHES, VIGIL, EYE, SOUL_FEAST, FLYING_START, WICK,
-	SHORT_FUSE, SECOND_STRIDE, STRIDE_FIRE, CHARMER, SNAKE_DANCE, BURNING_WAVE,
+	SHORT_FUSE, SECOND_STRIDE, STRIDE_FIRE, CHARMER, SNAKE_DANCE, BURNING_WAVE, REKINDLE,
+	BEACON, LAST_BREATH, HEARTH, HELPING_HAND, TRIANGULATION, QUICKFIRE,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -426,7 +455,8 @@ const MOLT_RADIUS := 40.0
 const SPIT_PERIOD := 1.5
 const SPIT_REACH := 100.0
 const SPIT_SPREAD := 0.35
-## Le rayon de la petite explosion d'une étincelle (`spark()`) : crachat, escarbille.
+## Le rayon de la petite explosion d'une étincelle (`Fireball.spark()`) : crachat, escarbille,
+## boule du Brasero.
 const SPARK_RADIUS := 12.0
 ## Le Feu de camp : les secondes d'immobilité qui le montent au plus. Les Escarbilles : leur
 ## part d'une impulsion, et leur portée en multiple du rayon. L'Œil du brasier : la part
@@ -446,6 +476,14 @@ const ASHES_MORE := 50.0
 const STRIDE_WINDOW := 1.5
 const CHARMED_SKILL := "hell_snake"
 const BURNING_WAVE_REACH := 2.0
+## Le Brasero : sa portée de visée avant la Vigie ; la part des PV max du lanceur qu'il reçoit
+## sous le Phare ; les boules de ses Dernières braises ; la compétence que tire le Foyer du mage ;
+## le demi-largeur du trait de la Triangulation.
+const TURRET_SIGHT := 150.0
+const BEACON_LIFE := 0.5
+const LAST_BREATH_BALLS := 8
+const HEARTH_SKILL := "fireball"
+const LINK_RADIUS := 8.0
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -604,6 +642,14 @@ var stride_fire := 0.0
 var charmer := 0.0
 var snake_dance := 0.0
 var burning_wave := 0.0
+var sight := 0.0
+var rekindle := 0.0
+var beacon := 0.0
+var last_breath := 0.0
+var hearth := 0.0
+var helping_hand := 0.0
+var triangulation := 0.0
+var quickfire := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -836,6 +882,9 @@ static func facts() -> Dictionary:
 		"plus_cendres": roundi(ASHES_MORE),
 		"fenetre_foulee": STRIDE_WINDOW,
 		"portee_onde": roundi(BURNING_WAVE_REACH),
+		"portee_brasero": roundi(TURRET_SIGHT),
+		"vie_phare": roundi(BEACON_LIFE * 100.0),
+		"boules_souffle": LAST_BREATH_BALLS,
 	}
 
 
@@ -870,12 +919,10 @@ func hatchling() -> SkillStats:
 	return g
 
 
-## Une étincelle (`Fireball.spark()`) : une part du coup, une petite explosion — le crachat
-## du serpent, les escarbilles du brasier.
+## Une étincelle (`Fireball.spark()`) : une part du coup — le crachat du serpent, les
+## escarbilles du brasier. Son explosion est `SPARK_RADIUS`, quel que soit le lancer.
 func spark(part: float) -> SkillStats:
-	var g := _derived(part)
-	g.radius = SPARK_RADIUS
-	return g
+	return _derived(part)
 
 
 ## Une mini-météorite de la Pluie : une part des dégâts, un tiers du rayon, et rien qui en

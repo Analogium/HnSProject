@@ -26,7 +26,7 @@ const ALL := [
 	preload("res://resources/skills/hell_snake.tres"),
 	preload("res://resources/skills/immolation.tres"),
 	preload("res://resources/skills/flame_dash.tres"),
-	preload("res://resources/skills/ignition.tres"),
+	preload("res://resources/skills/brazier.tres"),
 
 	preload("res://resources/skills/ice_spike.tres"),
 	preload("res://resources/skills/ice_nova.tres"),

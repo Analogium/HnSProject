@@ -1050,15 +1050,12 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 
 	if projectile:
-		out.append(SheetLine.new(
-			Group.SHAPE, Texts.t("projectiles"), str(cast.projectile_count()),
-			UiPalette.TEXT
-		))
+		# L'écart sur la ligne du nombre : seul, « 8° » ne disait pas de quoi, et il coûtait
+		# une ligne à la fiche la plus haute du jeu, celle du Brasero (jalon 42).
+		var count := str(cast.projectile_count())
 		if cast.spread_in_degrees > 0.0:
-			out.append(SheetLine.new(
-				Group.SHAPE, Texts.t("écart"), "%d°" % roundi(cast.spread_in_degrees),
-				UiPalette.TEXT
-			))
+			count += " · %d°" % roundi(cast.spread_in_degrees)
+		out.append(SheetLine.new(Group.SHAPE, Texts.t("projectiles"), count, UiPalette.TEXT))
 		if cast.projectile_speed > 0.0:
 			out.append(SheetLine.new(
 				# Un contexte : « vitesse » est aussi le déplacement.

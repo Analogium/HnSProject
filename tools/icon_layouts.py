@@ -76,10 +76,30 @@ def catalysis(d, c):
     d.ellipse([c - 95, c - 55, c + 95, c + 135], fill=(255, 255, 255))
 
 
-LAYOUTS = {"trinity": trinity, "rag_doll": rag_doll, "catalysis": catalysis}
+def brazier(d, c):
+    """Une coupe de fer sur trepied, sa flamme, et la boule qu'elle crache (jalon 42)."""
+    iron, iron_light, iron_dark = (95, 85, 90), (150, 140, 140), (45, 38, 44)
+    for x0, x1 in ((c - 40, c - 220), (c, c), (c + 40, c + 220)):
+        d.line([(x0, 600), (x1, 900)], fill=iron_dark, width=34)
+    d.pieslice([c - 270, 380, c + 270, 700], 0, 180, fill=iron)
+    d.pieslice([c - 250, 400, c + 150, 660], 90, 180, fill=iron_light)
+    d.rectangle([c - 290, 520, c + 290, 560], fill=iron_light)
+    d.polygon([(c - 230, 530), (c - 150, 240), (c - 60, 380), (c, 120), (c + 70, 360),
+               (c + 160, 260), (c + 230, 530)], fill=(225, 75, 25))
+    d.polygon([(c - 120, 530), (c - 40, 330), (c, 260), (c + 50, 340), (c + 120, 530)],
+              fill=(255, 190, 60))
+    d.polygon([(c - 40, 530), (c, 400), (c + 40, 530)], fill=(255, 245, 200))
+    d.line([(c + 130, 330), (c + 260, 260)], fill=(200, 70, 25), width=36)
+    d.ellipse([c + 220, 190, c + 330, 300], fill=(245, 120, 40))
+    d.ellipse([c + 243, 208, c + 298, 263], fill=(255, 225, 140))
+
+
+LAYOUTS = {"trinity": trinity, "rag_doll": rag_doll, "catalysis": catalysis, "brazier": brazier}
+## Le fond de chaque calque : le violet de la sorciere, le cramoisi du feu.
+BACKGROUNDS = {"brazier": (70, 18, 24)}
 
 
 def layout(name):
-    im = Image.new("RGB", (SIDE, SIDE), BG)
+    im = Image.new("RGB", (SIDE, SIDE), BACKGROUNDS.get(name, BG))
     LAYOUTS[name](ImageDraw.Draw(im), SIDE // 2)
     return im

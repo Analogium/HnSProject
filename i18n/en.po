@@ -234,9 +234,6 @@ msgstr "A blaze around you, burning the circle and its bearer."
 msgid "Une ruée au point visé, murs traversés, qui laisse des flammes."
 msgstr "A dash to the aimed point, through walls, leaving flames."
 
-msgid "Une combustion qui consume son porteur, le presse et l'embrase."
-msgstr "A burn that consumes its bearer, quickens and ignites."
-
 msgid "Un coup d'arme lourd, plus lent et plus fort."
 msgstr "A heavy weapon blow, slower and stronger."
 
@@ -263,9 +260,6 @@ msgstr "On average, if all hits"
 
 msgid "Appel du tonnerre"
 msgstr "Thunder Call"
-
-msgid "Combustion"
-msgstr "Combustion"
 
 msgid "Champ statique"
 msgstr "Static Field"
@@ -359,9 +353,6 @@ msgstr "Flame Dash"
 
 msgid "Ruée d'orage"
 msgstr "Storm Dash"
-
-msgid "Ignition"
-msgstr "Ignition"
 
 msgid "Électricité statique"
 msgstr "Static Electricity"
@@ -830,57 +821,6 @@ msgstr "While Static Field is active, your lightning damage is multiplied."
 
 msgid "Attisement"
 msgstr "Stoking"
-
-msgid "Braise vive"
-msgstr "Live Ember"
-
-msgid "Tant que la combustion brûle, vos dégâts de feu sont accrus."
-msgstr "While the combustion burns, your fire damage is increased."
-
-msgid "Cendres froides"
-msgstr "Cold Ashes"
-
-msgid "La combustion vous brûle moins chaque seconde."
-msgstr "The combustion burns you less each second."
-
-msgid "Allure"
-msgstr "Stride"
-
-msgid "Tant que la combustion brûle, vous vous déplacez plus vite."
-msgstr "While the combustion burns, you move faster."
-
-msgid "Tant que la combustion brûle, vos coups embrasent plus souvent."
-msgstr "While the combustion burns, your hits ignite more often."
-
-msgid "Peau de braise"
-msgstr "Ember Skin"
-
-msgid "Tant que la combustion brûle, vous résistez mieux au feu — le sien compris."
-msgstr "While the combustion burns, you resist fire better — its own included."
-
-msgid "Emballement"
-msgstr "Frenzy"
-
-msgid "Tant que la combustion brûle, vous lancez vos sorts plus vite."
-msgstr "While the combustion burns, you cast your spells faster."
-
-msgid "Feu dévorant"
-msgstr "Devouring Fire"
-
-msgid "Tant que la combustion brûle, vos dégâts de feu sont bien plus accrus — mais elle vous brûle deux fois plus."
-msgstr "While the combustion burns, your fire damage is increased much more — but it burns you twice as hard."
-
-msgid "Cendres fertiles"
-msgstr "Fertile Ashes"
-
-msgid "Tant que la combustion brûle, vous regagnez des points de vie chaque seconde."
-msgstr "While the combustion burns, you regain life every second."
-
-msgid "Holocauste"
-msgstr "Holocaust"
-
-msgid "Tant que la combustion brûle, vos dégâts de feu sont amplifiés."
-msgstr "While the combustion burns, your fire damage is amplified."
 
 msgid "Météore"
 msgstr "Meteor"
@@ -2193,9 +2133,6 @@ msgstr "mechanic"
 msgid "conversion"
 msgstr "conversion"
 
-
-
-
 msgid "points"
 msgstr "points"
 
@@ -2222,11 +2159,6 @@ msgstr "base"
 
 msgid "ajoutés"
 msgstr "added"
-
-
-
-
-
 
 msgid "par projectile"
 msgstr "per projectile"
@@ -2263,9 +2195,6 @@ msgstr "cast time"
 
 msgid "%d mana/s"
 msgstr "%d mana/s"
-
-msgid "écart"
-msgstr "spread"
 
 msgctxt "fiche de compétence"
 msgid "vitesse"
@@ -2330,12 +2259,6 @@ msgstr "blessed"
 
 msgid "saignant"
 msgstr "bleeding"
-
-
-
-
-
-
 
 msgid "niveaux de compétence"
 msgstr "skill levels"
@@ -2823,7 +2746,6 @@ msgstr "Loot Filter"
 msgid "FILTRE DE BUTIN"
 msgstr "LOOT FILTER"
 
-
 msgid "Montrer"
 msgstr "Show"
 
@@ -2832,10 +2754,6 @@ msgstr "Hide"
 
 msgid "Recolorer"
 msgstr "Recolor"
-
-
-
-
 
 msgid "Choisir une règle, ou en ajouter une"
 msgstr "Pick a rule, or add one"
@@ -2931,7 +2849,6 @@ msgid_plural "{n} bases"
 msgstr[0] "{n} base"
 msgstr[1] "{n} bases"
 
-
 msgid "Exporter"
 msgstr "Export"
 
@@ -2961,7 +2878,6 @@ msgstr "Filter saved: {fichier}"
 
 msgid "Ce fichier n'est pas un filtre de butin"
 msgstr "This file is not a loot filter"
-
 
 msgid "Code copié : {n} règle"
 msgid_plural "Code copié : {n} règles"
@@ -4908,3 +4824,129 @@ msgstr "snakes recalled"
 
 msgid "dégâts de l'onde brûlante"
 msgstr "burning wave damage"
+
+msgid "Brasero"
+msgstr "Brazier"
+
+msgid "Un trépied qui crache du feu."
+msgstr "A tripod that spits fire."
+
+msgid "Tisonnier"
+msgstr "Poker"
+
+msgid "Chaque boule du brasero inflige plus de dégâts."
+msgstr "Each of the brazier's balls deals more damage."
+
+msgid "Bûches"
+msgstr "Logs"
+
+msgid "Le brasero brûle plus longtemps."
+msgstr "The brazier burns longer."
+
+msgid "Soufflet"
+msgstr "Bellows"
+
+msgid "Le brasero tire plus souvent, mais se consume plus vite."
+msgstr "The brazier fires more often, but burns out faster."
+
+msgid "Vigie"
+msgstr "Lookout"
+
+msgid "Le brasero vise plus loin : au-delà de ses {portee_brasero} px."
+msgstr "The brazier aims further: beyond its {portee_brasero} px."
+
+msgid "Salve"
+msgstr "Volley"
+
+msgid "Chaque tir du brasero lâche une boule de plus, en éventail vers sa cible."
+msgstr "Each of the brazier's shots releases one more ball, fanned toward its target."
+
+msgid "Batterie"
+msgstr "Battery"
+
+msgid "Un brasero de plus peut brûler à la fois. En échange, chacun inflige moins de dégâts."
+msgstr "One more brazier can burn at a time. In exchange, each deals less damage."
+
+msgid "Feu sacré"
+msgstr "Sacred Fire"
+
+msgid "Chaque ennemi que tue le brasero lui rend du temps à brûler."
+msgstr "Each enemy the brazier kills gives it more time to burn."
+
+msgid "Phare"
+msgstr "Beacon"
+
+msgid "Les ennemis proches s'en prennent au brasero plutôt qu'à vous. Il reçoit {vie_phare} % de vos PV max, et s'éteint s'ils l'abattent."
+msgstr "Nearby enemies go after the brazier instead of you. It gets {vie_phare} % of your max HP, and goes out if they bring it down."
+
+msgid "Dernières braises"
+msgstr "Last Embers"
+
+msgid "Quand le brasero s'éteint ou tombe, il crache d'un coup une couronne de {boules_souffle} boules, à cette part d'un tir."
+msgstr "When the brazier goes out or falls, it spits a crown of {boules_souffle} balls at once, at this share of a shot."
+
+msgid "Foyer du mage"
+msgstr "Mage's Hearth"
+
+msgid "Le brasero tire votre Boule de feu, si vous savez la lancer : avec vos points et votre arbre de la boule — sauf le Météore, qui reste une boule. Chaque tir en paie le mana ; à court, il ne tire rien. Sa Salve et sa Mitraille s'y ajoutent, pas ses nœuds de dégâts."
+msgstr "The brazier fires your Fireball, if you know how to cast it: with your points and your fireball tree — except Meteor, it stays a ball. Each shot pays its mana; when short, it fires nothing. Its Volley and Grapeshot add to it, not its damage nodes."
+
+msgid "Lanterne d'orage"
+msgstr "Storm Lantern"
+
+msgid "Le brasero devient une lanterne de foudre : des dégâts de foudre, le mot-clé Foudre au lieu de Feu. Ses boules engourdissent au lieu d'embraser, et ce sont les bonus de foudre de l'équipement qui s'y appliquent, et non plus ceux de feu."
+msgstr "The brazier becomes a storm lantern: lightning damage, the Lightning keyword instead of Fire. Its balls numb instead of igniting, and lightning bonuses from equipment apply to it, no longer fire ones."
+
+msgid "Main d'appoint"
+msgstr "Helping Hand"
+
+msgid "Quand vous lancez la Boule de feu, chaque brasero en tire une avec vous, vers votre visée."
+msgstr "When you cast Fireball, each brazier fires one with you, toward your aim."
+
+msgid "Triangulation"
+msgstr "Triangulation"
+
+msgid "Un brasero posé relie ses flammes au plus jeune des autres : un trait de feu entre eux brûle ce qui le traverse, tant qu'ils brûlent tous deux."
+msgstr "A placed brazier links its flames to the youngest of the others: a line of fire between them burns whatever crosses it, while both burn."
+
+msgid "Mitraille"
+msgstr "Grapeshot"
+
+msgid "Les boules du brasero rebondissent une fois vers un autre ennemi."
+msgstr "The brazier's balls bounce once toward another enemy."
+
+msgid "Brasier ravivé"
+msgstr "Rekindled Blaze"
+
+msgid "Chaque ennemi que tue le brasero le fait tirer aussitôt, sans attendre son intervalle — une fois par seconde au plus par point."
+msgstr "Each enemy the brazier kills makes it fire at once, without waiting for its interval — once per second at most per point."
+
+msgid "Électrisé"
+msgstr "Electrified"
+
+msgid "La lanterne engourdit plus fort : l'engourdi qu'elle pose amplifie davantage les dégâts subis."
+msgstr "The lantern numbs harder: the numb it applies amplifies damage taken further."
+
+msgid "portée de visée"
+msgstr "aiming range"
+
+msgid "secondes rendues par tué"
+msgstr "seconds given back per kill"
+
+msgid "phare"
+msgstr "beacon"
+
+msgid "dégâts des dernières braises"
+msgstr "last embers damage"
+
+msgid "foyer du mage"
+msgstr "mage's hearth"
+
+msgid "main d'appoint"
+msgstr "helping hand"
+
+msgid "triangulation"
+msgstr "triangulation"
+
+msgid "tirs ravivés par seconde"
+msgstr "rekindled shots per second"

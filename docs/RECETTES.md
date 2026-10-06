@@ -425,7 +425,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`. `BOLT`, `BALL` et `COMET` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`, `TURRET`. `BOLT`, `BALL`, `COMET` et `TURRET` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -766,7 +766,7 @@ l'orienteraient chacun à leur façon.
    **transformation** qui ne lit pas un nombre de son arbre le déclare dans
    `Skill.IGNORED_BY_SHAPE` : la fiche du nœud concerné écrit « sans effet avec … ».
 
-4. **Sur un buff** (Ignition), une ligne qui ne vise pas un nombre du lancer — une
+4. **Sur un buff** (Nécrose avancée), une ligne qui ne vise pas un nombre du lancer — une
    portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,
    qui ne vaut que tant qu'il brûle. Rien à déclarer : `Skill.is_buff_line()` trie.
    Sur un **buff à charges** (Trinité), elle compte **par charge**.

@@ -48,6 +48,8 @@ enum Shape {
 	HOLY_CROSS, DRIFT,
 	# Jalon 41, la sorcière : la Catalyse, la Poupée de chiffon, le Familier, la Triade.
 	CATALYSIS, DOLL, FAMILIAR, TRIAD,
+	# Jalon 42 : le Brasero.
+	TURRET,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -76,6 +78,8 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BALL: Keywords.PROJECTILE,
 	Shape.COMET: Keywords.PROJECTILE,
 	Shape.ORB: Keywords.PROJECTILE,
+	# Le brasero est planté, mais ce qu'il tire, ce sont des boules.
+	Shape.TURRET: Keywords.PROJECTILE,
 	Shape.STRIKE: Keywords.MELEE,
 	Shape.CROSS: Keywords.MELEE,
 	Shape.ORBIT: Keywords.MELEE,

@@ -24,16 +24,19 @@ var _hit_radius := 0.0
 
 
 ## Une étincelle lancée par ce qui n'a pas de corps à états : le crachat du serpent, les
-## escarbilles du brasier. La petite boule des éclats, sans gel — ce qui dure ne fige
+## escarbilles de l'Immolation, les boules du Brasero. La petite boule des éclats, sans gel — ce qui dure ne fige
 ## jamais —, l'auteur posé à la main. Chargée à l'appel : la scène porte ce script.
+## `burst` à faux : pas d'explosion, la touche directe seule — les boules du Brasero.
 static func spark(
-	parent: Node, from: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, from: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
+	burst := true
 ) -> Fireball:
 	var ball := Projectile.spawn(
-		parent, load(SCENE), from, toward, cast.roll(Game.rng), null, 0.0, cast.nature, cast
+		parent, load(SCENE), from, toward, cast.roll(Game.rng), null, cast.projectile_speed,
+		cast.nature, cast
 	) as Fireball
 	ball.is_shard = true
-	ball.explosion_radius = cast.radius
+	ball.explosion_radius = SkillStats.SPARK_RADIUS if burst else 0.0
 	ball.hit_stop_on_impact = false
 	ball._author = author
 	return ball
@@ -108,7 +111,7 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func _explode(direct_target: Hurtbox) -> void:
-	if _burst_frame == Engine.get_physics_frames():
+	if explosion_radius <= 0.0 or _burst_frame == Engine.get_physics_frames():
 		return
 	_burst_frame = Engine.get_physics_frames()
 	var parts: Array[float] = _parts.duplicate()
