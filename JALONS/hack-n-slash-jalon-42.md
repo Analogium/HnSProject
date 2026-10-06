@@ -704,3 +704,56 @@ nouvelles silhouettes, vides.
 **L'icône de la Boule de feu**, refaite dans la foulée par le même modèle (option `qwen` de
 `tools/skill_icons.json`) : choisie sur planche (`14`), la boule ronde à longue traînée,
 graine 4242. Elle se lit au centre de l'arbre comme dans la barre (`15`).
+
+### Le Serpent infernal
+
+Même chose pour ses vingt nœuds et son icône. **Trois reprennent un tirage de la Boule de
+feu** (`from` dans `tools/node_icons.json`), à la demande de l'utilisateur — « s'ils font à
+peu près la même chose » : la Queue de flammes (un sillon de feu au sol) la Déflagration,
+la Gerbe (le crachat en éventail) la Double langue, la Mue de croissance (le serpent éclate
+en gerbe) la Fragmentation. Le Venin et la Morsure nécrosante prennent la palette
+nécrotique.
+
+**Le premier jet était illisible à 24 px** : un serpent orange de face, enroulé, cerné de
+flammes orange, ne laissait qu'une tache — l'icône de la compétence surtout. Le prompt
+demande désormais **un seul sujet, rien autour**, et chaque serpent **de profil, en S**,
+avec l'accessoire qui dit le nœud ; douze nœuds et l'icône refaits ainsi. Icône choisie sur
+planche (`16`) : le S épais aux crocs blancs, graine 777. Capture : `17-arbre-serpent.png`.
+
+### L'Immolation
+
+Ses dix-sept nœuds et son icône, aux mêmes règles. **Quatre reprennent un tirage** : la
+Fournaise (plus de dégâts) l'Attisement, le Brasier (le cercle s'élargit) le Souffle ardent,
+la Brûlure profonde (un embrasement plus fort) les Étincelles, le Feu de camp le Feu nourri,
+qui en est un. La Flamme noire et les Âmes consumées prennent la palette nécrotique. Le
+prompt « un seul sujet, rien autour » a suffi du premier coup : cœurs, plume, autel, œil se
+lisent à 24 px. Icône choisie sur planche (`18`) : une silhouette dans une flamme ronde,
+graine 4242. Capture : `19-arbre-immolation.png`.
+
+### La Ruée ardente
+
+Dix-sept nœuds et son icône. **Sept reprennent un tirage**, des trois autres arbres : le
+Sillage (la traînée dure) le sablier de la Longue vie, les Braises (plus large) le Souffle
+ardent, l'Onde de choc (l'explosion s'élargit) la Déflagration, la Mèche le tonneau à mèche
+de la Poudrière, le Charmeur la Couvée, la Danse du charmeur l'Ouroboros, l'Onde brûlante
+l'anneau des Escarbilles. **Trois refaits après la planche** : le Brûle-pavé et l'Onde de
+choc sortaient en feu de camp, le Bond et le Départ en trombe en personnage planté dans les
+flammes — redemandés comme une traînée au sol vue de côté, un saut au-dessus de son arc de
+feu, une explosion au bout d'une traînée. Icône choisie sur planche (`20`) : l'homme de feu
+en course, à la grande traînée, graine 4242 ; elle quitte le tuyau SDXL. Capture :
+`21-arbre-ruee.png`.
+
+### Le Brasero — le manuel du feu complet
+
+Seize nœuds et son icône. **Six reprennent un tirage** : le Tisonnier l'Attisement (un
+tisonnier déjà), les Bûches le Bûcher, la Vigie l'Œil du brasier, la Salve la Double langue,
+les Dernières braises la Fragmentation, le Brasier ravivé (il tire aussitôt) la Vélocité. La
+Lanterne d'orage et l'Électrisé prennent une palette neuve, `lightning`. **Refaits après la
+planche** : le Soufflet sortait en personnage, la Batterie en feu de camp ; la **Mitraille**
+résiste — « une boule qui rebondit », puis « qui ricoche sur un mur », donnent une flamme
+posée : la moins mauvaise est gardée, à refaire. Icône choisie sur planche (`22`) : le
+chaudron de fer sombre, graine 4242 ; le calque SDXL du §12 (`icon_layouts.brazier`) part
+avec l'ancien tirage. Capture : `23-arbre-brasero.png`.
+
+**Les cinq arbres du feu ont leurs vignettes** — 93 nœuds, dont 20 qui en reprennent un
+autre — et leurs cinq compétences une icône du même modèle.

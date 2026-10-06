@@ -66,7 +66,14 @@ L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
 **La Boule de feu** a été refaite au jalon 42 par le tuyau des nœuds (Qwen-Image,
 voir « Icônes de nœuds ») : l'option `qwen` de `tools/skill_icons.json`, où le sujet
 est une phrase entière et la réduction celle des nœuds, sans découpe. Graine 4242, choisie
-sur planche (`Bureau\hns-captures-noeuds-icones\14-icone-boule-de-feu.png`).
+sur planche (`Bureau\hns-captures-noeuds-icones\14-icone-boule-de-feu.png`). Le Serpent
+infernal aussi, graine 777 (`16-icone-serpent.png`). L'Immolation, graine 4242
+(`18-icone-immolation.png`). La Ruée ardente, graine 4242 (`20-icone-ruee.png`) : elle
+quitte le tuyau SDXL, où elle sortait sur fond gris. Le Brasero, graine 4242 (`22-icone-brasero.png`) :
+**tout le manuel du feu** passe ainsi par Qwen-Image.
+
+**Une boule de feu se dessine en flamme** : « une boule qui rebondit », « qui ricoche sur
+un mur » sortent une flamme posée — la Mitraille garde la moins mauvaise, à refaire.
 
 #### La recette du jalon 41 : plus nette, et composée
 
@@ -81,11 +88,9 @@ remèdes, réglés par un troisième champ facultatif de `tools/skill_icons.json
   un flocon et un éclair en triangle » sortait sans flocon ni éclair, la poupée de
   chiffon en fillette. Le sujet est donc posé à la main en grandes formes plates
   éclairées en haut à gauche (`tools/icon_layouts.py`), et SDXL l'habille en
-  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs. **Le Brasero**
-  (jalon 42) fait exception : à 0,4, ses aplats de fer restaient plats à côté des
-  icônes du manuel du feu, et 0,7 lui a donné leur grain sans perdre le trépied. Un
-  calque a son fond (`icon_layouts.BACKGROUNDS`) : le cramoisi du feu pour lui, le
-  violet de la sorcière par défaut ;
+  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs. Le Brasero y
+  est passé au jalon 42 (à 0,7, ses aplats de fer restaient plats à 0,4) avant de
+  rejoindre Qwen-Image avec tout le manuel du feu ;
 - **`violet`** — le fond qui touche les bords ramené au violet sombre de la
   sorcière : le corbeau sortait sur du blanc ou du gris.
 
@@ -98,9 +103,9 @@ Un corbeau sombre perd en contraste sur ce fond : à surveiller dans la barre.
 
 ```bash
 tools/skill_icons.py gen                 # la table, trois graines chacune
-tools/skill_icons.py gen --only brazier  # une seule, pour la refaire
+tools/skill_icons.py gen --only ice_nova  # une seule, pour la refaire
 tools/skill_icons.py apply               # pose les tirages retenus
-tools/skill_icons.py apply --only brazier # n'en pose qu'une
+tools/skill_icons.py apply --only ice_nova # n'en pose qu'une
 ```
 
 `--only` sur `apply` n'est pas un confort : le cache des tirages vit dans un
@@ -167,6 +172,23 @@ jusqu'à son redémarrage. `render()` s'arrête s'il en reçoit.
 - **le fond ramené à une teinte** — cramoisi, bleu nuit pour le Givre et sa suite —,
   reconnu à ce qu'il touche le bord ;
 - réduit par **couleur dominante** (`skill_icons.crisp()`), puis découpé.
+- **un seul sujet, rien autour** : un serpent orange cerné de flammes orange se fondait
+  en une tache à 24 px. Un serpent se demande **de profil, en S**, avec un seul accessoire
+  qui dit le nœud (le sablier, le cadenas, l'œuf) — vu de face, enroulé, il ne se lit plus.
+
+**Une nature** autre que le feu se dit dans la ligne du nœud, `{"nature": "cold"}` ou
+`"necrotic"` ou `"lightning"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
+près la même chose qu'un autre en reprend le tirage**, `{"from": "fireball_wide_blast"}` —
+l'utilisateur préfère reprendre que refaire ; il est réduit au côté de son propre rôle.
+Au Serpent : la Queue de flammes reprend la Déflagration, la Gerbe la Double langue, la
+Mue de croissance la Fragmentation. À l'Immolation : la Fournaise reprend l'Attisement, le
+Brasier le Souffle ardent, la Brûlure profonde les Étincelles, le Feu de camp le Feu nourri.
+À la Ruée ardente : le Sillage reprend la Longue vie (le sablier), les Braises le Souffle
+ardent, l'Onde de choc la Déflagration, la Mèche la Poudrière, le Charmeur la Couvée, la
+Danse du charmeur l'Ouroboros, l'Onde brûlante les Escarbilles.
+Au Brasero : le Tisonnier reprend l'Attisement, les Bûches le Bûcher, la Vigie l'Œil du
+brasier, la Salve la Double langue, les Dernières braises la Fragmentation, le Brasier
+ravivé la Vélocité.
 
 ```bash
 tools/node_icons.py gen --only fireball_meteor   # trois graines, planche sheet_nodes.png

@@ -26,13 +26,21 @@ SUBJECTS = json.load(open(os.path.join(HERE, "node_icons.json"), encoding="utf-8
 # icones compare a chaque PNG.
 SIDES = {"basic": 24, "suite": 28, "major": 32}
 # « Gros pixels, deux ou trois formes » : a la reduction, le detail d'un tirage ordinaire
-# devenait une boue (le bouclier de la Perforation).
+# devenait une boue (le bouclier de la Perforation). « Rien autour » : le serpent orange
+# cerne de flammes orange se fondait en une tache a 24 px.
 TMPL = ("Pixel Art, a tiny 32x32 pixel game icon, extremely low resolution with huge chunky square pixels. "
         "{d} Very simple: two or three large bold shapes only, minimal detail, thick black outline, "
+        "one single subject alone in the middle, nothing around it, strong contrast with the background, "
         "flat colors with a single shade, palette of {pal}, plain flat {bg} background, no text, no frame, no border.")
-FIRE, ICE = (46, 14, 18), (14, 22, 48)
-# Ce qui devient de glace (la conversion du Givre et sa suite) prend le fond bleu.
-COLD = {"fireball_frost", "fireball_deep_frost"}
+# La palette demandee, le fond demande, et la teinte a laquelle ce fond est ramene. Un
+# noeud qui change de nature (une conversion et ses suites) le dit dans sa ligne.
+NATURES = {
+    "fire": ("oranges, reds and warm yellows", "dark crimson", (46, 14, 18)),
+    "cold": ("icy blues and white", "dark navy blue", (14, 22, 48)),
+    "necrotic": ("sickly greens and bone white", "dark murky green", (18, 32, 16)),
+    "lightning": ("electric violets and white", "dark violet", (30, 16, 46)),
+}
+FIRE = NATURES["fire"][2]
 # Ecart de couleur en deca duquel un pixel qui touche le bord est du fond : Qwen pose un
 # leger degrade, que 0,16 avale sans manger le contour noir.
 BG_TOL = 0.16
@@ -84,13 +92,27 @@ def render(prompt, seed):
     return img
 
 
+def options(node):
+    return SUBJECTS[node][3] if len(SUBJECTS[node]) > 3 else {}
+
+
+def source(node):
+    """Le noeud dont le tirage sert : lui-meme, ou celui qu'il reprend (`from`) parce
+    qu'il fait a peu pres la meme chose — l'utilisateur prefere reprendre que refaire."""
+    return options(node).get("from", node)
+
+
+def nature(node):
+    return options(source(node)).get("nature", "fire")
+
+
 def prompt(node):
-    return sentence(SUBJECTS[node][0], node in COLD)
+    return sentence(SUBJECTS[node][0], nature(node))
 
 
-def sentence(subject, cold=False):
-    return TMPL.format(d=subject, pal="icy blues and white" if cold else "oranges, reds and warm yellows",
-                       bg="dark navy blue" if cold else "dark crimson")
+def sentence(subject, kind="fire"):
+    pal, bg, _ = NATURES[kind]
+    return TMPL.format(d=subject, pal=pal, bg=bg)
 
 
 def mask(role, side):
@@ -110,7 +132,7 @@ def mask(role, side):
 def reduce(img, node):
     """La vignette d'un noeud : au cote de son role, decoupee a sa silhouette."""
     role = SUBJECTS[node][2]
-    out = fit(img, SIDES[role], ICE if node in COLD else FIRE)
+    out = fit(img, SIDES[role], NATURES[nature(node)][2])
     out.putalpha(mask(role, SIDES[role]))
     return out
 
@@ -141,10 +163,17 @@ def raw_path(node, seed):
     return os.path.join(RAW, "%s_%d.png" % (node, seed))
 
 
+def chosen(node):
+    """Le tirage retenu, celui du noeud repris le cas echeant."""
+    return raw_path(source(node), SUBJECTS[source(node)][1])
+
+
 def cmd_gen(args):
     os.makedirs(RAW, exist_ok=True)
     nodes = args.only.split(",") if args.only else list(SUBJECTS)
     for node in nodes:
+        if source(node) != node:
+            continue
         # Les graines a la suite : ComfyUI garde le texte encode, qui coute ~100 s sur le CPU.
         for seed in ii.SEEDS:
             if os.path.exists(raw_path(node, seed)) and not args.redo:
@@ -160,8 +189,9 @@ def cmd_gen(args):
     for row, node in enumerate(nodes):
         draw.text((4, 18 + row * cell + cell // 2), node, fill=(230, 230, 230))
         for col, seed in enumerate(ii.SEEDS):
-            if os.path.exists(raw_path(node, seed)):
-                im = reduce(Image.open(raw_path(node, seed)).convert("RGB"), node)
+            path = raw_path(node, seed) if source(node) == node else (chosen(node) if col == 0 else "")
+            if os.path.exists(path):
+                im = reduce(Image.open(path).convert("RGB"), node)
                 sheet.alpha_composite(im.resize((im.width * 5, im.height * 5), Image.NEAREST),
                                       (262 + col * cell, 23 + row * cell))
     out = os.path.join(ii.WORK, "sheet_nodes.png")
@@ -184,7 +214,7 @@ def cmd_apply(args):
     os.makedirs(dest, exist_ok=True)
     nodes = args.only.split(",") if args.only else list(SUBJECTS)
     for node in nodes:
-        src = raw_path(node, SUBJECTS[node][1])
+        src = chosen(node)
         if not os.path.exists(src):
             sys.exit("manquant : " + src)
         reduce(Image.open(src).convert("RGB"), node).save(os.path.join(dest, node + ".png"))

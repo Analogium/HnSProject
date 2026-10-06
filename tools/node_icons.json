@@ -25,7 +25,7 @@
   ],
   "fireball_frost": [
     "A fireball turned completely into blue ice: a frozen blue orb bristling with sharp ice crystals.",
-    4242, "major"
+    4242, "major", {"nature": "cold"}
   ],
   "fireball_kindling": [
     "A burning matchstick held diagonally, its head bursting into a small flame, little sparks around it.",
@@ -69,7 +69,7 @@
   ],
   "fireball_deep_frost": [
     "A large sharp blue snowflake made of ice crystals.",
-    4242, "suite"
+    4242, "suite", {"nature": "cold"}
   ],
   "fireball_cascade": [
     "One fireball splitting into three smaller fireballs, each splitting again into even tinier fireballs, like branches.",
@@ -90,5 +90,285 @@
   "fireball_girth": [
     "A giant swollen fireball next to a tiny fireball, showing how much it grew.",
     4242, "suite"
+  ],
+  "hell_snake_molting": [
+    "A slender orange snake seen from the side, sliding out of its old pale grey shed skin.",
+    1337, "basic"
+  ],
+  "hell_snake_long_life": [
+    "An hourglass with glowing orange sand.",
+    1337, "basic"
+  ],
+  "hell_snake_fangs": [
+    "A snake head in profile with its jaws wide open, two long white fangs tipped with fire.",
+    4242, "basic"
+  ],
+  "hell_snake_swift": [
+    "A slender orange snake in a big S shape racing to the right, three pale speed lines behind it.",
+    1337, "basic"
+  ],
+  "hell_snake_flame_tail": [
+    "",
+    4242, "major", {"from": "fireball_wide_blast"}
+  ],
+  "hell_snake_hunter": [
+    "A snake head in profile with a big glowing yellow eye, facing a red crosshair target.",
+    4242, "major"
+  ],
+  "hell_snake_brood": [
+    "Three slender orange snakes side by side falling downward in a fan, seen from the side.",
+    777, "major"
+  ],
+  "hell_snake_venom": [
+    "A snake head made of sickly green rot, dripping green venom from its fangs.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "hell_snake_hydra": [
+    "A three-headed orange snake, three long necks spreading apart from one body, side view.",
+    1337, "suite"
+  ],
+  "hell_snake_hiss": [
+    "A snake head in profile with its mouth wide open, pale curved sound waves coming out of it.",
+    4242, "basic"
+  ],
+  "hell_snake_gluttony": [
+    "A fat orange snake with a huge round swollen belly, side view, a small skull in front of it.",
+    777, "major"
+  ],
+  "hell_snake_constriction": [
+    "An orange snake coiled tightly three times around a dark grey stone pillar.",
+    1337, "suite"
+  ],
+  "hell_snake_ouroboros": [
+    "A fire snake forming a perfect circle, biting its own tail.",
+    4242, "suite"
+  ],
+  "hell_snake_spit": [
+    "A snake head in profile spitting a bright round fireball forward to the right.",
+    1337, "major"
+  ],
+  "hell_snake_spiral": [
+    "An orange snake coiled into a flat spiral like a snail shell, seen from above.",
+    1337, "suite"
+  ],
+  "hell_snake_vise": [
+    "A fire snake wrapped around a heavy iron padlock, squeezing it shut.",
+    4242, "suite"
+  ],
+  "hell_snake_growth_molt": [
+    "",
+    4242, "suite", {"from": "fireball_fragmentation"}
+  ],
+  "hell_snake_spray": [
+    "",
+    4242, "suite", {"from": "fireball_forked_tongue"}
+  ],
+  "hell_snake_hydra_venom": [
+    "A baby fire snake with long glowing fangs, hatching from a cracked egg.",
+    777, "suite"
+  ],
+  "hell_snake_necrotic_bite": [
+    "Two green fangs biting into a rotting green skull.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "immolation_furnace": [
+    "",
+    4242, "basic", {"from": "fireball_stoking"}
+  ],
+  "immolation_blaze": [
+    "",
+    4242, "basic", {"from": "fireball_searing_breath"}
+  ],
+  "immolation_lukewarm_heart": [
+    "A red heart with a small calm flame on top, gentle and dim.",
+    4242, "basic"
+  ],
+  "immolation_slow_pulse": [
+    "A big red heart with one heavy shockwave ring around it.",
+    777, "basic"
+  ],
+  "immolation_phoenix": [
+    "A single burning phoenix feather, bright orange and red.",
+    4242, "basic"
+  ],
+  "immolation_black_flame": [
+    "A black flame with sickly green edges.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "immolation_deep_burn": [
+    "",
+    4242, "basic", {"from": "fireball_kindling"}
+  ],
+  "immolation_draught": [
+    "A swirling vortex of fire sucking inward toward its center, seen from above.",
+    4242, "major"
+  ],
+  "immolation_campfire": [
+    "",
+    4242, "major", {"from": "fireball_fed_fire"}
+  ],
+  "immolation_embers": [
+    "A ring of fire with small glowing sparks shooting outward from its edge.",
+    1337, "major"
+  ],
+  "immolation_offerings": [
+    "A small flame burning on a stone altar, a glowing blue mana crystal floating above it.",
+    4242, "major"
+  ],
+  "immolation_melt": [
+    "An iron shield melting and dripping in fire.",
+    777, "major"
+  ],
+  "immolation_rebirth": [
+    "A phoenix bird with wings spread wide, rising out of the flames.",
+    4242, "major"
+  ],
+  "immolation_phoenix_ashes": [
+    "A small grey pile of ashes with a glowing orange ember in the middle.",
+    777, "suite"
+  ],
+  "immolation_vigil": [
+    "A small campfire with a glowing green heart floating above it.",
+    4242, "suite"
+  ],
+  "immolation_eye": [
+    "A single glowing burning eye with a fiery iris.",
+    777, "suite"
+  ],
+  "immolation_soul_feast": [
+    "A pale green ghostly soul being sucked into a black flame.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "flame_dash_wake": [
+    "",
+    4242, "basic", {"from": "hell_snake_long_life"}
+  ],
+  "flame_dash_embers": [
+    "",
+    4242, "basic", {"from": "fireball_searing_breath"}
+  ],
+  "flame_dash_pyre": [
+    "A funeral pyre of stacked logs with tall flames.",
+    4242, "basic"
+  ],
+  "flame_dash_momentum": [
+    "A circular arrow made of fire, turning clockwise.",
+    777, "basic"
+  ],
+  "flame_dash_landing": [
+    "A boot stomping down on the ground, a burst of fire exploding around it.",
+    777, "major"
+  ],
+  "flame_dash_brand": [
+    "A glowing red-hot branding iron with a fiery tip.",
+    1337, "basic"
+  ],
+  "flame_dash_scorcher": [
+    "A long horizontal trail of small flames on the ground, seen from the side, stretching from left to right.",
+    777, "basic"
+  ],
+  "flame_dash_shockwave": [
+    "",
+    4242, "suite", {"from": "fireball_wide_blast"}
+  ],
+  "flame_dash_leap": [
+    "A dark figure jumping high in mid-air, a curved trail of fire arcing below it.",
+    777, "major"
+  ],
+  "flame_dash_flying_start": [
+    "A fiery explosion at the left end of a long trail of fire that streaks to the right.",
+    4242, "suite"
+  ],
+  "flame_dash_wick": [
+    "",
+    4242, "major", {"from": "fireball_powder_keg"}
+  ],
+  "flame_dash_short_fuse": [
+    "A very short lit fuse sparking, a bright spark at its tip.",
+    1337, "suite"
+  ],
+  "flame_dash_second_stride": [
+    "Two glowing fiery footprints one after the other.",
+    4242, "major"
+  ],
+  "flame_dash_stride_fire": [
+    "A single big footprint made of blazing fire.",
+    777, "suite"
+  ],
+  "flame_dash_charmer": [
+    "",
+    4242, "suite", {"from": "hell_snake_brood"}
+  ],
+  "flame_dash_snake_dance": [
+    "",
+    4242, "suite", {"from": "hell_snake_ouroboros"}
+  ],
+  "flame_dash_burning_wave": [
+    "",
+    4242, "suite", {"from": "immolation_embers"}
+  ],
+  "brazier_poker": [
+    "",
+    4242, "basic", {"from": "fireball_stoking"}
+  ],
+  "brazier_logs": [
+    "",
+    4242, "basic", {"from": "flame_dash_pyre"}
+  ],
+  "brazier_bellows": [
+    "A brown leather bellows tool seen from the side, a gust of white air coming out of its nozzle.",
+    777, "basic"
+  ],
+  "brazier_lookout": [
+    "",
+    4242, "basic", {"from": "immolation_eye"}
+  ],
+  "brazier_volley": [
+    "",
+    4242, "basic", {"from": "fireball_forked_tongue"}
+  ],
+  "brazier_battery": [
+    "Two small black iron cauldrons side by side, each holding a small flame.",
+    777, "basic"
+  ],
+  "brazier_sacred_fire": [
+    "A golden sacred flame in a small stone bowl, with a soft round halo.",
+    4242, "major"
+  ],
+  "brazier_beacon": [
+    "A tall stone watchtower with a bright fire burning on its top.",
+    777, "major"
+  ],
+  "brazier_last_breath": [
+    "",
+    4242, "major", {"from": "fireball_fragmentation"}
+  ],
+  "brazier_hearth": [
+    "An iron brazier with a big round fireball rising out of it.",
+    777, "major"
+  ],
+  "brazier_storm_lantern": [
+    "An iron lantern with a crackling lightning bolt inside.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "brazier_helping_hand": [
+    "An open hand with a small fireball floating above the palm.",
+    4242, "suite"
+  ],
+  "brazier_triangulation": [
+    "Three small flames at the corners of a triangle, joined by lines of fire.",
+    4242, "major"
+  ],
+  "brazier_grapeshot": [
+    "A small round fireball ricocheting off a grey stone wall, a dotted line showing its bounce.",
+    1337, "major"
+  ],
+  "brazier_rekindled": [
+    "",
+    4242, "suite", {"from": "fireball_velocity"}
+  ],
+  "brazier_electrified": [
+    "A crackling ball of purple electric sparks.",
+    777, "suite", {"nature": "lightning"}
   ]
 }

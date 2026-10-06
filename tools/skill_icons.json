@@ -1,7 +1,10 @@
 {
   "flame_dash": [
-    "a large man made of fire mid-leap, big thick flames, dark night background",
-    4242
+    "A man made of fire dashing to the right in profile, leaving a long trail of flames behind him.",
+    4242,
+    {
+      "qwen": true
+    }
   ],
   "storm_dash": [
     "the silhouette of a leaping man made of lightning",
@@ -131,16 +134,28 @@
     }
   ],
   "brazier": [
-    "an iron brazier on a tripod with roaring flames, spitting a fireball",
-    777,
+    "An iron brazier on three legs with roaring flames, spitting a fireball to the right.",
+    4242,
     {
-      "layout": true,
-      "denoise": 0.7,
-      "crisp": true
+      "qwen": true
     }
   ],
   "fireball": [
     "A big round blazing fireball flying to the right, with a short fiery tail.",
+    4242,
+    {
+      "qwen": true
+    }
+  ],
+  "hell_snake": [
+    "A slender orange fire snake in a big S shape seen from the side, head raised with mouth open.",
+    777,
+    {
+      "qwen": true
+    }
+  ],
+  "immolation": [
+    "A circle of tall flames seen from slightly above, a small dark human silhouette standing in the middle.",
     4242,
     {
       "qwen": true

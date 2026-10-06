@@ -2,9 +2,9 @@
 """Les icones de competences, de ComfyUI jusqu'au .tres. Recette : resources/icons/LISEZMOI.md.
 
     tools/skill_icons.py gen                  toute la table, trois tirages chacune
-    tools/skill_icons.py gen --only brazier  une seule, pour la refaire
+    tools/skill_icons.py gen --only ice_nova  une seule, pour la refaire
     tools/skill_icons.py apply                pose les tirages retenus
-    tools/skill_icons.py apply --only brazier  n'en pose qu'une
+    tools/skill_icons.py apply --only ice_nova  n'en pose qu'une
 
 Une entree marquee `qwen` passe par le tuyau des noeuds (`tools/node_icons.py`).
 
@@ -36,8 +36,7 @@ NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic
 # Le fond suit la nature : violet pour la foudre, cramoisi pour le feu, bleu pour
 # le froid, vert croupi pour la necrose, prune pour le sacre — un fond dore noierait la lumiere du sujet. Sans
 # entree, l'ardoise du chevalier, qui n'a pas d'element.
-BACKGROUNDS = {"flame_dash": "dark crimson", "brazier": "dark crimson",
-               "storm_dash": "dark violet", "static_electricity": "dark violet",
+BACKGROUNDS = {"storm_dash": "dark violet", "static_electricity": "dark violet",
                "ice_spike": "dark blue", "ice_nova": "dark blue",
                "frost_tomb": "dark blue", "winter_disaster": "dark blue",
                "holy_strike": "dark plum", "sacred_pillar": "dark plum",
