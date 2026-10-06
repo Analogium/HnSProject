@@ -138,5 +138,12 @@
       "denoise": 0.7,
       "crisp": true
     }
+  ],
+  "fireball": [
+    "A big round blazing fireball flying to the right, with a short fiery tail.",
+    4242,
+    {
+      "qwen": true
+    }
   ]
 }

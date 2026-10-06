@@ -26,17 +26,24 @@ const CELL_GAP := 6.0
 ## L'arbre ouvert (jalon 34, « centre, élargi » choisi sur planche) : la compétence au
 ## centre, ses nœuds en réseau autour, jusqu'à `TREE_SPAN` cases de chaque côté. **En plein
 ## écran** (jalon 42, planche B), à `TREE_MARGIN` des bords, par-dessus le sac : les dos des
-## livres s'effacent le temps de l'arbre. `NODE` est la zone qu'on survole ; ce qui s'y
-## dessine dépend de la sorte du nœud.
-const NODE := 32.0
-const SIMPLE_NODE := 26.0
-const DIAMOND := 18.0
-const SUITE_DIAMOND := 13.0
+## livres s'effacent le temps de l'arbre. `NODE` est la zone qu'on survole : le plus grand
+## des nœuds, un majeur.
+const NODE := 40.0
+## Le rôle d'un nœud fait sa silhouette (jalon 42, planche « ronds et octogones ») : petit
+## rond pour un nœud de nombres, rond cerclé de la sorte pour une suite, grand octogone de
+## la sorte pour ce qui change le jeu.
+enum NodeRole { BASIC, SUITE, MAJOR }
+## Le côté de la vignette, par rôle : celui que `tools/node_icons.py` découpe.
+const NODE_ICONS := [24, 28, 32]
+## La demi-largeur dessinée, par rôle.
+const NODE_RADIUS := [14.0, 17.0, 20.0]
+## Les pans coupés de l'octogone, cadre de la sorte puis fond.
+const OCTAGON_CUT := 10.0
 ## Le tireté qui mène à une suite, et son assombrissement tant qu'elle n'est pas prise.
 const SUITE_DASH := 4.0
 const SUITE_DIM := 0.55
 ## ±4 colonnes et ±2 rangées : la page plein écran a 216 px de haut entre l'en-tête et
-## l'aide, cinq rangées à 44 px et un losange y tiennent.
+## l'aide, cinq rangées à 44 px et un octogone de `NODE` y tiennent.
 const TREE_STEP := Vector2(64.0, 44.0)
 const TREE_SPAN := Vector2i(4, 2)
 const TREE_MARGIN := 8.0
@@ -93,7 +100,7 @@ const TITLE_BAND := 7.0
 const MISSING := Color(0.92, 0.50, 0.44)
 ## Ce qu'un échange coûte : le rouge de ce qui manque, lu de la même façon.
 const LOSS := MISSING
-## La pastille d'un nœud qui change le jeu, à la pointe de son losange : une transformation,
+## La couleur d'un nœud qui change le jeu, qui remplit son octogone : une transformation,
 ## une mécanique. Celle d'une conversion est de sa nature d'arrivée.
 const KIND_COLORS := {
 	"transformation": Color(0.78, 0.60, 0.98),
@@ -685,38 +692,55 @@ func _draw_tree(manual: Manual, arch: ManualArchetype, cell: ManualCell) -> void
 		_draw_node(manual, arch, cell, cell.talents[i], i == _hover_node)
 
 
-## Trois silhouettes (jalon 42, planche 3) : le petit carré d'un nœud de nombres, le grand
-## losange de ce qui change le jeu, le petit losange de sa suite. Le liseré garde l'état.
+## La silhouette de son rôle, sa vignette dedans. Le liseré intérieur garde l'état ; la
+## couleur de la sorte, l'octogone ou l'anneau.
 func _draw_node(
 	manual: Manual, arch: ManualArchetype, cell: ManualCell, node: TalentNode, hovered: bool
 ) -> void:
-	var r := _node_rect(node.position)
+	var center := _node_rect(node.position).get_center()
 	var spent := manual.points_of(node.id)
 	var tint := _tint(
 		manual.is_open(arch, node.id), spent, node.points_max,
 		manual.tree_remaining(cell)
 	)
 	var thickness := 2.0 if hovered else 1.0
-	var plain := r.grow(SIMPLE_NODE * 0.5 - NODE * 0.5)
-	var head := cell.lineage_head(node)
-	if head.kind().is_empty():
-		draw_rect(plain, UiPalette.BACK_FULL)
-		draw_rect(plain, CELL_BACKGROUND)
-		draw_rect(plain, tint, false, thickness)
-	else:
-		var radius := SUITE_DIAMOND if cell.is_suite(node) else DIAMOND
-		var shape := _diamond(r.get_center(), radius)
-		draw_colored_polygon(shape, UiPalette.BACK_FULL)
-		draw_colored_polygon(shape, CELL_BACKGROUND)
-		shape.append(shape[0])
-		draw_polyline(shape, tint, thickness)
-		# La pastille de la sorte à la pointe : la nature d'arrivée pour une conversion.
-		draw_circle(r.get_center() + Vector2(0.0, 5.0 - radius), 2.0, _kind_color(head))
+	var role := _role(cell, node)
+	var reach: float = NODE_RADIUS[role]
+	match role:
+		NodeRole.MAJOR:
+			draw_colored_polygon(_octagon(center, reach, OCTAGON_CUT), _kind_color(node))
+			draw_colored_polygon(_octagon(center, reach - 2.0, OCTAGON_CUT - 1.0), UiPalette.BACK_FULL)
+			var inner := _octagon(center, reach - 3.0, OCTAGON_CUT - 2.0)
+			draw_colored_polygon(inner, CELL_BACKGROUND)
+			inner.append(inner[0])
+			draw_polyline(inner, tint, thickness)
+		NodeRole.SUITE:
+			draw_circle(center, reach, UiPalette.BACK_FULL)
+			draw_arc(center, reach - 1.0, 0.0, TAU, 48, _kind_color(cell.lineage_head(node)), 2.0)
+			draw_circle(center, reach - 2.0, CELL_BACKGROUND)
+			draw_arc(center, reach - 2.5, 0.0, TAU, 48, tint, thickness)
+		_:
+			draw_circle(center, reach, UiPalette.BACK_FULL)
+			draw_circle(center, reach, CELL_BACKGROUND)
+			draw_arc(center, reach - 0.5, 0.0, TAU, 48, tint, thickness)
+	if node.icon != null:
+		draw_texture(
+			node.icon, (center - node.icon.get_size() * 0.5).floor(),
+			Color(0.42, 0.40, 0.48) if tint == LOCK else Color.WHITE
+		)
 
+	# Le compte pend au coin bas-droit : dedans, il cachait le tiers d'une vignette de 24.
 	_draw_count(
-		plain, "%d/%d" % [spent, node.points_max],
+		Rect2(center - Vector2(reach, reach), Vector2(reach, reach) * 2.0 + Vector2(2.0, 2.0)),
+		"%d/%d" % [spent, node.points_max],
 		UiPalette.TEXT if tint != LOCK else UiPalette.LABEL, FONT_SIZE
 	)
+
+
+static func _role(cell: ManualCell, node: TalentNode) -> NodeRole:
+	if cell.is_suite(node):
+		return NodeRole.SUITE
+	return NodeRole.BASIC if node.kind().is_empty() else NodeRole.MAJOR
 
 
 ## La couleur de ce qu'un nœud change : sa nature d'arrivée pour une conversion.
@@ -726,11 +750,16 @@ static func _kind_color(node: TalentNode) -> Color:
 	return KIND_COLORS[node.kind()]
 
 
-static func _diamond(center: Vector2, radius: float) -> PackedVector2Array:
-	return PackedVector2Array([
-		center + Vector2(0.0, -radius), center + Vector2(radius, 0.0),
-		center + Vector2(0.0, radius), center + Vector2(-radius, 0.0),
-	])
+static func _octagon(center: Vector2, half: float, cut: float) -> PackedVector2Array:
+	var h := half
+	var c := half - cut
+	var pts := PackedVector2Array()
+	for p: Vector2 in [
+		Vector2(-c, -h), Vector2(c, -h), Vector2(h, -c), Vector2(h, c),
+		Vector2(c, h), Vector2(-c, h), Vector2(-h, c), Vector2(-h, -c),
+	]:
+		pts.append(center + p)
+	return pts
 
 
 ## Les « ••• » de Last Epoch : les points que le parent doit porter, au milieu du lien,

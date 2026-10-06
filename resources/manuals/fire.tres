@@ -10,6 +10,29 @@
 [ext_resource type="Resource" path="res://resources/skills/immolation.tres" id="12_immolation"]
 [ext_resource type="Resource" path="res://resources/skills/flame_dash.tres" id="13_ruee_ardente"]
 [ext_resource type="Resource" path="res://resources/skills/brazier.tres" id="14_brasero"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_stoking.png" id="icon_fireball_stoking"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_searing_breath.png" id="icon_fireball_searing_breath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_velocity.png" id="icon_fireball_velocity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_ardor.png" id="icon_fireball_ardor"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_forked_tongue.png" id="icon_fireball_forked_tongue"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_piercing.png" id="icon_fireball_piercing"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_frost.png" id="icon_fireball_frost"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_kindling.png" id="icon_fireball_kindling"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_fragmentation.png" id="icon_fireball_fragmentation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_chain_reaction.png" id="icon_fireball_chain_reaction"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_meteor.png" id="icon_fireball_meteor"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_dense_core.png" id="icon_fireball_dense_core"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_updraft.png" id="icon_fireball_updraft"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_overheat.png" id="icon_fireball_overheat"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_fed_fire.png" id="icon_fireball_fed_fire"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_meteor_shower.png" id="icon_fireball_meteor_shower"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_free_fall.png" id="icon_fireball_free_fall"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_deep_frost.png" id="icon_fireball_deep_frost"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_cascade.png" id="icon_fireball_cascade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_powder_keg.png" id="icon_fireball_powder_keg"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_convergence.png" id="icon_fireball_convergence"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_wide_blast.png" id="icon_fireball_wide_blast"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/fireball_girth.png" id="icon_fireball_girth"]
 
 [sub_resource type="Resource" id="L_fireball_stoking_0"]
 script = ExtResource("4_ligne")
@@ -22,6 +45,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "fireball_stoking"
 name = "Attisement"
+icon = ExtResource("icon_fireball_stoking")
 description = "La boule inflige plus de dégâts, à la touche directe comme à l'explosion."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -37,6 +61,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "fireball_searing_breath"
 name = "Souffle ardent"
+icon = ExtResource("icon_fireball_searing_breath")
 description = "L'explosion à l'impact s'élargit et atteint des ennemis plus éloignés du point d'impact."
 position = Vector2i(0, -1)
 points_max = 3
@@ -52,6 +77,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "fireball_velocity"
 name = "Vélocité"
+icon = ExtResource("icon_fireball_velocity")
 description = "La boule vole plus vite. Sa durée de vol ne change pas : elle porte donc plus loin."
 position = Vector2i(1, 0)
 points_max = 2
@@ -67,6 +93,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "fireball_ardor"
 name = "Ardeur"
+icon = ExtResource("icon_fireball_ardor")
 description = "Augmente la chance de coup critique de la boule, touche directe et explosion comprises."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -91,6 +118,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "fireball_forked_tongue"
 name = "Double langue"
+icon = ExtResource("icon_fireball_forked_tongue")
 description = "Chaque sort lance une boule de plus, en éventail. En échange, chaque boule inflige moins de dégâts."
 position = Vector2i(2, 1)
 parents = Dictionary[String, int]({
@@ -108,6 +136,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_piercing"
 name = "Perforation"
+icon = ExtResource("icon_fireball_piercing")
 description = "La boule ne s'arrête plus au premier ennemi : elle le traverse, explose sur lui, et continue. Elle s'arrête sur l'ennemi suivant celui qu'elle a traversé en dernier. Elle ne frappe jamais deux fois le même ennemi."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -120,6 +149,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_fireball_piercing_0")])
 script = ExtResource("3_noeud")
 id = "fireball_frost"
 name = "Givre"
+icon = ExtResource("icon_fireball_frost")
 description = "La boule devient entièrement de glace : des dégâts de froid, le mot-clé Froid au lieu de Feu. Elle transit au lieu d'embraser, et ce sont les bonus de froid de l'équipement qui s'y appliquent, et non plus ceux de feu."
 position = Vector2i(-3, 0)
 parents = Dictionary[String, int]({
@@ -139,6 +169,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "fireball_kindling"
 name = "Étincelles"
+icon = ExtResource("icon_fireball_kindling")
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — l'embrasement pour le feu, qui brûle l'ennemi dans la durée."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -157,6 +188,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_fragmentation"
 name = "Fragmentation"
+icon = ExtResource("icon_fireball_fragmentation")
 description = "La boule éclate en petites boules qui partent en étoile : sur chaque ennemi qu'elle traverse, et au bout de sa course — sur un ennemi, un mur ou à portée maximale. Chacune inflige {part_eclat} % des dégâts et explose deux fois plus petit. Elles traversent sans les frapper les ennemis que la boule a déjà touchés."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -175,6 +207,7 @@ value_per_point = 24.0
 script = ExtResource("3_noeud")
 id = "fireball_chain_reaction"
 name = "Réaction en chaîne"
+icon = ExtResource("icon_fireball_chain_reaction")
 description = "Un ennemi que la boule tue explose s'il porte l'état de sa nature — embrasé, ou transi une fois la boule devenue de glace : {part_tue} % des dégâts d'un coup de la boule, dans ce rayon autour de lui. Un ennemi dans cet état tué par cette explosion explose à son tour."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -1013,6 +1046,7 @@ value_per_point = 50.0
 script = ExtResource("3_noeud")
 id = "fireball_meteor"
 name = "Météore"
+icon = ExtResource("icon_fireball_meteor")
 description = "La boule ne vole plus : elle tombe du ciel sur le point visé, et y éclate plus fort et trois fois plus large, en secouant le sol — réactions en chaîne comprises. Les boules en plus tombent en rangée en travers de la visée, et les éclats jaillissent du point d'impact. En échange, le sort est plus long à lancer et coûte plus de mana, et la perforation ne sert plus."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
@@ -1207,6 +1241,7 @@ value_per_point = 50.0
 script = ExtResource("3_noeud")
 id = "fireball_dense_core"
 name = "Noyau dense"
+icon = ExtResource("icon_fireball_dense_core")
 description = "La boule n'explose presque plus : son explosion rétrécit à peu de chose, mais elle frappe bien plus fort, touche directe comprise. La cible contre la zone."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -1224,6 +1259,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "fireball_updraft"
 name = "Prise d'air"
+icon = ExtResource("icon_fireball_updraft")
 description = "La boule enfle en volant : son explosion gagne en dégâts et en rayon pour chaque tranche de {pas_vol} px parcourue avant d'éclater. Tirer de loin."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -1241,6 +1277,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "fireball_overheat"
 name = "Surchauffe"
+icon = ExtResource("icon_fireball_overheat")
 description = "Chaque coup de la boule surchauffe ce qu'il touche pendant {duree_surchauffe} s, jusqu'à {charges_surchauffe} charges : la boule suivante y frappe plus fort pour chaque charge. Marteler une même cible."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -1259,6 +1296,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "fireball_fed_fire"
 name = "Feu nourri"
+icon = ExtResource("icon_fireball_fed_fire")
 description = "Une boule lancée pendant que votre Immolation brûle sort attisée du brasier : elle inflige plus de dégâts et explose plus large. Il faut savoir lancer l'Immolation, et l'avoir allumée."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -1276,6 +1314,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_meteor_shower"
 name = "Pluie de météorites"
+icon = ExtResource("icon_fireball_meteor_shower")
 description = "Après l'impact du météore, des mini-météorites retombent en couronne autour du point visé, une par point : {part_pluie} % des dégâts chacune, et une explosion trois fois plus petite."
 position = Vector2i(0, 2)
 parents = Dictionary[String, int]({
@@ -1294,6 +1333,7 @@ value_per_point = -60.0
 script = ExtResource("3_noeud")
 id = "fireball_free_fall"
 name = "Chute libre"
+icon = ExtResource("icon_fireball_free_fall")
 description = "Le météore ne se fait plus attendre : le sort se lance aussi vite qu'une boule."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
@@ -1311,6 +1351,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "fireball_deep_frost"
 name = "Gel intense"
+icon = ExtResource("icon_fireball_deep_frost")
 description = "La boule de glace transit plus fort : le transi qu'elle pose ralentit davantage."
 position = Vector2i(-3, 1)
 parents = Dictionary[String, int]({
@@ -1328,6 +1369,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_cascade"
 name = "Éclats en cascade"
+icon = ExtResource("icon_fireball_cascade")
 description = "Chaque éclat de la Fragmentation éclate à son tour au bout de sa course, une fois : de plus petites boules encore, en étoile, à {part_eclat} % de ses dégâts."
 position = Vector2i(3, 0)
 parents = Dictionary[String, int]({
@@ -1345,6 +1387,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_powder_keg"
 name = "Poudrière"
+icon = ExtResource("icon_fireball_powder_keg")
 description = "L'explosion d'un ennemi tué pose à coup sûr l'état de la boule sur ce qu'elle touche — l'embrasement, ou le transi une fois la boule de glace : la réaction en chaîne ne s'arrête plus faute d'embrasés."
 position = Vector2i(-3, -1)
 parents = Dictionary[String, int]({
@@ -1362,6 +1405,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_convergence"
 name = "Convergence"
+icon = ExtResource("icon_fireball_convergence")
 description = "Les boules ne partent plus en éventail : elles naissent côte à côte et se rejoignent au point visé, où un même ennemi les prend toutes."
 position = Vector2i(3, 1)
 parents = Dictionary[String, int]({
@@ -1379,6 +1423,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "fireball_wide_blast"
 name = "Déflagration"
+icon = ExtResource("icon_fireball_wide_blast")
 description = "L'explosion de la boule devient une vraie zone : son rayon profite aussi de ce qui accroît la zone d'effet — objets et passifs. Les dégâts de zone, eux, ne s'y appliquent pas."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
@@ -1396,6 +1441,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "fireball_girth"
 name = "Gonflement"
+icon = ExtResource("icon_fireball_girth")
 description = "La boule grossit en volant : elle touche plus large pour chaque tranche de {pas_vol} px parcourue, jusqu'à {taille_max} % de sa taille."
 position = Vector2i(2, -2)
 parents = Dictionary[String, int]({

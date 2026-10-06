@@ -1,0 +1,94 @@
+{
+  "fireball_stoking": [
+    "An iron fire poker stirring a heap of glowing red embers; a tall flame leaps up from the embers.",
+    4242, "basic"
+  ],
+  "fireball_searing_breath": [
+    "Seen from above: a small fireball at the center surrounded by a wide expanding ring of fire, with short sparks flying outward.",
+    777, "basic"
+  ],
+  "fireball_velocity": [
+    "A fireball rushing to the right, with three long pale speed lines trailing behind it.",
+    777, "basic"
+  ],
+  "fireball_ardor": [
+    "A fireball with a sharp four-pointed white star glint on its upper right, the sparkle of a critical hit.",
+    4242, "basic"
+  ],
+  "fireball_forked_tongue": [
+    "Two fireballs splitting apart in a V shape from a single point on the left, each with a fiery tail.",
+    1337, "basic"
+  ],
+  "fireball_piercing": [
+    "A fireball that has punched straight through a round wooden shield and comes out the other side, splinters flying.",
+    4242, "major"
+  ],
+  "fireball_frost": [
+    "A fireball turned completely into blue ice: a frozen blue orb bristling with sharp ice crystals.",
+    4242, "major"
+  ],
+  "fireball_kindling": [
+    "A burning matchstick held diagonally, its head bursting into a small flame, little sparks around it.",
+    777, "basic"
+  ],
+  "fireball_fragmentation": [
+    "A fireball bursting into six small fireballs flying outward in a star pattern.",
+    1337, "major"
+  ],
+  "fireball_chain_reaction": [
+    "A white skull exploding inside a burst of orange fire.",
+    4242, "major"
+  ],
+  "fireball_meteor": [
+    "A huge flaming rock meteor plunging diagonally from the top right corner, with a long fire tail.",
+    1337, "major"
+  ],
+  "fireball_dense_core": [
+    "A small white-hot glowing sphere squeezed by four grey iron spikes pointing at it from the corners.",
+    4242, "basic"
+  ],
+  "fireball_updraft": [
+    "A fireball rising upward, carried by a pale swirling whirlwind beneath it.",
+    777, "major"
+  ],
+  "fireball_overheat": [
+    "A glass thermometer whose red liquid is boiling over the top, with heat waves.",
+    777, "major"
+  ],
+  "fireball_fed_fire": [
+    "A campfire of crossed logs with tall flames, and a fireball rising out of the flames.",
+    4242, "major"
+  ],
+  "fireball_meteor_shower": [
+    "Four small flaming meteors falling diagonally in parallel, like rain.",
+    777, "suite"
+  ],
+  "fireball_free_fall": [
+    "A flaming meteor plunging straight down toward the ground, with vertical speed lines on both sides.",
+    777, "suite"
+  ],
+  "fireball_deep_frost": [
+    "A large sharp blue snowflake made of ice crystals.",
+    4242, "suite"
+  ],
+  "fireball_cascade": [
+    "One fireball splitting into three smaller fireballs, each splitting again into even tinier fireballs, like branches.",
+    777, "suite"
+  ],
+  "fireball_powder_keg": [
+    "A wooden gunpowder barrel with iron bands and a lit fuse sparking on top.",
+    777, "suite"
+  ],
+  "fireball_convergence": [
+    "Three fire trails coming from the left that converge on one bright point on the right.",
+    1337, "major"
+  ],
+  "fireball_wide_blast": [
+    "A wide flat fire explosion spreading along the ground in a horizontal wave of flames.",
+    777, "suite"
+  ],
+  "fireball_girth": [
+    "A giant swollen fireball next to a tiny fireball, showing how much it grew.",
+    4242, "suite"
+  ]
+}

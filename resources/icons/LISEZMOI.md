@@ -1,7 +1,7 @@
 # Icônes
 
-Deux familles, même tuyau et même recette : les compétences, dans ce dossier, et
-les objets, dans `items/`.
+Trois familles : les compétences, dans ce dossier, et les objets, dans `items/`, par
+le même tuyau SDXL ; les nœuds d'arbre, dans `nodes/`, par Qwen-Image (jalon 42).
 
 ## Icônes de compétences
 
@@ -63,6 +63,11 @@ ce qui restera à 24.
 
 L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
 
+**La Boule de feu** a été refaite au jalon 42 par le tuyau des nœuds (Qwen-Image,
+voir « Icônes de nœuds ») : l'option `qwen` de `tools/skill_icons.json`, où le sujet
+est une phrase entière et la réduction celle des nœuds, sans découpe. Graine 4242, choisie
+sur planche (`Bureau\hns-captures-noeuds-icones\14-icone-boule-de-feu.png`).
+
 #### La recette du jalon 41 : plus nette, et composée
 
 Les quatre icônes neuves de la sorcière (Trinité, Catalyse, Poupée de chiffon,
@@ -119,6 +124,59 @@ Et la graine 777 raye : sur un sujet vertical elle sort des bandes horizontales.
 
 Le champ vide est un état normal : la barre dessine alors un disque de la couleur
 de la nature du sort. Une compétence sans image reste jouable et reconnaissable.
+
+
+## Icônes de nœuds
+
+Une vignette par nœud d'arbre (jalon 42, l'arbre de la Boule de feu d'abord), sur le
+champ `icon` du nœud dans le `.tres` de son manuel. **Déjà découpée** à la silhouette de
+son rôle et à son côté — rond de 24 pour un nœud de nombres, rond de 28 pour une suite,
+octogone de 32 pour ce qui change le jeu (`ManualPanel.NODE_ICONS`) : le panneau la pose
+telle quelle, sans masque ni mise à l'échelle.
+
+### Pourquoi pas SDXL
+
+À 16 px, SDXL sortait une bouillie rouge : il ignore la composition (« une boule qui
+traverse un bouclier »), et les calques faits main du jalon 41 ne lui ajoutaient qu'un
+grain que la réduction effaçait. L'utilisateur voulait « plus de netteté, de compréhension
+et de beauté ». D'où un autre modèle, et des vignettes plus grandes.
+
+### Le modèle
+
+Dans `C:\Generate\ComfyUI\ComfyUI\models` (ComfyUI 0.21, RX 7900 XTX de 24 Go) :
+
+| Fichier | Dossier | Source |
+|---|---|---|
+| `qwen_image_2512_fp8_e4m3fn.safetensors` (20,4 Go) | `diffusion_models` | `Comfy-Org/Qwen-Image_ComfyUI` |
+| `qwen_2.5_vl_7b_fp8_scaled.safetensors` (9,4 Go) | `text_encoders` | idem |
+| `qwen_image_vae.safetensors` | `vae` | idem |
+| `Qwen-Image-2512-Lightning-8steps-V1.0-bf16.safetensors` | `loras` | `lightx2v/Qwen-Image-2512-Lightning` |
+| `Qwen-Image-2512-Master-Pixel-Art-LoRA.safetensors` | `loras` | `prithivMLmods/Qwen-Image-2512-Pixel-Art-LoRA` |
+
+Lightning ramène les 45 pas du LoRA pixel art à 8 : **7 s par tirage** à 768 px.
+**L'encodeur de texte tourne sur le CPU** (~100 s par sujet, gardé en cache d'une graine
+à l'autre) : modèle et encodeur ne tiennent pas ensemble sur la carte, et après un
+déchargement partiel le processus ComfyUI ne rendait plus que du bruit — **SDXL compris**,
+jusqu'à son redémarrage. `render()` s'arrête s'il en reçoit.
+
+### La recette
+
+- **Le prompt demande de gros pixels et deux ou trois formes** (`TMPL`) : un tirage
+  ordinaire était beau à 768 px et boueux à 32 (le bouclier de la Perforation) ;
+- **recadré sur le sujet**, pas au centre : Qwen remplit le cadre ;
+- **le fond ramené à une teinte** — cramoisi, bleu nuit pour le Givre et sa suite —,
+  reconnu à ce qu'il touche le bord ;
+- réduit par **couleur dominante** (`skill_icons.crisp()`), puis découpé.
+
+```bash
+tools/node_icons.py gen --only fireball_meteor   # trois graines, planche sheet_nodes.png
+tools/node_icons.py apply --only fireball_meteor # PNG dans nodes/, champ icon dans le .tres
+```
+
+Sujet, graine retenue et rôle dans `tools/node_icons.json`. Choisis sur planche
+(`Bureau\hns-captures-noeuds-icones\`, 06 à 12) ; **certaines se ressemblent encore**
+(beaucoup de flammes) et Chute libre, Déflagration et Double langue ratent leur sujet :
+gardées telles quelles, à retoucher.
 
 
 ## Icônes d'objets

@@ -6,6 +6,8 @@
     tools/skill_icons.py apply                pose les tirages retenus
     tools/skill_icons.py apply --only brazier  n'en pose qu'une
 
+Une entree marquee `qwen` passe par le tuyau des noeuds (`tools/node_icons.py`).
+
 Meme moteur que les objets — `tools/item_icons.py`, dont ce script importe le
 rendu, la quantification et les reglages du jalon 11. Deux differences, et elles
 sont la raison de ce second fichier : une icone de competence est une **tuile
@@ -142,7 +144,11 @@ def cmd_gen(args):
             else:
                 start = time.time()
                 prompt = TMPL.format(subj=SUBJECTS[name][0], bg=BACKGROUNDS.get(name, "slate blue"))
-                if opts.get("layout"):
+                if opts.get("qwen"):
+                    # Le tuyau des noeuds (jalon 42) : le sujet y est une phrase entiere.
+                    import node_icons
+                    img = node_icons.render(node_icons.sentence(SUBJECTS[name][0]), seed)
+                elif opts.get("layout"):
                     img = render(prompt, seed, layout=layout(name), denoise=opts["denoise"])
                 else:
                     img = render(prompt, seed)
@@ -150,7 +156,11 @@ def cmd_gen(args):
                 print("  %s  %.1fs" % (tag, time.time() - start), flush=True)
             if opts.get("violet"):
                 img = to_violet(img)
-            small = crisp(img) if opts.get("crisp") else quant(shrink(img).convert("RGBA"))
+            if opts.get("qwen"):
+                import node_icons
+                small = node_icons.fit(img, SIDE, node_icons.FIRE).convert("RGBA")
+            else:
+                small = crisp(img) if opts.get("crisp") else quant(shrink(img).convert("RGBA"))
             small.save(os.path.join(OUT, tag + ".png"))
     build_sheet()
 

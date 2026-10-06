@@ -660,3 +660,47 @@ Main d'appoint (il n'apprend pas la Boule de feu).
 Le banc (`only=brazier`), relevé après : **×19,4 au paquet, ×15,0 au duel** (×32,4 et ×30,3
 au §12). Le trait qui s'éteint avec son brasero et la fin des éclaboussures en ont repris
 la moitié ; la Triangulation reste dans tous les meilleurs builds.
+
+
+## 14. Une vignette par nœud — l'arbre de la Boule de feu
+
+La demande : que chaque nœud d'arbre porte une icône, comme Last Epoch, **les nœuds
+majeurs et les suites plus marqués que les simples** ; la Boule de feu d'abord, pour juger.
+
+**SDXL n'a pas suffi.** Le tuyau des compétences (SDXL 1.0 et le LoRA pixel-art-xl) a
+donné à 16 px une bouillie rouge, souvent sur fond gris ; les calques faits main du
+jalon 41 lisaient bien mais restaient plats, et l'habillage SDXL à 0,4 comme à 0,6 n'y
+changeait presque rien une fois réduit. Première planche (Bureau,
+`hns-captures-noeuds-icones\01` à `05`) écartée : « il faudrait plus de netteté, de
+compréhension et de beauté ». Deux causes, deux remèdes :
+
+- **le modèle** — Qwen-Image 2512 (fp8), le LoRA Lightning 8 pas et un LoRA pixel art,
+  installés dans le ComfyUI de l'utilisateur ; il suit la phrase. L'encodeur de texte
+  passe sur le CPU : après un déchargement partiel, le processus ComfyUI ne rendait plus
+  que du bruit, SDXL compris, jusqu'à son redémarrage. 7 s de calcul par tirage, ~100 s
+  d'encodage par sujet ;
+- **la taille** — 24 px pour un nœud simple, 28 pour une suite, 32 pour un majeur, au
+  lieu de 16/20/24. Et le prompt demande **de gros pixels et deux ou trois formes** : le
+  tirage ordinaire, superbe à 768 px, était boueux à 32.
+
+**Choisi sur planche** (`06` à `12`, trois graines par nœud) : **« ronds et octogones »** —
+petit rond pour un nœud de nombres, rond cerclé de la couleur de ce qu'il prolonge pour
+une suite, grand octogone plein de la couleur de sa sorte pour un majeur. Les losanges et
+la pastille de la planche 3 disparaissent. Les icônes sont gardées **telles quelles** :
+certaines se ressemblent (beaucoup de flammes), et Chute libre, Déflagration et Double
+langue ratent leur sujet — à retoucher plus tard.
+
+**Vu à la capture** (`13-arbre-boule-de-feu.png`) : un octogone de 21 px de demi-largeur
+débordait de la page sur la rangée ±2, où se pose le Feu nourri
+(`test_slots_and_nodes_fit_in_the_panel`) ; ramené à 20. Le compte, dedans, cachait le
+tiers d'une vignette de 24 : il pend désormais au coin bas-droit.
+
+Le tuyau est `tools/node_icons.py` (recette : `resources/icons/LISEZMOI.md`, « Icônes de
+nœuds ») ; la vignette, `TalentNode.icon`, découpée d'avance à sa silhouette.
+`test_node_icons_fit_their_role` refuse une vignette dont le côté ne suit plus le rôle de
+son nœud. Les autres arbres n'ont pas encore de vignettes : leurs nœuds prennent déjà les
+nouvelles silhouettes, vides.
+
+**L'icône de la Boule de feu**, refaite dans la foulée par le même modèle (option `qwen` de
+`tools/skill_icons.json`) : choisie sur planche (`14`), la boule ronde à longue traînée,
+graine 4242. Elle se lit au centre de l'arbre comme dans la barre (`15`).

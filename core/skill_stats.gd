@@ -395,7 +395,7 @@ const HEARTH := "hearth"
 const HELPING_HAND := "helping_hand"
 const TRIANGULATION := "triangulation"
 const QUICKFIRE := "quickfire"
-## Ceux qui changent **ce que fait** le lancer, pas combien : la pastille d'un nœud les
+## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
 	PIERCE, SPLITS, GROUND, END_BURST, KILL_BURST, SEEK, BROOD, HATCHLINGS,

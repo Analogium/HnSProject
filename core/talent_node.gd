@@ -12,6 +12,9 @@ extends Resource
 ## pas quoi (jalon 34). Les chiffres des mécaniques s'y écrivent en `{champ}` de
 ## `SkillStats.facts()`, jamais en dur : ils mentiraient au premier réglage.
 @export_multiline var description: String = ""
+## Sa vignette dans l'arbre (jalon 42), au côté que demande son rôle
+## (`ManualPanel.NODE_ICONS`) et déjà découpée à sa silhouette : `tools/node_icons.py`.
+@export var icon: Texture2D
 
 ## En cases autour de la compétence, qui tient `(0, 0)` : un réseau, pas des colonnes
 ## (jalon 34, Last Epoch). Pas en pixels.
