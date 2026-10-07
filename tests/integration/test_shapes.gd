@@ -1496,6 +1496,34 @@ func test_a_meteor_rains_small_ones_around_its_impact() -> void:
 		assert_eq(small._cast.meteor_shower, 0.0, "une retombée n'en fait pas tomber d'autres")
 
 
+## Lancé de l'épaule d'un Familier qui se dissout pendant la chute : le météore éclate une
+## fois et s'en va. Avant, l'erreur sur la source libérée le faisait exploser à chaque image.
+func test_a_meteor_whose_source_vanished_bursts_once() -> void:
+	_learn_with("manual_fire", "fireball", [], Skill.Shape.METEOR)
+	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	var shoulder := Node2D.new()
+	add_child(shoulder)
+	Meteor.fall(_effects, _p.global_position + Vector2.RIGHT * 60.0, cast, _p.states, shoulder)
+	shoulder.free()
+	await wait_seconds(Meteor.FALL + 0.05)
+	assert_eq(_children_of(Meteor).size(), 0, "le météore est parti")
+	assert_eq(_children_of(Explosion).size(), 1, "une seule explosion")
+
+
+## Le halo d'un souffle se cuit à son rayon final, pas à chaque rayon de son ouverture :
+## une nova de 83 px cuisait un halo par image, 6 ms le plus grand.
+func test_an_opening_blast_bakes_one_halo() -> void:
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.COLD] = 1.0
+	# Une teinte à lui : le cache des halos est partagé par toute la campagne.
+	var tint := Color(0.123, 0.456, 0.789)
+	Explosion.put(_effects, _p.global_position, parts, 83.0, null, tint, null, null)
+	await wait_seconds(Explosion.LIFETIME)
+	var prefix := tint.to_html(false) + "@"
+	var halos := EffectForge._scorches.keys().filter(func(k: String) -> bool: return k.begins_with(prefix))
+	assert_eq(halos, [prefix + "83@0.20"])
+
+
 ## Le Noyau dense sur un Météore : un « moins », que les +200 % de la chute ne noient pas.
 func test_a_dense_core_shrinks_even_a_meteor() -> void:
 	_learn("manual_fire", ["fireball", "fireball_stoking", "fireball_stoking", "fireball_stoking", "fireball_meteor"])

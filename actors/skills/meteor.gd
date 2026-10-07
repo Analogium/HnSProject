@@ -66,7 +66,9 @@ func _physics_process(delta: float) -> void:
 		)
 		_rain()
 		# Le poids de la chute : l'impact se sent, ce qui le sépare d'une boule de plus.
-		if _source is Player and not small:
+		# Valide d'abord : l'épaule du Familier peut s'être dissoute pendant la chute, et
+		# l'erreur sautait le `queue_free()` — le météore explosait alors à chaque image.
+		if is_instance_valid(_source) and _source is Player and not small:
 			Game.hit_stop()
 			Game.shake_camera((_source as Player).camera, (_source as Player).shake_amount * IMPACT_SHAKE)
 		# Fragmentation : l'étoile d'éclats part du point d'impact.

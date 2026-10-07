@@ -177,9 +177,13 @@ func _rime(r: float, k: float, fade: float) -> void:
 		Frost.raise_spike(self, foot, i % 2 == 0, out, _tint)
 
 
-## La trace au sol du souffle peint : tramée, elle s'efface avec lui.
+## La trace au sol du souffle peint : tramée, elle s'efface avec lui. Cuite au rayon final
+## et réduite pendant l'ouverture : cuite à chaque rayon, une nova de 83 px coûtait un
+## halo par image, 6 ms le plus grand (mesuré).
 func _ground(r: float, fade: float) -> void:
-	EffectForge.put_scorch(self, _tint, maxi(roundi(r), 1), fade)
+	EffectForge.put_scorch(
+		self, _tint, maxi(roundi(r), 1), fade, EffectForge.SCORCH_ALPHA, Vector2.ZERO, roundi(_radius)
+	)
 
 
 ## Peint — fait de planches cernées — ou tracé en polygones : c'est ce qui décide

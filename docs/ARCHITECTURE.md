@@ -210,7 +210,7 @@ de dépendances, et chacune est née d'un cycle qu'il fallait casser.
 | Qui atteint un coup qui ne naît pas d'une collision ? | `Targets.in_circle()`, sur le calque des hurtbox ennemies : la chaîne, le nuage, l'aura, le serpent, l'épée, l'explosion, la vague, le cyclone, les pics, le vortex, le pilier et la pulsation, la malédiction, et ce que cherchent les morts-vivants et les créatures d'un portail ; `Targets.in_capsule()` pour le **faisceau**, qui mord un segment épais et ne s'arrête pas au premier corps. Les deux passent par `Targets._touched()`, la requête unique. **Une impulsion** — pics, nuage, aura, cyclone, vortex, pilier, pulsation — frappe par `Targets.strike_circle()` : un tirage pour tout le cercle, qu'il touche ou non. **Jamais depuis un rappel de collision** — l'espace y est verrouillé. Les attaques de zone des ennemis y passent aussi, avec `mask` = `Targets.PLAYER_SIDE` : le joueur **et ses morts-vivants**, sur le même calque |
 | Qu'est-ce qui fige le jeu parmi les compétences ? | Ce qui frappe d'un geste : coups d'arc, tirs, chaîne. **Ce qui dure ne fige jamais** — un nuage gèlerait l'image à chaque impulsion |
 | Ce que coûte un geste entretenu ? | Des PV, `Player.burn()` — en part des PV max (`Skill.self_burn`, mortelle) ou des PV **actuels** (`self_wither`, la Nécrose avancée, que `Buff` y ramène et qui ne tue donc jamais ; lue sur le lancer depuis le jalon 38 — Endurcissement, Pacte) ; du mana **à plat**, `Player.drain()` (`Skill.mana_per_second`, un prix qu'on lit sur la jauge sans calcul), qui rend **faux** quand la réserve est vide — `Buff` le lit, comme sa brûlure, **sur le lancer résolu** : un nœud le baisse (Sobriété, jalon 35) ; et il peut en **rendre**, `Player.mend()` (`Skill.self_heal`, une part des PV max par seconde, sans mitigation : un soin ne se résiste pas ; lu lui aussi sur le lancer, Dégel au jalon 36) — et le buff s'éteint là où les PV épuisés tuent. Ce que coûte l'Immolation : `Player.burn()` : répartie entre les natures comme les dégâts de l'aura (`SkillStats.distribution()`), chaque part atténuée par `CharacterStats.mitigate()` — **la règle d'un coup reçu**, donc objets et passifs compris, et l'engourdissement. Pas un coup pour le reste : ni esquive, ni plancher d'un point. **Mortelle** |
-| Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_period` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde |
+| Quand le jeu se fige-t-il ? | `Game.hit_stop()` : **un gel par geste et non par cible**, et `hit_stop_period` entre deux. Sans elle, une compétence tenue sur une nuée figeait le jeu 12 % du temps sans qu'aucune image ne se perde. **L'option « Gel d'impact »** (`Settings.hit_stop`, enregistrée, menu Échap) le coupe à cette seule entrée : ressenti comme du lag par certains |
 | Qui secoue la caméra ? | `Game.shake_camera()`, **une seule secousse à la fois** : relancée, elle reprend la plus forte des deux amplitudes au lieu d'en empiler une seconde. **L'option « Secousses d'écran »** (`Settings.screen_shake`, enregistrée) la coupe à cette seule entrée ; le gel d'impact reste, il ne bouge pas l'image. Les cases des options vont par deux colonnes (`Options/Checks`) : à la sixième, en une seule, « Retour » sortait de l'écran |
 | Quand une touche de compétence part-elle ? | Le sondage de `Player._physics_process()` : **tenue, elle relance à chaque fin de recharge**, et ne s'arme qu'au passage à l'état enfoncé — un bouton encore baissé quand un panneau rend la souris ne lance rien |
 | Combien de points une case accepte-t-elle ? | `Skill.points_max()` : la longueur de la table de dégâts, ou `declared_points_max` pour ce qui n'inflige rien — un buff, comme un passif, déclare son nombre de points |
@@ -335,10 +335,11 @@ meurt presque toujours depuis un `area_entered`.
 - la mort du joueur et la montée de niveau repassent par `call_deferred`, sinon
   la liste de l'`EnemyManager` rétrécit sous ses propres pieds.
 
-Et : **`is_instance_valid()` avant tout `as`** sur une référence conservée.
-Convertir un objet déjà libéré est en soi une erreur, qui interrompt la fonction
+Et : **`is_instance_valid()` avant tout `as` ou `is`** sur une référence conservée.
+Convertir ou tester un objet déjà libéré est en soi une erreur, qui interrompt la fonction
 avant son `queue_free()` — c'est ce qui faisait traverser le joueur par le tir
-d'un caster abattu à distance, en le blessant à chaque image.
+d'un caster abattu à distance, en le blessant à chaque image, et exploser à chaque
+image le Météore lancé par un Familier dissous pendant sa chute (`Meteor._source`).
 
 ### 5. Un seul pilote, un seul point de passage
 

@@ -169,12 +169,13 @@ static func scorch(tint: Color, radius: int, alpha := SCORCH_ALPHA) -> Texture2D
 
 ## Pose le halo centré sur `at`, l'origine de `ci` par défaut. Sept effets écrivaient ce
 ## cadre à la main : il doit suivre l'image de `scorch()`, `2 × span + 1` de côté.
+## `baked` : le rayon cuit, réduit à `span` — un halo qui grandit ne cuit qu'une image.
 static func put_scorch(
 	ci: CanvasItem, tint: Color, span: int, fade := 1.0, alpha := SCORCH_ALPHA,
-	at := Vector2.ZERO
+	at := Vector2.ZERO, baked := 0
 ) -> void:
 	ci.draw_texture_rect(
-		scorch(tint, span, alpha),
+		scorch(tint, maxi(baked, span), alpha),
 		Rect2(snap(ci, at - Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
 		false, Color(1.0, 1.0, 1.0, fade)
 	)

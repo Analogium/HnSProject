@@ -125,7 +125,7 @@ func go_back(fallback: String = "res://world/zone.tscn") -> void:
 ## Fige le jeu brièvement. **Un gel par geste et non par cible** : `hit_stop_period`
 ## écarte les suivants, l'appelant n'a rien à compter.
 func hit_stop(duration: float = -1.0) -> void:
-	if _hit_stop_active:
+	if _hit_stop_active or not Settings.hit_stop:
 		return
 	# La période court depuis la **fin** du gel précédent, pas depuis son début :
 	# sinon un gel plus long qu'elle se rendrait la main à lui-même.

@@ -1854,6 +1854,9 @@ msgstr "Damage dealt"
 msgid "Secousses d'écran"
 msgstr "Screen shake"
 
+msgid "Gel d'impact"
+msgstr "Hit stop"
+
 msgid "Compteur de DPS"
 msgstr "DPS meter"
 

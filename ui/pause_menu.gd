@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var dealt_check: CheckBox = $Root/Center/Panel/Options/Checks/DamageDealt
 @onready var dps_check: CheckBox = $Root/Center/Panel/Options/Checks/DpsMeter
 @onready var shake_check: CheckBox = $Root/Center/Panel/Options/Checks/ScreenShake
+@onready var hit_stop_check: CheckBox = $Root/Center/Panel/Options/Checks/HitStop
 @onready var window_btn: Button = $Root/Center/Panel/Options/Window
 ## Libellé posé par le code, **dans la langue qu'il annonce**.
 @onready var language_btn: Button = $Root/Center/Panel/Options/Language
@@ -55,6 +56,8 @@ func _ready() -> void:
 	dps_check.toggled.connect(func(on: bool) -> void: Settings.dps_meter_visible = on)
 	shake_check.button_pressed = Settings.screen_shake
 	shake_check.toggled.connect(func(on: bool) -> void: Settings.screen_shake = on)
+	hit_stop_check.button_pressed = Settings.hit_stop
+	hit_stop_check.toggled.connect(func(on: bool) -> void: Settings.hit_stop = on)
 	_bind_opacity($Root/Center/Panel/Options/SpellOpacity, "spell_opacity")
 	_bind_opacity($Root/Center/Panel/Options/EnemyOpacity, "enemy_attack_opacity")
 

@@ -58,12 +58,20 @@ var dps_meter_visible := false:
 		_announce()
 
 ## Les secousses d'écran, coupées pour qui en a la nausée : `Game.shake_camera()` le lit.
-## Le gel d'impact reste — il ne bouge pas l'image.
+## Le gel d'impact a sa propre option, juste en dessous.
 var screen_shake := true:
 	set(value):
 		if value == screen_shake:
 			return
 		screen_shake = value
+		_announce()
+
+## Le gel d'impact, coupé pour qui le ressent comme du lag : `Game.hit_stop()` le lit.
+var hit_stop := true:
+	set(value):
+		if value == hit_stop:
+			return
+		hit_stop = value
 		_announce()
 
 ## Sa place dans le viewport logique ; `DpsMeter` la borne à l'écran.
@@ -390,6 +398,7 @@ func to_dict() -> Dictionary:
 		"damage_dealt": damage_dealt_visible,
 		"dps_meter": dps_meter_visible,
 		"screen_shake": screen_shake,
+		"hit_stop": hit_stop,
 		"dps_meter_position": [dps_meter_position.x, dps_meter_position.y],
 		"spell_opacity": spell_opacity,
 		"enemy_attack_opacity": enemy_attack_opacity,
@@ -411,6 +420,7 @@ func from_dict(source: Dictionary) -> void:
 	damage_dealt_visible = bool(source.get("damage_dealt", damage_dealt_visible))
 	dps_meter_visible = bool(source.get("dps_meter", dps_meter_visible))
 	screen_shake = bool(source.get("screen_shake", screen_shake))
+	hit_stop = bool(source.get("hit_stop", hit_stop))
 	var place: Variant = source.get("dps_meter_position")
 	if place is Array and place.size() == 2 and _is_number(place[0]) and _is_number(place[1]):
 		dps_meter_position = Vector2(place[0], place[1])

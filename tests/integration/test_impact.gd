@@ -49,6 +49,16 @@ func test_a_freeze_freezes_then_releases() -> void:
 	assert_eq(Game.freezes, 1)
 
 
+## L'option du menu coupe le gel à sa seule entrée.
+func test_the_option_turns_the_freeze_off() -> void:
+	Game.hit_stop_duration = 0.05
+	Settings.hit_stop = false
+	Game.hit_stop()
+	Settings.hit_stop = true
+	assert_eq(Engine.time_scale, 1.0, "le jeu garde sa vitesse")
+	assert_eq(Game.freezes, 0)
+
+
 ## Le cœur du réglage : deux impacts qui se suivent de près ne font qu'un gel.
 func test_two_close_impacts_freeze_only_once() -> void:
 	Game.hit_stop_duration = 0.05
