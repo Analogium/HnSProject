@@ -642,14 +642,11 @@ msgstr "The bolt turns to ice: cold damage, Cold keyword, and it chills instead 
 msgid "Surtension"
 msgstr "Surge"
 
-msgid "Un ennemi que l'éclair tue explose s'il porte l'état de sa nature — engourdi, ou transi une fois l'éclair devenu de glace : {part_tue} % des dégâts d'un coup de l'éclair, dans ce rayon autour de lui."
-msgstr "An enemy killed by the bolt explodes if it bears the state of the bolt's nature — numbed, or chilled once the bolt has turned to ice: {part_tue}% of the damage of one of the bolt's hits, within this radius around it."
-
 msgid "Orbe statique"
 msgstr "Static Orb"
 
-msgid "L'éclair devient un orbe lent qui file droit, traverse les ennemis et foudroie à intervalles réguliers tout ce qui passe près de lui ; un mur l'éteint. Chaque décharge est moins forte qu'un éclair. La perforation, les éclats et les rebonds ne servent plus."
-msgstr "The bolt becomes a slow orb that flies straight, passes through enemies and shocks everything near it at regular intervals; a wall puts it out. Each discharge is weaker than a bolt. Piercing, shards and ricochets no longer apply."
+msgid "L'éclair devient un orbe lent qui file droit, traverse les ennemis et foudroie à intervalles réguliers tout ce qui passe près de lui ; un mur l'éteint. Chaque décharge est moins forte qu'un éclair. La perforation, les esquilles, les rebonds et le paratonnerre ne servent plus."
+msgstr "The bolt becomes a slow orb that flies straight, passes through enemies and shocks everything near it at regular intervals; a wall puts it out. Each discharge is weaker than a bolt. Piercing, splinters, ricochets and the lightning rod no longer apply."
 
 msgid "Chaque décharge inflige plus de dégâts."
 msgstr "Each discharge deals more damage."
@@ -678,23 +675,14 @@ msgstr "Crescendo"
 msgid "Chaque saut frappe plus fort que le précédent : la dernière cible de la chaîne prend le plus gros coup."
 msgstr "Each jump hits harder than the last: the final target of the chain takes the biggest hit."
 
-msgid "La décharge inflige plus souvent un coup critique."
-msgstr "The discharge lands critical hits more often."
-
-msgid "Foudre au bout"
-msgstr "Final Strike"
-
-msgid "La dernière cible de la chaîne éclate : les ennemis autour d'elle, dans ce rayon, prennent le coup qu'elle vient de prendre."
-msgstr "The last target of the chain bursts: enemies around it, within this radius, take the hit it just took."
-
 msgid "Un ennemi que la décharge tue explose s'il porte l'état de sa nature — l'engourdissement pour la foudre : {part_tue} % des dégâts d'un coup de la chaîne, dans ce rayon autour de lui."
 msgstr "An enemy killed by the discharge explodes if it bears the state of its nature — numb for lightning: {part_tue}% of the damage of one of the chain's hits, within this radius around it."
 
 msgid "Toile d'arcs"
 msgstr "Arc Web"
 
-msgid "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc. Arc tendu et Crescendo ne servent plus."
-msgstr "The discharge no longer jumps: it strikes the nearest enemies around you all at once, each with its own arc. Taut Arc and Crescendo no longer apply."
+msgid "La décharge ne saute plus : elle frappe d'un coup les ennemis les plus proches autour de vous, chacun par son propre arc. Les nœuds des sauts ne servent plus."
+msgstr "The discharge no longer jumps: it strikes the nearest enemies around you all at once, each with its own arc. The jump nodes no longer apply."
 
 msgid "Cumulonimbus"
 msgstr "Cumulonimbus"
@@ -722,12 +710,6 @@ msgstr "The cloud no longer stays put: on each strike, it targets the nearest en
 
 msgid "Coup de tonnerre"
 msgstr "Thunderclap"
-
-msgid "En se dissipant, le nuage éclate d'un dernier coup de tonnerre, qui frappe tout ce qui est dans ce rayon des dégâts d'une de ses frappes."
-msgstr "As it dissipates, the cloud bursts in a last thunderclap, hitting everything within this radius for the damage of one of its strikes."
-
-msgid "Les frappes du nuage infligent plus souvent un coup critique."
-msgstr "The cloud's strikes land critical hits more often."
 
 msgid "Le nuage devient de grêle : dégâts de froid, mot-clé Froid, et il transit au lieu d'engourdir."
 msgstr "The cloud turns to hail: cold damage, Cold keyword, and it chills instead of numbing."
@@ -803,9 +785,6 @@ msgstr "Influx"
 
 msgid "Tant que le champ statique est actif, votre mana se régénère plus vite."
 msgstr "While Static Field is active, your mana regenerates faster."
-
-msgid "Tant que le champ statique est actif, vos sorts se lancent plus vite."
-msgstr "While Static Field is active, your spells cast faster."
 
 msgid "Arc brûlant"
 msgstr "Searing Arc"
@@ -4953,3 +4932,363 @@ msgstr "triangulation"
 
 msgid "tirs ravivés par seconde"
 msgstr "rekindled shots per second"
+
+msgid "Esquilles"
+msgstr "Splinters"
+
+msgid "Emballement"
+msgstr "Runaway"
+
+msgid "Tirer sans relâche fait chauffer le canon : chaque lancer qui suit le précédent de moins de {tenue_emballement} s ajoute un cumul, {cumuls_emballement} au plus, et chaque cumul raccourcit le geste. Une pause plus longue les fait tous retomber."
+msgstr "Firing nonstop heats the barrel: each cast within {tenue_emballement} s of the previous one adds a stack, up to {cumuls_emballement}, and each stack shortens the gesture. A longer pause drops them all."
+
+msgid "Paratonnerre"
+msgstr "Lightning Rod"
+
+msgid "Le premier ennemi que touche l'éclair devient un paratonnerre pendant {duree_paratonnerre} s : à moins de {portee_paratonnerre} px de lui, les éclairs suivants s'incurvent vers lui. Le retoucher rallume la marque ; un autre ennemi ne se marque qu'une fois elle éteinte."
+msgstr "The first enemy the bolt hits becomes a lightning rod for {duree_paratonnerre} s: within {portee_paratonnerre} px of it, the following bolts curve toward it. Hitting it again renews the mark; another enemy is only marked once it fades."
+
+msgid "Électrocution"
+msgstr "Electrocution"
+
+msgid "Un coup critique de l'éclair engourdit à coup sûr ce qu'il touche."
+msgstr "A critical hit from the bolt always numbs what it hits."
+
+msgid "Plein régime"
+msgstr "Full Throttle"
+
+msgid "À pleins cumuls d'Emballement, un tir sur {tir_double} part double : un second éclair suit le premier, au même cap."
+msgstr "At full Runaway stacks, one shot in {tir_double} fires twice: a second bolt follows the first on the same heading."
+
+msgid "Foudre héritée"
+msgstr "Inherited Strike"
+
+msgid "Quand le paratonnerre meurt, la marque passe à l'ennemi le plus proche, à moins de {portee_paratonnerre} px, avec le temps qui lui restait."
+msgstr "When the lightning rod dies, the mark passes to the nearest enemy within {portee_paratonnerre} px, with the time it had left."
+
+msgid "Cible de l'orage"
+msgstr "Storm's Target"
+
+msgid "Chaque frappe de vos Nuages d'orage tombe aussi sur le paratonnerre, s'il est à moins de {portee_orage} px du nuage."
+msgstr "Each strike of your Storm Clouds also lands on the lightning rod, if it is within {portee_orage} px of the cloud."
+
+msgid "Carambolage"
+msgstr "Carom"
+
+msgid "L'éclair rebondit sur les murs au lieu de s'y éteindre, une fois par point, sans user de rebond."
+msgstr "The bolt bounces off walls instead of dying on them, once per point, without spending a ricochet."
+
+msgid "Satellite"
+msgstr "Satellite"
+
+msgid "L'orbe ne file plus droit : il tourne autour de vous, à {orbite} px, le temps de sa course, et foudroie ce qui approche. Les murs ne l'éteignent plus."
+msgstr "The orb no longer flies straight: it circles you at {orbite} px for its whole course, shocking whatever comes near. Walls no longer put it out."
+
+msgid "Orbe chargé"
+msgstr "Charged Orb"
+
+msgid "Chaque ennemi que l'orbe foudroie le charge : ses décharges portent plus loin, jusqu'à {traverses_max} ennemis comptés."
+msgstr "Each enemy the orb shocks charges it: its discharges reach farther, up to {traverses_max} enemies counted."
+
+msgid "Glace vive"
+msgstr "Live Ice"
+
+msgid "Sur un ennemi transi, le trait de glace ajoute une part de ses dégâts en foudre : le froid conduit."
+msgstr "On a chilled enemy, the ice bolt adds part of its damage as lightning: the cold conducts."
+
+msgid "vitesse d'incantation par cumul"
+msgstr "cast speed per stack"
+
+msgid "tir double à plein régime"
+msgstr "double shot at full throttle"
+
+msgid "paratonnerre"
+msgstr "lightning rod"
+
+msgid "engourdi sûr au critique"
+msgstr "sure numb on critical"
+
+msgid "paratonnerre hérité"
+msgstr "inherited lightning rod"
+
+msgid "orage sur le paratonnerre"
+msgstr "storm on the lightning rod"
+
+msgid "nombre de rebonds sur les murs"
+msgstr "number of wall bounces"
+
+msgid "orbe en orbite"
+msgstr "orbiting orb"
+
+msgid "rayon en plus par ennemi frappé"
+msgstr "radius per enemy struck"
+
+msgid "dégâts de foudre contre les transis"
+msgstr "lightning vs the chilled"
+
+msgid "%d à la fois"
+msgstr "%d at once"
+
+msgid "Vif-argent"
+msgstr "Quicksilver"
+
+msgid "Fourmillements"
+msgstr "Pins and Needles"
+
+msgid "Conductance"
+msgstr "Conductance"
+
+msgid "Un saut vers un ennemi engourdi ne compte pas : la décharge le traverse sans s'user. Plus la meute est engourdie, plus elle court — {sauts_max} sauts au plus."
+msgstr "A jump to a numbed enemy doesn't count: the discharge passes through without wearing down. The more numbed the pack, the farther it runs — {sauts_max} jumps at most."
+
+msgid "Bifurcation"
+msgstr "Bifurcation"
+
+msgid "À chaque saut, la décharge peut se diviser : une seconde chaîne part du même point vers un autre ennemi, avec les sauts qui lui restaient. Une branche ne se divise plus."
+msgstr "At each jump, the discharge may split: a second chain leaves the same point toward another enemy, with the jumps it had left. A branch never splits again."
+
+msgid "Retour par la masse"
+msgstr "Ground Return"
+
+msgid "Après sa dernière cible, la décharge revient à vous et vous rend du mana pour chaque ennemi qu'elle a touché."
+msgstr "After its last target, the discharge comes back to you and returns mana for each enemy it hit."
+
+msgid "Relais"
+msgstr "Relay"
+
+msgid "La décharge saute aussi sur vos charges statiques, comme sur des ennemis : chaque charge prise éclate aussitôt autour d'elle, de la force du saut."
+msgstr "The discharge also jumps onto your static charges, as onto enemies: each charge taken bursts at once around itself, with the jump's strength."
+
+msgid "Ramure"
+msgstr "Antlers"
+
+msgid "Chaque arc de la toile saute encore une fois, de sa cible vers l'ennemi le plus proche qu'aucun arc n'a pris, à une part de sa force."
+msgstr "Each arc of the web jumps once more, from its target to the nearest enemy no arc has taken, at part of its strength."
+
+msgid "Survoltage"
+msgstr "Overvoltage"
+
+msgid "L'explosion d'un engourdi que la décharge tue relance depuis lui une petite chaîne de {sauts_survoltage} sauts, à une part de sa force. Elle ne relance rien à son tour."
+msgstr "The explosion of a numbed enemy the discharge kills sends a small chain of {sauts_survoltage} jumps from it, at part of its strength. That chain relaunches nothing in turn."
+
+msgid "Réamorçage"
+msgstr "Repriming"
+
+msgid "Chaque charge statique que le Relais fait éclater rend un saut à la décharge."
+msgstr "Each static charge the Relay bursts gives the discharge back a jump."
+
+msgid "sauts gratuits vers les engourdis"
+msgstr "free jumps to the numbed"
+
+msgid "chance de bifurquer par saut"
+msgstr "fork chance per jump"
+
+msgid "mana rendu par ennemi touché"
+msgstr "mana returned per enemy hit"
+
+msgid "sauts sur les charges statiques"
+msgstr "jumps onto static charges"
+
+msgid "saut rendu par charge prise"
+msgstr "jump returned per charge"
+
+msgid "dégâts du saut de chaque arc"
+msgstr "damage of each arc's jump"
+
+msgid "dégâts de la chaîne relancée"
+msgstr "relaunched chain damage"
+
+msgid "Accumulation"
+msgstr "Build-up"
+
+msgid "Une frappe qui ne trouve personne charge le nuage, {charges_accumulation} fois au plus : la suivante qui touche frappe plus fort pour chaque charge, et les dépense. Poser le nuage d'avance paie."
+msgstr "A strike that finds no one charges the cloud, up to {charges_accumulation} times: the next strike that lands hits harder for each charge, and spends them. Placing the cloud ahead pays off."
+
+msgid "Appel d'air"
+msgstr "Updraft"
+
+msgid "Chaque frappe aspire les ennemis du cercle vers son centre."
+msgstr "Each strike pulls the enemies in the circle toward its center."
+
+msgid "Débordement"
+msgstr "Overflow"
+
+msgid "Chaque frappe déborde : un arc part du nuage vers l'ennemi le plus proche hors de son cercle, jusqu'à {portee_debordement} fois son rayon, à une part de la frappe."
+msgstr "Each strike overflows: an arc leaves the cloud toward the nearest enemy outside its circle, up to {portee_debordement} times its radius, at part of the strike."
+
+msgid "Foudre jumelle"
+msgstr "Twin Lightning"
+
+msgid "Chaque frappe peut tomber deux fois : la seconde suit d'un dixième de seconde."
+msgstr "Each strike may land twice: the second follows a tenth of a second later."
+
+msgid "Point de rupture"
+msgstr "Breaking Point"
+
+msgid "À pleines charges d'Accumulation, la frappe suivante tombe sur tout ce qui est à {portee_rupture} fois le rayon du nuage."
+msgstr "At full Build-up charges, the next strike lands on everything within {portee_rupture} times the cloud's radius."
+
+msgid "Traque"
+msgstr "Hunt"
+
+msgid "L'orage errant ne lâche plus sa proie : il la suit deux fois plus vite jusqu'à sa mort, et n'en change qu'alors."
+msgstr "The wandering storm no longer lets go of its prey: it follows it twice as fast until it dies, and only then changes."
+
+msgid "Front mobile"
+msgstr "Moving Front"
+
+msgid "Tant que vous marchez, l'orage porté frappe plus souvent."
+msgstr "While you walk, the carried storm strikes more often."
+
+msgid "Verglas"
+msgstr "Black Ice"
+
+msgid "La grêle gèle plus fort ce qu'elle frappe : le transi qu'elle pose ralentit davantage."
+msgstr "The hail freezes what it strikes harder: the chill it applies slows further."
+
+msgid "dégâts en plus par charge"
+msgstr "damage per charge"
+
+msgid "frappe large à pleines charges"
+msgstr "wide strike at full charges"
+
+msgid "dégâts de l'arc qui déborde"
+msgstr "overflowing arc damage"
+
+msgid "chance de frapper deux fois"
+msgstr "chance to strike twice"
+
+msgid "traque de la proie"
+msgstr "prey hunt"
+
+msgid "frappes en plus en marchant"
+msgstr "extra strikes while walking"
+
+msgid "Impulsion"
+msgstr "Impulse"
+
+msgid "Vivacité"
+msgstr "Liveliness"
+
+msgid "Trait d'éclair"
+msgstr "Lightning Streak"
+
+msgid "Vous devenez l'éclair : un éclair relie votre départ à votre arrivée et frappe tout ce qu'il traverse. L'appel du tonnerre dure moitié moins."
+msgstr "You become the lightning: a bolt links your start to your arrival and strikes everything it crosses. Thunder Call lasts half as long."
+
+msgid "Tension accumulée"
+msgstr "Built-up Tension"
+
+msgid "La course charge vos mains : le premier sort de foudre lancé dans les {fenetre_course} s qui suivent la ruée frappe plus fort, par {pas_course} px courus — {course_max} px comptés au plus."
+msgstr "The run charges your hands: the first lightning spell cast within {fenetre_course} s of the dash hits harder, per {pas_course} px run — {course_max} px counted at most."
+
+msgid "Réarmement"
+msgstr "Rearm"
+
+msgid "Chaque ennemi engourdi pris dans l'explosion d'arrivée raccourcit la recharge de la ruée."
+msgstr "Each numbed enemy caught in the arrival explosion shortens the dash's cooldown."
+
+msgid "Aller-retour"
+msgstr "Round Trip"
+
+msgid "{attente_retour} s après un trait d'éclair, vous revenez à votre point de départ par le même chemin, et l'éclair refrappe ce qu'il traverse."
+msgstr "{attente_retour} s after a lightning streak, you return to your starting point the same way, and the bolt strikes what it crosses again."
+
+msgid "Tonnerre roulant"
+msgstr "Rolling Thunder"
+
+msgid "L'arrivée gronde encore {grondements} fois, au même endroit, à une part de son coup."
+msgstr "The arrival rumbles {grondements} more times, in the same place, at part of its hit."
+
+msgid "Mines statiques"
+msgstr "Static Mines"
+
+msgid "Les charges du sillage attendent : chacune ne mord qu'un ennemi, puis s'éteint, mais {force_mine} fois plus fort et dans {rayon_mine} fois son rayon."
+msgstr "The wake's charges lie in wait: each bites only one enemy, then goes out, but {force_mine} times harder and within {rayon_mine} times its radius."
+
+msgid "Galop"
+msgstr "Gallop"
+
+msgid "Chaque ruée cumule l'appel du tonnerre au lieu de le remplacer : ses effets comptent autant de fois, {galop_max} au plus."
+msgstr "Each dash stacks Thunder Call instead of replacing it: its effects count that many times, {galop_max} at most."
+
+msgid "éclair du départ à l'arrivée"
+msgstr "bolt from start to arrival"
+
+msgid "dégâts du sort suivant par 100 px"
+msgstr "next spell damage per 100 px"
+
+msgid "secondes de recharge par engourdi"
+msgstr "cooldown seconds per numbed"
+
+msgid "retour au départ"
+msgstr "return to start"
+
+msgid "dégâts des grondements"
+msgstr "rumble damage"
+
+msgid "charges en mines"
+msgstr "charges as mines"
+
+msgid "appel du tonnerre cumulé"
+msgstr "stacked thunder call"
+
+msgid "Mise à la terre"
+msgstr "Grounding"
+
+msgid "Faible courant"
+msgstr "Low Current"
+
+msgid "Ionisation"
+msgstr "Ionization"
+
+msgid "Tant que le champ statique est actif, il engourdit autour de vous : chaque seconde, chaque ennemi à moins de {portee_ionisation} px a sa chance d'être engourdi — de quoi semer des charges sans autre sort."
+msgstr "While the static field is active, it numbs around you: every second, each enemy within {portee_ionisation} px has a chance to be numbed — enough to sow charges without another spell."
+
+msgid "Capacité"
+msgstr "Capacitance"
+
+msgid "Tant que le champ statique est actif, les charges statiques que vous laissez vivent plus longtemps."
+msgstr "While the static field is active, the static charges you leave last longer."
+
+msgid "Choc en retour"
+msgstr "Backlash"
+
+msgid "Tant que le champ statique est actif, un ennemi qui vous frappe au contact prend un arc de foudre : une part du coup qu'il vous a porté."
+msgstr "While the static field is active, an enemy that hits you in melee takes a lightning arc: part of the blow it dealt you."
+
+msgid "Condensateur"
+msgstr "Capacitor"
+
+msgid "Chaque morsure d'une de vos charges statiques nourrit le condensateur ; à {cumuls_condensateur}, votre prochain sort de foudre part plus fort et le vide — tant que le champ statique est actif."
+msgstr "Each bite of one of your static charges feeds the capacitor; at {cumuls_condensateur}, your next lightning spell goes out stronger and empties it — while the static field is active."
+
+msgid "Décharge totale"
+msgstr "Total Discharge"
+
+msgid "À {cumuls_condensateur} morsures, le condensateur se vide de lui-même en une nova de foudre autour de vous, de tout ce que ses charges ont mordu."
+msgstr "At {cumuls_condensateur} bites, the capacitor empties itself in a lightning nova around you, worth everything its charges bit."
+
+msgid "Cage de Faraday"
+msgstr "Faraday Cage"
+
+msgid "Après un choc en retour, plus rien ne vous atteint pendant {duree_cage} s — une fois toutes les {rythme_cage} s."
+msgstr "After a backlash, nothing can reach you for {duree_cage} s — once every {rythme_cage} s."
+
+msgid "chance d'engourdir autour de vous"
+msgstr "chance to numb around you"
+
+msgid "secondes de vie des charges"
+msgstr "charge lifetime seconds"
+
+msgid "coup rendu au contact"
+msgstr "blow returned in melee"
+
+msgid "dégâts du sort condensé"
+msgstr "condensed spell damage"
+
+msgid "décharge du condensateur"
+msgstr "capacitor discharge"
+
+msgid "cage de Faraday"
+msgstr "Faraday cage"

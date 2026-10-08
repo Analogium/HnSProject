@@ -31,6 +31,9 @@ class Bolt:
 
 
 static var _bodies := {}
+## Tous ceux qui sont posés : `simultaneous` par lanceur au plus (jalon 43), le Familier
+## compté à part, comme pour les serpents.
+static var _live: Array[StormCloud] = []
 
 
 var _cast: SkillStats
@@ -44,12 +47,30 @@ var _flicker := RandomNumberGenerator.new()
 ## choisi à chaque frappe.
 var _follow: Node2D
 var _prey := Vector2.INF
+var _caster: Object
+## La Traque (jalon 43) : la proie qu'il ne lâche plus.
+var _quarry: Hurtbox
+## L'Accumulation : les frappes tombées à vide, que la suivante qui touche paie.
+var _charges := 0
+## La Foudre jumelle : les secondes avant la seconde frappe, négatives sans elle.
+var _twin := -1.0
+## Le Front mobile : l'horloge des frappes, plus vive tant que son porteur marche.
+var _clock := 0.0
 
 
 static func put(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null,
+	caster: Object = null
 ) -> StormCloud:
+	# Au-delà, les plus anciens se dissipent sans coup final.
+	_live.assign(_live.filter(func(c) -> bool: return is_instance_valid(c) and not c.is_queued_for_deletion()))
+	var own := _live.filter(func(c: StormCloud) -> bool: return c._caster == caster)
+	if cast.max_simultaneous() > 0:
+		for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
+			(own[i] as StormCloud).queue_free()
 	var cloud := StormCloud.new()
+	cloud._caster = caster
+	_live.append(cloud)
 	cloud._cast = cast
 	cloud._author = author
 	cloud._follow = follow
@@ -98,41 +119,99 @@ static func body(radius: float, tint: Color, flash: bool, gone: float) -> Effect
 ## l'estimation : la fiche et le nuage ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
+	var moving := false
 	if is_instance_valid(_follow):
+		moving = not _follow.global_position.is_equal_approx(global_position)
 		global_position = _follow.global_position
+	elif is_instance_valid(_quarry):
+		global_position = global_position.move_toward(
+			_quarry.global_position, DRIFT_SPEED * SkillStats.HUNT_SPEED * delta
+		)
 	elif _prey != Vector2.INF:
 		global_position = global_position.move_toward(_prey, DRIFT_SPEED * delta)
-	var due := _cast.strikes_due(_age)
+	_clock += delta * (1.0 + _cast.moving_front * 0.01 if moving else 1.0)
+	# Sous le Front mobile, l'horloge n'est pas plafonnée : c'est l'âge qui le dissipe.
+	var due := _cast.strikes_due(_clock) if _cast.moving_front <= 0.0 \
+			else floori(_clock / _cast.period) + 1
 	while _strikes < due:
 		_strike()
 		_strikes += 1
+	if _twin >= 0.0:
+		_twin -= delta
+		if _twin < 0.0:
+			_hit(_cast.radius, 1.0)
 	for e in _bolts:
 		e.age += delta
 	_bolts = _bolts.filter(func(e: Bolt) -> bool: return e.age < BOLT_LIFETIME)
 	queue_redraw()
-	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
-		if _cast.end_burst > 0.0:
-			Explosion.put(
-				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
-				_tint, _author, _cast
-			)
+	if _age >= _cast.duration and (_strikes >= _cast.strikes_over_duration() or _cast.moving_front > 0.0):
 		queue_free()
 
 
+## Une frappe de la période : où errer, puis l'impulsion, chargée par l'Accumulation (jalon 43)
+## — à pleines charges, le Point de rupture l'élargit —, et la Foudre jumelle à tirer.
 func _strike() -> void:
 	if _cast.seek_radius > 0.0 and not is_instance_valid(_follow):
-		# Personne en vue : le nuage s'arrête.
-		var prey := Targets.nearest(get_world_2d(), global_position, _cast.seek_radius)
-		_prey = prey.global_position if prey != null else Vector2.INF
-	var targets := Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author)
-	for target in targets:
+		if _cast.hunt > 0.0:
+			if not is_instance_valid(_quarry) or _quarry.is_queued_for_deletion():
+				_quarry = Targets.nearest(get_world_2d(), global_position, _cast.seek_radius)
+		else:
+			# Personne en vue : le nuage s'arrête.
+			var prey := Targets.nearest(get_world_2d(), global_position, _cast.seek_radius)
+			_prey = prey.global_position if prey != null else Vector2.INF
+	var full := _charges >= SkillStats.ACCUMULATION_MOST and _cast.breaking_point > 0.0
+	var touched := _hit(
+		_cast.radius * (SkillStats.BREAK_REACH if full else 1.0),
+		1.0 + _cast.accumulation * 0.01 * float(_charges)
+	)
+	if _cast.accumulation > 0.0:
+		_charges = 0 if touched else mini(_charges + 1, SkillStats.ACCUMULATION_MOST)
+	if _cast.twin_strike > 0.0 and Game.rng.randf() * 100.0 < _cast.twin_strike:
+		_twin = SkillStats.TWIN_DELAY
+
+
+## L'impulsion elle-même, dans ce rayon et à ce facteur : l'Appel d'air tire vers le centre,
+## le paratonnerre prend sa part (la Cible de l'orage), le Débordement arque vers un ennemi
+## au-delà. Rend vrai si elle a touché quelqu'un dans son cercle.
+func _hit(reach: float, factor: float) -> bool:
+	var world := get_world_2d()
+	var targets := Targets.strike_circle(world, global_position, reach, _cast, _author, -_cast.pull, factor)
+	for target in targets.slice(0, Lightning.ARCS_MOST):
 		_bolt_to(to_local(target.global_position))
+	# La Cible de l'orage (jalon 43) : le paratonnerre de l'Éclair vif prend aussi la frappe.
+	var rod := LightningRod.storm_target_of(_author)
+	if rod != null and rod not in targets \
+			and global_position.distance_to(rod.global_position) <= SkillStats.STORM_ROD_REACH:
+		Targets.strike(rod, _cast.roll(Game.rng), global_position, _author, _cast)
+		_bolt_to(to_local(rod.global_position))
+	if _cast.overflow > 0.0:
+		_overflow(world, reach, targets)
 	if targets.is_empty():
 		# Un éclair au sol même sans cible : le nuage montre qu'il frappe, et où.
 		_bolt_to(
 			Vector2.from_angle(_flicker.randf_range(0.0, TAU))
-			* _flicker.randf_range(0.0, _cast.radius * 0.8)
+			* _flicker.randf_range(0.0, reach * 0.8)
 		)
+	return not targets.is_empty()
+
+
+## Le Débordement : un arc vers l'ennemi le plus proche hors du cercle, jusqu'à
+## `OVERFLOW_REACH` fois son rayon, à une part d'une frappe.
+func _overflow(world: World2D, reach: float, inside: Array[Hurtbox]) -> void:
+	var best: Hurtbox = null
+	var best_distance := INF
+	for target in Targets.in_circle(world, global_position, reach * SkillStats.OVERFLOW_REACH):
+		var distance := global_position.distance_squared_to(target.global_position)
+		if target not in inside and distance < best_distance:
+			best = target
+			best_distance = distance
+	if best == null:
+		return
+	var parts := _cast.roll(Game.rng)
+	for n in parts.size():
+		parts[n] *= _cast.overflow * 0.01
+	Targets.strike(best, parts, global_position, _author, _cast)
+	_bolt_to(to_local(best.global_position))
 
 
 func _height() -> float:

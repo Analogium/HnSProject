@@ -89,6 +89,15 @@ func test_the_orb_loops_and_keeps_its_ball() -> void:
 		assert_gt(piece.texture.get_image().get_pixelv(center).get_luminance(), THRESHOLD, "le cœur blanc")
 
 
+## La marque du Paratonnerre boucle sur ses formes : l'éclair qui tombe, puis l'éclat seul,
+## qui tient bien moins de place.
+func test_the_rod_mark_loops_between_bolt_and_burst() -> void:
+	var bolt := Lightning.rod(VIOLET, 0)
+	assert_same(bolt, Lightning.rod(VIOLET, Lightning.ROD_FORMS), "la boucle retombe")
+	var burst := Lightning.rod(VIOLET, 1)
+	assert_gt(bolt.texture.get_height(), burst.texture.get_height() + Lightning.ROD_HEIGHT * 0.5)
+
+
 ## Entier, puis défait sur son dernier tiers : un éclair ne pâlit pas.
 func test_a_bolt_comes_apart_on_its_last_third() -> void:
 	assert_eq(Lightning.gone(0.5, 1.0), 0.0, "entier à mi-vie")

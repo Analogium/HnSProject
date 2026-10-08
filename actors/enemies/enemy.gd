@@ -264,6 +264,10 @@ func _hurt(hurtbox: Hurtbox, source: Vector2) -> void:
 	info.author = states
 	hurtbox.take_damage(info)
 	on_damage_dealt(info.amount)
+	# Le Choc en retour (jalon 43) : ce qui frappe le joueur au contact peut prendre un arc.
+	var victim := hurtbox.get_parent() as Player
+	if victim != null:
+		victim.backlash(self, info.amount)
 
 
 ## Une zone qui frappera en son nom, dans cette nature. Le gonfle, le mortier et le

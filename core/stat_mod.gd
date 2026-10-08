@@ -114,7 +114,10 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"wave_gain", "numb_effect", "perfect_chord", "reaction_power", "doll_life", "grudge",
 	"transfer", "echo_power", "swell", "overheat", "stoked", "girth", "gluttony", "spit",
 	"hatchling_bite", "ignite_effect", "campfire", "vigil", "eye", "soul_feast",
-	"flying_start", "wick", "stride_fire", "burning_wave", "last_breath",
+	"flying_start", "wick", "stride_fire", "burning_wave", "last_breath", "ramp", "charged_orb",
+	"live_ice", "bifurcation", "web_branch", "overvolt", "accumulation", "overflow",
+	"twin_strike", "moving_front", "charged_run", "rolling_thunder", "ionize", "backlash",
+	"condenser",
 ]
 
 var stat: String

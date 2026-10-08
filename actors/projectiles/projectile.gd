@@ -70,6 +70,7 @@ var _nature := -1
 var _struck := {}
 var _pierced := 0
 var _bounced := 0
+var _caromed := 0
 
 ## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
 ## l'unisson.
@@ -213,6 +214,8 @@ func setup(
 
 
 func _physics_process(delta: float) -> void:
+	if _cast != null and _cast.lightning_rod > 0.0:
+		_home(delta)
 	global_position += _dir * speed * delta
 	_life += delta
 	# Redessiné à chaque pas : c'est le changement qu'on regarde.
@@ -230,7 +233,7 @@ func _on_area_entered(area: Area2D) -> void:
 	if not strikes(area):
 		return
 	_struck[area.get_instance_id()] = true
-	var info := DamageInfo.roll(_cast, global_position, _parts, knockback)
+	var info := DamageInfo.roll(_cast, global_position, _conducted(area as Hurtbox), knockback)
 	info.author = _author
 	(area as Hurtbox).take_damage(info)
 	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
@@ -241,6 +244,8 @@ func _on_area_entered(area: Area2D) -> void:
 			caster.on_damage_dealt(info.amount)
 	if hit_stop_on_impact:
 		Game.hit_stop()
+	if _cast != null and _cast.lightning_rod > 0.0:
+		LightningRod.mark(get_parent(), area as Hurtbox, _author, _cast)
 	if _cast != null and _cast.contagion > 0.0 and _cast.inflicted_state >= 0:
 		Projectile.contaminate.call_deferred(area, _cast.inflicted_state, _cast.contagion)
 	if _cast != null and _pierced < int(_cast.pierce):
@@ -271,10 +276,61 @@ func _bounce() -> void:
 		rotation = _dir.angle()
 
 
+## Le Paratonnerre (jalon 43) : à portée de la marque de son lanceur, le tir s'incurve
+## vers elle — un virage borné, pas un aimant : un tir qui la croise de loin la manque.
+func _home(delta: float) -> void:
+	var rod := LightningRod.target_of(_author)
+	if rod == null or _struck.has(rod.get_instance_id()):
+		return
+	var to_rod := rod.global_position - global_position
+	if to_rod.length() > SkillStats.ROD_REACH:
+		return
+	var turn := clampf(_dir.angle_to(to_rod), -SkillStats.ROD_TURN * delta, SkillStats.ROD_TURN * delta)
+	_dir = _dir.rotated(turn)
+	if not _drawn():
+		rotation = _dir.angle()
+
+
+## La Glace vive (jalon 43) : sur un transi, le trait de glace ajoute une part de foudre.
+func _conducted(target: Hurtbox) -> Array[float]:
+	if _cast == null or _cast.live_ice <= 0.0 or target.states == null \
+			or not target.states.active(StatusEffects.Kind.CHILL):
+		return _parts
+	var parts := _parts.duplicate()
+	var total := 0.0
+	for part in _parts:
+		total += part
+	parts[DamageType.Kind.LIGHTNING] += total * _cast.live_ice * 0.01
+	return parts
+
+
 ## Le masque ne retient que le décor pour les corps : le tir s'arrête au mur,
-## et traverse les autres ennemis sans les toucher.
+## et traverse les autres ennemis sans les toucher. Sauf le Carambolage (jalon 43).
 func _on_body_entered(_body: Node2D) -> void:
+	if _cast != null and _caromed < int(_cast.caroms):
+		_caromed += 1
+		_carom.call_deferred()
+		return
 	_finish()
+
+
+## Repart du mur comme une bille de la bande. Différé : l'espace refuse les requêtes dans
+## un rappel de collision (invariant 4). Le rayon revient sur la course pour trouver la
+## face touchée ; sans face — un coin —, le tir rebrousse chemin.
+func _carom() -> void:
+	if is_queued_for_deletion():
+		return
+	var back := global_position - _dir * speed * get_physics_process_delta_time() * 2.0
+	var query := PhysicsRayQueryParameters2D.create(back, global_position + _dir * 4.0, Targets.DECOR)
+	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		_dir = -_dir
+	else:
+		var normal: Vector2 = hit["normal"]
+		_dir = _dir.bounce(normal)
+		global_position = hit["position"] + normal * 2.0
+	if not _drawn():
+		rotation = _dir.angle()
 
 
 ## La fin de course, quelle qu'elle soit — cible, mur, portée.

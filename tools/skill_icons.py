@@ -146,7 +146,7 @@ def cmd_gen(args):
                 if opts.get("qwen"):
                     # Le tuyau des noeuds (jalon 42) : le sujet y est une phrase entiere.
                     import node_icons
-                    img = node_icons.render(node_icons.sentence(SUBJECTS[name][0]), seed)
+                    img = node_icons.render(node_icons.sentence(SUBJECTS[name][0], opts.get("nature", "fire")), seed)
                 elif opts.get("layout"):
                     img = render(prompt, seed, layout=layout(name), denoise=opts["denoise"])
                 else:
@@ -157,7 +157,7 @@ def cmd_gen(args):
                 img = to_violet(img)
             if opts.get("qwen"):
                 import node_icons
-                small = node_icons.fit(img, SIDE, node_icons.FIRE).convert("RGBA")
+                small = node_icons.fit(img, SIDE, node_icons.NATURES[opts.get("nature", "fire")][2]).convert("RGBA")
             else:
                 small = crisp(img) if opts.get("crisp") else quant(shrink(img).convert("RGBA"))
             small.save(os.path.join(OUT, tag + ".png"))

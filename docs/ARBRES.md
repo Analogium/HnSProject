@@ -88,40 +88,40 @@ Jamais pris : Feu sacré, Dernières braises, Foyer du mage, Main d'appoint, Bra
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 102/s | 122/s |
-| meilleur au paquet | Célérité 1, Transpercement 2, Surcharge 4, Fourche 2, Éclats 2, Rebond 3, Étincelles 3, Surtension 1 | 1211/s ×11,9 | 370/s ×3,03 |
-| meilleur au duel | Surcharge 4, Fourche 2, Point chaud 3 | 262/s ×2,58 | 383/s ×3,13 |
-| Trait de glace au paquet (conversion) | Surcharge 2, Trait de glace 1, Fourche 2, Rebond 3, Célérité 1, Transpercement 2, Éclats 2, Étincelles 3, Surtension 1 | 1273/s ×12,5 | 355/s ×2,90 |
-| Trait de glace au duel (conversion) | Surcharge 4, Trait de glace 1, Fourche 2, Point chaud 3 | 262/s ×2,58 | 418/s ×3,42 |
-| Orbe statique au paquet (transformation) | Point chaud 3, Orbe statique 1, Surcharge 4, Fourche 2, Étincelles 3 | 1032/s ×10,2 | 443/s ×3,63 |
-| Orbe statique au duel (transformation) | Point chaud 3, Orbe statique 1, Surcharge 4, Fourche 2 | 1011/s ×9,95 | 443/s ×3,63 |
+| meilleur au paquet | Point chaud 3, Orbe statique 1, Orbe chargé 2, Surcharge 4, Fourche 2, Emballement 3, Trait de glace 1, Glace vive 3, Plein régime 1 | 1743/s ×17,2 | 852/s ×6,97 |
+| meilleur au duel | Surcharge 4, Fourche 2, Emballement 3, Plein régime 1, Trait de glace 1, Glace vive 3, Point chaud 3 | 601/s ×5,91 | 1201/s ×9,83 |
+| Trait de glace au paquet (conversion) | Surcharge 4, Trait de glace 1, Point chaud 3, Orbe statique 1, Orbe chargé 2, Fourche 2, Emballement 3, Plein régime 1 | 1743/s ×17,2 | 852/s ×6,97 |
+| Trait de glace au duel (conversion) | Surcharge 4, Trait de glace 1, Fourche 2, Emballement 3, Plein régime 1, Glace vive 3, Point chaud 3 | 601/s ×5,91 | 1201/s ×9,83 |
+| Orbe statique au paquet (transformation) | Point chaud 3, Orbe statique 1, Surcharge 4, Fourche 2, Orbe chargé 2, Emballement 3, Trait de glace 1, Glace vive 3, Plein régime 1 | 1743/s ×17,2 | 852/s ×6,97 |
+| Orbe statique au duel (transformation) | Point chaud 3, Orbe statique 1, Surcharge 4, Fourche 2, Emballement 3, Plein régime 1, Trait de glace 1, Glace vive 3 | 1323/s ×13,0 | 852/s ×6,97 |
 
-Jamais pris : aucun.
+Jamais pris : Célérité, Transpercement, Rebond, Esquilles, Paratonnerre, Électrocution, Foudre héritée, Cible de l'orage, Carambolage, Satellite.
 
 ### Chaîne d'éclairs
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 155/s | 60,6/s |
-| meilleur au paquet | Ramification 2, Crescendo 3, Réflexe 2, Foudre au bout 3, Haute tension 4, Court-circuit 1, Étincelles 3, Surtension 1, Point chaud 1 | 979/s ×6,30 | 134/s ×2,20 |
-| meilleur au duel | Haute tension 4, Court-circuit 1, Réflexe 2 | 206/s ×1,33 | 134/s ×2,20 |
-| Toile d'arcs au paquet (transformation) | Ramification 2, Toile d'arcs 1, Réflexe 2, Arc tendu 1, Foudre au bout 3, Haute tension 4, Court-circuit 1, Étincelles 3, Surtension 1, Point chaud 2 | 957/s ×6,16 | 140/s ×2,31 |
-| Toile d'arcs au duel (transformation) | Ramification 2, Toile d'arcs 1, Haute tension 4, Court-circuit 1, Réflexe 2 | 355/s ×2,28 | 140/s ×2,31 |
+| meilleur au paquet | Ramification 2, Toile d'arcs 1, Ramure 2, Vif-argent 2, Haute tension 4, Fourmillements 3, Surtension 1, Court-circuit 1 | 817/s ×5,26 | 140/s ×2,31 |
+| meilleur au duel | Haute tension 4, Court-circuit 1, Vif-argent 2, Toile d'arcs 1, Ramure 2 | 357/s ×2,30 | 140/s ×2,31 |
+| Toile d'arcs au paquet (transformation) | Ramification 2, Toile d'arcs 1, Ramure 2, Vif-argent 2, Haute tension 4, Fourmillements 3, Surtension 1, Court-circuit 1 | 817/s ×5,26 | 140/s ×2,31 |
+| Toile d'arcs au duel (transformation) | Ramification 2, Toile d'arcs 1, Haute tension 4, Court-circuit 1, Vif-argent 2 | 355/s ×2,28 | 140/s ×2,31 |
 
-Jamais pris : aucun.
+Jamais pris : Arc tendu, Crescendo, Conductance, Bifurcation, Retour par la masse, Relais, Survoltage, Réamorçage.
 
 ### Nuage d'orage
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 89,4/s | 78,8/s |
-| meilleur au paquet | Orage durable 3, Orage errant 1, Front orageux 3, Cumulonimbus 4, Averse 2, Coup de tonnerre 3, Point chaud 3, Étincelles 1 | 714/s ×7,99 | 228/s ×2,89 |
-| meilleur au duel | Orage durable 3, Cumulonimbus 4, Averse 2, Coup de tonnerre 3, Point chaud 3 | 229/s ×2,56 | 228/s ×2,89 |
-| Grêle au paquet (conversion) | Cumulonimbus 4, Grêle 1, Orage durable 3, Orage errant 1, Front orageux 3, Averse 2, Coup de tonnerre 3 | 684/s ×7,65 | 201/s ×2,55 |
-| Grêle au duel (conversion) | Cumulonimbus 4, Grêle 1, Orage durable 3, Averse 2, Coup de tonnerre 3, Point chaud 3 | 228/s ×2,55 | 207/s ×2,63 |
-| Orage portatif au paquet (transformation) | Orage durable 3, Orage portatif 1, Front orageux 3, Cumulonimbus 1, Averse 2, Point chaud 3, Étincelles 3 | 629/s ×7,03 | 203/s ×2,57 |
-| Orage portatif au duel (transformation) | Orage durable 3, Orage portatif 1, Cumulonimbus 4, Averse 2, Coup de tonnerre 3, Point chaud 3 | 276/s ×3,09 | 266/s ×3,37 |
+| meilleur au paquet | Orage durable 3, Orage errant 1, Front orageux 3, Débordement 2, Cumulonimbus 4, Averse 2, Accumulation 3 | 1377/s ×15,4 | 226/s ×2,87 |
+| meilleur au duel | Orage durable 3, Cumulonimbus 4, Averse 2, Foudre jumelle 2, Orage portatif 1, Front mobile 2 | 289/s ×3,23 | 290/s ×3,68 |
+| Grêle au paquet (conversion) | Cumulonimbus 4, Grêle 1, Orage durable 3, Orage errant 1, Front orageux 3, Débordement 2, Averse 2, Foudre jumelle 2, Accumulation 2 | 1402/s ×15,7 | 235/s ×2,99 |
+| Grêle au duel (conversion) | Cumulonimbus 4, Grêle 1, Orage durable 3, Averse 2, Foudre jumelle 2, Orage portatif 1, Front mobile 2 | 270/s ×3,02 | 264/s ×3,34 |
+| Orage portatif au paquet (transformation) | Orage durable 3, Orage portatif 1, Front orageux 3, Débordement 2, Cumulonimbus 2, Averse 2, Grêle 1, Verglas 2 | 701/s ×7,85 | 193/s ×2,45 |
+| Orage portatif au duel (transformation) | Orage durable 3, Orage portatif 1, Cumulonimbus 4, Averse 2, Foudre jumelle 2 | 289/s ×3,23 | 290/s ×3,68 |
 
-Jamais pris : aucun.
+Jamais pris : Appel d'air, Point de rupture, Traque.
 
 ## Manuel du froid
 

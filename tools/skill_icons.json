@@ -7,12 +7,20 @@
     }
   ],
   "storm_dash": [
-    "the silhouette of a leaping man made of lightning",
-    1337
+    "A solid black silhouette of a man running to the right in profile, outlined by bright violet lightning, a long lightning trail behind him.",
+    1337,
+    {
+      "qwen": true,
+      "nature": "lightning"
+    }
   ],
   "static_electricity": [
-    "a bright electric star burst with thick jagged arcs",
-    4242
+    "A raised open hand with thick violet electric arcs crackling between its fingers.",
+    777,
+    {
+      "qwen": true,
+      "nature": "lightning"
+    }
   ],
   "wave_slash": [
     "a huge glowing crescent slash wave of steel, thick curved blade arc",
@@ -159,6 +167,30 @@
     4242,
     {
       "qwen": true
+    }
+  ],
+  "swift_bolt": [
+    "A single thick jagged violet lightning bolt flying to the right, bright white core, a short trail of sparks behind it.",
+    777,
+    {
+      "qwen": true,
+      "nature": "lightning"
+    }
+  ],
+  "chain_lightning": [
+    "Three small white skulls in a row, one jagged violet lightning arc jumping from the first skull to the second to the third.",
+    777,
+    {
+      "qwen": true,
+      "nature": "lightning"
+    }
+  ],
+  "storm_cloud": [
+    "A round pale grey-white storm cloud with one thick jagged violet lightning bolt striking down from it. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    1337,
+    {
+      "qwen": true,
+      "nature": "lightning"
     }
   ]
 }

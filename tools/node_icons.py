@@ -11,7 +11,7 @@ Pas SDXL mais **Qwen-Image 2512** (fp8), avec le LoRA Lightning 8 pas et un LoRA
 art : SDXL ignorait la composition et sortait une bouillie rouge a 24 px. Meme transport
 que `tools/item_icons.py`.
 """
-import argparse, io, json, os, re, sys, time, urllib.parse, urllib.request
+import argparse, glob, io, json, os, re, sys, time, urllib.parse, urllib.request
 import numpy as np
 from scipy import ndimage
 from PIL import Image, ImageDraw
@@ -20,6 +20,8 @@ import skill_icons as si
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(ii.WORK, "node_raw")
+# Ou ComfyUI sauve ses tirages, vu depuis WSL.
+COMFY_OUT = os.environ.get("COMFY_OUT", "/mnt/c/Generate/ComfyUI/ComfyUI/output")
 SUBJECTS = json.load(open(os.path.join(HERE, "node_icons.json"), encoding="utf-8"))
 
 # Le cote de l'icone selon le role du noeud : `ManualPanel.NODE_ICONS`, que le test des
@@ -40,7 +42,6 @@ NATURES = {
     "necrotic": ("sickly greens and bone white", "dark murky green", (18, 32, 16)),
     "lightning": ("electric violets and white", "dark violet", (30, 16, 46)),
 }
-FIRE = NATURES["fire"][2]
 # Ecart de couleur en deca duquel un pixel qui touche le bord est du fond : Qwen pose un
 # leger degrade, que 0,16 avale sans manger le contour noir.
 BG_TOL = 0.16
@@ -76,8 +77,22 @@ def workflow(prompt, seed):
     }
 
 
+def done_before(flow):
+    """Le meme tirage, s'il a deja tourne : ComfyUI inscrit son prompt dans chaque PNG qu'il
+    sauve. Le cache des tirages vit dans un dossier temporaire, que vide un redemarrage ;
+    le dossier de sortie de ComfyUI, lui, reste."""
+    for path in sorted(glob.glob(os.path.join(COMFY_OUT, "hns_node_*.png")), reverse=True):
+        if json.loads(Image.open(path).info.get("prompt", "{}")) == flow:
+            return Image.open(path).convert("RGB")
+    return None
+
+
 def render(prompt, seed):
-    pid = ii.post("/prompt", {"prompt": workflow(prompt, seed)})["prompt_id"]
+    flow = workflow(prompt, seed)
+    img = done_before(flow)
+    if img is not None:
+        return img
+    pid = ii.post("/prompt", {"prompt": flow})["prompt_id"]
     while True:
         h = json.load(urllib.request.urlopen(f"{ii.HOST}/history/{pid}"))
         if pid in h:
@@ -168,6 +183,18 @@ def chosen(node):
     return raw_path(source(node), SUBJECTS[source(node)][1])
 
 
+def vignette(node):
+    """La vignette du noeud. Les tirages vivent dans un dossier temporaire : un noeud repris
+    dont le tirage a disparu reprend la vignette deja posee, si elle est a son cote."""
+    src = chosen(node)
+    if os.path.exists(src):
+        return reduce(Image.open(src).convert("RGB"), node)
+    done = os.path.join(ii.PROJ, "resources/icons/nodes", source(node) + ".png")
+    if source(node) != node and os.path.exists(done) and Image.open(done).width == SIDES[SUBJECTS[node][2]]:
+        return Image.open(done).convert("RGBA")
+    return None
+
+
 def cmd_gen(args):
     os.makedirs(RAW, exist_ok=True)
     nodes = args.only.split(",") if args.only else list(SUBJECTS)
@@ -189,9 +216,13 @@ def cmd_gen(args):
     for row, node in enumerate(nodes):
         draw.text((4, 18 + row * cell + cell // 2), node, fill=(230, 230, 230))
         for col, seed in enumerate(ii.SEEDS):
-            path = raw_path(node, seed) if source(node) == node else (chosen(node) if col == 0 else "")
-            if os.path.exists(path):
-                im = reduce(Image.open(path).convert("RGB"), node)
+            if source(node) != node:
+                im = vignette(node) if col == 0 else None
+            elif os.path.exists(raw_path(node, seed)):
+                im = reduce(Image.open(raw_path(node, seed)).convert("RGB"), node)
+            else:
+                im = None
+            if im is not None:
                 sheet.alpha_composite(im.resize((im.width * 5, im.height * 5), Image.NEAREST),
                                       (262 + col * cell, 23 + row * cell))
     out = os.path.join(ii.WORK, "sheet_nodes.png")
@@ -214,10 +245,10 @@ def cmd_apply(args):
     os.makedirs(dest, exist_ok=True)
     nodes = args.only.split(",") if args.only else list(SUBJECTS)
     for node in nodes:
-        src = chosen(node)
-        if not os.path.exists(src):
-            sys.exit("manquant : " + src)
-        reduce(Image.open(src).convert("RGB"), node).save(os.path.join(dest, node + ".png"))
+        im = vignette(node)
+        if im is None:
+            sys.exit("manquant : " + chosen(node))
+        im.save(os.path.join(dest, node + ".png"))
 
         tres = manual_of(node)
         s = open(tres, encoding="utf-8").read()

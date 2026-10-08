@@ -152,9 +152,17 @@ const TRANSFORMABLE: Array[Shape] = [
 const IGNORED_BY_SHAPE := {
 	Shape.METEOR: [SkillStats.PIERCE, SkillStats.SWELL, SkillStats.CONVERGE],
 	Shape.LEAP: ["duration", "radius", SkillStats.WICK],
-	Shape.ORB: [SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION],
-	Shape.WEB: [SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN],
-	Shape.TEMPEST: [SkillStats.SEEK],
+	Shape.ORB: [
+		SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION,
+		SkillStats.CAROMS, SkillStats.LIGHTNING_ROD, SkillStats.ROD_HEIR, SkillStats.STORM_TARGET,
+	],
+	Shape.WEB: [
+		SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN, SkillStats.CONDUCTANCE, SkillStats.BIFURCATION,
+		SkillStats.GROUNDING, SkillStats.RELAY, SkillStats.RELAY_REFUND,
+	],
+	# Porté, il est centré sur son lanceur : l'Appel d'air n'y attirerait les ennemis que
+	# là où ils marchent déjà (jalon 43).
+	Shape.TEMPEST: [SkillStats.SEEK, SkillStats.HUNT, SkillStats.PULL],
 	# L'onde passe sans se poser : nulle part où laisser un sol. L'implosion éclate déjà.
 	Shape.RING: [SkillStats.GROUND],
 	Shape.IMPLOSION: [SkillStats.END_BURST],
@@ -170,7 +178,9 @@ const IGNORED_BY_SHAPE := {
 ## devenu orbe n'a ni durée, ni rayon, ni rythme. Sans eux, la ligne du nœud qui les
 ## donnerait s'écrirait en perte — « +0,3 intervalle des frappes » en rouge.
 const SHAPE_NUMBERS := {
-	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.33},
+	# Douze orbes par lanceur (jalon 43) : en Satellite, quarante orbes dans une meute dense
+	# frappaient quatre mille fois par seconde, et le jeu tombait à 4 img/s.
+	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.33, "simultaneous": 12.0},
 }
 
 const HITS_PER_SHAPE := {

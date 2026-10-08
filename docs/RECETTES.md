@@ -787,7 +787,7 @@ sont repris depuis le jalon 40),
 `test_each_node_line_targets_a_cast_number`,
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
 `test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
-nécromancie depuis le jalon 38, le chevalier depuis le 39, le sacré depuis le 40 et la sorcière depuis le 41 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
+nécromancie depuis le jalon 38, le chevalier depuis le 39, le sacré depuis le 40, la sorcière depuis le 41, le feu depuis le 42 et la foudre depuis le 43 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
 un nœud de dégâts, de rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.

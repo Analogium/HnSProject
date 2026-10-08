@@ -127,3 +127,12 @@ func test_burn_is_displayed_in_packs() -> void:
 	Settings.damage_taken_visible = false
 	player.burn(0.05, fire, 0.6)
 	assert_eq(_fx._numbers.size(), 1, "la case des dégâts subis la coupe aussi")
+
+
+## Un déluge de coups ne fait pas naître plus de nombres ni d'éclats que le plafond : à
+## deux mille coups par seconde, leur dessin faisait tomber le jeu à 29 img/s (jalon 43).
+func test_a_flood_of_hits_stays_under_the_caps() -> void:
+	for i in HitFeedback.NUMBERS_MOST + 50:
+		_fx.hit(Vector2(i, 0.0), _hit(0.0, 5.0, i % 3 == 0), false)
+	assert_eq(_fx._numbers.size(), HitFeedback.NUMBERS_MOST)
+	assert_lt(_fx._p.size() / HitFeedback.P_STRIDE, HitFeedback.PARTICLES_MOST + HitFeedback.CRIT_PARTICLES)

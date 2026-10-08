@@ -133,6 +133,42 @@ const LABELS := {
 	HELPING_HAND: "main d'appoint",
 	TRIANGULATION: "triangulation",
 	QUICKFIRE: "tirs ravivés par seconde",
+	RAMP: "vitesse d'incantation par cumul",
+	FULL_THROTTLE: "tir double à plein régime",
+	LIGHTNING_ROD: "paratonnerre",
+	ELECTROCUTE: "engourdi sûr au critique",
+	ROD_HEIR: "paratonnerre hérité",
+	STORM_TARGET: "orage sur le paratonnerre",
+	CAROMS: "nombre de rebonds sur les murs",
+	SATELLITE: "orbe en orbite",
+	CHARGED_ORB: "rayon en plus par ennemi frappé",
+	LIVE_ICE: "dégâts de foudre contre les transis",
+	CONDUCTANCE: "sauts gratuits vers les engourdis",
+	BIFURCATION: "chance de bifurquer par saut",
+	GROUNDING: "mana rendu par ennemi touché",
+	RELAY: "sauts sur les charges statiques",
+	RELAY_REFUND: "saut rendu par charge prise",
+	WEB_BRANCH: "dégâts du saut de chaque arc",
+	OVERVOLT: "dégâts de la chaîne relancée",
+	ACCUMULATION: "dégâts en plus par charge",
+	BREAKING_POINT: "frappe large à pleines charges",
+	OVERFLOW: "dégâts de l'arc qui déborde",
+	TWIN_STRIKE: "chance de frapper deux fois",
+	HUNT: "traque de la proie",
+	MOVING_FRONT: "frappes en plus en marchant",
+	BOLT_DASH: "éclair du départ à l'arrivée",
+	CHARGED_RUN: "dégâts du sort suivant par 100 px",
+	REARM: "secondes de recharge par engourdi",
+	ROUND_TRIP: "retour au départ",
+	ROLLING_THUNDER: "dégâts des grondements",
+	STATIC_MINES: "charges en mines",
+	GALLOP: "appel du tonnerre cumulé",
+	IONIZE: "chance d'engourdir autour de vous",
+	CAPACITY: "secondes de vie des charges",
+	BACKLASH: "coup rendu au contact",
+	CONDENSER: "dégâts du sort condensé",
+	TOTAL_DISCHARGE: "décharge du condensateur",
+	FARADAY: "cage de Faraday",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -252,6 +288,42 @@ const AGREEMENT := {
 	HELPING_HAND: "fs",
 	TRIANGULATION: "fs",
 	QUICKFIRE: "mp",
+	RAMP: "fs",
+	FULL_THROTTLE: "ms",
+	LIGHTNING_ROD: "ms",
+	ELECTROCUTE: "ms",
+	ROD_HEIR: "ms",
+	STORM_TARGET: "ms",
+	CAROMS: "ms",
+	SATELLITE: "ms",
+	CHARGED_ORB: "ms",
+	LIVE_ICE: "mp",
+	CONDUCTANCE: "mp",
+	BIFURCATION: "fs",
+	GROUNDING: "ms",
+	RELAY: "mp",
+	RELAY_REFUND: "ms",
+	WEB_BRANCH: "mp",
+	OVERVOLT: "mp",
+	ACCUMULATION: "mp",
+	BREAKING_POINT: "fs",
+	OVERFLOW: "mp",
+	TWIN_STRIKE: "fs",
+	HUNT: "fs",
+	MOVING_FRONT: "fp",
+	BOLT_DASH: "ms",
+	CHARGED_RUN: "mp",
+	REARM: "fp",
+	ROUND_TRIP: "ms",
+	ROLLING_THUNDER: "mp",
+	STATIC_MINES: "fp",
+	GALLOP: "ms",
+	IONIZE: "fs",
+	CAPACITY: "fp",
+	BACKLASH: "ms",
+	CONDENSER: "mp",
+	TOTAL_DISCHARGE: "fs",
+	FARADAY: "fs",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -395,6 +467,57 @@ const HEARTH := "hearth"
 const HELPING_HAND := "helping_hand"
 const TRIANGULATION := "triangulation"
 const QUICKFIRE := "quickfire"
+## Ceux de l'Éclair vif (jalon 43). L'Emballement en points de pourcentage de vitesse par
+## cumul, l'Orbe chargé de rayon par ennemi, la Glace vive de foudre ajoutée ; les
+## rebonds sur les murs en nombre ; les autres sont des drapeaux.
+const RAMP := "ramp"
+const FULL_THROTTLE := "full_throttle"
+const LIGHTNING_ROD := "lightning_rod"
+const ELECTROCUTE := "electrocute"
+const ROD_HEIR := "rod_heir"
+const STORM_TARGET := "storm_target"
+const CAROMS := "caroms"
+const SATELLITE := "satellite"
+const CHARGED_ORB := "charged_orb"
+const LIVE_ICE := "live_ice"
+## Ceux de la Chaîne d'éclairs (jalon 43). La Bifurcation en chance par saut, la Ramure et
+## le Survoltage en points de pourcentage d'un coup, le Retour par la masse en mana par
+## ennemi ; les autres sont des drapeaux.
+const CONDUCTANCE := "conductance"
+const BIFURCATION := "bifurcation"
+const GROUNDING := "grounding"
+const RELAY := "relay"
+const RELAY_REFUND := "relay_refund"
+const WEB_BRANCH := "web_branch"
+const OVERVOLT := "overvolt"
+## Ceux du Nuage d'orage (jalon 43). L'Accumulation en points de pourcentage « plus » par
+## charge, le Débordement en part d'une frappe, la Foudre jumelle en chance, le Front
+## mobile en points de pourcentage de cadence ; deux drapeaux.
+const ACCUMULATION := "accumulation"
+const BREAKING_POINT := "breaking_point"
+const OVERFLOW := "overflow"
+const TWIN_STRIKE := "twin_strike"
+const HUNT := "hunt"
+const MOVING_FRONT := "moving_front"
+## Ceux de la Ruée d'orage (jalon 43). La Tension accumulée en points de pourcentage
+## « plus » par 100 px courus, le Réarmement en secondes par engourdi, le Tonnerre roulant
+## en part du coup d'arrivée ; les autres sont des drapeaux.
+const BOLT_DASH := "bolt_dash"
+const CHARGED_RUN := "charged_run"
+const REARM := "rearm"
+const ROUND_TRIP := "round_trip"
+const ROLLING_THUNDER := "rolling_thunder"
+const STATIC_MINES := "static_mines"
+const GALLOP := "gallop"
+## Ceux de l'Électricité statique (jalon 43), lus sur le buff allumé (`Player.lit_number()`).
+## L'Ionisation en chance par seconde, la Capacité en secondes, le Choc en retour en part du
+## coup reçu, le Condensateur en « plus » ; deux drapeaux.
+const IONIZE := "ionize"
+const CAPACITY := "capacity"
+const BACKLASH := "backlash"
+const CONDENSER := "condenser"
+const TOTAL_DISCHARGE := "total_discharge"
+const FARADAY := "faraday"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -407,7 +530,12 @@ const MECHANICS := [
 	GROWTH_MOLT, CONSTRICT, VISE, OUROBOROS, SPIRAL, SPIT, SPIT_FAN, ROT_HOLD, MELT,
 	CAMPFIRE, EMBERS, REBIRTH, PHOENIX_ASHES, VIGIL, EYE, SOUL_FEAST, FLYING_START, WICK,
 	SHORT_FUSE, SECOND_STRIDE, STRIDE_FIRE, CHARMER, SNAKE_DANCE, BURNING_WAVE, REKINDLE,
-	BEACON, LAST_BREATH, HEARTH, HELPING_HAND, TRIANGULATION, QUICKFIRE,
+	BEACON, LAST_BREATH, HEARTH, HELPING_HAND, TRIANGULATION, QUICKFIRE, RAMP,
+	FULL_THROTTLE, LIGHTNING_ROD, ELECTROCUTE, ROD_HEIR, STORM_TARGET, CAROMS, SATELLITE,
+	CHARGED_ORB, LIVE_ICE, CONDUCTANCE, BIFURCATION, GROUNDING, RELAY, RELAY_REFUND, WEB_BRANCH,
+	OVERVOLT, ACCUMULATION, BREAKING_POINT, OVERFLOW, TWIN_STRIKE, HUNT, MOVING_FRONT, BOLT_DASH,
+	CHARGED_RUN, REARM, ROUND_TRIP, ROLLING_THUNDER, STATIC_MINES, GALLOP, IONIZE, CAPACITY,
+	BACKLASH, CONDENSER, TOTAL_DISCHARGE, FARADAY,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -484,6 +612,58 @@ const BEACON_LIFE := 0.5
 const LAST_BREATH_BALLS := 8
 const HEARTH_SKILL := "fireball"
 const LINK_RADIUS := 8.0
+## L'Emballement : l'écart au lancer précédent qui garde les cumuls, et leur nombre au plus ;
+## le Plein régime : un tir sur combien part double, et l'écart entre ses deux éclairs.
+const RAMP_HOLD := 1.0
+const RAMP_MOST := 5
+const THROTTLE_EVERY := 4
+const THROTTLE_GAP := 0.08
+## Le Paratonnerre : sa durée, la portée où les éclairs s'incurvent vers lui, leur virage en
+## radians par seconde ; celle où la Cible de l'orage le frappe depuis un nuage.
+const ROD_LIFE := 3.0
+const ROD_REACH := 200.0
+const ROD_TURN := 9.0
+const STORM_ROD_REACH := 300.0
+## Le Satellite : le rayon de son orbite. L'Orbe chargé : les ennemis comptés au plus.
+const SATELLITE_RADIUS := 60.0
+const CHARGED_ORB_MOST := 5
+## Le Survoltage : les sauts de la chaîne qu'il relance. Les sauts au plus d'une décharge,
+## chaque branche à part : la Conductance et le Réamorçage en rendent, et une meute
+## engourdie ne doit pas lui faire traverser l'écran.
+const OVERVOLT_JUMPS := 2
+const CHAIN_JUMPS_MOST := 12
+## L'Accumulation : ses charges au plus ; le Point de rupture, sa portée en multiple du
+## rayon, comme celle du Débordement. La Foudre jumelle : l'écart entre ses deux frappes.
+## La Traque : la vitesse du nuage, en multiple de celle de l'errance.
+const ACCUMULATION_MOST := 5
+const BREAK_REACH := 2.0
+const OVERFLOW_REACH := 2.0
+const TWIN_DELAY := 0.1
+const HUNT_SPEED := 2.0
+## La Ruée d'orage. Le Trait d'éclair : la largeur de son trait. La Tension accumulée : le
+## pas de course, la course comptée au plus, le temps de lancer le sort qu'elle charge.
+## L'Aller-retour : son attente. Le Tonnerre roulant : ses grondements et leur écart. Les
+## Mines statiques : leur force et leur rayon, en multiples d'une charge. Le Galop : ses
+## charges au plus.
+const BOLT_DASH_WIDTH := 16.0
+const CHARGED_RUN_STEP := 100.0
+const CHARGED_RUN_MOST := 300.0
+const CHARGED_RUN_WINDOW := 3.0
+const ROUND_TRIP_DELAY := 1.5
+const ROLLING_COUNT := 2
+const ROLLING_GAP := 0.4
+const MINE_FACTOR := 3.0
+const MINE_REACH := 2.0
+const GALLOP_MOST := 3
+## L'Électricité statique. L'Ionisation : son rythme et sa portée. Le Condensateur : ses
+## cumuls ; la Décharge totale, le rayon de sa nova. La Cage de Faraday : sa durée, et
+## l'attente avant la suivante.
+const IONIZE_PERIOD := 1.0
+const IONIZE_RADIUS := 60.0
+const CONDENSER_MOST := 10
+const DISCHARGE_RADIUS := 50.0
+const FARADAY_TIME := 1.0
+const FARADAY_PERIOD := 5.0
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -650,6 +830,42 @@ var hearth := 0.0
 var helping_hand := 0.0
 var triangulation := 0.0
 var quickfire := 0.0
+var ramp := 0.0
+var full_throttle := 0.0
+var lightning_rod := 0.0
+var electrocute := 0.0
+var rod_heir := 0.0
+var storm_target := 0.0
+var caroms := 0.0
+var satellite := 0.0
+var charged_orb := 0.0
+var live_ice := 0.0
+var conductance := 0.0
+var bifurcation := 0.0
+var grounding := 0.0
+var relay := 0.0
+var relay_refund := 0.0
+var web_branch := 0.0
+var overvolt := 0.0
+var accumulation := 0.0
+var breaking_point := 0.0
+var overflow := 0.0
+var twin_strike := 0.0
+var hunt := 0.0
+var moving_front := 0.0
+var bolt_dash := 0.0
+var charged_run := 0.0
+var rearm := 0.0
+var round_trip := 0.0
+var rolling_thunder := 0.0
+var static_mines := 0.0
+var gallop := 0.0
+var ionize := 0.0
+var capacity := 0.0
+var backlash := 0.0
+var condenser := 0.0
+var total_discharge := 0.0
+var faraday := 0.0
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -885,6 +1101,31 @@ static func facts() -> Dictionary:
 		"portee_brasero": roundi(TURRET_SIGHT),
 		"vie_phare": roundi(BEACON_LIFE * 100.0),
 		"boules_souffle": LAST_BREATH_BALLS,
+		"tenue_emballement": roundi(RAMP_HOLD),
+		"cumuls_emballement": RAMP_MOST,
+		"tir_double": THROTTLE_EVERY,
+		"duree_paratonnerre": roundi(ROD_LIFE),
+		"portee_paratonnerre": roundi(ROD_REACH),
+		"portee_orage": roundi(STORM_ROD_REACH),
+		"orbite": roundi(SATELLITE_RADIUS),
+		"traverses_max": CHARGED_ORB_MOST,
+		"sauts_survoltage": OVERVOLT_JUMPS,
+		"sauts_max": CHAIN_JUMPS_MOST,
+		"charges_accumulation": ACCUMULATION_MOST,
+		"portee_rupture": roundi(BREAK_REACH),
+		"portee_debordement": roundi(OVERFLOW_REACH),
+		"pas_course": roundi(CHARGED_RUN_STEP),
+		"course_max": roundi(CHARGED_RUN_MOST),
+		"fenetre_course": roundi(CHARGED_RUN_WINDOW),
+		"attente_retour": ROUND_TRIP_DELAY,
+		"grondements": ROLLING_COUNT,
+		"force_mine": roundi(MINE_FACTOR),
+		"rayon_mine": roundi(MINE_REACH),
+		"galop_max": GALLOP_MOST,
+		"portee_ionisation": roundi(IONIZE_RADIUS),
+		"cumuls_condensateur": CONDENSER_MOST,
+		"duree_cage": roundi(FARADAY_TIME),
+		"rythme_cage": roundi(FARADAY_PERIOD),
 	}
 
 
@@ -895,6 +1136,18 @@ func ground(p_radius := GROUND_RADIUS) -> SkillStats:
 	g.duration = ground_duration
 	g.period = GROUND_PERIOD
 	g.radius = p_radius
+	return g
+
+
+## La chaîne que relance le Survoltage depuis un engourdi tué : une part du coup, deux
+## sauts, sans rien de ce qui relancerait — `_derived()` ne recopie ni l'explosion des tués
+## ni le Survoltage.
+func surged() -> SkillStats:
+	var g := _derived(overvolt * 0.01)
+	g.shape = Skill.Shape.CHAIN
+	g.targets = float(OVERVOLT_JUMPS)
+	g.jump_reach = jump_reach
+	g.jump_gain = jump_gain
 	return g
 
 

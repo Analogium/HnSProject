@@ -49,6 +49,11 @@ const IMPACT_OFFSET := 7.0
 ## x, y, vx, vy, âge, durée, côté, r, g, b. La couleur en clair : 38 Ko au pire cas
 ## mesuré, contre une palette à aligner à la main.
 const P_STRIDE := 10
+## Au-delà, ni nombre de dégâts ni gerbe ne naît : à deux mille coups par seconde (six
+## Satellites et le corbeau dans une meute), leur dessin faisait tomber le jeu de 164 à
+## 29 img/s (jalon 43). Les particules, au pire cas mesuré avant ce plafond.
+const NUMBERS_MOST := 80
+const PARTICLES_MOST := 960
 
 var _p := PackedFloat32Array()
 
@@ -161,6 +166,8 @@ func loot_gain(at: Vector2, text: String) -> void:
 
 
 func _add_number(at: Vector2, amount: float, is_crit: bool, tint: Color) -> void:
+	if _numbers.size() >= NUMBERS_MOST:
+		return
 	_add_label(
 		at + Vector2(0.0, -NUMBER_HEIGHT),
 		"%d" % maxi(roundi(amount), 1),
@@ -195,6 +202,8 @@ func _add_label(at: Vector2, text: String, body: int, tint: Color, rise: float) 
 
 ## Même règle que `_add_label` : la gerbe rallume le dessin elle-même.
 func _add_burst(at: Vector2, away: Vector2, is_crit: bool, tint: Color) -> void:
+	if _p.size() >= PARTICLES_MOST * P_STRIDE:
+		return
 	set_process(true)
 	queue_redraw()
 	var count := CRIT_PARTICLES if is_crit else HIT_PARTICLES

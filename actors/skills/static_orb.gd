@@ -9,21 +9,39 @@ const BOLT_LIFETIME := 0.14
 ## Les spores d'une nuée nécrotique.
 const SWARM := 12
 
+## Tous ceux qui volent : `simultaneous` par lanceur au plus (jalon 43), le Familier compté
+## à part. Au-delà, les plus anciens se dissolvent.
+static var _live: Array[StaticOrb] = []
+
 var _cast: SkillStats
 var _author: StatusEffects
 var _dir := Vector2.RIGHT
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
+## Son lanceur, pour la limite ; le Satellite (jalon 43) tourne autour, et dit où il en est.
+var _around: Node2D
+var _orbits := false
+var _angle := 0.0
+## L'Orbe chargé : les ennemis qu'il a déjà frappés, qui l'ont grossi.
+var _met := {}
 var _bolts: Array[StormCloud.Bolt] = []
 ## Tirage local et jamais `Game.rng` (invariant 3).
 var _flicker := RandomNumberGenerator.new()
 
 
 static func send(
-	parent: Node, from: Vector2, direction: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, from: Vector2, direction: Vector2, cast: SkillStats, author: StatusEffects,
+	around: Node2D = null
 ) -> StaticOrb:
+	_live.assign(_live.filter(func(o) -> bool: return is_instance_valid(o) and not o.is_queued_for_deletion()))
+	if cast.max_simultaneous() > 0:
+		var own := _live.filter(func(o: StaticOrb) -> bool: return o._around == around)
+		for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
+			(own[i] as StaticOrb).queue_free()
 	var orb := StaticOrb.new()
+	orb._around = around
+	_live.append(orb)
 	orb._cast = cast
 	orb._author = author
 	orb._dir = direction.normalized()
@@ -31,6 +49,10 @@ static func send(
 	parent.add_child(orb)
 	Settings.veil(orb, Settings.SPELLS)
 	orb.global_position = from + orb._dir * Projectile.MUZZLE
+	if cast.satellite > 0.0 and around != null:
+		orb._orbits = true
+		orb._angle = orb._dir.angle()
+		orb.global_position = from + orb._dir * SkillStats.SATELLITE_RADIUS
 	return orb
 
 
@@ -43,11 +65,19 @@ func _ready() -> void:
 ## peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
-	var step := _dir * _cast.projectile_speed * delta
-	if not Targets.in_sight(get_world_2d(), global_position, global_position + step):
-		queue_free()
-		return
-	global_position += step
+	if _orbits:
+		# Sur son orbite, il passe les murs : c'est son lanceur qui les longe.
+		if not is_instance_valid(_around):
+			queue_free()
+			return
+		_angle += _cast.projectile_speed / SkillStats.SATELLITE_RADIUS * delta
+		global_position = _around.global_position + Vector2.from_angle(_angle) * SkillStats.SATELLITE_RADIUS
+	else:
+		var step := _dir * _cast.projectile_speed * delta
+		if not Targets.in_sight(get_world_2d(), global_position, global_position + step):
+			queue_free()
+			return
+		global_position += step
 	var due := _cast.strikes_due(_age)
 	while _strikes < due:
 		_strike()
@@ -61,10 +91,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _strike() -> void:
-	for target in Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author):
+	var targets := Targets.strike_circle(get_world_2d(), global_position, reach(), _cast, _author)
+	for target in targets:
+		_met[target.get_instance_id()] = true
+	for target in targets.slice(0, Lightning.ARCS_MOST):
 		var e := StormCloud.Bolt.new()
 		e.toward = to_local(target.global_position)
 		_bolts.append(e)
+
+
+## Son rayon de frappe, grossi par l'Orbe chargé à chaque ennemi rencontré.
+func reach() -> float:
+	var met := mini(_met.size(), SkillStats.CHARGED_ORB_MOST)
+	return _cast.radius * (1.0 + _cast.charged_orb * 0.01 * float(met))
 
 
 func _draw() -> void:

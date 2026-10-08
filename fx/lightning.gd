@@ -18,6 +18,9 @@ const JITTER := 4.0
 ## Cadence du grésillement, en changements de forme par seconde. À 60 — une forme
 ## par image — l'œil ne voit plus un éclair mais du bruit.
 const FLICKER_HZ := 18.0
+## Les arcs dessinés par frappe d'un nuage ou d'un orbe, quel que soit le nombre de cibles :
+## un arc par cible coûtait 467 ms par seconde à six orbes chargés dans une meute (jalon 43).
+const ARCS_MOST := 3
 
 ## Le rayon du corps et celui d'une fourche : trois pixels, et un peu moins.
 const BODY := 1.1
@@ -47,12 +50,22 @@ const ORB_RADIUS := 4.5
 const ORB_ARC := 0.5
 const ORB_FORMS := 6
 
+## La marque du Paratonnerre (jalon 43), « la foudre appelée » choisie sur planche contre
+## un signe ⚡, une cible au sol, un losange, une tige : un éclair tombe du ciel sur la tête
+## marquée et y éclate, puis l'éclat seul, puis un autre éclair. Plus lente que le
+## grésillement : à 18 Hz, l'alternance éclair-éclat clignotait.
+const ROD_HEIGHT := 26.0
+const ROD_SWAY := 6.0
+const ROD_FORMS := 4
+const ROD_HZ := 8.0
+
 const R_TINT := EffectForge.R_TINT
 const R_CORE := EffectForge.R_CORE
 
 static var _darts := {}
 static var _charges := {}
 static var _orbs := {}
+static var _rods := {}
 
 
 ## Un trait brisé à rastériser : ses sommets, son rayon, et s'il porte le filament.
@@ -161,6 +174,24 @@ static func orb(tint: Color, form: int, gone_part: float) -> EffectForge.Piece:
 			strokes.append(Stroke.new(path(Vector2.from_angle(angle) * ORB_RADIUS, tip, rng, 1.5, 4.0), ORB_ARC, true))
 		_orbs[key] = _bake(strokes, PackedVector2Array(), tint, gone_part, ORB_RADIUS)
 	return _orbs[key]
+
+
+## La marque dans sa forme `form`, l'éclat sur la tête à l'ancrage : les formes paires
+## portent l'éclair qui tombe, les impaires l'éclat seul.
+static func rod(tint: Color, form: int) -> EffectForge.Piece:
+	var turn := posmod(form, ROD_FORMS)
+	var key := "%s|%d" % [tint.to_html(false), turn]
+	if not _rods.has(key):
+		var rng := RandomNumberGenerator.new()
+		rng.seed = turn
+		var strokes: Array[Stroke] = []
+		if turn % 2 == 0:
+			var sky := Vector2(rng.randf_range(-ROD_SWAY, ROD_SWAY), -ROD_HEIGHT)
+			strokes.append(Stroke.new(path(sky, Vector2.ZERO, rng, 2.5, 5.0), BODY, true))
+		else:
+			strokes.append(Stroke.new(PackedVector2Array([Vector2.ZERO, Vector2.ZERO]), FORK, false))
+		_rods[key] = _bake(strokes, PackedVector2Array([Vector2.ZERO]), tint, 0.0)
+	return _rods[key]
 
 
 static func _bolt(

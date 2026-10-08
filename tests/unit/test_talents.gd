@@ -813,8 +813,11 @@ func test_no_manual_fills_up_entirely() -> void:
 ## 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
 ## Seuls les leviers de base y échappent, un par arbre au plus, et les échanges entiers : le
 ## Pouls lent (−50 % de cadence ⇄ +60 % plus) n'est pas un second nœud de dégâts (jalon 42).
-## Le feu depuis le jalon 42, l'Ignition partie au profit du Brasero.
-const UNIQUE_TREES := ["manual_necrotic", "manual_weapons", "manual_holy", "manual_witch", "manual_fire"]
+## Le feu depuis le jalon 42, l'Ignition partie au profit du Brasero ; la foudre depuis le 43.
+const UNIQUE_TREES := [
+	"manual_necrotic", "manual_weapons", "manual_holy", "manual_witch", "manual_fire",
+	"manual_lightning",
+]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 

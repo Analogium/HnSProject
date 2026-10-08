@@ -46,6 +46,8 @@ var _burden := 0.0
 var _since_burden := 0.0
 ## Depuis la dernière fois que l'Auréole a béni, et son rayon, pour le dessin.
 var _since_blessing := 0.0
+## L'Ionisation (jalon 43) : depuis quand le champ n'a pas engourdi autour de lui.
+var _since_ion := 0.0
 var _aureole := 0.0
 
 
@@ -90,6 +92,14 @@ func stack(trigger: Skill.StackTrigger, own: SkillStats = null) -> bool:
 	_since_stack = 0.0
 	_hold = hold_of(_skill, own)
 	return true
+
+
+## Le Galop (jalon 43) : des charges posées d'un coup, sur un buff qui n'en porte pas
+## d'ordinaire, et qui tiennent ce temps.
+func hold_stacks(count: int, seconds: float) -> void:
+	stacks = count
+	_since_stack = 0.0
+	_hold = seconds
 
 
 ## Le plafond des charges et leur tenue : **le seul calcul**, que la fiche lit aussi.
@@ -148,7 +158,25 @@ func _physics_process(delta: float) -> void:
 		burning = cast.self_burn
 		_share_the_burden(cast, withered * _player.stats.max_health * delta, delta)
 		_bless(cast, delta)
+		_ionize(cast, delta)
 	_player.burn(burning + withered, _distribution, delta)
+
+
+## L'Ionisation (jalon 43) : à chaque période, chaque ennemi proche a sa chance d'être
+## engourdi — un tirage par ennemi, de quoi semer des charges sans autre sort.
+func _ionize(cast: SkillStats, delta: float) -> void:
+	if cast.ionize <= 0.0:
+		return
+	_since_ion += delta
+	if _since_ion < SkillStats.IONIZE_PERIOD:
+		return
+	_since_ion = 0.0
+	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.IONIZE_RADIUS):
+		if target.states != null and Game.rng.randf() * 100.0 < cast.ionize:
+			target.states.put(
+				StatusEffects.Kind.NUMB, 1.0, _player.states, _skill.id,
+				cast.strength_of(StatusEffects.Kind.NUMB)
+			)
 
 
 ## Le Fardeau partagé (jalon 38) : ce que la Nécrose a rongé, rendu aux ennemis proches

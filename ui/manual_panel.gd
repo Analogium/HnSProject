@@ -1108,11 +1108,15 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	# Celle d'un lancer qui pose un buff se lit sous le nom du buff, plus bas.
 	# Celle d'une malédiction se lit dans son bloc : c'est celle de l'état.
-	if cast.duration > 0.0 and not skill.grants_buffs() \
-			and cast.inflicted_state != StatusEffects.Kind.CURSED:
-		out.append(SheetLine.new(
-			Group.SHAPE, Texts.t("durée"), "%.1f s" % cast.duration, UiPalette.TEXT
-		))
+	# La limite sur la ligne de la durée : une ligne de plus sortait la fiche du Nuage
+	# d'orage du cadre (jalon 43).
+	var timed := cast.duration > 0.0 and not skill.grants_buffs() \
+			and cast.inflicted_state != StatusEffects.Kind.CURSED
+	if timed:
+		var lasting := "%.1f s" % cast.duration
+		if cast.max_simultaneous() > 0:
+			lasting += " · " + Texts.t("%d à la fois") % cast.max_simultaneous()
+		out.append(SheetLine.new(Group.SHAPE, Texts.t("durée"), lasting, UiPalette.TEXT))
 	if cast.radius > 0.0 and cast.shape != Skill.Shape.MARK:
 		out.append(SheetLine.new(
 			# Celui d'une frappe vive n'est pas une zone : c'est jusqu'où elle va chercher.
@@ -1123,7 +1127,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		out.append(SheetLine.new(
 			Group.SHAPE, Texts.t("toutes les"), "%.2f s" % cast.period, UiPalette.TEXT
 		))
-	if cast.max_simultaneous() > 0:
+	if cast.max_simultaneous() > 0 and not timed:
 		out.append(SheetLine.new(
 			Group.SHAPE, Texts.t("en même temps"), str(cast.max_simultaneous()), UiPalette.TEXT
 		))

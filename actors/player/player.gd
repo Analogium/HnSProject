@@ -154,6 +154,21 @@ var _rebirth_wait := 0.0
 var phoenix_ashes := 0.0
 ## La Seconde foulée : par case, le temps qui reste pour relancer la ruée sans payer.
 var _strides := {}
+## L'Emballement (jalon 43) : les cumuls, le temps depuis le dernier lancer qui en porte ;
+## le Plein régime compte les tirs à plein cumul.
+var _ramps := 0
+var _ramp_idle := INF
+var _throttle := 0
+## La Tension accumulée (jalon 43) : le « plus » que porte le prochain sort de foudre, et le
+## temps qu'il reste pour le lancer.
+var _tension := 0.0
+var _tension_left := 0.0
+## Le Condensateur (jalon 43) : les morsures de charges comptées, et ce qu'elles ont mordu,
+## que la Décharge totale rend d'un coup. La Cage de Faraday : son reste, son attente.
+var _condensed := 0
+var _condensed_power := 0.0
+var _faraday_left := 0.0
+var _faraday_wait := 0.0
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
@@ -228,6 +243,13 @@ func _physics_process(delta: float) -> void:
 		if _strides[index] <= 0.0:
 			_strides.erase(index)
 	phoenix_ashes = maxf(phoenix_ashes - delta, 0.0)
+	_ramp_idle += delta
+	_tension_left = maxf(_tension_left - delta, 0.0)
+	_faraday_wait = maxf(_faraday_wait - delta, 0.0)
+	if _faraday_left > 0.0:
+		_faraday_left -= delta
+		if _faraday_left <= 0.0:
+			hurtbox.invulnerable = false
 
 	_regen(delta)
 	_drink(delta)
@@ -319,6 +341,8 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.LUNGE and prey == null:
 		return false
 
+	if cast.ramp > 0.0:
+		_ramp_up(cast)
 	if stride:
 		_strides.erase(index)
 		# La Foulée de feu : la seconde ruée frappe plus fort, traînée et explosions.
@@ -330,6 +354,19 @@ func cast_slot(index: int) -> bool:
 			_strides[index] = SkillStats.STRIDE_WINDOW
 			# Un nouvel appui : la touche encore tenue la dépensait à l'image suivante.
 			_held[index] = false
+	# La Tension accumulée (jalon 43) : le premier sort de foudre après la course la dépense.
+	if _tension_left > 0.0 and cast.nature == DamageType.Kind.LIGHTNING and skill.strikes() \
+			and cast.shape != Skill.Shape.DASH:
+		cast = cast.echoed(1.0 + _tension * 0.01)
+		_tension_left = 0.0
+	# Le Condensateur (jalon 43) : à pleins cumuls, le sort de foudre suivant les dépense.
+	if _condensed >= SkillStats.CONDENSER_MOST and cast.nature == DamageType.Kind.LIGHTNING \
+			and skill.strikes():
+		var condensed := lit_number(SkillStats.CONDENSER)
+		if condensed > 0.0:
+			cast = cast.echoed(1.0 + condensed * 0.01)
+			_condensed = 0
+			_condensed_power = 0.0
 	var salvo := _salvo(skill, points, cast)
 	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
 	if spell:
@@ -342,11 +379,28 @@ func cast_slot(index: int) -> bool:
 		sprite.attack(skill.cadence == Skill.Cadence.CAST)
 	var aim := _aim_point()
 	_pose(skill, salvo, self, facing, aim, prey)
+	if cast.rearm > 0.0:
+		_rearm(index, cast)
+	# Le Plein régime (jalon 43) rejoue le lancer entier : un éclair, ou un orbe s'il l'est devenu.
+	if cast.full_throttle > 0.0 and _ramps == SkillStats.RAMP_MOST:
+		_throttle += 1
+		if _throttle % SkillStats.THROTTLE_EVERY == 0:
+			get_tree().create_timer(SkillStats.THROTTLE_GAP, false, true).timeout.connect(
+				_pose.bind(skill, salvo, self, facing, aim)
+			)
 	if skill.id == SkillStats.HEARTH_SKILL:
 		Brazier.assist(self, aim)
 	if spell:
 		_after_spell(skill, salvo, aim)
 	return true
+
+
+## L'Emballement (jalon 43) : un lancer qui suit le précédent de moins de `RAMP_HOLD`
+## ajoute un cumul, au-delà tout retombe ; le geste en est d'autant plus court.
+func _ramp_up(cast: SkillStats) -> void:
+	_ramps = mini(_ramps + 1, SkillStats.RAMP_MOST) if _ramp_idle < SkillStats.RAMP_HOLD else 0
+	_ramp_idle = 0.0
+	cast.use_time /= 1.0 + cast.ramp * 0.01 * float(_ramps)
 
 
 ## Le Feu nourri (jalon 42) : sous un brasier allumé, la boule en sort attisée — dégâts et
@@ -402,8 +456,13 @@ func _pose(
 		Skill.Shape.COMET:
 			_roll(salvo, comet_scene, origin, toward)
 		Skill.Shape.ORB:
-			for direction in _spread(cast, toward):
-				StaticOrb.send(parent, at, direction, cast, states)
+			var directions := _spread(cast, toward)
+			# Le Satellite (jalon 43) : répartis autour du lanceur, pas en éventail.
+			if cast.satellite > 0.0:
+				for i in directions.size():
+					directions[i] = toward.rotated(TAU * float(i) / float(directions.size()))
+			for direction in directions:
+				StaticOrb.send(parent, at, direction, cast, states, origin)
 		Skill.Shape.METEOR:
 			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
@@ -416,9 +475,9 @@ func _pose(
 				Game.hit_stop()
 				Game.shake_camera(camera, shake_amount)
 		Skill.Shape.CLOUD:
-			StormCloud.put(parent, aim, cast, states)
+			StormCloud.put(parent, aim, cast, states, null, origin)
 		Skill.Shape.TEMPEST:
-			StormCloud.put(parent, global_position, cast, states, self)
+			StormCloud.put(parent, global_position, cast, states, self, origin)
 		Skill.Shape.SNAKE:
 			# Une couvée part en éventail, centrée sur la visée.
 			var brood := 1 + int(cast.brood)
@@ -724,7 +783,57 @@ func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
 		return
 	if Game.rng.randf() * 100.0 >= stats.static_charge_chance:
 		return
-	StaticCharge.put(_effects_parent(), at, at - global_position, parts, states)
+	StaticCharge.put(
+		_effects_parent(), at, at - global_position, parts, states, StaticCharge.SHARE, false,
+		StaticCharge.LIFE + lit_number(SkillStats.CAPACITY), _charge_bit
+	)
+
+
+## Ce que les buffs allumés portent de ce nombre de mécanique (jalon 43) : l'Électricité
+## statique y met la Capacité, le Condensateur, le Choc en retour. Résolu à chaque appel :
+## on ne le demande qu'à un événement rare — une charge qui naît, un coup reçu.
+func lit_number(number: String) -> float:
+	var total := 0.0
+	for skill in lit_skills():
+		total += float(resolve(skill, skill_points(skill.id)).get(number))
+	return total
+
+
+## Une charge statique de ce joueur vient de mordre : le Condensateur compte. À pleins
+## cumuls, la Décharge totale les rend d'un coup en nova, sans attendre de sort.
+func _charge_bit(power: float) -> void:
+	_condensed = mini(_condensed + 1, SkillStats.CONDENSER_MOST)
+	_condensed_power += power
+	if _condensed < SkillStats.CONDENSER_MOST or lit_number(SkillStats.TOTAL_DISCHARGE) <= 0.0:
+		return
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.LIGHTNING] = _condensed_power
+	Explosion.put(
+		_effects_parent(), global_position, parts, SkillStats.DISCHARGE_RADIUS, null,
+		DamageType.COLORS[DamageType.Kind.LIGHTNING], states, null
+	)
+	_condensed = 0
+	_condensed_power = 0.0
+
+
+## Un ennemi vient de frapper au contact (`Enemy._hurt()`) : le Choc en retour lui rend
+## une part du coup en foudre, par un arc ; la Cage de Faraday s'ensuit.
+func backlash(attacker: Enemy, amount: float) -> void:
+	var part := lit_number(SkillStats.BACKLASH)
+	if part <= 0.0 or is_dead or not is_instance_valid(attacker):
+		return
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.LIGHTNING] = amount * part * 0.01
+	Targets.strike(attacker.hurtbox, parts, global_position, states, null)
+	ChainLightning.trace(
+		_effects_parent(), PackedVector2Array([global_position, attacker.global_position]),
+		DamageType.COLORS[DamageType.Kind.LIGHTNING]
+	)
+	# Jamais par-dessus une invulnérabilité posée ailleurs, qu'elle lèverait en finissant.
+	if _faraday_wait <= 0.0 and not hurtbox.invulnerable and lit_number(SkillStats.FARADAY) > 0.0:
+		hurtbox.invulnerable = true
+		_faraday_left = SkillStats.FARADAY_TIME
+		_faraday_wait = SkillStats.FARADAY_PERIOD
 
 
 ## Un ennemi tué. **Depuis un rappel de collision** : ce qui naît ici passe par
@@ -747,6 +856,9 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 			_effects_parent(), at, parts, cast.kill_burst, null,
 			DamageType.COLORS[cast.nature], states, blast
 		)
+		# Le Survoltage (jalon 43) : l'explosion relance une petite chaîne depuis le tué.
+		if cast.overvolt > 0.0:
+			ChainLightning.surge.call_deferred(_effects_parent(), get_world_2d(), at, states, cast.surged())
 	# Les Âmes consumées (jalon 42) : chaque tué rend une part des PV max.
 	if cast.soul_feast > 0.0:
 		heal(stats.max_health * cast.soul_feast * 0.01)
@@ -797,20 +909,45 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 	elif cast.period > 0.0 and cast.radius > 0.0:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
 	elif skill.grants_buffs():
-		_light(skill.id, Buff.light(self, skill, cast.duration))
+		# Le Galop (jalon 43) : le nouvel appel reprend les charges de l'ancien, plus une.
+		var held := maxi(lit_stacks(skill.id), 1) if lit(skill.id) else 0
+		var buff := Buff.light(self, skill, cast.duration)
+		if cast.gallop > 0.0:
+			buff.hold_stacks(mini(held + 1, SkillStats.GALLOP_MOST), cast.duration)
+		_light(skill.id, buff)
+	# Le Trait d'éclair (jalon 43) : un éclair relie le départ à l'arrivée, et frappe ce qu'il
+	# traverse ; l'Aller-retour y ramène, par le même chemin. La Tension accumulée se charge.
+	if cast.bolt_dash > 0.0:
+		_bolt_line(from_value, global_position, cast)
+		if cast.round_trip > 0.0:
+			get_tree().create_timer(SkillStats.ROUND_TRIP_DELAY, false, true).timeout.connect(
+				_return_to.bind(from_value, cast)
+			)
+	if cast.charged_run > 0.0:
+		var run := minf(from_value.distance_to(global_position), SkillStats.CHARGED_RUN_MOST)
+		_tension = cast.charged_run * run / SkillStats.CHARGED_RUN_STEP
+		_tension_left = SkillStats.CHARGED_RUN_WINDOW
 	# Sillage statique (jalon 35) : réparties sur le trajet, à la part d'un coup de la ruée.
 	var charges := int(cast.trail_charges)
+	var charge_life := StaticCharge.LIFE + lit_number(SkillStats.CAPACITY) if charges > 0 else 0.0
 	for i in charges:
 		StaticCharge.put(
 			_effects_parent(), from_value.lerp(global_position, (float(i) + 0.5) / float(charges)),
 			(global_position - from_value).orthogonal() * (1.0 if i % 2 == 0 else -1.0),
-			cast.roll(Game.rng), states, SkillStats.TRAIL_CHARGE_PART
+			cast.roll(Game.rng), states, SkillStats.TRAIL_CHARGE_PART, cast.static_mines > 0.0,
+			charge_life, _charge_bit
 		)
 	if cast.end_burst > 0.0:
 		Explosion.put(
 			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
 			DamageType.COLORS[cast.nature], states, cast
 		)
+		# Le Tonnerre roulant (jalon 43) : l'arrivée gronde encore, au même endroit.
+		if cast.rolling_thunder > 0.0:
+			for i in SkillStats.ROLLING_COUNT:
+				get_tree().create_timer(SkillStats.ROLLING_GAP * float(i + 1), false, true).timeout.connect(
+					_rumble.bind(global_position, cast.echoed(cast.rolling_thunder * 0.01))
+				)
 		# Le Départ en trombe (jalon 42) : la même explosion, à une part, d'où l'on part.
 		if cast.flying_start > 0.0:
 			Explosion.put(
@@ -825,6 +962,39 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 			_effects_parent(), global_position, wave, states, SkillStats.BURNING_WAVE_REACH
 		)
 	_charm(cast)
+
+
+func _bolt_line(from_value: Vector2, to: Vector2, cast: SkillStats) -> void:
+	var parts := cast.roll(Game.rng)
+	for target in Targets.in_capsule(get_world_2d(), from_value, to, SkillStats.BOLT_DASH_WIDTH):
+		Targets.strike(target, parts, from_value, states, cast)
+	ChainLightning.trace(_effects_parent(), PackedVector2Array([from_value, to]), DamageType.COLORS[cast.nature])
+
+
+## L'Aller-retour : on revient d'où l'on est parti, murs traversés comme à l'aller.
+func _return_to(origin: Vector2, cast: SkillStats) -> void:
+	if is_dead:
+		return
+	var from_value := global_position
+	global_position = _landing(from_value, origin)
+	_bolt_line(from_value, global_position, cast)
+
+
+func _rumble(at: Vector2, cast: SkillStats) -> void:
+	Explosion.put(
+		_effects_parent(), at, cast.roll(Game.rng), cast.end_burst, null,
+		DamageType.COLORS[cast.nature], states, cast
+	)
+
+
+## Le Réarmement (jalon 43) : chaque engourdi dans l'explosion d'arrivée — compté avant
+## qu'elle frappe — raccourcit la recharge de la case.
+func _rearm(index: int, cast: SkillStats) -> void:
+	var numbed := 0
+	for target in Targets.in_circle(get_world_2d(), global_position, cast.end_burst):
+		if target.states != null and target.states.active(StatusEffects.Kind.NUMB):
+			numbed += 1
+	_recharges[index] = maxf(_recharges[index] - cast.rearm * float(numbed), 0.0)
 
 
 ## Le Charmeur (jalon 42) : à l'arrivée, un Serpent infernal surgit — avec vos points et
@@ -1173,8 +1343,9 @@ func recompute_stats() -> void:
 func buff_mods() -> Array[StatMod]:
 	var out: Array[StatMod] = []
 	for skill in lit_skills():
-		# Une ligne est linéaire en points : ses charges la multiplient de la même façon.
-		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else 1
+		# Une ligne est linéaire en points : ses charges la multiplient de la même façon. Un
+		# buff sans charges propres en porte sous le Galop (jalon 43).
+		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else maxi(lit_stacks(skill.id), 1)
 		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
 		# Les lignes de ses nœuds qui ne visent pas un nombre du lancer (jalon 34) : des
 		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle — et

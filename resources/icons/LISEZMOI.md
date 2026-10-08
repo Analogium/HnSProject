@@ -61,8 +61,6 @@ dans le fond. On génère trois images par compétence et on choisit sur une
 planche où chacune est déjà réduite — juger une image de 1024 px ne dit rien de
 ce qui restera à 24.
 
-L'icône d'Éclair vif est antérieure et ne suit pas cette recette.
-
 **La Boule de feu** a été refaite au jalon 42 par le tuyau des nœuds (Qwen-Image,
 voir « Icônes de nœuds ») : l'option `qwen` de `tools/skill_icons.json`, où le sujet
 est une phrase entière et la réduction celle des nœuds, sans découpe. Graine 4242, choisie
@@ -71,6 +69,13 @@ infernal aussi, graine 777 (`16-icone-serpent.png`). L'Immolation, graine 4242
 (`18-icone-immolation.png`). La Ruée ardente, graine 4242 (`20-icone-ruee.png`) : elle
 quitte le tuyau SDXL, où elle sortait sur fond gris. Le Brasero, graine 4242 (`22-icone-brasero.png`) :
 **tout le manuel du feu** passe ainsi par Qwen-Image.
+
+**Le manuel de la foudre** aussi, au jalon 43 : l'option `nature` (`"lightning"`) donne la
+palette et le fond violet. Choisies sur planche (`Bureau\hns-captures-noeuds-foudre\`) :
+l'Éclair vif, graine 777 (`02`) ; la Chaîne, trois crânes qu'un arc relie, graine 777 (`05`,
+le premier sujet ne donnait qu'un éclair seul) ; le Nuage, un nuage **clair** isolé, graine
+1337 (`07`) ; la Ruée, une silhouette noire cernée d'éclairs, graine 1337 (`10`) ; la
+Statique, une main blanche cerclée d'arcs, graine 777 (`12`).
 
 **Une boule de feu se dessine en flamme** : « une boule qui rebondit », « qui ricoche sur
 un mur » sortent une flamme posée — la Mitraille garde la moins mauvaise, à refaire.
@@ -164,6 +169,12 @@ Lightning ramène les 45 pas du LoRA pixel art à 8 : **7 s par tirage** à 768 
 déchargement partiel le processus ComfyUI ne rendait plus que du bruit — **SDXL compris**,
 jusqu'à son redémarrage. `render()` s'arrête s'il en reçoit.
 
+**Si un tirage dépasse la minute**, la carte est dans un mauvais état : au jalon 43 elle
+calculait à 12 s par pas (2 min par tirage), sans débordement en mémoire partagée. Ni la
+fermeture d'iCUE (5 Go de mémoire vidéo), ni le redémarrage de ComfyUI n'y ont rien fait ;
+**le redémarrage de la machine** l'a ramenée à 11-16 s par tirage, ~90 s pour le premier
+d'un sujet.
+
 ### La recette
 
 - **Le prompt demande de gros pixels et deux ou trois formes** (`TMPL`) : un tirage
@@ -175,6 +186,13 @@ jusqu'à son redémarrage. `render()` s'arrête s'il en reçoit.
 - **un seul sujet, rien autour** : un serpent orange cerné de flammes orange se fondait
   en une tache à 24 px. Un serpent se demande **de profil, en S**, avec un seul accessoire
   qui dit le nœud (le sablier, le cadenas, l'œuf) — vu de face, enroulé, il ne se lit plus.
+- **pas de personnage** : une silhouette humaine sort détaillée et devient une bouillie à
+  24-32 px (Satellite, Orage portatif, Choc en retour au jalon 43). Un objet le remplace — un
+  chapeau de mage sous son nuage —, ou le sujet lui-même court sur deux jambes (le nuage du
+  Front mobile, l'éclair du Trait d'éclair) ;
+- **un nuage se demande clair et isolé** (« pale grey-white », « no sky, no ground, no
+  horizon ») : sombre, Qwen le pose dans un ciel violet à l'horizon, que le détourage ne
+  reconnaît pas, et il se fond dans le fond.
 
 **Une nature** autre que le feu se dit dans la ligne du nœud, `{"nature": "cold"}` ou
 `"necrotic"` ou `"lightning"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
@@ -189,6 +207,17 @@ Danse du charmeur l'Ouroboros, l'Onde brûlante les Escarbilles.
 Au Brasero : le Tisonnier reprend l'Attisement, les Bûches le Bûcher, la Vigie l'Œil du
 brasier, la Salve la Double langue, les Dernières braises la Fragmentation, le Brasier
 ravivé la Vélocité.
+À la foudre : le Trait de glace reprend le Givre, le Verglas le Gel intense, l'Orbe
+statique l'Électrisé du Brasero ; Haute tension et Potentiel la Surcharge, la Bifurcation la
+Fourche, la Vivacité le Vif-argent, la Persistance et la Capacité l'Orage durable (le
+sablier), le Réamorçage l'Impulsion, la Haute fréquence le Réarmement (le chronomètre),
+l'Influx le Retour par la masse, l'Arc brûlant le Point chaud.
+
+**Un nœud repris dont le tirage a disparu** reprend la vignette déjà posée, si elle est à
+son côté (`vignette()`) ; sinon `gen --only <source>` refait le tirage. Et **un tirage déjà
+fait ne se refait pas** : ComfyUI inscrit son prompt dans chaque PNG de son dossier de
+sortie (`COMFY_OUT`), que `done_before()` relit avant de calculer — le cache temporaire
+s'est vidé à un redémarrage de la machine, le dossier de ComfyUI non.
 
 ```bash
 tools/node_icons.py gen --only fireball_meteor   # trois graines, planche sheet_nodes.png
@@ -199,6 +228,11 @@ Sujet, graine retenue et rôle dans `tools/node_icons.json`. Choisis sur planche
 (`Bureau\hns-captures-noeuds-icones\`, 06 à 12) ; **certaines se ressemblent encore**
 (beaucoup de flammes) et Chute libre, Déflagration et Double langue ratent leur sujet :
 gardées telles quelles, à retoucher.
+
+La foudre (jalon 43) : 79 nœuds, dont 13 qui en reprennent un autre, choisis arbre par arbre
+sur planche et en jeu (`Bureau\hns-captures-noeuds-foudre\`, 01 à 12). Trois restent
+faibles, gardés : le Rebond (un éclair qui tombe sur un ennemi, sans rebond), le Satellite
+(une planète cerclée, sans la lune) et le Vif-argent (une main floue).
 
 
 ## Icônes d'objets

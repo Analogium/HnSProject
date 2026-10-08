@@ -35,15 +35,29 @@ var _next := CHECK
 ## Qui elle a déjà mordu. Sa période est sa vie entière : une cible plantée dessus ne
 ## la paie pas vingt fois.
 var _bitten := Targets.Contacts.new(LIFE)
+var _radius := RADIUS
+var _mine := false
+var _life := LIFE
+var _on_bite := Callable()
 
 
 ## `parts` est ce que le coup a **réellement** infligé : la charge est petite quand
 ## l'armure a mangé le coup. Celles qu'une ruée sème portent leur propre part.
 static func put(
 	parent: Node, at: Vector2, direction: Vector2, parts: Array, author: StatusEffects,
-	share := SHARE
+	share := SHARE, mine := false, life := LIFE, on_bite := Callable()
 ) -> StaticCharge:
 	var charge := StaticCharge.new()
+	# La Capacité (jalon 43) : plus longue, elle garde sa morsure pour toute sa vie. Le
+	# Condensateur apprend chacune de ses morsures.
+	charge._life = life
+	charge._bitten = Targets.Contacts.new(life)
+	charge._on_bite = on_bite
+	# Les Mines statiques (jalon 43) : plus fortes et plus larges, elles ne mordent qu'une fois.
+	if mine:
+		share *= SkillStats.MINE_FACTOR
+		charge._radius = RADIUS * SkillStats.MINE_REACH
+		charge._mine = true
 	var total := 0.0
 	for part in parts:
 		total += float(part)
@@ -62,6 +76,12 @@ static func put(
 	return charge
 
 
+## Celles qui vivent : le Relais de la Chaîne d'éclairs (jalon 43) y saute.
+static func live() -> Array[StaticCharge]:
+	_live = _live.filter(func(c: StaticCharge) -> bool: return is_instance_valid(c))
+	return _live
+
+
 func _ready() -> void:
 	z_index = 3
 
@@ -75,18 +95,23 @@ func _physics_process(delta: float) -> void:
 	# Elle s'écarte vite puis se pose : une étincelle est projetée, elle ne dérive pas.
 	position += _toward * delta * maxf(1.0 - _age / LIFE, 0.0) * 2.0
 	queue_redraw()
-	if _age >= LIFE:
+	if _age >= _life:
 		queue_free()
 		return
 	if _age < _next:
 		return
 	_next = _age + CHECK
 	_bitten.advance(CHECK)
-	for target in Targets.in_circle(get_world_2d(), global_position, RADIUS):
+	for target in Targets.in_circle(get_world_2d(), global_position, _radius):
 		if not _bitten.accepts(target):
 			continue
 		# Sans lancer : une charge ne critique pas et ne porte aucun bonus contre un état.
 		Targets.strike(target, _parts, global_position, _author, null)
+		if _on_bite.is_valid():
+			_on_bite.call(_parts[DamageType.Kind.LIGHTNING])
+		if _mine:
+			queue_free()
+			return
 
 
 ## L'étoile brisée, choisie sur planche : ses bras tournent et grésillent, décalés
@@ -94,6 +119,6 @@ func _physics_process(delta: float) -> void:
 ## défait sur son dernier tiers : disparaître d'un coup se lit comme un bug.
 func _draw() -> void:
 	Lightning.charge(
-		DamageType.COLORS[DamageType.Kind.LIGHTNING], RADIUS,
-		Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, LIFE)
+		DamageType.COLORS[DamageType.Kind.LIGHTNING], _radius,
+		Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, _life)
 	).put(self, Vector2.ZERO)

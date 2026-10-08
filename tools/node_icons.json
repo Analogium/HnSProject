@@ -370,5 +370,321 @@
   "brazier_electrified": [
     "A crackling ball of purple electric sparks.",
     777, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_overload": [
+    "A thick jagged violet lightning bolt with a bright white core, crackling with extra energy, small sparks bursting off its edges.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "swift_bolt_celerity": [
+    "A jagged lightning bolt rushing to the right, with three long pale speed lines trailing behind it.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "swift_bolt_hot_spot": [
+    "A jagged lightning bolt with a sharp four-pointed white star glint on its upper right, the sparkle of a critical hit.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "swift_bolt_fork": [
+    "Two jagged lightning bolts splitting apart in a V shape from a single point on the left.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "swift_bolt_piercing": [
+    "A horizontal jagged lightning bolt piercing straight through a cracked wooden plank, entering on the left and coming out on the right.",
+    1337, "major", {"nature": "lightning"}
+  ],
+  "swift_bolt_bounce": [
+    "A jagged lightning bolt bouncing off a small dark enemy silhouette and flying back up in a V shape, a bright spark at the bounce point.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "swift_bolt_splinters": [
+    "A lightning bolt shattering at its tip into many small sharp violet shards flying outward in a star pattern.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_glacial_bolt": [
+    "",
+    4242, "major", {"from": "fireball_frost"}
+  ],
+  "swift_bolt_static_orb": [
+    "",
+    4242, "major", {"from": "brazier_electrified"}
+  ],
+  "swift_bolt_ramp": [
+    "A round speedometer gauge with its needle pushed far into the violet zone, a small lightning bolt on its face.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "swift_bolt_lightning_rod": [
+    "A thick jagged lightning bolt striking down onto the tip of a short thick dark iron spike, a bright white star burst at the impact point.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "swift_bolt_electrocution": [
+    "A white human skull jolted by electricity, jagged violet lightning crackling through it.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "swift_bolt_full_throttle": [
+    "Two parallel jagged lightning bolts racing to the right, one right behind the other.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_inherited_strike": [
+    "A violet lightning arc leaping from a small grey skull over to a red crosshair target.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_storm_target": [
+    "A dark storm cloud dropping a jagged lightning bolt onto a red crosshair target.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_carom": [
+    "A jagged lightning bolt ricocheting off a grey stone brick wall in a V shape.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_satellite": [
+    "A small bright violet electric orb orbiting a dark round sphere, a thin ring showing its circular path, like a moon around a planet.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_charged_orb": [
+    "A glowing violet electric orb with long arcs of lightning reaching out far in every direction.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "swift_bolt_live_ice": [
+    "A blue ice crystal with a jagged violet lightning bolt crackling through it.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "chain_lightning_high_voltage": [
+    "",
+    4242, "basic", {"from": "swift_bolt_overload"}
+  ],
+  "chain_lightning_branching": [
+    "A chain of violet lightning zigzagging across four small glowing dots in a row.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "chain_lightning_reflex": [
+    "An open violet glowing hand casting a spell, quick motion lines behind it.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "chain_lightning_short_circuit": [
+    "A cut electrical cable, a big bright violet spark bursting from its cut end.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "chain_lightning_taut_arc": [
+    "A long thin lightning arc stretched between two far apart glowing points, like a taut bow string.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "chain_lightning_sparks": [
+    "An open hand covered with small crackling violet electric sparks, fingers stiff.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "chain_lightning_crescendo": [
+    "Three jagged lightning bolts in a row, growing from small to huge from left to right.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_surge": [
+    "A white skull exploding inside a burst of violet lightning.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_web": [
+    "A bright central point with five lightning arcs radiating outward to five small dots, like a spider web.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_conductance": [
+    "A coiled copper wire with violet electricity flowing through it, glowing.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_bifurcation": [
+    "",
+    4242, "major", {"from": "swift_bolt_fork"}
+  ],
+  "chain_lightning_grounding": [
+    "A jagged lightning bolt striking down into a glowing blue mana crystal.",
+    1337, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_relay": [
+    "A chain of lightning hopping through three small glowing violet spark balls.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "chain_lightning_antlers": [
+    "A pair of deer antlers made of violet lightning.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "chain_lightning_overvolt": [
+    "A violet electric explosion with three lightning arcs shooting out of it to the right.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "chain_lightning_repriming": [
+    "",
+    4242, "suite", {"from": "storm_dash_momentum"}
+  ],
+  "storm_cloud_cumulonimbus": [
+    "A huge towering pale grey-white storm cloud with one thick bright violet lightning bolt below it. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "storm_cloud_front": [
+    "A very wide flat pale grey storm cloud stretching from edge to edge, three small violet lightning bolts beneath it. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "storm_cloud_lingering_storm": [
+    "An hourglass with glowing violet sand.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "storm_cloud_downpour": [
+    "A small pale grey cloud pouring heavy violet rain streaks and two small lightning bolts. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "storm_cloud_wandering": [
+    "A small storm cloud drifting to the right, a dashed trail behind it, a lightning bolt beneath it.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_hail": [
+    "A dark storm cloud dropping big round white hailstones.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "storm_cloud_tempest": [
+    "A small pale grey storm cloud hovering right above a dark pointed wizard hat, a small lightning bolt between them. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_accumulation": [
+    "A dark storm cloud swollen and bulging, glowing violet from inside, about to burst.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_updraft": [
+    "A violet whirlwind vortex sucking inward toward its center, seen from above.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_overflow": [
+    "A storm cloud with a long lightning arc spilling sideways out of it to the right.",
+    1337, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_twin_strike": [
+    "Two identical jagged lightning bolts striking down side by side from a dark cloud.",
+    777, "major", {"nature": "lightning"}
+  ],
+  "storm_cloud_breaking_point": [
+    "A pale grey storm cloud splitting into two halves, a huge bright white lightning burst exploding out of the crack. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "storm_cloud_hunt": [
+    "A small storm cloud with one angry glowing eye, chasing a red crosshair target.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "storm_cloud_moving_front": [
+    "A pale grey storm cloud with two little legs running to the right, speed lines behind it, a small lightning bolt beneath it. Isolated on a plain flat background, no sky, no ground, no horizon.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "storm_cloud_black_ice": [
+    "",
+    4242, "suite", {"from": "fireball_deep_frost"}
+  ],
+  "storm_dash_lingering": [
+    "",
+    4242, "basic", {"from": "storm_cloud_lingering_storm"}
+  ],
+  "storm_dash_momentum": [
+    "A circular arrow made of violet lightning, turning clockwise.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "storm_dash_stride": [
+    "A winged boot crackling with violet lightning.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "storm_dash_reflexes": [
+    "",
+    4242, "basic", {"from": "chain_lightning_reflex"}
+  ],
+  "storm_dash_elusive": [
+    "Three copies of the same jagged violet lightning bolt side by side, fading from bright to almost transparent, like a sideways dodge afterimage.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "storm_dash_thunderclap": [
+    "A big bright violet star-shaped lightning explosion bursting on the ground, jagged cracks spreading out from it. Isolated on a plain flat background, no sky.",
+    1337, "major", {"nature": "lightning"}
+  ],
+  "storm_dash_static_wake": [
+    "A row of small crackling violet spark balls lying on the ground in a line.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "storm_dash_unbound": [
+    "A broken iron chain, a lightning bolt crackling between its two broken ends.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "storm_dash_bolt_dash": [
+    "A jagged violet lightning bolt with two little legs sprinting to the right, speed lines behind it.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "storm_dash_charged_run": [
+    "A clenched fist glowing violet and crackling with lightning, speed lines behind it.",
+    1337, "major", {"nature": "lightning"}
+  ],
+  "storm_dash_rearm": [
+    "A small silver stopwatch with a jagged lightning bolt across its face.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "storm_dash_round_trip": [
+    "Two curved lightning arrows, one going right on top and one coming back left below.",
+    1337, "suite", {"nature": "lightning"}
+  ],
+  "storm_dash_rolling_thunder": [
+    "Three concentric violet shockwave rings rippling out on the ground from one point.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "storm_dash_static_mines": [
+    "A small round spiked violet electric mine lying on the ground, sparking.",
+    777, "suite", {"nature": "lightning"}
+  ],
+  "storm_dash_gallop": [
+    "A galloping horse made of violet lightning, seen from the side.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "static_electricity_live_charge": [
+    "A single small glowing violet spark ball lying on the ground, crackling.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "static_electricity_potential": [
+    "",
+    4242, "basic", {"from": "swift_bolt_overload"}
+  ],
+  "static_electricity_insulation": [
+    "A round grey shield with a lightning bolt glancing off it.",
+    4242, "basic", {"nature": "lightning"}
+  ],
+  "static_electricity_high_frequency": [
+    "",
+    4242, "basic", {"from": "storm_dash_rearm"}
+  ],
+  "static_electricity_frugal": [
+    "A small light bulb glowing faintly violet.",
+    777, "basic", {"nature": "lightning"}
+  ],
+  "static_electricity_influx": [
+    "",
+    4242, "basic", {"from": "chain_lightning_grounding"}
+  ],
+  "static_electricity_searing_arc": [
+    "",
+    4242, "basic", {"from": "swift_bolt_hot_spot"}
+  ],
+  "static_electricity_inner_storm": [
+    "A glowing violet heart with a tiny lightning storm crackling inside it.",
+    1337, "basic", {"nature": "lightning"}
+  ],
+  "static_electricity_ionize": [
+    "A ring of crackling violet sparks floating in a circle around a bright white center point, seen from above.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "static_electricity_capacity": [
+    "",
+    4242, "major", {"from": "storm_cloud_lingering_storm"}
+  ],
+  "static_electricity_backlash": [
+    "A round grey metal shield bristling with short crackling violet lightning spikes all around its rim, like thorns.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "static_electricity_condenser": [
+    "A glass Leyden jar filled with swirling violet electricity.",
+    4242, "major", {"nature": "lightning"}
+  ],
+  "static_electricity_total_discharge": [
+    "A huge violet lightning nova bursting out in a circle in every direction.",
+    4242, "suite", {"nature": "lightning"}
+  ],
+  "static_electricity_faraday": [
+    "A small dome-shaped cage of thick dark iron bars, a bright violet lightning bolt bouncing off its top.",
+    777, "suite", {"nature": "lightning"}
   ]
 }

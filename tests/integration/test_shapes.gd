@@ -2139,20 +2139,6 @@ func test_each_jump_of_a_crescendo_hits_harder() -> void:
 	assert_almost_eq(float(_received_all[targets[2]][0]), first * 2.0, 0.001)
 
 
-## Deux cibles : avec trois, la voisine de la dernière serait la troisième.
-func test_the_last_target_of_the_chain_bursts() -> void:
-	_learn_with("manual_lightning", "chain_lightning", [["targets", -1.0], [SkillStats.END_BURST, 30.0]])
-	var first := _target(Vector2(60, 0))
-	var last := _target(Vector2(120, 0))
-	var beside_the_last := _target(Vector2(120, 25))
-	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
-	await wait_physics_frames(3)
-	assert_eq(_hits(first), 1)
-	assert_eq(_hits(last), 1, "l'éclatement épargne la cible qui éclate")
-	assert_eq(_hits(beside_the_last), 1, "l'éclatement seul")
-
-
 ## La Toile d'arcs : pas de cône ni de saut, les plus proches autour du lanceur.
 func test_an_arc_web_strikes_the_nearest_all_around() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [], Skill.Shape.WEB)
@@ -2176,16 +2162,6 @@ func test_a_wandering_cloud_drifts_toward_the_nearest_enemy() -> void:
 	var before := cloud.global_position.distance_to(prey.global_position)
 	await wait_seconds(0.5)
 	assert_lt(cloud.global_position.distance_to(prey.global_position), before - 10.0)
-
-
-func test_a_dissipating_cloud_bursts() -> void:
-	_learn_with("manual_lightning", "storm_cloud", [[SkillStats.END_BURST, 30.0], ["duration", -80.0, true]])
-	assert_true(_p.cast_slot(2))
-	var cloud: StormCloud = _children_of(StormCloud)[0]
-	while is_instance_valid(cloud):
-		await wait_physics_frames(1)
-	await wait_physics_frames(1)
-	assert_eq(_children_of(Explosion).size(), 1)
 
 
 ## L'Orage portatif se forme sur le lanceur et le suit.
@@ -3481,3 +3457,617 @@ func test_triangulated_braziers_burn_the_line_between_them() -> void:
 	first._go_out(false)
 	await wait_physics_frames(1)
 	assert_false(is_instance_valid(trail), "l'un des deux parti, le trait s'éteint")
+
+
+# --------------------------------------------------------------------------
+# Éclair vif (jalon 43)
+# --------------------------------------------------------------------------
+
+## L'Emballement : chaque lancer rapproché raccourcit le geste, cinq cumuls au plus, et
+## une pause les fait retomber.
+func test_a_runaway_bolt_casts_faster_while_held() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.RAMP, 10.0]])
+	assert_true(_p.cast_slot(2))
+	var first: float = _p._recharge_totals[2]
+	for i in SkillStats.RAMP_MOST + 1:
+		await wait_seconds(_p.remaining_cooldown(2) + 0.02)
+		assert_true(_p.cast_slot(2))
+	assert_eq(_p._ramps, SkillStats.RAMP_MOST, "pas au-delà du plafond")
+	assert_almost_eq(
+		_p._recharge_totals[2], first / (1.0 + 0.1 * SkillStats.RAMP_MOST), 0.001, "10 % par cumul"
+	)
+	await wait_seconds(SkillStats.RAMP_HOLD + 0.1)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p._ramps, 0, "une pause les fait retomber")
+
+
+## Le Plein régime : à pleins cumuls, un tir sur quatre part double.
+func test_a_full_throttle_bolt_fires_twice_every_fourth_shot() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.RAMP, 10.0], [SkillStats.FULL_THROTTLE, 1.0]])
+	_p._ramps = SkillStats.RAMP_MOST
+	_p._ramp_idle = 0.0
+	_p._throttle = SkillStats.THROTTLE_EVERY - 1
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.THROTTLE_GAP + 0.05)
+	assert_eq(_children_of(Projectile).size(), 2, "un second éclair suit le premier")
+
+
+
+## Devenu orbe, le Plein régime double l'orbe.
+func test_a_full_throttle_orb_comes_twice() -> void:
+	_learn_with(
+		"manual_lightning", "swift_bolt", [[SkillStats.RAMP, 10.0], [SkillStats.FULL_THROTTLE, 1.0]],
+		Skill.Shape.ORB
+	)
+	_p._ramps = SkillStats.RAMP_MOST
+	_p._ramp_idle = 0.0
+	_p._throttle = SkillStats.THROTTLE_EVERY - 1
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.THROTTLE_GAP + 0.05)
+	assert_eq(_children_of(StaticOrb).size(), 2)
+
+
+## Le Paratonnerre : la cible touchée est marquée, et l'éclair suivant s'incurve vers elle.
+func test_a_lightning_rod_draws_the_next_bolts() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.LIGHTNING_ROD, 1.0]])
+	var marked := _target(Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.4)
+	assert_eq(LightningRod.target_of(_p.states), marked)
+	# Hors de l'axe : un tir droit la manquerait.
+	marked.global_position = Vector2(80, 45)
+	await wait_seconds(_p.remaining_cooldown(2) + 0.02)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(marked), 2, "le second s'est incurvé vers elle")
+
+
+## La Foudre héritée : la marque survit à sa cible et passe à la plus proche.
+func test_an_inherited_rod_passes_to_the_nearest_enemy() -> void:
+	var cast := SkillStats.new()
+	cast.rod_heir = 1.0
+	var first := _target(Vector2(60, 0))
+	var heir := _target(Vector2(100, 0))
+	await wait_physics_frames(2)
+	LightningRod.mark(_effects, first, _p.states, cast)
+	await wait_physics_frames(2)
+	first.queue_free()
+	await wait_physics_frames(3)
+	assert_eq(LightningRod.target_of(_p.states), heir)
+
+
+## La Cible de l'orage : le nuage frappe aussi le paratonnerre, hors de son cercle.
+func test_the_storm_strikes_the_lightning_rod() -> void:
+	var rod_cast := SkillStats.new()
+	rod_cast.storm_target = 1.0
+	var marked := _target(Vector2(200, 0))
+	var beside := _target(Vector2(100, 120))
+	await wait_physics_frames(2)
+	LightningRod.mark(_effects, marked, _p.states, rod_cast)
+	await wait_physics_frames(2)
+	StormCloud.put(_effects, Vector2(100, 0), _p.resolve(SkillCatalog.by_id("storm_cloud"), 1), _p.states)
+	await wait_physics_frames(3)
+	assert_eq(_hits(marked), 1, "à 100 px, hors du cercle")
+	assert_eq(_hits(beside), 0)
+
+
+## L'Électrocution : un critique engourdit à coup sûr. Vingt coups faibles, dont la
+## chance ordinaire n'engourdirait qu'une poignée.
+func test_an_electrocuting_crit_always_numbs() -> void:
+	var cast := SkillStats.new()
+	cast.electrocute = 1.0
+	cast.crit_chance = 1.0
+	for i in 20:
+		var h := _target(Vector2(300 + i * 20, 300))
+		h.states = StatusEffects.new()
+		var parts := DamageType.empty_parts()
+		parts[DamageType.Kind.LIGHTNING] = 1.0
+		h.take_damage(DamageInfo.roll(cast, Vector2.ZERO, parts))
+		assert_true(h.states.active(StatusEffects.Kind.NUMB))
+
+
+## Le Carambolage : l'éclair repart du mur au lieu de s'y éteindre.
+func test_a_caroming_bolt_bounces_off_a_wall() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.CAROMS, 1.0]])
+	_wall(Vector2(60, 0), Vector2(10, 200))
+	var behind := _target(Vector2(-60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.0)
+	assert_eq(_hits(behind), 1, "revenu du mur")
+
+
+## Le Satellite : l'orbe tourne autour de son lanceur, et le suit.
+func test_a_satellite_orb_circles_its_caster() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.SATELLITE, 1.0]], Skill.Shape.ORB)
+	assert_true(_p.cast_slot(2))
+	var orb: StaticOrb = _children_of(StaticOrb)[0]
+	await wait_seconds(0.3)
+	var start := orb.global_position
+	_p.global_position += Vector2(40, 30)
+	await wait_seconds(0.3)
+	assert_almost_eq(orb.global_position.distance_to(_p.global_position), SkillStats.SATELLITE_RADIUS, 0.5)
+	assert_ne(orb.global_position, start)
+
+
+## Une limite par lanceur : un orbe de trop dissout le plus ancien, et le Familier compte à part.
+func test_one_orb_too_many_dissolves_the_oldest() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	cast.simultaneous = 6.0
+	var orbs: Array[StaticOrb] = []
+	for i in 7:
+		orbs.append(StaticOrb.send(_effects, Vector2(0, i * 40), Vector2.RIGHT, cast, _p.states, _p))
+	assert_true(orbs[0].is_queued_for_deletion(), "le plus ancien")
+	for i in range(1, 7):
+		assert_false(orbs[i].is_queued_for_deletion())
+	var crow := Node2D.new()
+	autofree(crow)
+	StaticOrb.send(_effects, Vector2(0, 300), Vector2.RIGHT, cast, _p.states, crow)
+	assert_false(orbs[1].is_queued_for_deletion(), "l'écho n'en chasse aucun")
+
+
+## Une frappe dans une meute ne dessine que quelques arcs : les dégâts, tous.
+func test_an_orb_strike_draws_only_a_few_arcs() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	cast.radius = 40.0
+	var pack: Array[Hurtbox] = []
+	for i in Lightning.ARCS_MOST + 3:
+		pack.append(_target(Vector2(200 + i * 4, 200)))
+	await wait_physics_frames(2)
+	var orb := StaticOrb.send(_effects, Vector2(200, 180), Vector2.RIGHT, cast, _p.states)
+	orb._strike()
+	assert_eq(orb._bolts.size(), Lightning.ARCS_MOST)
+	for target in pack:
+		assert_eq(_hits(target), 1)
+
+
+## Plusieurs satellites se répartissent autour du lanceur : deux, de part et d'autre.
+func test_satellites_spread_evenly_around_their_caster() -> void:
+	_learn_with(
+		"manual_lightning", "swift_bolt", [[SkillStats.SATELLITE, 1.0], ["projectiles", 1.0]], Skill.Shape.ORB
+	)
+	assert_true(_p.cast_slot(2))
+	var orbs := _children_of(StaticOrb)
+	assert_eq(orbs.size(), 2)
+	assert_almost_eq(
+		orbs[0].global_position.distance_to(orbs[1].global_position), SkillStats.SATELLITE_RADIUS * 2.0, 0.5
+	)
+
+
+## L'Orbe chargé : chaque ennemi frappé élargit ses décharges, cinq au plus.
+func test_a_charged_orb_reaches_farther_per_enemy_met() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	cast.radius = 28.0
+	cast.charged_orb = 10.0
+	var orb := StaticOrb.send(_effects, Vector2.ZERO, Vector2.RIGHT, cast, _p.states)
+	for i in SkillStats.CHARGED_ORB_MOST + 2:
+		orb._met[i] = true
+	assert_almost_eq(orb.reach(), 28.0 * 1.5, 0.001)
+
+
+## La Glace vive : sur un transi, le trait ajoute une part de foudre.
+func test_live_ice_adds_lightning_against_the_chilled() -> void:
+	var bolt: Projectile = _p.bolt_scene.instantiate()
+	autofree(bolt)
+	bolt._cast = SkillStats.new()
+	bolt._cast.live_ice = 50.0
+	bolt._parts = DamageType.empty_parts()
+	bolt._parts[DamageType.Kind.COLD] = 10.0
+	var target := _target(Vector2(300, 300))
+	target.states = StatusEffects.new()
+	assert_eq(bolt._conducted(target)[DamageType.Kind.LIGHTNING], 0.0, "rien sur un ennemi sain")
+	target.states.put(StatusEffects.Kind.CHILL, 1.0)
+	assert_eq(bolt._conducted(target)[DamageType.Kind.LIGHTNING], 5.0)
+
+
+# --------------------------------------------------------------------------
+# Nuage d'orage (jalon 43)
+# --------------------------------------------------------------------------
+
+## Trois nuages par lanceur : le quatrième dissipe le plus ancien, et le Familier compte à part.
+func test_a_fourth_cloud_dissipates_the_oldest() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("storm_cloud"), 1)
+	var clouds: Array[StormCloud] = []
+	for i in 4:
+		clouds.append(StormCloud.put(_effects, Vector2(i * 80, 0), cast, _p.states, null, _p))
+	assert_true(clouds[0].is_queued_for_deletion(), "le plus ancien")
+	for i in range(1, 4):
+		assert_false(clouds[i].is_queued_for_deletion())
+	var crow := Node2D.new()
+	autofree(crow)
+	var echo := StormCloud.put(_effects, Vector2(0, 80), cast, _p.states, null, crow)
+	assert_false(clouds[1].is_queued_for_deletion(), "l'écho n'en chasse aucun")
+	assert_false(echo.is_queued_for_deletion())
+
+
+# --------------------------------------------------------------------------
+# Chaîne d'éclairs (jalon 43)
+# --------------------------------------------------------------------------
+
+func _numbed(position: Vector2) -> Hurtbox:
+	var h := _target(position)
+	h.states = StatusEffects.new()
+	h.states.put(StatusEffects.Kind.NUMB, 1.0)
+	return h
+
+
+## La Conductance : les engourdis ne comptent pas, la décharge va plus loin.
+func test_a_conductive_chain_runs_through_the_numbed() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.CONDUCTANCE, 1.0]])
+	var line: Array[Hurtbox] = [_numbed(Vector2(60, 0)), _numbed(Vector2(120, 0))]
+	for i in 4:
+		line.append(_target(Vector2(180 + i * 60, 0)))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	for i in 5:
+		assert_eq(_hits(line[i]), 1, "deux engourdis gratuits, puis trois cibles")
+	assert_eq(_hits(line[5]), 0)
+
+
+## La Bifurcation, à coup sûr : une branche part du point d'avant vers un autre ennemi.
+func test_a_bifurcating_chain_sends_a_branch() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.BIFURCATION, 100.0]])
+	for x in [60, 120, 180]:
+		_target(Vector2(x, 0))
+	var aside := _target(Vector2(120, 60))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(aside), 1, "pris par la branche, partie de la première cible")
+	assert_eq(_children_of(ChainLightning).size(), 2, "le tronc et sa branche")
+
+
+## Le Retour par la masse : du mana par ennemi touché.
+func test_a_grounded_chain_gives_back_mana() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.GROUNDING, 2.0]])
+	_target(Vector2(60, 0))
+	_target(Vector2(120, 0))
+	await wait_physics_frames(2)
+	_p._set_mana(100.0)
+	var cost := _p.resolve(SkillCatalog.by_id("chain_lightning"), 1).mana_cost
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(_p.mana, 100.0 - cost + 4.0, 0.001)
+
+
+func _charge_at(position: Vector2) -> StaticCharge:
+	var parts := DamageType.empty_parts()
+	var charge := StaticCharge.put(_effects, position, Vector2.RIGHT, parts, _p.states)
+	charge._toward = Vector2.ZERO
+	return charge
+
+
+## Le Relais : la décharge passe par une charge pour atteindre un ennemi hors de saut.
+## Le Réamorçage : la charge rend son saut.
+func test_a_relayed_chain_jumps_through_a_static_charge() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [["targets", -1.0], [SkillStats.RELAY, 1.0]])
+	var first := _target(Vector2(60, 0))
+	var charge := _charge_at(Vector2(110, 0))
+	var beyond := _target(Vector2(160, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(first), 1)
+	assert_true(charge.is_queued_for_deletion(), "la charge prise éclate")
+	assert_eq(_hits(beyond), 0, "deux sauts : la cible et la charge")
+
+
+func test_a_reprimed_relay_gives_its_jump_back() -> void:
+	_learn_with(
+		"manual_lightning", "chain_lightning",
+		[["targets", -1.0], [SkillStats.RELAY, 1.0], [SkillStats.RELAY_REFUND, 1.0]]
+	)
+	_target(Vector2(60, 0))
+	_charge_at(Vector2(110, 0))
+	var beyond := _target(Vector2(160, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(beyond), 1, "la charge n'a pas usé de saut")
+
+
+## La Ramure : chaque arc de la toile saute encore une fois, à une part du coup.
+func test_each_arc_of_an_antlered_web_leaps_once_more() -> void:
+	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.WEB_BRANCH, 50.0]], Skill.Shape.WEB)
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
+	var ahead := _target(Vector2(60, 0))
+	_target(Vector2(-60, 0))
+	_target(Vector2(0, 60))
+	var past := _target(Vector2(110, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(past), 1)
+	assert_almost_eq(float(_received_all[past][0]), float(_received_all[ahead][0]) * 0.5, 0.001)
+
+
+## Le Survoltage : l'explosion d'un engourdi tué relance une chaîne depuis lui.
+func test_an_overvolted_kill_relaunches_a_chain() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("chain_lightning"), 1)
+	cast.kill_burst = 20.0
+	cast.overvolt = 30.0
+	var near := _target(Vector2(110, 0))
+	await wait_physics_frames(2)
+	var victim := StatusEffects.new()
+	victim.put(StatusEffects.Kind.NUMB, 1.0)
+	_p.states.slew.emit(cast, Vector2(40, 0), victim)
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1, "hors de l'explosion, pris par la chaîne relancée")
+	assert_eq(_children_of(ChainLightning).size(), 1)
+
+
+# --------------------------------------------------------------------------
+# Nuage d'orage (jalon 43), ses nœuds
+# --------------------------------------------------------------------------
+
+## Un nuage rapide, sans critique, aux dégâts fixes : ce qu'il inflige se calcule.
+func _storm(changes: Dictionary) -> SkillStats:
+	var cast := _p.resolve(SkillCatalog.by_id("storm_cloud"), 1)
+	cast.period = 0.1
+	cast.crit_chance = 0.0
+	for n in cast.damage_min.size():
+		cast.damage_min[n] = cast.damage_max[n]
+	for key: String in changes:
+		cast.set(key, changes[key])
+	return cast
+
+
+## L'Accumulation : les frappes à vide chargent, la suivante qui touche les dépense.
+func test_an_accumulating_cloud_charges_on_empty_strikes() -> void:
+	var cast := _storm({SkillStats.ACCUMULATION: 20.0})
+	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	await wait_seconds(0.15)
+	assert_eq(cloud._charges, 2, "deux frappes à vide")
+	var under := _target(Vector2(300, 300))
+	await wait_seconds(0.12)
+	assert_almost_eq(float(_received_all[under][0]), cast.total_max() * 1.4, 0.01)
+	assert_eq(cloud._charges, 0, "dépensées")
+
+
+## Le Point de rupture : à pleines charges, la frappe va au double du rayon.
+func test_a_breaking_cloud_strikes_wide_at_full_charges() -> void:
+	var cast := _storm({SkillStats.ACCUMULATION: 20.0, SkillStats.BREAKING_POINT: 1.0})
+	var aside := _target(Vector2(300 + cast.radius * 1.5, 300))
+	await wait_physics_frames(2)
+	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	cloud._charges = SkillStats.ACCUMULATION_MOST
+	await wait_physics_frames(2)
+	assert_eq(_hits(aside), 1)
+
+
+## Le Débordement : un arc vers l'ennemi hors du cercle, à une part de la frappe.
+func test_an_overflowing_cloud_arcs_beyond_its_circle() -> void:
+	var cast := _storm({SkillStats.OVERFLOW: 40.0})
+	var aside := _target(Vector2(300 + cast.radius * 1.5, 300))
+	await wait_physics_frames(2)
+	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	await wait_physics_frames(2)
+	assert_eq(_hits(aside), 1)
+	assert_almost_eq(float(_received_all[aside][0]), cast.total_max() * 0.4, 0.01)
+
+
+## La Foudre jumelle, à coup sûr : chaque frappe tombe deux fois.
+func test_a_twin_strike_lands_twice() -> void:
+	var cast := _storm({SkillStats.TWIN_STRIKE: 100.0})
+	cast.period = 0.5
+	var under := _target(Vector2(300, 300))
+	await wait_physics_frames(2)
+	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	await wait_seconds(SkillStats.TWIN_DELAY + 0.08)
+	assert_eq(_hits(under), 2)
+
+
+## L'Appel d'air : la frappe tire vers le centre — un recul négatif.
+func test_an_updraft_pulls_toward_the_center() -> void:
+	var cast := _storm({SkillStats.PULL: 60.0})
+	var under := _target(Vector2(310, 300))
+	var pulls: Array[float] = []
+	under.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
+	await wait_physics_frames(2)
+	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	await wait_physics_frames(2)
+	assert_eq(pulls[0], -60.0)
+
+
+## La Traque : le nuage garde sa proie, même quand une autre passe plus près.
+func test_a_hunting_cloud_keeps_its_prey() -> void:
+	var cast := _storm({SkillStats.SEEK: 200.0, SkillStats.HUNT: 1.0})
+	var prey := _target(Vector2(380, 300))
+	var other := _target(Vector2(500, 300))
+	await wait_physics_frames(2)
+	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	await wait_physics_frames(2)
+	assert_eq(cloud._quarry, prey)
+	other.global_position = cloud.global_position + Vector2(5, 0)
+	await wait_seconds(0.25)
+	assert_eq(cloud._quarry, prey, "elle ne la lâche pas")
+
+
+## Le Front mobile : porté par quelqu'un qui marche, il frappe plus que sa durée ne compte.
+func test_a_moving_front_strikes_more_while_walking() -> void:
+	var cast := _storm({SkillStats.MOVING_FRONT: 100.0})
+	cast.duration = 0.5
+	var walker := Node2D.new()
+	add_child_autofree(walker)
+	var cloud := StormCloud.put(_effects, Vector2.ZERO, cast, _p.states, walker)
+	var strikes := 0
+	while is_instance_valid(cloud) and not cloud.is_queued_for_deletion():
+		walker.position.x += 2.0
+		strikes = cloud._strikes
+		await wait_physics_frames(1)
+	assert_gt(strikes, cast.strikes_over_duration() + 2)
+
+
+
+# --------------------------------------------------------------------------
+# Ruée d'orage (jalon 43)
+# --------------------------------------------------------------------------
+
+## Le Trait d'éclair : ce qui est sur le trajet est frappé, ce qui est à côté non.
+func test_a_lightning_streak_strikes_along_the_dash() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.BOLT_DASH, 1.0]])
+	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
+	var aside := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 60))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_hits(on_the_way), 1)
+	assert_eq(_hits(aside), 0)
+
+
+## L'Aller-retour : on revient au départ, et l'éclair refrappe le trajet.
+func test_a_round_trip_brings_back_to_the_start() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.BOLT_DASH, 1.0], [SkillStats.ROUND_TRIP, 1.0]])
+	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
+	await wait_physics_frames(2)
+	var start := _p.global_position
+	assert_true(_p.cast_slot(2))
+	assert_ne(_p.global_position, start)
+	await wait_seconds(SkillStats.ROUND_TRIP_DELAY + 0.1)
+	assert_almost_eq(_p.global_position.distance_to(start), 0.0, 1.0)
+	assert_eq(_hits(on_the_way), 2)
+
+
+## Le Tonnerre roulant : l'arrivée frappe encore deux fois.
+func test_rolling_thunder_rumbles_twice_more() -> void:
+	_learn_with(
+		"manual_lightning", "storm_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.ROLLING_THUNDER, 30.0]]
+	)
+	var landing := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.ROLLING_GAP * SkillStats.ROLLING_COUNT + 0.15)
+	assert_eq(_hits(landing), 1 + SkillStats.ROLLING_COUNT)
+
+
+## La Tension accumulée : la course charge le prochain sort de foudre, qui la dépense.
+func test_built_up_tension_charges_the_next_lightning_spell() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.CHARGED_RUN, 10.0]])
+	_p.invest(0, "swift_bolt")
+	_p.bar.put(3, "swift_bolt")
+	assert_true(_p.cast_slot(2))
+	var run := minf(Player.PLACEMENT_RANGE, SkillStats.CHARGED_RUN_MOST)
+	assert_almost_eq(_p._tension, 10.0 * run / SkillStats.CHARGED_RUN_STEP, 0.5)
+	assert_gt(_p._tension_left, 0.0)
+	assert_true(_p.cast_slot(3))
+	assert_eq(_p._tension_left, 0.0, "dépensée")
+
+
+## Le Réarmement : chaque engourdi dans l'explosion d'arrivée raccourcit la recharge.
+func test_rearming_shortens_the_cooldown_per_numbed() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.END_BURST, 40.0], [SkillStats.REARM, 0.5]])
+	for dy in [-10, 10]:
+		var h := _target(Vector2(Player.PLACEMENT_RANGE, dy))
+		h.states = StatusEffects.new()
+		h.states.put(StatusEffects.Kind.NUMB, 1.0)
+	await wait_physics_frames(2)
+	var interval := _p.resolve(SkillCatalog.by_id("storm_dash"), 1).interval
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(_p.remaining_cooldown(2), interval - 1.0, 0.001)
+
+
+## Les Mines statiques : plus larges, plus fortes, et une seule morsure.
+func test_a_static_mine_bites_once_then_goes_out() -> void:
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.LIGHTNING] = 10.0
+	var mine := StaticCharge.put(_effects, Vector2(300, 300), Vector2.RIGHT, parts, _p.states, 0.5, true)
+	mine._toward = Vector2.ZERO
+	var first := _target(Vector2(300 + StaticCharge.RADIUS * 1.5, 300))
+	await wait_seconds(0.3)
+	assert_eq(_hits(first), 1, "hors du rayon d'une charge, dans celui d'une mine")
+	assert_almost_eq(float(_received_all[first][0]), 10.0 * 0.5 * SkillStats.MINE_FACTOR, 0.01)
+	assert_false(is_instance_valid(mine) and not mine.is_queued_for_deletion(), "éteinte")
+
+
+## Le Galop : chaque ruée ajoute une charge à l'appel du tonnerre, trois au plus.
+func test_gallop_stacks_thunder_call() -> void:
+	_learn_with("manual_lightning", "storm_dash", [[SkillStats.GALLOP, 1.0]])
+	var speed := _p.stats.move_speed
+	assert_true(_p.cast_slot(2))
+	var once := _p.stats.move_speed - speed
+	for i in SkillStats.GALLOP_MOST:
+		_p._recharges[2] = 0.0
+		await wait_physics_frames(1)
+		assert_true(_p.cast_slot(2))
+	assert_eq(_p.lit_stacks("storm_dash"), SkillStats.GALLOP_MOST)
+	assert_almost_eq(_p.stats.move_speed - speed, once * SkillStats.GALLOP_MOST, 0.01)
+
+
+# --------------------------------------------------------------------------
+# Électricité statique (jalon 43)
+# --------------------------------------------------------------------------
+
+## L'Ionisation : chaque seconde, le champ engourdit ce qui est près de vous.
+func test_an_ionizing_field_numbs_around_you() -> void:
+	_learn_with("manual_lightning", "static_electricity", [[SkillStats.IONIZE, 100.0]])
+	var near := _target(Vector2(30, 0))
+	near.states = StatusEffects.new()
+	var far := _target(Vector2(SkillStats.IONIZE_RADIUS + 40, 0))
+	far.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.IONIZE_PERIOD + 0.1)
+	assert_true(near.states.active(StatusEffects.Kind.NUMB))
+	assert_false(far.states.active(StatusEffects.Kind.NUMB))
+
+
+## La Capacité : sous le champ, une charge laissée vit plus longtemps.
+func test_capacitance_lengthens_the_static_charges() -> void:
+	_learn_with("manual_lightning", "static_electricity", [[SkillStats.CAPACITY, 1.5]])
+	assert_true(_p.cast_slot(2))
+	_p.stats.static_charge_chance = 100.0
+	var victim := StatusEffects.new()
+	victim.put(StatusEffects.Kind.NUMB, 1.0)
+	_p._on_struck(Vector2(40, 0), DamageType.empty_parts(), victim)
+	await wait_physics_frames(2)
+	var charge: StaticCharge = _children_of(StaticCharge)[0]
+	assert_almost_eq(charge._life, StaticCharge.LIFE + 1.5, 0.001)
+
+
+func _grunt(position: Vector2) -> Enemy:
+	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
+	add_child_autofree(grunt)
+	grunt.global_position = position
+	return grunt
+
+
+## Le Choc en retour : un coup au contact revient en arc ; la Cage de Faraday s'ensuit, une
+## fois, puis se lève.
+func test_a_backlash_answers_a_melee_blow_then_the_cage_closes() -> void:
+	_learn_with(
+		"manual_lightning", "static_electricity", [[SkillStats.BACKLASH, 50.0], [SkillStats.FARADAY, 1.0]]
+	)
+	assert_true(_p.cast_slot(2))
+	var grunt := _grunt(Vector2(20, 0))
+	await wait_physics_frames(2)
+	var full := grunt.health
+	_p.backlash(grunt, 20.0)
+	assert_lt(grunt.health, full, "l'arc l'a frappé")
+	assert_true(_p.hurtbox.invulnerable, "la cage")
+	await wait_seconds(SkillStats.FARADAY_TIME + 0.1)
+	assert_false(_p.hurtbox.invulnerable, "levée")
+	_p.backlash(grunt, 20.0)
+	assert_false(_p.hurtbox.invulnerable, "pas avant son attente")
+
+
+## Le Condensateur : dix morsures chargent le sort de foudre suivant, qui les dépense.
+func test_a_full_capacitor_charges_the_next_lightning_spell() -> void:
+	_learn_with("manual_lightning", "static_electricity", [[SkillStats.CONDENSER, 50.0]])
+	_p.invest(0, "swift_bolt")
+	_p.bar.put(3, "swift_bolt")
+	assert_true(_p.cast_slot(2))
+	for i in SkillStats.CONDENSER_MOST:
+		_p._charge_bit(1.0)
+	assert_eq(_p._condensed, SkillStats.CONDENSER_MOST)
+	assert_true(_p.cast_slot(3))
+	assert_eq(_p._condensed, 0, "dépensé")
+
+
+## La Décharge totale : à pleins cumuls, une nova part d'elle-même, de ce que les charges
+## ont mordu.
+func test_a_total_discharge_bursts_by_itself() -> void:
+	_learn_with("manual_lightning", "static_electricity", [[SkillStats.TOTAL_DISCHARGE, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var near := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	for i in SkillStats.CONDENSER_MOST:
+		_p._charge_bit(3.0)
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1)
+	assert_almost_eq(float(_received_all[near][0]), 30.0, 0.01)
+	assert_eq(_p._condensed, 0)
