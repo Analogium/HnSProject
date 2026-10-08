@@ -48,6 +48,8 @@ var _since_burden := 0.0
 var _since_blessing := 0.0
 ## L'Ionisation (jalon 43) : depuis quand le champ n'a pas engourdi autour de lui.
 var _since_ion := 0.0
+## Le Halo de givre (jalon 44) : depuis quand il n'a pas transi autour de lui.
+var _since_halo := 0.0
 var _aureole := 0.0
 
 
@@ -74,6 +76,11 @@ func _ready() -> void:
 
 ## Ce qu'il reste de sa durée, entre 0 et 1 ; celle de ses charges s'il en porte ; **1
 ## pour celui qui n'en a pas**, et qui brûle tant qu'on le paie.
+## Les secondes qu'il lui reste ; zéro pour celui qui n'a pas de fin (le Brise-glace, jalon 44).
+func remaining() -> float:
+	return maxf(_lifetime - _age, 0.0) if _lifetime > 0.0 else 0.0
+
+
 func remaining_ratio() -> float:
 	if stacks > 0:
 		return clampf(1.0 - _since_stack / _hold, 0.0, 1.0)
@@ -159,6 +166,9 @@ func _physics_process(delta: float) -> void:
 		_share_the_burden(cast, withered * _player.stats.max_health * delta, delta)
 		_bless(cast, delta)
 		_ionize(cast, delta)
+		_halo(cast, delta)
+		# L'Hibernation (jalon 44) : les recharges des autres courent plus vite tant qu'il tient.
+		_player._hasten(delta * cast.hibernation * 0.01)
 	_player.burn(burning + withered, _distribution, delta)
 
 
@@ -177,6 +187,20 @@ func _ionize(cast: SkillStats, delta: float) -> void:
 				StatusEffects.Kind.NUMB, 1.0, _player.states, _skill.id,
 				cast.strength_of(StatusEffects.Kind.NUMB)
 			)
+
+
+## Le Halo de givre (jalon 44) : à chaque période, ce qui est autour du porteur est transi,
+## sans coup, à la force du nœud.
+func _halo(cast: SkillStats, delta: float) -> void:
+	if cast.rime_halo <= 0.0:
+		return
+	_since_halo += delta
+	if _since_halo < SkillStats.HALO_PERIOD:
+		return
+	_since_halo = 0.0
+	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.HALO_RADIUS):
+		if target.states != null:
+			target.states.put(StatusEffects.Kind.CHILL, 0.0, _player.states, _skill.id, cast.rime_halo * 0.01)
 
 
 ## Le Fardeau partagé (jalon 38) : ce que la Nécrose a rongé, rendu aux ennemis proches

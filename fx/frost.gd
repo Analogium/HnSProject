@@ -69,6 +69,29 @@ static func drift(ci: CanvasItem, at: Vector2, tint: Color, fade: float) -> void
 	EffectForge.put_centered(ci, EffectForge.flake(tint), at, fade)
 
 
+## L'Orbe gelée (jalon 44), « sphère de givre » choisie sur planche contre une étoile de
+## cristaux, un flocon géant, un cœur et sa ronde, un oursin et un cristal taillé : une boule
+## pleine, et la facette de givre qui la traverse dit qu'elle tourne. Fabriquée une fois par
+## position de la facette — un demi-tour suffit, elle est symétrique.
+const ORB_FRAME := 17
+const ORB_TURNS := 8
+static var _orbs := {}
+
+
+static func orb(tint: Color, turn: int) -> Texture2D:
+	var key := "%s|%d" % [tint.to_html(false), posmod(turn, ORB_TURNS)]
+	if not _orbs.has(key):
+		var at := Vector2.ONE * float(ORB_FRAME / 2)
+		var facet := Vector2.from_angle(PI * float(posmod(turn, ORB_TURNS)) / float(ORB_TURNS))
+		var canvas := PixelCanvas.new(ORB_FRAME, ORB_FRAME)
+		canvas.disc(at, 6.5, EffectForge.R_TINT)
+		canvas.disc(at + Vector2(-1.5, -1.5), 3.0, EffectForge.R_TINT, 0.25)
+		canvas.line(at - facet * 5.0, at + facet * 5.0, EffectForge.R_CORE, 1.0)
+		var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(rim(tint))])
+		_orbs[key] = ImageTexture.create_from_image(img)
+	return _orbs[key]
+
+
 ## Le javelot au cap `turn`, centré sur le tir. L'arête court sur un flanc, pas au milieu.
 static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
 	var key := "%s|%d" % [tint.to_html(false), posmod(turn, Slash.TURNS)]

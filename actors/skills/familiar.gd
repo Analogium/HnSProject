@@ -24,7 +24,7 @@ const ECHOED: Array[Skill.Shape] = [
 	Skill.Shape.FISSURE, Skill.Shape.NOVA, Skill.Shape.RING, Skill.Shape.VORTEX,
 	Skill.Shape.IMPLOSION, Skill.Shape.BEAM, Skill.Shape.HOLY_CROSS, Skill.Shape.PILLAR,
 	Skill.Shape.DRIFT, Skill.Shape.GATE, Skill.Shape.CURSE, Skill.Shape.MARK, Skill.Shape.BREATH,
-	Skill.Shape.CATALYSIS, Skill.Shape.TRIAD,
+	Skill.Shape.CATALYSIS, Skill.Shape.TRIAD, Skill.Shape.FROST_ORB,
 ]
 
 

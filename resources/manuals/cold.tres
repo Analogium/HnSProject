@@ -9,6 +9,7 @@
 [ext_resource type="Resource" path="res://resources/skills/ice_nova.tres" id="11_nova"]
 [ext_resource type="Resource" path="res://resources/skills/frost_tomb.tres" id="12_tombeau"]
 [ext_resource type="Resource" path="res://resources/skills/winter_disaster.tres" id="13_desastre"]
+[ext_resource type="Resource" path="res://resources/skills/frozen_orb.tres" id="14_orbe"]
 
 [sub_resource type="Resource" id="L_ice_spike_edge_0"]
 script = ExtResource("4_ligne")
@@ -20,7 +21,7 @@ value_per_point = 8.0
 [sub_resource type="Resource" id="N_ice_spike_edge"]
 script = ExtResource("3_noeud")
 id = "ice_spike_edge"
-name = "Tranchant"
+name = "Arête"
 description = "Les pics frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -41,21 +42,6 @@ position = Vector2i(1, 0)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_upheaval_0")])
 
-[sub_resource type="Resource" id="L_ice_spike_reflex_0"]
-script = ExtResource("4_ligne")
-stat = "use_time"
-percentage = true
-value_per_point = -8.0
-
-[sub_resource type="Resource" id="N_ice_spike_reflex"]
-script = ExtResource("3_noeud")
-id = "ice_spike_reflex"
-name = "Réflexe"
-description = "Les pics se lancent plus vite."
-position = Vector2i(0, -1)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_reflex_0")])
-
 [sub_resource type="Resource" id="L_ice_spike_chilblain_0"]
 script = ExtResource("4_ligne")
 stat = "status_chance_increase"
@@ -68,11 +54,28 @@ name = "Engelure"
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
-"ice_spike_edge": 1,
-"ice_spike_reflex": 1
+"ice_spike_edge": 1
 })
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_chilblain_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_relentless_0"]
+script = ExtResource("4_ligne")
+stat = "damage_vs_chill"
+percentage = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_ice_spike_relentless"]
+script = ExtResource("3_noeud")
+id = "ice_spike_relentless"
+name = "Acharnement"
+description = "Ce sort frappe plus fort un ennemi transi."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"ice_spike_chilblain": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_relentless_0")])
 
 [sub_resource type="Resource" id="L_ice_spike_shards_0"]
 script = ExtResource("4_ligne")
@@ -90,75 +93,6 @@ parents = Dictionary[String, int]({
 })
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_shards_0")])
-
-[sub_resource type="Resource" id="L_ice_spike_hoarfrost_0"]
-script = ExtResource("4_ligne")
-stat = "ground_duration"
-value_per_point = 1.0
-
-[sub_resource type="Resource" id="N_ice_spike_hoarfrost"]
-script = ExtResource("3_noeud")
-id = "ice_spike_hoarfrost"
-name = "Givre persistant"
-description = "Les pics laissent un sol gelé, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts, dans un rayon de {rayon_sol}."
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"ice_spike_upheaval": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_hoarfrost_0")])
-
-[sub_resource type="Resource" id="L_ice_spike_biting_cold_0"]
-script = ExtResource("4_ligne")
-stat = "chill_effect"
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_ice_spike_biting_cold"]
-script = ExtResource("3_noeud")
-id = "ice_spike_biting_cold"
-name = "Froid mordant"
-description = "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
-position = Vector2i(-2, -1)
-parents = Dictionary[String, int]({
-"ice_spike_chilblain": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_biting_cold_0")])
-
-[sub_resource type="Resource" id="L_ice_spike_relentless_0"]
-script = ExtResource("4_ligne")
-stat = "damage_vs_chill"
-percentage = true
-value_per_point = 12.0
-
-[sub_resource type="Resource" id="N_ice_spike_relentless"]
-script = ExtResource("3_noeud")
-id = "ice_spike_relentless"
-name = "Acharnement"
-description = "Ce sort frappe plus fort un ennemi transi."
-position = Vector2i(-3, -1)
-parents = Dictionary[String, int]({
-"ice_spike_biting_cold": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_relentless_0")])
-
-[sub_resource type="Resource" id="L_ice_spike_shatter_0"]
-script = ExtResource("4_ligne")
-stat = "kill_burst"
-value_per_point = 24.0
-
-[sub_resource type="Resource" id="N_ice_spike_shatter"]
-script = ExtResource("3_noeud")
-id = "ice_spike_shatter"
-name = "Bris"
-description = "Un ennemi tué par les pics explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-position = Vector2i(-2, 0)
-parents = Dictionary[String, int]({
-"ice_spike_chilblain": 3
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_shatter_0")])
 
 [sub_resource type="Resource" id="L_ice_spike_fissure_0"]
 script = ExtResource("4_ligne")
@@ -188,11 +122,173 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_fissure_0"), Sub
 transforms = true
 shape = 30
 
+[sub_resource type="Resource" id="L_ice_spike_bullseye_0"]
+script = ExtResource("4_ligne")
+stat = "eye"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_ice_spike_bullseye"]
+script = ExtResource("3_noeud")
+id = "ice_spike_bullseye"
+name = "Plein centre"
+description = "Viser juste : un ennemi au cœur du cercle, dans son tiers central, prend plus de dégâts."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"ice_spike_upheaval": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_bullseye_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_aftershock_0"]
+script = ExtResource("4_ligne")
+stat = "aftershock"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_ice_spike_aftershock"]
+script = ExtResource("3_noeud")
+id = "ice_spike_aftershock"
+name = "Réplique"
+description = "Les pics repercent au même endroit {ecart_replique} s plus tard, à une part de leur coup."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"ice_spike_edge": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_aftershock_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_grove_0"]
+script = ExtResource("4_ligne")
+stat = "grove"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_ice_spike_grove_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_ice_spike_grove"]
+script = ExtResource("3_noeud")
+id = "ice_spike_grove"
+name = "Bosquet"
+description = "D'autres cercles de pics percent contre le premier, de part et d'autre de votre visée — tous un peu moins fort."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"ice_spike_upheaval": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_grove_0"), SubResource("L_ice_spike_grove_1")])
+
+[sub_resource type="Resource" id="L_ice_spike_glacier_0"]
+script = ExtResource("4_ligne")
+stat = "glacier"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_spike_glacier"]
+script = ExtResource("3_noeud")
+id = "ice_spike_glacier"
+name = "Glacier"
+description = "Un lancer sur {glacier_tous} perce un glacier : un cercle {rayon_glacier} fois plus large, qui frappe {plus_glacier} % plus fort."
+position = Vector2i(-1, -2)
+parents = Dictionary[String, int]({
+"ice_spike_relentless": 1,
+"ice_spike_bullseye": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_glacier_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_crystallize_0"]
+script = ExtResource("4_ligne")
+stat = "crystallize"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_spike_crystallize"]
+script = ExtResource("3_noeud")
+id = "ice_spike_crystallize"
+name = "Cristallisation"
+description = "Des pics lancés dans votre vortex de Désastre hivernal lui rendent {temps_cristal} s, sans dépasser deux fois sa durée."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"ice_spike_aftershock": 1,
+"ice_spike_edge": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_crystallize_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_crevasse_0"]
+script = ExtResource("4_ligne")
+stat = "crevasse"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_spike_crevasse"]
+script = ExtResource("3_noeud")
+id = "ice_spike_crevasse"
+name = "Crevasse"
+description = "Le bout du sillon s'ouvre en un cercle de pics {rayon_crevasse} fois plus large."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"ice_spike_fissure": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_crevasse_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_sleet_0"]
+script = ExtResource("4_ligne")
+stat = "seek_radius"
+value_per_point = 60.0
+
+[sub_resource type="Resource" id="N_ice_spike_sleet"]
+script = ExtResource("3_noeud")
+id = "ice_spike_sleet"
+name = "Grésil"
+description = "Les éclats s'incurvent vers l'ennemi le plus proche."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"ice_spike_shards": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_sleet_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_tremors_0"]
+script = ExtResource("4_ligne")
+stat = "tremors"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_spike_tremors"]
+script = ExtResource("3_noeud")
+id = "ice_spike_tremors"
+name = "Secousses"
+description = "La réplique se répète, à {ecart_replique} s d'écart."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"ice_spike_aftershock": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_tremors_0")])
+
+[sub_resource type="Resource" id="L_ice_spike_serac_0"]
+script = ExtResource("4_ligne")
+stat = "serac"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_spike_serac"]
+script = ExtResource("3_noeud")
+id = "ice_spike_serac"
+name = "Sérac"
+description = "Le glacier perce un lancer sur {serac_tous}."
+position = Vector2i(-2, -2)
+parents = Dictionary[String, int]({
+"ice_spike_glacier": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_spike_serac_0")])
+
 [sub_resource type="Resource" id="C_pics"]
 script = ExtResource("2_case")
 skill = ExtResource("10_pics")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ice_spike_edge"), SubResource("N_ice_spike_upheaval"), SubResource("N_ice_spike_reflex"), SubResource("N_ice_spike_chilblain"), SubResource("N_ice_spike_shards"), SubResource("N_ice_spike_hoarfrost"), SubResource("N_ice_spike_biting_cold"), SubResource("N_ice_spike_relentless"), SubResource("N_ice_spike_shatter"), SubResource("N_ice_spike_fissure")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ice_spike_edge"), SubResource("N_ice_spike_upheaval"), SubResource("N_ice_spike_chilblain"), SubResource("N_ice_spike_relentless"), SubResource("N_ice_spike_shards"), SubResource("N_ice_spike_fissure"), SubResource("N_ice_spike_bullseye"), SubResource("N_ice_spike_aftershock"), SubResource("N_ice_spike_grove"), SubResource("N_ice_spike_glacier"), SubResource("N_ice_spike_crystallize"), SubResource("N_ice_spike_crevasse"), SubResource("N_ice_spike_sleet"), SubResource("N_ice_spike_tremors"), SubResource("N_ice_spike_serac")])
 
 [sub_resource type="Resource" id="L_ice_nova_bite_0"]
 script = ExtResource("4_ligne")
@@ -240,23 +336,6 @@ position = Vector2i(0, 1)
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_reflex_0")])
 
-[sub_resource type="Resource" id="L_ice_nova_chilblain_0"]
-script = ExtResource("4_ligne")
-stat = "status_chance_increase"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_ice_nova_chilblain"]
-script = ExtResource("3_noeud")
-id = "ice_nova_chilblain"
-name = "Engelure"
-description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
-position = Vector2i(-1, -1)
-parents = Dictionary[String, int]({
-"ice_nova_bite": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_chilblain_0")])
-
 [sub_resource type="Resource" id="L_ice_nova_biting_cold_0"]
 script = ExtResource("4_ligne")
 stat = "chill_effect"
@@ -267,10 +346,9 @@ script = ExtResource("3_noeud")
 id = "ice_nova_biting_cold"
 name = "Froid mordant"
 description = "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
-position = Vector2i(0, -1)
+position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
-"ice_nova_breath": 1,
-"ice_nova_chilblain": 1
+"ice_nova_bite": 1
 })
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_biting_cold_0")])
@@ -292,24 +370,6 @@ parents = Dictionary[String, int]({
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_hoarfrost_0")])
 
-[sub_resource type="Resource" id="L_ice_nova_relentless_0"]
-script = ExtResource("4_ligne")
-stat = "damage_vs_chill"
-percentage = true
-value_per_point = 12.0
-
-[sub_resource type="Resource" id="N_ice_nova_relentless"]
-script = ExtResource("3_noeud")
-id = "ice_nova_relentless"
-name = "Acharnement"
-description = "Ce sort frappe plus fort un ennemi transi."
-position = Vector2i(1, -1)
-parents = Dictionary[String, int]({
-"ice_nova_biting_cold": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_relentless_0")])
-
 [sub_resource type="Resource" id="L_ice_nova_shatter_0"]
 script = ExtResource("4_ligne")
 stat = "kill_burst"
@@ -320,9 +380,9 @@ script = ExtResource("3_noeud")
 id = "ice_nova_shatter"
 name = "Bris"
 description = "Un ennemi tué par la nova explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-position = Vector2i(-2, -1)
+position = Vector2i(-1, -2)
 parents = Dictionary[String, int]({
-"ice_nova_chilblain": 3
+"ice_nova_biting_cold": 2
 })
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_shatter_0")])
@@ -349,11 +409,147 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_frost_wave_0")])
 transforms = true
 shape = 31
 
+[sub_resource type="Resource" id="L_ice_nova_deep_cold_0"]
+script = ExtResource("4_ligne")
+stat = "deep_cold"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_ice_nova_deep_cold"]
+script = ExtResource("3_noeud")
+id = "ice_nova_deep_cold"
+name = "Grand froid"
+description = "La nova mord plus fort dans la foule gelée : plus il y a d'ennemis transis dans son cercle, {transis_max} au plus, plus elle frappe fort."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"ice_nova_biting_cold": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_deep_cold_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_rime_0"]
+script = ExtResource("4_ligne")
+stat = "rime"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_ice_nova_rime"]
+script = ExtResource("3_noeud")
+id = "ice_nova_rime"
+name = "Frimas"
+description = "Le transi que pose la nova dure plus longtemps."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"ice_nova_bite": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_rime_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_repulsion_0"]
+script = ExtResource("4_ligne")
+stat = "knockback"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_ice_nova_repulsion"]
+script = ExtResource("3_noeud")
+id = "ice_nova_repulsion"
+name = "Repoussoir"
+description = "La nova repousse ce qu'elle touche."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"ice_nova_breath": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_repulsion_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_startle_0"]
+script = ExtResource("4_ligne")
+stat = "startle"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_nova_startle"]
+script = ExtResource("3_noeud")
+id = "ice_nova_startle"
+name = "Sursaut"
+description = "Un coup qui vous ôte plus de {perte_sursaut} % de vos PV max fait partir la nova d'elle-même, sans coût, au plus une fois toutes les {rythme_sursaut} s."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"ice_nova_reflex": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_startle_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_ebb_0"]
+script = ExtResource("4_ligne")
+stat = "ebb"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_nova_ebb"]
+script = ExtResource("3_noeud")
+id = "ice_nova_ebb"
+name = "Reflux"
+description = "À bout de course, l'anneau se referme sur son centre, et refrappe une fois ce qu'il croise."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"ice_nova_frost_wave": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_ebb_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_white_frost_0"]
+script = ExtResource("4_ligne")
+stat = "powder_keg"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_nova_white_frost"]
+script = ExtResource("3_noeud")
+id = "ice_nova_white_frost"
+name = "Gelée blanche"
+description = "Le gel se propage : l'explosion d'un ennemi tué par le Bris transit à coup sûr ce qu'elle touche."
+position = Vector2i(-2, -2)
+parents = Dictionary[String, int]({
+"ice_nova_shatter": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_white_frost_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_black_ice_0"]
+script = ExtResource("4_ligne")
+stat = "black_ice"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_ice_nova_black_ice"]
+script = ExtResource("3_noeud")
+id = "ice_nova_black_ice"
+name = "Glace noire"
+description = "Sur le sol gelé de votre nova, vous glissez plus vite."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"ice_nova_hoarfrost": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_black_ice_0")])
+
+[sub_resource type="Resource" id="L_ice_nova_alert_0"]
+script = ExtResource("4_ligne")
+stat = "alert"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_ice_nova_alert"]
+script = ExtResource("3_noeud")
+id = "ice_nova_alert"
+name = "Qui-vive"
+description = "Le Sursaut ne demande plus qu'un coup de {perte_vive} % de vos PV max, et revient au bout de {rythme_vif} s."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"ice_nova_startle": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_ice_nova_alert_0")])
+
 [sub_resource type="Resource" id="C_nova"]
 script = ExtResource("2_case")
 skill = ExtResource("11_nova")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_ice_nova_bite"), SubResource("N_ice_nova_breath"), SubResource("N_ice_nova_reflex"), SubResource("N_ice_nova_chilblain"), SubResource("N_ice_nova_biting_cold"), SubResource("N_ice_nova_hoarfrost"), SubResource("N_ice_nova_relentless"), SubResource("N_ice_nova_shatter"), SubResource("N_ice_nova_frost_wave")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_ice_nova_bite"), SubResource("N_ice_nova_breath"), SubResource("N_ice_nova_reflex"), SubResource("N_ice_nova_biting_cold"), SubResource("N_ice_nova_hoarfrost"), SubResource("N_ice_nova_shatter"), SubResource("N_ice_nova_frost_wave"), SubResource("N_ice_nova_deep_cold"), SubResource("N_ice_nova_rime"), SubResource("N_ice_nova_repulsion"), SubResource("N_ice_nova_startle"), SubResource("N_ice_nova_ebb"), SubResource("N_ice_nova_white_frost"), SubResource("N_ice_nova_black_ice"), SubResource("N_ice_nova_alert")])
 
 [sub_resource type="Resource" id="L_frost_tomb_thick_ice_0"]
 script = ExtResource("4_ligne")
@@ -458,57 +654,6 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_shatter_out_0"), SubResource("L_frost_tomb_shatter_out_1")])
 
-[sub_resource type="Resource" id="L_frost_tomb_chilblain_0"]
-script = ExtResource("4_ligne")
-stat = "status_chance_increase"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_frost_tomb_chilblain"]
-script = ExtResource("3_noeud")
-id = "frost_tomb_chilblain"
-name = "Engelure"
-description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
-position = Vector2i(1, -1)
-parents = Dictionary[String, int]({
-"frost_tomb_shatter_out": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_chilblain_0")])
-
-[sub_resource type="Resource" id="L_frost_tomb_biting_cold_0"]
-script = ExtResource("4_ligne")
-stat = "chill_effect"
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_frost_tomb_biting_cold"]
-script = ExtResource("3_noeud")
-id = "frost_tomb_biting_cold"
-name = "Froid mordant"
-description = "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
-position = Vector2i(-1, -1)
-parents = Dictionary[String, int]({
-"frost_tomb_shatter_out": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_biting_cold_0")])
-
-[sub_resource type="Resource" id="L_frost_tomb_shatter_0"]
-script = ExtResource("4_ligne")
-stat = "kill_burst"
-value_per_point = 24.0
-
-[sub_resource type="Resource" id="N_frost_tomb_shatter"]
-script = ExtResource("3_noeud")
-id = "frost_tomb_shatter"
-name = "Bris"
-description = "Un ennemi tué par l'éclatement explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-position = Vector2i(2, -1)
-parents = Dictionary[String, int]({
-"frost_tomb_chilblain": 3
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_shatter_0")])
-
 [sub_resource type="Resource" id="L_frost_tomb_frost_armor_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
@@ -529,11 +674,130 @@ points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_frost_armor_0")])
 frees = true
 
+[sub_resource type="Resource" id="L_frost_tomb_frost_skin_0"]
+script = ExtResource("4_ligne")
+stat = "frost_skin"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_frost_tomb_frost_skin"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_frost_skin"
+name = "Peau de givre"
+description = "Tant que le tombeau tient, un ennemi qui vous frappe au contact est transi."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"frost_tomb_thick_ice": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_frost_skin_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_hibernation_0"]
+script = ExtResource("4_ligne")
+stat = "hibernation"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_frost_tomb_hibernation"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_hibernation"
+name = "Hibernation"
+description = "Tant que le tombeau tient, les recharges de vos autres compétences courent plus vite."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"frost_tomb_long_night": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_hibernation_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_refuge_0"]
+script = ExtResource("4_ligne")
+stat = "refuge"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frost_tomb_refuge"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_refuge"
+name = "Refuge"
+description = "Entrer dans la glace éteint les états que vous portez : embrasé, transi, engourdi, pourrissant…"
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"frost_tomb_thaw": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_refuge_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_rime_halo_0"]
+script = ExtResource("4_ligne")
+stat = "rime_halo"
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="N_frost_tomb_rime_halo"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_rime_halo"
+name = "Halo de givre"
+description = "Sous l'armure, ce qui passe à {portee_halo} px de vous est transi, une fois par seconde."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"frost_tomb_frost_armor": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_rime_halo_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_endless_winter_0"]
+script = ExtResource("4_ligne")
+stat = "endless_winter"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frost_tomb_endless_winter"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_endless_winter"
+name = "Hiver sans fin"
+description = "Chaque ennemi tué sous l'armure lui rend {temps_hiver} s, sans dépasser sa durée."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"frost_tomb_frost_armor": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_endless_winter_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_ice_heart_0"]
+script = ExtResource("4_ligne")
+stat = "ice_heart"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frost_tomb_ice_heart"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_ice_heart"
+name = "Cœur de glace"
+description = "L'éclatement transit à coup sûr ce qu'il touche, à double force."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"frost_tomb_shatter_out": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_ice_heart_0")])
+
+[sub_resource type="Resource" id="L_frost_tomb_icebreaker_0"]
+script = ExtResource("4_ligne")
+stat = "icebreaker"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_frost_tomb_icebreaker"]
+script = ExtResource("3_noeud")
+id = "frost_tomb_icebreaker"
+name = "Brise-glace"
+description = "Sortir tôt paie : l'éclatement frappe plus fort pour chaque seconde de tombeau qu'il restait."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"frost_tomb_shatter_out": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frost_tomb_icebreaker_0")])
+
 [sub_resource type="Resource" id="C_tombeau"]
 script = ExtResource("2_case")
 skill = ExtResource("12_tombeau")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_frost_tomb_thick_ice"), SubResource("N_frost_tomb_thaw"), SubResource("N_frost_tomb_long_night"), SubResource("N_frost_tomb_insulation"), SubResource("N_frost_tomb_frugal"), SubResource("N_frost_tomb_shatter_out"), SubResource("N_frost_tomb_chilblain"), SubResource("N_frost_tomb_biting_cold"), SubResource("N_frost_tomb_shatter"), SubResource("N_frost_tomb_frost_armor")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_frost_tomb_thick_ice"), SubResource("N_frost_tomb_thaw"), SubResource("N_frost_tomb_long_night"), SubResource("N_frost_tomb_insulation"), SubResource("N_frost_tomb_frugal"), SubResource("N_frost_tomb_shatter_out"), SubResource("N_frost_tomb_frost_armor"), SubResource("N_frost_tomb_frost_skin"), SubResource("N_frost_tomb_hibernation"), SubResource("N_frost_tomb_refuge"), SubResource("N_frost_tomb_rime_halo"), SubResource("N_frost_tomb_endless_winter"), SubResource("N_frost_tomb_ice_heart"), SubResource("N_frost_tomb_icebreaker")])
 
 [sub_resource type="Resource" id="L_winter_disaster_eye_0"]
 script = ExtResource("4_ligne")
@@ -605,24 +869,6 @@ parents = Dictionary[String, int]({
 points_max = 2
 lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_squalls_0"), SubResource("L_winter_disaster_squalls_1")])
 
-[sub_resource type="Resource" id="L_winter_disaster_chilblain_0"]
-script = ExtResource("4_ligne")
-stat = "status_chance_increase"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_winter_disaster_chilblain"]
-script = ExtResource("3_noeud")
-id = "winter_disaster_chilblain"
-name = "Engelure"
-description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
-position = Vector2i(-1, -1)
-parents = Dictionary[String, int]({
-"winter_disaster_eye": 1,
-"winter_disaster_gust": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_chilblain_0")])
-
 [sub_resource type="Resource" id="L_winter_disaster_suction_0"]
 script = ExtResource("4_ligne")
 stat = "pull"
@@ -640,57 +886,6 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_suction_0")])
 
-[sub_resource type="Resource" id="L_winter_disaster_biting_cold_0"]
-script = ExtResource("4_ligne")
-stat = "chill_effect"
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_winter_disaster_biting_cold"]
-script = ExtResource("3_noeud")
-id = "winter_disaster_biting_cold"
-name = "Froid mordant"
-description = "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
-position = Vector2i(-2, -1)
-parents = Dictionary[String, int]({
-"winter_disaster_chilblain": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_biting_cold_0")])
-
-[sub_resource type="Resource" id="L_winter_disaster_avalanche_0"]
-script = ExtResource("4_ligne")
-stat = "end_burst"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_winter_disaster_avalanche"]
-script = ExtResource("3_noeud")
-id = "winter_disaster_avalanche"
-name = "Avalanche"
-description = "Le vortex éclate en finissant : une explosion de froid dans ce rayon autour de son cœur."
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"winter_disaster_blizzard": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_avalanche_0")])
-
-[sub_resource type="Resource" id="L_winter_disaster_shatter_0"]
-script = ExtResource("4_ligne")
-stat = "kill_burst"
-value_per_point = 24.0
-
-[sub_resource type="Resource" id="N_winter_disaster_shatter"]
-script = ExtResource("3_noeud")
-id = "winter_disaster_shatter"
-name = "Bris"
-description = "Un ennemi tué par le vortex explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-position = Vector2i(-2, 0)
-parents = Dictionary[String, int]({
-"winter_disaster_chilblain": 3
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_shatter_0")])
-
 [sub_resource type="Resource" id="L_winter_disaster_implosion_0"]
 script = ExtResource("4_ligne")
 stat = "duration"
@@ -701,22 +896,408 @@ value_per_point = -30.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_implosion"
 name = "Implosion"
-description = "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion. L'avalanche ne sert plus."
+description = "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
 "winter_disaster_suction": 2,
-"winter_disaster_avalanche": 1
+"winter_disaster_blizzard": 2
 })
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_implosion_0")])
 transforms = true
 shape = 32
 
+[sub_resource type="Resource" id="L_winter_disaster_snowball_0"]
+script = ExtResource("4_ligne")
+stat = "snowball"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_winter_disaster_snowball"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_snowball"
+name = "Boule de neige"
+description = "Le vortex se nourrit de ce qu'il frappe : chaque ennemi touché le fait grossir au-delà de son plein, de {neige_max} % au plus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"winter_disaster_gust": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_snowball_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_slide_0"]
+script = ExtResource("4_ligne")
+stat = "slide"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_winter_disaster_slide"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_slide"
+name = "Coulée"
+description = "Le vortex ne reste plus sous vous : il roule vers le point visé, à {vitesse_coulee} px/s, et grandit en roulant. Un mur l'arrête."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"winter_disaster_blizzard": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_slide_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_lull_0"]
+script = ExtResource("4_ligne")
+stat = "lull"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_winter_disaster_lull"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_lull"
+name = "Accalmie"
+description = "Dans l'œil de votre vortex, son tiers central, vous subissez moins de dégâts."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"winter_disaster_eye": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_lull_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_frosting_0"]
+script = ExtResource("4_ligne")
+stat = "frosting"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_winter_disaster_frosting"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_frosting"
+name = "Givrage"
+description = "Chaque impulsion renforce le transi des ennemis qu'elle frappe, {givrage_max} fois au plus par ennemi."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"winter_disaster_squalls": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_frosting_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_superconduct_0"]
+script = ExtResource("4_ligne")
+stat = "superconduct"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_winter_disaster_superconduct"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_superconduct"
+name = "Supraconduction"
+description = "Le froid conduit : un ennemi engourdi pris dans le vortex est transi à coup sûr — et, sous l'Aspiration, tiré deux fois plus fort."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"winter_disaster_suction": 1,
+"winter_disaster_gust": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_superconduct_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_singularity_0"]
+script = ExtResource("4_ligne")
+stat = "singularity"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_winter_disaster_singularity"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_singularity"
+name = "Singularité"
+description = "L'implosion éclate à {portee_singularite} fois son rayon."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"winter_disaster_implosion": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_singularity_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_rut_0"]
+script = ExtResource("4_ligne")
+stat = "rut"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_winter_disaster_rut"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_rut"
+name = "Ornière"
+description = "La coulée laisse un sol gelé derrière elle."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"winter_disaster_slide": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_rut_0")])
+
+[sub_resource type="Resource" id="L_winter_disaster_mill_0"]
+script = ExtResource("4_ligne")
+stat = "mill"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_winter_disaster_mill"]
+script = ExtResource("3_noeud")
+id = "winter_disaster_mill"
+name = "Meule"
+description = "Un ennemi aspiré jusqu'au cœur du vortex, à {coeur_meule} px, prend plus de dégâts."
+position = Vector2i(2, -2)
+parents = Dictionary[String, int]({
+"winter_disaster_suction": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_winter_disaster_mill_0")])
+
 [sub_resource type="Resource" id="C_desastre"]
 script = ExtResource("2_case")
 skill = ExtResource("13_desastre")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_winter_disaster_eye"), SubResource("N_winter_disaster_blizzard"), SubResource("N_winter_disaster_gust"), SubResource("N_winter_disaster_squalls"), SubResource("N_winter_disaster_chilblain"), SubResource("N_winter_disaster_suction"), SubResource("N_winter_disaster_biting_cold"), SubResource("N_winter_disaster_avalanche"), SubResource("N_winter_disaster_shatter"), SubResource("N_winter_disaster_implosion")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_winter_disaster_eye"), SubResource("N_winter_disaster_blizzard"), SubResource("N_winter_disaster_gust"), SubResource("N_winter_disaster_squalls"), SubResource("N_winter_disaster_suction"), SubResource("N_winter_disaster_implosion"), SubResource("N_winter_disaster_snowball"), SubResource("N_winter_disaster_slide"), SubResource("N_winter_disaster_lull"), SubResource("N_winter_disaster_frosting"), SubResource("N_winter_disaster_superconduct"), SubResource("N_winter_disaster_singularity"), SubResource("N_winter_disaster_rut"), SubResource("N_winter_disaster_mill")])
+
+[sub_resource type="Resource" id="L_frozen_orb_core_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_frozen_orb_core"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_core"
+name = "Noyau"
+description = "Les éclats de l'orbe frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_core_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_long_course_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_frozen_orb_long_course"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_long_course"
+name = "Long cours"
+description = "L'orbe vole plus longtemps, et crache d'autant plus d'éclats."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_long_course_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_breeze_0"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_frozen_orb_breeze"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_breeze"
+name = "Bise"
+description = "L'orbe file plus vite."
+position = Vector2i(0, -1)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_breeze_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_needles_0"]
+script = ExtResource("4_ligne")
+stat = "pierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frozen_orb_needles"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_needles"
+name = "Aiguilles"
+description = "Les éclats traversent un ennemi de plus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"frozen_orb_core": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_needles_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_top_0"]
+script = ExtResource("4_ligne")
+stat = "top"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_frozen_orb_top"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_top"
+name = "Toupie"
+description = "L'orbe tourne plus vite et crache plus d'éclats."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"frozen_orb_long_course": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_top_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_shard_rain_0"]
+script = ExtResource("4_ligne")
+stat = "shard_rain"
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_frozen_orb_shard_rain"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_shard_rain"
+name = "Pluie d'éclats"
+description = "L'orbe éclate en plus d'éclats que ses {eclats_orbe}."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"frozen_orb_long_course": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_shard_rain_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_constellation_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_frozen_orb_constellation_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_frozen_orb_constellation"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_constellation"
+name = "Constellation"
+description = "D'autres orbes partent avec la première, en éventail — toutes un peu moins fortes."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"frozen_orb_core": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_constellation_0"), SubResource("L_frozen_orb_constellation_1")])
+
+[sub_resource type="Resource" id="L_frozen_orb_biting_orb_0"]
+script = ExtResource("4_ligne")
+stat = "orb_bite"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_frozen_orb_biting_orb"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_biting_orb"
+name = "Orbe mordante"
+description = "L'orbe frappe aussi ce qu'elle traverse, une fois chacun, à une part du coup."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"frozen_orb_breeze": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_biting_orb_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_fracture_0"]
+script = ExtResource("4_ligne")
+stat = "fracture"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_frozen_orb_fracture"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_fracture"
+name = "Fracture"
+description = "Un éclat qui touche un ennemi transi peut se briser en deux morceaux, qui filent en V et portent chacun {part_morceau} % du coup. Les morceaux ne se brisent plus."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"frozen_orb_needles": 1,
+"frozen_orb_core": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_fracture_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_guidance_0"]
+script = ExtResource("4_ligne")
+stat = "guided"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frozen_orb_guidance"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_guidance"
+name = "Guidage"
+description = "L'orbe s'incurve vers votre curseur tant qu'elle vole. Sans effet sous la Stase, qui la mène au point visé."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"frozen_orb_top": 1,
+"frozen_orb_breeze": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_guidance_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_stasis_0"]
+script = ExtResource("4_ligne")
+stat = "stasis"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frozen_orb_stasis"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_stasis"
+name = "Stase"
+description = "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"frozen_orb_shard_rain": 1,
+"frozen_orb_long_course": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_stasis_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_kaleidoscope_0"]
+script = ExtResource("4_ligne")
+stat = "kaleidoscope"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frozen_orb_kaleidoscope"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_kaleidoscope"
+name = "Kaléidoscope"
+description = "Les morceaux d'une fracture se brisent encore une fois."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"frozen_orb_fracture": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_kaleidoscope_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_crystalline_0"]
+script = ExtResource("4_ligne")
+stat = "crystalline"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_frozen_orb_crystalline"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_crystalline"
+name = "Cristallin"
+description = "Arrêtée, l'orbe grossit : ses éclats frappent plus fort pour chaque seconde de stase."
+position = Vector2i(3, 1)
+parents = Dictionary[String, int]({
+"frozen_orb_stasis": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_crystalline_0")])
+
+[sub_resource type="Resource" id="L_frozen_orb_sight_0"]
+script = ExtResource("4_ligne")
+stat = "aimed_spit"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_frozen_orb_sight"]
+script = ExtResource("3_noeud")
+id = "frozen_orb_sight"
+name = "Viseur"
+description = "Guidée, l'orbe crache ses éclats vers l'ennemi le plus proche à {portee_viseur} px, plutôt qu'en spirale."
+position = Vector2i(2, -2)
+parents = Dictionary[String, int]({
+"frozen_orb_guidance": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_frozen_orb_sight_0")])
+
+[sub_resource type="Resource" id="C_orbe"]
+script = ExtResource("2_case")
+skill = ExtResource("14_orbe")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_frozen_orb_core"), SubResource("N_frozen_orb_long_course"), SubResource("N_frozen_orb_breeze"), SubResource("N_frozen_orb_needles"), SubResource("N_frozen_orb_top"), SubResource("N_frozen_orb_shard_rain"), SubResource("N_frozen_orb_constellation"), SubResource("N_frozen_orb_biting_orb"), SubResource("N_frozen_orb_fracture"), SubResource("N_frozen_orb_guidance"), SubResource("N_frozen_orb_stasis"), SubResource("N_frozen_orb_kaleidoscope"), SubResource("N_frozen_orb_crystalline"), SubResource("N_frozen_orb_sight")])
 
 [sub_resource type="Resource" id="L_morsure_du_gel_0"]
 script = ExtResource("4_ligne")
@@ -740,4 +1321,4 @@ position = Vector2i(0, 1)
 script = ExtResource("1_arch")
 id = "cold"
 name = "Maître du froid"
-cells = Array[ExtResource("2_case")]([SubResource("C_pics"), SubResource("C_nova"), SubResource("C_tombeau"), SubResource("C_desastre"), SubResource("C_morsure_du_gel")])
+cells = Array[ExtResource("2_case")]([SubResource("C_pics"), SubResource("C_nova"), SubResource("C_tombeau"), SubResource("C_desastre"), SubResource("C_orbe"), SubResource("C_morsure_du_gel")])

@@ -50,6 +50,8 @@ enum Shape {
 	CATALYSIS, DOLL, FAMILIAR, TRIAD,
 	# Jalon 42 : le Brasero.
 	TURRET,
+	# Jalon 44 : l'Orbe gelée.
+	FROST_ORB,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -78,6 +80,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BALL: Keywords.PROJECTILE,
 	Shape.COMET: Keywords.PROJECTILE,
 	Shape.ORB: Keywords.PROJECTILE,
+	Shape.FROST_ORB: Keywords.PROJECTILE,
 	# Le brasero est planté, mais ce qu'il tire, ce sont des boules.
 	Shape.TURRET: Keywords.PROJECTILE,
 	Shape.STRIKE: Keywords.MELEE,
@@ -163,9 +166,10 @@ const IGNORED_BY_SHAPE := {
 	# Porté, il est centré sur son lanceur : l'Appel d'air n'y attirerait les ennemis que
 	# là où ils marchent déjà (jalon 43).
 	Shape.TEMPEST: [SkillStats.SEEK, SkillStats.HUNT, SkillStats.PULL],
-	# L'onde passe sans se poser : nulle part où laisser un sol. L'implosion éclate déjà.
-	Shape.RING: [SkillStats.GROUND],
-	Shape.IMPLOSION: [SkillStats.END_BURST],
+	# L'onde passe sans se poser : nulle part où laisser un sol.
+	Shape.RING: [SkillStats.GROUND, SkillStats.DEEP_COLD],
+	# Le sillon perce en ligne : nulle part où poser le bosquet (jalon 44).
+	Shape.FISSURE: [SkillStats.GROVE],
 	# Le cône souffle et passe ; la marque ne couvre qu'un ennemi.
 	Shape.BREATH: [SkillStats.GROUND],
 	Shape.MARK: ["radius"],

@@ -71,6 +71,8 @@ var _struck := {}
 var _pierced := 0
 var _bounced := 0
 var _caromed := 0
+## Le Grésil (jalon 44) : l'ennemi que l'éclat cherche.
+var _quarry: Hurtbox
 
 ## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
 ## l'unisson.
@@ -216,6 +218,8 @@ func setup(
 func _physics_process(delta: float) -> void:
 	if _cast != null and _cast.lightning_rod > 0.0:
 		_home(delta)
+	elif _cast != null and _cast.seek_radius > 0.0:
+		_seek(delta)
 	global_position += _dir * speed * delta
 	_life += delta
 	# Redessiné à chaque pas : c'est le changement qu'on regarde.
@@ -246,6 +250,11 @@ func _on_area_entered(area: Area2D) -> void:
 		Game.hit_stop()
 	if _cast != null and _cast.lightning_rod > 0.0:
 		LightningRod.mark(get_parent(), area as Hurtbox, _author, _cast)
+	if _cast != null and _cast.fracture > 0.0 and _fractures(area as Hurtbox):
+		Projectile.fork.call_deferred(
+			get_parent(), load(scene_file_path), global_position, _dir, speed, _nature, _source,
+			_cast.fragment(), _struck.duplicate()
+		)
 	if _cast != null and _cast.contagion > 0.0 and _cast.inflicted_state >= 0:
 		Projectile.contaminate.call_deferred(area, _cast.inflicted_state, _cast.contagion)
 	if _cast != null and _pierced < int(_cast.pierce):
@@ -282,11 +291,22 @@ func _home(delta: float) -> void:
 	var rod := LightningRod.target_of(_author)
 	if rod == null or _struck.has(rod.get_instance_id()):
 		return
-	var to_rod := rod.global_position - global_position
-	if to_rod.length() > SkillStats.ROD_REACH:
-		return
-	var turn := clampf(_dir.angle_to(to_rod), -SkillStats.ROD_TURN * delta, SkillStats.ROD_TURN * delta)
-	_dir = _dir.rotated(turn)
+	if global_position.distance_to(rod.global_position) <= SkillStats.ROD_REACH:
+		_steer(rod.global_position, delta)
+
+
+## Le Grésil (jalon 44) : vers l'ennemi non frappé le plus proche, gardé jusqu'à ce qu'il
+## soit frappé ou mort.
+func _seek(delta: float) -> void:
+	if not is_instance_valid(_quarry) or _struck.has(_quarry.get_instance_id()):
+		_quarry = Targets.nearest(get_world_2d(), global_position, _cast.seek_radius, _struck, true)
+	if _quarry != null:
+		_steer(_quarry.global_position, delta)
+
+
+func _steer(toward: Vector2, delta: float) -> void:
+	var turn := SkillStats.ROD_TURN * delta
+	_dir = _dir.rotated(clampf(_dir.angle_to(toward - global_position), -turn, turn))
 	if not _drawn():
 		rotation = _dir.angle()
 
@@ -354,6 +374,30 @@ func _shatter(pierced := false) -> void:
 		get_parent(), load(scene_file_path), global_position, dir, speed, _nature,
 		_source, _cast.shard(), count, _struck.duplicate()
 	)
+
+
+## La Fracture (jalon 44) : sur un transi, un tirage.
+func _fractures(target: Hurtbox) -> bool:
+	return target.states != null and target.states.active(StatusEffects.Kind.CHILL) \
+			and Game.rng.randf() * 100.0 < _cast.fracture
+
+
+## Les deux morceaux d'un éclat brisé, en V sur son cap. Différée et statique, comme les
+## éclats : l'impact est un rappel de collision.
+static func fork(
+	parent: Node, scene: PackedScene, at: Vector2, dir: Vector2, p_speed: float, nature: int,
+	source, piece: SkillStats, struck: Dictionary
+) -> void:
+	if not is_instance_valid(parent):
+		return
+	var author: Node2D = source if is_instance_valid(source) else null
+	for side in [-1.0, 1.0]:
+		var bolt := spawn(
+			parent, scene, at, dir.rotated(side * SkillStats.FRACTURE_SPREAD), piece.roll(Game.rng),
+			author, p_speed, nature, piece
+		)
+		if bolt != null:
+			bolt._struck = struck.duplicate()
 
 
 ## La Contagion (jalon 38) : l'état que le tir a posé gagne les voisins de sa cible,

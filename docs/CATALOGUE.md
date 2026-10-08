@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 40 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 41 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -376,51 +376,85 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Nova de glace | sort froid | niveau 3 | 5 | 20 mana | 1.10 s | nova · rayon 46 · +50 % de chance d'état | 12 · 15 · 19 · 24 · 30 |
 | Tombeau de glace | sort froid | niveau 8 | 4 | 25 mana | recharge 0.60 s | buff · 3.0 s · draine 3 mana/s · rend 1.7 % PV/s | Carapace de givre : -18 % dégâts subis |
 | Désastre hivernal | sort froid | niveau 12 | 5 | 26 mana | 0.80 s · recharge 3.00 s | vortex · 4.0 s · rayon 52 · toutes les 0.50 s | 6 · 8 · 10 · 12 · 15 |
+| Orbe gelée | sort froid | niveau 5 | 5 | 18 mana | 0.80 s | frost_orb · 1.6 s · toutes les 0.12 s · 6 au plus | 5 · 7 · 9 · 11 · 14 |
 | Morsure du gel | passif | niveau 2 | 4 | — | — | — | +10 % chance de transir |
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Tranchant | Pics de glace | — | 4 | +8 % de dégâts amplifiés |
+| Arête | Pics de glace | — | 4 | +8 % de dégâts amplifiés |
 | Poussée | Pics de glace | — | 2 | +10 % de rayon accru |
-| Réflexe | Pics de glace | — | 3 | -8 % de temps du geste réduit |
-| Engelure | Pics de glace | Tranchant (1) ou Réflexe (1) | 3 | +15 % chance d'état |
-| Éclats | Pics de glace | Tranchant (2) | 2 | +2 nombre d'éclats |
-| Givre persistant | Pics de glace | Poussée (1) | 2 | +1 secondes de sol laissé |
-| Froid mordant | Pics de glace | Engelure (1) | 3 | +10 % effet du transi |
-| Acharnement | Pics de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
-| Bris | Pics de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Engelure | Pics de glace | Arête (1) | 3 | +15 % chance d'état |
+| Acharnement | Pics de glace | Engelure (1) | 3 | +12 % de dégâts accrus contre les transis |
+| Éclats | Pics de glace | Arête (2) | 2 | +2 nombre d'éclats |
 | Sillon de glace | Pics de glace | Poussée (2) ou Éclats (1) | 1 | -30 % de rayon réduit · -40 % de dégâts atténués |
+| Plein centre | Pics de glace | Poussée (1) | 3 | +15 % dégâts en plus au cœur |
+| Réplique | Pics de glace | Arête (1) | 2 | +25 % dégâts de la réplique |
+| Bosquet | Pics de glace | Poussée (1) | 2 | +1 cercles de pics en plus · -20 % de dégâts atténués |
+| Glacier | Pics de glace | Acharnement (1) ou Plein centre (2) | 1 | +1 glacier |
+| Cristallisation | Pics de glace | Réplique (1) ou Arête (2) | 1 | +1 vortex nourri par les pics |
+| Crevasse | Pics de glace | Sillon de glace (1) | 1 | +1 crevasse au bout du sillon |
+| Grésil | Pics de glace | Éclats (1) | 2 | +60 rayon de chasse |
+| Secousses | Pics de glace | Réplique (2) | 2 | +1 répliques en plus |
+| Sérac | Pics de glace | Glacier (1) | 1 | +1 glacier un lancer sur deux |
 | Morsure | Nova de glace | — | 4 | +8 % de dégâts amplifiés |
 | Souffle | Nova de glace | — | 3 | +10 % de rayon accru |
 | Réflexe | Nova de glace | — | 2 | -10 % de temps du geste réduit |
-| Engelure | Nova de glace | Morsure (1) | 3 | +15 % chance d'état |
-| Froid mordant | Nova de glace | Souffle (1) ou Engelure (1) | 3 | +10 % effet du transi |
+| Froid mordant | Nova de glace | Morsure (1) | 3 | +10 % effet du transi |
 | Givre persistant | Nova de glace | Souffle (2) | 2 | +1 secondes de sol laissé |
-| Acharnement | Nova de glace | Froid mordant (1) | 3 | +12 % de dégâts accrus contre les transis |
-| Bris | Nova de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
+| Bris | Nova de glace | Froid mordant (2) | 1 | +24 rayon de l'explosion des tués |
 | Onde de givre | Nova de glace | Souffle (2) ou Réflexe (2) | 1 | -30 % de dégâts atténués |
+| Grand froid | Nova de glace | Froid mordant (1) | 3 | +4 % dégâts en plus par transi proche |
+| Frimas | Nova de glace | Morsure (1) | 3 | +0.5 secondes de transi en plus |
+| Repoussoir | Nova de glace | Souffle (1) | 2 | +30 recul |
+| Sursaut | Nova de glace | Réflexe (1) | 1 | +1 nova de sursaut |
+| Reflux | Nova de glace | Onde de givre (1) | 1 | +1 anneau qui revient |
+| Gelée blanche | Nova de glace | Bris (1) | 1 | +1 état assuré aux explosions |
+| Glace noire | Nova de glace | Givre persistant (1) | 2 | +8 % vitesse sur le sol gelé |
+| Qui-vive | Nova de glace | Sursaut (1) | 1 | +1 sursaut plus vif |
 | Glace épaisse | Tombeau de glace | — | 4 | -3 % dégâts subis |
 | Dégel | Tombeau de glace | — | 3 | +20 % de soin accru |
 | Longue nuit | Tombeau de glace | — | 3 | +20 % de durée accrue |
 | Isolant | Tombeau de glace | Glace épaisse (1) | 3 | +8 % rés. froid |
 | Sobriété | Tombeau de glace | Longue nuit (1) | 2 | -25 % de mana drainé réduit |
 | Éclatement | Tombeau de glace | Glace épaisse (2) ou Longue nuit (2) | 3 | ajoute 8 à 16 dégâts de froid · +12 rayon de l'explosion finale |
-| Engelure | Tombeau de glace | Éclatement (1) | 3 | +15 % chance d'état |
-| Froid mordant | Tombeau de glace | Éclatement (1) | 2 | +10 % effet du transi |
-| Bris | Tombeau de glace | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
 | Armure de givre | Tombeau de glace | Dégel (2) ou Sobriété (1) | 1 | -50 % de durée réduite |
+| Peau de givre | Tombeau de glace | Glace épaisse (1) | 3 | +30 % force du transi au contact |
+| Hibernation | Tombeau de glace | Longue nuit (1) | 3 | +20 % recharges plus rapides |
+| Refuge | Tombeau de glace | Dégel (1) | 1 | +1 états éteints en entrant |
+| Halo de givre | Tombeau de glace | Armure de givre (1) | 2 | +50 % force du halo de givre |
+| Hiver sans fin | Tombeau de glace | Armure de givre (1) | 1 | +1 temps rendu par tué |
+| Cœur de glace | Tombeau de glace | Éclatement (1) | 1 | +1 éclatement qui transit |
+| Brise-glace | Tombeau de glace | Éclatement (2) | 2 | +25 % dégâts par seconde restante |
 | Œil du cyclone | Désastre hivernal | — | 4 | +8 % de dégâts amplifiés |
 | Blizzard | Désastre hivernal | — | 2 | +20 % de durée accrue |
 | Bourrasque | Désastre hivernal | — | 3 | +10 % de rayon accru |
 | Rafales | Désastre hivernal | Œil du cyclone (1) | 2 | -15 % d'intervalle des frappes réduit · -10 % de durée réduite |
-| Engelure | Désastre hivernal | Œil du cyclone (1) ou Bourrasque (1) | 3 | +15 % chance d'état |
 | Aspiration | Désastre hivernal | Bourrasque (1) | 3 | +60 force d'aspiration |
-| Froid mordant | Désastre hivernal | Engelure (1) | 3 | +10 % effet du transi |
-| Avalanche | Désastre hivernal | Blizzard (1) | 3 | +15 rayon de l'explosion finale |
-| Bris | Désastre hivernal | Engelure (3) | 1 | +24 rayon de l'explosion des tués |
-| Implosion | Désastre hivernal | Aspiration (2) ou Avalanche (1) | 1 | -30 % de durée réduite |
+| Implosion | Désastre hivernal | Aspiration (2) ou Blizzard (2) | 1 | -30 % de durée réduite |
+| Boule de neige | Désastre hivernal | Bourrasque (1) | 3 | +2 % rayon en plus par ennemi frappé |
+| Coulée | Désastre hivernal | Blizzard (1) | 1 | +1 coulée vers le point visé |
+| Accalmie | Désastre hivernal | Œil du cyclone (1) | 2 | +8 % dégâts subis en moins dans l'œil |
+| Givrage | Désastre hivernal | Rafales (1) | 3 | +10 % force du transi par impulsion |
+| Supraconduction | Désastre hivernal | Aspiration (1) ou Bourrasque (2) | 1 | +1 engourdis transis et aspirés |
+| Singularité | Désastre hivernal | Implosion (1) | 1 | +1 éclatement à deux rayons |
+| Ornière | Désastre hivernal | Coulée (1) | 2 | +1 secondes de sol de la coulée |
+| Meule | Désastre hivernal | Aspiration (2) | 2 | +20 % dégâts au cœur du vortex |
+| Noyau | Orbe gelée | — | 4 | +8 % de dégâts amplifiés |
+| Long cours | Orbe gelée | — | 3 | +20 % de durée accrue |
+| Bise | Orbe gelée | — | 2 | +15 % de vitesse de projectile accrue |
+| Aiguilles | Orbe gelée | Noyau (1) | 2 | +1 nombre d'ennemis traversés |
+| Toupie | Orbe gelée | Long cours (1) | 3 | +10 % éclats crachés en plus par seconde |
+| Pluie d'éclats | Orbe gelée | Long cours (2) | 2 | +3 éclats en plus à l'éclatement |
+| Constellation | Orbe gelée | Noyau (2) | 2 | +1 nombre de projectiles · -20 % de dégâts atténués |
+| Orbe mordante | Orbe gelée | Bise (1) | 3 | +30 % dégâts de l'orbe qui passe |
+| Fracture | Orbe gelée | Aiguilles (1) ou Noyau (2) | 3 | +20 % chance de se briser sur un transi |
+| Guidage | Orbe gelée | Toupie (1) ou Bise (2) | 1 | +1 orbe guidée au curseur |
+| Stase | Orbe gelée | Pluie d'éclats (1) ou Long cours (2) | 1 | +1 orbe arrêtée au point visé |
+| Kaléidoscope | Orbe gelée | Fracture (2) | 1 | +1 morceaux qui se brisent encore |
+| Cristallin | Orbe gelée | Stase (1) | 2 | +10 % dégâts en plus par seconde d'arrêt |
+| Viseur | Orbe gelée | Guidage (1) | 1 | +1 éclats crachés vers l'ennemi |
 
-23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+28 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître de la lumière — `manual_holy`
 

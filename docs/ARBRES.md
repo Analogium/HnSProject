@@ -130,36 +130,46 @@ Jamais pris : Appel d'air, Point de rupture, Traque.
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 61,1/s | 32,7/s |
-| meilleur au paquet | Réflexe 3, Tranchant 4, Éclats 2, Engelure 3, Froid mordant 1, Acharnement 3, Bris 1, Poussée 1, Givre persistant 2 | 225/s ×3,68 | 94,5/s ×2,89 |
-| meilleur au duel | Réflexe 3, Poussée 1, Givre persistant 2, Tranchant 4, Engelure 3, Froid mordant 1, Acharnement 3 | 159/s ×2,61 | 94,5/s ×2,89 |
-| Sillon de glace au paquet (transformation) | Poussée 2, Sillon de glace 1, Tranchant 4, Éclats 2, Engelure 2, Froid mordant 1, Acharnement 3, Réflexe 3, Givre persistant 2 | 227/s ×3,72 | 92,9/s ×2,84 |
-| Sillon de glace au duel (transformation) | Poussée 2, Sillon de glace 1, Tranchant 4, Éclats 2, Réflexe 3, Engelure 1, Froid mordant 1, Acharnement 3, Givre persistant 2 | 206/s ×3,38 | 92,9/s ×2,84 |
+| meilleur au paquet | Arête 4, Réplique 2, Secousses 2, Engelure 1, Acharnement 1, Glacier 1, Sérac 1, Poussée 2, Sillon de glace 1, Crevasse 1, Éclats 2, Grésil 2 | 742/s ×12,1 | 426/s ×13,0 |
+| meilleur au duel | Arête 4, Réplique 2, Secousses 2, Poussée 1, Plein centre 3, Glacier 1, Engelure 1, Acharnement 3, Sérac 1 | 481/s ×7,87 | 254/s ×7,77 |
+| Sillon de glace au paquet (transformation) | Poussée 2, Sillon de glace 1, Crevasse 1, Arête 4, Réplique 2, Secousses 2, Engelure 1, Acharnement 1, Glacier 1, Sérac 1, Éclats 2, Grésil 2 | 742/s ×12,1 | 426/s ×13,0 |
+| Sillon de glace au duel (transformation) | Poussée 2, Sillon de glace 1, Crevasse 1, Arête 4, Réplique 2, Secousses 2, Éclats 2, Grésil 2, Engelure 1, Acharnement 3 | 740/s ×12,1 | 509/s ×15,6 |
 
-Jamais pris : aucun.
+Jamais pris : Bosquet, Cristallisation.
 
 ### Nova de glace
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 54,6/s | 26,1/s |
-| meilleur au paquet | Souffle 3, Givre persistant 2, Morsure 4, Réflexe 2, Froid mordant 1, Acharnement 3, Engelure 3, Bris 1 | 335/s ×6,14 | 69,4/s ×2,66 |
-| meilleur au duel | Souffle 2, Givre persistant 2, Froid mordant 1, Acharnement 3, Morsure 4, Engelure 3 | 234/s ×4,29 | 72,3/s ×2,77 |
-| Onde de givre au paquet (transformation) | Souffle 3, Onde de givre 1, Réflexe 2, Morsure 4, Froid mordant 1, Acharnement 3, Engelure 3, Bris 1 | 363/s ×6,66 | 36,0/s ×1,38 |
-| Onde de givre au duel (transformation) | Souffle 2, Onde de givre 1, Réflexe 2, Morsure 4, Froid mordant 1, Acharnement 3 | 279/s ×5,11 | 36,0/s ×1,38 |
+| meilleur au paquet | Souffle 2, Onde de givre 1, Reflux 1, Réflexe 2, Morsure 4, Froid mordant 2, Bris 1, Frimas 3 | 496/s ×9,10 | 58,4/s ×2,23 |
+| meilleur au duel | Souffle 2, Givre persistant 2, Morsure 4, Réflexe 1, Sursaut 1, Froid mordant 1, Grand froid 3 | 238/s ×4,35 | 62,3/s ×2,38 |
+| Onde de givre au paquet (transformation) | Souffle 2, Onde de givre 1, Reflux 1, Réflexe 2, Morsure 4, Froid mordant 2, Bris 1, Frimas 3 | 496/s ×9,10 | 58,4/s ×2,23 |
+| Onde de givre au duel (transformation) | Souffle 2, Onde de givre 1, Reflux 1, Réflexe 2, Morsure 4 | 436/s ×7,98 | 58,4/s ×2,23 |
 
-Jamais pris : aucun.
+Jamais pris : Repoussoir, Gelée blanche, Glace noire, Qui-vive.
 
 ### Désastre hivernal
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 64,3/s | 37,0/s |
-| meilleur au paquet | Blizzard 2, Bourrasque 3, Avalanche 3, Œil du cyclone 4, Rafales 2, Engelure 3, Bris 1 | 240/s ×3,74 | 84,8/s ×2,29 |
-| meilleur au duel | Blizzard 2, Œil du cyclone 4, Rafales 2, Avalanche 3 | 83,6/s ×1,30 | 84,8/s ×2,29 |
-| Implosion au paquet (transformation) | Blizzard 2, Avalanche 1, Implosion 1, Œil du cyclone 4, Rafales 2, Bourrasque 3 | 232/s ×3,61 | 89,1/s ×2,41 |
-| Implosion au duel (transformation) | Blizzard 2, Avalanche 1, Implosion 1, Œil du cyclone 4, Rafales 2, Bourrasque 3 | 232/s ×3,61 | 89,1/s ×2,41 |
+| meilleur au paquet | Blizzard 2, Implosion 1, Singularité 1, Bourrasque 3, Coulée 1, Œil du cyclone 4, Accalmie 2, Rafales 2, Boule de neige 3, Ornière 1 | 388/s ×6,03 | 61,8/s ×1,67 |
+| meilleur au duel | Blizzard 2, Œil du cyclone 4, Rafales 2 | 72,1/s ×1,12 | 79,1/s ×2,14 |
+| Implosion au paquet (transformation) | Blizzard 2, Implosion 1, Singularité 1, Bourrasque 3, Coulée 1, Œil du cyclone 4, Accalmie 2, Rafales 2, Boule de neige 3, Ornière 1 | 388/s ×6,03 | 61,8/s ×1,67 |
+| Implosion au duel (transformation) | Blizzard 2, Implosion 1, Œil du cyclone 4, Rafales 2, Bourrasque 3 | 232/s ×3,61 | 89,1/s ×2,41 |
 
-Jamais pris : Aspiration, Froid mordant.
+Jamais pris : Aspiration, Givrage, Supraconduction, Meule.
+
+### Orbe gelée
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 94,5/s | 15,2/s |
+| meilleur au paquet | Long cours 3, Toupie 1, Guidage 1, Viseur 1, Noyau 4, Aiguilles 2, Fracture 3, Pluie d'éclats 2 | 908/s ×9,61 | 496/s ×32,6 |
+| meilleur au duel | Long cours 3, Toupie 3, Guidage 1, Viseur 1, Stase 1, Pluie d'éclats 2, Noyau 4, Cristallin 2, Bise 2, Orbe mordante 1 | 592/s ×6,26 | 1005/s ×65,9 |
+
+Jamais pris : Constellation, Kaléidoscope.
 
 ## Manuel de magie nécrotique
 

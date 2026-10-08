@@ -161,3 +161,12 @@ func test_the_eight_chips_all_differ() -> void:
 	for tex: Texture2D in EffectForge.chips(Color(0.50, 0.88, 1.00)):
 		seen[tex.get_image().get_data().hex_encode()] = true
 	assert_eq(seen.size(), EffectForge.CHIP_TURNS, "huit dessins distincts")
+
+
+## L'Orbe gelée (jalon 44) : une fabrication par position de la facette, et un demi-tour
+## suffit — la neuvième retombe sur la première.
+func test_the_frozen_orb_is_built_once_per_facet() -> void:
+	var tint: Color = DamageType.COLORS[DamageType.Kind.COLD]
+	assert_same(Frost.orb(tint, 2), Frost.orb(tint, 2))
+	assert_same(Frost.orb(tint, Frost.ORB_TURNS), Frost.orb(tint, 0))
+	assert_false(Frost.orb(tint, 1).get_image().is_invisible())

@@ -3197,9 +3197,6 @@ msgstr "The spikes hit harder."
 msgid "Les pics percent sur un cercle plus large."
 msgstr "The spikes break through over a wider circle."
 
-msgid "Les pics se lancent plus vite."
-msgstr "The spikes are cast faster."
-
 msgid "Engelure"
 msgstr "Chilblain"
 
@@ -3211,9 +3208,6 @@ msgstr "As they sink back, the spikes throw ice shards in a star, which spare wh
 
 msgid "Givre persistant"
 msgstr "Lingering Frost"
-
-msgid "Les pics laissent un sol gelé, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts, dans un rayon de {rayon_sol}."
-msgstr "The spikes leave frozen ground, which hits whatever stands on it every {rythme_sol} s for {part_sol}% of the damage, within a radius of {rayon_sol}."
 
 msgid "Froid mordant"
 msgstr "Biting Cold"
@@ -3230,17 +3224,8 @@ msgstr "This spell hits a chilled enemy harder."
 msgid "Bris"
 msgstr "Shatter"
 
-msgid "Un ennemi tué par les pics explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-msgstr "An enemy killed by the spikes explodes if it bears the state of their nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
-
 msgid "Un ennemi tué par la nova explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
 msgstr "An enemy killed by the nova explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
-
-msgid "Un ennemi tué par l'éclatement explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-msgstr "An enemy killed by the shattering explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
-
-msgid "Un ennemi tué par le vortex explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
-msgstr "An enemy killed by the vortex explodes if it bears the state of its nature — chill for cold: {part_tue}% of the damage of one hit, within this radius around it."
 
 msgid "Sillon de glace"
 msgstr "Ice Furrow"
@@ -3323,17 +3308,8 @@ msgstr "Suction"
 msgid "Chaque impulsion du vortex tire les ennemis qu'elle frappe vers son cœur."
 msgstr "Each pulse of the vortex pulls the enemies it hits toward its heart."
 
-msgid "Avalanche"
-msgstr "Avalanche"
-
-msgid "Le vortex éclate en finissant : une explosion de froid dans ce rayon autour de son cœur."
-msgstr "The vortex bursts as it ends: a cold explosion within this radius around its heart."
-
 msgid "Implosion"
 msgstr "Implosion"
-
-msgid "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion. L'avalanche ne sert plus."
-msgstr "The vortex starts at full size and closes in to its heart, where it bursts with its whole radius, far harder than a pulse. Avalanche no longer applies."
 
 msgid "effet du transi"
 msgstr "chill effect"
@@ -5292,3 +5268,399 @@ msgstr "capacitor discharge"
 
 msgid "cage de Faraday"
 msgstr "Faraday cage"
+
+msgid "Arête"
+msgstr "Edge"
+
+msgid "Plein centre"
+msgstr "Bullseye"
+
+msgid "Viser juste : un ennemi au cœur du cercle, dans son tiers central, prend plus de dégâts."
+msgstr "Aim true: an enemy at the heart of the circle, in its central third, takes more damage."
+
+msgid "Réplique"
+msgstr "Aftershock"
+
+msgid "Les pics repercent au même endroit {ecart_replique} s plus tard, à une part de leur coup."
+msgstr "The spikes pierce the same spot again {ecart_replique} s later, at part of their hit."
+
+msgid "Bosquet"
+msgstr "Grove"
+
+msgid "D'autres cercles de pics percent contre le premier, de part et d'autre de votre visée — tous un peu moins fort."
+msgstr "More circles of spikes pierce against the first, on either side of your aim — all a little weaker."
+
+msgid "Glacier"
+msgstr "Glacier"
+
+msgid "Un lancer sur {glacier_tous} perce un glacier : un cercle {rayon_glacier} fois plus large, qui frappe {plus_glacier} % plus fort."
+msgstr "One cast in {glacier_tous} raises a glacier: a circle {rayon_glacier} times wider that hits {plus_glacier}% harder."
+
+msgid "Cristallisation"
+msgstr "Crystallization"
+
+msgid "Des pics lancés dans votre vortex de Désastre hivernal lui rendent {temps_cristal} s, sans dépasser deux fois sa durée."
+msgstr "Spikes cast into your Winter Disaster vortex give it back {temps_cristal} s, up to twice its duration."
+
+msgid "Crevasse"
+msgstr "Crevasse"
+
+msgid "Le bout du sillon s'ouvre en un cercle de pics {rayon_crevasse} fois plus large."
+msgstr "The end of the furrow opens into a circle of spikes {rayon_crevasse} times wider."
+
+msgid "Grésil"
+msgstr "Sleet"
+
+msgid "Les éclats s'incurvent vers l'ennemi le plus proche."
+msgstr "The shards curve toward the nearest enemy."
+
+msgid "Secousses"
+msgstr "Tremors"
+
+msgid "La réplique se répète, à {ecart_replique} s d'écart."
+msgstr "The aftershock repeats, {ecart_replique} s apart."
+
+msgid "Sérac"
+msgstr "Serac"
+
+msgid "Le glacier perce un lancer sur {serac_tous}."
+msgstr "The glacier rises one cast in {serac_tous}."
+
+msgid "dégâts de la réplique"
+msgstr "aftershock damage"
+
+msgid "répliques en plus"
+msgstr "additional aftershocks"
+
+msgid "cercles de pics en plus"
+msgstr "additional spike circles"
+
+msgid "glacier"
+msgstr "glacier"
+
+msgid "glacier un lancer sur deux"
+msgstr "glacier every second cast"
+
+msgid "vortex nourri par les pics"
+msgstr "vortex fed by spikes"
+
+msgid "crevasse au bout du sillon"
+msgstr "crevasse at the end of the furrow"
+
+msgid "Grand froid"
+msgstr "Deep Cold"
+
+msgid "La nova mord plus fort dans la foule gelée : plus il y a d'ennemis transis dans son cercle, {transis_max} au plus, plus elle frappe fort."
+msgstr "The nova bites harder into a frozen crowd: the more chilled enemies in its circle, up to {transis_max}, the harder it hits."
+
+msgid "Frimas"
+msgstr "Rime"
+
+msgid "Le transi que pose la nova dure plus longtemps."
+msgstr "The chill the nova inflicts lasts longer."
+
+msgid "Repoussoir"
+msgstr "Repulsion"
+
+msgid "La nova repousse ce qu'elle touche."
+msgstr "The nova pushes back what it hits."
+
+msgid "Sursaut"
+msgstr "Startle"
+
+msgid "Un coup qui vous ôte plus de {perte_sursaut} % de vos PV max fait partir la nova d'elle-même, sans coût, au plus une fois toutes les {rythme_sursaut} s."
+msgstr "A blow that takes more than {perte_sursaut}% of your max HP sets the nova off by itself, at no cost, at most once every {rythme_sursaut} s."
+
+msgid "Reflux"
+msgstr "Ebb"
+
+msgid "À bout de course, l'anneau se referme sur son centre, et refrappe une fois ce qu'il croise."
+msgstr "At the end of its course, the ring closes back on its center, striking once more what it crosses."
+
+msgid "Gelée blanche"
+msgstr "Hoarfrost"
+
+msgid "Le gel se propage : l'explosion d'un ennemi tué par le Bris transit à coup sûr ce qu'elle touche."
+msgstr "The frost spreads: the explosion of an enemy killed by Shatter surely chills what it hits."
+
+msgid "Glace noire"
+msgstr "Black Ice"
+
+msgid "Sur le sol gelé de votre nova, vous glissez plus vite."
+msgstr "On your nova's frozen ground, you glide faster."
+
+msgid "Qui-vive"
+msgstr "On Alert"
+
+msgid "Le Sursaut ne demande plus qu'un coup de {perte_vive} % de vos PV max, et revient au bout de {rythme_vif} s."
+msgstr "Startle only needs a blow of {perte_vive}% of your max HP, and returns after {rythme_vif} s."
+
+msgid "dégâts en plus par transi proche"
+msgstr "damage per chilled foe"
+
+msgid "secondes de transi en plus"
+msgstr "additional seconds of chill"
+
+msgid "vitesse sur le sol gelé"
+msgstr "speed on frozen ground"
+
+msgid "nova de sursaut"
+msgstr "startle nova"
+
+msgid "sursaut plus vif"
+msgstr "quicker startle"
+
+msgid "anneau qui revient"
+msgstr "returning ring"
+
+msgid "Peau de givre"
+msgstr "Frost Skin"
+
+msgid "Tant que le tombeau tient, un ennemi qui vous frappe au contact est transi."
+msgstr "While the tomb holds, an enemy that hits you in melee is chilled."
+
+msgid "Hibernation"
+msgstr "Hibernation"
+
+msgid "Tant que le tombeau tient, les recharges de vos autres compétences courent plus vite."
+msgstr "While the tomb holds, your other skills' cooldowns run faster."
+
+msgid "Refuge"
+msgstr "Refuge"
+
+msgid "Entrer dans la glace éteint les états que vous portez : embrasé, transi, engourdi, pourrissant…"
+msgstr "Entering the ice puts out the states you carry: ignited, chilled, numbed, rotting…"
+
+msgid "Halo de givre"
+msgstr "Rime Halo"
+
+msgid "Sous l'armure, ce qui passe à {portee_halo} px de vous est transi, une fois par seconde."
+msgstr "Under the armor, whatever comes within {portee_halo} px of you is chilled, once per second."
+
+msgid "Hiver sans fin"
+msgstr "Endless Winter"
+
+msgid "Chaque ennemi tué sous l'armure lui rend {temps_hiver} s, sans dépasser sa durée."
+msgstr "Each enemy killed under the armor gives it back {temps_hiver} s, up to its duration."
+
+msgid "Cœur de glace"
+msgstr "Ice Heart"
+
+msgid "L'éclatement transit à coup sûr ce qu'il touche, à double force."
+msgstr "The shattering surely chills what it hits, at double strength."
+
+msgid "Brise-glace"
+msgstr "Icebreaker"
+
+msgid "Sortir tôt paie : l'éclatement frappe plus fort pour chaque seconde de tombeau qu'il restait."
+msgstr "Leaving early pays: the shattering hits harder for each second of tomb that was left."
+
+msgid "force du transi au contact"
+msgstr "melee chill strength"
+
+msgid "recharges plus rapides"
+msgstr "faster cooldowns"
+
+msgid "états éteints en entrant"
+msgstr "states put out on entering"
+
+msgid "force du halo de givre"
+msgstr "rime halo strength"
+
+msgid "temps rendu par tué"
+msgstr "time given back per kill"
+
+msgid "éclatement qui transit"
+msgstr "chilling shatter"
+
+msgid "dégâts par seconde restante"
+msgstr "damage per second left"
+
+msgid "Boule de neige"
+msgstr "Snowball"
+
+msgid "Le vortex se nourrit de ce qu'il frappe : chaque ennemi touché le fait grossir au-delà de son plein, de {neige_max} % au plus."
+msgstr "The vortex feeds on what it hits: each enemy struck makes it grow beyond its full size, by up to {neige_max}%."
+
+msgid "Coulée"
+msgstr "Slide"
+
+msgid "Le vortex ne reste plus sous vous : il roule vers le point visé, à {vitesse_coulee} px/s, et grandit en roulant. Un mur l'arrête."
+msgstr "The vortex no longer stays under you: it rolls toward the aimed point at {vitesse_coulee} px/s, growing as it rolls. A wall stops it."
+
+msgid "Accalmie"
+msgstr "Lull"
+
+msgid "Dans l'œil de votre vortex, son tiers central, vous subissez moins de dégâts."
+msgstr "In the eye of your vortex, its central third, you take less damage."
+
+msgid "Givrage"
+msgstr "Icing"
+
+msgid "Chaque impulsion renforce le transi des ennemis qu'elle frappe, {givrage_max} fois au plus par ennemi."
+msgstr "Each pulse strengthens the chill of the enemies it hits, up to {givrage_max} times per enemy."
+
+msgid "Supraconduction"
+msgstr "Superconduction"
+
+msgid "Le froid conduit : un ennemi engourdi pris dans le vortex est transi à coup sûr — et, sous l'Aspiration, tiré deux fois plus fort."
+msgstr "Cold conducts: a numbed enemy caught in the vortex is surely chilled — and, under Suction, pulled twice as hard."
+
+msgid "Singularité"
+msgstr "Singularity"
+
+msgid "L'implosion éclate à {portee_singularite} fois son rayon."
+msgstr "The implosion bursts at {portee_singularite} times its radius."
+
+msgid "Ornière"
+msgstr "Rut"
+
+msgid "La coulée laisse un sol gelé derrière elle."
+msgstr "The slide leaves frozen ground behind it."
+
+msgid "Meule"
+msgstr "Millstone"
+
+msgid "Un ennemi aspiré jusqu'au cœur du vortex, à {coeur_meule} px, prend plus de dégâts."
+msgstr "An enemy pulled into the vortex's core, within {coeur_meule} px, takes more damage."
+
+msgid "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion."
+msgstr "The vortex starts at full size and closes in to its core, where it bursts across its whole radius, far harder than a pulse."
+
+msgid "coulée vers le point visé"
+msgstr "slide toward the aim"
+
+msgid "dégâts subis en moins dans l'œil"
+msgstr "less damage taken in the eye"
+
+msgid "force du transi par impulsion"
+msgstr "chill strength per pulse"
+
+msgid "engourdis transis et aspirés"
+msgstr "numbed chilled and pulled"
+
+msgid "éclatement à deux rayons"
+msgstr "burst at two radii"
+
+msgid "secondes de sol de la coulée"
+msgstr "seconds of slide ground"
+
+msgid "dégâts au cœur du vortex"
+msgstr "damage at the vortex core"
+
+msgid "Orbe gelée"
+msgstr "Frozen Orb"
+
+msgid "Une orbe lente qui crache des éclats de glace en tournant, puis éclate."
+msgstr "A slow orb that spits ice shards as it spins, then bursts."
+
+msgid "Noyau"
+msgstr "Core"
+
+msgid "Les éclats de l'orbe frappent plus fort."
+msgstr "The orb's shards hit harder."
+
+msgid "Long cours"
+msgstr "Long Course"
+
+msgid "L'orbe vole plus longtemps, et crache d'autant plus d'éclats."
+msgstr "The orb flies longer, and spits that many more shards."
+
+msgid "Bise"
+msgstr "North Wind"
+
+msgid "L'orbe file plus vite."
+msgstr "The orb flies faster."
+
+msgid "Aiguilles"
+msgstr "Needles"
+
+msgid "Les éclats traversent un ennemi de plus."
+msgstr "The shards pierce one more enemy."
+
+msgid "Toupie"
+msgstr "Spinning Top"
+
+msgid "L'orbe tourne plus vite et crache plus d'éclats."
+msgstr "The orb spins faster and spits more shards."
+
+msgid "Pluie d'éclats"
+msgstr "Shard Rain"
+
+msgid "L'orbe éclate en plus d'éclats que ses {eclats_orbe}."
+msgstr "The orb bursts into more shards than its {eclats_orbe}."
+
+msgid "Constellation"
+msgstr "Constellation"
+
+msgid "D'autres orbes partent avec la première, en éventail — toutes un peu moins fortes."
+msgstr "More orbs leave with the first, in a fan — all a little weaker."
+
+msgid "Orbe mordante"
+msgstr "Biting Orb"
+
+msgid "L'orbe frappe aussi ce qu'elle traverse, une fois chacun, à une part du coup."
+msgstr "The orb also hits what it passes through, once each, at part of its hit."
+
+msgid "Fracture"
+msgstr "Fracture"
+
+msgid "Un éclat qui touche un ennemi transi peut se briser en deux morceaux, qui filent en V et portent chacun {part_morceau} % du coup. Les morceaux ne se brisent plus."
+msgstr "A shard that hits a chilled enemy may break into two pieces, flying off in a V, each carrying {part_morceau}% of the hit. The pieces break no further."
+
+msgid "Guidage"
+msgstr "Guidance"
+
+msgid "L'orbe s'incurve vers votre curseur tant qu'elle vole. Sans effet sous la Stase, qui la mène au point visé."
+msgstr "The orb curves toward your cursor as it flies. No effect under Stasis, which takes it to the aimed point."
+
+msgid "Stase"
+msgstr "Stasis"
+
+msgid "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour."
+msgstr "The orb flies to the aimed point, stops there and spins until the end, spitting its shards all around."
+
+msgid "Kaléidoscope"
+msgstr "Kaleidoscope"
+
+msgid "Les morceaux d'une fracture se brisent encore une fois."
+msgstr "The pieces of a fracture break once more."
+
+msgid "Cristallin"
+msgstr "Crystalline"
+
+msgid "Arrêtée, l'orbe grossit : ses éclats frappent plus fort pour chaque seconde de stase."
+msgstr "Once stopped, the orb swells: its shards hit harder for each second of stasis."
+
+msgid "Viseur"
+msgstr "Sight"
+
+msgid "Guidée, l'orbe crache ses éclats vers l'ennemi le plus proche à {portee_viseur} px, plutôt qu'en spirale."
+msgstr "Guided, the orb spits its shards at the nearest enemy within {portee_viseur} px, rather than in a spiral."
+
+msgid "éclats crachés en plus par seconde"
+msgstr "more shards spat per second"
+
+msgid "éclats en plus à l'éclatement"
+msgstr "more shards in the burst"
+
+msgid "dégâts de l'orbe qui passe"
+msgstr "passing orb damage"
+
+msgid "chance de se briser sur un transi"
+msgstr "chance to break on a chilled foe"
+
+msgid "orbe guidée au curseur"
+msgstr "orb guided by the cursor"
+
+msgid "orbe arrêtée au point visé"
+msgstr "orb stopped at the aim"
+
+msgid "morceaux qui se brisent encore"
+msgstr "pieces that break again"
+
+msgid "dégâts en plus par seconde d'arrêt"
+msgstr "damage per second stopped"
+
+msgid "éclats crachés vers l'ennemi"
+msgstr "shards spat at enemies"

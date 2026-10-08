@@ -808,23 +808,16 @@ func test_no_manual_fills_up_entirely() -> void:
 		)
 
 
-## La nécromancie (jalon 38), le chevalier (jalon 39), le sacré (jalon 40), la sorcière
-## (jalon 41) et le feu (jalon 42) : **aucune ligne ni aucun nom ne revient d'un arbre à l'autre**. Aux jalons
-## 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois.
+## **Aucune ligne ni aucun nom ne revient d'un arbre à l'autre** d'un même manuel : aux
+## jalons 35 et 36, Engelure, Froid mordant et Bris se payaient quatre fois. Manuel par
+## manuel du jalon 38 au jalon 44, le froid en dernier : c'est la règle de tous les arbres.
 ## Seuls les leviers de base y échappent, un par arbre au plus, et les échanges entiers : le
 ## Pouls lent (−50 % de cadence ⇄ +60 % plus) n'est pas un second nœud de dégâts (jalon 42).
-## Le feu depuis le jalon 42, l'Ignition partie au profit du Brasero ; la foudre depuis le 43.
-const UNIQUE_TREES := [
-	"manual_necrotic", "manual_weapons", "manual_holy", "manual_witch", "manual_fire",
-	"manual_lightning",
-]
 const BASE_LEVERS := ["damage", "radius", "duration"]
 
 
-func test_unique_trees_share_no_line_and_no_name() -> void:
+func test_trees_share_no_line_and_no_name() -> void:
 	for base in _books():
-		if not base.id in UNIQUE_TREES:
-			continue
 		var line_owner := {}
 		var name_owner := {}
 		for c in base.manual.cells:

@@ -174,7 +174,7 @@ func test_a_bolt_carries_projectile_and_a_sword_swing_does_not() -> void:
 
 ## `projectile` se déduit de la forme (jalon 11), et d'elle seule : une chaîne ou
 ## un nuage n'en sont pas, et un affixe de projectile ne doit pas les servir. Le
-## Brasero, si : il tire des boules (jalon 42).
+## Brasero, si : il tire des boules (jalon 42) ; l'Orbe gelée crache des éclats (jalon 44).
 func test_the_shape_gives_projectile() -> void:
 	var c := _skill([1.0] as Array[float])
 	for shape in Skill.Shape.values():
@@ -183,7 +183,7 @@ func test_the_shape_gives_projectile() -> void:
 			c.worn(Keywords.PROJECTILE),
 			shape in [
 				Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET, Skill.Shape.ORB,
-				Skill.Shape.TURRET,
+				Skill.Shape.TURRET, Skill.Shape.FROST_ORB,
 			],
 			"forme %s" % Skill.Shape.keys()[shape]
 		)
@@ -196,7 +196,8 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 	for c: Skill in SkillCatalog.ALL:
 		var lasts := c.shape in [
 			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH,
-			Skill.Shape.WAVE, Skill.Shape.VORTEX, Skill.Shape.PILLAR, Skill.Shape.PULSE
+			Skill.Shape.WAVE, Skill.Shape.VORTEX, Skill.Shape.PILLAR, Skill.Shape.PULSE,
+			Skill.Shape.FROST_ORB,
 		]
 		# Le faisceau y est : son rayon est **sa longueur**, et sans elle il ne sort pas
 		# du lanceur.

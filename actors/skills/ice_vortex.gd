@@ -32,23 +32,42 @@ const FADE := 0.4
 const IMPLODED_PART := 0.15
 const IMPLOSION_BURST := 4.0
 
+## Ceux qui tournent, pour la Cristallisation (jalon 44).
+static var _live: Array[IceVortex] = []
+
 var _cast: SkillStats
 var _author: StatusEffects
+## Le temps de sa croissance : la durée de son lancer, que la Cristallisation allonge sans
+## le faire rétrécir.
+var _grow := 0.0
+var _fed := false
 var _tint := Color.WHITE
 var _age := 0.0
 var _strikes := 0
+## La Boule de neige (jalon 44) : le rayon gagné, en part, `SNOWBALL_MOST` au plus.
+var _swell := 0.0
+## La Coulée : où il roule, et où l'Ornière a posé son dernier sol.
+var _aim := Vector2.ZERO
+var _rut_at := Vector2.ZERO
+## Le Givrage : combien de fois chaque ennemi a vu son transi renforcé.
+var _frosted := {}
 
 
 static func open(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, aim := point
 ) -> IceVortex:
+	_live.assign(_live.filter(func(v) -> bool: return is_instance_valid(v) and not v.is_queued_for_deletion()))
 	var vortex := IceVortex.new()
+	_live.append(vortex)
 	vortex._cast = cast
+	vortex._grow = cast.duration
 	vortex._author = author
 	vortex._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(vortex)
 	Settings.veil(vortex, Settings.SPELLS)
 	vortex.global_position = point
+	vortex._aim = aim
+	vortex._rut_at = point
 	return vortex
 
 
@@ -58,18 +77,44 @@ func _ready() -> void:
 	z_index = 3
 
 
-## Ce qu'il couvre maintenant : de `SEED_PART` à son rayon plein, linéairement.
+## La Cristallisation (jalon 44) : des pics lancés dans un vortex du même lanceur lui rendent
+## du temps, jusqu'à deux fois sa durée. Sa copie du lancer, à la première fois : le
+## lancer posé n'est pas à lui seul.
+static func feed(point: Vector2, author: StatusEffects, seconds: float) -> void:
+	for v in _live:
+		if is_instance_valid(v) and v._author == author \
+				and point.distance_to(v.global_position) <= v.reach():
+			if not v._fed:
+				v._cast = v._cast.echoed(1.0)
+				v._fed = true
+			v._cast.duration = minf(v._cast.duration + seconds, v._grow * 2.0)
+
+
+## L'Accalmie (jalon 44) : ce qu'elle retire aux dégâts subis de son lanceur, s'il se tient
+## dans l'œil d'un de ses vortex — la part centrale de l'Œil du brasier.
+static func calm_for(point: Vector2, author: StatusEffects) -> float:
+	for v in _live:
+		if is_instance_valid(v) and v._author == author and v._cast.lull > 0.0 \
+				and point.distance_to(v.global_position) <= v.reach() * SkillStats.EYE_PART:
+			return v._cast.lull
+	return 0.0
+
+
+## Ce qu'il couvre maintenant : de `SEED_PART` à son rayon plein, linéairement — et ce que
+## la Boule de neige y ajoute.
 func reach() -> float:
-	var grown := clampf(_age / _cast.duration, 0.0, 1.0) if _cast.duration > 0.0 else 1.0
+	var grown := clampf(_age / _grow, 0.0, 1.0) if _grow > 0.0 else 1.0
 	if _cast.shape == Skill.Shape.IMPLOSION:
-		return _cast.radius * lerpf(1.0, IMPLODED_PART, grown)
-	return _cast.radius * lerpf(SEED_PART, 1.0, grown)
+		return _cast.radius * lerpf(1.0, IMPLODED_PART, grown) * (1.0 + _swell)
+	return _cast.radius * lerpf(SEED_PART, 1.0, grown) * (1.0 + _swell)
 
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
 ## l'estimation : la fiche et le vortex ne peuvent pas annoncer deux nombres.
 func _physics_process(delta: float) -> void:
 	_age += delta
+	if _cast.slide > 0.0:
+		_roll(delta)
 	var due := _cast.strikes_due(_age)
 	while _strikes < due:
 		_strike()
@@ -80,22 +125,71 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## L'Implosion éclate de tout son rayon ; l'Avalanche, du sien.
+## La Coulée (jalon 44) : il roule vers le point visé et s'y arrête ; un mur l'arrête aussi.
+## L'Ornière pose un sol chaque fois qu'il a roulé deux rayons de sol.
+func _roll(delta: float) -> void:
+	var next := global_position.move_toward(_aim, SkillStats.SLIDE_SPEED * delta)
+	if not Targets.in_sight(get_world_2d(), global_position, next):
+		_aim = global_position
+		return
+	global_position = next
+	if _cast.rut > 0.0 and global_position.distance_to(_rut_at) >= SkillStats.GROUND_RADIUS * 2.0:
+		_rut_at = global_position
+		var rut := _cast.ground()
+		rut.duration = _cast.rut
+		DashTrail.patch(get_parent(), global_position, rut, _author)
+
+
+## L'Implosion éclate de tout son rayon, de deux sous la Singularité (jalon 44).
 func _end() -> void:
-	var imploding := _cast.shape == Skill.Shape.IMPLOSION
-	var burst := _cast.radius if imploding else _cast.end_burst
-	if burst <= 0.0:
+	if _cast.shape != Skill.Shape.IMPLOSION:
 		return
 	var parts := _cast.roll(Game.rng)
-	if imploding:
-		for i in parts.size():
-			parts[i] *= IMPLOSION_BURST
+	for i in parts.size():
+		parts[i] *= IMPLOSION_BURST
+	var burst := _cast.radius * (SkillStats.SINGULARITY_REACH if _cast.singularity > 0.0 else 1.0)
 	Explosion.put(get_parent(), global_position, parts, burst, null, _tint, _author, _cast)
 
 
-## L'Aspiration : chaque impulsion tire vers le cœur, par un recul inversé.
+## Un tirage par impulsion (invariant 3). L'Aspiration tire vers le cœur par un recul
+## inversé, deux fois plus fort sur un engourdi sous la Supraconduction, qui le transit
+## aussi ; la Meule mord plus fort au cœur ; le Givrage renforce un transi déjà posé ; la
+## Boule de neige grossit de chaque ennemi frappé (jalon 44).
 func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, reach(), _cast, _author, -_cast.pull)
+	var parts := _cast.roll(Game.rng)
+	var milled := parts.duplicate()
+	for i in milled.size():
+		milled[i] *= 1.0 + _cast.mill * 0.01
+	var targets := Targets.in_circle(get_world_2d(), global_position, reach())
+	for target in targets:
+		var numbed := _cast.superconduct > 0.0 and target.states != null \
+				and target.states.active(StatusEffects.Kind.NUMB)
+		var at_core := target.global_position.distance_to(global_position) <= SkillStats.MILL_CORE
+		Targets.strike(
+			target, milled if at_core else parts, global_position, _author, _cast,
+			-_cast.pull * (2.0 if numbed else 1.0)
+		)
+		if numbed:
+			target.states.put(
+				StatusEffects.Kind.CHILL, 0.0, _author, _cast.skill_id,
+				_cast.strength_of(StatusEffects.Kind.CHILL)
+			)
+		if _cast.frosting > 0.0:
+			_frost(target)
+	_swell = minf(_swell + _cast.snowball * 0.01 * float(targets.size()), SkillStats.SNOWBALL_MOST)
+
+
+## Le Givrage : un transi déjà posé gagne en force, `FROSTING_MOST` fois par ennemi.
+func _frost(target: Hurtbox) -> void:
+	if target.states == null or not target.states.active(StatusEffects.Kind.CHILL):
+		return
+	var id := target.get_instance_id()
+	var times := mini(int(_frosted.get(id, 0)) + 1, SkillStats.FROSTING_MOST)
+	_frosted[id] = times
+	target.states.put(
+		StatusEffects.Kind.CHILL, 0.0, _author, _cast.skill_id,
+		_cast.strength_of(StatusEffects.Kind.CHILL) * (1.0 + _cast.frosting * 0.01 * float(times))
+	)
 
 
 ## Un tourbillon, et non un cercle de pics : quatre bras d'éclats **couchés sur

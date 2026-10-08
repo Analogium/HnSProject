@@ -169,6 +169,43 @@ const LABELS := {
 	CONDENSER: "dégâts du sort condensé",
 	TOTAL_DISCHARGE: "décharge du condensateur",
 	FARADAY: "cage de Faraday",
+	AFTERSHOCK: "dégâts de la réplique",
+	TREMORS: "répliques en plus",
+	GROVE: "cercles de pics en plus",
+	GLACIER: "glacier",
+	SERAC: "glacier un lancer sur deux",
+	CRYSTALLIZE: "vortex nourri par les pics",
+	CREVASSE: "crevasse au bout du sillon",
+	DEEP_COLD: "dégâts en plus par transi proche",
+	RIME: "secondes de transi en plus",
+	BLACK_ICE: "vitesse sur le sol gelé",
+	STARTLE: "nova de sursaut",
+	ALERT: "sursaut plus vif",
+	EBB: "anneau qui revient",
+	FROST_SKIN: "force du transi au contact",
+	HIBERNATION: "recharges plus rapides",
+	REFUGE: "états éteints en entrant",
+	RIME_HALO: "force du halo de givre",
+	ENDLESS_WINTER: "temps rendu par tué",
+	ICE_HEART: "éclatement qui transit",
+	ICEBREAKER: "dégâts par seconde restante",
+	SNOWBALL: "rayon en plus par ennemi frappé",
+	SLIDE: "coulée vers le point visé",
+	LULL: "dégâts subis en moins dans l'œil",
+	FROSTING: "force du transi par impulsion",
+	SUPERCONDUCT: "engourdis transis et aspirés",
+	SINGULARITY: "éclatement à deux rayons",
+	RUT: "secondes de sol de la coulée",
+	MILL: "dégâts au cœur du vortex",
+	TOP: "éclats crachés en plus par seconde",
+	SHARD_RAIN: "éclats en plus à l'éclatement",
+	ORB_BITE: "dégâts de l'orbe qui passe",
+	FRACTURE: "chance de se briser sur un transi",
+	GUIDED: "orbe guidée au curseur",
+	STASIS: "orbe arrêtée au point visé",
+	KALEIDOSCOPE: "morceaux qui se brisent encore",
+	CRYSTALLINE: "dégâts en plus par seconde d'arrêt",
+	AIMED_SPIT: "éclats crachés vers l'ennemi",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -324,6 +361,43 @@ const AGREEMENT := {
 	CONDENSER: "mp",
 	TOTAL_DISCHARGE: "fs",
 	FARADAY: "fs",
+	AFTERSHOCK: "mp",
+	TREMORS: "fp",
+	GROVE: "mp",
+	GLACIER: "ms",
+	SERAC: "ms",
+	CRYSTALLIZE: "ms",
+	CREVASSE: "fs",
+	DEEP_COLD: "mp",
+	RIME: "fp",
+	BLACK_ICE: "fs",
+	STARTLE: "fs",
+	ALERT: "ms",
+	EBB: "ms",
+	FROST_SKIN: "fs",
+	HIBERNATION: "fp",
+	REFUGE: "mp",
+	RIME_HALO: "fs",
+	ENDLESS_WINTER: "ms",
+	ICE_HEART: "ms",
+	ICEBREAKER: "mp",
+	SNOWBALL: "ms",
+	SLIDE: "fs",
+	LULL: "mp",
+	FROSTING: "fs",
+	SUPERCONDUCT: "mp",
+	SINGULARITY: "ms",
+	RUT: "fp",
+	MILL: "mp",
+	TOP: "mp",
+	SHARD_RAIN: "mp",
+	ORB_BITE: "mp",
+	FRACTURE: "fs",
+	GUIDED: "fs",
+	STASIS: "fs",
+	KALEIDOSCOPE: "mp",
+	CRYSTALLINE: "mp",
+	AIMED_SPIT: "mp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -518,6 +592,59 @@ const BACKLASH := "backlash"
 const CONDENSER := "condenser"
 const TOTAL_DISCHARGE := "total_discharge"
 const FARADAY := "faraday"
+## Ceux des Pics de glace (jalon 44). La Réplique en points de pourcentage du coup, les
+## Secousses et le Bosquet en nombre ; les autres sont des drapeaux. Le Plein centre lit
+## `EYE`, le cœur de l'Œil du brasier ; le Grésil, `SEEK`.
+const AFTERSHOCK := "aftershock"
+const TREMORS := "tremors"
+const GROVE := "grove"
+const GLACIER := "glacier"
+const SERAC := "serac"
+const CRYSTALLIZE := "crystallize"
+const CREVASSE := "crevasse"
+## Ceux de la Nova de glace (jalon 44). Le Grand froid en « plus » par transi, le Frimas en
+## secondes, la Glace noire en points de pourcentage de vitesse ; trois drapeaux. La Gelée
+## blanche est la Poudrière du feu, `POWDER_KEG` ; le Repoussoir, `KNOCKBACK`.
+const DEEP_COLD := "deep_cold"
+const RIME := "rime"
+const BLACK_ICE := "black_ice"
+const STARTLE := "startle"
+const ALERT := "alert"
+const EBB := "ebb"
+## Ceux du Tombeau de glace (jalon 44), lus sur le buff allumé ou à sa sortie. La Peau de
+## givre et le Halo en force du transi, l'Hibernation en points de pourcentage de vitesse
+## des recharges, le Brise-glace en « plus » par seconde restante ; trois drapeaux.
+const FROST_SKIN := "frost_skin"
+const HIBERNATION := "hibernation"
+const REFUGE := "refuge"
+const RIME_HALO := "rime_halo"
+const ENDLESS_WINTER := "endless_winter"
+const ICE_HEART := "ice_heart"
+const ICEBREAKER := "icebreaker"
+## Ceux du Désastre hivernal (jalon 44), lus par `IceVortex`. La Boule de neige en points de
+## pourcentage de rayon par ennemi frappé, l'Accalmie en dégâts subis en moins, le Givrage
+## en force du transi par impulsion, la Meule en « plus », l'Ornière en secondes ; trois
+## drapeaux.
+const SNOWBALL := "snowball"
+const SLIDE := "slide"
+const LULL := "lull"
+const FROSTING := "frosting"
+const SUPERCONDUCT := "superconduct"
+const SINGULARITY := "singularity"
+const RUT := "rut"
+const MILL := "mill"
+## Ceux de l'Orbe gelée (jalon 44), lus par `FrozenOrb` et ses éclats. La Toupie en points de
+## pourcentage d'éclats par seconde, la Pluie d'éclats en nombre, l'Orbe mordante en part
+## d'un coup, la Fracture en chance, le Cristallin en « plus » par seconde ; quatre drapeaux.
+const TOP := "top"
+const SHARD_RAIN := "shard_rain"
+const ORB_BITE := "orb_bite"
+const FRACTURE := "fracture"
+const GUIDED := "guided"
+const STASIS := "stasis"
+const KALEIDOSCOPE := "kaleidoscope"
+const CRYSTALLINE := "crystalline"
+const AIMED_SPIT := "aimed_spit"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -535,7 +662,11 @@ const MECHANICS := [
 	CHARGED_ORB, LIVE_ICE, CONDUCTANCE, BIFURCATION, GROUNDING, RELAY, RELAY_REFUND, WEB_BRANCH,
 	OVERVOLT, ACCUMULATION, BREAKING_POINT, OVERFLOW, TWIN_STRIKE, HUNT, MOVING_FRONT, BOLT_DASH,
 	CHARGED_RUN, REARM, ROUND_TRIP, ROLLING_THUNDER, STATIC_MINES, GALLOP, IONIZE, CAPACITY,
-	BACKLASH, CONDENSER, TOTAL_DISCHARGE, FARADAY,
+	BACKLASH, CONDENSER, TOTAL_DISCHARGE, FARADAY, AFTERSHOCK, TREMORS, GROVE, GLACIER,
+	SERAC, CRYSTALLIZE, CREVASSE, DEEP_COLD, RIME, BLACK_ICE, STARTLE, ALERT, EBB,
+	FROST_SKIN, HIBERNATION, REFUGE, RIME_HALO, ENDLESS_WINTER, ICE_HEART, ICEBREAKER,
+	SNOWBALL, SLIDE, LULL, FROSTING, SUPERCONDUCT, SINGULARITY, RUT, MILL, TOP, SHARD_RAIN,
+	ORB_BITE, FRACTURE, GUIDED, STASIS, KALEIDOSCOPE, CRYSTALLINE, AIMED_SPIT,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -619,7 +750,8 @@ const RAMP_MOST := 5
 const THROTTLE_EVERY := 4
 const THROTTLE_GAP := 0.08
 ## Le Paratonnerre : sa durée, la portée où les éclairs s'incurvent vers lui, leur virage en
-## radians par seconde ; celle où la Cible de l'orage le frappe depuis un nuage.
+## radians par seconde — celui des éclats du Grésil aussi (jalon 44) ; celle où la Cible de
+## l'orage le frappe depuis un nuage.
 const ROD_LIFE := 3.0
 const ROD_REACH := 200.0
 const ROD_TURN := 9.0
@@ -664,6 +796,50 @@ const CONDENSER_MOST := 10
 const DISCHARGE_RADIUS := 50.0
 const FARADAY_TIME := 1.0
 const FARADAY_PERIOD := 5.0
+## Les Pics de glace. La Réplique : l'écart entre deux. Le Glacier : un lancer sur combien,
+## sous le Sérac aussi, son rayon et son « plus ». La Cristallisation : ce qu'un lancer rend
+## au vortex, qui ne dépasse pas deux fois sa durée. La Crevasse : son rayon.
+const AFTERSHOCK_GAP := 0.4
+const GLACIER_EVERY := 3
+const SERAC_EVERY := 2
+const GLACIER_RADIUS := 1.5
+const GLACIER_MORE := 40.0
+const CRYSTALLIZE_TIME := 0.3
+const CREVASSE_RADIUS := 2.0
+## La Nova de glace. Le Grand froid : les transis comptés au plus. Le Sursaut : la
+## compétence qu'il relance, la part des PV max qu'un coup doit ôter, son attente — et
+## sous le Qui-vive.
+const DEEP_COLD_MOST := 5
+const STARTLE_SKILL := "ice_nova"
+const STARTLE_LOSS := 0.10
+const STARTLE_PERIOD := 4.0
+const ALERT_LOSS := 0.05
+const ALERT_PERIOD := 2.0
+## Le Tombeau de glace. Le Halo : sa portée et son rythme. L'Hiver sans fin : ce qu'un tué
+## rend. Le Cœur de glace : l'effet du transi qu'il ajoute — sa force doublée.
+const TOMB_SKILL := "frost_tomb"
+const HALO_RADIUS := 40.0
+const HALO_PERIOD := 1.0
+const ENDLESS_TIME := 0.3
+const ICE_HEART_EFFECT := 100.0
+## Le Désastre hivernal. La Boule de neige : le rayon gagné au plus, en part. La Coulée : sa
+## vitesse. Le Givrage : ses renforts au plus par ennemi. La Meule : le cœur, en px. La
+## Singularité : la portée de l'éclatement, en rayons. L'Accalmie lit `EYE_PART`.
+const SNOWBALL_MOST := 0.4
+const SLIDE_SPEED := 50.0
+const FROSTING_MOST := 3
+const MILL_CORE := 15.0
+const SINGULARITY_REACH := 2.0
+## L'Orbe gelée. Ses éclats à l'éclatement, et leur vitesse ; la portée de sa morsure. La
+## Fracture : la part d'un éclat que garde chaque morceau, et leur écart en radians. Le
+## Guidage : son virage en radians par seconde. Le Viseur : la portée où il cherche.
+const FROST_ORB_BURST := 8
+const SHARD_SPEED := 200.0
+const ORB_REACH := 9.0
+const FRACTURE_PART := 0.5
+const FRACTURE_SPREAD := 0.5
+const GUIDE_TURN := 3.0
+const SPIT_SIGHT := 160.0
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -866,6 +1042,45 @@ var backlash := 0.0
 var condenser := 0.0
 var total_discharge := 0.0
 var faraday := 0.0
+var aftershock := 0.0
+var tremors := 0.0
+var grove := 0.0
+var glacier := 0.0
+var serac := 0.0
+var crystallize := 0.0
+var crevasse := 0.0
+var deep_cold := 0.0
+var rime := 0.0
+var black_ice := 0.0
+var startle := 0.0
+var alert := 0.0
+var ebb := 0.0
+var frost_skin := 0.0
+var hibernation := 0.0
+var refuge := 0.0
+var rime_halo := 0.0
+var endless_winter := 0.0
+var ice_heart := 0.0
+var icebreaker := 0.0
+var snowball := 0.0
+var slide := 0.0
+var lull := 0.0
+var frosting := 0.0
+var superconduct := 0.0
+var singularity := 0.0
+var rut := 0.0
+var mill := 0.0
+var top := 0.0
+var shard_rain := 0.0
+var orb_bite := 0.0
+var fracture := 0.0
+var guided := 0.0
+var stasis := 0.0
+var kaleidoscope := 0.0
+var crystalline := 0.0
+var aimed_spit := 0.0
+## Le morceau de la Fracture, une fois fabriqué : un cache, que `echoed()` ne recopie pas.
+var _fragment: SkillStats
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
 var binds_caster := false
 ## Vrai pour ce qui n'a pas de fin — l'aura, le buff, le cyclone : pas de « par lancer ».
@@ -1126,6 +1341,28 @@ static func facts() -> Dictionary:
 		"cumuls_condensateur": CONDENSER_MOST,
 		"duree_cage": roundi(FARADAY_TIME),
 		"rythme_cage": roundi(FARADAY_PERIOD),
+		"ecart_replique": AFTERSHOCK_GAP,
+		"glacier_tous": GLACIER_EVERY,
+		"serac_tous": SERAC_EVERY,
+		"rayon_glacier": GLACIER_RADIUS,
+		"plus_glacier": roundi(GLACIER_MORE),
+		"temps_cristal": CRYSTALLIZE_TIME,
+		"rayon_crevasse": roundi(CREVASSE_RADIUS),
+		"transis_max": DEEP_COLD_MOST,
+		"perte_sursaut": roundi(STARTLE_LOSS * 100.0),
+		"rythme_sursaut": roundi(STARTLE_PERIOD),
+		"perte_vive": roundi(ALERT_LOSS * 100.0),
+		"rythme_vif": roundi(ALERT_PERIOD),
+		"portee_halo": roundi(HALO_RADIUS),
+		"temps_hiver": ENDLESS_TIME,
+		"neige_max": roundi(SNOWBALL_MOST * 100.0),
+		"vitesse_coulee": roundi(SLIDE_SPEED),
+		"givrage_max": FROSTING_MOST,
+		"coeur_meule": roundi(MILL_CORE),
+		"portee_singularite": roundi(SINGULARITY_REACH),
+		"eclats_orbe": FROST_ORB_BURST,
+		"part_morceau": roundi(FRACTURE_PART * 100.0),
+		"portee_viseur": roundi(SPIT_SIGHT),
 	}
 
 
@@ -1160,6 +1397,37 @@ func shard() -> SkillStats:
 	g.radius = radius * 0.5
 	if split_cascade > 0.0:
 		g.splits = splits
+	# Le Grésil (jalon 44) : les éclats des pics cherchent.
+	g.seek_radius = seek_radius
+	return g
+
+
+## La Réplique des pics (jalon 44) : un pic entier — ses éclats, son sol, son cœur —, à une
+## part du coup ; seule la Réplique ne se recopie pas, sinon elle répliquerait sans fin.
+func aftershock_of() -> SkillStats:
+	var g := echoed(aftershock * 0.01)
+	g.aftershock = 0.0
+	g.tremors = 0.0
+	return g
+
+
+## Un morceau de la Fracture (jalon 44) : une part de l'éclat, qui ne se brise plus — sauf
+## une fois de plus sous le Kaléidoscope. Fabriqué une fois par lancer : la copie entière
+## coûte 0,27 ms, et une orbe brise des dizaines d'éclats par seconde.
+func fragment() -> SkillStats:
+	if _fragment == null:
+		_fragment = echoed(FRACTURE_PART)
+		if kaleidoscope > 0.0:
+			_fragment.kaleidoscope = 0.0
+		else:
+			_fragment.fracture = 0.0
+	return _fragment
+
+
+## Le Glacier et la Crevasse (jalon 44) : le lancer entier, plus large et plus fort.
+func swollen(part: float, radius_factor: float) -> SkillStats:
+	var g := echoed(part)
+	g.radius *= radius_factor
 	return g
 
 
@@ -1206,6 +1474,7 @@ func _derived(part: float) -> SkillStats:
 	g.crit_multiplier = crit_multiplier
 	g.status_chance_increase = status_chance_increase
 	g.chill_effect = chill_effect
+	g.rime = rime
 	g.ignite_effect = ignite_effect
 	g.numb_effect = numb_effect
 	g.crawl_speed = crawl_speed
@@ -1217,8 +1486,9 @@ func _derived(part: float) -> SkillStats:
 func echoed(part: float) -> SkillStats:
 	var g := SkillStats.new()
 	for p in get_property_list():
-		# `interval` se déduit : il n'a rien à recopier.
-		if p["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE and p["name"] != "interval":
+		# `interval` se déduit, et un cache ne vaut que pour son lancer.
+		if p["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE and p["name"] != "interval" \
+				and not String(p["name"]).begins_with("_"):
 			var value: Variant = get(p["name"])
 			g.set(p["name"], value.duplicate() if value is Array else value)
 	for i in damage_min.size():

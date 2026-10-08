@@ -159,6 +159,17 @@ var _strides := {}
 var _ramps := 0
 var _ramp_idle := INF
 var _throttle := 0
+## Le Glacier (jalon 44) : les lancers comptés.
+var _glacier := 0
+## La Glace noire (jalon 44) : le dernier sol de la nova, son centre, son rayon, ce qu'il
+## lui reste, ce qu'il donne. Le Sursaut : l'attente avant le suivant.
+var _black_ice_at := Vector2.ZERO
+var _black_ice_radius := 0.0
+var _black_ice_left := 0.0
+var _black_ice := 0.0
+var _startle_wait := 0.0
+## L'Accalmie (jalon 44) : ce qu'elle retire aux dégâts subis, tant qu'on est dans l'œil.
+var _calm := 0.0
 ## La Tension accumulée (jalon 43) : le « plus » que porte le prochain sort de foudre, et le
 ## temps qu'il reste pour le lancer.
 var _tension := 0.0
@@ -246,6 +257,12 @@ func _physics_process(delta: float) -> void:
 	_ramp_idle += delta
 	_tension_left = maxf(_tension_left - delta, 0.0)
 	_faraday_wait = maxf(_faraday_wait - delta, 0.0)
+	_black_ice_left = maxf(_black_ice_left - delta, 0.0)
+	_startle_wait = maxf(_startle_wait - delta, 0.0)
+	var calm := IceVortex.calm_for(global_position, states)
+	if calm != _calm:
+		_calm = calm
+		_restat()
 	if _faraday_left > 0.0:
 		_faraday_left -= delta
 		if _faraday_left <= 0.0:
@@ -275,6 +292,8 @@ func _physics_process(delta: float) -> void:
 	sprite.set_state(input != Vector2.ZERO, facing)
 
 	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if _is_swinging else 1.0)
+	if _black_ice_left > 0.0 and global_position.distance_to(_black_ice_at) <= _black_ice_radius:
+		speed *= 1.0 + _black_ice * 0.01
 	if input != Vector2.ZERO:
 		velocity = velocity.lerp(input.normalized() * speed, ACCEL)
 	else:
@@ -367,6 +386,11 @@ func cast_slot(index: int) -> bool:
 			cast = cast.echoed(1.0 + condensed * 0.01)
 			_condensed = 0
 			_condensed_power = 0.0
+	# Le Glacier (jalon 44) : un lancer sur trois, ou sur deux sous le Sérac.
+	if cast.glacier > 0.0:
+		_glacier += 1
+		if _glacier % (SkillStats.SERAC_EVERY if cast.serac > 0.0 else SkillStats.GLACIER_EVERY) == 0:
+			cast = cast.swollen(1.0 + SkillStats.GLACIER_MORE * 0.01, SkillStats.GLACIER_RADIUS)
 	var salvo := _salvo(skill, points, cast)
 	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
 	if spell:
@@ -455,6 +479,9 @@ func _pose(
 			_roll(salvo, orb_scene, origin, toward, aim)
 		Skill.Shape.COMET:
 			_roll(salvo, comet_scene, origin, toward)
+		Skill.Shape.FROST_ORB:
+			for direction in _spread(cast, toward):
+				FrozenOrb.send(parent, at, direction, cast, states, origin, bolt_scene, aim, self)
 		Skill.Shape.ORB:
 			var directions := _spread(cast, toward)
 			# Le Satellite (jalon 43) : répartis autour du lanceur, pas en éventail.
@@ -489,6 +516,9 @@ func _pose(
 		Skill.Shape.BUFF:
 			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie.
 			_light(skill.id, Buff.light(self, skill, cast.duration, cast.binds_caster))
+			# Le Refuge (jalon 44) : entrer dans la glace éteint ce que l'on porte.
+			if cast.refuge > 0.0:
+				states.clear()
 		Skill.Shape.CYCLONE:
 			_light(skill.id, Cyclone.spin(self, skill))
 		Skill.Shape.FAMILIAR:
@@ -505,22 +535,33 @@ func _pose(
 		Skill.Shape.SLAM:
 			_slam(cast)
 		Skill.Shape.SPIKES:
-			IceSpikes.raise_at(parent, aim, cast, states, origin, bolt_scene)
+			IceSpikes.grove(parent, aim, toward, cast, states, origin, bolt_scene)
+			if cast.crystallize > 0.0:
+				IceVortex.feed(aim, states, SkillStats.CRYSTALLIZE_TIME)
 		Skill.Shape.FISSURE:
 			IceSpikes.fissure(parent, at, aim, cast, states, origin, bolt_scene)
+			if cast.crystallize > 0.0:
+				IceVortex.feed(aim, states, SkillStats.CRYSTALLIZE_TIME)
 		Skill.Shape.NOVA:
 			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
 			# cercle et s'efface, ce qu'une nova fait exactement. Son sol a sa taille.
-			Explosion.put(
+			var nova := Explosion.put(
 				parent, at, cast.roll(Game.rng), cast.radius, null,
 				DamageType.COLORS[cast.nature], states, cast
 			)
+			nova.knockback = cast.knockback
+			nova.crowd = cast.deep_cold
 			if cast.ground_duration > 0.0:
 				DashTrail.patch(parent, at, cast.ground(cast.radius), states)
+				if cast.black_ice > 0.0 and origin == self:
+					_black_ice_at = at
+					_black_ice_radius = cast.radius
+					_black_ice_left = cast.ground_duration
+					_black_ice = cast.black_ice
 		Skill.Shape.RING:
 			FrostRing.spread(parent, at, cast, states)
 		Skill.Shape.VORTEX, Skill.Shape.IMPLOSION:
-			IceVortex.open(parent, at, cast, states)
+			IceVortex.open(parent, at, cast, states, aim)
 		Skill.Shape.BEAM:
 			HolyBeam.fire(parent, at, toward, cast, states)
 		Skill.Shape.HOLY_CROSS:
@@ -669,21 +710,27 @@ func extinguish(skill_id: String) -> void:
 	if is_instance_valid(node):
 		(node as Node).extinguish()
 		if node is Buff and not is_dead:
-			_shatter(SkillCatalog.by_id(skill_id))
+			_shatter(SkillCatalog.by_id(skill_id), (node as Buff).remaining())
 	after_buff_change()
 
 
 ## L'Éclatement du Tombeau (jalon 36) : un buff lancé qui s'éteint éclate. Pas celui
-## d'une ruée, qui a déjà éclaté à l'arrivée.
-func _shatter(skill: Skill) -> void:
+## d'une ruée, qui a déjà éclaté à l'arrivée. Le Brise-glace (jalon 44) paie chaque seconde
+## qu'il lui restait ; le Cœur de glace transit à coup sûr, à double force.
+func _shatter(skill: Skill, remaining: float) -> void:
 	if skill == null or skill.shape != Skill.Shape.BUFF:
 		return
 	var cast := resolve(skill, skill_points(skill.id))
-	if cast.end_burst > 0.0:
-		Explosion.put(
-			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
-			DamageType.COLORS[cast.nature], states, cast
-		)
+	if cast.end_burst <= 0.0:
+		return
+	cast = cast.echoed(1.0 + cast.icebreaker * 0.01 * remaining)
+	if cast.ice_heart > 0.0:
+		cast.status_chance_increase += SkillStats.SURE_STATE
+		cast.chill_effect += SkillStats.ICE_HEART_EFFECT
+	Explosion.put(
+		_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
+		DamageType.COLORS[cast.nature], states, cast
+	)
 
 
 ## L'allumage, son pendant : la fiche reçoit les lignes du buff.
@@ -816,9 +863,13 @@ func _charge_bit(power: float) -> void:
 	_condensed_power = 0.0
 
 
-## Un ennemi vient de frapper au contact (`Enemy._hurt()`) : le Choc en retour lui rend
-## une part du coup en foudre, par un arc ; la Cage de Faraday s'ensuit.
-func backlash(attacker: Enemy, amount: float) -> void:
+## Un ennemi vient de frapper au contact (`Enemy._hurt()`) : la Peau de givre le transit
+## (jalon 44) ; le Choc en retour lui rend une part du coup en foudre, par un arc, et la Cage
+## de Faraday s'ensuit.
+func melee_blow(attacker: Enemy, amount: float) -> void:
+	var skin := lit_number(SkillStats.FROST_SKIN)
+	if skin > 0.0 and is_instance_valid(attacker) and attacker.hurtbox.states != null:
+		attacker.hurtbox.states.put(StatusEffects.Kind.CHILL, 0.0, states, SkillStats.TOMB_SKILL, skin * 0.01)
 	var part := lit_number(SkillStats.BACKLASH)
 	if part <= 0.0 or is_dead or not is_instance_valid(attacker):
 		return
@@ -859,6 +910,11 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		# Le Survoltage (jalon 43) : l'explosion relance une petite chaîne depuis le tué.
 		if cast.overvolt > 0.0:
 			ChainLightning.surge.call_deferred(_effects_parent(), get_world_2d(), at, states, cast.surged())
+	# L'Hiver sans fin (jalon 44) : chaque tué rend du temps au tombeau allumé qui le porte.
+	if lit(SkillStats.TOMB_SKILL):
+		var tomb := resolve(SkillCatalog.by_id(SkillStats.TOMB_SKILL), skill_points(SkillStats.TOMB_SKILL))
+		if tomb.endless_winter > 0.0:
+			(_lit[SkillStats.TOMB_SKILL] as Buff).prolong(SkillStats.ENDLESS_TIME)
 	# Les Âmes consumées (jalon 42) : chaque tué rend une part des PV max.
 	if cast.soul_feast > 0.0:
 		heal(stats.max_health * cast.soul_feast * 0.01)
@@ -1294,8 +1350,9 @@ func recompute_stats() -> void:
 		mods.append_array(book.passive_mods())
 	mods.append_array(passive_tree.mods(passives))
 	mods.append_array(buff_mods())
-	# Rempart d'os et Bouclier de lames : tant qu'ils sont debout, pas un buff qu'on allume.
-	var wall := Minion.wall_of(self) + (_crown.ward() if _crown != null else 0.0)
+	# Rempart d'os, Bouclier de lames et Accalmie (jalon 44) : tant qu'ils tiennent, pas un
+	# buff qu'on allume.
+	var wall := Minion.wall_of(self) + (_crown.ward() if _crown != null else 0.0) + _calm
 	if wall > 0.0:
 		mods.append(StatMod.new("damage_taken", StatMod.Mode.FLAT, -wall))
 
@@ -1773,11 +1830,32 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
-	_set_health(health - info.amount + RagDoll.shoulder(self, info.amount))
+	var lost := info.amount - RagDoll.shoulder(self, info.amount)
+	_set_health(health - lost)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:
 		_die()
+	elif _startle_wait <= 0.0:
+		_startle(lost)
+
+
+## Le Sursaut (jalon 44) : un coup qui ôte assez de vie fait partir la nova d'elle-même,
+## sans coût, depuis le lanceur. Résolue à ce seul moment : un coup reçu est rare. Posée
+## en différé : le coup arrive d'un rappel de collision (invariant 4).
+func _startle(lost: float) -> void:
+	var skill := SkillCatalog.by_id(SkillStats.STARTLE_SKILL)
+	var points := skill_points(skill.id)
+	if points <= 0:
+		return
+	var nova := resolve(skill, points)
+	if nova.startle <= 0.0:
+		return
+	var alert := nova.alert > 0.0
+	if lost < stats.max_health * (SkillStats.ALERT_LOSS if alert else SkillStats.STARTLE_LOSS):
+		return
+	_startle_wait = SkillStats.ALERT_PERIOD if alert else SkillStats.STARTLE_PERIOD
+	_pose.call_deferred(skill, [nova] as Array[SkillStats], self, facing, global_position)
 
 
 ## Le drapeau évite plusieurs `died` : plusieurs grunts frappent dans la même image.

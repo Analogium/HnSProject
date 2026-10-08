@@ -2305,17 +2305,7 @@ func test_a_sucking_vortex_pulls_toward_its_heart() -> void:
 	assert_eq(pulls, [-120.0])
 
 
-func test_an_avalanche_bursts_when_the_vortex_ends() -> void:
-	_learn_with("manual_cold", "winter_disaster", [[SkillStats.END_BURST, 30.0], ["duration", -80.0, true]])
-	assert_true(_p.cast_slot(2))
-	var vortex: IceVortex = _children_of(IceVortex)[0]
-	while is_instance_valid(vortex):
-		await wait_physics_frames(1)
-	await wait_physics_frames(1)
-	assert_eq(_children_of(Explosion).size(), 1)
-
-
-## L'Implosion se resserre, puis éclate de tout son rayon — sans nœud d'Avalanche.
+## L'Implosion se resserre, puis éclate de tout son rayon.
 func test_an_implosion_closes_in_then_bursts_whole() -> void:
 	_learn_with("manual_cold", "winter_disaster", [["duration", -80.0, true]], Skill.Shape.IMPLOSION)
 	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
@@ -4036,12 +4026,12 @@ func test_a_backlash_answers_a_melee_blow_then_the_cage_closes() -> void:
 	var grunt := _grunt(Vector2(20, 0))
 	await wait_physics_frames(2)
 	var full := grunt.health
-	_p.backlash(grunt, 20.0)
+	_p.melee_blow(grunt, 20.0)
 	assert_lt(grunt.health, full, "l'arc l'a frappé")
 	assert_true(_p.hurtbox.invulnerable, "la cage")
 	await wait_seconds(SkillStats.FARADAY_TIME + 0.1)
 	assert_false(_p.hurtbox.invulnerable, "levée")
-	_p.backlash(grunt, 20.0)
+	_p.melee_blow(grunt, 20.0)
 	assert_false(_p.hurtbox.invulnerable, "pas avant son attente")
 
 
@@ -4071,3 +4061,507 @@ func test_a_total_discharge_bursts_by_itself() -> void:
 	assert_eq(_hits(near), 1)
 	assert_almost_eq(float(_received_all[near][0]), 30.0, 0.01)
 	assert_eq(_p._condensed, 0)
+
+
+# --------------------------------------------------------------------------
+# Pics de glace (jalon 44)
+# --------------------------------------------------------------------------
+
+## Le Plein centre : au cœur du cercle, le même tirage frappe plus fort.
+func test_the_bullseye_bites_harder_at_the_heart() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.EYE, 50.0]])
+	_p.stats.crit_chance = 0.0
+	var point := _aim()
+	var heart := _target(point)
+	var rim := _target(point + Vector2(0, 20))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_almost_eq(float(_received_all[heart][0]), float(_received_all[rim][0]) * 1.5, 0.01)
+
+
+## La Réplique, et les Secousses qui la répètent : le même cœur, plus tard.
+func test_an_aftershock_strikes_again_and_tremors_repeat_it() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.AFTERSHOCK, 50.0], [SkillStats.TREMORS, 2.0]])
+	var below := _target(_aim())
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.AFTERSHOCK_GAP * 3.0 + 0.1)
+	assert_eq(_hits(below), 4, "le coup, la réplique et deux secousses")
+	await wait_seconds(SkillStats.AFTERSHOCK_GAP * 2.0)
+	assert_eq(_hits(below), 4, "une réplique ne réplique pas")
+
+
+## La réplique reste un pic : sous les Éclats, elle projette les siens.
+func test_an_aftershock_is_a_whole_spike_with_its_shards() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.AFTERSHOCK, 50.0], [SkillStats.SPLITS, 2.0]])
+	var thrown := [0]
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void: thrown[0] += 1 if n is Projectile else 0
+	)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.AFTERSHOCK_GAP + IceSpikes.LIFETIME + 0.15)
+	assert_eq(thrown[0], 4, "deux éclats du pic, deux de sa réplique")
+
+
+## Le Bosquet : un cercle de plus, contre le premier, sur le côté de la visée.
+func test_a_grove_raises_a_circle_beside_the_first() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.GROVE, 1.0]])
+	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
+	var beside := _target(_aim() + _p.facing.rotated(PI * 0.5) * radius * 2.0)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(IceSpikes).size(), 2)
+	await wait_physics_frames(3)
+	assert_eq(_hits(beside), 1)
+
+
+## Le Glacier perce un lancer sur trois, plus large.
+func test_a_glacier_comes_every_third_cast() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.GLACIER, 1.0]])
+	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
+	_p._glacier = SkillStats.GLACIER_EVERY - 2
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq((_children_of(IceSpikes)[0] as IceSpikes)._cast.radius, radius, 0.01)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(
+		(_children_of(IceSpikes)[1] as IceSpikes)._cast.radius, radius * SkillStats.GLACIER_RADIUS, 0.01
+	)
+
+
+## Sous le Sérac, un lancer sur deux.
+func test_a_serac_glacier_comes_every_second_cast() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.GLACIER, 1.0], [SkillStats.SERAC, 1.0]])
+	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
+	_p._glacier = SkillStats.SERAC_EVERY - 1
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(
+		(_children_of(IceSpikes)[-1] as IceSpikes)._cast.radius, radius * SkillStats.GLACIER_RADIUS, 0.01
+	)
+
+
+## La Cristallisation : des pics lancés dans le vortex lui rendent du temps, jusqu'à deux
+## fois sa durée.
+func test_spikes_cast_in_the_vortex_feed_it() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.CRYSTALLIZE, 1.0]])
+	assert_true(_p.invest(0, "winter_disaster"))
+	_p.bar.put(3, "winter_disaster")
+	assert_true(_p.cast_slot(3))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	var base := vortex._cast.duration
+	vortex.global_position = _aim()
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(vortex._cast.duration, base + SkillStats.CRYSTALLIZE_TIME, 0.001)
+	for i in 30:
+		IceVortex.feed(vortex.global_position, _p.states, SkillStats.CRYSTALLIZE_TIME)
+	assert_almost_eq(vortex._cast.duration, base * 2.0, 0.001, "pas au-delà du double")
+
+
+## La Crevasse : au bout du sillon, un cercle deux fois plus large, sur le point visé.
+func test_a_crevasse_opens_at_the_end_of_the_furrow() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.CREVASSE, 1.0]], Skill.Shape.FISSURE)
+	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
+	assert_true(_p.cast_slot(2))
+	var last: IceSpikes = _children_of(IceSpikes)[-1]
+	assert_eq(last.global_position, _aim())
+	assert_almost_eq(last._cast.radius, radius * SkillStats.CREVASSE_RADIUS, 0.01)
+
+
+## Le Grésil : un éclat qui partirait à côté s'incurve vers l'ennemi.
+func test_sleet_shards_curve_toward_an_enemy() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 1.0], [SkillStats.SEEK, 200.0]])
+	var aside := _target(_aim() + Vector2(60, 30))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(IceSpikes.LIFETIME + 0.6)
+	assert_eq(_hits(aside), 1)
+
+
+# --------------------------------------------------------------------------
+# Nova de glace (jalon 44)
+# --------------------------------------------------------------------------
+
+## Le Grand froid : la nova frappe plus fort par transi dans son cercle, sain compris.
+func test_deep_cold_bites_harder_in_a_chilled_crowd() -> void:
+	for at in [Vector2(20, 0), Vector2(-20, 0)]:
+		var chilled := _target(at)
+		chilled.states = StatusEffects.new()
+		chilled.states.put(StatusEffects.Kind.CHILL, 1.0)
+	var healthy := _target(Vector2(0, 20))
+	await wait_physics_frames(2)
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.COLD] = 10.0
+	var nova := Explosion.put(_effects, _p.global_position, parts, 46.0, null, Color.WHITE, _p.states, SkillStats.new())
+	nova.crowd = 10.0
+	await wait_physics_frames(3)
+	assert_almost_eq(float(_received_all[healthy][0]), 12.0, 0.01, "deux transis, +10 % chacun")
+
+
+## La nova pose ses deux nombres sur son explosion : le Grand froid et le Repoussoir.
+func test_the_nova_carries_its_crowd_and_its_push() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.DEEP_COLD, 4.0], [SkillStats.KNOCKBACK, 30.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var nova: Explosion = _children_of(Explosion)[0]
+	assert_eq(nova.crowd, 4.0)
+	assert_eq(nova.knockback, 30.0)
+
+
+## Le Frimas : le transi de la nova dure davantage.
+func test_rime_makes_the_nova_chill_last() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.RIME, 1.5], ["status_chance_increase", 500.0]])
+	var target := _target(Vector2(20, 0))
+	target.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_gt(
+		target.states._state(StatusEffects.Kind.CHILL).remaining,
+		StatusEffects.DURATIONS[StatusEffects.Kind.CHILL] + 1.0
+	)
+
+
+## Le Sursaut : un gros coup fait partir la nova, un petit non ; puis il attend.
+func test_a_heavy_blow_startles_a_nova_out() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.STARTLE, 1.0]])
+	var full := _p.stats.max_health
+	_p._on_damaged(DamageInfo.new(full * 0.07, Vector2(10, 0)))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 0, "un petit coup ne suffit pas")
+	_p._on_damaged(DamageInfo.new(full * 0.2, Vector2(10, 0)))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1)
+	_p._on_damaged(DamageInfo.new(full * 0.2, Vector2(10, 0)))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1, "pas avant son attente")
+
+
+## Le Qui-vive : un coup plus petit suffit.
+func test_on_alert_a_smaller_blow_startles() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.STARTLE, 1.0], [SkillStats.ALERT, 1.0]])
+	_p._on_damaged(DamageInfo.new(_p.stats.max_health * 0.07, Vector2(10, 0)))
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1)
+	assert_almost_eq(_p._startle_wait, SkillStats.ALERT_PERIOD, 0.1, "et revient plus vite")
+
+
+## Le Reflux : l'anneau se referme et refrappe une fois ce qu'il croise.
+func test_an_ebbing_wave_strikes_again_on_its_way_back() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.EBB, 1.0]], Skill.Shape.RING)
+	var target := _target(Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(FrostRing.LIFETIME * 2.0 + 0.1)
+	assert_eq(_hits(target), 2)
+	assert_eq(_children_of(FrostRing).size(), 0, "puis il s'efface")
+
+
+## La Glace noire : le sol gelé de la nova retient où le joueur glisse.
+func test_black_ice_remembers_the_frozen_ground() -> void:
+	_learn_with("manual_cold", "ice_nova", [[SkillStats.GROUND, 2.0], [SkillStats.BLACK_ICE, 50.0]])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p._black_ice_at, _p.global_position)
+	assert_eq(_p._black_ice, 50.0)
+	assert_almost_eq(_p._black_ice_left, 2.0, 0.001)
+
+
+# --------------------------------------------------------------------------
+# Tombeau de glace (jalon 44)
+# --------------------------------------------------------------------------
+
+## La Peau de givre : qui frappe au contact est transi, à la force du nœud.
+func test_frost_skin_chills_a_melee_attacker() -> void:
+	_learn_with("manual_cold", "frost_tomb", [[SkillStats.FROST_SKIN, 60.0]])
+	assert_true(_p.cast_slot(2))
+	var grunt := _grunt(Vector2(20, 0))
+	await wait_physics_frames(2)
+	_p.melee_blow(grunt, 10.0)
+	var chill: StatusEffects.State = grunt.hurtbox.states._state(StatusEffects.Kind.CHILL)
+	assert_not_null(chill)
+	assert_almost_eq(chill.strength, 0.6, 0.001)
+
+
+## L'Hibernation : enfermé, les recharges des autres courent plus vite.
+func test_hibernation_hastens_the_other_recharges() -> void:
+	_learn_with("manual_cold", "frost_tomb", [[SkillStats.HIBERNATION, 100.0]])
+	assert_true(_p.invest(0, "winter_disaster"))
+	_p.bar.put(3, "winter_disaster")
+	assert_true(_p.cast_slot(2))
+	_p._recharges[3] = 2.0
+	await wait_seconds(0.5)
+	assert_almost_eq(_p._recharges[3], 1.0, 0.06, "deux fois plus vite")
+
+
+## Le Refuge : entrer dans la glace éteint ce que l'on porte.
+func test_the_refuge_puts_out_the_wearer_states() -> void:
+	_learn_with("manual_cold", "frost_tomb", [[SkillStats.REFUGE, 1.0]])
+	_p.states.put(StatusEffects.Kind.IGNITE, 5.0)
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.states.active(StatusEffects.Kind.IGNITE))
+
+
+## Le Halo de givre : ce qui passe autour du porteur est transi.
+func test_a_rime_halo_chills_around_its_wearer() -> void:
+	_learn_with("manual_cold", "frost_tomb", [[SkillStats.RIME_HALO, 100.0]])
+	var near := _target(Vector2(20, 0))
+	near.states = StatusEffects.new()
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.HALO_PERIOD + 0.1)
+	assert_true(near.states.active(StatusEffects.Kind.CHILL))
+
+
+## L'Hiver sans fin : chaque tué rend du temps au tombeau.
+func test_endless_winter_gives_time_back_on_each_kill() -> void:
+	_learn_with("manual_cold", "frost_tomb", [[SkillStats.ENDLESS_WINTER, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.0)
+	var tomb: Buff = _p._lit["frost_tomb"]
+	var before := tomb.remaining()
+	_p._on_slew(SkillStats.new(), Vector2.ZERO, null)
+	assert_almost_eq(tomb.remaining(), before + SkillStats.ENDLESS_TIME, 0.001)
+
+
+## Le Cœur de glace : l'éclatement transit à coup sûr, à double force.
+func test_an_ice_heart_burst_chills_twice_as_hard() -> void:
+	_learn_with(
+		"manual_cold", "frost_tomb",
+		[["damage_cold", 10.0], [SkillStats.END_BURST, 30.0], [SkillStats.ICE_HEART, 1.0]]
+	)
+	var near := _target(Vector2(20, 0))
+	near.states = StatusEffects.new()
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	var chill: StatusEffects.State = near.states._state(StatusEffects.Kind.CHILL)
+	assert_not_null(chill)
+	assert_almost_eq(chill.strength, 2.0, 0.001)
+
+
+## Le Brise-glace : sortir tôt, c'est éclater de toutes les secondes qui restaient.
+func test_an_icebreaker_burst_pays_for_the_time_left() -> void:
+	_learn_with(
+		"manual_cold", "frost_tomb",
+		[["damage_cold", 10.0], [SkillStats.END_BURST, 30.0], [SkillStats.ICEBREAKER, 100.0]]
+	)
+	_p.stats.crit_chance = 0.0
+	var near := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var left := (_p._lit["frost_tomb"] as Buff).remaining()
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_almost_eq(float(_received_all[near][0]), 10.0 * (1.0 + left), 0.5)
+
+
+# --------------------------------------------------------------------------
+# Désastre hivernal (jalon 44)
+# --------------------------------------------------------------------------
+
+## La Boule de neige : le vortex grossit de chaque ennemi frappé.
+func test_a_snowball_vortex_grows_from_what_it_hits() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.SNOWBALL, 10.0]])
+	_target(Vector2(10, 0))
+	_target(Vector2(-10, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	assert_almost_eq(vortex._swell, 0.2, 0.001, "deux ennemis, 10 % chacun")
+
+
+## La Coulée roule vers le point visé ; l'Ornière y laisse son sol.
+func test_a_sliding_vortex_rolls_toward_the_aim_and_leaves_a_rut() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.SLIDE, 1.0], [SkillStats.RUT, 1.0]])
+	assert_true(_p.cast_slot(2))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	await wait_seconds(1.0)
+	assert_almost_eq(vortex.global_position.distance_to(_p.global_position), SkillStats.SLIDE_SPEED, 3.0)
+	assert_gt(_children_of(DashTrail).size(), 0, "l'ornière")
+
+
+## L'Accalmie : dans l'œil, le lanceur subit moins.
+func test_the_lull_shelters_its_caster_in_the_eye() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.LULL, 30.0]])
+	var before := _p.stats.damage_taken
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(_p.stats.damage_taken, before - 30.0, 0.001)
+
+
+## Le Givrage : un transi déjà posé se renforce à chaque impulsion.
+func test_frosting_strengthens_a_chill_each_pulse() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.FROSTING, 50.0]])
+	var target := _target(Vector2(10, 0))
+	target.states = StatusEffects.new()
+	target.states.put(StatusEffects.Kind.CHILL, 0.0)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(target.states._state(StatusEffects.Kind.CHILL).strength, 1.5, 0.001)
+
+
+## La Supraconduction : un engourdi est transi à coup sûr et aspiré deux fois plus fort.
+func test_superconduction_chills_and_pulls_the_numbed_harder() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.PULL, 60.0], [SkillStats.SUPERCONDUCT, 1.0]])
+	var numbed := _target(Vector2(10, 0))
+	numbed.states = StatusEffects.new()
+	numbed.states.put(StatusEffects.Kind.NUMB, 0.0)
+	var pulls := []
+	numbed.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_eq(pulls, [-120.0])
+	assert_true(numbed.states.active(StatusEffects.Kind.CHILL))
+
+
+## La Meule : au cœur, le même tirage mord plus fort.
+func test_the_mill_bites_harder_at_the_core() -> void:
+	_learn_with("manual_cold", "winter_disaster", [[SkillStats.MILL, 50.0]])
+	_p.stats.crit_chance = 0.0
+	var core := _target(Vector2(5, 0))
+	var rim := _target(Vector2(22, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(float(_received_all[core][0]), float(_received_all[rim][0]) * 1.5, 0.01)
+
+
+## La Singularité : l'implosion éclate à deux fois son rayon.
+func test_a_singularity_bursts_twice_as_wide() -> void:
+	_learn_with(
+		"manual_cold", "winter_disaster", [["duration", -80.0, true], [SkillStats.SINGULARITY, 1.0]],
+		Skill.Shape.IMPLOSION
+	)
+	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
+	var far := _target(Vector2(cast.radius * 1.7, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var vortex: IceVortex = _children_of(IceVortex)[0]
+	while is_instance_valid(vortex):
+		await wait_physics_frames(1)
+	await wait_physics_frames(2)
+	assert_eq(_hits(far), 1, "l'éclatement seul")
+
+
+# --------------------------------------------------------------------------
+# Orbe gelée (jalon 44)
+# --------------------------------------------------------------------------
+
+func _count_shards() -> Array:
+	var thrown := [0]
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void: thrown[0] += 1 if n is Projectile else 0
+	)
+	return thrown
+
+
+## L'orbe file, crache un éclat par période, puis éclate en couronne et s'efface.
+func test_a_frozen_orb_spits_shards_then_bursts() -> void:
+	_learn("manual_cold", ["frozen_orb"])
+	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	var thrown := _count_shards()
+	assert_true(_p.cast_slot(2))
+	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
+	await wait_seconds(0.5)
+	assert_gt(orb.global_position.distance_to(_p.global_position), 40.0, "elle file")
+	assert_almost_eq(thrown[0], int(0.5 / cast.period), 1, "un éclat par période")
+	await wait_seconds(cast.duration - 0.4)
+	assert_eq(_children_of(FrozenOrb).size(), 0)
+	assert_almost_eq(
+		thrown[0], int(cast.duration / cast.period) + SkillStats.FROST_ORB_BURST, 1, "et sa couronne"
+	)
+
+
+## Pas plus que sa limite par lanceur : la plus ancienne se dissout.
+func test_frozen_orbs_are_capped_per_caster() -> void:
+	_learn("manual_cold", ["frozen_orb"])
+	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	for i in cast.max_simultaneous() + 2:
+		_p._recharges[2] = 0.0
+		assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	assert_eq(_children_of(FrozenOrb).size(), cast.max_simultaneous())
+
+
+## La Toupie crache plus vite ; la Pluie d'éclats grossit la couronne.
+func test_a_spinning_top_spits_faster_and_rain_widens_the_burst() -> void:
+	_learn_with("manual_cold", "frozen_orb", [[SkillStats.TOP, 100.0], [SkillStats.SHARD_RAIN, 4.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	var thrown := _count_shards()
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(cast.duration + 0.1)
+	assert_almost_eq(
+		thrown[0], int(cast.duration / cast.period * 2.0) + SkillStats.FROST_ORB_BURST + 4, 2
+	)
+
+
+## L'Orbe mordante frappe ce qu'elle traverse, une fois.
+func test_a_biting_orb_strikes_what_it_passes() -> void:
+	_learn_with("manual_cold", "frozen_orb", [[SkillStats.ORB_BITE, 30.0]])
+	var on_path := _target(_p.global_position + _p.facing * 40.0)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
+	await wait_seconds(0.6)
+	assert_true(orb._bitten.has(on_path.get_instance_id()))
+
+
+## La Fracture : un éclat sur un transi se brise en deux morceaux, qui ne se brisent plus ;
+## sous le Kaléidoscope, une fois de plus.
+func test_fracture_breaks_a_shard_on_a_chilled_enemy() -> void:
+	_learn_with("manual_cold", "frozen_orb", [[SkillStats.FRACTURE, 100.0]])
+	var chilled := _target(_p.global_position + _p.facing * 50.0)
+	chilled.states = StatusEffects.new()
+	chilled.states.put(StatusEffects.Kind.CHILL, 0.0)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.8)
+	var pieces := _children_of(Projectile).filter(
+		func(b: Projectile) -> bool: return is_zero_approx(b._cast.fracture)
+	)
+	assert_gt(pieces.size(), 1, "des morceaux")
+
+	var shard := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	shard.fracture = 100.0
+	assert_eq(shard.fragment().fracture, 0.0, "un morceau ne se brise plus")
+	assert_same(shard.fragment(), shard.fragment(), "fabriqué une fois par lancer")
+	var kaleidoscope := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	kaleidoscope.fracture = 100.0
+	kaleidoscope.kaleidoscope = 1.0
+	assert_eq(kaleidoscope.fragment().fracture, 100.0, "sauf sous le Kaléidoscope")
+	assert_eq(kaleidoscope.fragment().fragment().fracture, 0.0, "une fois")
+
+
+## Le Guidage : l'orbe s'incurve vers le curseur.
+func test_a_guided_orb_curves_toward_the_cursor() -> void:
+	_learn_with("manual_cold", "frozen_orb", [[SkillStats.GUIDED, 1.0]])
+	_p.facing = Vector2.RIGHT
+	assert_true(_p.cast_slot(2))
+	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
+	_p.facing = Vector2.DOWN
+	await wait_seconds(0.4)
+	assert_gt(orb._dir.y, 0.5, "elle a tourné vers le bas")
+
+
+## La Stase : l'orbe s'arrête au point visé ; le Cristallin y grossit ses éclats.
+func test_a_stasis_orb_stops_at_the_aim_and_swells() -> void:
+	_learn_with("manual_cold", "frozen_orb", [[SkillStats.STASIS, 1.0], [SkillStats.CRYSTALLINE, 50.0]])
+	var aim := _aim()
+	assert_true(_p.cast_slot(2))
+	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
+	await wait_seconds(1.5)
+	assert_eq(orb.global_position, aim)
+	assert_gt(orb._stopped, 0.0)
+	assert_gt(orb._shard_cast().total_max(), orb._cast.total_max(), "plus fort à l'arrêt")
+
+
+## La Constellation : une orbe de plus par point.
+func test_a_constellation_casts_more_orbs() -> void:
+	_learn_with("manual_cold", "frozen_orb", [["projectiles", 2.0]])
+	assert_true(_p.cast_slot(2))
+	assert_eq(_children_of(FrozenOrb).size(), 3)

@@ -301,7 +301,9 @@ func suffer(
 			if burn_per_second(kind) > 0.0:
 				put(kind, part * strength, author, source)
 			else:
-				put(kind, part, author, source, strength)
+				# Le Frimas (jalon 44) : le transi de la nova dure davantage.
+				var lasting: float = DURATIONS[kind] + cast.rime if cast != null and kind == Kind.CHILL else 0.0
+				put(kind, part, author, source, strength, lasting)
 
 
 ## Ce qu'un **lancer** pose à ce qu'il touche, à sa chance : la décomposition de la

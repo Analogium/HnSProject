@@ -53,6 +53,19 @@ static func raise_at(
 	return spikes
 
 
+## Le Bosquet (jalon 44) : des cercles de plus, posés contre le premier, de part et d'autre
+## du cap — un seul se pose sur le côté.
+static func grove(
+	parent: Node, point: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
+	source: Node2D, shards: PackedScene
+) -> void:
+	raise_at(parent, point, cast, author, source, shards)
+	var extra := int(cast.grove)
+	for i in extra:
+		var side := Vector2.from_angle(toward.angle() + PI * 0.5 + TAU * float(i) / float(extra))
+		raise_at(parent, point + side * cast.radius * 2.0, cast, author, source, shards)
+
+
 ## Le Sillon : des cercles en ligne, de `from` à `to`, chacun un peu après le précédent,
 ## et chacun projette ses éclats en retombant.
 static func fissure(
@@ -66,6 +79,11 @@ static func fissure(
 		raise_at(
 			parent, from + dir * (cast.radius + step * float(i)), cast, author, source, shards,
 			FISSURE_STEP * float(i)
+		)
+	if cast.crevasse > 0.0:
+		raise_at(
+			parent, to, cast.swollen(1.0, SkillStats.CREVASSE_RADIUS), author, source, shards,
+			FISSURE_STEP * float(count)
 		)
 
 
@@ -88,10 +106,15 @@ func _physics_process(delta: float) -> void:
 		return
 	if not _has_struck:
 		_has_struck = true
-		for target in Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author):
-			_struck[target.get_instance_id()] = true
+		_strike()
 		if _cast.ground_duration > 0.0:
 			DashTrail.patch(get_parent(), global_position, _cast.ground(), _author)
+		if _cast.aftershock > 0.0:
+			for i in int(_cast.tremors) + 1:
+				raise_at(
+					get_parent(), global_position, _cast.aftershock_of(), _author, _source, _shards,
+					SkillStats.AFTERSHOCK_GAP * float(i + 1)
+				)
 	_age += delta
 	queue_redraw()
 	if _age >= LIFETIME:
@@ -102,6 +125,20 @@ func _physics_process(delta: float) -> void:
 				_source, _cast.shard(), int(_cast.splits), _struck
 			)
 		queue_free()
+
+
+## Un tirage pour tout le cercle (invariant 3) ; le Plein centre (jalon 44) frappe plus fort
+## ce qui est au cœur, la part qu'a l'Œil du brasier.
+func _strike() -> void:
+	var parts := _cast.roll(Game.rng)
+	var eyed := parts.duplicate()
+	for i in eyed.size():
+		eyed[i] *= 1.0 + _cast.eye * 0.01
+	var core := _cast.radius * SkillStats.EYE_PART
+	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+		var inside := target.global_position.distance_to(global_position) <= core
+		Targets.strike(target, eyed if inside else parts, global_position, _author, _cast)
+		_struck[target.get_instance_id()] = true
 
 
 ## Des cristaux debout, pointe en haut : un pic vu de dessus en vue plongeante monte

@@ -32,6 +32,10 @@ var _excluded := 0
 var _tint := Color.WHITE
 var _age := 0.0
 var _has_struck := false
+## La nova seule les pose (jalon 44) : le Repoussoir, et le Grand froid, le « plus » par
+## transi dans le cercle, `DEEP_COLD_MOST` au plus.
+var knockback := 0.0
+var crowd := 0.0
 ## Qui elle frappe : les ennemis, ou le camp du joueur quand c'est un ennemi qui explose.
 var _mask := Targets.ENEMIES
 
@@ -66,13 +70,26 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
-		for target in Targets.in_circle(get_world_2d(), global_position, _radius, _mask):
+		var targets := Targets.in_circle(get_world_2d(), global_position, _radius, _mask)
+		if crowd > 0.0:
+			_crowded(targets)
+		for target in targets:
 			if target.get_instance_id() != _excluded:
-				Targets.strike(target, _parts, global_position, _author, _cast)
+				Targets.strike(target, _parts, global_position, _author, _cast, knockback)
 	_age += delta
 	queue_redraw()
 	if _age >= _life_span():
 		queue_free()
+
+
+func _crowded(targets: Array[Hurtbox]) -> void:
+	var chilled := 0
+	for target in targets:
+		if target.states != null and target.states.active(StatusEffects.Kind.CHILL):
+			chilled += 1
+	var factor := 1.0 + crowd * 0.01 * float(mini(chilled, SkillStats.DEEP_COLD_MOST))
+	for i in _parts.size():
+		_parts[i] *= factor
 
 
 ## Trois souffles peints — le brasier, la nova, le mur de gaz de la nécrose, qui se

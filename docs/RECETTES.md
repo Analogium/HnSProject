@@ -425,7 +425,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`, `TURRET`. `BOLT`, `BALL`, `COMET` et `TURRET` donnent `projectile` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`, `TURRET`, `FROST_ORB`. `BOLT`, `BALL`, `COMET`, `TURRET` et `FROST_ORB` donnent `projectile` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -786,9 +786,9 @@ sont repris depuis le jalon 40),
 `test_each_transformation_stays_among_posed_shapes`,
 `test_each_node_line_targets_a_cast_number`,
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
-`test_unique_trees_share_no_line_and_no_name` (les manuels de `UNIQUE_TREES`, la
-nécromancie depuis le jalon 38, le chevalier depuis le 39, le sacré depuis le 40, la sorcière depuis le 41, le feu depuis le 42 et la foudre depuis le 43 : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf
-un nœud de dégâts, de rayon et de durée par arbre) ; et
+`test_trees_share_no_line_and_no_name` (tous les manuels depuis le jalon 44, le froid en
+dernier : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf un nœud de dégâts, de
+rayon et de durée par arbre) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.
 

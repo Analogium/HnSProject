@@ -32,6 +32,7 @@ const ALL := [
 	preload("res://resources/skills/ice_nova.tres"),
 	preload("res://resources/skills/frost_tomb.tres"),
 	preload("res://resources/skills/winter_disaster.tres"),
+	preload("res://resources/skills/frozen_orb.tres"),
 
 	preload("res://resources/skills/holy_strike.tres"),
 	preload("res://resources/skills/sacred_pillar.tres"),

@@ -3,7 +3,8 @@ extends Node2D
 
 ## L'Onde de givre (jalon 36, transformation de la Nova de glace) : un anneau qui
 ## s'élargit depuis le lanceur jusqu'à `REACH` fois le rayon, et frappe chaque ennemi
-## **une fois**, quand il le passe. Posé, il ne suit pas le lanceur.
+## **une fois**, quand il le passe. Posé, il ne suit pas le lanceur. Sous le Reflux
+## (jalon 44), il se referme ensuite sur son centre et refrappe chacun une fois.
 
 const REACH := 3.0
 const LIFETIME := 0.8
@@ -50,20 +51,36 @@ func _ready() -> void:
 ## Ce qu'il couvre maintenant : vite au départ, lent au bout — une onde qui s'épuise.
 func reach() -> float:
 	var k := clampf(_age / LIFETIME, 0.0, 1.0)
+	if _returning():
+		k = clampf(2.0 - _age / LIFETIME, 0.0, 1.0)
 	return _cast.radius * _reach * (1.0 - pow(1.0 - k, 2.0))
+
+
+func _returning() -> bool:
+	return _cast.ebb > 0.0 and _age > LIFETIME
+
+
+func _life_span() -> float:
+	return LIFETIME * (2.0 if _cast.ebb > 0.0 else 1.0)
 
 
 func _physics_process(delta: float) -> void:
 	if _parts.is_empty():
 		_parts = _cast.roll(Game.rng)
+	var was_returning := _returning()
 	_age += delta
-	for target in Targets.in_circle(get_world_2d(), global_position, reach()):
+	if _returning() and not was_returning:
+		_struck.clear()
+	var r := reach()
+	for target in Targets.in_circle(get_world_2d(), global_position, r):
 		var id := target.get_instance_id()
-		if not _struck.has(id):
-			_struck[id] = true
-			Targets.strike(target, _parts, global_position, _author, _cast)
+		# Au retour, seul ce que l'anneau croise en se refermant, sur un rayon de large.
+		if _struck.has(id) or (_returning() and target.global_position.distance_to(global_position) < r - _cast.radius):
+			continue
+		_struck[id] = true
+		Targets.strike(target, _parts, global_position, _author, _cast, _cast.knockback)
 	queue_redraw()
-	if _age >= LIFETIME:
+	if _age >= _life_span():
 		queue_free()
 
 
@@ -71,7 +88,7 @@ func _physics_process(delta: float) -> void:
 ## la planche, sans tirage — l'anneau ne scintille pas d'une image à l'autre.
 func _draw() -> void:
 	var r := reach()
-	var left := clampf((LIFETIME - _age) / (LIFETIME * EMPTYING), 0.0, 1.0)
+	var left := clampf((_life_span() - _age) / (LIFETIME * EMPTYING), 0.0, 1.0)
 	if _cast.nature == DamageType.Kind.FIRE:
 		_crown(r, left)
 		return
