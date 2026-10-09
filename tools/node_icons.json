@@ -686,5 +686,293 @@
   "static_electricity_faraday": [
     "A small dome-shaped cage of thick dark iron bars, a bright violet lightning bolt bouncing off its top.",
     777, "suite", {"nature": "lightning"}
+  ],
+  "ice_spike_edge": [
+    "A single long sharp ice crystal blade pointing up to the right, its edge glinting with a thin bright white line.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "ice_spike_upheaval": [
+    "A wide ring of short jagged ice spikes erupting from the ground in a circle, seen from slightly above.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "ice_spike_chilblain": [
+    "",
+    4242, "basic", {"from": "fireball_deep_frost"}
+  ],
+  "ice_spike_relentless": [
+    "A sharp ice spike stabbing down into a frozen blue block of ice, white cracks spreading from the impact.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "ice_spike_shards": [
+    "A tall ice spike shattering at its tip into many small sharp ice shards flying outward in a star pattern.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_spike_fissure": [
+    "A straight diagonal line of jagged ice spikes erupting from a long crack in the ground, from bottom left to top right.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_spike_bullseye": [
+    "A round target of concentric icy blue and white rings with a single sharp ice spike stuck in its exact center.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_spike_aftershock": [
+    "Two identical jagged ice spikes erupting from the ground one behind the other, the back one pale like an echo.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_spike_grove": [
+    "Three small clusters of jagged ice spikes erupting from the ground side by side in a row.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_spike_glacier": [
+    "A huge massive mountain-shaped glacier of blue ice with a white snowy peak.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_spike_crystallize": [
+    "A sharp ice spike standing in the center of a swirling blue whirlpool vortex.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_spike_crevasse": [
+    "A deep jagged crack splitting icy ground wide open, sharp ice spikes rising along both edges.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "ice_spike_sleet": [
+    "Three small sharp ice shards curving through the air toward a red crosshair target.",
+    1337, "suite", {"nature": "cold"}
+  ],
+  "ice_spike_tremors": [
+    "A jagged ice spike with three curved shockwave arcs rippling outward from its base, like an earthquake.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "ice_spike_serac": [
+    "A tall leaning tower of blue ice cracking apart, chunks of ice breaking off its top.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "ice_nova_bite": [
+    "A pair of sharp icy blue fangs biting down, white frost crystals on their tips.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "ice_nova_breath": [
+    "A pale blue face of the north wind with puffed cheeks, blowing a long icy gust out of its mouth.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "ice_nova_reflex": [
+    "An hourglass made of clear blue ice, white snow pouring fast through it.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "ice_nova_biting_cold": [
+    "A small blue snail frozen inside a clear cube of ice.",
+    1337, "basic", {"nature": "cold"}
+  ],
+  "ice_nova_hoarfrost": [
+    "A flat round patch of frozen blue icy ground covered with white frost crystals, seen from above.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_nova_shatter": [
+    "A frozen blue skull shattering into sharp ice shards flying outward.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_nova_frost_wave": [
+    "Three concentric thin rings of icy blue frost rippling outward, seen from above.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_nova_deep_cold": [
+    "Three small enemies frozen inside blocks of blue ice, standing side by side.",
+    777, "major", {"nature": "cold"}
+  ],
+  "ice_nova_rime": [
+    "A big blue snowflake with a white clock face in its center.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_nova_repulsion": [
+    "A burst of icy blue wind blasting out from a center, thick white arrows pointing away in four directions.",
+    1337, "major", {"nature": "cold"}
+  ],
+  "ice_nova_startle": [
+    "A red heart cracked by a blow, an icy blue frost burst exploding out of it.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "ice_nova_ebb": [
+    "A blue frost ring seen from above, four thick bold white arrows on it all pointing inward to its center.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "ice_nova_white_frost": [
+    "White frost spreading outward in branching veins like a tree, from a small blue ice crystal.",
+    1337, "suite", {"nature": "cold"}
+  ],
+  "ice_nova_black_ice": [
+    "A boot sliding fast on a slick black ice patch, white speed lines behind it.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "ice_nova_alert": [
+    "A wide open watchful eye with an icy blue iris, white frost on its lashes.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "frost_tomb_thick_ice": [
+    "A thick wall of heavy stacked blue ice bricks.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "frost_tomb_thaw": [
+    "A melting blue ice cube dripping clear water drops, a bright green cross glowing inside it.",
+    1337, "basic", {"nature": "cold"}
+  ],
+  "frost_tomb_long_night": [
+    "A pale crescent moon in a dark night sky above a small snowy hill.",
+    1337, "basic", {"nature": "cold"}
+  ],
+  "frost_tomb_insulation": [
+    "A thick red wool scarf wrapped in a loop, white snow on it.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "frost_tomb_frugal": [
+    "A small round blue mana potion bottle, half full, white frost on its glass.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "frost_tomb_shatter_out": [
+    "A block of blue ice exploding outward into many sharp ice chunks.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frost_tomb_frost_armor": [
+    "A knight's breastplate made of clear blue ice, white frost along its edges.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "frost_tomb_frost_skin": [
+    "A clenched fist covered in blue frosty skin, short sharp ice spikes on its knuckles.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frost_tomb_hibernation": [
+    "A white bear curled up asleep inside a small blue ice cave.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "frost_tomb_refuge": [
+    "A small blue ice igloo with a warm glowing orange doorway.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frost_tomb_rime_halo": [
+    "A small dark hooded figure standing in the middle of a swirling circle of white frost mist.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "frost_tomb_endless_winter": [
+    "An infinity symbol made of blue ice.",
+    1337, "suite", {"nature": "cold"}
+  ],
+  "frost_tomb_ice_heart": [
+    "A heart made of clear faceted blue ice crystal.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "frost_tomb_icebreaker": [
+    "A heavy iron war hammer smashing a block of blue ice into flying pieces.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "winter_disaster_eye": [
+    "A tight blue ice tornado with sharp jagged ice blades whirling inside it.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "winter_disaster_blizzard": [
+    "A dark grey storm cloud dropping a thick curtain of heavy white snow.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "winter_disaster_gust": [
+    "A strong icy gust of wind bending a small bare tree far to the side.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "winter_disaster_squalls": [
+    "Three short white wind swooshes one after another, like quick gusts.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "winter_disaster_suction": [
+    "Small ice chunks pulled along long curved white streaks toward a single dark point.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_implosion": [
+    "Many sharp blue ice shards all pointing inward, converging on one bright white point in the center.",
+    777, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_snowball": [
+    "A huge white snowball rolling forward, a trail of snow behind it.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_slide": [
+    "A small blue ice whirlwind rolling to the right along the ground, a long white motion trail behind it.",
+    777, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_lull": [
+    "A small blue umbrella sheltering from swirling white snow all around it.",
+    1337, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_frosting": [
+    "A blue gem crusted in layer after layer of thick white frost.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_superconduct": [
+    "A coiled blue ice wire with a bright violet electric current running along it.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "winter_disaster_singularity": [
+    "A tiny black hole with a bright white rim, small ice shards spiraling into it.",
+    1337, "suite", {"nature": "cold"}
+  ],
+  "winter_disaster_rut": [
+    "Two deep parallel ruts in the snow filled with blue ice, seen from above.",
+    1337, "suite", {"nature": "cold"}
+  ],
+  "winter_disaster_mill": [
+    "A round grey millstone covered in blue ice, crushing small ice chunks.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "frozen_orb_core": [
+    "A bright white glowing core inside a small sphere of blue ice.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "frozen_orb_long_course": [
+    "A blue ice comet with a very long glowing white tail stretching across the whole picture.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "frozen_orb_breeze": [
+    "A blue ice orb flying fast to the right with long white speed lines behind it.",
+    777, "basic", {"nature": "cold"}
+  ],
+  "frozen_orb_constellation": [
+    "Three blue ice orbs flying side by side in a fan, small white stars between them.",
+    4242, "basic", {"nature": "cold"}
+  ],
+  "frozen_orb_needles": [
+    "A thin sharp blue ice needle passing straight through a round wooden shield.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_top": [
+    "A blue ice spinning top toy whirling fast, white curved motion lines around it.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_shard_rain": [
+    "A cracked blue ice orb bursting open, many small sharp ice shards spilling out of it.",
+    1337, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_biting_orb": [
+    "A round blue ice orb with a wide open mouth full of sharp white fangs.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_fracture": [
+    "A sharp blue ice shard splitting into two pieces flying apart in a V shape.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_guidance": [
+    "A blue ice orb curving along a bent dotted white path toward a small red target.",
+    777, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_stasis": [
+    "A blue ice orb hovering motionless above a round white marker on the ground, ice shards spraying around it.",
+    4242, "major", {"nature": "cold"}
+  ],
+  "frozen_orb_kaleidoscope": [
+    "A symmetrical kaleidoscope star pattern made of blue and white ice shards.",
+    4242, "suite", {"nature": "cold"}
+  ],
+  "frozen_orb_crystalline": [
+    "A large perfectly faceted blue crystal sphere glinting with white highlights.",
+    777, "suite", {"nature": "cold"}
+  ],
+  "frozen_orb_sight": [
+    "A small brass spyglass with a glowing blue ice lens.",
+    4242, "suite", {"nature": "cold"}
   ]
 }

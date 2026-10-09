@@ -2900,6 +2900,18 @@ msgstr "Town Portal"
 msgid "Marchand"
 msgstr "Merchant"
 
+msgid "Entraîneur"
+msgstr "Trainer"
+
+msgid "Immortels"
+msgstr "Immortal"
+
+msgid "Mortels"
+msgstr "Mortal"
+
+msgid "Mannequins : %d"
+msgstr "Dummies: %d"
+
 msgid "Coffre"
 msgstr "Stash"
 
@@ -5611,14 +5623,14 @@ msgstr "A shard that hits a chilled enemy may break into two pieces, flying off 
 msgid "Guidage"
 msgstr "Guidance"
 
-msgid "L'orbe s'incurve vers votre curseur tant qu'elle vole. Sans effet sous la Stase, qui la mène au point visé."
-msgstr "The orb curves toward your cursor as it flies. No effect under Stasis, which takes it to the aimed point."
+msgid "L'orbe s'incurve vers votre curseur tant qu'elle vole."
+msgstr "The orb curves toward your cursor as it flies."
 
 msgid "Stase"
 msgstr "Stasis"
 
-msgid "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour."
-msgstr "The orb flies to the aimed point, stops there and spins until the end, spitting its shards all around."
+msgid "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour. Le Guidage n'y a plus d'effet."
+msgstr "The orb flies to the aimed point, stops there and spins until the end, spitting its shards all around. Guidance no longer has any effect."
 
 msgid "Kaléidoscope"
 msgstr "Kaleidoscope"

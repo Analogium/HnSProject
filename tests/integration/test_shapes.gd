@@ -4560,6 +4560,18 @@ func test_a_stasis_orb_stops_at_the_aim_and_swells() -> void:
 	assert_gt(orb._shard_cast().total_max(), orb._cast.total_max(), "plus fort à l'arrêt")
 
 
+## Son lanceur parti — le corbeau éteint —, l'orbe se dissout sans cracher au nom d'un mort.
+func test_a_frozen_orb_dissolves_with_its_caster() -> void:
+	_learn("manual_cold", ["frozen_orb"])
+	var shoulder := Node2D.new()
+	_effects.add_child(shoulder)
+	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
+	FrozenOrb.send(_effects, Vector2.ZERO, Vector2.RIGHT, cast, _p.states, shoulder, _p.bolt_scene, Vector2.ZERO, _p)
+	shoulder.free()
+	await wait_physics_frames(2)
+	assert_eq(_children_of(FrozenOrb).size(), 0)
+
+
 ## La Constellation : une orbe de plus par point.
 func test_a_constellation_casts_more_orbs() -> void:
 	_learn_with("manual_cold", "frozen_orb", [["projectiles", 2.0]])

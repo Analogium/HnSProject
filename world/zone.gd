@@ -9,6 +9,8 @@ extends Node2D
 
 const GRUNT_SCENE := preload("res://actors/enemies/grunt.tscn")
 const CASTER_SCENE := preload("res://actors/enemies/caster.tscn")
+const DUMMY_SCENE := preload("res://actors/dummy/training_dummy.tscn")
+const GRUNT_STATS := preload("res://resources/stats/grunt_stats.tres")
 
 ## Paquet manuel autour du joueur (touche G). Ce n'est plus le peuplement de la
 ## zone — c'est l'EnemySpawner qui s'en charge — mais un outil de test, pour
@@ -68,6 +70,8 @@ const DECOR_JITTER := 8.0
 ## Le portail qu'on ouvre hors de la ville : un seul, déplacé à chaque ouverture.
 @onready var portal: Interactable = $Entities/Portal
 @onready var town_waypoint: Interactable = $Entities/Town/Waypoint
+@onready var trainer: Interactable = $Entities/Town/Trainer
+@onready var dummies: Node2D = $Entities/Town/Dummies
 ## Ce que chaque zone pose sur sa route : son waypoint, et le passage vers la suivante.
 @onready var area_marks: Node2D = $Entities/Area
 @onready var area_waypoint: Interactable = $Entities/Area/Waypoint
@@ -107,6 +111,14 @@ const PORTAL_AHEAD := 28.0
 ## garde de ses waypoints ; la dernière zone n'a pas de sortie.
 const AREAS := ["Ville", "Friches brûlées", "Val calciné", "Lande morte"]
 const TOWN_WAYPOINT_CELL := Vector2i(7, 11)
+## L'entraîneur et ses mannequins, en bas à droite, à l'écart des passages ; autant de
+## cases que de mannequins au plus.
+const TRAINER_CELL := Vector2i(16, 10)
+const DUMMY_CELLS: Array[Vector2i] = [Vector2i(20, 10), Vector2i(19, 8), Vector2i(19, 12)]
+## Les entrées du menu de l'entraîneur au-delà de ces deux-là sont le nombre, plus `COUNT_ID`.
+const IMMORTAL_ID := 0
+const MORTAL_ID := 1
+const COUNT_ID := 10
 ## Le waypoint s'active quand on marche dessus : à moins d'une demi-case de son centre.
 const WAYPOINT_REACH := 16.0
 
@@ -124,6 +136,10 @@ var area := 1
 ## Les waypoints activés ; ceux du personnage chargé, la même liste.
 var waypoints: Array[int] = []
 var _waypoint_menu := PopupMenu.new()
+## Ce qu'on a demandé à l'entraîneur, le temps de la session.
+var dummy_count := 1
+var dummies_mortal := false
+var _trainer_menu := PopupMenu.new()
 ## Vrai en ville : ni ennemis ni portail à ouvrir, un marchand et le coffre.
 var in_town := false
 ## Le coffre partagé de la session ; un coffre vide et jamais écrit sans personnage.
@@ -189,11 +205,19 @@ func _ready() -> void:
 	town_gate.position = MapGenerator.cell_center(GATE_CELL)
 	way_back.position = MapGenerator.cell_center(WAY_BACK_CELL)
 	town_waypoint.position = MapGenerator.cell_center(TOWN_WAYPOINT_CELL)
+	trainer.position = MapGenerator.cell_center(TRAINER_CELL)
+	trainer.used.connect(_open_trainer)
 	# Comme les menus du filtre de butin : la police du jeu, et des noms déjà traduits.
 	_waypoint_menu.auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED
 	_waypoint_menu.add_theme_font_size_override("font_size", 8)
 	$UI.add_child(_waypoint_menu)
 	_waypoint_menu.id_pressed.connect(travel)
+	_trainer_menu.auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED
+	_trainer_menu.add_theme_font_size_override("font_size", 8)
+	# Ouvert après un choix : les deux réglages se font d'une traite.
+	_trainer_menu.hide_on_checkable_item_selection = false
+	$UI.add_child(_trainer_menu)
+	_trainer_menu.id_pressed.connect(_on_trainer_choice)
 	beyond.color = TilesetBuilder.WALL_BASE
 
 	# Le personnage vient de l'écran de sélection. Null quand la zone est lancée
@@ -454,6 +478,51 @@ func _open_waypoints() -> void:
 	_waypoint_menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
 
 
+func _open_trainer() -> void:
+	_fill_trainer_menu()
+	_trainer_menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
+
+
+## Refait à chaque choix : les coches suivent, et la langue si elle a changé.
+func _fill_trainer_menu() -> void:
+	_trainer_menu.clear()
+	_trainer_menu.add_radio_check_item(Texts.t("Immortels"), IMMORTAL_ID)
+	_trainer_menu.set_item_checked(0, not dummies_mortal)
+	_trainer_menu.add_radio_check_item(Texts.t("Mortels"), MORTAL_ID)
+	_trainer_menu.set_item_checked(1, dummies_mortal)
+	_trainer_menu.add_separator()
+	for n in range(1, DUMMY_CELLS.size() + 1):
+		_trainer_menu.add_radio_check_item(Texts.t("Mannequins : %d") % n, COUNT_ID + n)
+		_trainer_menu.set_item_checked(_trainer_menu.item_count - 1, n == dummy_count)
+
+
+func _on_trainer_choice(id: int) -> void:
+	if id >= COUNT_ID:
+		dummy_count = id - COUNT_ID
+	else:
+		dummies_mortal = id == MORTAL_ID
+	_fill_trainer_menu()
+	_place_dummies()
+
+
+## Neufs à chaque fois, et seulement en ville : hors d'elle, leurs corps cachés
+## prendraient encore les coups, la zone partageant ses coordonnées. Un grunt de la
+## prochaine zone, sans affixe : c'est contre lui qu'on règle son coup.
+func _place_dummies() -> void:
+	for dummy in dummies.get_children():
+		dummies.remove_child(dummy)
+		dummy.queue_free()
+	if not in_town:
+		return
+	var sheet := Enemy.sheet_of(GRUNT_STATS, Game.zone_level, [])
+	for i in dummy_count:
+		var dummy: TrainingDummy = DUMMY_SCENE.instantiate()
+		dummy.position = MapGenerator.cell_center(DUMMY_CELLS[i])
+		dummy.stats = sheet
+		dummy.mortal = dummies_mortal
+		dummies.add_child(dummy)
+
+
 ## Activé pour de bon, donc écrit tout de suite : le personnage ne doit pas le
 ## reperdre sur une fermeture avant la sauvegarde suivante.
 func _activate_waypoint() -> void:
@@ -568,6 +637,7 @@ func _set_town(on: bool) -> void:
 		node.queue_free()
 	if not on and inventory.storage_open():
 		inventory.toggle()
+	_place_dummies()
 
 
 ## Une zone quittée ne vit plus : désactivés, ses ennemis sortent aussi de la physique

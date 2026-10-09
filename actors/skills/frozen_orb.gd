@@ -65,7 +65,12 @@ func _ready() -> void:
 	z_index = 5
 
 
+## Son lanceur parti — le corbeau éteint —, elle se dissout : ses éclats n'auraient plus
+## d'auteur.
 func _physics_process(delta: float) -> void:
+	if not is_instance_valid(_source):
+		queue_free()
+		return
 	_age += delta
 	if not _move(delta):
 		_burst()

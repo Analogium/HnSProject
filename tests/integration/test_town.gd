@@ -406,3 +406,48 @@ func test_leaving_town_empties_its_floor() -> void:
 	assert_eq(_manuals(_zone.town_loot), 1, "le manuel de l'arrivée")
 	_use(_zone.town_gate)
 	assert_eq(_manuals(_zone.town_loot), 0)
+
+
+func _dummies() -> Array[TrainingDummy]:
+	var found: Array[TrainingDummy] = []
+	found.assign(_zone.dummies.get_children())
+	return found
+
+
+## Un mannequin immortel à l'arrivée ; l'entraîneur en règle le nombre et la mortalité,
+## et rien n'en reste hors de la ville, qui partage ses coordonnées avec la zone.
+func test_the_trainer_sets_the_dummies() -> void:
+	assert_eq(_dummies().size(), 1)
+	assert_false(_dummies()[0].mortal)
+	_use(_zone.trainer)
+	assert_true(_zone._trainer_menu.visible)
+	_zone._on_trainer_choice(_zone.COUNT_ID + 3)
+	_zone._on_trainer_choice(_zone.MORTAL_ID)
+	assert_true(_zone._trainer_menu.visible, "les deux réglages d'une traite")
+	assert_eq(_dummies().size(), 3)
+	for dummy in _dummies():
+		assert_true(dummy.mortal)
+		assert_true(_zone.generator.is_walkable(MapGenerator.cell_at(dummy.global_position)))
+	_use(_zone.town_gate)
+	assert_eq(_dummies().size(), 0, "hors de la ville")
+	_zone.travel(0)
+	assert_eq(_dummies().size(), 3, "le réglage tient la session")
+
+
+## Immortel, il cumule sans rien perdre ; mortel, il tombe puis se relève plein.
+func test_a_mortal_dummy_falls_and_rises() -> void:
+	var dummy := _dummies()[0]
+	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector2.ZERO))
+	assert_eq(dummy.health, dummy.stats.max_health, "immortel")
+	assert_true(dummy.visible)
+	_zone._on_trainer_choice(_zone.MORTAL_ID)
+	await wait_process_frames(1)
+	dummy = _dummies()[0]
+	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector2.ZERO))
+	await wait_physics_frames(1)
+	assert_false(dummy.visible, "à terre")
+	assert_eq(dummy.hurtbox.collision_layer, 0, "plus rien ne le touche")
+	dummy._physics_process(TrainingDummy.RESPAWN)
+	assert_true(dummy.visible)
+	assert_eq(dummy.health, dummy.stats.max_health)
+	assert_ne(dummy.hurtbox.collision_layer, 0)

@@ -765,7 +765,9 @@ l'orienteraient chacun à leur façon.
    le dit : avant d'en poser une, vérifier que la forme de la compétence la lit, ou
    y ajouter la lecture — une fois, dans la forme, jamais dans le nœud. Une
    **transformation** qui ne lit pas un nombre de son arbre le déclare dans
-   `Skill.IGNORED_BY_SHAPE` : la fiche du nœud concerné écrit « sans effet avec … ».
+   `Skill.IGNORED_BY_SHAPE` : la fiche du nœud concerné écrit « sans effet avec … ». Une
+   **mécanique** qui rend un autre nœud inutile — la Stase de l'Orbe gelée, qui mène
+   l'orbe au point visé, et le Guidage — se déclare de même dans `Skill.IGNORED_BY_MECHANIC`.
 
 4. **Sur un buff** (Nécrose avancée), une ligne qui ne vise pas un nombre du lancer — une
    portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,

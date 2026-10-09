@@ -84,6 +84,13 @@ look = 2
 script = ExtResource("17_town")
 look = 4
 
+[node name="Trainer" type="Node2D" parent="Entities/Town"]
+script = ExtResource("17_town")
+look = 5
+
+[node name="Dummies" type="Node2D" parent="Entities/Town"]
+y_sort_enabled = true
+
 [node name="Loot" type="Node2D" parent="Entities/Town"]
 y_sort_enabled = true
 

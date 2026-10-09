@@ -480,7 +480,70 @@ aucune ligne d'un arbre à l'autre — est désormais celle de tous les manuels
 
 ### Ce qui reste au jalon
 
-- **les vignettes** des 72 nœuds du froid et l'icône de l'Orbe, arbre par arbre (jalon 42,
-  §14) ;
+- ~~**les vignettes** des 72 nœuds du froid et l'icône de l'Orbe~~ — faites, §12 ;
 - **l'équilibrage**, en dernier : l'Orbe au duel (×65,9), les Pics (×12,1 et ×15,6), la
   Nova et le Désastre au paquet.
+
+## 11. Les retours sur l'Orbe gelée
+
+1. **« Indique que le Guidage n'a aucun effet avec la Stase »** : la fiche ne le disait que
+   pour une transformation (`IGNORED_BY_SHAPE`). La Stase est une mécanique : une table
+   sœur, `Skill.IGNORED_BY_MECHANIC`, que `ManualPanel._node_sheet()` lit au même endroit.
+   La fiche du Guidage écrit en rouge « sans effet avec Stase », et la description de la
+   Stase le dit aussi. Un test (`test_a_node_says_what_a_mechanic_ignores`).
+2. **Une erreur en jeu** : `FrozenOrb._spit` passait à `Projectile.spawn()` un lanceur déjà
+   libéré — l'épaule du corbeau, éteint pendant que ses orbes volaient. L'orbe se dissout
+   désormais avec son lanceur, comme le Satellite avec le sien ; ses tirs n'auraient plus
+   eu d'auteur. Un test (`test_a_frozen_orb_dissolves_with_its_caster`).
+
+## 12. Une vignette par nœud — le manuel du froid
+
+Les 72 nœuds et les cinq icônes de compétence, par le tuyau du feu et de la foudre (jalon 42,
+§14 ; recette : `resources/icons/LISEZMOI.md`) avec la palette `cold`, **arbre par arbre** :
+chaque arbre posé, capturé en jeu et validé avant le suivant. Captures sur le Bureau,
+`hns-captures-noeuds-glace\`.
+
+**Les Pics de glace** : quinze vignettes, dont une reprise — l'Engelure reprend le flocon du
+Gel intense (`fireball_deep_frost`). L'icône de la compétence quitte le tuyau SDXL pour
+Qwen-Image (`qwen`, `nature: cold`), graine 4242. Arbre en jeu en `01`, planches en `02`
+(nœuds) et `03` (icône). Faibles : la **Crevasse** (deux blocs pâles, la faille ne se lit
+pas) et l'**Arête**, sortie en épée plutôt qu'en lame de cristal. Validés tels quels.
+
+**La Nova de glace** : quinze vignettes neuves — rien d'existant ne disait la même chose, et le
+flocon sert déjà trois fois. Trois sujets refaits avant de montrer : le **Souffle** (un nuage
+informe → le visage du vent du nord qui souffle), le **Froid mordant** (un boulet sombre perdu
+à 24 px → un escargot pris dans la glace : le ralenti) et le **Reflux** (des flèches courbes
+invisibles → quatre flèches pleines vers le centre de l'anneau). Icône de la compétence en
+Qwen, graine 4242. Arbre en jeu en `04`, planches en `05` et `06`.
+
+**Le Tombeau de glace** : quatorze vignettes neuves. Deux sujets refaits : le **Brise-glace**
+(la proue d'un brise-glace, illisible → un marteau qui fend un bloc de glace) et le **Halo de
+givre** (un anneau nu, le quatrième du manuel après l'Onde, le Reflux et l'icône de la Nova →
+une silhouette au milieu d'un cercle de givre : ce qui passe près de vous). Icône de la
+compétence en Qwen, graine 777 — la silhouette debout dans son bloc se lit mieux. Arbre en
+jeu en `07`, planches en `08` et `09`.
+
+**Le Désastre hivernal** : quatorze vignettes neuves. Le premier tirage sortait trois tornades
+presque identiques (Œil du cyclone, Bourrasque, Coulée) : l'Œil garde la tornade, la Coulée
+sa traînée. Cinq sujets refaits : la **Bourrasque** (un arbre dans le vent), le **Blizzard**
+(un nuage qui lâche un rideau de neige), l'**Implosion** (des éclats qui convergent),
+l'**Accalmie** (un parapluie dans la tempête) et l'**Aspiration**, dont le tourbillon doublait
+l'icône de la compétence (des éclats tirés vers un point). Icône en Qwen, graine 4242.
+Arbre en jeu en `10`, planches en `11` et `12`. Faibles en jeu : la Bourrasque, une tache à
+24 px, et la Supraconduction, dont le violet se perd.
+
+**L'Orbe gelée** : quatorze vignettes neuves et sa première icône — une orbe de glace qui
+crache ses éclats, graine 4242 ; `skill_icons.py apply` lui a ajouté son champ `icon`. Deux
+sujets refaits : le **Long cours** (une orbe et trois points, confondue avec la Bise → une
+comète à longue queue) et la **Pluie d'éclats** (une silhouette sous la pluie → une orbe
+fendue qui répand ses éclats). Arbre en jeu en `13`, planches en `14` et `15`.
+
+Le manuel compte ainsi **72 vignettes, dont une reprise** (l'Engelure), et cinq icônes de
+compétence en Qwen. Restent faibles, non refaites : la Crevasse, l'Arête, la Bourrasque, la
+Supraconduction.
+
+**Le tuyau s'est arrêté une fois** : 122-126 s par tirage au lieu de 15. C'était le processus
+ComfyUI, pas la machine — voir `LISEZMOI.md`, « Si un tirage dépasse la minute ». Le second arrêt (117 s par
+tirage, ComfyUI pourtant relancé) avait une cause mesurée : **la VRAM débordait** — ComfyUI
+20 Go dédiés et 3 Go en mémoire partagée, les autres applications 8 Go dont 4,9 Go pour
+`QmlRenderer` (iCUE). Après le redémarrage de la machine, retour à 15 s.

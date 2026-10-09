@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="Skill" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/frozen_orb.png" id="2_icone"]
 
 [resource]
 script = ExtResource("1_comp")
@@ -18,3 +19,4 @@ period = 0.12
 simultaneous = 6
 damage_per_point = Array[float]([5.0, 7.0, 9.0, 11.0, 14.0])
 required_manual_level = 5
+icon = ExtResource("2_icone")

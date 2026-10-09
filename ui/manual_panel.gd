@@ -1396,9 +1396,11 @@ func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 		out.append(_first_point_line())
 
 	out.append_array(_effect_lines(node.mods(maxi(spent, 1))))
-	# Ce qu'une transformation de l'arbre ne lit pas, dit avant qu'on paie.
+	# Ce qu'une transformation ou une mécanique de l'arbre ne lit pas, dit avant qu'on paie.
 	for other in cell.talents:
 		var ignored: Array = Skill.IGNORED_BY_SHAPE.get(other.shape, []) if other.transforms else []
+		for l in other.lines:
+			ignored = ignored + Skill.IGNORED_BY_MECHANIC.get(l.stat, [])
 		if node.lines.any(func(l: TalentLine) -> bool: return l.stat in ignored):
 			out.append(SheetLine.new(
 				Group.EFFECT, Texts.t("sans effet avec"), other.displayed_name(), LOSS

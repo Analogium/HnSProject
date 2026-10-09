@@ -1127,6 +1127,14 @@ func test_a_node_says_what_a_transformation_ignores() -> void:
 	assert_eq(_values(splits.lines, "sans effet avec").size(), 0, "les éclats jaillissent de l'impact")
 
 
+## Une mécanique aussi (jalon 44) : sous la Stase, le Guidage n'a rien à guider.
+func test_a_node_says_what_a_mechanic_ignores() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_cold"))
+	var cell := book.base.manual.cell_of("frozen_orb")
+	var guidance := _panel._node_sheet(book.manual, cell, cell.node_of("frozen_orb_guidance"))
+	assert_eq(_values(guidance.lines, "sans effet avec"), PackedStringArray(["Stase"]))
+
+
 ## Ce qu'un échange coûte s'écrit en rouge ; ce qu'il donne, non.
 func test_a_trade_writes_its_loss_in_red() -> void:
 	var book := Item.new(ItemCatalog.by_id("manual_fire"))

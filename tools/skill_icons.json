@@ -31,20 +31,44 @@
     1337
   ],
   "ice_spike": [
-    "a cluster of tall jagged ice spikes erupting from the ground",
-    4242
+    "A cluster of three tall jagged ice spikes erupting from the ground, the middle one tallest, a few ice chips flying.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "cold"
+    }
   ],
   "ice_nova": [
     "a ring of sharp ice shards bursting outward in a circle",
-    4242
+    4242,
+    {
+      "qwen": true,
+      "nature": "cold"
+    }
   ],
   "frost_tomb": [
     "a man frozen standing inside a thick block of ice",
-    4242
+    777,
+    {
+      "qwen": true,
+      "nature": "cold"
+    }
   ],
   "winter_disaster": [
     "a whirlpool of jagged ice shards spiraling into a dark center",
-    1337
+    4242,
+    {
+      "qwen": true,
+      "nature": "cold"
+    }
+  ],
+  "frozen_orb": [
+    "a glowing round orb of blue ice spinning, small sharp ice shards spraying out of it in a spiral",
+    4242,
+    {
+      "qwen": true,
+      "nature": "cold"
+    }
   ],
   "holy_strike": [
     "a thin sharp diagonal streak of blinding white light cutting across the frame, glowing radiance",

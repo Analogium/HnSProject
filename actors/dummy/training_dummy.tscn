@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://actors/dummy/training_dummy.gd" id="1_dummy"]
 [ext_resource type="Script" path="res://art/actor_sprite.gd" id="4_sprite"]
 [ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Script" path="res://ui/health_bar.gd" id="5_bar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dummy"]
 resource_local_to_scene = true
@@ -39,6 +40,9 @@ script = ExtResource("3_hurtbox")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("CircleShape2D_hurt")
+
+[node name="HealthBar" type="Node2D" parent="."]
+script = ExtResource("5_bar")
 
 [node name="DamageLabel" type="Label" parent="."]
 offset_left = -24.0

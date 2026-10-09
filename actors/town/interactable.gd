@@ -6,20 +6,20 @@ extends Node2D
 ## clic gauche l'utilise, n'importe où dans la zone, et ne lance pas d'attaque — le
 ## même refus que `GroundItem.takes_the_click()`.
 ##
-## Dessin provisoire, à reprendre par `/dessiner-un-effet` : le marchand emprunte le
-## guerrier en grilles, le coffre, les portails et le waypoint sont tracés.
+## Dessin provisoire, à reprendre par `/dessiner-un-effet` : le marchand et l'entraîneur
+## empruntent le guerrier en grilles, le coffre, les portails et le waypoint sont tracés.
 
 signal used
 
 ## À la fin seulement : la scène écrit le rang.
-enum Look { MERCHANT, STASH, PORTAL, GATE, WAYPOINT }
+enum Look { MERCHANT, STASH, PORTAL, GATE, WAYPOINT, TRAINER }
 
 @export var look := Look.MERCHANT
 
 ## Les clés françaises, traduites au dessin.
 const TITLES := {
 	Look.MERCHANT: "Marchand", Look.STASH: "Coffre", Look.PORTAL: "Portail", Look.GATE: "Passage",
-	Look.WAYPOINT: "Waypoint",
+	Look.WAYPOINT: "Waypoint", Look.TRAINER: "Entraîneur",
 }
 
 ## La surface qui répond, autour du pied : c'est aussi ce qui s'éclaire au survol.
@@ -49,9 +49,10 @@ var _t := 0.0
 
 
 func _ready() -> void:
-	if look == Look.MERCHANT:
+	if look in [Look.MERCHANT, Look.TRAINER]:
 		var body := AnimatedSprite2D.new()
-		body.sprite_frames = SpriteForge.frames("player", 3, "none")
+		body.sprite_frames = SpriteForge.frames("player", 3, "none") if look == Look.MERCHANT \
+			else SpriteForge.frames("player", 1, "sword")
 		body.offset = SpriteForge.offset_of("player")
 		body.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		body.play("idle_down")

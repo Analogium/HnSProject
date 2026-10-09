@@ -178,6 +178,12 @@ const IGNORED_BY_SHAPE := {
 	Shape.TRIAD: ["projectiles", "projectile_speed", SkillStats.BOUNCES],
 }
 
+## Ce qu'une mécanique rend sans effet dans son arbre, comme une transformation (jalon 44) :
+## la Stase mène l'orbe au point visé, le Guidage n'a plus rien à guider.
+const IGNORED_BY_MECHANIC := {
+	SkillStats.STASIS: [SkillStats.GUIDED],
+}
+
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
 ## devenu orbe n'a ni durée, ni rayon, ni rythme. Sans eux, la ligne du nœud qui les
 ## donnerait s'écrirait en perte — « +0,3 intervalle des frappes » en rouge.

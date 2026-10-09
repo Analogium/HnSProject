@@ -10,6 +10,78 @@
 [ext_resource type="Resource" path="res://resources/skills/frost_tomb.tres" id="12_tombeau"]
 [ext_resource type="Resource" path="res://resources/skills/winter_disaster.tres" id="13_desastre"]
 [ext_resource type="Resource" path="res://resources/skills/frozen_orb.tres" id="14_orbe"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_edge.png" id="icon_ice_spike_edge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_upheaval.png" id="icon_ice_spike_upheaval"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_chilblain.png" id="icon_ice_spike_chilblain"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_relentless.png" id="icon_ice_spike_relentless"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_shards.png" id="icon_ice_spike_shards"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_fissure.png" id="icon_ice_spike_fissure"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_bullseye.png" id="icon_ice_spike_bullseye"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_aftershock.png" id="icon_ice_spike_aftershock"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_grove.png" id="icon_ice_spike_grove"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_glacier.png" id="icon_ice_spike_glacier"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_crystallize.png" id="icon_ice_spike_crystallize"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_crevasse.png" id="icon_ice_spike_crevasse"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_sleet.png" id="icon_ice_spike_sleet"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_tremors.png" id="icon_ice_spike_tremors"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_spike_serac.png" id="icon_ice_spike_serac"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_bite.png" id="icon_ice_nova_bite"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_breath.png" id="icon_ice_nova_breath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_reflex.png" id="icon_ice_nova_reflex"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_biting_cold.png" id="icon_ice_nova_biting_cold"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_hoarfrost.png" id="icon_ice_nova_hoarfrost"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_shatter.png" id="icon_ice_nova_shatter"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_frost_wave.png" id="icon_ice_nova_frost_wave"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_deep_cold.png" id="icon_ice_nova_deep_cold"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_rime.png" id="icon_ice_nova_rime"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_repulsion.png" id="icon_ice_nova_repulsion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_startle.png" id="icon_ice_nova_startle"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_ebb.png" id="icon_ice_nova_ebb"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_white_frost.png" id="icon_ice_nova_white_frost"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_black_ice.png" id="icon_ice_nova_black_ice"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/ice_nova_alert.png" id="icon_ice_nova_alert"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_thick_ice.png" id="icon_frost_tomb_thick_ice"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_thaw.png" id="icon_frost_tomb_thaw"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_long_night.png" id="icon_frost_tomb_long_night"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_insulation.png" id="icon_frost_tomb_insulation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_frugal.png" id="icon_frost_tomb_frugal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_shatter_out.png" id="icon_frost_tomb_shatter_out"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_frost_armor.png" id="icon_frost_tomb_frost_armor"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_frost_skin.png" id="icon_frost_tomb_frost_skin"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_hibernation.png" id="icon_frost_tomb_hibernation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_refuge.png" id="icon_frost_tomb_refuge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_rime_halo.png" id="icon_frost_tomb_rime_halo"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_endless_winter.png" id="icon_frost_tomb_endless_winter"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_ice_heart.png" id="icon_frost_tomb_ice_heart"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frost_tomb_icebreaker.png" id="icon_frost_tomb_icebreaker"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_eye.png" id="icon_winter_disaster_eye"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_blizzard.png" id="icon_winter_disaster_blizzard"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_gust.png" id="icon_winter_disaster_gust"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_squalls.png" id="icon_winter_disaster_squalls"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_suction.png" id="icon_winter_disaster_suction"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_implosion.png" id="icon_winter_disaster_implosion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_snowball.png" id="icon_winter_disaster_snowball"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_slide.png" id="icon_winter_disaster_slide"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_lull.png" id="icon_winter_disaster_lull"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_frosting.png" id="icon_winter_disaster_frosting"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_superconduct.png" id="icon_winter_disaster_superconduct"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_singularity.png" id="icon_winter_disaster_singularity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_rut.png" id="icon_winter_disaster_rut"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/winter_disaster_mill.png" id="icon_winter_disaster_mill"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_core.png" id="icon_frozen_orb_core"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_long_course.png" id="icon_frozen_orb_long_course"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_breeze.png" id="icon_frozen_orb_breeze"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_constellation.png" id="icon_frozen_orb_constellation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_needles.png" id="icon_frozen_orb_needles"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_top.png" id="icon_frozen_orb_top"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_shard_rain.png" id="icon_frozen_orb_shard_rain"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_biting_orb.png" id="icon_frozen_orb_biting_orb"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_fracture.png" id="icon_frozen_orb_fracture"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_guidance.png" id="icon_frozen_orb_guidance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_stasis.png" id="icon_frozen_orb_stasis"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_kaleidoscope.png" id="icon_frozen_orb_kaleidoscope"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_crystalline.png" id="icon_frozen_orb_crystalline"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/frozen_orb_sight.png" id="icon_frozen_orb_sight"]
 
 [sub_resource type="Resource" id="L_ice_spike_edge_0"]
 script = ExtResource("4_ligne")
@@ -22,6 +94,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "ice_spike_edge"
 name = "Arête"
+icon = ExtResource("icon_ice_spike_edge")
 description = "Les pics frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -37,6 +110,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "ice_spike_upheaval"
 name = "Poussée"
+icon = ExtResource("icon_ice_spike_upheaval")
 description = "Les pics percent sur un cercle plus large."
 position = Vector2i(1, 0)
 points_max = 2
@@ -51,6 +125,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "ice_spike_chilblain"
 name = "Engelure"
+icon = ExtResource("icon_ice_spike_chilblain")
 description = "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -69,6 +144,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "ice_spike_relentless"
 name = "Acharnement"
+icon = ExtResource("icon_ice_spike_relentless")
 description = "Ce sort frappe plus fort un ennemi transi."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -86,6 +162,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "ice_spike_shards"
 name = "Éclats"
+icon = ExtResource("icon_ice_spike_shards")
 description = "En retombant, les pics projettent des éclats de glace en étoile, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -111,6 +188,7 @@ value_per_point = -40.0
 script = ExtResource("3_noeud")
 id = "ice_spike_fissure"
 name = "Sillon de glace"
+icon = ExtResource("icon_ice_spike_fissure")
 description = "Les pics ne percent plus au point visé : ils sortent de terre en ligne, de vous jusqu'à lui, un cercle après l'autre, chacun moins fort. Avec Éclats, chaque cercle projette les siens."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -131,6 +209,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "ice_spike_bullseye"
 name = "Plein centre"
+icon = ExtResource("icon_ice_spike_bullseye")
 description = "Viser juste : un ennemi au cœur du cercle, dans son tiers central, prend plus de dégâts."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -148,6 +227,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "ice_spike_aftershock"
 name = "Réplique"
+icon = ExtResource("icon_ice_spike_aftershock")
 description = "Les pics repercent au même endroit {ecart_replique} s plus tard, à une part de leur coup."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -172,6 +252,7 @@ value_per_point = -20.0
 script = ExtResource("3_noeud")
 id = "ice_spike_grove"
 name = "Bosquet"
+icon = ExtResource("icon_ice_spike_grove")
 description = "D'autres cercles de pics percent contre le premier, de part et d'autre de votre visée — tous un peu moins fort."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -189,6 +270,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_spike_glacier"
 name = "Glacier"
+icon = ExtResource("icon_ice_spike_glacier")
 description = "Un lancer sur {glacier_tous} perce un glacier : un cercle {rayon_glacier} fois plus large, qui frappe {plus_glacier} % plus fort."
 position = Vector2i(-1, -2)
 parents = Dictionary[String, int]({
@@ -207,6 +289,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_spike_crystallize"
 name = "Cristallisation"
+icon = ExtResource("icon_ice_spike_crystallize")
 description = "Des pics lancés dans votre vortex de Désastre hivernal lui rendent {temps_cristal} s, sans dépasser deux fois sa durée."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -225,6 +308,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_spike_crevasse"
 name = "Crevasse"
+icon = ExtResource("icon_ice_spike_crevasse")
 description = "Le bout du sillon s'ouvre en un cercle de pics {rayon_crevasse} fois plus large."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
@@ -242,6 +326,7 @@ value_per_point = 60.0
 script = ExtResource("3_noeud")
 id = "ice_spike_sleet"
 name = "Grésil"
+icon = ExtResource("icon_ice_spike_sleet")
 description = "Les éclats s'incurvent vers l'ennemi le plus proche."
 position = Vector2i(-1, 2)
 parents = Dictionary[String, int]({
@@ -259,6 +344,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_spike_tremors"
 name = "Secousses"
+icon = ExtResource("icon_ice_spike_tremors")
 description = "La réplique se répète, à {ecart_replique} s d'écart."
 position = Vector2i(-3, 0)
 parents = Dictionary[String, int]({
@@ -276,6 +362,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_spike_serac"
 name = "Sérac"
+icon = ExtResource("icon_ice_spike_serac")
 description = "Le glacier perce un lancer sur {serac_tous}."
 position = Vector2i(-2, -2)
 parents = Dictionary[String, int]({
@@ -301,6 +388,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "ice_nova_bite"
 name = "Morsure"
+icon = ExtResource("icon_ice_nova_bite")
 description = "La nova frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -316,6 +404,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "ice_nova_breath"
 name = "Souffle"
+icon = ExtResource("icon_ice_nova_breath")
 description = "La nova porte plus loin."
 position = Vector2i(1, 0)
 points_max = 3
@@ -331,6 +420,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "ice_nova_reflex"
 name = "Réflexe"
+icon = ExtResource("icon_ice_nova_reflex")
 description = "La nova se lance plus vite."
 position = Vector2i(0, 1)
 points_max = 2
@@ -345,6 +435,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "ice_nova_biting_cold"
 name = "Froid mordant"
+icon = ExtResource("icon_ice_nova_biting_cold")
 description = "Le transi que pose ce sort ralentit davantage. Un transi plus faible ne remplace pas le sien et ne le prolonge pas."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -362,6 +453,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_nova_hoarfrost"
 name = "Givre persistant"
+icon = ExtResource("icon_ice_nova_hoarfrost")
 description = "La nova laisse sous vous un sol gelé de sa taille, qui frappe ce qui s'y tient toutes les {rythme_sol} s à {part_sol} % des dégâts."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -379,6 +471,7 @@ value_per_point = 24.0
 script = ExtResource("3_noeud")
 id = "ice_nova_shatter"
 name = "Bris"
+icon = ExtResource("icon_ice_nova_shatter")
 description = "Un ennemi tué par la nova explose s'il porte l'état de sa nature — le transi pour le froid : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
 position = Vector2i(-1, -2)
 parents = Dictionary[String, int]({
@@ -398,6 +491,7 @@ value_per_point = -30.0
 script = ExtResource("3_noeud")
 id = "ice_nova_frost_wave"
 name = "Onde de givre"
+icon = ExtResource("icon_ice_nova_frost_wave")
 description = "La nova devient un anneau qui s'élargit depuis vous jusqu'à trois fois son rayon, et frappe une fois chaque ennemi qu'il passe. Le sol gelé ne sert plus."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -418,6 +512,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "ice_nova_deep_cold"
 name = "Grand froid"
+icon = ExtResource("icon_ice_nova_deep_cold")
 description = "La nova mord plus fort dans la foule gelée : plus il y a d'ennemis transis dans son cercle, {transis_max} au plus, plus elle frappe fort."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -435,6 +530,7 @@ value_per_point = 0.5
 script = ExtResource("3_noeud")
 id = "ice_nova_rime"
 name = "Frimas"
+icon = ExtResource("icon_ice_nova_rime")
 description = "Le transi que pose la nova dure plus longtemps."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -452,6 +548,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "ice_nova_repulsion"
 name = "Repoussoir"
+icon = ExtResource("icon_ice_nova_repulsion")
 description = "La nova repousse ce qu'elle touche."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -469,6 +566,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_nova_startle"
 name = "Sursaut"
+icon = ExtResource("icon_ice_nova_startle")
 description = "Un coup qui vous ôte plus de {perte_sursaut} % de vos PV max fait partir la nova d'elle-même, sans coût, au plus une fois toutes les {rythme_sursaut} s."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -486,6 +584,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_nova_ebb"
 name = "Reflux"
+icon = ExtResource("icon_ice_nova_ebb")
 description = "À bout de course, l'anneau se referme sur son centre, et refrappe une fois ce qu'il croise."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
@@ -503,6 +602,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_nova_white_frost"
 name = "Gelée blanche"
+icon = ExtResource("icon_ice_nova_white_frost")
 description = "Le gel se propage : l'explosion d'un ennemi tué par le Bris transit à coup sûr ce qu'elle touche."
 position = Vector2i(-2, -2)
 parents = Dictionary[String, int]({
@@ -520,6 +620,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "ice_nova_black_ice"
 name = "Glace noire"
+icon = ExtResource("icon_ice_nova_black_ice")
 description = "Sur le sol gelé de votre nova, vous glissez plus vite."
 position = Vector2i(3, 0)
 parents = Dictionary[String, int]({
@@ -537,6 +638,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "ice_nova_alert"
 name = "Qui-vive"
+icon = ExtResource("icon_ice_nova_alert")
 description = "Le Sursaut ne demande plus qu'un coup de {perte_vive} % de vos PV max, et revient au bout de {rythme_vif} s."
 position = Vector2i(-1, 2)
 parents = Dictionary[String, int]({
@@ -560,6 +662,7 @@ value_per_point = -3.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_thick_ice"
 name = "Glace épaisse"
+icon = ExtResource("icon_frost_tomb_thick_ice")
 description = "Tant que le tombeau tient, vous subissez moins de dégâts."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -575,6 +678,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_thaw"
 name = "Dégel"
+icon = ExtResource("icon_frost_tomb_thaw")
 description = "Le tombeau vous soigne plus vite."
 position = Vector2i(-1, 1)
 points_max = 3
@@ -590,6 +694,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_long_night"
 name = "Longue nuit"
+icon = ExtResource("icon_frost_tomb_long_night")
 description = "Le tombeau tient plus longtemps."
 position = Vector2i(1, 0)
 points_max = 3
@@ -604,6 +709,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_insulation"
 name = "Isolant"
+icon = ExtResource("icon_frost_tomb_insulation")
 description = "Tant que le tombeau tient, vous résistez mieux au froid."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -622,6 +728,7 @@ value_per_point = -25.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_frugal"
 name = "Sobriété"
+icon = ExtResource("icon_frost_tomb_frugal")
 description = "Le tombeau draine moins de mana."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -645,6 +752,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_shatter_out"
 name = "Éclatement"
+icon = ExtResource("icon_frost_tomb_shatter_out")
 description = "Quand vous sortez du tombeau, à sa fin ou de vous-même, il éclate : une explosion de froid dans ce rayon autour de vous."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -664,6 +772,7 @@ value_per_point = -50.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_frost_armor"
 name = "Armure de givre"
+icon = ExtResource("icon_frost_tomb_frost_armor")
 description = "Le tombeau ne vous enferme plus : vous marchez et lancez vos autres sorts sous sa protection et son soin. Mais il tient moitié moins, et sa recharge est fixée à {recharge_libre} s, quoi que vous portiez."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
@@ -683,6 +792,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_frost_skin"
 name = "Peau de givre"
+icon = ExtResource("icon_frost_tomb_frost_skin")
 description = "Tant que le tombeau tient, un ennemi qui vous frappe au contact est transi."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -700,6 +810,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_hibernation"
 name = "Hibernation"
+icon = ExtResource("icon_frost_tomb_hibernation")
 description = "Tant que le tombeau tient, les recharges de vos autres compétences courent plus vite."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -717,6 +828,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_refuge"
 name = "Refuge"
+icon = ExtResource("icon_frost_tomb_refuge")
 description = "Entrer dans la glace éteint les états que vous portez : embrasé, transi, engourdi, pourrissant…"
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -734,6 +846,7 @@ value_per_point = 50.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_rime_halo"
 name = "Halo de givre"
+icon = ExtResource("icon_frost_tomb_rime_halo")
 description = "Sous l'armure, ce qui passe à {portee_halo} px de vous est transi, une fois par seconde."
 position = Vector2i(0, 2)
 parents = Dictionary[String, int]({
@@ -751,6 +864,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_endless_winter"
 name = "Hiver sans fin"
+icon = ExtResource("icon_frost_tomb_endless_winter")
 description = "Chaque ennemi tué sous l'armure lui rend {temps_hiver} s, sans dépasser sa durée."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
@@ -768,6 +882,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_ice_heart"
 name = "Cœur de glace"
+icon = ExtResource("icon_frost_tomb_ice_heart")
 description = "L'éclatement transit à coup sûr ce qu'il touche, à double force."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -785,6 +900,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "frost_tomb_icebreaker"
 name = "Brise-glace"
+icon = ExtResource("icon_frost_tomb_icebreaker")
 description = "Sortir tôt paie : l'éclatement frappe plus fort pour chaque seconde de tombeau qu'il restait."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
@@ -810,6 +926,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_eye"
 name = "Œil du cyclone"
+icon = ExtResource("icon_winter_disaster_eye")
 description = "Le vortex frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -825,6 +942,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_blizzard"
 name = "Blizzard"
+icon = ExtResource("icon_winter_disaster_blizzard")
 description = "Le vortex dure plus longtemps, et grandit plus lentement."
 position = Vector2i(1, 0)
 points_max = 2
@@ -840,6 +958,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_gust"
 name = "Bourrasque"
+icon = ExtResource("icon_winter_disaster_gust")
 description = "Le vortex atteint un rayon plus large."
 position = Vector2i(0, -1)
 points_max = 3
@@ -861,6 +980,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_squalls"
 name = "Rafales"
+icon = ExtResource("icon_winter_disaster_squalls")
 description = "Le vortex frappe plus souvent, mais dure moins longtemps."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -878,6 +998,7 @@ value_per_point = 60.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_suction"
 name = "Aspiration"
+icon = ExtResource("icon_winter_disaster_suction")
 description = "Chaque impulsion du vortex tire les ennemis qu'elle frappe vers son cœur."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -896,6 +1017,7 @@ value_per_point = -30.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_implosion"
 name = "Implosion"
+icon = ExtResource("icon_winter_disaster_implosion")
 description = "Le vortex part à pleine taille et se resserre jusqu'à son cœur, où il éclate de tout son rayon, bien plus fort qu'une impulsion."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -916,6 +1038,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_snowball"
 name = "Boule de neige"
+icon = ExtResource("icon_winter_disaster_snowball")
 description = "Le vortex se nourrit de ce qu'il frappe : chaque ennemi touché le fait grossir au-delà de son plein, de {neige_max} % au plus."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -933,6 +1056,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_slide"
 name = "Coulée"
+icon = ExtResource("icon_winter_disaster_slide")
 description = "Le vortex ne reste plus sous vous : il roule vers le point visé, à {vitesse_coulee} px/s, et grandit en roulant. Un mur l'arrête."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -950,6 +1074,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_lull"
 name = "Accalmie"
+icon = ExtResource("icon_winter_disaster_lull")
 description = "Dans l'œil de votre vortex, son tiers central, vous subissez moins de dégâts."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -967,6 +1092,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_frosting"
 name = "Givrage"
+icon = ExtResource("icon_winter_disaster_frosting")
 description = "Chaque impulsion renforce le transi des ennemis qu'elle frappe, {givrage_max} fois au plus par ennemi."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -984,6 +1110,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_superconduct"
 name = "Supraconduction"
+icon = ExtResource("icon_winter_disaster_superconduct")
 description = "Le froid conduit : un ennemi engourdi pris dans le vortex est transi à coup sûr — et, sous l'Aspiration, tiré deux fois plus fort."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
@@ -1002,6 +1129,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_singularity"
 name = "Singularité"
+icon = ExtResource("icon_winter_disaster_singularity")
 description = "L'implosion éclate à {portee_singularite} fois son rayon."
 position = Vector2i(3, -1)
 parents = Dictionary[String, int]({
@@ -1019,6 +1147,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_rut"
 name = "Ornière"
+icon = ExtResource("icon_winter_disaster_rut")
 description = "La coulée laisse un sol gelé derrière elle."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
@@ -1036,6 +1165,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "winter_disaster_mill"
 name = "Meule"
+icon = ExtResource("icon_winter_disaster_mill")
 description = "Un ennemi aspiré jusqu'au cœur du vortex, à {coeur_meule} px, prend plus de dégâts."
 position = Vector2i(2, -2)
 parents = Dictionary[String, int]({
@@ -1061,6 +1191,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_core"
 name = "Noyau"
+icon = ExtResource("icon_frozen_orb_core")
 description = "Les éclats de l'orbe frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 4
@@ -1076,6 +1207,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_long_course"
 name = "Long cours"
+icon = ExtResource("icon_frozen_orb_long_course")
 description = "L'orbe vole plus longtemps, et crache d'autant plus d'éclats."
 position = Vector2i(1, 0)
 points_max = 3
@@ -1091,6 +1223,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_breeze"
 name = "Bise"
+icon = ExtResource("icon_frozen_orb_breeze")
 description = "L'orbe file plus vite."
 position = Vector2i(0, -1)
 points_max = 2
@@ -1105,6 +1238,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_needles"
 name = "Aiguilles"
+icon = ExtResource("icon_frozen_orb_needles")
 description = "Les éclats traversent un ennemi de plus."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -1122,6 +1256,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_top"
 name = "Toupie"
+icon = ExtResource("icon_frozen_orb_top")
 description = "L'orbe tourne plus vite et crache plus d'éclats."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -1139,6 +1274,7 @@ value_per_point = 3.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_shard_rain"
 name = "Pluie d'éclats"
+icon = ExtResource("icon_frozen_orb_shard_rain")
 description = "L'orbe éclate en plus d'éclats que ses {eclats_orbe}."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -1163,6 +1299,7 @@ value_per_point = -20.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_constellation"
 name = "Constellation"
+icon = ExtResource("icon_frozen_orb_constellation")
 description = "D'autres orbes partent avec la première, en éventail — toutes un peu moins fortes."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -1180,6 +1317,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_biting_orb"
 name = "Orbe mordante"
+icon = ExtResource("icon_frozen_orb_biting_orb")
 description = "L'orbe frappe aussi ce qu'elle traverse, une fois chacun, à une part du coup."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -1197,6 +1335,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_fracture"
 name = "Fracture"
+icon = ExtResource("icon_frozen_orb_fracture")
 description = "Un éclat qui touche un ennemi transi peut se briser en deux morceaux, qui filent en V et portent chacun {part_morceau} % du coup. Les morceaux ne se brisent plus."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -1215,7 +1354,8 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_guidance"
 name = "Guidage"
-description = "L'orbe s'incurve vers votre curseur tant qu'elle vole. Sans effet sous la Stase, qui la mène au point visé."
+icon = ExtResource("icon_frozen_orb_guidance")
+description = "L'orbe s'incurve vers votre curseur tant qu'elle vole."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
 "frozen_orb_top": 1,
@@ -1233,7 +1373,8 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_stasis"
 name = "Stase"
-description = "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour."
+icon = ExtResource("icon_frozen_orb_stasis")
+description = "L'orbe file au point visé, s'y arrête et y tourne jusqu'à la fin, crachant ses éclats tout autour. Le Guidage n'y a plus d'effet."
 position = Vector2i(2, 1)
 parents = Dictionary[String, int]({
 "frozen_orb_shard_rain": 1,
@@ -1251,6 +1392,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_kaleidoscope"
 name = "Kaléidoscope"
+icon = ExtResource("icon_frozen_orb_kaleidoscope")
 description = "Les morceaux d'une fracture se brisent encore une fois."
 position = Vector2i(-3, -1)
 parents = Dictionary[String, int]({
@@ -1268,6 +1410,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_crystalline"
 name = "Cristallin"
+icon = ExtResource("icon_frozen_orb_crystalline")
 description = "Arrêtée, l'orbe grossit : ses éclats frappent plus fort pour chaque seconde de stase."
 position = Vector2i(3, 1)
 parents = Dictionary[String, int]({
@@ -1285,6 +1428,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "frozen_orb_sight"
 name = "Viseur"
+icon = ExtResource("icon_frozen_orb_sight")
 description = "Guidée, l'orbe crache ses éclats vers l'ennemi le plus proche à {portee_viseur} px, plutôt qu'en spirale."
 position = Vector2i(2, -2)
 parents = Dictionary[String, int]({

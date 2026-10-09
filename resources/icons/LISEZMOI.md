@@ -169,11 +169,30 @@ Lightning ramène les 45 pas du LoRA pixel art à 8 : **7 s par tirage** à 768 
 déchargement partiel le processus ComfyUI ne rendait plus que du bruit — **SDXL compris**,
 jusqu'à son redémarrage. `render()` s'arrête s'il en reçoit.
 
-**Si un tirage dépasse la minute**, la carte est dans un mauvais état : au jalon 43 elle
-calculait à 12 s par pas (2 min par tirage), sans débordement en mémoire partagée. Ni la
-fermeture d'iCUE (5 Go de mémoire vidéo), ni le redémarrage de ComfyUI n'y ont rien fait ;
-**le redémarrage de la machine** l'a ramenée à 11-16 s par tirage, ~90 s pour le premier
-d'un sujet.
+**Si un tirage dépasse la minute**, c'est **le processus ComfyUI** qui est dans un mauvais
+état, pas la machine. Au jalon 43 il calculait à 12 s par pas (2 min par tirage) ; au
+jalon 44, 122-126 s par tirage d'un sujet déjà encodé, contre 15 s une fois **ComfyUI
+relancé** — avec iCUE, Opera et Discord toujours ouverts. Le « redémarrage de la machine »
+du jalon 43 n'en était pas un : Windows n'a pas redémarré depuis le 21 septembre, il se
+met en veille la nuit et reprend en démarrage rapide.
+
+Écarté au jalon 44, mesures à l'appui : la mémoire vidéo des autres applications (~7 Go,
+dont 4 Go pour `QmlRenderer`, le moteur d'affichage d'iCUE), un banc Godot en fenêtré
+juste avant un tirage, et 12 Go réservés par un autre processus — Windows relègue alors
+12,9 Go de ComfyUI dans la RAM, mais le tirage suivant les ramène en 23 s et le suivant
+retombe à 15 s. Les `LiveKernelEvent` 141 et 117 du journal Application ne sont pas des
+plantages : un arriéré de rapports du 15 juin que Windows renvoie par paquets de 49, à
+heures fixes. **La cause dans le processus reste inconnue** : il était rapide à 13 h 53,
+lent à 18 h 24, inactif entre les deux, sans journal sur le disque.
+
+**Avant de le relancer**, relever ce qui manque : `/internal/logs/raw` (un « loaded
+partially » au chargement de `QwenImage` ?), la mémoire dédiée et partagée de `python`
+(`\GPU Process Memory(*)`), et essayer `POST /free` (`{"unload_models": true,
+"free_memory": true}`), qui force un chargement neuf sans tuer le processus.
+
+**Une mémoire partagée non nulle dit que la VRAM déborde.** Le second arrêt du jalon 44
+(117 s, ComfyUI pourtant relancé) : 20 Go dédiés et 3 Go partagés pour ComfyUI, 8 Go pour
+les autres applications dont 4,9 Go pour `QmlRenderer`. Un redémarrage de Windows l'a réglé.
 
 ### La recette
 
@@ -212,6 +231,7 @@ statique l'Électrisé du Brasero ; Haute tension et Potentiel la Surcharge, la 
 Fourche, la Vivacité le Vif-argent, la Persistance et la Capacité l'Orage durable (le
 sablier), le Réamorçage l'Impulsion, la Haute fréquence le Réarmement (le chronomètre),
 l'Influx le Retour par la masse, l'Arc brûlant le Point chaud.
+Au froid (jalon 44) : l'Engelure reprend le Gel intense du feu (le flocon).
 
 **Un nœud repris dont le tirage a disparu** reprend la vignette déjà posée, si elle est à
 son côté (`vignette()`) ; sinon `gen --only <source>` refait le tirage. Et **un tirage déjà
