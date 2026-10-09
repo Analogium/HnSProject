@@ -19,10 +19,7 @@ var cast: SkillStats
 ## Le total des parts, calculé et jamais rangé : une seule vérité.
 var amount: float:
 	get:
-		var total := 0.0
-		for part in parts:
-			total += part
-		return total
+		return DamageType.total(parts)
 
 ## La nature de la part la plus forte, qui donne sa couleur à la gerbe d'éclats.
 var type: DamageType.Kind:

@@ -58,11 +58,8 @@ static func put(
 		share *= SkillStats.MINE_FACTOR
 		charge._radius = RADIUS * SkillStats.MINE_REACH
 		charge._mine = true
-	var total := 0.0
-	for part in parts:
-		total += float(part)
 	charge._parts = DamageType.empty_parts()
-	charge._parts[DamageType.Kind.LIGHTNING] = total * share
+	charge._parts[DamageType.Kind.LIGHTNING] = DamageType.total(parts) * share
 	charge._author = author
 	charge._toward = direction.normalized() * DRIFT
 	# Le filtre plutôt que la seule sortie d'arbre : une charge dont le parent a disparu

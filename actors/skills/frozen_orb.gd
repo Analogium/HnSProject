@@ -40,10 +40,8 @@ static func send(
 	source: Node2D, shards: PackedScene, aim: Vector2, guide: Player
 ) -> FrozenOrb:
 	_live.assign(_live.filter(func(o) -> bool: return is_instance_valid(o) and not o.is_queued_for_deletion()))
-	if cast.max_simultaneous() > 0:
-		var own := _live.filter(func(o: FrozenOrb) -> bool: return o._source == source)
-		for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
-			(own[i] as FrozenOrb).queue_free()
+	for old in cast.crowded(_live.filter(func(o: FrozenOrb) -> bool: return o._source == source)):
+		old.queue_free()
 	var orb := FrozenOrb.new()
 	_live.append(orb)
 	orb._cast = cast
@@ -148,9 +146,7 @@ func _bite() -> void:
 		if _bitten.has(id):
 			continue
 		_bitten[id] = true
-		var parts := _cast.roll(Game.rng)
-		for i in parts.size():
-			parts[i] *= _cast.orb_bite * 0.01
+		var parts := DamageType.scaled(_cast.roll(Game.rng), _cast.orb_bite * 0.01)
 		Targets.strike(target, parts, global_position, _author, _cast)
 
 

@@ -157,10 +157,7 @@ func _trigger(reaction: Reaction, target: Hurtbox, at: Vector2) -> void:
 ## Un coup de la Catalyse à `REACTION_PART`, moitié dans chaque nature de la paire. Un
 ## tirage par réaction (invariant 3).
 func _parts(reaction: Reaction) -> Array[float]:
-	var rolled := _cast.roll(Game.rng)
-	var total := 0.0
-	for part in rolled:
-		total += part
+	var total := DamageType.total(_cast.roll(Game.rng))
 	var out := DamageType.empty_parts()
 	for kind: int in PAIRS[reaction]:
 		out[StatusEffects.NATURES[kind]] += total * reaction_part(_cast) * 0.5

@@ -33,8 +33,8 @@ var _absorbed := 0.0
 ## les Jumelles —, puis pose la nouvelle.
 static func place(player: Player, point: Vector2, cast: SkillStats, parent: Node) -> RagDoll:
 	var own := standing.filter(func(d: RagDoll) -> bool: return d._player == player and not d._fallen)
-	for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
-		(own[i] as RagDoll)._fall()
+	for old in cast.crowded(own):
+		(old as RagDoll)._fall()
 	var doll := RagDoll.new()
 	doll._player = player
 	doll._cast = cast

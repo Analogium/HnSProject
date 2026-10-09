@@ -61,9 +61,7 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	queue_redraw()
 	if _age >= FALL:
-		Explosion.put(
-			get_parent(), global_position, _cast.roll(Game.rng), _cast.radius, null, _tint, _author, _cast
-		)
+		Explosion.of_cast(get_parent(), global_position, _cast, _cast.radius, _author)
 		_rain()
 		# Le poids de la chute : l'impact se sent, ce qui le sépare d'une boule de plus.
 		# Valide d'abord : l'épaule du Familier peut s'être dissoute pendant la chute, et

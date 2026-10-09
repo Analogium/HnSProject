@@ -345,11 +345,7 @@ func _bite_one(target: Hurtbox) -> void:
 
 ## Le tirage d'une morsure, grossi par ses proies.
 func _bite_parts() -> Array[float]:
-	var parts := _cast.roll(Game.rng)
-	var appetite := 1.0 + _cast.gluttony * 0.01 * float(_preys)
-	for i in parts.size():
-		parts[i] *= appetite
-	return parts
+	return DamageType.scaled(_cast.roll(Game.rng), 1.0 + _cast.gluttony * 0.01 * float(_preys))
 
 
 func _uncoil() -> void:

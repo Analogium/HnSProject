@@ -5,7 +5,6 @@ extends Node2D
 ## et foudroie à chaque période ce qui passe dans son rayon. Il ne frappe pas à l'impact
 ## et traverse les ennemis ; un mur l'éteint.
 
-const BOLT_LIFETIME := 0.14
 ## Les spores d'une nuée nécrotique.
 const SWARM := 12
 
@@ -35,10 +34,8 @@ static func send(
 	around: Node2D = null
 ) -> StaticOrb:
 	_live.assign(_live.filter(func(o) -> bool: return is_instance_valid(o) and not o.is_queued_for_deletion()))
-	if cast.max_simultaneous() > 0:
-		var own := _live.filter(func(o: StaticOrb) -> bool: return o._around == around)
-		for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
-			(own[i] as StaticOrb).queue_free()
+	for old in cast.crowded(_live.filter(func(o: StaticOrb) -> bool: return o._around == around)):
+		old.queue_free()
 	var orb := StaticOrb.new()
 	orb._around = around
 	_live.append(orb)
@@ -82,9 +79,7 @@ func _physics_process(delta: float) -> void:
 	while _strikes < due:
 		_strike()
 		_strikes += 1
-	for e in _bolts:
-		e.age += delta
-	_bolts = _bolts.filter(func(e: StormCloud.Bolt) -> bool: return e.age < BOLT_LIFETIME)
+	_bolts = StormCloud.Bolt.aged(_bolts, delta)
 	queue_redraw()
 	if _age >= _cast.duration:
 		queue_free()
@@ -114,15 +109,7 @@ func _draw() -> void:
 		_tint, Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, _cast.duration)
 	).put(self, Vector2.ZERO)
 	for e in _bolts:
-		var beat := Lightning.hold(e.age)
-		if beat != e.shown:
-			e.shown = beat
-			_flicker.seed = int(get_instance_id()) ^ beat ^ int(e.toward.x)
-			e.pieces = Lightning.chain(
-				PackedVector2Array([Vector2.ZERO, e.toward]), _flicker, _tint, 1, true,
-				Lightning.gone(e.age, BOLT_LIFETIME)
-			)
-		Lightning.put(self, e.pieces)
+		e.draw(self, _flicker, _tint)
 
 
 ## La Nuée de la Peste (jalon 38), « spores en orbite » choisi sur planche contre un crâne

@@ -12,7 +12,6 @@ const HEIGHT_CARRIED := 40.0
 const PUFFS := 7
 const SPAWN := 0.2
 const DISSIPATION := 0.3
-const BOLT_LIFETIME := 0.14
 ## Le nuage s'éclaire de la couleur de la foudre juste après avoir frappé.
 const FLASH_COLOR := 0.12
 const FLASH_MIX := 0.35
@@ -22,12 +21,31 @@ const CLOUD := Color(0.30, 0.28, 0.40)
 const DRIFT_SPEED := 40.0
 
 
+## Un éclair d'une frappe, du nuage ou de l'orbe statique : les deux tenaient chacun sa
+## durée, son vieillissement et son dessin, à l'identique.
 class Bolt:
+	const LIFETIME := 0.14
 	var of: Vector2
 	var toward: Vector2
 	var age := 0.0
 	var shown := -1
 	var pieces: Array[EffectForge.Piece]
+
+	## Une seule fourche : l'éclair est court, deux le brouilleraient.
+	func draw(ci: CanvasItem, flicker: RandomNumberGenerator, tint: Color) -> void:
+		var beat := Lightning.hold(age)
+		if beat != shown:
+			shown = beat
+			flicker.seed = int(ci.get_instance_id()) ^ beat ^ int(toward.x)
+			pieces = Lightning.chain(
+				PackedVector2Array([of, toward]), flicker, tint, 1, true, Lightning.gone(age, LIFETIME)
+			)
+		Lightning.put(ci, pieces)
+
+	static func aged(bolts: Array[Bolt], delta: float) -> Array[Bolt]:
+		for e in bolts:
+			e.age += delta
+		return bolts.filter(func(e: Bolt) -> bool: return e.age < LIFETIME)
 
 
 static var _bodies := {}
@@ -64,10 +82,8 @@ static func put(
 ) -> StormCloud:
 	# Au-delà, les plus anciens se dissipent sans coup final.
 	_live.assign(_live.filter(func(c) -> bool: return is_instance_valid(c) and not c.is_queued_for_deletion()))
-	var own := _live.filter(func(c: StormCloud) -> bool: return c._caster == caster)
-	if cast.max_simultaneous() > 0:
-		for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
-			(own[i] as StormCloud).queue_free()
+	for old in cast.crowded(_live.filter(func(c: StormCloud) -> bool: return c._caster == caster)):
+		old.queue_free()
 	var cloud := StormCloud.new()
 	cloud._caster = caster
 	_live.append(cloud)
@@ -140,9 +156,7 @@ func _physics_process(delta: float) -> void:
 		_twin -= delta
 		if _twin < 0.0:
 			_hit(_cast.radius, 1.0)
-	for e in _bolts:
-		e.age += delta
-	_bolts = _bolts.filter(func(e: Bolt) -> bool: return e.age < BOLT_LIFETIME)
+	_bolts = Bolt.aged(_bolts, delta)
 	queue_redraw()
 	if _age >= _cast.duration and (_strikes >= _cast.strikes_over_duration() or _cast.moving_front > 0.0):
 		queue_free()
@@ -207,9 +221,7 @@ func _overflow(world: World2D, reach: float, inside: Array[Hurtbox]) -> void:
 			best_distance = distance
 	if best == null:
 		return
-	var parts := _cast.roll(Game.rng)
-	for n in parts.size():
-		parts[n] *= _cast.overflow * 0.01
+	var parts := DamageType.scaled(_cast.roll(Game.rng), _cast.overflow * 0.01)
 	Targets.strike(best, parts, global_position, _author, _cast)
 	_bolt_to(to_local(best.global_position))
 
@@ -241,13 +253,4 @@ func _draw() -> void:
 	).put(self, Vector2(0.0, -_height()) + bob)
 
 	for e in _bolts:
-		var beat := Lightning.hold(e.age)
-		if beat != e.shown:
-			e.shown = beat
-			_flicker.seed = int(get_instance_id()) ^ beat ^ int(e.toward.x)
-			# Une seule fourche : l'éclair du nuage est court, deux le brouilleraient.
-			e.pieces = Lightning.chain(
-				PackedVector2Array([e.of, e.toward]), _flicker, _tint, 1, true,
-				Lightning.gone(e.age, BOLT_LIFETIME)
-			)
-		Lightning.put(self, e.pieces)
+		e.draw(self, _flicker, _tint)

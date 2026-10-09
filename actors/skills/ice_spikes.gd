@@ -131,9 +131,7 @@ func _physics_process(delta: float) -> void:
 ## ce qui est au cœur, la part qu'a l'Œil du brasier.
 func _strike() -> void:
 	var parts := _cast.roll(Game.rng)
-	var eyed := parts.duplicate()
-	for i in eyed.size():
-		eyed[i] *= 1.0 + _cast.eye * 0.01
+	var eyed := DamageType.scaled(parts, 1.0 + _cast.eye * 0.01)
 	var core := _cast.radius * SkillStats.EYE_PART
 	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
 		var inside := target.global_position.distance_to(global_position) <= core

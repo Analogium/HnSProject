@@ -144,9 +144,7 @@ func _roll(delta: float) -> void:
 func _end() -> void:
 	if _cast.shape != Skill.Shape.IMPLOSION:
 		return
-	var parts := _cast.roll(Game.rng)
-	for i in parts.size():
-		parts[i] *= IMPLOSION_BURST
+	var parts := DamageType.scaled(_cast.roll(Game.rng), IMPLOSION_BURST)
 	var burst := _cast.radius * (SkillStats.SINGULARITY_REACH if _cast.singularity > 0.0 else 1.0)
 	Explosion.put(get_parent(), global_position, parts, burst, null, _tint, _author, _cast)
 
@@ -157,13 +155,10 @@ func _end() -> void:
 ## Boule de neige grossit de chaque ennemi frappé (jalon 44).
 func _strike() -> void:
 	var parts := _cast.roll(Game.rng)
-	var milled := parts.duplicate()
-	for i in milled.size():
-		milled[i] *= 1.0 + _cast.mill * 0.01
+	var milled := DamageType.scaled(parts, 1.0 + _cast.mill * 0.01)
 	var targets := Targets.in_circle(get_world_2d(), global_position, reach())
 	for target in targets:
-		var numbed := _cast.superconduct > 0.0 and target.states != null \
-				and target.states.active(StatusEffects.Kind.NUMB)
+		var numbed := _cast.superconduct > 0.0 and target.has_state(StatusEffects.Kind.NUMB)
 		var at_core := target.global_position.distance_to(global_position) <= SkillStats.MILL_CORE
 		Targets.strike(
 			target, milled if at_core else parts, global_position, _author, _cast,
@@ -181,7 +176,7 @@ func _strike() -> void:
 
 ## Le Givrage : un transi déjà posé gagne en force, `FROSTING_MOST` fois par ennemi.
 func _frost(target: Hurtbox) -> void:
-	if target.states == null or not target.states.active(StatusEffects.Kind.CHILL):
+	if not target.has_state(StatusEffects.Kind.CHILL):
 		return
 	var id := target.get_instance_id()
 	var times := mini(int(_frosted.get(id, 0)) + 1, SkillStats.FROSTING_MOST)

@@ -177,8 +177,5 @@ func _on_damaged(info: DamageInfo) -> void:
 	if health <= 0.0:
 		# Dernier souffle : en différé, la blessure arrive d'un rappel de collision.
 		if _cast.end_burst > 0.0:
-			Explosion.put(
-				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
-				DamageType.COLORS[_cast.nature], _player.states, _cast
-			)
+			Explosion.of_cast(get_parent(), global_position, _cast, _cast.end_burst, _player.states)
 		queue_free()

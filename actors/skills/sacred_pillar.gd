@@ -70,10 +70,7 @@ func _physics_process(delta: float) -> void:
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
 		# L'Effondrement : en s'éteignant, la colonne éclate.
 		if _cast.end_burst > 0.0:
-			Explosion.put(
-				get_parent(), global_position, _cast.roll(Game.rng), _cast.end_burst, null,
-				_tint, _author, _cast
-			)
+			Explosion.of_cast(get_parent(), global_position, _cast, _cast.end_burst, _author)
 		queue_free()
 
 

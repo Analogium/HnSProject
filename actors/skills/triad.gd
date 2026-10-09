@@ -58,10 +58,7 @@ func _physics_process(delta: float) -> void:
 	for i in _starts.size():
 		_pierce(i, _at(i, before), _at(i, _age))
 	if _age >= TRAVEL:
-		Explosion.put(
-			get_parent(), global_position, _cast.roll(Game.rng), _cast.radius, null,
-			DamageType.COLORS[_cast.nature], _author, _cast
-		)
+		Explosion.of_cast(get_parent(), global_position, _cast, _cast.radius, _author)
 		queue_free()
 		return
 	queue_redraw()

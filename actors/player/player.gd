@@ -549,10 +549,7 @@ func _pose(
 		Skill.Shape.NOVA:
 			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
 			# cercle et s'efface, ce qu'une nova fait exactement. Son sol a sa taille.
-			var nova := Explosion.put(
-				parent, at, cast.roll(Game.rng), cast.radius, null,
-				DamageType.COLORS[cast.nature], states, cast
-			)
+			var nova := Explosion.of_cast(parent, at, cast, cast.radius, states)
 			nova.knockback = cast.knockback
 			nova.crowd = cast.deep_cold
 			if cast.ground_duration > 0.0:
@@ -731,10 +728,7 @@ func _shatter(skill: Skill, remaining: float) -> void:
 	if cast.ice_heart > 0.0:
 		cast.status_chance_increase += SkillStats.SURE_STATE
 		cast.chill_effect += SkillStats.ICE_HEART_EFFECT
-	Explosion.put(
-		_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
-		DamageType.COLORS[cast.nature], states, cast
-	)
+	Explosion.of_cast(_effects_parent(), global_position, cast, cast.end_burst, states)
 
 
 ## L'allumage, son pendant : la fiche reçoit les lignes du buff.
@@ -898,9 +892,7 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		return
 	# L'état de la nature du lancer : un brasier devenu nécrotique fait exploser les pourrissants.
 	if cast.kill_burst > 0.0 and victim != null and victim.active(StatusEffects.rolled_by(cast.nature)):
-		var parts := cast.roll(Game.rng)
-		for i in parts.size():
-			parts[i] *= SkillStats.KILL_BURST_PART
+		var parts := DamageType.scaled(cast.roll(Game.rng), SkillStats.KILL_BURST_PART)
 		# La Poudrière (jalon 42) : l'explosion pose son état à coup sûr, et la chaîne ne
 		# s'arrête plus faute d'embrasés. Une copie, que la suite de la chaîne reprend.
 		var blast := cast
@@ -998,10 +990,7 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 			charge_life, _charge_bit
 		)
 	if cast.end_burst > 0.0:
-		Explosion.put(
-			_effects_parent(), global_position, cast.roll(Game.rng), cast.end_burst, null,
-			DamageType.COLORS[cast.nature], states, cast
-		)
+		Explosion.of_cast(_effects_parent(), global_position, cast, cast.end_burst, states)
 		# Le Tonnerre roulant (jalon 43) : l'arrivée gronde encore, au même endroit.
 		if cast.rolling_thunder > 0.0:
 			for i in SkillStats.ROLLING_COUNT:
@@ -1041,10 +1030,7 @@ func _return_to(origin: Vector2, cast: SkillStats) -> void:
 
 
 func _rumble(at: Vector2, cast: SkillStats) -> void:
-	Explosion.put(
-		_effects_parent(), at, cast.roll(Game.rng), cast.end_burst, null,
-		DamageType.COLORS[cast.nature], states, cast
-	)
+	Explosion.of_cast(_effects_parent(), at, cast, cast.end_burst, states)
 
 
 ## Le Réarmement (jalon 43) : chaque engourdi dans l'explosion d'arrivée — compté avant
@@ -1052,7 +1038,7 @@ func _rumble(at: Vector2, cast: SkillStats) -> void:
 func _rearm(index: int, cast: SkillStats) -> void:
 	var numbed := 0
 	for target in Targets.in_circle(get_world_2d(), global_position, cast.end_burst):
-		if target.states != null and target.states.active(StatusEffects.Kind.NUMB):
+		if target.has_state(StatusEffects.Kind.NUMB):
 			numbed += 1
 	_recharges[index] = maxf(_recharges[index] - cast.rearm * float(numbed), 0.0)
 
@@ -1897,9 +1883,8 @@ func _reborn() -> bool:
 		_set_health(stats.max_health * SkillStats.REBIRTH_HEALTH)
 		if cast.phoenix_ashes > 0.0:
 			phoenix_ashes = SkillStats.ASHES_TIME
-		Explosion.put(
-			_effects_parent(), global_position, cast.roll(Game.rng),
-			cast.radius * SkillStats.REBIRTH_REACH, null, DamageType.COLORS[cast.nature], states, cast
+		Explosion.of_cast(
+			_effects_parent(), global_position, cast, cast.radius * SkillStats.REBIRTH_REACH, states
 		)
 		return true
 	return false

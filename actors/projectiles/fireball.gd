@@ -114,12 +114,11 @@ func _explode(direct_target: Hurtbox) -> void:
 	if explosion_radius <= 0.0 or _burst_frame == Engine.get_physics_frames():
 		return
 	_burst_frame = Engine.get_physics_frames()
-	var parts: Array[float] = _parts.duplicate()
+	var parts := _parts
 	var radius := explosion_radius
 	# La Prise d'air (jalon 42) : plus la boule a volé, plus elle éclate fort et large.
 	if _cast != null and _cast.swell > 0.0:
 		var gain := 1.0 + _cast.swell * 0.01 * speed * _life / SkillStats.SWELL_STEP
-		for i in parts.size():
-			parts[i] *= gain
+		parts = DamageType.scaled(parts, gain)
 		radius *= gain
 	Explosion.put(get_parent(), global_position, parts, radius, direct_target, tint(), _author, _cast)

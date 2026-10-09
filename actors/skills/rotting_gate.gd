@@ -117,10 +117,7 @@ func _crawl(c: Crawler, delta: float) -> void:
 ## Elle éclate ; Progéniture en lâche des petits là où elle était, qui chassent à leur tour.
 func _burst(c: Crawler) -> void:
 	_crawlers.erase(c)
-	var parts := _cast.roll(Game.rng)
-	if c.small:
-		for i in parts.size():
-			parts[i] *= SkillStats.SPLIT_PART
+	var parts := DamageType.scaled(_cast.roll(Game.rng), SkillStats.SPLIT_PART if c.small else 1.0)
 	var radius := _cast.radius * (0.5 if c.small else 1.0)
 	Explosion.put(get_parent(), c.at, parts, radius, null, _tint, _author, _cast)
 	if c.small:

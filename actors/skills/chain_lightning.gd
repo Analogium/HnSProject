@@ -123,8 +123,7 @@ static func _run(
 static func _free_hop(next: Node2D, cast: SkillStats) -> bool:
 	if next is StaticCharge:
 		return cast.relay_refund > 0.0
-	var states := (next as Hurtbox).states
-	return cast.conductance > 0.0 and states != null and states.active(StatusEffects.Kind.NUMB)
+	return cast.conductance > 0.0 and (next as Hurtbox).has_state(StatusEffects.Kind.NUMB)
 
 
 ## Frappe ce qu'un trajet a pris, chaque saut plus fort sous le Crescendo — une branche
@@ -135,9 +134,7 @@ static func _strike(
 ) -> int:
 	var struck := 0
 	for i in run.taken.size():
-		var hit := parts.duplicate()
-		for n in hit.size():
-			hit[n] *= 1.0 + cast.jump_gain * 0.01 * float(offset + i)
+		var hit := DamageType.scaled(parts, 1.0 + cast.jump_gain * 0.01 * float(offset + i))
 		var next := run.taken[i]
 		if next is StaticCharge:
 			Explosion.put(parent, next.global_position, hit, RELAY_RADIUS, null, tint, author, cast)
@@ -169,9 +166,7 @@ static func _web(
 			if next != null:
 				excluded.append(next)
 				leaps[target] = next
-	var leap := parts.duplicate()
-	for n in leap.size():
-		leap[n] *= cast.web_branch * 0.01
+	var leap := DamageType.scaled(parts, cast.web_branch * 0.01)
 	for target in arcs:
 		Targets.strike(target, parts, origin, author, cast)
 		trace(parent, PackedVector2Array([origin, target.global_position]), tint)

@@ -41,8 +41,8 @@ var _links: Array[DashTrail] = []
 
 static func place(player: Player, point: Vector2, cast: SkillStats, parent: Node) -> Brazier:
 	var own := lit.filter(func(b: Brazier) -> bool: return b._player == player and not b._out)
-	for i in maxi(own.size() - cast.max_simultaneous() + 1, 0):
-		(own[i] as Brazier)._go_out(false)
+	for old in cast.crowded(own):
+		(old as Brazier)._go_out(false)
 	var b := Brazier.new()
 	b._player = player
 	b._cast = cast

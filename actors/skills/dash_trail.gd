@@ -204,9 +204,7 @@ func _burn_fuse(delta: float) -> bool:
 	var plates := ceili(float(points.size()) / 2.0)
 	var due := mini(int(_fuse / WICK_DELAY) + 1, plates)
 	while _fused < due:
-		var parts := _cast.roll(Game.rng)
-		for i in parts.size():
-			parts[i] *= _cast.wick * 0.01
+		var parts := DamageType.scaled(_cast.roll(Game.rng), _cast.wick * 0.01)
 		Explosion.put(_effects, points[_fused * 2], parts, _cast.radius, null, _tint, _author, _cast)
 		_fused += 1
 	return _fused < plates

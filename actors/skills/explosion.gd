@@ -58,6 +58,16 @@ static func put(
 	return e
 
 
+## Celle d'un lancer tel quel : un tirage neuf, la couleur de sa nature. Neuf gestes
+## l'écrivaient en entier.
+static func of_cast(
+	parent: Node, point: Vector2, cast: SkillStats, radius: float, author: StatusEffects
+) -> Explosion:
+	return put(
+		parent, point, cast.roll(Game.rng), radius, null, DamageType.COLORS[cast.nature], author, cast
+	)
+
+
 func _ready() -> void:
 	z_index = 3
 	# Le feu, la glace et la nécrose sont **dessinés**, et une planche cernée ne peut
@@ -85,11 +95,10 @@ func _physics_process(delta: float) -> void:
 func _crowded(targets: Array[Hurtbox]) -> void:
 	var chilled := 0
 	for target in targets:
-		if target.states != null and target.states.active(StatusEffects.Kind.CHILL):
+		if target.has_state(StatusEffects.Kind.CHILL):
 			chilled += 1
 	var factor := 1.0 + crowd * 0.01 * float(mini(chilled, SkillStats.DEEP_COLD_MOST))
-	for i in _parts.size():
-		_parts[i] *= factor
+	_parts = DamageType.scaled(_parts, factor)
 
 
 ## Trois souffles peints — le brasier, la nova, le mur de gaz de la nécrose, qui se

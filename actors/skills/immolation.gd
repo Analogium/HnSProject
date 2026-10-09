@@ -99,16 +99,12 @@ func _rise() -> float:
 ## `Targets.strike_circle()` — écrit à la main pour l'Œil du brasier, qui frappe plus fort
 ## au cœur, et le Tirage, qui y ramène (un recul négatif).
 func _strike() -> void:
-	var parts := _cast.roll(Game.rng)
 	var factor := _rise()
 	if _player.phoenix_ashes > 0.0:
 		factor *= 1.0 + _cast.phoenix_ashes * SkillStats.ASHES_MORE * 0.01
-	for i in parts.size():
-		parts[i] *= factor
+	var parts := DamageType.scaled(_cast.roll(Game.rng), factor)
 	var core := _cast.radius * SkillStats.EYE_PART
-	var eyed := parts.duplicate()
-	for i in eyed.size():
-		eyed[i] *= 1.0 + _cast.eye * 0.01
+	var eyed := DamageType.scaled(parts, 1.0 + _cast.eye * 0.01)
 	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
 		var inside := target.global_position.distance_to(global_position) <= core
 		Targets.strike(

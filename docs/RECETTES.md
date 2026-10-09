@@ -432,7 +432,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `targets` | Une chaîne : combien d'ennemis, le premier compris |
    | `duration` / `period` | Un nuage, un serpent, une orbite : ce qu'ils vivent, et l'écart entre deux frappes — ou entre deux touches d'une même cible. Une aura a une période et pas de durée ; une ruée a une durée, celle de ce qu'elle laisse |
    | `radius` | Une boule (son explosion), un nuage, une aura, un pilier, une pulsation ; **la longueur** d'un faisceau, dont la largeur est celle de son dessin ; la portée d'une frappe vive |
-   | `simultaneous` | Une orbite : combien à la fois. Zéro, sans limite |
+   | `simultaneous` | Combien à la fois **par lanceur** : orbite, invocations, serpents, nuage, orbes, brasier, poupée. Au-delà, les plus anciens partent — `SkillStats.crowded()` les désigne. Zéro, sans limite |
    | `self_burn` | Une aura, un buff : la part des PV max qu'il brûle au lanceur par seconde. **Mortelle** |
    | `mana_per_second` | Un buff, un cyclone : le mana drainé par seconde, **à plat**. La réserve vide **l'éteint** |
    | `self_heal` | Ce qu'un geste entretenu **rend** par seconde, en part des PV max. Le pendant de `self_burn`, et sans mitigation : un soin ne se résiste pas |

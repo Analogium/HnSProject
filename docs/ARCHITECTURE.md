@@ -353,6 +353,9 @@ image le Météore lancé par un Familier dissous pendant sa chute (`Meteor._sou
 | La naissance d'un ennemi | `EnemyManager.spawn()` |
 | La naissance d'un tir | `Projectile.spawn()` |
 | La recherche des cibles d'un coup sans collision | `Targets.in_circle()` ; la plus proche, `Targets.nearest()` — le serpent qui chasse, le nuage qui erre, le tir qui rebondit. `Targets.strike_circle()` prend un recul : **négatif, il tire vers le centre** (l'Aspiration du vortex, par `DamageInfo.knockback`) |
+| Un coup à un facteur | `DamageType.scaled()`, qui rend une **copie** : la part d'origine sert encore aux cibles hors du bonus (le cœur des pics, les sauts de la chaîne). `DamageType.total()` en fait la somme |
+| Une cible sous un état ? | `Hurtbox.has_state()` : faux sans états — la poupée, le brasier, les morts-vivants n'en portent pas |
+| Qui part quand la limite `simultaneous` est atteinte | `SkillStats.crowded()` : les plus anciens du lanceur, pour qu'un de plus tienne — orbe gelée, orbe statique, nuage, brasier, poupée. Le serpent tient sa couvée à part (`HellSnake._broods`) |
 | La résolution d'un lancer | `Player.resolve()` — le lancer et la fiche du manuel |
 | La gorgée d'un flacon | `Player.use_flask()` : la fiche reçoit ses lignes au même moment |
 | L'extinction d'un geste entretenu | `Player.extinguish()` : la fiche perd les lignes du buff au même moment |

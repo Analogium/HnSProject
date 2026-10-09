@@ -1181,6 +1181,15 @@ func max_simultaneous() -> int:
 	return int(simultaneous)
 
 
+## Les plus anciens de `own`, qui partent pour qu'un de plus tienne sous la limite ;
+## aucun sans limite. Cinq gestes écrivaient ce décompte et son « + 1 ».
+func crowded(own: Array) -> Array:
+	var most := max_simultaneous()
+	if most <= 0:
+		return []
+	return own.slice(0, maxi(own.size() - most + 1, 0))
+
+
 ## Une impulsion à la pose, puis une par période ; l'epsilon absorbe l'arrondi d'une
 ## durée modifiée. **Le nuage compte ses frappes par ici**, comme la fiche.
 func strikes_over_duration() -> int:
@@ -1264,17 +1273,11 @@ func distribution() -> Array[float]:
 
 
 func total_min() -> float:
-	var total := 0.0
-	for part in damage_min:
-		total += part
-	return total
+	return DamageType.total(damage_min)
 
 
 func total_max() -> float:
-	var total := 0.0
-	for part in damage_max:
-		total += part
-	return total
+	return DamageType.total(damage_max)
 
 
 ## Les chiffres des mécaniques, pour les descriptions des nœuds (`{part_sol}`…) : lus

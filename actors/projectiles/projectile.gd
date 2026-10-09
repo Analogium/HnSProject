@@ -313,14 +313,10 @@ func _steer(toward: Vector2, delta: float) -> void:
 
 ## La Glace vive (jalon 43) : sur un transi, le trait de glace ajoute une part de foudre.
 func _conducted(target: Hurtbox) -> Array[float]:
-	if _cast == null or _cast.live_ice <= 0.0 or target.states == null \
-			or not target.states.active(StatusEffects.Kind.CHILL):
+	if _cast == null or _cast.live_ice <= 0.0 or not target.has_state(StatusEffects.Kind.CHILL):
 		return _parts
 	var parts := _parts.duplicate()
-	var total := 0.0
-	for part in _parts:
-		total += part
-	parts[DamageType.Kind.LIGHTNING] += total * _cast.live_ice * 0.01
+	parts[DamageType.Kind.LIGHTNING] += DamageType.total(_parts) * _cast.live_ice * 0.01
 	return parts
 
 
@@ -378,8 +374,7 @@ func _shatter(pierced := false) -> void:
 
 ## La Fracture (jalon 44) : sur un transi, un tirage.
 func _fractures(target: Hurtbox) -> bool:
-	return target.states != null and target.states.active(StatusEffects.Kind.CHILL) \
-			and Game.rng.randf() * 100.0 < _cast.fracture
+	return target.has_state(StatusEffects.Kind.CHILL) and Game.rng.randf() * 100.0 < _cast.fracture
 
 
 ## Les deux morceaux d'un éclat brisé, en V sur son cap. Différée et statique, comme les

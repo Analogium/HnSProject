@@ -74,13 +74,13 @@ func _ready() -> void:
 		material = ArtPalette.ADDITIVE
 
 
-## Ce qu'il reste de sa durée, entre 0 et 1 ; celle de ses charges s'il en porte ; **1
-## pour celui qui n'en a pas**, et qui brûle tant qu'on le paie.
 ## Les secondes qu'il lui reste ; zéro pour celui qui n'a pas de fin (le Brise-glace, jalon 44).
 func remaining() -> float:
 	return maxf(_lifetime - _age, 0.0) if _lifetime > 0.0 else 0.0
 
 
+## Ce qu'il reste de sa durée, entre 0 et 1 ; celle de ses charges s'il en porte ; **1
+## pour celui qui n'en a pas**, et qui brûle tant qu'on le paie.
 func remaining_ratio() -> float:
 	if stacks > 0:
 		return clampf(1.0 - _since_stack / _hold, 0.0, 1.0)

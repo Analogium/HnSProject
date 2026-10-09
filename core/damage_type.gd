@@ -66,6 +66,22 @@ static func empty_parts() -> Array[float]:
 	return parts
 
 
+## Une **copie** à ce facteur : la même part sert souvent aux cibles hors du bonus, et
+## seize gestes écrivaient la boucle, `duplicate()` à ne pas oublier.
+static func scaled(parts: Array[float], factor: float) -> Array[float]:
+	var out: Array[float] = parts.duplicate()
+	for i in out.size():
+		out[i] *= factor
+	return out
+
+
+static func total(parts: Array) -> float:
+	var sum := 0.0
+	for part in parts:
+		sum += float(part)
+	return sum
+
+
 ## À égalité, la première : des parts nulles restent physiques.
 static func dominant(parts: Array[float]) -> Kind:
 	var strongest := 0

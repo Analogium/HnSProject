@@ -14,15 +14,21 @@ const MIN_DAMAGE := 1.0
 
 @export var invulnerable: bool = false
 
-## La fiche de l'acteur, par référence. Null — le mannequin — encaisse tout brut.
+## La fiche de l'acteur, par référence. Null — le mannequin de l'arène, et ce que le joueur
+## dresse : poupée, brasier, morts-vivants — encaisse tout brut.
 var stats: CharacterStats
 
-## Ses états. Null — le mannequin — n'en prend aucun et ne tire rien.
+## Ses états. Null — ce que le joueur dresse — n'en prend aucun et ne tire rien.
 var states: StatusEffects
 
 
 ## Monte les nombres d'un corps plus haut que le guerrier (`SpriteForge.head_room()`).
 var feedback_lift := 0.0
+
+
+## Faux sans états : sept appelants écrivaient la garde à la main.
+func has_state(kind: int) -> bool:
+	return states != null and states.active(kind)
 
 
 ## D'où partent les nombres et les noms d'état de ce corps.
