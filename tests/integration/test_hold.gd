@@ -114,3 +114,19 @@ func test_a_click_taken_by_the_ui_casts_nothing() -> void:
 	Input.action_press(ACTION)
 	await wait_physics_frames(_cooldown_in_frames() + 2)
 	assert_eq(_frames.size(), 0, "le clic de l'interface ne part pas en jeu")
+
+
+## La souris passe sur un objet ou un panneau, touche tenue : la case se suspend, et
+## reprend sans nouvel appui quand la souris s'en va.
+func test_a_hover_pauses_the_held_key_without_disarming_it() -> void:
+	_press()
+	await wait_physics_frames(2)
+	assert_eq(_frames.size(), 1, "le premier tir")
+
+	Game.grab_ui_input(self, true)
+	await wait_physics_frames(_cooldown_in_frames() * 2 + 2)
+	assert_eq(_frames.size(), 1, "rien ne part sous la souris prise")
+
+	Game.grab_ui_input(self, false)
+	await wait_physics_frames(2)
+	assert_eq(_frames.size(), 2, "la touche toujours tenue reprend aussitôt")

@@ -239,7 +239,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed("flask_%d" % (i + 1)):
 			use_flask(i)
 	for i in SkillBar.SLOT_COUNT:
-		if event.is_action_pressed("skill_%d" % (i + 1)):
+		var action := "skill_%d" % (i + 1)
+		if event.is_action_pressed(action) and not _click_taken(action):
 			_held[i] = true
 
 
@@ -301,19 +302,22 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Sondage des cinq cases, sauf quand un panneau tient la souris ou qu'une étiquette
-	# de butin, un marchand ou un portail réclame le clic gauche. Tenue, la touche
-	# relance à chaque fin de recharge : la cadence est celle de `cast_slot()`.
+	# Sondage des cinq cases. Tenue, la touche relance à chaque fin de recharge : la
+	# cadence est celle de `cast_slot()`. Un survol qui réclame le clic **suspend** la
+	# case sans la désarmer : seul le relâchement désarme.
 	for i in SkillBar.SLOT_COUNT:
 		var action := "skill_%d" % (i + 1)
-		if Game.ui_grabs_input or GroundItem.takes_the_click(action) or Interactable.takes_the_click(action):
-			_held[i] = false
-			continue
 		if not Input.is_action_pressed(action):
 			_held[i] = false
-			continue
-		if _held[i]:
+		elif _held[i] and not _click_taken(action):
 			cast_slot(i)
+
+
+## Un panneau tient la souris, ou une étiquette de butin, un marchand ou un portail
+## réclame le clic gauche.
+func _click_taken(action: String) -> bool:
+	return Game.ui_grabs_input or GroundItem.takes_the_click(action) \
+			or Interactable.takes_the_click(action)
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
