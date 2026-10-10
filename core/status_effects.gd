@@ -33,7 +33,8 @@ signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 ## OVERHEAT : la Surchauffe de la Boule de feu (jalon 42), des charges que porte sa force.
-enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED, OVERHEAT }
+## BREACH : la Brèche de la Frappe lourde (jalon 46), sa force multiplie les coups d'arme.
+enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED, OVERHEAT, BREACH }
 
 ## La nature de chaque état : ce qu'il brûle, et sa couleur.
 const NATURES := [
@@ -47,6 +48,7 @@ const NATURES := [
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.FIRE,
+	DamageType.Kind.PHYSICAL,
 ]
 
 ## Ceux qu'un coup **tire** : **chaque nature en pose exactement un**, le physique
@@ -61,7 +63,7 @@ const TICKING := [Kind.DECAY, Kind.WILTING]
 ## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
 const IDS := [
 	"ignite", "numb", "chill", "rot", "blessing", "bleed", "decay", "wilting", "cursed",
-	"overheat",
+	"overheat", "breach",
 ]
 
 ## Ce qui précise des dégâts contre un état ; le terme se place avant : « dégâts accrus
@@ -77,12 +79,13 @@ const AGAINST := [
 	"contre les flétris",
 	"contre les maudits",
 	"contre les surchauffés",
+	"contre les fêlés",
 ]
 
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := [
 	"embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant", "décomposé", "flétri",
-	"maudit", "surchauffé",
+	"maudit", "surchauffé", "fêlé",
 ]
 
 ## Ce qui brûle, nommé par le compteur de DPS.
@@ -97,7 +100,7 @@ const BURN_NAMES := {
 ## une sorte à sa statistique — le porteur y écrit ses facteurs, la page du manuel y lit
 ## son libellé.
 const CHANCE_STATS := [
-	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "", "",
+	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "", "", "",
 ]
 ## Le libellé de la chance d'une sorte **sans statistique** : un lancer peut l'accroître
 ## (le Projectile élémentaire, jalon 28) et la page doit pouvoir le dire.
@@ -105,7 +108,7 @@ const UNWORN_CHANCES := {Kind.NUMB: "chance d'engourdir", Kind.BLEED: "chance de
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
-const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 3.0]
+const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 3.0, 3.0]
 
 ## Pour **chaque nature présente** dans le coup, quelle que soit sa part (jalon 34, à la
 ## PoE 1) : les mêmes dégâts physiques font saigner aussi souvent sur toutes les
@@ -149,6 +152,8 @@ const OWN_COLORS := {
 	Kind.CURSED: Color(0.58, 0.30, 0.62),
 	# Le blanc jaune de la chaleur : l'orange est déjà celui de l'embrasement.
 	Kind.OVERHEAT: Color(1.0, 0.88, 0.50),
+	# Le bronze d'une armure qui cède : le blanc du physique est celui des coups.
+	Kind.BREACH: Color(0.78, 0.58, 0.34),
 }
 
 ## Les pertes sans coup s'affichent par paquets : un chiffre par image en ferait
@@ -402,6 +407,17 @@ func extend(kind: int, seconds: float) -> void:
 	var state := _state(kind)
 	if state != null:
 		state.remaining = minf(state.remaining + seconds, DURATIONS[kind])
+
+
+## Ôte cet état et rend ce qu'il lui restait à brûler : la Saignée du Coup en croix (jalon 46).
+## Ce qu'il a déjà brûlé reste au compteur de DPS.
+func drain(kind: int) -> float:
+	var state := _state(kind)
+	if state == null:
+		return 0.0
+	var left := state.per_second * state.remaining
+	remove(kind)
+	return left
 
 
 ## Enlacé par un serpent sous l'Étau (jalon 42), ou relâché. Tenu, il ne bouge ni

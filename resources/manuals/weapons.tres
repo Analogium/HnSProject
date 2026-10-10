@@ -45,7 +45,7 @@ value_per_point = 12.0
 [sub_resource type="Resource" id="N_heavy_strike_momentum"]
 script = ExtResource("3_noeud")
 id = "heavy_strike_momentum"
-name = "Élan"
+name = "Fracas"
 description = "La frappe porte plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -156,11 +156,130 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_crater_0")])
 
+[sub_resource type="Resource" id="L_heavy_strike_sure_strike_0"]
+script = ExtResource("4_ligne")
+stat = "sure_strike"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_heavy_strike_sure_strike"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_sure_strike"
+name = "Coup sûr"
+description = "Une Frappe lourde sur {sur_tous} est critique à coup sûr, et son gel d'impact dure le double."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"heavy_strike_weight": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_sure_strike_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_maul_0"]
+script = ExtResource("4_ligne")
+stat = "maul"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_heavy_strike_maul"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_maul"
+name = "Coup de massue"
+description = "Le coup sûr frappe aussi tout ce qui se tient autour de sa cible, dans un cercle de {rayon_massue} px, à {part_massue} % du coup."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"heavy_strike_sure_strike": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_maul_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_breach_0"]
+script = ExtResource("4_ligne")
+stat = "breach"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_heavy_strike_breach"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_breach"
+name = "Brèche"
+description = "L'armure cède : chaque ennemi frappé est fêlé pendant {duree_fele} s, et tous vos coups d'arme le frappent plus fort."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"heavy_strike_momentum": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_breach_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_collision_0"]
+script = ExtResource("4_ligne")
+stat = "collision"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_heavy_strike_collision"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_collision"
+name = "Collision"
+description = "Un ennemi repoussé par la frappe qui en heurte un autre, droit devant lui, les blesse tous les deux d'une part du coup."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"heavy_strike_ram": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_collision_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_skittles_0"]
+script = ExtResource("4_ligne")
+stat = "skittles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_heavy_strike_skittles"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_skittles"
+name = "Quilles"
+description = "L'ennemi heurté par une Collision est repoussé à son tour, et peut en heurter un troisième."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"heavy_strike_collision": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_skittles_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_tremor_0"]
+script = ExtResource("4_ligne")
+stat = "tremor"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_heavy_strike_tremor"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_tremor"
+name = "Tremblement"
+description = "Le Brise-sol frappe un second anneau, au double de son rayon, {ecart_tremblement} s après le premier."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"heavy_strike_shatter": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_tremor_0")])
+
+[sub_resource type="Resource" id="L_heavy_strike_red_iron_0"]
+script = ExtResource("4_ligne")
+stat = "red_iron"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_heavy_strike_red_iron"]
+script = ExtResource("3_noeud")
+id = "heavy_strike_red_iron"
+name = "Fer rouge"
+description = "La Lame ardente rend du temps à l'embrasement de l'ennemi qu'elle frappe, jusqu'à sa pleine durée."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"heavy_strike_burning_blade": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_red_iron_0")])
+
 [sub_resource type="Resource" id="C_frappe_lourde"]
 script = ExtResource("2_case")
 skill = ExtResource("10_frappe_lourde")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_heavy_strike_momentum"), SubResource("N_heavy_strike_weight"), SubResource("N_heavy_strike_ram"), SubResource("N_heavy_strike_fury"), SubResource("N_heavy_strike_burning_blade"), SubResource("N_heavy_strike_shatter"), SubResource("N_heavy_strike_crater")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_heavy_strike_momentum"), SubResource("N_heavy_strike_weight"), SubResource("N_heavy_strike_ram"), SubResource("N_heavy_strike_fury"), SubResource("N_heavy_strike_burning_blade"), SubResource("N_heavy_strike_shatter"), SubResource("N_heavy_strike_crater"), SubResource("N_heavy_strike_sure_strike"), SubResource("N_heavy_strike_maul"), SubResource("N_heavy_strike_breach"), SubResource("N_heavy_strike_collision"), SubResource("N_heavy_strike_skittles"), SubResource("N_heavy_strike_tremor"), SubResource("N_heavy_strike_red_iron")])
 
 [sub_resource type="Resource" id="L_cross_slash_edge_0"]
 script = ExtResource("4_ligne")
@@ -276,11 +395,147 @@ lines = Array[ExtResource("4_ligne")]([])
 converts_to = 5
 converts = true
 
+[sub_resource type="Resource" id="L_cross_slash_laceration_0"]
+script = ExtResource("4_ligne")
+stat = "laceration"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cross_slash_laceration"]
+script = ExtResource("3_noeud")
+id = "cross_slash_laceration"
+name = "Lacération"
+description = "Chaque coup sur un ennemi qui saigne rend du temps à son saignement, jusqu'à sa pleine durée."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"cross_slash_gash": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_laceration_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_riposte_0"]
+script = ExtResource("4_ligne")
+stat = "riposte"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_cross_slash_riposte"]
+script = ExtResource("3_noeud")
+id = "cross_slash_riposte"
+name = "Riposte"
+description = "Un coup reçu arme la riposte : le Coup en croix lancé dans les {fenetre_riposte} s qui suivent frappe plus fort."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"cross_slash_edge": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_riposte_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_tierce_0"]
+script = ExtResource("4_ligne")
+stat = "tierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cross_slash_tierce"]
+script = ExtResource("3_noeud")
+id = "cross_slash_tierce"
+name = "Tierce"
+description = "La croix a un troisième temps : un estoc droit devant, qui frappe l'ennemi le plus proche sur sa ligne, à {part_tierce} % du coup."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"cross_slash_thrust": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_tierce_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_quarte_0"]
+script = ExtResource("4_ligne")
+stat = "quarte"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cross_slash_quarte"]
+script = ExtResource("3_noeud")
+id = "cross_slash_quarte"
+name = "Quarte"
+description = "L'estoc de la Tierce traverse : il frappe tout ce qui se tient sur sa ligne, {allonge_quarte} px plus loin."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"cross_slash_tierce": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_quarte_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_bloodletting_0"]
+script = ExtResource("4_ligne")
+stat = "bloodletting"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_cross_slash_bloodletting"]
+script = ExtResource("3_noeud")
+id = "cross_slash_bloodletting"
+name = "Saignée"
+description = "Le second coup vide le saignement de ce qu'il frappe : tout ce qui restait à saigner tombe d'un coup, plus fort."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"cross_slash_haemorrhage": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_bloodletting_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_transfusion_0"]
+script = ExtResource("4_ligne")
+stat = "transfusion"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_cross_slash_transfusion"]
+script = ExtResource("3_noeud")
+id = "cross_slash_transfusion"
+name = "Transfusion"
+description = "Ce que vide la Saignée vous rend une part de ses dégâts en PV."
+position = Vector2i(2, -2)
+parents = Dictionary[String, int]({
+"cross_slash_bloodletting": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_transfusion_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_splash_0"]
+script = ExtResource("4_ligne")
+stat = "powder_keg"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cross_slash_splash"]
+script = ExtResource("3_noeud")
+id = "cross_slash_splash"
+name = "Éclaboussure"
+description = "Ce que touche la Gerbe de sang saigne à coup sûr."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"cross_slash_blood_spray": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_splash_0")])
+
+[sub_resource type="Resource" id="L_cross_slash_ordeal_0"]
+script = ExtResource("4_ligne")
+stat = "ordeal"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cross_slash_ordeal"]
+script = ExtResource("3_noeud")
+id = "cross_slash_ordeal"
+name = "Ordalie"
+description = "Sous la Lame sainte, le second coup bénit à coup sûr ce qu'il frappe."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"cross_slash_holy_blade": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_ordeal_0")])
+
 [sub_resource type="Resource" id="C_coup_en_croix"]
 script = ExtResource("2_case")
 skill = ExtResource("11_coup_en_croix")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_cross_slash_edge"), SubResource("N_cross_slash_gash"), SubResource("N_cross_slash_thrust"), SubResource("N_cross_slash_open_wound"), SubResource("N_cross_slash_haemorrhage"), SubResource("N_cross_slash_blood_spray"), SubResource("N_cross_slash_holy_blade")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_cross_slash_edge"), SubResource("N_cross_slash_gash"), SubResource("N_cross_slash_thrust"), SubResource("N_cross_slash_open_wound"), SubResource("N_cross_slash_haemorrhage"), SubResource("N_cross_slash_blood_spray"), SubResource("N_cross_slash_holy_blade"), SubResource("N_cross_slash_laceration"), SubResource("N_cross_slash_riposte"), SubResource("N_cross_slash_tierce"), SubResource("N_cross_slash_quarte"), SubResource("N_cross_slash_bloodletting"), SubResource("N_cross_slash_transfusion"), SubResource("N_cross_slash_splash"), SubResource("N_cross_slash_ordeal")])
 
 [sub_resource type="Resource" id="L_spiral_sword_sharpness_0"]
 script = ExtResource("4_ligne")
@@ -403,11 +658,127 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_arsenal_0")])
 
+[sub_resource type="Resource" id="L_spiral_sword_waltz_0"]
+script = ExtResource("4_ligne")
+stat = "waltz"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_spiral_sword_waltz"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_waltz"
+name = "Valse"
+description = "Les épées tournent plus vite : elles croisent plus d'ennemis."
+position = Vector2i(-1, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_waltz_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_honing_0"]
+script = ExtResource("4_ligne")
+stat = "honing"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_spiral_sword_honing"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_honing"
+name = "Affûtage"
+description = "Chaque ennemi qu'une épée coupe l'affûte : ses coups suivants portent plus fort, jusqu'à {affutage_max} fois, tant qu'elle tourne."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"spiral_sword_sharpness": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_honing_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_parry_0"]
+script = ExtResource("4_ligne")
+stat = "parry"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_spiral_sword_parry"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_parry"
+name = "Parade"
+description = "Une épée qui croise un trait ennemi le brise, puis attend {attente_parade} s, divisées par les points du nœud."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"spiral_sword_wide": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_parry_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_breakwater_0"]
+script = ExtResource("4_ligne")
+stat = "breakwater"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_spiral_sword_breakwater"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_breakwater"
+name = "Brise-lames"
+description = "Un coup qui devrait vous toucher brise une épée de la ronde à sa place, et ne fait rien. Une fois toutes les {attente_brise_lames} s."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"spiral_sword_ward": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_breakwater_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_grapeshot_0"]
+script = ExtResource("4_ligne")
+stat = "grapeshot"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_spiral_sword_grapeshot"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_grapeshot"
+name = "Grenaille"
+description = "L'épée brisée par le Brise-lames éclate autour de vous, dans un cercle de {rayon_grenaille} px."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"spiral_sword_breakwater": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_grapeshot_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_escort_0"]
+script = ExtResource("4_ligne")
+stat = "escort"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_spiral_sword_escort"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_escort"
+name = "Escorte"
+description = "Chaque Frappe lourde ou Coup en croix qui touche envoie une épée de la ronde frapper sa cible, à une part de son coup."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"spiral_sword_round": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_escort_0")])
+
+[sub_resource type="Resource" id="L_spiral_sword_rally_0"]
+script = ExtResource("4_ligne")
+stat = "rally"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_spiral_sword_rally"]
+script = ExtResource("3_noeud")
+id = "spiral_sword_rally"
+name = "Ralliement"
+description = "Les épées de la Volée reviennent au bout de leur course tourner {vie_ralliement} s autour de vous, dans la limite de la ronde."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"spiral_sword_volley": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spiral_sword_rally_0")])
+
 [sub_resource type="Resource" id="C_epee_spirale"]
 script = ExtResource("2_case")
 skill = ExtResource("12_epee_spirale")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_spiral_sword_sharpness"), SubResource("N_spiral_sword_round"), SubResource("N_spiral_sword_endurance"), SubResource("N_spiral_sword_ward"), SubResource("N_spiral_sword_wide"), SubResource("N_spiral_sword_volley"), SubResource("N_spiral_sword_arsenal")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_spiral_sword_sharpness"), SubResource("N_spiral_sword_round"), SubResource("N_spiral_sword_endurance"), SubResource("N_spiral_sword_ward"), SubResource("N_spiral_sword_wide"), SubResource("N_spiral_sword_volley"), SubResource("N_spiral_sword_arsenal"), SubResource("N_spiral_sword_waltz"), SubResource("N_spiral_sword_honing"), SubResource("N_spiral_sword_parry"), SubResource("N_spiral_sword_breakwater"), SubResource("N_spiral_sword_grapeshot"), SubResource("N_spiral_sword_escort"), SubResource("N_spiral_sword_rally")])
 
 [sub_resource type="Resource" id="L_wave_slash_edge_0"]
 script = ExtResource("4_ligne")
@@ -511,11 +882,129 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_backwash_0")])
 transforms = true
 shape = 37
 
+[sub_resource type="Resource" id="L_wave_slash_restraint_0"]
+script = ExtResource("4_ligne")
+stat = "mana_cost"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_wave_slash_restraint"]
+script = ExtResource("3_noeud")
+id = "wave_slash_restraint"
+name = "Retenue"
+description = "La vague coûte moins de mana."
+position = Vector2i(-1, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_restraint_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_billow_0"]
+script = ExtResource("4_ligne")
+stat = "billow"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_wave_slash_billow"]
+script = ExtResource("3_noeud")
+id = "wave_slash_billow"
+name = "Houle"
+description = "La vague grossit en volant : au bout de sa course, elle est plus large et frappe plus fort."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"wave_slash_breadth": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_billow_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_prow_0"]
+script = ExtResource("4_ligne")
+stat = "prow"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_wave_slash_prow"]
+script = ExtResource("3_noeud")
+id = "wave_slash_prow"
+name = "Proue"
+description = "Le premier ennemi que mord la vague prend davantage."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"wave_slash_edge": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_prow_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_undertow_0"]
+script = ExtResource("4_ligne")
+stat = "undertow"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_wave_slash_undertow"]
+script = ExtResource("3_noeud")
+id = "wave_slash_undertow"
+name = "Lame de fond"
+description = "La vague emporte ce qu'elle mord : les ennemis sont traînés avec elle jusqu'au bout de sa course."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"wave_slash_reach": 2,
+"wave_slash_billow": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_undertow_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_breakers_0"]
+script = ExtResource("4_ligne")
+stat = "breakers"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_wave_slash_breakers"]
+script = ExtResource("3_noeud")
+id = "wave_slash_breakers"
+name = "Brisants"
+description = "Au bout de sa course, la Lame de fond jette ce qu'elle emporte : chacun prend une part du coup."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"wave_slash_undertow": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_breakers_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_to_and_fro_0"]
+script = ExtResource("4_ligne")
+stat = "to_and_fro"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_wave_slash_to_and_fro"]
+script = ExtResource("3_noeud")
+id = "wave_slash_to_and_fro"
+name = "Va-et-vient"
+description = "Revenue à vous, la vague du Ressac repart une troisième fois vers la visée, à {part_va_et_vient} % du coup."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"wave_slash_backwash": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_to_and_fro_0")])
+
+[sub_resource type="Resource" id="L_wave_slash_harrow_0"]
+script = ExtResource("4_ligne")
+stat = "harrow"
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="N_wave_slash_harrow"]
+script = ExtResource("3_noeud")
+id = "wave_slash_harrow"
+name = "Herse"
+description = "Ce qui se tient dans le Sillon d'acier saigne plus souvent."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"wave_slash_furrow": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_wave_slash_harrow_0")])
+
 [sub_resource type="Resource" id="C_vague"]
 script = ExtResource("2_case")
 skill = ExtResource("13_vague")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_wave_slash_edge"), SubResource("N_wave_slash_reach"), SubResource("N_wave_slash_breadth"), SubResource("N_wave_slash_twins"), SubResource("N_wave_slash_furrow"), SubResource("N_wave_slash_backwash")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_wave_slash_edge"), SubResource("N_wave_slash_reach"), SubResource("N_wave_slash_breadth"), SubResource("N_wave_slash_twins"), SubResource("N_wave_slash_furrow"), SubResource("N_wave_slash_backwash"), SubResource("N_wave_slash_restraint"), SubResource("N_wave_slash_billow"), SubResource("N_wave_slash_prow"), SubResource("N_wave_slash_undertow"), SubResource("N_wave_slash_breakers"), SubResource("N_wave_slash_to_and_fro"), SubResource("N_wave_slash_harrow")])
 
 [sub_resource type="Resource" id="L_cyclone_reaping_0"]
 script = ExtResource("4_ligne")
@@ -616,11 +1105,154 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_hungry_0")])
 
+[sub_resource type="Resource" id="L_cyclone_steadfast_0"]
+script = ExtResource("4_ligne")
+stat = "damage_taken"
+value_per_point = -5.0
+
+[sub_resource type="Resource" id="L_cyclone_steadfast_1"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_cyclone_steadfast"]
+script = ExtResource("3_noeud")
+id = "cyclone_steadfast"
+name = "Pied ferme"
+description = "Tant que le tour tourne, vous subissez moins de dégâts, mais avancez moins vite."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"cyclone_long_breath": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_steadfast_0"), SubResource("L_cyclone_steadfast_1")])
+
+[sub_resource type="Resource" id="L_cyclone_vertigo_0"]
+script = ExtResource("4_ligne")
+stat = "vertigo"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_cyclone_vertigo"]
+script = ExtResource("3_noeud")
+id = "cyclone_vertigo"
+name = "Vertige"
+description = "Le tour s'emballe : chaque seconde tournée rapproche ses frappes, {vertige_max} s au plus."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"cyclone_whirl": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_vertigo_0")])
+
+[sub_resource type="Resource" id="L_cyclone_dervishes_0"]
+script = ExtResource("4_ligne")
+stat = "dervishes"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cyclone_dervishes"]
+script = ExtResource("3_noeud")
+id = "cyclone_dervishes"
+name = "Derviches"
+description = "Toutes les {rythme_derviche} s, le tour lâche un petit derviche qui file droit devant vous et fauche ce qu'il croise, à {part_derviche} % du coup."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"cyclone_span": 2,
+"cyclone_reaping": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_dervishes_0")])
+
+[sub_resource type="Resource" id="L_cyclone_sirocco_0"]
+script = ExtResource("4_ligne")
+stat = "sirocco"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cyclone_sirocco"]
+script = ExtResource("3_noeud")
+id = "cyclone_sirocco"
+name = "Sirocco"
+description = "Un derviche de plus par point, en éventail."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"cyclone_dervishes": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_sirocco_0")])
+
+[sub_resource type="Resource" id="L_cyclone_waterspout_0"]
+script = ExtResource("4_ligne")
+stat = "waterspout"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cyclone_waterspout"]
+script = ExtResource("3_noeud")
+id = "cyclone_waterspout"
+name = "Trombe"
+description = "Les derviches s'incurvent vers l'ennemi le plus proche."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"cyclone_dervishes": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_waterspout_0")])
+
+[sub_resource type="Resource" id="L_cyclone_denouement_0"]
+script = ExtResource("4_ligne")
+stat = "denouement"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_cyclone_denouement"]
+script = ExtResource("3_noeud")
+id = "cyclone_denouement"
+name = "Dénouement"
+description = "Relâché, le tour frappe une dernière fois son cercle, d'autant plus fort qu'il a tourné longtemps : {denouement_max} s au plus."
+position = Vector2i(0, 1)
+parents = Dictionary[String, int]({
+"cyclone_reaping": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_denouement_0")])
+
+[sub_resource type="Resource" id="L_cyclone_gust_0"]
+script = ExtResource("4_ligne")
+stat = "gust"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cyclone_gust"]
+script = ExtResource("3_noeud")
+id = "cyclone_gust"
+name = "Coup de vent"
+description = "La dernière frappe du Dénouement repousse loin tout ce qu'elle touche."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"cyclone_denouement": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_gust_0")])
+
+[sub_resource type="Resource" id="L_cyclone_mad_round_0"]
+script = ExtResource("4_ligne")
+stat = "mad_round"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_cyclone_mad_round"]
+script = ExtResource("3_noeud")
+id = "cyclone_mad_round"
+name = "Ronde folle"
+description = "Tant que le Cyclone tourne, les épées de l'Épée spirale tournent deux fois plus vite et frappent plus fort."
+position = Vector2i(-1, -2)
+parents = Dictionary[String, int]({
+"cyclone_whirl": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cyclone_mad_round_0")])
+
 [sub_resource type="Resource" id="C_cyclone"]
 script = ExtResource("2_case")
 skill = ExtResource("14_cyclone")
 position = Vector2i(1, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_cyclone_reaping"), SubResource("N_cyclone_span"), SubResource("N_cyclone_long_breath"), SubResource("N_cyclone_whirl"), SubResource("N_cyclone_vortex"), SubResource("N_cyclone_hungry")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_cyclone_reaping"), SubResource("N_cyclone_span"), SubResource("N_cyclone_long_breath"), SubResource("N_cyclone_whirl"), SubResource("N_cyclone_vortex"), SubResource("N_cyclone_hungry"), SubResource("N_cyclone_steadfast"), SubResource("N_cyclone_vertigo"), SubResource("N_cyclone_dervishes"), SubResource("N_cyclone_sirocco"), SubResource("N_cyclone_waterspout"), SubResource("N_cyclone_denouement"), SubResource("N_cyclone_gust"), SubResource("N_cyclone_mad_round")])
 
 [sub_resource type="Resource" id="L_slicing_dash_edge_0"]
 script = ExtResource("4_ligne")
@@ -756,11 +1388,127 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_war_leap_0"),
 transforms = true
 shape = 26
 
+[sub_resource type="Resource" id="L_slicing_dash_vault_0"]
+script = ExtResource("4_ligne")
+stat = "vault"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_slicing_dash_vault"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_vault"
+name = "Voltige"
+description = "À l'arrivée de la ruée, aucun coup ne vous touche pendant {voltige} s."
+position = Vector2i(0, -1)
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_vault_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_hamstring_0"]
+script = ExtResource("4_ligne")
+stat = "hamstring"
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="N_slicing_dash_hamstring"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_hamstring"
+name = "Coupe-jarret"
+description = "La ruée fait saigner plus souvent, son couloir comme son choc d'arrivée."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"slicing_dash_edge": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_hamstring_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_relaunch_0"]
+script = ExtResource("4_ligne")
+stat = "relaunch"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_slicing_dash_relaunch"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_relaunch"
+name = "Relance"
+description = "Un ennemi tué par la ruée la recharge sur-le-champ."
+position = Vector2i(-1, -2)
+parents = Dictionary[String, int]({
+"slicing_dash_charge": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_relaunch_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_hallali_0"]
+script = ExtResource("4_ligne")
+stat = "hallali"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_slicing_dash_hallali"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_hallali"
+name = "Hallali"
+description = "Chaque Relance d'affilée fait frapper la ruée suivante plus fort, {hallali_max} fois au plus ; une ruée sans tué remet le compte à zéro."
+position = Vector2i(-2, -2)
+parents = Dictionary[String, int]({
+"slicing_dash_relaunch": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_hallali_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_breakthrough_0"]
+script = ExtResource("4_ligne")
+stat = "breakthrough"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_slicing_dash_breakthrough"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_breakthrough"
+name = "Trouée"
+description = "Chaque ennemi traversé par la ruée renforce le Choc d'arrivée."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"slicing_dash_impact": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_breakthrough_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_fallout_0"]
+script = ExtResource("4_ligne")
+stat = "fallout"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_slicing_dash_fallout"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_fallout"
+name = "Retombée"
+description = "La réception du Saut de guerre assomme ce qu'elle frappe : ni marche ni attaque pendant {assomme} s, la moitié pour une élite."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"slicing_dash_war_leap": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_fallout_0")])
+
+[sub_resource type="Resource" id="L_slicing_dash_chasse_0"]
+script = ExtResource("4_ligne")
+stat = "chasse"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_slicing_dash_chasse"]
+script = ExtResource("3_noeud")
+id = "slicing_dash_chasse"
+name = "Pas chassé"
+description = "Une ruée lancée moins de {fenetre_chasse} s après la précédente frappe plus fort, {chasse_max} fois d'affilée au plus."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"slicing_dash_flow": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_slicing_dash_chasse_0")])
+
 [sub_resource type="Resource" id="C_ruee"]
 script = ExtResource("2_case")
 skill = ExtResource("15_ruee")
 position = Vector2i(2, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_slicing_dash_edge"), SubResource("N_slicing_dash_swath"), SubResource("N_slicing_dash_charge"), SubResource("N_slicing_dash_lingering"), SubResource("N_slicing_dash_impact"), SubResource("N_slicing_dash_flow"), SubResource("N_slicing_dash_war_leap")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_slicing_dash_edge"), SubResource("N_slicing_dash_swath"), SubResource("N_slicing_dash_charge"), SubResource("N_slicing_dash_lingering"), SubResource("N_slicing_dash_impact"), SubResource("N_slicing_dash_flow"), SubResource("N_slicing_dash_war_leap"), SubResource("N_slicing_dash_vault"), SubResource("N_slicing_dash_hamstring"), SubResource("N_slicing_dash_relaunch"), SubResource("N_slicing_dash_hallali"), SubResource("N_slicing_dash_breakthrough"), SubResource("N_slicing_dash_fallout"), SubResource("N_slicing_dash_chasse")])
 
 [resource]
 script = ExtResource("1_arch")

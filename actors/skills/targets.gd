@@ -16,6 +16,8 @@ const DECOR := 1
 ## Au-delà, la requête tronque en silence. Soixante-quatre hurtbox dans un rayon de
 ## cinquante pixels est un paquet que le jeu ne produit pas.
 const MAXIMUM := 64
+## Le calque des traits ennemis (`enemy_bolt.tscn`), que la Parade brise (jalon 46).
+const ENEMY_BOLTS := 1 << 6
 
 
 ## Les hurtbox qui touchent ce cercle, ennemies sauf `mask` contraire.
@@ -70,22 +72,38 @@ static func in_capsule(
 	)
 
 
+## Les traits ennemis qui touchent ce cercle : la Parade de l'Épée spirale (jalon 46).
+static func bolts_in_circle(world: World2D, center: Vector2, radius: float) -> Array[Projectile]:
+	var out: Array[Projectile] = []
+	var circle := CircleShape2D.new()
+	circle.radius = radius
+	for result in _query(world, circle, Transform2D(0.0, center), ENEMY_BOLTS):
+		var bolt := result["collider"] as Projectile
+		if bolt != null:
+			out.append(bolt)
+	return out
+
+
 ## La requête elle-même, partagée : deux copies auraient fini par viser deux calques.
 static func _touched(
 	world: World2D, shape: Shape2D, at: Transform2D, mask := ENEMIES
 ) -> Array[Hurtbox]:
 	var out: Array[Hurtbox] = []
+	for result in _query(world, shape, at, mask):
+		var hurtbox := result["collider"] as Hurtbox
+		if hurtbox != null:
+			out.append(hurtbox)
+	return out
+
+
+static func _query(world: World2D, shape: Shape2D, at: Transform2D, mask: int) -> Array[Dictionary]:
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
 	query.transform = at
 	query.collision_mask = mask
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
-	for result in world.direct_space_state.intersect_shape(query, MAXIMUM):
-		var hurtbox := result["collider"] as Hurtbox
-		if hurtbox != null:
-			out.append(hurtbox)
-	return out
+	return world.direct_space_state.intersect_shape(query, MAXIMUM)
 
 
 ## Aucun mur entre les deux points : une décharge qui traverse la pierre se lit

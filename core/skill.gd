@@ -154,7 +154,6 @@ const TRANSFORMABLE: Array[Shape] = [
 ## pas de traînée.
 const IGNORED_BY_SHAPE := {
 	Shape.METEOR: [SkillStats.PIERCE, SkillStats.SWELL, SkillStats.CONVERGE],
-	Shape.LEAP: ["duration", "radius", SkillStats.WICK],
 	Shape.ORB: [
 		SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION,
 		SkillStats.CAROMS, SkillStats.LIGHTNING_ROD, SkillStats.ROD_HEIR, SkillStats.STORM_TARGET,
@@ -178,6 +177,12 @@ const IGNORED_BY_SHAPE := {
 	# Les trois comètes ne sont pas des tirs : elles naissent autour du lanceur et se
 	# rejoignent au point visé.
 	Shape.TRIAD: ["projectiles", "projectile_speed", SkillStats.BOUNCES],
+	# Le Brise-sol frappe déjà tout le cercle de l'impact : la massue n'y ajouterait rien.
+	Shape.SLAM: [SkillStats.MAUL],
+	# Une vague qui rapporte ce qu'elle emporte le rendrait au lanceur (jalon 46).
+	Shape.BOOMERANG: [SkillStats.UNDERTOW, SkillStats.BREAKERS],
+	# Le bond n'a pas de couloir à faire saigner.
+	Shape.LEAP: ["duration", "radius", SkillStats.WICK, SkillStats.HAMSTRING],
 }
 
 ## Ce qu'une mécanique rend sans effet dans son arbre, comme une transformation (jalon 44) :

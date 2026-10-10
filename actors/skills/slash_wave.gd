@@ -37,6 +37,13 @@ var _bitten: Targets.Contacts
 var _caster: Node2D
 var _start := Vector2.ZERO
 var _returning := false
+## Jalon 46. La Proue : le premier mordu est-il passé. La Lame de fond : ce qu'elle emporte.
+## Le Va-et-vient : le cap de l'aller, et le troisième passage en cours.
+var _prow_taken := false
+## Sans type : un emporté peut mourir en route, et un mort ne passe pas un typage (invariant 4).
+var _carried := []
+var _heading := Vector2.RIGHT
+var _third := false
 
 
 static func send(
@@ -49,6 +56,7 @@ static func send(
 	wave._caster = caster
 	wave._parts = cast.roll(Game.rng)
 	wave._toward = toward.normalized()
+	wave._heading = wave._toward
 	wave._tint = DamageType.COLORS[cast.nature]
 	wave._bitten = Targets.Contacts.new(cast.duration)
 	parent.add_child(wave)
@@ -71,11 +79,22 @@ func _physics_process(delta: float) -> void:
 	var home := _returning and is_instance_valid(_caster)
 	if home:
 		_toward = global_position.direction_to(_caster.global_position)
-	position += _toward * _cast.projectile_speed * delta
+	var step := _toward * _cast.projectile_speed * delta
+	position += step
 	_bitten.advance(delta)
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+	_carry(step)
+	var grown := _grown()
+	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius * grown):
 		if _bitten.accepts(target):
-			Targets.strike(target, _parts, global_position, _author, _cast)
+			var factor := grown
+			# La Proue (jalon 46) : le premier qu'elle mord prend davantage.
+			if _cast.prow > 0.0 and not _prow_taken:
+				_prow_taken = true
+				factor *= 1.0 + _cast.prow * 0.01
+			Targets.strike(target, DamageType.scaled(_parts, factor), global_position, _author, _cast)
+			var body := target.get_parent() as Enemy
+			if _cast.undertow > 0.0 and body != null and not _carried.has(body):
+				_carried.append(body)
 	queue_redraw()
 	var arrived := home and global_position.distance_to(_caster.global_position) < _cast.radius
 	if _age >= _cast.duration or arrived:
@@ -87,13 +106,51 @@ func _physics_process(delta: float) -> void:
 func _end_of_run() -> void:
 	if _cast.ground_duration > 0.0:
 		DashTrail.leave(get_parent(), _start, global_position, _cast.ground(), _author, true)
-	if _returning or _cast.shape != Skill.Shape.BOOMERANG:
+	_throw_carried()
+	if _cast.shape != Skill.Shape.BOOMERANG or _third:
 		queue_free()
 		return
-	_returning = true
+	if _returning:
+		# Le Va-et-vient (jalon 46) : revenue, elle repart vers la visée, plus faible.
+		if _cast.to_and_fro <= 0.0:
+			queue_free()
+			return
+		_third = true
+		_returning = false
+		_toward = _heading
+		_parts = DamageType.scaled(_parts, SkillStats.TO_AND_FRO_PART)
+	else:
+		_returning = true
 	_age = 0.0
 	_start = global_position
 	_bitten = Targets.Contacts.new(_cast.duration)
+
+
+## La Houle (jalon 46) : le rayon et les dégâts grandissent au fil de la course, de un au
+## bout. Un seul calcul, que la frappe et le dessin lisent.
+func _grown() -> float:
+	return 1.0 + _cast.billow * 0.01 * clampf(_age / _cast.duration, 0.0, 1.0)
+
+
+## La Lame de fond (jalon 46) : ce qu'elle a mordu avance avec elle, murs compris.
+func _carry(step: Vector2) -> void:
+	if _carried.is_empty():
+		return
+	_carried = _carried.filter(
+		func(e: Variant) -> bool: return is_instance_valid(e) and not (e as Enemy).is_dead
+	)
+	for body: Variant in _carried:
+		(body as Enemy).move_and_collide(step)
+
+
+## Au bout de la course, les Brisants jettent ce qu'elle emporte : un coup de plus à chacun.
+func _throw_carried() -> void:
+	if _cast.breakers > 0.0:
+		var parts := DamageType.scaled(_parts, _cast.breakers * 0.01)
+		for body: Variant in _carried:
+			if is_instance_valid(body) and not (body as Enemy).is_dead:
+				Targets.strike((body as Enemy).hurtbox, parts, global_position, _author, _cast)
+	_carried.clear()
 
 
 ## Un croissant ouvert vers l'avant, le fil blanc devant : l'arc du geste, détaché
@@ -101,10 +158,12 @@ func _end_of_run() -> void:
 ## Ressac ne se dissout pas.
 func _draw() -> void:
 	var fade := clampf((_cast.duration - _age) / (_cast.duration * FADE), 0.0, 1.0)
-	if _cast.shape == Skill.Shape.BOOMERANG and not _returning:
+	if _cast.shape == Skill.Shape.BOOMERANG and not _returning and not _third:
 		fade = 1.0
 	var gone := floorf((1.0 - fade) * 4.0) / 4.0
 	var turn := Slash.turn_of(_toward.angle())
+	# Par pas de deux pixels : chaque taille est fabriquée une fois et gardée.
+	var radius := floorf(_cast.radius * _grown() * 0.5) * 2.0
 	Slash.crescent(
-		_tint, _cast.radius, THICKNESS, turn, -SPAN * 0.5, SPAN * 0.5, gone, false
-	).put(self, -Vector2.from_angle(Slash.angle_of(turn)) * _cast.radius * 0.5)
+		_tint, radius, THICKNESS, turn, -SPAN * 0.5, SPAN * 0.5, gone, false
+	).put(self, -Vector2.from_angle(Slash.angle_of(turn)) * radius * 0.5)

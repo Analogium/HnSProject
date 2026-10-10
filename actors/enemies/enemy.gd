@@ -33,6 +33,13 @@ var is_aggro := false
 var manager: EnemyManager
 ## Ses états, neufs pour chaque ennemi.
 var states := StatusEffects.new()
+## La Collision (jalon 46) : repoussé par ce lancer, il blesse le premier qu'il heurte dans
+## le sens du recul, tant que dure la fenêtre. `_skittle` : le recul que les Quilles passent.
+var _shove: SkillStats
+var _shove_author: StatusEffects
+var _shove_toward := Vector2.ZERO
+var _shove_left := 0.0
+var _skittle := 0.0
 
 
 func _ready() -> void:
@@ -312,6 +319,48 @@ func _on_damaged(info: DamageInfo) -> void:
 		die()
 	elif states.doomed(health / stats.max_health):
 		_execute()
+
+
+## Armé par un coup qui repousse sous la Collision : `hit` est le coup de la collision.
+func shove(hit: SkillStats, author: StatusEffects, toward: Vector2, skittle := 0.0) -> void:
+	_shove = hit
+	_shove_author = author
+	_shove_toward = toward
+	_shove_left = SkillStats.COLLISION_WINDOW
+	_skittle = skittle
+
+
+## Assommé (la Retombée, jalon 46) : tenu comme sous l'Étau, ni marche ni attaque. Une élite
+## l'est deux fois moins longtemps.
+func stun(seconds: float) -> void:
+	states.hold(true)
+	var held := seconds * (0.5 if not affixes.is_empty() else 1.0)
+	get_tree().create_timer(held, false).timeout.connect(states.hold.bind(false))
+	StunMark.over(self, held)
+
+
+func shoved() -> bool:
+	return _shove_left > 0.0
+
+
+## Par l'EnemyManager, après le tick : `move_and_slide()` vient de dire qui il a heurté. Un
+## voisin qu'il touchait déjà ne compte que s'il est devant lui, dans le sens du recul.
+func collide(delta: float) -> void:
+	_shove_left -= delta
+	for i in get_slide_collision_count():
+		var hit := get_slide_collision(i)
+		var other := hit.get_collider() as Enemy
+		if other == null or other.is_dead or hit.get_normal().dot(_shove_toward) > -0.5:
+			continue
+		var cast := _shove
+		_shove_left = 0.0
+		var parts := cast.roll(Game.rng)
+		Targets.strike(other.hurtbox, parts, global_position, _shove_author, cast, _skittle)
+		Targets.strike(hurtbox, parts, other.global_position, _shove_author, cast)
+		# Les Quilles : le heurté part à son tour et peut en heurter un troisième, sans le pousser.
+		if _skittle > 0.0 and not other.is_dead:
+			other.shove(cast, _shove_author, _shove_toward)
+		return
 
 
 ## Les Ronces (jalon 45) : ses propres coups le blessent. Sans auteur : personne ne l'a tué.

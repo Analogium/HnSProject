@@ -111,14 +111,15 @@ static func sheet_of(archetype: String) -> Sheet:
 ## textes du joueur, calés sur la tête du guerrier, montent d'autant. Lu sur l'image
 ## de repos elle-même, pour suivre un chapeau qu'aucun repère ne décrit.
 static func head_room(archetype: String) -> float:
-	return maxf(_top("player") - _top(archetype), 0.0)
+	return maxf(top("player") - top(archetype), 0.0)
 
 
 static var _tops: Dictionary = {}
 
 
-## La première rangée opaque de l'image de repos, repère du nœud (offset compris).
-static func _top(archetype: String) -> float:
+## La première rangée opaque de l'image de repos, repère du nœud (offset compris) : le haut
+## de la tête, où tournent les étoiles d'un assommé (jalon 46).
+static func top(archetype: String) -> float:
 	if not _tops.has(archetype):
 		var img := frame_image(config(archetype, 0), "down", "idle", 0)
 		var row := 0

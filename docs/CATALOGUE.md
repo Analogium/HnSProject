@@ -216,13 +216,20 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Élan | Frappe lourde | — | 5 | +12 % de dégâts amplifiés |
+| Fracas | Frappe lourde | — | 5 | +12 % de dégâts amplifiés |
 | Pesée | Frappe lourde | — | 3 | +25 % de chance critique de base accrue |
 | Coup de bélier | Frappe lourde | — | 4 | +40 recul |
-| Hargne | Frappe lourde | Élan (1) | 4 | +2 PV par ennemi touché |
-| Lame ardente | Frappe lourde | Élan (1) | 1 | devient feu |
-| Brise-sol | Frappe lourde | Élan (2) ou Coup de bélier (2) | 1 | +28 rayon · -15 % de dégâts atténués |
+| Hargne | Frappe lourde | Fracas (1) | 4 | +2 PV par ennemi touché |
+| Lame ardente | Frappe lourde | Fracas (1) | 1 | devient feu |
+| Brise-sol | Frappe lourde | Fracas (2) ou Coup de bélier (2) | 1 | +28 rayon · -15 % de dégâts atténués |
 | Cratère | Frappe lourde | Brise-sol (1) | 3 | +20 % de rayon accru |
+| Coup sûr | Frappe lourde | Pesée (2) | 1 | +1 coup sûr |
+| Coup de massue | Frappe lourde | Coup sûr (1) | 1 | +1 coup de massue |
+| Brèche | Frappe lourde | Fracas (2) | 3 | +6 % force du fêlé |
+| Collision | Frappe lourde | Coup de bélier (1) | 2 | +25 % dégâts de la collision |
+| Quilles | Frappe lourde | Collision (1) | 1 | +1 heurtés repoussés |
+| Tremblement | Frappe lourde | Brise-sol (1) | 2 | +25 % dégâts du second anneau |
+| Fer rouge | Frappe lourde | Lame ardente (1) | 2 | +1 secondes d'embrasement rendues |
 | Taille | Coup en croix | — | 5 | +12 % de dégâts amplifiés |
 | Entaille | Coup en croix | — | 3 | +15 % chance d'état |
 | Estoc | Coup en croix | Taille (1) | 3 | ajoute 2 à 6 dégâts physiques |
@@ -230,6 +237,14 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Hémorragie | Coup en croix | Entaille (1) | 4 | +15 % effet du saignement |
 | Gerbe de sang | Coup en croix | Hémorragie (2) | 3 | +15 rayon de l'explosion des tués |
 | Lame sainte | Coup en croix | Taille (2) | 1 | devient sacré |
+| Lacération | Coup en croix | Entaille (1) | 2 | +1 secondes de saignement rendues |
+| Riposte | Coup en croix | Taille (1) | 3 | +20 % dégâts de la riposte |
+| Tierce | Coup en croix | Estoc (2) | 1 | +1 estoc en troisième temps |
+| Quarte | Coup en croix | Tierce (1) | 1 | +1 estoc qui traverse |
+| Saignée | Coup en croix | Hémorragie (1) | 2 | +20 % dégâts du saignement vidé |
+| Transfusion | Coup en croix | Saignée (1) | 2 | +5 % PV rendus du saignement vidé |
+| Éclaboussure | Coup en croix | Gerbe de sang (1) | 1 | +1 état assuré aux explosions |
+| Ordalie | Coup en croix | Lame sainte (1) | 1 | +1 second coup qui bénit à coup sûr |
 | Tranchant | Épée spirale | — | 5 | +12 % de dégâts amplifiés |
 | Ronde | Épée spirale | — | 3 | +1 maximum simultané |
 | Endurance | Épée spirale | — | 4 | +20 % de durée accrue |
@@ -237,18 +252,40 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Orbite large | Épée spirale | Tranchant (1) | 3 | +20 % de rayon accru |
 | Volée d'épées | Épée spirale | Tranchant (2) ou Bouclier de lames (2) | 1 | +160 portée de la volée d'épées · -30 % de durée réduite |
 | Arsenal | Épée spirale | Ronde (1) | 3 | +1 nombre d'épées en plus par lancer |
+| Valse | Épée spirale | — | 3 | +15 % vitesse de la ronde |
+| Affûtage | Épée spirale | Tranchant (1) | 3 | +4 % dégâts par ennemi coupé |
+| Parade | Épée spirale | Orbite large (1) | 2 | +1 parade des traits ennemis |
+| Brise-lames | Épée spirale | Bouclier de lames (2) | 1 | +1 épée qui encaisse un coup |
+| Grenaille | Épée spirale | Brise-lames (1) | 2 | +40 % dégâts de l'épée brisée |
+| Escorte | Épée spirale | Ronde (2) | 2 | +25 % dégâts de l'escorte |
+| Ralliement | Épée spirale | Volée d'épées (1) | 1 | +1 épées de la volée qui reviennent |
 | Fil de l'arc | Vague tranchante | — | 5 | +12 % de dégâts amplifiés |
 | Course | Vague tranchante | — | 4 | +20 % de durée accrue |
 | Grand arc | Vague tranchante | — | 4 | +15 % de rayon accru |
 | Vagues jumelles | Vague tranchante | Fil de l'arc (2) | 3 | +1 nombre de vagues |
 | Sillon d'acier | Vague tranchante | Course (1) | 4 | +1 secondes de sol laissé |
 | Ressac | Vague tranchante | Course (2) ou Vagues jumelles (1) | 1 | -20 % de dégâts atténués |
+| Retenue | Vague tranchante | — | 3 | -10 % de coût en mana réduit |
+| Houle | Vague tranchante | Grand arc (1) | 3 | +25 % rayon et dégâts en fin de course |
+| Proue | Vague tranchante | Fil de l'arc (1) | 3 | +20 % dégâts au premier mordu |
+| Lame de fond | Vague tranchante | Course (2) ou Houle (1) | 1 | +1 ennemis emportés |
+| Brisants | Vague tranchante | Lame de fond (1) | 2 | +30 % dégâts des emportés jetés |
+| Va-et-vient | Vague tranchante | Ressac (1) | 1 | +1 troisième passage |
+| Herse | Vague tranchante | Sillon d'acier (1) | 2 | +50 % chance de faire saigner du sillon |
 | Fauchage | Cyclone | — | 5 | +10 % de dégâts amplifiés |
 | Envergure | Cyclone | — | 3 | +15 % de rayon accru |
 | Souffle long | Cyclone | — | 4 | -15 % de mana drainé réduit |
 | Moulinet | Cyclone | Fauchage (1) | 3 | -10 % d'intervalle des frappes réduit |
 | Tourbillon | Cyclone | Envergure (1) | 3 | +40 force d'aspiration |
 | Fauche vorace | Cyclone | Souffle long (2) ou Moulinet (1) | 3 | +0.4 mana par ennemi touché |
+| Pied ferme | Cyclone | Souffle long (1) | 3 | -5 % dégâts subis · -10 % de vitesse réduite |
+| Vertige | Cyclone | Moulinet (1) | 3 | +4 % cadence par seconde tournée |
+| Derviches | Cyclone | Envergure (2) ou Fauchage (2) | 1 | +1 derviches |
+| Sirocco | Cyclone | Derviches (1) | 2 | +1 derviches en plus |
+| Trombe | Cyclone | Derviches (1) | 1 | +1 derviches qui cherchent |
+| Dénouement | Cyclone | Fauchage (2) | 1 | +20 % dernière frappe par seconde |
+| Coup de vent | Cyclone | Dénouement (1) | 1 | +1 dernière frappe qui repousse |
+| Ronde folle | Cyclone | Moulinet (2) | 2 | +15 % dégâts des épées sous le cyclone |
 | Fil tranchant | Ruée tranchante | — | 5 | +12 % de dégâts amplifiés |
 | Andain | Ruée tranchante | — | 3 | +15 % de rayon accru |
 | Charge | Ruée tranchante | Fil tranchant (1) | 4 | -8 % de recharge réduite |
@@ -256,6 +293,13 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Choc d'arrivée | Ruée tranchante | Andain (1) | 4 | +12 rayon de l'explosion finale |
 | Enchaînement | Ruée tranchante | Charge (2) | 1 | -100 % de recharge réduite · +500 % de temps du geste accru |
 | Saut de guerre | Ruée tranchante | Fil tranchant (2) ou Choc d'arrivée (1) | 1 | +32 rayon de l'explosion finale · +40 % de temps du geste accru |
+| Voltige | Ruée tranchante | — | 1 | +1 voltige à l'arrivée |
+| Coupe-jarret | Ruée tranchante | Fil tranchant (1) | 2 | +50 % chance de saigner de la ruée |
+| Relance | Ruée tranchante | Charge (1) | 1 | +1 ruée rendue par tué |
+| Hallali | Ruée tranchante | Relance (1) | 2 | +15 % dégâts par relance |
+| Trouée | Ruée tranchante | Choc d'arrivée (1) | 2 | +10 % choc par ennemi traversé |
+| Retombée | Ruée tranchante | Saut de guerre (1) | 1 | +1 réception qui assomme |
+| Pas chassé | Ruée tranchante | Enchaînement (1) | 2 | +10 % dégâts par ruée enchaînée |
 
 34 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

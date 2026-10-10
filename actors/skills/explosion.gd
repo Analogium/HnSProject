@@ -87,8 +87,10 @@ func _physics_process(delta: float) -> void:
 			_crowded(targets)
 		for target in targets:
 			if target.get_instance_id() != _excluded:
+				# Flétri **avant** le coup : celui que ce souffle flétrit ne rend rien encore.
+				var wilted := target.has_state(StatusEffects.Kind.WILTING)
 				Targets.strike(target, _parts, global_position, _author, _cast, knockback)
-				if drink > 0.0 and _author != null and target.has_state(StatusEffects.Kind.WILTING):
+				if drink > 0.0 and _author != null and wilted:
 					_author.heal.emit(drink)
 	_age += delta
 	queue_redraw()

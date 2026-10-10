@@ -247,6 +247,47 @@ const LABELS := {
 	OUTLET: "fardeau aux gros coups reçus",
 	REVENANT: "sursis plus fréquent",
 	SLOW_AGONY: "durée des sorts nécrotiques",
+	SURE_STRIKE: "coup sûr",
+	MAUL: "coup de massue",
+	BREACH: "force du fêlé",
+	COLLISION: "dégâts de la collision",
+	SKITTLES: "heurtés repoussés",
+	TREMOR: "dégâts du second anneau",
+	RED_IRON: "secondes d'embrasement rendues",
+	LACERATION: "secondes de saignement rendues",
+	RIPOSTE: "dégâts de la riposte",
+	TIERCE: "estoc en troisième temps",
+	QUARTE: "estoc qui traverse",
+	BLOODLETTING: "dégâts du saignement vidé",
+	TRANSFUSION: "PV rendus du saignement vidé",
+	ORDEAL: "second coup qui bénit à coup sûr",
+	WALTZ: "vitesse de la ronde",
+	HONING: "dégâts par ennemi coupé",
+	PARRY: "parade des traits ennemis",
+	BREAKWATER: "épée qui encaisse un coup",
+	GRAPESHOT: "dégâts de l'épée brisée",
+	ESCORT: "dégâts de l'escorte",
+	RALLY: "épées de la volée qui reviennent",
+	BILLOW: "rayon et dégâts en fin de course",
+	PROW: "dégâts au premier mordu",
+	UNDERTOW: "ennemis emportés",
+	BREAKERS: "dégâts des emportés jetés",
+	TO_AND_FRO: "troisième passage",
+	HARROW: "chance de faire saigner du sillon",
+	VERTIGO: "cadence par seconde tournée",
+	DERVISHES: "derviches",
+	SIROCCO: "derviches en plus",
+	WATERSPOUT: "derviches qui cherchent",
+	DENOUEMENT: "dernière frappe par seconde",
+	GUST: "dernière frappe qui repousse",
+	MAD_ROUND: "dégâts des épées sous le cyclone",
+	VAULT: "voltige à l'arrivée",
+	HAMSTRING: "chance de saigner de la ruée",
+	RELAUNCH: "ruée rendue par tué",
+	HALLALI: "dégâts par relance",
+	BREAKTHROUGH: "choc par ennemi traversé",
+	FALLOUT: "réception qui assomme",
+	CHASSE: "dégâts par ruée enchaînée",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -480,6 +521,47 @@ const AGREEMENT := {
 	OUTLET: "ms",
 	REVENANT: "ms",
 	SLOW_AGONY: "fs",
+	SURE_STRIKE: "ms",
+	MAUL: "ms",
+	BREACH: "fs",
+	COLLISION: "mp",
+	SKITTLES: "mp",
+	TREMOR: "mp",
+	RED_IRON: "fp",
+	LACERATION: "fp",
+	RIPOSTE: "mp",
+	TIERCE: "ms",
+	QUARTE: "ms",
+	BLOODLETTING: "mp",
+	TRANSFUSION: "mp",
+	ORDEAL: "ms",
+	WALTZ: "fs",
+	HONING: "mp",
+	PARRY: "fs",
+	BREAKWATER: "fs",
+	GRAPESHOT: "mp",
+	ESCORT: "mp",
+	RALLY: "fp",
+	BILLOW: "ms",
+	PROW: "mp",
+	UNDERTOW: "mp",
+	BREAKERS: "mp",
+	TO_AND_FRO: "ms",
+	HARROW: "fs",
+	VERTIGO: "fs",
+	DERVISHES: "mp",
+	SIROCCO: "mp",
+	WATERSPOUT: "mp",
+	DENOUEMENT: "fs",
+	GUST: "fs",
+	MAD_ROUND: "mp",
+	VAULT: "fs",
+	HAMSTRING: "fs",
+	RELAUNCH: "fs",
+	HALLALI: "mp",
+	BREAKTHROUGH: "ms",
+	FALLOUT: "fs",
+	CHASSE: "mp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -785,6 +867,50 @@ const REAPER := "reaper"
 const OUTLET := "outlet"
 const REVENANT := "revenant"
 const SLOW_AGONY := "slow_agony"
+## La Frappe lourde (jalon 46) : le Coup sûr, le Coup de massue, la Brèche, la Collision,
+## les Quilles, le Tremblement, le Fer rouge.
+const SURE_STRIKE := "sure_strike"
+const MAUL := "maul"
+const BREACH := "breach"
+const COLLISION := "collision"
+const SKITTLES := "skittles"
+const TREMOR := "tremor"
+const RED_IRON := "red_iron"
+## Le Coup en croix, l'Épée spirale, la Vague, le Cyclone, la Ruée (jalon 46).
+const LACERATION := "laceration"
+const RIPOSTE := "riposte"
+const TIERCE := "tierce"
+const QUARTE := "quarte"
+const BLOODLETTING := "bloodletting"
+const TRANSFUSION := "transfusion"
+const ORDEAL := "ordeal"
+const WALTZ := "waltz"
+const HONING := "honing"
+const PARRY := "parry"
+const BREAKWATER := "breakwater"
+const GRAPESHOT := "grapeshot"
+const ESCORT := "escort"
+const RALLY := "rally"
+const BILLOW := "billow"
+const PROW := "prow"
+const UNDERTOW := "undertow"
+const BREAKERS := "breakers"
+const TO_AND_FRO := "to_and_fro"
+const HARROW := "harrow"
+const VERTIGO := "vertigo"
+const DERVISHES := "dervishes"
+const SIROCCO := "sirocco"
+const WATERSPOUT := "waterspout"
+const DENOUEMENT := "denouement"
+const GUST := "gust"
+const MAD_ROUND := "mad_round"
+const VAULT := "vault"
+const HAMSTRING := "hamstring"
+const RELAUNCH := "relaunch"
+const HALLALI := "hallali"
+const BREAKTHROUGH := "breakthrough"
+const FALLOUT := "fallout"
+const CHASSE := "chasse"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -811,6 +937,11 @@ const MECHANICS := [
 	MARTYR, LANGUOR, APNEA, SUCTION, DETONATION, DEEP_DIVE, RATTLE, FIT, GESTATION, LEASH,
 	AMALGAM, LINEAGE, SWARMING, CRITICAL_MASS, THORNS, OMEN, SENTENCE, EXHUME, LEGACY, TITHE,
 	EXECUTIONER, CARRION, MORIBUND, REPRIEVE, REAPER, OUTLET, REVENANT, SLOW_AGONY,
+	SURE_STRIKE, MAUL, BREACH, COLLISION, SKITTLES, TREMOR, RED_IRON,
+	LACERATION, RIPOSTE, TIERCE, QUARTE, BLOODLETTING, TRANSFUSION, ORDEAL, WALTZ, HONING,
+	PARRY, BREAKWATER, GRAPESHOT, ESCORT, RALLY, BILLOW, PROW, UNDERTOW, BREAKERS,
+	TO_AND_FRO, HARROW, VERTIGO, DERVISHES, SIROCCO, WATERSPOUT, DENOUEMENT, GUST,
+	MAD_ROUND, VAULT, HAMSTRING, RELAUNCH, HALLALI, BREAKTHROUGH, FALLOUT, CHASSE,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -823,6 +954,7 @@ const EFFECT_OF := {
 	StatusEffects.Kind.DECAY: DECAY_EFFECT,
 	StatusEffects.Kind.WILTING: WILTING_WEAKNESS,
 	StatusEffects.Kind.CURSED: CURSE_EFFECT,
+	StatusEffects.Kind.BREACH: BREACH,
 }
 
 ## Le sol brûlant : sa part des dégâts par impulsion, son rythme, son rayon. Et la part
@@ -1039,6 +1171,60 @@ const REVENANT_HEALTH := 0.3
 const OUTLET_LOSS := 0.1
 ## La Faucheuse : ce qui reste du coût des sorts nécrotiques.
 const REAPER_COST := 0.5
+## La Frappe lourde. Le Coup sûr : un lancer sur combien, et son gel en multiple d'un gel.
+## Le Coup de massue : sa part et son rayon. La Collision : combien de temps un repoussé
+## peut en heurter un autre. Le Tremblement : son écart, son rayon en multiple du Brise-sol.
+const SURE_EVERY := 3
+const SURE_STOP := 2.0
+const MAUL_PART := 0.5
+const MAUL_RADIUS := 30.0
+const COLLISION_WINDOW := 0.35
+const TREMOR_GAP := 0.3
+const TREMOR_REACH := 2.0
+## Le Coup en croix. La Riposte : combien de temps un coup reçu l'arme. La Tierce : son
+## écart après la croix, sa part, ce qu'elle porte au-delà de l'allonge et sa largeur ; la
+## Quarte, ce qu'elle ajoute.
+const RIPOSTE_WINDOW := 2.0
+const TIERCE_GAP := 0.12
+const TIERCE_PART := 0.6
+const TIERCE_BEYOND := 12.0
+const TIERCE_WIDTH := 12.0
+const QUARTE_REACH := 60.0
+## L'Épée spirale. L'Affûtage : ses cumuls au plus. La Parade : son attente, divisée par ses
+## points. Le Brise-lames : son attente ; la Grenaille, son rayon. Le Ralliement : la vie
+## d'une épée revenue.
+const HONING_MOST := 5
+## Les gestes que l'Escorte suit.
+const ESCORTED := ["heavy_strike", "cross_slash"]
+const PARRY_WAIT := 2.0
+const BREAKWATER_WAIT := 3.0
+const GRAPESHOT_RADIUS := 40.0
+const RALLY_LIFE := 2.0
+## La Vague. Le Va-et-vient : la part du troisième passage.
+const TO_AND_FRO_PART := 0.5
+## Le Cyclone. Le Vertige : les secondes comptées au plus. Les Derviches : leur rythme, leur
+## part, leur rayon, leur vitesse, leur vie, la portée où la Trombe les fait chercher, leur
+## écart. Le Dénouement : les secondes comptées au plus ; le Coup de vent, son recul. La
+## Ronde folle : ce qu'elle multiplie à la rotation des épées.
+const VERTIGO_MOST := 3.0
+const DERVISH_PERIOD := 1.5
+const DERVISH_PART := 0.4
+const DERVISH_RADIUS := 12.0
+const DERVISH_SPEED := 110.0
+const DERVISH_LIFE := 1.2
+const DERVISH_SIGHT := 120.0
+const DERVISH_FAN := 0.4
+const DENOUEMENT_MOST := 5.0
+const GUST_FORCE := 300.0
+const MAD_SPIN := 2.0
+## La Ruée. La Voltige : son temps d'invulnérabilité. L'Hallali : ses relances comptées au
+## plus. La Retombée : combien de temps elle assomme. Le Pas chassé : sa fenêtre et ses
+## ruées comptées au plus.
+const VAULT_TIME := 0.4
+const HALLALI_MOST := 3
+const FALLOUT_TIME := 0.8
+const CHASSE_WINDOW := 1.0
+const CHASSE_MOST := 3
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -1319,6 +1505,50 @@ var reaper := 0.0
 var outlet := 0.0
 var revenant := 0.0
 var slow_agony := 0.0
+var sure_strike := 0.0
+var maul := 0.0
+var breach := 0.0
+var collision := 0.0
+var skittles := 0.0
+var tremor := 0.0
+var red_iron := 0.0
+var laceration := 0.0
+var riposte := 0.0
+var tierce := 0.0
+var quarte := 0.0
+var bloodletting := 0.0
+var transfusion := 0.0
+var ordeal := 0.0
+var waltz := 0.0
+var honing := 0.0
+var parry := 0.0
+var breakwater := 0.0
+var grapeshot := 0.0
+var escort := 0.0
+var rally := 0.0
+var billow := 0.0
+var prow := 0.0
+var undertow := 0.0
+var breakers := 0.0
+var to_and_fro := 0.0
+var harrow := 0.0
+var vertigo := 0.0
+var dervishes := 0.0
+var sirocco := 0.0
+var waterspout := 0.0
+var denouement := 0.0
+var gust := 0.0
+var mad_round := 0.0
+var vault := 0.0
+var hamstring := 0.0
+var relaunch := 0.0
+var hallali := 0.0
+var breakthrough := 0.0
+var fallout := 0.0
+var chasse := 0.0
+## Vrai sur le lancer que le Coup sûr a fait tomber juste : son gel et le Coup de massue le
+## lisent au coup. Aucun nœud ne le vise.
+var is_sure := false
 ## Le morceau de la Fracture, une fois fabriqué : un cache, que `echoed()` ne recopie pas.
 var _fragment: SkillStats
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
@@ -1494,6 +1724,10 @@ func against_factor(states: StatusEffects) -> float:
 	# La Surchauffe : un « plus » par charge, lu avant que ce coup n'en pose une autre.
 	if overheat > 0.0:
 		product *= 1.0 + overheat * 0.01 * states.strength(StatusEffects.Kind.OVERHEAT)
+	# La Brèche (jalon 46) : le fêlé subit tout coup d'arme à sa force, d'où qu'il vienne.
+	var cracked := states.strength(StatusEffects.Kind.BREACH)
+	if cracked > 0.0 and Keywords.ATTACK in keywords:
+		product *= cracked
 	if increased <= 0.0:
 		return product
 	return maxf(increased + added * 0.01, 0.0) / increased * product
@@ -1638,6 +1872,29 @@ static func facts() -> Dictionary:
 		"vie_revenant": roundi(REVENANT_HEALTH * 100.0),
 		"perte_exutoire": roundi(OUTLET_LOSS * 100.0),
 		"abri_max": roundi(CharacterStats.MAX_DAMAGE_REDUCTION),
+		"sur_tous": SURE_EVERY,
+		"part_massue": roundi(MAUL_PART * 100.0),
+		"rayon_massue": roundi(MAUL_RADIUS),
+		"duree_fele": roundi(StatusEffects.DURATIONS[StatusEffects.Kind.BREACH]),
+		"ecart_tremblement": TREMOR_GAP,
+		"fenetre_riposte": roundi(RIPOSTE_WINDOW),
+		"part_tierce": roundi(TIERCE_PART * 100.0),
+		"allonge_quarte": roundi(QUARTE_REACH),
+		"affutage_max": HONING_MOST,
+		"attente_parade": roundi(PARRY_WAIT),
+		"attente_brise_lames": roundi(BREAKWATER_WAIT),
+		"rayon_grenaille": roundi(GRAPESHOT_RADIUS),
+		"vie_ralliement": roundi(RALLY_LIFE),
+		"part_va_et_vient": roundi(TO_AND_FRO_PART * 100.0),
+		"vertige_max": roundi(VERTIGO_MOST),
+		"rythme_derviche": DERVISH_PERIOD,
+		"part_derviche": roundi(DERVISH_PART * 100.0),
+		"denouement_max": roundi(DENOUEMENT_MOST),
+		"voltige": VAULT_TIME,
+		"hallali_max": HALLALI_MOST,
+		"assomme": FALLOUT_TIME,
+		"fenetre_chasse": roundi(CHASSE_WINDOW),
+		"chasse_max": CHASSE_MOST,
 	}
 
 
@@ -1645,10 +1902,24 @@ static func facts() -> Dictionary:
 ## `GROUND_RADIUS` sous un impact ; la nova pose le sien à sa taille (jalon 36).
 func ground(p_radius := GROUND_RADIUS) -> SkillStats:
 	var g := _derived(GROUND_PART)
+	# La Herse (jalon 46) : ce qui se tient dans le sillon saigne plus souvent.
+	g.status_chance_increase += harrow
 	g.duration = ground_duration
 	g.period = GROUND_PERIOD
 	g.radius = p_radius
 	return g
+
+
+## Le coup de la Saignée (jalon 46) : ses parts sont posées à la main, sans critique.
+func bled() -> SkillStats:
+	var g := _derived(0.0)
+	g.crit_chance = 0.0
+	return g
+
+
+## Le coup d'une Collision (jalon 46), à sa part : sans recul ni rien qui la relancerait.
+func collided() -> SkillStats:
+	return _derived(collision * 0.01)
 
 
 ## La chaîne que relance le Survoltage depuis un engourdi tué : une part du coup, deux
@@ -1880,4 +2151,7 @@ func finalize() -> void:
 	self_burn = maxf(self_burn, 0.0)
 	self_wither = maxf(self_wither, 0.0)
 	inflict_chance = clampf(inflict_chance, 0.0, 1.0)
+	# Le Coupe-jarret (jalon 46) : toute la ruée fait saigner plus souvent, couloir et choc —
+	# dans le lancer résolu, que lit la fenêtre des déclenchements.
+	status_chance_increase += hamstring
 	crit_chance = clampf(crit_chance, 0.0, 1.0)

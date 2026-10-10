@@ -105,6 +105,8 @@ func _physics_process(delta: float) -> void:
 			e.suffer_states(delta)
 		e.regen(delta)
 		e.tick(delta)
+		if e.shoved() and not e.is_dead:
+			e.collide(delta)
 
 
 ## Quand la cible a changé de case, au plus toutes les FIELD_PERIOD.

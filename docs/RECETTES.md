@@ -757,7 +757,8 @@ l'orienteraient chacun à leur façon.
    `decay_effect`, `wilting_weakness`, `curse_effect`, `contagion`, `minion_life`,
    `bone_wall`, `colossus`, `tribute` et `shared_burden`, pour le chevalier
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
-   `sword_volley`, `extra_swords` et `waves`, pour le sacré `blessing_effect`,
+   `sword_volley`, `extra_swords`, `waves`, puis au jalon 46 `sure_strike`, `maul`, `breach`,
+   `collision`, `skittles`, `tremor`, `red_iron` et les trente-quatre de `SkillStats.LACERATION` à `CHASSE`, pour le sacré `blessing_effect`,
    `wave_gain` et `aureole`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `doll_life`, `grudge`, `transfer`, `lure`, `echo_power`, `echoes` et `countersong` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
@@ -772,7 +773,7 @@ l'orienteraient chacun à leur façon.
    se lit sur l'état, qui garde son lancer : `StatusEffects.cast_of()` (jalon 45). Un
    décomposé meurt souvent de ses à-coups, sans coup ni lancer pour le porter.
 
-4. **Sur un buff** (Nécrose avancée), une ligne qui ne vise pas un nombre du lancer — une
+4. **Sur un buff** (Nécrose avancée), ou un geste entretenu qu'on allume (le Pied ferme du Cyclone, jalon 46), une ligne qui ne vise pas un nombre du lancer — une
    portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,
    qui ne vaut que tant qu'il brûle. Rien à déclarer : `Skill.is_buff_line()` trie.
    Sur un **buff à charges** (Trinité), elle compte **par charge**.

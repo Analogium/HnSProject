@@ -12,10 +12,13 @@ var _author: StatusEffects
 var _toward := Vector2.RIGHT
 var _flown := 0.0
 var _bitten: Targets.Contacts
+## Le Ralliement (jalon 46) : la couronne où elle revient au bout de sa course.
+var home: BladeCrown
 
 
 static func throw(
-	parent: Node, from_value: Vector2, outward: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, from_value: Vector2, outward: Vector2, cast: SkillStats, author: StatusEffects,
+	prey: Hurtbox = null
 ) -> FlyingSword:
 	var sword := FlyingSword.new()
 	sword._cast = cast
@@ -24,7 +27,9 @@ static func throw(
 	parent.add_child(sword)
 	Settings.veil(sword, Settings.SPELLS)
 	sword.global_position = from_value
-	var prey := Targets.nearest(sword.get_world_2d(), from_value, cast.sword_volley)
+	# L'Escorte (jalon 46) vise sa cible ; la volée, la plus proche.
+	if prey == null:
+		prey = Targets.nearest(sword.get_world_2d(), from_value, cast.sword_volley)
 	sword._toward = from_value.direction_to(prey.global_position) if prey != null else outward.normalized()
 	return sword
 
@@ -43,6 +48,8 @@ func _physics_process(delta: float) -> void:
 			Targets.strike(target, _cast.roll(Game.rng), global_position, _author, _cast)
 	queue_redraw()
 	if _flown >= _cast.sword_volley:
+		if is_instance_valid(home):
+			home.rally(_cast)
 		queue_free()
 
 

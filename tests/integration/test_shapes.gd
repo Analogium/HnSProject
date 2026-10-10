@@ -2599,8 +2599,8 @@ func _knockbacks_on(target: Hurtbox) -> Array:
 ## Le Brise-sol : tout le cercle autour de l'impact, une fois, rien derrière soi.
 func test_a_groundbreaker_strikes_the_circle_of_its_impact() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [["radius", 28.0]], Skill.Shape.SLAM)
-	var beyond := _target(Vector2(Player.SLAM_REACH + 20.0, 0))
-	var aside := _target(Vector2(Player.SLAM_REACH, 24))
+	var beyond := _target(Vector2(_p.strike_reach() + 20.0, 0))
+	var aside := _target(Vector2(_p.strike_reach(), 24))
 	var behind := _target(Vector2(-30, 0))
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
@@ -4347,15 +4347,20 @@ func test_an_icebreaker_burst_pays_for_the_time_left() -> void:
 		"manual_cold", "frost_tomb",
 		[["damage_cold", 10.0], [SkillStats.END_BURST, 30.0], [SkillStats.ICEBREAKER, 100.0]]
 	)
-	_p.stats.crit_chance = 0.0
 	var near := _target(Vector2(20, 0))
+	# Sans le critique : allumer le tombeau refait la fiche, et sa chance avec (5 %).
+	var bursts := []
+	near.damaged.connect(
+		func(info: DamageInfo) -> void:
+			bursts.append(info.amount / (info.cast.crit_multiplier if info.is_crit else 1.0))
+	)
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
 	var left := (_p._lit["frost_tomb"] as Buff).remaining()
 	_p._recharges[2] = 0.0
 	assert_true(_p.cast_slot(2))
 	await wait_physics_frames(3)
-	assert_almost_eq(float(_received_all[near][0]), 10.0 * (1.0 + left), 0.5)
+	assert_almost_eq(float(bursts[0]), 10.0 * (1.0 + left), 0.5)
 
 
 # --------------------------------------------------------------------------
@@ -5194,3 +5199,552 @@ func test_slow_agony_lengthens_necrotic_spells_and_their_states() -> void:
 	assert_true(_p.cast_slot(3))
 	var bolt: Projectile = _children_of(Projectile)[0]
 	assert_almost_eq(bolt._cast.languor, StatusEffects.DURATIONS[StatusEffects.Kind.DECAY] * 0.5, 0.001)
+
+
+# --------------------------------------------------------------------------
+# Frappe lourde (jalon 46)
+# --------------------------------------------------------------------------
+
+func _crits_on(target: Hurtbox) -> Array:
+	var seen := []
+	target.damaged.connect(func(info: DamageInfo) -> void: seen.append(info.is_crit))
+	return seen
+
+
+## Une hurtbox qui porte des états, comme un ennemi : la Brèche et le Fer rouge s'y posent.
+func _worn_target(position: Vector2) -> Hurtbox:
+	var h := _target(position)
+	h.states = StatusEffects.new()
+	return h
+
+
+func _strike_again() -> void:
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(_p.swing_duration + 0.1)
+
+
+## Le Coup sûr : le troisième lancer est critique, quoi que tire le hasard.
+func test_a_sure_blow_lands_every_third_strike() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.SURE_STRIKE, 1.0]])
+	var target := _target(Vector2(20, 0))
+	var crits := _crits_on(target)
+	await wait_physics_frames(2)
+	for i in 6:
+		await _strike_again()
+	assert_eq(crits.size(), 6)
+	assert_true(crits[2] and crits[5], "le troisième et le sixième")
+
+
+## Le Coup de massue : le coup sûr frappe aussi autour de sa cible, hors de portée de l'arme.
+func test_a_bludgeon_strikes_around_the_sure_target() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.SURE_STRIKE, 1.0], [SkillStats.MAUL, 1.0]])
+	var struck := _target(Vector2(24, 0))
+	var beside := _target(Vector2(52, 0))
+	await wait_physics_frames(2)
+	await _strike_again()
+	assert_eq(_hits(beside), 0, "hors de portée, sans coup sûr")
+	_p._sure = SkillStats.SURE_EVERY - 1
+	await _strike_again()
+	assert_eq(_hits(struck), 2)
+	assert_eq(_hits(beside), 1, "le cercle de la massue")
+
+
+## La Brèche : le frappé est fêlé, à la force du nœud, et tout coup d'arme y frappe plus fort
+## — pas un sort.
+func test_a_breach_cracks_for_every_weapon_attack() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.BREACH, 20.0]])
+	var target := _worn_target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	await _strike_again()
+	var cracked := StatusEffects.Kind.BREACH
+	assert_true(target.states.active(cracked))
+	assert_almost_eq(target.states.strength(cracked), 1.2, 0.001)
+	var attack := _p.resolve(SkillCatalog.by_id("cross_slash"), 1)
+	assert_almost_eq(attack.against_factor(target.states), 1.2, 0.001, "une autre attaque")
+	var spell := _p.resolve(SkillCatalog.by_id("fireball"), 1)
+	assert_almost_eq(spell.against_factor(target.states), 1.0, 0.001, "pas un sort")
+
+
+## Le Fer rouge : l'embrasement déjà là reprend du temps, jusqu'à sa pleine durée.
+func test_red_iron_gives_time_back_to_an_ignite() -> void:
+	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.RED_IRON, 2.0]])
+	var target := _worn_target(Vector2(20, 0))
+	var ignite := StatusEffects.Kind.IGNITE
+	target.states.put(ignite, 10.0)
+	target.states.advance(2.5)
+	await wait_physics_frames(2)
+	await _strike_again()
+	assert_gt(target.states.remaining(ignite), 3.0, "1,5 s, plus 2")
+
+
+## Le Tremblement : un second anneau au double du rayon, après le premier, sans repasser
+## sur ce que le premier a frappé.
+func test_a_tremor_strikes_a_second_ring() -> void:
+	_learn_with(
+		"manual_weapons", "heavy_strike", [["radius", 28.0], [SkillStats.TREMOR, 50.0]],
+		Skill.Shape.SLAM
+	)
+	var inner := _target(Vector2(_p.strike_reach() + 10.0, 0))
+	var outer := _target(Vector2(_p.strike_reach() + 44.0, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.1)
+	assert_eq(_hits(inner), 1)
+	assert_eq(_hits(outer), 0, "pas encore")
+	await wait_seconds(SkillStats.TREMOR_GAP + 0.1)
+	assert_eq(_hits(inner), 1, "l'anneau seul")
+	assert_eq(_hits(outer), 1)
+
+
+## La Collision et les Quilles : le repoussé blesse celui qu'il heurte, qui part à son tour
+## sur un troisième. De vrais ennemis, menés par leur pilote : c'est lui qui voit le heurt.
+func test_a_collision_hurts_whom_it_slams_and_skittles_carry_on() -> void:
+	_learn_with(
+		"manual_weapons", "heavy_strike",
+		[[SkillStats.KNOCKBACK, 400.0], [SkillStats.COLLISION, 50.0], [SkillStats.SKITTLES, 1.0]]
+	)
+	var manager := EnemyManager.new()
+	manager.target = _p
+	add_child_autofree(manager)
+	var grunt: PackedScene = load("res://actors/enemies/grunt.tscn")
+	var first := manager.spawn(grunt, Vector2(24, 0))
+	var second := manager.spawn(grunt, Vector2(46, 0))
+	var third := manager.spawn(grunt, Vector2(68, 0))
+	# Assez de vie pour que personne ne tombe : un mort ne heurte plus rien.
+	var hits := [[], [], []]
+	for i in 3:
+		var body: Enemy = [first, second, third][i]
+		body.stats = body.stats.duplicate()
+		body.stats.max_health = 9999.0
+		body._set_health(9999.0)
+		body.hurtbox.damaged.connect(func(info: DamageInfo) -> void: hits[i].append(info.amount))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.5)
+	assert_eq(hits[0].size(), 2, "frappé, puis heurtant")
+	assert_eq(hits[1].size(), 2, "heurté, puis heurtant à son tour")
+	assert_eq(hits[2].size(), 1, "heurté, sans aller plus loin")
+
+
+# --------------------------------------------------------------------------
+# Coup en croix (jalon 46)
+# --------------------------------------------------------------------------
+
+## La Lacération : le saignement déjà là reprend du temps.
+func test_a_laceration_gives_time_back_to_a_bleed() -> void:
+	_learn_with("manual_weapons", "cross_slash", [[SkillStats.LACERATION, 2.0]])
+	var target := _worn_target(Vector2(20, 0))
+	var bleed := StatusEffects.Kind.BLEED
+	# Plus fort que ce que la croix pose : son propre saignement ne le remplace pas.
+	target.states.put(bleed, 1000.0)
+	target.states.advance(3.0)
+	await wait_physics_frames(2)
+	await _strike_again()
+	assert_gt(target.states.remaining(bleed), 2.5, "1 s, plus 2 à chaque coup")
+
+
+## La Riposte : un coup reçu, et la croix suivante frappe plus fort — une fois.
+func test_a_riposte_answers_a_blow_once() -> void:
+	_learn_with("manual_weapons", "cross_slash", [[SkillStats.RIPOSTE, 50.0]])
+	var plain := _p.resolve(SkillCatalog.by_id("cross_slash"), 1).total_max()
+	_blow_on_player(0.1)
+	await _strike_again()
+	assert_almost_eq(_p._hit_cast.total_max(), plain * 1.5, 0.01)
+	await _strike_again()
+	assert_almost_eq(_p._hit_cast.total_max(), plain, 0.01, "dépensée")
+
+
+## La Tierce frappe le plus proche sur sa ligne, au-delà de l'arme ; la Quarte traverse.
+func test_a_tierce_thrusts_the_nearest_and_a_quarte_pierces() -> void:
+	_learn_with("manual_weapons", "cross_slash", [[SkillStats.TIERCE, 1.0]])
+	# Au-delà de l'allonge de l'épée (32 px), en deçà de l'estoc (44 px).
+	var near := _target(Vector2(48, 0))
+	var far := _target(Vector2(80, 0))
+	var trails := []
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void:
+			if n is ThrustTrail:
+				trails.append(n)
+	)
+	await wait_physics_frames(2)
+	await _strike_again()
+	await wait_seconds(SkillStats.TIERCE_GAP + 0.1)
+	assert_eq(_hits(near), 1, "hors de portée de la croix, pas de l'estoc")
+	assert_eq(_hits(far), 0)
+	assert_eq(trails.size(), 1, "son fuseau et son étoile")
+
+
+func test_a_quarte_thrust_goes_through_its_line() -> void:
+	_learn_with("manual_weapons", "cross_slash", [[SkillStats.TIERCE, 1.0], [SkillStats.QUARTE, 1.0]])
+	# Au-delà de l'allonge de l'épée (32 px), en deçà de l'estoc (44 px).
+	var near := _target(Vector2(48, 0))
+	var far := _target(Vector2(80, 0))
+	await wait_physics_frames(2)
+	await _strike_again()
+	await wait_seconds(SkillStats.TIERCE_GAP + 0.1)
+	assert_eq(_hits(near), 1)
+	assert_eq(_hits(far), 1)
+
+
+## La Saignée : le second coup vide le saignement d'un coup, plus fort ; la Transfusion en
+## rend une part. 1000 de physique : 125 par seconde pendant 4 s, 500 à vider.
+func test_bloodletting_drains_the_bleed_and_transfusion_heals() -> void:
+	_learn_with(
+		"manual_weapons", "cross_slash",
+		[[SkillStats.BLOODLETTING, 100.0], [SkillStats.TRANSFUSION, 10.0]]
+	)
+	var target := _worn_target(Vector2(20, 0))
+	target.states.put(StatusEffects.Kind.BLEED, 1000.0)
+	await wait_physics_frames(2)
+	_p.stats.health_regen = 0.0
+	_p._set_health(_p.stats.max_health - 50.0)
+	var health := _p.health
+	await _strike_again()
+	assert_true((_received_all[target] as Array).any(func(a: float) -> bool: return a >= 990.0), "vidé, doublé")
+	assert_gte(_p.health, health + 49.9, "un dixième rendu, plus que ce qui manquait")
+
+
+## L'Ordalie : sous la Lame sainte, le second coup bénit à coup sûr.
+func test_an_ordeal_blesses_for_sure() -> void:
+	_learn("manual_weapons", [
+		"cross_slash", "cross_slash_edge", "cross_slash_edge", "cross_slash_holy_blade",
+		"cross_slash_ordeal",
+	])
+	var target := _worn_target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	await _strike_again()
+	assert_true(target.states.active(StatusEffects.Kind.BLESSING))
+
+
+# --------------------------------------------------------------------------
+# Épée spirale (jalon 46)
+# --------------------------------------------------------------------------
+
+func _turned_in(seconds: float) -> float:
+	var crown := _p._crown
+	var before := crown._rotation
+	await wait_seconds(seconds)
+	return fposmod(crown._rotation - before, TAU)
+
+
+## La Valse : la ronde tourne plus vite.
+func test_a_waltz_spins_the_swords_faster() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.WALTZ, 100.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var turned: float = await _turned_in(0.25)
+	assert_almost_eq(turned, BladeCrown.ROTATION * 2.0 * 0.25, 0.25)
+
+
+## L'Affûtage : chaque coupé compte, jusqu'au plafond.
+func test_honing_counts_what_a_sword_cuts() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.HONING, 10.0]])
+	_target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(3.2)
+	assert_gt(_p._crown._blades[0].honed, 1)
+	assert_lte(_p._crown._blades[0].honed, SkillStats.HONING_MOST)
+
+
+## La Parade : une épée qui croise un trait ennemi le brise.
+func test_a_parry_breaks_an_enemy_bolt() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.PARRY, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.3)
+	var crown := _p._crown
+	var blade: BladeCrown.Blade = crown._blades[0]
+	var at := crown.to_global(crown._center(blade, crown._rotation + blade.place))
+	var shooter := Node2D.new()
+	add_child_autofree(shooter)
+	var toward := Vector2.RIGHT
+	var bolt := Projectile.spawn_of_nature(
+		_effects, load("res://actors/projectiles/enemy_bolt.tscn"), at - toward * Projectile.MUZZLE,
+		toward, 5.0, shooter
+	)
+	await wait_physics_frames(3)
+	assert_false(is_instance_valid(bolt) and not bolt.is_queued_for_deletion(), "brisé")
+	assert_gt(blade.parry_wait, 0.0, "et l'épée attend")
+
+
+## Le Brise-lames et la Grenaille : une épée prend le coup et éclate ; pas deux dans l'attente.
+func test_a_breakwater_sword_takes_the_blow_and_bursts() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.BREAKWATER, 1.0], [SkillStats.GRAPESHOT, 100.0]])
+	assert_true(_p.cast_slot(2))
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	_p.stats.health_regen = 0.0
+	var health := _p.health
+	_blow_on_player(0.2)
+	assert_eq(_p.health, health, "rien")
+	assert_eq(_p.orbiting_swords(), 1)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1, "elle éclate")
+	_blow_on_player(0.2)
+	assert_lt(_p.health, health, "l'attente")
+
+
+## L'Escorte : la Frappe lourde qui touche envoie une épée de la ronde sur sa cible.
+func test_an_escort_sends_a_sword_after_a_heavy_strike() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.ESCORT, 50.0]])
+	assert_true(_p.invest(0, "heavy_strike"))
+	_p.bar.put(3, "heavy_strike")
+	var sent := []
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void:
+			if n is FlyingSword:
+				sent.append(n)
+	)
+	_target(Vector2(20, 0))
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(3))
+	await wait_seconds(_p.swing_duration + 0.1)
+	assert_eq(sent.size(), 1)
+	assert_eq(_p.orbiting_swords(), 1, "l'épée continue de tourner")
+
+
+## Le Ralliement : l'épée de la volée revient tourner, puis s'en va.
+func test_a_rally_brings_the_volley_back() -> void:
+	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.SWORD_VOLLEY, 40.0], [SkillStats.RALLY, 1.0]])
+	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.35)
+	assert_eq(_p.orbiting_swords(), 1, "revenue")
+	await wait_seconds(SkillStats.RALLY_LIFE)
+	assert_eq(_p.orbiting_swords(), 0)
+	assert_eq(_children_of(FlyingSword).size(), 0, "sans repartir")
+
+
+# --------------------------------------------------------------------------
+# Vague tranchante (jalon 46)
+# --------------------------------------------------------------------------
+
+## La Houle : grossie en fin de course, la vague atteint ce qu'elle frôlait.
+func test_a_swell_reaches_wider_at_the_end_of_the_run() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.BILLOW, 100.0]])
+	var aside := _target(Vector2(62, 32))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.7)
+	assert_eq(_hits(aside), 1)
+
+
+## La Proue : le premier mordu prend davantage, du même tirage.
+func test_a_prow_hits_the_first_bitten_harder() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.PROW, 100.0]])
+	# Hors de portée du coup d'arme qui lance la vague.
+	var first := _target(Vector2(42, 0))
+	var second := _target(Vector2(66, 0))
+	# Sans le critique, qui se tire coup par coup.
+	var bites := []
+	for t: Hurtbox in [first, second]:
+		t.damaged.connect(
+			func(info: DamageInfo) -> void:
+				bites.append(info.amount / (info.cast.crit_multiplier if info.is_crit else 1.0))
+		)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.7)
+	assert_eq(bites.size(), 2)
+	assert_almost_eq(float(bites[0]), float(bites[1]) * 2.0, 0.01)
+
+
+## La Lame de fond et les Brisants : le mordu est emporté, puis jeté.
+func test_an_undertow_carries_then_breakers_throw() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.UNDERTOW, 1.0], [SkillStats.BREAKERS, 50.0]])
+	var grunt := _grunt(Vector2(46, 0))
+	grunt.stats = grunt.stats.duplicate()
+	grunt.stats.max_health = 9999.0
+	grunt._set_health(9999.0)
+	var hits := []
+	grunt.hurtbox.damaged.connect(func(info: DamageInfo) -> void: hits.append(info.amount))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.7)
+	assert_gt(grunt.global_position.x, 70.0, "emporté")
+	assert_eq(hits.size(), 2, "mordu, puis jeté")
+
+
+## Le Va-et-vient : sous le Ressac, l'aller, le retour, et un troisième passage.
+func test_to_and_fro_sends_the_backwash_a_third_time() -> void:
+	_learn_with("manual_weapons", "wave_slash", [[SkillStats.TO_AND_FRO, 1.0]], Skill.Shape.BOOMERANG)
+	var ahead := _target(Vector2(50, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(2.0)
+	assert_eq(_hits(ahead), 3)
+
+
+# --------------------------------------------------------------------------
+# Cyclone (jalon 46)
+# --------------------------------------------------------------------------
+
+## Le Pied ferme : des lignes du geste entretenu, tant qu'il tourne.
+func test_steadfast_holds_while_the_cyclone_spins() -> void:
+	_learn_with("manual_weapons", "cyclone", [["damage_taken", -5.0], ["move_speed", -10.0, true]])
+	var taken := _p.stats.damage_taken
+	var speed := _p.stats.move_speed
+	assert_true(_p.cast_slot(2))
+	assert_almost_eq(_p.stats.damage_taken, taken - 5.0, 0.001)
+	assert_almost_eq(_p.stats.move_speed, speed * 0.9, 0.01)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2), "éteint")
+	assert_almost_eq(_p.stats.damage_taken, taken, 0.001)
+
+
+## Le Vertige : après deux secondes de tour, les frappes se rapprochent.
+func test_vertigo_brings_the_strikes_closer() -> void:
+	_learn_with("manual_weapons", "cyclone", [[SkillStats.VERTIGO, 50.0]])
+	var target := _target(Vector2(20, 0))
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(2.0)
+	var before := _hits(target)
+	await wait_seconds(1.0)
+	assert_gte(_hits(target) - before, 5, "0,35 s ramenées à 0,175")
+
+
+## Les Derviches et le Sirocco : deux petits tours qui partent devant ; la Trombe les mène
+## à ce qu'ils auraient manqué.
+func test_dervishes_set_out_and_a_waterspout_steers_them() -> void:
+	_learn_with(
+		"manual_weapons", "cyclone",
+		[[SkillStats.DERVISHES, 1.0], [SkillStats.SIROCCO, 1.0], [SkillStats.WATERSPOUT, 1.0]]
+	)
+	var aside := _target(Vector2(70, 55))
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_eq(_children_of(Dervish).size(), 2)
+	await wait_seconds(1.2)
+	assert_gte(_hits(aside), 1)
+
+
+## Le Dénouement et le Coup de vent : relâché, le tour frappe une dernière fois, et repousse.
+func test_an_unwinding_strikes_once_more_and_a_gust_pushes() -> void:
+	_learn_with("manual_weapons", "cyclone", [[SkillStats.DENOUEMENT, 20.0], [SkillStats.GUST, 1.0]])
+	var target := _target(Vector2(20, 0))
+	var pushes := _knockbacks_on(target)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.0)
+	var before := pushes.size()
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(pushes.size(), before + 1)
+	assert_eq(pushes[-1], SkillStats.GUST_FORCE)
+
+
+## La Ronde folle : sous le Cyclone, les épées de l'Épée spirale tournent deux fois plus vite.
+func test_a_mad_round_spins_the_swords_under_the_cyclone() -> void:
+	_learn_with("manual_weapons", "cyclone", [[SkillStats.MAD_ROUND, 15.0]])
+	assert_true(_p.invest(0, "spiral_sword"))
+	_p.bar.put(3, "spiral_sword")
+	assert_true(_p.cast_slot(3))
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_almost_eq(_p.spin_madness(), 15.0, 0.001)
+	var turned: float = await _turned_in(0.25)
+	assert_almost_eq(turned, BladeCrown.ROTATION * SkillStats.MAD_SPIN * 0.25, 0.25)
+
+
+# --------------------------------------------------------------------------
+# Ruée tranchante (jalon 46)
+# --------------------------------------------------------------------------
+
+func _frail_grunt(position: Vector2) -> Enemy:
+	var grunt := _grunt(position)
+	grunt._set_health(1.0)
+	return grunt
+
+
+## La Voltige : invulnérable à l'arrivée, un temps.
+func test_a_vault_shelters_on_landing() -> void:
+	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.VAULT, 1.0]])
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.hurtbox.invulnerable)
+	await wait_seconds(SkillStats.VAULT_TIME + 0.1)
+	assert_false(_p.hurtbox.invulnerable)
+
+
+## La Relance et l'Hallali : un tué rend la ruée, et la suivante compte la relance.
+func test_a_relaunch_refunds_the_dash_and_the_hallali_counts() -> void:
+	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.RELAUNCH, 1.0], [SkillStats.HALLALI, 50.0]])
+	_frail_grunt(Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.4)
+	assert_eq(_p._recharges[2], 0.0, "rendue")
+	assert_eq(_p._hallali, 1)
+	assert_true(_p.cast_slot(2), "la ruée suivante, plus forte, ne tue rien")
+	await wait_seconds(0.4)
+	assert_gt(_p._recharges[2], 0.0, "pas rendue")
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p._hallali, 0, "lancée sans relance, le compte retombe")
+
+
+## La Trouée : chaque ennemi traversé renforce le choc d'arrivée.
+func test_a_breakthrough_feeds_the_arrival_shock() -> void:
+	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.END_BURST, 20.0], [SkillStats.BREAKTHROUGH, 50.0]])
+	_target(Vector2(40, 0))
+	_target(Vector2(80, 0))
+	await wait_physics_frames(2)
+	var plain := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1).total_max()
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var blast: Explosion = _children_of(Explosion)[0]
+	assert_almost_eq(blast._cast.total_max(), plain * 2.0, 0.01, "deux traversés, +50 % chacun")
+
+
+## La Retombée : la réception du bond assomme, la moitié pour une élite, puis lâche.
+func test_a_fallout_stuns_on_landing() -> void:
+	_learn_with(
+		"manual_weapons", "slicing_dash", [[SkillStats.END_BURST, 32.0], [SkillStats.FALLOUT, 1.0]],
+		Skill.Shape.LEAP
+	)
+	var grunt := _grunt(Vector2(Player.PLACEMENT_RANGE + 10.0, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_eq(grunt.states.speed_factor, 0.0, "assommé")
+	assert_eq(grunt.get_children().filter(func(n: Node) -> bool: return n is StunMark).size(), 1, "ses étoiles")
+	await wait_seconds(SkillStats.FALLOUT_TIME + 0.1)
+	assert_eq(grunt.states.speed_factor, 1.0)
+	assert_eq(grunt.get_children().filter(func(n: Node) -> bool: return n is StunMark and not n.is_queued_for_deletion()).size(), 0, "parties avec lui")
+
+
+## Le Pas chassé : les ruées enchaînées se comptent, une pause remet à zéro.
+func test_a_chasse_counts_chained_dashes() -> void:
+	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.CHASSE, 10.0]])
+	for i in 3:
+		_p._recharges[2] = 0.0
+		assert_true(_p.cast_slot(2))
+		await wait_physics_frames(2)
+	assert_eq(_p._chasse, 2)
+	await wait_seconds(SkillStats.CHASSE_WINDOW + 0.1)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_eq(_p._chasse, 0)
+
+
+## L'allonge de la fiche pousse la hitbox (jalon 46) : un affixe ou un passif d'allonge
+## n'y changeait rien, la capsule était fixe dans la scène.
+func test_the_reach_of_the_sheet_moves_the_blade() -> void:
+	_learn("manual_weapons", ["heavy_strike"])
+	var far := _target(Vector2(46, 0))
+	await wait_physics_frames(2)
+	await _strike_again()
+	assert_eq(_hits(far), 0, "hors de l'allonge de base")
+	_p.base_stats = _p.base_stats.duplicate()
+	_p.base_stats.attack_range = 50.0
+	_p.recompute_stats()
+	await _strike_again()
+	assert_eq(_hits(far), 1, "à portée de la lame allongée")
+	assert_almost_eq(_p.strike_reach(), 50.0 - 8.0, 0.01, "le Brise-sol et l'impact suivent")
+
+
+## Le Coupe-jarret est dans le lancer résolu : la fenêtre des déclenchements le lit.
+func test_a_hamstring_is_in_the_resolved_dash() -> void:
+	var bare := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1).status_chance_increase
+	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.HAMSTRING, 50.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1)
+	assert_almost_eq(cast.status_chance_increase, bare + 50.0, 0.001)

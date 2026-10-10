@@ -41,6 +41,7 @@ const STATE_TEXTS := [
 	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts.",
 	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue, ou achèvent le maudit sous un seuil de vie.",
 	"Posé par la Surchauffe de la Boule de feu, jamais par un coup ordinaire. Chaque coup de la boule en ajoute une charge, jusqu'à {charges}, pendant {duree} s : la boule suivante y frappe plus fort pour chaque charge.",
+	"Posé par la Brèche de la Frappe lourde, jamais par un coup ordinaire. Le fêlé subit davantage de tous les coups d'arme, pendant {duree} s : leurs dégâts sont multipliés par sa force, que la Brèche fixe.",
 ]
 
 var _index: VBoxContainer

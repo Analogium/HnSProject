@@ -75,6 +75,12 @@ func take_damage(info: DamageInfo) -> void:
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:
+		# Le Fer rouge (jalon 46) : avant que ce coup n'embrase, ce qui brûlait déjà repart.
+		if info.cast != null and info.cast.red_iron > 0.0:
+			states.extend(StatusEffects.Kind.IGNITE, info.cast.red_iron)
+		# La Lacération (jalon 46) : de même pour le saignement.
+		if info.cast != null and info.cast.laceration > 0.0:
+			states.extend(StatusEffects.Kind.BLEED, info.cast.laceration)
 		states.suffer(
 			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
 			info.cast.status_chance_increase if info.cast != null else 0.0, source, info.cast
@@ -99,6 +105,10 @@ func take_damage(info: DamageInfo) -> void:
 			states.charge(StatusEffects.Kind.OVERHEAT, SkillStats.OVERHEAT_MOST, info.author, source)
 		if info.cast != null and info.cast.melt > 0.0:
 			states.melt(info.cast.melt)
+		# La Brèche (jalon 46) : sans tirage, et à sa force — le multiple des coups d'arme.
+		if info.cast != null and info.cast.breach > 0.0:
+			var breach := StatusEffects.Kind.BREACH
+			states.put(breach, 0.0, info.author, source, info.cast.strength_of(breach))
 
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la

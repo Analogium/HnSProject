@@ -45,9 +45,6 @@ const LANDING_STEP := 8.0
 ## Où une frappe vive s'arrête devant sa cible, de centre à centre : les deux corps se
 ## touchent sans se chevaucher.
 const LUNGE_REACH := 14.0
-## Où tombe le Brise-sol, devant le corps : au bout de la hitbox (20 px), là où la lame
-## frapperait.
-const SLAM_REACH := 24.0
 
 ## Ce qu'une mise à mort verse à chaque flacon porté, plus par affixe de l'ennemi : une
 ## élite remplit plus vite, comme la rareté d'un monstre de PoE. Provisoire.
@@ -72,6 +69,7 @@ const CHARGES_PER_AFFIX := 1.0
 @onready var health_bar: HealthBar = $HealthBar
 @onready var attack_pivot: Node2D = $AttackPivot
 @onready var hitbox: Area2D = $AttackPivot/Hitbox
+@onready var _hit_shape: CollisionShape2D = $AttackPivot/Hitbox/CollisionShape2D
 @onready var swing_arc: SwingArc = $AttackPivot/SwingArc
 @onready var camera: Camera2D = $Camera2D
 ## Le corps, pour chercher où une ruée peut atterrir.
@@ -159,13 +157,24 @@ var _strides := {}
 var _ramps := 0
 var _ramp_idle := INF
 var _throttle := 0
-## Le Glacier (jalon 44) : les lancers comptés.
+## Le Glacier (jalon 44) : les lancers comptés. Le Coup sûr (jalon 46) : les siens.
 var _glacier := 0
+var _sure := 0
 ## L'Apnée (jalon 45) : l'heure du jeu, et celle du dernier lancer de chaque compétence.
 var _clock := 0.0
 var _last_cast := {}
 ## Le Sursis (jalon 45) : l'attente avant qu'il puisse revenir.
 var _reprieve_wait := 0.0
+## La Riposte (jalon 46) : le temps qui reste après un coup reçu.
+var _riposte_left := 0.0
+## La Relance et l'Hallali (jalon 46) : les relances d'affilée, et si la dernière ruée en a
+## gagné une. Le Pas chassé : les ruées enchaînées, et l'heure de la dernière.
+var _hallali := 0
+var _relaunched := false
+var _chasse := 0
+var _last_chasse := -INF
+## Le coup du geste en cours : le second d'une croix vide le saignement (jalon 46).
+var _hit_index := 0
 ## La Glace noire (jalon 44) : le dernier sol de la nova, son centre, son rayon, ce qu'il
 ## lui reste, ce qu'il donne. Le Sursaut : l'attente avant le suivant.
 var _black_ice_at := Vector2.ZERO
@@ -180,10 +189,11 @@ var _calm := 0.0
 var _tension := 0.0
 var _tension_left := 0.0
 ## Le Condensateur (jalon 43) : les morsures de charges comptées, et ce qu'elles ont mordu,
-## que la Décharge totale rend d'un coup. La Cage de Faraday : son reste, son attente.
+## que la Décharge totale rend d'un coup. La Cage de Faraday : son attente. Ce qui reste
+## d'une invulnérabilité posée par elle ou par la Voltige (jalon 46).
 var _condensed := 0
 var _condensed_power := 0.0
-var _faraday_left := 0.0
+var _untouchable_left := 0.0
 var _faraday_wait := 0.0
 var _already_hit: Array[Node] = []
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
@@ -258,6 +268,7 @@ func _physics_process(delta: float) -> void:
 	_rebirth_wait = maxf(_rebirth_wait - delta, 0.0)
 	_clock += delta
 	_reprieve_wait = maxf(_reprieve_wait - delta, 0.0)
+	_riposte_left = maxf(_riposte_left - delta, 0.0)
 	for index: int in _strides.keys():
 		_strides[index] -= delta
 		if _strides[index] <= 0.0:
@@ -272,9 +283,9 @@ func _physics_process(delta: float) -> void:
 	if calm != _calm:
 		_calm = calm
 		_restat()
-	if _faraday_left > 0.0:
-		_faraday_left -= delta
-		if _faraday_left <= 0.0:
+	if _untouchable_left > 0.0:
+		_untouchable_left -= delta
+		if _untouchable_left <= 0.0:
 			hurtbox.invulnerable = false
 
 	_regen(delta)
@@ -417,6 +428,31 @@ func cast_slot(index: int) -> bool:
 		_glacier += 1
 		if _glacier % (SkillStats.SERAC_EVERY if cast.serac > 0.0 else SkillStats.GLACIER_EVERY) == 0:
 			cast = cast.swollen(1.0 + SkillStats.GLACIER_MORE * 0.01, SkillStats.GLACIER_RADIUS)
+	# Le Coup sûr (jalon 46) : un lancer sur trois, critique à coup sûr.
+	if cast.sure_strike > 0.0:
+		_sure += 1
+		if _sure % SkillStats.SURE_EVERY == 0:
+			cast = cast.echoed(1.0)
+			cast.crit_chance = 1.0
+			cast.is_sure = true
+	# La Relance et l'Hallali (jalon 46) : la ruée rendue par un tué frappe plus fort ; une
+	# ruée lancée sans relance remet le compte à zéro.
+	if cast.relaunch > 0.0:
+		if not _relaunched:
+			_hallali = 0
+		_relaunched = false
+		if cast.hallali > 0.0 and _hallali > 0:
+			cast = cast.echoed(1.0 + cast.hallali * 0.01 * float(_hallali))
+	# Le Pas chassé (jalon 46) : une ruée qui suit la précédente de près frappe plus fort.
+	if cast.chasse > 0.0:
+		var chained := _clock - _last_chasse <= SkillStats.CHASSE_WINDOW
+		_chasse = mini(_chasse + 1, SkillStats.CHASSE_MOST) if chained else 0
+		_last_chasse = _clock
+		cast = cast.echoed(1.0 + cast.chasse * 0.01 * float(_chasse))
+	# La Riposte (jalon 46) : un coup reçu depuis peu, et la croix suivante le rend.
+	if cast.riposte > 0.0 and _riposte_left > 0.0:
+		cast = cast.echoed(1.0 + cast.riposte * 0.01)
+		_riposte_left = 0.0
 	# L'Apnée (jalon 45) : plus fort à chaque seconde depuis le précédent ; le premier, au plein.
 	if cast.apnea > 0.0:
 		var most := SkillStats.DEEP_DIVE_MOST if cast.deep_dive > 0.0 else SkillStats.APNEA_MOST
@@ -800,6 +836,14 @@ func _light(skill_id: String, node: Node) -> void:
 	after_buff_change()
 
 
+## La Ronde folle (jalon 46) : ce que donne aux épées le Cyclone qui tourne, zéro sans lui.
+func spin_madness() -> float:
+	for node: Variant in _lit.values():
+		if is_instance_valid(node) and node is Cyclone:
+			return (node as Cyclone).madness()
+	return 0.0
+
+
 ## Combien d'épées tournent autour du personnage.
 func orbiting_swords() -> int:
 	return _crown.count() if _crown != null else 0
@@ -936,11 +980,19 @@ func melee_blow(attacker: Enemy, amount: float) -> void:
 		_effects_parent(), PackedVector2Array([global_position, attacker.global_position]),
 		DamageType.COLORS[DamageType.Kind.LIGHTNING]
 	)
-	# Jamais par-dessus une invulnérabilité posée ailleurs, qu'elle lèverait en finissant.
-	if _faraday_wait <= 0.0 and not hurtbox.invulnerable and lit_number(SkillStats.FARADAY) > 0.0:
-		hurtbox.invulnerable = true
-		_faraday_left = SkillStats.FARADAY_TIME
+	if _faraday_wait <= 0.0 and lit_number(SkillStats.FARADAY) > 0.0 \
+			and _untouchable(SkillStats.FARADAY_TIME):
 		_faraday_wait = SkillStats.FARADAY_PERIOD
+
+
+## Invulnérable pour ce temps — la Cage de Faraday, la Voltige. Jamais par-dessus une
+## invulnérabilité posée ailleurs, qu'elle lèverait en finissant.
+func _untouchable(seconds: float) -> bool:
+	if hurtbox.invulnerable:
+		return false
+	hurtbox.invulnerable = true
+	_untouchable_left = seconds
+	return true
 
 
 ## Un ennemi tué. **Depuis un rappel de collision** : ce qui naît ici passe par
@@ -971,6 +1023,9 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		var tomb := resolve(SkillCatalog.by_id(SkillStats.TOMB_SKILL), skill_points(SkillStats.TOMB_SKILL))
 		if tomb.endless_winter > 0.0:
 			(_lit[SkillStats.TOMB_SKILL] as Buff).prolong(SkillStats.ENDLESS_TIME)
+	# La Relance (jalon 46) : un tué rend la ruée sur-le-champ.
+	if cast.relaunch > 0.0:
+		_relaunch(cast.skill_id)
 	# Les Âmes consumées (jalon 42) : chaque tué rend une part des PV max.
 	if cast.soul_feast > 0.0:
 		heal(stats.max_health * cast.soul_feast * 0.01)
@@ -978,6 +1033,15 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		_stack_on_kill()
 	elif cast.keywords.has(Keywords.SPELL):
 		_siphon()
+
+
+func _relaunch(skill_id: String) -> void:
+	for i in _recharges.size():
+		if bar.id_of(i) == skill_id:
+			_recharges[i] = 0.0
+	if not _relaunched:
+		_hallali = mini(_hallali + 1, SkillStats.HALLALI_MOST)
+	_relaunched = true
 
 
 ## Un corps qui portait l'état d'un de nos lancers est tombé, de quoi que ce soit (jalon 45) :
@@ -1035,6 +1099,8 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		LeapArc.leave(_effects_parent(), from_value, global_position, cast)
 	elif cast.period > 0.0 and cast.radius > 0.0:
 		DashTrail.leave(_effects_parent(), from_value, global_position, cast, states)
+	if cast.vault > 0.0:
+		_untouchable(SkillStats.VAULT_TIME)
 	elif skill.grants_buffs():
 		# Le Galop (jalon 43) : le nouvel appel reprend les charges de l'ancien, plus une.
 		var held := maxi(lit_stacks(skill.id), 1) if lit(skill.id) else 0
@@ -1065,7 +1131,18 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 			charge_life, _charge_bit
 		)
 	if cast.end_burst > 0.0:
-		Explosion.of_cast(_effects_parent(), global_position, cast, cast.end_burst, states)
+		# La Trouée (jalon 46) : chaque ennemi traversé renforce le choc d'arrivée.
+		var burst := cast
+		if cast.breakthrough > 0.0:
+			var crossed := Targets.in_capsule(get_world_2d(), from_value, global_position, cast.radius * 2.0)
+			burst = cast.echoed(1.0 + cast.breakthrough * 0.01 * float(crossed.size()))
+		Explosion.of_cast(_effects_parent(), global_position, burst, cast.end_burst, states)
+		# La Retombée (jalon 46) : la réception du bond assomme ce qu'elle frappe.
+		if cast.fallout > 0.0 and cast.shape == Skill.Shape.LEAP:
+			for target in Targets.in_circle(get_world_2d(), global_position, cast.end_burst):
+				var body := target.get_parent() as Enemy
+				if body != null:
+					body.stun(SkillStats.FALLOUT_TIME)
 		# Le Tonnerre roulant (jalon 43) : l'arrivée gronde encore, au même endroit.
 		if cast.rolling_thunder > 0.0:
 			for i in SkillStats.ROLLING_COUNT:
@@ -1134,15 +1211,30 @@ func _charm(cast: SkillStats) -> void:
 ## Le Brise-sol (jalon 39) : la lame s'abat devant soi et frappe tout le cercle de
 ## l'impact, le recul partant de son centre. Un geste : un gel, une secousse de frappe.
 func _slam(cast: SkillStats) -> void:
-	var impact := global_position + facing * SLAM_REACH
-	var struck := Targets.strike_circle(
-		get_world_2d(), impact, cast.radius, cast, states, stats.knockback_force + cast.knockback
-	)
+	var impact := global_position + facing * strike_reach()
+	var knockback := stats.knockback_force + cast.knockback
+	var struck := Targets.strike_circle(get_world_2d(), impact, cast.radius, cast, states, knockback)
 	GroundSlam.leave(_effects_parent(), impact, cast)
 	heal(cast.life_on_hit * float(struck.size()))
+	for target in struck:
+		_shove(target, cast, impact, knockback)
 	if not struck.is_empty():
-		Game.hit_stop()
+		Game.hit_stop(_stop_of(cast))
 		Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
+	if cast.tremor > 0.0:
+		get_tree().create_timer(SkillStats.TREMOR_GAP, false).timeout.connect(_tremor.bind(impact, cast))
+
+
+## Le Tremblement (jalon 46) : un second anneau autour du Brise-sol, au-delà de son cercle.
+## Un tirage pour tout l'anneau (invariant 3).
+func _tremor(impact: Vector2, cast: SkillStats) -> void:
+	var ring := cast.echoed(cast.tremor * 0.01)
+	ring.radius = cast.radius * SkillStats.TREMOR_REACH
+	GroundSlam.leave(_effects_parent(), impact, ring)
+	var parts := ring.roll(Game.rng)
+	for target in Targets.in_circle(get_world_2d(), impact, ring.radius):
+		if impact.distance_to(target.global_position) > cast.radius:
+			Targets.strike(target, parts, impact, states, ring)
 
 
 ## La cible d'une frappe vive : parmi les ennemis à sa portée, **le plus proche de la
@@ -1330,13 +1422,46 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 			await get_tree().physics_frame
 		_hit_parts = cast.roll(Game.rng)
 		_hit_cast = cast
+		_hit_index = hit
+		# L'Ordalie (jalon 46) : le second coup de la croix bénit à coup sûr.
+		if hit == 1 and cast.ordeal > 0.0:
+			_hit_cast = cast.echoed(1.0)
+			_hit_cast.status_chance_increase += SkillStats.SURE_STATE
 		_already_hit.clear()
 		# set_deferred : on est peut-être dans un rappel de physique.
 		hitbox.set_deferred("monitoring", true)
 		# ignore_time_scale : sinon le hit-stop étire la fenêtre de swing.
 		await get_tree().create_timer(swing_duration, true, false, true).timeout
 		hitbox.set_deferred("monitoring", false)
+	# La Tierce (jalon 46) : après la croix, un estoc droit devant.
+	if cast.tierce > 0.0:
+		await get_tree().create_timer(SkillStats.TIERCE_GAP, false).timeout
+		_thrust(cast)
 	_is_swinging = false
+
+
+## L'estoc de la Tierce : le plus proche sur sa ligne, ou tout ce qu'elle traverse sous la
+## Quarte, plus loin. Un tirage pour toute la ligne (invariant 3).
+func _thrust(cast: SkillStats) -> void:
+	if is_dead:
+		return
+	var thrust := cast.echoed(SkillStats.TIERCE_PART)
+	var reach := stats.attack_range + SkillStats.TIERCE_BEYOND \
+		+ (SkillStats.QUARTE_REACH if cast.quarte > 0.0 else 0.0)
+	var tip := global_position + facing * reach
+	var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.TIERCE_WIDTH)
+	if cast.quarte <= 0.0 and not struck.is_empty():
+		struck.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
+			return global_position.distance_squared_to(a.global_position) \
+				< global_position.distance_squared_to(b.global_position))
+		struck = [struck[0]] as Array[Hurtbox]
+	var parts := thrust.roll(Game.rng)
+	for target in struck:
+		Targets.strike(target, parts, global_position, states, thrust)
+	# Sans la Quarte, l'étoile éclate sur celui qu'il frappe.
+	if cast.quarte <= 0.0 and not struck.is_empty():
+		tip = global_position + facing * global_position.distance_to(struck[0].global_position)
+	ThrustTrail.leave(_effects_parent(), global_position, tip, DamageType.COLORS[thrust.nature])
 
 
 ## Les traits répartis sur l'écart du geste résolu : tout vient de
@@ -1392,6 +1517,20 @@ func _regen(delta: float) -> void:
 		_set_health(health + stats.health_regen * delta)
 	if stats.mana_regen > 0.0 and mana < stats.max_mana:
 		_set_mana(mana + stats.mana_regen * delta)
+
+
+## Le milieu de la lame, devant le corps : le centre de la hitbox, où le Brise-sol tombe et
+## où la Frappe lourde dessine son impact.
+func strike_reach() -> float:
+	return _hit_shape.position.x
+
+
+## L'allonge de la fiche (jalon 46) : le bout de la hitbox est à `attack_range`. Elle était
+## fixe dans la scène, et l'allonge d'un affixe ou d'un passif ne changeait rien.
+func _reach_out() -> void:
+	var blade := (_hit_shape.shape as CapsuleShape2D).radius
+	_hit_shape.position.x = maxf(stats.attack_range - blade, 0.0)
+	swing_arc.impact_reach = _hit_shape.position.x
 
 
 ## Reconstruit la fiche **de zéro** : additionner compterait les bonus à chaque appel.
@@ -1458,6 +1597,7 @@ func recompute_stats() -> void:
 
 	# Réassignée : la hurtbox défendrait sinon avec l'ancienne fiche.
 	hurtbox.stats = stats
+	_reach_out()
 
 
 ## Ce que les buffs allumés versent dans la fiche, par point placé : les lignes d'un
@@ -1885,15 +2025,64 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	info.author = states
 	(area as Hurtbox).take_damage(info)
 	heal(_hit_cast.life_on_hit)
+	_shove(area as Hurtbox, _hit_cast, global_position, info.knockback)
+	if _hit_index == 1 and _hit_cast.bloodletting > 0.0:
+		_bleed_out(area as Hurtbox, _hit_cast)
 
 	# **Au premier touché seulement** : un balayage est un geste, pas cinq.
 	if _already_hit.size() == 1:
-		Game.hit_stop()
+		Game.hit_stop(_stop_of(_hit_cast))
 		Game.shake_camera(camera, _hit_shake)
+		# L'Escorte (jalon 46) : une épée de la ronde suit la Frappe lourde et le Coup en croix.
+		if _crown != null and _hit_index == 0 and _hit_cast.skill_id in SkillStats.ESCORTED:
+			_crown.escort(area as Hurtbox)
+		# Le Coup de massue (jalon 46) : le coup sûr frappe aussi autour de sa cible.
+		if _hit_cast.is_sure and _hit_cast.maul > 0.0:
+			Explosion.put(
+				_effects_parent(), area.global_position,
+				DamageType.scaled(_hit_parts, SkillStats.MAUL_PART), SkillStats.MAUL_RADIUS, area,
+				DamageType.COLORS[_hit_cast.nature], states, _hit_cast
+			)
+
+
+## La Saignée (jalon 46) : le second coup de la croix vide le saignement d'un coup, plus fort ;
+## la Transfusion en rend une part. Un coup de plus, sans critique ni état propre : ce qui
+## restait à saigner.
+func _bleed_out(target: Hurtbox, cast: SkillStats) -> void:
+	if target.states == null:
+		return
+	var left := target.states.drain(StatusEffects.Kind.BLEED) * (1.0 + cast.bloodletting * 0.01)
+	if left <= 0.0:
+		return
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.PHYSICAL] = left
+	Targets.strike(target, parts, global_position, states, cast.bled())
+	heal(left * cast.transfusion * 0.01)
+
+
+## Le gel d'un coup : celui du jeu, doublé sous le Coup sûr (jalon 46).
+func _stop_of(cast: SkillStats) -> float:
+	return Game.hit_stop_duration * (SkillStats.SURE_STOP if cast.is_sure else 1.0)
+
+
+## La Collision (jalon 46) : le repoussé est armé pour blesser celui qu'il heurtera ; les
+## Quilles lui passent le recul du coup.
+func _shove(target: Hurtbox, cast: SkillStats, from_value: Vector2, knockback: float) -> void:
+	if cast.collision <= 0.0 or knockback <= 0.0:
+		return
+	var enemy := target.get_parent() as Enemy
+	if enemy != null and not enemy.is_dead:
+		enemy.shove(
+			cast.collided(), states, from_value.direction_to(enemy.global_position),
+			knockback if cast.skittles > 0.0 else 0.0
+		)
 
 
 func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
+		return
+	# Le Brise-lames (jalon 46) : une épée de la ronde prend le coup à sa place.
+	if _crown != null and _crown.take_blow():
 		return
 	var lost := info.amount - RagDoll.shoulder(self, info.amount)
 	var necrosis := _necrosis()
@@ -1903,6 +2092,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	if necrosis != null and necrosis.outlet > 0.0 and lost >= stats.max_health * SkillStats.OUTLET_LOSS:
 		(_lit[SkillStats.NECROSIS_SKILL] as Buff).unburden(necrosis)
 	_set_health(health - lost)
+	_riposte_left = SkillStats.RIPOSTE_WINDOW
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:

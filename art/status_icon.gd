@@ -99,6 +99,15 @@ const MASKS := [
 		".#...#.",
 		"...#...",
 	],
+	[  # fêlé : un écu fendu, la fente cernée par le contour (jalon 46)
+		".#####.",
+		"#o.####",
+		"#o#.###",
+		"####.##",
+		".##.##.",
+		"..#.#..",
+		"...#...",
+	],
 ]
 
 static var _cache: Array[Texture2D] = []

@@ -1494,6 +1494,21 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 					Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.EFFECT_OF[kind]]),
 					_times(cast.strength_of(kind)), StatusEffects.color(kind)
 				))
+		# La Herse (jalon 46) : le sillon de la vague tire le saignement à sa propre chance ;
+		# l'Ordalie bénit à coup sûr au second coup de la croix.
+		var physical: float = shares[DamageType.Kind.PHYSICAL]
+		if cast.harrow > 0.0 and cast.ground_duration > 0.0 and physical > 0.0:
+			var bleed := StatusEffects.Kind.BLEED
+			var furrow := StatusEffects.factor_of(factors[bleed], cast.ground().status_chance_increase)
+			out.append(SheetLine.new(
+				Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.HARROW]),
+				_chance(StatusEffects.chance(physical, 0.0, furrow)), StatusEffects.color(bleed)
+			))
+		if cast.ordeal > 0.0 and shares[DamageType.Kind.HOLY] > 0.0:
+			out.append(SheetLine.new(
+				Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.ORDEAL]), _chance(1.0),
+				StatusEffects.color(StatusEffects.Kind.BLESSING)
+			))
 		# La Surchauffe (jalon 42) : posée à chaque coup, sans tirage, et ce que vaut une charge.
 		if cast.overheat > 0.0:
 			var heat := StatusEffects.Kind.OVERHEAT
@@ -1505,6 +1520,17 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 				Texts.t("{part} par charge, {charges} au plus").format({
 					"part": _increase(1.0 + cast.overheat * 0.01), "charges": SkillStats.OVERHEAT_MOST,
 				}), StatusEffects.color(heat)
+			))
+		# La Brèche (jalon 46) : posée à chaque coup, sans tirage, à la force qui multiplie les
+		# coups d'arme.
+		if cast.breach > 0.0:
+			var breach := StatusEffects.Kind.BREACH
+			out.append(SheetLine.new(
+				Group.ON_HIT, StatusEffects.name(breach), _chance(1.0), StatusEffects.color(breach)
+			))
+			out.append(SheetLine.new(
+				Group.ON_HIT, Texts.t(SkillStats.LABELS[SkillStats.BREACH]),
+				_times(cast.strength_of(breach)), StatusEffects.color(breach)
 			))
 		# Ce que rend ou fait chaque ennemi touché (jalon 39).
 		for number: String in [SkillStats.KNOCKBACK, SkillStats.LIFE_ON_HIT, SkillStats.MANA_ON_HIT]:

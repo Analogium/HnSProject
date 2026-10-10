@@ -729,7 +729,8 @@ func test_each_node_line_targets_a_cast_number() -> void:
 	var sheet := CharacterStats.new()
 	for base in _books():
 		for c in base.manual.cells:
-			var buff := c.skill != null and c.skill.grants_buffs()
+			# Un geste entretenu porte aussi des lignes de buff : le Pied ferme du Cyclone (jalon 46).
+			var buff := c.skill != null and (c.skill.grants_buffs() or c.skill.shape in Skill.SUSTAINED_SHAPES)
 			for n in c.talents:
 				for l in n.lines:
 					var cast_line := l.scope.is_empty() and SkillStats.modifiable(l.stat)

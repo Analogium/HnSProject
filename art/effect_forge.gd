@@ -975,6 +975,18 @@ static func dissolve(img: Image, gone: float) -> void:
 	img.copy_from(kept)
 
 
+## La pièce et ses `steps` crans de dissolution, du plein au presque vide : ce qui naît à
+## l'angle exact une fois par geste (la frappe vive, l'estoc de la Tierce) s'efface ainsi.
+static func dissolving(piece: Piece, steps: int) -> Array[Piece]:
+	var out: Array[Piece] = [piece]
+	var img := piece.texture.get_image()
+	for i in range(1, steps):
+		var copy := img.duplicate() as Image
+		dissolve(copy, float(i) / float(steps))
+		out.append(Piece.new(ImageTexture.create_from_image(copy), piece.offset))
+	return out
+
+
 static func _rgba(img: Image) -> Image:
 	var copy := img.duplicate()
 	copy.convert(Image.FORMAT_RGBA8)
@@ -1049,6 +1061,38 @@ static func rotated(grid: Array, angle: float) -> Array:
 			line += best
 		out.append(line)
 	return out
+
+
+# --------------------------------------------------------------------------
+# Le chevalier (jalon 46)
+# --------------------------------------------------------------------------
+
+## L'étoile d'impact de l'estoc de la Tierce, en trois temps : elle éclate, s'ouvre, se
+## résorbe. Choisie sur planche avec son fuseau.
+const THRUST_STAR := [
+	[".......", "...w...", "...4...", ".w444w.", "...4...", "...w...", "......."],
+	[".......", "..w.w..", ".w.4.w.", "...4...", ".w.4.w.", "..w.w..", "......."],
+	[".......", "...3...", "..3.3..", ".3...3.", "..3.3..", "...3...", "......."],
+]
+## Les étoiles de l'assommé : la grande devant la tête, la petite derrière (planche).
+const STUN_STARS := [
+	[".......", "...4...", "...4...", ".44w44.", "...4...", "...4...", "......."],
+	[".......", ".......", "...3...", "..343..", "...3...", ".......", "......."],
+]
+const STAR_SIDE := 7
+## L'or des étoiles de l'assommé : ni le jaune pâle du sacré, ni le violet de la foudre.
+const STUN_GOLD := Color(1.0, 0.88, 0.45)
+
+static var _thrust_stars := {}
+static var _stun_stars := {}
+
+
+static func thrust_stars(tint: Color) -> Array:
+	return _sheet(_thrust_stars, THRUST_STAR, STAR_SIDE, STAR_SIDE, tint, tint.lerp(Color.WHITE, 0.7))
+
+
+static func stun_stars() -> Array:
+	return _sheet(_stun_stars, STUN_STARS, STAR_SIDE, STAR_SIDE, STUN_GOLD, STUN_GOLD.lerp(Color.WHITE, 0.7))
 
 
 ## L'épée d'Épée spirale, **pointe à droite** — le cap zéro —, dessinée une seule

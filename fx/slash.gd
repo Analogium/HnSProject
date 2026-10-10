@@ -194,6 +194,35 @@ static func _spindle(
 	return _bake(canvas, tint, gone, corner)
 
 
+## Le derviche du Cyclone (jalon 46), choisi sur planche contre un entonnoir, un diable de
+## poussière et une lame qui tournoie : deux bras de lame en spirale, au cap `turn`. Symétrique
+## d'un demi-tour, il n'a que la moitié de ses caps à fabriquer.
+const SPIRAL_SIDE := 27
+const SPIRAL_STEPS := 12
+const SPIRAL_TWIST := 0.38
+const SPIRAL_GROWTH := 0.95
+
+
+static func spiral(tint: Color, turn: int) -> EffectForge.Piece:
+	turn = turn % (TURNS / 2)
+	var key := "s%s|%d" % [tint.to_html(false), turn]
+	if _pieces.has(key):
+		return _pieces[key]
+	var canvas := PixelCanvas.new(SPIRAL_SIDE, SPIRAL_SIDE)
+	var center := Vector2(SPIRAL_SIDE, SPIRAL_SIDE) * 0.5
+	for arm in 2:
+		var previous := center
+		for step in SPIRAL_STEPS:
+			var angle := angle_of(turn) + PI * arm + SPIRAL_TWIST * step
+			var point := center + Vector2.from_angle(angle) * (1.0 + SPIRAL_GROWTH * step)
+			# Plus sombre en s'éloignant : le cœur du tour est le plus vif.
+			canvas.capsule(previous, point, 0.7, R_TINT, 0.4 - 0.05 * step)
+			previous = point
+	var piece := _bake(canvas, tint, 0.0, -center)
+	_pieces[key] = piece
+	return piece
+
+
 ## L'épée au cap `turn`, centrée sur son milieu. `ghost` la réduit à sa
 ## silhouette dans la teinte du coup — ce que montrent les images rémanentes.
 static func sword(tint: Color, turn: int, ghost: bool, gone: float) -> EffectForge.Piece:

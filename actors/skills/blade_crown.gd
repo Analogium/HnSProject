@@ -24,6 +24,9 @@ class Blade:
 	var contacts: Targets.Contacts
 	var age := 0.0
 	var place := 0.0
+	## L'Affûtage (jalon 46) : les ennemis qu'elle a coupés. La Parade : son attente.
+	var honed := 0
+	var parry_wait := 0.0
 
 
 var _blades: Array[Blade] = []
@@ -33,6 +36,8 @@ var _rotation := 0.0
 var author: StatusEffects
 ## Où partent les épées d'une volée : hors du porteur, qui les emmènerait avec lui.
 var effects: Node
+## Le Brise-lames (jalon 46) : l'attente avant qu'une épée puisse encaisser un autre coup.
+var _breakwater_wait := 0.0
 
 
 func _ready() -> void:
@@ -80,9 +85,15 @@ func _shelter_changed(cast: SkillStats) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_breakwater_wait = maxf(_breakwater_wait - delta, 0.0)
 	if _blades.is_empty():
 		return
-	_rotation = fmod(_rotation + ROTATION * delta, TAU)
+	# La Valse (jalon 46) : la plus rapide mène la ronde ; la Ronde folle la double encore.
+	var waltz := 0.0
+	for blade in _blades:
+		waltz = maxf(waltz, blade.cast.waltz)
+	var spin := ROTATION * (1.0 + waltz * 0.01) * (SkillStats.MAD_SPIN if _madness() > 0.0 else 1.0)
+	_rotation = fmod(_rotation + spin * delta, TAU)
 	var alive_ones: Array[Blade] = []
 	var gone: Array[Blade] = []
 	for blade in _blades:
@@ -100,6 +111,7 @@ func _physics_process(delta: float) -> void:
 	for i in _blades.size():
 		_blades[i].place = lerp_angle(_blades[i].place, TAU * float(i) / float(_blades.size()), slides)
 	_slice()
+	_parry(delta)
 	queue_redraw()
 
 
@@ -107,8 +119,85 @@ func _physics_process(delta: float) -> void:
 func _leave(blade: Blade) -> void:
 	if blade.cast.sword_volley > 0.0:
 		var at := to_global(_center(blade, _rotation + blade.place))
-		FlyingSword.throw(effects, at, at - global_position, blade.cast, author)
+		var sword := FlyingSword.throw(effects, at, at - global_position, blade.cast, author)
+		if blade.cast.rally > 0.0:
+			sword.home = self
 	_shelter_changed(blade.cast)
+
+
+## Le Ralliement (jalon 46) : une épée de la volée revient tourner, pour peu de temps, sans
+## repartir — dans la limite de la ronde.
+func rally(cast: SkillStats) -> void:
+	if full(cast.max_simultaneous()):
+		return
+	var back := cast.echoed(1.0)
+	back.duration = SkillStats.RALLY_LIFE
+	back.sword_volley = 0.0
+	add_to(back)
+
+
+## Le Brise-lames (jalon 46) : une épée qui le porte se brise à la place du coup. Vrai si
+## elle l'a pris : le coup ne fait rien. La Grenaille la fait éclater autour du porteur.
+func take_blow() -> bool:
+	if _breakwater_wait > 0.0:
+		return false
+	for blade in _blades:
+		if blade.cast.breakwater <= 0.0:
+			continue
+		_blades.erase(blade)
+		_breakwater_wait = SkillStats.BREAKWATER_WAIT
+		if blade.cast.grapeshot > 0.0:
+			Explosion.put(
+				effects, global_position,
+				DamageType.scaled(blade.cast.roll(Game.rng), blade.cast.grapeshot * 0.01),
+				SkillStats.GRAPESHOT_RADIUS, null, DamageType.COLORS[blade.cast.nature], author,
+				blade.cast
+			)
+		_shelter_changed(blade.cast)
+		queue_redraw()
+		return true
+	return false
+
+
+## L'Escorte (jalon 46) : un coup d'arme envoie le double d'une épée de la ronde sur sa
+## cible, à la part de l'Escorte ; l'épée, elle, continue de tourner.
+func escort(target: Hurtbox) -> void:
+	if _blades.is_empty() or _blades[0].cast.escort <= 0.0:
+		return
+	var blade := _blades[0]
+	var at := to_global(_center(blade, _rotation + blade.place))
+	var sent := blade.cast.echoed(blade.cast.escort * 0.01)
+	sent.sword_volley = at.distance_to(target.global_position) + CONTACT
+	sent.rally = 0.0
+	FlyingSword.throw(effects, at, at.direction_to(target.global_position), sent, author, target)
+
+
+## La Parade (jalon 46) : une épée qui croise un trait ennemi le brise, puis attend.
+func _parry(delta: float) -> void:
+	var widest := 0.0
+	for blade in _blades:
+		blade.parry_wait = maxf(blade.parry_wait - delta, 0.0)
+		if blade.cast.parry > 0.0:
+			widest = maxf(widest, blade.cast.radius)
+	if widest <= 0.0:
+		return
+	var bolts := Targets.bolts_in_circle(get_world_2d(), global_position, widest + CONTACT)
+	for blade in _blades:
+		if blade.cast.parry <= 0.0 or blade.parry_wait > 0.0:
+			continue
+		var center := to_global(_center(blade, _rotation + blade.place))
+		for bolt in bolts:
+			if is_instance_valid(bolt) and not bolt.is_queued_for_deletion() \
+					and center.distance_to(bolt.global_position) <= CONTACT:
+				bolt.queue_free()
+				blade.parry_wait = SkillStats.PARRY_WAIT / blade.cast.parry
+				break
+
+
+## La Ronde folle (jalon 46) : ce que le Cyclone allumé du porteur donne à ses épées.
+func _madness() -> float:
+	var player := get_parent() as Player
+	return player.spin_madness() if player != null else 0.0
 
 
 func _slice() -> void:
@@ -118,11 +207,17 @@ func _slice() -> void:
 	for blade in _blades:
 		widest = maxf(widest, blade.cast.radius)
 	var targets := Targets.in_circle(get_world_2d(), global_position, widest + CONTACT)
+	var mad := 1.0 + _madness() * 0.01
 	for blade in _blades:
 		var center := to_global(_center(blade, _rotation + blade.place))
 		for target in targets:
 			if center.distance_to(target.global_position) <= CONTACT and blade.contacts.accepts(target):
-				Targets.strike(target, blade.cast.roll(Game.rng), center, author, blade.cast)
+				# L'Affûtage (jalon 46) : chaque coupé rend la suivante plus forte.
+				var honed := 1.0 + blade.cast.honing * 0.01 * float(blade.honed)
+				var parts := DamageType.scaled(blade.cast.roll(Game.rng), honed * mad)
+				Targets.strike(target, parts, center, author, blade.cast)
+				if blade.cast.honing > 0.0:
+					blade.honed = mini(blade.honed + 1, SkillStats.HONING_MOST)
 
 
 func _center(blade: Blade, angle: float) -> Vector2:

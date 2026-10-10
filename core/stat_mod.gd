@@ -123,7 +123,10 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"snowball", "lull", "frosting", "mill", "top", "orb_bite", "fracture", "crystalline",
 	"march", "mend", "pack", "martyr", "apnea", "suction", "detonation",
 	"fertility", "gestation", "thorns", "sentence", "legacy",
-	"carrion", "moribund", "slow_agony",
+	"carrion", "moribund", "slow_agony", "breach", "collision", "tremor",
+	"riposte", "bloodletting", "transfusion", "waltz", "honing", "grapeshot", "escort",
+	"billow", "prow", "breakers", "harrow", "vertigo", "denouement", "mad_round",
+	"hamstring", "hallali", "breakthrough", "chasse",
 ]
 
 var stat: String

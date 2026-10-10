@@ -37,12 +37,12 @@ static func leave(parent: Node, from_value: Vector2, landing: Vector2, target: V
 
 func _ready() -> void:
 	z_index = 2
-	_path = _dissolving(Slash.cleave(Slash.STEEL, _toward, PATH_WIDTH))
+	_path = EffectForge.dissolving(Slash.cleave(Slash.STEEL, _toward, PATH_WIDTH), STEPS)
 	var across := (_target - _toward).orthogonal().normalized() * CUT_REACH
 	if across == Vector2.ZERO:
 		across = Vector2.UP * CUT_REACH
 	_target -= across
-	_cut = _dissolving(Slash.cleave(SwingArc.STRIKE_COLOR, across * 2.0, CUT_WIDTH))
+	_cut = EffectForge.dissolving(Slash.cleave(SwingArc.STRIKE_COLOR, across * 2.0, CUT_WIDTH), STEPS)
 
 
 func _physics_process(delta: float) -> void:
@@ -61,13 +61,3 @@ func _draw() -> void:
 	if step < STEPS:
 		_cut[step].put(self, _target)
 
-
-## La pièce et ses crans de dissolution, du plein au presque vide.
-static func _dissolving(piece: EffectForge.Piece) -> Array[EffectForge.Piece]:
-	var out: Array[EffectForge.Piece] = [piece]
-	var img := piece.texture.get_image()
-	for i in range(1, STEPS):
-		var copy := img.duplicate() as Image
-		EffectForge.dissolve(copy, float(i) / float(STEPS))
-		out.append(EffectForge.Piece.new(ImageTexture.create_from_image(copy), piece.offset))
-	return out

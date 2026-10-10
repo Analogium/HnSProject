@@ -45,8 +45,6 @@ const STRIKE_COLOR := Color(1.0, 0.85, 0.6)
 ## finisse : un blanc entre les deux se lirait comme deux coups.
 const STRIKE_CRESCENT_END := 0.6
 const STRIKE_IMPACT_START := 0.45
-## L'impact tombe au centre de la capsule de la hitbox.
-const IMPACT := Vector2(20.0, 0.0)
 const CRACKS := 5
 ## Les temps de l'impact, fabriqués à chaque frappe puisque ses fissures sont
 ## neuves à chaque coup. Quatre suffisent : il ne vit qu'une dizaine d'images.
@@ -79,6 +77,9 @@ const CROSS_CROSSING := 0.53
 const CROSS_FLASH := 0.08
 
 var _t := 1.0          # progression 0 → 1, 1 = terminé
+## Où tombe l'impact de la frappe lourde : le centre de la hitbox, posé par
+## `Player._reach_out()` d'après l'allonge.
+var impact_reach := 20.0
 var _duration := 0.12
 var _flip := false     # un coup sur deux balaie dans l'autre sens
 var _style := Style.ARC
@@ -149,7 +150,7 @@ func _draw_strike() -> void:
 	var k := (_t - STRIKE_IMPACT_START) / (1.0 - STRIKE_IMPACT_START)
 	if k <= 0.0:
 		return
-	var center := IMPACT.rotated(global_rotation)
+	var center := Vector2(impact_reach, 0.0).rotated(global_rotation)
 	var frame := mini(int(k * float(IMPACT_FRAMES)), IMPACT_FRAMES - 1)
 	if _impacts[frame] == null:
 		_impacts[frame] = _impact(frame)

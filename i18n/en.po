@@ -6075,3 +6075,424 @@ msgstr "necrotic spell duration"
 
 msgid "Tant que la Nécrose brûle, vous regagnez chaque seconde une part de vos PV max."
 msgstr "While Necrosis burns, you regain part of your max HP every second."
+
+# ---------------------------------------------------------------------------
+# Frappe lourde (jalon 46)
+# ---------------------------------------------------------------------------
+
+msgid "Fracas"
+msgstr "Crash"
+
+msgid "Coup sûr"
+msgstr "Sure Blow"
+
+msgid "Une Frappe lourde sur {sur_tous} est critique à coup sûr, et son gel d'impact dure le double."
+msgstr "One Heavy Strike in {sur_tous} is a guaranteed critical hit, and its impact freeze lasts twice as long."
+
+msgid "Coup de massue"
+msgstr "Bludgeon"
+
+msgid "Le coup sûr frappe aussi tout ce qui se tient autour de sa cible, dans un cercle de {rayon_massue} px, à {part_massue} % du coup."
+msgstr "The sure blow also strikes everything around its target, in a {rayon_massue} px circle, at {part_massue}% of the hit."
+
+msgid "Brèche"
+msgstr "Breach"
+
+msgid "L'armure cède : chaque ennemi frappé est fêlé pendant {duree_fele} s, et tous vos coups d'arme le frappent plus fort."
+msgstr "The armour gives way: every enemy struck is cracked for {duree_fele} s, and all your weapon attacks hit it harder."
+
+msgid "Collision"
+msgstr "Collision"
+
+msgid "Un ennemi repoussé par la frappe qui en heurte un autre, droit devant lui, les blesse tous les deux d'une part du coup."
+msgstr "An enemy knocked back by the strike that slams into another one, straight ahead of it, hurts them both with a share of the hit."
+
+msgid "Quilles"
+msgstr "Skittles"
+
+msgid "L'ennemi heurté par une Collision est repoussé à son tour, et peut en heurter un troisième."
+msgstr "The enemy struck by a Collision is knocked back in turn, and can slam into a third one."
+
+msgid "Tremblement"
+msgstr "Tremor"
+
+msgid "Le Brise-sol frappe un second anneau, au double de son rayon, {ecart_tremblement} s après le premier."
+msgstr "Groundbreaker strikes a second ring, at twice its radius, {ecart_tremblement} s after the first."
+
+msgid "Fer rouge"
+msgstr "Red Iron"
+
+msgid "La Lame ardente rend du temps à l'embrasement de l'ennemi qu'elle frappe, jusqu'à sa pleine durée."
+msgstr "Burning Blade gives time back to the ignite of the enemy it strikes, up to its full duration."
+
+msgid "coup sûr"
+msgstr "sure blow"
+
+msgid "coup de massue"
+msgstr "bludgeon"
+
+msgid "force du fêlé"
+msgstr "cracked strength"
+
+msgid "dégâts de la collision"
+msgstr "collision damage"
+
+msgid "heurtés repoussés"
+msgstr "struck enemies knocked back"
+
+msgid "dégâts du second anneau"
+msgstr "second ring damage"
+
+msgid "secondes d'embrasement rendues"
+msgstr "seconds of ignite given back"
+
+msgid "fêlé"
+msgstr "cracked"
+
+msgid "contre les fêlés"
+msgstr "against cracked enemies"
+
+msgid "Posé par la Brèche de la Frappe lourde, jamais par un coup ordinaire. Le fêlé subit davantage de tous les coups d'arme, pendant {duree} s : leurs dégâts sont multipliés par sa force, que la Brèche fixe."
+msgstr "Applied by Heavy Strike's Breach, never by an ordinary hit. The cracked enemy takes more from every weapon attack, for {duree} s: their damage is multiplied by its strength, which Breach sets."
+
+
+# Coup en croix (jalon 46)
+
+msgid "Lacération"
+msgstr "Laceration"
+
+msgid "Chaque coup sur un ennemi qui saigne rend du temps à son saignement, jusqu'à sa pleine durée."
+msgstr "Each hit on a bleeding enemy gives time back to its bleed, up to its full duration."
+
+msgid "Riposte"
+msgstr "Riposte"
+
+msgid "Un coup reçu arme la riposte : le Coup en croix lancé dans les {fenetre_riposte} s qui suivent frappe plus fort."
+msgstr "A blow taken arms the riposte: the Cross Slash cast within the next {fenetre_riposte} s hits harder."
+
+msgid "Tierce"
+msgstr "Tierce"
+
+msgid "La croix a un troisième temps : un estoc droit devant, qui frappe l'ennemi le plus proche sur sa ligne, à {part_tierce} % du coup."
+msgstr "The cross gets a third beat: a thrust straight ahead, striking the nearest enemy on its line, at {part_tierce}% of the hit."
+
+msgid "Quarte"
+msgstr "Quarte"
+
+msgid "L'estoc de la Tierce traverse : il frappe tout ce qui se tient sur sa ligne, {allonge_quarte} px plus loin."
+msgstr "Tierce's thrust pierces: it strikes everything standing on its line, {allonge_quarte} px farther."
+
+msgid "Saignée"
+msgstr "Bloodletting"
+
+msgid "Le second coup vide le saignement de ce qu'il frappe : tout ce qui restait à saigner tombe d'un coup, plus fort."
+msgstr "The second hit drains the bleed of what it strikes: everything left to bleed falls at once, harder."
+
+msgid "Transfusion"
+msgstr "Transfusion"
+
+msgid "Ce que vide la Saignée vous rend une part de ses dégâts en PV."
+msgstr "What Bloodletting drains gives you back part of its damage as HP."
+
+msgid "Éclaboussure"
+msgstr "Splatter"
+
+msgid "Ce que touche la Gerbe de sang saigne à coup sûr."
+msgstr "What Blood Spray hits is sure to bleed."
+
+msgid "Ordalie"
+msgstr "Ordeal"
+
+msgid "Sous la Lame sainte, le second coup bénit à coup sûr ce qu'il frappe."
+msgstr "Under Holy Blade, the second hit is sure to bless what it strikes."
+
+
+# Épée spirale (jalon 46)
+
+msgid "Valse"
+msgstr "Waltz"
+
+msgid "Les épées tournent plus vite : elles croisent plus d'ennemis."
+msgstr "The swords spin faster: they cross more enemies."
+
+msgid "Affûtage"
+msgstr "Honing"
+
+msgid "Chaque ennemi qu'une épée coupe l'affûte : ses coups suivants portent plus fort, jusqu'à {affutage_max} fois, tant qu'elle tourne."
+msgstr "Each enemy a sword cuts hones it: its next hits land harder, up to {affutage_max} times, while it spins."
+
+msgid "Parade"
+msgstr "Parry"
+
+msgid "Une épée qui croise un trait ennemi le brise, puis attend {attente_parade} s, divisées par les points du nœud."
+msgstr "A sword that crosses an enemy bolt breaks it, then waits {attente_parade} s, divided by the node's points."
+
+msgid "Brise-lames"
+msgstr "Breakwater"
+
+msgid "Un coup qui devrait vous toucher brise une épée de la ronde à sa place, et ne fait rien. Une fois toutes les {attente_brise_lames} s."
+msgstr "A blow that should hit you breaks a circling sword instead, and does nothing. Once every {attente_brise_lames} s."
+
+msgid "Grenaille"
+msgstr "Grapeshot"
+
+msgid "L'épée brisée par le Brise-lames éclate autour de vous, dans un cercle de {rayon_grenaille} px."
+msgstr "The sword broken by Breakwater bursts around you, in a {rayon_grenaille} px circle."
+
+msgid "Escorte"
+msgstr "Escort"
+
+msgid "Chaque Frappe lourde ou Coup en croix qui touche envoie une épée de la ronde frapper sa cible, à une part de son coup."
+msgstr "Each Heavy Strike or Cross Slash that lands sends a circling sword to strike its target, at a share of its hit."
+
+msgid "Ralliement"
+msgstr "Rally"
+
+msgid "Les épées de la Volée reviennent au bout de leur course tourner {vie_ralliement} s autour de vous, dans la limite de la ronde."
+msgstr "Volley swords come back at the end of their flight and circle you for {vie_ralliement} s, within the circle's limit."
+
+
+# Vague tranchante (jalon 46)
+
+msgid "Retenue"
+msgstr "Restraint"
+
+msgid "La vague coûte moins de mana."
+msgstr "The wave costs less mana."
+
+msgid "Houle"
+msgstr "Swell"
+
+msgid "La vague grossit en volant : au bout de sa course, elle est plus large et frappe plus fort."
+msgstr "The wave grows as it flies: at the end of its run, it is wider and hits harder."
+
+msgid "Proue"
+msgstr "Prow"
+
+msgid "Le premier ennemi que mord la vague prend davantage."
+msgstr "The first enemy the wave bites takes more."
+
+msgid "Lame de fond"
+msgstr "Undertow"
+
+msgid "La vague emporte ce qu'elle mord : les ennemis sont traînés avec elle jusqu'au bout de sa course."
+msgstr "The wave carries what it bites: enemies are dragged along to the end of its run."
+
+msgid "Brisants"
+msgstr "Breakers"
+
+msgid "Au bout de sa course, la Lame de fond jette ce qu'elle emporte : chacun prend une part du coup."
+msgstr "At the end of its run, Undertow throws what it carries: each takes a share of the hit."
+
+msgid "Va-et-vient"
+msgstr "To and Fro"
+
+msgid "Revenue à vous, la vague du Ressac repart une troisième fois vers la visée, à {part_va_et_vient} % du coup."
+msgstr "Back to you, the Backwash wave sets out a third time toward your aim, at {part_va_et_vient}% of the hit."
+
+msgid "Herse"
+msgstr "Harrow"
+
+msgid "Ce qui se tient dans le Sillon d'acier saigne plus souvent."
+msgstr "What stands in Steel Furrow bleeds more often."
+
+
+# Cyclone (jalon 46)
+
+msgid "Pied ferme"
+msgstr "Steadfast"
+
+msgid "Tant que le tour tourne, vous subissez moins de dégâts, mais avancez moins vite."
+msgstr "While the spin lasts, you take less damage, but move slower."
+
+msgid "Vertige"
+msgstr "Vertigo"
+
+msgid "Le tour s'emballe : chaque seconde tournée rapproche ses frappes, {vertige_max} s au plus."
+msgstr "The spin speeds up: each second spun brings its strikes closer, {vertige_max} s at most."
+
+msgid "Derviches"
+msgstr "Dervishes"
+
+msgid "Toutes les {rythme_derviche} s, le tour lâche un petit derviche qui file droit devant vous et fauche ce qu'il croise, à {part_derviche} % du coup."
+msgstr "Every {rythme_derviche} s, the spin releases a small dervish that rushes straight ahead of you and mows what it crosses, at {part_derviche}% of the hit."
+
+msgid "Sirocco"
+msgstr "Sirocco"
+
+msgid "Un derviche de plus par point, en éventail."
+msgstr "One more dervish per point, fanned out."
+
+msgid "Trombe"
+msgstr "Waterspout"
+
+msgid "Les derviches s'incurvent vers l'ennemi le plus proche."
+msgstr "Dervishes curve toward the nearest enemy."
+
+msgid "Dénouement"
+msgstr "Unwinding"
+
+msgid "Relâché, le tour frappe une dernière fois son cercle, d'autant plus fort qu'il a tourné longtemps : {denouement_max} s au plus."
+msgstr "Released, the spin strikes its circle one last time, harder the longer it spun: {denouement_max} s at most."
+
+msgid "Coup de vent"
+msgstr "Gust"
+
+msgid "La dernière frappe du Dénouement repousse loin tout ce qu'elle touche."
+msgstr "Unwinding's last strike knocks everything it hits far back."
+
+msgid "Ronde folle"
+msgstr "Mad Round"
+
+msgid "Tant que le Cyclone tourne, les épées de l'Épée spirale tournent deux fois plus vite et frappent plus fort."
+msgstr "While Cyclone spins, Spiral Sword's swords spin twice as fast and hit harder."
+
+
+# Ruée tranchante (jalon 46)
+
+msgid "Voltige"
+msgstr "Vault"
+
+msgid "À l'arrivée de la ruée, aucun coup ne vous touche pendant {voltige} s."
+msgstr "When the dash lands, no blow touches you for {voltige} s."
+
+msgid "Coupe-jarret"
+msgstr "Hamstring"
+
+msgid "La ruée fait saigner plus souvent, son couloir comme son choc d'arrivée."
+msgstr "The dash causes bleeding more often, its corridor as well as its arrival shock."
+
+msgid "Relance"
+msgstr "Relaunch"
+
+msgid "Un ennemi tué par la ruée la recharge sur-le-champ."
+msgstr "An enemy killed by the dash recharges it on the spot."
+
+msgid "Hallali"
+msgstr "Death Cry"
+
+msgid "Chaque Relance d'affilée fait frapper la ruée suivante plus fort, {hallali_max} fois au plus ; une ruée sans tué remet le compte à zéro."
+msgstr "Each Relaunch in a row makes the next dash hit harder, {hallali_max} times at most; a dash without a kill resets the count."
+
+msgid "Trouée"
+msgstr "Breakthrough"
+
+msgid "Chaque ennemi traversé par la ruée renforce le Choc d'arrivée."
+msgstr "Each enemy the dash goes through strengthens Arrival Shock."
+
+msgid "Retombée"
+msgstr "Fallout"
+
+msgid "La réception du Saut de guerre assomme ce qu'elle frappe : ni marche ni attaque pendant {assomme} s, la moitié pour une élite."
+msgstr "War Leap's landing stuns what it hits: no walking nor attacking for {assomme} s, half for an elite."
+
+msgid "Pas chassé"
+msgstr "Chassé"
+
+msgid "Une ruée lancée moins de {fenetre_chasse} s après la précédente frappe plus fort, {chasse_max} fois d'affilée au plus."
+msgstr "A dash cast less than {fenetre_chasse} s after the previous one hits harder, {chasse_max} times in a row at most."
+
+
+# Les nombres (jalon 46)
+
+msgid "secondes de saignement rendues"
+msgstr "seconds of bleed given back"
+
+msgid "dégâts de la riposte"
+msgstr "riposte damage"
+
+msgid "estoc en troisième temps"
+msgstr "third-beat thrust"
+
+msgid "estoc qui traverse"
+msgstr "piercing thrust"
+
+msgid "dégâts du saignement vidé"
+msgstr "drained bleed damage"
+
+msgid "PV rendus du saignement vidé"
+msgstr "HP back from drained bleed"
+
+msgid "second coup qui bénit à coup sûr"
+msgstr "second hit sure to bless"
+
+msgid "vitesse de la ronde"
+msgstr "circle speed"
+
+msgid "dégâts par ennemi coupé"
+msgstr "damage per enemy cut"
+
+msgid "parade des traits ennemis"
+msgstr "enemy bolt parry"
+
+msgid "épée qui encaisse un coup"
+msgstr "sword that takes a blow"
+
+msgid "dégâts de l'épée brisée"
+msgstr "broken sword damage"
+
+msgid "dégâts de l'escorte"
+msgstr "escort damage"
+
+msgid "épées de la volée qui reviennent"
+msgstr "returning volley swords"
+
+msgid "rayon et dégâts en fin de course"
+msgstr "radius, damage at run's end"
+
+msgid "dégâts au premier mordu"
+msgstr "damage to the first bitten"
+
+msgid "ennemis emportés"
+msgstr "carried enemies"
+
+msgid "dégâts des emportés jetés"
+msgstr "thrown carried damage"
+
+msgid "troisième passage"
+msgstr "third pass"
+
+msgid "chance de faire saigner du sillon"
+msgstr "furrow bleed chance"
+
+msgid "cadence par seconde tournée"
+msgstr "pace per second spun"
+
+msgid "derviches"
+msgstr "dervishes"
+
+msgid "derviches en plus"
+msgstr "extra dervishes"
+
+msgid "derviches qui cherchent"
+msgstr "seeking dervishes"
+
+msgid "dernière frappe par seconde"
+msgstr "last strike per second"
+
+msgid "dernière frappe qui repousse"
+msgstr "knockback last strike"
+
+msgid "dégâts des épées sous le cyclone"
+msgstr "sword damage under cyclone"
+
+msgid "voltige à l'arrivée"
+msgstr "vault on landing"
+
+msgid "chance de saigner de la ruée"
+msgstr "dash bleed chance"
+
+msgid "ruée rendue par tué"
+msgstr "dash refunded per kill"
+
+msgid "dégâts par relance"
+msgstr "damage per relaunch"
+
+msgid "choc par ennemi traversé"
+msgstr "shock per enemy crossed"
+
+msgid "réception qui assomme"
+msgstr "stunning landing"
+
+msgid "dégâts par ruée enchaînée"
+msgstr "damage per chained dash"
