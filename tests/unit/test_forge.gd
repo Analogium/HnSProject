@@ -94,7 +94,7 @@ func test_every_animation_of_a_sheet_moves() -> void:
 		for dir in SpriteForge.DIRS:
 			assert_ne(SpriteForge.frame_image(cfg, dir, "idle", 0).get_data(),
 				SpriteForge.frame_image(cfg, dir, "idle", 2).get_data(), "souffle %s %s" % [body, dir])
-			for anim in ["walk", "attack", "cast"]:
+			for anim in ["walk", "attack", "cast", "sweep", "overhead", "thrust"]:
 				var seen := {}
 				for i in sheet.count(anim):
 					var pixels := SpriteForge.frame_image(cfg, dir, anim, i).get_data()
@@ -114,6 +114,41 @@ func test_a_sheet_plays_its_generated_cycles() -> void:
 			for dir in SpriteForge.DIRS:
 				assert_eq((sheet.meta["anims"][anim]["hands"][dir] as Array).size(), sheet.count(anim),
 					"une main par image (%s %s %s)" % [body, anim, dir])
+
+
+## Chaque geste d'attaque (`Skill.GESTURE`, jalon 47) est sur la planche de chaque classe :
+## une lame par image, et une image d'impact qui n'est ni la première ni la dernière — sinon
+## le coup partirait à l'appui, ou après le geste.
+func test_each_attack_gesture_is_on_each_class_sheet() -> void:
+	for body in ["witch", "swiftblade"]:
+		var sheet := SpriteForge.sheet_of(body)
+		var frames := SpriteForge.frames(body, 0)
+		for family: String in Skill.GESTURE.values():
+			var cycle: Dictionary = sheet.meta["anims"][family]
+			assert_eq(frames.get_frame_count(family + "_side"), sheet.count(family))
+			assert_between(int(cycle["impact"]), 1, sheet.count(family) - 2, "%s %s" % [body, family])
+			for dir in SpriteForge.DIRS:
+				assert_eq((cycle["blades"][dir] as Array).size(), sheet.count(family),
+					"une lame par image (%s %s %s)" % [body, family, dir])
+
+
+## Une attaque joue son geste quand la planche l'a, le coup sinon ; l'impact se lit sur la
+## planche, et les grilles retombent sur `DEFAULT_IMPACT`.
+func test_an_attack_plays_its_gesture_and_reads_its_impact() -> void:
+	var sprite := ActorSprite.new()
+	sprite.archetype = "swiftblade"
+	sprite.variant = 0
+	add_child_autofree(sprite)
+	sprite.attack(false, 0.5, "overhead")
+	assert_eq(sprite.animation, &"overhead_down")
+	var cycle: Dictionary = SpriteForge.sheet_of("swiftblade").meta["anims"]["overhead"]
+	assert_almost_eq(sprite.impact_of("overhead"), float(cycle["impact"]) / float(cycle["count"]), 1e-6)
+	var grid := ActorSprite.new()
+	grid.archetype = "player"
+	add_child_autofree(grid)
+	grid.attack(false, 0.5, "overhead")
+	assert_eq(grid.animation, &"attack_down", "les grilles n'ont que le coup")
+	assert_eq(grid.impact_of("overhead"), ActorSprite.DEFAULT_IMPACT)
 
 
 ## Un sort joue le lancer, un coup d'arme le coup ; un corps sans lancer (les

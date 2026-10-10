@@ -217,13 +217,55 @@ def recolor(o, rule):
 
 def patch(o, p, colors, dx0=0):
     """Une retouche à la main : une grille posée par-dessus, `.` laisse passer.
-    `at` est en coordonnées de la case, celles qu'on lit sur la planche."""
+    `at` est en coordonnées de la case, celles qu'on lit sur la planche. **Dans la
+    silhouette seulement, contour compris** : une tête générée un pixel plus étroite
+    laissait le visage sortir du crâne, sans contour (jalon 47)."""
     x0, y0 = p["at"][0] + dx0, p["at"][1]
     for dy, row in enumerate(p["grid"]):
         for dx, ch in enumerate(row):
-            if ch != ".":
+            px = o[y0 + dy, x0 + dx]
+            if ch != "." and px[3] and tuple(px[:3]) != OUTLINE:
                 o[y0 + dy, x0 + dx, :3] = [int(colors[ch][i:i + 2], 16) for i in (0, 2, 4)]
                 o[y0 + dy, x0 + dx, 3] = 255
+
+
+def fit_dx(cell, p, direction):
+    """Le décalage qui pose le visage sur le crâne de **cette** image, rangée par rangée de
+    la retouche qui portent les yeux : centré sur la tête de face, contre son bord avant de
+    profil. Une tête
+    générée n'a jamais tout à fait la largeur ni la place de la pose validée."""
+    if direction == "up":
+        return 0
+    x0, y0 = p["at"]
+    grid = p["grid"]
+    gaps = []
+    for dy, row in enumerate(grid):
+        cols = [dx for dx, ch in enumerate(row) if ch != "."]
+        y = y0 + dy
+        # Les rangées des yeux seules : plus haut, mèches et bord du chapeau débordent.
+        if not ("k" in row or "E" in row) or not 0 <= y < cell.shape[0]:
+            continue
+        inside = np.nonzero((cell[y, :, 3] > 0) & np.any(cell[y, :, :3] != OUTLINE, axis=1))[0]
+        if not len(inside):
+            continue
+        if direction == "side":
+            gaps.append(inside.max() - (x0 + cols[-1]))
+        else:
+            gaps.append((inside.min() + inside.max()) / 2 - (x0 + (cols[0] + cols[-1]) / 2))
+    return round(float(np.median(gaps))) if gaps else 0
+
+
+def put_patches(cell, cfg, direction, dx=0, dy=0):
+    """Les retouches d'une vue, la première — le visage — calée sur le crâne, les autres
+    décalées d'autant."""
+    ps = [dict(p, at=[round(x) + dx, round(y) + dy])
+          for p in cfg.get("patches", {}).get(direction, [])
+          for x, y in [reshape_point(cfg, direction, *p["at"])]]
+    if not ps:
+        return
+    fit = fit_dx(cell, ps[0], direction)
+    for p in ps:
+        patch(cell, dict(p, at=[p["at"][0] + fit, p["at"][1]]), cfg["colors"])
 
 
 def outline(o):
@@ -328,9 +370,7 @@ def static_cells(cfg, cid):
         o = framed(o)
         cell = np.zeros((F, F, 4), "uint8")
         place(cell, o, F // 2 - o.shape[1] // 2, feet + 2 - o.shape[0])
-        for p in cfg.get("patches", {}).get(d, []):
-            x, y = reshape_point(cfg, d, *p["at"])
-            patch(cell, dict(p, at=[round(x), round(y)]), cfg["colors"])
+        put_patches(cell, cfg, d)
         cells.append(cell)
     return cells
 
@@ -339,10 +379,13 @@ def static_cells(cfg, cid):
 # Animations générées : un cycle entier en une seule image
 # --------------------------------------------------------------------------
 # L'arme suit l'équipement : chaque personnage a le coup d'épée **et** le lancer.
-ANIMS = {"walk": 4, "attack": 3, "cast": 3}
+ANIMS = {"walk": 4, "attack": 3, "cast": 3, "sweep": 5, "overhead": 5, "thrust": 5}
 STRIP = (1536, 640)
 MOTION = {"walk": "walking, walk cycle", "attack": "slashing attack motion, sword swing",
-          "cast": "casting a spell, attack animation"}
+          "cast": "casting a spell, attack animation",
+          "sweep": "horizontal slash, swinging the arm wide across the body, dynamic action pose",
+          "overhead": "overhead strike, arm raised high above the head then slamming down, dynamic action pose",
+          "thrust": "lunging stab, arm thrust straight forward, deep lunge, dynamic action pose"}
 ANIM_PROMPT = ("pixel art, game sprite sheet, {motion}, {n} frames of the same character in a row, "
                "{view}, {who}, full body, evenly spaced, identical character")
 ANIM_NEG = ("text, watermark, blurry, photo, 3d render, realistic proportions, gradient background, "
@@ -365,8 +408,59 @@ SLASH_ARM = {"down": [((650, 430), (640, 330)), ((560, 590), (430, 650)), ((580,
              "side": [((460, 440), (430, 350)), ((600, 540), (700, 610)), ((560, 600), (560, 690))]}
 
 
+# Les gestes d'attaque (jalon 47), cinq temps chacun : armé, élan, coup, suite, retour. Le
+# corps s'engage — buste penché (`lean`, profil seul), tassé (`crouch`), pas en avant
+# (`lunge`, profil seul) — sinon, à 34 px, seul le bras bouge et rien ne se lit. L'arme suit
+# l'avant-bras ; `impact` est l'image où le coup tombe, que le jeu lit dans le `.json`.
+STRIKES = {
+    "sweep": {"impact": 2,
+              "arm": {"side": [((440, 540), (370, 520)), ((460, 470), (420, 390)),
+                               ((600, 520), (710, 530)), ((590, 590), (640, 680)),
+                               ((540, 600), (560, 685))],
+                      "down": [((690, 490), (770, 430)), ((670, 430), (720, 340)),
+                               ((540, 590), (430, 620)), ((470, 640), (390, 700)),
+                               ((610, 610), (615, 690))]},
+              "lean": (-30, -40, 60, 45, 10), "crouch": (0, -10, 25, 25, 5), "lunge": (0, 0, 0.6, 0.6, 0.2)},
+    "overhead": {"impact": 3,
+                 "arm": {"side": [((520, 470), (540, 400)), ((490, 410), (440, 330)),
+                                  ((480, 400), (420, 320)), ((610, 570), (690, 660)),
+                                  ((580, 600), (630, 690))],
+                         "down": [((650, 470), (660, 400)), ((630, 400), (600, 300)),
+                                  ((625, 390), (590, 285)), ((590, 610), (570, 720)),
+                                  ((610, 610), (620, 695))]},
+                 "lean": (-10, -35, -45, 70, 30), "crouch": (0, -15, -20, 45, 20), "lunge": (0, 0, 0, 0.7, 0.4)},
+    "thrust": {"impact": 1,
+               "arm": {"side": [((440, 560), (500, 555)), ((640, 530), (770, 530)),
+                                ((630, 530), (760, 530)), ((560, 545), (630, 545)),
+                                ((520, 600), (545, 685))],
+                       "down": [((660, 560), (640, 510)), ((580, 600), (530, 690)),
+                                ((585, 600), (535, 685)), ((630, 580), (625, 560)),
+                                ((610, 610), (615, 690))]},
+               "lean": (-35, 75, 70, 20, 0), "crouch": (5, 30, 30, 10, 0), "lunge": (0, 1.0, 1.0, 0.5, 0)},
+}
+REST_BLADE = (0.42, -0.91)
+# Le profil, jambes en fente : genou et cheville de la jambe avant, puis de l'arrière.
+LUNGE_LEGS = ((585, 785), (650, 905), (455, 805), (395, 905))
+
+
 def anim_pose(kind, direction, k, width=1.0):
     kp = dict(POSES[direction])
+    if kind in STRIKES:
+        g = STRIKES[kind]
+        arm = g["arm"]["down" if direction == "up" else direction][k]
+        if direction == "up":
+            arm = tuple((1024 - x, y) for x, y in arm)
+        kp[ARMED[1]], kp[ARMED[2]] = arm
+        dx = g["lean"][k] if direction == "side" else 0
+        dy = g["crouch"][k]
+        for i in list(kp):
+            if i not in (8, 9, 10, 11, 12, 13):
+                kp[i] = (kp[i][0] + dx, kp[i][1] + dy)
+        t = g["lunge"][k]
+        if direction == "side" and t:
+            for i, goal in zip((12, 13, 9, 10), LUNGE_LEGS):
+                kp[i] = (kp[i][0] + (goal[0] - kp[i][0]) * t, kp[i][1] + (goal[1] - kp[i][1]) * t)
+        return widened(kp, width)
     if kind == "walk":
         if direction == "side":
             kp[9], kp[10], kp[12], kp[13] = SIDE_STRIDE[k]
@@ -459,7 +553,7 @@ def anim_cells(cfg, path, kind, direction, ref):
     scale = cfg["height"] / max(b[3] - b[1] for b in sources)
     # La tête dans la case, après le tassement du corps.
     rows = round(reshape_point(cfg, direction, 0, cfg["anchors"][direction]["head"])[1])
-    cells, hands = [], []
+    cells, hands, blades = [], [], []
     for k, (c, keep, move) in enumerate(zip(cols, keeps, moves)):
         o = framed(palette_lock(recolored(cfg, reduce(c, keep, scale), direction), ref))
         cell = np.zeros((F, F, 4), "uint8")
@@ -469,26 +563,45 @@ def anim_cells(cfg, path, kind, direction, ref):
         x0, y0 = round(rx - cx), feet + 2 - o.shape[0]
         place(cell, o, x0, y0)
         dx, dy = head_offset(cell, ref, rows)
-        for p in cfg.get("patches", {}).get(direction, []):
-            x, y = reshape_point(cfg, direction, *p["at"])
-            patch(cell, dict(p, at=[round(x) + dx, round(y) + dy]), cfg["colors"])
+        put_patches(cell, cfg, direction, dx, dy)
         bx0, by0, _, _ = bbox(keep)
-        wx, wy = move(*strip_to_column(kind, *anim_pose(kind, direction, k, cfg.get("width", 1.0))[ARMED[2]], k))
+        pose = anim_pose(kind, direction, k, cfg.get("width", 1.0))
+        wx, wy = move(*strip_to_column(kind, *pose[ARMED[2]], k))
         hands.append([round((wx - bx0) * scale + 1 + x0, 1), round((wy - by0) * scale + 1 + y0, 1)])
+        # La lame prolonge l'avant-bras, après le même affinage que le corps.
+        # Au retour, celle du repos (`SpriteForge._weapon_dir()`), sinon elle saute en
+        # repassant au repos.
+        ex, ey = move(*strip_to_column(kind, *pose[ARMED[1]], k))
+        d = np.array([wx - ex, wy - ey]); d /= max(np.linalg.norm(d), 1e-6)
+        if k == n - 1:
+            d = np.array([REST_BLADE[0] * (-1 if direction == "up" else 1), REST_BLADE[1]])
+        blades.append([round(float(d[0]), 2), round(float(d[1]), 2)])
         cells.append(cell)
-    return cells, hands
+    return cells, hands, blades
 
 
-def anim_gif(cells_by_dir, hands_by_dir, out):
+def anim_gif(cells_by_dir, hands_by_dir, out, blades_by_dir=None, impact=-1):
+    """Avec `blades_by_dir`, la lame de 11 pixels le long de l'avant-bras, comme la pose
+    la forge du jeu ; l'image d'impact tient deux fois plus longtemps. Une bande PNG des
+    mêmes images à côté, pour les juger une à une."""
     n = len(cells_by_dir[0]); frames = []
     for i in range(n):
         c = Image.new("RGBA", (len(cells_by_dir) * 52, 52), GROUND + (255,))
+        d = ImageDraw.Draw(c)
         for j, (cells, hands) in enumerate(zip(cells_by_dir, hands_by_dir)):
             c.alpha_composite(Image.fromarray(cells[i]), (j * 52 + 2, 2))
-            x, y = hands[i]
-            c.putpixel((j * 52 + 2 + round(x), 2 + round(y)), (255, 230, 60, 255))
+            x, y = j * 52 + 2 + hands[i][0], 2 + hands[i][1]
+            if blades_by_dir:
+                bx, by = blades_by_dir[j][i]
+                d.line([(x + bx * 1.6, y + by * 1.6), (x + bx * 11, y + by * 11)], fill=(200, 214, 236, 255))
+            c.putpixel((round(x), round(y)), (255, 230, 60, 255))
         frames.append(c.resize((c.width * 5, c.height * 5), Image.NEAREST).convert("RGB"))
-    frames[0].save(out, save_all=True, append_images=frames[1:], duration=140, loop=0)
+    durations = [280 if i == impact else 140 for i in range(n)]
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=durations, loop=0)
+    strip = Image.new("RGB", (frames[0].width, frames[0].height * n))
+    for i, f in enumerate(frames):
+        strip.paste(f, (0, i * f.height))
+    strip.save(out[:-4] + ".png")
     print(out)
 
 
@@ -549,14 +662,16 @@ def cmd_anim(a):
     refs = static_cells(cfg, a.id)
     for kind in a.only or ANIMS:
         for seed in cfg["anim"]["seeds"]:
-            by_dir, hands = [], []
+            by_dir, hands, blades = [], [], []
             for d, ref in zip(DIRS, refs):
                 f = os.path.join(RAW, f"{a.id}_{kind}_{d}_{seed}.png")
                 if not os.path.exists(f):
                     run(anim_graph(cfg, a.id, kind, d, seed)).save(f)
-                cells, h = anim_cells(cfg, f, kind, d, ref)
-                by_dir.append(cells); hands.append(h)
-            anim_gif(by_dir, hands, os.path.join(DESKTOP, f"hns-{a.id}-{kind}-{seed}.gif"))
+                cells, h, b = anim_cells(cfg, f, kind, d, ref)
+                by_dir.append(cells); hands.append(h); blades.append(b)
+            strike = STRIKES.get(kind)
+            anim_gif(by_dir, hands, os.path.join(DESKTOP, f"hns-{a.id}-{kind}-{seed}.gif"),
+                     blades if strike else None, strike["impact"] if strike else -1)
 
 
 def cmd_keep(a):
@@ -587,10 +702,14 @@ def cmd_build(a):
         if not all(os.path.exists(p) for p in paths):
             continue
         anims[kind] = {"count": n, "rows": {}, "hands": {}}
+        if kind in STRIKES:
+            anims[kind].update(impact=STRIKES[kind]["impact"], blades={})
         for d, p, ref in zip(DIRS, paths, refs):
-            cells, hands = anim_cells(cfg, p, kind, d, ref)
+            cells, hands, blades = anim_cells(cfg, p, kind, d, ref)
             anims[kind]["rows"][d] = len(rows)
             anims[kind]["hands"][d] = hands
+            if kind in STRIKES:
+                anims[kind]["blades"][d] = blades
             rows.append(cells)
     width = max(len(r) for r in rows)
     sheet = np.zeros((F * len(rows), F * width, 4), "uint8")

@@ -133,7 +133,7 @@ var _is_swinging := false
 
 
 ## Le geste du corps (jalon 47) : **un seul à la fois**, sinon deux cases alternées
-## doublent la cadence. Le coup d'une attaque attend son impact (`Skill.IMPACT`).
+## doublent la cadence. Le coup d'une attaque attend son impact (`Skill.GESTURE`).
 class Gesture:
 	var left: float
 	var to_impact := 0.0
@@ -501,17 +501,18 @@ func cast_slot(index: int) -> bool:
 	# Tout lancer anime le lanceur sur son geste, et ce geste prend le corps. Pas la ruée,
 	# où le corps traverse l'écran : son temps de geste n'espace que sa case (le Choc
 	# d'arrivée en fait une recharge).
+	var family: String = Skill.GESTURE.get(cast.shape, "")
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		if cast.use_time > 0.0:
 			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
 		sprite.attack(
 			skill.cadence == Skill.Cadence.CAST,
-			cast.use_time / maxf(states.speed_factor, 0.01)
+			cast.use_time / maxf(states.speed_factor, 0.01), family
 		)
 	var aim := _aim_point()
 	var pose := _pose.bind(skill, salvo, self, facing, aim)
-	if _gesture != null and Skill.IMPACT.has(cast.shape):
-		_gesture.to_impact = cast.use_time * Skill.IMPACT[cast.shape]
+	if _gesture != null and not family.is_empty():
+		_gesture.to_impact = cast.use_time * sprite.impact_of(family)
 		_gesture.strike = pose
 	else:
 		pose.call()

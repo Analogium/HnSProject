@@ -5761,7 +5761,7 @@ func test_an_attack_lands_at_its_impact_not_on_the_press() -> void:
 	var ahead := _target(Vector2(20, 0))
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
-	var impact := _p._gesture.left * Skill.IMPACT[Skill.Shape.STRIKE]
+	var impact := _p._gesture.left * _p.sprite.impact_of(Skill.GESTURE[Skill.Shape.STRIKE])
 	await wait_seconds(impact * 0.5)
 	assert_eq(_hits(ahead), 0, "le bras est encore levé")
 	await wait_seconds(impact * 0.5 + _p.swing_duration + 0.1)

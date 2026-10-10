@@ -60,13 +60,14 @@ enum Shape {
 
 @export var shape: Shape = Shape.ARC
 
-## Où tombe le coup d'une attaque dans son geste (jalon 47), par famille : balayage, frappe
-## de haut, estoc. Une forme absente pose tout à l'appui — la ruée, le cyclone, les sorts.
-const IMPACT := {
-	Shape.ARC: 0.40, Shape.CROSS: 0.40, Shape.WAVE: 0.40, Shape.BOOMERANG: 0.40,
-	Shape.ORBIT: 0.40,
-	Shape.STRIKE: 0.55, Shape.SLAM: 0.55,
-	Shape.LUNGE: 0.30,
+## Le geste d'une attaque (jalon 47), par forme : le nom de son geste sur la planche du
+## personnage, qui en donne l'image d'impact. Une forme absente pose tout à l'appui — la
+## ruée, le cyclone, les sorts.
+const GESTURE := {
+	Shape.ARC: "sweep", Shape.CROSS: "sweep", Shape.WAVE: "sweep", Shape.BOOMERANG: "sweep",
+	Shape.ORBIT: "sweep",
+	Shape.STRIKE: "overhead", Shape.SLAM: "overhead",
+	Shape.LUNGE: "thrust",
 }
 
 ## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà : le

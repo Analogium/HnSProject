@@ -28,6 +28,9 @@ const FLASH_TIME := 0.08
 ## lire « embrasé » dans une mêlée, pas assez pour qu'un grunt cesse d'être vert.
 const STATE_TINT := 0.45
 
+## L'impact d'un geste qu'aucune planche ne décrit : au milieu du coup, un peu avant.
+const DEFAULT_IMPACT := 0.4
+
 var _dir := "down"
 var _anim := "idle"
 var _attacking := false
@@ -108,16 +111,27 @@ func set_state(moving: bool, facing: Vector2) -> void:
 ##
 ## `spell` : un sort joue le lancer, quand le corps en a un — les grilles n'ont que
 ## le coup. `duration` étire le geste sur ce temps (jalon 47) ; zéro, sa cadence propre.
-func attack(spell := false, duration := 0.0) -> void:
+## `family` : le geste d'une attaque (`Skill.GESTURE`), s'il est sur la planche.
+func attack(spell := false, duration := 0.0, family := "") -> void:
 	_attacking = true
 	_anim = "attack"
 	var cast := "cast_%s" % _dir
 	var gesture := cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir
+	if not family.is_empty() and sprite_frames.has_animation("%s_%s" % [family, _dir]):
+		gesture = "%s_%s" % [family, _dir]
 	speed_scale = 1.0
 	if duration > 0.0:
 		speed_scale = sprite_frames.get_frame_count(gesture) \
 				/ sprite_frames.get_animation_speed(gesture) / duration
 	play(gesture)
+
+
+## Où tombe le coup dans ce geste : son image d'impact sur la planche, sinon
+## `DEFAULT_IMPACT` — les grilles n'ont que le coup.
+func impact_of(family: String) -> float:
+	var sheet := SpriteForge.sheet_of(archetype)
+	var at := sheet.impact(family) if sheet != null else -1.0
+	return at if at >= 0.0 else DEFAULT_IMPACT
 
 
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est l'ActorSprite qui

@@ -12,10 +12,13 @@ depuis WSL). La sorcière du jalon 25 en est le premier exemple : `witch.json` e
 `art/characters/<id>.png` porte en rangée 0 **trois poses fixes** — face, profil
 (tourné vers la droite), dos — dans des cases de `frame` pixels, pieds sur la rangée
 `feet` ; puis une rangée par geste généré et par vue : marche (4 images), coup d'épée
-(`attack`, 3) et lancer (`cast`, 3). **Les deux attaques pour chaque personnage** :
+(`attack`, 3), lancer (`cast`, 3), et les trois attaques du jalon 47 — balayage
+(`sweep`), frappe de haut (`overhead`), estoc (`thrust`), 5 images chacune. **Les deux attaques pour chaque personnage** :
 l'arme suit l'équipement, et le jeu joue le lancer pour un sort.
 `art/characters/<id>.json` donne les repères de chaque vue et, par geste, la rangée de
-chaque vue et **la main armée de chaque image**. `SpriteForge._draw_sheet()` joue les
+chaque vue et **la main armée de chaque image** ; pour une attaque, aussi **la lame de
+chaque image** (`blades`, le long de l'avant-bras du squelette, celle du repos à la
+dernière) et **l'image d'impact** (`impact`), que le jeu lit pour faire tomber le coup. `SpriteForge._draw_sheet()` joue les
 gestes tels quels et fait respirer la pose au repos. L'arme n'est **jamais** dans la
 planche : la forge la pose à la main, et elle suit l'équipement.
 
@@ -35,7 +38,7 @@ choix.
    `views.seeds`. IPAdapter tient l'identité du concept, OpenPose impose la vue
    par des squelettes chibi écrits dans l'outil. Le prompt de `views.prompt`
    décrit le personnage **mains vides**. Puis `keep <id> views <graine>`.
-3. **Gestes** — `anim <id>` (`--only attack cast` pour n'en refaire que certains) :
+3. **Gestes** — `anim <id>` (`--only sweep overhead thrust` pour n'en refaire que certains) :
    la marche, le coup d'épée et le lancer, chaque cycle **en une seule image** (des
    squelettes côte à côte), pour chaque graine de `anim.seeds`, le personnage décrit
    par `anim.who`, mains vides. Un GIF par geste et par graine sur le Bureau,
@@ -82,6 +85,16 @@ choix.
 - **`palette`** : les rampes de la forge pour ce qu'elle dessine elle-même — le
   manche de l'arme, la main à l'attaque, qui doit avoir la couleur de la peau.
 
+## Les gestes d'attaque (jalon 47)
+
+`STRIKES`, dans l'outil : pour chaque geste, coude et poignet armés en cinq temps (face et
+profil ; le dos est le miroir de face), le buste penché (`lean`, profil), tassé
+(`crouch`), la fente (`lunge`, profil) et l'image d'impact. **Le corps doit s'engager** :
+à 34 px, un bras qui bouge seul ne se lit pas, et l'ancien coup d'épée ne se voyait pas.
+Une classe neuve : `anim <id> --only sweep overhead thrust`, environ 5 minutes pour deux
+graines (17 s l'image), puis `keep` et `build`. Le GIF trace la lame et tient l'image
+d'impact deux fois plus longtemps ; un `.png` du même nom montre les images une à une.
+
 ## Les pièges déjà payés
 
 - **Des proportions adultes ne survivent pas à 48 px** : la tête retombe à quatre
@@ -101,5 +114,11 @@ choix.
   bas, ce qui est proche du fond.
 - **De dos, pas de nez ni d'yeux dans le squelette**, sinon le modèle dessine un
   visage.
+- **Les retouches sont dessinées pour `authored_height`** ; leur place suit `height`,
+  pas leur grille. Le visage se cale donc sur le crâne de chaque image (`put_patches()` :
+  centré de face, contre le bord avant de profil, mesuré aux rangées des yeux) et ne
+  s'écrit que dans la silhouette — sinon il sortait du crâne, sans contour (jalon 47).
+- **Une graine peut perdre le chapeau de dos** (la sorcière, graine 777, jalon 47) :
+  regarder les trois vues de chaque geste avant de retenir.
 - **L'ombre que dessine le modèle** entre dans le cadrage et écrase le personnage :
   `silhouette()` la retire (grise, peu saturée, dans le bas).

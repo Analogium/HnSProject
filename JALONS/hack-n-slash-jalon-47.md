@@ -208,3 +208,56 @@ la Frappe lourde, 115 % sous 0,50 s pour le Coup en croix. Un sort n'en a pas
 (`test_an_attack_sheet_shows_its_share_of_the_weapon_time`). Vu sur capture réelle, en
 fenêtré : la fiche tient dans son cadre.
 
+
+## 9. Les visages, avant les gestes
+
+L'utilisateur : « leurs visages, sur certaines directions, sortent un peu de leurs crânes ;
+il faudrait refaire ça avant d'aller plus loin ». **La cause** : le visage est une retouche
+à la main, posée **après** le contour, et sa grille est dessinée pour 45 px quand les deux
+classes sont passées à 34 — seule sa place suivait (`reshape_point()`). Une tête générée un
+pixel plus étroite, ou décalée, le laissait dépasser, sans contour : la joue droite de la
+Vive lame de face, le nez et la bouche de la sorcière de profil.
+
+**La correction**, dans `tools/character_forge.py` : `put_patches()` cale la première
+retouche d'une vue — le visage — sur le crâne de **chaque image** (`fit_dx()` : centrée de
+face, contre le bord avant de profil, mesurée aux seules rangées des yeux, car plus haut
+mèches et bord du chapeau débordent), et `patch()` n'écrit que dans la silhouette, contour
+compris. Deux essais refusés à la planche : le clipping seul (de profil, la sorcière perdait
+tout son visage, la Vive lame un œil), puis le calage sur toutes les rangées (le visage de la
+sorcière reculait dans les cheveux). Planche avant/après : `Bureau\hns-captures-visages\`.
+Retenue telle quelle ; le bas du visage de la sorcière de profil est un peu rogné.
+
+## 10. Les gestes dessinés — livrés (étape C)
+
+**Choisis sur pièce** : la graine 4242 pour les trois gestes et les deux classes
+(`Bureau\hns-gestes\`). La 777 de la sorcière perdait son chapeau de dos.
+
+- **L'outil** : `STRIKES` dans `character_forge.py`, cinq temps par geste — armé, élan,
+  coup, suite, retour — avec le buste qui penche, se tasse et se fend. Vérifié d'abord en
+  squelettes, lame tracée : la lame pendait vers le bas au retour puis sautait au repos ; la
+  dernière image prend donc la lame du repos (`REST_BLADE`).
+- **La planche** porte `blades` (la lame de chaque image, le long de l'avant-bras) et
+  `impact` ; **`Skill.IMPACT` disparaît** au profit de `Skill.GESTURE` (forme → geste), et
+  `ActorSprite.impact_of()` lit l'impact sur la planche : 2/5 pour le balayage, 3/5 pour la
+  frappe de haut, 1/5 pour l'estoc. `DEFAULT_IMPACT` (0,4) pour les grilles.
+- **La forge** enregistre tout geste de la planche ; le coup et le lancer **toujours**,
+  réduits à la pose s'ils manquent — les ennemis en planche n'ont pas les deux.
+- **Mesuré** hors jeu (headless, meilleur de trois) : 87 images par personnage et par arme
+  en 9,6 ms (Vive lame), 9,1 ms (sorcière), contre 42 avant le jalon.
+
+**Vu en jeu, en fenêtré** (`Bureau\hns-captures-gestes-swiftblade\` et `-witch\`) : la
+frappe lourde lève l'épée derrière la tête pendant cinq captures puis l'abat, l'arc d'effet
+au même instant ; le coup en croix part en arrière à l'horizontale, monte, traverse au
+premier coup. **L'estoc n'a pas été capturé** : la frappe vive a été refusée, faute d'ennemi
+à portée.
+
+**Les tests** : `test_each_attack_gesture_is_on_each_class_sheet` (chaque geste sur chaque
+planche, une lame par image, l'impact ni à la première ni à la dernière image),
+`test_an_attack_plays_its_gesture_and_reads_its_impact`, et les gestes ajoutés à
+`test_every_animation_of_a_sheet_moves`. 1431 sur 1431.
+
+### Ce qui reste au jalon
+
+- **Jouer** : l'estoc en jeu, la sensation d'ensemble.
+- L'ancien coup d'épée (`attack`) ne sert plus au joueur que pour une forme sans geste ;
+  il reste pour les ennemis en planche.

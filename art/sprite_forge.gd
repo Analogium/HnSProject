@@ -92,6 +92,12 @@ class Sheet:
 		var anims: Dictionary = meta.get("anims", {})
 		return int(anims[anim]["count"]) if anims.has(anim) else 1
 
+	## La part du geste où tombe le coup, lue sur l'image d'impact de la planche
+	## (jalon 47) ; -1 pour un geste qui n'en a pas.
+	func impact(anim: String) -> float:
+		var cycle: Dictionary = meta.get("anims", {}).get(anim, {})
+		return float(cycle["impact"]) / float(cycle["count"]) if cycle.has("impact") else -1.0
+
 
 ## Null pour un archétype en grilles ou en capsules.
 static func sheet_of(archetype: String) -> Sheet:
@@ -173,9 +179,15 @@ static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrame
 	for dir in DIRS:
 		if sheet != null:
 			_add_anim(sf, cfg, "idle_" + dir, dir, "idle", SHEET_BREATH.size(), 4.0, true)
-			_add_anim(sf, cfg, "walk_" + dir, dir, "walk", sheet.count("walk"), 8.0, true)
-			_add_anim(sf, cfg, "attack_" + dir, dir, "attack", sheet.count("attack"), 11.0, false)
-			_add_anim(sf, cfg, "cast_" + dir, dir, "cast", sheet.count("cast"), 11.0, false)
+			# Le coup et le lancer toujours, réduits à la pose s'ils manquent : `attack()`
+			# les joue sur tout acteur. Puis tout autre geste, comme ceux du jalon 47.
+			var anims := ["walk", "attack", "cast"]
+			for anim: String in sheet.meta.get("anims", {}):
+				if anim not in anims:
+					anims.append(anim)
+			for anim: String in anims:
+				var walk := anim == "walk"
+				_add_anim(sf, cfg, anim + "_" + dir, dir, anim, sheet.count(anim), 8.0 if walk else 11.0, walk)
 			continue
 		_add_anim(sf, cfg, "idle_" + dir, dir, "idle", IDLE_BOB.size(), 3.0, true)
 		_add_anim(sf, cfg, "walk_" + dir, dir, "walk", WALK_SWING.size(), 10.0, true)
@@ -1401,6 +1413,11 @@ static func _draw_sheet(
 		out.blend_rect(sheet.image, cell, Vector2i.ZERO)
 		var at: Array = cycle["hands"][dir][i]
 		hand = Vector2(at[0], at[1])
+		# Les attaques du jalon 47 donnent la lame de chaque image, le long de l'avant-bras,
+		# déjà dans le sens de l'image : de dos, on annule d'avance le retournement d'en bas.
+		if cycle.has("blades"):
+			var blade: Array = cycle["blades"][dir][i]
+			placed["weapon_dir"] = Vector2(blade[0], blade[1]) * Vector2(-1.0 if dir == "up" else 1.0, 1.0)
 	else:
 		# Le repos : la pose validée, qui respire au-dessus des pieds. Le jour laissé
 		# sous le buste monté est bouché par sa dernière rangée.

@@ -507,11 +507,11 @@ func test_an_attack_takes_its_share_of_the_weapon_time() -> void:
 	assert_almost_eq(heavy.use_time(quick), heavy.use_time(sheet) * 0.5, 1e-6)
 
 
-## Ce que `Skill.IMPACT` retient attend son impact : un sort qui y entrerait partirait en
+## Ce que `Skill.GESTURE` retient attend son impact : un sort qui y entrerait partirait en
 ## retard sans que rien ne le dise.
 func test_only_attacks_wait_for_an_impact() -> void:
 	for c: Skill in SkillCatalog.ALL:
-		if Skill.IMPACT.has(c.shape):
+		if Skill.GESTURE.has(c.shape):
 			assert_eq(c.cadence, Skill.Cadence.WEAPON, "« %s »" % c.name)
 
 
