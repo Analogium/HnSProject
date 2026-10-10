@@ -206,10 +206,10 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | strike | 20 · 26 · 33 · 41 · 50 |
-| Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | cadence de l'arme | cross | 13 · 17 · 21 · 26 · 32 |
+| Frappe lourde | attaque physique | niveau 1 | 5 | 6 mana | 130 % du temps de l'arme | strike | 20 · 26 · 33 · 41 · 50 |
+| Coup en croix | attaque physique | niveau 3 | 5 | 7 mana | 115 % du temps de l'arme | cross | 13 · 17 · 21 · 26 · 32 |
 | Épée spirale | attaque physique | niveau 6 | 5 | 10 mana | cadence de l'arme | orbit · 5.0 s · rayon 26 · toutes les 0.50 s · 3 au plus | 8 · 10 · 13 · 16 · 20 |
-| Vague tranchante | attaque physique | niveau 4 | 5 | 8 mana | cadence de l'arme | wave · 0.5 s · rayon 20 | 11 · 14 · 18 · 22 · 27 |
+| Vague tranchante | attaque physique | niveau 4 | 5 | 8 mana | 110 % du temps de l'arme | wave · 0.5 s · rayon 20 | 11 · 14 · 18 · 22 · 27 |
 | Cyclone | attaque physique | niveau 8 | 5 | 0 mana | cadence de l'arme | cyclone · rayon 34 · toutes les 0.35 s · draine 10 mana/s | 7 · 9 · 11 · 14 · 17 |
 | Ruée tranchante | attaque physique | niveau 5 | 5 | 10 mana | cadence de l'arme · recharge 3.00 s | dash · 0.3 s · rayon 12 · toutes les 0.25 s | 16 · 21 · 26 · 32 · 40 |
 | Garde de fer | passif | niveau 2 | 4 | — | — | — | +12 armure · +14 PV |
@@ -654,7 +654,7 @@ de la sorcière est rempli depuis le jalon 41.
 
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Frappe vive | attaque physique | niveau 1 | 5 | 6 mana | cadence de l'arme | lunge · rayon 130 | 24 · 31 · 39 · 48 · 58 |
+| Frappe vive | attaque physique | niveau 1 | 5 | 6 mana | 80 % du temps de l'arme | lunge · rayon 130 | 24 · 31 · 39 · 48 · 58 |
 | Soif de sang | attaque physique | niveau 3 | 1 | 0 mana | cadence de l'arme · recharge 0.60 s | buff · 5 charges de 3.0 s | Frénésie : +5 % de vitesse d'attaque accrue |
 
 6 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.

@@ -10,6 +10,7 @@ name = "Frappe lourde"
 description = "Un coup d'arme lourd, plus lent et plus fort."
 nature = 0
 cadence = 0
+attack_time_factor = 1.3
 shape = 2
 mana_cost = 6.0
 projectiles = 1

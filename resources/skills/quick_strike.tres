@@ -10,6 +10,7 @@ name = "Frappe vive"
 description = "Se jette d'un coup sur l'ennemi visé à portée et le frappe."
 nature = 0
 cadence = 0
+attack_time_factor = 0.8
 shape = 23
 mana_cost = 6.0
 radius = 130.0

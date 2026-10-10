@@ -884,6 +884,26 @@ func test_a_node_sheet_says_what_it_requires() -> void:
 	)
 
 
+## La part du temps de l'arme que prend une attaque se lit à côté du temps qu'elle donne
+## (jalon 47) ; un sort n'en a pas.
+func test_an_attack_sheet_shows_its_share_of_the_weapon_time() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_weapons"))
+	book.manual.gain_experience(999999)
+	_player.study(book)
+	var heavy := SkillCatalog.by_id("heavy_strike")
+	var lines := _sheet_of(book, "heavy_strike")
+	assert_eq(
+		_values(lines, "temps de l'arme"),
+		PackedStringArray([StatMod.percentage(heavy.attack_time_factor * 100.0)])
+	)
+	assert_eq(
+		_values(lines, "temps d'attaque"),
+		PackedStringArray(["%.2f s" % heavy.use_time(_player.stats)]),
+		"et le temps qu'elle donne, à côté"
+	)
+	assert_eq(_values(_sheet_of(_rich_book(), "swift_bolt"), "temps de l'arme"), PackedStringArray())
+
+
 ## Un nœud de conversion dit ce que la compétence devient : c'est ce mot-clé qui fait
 ## mordre l'équipement de la nature d'arrivée.
 func test_a_node_sheet_announces_what_the_skill_becomes() -> void:

@@ -1,6 +1,7 @@
 extends GutTest
 
 const Weapons := preload("res://tests/weapons.gd")
+const Gestures := preload("res://tests/gestures.gd")
 
 ## Ce qu'un impact déclenche en dehors des dégâts : le gel et la secousse.
 ##
@@ -201,7 +202,7 @@ func test_a_sweep_hitting_three_targets_freezes_only_once() -> void:
 	add_child_autofree(player)
 	Weapons.arm(player, SkillCatalog.ID_ATTACK)
 	await wait_physics_frames(1)
-	assert_true(player.cast_slot(0), "le balayage part")
+	assert_true(Gestures.cast(player, 0), "le balayage part")
 
 	# Un tableau et non un entier : une lambda GDScript capture les locales par
 	# valeur, et un compteur incrémenté dedans ne remonterait jamais ici.

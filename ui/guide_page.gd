@@ -22,6 +22,7 @@ const ARTICLES := {
 	"manual_levels": ["Expérience et niveaux", "Chaque ennemi tué donne à chaque manuel du râtelier autant d'expérience qu'au personnage. Un manuel monte jusqu'au niveau {max}, et chaque niveau lui donne un point."],
 	"cells": ["Les cases", "Une case porte une compétence ou un passif. Elle s'ouvre au niveau de manuel qu'elle demande ; un clic sur un passif y place un point, un clic sur une compétence ouvre son arbre. Un point se reprend d'un clic droit, tant que rien de ce qu'il ouvre n'en dépend."],
 	"talent_trees": ["Les arbres de talents", "Chaque compétence a son arbre, et ses propres points : un par niveau du manuel, en plus de ceux du livre. Le centre de l'arbre est la compétence, payée par le livre.\n\nUn nœud s'ouvre quand la compétence a un point et qu'un des nœuds qui y mènent en porte assez — les grains sur le lien. Certains nœuds transforment la compétence, d'autres en convertissent les dégâts : ceux-là sont tout ou rien.\n\nTenir {details} sur une compétence montre ce qu'elle peut déclencher, avec les vraies chances."],
+	"gesture": ["Le geste", "Une compétence se lance par un geste du personnage, un seul à la fois. Le geste d'une attaque prend le temps de l'arme, plus ou moins selon l'attaque, et la vitesse d'attaque l'accélère ; le coup part quand la lame tombe, pas à l'appui. Celui d'un sort dure son temps d'incantation.\n\nLa recharge est autre chose : certaines compétences en ont une, et seule la récupération la raccourcit."],
 	"resistances": ["Résistances", "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège. Les abris — Rempart d'os, Glace épaisse, Linceul… — retirent ensuite une part de chaque coup, toutes natures confondues, {abri} au plus."],
 	"flasks": ["Les flacons", "Sous la ceinture, bus par les touches {touches}. Une gorgée coûte des charges ; chaque ennemi tué en rend à tous les flacons portés, une élite davantage. La ville les remplit.\n\nLes gorgées de vie et de mana rendent sur la durée et se cumulent. Un flacon utilitaire ne se reboit pas tant que son effet dure. Mourir vide les gorgées en cours."],
 	"currency": ["Les pièces", "Une pièce s'applique à un objet du sac : clic droit sur la pièce, puis clic sur l'objet. Un objet qui ne porte pas d'affixes, comme un manuel, n'en accepte aucune."],
@@ -150,6 +151,7 @@ static func chapters() -> Array:
 			_article("manual_levels", {"max": Manual.MAX_LEVEL}),
 			_article("cells"),
 			_article("talent_trees", {"details": Keybinds.key_label("item_details")}),
+			_article("gesture"),
 		]),
 		_chapter(Texts.t("Bonus"), [
 			[Glossary.title("additive"), Glossary.definition("additive")],

@@ -105,41 +105,41 @@ Case : verdict, coups pour tuer un grunt, secondes de survie.
 
 | profil | zone | niveau | compétence | coups grunt | coups caster | coups colosse | s grunt | s colosse | survie |
 |---|---|---|---|---|---|---|---|---|---|
-| Débutant | 1 | 1 | Frappe lourde | 0,94 | 0,62 | 1,87 | 0,41 | 0,81 | 4,68 |
-| Débutant | 10 | 1 | Frappe lourde | 1,94 | 1,29 | 3,88 | 0,84 | 1,68 | 2,20 |
-| Débutant | 20 | 1 | Frappe lourde | 4,13 | 2,75 | 8,25 | 1,79 | 3,57 | 1,39 |
-| Débutant | 40 | 1 | Frappe lourde | 16,8 | 11,2 | 33,5 | 7,25 | 14,5 | 0,80 |
-| Débutant | 60 | 1 | Frappe lourde | 62,7 | 41,8 | 125 | 27,1 | 54,2 | 0,56 |
-| Débutant | 90 | 1 | Frappe lourde | 415 | 277 | 831 | 180 | 359 | 0,39 |
-| Débutant | 120 | 1 | Frappe lourde | 2583 | 1722 | 5165 | 1117 | 2235 | 0,30 |
-| Nu | 1 | 1 | Frappe lourde | 0,94 | 0,62 | 1,87 | 0,41 | 0,81 | 4,68 |
-| Nu | 10 | 14 | Frappe lourde | 0,27 | 0,18 | 0,53 | 0,12 | 0,23 | 4,77 |
-| Nu | 20 | 21 | Frappe lourde | 0,46 | 0,31 | 0,93 | 0,20 | 0,40 | 7,91 |
-| Nu | 40 | 36 | Frappe lourde | 0,97 | 0,64 | 1,93 | 0,48 | 0,96 | 6,86 |
-| Nu | 60 | 58 | Frappe lourde | 2,39 | 1,59 | 4,78 | 0,88 | 1,76 | 6,28 |
-| Nu | 90 | 100 | Frappe lourde | 12,8 | 8,54 | 25,6 | 4,72 | 9,44 | 4,04 |
-| Nu | 120 | 100 | Frappe lourde | 68,2 | 45,5 | 136 | 25,1 | 50,3 | 2,97 |
-| Sous-équipé | 1 | 1 | Frappe lourde | 0,84 | 0,56 | 1,69 | 0,36 | 0,72 | 22,0 |
-| Sous-équipé | 10 | 14 | Frappe lourde | 0,26 | 0,17 | 0,52 | 0,11 | 0,22 | 12,1 |
-| Sous-équipé | 20 | 21 | Frappe lourde | 0,45 | 0,30 | 0,90 | 0,19 | 0,38 | 17,0 |
-| Sous-équipé | 40 | 36 | Frappe lourde | 0,84 | 0,56 | 1,68 | 0,35 | 0,70 | 24,2 |
-| Sous-équipé | 60 | 58 | Frappe lourde | 1,99 | 1,33 | 3,98 | 0,60 | 1,21 | 38,5 |
-| Sous-équipé | 90 | 100 | Frappe lourde | 7,26 | 4,84 | 14,5 | 2,17 | 4,34 | 26,3 |
-| Sous-équipé | 120 | 100 | Frappe lourde | 38,6 | 25,8 | 77,3 | 11,1 | 22,2 | 20,9 |
-| Équipé | 1 | 1 | Frappe lourde | 0,97 | 0,65 | 1,94 | 0,37 | 0,75 | 20,0 |
-| Équipé | 10 | 14 | Frappe lourde | 0,25 | 0,17 | 0,50 | 0,11 | 0,22 | 13,8 |
-| Équipé | 20 | 21 | Frappe lourde | 0,43 | 0,29 | 0,86 | 0,18 | 0,37 | 32,8 |
+| Débutant | 1 | 1 | Frappe lourde | 0,94 | 0,62 | 1,87 | 0,53 | 1,05 | 4,68 |
+| Débutant | 10 | 1 | Frappe lourde | 1,94 | 1,29 | 3,88 | 1,09 | 2,19 | 2,20 |
+| Débutant | 20 | 1 | Frappe lourde | 4,13 | 2,75 | 8,25 | 2,32 | 4,64 | 1,39 |
+| Débutant | 40 | 1 | Frappe lourde | 16,8 | 11,2 | 33,5 | 9,43 | 18,9 | 0,80 |
+| Débutant | 60 | 1 | Frappe lourde | 62,7 | 41,8 | 125 | 35,3 | 70,5 | 0,56 |
+| Débutant | 90 | 1 | Frappe lourde | 415 | 277 | 831 | 234 | 467 | 0,39 |
+| Débutant | 120 | 1 | Frappe lourde | 2583 | 1722 | 5165 | 1453 | 2905 | 0,30 |
+| Nu | 1 | 1 | Frappe lourde | 0,94 | 0,62 | 1,87 | 0,53 | 1,05 | 4,68 |
+| Nu | 10 | 14 | Frappe lourde | 0,27 | 0,18 | 0,53 | 0,15 | 0,30 | 4,77 |
+| Nu | 20 | 21 | Frappe lourde | 0,46 | 0,31 | 0,93 | 0,26 | 0,52 | 7,91 |
+| Nu | 40 | 36 | Frappe lourde | 0,97 | 0,64 | 1,93 | 0,49 | 0,99 | 6,86 |
+| Nu | 60 | 58 | Frappe lourde | 2,39 | 1,59 | 4,78 | 1,15 | 2,29 | 6,28 |
+| Nu | 90 | 100 | Frappe lourde | 12,8 | 8,54 | 25,6 | 6,13 | 12,3 | 4,04 |
+| Nu | 120 | 100 | Frappe lourde | 68,2 | 45,5 | 136 | 32,7 | 65,4 | 2,97 |
+| Sous-équipé | 1 | 1 | Frappe lourde | 0,84 | 0,56 | 1,69 | 0,47 | 0,93 | 22,0 |
+| Sous-équipé | 10 | 14 | Frappe lourde | 0,26 | 0,17 | 0,52 | 0,14 | 0,29 | 12,1 |
+| Sous-équipé | 20 | 21 | Frappe lourde | 0,45 | 0,30 | 0,90 | 0,25 | 0,49 | 17,0 |
+| Sous-équipé | 40 | 36 | Frappe lourde | 0,84 | 0,56 | 1,68 | 0,40 | 0,80 | 24,2 |
+| Sous-équipé | 60 | 58 | Frappe lourde | 1,99 | 1,33 | 3,98 | 0,78 | 1,57 | 38,5 |
+| Sous-équipé | 90 | 100 | Frappe lourde | 7,26 | 4,84 | 14,5 | 2,59 | 5,18 | 26,3 |
+| Sous-équipé | 120 | 100 | Frappe lourde | 38,6 | 25,8 | 77,3 | 13,6 | 27,1 | 20,9 |
+| Équipé | 1 | 1 | Frappe lourde | 0,97 | 0,65 | 1,94 | 0,49 | 0,97 | 20,0 |
+| Équipé | 10 | 14 | Frappe lourde | 0,25 | 0,17 | 0,50 | 0,14 | 0,28 | 13,8 |
+| Équipé | 20 | 21 | Frappe lourde | 0,43 | 0,29 | 0,86 | 0,23 | 0,46 | 32,8 |
 | Équipé | 40 | 36 | Frappe lourde | 0,74 | 0,49 | 1,48 | 0,32 | 0,64 | 71,3 |
-| Équipé | 60 | 58 | Frappe lourde | 1,60 | 1,06 | 3,19 | 0,43 | 0,86 | 47,1 |
-| Équipé | 90 | 100 | Frappe lourde | 8,65 | 5,77 | 17,3 | 2,48 | 4,96 | 35,0 |
-| Équipé | 120 | 100 | Frappe lourde | 49,9 | 33,2 | 99,7 | 15,0 | 29,9 | 19,3 |
-| Sur-équipé | 1 | 1 | Frappe lourde | 0,71 | 0,48 | 1,43 | 0,26 | 0,53 | ∞ |
-| Sur-équipé | 10 | 14 | Frappe lourde | 0,19 | 0,12 | 0,37 | 0,08 | 0,16 | 85,8 |
-| Sur-équipé | 20 | 21 | Frappe lourde | 0,32 | 0,21 | 0,63 | 0,11 | 0,23 | 234 |
+| Équipé | 60 | 58 | Frappe lourde | 1,60 | 1,06 | 3,19 | 0,54 | 1,07 | 47,1 |
+| Équipé | 90 | 100 | Frappe lourde | 8,65 | 5,77 | 17,3 | 3,19 | 6,38 | 35,0 |
+| Équipé | 120 | 100 | Frappe lourde | 49,9 | 33,2 | 99,7 | 19,4 | 38,9 | 19,3 |
+| Sur-équipé | 1 | 1 | Frappe lourde | 0,71 | 0,48 | 1,43 | 0,34 | 0,69 | ∞ |
+| Sur-équipé | 10 | 14 | Frappe lourde | 0,19 | 0,12 | 0,37 | 0,10 | 0,20 | 85,8 |
+| Sur-équipé | 20 | 21 | Frappe lourde | 0,32 | 0,21 | 0,63 | 0,15 | 0,29 | 234 |
 | Sur-équipé | 40 | 36 | Frappe lourde | 0,51 | 0,34 | 1,01 | 0,19 | 0,37 | 83,4 |
-| Sur-équipé | 60 | 58 | Frappe lourde | 2,10 | 1,40 | 4,19 | 0,58 | 1,17 | 59,3 |
-| Sur-équipé | 90 | 100 | Frappe lourde | 9,13 | 6,09 | 18,3 | 2,46 | 4,92 | 29,3 |
-| Sur-équipé | 120 | 100 | Frappe lourde | 35,9 | 23,9 | 71,8 | 9,45 | 18,9 | 18,8 |
+| Sur-équipé | 60 | 58 | Frappe lourde | 2,10 | 1,40 | 4,19 | 0,76 | 1,52 | 59,3 |
+| Sur-équipé | 90 | 100 | Frappe lourde | 9,13 | 6,09 | 18,3 | 3,17 | 6,33 | 29,3 |
+| Sur-équipé | 120 | 100 | Frappe lourde | 35,9 | 23,9 | 71,8 | 12,0 | 24,0 | 18,8 |
 
 </details>
 

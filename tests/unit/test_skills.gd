@@ -492,6 +492,29 @@ func test_attacks_ride_the_attack_speed_and_buffs_wait() -> void:
 			assert_gt(c.cooldown, 0.0, "« %s » : un buff ou une malédiction attend" % c.name)
 
 
+## Le temps d'une attaque est une part de celui de l'arme (jalon 47) : la frappe lourde
+## pèse, la frappe vive file, et la vitesse d'attaque les accélère toutes pareil.
+func test_an_attack_takes_its_share_of_the_weapon_time() -> void:
+	var sheet := CharacterStats.new()
+	var plain := SkillCatalog.by_id("attack").use_time(sheet)
+	var heavy := SkillCatalog.by_id("heavy_strike")
+	assert_almost_eq(plain, sheet.attack_interval(), 1e-6, "l'attaque de base, à l'arme")
+	assert_almost_eq(heavy.use_time(sheet), plain * heavy.attack_time_factor, 1e-6)
+	assert_gt(heavy.use_time(sheet), plain, "la frappe lourde pèse")
+	assert_lt(SkillCatalog.by_id("quick_strike").use_time(sheet), plain, "la frappe vive file")
+	var quick := CharacterStats.new()
+	quick.attack_speed = 2.0
+	assert_almost_eq(heavy.use_time(quick), heavy.use_time(sheet) * 0.5, 1e-6)
+
+
+## Ce que `Skill.IMPACT` retient attend son impact : un sort qui y entrerait partirait en
+## retard sans que rien ne le dise.
+func test_only_attacks_wait_for_an_impact() -> void:
+	for c: Skill in SkillCatalog.ALL:
+		if Skill.IMPACT.has(c.shape):
+			assert_eq(c.cadence, Skill.Cadence.WEAPON, "« %s »" % c.name)
+
+
 ## Un geste d'arme lit son temps sur l'arme : un `cast_time` posé dessus serait un
 ## nombre que personne ne lit. Un sort, lui, veut l'un ou l'autre — sans rien, sa case
 ## repartirait à chaque image.

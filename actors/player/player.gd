@@ -130,6 +130,22 @@ var _hit_parts: Array[float] = []
 var _hit_cast: SkillStats
 var _hit_shake := 0.0
 var _is_swinging := false
+
+
+## Le geste du corps (jalon 47) : **un seul à la fois**, sinon deux cases alternées
+## doublent la cadence. Le coup d'une attaque attend son impact (`Skill.IMPACT`).
+class Gesture:
+	var left: float
+	var to_impact := 0.0
+	## Le `_pose()` qui reste à porter ; vide une fois porté, ou d'emblée pour un sort.
+	var strike := Callable()
+	var weapon := false
+
+	func _init(length: float, of_weapon: bool) -> void:
+		left = length
+		weapon = of_weapon
+
+var _gesture: Gesture
 ## Les gestes entretenus allumés, par identifiant de compétence : une aura et les
 ## buffs. Leurs nœuds vivent sous le joueur ; le dictionnaire dit lequel répond à
 ## quelle case.
@@ -292,7 +308,10 @@ func _physics_process(delta: float) -> void:
 	_drink(delta)
 	_suffer_states(delta)
 	if is_dead:
+		_gesture = null
 		return
+	if _gesture != null:
+		_tick_gesture(delta * cadence)
 
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
@@ -311,7 +330,8 @@ func _physics_process(delta: float) -> void:
 	# Le sprite suit la visée, pas le déplacement : on recule face à l'ennemi.
 	sprite.set_state(input != Vector2.ZERO, facing)
 
-	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if _is_swinging else 1.0)
+	var slowed := _is_swinging or (_gesture != null and _gesture.weapon)
+	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if slowed else 1.0)
 	if _black_ice_left > 0.0 and global_position.distance_to(_black_ice_at) <= _black_ice_radius:
 		speed *= 1.0 + _black_ice * 0.01
 	if input != Vector2.ZERO:
@@ -332,6 +352,18 @@ func _physics_process(delta: float) -> void:
 			cast_slot(i)
 
 
+## Au rythme des recharges : le gel ralentit le geste comme il ralentit les cases.
+func _tick_gesture(step: float) -> void:
+	_gesture.left -= step
+	_gesture.to_impact -= step
+	if _gesture.strike.is_valid() and _gesture.to_impact <= 0.0:
+		var strike := _gesture.strike
+		_gesture.strike = Callable()
+		strike.call()
+	if _gesture.left <= 0.0:
+		_gesture = null
+
+
 ## Un panneau tient la souris, ou une étiquette de butin, un marchand ou un portail
 ## réclame le clic gauche.
 func _click_taken(action: String) -> bool:
@@ -340,8 +372,8 @@ func _click_taken(action: String) -> bool:
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
-## il porte les huit refus : case vide, non apprise, mauvaise arme, réserve, recharge, orbite
-## pleine, morts-vivants au complet, frappe vive sans personne à portée.
+## il porte les neuf refus : case vide, non apprise, geste en cours, mauvaise arme, réserve,
+## recharge, orbite pleine, morts-vivants au complet, frappe vive sans personne à portée.
 func cast_slot(index: int) -> bool:
 	# La Seconde foulée passe outre la recharge et le coût, une fois.
 	var stride := _strides.has(index)
@@ -377,6 +409,8 @@ func cast_slot(index: int) -> bool:
 			extinguish(skill.id)
 			_start_recharge(index, cast.interval)
 			return true
+	if _gesture != null:
+		return false
 	# Après l'extinction : changer d'arme ne doit pas empêcher d'éteindre ce qui brûle,
 	# et le tombeau de glace ne laisse partir que lui-même.
 	if not _bound.is_empty() and skill.id != _bound:
@@ -393,8 +427,7 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.SUMMON and cast.recall <= 0.0 \
 			and Minion.count_of(self, skill.id) >= Minion.cap(cast):
 		return false
-	var prey: Hurtbox = _lunge_target(cast) if skill.shape == Skill.Shape.LUNGE else null
-	if skill.shape == Skill.Shape.LUNGE and prey == null:
+	if skill.shape == Skill.Shape.LUNGE and _lunge_target(cast) == null:
 		return false
 
 	if cast.ramp > 0.0:
@@ -465,12 +498,23 @@ func cast_slot(index: int) -> bool:
 		_chord(salvo)
 	if not skill.nature_cycle.is_empty():
 		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
-	# Tout lancer anime le lanceur, un sort comme un coup d'arme : sans ça, la
-	# sorcière lançait ses sorts immobile. Pas la ruée, où le corps traverse l'écran.
+	# Tout lancer anime le lanceur sur son geste, et ce geste prend le corps. Pas la ruée,
+	# où le corps traverse l'écran : son temps de geste n'espace que sa case (le Choc
+	# d'arrivée en fait une recharge).
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
-		sprite.attack(skill.cadence == Skill.Cadence.CAST)
+		if cast.use_time > 0.0:
+			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
+		sprite.attack(
+			skill.cadence == Skill.Cadence.CAST,
+			cast.use_time / maxf(states.speed_factor, 0.01)
+		)
 	var aim := _aim_point()
-	_pose(skill, salvo, self, facing, aim, prey)
+	var pose := _pose.bind(skill, salvo, self, facing, aim)
+	if _gesture != null and Skill.IMPACT.has(cast.shape):
+		_gesture.to_impact = cast.use_time * Skill.IMPACT[cast.shape]
+		_gesture.strike = pose
+	else:
+		pose.call()
 	if cast.rearm > 0.0:
 		_rearm(index, cast)
 	# Le Plein régime (jalon 43) rejoue le lancer entier : un éclair, ou un orbe s'il l'est devenu.
@@ -532,8 +576,7 @@ func _salvo(skill: Skill, points: int, cast: SkillStats) -> Array[SkillStats]:
 ## le joueur, ou l'épaule du Familier qui rejoue un sort (jalon 41). Le premier lancer de
 ## la salve sert à tout ce qui n'est pas une volée de projectiles.
 func _pose(
-	skill: Skill, salvo: Array[SkillStats], origin: Node2D, toward: Vector2, aim: Vector2,
-	prey: Hurtbox = null
+	skill: Skill, salvo: Array[SkillStats], origin: Node2D, toward: Vector2, aim: Vector2
 ) -> void:
 	salvo = _stoke(salvo)
 	var cast := salvo[0]
@@ -682,7 +725,7 @@ func _pose(
 		Skill.Shape.CROSS:
 			_swing(cast, SwingArc.Style.CROSS)
 		Skill.Shape.LUNGE:
-			_lunge(cast, prey)
+			_lunge(cast)
 		_:
 			_swing(cast)
 
@@ -1238,7 +1281,7 @@ func _tremor(impact: Vector2, cast: SkillStats) -> void:
 
 
 ## La cible d'une frappe vive : parmi les ennemis à sa portée, **le plus proche de la
-## visée**. Null sans personne à portée, et le lancer est refusé.
+## visée**, cherché à l'appui pour refuser un lancer sans personne, puis à l'impact.
 func _lunge_target(cast: SkillStats) -> Hurtbox:
 	var aim := _aim_point()
 	var best: Hurtbox = null
@@ -1251,7 +1294,11 @@ func _lunge_target(cast: SkillStats) -> Hurtbox:
 
 ## Une frappe vive : on se porte **contre** la cible, murs traversés comme une ruée, et on
 ## frappe elle seule — pas un arc, qui prendrait ses voisins. Gel et secousse d'une frappe.
-func _lunge(cast: SkillStats, prey: Hurtbox) -> void:
+func _lunge(cast: SkillStats) -> void:
+	# Choisie à l'impact : celle de l'appui a pu tomber pendant le geste (jalon 47).
+	var prey := _lunge_target(cast)
+	if prey == null:
+		return
 	var toward := prey.global_position
 	var from_value := global_position
 	global_position = _landing(from_value, toward - from_value.direction_to(toward) * LUNGE_REACH)

@@ -29,7 +29,7 @@ const TEXTS := {
 	"res_necrotic": "Réduit les dégâts nécrotiques, en pourcentage direct.",
 	"res_holy": "Réduit les dégâts sacrés, en pourcentage direct.",
 
-	"attack_time": "Le temps que prend un coup d'arme, avant la vitesse d'attaque.",
+	"attack_time": "Le temps que prend un coup d'arme, avant la vitesse d'attaque. Chaque attaque en prend sa part : plus pour un coup qui pèse.",
 	"attack_speed": "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation.",
 	"cooldown_recovery": "Raccourcit les recharges des compétences qui en ont une. **Ni la vitesse d'attaque ni celle d'incantation n'y touchent.**",
 	"cast_speed": "La cadence du tir. Elle ne touche pas au coup d'épée, qui suit la vitesse d'attaque, et **aucun attribut ne la donne** : elle vient des armes d'incantation et de l'arbre.",

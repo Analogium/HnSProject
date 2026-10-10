@@ -10,6 +10,7 @@ name = "Vague tranchante"
 description = "Un coup de taille qui détache son arc et l'envoie devant soi."
 nature = 0
 cadence = 0
+attack_time_factor = 1.1
 shape = 12
 mana_cost = 8.0
 duration = 0.50

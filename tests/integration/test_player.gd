@@ -1,6 +1,7 @@
 extends GutTest
 
 const Weapons := preload("res://tests/weapons.gd")
+const Gestures := preload("res://tests/gestures.gd")
 
 ## Le joueur monté dans l'arbre : réserve de mana, régénérations, équipement et
 ## recalcul de la fiche. Rien de tout ça n'existe hors scène.
@@ -35,7 +36,7 @@ func test_full_pool_at_spawn() -> void:
 func test_the_bolt_costs_mana() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	var before := _p.mana
-	_p.cast_slot(1)
+	Gestures.cast(_p, 1)
 	assert_eq(
 		_p.mana, before - SkillCatalog.by_id(SkillCatalog.ID_BOLT).mana_cost,
 		"le coût exact, pas un de plus"
@@ -60,7 +61,7 @@ func test_the_bolt_nature_does_not_diverge_from_the_pellet() -> void:
 func test_insufficient_pool_refuses_the_bolt() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p._set_mana(2.0)
-	_p.cast_slot(1)
+	Gestures.cast(_p, 1)
 	assert_eq(_p.mana, 2.0, "ni tir, ni prélèvement partiel")
 
 
@@ -396,7 +397,7 @@ func test_the_bolt_receives_what_equipment_adds_to_spells() -> void:
 	_p.equip(Item.new(ItemCatalog.by_id("wand"), [
 		StatMod.ranged("damage_lightning", 33.0, 33.0, Keywords.SPELL),
 	]))
-	_p.cast_slot(1)
+	Gestures.cast(_p, 1)
 	assert_eq(_bolts_fired.get_child_count(), 1, "un tir est parti")
 	var bolt := _bolts_fired.get_child(0) as Projectile
 	assert_not_null(bolt)
@@ -493,11 +494,11 @@ func test_skill_points_come_from_the_book_that_teaches_it() -> void:
 func test_cast_refuses_what_was_not_learned() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.bar.put(2, "swift_bolt")
-	assert_false(_p.cast_slot(2), "la compétence n'est dans aucun livre à l'étude")
+	assert_false(Gestures.cast(_p, 2), "la compétence n'est dans aucun livre à l'étude")
 	assert_eq(_bolts_fired.get_child_count(), 0)
 
 	_p.study(_worked_book())
-	assert_true(_p.cast_slot(2), "le livre à l'étude la rend lançable")
+	assert_true(Gestures.cast(_p, 2), "le livre à l'étude la rend lançable")
 	assert_eq(_bolts_fired.get_child_count(), 1)
 
 
@@ -505,20 +506,20 @@ func test_cast_refuses_what_was_not_learned() -> void:
 ## rien ne part.
 func test_cast_refuses_a_skill_its_weapon_does_not_allow() -> void:
 	var before := _p.mana
-	assert_false(_p.cast_slot(1), "le tir, les mains vides")
+	assert_false(Gestures.cast(_p, 1), "le tir, les mains vides")
 	_p.equip(Weapons.bare(false), EquipmentSlots.WEAPON)
-	assert_false(_p.cast_slot(1), "le tir, une épée en main")
+	assert_false(Gestures.cast(_p, 1), "le tir, une épée en main")
 	assert_eq(_p.mana, before, "sans rien payer")
-	assert_true(_p.cast_slot(0), "le coup d'épée part")
+	assert_true(Gestures.cast(_p, 0), "le coup d'épée part")
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
-	assert_true(_p.cast_slot(1), "le tir, une baguette en main")
+	assert_true(Gestures.cast(_p, 1), "le tir, une baguette en main")
 
 
 func test_cast_refuses_an_empty_slot_and_a_running_cooldown() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
-	assert_false(_p.cast_slot(4), "la cinquième case est vide")
-	assert_true(_p.cast_slot(1), "le tir part")
-	assert_false(_p.cast_slot(1), "et ne repart pas tant qu'il se recharge")
+	assert_false(Gestures.cast(_p, 4), "la cinquième case est vide")
+	assert_true(Gestures.cast(_p, 1), "le tir part")
+	assert_false(Gestures.cast(_p, 1), "et ne repart pas tant qu'il se recharge")
 
 
 ## La couronne : huit projectiles sur un tour complet, chacun à son angle.
@@ -559,7 +560,7 @@ func _crown(count: int, spread: float) -> SkillStats:
 func test_a_single_bolt_flies_straight_along_the_aim() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
 	_p.facing = Vector2(0.6, -0.8)
-	assert_true(_p.cast_slot(1), "le tir de départ")
+	assert_true(Gestures.cast(_p, 1), "le tir de départ")
 	assert_eq(_bolts_fired.get_child_count(), 1, "un seul trait")
 	assert_eq(
 		(_bolts_fired.get_child(0) as Projectile)._dir, _p.facing,
@@ -606,7 +607,7 @@ func test_each_spell_leaves_with_its_sheet_numbers() -> void:
 		_p._set_mana(999.0)
 		_clear_bolts()
 
-		assert_true(_p.cast_slot(4), "« %s » part" % c.name)
+		assert_true(Gestures.cast(_p, 4), "« %s » part" % c.name)
 		assert_eq(_bolts_fired.get_child_count(), c.projectiles, "« %s » : traits" % c.name)
 		for bolt: Projectile in _bolts_fired.get_children():
 			assert_eq(bolt._parts[c.nature], c.damage(points), "« %s » : dégâts" % c.name)
@@ -629,7 +630,7 @@ func test_a_bolt_with_one_more_projectile_fires_two() -> void:
 	_p.skill_mods.assign([
 		StatMod.new("projectiles", StatMod.Mode.FLAT, 1.0, Keywords.PROJECTILE),
 	])
-	assert_true(_p.cast_slot(1), "le tir de départ")
+	assert_true(Gestures.cast(_p, 1), "le tir de départ")
 	assert_eq(_bolts_fired.get_child_count(), 2, "deux traits")
 	var a := (_bolts_fired.get_child(0) as Projectile)._dir
 	var b := (_bolts_fired.get_child(1) as Projectile)._dir
@@ -729,7 +730,7 @@ func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
 	_p._set_mana(999.0)
 	_p.bar.put(3, "storm_cloud")
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_eq(_bolts_fired.get_child_count(), 1)
 	var cloud := _bolts_fired.get_child(0) as StormCloud
 	var parts := cloud._cast.roll(Game.rng)
@@ -750,7 +751,7 @@ func test_an_item_does_not_change_the_bolt_color() -> void:
 		StatMod.ranged("damage_cold", 900.0, 900.0, Keywords.SPELL),
 	])
 	_p.bar.put(3, "swift_bolt")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var bolt := _bolts_fired.get_child(0) as Projectile
 	assert_gt(bolt._parts[DamageType.Kind.COLD], bolt._parts[DamageType.Kind.LIGHTNING])
 	assert_eq(bolt._nature, int(DamageType.Kind.LIGHTNING), "le trait reste un éclair")
@@ -785,7 +786,7 @@ func test_a_sword_swing_hits_the_whole_arc_for_the_same_value() -> void:
 		StatMod.ranged("damage_fire", 1.0, 1000.0, Keywords.ATTACK),
 		StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0),
 	])
-	assert_true(_p.cast_slot(0), "le coup de base")
+	assert_true(Gestures.cast(_p, 0), "le coup de base")
 
 	var received_all: Array[float] = []
 	for i in 2:

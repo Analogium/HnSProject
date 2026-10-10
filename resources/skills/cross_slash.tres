@@ -10,6 +10,7 @@ name = "Coup en croix"
 description = "Deux coups d'arme portés en croix, l'un après l'autre."
 nature = 0
 cadence = 0
+attack_time_factor = 1.15
 shape = 8
 mana_cost = 7.0
 damage_per_point = Array[float]([13.0, 17.0, 21.0, 26.0, 32.0])

@@ -1,6 +1,7 @@
 extends GutTest
 
 const Weapons := preload("res://tests/weapons.gd")
+const Gestures := preload("res://tests/gestures.gd")
 
 ## Les formes du jalon 11, lancées pour de vrai par `Player.cast_slot()` sur des
 ## hurtbox posées à la main : qui elles touchent, combien de fois, et quand elles
@@ -110,7 +111,7 @@ func test_the_chain_hits_three_enemies_and_not_the_fourth() -> void:
 	var targets := [_target(Vector2(60, 0)), _target(Vector2(120, 0)), _target(Vector2(180, 0)), _target(Vector2(240, 0))]
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	for i in 3:
 		assert_eq(_hits(targets[i]), 1, "la cible %d est touchée une fois" % (i + 1))
 	assert_eq(_hits(targets[3]), 0, "la quatrième n'est pas touchée : trois cibles")
@@ -122,7 +123,7 @@ func test_the_chain_does_not_jump_beyond_its_range() -> void:
 	var too_far := _target(Vector2(60 + ChainLightning.JUMP + 20.0, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(near), 1)
 	assert_eq(_hits(too_far), 0, "hors de portée d'un saut")
 
@@ -138,10 +139,10 @@ func test_the_chain_strikes_on_behalf_of_its_caster() -> void:
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
 	_p.states.put(StatusEffects.Kind.BLESSING, 1.0)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(target), 2)
 	assert_almost_eq(float(_received_all[target][1]), float(_received_all[target][0]) * (1.0 - StatusEffects.BLESSING), 0.001)
 
@@ -154,7 +155,7 @@ func test_the_chain_fires_into_the_void_without_a_target_ahead() -> void:
 	await wait_physics_frames(2)
 
 	var mana := _p.mana
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(on_the_side), 0, "hors du cône de la visée")
 	assert_lt(_p.mana, mana, "le mana est dépensé")
 	assert_eq(_children_of(ChainLightning).size(), 1, "et la décharge se voit")
@@ -196,7 +197,7 @@ func test_a_chain_carries_its_damage_against_a_state() -> void:
 	var bleeding := _bleeding_target(Vector2(60, 0))
 	var bare := _target(Vector2(120, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_assert_doubled(bleeding, bare, "Targets.strike")
 
 
@@ -206,7 +207,7 @@ func test_a_ball_carries_it_by_its_bolt_and_its_explosion() -> void:
 	var bleeding := _bleeding_target(Vector2(40, 0))
 	var bare := _target(Vector2(40, 16))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
 	_assert_doubled(bleeding, bare, "le tir sur l'une, l'explosion sur l'autre")
 
@@ -220,12 +221,12 @@ func test_a_spell_crits_on_every_path() -> void:
 	await wait_physics_frames(2)
 	_learn("manual_lightning", ["chain_lightning"])
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 10000.0)])
-	assert_true(_p.cast_slot(2), "la chaîne")
+	assert_true(Gestures.cast(_p, 2), "la chaîne")
 	_learn("manual_fire", ["fireball"])
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 10000.0)])
 	_p.bar.put(1, "fireball")
 	_p.facing = Vector2(1, 1).normalized()
-	assert_true(_p.cast_slot(1), "la boule, sur une case qui ne recharge pas")
+	assert_true(Gestures.cast(_p, 1), "la boule, sur une case qui ne recharge pas")
 	await wait_seconds(0.5)
 	assert_gt(crits.size(), 2)
 	assert_false(false in crits, "tous critiques")
@@ -237,7 +238,7 @@ func test_a_swing_carries_it() -> void:
 	var bleeding := _bleeding_target(Vector2(20, -4))
 	var bare := _target(Vector2(20, 4))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_p.swing_duration + 0.2)
 	_assert_doubled(bleeding, bare, "le coup d'arc")
 
@@ -258,7 +259,7 @@ func test_the_cloud_strikes_below_not_beside_then_vanishes() -> void:
 	Game.hit_stop_duration = 0.05
 	Game.hit_stop_period = 0.0
 	Game.freezes = 0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var cloud: StormCloud = _children_of(StormCloud)[0]
 	# Gardé avant l'attente : le nuage sera libéré à la fin.
 	var cast := cloud._cast
@@ -284,7 +285,7 @@ func test_the_aura_lights_strikes_burns_and_goes_out_for_free() -> void:
 	await wait_physics_frames(2)
 
 	var mana := _p.mana
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.aura_lit())
 	assert_lt(_p.mana, mana, "l'allumer coûte")
 	await wait_physics_frames(3)
@@ -294,7 +295,7 @@ func test_the_aura_lights_strikes_burns_and_goes_out_for_free() -> void:
 
 	_p._recharges[2] = 0.0
 	mana = _p.mana
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_false(_p.aura_lit(), "le second lancer éteint")
 	assert_eq(_p.mana, mana, "sans coût")
 
@@ -321,7 +322,7 @@ func test_a_draught_pulls_what_the_aura_strikes() -> void:
 	var knocks := []
 	near.damaged.connect(func(info: DamageInfo) -> void: knocks.append(info.knockback))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(knocks, [-40.0])
 
@@ -331,7 +332,7 @@ func test_a_draught_pulls_what_the_aura_strikes() -> void:
 func test_a_campfire_rises_while_still_and_keeps_vigil() -> void:
 	_learn_with("manual_fire", "immolation", [[SkillStats.CAMPFIRE, 50.0], [SkillStats.VIGIL, 10.0]])
 	var base := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var aura: Immolation = _p._lit["immolation"]
 	await wait_seconds(1.1)
 	var risen := aura._cast.radius
@@ -354,7 +355,7 @@ func test_cinders_leap_to_an_enemy_outside_the_circle() -> void:
 	_target(Vector2(radius * 0.5, 0))
 	var outside := _target(Vector2(0, radius * 1.6))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var aura: Immolation = _p._lit["immolation"]
 	await wait_physics_frames(1)
 	for spark: Fireball in _children_of(Fireball):
@@ -374,7 +375,7 @@ func test_the_eye_of_the_blaze_strikes_harder_at_the_core() -> void:
 	var core := _target(Vector2(radius * 0.2, 0))
 	var edge := _target(Vector2(0, radius * 0.8))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_almost_eq(_received_all[core][0] / _received_all[edge][0], 1.24, 0.001)
 
@@ -383,7 +384,7 @@ func test_the_eye_of_the_blaze_strikes_harder_at_the_core() -> void:
 ## Cendres du phénix suspendent sa brûlure.
 func test_rebirth_holds_back_one_death_a_minute() -> void:
 	_learn_with("manual_fire", "immolation", [[SkillStats.REBIRTH, 1.0], [SkillStats.PHOENIX_ASHES, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._set_health(0.0)
 	_p._die()
 	assert_false(_p.is_dead, "retenu")
@@ -466,7 +467,7 @@ func _burn_loss() -> float:
 
 func test_the_aura_goes_out_when_its_book_leaves_the_rack() -> void:
 	_learn("manual_fire", ["immolation"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p.stop_studying(0)
 	await wait_physics_frames(2)
 	assert_false(_p.aura_lit())
@@ -482,7 +483,7 @@ func test_the_snake_burns_what_it_touches_once_per_period() -> void:
 	var below := _target(point)
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_physics_frames(3)
 	assert_eq(_hits(below), 1, "la tête tombe sur elle")
@@ -528,7 +529,7 @@ func test_a_ground_laid_on_a_ground_renews_it() -> void:
 
 func test_the_snake_stays_near_its_landing_point() -> void:
 	_learn("manual_fire", ["hell_snake"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	var farthest := 0.0
 	for i in 30:
@@ -547,12 +548,12 @@ func test_spiral_sword_refuses_the_fourth_without_taking_anything() -> void:
 	_learn("manual_weapons", ["spiral_sword"])
 	for i in 3:
 		_p._recharges[2] = 0.0
-		assert_true(_p.cast_slot(2), "épée %d" % (i + 1))
+		assert_true(Gestures.cast(_p, 2), "épée %d" % (i + 1))
 	assert_eq(_p.orbiting_swords(), 3)
 
 	_p._recharges[2] = 0.0
 	var mana := _p.mana
-	assert_false(_p.cast_slot(2), "la quatrième est refusée")
+	assert_false(Gestures.cast(_p, 2), "la quatrième est refusée")
 	assert_eq(_p.mana, mana, "sans mana")
 	assert_eq(_p.remaining_cooldown(2), 0.0, "ni recharge")
 
@@ -563,7 +564,7 @@ func test_the_sword_strikes_while_spinning_then_vanishes() -> void:
 	var on_the_circle := _target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
 	assert_gt(_hits(on_the_circle), 0, "elle passe sur la cible")
 	await wait_seconds(0.8)
@@ -581,7 +582,7 @@ func test_the_cross_hits_the_same_target_twice() -> void:
 	var ahead := _target(Vector2(20, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_p.swing_duration * 2.0 + 0.3)
 	assert_eq(_hits(ahead), 2)
 
@@ -593,7 +594,7 @@ func test_the_ball_wounds_the_neighbor_and_the_target_once() -> void:
 	var far := _target(Vector2(40, 70))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
 	assert_eq(_hits(direct), 1, "la touche directe, sans l'explosion en plus")
 	assert_eq(_hits(neighbor), 1, "l'explosion atteint le voisin")
@@ -609,7 +610,7 @@ func test_the_ball_wounds_the_neighbor_and_the_target_once() -> void:
 func test_the_dash_carries_the_player_to_the_aim() -> void:
 	_learn("manual_fire", ["flame_dash"])
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(
 		_p.global_position.distance_to(from_value), Player.PLACEMENT_RANGE, 2.0,
 		"au bout de la portée de pose"
@@ -625,7 +626,7 @@ func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
 	await wait_physics_frames(2)
 
 	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.2)
 	assert_eq(_hits(on_the_way), cast.strikes_over_duration(), "une frappe par période")
 	assert_eq(_hits(aside), 0, "et rien hors du couloir")
@@ -698,7 +699,7 @@ func test_the_slicing_dash_cuts_its_path_once() -> void:
 
 	var cast := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1)
 	assert_eq(cast.strikes_over_duration(), 1, "un seul coup par traversée")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.2)
 	assert_eq(_hits(near), 1, "au début du chemin")
 	assert_eq(_hits(far), 1, "comme au bout")
@@ -712,7 +713,7 @@ func test_the_slicing_dash_cuts_its_path_once() -> void:
 func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
 	_learn("manual_necrotic", ["advanced_necrosis"])
 	var rot := _p.stats.rot_chance
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("advanced_necrosis"))
 	assert_eq(_p.lit_ratio("advanced_necrosis"), 1.0, "entretenu, il n'a pas de compte à rebours")
 	assert_gt(_p.stats.rot_chance, rot, "ses lignes sont dans la fiche")
@@ -721,7 +722,7 @@ func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
 
 	_p._recharges[2] = 0.0
 	var mana := _p.mana
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_false(_p.lit("advanced_necrosis"), "le second lancer éteint")
 	assert_eq(_p.mana, mana, "sans coût")
 	assert_eq(_p.stats.rot_chance, rot, "et la fiche retrouve ses nombres")
@@ -732,24 +733,24 @@ func test_the_buff_lights_gives_its_lines_and_goes_out_for_free() -> void:
 func test_a_buff_node_gives_its_lines_while_lit() -> void:
 	_learn_with("manual_necrotic", "advanced_necrosis", [["rot_chance", 50.0], ["self_wither", -100.0, true]])
 	var rot := _p.stats.rot_chance
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("advanced_necrosis"))
 	var lit_rot := _p.stats.rot_chance
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var out_rot := _p.stats.rot_chance
 	assert_eq(out_rot, rot, "éteint, la fiche retrouve ses nombres")
 
 	_learn("manual_necrotic", ["advanced_necrosis"])
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var bare_rot := _p.stats.rot_chance
 	assert_gt(lit_rot, bare_rot, "le nœud s'ajoute au buff")
 
 
 func test_a_buff_node_can_put_out_its_burn() -> void:
 	_learn_with("manual_necrotic", "advanced_necrosis", [["self_wither", -100.0, true]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(5)
 	assert_eq(_p.health, _p.stats.max_health, "sans brûlure, plus rien ne ronge")
 
@@ -757,7 +758,7 @@ func test_a_buff_node_can_put_out_its_burn() -> void:
 ## Le mana épuisé éteint ce qui le draine — là où les PV épuisés tuent.
 func test_the_buff_goes_out_when_its_pool_is_empty() -> void:
 	_learn("manual_lightning", ["static_electricity"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("static_electricity"))
 
 	_p.stats.mana_regen = 0.0
@@ -777,7 +778,7 @@ func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
 	healthy.states = StatusEffects.new()
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p.stats.static_charge_chance = 100.0
 	var parts := _all_in(DamageType.Kind.LIGHTNING)
 	parts[DamageType.Kind.LIGHTNING] = 50.0
@@ -826,7 +827,7 @@ func test_the_dash_goes_through_what_is_on_the_way() -> void:
 	await wait_physics_frames(2)
 
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(
 		_p.global_position.distance_to(from_value), Player.PLACEMENT_RANGE, 2.0,
 		"le mur du milieu ne l'arrête pas"
@@ -840,7 +841,7 @@ func test_a_taken_landing_backs_up_to_the_first_free_point() -> void:
 	await wait_physics_frames(2)
 
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var travelled := _p.global_position.x - from_value.x
 	assert_gt(travelled, 0.0, "elle part quand même")
 	assert_lt(travelled, Player.PLACEMENT_RANGE, "mais s'arrête devant le mur")
@@ -852,7 +853,7 @@ func test_the_storm_dash_leaves_speed_and_no_trail() -> void:
 	var speed := _p.stats.move_speed
 	var cast := _p.resolve(SkillCatalog.by_id("storm_dash"), 1)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 0, "rien au sol")
 	assert_true(_p.lit("storm_dash"), "mais un buff sur le lanceur")
@@ -879,7 +880,7 @@ func test_the_wave_travels_past_the_arm_and_bites_once() -> void:
 	var behind := _target(Vector2(-60, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(SlashWave).size(), 1)
 	await wait_seconds(cast.duration + 0.1)
 	assert_eq(_hits(ahead), 1, "la vague l'a rattrapée, et une seule fois")
@@ -895,7 +896,7 @@ func test_the_cyclone_spins_on_mana_until_the_pool_runs_dry() -> void:
 	var far := _target(Vector2(120, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("cyclone"))
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1, "ce qui est dans le cercle est fauché")
@@ -920,7 +921,7 @@ func test_the_spikes_strike_once_and_leave_nothing() -> void:
 	var beside := _target(point + Vector2(0, 80))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(IceSpikes)[0].global_position, point, "posés à la portée, devant")
 	await wait_physics_frames(3)
 	assert_eq(_hits(below), 1)
@@ -940,7 +941,7 @@ func test_the_nova_bursts_around_the_caster_and_chills_better() -> void:
 	var far := _target(Vector2(cast.radius + 40.0, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1, "le cercle autour de soi")
 	assert_eq(_hits(far), 0)
@@ -955,13 +956,13 @@ func test_the_tomb_binds_its_caster_and_only_lets_itself_end() -> void:
 	_p.bar.put(3, "ice_spike")
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("frost_tomb"))
-	assert_false(_p.cast_slot(3), "rien d'autre ne part")
+	assert_false(Gestures.cast(_p, 3), "rien d'autre ne part")
 	assert_lt(_p.stats.damage_taken, 0.0, "et les coups portent moins")
 
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2), "seul le tombeau peut se rouvrir")
+	assert_true(Gestures.cast(_p, 2), "seul le tombeau peut se rouvrir")
 	assert_false(_p.lit("frost_tomb"))
 
 
@@ -972,7 +973,7 @@ func test_the_tomb_mends_then_thaws_on_its_own() -> void:
 	_p._set_health(_p.stats.max_health * 0.5)
 	var wounded := _p.health
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration * 0.5)
 	assert_gt(_p.health, wounded, "la glace soigne")
 
@@ -989,7 +990,7 @@ func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
 	var on_the_edge := _target(Vector2(cast.radius * 0.9, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	assert_lt(vortex.reach(), cast.radius, "il s'ouvre petit")
 	await wait_physics_frames(3)
@@ -1015,7 +1016,7 @@ func test_the_beam_pierces_its_line_and_spares_the_side() -> void:
 	var aside := _target(Vector2(cast.radius * 0.5, 40.0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_hits(near), 1, "le premier corps ne l'arrête pas")
 	assert_eq(_hits(far_one), 1)
@@ -1037,7 +1038,7 @@ func test_the_pillar_strikes_its_circle_for_its_duration() -> void:
 	var beside := _target(point + Vector2(0, cast.radius + 40.0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(SacredPillar)[0].global_position, point, "posé à la portée, devant")
 
 	await wait_seconds(cast.duration + 0.2)
@@ -1057,7 +1058,7 @@ func test_the_pulse_follows_its_caster_then_ends_on_its_own() -> void:
 	var met := _target(away)
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_hits(met), 0, "loin du lanceur, rien")
 
@@ -1079,7 +1080,7 @@ func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
 	var resistance := _p.stats.res_holy
 	var blessing := _p.states.chance_factors[StatusEffects.Kind.BLESSING]
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("holy_light"))
 	assert_gt(_p.stats.res_holy, resistance, "la fiche résiste mieux au sacré")
 	assert_gt(
@@ -1088,7 +1089,7 @@ func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
 	)
 
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_false(_p.lit("holy_light"))
 	assert_eq(_p.stats.res_holy, resistance, "éteinte, la fiche retrouve ses nombres")
 
@@ -1115,7 +1116,7 @@ func test_plague_leaves_decay_on_what_it_strikes() -> void:
 	_learn("manual_necrotic", ["plague"])
 	var target := _wearing_target(_p.global_position + Vector2(60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_eq(_hits(target), 1)
 	assert_true(target.states.active(StatusEffects.Kind.DECAY), "décomposée")
@@ -1127,7 +1128,7 @@ func test_the_curse_marks_its_circle_without_striking() -> void:
 	var inside := _wearing_target(aim + Vector2(30, 0))
 	var outside := _wearing_target(aim + Vector2(90, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_true(inside.states.active(StatusEffects.Kind.CURSED), "maudite")
 	assert_false(outside.states.active(StatusEffects.Kind.CURSED), "hors du cercle, non")
@@ -1136,19 +1137,19 @@ func test_the_curse_marks_its_circle_without_striking() -> void:
 
 func test_rise_raises_two_undead_then_refuses_a_third() -> void:
 	_learn("manual_necrotic", ["rise"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_eq(Minion.count_of(_p, "rise"), 2)
 	_p._recharges[2] = 0.0
 	var mana := _p.mana
-	assert_false(_p.cast_slot(2), "au complet : refusée")
+	assert_false(Gestures.cast(_p, 2), "au complet : refusée")
 	assert_eq(_p.mana, mana, "sans rien prendre")
 
 
 ## Un nœud atteint le lancer, donc le plafond : Légion d'os en lève un de plus.
 func test_bone_legion_raises_a_third() -> void:
 	_learn("manual_necrotic", ["rise", "rise", "rise", "rise_bone_legion"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_eq(Minion.count_of(_p, "rise"), 3)
 
@@ -1158,7 +1159,7 @@ func test_the_undead_strike_on_behalf_of_the_player() -> void:
 	var target := _wearing_target(_p.global_position + Vector2(60, 0))
 	_authors.clear()
 	target.damaged.connect(_on_authored)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
 	assert_gt(_hits(target), 0, "ils vont frapper ce qui entre dans la zone")
 	assert_eq(_authors[0], _p.states, "au nom du joueur : sa pourriture le soignera")
@@ -1168,14 +1169,14 @@ func test_the_undead_strike_on_behalf_of_the_player() -> void:
 func test_the_undead_leave_alone_what_stays_outside_the_zone() -> void:
 	_learn("manual_necrotic", ["rise"])
 	var target := _target(_p.global_position + Vector2(200, 0))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
 	assert_eq(_hits(target), 0)
 
 
 func test_the_undead_fall_when_their_book_leaves_the_rack() -> void:
 	_learn("manual_necrotic", ["rise"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	_p.stop_studying(0)
 	await wait_physics_frames(2)
@@ -1190,7 +1191,7 @@ func test_an_enemy_turns_on_the_closer_undead() -> void:
 	grunt.global_position = _p.global_position + Vector2(-100, 0)
 	assert_eq(grunt.foe(), _p, "sans mort-vivant, le joueur")
 	_learn("manual_necrotic", ["rise"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_true(grunt.foe() is Minion, "le mort-vivant, plus proche")
 
@@ -1201,7 +1202,7 @@ func test_the_gate_spews_creatures_that_burst_on_an_enemy_in_sight() -> void:
 	var seen := _target(aim + Vector2(60, 0))
 	var unseen := _target(aim + Vector2(0, 200))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
 	assert_gt(_hits(seen), 0, "elles vont exploser dessus")
 	assert_eq(_hits(unseen), 0, "hors de vue, elles l'ignorent")
@@ -1210,7 +1211,7 @@ func test_the_gate_spews_creatures_that_burst_on_an_enemy_in_sight() -> void:
 func test_necrosis_gnaws_current_health_and_raises_the_chance_to_rot() -> void:
 	_learn("manual_necrotic", ["advanced_necrosis"])
 	var before := _p.states.chance_factors[StatusEffects.Kind.ROT]
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_almost_eq(_p.states.chance_factors[StatusEffects.Kind.ROT], before + 0.10, 0.0001)
 	_p.stats.health_regen = 0.0
@@ -1251,7 +1252,7 @@ func test_the_elemental_projectile_takes_each_element_in_turn() -> void:
 	var seen: Array[int] = []
 	for i in 4:
 		_p._recharges[2] = 0.0
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 		var bolts := _children_of(Projectile)
 		seen.append((bolts[-1] as Projectile).nature())
 	assert_eq(seen, [
@@ -1266,7 +1267,7 @@ func test_the_quick_strike_needs_a_prey_in_range() -> void:
 	var far := _target(Vector2(cast.radius + 40.0, 0))
 	await wait_physics_frames(2)
 	var mana := _p.mana
-	assert_false(_p.cast_slot(2))
+	assert_false(Gestures.cast(_p, 2))
 	assert_eq(_p.mana, mana, "rien n'est payé")
 	assert_eq(_p.remaining_cooldown(2), 0.0, "ni la recharge")
 	assert_eq(_hits(far), 0)
@@ -1280,7 +1281,7 @@ func test_the_quick_strike_lands_on_the_prey_nearest_the_aim() -> void:
 	_p.facing = Vector2(1.0, 0.6).normalized()
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(below), 1, "celle que la visée désigne")
 	assert_eq(_hits(above), 0, "pas sa voisine")
 	assert_almost_eq(
@@ -1298,7 +1299,7 @@ func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
 	_learn_class(Character.SWIFTBLADE, ["bloodlust"])
 	var skill := SkillCatalog.by_id("bloodlust")
 	var base_speed := _p.stats.attack_speed
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("bloodlust"))
 	assert_eq(_p.lit_stacks("bloodlust"), 0)
 	assert_eq(_p.stats.attack_speed, base_speed, "allumée sans charge, rien")
@@ -1332,7 +1333,7 @@ func test_spell_amplification_is_cast_and_refreshed() -> void:
 	var before := _p.resolve(projectile, 1).total_min()
 
 	var mana := _p.mana
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_true(_p.lit("spell_amplification"))
 	assert_lt(_p.mana, mana, "il se paie")
 	assert_almost_eq(_p.resolve(projectile, 1).total_min(), before * 1.2, 1e-3, "20 % amplifiés")
@@ -1340,7 +1341,7 @@ func test_spell_amplification_is_cast_and_refreshed() -> void:
 	assert_lt(_p.lit_ratio("spell_amplification"), 1.0, "le temps passe")
 
 	_p._recharges[3] = 0.0
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_true(_p.lit("spell_amplification"), "relancé, il ne s'éteint pas")
 	assert_almost_eq(_p.lit_ratio("spell_amplification"), 1.0, 1e-3, "il repart à zéro")
 
@@ -1393,7 +1394,7 @@ func test_a_piercing_bolt_goes_through_one_and_stops_on_the_next() -> void:
 	var third := _target(Vector2(120, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_eq(_hits(first), 1, "traversée")
 	assert_eq(_hits(second), 1, "frappée, et le tir s'y arrête")
@@ -1406,7 +1407,7 @@ func test_a_splitting_bolt_throws_its_shards_past_the_target_once() -> void:
 	var behind := _target(Vector2(90, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(12)
 	assert_eq(_children_of(Projectile).size(), 3, "trois éclats en étoile, le tir parti")
 	await wait_seconds(0.5)
@@ -1433,7 +1434,7 @@ func test_a_swelling_ball_bursts_wider_the_farther_it_flew() -> void:
 	_effects.child_entered_tree.connect(func(n: Node) -> void:
 		if n is Explosion:
 			seen.append((n as Explosion)._radius))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
 	assert_eq(seen.size(), 1)
 	assert_gt(seen[0], radius * 2.0, "plus de 100 px volés : plus du double")
@@ -1449,7 +1450,7 @@ func test_an_overheating_ball_stacks_its_charges() -> void:
 	assert_eq(cast.against_factor(target.states), 1.0, "rien avant la première boule")
 
 	for i in SkillStats.OVERHEAT_MOST + 1:
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 		await wait_seconds(0.9)
 	var charges := target.states.strength(StatusEffects.Kind.OVERHEAT)
 	assert_eq(charges, float(SkillStats.OVERHEAT_MOST), "pas au-delà du plafond")
@@ -1474,7 +1475,7 @@ func test_a_fed_ball_grows_only_under_a_lit_aura() -> void:
 func test_converging_balls_meet_on_the_aim() -> void:
 	_learn_with("manual_fire", "fireball", [["projectiles", 2.0], [SkillStats.CONVERGE, 1.0]])
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var aim := _p.global_position + Vector2.RIGHT * Player.PLACEMENT_RANGE
 	var balls := _children_of(Fireball)
 	assert_eq(balls.size(), 3)
@@ -1488,7 +1489,7 @@ func test_converging_balls_meet_on_the_aim() -> void:
 func test_a_meteor_rains_small_ones_around_its_impact() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.METEOR_SHOWER, 3.0]], Skill.Shape.METEOR)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(Meteor.FALL + 0.05)
 	var rain := _children_of(Meteor)
 	assert_eq(rain.size(), 3)
@@ -1563,7 +1564,7 @@ func test_a_deflagration_opens_the_radius_to_area_lines() -> void:
 func test_a_swelling_ball_grows_its_hit_shape() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.GIRTH, 100.0]])
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.4)
 	var ball: Fireball = _children_of(Fireball)[0]
 	assert_gt(ball.size(), 1.5)
@@ -1608,7 +1609,7 @@ func test_a_piercing_bolt_also_splits_on_what_it_goes_through() -> void:
 	var second := _target(Vector2(160, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(12)
 	assert_eq(_hits(first), 1)
 	assert_eq(_children_of(Projectile).size(), 4, "le tir continue, trois éclats partis de la cible traversée")
@@ -1630,7 +1631,7 @@ func test_a_transformed_bolt_bursts_around_its_caster() -> void:
 
 	var beside := _target(Vector2(0, 20))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(_children_of(Projectile).size(), 0, "aucun tir")
 	assert_eq(_hits(beside), 1, "la nova frappe à côté")
@@ -1643,7 +1644,7 @@ func test_a_meteor_falls_then_bursts_on_the_aim() -> void:
 	var aside := _target(Vector2(0, 60))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(Meteor).size(), 1)
 	assert_eq(_children_of(Projectile).size(), 0, "rien ne vole")
 	await wait_seconds(Meteor.FALL * 0.5)
@@ -1662,7 +1663,7 @@ func test_a_meteor_falls_then_bursts_on_the_aim() -> void:
 func test_extra_balls_fall_as_a_row_of_meteors() -> void:
 	_learn_with("manual_fire", "fireball", [["projectiles", 2.0]], Skill.Shape.METEOR)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var meteors := _children_of(Meteor)
 	assert_eq(meteors.size(), 3)
 	var gap: float = meteors[0].global_position.distance_to(meteors[1].global_position)
@@ -1674,7 +1675,7 @@ func test_extra_balls_fall_as_a_row_of_meteors() -> void:
 func test_a_meteor_throws_its_shards_from_the_impact() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]], Skill.Shape.METEOR)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var impact: Vector2 = _children_of(Meteor)[0].global_position
 	await wait_seconds(Meteor.FALL + 0.05)
 	var shards := _children_of(Fireball)
@@ -1689,7 +1690,7 @@ func test_a_leap_leaves_no_trail_and_bursts_where_it_lands() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0]], Skill.Shape.LEAP)
 	var on_the_way := _target(Vector2(40, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 0, "pas de traînée")
 	assert_eq(_children_of(LeapArc).size(), 1)
@@ -1703,7 +1704,7 @@ func test_the_shards_of_a_ball_are_drawn_small() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]])
 	_target(Vector2(40, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(14)
 	var shards := _children_of(Fireball)
 	assert_eq(shards.size(), 3)
@@ -1713,7 +1714,7 @@ func test_the_shards_of_a_ball_are_drawn_small() -> void:
 
 func test_a_brood_drops_two_snakes_fanned_on_the_aim() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.BROOD, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snakes := _children_of(HellSnake)
 	assert_eq(snakes.size(), 2)
 	assert_ne((snakes[0] as HellSnake)._cap, (snakes[1] as HellSnake)._cap, "en éventail")
@@ -1722,7 +1723,7 @@ func test_a_brood_drops_two_snakes_fanned_on_the_aim() -> void:
 ## Vif : sa vitesse à lui, accrue en points de pourcentage — pas celle d'un projectile.
 func test_a_swift_snake_crawls_faster() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.CRAWL_SPEED, 100.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	var travelled := 0.0
 	var last := snake._head
@@ -1740,7 +1741,7 @@ func test_a_hunting_snake_takes_the_nearest_enemy_for_anchor() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.SEEK, 200.0]])
 	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 90))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	assert_eq(snake._anchor, prey.global_position)
@@ -1752,7 +1753,7 @@ func test_a_dying_snake_hatches() -> void:
 	_learn_with("manual_fire", "hell_snake", [
 		[SkillStats.HATCHLINGS, 2.0], ["duration", -90.0, true],
 	])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	while is_instance_valid(snake):
 		await wait_physics_frames(1)
@@ -1781,7 +1782,7 @@ func test_hydra_venom_feeds_the_young() -> void:
 ## autre lancer ne comptent pas, fût-ce son frère de couvée.
 func test_a_gluttonous_snake_grows_on_its_own_prey() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.GLUTTONY, 10.0], [SkillStats.BROOD, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snakes := _children_of(HellSnake)
 	var fed: HellSnake = snakes[0]
 	var other: HellSnake = snakes[1]
@@ -1802,7 +1803,7 @@ func test_a_gluttonous_snake_grows_on_its_own_prey() -> void:
 ## La Mue de croissance : à la cinquième proie, une gerbe, et tout recommence.
 func test_a_sated_snake_molts() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.GLUTTONY, 10.0], [SkillStats.GROWTH_MOLT, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_physics_frames(10)
 	for i in SkillStats.GLUTTONY_MOST:
@@ -1821,7 +1822,7 @@ func test_a_constricting_snake_coils_and_holds_its_prey() -> void:
 	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 0))
 	prey.states = StatusEffects.new()
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_physics_frames(3)
 	assert_eq(snake._coiled, prey, "la première mordue")
@@ -1838,7 +1839,7 @@ func test_an_ouroboros_circles_the_aim_and_a_spiral_tightens() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.OUROBOROS, 1.0], [SkillStats.SEEK, 300.0]])
 	_target(Vector2(Player.PLACEMENT_RANGE + 150, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	var aim := snake._anchor
 	for i in 10:
@@ -1854,7 +1855,7 @@ func test_an_ouroboros_circles_the_aim_and_a_spiral_tightens() -> void:
 ## sans proie.
 func test_a_spitting_snake_fires_at_the_nearest_prey() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.SPIT, 30.0], [SkillStats.SPIT_FAN, 2.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_seconds(SkillStats.SPIT_PERIOD + 0.1)
 	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
@@ -1873,11 +1874,11 @@ func test_a_fourth_snake_dissolves_the_oldest() -> void:
 		"hell_snake", "hell_snake_molting", "hell_snake_molting", "hell_snake_brood",
 		"hell_snake_brood", "hell_snake_hydra",
 	])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_crawling().size(), 3, "la Couvée remplit la limite d'un coup")
 	var first: Array = _crawling()
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_crawling().size(), 3)
 	for old: HellSnake in first:
 		assert_true(old._vanishing, "les trois plus anciens")
@@ -1890,13 +1891,13 @@ func test_a_fourth_snake_dissolves_the_oldest() -> void:
 func test_the_familiar_has_its_own_three_snakes() -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"])
 	_p.bar.put(3, "familiar")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	_learn("manual_fire", ["hell_snake", "hell_snake_molting", "hell_snake_molting", "hell_snake_brood", "hell_snake_brood"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(Familiar.ECHO_DELAY + 0.05)
 	assert_eq(_crawling().size(), 6, "trois à vous, trois au corbeau")
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_crawling().size(), 6, "les vôtres seuls se renouvellent")
 
 
@@ -1906,7 +1907,7 @@ func _crawling() -> Array:
 
 func test_a_dash_bursts_where_it_lands() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var burst: Array = _children_of(Explosion)
 	assert_eq(burst.size(), 1)
@@ -1917,7 +1918,7 @@ func test_a_dash_bursts_where_it_lands() -> void:
 func test_a_flying_start_bursts_at_both_ends() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.FLYING_START, 50.0]])
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var at := _children_of(Explosion).map(func(e: Explosion) -> Vector2: return e.global_position)
 	assert_eq(at.size(), 2)
@@ -1931,7 +1932,7 @@ func test_a_wick_runs_along_the_spent_trail() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.WICK, 50.0]])
 	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration - 0.1)
 	assert_eq(_children_of(Explosion).size(), 0, "pas avant l'extinction")
 	for i in 30:
@@ -1956,14 +1957,14 @@ func test_a_wick_runs_along_the_spent_trail() -> void:
 ## une fois ; la Foulée de feu la rend plus forte.
 func test_a_second_stride_is_free_once() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.SECOND_STRIDE, 1.0], [SkillStats.STRIDE_FIRE, 50.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var mana := _p.mana
 	var left := _p.remaining_cooldown(2)
 	assert_gt(left, 0.0)
-	assert_true(_p.cast_slot(2), "relancée pendant la recharge")
+	assert_true(Gestures.cast(_p, 2), "relancée pendant la recharge")
 	assert_eq(_p.mana, mana, "sans coût")
 	assert_almost_eq(_p.remaining_cooldown(2), left, 0.001, "sans relancer la recharge")
-	assert_false(_p.cast_slot(2), "une fois")
+	assert_false(Gestures.cast(_p, 2), "une fois")
 
 
 ## La touche tenue relance à chaque image où elle le peut : elle dépensait la seconde ruée
@@ -1988,12 +1989,12 @@ func test_a_held_key_keeps_the_second_stride_for_a_new_press() -> void:
 ## charmeur rappelle ceux qui sont déjà en jeu.
 func test_a_charmer_raises_a_snake_where_it_lands() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.CHARMER, 1.0], [SkillStats.SNAKE_DANCE, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(HellSnake).size(), 0, "sans Serpent infernal appris, rien")
 	assert_true(_p.invest(0, "hell_snake"))
 	var old := HellSnake.drop(_effects, Vector2(-200, 0), _p.resolve(SkillCatalog.by_id("hell_snake"), 1), Vector2.RIGHT, _p.states, _p)
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(HellSnake).size(), 2, "un de plus, à l'arrivée")
 	assert_eq(old._anchor, _p.global_position, "l'ancien rappelé")
 
@@ -2001,7 +2002,7 @@ func test_a_charmer_raises_a_snake_where_it_lands() -> void:
 ## L'Onde brûlante : l'atterrissage du bond projette l'anneau de feu, à deux rayons.
 func test_a_burning_wave_spreads_from_the_leap() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.BURNING_WAVE, 40.0]], Skill.Shape.LEAP)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var rings := _children_of(FrostRing)
 	assert_eq(rings.size(), 1)
 	var ring: FrostRing = rings[0]
@@ -2066,7 +2067,7 @@ func test_a_bouncing_bolt_leaps_to_the_nearest_unstruck_enemy() -> void:
 	var behind := _target(Vector2(200, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.8)
 	assert_eq(_hits(first), 1)
 	assert_eq(_hits(off_axis), 1, "le rebond, hors de l'axe du tir")
@@ -2080,7 +2081,7 @@ func test_a_bolt_bounces_beyond_a_chain_jump() -> void:
 	var first := _target(Vector2(60, 0))
 	var far_aside := _target(Vector2(60, ChainLightning.JUMP + 60.0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.2)
 	assert_eq(_hits(first), 1)
 	assert_eq(_hits(far_aside), 1)
@@ -2092,7 +2093,7 @@ func test_a_bolt_bounces_backward() -> void:
 	var first := _target(Vector2(60, 0))
 	var behind_it := _target(Vector2(20, 45))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.8)
 	assert_eq(_hits(first), 1)
 	assert_eq(_hits(behind_it), 1, "à 132° de l'axe du tir")
@@ -2105,7 +2106,7 @@ func test_the_glacial_bolt_is_drawn_and_the_enemy_bolt_is_not() -> void:
 		"swift_bolt", "swift_bolt_overload", "swift_bolt_overload", "swift_bolt_glacial_bolt",
 	])
 	_p.facing = Vector2(1.0, 1.0).normalized()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var bolt: Projectile = _children_of(Projectile)[0]
 	assert_eq(bolt.nature(), DamageType.Kind.COLD)
 	assert_eq(bolt.rotation, 0.0, "une planche ne pivote pas")
@@ -2123,7 +2124,7 @@ func test_a_taut_arc_jumps_farther() -> void:
 	var near := _target(Vector2(60, 0))
 	var far := _target(Vector2(60 + ChainLightning.JUMP + 20.0, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(near), 1)
 	assert_eq(_hits(far), 1, "au-delà d'un saut ordinaire")
 
@@ -2134,7 +2135,7 @@ func test_each_jump_of_a_crescendo_hits_harder() -> void:
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
 	var targets := [_target(Vector2(60, 0)), _target(Vector2(120, 0)), _target(Vector2(180, 0))]
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var first := float(_received_all[targets[0]][0])
 	assert_almost_eq(float(_received_all[targets[1]][0]), first * 1.5, 0.001)
 	assert_almost_eq(float(_received_all[targets[2]][0]), first * 2.0, 0.001)
@@ -2147,7 +2148,7 @@ func test_an_arc_web_strikes_the_nearest_all_around() -> void:
 	var behind := _target(Vector2(-60, 0))
 	var far_from_all := _target(Vector2(0, ChainLightning.SCOPE + 30.0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(ahead), 1)
 	assert_eq(_hits(behind), 1, "derrière, hors du cône d'une chaîne")
 	assert_eq(_hits(far_from_all), 0)
@@ -2158,7 +2159,7 @@ func test_a_wandering_cloud_drifts_toward_the_nearest_enemy() -> void:
 	_learn_with("manual_lightning", "storm_cloud", [[SkillStats.SEEK, 200.0]])
 	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 100))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var cloud: StormCloud = _children_of(StormCloud)[0]
 	var before := cloud.global_position.distance_to(prey.global_position)
 	await wait_seconds(0.5)
@@ -2168,7 +2169,7 @@ func test_a_wandering_cloud_drifts_toward_the_nearest_enemy() -> void:
 ## L'Orage portatif se forme sur le lanceur et le suit.
 func test_a_portable_storm_follows_its_caster() -> void:
 	_learn_with("manual_lightning", "storm_cloud", [], Skill.Shape.TEMPEST)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var cloud: StormCloud = _children_of(StormCloud)[0]
 	assert_eq(cloud.global_position, _p.global_position)
 	_p.global_position += Vector2(50, 20)
@@ -2186,7 +2187,7 @@ func test_a_static_orb_shocks_what_it_passes_by() -> void:
 	assert_true(cast.keywords.has(Keywords.PROJECTILE))
 	var on_the_way := _target(Vector2(80, 10))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
 	var orb: StaticOrb = _children_of(StaticOrb)[0]
 	await wait_seconds(1.4)
@@ -2198,7 +2199,7 @@ func test_a_static_orb_shocks_what_it_passes_by() -> void:
 func test_a_storm_dash_scatters_static_charges_on_its_path() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.TRAIL_CHARGES, 4.0]])
 	var from_value := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var charges := _children_of(StaticCharge)
 	assert_eq(charges.size(), 4)
@@ -2210,7 +2211,7 @@ func test_a_storm_dash_scatters_static_charges_on_its_path() -> void:
 ## Le drain d'un buff se lit sur le lancer résolu : un nœud le change.
 func test_a_buff_drains_what_its_tree_leaves() -> void:
 	_learn_with("manual_lightning", "static_electricity", [["mana_per_second", -50.0, true]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	# Après l'allumage, qui refait la fiche et sa régénération.
 	_p.stats.mana_regen = 0.0
 	var mana := _p.mana
@@ -2229,7 +2230,7 @@ func test_sinking_spikes_throw_shards_that_spare_the_bitten() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 3.0]])
 	var bitten := _target(Vector2(Player.PLACEMENT_RANGE, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(IceSpikes.LIFETIME + 0.05)
 	assert_eq(_children_of(Projectile).size(), 3)
 	await wait_seconds(0.3)
@@ -2238,14 +2239,14 @@ func test_sinking_spikes_throw_shards_that_spare_the_bitten() -> void:
 
 func test_spikes_leave_frozen_ground() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.GROUND, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 1)
 
 
 func test_a_frozen_nova_leaves_ground_under_its_caster() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.GROUND, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	var ground: Array = _children_of(DashTrail)
 	assert_eq(ground.size(), 1)
@@ -2261,7 +2262,7 @@ func test_an_ice_furrow_raises_spikes_in_a_line_to_the_aim() -> void:
 	var far := _target(Vector2(Player.PLACEMENT_RANGE - 20.0, 0))
 	var aside := _target(Vector2(80, 60))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_gt(_children_of(IceSpikes).size(), 2)
 	await wait_seconds(0.6)
 	assert_eq(_hits(near), 1)
@@ -2272,7 +2273,7 @@ func test_an_ice_furrow_raises_spikes_in_a_line_to_the_aim() -> void:
 ## Avec Éclats, chaque cercle du Sillon projette les siens en retombant.
 func test_each_circle_of_a_furrow_throws_its_shards() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 2.0]], Skill.Shape.FISSURE)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var circles := _children_of(IceSpikes).size()
 	assert_gt(circles, 1)
 	await wait_seconds(IceSpikes.FISSURE_STEP * float(circles) + IceSpikes.LIFETIME + 0.05)
@@ -2287,7 +2288,7 @@ func test_a_frost_wave_reaches_three_radii_once_each() -> void:
 	var far := _target(Vector2(-cast.radius * 2.5, 0))
 	var beyond := _target(Vector2(0, cast.radius * FrostRing.REACH + 30.0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(FrostRing.LIFETIME + 0.1)
 	assert_eq(_hits(close), 1)
 	assert_eq(_hits(far), 1, "au-delà du rayon d'une nova")
@@ -2301,7 +2302,7 @@ func test_a_sucking_vortex_pulls_toward_its_heart() -> void:
 	var pulls := []
 	prey.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(pulls, [-120.0])
 
@@ -2310,7 +2311,7 @@ func test_a_sucking_vortex_pulls_toward_its_heart() -> void:
 func test_an_implosion_closes_in_then_bursts_whole() -> void:
 	_learn_with("manual_cold", "winter_disaster", [["duration", -80.0, true]], Skill.Shape.IMPLOSION)
 	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	assert_almost_eq(vortex.reach(), cast.radius, 0.01, "il part à pleine taille")
 	await wait_seconds(cast.duration * 0.5)
@@ -2327,9 +2328,9 @@ func test_leaving_the_tomb_shatters_it() -> void:
 	_learn_with("manual_cold", "frost_tomb", [["damage_cold", 10.0], [SkillStats.END_BURST, 30.0]])
 	var near := _target(Vector2(20, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_false(_p.lit("frost_tomb"))
 	await wait_physics_frames(2)
 	assert_eq(_hits(near), 1)
@@ -2338,7 +2339,7 @@ func test_leaving_the_tomb_shatters_it() -> void:
 ## Un buff de ruée ne rééclate pas en finissant : il a éclaté à l'arrivée.
 func test_only_a_cast_buff_shatters() -> void:
 	_learn_with("manual_lightning", "storm_dash", [["damage_lightning", 10.0], [SkillStats.END_BURST, 30.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var bursts := _children_of(Explosion).size()
 	_p.extinguish("storm_dash")
@@ -2354,10 +2355,10 @@ func test_frost_armor_protects_without_binding() -> void:
 	assert_true(_p.invest(0, "ice_spike"))
 	_p.bar.put(3, "ice_spike")
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("frost_tomb"))
 	assert_lt(_p.stats.damage_taken, 0.0, "il protège")
-	assert_true(_p.cast_slot(3), "et les autres sorts partent")
+	assert_true(Gestures.cast(_p, 3), "et les autres sorts partent")
 
 
 ## Dégel : le soin du tombeau se lit sur le lancer résolu.
@@ -2366,7 +2367,7 @@ func test_the_tomb_mends_what_its_tree_gives() -> void:
 	var tomb := SkillCatalog.by_id("frost_tomb")
 	_p._set_health(_p.stats.max_health * 0.2)
 	var wounded := _p.health
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p.stats.health_regen = 0.0
 	await wait_seconds(1.0)
 	var mended := _p.health - wounded
@@ -2403,7 +2404,7 @@ func test_contagion_spreads_decay_without_striking() -> void:
 	var struck := _wearing_target(Vector2(60, 0))
 	var beside := _wearing_target(Vector2(60, 24))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_eq(_hits(struck), 1)
 	assert_eq(_hits(beside), 0, "le voisin n'est pas frappé")
@@ -2415,7 +2416,7 @@ func test_a_plague_swarm_decays_what_it_passes_by() -> void:
 	_learn_with("manual_necrotic", "plague", [], Skill.Shape.ORB)
 	var on_the_way := _wearing_target(Vector2(80, 10))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.4)
 	assert_gt(_hits(on_the_way), 1, "plusieurs morsures en passant")
 	assert_true(on_the_way.states.active(StatusEffects.Kind.DECAY))
@@ -2431,7 +2432,7 @@ func _undead() -> Minion:
 ## Ossature : des PV accrus à la levée.
 func test_ossature_raises_sturdier_undead() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.MINION_LIFE, 100.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_almost_eq(_undead().max_health, _p.stats.max_health * Minion.LIFE * 2.0, 0.01)
 
@@ -2441,14 +2442,14 @@ func test_a_bone_colossus_stands_alone_and_strikes_a_circle() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0]])
 	var first := _target(Vector2(40, 0))
 	var next := _target(Vector2(40, 18))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_eq(Minion.count_of(_p, "rise"), 1)
 	assert_almost_eq(
 		_undead().max_health, _p.stats.max_health * Minion.LIFE * SkillStats.COLOSSUS_LIFE, 0.01
 	)
 	_p._recharges[2] = 0.0
-	assert_false(_p.cast_slot(2), "un colosse, pas deux")
+	assert_false(Gestures.cast(_p, 2), "un colosse, pas deux")
 	await wait_seconds(1.5)
 	assert_gt(_hits(first), 0)
 	assert_gt(_hits(next), 0, "son coup prend aussi le voisin")
@@ -2457,7 +2458,7 @@ func test_a_bone_colossus_stands_alone_and_strikes_a_circle() -> void:
 ## Dernier souffle : un mort-vivant qui tombe éclate.
 func test_a_falling_undead_bursts() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.END_BURST, 30.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var minion := _undead()
 	var blow := DamageType.empty_parts()
@@ -2472,7 +2473,7 @@ func test_a_falling_undead_bursts() -> void:
 func test_a_bone_rampart_shields_by_the_head() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.BONE_WALL, 5.0]])
 	var bare := _p.stats.damage_taken
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_almost_eq(_p.stats.damage_taken, bare - 10.0, 0.001, "deux debout")
 	_undead().queue_free()
@@ -2488,7 +2489,7 @@ func test_a_toxic_breath_strikes_its_cone_only() -> void:
 	var behind := _target(Vector2(-20, 0))
 	var aside := _target(Vector2(0, 40))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(ToxicBreath.LIFETIME + 0.1)
 	assert_eq(_hits(far_ahead), 1, "au-delà du rayon d'une nova, une fois")
 	assert_eq(_hits(behind), 0)
@@ -2501,7 +2502,7 @@ func test_a_bursting_creature_releases_young() -> void:
 	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
 	var prey := _target(aim + Vector2(50, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var gate: RottingGate = _children_of(RottingGate)[0]
 	var waited := 0.0
 	while _hits(prey) == 0 and waited < 2.0:
@@ -2515,7 +2516,7 @@ func test_a_bursting_creature_releases_young() -> void:
 ## Le Nid porté : le portail suit le joueur.
 func test_a_carried_nest_follows_its_caster() -> void:
 	_learn_with("manual_necrotic", "rotting_gate", [], Skill.Shape.NEST)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var gate: RottingGate = _children_of(RottingGate)[0]
 	_p.global_position += Vector2(60, 0)
 	await wait_physics_frames(2)
@@ -2533,7 +2534,7 @@ func test_a_deep_long_curse_pays_its_tribute() -> void:
 	var two := _wearing_target(aim + Vector2(-10, 0))
 	await wait_physics_frames(2)
 	_p._set_mana(100.0)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(_p.mana, 100.0 - cast.mana_cost + 6.0, 0.5, "trois de mana par maudit")
 	assert_almost_eq(one.states.resistance_lost(DamageType.Kind.NECROTIC), StatusEffects.CURSE * 1.5, 0.001)
@@ -2547,7 +2548,7 @@ func test_a_death_mark_takes_one_then_moves_on() -> void:
 	var marked := _wearing_target(aim + Vector2(10, 0))
 	var next := _wearing_target(aim + Vector2(50, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(
 		marked.states.resistance_lost(DamageType.Kind.NECROTIC),
@@ -2564,7 +2565,7 @@ func test_a_death_mark_takes_one_then_moves_on() -> void:
 ## Endurcissement : la vie rongée se lit sur le lancer.
 func test_hardening_gnaws_less() -> void:
 	_learn_with("manual_necrotic", "advanced_necrosis", [["self_wither", -50.0, true]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	_p.stats.health_regen = 0.0
 	var health := _p.health
@@ -2580,7 +2581,7 @@ func test_a_shared_burden_strikes_around() -> void:
 	var near := _target(Vector2(20, 0))
 	var far := _target(Vector2(90, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.BURDEN_PERIOD + 0.2)
 	assert_eq(_hits(near), 1)
 	assert_eq(_hits(far), 0)
@@ -2603,7 +2604,7 @@ func test_a_groundbreaker_strikes_the_circle_of_its_impact() -> void:
 	var aside := _target(Vector2(_p.strike_reach(), 24))
 	var behind := _target(Vector2(-30, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.3)
 	assert_eq(_hits(beyond), 1)
 	assert_eq(_hits(aside), 1, "de côté de l'impact aussi")
@@ -2620,7 +2621,7 @@ func test_a_ramming_furious_strike_pushes_and_heals() -> void:
 	_p.stats.health_regen = 0.0
 	_p._set_health(_p.stats.max_health - 50.0)
 	var health := _p.health
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_p.swing_duration + 0.2)
 	assert_eq(_hits(two), 1)
 	assert_eq(pushes, [120.0])
@@ -2632,9 +2633,9 @@ func test_a_blade_shield_lasts_while_the_swords_spin() -> void:
 	# La durée par le nœud : l'abri refait la fiche, et avec elle les modificateurs de mot-clé.
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.BLADE_WARD, 5.0], ["duration", -80.0, true]])
 	var bare := _p.stats.damage_taken
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(_p.stats.damage_taken, bare - 10.0, 0.001, "deux épées")
 	await wait_seconds(1.3)
 	assert_eq(_p.orbiting_swords(), 0)
@@ -2647,7 +2648,7 @@ func test_a_sword_volley_flies_to_the_nearest_enemy() -> void:
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
 	var far := _target(Vector2(120, 30))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.6)
 	assert_eq(_hits(far), 1)
 	assert_eq(_children_of(FlyingSword).size(), 0, "et sa course finit à la portée")
@@ -2659,7 +2660,7 @@ func test_a_wide_orbit_reaches_farther() -> void:
 	var radius := SkillCatalog.by_id("spiral_sword").radius * 2.0
 	var on_the_circle := _target(Vector2(radius, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
 	assert_gt(_hits(on_the_circle), 0)
 
@@ -2670,7 +2671,7 @@ func test_twin_waves_fan_out_and_a_backwash_bites_twice() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
 	var ahead := _target(Vector2(SlashWave.START + cast.radius + 20.0, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(SlashWave).size(), 2)
 	await wait_seconds(cast.duration * 2.0 + 0.2)
 	assert_eq(_hits(ahead), 4, "deux vagues, aller et retour")
@@ -2683,7 +2684,7 @@ func test_a_steel_furrow_cuts_behind_the_wave() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
 	var on_the_way := _target(Vector2(SlashWave.START + 20.0, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.1)
 	var after_the_wave := _hits(on_the_way)
 	assert_eq(_children_of(DashTrail).size(), 1)
@@ -2696,7 +2697,7 @@ func test_a_backwash_lays_a_furrow_on_each_pass() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.GROUND, 2.0]], Skill.Shape.BOOMERANG)
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.1)
 	assert_eq(_children_of(DashTrail).size(), 1, "au bout de l'aller")
 	await wait_seconds(cast.duration + 0.1)
@@ -2712,7 +2713,7 @@ func test_a_hungry_whirlpool_pulls_and_feeds() -> void:
 	_target(Vector2(-20, 0))
 	var pulls := _knockbacks_on(one)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	# Après l'allumage, qui refait la fiche ; avant la première frappe.
 	_p.stats.max_mana = 9999.0
 	_p._set_mana(100.0)
@@ -2724,10 +2725,10 @@ func test_a_hungry_whirlpool_pulls_and_feeds() -> void:
 ## Arsenal : un lancer fait naître ses épées en plus d'un coup, sans dépasser la ronde.
 func test_an_arsenal_summons_its_swords_at_once_within_the_round() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.EXTRA_SWORDS, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p.orbiting_swords(), 2)
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p.orbiting_swords(), SkillCatalog.by_id("spiral_sword").simultaneous, "pas au-delà")
 
 
@@ -2743,7 +2744,7 @@ func test_a_holy_cross_strikes_the_four_axes() -> void:
 	]
 	var aslant := _target(Vector2(40, 40))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	for arm: Hurtbox in arms:
 		assert_eq(_hits(arm), 1)
@@ -2757,7 +2758,7 @@ func test_a_refracted_beam_leaps_to_the_nearest_unstruck_enemy() -> void:
 	var off_axis := _target(Vector2(90, 40))
 	var after := _target(Vector2(99, 140))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(4)
 	assert_eq(_hits(first), 1)
 	assert_eq(_hits(off_axis), 1, "le rebond, hors de l'axe")
@@ -2768,7 +2769,7 @@ func test_a_drifting_pillar_follows_the_nearest_enemy() -> void:
 	_learn_with("manual_holy", "sacred_pillar", [], Skill.Shape.DRIFT)
 	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 80))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var pillar: SacredPillar = _children_of(SacredPillar)[0]
 	var before := pillar.global_position.distance_to(prey.global_position)
 	await wait_seconds(0.5)
@@ -2783,7 +2784,7 @@ func test_a_calling_pillar_pulls_then_collapses() -> void:
 	var prey := _target(Vector2(Player.PLACEMENT_RANGE + 15.0, 0))
 	var pulls := _knockbacks_on(prey)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var pillar: SacredPillar = _children_of(SacredPillar)[0]
 	await wait_physics_frames(2)
 	assert_eq(pulls, [-40.0])
@@ -2804,7 +2805,7 @@ func test_an_exalted_pulse_swells_and_absolves() -> void:
 	_p.stats.health_regen = 0.0
 	_p._set_health(_p.stats.max_health - 50.0)
 	var health := _p.health
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.period + 0.1)
 	var received: Array = _received_all[near]
 	assert_eq(received.size(), 2)
@@ -2818,7 +2819,7 @@ func test_an_aureole_blesses_what_comes_near() -> void:
 	var near := _wearing_target(Vector2(20, 0))
 	var far := _wearing_target(Vector2(90, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.AUREOLE_PERIOD + 0.1)
 	assert_true(near.states.active(StatusEffects.Kind.BLESSING))
 	assert_eq(_hits(near), 0, "béni, pas frappé")
@@ -2842,7 +2843,7 @@ func _no_rolled_states() -> void:
 
 func _cast_again(slot: int) -> void:
 	_p._recharges[slot] = 0.0
-	assert_true(_p.cast_slot(slot))
+	assert_true(Gestures.cast(_p, slot))
 
 
 ## Trinité : une charge par sort d'une autre nature que le précédent. Le premier n'a pas
@@ -2852,7 +2853,7 @@ func test_trinity_stacks_harmony_on_each_change_of_element() -> void:
 	_p.bar.put(3, "trinity")
 	_p.bar.put(4, "catalysis")
 	var projectile := SkillCatalog.by_id("elemental_projectile")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var before := _p.resolve(projectile, 1).total_min()
 
 	_cast_again(2)
@@ -2880,7 +2881,7 @@ func test_catalysis_consumes_a_pair_of_states_into_vapor() -> void:
 	lone.states.put(StatusEffects.Kind.IGNITE, 5.0)
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_false(steamy.states.active(StatusEffects.Kind.IGNITE), "consommé")
 	assert_false(steamy.states.active(StatusEffects.Kind.CHILL), "consommé")
 	assert_true(lone.states.active(StatusEffects.Kind.IGNITE), "seul, il reste")
@@ -2901,7 +2902,7 @@ func test_catalysis_arcs_from_fire_and_lightning() -> void:
 	var far := _target(_aim() + Vector2(0, Catalysis.ARC_REACH + 20.0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_eq(_hits(charged), 2, "la frappe du cercle, puis l'arc")
 	assert_eq(_hits(neighbor), 1, "hors du cercle, l'arc l'atteint")
 	assert_eq(_hits(far), 0)
@@ -2918,7 +2919,7 @@ func test_catalysis_conducts_the_chill_to_the_neighbors() -> void:
 	var neighbor := _wearing_target(_aim() + Vector2(Catalysis.SPREAD_REACH - 4.0, 0))
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_false(frozen.states.active(StatusEffects.Kind.CHILL))
 	assert_true(neighbor.states.active(StatusEffects.Kind.CHILL), "le transi a gagné")
 	assert_eq(_hits(frozen), 2)
@@ -2934,7 +2935,7 @@ func test_the_rag_doll_draws_the_blows_and_bursts() -> void:
 	grunt.setup(_p)
 	# Hors du souffle de la poupée : il doit survivre à ses deux éclats.
 	grunt.global_position = _aim() + Vector2(80, 0)
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var dolls := _children_of(RagDoll)
 	assert_eq(dolls.size(), 1)
 	assert_eq((dolls[0] as RagDoll).global_position, _aim())
@@ -2959,7 +2960,7 @@ func test_the_rag_doll_draws_the_blows_and_bursts() -> void:
 func test_the_familiar_echoes_a_posed_spell_weaker_and_later() -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"])
 	_p.bar.put(3, "familiar")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_true(_p.lit("familiar"))
 	_cast_again(2)
 	var first: Projectile = _children_of(Projectile)[0]
@@ -2984,7 +2985,7 @@ func test_a_prism_volley_spreads_the_turn_across_its_bolts() -> void:
 		"elemental_projectile", "elemental_projectile_celerity", "elemental_projectile_ricochet",
 		"elemental_projectile_prism", "elemental_projectile_prism",
 	])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var natures := {}
 	for bolt: Projectile in _children_of(Projectile):
 		natures[bolt.nature()] = true
@@ -3005,7 +3006,7 @@ func test_the_triad_bursts_once_with_the_three_elements() -> void:
 	var target := _target(_aim())
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(Triad).size(), 1)
 	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
 	await wait_seconds(Triad.TRAVEL + 0.1)
@@ -3026,7 +3027,7 @@ func test_the_triad_comets_pierce_what_they_cross() -> void:
 	var crossed := _target(_p.global_position + _p.facing * 60.0)
 	var aside := _target(_p.global_position + Vector2(60, 70))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(Triad.TRAVEL + 0.1)
 	assert_eq(_hits(crossed), 3, "une fois par comète")
 	assert_eq(_hits(aside), 0)
@@ -3044,7 +3045,7 @@ func test_the_amplification_tree_resonates_siphons_and_backlashes() -> void:
 		"spell_amplification_backlash",
 	])
 	_p.bar.put(3, "spell_amplification")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var buff: Buff = _p._lit["spell_amplification"]
 	buff._age = 5.0
 	_cast_again(2)
@@ -3078,7 +3079,7 @@ func test_trinity_dissonance_holds_one_more_and_loses_all_on_a_repeat() -> void:
 	_p.bar.put(3, "trinity")
 	_p.bar.put(4, "catalysis")
 	var projectile := SkillCatalog.by_id("elemental_projectile")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var bare := _p.resolve(projectile, 1).status_chance_increase
 	_cast_projectile(6)
 	var buff: Buff = _p._lit["trinity"]
@@ -3101,8 +3102,8 @@ func test_trinity_tempo_shortens_the_running_cooldowns() -> void:
 	])
 	_p.bar.put(3, "trinity")
 	_p.bar.put(4, "rag_doll")
-	assert_true(_p.cast_slot(3))
-	assert_true(_p.cast_slot(4))
+	assert_true(Gestures.cast(_p, 3))
+	assert_true(Gestures.cast(_p, 4))
 	_cast_projectile(1)
 	var doll := _p.remaining_cooldown(4)
 	_cast_projectile(1)
@@ -3118,7 +3119,7 @@ func test_trinity_perfect_chord_spends_full_charges_on_a_three_element_spell() -
 		"trinity_perfect_chord",
 	])
 	_p.bar.put(3, "trinity")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	_cast_projectile(5)
 	var buff: Buff = _p._lit["trinity"]
 	assert_eq(buff.stacks, 4, "pleines")
@@ -3148,7 +3149,7 @@ func test_a_primed_catalysis_reacts_with_a_single_state() -> void:
 	burning.states.put(StatusEffects.Kind.IGNITE, 5.0)
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_false(chilled.states.active(StatusEffects.Kind.CHILL), "consommé")
 	assert_true(burning.states.active(StatusEffects.Kind.IGNITE), "feu sur feu, rien")
 	await wait_physics_frames(2)
@@ -3173,7 +3174,7 @@ func test_the_catalysis_tree_strengthens_each_reaction() -> void:
 	steamy.states.put(StatusEffects.Kind.CHILL, 1.0)
 	await wait_physics_frames(2)
 
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 1, "la nappe")
 
@@ -3184,7 +3185,7 @@ func test_twin_dolls_stand_together() -> void:
 		"elemental_projectile", "rag_doll", "rag_doll_decoy", "rag_doll_decoy", "rag_doll_twins",
 	])
 	_p.bar.put(3, "rag_doll")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	_cast_again(3)
 	await wait_physics_frames(2)
 	assert_eq(_children_of(RagDoll).size(), 2)
@@ -3205,7 +3206,7 @@ func test_the_doll_shoulders_your_blows_and_returns_them() -> void:
 		"rag_doll_gunpowder", "rag_doll_grudge",
 	])
 	_p.bar.put(3, "rag_doll")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var doll: RagDoll = _children_of(RagDoll)[0]
 	var health := _p.health
 	_p._on_damaged(DamageInfo.new(50.0, _p.global_position))
@@ -3222,7 +3223,7 @@ func test_a_decoy_doll_draws_from_farther() -> void:
 	add_child_autofree(grunt)
 	grunt.setup(_p)
 	grunt.global_position = _p.global_position + (_aim() - _p.global_position) * 0.45
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	await wait_physics_frames(1)
 	assert_true(grunt.foe() is RagDoll, "plus loin que vous, mais à portée d'appeau")
 
@@ -3235,7 +3236,7 @@ func test_the_familiar_ruminates_in_the_next_element() -> void:
 		"familiar_rumination", "familiar_frugality", "familiar_frugality", "familiar_countersong",
 	])
 	_p.bar.put(3, "familiar")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var own := _p.resolve(SkillCatalog.by_id("familiar"), 1)
 	assert_almost_eq(Familiar.echo_part(own), Familiar.ECHO_PART + 0.12 - 0.10, 1e-4)
 	assert_almost_eq(own.mana_per_second, 4.0 * 0.8, 1e-4, "Frugalité")
@@ -3261,7 +3262,7 @@ func test_the_countersong_shifts_a_spell_without_a_turn() -> void:
 		"familiar_countersong",
 	])
 	_p.bar.put(3, "familiar")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	_learn("manual_fire", ["fireball"])
 	assert_true(SkillCatalog.by_id("fireball").nature_cycle.is_empty())
 	_cast_again(2)
@@ -3285,8 +3286,8 @@ func test_the_raven_eye_aims_the_echo_at_the_prey() -> void:
 	_p.bar.put(4, "catalysis")
 	var prey := _target(_aim() + Vector2(0, 30))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(3))
-	assert_true(_p.cast_slot(4))
+	assert_true(Gestures.cast(_p, 3))
+	assert_true(Gestures.cast(_p, 4))
 	await wait_seconds(Familiar.ECHO_DELAY + 0.05)
 	var echoed := _children_of(Catalysis).filter(
 		func(c: Catalysis) -> bool: return c.global_position == prey.global_position
@@ -3299,7 +3300,7 @@ func test_black_wings_quicken_while_the_raven_flies() -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "familiar", "familiar_black_wings"])
 	_p.bar.put(3, "familiar")
 	var speed := _p.stats.move_speed
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_gt(_p.stats.move_speed, speed)
 
 
@@ -3309,8 +3310,8 @@ func test_the_familiar_and_the_doll_leave_with_their_points() -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "familiar", "rag_doll"])
 	_p.bar.put(3, "familiar")
 	_p.bar.put(4, "rag_doll")
-	assert_true(_p.cast_slot(3))
-	assert_true(_p.cast_slot(4))
+	assert_true(Gestures.cast(_p, 3))
+	assert_true(Gestures.cast(_p, 4))
 	await wait_physics_frames(1)
 	assert_true(_p.refund(Rack.CLASS_SLOT, "familiar"))
 	assert_true(_p.refund(Rack.CLASS_SLOT, "rag_doll"))
@@ -3333,7 +3334,7 @@ func _brazier() -> Brazier:
 ## période ; personne à portée, il attend.
 func test_the_brazier_spits_at_the_nearest_enemy() -> void:
 	_learn("manual_fire", ["brazier"])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	assert_eq(b.global_position, _aim())
 	var cast := _p.resolve(SkillCatalog.by_id("brazier"), 1)
@@ -3352,7 +3353,7 @@ func test_the_brazier_spits_at_the_nearest_enemy() -> void:
 ## Deux à la fois : un troisième éteint le plus ancien, sans dernières braises.
 func test_a_third_brazier_puts_out_the_oldest() -> void:
 	_learn_with("manual_fire", "brazier", [[SkillStats.LAST_BREATH, 60.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var first := _brazier()
 	_cast_again(2)
 	_cast_again(2)
@@ -3371,7 +3372,7 @@ func test_the_hearth_fires_your_fireball_without_its_meteor() -> void:
 	var fireball := SkillCatalog.by_id("fireball")
 	assert_eq(_p.resolve(fireball, 1).shape, Skill.Shape.METEOR)
 	assert_eq(_p.resolve(fireball, 1, true).shape, Skill.Shape.BALL, "sans sa transformation")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	assert_eq(b._ball.shape, Skill.Shape.BALL)
 	assert_almost_eq(b._ball.total_max(), _p.resolve(fireball, 1, true).total_max(), 0.01, "vos points, votre arbre")
@@ -3392,7 +3393,7 @@ func test_the_hearth_keeps_the_volley_and_the_grapeshot() -> void:
 		[SkillStats.HEARTH, 1.0], ["projectiles", 1.0], [SkillStats.BOUNCES, 1.0],
 	])
 	assert_true(_p.invest(0, "fireball"))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	assert_eq(b._ball.projectile_count(), 2, "la Salve")
 	assert_eq(b._ball.bounces, 1.0, "la Mitraille")
@@ -3407,7 +3408,7 @@ func test_a_beacon_draws_the_blows_and_falls_in_embers() -> void:
 	add_child_autofree(grunt)
 	grunt.setup(_p)
 	grunt.global_position = _aim() + Vector2(30, 0)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	await wait_physics_frames(1)
 	assert_almost_eq(b.max_health, _p.stats.max_health * SkillStats.BEACON_LIFE, 0.01)
@@ -3423,7 +3424,7 @@ func test_a_beacon_draws_the_blows_and_falls_in_embers() -> void:
 ## tirer aussitôt — pas un tué d'un autre lancer.
 func test_a_kill_rekindles_the_brazier() -> void:
 	_learn_with("manual_fire", "brazier", [[SkillStats.REKINDLE, 1.0], [SkillStats.QUICKFIRE, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	var life := b.lifetime()
 	_p.states.slew.emit(_p.resolve(SkillCatalog.by_id("brazier"), 1), Vector2.ZERO, null)
@@ -3436,7 +3437,7 @@ func test_a_kill_rekindles_the_brazier() -> void:
 ## La Triangulation : le second brasero relie ses flammes au premier.
 func test_triangulated_braziers_burn_the_line_between_them() -> void:
 	_learn_with("manual_fire", "brazier", [[SkillStats.TRIANGULATION, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(DashTrail).size(), 0, "seul, rien à relier")
 	var first := _brazier()
 	_p.global_position += Vector2(0, 60)
@@ -3458,17 +3459,17 @@ func test_triangulated_braziers_burn_the_line_between_them() -> void:
 ## une pause les fait retomber.
 func test_a_runaway_bolt_casts_faster_while_held() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.RAMP, 10.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var first: float = _p._recharge_totals[2]
 	for i in SkillStats.RAMP_MOST + 1:
 		await wait_seconds(_p.remaining_cooldown(2) + 0.02)
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p._ramps, SkillStats.RAMP_MOST, "pas au-delà du plafond")
 	assert_almost_eq(
 		_p._recharge_totals[2], first / (1.0 + 0.1 * SkillStats.RAMP_MOST), 0.001, "10 % par cumul"
 	)
 	await wait_seconds(SkillStats.RAMP_HOLD + 0.1)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p._ramps, 0, "une pause les fait retomber")
 
 
@@ -3478,7 +3479,7 @@ func test_a_full_throttle_bolt_fires_twice_every_fourth_shot() -> void:
 	_p._ramps = SkillStats.RAMP_MOST
 	_p._ramp_idle = 0.0
 	_p._throttle = SkillStats.THROTTLE_EVERY - 1
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.THROTTLE_GAP + 0.05)
 	assert_eq(_children_of(Projectile).size(), 2, "un second éclair suit le premier")
 
@@ -3493,7 +3494,7 @@ func test_a_full_throttle_orb_comes_twice() -> void:
 	_p._ramps = SkillStats.RAMP_MOST
 	_p._ramp_idle = 0.0
 	_p._throttle = SkillStats.THROTTLE_EVERY - 1
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.THROTTLE_GAP + 0.05)
 	assert_eq(_children_of(StaticOrb).size(), 2)
 
@@ -3503,13 +3504,13 @@ func test_a_lightning_rod_draws_the_next_bolts() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.LIGHTNING_ROD, 1.0]])
 	var marked := _target(Vector2(60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.4)
 	assert_eq(LightningRod.target_of(_p.states), marked)
 	# Hors de l'axe : un tir droit la manquerait.
 	marked.global_position = Vector2(80, 45)
 	await wait_seconds(_p.remaining_cooldown(2) + 0.02)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_eq(_hits(marked), 2, "le second s'est incurvé vers elle")
 
@@ -3564,7 +3565,7 @@ func test_a_caroming_bolt_bounces_off_a_wall() -> void:
 	_wall(Vector2(60, 0), Vector2(10, 200))
 	var behind := _target(Vector2(-60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
 	assert_eq(_hits(behind), 1, "revenu du mur")
 
@@ -3572,7 +3573,7 @@ func test_a_caroming_bolt_bounces_off_a_wall() -> void:
 ## Le Satellite : l'orbe tourne autour de son lanceur, et le suit.
 func test_a_satellite_orb_circles_its_caster() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.SATELLITE, 1.0]], Skill.Shape.ORB)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orb: StaticOrb = _children_of(StaticOrb)[0]
 	await wait_seconds(0.3)
 	var start := orb.global_position
@@ -3618,7 +3619,7 @@ func test_satellites_spread_evenly_around_their_caster() -> void:
 	_learn_with(
 		"manual_lightning", "swift_bolt", [[SkillStats.SATELLITE, 1.0], ["projectiles", 1.0]], Skill.Shape.ORB
 	)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orbs := _children_of(StaticOrb)
 	assert_eq(orbs.size(), 2)
 	assert_almost_eq(
@@ -3690,7 +3691,7 @@ func test_a_conductive_chain_runs_through_the_numbed() -> void:
 	for i in 4:
 		line.append(_target(Vector2(180 + i * 60, 0)))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	for i in 5:
 		assert_eq(_hits(line[i]), 1, "deux engourdis gratuits, puis trois cibles")
 	assert_eq(_hits(line[5]), 0)
@@ -3703,7 +3704,7 @@ func test_a_bifurcating_chain_sends_a_branch() -> void:
 		_target(Vector2(x, 0))
 	var aside := _target(Vector2(120, 60))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(aside), 1, "pris par la branche, partie de la première cible")
 	assert_eq(_children_of(ChainLightning).size(), 2, "le tronc et sa branche")
 
@@ -3716,7 +3717,7 @@ func test_a_grounded_chain_gives_back_mana() -> void:
 	await wait_physics_frames(2)
 	_p._set_mana(100.0)
 	var cost := _p.resolve(SkillCatalog.by_id("chain_lightning"), 1).mana_cost
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(_p.mana, 100.0 - cost + 4.0, 0.001)
 
 
@@ -3735,7 +3736,7 @@ func test_a_relayed_chain_jumps_through_a_static_charge() -> void:
 	var charge := _charge_at(Vector2(110, 0))
 	var beyond := _target(Vector2(160, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(first), 1)
 	assert_true(charge.is_queued_for_deletion(), "la charge prise éclate")
 	assert_eq(_hits(beyond), 0, "deux sauts : la cible et la charge")
@@ -3750,7 +3751,7 @@ func test_a_reprimed_relay_gives_its_jump_back() -> void:
 	_charge_at(Vector2(110, 0))
 	var beyond := _target(Vector2(160, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(beyond), 1, "la charge n'a pas usé de saut")
 
 
@@ -3763,7 +3764,7 @@ func test_each_arc_of_an_antlered_web_leaps_once_more() -> void:
 	_target(Vector2(0, 60))
 	var past := _target(Vector2(110, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(past), 1)
 	assert_almost_eq(float(_received_all[past][0]), float(_received_all[ahead][0]) * 0.5, 0.001)
 
@@ -3896,7 +3897,7 @@ func test_a_lightning_streak_strikes_along_the_dash() -> void:
 	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
 	var aside := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 60))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(on_the_way), 1)
 	assert_eq(_hits(aside), 0)
 
@@ -3907,7 +3908,7 @@ func test_a_round_trip_brings_back_to_the_start() -> void:
 	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
 	await wait_physics_frames(2)
 	var start := _p.global_position
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_ne(_p.global_position, start)
 	await wait_seconds(SkillStats.ROUND_TRIP_DELAY + 0.1)
 	assert_almost_eq(_p.global_position.distance_to(start), 0.0, 1.0)
@@ -3921,7 +3922,7 @@ func test_rolling_thunder_rumbles_twice_more() -> void:
 	)
 	var landing := _target(Vector2(Player.PLACEMENT_RANGE, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.ROLLING_GAP * SkillStats.ROLLING_COUNT + 0.15)
 	assert_eq(_hits(landing), 1 + SkillStats.ROLLING_COUNT)
 
@@ -3931,11 +3932,11 @@ func test_built_up_tension_charges_the_next_lightning_spell() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.CHARGED_RUN, 10.0]])
 	_p.invest(0, "swift_bolt")
 	_p.bar.put(3, "swift_bolt")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var run := minf(Player.PLACEMENT_RANGE, SkillStats.CHARGED_RUN_MOST)
 	assert_almost_eq(_p._tension, 10.0 * run / SkillStats.CHARGED_RUN_STEP, 0.5)
 	assert_gt(_p._tension_left, 0.0)
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_eq(_p._tension_left, 0.0, "dépensée")
 
 
@@ -3948,7 +3949,7 @@ func test_rearming_shortens_the_cooldown_per_numbed() -> void:
 		h.states.put(StatusEffects.Kind.NUMB, 1.0)
 	await wait_physics_frames(2)
 	var interval := _p.resolve(SkillCatalog.by_id("storm_dash"), 1).interval
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(_p.remaining_cooldown(2), interval - 1.0, 0.001)
 
 
@@ -3969,12 +3970,12 @@ func test_a_static_mine_bites_once_then_goes_out() -> void:
 func test_gallop_stacks_thunder_call() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.GALLOP, 1.0]])
 	var speed := _p.stats.move_speed
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var once := _p.stats.move_speed - speed
 	for i in SkillStats.GALLOP_MOST:
 		_p._recharges[2] = 0.0
 		await wait_physics_frames(1)
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p.lit_stacks("storm_dash"), SkillStats.GALLOP_MOST)
 	assert_almost_eq(_p.stats.move_speed - speed, once * SkillStats.GALLOP_MOST, 0.01)
 
@@ -3991,7 +3992,7 @@ func test_an_ionizing_field_numbs_around_you() -> void:
 	var far := _target(Vector2(SkillStats.IONIZE_RADIUS + 40, 0))
 	far.states = StatusEffects.new()
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.IONIZE_PERIOD + 0.1)
 	assert_true(near.states.active(StatusEffects.Kind.NUMB))
 	assert_false(far.states.active(StatusEffects.Kind.NUMB))
@@ -4000,7 +4001,7 @@ func test_an_ionizing_field_numbs_around_you() -> void:
 ## La Capacité : sous le champ, une charge laissée vit plus longtemps.
 func test_capacitance_lengthens_the_static_charges() -> void:
 	_learn_with("manual_lightning", "static_electricity", [[SkillStats.CAPACITY, 1.5]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p.stats.static_charge_chance = 100.0
 	var victim := StatusEffects.new()
 	victim.put(StatusEffects.Kind.NUMB, 1.0)
@@ -4023,7 +4024,7 @@ func test_a_backlash_answers_a_melee_blow_then_the_cage_closes() -> void:
 	_learn_with(
 		"manual_lightning", "static_electricity", [[SkillStats.BACKLASH, 50.0], [SkillStats.FARADAY, 1.0]]
 	)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var grunt := _grunt(Vector2(20, 0))
 	await wait_physics_frames(2)
 	var full := grunt.health
@@ -4041,11 +4042,11 @@ func test_a_full_capacitor_charges_the_next_lightning_spell() -> void:
 	_learn_with("manual_lightning", "static_electricity", [[SkillStats.CONDENSER, 50.0]])
 	_p.invest(0, "swift_bolt")
 	_p.bar.put(3, "swift_bolt")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	for i in SkillStats.CONDENSER_MOST:
 		_p._charge_bit(1.0)
 	assert_eq(_p._condensed, SkillStats.CONDENSER_MOST)
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	assert_eq(_p._condensed, 0, "dépensé")
 
 
@@ -4053,7 +4054,7 @@ func test_a_full_capacitor_charges_the_next_lightning_spell() -> void:
 ## ont mordu.
 func test_a_total_discharge_bursts_by_itself() -> void:
 	_learn_with("manual_lightning", "static_electricity", [[SkillStats.TOTAL_DISCHARGE, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var near := _target(Vector2(20, 0))
 	await wait_physics_frames(2)
 	for i in SkillStats.CONDENSER_MOST:
@@ -4076,7 +4077,7 @@ func test_the_bullseye_bites_harder_at_the_heart() -> void:
 	var heart := _target(point)
 	var rim := _target(point + Vector2(0, 20))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_almost_eq(float(_received_all[heart][0]), float(_received_all[rim][0]) * 1.5, 0.01)
 
@@ -4086,7 +4087,7 @@ func test_an_aftershock_strikes_again_and_tremors_repeat_it() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.AFTERSHOCK, 50.0], [SkillStats.TREMORS, 2.0]])
 	var below := _target(_aim())
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.AFTERSHOCK_GAP * 3.0 + 0.1)
 	assert_eq(_hits(below), 4, "le coup, la réplique et deux secousses")
 	await wait_seconds(SkillStats.AFTERSHOCK_GAP * 2.0)
@@ -4100,7 +4101,7 @@ func test_an_aftershock_is_a_whole_spike_with_its_shards() -> void:
 	_effects.child_entered_tree.connect(
 		func(n: Node) -> void: thrown[0] += 1 if n is Projectile else 0
 	)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.AFTERSHOCK_GAP + IceSpikes.LIFETIME + 0.15)
 	assert_eq(thrown[0], 4, "deux éclats du pic, deux de sa réplique")
 
@@ -4111,7 +4112,7 @@ func test_a_grove_raises_a_circle_beside_the_first() -> void:
 	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
 	var beside := _target(_aim() + _p.facing.rotated(PI * 0.5) * radius * 2.0)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(IceSpikes).size(), 2)
 	await wait_physics_frames(3)
 	assert_eq(_hits(beside), 1)
@@ -4122,10 +4123,10 @@ func test_a_glacier_comes_every_third_cast() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.GLACIER, 1.0]])
 	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
 	_p._glacier = SkillStats.GLACIER_EVERY - 2
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq((_children_of(IceSpikes)[0] as IceSpikes)._cast.radius, radius, 0.01)
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(
 		(_children_of(IceSpikes)[1] as IceSpikes)._cast.radius, radius * SkillStats.GLACIER_RADIUS, 0.01
 	)
@@ -4136,7 +4137,7 @@ func test_a_serac_glacier_comes_every_second_cast() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.GLACIER, 1.0], [SkillStats.SERAC, 1.0]])
 	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
 	_p._glacier = SkillStats.SERAC_EVERY - 1
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(
 		(_children_of(IceSpikes)[-1] as IceSpikes)._cast.radius, radius * SkillStats.GLACIER_RADIUS, 0.01
 	)
@@ -4148,11 +4149,11 @@ func test_spikes_cast_in_the_vortex_feed_it() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.CRYSTALLIZE, 1.0]])
 	assert_true(_p.invest(0, "winter_disaster"))
 	_p.bar.put(3, "winter_disaster")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	var base := vortex._cast.duration
 	vortex.global_position = _aim()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(vortex._cast.duration, base + SkillStats.CRYSTALLIZE_TIME, 0.001)
 	for i in 30:
 		IceVortex.feed(vortex.global_position, _p.states, SkillStats.CRYSTALLIZE_TIME)
@@ -4163,7 +4164,7 @@ func test_spikes_cast_in_the_vortex_feed_it() -> void:
 func test_a_crevasse_opens_at_the_end_of_the_furrow() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.CREVASSE, 1.0]], Skill.Shape.FISSURE)
 	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var last: IceSpikes = _children_of(IceSpikes)[-1]
 	assert_eq(last.global_position, _aim())
 	assert_almost_eq(last._cast.radius, radius * SkillStats.CREVASSE_RADIUS, 0.01)
@@ -4174,7 +4175,7 @@ func test_sleet_shards_curve_toward_an_enemy() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 1.0], [SkillStats.SEEK, 200.0]])
 	var aside := _target(_aim() + Vector2(60, 30))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(IceSpikes.LIFETIME + 0.6)
 	assert_eq(_hits(aside), 1)
 
@@ -4202,7 +4203,7 @@ func test_deep_cold_bites_harder_in_a_chilled_crowd() -> void:
 ## La nova pose ses deux nombres sur son explosion : le Grand froid et le Repoussoir.
 func test_the_nova_carries_its_crowd_and_its_push() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.DEEP_COLD, 4.0], [SkillStats.KNOCKBACK, 30.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var nova: Explosion = _children_of(Explosion)[0]
 	assert_eq(nova.crowd, 4.0)
@@ -4215,7 +4216,7 @@ func test_rime_makes_the_nova_chill_last() -> void:
 	var target := _target(Vector2(20, 0))
 	target.states = StatusEffects.new()
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_gt(
 		target.states._state(StatusEffects.Kind.CHILL).remaining,
@@ -4252,7 +4253,7 @@ func test_an_ebbing_wave_strikes_again_on_its_way_back() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.EBB, 1.0]], Skill.Shape.RING)
 	var target := _target(Vector2(60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(FrostRing.LIFETIME * 2.0 + 0.1)
 	assert_eq(_hits(target), 2)
 	assert_eq(_children_of(FrostRing).size(), 0, "puis il s'efface")
@@ -4261,7 +4262,7 @@ func test_an_ebbing_wave_strikes_again_on_its_way_back() -> void:
 ## La Glace noire : le sol gelé de la nova retient où le joueur glisse.
 func test_black_ice_remembers_the_frozen_ground() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.GROUND, 2.0], [SkillStats.BLACK_ICE, 50.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p._black_ice_at, _p.global_position)
 	assert_eq(_p._black_ice, 50.0)
 	assert_almost_eq(_p._black_ice_left, 2.0, 0.001)
@@ -4274,7 +4275,7 @@ func test_black_ice_remembers_the_frozen_ground() -> void:
 ## La Peau de givre : qui frappe au contact est transi, à la force du nœud.
 func test_frost_skin_chills_a_melee_attacker() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.FROST_SKIN, 60.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var grunt := _grunt(Vector2(20, 0))
 	await wait_physics_frames(2)
 	_p.melee_blow(grunt, 10.0)
@@ -4288,7 +4289,7 @@ func test_hibernation_hastens_the_other_recharges() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.HIBERNATION, 100.0]])
 	assert_true(_p.invest(0, "winter_disaster"))
 	_p.bar.put(3, "winter_disaster")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[3] = 2.0
 	await wait_seconds(0.5)
 	assert_almost_eq(_p._recharges[3], 1.0, 0.06, "deux fois plus vite")
@@ -4298,7 +4299,7 @@ func test_hibernation_hastens_the_other_recharges() -> void:
 func test_the_refuge_puts_out_the_wearer_states() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.REFUGE, 1.0]])
 	_p.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_false(_p.states.active(StatusEffects.Kind.IGNITE))
 
 
@@ -4307,7 +4308,7 @@ func test_a_rime_halo_chills_around_its_wearer() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.RIME_HALO, 100.0]])
 	var near := _target(Vector2(20, 0))
 	near.states = StatusEffects.new()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.HALO_PERIOD + 0.1)
 	assert_true(near.states.active(StatusEffects.Kind.CHILL))
 
@@ -4315,7 +4316,7 @@ func test_a_rime_halo_chills_around_its_wearer() -> void:
 ## L'Hiver sans fin : chaque tué rend du temps au tombeau.
 func test_endless_winter_gives_time_back_on_each_kill() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.ENDLESS_WINTER, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
 	var tomb: Buff = _p._lit["frost_tomb"]
 	var before := tomb.remaining()
@@ -4332,9 +4333,9 @@ func test_an_ice_heart_burst_chills_twice_as_hard() -> void:
 	var near := _target(Vector2(20, 0))
 	near.states = StatusEffects.new()
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	var chill: StatusEffects.State = near.states._state(StatusEffects.Kind.CHILL)
 	assert_not_null(chill)
@@ -4355,10 +4356,10 @@ func test_an_icebreaker_burst_pays_for_the_time_left() -> void:
 			bursts.append(info.amount / (info.cast.crit_multiplier if info.is_crit else 1.0))
 	)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var left := (_p._lit["frost_tomb"] as Buff).remaining()
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_almost_eq(float(bursts[0]), 10.0 * (1.0 + left), 0.5)
 
@@ -4373,7 +4374,7 @@ func test_a_snowball_vortex_grows_from_what_it_hits() -> void:
 	_target(Vector2(10, 0))
 	_target(Vector2(-10, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	assert_almost_eq(vortex._swell, 0.2, 0.001, "deux ennemis, 10 % chacun")
@@ -4382,7 +4383,7 @@ func test_a_snowball_vortex_grows_from_what_it_hits() -> void:
 ## La Coulée roule vers le point visé ; l'Ornière y laisse son sol.
 func test_a_sliding_vortex_rolls_toward_the_aim_and_leaves_a_rut() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.SLIDE, 1.0], [SkillStats.RUT, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	await wait_seconds(1.0)
 	assert_almost_eq(vortex.global_position.distance_to(_p.global_position), SkillStats.SLIDE_SPEED, 3.0)
@@ -4393,7 +4394,7 @@ func test_a_sliding_vortex_rolls_toward_the_aim_and_leaves_a_rut() -> void:
 func test_the_lull_shelters_its_caster_in_the_eye() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.LULL, 30.0]])
 	var before := _p.stats.damage_taken
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(_p.stats.damage_taken, before - 30.0, 0.001)
 
@@ -4405,7 +4406,7 @@ func test_frosting_strengthens_a_chill_each_pulse() -> void:
 	target.states = StatusEffects.new()
 	target.states.put(StatusEffects.Kind.CHILL, 0.0)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(target.states._state(StatusEffects.Kind.CHILL).strength, 1.5, 0.001)
 
@@ -4419,7 +4420,7 @@ func test_superconduction_chills_and_pulls_the_numbed_harder() -> void:
 	var pulls := []
 	numbed.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(pulls, [-120.0])
 	assert_true(numbed.states.active(StatusEffects.Kind.CHILL))
@@ -4432,7 +4433,7 @@ func test_the_mill_bites_harder_at_the_core() -> void:
 	var core := _target(Vector2(5, 0))
 	var rim := _target(Vector2(22, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(float(_received_all[core][0]), float(_received_all[rim][0]) * 1.5, 0.01)
 
@@ -4446,7 +4447,7 @@ func test_a_singularity_bursts_twice_as_wide() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
 	var far := _target(Vector2(cast.radius * 1.7, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
 	while is_instance_valid(vortex):
 		await wait_physics_frames(1)
@@ -4471,7 +4472,7 @@ func test_a_frozen_orb_spits_shards_then_bursts() -> void:
 	_learn("manual_cold", ["frozen_orb"])
 	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
 	var thrown := _count_shards()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
 	await wait_seconds(0.5)
 	assert_gt(orb.global_position.distance_to(_p.global_position), 40.0, "elle file")
@@ -4489,7 +4490,7 @@ func test_frozen_orbs_are_capped_per_caster() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
 	for i in cast.max_simultaneous() + 2:
 		_p._recharges[2] = 0.0
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_eq(_children_of(FrozenOrb).size(), cast.max_simultaneous())
 
@@ -4499,7 +4500,7 @@ func test_a_spinning_top_spits_faster_and_rain_widens_the_burst() -> void:
 	_learn_with("manual_cold", "frozen_orb", [[SkillStats.TOP, 100.0], [SkillStats.SHARD_RAIN, 4.0]])
 	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
 	var thrown := _count_shards()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.1)
 	assert_almost_eq(
 		thrown[0], int(cast.duration / cast.period * 2.0) + SkillStats.FROST_ORB_BURST + 4, 2
@@ -4511,7 +4512,7 @@ func test_a_biting_orb_strikes_what_it_passes() -> void:
 	_learn_with("manual_cold", "frozen_orb", [[SkillStats.ORB_BITE, 30.0]])
 	var on_path := _target(_p.global_position + _p.facing * 40.0)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
 	await wait_seconds(0.6)
 	assert_true(orb._bitten.has(on_path.get_instance_id()))
@@ -4525,7 +4526,7 @@ func test_fracture_breaks_a_shard_on_a_chilled_enemy() -> void:
 	chilled.states = StatusEffects.new()
 	chilled.states.put(StatusEffects.Kind.CHILL, 0.0)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.8)
 	var pieces := _children_of(Projectile).filter(
 		func(b: Projectile) -> bool: return is_zero_approx(b._cast.fracture)
@@ -4547,7 +4548,7 @@ func test_fracture_breaks_a_shard_on_a_chilled_enemy() -> void:
 func test_a_guided_orb_curves_toward_the_cursor() -> void:
 	_learn_with("manual_cold", "frozen_orb", [[SkillStats.GUIDED, 1.0]])
 	_p.facing = Vector2.RIGHT
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
 	_p.facing = Vector2.DOWN
 	await wait_seconds(0.4)
@@ -4558,7 +4559,7 @@ func test_a_guided_orb_curves_toward_the_cursor() -> void:
 func test_a_stasis_orb_stops_at_the_aim_and_swells() -> void:
 	_learn_with("manual_cold", "frozen_orb", [[SkillStats.STASIS, 1.0], [SkillStats.CRYSTALLINE, 50.0]])
 	var aim := _aim()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
 	await wait_seconds(1.5)
 	assert_eq(orb.global_position, aim)
@@ -4581,7 +4582,7 @@ func test_a_frozen_orb_dissolves_with_its_caster() -> void:
 ## La Constellation : une orbe de plus par point.
 func test_a_constellation_casts_more_orbs() -> void:
 	_learn_with("manual_cold", "frozen_orb", [["projectiles", 2.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(FrozenOrb).size(), 3)
 
 
@@ -4595,7 +4596,7 @@ func test_a_plague_bolt_marks_its_decay_as_epidemic() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.EPIDEMIC, 40.0]])
 	var struck := _wearing_target(Vector2(60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_almost_eq(struck.states.epidemic(StatusEffects.Kind.DECAY), 40.0, 0.001)
 	assert_eq(struck.states.heirs(StatusEffects.Kind.DECAY), 1)
@@ -4634,7 +4635,7 @@ func test_a_vector_bolt_seeks_the_healthy() -> void:
 	rotten.states.put(StatusEffects.Kind.DECAY, 1.0)
 	var healthy := _wearing_target(Vector2(90, 40))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.2)
 	assert_eq(_hits(healthy), 1)
 	assert_eq(_hits(rotten), 0)
@@ -4646,7 +4647,7 @@ func test_a_missed_bolt_bursts_into_a_germ_cloud() -> void:
 	_wall(Vector2(60, 0), Vector2(10, 200))
 	var beside := _wearing_target(Vector2(42, 22))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_eq(_hits(beside), 1)
 	assert_true(beside.states.active(StatusEffects.Kind.DECAY))
@@ -4672,7 +4673,7 @@ func test_pustules_burst_a_decaying_kill() -> void:
 ## La Dispersion : au bout de sa course, la nuée se divise en petits essaims.
 func test_a_swarm_disperses_at_the_end_of_its_flight() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.DISPERSAL, 2.0]], Skill.Shape.ORB)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	var swarm: StaticOrb = _children_of(StaticOrb)[0]
 	var radius := swarm._cast.radius
 	var duration := swarm._cast.duration
@@ -4698,7 +4699,7 @@ func _wound(minion: Minion, part: float) -> void:
 func test_patched_bones_mend_on_each_blow() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.MEND, 10.0]])
 	_target(Vector2(30, 0))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var minion := _undead()
 	minion.health = minion.max_health * 0.5
@@ -4709,7 +4710,7 @@ func test_patched_bones_mend_on_each_blow() -> void:
 ## La Curée : plus fort quand un autre frappe la même proie.
 func test_the_quarry_bites_harder_together() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.PACK, 10.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var pair := Minion.living.filter(func(m: Minion) -> bool: return m._player == _p)
 	var prey := _target(Vector2(300, 0))
@@ -4723,12 +4724,12 @@ func test_the_quarry_bites_harder_together() -> void:
 ## Le Rappel : tous debout, relancer les remet sur pied et les fait frapper plus fort.
 func test_a_recall_mends_and_rallies_those_standing() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.RECALL, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var minion := _undead()
 	minion.health = 1.0
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2), "relancer n'est plus refusé")
+	assert_true(Gestures.cast(_p, 2), "relancer n'est plus refusé")
 	assert_eq(Minion.count_of(_p, "rise"), 2, "personne de plus")
 	assert_eq(minion.health, minion.max_health)
 	assert_almost_eq(minion._more(), 1.0 + SkillStats.RECALL_MORE, 0.001)
@@ -4748,7 +4749,7 @@ func test_bone_throwers_throw_from_their_post() -> void:
 			if n is Projectile:
 				count.call_deferred(n)
 	)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.2)
 	assert_gt(_hits(prey), 0)
 	assert_gt(bones[0], 0, "ce sont des os qui volent")
@@ -4760,7 +4761,7 @@ func test_bone_throwers_throw_from_their_post() -> void:
 ## s'en vont.
 func test_a_fallen_colossus_crumbles_into_rubble() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0], [SkillStats.RUBBLE, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	_wound(_undead(), 10.0)
 	await wait_physics_frames(2)
@@ -4769,13 +4770,13 @@ func test_a_fallen_colossus_crumbles_into_rubble() -> void:
 	assert_eq(Minion.count_of(_p, "rise"), 0, "hors de la limite")
 	assert_eq((rubble[0] as Minion)._cast.colossus, 0.0, "des ordinaires")
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2), "le colosse se relève")
+	assert_true(Gestures.cast(_p, 2), "le colosse se relève")
 
 
 ## Le Martyr : à bout, il fonce exploser sur l'ennemi le plus proche.
 func test_a_martyr_rushes_to_explode() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.END_BURST, 30.0], [SkillStats.MARTYR, 50.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var minion := _undead()
 	_wound(minion, 0.8)
@@ -4795,7 +4796,7 @@ func test_languor_lengthens_the_wilting() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.LANGUOR, 2.0], ["inflict_chance", 100.0, true]])
 	var near := _wearing_target(Vector2(20, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_gt(
 		near.states.remaining(StatusEffects.Kind.WILTING),
@@ -4806,9 +4807,9 @@ func test_languor_lengthens_the_wilting() -> void:
 ## L'Apnée : le premier souffle compte au plein, celui qui le suit aussitôt presque rien.
 func test_apnea_rewards_the_held_breath() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.APNEA, 10.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var novas := _children_of(Explosion)
 	var ratio: float = (novas[0] as Explosion)._cast.total_max() / (novas[1] as Explosion)._cast.total_max()
@@ -4823,7 +4824,7 @@ func test_suction_drinks_from_the_wilting() -> void:
 	_wearing_target(Vector2(-20, 0))
 	_p._set_health(_p.stats.max_health * 0.5)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.5, "un flétri sur deux")
 
@@ -4837,7 +4838,7 @@ func test_the_breath_detonates_the_gate_crawlers() -> void:
 	await wait_seconds(gate_cast.period * 2.0 + 0.05)
 	var crawling := gate._crawlers.size()
 	assert_gt(crawling, 0)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(gate._crawlers.size(), 0, "toutes éclatées")
 	await wait_physics_frames(1)
 	assert_eq(_children_of(Explosion).size(), crawling + 1, "les leurs, et la nova")
@@ -4873,7 +4874,7 @@ func test_a_coughing_fit_breathes_again() -> void:
 	_effects.child_entered_tree.connect(
 		func(n: Node) -> void: breaths[0] += 1 if n is ToxicBreath else 0
 	)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.FIT_GAP * float(SkillStats.FIT_COUNT) + 0.1)
 	assert_eq(breaths[0], 1 + SkillStats.FIT_COUNT)
 
@@ -5021,7 +5022,7 @@ func test_an_omen_delays_a_deeper_curse() -> void:
 	_learn_with("manual_necrotic", "putrid_curse", [[SkillStats.OMEN, 1.0], [SkillStats.CURSE_EFFECT, 50.0]])
 	var under := _wearing_target(_p.global_position + Vector2(Player.PLACEMENT_RANGE, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
 	assert_false(under.states.active(StatusEffects.Kind.CURSED), "pas encore")
 	await wait_seconds(0.6)
@@ -5088,7 +5089,7 @@ func test_a_legacy_mark_grows_as_it_passes() -> void:
 	var first := _grunt(aim)
 	var second := _grunt(aim + Vector2(30, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var base := first.states.strength(StatusEffects.Kind.CURSED)
 	assert_gt(base, 0.0)
@@ -5106,7 +5107,7 @@ func _necrosis_lit(lines: Array) -> void:
 	_learn_with("manual_necrotic", "advanced_necrosis", lines)
 	assert_true(_p.invest(0, "plague"))
 	_p.bar.put(3, "plague")
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit(SkillStats.NECROSIS_SKILL))
 
 
@@ -5139,7 +5140,7 @@ func test_the_moribund_stop_gnawing_and_strike_harder() -> void:
 	_p._set_health(_p.stats.max_health * 0.4)
 	await wait_seconds(0.5)
 	assert_gte(_p.health, _p.stats.max_health * 0.4, "elle ne ronge plus")
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var bolt: Projectile = _children_of(Projectile)[0]
 	assert_almost_eq(bolt._cast.total_max(), plain * 1.5, 0.01)
 
@@ -5152,7 +5153,7 @@ func test_a_reprieve_spares_once() -> void:
 	assert_eq(_p.health, 1.0)
 	assert_false(_p.lit(SkillStats.NECROSIS_SKILL), "éteinte")
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_lethal_blow()
 	assert_true(_p.is_dead, "pas deux fois dans l'attente")
 
@@ -5170,7 +5171,7 @@ func test_the_reaper_halves_necrotic_costs() -> void:
 	_necrosis_lit([[SkillStats.REAPER, 1.0]])
 	var cost := _p.resolve(SkillCatalog.by_id("plague"), 1).mana_cost
 	_p._set_mana(cost * 0.6)
-	assert_true(_p.cast_slot(3), "lancée sans tout le mana qu'elle demande")
+	assert_true(Gestures.cast(_p, 3), "lancée sans tout le mana qu'elle demande")
 	assert_almost_eq(_p.mana, cost * 0.6 - cost * SkillStats.REAPER_COST, 0.01)
 
 
@@ -5196,7 +5197,7 @@ func test_an_outlet_releases_the_burden_on_a_heavy_blow() -> void:
 ## La Lente agonie : sous la Nécrose, le sort nécrotique et l'état qu'il pose durent plus.
 func test_slow_agony_lengthens_necrotic_spells_and_their_states() -> void:
 	_necrosis_lit([[SkillStats.SLOW_AGONY, 50.0]])
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	var bolt: Projectile = _children_of(Projectile)[0]
 	assert_almost_eq(bolt._cast.languor, StatusEffects.DURATIONS[StatusEffects.Kind.DECAY] * 0.5, 0.001)
 
@@ -5220,7 +5221,7 @@ func _worn_target(position: Vector2) -> Hurtbox:
 
 func _strike_again() -> void:
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_p.swing_duration + 0.1)
 
 
@@ -5288,7 +5289,7 @@ func test_a_tremor_strikes_a_second_ring() -> void:
 	var inner := _target(Vector2(_p.strike_reach() + 10.0, 0))
 	var outer := _target(Vector2(_p.strike_reach() + 44.0, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.1)
 	assert_eq(_hits(inner), 1)
 	assert_eq(_hits(outer), 0, "pas encore")
@@ -5320,7 +5321,7 @@ func test_a_collision_hurts_whom_it_slams_and_skittles_carry_on() -> void:
 		body._set_health(9999.0)
 		body.hurtbox.damaged.connect(func(info: DamageInfo) -> void: hits[i].append(info.amount))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
 	assert_eq(hits[0].size(), 2, "frappé, puis heurtant")
 	assert_eq(hits[1].size(), 2, "heurté, puis heurtant à son tour")
@@ -5431,7 +5432,7 @@ func _turned_in(seconds: float) -> float:
 ## La Valse : la ronde tourne plus vite.
 func test_a_waltz_spins_the_swords_faster() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.WALTZ, 100.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	var turned: float = await _turned_in(0.25)
 	assert_almost_eq(turned, BladeCrown.ROTATION * 2.0 * 0.25, 0.25)
@@ -5441,7 +5442,7 @@ func test_a_waltz_spins_the_swords_faster() -> void:
 func test_honing_counts_what_a_sword_cuts() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.HONING, 10.0]])
 	_target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(3.2)
 	assert_gt(_p._crown._blades[0].honed, 1)
 	assert_lte(_p._crown._blades[0].honed, SkillStats.HONING_MOST)
@@ -5450,7 +5451,7 @@ func test_honing_counts_what_a_sword_cuts() -> void:
 ## La Parade : une épée qui croise un trait ennemi le brise.
 func test_a_parry_breaks_an_enemy_bolt() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.PARRY, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.3)
 	var crown := _p._crown
 	var blade: BladeCrown.Blade = crown._blades[0]
@@ -5470,9 +5471,9 @@ func test_a_parry_breaks_an_enemy_bolt() -> void:
 ## Le Brise-lames et la Grenaille : une épée prend le coup et éclate ; pas deux dans l'attente.
 func test_a_breakwater_sword_takes_the_blow_and_bursts() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.BREAKWATER, 1.0], [SkillStats.GRAPESHOT, 100.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	_p.stats.health_regen = 0.0
 	var health := _p.health
@@ -5497,9 +5498,9 @@ func test_an_escort_sends_a_sword_after_a_heavy_strike() -> void:
 				sent.append(n)
 	)
 	_target(Vector2(20, 0))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(3))
+	assert_true(Gestures.cast(_p, 3))
 	await wait_seconds(_p.swing_duration + 0.1)
 	assert_eq(sent.size(), 1)
 	assert_eq(_p.orbiting_swords(), 1, "l'épée continue de tourner")
@@ -5509,7 +5510,7 @@ func test_an_escort_sends_a_sword_after_a_heavy_strike() -> void:
 func test_a_rally_brings_the_volley_back() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.SWORD_VOLLEY, 40.0], [SkillStats.RALLY, 1.0]])
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.35)
 	assert_eq(_p.orbiting_swords(), 1, "revenue")
 	await wait_seconds(SkillStats.RALLY_LIFE)
@@ -5526,7 +5527,7 @@ func test_a_swell_reaches_wider_at_the_end_of_the_run() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.BILLOW, 100.0]])
 	var aside := _target(Vector2(62, 32))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.7)
 	assert_eq(_hits(aside), 1)
 
@@ -5545,7 +5546,7 @@ func test_a_prow_hits_the_first_bitten_harder() -> void:
 				bites.append(info.amount / (info.cast.crit_multiplier if info.is_crit else 1.0))
 		)
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.7)
 	assert_eq(bites.size(), 2)
 	assert_almost_eq(float(bites[0]), float(bites[1]) * 2.0, 0.01)
@@ -5561,7 +5562,7 @@ func test_an_undertow_carries_then_breakers_throw() -> void:
 	var hits := []
 	grunt.hurtbox.damaged.connect(func(info: DamageInfo) -> void: hits.append(info.amount))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.7)
 	assert_gt(grunt.global_position.x, 70.0, "emporté")
 	assert_eq(hits.size(), 2, "mordu, puis jeté")
@@ -5572,7 +5573,7 @@ func test_to_and_fro_sends_the_backwash_a_third_time() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.TO_AND_FRO, 1.0]], Skill.Shape.BOOMERANG)
 	var ahead := _target(Vector2(50, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(2.0)
 	assert_eq(_hits(ahead), 3)
 
@@ -5586,11 +5587,11 @@ func test_steadfast_holds_while_the_cyclone_spins() -> void:
 	_learn_with("manual_weapons", "cyclone", [["damage_taken", -5.0], ["move_speed", -10.0, true]])
 	var taken := _p.stats.damage_taken
 	var speed := _p.stats.move_speed
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(_p.stats.damage_taken, taken - 5.0, 0.001)
 	assert_almost_eq(_p.stats.move_speed, speed * 0.9, 0.01)
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2), "éteint")
+	assert_true(Gestures.cast(_p, 2), "éteint")
 	assert_almost_eq(_p.stats.damage_taken, taken, 0.001)
 
 
@@ -5598,7 +5599,7 @@ func test_steadfast_holds_while_the_cyclone_spins() -> void:
 func test_vertigo_brings_the_strikes_closer() -> void:
 	_learn_with("manual_weapons", "cyclone", [[SkillStats.VERTIGO, 50.0]])
 	var target := _target(Vector2(20, 0))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(2.0)
 	var before := _hits(target)
 	await wait_seconds(1.0)
@@ -5613,7 +5614,7 @@ func test_dervishes_set_out_and_a_waterspout_steers_them() -> void:
 		[[SkillStats.DERVISHES, 1.0], [SkillStats.SIROCCO, 1.0], [SkillStats.WATERSPOUT, 1.0]]
 	)
 	var aside := _target(Vector2(70, 55))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(_children_of(Dervish).size(), 2)
 	await wait_seconds(1.2)
@@ -5625,11 +5626,11 @@ func test_an_unwinding_strikes_once_more_and_a_gust_pushes() -> void:
 	_learn_with("manual_weapons", "cyclone", [[SkillStats.DENOUEMENT, 20.0], [SkillStats.GUST, 1.0]])
 	var target := _target(Vector2(20, 0))
 	var pushes := _knockbacks_on(target)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
 	var before := pushes.size()
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(pushes.size(), before + 1)
 	assert_eq(pushes[-1], SkillStats.GUST_FORCE)
 
@@ -5639,8 +5640,8 @@ func test_a_mad_round_spins_the_swords_under_the_cyclone() -> void:
 	_learn_with("manual_weapons", "cyclone", [[SkillStats.MAD_ROUND, 15.0]])
 	assert_true(_p.invest(0, "spiral_sword"))
 	_p.bar.put(3, "spiral_sword")
-	assert_true(_p.cast_slot(3))
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 3))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_almost_eq(_p.spin_madness(), 15.0, 0.001)
 	var turned: float = await _turned_in(0.25)
@@ -5660,7 +5661,7 @@ func _frail_grunt(position: Vector2) -> Enemy:
 ## La Voltige : invulnérable à l'arrivée, un temps.
 func test_a_vault_shelters_on_landing() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.VAULT, 1.0]])
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.hurtbox.invulnerable)
 	await wait_seconds(SkillStats.VAULT_TIME + 0.1)
 	assert_false(_p.hurtbox.invulnerable)
@@ -5671,15 +5672,15 @@ func test_a_relaunch_refunds_the_dash_and_the_hallali_counts() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.RELAUNCH, 1.0], [SkillStats.HALLALI, 50.0]])
 	_frail_grunt(Vector2(60, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.4)
 	assert_eq(_p._recharges[2], 0.0, "rendue")
 	assert_eq(_p._hallali, 1)
-	assert_true(_p.cast_slot(2), "la ruée suivante, plus forte, ne tue rien")
+	assert_true(Gestures.cast(_p, 2), "la ruée suivante, plus forte, ne tue rien")
 	await wait_seconds(0.4)
 	assert_gt(_p._recharges[2], 0.0, "pas rendue")
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p._hallali, 0, "lancée sans relance, le compte retombe")
 
 
@@ -5690,7 +5691,7 @@ func test_a_breakthrough_feeds_the_arrival_shock() -> void:
 	_target(Vector2(80, 0))
 	await wait_physics_frames(2)
 	var plain := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1).total_max()
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var blast: Explosion = _children_of(Explosion)[0]
 	assert_almost_eq(blast._cast.total_max(), plain * 2.0, 0.01, "deux traversés, +50 % chacun")
@@ -5704,7 +5705,7 @@ func test_a_fallout_stuns_on_landing() -> void:
 	)
 	var grunt := _grunt(Vector2(Player.PLACEMENT_RANGE + 10.0, 0))
 	await wait_physics_frames(2)
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(grunt.states.speed_factor, 0.0, "assommé")
 	assert_eq(grunt.get_children().filter(func(n: Node) -> bool: return n is StunMark).size(), 1, "ses étoiles")
 	await wait_seconds(SkillStats.FALLOUT_TIME + 0.1)
@@ -5717,12 +5718,12 @@ func test_a_chasse_counts_chained_dashes() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.CHASSE, 10.0]])
 	for i in 3:
 		_p._recharges[2] = 0.0
-		assert_true(_p.cast_slot(2))
+		assert_true(Gestures.cast(_p, 2))
 		await wait_physics_frames(2)
 	assert_eq(_p._chasse, 2)
 	await wait_seconds(SkillStats.CHASSE_WINDOW + 0.1)
 	_p._recharges[2] = 0.0
-	assert_true(_p.cast_slot(2))
+	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_p._chasse, 0)
 
 
@@ -5748,3 +5749,48 @@ func test_a_hamstring_is_in_the_resolved_dash() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.HAMSTRING, 50.0]])
 	var cast := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1)
 	assert_almost_eq(cast.status_chance_increase, bare + 50.0, 0.001)
+
+
+# --------------------------------------------------------------------------
+# Le geste (jalon 47)
+# --------------------------------------------------------------------------
+
+## Le coup tombe à l'impact du geste, pas à l'appui.
+func test_an_attack_lands_at_its_impact_not_on_the_press() -> void:
+	_learn("manual_weapons", ["heavy_strike"])
+	var ahead := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var impact := _p._gesture.left * Skill.IMPACT[Skill.Shape.STRIKE]
+	await wait_seconds(impact * 0.5)
+	assert_eq(_hits(ahead), 0, "le bras est encore levé")
+	await wait_seconds(impact * 0.5 + _p.swing_duration + 0.1)
+	assert_eq(_hits(ahead), 1)
+
+
+## Un geste à la fois : sans ça, deux cases alternées doublent la cadence.
+func test_a_second_slot_waits_for_the_gesture() -> void:
+	_learn("manual_weapons", ["heavy_strike", "cross_slash"])
+	_p.bar.put(3, "cross_slash")
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.cast_slot(3), "le corps est pris")
+	await wait_seconds(_p._gesture.left + 0.05)
+	assert_true(_p.cast_slot(3), "libre à la fin du geste")
+
+
+## Le corps joue son geste sur toute sa durée, vitesse d'attaque comprise.
+func test_the_body_plays_the_gesture_over_its_length() -> void:
+	_learn("manual_weapons", ["heavy_strike"])
+	_p.stats.attack_speed = 2.0
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	var sprite := _p.sprite
+	var frames := sprite.sprite_frames
+	var played := frames.get_frame_count(sprite.animation) \
+			/ frames.get_animation_speed(sprite.animation) / sprite.speed_scale
+	assert_almost_eq(played, _p._gesture.left, 1e-4)
+	assert_almost_eq(
+		_p._gesture.left, SkillCatalog.by_id("heavy_strike").use_time(_p.stats), 1e-4,
+		"la vitesse d'attaque raccourcit le geste"
+	)

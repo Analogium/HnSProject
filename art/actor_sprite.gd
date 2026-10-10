@@ -107,12 +107,17 @@ func set_state(moving: bool, facing: Vector2) -> void:
 ## image même si le précédent jouait encore.
 ##
 ## `spell` : un sort joue le lancer, quand le corps en a un — les grilles n'ont que
-## le coup.
-func attack(spell := false) -> void:
+## le coup. `duration` étire le geste sur ce temps (jalon 47) ; zéro, sa cadence propre.
+func attack(spell := false, duration := 0.0) -> void:
 	_attacking = true
 	_anim = "attack"
 	var cast := "cast_%s" % _dir
-	play(cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir)
+	var gesture := cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir
+	speed_scale = 1.0
+	if duration > 0.0:
+		speed_scale = sprite_frames.get_frame_count(gesture) \
+				/ sprite_frames.get_animation_speed(gesture) / duration
+	play(gesture)
 
 
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est l'ActorSprite qui
@@ -194,5 +199,6 @@ func _apply() -> void:
 func _on_animation_finished() -> void:
 	if _attacking:
 		_attacking = false
+		speed_scale = 1.0
 		_anim = "idle"
 		_apply()

@@ -960,6 +960,12 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			else Texts.t("temps d'incantation"),
 			"%.2f s" % cast.use_time, UiPalette.TEXT
 		))
+	# La part du temps de l'arme que prend cette attaque (jalon 47) : 130 % pour un coup qui pèse.
+	if skill.cadence == Skill.Cadence.WEAPON and cast.use_time > 0.0:
+		out.append(SheetLine.new(
+			Group.COST, Texts.t("temps de l'arme"),
+			StatMod.percentage(skill.attack_time_factor * 100.0), UiPalette.TEXT
+		))
 	if cast.recharge > 0.0:
 		out.append(SheetLine.new(
 			Group.COST, Texts.t("recharge"), "%.2f s" % cast.recharge, UiPalette.TEXT

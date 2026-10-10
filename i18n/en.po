@@ -1519,6 +1519,9 @@ msgstr "holy res."
 msgid "temps d'attaque"
 msgstr "attack time"
 
+msgid "temps de l'arme"
+msgstr "weapon time"
+
 msgid "vitesse d'attaque"
 msgstr "attack speed"
 
@@ -1703,8 +1706,8 @@ msgstr "Reduces necrotic damage, as a direct percentage."
 msgid "Réduit les dégâts sacrés, en pourcentage direct."
 msgstr "Reduces holy damage, as a direct percentage."
 
-msgid "Le temps que prend un coup d'arme, avant la vitesse d'attaque."
-msgstr "The base delay between two hits, before attack speed."
+msgid "Le temps que prend un coup d'arme, avant la vitesse d'attaque. Chaque attaque en prend sa part : plus pour un coup qui pèse."
+msgstr "The base delay between two hits, before attack speed. Each attack takes its share of it: more for a heavy blow."
 
 msgid "La cadence du corps à corps. Elle ne touche pas au tir, qui suit la vitesse d'incantation."
 msgstr "The rate of melee. It does not affect bolts, which follow cast speed."
@@ -3151,6 +3154,12 @@ msgstr "The portal"
 
 msgid "La touche {portail} ouvre un portail vers la ville. La zone attend, figée : le portail bleu de la ville y ramène, avec les mêmes ennemis et le même butin.\n\nLe portail doré de la ville et les waypoints mènent ailleurs, et la zone qui attendait est perdue. Rien d'une zone ne survit à la fermeture du jeu."
 msgstr "The {portail} key opens a portal to town. The area waits, frozen: the blue portal in town leads back to it, with the same enemies and the same loot.\n\nThe golden portal in town and the waypoints lead elsewhere, and the waiting area is lost. Nothing of an area survives closing the game."
+
+msgid "Le geste"
+msgstr "The gesture"
+
+msgid "Une compétence se lance par un geste du personnage, un seul à la fois. Le geste d'une attaque prend le temps de l'arme, plus ou moins selon l'attaque, et la vitesse d'attaque l'accélère ; le coup part quand la lame tombe, pas à l'appui. Celui d'un sort dure son temps d'incantation.\n\nLa recharge est autre chose : certaines compétences en ont une, et seule la récupération la raccourcit."
+msgstr "A skill is used through a gesture of the character, one at a time. An attack's gesture takes the weapon's time, more or less depending on the attack, and attack speed quickens it; the blow lands when the blade falls, not on the press. A spell's gesture lasts its cast time.\n\nThe cooldown is something else: some skills have one, and only cooldown recovery shortens it."
 
 msgid "Les waypoints"
 msgstr "Waypoints"

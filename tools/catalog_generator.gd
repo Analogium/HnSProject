@@ -229,7 +229,8 @@ func _per_point(lines: Array[TalentLine]) -> String:
 func _pace(c: Skill) -> String:
 	var out := PackedStringArray()
 	if c.cadence == Skill.Cadence.WEAPON:
-		out.append("cadence de l'arme")
+		out.append("cadence de l'arme" if c.attack_time_factor == 1.0
+				else "%d %% du temps de l'arme" % roundi(c.attack_time_factor * 100.0))
 	elif c.cast_time > 0.0:
 		out.append("%.2f s" % c.cast_time)
 	if c.cooldown > 0.0:

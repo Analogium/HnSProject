@@ -27,6 +27,10 @@ enum Cadence { WEAPON, CAST }
 
 @export var cadence: Cadence = Cadence.CAST
 
+## Le geste d'une attaque en part du temps de l'arme (jalon 47) : 1,3 pour un coup qui pèse.
+## Le « temps d'attaque » de PoE ; sans effet à la cadence `CAST`.
+@export var attack_time_factor: float = 1.0
+
 ## Ce que le lancer pose dans le monde, comportement et dessin ensemble — `STRIKE`
 ## ne diffère d'`ARC` que par le dessin, `COMET` de `BOLT` de même. Aucun nœud ne la change.
 ## **Ajouter à la fin seulement** : les `.tres` écrivent l'entier.
@@ -55,6 +59,15 @@ enum Shape {
 }
 
 @export var shape: Shape = Shape.ARC
+
+## Où tombe le coup d'une attaque dans son geste (jalon 47), par famille : balayage, frappe
+## de haut, estoc. Une forme absente pose tout à l'appui — la ruée, le cyclone, les sorts.
+const IMPACT := {
+	Shape.ARC: 0.40, Shape.CROSS: 0.40, Shape.WAVE: 0.40, Shape.BOOMERANG: 0.40,
+	Shape.ORBIT: 0.40,
+	Shape.STRIKE: 0.55, Shape.SLAM: 0.55,
+	Shape.LUNGE: 0.30,
+}
 
 ## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà : le
 ## redéclarer ferait deux vérités. Aujourd'hui le seul `melee` du coup d'arme, dont
@@ -319,14 +332,15 @@ enum StackTrigger { KILL, ALTERNATION }
 @export var icon: Texture2D
 
 
-## Le temps du geste : celui de l'arme, ou l'incantation sur la cadence du lanceur.
+## Le temps du geste : celui de l'arme fois `attack_time_factor`, ou l'incantation sur la
+## cadence du lanceur.
 ## Borné en bas comme `CharacterStats.attack_interval()` : une vitesse nulle figerait le
 ## lanceur.
 func use_time(stats: CharacterStats) -> float:
 	if stats == null:
 		return cast_time
 	if cadence == Cadence.WEAPON:
-		return stats.attack_interval()
+		return stats.attack_interval() * attack_time_factor
 	return cast_time / maxf(stats.cast_speed, 0.1)
 
 
