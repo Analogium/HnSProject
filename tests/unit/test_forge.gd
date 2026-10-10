@@ -116,20 +116,53 @@ func test_a_sheet_plays_its_generated_cycles() -> void:
 					"une main par image (%s %s %s)" % [body, anim, dir])
 
 
-## Chaque geste d'attaque (`Skill.GESTURE`, jalon 47) est sur la planche de chaque classe :
-## une lame par image, et une image d'impact qui n'est ni la première ni la dernière — sinon
-## le coup partirait à l'appui, ou après le geste.
-func test_each_attack_gesture_is_on_each_class_sheet() -> void:
-	for body in ["witch", "swiftblade"]:
+## **La règle de génération** (jalon 47) : la planche de chaque classe porte le geste de
+## chaque attaque qu'elle peut lancer — d'un manuel qui tombe ou de départ, pour toutes ; de
+## son manuel de classe, pour elle seule. Une attaque à geste neuf ou une classe neuve sans sa
+## génération (`tools/characters/LISEZMOI.md`), et ce test le dit. Une lame par image, et
+## une image d'impact ni première ni dernière : sinon le coup part à l'appui, ou après.
+func test_each_class_sheet_has_the_gestures_of_its_attacks() -> void:
+	for id: String in Character.CLASSES:
+		var body: String = Character.CLASSES[id]["archetype"]
 		var sheet := SpriteForge.sheet_of(body)
 		var frames := SpriteForge.frames(body, 0)
-		for family: String in Skill.GESTURE.values():
-			var cycle: Dictionary = sheet.meta["anims"][family]
+		for family in _attack_gestures(id):
+			var anims: Dictionary = sheet.meta["anims"]
+			assert_true(anims.has(family), "%s : le geste %s n'est pas généré" % [body, family])
+			if not anims.has(family):
+				continue
+			var cycle: Dictionary = anims[family]
 			assert_eq(frames.get_frame_count(family + "_side"), sheet.count(family))
 			assert_between(int(cycle["impact"]), 1, sheet.count(family) - 2, "%s %s" % [body, family])
 			for dir in SpriteForge.DIRS:
 				assert_eq((cycle["blades"][dir] as Array).size(), sheet.count(family),
 					"une lame par image (%s %s %s)" % [body, family, dir])
+
+
+## Les gestes des attaques qu'une classe peut lancer, transformations par nœud comprises.
+func _attack_gestures(class_id: String) -> Array[String]:
+	var shapes := []
+	for c: Skill in SkillCatalog.ALL:
+		if SkillCatalog.is_starting(c.id) and c.cadence == Skill.Cadence.WEAPON:
+			shapes.append(c.shape)
+	var manuals: Array[ManualArchetype] = [(Character.CLASSES[class_id]["manual"] as ItemBase).manual]
+	for base: ItemBase in ItemCatalog.ALL:
+		if base.manual != null:
+			manuals.append(base.manual)
+	for manual in manuals:
+		for cell in manual.cells:
+			if cell.skill == null or cell.skill.cadence != Skill.Cadence.WEAPON:
+				continue
+			shapes.append(cell.skill.shape)
+			for node: TalentNode in cell.talents:
+				if node.transforms:
+					shapes.append(node.shape)
+	var out: Array[String] = []
+	for shape in shapes:
+		var family: String = Skill.GESTURE.get(shape, "")
+		if not family.is_empty() and family not in out:
+			out.append(family)
+	return out
 
 
 ## Une attaque joue son geste quand la planche l'a, le coup sinon ; l'impact se lit sur la

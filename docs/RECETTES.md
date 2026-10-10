@@ -455,6 +455,16 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    compétence sans nœud reste jouable — sa case ouvre alors une vue qui ne montre
    que sa racine.
 
+5. **Une attaque : son geste** (jalon 47, règle de l'utilisateur). Elle prend un geste
+   existant de `Skill.GESTURE` — balayage, frappe de haut, estoc — et il n'y a rien à
+   générer. **Un mouvement neuf** se génère **pour chaque classe** : une entrée dans
+   `STRIKES` de `tools/character_forge.py`, puis `anim <classe> --only <geste>`, planche
+   choisie par l'utilisateur, `keep`, `build` — la recette est
+   [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). **Sauf dans un manuel
+   de classe** : seule sa classe la lance, seule sa planche en a besoin. Un nœud qui
+   **transforme** une attaque compte aussi. `test_each_class_sheet_has_the_gestures_of_its_attacks`
+   refuse l'oubli.
+
 Deux compétences d'un même manuel doivent **se distinguer par ce qu'elles
 font** — une chaîne, un nuage, une aura — et pas seulement par leurs nombres :
 sinon c'est une seule compétence à plusieurs réglages, et l'arbre de la première
@@ -911,6 +921,11 @@ compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Pu
    de/du <classe> ».
 6. **`i18n/en.po`** — son nom et celui de son manuel ; `test_no_orphan_translation` relit
    `CLASSES`.
+
+**Ses gestes d'attaque** (jalon 47, règle de l'utilisateur) : une classe neuve reçoit
+**tous les mouvements déjà existants** — `anim <id> --only <toutes les clés de STRIKES>`
+(aujourd'hui `sweep overhead thrust`), planche choisie, `keep`, `build`. `test_each_class_sheet_has_the_gestures_of_its_attacks`
+parcourt `CLASSES` et refuse la classe qui en manque un.
 
 `test_a_sheet_plays_its_generated_cycles` refuse une planche sans marche, coup
 d'épée ou lancer générés, ou dont une image n'a pas sa main armée — l'ajouter à sa

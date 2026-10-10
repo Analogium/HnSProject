@@ -91,8 +91,11 @@ choix.
 profil ; le dos est le miroir de face), le buste penché (`lean`, profil), tassé
 (`crouch`), la fente (`lunge`, profil) et l'image d'impact. **Le corps doit s'engager** :
 à 34 px, un bras qui bouge seul ne se lit pas, et l'ancien coup d'épée ne se voyait pas.
-Une classe neuve : `anim <id> --only sweep overhead thrust`, environ 5 minutes pour deux
-graines (17 s l'image), puis `keep` et `build`. Le GIF trace la lame et tient l'image
+**La règle de l'utilisateur** : une classe neuve reçoit tous les gestes de `STRIKES`
+(`anim <id> --only sweep overhead thrust`, environ 5 minutes pour deux graines, 17 s
+l'image, puis `keep` et `build`) ; une attaque à **mouvement neuf** se génère pour chaque
+classe, sauf si elle vit dans un manuel de classe — pour sa classe seule. Voir RECETTES,
+« Ajouter une compétence » §5 et « Ajouter une classe jouable ». Le GIF trace la lame et tient l'image
 d'impact deux fois plus longtemps ; un `.png` du même nom montre les images une à une.
 
 ## Les pièges déjà payés
