@@ -60,13 +60,23 @@ func test_physical_has_no_resistance() -> void:
 func test_damage_taken_shelters_every_nature_after_its_defense() -> void:
 	var st := CharacterStats.new()
 	st.res_fire = 50.0
-	st.damage_taken = -70.0
-	assert_almost_eq(st.mitigate(DamageType.Kind.FIRE, 100.0), 15.0, 0.001, "moitié, puis 30 %")
+	st.damage_taken = -50.0
+	assert_almost_eq(st.mitigate(DamageType.Kind.FIRE, 100.0), 25.0, 0.001, "moitié, puis moitié")
 	assert_almost_eq(
-		st.mitigate(DamageType.Kind.PHYSICAL, 100.0), 30.0, 0.001, "sans armure, 30 %"
+		st.mitigate(DamageType.Kind.PHYSICAL, 100.0), 50.0, 0.001, "sans armure, moitié"
 	)
+
+
+## Les abris cumulés ne retirent jamais plus que `MAX_DAMAGE_REDUCTION` (jalon 45) : sans
+## borne, quelques sources rendaient intouchable.
+func test_damage_reduction_is_capped() -> void:
+	var st := CharacterStats.new()
 	st.damage_taken = -400.0
-	assert_eq(st.mitigate(DamageType.Kind.FIRE, 100.0), 0.0, "jamais négatif")
+	assert_almost_eq(
+		st.mitigate(DamageType.Kind.PHYSICAL, 100.0), 100.0 - CharacterStats.MAX_DAMAGE_REDUCTION, 0.001
+	)
+	st.damage_taken = 30.0
+	assert_almost_eq(st.mitigate(DamageType.Kind.PHYSICAL, 100.0), 130.0, 0.001, "une vulnérabilité, sans borne")
 
 
 func test_cadence() -> void:

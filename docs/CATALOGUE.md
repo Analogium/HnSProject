@@ -518,14 +518,28 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Fléaux jumeaux | Peste | Fléau rampant (2) | 2 | +1 nombre de projectiles |
 | Bubons | Peste | Incubation (2) | 3 | +15 rayon de l'explosion des tués |
 | Nuée | Peste | Virulence (2) ou Condamnation (1) | 1 | -25 % de dégâts atténués · -60 % de vitesse de projectile réduite |
+| Projection | Peste | — | 2 | +15 % de vitesse de projectile accrue |
+| Vecteur | Peste | Projection (1) | 2 | +60 rayon de recherche des sains |
+| Germe | Peste | Projection (2) ou Fléaux jumeaux (1) | 1 | +1 nuage en fin de course |
+| Épidémie | Peste | Contagion (1) | 3 | +40 portée de l'épidémie |
+| Pandémie | Peste | Épidémie (2) | 1 | +1 épidémie qui passe à deux |
+| Pustules | Peste | Bubons (1) | 1 | +1 décomposés tués qui éclatent |
+| Dispersion | Peste | Nuée (1) | 2 | +1 petits essaims en fin de course |
 | Moelle | Relève | — | 5 | +12 % de dégâts amplifiés |
 | Guet | Relève | — | 3 | +20 % de rayon accru |
 | Ossature | Relève | — | 4 | +25 % PV des morts-vivants |
 | Légion d'os | Relève | — | 1 | +1 maximum simultané |
-| Frénésie | Relève | Moelle (1) | 3 | -10 % d'intervalle des frappes réduit |
+| Cliquetis | Relève | Moelle (1) | 3 | -10 % d'intervalle des frappes réduit |
 | Rempart d'os | Relève | Ossature (1) | 3 | +2 % dégâts subis retirés par mort-vivant |
 | Dernier souffle | Relève | Ossature (2) | 3 | +15 rayon de l'explosion finale |
 | Colosse d'os | Relève | Moelle (2) ou Dernier souffle (1) | 1 | +24 rayon de frappe du colosse · +150 % de dégâts amplifiés |
+| Marche funèbre | Relève | — | 2 | +15 % vitesse des morts-vivants |
+| Os rapiécés | Relève | Ossature (1) | 3 | +2 % PV rendus par coup |
+| Curée | Relève | Cliquetis (1) | 3 | +8 % dégâts à plusieurs sur une proie |
+| Rappel | Relève | Marche funèbre (1) | 1 | +1 rappel des morts-vivants |
+| Lanceurs d'os | Relève | Guet (2) | 1 | +1 morts-vivants qui jettent des os |
+| Éboulis d'os | Relève | Colosse d'os (1) | 1 | +1 colosse qui se brise |
+| Martyr | Relève | Dernier souffle (1) | 2 | +20 % dégâts du martyr |
 | Caustique | Déferlante toxique | — | 5 | +14 % de dégâts amplifiés |
 | Miasme | Déferlante toxique | — | 3 | +20 % de rayon accru |
 | Haleine fétide | Déferlante toxique | — | 4 | +15 % de chance de l'état posé accrue |
@@ -533,25 +547,55 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Asphyxie | Déferlante toxique | Haleine fétide (2) | 4 | +5 % affaiblissement du flétri |
 | Marais | Déferlante toxique | Miasme (1) | 3 | +1 secondes de sol laissé |
 | Haleine | Déferlante toxique | Miasme (2) ou Asphyxie (1) | 1 | -15 % de dégâts atténués |
+| Langueur | Déferlante toxique | Haleine fétide (1) | 2 | +1 secondes de flétrissement en plus |
+| Apnée | Déferlante toxique | Caustique (1) | 3 | +10 % dégâts par seconde d'apnée |
+| Succion | Déferlante toxique | Dessiccation (1) | 2 | +1 % PV rendus par flétri touché |
+| Détonation | Déferlante toxique | Caustique (2) | 2 | +15 % dégâts des créatures éclatées |
+| Plongée | Déferlante toxique | Apnée (2) | 1 | +1 souffle retenu plus longtemps |
+| Râle | Déferlante toxique | Asphyxie (1) | 1 | +1 flétris qui s'usent en frappant |
+| Quinte | Déferlante toxique | Haleine (1) | 1 | +1 cônes qui repartent |
 | Essaim | Porte pourrissante | — | 5 | +12 % de dégâts amplifiés |
-| Couvée | Porte pourrissante | — | 4 | +25 % de durée accrue |
+| Ponte | Porte pourrissante | — | 4 | +25 % de durée accrue |
 | Boursouflure | Porte pourrissante | Essaim (1) | 3 | +20 % de rayon accru |
-| Rampants véloces | Porte pourrissante | Couvée (1) | 3 | +25 % vitesse de reptation |
+| Rampants véloces | Porte pourrissante | Ponte (1) | 3 | +25 % vitesse de reptation |
 | Flair | Porte pourrissante | Rampants véloces (1) | 3 | +30 rayon de chasse |
 | Progéniture | Porte pourrissante | Boursouflure (1) | 3 | +1 nombre de petits |
-| Nid porté | Porte pourrissante | Rampants véloces (2) ou Couvée (2) | 1 | -30 % de durée réduite |
+| Nid porté | Porte pourrissante | Rampants véloces (2) ou Ponte (2) | 1 | -30 % de durée réduite |
+| Fécondité | Porte pourrissante | — | 3 | +12 % cadence de ponte |
+| Gestation | Porte pourrissante | Essaim (1) | 2 | +10 % dégâts par seconde d'attente |
+| Laisse | Porte pourrissante | Flair (1) | 1 | +1 créatures qui suivent la visée |
+| Amalgame | Porte pourrissante | Gestation (1) ou Fécondité (2) | 1 | +1 créatures qui fusionnent |
+| Lignée | Porte pourrissante | Progéniture (2) | 1 | +1 petits qui en lâchent d'autres |
+| Grouillement | Porte pourrissante | Nid porté (1) | 2 | +1 créatures crachées par coup reçu |
+| Masse critique | Porte pourrissante | Amalgame (1) | 1 | +1 amalgame qui relâche les siennes |
 | Anathème | Malédiction putride | — | 3 | +25 % de rayon accru |
 | Malédiction prompte | Malédiction putride | — | 3 | -12 % de temps du geste réduit |
 | Malédiction profonde | Malédiction putride | — | 5 | +15 % effet de la malédiction |
 | Longue malédiction | Malédiction putride | Malédiction profonde (1) | 4 | +20 % de durée accrue |
 | Tribut | Malédiction putride | Anathème (1) | 5 | +1 mana par ennemi maudit |
 | Marque de mort | Malédiction putride | Malédiction profonde (2) ou Tribut (1) | 1 | -25 % de durée réduite |
+| Récidive | Malédiction putride | — | 3 | -8 % de recharge réduite |
+| Ronces | Malédiction putride | Malédiction profonde (1) | 2 | +15 % de ses coups renvoyés au maudit |
+| Présage | Malédiction putride | Malédiction prompte (1) | 2 | +1 secondes avant que le sceau tombe · +30 % effet de la malédiction |
+| Sentence | Malédiction putride | Longue malédiction (1) | 2 | +5 % seuil d'achèvement des maudits |
+| Exhumation | Malédiction putride | Longue malédiction (2) | 1 | +1 maudits tués qui se relèvent |
+| Héritage | Malédiction putride | Marque de mort (1) | 2 | +20 % force gagnée par passage |
+| Dîme | Malédiction putride | Tribut (2) | 1 | +3 mana par maudit tué |
+| Exécuteur | Malédiction putride | Sentence (1) | 1 | +1 malédiction passée par l'achevé |
 | Gangrène | Nécrose avancée | — | 5 | +4 % chance de pourrir |
 | Endurcissement | Nécrose avancée | — | 3 | -20 % de vie rongée réduite |
-| Sang noir | Nécrose avancée | Gangrène (1) | 4 | +1.5 PV/s |
+| Sang noir | Nécrose avancée | Gangrène (1) | 2 | +1 % soin |
 | Chair morte | Nécrose avancée | Endurcissement (1) | 4 | +8 % rés. nécrotique |
 | Pacte | Nécrose avancée | Gangrène (2) | 4 | +15 % de dégâts nécrotiques accrus · +25 % de vie rongée accrue |
 | Fardeau partagé | Nécrose avancée | Pacte (1) ou Sang noir (2) | 1 | +48 rayon du fardeau partagé |
+| Lente agonie | Nécrose avancée | Gangrène (1) | 2 | +10 % durée des sorts nécrotiques |
+| Charognard | Nécrose avancée | Sang noir (1) | 2 | +1 % PV rendus par mort proche |
+| Moribond | Nécrose avancée | Endurcissement (2) | 3 | +10 % dégâts nécrotiques à bout de vie |
+| Sursis | Nécrose avancée | Chair morte (2) | 1 | +1 sursis d'un coup mortel |
+| Faucheuse | Nécrose avancée | Pacte (2) | 1 | +100 % de vie rongée accrue · +1 sorts nécrotiques à moitié prix |
+| Exutoire | Nécrose avancée | Fardeau partagé (1) | 1 | +1 fardeau aux gros coups reçus |
+| Linceul | Nécrose avancée | Faucheuse (1) | 2 | -3 % dégâts subis |
+| Revenant | Nécrose avancée | Sursis (1) | 1 | +1 sursis plus fréquent |
 
 24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 

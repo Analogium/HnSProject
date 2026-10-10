@@ -3,8 +3,8 @@ extends RefCounted
 
 ## La nécrose, **posée** en un seul endroit : sa couleur, le mur de gaz de la
 ## Déferlante toxique et des créatures de la Porte, celui de l'Haleine, le cercle de
-## la Malédiction putride. Ses planches — crâne, fumées, faille, créature, œil, spore —
-## sont dans `EffectForge`, choisies sur planche au jalon 26.
+## la Malédiction putride. Ses planches — crâne, fumées, faille, créature, œil, spore, et
+## l'os et l'amalgame du jalon 45 — sont dans `EffectForge`, choisies sur planche.
 ##
 ## **La nécrose ronge, elle n'éclaire pas** : son cœur est un jaune maladif, et elle a
 ## un dedans — l'ombre des orbites, la chair d'une faille —, là où le feu et le sacré
@@ -17,6 +17,9 @@ const CORE := 0.85
 const SHADE := Color(0.30, 0.16, 0.36)
 ## La chair d'une faille : ce qui s'ouvre sur l'autre monde est vivant.
 const FLESH := Color(0.66, 0.36, 0.42)
+## L'ivoire des os que jettent les morts-vivants (jalon 45) : la nécrose ronge l'os, elle ne
+## le teint pas — dans la rampe du cœur, il se lisait comme une tige.
+const BONE := Color(0.88, 0.85, 0.70)
 
 ## Le mur de gaz se refait par crans et non à chaque image : huit formes pour toute
 ## l'onde, gardées par rayon. Relancée, une Déferlante ne coûte plus rien.

@@ -209,6 +209,12 @@ les autres applications dont 4,9 Go pour `QmlRenderer`. Un redémarrage de Windo
   24-32 px (Satellite, Orage portatif, Choc en retour au jalon 43). Un objet le remplace — un
   chapeau de mage sous son nuage —, ou le sujet lui-même court sur deux jambes (le nuage du
   Front mobile, l'éclair du Trait d'éclair) ;
+- **pas de nuée** : sept mouches, un essaim, un éventail de petits crânes sortent en bruit à
+  24-32 px (la Nuée, la Dispersion au jalon 45). Une seule grosse bête, ou une image de
+  l'éparpillement — un pissenlit qui lâche ses graines ;
+- **une créature demandée sort en gobelin** : à la Porte pourrissante, la moitié de l'arbre
+  sortait en petit monstre vert, tous pareils. Elle ne reste que là où elle est le sujet ;
+  ailleurs, un objet ou une bête qui dit le nœud (un poisson-globe, une truffe) ;
 - **un nuage se demande clair et isolé** (« pale grey-white », « no sky, no ground, no
   horizon ») : sombre, Qwen le pose dans un ciel violet à l'horizon, que le détourage ne
   reconnaît pas, et il se fond dans le fond.
@@ -232,6 +238,7 @@ Fourche, la Vivacité le Vif-argent, la Persistance et la Capacité l'Orage dura
 sablier), le Réamorçage l'Impulsion, la Haute fréquence le Réarmement (le chronomètre),
 l'Influx le Retour par la masse, l'Arc brûlant le Point chaud.
 Au froid (jalon 44) : l'Engelure reprend le Gel intense du feu (le flocon).
+La nécromancie (jalon 45) : aucune reprise, rien d'existant n'était de la nécrose.
 
 **Un nœud repris dont le tirage a disparu** reprend la vignette déjà posée, si elle est à
 son côté (`vignette()`) ; sinon `gen --only <source>` refait le tirage. Et **un tirage déjà
@@ -253,6 +260,11 @@ La foudre (jalon 43) : 79 nœuds, dont 13 qui en reprennent un autre, choisis ar
 sur planche et en jeu (`Bureau\hns-captures-noeuds-foudre\`, 01 à 12). Trois restent
 faibles, gardés : le Rebond (un éclair qui tombe sur un ennemi, sans rebond), le Satellite
 (une planète cerclée, sans la lune) et le Vif-argent (une main floue).
+
+La nécromancie (jalon 45) : 86 nœuds, sans reprise, et ses six icônes de compétence passées
+en Qwen (`nature: necrotic`), choisis arbre par arbre (`Bureau\hns-captures-noeuds-necrose\`,
+01 à 18). Trois restent faibles, gardés : l'Éboulis d'os (un tas), les Rampants véloces (un
+cafard) et les Ronces (une couronne d'épines sombre).
 
 
 ## Icônes d'objets

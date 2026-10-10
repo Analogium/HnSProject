@@ -31,8 +31,26 @@ class Crawler:
 	var prey: Hurtbox
 	## Sa place dans l'amas, en angle.
 	var angle: float
-	## Un petit de Progéniture : une part du coup, un demi-rayon, et rien après lui.
+	## Un petit de Progéniture : une part du coup, un demi-rayon, et rien après lui — sauf
+	## sous la Lignée (jalon 45), où il en lâche une fois : ce sont les derniers.
 	var small := false
+	var last := false
+	## La Gestation : le temps passé sans proie. L'Amalgame : trois fondues en une ; sous la
+	## Masse critique, celles qu'il relâche en éclatant ne fusionnent plus.
+	var waited := 0.0
+	var big := false
+	var loose := false
+
+	## Ce que son éclat frappe, en part du coup et du rayon.
+	func part() -> float:
+		if big:
+			return SkillStats.AMALGAM_MORE
+		return SkillStats.SPLIT_PART * (SkillStats.SPLIT_PART if last else 1.0) if small else 1.0
+
+	func reach() -> float:
+		if big:
+			return SkillStats.AMALGAM_RADIUS
+		return (0.25 if last else 0.5) if small else 1.0
 
 
 var _cast: SkillStats
@@ -43,16 +61,26 @@ var _born := 0
 var _search := 0.0
 var _crawlers: Array[Crawler] = []
 var _follow: Node2D
+## La Laisse (jalon 45) : celui dont elles suivent la visée.
+var _aimer: Player
+## Le Grouillement : l'attente avant qu'un coup reçu en fasse cracher d'autres.
+var _provoked := 0.0
+
+## Toutes celles qui sont ouvertes : la Détonation de la Déferlante les cherche (jalon 45).
+static var _open: Array[RottingGate] = []
 
 
 static func open(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null,
+	aimer: Player = null
 ) -> RottingGate:
 	var gate := RottingGate.new()
 	gate._follow = follow
+	gate._aimer = aimer if cast.leash > 0.0 else null
 	gate._cast = cast
 	gate._author = author
 	gate._tint = DamageType.COLORS[cast.nature]
+	_open.append(gate)
 	parent.add_child(gate)
 	Settings.veil(gate, Settings.SPELLS)
 	gate.global_position = point
@@ -64,19 +92,34 @@ func _ready() -> void:
 	z_index = 3
 
 
+func _exit_tree() -> void:
+	_open.erase(self)
+
+
+## La Détonation (jalon 45) : les créatures de cet auteur dans ce cercle éclatent sur-le-champ,
+## plus fort.
+static func detonate(center: Vector2, radius: float, author: StatusEffects, factor: float) -> void:
+	for gate in _open:
+		if gate._author != author:
+			continue
+		for c in gate._crawlers.duplicate():
+			if c.at.distance_to(center) <= radius:
+				gate._burst(c, factor)
+
+
 ## Les naissances se comptent par `strikes_over_duration()`, comme les impulsions du
 ## pilier : la fiche annonce une explosion par créature.
 func _physics_process(delta: float) -> void:
 	if is_instance_valid(_follow):
 		global_position = _follow.global_position + NEST_OFFSET
 	_age += delta
+	_provoked = maxf(_provoked - delta, 0.0)
 	var due := _cast.strikes_due(_age)
 	while _born < due:
 		_born += 1
-		var c := Crawler.new()
-		c.at = global_position
-		c.angle = float(_born) * 2.4
-		_crawlers.append(c)
+		_spawn()
+	if _cast.amalgam > 0.0:
+		_fuse()
 	_search -= delta
 	if _search <= 0.0:
 		_search = SEARCH_PERIOD
@@ -88,17 +131,54 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-## Chaque créature sans proie prend l'ennemi à portée le plus proche d'elle.
+func _spawn() -> void:
+	var c: Crawler = Crawler.new()
+	c.at = global_position
+	c.angle = float(_born + _crawlers.size()) * 2.4
+	_crawlers.append(c)
+
+
+## Le Grouillement (jalon 45) : un coup reçu par le porteur du nid en fait cracher d'autres.
+static func provoke(bearer: Node2D) -> void:
+	for gate in _open:
+		if gate._follow == bearer and gate._cast.swarming > 0.0 and gate._provoked <= 0.0:
+			gate._provoked = SkillStats.SWARMING_PERIOD
+			for i in int(gate._cast.swarming):
+				gate._spawn()
+
+
+## L'Amalgame (jalon 45) : trois qui attendent sans proie se fondent en une.
+func _fuse() -> void:
+	var idle := _crawlers.filter(
+		func(c: Crawler) -> bool:
+			return not c.small and not c.big and not c.loose and not is_instance_valid(c.prey)
+	)
+	while idle.size() >= SkillStats.AMALGAM_SIZE:
+		var big: Crawler = Crawler.new()
+		big.big = true
+		big.at = global_position
+		for i in SkillStats.AMALGAM_SIZE:
+			var c: Crawler = idle.pop_back()
+			_crawlers.erase(c)
+			big.angle = c.angle
+			big.waited = maxf(big.waited, c.waited)
+		_crawlers.append(big)
+
+
+## Chaque créature sans proie prend l'ennemi à portée le plus proche d'elle — sous la Laisse,
+## le plus proche de la visée.
 func _hunt() -> void:
 	var seen := Targets.in_circle(get_world_2d(), global_position, SIGHT + _cast.seek_radius)
 	if seen.is_empty():
 		return
+	var aimed := _aimer._aim_point() if is_instance_valid(_aimer) else Vector2.INF
 	for c in _crawlers:
 		if is_instance_valid(c.prey):
 			continue
+		var from := c.at if aimed == Vector2.INF else aimed
 		var best_d := INF
 		for target in seen:
-			var d := c.at.distance_squared_to(target.global_position)
+			var d := from.distance_squared_to(target.global_position)
 			if d < best_d:
 				c.prey = target
 				best_d = d
@@ -106,7 +186,9 @@ func _hunt() -> void:
 
 func _crawl(c: Crawler, delta: float) -> void:
 	var goal := global_position + Vector2.from_angle(c.angle + _age) * HUDDLE
-	if is_instance_valid(c.prey):
+	if not is_instance_valid(c.prey):
+		c.waited += delta
+	else:
 		goal = c.prey.global_position
 		if c.at.distance_to(goal) <= CONTACT:
 			_burst(c)
@@ -114,18 +196,38 @@ func _crawl(c: Crawler, delta: float) -> void:
 	c.at = c.at.move_toward(goal, SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta)
 
 
+## La Gestation (jalon 45) : ce qu'elle a grossi à attendre — ses dégâts, et son dessin.
+func _swell(c: Crawler) -> float:
+	return 1.0 + _cast.gestation * 0.01 * minf(c.waited, SkillStats.GESTATION_MOST)
+
+
+## Sa taille dessinée : la Gestation la fait enfler par paliers impairs — une planche ne
+## s'étire pas —, l'amalgame part de plus grand.
+func _side(c: Crawler) -> int:
+	var base := EffectForge.AMALGAM_SIDE if c.big else EffectForge.CRAWLER_SIZE
+	return floori(float(base) * _swell(c) * 0.5) * 2 + 1
+
+
 ## Elle éclate ; Progéniture en lâche des petits là où elle était, qui chassent à leur tour.
-func _burst(c: Crawler) -> void:
+## La Masse critique fait relâcher à l'amalgame celles qui le formaient.
+func _burst(c: Crawler, factor := 1.0) -> void:
 	_crawlers.erase(c)
-	var parts := DamageType.scaled(_cast.roll(Game.rng), SkillStats.SPLIT_PART if c.small else 1.0)
-	var radius := _cast.radius * (0.5 if c.small else 1.0)
-	Explosion.put(get_parent(), c.at, parts, radius, null, _tint, _author, _cast)
-	if c.small:
+	var parts := DamageType.scaled(_cast.roll(Game.rng), factor * c.part() * _swell(c))
+	Explosion.put(get_parent(), c.at, parts, _cast.radius * c.reach(), null, _tint, _author, _cast)
+	if c.big and _cast.critical_mass > 0.0:
+		for i in SkillStats.AMALGAM_SIZE:
+			var freed: Crawler = Crawler.new()
+			freed.at = c.at
+			freed.angle = c.angle + float(i) * TAU / float(SkillStats.AMALGAM_SIZE)
+			freed.loose = true
+			_crawlers.append(freed)
+	if c.last or c.small and _cast.lineage <= 0.0:
 		return
 	for i in int(_cast.hatchlings):
-		var young := Crawler.new()
+		var young: Crawler = Crawler.new()
 		young.at = c.at
 		young.angle = c.angle + float(i + 1) * 2.4
+		young.last = c.small
 		young.small = true
 		_crawlers.append(young)
 
@@ -147,4 +249,9 @@ func _draw() -> void:
 	var crawlers := EffectForge.crawlers(_tint)
 	for i in _crawlers.size():
 		var hop := int(_age * EffectForge.CRAWLER_HZ + float(i) * 0.7) % crawlers.size()
-		Necrotic.centered(self, crawlers[hop], to_local(_crawlers[i].at) - Vector2(0.0, 3.0))
+		var c := _crawlers[i]
+		var side := _side(c)
+		var tex: Texture2D = crawlers[hop]
+		if side != EffectForge.CRAWLER_SIZE or c.big:
+			tex = EffectForge.grown_crawlers(_tint, side, c.big)[hop]
+		Necrotic.centered(self, tex, to_local(c.at) - Vector2(0.0, floorf(float(side) * 0.5)))

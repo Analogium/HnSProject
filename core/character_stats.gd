@@ -136,6 +136,9 @@ const MANA_REGEN_PER_INTELLIGENCE := 0.05
 ## Le plafond classique du genre. Il donne sa valeur à l'objectif « atteindre le
 ## plafond », et empêche l'immunité pure à un élément.
 const MAX_RESISTANCE := 75.0
+## Ce que les abris — Rempart d'os, Glace épaisse, Linceul… — retirent au plus des dégâts
+## subis, en points de pourcentage : sans borne, quelques sources cumulées rendaient intouchable.
+const MAX_DAMAGE_REDUCTION := 60.0
 ## Au pire un coup fait le double, jamais plus : une malédiction doit faire mal,
 ## pas transformer un coup d'épingle en exécution.
 const MIN_RESISTANCE := -100.0
@@ -173,7 +176,12 @@ func mitigate(kind: int, part: float, lost := 0.0) -> float:
 	else:
 		defended *= 1.0 - resistance(kind, lost) * 0.01
 	# Après la défense de la nature, et sur toutes : c'est un abri, pas une résistance.
-	return defended * maxf(1.0 + damage_taken * 0.01, 0.0)
+	return defended * damage_taken_factor()
+
+
+## Ce qui passe de chaque coup après les abris, borné par `MAX_DAMAGE_REDUCTION`.
+func damage_taken_factor() -> float:
+	return maxf(1.0 + damage_taken * 0.01, 1.0 - MAX_DAMAGE_REDUCTION * 0.01)
 
 ## Bornée, ce que retire une malédiction **avant** la borne ; zéro pour le physique, qui
 ## passe par l'armure.

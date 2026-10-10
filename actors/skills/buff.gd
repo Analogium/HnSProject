@@ -162,6 +162,9 @@ func _physics_process(delta: float) -> void:
 	var burning := 0.0
 	if cast != null:
 		withered = cast.self_wither * _player.health / maxf(_player.stats.max_health, 1.0)
+		# Le Moribond (jalon 45) : à bout de vie, elle ne ronge plus.
+		if cast.moribund > 0.0 and _player.health < _player.stats.max_health * SkillStats.MORIBUND_LIFE:
+			withered = 0.0
 		burning = cast.self_burn
 		_share_the_burden(cast, withered * _player.stats.max_health * delta, delta)
 		_bless(cast, delta)
@@ -210,7 +213,14 @@ func _share_the_burden(cast: SkillStats, gnawed: float, delta: float) -> void:
 		return
 	_burden += gnawed
 	_since_burden += delta
-	if _since_burden < SkillStats.BURDEN_PERIOD:
+	if _since_burden >= SkillStats.BURDEN_PERIOD:
+		unburden(cast)
+
+
+## Le Fardeau part maintenant : à sa période, ou sur un gros coup reçu (l'Exutoire, jalon 45).
+## L'explosion naît en différé : un coup reçu arrive d'un rappel de collision.
+func unburden(cast: SkillStats) -> void:
+	if cast.shared_burden <= 0.0 or _burden <= 0.0:
 		return
 	var parts := DamageType.empty_parts()
 	parts[cast.nature] = _burden * SkillStats.BURDEN_FACTOR

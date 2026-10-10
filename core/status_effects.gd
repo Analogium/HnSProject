@@ -13,8 +13,13 @@ extends RefCounted
 signal change
 ## Un état **neuf** vient de se poser.
 signal reached(kind: int)
-## Ce que la pourriture posée par ce corps sur un autre lui rend.
+## Ce que ce corps reprend de ses coups : la pourriture qu'il a posée, la Succion (jalon 45).
 signal heal(amount: float)
+## Les Ronces de la malédiction (jalon 45) : ce que ses propres coups lui coûtent.
+signal recoil(amount: float)
+## **Un corps qui portait l'état d'un lancer de ce corps vient de tomber**, de quoi que ce
+## soit : la Dîme et l'Exhumation (jalon 45). Le lancer sans type, comme `slew`.
+signal fell(cast: RefCounted, at: Vector2)
 ## **Ce corps vient de porter un coup** : où il a touché, ce qui est passé, les états de
 ## la cible. Pour ce qui réagit à un coup réussi sans pouvoir vivre dans la hurtbox —
 ## la charge statique. Sans type sur les parts : nommer `DamageInfo`, qui nomme cette
@@ -170,6 +175,10 @@ class State:
 	var until_tick := DOT_TICK
 	## La résistance au feu que cet embrasement fait fondre (la Fonte, jalon 42).
 	var melt := 0.0
+	## Le lancer qui l'a posé (jalon 45), null pour un état tiré : l'Épidémie, le Râle, les
+	## Ronces, la Sentence se lisent sur lui. `posed` : sa durée à la pose, que le Râle rend.
+	var cast: SkillStats
+	var posed := 0.0
 
 
 ## Des pertes sans coup, montrées par paquets. Le joueur en a deux — Immolation et
@@ -310,16 +319,17 @@ func suffer(
 ## Peste. Une part nulle dans sa nature — un sort converti — ne pose rien. Un tirage,
 ## quel que soit le résultat (invariant 3). Ce qui brûle se renforce **en brûlant
 ## davantage**, et garde la force 1 : `per_second` se compare déjà dans `put()`.
+## `duration` à zéro : celle de la sorte — la Langueur l'allonge (jalon 45).
 func inflict(
 	kind: int, chance_value: float, parts: Array[float], author: StatusEffects,
-	rng: RandomNumberGenerator, source := "", strength := 1.0
+	rng: RandomNumberGenerator, source := "", strength := 1.0, duration := 0.0
 ) -> void:
 	var part: float = parts[NATURES[kind]]
 	if rng.randf() < chance_value and part > 0.0:
 		if burn_per_second(kind) > 0.0:
-			put(kind, part * strength, author, source)
+			put(kind, part * strength, author, source, 1.0, duration)
 		else:
-			put(kind, part, author, source, strength)
+			put(kind, part, author, source, strength, duration)
 
 
 ## Le même état, recopié sur un autre corps à pleine durée : la Contagion de la Peste.
@@ -330,6 +340,55 @@ func pass_on(kind: int, other: StatusEffects) -> void:
 	var author := state.author.get_ref() as StatusEffects if state.author != null else null
 	var burn := burn_per_second(kind)
 	other.put(kind, state.per_second / burn if burn > 0.0 else 0.0, author, state.source, state.strength)
+	other.attach(kind, state.cast)
+
+
+## Le lancer qui vient de poser cet état (jalon 45) : le dernier l'emporte.
+func attach(kind: int, by: SkillStats) -> void:
+	var state := _state(kind)
+	if state != null and by != null:
+		state.cast = by
+
+
+func cast_of(kind: int) -> SkillStats:
+	var state := _state(kind)
+	return state.cast if state != null else null
+
+
+func author_of(kind: int) -> StatusEffects:
+	var state := _state(kind)
+	return state.author.get_ref() as StatusEffects if state != null and state.author != null else null
+
+
+## Ce corps vient de porter un coup de ce montant : le Râle rend du flétrissement, les Ronces
+## en renvoient une part (jalon 45).
+func landed(amount: float) -> void:
+	var back := 0.0
+	for state in _states:
+		if state.cast == null:
+			continue
+		if state.cast.rattle > 0.0:
+			state.remaining = minf(state.remaining + SkillStats.RATTLE_TIME, state.posed)
+		back += amount * state.cast.thorns * 0.01
+	if back > 0.0:
+		recoil.emit(back)
+
+
+## Jusqu'où cet état passe à la mort du porteur — l'Épidémie ; zéro s'il ne passe pas.
+func epidemic(kind: int) -> float:
+	var by := cast_of(kind)
+	return by.epidemic if by != null else 0.0
+
+
+func heirs(kind: int) -> int:
+	var by := cast_of(kind)
+	return 2 if by != null and by.pandemic > 0.0 else 1
+
+
+## La Sentence (jalon 45) : maudit sous ce seuil de sa vie, il est achevé.
+func doomed(life_part: float) -> bool:
+	var by := cast_of(Kind.CURSED)
+	return by != null and life_part <= by.sentence * 0.01
 
 
 ## Une charge de plus de cet état, `most` au plus, à pleine durée : la Surchauffe. Les
@@ -432,6 +491,7 @@ func put(
 		return
 	var stronger := strength > state.strength
 	state.remaining = duration if duration > 0.0 else DURATIONS[kind]
+	state.posed = state.remaining
 	state.per_second = per_second
 	state.strength = strength
 	state.author = weakref(author) if author != null else null

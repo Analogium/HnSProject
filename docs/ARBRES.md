@@ -178,46 +178,46 @@ Jamais pris : Constellation, Kaléidoscope.
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 90,2/s | 96,4/s |
-| meilleur au paquet | Fléau rampant 2, Fléaux jumeaux 2, Virulence 5, Incubation 4, Bubons 3 | 1125/s ×12,5 | 445/s ×4,62 |
-| meilleur au duel | Fléau rampant 2, Fléaux jumeaux 2, Virulence 5, Incubation 4 | 726/s ×8,05 | 445/s ×4,62 |
-| Nuée au paquet (transformation) | Virulence 5, Nuée 1, Fléau rampant 2, Fléaux jumeaux 2, Incubation 2, Bubons 3 | 1542/s ×17,1 | 941/s ×9,76 |
+| meilleur au paquet | Virulence 5, Nuée 1, Dispersion 2, Fléau rampant 2, Fléaux jumeaux 2, Incubation 2, Bubons 3, Projection 2 | 1731/s ×19,2 | 637/s ×6,60 |
+| meilleur au duel | Fléau rampant 2, Fléaux jumeaux 2, Virulence 5, Nuée 1, Dispersion 2, Incubation 4 | 1456/s ×16,1 | 948/s ×9,84 |
+| Nuée au paquet (transformation) | Virulence 5, Nuée 1, Fléau rampant 2, Fléaux jumeaux 2, Incubation 2, Bubons 3, Projection 2 | 1731/s ×19,2 | 637/s ×6,60 |
 | Nuée au duel (transformation) | Virulence 5, Nuée 1, Fléau rampant 2, Fléaux jumeaux 2, Incubation 4 | 1456/s ×16,1 | 948/s ×9,84 |
 
-Jamais pris : Condamnation, Contagion.
+Jamais pris : Condamnation, Contagion, Vecteur, Germe, Épidémie, Pandémie, Pustules.
 
 ### Relève
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 56,7/s | 60,3/s |
-| meilleur au paquet | Moelle 5, Colosse d'os 1, Frénésie 3 | 292/s ×5,15 | 168/s ×2,78 |
-| meilleur au duel | Légion d'os 1, Moelle 5, Frénésie 3, Guet 3 | 182/s ×3,21 | 201/s ×3,33 |
+| meilleur au paquet | Moelle 5, Colosse d'os 1, Marche funèbre 1, Rappel 1 | 332/s ×5,85 | 159/s ×2,64 |
+| meilleur au duel | Légion d'os 1, Marche funèbre 2, Rappel 1, Moelle 5, Cliquetis 3, Curée 3, Guet 3 | 222/s ×3,91 | 319/s ×5,30 |
 
-Jamais pris : Ossature, Rempart d'os, Dernier souffle.
+Jamais pris : Ossature, Rempart d'os, Dernier souffle, Os rapiécés, Lanceurs d'os, Éboulis d'os, Martyr.
 
 ### Déferlante toxique
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 89,4/s | 37,5/s |
-| meilleur au paquet | Miasme 3, Marais 3, Caustique 5, Haleine fétide 4, Dessiccation 3 | 815/s ×9,13 | 141/s ×3,75 |
-| meilleur au duel | Haleine fétide 2, Dessiccation 3, Caustique 5, Miasme 1, Marais 3, Asphyxie 4 | 413/s ×4,62 | 144/s ×3,83 |
-| Haleine au paquet (transformation) | Miasme 3, Haleine 1, Caustique 5, Haleine fétide 4, Dessiccation 3, Asphyxie 4 | 610/s ×6,82 | 97,5/s ×2,60 |
-| Haleine au duel (transformation) | Miasme 2, Haleine 1, Haleine fétide 2, Dessiccation 3, Caustique 5, Asphyxie 4 | 276/s ×3,09 | 97,5/s ×2,60 |
+| meilleur au paquet | Miasme 3, Haleine 1, Quinte 1, Caustique 5, Apnée 3, Haleine fétide 4, Dessiccation 3 | 1207/s ×13,5 | 195/s ×5,19 |
+| meilleur au duel | Haleine fétide 2, Dessiccation 3, Caustique 5, Apnée 3, Miasme 2, Haleine 1, Quinte 1, Plongée 1, Asphyxie 2 | 716/s ×8,01 | 203/s ×5,42 |
+| Haleine au paquet (transformation) | Miasme 3, Haleine 1, Quinte 1, Caustique 5, Apnée 3, Haleine fétide 4, Dessiccation 3 | 1207/s ×13,5 | 195/s ×5,19 |
+| Haleine au duel (transformation) | Miasme 2, Haleine 1, Quinte 1, Haleine fétide 2, Dessiccation 3, Caustique 5, Apnée 3, Plongée 1, Asphyxie 2 | 716/s ×8,01 | 203/s ×5,42 |
 
-Jamais pris : aucun.
+Jamais pris : Marais, Langueur, Succion, Détonation, Râle.
 
 ### Porte pourrissante
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 87,3/s | 45,5/s |
-| meilleur au paquet | Couvée 4, Essaim 5, Boursouflure 3, Progéniture 3, Rampants véloces 3 | 726/s ×8,32 | 303/s ×6,67 |
-| meilleur au duel | Essaim 5, Boursouflure 1, Progéniture 3, Couvée 4 | 530/s ×6,07 | 303/s ×6,67 |
-| Nid porté au paquet (transformation) | Couvée 4, Nid porté 1, Essaim 5, Boursouflure 3, Progéniture 3, Rampants véloces 1, Flair 3 | 499/s ×5,72 | 253/s ×5,56 |
-| Nid porté au duel (transformation) | Couvée 4, Nid porté 1, Essaim 5, Boursouflure 1, Progéniture 3, Rampants véloces 1, Flair 3 | 361/s ×4,14 | 253/s ×5,56 |
+| meilleur au paquet | Ponte 4, Essaim 5, Boursouflure 3, Progéniture 3, Lignée 1, Fécondité 3, Rampants véloces 1 | 985/s ×11,3 | 657/s ×14,4 |
+| meilleur au duel | Essaim 5, Boursouflure 1, Progéniture 3, Lignée 1, Ponte 4, Fécondité 3, Gestation 2, Rampants véloces 1 | 687/s ×7,87 | 675/s ×14,8 |
+| Nid porté au paquet (transformation) | Ponte 4, Nid porté 1, Essaim 1, Boursouflure 3, Progéniture 3, Lignée 1, Fécondité 3, Rampants véloces 1, Flair 1, Laisse 1 | 651/s ×7,45 | 396/s ×8,69 |
+| Nid porté au duel (transformation) | Ponte 4, Nid porté 1, Essaim 5, Boursouflure 1, Progéniture 3, Lignée 1, Fécondité 3, Gestation 2 | 547/s ×6,26 | 571/s ×12,6 |
 
-Jamais pris : aucun.
+Jamais pris : Amalgame, Grouillement, Masse critique.
 
 ## Manuel du chevalier
 

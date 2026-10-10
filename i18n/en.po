@@ -3131,8 +3131,8 @@ msgstr "Each skill has its tree, and its own points: one per manual level, on to
 msgid "Résistances"
 msgstr "Resistances"
 
-msgid "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège."
-msgstr "Each nature other than physical is reduced by its resistance, as a direct percentage, up to {plafond}. A curse removes some before the cap: a resistance above it protects against that."
+msgid "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège. Les abris — Rempart d'os, Glace épaisse, Linceul… — retirent ensuite une part de chaque coup, toutes natures confondues, {abri} au plus."
+msgstr "Each nature other than physical is reduced by its resistance, as a direct percentage, up to {plafond}. A curse removes some before the cap: a resistance above it protects against that. Shelters — Bone Rampart, Thick Ice, Shroud… — then take off part of every blow, whatever its nature, {abri} at most."
 
 msgid "Les flacons"
 msgstr "Flasks"
@@ -3176,14 +3176,14 @@ msgstr "Applied by holy. The blessed deal {force} less damage, for {duree} s. So
 msgid "Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s. Certains nœuds du Maître chevalier le font saigner plus vite."
 msgstr "Applied by physical. Burns {part} of the physical taken per second, for {duree} s. Some Knight Master nodes make it bleed faster."
 
-msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite."
-msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy make it gnaw faster."
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite, ou passer au plus proche quand son porteur meurt."
+msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy make it gnaw faster, or pass to the nearest enemy when its bearer dies."
 
 msgid "Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts."
 msgstr "Applied by some skills, never by an ordinary hit. Burns {part} of the necrotic taken per second, for {duree} s, in {ticks} pulses per second: each can cause rot. Some nodes of the Master of Necromancy also make the withered deal less damage."
 
-msgid "Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue."
-msgstr "Applied by some skills, never by an ordinary hit. The cursed lose {force} points of necrotic resistance, before the cap, for {duree} s. Some nodes of the Master of Necromancy make it stronger or longer."
+msgid "Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue, ou achèvent le maudit sous un seuil de vie."
+msgstr "Applied by some skills, never by an ordinary hit. The cursed lose {force} points of necrotic resistance, before the cap, for {duree} s. Some nodes of the Master of Necromancy make it stronger or longer, or finish off the cursed below a life threshold."
 
 msgid "États"
 msgstr "States"
@@ -3547,9 +3547,6 @@ msgstr "Necrosis gnaws less life."
 
 msgid "Sang noir"
 msgstr "Black Blood"
-
-msgid "Tant que la Nécrose brûle, vos PV se refont."
-msgstr "While Necrosis burns, your HP regenerate."
 
 msgid "Chair morte"
 msgstr "Dead Flesh"
@@ -5676,3 +5673,405 @@ msgstr "damage per second stopped"
 
 msgid "éclats crachés vers l'ennemi"
 msgstr "shards spat at enemies"
+
+# Jalon 45 : les arbres de la nécromancie repris — la Peste.
+msgid "Projection"
+msgstr "Projection"
+
+msgid "Le trait file plus vite : c'est le plus lent du manuel."
+msgstr "The bolt flies faster: it is the slowest in the manual."
+
+msgid "Vecteur"
+msgstr "Vector"
+
+msgid "Le trait cherche les sains : il s'incurve vers l'ennemi pas encore décomposé le plus proche, dans ce rayon."
+msgstr "The bolt seeks the healthy: it curves toward the nearest enemy not yet decaying, within this radius."
+
+msgid "Germe"
+msgstr "Germ"
+
+msgid "Un trait qui ne touche rien n'est pas perdu : au bout de sa course, il crève en un nuage qui frappe à {part_germe} % du coup tout ce qui est à {rayon_germe} px, et le décompose."
+msgstr "A bolt that hits nothing is not wasted: at the end of its flight it bursts into a cloud that strikes everything within {rayon_germe} px for {part_germe}% of the hit, and decays it."
+
+msgid "Épidémie"
+msgstr "Epidemic"
+
+msgid "La décomposition change d'hôte : un ennemi qui meurt décomposé la passe, à pleine durée, à l'ennemi sain le plus proche dans ce rayon."
+msgstr "Decay changes host: an enemy that dies decaying passes it, at full duration, to the nearest healthy enemy within this radius."
+
+msgid "Pandémie"
+msgstr "Pandemic"
+
+msgid "L'Épidémie passe à deux ennemis au lieu d'un."
+msgstr "Epidemic passes to two enemies instead of one."
+
+msgid "Pustules"
+msgstr "Pustules"
+
+msgid "Les Bubons font aussi éclater un ennemi tué qui n'est que décomposé."
+msgstr "Buboes also burst a slain enemy that is only decaying."
+
+msgid "Dispersion"
+msgstr "Dispersal"
+
+msgid "Au bout de sa course, l'essaim se divise : un petit essaim par point, en étoile, à {part_dispersion} % du coup."
+msgstr "At the end of its flight, the swarm splits: one small swarm per point, in a star, at {part_dispersion}% of the hit."
+
+msgid "portée de l'épidémie"
+msgstr "epidemic reach"
+
+msgid "épidémie qui passe à deux"
+msgstr "epidemic passing to two"
+
+msgid "rayon de recherche des sains"
+msgstr "healthy-seeking radius"
+
+msgid "nuage en fin de course"
+msgstr "cloud at end of flight"
+
+msgid "décomposés tués qui éclatent"
+msgstr "slain decaying foes burst"
+
+msgid "petits essaims en fin de course"
+msgstr "small swarms at end of flight"
+
+# Jalon 45 : la Relève.
+msgid "Cliquetis"
+msgstr "Rattle"
+
+msgid "Marche funèbre"
+msgstr "Funeral March"
+
+msgid "Les morts-vivants marchent plus vite, vers leur proie comme à vos côtés."
+msgstr "The undead walk faster, toward their prey as at your side."
+
+msgid "Os rapiécés"
+msgstr "Patched Bones"
+
+msgid "Chaque coup d'un mort-vivant lui rend une part de ses PV."
+msgstr "Each blow of an undead restores part of its HP."
+
+msgid "Curée"
+msgstr "Quarry"
+
+msgid "La meute : un mort-vivant frappe plus fort quand un autre s'en prend à la même proie."
+msgstr "The pack: an undead strikes harder when another goes after the same prey."
+
+msgid "Rappel"
+msgstr "Recall"
+
+msgid "Relancer la Relève quand tous sont debout n'est plus perdu : ils reviennent à pleins PV et frappent {plus_rappel} % plus fort pendant {duree_rappel} s."
+msgstr "Recasting Rise while all stand is no longer wasted: they return to full HP and strike {plus_rappel}% harder for {duree_rappel} s."
+
+msgid "Lanceurs d'os"
+msgstr "Bone Throwers"
+
+msgid "Ils ne vont plus au contact : depuis leur place, ils jettent un os à l'ennemi le plus proche, jusqu'à {portee_os} px, à {part_os} % du coup."
+msgstr "They no longer close in: from their post, they throw a bone at the nearest enemy, up to {portee_os} px, at {part_os}% of the hit."
+
+msgid "Éboulis d'os"
+msgstr "Bone Rubble"
+
+msgid "Le colosse qui tombe se brise en {eboulis} morts-vivants ordinaires, qui frappent à {part_eboulis} % de ses coups pendant {duree_eboulis} s."
+msgstr "The fallen colossus breaks into {eboulis} ordinary undead, striking at {part_eboulis}% of its blows for {duree_eboulis} s."
+
+msgid "Martyr"
+msgstr "Martyr"
+
+msgid "Sous {vie_martyr} % de ses PV, un mort-vivant fonce exploser sur l'ennemi le plus proche : son Dernier souffle frappe plus fort."
+msgstr "Below {vie_martyr}% of its HP, an undead rushes to explode on the nearest enemy: its Last Breath strikes harder."
+
+msgid "vitesse des morts-vivants"
+msgstr "undead speed"
+
+msgid "PV rendus par coup"
+msgstr "HP restored per blow"
+
+msgid "dégâts à plusieurs sur une proie"
+msgstr "damage when ganging up"
+
+msgid "rappel des morts-vivants"
+msgstr "undead recall"
+
+msgid "morts-vivants qui jettent des os"
+msgstr "undead throwing bones"
+
+msgid "colosse qui se brise"
+msgstr "colossus that crumbles"
+
+msgid "dégâts du martyr"
+msgstr "martyr damage"
+
+# Jalon 45 : la Déferlante toxique.
+msgid "Langueur"
+msgstr "Languor"
+
+msgid "Le flétrissement posé par la Déferlante dure plus longtemps."
+msgstr "The wilting laid by Toxic Unleash lasts longer."
+
+msgid "Apnée"
+msgstr "Apnea"
+
+msgid "Retenir son souffle paie : la Déferlante frappe plus fort pour chaque seconde depuis la précédente, {apnee_max} s au plus."
+msgstr "Holding your breath pays: Toxic Unleash strikes harder for each second since the last one, up to {apnee_max} s."
+
+msgid "Succion"
+msgstr "Suction"
+
+msgid "Chaque ennemi flétri que le souffle frappe vous rend une part de vos PV max."
+msgstr "Each wilting enemy the breath strikes restores part of your max HP."
+
+msgid "Détonation"
+msgstr "Detonation"
+
+msgid "Le souffle fait éclater sur-le-champ les créatures de votre Porte pourrissante qu'il atteint, plus fort."
+msgstr "The breath bursts on the spot the creatures of your Rotting Gate it reaches, harder."
+
+msgid "Plongée"
+msgstr "Deep Dive"
+
+msgid "L'Apnée compte jusqu'à {plongee_max} s."
+msgstr "Apnea counts up to {plongee_max} s."
+
+msgid "Râle"
+msgstr "Death Rattle"
+
+msgid "Le flétri s'use en frappant : chaque coup qu'il porte lui rend {temps_rale} s de flétrissement."
+msgstr "The wilting wear themselves out striking: each blow they land gives back {temps_rale} s of wilting."
+
+msgid "Quinte"
+msgstr "Coughing Fit"
+
+msgid "Le cône repart {quintes} fois derrière le premier, de là où vous vous tenez, à {part_quinte} % du coup."
+msgstr "The cone goes out {quintes} more times after the first, from where you stand, at {part_quinte}% of the hit."
+
+msgid "secondes de flétrissement en plus"
+msgstr "seconds of wilting added"
+
+msgid "dégâts par seconde d'apnée"
+msgstr "damage per second held"
+
+msgid "PV rendus par flétri touché"
+msgstr "HP per wilting foe struck"
+
+msgid "dégâts des créatures éclatées"
+msgstr "burst creature damage"
+
+msgid "souffle retenu plus longtemps"
+msgstr "breath held longer"
+
+msgid "flétris qui s'usent en frappant"
+msgstr "wilting foes worn by striking"
+
+msgid "cônes qui repartent"
+msgstr "cones that go out again"
+
+# Jalon 45 : la Porte pourrissante.
+msgid "Ponte"
+msgstr "Laying"
+
+msgid "Fécondité"
+msgstr "Fertility"
+
+msgid "La porte crache ses créatures plus souvent."
+msgstr "The gate spits its creatures more often."
+
+msgid "Gestation"
+msgstr "Gestation"
+
+msgid "L'attente les fait grossir : une créature sans proie enfle et frappe plus fort pour chaque seconde passée à attendre, {gestation_max} s au plus."
+msgstr "Waiting makes them swell: a creature without prey grows and strikes harder for each second spent waiting, up to {gestation_max} s."
+
+msgid "Laisse"
+msgstr "Leash"
+
+msgid "Elles foncent sur ce que vous visez : l'ennemi le plus proche du curseur, plutôt que d'elles."
+msgstr "They rush at what you aim at: the enemy nearest the cursor, rather than nearest them."
+
+msgid "Amalgame"
+msgstr "Amalgam"
+
+msgid "{amalgame} créatures qui attendent sans proie fusionnent en une seule, qui frappe {force_amalgame} fois plus fort sur un rayon {rayon_amalgame} fois plus large."
+msgstr "{amalgame} creatures waiting without prey fuse into one, striking {force_amalgame} times harder over a radius {rayon_amalgame} times wider."
+
+msgid "Lignée"
+msgstr "Lineage"
+
+msgid "Les petits lâchent à leur tour des petits en éclatant, une fois."
+msgstr "The young release young of their own when they burst, once."
+
+msgid "Grouillement"
+msgstr "Teeming"
+
+msgid "Portée, la porte crache une créature de plus par point chaque fois qu'un coup vous touche, une fois toutes les {rythme_grouillement} s."
+msgstr "Carried, the gate spits one more creature per point each time a blow hits you, once every {rythme_grouillement} s."
+
+msgid "Masse critique"
+msgstr "Critical Mass"
+
+msgid "En éclatant, l'amalgame relâche les {amalgame} créatures qui le formaient : elles chassent et éclatent à leur tour."
+msgstr "When it bursts, the amalgam releases the {amalgame} creatures it was made of: they hunt and burst in turn."
+
+msgid "cadence de ponte"
+msgstr "laying rate"
+
+msgid "dégâts par seconde d'attente"
+msgstr "damage per second waited"
+
+msgid "créatures qui suivent la visée"
+msgstr "creatures following the aim"
+
+msgid "créatures qui fusionnent"
+msgstr "creatures that fuse"
+
+msgid "petits qui en lâchent d'autres"
+msgstr "young that release more"
+
+msgid "créatures crachées par coup reçu"
+msgstr "creatures spat per blow taken"
+
+msgid "amalgame qui relâche les siennes"
+msgstr "amalgam releasing its own"
+
+# Jalon 45 : la Malédiction putride.
+msgid "Récidive"
+msgstr "Relapse"
+
+msgid "Le sceau revient plus vite."
+msgstr "The seal comes back sooner."
+
+msgid "Ronces"
+msgstr "Thorns"
+
+msgid "Le maudit se blesse : une part des dégâts qu'il inflige lui revient."
+msgstr "The cursed hurt themselves: part of the damage they deal comes back to them."
+
+msgid "Présage"
+msgstr "Omen"
+
+msgid "Le sceau tombe plus tard, mais maudit plus profond."
+msgstr "The seal falls later, but curses deeper."
+
+msgid "Sentence"
+msgstr "Sentence"
+
+msgid "Le maudit est achevé : sous ce seuil de ses PV, il meurt sur-le-champ, élites et boss compris."
+msgstr "The cursed are finished off: below this share of their HP, they die on the spot, elites and bosses included."
+
+msgid "Exhumation"
+msgstr "Exhumation"
+
+msgid "Un maudit qui meurt se relève à vos côtés : un mort-vivant de votre Relève, avec tout son arbre — colosse compris —, pour {vie_exhume} s, {exhumes_max} au plus. Sans la Relève apprise, rien ne se lève."
+msgstr "A cursed enemy that dies rises at your side: an undead of your Rise, with its whole tree — colossus included — for {vie_exhume} s, {exhumes_max} at most. Without Rise learned, nothing rises."
+
+msgid "Héritage"
+msgstr "Legacy"
+
+msgid "La marque gagne en force à chaque ennemi auquel elle passe, {passages_max} fois au plus."
+msgstr "The mark grows stronger with each enemy it passes to, {passages_max} times at most."
+
+msgid "Dîme"
+msgstr "Tithe"
+
+msgid "Un maudit qui meurt, de quoi que ce soit, vous rend du mana."
+msgstr "A cursed enemy that dies, from anything, restores mana."
+
+msgid "Exécuteur"
+msgstr "Executioner"
+
+msgid "Un ennemi achevé par la Sentence maudit ses voisins à {portee_executeur} px."
+msgstr "An enemy finished off by Sentence curses its neighbours within {portee_executeur} px."
+
+msgid "de ses coups renvoyés au maudit"
+msgstr "of their blows turned on the cursed"
+
+msgid "secondes avant que le sceau tombe"
+msgstr "seconds before the seal falls"
+
+msgid "seuil d'achèvement des maudits"
+msgstr "cursed execution threshold"
+
+msgid "maudits tués qui se relèvent"
+msgstr "slain cursed that rise"
+
+msgid "force gagnée par passage"
+msgstr "strength gained per pass"
+
+msgid "mana par maudit tué"
+msgstr "mana per cursed slain"
+
+msgid "malédiction passée par l'achevé"
+msgstr "curse passed on by the executed"
+
+# Jalon 45 : la Nécrose avancée.
+msgid "Lente agonie"
+msgstr "Slow Agony"
+
+msgid "Tant que la Nécrose brûle, vos sorts nécrotiques durent plus longtemps — portes, nuées, malédictions —, et les états qu'ils posent aussi."
+msgstr "While Necrosis burns, your necrotic spells last longer — gates, swarms, curses — and so do the states they lay."
+
+msgid "Charognard"
+msgstr "Carrion Eater"
+
+msgid "Tant que la Nécrose brûle, chaque ennemi qui meurt à {portee_charognard} px de vous vous rend une part de vos PV max."
+msgstr "While Necrosis burns, each enemy dying within {portee_charognard} px of you restores part of your max HP."
+
+msgid "Moribond"
+msgstr "Moribund"
+
+msgid "Sous {vie_moribond} % de votre vie, la Nécrose cesse de ronger et vos sorts nécrotiques frappent plus fort."
+msgstr "Below {vie_moribond}% of your life, Necrosis stops gnawing and your necrotic spells strike harder."
+
+msgid "Sursis"
+msgstr "Reprieve"
+
+msgid "Tant que la Nécrose brûle, un coup qui devrait vous tuer vous laisse à 1 PV et l'éteint ; une fois toutes les {attente_sursis} s."
+msgstr "While Necrosis burns, a blow that should kill you leaves you at 1 HP and puts it out; once every {attente_sursis} s."
+
+msgid "Faucheuse"
+msgstr "Reaper"
+
+msgid "La Nécrose ronge deux fois plus, mais tant qu'elle brûle, vos sorts nécrotiques coûtent moitié moins de mana."
+msgstr "Necrosis gnaws twice as much, but while it burns your necrotic spells cost half as much mana."
+
+msgid "Exutoire"
+msgstr "Outlet"
+
+msgid "Le Fardeau partagé part aussi dès qu'un coup vous ôte {perte_exutoire} % de vos PV max."
+msgstr "Shared Burden also goes off as soon as a blow takes {perte_exutoire}% of your max HP."
+
+msgid "Linceul"
+msgstr "Shroud"
+
+msgid "Sous la Faucheuse, vous subissez moins de dégâts — toutes réductions confondues, {abri_max} % au plus."
+msgstr "Under the Reaper, you take less damage — {abri_max}% at most, all reductions combined."
+
+msgid "Revenant"
+msgstr "Revenant"
+
+msgid "Le Sursis revient toutes les {attente_revenant} s, et vous laisse à {vie_revenant} % de vos PV max."
+msgstr "Reprieve returns every {attente_revenant} s, and leaves you at {vie_revenant}% of your max HP."
+
+msgid "PV rendus par mort proche"
+msgstr "HP per nearby death"
+
+msgid "dégâts nécrotiques à bout de vie"
+msgstr "necrotic damage near death"
+
+msgid "sursis d'un coup mortel"
+msgstr "reprieve from a lethal blow"
+
+msgid "sorts nécrotiques à moitié prix"
+msgstr "half-price necrotic spells"
+
+msgid "fardeau aux gros coups reçus"
+msgstr "burden on heavy blows taken"
+
+msgid "sursis plus fréquent"
+msgstr "more frequent reprieve"
+
+msgid "durée des sorts nécrotiques"
+msgstr "necrotic spell duration"
+
+msgid "Tant que la Nécrose brûle, vous regagnez chaque seconde une part de vos PV max."
+msgstr "While Necrosis burns, you regain part of your max HP every second."

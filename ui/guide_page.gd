@@ -22,7 +22,7 @@ const ARTICLES := {
 	"manual_levels": ["Expérience et niveaux", "Chaque ennemi tué donne à chaque manuel du râtelier autant d'expérience qu'au personnage. Un manuel monte jusqu'au niveau {max}, et chaque niveau lui donne un point."],
 	"cells": ["Les cases", "Une case porte une compétence ou un passif. Elle s'ouvre au niveau de manuel qu'elle demande ; un clic sur un passif y place un point, un clic sur une compétence ouvre son arbre. Un point se reprend d'un clic droit, tant que rien de ce qu'il ouvre n'en dépend."],
 	"talent_trees": ["Les arbres de talents", "Chaque compétence a son arbre, et ses propres points : un par niveau du manuel, en plus de ceux du livre. Le centre de l'arbre est la compétence, payée par le livre.\n\nUn nœud s'ouvre quand la compétence a un point et qu'un des nœuds qui y mènent en porte assez — les grains sur le lien. Certains nœuds transforment la compétence, d'autres en convertissent les dégâts : ceux-là sont tout ou rien.\n\nTenir {details} sur une compétence montre ce qu'elle peut déclencher, avec les vraies chances."],
-	"resistances": ["Résistances", "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège."],
+	"resistances": ["Résistances", "Chaque nature autre que le physique se réduit par sa résistance, en pourcentage direct, jusqu'à {plafond}. Une malédiction en retire avant le plafond : une résistance au-delà en protège. Les abris — Rempart d'os, Glace épaisse, Linceul… — retirent ensuite une part de chaque coup, toutes natures confondues, {abri} au plus."],
 	"flasks": ["Les flacons", "Sous la ceinture, bus par les touches {touches}. Une gorgée coûte des charges ; chaque ennemi tué en rend à tous les flacons portés, une élite davantage. La ville les remplit.\n\nLes gorgées de vie et de mana rendent sur la durée et se cumulent. Un flacon utilitaire ne se reboit pas tant que son effet dure. Mourir vide les gorgées en cours."],
 	"currency": ["Les pièces", "Une pièce s'applique à un objet du sac : clic droit sur la pièce, puis clic sur l'objet. Un objet qui ne porte pas d'affixes, comme un manuel, n'en accepte aucune."],
 	"portal": ["Le portail", "La touche {portail} ouvre un portail vers la ville. La zone attend, figée : le portail bleu de la ville y ramène, avec les mêmes ennemis et le même butin.\n\nLe portail doré de la ville et les waypoints mènent ailleurs, et la zone qui attendait est perdue. Rien d'une zone ne survit à la fermeture du jeu."],
@@ -37,9 +37,9 @@ const STATE_TEXTS := [
 	"Posé par la nécrose. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, et rend à son auteur {soin} de ce qu'il brûle.",
 	"Posé par le sacré. Le béni inflige {force} de dégâts en moins, pendant {duree} s. Certains nœuds du Maître de la lumière l'affaiblissent davantage, ou bénissent sans frapper.",
 	"Posé par le physique. Brûle {part} par seconde du physique reçu, pendant {duree} s. Certains nœuds du Maître chevalier le font saigner plus vite.",
-	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite.",
+	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie la font ronger plus vite, ou passer au plus proche quand son porteur meurt.",
 	"Posé par certaines compétences, jamais par un coup ordinaire. Brûle {part} par seconde du nécrotique reçu, pendant {duree} s, en {ticks} à-coups par seconde : chacun peut faire pourrir. Certains nœuds du Maître de la nécromancie font qu'en plus, le flétri inflige moins de dégâts.",
-	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue.",
+	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue, ou achèvent le maudit sous un seuil de vie.",
 	"Posé par la Surchauffe de la Boule de feu, jamais par un coup ordinaire. Chaque coup de la boule en ajoute une charge, jusqu'à {charges}, pendant {duree} s : la boule suivante y frappe plus fort pour chaque charge.",
 ]
 
@@ -157,7 +157,10 @@ static func chapters() -> Array:
 		_chapter(Texts.t("Défenses"), [
 			[RichText.capitalized(StatMod.name("armor")), Texts.t(StatHelp.TEXTS["armor"])],
 			[RichText.capitalized(StatMod.name("evasion")), Texts.t(StatHelp.TEXTS["evasion"])],
-			_article("resistances", {"plafond": StatMod.percentage(CharacterStats.MAX_RESISTANCE)}),
+			_article("resistances", {
+				"plafond": StatMod.percentage(CharacterStats.MAX_RESISTANCE),
+				"abri": StatMod.percentage(CharacterStats.MAX_DAMAGE_REDUCTION),
+			}),
 		]),
 		_chapter(Texts.t("Flacons"), [_article("flasks", {"touches": " ".join(flask_keys)})]),
 		_chapter(Texts.t("Monnaie"), coins),

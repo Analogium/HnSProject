@@ -206,6 +206,47 @@ const LABELS := {
 	KALEIDOSCOPE: "morceaux qui se brisent encore",
 	CRYSTALLINE: "dégâts en plus par seconde d'arrêt",
 	AIMED_SPIT: "éclats crachés vers l'ennemi",
+	EPIDEMIC: "portée de l'épidémie",
+	PANDEMIC: "épidémie qui passe à deux",
+	VECTOR: "rayon de recherche des sains",
+	GERM: "nuage en fin de course",
+	PUSTULES: "décomposés tués qui éclatent",
+	DISPERSAL: "petits essaims en fin de course",
+	MARCH: "vitesse des morts-vivants",
+	MEND: "PV rendus par coup",
+	PACK: "dégâts à plusieurs sur une proie",
+	RECALL: "rappel des morts-vivants",
+	BONE_THROW: "morts-vivants qui jettent des os",
+	RUBBLE: "colosse qui se brise",
+	MARTYR: "dégâts du martyr",
+	LANGUOR: "secondes de flétrissement en plus",
+	APNEA: "dégâts par seconde d'apnée",
+	SUCTION: "PV rendus par flétri touché",
+	DETONATION: "dégâts des créatures éclatées",
+	DEEP_DIVE: "souffle retenu plus longtemps",
+	RATTLE: "flétris qui s'usent en frappant",
+	FIT: "cônes qui repartent",
+	FERTILITY: "cadence de ponte",
+	GESTATION: "dégâts par seconde d'attente",
+	LEASH: "créatures qui suivent la visée",
+	AMALGAM: "créatures qui fusionnent",
+	LINEAGE: "petits qui en lâchent d'autres",
+	SWARMING: "créatures crachées par coup reçu",
+	CRITICAL_MASS: "amalgame qui relâche les siennes",
+	THORNS: "de ses coups renvoyés au maudit",
+	OMEN: "secondes avant que le sceau tombe",
+	SENTENCE: "seuil d'achèvement des maudits",
+	EXHUME: "maudits tués qui se relèvent",
+	LEGACY: "force gagnée par passage",
+	TITHE: "mana par maudit tué",
+	EXECUTIONER: "malédiction passée par l'achevé",
+	CARRION: "PV rendus par mort proche",
+	MORIBUND: "dégâts nécrotiques à bout de vie",
+	REPRIEVE: "sursis d'un coup mortel",
+	REAPER: "sorts nécrotiques à moitié prix",
+	OUTLET: "fardeau aux gros coups reçus",
+	REVENANT: "sursis plus fréquent",
+	SLOW_AGONY: "durée des sorts nécrotiques",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -398,6 +439,47 @@ const AGREEMENT := {
 	KALEIDOSCOPE: "mp",
 	CRYSTALLINE: "mp",
 	AIMED_SPIT: "mp",
+	EPIDEMIC: "fs",
+	PANDEMIC: "fs",
+	VECTOR: "ms",
+	GERM: "ms",
+	PUSTULES: "mp",
+	DISPERSAL: "mp",
+	MARCH: "fs",
+	MEND: "mp",
+	PACK: "mp",
+	RECALL: "ms",
+	BONE_THROW: "mp",
+	RUBBLE: "ms",
+	MARTYR: "mp",
+	LANGUOR: "fp",
+	APNEA: "mp",
+	SUCTION: "mp",
+	DETONATION: "mp",
+	DEEP_DIVE: "ms",
+	RATTLE: "mp",
+	FIT: "mp",
+	FERTILITY: "fs",
+	GESTATION: "mp",
+	LEASH: "fp",
+	AMALGAM: "fp",
+	LINEAGE: "mp",
+	SWARMING: "fp",
+	CRITICAL_MASS: "ms",
+	THORNS: "mp",
+	OMEN: "fp",
+	SENTENCE: "ms",
+	EXHUME: "mp",
+	LEGACY: "fs",
+	TITHE: "ms",
+	EXECUTIONER: "fs",
+	CARRION: "mp",
+	MORIBUND: "mp",
+	REPRIEVE: "ms",
+	REAPER: "mp",
+	OUTLET: "ms",
+	REVENANT: "ms",
+	SLOW_AGONY: "fs",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -645,6 +727,64 @@ const STASIS := "stasis"
 const KALEIDOSCOPE := "kaleidoscope"
 const CRYSTALLINE := "crystalline"
 const AIMED_SPIT := "aimed_spit"
+## Ceux de la Peste (jalon 45). L'Épidémie et le Vecteur en px, la Dispersion en nombre ; trois
+## drapeaux. L'Épidémie se lit sur l'état posé (`StatusEffects.spread()`), pas sur le lancer :
+## le décomposé meurt souvent de ses à-coups, sans coup ni lancer derrière.
+const EPIDEMIC := "epidemic"
+const PANDEMIC := "pandemic"
+const VECTOR := "vector"
+const GERM := "germ"
+const PUSTULES := "pustules"
+const DISPERSAL := "dispersal"
+## Ceux de la Relève (jalon 45), lus par `Minion`. La Marche funèbre en points de pourcentage
+## de vitesse, les Os rapiécés en points de pourcentage des PV par coup, la Curée et le Martyr
+## en « plus » ; trois drapeaux.
+const MARCH := "march"
+const MEND := "mend"
+const PACK := "pack"
+const RECALL := "recall"
+const BONE_THROW := "bone_throw"
+const RUBBLE := "rubble"
+const MARTYR := "martyr"
+## Ceux de la Déferlante toxique (jalon 45). La Langueur en secondes, l'Apnée et la Détonation
+## en « plus », la Succion en points de pourcentage des PV max par flétri ; trois drapeaux.
+const LANGUOR := "languor"
+const APNEA := "apnea"
+const SUCTION := "suction"
+const DETONATION := "detonation"
+const DEEP_DIVE := "deep_dive"
+const RATTLE := "rattle"
+const FIT := "fit"
+## Ceux de la Porte pourrissante (jalon 45), lus par `RottingGate`. La Fécondité en points de
+## pourcentage de cadence — elle se lit en période (`finalize()`) —, la Gestation en « plus »
+## par seconde, qui grossit aussi le dessin, le Grouillement en nombre ; quatre drapeaux.
+const FERTILITY := "fertility"
+const GESTATION := "gestation"
+const LEASH := "leash"
+const AMALGAM := "amalgam"
+const LINEAGE := "lineage"
+const SWARMING := "swarming"
+const CRITICAL_MASS := "critical_mass"
+## Ceux de la Malédiction putride (jalon 45), lus sur la malédiction posée — elle garde son
+## lancer (`StatusEffects.cast_of()`). Les Ronces, la Sentence et l'Héritage en points de
+## pourcentage, le Présage en secondes, la Dîme en mana ; deux drapeaux.
+const THORNS := "thorns"
+const OMEN := "omen"
+const SENTENCE := "sentence"
+const EXHUME := "exhume"
+const LEGACY := "legacy"
+const TITHE := "tithe"
+const EXECUTIONER := "executioner"
+## Ceux de la Nécrose avancée (jalon 45), lus sur le buff allumé (`Player._necrosis()`). Le
+## Charognard en points de pourcentage des PV max, le Moribond en « plus », la Lente agonie en
+## points de pourcentage de durée ; quatre drapeaux. Le Linceul est une ligne du buff.
+const CARRION := "carrion"
+const MORIBUND := "moribund"
+const REPRIEVE := "reprieve"
+const REAPER := "reaper"
+const OUTLET := "outlet"
+const REVENANT := "revenant"
+const SLOW_AGONY := "slow_agony"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -666,7 +806,11 @@ const MECHANICS := [
 	SERAC, CRYSTALLIZE, CREVASSE, DEEP_COLD, RIME, BLACK_ICE, STARTLE, ALERT, EBB,
 	FROST_SKIN, HIBERNATION, REFUGE, RIME_HALO, ENDLESS_WINTER, ICE_HEART, ICEBREAKER,
 	SNOWBALL, SLIDE, LULL, FROSTING, SUPERCONDUCT, SINGULARITY, RUT, MILL, TOP, SHARD_RAIN,
-	ORB_BITE, FRACTURE, GUIDED, STASIS, KALEIDOSCOPE, CRYSTALLINE, AIMED_SPIT,
+	ORB_BITE, FRACTURE, GUIDED, STASIS, KALEIDOSCOPE, CRYSTALLINE, AIMED_SPIT, EPIDEMIC,
+	PANDEMIC, VECTOR, GERM, PUSTULES, DISPERSAL, MARCH, MEND, PACK, RECALL, BONE_THROW, RUBBLE,
+	MARTYR, LANGUOR, APNEA, SUCTION, DETONATION, DEEP_DIVE, RATTLE, FIT, GESTATION, LEASH,
+	AMALGAM, LINEAGE, SWARMING, CRITICAL_MASS, THORNS, OMEN, SENTENCE, EXHUME, LEGACY, TITHE,
+	EXECUTIONER, CARRION, MORIBUND, REPRIEVE, REAPER, OUTLET, REVENANT, SLOW_AGONY,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -840,6 +984,61 @@ const FRACTURE_PART := 0.5
 const FRACTURE_SPREAD := 0.5
 const GUIDE_TURN := 3.0
 const SPIT_SIGHT := 160.0
+## La Peste. Le Germe : la part du coup et le rayon du nuage. La Dispersion : la part des
+## petits essaims, leur rayon et leur durée en part de ceux de la nuée.
+const GERM_PART := 0.5
+const GERM_RADIUS := 30.0
+const DISPERSAL_PART := 0.4
+const DISPERSAL_SIZE := 0.5
+## La Relève. Le Rappel : sa durée et son « plus ». Les Lanceurs d'os : la part du coup, la
+## portée et la vitesse de l'os. L'Éboulis : combien, pour combien de temps, à quelle part
+## des coups du colosse. Le Martyr : sous quelle part de ses PV il fonce.
+const RECALL_TIME := 3.0
+const RECALL_MORE := 0.3
+const BONE_THROW_PART := 0.7
+const BONE_THROW_REACH := 100.0
+const BONE_THROW_SPEED := 220.0
+const RUBBLE_COUNT := 3
+const RUBBLE_LIFE := 6.0
+const RUBBLE_PART := 0.4
+const MARTYR_LIFE := 0.25
+## La Déferlante. L'Apnée : les secondes comptées au plus, et sous la Plongée. Le Râle : ce
+## qu'un coup du flétri rend à son flétrissement. La Quinte : combien de cônes repartent, à
+## quel écart, à quelle part du coup.
+const APNEA_MOST := 3.0
+const DEEP_DIVE_MOST := 5.0
+const RATTLE_TIME := 0.5
+const FIT_COUNT := 2
+const FIT_GAP := 0.15
+const FIT_PART := 0.4
+## La Porte. La Gestation : les secondes d'attente comptées au plus. L'Amalgame : combien
+## fusionnent, et ce que l'amalgame frappe en plus — dégâts et rayon. Le Grouillement : son
+## attente entre deux coups reçus.
+const GESTATION_MOST := 3.0
+const AMALGAM_SIZE := 3
+const AMALGAM_MORE := 3.0
+const AMALGAM_RADIUS := 2.0
+const SWARMING_PERIOD := 1.0
+## La Malédiction. L'Exhumation : la compétence dont elle lève, ce que vit un exhumé, combien
+## au plus par lanceur.
+## L'Héritage : ses passages comptés au plus. L'Exécuteur : sa portée.
+const EXHUMED_SKILL := "rise"
+const EXHUME_LIFE := 6.0
+const EXHUMED_MOST := 3
+const LEGACY_MOST := 3
+const EXECUTIONER_REACH := 60.0
+## La Nécrose. Le Charognard : sa portée. Le Moribond : sous quelle part de la vie. Le Sursis :
+## son attente, et sous le Revenant, avec la part de vie qu'il laisse. L'Exutoire : la part
+## des PV max qu'un coup doit ôter.
+const NECROSIS_SKILL := "advanced_necrosis"
+const CARRION_REACH := 100.0
+const MORIBUND_LIFE := 0.5
+const REPRIEVE_PERIOD := 60.0
+const REVENANT_PERIOD := 30.0
+const REVENANT_HEALTH := 0.3
+const OUTLET_LOSS := 0.1
+## La Faucheuse : ce qui reste du coût des sorts nécrotiques.
+const REAPER_COST := 0.5
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -1079,6 +1278,47 @@ var stasis := 0.0
 var kaleidoscope := 0.0
 var crystalline := 0.0
 var aimed_spit := 0.0
+var epidemic := 0.0
+var pandemic := 0.0
+var vector := 0.0
+var germ := 0.0
+var pustules := 0.0
+var dispersal := 0.0
+var march := 0.0
+var mend := 0.0
+var pack := 0.0
+var recall := 0.0
+var bone_throw := 0.0
+var rubble := 0.0
+var martyr := 0.0
+var languor := 0.0
+var apnea := 0.0
+var suction := 0.0
+var detonation := 0.0
+var deep_dive := 0.0
+var rattle := 0.0
+var fit := 0.0
+var fertility := 0.0
+var gestation := 0.0
+var leash := 0.0
+var amalgam := 0.0
+var lineage := 0.0
+var swarming := 0.0
+var critical_mass := 0.0
+var thorns := 0.0
+var omen := 0.0
+var sentence := 0.0
+var exhume := 0.0
+var legacy := 0.0
+var tithe := 0.0
+var executioner := 0.0
+var carrion := 0.0
+var moribund := 0.0
+var reprieve := 0.0
+var reaper := 0.0
+var outlet := 0.0
+var revenant := 0.0
+var slow_agony := 0.0
 ## Le morceau de la Fracture, une fois fabriqué : un cache, que `echoed()` ne recopie pas.
 var _fragment: SkillStats
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
@@ -1366,6 +1606,38 @@ static func facts() -> Dictionary:
 		"eclats_orbe": FROST_ORB_BURST,
 		"part_morceau": roundi(FRACTURE_PART * 100.0),
 		"portee_viseur": roundi(SPIT_SIGHT),
+		"part_germe": roundi(GERM_PART * 100.0),
+		"rayon_germe": roundi(GERM_RADIUS),
+		"part_dispersion": roundi(DISPERSAL_PART * 100.0),
+		"duree_rappel": roundi(RECALL_TIME),
+		"plus_rappel": roundi(RECALL_MORE * 100.0),
+		"part_os": roundi(BONE_THROW_PART * 100.0),
+		"portee_os": roundi(BONE_THROW_REACH),
+		"eboulis": RUBBLE_COUNT,
+		"duree_eboulis": roundi(RUBBLE_LIFE),
+		"part_eboulis": roundi(RUBBLE_PART * 100.0),
+		"vie_martyr": roundi(MARTYR_LIFE * 100.0),
+		"apnee_max": roundi(APNEA_MOST),
+		"plongee_max": roundi(DEEP_DIVE_MOST),
+		"temps_rale": RATTLE_TIME,
+		"quintes": FIT_COUNT,
+		"part_quinte": roundi(FIT_PART * 100.0),
+		"gestation_max": roundi(GESTATION_MOST),
+		"amalgame": AMALGAM_SIZE,
+		"force_amalgame": roundi(AMALGAM_MORE),
+		"rayon_amalgame": roundi(AMALGAM_RADIUS),
+		"rythme_grouillement": roundi(SWARMING_PERIOD),
+		"vie_exhume": roundi(EXHUME_LIFE),
+		"exhumes_max": EXHUMED_MOST,
+		"passages_max": LEGACY_MOST,
+		"portee_executeur": roundi(EXECUTIONER_REACH),
+		"portee_charognard": roundi(CARRION_REACH),
+		"vie_moribond": roundi(MORIBUND_LIFE * 100.0),
+		"attente_sursis": roundi(REPRIEVE_PERIOD),
+		"attente_revenant": roundi(REVENANT_PERIOD),
+		"vie_revenant": roundi(REVENANT_HEALTH * 100.0),
+		"perte_exutoire": roundi(OUTLET_LOSS * 100.0),
+		"abri_max": roundi(CharacterStats.MAX_DAMAGE_REDUCTION),
 	}
 
 
@@ -1431,6 +1703,17 @@ func fragment() -> SkillStats:
 func swollen(part: float, radius_factor: float) -> SkillStats:
 	var g := echoed(part)
 	g.radius *= radius_factor
+	return g
+
+
+## Un petit essaim de la Dispersion (jalon 45) : la nuée entière à une part, plus petite et
+## plus brève, qui ne se divise plus — et hors de la limite des orbes, qu'elle viderait.
+func dispersed() -> SkillStats:
+	var g := echoed(DISPERSAL_PART)
+	g.radius *= DISPERSAL_SIZE
+	g.duration *= DISPERSAL_SIZE
+	g.dispersal = 0.0
+	g.simultaneous = 0.0
 	return g
 
 
@@ -1592,7 +1875,8 @@ func finalize() -> void:
 	extra_swords = float(maxi(roundi(extra_swords), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
-	period = maxf(period, 0.0)
+	# La Fécondité de la Porte (jalon 45) : une cadence de ponte, qui se lit en période.
+	period = maxf(period, 0.0) / (1.0 + fertility * 0.01)
 	self_burn = maxf(self_burn, 0.0)
 	self_wither = maxf(self_wither, 0.0)
 	inflict_chance = clampf(inflict_chance, 0.0, 1.0)

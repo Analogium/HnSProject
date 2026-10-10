@@ -161,6 +161,11 @@ var _ramp_idle := INF
 var _throttle := 0
 ## Le Glacier (jalon 44) : les lancers comptés.
 var _glacier := 0
+## L'Apnée (jalon 45) : l'heure du jeu, et celle du dernier lancer de chaque compétence.
+var _clock := 0.0
+var _last_cast := {}
+## Le Sursis (jalon 45) : l'attente avant qu'il puisse revenir.
+var _reprieve_wait := 0.0
 ## La Glace noire (jalon 44) : le dernier sol de la nova, son centre, son rayon, ce qu'il
 ## lui reste, ce qu'il donne. Le Sursaut : l'attente avant le suivant.
 var _black_ice_at := Vector2.ZERO
@@ -217,6 +222,7 @@ func _ready() -> void:
 	states.change.connect(_show_states)
 	states.reached.connect(_announce_state)
 	states.heal.connect(heal)
+	states.fell.connect(_on_fell)
 
 
 ## La souris sert-elle à viser ? Pas déduit de sa position, qui bouge avec la caméra.
@@ -250,6 +256,8 @@ func _physics_process(delta: float) -> void:
 	for i in _recharges.size():
 		_recharges[i] = maxf(_recharges[i] - delta * cadence, 0.0)
 	_rebirth_wait = maxf(_rebirth_wait - delta, 0.0)
+	_clock += delta
+	_reprieve_wait = maxf(_reprieve_wait - delta, 0.0)
 	for index: int in _strides.keys():
 		_strides[index] -= delta
 		if _strides[index] <= 0.0:
@@ -335,6 +343,19 @@ func cast_slot(index: int) -> bool:
 	if points <= 0:
 		return false
 	var cast := resolve(skill, points)
+	# Sous la Nécrose (jalon 45) : la Faucheuse divise le coût des sorts nécrotiques, la Lente
+	# agonie les allonge, eux et ce qu'ils posent, le Moribond les renforce à bout de vie.
+	if cast.nature == DamageType.Kind.NECROTIC and skill.id != SkillStats.NECROSIS_SKILL:
+		var necrosis := _necrosis()
+		if necrosis != null:
+			if necrosis.reaper > 0.0:
+				cast.mana_cost *= SkillStats.REAPER_COST
+			var longer := necrosis.slow_agony * 0.01
+			cast.duration *= 1.0 + longer
+			if cast.inflicted_state >= 0:
+				cast.languor += StatusEffects.DURATIONS[cast.inflicted_state] * longer
+			if necrosis.moribund > 0.0 and health < stats.max_health * SkillStats.MORIBUND_LIFE:
+				cast = cast.echoed(1.0 + necrosis.moribund * 0.01)
 
 	if cast.sustained:
 		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
@@ -357,7 +378,8 @@ func cast_slot(index: int) -> bool:
 	# rien.
 	if skill.shape == Skill.Shape.ORBIT and _blade_crown().full(cast.max_simultaneous()):
 		return false
-	if skill.shape == Skill.Shape.SUMMON \
+	# Sauf le Rappel (jalon 45), qui remet sur pied ceux qui sont debout.
+	if skill.shape == Skill.Shape.SUMMON and cast.recall <= 0.0 \
 			and Minion.count_of(self, skill.id) >= Minion.cap(cast):
 		return false
 	var prey: Hurtbox = _lunge_target(cast) if skill.shape == Skill.Shape.LUNGE else null
@@ -395,6 +417,12 @@ func cast_slot(index: int) -> bool:
 		_glacier += 1
 		if _glacier % (SkillStats.SERAC_EVERY if cast.serac > 0.0 else SkillStats.GLACIER_EVERY) == 0:
 			cast = cast.swollen(1.0 + SkillStats.GLACIER_MORE * 0.01, SkillStats.GLACIER_RADIUS)
+	# L'Apnée (jalon 45) : plus fort à chaque seconde depuis le précédent ; le premier, au plein.
+	if cast.apnea > 0.0:
+		var most := SkillStats.DEEP_DIVE_MOST if cast.deep_dive > 0.0 else SkillStats.APNEA_MOST
+		var held := minf(_clock - float(_last_cast.get(skill.id, -INF)), most)
+		_last_cast[skill.id] = _clock
+		cast = cast.echoed(1.0 + cast.apnea * 0.01 * held)
 	var salvo := _salvo(skill, points, cast)
 	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
 	if spell:
@@ -552,6 +580,9 @@ func _pose(
 			var nova := Explosion.of_cast(parent, at, cast, cast.radius, states)
 			nova.knockback = cast.knockback
 			nova.crowd = cast.deep_cold
+			nova.drink = stats.max_health * cast.suction * 0.01
+			if cast.detonation > 0.0:
+				RottingGate.detonate(at, cast.radius, states, 1.0 + cast.detonation * 0.01)
 			if cast.ground_duration > 0.0:
 				DashTrail.patch(parent, at, cast.ground(cast.radius), states)
 				if cast.black_ice > 0.0 and origin == self:
@@ -585,13 +616,23 @@ func _pose(
 		Skill.Shape.SUMMON:
 			Minion.raise(self, cast, parent)
 		Skill.Shape.GATE:
-			RottingGate.open(parent, aim, cast, states)
+			RottingGate.open(parent, aim, cast, states, null, self)
 		Skill.Shape.NEST:
-			RottingGate.open(parent, global_position, cast, states, self)
+			RottingGate.open(parent, global_position, cast, states, self, self)
 		Skill.Shape.CURSE, Skill.Shape.MARK:
 			PutridCurse.fall(parent, aim, cast, states, self)
 		Skill.Shape.BREATH:
 			ToxicBreath.exhale(parent, at, toward, cast, states)
+			# La Quinte (jalon 45) : le cône repart, d'où l'on se tient alors.
+			if cast.fit > 0.0:
+				var fit := cast.echoed(SkillStats.FIT_PART)
+				fit.fit = 0.0
+				for i in SkillStats.FIT_COUNT:
+					get_tree().create_timer(SkillStats.FIT_GAP * float(i + 1), false).timeout.connect(
+						func() -> void:
+							if is_instance_valid(origin) and is_instance_valid(parent):
+								ToxicBreath.exhale(parent, origin.global_position, toward, fit, states)
+					)
 		Skill.Shape.CATALYSIS:
 			Catalysis.burst(parent, aim, cast, states)
 		Skill.Shape.TRIAD:
@@ -685,6 +726,23 @@ func echo(skill: Skill, salvo: Array[SkillStats], origin: Node2D, aim: Vector2) 
 	if toward == Vector2.ZERO:
 		toward = facing
 	_pose(skill, salvo, origin, toward, aim)
+
+
+## Le lancer résolu de la Nécrose avancée allumée, null éteinte (jalon 45).
+func _necrosis() -> SkillStats:
+	if not lit(SkillStats.NECROSIS_SKILL):
+		return null
+	return resolve(SkillCatalog.by_id(SkillStats.NECROSIS_SKILL), skill_points(SkillStats.NECROSIS_SKILL))
+
+
+## Le Charognard (jalon 45) : un ennemi qui meurt près de soi rend des PV, sous la Nécrose.
+## Appelée par l'`EnemyManager` à chaque mort qui rapporte.
+func feast(at: Vector2) -> void:
+	if at.distance_to(global_position) > SkillStats.CARRION_REACH:
+		return
+	var necrosis := _necrosis()
+	if necrosis != null:
+		heal(stats.max_health * necrosis.carrion * 0.01)
 
 
 ## Ce geste entretenu brûle-t-il en ce moment.
@@ -891,7 +949,9 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 	if cast == null:
 		return
 	# L'état de la nature du lancer : un brasier devenu nécrotique fait exploser les pourrissants.
-	if cast.kill_burst > 0.0 and victim != null and victim.active(StatusEffects.rolled_by(cast.nature)):
+	# Les Pustules de la Peste (jalon 45) : les décomposés aussi.
+	if cast.kill_burst > 0.0 and victim != null and (victim.active(StatusEffects.rolled_by(cast.nature)) \
+			or cast.pustules > 0.0 and victim.active(StatusEffects.Kind.DECAY)):
 		var parts := DamageType.scaled(cast.roll(Game.rng), SkillStats.KILL_BURST_PART)
 		# La Poudrière (jalon 42) : l'explosion pose son état à coup sûr, et la chaîne ne
 		# s'arrête plus faute d'embrasés. Une copie, que la suite de la chaîne reprend.
@@ -918,6 +978,21 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		_stack_on_kill()
 	elif cast.keywords.has(Keywords.SPELL):
 		_siphon()
+
+
+## Un corps qui portait l'état d'un de nos lancers est tombé, de quoi que ce soit (jalon 45) :
+## la Dîme rend du mana, l'Exhumation le relève — mort-vivant de la Relève, tout son arbre
+## compris, si l'on la connaît.
+func _on_fell(cast: SkillStats, at: Vector2) -> void:
+	gain_mana(cast.tithe)
+	if cast.exhume <= 0.0:
+		return
+	var points := skill_points(SkillStats.EXHUMED_SKILL)
+	if points > 0:
+		Minion.risen.call_deferred(
+			self, resolve(SkillCatalog.by_id(SkillStats.EXHUMED_SKILL), points), _effects_parent(), at,
+			1, SkillStats.EXHUME_LIFE, "exhumed", SkillStats.EXHUMED_MOST
+		)
 
 
 ## Le Siphon (jalon 41) : un ennemi tué d'un sort rend du mana, sous le buff qui le porte.
@@ -1821,13 +1896,33 @@ func _on_damaged(info: DamageInfo) -> void:
 	if is_dead:
 		return
 	var lost := info.amount - RagDoll.shoulder(self, info.amount)
+	var necrosis := _necrosis()
+	if necrosis != null and health - lost <= 0.0 and _spared(necrosis):
+		return
+	# L'Exutoire (jalon 45) : un gros coup reçu libère le Fardeau sur-le-champ.
+	if necrosis != null and necrosis.outlet > 0.0 and lost >= stats.max_health * SkillStats.OUTLET_LOSS:
+		(_lit[SkillStats.NECROSIS_SKILL] as Buff).unburden(necrosis)
 	_set_health(health - lost)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:
 		_die()
-	elif _startle_wait <= 0.0:
+		return
+	RottingGate.provoke(self)
+	if _startle_wait <= 0.0:
 		_startle(lost)
+
+
+## Le Sursis (jalon 45) : un coup mortel laisse en vie et éteint la Nécrose ; sous le
+## Revenant, il revient plus vite et laisse davantage.
+func _spared(necrosis: SkillStats) -> bool:
+	if necrosis.reprieve <= 0.0 or _reprieve_wait > 0.0:
+		return false
+	var revenant := necrosis.revenant > 0.0
+	_reprieve_wait = SkillStats.REVENANT_PERIOD if revenant else SkillStats.REPRIEVE_PERIOD
+	extinguish(SkillStats.NECROSIS_SKILL)
+	_set_health(stats.max_health * SkillStats.REVENANT_HEALTH if revenant else 1.0)
+	return true
 
 
 ## Le Sursaut (jalon 44) : un coup qui ôte assez de vie fait partir la nova d'elle-même,

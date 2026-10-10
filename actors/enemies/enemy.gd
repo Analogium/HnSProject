@@ -60,6 +60,7 @@ func _ready() -> void:
 	states.reports_dealt = true
 	states.change.connect(_show_states)
 	states.heal.connect(_heal)
+	states.recoil.connect(_on_recoil)
 	_set_health(stats.max_health)
 	hurtbox.damaged.connect(_on_damaged)
 	# Volontairement désactivé : c'est l'EnemyManager qui pilote.
@@ -146,6 +147,8 @@ func suffer_states(delta: float) -> void:
 	HitFeedback.damage_without_hit(hurtbox.global_position, digit, false)
 	if health <= 0.0:
 		die()
+	elif states.doomed(health / stats.max_health):
+		_execute()
 
 
 ## Pas à un corps tombé : sa pourriture lui survit, le soin non.
@@ -307,6 +310,49 @@ func _on_damaged(info: DamageInfo) -> void:
 		if info.author != null:
 			info.author.slew.emit(info.cast, global_position, states)
 		die()
+	elif states.doomed(health / stats.max_health):
+		_execute()
+
+
+## Les Ronces (jalon 45) : ses propres coups le blessent. Sans auteur : personne ne l'a tué.
+func _on_recoil(amount: float) -> void:
+	if is_dead:
+		return
+	_set_health(health - amount)
+	if health <= 0.0:
+		die()
+
+
+## La Sentence (jalon 45) : achevé au nom de qui l'a maudit ; l'Exécuteur passe la
+## malédiction à ses voisins.
+func _execute() -> void:
+	var curse := states.cast_of(StatusEffects.Kind.CURSED)
+	var author := states.author_of(StatusEffects.Kind.CURSED)
+	if author != null:
+		author.slew.emit(curse, global_position, states)
+	if curse.executioner > 0.0:
+		Enemy.relay.call_deferred(
+			get_world_2d(), global_position, states, StatusEffects.Kind.CURSED,
+			hurtbox.get_instance_id(), SkillStats.EXECUTIONER_REACH, Targets.MAXIMUM
+		)
+	die()
+
+
+## L'état d'un mort passe aux `most` plus proches dans `reach` qui ne le portent pas encore,
+## à pleine durée : l'Épidémie, l'Exécuteur (jalon 45).
+static func relay(
+	world: World2D, at: Vector2, from: StatusEffects, kind: int, own: int, reach: float, most: int
+) -> void:
+	var heirs := Targets.in_circle(world, at, reach).filter(
+		func(t: Hurtbox) -> bool:
+			return t.get_instance_id() != own and t.states != null and not t.states.active(kind)
+	)
+	heirs.sort_custom(
+		func(a: Hurtbox, b: Hurtbox) -> bool:
+			return at.distance_squared_to(a.global_position) < at.distance_squared_to(b.global_position)
+	)
+	for heir: Hurtbox in heirs.slice(0, most):
+		from.pass_on(kind, heir.states)
 
 
 ## Expérience dérivée des PV, jamais posée à la main : une constante par
@@ -353,6 +399,21 @@ func die(award := true) -> void:
 	is_dead = true
 	# Le paquet en cours de ce qui le brûlait : un mort ne ticke plus.
 	states.report()
+	# Ce que ses états de lancer font à sa mort (jalon 45) : l'Épidémie change d'hôte — en
+	# différé, on meurt souvent dans un rappel de collision (invariant 4) —, et leur auteur
+	# l'apprend.
+	for kind in states.kinds():
+		var by := states.cast_of(kind)
+		if by == null:
+			continue
+		if by.epidemic > 0.0:
+			Enemy.relay.call_deferred(
+				get_world_2d(), global_position, states, kind, hurtbox.get_instance_id(),
+				states.epidemic(kind), states.heirs(kind)
+			)
+		var author := states.author_of(kind)
+		if author != null:
+			author.fell.emit(by, global_position)
 	if award and manager != null:
 		manager.report_kill(self)
 	died.emit(self)

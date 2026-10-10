@@ -768,6 +768,9 @@ l'orienteraient chacun à leur façon.
    `Skill.IGNORED_BY_SHAPE` : la fiche du nœud concerné écrit « sans effet avec … ». Une
    **mécanique** qui rend un autre nœud inutile — la Stase de l'Orbe gelée, qui mène
    l'orbe au point visé, et le Guidage — se déclare de même dans `Skill.IGNORED_BY_MECHANIC`.
+   **Un nombre qui agit après la pose de l'état** — à la mort de son porteur, à ses coups —
+   se lit sur l'état, qui garde son lancer : `StatusEffects.cast_of()` (jalon 45). Un
+   décomposé meurt souvent de ses à-coups, sans coup ni lancer pour le porter.
 
 4. **Sur un buff** (Nécrose avancée), une ligne qui ne vise pas un nombre du lancer — une
    portée, ou un champ de la fiche — est **une ligne du buff**, aux règles d'un passif,

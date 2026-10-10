@@ -1130,6 +1130,25 @@ const EYE := [
 const EYE_WIDTH := 21
 const EYE_HEIGHT := 9
 
+## L'os des Lanceurs d'os (jalon 45), « os court » choisi sur planche contre un fémur, une
+## esquille, un os cerné de vert et un os rongé : couché et en biais, deux nœuds à chaque
+## bout. **Il tournoie** — couché, biais, debout, l'autre biais —, ce qui dispense de
+## l'orienter : le debout est le couché tourné d'un quart, l'autre biais le premier en miroir.
+const BONE_FLAT := ["we.....ea", ".wbbbbbb.", "eb.....ba"]
+const BONE_SLANT := [".ww.....", "ewe.....", "ebb.....", "...b....", "....b...", ".....bea", ".....bba", ".....aa."]
+const BONE_HZ := 12.0
+const BONE_INK := {"a": [0, 1], "b": [0, 2], "e": [0, 3], "w": [0, 4]}
+
+## La créature fabriquée à la taille (jalon 45) : la Gestation la fait enfler par paliers
+## impairs, l'amalgame part de `AMALGAM_SIDE` — « six yeux » choisi sur planche contre une
+## grappe, une gueule, une masse bosselée et des pustules. Une planche ne s'étire pas.
+const AMALGAM_SIDE := 13
+const AMALGAM_EYES := [
+	Vector2(-0.5, -0.4), Vector2(-0.1, -0.55), Vector2(0.35, -0.42), Vector2(-0.3, -0.05),
+	Vector2(0.15, -0.12), Vector2(0.55, 0.05),
+]
+const CRAWLER_EYES := [Vector2(-0.32, -0.25), Vector2(0.28, -0.25)]
+
 ## Une spore de la Nécrose avancée, qui monte autour de celui qu'elle ronge.
 const SPORE := [".3.", "3w3", ".3."]
 const SPORE_SIZE := 3
@@ -1140,6 +1159,8 @@ static var _rifts := {}
 static var _crawlers := {}
 static var _eyes := {}
 static var _spores := {}
+static var _bones: Array = []
+static var _grown_crawlers := {}
 
 
 static func plagues(tint: Color) -> Array:
@@ -1168,6 +1189,84 @@ static func rifts(tint: Color) -> Array:
 
 static func crawlers(tint: Color) -> Array:
 	return _shaded(_crawlers, CRAWLER, CRAWLER_SIZE, CRAWLER_SIZE, tint, Necrotic.SHADE)
+
+
+## Les quatre temps de l'os, une seule cuisson : l'ivoire ne suit pas la nature.
+static func bones() -> Array:
+	if _bones.is_empty():
+		var other_slant: Array = BONE_SLANT.map(func(row: String) -> String: return _reversed(row))
+		for grid: Array in [BONE_FLAT, BONE_SLANT, turned(BONE_FLAT), other_slant]:
+			var canvas := PixelCanvas.new((grid[0] as String).length(), grid.size())
+			canvas.stamp(grid, Vector2i.ZERO, BONE_INK)
+			_bones.append(ImageTexture.create_from_image(canvas.to_image([ArtPalette.ramp(Necrotic.BONE)])))
+	return _bones
+
+
+## La créature à `side` pixels, assise puis tassée — l'amalgame avec ses six yeux. Une
+## cuisson par teinte, taille et sorte.
+static func grown_crawlers(tint: Color, side: int, amalgam: bool) -> Array:
+	var key := "%s/%d/%s" % [tint.to_html(false), side, amalgam]
+	if not _grown_crawlers.has(key):
+		var palettes := [
+			ArtPalette.ramp(tint), ArtPalette.ramp(Necrotic.core(tint)), ArtPalette.ramp(Necrotic.SHADE)
+		]
+		var frames: Array[Texture2D] = []
+		for squat in [false, true]:
+			var grid := _crawler_grid(side, AMALGAM_EYES if amalgam else CRAWLER_EYES, squat)
+			var canvas := PixelCanvas.new((grid[0] as String).length(), side)
+			canvas.stamp(grid, Vector2i.ZERO, INK_SHADE)
+			frames.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+		_grown_crawlers[key] = frames
+	return _grown_crawlers[key]
+
+
+## Une bulle éclairée d'en haut à gauche, posée sur sa dernière rangée — tassée, plus large
+## de deux et plus basse de deux. Les yeux sont sombres, avec leur reflet en grand : le jaune
+## du cœur ne tranche pas sur le vert du corps. Seuils posés à l'œil sur la planche.
+static func _crawler_grid(side: int, eye_spots: Array, squat: bool) -> Array:
+	var w := side + (2 if squat else 0)
+	var h := side - (2 if squat else 0)
+	var cx := float(w - 1) * 0.5
+	var cy := float(side - 1) - float(h - 1) * 0.5
+	var rx := float(w) * 0.5
+	var ry := float(h) * 0.5
+	var cells: Array = []
+	for y in side:
+		var line := ""
+		for x in w:
+			var dx := (float(x) - cx) / rx
+			var dy := (float(y) - cy) / ry
+			var d := sqrt(dx * dx + dy * dy)
+			var v := (1.0 - d) * 0.75 - dx * 0.25 - dy * 0.4
+			if d > 1.0:
+				line += "."
+			elif v > 0.55:
+				line += "5"
+			elif v > 0.1:
+				line += "4"
+			elif v > -0.25:
+				line += "3"
+			else:
+				line += "2"
+		cells.append(line)
+	var put := func(spot: Vector2, ox: int, oy: int, ink: String) -> void:
+		var gx := roundi(cx + spot.x * rx) + ox
+		var gy := roundi(cy + spot.y * ry) + oy
+		if gy >= 0 and gy < side and gx >= 0 and gx < w and (cells[gy] as String)[gx] != ".":
+			var line: String = cells[gy]
+			cells[gy] = line.substr(0, gx) + ink + line.substr(gx + 1)
+	put.call(Vector2(-0.5, -0.62), 0, 0, "w")
+	var big := side >= 12
+	for spot: Vector2 in eye_spots:
+		if big and eye_spots.size() <= 2:
+			put.call(spot, 0, 0, "w")
+			put.call(spot, 1, 0, "x")
+			put.call(spot, 0, 1, "x")
+			put.call(spot, 1, 1, "x")
+		else:
+			put.call(spot, 0, 0, "x")
+			put.call(spot, 0, 1, "y")
+	return cells
 
 
 static func eyes(tint: Color) -> Array:

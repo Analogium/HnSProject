@@ -71,6 +71,7 @@ func take_damage(info: DamageInfo) -> void:
 	# d'ici — `core/` ne fait naître aucun nœud, et on est dans un rappel de collision.
 	if info.author != null:
 		info.author.struck.emit(global_position, info.parts, states)
+		info.author.landed(info.amount)
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:
@@ -79,10 +80,13 @@ func take_damage(info: DamageInfo) -> void:
 			info.cast.status_chance_increase if info.cast != null else 0.0, source, info.cast
 		)
 		if info.cast != null and info.cast.inflicted_state >= 0:
+			var kind := info.cast.inflicted_state
+			var lasting: float = StatusEffects.DURATIONS[kind] + info.cast.languor if info.cast.languor > 0.0 else 0.0
 			states.inflict(
-				info.cast.inflicted_state, info.cast.inflict_chance, info.parts, info.author,
-				Game.rng, source, info.cast.strength_of(info.cast.inflicted_state)
+				kind, info.cast.inflict_chance, info.parts, info.author, Game.rng, source,
+				info.cast.strength_of(kind), lasting
 			)
+			states.attach(kind, info.cast)
 		# L'Électrocution (jalon 43) : sans tirage, le critique l'a déjà été.
 		if info.cast != null and info.cast.electrocute > 0.0 and info.is_crit:
 			var part := info.parts[DamageType.Kind.LIGHTNING]

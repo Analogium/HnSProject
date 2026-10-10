@@ -36,6 +36,8 @@ var _has_struck := false
 ## transi dans le cercle, `DEEP_COLD_MOST` au plus.
 var knockback := 0.0
 var crowd := 0.0
+## La Succion de la Déferlante (jalon 45) : les PV que rend chaque flétri frappé.
+var drink := 0.0
 ## Qui elle frappe : les ennemis, ou le camp du joueur quand c'est un ennemi qui explose.
 var _mask := Targets.ENEMIES
 
@@ -86,6 +88,8 @@ func _physics_process(delta: float) -> void:
 		for target in targets:
 			if target.get_instance_id() != _excluded:
 				Targets.strike(target, _parts, global_position, _author, _cast, knockback)
+				if drink > 0.0 and _author != null and target.has_state(StatusEffects.Kind.WILTING):
+					_author.heal.emit(drink)
 	_age += delta
 	queue_redraw()
 	if _age >= _life_span():

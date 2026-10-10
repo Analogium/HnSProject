@@ -158,6 +158,7 @@ const IGNORED_BY_SHAPE := {
 	Shape.ORB: [
 		SkillStats.PIERCE, SkillStats.SPLITS, SkillStats.BOUNCES, SkillStats.CONTAGION,
 		SkillStats.CAROMS, SkillStats.LIGHTNING_ROD, SkillStats.ROD_HEIR, SkillStats.STORM_TARGET,
+		SkillStats.VECTOR, SkillStats.GERM,
 	],
 	Shape.WEB: [
 		SkillStats.JUMP_REACH, SkillStats.JUMP_GAIN, SkillStats.CONDUCTANCE, SkillStats.BIFURCATION,
@@ -170,8 +171,9 @@ const IGNORED_BY_SHAPE := {
 	Shape.RING: [SkillStats.GROUND, SkillStats.DEEP_COLD],
 	# Le sillon perce en ligne : nulle part où poser le bosquet (jalon 44).
 	Shape.FISSURE: [SkillStats.GROVE],
-	# Le cône souffle et passe ; la marque ne couvre qu'un ennemi.
-	Shape.BREATH: [SkillStats.GROUND],
+	# Le cône souffle et passe ; la marque ne couvre qu'un ennemi. La Succion et la Détonation
+	# se lisent sur la nova, que le cône remplace (jalon 45).
+	Shape.BREATH: [SkillStats.GROUND, SkillStats.SUCTION, SkillStats.DETONATION],
 	Shape.MARK: ["radius"],
 	# Les trois comètes ne sont pas des tirs : elles naissent autour du lanceur et se
 	# rejoignent au point visé.
@@ -182,6 +184,8 @@ const IGNORED_BY_SHAPE := {
 ## la Stase mène l'orbe au point visé, le Guidage n'a plus rien à guider.
 const IGNORED_BY_MECHANIC := {
 	SkillStats.STASIS: [SkillStats.GUIDED],
+	# Un géant qui jette des os se lirait mal (jalon 45).
+	SkillStats.COLOSSUS: [SkillStats.BONE_THROW],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait

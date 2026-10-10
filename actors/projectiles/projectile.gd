@@ -73,6 +73,13 @@ var _bounced := 0
 var _caromed := 0
 ## Le Grésil (jalon 44) : l'ennemi que l'éclat cherche.
 var _quarry: Hurtbox
+## L'os des Lanceurs d'os (jalon 45) : dessiné, il tournoie et ne s'oriente pas.
+var bone := false:
+	set(value):
+		bone = value
+		if bone:
+			rotation = 0.0
+			material = null
 
 ## Tirage **local**, semé sur le nœud : invariant 3, et deux tirs ne grésillent pas à
 ## l'unisson.
@@ -90,7 +97,7 @@ func _ready() -> void:
 ## Trait de glace (jalon 35). Le tir des casters reste tracé, au choix de
 ## l'utilisateur : on le distingue du sien en combat.
 func _drawn() -> bool:
-	return nature() in DRAWN or (nature() == DamageType.Kind.COLD and _cast != null)
+	return bone or nature() in DRAWN or (nature() == DamageType.Kind.COLD and _cast != null)
 
 
 ## Reconstruit à chaque appel : c'est le changement qui fait l'effet.
@@ -118,6 +125,10 @@ func nature() -> DamageType.Kind:
 
 
 func _draw() -> void:
+	if bone:
+		var bones := EffectForge.bones()
+		Necrotic.centered(self, bones[int(_life * EffectForge.BONE_HZ) % bones.size()], Vector2.ZERO)
+		return
 	var color := tint()
 	# **La foudre ne se dessine pas comme une bille.** Un éclair court et fourché,
 	# couché sur la trajectoire au cap le plus proche. La nécrose, elle, est un crâne.
@@ -218,7 +229,7 @@ func setup(
 func _physics_process(delta: float) -> void:
 	if _cast != null and _cast.lightning_rod > 0.0:
 		_home(delta)
-	elif _cast != null and _cast.seek_radius > 0.0:
+	elif _cast != null and (_cast.seek_radius > 0.0 or _cast.vector > 0.0):
 		_seek(delta)
 	global_position += _dir * speed * delta
 	_life += delta
@@ -296,10 +307,15 @@ func _home(delta: float) -> void:
 
 
 ## Le Grésil (jalon 44) : vers l'ennemi non frappé le plus proche, gardé jusqu'à ce qu'il
-## soit frappé ou mort.
+## soit frappé ou mort. Le Vecteur de la Peste (jalon 45) : vers le plus proche **sain**,
+## lâché dès qu'il se décompose.
 func _seek(delta: float) -> void:
-	if not is_instance_valid(_quarry) or _struck.has(_quarry.get_instance_id()):
-		_quarry = Targets.nearest(get_world_2d(), global_position, _cast.seek_radius, _struck, true)
+	var healthy := StatusEffects.Kind.DECAY if _cast.vector > 0.0 else -1
+	if not is_instance_valid(_quarry) or _struck.has(_quarry.get_instance_id()) \
+			or (healthy >= 0 and _quarry.has_state(healthy)):
+		_quarry = Targets.nearest(
+			get_world_2d(), global_position, maxf(_cast.seek_radius, _cast.vector), _struck, true, healthy
+		)
 	if _quarry != null:
 		_steer(_quarry.global_position, delta)
 
@@ -354,6 +370,14 @@ func _finish() -> void:
 	if is_queued_for_deletion():
 		return
 	_shatter()
+	# Le Germe (jalon 45) : un trait qui n'a rien touché crève en nuage. L'explosion naît
+	# d'elle-même en différé.
+	if _cast != null and _cast.germ > 0.0 and _struck.is_empty():
+		var cloud := _cast.echoed(SkillStats.GERM_PART)
+		Explosion.put(
+			get_parent(), global_position, cloud.roll(Game.rng), SkillStats.GERM_RADIUS, null,
+			tint(), _author, cloud
+		)
 	queue_free()
 
 

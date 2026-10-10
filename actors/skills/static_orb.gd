@@ -82,7 +82,19 @@ func _physics_process(delta: float) -> void:
 	_bolts = StormCloud.Bolt.aged(_bolts, delta)
 	queue_redraw()
 	if _age >= _cast.duration:
+		_disperse()
 		queue_free()
+
+
+## La Dispersion de la Nuée (jalon 45) : au bout de sa course, des petits essaims en étoile,
+## sans lanceur à suivre — la limite des orbes ne les compte pas.
+func _disperse() -> void:
+	var count := int(_cast.dispersal)
+	if count <= 0:
+		return
+	var small := _cast.dispersed()
+	for i in count:
+		StaticOrb.send(get_parent(), global_position, _dir.rotated(TAU * float(i) / float(count)), small, _author)
 
 
 func _strike() -> void:

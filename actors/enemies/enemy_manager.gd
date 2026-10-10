@@ -130,6 +130,7 @@ func report_kill(enemy: Enemy) -> void:
 	# Au-dessus du corps : le gain s'attribue à la cible choisie.
 	player.reward(float(enemy.xp_value()), level, enemy.global_position)
 	player.gain_flask_charges(enemy.affixes.size())
+	player.feast(enemy.global_position)
 	_drop_loot(enemy, player)
 
 

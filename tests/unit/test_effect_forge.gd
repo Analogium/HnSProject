@@ -170,3 +170,40 @@ func test_the_frozen_orb_is_built_once_per_facet() -> void:
 	assert_same(Frost.orb(tint, 2), Frost.orb(tint, 2))
 	assert_same(Frost.orb(tint, Frost.ORB_TURNS), Frost.orb(tint, 0))
 	assert_false(Frost.orb(tint, 1).get_image().is_invisible())
+
+
+## L'os des Lanceurs d'os (jalon 45) : une cuisson pour la partie, quatre temps, et le
+## debout est le couché tourné — même nombre de pixels, rien de perdu.
+func test_the_bone_tumbles_in_four_lossless_beats() -> void:
+	for grid: Array in [EffectForge.BONE_FLAT, EffectForge.BONE_SLANT]:
+		for row: String in grid:
+			assert_eq(row.length(), (grid[0] as String).length(), "grille rectangulaire")
+	var frames := EffectForge.bones()
+	assert_eq(frames, EffectForge.bones(), "deux appels, une cuisson")
+	assert_eq(frames.size(), 4)
+	assert_eq(_painted(frames[0]), _painted(frames[2]), "le quart de tour ne perd aucun pixel")
+	assert_eq(_painted(frames[1]), _painted(frames[3]), "le miroir non plus")
+	assert_eq((frames[2] as Texture2D).get_size(), Vector2((frames[0] as Texture2D).get_height(), (frames[0] as Texture2D).get_width()))
+
+
+## La créature fabriquée à la taille (jalon 45) : une cuisson par taille, assise puis tassée,
+## posées sur la même rangée ; l'amalgame a ses six yeux.
+func test_a_grown_crawler_is_forged_once_per_size() -> void:
+	var tint := DamageType.COLORS[DamageType.Kind.NECROTIC]
+	var frames := EffectForge.grown_crawlers(tint, 11, false)
+	assert_eq(frames, EffectForge.grown_crawlers(tint, 11, false), "deux appels, une cuisson")
+	assert_eq((frames[0] as Texture2D).get_size(), Vector2(11, 11))
+	assert_eq((frames[1] as Texture2D).get_size(), Vector2(13, 11), "tassée : plus large de deux")
+	var plain: PackedByteArray = (EffectForge.grown_crawlers(tint, 13, false)[0] as Texture2D).get_image().get_data()
+	var amalgam: PackedByteArray = (EffectForge.grown_crawlers(tint, 13, true)[0] as Texture2D).get_image().get_data()
+	assert_ne(plain, amalgam, "l'amalgame n'est pas la créature agrandie")
+
+
+func _painted(tex: Texture2D) -> int:
+	var image := tex.get_image()
+	var n := 0
+	for y in image.get_height():
+		for x in image.get_width():
+			if image.get_pixel(x, y).a > 0.0:
+				n += 1
+	return n

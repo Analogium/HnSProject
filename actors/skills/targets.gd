@@ -34,15 +34,17 @@ static func in_circle(
 
 ## La plus proche du centre dans ce cercle, ou null : le serpent qui chasse, le nuage qui
 ## erre, le tir qui rebondit. `skipped` : les identifiants déjà frappés ; `sighted` :
-## sans mur entre les deux, un rayon de plus par candidat.
+## sans mur entre les deux, un rayon de plus par candidat ; `unless` : un état qui écarte
+## qui le porte — le Vecteur de la Peste cherche les sains (jalon 45).
 static func nearest(
-	world: World2D, center: Vector2, radius: float, skipped := {}, sighted := false
+	world: World2D, center: Vector2, radius: float, skipped := {}, sighted := false, unless := -1
 ) -> Hurtbox:
 	var best: Hurtbox = null
 	var best_distance := INF
 	for target in in_circle(world, center, radius):
 		var distance := center.distance_squared_to(target.global_position)
 		if distance < best_distance and not skipped.has(target.get_instance_id()) \
+				and (unless < 0 or not target.has_state(unless)) \
 				and (not sighted or in_sight(world, center, target.global_position)):
 			best = target
 			best_distance = distance

@@ -1217,7 +1217,8 @@ func test_necrosis_gnaws_current_health_and_raises_the_chance_to_rot() -> void:
 	var health := _p.health
 	await wait_seconds(1.0)
 	assert_lt(_p.health, health, "il ronge")
-	assert_gt(_p.health, health * 0.985, "un pour cent par seconde, pas davantage")
+	# Cinq pour cent des PV actuels par seconde depuis le jalon 45, avant la résistance.
+	assert_gt(_p.health, health * 0.94, "cinq pour cent par seconde, pas davantage")
 
 
 # --------------------------------------------------------------------------
@@ -4577,3 +4578,619 @@ func test_a_constellation_casts_more_orbs() -> void:
 	_learn_with("manual_cold", "frozen_orb", [["projectiles", 2.0]])
 	assert_true(_p.cast_slot(2))
 	assert_eq(_children_of(FrozenOrb).size(), 3)
+
+
+# --------------------------------------------------------------------------
+# Peste (jalon 45)
+# --------------------------------------------------------------------------
+
+## L'Épidémie se lit sur la décomposition posée, qui garde son lancer : le décomposé meurt
+## souvent de ses à-coups, sans lancer derrière.
+func test_a_plague_bolt_marks_its_decay_as_epidemic() -> void:
+	_learn_with("manual_necrotic", "plague", [[SkillStats.EPIDEMIC, 40.0]])
+	var struck := _wearing_target(Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_almost_eq(struck.states.epidemic(StatusEffects.Kind.DECAY), 40.0, 0.001)
+	assert_eq(struck.states.heirs(StatusEffects.Kind.DECAY), 1)
+
+
+## À la mort, la décomposition passe au plus proche qui ne la porte pas — sous la Pandémie,
+## aux deux plus proches.
+func test_an_epidemic_changes_host_at_death() -> void:
+	for heirs in [1, 2]:
+		var dying := _grunt(Vector2(200, 0))
+		var nearest := _grunt(Vector2(225, 0))
+		var next := _grunt(Vector2(200, 30))
+		var already := _grunt(Vector2(185, 0))
+		var far := _grunt(Vector2(320, 0))
+		await wait_physics_frames(2)
+		already.states.put(StatusEffects.Kind.DECAY, 1.0, _p.states, "plague")
+		var plague := SkillStats.new()
+		plague.epidemic = 40.0
+		plague.pandemic = 1.0 if heirs == 2 else 0.0
+		dying.states.put(StatusEffects.Kind.DECAY, 1.0, _p.states, "plague")
+		dying.states.attach(StatusEffects.Kind.DECAY, plague)
+		dying.die(false)
+		await wait_physics_frames(2)
+		assert_true(nearest.states.active(StatusEffects.Kind.DECAY), "le plus proche des sains")
+		assert_eq(next.states.active(StatusEffects.Kind.DECAY), heirs == 2, "le second, sous la Pandémie")
+		assert_false(far.states.active(StatusEffects.Kind.DECAY), "hors de portée")
+		assert_almost_eq(nearest.states.epidemic(StatusEffects.Kind.DECAY), 40.0, 0.001, "et elle passera encore")
+		for grunt in [nearest, next, already, far]:
+			grunt.free()
+
+
+## Le Vecteur : le trait laisse le décomposé devant lui et s'incurve vers le sain.
+func test_a_vector_bolt_seeks_the_healthy() -> void:
+	_learn_with("manual_necrotic", "plague", [[SkillStats.VECTOR, 120.0]])
+	var rotten := _wearing_target(Vector2(150, 0))
+	rotten.states.put(StatusEffects.Kind.DECAY, 1.0)
+	var healthy := _wearing_target(Vector2(90, 40))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.2)
+	assert_eq(_hits(healthy), 1)
+	assert_eq(_hits(rotten), 0)
+
+
+## Le Germe : un trait arrêté par un mur sans rien toucher crève en nuage qui décompose.
+func test_a_missed_bolt_bursts_into_a_germ_cloud() -> void:
+	_learn_with("manual_necrotic", "plague", [[SkillStats.GERM, 1.0]])
+	_wall(Vector2(60, 0), Vector2(10, 200))
+	var beside := _wearing_target(Vector2(42, 22))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(beside), 1)
+	assert_true(beside.states.active(StatusEffects.Kind.DECAY))
+
+
+## Les Pustules : les Bubons font éclater un tué décomposé, qui ne pourrissait pas.
+func test_pustules_burst_a_decaying_kill() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("plague"), 1)
+	cast.kill_burst = 30.0
+	var near := _target(Vector2(50, 0))
+	var decaying := StatusEffects.new()
+	decaying.put(StatusEffects.Kind.DECAY, 1.0)
+	await wait_physics_frames(2)
+	_p.states.slew.emit(cast, Vector2(40, 0), decaying)
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 0, "sans les Pustules")
+	cast.pustules = 1.0
+	_p.states.slew.emit(cast, Vector2(40, 0), decaying)
+	await wait_physics_frames(3)
+	assert_eq(_hits(near), 1)
+
+
+## La Dispersion : au bout de sa course, la nuée se divise en petits essaims.
+func test_a_swarm_disperses_at_the_end_of_its_flight() -> void:
+	_learn_with("manual_necrotic", "plague", [[SkillStats.DISPERSAL, 2.0]], Skill.Shape.ORB)
+	assert_true(_p.cast_slot(2))
+	var swarm: StaticOrb = _children_of(StaticOrb)[0]
+	var radius := swarm._cast.radius
+	var duration := swarm._cast.duration
+	await wait_seconds(duration + 0.1)
+	var small := _children_of(StaticOrb)
+	assert_eq(small.size(), 2)
+	assert_almost_eq((small[0] as StaticOrb)._cast.radius, radius * SkillStats.DISPERSAL_SIZE, 0.01)
+	await wait_seconds(duration * SkillStats.DISPERSAL_SIZE + 0.1)
+	assert_eq(_children_of(StaticOrb).size(), 0, "les petits ne se divisent plus")
+
+
+# --------------------------------------------------------------------------
+# Relève (jalon 45)
+# --------------------------------------------------------------------------
+
+func _wound(minion: Minion, part: float) -> void:
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = minion.max_health * part
+	minion.hurtbox.take_damage(DamageInfo.roll(null, minion.global_position, blow))
+
+
+## Les Os rapiécés : un coup porté rend des PV au mort-vivant.
+func test_patched_bones_mend_on_each_blow() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.MEND, 10.0]])
+	_target(Vector2(30, 0))
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	minion.health = minion.max_health * 0.5
+	await wait_seconds(1.5)
+	assert_gt(minion.health, minion.max_health * 0.5)
+
+
+## La Curée : plus fort quand un autre frappe la même proie.
+func test_the_quarry_bites_harder_together() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.PACK, 10.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var pair := Minion.living.filter(func(m: Minion) -> bool: return m._player == _p)
+	var prey := _target(Vector2(300, 0))
+	pair[0]._foe = prey
+	pair[1]._foe = null
+	assert_almost_eq(pair[0]._more(), 1.0, 0.001, "seul sur sa proie")
+	pair[1]._foe = prey
+	assert_almost_eq(pair[0]._more(), 1.1, 0.001)
+
+
+## Le Rappel : tous debout, relancer les remet sur pied et les fait frapper plus fort.
+func test_a_recall_mends_and_rallies_those_standing() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.RECALL, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	minion.health = 1.0
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2), "relancer n'est plus refusé")
+	assert_eq(Minion.count_of(_p, "rise"), 2, "personne de plus")
+	assert_eq(minion.health, minion.max_health)
+	assert_almost_eq(minion._more(), 1.0 + SkillStats.RECALL_MORE, 0.001)
+
+
+## Les Lanceurs d'os : ils restent à leur place et jettent un os à ce qui approche.
+func test_bone_throwers_throw_from_their_post() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.BONE_THROW, 1.0]])
+	var prey := _target(Vector2(80, 0))
+	var bones := [0]
+	# En différé : le tir entre dans l'arbre avant d'être marqué comme os.
+	var count := func(n: Node) -> void:
+		if is_instance_valid(n) and (n as Projectile).bone:
+			bones[0] += 1
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void:
+			if n is Projectile:
+				count.call_deferred(n)
+	)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(1.2)
+	assert_gt(_hits(prey), 0)
+	assert_gt(bones[0], 0, "ce sont des os qui volent")
+	for minion in Minion.living:
+		assert_lt(minion.global_position.distance_to(_p.global_position), Minion.FORMATION + 8.0, "à sa place")
+
+
+## L'Éboulis d'os : le colosse tombé se brise en trois, qui ne comptent pas dans la limite et
+## s'en vont.
+func test_a_fallen_colossus_crumbles_into_rubble() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0], [SkillStats.RUBBLE, 1.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	_wound(_undead(), 10.0)
+	await wait_physics_frames(2)
+	var rubble := Minion.living.filter(func(m: Minion) -> bool: return m._player == _p)
+	assert_eq(rubble.size(), SkillStats.RUBBLE_COUNT)
+	assert_eq(Minion.count_of(_p, "rise"), 0, "hors de la limite")
+	assert_eq((rubble[0] as Minion)._cast.colossus, 0.0, "des ordinaires")
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2), "le colosse se relève")
+
+
+## Le Martyr : à bout, il fonce exploser sur l'ennemi le plus proche.
+func test_a_martyr_rushes_to_explode() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.END_BURST, 30.0], [SkillStats.MARTYR, 50.0]])
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	_wound(minion, 0.8)
+	assert_true(minion._martyr)
+	var prey := _target(Vector2(60, 0))
+	await wait_seconds(1.5)
+	assert_false(is_instance_valid(minion), "tombé en explosant")
+	assert_gt(_hits(prey), 0)
+
+
+# --------------------------------------------------------------------------
+# Déferlante toxique (jalon 45)
+# --------------------------------------------------------------------------
+
+## La Langueur : le flétrissement de la Déferlante dure davantage.
+func test_languor_lengthens_the_wilting() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.LANGUOR, 2.0], ["inflict_chance", 100.0, true]])
+	var near := _wearing_target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	assert_gt(
+		near.states.remaining(StatusEffects.Kind.WILTING),
+		StatusEffects.DURATIONS[StatusEffects.Kind.WILTING] + 1.9
+	)
+
+
+## L'Apnée : le premier souffle compte au plein, celui qui le suit aussitôt presque rien.
+func test_apnea_rewards_the_held_breath() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.APNEA, 10.0]])
+	assert_true(_p.cast_slot(2))
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(1)
+	var novas := _children_of(Explosion)
+	var ratio: float = (novas[0] as Explosion)._cast.total_max() / (novas[1] as Explosion)._cast.total_max()
+	assert_almost_eq(ratio, 1.0 + 0.1 * SkillStats.APNEA_MOST, 0.01)
+
+
+## La Succion : chaque flétri frappé rend des PV.
+func test_suction_drinks_from_the_wilting() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.SUCTION, 10.0]])
+	var wilting := _wearing_target(Vector2(20, 0))
+	wilting.states.put(StatusEffects.Kind.WILTING, 1.0)
+	_wearing_target(Vector2(-20, 0))
+	_p._set_health(_p.stats.max_health * 0.5)
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(3)
+	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.5, "un flétri sur deux")
+
+
+## La Détonation : la nova fait éclater les créatures de la porte qu'elle atteint.
+func test_the_breath_detonates_the_gate_crawlers() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.DETONATION, 50.0]])
+	assert_true(_p.invest(0, "rotting_gate"))
+	var gate_cast := _p.resolve(SkillCatalog.by_id("rotting_gate"), 1)
+	var gate := RottingGate.open(_effects, Vector2(20, 0), gate_cast, _p.states)
+	await wait_seconds(gate_cast.period * 2.0 + 0.05)
+	var crawling := gate._crawlers.size()
+	assert_gt(crawling, 0)
+	assert_true(_p.cast_slot(2))
+	assert_eq(gate._crawlers.size(), 0, "toutes éclatées")
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), crawling + 1, "les leurs, et la nova")
+
+
+## Le Râle : chaque coup que porte le flétri lui rend du flétrissement, jamais au-delà de la
+## pose.
+func test_a_rattling_wilt_wears_with_each_blow() -> void:
+	var wilted := StatusEffects.new()
+	var breath := SkillStats.new()
+	breath.rattle = 1.0
+	wilted.put(StatusEffects.Kind.WILTING, 1.0)
+	wilted.attach(StatusEffects.Kind.WILTING, breath)
+	wilted.advance(2.0)
+	var left := wilted.remaining(StatusEffects.Kind.WILTING)
+	var victim := _target(Vector2(300, 0))
+	await wait_physics_frames(2)
+	var info := DamageInfo.roll(null, Vector2.ZERO, DamageType.empty_parts())
+	info.author = wilted
+	victim.take_damage(info)
+	assert_almost_eq(wilted.remaining(StatusEffects.Kind.WILTING), left + SkillStats.RATTLE_TIME, 0.001)
+	for i in 10:
+		wilted.landed(1.0)
+	assert_almost_eq(
+		wilted.remaining(StatusEffects.Kind.WILTING), StatusEffects.DURATIONS[StatusEffects.Kind.WILTING], 0.001
+	)
+
+
+## La Quinte : le cône repart deux fois.
+func test_a_coughing_fit_breathes_again() -> void:
+	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.FIT, 1.0]], Skill.Shape.BREATH)
+	var breaths := [0]
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void: breaths[0] += 1 if n is ToxicBreath else 0
+	)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(SkillStats.FIT_GAP * float(SkillStats.FIT_COUNT) + 0.1)
+	assert_eq(breaths[0], 1 + SkillStats.FIT_COUNT)
+
+
+# --------------------------------------------------------------------------
+# Porte pourrissante (jalon 45)
+# --------------------------------------------------------------------------
+
+## Un portail à la main, au lancer sans tirage : ses éclats se comparent.
+func _gate(changes: Dictionary, at := Vector2(20, 0), follow: Node2D = null) -> RottingGate:
+	var cast := _p.resolve(SkillCatalog.by_id("rotting_gate"), 1)
+	cast.damage_min = cast.damage_max.duplicate()
+	for field: String in changes:
+		cast.set(field, changes[field])
+	return RottingGate.open(_effects, at, cast, _p.states, follow, _p)
+
+
+## La Fécondité se lit en période : la porte crache plus souvent, et davantage.
+func test_fertility_shortens_the_laying_period() -> void:
+	_learn_with("manual_necrotic", "rotting_gate", [[SkillStats.FERTILITY, 50.0]])
+	var base := SkillCatalog.by_id("rotting_gate").period
+	assert_almost_eq(_p.resolve(SkillCatalog.by_id("rotting_gate"), 1).period, base / 1.5, 0.001)
+
+
+## La Gestation : une créature qui a attendu éclate plus fort.
+func test_gestation_swells_the_waiting() -> void:
+	var gate := _gate({SkillStats.GESTATION: 10.0})
+	var fresh := RottingGate.Crawler.new()
+	var ripe := RottingGate.Crawler.new()
+	ripe.waited = SkillStats.GESTATION_MOST + 5.0
+	gate._crawlers.append_array([fresh, ripe])
+	gate._burst(fresh)
+	gate._burst(ripe)
+	await wait_physics_frames(1)
+	var blasts := _children_of(Explosion)
+	assert_almost_eq(
+		DamageType.total((blasts[1] as Explosion)._parts) / DamageType.total((blasts[0] as Explosion)._parts),
+		1.0 + 0.1 * SkillStats.GESTATION_MOST, 0.001
+	)
+	assert_almost_eq(gate._swell(ripe), 1.0 + 0.1 * SkillStats.GESTATION_MOST, 0.001, "et le dessin grossit d'autant")
+	# Par paliers impairs : 7 × 1,3 → 9 ; l'amalgame part de 13.
+	assert_eq(gate._side(fresh), EffectForge.CRAWLER_SIZE)
+	assert_eq(gate._side(ripe), 9)
+	ripe.big = true
+	assert_eq(gate._side(ripe), 17, "13 × 1,3")
+
+
+## La Laisse : la créature prend l'ennemi le plus proche de la visée, pas d'elle.
+func test_leashed_crawlers_go_for_the_aim() -> void:
+	var gate := _gate({SkillStats.LEASH: 1.0})
+	_target(Vector2(30, 0))
+	var aimed := _target(_aim() + Vector2(0, 10))
+	gate._spawn()
+	await wait_physics_frames(2)
+	gate._hunt()
+	assert_eq(gate._crawlers[0].prey, aimed)
+
+
+## L'Amalgame : trois qui attendent n'en font qu'une, plus forte et plus large.
+func test_three_idle_crawlers_fuse() -> void:
+	var gate := _gate({SkillStats.AMALGAM: 1.0})
+	for i in SkillStats.AMALGAM_SIZE:
+		gate._spawn()
+	await wait_physics_frames(2)
+	var bigs := gate._crawlers.filter(func(c: RottingGate.Crawler) -> bool: return c.big)
+	assert_eq(bigs.size(), 1, "trois fondues, la porte en a pondu une autre")
+	var big: RottingGate.Crawler = bigs[0]
+	gate._burst(big)
+	await wait_physics_frames(1)
+	var blast: Explosion = _children_of(Explosion)[0]
+	assert_almost_eq(blast._radius, gate._cast.radius * SkillStats.AMALGAM_RADIUS, 0.01)
+	assert_almost_eq(
+		DamageType.total(blast._parts), DamageType.total(gate._cast.roll(Game.rng)) * SkillStats.AMALGAM_MORE, 0.01
+	)
+
+
+## La Masse critique : l'amalgame relâche en éclatant les trois qui le formaient, qui ne
+## refusionnent pas.
+func test_critical_mass_releases_the_amalgam() -> void:
+	var gate := _gate({SkillStats.AMALGAM: 1.0, SkillStats.CRITICAL_MASS: 1.0})
+	var big := RottingGate.Crawler.new()
+	big.big = true
+	gate._crawlers.append(big)
+	gate._burst(big)
+	assert_eq(gate._crawlers.size(), SkillStats.AMALGAM_SIZE)
+	gate._fuse()
+	assert_eq(gate._crawlers.size(), SkillStats.AMALGAM_SIZE, "relâchées, elles ne fusionnent plus")
+
+
+## La Lignée : les petits en lâchent d'autres, qui sont les derniers.
+func test_lineage_hatches_once_more() -> void:
+	var gate := _gate({SkillStats.HATCHLINGS: 2.0, SkillStats.LINEAGE: 1.0})
+	var parent := RottingGate.Crawler.new()
+	gate._crawlers.append(parent)
+	gate._burst(parent)
+	assert_eq(gate._crawlers.size(), 2)
+	gate._burst(gate._crawlers[0])
+	var last := gate._crawlers.filter(func(c: RottingGate.Crawler) -> bool: return c.last)
+	assert_eq(last.size(), 2)
+	gate._burst(last[0])
+	assert_eq(gate._crawlers.size(), 2, "les derniers ne lâchent rien")
+
+
+## Le Grouillement : un coup reçu fait cracher le nid, une fois par période.
+func test_a_carried_nest_teems_when_struck() -> void:
+	var gate := _gate({SkillStats.SWARMING: 2.0}, _p.global_position, _p)
+	var before := gate._crawlers.size()
+	RottingGate.provoke(_p)
+	assert_eq(gate._crawlers.size(), before + 2)
+	RottingGate.provoke(_p)
+	assert_eq(gate._crawlers.size(), before + 2, "pas avant la fin de l'attente")
+
+
+# --------------------------------------------------------------------------
+# Malédiction putride (jalon 45)
+# --------------------------------------------------------------------------
+
+## Un grunt maudit par le joueur, d'un lancer qui porte ces nombres.
+func _cursed_grunt(position: Vector2, changes: Dictionary) -> Enemy:
+	var grunt := _grunt(position)
+	var curse := _p.resolve(SkillCatalog.by_id("putrid_curse"), 1)
+	for field: String in changes:
+		curse.set(field, changes[field])
+	grunt.states.put(StatusEffects.Kind.CURSED, 0.0, _p.states, "putrid_curse")
+	grunt.states.attach(StatusEffects.Kind.CURSED, curse)
+	return grunt
+
+
+## Les Ronces : les coups du maudit lui reviennent en partie.
+func test_thorns_turn_the_blows_on_the_cursed() -> void:
+	var grunt := _cursed_grunt(Vector2(300, 0), {SkillStats.THORNS: 50.0})
+	var victim := _target(Vector2(-300, 0))
+	await wait_physics_frames(2)
+	var full := grunt.health
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = 10.0
+	var info := DamageInfo.roll(null, Vector2.ZERO, blow)
+	info.author = grunt.states
+	victim.take_damage(info)
+	assert_almost_eq(grunt.health, full - info.amount * 0.5, 0.01)
+
+
+## Le Présage : le sceau tombe plus tard, et plus fort.
+func test_an_omen_delays_a_deeper_curse() -> void:
+	_learn_with("manual_necrotic", "putrid_curse", [[SkillStats.OMEN, 1.0], [SkillStats.CURSE_EFFECT, 50.0]])
+	var under := _wearing_target(_p.global_position + Vector2(Player.PLACEMENT_RANGE, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_seconds(0.6)
+	assert_false(under.states.active(StatusEffects.Kind.CURSED), "pas encore")
+	await wait_seconds(0.6)
+	assert_almost_eq(under.states.strength(StatusEffects.Kind.CURSED), 1.5, 0.001)
+
+
+## La Sentence achève le maudit sous son seuil ; l'Exécuteur passe la malédiction aux voisins.
+func test_the_sentence_executes_and_the_executioner_spreads() -> void:
+	var doomed := _cursed_grunt(Vector2(200, 0), {SkillStats.SENTENCE: 10.0, SkillStats.EXECUTIONER: 1.0})
+	var neighbour := _grunt(Vector2(230, 0))
+	var far := _grunt(Vector2(330, 0))
+	await wait_physics_frames(2)
+	# Les coups passent l'armure : on ne compte que sur un petit coup, au-dessus du plancher.
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = doomed.stats.max_health * 0.05
+	doomed._set_health(doomed.stats.max_health * 0.5)
+	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+	assert_false(doomed.is_dead, "au-dessus du seuil")
+	doomed._set_health(doomed.stats.max_health * 0.11)
+	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+	assert_true(doomed.is_dead, "achevé")
+	await wait_physics_frames(2)
+	assert_true(neighbour.states.active(StatusEffects.Kind.CURSED))
+	assert_false(far.states.active(StatusEffects.Kind.CURSED))
+
+
+## La Dîme et l'Exhumation : un maudit qui tombe rend du mana et se relève, trois au plus.
+func test_a_fallen_cursed_pays_a_tithe_and_rises() -> void:
+	_learn("manual_necrotic", ["rise"])
+	_p._set_mana(0.0)
+	for i in SkillStats.EXHUMED_MOST + 1:
+		var grunt := _cursed_grunt(Vector2(200, 30 * i), {SkillStats.TITHE: 3.0, SkillStats.EXHUME: 1.0})
+		await wait_physics_frames(1)
+		var before := _p.mana
+		grunt.die(false)
+		assert_almost_eq(_p.mana, before + 3.0, 0.001, "la Dîme")
+		await wait_physics_frames(2)
+	var exhumed := Minion.living.filter(
+		func(m: Minion) -> bool: return m._kin == "exhumed" and not m.is_queued_for_deletion()
+	)
+	assert_eq(exhumed.size(), SkillStats.EXHUMED_MOST, "les plus anciens s'en vont")
+	assert_eq(Minion.count_of(_p, "rise"), 0, "hors de la limite de la Relève")
+
+
+## L'exhumé est un mort-vivant de la Relève, tout son arbre compris : un colosse sous le Colosse.
+func test_the_exhumed_follow_the_rise_tree() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0]])
+	var grunt := _cursed_grunt(Vector2(200, 0), {SkillStats.EXHUME: 1.0})
+	await wait_physics_frames(1)
+	grunt.die(false)
+	await wait_physics_frames(2)
+	var exhumed: Array = Minion.living.filter(func(m: Minion) -> bool: return m._kin == "exhumed")
+	assert_eq(exhumed.size(), 1)
+	assert_gt((exhumed[0] as Minion)._cast.colossus, 0.0)
+	assert_almost_eq(
+		(exhumed[0] as Minion).max_health, _p.stats.max_health * Minion.LIFE * SkillStats.COLOSSUS_LIFE, 0.01
+	)
+
+
+## L'Héritage : la marque passe plus forte.
+func test_a_legacy_mark_grows_as_it_passes() -> void:
+	_learn_with("manual_necrotic", "putrid_curse", [[SkillStats.LEGACY, 50.0]], Skill.Shape.MARK)
+	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var first := _grunt(aim)
+	var second := _grunt(aim + Vector2(30, 0))
+	await wait_physics_frames(2)
+	assert_true(_p.cast_slot(2))
+	await wait_physics_frames(2)
+	var base := first.states.strength(StatusEffects.Kind.CURSED)
+	assert_gt(base, 0.0)
+	first.die(false)
+	await wait_physics_frames(3)
+	assert_almost_eq(second.states.strength(StatusEffects.Kind.CURSED), base * 1.5, 0.001)
+
+
+# --------------------------------------------------------------------------
+# Nécrose avancée (jalon 45)
+# --------------------------------------------------------------------------
+
+## La Nécrose allumée sous ces nombres, et la Peste apprise sur la quatrième case.
+func _necrosis_lit(lines: Array) -> void:
+	_learn_with("manual_necrotic", "advanced_necrosis", lines)
+	assert_true(_p.invest(0, "plague"))
+	_p.bar.put(3, "plague")
+	assert_true(_p.cast_slot(2))
+	assert_true(_p.lit(SkillStats.NECROSIS_SKILL))
+
+
+## Un coup reçu, sans passer par la hurtbox : le joueur pourrait l'esquiver.
+func _blow_on_player(part: float) -> void:
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * part
+	_p._on_damaged(DamageInfo.roll(null, Vector2.ZERO, blow))
+
+
+func _lethal_blow() -> void:
+	_blow_on_player(10.0)
+
+
+## Le Charognard : une mort proche rend des PV, une lointaine non.
+func test_carrion_feeds_on_nearby_deaths() -> void:
+	_necrosis_lit([[SkillStats.CARRION, 10.0]])
+	_p._set_health(_p.stats.max_health * 0.5)
+	_p.feast(_p.global_position + Vector2(SkillStats.CARRION_REACH + 20.0, 0))
+	assert_almost_eq(_p.health, _p.stats.max_health * 0.5, 0.01, "trop loin")
+	_p.feast(_p.global_position + Vector2(40, 0))
+	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.01)
+
+
+## Le Moribond : à bout de vie, la Nécrose ne ronge plus et les sorts nécrotiques frappent
+## plus fort.
+func test_the_moribund_stop_gnawing_and_strike_harder() -> void:
+	_necrosis_lit([[SkillStats.MORIBUND, 50.0]])
+	var plain := _p.resolve(SkillCatalog.by_id("plague"), 1).total_max()
+	_p._set_health(_p.stats.max_health * 0.4)
+	await wait_seconds(0.5)
+	assert_gte(_p.health, _p.stats.max_health * 0.4, "elle ne ronge plus")
+	assert_true(_p.cast_slot(3))
+	var bolt: Projectile = _children_of(Projectile)[0]
+	assert_almost_eq(bolt._cast.total_max(), plain * 1.5, 0.01)
+
+
+## Le Sursis : un coup mortel laisse à 1 PV et éteint la Nécrose, une fois par attente.
+func test_a_reprieve_spares_once() -> void:
+	_necrosis_lit([[SkillStats.REPRIEVE, 1.0]])
+	_lethal_blow()
+	assert_false(_p.is_dead)
+	assert_eq(_p.health, 1.0)
+	assert_false(_p.lit(SkillStats.NECROSIS_SKILL), "éteinte")
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	_lethal_blow()
+	assert_true(_p.is_dead, "pas deux fois dans l'attente")
+
+
+## Le Revenant : le Sursis laisse davantage.
+func test_a_revenant_is_spared_with_more_life() -> void:
+	_necrosis_lit([[SkillStats.REPRIEVE, 1.0], [SkillStats.REVENANT, 1.0]])
+	_lethal_blow()
+	assert_almost_eq(_p.health, _p.stats.max_health * SkillStats.REVENANT_HEALTH, 0.01)
+	assert_almost_eq(_p._reprieve_wait, SkillStats.REVENANT_PERIOD, 0.01)
+
+
+## La Faucheuse : sous la Nécrose, la Peste coûte moitié moins.
+func test_the_reaper_halves_necrotic_costs() -> void:
+	_necrosis_lit([[SkillStats.REAPER, 1.0]])
+	var cost := _p.resolve(SkillCatalog.by_id("plague"), 1).mana_cost
+	_p._set_mana(cost * 0.6)
+	assert_true(_p.cast_slot(3), "lancée sans tout le mana qu'elle demande")
+	assert_almost_eq(_p.mana, cost * 0.6 - cost * SkillStats.REAPER_COST, 0.01)
+
+
+## Sang noir : sous la Nécrose, une part des PV max par seconde.
+func test_black_blood_mends_while_necrosis_burns() -> void:
+	_necrosis_lit([["self_heal", 0.5]])
+	_p._set_health(_p.stats.max_health * 0.5)
+	await wait_seconds(0.5)
+	assert_gt(_p.health, _p.stats.max_health * 0.6, "plus que la Nécrose ne ronge")
+
+
+## L'Exutoire : un gros coup reçu libère le Fardeau sur-le-champ.
+func test_an_outlet_releases_the_burden_on_a_heavy_blow() -> void:
+	_necrosis_lit([[SkillStats.SHARED_BURDEN, 48.0], [SkillStats.OUTLET, 1.0]])
+	var buff: Buff = _p._lit[SkillStats.NECROSIS_SKILL]
+	buff._burden = 5.0
+	_blow_on_player(0.3)
+	assert_eq(buff._burden, 0.0)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Explosion).size(), 1)
+
+
+## La Lente agonie : sous la Nécrose, le sort nécrotique et l'état qu'il pose durent plus.
+func test_slow_agony_lengthens_necrotic_spells_and_their_states() -> void:
+	_necrosis_lit([[SkillStats.SLOW_AGONY, 50.0]])
+	assert_true(_p.cast_slot(3))
+	var bolt: Projectile = _children_of(Projectile)[0]
+	assert_almost_eq(bolt._cast.languor, StatusEffects.DURATIONS[StatusEffects.Kind.DECAY] * 0.5, 0.001)

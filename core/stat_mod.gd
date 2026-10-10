@@ -94,6 +94,7 @@ const ELIDING := "aeiouhéèê"
 
 ## Rangées en fraction ou en multiplicateur, lues en pourcentage : 0.05 → « 5 % ».
 const SCALED := [
+	"self_heal",
 	"crit_chance",
 	"crit_multiplier",
 	"attack_speed",
@@ -120,6 +121,9 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"condenser", "aftershock", "deep_cold", "black_ice",
 	"frost_skin", "hibernation", "rime_halo", "icebreaker",
 	"snowball", "lull", "frosting", "mill", "top", "orb_bite", "fracture", "crystalline",
+	"march", "mend", "pack", "martyr", "apnea", "suction", "detonation",
+	"fertility", "gestation", "thorns", "sentence", "legacy",
+	"carrion", "moribund", "slow_agony",
 ]
 
 var stat: String
@@ -326,7 +330,7 @@ func is_a_range() -> bool:
 ## Ce qui gagne à baisser : un nœud qui l'accroît paie un échange (jalon 34).
 const LOWER_IS_BETTER := [
 	"recharge", "use_time", "self_burn", "period", "damage_taken", "attack_time", "mana_per_second",
-	"flask_charges_used",
+	"flask_charges_used", "omen", "self_wither",
 ]
 
 

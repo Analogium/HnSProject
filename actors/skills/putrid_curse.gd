@@ -34,6 +34,10 @@ var _has_struck := false
 var _caster: Player
 var _marking := false
 var _marked: Hurtbox
+## Le Présage (jalon 45) : ce qu'il reste avant que le sceau tombe. L'Héritage : les
+## passages de la marque.
+var _wait := 0.0
+var _passes := 0
 
 
 static func fall(
@@ -44,6 +48,7 @@ static func fall(
 	curse._author = author
 	curse._caster = caster
 	curse._marking = cast.shape == Skill.Shape.MARK
+	curse._wait = cast.omen
 	curse._tint = StatusEffects.color(cast.inflicted_state)
 	parent.add_child(curse)
 	Settings.veil(curse, Settings.SPELLS)
@@ -57,6 +62,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _wait > 0.0:
+		_wait -= delta
+		queue_redraw()
+		return
 	if not _has_struck:
 		_has_struck = true
 		if _marking:
@@ -66,6 +75,7 @@ func _physics_process(delta: float) -> void:
 				_curse(target)
 	_age += delta
 	if _marking and not _holds():
+		_passes += 1
 		_mark(Targets.nearest(get_world_2d(), global_position, MARK_REACH, _spent()))
 	queue_redraw()
 	if _age >= (_cast.duration if _marking else LIFETIME) or (_marking and _marked == null):
@@ -77,10 +87,12 @@ func _physics_process(delta: float) -> void:
 func _curse(target: Hurtbox) -> void:
 	if target.states == null:
 		return
+	var gained := 1.0 + _cast.legacy * 0.01 * float(mini(_passes, SkillStats.LEGACY_MOST))
 	target.states.put(
 		_cast.inflicted_state, 0.0, _author, _cast.skill_id,
-		_cast.strength_of(_cast.inflicted_state), maxf(_cast.duration - _age, 0.01)
+		_cast.strength_of(_cast.inflicted_state) * gained, maxf(_cast.duration - _age, 0.01)
 	)
+	target.states.attach(_cast.inflicted_state, _cast)
 	if is_instance_valid(_caster):
 		_caster.gain_mana(_cast.tribute)
 
@@ -110,6 +122,11 @@ func _spent() -> Dictionary:
 ## qui s'abat (jalon 26). La nappe tramée **s'efface en fondu** — un halo au sol est
 ## fait pour ça —, le cercle se dissout, l'œil se referme.
 func _draw() -> void:
+	# Le Présage : le cercle seul, avant que l'œil ne s'ouvre.
+	if _wait > 0.0:
+		if not _marking:
+			Necrotic.put_band(self, Necrotic.ring(_tint, _cast.radius, 0.0), Vector2.ZERO)
+		return
 	if _marking:
 		# L'œil ouvert au-dessus du marqué, et rien au sol : il n'y a pas de zone.
 		Necrotic.centered(self, EffectForge.eyes(_tint)[2], Vector2(0.0, -MARK_LIFT))

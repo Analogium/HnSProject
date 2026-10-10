@@ -974,5 +974,349 @@
   "frozen_orb_sight": [
     "A small brass spyglass with a glowing blue ice lens.",
     4242, "suite", {"nature": "cold"}
+  ],
+  "plague_virulence": [
+    "A fat round green virus cell covered in short spikes, glowing with sickness.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "plague_creeping": [
+    "A glowing green arrow flying to the right, passing straight through a bone-white skull, its tip coming out the other side.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "plague_doom": [
+    "A bone-white skull with a glowing purple curse rune carved on its forehead.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "plague_incubation": [
+    "A rotting green apple, half eaten by black decay, a fat worm coming out of it.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "plague_contagion": [
+    "Three bone-white skulls in a triangle, green toxic spores drifting from the top skull onto the two below it.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "plague_twins": [
+    "Three bright green glowing orbs flying to the right in a fan, spreading out from a single point on the left, each with a short tail.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "plague_buboes": [
+    "A round bloated green sac bursting open, big drops of yellow pus flying outward in a star.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "plague_swarm": [
+    "One single big black fly seen from above, wings spread wide, pale green wings and red eyes.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "plague_projection": [
+    "A green comet flying fast to the right, with a long straight tail behind it.",
+    1337, "basic", {"nature": "necrotic"}
+  ],
+  "plague_vector": [
+    "A mosquito seen in profile with a long needle proboscis, its swollen belly glowing green.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "plague_germ": [
+    "A green spore pod bursting open at its top, releasing a big round puff of green toxic gas.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "plague_epidemic": [
+    "Two bone-white skulls side by side, a green ghostly flame jumping from the left skull onto the right one along a curved arrow.",
+    1337, "suite", {"nature": "necrotic"}
+  ],
+  "plague_pandemic": [
+    "A small round globe of the world entirely rotting green, wrapped in green toxic fumes.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "plague_pustules": [
+    "A bone-white skull covered in many small swollen green pustules.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "plague_dispersal": [
+    "A pale green dandelion puffball, its seeds flying away into the wind to the right.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "rise_marrow": [
+    "A cracked bone-white femur, glowing green marrow oozing out of its broken end.",
+    1337, "basic", {"nature": "necrotic"}
+  ],
+  "rise_vigil": [
+    "A small bone-white tombstone in the middle of a wide glowing green circle drawn on the ground.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rise_ossature": [
+    "A thick sturdy bone-white rib cage seen from the front.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rise_bone_legion": [
+    "A bone-white skull with a big bright green plus sign beside it.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "rise_frenzy": [
+    "Two bone-white bones crossed in an X, clattering, short motion lines around them.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rise_bone_wall": [
+    "A sturdy wall made of stacked bone-white bones and skulls.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rise_last_breath": [
+    "A bone-white skull exploding in a burst of green flames, bone fragments flying outward.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "rise_colossus": [
+    "One giant massive bone-white skull with two huge curved horns.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "rise_funeral_march": [
+    "A bone-white skeletal foot stepping forward to the right, motion lines behind it.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rise_patched_bones": [
+    "A single bone-white bone lying diagonally, wrapped in the middle by a stitched cloth bandage, a small green heart above it.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "rise_quarry": [
+    "A glowing green heart pierced by two crossed bone-white bones.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "rise_recall": [
+    "A bone-white skull with a thick green circular arrow looping around it.",
+    1337, "suite", {"nature": "necrotic"}
+  ],
+  "rise_bone_throwers": [
+    "A bone-white bone spinning through the air to the right, with curved motion lines.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rise_rubble": [
+    "A heap of scattered bone-white bones with three small bone-white skulls lying on top of the pile.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "rise_martyr": [
+    "A bone-white skull with a lit fuse on top like a bomb, sparks flying from the fuse.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_caustic": [
+    "A round glass flask of bubbling green acid, drops spilling over its rim.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_miasma": [
+    "A wide flat cloud of green toxic gas spreading outward in every direction.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_fetid": [
+    "A rotten fish skeleton with wavy green stink lines rising from it.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_desiccation": [
+    "A dry cracked brown leaf crumbling into pieces.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_asphyxia": [
+    "A bone-white skull wearing an old green gas mask with two round glass eyes.",
+    1337, "basic", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_marsh": [
+    "A bubbling green swamp puddle seen from above, bubbles popping on its surface.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_breath": [
+    "A big green toxic gas cloud shaped like a wide cone, narrow on the left and widening to the right.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_languor": [
+    "A withered brown rose lying on its side, its petals slowly falling.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_apnea": [
+    "A pair of green lungs swollen full of held air.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_suction": [
+    "A red heart in the middle, four wisps of green gas flowing into it from the sides.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_detonation": [
+    "A small green slime blob creature exploding in a burst of green goo.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_deep_dive": [
+    "An old brass diving helmet with a round window, a few bubbles rising from it.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_rattle": [
+    "A bone-white skull seen from the side, a long green wisp of breath flowing out of its open mouth to the right.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "toxic_unleash_fit": [
+    "Three bright green chevron arrows made of toxic gas in a row, all pointing to the right.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "rotting_gate_swarm": [
+    "A powerful round green explosion blast with jagged edges and flying goo.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rotting_gate_brood": [
+    "A cluster of slimy translucent green eggs in a nest of rotten flesh.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rotting_gate_bloating": [
+    "A green pufferfish fully puffed up, perfectly round and covered in spikes.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "rotting_gate_crawlers": [
+    "A green cockroach scurrying fast to the right, speed lines behind it.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rotting_gate_scent": [
+    "A big black wet dog nose seen from the front, three wavy green scent lines rising toward it.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rotting_gate_progeny": [
+    "A green slime blob creature splitting apart into three tiny blob creatures.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "rotting_gate_nest": [
+    "A round fleshy green portal hanging from a leather shoulder strap like a bag.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rotting_gate_fertility": [
+    "A ripe green fleshy fruit splitting open, many small seeds spilling out of it.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "rotting_gate_gestation": [
+    "A small green slime blob creature beside a much bigger one, an upward arrow between them.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "rotting_gate_leash": [
+    "A red crosshair target mark with a small green slime blob leaping into its center.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "rotting_gate_amalgam": [
+    "One big green slime blob creature with six dark eyes scattered over its body.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "rotting_gate_lineage": [
+    "A family tree of green slime blobs: one blob at the top linked by lines to two below, each linked to two tiny ones.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "rotting_gate_swarming": [
+    "A cracked round wooden shield, green slime oozing out of the crack.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "rotting_gate_critical_mass": [
+    "A big round green slime ball cracking open like an egg, three small green blobs spilling out of it.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "putrid_curse_spreading": [
+    "A wide glowing magic circle drawn on the ground seen from above, cursed runes all around its edge.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "putrid_curse_swift": [
+    "A small bone-white skull with two purple bat wings flying fast to the right, speed lines behind it.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "putrid_curse_deep": [
+    "A round shield cracked right through the middle by a glowing purple curse rune.",
+    1337, "basic", {"nature": "necrotic"}
+  ],
+  "putrid_curse_long": [
+    "A long scroll of cursed parchment unrolling downward, glowing runes written on it.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "putrid_curse_tribute": [
+    "A golden offering bowl holding a glowing blue mana flame.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_mark": [
+    "A bony skeletal finger pointing down at one small skull glowing purple.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_relapse": [
+    "A thick purple circular arrow wrapped around a wax seal.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "putrid_curse_thorns": [
+    "A thorny green bramble vine coiled in a ring, long sharp thorns, drops of red blood on the thorns.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_omen": [
+    "A black crow with a glowing green eye perched on top of a bone-white skull.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_sentence": [
+    "A large executioner's axe with a curved blade, a purple glow along its edge.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_exhume": [
+    "An open wooden coffin standing upright, a bone-white skeletal hand reaching out of it.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "putrid_curse_legacy": [
+    "A heavy royal signet ring set with a glowing purple gem.",
+    1337, "suite", {"nature": "necrotic"}
+  ],
+  "putrid_curse_tithe": [
+    "A small leather coin purse spilling glowing blue gems.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "putrid_curse_executioner": [
+    "A bone-white skull in the center bursting into a ring of glowing purple curse runes spreading outward.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_gangrene": [
+    "A green rotting hand, black veins spreading up its fingers.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_hardening": [
+    "A thick grey-green turtle shell seen from above, its plates hard and ridged.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_black_blood": [
+    "A single big drop of black blood with a green glow around it.",
+    777, "basic", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_dead_flesh": [
+    "A grey patchwork of stitched dead skin stretched over a round shield.",
+    1337, "basic", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_pact": [
+    "A parchment contract signed in green blood, a dripping quill lying across it.",
+    4242, "basic", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_burden": [
+    "A heavy black iron chain ending in a big iron ball glowing green.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_slow_agony": [
+    "A tall melting green candle burning slowly with a small green flame.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_carrion": [
+    "A bald-headed black vulture perched with wings half open, glowing green eyes.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_moribund": [
+    "A nearly empty glass vial with a little red liquid at the bottom and a green skull on its label.",
+    4242, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_reprieve": [
+    "A hanging rope noose with its knot cut in two.",
+    777, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_reaper": [
+    "A large dark scythe with a curved blade glowing green.",
+    1337, "major", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_outlet": [
+    "A cracked black iron ball bursting open, green energy spilling out of the cracks.",
+    4242, "suite", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_shroud": [
+    "A bone-white skull wrapped in pale grey burial bandages, a faint green glow between the wraps.",
+    777, "suite", {"nature": "necrotic"}
+  ],
+  "advanced_necrosis_revenant": [
+    "A ghostly green flame rising out of an open grave.",
+    777, "suite", {"nature": "necrotic"}
   ]
 }

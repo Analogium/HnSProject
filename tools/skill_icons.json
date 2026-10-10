@@ -91,28 +91,52 @@
     1337
   ],
   "plague": [
-    "a green skull made of toxic smoke flying forward",
-    4242
+    "A bone-white skull wrapped in thick green toxic smoke, flying to the right, a trail of green fumes behind it.",
+    777,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "rise": [
-    "a skeletal hand bursting out of the ground",
-    4242
+    "A bone-white skeletal hand bursting out of a mound of dark earth, reaching upward, a faint green glow around it.",
+    1337,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "toxic_unleash": [
-    "a ring of poisonous green smoke clouds expanding in a circle",
-    4242
+    "Seen from above: a thick ring of green toxic gas clouds bursting outward in a circle from an empty center.",
+    777,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "rotting_gate": [
-    "a gaping fleshy maw portal oozing green slime",
-    4242
+    "A round fleshy green portal open in the ground, a dark toothed maw at its center, green slime oozing over its rim.",
+    777,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "putrid_curse": [
-    "a sinister purple evil eye inside a magic circle",
-    4242
+    "A sinister purple evil eye at the center of a glowing green magic circle seen from above.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "advanced_necrosis": [
-    "a rotting green heart with black veins of necrosis",
-    1337
+    "A rotting green heart with thick black veins of necrosis spreading over it.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ],
   "elemental_projectile": [
     "three small glowing orbs of fire, ice and lightning swirling around each other",
