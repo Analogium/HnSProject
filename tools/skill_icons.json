@@ -23,12 +23,20 @@
     }
   ],
   "wave_slash": [
-    "a huge glowing crescent slash wave of steel, thick curved blade arc",
-    4242
+    "A huge thick white steel crescent slash wave flying to the right, a short motion trail behind it.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
   ],
   "cyclone": [
-    "a warrior spinning fast with a big sword, circular motion trails around him",
-    1337
+    "A grey steel whirlwind tornado made of spinning sword blades, seen from the side.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
   ],
   "ice_spike": [
     "A cluster of three tall jagged ice spikes erupting from the ground, the middle one tallest, a few ice chips flying.",
@@ -87,8 +95,12 @@
     4242
   ],
   "slicing_dash": [
-    "a swordsman dashing horizontally at great speed, sword held forward, white speed lines streaking behind him",
-    1337
+    "A steel sword flying horizontally to the right on its own, blade pointing right, long thick white speed lines streaking behind it, no person, no character.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
   ],
   "plague": [
     "A bone-white skull wrapped in thick green toxic smoke, flying to the right, a trail of green fumes behind it.",
@@ -239,6 +251,30 @@
     {
       "qwen": true,
       "nature": "lightning"
+    }
+  ],
+  "heavy_strike": [
+    "A huge steel two-handed sword held diagonally, blade pointing up and to the right, a thick white curved swing arc trailing behind the blade.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "cross_slash": [
+    "Two steel swords crossed in an X, two thick white curved slash arcs crossing behind them.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "spiral_sword": [
+    "Three steel swords circling around an empty center, tips pointing clockwise, a thick white circular motion trail behind them.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
     }
   ]
 }

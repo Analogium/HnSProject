@@ -401,8 +401,7 @@ Derviches et Sirocco, Escorte, Tierce, Quilles, Va-et-vient — n'a pas été me
 ### Ce qui reste au jalon
 
 - ~~**les planches**~~ — faites, §7 ;
-- **les vignettes** des 84 nœuds et des six icônes de compétence (jalon 42, §14), arbre par
-  arbre ;
+- ~~**les vignettes** des 84 nœuds et des six icônes de compétence~~ — faites, §9 ;
 - **l'équilibrage**, en dernier.
 
 ## 7. Les planches — le fêlé, le derviche, l'estoc, l'assommé
@@ -464,3 +463,65 @@ partent avec l'assommé). La campagne : **1 421 tests, tous verts**.
    `Explosion` lit l'état avant de frapper.
 
 Deux tests de plus : l'allonge de la fiche qui pousse la lame, le Coupe-jarret dans le lancer résolu.
+
+## 9. Une vignette par nœud — le manuel du chevalier
+
+Les nœuds et les six icônes de compétence, par le tuyau Qwen-Image (jalon 42, §14 ; recette :
+`resources/icons/LISEZMOI.md`), **arbre par arbre**, chacun montré à l'utilisateur avant le
+suivant. Le manuel n'avait **aucune** vignette : les 84 sont neuves. Une palette neuve,
+`physical` (acier, bronze, rouge sang, fond ardoise) ; la Lame ardente et ses suites restent en
+`fire`, comme leur conversion. Captures sur le Bureau, `hns-captures-noeuds-chevalier\`.
+
+**La Frappe lourde** : quatorze vignettes, et l'icône de la compétence quitte SDXL (une épée en
+biais et l'arc de son coup, graine 4242 — le premier sujet, une épée qui s'abat dans un éclat,
+doublait le Brise-sol). Cinq sujets refaits : la **Pesée** (une balance d'acier sombre, sans
+contraste → la même en bronze), le **Cratère** (un anneau de terre lu comme une roue → un trou
+dans un dallage), la **Collision** (deux boulets noirs illisibles → deux boucliers de bronze qui
+se heurtent), le **Fer rouge** (des tenailles en bouillie → un fer à cheval rougi sur l'enclume)
+et le **Tremblement**, passé deux fois (une colonne sortie en tour d'échecs, puis un rocher
+noyé dans des traits en bruit → un gong qui vibre). Arbre en jeu : `arbre-heavy_strike.png`.
+
+**Le Coup en croix** : quinze vignettes, et l'icône quitte SDXL (deux épées croisées sur leur
+double arc, graine 4242). Une seconde palette neuve, `holy` (or et blanc, fond prune), pour la
+Lame sainte et l'Ordalie. Trois sujets refaits : l'**Entaille** (un X rouge, qui se lit
+« annuler » → trois griffures qui saignent), la **Plaie ouverte** (une goutte poignardée sortie
+en bouillie, et une fois en visage → un bandage taché) et l'**Éclaboussure** (« une couronne de
+gouttes » sortait en **couronne d'or** → une tache vue de dessus). Arbre en jeu :
+`arbre-cross_slash.png`.
+
+**L'Épée spirale** : quatorze vignettes, et l'icône quitte SDXL (trois épées en ronde dans leur
+traînée, graine 4242). Trois sujets refaits : la **Parade** et le **Brise-lames** sortaient en
+**épées croisées**, le double du Coup en croix (→ une épée qui fend un orbe violet ; le
+Brise-lames deux fois, une épée cassée en deux restant un X, → la digue de son nom, où se brise
+une vague) ; la **Grenaille**, une bouillie d'acier (→ des éclats autour d'un cœur rouge).
+Arbre en jeu : `arbre-spiral_sword.png`.
+
+**La Vague tranchante** : treize vignettes, et l'icône quitte SDXL (un croissant d'acier qui
+file, graine 4242). **Un croissant seul sort en lune** : le Fil de l'arc, la Course et le Grand
+arc étaient trois fois la même, refaits en objets (une faucille, une longue-vue, un éventail
+ouvert). Le croissant ne reste que là où il dit le geste — deux pour les Vagues jumelles, un
+petit et un grand pour la Houle, une boucle pour le Ressac. Les images de mer prises en objets,
+loin de la vague du Brise-lames : un navire pour la Proue, une ancre pour la Lame de fond, une
+catapulte pour les Brisants. Arbre en jeu : `arbre-wave_slash.png`.
+
+**Le Cyclone** : quatorze vignettes, et l'icône quitte SDXL (une tornade de lames, graine
+4242). La tornade ne reste qu'à l'icône et à la Trombe ; ailleurs, des objets qui tournent (un
+moulin, une toupie pour les Derviches, un ressort pour le Dénouement, un manège d'épées pour la
+Ronde folle). Trois sujets refaits : le **Fauchage** (une gerbe sortie en flamme dorée → des
+épis tranchés d'un trait), l'**Envergure** (un aigle petit et sombre → deux ailes blanches) et
+le **Sirocco**, deux fois (des taches brunes, puis la toupie des Derviches → une tornade de
+sable orange). Arbre en jeu : `arbre-cyclone.png`.
+
+**La Ruée tranchante** : quatorze vignettes, et l'icône quitte SDXL (une épée seule qui file,
+graine 4242). Cinq sujets refaits : le **Fil tranchant** (un rasoir lu comme une agrafeuse → une
+lame de scie ronde), l'**Andain** (une bande d'herbe trop fine à 24 px → un râteau dans son tas),
+l'**Enchaînement** (une chaîne minuscule → trois maillons qui remplissent le cadre), la
+**Retombée** et l'**icône** : **un casque demandé sort avec un visage dedans**, une ruée avec son
+chevalier — « empty », « no face, no person » les en vident (un casque cabossé sous trois étoiles
+d'or, l'assommé de la planche §7). Arbre en jeu : `arbre-slicing_dash.png`.
+
+Le manuel compte ainsi **84 vignettes, aucune reprise**, et six icônes de compétence en Qwen.
+Restent les plus faibles, gardés : le **Tremblement** (un gong) et le **Fer rouge** (un fer à
+cheval sur l'enclume) de la Frappe lourde, l'**Andain**. Deux règles de sujet apprises, reportées
+dans `LISEZMOI.md` : **un croissant seul sort en lune**, et **un casque ou une armure demandés
+sortent habités** — le dire vide.

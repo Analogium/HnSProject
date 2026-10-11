@@ -11,6 +11,90 @@
 [ext_resource type="Resource" path="res://resources/skills/wave_slash.tres" id="13_vague"]
 [ext_resource type="Resource" path="res://resources/skills/cyclone.tres" id="14_cyclone"]
 [ext_resource type="Resource" path="res://resources/skills/slicing_dash.tres" id="15_ruee"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_momentum.png" id="icon_heavy_strike_momentum"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_weight.png" id="icon_heavy_strike_weight"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_ram.png" id="icon_heavy_strike_ram"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_fury.png" id="icon_heavy_strike_fury"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_burning_blade.png" id="icon_heavy_strike_burning_blade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_shatter.png" id="icon_heavy_strike_shatter"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_crater.png" id="icon_heavy_strike_crater"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_sure_strike.png" id="icon_heavy_strike_sure_strike"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_maul.png" id="icon_heavy_strike_maul"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_breach.png" id="icon_heavy_strike_breach"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_collision.png" id="icon_heavy_strike_collision"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_skittles.png" id="icon_heavy_strike_skittles"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_tremor.png" id="icon_heavy_strike_tremor"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/heavy_strike_red_iron.png" id="icon_heavy_strike_red_iron"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_edge.png" id="icon_cross_slash_edge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_gash.png" id="icon_cross_slash_gash"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_thrust.png" id="icon_cross_slash_thrust"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_open_wound.png" id="icon_cross_slash_open_wound"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_haemorrhage.png" id="icon_cross_slash_haemorrhage"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_blood_spray.png" id="icon_cross_slash_blood_spray"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_holy_blade.png" id="icon_cross_slash_holy_blade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_laceration.png" id="icon_cross_slash_laceration"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_riposte.png" id="icon_cross_slash_riposte"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_tierce.png" id="icon_cross_slash_tierce"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_quarte.png" id="icon_cross_slash_quarte"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_bloodletting.png" id="icon_cross_slash_bloodletting"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_transfusion.png" id="icon_cross_slash_transfusion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_splash.png" id="icon_cross_slash_splash"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cross_slash_ordeal.png" id="icon_cross_slash_ordeal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_sharpness.png" id="icon_spiral_sword_sharpness"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_round.png" id="icon_spiral_sword_round"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_endurance.png" id="icon_spiral_sword_endurance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_ward.png" id="icon_spiral_sword_ward"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_wide.png" id="icon_spiral_sword_wide"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_volley.png" id="icon_spiral_sword_volley"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_arsenal.png" id="icon_spiral_sword_arsenal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_waltz.png" id="icon_spiral_sword_waltz"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_honing.png" id="icon_spiral_sword_honing"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_parry.png" id="icon_spiral_sword_parry"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_breakwater.png" id="icon_spiral_sword_breakwater"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_grapeshot.png" id="icon_spiral_sword_grapeshot"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_escort.png" id="icon_spiral_sword_escort"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spiral_sword_rally.png" id="icon_spiral_sword_rally"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_edge.png" id="icon_wave_slash_edge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_reach.png" id="icon_wave_slash_reach"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_breadth.png" id="icon_wave_slash_breadth"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_twins.png" id="icon_wave_slash_twins"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_furrow.png" id="icon_wave_slash_furrow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_backwash.png" id="icon_wave_slash_backwash"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_restraint.png" id="icon_wave_slash_restraint"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_billow.png" id="icon_wave_slash_billow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_prow.png" id="icon_wave_slash_prow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_undertow.png" id="icon_wave_slash_undertow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_breakers.png" id="icon_wave_slash_breakers"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_to_and_fro.png" id="icon_wave_slash_to_and_fro"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/wave_slash_harrow.png" id="icon_wave_slash_harrow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_reaping.png" id="icon_cyclone_reaping"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_span.png" id="icon_cyclone_span"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_long_breath.png" id="icon_cyclone_long_breath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_whirl.png" id="icon_cyclone_whirl"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_vortex.png" id="icon_cyclone_vortex"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_hungry.png" id="icon_cyclone_hungry"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_steadfast.png" id="icon_cyclone_steadfast"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_vertigo.png" id="icon_cyclone_vertigo"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_dervishes.png" id="icon_cyclone_dervishes"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_sirocco.png" id="icon_cyclone_sirocco"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_waterspout.png" id="icon_cyclone_waterspout"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_denouement.png" id="icon_cyclone_denouement"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_gust.png" id="icon_cyclone_gust"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cyclone_mad_round.png" id="icon_cyclone_mad_round"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_edge.png" id="icon_slicing_dash_edge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_swath.png" id="icon_slicing_dash_swath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_charge.png" id="icon_slicing_dash_charge"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_lingering.png" id="icon_slicing_dash_lingering"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_impact.png" id="icon_slicing_dash_impact"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_flow.png" id="icon_slicing_dash_flow"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_war_leap.png" id="icon_slicing_dash_war_leap"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_vault.png" id="icon_slicing_dash_vault"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_hamstring.png" id="icon_slicing_dash_hamstring"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_relaunch.png" id="icon_slicing_dash_relaunch"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_hallali.png" id="icon_slicing_dash_hallali"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_breakthrough.png" id="icon_slicing_dash_breakthrough"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_fallout.png" id="icon_slicing_dash_fallout"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/slicing_dash_chasse.png" id="icon_slicing_dash_chasse"]
 
 [sub_resource type="Resource" id="L_garde_de_fer_0"]
 script = ExtResource("4_ligne")
@@ -46,6 +130,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_momentum"
 name = "Fracas"
+icon = ExtResource("icon_heavy_strike_momentum")
 description = "La frappe porte plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -61,6 +146,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_weight"
 name = "Pesée"
+icon = ExtResource("icon_heavy_strike_weight")
 description = "Le coup tombe plus souvent juste : sa chance de coup critique est accrue."
 position = Vector2i(1, 0)
 points_max = 3
@@ -75,6 +161,7 @@ value_per_point = 40.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_ram"
 name = "Coup de bélier"
+icon = ExtResource("icon_heavy_strike_ram")
 description = "Chaque ennemi touché est repoussé loin de vous."
 position = Vector2i(0, 1)
 points_max = 4
@@ -89,6 +176,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_fury"
 name = "Hargne"
+icon = ExtResource("icon_heavy_strike_fury")
 description = "Chaque ennemi touché vous rend des PV."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -101,6 +189,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_heavy_strike_fury_0")])
 script = ExtResource("3_noeud")
 id = "heavy_strike_burning_blade"
 name = "Lame ardente"
+icon = ExtResource("icon_heavy_strike_burning_blade")
 description = "La lame s'embrase : la frappe devient un coup de feu, qui embrase au lieu de faire saigner."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -127,6 +216,7 @@ value_per_point = -15.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_shatter"
 name = "Brise-sol"
+icon = ExtResource("icon_heavy_strike_shatter")
 description = "La lame s'abat sur le sol devant vous et frappe tout ce qui se tient autour du point d'impact, une seule fois ; le recul part du centre. En échange, chaque coup porte un peu moins."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -148,6 +238,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_crater"
 name = "Cratère"
+icon = ExtResource("icon_heavy_strike_crater")
 description = "Le Brise-sol frappe un cercle plus large."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -165,6 +256,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_sure_strike"
 name = "Coup sûr"
+icon = ExtResource("icon_heavy_strike_sure_strike")
 description = "Une Frappe lourde sur {sur_tous} est critique à coup sûr, et son gel d'impact dure le double."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -182,6 +274,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_maul"
 name = "Coup de massue"
+icon = ExtResource("icon_heavy_strike_maul")
 description = "Le coup sûr frappe aussi tout ce qui se tient autour de sa cible, dans un cercle de {rayon_massue} px, à {part_massue} % du coup."
 position = Vector2i(3, 0)
 parents = Dictionary[String, int]({
@@ -199,6 +292,7 @@ value_per_point = 6.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_breach"
 name = "Brèche"
+icon = ExtResource("icon_heavy_strike_breach")
 description = "L'armure cède : chaque ennemi frappé est fêlé pendant {duree_fele} s, et tous vos coups d'arme le frappent plus fort."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -216,6 +310,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_collision"
 name = "Collision"
+icon = ExtResource("icon_heavy_strike_collision")
 description = "Un ennemi repoussé par la frappe qui en heurte un autre, droit devant lui, les blesse tous les deux d'une part du coup."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -233,6 +328,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_skittles"
 name = "Quilles"
+icon = ExtResource("icon_heavy_strike_skittles")
 description = "L'ennemi heurté par une Collision est repoussé à son tour, et peut en heurter un troisième."
 position = Vector2i(2, 1)
 parents = Dictionary[String, int]({
@@ -250,6 +346,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_tremor"
 name = "Tremblement"
+icon = ExtResource("icon_heavy_strike_tremor")
 description = "Le Brise-sol frappe un second anneau, au double de son rayon, {ecart_tremblement} s après le premier."
 position = Vector2i(-1, 2)
 parents = Dictionary[String, int]({
@@ -267,6 +364,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "heavy_strike_red_iron"
 name = "Fer rouge"
+icon = ExtResource("icon_heavy_strike_red_iron")
 description = "La Lame ardente rend du temps à l'embrasement de l'ennemi qu'elle frappe, jusqu'à sa pleine durée."
 position = Vector2i(-3, 0)
 parents = Dictionary[String, int]({
@@ -292,6 +390,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "cross_slash_edge"
 name = "Taille"
+icon = ExtResource("icon_cross_slash_edge")
 description = "Les deux coups portent plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -306,6 +405,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "cross_slash_gash"
 name = "Entaille"
+icon = ExtResource("icon_cross_slash_gash")
 description = "Augmente la chance que les coups fassent saigner ce qu'ils touchent."
 position = Vector2i(1, 0)
 points_max = 3
@@ -321,6 +421,7 @@ value_max_per_point = 6.0
 script = ExtResource("3_noeud")
 id = "cross_slash_thrust"
 name = "Estoc"
+icon = ExtResource("icon_cross_slash_thrust")
 description = "Chaque coup ajoute des dégâts physiques — de quoi faire saigner plus fort."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -339,6 +440,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "cross_slash_open_wound"
 name = "Plaie ouverte"
+icon = ExtResource("icon_cross_slash_open_wound")
 description = "Les coups frappent plus fort un ennemi qui saigne."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -356,6 +458,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "cross_slash_haemorrhage"
 name = "Hémorragie"
+icon = ExtResource("icon_cross_slash_haemorrhage")
 description = "Le saignement que posent les coups saigne plus vite."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -373,6 +476,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "cross_slash_blood_spray"
 name = "Gerbe de sang"
+icon = ExtResource("icon_cross_slash_blood_spray")
 description = "Un ennemi tué par le Coup en croix explose s'il saigne : {part_tue} % des dégâts d'un coup, dans ce rayon autour de lui."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -385,6 +489,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_cross_slash_blood_spray_0"
 script = ExtResource("3_noeud")
 id = "cross_slash_holy_blade"
 name = "Lame sainte"
+icon = ExtResource("icon_cross_slash_holy_blade")
 description = "La lame devient sacrée : les coups bénissent au lieu de faire saigner, et ce que l'arbre donne au saignement ne sert plus."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -404,6 +509,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cross_slash_laceration"
 name = "Lacération"
+icon = ExtResource("icon_cross_slash_laceration")
 description = "Chaque coup sur un ennemi qui saigne rend du temps à son saignement, jusqu'à sa pleine durée."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -421,6 +527,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "cross_slash_riposte"
 name = "Riposte"
+icon = ExtResource("icon_cross_slash_riposte")
 description = "Un coup reçu arme la riposte : le Coup en croix lancé dans les {fenetre_riposte} s qui suivent frappe plus fort."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -438,6 +545,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cross_slash_tierce"
 name = "Tierce"
+icon = ExtResource("icon_cross_slash_tierce")
 description = "La croix a un troisième temps : un estoc droit devant, qui frappe l'ennemi le plus proche sur sa ligne, à {part_tierce} % du coup."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -455,6 +563,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cross_slash_quarte"
 name = "Quarte"
+icon = ExtResource("icon_cross_slash_quarte")
 description = "L'estoc de la Tierce traverse : il frappe tout ce qui se tient sur sa ligne, {allonge_quarte} px plus loin."
 position = Vector2i(-3, -1)
 parents = Dictionary[String, int]({
@@ -472,6 +581,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "cross_slash_bloodletting"
 name = "Saignée"
+icon = ExtResource("icon_cross_slash_bloodletting")
 description = "Le second coup vide le saignement de ce qu'il frappe : tout ce qui restait à saigner tombe d'un coup, plus fort."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
@@ -489,6 +599,7 @@ value_per_point = 5.0
 script = ExtResource("3_noeud")
 id = "cross_slash_transfusion"
 name = "Transfusion"
+icon = ExtResource("icon_cross_slash_transfusion")
 description = "Ce que vide la Saignée vous rend une part de ses dégâts en PV."
 position = Vector2i(2, -2)
 parents = Dictionary[String, int]({
@@ -506,6 +617,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cross_slash_splash"
 name = "Éclaboussure"
+icon = ExtResource("icon_cross_slash_splash")
 description = "Ce que touche la Gerbe de sang saigne à coup sûr."
 position = Vector2i(3, -1)
 parents = Dictionary[String, int]({
@@ -523,6 +635,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cross_slash_ordeal"
 name = "Ordalie"
+icon = ExtResource("icon_cross_slash_ordeal")
 description = "Sous la Lame sainte, le second coup bénit à coup sûr ce qu'il frappe."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -548,6 +661,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_sharpness"
 name = "Tranchant"
+icon = ExtResource("icon_spiral_sword_sharpness")
 description = "Les épées frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -562,6 +676,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_round"
 name = "Ronde"
+icon = ExtResource("icon_spiral_sword_round")
 description = "Une épée de plus peut tourner autour de vous."
 position = Vector2i(1, 0)
 points_max = 3
@@ -577,6 +692,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_endurance"
 name = "Endurance"
+icon = ExtResource("icon_spiral_sword_endurance")
 description = "Les épées tournent plus longtemps."
 position = Vector2i(0, 1)
 points_max = 4
@@ -591,6 +707,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_ward"
 name = "Bouclier de lames"
+icon = ExtResource("icon_spiral_sword_ward")
 description = "Tant qu'elles tournent, chaque épée vous retire une part des dégâts subis."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -609,6 +726,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_wide"
 name = "Orbite large"
+icon = ExtResource("icon_spiral_sword_wide")
 description = "Les épées tournent plus loin de vous."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -632,6 +750,7 @@ value_per_point = -30.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_volley"
 name = "Volée d'épées"
+icon = ExtResource("icon_spiral_sword_volley")
 description = "Au bout de sa durée, chaque épée quitte la ronde et file vers l'ennemi le plus proche, en traversant tout ce qu'elle croise jusqu'à cette portée. En échange, elles tournent moins longtemps."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -650,6 +769,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_arsenal"
 name = "Arsenal"
+icon = ExtResource("icon_spiral_sword_arsenal")
 description = "Chaque lancer fait naître une épée de plus par point, d'un coup — dans la limite des épées qui peuvent tourner ensemble."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -667,6 +787,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_waltz"
 name = "Valse"
+icon = ExtResource("icon_spiral_sword_waltz")
 description = "Les épées tournent plus vite : elles croisent plus d'ennemis."
 position = Vector2i(-1, 1)
 points_max = 3
@@ -681,6 +802,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_honing"
 name = "Affûtage"
+icon = ExtResource("icon_spiral_sword_honing")
 description = "Chaque ennemi qu'une épée coupe l'affûte : ses coups suivants portent plus fort, jusqu'à {affutage_max} fois, tant qu'elle tourne."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -698,6 +820,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_parry"
 name = "Parade"
+icon = ExtResource("icon_spiral_sword_parry")
 description = "Une épée qui croise un trait ennemi le brise, puis attend {attente_parade} s, divisées par les points du nœud."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -715,6 +838,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_breakwater"
 name = "Brise-lames"
+icon = ExtResource("icon_spiral_sword_breakwater")
 description = "Un coup qui devrait vous toucher brise une épée de la ronde à sa place, et ne fait rien. Une fois toutes les {attente_brise_lames} s."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -732,6 +856,7 @@ value_per_point = 40.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_grapeshot"
 name = "Grenaille"
+icon = ExtResource("icon_spiral_sword_grapeshot")
 description = "L'épée brisée par le Brise-lames éclate autour de vous, dans un cercle de {rayon_grenaille} px."
 position = Vector2i(3, -1)
 parents = Dictionary[String, int]({
@@ -749,6 +874,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_escort"
 name = "Escorte"
+icon = ExtResource("icon_spiral_sword_escort")
 description = "Chaque Frappe lourde ou Coup en croix qui touche envoie une épée de la ronde frapper sa cible, à une part de son coup."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -766,6 +892,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "spiral_sword_rally"
 name = "Ralliement"
+icon = ExtResource("icon_spiral_sword_rally")
 description = "Les épées de la Volée reviennent au bout de leur course tourner {vie_ralliement} s autour de vous, dans la limite de la ronde."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -791,6 +918,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "wave_slash_edge"
 name = "Fil de l'arc"
+icon = ExtResource("icon_wave_slash_edge")
 description = "La vague frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -806,6 +934,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "wave_slash_reach"
 name = "Course"
+icon = ExtResource("icon_wave_slash_reach")
 description = "La vague vole plus longtemps, donc plus loin."
 position = Vector2i(1, 0)
 points_max = 4
@@ -821,6 +950,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "wave_slash_breadth"
 name = "Grand arc"
+icon = ExtResource("icon_wave_slash_breadth")
 description = "La vague est plus large."
 position = Vector2i(0, 1)
 points_max = 4
@@ -835,6 +965,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "wave_slash_twins"
 name = "Vagues jumelles"
+icon = ExtResource("icon_wave_slash_twins")
 description = "Une vague de plus par point, en éventail."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -852,6 +983,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "wave_slash_furrow"
 name = "Sillon d'acier"
+icon = ExtResource("icon_wave_slash_furrow")
 description = "Au bout de sa course, la vague laisse derrière elle un couloir tranchant qui frappe ce qui s'y tient : {part_sol} % des dégâts toutes les {rythme_sol} s."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -871,6 +1003,7 @@ value_per_point = -20.0
 script = ExtResource("3_noeud")
 id = "wave_slash_backwash"
 name = "Ressac"
+icon = ExtResource("icon_wave_slash_backwash")
 description = "Au bout de sa course, la vague revient vers vous et mord une seconde fois ce qu'elle traverse. En échange, chaque morsure porte moins."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -892,6 +1025,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "wave_slash_restraint"
 name = "Retenue"
+icon = ExtResource("icon_wave_slash_restraint")
 description = "La vague coûte moins de mana."
 position = Vector2i(-1, 1)
 points_max = 3
@@ -906,6 +1040,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "wave_slash_billow"
 name = "Houle"
+icon = ExtResource("icon_wave_slash_billow")
 description = "La vague grossit en volant : au bout de sa course, elle est plus large et frappe plus fort."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -923,6 +1058,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "wave_slash_prow"
 name = "Proue"
+icon = ExtResource("icon_wave_slash_prow")
 description = "Le premier ennemi que mord la vague prend davantage."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -940,6 +1076,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "wave_slash_undertow"
 name = "Lame de fond"
+icon = ExtResource("icon_wave_slash_undertow")
 description = "La vague emporte ce qu'elle mord : les ennemis sont traînés avec elle jusqu'au bout de sa course."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -958,6 +1095,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "wave_slash_breakers"
 name = "Brisants"
+icon = ExtResource("icon_wave_slash_breakers")
 description = "Au bout de sa course, la Lame de fond jette ce qu'elle emporte : chacun prend une part du coup."
 position = Vector2i(3, 0)
 parents = Dictionary[String, int]({
@@ -975,6 +1113,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "wave_slash_to_and_fro"
 name = "Va-et-vient"
+icon = ExtResource("icon_wave_slash_to_and_fro")
 description = "Revenue à vous, la vague du Ressac repart une troisième fois vers la visée, à {part_va_et_vient} % du coup."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -992,6 +1131,7 @@ value_per_point = 50.0
 script = ExtResource("3_noeud")
 id = "wave_slash_harrow"
 name = "Herse"
+icon = ExtResource("icon_wave_slash_harrow")
 description = "Ce qui se tient dans le Sillon d'acier saigne plus souvent."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -1017,6 +1157,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "cyclone_reaping"
 name = "Fauchage"
+icon = ExtResource("icon_cyclone_reaping")
 description = "Le tour frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -1032,6 +1173,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "cyclone_span"
 name = "Envergure"
+icon = ExtResource("icon_cyclone_span")
 description = "Le tour fauche plus large."
 position = Vector2i(1, 0)
 points_max = 3
@@ -1047,6 +1189,7 @@ value_per_point = -15.0
 script = ExtResource("3_noeud")
 id = "cyclone_long_breath"
 name = "Souffle long"
+icon = ExtResource("icon_cyclone_long_breath")
 description = "Le tour draine moins de mana."
 position = Vector2i(-1, 1)
 points_max = 4
@@ -1062,6 +1205,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "cyclone_whirl"
 name = "Moulinet"
+icon = ExtResource("icon_cyclone_whirl")
 description = "Le tour frappe plus souvent."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -1079,6 +1223,7 @@ value_per_point = 40.0
 script = ExtResource("3_noeud")
 id = "cyclone_vortex"
 name = "Tourbillon"
+icon = ExtResource("icon_cyclone_vortex")
 description = "Chaque frappe du tour attire les ennemis vers vous."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -1096,6 +1241,7 @@ value_per_point = 0.4
 script = ExtResource("3_noeud")
 id = "cyclone_hungry"
 name = "Fauche vorace"
+icon = ExtResource("icon_cyclone_hungry")
 description = "Chaque ennemi pris dans une frappe du tour vous rend du mana : au cœur d'un paquet, le tour s'entretient de lui-même."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -1120,6 +1266,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "cyclone_steadfast"
 name = "Pied ferme"
+icon = ExtResource("icon_cyclone_steadfast")
 description = "Tant que le tour tourne, vous subissez moins de dégâts, mais avancez moins vite."
 position = Vector2i(-2, 1)
 parents = Dictionary[String, int]({
@@ -1137,6 +1284,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "cyclone_vertigo"
 name = "Vertige"
+icon = ExtResource("icon_cyclone_vertigo")
 description = "Le tour s'emballe : chaque seconde tournée rapproche ses frappes, {vertige_max} s au plus."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -1154,6 +1302,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cyclone_dervishes"
 name = "Derviches"
+icon = ExtResource("icon_cyclone_dervishes")
 description = "Toutes les {rythme_derviche} s, le tour lâche un petit derviche qui file droit devant vous et fauche ce qu'il croise, à {part_derviche} % du coup."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -1172,6 +1321,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cyclone_sirocco"
 name = "Sirocco"
+icon = ExtResource("icon_cyclone_sirocco")
 description = "Un derviche de plus par point, en éventail."
 position = Vector2i(0, -2)
 parents = Dictionary[String, int]({
@@ -1189,6 +1339,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cyclone_waterspout"
 name = "Trombe"
+icon = ExtResource("icon_cyclone_waterspout")
 description = "Les derviches s'incurvent vers l'ennemi le plus proche."
 position = Vector2i(1, -2)
 parents = Dictionary[String, int]({
@@ -1206,6 +1357,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "cyclone_denouement"
 name = "Dénouement"
+icon = ExtResource("icon_cyclone_denouement")
 description = "Relâché, le tour frappe une dernière fois son cercle, d'autant plus fort qu'il a tourné longtemps : {denouement_max} s au plus."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
@@ -1223,6 +1375,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "cyclone_gust"
 name = "Coup de vent"
+icon = ExtResource("icon_cyclone_gust")
 description = "La dernière frappe du Dénouement repousse loin tout ce qu'elle touche."
 position = Vector2i(0, 2)
 parents = Dictionary[String, int]({
@@ -1240,6 +1393,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "cyclone_mad_round"
 name = "Ronde folle"
+icon = ExtResource("icon_cyclone_mad_round")
 description = "Tant que le Cyclone tourne, les épées de l'Épée spirale tournent deux fois plus vite et frappent plus fort."
 position = Vector2i(-1, -2)
 parents = Dictionary[String, int]({
@@ -1265,6 +1419,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_edge"
 name = "Fil tranchant"
+icon = ExtResource("icon_slicing_dash_edge")
 description = "Le couloir de la ruée frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -1280,6 +1435,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_swath"
 name = "Andain"
+icon = ExtResource("icon_slicing_dash_swath")
 description = "Le couloir de la ruée est plus large."
 position = Vector2i(1, 0)
 points_max = 3
@@ -1295,6 +1451,7 @@ value_per_point = -8.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_charge"
 name = "Charge"
+icon = ExtResource("icon_slicing_dash_charge")
 description = "La ruée se recharge plus vite."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -1313,6 +1470,7 @@ value_per_point = 100.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_lingering"
 name = "Lame traînante"
+icon = ExtResource("icon_slicing_dash_lingering")
 description = "Le couloir reste plus longtemps, et frappe une fois de plus par point."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -1330,6 +1488,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_impact"
 name = "Choc d'arrivée"
+icon = ExtResource("icon_slicing_dash_impact")
 description = "À l'arrivée, la ruée frappe tout ce qui se tient autour de vous, dans ce rayon."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -1354,6 +1513,7 @@ value_per_point = 500.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_flow"
 name = "Enchaînement"
+icon = ExtResource("icon_slicing_dash_flow")
 description = "La ruée n'a plus de recharge, mais elle prend bien plus de temps à lancer : on enchaîne les ruées à la cadence du geste."
 position = Vector2i(-2, -1)
 parents = Dictionary[String, int]({
@@ -1377,6 +1537,7 @@ value_per_point = 40.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_war_leap"
 name = "Saut de guerre"
+icon = ExtResource("icon_slicing_dash_war_leap")
 description = "La ruée devient un bond : plus de couloir, mais l'arrivée frappe tout autour de vous. En échange, le geste est plus long."
 position = Vector2i(0, 1)
 parents = Dictionary[String, int]({
@@ -1397,6 +1558,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_vault"
 name = "Voltige"
+icon = ExtResource("icon_slicing_dash_vault")
 description = "À l'arrivée de la ruée, aucun coup ne vous touche pendant {voltige} s."
 position = Vector2i(0, -1)
 points_max = 1
@@ -1411,6 +1573,7 @@ value_per_point = 50.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_hamstring"
 name = "Coupe-jarret"
+icon = ExtResource("icon_slicing_dash_hamstring")
 description = "La ruée fait saigner plus souvent, son couloir comme son choc d'arrivée."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -1428,6 +1591,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_relaunch"
 name = "Relance"
+icon = ExtResource("icon_slicing_dash_relaunch")
 description = "Un ennemi tué par la ruée la recharge sur-le-champ."
 position = Vector2i(-1, -2)
 parents = Dictionary[String, int]({
@@ -1445,6 +1609,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_hallali"
 name = "Hallali"
+icon = ExtResource("icon_slicing_dash_hallali")
 description = "Chaque Relance d'affilée fait frapper la ruée suivante plus fort, {hallali_max} fois au plus ; une ruée sans tué remet le compte à zéro."
 position = Vector2i(-2, -2)
 parents = Dictionary[String, int]({
@@ -1462,6 +1627,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_breakthrough"
 name = "Trouée"
+icon = ExtResource("icon_slicing_dash_breakthrough")
 description = "Chaque ennemi traversé par la ruée renforce le Choc d'arrivée."
 position = Vector2i(2, 1)
 parents = Dictionary[String, int]({
@@ -1479,6 +1645,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_fallout"
 name = "Retombée"
+icon = ExtResource("icon_slicing_dash_fallout")
 description = "La réception du Saut de guerre assomme ce qu'elle frappe : ni marche ni attaque pendant {assomme} s, la moitié pour une élite."
 position = Vector2i(0, 2)
 parents = Dictionary[String, int]({
@@ -1496,6 +1663,7 @@ value_per_point = 10.0
 script = ExtResource("3_noeud")
 id = "slicing_dash_chasse"
 name = "Pas chassé"
+icon = ExtResource("icon_slicing_dash_chasse")
 description = "Une ruée lancée moins de {fenetre_chasse} s après la précédente frappe plus fort, {chasse_max} fois d'affilée au plus."
 position = Vector2i(-3, -1)
 parents = Dictionary[String, int]({

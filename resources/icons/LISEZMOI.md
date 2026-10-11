@@ -215,12 +215,17 @@ les autres applications dont 4,9 Go pour `QmlRenderer`. Un redémarrage de Windo
 - **une créature demandée sort en gobelin** : à la Porte pourrissante, la moitié de l'arbre
   sortait en petit monstre vert, tous pareils. Elle ne reste que là où elle est le sujet ;
   ailleurs, un objet ou une bête qui dit le nœud (un poisson-globe, une truffe) ;
+- **un croissant seul sort en lune** (jalon 46) : trois nœuds de la Vague tranchante étaient la
+  même lune. Il ne reste que là où il dit le geste (deux, un petit et un grand, une boucle) ;
+  ailleurs, un objet — une faucille, une longue-vue, un éventail ;
+- **un casque demandé sort avec un visage dedans** (jalon 46), une ruée avec son chevalier :
+  « empty », « no face, no person » les vident ;
 - **un nuage se demande clair et isolé** (« pale grey-white », « no sky, no ground, no
   horizon ») : sombre, Qwen le pose dans un ciel violet à l'horizon, que le détourage ne
   reconnaît pas, et il se fond dans le fond.
 
 **Une nature** autre que le feu se dit dans la ligne du nœud, `{"nature": "cold"}` ou
-`"necrotic"` ou `"lightning"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
+`"necrotic"`, `"lightning"`, `"holy"` ou `"physical"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
 près la même chose qu'un autre en reprend le tirage**, `{"from": "fireball_wide_blast"}` —
 l'utilisateur préfère reprendre que refaire ; il est réduit au côté de son propre rôle.
 Au Serpent : la Queue de flammes reprend la Déflagration, la Gerbe la Double langue, la
@@ -265,6 +270,11 @@ La nécromancie (jalon 45) : 86 nœuds, sans reprise, et ses six icônes de comp
 en Qwen (`nature: necrotic`), choisis arbre par arbre (`Bureau\hns-captures-noeuds-necrose\`,
 01 à 18). Trois restent faibles, gardés : l'Éboulis d'os (un tas), les Rampants véloces (un
 cafard) et les Ronces (une couronne d'épines sombre).
+
+Le chevalier (jalon 46) : 84 nœuds sans reprise, palette `physical` (acier, bronze, rouge sang,
+fond ardoise) ; la Lame ardente et ses suites en `fire`, la Lame sainte et l'Ordalie en `holy`. Ses six icônes de compétence passent en
+Qwen. Choisis arbre par arbre (`Bureau\hns-captures-noeuds-chevalier\`). Trois restent faibles,
+gardés : le Tremblement (un gong), le Fer rouge (un fer à cheval sur l'enclume) et l'Andain.
 
 
 ## Icônes d'objets

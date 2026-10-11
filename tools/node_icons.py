@@ -41,6 +41,8 @@ NATURES = {
     "cold": ("icy blues and white", "dark navy blue", (14, 22, 48)),
     "necrotic": ("sickly greens and bone white", "dark murky green", (18, 32, 16)),
     "lightning": ("electric violets and white", "dark violet", (30, 16, 46)),
+    "holy": ("radiant golds and white", "dark plum", (34, 18, 36)),
+    "physical": ("steel greys, silver white, warm bronze and blood red", "dark slate blue", (20, 26, 40)),
 }
 # Ecart de couleur en deca duquel un pixel qui touche le bord est du fond : Qwen pose un
 # leger degrade, que 0,16 avale sans manger le contour noir.

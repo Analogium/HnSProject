@@ -1318,5 +1318,341 @@
   "advanced_necrosis_revenant": [
     "A ghostly green flame rising out of an open grave.",
     777, "suite", {"nature": "necrotic"}
+  ],
+  "heavy_strike_momentum": [
+    "A heavy steel war hammer head slamming down, a burst of thick white impact lines under it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "heavy_strike_weight": [
+    "A shiny bronze balance scale with two round pans, the left pan pulled down low by a heavy black iron weight.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "heavy_strike_ram": [
+    "A bronze battering ram head shaped like a ram's head with big curled horns, facing right.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "heavy_strike_fury": [
+    "A clenched steel gauntlet fist squeezing a glowing red heart.",
+    777, "major", {"nature": "physical"}
+  ],
+  "heavy_strike_burning_blade": [
+    "A steel sword pointing up, its whole blade wrapped in bright orange flames.",
+    1337, "major", {"nature": "fire"}
+  ],
+  "heavy_strike_shatter": [
+    "A big steel sword stabbed point-down into cracked brown ground, chunks of rock flying up around it.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "heavy_strike_crater": [
+    "A big round hole smashed into a grey stone tile floor, seen from above, broken tiles and cracks around its rim.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "heavy_strike_sure_strike": [
+    "A steel arrowhead stuck dead center in a red and white bullseye target.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "heavy_strike_maul": [
+    "A heavy round iron mace head covered in short thick spikes, on a short wooden handle.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "heavy_strike_breach": [
+    "A steel kite shield split in two by a deep jagged crack down its middle.",
+    777, "major", {"nature": "physical"}
+  ],
+  "heavy_strike_collision": [
+    "Two round bronze shields crashing into each other edge to edge, a big bright yellow-white impact star between them.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "heavy_strike_skittles": [
+    "A heavy black bowling ball knocking over white wooden bowling pins that tumble to the right.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "heavy_strike_tremor": [
+    "A big round bronze gong hanging from a dark wooden frame, two thick curved vibration lines on each side of it.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "heavy_strike_red_iron": [
+    "A glowing orange-red hot iron horseshoe lying on a black iron anvil.",
+    1337, "suite", {"nature": "fire"}
+  ],
+  "cross_slash_edge": [
+    "A sharp steel sword blade lying diagonally, a bright white glint sparkle on its cutting edge.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "cross_slash_gash": [
+    "Three parallel diagonal red slash wounds like claw marks, blood dripping down from them.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "cross_slash_thrust": [
+    "A heavy steel spearhead pointing up, sharp and wide, on a short wooden shaft.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "cross_slash_open_wound": [
+    "A white cloth bandage roll stained with a big red blood spot.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "cross_slash_haemorrhage": [
+    "A big red drop of blood falling fast, thick white speed lines streaking above it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "cross_slash_blood_spray": [
+    "A bone-white skull bursting apart in a big red blood explosion.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "cross_slash_holy_blade": [
+    "A steel sword pointing up, its blade glowing radiant gold, a bright golden halo ring around its hilt.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "cross_slash_laceration": [
+    "A bronze hourglass whose falling sand is bright red blood.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "cross_slash_riposte": [
+    "A round bronze buckler, a thick curved white arrow bouncing back off it to the left.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "cross_slash_tierce": [
+    "A steel sword pointing straight to the right, a bright white four-pointed star bursting at its tip.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "cross_slash_quarte": [
+    "A long thin steel sword pointing to the right, skewering two round red apples in a row on its blade.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "cross_slash_bloodletting": [
+    "A glass flask tipped over on its side, pouring out a stream of red blood.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "cross_slash_transfusion": [
+    "A glass flask pouring red blood into a big red heart.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "cross_slash_splash": [
+    "A red blood splatter stain seen from above, splashed droplets scattered around a central splotch.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "cross_slash_ordeal": [
+    "A white wax seal stamped with a radiant golden sun emblem.",
+    1337, "suite", {"nature": "holy"}
+  ],
+  "spiral_sword_sharpness": [
+    "A broad steel axe blade with a gleaming sharp white cutting edge.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "spiral_sword_round": [
+    "A steel sword pointing up, a big thick white plus sign beside it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "spiral_sword_endurance": [
+    "A round bronze pocket watch whose hand is a tiny steel sword.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "spiral_sword_ward": [
+    "A round steel shield whose rim is made of many short sword blades fanned out like sun rays.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_wide": [
+    "A bronze drawing compass opened wide, drawing a big thick white circle.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "spiral_sword_volley": [
+    "Three steel swords flying to the right in parallel, thick white speed lines behind them.",
+    777, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_arsenal": [
+    "A wooden weapon rack holding four upright steel swords side by side.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_waltz": [
+    "A steel sword spinning fast, thick white circular motion blur arcs around it.",
+    777, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_honing": [
+    "A grey whetstone sharpening a steel sword blade, bright orange sparks flying.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_parry": [
+    "A glowing purple magic orb shattering into pieces against the edge of one upright steel sword blade.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_breakwater": [
+    "A grey stone breakwater wall, a big white wave crashing and breaking against it.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "spiral_sword_grapeshot": [
+    "Sharp grey metal shards bursting outward in a circle from a bright white flash at the center.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "spiral_sword_escort": [
+    "A heavy steel war hammer with a small steel sword flying beside it, both pointing to the right.",
+    777, "major", {"nature": "physical"}
+  ],
+  "spiral_sword_rally": [
+    "A steel sword flying in a U-turn, a thick white curved arrow showing it coming back.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "wave_slash_edge": [
+    "A curved steel sickle with a short wooden handle, its blade gleaming white.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "wave_slash_reach": [
+    "A long bronze spyglass telescope fully extended, pointing to the right.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "wave_slash_breadth": [
+    "A wide bronze and white folding hand fan, opened fully into a half circle.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "wave_slash_twins": [
+    "Two white steel crescent arcs flying to the right side by side, spreading apart in a fan.",
+    777, "major", {"nature": "physical"}
+  ],
+  "wave_slash_furrow": [
+    "A long straight furrow cut into brown ground, short steel blades sticking up along it.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "wave_slash_backwash": [
+    "A white steel crescent arc, a thick curved arrow looping back from it to the left.",
+    777, "major", {"nature": "physical"}
+  ],
+  "wave_slash_restraint": [
+    "A small round blue mana potion bottle with a cork, only half full.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "wave_slash_billow": [
+    "A small white steel crescent arc on the left and a much bigger one on the right, growing as it flies.",
+    777, "major", {"nature": "physical"}
+  ],
+  "wave_slash_prow": [
+    "The pointed carved wooden prow of a ship facing right, a steel blade fixed to its tip.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "wave_slash_undertow": [
+    "A heavy black iron anchor dragged to the right by a thick rope.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "wave_slash_breakers": [
+    "A wooden catapult throwing a round grey rock to the right.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "wave_slash_to_and_fro": [
+    "A thick white curved double-headed arrow, pointing both left and right.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "wave_slash_harrow": [
+    "An iron portcullis gate with sharp spikes at its bottom, red blood dripping from the spikes.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "cyclone_reaping": [
+    "Three tall golden wheat stalks cut through by one thick horizontal white slash line.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "cyclone_span": [
+    "A pair of large white feathered wings spread wide open, nothing between them.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "cyclone_long_breath": [
+    "A pale blue conch seashell, a long thin blue breath swirl coming out of it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "cyclone_whirl": [
+    "A wooden windmill with four white sails spinning fast, curved motion lines around the sails.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "cyclone_vortex": [
+    "A big red and steel horseshoe magnet pulling three small grey rocks toward it.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "cyclone_hungry": [
+    "A pair of open steel jaws biting into a glowing blue mana crystal.",
+    777, "major", {"nature": "physical"}
+  ],
+  "cyclone_steadfast": [
+    "A heavy steel knight boot planted firmly on the ground, small cracks around it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "cyclone_vertigo": [
+    "A thick black and white hypnotic spiral swirl.",
+    777, "major", {"nature": "physical"}
+  ],
+  "cyclone_dervishes": [
+    "A wooden spinning top spinning on its tip, a sharp steel blade ring around its rim.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "cyclone_sirocco": [
+    "A swirling orange desert sandstorm whirl blowing to the right, sand grains flying from it.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "cyclone_waterspout": [
+    "A tall dark grey tornado bending sideways toward a small red and white target on its right.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "cyclone_denouement": [
+    "A coiled steel spring bursting open, a bright white flash where it is released.",
+    777, "major", {"nature": "physical"}
+  ],
+  "cyclone_gust": [
+    "Thick white curling wind gust lines blowing hard to the right, two green leaves carried along.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "cyclone_mad_round": [
+    "A small bronze carousel merry-go-round spinning fast, steel swords standing in place of its horses.",
+    777, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_edge": [
+    "A round steel circular saw blade with sharp gleaming white teeth.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "slicing_dash_swath": [
+    "A wooden hay rake gathering a big heap of freshly cut green grass.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "slicing_dash_charge": [
+    "A loaded bronze and wood crossbow, cocked, its bolt ready, facing right.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "slicing_dash_lingering": [
+    "A steel sword blade leaving a long glowing white trail hanging in the air behind it.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "slicing_dash_impact": [
+    "A big jagged white and yellow impact starburst, small rocks flying out from its center.",
+    777, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_flow": [
+    "Three big thick steel chain links linked together diagonally, filling the frame.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "slicing_dash_war_leap": [
+    "A green grasshopper leaping in a high arc to the right, a dotted arc trail behind it.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_vault": [
+    "A white feather floating in the air, two arrows passing by on both sides without touching it.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_hamstring": [
+    "A steel dagger slicing through a thick red rope, the rope fraying apart.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_relaunch": [
+    "A bone-white skull inside a thick white circular reload arrow.",
+    777, "major", {"nature": "physical"}
+  ],
+  "slicing_dash_hallali": [
+    "A curled brass hunting horn, thick sound waves coming out of its bell.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "slicing_dash_breakthrough": [
+    "A wooden palisade wall with a big hole smashed through its middle.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "slicing_dash_fallout": [
+    "An empty dented steel helmet lying on the ground, three small gold stars circling above it, no face, no person.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "slicing_dash_chasse": [
+    "Two red dance shoes, one stepping quickly in front of the other, short motion lines.",
+    777, "major", {"nature": "physical"}
   ]
 }
