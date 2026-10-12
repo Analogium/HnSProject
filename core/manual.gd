@@ -54,11 +54,12 @@ func points_of(identifier: String) -> int:
 
 
 ## Ce que les cases et les passifs ont pris au livre : un nœud paie sur son arbre.
-## Sans archétype, aucun identifiant n'est reconnu comme nœud.
+## Sans archétype, aucun identifiant n'est reconnu comme nœud. Un identifiant que le manuel
+## ne connaît plus — la Frappe sacrée, partie au jalon 48 — rend ses points au livre.
 func points_spent(archetype: ManualArchetype) -> int:
 	var total := 0
 	for id in points:
-		if archetype == null or archetype.node_of(id) == null:
+		if archetype == null or (archetype.node_of(id) == null and archetype.knows(id)):
 			total += int(points[id])
 	return total
 

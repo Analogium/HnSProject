@@ -56,6 +56,9 @@ enum Shape {
 	TURRET,
 	# Jalon 44 : l'Orbe gelée.
 	FROST_ORB,
+	# Jalon 48 : le Faisceau, le Marteau béni ; les Chaînes du jugement et le Bouc émissaire,
+	# qui remplacent la Frappe sacrée. BEAM, HOLY_CROSS et RAY n'ont plus rien derrière.
+	RAY, HAMMER, CHAINS, SCAPEGOAT,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -125,12 +128,13 @@ const KEYWORD_OF_SHAPE := {
 	Shape.RING: Keywords.AREA,
 	Shape.IMPLOSION: Keywords.AREA,
 	Shape.BREATH: Keywords.AREA,
-	# Le faisceau n'y est **pas** : une ligne n'est ni un tir ni une surface, et lui
-	# prêter `area` promettrait un affixe qui ne le servirait pas.
-	# La croix non plus : quatre lignes.
+	# Les chaînes n'y sont **pas** : leur trait n'est pas un tir, ni le partage une surface,
+	# et leur prêter un mot-clé promettrait un affixe qui ne les servirait pas.
 	Shape.PILLAR: Keywords.AREA,
 	Shape.DRIFT: Keywords.AREA,
 	Shape.PULSE: Keywords.AREA,
+	# Le marteau balaie le cercle autour du lanceur en spirale : une surface, en temps.
+	Shape.HAMMER: Keywords.AREA,
 	# Le portail déclare `area` lui-même : ce qu'il crache se bat pour le joueur, et
 	# explose.
 	Shape.SUMMON: Keywords.SUMMON,
@@ -155,11 +159,11 @@ const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE, S
 ## morts-vivants, la cible de la frappe vive — qu'un nœud rendrait orphelin.
 const TRANSFORMABLE: Array[Shape] = [
 	Shape.BOLT, Shape.BALL, Shape.COMET, Shape.CHAIN, Shape.CLOUD, Shape.SNAKE,
-	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.BEAM, Shape.PILLAR,
+	Shape.WAVE, Shape.SPIKES, Shape.NOVA, Shape.VORTEX, Shape.PILLAR,
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
-	Shape.HOLY_CROSS, Shape.DRIFT, Shape.CATALYSIS, Shape.TRIAD,
+	Shape.DRIFT, Shape.CATALYSIS, Shape.TRIAD, Shape.HAMMER, Shape.CHAINS, Shape.SCAPEGOAT,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -197,6 +201,8 @@ const IGNORED_BY_SHAPE := {
 	Shape.BOOMERANG: [SkillStats.UNDERTOW, SkillStats.BREAKERS],
 	# Le bond n'a pas de couloir à faire saigner.
 	Shape.LEAP: ["duration", "radius", SkillStats.WICK, SkillStats.HAMSTRING],
+	# Le porteur ne veut pas d'ennemis tirés vers lui.
+	Shape.SCAPEGOAT: [SkillStats.CONSTRICTION, SkillStats.SHACKLE],
 }
 
 ## Ce qu'une mécanique rend sans effet dans son arbre, comme une transformation (jalon 44) :
@@ -214,6 +220,11 @@ const SHAPE_NUMBERS := {
 	# Douze orbes par lanceur (jalon 43) : en Satellite, quarante orbes dans une meute dense
 	# frappaient quatre mille fois par seconde, et le jeu tombait à 4 img/s.
 	Shape.ORB: {"duration": 2.5, "radius": 28.0, "period": 0.33, "simultaneous": 12.0},
+	# Les Chaînes du jugement (jalon 48) : deux voisins enchaînés, 30 % de chaque coup partagé.
+	# Portés par le lancer, pour que la fiche les lise et que les Maillons et la Solidarité
+	# s'y ajoutent.
+	Shape.CHAINS: {SkillStats.LINKS: 2.0, SkillStats.SOLIDARITY: 30.0},
+	Shape.SCAPEGOAT: {SkillStats.LINKS: 2.0, SkillStats.SOLIDARITY: 30.0},
 }
 
 const HITS_PER_SHAPE := {

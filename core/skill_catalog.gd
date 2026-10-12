@@ -34,10 +34,11 @@ const ALL := [
 	preload("res://resources/skills/winter_disaster.tres"),
 	preload("res://resources/skills/frozen_orb.tres"),
 
-	preload("res://resources/skills/holy_strike.tres"),
+	preload("res://resources/skills/judgment_chains.tres"),
 	preload("res://resources/skills/sacred_pillar.tres"),
 	preload("res://resources/skills/holy_pulse.tres"),
 	preload("res://resources/skills/holy_light.tres"),
+	preload("res://resources/skills/blessed_hammer.tres"),
 
 	preload("res://resources/skills/plague.tres"),
 	preload("res://resources/skills/rise.tres"),

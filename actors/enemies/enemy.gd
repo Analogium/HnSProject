@@ -339,6 +339,12 @@ func stun(seconds: float) -> void:
 	StunMark.over(self, held)
 
 
+## Tiré par une chaîne (jalon 48) : un pas en plus du sien, qui bute sur les murs et les corps.
+func tug(motion: Vector2) -> void:
+	if not is_dead:
+		move_and_collide(motion)
+
+
 func shoved() -> bool:
 	return _shove_left > 0.0
 

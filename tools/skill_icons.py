@@ -39,7 +39,7 @@ NEG = ("text, letters, watermark, signature, blurry, photo, 3d render, realistic
 BACKGROUNDS = {"storm_dash": "dark violet", "static_electricity": "dark violet",
                "ice_spike": "dark blue", "ice_nova": "dark blue",
                "frost_tomb": "dark blue", "winter_disaster": "dark blue",
-               "holy_strike": "dark plum", "sacred_pillar": "dark plum",
+               "sacred_pillar": "dark plum",
                "holy_pulse": "dark plum", "holy_light": "dark plum",
                "plague": "dark murky green", "rise": "dark murky green",
                "toxic_unleash": "dark murky green", "rotting_gate": "dark murky green",

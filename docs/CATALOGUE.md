@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 41 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 42 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -504,21 +504,30 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
-| Frappe sacrée | sort sacré | niveau 1 | 5 | 10 mana | 0.50 s | beam · rayon 80 | 9 · 11 · 14 · 18 · 22 |
+| Chaînes du jugement | sort sacré | niveau 1 | 5 | 10 mana | 0.50 s | chains · 4.0 s · rayon 90 | 9 · 11 · 14 · 18 · 22 |
 | Pilier sacré | sort sacré | niveau 5 | 5 | 20 mana | 1.00 s | pillar · 2.0 s · rayon 32 · toutes les 0.50 s | 8 · 10 · 13 · 16 · 20 |
 | Pulsation sacrée | sort sacré | niveau 9 | 5 | 26 mana | 0.80 s · recharge 5.00 s | pulse · 5.0 s · rayon 44 · toutes les 1.00 s | 12 · 15 · 19 · 24 · 30 |
 | Lumière sacrée | sort sacré | niveau 12 | 4 | 0 mana | recharge 0.60 s | buff · draine 5 mana/s | Grâce : +6 % rés. sacré · +13 % chance de bénir |
+| Marteau béni | sort sacré | niveau 3 | 5 | 12 mana | 0.60 s | hammer · 1.2 s · rayon 70 · toutes les 0.50 s | 10 · 13 · 16 · 20 · 25 |
 | Onction | passif | niveau 2 | 4 | — | — | — | +0.4 PV/s |
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
-| Percée | Frappe sacrée | — | 5 | +12 % de dégâts amplifiés |
-| Allonge du trait | Frappe sacrée | — | 3 | +15 % de rayon accru |
-| Sanctification | Frappe sacrée | — | 4 | +15 % chance d'état |
-| Réprobation | Frappe sacrée | Percée (1) | 3 | +20 % de dégâts accrus contre les bénis |
-| Bénédiction profonde | Frappe sacrée | Sanctification (1) | 4 | +15 % effet de la bénédiction |
-| Réfraction | Frappe sacrée | Allonge du trait (1) | 2 | +1 nombre de rebonds |
-| Croix de lumière | Frappe sacrée | Percée (2) ou Réfraction (1) | 1 | -30 % de rayon réduit |
+| Réquisitoire | Chaînes du jugement | — | 5 | +12 % de dégâts amplifiés |
+| Ampleur | Chaînes du jugement | — | 3 | +15 % de rayon accru |
+| Geôle | Chaînes du jugement | — | 4 | +20 % de durée accrue |
+| Aspersion | Chaînes du jugement | — | 4 | +15 % chance d'état |
+| Maillons | Chaînes du jugement | Ampleur (1) | 3 | +1 enchaînés en plus |
+| Solidarité | Chaînes du jugement | Réquisitoire (1) | 3 | +6 % part partagée de chaque coup |
+| Resserrement | Chaînes du jugement | Geôle (1) | 2 | +20 px/s de resserrement |
+| Rupture | Chaînes du jugement | Réquisitoire (1) | 3 | +25 % dégâts de la rupture |
+| Pilori | Chaînes du jugement | Ampleur (1) | 2 | +25 px/s vers le pilier |
+| Bouc émissaire | Chaînes du jugement | Geôle (2) ou Solidarité (2) | 1 | -30 % de dégâts atténués |
+| Carcan | Chaînes du jugement | Resserrement (1) | 1 | +1 enchaîné assommé au contact |
+| Passation | Chaînes du jugement | Maillons (1) | 2 | +1 sauts des chaînes d'un mort |
+| Absoute | Chaînes du jugement | Rupture (1) | 1 | +1 rupture qui bénit à coup sûr |
+| Unisson | Chaînes du jugement | Solidarité (1) | 1 | +1 états partagés |
+| Stigmates | Chaînes du jugement | Bouc émissaire (1) | 2 | +1 % PV rendus par coup détourné |
 | Jugement | Pilier sacré | — | 5 | +12 % de dégâts amplifiés |
 | Colonne | Pilier sacré | — | 3 | +15 % de rayon accru |
 | Veille | Pilier sacré | — | 4 | +20 % de durée accrue |
@@ -526,20 +535,55 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | Appel céleste | Pilier sacré | Colonne (1) | 3 | +40 force d'aspiration |
 | Effondrement | Pilier sacré | Veille (1) | 3 | +15 rayon de l'explosion finale |
 | Pilier errant | Pilier sacré | Jugement (2) ou Veille (2) | 1 | -25 % de rayon réduit |
+| Verdict | Pilier sacré | Jugement (1) | 2 | +30 % dégâts de la première impulsion |
+| Ascension | Pilier sacré | Veille (1) | 3 | +0.2 secondes de colonne par tué |
+| Consécration | Pilier sacré | Colonne (1) | 3 | +1 % PV rendus par seconde consacrée |
+| Sanctuaire | Pilier sacré | Consécration (1) | 1 | +1 sol consacré qui bénit |
+| Triptyque | Pilier sacré | Colonne (2) ou Jugement (2) | 1 | +1 triptyque · -40 % de rayon réduit |
+| Apothéose | Pilier sacré | Effondrement (1) | 2 | +3 % dégâts d'effondrement par frappé |
+| Procession | Pilier sacré | Pilier errant (1) | 2 | +30 % vitesse du pilier errant |
 | Ferveur | Pulsation sacrée | — | 5 | +12 % de dégâts amplifiés |
 | Litanie | Pulsation sacrée | — | 4 | +20 % de durée accrue |
 | Rayonnement | Pulsation sacrée | — | 3 | +15 % de rayon accru |
 | Cantique | Pulsation sacrée | Ferveur (1) | 3 | ajoute 2 à 5 dégâts sacrés |
 | Absolution | Pulsation sacrée | Litanie (1) | 3 | +1 PV par ennemi touché |
 | Exaltation | Pulsation sacrée | Cantique (1) ou Litanie (2) | 3 | +4 % dégâts en plus par onde |
+| Antienne | Pulsation sacrée | — | 3 | -10 % de recharge réduite |
+| Égide | Pulsation sacrée | Absolution (1) | 3 | +1 % dégâts subis en moins par touché |
+| Purification | Pulsation sacrée | Litanie (1) | 2 | +20 % états subis raccourcis par onde |
+| Communion | Pulsation sacrée | Rayonnement (1) | 2 | +25 % dégâts de la communion |
+| Colère divine | Pulsation sacrée | Exaltation (1) | 1 | +1 ondes amassées |
+| Extase | Pulsation sacrée | Exaltation (1) | 2 | +20 % dégâts de la dernière onde |
+| Viatique | Pulsation sacrée | Absolution (1) | 2 | +1 mana par ennemi touché |
+| Révélation | Pulsation sacrée | Colère divine (1) | 1 | +1 colère qui bénit à coup sûr |
 | Zèle | Lumière sacrée | — | 5 | +4 % de dégâts sacrés accrus |
 | Recueillement | Lumière sacrée | — | 3 | -15 % de mana drainé réduit |
 | Sérénité | Lumière sacrée | — | 4 | -2 % dégâts subis |
 | Cuirasse de foi | Lumière sacrée | Sérénité (1) | 4 | +30 armure |
 | Allégresse | Lumière sacrée | Zèle (1) | 3 | +4 % de vitesse d'incantation accrue |
 | Auréole | Lumière sacrée | Zèle (2) ou Sérénité (2) | 3 | +20 rayon de l'auréole |
+| Pèlerin | Lumière sacrée | — | 3 | +4 % de vitesse accrue |
+| Dévotion | Lumière sacrée | Zèle (1) | 3 | +1 % dégâts sacrés par seconde allumée |
+| Intercession | Lumière sacrée | Sérénité (1) | 2 | +25 % force de l'intercession |
+| Épiphanie | Lumière sacrée | Zèle (2) ou Allégresse (1) | 1 | +1 épiphanie |
+| Gloire | Lumière sacrée | Auréole (1) | 2 | +1 % PV max frappés par la gloire |
+| Humilité | Lumière sacrée | Auréole (1) | 2 | +5 % résistance sacrée fondue |
+| Transfiguration | Lumière sacrée | Épiphanie (1) | 1 | +1 éclat de l'épiphanie |
+| Aplomb | Marteau béni | — | 5 | +12 % de dégâts amplifiés |
+| Envolée | Marteau béni | — | 3 | +15 % de rayon accru |
+| Ferrure | Marteau béni | — | 4 | +20 % de durée accrue |
+| Allègement | Marteau béni | — | 3 | -10 % de coût en mana réduit |
+| Prestesse | Marteau béni | Envolée (1) | 3 | +10 % vitesse du marteau |
+| Carillon | Marteau béni | Aplomb (1) | 2 | +1 marteaux en plus |
+| Martèlement | Marteau béni | Aplomb (1) | 3 | +10 % dégâts par coup répété |
+| Tocsin | Marteau béni | Ferrure (1) | 3 | +40 % dégâts du petit marteau au premier point, puis +10 % par point |
+| Gravitation | Marteau béni | Envolée (2) ou Prestesse (2) | 1 | +1 gravitation · -30 % de dégâts atténués |
+| Bourdon | Marteau béni | Carillon (1) | 1 | +1 bourdon |
+| Battage | Marteau béni | Martèlement (1) | 2 | +40 % dégâts du battage |
+| Branle | Marteau béni | Tocsin (1) | 1 | +1 branle |
+| Éclipse | Marteau béni | Gravitation (1) | 2 | +10 % orbite élargie par seconde |
 
-23 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+28 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Maître de la nécromancie — `manual_necrotic`
 

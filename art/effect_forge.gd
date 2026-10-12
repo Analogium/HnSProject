@@ -1106,6 +1106,25 @@ const SWORD := [
 	"....g............",
 ]
 
+## Le marteau du Marteau béni (jalon 48), **tête en haut** — choisi sur planche contre un
+## maillet, un tau, une étoile, une traîne de grains et un croissant. La tête est la
+## lumière, le manche plus sombre : tournée en biais, une silhouette toute claire sortait
+## en tache. Ses huit orientations sont tournées au premier besoin (`Holy.hammer()`).
+const HAMMER := [
+	".34444444443.",
+	"3455555555543",
+	"345wwwwwww543",
+	"3455555555543",
+	".34444444443.",
+	"......4......",
+	".....232.....",
+	".....232.....",
+	".....232.....",
+	".....232.....",
+	".....121.....",
+	"......1......",
+]
+
 
 # --------------------------------------------------------------------------
 # La nécrose (jalon 26)

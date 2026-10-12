@@ -178,7 +178,8 @@ class State:
 	var unreported := 0.0
 	## Jusqu'au prochain à-coup, pour ce qui brûle par à-coups (`TICKING`).
 	var until_tick := DOT_TICK
-	## La résistance au feu que cet embrasement fait fondre (la Fonte, jalon 42).
+	## La résistance de sa nature que cet état fait fondre : au feu pour un embrasement (la
+	## Fonte, jalon 42), au sacré pour une bénédiction (l'Humilité, jalon 48).
 	var melt := 0.0
 	## Le lancer qui l'a posé (jalon 45), null pour un état tiré : l'Épidémie, le Râle, les
 	## Ronces, la Sentence se lisent sur lui. `posed` : sa durée à la pose, que le Râle rend.
@@ -461,15 +462,25 @@ func resistance_lost(nature: int) -> float:
 		var ignite := _state(Kind.IGNITE)
 		if ignite != null:
 			return ignite.melt
+	elif nature == DamageType.Kind.HOLY:
+		var blessing := _state(Kind.BLESSING)
+		if blessing != null:
+			return blessing.melt
 	return 0.0
 
 
 ## La Fonte : un embrasement déjà là fait fondre autant de résistance au feu, le plus fort
-## l'emporte. Il s'en va avec lui.
-func melt(amount: float) -> void:
-	var ignite := _state(Kind.IGNITE)
-	if ignite != null:
-		ignite.melt = maxf(ignite.melt, amount)
+## l'emporte. Il s'en va avec lui. L'Humilité (jalon 48), de même au sacré sous une bénédiction.
+func melt(amount: float, kind: int = Kind.IGNITE) -> void:
+	var state := _state(kind)
+	if state != null:
+		state.melt = maxf(state.melt, amount)
+
+
+## La Purification (jalon 48) : chaque état porté perd cette part de ce qu'il lui reste.
+func shorten(part: float) -> void:
+	for state in _states:
+		state.remaining *= 1.0 - clampf(part, 0.0, 1.0)
 
 
 ## La chance de base, plus ce que ces dégâts retirent des PV max : un coup de feu qui ôte

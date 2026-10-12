@@ -107,6 +107,15 @@ func test_two_manuals_have_independent_points() -> void:
 	assert_eq(fresh.manual.points_spent(fresh.base.manual), 0, "un troisième exemplaire naît vierge")
 
 
+## Une compétence retirée du jeu — la Frappe sacrée, au jalon 48 — ne garde pas les points
+## qu'une sauvegarde y avait placés : ils reviennent au livre.
+func test_points_on_a_vanished_skill_return_to_the_book() -> void:
+	var item := Item.new(_base())
+	item.manual.points["swift_bolt"] = 2
+	item.manual.points["holy_strike"] = 3
+	assert_eq(item.manual.points_spent(item.base.manual), 2)
+
+
 # --------------------------------------------------------------------------
 # Ce qu'un manuel n'est pas
 # --------------------------------------------------------------------------

@@ -224,3 +224,60 @@ func test_the_dervish_spiral_is_built_once_per_half_turn() -> void:
 	assert_same(Slash.spiral(tint, 3), first, "gardée")
 	assert_same(Slash.spiral(tint, 3 + Slash.TURNS / 2), first, "symétrique d'un demi-tour")
 	assert_ne(Slash.spiral(tint, 4).texture.get_image().get_data(), first.texture.get_image().get_data())
+
+
+# --------------------------------------------------------------------------
+# Le sacré (jalon 48)
+# --------------------------------------------------------------------------
+
+const HOLY := Color(1.00, 0.72, 0.80)
+
+
+func test_the_hammer_grid_is_rectangular() -> void:
+	for row: String in EffectForge.HAMMER:
+		assert_eq(row.length(), (EffectForge.HAMMER[0] as String).length(), "« %s »" % row)
+
+
+## Huit orientations, chacune fabriquée une fois : un huitième de tour près revient à la même.
+func test_the_hammer_is_built_once_per_eighth_of_a_turn() -> void:
+	var up := Holy.hammer(HOLY, -PI * 0.5)
+	assert_same(Holy.hammer(HOLY, -PI * 0.5 + 0.2), up)
+	assert_ne(Holy.hammer(HOLY, 0.0), up, "un quart de tour plus loin")
+
+
+## Le sol consacré : un cercle du cœur au bord, des dalles tramées dedans, et une fois par rayon.
+func test_the_consecrated_ground_is_rimmed_and_kept() -> void:
+	var ground := Holy.consecrated(HOLY, 20)
+	assert_same(Holy.consecrated(HOLY, 20), ground)
+	var img := ground.get_image()
+	# L'image garde huit bits par canal.
+	var rim := img.get_pixel(40, 20)
+	var expected := Holy.halo(HOLY)
+	assert_almost_eq(Vector4(rim.r, rim.g, rim.b, rim.a), Vector4(expected.r, expected.g, expected.b, 1.0), Vector4.ONE / 255.0, "le bord")
+	var tiled := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.0 and img.get_pixel(x, y).a < 1.0:
+				tiled += 1
+	assert_gt(tiled, 0, "des dalles")
+
+
+## Les pièces des Chaînes du jugement : gardées par cap et par sorte ; l'anneau a son trou,
+## qui laisse voir le sol.
+func test_chain_links_are_baked_per_turn_and_kind() -> void:
+	var ring := Holy.link(HOLY, 4, Holy.Link.RING)
+	assert_same(Holy.link(HOLY, 4, Holy.Link.RING), ring)
+	assert_ne(Holy.link(HOLY, 4, Holy.Link.BAR), ring)
+	assert_ne(Holy.link(HOLY, 12, Holy.Link.RING).get_image().get_data(), ring.get_image().get_data())
+	var flat := Holy.link(HOLY, 0, Holy.Link.RING).get_image()
+	assert_eq(flat.get_pixel(6, 6).a, 0.0, "le trou")
+	assert_gt(flat.get_pixel(9, 6).a, 0.0, "l'anneau")
+
+
+## Les rayons de gloire du souffle sacré : gardés par rayon et par temps, et chaque temps a
+## son dessin — ils s'ouvrent, puis leur pied rattrape leur pointe.
+func test_glory_rays_are_baked_per_radius_and_frame() -> void:
+	var first := Holy.glory(HOLY, 30, 0)
+	assert_same(Holy.glory(HOLY, 30, 0), first)
+	assert_ne(Holy.glory(HOLY, 30, 3).get_image().get_data(), first.get_image().get_data())
+	assert_eq(Holy.glory(HOLY, 60, 0).get_width(), 60 * 2 + 7, "la planche suit le rayon")

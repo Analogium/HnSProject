@@ -200,6 +200,8 @@ var _black_ice := 0.0
 var _startle_wait := 0.0
 ## L'Accalmie (jalon 44) : ce qu'elle retire aux dégâts subis, tant qu'on est dans l'œil.
 var _calm := 0.0
+## L'Égide (jalon 48) : ce que la dernière onde de la Pulsation retire aux dégâts subis.
+var _aegis := 0.0
 ## La Tension accumulée (jalon 43) : le « plus » que porte le prochain sort de foudre, et le
 ## temps qu'il reste pour le lancer.
 var _tension := 0.0
@@ -399,6 +401,8 @@ func cast_slot(index: int) -> bool:
 				cast.languor += StatusEffects.DURATIONS[cast.inflicted_state] * longer
 			if necrosis.moribund > 0.0 and health < stats.max_health * SkillStats.MORIBUND_LIFE:
 				cast = cast.echoed(1.0 + necrosis.moribund * 0.01)
+	if skill.strikes():
+		cast = devoted(cast)
 
 	if cast.sustained:
 		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
@@ -674,15 +678,27 @@ func _pose(
 			FrostRing.spread(parent, at, cast, states)
 		Skill.Shape.VORTEX, Skill.Shape.IMPLOSION:
 			IceVortex.open(parent, at, cast, states, aim)
-		Skill.Shape.BEAM:
-			HolyBeam.fire(parent, at, toward, cast, states)
-		Skill.Shape.HOLY_CROSS:
-			# Droit sur les axes, sans viser ; un ennemi au croisement n'est frappé qu'une fois.
-			var struck := {}
-			for direction in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
-				HolyBeam.fire(parent, at, direction, cast, states, struck)
+		Skill.Shape.CHAINS:
+			JudgmentChains.throw(parent, at, toward, cast, states)
+		Skill.Shape.SCAPEGOAT:
+			JudgmentChains.bind(parent, self, cast, states)
+		Skill.Shape.HAMMER:
+			# Le Carillon (jalon 48) : des marteaux en étoile, le premier vers la visée.
+			var count := 1 + int(cast.hammers)
+			for i in count:
+				BlessedHammer.swing(
+					parent, at, toward.angle() + TAU * float(i) / float(count), cast, states, origin, i
+				)
 		Skill.Shape.PILLAR, Skill.Shape.DRIFT:
-			SacredPillar.fall(parent, aim, cast, states)
+			# Le Triptyque (jalon 48) : trois colonnes en triangle autour du point visé.
+			if cast.triptych > 0.0:
+				for i in SkillStats.TRIPTYCH_COUNT:
+					var corner := Vector2.UP.rotated(TAU * float(i) / float(SkillStats.TRIPTYCH_COUNT))
+					SacredPillar.fall(
+						parent, aim + corner * cast.radius * SkillStats.TRIPTYCH_SPREAD, cast, states, self
+					)
+			else:
+				SacredPillar.fall(parent, aim, cast, states, self)
 		Skill.Shape.PULSE:
 			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
 			HolyPulse.emanate(self, cast)
@@ -808,6 +824,24 @@ func echo(skill: Skill, salvo: Array[SkillStats], origin: Node2D, aim: Vector2) 
 	_pose(skill, salvo, origin, toward, aim)
 
 
+## Le lancer résolu de la Lumière sacrée allumée, null éteinte (jalon 48).
+func _holy_light() -> SkillStats:
+	if not lit(SkillStats.LIGHT_SKILL):
+		return null
+	return resolve(SkillCatalog.by_id(SkillStats.LIGHT_SKILL), skill_points(SkillStats.LIGHT_SKILL))
+
+
+## La Dévotion (jalon 48) : chaque seconde de lumière renforce le sort sacré lancé.
+func devoted(cast: SkillStats) -> SkillStats:
+	if cast.nature != DamageType.Kind.HOLY:
+		return cast
+	var light := _holy_light()
+	if light == null or light.devotion <= 0.0:
+		return cast
+	var lit_for := minf((_lit[SkillStats.LIGHT_SKILL] as Buff).age(), SkillStats.DEVOTION_MOST)
+	return cast.echoed(1.0 + light.devotion * 0.01 * lit_for)
+
+
 ## Le lancer résolu de la Nécrose avancée allumée, null éteinte (jalon 45).
 func _necrosis() -> SkillStats:
 	if not lit(SkillStats.NECROSIS_SKILL):
@@ -850,7 +884,24 @@ func extinguish(skill_id: String) -> void:
 		(node as Node).extinguish()
 		if node is Buff and not is_dead:
 			_shatter(SkillCatalog.by_id(skill_id), (node as Buff).remaining())
+			_transfigure(skill_id)
 	after_buff_change()
+
+
+## La Transfiguration (jalon 48) : l'Épiphanie qui s'éteint éclate autour de son porteur,
+## d'une part de ses PV max.
+func _transfigure(skill_id: String) -> void:
+	if skill_id != SkillStats.LIGHT_SKILL:
+		return
+	var light := resolve(SkillCatalog.by_id(skill_id), skill_points(skill_id))
+	if light.transfiguration <= 0.0 or light.epiphany <= 0.0:
+		return
+	var parts := DamageType.empty_parts()
+	parts[light.nature] = stats.max_health * SkillStats.TRANSFIGURATION_PART
+	Explosion.put(
+		_effects_parent(), global_position, parts, SkillStats.TRANSFIGURATION_RADIUS, null,
+		DamageType.COLORS[light.nature], states, light
+	)
 
 
 ## L'Éclatement du Tombeau (jalon 36) : un buff lancé qui s'éteint éclate. Pas celui
@@ -939,6 +990,13 @@ func spend_mana(amount: float) -> bool:
 		return false
 	_set_mana(mana - amount)
 	return true
+
+
+## L'Égide (jalon 48) : l'abri de la dernière onde, jusqu'à la suivante.
+func guard(amount: float) -> void:
+	if amount != _aegis:
+		_aegis = amount
+		_restat()
 
 
 func gain_mana(amount: float) -> void:
@@ -1602,9 +1660,9 @@ func recompute_stats() -> void:
 		mods.append_array(book.passive_mods())
 	mods.append_array(passive_tree.mods(passives))
 	mods.append_array(buff_mods())
-	# Rempart d'os, Bouclier de lames et Accalmie (jalon 44) : tant qu'ils tiennent, pas un
-	# buff qu'on allume.
-	var wall := Minion.wall_of(self) + (_crown.ward() if _crown != null else 0.0) + _calm
+	# Rempart d'os, Bouclier de lames, Accalmie (jalon 44) et Égide (jalon 48) : tant qu'ils
+	# tiennent, pas un buff qu'on allume.
+	var wall := Minion.wall_of(self) + (_crown.ward() if _crown != null else 0.0) + _calm + _aegis
 	if wall > 0.0:
 		mods.append(StatMod.new("damage_taken", StatMod.Mode.FLAT, -wall))
 
@@ -1656,6 +1714,9 @@ func buff_mods() -> Array[StatMod]:
 		# Une ligne est linéaire en points : ses charges la multiplient de la même façon. Un
 		# buff sans charges propres en porte sous le Galop (jalon 43).
 		var times := lit_stacks(skill.id) if skill.stacks_max > 0 else maxi(lit_stacks(skill.id), 1)
+		# L'Épiphanie (jalon 48) : tant qu'elle brûle, la lumière verse ses lignes deux fois.
+		if skill.id == SkillStats.LIGHT_SKILL and resolve(skill, skill_points(skill.id)).epiphany > 0.0:
+			times *= SkillStats.EPIPHANY_FACTOR
 		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
 		# Les lignes de ses nœuds qui ne visent pas un nombre du lancer (jalon 34) : des
 		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle — et
@@ -2132,7 +2193,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	# Le Brise-lames (jalon 46) : une épée de la ronde prend le coup à sa place.
 	if _crown != null and _crown.take_blow():
 		return
-	var lost := info.amount - RagDoll.shoulder(self, info.amount)
+	var lost := JudgmentChains.divert(self, info.amount - RagDoll.shoulder(self, info.amount))
 	var necrosis := _necrosis()
 	if necrosis != null and health - lost <= 0.0 and _spared(necrosis):
 		return
@@ -2140,6 +2201,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	if necrosis != null and necrosis.outlet > 0.0 and lost >= stats.max_health * SkillStats.OUTLET_LOSS:
 		(_lit[SkillStats.NECROSIS_SKILL] as Buff).unburden(necrosis)
 	_set_health(health - lost)
+	_intercede(info, lost)
 	_riposte_left = SkillStats.RIPOSTE_WINDOW
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
@@ -2149,6 +2211,19 @@ func _on_damaged(info: DamageInfo) -> void:
 	RottingGate.provoke(self)
 	if _startle_wait <= 0.0:
 		_startle(lost)
+
+
+## L'Intercession (jalon 48) : sous la lumière, un gros coup bénit son auteur à coup sûr, et
+## plus fort. Comme l'Auréole, elle pose l'état sans frapper.
+func _intercede(info: DamageInfo, lost: float) -> void:
+	if info.author == null or lost < stats.max_health * SkillStats.INTERCESSION_LOSS:
+		return
+	var light := _holy_light()
+	if light != null and light.intercession > 0.0:
+		info.author.put(
+			StatusEffects.Kind.BLESSING, 0.0, states, SkillStats.LIGHT_SKILL,
+			light.strength_of(StatusEffects.Kind.BLESSING) * (1.0 + light.intercession * 0.01)
+		)
 
 
 ## Le Sursis (jalon 45) : un coup mortel laisse en vie et éteint la Nécrose ; sous le

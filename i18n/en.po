@@ -483,9 +483,6 @@ msgstr "The body gnaws at itself, and what it strikes rots more often."
 msgid "Nécrose"
 msgstr "Necrosis"
 
-msgid "Frappe sacrée"
-msgstr "Sacred Strike"
-
 msgid "Pilier sacré"
 msgstr "Sacred Pillar"
 
@@ -497,9 +494,6 @@ msgstr "Holy Light"
 
 msgid "Grâce"
 msgstr "Grace"
-
-msgid "Un trait de lumière qui perce tout ce qui est sur sa ligne."
-msgstr "A shaft of light piercing all that stands in its line."
 
 msgid "Une colonne de lumière tombe du ciel et brûle sa zone."
 msgstr "A column of light falls from the sky and sears its ground."
@@ -1043,12 +1037,6 @@ msgstr "Blizzard"
 
 msgid "Œil du cyclone"
 msgstr "Eye of the Storm"
-
-msgid "Percée"
-msgstr "Piercing"
-
-msgid "Allonge du trait"
-msgstr "Beam Reach"
 
 msgid "Colonne"
 msgstr "Column"
@@ -3872,39 +3860,6 @@ msgstr "swords per cast"
 msgid "Le trait frappe plus fort."
 msgstr "The beam hits harder."
 
-msgid "Le trait porte plus loin."
-msgstr "The beam reaches farther."
-
-msgid "Sanctification"
-msgstr "Sanctification"
-
-msgid "Le trait bénit plus souvent ce qu'il touche."
-msgstr "The beam blesses what it hits more often."
-
-msgid "Réprobation"
-msgstr "Reproof"
-
-msgid "Le trait frappe plus fort les ennemis bénis."
-msgstr "The beam hits blessed enemies harder."
-
-msgid "Bénédiction profonde"
-msgstr "Deep Blessing"
-
-msgid "La bénédiction que pose le trait affaiblit davantage : le béni inflige encore moins de dégâts."
-msgstr "The blessing the beam lays weakens more: the blessed deal even less damage."
-
-msgid "Réfraction"
-msgstr "Refraction"
-
-msgid "Au bout de sa course, le trait repart vers l'ennemi le plus proche qu'il n'a pas encore frappé, une fois par point. Personne n'est frappé deux fois par un même lancer."
-msgstr "At the end of its course, the beam sets off again toward the nearest enemy it has not hit yet, once per point. No one is hit twice by the same cast."
-
-msgid "Croix de lumière"
-msgstr "Cross of Light"
-
-msgid "Le trait part dans les quatre directions autour de vous, droit sur les axes, sans viser. Un ennemi au croisement n'est frappé qu'une fois. En échange, chaque bras est plus court."
-msgstr "The beam shoots in the four directions around you, straight along the axes, without aiming. An enemy at the crossing is hit only once. In exchange, each arm is shorter."
-
 msgid "La colonne frappe plus fort."
 msgstr "The column hits harder."
 
@@ -6505,3 +6460,436 @@ msgstr "stunning landing"
 
 msgid "dégâts par ruée enchaînée"
 msgstr "damage per chained dash"
+
+msgid "Verdict"
+msgstr "Verdict"
+
+msgid "La colonne tombe : sa première impulsion frappe plus fort."
+msgstr "The column falls: its first pulse strikes harder."
+
+msgid "Ascension"
+msgstr "Ascension"
+
+msgid "Chaque ennemi que la colonne tue la fait brûler plus longtemps, {ascension_max} s de plus au plus."
+msgstr "Each enemy the column kills makes it burn longer, up to {ascension_max} s more."
+
+msgid "Consécration"
+msgstr "Consecration"
+
+msgid "La colonne consacre le sol : tant que vous vous tenez dans son cercle, vous regagnez chaque seconde une part de vos PV max."
+msgstr "The column consecrates the ground: while you stand in its circle, you regain a share of your max HP every second."
+
+msgid "Sanctuaire"
+msgstr "Sanctuary"
+
+msgid "Ce que la colonne frappe dans le sol consacré est béni à coup sûr."
+msgstr "Whatever the column strikes on the consecrated ground is surely blessed."
+
+msgid "Triptyque"
+msgstr "Triptych"
+
+msgid "{colonnes_triptyque} colonnes tombent en triangle autour du point visé, au lieu d'une. En échange, chacune mord un cercle plus étroit."
+msgstr "{colonnes_triptyque} columns fall in a triangle around the target point, instead of one. In exchange, each bites a narrower circle."
+
+msgid "Apothéose"
+msgstr "Apotheosis"
+
+msgid "L'Effondrement frappe plus fort pour chaque ennemi que la colonne a frappé, {apotheose_max} au plus."
+msgstr "Collapse strikes harder for each enemy the column has struck, up to {apotheose_max}."
+
+msgid "Procession"
+msgstr "Procession"
+
+msgid "Le Pilier errant glisse plus vite vers sa proie."
+msgstr "Wandering Pillar glides faster toward its prey."
+
+msgid "Antienne"
+msgstr "Antiphon"
+
+msgid "La pulsation revient plus vite."
+msgstr "The pulse comes back sooner."
+
+msgid "Égide"
+msgstr "Aegis"
+
+msgid "Chaque onde qui touche vous garde : vous subissez moins de dégâts pour chaque ennemi touché, jusqu'à l'onde suivante, {egide_max} % au plus."
+msgstr "Each wave that lands guards you: you take less damage for each enemy hit, until the next wave, up to {egide_max}%."
+
+msgid "Purification"
+msgstr "Purification"
+
+msgid "Chaque onde vous lave : les états que vous portez perdent une part de ce qu'il leur reste."
+msgstr "Each wave cleanses you: the states you bear lose a share of what they have left."
+
+msgid "Communion"
+msgstr "Communion"
+
+msgid "Une onde qui atteint l'un de vos Piliers sacrés le fait frapper sur-le-champ, une impulsion de plus à une part de son coup."
+msgstr "A wave reaching one of your Sacred Pillars makes it strike at once, one more pulse at a share of its hit."
+
+msgid "Colère divine"
+msgstr "Divine Wrath"
+
+msgid "Les ondes s'amassent : aucune ne part avant la fin, et la dernière frappe de toutes à la fois, {portee_colere} fois plus loin. Rien ne frappe pendant la litanie."
+msgstr "The waves gather: none leaves before the end, and the last strikes with all of them at once, {portee_colere} times farther. Nothing strikes during the litany."
+
+msgid "Extase"
+msgstr "Ecstasy"
+
+msgid "La dernière onde de la litanie porte {portee_extase} fois plus loin et frappe plus fort."
+msgstr "The last wave of the litany reaches {portee_extase} times farther and strikes harder."
+
+msgid "Viatique"
+msgstr "Viaticum"
+
+msgid "Chaque ennemi touché par une onde vous rend aussi du mana."
+msgstr "Each enemy hit by a wave also restores mana."
+
+msgid "Révélation"
+msgstr "Revelation"
+
+msgid "La Colère divine bénit à coup sûr tout ce qu'elle touche."
+msgstr "Divine Wrath surely blesses everything it hits."
+
+msgid "Pèlerin"
+msgstr "Pilgrim"
+
+msgid "Tant que la lumière brûle, vous marchez plus vite."
+msgstr "While the light burns, you walk faster."
+
+msgid "Dévotion"
+msgstr "Devotion"
+
+msgid "Chaque seconde que la lumière brûle renforce vos sorts sacrés, {devotion_max} s au plus."
+msgstr "Every second the light burns strengthens your holy spells, up to {devotion_max} s."
+
+msgid "Intercession"
+msgstr "Intercession"
+
+msgid "Tant que la lumière brûle, un coup qui vous ôte plus de {perte_intercession} % de vos PV max bénit son auteur à coup sûr, d'une bénédiction plus forte."
+msgstr "While the light burns, a blow taking more than {perte_intercession}% of your max HP surely blesses its author, with a stronger blessing."
+
+msgid "Épiphanie"
+msgstr "Epiphany"
+
+msgid "La lumière ne draine plus : elle s'allume {duree_epiphanie} s puis se recharge {recharge_epiphanie} s, et tout ce qu'elle donne vaut le double tant qu'elle brûle."
+msgstr "The light no longer drains: it shines for {duree_epiphanie} s then recharges for {recharge_epiphanie} s, and everything it grants is doubled while it burns."
+
+msgid "Gloire"
+msgstr "Glory"
+
+msgid "L'Auréole brûle : toutes les {rythme_aureole} s, elle frappe ce qu'elle bénit d'une part de vos PV max, en dégâts sacrés."
+msgstr "The Aureole burns: every {rythme_aureole} s, it strikes what it blesses for a share of your max HP, as holy damage."
+
+msgid "Humilité"
+msgstr "Humility"
+
+msgid "Les ennemis que l'Auréole bénit perdent de leur résistance au sacré."
+msgstr "Enemies blessed by the Aureole lose some of their holy resistance."
+
+msgid "Transfiguration"
+msgstr "Transfiguration"
+
+msgid "À son extinction, l'Épiphanie éclate autour de vous : {part_transfiguration} % de vos PV max en dégâts sacrés, dans un rayon de {rayon_transfiguration} px."
+msgstr "When it goes out, Epiphany bursts around you: {part_transfiguration}% of your max HP as holy damage, within {rayon_transfiguration} px."
+
+msgid "dégâts de la première impulsion"
+msgstr "first pulse damage"
+
+msgid "secondes de colonne par tué"
+msgstr "column seconds per kill"
+
+msgid "PV rendus par seconde consacrée"
+msgstr "HP restored per consecrated second"
+
+msgid "sol consacré qui bénit"
+msgstr "blessing consecrated ground"
+
+msgid "triptyque"
+msgstr "triptych"
+
+msgid "dégâts d'effondrement par frappé"
+msgstr "collapse damage per enemy struck"
+
+msgid "vitesse du pilier errant"
+msgstr "wandering pillar speed"
+
+msgid "dégâts subis en moins par touché"
+msgstr "less damage taken per enemy hit"
+
+msgid "états subis raccourcis par onde"
+msgstr "states shortened per wave"
+
+msgid "dégâts de la communion"
+msgstr "communion pulse damage"
+
+msgid "ondes amassées"
+msgstr "gathered waves"
+
+msgid "colère qui bénit à coup sûr"
+msgstr "wrath that surely blesses"
+
+msgid "dégâts de la dernière onde"
+msgstr "last wave damage"
+
+msgid "dégâts sacrés par seconde allumée"
+msgstr "holy damage per second of light"
+
+msgid "force de l'intercession"
+msgstr "intercession strength"
+
+msgid "épiphanie"
+msgstr "epiphany"
+
+msgid "PV max frappés par la gloire"
+msgstr "max HP struck by glory"
+
+msgid "résistance sacrée fondue"
+msgstr "holy resistance melted"
+
+msgid "éclat de l'épiphanie"
+msgstr "epiphany burst"
+
+msgid "Marteau béni"
+msgstr "Blessed Hammer"
+
+msgid "Un marteau de lumière part de vous en spirale et frappe ce qu'il croise."
+msgstr "A hammer of light spirals out from you and strikes what it meets."
+
+msgid "Aplomb"
+msgstr "Poise"
+
+msgid "Le marteau frappe plus fort."
+msgstr "The hammer strikes harder."
+
+msgid "Envolée"
+msgstr "Flight"
+
+msgid "La spirale s'ouvre plus loin."
+msgstr "The spiral opens wider."
+
+msgid "Ferrure"
+msgstr "Ironwork"
+
+msgid "Le marteau tourne plus longtemps : des tours en plus."
+msgstr "The hammer spins longer: more turns."
+
+msgid "Allègement"
+msgstr "Lightening"
+
+msgid "Le marteau coûte moins de mana."
+msgstr "The hammer costs less mana."
+
+msgid "Prestesse"
+msgstr "Swiftness"
+
+msgid "Le marteau tourne plus vite : il croise plus de monde."
+msgstr "The hammer spins faster: it meets more foes."
+
+msgid "Carillon"
+msgstr "Chime"
+
+msgid "Un marteau de plus par point, partis en étoile."
+msgstr "One more hammer per point, sent out in a star."
+
+msgid "Martèlement"
+msgstr "Hammering"
+
+msgid "Chaque coup de vos marteaux sur un même ennemi frappe plus fort que le précédent, {martelement_max} coups comptés au plus. Le compte s'oublie après {oubli_martelement} s sans coup."
+msgstr "Each blow of your hammers on the same enemy strikes harder than the last, counting {martelement_max} blows at most. The count is forgotten after {oubli_martelement} s without a blow."
+
+msgid "Tocsin"
+msgstr "Tocsin"
+
+msgid "Un ennemi qu'un marteau tue en lâche un petit, qui part en spirale de son corps, à une part du coup."
+msgstr "An enemy killed by a hammer releases a small one, spiralling out of its body at a share of the hit."
+
+msgid "Gravitation"
+msgstr "Gravitation"
+
+msgid "Le marteau ne s'éloigne plus : il tourne autour de vous toute sa durée, à {orbite_gravitation} % de son rayon. En échange, il frappe moins fort."
+msgstr "The hammer no longer drifts away: it circles you for its whole duration, at {orbite_gravitation}% of its radius. In exchange, it strikes softer."
+
+msgid "Bourdon"
+msgstr "Great Bell"
+
+msgid "Un marteau du Carillon sur {bourdon_tous} est un bourdon : il frappe plus fort et mord plus large."
+msgstr "One Chime hammer in {bourdon_tous} is a great bell: it strikes harder and bites wider."
+
+msgid "Battage"
+msgstr "Threshing"
+
+msgid "Tous les {battage_tous} coups de vos marteaux sur un même ennemi, un éclat sacré frappe autour de lui."
+msgstr "Every {battage_tous} blows of your hammers on the same enemy, a holy burst strikes around it."
+
+msgid "Branle"
+msgstr "Peal"
+
+msgid "Les petits marteaux du Tocsin en lâchent à leur tour, une fois."
+msgstr "Tocsin's small hammers release their own in turn, once."
+
+msgid "Éclipse"
+msgstr "Eclipse"
+
+msgid "Sous la Gravitation, l'orbite s'élargit à chaque seconde."
+msgstr "Under Gravitation, the orbit widens every second."
+
+msgid "marteaux en plus"
+msgstr "extra hammers"
+
+msgid "vitesse du marteau"
+msgstr "hammer speed"
+
+msgid "dégâts par coup répété"
+msgstr "damage per repeated blow"
+
+msgid "dégâts du petit marteau"
+msgstr "small hammer damage"
+
+msgid "gravitation"
+msgstr "gravitation"
+
+msgid "bourdon"
+msgstr "great bell"
+
+msgid "dégâts du battage"
+msgstr "threshing damage"
+
+msgid "branle"
+msgstr "peal"
+
+msgid "orbite élargie par seconde"
+msgstr "orbit widened per second"
+
+
+msgid "Chaînes du jugement"
+msgstr "Chains of Judgment"
+
+msgid "Un trait de fer béni. Le premier ennemi touché est enchaîné à ses plus proches voisins, et une part de chaque coup que prend un enchaîné frappe tous les autres."
+msgstr "A bolt of blessed iron. The first enemy hit is chained to its nearest neighbours, and a share of every blow a chained enemy takes strikes all the others."
+
+msgid "Réquisitoire"
+msgstr "Indictment"
+
+msgid "Les chaînes frappent plus fort."
+msgstr "The chains strike harder."
+
+msgid "Ampleur"
+msgstr "Breadth"
+
+msgid "La chaîne cherche ses voisins plus loin."
+msgstr "The chain looks for neighbours farther away."
+
+msgid "Geôle"
+msgstr "Gaol"
+
+msgid "Les chaînes tiennent plus longtemps."
+msgstr "The chains hold longer."
+
+msgid "Aspersion"
+msgstr "Aspersion"
+
+msgid "Les chaînes bénissent plus souvent ce qu'elles touchent."
+msgstr "The chains bless what they touch more often."
+
+msgid "Maillons"
+msgstr "Links"
+
+msgid "La chaîne enchaîne un ennemi de plus par point."
+msgstr "The chain binds one more enemy per point."
+
+msgid "Solidarité"
+msgstr "Solidarity"
+
+msgid "Les enchaînés partagent une plus grande part de chaque coup."
+msgstr "Chained enemies share a greater part of every blow."
+
+msgid "Resserrement"
+msgstr "Tightening"
+
+msgid "Les chaînes tirent les enchaînés vers le premier touché."
+msgstr "The chains drag chained enemies toward the first one hit."
+
+msgid "Rupture"
+msgstr "Rupture"
+
+msgid "Un enchaîné qui meurt éclate, à {rayon_rupture} px autour de lui, à une part du coup de la chaîne."
+msgstr "A chained enemy that dies bursts within {rayon_rupture} px around it, for a share of the chain's blow."
+
+msgid "Pilori"
+msgstr "Pillory"
+
+msgid "Les enchaînés sont tirés vers le plus proche de vos Piliers sacrés qui brûlent."
+msgstr "Chained enemies are dragged toward the nearest of your burning Sacred Pillars."
+
+msgid "Bouc émissaire"
+msgstr "Scapegoat"
+
+msgid "Les chaînes partent de vous : elles vous lient aux ennemis les plus proches, autant que le trait en enchaînerait, jusqu'à {portee_bouc} fois le rayon. La part partagée des coups que vous prenez passe à eux au lieu de vous. En échange, les chaînes frappent moins fort."
+msgstr "The chains start from you: they bind you to the nearest enemies, as many as the bolt would chain, up to {portee_bouc} times the radius. The shared part of the blows you take goes to them instead of you. In exchange, the chains strike less hard."
+
+msgid "Carcan"
+msgstr "Shackle"
+
+msgid "Un enchaîné que le Resserrement amène au contact du premier touché est assommé {carcan} s, une fois par lien."
+msgstr "A chained enemy that Tightening brings into contact with the first one hit is stunned for {carcan} s, once per link."
+
+msgid "Passation"
+msgstr "Handover"
+
+msgid "Les chaînes d'un enchaîné qui meurt sautent sur l'ennemi libre le plus proche, une fois par point."
+msgstr "The chains of a chained enemy that dies leap to the nearest free enemy, once per point."
+
+msgid "Absoute"
+msgstr "Absoute"
+
+msgid "L'éclat de la Rupture bénit à coup sûr ce qu'il touche."
+msgstr "Rupture's burst surely blesses what it touches."
+
+msgid "Unisson"
+msgstr "Unison"
+
+msgid "Un coup partagé passe aussi aux autres enchaînés les états que porte celui qui l'a pris."
+msgstr "A shared blow also passes to the other chained enemies the states carried by the one who took it."
+
+msgid "Stigmates"
+msgstr "Stigmata"
+
+msgid "Sous le Bouc émissaire, chaque coup détourné vous rend des PV."
+msgstr "Under Scapegoat, each diverted blow gives you back life."
+
+msgid "enchaînés en plus"
+msgstr "more chained enemies"
+
+msgid "part partagée de chaque coup"
+msgstr "shared part of each blow"
+
+msgid "px/s de resserrement"
+msgstr "px/s of tightening"
+
+msgid "dégâts de la rupture"
+msgstr "rupture damage"
+
+msgid "px/s vers le pilier"
+msgstr "px/s toward the pillar"
+
+msgid "enchaîné assommé au contact"
+msgstr "chained enemy stunned on contact"
+
+msgid "sauts des chaînes d'un mort"
+msgstr "leaps of a dead enemy's chains"
+
+msgid "rupture qui bénit à coup sûr"
+msgstr "rupture that surely blesses"
+
+msgid "états partagés"
+msgstr "shared states"
+
+msgid "PV rendus par coup détourné"
+msgstr "life given back per diverted blow"
+
+msgid "enchaînés"
+msgstr "chained"
+
+msgid "%d · %s partagés"
+msgstr "%d · %s shared"

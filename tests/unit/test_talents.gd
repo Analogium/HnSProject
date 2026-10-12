@@ -961,7 +961,7 @@ func test_the_knight_transformations_carry_their_shapes() -> void:
 
 func test_the_holy_transformations_carry_their_shapes() -> void:
 	var expected := {
-		"holy_strike_cross": Skill.Shape.HOLY_CROSS,
+		"judgment_chains_scapegoat": Skill.Shape.SCAPEGOAT,
 		"sacred_pillar_drift": Skill.Shape.DRIFT,
 	}
 	for c in ItemCatalog.by_id("manual_holy").manual.cells:

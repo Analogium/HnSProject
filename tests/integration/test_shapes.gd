@@ -1005,29 +1005,6 @@ func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
 # Le manuel sacré
 # --------------------------------------------------------------------------
 
-## Le trait perce : il frappe **tout ce qui est sur sa ligne**, une fois, et rien à
-## côté. C'est ce qui le sépare d'un tir, qui s'arrête au premier corps.
-func test_the_beam_pierces_its_line_and_spares_the_side() -> void:
-	_learn("manual_holy", ["holy_strike"])
-	var cast := _p.resolve(SkillCatalog.by_id("holy_strike"), 1)
-	var near := _target(Vector2(cast.radius * 0.3, 0))
-	var far_one := _target(Vector2(cast.radius * 0.9, 0))
-	var beyond := _target(Vector2(cast.radius + 40.0, 0))
-	var aside := _target(Vector2(cast.radius * 0.5, 40.0))
-	await wait_physics_frames(2)
-
-	assert_true(Gestures.cast(_p, 2))
-	await wait_physics_frames(2)
-	assert_eq(_hits(near), 1, "le premier corps ne l'arrête pas")
-	assert_eq(_hits(far_one), 1)
-	assert_eq(_hits(beyond), 0, "au-delà de sa longueur")
-	assert_eq(_hits(aside), 0, "et rien hors de la ligne")
-
-	await wait_seconds(HolyBeam.LIFETIME + 0.1)
-	assert_eq(_hits(near), 1, "une seule fois : le trait ne dure pas")
-	assert_eq(_children_of(HolyBeam).size(), 0)
-
-
 ## Le pilier tombe au point visé et frappe son cercle à chaque période, exactement
 ## autant de fois que la fiche l'annonce.
 func test_the_pillar_strikes_its_circle_for_its_duration() -> void:
@@ -2735,35 +2712,6 @@ func test_an_arsenal_summons_its_swords_at_once_within_the_round() -> void:
 # --------------------------------------------------------------------------
 # Le sacré (jalon 40)
 # --------------------------------------------------------------------------
-
-## La Croix de lumière : les quatre axes, sans viser ; rien en diagonale.
-func test_a_holy_cross_strikes_the_four_axes() -> void:
-	_learn_with("manual_holy", "holy_strike", [], Skill.Shape.HOLY_CROSS)
-	var arms := [
-		_target(Vector2(40, 0)), _target(Vector2(0, 40)), _target(Vector2(-40, 0)), _target(Vector2(0, -40))
-	]
-	var aslant := _target(Vector2(40, 40))
-	await wait_physics_frames(2)
-	assert_true(Gestures.cast(_p, 2))
-	await wait_physics_frames(3)
-	for arm: Hurtbox in arms:
-		assert_eq(_hits(arm), 1)
-	assert_eq(_hits(aslant), 0)
-
-
-## La Réfraction : du bout du trait vers l'ennemi non frappé le plus proche, une fois.
-func test_a_refracted_beam_leaps_to_the_nearest_unstruck_enemy() -> void:
-	_learn_with("manual_holy", "holy_strike", [[SkillStats.BOUNCES, 1.0]])
-	var first := _target(Vector2(40, 0))
-	var off_axis := _target(Vector2(90, 40))
-	var after := _target(Vector2(99, 140))
-	await wait_physics_frames(2)
-	assert_true(Gestures.cast(_p, 2))
-	await wait_physics_frames(4)
-	assert_eq(_hits(first), 1)
-	assert_eq(_hits(off_axis), 1, "le rebond, hors de l'axe")
-	assert_eq(_hits(after), 0, "un seul rebond")
-
 
 func test_a_drifting_pillar_follows_the_nearest_enemy() -> void:
 	_learn_with("manual_holy", "sacred_pillar", [], Skill.Shape.DRIFT)
@@ -5794,3 +5742,492 @@ func test_the_body_plays_the_gesture_over_its_length() -> void:
 		_p._gesture.left, SkillCatalog.by_id("heavy_strike").use_time(_p.stats), 1e-4,
 		"la vitesse d'attaque raccourcit le geste"
 	)
+
+
+# --------------------------------------------------------------------------
+# Les Chaînes du jugement (jalon 48)
+# --------------------------------------------------------------------------
+
+func _no_crits() -> void:
+	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
+
+
+func _nets() -> Array:
+	return _children_of(JudgmentChains).filter(func(c: Node) -> bool: return not c.is_queued_for_deletion())
+
+
+## Un coup de 20 en physique, sans auteur, sur ce corps.
+func _blow_on(target: Hurtbox) -> void:
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = 20.0
+	target.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+
+
+## Lance les chaînes sur `prey`, comme on vise, et attend que le trait l'ait pris.
+func _throw_chains(prey: Enemy) -> void:
+	await wait_physics_frames(2)
+	_p.facing = _p.global_position.direction_to(prey.hurtbox.global_position)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.3)
+
+
+## Le trait prend le premier touché et ses deux plus proches voisins, pas le quatrième. Un
+## coup sur l'un frappe les autres à la part partagée, et le coup partagé ne revient pas.
+func test_judgment_chains_bind_the_first_hit_and_share_its_blows() -> void:
+	_learn("manual_holy", ["judgment_chains"])
+	_no_crits()
+	var cast := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1)
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 40))
+	var other := _grunt(Vector2(100, 0))
+	var free := _grunt(Vector2(60, -(cast.radius + 30.0)))
+	await _throw_chains(first)
+	assert_eq(_nets().size(), 1)
+	var net: JudgmentChains = _nets()[0]
+	assert_eq(net._members.size(), 1 + int(cast.links))
+	assert_false(free.hurtbox in net._members, "hors du rayon")
+
+	var before := [first.health, near.health, other.health, free.health]
+	_blow_on(first.hurtbox)
+	var struck := float(before[0]) - first.health
+	await wait_physics_frames(2)
+	assert_eq(first.health, float(before[0]) - struck, "le coup partagé ne se repartage pas")
+	var shared := float(before[1]) - near.health
+	assert_gt(shared, 0.0)
+	assert_lte(shared, struck * cast.solidarity * 0.01 + 0.01)
+	assert_almost_eq(float(before[2]) - other.health, shared, 0.01)
+	assert_eq(free.health, float(before[3]))
+
+	await wait_seconds(cast.duration)
+	assert_eq(_nets().size(), 0, "les liens tombent au bout de leur durée")
+
+
+## Les Maillons : un enchaîné de plus.
+func test_judgment_chains_links_bind_one_more() -> void:
+	_learn_with("manual_holy", "judgment_chains", [[SkillStats.LINKS, 1.0]])
+	var first := _grunt(Vector2(60, 0))
+	for at: Vector2 in [Vector2(60, 30), Vector2(60, -30), Vector2(90, 0), Vector2(30, 40)]:
+		_grunt(at)
+	await _throw_chains(first)
+	var cast := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1)
+	assert_eq(cast.links, 3.0, "deux, et un de plus")
+	assert_eq((_nets()[0] as JudgmentChains)._members.size(), 1 + int(cast.links))
+
+
+## La Rupture : un enchaîné qui meurt éclate autour de lui.
+func test_judgment_chains_rupture_on_a_death() -> void:
+	_learn_with("manual_holy", "judgment_chains", [[SkillStats.RUPTURE, 50.0]])
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 40))
+	var bystander := _target(Vector2(60, 40 + SkillStats.RUPTURE_RADIUS - 10.0))
+	await _throw_chains(first)
+	var before := _hits(bystander)
+	near.die(false)
+	await wait_physics_frames(3)
+	assert_eq(_hits(bystander), before + 1)
+
+
+## La Passation : les chaînes du mort sautent sur l'ennemi libre le plus proche, et le
+## faisceau, qui n'avait plus qu'un maillon, tient.
+func test_judgment_chains_hand_over_on_a_death() -> void:
+	_learn_with("manual_holy", "judgment_chains", [[SkillStats.HANDOVER, 1.0]])
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 60))
+	var spare := _grunt(Vector2(60, 140))
+	await _throw_chains(first)
+	var net: JudgmentChains = _nets()[0]
+	assert_eq(net._members.size(), 2)
+	near.die(false)
+	await wait_physics_frames(3)
+	assert_false(net.is_queued_for_deletion())
+	assert_true(spare.hurtbox in net._members)
+
+
+## Le Resserrement tire l'enchaîné vers le premier touché ; le Carcan l'assomme au contact.
+func test_judgment_chains_constrict_and_shackle() -> void:
+	_learn_with(
+		"manual_holy", "judgment_chains", [[SkillStats.CONSTRICTION, 200.0], [SkillStats.SHACKLE, 1.0]]
+	)
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 50))
+	await _throw_chains(first)
+	await wait_seconds(0.3)
+	assert_lte(near.global_position.distance_to(first.global_position), SkillStats.SHACKLE_CONTACT + 0.5)
+	assert_eq(near.states.speed_factor, 0.0, "assommé")
+
+
+## Le Pilori : les enchaînés vont vers le Pilier sacré qui brûle.
+func test_judgment_chains_drag_toward_a_pillar() -> void:
+	_learn_with("manual_holy", "judgment_chains", [[SkillStats.PILLORY, 200.0]])
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 40))
+	await _throw_chains(first)
+	var pillar := SacredPillar.fall(
+		_effects, Vector2(60, 200), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1), _p.states
+	)
+	var gap := near.global_position.distance_to(pillar.global_position)
+	await wait_seconds(0.2)
+	assert_lt(near.global_position.distance_to(pillar.global_position), gap - 20.0)
+
+
+## L'Unisson : l'état que porte le frappé passe aux autres enchaînés avec le coup partagé.
+func test_judgment_chains_unison_passes_the_states() -> void:
+	_learn_with("manual_holy", "judgment_chains", [[SkillStats.UNISON, 1.0]])
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 40))
+	await _throw_chains(first)
+	first.states.put(StatusEffects.Kind.CHILL, 0.0, _p.states, "trial")
+	assert_false(near.states.active(StatusEffects.Kind.CHILL))
+	_blow_on(first.hurtbox)
+	await wait_physics_frames(2)
+	assert_true(near.states.active(StatusEffects.Kind.CHILL))
+
+
+## Un mort ne se laisse pas prendre — la Passation trouvait un voisin tué dans la même image,
+## libéré ensuite sous ses chaînes —, et une ancre libérée sans que sa mort ne passe par les
+## chaînes dénoue le faisceau sans erreur.
+func test_judgment_chains_survive_a_freed_member() -> void:
+	_learn("manual_holy", ["judgment_chains"])
+	var first := _grunt(Vector2(60, 0))
+	var near := _grunt(Vector2(60, 40))
+	_grunt(Vector2(100, 0))
+	await _throw_chains(first)
+	var net: JudgmentChains = _nets()[0]
+	near.is_dead = true
+	net._release(near.hurtbox)
+	net._take(near.hurtbox)
+	assert_false(near.hurtbox in net._members, "un mort ne se prend pas")
+	first.free()
+	await wait_physics_frames(2)
+	assert_eq(_nets().size(), 0, "le faisceau se dénoue")
+
+
+## Deux enchaînés au contact gardent un anneau entre eux ; un long lien, un maillon tous les
+## cinq pixels.
+func test_judgment_chains_keep_a_link_between_close_bodies() -> void:
+	assert_eq(JudgmentChains.pieces(0.5), 1)
+	assert_eq(JudgmentChains.pieces(6.0), 1)
+	assert_eq(JudgmentChains.pieces(100.0), int(100.0 / Holy.LINK_PITCH) - 1)
+
+
+## Le Bouc émissaire : les chaînes partent du joueur, et la part partagée des coups qu'il
+## prend passe aux enchaînés ; les Stigmates le soignent de chaque coup détourné.
+func test_judgment_chains_scapegoat_takes_the_shared_part() -> void:
+	_learn_with(
+		"manual_holy", "judgment_chains", [[SkillStats.STIGMATA, 1.0]], Skill.Shape.SCAPEGOAT
+	)
+	var left := _grunt(Vector2(-40, 0))
+	var below := _grunt(Vector2(0, 40))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(2)
+	var net: JudgmentChains = _nets()[0]
+	assert_eq(net._members.size(), 2)
+	_p.stats.health_regen = 0.0
+	var before := [_p.health, left.health, below.health]
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = 20.0
+	_p._on_damaged(DamageInfo.roll(null, Vector2.ZERO, blow))
+	await wait_physics_frames(2)
+	var share := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1).solidarity * 0.01
+	assert_almost_eq(_p.health, float(before[0]) - 20.0 * (1.0 - share) + _p.stats.max_health * 0.01, 0.01)
+	assert_lt(left.health, float(before[1]))
+	assert_lt(below.health, float(before[2]))
+
+
+# --------------------------------------------------------------------------
+# Le Pilier sacré (jalon 48)
+# --------------------------------------------------------------------------
+
+func _pillars() -> Array:
+	return _children_of(SacredPillar).filter(func(p: Node) -> bool: return not p.is_queued_for_deletion())
+
+
+## Le Verdict : la première impulsion frappe plus fort que les suivantes.
+func test_a_verdict_weighs_on_the_first_pulse() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [[SkillStats.VERDICT, 30.0]])
+	_no_crits()
+	var under := _target(_aim())
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.6)
+	var received: Array = _received_all[under]
+	assert_eq(received.size(), 2)
+	assert_almost_eq(float(received[0]), float(received[1]) * 1.3, 0.01)
+
+
+## Le Triptyque : trois colonnes en triangle, à un rayon du point visé.
+func test_a_triptych_drops_three_columns() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [[SkillStats.TRIPTYCH, 1.0]])
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	var pillars := _pillars()
+	assert_eq(pillars.size(), SkillStats.TRIPTYCH_COUNT)
+	for pillar: SacredPillar in pillars:
+		assert_almost_eq(pillar.global_position.distance_to(_aim()), pillar.reach(), 0.5)
+
+
+## La Consécration soigne son lanceur dans le cercle ; le Sanctuaire bénit à coup sûr.
+func test_a_consecrated_column_heals_and_blesses() -> void:
+	_learn_with(
+		"manual_holy", "sacred_pillar", [[SkillStats.CONSECRATION, 10.0], [SkillStats.SANCTUARY, 1.0]]
+	)
+	var cast := _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1)
+	var beside := _wearing_target(_p.global_position + Vector2(10, 0))
+	_p.stats.health_regen = 0.0
+	_p._set_health(_p.stats.max_health * 0.5)
+	var before := _p.health
+	SacredPillar.fall(_effects, _p.global_position, cast, _p.states, _p)
+	await wait_seconds(0.5)
+	assert_almost_eq(_p.health - before, _p.stats.max_health * 0.05, _p.stats.max_health * 0.01)
+	assert_true(beside.states.active(StatusEffects.Kind.BLESSING), "béni sans tirage")
+
+
+## L'Ascension : un tué allonge la colonne.
+func test_an_ascension_prolongs_the_column() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [[SkillStats.ASCENSION, 0.5]])
+	var prey := _grunt(_aim())
+	await wait_physics_frames(2)
+	prey._set_health(1.0)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(3)
+	assert_true(not is_instance_valid(prey) or prey.is_dead)
+	var pillar: SacredPillar = _pillars()[0]
+	assert_almost_eq(pillar._cast.duration, SkillCatalog.by_id("sacred_pillar").duration + 0.5, 0.001)
+
+
+## L'Apothéose : l'Effondrement porte les ennemis que la colonne a frappés.
+func test_an_apotheosis_swells_the_collapse() -> void:
+	_learn_with("manual_holy", "sacred_pillar", [
+		[SkillStats.END_BURST, 30.0], [SkillStats.APOTHEOSIS, 10.0], ["duration", -70.0, true]
+	])
+	_no_crits()
+	var one := _target(_aim() + Vector2(5, 0))
+	var other := _target(_aim() - Vector2(5, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.8)
+	var received: Array = _received_all[one]
+	assert_eq(received.size(), 2, "l'impulsion, puis l'effondrement")
+	assert_almost_eq(float(received[1]), float(received[0]) * 1.2, 0.01)
+	assert_eq(_hits(other), 2)
+
+
+# --------------------------------------------------------------------------
+# La Pulsation sacrée (jalon 48)
+# --------------------------------------------------------------------------
+
+## La Colère divine : rien pendant la litanie, puis toutes les ondes d'un coup, plus loin.
+func test_divine_wrath_gathers_the_waves() -> void:
+	_learn_with("manual_holy", "holy_pulse", [[SkillStats.WRATH, 1.0], ["duration", -60.0, true]])
+	_no_crits()
+	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
+	var far := _target(_p.global_position + Vector2(cast.radius * 1.3, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.5)
+	assert_eq(_hits(far), 0, "rien ne part avant la fin")
+	await wait_seconds(cast.period)
+	assert_eq(_hits(far), 1, "la dernière, plus loin")
+	assert_almost_eq(float(_received_all[far][0]), cast.average_per_hit() * 2.0, 0.01)
+
+
+## L'Égide garde, le Viatique rend du mana, la Purification lave, la Communion fait frapper
+## le pilier qu'atteint l'onde.
+func test_a_pulse_guards_cleanses_and_communes() -> void:
+	_learn_with("manual_holy", "holy_pulse", [
+		[SkillStats.AEGIS, 2.0], [SkillStats.MANA_ON_HIT, 3.0], [SkillStats.PURIFICATION, 50.0],
+		[SkillStats.COMMUNION, 50.0],
+	])
+	_target(_p.global_position + Vector2(20, 0))
+	_target(_p.global_position + Vector2(-20, 0))
+	SacredPillar.fall(
+		_effects, _p.global_position + Vector2(40, 0), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1),
+		_p.states
+	)
+	var by_pillar := _target(_p.global_position + Vector2(55, 15))
+	await wait_physics_frames(2)
+	_p.stats.mana_regen = 0.0
+	_p.states.put(StatusEffects.Kind.IGNITE, 1.0, null, "")
+	var burning := _p.states.remaining(StatusEffects.Kind.IGNITE)
+	assert_true(_p.cast_slot(2))
+	_p._set_mana(0.0)
+	Gestures.land(_p)
+	await wait_physics_frames(2)
+	assert_eq(_p._aegis, 4.0, "deux touchés, deux points")
+	# L'Égide refait la fiche, et la régénération de mana avec : deux images de marge.
+	assert_almost_eq(_p.mana, 6.0, 0.5, "trois de mana par touché")
+	assert_lt(_p.states.remaining(StatusEffects.Kind.IGNITE), burning * 0.6, "lavé de moitié")
+	assert_eq(_hits(by_pillar), 2, "l'impulsion du pilier, puis celle de la communion")
+
+
+# --------------------------------------------------------------------------
+# La Lumière sacrée (jalon 48)
+# --------------------------------------------------------------------------
+
+## L'Épiphanie : sans drain, des lignes doublées, une fin ; la Transfiguration éclate alors.
+func test_an_epiphany_doubles_then_bursts() -> void:
+	_learn_with("manual_holy", "holy_light", [[SkillStats.EPIPHANY, 1.0], [SkillStats.TRANSFIGURATION, 1.0]])
+	var field: String = DamageType.RESIST_FIELDS[DamageType.Kind.HOLY]
+	var bare := float(_p.stats.get(field))
+	var near := _target(_p.global_position + Vector2(30, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	var light := _p.resolve(SkillCatalog.by_id("holy_light"), 1)
+	assert_almost_eq(light.recharge, SkillStats.EPIPHANY_RECHARGE, 0.001)
+	assert_almost_eq(float(_p.stats.get(field)) - bare, 12.0, 0.01, "la Grâce, deux fois")
+	(_p._lit["holy_light"] as Buff)._age = SkillStats.EPIPHANY_TIME - 0.05
+	await wait_physics_frames(6)
+	assert_false(_p.lit("holy_light"))
+	assert_eq(_hits(near), 1, "l'éclat de la Transfiguration")
+
+
+## La Gloire frappe ce que l'Auréole bénit ; l'Humilité y fond la résistance au sacré.
+func test_a_glorious_aureole_strikes_and_humbles() -> void:
+	_learn_with("manual_holy", "holy_light", [
+		[SkillStats.AUREOLE, 40.0], [SkillStats.GLORY, 2.0], [SkillStats.HUMILITY, 10.0]
+	])
+	_no_crits()
+	var near := _wearing_target(_p.global_position + Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(SkillStats.AUREOLE_PERIOD + 0.1)
+	assert_eq(_hits(near), 1)
+	assert_almost_eq(float(_received_all[near][0]), _p.stats.max_health * 0.02, 0.01)
+	assert_eq(near.states.resistance_lost(DamageType.Kind.HOLY), 10.0)
+
+
+## L'Intercession : un gros coup bénit son auteur, plus fort ; un petit, non.
+func test_an_intercession_blesses_a_heavy_blow() -> void:
+	_learn_with("manual_holy", "holy_light", [[SkillStats.INTERCESSION, 50.0]])
+	var grunt := _grunt(Vector2(300, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * 0.05
+	var light_blow := DamageInfo.roll(null, Vector2.ZERO, blow)
+	light_blow.author = grunt.states
+	_p._on_damaged(light_blow)
+	assert_false(grunt.states.active(StatusEffects.Kind.BLESSING), "un petit coup")
+	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * 0.2
+	var heavy := DamageInfo.roll(null, Vector2.ZERO, blow)
+	heavy.author = grunt.states
+	_p._on_damaged(heavy)
+	assert_almost_eq(grunt.states.strength(StatusEffects.Kind.BLESSING), 1.5, 0.001)
+
+
+## La Dévotion : chaque seconde allumée renforce le sort sacré qui frappe.
+func test_devotion_grows_with_the_light() -> void:
+	_learn_with("manual_holy", "holy_light", [[SkillStats.DEVOTION, 10.0]])
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	(_p._lit["holy_light"] as Buff)._age = 5.0
+	var strike := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1)
+	assert_almost_eq(_p.devoted(strike).total_min(), strike.total_min() * 1.5, 0.01)
+
+
+# --------------------------------------------------------------------------
+# Le Marteau béni (jalon 48)
+# --------------------------------------------------------------------------
+
+func _hammers() -> Array:
+	return _children_of(BlessedHammer).filter(func(h: Node) -> bool: return not h.is_queued_for_deletion())
+
+
+## La spirale s'ouvre jusqu'à son rayon, frappe ce qu'elle croise, puis s'éteint.
+func test_a_blessed_hammer_spirals_out_then_ends() -> void:
+	_learn("manual_holy", ["blessed_hammer"])
+	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
+	var crossed := _target(_p.global_position + Vector2(cast.radius * 0.6, 0))
+	var beyond := _target(_p.global_position + Vector2(cast.radius + 30.0, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_hammers().size(), 1)
+	await wait_seconds(cast.duration + 0.1)
+	assert_gte(_hits(crossed), 1, "croisé sur la spirale")
+	assert_eq(_hits(beyond), 0, "hors de la spirale")
+	assert_eq(_hammers().size(), 0, "éteint au bout de sa durée")
+
+
+## Le Carillon : trois marteaux en étoile ; le Bourdon fait du troisième un bourdon.
+func test_a_chime_sends_a_star_with_a_great_bell() -> void:
+	_learn_with("manual_holy", "blessed_hammer", [[SkillStats.HAMMERS, 2.0], [SkillStats.BOURDON, 1.0]])
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	var hammers := _hammers()
+	assert_eq(hammers.size(), 3)
+	var bells := hammers.filter(
+		func(h: BlessedHammer) -> bool: return h._bite > SkillStats.HAMMER_BITE
+	)
+	assert_eq(bells.size(), 1)
+
+
+## La Gravitation : le marteau tourne autour de son lanceur, à rayon fixe.
+func test_a_gravitating_hammer_circles_its_caster() -> void:
+	_learn_with("manual_holy", "blessed_hammer", [[SkillStats.GRAVITATION, 1.0]])
+	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	_p.global_position += Vector2(40, 0)
+	await wait_seconds(0.5)
+	var hammer: BlessedHammer = _hammers()[0]
+	assert_almost_eq(
+		hammer.global_position.distance_to(_p.global_position),
+		cast.radius * SkillStats.GRAVITATION_ORBIT, 1.0
+	)
+
+
+## Le Martèlement : chaque coup sur un même ennemi plus fort ; le Battage éclate au cinquième.
+func test_hammering_grows_and_threshes() -> void:
+	_learn_with(
+		"manual_holy", "blessed_hammer", [[SkillStats.MARTELLING, 10.0], [SkillStats.THRESHING, 40.0]]
+	)
+	_no_crits()
+	var anvil := _target(Vector2(400, 0))
+	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
+	var hammer := BlessedHammer.swing(_effects, Vector2(-400, 0), 0.0, cast, _p.states, null)
+	for i in SkillStats.THRESHING_EVERY:
+		hammer._blow(anvil)
+	var received: Array = _received_all[anvil]
+	assert_almost_eq(float(received[1]), float(received[0]) * 1.1, 0.01)
+	assert_almost_eq(float(received[4]), float(received[0]) * 1.4, 0.01)
+	await wait_physics_frames(3)
+	assert_eq(_children_of(Explosion).size(), 1, "un éclat au cinquième coup")
+
+
+## Le Battage en vrai : un marteau seul ne touche un même ennemi que deux fois sur sa spirale ;
+## les coups se comptent tous marteaux confondus, et le cinquième éclate.
+func test_hammers_together_reach_the_threshing() -> void:
+	_learn_with(
+		"manual_holy", "blessed_hammer", [[SkillStats.HAMMERS, 2.0], [SkillStats.THRESHING, 40.0]]
+	)
+	var anvil := _grunt(Vector2(35, 0))
+	anvil.stats = anvil.stats.duplicate()
+	anvil.stats.max_health = 1.0e9
+	anvil._set_health(1.0e9)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	# Relancé dès que les marteaux s'éteignent, comme on le tient en jeu.
+	var burst := false
+	for i in 120:
+		if i == 45:
+			_cast_again(2)
+		burst = burst or not _children_of(Explosion).is_empty()
+		await wait_physics_frames(1)
+	assert_true(burst, "le Battage a éclaté")
+
+
+## Le Tocsin : un tué lâche un petit marteau, à sa part du coup.
+func test_a_tocsin_rings_out_of_the_slain() -> void:
+	_learn_with("manual_holy", "blessed_hammer", [[SkillStats.TOCSIN, 40.0]])
+	var prey := _grunt(Vector2(400, 0))
+	await wait_physics_frames(2)
+	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
+	var hammer := BlessedHammer.swing(_effects, Vector2(-400, 0), 0.0, cast, _p.states, null)
+	prey._set_health(1.0)
+	hammer._blow(prey.hurtbox)
+	assert_true(prey.is_dead)
+	await wait_physics_frames(1)
+	var small: Array = _hammers().filter(func(h: BlessedHammer) -> bool: return h != hammer)
+	assert_eq(small.size(), 1)
+	assert_almost_eq((small[0] as BlessedHammer)._cast.total_min(), cast.total_min() * 0.4, 0.01)

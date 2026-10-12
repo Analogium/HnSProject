@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://clyl8d7wi3uq4"
-path="res://.godot/imported/holy_strike.png-412e27f8c4ae4c07cc387da6eff1f692.ctex"
+uid="uid://vn2lxre4mv15"
+path="res://.godot/imported/judgment_chains_links.png-de5b5afc88c832c479150e6b9d9483e1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/icons/holy_strike.png"
-dest_files=["res://.godot/imported/holy_strike.png-412e27f8c4ae4c07cc387da6eff1f692.ctex"]
+source_file="res://resources/icons/nodes/judgment_chains_links.png"
+dest_files=["res://.godot/imported/judgment_chains_links.png-de5b5afc88c832c479150e6b9d9483e1.ctex"]
 
 [params]
 

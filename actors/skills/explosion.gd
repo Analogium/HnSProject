@@ -134,6 +134,9 @@ func _draw() -> void:
 		DamageType.Kind.NECROTIC:
 			Necrotic.put_band(self, Necrotic.miasma(_tint, _radius, k), Vector2.ZERO)
 			return
+		DamageType.Kind.HOLY:
+			_glory(k)
+			return
 
 	# **En additif, c'est le bleu qui blanchit.** Le blanc du feu en porte 0,78 : à
 	# 0,55 de mélange, le souffle montait à 0,67 de bleu une fois posé sur le sol et
@@ -209,6 +212,18 @@ func _rime(r: float, k: float, fade: float) -> void:
 		Frost.raise_spike(self, foot, i % 2 == 0, out, _tint)
 
 
+## Le souffle sacré, **entièrement dessiné** (jalon 48) : les rayons de gloire de `Holy`, et
+## l'étoile du souffle au cœur, le premier tiers. Tracé en additif, l'anneau rose pâle se
+## perdait sur le sol, et l'éclat du Battage passait pour absent.
+func _glory(k: float) -> void:
+	var frame := mini(int(k * float(Holy.GLORY_FRAMES)), Holy.GLORY_FRAMES - 1)
+	EffectForge.put_centered(self, Holy.glory(_tint, maxi(roundi(_radius), 1), frame), Vector2.ZERO)
+	var burst := EffectForge.flashes(_tint)
+	var step := int(_age * EffectForge.FLASH_HZ)
+	if step < burst.size():
+		EffectForge.put_centered(self, burst[step], Vector2.ZERO)
+
+
 ## La trace au sol du souffle peint : tramée, elle s'efface avec lui. Cuite au rayon final
 ## et réduite pendant l'ouverture : cuite à chaque rayon, une nova de 83 px coûtait un
 ## halo par image, 6 ms le plus grand (mesuré).
@@ -221,7 +236,9 @@ func _ground(r: float, fade: float) -> void:
 ## Peint — fait de planches cernées — ou tracé en polygones : c'est ce qui décide
 ## du mélange, et les deux moitiés de `_draw()`.
 func _is_painted() -> bool:
-	return _nature() in [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.NECROTIC]
+	return _nature() in [
+		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.NECROTIC, DamageType.Kind.HOLY,
+	]
 
 
 ## Combien de temps ce souffle s'affiche.

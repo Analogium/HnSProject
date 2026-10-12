@@ -5,134 +5,353 @@
 [ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
 [ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
 [ext_resource type="Script" path="res://core/passive.gd" id="5_passif"]
-[ext_resource type="Resource" path="res://resources/skills/holy_strike.tres" id="10_frappe"]
+[ext_resource type="Resource" path="res://resources/skills/judgment_chains.tres" id="10_chaines"]
 [ext_resource type="Resource" path="res://resources/skills/sacred_pillar.tres" id="11_pilier"]
 [ext_resource type="Resource" path="res://resources/skills/holy_pulse.tres" id="12_pulsation"]
 [ext_resource type="Resource" path="res://resources/skills/holy_light.tres" id="13_lumiere"]
+[ext_resource type="Resource" path="res://resources/skills/blessed_hammer.tres" id="14_marteau"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_indictment.png" id="icon_judgment_chains_indictment"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_breadth.png" id="icon_judgment_chains_breadth"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_gaol.png" id="icon_judgment_chains_gaol"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_aspersion.png" id="icon_judgment_chains_aspersion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_links.png" id="icon_judgment_chains_links"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_solidarity.png" id="icon_judgment_chains_solidarity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_constriction.png" id="icon_judgment_chains_constriction"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_rupture.png" id="icon_judgment_chains_rupture"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_pillory.png" id="icon_judgment_chains_pillory"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_scapegoat.png" id="icon_judgment_chains_scapegoat"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_shackle.png" id="icon_judgment_chains_shackle"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_handover.png" id="icon_judgment_chains_handover"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_absoute.png" id="icon_judgment_chains_absoute"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_unison.png" id="icon_judgment_chains_unison"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/judgment_chains_stigmata.png" id="icon_judgment_chains_stigmata"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_judgement.png" id="icon_sacred_pillar_judgement"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_column.png" id="icon_sacred_pillar_column"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_vigil.png" id="icon_sacred_pillar_vigil"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_knell.png" id="icon_sacred_pillar_knell"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_call.png" id="icon_sacred_pillar_call"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_collapse.png" id="icon_sacred_pillar_collapse"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_drift.png" id="icon_sacred_pillar_drift"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_verdict.png" id="icon_sacred_pillar_verdict"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_ascension.png" id="icon_sacred_pillar_ascension"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_consecration.png" id="icon_sacred_pillar_consecration"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_sanctuary.png" id="icon_sacred_pillar_sanctuary"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_triptych.png" id="icon_sacred_pillar_triptych"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_apotheosis.png" id="icon_sacred_pillar_apotheosis"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/sacred_pillar_procession.png" id="icon_sacred_pillar_procession"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_fervour.png" id="icon_holy_pulse_fervour"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_litany.png" id="icon_holy_pulse_litany"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_radiance.png" id="icon_holy_pulse_radiance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_canticle.png" id="icon_holy_pulse_canticle"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_absolution.png" id="icon_holy_pulse_absolution"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_exaltation.png" id="icon_holy_pulse_exaltation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_antiphon.png" id="icon_holy_pulse_antiphon"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_aegis.png" id="icon_holy_pulse_aegis"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_purification.png" id="icon_holy_pulse_purification"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_communion.png" id="icon_holy_pulse_communion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_wrath.png" id="icon_holy_pulse_wrath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_ecstasy.png" id="icon_holy_pulse_ecstasy"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_viaticum.png" id="icon_holy_pulse_viaticum"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_pulse_revelation.png" id="icon_holy_pulse_revelation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_zeal.png" id="icon_holy_light_zeal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_recollection.png" id="icon_holy_light_recollection"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_serenity.png" id="icon_holy_light_serenity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_cuirass.png" id="icon_holy_light_cuirass"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_elation.png" id="icon_holy_light_elation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_aureole.png" id="icon_holy_light_aureole"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_pilgrim.png" id="icon_holy_light_pilgrim"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_devotion.png" id="icon_holy_light_devotion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_intercession.png" id="icon_holy_light_intercession"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_epiphany.png" id="icon_holy_light_epiphany"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_glory.png" id="icon_holy_light_glory"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_humility.png" id="icon_holy_light_humility"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/holy_light_transfiguration.png" id="icon_holy_light_transfiguration"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_poise.png" id="icon_blessed_hammer_poise"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_flight.png" id="icon_blessed_hammer_flight"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_ironwork.png" id="icon_blessed_hammer_ironwork"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_lightening.png" id="icon_blessed_hammer_lightening"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_swiftness.png" id="icon_blessed_hammer_swiftness"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_chime.png" id="icon_blessed_hammer_chime"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_hammering.png" id="icon_blessed_hammer_hammering"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_tocsin.png" id="icon_blessed_hammer_tocsin"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_gravitation.png" id="icon_blessed_hammer_gravitation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_bourdon.png" id="icon_blessed_hammer_bourdon"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_threshing.png" id="icon_blessed_hammer_threshing"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_peal.png" id="icon_blessed_hammer_peal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/blessed_hammer_eclipse.png" id="icon_blessed_hammer_eclipse"]
 
-[sub_resource type="Resource" id="L_holy_strike_piercing_0"]
+[sub_resource type="Resource" id="L_judgment_chains_indictment_0"]
 script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
 value_per_point = 12.0
 
-[sub_resource type="Resource" id="N_holy_strike_piercing"]
+[sub_resource type="Resource" id="N_judgment_chains_indictment"]
 script = ExtResource("3_noeud")
-id = "holy_strike_piercing"
-name = "Percée"
-description = "Le trait frappe plus fort."
+id = "judgment_chains_indictment"
+name = "Réquisitoire"
+icon = ExtResource("icon_judgment_chains_indictment")
+description = "Les chaînes frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_piercing_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_indictment_0")])
 
-[sub_resource type="Resource" id="L_holy_strike_reach_0"]
+[sub_resource type="Resource" id="L_judgment_chains_breadth_0"]
 script = ExtResource("4_ligne")
 stat = "radius"
 percentage = true
 value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_holy_strike_reach"]
+[sub_resource type="Resource" id="N_judgment_chains_breadth"]
 script = ExtResource("3_noeud")
-id = "holy_strike_reach"
-name = "Allonge du trait"
-description = "Le trait porte plus loin."
+id = "judgment_chains_breadth"
+name = "Ampleur"
+icon = ExtResource("icon_judgment_chains_breadth")
+description = "La chaîne cherche ses voisins plus loin."
 position = Vector2i(1, 0)
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_reach_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_breadth_0")])
 
-[sub_resource type="Resource" id="L_holy_strike_sanctification_0"]
+[sub_resource type="Resource" id="L_judgment_chains_gaol_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_judgment_chains_gaol"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_gaol"
+name = "Geôle"
+icon = ExtResource("icon_judgment_chains_gaol")
+description = "Les chaînes tiennent plus longtemps."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_gaol_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_aspersion_0"]
 script = ExtResource("4_ligne")
 stat = "status_chance_increase"
 value_per_point = 15.0
 
-[sub_resource type="Resource" id="N_holy_strike_sanctification"]
+[sub_resource type="Resource" id="N_judgment_chains_aspersion"]
 script = ExtResource("3_noeud")
-id = "holy_strike_sanctification"
-name = "Sanctification"
-description = "Le trait bénit plus souvent ce qu'il touche."
-position = Vector2i(0, 1)
+id = "judgment_chains_aspersion"
+name = "Aspersion"
+icon = ExtResource("icon_judgment_chains_aspersion")
+description = "Les chaînes bénissent plus souvent ce qu'elles touchent."
+position = Vector2i(0, -1)
 points_max = 4
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_sanctification_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_aspersion_0")])
 
-[sub_resource type="Resource" id="L_holy_strike_reproof_0"]
+[sub_resource type="Resource" id="L_judgment_chains_links_0"]
 script = ExtResource("4_ligne")
-stat = "damage_vs_blessing"
-percentage = true
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_holy_strike_reproof"]
-script = ExtResource("3_noeud")
-id = "holy_strike_reproof"
-name = "Réprobation"
-description = "Le trait frappe plus fort les ennemis bénis."
-position = Vector2i(-2, 0)
-parents = Dictionary[String, int]({
-"holy_strike_piercing": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_reproof_0")])
-
-[sub_resource type="Resource" id="L_holy_strike_deep_blessing_0"]
-script = ExtResource("4_ligne")
-stat = "blessing_effect"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_holy_strike_deep_blessing"]
-script = ExtResource("3_noeud")
-id = "holy_strike_deep_blessing"
-name = "Bénédiction profonde"
-description = "La bénédiction que pose le trait affaiblit davantage : le béni inflige encore moins de dégâts."
-position = Vector2i(1, 1)
-parents = Dictionary[String, int]({
-"holy_strike_sanctification": 1
-})
-points_max = 4
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_deep_blessing_0")])
-
-[sub_resource type="Resource" id="L_holy_strike_refraction_0"]
-script = ExtResource("4_ligne")
-stat = "bounces"
+stat = "links"
 value_per_point = 1.0
 
-[sub_resource type="Resource" id="N_holy_strike_refraction"]
+[sub_resource type="Resource" id="N_judgment_chains_links"]
 script = ExtResource("3_noeud")
-id = "holy_strike_refraction"
-name = "Réfraction"
-description = "Au bout de sa course, le trait repart vers l'ennemi le plus proche qu'il n'a pas encore frappé, une fois par point. Personne n'est frappé deux fois par un même lancer."
-position = Vector2i(1, -1)
+id = "judgment_chains_links"
+name = "Maillons"
+icon = ExtResource("icon_judgment_chains_links")
+description = "La chaîne enchaîne un ennemi de plus par point."
+position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
-"holy_strike_reach": 1
+"judgment_chains_breadth": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_links_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_solidarity_0"]
+script = ExtResource("4_ligne")
+stat = "solidarity"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_judgment_chains_solidarity"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_solidarity"
+name = "Solidarité"
+icon = ExtResource("icon_judgment_chains_solidarity")
+description = "Les enchaînés partagent une plus grande part de chaque coup."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"judgment_chains_indictment": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_solidarity_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_constriction_0"]
+script = ExtResource("4_ligne")
+stat = "constriction"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_judgment_chains_constriction"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_constriction"
+name = "Resserrement"
+icon = ExtResource("icon_judgment_chains_constriction")
+description = "Les chaînes tirent les enchaînés vers le premier touché."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"judgment_chains_gaol": 1
 })
 points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_refraction_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_constriction_0")])
 
-[sub_resource type="Resource" id="L_holy_strike_cross_0"]
+[sub_resource type="Resource" id="L_judgment_chains_rupture_0"]
 script = ExtResource("4_ligne")
-stat = "radius"
+stat = "rupture"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_judgment_chains_rupture"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_rupture"
+name = "Rupture"
+icon = ExtResource("icon_judgment_chains_rupture")
+description = "Un enchaîné qui meurt éclate, à {rayon_rupture} px autour de lui, à une part du coup de la chaîne."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"judgment_chains_indictment": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_rupture_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_pillory_0"]
+script = ExtResource("4_ligne")
+stat = "pillory"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_judgment_chains_pillory"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_pillory"
+name = "Pilori"
+icon = ExtResource("icon_judgment_chains_pillory")
+description = "Les enchaînés sont tirés vers le plus proche de vos Piliers sacrés qui brûlent."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"judgment_chains_breadth": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_pillory_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_scapegoat_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
 percentage = true
+more = true
 value_per_point = -30.0
 
-[sub_resource type="Resource" id="N_holy_strike_cross"]
+[sub_resource type="Resource" id="N_judgment_chains_scapegoat"]
 script = ExtResource("3_noeud")
-id = "holy_strike_cross"
-name = "Croix de lumière"
-description = "Le trait part dans les quatre directions autour de vous, droit sur les axes, sans viser. Un ennemi au croisement n'est frappé qu'une fois. En échange, chaque bras est plus court."
-position = Vector2i(0, -1)
+id = "judgment_chains_scapegoat"
+name = "Bouc émissaire"
+icon = ExtResource("icon_judgment_chains_scapegoat")
+description = "Les chaînes partent de vous : elles vous lient aux ennemis les plus proches, autant que le trait en enchaînerait, jusqu'à {portee_bouc} fois le rayon. La part partagée des coups que vous prenez passe à eux au lieu de vous. En échange, les chaînes frappent moins fort."
+position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
-"holy_strike_piercing": 2,
-"holy_strike_refraction": 1
+"judgment_chains_gaol": 2,
+"judgment_chains_solidarity": 2
 })
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_strike_cross_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_scapegoat_0")])
 transforms = true
-shape = 38
+shape = 49
 
-[sub_resource type="Resource" id="C_frappe"]
+[sub_resource type="Resource" id="L_judgment_chains_shackle_0"]
+script = ExtResource("4_ligne")
+stat = "shackle"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_judgment_chains_shackle"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_shackle"
+name = "Carcan"
+icon = ExtResource("icon_judgment_chains_shackle")
+description = "Un enchaîné que le Resserrement amène au contact du premier touché est assommé {carcan} s, une fois par lien."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"judgment_chains_constriction": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_shackle_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_handover_0"]
+script = ExtResource("4_ligne")
+stat = "handover"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_judgment_chains_handover"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_handover"
+name = "Passation"
+icon = ExtResource("icon_judgment_chains_handover")
+description = "Les chaînes d'un enchaîné qui meurt sautent sur l'ennemi libre le plus proche, une fois par point."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"judgment_chains_links": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_handover_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_absoute_0"]
+script = ExtResource("4_ligne")
+stat = "absoute"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_judgment_chains_absoute"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_absoute"
+name = "Absoute"
+icon = ExtResource("icon_judgment_chains_absoute")
+description = "L'éclat de la Rupture bénit à coup sûr ce qu'il touche."
+position = Vector2i(-1, -2)
+parents = Dictionary[String, int]({
+"judgment_chains_rupture": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_absoute_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_unison_0"]
+script = ExtResource("4_ligne")
+stat = "unison"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_judgment_chains_unison"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_unison"
+name = "Unisson"
+icon = ExtResource("icon_judgment_chains_unison")
+description = "Un coup partagé passe aussi aux autres enchaînés les états que porte celui qui l'a pris."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"judgment_chains_solidarity": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_unison_0")])
+
+[sub_resource type="Resource" id="L_judgment_chains_stigmata_0"]
+script = ExtResource("4_ligne")
+stat = "stigmata"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_judgment_chains_stigmata"]
+script = ExtResource("3_noeud")
+id = "judgment_chains_stigmata"
+name = "Stigmates"
+icon = ExtResource("icon_judgment_chains_stigmata")
+description = "Sous le Bouc émissaire, chaque coup détourné vous rend des PV."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"judgment_chains_scapegoat": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_judgment_chains_stigmata_0")])
+
+[sub_resource type="Resource" id="C_chaines"]
 script = ExtResource("2_case")
-skill = ExtResource("10_frappe")
+skill = ExtResource("10_chaines")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_strike_piercing"), SubResource("N_holy_strike_reach"), SubResource("N_holy_strike_sanctification"), SubResource("N_holy_strike_reproof"), SubResource("N_holy_strike_deep_blessing"), SubResource("N_holy_strike_refraction"), SubResource("N_holy_strike_cross")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_judgment_chains_indictment"), SubResource("N_judgment_chains_breadth"), SubResource("N_judgment_chains_gaol"), SubResource("N_judgment_chains_aspersion"), SubResource("N_judgment_chains_links"), SubResource("N_judgment_chains_solidarity"), SubResource("N_judgment_chains_constriction"), SubResource("N_judgment_chains_rupture"), SubResource("N_judgment_chains_pillory"), SubResource("N_judgment_chains_scapegoat"), SubResource("N_judgment_chains_shackle"), SubResource("N_judgment_chains_handover"), SubResource("N_judgment_chains_absoute"), SubResource("N_judgment_chains_unison"), SubResource("N_judgment_chains_stigmata")])
 
 [sub_resource type="Resource" id="L_sacred_pillar_judgement_0"]
 script = ExtResource("4_ligne")
@@ -145,6 +364,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_judgement"
 name = "Jugement"
+icon = ExtResource("icon_sacred_pillar_judgement")
 description = "La colonne frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -160,6 +380,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_column"
 name = "Colonne"
+icon = ExtResource("icon_sacred_pillar_column")
 description = "La colonne mord un cercle plus large."
 position = Vector2i(1, 0)
 points_max = 3
@@ -175,6 +396,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_vigil"
 name = "Veille"
+icon = ExtResource("icon_sacred_pillar_vigil")
 description = "La colonne brûle plus longtemps."
 position = Vector2i(0, 1)
 points_max = 4
@@ -190,6 +412,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_knell"
 name = "Glas"
+icon = ExtResource("icon_sacred_pillar_knell")
 description = "La colonne frappe plus souvent."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -207,6 +430,7 @@ value_per_point = 40.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_call"
 name = "Appel céleste"
+icon = ExtResource("icon_sacred_pillar_call")
 description = "Chaque impulsion de la colonne attire les ennemis vers son cœur."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -224,6 +448,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_collapse"
 name = "Effondrement"
+icon = ExtResource("icon_sacred_pillar_collapse")
 description = "En s'éteignant, la colonne éclate et frappe tout autour d'elle."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -242,6 +467,7 @@ value_per_point = -25.0
 script = ExtResource("3_noeud")
 id = "sacred_pillar_drift"
 name = "Pilier errant"
+icon = ExtResource("icon_sacred_pillar_drift")
 description = "La colonne glisse vers l'ennemi le plus proche et le suit, au lieu de rester où elle est tombée. En échange, elle mord un cercle plus étroit."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -253,11 +479,144 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_drift_0")])
 transforms = true
 shape = 39
 
+[sub_resource type="Resource" id="L_sacred_pillar_verdict_0"]
+script = ExtResource("4_ligne")
+stat = "verdict"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_verdict"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_verdict"
+name = "Verdict"
+icon = ExtResource("icon_sacred_pillar_verdict")
+description = "La colonne tombe : sa première impulsion frappe plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"sacred_pillar_judgement": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_verdict_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_ascension_0"]
+script = ExtResource("4_ligne")
+stat = "ascension"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_sacred_pillar_ascension"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_ascension"
+name = "Ascension"
+icon = ExtResource("icon_sacred_pillar_ascension")
+description = "Chaque ennemi que la colonne tue la fait brûler plus longtemps, {ascension_max} s de plus au plus."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"sacred_pillar_vigil": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_ascension_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_consecration_0"]
+script = ExtResource("4_ligne")
+stat = "consecration"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_consecration"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_consecration"
+name = "Consécration"
+icon = ExtResource("icon_sacred_pillar_consecration")
+description = "La colonne consacre le sol : tant que vous vous tenez dans son cercle, vous regagnez chaque seconde une part de vos PV max."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"sacred_pillar_column": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_consecration_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_sanctuary_0"]
+script = ExtResource("4_ligne")
+stat = "sanctuary"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_sanctuary"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_sanctuary"
+name = "Sanctuaire"
+icon = ExtResource("icon_sacred_pillar_sanctuary")
+description = "Ce que la colonne frappe dans le sol consacré est béni à coup sûr."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"sacred_pillar_consecration": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_sanctuary_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_triptych_0"]
+script = ExtResource("4_ligne")
+stat = "triptych"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_sacred_pillar_triptych_1"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = -40.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_triptych"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_triptych"
+name = "Triptyque"
+icon = ExtResource("icon_sacred_pillar_triptych")
+description = "{colonnes_triptyque} colonnes tombent en triangle autour du point visé, au lieu d'une. En échange, chacune mord un cercle plus étroit."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"sacred_pillar_column": 2,
+"sacred_pillar_judgement": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_triptych_0"), SubResource("L_sacred_pillar_triptych_1")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_apotheosis_0"]
+script = ExtResource("4_ligne")
+stat = "apotheosis"
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_apotheosis"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_apotheosis"
+name = "Apothéose"
+icon = ExtResource("icon_sacred_pillar_apotheosis")
+description = "L'Effondrement frappe plus fort pour chaque ennemi que la colonne a frappé, {apotheose_max} au plus."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"sacred_pillar_collapse": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_apotheosis_0")])
+
+[sub_resource type="Resource" id="L_sacred_pillar_procession_0"]
+script = ExtResource("4_ligne")
+stat = "procession"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_sacred_pillar_procession"]
+script = ExtResource("3_noeud")
+id = "sacred_pillar_procession"
+name = "Procession"
+icon = ExtResource("icon_sacred_pillar_procession")
+description = "Le Pilier errant glisse plus vite vers sa proie."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"sacred_pillar_drift": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_sacred_pillar_procession_0")])
+
 [sub_resource type="Resource" id="C_pilier"]
 script = ExtResource("2_case")
 skill = ExtResource("11_pilier")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_sacred_pillar_judgement"), SubResource("N_sacred_pillar_column"), SubResource("N_sacred_pillar_vigil"), SubResource("N_sacred_pillar_knell"), SubResource("N_sacred_pillar_call"), SubResource("N_sacred_pillar_collapse"), SubResource("N_sacred_pillar_drift")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_sacred_pillar_judgement"), SubResource("N_sacred_pillar_column"), SubResource("N_sacred_pillar_vigil"), SubResource("N_sacred_pillar_knell"), SubResource("N_sacred_pillar_call"), SubResource("N_sacred_pillar_collapse"), SubResource("N_sacred_pillar_drift"), SubResource("N_sacred_pillar_verdict"), SubResource("N_sacred_pillar_ascension"), SubResource("N_sacred_pillar_consecration"), SubResource("N_sacred_pillar_sanctuary"), SubResource("N_sacred_pillar_triptych"), SubResource("N_sacred_pillar_apotheosis"), SubResource("N_sacred_pillar_procession")])
 
 [sub_resource type="Resource" id="L_holy_pulse_fervour_0"]
 script = ExtResource("4_ligne")
@@ -270,6 +629,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_fervour"
 name = "Ferveur"
+icon = ExtResource("icon_holy_pulse_fervour")
 description = "Les ondes frappent plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -285,6 +645,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_litany"
 name = "Litanie"
+icon = ExtResource("icon_holy_pulse_litany")
 description = "La pulsation dure plus longtemps."
 position = Vector2i(1, 0)
 points_max = 4
@@ -300,6 +661,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_radiance"
 name = "Rayonnement"
+icon = ExtResource("icon_holy_pulse_radiance")
 description = "Les ondes portent plus loin autour de vous."
 position = Vector2i(0, 1)
 points_max = 3
@@ -315,6 +677,7 @@ value_max_per_point = 5.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_canticle"
 name = "Cantique"
+icon = ExtResource("icon_holy_pulse_canticle")
 description = "Les ondes portent des dégâts sacrés en plus."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -332,6 +695,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_absolution"
 name = "Absolution"
+icon = ExtResource("icon_holy_pulse_absolution")
 description = "Chaque ennemi touché par une onde vous rend des points de vie."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -349,6 +713,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "holy_pulse_exaltation"
 name = "Exaltation"
+icon = ExtResource("icon_holy_pulse_exaltation")
 description = "Chaque onde frappe plus fort que la précédente : la dernière d'une longue litanie porte le gain de toutes celles déjà parties."
 position = Vector2i(0, -1)
 parents = Dictionary[String, int]({
@@ -358,11 +723,153 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_exaltation_0")])
 
+[sub_resource type="Resource" id="L_holy_pulse_antiphon_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_holy_pulse_antiphon"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_antiphon"
+name = "Antienne"
+icon = ExtResource("icon_holy_pulse_antiphon")
+description = "La pulsation revient plus vite."
+position = Vector2i(-1, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_antiphon_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_aegis_0"]
+script = ExtResource("4_ligne")
+stat = "aegis"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_pulse_aegis"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_aegis"
+name = "Égide"
+icon = ExtResource("icon_holy_pulse_aegis")
+description = "Chaque onde qui touche vous garde : vous subissez moins de dégâts pour chaque ennemi touché, jusqu'à l'onde suivante, {egide_max} % au plus."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"holy_pulse_absolution": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_aegis_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_purification_0"]
+script = ExtResource("4_ligne")
+stat = "purification"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_holy_pulse_purification"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_purification"
+name = "Purification"
+icon = ExtResource("icon_holy_pulse_purification")
+description = "Chaque onde vous lave : les états que vous portez perdent une part de ce qu'il leur reste."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"holy_pulse_litany": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_purification_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_communion_0"]
+script = ExtResource("4_ligne")
+stat = "communion"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_holy_pulse_communion"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_communion"
+name = "Communion"
+icon = ExtResource("icon_holy_pulse_communion")
+description = "Une onde qui atteint l'un de vos Piliers sacrés le fait frapper sur-le-champ, une impulsion de plus à une part de son coup."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"holy_pulse_radiance": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_communion_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_wrath_0"]
+script = ExtResource("4_ligne")
+stat = "wrath"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_pulse_wrath"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_wrath"
+name = "Colère divine"
+icon = ExtResource("icon_holy_pulse_wrath")
+description = "Les ondes s'amassent : aucune ne part avant la fin, et la dernière frappe de toutes à la fois, {portee_colere} fois plus loin. Rien ne frappe pendant la litanie."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"holy_pulse_exaltation": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_wrath_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_ecstasy_0"]
+script = ExtResource("4_ligne")
+stat = "ecstasy"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_holy_pulse_ecstasy"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_ecstasy"
+name = "Extase"
+icon = ExtResource("icon_holy_pulse_ecstasy")
+description = "La dernière onde de la litanie porte {portee_extase} fois plus loin et frappe plus fort."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"holy_pulse_exaltation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_ecstasy_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_viaticum_0"]
+script = ExtResource("4_ligne")
+stat = "mana_on_hit"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_pulse_viaticum"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_viaticum"
+name = "Viatique"
+icon = ExtResource("icon_holy_pulse_viaticum")
+description = "Chaque ennemi touché par une onde vous rend aussi du mana."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"holy_pulse_absolution": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_viaticum_0")])
+
+[sub_resource type="Resource" id="L_holy_pulse_revelation_0"]
+script = ExtResource("4_ligne")
+stat = "revelation"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_pulse_revelation"]
+script = ExtResource("3_noeud")
+id = "holy_pulse_revelation"
+name = "Révélation"
+icon = ExtResource("icon_holy_pulse_revelation")
+description = "La Colère divine bénit à coup sûr tout ce qu'elle touche."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"holy_pulse_wrath": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_pulse_revelation_0")])
+
 [sub_resource type="Resource" id="C_pulsation"]
 script = ExtResource("2_case")
 skill = ExtResource("12_pulsation")
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_pulse_fervour"), SubResource("N_holy_pulse_litany"), SubResource("N_holy_pulse_radiance"), SubResource("N_holy_pulse_canticle"), SubResource("N_holy_pulse_absolution"), SubResource("N_holy_pulse_exaltation")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_pulse_fervour"), SubResource("N_holy_pulse_litany"), SubResource("N_holy_pulse_radiance"), SubResource("N_holy_pulse_canticle"), SubResource("N_holy_pulse_absolution"), SubResource("N_holy_pulse_exaltation"), SubResource("N_holy_pulse_antiphon"), SubResource("N_holy_pulse_aegis"), SubResource("N_holy_pulse_purification"), SubResource("N_holy_pulse_communion"), SubResource("N_holy_pulse_wrath"), SubResource("N_holy_pulse_ecstasy"), SubResource("N_holy_pulse_viaticum"), SubResource("N_holy_pulse_revelation")])
 
 [sub_resource type="Resource" id="L_holy_light_zeal_0"]
 script = ExtResource("4_ligne")
@@ -375,6 +882,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "holy_light_zeal"
 name = "Zèle"
+icon = ExtResource("icon_holy_light_zeal")
 description = "Tant que la lumière brûle, vos dégâts sacrés sont plus forts."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -390,6 +898,7 @@ value_per_point = -15.0
 script = ExtResource("3_noeud")
 id = "holy_light_recollection"
 name = "Recueillement"
+icon = ExtResource("icon_holy_light_recollection")
 description = "La lumière draine moins de mana."
 position = Vector2i(1, 0)
 points_max = 3
@@ -404,6 +913,7 @@ value_per_point = -2.0
 script = ExtResource("3_noeud")
 id = "holy_light_serenity"
 name = "Sérénité"
+icon = ExtResource("icon_holy_light_serenity")
 description = "Tant que la lumière brûle, vous subissez moins de dégâts."
 position = Vector2i(0, 1)
 points_max = 4
@@ -418,6 +928,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "holy_light_cuirass"
 name = "Cuirasse de foi"
+icon = ExtResource("icon_holy_light_cuirass")
 description = "Tant que la lumière brûle, votre armure augmente."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
@@ -436,6 +947,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "holy_light_elation"
 name = "Allégresse"
+icon = ExtResource("icon_holy_light_elation")
 description = "Tant que la lumière brûle, vous lancez vos sorts plus vite."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -453,6 +965,7 @@ value_per_point = 20.0
 script = ExtResource("3_noeud")
 id = "holy_light_aureole"
 name = "Auréole"
+icon = ExtResource("icon_holy_light_aureole")
 description = "Tant que la lumière brûle, les ennemis qui s'approchent de vous sont bénis : ils infligent moins de dégâts."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -462,11 +975,378 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_aureole_0")])
 
+[sub_resource type="Resource" id="L_holy_light_pilgrim_0"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_holy_light_pilgrim"]
+script = ExtResource("3_noeud")
+id = "holy_light_pilgrim"
+name = "Pèlerin"
+icon = ExtResource("icon_holy_light_pilgrim")
+description = "Tant que la lumière brûle, vous marchez plus vite."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_pilgrim_0")])
+
+[sub_resource type="Resource" id="L_holy_light_devotion_0"]
+script = ExtResource("4_ligne")
+stat = "devotion"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_light_devotion"]
+script = ExtResource("3_noeud")
+id = "holy_light_devotion"
+name = "Dévotion"
+icon = ExtResource("icon_holy_light_devotion")
+description = "Chaque seconde que la lumière brûle renforce vos sorts sacrés, {devotion_max} s au plus."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"holy_light_zeal": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_devotion_0")])
+
+[sub_resource type="Resource" id="L_holy_light_intercession_0"]
+script = ExtResource("4_ligne")
+stat = "intercession"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_holy_light_intercession"]
+script = ExtResource("3_noeud")
+id = "holy_light_intercession"
+name = "Intercession"
+icon = ExtResource("icon_holy_light_intercession")
+description = "Tant que la lumière brûle, un coup qui vous ôte plus de {perte_intercession} % de vos PV max bénit son auteur à coup sûr, d'une bénédiction plus forte."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"holy_light_serenity": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_intercession_0")])
+
+[sub_resource type="Resource" id="L_holy_light_epiphany_0"]
+script = ExtResource("4_ligne")
+stat = "epiphany"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_light_epiphany"]
+script = ExtResource("3_noeud")
+id = "holy_light_epiphany"
+name = "Épiphanie"
+icon = ExtResource("icon_holy_light_epiphany")
+description = "La lumière ne draine plus : elle s'allume {duree_epiphanie} s puis se recharge {recharge_epiphanie} s, et tout ce qu'elle donne vaut le double tant qu'elle brûle."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"holy_light_zeal": 2,
+"holy_light_elation": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_epiphany_0")])
+
+[sub_resource type="Resource" id="L_holy_light_glory_0"]
+script = ExtResource("4_ligne")
+stat = "glory"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_light_glory"]
+script = ExtResource("3_noeud")
+id = "holy_light_glory"
+name = "Gloire"
+icon = ExtResource("icon_holy_light_glory")
+description = "L'Auréole brûle : toutes les {rythme_aureole} s, elle frappe ce qu'elle bénit d'une part de vos PV max, en dégâts sacrés."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"holy_light_aureole": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_glory_0")])
+
+[sub_resource type="Resource" id="L_holy_light_humility_0"]
+script = ExtResource("4_ligne")
+stat = "humility"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_holy_light_humility"]
+script = ExtResource("3_noeud")
+id = "holy_light_humility"
+name = "Humilité"
+icon = ExtResource("icon_holy_light_humility")
+description = "Les ennemis que l'Auréole bénit perdent de leur résistance au sacré."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"holy_light_aureole": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_humility_0")])
+
+[sub_resource type="Resource" id="L_holy_light_transfiguration_0"]
+script = ExtResource("4_ligne")
+stat = "transfiguration"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_holy_light_transfiguration"]
+script = ExtResource("3_noeud")
+id = "holy_light_transfiguration"
+name = "Transfiguration"
+icon = ExtResource("icon_holy_light_transfiguration")
+description = "À son extinction, l'Épiphanie éclate autour de vous : {part_transfiguration} % de vos PV max en dégâts sacrés, dans un rayon de {rayon_transfiguration} px."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"holy_light_epiphany": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_holy_light_transfiguration_0")])
+
 [sub_resource type="Resource" id="C_lumiere"]
 script = ExtResource("2_case")
 skill = ExtResource("13_lumiere")
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_light_zeal"), SubResource("N_holy_light_recollection"), SubResource("N_holy_light_serenity"), SubResource("N_holy_light_cuirass"), SubResource("N_holy_light_elation"), SubResource("N_holy_light_aureole")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_holy_light_zeal"), SubResource("N_holy_light_recollection"), SubResource("N_holy_light_serenity"), SubResource("N_holy_light_cuirass"), SubResource("N_holy_light_elation"), SubResource("N_holy_light_aureole"), SubResource("N_holy_light_pilgrim"), SubResource("N_holy_light_devotion"), SubResource("N_holy_light_intercession"), SubResource("N_holy_light_epiphany"), SubResource("N_holy_light_glory"), SubResource("N_holy_light_humility"), SubResource("N_holy_light_transfiguration")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_poise_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_poise"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_poise"
+name = "Aplomb"
+icon = ExtResource("icon_blessed_hammer_poise")
+description = "Le marteau frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_poise_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_flight_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_flight"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_flight"
+name = "Envolée"
+icon = ExtResource("icon_blessed_hammer_flight")
+description = "La spirale s'ouvre plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_flight_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_ironwork_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_ironwork"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_ironwork"
+name = "Ferrure"
+icon = ExtResource("icon_blessed_hammer_ironwork")
+description = "Le marteau tourne plus longtemps : des tours en plus."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_ironwork_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_lightening_0"]
+script = ExtResource("4_ligne")
+stat = "mana_cost"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_lightening"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_lightening"
+name = "Allègement"
+icon = ExtResource("icon_blessed_hammer_lightening")
+description = "Le marteau coûte moins de mana."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_lightening_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_swiftness_0"]
+script = ExtResource("4_ligne")
+stat = "hammer_spin"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_swiftness"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_swiftness"
+name = "Prestesse"
+icon = ExtResource("icon_blessed_hammer_swiftness")
+description = "Le marteau tourne plus vite : il croise plus de monde."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"blessed_hammer_flight": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_swiftness_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_chime_0"]
+script = ExtResource("4_ligne")
+stat = "hammers"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_chime"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_chime"
+name = "Carillon"
+icon = ExtResource("icon_blessed_hammer_chime")
+description = "Un marteau de plus par point, partis en étoile."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"blessed_hammer_poise": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_chime_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_hammering_0"]
+script = ExtResource("4_ligne")
+stat = "martelling"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_hammering"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_hammering"
+name = "Martèlement"
+icon = ExtResource("icon_blessed_hammer_hammering")
+description = "Chaque coup de vos marteaux sur un même ennemi frappe plus fort que le précédent, {martelement_max} coups comptés au plus. Le compte s'oublie après {oubli_martelement} s sans coup."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"blessed_hammer_poise": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_hammering_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_tocsin_0"]
+script = ExtResource("4_ligne")
+stat = "tocsin"
+value_per_point = 10.0
+first_point_bonus = 30.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_tocsin"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_tocsin"
+name = "Tocsin"
+icon = ExtResource("icon_blessed_hammer_tocsin")
+description = "Un ennemi qu'un marteau tue en lâche un petit, qui part en spirale de son corps, à une part du coup."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"blessed_hammer_ironwork": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_tocsin_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_gravitation_0"]
+script = ExtResource("4_ligne")
+stat = "gravitation"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_blessed_hammer_gravitation_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -30.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_gravitation"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_gravitation"
+name = "Gravitation"
+icon = ExtResource("icon_blessed_hammer_gravitation")
+description = "Le marteau ne s'éloigne plus : il tourne autour de vous toute sa durée, à {orbite_gravitation} % de son rayon. En échange, il frappe moins fort."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"blessed_hammer_flight": 2,
+"blessed_hammer_swiftness": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_gravitation_0"), SubResource("L_blessed_hammer_gravitation_1")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_bourdon_0"]
+script = ExtResource("4_ligne")
+stat = "bourdon"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_bourdon"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_bourdon"
+name = "Bourdon"
+icon = ExtResource("icon_blessed_hammer_bourdon")
+description = "Un marteau du Carillon sur {bourdon_tous} est un bourdon : il frappe plus fort et mord plus large."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"blessed_hammer_chime": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_bourdon_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_threshing_0"]
+script = ExtResource("4_ligne")
+stat = "threshing"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_threshing"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_threshing"
+name = "Battage"
+icon = ExtResource("icon_blessed_hammer_threshing")
+description = "Tous les {battage_tous} coups de vos marteaux sur un même ennemi, un éclat sacré frappe autour de lui."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"blessed_hammer_hammering": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_threshing_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_peal_0"]
+script = ExtResource("4_ligne")
+stat = "peal"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_peal"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_peal"
+name = "Branle"
+icon = ExtResource("icon_blessed_hammer_peal")
+description = "Les petits marteaux du Tocsin en lâchent à leur tour, une fois."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"blessed_hammer_tocsin": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_peal_0")])
+
+[sub_resource type="Resource" id="L_blessed_hammer_eclipse_0"]
+script = ExtResource("4_ligne")
+stat = "eclipse"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_blessed_hammer_eclipse"]
+script = ExtResource("3_noeud")
+id = "blessed_hammer_eclipse"
+name = "Éclipse"
+icon = ExtResource("icon_blessed_hammer_eclipse")
+description = "Sous la Gravitation, l'orbite s'élargit à chaque seconde."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"blessed_hammer_gravitation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_blessed_hammer_eclipse_0")])
+
+[sub_resource type="Resource" id="C_marteau"]
+script = ExtResource("2_case")
+skill = ExtResource("14_marteau")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_blessed_hammer_poise"), SubResource("N_blessed_hammer_flight"), SubResource("N_blessed_hammer_ironwork"), SubResource("N_blessed_hammer_lightening"), SubResource("N_blessed_hammer_swiftness"), SubResource("N_blessed_hammer_chime"), SubResource("N_blessed_hammer_hammering"), SubResource("N_blessed_hammer_tocsin"), SubResource("N_blessed_hammer_gravitation"), SubResource("N_blessed_hammer_bourdon"), SubResource("N_blessed_hammer_threshing"), SubResource("N_blessed_hammer_peal"), SubResource("N_blessed_hammer_eclipse")])
 
 [sub_resource type="Resource" id="L_onction_0"]
 script = ExtResource("4_ligne")
@@ -490,4 +1370,4 @@ position = Vector2i(0, 1)
 script = ExtResource("1_arch")
 id = "holy"
 name = "Maître de la lumière"
-cells = Array[ExtResource("2_case")]([SubResource("C_frappe"), SubResource("C_pilier"), SubResource("C_pulsation"), SubResource("C_lumiere"), SubResource("C_onction")])
+cells = Array[ExtResource("2_case")]([SubResource("C_chaines"), SubResource("C_pilier"), SubResource("C_pulsation"), SubResource("C_lumiere"), SubResource("C_marteau"), SubResource("C_onction")])

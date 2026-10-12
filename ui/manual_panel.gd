@@ -1104,6 +1104,16 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.hits > 1:
 		out.append(SheetLine.new(Group.SHAPE, Texts.t("coups"), str(cast.hits), UiPalette.TEXT))
+	# Les Chaînes du jugement (jalon 48) : combien elles prennent — le premier touché compris —,
+	# et la part de chaque coup qui passe d'un enchaîné aux autres. Une ligne : deux sortaient
+	# la fiche du cadre.
+	if cast.solidarity > 0.0:
+		var caught := int(cast.links) + (1 if cast.shape == Skill.Shape.CHAINS else 0)
+		out.append(SheetLine.new(
+			Group.SHAPE, Texts.t("enchaînés"),
+			Texts.t("%d · %s partagés") % [caught, StatMod.percentage(roundi(cast.solidarity))],
+			UiPalette.TEXT
+		))
 	if cast.waves > 0.0:
 		out.append(SheetLine.new(
 			Group.SHAPE, Texts.t("vagues"), str(1 + int(cast.waves)), UiPalette.TEXT

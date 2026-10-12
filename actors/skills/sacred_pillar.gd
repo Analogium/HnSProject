@@ -25,6 +25,9 @@ const FLOW := 24
 const DRIFT_SPEED := 40.0
 const DRIFT_SIGHT := 160.0
 
+## Ceux qui brûlent, pour la Communion et le Pilori (jalon 48).
+static var _standing: Array[SacredPillar] = []
+
 var _cast: SkillStats
 var _author: StatusEffects
 var _tint := Color.WHITE
@@ -33,19 +36,52 @@ var _strikes := 0
 ## Ce que suit le Pilier errant, choisi à chaque impulsion. Sans type : il peut mourir
 ## entre deux, et `is_instance_valid()` passe avant tout usage (invariant 4).
 var _prey: Variant = null
+## Le lanceur, que soigne la Consécration (jalon 48) ; null pour un pilier posé sans lui.
+var _caster: Player
+## L'Ascension : les secondes déjà gagnées. L'Apothéose : les ennemis frappés.
+var _gained := 0.0
+var _struck := 0
 
 
+## `caster` : le joueur qui se tient dans la colonne, pour la Consécration.
 static func fall(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, caster: Player = null
 ) -> SacredPillar:
 	var pillar := SacredPillar.new()
+	# Une copie pour lui seul, quand il change son lancer : l'Ascension allonge sa durée, le
+	# Sanctuaire bénit à coup sûr — et le Triptyque pose trois piliers d'un même lancer.
+	if cast.ascension > 0.0 or cast.sanctuary > 0.0:
+		cast = cast.echoed(1.0)
+		if cast.sanctuary > 0.0:
+			cast.status_chance_increase += SkillStats.SURE_STATE
 	pillar._cast = cast
 	pillar._author = author
+	pillar._caster = caster
 	pillar._tint = DamageType.COLORS[cast.nature]
+	if cast.ascension > 0.0 and author != null:
+		author.slew.connect(pillar._on_slew)
 	parent.add_child(pillar)
 	Settings.veil(pillar, Settings.SPELLS)
 	pillar.global_position = point
+	_standing.assign(_standing.filter(
+		func(p) -> bool: return is_instance_valid(p) and not p.is_queued_for_deletion()
+	))
+	_standing.append(pillar)
 	return pillar
+
+
+## Les piliers de ce lanceur qui brûlent encore.
+static func standing_for(author: StatusEffects) -> Array[SacredPillar]:
+	var out: Array[SacredPillar] = []
+	for p in _standing:
+		if is_instance_valid(p) and not p.is_queued_for_deletion() and p._author == author:
+			out.append(p)
+	return out
+
+
+## Le cercle qu'il mord.
+func reach() -> float:
+	return _cast.radius
 
 
 ## Pas de lumière ajoutée : la colonne est **dessinée**, et une planche cernée ne
@@ -64,21 +100,53 @@ func _physics_process(delta: float) -> void:
 		_strikes += 1
 	if is_instance_valid(_prey):
 		global_position = global_position.move_toward(
-			(_prey as Node2D).global_position, DRIFT_SPEED * delta
+			(_prey as Node2D).global_position, DRIFT_SPEED * (1.0 + _cast.procession * 0.01) * delta
 		)
+	# La Consécration (jalon 48) : son lanceur, debout dans le cercle, regagne des PV.
+	if _cast.consecration > 0.0 and is_instance_valid(_caster) \
+			and _caster.global_position.distance_to(global_position) <= reach():
+		_caster.mend(_cast.consecration * 0.01, delta)
 	queue_redraw()
 	if _age >= _cast.duration and _strikes >= _cast.strikes_over_duration():
-		# L'Effondrement : en s'éteignant, la colonne éclate.
+		# L'Effondrement : en s'éteignant, la colonne éclate ; l'Apothéose, d'autant plus fort
+		# qu'elle a frappé de monde.
 		if _cast.end_burst > 0.0:
-			Explosion.of_cast(get_parent(), global_position, _cast, _cast.end_burst, _author)
+			var burst := _cast
+			if _cast.apotheosis > 0.0:
+				burst = _cast.echoed(
+					1.0 + _cast.apotheosis * 0.01 * float(mini(_struck, SkillStats.APOTHEOSIS_MOST))
+				)
+			Explosion.of_cast(get_parent(), global_position, burst, _cast.end_burst, _author)
 		queue_free()
 
 
-## L'Appel céleste tire vers le cœur, par un recul négatif.
-func _strike() -> void:
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, _cast, _author, -_cast.pull)
+## L'Appel céleste tire vers le cœur, par un recul négatif. Le Verdict (jalon 48) : la
+## colonne tombe, et sa première impulsion frappe plus fort.
+func _strike(factor := 1.0) -> void:
+	if _strikes == 0:
+		factor *= 1.0 + _cast.verdict * 0.01
+	_struck += Targets.strike_circle(
+		get_world_2d(), global_position, _cast.radius, _cast, _author, -_cast.pull, factor
+	).size()
 	if _cast.shape == Skill.Shape.DRIFT:
 		_prey = Targets.nearest(get_world_2d(), global_position, DRIFT_SIGHT)
+
+
+## La Communion (jalon 48) : une onde de la Pulsation qui l'atteint la fait frapper sur-le-champ,
+## une impulsion de plus à cette part de son coup.
+func commune(part: float) -> void:
+	_struck += Targets.strike_circle(
+		get_world_2d(), global_position, _cast.radius, _cast, _author, -_cast.pull, part
+	).size()
+
+
+## L'Ascension (jalon 48) : un ennemi tué par cette colonne la fait brûler plus longtemps.
+func _on_slew(cast: SkillStats, _at: Vector2, _victim: StatusEffects) -> void:
+	if cast != _cast or _gained >= SkillStats.ASCENSION_MOST:
+		return
+	var gain := minf(_cast.ascension, SkillStats.ASCENSION_MOST - _gained)
+	_gained += gain
+	_cast.duration += gain
 
 
 ## La colonne **tombe du ciel** : elle se découvre du haut vers le bas au lieu de
@@ -94,7 +162,16 @@ func _draw() -> void:
 	# pâlissant sort grise sur un sol sombre, comme tout ce qui est dessiné. Seul le
 	# halo au sol s'efface, parce qu'il est tramé et fait pour ça.
 	var fallen := minf(clampf(_age / OPENING, 0.0, 1.0), fade)
-	EffectForge.put_scorch(self, _tint, maxi(roundi(_cast.radius), 1), fade)
+	var span := maxi(roundi(_cast.radius), 1)
+	# La Consécration (jalon 48) : le sol qui soigne a ses dalles.
+	if _cast.consecration > 0.0:
+		draw_texture_rect(
+			Holy.consecrated(_tint, span),
+			Rect2(EffectForge.snap(self, -Vector2(span, span)), Vector2.ONE * float(span * 2 + 1)),
+			false, Color(1.0, 1.0, 1.0, fade)
+		)
+	else:
+		EffectForge.put_scorch(self, _tint, span, fade)
 	_column(fallen)
 
 	# **Autour** de la colonne et non dedans : un grain posé sur un cœur blanc n'est

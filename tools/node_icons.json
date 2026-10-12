@@ -1654,5 +1654,281 @@
   "slicing_dash_chasse": [
     "Two red dance shoes, one stepping quickly in front of the other, short motion lines.",
     777, "major", {"nature": "physical"}
+  ],
+  "judgment_chains_indictment": [
+    "A golden judge's gavel striking down on a small round wooden block, a white flash at the impact.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "judgment_chains_breadth": [
+    "A golden drawing compass with its two legs spread very wide apart.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "judgment_chains_gaol": [
+    "A heavy closed golden padlock with a thick shackle.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "judgment_chains_aspersion": [
+    "A small round golden bowl full of glowing white holy water, big white droplets splashing up out of it.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "judgment_chains_links": [
+    "One single huge oval golden chain link standing upright, a glowing white plus sign inside it.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_solidarity": [
+    "Two golden hands clasped together in a firm handshake, seen from the side, no arms, no person.",
+    777, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_constriction": [
+    "A small golden winch drum with a thick golden chain wound tightly around it.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_rupture": [
+    "A thick golden chain link snapping in two in the middle, white sparks bursting out of the break.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_pillory": [
+    "A medieval wooden pillory seen from the front: one tall vertical post holding a horizontal board with three round holes, gold bolts.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_scapegoat": [
+    "A white goat's head with curved golden horns, a heavy golden chain hanging around its neck.",
+    777, "major", {"nature": "holy"}
+  ],
+  "judgment_chains_shackle": [
+    "A square wooden cangue board with a round hole in its middle, three small gold stars circling above it, no person.",
+    1337, "suite", {"nature": "holy"}
+  ],
+  "judgment_chains_handover": [
+    "The end of a golden chain with a hook, leaping to the right in a big curved arc, a white motion trail behind it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "judgment_chains_absoute": [
+    "A golden censer swinging on three short chains, white smoke puffs rising from it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "judgment_chains_unison": [
+    "Two golden candles standing side by side, one single white flame leaping in an arc from the first wick to the second.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "judgment_chains_stigmata": [
+    "A golden heart pierced by a thin white nail, short white light rays around it.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "sacred_pillar_judgement": [
+    "A golden sword pointing straight down, its blade glowing white.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "sacred_pillar_column": [
+    "A white marble column seen from the side, with a golden capital and a golden base.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "sacred_pillar_vigil": [
+    "A small golden oil lamp with one steady white flame.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "sacred_pillar_knell": [
+    "A single golden bell swinging to the side, white sound waves around it.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "sacred_pillar_call": [
+    "A golden spiral vortex twisting inward toward a glowing white center.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_collapse": [
+    "A white marble column cracking and crumbling in the middle, golden light bursting out of the cracks.",
+    777, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_drift": [
+    "A short white marble column standing on the left, a thick curved golden arrow flying from it toward a small red target circle on the right.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_verdict": [
+    "An unrolled golden scroll with a large red wax seal stamped in its middle.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_ascension": [
+    "One single white feathered wing pointing upward, a golden glow around it.",
+    777, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_consecration": [
+    "A golden chalice standing on a square stone floor tile, white light rising from the tile.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_sanctuary": [
+    "A tiny white chapel with a golden roof and a small golden cross on top.",
+    1337, "suite", {"nature": "holy"}
+  ],
+  "sacred_pillar_triptych": [
+    "A golden triptych altarpiece: three tall arched panels hinged side by side, the middle one taller.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "sacred_pillar_apotheosis": [
+    "A golden laurel crown with white glowing rays around it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "sacred_pillar_procession": [
+    "A golden processional cross on a tall staff, tilted to the right, a long white ribbon banner fluttering behind it, no person.",
+    1337, "suite", {"nature": "holy"}
+  ],
+  "holy_pulse_fervour": [
+    "A golden torch with a tall bright white flame.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "holy_pulse_litany": [
+    "An open golden prayer book with white pages and a red ribbon bookmark hanging down.",
+    1337, "basic", {"nature": "holy"}
+  ],
+  "holy_pulse_radiance": [
+    "A small golden sun disc with long thick white rays spreading wide in every direction.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_pulse_canticle": [
+    "A golden harp with white strings.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "holy_pulse_absolution": [
+    "A golden key whose round bow is shaped like a small red heart.",
+    777, "major", {"nature": "holy"}
+  ],
+  "holy_pulse_exaltation": [
+    "Three golden steps of a staircase rising to the right, a white glow on the top step.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "holy_pulse_antiphon": [
+    "A thick golden circular arrow looping back on itself, white glow around it.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_pulse_aegis": [
+    "A round golden shield with a white cross on its face.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "holy_pulse_purification": [
+    "A golden ewer tilted to the side, pouring a stream of clear white water downward.",
+    1337, "major", {"nature": "holy"}
+  ],
+  "holy_pulse_communion": [
+    "A round white communion wafer with a small golden cross stamped on it, white glow.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "holy_pulse_wrath": [
+    "A golden dam wall holding back a huge glowing white wave about to burst over it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "holy_pulse_ecstasy": [
+    "A golden trumpet blowing to the right, a big white sound burst coming out of its bell.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "holy_pulse_viaticum": [
+    "A small round golden flask full of glowing blue liquid.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "holy_pulse_revelation": [
+    "One single wide open golden eye with white rays all around it.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "holy_light_zeal": [
+    "A sharp eight-pointed golden star blazing with white light.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_light_recollection": [
+    "A loop of golden prayer beads with a small golden cross hanging from it.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_light_serenity": [
+    "A white dove with its wings spread, a soft golden glow behind it.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_light_cuirass": [
+    "A golden breastplate armor with a white cross on its chest, empty, no person.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "holy_light_elation": [
+    "A small golden hummingbird hovering, its wings blurred with speed.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "holy_light_aureole": [
+    "A circle of small white flames floating in a ring, a soft golden glow in its middle.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "holy_light_pilgrim": [
+    "A golden scallop shell, the pilgrim's shell.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "holy_light_devotion": [
+    "A pair of golden praying hands, palms pressed together, no arms, no person.",
+    777, "major", {"nature": "holy"}
+  ],
+  "holy_light_intercession": [
+    "A small round golden mirror reflecting a dark red arrow back to the left, a white sparkle on the mirror.",
+    777, "major", {"nature": "holy"}
+  ],
+  "holy_light_epiphany": [
+    "A golden star bursting with white light, one long ray pointing straight down from it.",
+    777, "major", {"nature": "holy"}
+  ],
+  "holy_light_glory": [
+    "A golden cross with thick white rays of glory bursting all around it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "holy_light_humility": [
+    "A golden crown knocked over, lying tipped on its side on a stone floor, one of its points bent.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "holy_light_transfiguration": [
+    "A white butterfly with glowing golden wings.",
+    777, "suite", {"nature": "holy"}
+  ],
+  "blessed_hammer_poise": [
+    "A heavy square golden hammer head resting on cracked grey stones, no handle.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "blessed_hammer_flight": [
+    "A golden nautilus seashell seen from the side, its spiral opening wide.",
+    1337, "basic", {"nature": "holy"}
+  ],
+  "blessed_hammer_ironwork": [
+    "A thick golden metal band ring studded with round rivets.",
+    1337, "basic", {"nature": "holy"}
+  ],
+  "blessed_hammer_lightening": [
+    "A small golden hammer hanging from a round white balloon, floating up.",
+    777, "basic", {"nature": "holy"}
+  ],
+  "blessed_hammer_swiftness": [
+    "A golden gyroscope with its rings spinning, white motion lines around it.",
+    4242, "basic", {"nature": "holy"}
+  ],
+  "blessed_hammer_chime": [
+    "Four small golden hammers arranged in a star, their heads pointing outward.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "blessed_hammer_hammering": [
+    "A golden hammer striking a glowing white-hot iron bar on a dark anvil, sparks flying.",
+    777, "major", {"nature": "holy"}
+  ],
+  "blessed_hammer_tocsin": [
+    "A small golden hammer bursting out of a cracked black skull.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "blessed_hammer_gravitation": [
+    "A golden hammer orbiting around a small glowing white planet, a thin circular orbit line.",
+    4242, "major", {"nature": "holy"}
+  ],
+  "blessed_hammer_bourdon": [
+    "One huge golden hammer standing next to two tiny golden hammers.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "blessed_hammer_threshing": [
+    "A wooden flail striking a golden wheat sheaf, a white burst of grains flying out.",
+    1337, "suite", {"nature": "holy"}
+  ],
+  "blessed_hammer_peal": [
+    "A golden pendulum swinging to the side on a thin rod, a curved white motion arc under it.",
+    4242, "suite", {"nature": "holy"}
+  ],
+  "blessed_hammer_eclipse": [
+    "A solar eclipse: a dark disc covering a white sun, a thick golden ring of light around it.",
+    4242, "suite", {"nature": "holy"}
   ]
 }

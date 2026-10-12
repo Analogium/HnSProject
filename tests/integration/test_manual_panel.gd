@@ -1168,3 +1168,18 @@ func test_a_trade_writes_its_loss_in_red() -> void:
 			tints[l.label_of] = l.tint
 	assert_eq(tints.values().count(ManualPanel.LOSS), 1, "la brûlure doublée, et elle seule")
 
+
+
+## Les Chaînes du jugement (jalon 48) : la fiche dit combien elles prennent et la part de
+## chaque coup qui passe aux autres, Maillons et Solidarité compris.
+func test_the_chains_sheet_shows_what_they_share() -> void:
+	var book := Item.new(ItemCatalog.by_id("manual_holy"))
+	book.manual.gain_experience(999999)
+	_player.rack.remove(0)
+	_player.study(book, 0)
+	for id in ["judgment_chains", "judgment_chains_indictment", "judgment_chains_solidarity",
+			"judgment_chains_breadth", "judgment_chains_links"]:
+		assert_true(_player.invest(0, id), "« %s »" % id)
+	var lines := _sheet_of(book, "judgment_chains")
+	# Le premier touché, deux, un Maillon ; 30 %, et 6 de Solidarité.
+	assert_eq(_values(lines, "enchaînés"), PackedStringArray(["4 · 36 % partagés"]))

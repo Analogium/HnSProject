@@ -197,14 +197,14 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 		var lasts := c.shape in [
 			Skill.Shape.CLOUD, Skill.Shape.SNAKE, Skill.Shape.ORBIT, Skill.Shape.DASH,
 			Skill.Shape.WAVE, Skill.Shape.VORTEX, Skill.Shape.PILLAR, Skill.Shape.PULSE,
-			Skill.Shape.FROST_ORB,
+			Skill.Shape.FROST_ORB, Skill.Shape.HAMMER,
 		]
-		# Le faisceau y est : son rayon est **sa longueur**, et sans elle il ne sort pas
-		# du lanceur.
+		# Les chaînes y sont : leur rayon est où elles cherchent les voisins.
 		var covers := c.shape in [
 			Skill.Shape.BALL, Skill.Shape.CLOUD, Skill.Shape.AURA, Skill.Shape.DASH,
 			Skill.Shape.WAVE, Skill.Shape.CYCLONE, Skill.Shape.SPIKES, Skill.Shape.NOVA,
-			Skill.Shape.VORTEX, Skill.Shape.BEAM, Skill.Shape.PILLAR, Skill.Shape.PULSE
+			Skill.Shape.VORTEX, Skill.Shape.PILLAR, Skill.Shape.PULSE,
+			Skill.Shape.HAMMER, Skill.Shape.CHAINS,
 		]
 		# Une ruée sans table de dégâts ne laisse **rien au sol** : sa durée est celle du
 		# buff qu'elle donne, et elle n'a ni rayon ni période.
@@ -219,6 +219,8 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
 		if c.shape == Skill.Shape.CHAIN:
 			assert_gte(c.targets, 2, "« %s » : une chaîne saute" % c.name)
+		if c.shape == Skill.Shape.CHAINS:
+			assert_gt(c.duration, 0.0, "« %s » : des liens qui durent" % c.name)
 		if c.shape == Skill.Shape.ORBIT:
 			assert_gte(c.simultaneous, 1, "« %s » : un maximum" % c.name)
 		if c.shape == Skill.Shape.AURA:

@@ -293,39 +293,49 @@ Jamais pris : Voltige, Coupe-jarret, Retombée.
 
 ## Manuel sacré
 
-### Frappe sacrée
+### Chaînes du jugement
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 113/s | 39,9/s |
-| meilleur au paquet | Allonge du trait 1, Réfraction 2, Percée 5, Réprobation 3 | 363/s ×3,21 | 101/s ×2,52 |
-| meilleur au duel | Percée 5, Réprobation 3 | 191/s ×1,69 | 101/s ×2,52 |
-| Croix de lumière au paquet (transformation) | Percée 5, Croix de lumière 1, Allonge du trait 3, Réfraction 2 | 476/s ×4,20 | 63,9/s ×1,60 |
-| Croix de lumière au duel (transformation) | Percée 5, Croix de lumière 1, Réprobation 3 | 161/s ×1,42 | 101/s ×2,52 |
+| sans arbre | — | 113/s | 38,3/s |
+| meilleur au paquet | Réquisitoire 5, Ampleur 1, Maillons 3 | 280/s ×2,48 | 61,3/s ×1,60 |
+| meilleur au duel | Réquisitoire 5 | 176/s ×1,56 | 61,3/s ×1,60 |
+| Bouc émissaire au paquet (transformation) | Geôle 2, Bouc émissaire 1, Ampleur 1, Maillons 3, Réquisitoire 5 | 176/s ×1,55 | 42,9/s ×1,12 |
+| Bouc émissaire au duel (transformation) | Geôle 2, Bouc émissaire 1, Réquisitoire 5 | 82,5/s ×0,73 | 42,9/s ×1,12 |
 
-Jamais pris : Sanctification, Bénédiction profonde.
+Jamais pris : Aspersion, Solidarité, Resserrement, Rupture, Pilori, Carcan, Passation, Absoute, Unisson, Stigmates.
 
 ### Pilier sacré
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 126/s | 74,1/s |
-| meilleur au paquet | Colonne 3, Veille 4, Jugement 1, Glas 3, Effondrement 3 | 637/s ×5,08 | 221/s ×2,99 |
-| meilleur au duel | Veille 4, Jugement 5, Glas 3, Effondrement 3 | 370/s ×2,95 | 316/s ×4,27 |
-| Pilier errant au paquet (transformation) | Jugement 5, Pilier errant 1, Colonne 3, Veille 4, Glas 3, Effondrement 3 | 1038/s ×8,27 | 316/s ×4,27 |
-| Pilier errant au duel (transformation) | Jugement 5, Pilier errant 1, Veille 4, Glas 3, Effondrement 3 | 581/s ×4,63 | 316/s ×4,27 |
+| meilleur au paquet | Colonne 3, Triptyque 1, Veille 4, Jugement 5, Glas 3, Ascension 3, Effondrement 1 | 2170/s ×17,3 | 869/s ×11,7 |
+| meilleur au duel | Colonne 2, Triptyque 1, Veille 4, Jugement 5, Glas 3, Effondrement 3, Apothéose 2 | 1566/s ×12,5 | 1013/s ×13,7 |
+| Pilier errant au paquet (transformation) | Jugement 5, Pilier errant 1, Colonne 3, Triptyque 1, Veille 4, Glas 3, Ascension 3 | 1665/s ×13,3 | 869/s ×11,7 |
+| Pilier errant au duel (transformation) | Jugement 5, Pilier errant 1, Triptyque 1, Veille 4, Glas 3, Effondrement 1, Apothéose 2, Verdict 2 | 531/s ×4,23 | 1063/s ×14,4 |
 
-Jamais pris : Appel céleste.
+Jamais pris : Appel céleste, Consécration, Sanctuaire, Procession.
 
 ### Pulsation sacrée
 
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 108/s | 24,0/s |
-| meilleur au paquet | Litanie 4, Ferveur 1, Cantique 3 | 238/s ×2,20 | 67,7/s ×2,83 |
-| meilleur au duel | Litanie 4, Exaltation 3, Ferveur 5, Cantique 3 | 358/s ×3,32 | 145/s ×6,06 |
+| meilleur au paquet | Litanie 4, Antienne 3, Exaltation 1, Colère divine 1, Extase 2 | 545/s ×5,04 | 127/s ×5,31 |
+| meilleur au duel | Litanie 4, Exaltation 3, Colère divine 1, Extase 2, Ferveur 5, Antienne 3 | 545/s ×5,04 | 260/s ×10,8 |
 
-Jamais pris : Rayonnement, Absolution.
+Jamais pris : Rayonnement, Cantique, Absolution, Égide, Purification, Communion, Viatique, Révélation.
+
+### Marteau béni
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 149/s | 38,1/s |
+| meilleur au paquet | Aplomb 5, Carillon 2, Martèlement 3, Battage 2, Bourdon 1, Ferrure 4, Tocsin 3 | 2723/s ×18,3 | 1907/s ×50,0 |
+| meilleur au duel | Aplomb 5, Carillon 2, Martèlement 3, Bourdon 1, Ferrure 4 | 1297/s ×8,72 | 1907/s ×50,0 |
+
+Jamais pris : Envolée, Allègement, Prestesse, Gravitation, Branle, Éclipse.
 
 ## Manuel de la sorcière
 

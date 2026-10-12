@@ -74,6 +74,11 @@ func _ready() -> void:
 		material = ArtPalette.ADDITIVE
 
 
+## Depuis quand il brûle : la Dévotion (jalon 48) monte avec.
+func age() -> float:
+	return _age
+
+
 ## Les secondes qu'il lui reste ; zéro pour celui qui n'a pas de fin (le Brise-glace, jalon 44).
 func remaining() -> float:
 	return maxf(_lifetime - _age, 0.0) if _lifetime > 0.0 else 0.0
@@ -233,7 +238,9 @@ func unburden(cast: SkillStats) -> void:
 
 
 ## L'Auréole (jalon 40) : ce qui entre dans son cercle est béni, pour la durée de l'état.
-## Elle ne frappe pas — comme la malédiction, elle pose l'état elle-même.
+## Elle ne frappe pas — comme la malédiction, elle pose l'état elle-même. Sauf sous la Gloire
+## (jalon 48), qui frappe ce qu'elle bénit d'une part des PV max ; l'Humilité y fond la
+## résistance au sacré.
 func _bless(cast: SkillStats, delta: float) -> void:
 	_aureole = cast.aureole
 	if _aureole <= 0.0:
@@ -243,9 +250,15 @@ func _bless(cast: SkillStats, delta: float) -> void:
 		return
 	_since_blessing = 0.0
 	var strength := cast.strength_of(StatusEffects.Kind.BLESSING)
+	var glory := DamageType.empty_parts()
+	glory[cast.nature] = _player.stats.max_health * cast.glory * 0.01
 	for target in Targets.in_circle(get_world_2d(), _player.global_position, _aureole):
 		if target.states != null:
 			target.states.put(StatusEffects.Kind.BLESSING, 0.0, _player.states, cast.skill_id, strength)
+			if cast.humility > 0.0:
+				target.states.melt(cast.humility, StatusEffects.Kind.BLESSING)
+		if cast.glory > 0.0:
+			Targets.strike(target, glory, _player.global_position, _player.states, cast)
 
 
 ## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.

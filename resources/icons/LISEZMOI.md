@@ -276,6 +276,14 @@ fond ardoise) ; la Lame ardente et ses suites en `fire`, la Lame sainte et l'Ord
 Qwen. Choisis arbre par arbre (`Bureau\hns-captures-noeuds-chevalier\`). Trois restent faibles,
 gardés : le Tremblement (un gong), le Fer rouge (un fer à cheval sur l'enclume) et l'Andain.
 
+Le sacré (jalon 48) : 69 nœuds sans reprise, palette `holy`, et ses cinq icônes de compétence
+passées en Qwen — dont celles des Chaînes du jugement et du Marteau béni, neuves. Choisis arbre
+par arbre (`Bureau\hns-captures-noeuds-sacre\`, 01 à 05). **Le rôle se calcule comme le panneau**
+(`ManualPanel._role()`) : une ligne sur un nombre de mécanique fait un majeur, même un simple
+« +1 enchaîné ». **Un mouvement demandé à un objet lui donne des jambes** : une colonne « qui
+sautille » est sortie en petit personnage — une flèche vers une cible dit mieux le mouvement.
+Deux ressemblances gardées : le Zèle et l'Épiphanie (deux étoiles voisines).
+
 
 ## Icônes d'objets
 

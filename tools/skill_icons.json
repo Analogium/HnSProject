@@ -78,21 +78,29 @@
       "nature": "cold"
     }
   ],
-  "holy_strike": [
-    "a thin sharp diagonal streak of blinding white light cutting across the frame, glowing radiance",
-    1337
-  ],
   "sacred_pillar": [
-    "a tall narrow vertical beam of bright white light descending from above, glowing column of radiance",
-    1337
+    "A narrow column of bright white holy light crashing down from the top edge onto the ground, a bright golden splash ring where it lands.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "holy"
+    }
   ],
   "holy_pulse": [
-    "concentric rings of white holy light radiating outward from a center",
-    4242
+    "Three thick concentric rings of golden light radiating outward from a small glowing white center, seen from above.",
+    777,
+    {
+      "qwen": true,
+      "nature": "holy"
+    }
   ],
   "holy_light": [
-    "a glowing golden angelic halo ring floating in the air, bright ring of light",
-    4242
+    "A bright golden halo ring floating in the air, soft white light glowing inside the ring.",
+    777,
+    {
+      "qwen": true,
+      "nature": "holy"
+    }
   ],
   "slicing_dash": [
     "A steel sword flying horizontally to the right on its own, blade pointing right, long thick white speed lines streaking behind it, no person, no character.",
@@ -275,6 +283,22 @@
     {
       "qwen": true,
       "nature": "physical"
+    }
+  ],
+  "judgment_chains": [
+    "A short thick golden chain of four big links stretched diagonally from bottom left to top right, a glowing white iron hook at its upper end.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "holy"
+    }
+  ],
+  "blessed_hammer": [
+    "A golden war hammer with a heavy square head, spinning, a curved white spiral trail behind it.",
+    777,
+    {
+      "qwen": true,
+      "nature": "holy"
     }
   ]
 }

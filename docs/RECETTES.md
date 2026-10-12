@@ -425,7 +425,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `BEAM`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`, `TURRET`, `FROST_ORB`. `BOLT`, `BALL`, `COMET`, `TURRET` et `FROST_ORB` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead` ou `thrust` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `CATALYSIS`, `DOLL`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`. `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET` et `FROST_ORB` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead` ou `thrust` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -488,9 +488,9 @@ tant qu'on ne tue pas.
 **Une frappe vive** (`LUNGE`) veut un `radius`, sa portée : elle se jette sur l'ennemi
 à portée le plus proche de la visée et le frappe seul, et refuse de partir sans cible.
 
-**Un faisceau** (`BEAM`) part du lanceur dans sa visée, frappe **une fois tout ce qui
-est sur sa ligne** — `Targets.in_capsule()`, qui ne s'arrête pas au premier corps — et
-s'efface. Il veut un `radius`, qui est sa longueur. **Un pilier** (`PILLAR`) tombe au
+**Des chaînes** (`CHAINS`) partent du lanceur dans sa visée et prennent le premier corps
+touché : elles veulent un `radius`, où elles cherchent ses voisins, et une `duration`, ce
+que tiennent les liens. **Un pilier** (`PILLAR`) tombe au
 curseur et **une pulsation** (`PULSE`) est portée par le lanceur : tous deux veulent
 une `duration`, une `period` et un `radius`, et frappent leur cercle à chaque
 impulsion. Une pulsation **finit seule** — elle ne se paie pas à la seconde, donc elle
@@ -502,7 +502,7 @@ le `radius` autour du joueur et frappent à la `period` — au nom du joueur. **
 explose au `radius`. **Une malédiction** (`CURSE`) n'a ni dégâts ni buff : un `radius`
 et un `inflicted_state`, posé d'un coup sur son cercle, avec `declared_points_max`.
 
-**Un geste entretenu** est `AURA`, `BUFF` (hors buff lancé) ou `CYCLONE` : `Skill.resolve()` en décide
+**Un geste entretenu** est `AURA`, `BUFF` (hors buff lancé), ou `CYCLONE` : `Skill.resolve()` en décide
 (`SkillStats.sustained`), et ce seul booléen allume et éteint la case sur la même
 touche et retire la « moyenne par lancer ». Les trois veulent un prix par seconde.
 
@@ -769,7 +769,7 @@ l'orienteraient chacun à leur façon.
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
    `sword_volley`, `extra_swords`, `waves`, puis au jalon 46 `sure_strike`, `maul`, `breach`,
    `collision`, `skittles`, `tremor`, `red_iron` et les trente-quatre de `SkillStats.LACERATION` à `CHASSE`, pour le sacré `blessing_effect`,
-   `wave_gain` et `aureole`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `doll_life`, `grudge`, `transfer`, `lure`, `echo_power`, `echoes` et `countersong` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
+   `wave_gain` et `aureole`, puis au jalon 48 les trente-huit de `SkillStats.LINKS` à `ECLIPSE`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `doll_life`, `grudge`, `transfer`, `lure`, `echo_power`, `echoes` et `countersong` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne

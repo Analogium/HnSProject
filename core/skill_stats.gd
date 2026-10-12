@@ -288,6 +288,44 @@ const LABELS := {
 	BREAKTHROUGH: "choc par ennemi traversé",
 	FALLOUT: "réception qui assomme",
 	CHASSE: "dégâts par ruée enchaînée",
+	LINKS: "enchaînés en plus",
+	SOLIDARITY: "part partagée de chaque coup",
+	CONSTRICTION: "px/s de resserrement",
+	RUPTURE: "dégâts de la rupture",
+	PILLORY: "px/s vers le pilier",
+	SHACKLE: "enchaîné assommé au contact",
+	HANDOVER: "sauts des chaînes d'un mort",
+	ABSOUTE: "rupture qui bénit à coup sûr",
+	UNISON: "états partagés",
+	STIGMATA: "PV rendus par coup détourné",
+	VERDICT: "dégâts de la première impulsion",
+	ASCENSION: "secondes de colonne par tué",
+	CONSECRATION: "PV rendus par seconde consacrée",
+	SANCTUARY: "sol consacré qui bénit",
+	TRIPTYCH: "triptyque",
+	APOTHEOSIS: "dégâts d'effondrement par frappé",
+	PROCESSION: "vitesse du pilier errant",
+	AEGIS: "dégâts subis en moins par touché",
+	PURIFICATION: "états subis raccourcis par onde",
+	COMMUNION: "dégâts de la communion",
+	WRATH: "ondes amassées",
+	REVELATION: "colère qui bénit à coup sûr",
+	ECSTASY: "dégâts de la dernière onde",
+	DEVOTION: "dégâts sacrés par seconde allumée",
+	INTERCESSION: "force de l'intercession",
+	EPIPHANY: "épiphanie",
+	GLORY: "PV max frappés par la gloire",
+	HUMILITY: "résistance sacrée fondue",
+	TRANSFIGURATION: "éclat de l'épiphanie",
+	HAMMERS: "marteaux en plus",
+	HAMMER_SPIN: "vitesse du marteau",
+	MARTELLING: "dégâts par coup répété",
+	TOCSIN: "dégâts du petit marteau",
+	GRAVITATION: "gravitation",
+	BOURDON: "bourdon",
+	THRESHING: "dégâts du battage",
+	PEAL: "branle",
+	ECLIPSE: "orbite élargie par seconde",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -562,6 +600,44 @@ const AGREEMENT := {
 	BREAKTHROUGH: "ms",
 	FALLOUT: "fs",
 	CHASSE: "mp",
+	LINKS: "mp",
+	SOLIDARITY: "fs",
+	CONSTRICTION: "mp",
+	RUPTURE: "mp",
+	PILLORY: "mp",
+	SHACKLE: "ms",
+	HANDOVER: "mp",
+	ABSOUTE: "fs",
+	UNISON: "mp",
+	STIGMATA: "mp",
+	VERDICT: "mp",
+	ASCENSION: "fp",
+	CONSECRATION: "mp",
+	SANCTUARY: "ms",
+	TRIPTYCH: "ms",
+	APOTHEOSIS: "mp",
+	PROCESSION: "fs",
+	AEGIS: "mp",
+	PURIFICATION: "mp",
+	COMMUNION: "mp",
+	WRATH: "fp",
+	REVELATION: "fs",
+	ECSTASY: "mp",
+	DEVOTION: "mp",
+	INTERCESSION: "fs",
+	EPIPHANY: "fs",
+	GLORY: "mp",
+	HUMILITY: "fs",
+	TRANSFIGURATION: "ms",
+	HAMMERS: "mp",
+	HAMMER_SPIN: "fs",
+	MARTELLING: "mp",
+	TOCSIN: "mp",
+	GRAVITATION: "fs",
+	BOURDON: "ms",
+	THRESHING: "mp",
+	PEAL: "ms",
+	ECLIPSE: "fs",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -911,6 +987,57 @@ const HALLALI := "hallali"
 const BREAKTHROUGH := "breakthrough"
 const FALLOUT := "fallout"
 const CHASSE := "chasse"
+## Les Chaînes du jugement (jalon 48). Les enchaînés (`links`, hors le premier touché) et la
+## Passation se comptent, la part partagée (`solidarity`), la Rupture et les Stigmates (des
+## PV max) en points de pourcentage, le
+## Resserrement et le Pilori en px/s ; trois drapeaux.
+const LINKS := "links"
+const SOLIDARITY := "solidarity"
+const CONSTRICTION := "constriction"
+const RUPTURE := "rupture"
+const PILLORY := "pillory"
+const SHACKLE := "shackle"
+const HANDOVER := "handover"
+const ABSOUTE := "absoute"
+const UNISON := "unison"
+const STIGMATA := "stigmata"
+## Le Pilier sacré (jalon 48). Le Verdict, la Consécration, l'Apothéose et la Procession en
+## points de pourcentage, l'Ascension en secondes ; deux drapeaux.
+const VERDICT := "verdict"
+const ASCENSION := "ascension"
+const CONSECRATION := "consecration"
+const SANCTUARY := "sanctuary"
+const TRIPTYCH := "triptych"
+const APOTHEOSIS := "apotheosis"
+const PROCESSION := "procession"
+## La Pulsation sacrée (jalon 48). L'Égide, la Purification, la Communion et l'Extase en
+## points de pourcentage ; deux drapeaux. Le Viatique est `MANA_ON_HIT`.
+const AEGIS := "aegis"
+const PURIFICATION := "purification"
+const COMMUNION := "communion"
+const WRATH := "wrath"
+const REVELATION := "revelation"
+const ECSTASY := "ecstasy"
+## La Lumière sacrée (jalon 48), lus sur le buff allumé. La Dévotion, l'Intercession et la
+## Gloire en points de pourcentage, l'Humilité en points de résistance ; deux drapeaux.
+const DEVOTION := "devotion"
+const INTERCESSION := "intercession"
+const EPIPHANY := "epiphany"
+const GLORY := "glory"
+const HUMILITY := "humility"
+const TRANSFIGURATION := "transfiguration"
+## Le Marteau béni (jalon 48), lus par `BlessedHammer`. Le Carillon en nombre ; la Prestesse,
+## le Martèlement, le Tocsin, le Battage et l'Éclipse en points de pourcentage ; trois
+## drapeaux.
+const HAMMERS := "hammers"
+const HAMMER_SPIN := "hammer_spin"
+const MARTELLING := "martelling"
+const TOCSIN := "tocsin"
+const GRAVITATION := "gravitation"
+const BOURDON := "bourdon"
+const THRESHING := "threshing"
+const PEAL := "peal"
+const ECLIPSE := "eclipse"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -942,6 +1069,11 @@ const MECHANICS := [
 	PARRY, BREAKWATER, GRAPESHOT, ESCORT, RALLY, BILLOW, PROW, UNDERTOW, BREAKERS,
 	TO_AND_FRO, HARROW, VERTIGO, DERVISHES, SIROCCO, WATERSPOUT, DENOUEMENT, GUST,
 	MAD_ROUND, VAULT, HAMSTRING, RELAUNCH, HALLALI, BREAKTHROUGH, FALLOUT, CHASSE,
+	LINKS, SOLIDARITY, CONSTRICTION, RUPTURE, PILLORY, SHACKLE, HANDOVER, ABSOUTE, UNISON, STIGMATA,
+	VERDICT, ASCENSION, CONSECRATION, SANCTUARY, TRIPTYCH, APOTHEOSIS, PROCESSION,
+	AEGIS, PURIFICATION, COMMUNION, WRATH, REVELATION, ECSTASY,
+	DEVOTION, INTERCESSION, EPIPHANY, GLORY, HUMILITY, TRANSFIGURATION,
+	HAMMERS, MARTELLING, TOCSIN, GRAVITATION, BOURDON, THRESHING, PEAL, ECLIPSE,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -1225,6 +1357,53 @@ const HALLALI_MOST := 3
 const FALLOUT_TIME := 0.8
 const CHASSE_WINDOW := 1.0
 const CHASSE_MOST := 3
+## Les Chaînes du jugement. Le trait : sa vitesse et sa portée. À combien de rayons du premier
+## touché un lien rompt, qui est aussi la portée du Bouc émissaire ; les enchaînés et la part
+## partagée sans nœud viennent de `Skill.SHAPE_NUMBERS`. La Rupture : son rayon. Le Carcan : ce qu'il assomme, et le contact.
+const CHAINS_SPEED := 420.0
+const CHAINS_RANGE := 220.0
+const CHAINS_SNAP := 2.0
+const RUPTURE_RADIUS := 40.0
+const SHACKLE_TIME := 0.5
+const SHACKLE_CONTACT := 16.0
+## Le Pilier sacré. L'Ascension : les secondes gagnées au plus. Le Triptyque : ses colonnes,
+## et leur écart au point visé en multiple du rayon. L'Apothéose : les ennemis comptés au plus.
+const ASCENSION_MOST := 2.0
+const TRIPTYCH_COUNT := 3
+const TRIPTYCH_SPREAD := 1.0
+const APOTHEOSIS_MOST := 20
+## La Pulsation sacrée. L'Égide : son abri au plus. La Colère divine et l'Extase : la portée
+## de leur onde, en multiple du rayon.
+const AEGIS_MOST := 10.0
+const WRATH_REACH := 1.5
+const ECSTASY_REACH := 2.0
+## La Lumière sacrée. La Dévotion : les secondes comptées au plus. L'Intercession : la part
+## des PV max qu'un coup doit ôter. L'Épiphanie : sa durée, sa recharge, ce qu'elle multiplie
+## aux lignes ; la Transfiguration, son rayon et sa part des PV max.
+const LIGHT_SKILL := "holy_light"
+const DEVOTION_MOST := 10.0
+const INTERCESSION_LOSS := 0.1
+const EPIPHANY_TIME := 8.0
+const EPIPHANY_RECHARGE := 20.0
+const EPIPHANY_FACTOR := 2
+const TRANSFIGURATION_RADIUS := 60.0
+const TRANSFIGURATION_PART := 0.2
+## Le Marteau béni. Sa vitesse de rotation en radians par seconde — deux tours et demi sur
+## sa durée de base : à un tour et demi, la spirale s'ouvrait de 47 px par tour pour une
+## morsure de 16, et un ennemi seul au contact passait entre deux —, le cercle qu'il mord. Le
+## Martèlement : ses coups comptés au plus, et l'oubli sans coup. Le Battage : tous les combien
+## de coups, son rayon. Le Bourdon : un marteau sur combien, ce qu'il frappe et mord en plus. Le Tocsin : la taille
+## du petit, en part de la spirale. La Gravitation : son orbite, en part du rayon.
+const HAMMER_SPEED := 13.1
+const HAMMER_BITE := 8.0
+const MARTELLING_MOST := 10
+const MARTELLING_FORGET := 1.5
+const THRESHING_EVERY := 5
+const THRESHING_RADIUS := 30.0
+const BOURDON_EVERY := 3
+const BOURDON_FACTOR := 1.5
+const TOCSIN_SIZE := 0.5
+const GRAVITATION_ORBIT := 0.5
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -1546,6 +1725,44 @@ var hallali := 0.0
 var breakthrough := 0.0
 var fallout := 0.0
 var chasse := 0.0
+var links := 0.0
+var solidarity := 0.0
+var constriction := 0.0
+var rupture := 0.0
+var pillory := 0.0
+var shackle := 0.0
+var handover := 0.0
+var absoute := 0.0
+var unison := 0.0
+var stigmata := 0.0
+var verdict := 0.0
+var ascension := 0.0
+var consecration := 0.0
+var sanctuary := 0.0
+var triptych := 0.0
+var apotheosis := 0.0
+var procession := 0.0
+var aegis := 0.0
+var purification := 0.0
+var communion := 0.0
+var wrath := 0.0
+var revelation := 0.0
+var ecstasy := 0.0
+var devotion := 0.0
+var intercession := 0.0
+var epiphany := 0.0
+var glory := 0.0
+var humility := 0.0
+var transfiguration := 0.0
+var hammers := 0.0
+var hammer_spin := 0.0
+var martelling := 0.0
+var tocsin := 0.0
+var gravitation := 0.0
+var bourdon := 0.0
+var threshing := 0.0
+var peal := 0.0
+var eclipse := 0.0
 ## Vrai sur le lancer que le Coup sûr a fait tomber juste : son gel et le Coup de massue le
 ## lisent au coup. Aucun nœud ne le vise.
 var is_sure := false
@@ -1895,6 +2112,27 @@ static func facts() -> Dictionary:
 		"assomme": FALLOUT_TIME,
 		"fenetre_chasse": roundi(CHASSE_WINDOW),
 		"chasse_max": CHASSE_MOST,
+		"rayon_rupture": roundi(RUPTURE_RADIUS),
+		"carcan": SHACKLE_TIME,
+		"portee_bouc": roundi(CHAINS_SNAP),
+		"ascension_max": roundi(ASCENSION_MOST),
+		"colonnes_triptyque": TRIPTYCH_COUNT,
+		"apotheose_max": APOTHEOSIS_MOST,
+		"egide_max": roundi(AEGIS_MOST),
+		"portee_colere": WRATH_REACH,
+		"portee_extase": roundi(ECSTASY_REACH),
+		"devotion_max": roundi(DEVOTION_MOST),
+		"perte_intercession": roundi(INTERCESSION_LOSS * 100.0),
+		"duree_epiphanie": roundi(EPIPHANY_TIME),
+		"recharge_epiphanie": roundi(EPIPHANY_RECHARGE),
+		"rayon_transfiguration": roundi(TRANSFIGURATION_RADIUS),
+		"part_transfiguration": roundi(TRANSFIGURATION_PART * 100.0),
+		"rythme_aureole": AUREOLE_PERIOD,
+		"battage_tous": THRESHING_EVERY,
+		"martelement_max": MARTELLING_MOST,
+		"oubli_martelement": MARTELLING_FORGET,
+		"bourdon_tous": BOURDON_EVERY,
+		"orbite_gravitation": roundi(GRAVITATION_ORBIT * 100.0),
 	}
 
 
@@ -2144,6 +2382,7 @@ func finalize() -> void:
 	trail_charges = float(maxi(roundi(trail_charges), 0))
 	waves = float(maxi(roundi(waves), 0))
 	extra_swords = float(maxi(roundi(extra_swords), 0))
+	hammers = float(maxi(roundi(hammers), 0))
 	duration = maxf(duration, 0.0)
 	radius = maxf(radius, 0.0)
 	# La Fécondité de la Porte (jalon 45) : une cadence de ponte, qui se lit en période.
@@ -2154,4 +2393,10 @@ func finalize() -> void:
 	# Le Coupe-jarret (jalon 46) : toute la ruée fait saigner plus souvent, couloir et choc —
 	# dans le lancer résolu, que lit la fenêtre des déclenchements.
 	status_chance_increase += hamstring
+	# L'Épiphanie (jalon 48) : la lumière ne draine plus, elle s'allume pour un temps et se
+	# recharge — dans le lancer résolu, que lisent la case, le buff et la fiche.
+	if epiphany > 0.0:
+		duration = EPIPHANY_TIME
+		recharge = EPIPHANY_RECHARGE
+		mana_per_second = 0.0
 	crit_chance = clampf(crit_chance, 0.0, 1.0)
