@@ -107,9 +107,9 @@ func _crowded(targets: Array[Hurtbox]) -> void:
 	_parts = DamageType.scaled(_parts, factor)
 
 
-## Trois souffles peints — le brasier, la nova, le mur de gaz de la nécrose, qui se
-## rastérise d'un tenant (`Necrotic.miasma()`) — et, pour tout le reste, l'onde tracée
-## qui suit.
+## Les souffles peints — le brasier, la nova, le mur de gaz de la nécrose, qui se
+## rastérise d'un tenant (`Necrotic.miasma()`), la gloire, l'anneau de foudre — et, pour le
+## physique, l'onde tracée qui suit.
 ##
 ## Pas de disque plein qui dure : en mélange additif sur un sol sombre, un orange
 ## peu opaque sortait **brun**, et l'explosion se lisait comme une flaque. Le cœur
@@ -136,6 +136,9 @@ func _draw() -> void:
 			return
 		DamageType.Kind.HOLY:
 			_glory(k)
+			return
+		DamageType.Kind.LIGHTNING:
+			_storm(k)
 			return
 
 	# **En additif, c'est le bleu qui blanchit.** Le blanc du feu en porte 0,78 : à
@@ -238,7 +241,17 @@ func _ground(r: float, fade: float) -> void:
 func _is_painted() -> bool:
 	return _nature() in [
 		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.NECROTIC, DamageType.Kind.HOLY,
+		DamageType.Kind.LIGHTNING,
 	]
+
+
+## La foudre (jalon 49) : l'éclat au centre, puis l'anneau qui s'ouvre jusqu'au rayon qui mord
+## (`Lightning.ring()`) et se défait.
+func _storm(k: float) -> void:
+	if k < Lightning.RING_FLASH:
+		EffectForge.put_centered(self, EffectForge.strike(_tint), Vector2.ZERO)
+	var frame := mini(int(k * float(Lightning.RING_FRAMES)), Lightning.RING_FRAMES - 1)
+	Lightning.put(self, Lightning.ring(_tint, roundi(_radius), frame))
 
 
 ## Combien de temps ce souffle s'affiche.

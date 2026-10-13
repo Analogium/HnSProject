@@ -167,6 +167,34 @@ func test_each_nature_gives_its_keyword() -> void:
 		assert_true(Skill.KEYWORD_OF_NATURE.has(nature), DamageType.IDS[nature])
 
 
+## L'Amplification et la Trinité ne font que renforcer (jalon 49) : « Buff », ni sort ni
+## élément. Les autres buffs gardent les leurs.
+func test_the_bare_buffs_wear_buff_alone() -> void:
+	for id in ["spell_amplification", "trinity"]:
+		assert_eq(Array(SkillCatalog.by_id(id).keywords()), [Keywords.BUFF], id)
+	var frenzy := SkillCatalog.by_id("bloodlust")
+	assert_true(frenzy.worn(Keywords.BUFF))
+	assert_true(frenzy.worn(Keywords.ATTACK))
+
+
+## Le Familier rejoue les sorts des trois éléments : un sort, pas un sort de foudre.
+func test_the_familiar_is_a_spell_without_element() -> void:
+	var familiar := SkillCatalog.by_id("familiar")
+	assert_true(familiar.worn(Keywords.SPELL))
+	assert_false(familiar.worn(Keywords.LIGHTNING))
+
+
+## Le Contrecoup (jalon 49) : les secondes brûlées, bornées, et le niveau du joueur.
+func test_a_recoil_grows_with_the_time_burned_and_the_level() -> void:
+	var cast := SkillStats.new()
+	cast.recoil = 2.0
+	assert_almost_eq(cast.recoil_damage(1, 5.0), 10.0, 1e-4)
+	assert_almost_eq(cast.recoil_damage(1, 60.0), 2.0 * SkillStats.RECOIL_MOST, 1e-4, "borné")
+	assert_almost_eq(
+		cast.recoil_damage(11, 5.0), 10.0 * (1.0 + 10.0 * SkillStats.RECOIL_PER_LEVEL), 1e-4
+	)
+
+
 func test_a_bolt_carries_projectile_and_a_sword_swing_does_not() -> void:
 	assert_true(SkillCatalog.by_id(SkillCatalog.ID_BOLT).worn(Keywords.PROJECTILE))
 	assert_false(SkillCatalog.by_id(SkillCatalog.ID_ATTACK).worn(Keywords.PROJECTILE))
@@ -237,12 +265,15 @@ func test_each_shape_has_the_numbers_it_needs() -> void:
 			assert_gt(c.stack_duration, 0.0, "« %s » : ce que vivent ses charges" % c.name)
 		if c.shape == Skill.Shape.LUNGE:
 			assert_gt(c.radius, 0.0, "« %s » : sa portée" % c.name)
-		# La sorcière (jalon 41) : le cercle qui réagit, le fétiche qui dure et éclate, le
+		# La sorcière (jalon 41) : le glyphe qui éclate et le chaudron qui bout (jalon 49), le
 		# corbeau qui se paie à la seconde.
-		if c.shape in [Skill.Shape.CATALYSIS, Skill.Shape.DOLL]:
+		if c.shape in [Skill.Shape.GLYPH, Skill.Shape.CAULDRON]:
 			assert_gt(c.radius, 0.0, "« %s » : un rayon" % c.name)
-		if c.shape == Skill.Shape.DOLL:
 			assert_gt(c.duration, 0.0, "« %s » : une durée" % c.name)
+		if c.shape == Skill.Shape.GLYPH:
+			assert_gt(c.simultaneous, 0, "« %s » : combien à la fois" % c.name)
+		if c.shape == Skill.Shape.CAULDRON:
+			assert_gt(c.period, 0.0, "« %s » : ses bouillons" % c.name)
 		if c.shape == Skill.Shape.FAMILIAR:
 			assert_gt(c.mana_per_second, 0.0, "« %s » : son prix" % c.name)
 		for kind in c.nature_cycle:

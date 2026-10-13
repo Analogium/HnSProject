@@ -79,12 +79,6 @@ const LABELS := {
 	DISSONANCE: "nombre de charges",
 	TEMPO: "secondes de recharge rendues",
 	PERFECT_CHORD: "dégâts en plus de l'accord",
-	REACTION_POWER: "puissance des réactions",
-	PRIMER: "état prêté",
-	DOLL_LIFE: "PV de la poupée",
-	GRUDGE: "dégâts encaissés rendus",
-	TRANSFER: "dégâts subis détournés",
-	LURE: "portée de l'appeau",
 	ECHO_POWER: "dégâts rejoués",
 	ECHOES: "nombre d'échos",
 	COUNTERSONG: "élément d'avance de l'écho",
@@ -326,6 +320,50 @@ const LABELS := {
 	THRESHING: "dégâts du battage",
 	PEAL: "branle",
 	ECLIPSE: "orbite élargie par seconde",
+	EQUILIBRIUM: "résistance ouverte",
+	PRECIPITATE: "du trait par réaction",
+	SHIMMER: "chatoiement",
+	SPECTRUM: "dégâts par autre élément",
+	CONJUNCTION: "conjonction",
+	ARMING: "temps d'armement",
+	TRIGGER: "rayon de déclenchement",
+	PALIMPSEST: "du glyphe par réaction",
+	REWRITE: "réécriture",
+	ENTWINE: "dégâts des fils",
+	WEFT: "trame",
+	LURE: "portée du leurre",
+	SIGNATURE: "signature",
+	SEAL: "sceau",
+	COUNTERSEAL: "contresceau",
+	ARPEGGIO: "durée d'état élémentaire",
+	MODULATION: "états prolongés par charge",
+	DIAPASON: "part dans l'élément précédent",
+	RUBATO: "rubato",
+	CODA: "coda",
+	INVERSION: "renversement",
+	FALSE_NOTE: "fausse note",
+	SATURATION: "chance de saturer",
+	INCARNATION: "incarnation",
+	AURA: "coup de l'aura",
+	METAMORPHOSIS: "métamorphose",
+	TRIPLE_BURST: "triple éclat",
+	RECOIL: "dégâts du contrecoup par seconde",
+	REMIGES: "écho avancé",
+	DARK_OMEN: "dégâts de l'écho par état",
+	PECK: "coup de bec",
+	EVIL_EYE: "mauvais œil",
+	CROAK: "rayon du mauvais œil",
+	JETTATURA: "jettatura",
+	CANON: "dégâts de l'écho",
+	BRIM: "dégâts de l'explosion",
+	FROTH: "chance d'une goutte",
+	PHILTRE: "mana par seconde",
+	MIX: "mélange",
+	LID: "couvercle",
+	DECOCTION: "décoction",
+	BUBBLES: "rayon des bulles",
+	EMULSION: "émulsion",
+	LEES: "durée par seconde bue",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -391,12 +429,6 @@ const AGREEMENT := {
 	DISSONANCE: "ms",
 	TEMPO: "fp",
 	PERFECT_CHORD: "mp",
-	REACTION_POWER: "fs",
-	PRIMER: "ms",
-	DOLL_LIFE: "mp",
-	GRUDGE: "mp",
-	TRANSFER: "mp",
-	LURE: "fs",
 	ECHO_POWER: "mp",
 	ECHOES: "ms",
 	COUNTERSONG: "ms",
@@ -638,6 +670,50 @@ const AGREEMENT := {
 	THRESHING: "mp",
 	PEAL: "ms",
 	ECLIPSE: "fs",
+	EQUILIBRIUM: "fs",
+	PRECIPITATE: "fs",
+	SHIMMER: "ms",
+	SPECTRUM: "mp",
+	CONJUNCTION: "fs",
+	ARMING: "ms",
+	TRIGGER: "ms",
+	PALIMPSEST: "fs",
+	REWRITE: "fs",
+	ENTWINE: "mp",
+	WEFT: "fs",
+	LURE: "fs",
+	SIGNATURE: "fs",
+	SEAL: "ms",
+	COUNTERSEAL: "ms",
+	ARPEGGIO: "fs",
+	MODULATION: "mp",
+	DIAPASON: "fs",
+	RUBATO: "ms",
+	CODA: "fs",
+	INVERSION: "ms",
+	FALSE_NOTE: "fs",
+	SATURATION: "fs",
+	INCARNATION: "fs",
+	AURA: "ms",
+	METAMORPHOSIS: "fs",
+	TRIPLE_BURST: "ms",
+	RECOIL: "mp",
+	REMIGES: "ms",
+	DARK_OMEN: "mp",
+	PECK: "ms",
+	EVIL_EYE: "ms",
+	CROAK: "ms",
+	JETTATURA: "fs",
+	CANON: "mp",
+	BRIM: "mp",
+	FROTH: "fs",
+	PHILTRE: "ms",
+	MIX: "ms",
+	LID: "ms",
+	DECOCTION: "fs",
+	BUBBLES: "ms",
+	EMULSION: "fs",
+	LEES: "fs",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -703,19 +779,12 @@ const AUREOLE := "aureole"
 const NUMB_EFFECT := "numb_effect"
 const RESONANCE := "resonance"
 const SIPHON := "siphon"
-## Ceux des arbres de Trinité, de la Catalyse, de la Poupée et du Familier (jalon 41). En
-## points de pourcentage : l'accord, les réactions, les PV de la poupée, ce qu'elle rend et
-## détourne, la part d'un écho.
+## Ceux des arbres de Trinité et du Familier (jalon 41). En points de pourcentage : l'accord,
+## la part d'un écho.
 const STACK_HOLD := "stack_hold"
 const DISSONANCE := "dissonance"
 const TEMPO := "tempo"
 const PERFECT_CHORD := "perfect_chord"
-const REACTION_POWER := "reaction_power"
-const PRIMER := "primer"
-const DOLL_LIFE := "doll_life"
-const GRUDGE := "grudge"
-const TRANSFER := "transfer"
-const LURE := "lure"
 const ECHO_POWER := "echo_power"
 const ECHOES := "echoes"
 const COUNTERSONG := "countersong"
@@ -1038,6 +1107,64 @@ const BOURDON := "bourdon"
 const THRESHING := "threshing"
 const PEAL := "peal"
 const ECLIPSE := "eclipse"
+## Le Projectile élémentaire (jalon 49). L'Équilibre en points de résistance, le Précipité et le
+## Spectre en points de pourcentage ; deux drapeaux.
+const EQUILIBRIUM := "equilibrium"
+const PRECIPITATE := "precipitate"
+const SHIMMER := "shimmer"
+const SPECTRUM := "spectrum"
+const CONJUNCTION := "conjunction"
+## Les Glyphes (jalon 49, à la place de la Catalyse). L'armement en secondes et le
+## déclenchement en pixels, que la forme apporte (`Skill.SHAPE_NUMBERS`) et que deux nœuds
+## simples raccourcissent ou élargissent ; le Palimpseste et l'Entrelacs en points de
+## pourcentage d'un coup, le Leurre en pixels ; cinq drapeaux.
+const ARMING := "arming"
+const TRIGGER := "trigger"
+const PALIMPSEST := "palimpsest"
+const REWRITE := "rewrite"
+const ENTWINE := "entwine"
+const WEFT := "weft"
+const LURE := "lure"
+const SIGNATURE := "signature"
+const SEAL := "seal"
+const COUNTERSEAL := "counterseal"
+## Trinité (jalon 49). L'Arpège et le Diapason en points de pourcentage, la Modulation en
+## secondes ; quatre drapeaux.
+const ARPEGGIO := "arpeggio"
+const MODULATION := "modulation"
+const DIAPASON := "diapason"
+const RUBATO := "rubato"
+const CODA := "coda"
+const INVERSION := "inversion"
+const FALSE_NOTE := "false_note"
+## L'Amplification des sorts (jalon 49). La Saturation et l'Aura en points de pourcentage, le
+## Contrecoup en dégâts par seconde brûlée ; trois drapeaux.
+const SATURATION := "saturation"
+const INCARNATION := "incarnation"
+const AURA := "aura"
+const METAMORPHOSIS := "metamorphosis"
+const TRIPLE_BURST := "triple_burst"
+const RECOIL := "recoil"
+## Le Familier (jalon 49). Les Rémiges en secondes ; le Sombre augure, la Becquée, le
+## Croassement et le Canon en points de pourcentage ; deux drapeaux.
+const REMIGES := "remiges"
+const DARK_OMEN := "dark_omen"
+const PECK := "peck"
+const EVIL_EYE := "evil_eye"
+const CROAK := "croak"
+const JETTATURA := "jettatura"
+const CANON := "canon"
+## Le Chaudron (jalon 49). Le Trop-plein et l'Écume en points de pourcentage, le Philtre en
+## mana par seconde, les Bulles en pixels, la Lie en secondes ; quatre drapeaux.
+const BRIM := "brim"
+const FROTH := "froth"
+const PHILTRE := "philtre"
+const MIX := "mix"
+const LID := "lid"
+const DECOCTION := "decoction"
+const BUBBLES := "bubbles"
+const EMULSION := "emulsion"
+const LEES := "lees"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -1045,7 +1172,7 @@ const MECHANICS := [
 	BOUNCES, JUMP_GAIN, TRAIL_CHARGES, PULL, CONTAGION, BONE_WALL, COLOSSUS, TRIBUTE,
 	SHARED_BURDEN, KNOCKBACK, LIFE_ON_HIT, MANA_ON_HIT, BLADE_WARD, SWORD_VOLLEY, WAVES,
 	EXTRA_SWORDS, WAVE_GAIN, AUREOLE, RESONANCE, SIPHON, DISSONANCE, TEMPO, PERFECT_CHORD,
-	PRIMER, GRUDGE, TRANSFER, LURE, ECHOES, COUNTERSONG, SWELL, OVERHEAT, STOKED,
+	ECHOES, COUNTERSONG, SWELL, OVERHEAT, STOKED,
 	METEOR_SHOWER, SPLIT_CASCADE, POWDER_KEG, CONVERGE, WIDE_BLAST, GIRTH, GLUTTONY,
 	GROWTH_MOLT, CONSTRICT, VISE, OUROBOROS, SPIRAL, SPIT, SPIT_FAN, ROT_HOLD, MELT,
 	CAMPFIRE, EMBERS, REBIRTH, PHOENIX_ASHES, VIGIL, EYE, SOUL_FEAST, FLYING_START, WICK,
@@ -1074,6 +1201,12 @@ const MECHANICS := [
 	AEGIS, PURIFICATION, COMMUNION, WRATH, REVELATION, ECSTASY,
 	DEVOTION, INTERCESSION, EPIPHANY, GLORY, HUMILITY, TRANSFIGURATION,
 	HAMMERS, MARTELLING, TOCSIN, GRAVITATION, BOURDON, THRESHING, PEAL, ECLIPSE,
+	EQUILIBRIUM, PRECIPITATE, SHIMMER, SPECTRUM, CONJUNCTION,
+	PALIMPSEST, REWRITE, ENTWINE, WEFT, LURE, SIGNATURE, SEAL, COUNTERSEAL,
+	ARPEGGIO, MODULATION, DIAPASON, RUBATO, CODA, INVERSION, FALSE_NOTE,
+	SATURATION, INCARNATION, AURA, METAMORPHOSIS, TRIPLE_BURST, RECOIL,
+	REMIGES, DARK_OMEN, PECK, EVIL_EYE, CROAK, JETTATURA, CANON,
+	BRIM, FROTH, PHILTRE, MIX, LID, DECOCTION, BUBBLES, EMULSION, LEES,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -1404,6 +1537,61 @@ const BOURDON_EVERY := 3
 const BOURDON_FACTOR := 1.5
 const TOCSIN_SIZE := 0.5
 const GRAVITATION_ORBIT := 0.5
+## L'Équilibre (jalon 49) : ce que dure la résistance ouverte.
+const EQUILIBRIUM_TIME := 3.0
+## Un même ennemi ne réagit qu'une fois dans ce délai (jalon 49) : deux glyphes qui éclatent
+## ensemble, ou le trait et son écho, le referaient réagir sur-le-champ.
+const REACTION_GUARD := 0.5
+## Les Glyphes (jalon 49) : le rythme et la part d'un coup du triangle et des fils de
+## l'Entrelacs, l'épaisseur d'un fil ; le pas et la force du Leurre ; l'attente de la
+## Signature ; la part d'un coup par élément du Sceau, son rayon en part du cercle, et l'écart
+## des glyphes que laisse le Contresceau.
+const GLYPH_SKILL := "glyph"
+const TRIANGLE_PERIOD := 1.0
+const TRIANGLE_PART := 0.5
+const THREAD_WIDTH := 8.0
+const LURE_PERIOD := 0.3
+const LURE_TUG := 50.0
+const SIGNATURE_GAP := 3.0
+const SEAL_PART := 1.5
+const SEAL_REACH := 1.5
+const COUNTERSEAL_SPREAD := 0.6
+## Trinité (jalon 49) : jusqu'où la Modulation prolonge ; le pas du Rubato, d'une charge à la
+## suivante ; ce que porte chaque charge perdue de la Fausse note, en part du sort répété, et
+## son rayon.
+const MODULATION_REACH := 80.0
+const RUBATO_STEP := 1.0
+const FALSE_NOTE_PART := 0.25
+const FALSE_NOTE_RADIUS := 100.0
+## L'Incarnation (jalon 49) : l'effet ajouté à l'état de son élément, en points de
+## pourcentage ; le rythme et la portée de l'Aura.
+const INCARNATION_EFFECT := 50.0
+const AURA_PERIOD := 1.0
+const AURA_REACH := 40.0
+## Le Contrecoup (jalon 49) : les secondes brûlées qu'il compte au plus, et ce que chaque
+## niveau du joueur ajoute à ses dégâts. La Résonance : chaque prolongation vaut cette part
+## de la précédente — sans quoi on ne sortirait plus du buff.
+const RECOIL_MOST := 10.0
+const RECOIL_PER_LEVEL := 0.10
+const RESONANCE_DECAY := 0.8
+## Le Familier (jalon 49) : le plus court retard d'un écho sous les Rémiges ; le rythme et la
+## portée de la Becquée ; le rayon du Mauvais œil ; la force de l'état que la Jettatura ajoute.
+const REMIGES_FLOOR := 0.1
+const PECK_PERIOD := 1.0
+const PECK_REACH := 120.0
+const EVIL_EYE_RADIUS := 50.0
+const JETTATURA_STRENGTH := 0.5
+## Le Chaudron (jalon 49) : son explosion, en bouillons et en rayon ; ce que la Décoction
+## boit par bouillon et ce que vaut chaque seconde bue ; la goutte de l'Écume, sa portée et sa
+## vitesse ; la part de l'explosion entière que verse le Couvercle.
+const SPILL_PART := 3.0
+const SPILL_REACH := 1.5
+const DECOCTION_SIP := 1.0
+const DECOCTION_GAIN := 0.10
+const FROTH_PART := 0.5
+const FROTH_REACH := 160.0
+const FROTH_SPEED := 200.0
+const LID_PART := 0.5
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -1516,12 +1704,6 @@ var stack_hold := 0.0
 var dissonance := 0.0
 var tempo := 0.0
 var perfect_chord := 0.0
-var reaction_power := 0.0
-var primer := 0.0
-var doll_life := 0.0
-var grudge := 0.0
-var transfer := 0.0
-var lure := 0.0
 var echo_power := 0.0
 var echoes := 0.0
 var countersong := 0.0
@@ -1763,6 +1945,53 @@ var bourdon := 0.0
 var threshing := 0.0
 var peal := 0.0
 var eclipse := 0.0
+var equilibrium := 0.0
+var precipitate := 0.0
+var shimmer := 0.0
+var spectrum := 0.0
+var conjunction := 0.0
+var arming := 0.0
+var trigger := 0.0
+var palimpsest := 0.0
+var rewrite := 0.0
+var entwine := 0.0
+var weft := 0.0
+var lure := 0.0
+var signature := 0.0
+var seal := 0.0
+var counterseal := 0.0
+var arpeggio := 0.0
+var modulation := 0.0
+var diapason := 0.0
+var rubato := 0.0
+var coda := 0.0
+var inversion := 0.0
+var false_note := 0.0
+var saturation := 0.0
+var incarnation := 0.0
+var aura := 0.0
+var metamorphosis := 0.0
+var triple_burst := 0.0
+var recoil := 0.0
+var remiges := 0.0
+var dark_omen := 0.0
+var peck := 0.0
+var evil_eye := 0.0
+var croak := 0.0
+var jettatura := 0.0
+var canon := 0.0
+var brim := 0.0
+var froth := 0.0
+var philtre := 0.0
+var mix := 0.0
+var lid := 0.0
+var decoction := 0.0
+var bubbles := 0.0
+var emulsion := 0.0
+var lees := 0.0
+## Le Chatoiement (jalon 49) : le lancer de chaque rebond, au tour suivant le précédent.
+## Rempli par `Player._salvo()`, aucun nœud ne le vise.
+var bounce_turns: Array[SkillStats] = []
 ## Vrai sur le lancer que le Coup sûr a fait tomber juste : son gel et le Coup de massue le
 ## lisent au coup. Aucun nœud ne le vise.
 var is_sure := false
@@ -2133,6 +2362,29 @@ static func facts() -> Dictionary:
 		"oubli_martelement": MARTELLING_FORGET,
 		"bourdon_tous": BOURDON_EVERY,
 		"orbite_gravitation": roundi(GRAVITATION_ORBIT * 100.0),
+		"duree_equilibre": roundi(EQUILIBRIUM_TIME),
+		"rythme_triangle": TRIANGLE_PERIOD,
+		"part_triangle": roundi(TRIANGLE_PART * 100.0),
+		"attente_signature": roundi(SIGNATURE_GAP),
+		"part_sceau": roundi(SEAL_PART * 100.0),
+		"portee_modulation": roundi(MODULATION_REACH),
+		"pas_rubato": roundi(RUBATO_STEP),
+		"part_fausse_note": roundi(FALSE_NOTE_PART * 100.0),
+		"effet_incarnation": roundi(INCARNATION_EFFECT),
+		"rythme_aura": AURA_PERIOD,
+		"portee_aura": roundi(AURA_REACH),
+		"duree_contrecoup": roundi(RECOIL_MOST),
+		"gain_contrecoup": roundi(RECOIL_PER_LEVEL * 100.0),
+		"decroissance_resonance": roundi(RESONANCE_DECAY * 100.0),
+		"rayon_fausse_note": roundi(FALSE_NOTE_RADIUS),
+		"rythme_becquee": PECK_PERIOD,
+		"portee_becquee": roundi(PECK_REACH),
+		"rayon_mauvais_oeil": roundi(EVIL_EYE_RADIUS),
+		"force_jettatura": roundi(JETTATURA_STRENGTH * 100.0),
+		"gorgee": roundi(DECOCTION_SIP),
+		"gain_gorgee": roundi(DECOCTION_GAIN * 100.0),
+		"portee_goutte": roundi(FROTH_REACH),
+		"part_couvercle": roundi(LID_PART * 100.0),
 	}
 
 
@@ -2289,6 +2541,9 @@ func echoed(part: float) -> SkillStats:
 	for i in damage_min.size():
 		g.damage_min[i] *= part
 		g.damage_max[i] *= part
+	# L'écho d'un trait qui chatoie rebondit à sa part, lui aussi.
+	for i in bounce_turns.size():
+		g.bounce_turns[i] = bounce_turns[i].echoed(part)
 	return g
 
 
@@ -2302,6 +2557,33 @@ func blend(natures: Array[int]) -> void:
 	for n in natures:
 		damage_min[n] += low
 		damage_max[n] += top
+
+
+## Le Contrecoup (jalon 49) : ses dégâts après tant de secondes brûlées, au niveau du joueur.
+## **Le seul calcul**, que la fiche lit aussi.
+func recoil_damage(level: int, seconds: float) -> float:
+	return recoil * minf(seconds, RECOIL_MOST) * (1.0 + RECOIL_PER_LEVEL * float(level - 1))
+
+
+## La durée d'un état que ce lancer tire, ou zéro pour celle de sa sorte : le Frimas (jalon 44)
+## allonge le transi, l'Arpège (jalon 49) les trois états élémentaires.
+func lasting_of(kind: int) -> float:
+	var extra := rime if kind == StatusEffects.Kind.CHILL else 0.0
+	var factor := 1.0 + arpeggio * 0.01 if kind in StatusEffects.ELEMENTAL else 1.0
+	if extra <= 0.0 and factor == 1.0:
+		return 0.0
+	return (StatusEffects.DURATIONS[kind] + extra) * factor
+
+
+## Une part de ses dégâts passe dans cette nature : le Diapason (jalon 49).
+func tinge(nature_to: int, part: float) -> void:
+	var low := total_min() * part
+	var top := total_max() * part
+	for i in damage_min.size():
+		damage_min[i] *= 1.0 - part
+		damage_max[i] *= 1.0 - part
+	damage_min[nature_to] += low
+	damage_max[nature_to] += top
 
 
 ## Le multiplicateur d'effet de cet état quand ce lancer le pose : 1, plus ce que l'arbre

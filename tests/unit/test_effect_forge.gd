@@ -281,3 +281,58 @@ func test_glory_rays_are_baked_per_radius_and_frame() -> void:
 	assert_same(Holy.glory(HOLY, 30, 0), first)
 	assert_ne(Holy.glory(HOLY, 30, 3).get_image().get_data(), first.get_image().get_data())
 	assert_eq(Holy.glory(HOLY, 60, 0).get_width(), 60 * 2 + 7, "la planche suit le rayon")
+
+
+## Les dessins du jalon 49, choisis sur planche : la marmite, le piqué, l'icône de résistance.
+func test_the_witch_grids_are_rectangular() -> void:
+	for grid: Array in [EffectForge.CAULDRON, EffectForge.CROW_DIVE, StatusIcon.LOWERED]:
+		for row: String in grid:
+			assert_eq(row.length(), (grid[0] as String).length(), "largeur de « %s »" % row)
+	assert_eq(EffectForge.CAULDRON.size(), EffectForge.CAULDRON_HEIGHT)
+	assert_eq(EffectForge.CROW_DIVE.size(), EffectForge.CROW_DIVE_HEIGHT)
+	for bubbles: Array in EffectForge.CAULDRON_BUBBLES:
+		for at: Vector2i in bubbles:
+			assert_eq((EffectForge.CAULDRON[at.y] as String)[at.x], "a", "une bulle sur la surface")
+
+
+## Fabriquée une fois par teinte : l'élément change, la marmite suit, et ses temps diffèrent.
+func test_the_cauldron_is_baked_once_per_tint() -> void:
+	var frames := EffectForge.cauldron(FIRE)
+	assert_same(EffectForge.cauldron(FIRE), frames)
+	assert_eq(frames.size(), EffectForge.CAULDRON_BUBBLES.size())
+	assert_ne(frames[0].get_image().get_data(), frames[1].get_image().get_data())
+
+
+## L'anneau de foudre : un par rayon et par temps, et rien au dernier — le souffle s'est éteint.
+func test_the_lightning_ring_is_baked_per_radius_and_frame() -> void:
+	var tint := Color(0.72, 0.56, 1.00)
+	var first := Lightning.ring(tint, 40, 1)
+	assert_same(Lightning.ring(tint, 40, 1), first)
+	assert_false(first.is_empty())
+	assert_true(Lightning.ring(tint, 40, Lightning.RING_FRAMES - 1).is_empty())
+
+
+## L'œil du Mauvais œil : gardé par rayon, temps et teinte ; fermé, un trait ; ouvert, l'amande.
+func test_the_evil_eye_opens_and_is_kept() -> void:
+	var shut := Witchcraft.eye(50.0, 0, FIRE)
+	var open := Witchcraft.eye(50.0, 2, FIRE)
+	assert_same(Witchcraft.eye(50.0, 2, FIRE), open)
+	assert_gt(_painted(open.texture), _painted(shut.texture) * 3, "l'œil ouvert couvre son amande")
+
+
+## Le javelot ardent a la forme du javelot de glace, pas son arête.
+func test_the_fire_javelin_is_the_ice_shape_with_a_fire_edge() -> void:
+	var turn := Slash.turn_of(0.0)
+	var fire := Fire.javelin(FIRE, turn)
+	var ice := Frost.javelin(FIRE, turn)
+	assert_eq(_painted(fire.texture), _painted(ice.texture))
+	assert_ne(fire.texture.get_image().get_data(), ice.texture.get_image().get_data())
+
+
+## Le bord du Chaudron : gardé par teinte, rayon et temps, et sa couronne grandit avec le cercle.
+func test_the_cauldron_rim_is_kept_and_follows_the_radius() -> void:
+	var rim := EffectForge.cauldron_rim(FIRE, 50, 0)
+	assert_same(EffectForge.cauldron_rim(FIRE, 50, 0), rim)
+	assert_ne(EffectForge.cauldron_rim(FIRE, 50, 1).texture.get_image().get_data(), rim.texture.get_image().get_data())
+	assert_eq(rim.texture.get_width(), 50 * 2 + 9)
+	assert_gt(_painted(EffectForge.cauldron_rim(FIRE, 70, 0).texture), _painted(rim.texture))

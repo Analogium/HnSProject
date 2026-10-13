@@ -23,6 +23,7 @@ id = "familiar"
 name = "Familier"
 description = "Un corbeau qui rejoue vos sorts, moins fort, un instant après."
 nature = 3
+elementless = true
 cadence = 1
 shape = 42
 cooldown = 0.60

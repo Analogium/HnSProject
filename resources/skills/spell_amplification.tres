@@ -33,5 +33,6 @@ mana_cost = 20.0
 duration = 10.0
 declared_points_max = 1
 buffs = Array[ExtResource("4_buff")]([SubResource("B_sorts_amplifies")])
+bare_buff = true
 required_manual_level = 3
 icon = ExtResource("2_icone")

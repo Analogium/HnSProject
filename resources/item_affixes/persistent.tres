@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemAffix" format=3]
+
+[ext_resource type="Script" path="res://core/item_affix.gd" id="1_persi"]
+[ext_resource type="Script" path="res://core/item_affix_tier.gd" id="2_persi"]
+
+[sub_resource type="Resource" id="Resource_persistent_t1"]
+script = ExtResource("2_persi")
+required_level = 40
+min_value = 21.0
+max_value = 28.0
+
+[sub_resource type="Resource" id="Resource_persistent_t2"]
+script = ExtResource("2_persi")
+required_level = 18
+min_value = 14.0
+max_value = 20.0
+
+[sub_resource type="Resource" id="Resource_persistent_t3"]
+script = ExtResource("2_persi")
+min_value = 8.0
+max_value = 13.0
+
+[resource]
+script = ExtResource("1_persi")
+id = "persistent"
+suffix = "de la Persistance"
+tags = PackedStringArray("jewellery")
+excludes = PackedStringArray()
+stat = "duration"
+scope = "buff"
+percent = true
+tiers = Array[ExtResource("2_persi")]([SubResource("Resource_persistent_t1"), SubResource("Resource_persistent_t2"), SubResource("Resource_persistent_t3")])
+weight = 3

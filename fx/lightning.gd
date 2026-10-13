@@ -59,6 +59,15 @@ const ROD_SWAY := 6.0
 const ROD_FORMS := 4
 const ROD_HZ := 8.0
 
+## L'explosion de foudre (jalon 49), « couronne d'arcs » choisie sur planche contre une étoile
+## de fourches, une pluie d'éclairs, un globe et un sol fendu : un anneau d'éclair qui s'ouvre
+## de la moitié du rayon jusqu'au bord, puis se défait ; un éclat au centre d'abord. Le rayon
+## est une statistique : un anneau par rayon et par temps, fabriqué à la première explosion.
+const RING_FRAMES := 5
+const RING_POINTS := 12
+## L'éclat du centre tient ce premier bout de la vie du souffle.
+const RING_FLASH := 0.35
+
 const R_TINT := EffectForge.R_TINT
 const R_CORE := EffectForge.R_CORE
 
@@ -66,6 +75,7 @@ static var _darts := {}
 static var _charges := {}
 static var _orbs := {}
 static var _rods := {}
+static var _rings := {}
 
 
 ## Un trait brisé à rastériser : ses sommets, son rayon, et s'il porte le filament.
@@ -192,6 +202,24 @@ static func rod(tint: Color, form: int) -> EffectForge.Piece:
 			strokes.append(Stroke.new(PackedVector2Array([Vector2.ZERO, Vector2.ZERO]), FORK, false))
 		_rods[key] = _bake(strokes, PackedVector2Array([Vector2.ZERO]), tint, 0.0)
 	return _rods[key]
+
+
+## L'anneau au temps `frame` de `RING_FRAMES`, ou rien au dernier : le souffle s'est éteint.
+static func ring(tint: Color, radius: int, frame: int) -> Array[EffectForge.Piece]:
+	var key := "%s|%d|%d" % [tint.to_html(false), radius, frame]
+	if not _rings.has(key):
+		var made: Array[EffectForge.Piece] = []
+		if frame < RING_FRAMES - 1:
+			var k := (float(frame) + 0.5) / float(RING_FRAMES)
+			var r := float(radius) * (0.5 + 0.5 * (1.0 - pow(1.0 - minf(k * 2.5, 1.0), 3.0)))
+			var rng := RandomNumberGenerator.new()
+			rng.seed = frame
+			var points := PackedVector2Array()
+			for i in RING_POINTS + 1:
+				points.append(Vector2.from_angle(TAU * float(i) / float(RING_POINTS)) * r)
+			made = chain(points, rng, tint, 0, false, GONE if frame >= RING_FRAMES - 2 else 0.0)
+		_rings[key] = made
+	return _rings[key]
 
 
 static func _bolt(

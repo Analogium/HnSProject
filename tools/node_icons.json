@@ -1930,5 +1930,317 @@
   "blessed_hammer_eclipse": [
     "A solar eclipse: a dark disc covering a white sun, a thick golden ring of light around it.",
     4242, "suite", {"nature": "holy"}
+  ],
+  "elemental_projectile_arcana": [
+    "A glowing violet rune stone with a bright white arcane sigil carved on its face.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "elemental_projectile_celerity": [
+    "A small orange comet streaking fast to the right, long white speed lines trailing behind it.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "elemental_projectile_electroshock": [
+    "A violet lightning bolt striking a cracked grey stone, white sparks bursting from the impact.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "elemental_projectile_cross_affinity": [
+    "Two crossed magic wands, one tipped with an orange flame, the other with an icy blue crystal.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "elemental_projectile_ricochet": [
+    "A glowing orange ball bouncing off a grey stone wall, a white dotted zigzag path showing the bounce.",
+    777, "major", {"nature": "witch"}
+  ],
+  "elemental_projectile_prism": [
+    "A clear crystal prism splitting one white beam into three rays: orange, icy blue and violet.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "elemental_projectile_triad": [
+    "A triangle of three glowing orbs, orange at the top, icy blue at the bottom left and violet at the bottom right, each joined by a thin white line to one bright white star in the center.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "elemental_projectile_sleight": [
+    "A black magic wand with a white tip flicking quickly, curved white motion lines and a burst of white sparkles at its tip.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "elemental_projectile_equilibrium": [
+    "A golden balance scale perfectly level, an orange flame in one pan and an icy blue crystal in the other.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "elemental_projectile_precipitate": [
+    "A round glass alchemy flask filled with three layered liquids, orange, icy blue and violet, a white burst at its neck.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "elemental_projectile_shimmer": [
+    "A small ball bouncing along a zigzag path, its trail changing color at each bounce: orange, then icy blue, then violet.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "elemental_projectile_spectrum": [
+    "A thick arc of three bands, orange, icy blue and violet, arching over a small red bullseye target.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "elemental_projectile_conjunction": [
+    "Three interlocking rings, orange, icy blue and violet, a white glow where they cross in the middle.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "trinity_scale": [
+    "Three musical notes climbing a short staircase to the right: an orange note, then an icy blue note, then a violet note.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "trinity_measure": [
+    "A round shield with a white treble clef on its face, its rim split in three colors: orange, icy blue and violet.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "trinity_fermata": [
+    "A violet musical note with a long glowing white horizontal bar stretching far to its right, a sustained held note.",
+    1337, "basic", {"nature": "witch"}
+  ],
+  "trinity_dissonance": [
+    "A silver tuning fork with one prong cracked, a jagged red spark crackling between its prongs.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "trinity_tempo": [
+    "A wooden metronome with its pendulum swung to the side, curved white motion lines beside it.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "trinity_perfect_chord": [
+    "Three glowing musical notes, orange, icy blue and violet, merging into one bright white burst.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "trinity_arpeggio": [
+    "A small golden harp with three glowing strings: orange, icy blue and violet.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "trinity_diapason": [
+    "A silver tuning fork vibrating, its left prong glowing orange and its right prong glowing icy blue.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "trinity_modulation": [
+    "A violet musical note in the center with three concentric sound wave rings rippling out around it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "trinity_rubato": [
+    "An hourglass with three colored grains falling one at a time: orange, icy blue and violet.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "trinity_coda": [
+    "One glowing violet musical note standing alone in front of two faded grey musical notes.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "trinity_inversion": [
+    "A violet musical note flipped upside down, a curved white arrow looping around it.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "trinity_false_note": [
+    "A cracked musical note bursting apart into sharp orange, icy blue and violet shards.",
+    1337, "suite", {"nature": "witch"}
+  ],
+  "spell_amplification_overpower": [
+    "A bright violet clenched fist glowing with power, small white sparks around it.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "spell_amplification_volubility": [
+    "A violet open spellbook with its pages flipping fast, white speed streaks beside it.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "spell_amplification_remanence": [
+    "A tall violet candle with a long bright steady flame, burned down only a little.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "spell_amplification_siphon": [
+    "A small grey skull with a stream of glowing blue mana droplets rising out of it.",
+    777, "major", {"nature": "witch"}
+  ],
+  "spell_amplification_resonance": [
+    "A glowing violet bell ringing, curved white vibration lines on both sides.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "spell_amplification_backlash": [
+    "A violet lightning burst exploding outward, a ring of jagged white electric arcs around it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "spell_amplification_recurrence": [
+    "A thick violet circular arrow looping back on itself around a small glowing white star.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "spell_amplification_exacerbation": [
+    "A small orange flame, a small icy blue snowflake and a small violet lightning bolt, each with a bold white plus sign.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "spell_amplification_saturation": [
+    "A plain grey round target splashed by a violet magic dart, orange, icy blue and violet drops spraying from it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "spell_amplification_incarnation": [
+    "A pointed witch hat made entirely of bright orange living fire.",
+    777, "major", {"nature": "witch"}
+  ],
+  "spell_amplification_aura": [
+    "A dotted violet circle of glowing runes, a small orange flame, an icy blue snowflake and a violet bolt sitting on the circle.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "spell_amplification_metamorphosis": [
+    "A butterfly with one orange flame wing and one icy blue frost wing, its body a violet lightning bolt.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "spell_amplification_triple_burst": [
+    "Three small explosions side by side: an orange fire burst, an icy blue frost burst and a violet lightning burst.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "familiar_faithful_echo": [
+    "A black raven in flight with a faint violet ghost copy of itself just behind it.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "familiar_frugality": [
+    "A small blue mana potion bottle with a single black feather leaning against it.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "familiar_black_wings": [
+    "A pair of spread dark grey feathered wings outlined in bright violet, white speed streaks behind them.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "familiar_raven_eye": [
+    "A large glowing violet bird eye in black feathers, a thin white aiming circle around it.",
+    777, "major", {"nature": "witch"}
+  ],
+  "familiar_rumination": [
+    "Three black ravens one behind another, outlined in bright violet, each one smaller and paler than the one in front.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "familiar_countersong": [
+    "A black raven with its beak open, a curved arrow of orange, icy blue and violet coming out of its beak.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "familiar_remiges": [
+    "A single long black flight feather with white speed streaks along it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "familiar_dark_omen": [
+    "A black raven perched on a grey skull, its eyes glowing violet.",
+    1337, "suite", {"nature": "witch"}
+  ],
+  "familiar_peck": [
+    "A black raven diving down beak first, a white impact star under its beak.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "familiar_evil_eye": [
+    "A large violet eye wide open lying flat on the ground, black lashes, a dark violet glow around it.",
+    777, "major", {"nature": "witch"}
+  ],
+  "familiar_croak": [
+    "A black raven with its beak wide open, big violet sound wave arcs spreading out in front of it.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "familiar_jettatura": [
+    "A single large white eyeball with an icy blue iris, a small orange flame burning inside its black pupil.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "familiar_canon": [
+    "Three black feathers fanned out, the left one tipped with orange fire, the middle one with icy blue frost, the right one with violet lightning.",
+    777, "suite", {"nature": "witch"}
+  ],
+  "cauldron_simmer": [
+    "A small black iron cauldron with bright orange flames licking its bottom.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "cauldron_belly": [
+    "A wide black iron cauldron with a big glowing violet circle drawn on the ground around it.",
+    1337, "basic", {"nature": "witch"}
+  ],
+  "cauldron_low_heat": [
+    "A small calm blue flame burning on a few dark logs.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "cauldron_seething": [
+    "Many round violet bubbles rising fast and popping into small white sparkles.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "cauldron_brim": [
+    "A black iron cauldron boiling over, glowing violet liquid spilling down its sides.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "cauldron_froth": [
+    "A black iron cauldron with one big glowing violet droplet flying out of it to the right.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "cauldron_philtre": [
+    "A wooden ladle full of glowing blue liquid, blue drops dripping from it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "cauldron_mix": [
+    "A black iron cauldron with orange and icy blue liquid swirling together inside it.",
+    777, "major", {"nature": "witch"}
+  ],
+  "cauldron_lid": [
+    "A round black iron pot lid with a handle flying upward, a bright white flash bursting beneath it.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "cauldron_decoction": [
+    "A black iron cauldron sucking in thin orange, icy blue and violet wisps from around it.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "cauldron_bubbles": [
+    "Three big glossy violet bubbles bursting into white sparkles.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "cauldron_emulsion": [
+    "Three round glowing liquid orbs, one orange, one icy blue and one violet, swirling together in a tight spiral.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "cauldron_lees": [
+    "A black iron cauldron lying on its side, thick bright violet sludge pooling out of its mouth onto the ground.",
+    1337, "suite", {"nature": "witch"}
+  ],
+  "glyph_ink": [
+    "A small glass ink bottle full of glowing violet ink, a white quill feather standing in it.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "glyph_flourish": [
+    "A bright violet magic circle bursting outward in a wide ring of white sparks.",
+    777, "basic", {"nature": "witch"}
+  ],
+  "glyph_chalk": [
+    "A single stick of white chalk drawing a curved glowing line on dark stone.",
+    1337, "basic", {"nature": "witch"}
+  ],
+  "glyph_calligraphy": [
+    "A violet feather quill drawing one fast glowing curved stroke, white speed streaks behind it.",
+    1337, "basic", {"nature": "witch"}
+  ],
+  "glyph_engraving": [
+    "A steel chisel carving a glowing violet groove into a dark stone slab.",
+    4242, "basic", {"nature": "witch"}
+  ],
+  "glyph_palimpsest": [
+    "An old torn parchment with an orange flame mark and an icy blue snowflake mark overlapping in its center.",
+    777, "major", {"nature": "witch"}
+  ],
+  "glyph_entwine": [
+    "Two glowing circles, one orange and one icy blue, joined by a bright white thread of light.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "glyph_lure": [
+    "A shiny fishing lure with a sharp hook, glowing violet, dangling from a thin line.",
+    1337, "major", {"nature": "witch"}
+  ],
+  "glyph_signature": [
+    "A violet quill pen with a single red drop of blood at its tip, a small glowing violet circle under it.",
+    777, "major", {"nature": "witch"}
+  ],
+  "glyph_seal": [
+    "A large dark red wax seal with a glowing orange flame emblem pressed into it.",
+    4242, "major", {"nature": "witch"}
+  ],
+  "glyph_rewrite": [
+    "A glowing circle being redrawn by a curved white arrow, one half orange and the other half icy blue.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "glyph_weft": [
+    "A small wooden loom weaving three threads, orange, icy blue and violet, into a cloth.",
+    4242, "suite", {"nature": "witch"}
+  ],
+  "glyph_counterseal": [
+    "A cracked dark red wax seal breaking into three small glowing circles, orange, icy blue and violet.",
+    777, "suite", {"nature": "witch"}
   ]
 }

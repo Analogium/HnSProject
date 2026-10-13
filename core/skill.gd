@@ -50,8 +50,9 @@ enum Shape {
 	SLAM, BOOMERANG,
 	# Jalon 40 : la Croix de lumière, le Pilier errant.
 	HOLY_CROSS, DRIFT,
-	# Jalon 41, la sorcière : la Catalyse, la Poupée de chiffon, le Familier, la Triade.
-	CATALYSIS, DOLL, FAMILIAR, TRIAD,
+	# Jalon 41, la sorcière : le Familier, la Triade ; au jalon 49, le Chaudron à la place de
+	# la Poupée de chiffon, les Glyphes à la place de la Catalyse.
+	GLYPH, CAULDRON, FAMILIAR, TRIAD,
 	# Jalon 42 : le Brasero.
 	TURRET,
 	# Jalon 44 : l'Orbe gelée.
@@ -77,6 +78,12 @@ const GESTURE := {
 ## redéclarer ferait deux vérités. Aujourd'hui le seul `melee` du coup d'arme, dont
 ## la forme `ARC` est celle que prend toute compétence qui n'en choisit pas.
 @export var declared_keywords: PackedStringArray = PackedStringArray()
+## Un buff qui ne fait que renforcer les autres gestes (l'Amplification, la Trinité, jalon 49) :
+## ni sort ni élément, seulement « Buff ». Sa nature ne lui sert qu'à sa couleur et à ses éclats.
+@export var bare_buff := false
+## Un sort sans élément (le Familier, jalon 49) : il rejoue ceux des trois, sa nature ne lui
+## sert qu'à la couleur de son disque.
+@export var elementless := false
 
 ## Une nature absente ne donne aucun mot-clé : l'afficher enverrait chercher un
 ## affixe qui n'existe pas.
@@ -110,10 +117,9 @@ const KEYWORD_OF_SHAPE := {
 	Shape.LEAP: Keywords.AREA,
 	Shape.METEOR: Keywords.AREA,
 	Shape.TEMPEST: Keywords.AREA,
-	Shape.CATALYSIS: Keywords.AREA,
+	Shape.GLYPH: Keywords.AREA,
 	Shape.TRIAD: Keywords.AREA,
-	# Le fétiche ne frappe qu'en éclatant.
-	Shape.DOLL: Keywords.AREA,
+	Shape.CAULDRON: Keywords.AREA,
 	# La vague part de la lame et le cyclone tourne sur place : deux gestes d'arme,
 	# donc de la mêlée, quoi qu'ils atteignent au-delà du bras.
 	Shape.WAVE: Keywords.MELEE,
@@ -142,6 +148,7 @@ const KEYWORD_OF_SHAPE := {
 	Shape.NEST: Keywords.SUMMON,
 	Shape.CURSE: Keywords.CURSE,
 	Shape.MARK: Keywords.CURSE,
+	Shape.BUFF: Keywords.BUFF,
 	# On se jette sur une cible pour la frapper à l'arme : de la mêlée, d'où qu'on parte.
 	Shape.LUNGE: Keywords.MELEE,
 }
@@ -163,7 +170,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.GATE, Shape.STRIKE, Shape.CROSS, Shape.ARC, Shape.DASH, Shape.METEOR, Shape.LEAP,
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
-	Shape.DRIFT, Shape.CATALYSIS, Shape.TRIAD, Shape.HAMMER, Shape.CHAINS, Shape.SCAPEGOAT,
+	Shape.DRIFT, Shape.GLYPH, Shape.TRIAD, Shape.HAMMER, Shape.CHAINS, Shape.SCAPEGOAT,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -194,7 +201,10 @@ const IGNORED_BY_SHAPE := {
 	Shape.MARK: ["radius"],
 	# Les trois comètes ne sont pas des tirs : elles naissent autour du lanceur et se
 	# rejoignent au point visé.
-	Shape.TRIAD: ["projectiles", "projectile_speed", SkillStats.BOUNCES],
+	Shape.TRIAD: [
+		"projectiles", "projectile_speed", SkillStats.BOUNCES, SkillStats.PRECIPITATE,
+		SkillStats.SHIMMER, SkillStats.SPECTRUM,
+	],
 	# Le Brise-sol frappe déjà tout le cercle de l'impact : la massue n'y ajouterait rien.
 	Shape.SLAM: [SkillStats.MAUL],
 	# Une vague qui rapporte ce qu'elle emporte le rendrait au lanceur (jalon 46).
@@ -211,6 +221,9 @@ const IGNORED_BY_MECHANIC := {
 	SkillStats.STASIS: [SkillStats.GUIDED],
 	# Un géant qui jette des os se lirait mal (jalon 45).
 	SkillStats.COLOSSUS: [SkillStats.BONE_THROW],
+	# Le Mauvais œil (jalon 49) ne rejoue plus de dégâts ; la Décoction ne pose plus rien.
+	SkillStats.EVIL_EYE: [SkillStats.ECHO_POWER, SkillStats.DARK_OMEN],
+	SkillStats.DECOCTION: [SkillStats.MIX, SkillStats.EMULSION],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
@@ -225,6 +238,8 @@ const SHAPE_NUMBERS := {
 	# s'y ajoutent.
 	Shape.CHAINS: {SkillStats.LINKS: 2.0, SkillStats.SOLIDARITY: 30.0},
 	Shape.SCAPEGOAT: {SkillStats.LINKS: 2.0, SkillStats.SOLIDARITY: 30.0},
+	# Les Glyphes (jalon 49) : armés en une demi-seconde, déclenchés à 16 px de leur centre.
+	Shape.GLYPH: {SkillStats.ARMING: 0.5, SkillStats.TRIGGER: 16.0},
 }
 
 const HITS_PER_SHAPE := {
@@ -444,10 +459,11 @@ func grants_buffs() -> bool:
 ## Ceux du lancer : sa nature et sa forme, qu'une conversion et une transformation ont
 ## pu changer (jalon 34).
 func _keywords(own_nature: DamageType.Kind, cast_shape: Shape) -> PackedStringArray:
-	var all_keywords := PackedStringArray([
-		KEYWORD_OF_CADENCE.get(cadence, ""), KEYWORD_OF_NATURE.get(own_nature, ""),
-		KEYWORD_OF_SHAPE.get(cast_shape, ""),
-	])
+	var all_keywords := PackedStringArray([KEYWORD_OF_SHAPE.get(cast_shape, "")])
+	if not bare_buff:
+		all_keywords.append(KEYWORD_OF_CADENCE.get(cadence, ""))
+		if not elementless:
+			all_keywords.append(KEYWORD_OF_NATURE.get(own_nature, ""))
 	all_keywords.append_array(declared_keywords)
 	return Keywords.sort_in_order(all_keywords)
 
@@ -483,11 +499,13 @@ func damage(points: int) -> float:
 ## Les talents ne sont pas filtrés. **Une conversion change la nature du lancer avant
 ## le filtre** : la boule de feu gelée est un sort de froid, que les affixes de froid
 ## mordent et ceux de feu non. `turn` choisit la nature d'une compétence qui en change
-## à chaque lancer ; une conversion l'emporte.
+## à chaque lancer ; une conversion l'emporte. `incarnated`, l'élément de l'Incarnation
+## (jalon 49), l'emporte sur tout : mots-clés, affixes et Triade le suivent.
 ##
 ## Mesuré : 8,1 µs nue, 21,6 µs avec trois lignes d'objet et deux nœuds.
 func resolve(
-	points: int, stats: CharacterStats, mods: Array = [], talents: Array = [], turn := 0
+	points: int, stats: CharacterStats, mods: Array = [], talents: Array = [], turn := 0,
+	incarnated := -1
 ) -> SkillStats:
 	var own_nature := nature_at(turn)
 	var cast_shape := shape
@@ -498,6 +516,10 @@ func resolve(
 			own_nature = t.node.converts_to
 		if t.node.transforms:
 			cast_shape = t.node.shape
+	if incarnated >= 0:
+		own_nature = incarnated as DamageType.Kind
+	# La Triade porte les trois éléments du tour : les trois mots-clés mordent.
+	var triad := cast_shape == Shape.TRIAD and not nature_cycle.is_empty() and incarnated < 0
 	var r := SkillStats.new()
 	r.nature = own_nature
 	r.projectiles = float(projectiles)
@@ -532,6 +554,10 @@ func resolve(
 		r.crit_multiplier = stats.crit_multiplier
 
 	var worn_items := _keywords(own_nature, cast_shape)
+	if triad:
+		for n in nature_cycle:
+			worn_items.append(KEYWORD_OF_NATURE[n])
+		worn_items = Keywords.sort_in_order(worn_items)
 	r.keywords = worn_items
 	# La Déflagration (jalon 42) : le rayon suit aussi ce qui vise la zone, sans que le
 	# reste de la zone — ses dégâts — ne s'applique.
@@ -572,8 +598,11 @@ func resolve(
 		else:
 			increased += m.value
 	r.scale_damage(increased, more)
-	# La Triade (jalon 41) : les trois comètes portent chacune son élément du tour.
-	if cast_shape == Shape.TRIAD and not nature_cycle.is_empty():
+	# La Triade (jalon 41) : les trois comètes portent chacune son élément du tour. Sous
+	# l'Incarnation, tout passe dans son élément, fourchettes ajoutées comprises.
+	if incarnated >= 0:
+		r.blend([incarnated] as Array[int])
+	elif triad:
 		r.blend(nature_cycle)
 	r.finalize()
 	# Ici et non dans `finalize()` : zéro veut dire « sans limite », et un nœud ne doit

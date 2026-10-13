@@ -33,5 +33,6 @@ stack_duration = 4.0
 stack_trigger = 1
 declared_points_max = 4
 buffs = Array[ExtResource("4_buff")]([SubResource("B_harmonie")])
+bare_buff = true
 required_manual_level = 2
 icon = ExtResource("2_icone")

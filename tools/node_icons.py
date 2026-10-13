@@ -43,6 +43,8 @@ NATURES = {
     "lightning": ("electric violets and white", "dark violet", (30, 16, 46)),
     "holy": ("radiant golds and white", "dark plum", (34, 18, 36)),
     "physical": ("steel greys, silver white, warm bronze and blood red", "dark slate blue", (20, 26, 40)),
+    # La sorciere (jalon 49) : ses arbres tiennent les trois elements a la fois, sur son violet.
+    "witch": ("flame orange, icy blue, electric violet and white", "dark violet", (28, 16, 40)),
 }
 # Ecart de couleur en deca duquel un pixel qui touche le bord est du fond : Qwen pose un
 # leger degrade, que 0,16 avale sans manger le contour noir.

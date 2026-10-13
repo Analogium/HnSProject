@@ -16,10 +16,8 @@ nature du sort.
 """
 import argparse, json, io, os, re, shutil, sys, time
 import numpy as np
-from scipy import ndimage
 from PIL import Image, ImageDraw
-from item_icons import HOST, PROJ, SEEDS, WORK, BG_TOL, render, quant
-from icon_layouts import BG as VIOLET, layout
+from item_icons import HOST, PROJ, SEEDS, WORK, render, quant
 
 SIDE = 24  # le cadre de SkillIcon
 
@@ -43,11 +41,7 @@ BACKGROUNDS = {"storm_dash": "dark violet", "static_electricity": "dark violet",
                "holy_pulse": "dark plum", "holy_light": "dark plum",
                "plague": "dark murky green", "rise": "dark murky green",
                "toxic_unleash": "dark murky green", "rotting_gate": "dark murky green",
-               "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green",
-               # La sorcière : le violet de la foudre, même pour le trait qui change d'élément.
-               "elemental_projectile": "dark violet", "spell_amplification": "dark violet",
-               "trinity": "dark violet", "catalysis": "dark violet", "rag_doll": "dark violet",
-               "familiar": "dark violet"}
+               "putrid_curse": "dark murky green", "advanced_necrosis": "dark murky green"}
 
 # Le sujet occupe rarement plus que ce centre ; reduite entiere, la tuile noie sa
 # silhouette dans le fond.
@@ -91,19 +85,6 @@ def crisp(img, colors=14):
     return out
 
 
-def to_violet(img):
-    """Le fond qui touche les bords ramene au violet de la sorciere : SDXL sortait le
-    corbeau sur du blanc ou du gris, qui jurait avec le reste du manuel."""
-    a = np.asarray(img).astype(np.float32) / 255.0
-    ring = np.concatenate([a[:4].reshape(-1, 3), a[-4:].reshape(-1, 3),
-                           a[:, :4].reshape(-1, 3), a[:, -4:].reshape(-1, 3)])
-    lab, _ = ndimage.label(np.linalg.norm(a - np.median(ring, 0), axis=2) < BG_TOL)
-    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-    out = np.asarray(img).copy()
-    out[np.isin(lab, list(edge))] = VIOLET
-    return Image.fromarray(out)
-
-
 def build_sheet():
     cell = SIDE * ZOOM + 10
     sheet = Image.new("RGBA", (150 + cell * len(SEEDS), 18 + cell * len(SUBJECTS)), (40, 40, 46, 255))
@@ -131,9 +112,7 @@ def cmd_gen(args):
     os.makedirs(RAW, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
     for name in (args.only.split(",") if args.only else list(SUBJECTS)):
-        # Le troisieme champ, facultatif (jalon 41) : `layout` et `denoise` pour un
-        # calque d'`icon_layouts.py`, `crisp` pour la reduction nette, `violet` pour
-        # ramener le fond.
+        # Le troisieme champ, facultatif : `qwen` et `nature` pour le tuyau des noeuds.
         opts = SUBJECTS[name][2] if len(SUBJECTS[name]) > 2 else {}
         for seed in SEEDS:
             tag = "%s_%d" % (name, seed)
@@ -147,19 +126,15 @@ def cmd_gen(args):
                     # Le tuyau des noeuds (jalon 42) : le sujet y est une phrase entiere.
                     import node_icons
                     img = node_icons.render(node_icons.sentence(SUBJECTS[name][0], opts.get("nature", "fire")), seed)
-                elif opts.get("layout"):
-                    img = render(prompt, seed, layout=layout(name), denoise=opts["denoise"])
                 else:
                     img = render(prompt, seed)
                 img.save(raw)
                 print("  %s  %.1fs" % (tag, time.time() - start), flush=True)
-            if opts.get("violet"):
-                img = to_violet(img)
             if opts.get("qwen"):
                 import node_icons
                 small = node_icons.fit(img, SIDE, node_icons.NATURES[opts.get("nature", "fire")][2]).convert("RGBA")
             else:
-                small = crisp(img) if opts.get("crisp") else quant(shrink(img).convert("RGBA"))
+                small = quant(shrink(img).convert("RGBA"))
             small.save(os.path.join(OUT, tag + ".png"))
     build_sheet()
 

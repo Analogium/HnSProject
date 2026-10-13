@@ -149,10 +149,12 @@ func _a_manual(l: PackedStringArray, base: ItemBase) -> void:
 		# Le mot-clé de la cadence par la table de `Skill`, jamais par un ternaire
 		# recopié : la colonne annonçait « attack » à côté d'une nature française.
 		var cadence := Keywords.label_of(Skill.KEYWORD_OF_CADENCE[c.cadence])
-		l.append("| %s | %s %s | niveau %d | %d | %d mana | %s | %s | %s |" % [
+		# Un buff nu ou un sort sans élément (jalon 49) : ses mots-clés le disent.
+		var sort := c.keywords_label().to_lower() if c.bare_buff or c.elementless \
+				else "%s %s" % [cadence.to_lower(), DamageType.NAMES[c.nature]]
+		l.append("| %s | %s | niveau %d | %d | %d mana | %s | %s | %s |" % [
 			c.name,
-			cadence.to_lower(),
-			DamageType.NAMES[c.nature],
+			sort,
 			c.required_manual_level,
 			c.points_max(),
 			roundi(c.mana_cost),

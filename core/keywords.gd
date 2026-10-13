@@ -12,6 +12,8 @@ const AREA := "area"
 ## Ce qui se bat pour le personnage : ce qu'il lève, ce qu'un portail crache.
 const SUMMON := "summon"
 const CURSE := "curse"
+## Ce qui ne renforce que les autres gestes (jalon 49) : ni sort, ni élément.
+const BUFF := "buff"
 ## Ce qui continue de blesser après le coup — un état qu'un lancer pose. Déclaré.
 const DOT := "dot"
 const LIGHTNING := "lightning"
@@ -34,6 +36,7 @@ const LABELS := {
 	AREA: "Zone",
 	SUMMON: "Invocation",
 	CURSE: "Malédiction",
+	BUFF: "Buff",
 	DOT: "Dégâts continus",
 	LIGHTNING: "Foudre",
 	FIRE: "Feu",
@@ -55,6 +58,7 @@ const RECIPIENTS := {
 	AREA: "aux compétences de zone",
 	SUMMON: "aux invocations",
 	CURSE: "aux malédictions",
+	BUFF: "aux buffs",
 	DOT: "aux compétences à dégâts continus",
 	LIGHTNING: "aux compétences de foudre",
 	FIRE: "aux compétences de feu",
@@ -79,6 +83,7 @@ const QUALIFIERS := {
 	AREA: "de zone",
 	SUMMON: "d'invocation",
 	CURSE: "de malédiction",
+	BUFF: "de buff",
 	LIGHTNING: "de foudre",
 	FIRE: "de feu",
 	COLD: "de froid",

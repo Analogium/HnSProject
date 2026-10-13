@@ -2783,8 +2783,8 @@ func _aim() -> Vector2:
 	return _p.global_position + _p.facing * Player.PLACEMENT_RANGE
 
 
-## Aucun état tiré par les coups du joueur : ce que la Catalyse retire ne revient pas
-## par sa propre frappe.
+## Aucun état tiré par les coups du joueur : ce qu'une réaction retire ne revient pas
+## par le coup qui la porte.
 func _no_rolled_states() -> void:
 	_p.states.chance_factors.fill(0.0)
 
@@ -2795,11 +2795,11 @@ func _cast_again(slot: int) -> void:
 
 
 ## Trinité : une charge par sort d'une autre nature que le précédent. Le premier n'a pas
-## de précédent ; la Catalyse, qui part au feu comme le Projectile, n'en donne pas.
+## de précédent ; les Glyphes, qui partent au feu comme le Projectile, n'en donnent pas.
 func test_trinity_stacks_harmony_on_each_change_of_element() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "trinity", "catalysis"])
+	_learn_class(Character.WITCH, ["elemental_projectile", "trinity", "glyph"])
 	_p.bar.put(3, "trinity")
-	_p.bar.put(4, "catalysis")
+	_p.bar.put(4, "glyph")
 	var projectile := SkillCatalog.by_id("elemental_projectile")
 	assert_true(Gestures.cast(_p, 3))
 	var before := _p.resolve(projectile, 1).total_min()
@@ -2817,90 +2817,207 @@ func test_trinity_stacks_harmony_on_each_change_of_element() -> void:
 	assert_almost_eq(_p.resolve(projectile, 1).total_min(), before * 1.10, 1e-3, "5 % par charge")
 
 
-## Embrasé et transi : les deux s'en vont, la Vapeur souffle. Un état seul ne réagit pas.
-func test_catalysis_consumes_a_pair_of_states_into_vapor() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "catalysis"])
-	_p.bar.put(3, "catalysis")
-	_no_rolled_states()
-	var steamy := _wearing_target(_aim())
-	steamy.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	steamy.states.put(StatusEffects.Kind.CHILL, 1.0)
-	var lone := _wearing_target(_aim() + Vector2(0, 30))
-	lone.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	await wait_physics_frames(2)
-
+## Trinité allumée en case 4, le Projectile en case 3 : chaque trait suivant change d'élément.
+func _trinity_with(nodes: Array) -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "trinity"] + nodes)
+	_p.bar.put(3, "trinity")
 	assert_true(Gestures.cast(_p, 3))
-	assert_false(steamy.states.active(StatusEffects.Kind.IGNITE), "consommé")
-	assert_false(steamy.states.active(StatusEffects.Kind.CHILL), "consommé")
-	assert_true(lone.states.active(StatusEffects.Kind.IGNITE), "seul, il reste")
+
+
+## Arpège : par charge, les états élémentaires des sorts durent davantage — l'embrasé aussi.
+func test_an_arpeggio_lengthens_the_elemental_states_per_stack() -> void:
+	_trinity_with(["trinity_scale", "trinity_arpeggio", "trinity_arpeggio"])
+	var projectile := SkillCatalog.by_id("elemental_projectile")
+	_cast_again(2)
+	_cast_again(2)
+	assert_eq(_p.lit_stacks("trinity"), 1)
+	var cast := _p.resolve(projectile, 1)
+	assert_eq(cast.arpeggio, 8.0)
+	var ignite := StatusEffects.DURATIONS[StatusEffects.Kind.IGNITE]
+	assert_almost_eq(cast.lasting_of(StatusEffects.Kind.IGNITE), ignite * 1.08, 1e-4)
+	assert_eq(cast.lasting_of(StatusEffects.Kind.BLEED), 0.0, "pas un état élémentaire")
+
+
+## Diapason : le trait de froid qui suit un trait de feu en garde une part au feu.
+func test_a_diapason_keeps_a_share_in_the_previous_element() -> void:
+	_trinity_with(["trinity_scale", "trinity_diapason", "trinity_diapason"])
+	_cast_again(2)
+	_cast_again(2)
+	var cold := _children_of(Projectile)[-1] as Projectile
+	assert_eq(cold.nature(), DamageType.Kind.COLD)
+	assert_almost_eq(cold._cast.distribution()[DamageType.Kind.FIRE], 0.2, 1e-4)
+
+
+## Coda et Renversement : l'accord part à une charge du plafond et en laisse une.
+func test_an_inverted_chord_fires_early_and_a_coda_keeps_a_stack() -> void:
+	_trinity_with([
+		"trinity_fermata", "trinity_fermata", "trinity_perfect_chord", "trinity_coda",
+		"trinity_inversion",
+	])
+	_cast_again(2)
+	_cast_again(2)
+	_cast_again(2)
+	assert_eq(_p.lit_stacks("trinity"), 2, "à une du plafond")
+	_cast_again(2)
+	var chord := _children_of(Projectile)[-1] as Projectile
+	assert_eq(chord._cast.distribution().filter(func(s: float) -> bool: return s > 0.0).size(), 3)
+	assert_eq(_p.lit_stacks("trinity"), 2, "la Coda, puis la charge de ce sort")
+
+
+## Fausse note : répéter l'élément sous la Dissonance fait éclater les charges perdues.
+func test_a_false_note_bursts_the_lost_stacks() -> void:
+	_trinity_with(["trinity_scale", "trinity_dissonance", "trinity_false_note", "glyph"])
+	_p.bar.put(4, "glyph")
+	# Feu, froid, foudre, feu : trois charges. Les Glyphes partent de leur propre tour, au feu.
+	for i in 4:
+		_cast_again(2)
+	assert_eq(_p.lit_stacks("trinity"), 3)
+	assert_eq(_children_of(Explosion).size(), 0)
+	_cast_again(4)
+	assert_eq(_p.lit_stacks("trinity"), 0)
 	await wait_physics_frames(2)
-	assert_eq(_children_of(Explosion).size(), 1, "une Vapeur")
-	assert_eq(_hits(steamy), 2, "la frappe du cercle, puis la Vapeur")
+	assert_gt(_children_of(Explosion).size(), 0, "l'éclat")
 
 
-## Embrasé et engourdi : l'Arc ardent frappe l'ennemi et gagne ses voisins à sa portée.
-func test_catalysis_arcs_from_fire_and_lightning() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "catalysis"])
-	_p.bar.put(3, "catalysis")
-	_no_rolled_states()
-	var charged := _wearing_target(_aim())
-	charged.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	charged.states.put(StatusEffects.Kind.NUMB, 1.0)
-	var neighbor := _target(_aim() + Vector2(50, 0))
-	var far := _target(_aim() + Vector2(0, Catalysis.ARC_REACH + 20.0))
+## Rubato : à l'échéance, une charge tombe, puis la suivante un pas plus tard.
+func test_rubato_drops_the_stacks_one_by_one() -> void:
+	_trinity_with(["trinity_fermata", "trinity_rubato"])
+	for i in 4:
+		_cast_again(2)
+	assert_eq(_p.lit_stacks("trinity"), 3)
+	var buff := _p._lit["trinity"] as Buff
+	buff._since_stack = buff._hold
 	await wait_physics_frames(2)
+	assert_eq(_p.lit_stacks("trinity"), 2)
+	await wait_seconds(SkillStats.RUBATO_STEP + 0.1)
+	assert_eq(_p.lit_stacks("trinity"), 1)
 
+
+## Modulation : chaque charge gagnée prolonge les états élémentaires autour de soi.
+func test_modulation_prolongs_the_states_around_on_each_stack() -> void:
+	_trinity_with(["trinity_fermata", "trinity_modulation", "trinity_modulation"])
+	var near := _wearing_target(Vector2(0, 40))
+	near.states.put(StatusEffects.Kind.NUMB, 1.0)
+	near.states.advance(1.0)
+	var left := near.states.remaining(StatusEffects.Kind.NUMB)
+	await wait_physics_frames(2)
+	_cast_again(2)
+	_cast_again(2)
+	assert_almost_eq(near.states.remaining(StatusEffects.Kind.NUMB), left + 0.6, 1e-4)
+
+
+## L'Amplification en case 4, le Projectile en case 3, ces nœuds pris ; un premier trait au feu.
+func _amplified_with(nodes: Array) -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "spell_amplification"] + nodes)
+	_p.bar.put(3, "spell_amplification")
+	assert_true(Gestures.cast(_p, 2))
 	assert_true(Gestures.cast(_p, 3))
-	assert_eq(_hits(charged), 2, "la frappe du cercle, puis l'arc")
-	assert_eq(_hits(neighbor), 1, "hors du cercle, l'arc l'atteint")
+
+
+## Incarnation : l'élément du dernier sort ; le trait suivant, au froid, y passe tout entier.
+## Métamorphose : il avance ensuite d'un tour à chaque sort.
+func test_an_incarnation_turns_every_spell_into_one_element() -> void:
+	_amplified_with([
+		"spell_amplification_overpower", "spell_amplification_overpower",
+		"spell_amplification_incarnation",
+	])
+	_cast_again(2)
+	var bolt := _children_of(Projectile)[-1] as Projectile
+	assert_eq(bolt.nature(), DamageType.Kind.FIRE, "le froid du tour passe au feu")
+	assert_almost_eq(bolt._cast.distribution()[DamageType.Kind.FIRE], 1.0, 1e-4)
+	assert_eq(bolt._cast.ignite_effect, SkillStats.INCARNATION_EFFECT)
+	var next := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
+	assert_true(next.keywords.has(Keywords.FIRE), "le mot-clé suit l'élément")
+	assert_false(next.keywords.has(Keywords.COLD) or next.keywords.has(Keywords.LIGHTNING))
+	assert_eq(_p.lit_incarnation("spell_amplification"), DamageType.Kind.FIRE, "l'icône du HUD")
+	_cast_again(2)
+	assert_eq((_children_of(Projectile)[-1] as Projectile).nature(), DamageType.Kind.FIRE)
+
+
+## Triade sous l'Incarnation (jalon 49) : trois comètes encore, toutes de son élément.
+func test_a_triad_under_the_incarnation_sends_three_comets_of_its_element() -> void:
+	_amplified_with([
+		"elemental_projectile_arcana", "elemental_projectile_arcana", "elemental_projectile_triad",
+		"spell_amplification_overpower", "spell_amplification_overpower",
+		"spell_amplification_incarnation",
+	])
+	var cast := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
+	assert_almost_eq(cast.distribution()[DamageType.Kind.FIRE], 1.0, 1e-4)
+	assert_false(cast.keywords.has(Keywords.COLD) or cast.keywords.has(Keywords.LIGHTNING))
+	_cast_again(2)
+	var triad := _children_of(Triad)[-1] as Triad
+	assert_eq(triad._tints.size(), 3)
+	for i in 3:
+		assert_eq(triad._tints[i], DamageType.COLORS[DamageType.Kind.FIRE])
+		assert_almost_eq(
+			DamageType.total(triad._parts[i]), DamageType.total(triad._parts[0]), 1e-4, "un tiers chacune"
+		)
+
+
+func test_a_metamorphosis_moves_the_incarnation_along_the_turn() -> void:
+	_amplified_with([
+		"spell_amplification_overpower", "spell_amplification_overpower",
+		"spell_amplification_incarnation", "spell_amplification_metamorphosis",
+	])
+	var seen: Array[int] = []
+	for i in 3:
+		_cast_again(2)
+		seen.append((_children_of(Projectile)[-1] as Projectile).nature())
+	assert_eq(seen, [
+		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING
+	] as Array[int])
+
+
+## Aura : sous l'Incarnation, chaque période, ce qui entoure la sorcière est frappé et pris.
+func test_an_aura_strikes_around_under_the_incarnation() -> void:
+	_amplified_with([
+		"spell_amplification_overpower", "spell_amplification_overpower",
+		"spell_amplification_incarnation", "spell_amplification_aura",
+	])
+	_no_rolled_states()
+	_cast_again(2)
+	var near := _wearing_target(Vector2(0, SkillStats.AURA_REACH - 10.0))
+	var far := _wearing_target(Vector2(0, -SkillStats.AURA_REACH - 20.0))
+	await wait_seconds(SkillStats.AURA_PERIOD + 0.1)
+	assert_gt(_hits(near), 0)
+	assert_true(near.states.active(StatusEffects.Kind.IGNITE), "à coup sûr")
 	assert_eq(_hits(far), 0)
 
 
-## Transi et engourdi : le transi gagne les voisins avant de quitter l'ennemi.
-func test_catalysis_conducts_the_chill_to_the_neighbors() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "catalysis"])
-	_p.bar.put(3, "catalysis")
+## Exacerbation : sous l'amplification, l'effet des états élémentaires des sorts monte.
+## Saturation : un corps sans état élémentaire prend celui du coup, hors du tirage ordinaire.
+func test_exacerbation_and_saturation_under_the_amplification() -> void:
+	_amplified_with([
+		"spell_amplification_overpower", "spell_amplification_exacerbation",
+		"spell_amplification_saturation",
+	])
+	var cast := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
+	assert_eq(cast.chill_effect, 8.0)
+	assert_eq(cast.saturation, 25.0)
+	cast.saturation = 100.0
+	cast.status_chance_increase = 0.0
 	_no_rolled_states()
-	var frozen := _wearing_target(_aim())
-	frozen.states.put(StatusEffects.Kind.CHILL, 1.0)
-	frozen.states.put(StatusEffects.Kind.NUMB, 1.0)
-	var neighbor := _wearing_target(_aim() + Vector2(Catalysis.SPREAD_REACH - 4.0, 0))
+	var bare := _wearing_target(Vector2(0, 200))
+	var chilled := _wearing_target(Vector2(0, 240))
+	chilled.states.put(StatusEffects.Kind.CHILL, 1.0)
+	cast.blend([DamageType.Kind.FIRE] as Array[int])
+	for target: Hurtbox in [bare, chilled]:
+		Targets.strike(target, cast.roll(Game.rng), target.global_position, _p.states, cast)
+	assert_true(bare.states.active(StatusEffects.Kind.IGNITE), "saturé")
+	assert_false(chilled.states.active(StatusEffects.Kind.IGNITE), "il portait déjà un état")
+
+
+## Triple éclat : un éclat par élément lancé sous l'amplification, à son extinction.
+func test_a_triple_burst_bursts_once_per_element_cast() -> void:
+	_amplified_with([
+		"spell_amplification_remanence", "spell_amplification_backlash",
+		"spell_amplification_triple_burst",
+	])
+	_cast_again(2)
+	_cast_again(2)
+	_p.extinguish("spell_amplification")
 	await wait_physics_frames(2)
-
-	assert_true(Gestures.cast(_p, 3))
-	assert_false(frozen.states.active(StatusEffects.Kind.CHILL))
-	assert_true(neighbor.states.active(StatusEffects.Kind.CHILL), "le transi a gagné")
-	assert_eq(_hits(frozen), 2)
-
-
-## La poupée se pose au point visé ; un ennemi plus près d'elle que du joueur la frappe.
-## Sa fin la fait éclater, et en poser une autre fait éclater l'ancienne.
-func test_the_rag_doll_draws_the_blows_and_bursts() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "rag_doll"])
-	_p.bar.put(3, "rag_doll")
-	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
-	add_child_autofree(grunt)
-	grunt.setup(_p)
-	# Hors du souffle de la poupée : il doit survivre à ses deux éclats.
-	grunt.global_position = _aim() + Vector2(80, 0)
-	assert_true(Gestures.cast(_p, 3))
-	var dolls := _children_of(RagDoll)
-	assert_eq(dolls.size(), 1)
-	assert_eq((dolls[0] as RagDoll).global_position, _aim())
-	await wait_physics_frames(1)
-	assert_true(grunt.foe() is RagDoll, "la poupée, plus proche")
-
-	_cast_again(3)
-	await wait_physics_frames(2)
-	assert_eq(_children_of(RagDoll).size(), 1, "une seule debout")
-	assert_eq(_children_of(Explosion).size(), 1, "l'ancienne a éclaté")
-
-	var doll: RagDoll = _children_of(RagDoll)[0]
-	doll._age = _p.resolve(SkillCatalog.by_id("rag_doll"), 1).duration
-	await wait_physics_frames(3)
-	assert_eq(_children_of(RagDoll).size(), 0, "à sa fin")
-	assert_eq(_children_of(Explosion).size(), 2, "elle éclate")
-	assert_eq(grunt.foe(), _p, "et le joueur redevient la cible")
+	assert_eq(_children_of(Explosion).size(), 2, "froid et foudre")
 
 
 ## Le Familier rejoue un sort posé, à sa part des dégâts, après son retard ; un écho ne se
@@ -2927,6 +3044,78 @@ func test_the_familiar_echoes_a_posed_spell_weaker_and_later() -> void:
 	assert_false(_p.lit("familiar"), "éteint à la touche")
 
 
+## Le Familier allumé en case 4, ces nœuds pris.
+func _familiar_with(nodes: Array) -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"] + nodes)
+	_p.bar.put(3, "familiar")
+	assert_true(Gestures.cast(_p, 3))
+
+
+## Rémiges : l'écho part plus tôt. Sombre augure : il frappe plus fort contre chaque état.
+func test_remiges_and_dark_omen_shape_the_echo() -> void:
+	_familiar_with([
+		"familiar_remiges", "familiar_remiges", "familiar_remiges", "familiar_faithful_echo",
+		"familiar_raven_eye", "familiar_dark_omen", "familiar_dark_omen",
+	])
+	_cast_again(2)
+	await wait_seconds(Familiar.ECHO_DELAY - 0.3 + 0.05)
+	var bolts := _children_of(Projectile)
+	assert_eq(bolts.size(), 2, "l'écho est déjà parti")
+	var echo := bolts[1] as Projectile
+	assert_eq(echo._cast.against_increased[StatusEffects.Kind.CHILL], 20.0)
+
+
+## Mauvais œil et Jettatura : l'écho ne frappe pas, il pose l'état de son élément et celui
+## du suivant autour du point visé.
+func test_an_evil_eye_curses_instead_of_striking() -> void:
+	_familiar_with([
+		"familiar_frugality", "familiar_frugality", "familiar_evil_eye", "familiar_jettatura",
+	])
+	var cursed := _wearing_target(_aim() + Vector2(0, 30))
+	await wait_physics_frames(2)
+	_cast_again(2)
+	await wait_seconds(Familiar.ECHO_DELAY + 0.1)
+	assert_eq(_children_of(Projectile).size(), 1, "pas de trait rejoué")
+	assert_eq(_children_of(EvilEye).size(), 1, "l'œil au sol")
+	assert_eq(_hits(cursed), 0)
+	assert_true(cursed.states.active(StatusEffects.Kind.IGNITE), "son élément")
+	assert_true(cursed.states.active(StatusEffects.Kind.CHILL), "le suivant")
+
+
+## Becquée : le corbeau fond sur le plus proche et le frappe en arrivant, d'une part du dernier
+## sort, dont il pose l'état ; puis il revient à l'épaule.
+func test_the_raven_pecks_the_nearest_enemy() -> void:
+	_familiar_with(["familiar_black_wings", "familiar_peck"])
+	_no_rolled_states()
+	var prey := _wearing_target(Vector2(0, 60))
+	await wait_physics_frames(2)
+	_cast_again(2)
+	await wait_seconds(SkillStats.PECK_PERIOD + Familiar.DIVE_TIME * 0.5)
+	var raven := _p._lit["familiar"] as Familiar
+	assert_eq(_hits(prey), 0, "en plein piqué")
+	assert_ne(raven.position, Familiar.SHOULDER)
+	await wait_seconds(Familiar.DIVE_TIME * 2.0)
+	assert_gt(_hits(prey), 0)
+	assert_true(prey.states.active(StatusEffects.Kind.IGNITE))
+	assert_lt(raven._dive_age, 0.0, "revenu")
+
+
+## Canon : sous le Contre-chant, chaque écho avance d'un élément sur le précédent.
+func test_a_canon_spreads_the_echoes_across_the_elements() -> void:
+	_familiar_with([
+		"familiar_faithful_echo", "familiar_faithful_echo", "familiar_rumination",
+		"familiar_countersong", "familiar_canon",
+	])
+	_cast_again(2)
+	await wait_seconds(Familiar.ECHO_DELAY * 2.0 + 0.1)
+	var natures: Array[int] = []
+	for bolt: Projectile in _children_of(Projectile):
+		natures.append(bolt.nature())
+	assert_eq(natures, [
+		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING
+	] as Array[int])
+
+
 ## Prisme : la salve répartit le tour, un élément par trait.
 func test_a_prism_volley_spreads_the_turn_across_its_bolts() -> void:
 	_learn_class(Character.WITCH, [
@@ -2951,6 +3140,7 @@ func test_the_triad_bursts_once_with_the_three_elements() -> void:
 	var shares := cast.distribution()
 	for nature in [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING]:
 		assert_almost_eq(shares[nature], 1.0 / 3.0, 1e-4)
+		assert_true(cast.keywords.has(Skill.KEYWORD_OF_NATURE[nature]), "les trois mots-clés")
 	var target := _target(_aim())
 	await wait_physics_frames(2)
 
@@ -2959,6 +3149,120 @@ func test_the_triad_bursts_once_with_the_three_elements() -> void:
 	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
 	await wait_seconds(Triad.TRAVEL + 0.1)
 	assert_eq(_hits(target), 1, "au point visé, l'éclat seul")
+
+
+## Équilibre : un trait de feu ouvre le froid et la foudre, pas le feu.
+func test_equilibrium_opens_the_two_other_elements() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_arcana", "elemental_projectile_cross_affinity",
+		"elemental_projectile_equilibrium",
+	])
+	var target := _wearing_target(Vector2(60, 0))
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.5)
+	assert_eq(_hits(target), 1)
+	assert_eq(target.states.resistance_lost(DamageType.Kind.COLD), 5.0)
+	assert_eq(target.states.resistance_lost(DamageType.Kind.LIGHTNING), 5.0)
+	assert_eq(target.states.resistance_lost(DamageType.Kind.FIRE), 0.0, "pas le sien")
+
+
+## Précipité : un trait de feu sur un transi engourdi les fait réagir — le Givre conducteur
+## frappe, et le transi gagne le voisin. Son propre état ne compte pas : un trait de froid
+## sur un transi engourdi n'a qu'un autre état devant lui.
+func test_a_precipitate_bolt_makes_the_two_other_states_react() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_electroshock", "elemental_projectile_precipitate",
+	])
+	_no_rolled_states()
+	var target := _wearing_target(Vector2(60, 0))
+	target.states.put(StatusEffects.Kind.CHILL, 1.0)
+	target.states.put(StatusEffects.Kind.NUMB, 1.0)
+	var neighbor := _wearing_target(Vector2(60, 40))
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.5)
+	assert_false(target.states.active(StatusEffects.Kind.CHILL), "consommé")
+	assert_false(target.states.active(StatusEffects.Kind.NUMB), "consommé")
+	assert_eq(_hits(target), 2, "le trait, puis le Givre conducteur")
+	assert_true(neighbor.states.active(StatusEffects.Kind.CHILL), "le transi a gagné")
+
+	var cold := _wearing_target(Vector2(0, 60))
+	cold.states.put(StatusEffects.Kind.CHILL, 1.0)
+	cold.states.put(StatusEffects.Kind.NUMB, 1.0)
+	_p.facing = Vector2.DOWN
+	await wait_physics_frames(2)
+	_cast_again(2)
+	await wait_seconds(0.5)
+	assert_eq(_hits(cold), 1, "le trait de froid seul")
+	assert_true(cold.states.active(StatusEffects.Kind.NUMB))
+
+
+var _natures_hit: Array[int] = []
+
+
+func _on_nature_hit(info: DamageInfo) -> void:
+	_natures_hit.append(info.type)
+
+
+## Chatoiement : chaque rebond prend l'élément suivant du tour.
+func test_a_shimmering_bolt_changes_element_on_each_bounce() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_celerity", "elemental_projectile_ricochet",
+		"elemental_projectile_ricochet", "elemental_projectile_shimmer",
+	])
+	_natures_hit.clear()
+	for x in [40.0, 80.0, 120.0]:
+		_target(Vector2(x, 0)).damaged.connect(_on_nature_hit)
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.8)
+	assert_eq(_natures_hit, [
+		DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING
+	] as Array[int])
+
+
+## Spectre : les traits d'une salve partagent ce qu'ils ont touché ; chaque autre élément déjà
+## passé sur une cible renforce le suivant, le sien ne compte pas.
+func test_a_spectrum_volley_strikes_harder_per_other_element() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_celerity", "elemental_projectile_ricochet",
+		"elemental_projectile_prism", "elemental_projectile_spectrum",
+	])
+	assert_true(Gestures.cast(_p, 2))
+	var bolts := _children_of(Projectile)
+	assert_eq(bolts.size(), 2)
+	assert_true(is_same((bolts[0] as Projectile).salvo_hits, (bolts[1] as Projectile).salvo_hits), "une salve")
+
+	var bolt := bolts[0] as Projectile
+	var target := _target(Vector2(0, 200))
+	bolt._nature = DamageType.Kind.FIRE
+	assert_eq(bolt._spectrum(target), 1.0, "le premier")
+	bolt._nature = DamageType.Kind.COLD
+	assert_almost_eq(bolt._spectrum(target), 1.15, 1e-4)
+	bolt._nature = DamageType.Kind.LIGHTNING
+	assert_almost_eq(bolt._spectrum(target), 1.30, 1e-4)
+	bolt._nature = DamageType.Kind.FIRE
+	assert_almost_eq(bolt._spectrum(target), 1.30, 1e-4, "le feu ne compte pas pour lui-même")
+
+
+## Conjonction : l'éclat de la Triade pose les trois états, même sans chance d'état portée.
+func test_a_conjunction_burst_surely_inflicts_the_three_states() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_arcana", "elemental_projectile_arcana",
+		"elemental_projectile_triad", "elemental_projectile_conjunction",
+	])
+	_no_rolled_states()
+	var target := _wearing_target(_aim())
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(Triad.TRAVEL + 0.1)
+	for kind in [StatusEffects.Kind.IGNITE, StatusEffects.Kind.CHILL, StatusEffects.Kind.NUMB]:
+		assert_true(target.states.active(kind), StatusEffects.NAMES[kind])
 
 
 ## En route, chaque comète perce ce qu'elle traverse, une fois, de son seul élément. Les
@@ -2998,6 +3302,10 @@ func test_the_amplification_tree_resonates_siphons_and_backlashes() -> void:
 	buff._age = 5.0
 	_cast_again(2)
 	assert_almost_eq(buff._age, 5.0 - 0.3, 1e-4, "un point de Résonance")
+	_cast_again(2)
+	assert_almost_eq(
+		buff._age, 5.0 - 0.3 - 0.3 * SkillStats.RESONANCE_DECAY, 1e-4, "la suivante s'amenuise"
+	)
 
 	_p._set_mana(10.0)
 	_p.states.slew.emit(_blow(Keywords.SPELL), Vector2.ZERO, null)
@@ -3005,10 +3313,19 @@ func test_the_amplification_tree_resonates_siphons_and_backlashes() -> void:
 	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
 	assert_almost_eq(_p.mana, 12.0, 1e-3, "pas sur une attaque")
 
+	buff.lived = 30.0
 	buff._age = buff._lifetime
 	await wait_physics_frames(3)
 	assert_false(_p.lit("spell_amplification"))
 	assert_eq(_children_of(Explosion).size(), 1, "le Contrecoup")
+	var recoil := _p.resolve(SkillCatalog.by_id("spell_amplification"), 1).recoil_damage(
+		_p.level, SkillStats.RECOIL_MOST
+	)
+	assert_gt(recoil, 0.0)
+	assert_almost_eq(
+		DamageType.total((_children_of(Explosion)[0] as Explosion)._parts), recoil, 1e-3,
+		"au plus, ce que valent les secondes comptées"
+	)
 
 
 ## Le Projectile élémentaire avance d'un élément par lancer : `n` lancers, `n` tours.
@@ -3021,11 +3338,11 @@ func _cast_projectile(times: int) -> void:
 ## d'orgue : elles tiennent plus longtemps. Gamme : chaque charge accroît la chance d'état.
 func test_trinity_dissonance_holds_one_more_and_loses_all_on_a_repeat() -> void:
 	_learn_class(Character.WITCH, [
-		"elemental_projectile", "trinity", "catalysis", "trinity_scale", "trinity_dissonance",
+		"elemental_projectile", "trinity", "glyph", "trinity_scale", "trinity_dissonance",
 		"trinity_fermata",
 	])
 	_p.bar.put(3, "trinity")
-	_p.bar.put(4, "catalysis")
+	_p.bar.put(4, "glyph")
 	var projectile := SkillCatalog.by_id("elemental_projectile")
 	assert_true(Gestures.cast(_p, 3))
 	var bare := _p.resolve(projectile, 1).status_chance_increase
@@ -3036,7 +3353,7 @@ func test_trinity_dissonance_holds_one_more_and_loses_all_on_a_repeat() -> void:
 	assert_almost_eq(
 		_p.resolve(projectile, 1).status_chance_increase, bare + 4.0 * 4.0, 1e-3, "la Gamme, par charge"
 	)
-	# Le Projectile repart au feu ; la Catalyse aussi, à son premier tour.
+	# Le Projectile repart au feu ; les Glyphes aussi, à leur premier tour.
 	_cast_projectile(1)
 	_cast_again(4)
 	assert_eq(buff.stacks, 0, "le feu répété")
@@ -3045,17 +3362,16 @@ func test_trinity_dissonance_holds_one_more_and_loses_all_on_a_repeat() -> void:
 ## Tempo : un sort qui charge l'Harmonie rend du temps aux recharges, pas aux simples gestes.
 func test_trinity_tempo_shortens_the_running_cooldowns() -> void:
 	_learn_class(Character.WITCH, [
-		"elemental_projectile", "trinity", "rag_doll", "trinity_fermata", "trinity_tempo",
-		"trinity_tempo",
+		"elemental_projectile", "trinity", "spell_amplification", "trinity_fermata", "trinity_tempo",
 	])
 	_p.bar.put(3, "trinity")
-	_p.bar.put(4, "rag_doll")
+	_p.bar.put(4, "spell_amplification")
 	assert_true(Gestures.cast(_p, 3))
 	assert_true(Gestures.cast(_p, 4))
 	_cast_projectile(1)
-	var doll := _p.remaining_cooldown(4)
+	var amplification := _p.remaining_cooldown(4)
 	_cast_projectile(1)
-	assert_almost_eq(_p.remaining_cooldown(4), doll - 0.2, 1e-4, "deux points de Tempo")
+	assert_almost_eq(_p.remaining_cooldown(4), amplification - 0.1, 1e-4, "un point de Tempo, le seul")
 	assert_gt(_p.remaining_cooldown(2), 0.0, "le geste du Projectile n'en perd rien")
 
 
@@ -3080,100 +3396,6 @@ func test_trinity_perfect_chord_spends_full_charges_on_a_three_element_spell() -
 		assert_almost_eq(shares[nature], 1.0 / 3.0, 1e-4)
 	assert_almost_eq(chord._cast.total_min(), full * 1.3, 1e-3)
 	assert_eq(buff.stacks, 1, "consommées, puis la charge de ce sort")
-
-
-## Amorce : un état seul réagit avec l'élément du tour, et il est seul consommé. Un état
-## du même élément que le tour ne réagit pas.
-func test_a_primed_catalysis_reacts_with_a_single_state() -> void:
-	_learn_class(Character.WITCH, [
-		"elemental_projectile", "catalysis", "catalysis_concentrate", "catalysis_concentrate",
-		"catalysis_primer",
-	])
-	_p.bar.put(3, "catalysis")
-	_no_rolled_states()
-	var chilled := _wearing_target(_aim())
-	chilled.states.put(StatusEffects.Kind.CHILL, 1.0)
-	var burning := _wearing_target(_aim() + Vector2(0, 30))
-	burning.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	await wait_physics_frames(2)
-
-	assert_true(Gestures.cast(_p, 3))
-	assert_false(chilled.states.active(StatusEffects.Kind.CHILL), "consommé")
-	assert_true(burning.states.active(StatusEffects.Kind.IGNITE), "feu sur feu, rien")
-	await wait_physics_frames(2)
-	assert_eq(_children_of(Explosion).size(), 1, "la Vapeur, du feu prêté")
-
-
-## Nappe brûlante : la Vapeur laisse un sol. Exothermie, Arc fourchu, Conductivité : les
-## réactions plus fortes, un arc de plus, un transi qui va plus loin.
-func test_the_catalysis_tree_strengthens_each_reaction() -> void:
-	_learn_class(Character.WITCH, [
-		"elemental_projectile", "catalysis", "catalysis_exothermy", "catalysis_scalding_mist",
-		"catalysis_forked_arc", "catalysis_conductivity",
-	])
-	_p.bar.put(3, "catalysis")
-	var cast := _p.resolve(SkillCatalog.by_id("catalysis"), 1)
-	assert_almost_eq(Catalysis.reaction_part(cast), Catalysis.REACTION_PART * 1.25, 1e-4)
-	assert_eq(Catalysis.arcs(cast), Catalysis.ARCS + 1)
-	assert_almost_eq(Catalysis.spread_reach(cast), Catalysis.SPREAD_REACH + 16.0, 1e-4)
-	_no_rolled_states()
-	var steamy := _wearing_target(_aim())
-	steamy.states.put(StatusEffects.Kind.IGNITE, 5.0)
-	steamy.states.put(StatusEffects.Kind.CHILL, 1.0)
-	await wait_physics_frames(2)
-
-	assert_true(Gestures.cast(_p, 3))
-	await wait_physics_frames(2)
-	assert_eq(_children_of(DashTrail).size(), 1, "la nappe")
-
-
-## Jumelles : deux poupées debout ; la troisième fait éclater la plus ancienne.
-func test_twin_dolls_stand_together() -> void:
-	_learn_class(Character.WITCH, [
-		"elemental_projectile", "rag_doll", "rag_doll_decoy", "rag_doll_decoy", "rag_doll_twins",
-	])
-	_p.bar.put(3, "rag_doll")
-	assert_true(Gestures.cast(_p, 3))
-	_cast_again(3)
-	await wait_physics_frames(2)
-	assert_eq(_children_of(RagDoll).size(), 2)
-	assert_eq(_children_of(Explosion).size(), 0)
-	var oldest: RagDoll = RagDoll.standing[0]
-	_cast_again(3)
-	await wait_physics_frames(2)
-	assert_eq(_children_of(RagDoll).size(), 2)
-	assert_eq(_children_of(Explosion).size(), 1)
-	assert_false(is_instance_valid(oldest), "la plus ancienne")
-
-
-## Transfert : la poupée prend une part de ce que subit le joueur. Rancune : ce qu'elle a
-## encaissé grossit son éclat.
-func test_the_doll_shoulders_your_blows_and_returns_them() -> void:
-	_learn_class(Character.WITCH, [
-		"elemental_projectile", "rag_doll", "rag_doll_stuffing", "rag_doll_transfer",
-		"rag_doll_gunpowder", "rag_doll_grudge",
-	])
-	_p.bar.put(3, "rag_doll")
-	assert_true(Gestures.cast(_p, 3))
-	var doll: RagDoll = _children_of(RagDoll)[0]
-	var health := _p.health
-	_p._on_damaged(DamageInfo.new(50.0, _p.global_position))
-	assert_almost_eq(_p.health, health - 45.0, 1e-3, "dix pour cent détournés")
-	assert_almost_eq(doll.health, doll.max_health - 5.0, 1e-3)
-	assert_almost_eq(doll._absorbed, 5.0, 1e-3)
-
-
-## Appeau : un ennemi un peu plus près du joueur choisit quand même la poupée.
-func test_a_decoy_doll_draws_from_farther() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "rag_doll", "rag_doll_decoy"])
-	_p.bar.put(3, "rag_doll")
-	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
-	add_child_autofree(grunt)
-	grunt.setup(_p)
-	grunt.global_position = _p.global_position + (_aim() - _p.global_position) * 0.45
-	assert_true(Gestures.cast(_p, 3))
-	await wait_physics_frames(1)
-	assert_true(grunt.foe() is RagDoll, "plus loin que vous, mais à portée d'appeau")
 
 
 ## Ressassement : deux échos, un retard l'un après l'autre. Contre-chant : l'élément
@@ -3227,18 +3449,18 @@ func test_the_countersong_shifts_a_spell_without_a_turn() -> void:
 ## Œil du corbeau : l'écho part vers l'ennemi le plus proche du point visé.
 func test_the_raven_eye_aims_the_echo_at_the_prey() -> void:
 	_learn_class(Character.WITCH, [
-		"elemental_projectile", "catalysis", "familiar", "familiar_faithful_echo",
+		"elemental_projectile", "glyph", "familiar", "familiar_faithful_echo",
 		"familiar_raven_eye", "familiar_raven_eye", "familiar_raven_eye",
 	])
 	_p.bar.put(3, "familiar")
-	_p.bar.put(4, "catalysis")
+	_p.bar.put(4, "glyph")
 	var prey := _target(_aim() + Vector2(0, 30))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 3))
 	assert_true(Gestures.cast(_p, 4))
 	await wait_seconds(Familiar.ECHO_DELAY + 0.05)
-	var echoed := _children_of(Catalysis).filter(
-		func(c: Catalysis) -> bool: return c.global_position == prey.global_position
+	var echoed := _children_of(Glyph).filter(
+		func(g: Glyph) -> bool: return g.global_position == prey.global_position
 	)
 	assert_eq(echoed.size(), 1, "sur la proie, pas sur le point visé")
 
@@ -3253,20 +3475,264 @@ func test_black_wings_quicken_while_the_raven_flies() -> void:
 
 
 ## Le manuel de classe ne quitte jamais le râtelier : c'est le point repris qui fait
-## tomber le corbeau et la poupée — elle sans éclat, ce n'est pas un coup.
-func test_the_familiar_and_the_doll_leave_with_their_points() -> void:
-	_learn_class(Character.WITCH, ["elemental_projectile", "familiar", "rag_doll"])
+## tomber le corbeau et le chaudron — lui sans débordement, ce n'est pas sa fin.
+func test_the_familiar_and_the_cauldron_leave_with_their_points() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "familiar", "cauldron", "cauldron_low_heat", "cauldron_lid",
+	])
 	_p.bar.put(3, "familiar")
-	_p.bar.put(4, "rag_doll")
+	_p.bar.put(4, "cauldron")
 	assert_true(Gestures.cast(_p, 3))
 	assert_true(Gestures.cast(_p, 4))
 	await wait_physics_frames(1)
 	assert_true(_p.refund(Rack.CLASS_SLOT, "familiar"))
-	assert_true(_p.refund(Rack.CLASS_SLOT, "rag_doll"))
+	assert_true(_p.refund(Rack.CLASS_SLOT, "cauldron_lid"))
+	assert_true(_p.refund(Rack.CLASS_SLOT, "cauldron_low_heat"))
+	assert_true(_p.refund(Rack.CLASS_SLOT, "cauldron"))
 	await wait_physics_frames(3)
 	assert_false(_p.lit("familiar"))
-	assert_eq(_children_of(RagDoll).size(), 0)
-	assert_eq(_children_of(Explosion).size(), 0, "sans éclat")
+	assert_eq(_children_of(Cauldron).size(), 0)
+	assert_eq(_children_of(Explosion).size(), 0, "sans débordement")
+
+
+# --------------------------------------------------------------------------
+# Chaudron (jalon 49)
+# --------------------------------------------------------------------------
+
+func _cauldron() -> Cauldron:
+	var boiling := _children_of(Cauldron)
+	return boiling.back() if not boiling.is_empty() else null
+
+
+## Il se pose au point visé et bout dans l'élément de son tour : chaque bouillon frappe son
+## cercle et y pose son état. En reposer un éteint l'ancien.
+func test_the_cauldron_boils_its_element_onto_its_circle() -> void:
+	_learn_class(Character.WITCH, ["cauldron"])
+	_no_rolled_states()
+	var inside := _wearing_target(_aim() + Vector2(0, 20))
+	var outside := _wearing_target(_aim() + Vector2(0, 80))
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	var cauldron := _cauldron()
+	assert_eq(cauldron.global_position, _aim())
+	assert_eq(cauldron.element, DamageType.Kind.FIRE)
+	await wait_seconds(cauldron._cast.period + 0.05)
+	assert_eq(_hits(inside), 1)
+	assert_true(inside.states.active(StatusEffects.Kind.IGNITE), "à coup sûr")
+	assert_eq(_hits(outside), 0)
+	_cast_again(2)
+	await wait_physics_frames(1)
+	assert_eq(_children_of(Cauldron).size(), 1, "un seul à la fois")
+
+
+## Les sorts s'y versent : il bout dans l'élément du dernier, et déborde aux trois.
+func test_the_cauldron_takes_each_spell_and_overflows_on_three() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "cauldron"])
+	_p.bar.put(3, "cauldron")
+	assert_true(Gestures.cast(_p, 3))
+	var cauldron := _cauldron()
+	_cast_again(2)
+	assert_eq(cauldron.element, DamageType.Kind.FIRE, "feu sur feu")
+	_cast_again(2)
+	assert_eq(cauldron.element, DamageType.Kind.COLD)
+	assert_eq(_children_of(Explosion).size(), 0)
+	_cast_again(2)
+	assert_eq(cauldron.element, DamageType.Kind.LIGHTNING)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1, "les trois versés : il déborde")
+	assert_true(cauldron._poured.is_empty(), "puis se remet à bouillir, vide")
+
+
+## Mélange : les deux derniers éléments ; Émulsion : les trois, sans débordement.
+func test_a_blend_keeps_two_elements_and_an_emulsion_three() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "cauldron", "cauldron_low_heat", "cauldron_mix", "cauldron_emulsion",
+	])
+	_p.bar.put(3, "cauldron")
+	assert_true(Gestures.cast(_p, 3))
+	var cauldron := _cauldron()
+	assert_eq(cauldron._contents().size(), 3)
+	for i in 3:
+		_cast_again(2)
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 0, "l'Émulsion ne déborde pas")
+	cauldron._cast.emulsion = 0.0
+	assert_eq(cauldron._contents(), [DamageType.Kind.COLD, DamageType.Kind.LIGHTNING] as Array[int])
+
+
+## Décoction : chaque bouillon boit une seconde des états du cercle et n'en pose pas.
+func test_a_decoction_drinks_the_states_instead_of_inflicting() -> void:
+	_learn_class(Character.WITCH, [
+		"cauldron", "cauldron_simmer", "cauldron_brim", "cauldron_decoction",
+	])
+	var soaked := _wearing_target(_aim() + Vector2(0, 20))
+	soaked.states.put(StatusEffects.Kind.NUMB, 1.0)
+	var left := soaked.states.remaining(StatusEffects.Kind.NUMB)
+	await wait_physics_frames(2)
+
+	assert_true(Gestures.cast(_p, 2))
+	var cauldron := _cauldron()
+	await wait_seconds(cauldron._cast.period + 0.05)
+	assert_eq(_hits(soaked), 1)
+	assert_almost_eq(soaked.states.remaining(StatusEffects.Kind.NUMB), left - SkillStats.DECOCTION_SIP, 1e-4)
+	assert_false(soaked.states.active(StatusEffects.Kind.IGNITE), "rien de posé")
+	assert_almost_eq(cauldron._drunk, SkillStats.DECOCTION_SIP, 1e-4)
+
+
+## Couvercle : à sa fin, ce qui a été versé déborde. Philtre : sa maîtresse y reprend du mana.
+func test_a_lid_pops_at_the_end_and_a_philtre_restores_mana() -> void:
+	_learn_class(Character.WITCH, [
+		"cauldron", "cauldron_low_heat", "cauldron_lid", "cauldron_belly", "cauldron_philtre",
+		"cauldron_philtre",
+	])
+	assert_true(Gestures.cast(_p, 2))
+	var cauldron := _cauldron()
+	_p.global_position = cauldron.global_position
+	_p._set_mana(10.0)
+	await wait_seconds(0.5)
+	assert_gt(_p.mana, 10.0 + 0.5 * 2.0 - 0.1, "le Philtre")
+	cauldron._age = cauldron.lifetime()
+	await wait_physics_frames(3)
+	assert_eq(_children_of(Cauldron).size(), 0)
+	assert_eq(_children_of(Explosion).size(), 1, "le couvercle saute")
+
+
+# --------------------------------------------------------------------------
+# Glyphes (jalon 49)
+# --------------------------------------------------------------------------
+
+## Un glyphe de ce lancer dans cet élément, tracé à la main : le triangle et les fils veulent
+## trois points distincts, que la visée ne donne pas.
+func _glyph_at(point: Vector2, nature: int) -> Glyph:
+	var cast := _p.resolve(SkillCatalog.by_id("glyph"), 1)
+	Familiar.sing(cast, posmod(
+		DamageType.ELEMENTS.find(nature) - DamageType.ELEMENTS.find(cast.nature), DamageType.ELEMENTS.size()
+	))
+	return Glyph.place(_p, _p, point, cast, _p._effects_parent())
+
+
+## Armé après son délai, il éclate sur le premier ennemi venu, lui pose son état et s'efface.
+func test_a_glyph_arms_then_bursts_on_the_first_enemy() -> void:
+	_learn_class(Character.WITCH, ["glyph"])
+	var prey := _wearing_target(_aim())
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(3)
+	assert_eq(_hits(prey), 0, "pas encore armé")
+	assert_eq(_children_of(Glyph).size(), 1)
+	await wait_seconds(0.55)
+	assert_eq(_hits(prey), 1)
+	assert_true(prey.states.active(StatusEffects.Kind.IGNITE), "son état, à coup sûr")
+	await wait_seconds(Glyph.SHATTER_TIME + 0.05)
+	assert_eq(_children_of(Glyph).size(), 0, "son éclat dessiné, puis plus rien")
+
+
+## Chaque lancer prend l'élément suivant du tour ; trois au plus, le plus ancien s'efface.
+func test_glyphs_take_each_element_and_keep_three() -> void:
+	_learn_class(Character.WITCH, ["glyph"])
+	assert_true(Gestures.cast(_p, 2))
+	for i in 3:
+		_cast_again(2)
+	await wait_physics_frames(2)
+	var elements := _children_of(Glyph).map(func(g: Glyph) -> int: return g.element)
+	assert_eq(elements, [DamageType.Kind.COLD, DamageType.Kind.LIGHTNING, DamageType.Kind.FIRE])
+
+
+## Trois glyphes armés des trois éléments : le triangle frappe ce qui s'y tient, pas au-delà.
+func test_three_glyphs_strike_their_triangle() -> void:
+	_learn_class(Character.WITCH, ["glyph"])
+	var center := Vector2(300, 0)
+	for i in 3:
+		_glyph_at(center + Vector2.UP.rotated(TAU * float(i) / 3.0) * 60.0, DamageType.ELEMENTS[i])
+	var inside := _target(center)
+	var outside := _target(center + Vector2(0, 80))
+	await wait_seconds(0.5 + SkillStats.TRIANGLE_PERIOD + 0.1)
+	assert_eq(_hits(inside), 1)
+	assert_eq(_hits(outside), 0)
+
+
+## Palimpseste : l'éclat fait réagir l'état d'un autre élément ; la Réécriture retrace le
+## glyphe à sa place, dans l'élément suivant.
+func test_a_palimpsest_reacts_and_a_rewrite_retraces_the_glyph() -> void:
+	_learn_class(Character.WITCH, ["glyph", "glyph_ink", "glyph_palimpsest", "glyph_rewrite"])
+	_no_rolled_states()
+	var prey := _wearing_target(_aim())
+	prey.states.put(StatusEffects.Kind.CHILL, 1.0)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.55)
+	assert_false(prey.states.active(StatusEffects.Kind.CHILL), "consommé")
+	await wait_physics_frames(2)
+	assert_eq(_children_of(Explosion).size(), 1, "la Vapeur, du feu du glyphe")
+	var rewritten: Array = _children_of(Glyph).filter(func(g: Glyph) -> bool: return g._shatter_age < 0.0)
+	assert_eq(rewritten.size(), 1, "retracé")
+	assert_eq((rewritten[0] as Glyph).element, DamageType.Kind.COLD)
+
+
+## Entrelacs : le fil entre deux glyphes frappe ce qui le traverse ; la Trame y pose les états
+## de ses deux bouts.
+func test_an_entwined_thread_strikes_and_its_weft_sets_both_states() -> void:
+	_learn_class(Character.WITCH, ["glyph", "glyph_flourish", "glyph_entwine", "glyph_weft"])
+	_glyph_at(Vector2(260, 0), DamageType.Kind.FIRE)
+	_glyph_at(Vector2(360, 0), DamageType.Kind.COLD)
+	var crossing := _wearing_target(Vector2(310, 0))
+	await wait_seconds(0.5 + SkillStats.TRIANGLE_PERIOD + 0.1)
+	assert_eq(_hits(crossing), 1)
+	assert_true(crossing.states.active(StatusEffects.Kind.IGNITE))
+	assert_true(crossing.states.active(StatusEffects.Kind.CHILL))
+
+
+## Leurre : un ennemi à sa portée est tiré vers le glyphe ; un autre au-delà, non.
+func test_a_lure_tugs_the_enemies_in_reach() -> void:
+	_learn_class(Character.WITCH, ["glyph", "glyph_chalk", "glyph_lure"])
+	var glyph := _glyph_at(Vector2(300, 0), DamageType.Kind.FIRE)
+	var near := _grunt(Vector2(330, 0))
+	var far := _grunt(Vector2(400, 0))
+	await wait_physics_frames(2)
+	near.velocity = Vector2.ZERO
+	far.velocity = Vector2.ZERO
+	glyph._tug()
+	assert_lt(near.velocity.x, 0.0, "vers le glyphe")
+	assert_eq(far.velocity, Vector2.ZERO)
+
+
+## Signature : un coup reçu trace un glyphe aux pieds, pas deux de suite.
+func test_a_signature_traces_a_glyph_under_a_blow() -> void:
+	_learn_class(Character.WITCH, ["glyph", "glyph_calligraphy", "glyph_signature"])
+	_blow_on_player(0.05)
+	_blow_on_player(0.05)
+	await wait_physics_frames(2)
+	var traced := _children_of(Glyph)
+	assert_eq(traced.size(), 1, "son attente")
+	assert_eq((traced[0] as Glyph).global_position, _p.global_position)
+
+
+## Sceau : chaque sort l'emplit de son élément ; relancé, il éclate, et le Contresceau laisse
+## un glyphe ordinaire de chaque élément versé.
+func test_a_seal_fills_then_bursts_and_leaves_its_counterseal() -> void:
+	_learn_class(Character.WITCH, [
+		"glyph", "elemental_projectile", "glyph_ink", "glyph_ink", "glyph_seal", "glyph_counterseal",
+	])
+	_p.bar.put(3, "elemental_projectile")
+	var prey := _wearing_target(_aim())
+	# Hors du chemin des traits, dans le cercle du Sceau.
+	var witness := _target(_aim() + Vector2(0, 40))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.6)
+	assert_eq(_hits(prey), 0, "le Sceau n'éclate pas au contact")
+	_cast_again(3)
+	_cast_again(3)
+	var seal: Glyph = _children_of(Glyph)[0]
+	assert_eq(seal._poured.size(), 2, "le feu du Sceau, le froid du second trait")
+	assert_eq(_hits(witness), 0)
+	_cast_again(2)
+	await wait_physics_frames(2)
+	assert_eq(_hits(witness), 1, "l'ancien éclate")
+	var left := _children_of(Glyph).filter(func(g: Glyph) -> bool: return g._shatter_age < 0.0)
+	assert_eq(left.filter(func(g: Glyph) -> bool: return g.sealed).size(), 1, "le nouveau")
+	assert_eq(left.filter(func(g: Glyph) -> bool: return not g.sealed).size(), 2, "un par élément versé")
 
 
 # --------------------------------------------------------------------------

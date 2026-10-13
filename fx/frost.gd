@@ -94,7 +94,13 @@ static func orb(tint: Color, turn: int) -> Texture2D:
 
 ## Le javelot au cap `turn`, centré sur le tir. L'arête court sur un flanc, pas au milieu.
 static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
-	var key := "%s|%d" % [tint.to_html(false), posmod(turn, Slash.TURNS)]
+	return shaped_javelin(tint, rim(tint), turn)
+
+
+## Sa forme, l'arête à la couleur `core` : le givre ici, le cœur du feu pour l'Éclair vif
+## converti (`Fire.javelin()`, jalon 49).
+static func shaped_javelin(tint: Color, core: Color, turn: int) -> EffectForge.Piece:
+	var key := "%s|%s|%d" % [tint.to_html(false), core.to_html(false), posmod(turn, Slash.TURNS)]
 	if not _javelins.has(key):
 		var d := Vector2.from_angle(Slash.angle_of(turn))
 		var side := d.orthogonal()
@@ -105,6 +111,6 @@ static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
 		canvas.capsule(at + d * 1.0, at + d * 6.0, 1.3, EffectForge.R_TINT)
 		canvas.capsule(at + d * 6.0, at + d * 10.0, 0.6, EffectForge.R_TINT, Holy.LIT)
 		canvas.line(at - d * 6.0 - side, at + d * 10.0, EffectForge.R_CORE, 1.0)
-		var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(rim(tint))])
+		var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(core)])
 		_javelins[key] = EffectForge.Piece.new(ImageTexture.create_from_image(img), -at)
 	return _javelins[key]

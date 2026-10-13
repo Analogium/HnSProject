@@ -597,3 +597,34 @@ func test_a_deeper_burn_ignites_harder() -> void:
 	var deep := StatusEffects.new()
 	deep.suffer(parts, author, Game.rng, 0.0, 0.0, "", cast)
 	assert_almost_eq(deep._state(StatusEffects.Kind.IGNITE).per_second, plain._state(StatusEffects.Kind.IGNITE).per_second * 1.5, 1e-4)
+
+
+## L'Équilibre (jalon 49) : la plus forte ouverture l'emporte, puis se referme seule, même
+## sans état porté. La mort l'efface.
+## Une résistance entamée se voit (jalon 49) : la barre de vie relit `opened()` quand l'état
+## change, à l'ouverture comme à la fermeture.
+func test_an_opened_resistance_is_told_and_listed() -> void:
+	var s := StatusEffects.new()
+	var told := [0]
+	s.change.connect(func() -> void: told[0] += 1)
+	s.expose(DamageType.Kind.COLD, 5.0, 1.0)
+	assert_eq(s.opened(), [DamageType.Kind.COLD] as Array[int])
+	assert_eq(told[0], 1)
+	s.advance(1.1)
+	assert_true(s.opened().is_empty())
+	assert_eq(told[0], 2)
+
+
+func test_an_exposure_opens_a_resistance_then_closes() -> void:
+	var e := StatusEffects.new()
+	e.expose(DamageType.Kind.COLD, 10.0, 3.0)
+	e.expose(DamageType.Kind.COLD, 5.0, 3.0)
+	assert_eq(e.resistance_lost(DamageType.Kind.COLD), 10.0, "la plus forte reste")
+	assert_eq(e.resistance_lost(DamageType.Kind.FIRE), 0.0)
+	e.advance(2.9)
+	assert_eq(e.resistance_lost(DamageType.Kind.COLD), 10.0)
+	e.advance(0.2)
+	assert_eq(e.resistance_lost(DamageType.Kind.COLD), 0.0, "refermée")
+	e.expose(DamageType.Kind.LIGHTNING, 5.0, 3.0)
+	e.clear()
+	assert_eq(e.resistance_lost(DamageType.Kind.LIGHTNING), 0.0, "effacée à la mort")

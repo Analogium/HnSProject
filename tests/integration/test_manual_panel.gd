@@ -667,22 +667,37 @@ func test_a_kill_trigger_shows_on_attacks_only() -> void:
 	assert_eq(_values(_triggers("bolt"), frenzy).size(), 0, "le tir est un sort")
 
 
-## La sorcière (jalon 41) : l'Harmonie se lit sur ses sorts, les réactions sur la
-## Catalyse, l'écho sur le Familier, la poupée sur elle-même.
+## La sorcière (jalon 41) : l'Harmonie se lit sur ses sorts, les réactions sur le
+## Palimpseste et sur le trait du Précipité, l'écho sur le Familier, l'explosion sur le
+## Chaudron, l'armement et le triangle sur les Glyphes.
 func test_the_witch_triggers_are_listed() -> void:
 	var book := Item.new(Character.CLASSES[Character.WITCH]["manual"])
 	book.manual.gain_experience(999999)
 	_player.rack.seat(book)
-	for id in ["elemental_projectile", "trinity", "catalysis", "rag_doll", "familiar"]:
+	for id in [
+		"elemental_projectile", "trinity", "glyph", "cauldron", "familiar",
+		"elemental_projectile_electroshock", "elemental_projectile_precipitate",
+		"glyph_ink", "glyph_palimpsest",
+	]:
 		assert_true(_player.invest(Rack.CLASS_SLOT, id), id)
 	var harmony: String = SkillCatalog.by_id("trinity").buffs[0].displayed_name()
 	assert_eq(_values(_triggers("elemental_projectile"), harmony), PackedStringArray([Texts.t("si l'élément change")]))
 	assert_eq(
-		_values(_triggers("catalysis"), Texts.t("Vapeur")),
-		PackedStringArray([Texts.t("souffle de %d px") % roundi(Catalysis.VAPOR_RADIUS)])
+		_values(_triggers("glyph"), Texts.t("Vapeur")),
+		PackedStringArray([Texts.t("souffle de %d px") % roundi(Reactions.VAPOR_RADIUS)])
 	)
+	assert_eq(
+		_values(_triggers("glyph"), Texts.t("par réaction")),
+		PackedStringArray([Texts.t("%s d'un coup") % StatMod.percentage(50)])
+	)
+	assert_eq(_values(_triggers("glyph"), Texts.t("armés en")), PackedStringArray(["0.50 s"]))
+	assert_eq(_values(_triggers("glyph"), Texts.t("triangle")).size(), 1)
 	assert_eq(_values(_triggers("familiar"), Texts.t("après")).size(), 1)
-	assert_eq(_values(_triggers("rag_doll"), Texts.t("éclate")).size(), 1)
+	assert_eq(_values(_triggers("cauldron"), Texts.t("explosion")).size(), 1)
+	assert_eq(
+		_values(_triggers("elemental_projectile"), Texts.t("par réaction")),
+		PackedStringArray([Texts.t("%s d'un coup") % StatMod.percentage(20)])
+	)
 
 
 ## La fenêtre tient dans le cadrage au-dessus des jauges, **de l'autre côté du panneau**

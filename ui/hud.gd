@@ -48,6 +48,8 @@ const BUFF_SIDE := float(SkillIcon.SIDE)
 const BUFF_GAP := 4.0
 ## Ce qu'il reste d'un buff à durée, en voile descendant — celui de la barre.
 const BUFF_SPENT := Color(0.02, 0.02, 0.04, 0.62)
+## Le filtre de l'Incarnation : la teinte de l'élément, éclaircie pour que l'icône reste lisible.
+const INCARNATION_LIGHT := 0.35
 
 var _player: Player
 var _points_left := 0
@@ -215,7 +217,14 @@ func _draw_buffs() -> void:
 		var skill := _lit[i]
 		var r := _buff_rect(i)
 		draw_rect(r, BACK)
-		SkillIcon.draw_into(self, r, skill)
+		# L'Incarnation (jalon 49) : l'icône prend l'élément du prochain sort.
+		var nature := skill.nature
+		var tint := Color.WHITE
+		var incarnated := _player.lit_incarnation(skill.id)
+		if incarnated >= 0:
+			nature = incarnated as DamageType.Kind
+			tint = DamageType.COLORS[nature].lerp(Color.WHITE, INCARNATION_LIGHT)
+		SkillIcon.draw_into(self, r, skill, tint)
 		# Ce qu'il reste descend comme le voile de recharge de la barre ; un geste qu'on
 		# entretient n'en a pas, et son cadre le dit déjà.
 		var left := _player.lit_ratio(skill.id)
@@ -224,7 +233,7 @@ func _draw_buffs() -> void:
 				Rect2(r.position, Vector2(BUFF_SIDE, roundf(BUFF_SIDE * (1.0 - left)))),
 				BUFF_SPENT
 			)
-		draw_rect(r, DamageType.COLORS[skill.nature].lerp(Color.WHITE, 0.3), false, 1.0)
+		draw_rect(r, DamageType.COLORS[nature].lerp(Color.WHITE, 0.3), false, 1.0)
 		# Les charges en bas à droite, comme le compte d'une case de manuel.
 		var stacks := _player.lit_stacks(skill.id)
 		if stacks > 0:

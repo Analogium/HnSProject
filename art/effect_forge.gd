@@ -915,6 +915,14 @@ static var _shafts := {}
 static var _tips := {}
 
 
+static var _strikes := {}
+
+
+## L'éclat d'un coup porté, seul : la Becquée (jalon 49) le pose où le bec frappe.
+static func strike(tint: Color) -> Texture2D:
+	return _sheet(_strikes, [STRIKE], STRIKE_SIZE, STRIKE_SIZE, tint, tint.lerp(Color.WHITE, 0.85))[0]
+
+
 ## Le grain de lumière de cette teinte.
 static func spark(tint: Color) -> Texture2D:
 	return _sheet(_specks, [SPECK], SPECK_SIZE, SPECK_SIZE, tint, Holy.halo(tint))[0]
@@ -1388,30 +1396,21 @@ const CROW_INK := {"k": [0, 0], "K": [0, 1], "g": [0, 3], "y": [1, 3], "e": [2, 
 const FEATHER := Color(0.20, 0.17, 0.26)
 const BEAK := Color(0.85, 0.66, 0.22)
 
-## La Poupée de chiffon, « boutons » choisie sur planche : la toile, les yeux-boutons,
-## la robe à la teinte de son tour.
-const DOLL := [
-	"...ccccc....",
-	"..cCCCCCc...",
-	"..cbCCbCc...",
-	"..cCCCCCc...",
-	"..cCSSSCc...",
-	"...cCCCc....",
-	"..sSSSSSs...",
-	".sSSSSSSSs..",
-	"sSS.SSS.SSs.",
-	"..sSSSSSs...",
-	"..cc...cc...",
-	"..cc...cc...",
+## La Becquée (jalon 49), « piqué » choisi sur planche : ailes repliées, bec en avant. Il
+## ne fond que de côté ; vers la gauche, renversé comme le vol.
+const CROW_DIVE := [
+	"k.............",
+	"KKk...........",
+	".kKKKkkKKKk...",
+	"..kKKKKKKKeKyy",
+	".kKKkkKKKKKk..",
+	"kKk...........",
 ]
-const DOLL_WIDTH := 12
-const DOLL_HEIGHT := 12
-const DOLL_INK := {"c": [0, 1], "C": [0, 2], "b": [1, 1], "s": [2, 2], "S": [2, 4]}
-const CLOTH := Color(0.72, 0.60, 0.44)
-const BUTTON := Color(0.12, 0.08, 0.10)
+const CROW_DIVE_WIDTH := 14
+const CROW_DIVE_HEIGHT := 6
 
 static var _crows: Array = []
-static var _dolls := {}
+static var _dives: Array[Texture2D] = []
 
 
 ## Les deux battements, vers la droite puis vers la gauche : `[droite, gauche]`.
@@ -1434,15 +1433,21 @@ static func crow() -> Array:
 	return _crows
 
 
-static func doll(tint: Color) -> Texture2D:
-	var key := tint.to_html(false)
-	if not _dolls.has(key):
-		var canvas := PixelCanvas.new(DOLL_WIDTH, DOLL_HEIGHT)
-		canvas.stamp(DOLL, Vector2i.ZERO, DOLL_INK)
-		_dolls[key] = ImageTexture.create_from_image(canvas.to_image([
-			ArtPalette.ramp(CLOTH), ArtPalette.ramp(BUTTON), ArtPalette.ramp(tint),
-		]))
-	return _dolls[key]
+## Le piqué, vers la droite puis vers la gauche.
+static func crow_dive() -> Array[Texture2D]:
+	if _dives.is_empty():
+		var palettes := [
+			ArtPalette.ramp(FEATHER), ArtPalette.ramp(BEAK),
+			ArtPalette.ramp(DamageType.COLORS[DamageType.Kind.LIGHTNING]),
+		]
+		for mirrored in [false, true]:
+			var rows: Array = CROW_DIVE
+			if mirrored:
+				rows = CROW_DIVE.map(func(row: String) -> String: return _reversed(row))
+			var canvas := PixelCanvas.new(CROW_DIVE_WIDTH, CROW_DIVE_HEIGHT)
+			canvas.stamp(rows, Vector2i.ZERO, CROW_INK)
+			_dives.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+	return _dives
 
 
 ## Le Brasero (jalon 42), « trépied de fer » choisi sur planche : une coupe large sur trois
@@ -1477,6 +1482,84 @@ static func brazier(tint: Color) -> Texture2D:
 			ArtPalette.ramp(IRON), ArtPalette.ramp(tint),
 		]))
 	return _braziers[key]
+
+
+## Le Chaudron (jalon 49), « marmite à pieds » choisie sur planche contre une marmite sur le
+## feu, une bassine, une crémaillère et une grosse bulle : fonte ronde sur trois pieds courts,
+## ce qui bout à la teinte de l'élément. Quatre temps, qui ne diffèrent que par les bulles.
+const CAULDRON := [
+	".................",
+	"....lllllllll....",
+	"..lmaaaaaaaaaml..",
+	".lmaaaaaaaaaaaml.",
+	".lmaaaaaaaaaaaml.",
+	"..lmmmmmmmmmmml..",
+	".dmmmmmmmmmmmmmd.",
+	"dmmmllmmmmmmmmmmd",
+	"dmmllmmmmmmmmmmmd",
+	"dmmlmmmmmmmmmmmdd",
+	".dmmmmmmmmmmmmdd.",
+	"..ddmmmmmmmmddd..",
+	"...dd..ddd..dd...",
+	"...d...ddd...d...",
+]
+const CAULDRON_WIDTH := 17
+const CAULDRON_HEIGHT := 14
+const CAULDRON_INK := {"d": [0, 1], "m": [0, 2], "l": [0, 3], "a": [1, 2], "c": [2, 4]}
+## Les bulles de chaque temps, sur la surface ; et ses temps par seconde.
+const CAULDRON_BUBBLES := [
+	[Vector2i(5, 3), Vector2i(11, 2)], [Vector2i(7, 2), Vector2i(12, 4), Vector2i(4, 4)],
+	[Vector2i(9, 3), Vector2i(5, 2)], [Vector2i(6, 4), Vector2i(10, 3), Vector2i(13, 3)],
+]
+const CAULDRON_HZ := 5.0
+## Le bord de son cercle, « couronne de bulles » choisie sur planche contre un liseré, des
+## tirets, une onde et une flaque : la brûlure seule ne disait pas où il frappe. Une bulle tous
+## les `RIM_SPACING` px, quatre tailles en alternance, une sur sept crevée — qui change à chaque
+## temps.
+const RIM_SPACING := 11.0
+const RIM_SIZES := [2.4, 1.4, 1.9, 1.0]
+
+static var _cauldrons := {}
+static var _rims := {}
+
+
+static func cauldron(tint: Color) -> Array[Texture2D]:
+	var key := tint.to_html(false)
+	if not _cauldrons.has(key):
+		var palettes := [
+			ArtPalette.ramp(IRON), ArtPalette.ramp(tint), ArtPalette.ramp(tint.lerp(Color.WHITE, 0.7)),
+		]
+		var frames: Array[Texture2D] = []
+		for bubbles: Array in CAULDRON_BUBBLES:
+			var rows: Array = CAULDRON.duplicate()
+			for at: Vector2i in bubbles:
+				var row: String = rows[at.y]
+				rows[at.y] = row.substr(0, at.x) + "c" + row.substr(at.x + 1)
+			var canvas := PixelCanvas.new(CAULDRON_WIDTH, CAULDRON_HEIGHT)
+			canvas.stamp(rows, Vector2i.ZERO, CAULDRON_INK)
+			frames.append(ImageTexture.create_from_image(canvas.to_image(palettes)))
+		_cauldrons[key] = frames
+	return _cauldrons[key]
+
+
+## Le bord au rayon `radius`, au temps `frame` de la marmite : gardé par teinte, rayon et temps.
+static func cauldron_rim(tint: Color, radius: int, frame: int) -> Piece:
+	var key := "%s|%d|%d" % [tint.to_html(false), radius, frame]
+	if not _rims.has(key):
+		var side := radius * 2 + 9
+		var canvas := PixelCanvas.new(side, side)
+		var mid := Vector2(side, side) * 0.5
+		var count := maxi(roundi(TAU * float(radius) / RIM_SPACING), 8)
+		for i in count:
+			if (i * 3 + frame) % 7 == 0:
+				continue
+			var size: float = RIM_SIZES[(i + frame) % RIM_SIZES.size()]
+			var at := mid + Vector2.from_angle(TAU * float(i) / float(count)) * float(radius)
+			canvas.disc(at, size, R_TINT, 0.1)
+			canvas.dot_px(int(at.x - size * 0.4), int(at.y - size * 0.4), R_CORE, 1.0)
+		var img := canvas.to_image([ArtPalette.ramp(tint), ArtPalette.ramp(tint.lerp(Color.WHITE, 0.8))])
+		_rims[key] = Piece.new(ImageTexture.create_from_image(img), -mid.floor())
+	return _rims[key]
 
 
 static func _reversed(row: String) -> String:

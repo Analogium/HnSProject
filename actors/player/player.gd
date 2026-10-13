@@ -153,6 +153,8 @@ var _lit := {}
 ## Le prochain tour des compétences qui changent de nature à chaque lancer, par
 ## identifiant. Jamais sauvegardé : on recommence par le premier élément.
 var _turns := {}
+## La dernière Signature, en images de physique.
+var _signed_at := -1_000_000
 var _costs := {}
 ## La nature du dernier sort qui a frappé, pour les charges d'Harmonie ; −1 avant le premier.
 var _last_spell_nature := -1
@@ -499,7 +501,9 @@ func cast_slot(index: int) -> bool:
 	var salvo := _salvo(skill, points, cast)
 	var spell := skill.cadence == Skill.Cadence.CAST and skill.strikes()
 	if spell:
+		_incarnate(salvo)
 		_chord(salvo)
+		_diapason(salvo)
 	if not skill.nature_cycle.is_empty():
 		_turns[skill.id] = int(_turns.get(skill.id, 0)) + 1
 	# Tout lancer anime le lanceur sur son geste, et ce geste prend le corps. Pas la ruée,
@@ -572,8 +576,16 @@ func _salvo(skill: Skill, points: int, cast: SkillStats) -> Array[SkillStats]:
 	if skill.nature_cycle.is_empty():
 		return out
 	var turn := int(_turns.get(skill.id, 0))
+	var incarnated := _incarnation_of(skill)
 	for i in range(1, cast.projectile_count()):
-		out.append(skill.resolve(points, stats, skill_mods, talents_of(skill.id), turn + i))
+		out.append(skill.resolve(points, stats, skill_mods, talents_of(skill.id), turn + i, incarnated))
+	# Le Chatoiement (jalon 49) : chaque rebond d'un trait avance d'un tour sur le précédent.
+	if cast.shimmer > 0.0:
+		for i in out.size():
+			for k in range(1, int(cast.bounces) + 1):
+				out[i].bounce_turns.append(skill.resolve(
+					points, stats, skill_mods, talents_of(skill.id), turn + i + k, incarnated
+				))
 	return out
 
 
@@ -631,7 +643,12 @@ func _pose(
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
 			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie.
-			_light(skill.id, Buff.light(self, skill, cast.duration, cast.binds_caster))
+			var buff := Buff.light(self, skill, cast.duration, cast.binds_caster)
+			# L'Incarnation (jalon 49) : l'élément du dernier sort, le feu s'il n'y en a pas.
+			if cast.incarnation > 0.0:
+				buff.incarnation = _last_spell_nature if _last_spell_nature in DamageType.ELEMENTS \
+						else DamageType.ELEMENTS[0]
+			_light(skill.id, buff)
 			# Le Refuge (jalon 44) : entrer dans la glace éteint ce que l'on porte.
 			if cast.refuge > 0.0:
 				states.clear()
@@ -729,14 +746,14 @@ func _pose(
 							if is_instance_valid(origin) and is_instance_valid(parent):
 								ToxicBreath.exhale(parent, origin.global_position, toward, fit, states)
 					)
-		Skill.Shape.CATALYSIS:
-			Catalysis.burst(parent, aim, cast, states)
+		Skill.Shape.GLYPH:
+			Glyph.place(self, origin, aim, cast, parent)
 		Skill.Shape.TRIAD:
 			Triad.converge(parent, at, aim, cast, states)
 		Skill.Shape.TURRET:
 			Brazier.place(self, aim, cast, parent)
-		Skill.Shape.DOLL:
-			RagDoll.place(self, aim, cast, parent)
+		Skill.Shape.CAULDRON:
+			Cauldron.place(self, aim, cast, parent)
 		Skill.Shape.STRIKE:
 			_swing(cast, SwingArc.Style.STRIKE)
 		Skill.Shape.CROSS:
@@ -749,7 +766,8 @@ func _pose(
 
 ## Ce qu'un sort qui frappe déclenche chez son lanceur (jalon 41) : une charge d'Harmonie
 ## s'il change de nature — le Tempo avec elle —, leur perte s'il la répète sous la
-## Dissonance, ce que la Résonance rend à un buff lancé, l'écho du Familier.
+## Dissonance, ce que la Résonance rend à un buff lancé, l'écho du Familier, ce qui se verse
+## au Chaudron (jalon 49).
 func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector2) -> void:
 	var nature := salvo[0].nature
 	var alternated := _last_spell_nature >= 0 and nature != _last_spell_nature
@@ -769,13 +787,75 @@ func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector2) -> void:
 		if alternated and buff.stack(Skill.StackTrigger.ALTERNATION, own):
 			changed = true
 			_hasten(own.tempo)
+			_modulate(own.modulation)
 		elif repeated and own.dissonance > 0.0 and buff.stacks > 0:
+			if own.false_note > 0.0:
+				_false_note(salvo[0], buff.stacks)
 			buff.stacks = 0
 			changed = true
 		if own.resonance > 0.0:
-			buff.prolong(own.resonance)
+			buff.resonate(own.resonance)
+		if own.triple_burst > 0.0:
+			buff.natures_cast[nature] = true
+	Cauldron.pour_all(self, nature)
+	Glyph.pour_all(self, nature)
 	if changed:
 		after_buff_change()
+
+
+## L'Incarnation (jalon 49) : le sort, déjà résolu dans son élément (`_incarnation_of()`), y
+## pose un état plus fort. Sous la Métamorphose, l'élément avance ensuite d'un tour.
+func _incarnate(salvo: Array[SkillStats]) -> void:
+	for id: String in _lit:
+		if not lit(id) or not _lit[id] is Buff or (_lit[id] as Buff).incarnation < 0:
+			continue
+		var buff := _lit[id] as Buff
+		var element := buff.incarnation
+		var effect: String = SkillStats.EFFECT_OF[StatusEffects.rolled_by(element)]
+		for cast in salvo:
+			cast.set(effect, float(cast.get(effect)) + SkillStats.INCARNATION_EFFECT)
+		buff.last_spell = salvo[0]
+		if resolve(SkillCatalog.by_id(id), skill_points(id)).metamorphosis > 0.0:
+			var at := DamageType.ELEMENTS.find(element)
+			buff.incarnation = DamageType.ELEMENTS[(at + 1) % DamageType.ELEMENTS.size()]
+		return
+
+
+## Le Diapason (jalon 49) : un sort qui change d'élément sous un buff qui le porte garde une
+## part de ses dégâts dans l'élément précédent — de quoi en poser l'état. Avant la pose, que
+## le geste peut retarder.
+func _diapason(salvo: Array[SkillStats]) -> void:
+	var previous := _last_spell_nature
+	if previous < 0 or salvo[0].nature == previous:
+		return
+	for id: String in _lit:
+		if not lit(id) or not _lit[id] is Buff:
+			continue
+		var own := resolve(SkillCatalog.by_id(id), skill_points(id))
+		if own.diapason > 0.0:
+			for cast in salvo:
+				cast.tinge(previous, own.diapason * 0.01)
+			return
+
+
+## La Modulation (jalon 49) : chaque charge gagnée prolonge les états élémentaires autour de soi.
+func _modulate(seconds: float) -> void:
+	if seconds <= 0.0:
+		return
+	for target in Targets.in_circle(get_world_2d(), global_position, SkillStats.MODULATION_REACH):
+		if target.states != null:
+			for kind: int in StatusEffects.ELEMENTAL:
+				target.states.extend(kind, seconds)
+
+
+## La Fausse note (jalon 49) : les charges que la Dissonance fait perdre éclatent autour de soi,
+## dans l'élément répété.
+func _false_note(cast: SkillStats, lost: int) -> void:
+	var parts := DamageType.scaled(cast.roll(Game.rng), SkillStats.FALSE_NOTE_PART * float(lost))
+	Explosion.put(
+		_effects_parent(), global_position, parts, SkillStats.FALSE_NOTE_RADIUS, null,
+		DamageType.COLORS[cast.nature], states, cast
+	)
 
 
 ## Le Tempo (jalon 41) : les recharges en cours des compétences **à recharge** perdent ces
@@ -799,9 +879,13 @@ func _chord(salvo: Array[SkillStats]) -> void:
 		var skill := SkillCatalog.by_id(id)
 		var own := resolve(skill, skill_points(id))
 		var buff := _lit[id] as Buff
-		if own.perfect_chord <= 0.0 or buff.stacks < Buff.cap_of(skill, own):
+		# Le Renversement (jalon 49) : à une charge du plafond.
+		if own.perfect_chord <= 0.0 or buff.stacks < Buff.cap_of(skill, own) - int(own.inversion):
 			continue
 		buff.stacks = 0
+		# La Coda (jalon 49) : il en reste une.
+		if own.coda > 0.0:
+			buff.hold_stacks(1, Buff.hold_of(skill, own))
 		var factor := 1.0 + own.perfect_chord * 0.01
 		for cast in salvo:
 			cast.blend(DamageType.ELEMENTS)
@@ -883,7 +967,7 @@ func extinguish(skill_id: String) -> void:
 	if is_instance_valid(node):
 		(node as Node).extinguish()
 		if node is Buff and not is_dead:
-			_shatter(SkillCatalog.by_id(skill_id), (node as Buff).remaining())
+			_shatter(SkillCatalog.by_id(skill_id), node as Buff)
 			_transfigure(skill_id)
 	after_buff_change()
 
@@ -907,16 +991,28 @@ func _transfigure(skill_id: String) -> void:
 ## L'Éclatement du Tombeau (jalon 36) : un buff lancé qui s'éteint éclate. Pas celui
 ## d'une ruée, qui a déjà éclaté à l'arrivée. Le Brise-glace (jalon 44) paie chaque seconde
 ## qu'il lui restait ; le Cœur de glace transit à coup sûr, à double force.
-func _shatter(skill: Skill, remaining: float) -> void:
+func _shatter(skill: Skill, buff: Buff) -> void:
 	if skill == null or skill.shape != Skill.Shape.BUFF:
 		return
 	var cast := resolve(skill, skill_points(skill.id))
 	if cast.end_burst <= 0.0:
 		return
-	cast = cast.echoed(1.0 + cast.icebreaker * 0.01 * remaining)
+	# Le Contrecoup (jalon 49) : des dégâts qui montent avec le temps brûlé et le niveau.
+	if cast.recoil > 0.0:
+		var built := cast.recoil_damage(level, buff.lived)
+		cast.add_to(cast.nature, built, built)
+	cast = cast.echoed(1.0 + cast.icebreaker * 0.01 * buff.remaining())
 	if cast.ice_heart > 0.0:
 		cast.status_chance_increase += SkillStats.SURE_STATE
 		cast.chill_effect += SkillStats.ICE_HEART_EFFECT
+	# Le Triple éclat (jalon 49) : un éclat par élément lancé, chacun dans le sien.
+	if cast.triple_burst > 0.0 and not buff.natures_cast.is_empty():
+		for nature: int in buff.natures_cast:
+			var part := cast.echoed(1.0)
+			part.blend([nature] as Array[int])
+			part.nature = nature
+			Explosion.of_cast(_effects_parent(), global_position, part, cast.end_burst, states)
+		return
 	Explosion.of_cast(_effects_parent(), global_position, cast, cast.end_burst, states)
 
 
@@ -1430,7 +1526,28 @@ func resolve(skill: Skill, points: int, plain := false) -> SkillStats:
 	var talents: Array = talents_of(skill.id)
 	if plain:
 		talents = talents.filter(func(t: InvestedTalent) -> bool: return not t.node.transforms)
-	return skill.resolve(points, stats, skill_mods, talents, int(_turns.get(skill.id, 0)))
+	return skill.resolve(
+		points, stats, skill_mods, talents, int(_turns.get(skill.id, 0)), _incarnation_of(skill)
+	)
+
+
+## L'élément que l'Incarnation (jalon 49) impose à ce geste, -1 sans elle : les sorts qui
+## frappent seulement, résolus dans son élément pour que mots-clés et affixes le suivent.
+func _incarnation_of(skill: Skill) -> int:
+	if skill.cadence != Skill.Cadence.CAST or not skill.strikes():
+		return -1
+	for id: String in _lit:
+		if lit(id) and _lit[id] is Buff and (_lit[id] as Buff).incarnation >= 0:
+			return (_lit[id] as Buff).incarnation
+	return -1
+
+
+## Pour le HUD : l'élément que prendra le prochain sort sous ce buff, -1 sans Incarnation.
+func lit_incarnation(skill_id: String) -> int:
+	var node: Variant = _lit.get(skill_id)
+	if not is_instance_valid(node) or not node is Buff:
+		return -1
+	return (node as Buff).incarnation
 
 
 ## Les deux ensemble : gardés séparément, l'un finirait par ne plus décrire l'autre.
@@ -1581,6 +1698,7 @@ func _roll(
 		return
 	var directions := _spread(salvo[0], toward)
 	var count := directions.size()
+	var salvo_hits := {}
 	for i in count:
 		var cast := salvo[i % salvo.size()]
 		var from := origin.global_position
@@ -1594,6 +1712,8 @@ func _roll(
 			_effects_parent(), scene, from, heading, cast.roll(Game.rng),
 			origin, cast.projectile_speed, cast.nature, cast
 		)
+		if bolt != null:
+			bolt.salvo_hits = salvo_hits
 		if bolt is Fireball:
 			(bolt as Fireball).explosion_radius = cast.radius
 
@@ -2193,7 +2313,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	# Le Brise-lames (jalon 46) : une épée de la ronde prend le coup à sa place.
 	if _crown != null and _crown.take_blow():
 		return
-	var lost := JudgmentChains.divert(self, info.amount - RagDoll.shoulder(self, info.amount))
+	var lost := JudgmentChains.divert(self, info.amount)
 	var necrosis := _necrosis()
 	if necrosis != null and health - lost <= 0.0 and _spared(necrosis):
 		return
@@ -2209,8 +2329,25 @@ func _on_damaged(info: DamageInfo) -> void:
 		_die()
 		return
 	RottingGate.provoke(self)
+	_sign()
 	if _startle_wait <= 0.0:
 		_startle(lost)
+
+
+## La Signature (jalon 49) : un coup reçu trace un glyphe à vos pieds, dans l'élément du tour,
+## au plus un toutes les `SIGNATURE_GAP` secondes — de jeu, comme la garde des réactions.
+func _sign() -> void:
+	var id := SkillStats.GLYPH_SKILL
+	var now := Engine.get_physics_frames()
+	if skill_points(id) <= 0 or now - _signed_at < roundi(SkillStats.SIGNATURE_GAP * Engine.physics_ticks_per_second):
+		return
+	var skill := SkillCatalog.by_id(id)
+	var cast := resolve(skill, skill_points(id))
+	if cast.signature <= 0.0:
+		return
+	_signed_at = now
+	Glyph.place(self, self, global_position, cast, _effects_parent())
+	_turns[id] = int(_turns.get(id, 0)) + 1
 
 
 ## L'Intercession (jalon 48) : sous la lumière, un gros coup bénit son auteur à coup sûr, et

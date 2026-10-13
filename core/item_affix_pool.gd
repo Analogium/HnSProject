@@ -79,6 +79,8 @@ const ALL := [
 	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).
 	preload("res://resources/item_affixes/crushing.tres"),
 	preload("res://resources/item_affixes/expansive.tres"),
+	# Jalon 49 : « Buff » s'affiche sur l'Amplification et la Trinité.
+	preload("res://resources/item_affixes/persistent.tres"),
 
 	# Jalon 26 : les quatre mots-clés du manuel nécrotique.
 	preload("res://resources/item_affixes/putrefying.tres"),

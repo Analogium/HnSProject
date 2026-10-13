@@ -7,7 +7,7 @@ class_name StatusIcon
 const SIDE := 9
 const OUTLINE := Color(0.02, 0.02, 0.03, 0.95)
 
-## Dans l'ordre de `StatusEffects.Kind`, 7×7 : `#` la couleur, `o` son reflet.
+## Dans l'ordre de `StatusEffects.Kind`, 7×7 : `#` la couleur, `o` son reflet, `x` un fond sombre.
 const MASKS := [
 	[  # embrasement : une flamme
 		"...#...",
@@ -110,7 +110,23 @@ const MASKS := [
 	],
 ]
 
+## Une résistance entamée (jalon 49), « flèche sur disque sombre » choisie sur planche : la
+## flèche qui descend, de la couleur de la nature, sur un fond `x` qui la sépare des états —
+## pleine, elle se lisait comme une icône d'état de plus. Sa pointe a des ailes : sans elles,
+## à neuf pixels, elle se lisait « + ».
+const LOWERED := [
+	".xxxxx.",
+	"xxx#xxx",
+	"xxx#xxx",
+	"x#x#x#x",
+	"xx###xx",
+	".xx#xx.",
+	"..xxx..",
+]
+const HOLLOW := Color(0.10, 0.08, 0.14)
+
 static var _cache: Array[Texture2D] = []
+static var _lowered := {}
 
 
 static func texture(kind: int) -> Texture2D:
@@ -118,6 +134,12 @@ static func texture(kind: int) -> Texture2D:
 		for s in MASKS.size():
 			_cache.append(paint(MASKS[s], StatusEffects.color(s)))
 	return _cache[kind]
+
+
+static func lowered(nature: int) -> Texture2D:
+	if not _lowered.has(nature):
+		_lowered[nature] = paint(LOWERED, DamageType.COLORS[nature])
+	return _lowered[nature]
 
 
 ## Publique : les icônes de l'arbre de passifs se peignent de la même main.
@@ -129,6 +151,8 @@ static func paint(mask: Array, color: Color) -> Texture2D:
 			var c := _cell(mask, x - 1, y - 1)
 			if c == "#":
 				img.set_pixel(x, y, color)
+			elif c == "x":
+				img.set_pixel(x, y, HOLLOW)
 			elif c == "o":
 				img.set_pixel(x, y, glint)
 			elif _touches(mask, x - 1, y - 1):

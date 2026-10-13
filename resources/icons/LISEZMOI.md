@@ -80,27 +80,14 @@ Statique, une main blanche cerclée d'arcs, graine 777 (`12`).
 **Une boule de feu se dessine en flamme** : « une boule qui rebondit », « qui ricoche sur
 un mur » sortent une flamme posée — la Mitraille garde la moins mauvaise, à refaire.
 
-#### La recette du jalon 41 : plus nette, et composée
+#### La recette du jalon 41, partie au jalon 49
 
-Les quatre icônes neuves de la sorcière (Trinité, Catalyse, Poupée de chiffon,
-Familier) ont été jugées floues et illogiques par l'utilisateur. Deux causes, deux
-remèdes, réglés par un troisième champ facultatif de `tools/skill_icons.json` :
-
-- **`crisp`** — la réduction par **couleur dominante** (`crisp()`) : l'image est
-  ramenée à 14 couleurs, puis chaque pixel prend la plus fréquente du cœur de son
-  bloc. La moyenne de zone mélangeait deux couleurs voisines en une troisième ;
-- **`layout` et `denoise`** — SDXL de base **ignore la composition** : « une flamme,
-  un flocon et un éclair en triangle » sortait sans flocon ni éclair, la poupée de
-  chiffon en fillette. Le sujet est donc posé à la main en grandes formes plates
-  éclairées en haut à gauche (`tools/icon_layouts.py`), et SDXL l'habille en
-  img2img à `denoise` 0,4 : au-delà de 0,5, il délave les couleurs. Le Brasero y
-  est passé au jalon 42 (à 0,7, ses aplats de fer restaient plats à 0,4) avant de
-  rejoindre Qwen-Image avec tout le manuel du feu ;
-- **`violet`** — le fond qui touche les bords ramené au violet sombre de la
-  sorcière : le corbeau sortait sur du blanc ou du gris.
-
-Choisis sur planche (`Bureau\hns-captures-sorciere-jalon41\22-icones-nettes.png`).
-Un corbeau sombre perd en contraste sur ce fond : à surveiller dans la barre.
+Les quatre icônes de la sorcière du jalon 41 sortaient floues et illogiques : SDXL de base
+**ignore la composition** (« une flamme, un flocon et un éclair en triangle » sortait sans
+flocon ni éclair). Un calque fait main habillé en img2img et une réduction par couleur
+dominante les avaient rattrapées ; au jalon 49, toutes sont passées par Qwen-Image, qui
+compose seul, et le calque (`icon_layouts.py`) et la réduction (`crisp`) sont partis avec la
+dernière qui s'en servait, la Catalyse.
 
 ### Le tuyau
 
@@ -225,7 +212,7 @@ les autres applications dont 4,9 Go pour `QmlRenderer`. Un redémarrage de Windo
   reconnaît pas, et il se fond dans le fond.
 
 **Une nature** autre que le feu se dit dans la ligne du nœud, `{"nature": "cold"}` ou
-`"necrotic"`, `"lightning"`, `"holy"` ou `"physical"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
+`"necrotic"`, `"lightning"`, `"holy"`, `"physical"` ou `"witch"` : palette, fond demandé et teinte du fond (`NATURES`). **Un nœud qui fait à peu
 près la même chose qu'un autre en reprend le tirage**, `{"from": "fireball_wide_blast"}` —
 l'utilisateur préfère reprendre que refaire ; il est réduit au côté de son propre rôle.
 Au Serpent : la Queue de flammes reprend la Déflagration, la Gerbe la Double langue, la
@@ -283,6 +270,15 @@ par arbre (`Bureau\hns-captures-noeuds-sacre\`, 01 à 05). **Le rôle se calcule
 « +1 enchaîné ». **Un mouvement demandé à un objet lui donne des jambes** : une colonne « qui
 sautille » est sortie en petit personnage — une flèche vers une cible dit mieux le mouvement.
 Deux ressemblances gardées : le Zèle et l'Épiphanie (deux étoiles voisines).
+
+La sorcière (jalon 49) : 78 nœuds sans reprise et ses six icônes de compétence en Qwen (les
+Glyphes à la place de la Catalyse), palette `witch` (orange, bleu glacé, violet électrique et
+blanc pour les trois éléments, fond violet sombre). Choisis arbre par arbre
+(`Bureau\hns-captures-icones-sorciere\`). Trois pièges : **un sujet noir disparaît sur le fond
+violet** (les ailes, les corbeaux) si on ne demande pas « outlined in bright violet » ; **deux
+yeux côte à côte sortent en visage**, quelle que soit la consigne : un seul œil ; **une rune
+sort en lettre** (un « R » sur la Récurrence) : une étoile la remplace. Une ressemblance
+gardée : le Diapason et la Dissonance (deux diapasons).
 
 
 ## Icônes d'objets

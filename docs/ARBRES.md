@@ -343,31 +343,31 @@ Jamais pris : Envolée, Allègement, Prestesse, Gravitation, Branle, Éclipse.
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 97,2/s | 111/s |
-| meilleur au paquet | Fulgurance 4, Ricochet 2, Prisme 2, Arcanes 5, Affinité croisée 3, Électrochoc 4 | 807/s ×8,30 | 602/s ×5,40 |
-| meilleur au duel | Fulgurance 1, Ricochet 1, Prisme 2, Arcanes 5, Affinité croisée 3, Électrochoc 4 | 507/s ×5,21 | 602/s ×5,40 |
-| Triade au paquet (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Électrochoc 4 | 363/s ×3,74 | 259/s ×2,32 |
-| Triade au duel (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Électrochoc 4 | 363/s ×3,74 | 259/s ×2,32 |
+| sans arbre | — | 95,8/s | 111/s |
+| meilleur au paquet | Fulgurance 1, Ricochet 2, Prisme 2, Arcanes 4, Affinité croisée 3, Prestidigitation 3, Spectre 2, Électrochoc 1, Précipité 2 | 1249/s ×13,0 | 772/s ×6,97 |
+| meilleur au duel | Fulgurance 1, Ricochet 1, Prisme 2, Arcanes 5, Affinité croisée 3, Spectre 2, Prestidigitation 3, Équilibre 3 | 1039/s ×10,8 | 1139/s ×10,3 |
+| Triade au paquet (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Prestidigitation 3, Équilibre 3, Électrochoc 4 | 520/s ×5,42 | 337/s ×3,04 |
+| Triade au duel (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Équilibre 3, Prestidigitation 3, Électrochoc 4, Conjonction 1 | 520/s ×5,42 | 340/s ×3,07 |
 
-Jamais pris : aucun.
+Jamais pris : Chatoiement.
 
-### Catalyse
-
-| build | points | paquet | duel |
-|---|---|---|---|
-| sans arbre | — | 372/s | 54,0/s |
-| meilleur au paquet | Concentré 5, Amorce 1, Grand cercle 3, Exothermie 4, Nappe brûlante 3 | 1816/s ×4,87 | 271/s ×5,01 |
-| meilleur au duel | Concentré 5, Amorce 1, Exothermie 4, Nappe brûlante 3 | 1159/s ×3,11 | 271/s ×5,01 |
-
-Jamais pris : Arc fourchu, Conductivité.
-
-### Poupée de chiffon
+### Glyphes
 
 | build | points | paquet | duel |
 |---|---|---|---|
-| sans arbre | — | 82,1/s | 18,5/s |
-| meilleur au paquet | Appeau 2, Jumelles 1, Bourre de poudre 5 | 121/s ×1,47 | 27,8/s ×1,50 |
-| meilleur au duel | Bourre de poudre 5 | 80,5/s ×0,98 | 27,8/s ×1,50 |
+| sans arbre | — | 225/s | 68,3/s |
+| meilleur au paquet | Encre 2, Sceau 1, Contresceau 1, Palimpseste 3, Réécriture 1 | 1795/s ×7,96 | 406/s ×5,95 |
+| meilleur au duel | Encre 5, Palimpseste 3, Réécriture 1, Sceau 1, Contresceau 1 | 1441/s ×6,39 | 508/s ×7,44 |
 
-Jamais pris : Rembourrage, Rancune, Transfert.
+Jamais pris : Paraphe, Craie, Calligraphie, Gravure, Entrelacs, Leurre, Signature, Trame.
+
+### Chaudron
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 76,4/s | 22,2/s |
+| meilleur au paquet | Panse 3, Mijotage 5, Bouillonnement 3, Feu doux 1, Mélange 1, Émulsion 1, Écume 3 | 468/s ×6,13 | 53,9/s ×2,43 |
+| meilleur au duel | Mijotage 5, Bouillonnement 3, Panse 1, Écume 3 | 437/s ×5,72 | 62,3/s ×2,80 |
+
+Jamais pris : Trop-plein, Philtre, Couvercle, Décoction, Bulles, Lie.
 

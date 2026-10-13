@@ -49,6 +49,10 @@ const JITTER := 0.4
 ## Les natures **dessinées** : planches cernées, qui ne tournent pas et ne sont pas
 ## additives. Les autres restent des glyphes tracés.
 const DRAWN := [DamageType.Kind.LIGHTNING, DamageType.Kind.NECROTIC]
+const JAVELINS := [DamageType.Kind.COLD, DamageType.Kind.FIRE]
+## Les deux braises du javelot ardent : leur écart derrière lui, et leurs échanges par seconde.
+const EMBER_BEHIND := 12.0
+const EMBER_HZ := 8.0
 ## L'écart entre deux volutes de la traînée de la Peste, et leur tangage.
 const FUME_STEP := 7.0
 const FUME_SWAY := 1.5
@@ -73,6 +77,11 @@ var _bounced := 0
 var _caromed := 0
 ## Le Grésil (jalon 44) : l'ennemi que l'éclat cherche.
 var _quarry: Hurtbox
+## Le Spectre (jalon 49) : partagé par les traits d'une salve, les éléments qui ont déjà
+## touché chaque cible, par identifiant.
+var salvo_hits := {}
+## Le Chatoiement (jalon 49) : le lancer de chaque rebond, pris au départ.
+var _turns: Array[SkillStats] = []
 ## L'os des Lanceurs d'os (jalon 45) : dessiné, il tournoie et ne s'oriente pas.
 var bone := false:
 	set(value):
@@ -93,11 +102,11 @@ func _ready() -> void:
 	material = ArtPalette.ADDITIVE
 
 
-## Dessiné plutôt que tracé : la foudre, la nécrose, et le froid **du joueur** — le
-## Trait de glace (jalon 35). Le tir des casters reste tracé, au choix de
-## l'utilisateur : on le distingue du sien en combat.
+## Dessiné plutôt que tracé : la foudre, la nécrose, et le froid et le feu **du joueur** — le
+## Trait de glace (jalon 35), l'Éclair vif converti (jalon 49). Le tir des casters reste tracé,
+## au choix de l'utilisateur : on le distingue du sien en combat.
 func _drawn() -> bool:
-	return bone or nature() in DRAWN or (nature() == DamageType.Kind.COLD and _cast != null)
+	return bone or nature() in DRAWN or (nature() in JAVELINS and _cast != null)
 
 
 ## Reconstruit à chaque appel : c'est le changement qui fait l'effet.
@@ -143,7 +152,12 @@ func _draw() -> void:
 		_plague(color)
 		return
 	if _drawn():
-		Frost.javelin(color, Slash.turn_of(_dir.angle())).put(self, Vector2.ZERO)
+		var turn := Slash.turn_of(_dir.angle())
+		if nature() == DamageType.Kind.FIRE:
+			Fire.javelin(color, turn).put(self, Vector2.ZERO)
+			_embers(color)
+		else:
+			Frost.javelin(color, turn).put(self, Vector2.ZERO)
 		return
 	for a: Array in AUREOLES:
 		var halo := color
@@ -152,6 +166,15 @@ func _draw() -> void:
 	var body := color
 	body.a = BODY
 	draw_colored_polygon(_shape(1.0), body)
+
+
+## Deux braises derrière le javelot ardent, qui changent de flanc : un pixel du cœur chacune.
+func _embers(color: Color) -> void:
+	var side := _dir.orthogonal()
+	var flip := 1.0 if int(_life * EMBER_HZ) % 2 == 0 else -1.0
+	for i in 2:
+		var at := -_dir * (EMBER_BEHIND + 4.0 * float(i)) + side * 2.0 * flip * (1.0 if i == 0 else -1.0)
+		draw_rect(Rect2(EffectForge.snap(self, at), Vector2.ONE), Fire.heart(color))
 
 
 ## Le crâne de la Peste et ses fumées, qui ondulent de part et d'autre de la course.
@@ -175,6 +198,8 @@ static func spawn(
 	if bolt != null:
 		# Avant `setup()`, qui lit le lancer pour savoir si le tir est dessiné.
 		bolt._cast = cast
+		if cast != null:
+			bolt._turns = cast.bounce_turns
 		bolt.setup(dir, parts, source, p_speed, nature)
 		Settings.veil(bolt, Settings.SPELLS)
 	return bolt
@@ -248,8 +273,12 @@ func _on_area_entered(area: Area2D) -> void:
 	if not strikes(area):
 		return
 	_struck[area.get_instance_id()] = true
+	if _cast != null and _cast.precipitate > 0.0:
+		_precipitate(area as Hurtbox)
 	var info := DamageInfo.roll(_cast, global_position, _conducted(area as Hurtbox), knockback)
 	info.author = _author
+	if _cast != null and _cast.spectrum > 0.0:
+		info.multiplier(_spectrum(area as Hurtbox))
 	(area as Hurtbox).take_damage(info)
 	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
 	# caster libéré ferait sinon traverser le joueur par son tir (invariant 4).
@@ -294,6 +323,30 @@ func _bounce() -> void:
 	_dir = global_position.direction_to(best.global_position)
 	if not _drawn():
 		rotation = _dir.angle()
+	# Le Chatoiement (jalon 49) : le rebond prend le lancer du tour suivant.
+	if _bounced <= _turns.size():
+		_cast = _turns[_bounced - 1]
+		_parts = _cast.roll(Game.rng)
+		_nature = _cast.nature
+
+
+## Le Précipité (jalon 49) : les deux états des autres éléments, lus avant que le coup ne
+## pose le sien, réagissent après lui.
+func _precipitate(target: Hurtbox) -> void:
+	var held := Reactions.held_by(target.states)
+	held.erase(StatusEffects.rolled_by(nature()))
+	if held.size() >= 2:
+		Reactions.precipitate.call_deferred(get_parent(), target, held, _cast, _author)
+
+
+## Le Spectre (jalon 49) : plus fort de chaque autre élément de la salve passé sur la cible.
+func _spectrum(target: Hurtbox) -> float:
+	var id := target.get_instance_id()
+	var seen: Dictionary = salvo_hits.get(id, {})
+	var others := seen.size() - (1 if seen.has(nature()) else 0)
+	seen[nature()] = true
+	salvo_hits[id] = seen
+	return 1.0 + _cast.spectrum * 0.01 * float(others)
 
 
 ## Le Paratonnerre (jalon 43) : à portée de la marque de son lanceur, le tir s'incurve

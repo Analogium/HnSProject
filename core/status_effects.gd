@@ -55,6 +55,9 @@ const NATURES := [
 ## compris — le saignement est ce que laisse une lame. Les autres, c'est un lancer qui
 ## les pose (`inflict()`), ou une malédiction (jalon 26).
 const ROLLED := [Kind.IGNITE, Kind.NUMB, Kind.CHILL, Kind.ROT, Kind.BLESSING, Kind.BLEED]
+## Les trois états des éléments de la sorcière : ce qui réagit (`Reactions`), ce que l'Arpège
+## prolonge (jalon 49).
+const ELEMENTAL := [Kind.IGNITE, Kind.CHILL, Kind.NUMB]
 
 ## Ceux qui brûlent **par à-coups** : chaque à-coup est un petit coup nécrotique, et
 ## tire la pourriture comme lui.
@@ -233,6 +236,10 @@ var _losses := Pack.new()
 ## Les serpents qui le tiennent : deux peuvent l'enlacer, le premier parti ne le lâche pas.
 var _holds := 0
 var _to_show := 0.0
+## L'Équilibre (jalon 49) : les points de résistance ouverts, par nature, et ce qu'il leur
+## reste. Pas un état : rien ne se montre, rien ne se passe ni ne se consomme.
+var _exposed := {}
+var _exposed_left := {}
 
 
 ## Le joueur et les ennemis ont un champ `states` ; un tir ne connaît que son lanceur.
@@ -313,11 +320,10 @@ func suffer(
 			continue
 		if rng.randf() < chance(part, max_hp, factor_of(better[kind], cast_increase)):
 			var strength := cast.strength_of(kind) if cast != null else 1.0
+			var lasting := cast.lasting_of(kind) if cast != null else 0.0
 			if burn_per_second(kind) > 0.0:
-				put(kind, part * strength, author, source)
+				put(kind, part * strength, author, source, 1.0, lasting)
 			else:
-				# Le Frimas (jalon 44) : le transi de la nova dure davantage.
-				var lasting: float = DURATIONS[kind] + cast.rime if cast != null and kind == Kind.CHILL else 0.0
 				put(kind, part, author, source, strength, lasting)
 
 
@@ -403,11 +409,12 @@ func charge(kind: int, most: int, author: StatusEffects, source := "") -> void:
 	put(kind, 0.0, author, source, minf(strength(kind) + 1.0, float(most)))
 
 
-## Rend du temps à cet état, jamais plus que sa pleine durée : la Morsure nécrosante.
+## Rend du temps à cet état, jamais plus que sa pleine durée — celle de sa pose, si un lancer
+## l'a allongée : la Morsure nécrosante.
 func extend(kind: int, seconds: float) -> void:
 	var state := _state(kind)
 	if state != null:
-		state.remaining = minf(state.remaining + seconds, DURATIONS[kind])
+		state.remaining = minf(state.remaining + seconds, maxf(DURATIONS[kind], state.posed))
 
 
 ## Ôte cet état et rend ce qu'il lui restait à brûler : la Saignée du Coup en croix (jalon 46).
@@ -434,7 +441,7 @@ func strength(kind: int) -> float:
 	return state.strength if state != null else 0.0
 
 
-## Ôte cet état s'il est là : ce que consomme une réaction de la Catalyse (jalon 41).
+## Ôte cet état s'il est là : ce que consomme une réaction (jalon 41).
 ## Rend s'il y était.
 func remove(kind: int) -> bool:
 	var state := _state(kind)
@@ -449,9 +456,33 @@ func remove(kind: int) -> bool:
 	return true
 
 
-## Les points de résistance que ses états retirent à cette nature : la malédiction, à sa
-## force (Malédiction profonde, la Marque de mort).
+## Les points de résistance retirés à cette nature : par ses états — la malédiction à sa
+## force (Malédiction profonde, la Marque de mort) — et par l'Équilibre.
 func resistance_lost(nature: int) -> float:
+	return float(_exposed.get(nature, 0.0)) + _lost_to_states(nature)
+
+
+## L'Équilibre (jalon 49) : la plus forte ouverture l'emporte, et sa durée repart.
+func expose(nature: int, points: float, seconds: float) -> void:
+	if points >= float(_exposed.get(nature, 0.0)):
+		var fresh := not _exposed.has(nature)
+		_exposed[nature] = points
+		_exposed_left[nature] = seconds
+		if fresh:
+			change.emit()
+
+
+## Les natures dont la résistance est entamée, dans l'ordre de l'enum : leurs icônes suivent
+## celles des états (jalon 49).
+func opened() -> Array[int]:
+	var out: Array[int] = []
+	for nature in DamageType.Kind.size():
+		if resistance_lost(nature) > 0.0:
+			out.append(nature)
+	return out
+
+
+func _lost_to_states(nature: int) -> float:
 	if is_clear:
 		return 0.0
 	if nature == DamageType.Kind.NECROTIC:
@@ -474,7 +505,10 @@ func resistance_lost(nature: int) -> float:
 func melt(amount: float, kind: int = Kind.IGNITE) -> void:
 	var state := _state(kind)
 	if state != null:
+		var fresh := state.melt <= 0.0 and amount > 0.0
 		state.melt = maxf(state.melt, amount)
+		if fresh:
+			change.emit()
 
 
 ## La Purification (jalon 48) : chaque état porté perd cette part de ce qu'il lui reste.
@@ -534,6 +568,8 @@ func put(
 ## Rend ce que les états ont brûlé pendant ce pas, **à ôter par l'appelant**
 ## (`_set_health()`, invariant 5), engourdissement compris.
 func advance(delta: float) -> float:
+	if not _exposed.is_empty():
+		_close(delta)
 	if _states.is_empty():
 		return 0.0
 	var amplified := damage_taken_factor
@@ -574,6 +610,15 @@ func advance(delta: float) -> float:
 	return loss
 
 
+func _close(delta: float) -> void:
+	for nature: int in _exposed_left.keys():
+		_exposed_left[nature] -= delta
+		if _exposed_left[nature] <= 0.0:
+			_exposed_left.erase(nature)
+			_exposed.erase(nature)
+			change.emit()
+
+
 ## Le chiffre à faire s'envoler maintenant, ou zéro. Lu une fois : il se vide.
 func digit() -> float:
 	var to_show := _to_show
@@ -585,6 +630,8 @@ func digit() -> float:
 func clear() -> void:
 	_losses.clear()
 	_to_show = 0.0
+	_exposed.clear()
+	_exposed_left.clear()
 	if _states.is_empty():
 		return
 	_states.clear()

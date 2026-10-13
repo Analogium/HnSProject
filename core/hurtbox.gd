@@ -15,7 +15,7 @@ const MIN_DAMAGE := 1.0
 @export var invulnerable: bool = false
 
 ## La fiche de l'acteur, par référence. Null — le mannequin de l'arène, et ce que le joueur
-## dresse : poupée, brasier, morts-vivants — encaisse tout brut.
+## dresse : brasier, morts-vivants — encaisse tout brut.
 var stats: CharacterStats
 
 ## Ses états. Null — ce que le joueur dresse — n'en prend aucun et ne tire rien.
@@ -75,6 +75,8 @@ func take_damage(info: DamageInfo) -> void:
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:
+		if info.cast != null and info.cast.saturation > 0.0:
+			_saturate(info, source)
 		# Le Fer rouge (jalon 46) : avant que ce coup n'embrase, ce qui brûlait déjà repart.
 		if info.cast != null and info.cast.red_iron > 0.0:
 			states.extend(StatusEffects.Kind.IGNITE, info.cast.red_iron)
@@ -105,10 +107,39 @@ func take_damage(info: DamageInfo) -> void:
 			states.charge(StatusEffects.Kind.OVERHEAT, SkillStats.OVERHEAT_MOST, info.author, source)
 		if info.cast != null and info.cast.melt > 0.0:
 			states.melt(info.cast.melt)
+		if info.cast != null and info.cast.equilibrium > 0.0:
+			_balance(info)
 		# La Brèche (jalon 46) : sans tirage, et à sa force — le multiple des coups d'arme.
 		if info.cast != null and info.cast.breach > 0.0:
 			var breach := StatusEffects.Kind.BREACH
 			states.put(breach, 0.0, info.author, source, info.cast.strength_of(breach))
+
+
+## La Saturation (jalon 49) : un sort qui touche un corps sans état élémentaire a sa chance
+## de lui poser celui de son élément, en plus du tirage ordinaire, qui suit.
+func _saturate(info: DamageInfo, source: String) -> void:
+	for kind: int in StatusEffects.ELEMENTAL:
+		if states.active(kind):
+			return
+	var kind := StatusEffects.rolled_by(info.type)
+	if not kind in StatusEffects.ELEMENTAL or Game.rng.randf() * 100.0 >= info.cast.saturation:
+		return
+	var part := info.parts[info.type]
+	if StatusEffects.burn_per_second(kind) > 0.0:
+		states.put(kind, part * info.cast.strength_of(kind), info.author, source)
+	else:
+		states.put(kind, part, info.author, source, info.cast.strength_of(kind))
+
+
+## L'Équilibre (jalon 49) : chaque élément du coup ouvre la résistance aux deux autres. Après
+## la mitigation : c'est le coup suivant qui en profite.
+func _balance(info: DamageInfo) -> void:
+	for nature: int in DamageType.ELEMENTS:
+		if info.parts[nature] <= 0.0:
+			continue
+		for other: int in DamageType.ELEMENTS:
+			if other != nature:
+				states.expose(other, info.cast.equilibrium, SkillStats.EQUILIBRIUM_TIME)
 
 
 ## Chaque part par sa défense (règles dans CharacterStats). L'armure se calcule sur la

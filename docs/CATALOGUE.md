@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 42 compétences, 72 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 42 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -708,11 +708,11 @@ de la sorcière est rempli depuis le jalon 41.
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Projectile élémentaire | sort feu | niveau 1 | 5 | 7 mana | 0.45 s | comet · +200 % de chance d'état · tour à tour feu, froid, foudre | 18 · 23 · 29 · 36 · 44 |
-| Amplification des sorts | sort foudre | niveau 3 | 1 | 20 mana | 0.30 s · recharge 10.00 s | buff · 10.0 s | Sorts amplifiés : +20 % de dégâts de sort amplifiés |
-| Catalyse | sort feu | niveau 5 | 5 | 14 mana | 0.60 s | catalysis · rayon 36 · tour à tour feu, froid, foudre | 12 · 15 · 19 · 24 · 30 |
-| Poupée de chiffon | sort feu | niveau 7 | 5 | 16 mana | 0.50 s · recharge 3.00 s | doll · 8.0 s · rayon 40 · 1 au plus · tour à tour feu, froid, foudre | 20 · 26 · 33 · 41 · 50 |
-| Trinité | sort foudre | niveau 2 | 4 | 0 mana | recharge 0.60 s | buff · 3 charges de 4.0 s | Harmonie : +5 % de dégâts de sort accrus |
-| Familier | sort foudre | niveau 10 | 4 | 0 mana | recharge 0.60 s | familiar · draine 4 mana/s | Familier : +3 % de vitesse d'incantation accrue |
+| Amplification des sorts | buff | niveau 3 | 1 | 20 mana | 0.30 s · recharge 10.00 s | buff · 10.0 s | Sorts amplifiés : +20 % de dégâts de sort amplifiés |
+| Glyphes | sort feu | niveau 5 | 5 | 12 mana | 0.50 s | glyph · 10.0 s · rayon 36 · 3 au plus · tour à tour feu, froid, foudre | 12 · 15 · 19 · 24 · 30 |
+| Chaudron | sort feu | niveau 7 | 5 | 16 mana | 0.50 s · recharge 3.00 s | cauldron · 8.0 s · rayon 50 · toutes les 0.80 s · 1 au plus · tour à tour feu, froid, foudre | 8 · 10 · 13 · 16 · 20 |
+| Trinité | buff | niveau 2 | 4 | 0 mana | recharge 0.60 s | buff · 3 charges de 4.0 s | Harmonie : +5 % de dégâts de sort accrus |
+| Familier | sort | niveau 10 | 4 | 0 mana | recharge 0.60 s | familiar · draine 4 mana/s | Familier : +3 % de vitesse d'incantation accrue |
 
 | nœud | compétence | relié à (points demandés) | points | par point |
 |---|---|---|---|---|
@@ -723,37 +723,77 @@ de la sorcière est rempli depuis le jalon 41.
 | Ricochet | Projectile élémentaire | Fulgurance (1) | 2 | +1 nombre de rebonds |
 | Prisme | Projectile élémentaire | Ricochet (1) | 2 | +1 nombre de projectiles · -15 % de dégâts atténués |
 | Triade | Projectile élémentaire | Arcanes (2) ou Électrochoc (2) | 1 | +30 rayon · +25 % de temps du geste accru |
+| Prestidigitation | Projectile élémentaire | — | 3 | -8 % de temps du geste réduit |
+| Équilibre | Projectile élémentaire | Affinité croisée (1) | 3 | +5 % résistance ouverte |
+| Précipité | Projectile élémentaire | Électrochoc (1) | 2 | +20 % du trait par réaction |
+| Chatoiement | Projectile élémentaire | Ricochet (1) | 1 | +1 chatoiement |
+| Spectre | Projectile élémentaire | Prisme (1) | 2 | +15 % dégâts par autre élément |
+| Conjonction | Projectile élémentaire | Triade (1) | 1 | +1 conjonction |
 | Surpuissance | Amplification des sorts | — | 5 | +3 % de dégâts de sort amplifiés |
 | Volubilité | Amplification des sorts | — | 4 | +4 % de vitesse d'incantation accrue |
 | Rémanence | Amplification des sorts | — | 3 | +15 % de durée accrue |
 | Siphon | Amplification des sorts | Surpuissance (1) | 3 | +2 mana par ennemi tué |
 | Résonance | Amplification des sorts | Volubilité (1) | 3 | +0.3 secondes gagnées par sort |
-| Contrecoup | Amplification des sorts | Rémanence (1) ou Résonance (2) | 3 | ajoute 6 à 14 dégâts de foudre · +15 rayon de l'explosion finale |
-| Concentré | Catalyse | — | 5 | +10 % de dégâts amplifiés |
-| Exothermie | Catalyse | — | 4 | +25 % puissance des réactions |
-| Grand cercle | Catalyse | — | 3 | +15 % de rayon accru |
-| Nappe brûlante | Catalyse | Exothermie (1) | 3 | +2 secondes de sol laissé au premier point, puis +1.5 par point |
-| Arc fourchu | Catalyse | Exothermie (1) | 2 | +1 nombre de cibles |
-| Conductivité | Catalyse | Exothermie (1) | 3 | +16 rayon de contagion |
-| Amorce | Catalyse | Concentré (2) ou Grand cercle (2) | 1 | +1 état prêté |
-| Bourre de poudre | Poupée de chiffon | — | 5 | +10 % de dégâts amplifiés |
-| Rembourrage | Poupée de chiffon | — | 5 | +20 % PV de la poupée |
-| Appeau | Poupée de chiffon | — | 3 | +20 portée de l'appeau |
-| Rancune | Poupée de chiffon | Bourre de poudre (1) | 4 | +15 % dégâts encaissés rendus |
-| Transfert | Poupée de chiffon | Rembourrage (1) | 3 | +10 % dégâts subis détournés |
-| Jumelles | Poupée de chiffon | Appeau (2) ou Rembourrage (3) | 1 | +1 maximum simultané |
+| Contrecoup | Amplification des sorts | Rémanence (1) ou Résonance (2) | 3 | +1 dégâts du contrecoup par seconde · +30 rayon de l'explosion finale |
+| Récurrence | Amplification des sorts | — | 3 | -10 % de recharge réduite |
+| Exacerbation | Amplification des sorts | Surpuissance (1) | 3 | +8 % effet de l'embrasement aux sorts · +8 % effet du transi aux sorts · +8 % effet de l'engourdi aux sorts |
+| Saturation | Amplification des sorts | Exacerbation (1) | 2 | +25 % chance de saturer aux sorts |
+| Incarnation | Amplification des sorts | Surpuissance (2) ou Rémanence (2) | 1 | +1 incarnation · -10 % de dégâts de sort atténués |
+| Aura | Amplification des sorts | Incarnation (1) | 2 | +10 % coup de l'aura |
+| Métamorphose | Amplification des sorts | Incarnation (1) | 1 | +1 métamorphose |
+| Triple éclat | Amplification des sorts | Contrecoup (1) | 1 | +1 triple éclat |
+| Encre | Glyphes | — | 5 | +10 % de dégâts amplifiés |
+| Paraphe | Glyphes | — | 3 | +15 % de rayon accru |
+| Craie | Glyphes | — | 3 | +20 % de durée accrue |
+| Calligraphie | Glyphes | — | 3 | -15 % de temps d'armement réduit |
+| Gravure | Glyphes | Paraphe (1) | 2 | +25 % de rayon de déclenchement accru |
+| Palimpseste | Glyphes | Encre (1) | 3 | +50 % du glyphe par réaction |
+| Entrelacs | Glyphes | Paraphe (1) | 3 | +15 % dégâts des fils |
+| Leurre | Glyphes | Craie (1) | 3 | +40 portée du leurre |
+| Signature | Glyphes | Calligraphie (1) | 1 | +1 signature |
+| Sceau | Glyphes | Encre (2) ou Craie (2) | 1 | +1 sceau |
+| Réécriture | Glyphes | Palimpseste (1) | 1 | +1 réécriture |
+| Trame | Glyphes | Entrelacs (1) | 1 | +1 trame |
+| Contresceau | Glyphes | Sceau (1) | 1 | +1 contresceau |
+| Mijotage | Chaudron | — | 5 | +12 % de dégâts amplifiés |
+| Panse | Chaudron | — | 3 | +15 % de rayon accru |
+| Feu doux | Chaudron | — | 4 | +20 % de durée accrue |
+| Bouillonnement | Chaudron | Mijotage (1) | 3 | -10 % d'intervalle des frappes réduit |
+| Trop-plein | Chaudron | Mijotage (1) | 3 | +25 % dégâts de l'explosion |
+| Écume | Chaudron | Panse (1) | 3 | +10 % chance d'une goutte |
+| Philtre | Chaudron | Panse (1) | 2 | +1 mana par seconde |
+| Mélange | Chaudron | Feu doux (1) | 1 | +1 mélange |
+| Couvercle | Chaudron | Feu doux (1) | 1 | +1 couvercle |
+| Décoction | Chaudron | Trop-plein (1) ou Bouillonnement (2) | 1 | +1 décoction |
+| Bulles | Chaudron | Écume (1) | 2 | +15 rayon des bulles |
+| Émulsion | Chaudron | Mélange (1) | 1 | +1 émulsion |
+| Lie | Chaudron | Décoction (1) | 2 | +0.2 durée par seconde bue |
 | Gamme | Trinité | — | 5 | +4 % chance d'état aux sorts |
 | Mesure | Trinité | — | 4 | +2 % rés. feu · +2 % rés. froid · +2 % rés. foudre |
 | Point d'orgue | Trinité | — | 4 | +0.5 secondes de tenue des charges |
 | Dissonance | Trinité | Gamme (1) | 2 | +1 nombre de charges |
-| Tempo | Trinité | Point d'orgue (1) | 5 | +0.1 secondes de recharge rendues |
+| Tempo | Trinité | Point d'orgue (1) | 1 | +0.1 secondes de recharge rendues |
 | Accord parfait | Trinité | Dissonance (1) ou Point d'orgue (2) | 1 | +30 % dégâts en plus de l'accord |
+| Arpège | Trinité | Gamme (1) | 3 | +4 % durée d'état élémentaire aux sorts |
+| Diapason | Trinité | Gamme (1) | 2 | +10 % part dans l'élément précédent |
+| Modulation | Trinité | Point d'orgue (1) | 3 | +0.3 états prolongés par charge |
+| Rubato | Trinité | Point d'orgue (1) | 1 | +1 rubato |
+| Coda | Trinité | Accord parfait (1) | 1 | +1 coda |
+| Renversement | Trinité | Accord parfait (1) | 1 | +1 renversement · -15 % dégâts en plus de l'accord |
+| Fausse note | Trinité | Dissonance (1) | 1 | +1 fausse note |
 | Écho fidèle | Familier | — | 5 | +6 % dégâts rejoués |
 | Frugalité | Familier | — | 4 | -10 % de mana drainé réduit |
 | Ailes noires | Familier | — | 5 | +2 % de vitesse accrue |
 | Œil du corbeau | Familier | Écho fidèle (1) | 4 | +15 rayon de chasse |
 | Ressassement | Familier | Écho fidèle (2) | 2 | +1 nombre d'échos · -10 % dégâts rejoués |
 | Contre-chant | Familier | Frugalité (2) ou Ressassement (1) | 1 | +1 élément d'avance de l'écho |
+| Rémiges | Familier | — | 3 | +0.1 écho avancé |
+| Sombre augure | Familier | Œil du corbeau (1) | 2 | +10 % dégâts de l'écho par état |
+| Becquée | Familier | Ailes noires (1) | 2 | +10 % coup de bec |
+| Mauvais œil | Familier | Frugalité (2) ou Contre-chant (1) | 1 | +1 mauvais œil |
+| Croassement | Familier | Mauvais œil (1) | 2 | +15 % rayon du mauvais œil |
+| Jettatura | Familier | Mauvais œil (1) | 1 | +1 jettatura |
+| Canon | Familier | Contre-chant (1) | 2 | +5 % dégâts de l'écho |
 
 24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
@@ -1321,6 +1361,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `necrotic_to_attacks` | dégâts nécrotiques aux attaques | melee, jewellery | — | 2 | 8 | 14 / 76 |
 | `necrotic_to_spells` | dégâts nécrotiques aux sorts | caster, jewellery | — | 2 | 8 | 11 / 76 |
 | `nimble` | vitesse (%) | boots | — | 10 | 5 | 6 / 76 |
+| `persistent` | durée aux buffs (%) | jewellery | — | 3 | 3 | 6 / 76 |
 | `physical_attack_dmg` | dégâts d'attaque physiques (%) | melee | — | 8 | 6 | 8 / 76 |
 | `physical_skill_levels` | niveaux de compétence physiques | melee | — | 1 | 2 | 8 / 76 |
 | `physical_spell_dmg` | dégâts de sort physiques (%) | caster | — | 8 | 6 | 5 / 76 |
@@ -1912,6 +1953,14 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T3 | 24 | 11–14 % | 10 |
 | T4 | 12 | 7–10 % | 10 |
 | T5 | 1 | 3–6 % | 10 |
+
+**`persistent`** — « de la Persistance », durée aux buffs, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 40 | 21–28 % | 10 |
+| T2 | 18 | 14–20 % | 10 |
+| T3 | 1 | 8–13 % | 10 |
 
 **`physical_attack_dmg`** — « du Bourreau », dégâts d'attaque physiques, arrondi 1
 

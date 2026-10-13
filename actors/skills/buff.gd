@@ -21,6 +21,11 @@ const TOMB_ALPHA := 0.8
 const CROWN_SPACING := 10.5
 const CROWN_JITTER := [0.0, 2.0, -1.0, 1.0, -2.0, 0.5]
 const CROWN_TURN := 0.3
+## L'Aura (jalon 49), « cercle de runes » choisi sur planche : son cercle en pointillés — un
+## grain tous les deux pixels, un sur trois retiré — et trois icônes de l'état de son élément
+## qui en font le tour, en radians par seconde.
+const AURA_DOTS := 2.0
+const AURA_TURN := 1.2
 const DRAWN := [
 	DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING,
 	DamageType.Kind.NECROTIC,
@@ -51,6 +56,20 @@ var _since_ion := 0.0
 ## Le Halo de givre (jalon 44) : depuis quand il n'a pas transi autour de lui.
 var _since_halo := 0.0
 var _aureole := 0.0
+## L'Incarnation (jalon 49) : l'élément que prennent les sorts tant qu'il brûle, -1 sans
+## elle ; le dernier sort converti, que l'Aura reprend ; depuis quand l'Aura n'a pas frappé.
+var incarnation := -1
+var last_spell: SkillStats
+var _since_aura := 0.0
+## Ce que l'Aura frappe, en points de pourcentage, relu à chaque période ; -1 avant la première
+## lecture. Le dessin la lit : sans Aura, pas de cercle.
+var _aura := -1.0
+## Le Triple éclat (jalon 49) : les éléments lancés tant qu'il brûle.
+var natures_cast := {}
+## Le Contrecoup (jalon 49) compte le temps brûlé depuis l'allumage, que la Résonance ne
+## rembobine pas ; elle compte ses prolongations, qui s'amenuisent.
+var lived := 0.0
+var _resonated := 0
 
 
 static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false) -> Buff:
@@ -123,11 +142,28 @@ static func hold_of(skill: Skill, own: SkillStats) -> float:
 	return skill.stack_duration + (own.stack_hold if own != null else 0.0)
 
 
+## À l'échéance, toutes ensemble — ou une à une sous le Rubato (jalon 49), chacune
+## `RUBATO_STEP` après la précédente.
+func _drop_stacks() -> void:
+	if _player.resolve(_skill, _player.skill_points(_skill.id)).rubato > 0.0:
+		stacks -= 1
+		_since_stack = _hold - SkillStats.RUBATO_STEP
+	else:
+		stacks = 0
+	_player.after_buff_change()
+
+
 ## La Résonance (jalon 41) : un buff lancé regagne ces secondes, jamais au-delà de sa
 ## durée entière.
 func prolong(seconds: float) -> void:
 	if _lifetime > 0.0:
 		_age = maxf(_age - seconds, 0.0)
+
+
+## La Résonance : chaque prolongation vaut `RESONANCE_DECAY` de la précédente (jalon 49).
+func resonate(seconds: float) -> void:
+	prolong(seconds * pow(SkillStats.RESONANCE_DECAY, _resonated))
+	_resonated += 1
 
 
 ## Appelée par `Player.extinguish()`, le seul chemin : le joueur reprend ses lignes à
@@ -139,6 +175,7 @@ func extinguish() -> void:
 
 func _physics_process(delta: float) -> void:
 	_age += delta
+	lived += delta
 	if _player.skill_points(_skill.id) <= 0 or _player.is_dead:
 		_player.extinguish(_skill.id)
 		return
@@ -148,8 +185,8 @@ func _physics_process(delta: float) -> void:
 	if stacks > 0:
 		_since_stack += delta
 		if _since_stack >= _hold:
-			stacks = 0
-			_player.after_buff_change()
+			_drop_stacks()
+	_radiate(delta)
 	# Le lancer résolu et non la compétence : un nœud d'arbre change sa brûlure (jalon 34),
 	# son drain (jalon 35), son soin (jalon 36) et ce qu'il ronge (jalon 38).
 	var cast: SkillStats = null
@@ -178,6 +215,26 @@ func _physics_process(delta: float) -> void:
 		# L'Hibernation (jalon 44) : les recharges des autres courent plus vite tant qu'il tient.
 		_player._hasten(delta * cast.hibernation * 0.01)
 	_player.burn(burning + withered, _distribution, delta)
+
+
+## L'Aura (jalon 49) : sous l'Incarnation, chaque période, ce qui entoure le porteur prend un
+## coup de son élément, une part du dernier sort converti, qui pose son état à coup sûr.
+func _radiate(delta: float) -> void:
+	if incarnation < 0 or last_spell == null:
+		return
+	if _aura < 0.0:
+		_aura = _player.resolve(_skill, _player.skill_points(_skill.id)).aura
+	_since_aura += delta
+	if _since_aura < SkillStats.AURA_PERIOD:
+		return
+	_since_aura = 0.0
+	_aura = _player.resolve(_skill, _player.skill_points(_skill.id)).aura
+	if _aura <= 0.0:
+		return
+	var hit := last_spell.echoed(_aura * 0.01)
+	hit.status_chance_increase += SkillStats.SURE_STATE
+	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.AURA_REACH):
+		Targets.strike(target, hit.roll(Game.rng), _player.global_position, _player.states, hit)
 
 
 ## L'Ionisation (jalon 43) : à chaque période, chaque ennemi proche a sa chance d'être
@@ -302,6 +359,23 @@ func _draw() -> void:
 				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
 	if _aureole > 0.0:
 		_crown(tint)
+	if incarnation >= 0 and last_spell != null and _aura > 0.0:
+		_aura_ring()
+
+
+## Le cercle de l'Aura, là où elle frappe, et les trois icônes de son état qui en font le tour.
+func _aura_ring() -> void:
+	var tint: Color = DamageType.COLORS[incarnation]
+	var n := roundi(TAU * SkillStats.AURA_REACH / AURA_DOTS)
+	for k in n:
+		if k % 3 == 0:
+			continue
+		var p := Vector2.from_angle(TAU * float(k) / float(n)) * SkillStats.AURA_REACH
+		draw_rect(Rect2(EffectForge.snap(self, p), Vector2.ONE), tint)
+	var icon := StatusIcon.texture(StatusEffects.rolled_by(incarnation))
+	for i in 3:
+		var a := TAU * float(i) / 3.0 + _age * AURA_TURN
+		EffectForge.put_centered(self, icon, Vector2.from_angle(a) * SkillStats.AURA_REACH)
 
 
 ## Un grain de lumière sur deux, un pixel de son cœur entre eux : grand et petit en

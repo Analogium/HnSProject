@@ -91,7 +91,7 @@ static func factor(tex: Texture2D, side: float) -> int:
 ## Pose l'icône au centre de ce cadre, agrandie d'un **facteur entier** — ou, dans un
 ## cadre plus petit qu'elle, réduite d'un **diviseur entier** (une ligne sur deux, pas
 ## une sur trois ici et deux là) ; à défaut d'image, le disque de la couleur de la nature.
-static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill) -> void:
+static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill, tint := Color.WHITE) -> void:
 	var side := minf(r.size.x, r.size.y)
 	var tex := texture(skill)
 	if tex == null:
@@ -100,7 +100,7 @@ static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill) -> void:
 	var biggest := maxf(tex.get_width(), tex.get_height())
 	var scale := float(factor(tex, side)) if biggest <= side else 1.0 / ceilf(biggest / side)
 	var span := tex.get_size() * scale
-	canvas.draw_texture_rect(tex, Rect2(r.position + (r.size - span) * 0.5, span), false)
+	canvas.draw_texture_rect(tex, Rect2(r.position + (r.size - span) * 0.5, span), false, tint)
 
 
 ## Vide le cache. Pour les tests, qui fabriquent des icônes de toutes pièces et

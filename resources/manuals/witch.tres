@@ -6,10 +6,88 @@
 [ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
 [ext_resource type="Resource" path="res://resources/skills/elemental_projectile.tres" id="10_projectile"]
 [ext_resource type="Resource" path="res://resources/skills/spell_amplification.tres" id="11_amplification"]
-[ext_resource type="Resource" path="res://resources/skills/catalysis.tres" id="12_catalyse"]
-[ext_resource type="Resource" path="res://resources/skills/rag_doll.tres" id="13_poupee"]
+[ext_resource type="Resource" path="res://resources/skills/glyph.tres" id="12_glyphes"]
+[ext_resource type="Resource" path="res://resources/skills/cauldron.tres" id="13_chaudron"]
 [ext_resource type="Resource" path="res://resources/skills/trinity.tres" id="14_trinite"]
 [ext_resource type="Resource" path="res://resources/skills/familiar.tres" id="15_familier"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_arcana.png" id="icon_elemental_projectile_arcana"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_celerity.png" id="icon_elemental_projectile_celerity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_electroshock.png" id="icon_elemental_projectile_electroshock"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_cross_affinity.png" id="icon_elemental_projectile_cross_affinity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_ricochet.png" id="icon_elemental_projectile_ricochet"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_prism.png" id="icon_elemental_projectile_prism"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_triad.png" id="icon_elemental_projectile_triad"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_sleight.png" id="icon_elemental_projectile_sleight"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_equilibrium.png" id="icon_elemental_projectile_equilibrium"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_precipitate.png" id="icon_elemental_projectile_precipitate"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_shimmer.png" id="icon_elemental_projectile_shimmer"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_spectrum.png" id="icon_elemental_projectile_spectrum"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/elemental_projectile_conjunction.png" id="icon_elemental_projectile_conjunction"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_scale.png" id="icon_trinity_scale"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_measure.png" id="icon_trinity_measure"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_fermata.png" id="icon_trinity_fermata"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_dissonance.png" id="icon_trinity_dissonance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_tempo.png" id="icon_trinity_tempo"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_perfect_chord.png" id="icon_trinity_perfect_chord"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_arpeggio.png" id="icon_trinity_arpeggio"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_diapason.png" id="icon_trinity_diapason"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_modulation.png" id="icon_trinity_modulation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_rubato.png" id="icon_trinity_rubato"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_coda.png" id="icon_trinity_coda"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_inversion.png" id="icon_trinity_inversion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/trinity_false_note.png" id="icon_trinity_false_note"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_overpower.png" id="icon_spell_amplification_overpower"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_volubility.png" id="icon_spell_amplification_volubility"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_remanence.png" id="icon_spell_amplification_remanence"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_siphon.png" id="icon_spell_amplification_siphon"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_resonance.png" id="icon_spell_amplification_resonance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_backlash.png" id="icon_spell_amplification_backlash"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_exacerbation.png" id="icon_spell_amplification_exacerbation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_saturation.png" id="icon_spell_amplification_saturation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_incarnation.png" id="icon_spell_amplification_incarnation"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_aura.png" id="icon_spell_amplification_aura"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_metamorphosis.png" id="icon_spell_amplification_metamorphosis"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_triple_burst.png" id="icon_spell_amplification_triple_burst"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_faithful_echo.png" id="icon_familiar_faithful_echo"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_frugality.png" id="icon_familiar_frugality"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_raven_eye.png" id="icon_familiar_raven_eye"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_countersong.png" id="icon_familiar_countersong"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_remiges.png" id="icon_familiar_remiges"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_dark_omen.png" id="icon_familiar_dark_omen"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_peck.png" id="icon_familiar_peck"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_evil_eye.png" id="icon_familiar_evil_eye"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_croak.png" id="icon_familiar_croak"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/spell_amplification_recurrence.png" id="icon_spell_amplification_recurrence"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_simmer.png" id="icon_cauldron_simmer"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_belly.png" id="icon_cauldron_belly"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_low_heat.png" id="icon_cauldron_low_heat"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_seething.png" id="icon_cauldron_seething"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_brim.png" id="icon_cauldron_brim"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_froth.png" id="icon_cauldron_froth"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_philtre.png" id="icon_cauldron_philtre"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_mix.png" id="icon_cauldron_mix"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_decoction.png" id="icon_cauldron_decoction"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_bubbles.png" id="icon_cauldron_bubbles"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_black_wings.png" id="icon_familiar_black_wings"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_rumination.png" id="icon_familiar_rumination"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_lid.png" id="icon_cauldron_lid"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_emulsion.png" id="icon_cauldron_emulsion"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/cauldron_lees.png" id="icon_cauldron_lees"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_jettatura.png" id="icon_familiar_jettatura"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/familiar_canon.png" id="icon_familiar_canon"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_ink.png" id="icon_glyph_ink"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_flourish.png" id="icon_glyph_flourish"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_chalk.png" id="icon_glyph_chalk"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_calligraphy.png" id="icon_glyph_calligraphy"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_engraving.png" id="icon_glyph_engraving"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_palimpsest.png" id="icon_glyph_palimpsest"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_entwine.png" id="icon_glyph_entwine"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_lure.png" id="icon_glyph_lure"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_signature.png" id="icon_glyph_signature"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_seal.png" id="icon_glyph_seal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_rewrite.png" id="icon_glyph_rewrite"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_weft.png" id="icon_glyph_weft"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/glyph_counterseal.png" id="icon_glyph_counterseal"]
 
 [sub_resource type="Resource" id="L_elemental_projectile_arcana_0"]
 script = ExtResource("4_ligne")
@@ -22,6 +100,7 @@ value_per_point = 12.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_arcana"
 name = "Arcanes"
+icon = ExtResource("icon_elemental_projectile_arcana")
 description = "Le trait frappe plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -37,6 +116,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_celerity"
 name = "Fulgurance"
+icon = ExtResource("icon_elemental_projectile_celerity")
 description = "Le trait file plus vite."
 position = Vector2i(1, 0)
 points_max = 4
@@ -51,6 +131,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_electroshock"
 name = "Électrochoc"
+icon = ExtResource("icon_elemental_projectile_electroshock")
 description = "L'engourdi que pose le trait est plus fort : l'ennemi subit davantage de dégâts en plus."
 position = Vector2i(0, -1)
 points_max = 4
@@ -78,6 +159,7 @@ value_per_point = 8.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_cross_affinity"
 name = "Affinité croisée"
+icon = ExtResource("icon_elemental_projectile_cross_affinity")
 description = "Le trait frappe plus fort ce qui brûle, gèle ou grésille déjà : de quoi alterner les éléments sur une même cible."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -95,6 +177,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_ricochet"
 name = "Ricochet"
+icon = ExtResource("icon_elemental_projectile_ricochet")
 description = "Après avoir touché, le trait rebondit vers l'ennemi le plus proche, une fois par point."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
@@ -119,6 +202,7 @@ value_per_point = -15.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_prism"
 name = "Prisme"
+icon = ExtResource("icon_elemental_projectile_prism")
 description = "Un trait de plus par point, en éventail. Chaque trait de la salve prend l'élément suivant : feu, glace, foudre. En échange, chacun frappe moins fort."
 position = Vector2i(2, -1)
 parents = Dictionary[String, int]({
@@ -142,6 +226,7 @@ value_per_point = 25.0
 script = ExtResource("3_noeud")
 id = "elemental_projectile_triad"
 name = "Triade"
+icon = ExtResource("icon_elemental_projectile_triad")
 description = "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. En échange, le geste est plus lent."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -153,6 +238,112 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_triad
 transforms = true
 shape = 43
 
+[sub_resource type="Resource" id="L_elemental_projectile_sleight_0"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = -8.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_sleight"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_sleight"
+name = "Prestidigitation"
+icon = ExtResource("icon_elemental_projectile_sleight")
+description = "Le trait part plus vite de la main."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_sleight_0")])
+
+[sub_resource type="Resource" id="L_elemental_projectile_equilibrium_0"]
+script = ExtResource("4_ligne")
+stat = "equilibrium"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_equilibrium"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_equilibrium"
+name = "Équilibre"
+icon = ExtResource("icon_elemental_projectile_equilibrium")
+description = "Frapper d'un élément ouvre les deux autres : l'ennemi touché perd de la résistance aux deux autres éléments pendant {duree_equilibre} s. Le trait suivant, d'un autre élément, y entre mieux."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"elemental_projectile_cross_affinity": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_equilibrium_0")])
+
+[sub_resource type="Resource" id="L_elemental_projectile_precipitate_0"]
+script = ExtResource("4_ligne")
+stat = "precipitate"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_precipitate"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_precipitate"
+name = "Précipité"
+icon = ExtResource("icon_elemental_projectile_precipitate")
+description = "Un trait qui touche un ennemi portant les états des deux autres éléments les consomme et les fait réagir, à une part de son coup. Feu sur transi et engourdi : Givre conducteur, le transi gagne ses voisins. Froid sur embrasé et engourdi : Arc ardent, la foudre saute sur ses voisins. Foudre sur embrasé et transi : Vapeur, une explosion autour de lui."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"elemental_projectile_electroshock": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_precipitate_0")])
+
+[sub_resource type="Resource" id="L_elemental_projectile_shimmer_0"]
+script = ExtResource("4_ligne")
+stat = "shimmer"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_shimmer"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_shimmer"
+name = "Chatoiement"
+icon = ExtResource("icon_elemental_projectile_shimmer")
+description = "Chaque rebond du Ricochet prend l'élément suivant du tour : un trait qui ricoche deux fois frappe des trois éléments et peut poser les trois états."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"elemental_projectile_ricochet": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_shimmer_0")])
+
+[sub_resource type="Resource" id="L_elemental_projectile_spectrum_0"]
+script = ExtResource("4_ligne")
+stat = "spectrum"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_spectrum"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_spectrum"
+name = "Spectre"
+icon = ExtResource("icon_elemental_projectile_spectrum")
+description = "Dans une même salve du Prisme, chaque autre élément qui a déjà touché une cible fait frapper plus fort le trait suivant qui l'atteint."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"elemental_projectile_prism": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_spectrum_0")])
+
+[sub_resource type="Resource" id="L_elemental_projectile_conjunction_0"]
+script = ExtResource("4_ligne")
+stat = "conjunction"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_elemental_projectile_conjunction"]
+script = ExtResource("3_noeud")
+id = "elemental_projectile_conjunction"
+name = "Conjonction"
+icon = ExtResource("icon_elemental_projectile_conjunction")
+description = "À la jonction de la Triade, l'éclat pose les trois états à coup sûr : embrasé, transi et engourdi, prêts à réagir."
+position = Vector2i(-1, -2)
+parents = Dictionary[String, int]({
+"elemental_projectile_triad": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_conjunction_0")])
+
 [sub_resource type="Resource" id="L_trinity_scale_0"]
 script = ExtResource("4_ligne")
 stat = "status_chance_increase"
@@ -163,6 +354,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "trinity_scale"
 name = "Gamme"
+icon = ExtResource("icon_trinity_scale")
 description = "Chaque charge d'Harmonie rend vos sorts plus aptes à poser leur état."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -187,6 +379,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "trinity_measure"
 name = "Mesure"
+icon = ExtResource("icon_trinity_measure")
 description = "Chaque charge d'Harmonie vous protège du feu, du froid et de la foudre."
 position = Vector2i(1, 0)
 points_max = 4
@@ -201,6 +394,7 @@ value_per_point = 0.5
 script = ExtResource("3_noeud")
 id = "trinity_fermata"
 name = "Point d'orgue"
+icon = ExtResource("icon_trinity_fermata")
 description = "Les charges d'Harmonie tiennent plus longtemps."
 position = Vector2i(0, 1)
 points_max = 4
@@ -215,6 +409,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "trinity_dissonance"
 name = "Dissonance"
+icon = ExtResource("icon_trinity_dissonance")
 description = "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -232,12 +427,13 @@ value_per_point = 0.1
 script = ExtResource("3_noeud")
 id = "trinity_tempo"
 name = "Tempo"
+icon = ExtResource("icon_trinity_tempo")
 description = "Chaque sort qui donne ou ravive l'Harmonie raccourcit les recharges en cours de vos compétences à recharge."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
 "trinity_fermata": 1
 })
-points_max = 5
+points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_tempo_0")])
 
 [sub_resource type="Resource" id="L_trinity_perfect_chord_0"]
@@ -249,6 +445,7 @@ value_per_point = 30.0
 script = ExtResource("3_noeud")
 id = "trinity_perfect_chord"
 name = "Accord parfait"
+icon = ExtResource("icon_trinity_perfect_chord")
 description = "À pleines charges, votre sort suivant les consomme toutes : il part dans les trois éléments, un tiers chacun, et frappe plus fort."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
@@ -258,216 +455,137 @@ parents = Dictionary[String, int]({
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_perfect_chord_0")])
 
-[sub_resource type="Resource" id="L_catalysis_concentrate_0"]
+[sub_resource type="Resource" id="L_trinity_arpeggio_0"]
 script = ExtResource("4_ligne")
-stat = "damage"
-percentage = true
-more = true
-value_per_point = 10.0
+stat = "arpeggio"
+scope = "spell"
+value_per_point = 4.0
 
-[sub_resource type="Resource" id="N_catalysis_concentrate"]
+[sub_resource type="Resource" id="N_trinity_arpeggio"]
 script = ExtResource("3_noeud")
-id = "catalysis_concentrate"
-name = "Concentré"
-description = "La Catalyse frappe plus fort, et ses réactions avec elle."
-position = Vector2i(-1, 0)
-points_max = 5
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_concentrate_0")])
-
-[sub_resource type="Resource" id="L_catalysis_exothermy_0"]
-script = ExtResource("4_ligne")
-stat = "reaction_power"
-value_per_point = 25.0
-
-[sub_resource type="Resource" id="N_catalysis_exothermy"]
-script = ExtResource("3_noeud")
-id = "catalysis_exothermy"
-name = "Exothermie"
-description = "Les réactions frappent plus fort."
-position = Vector2i(1, 0)
-points_max = 4
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_exothermy_0")])
-
-[sub_resource type="Resource" id="L_catalysis_wide_circle_0"]
-script = ExtResource("4_ligne")
-stat = "radius"
-percentage = true
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_catalysis_wide_circle"]
-script = ExtResource("3_noeud")
-id = "catalysis_wide_circle"
-name = "Grand cercle"
-description = "Le cercle de la Catalyse s'élargit."
-position = Vector2i(0, -1)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_wide_circle_0")])
-
-[sub_resource type="Resource" id="L_catalysis_scalding_mist_0"]
-script = ExtResource("4_ligne")
-stat = "ground_duration"
-value_per_point = 1.5
-first_point_bonus = 0.5
-
-[sub_resource type="Resource" id="N_catalysis_scalding_mist"]
-script = ExtResource("3_noeud")
-id = "catalysis_scalding_mist"
-name = "Nappe brûlante"
-description = "La Vapeur laisse au sol une nappe de feu et de froid. Elle frappe les ennemis qui s'y tiennent — {part_sol} % d'un coup de la Catalyse toutes les {rythme_sol} s — pendant la durée indiquée."
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"catalysis_exothermy": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_scalding_mist_0")])
-
-[sub_resource type="Resource" id="L_catalysis_forked_arc_0"]
-script = ExtResource("4_ligne")
-stat = "targets"
-value_per_point = 1.0
-
-[sub_resource type="Resource" id="N_catalysis_forked_arc"]
-script = ExtResource("3_noeud")
-id = "catalysis_forked_arc"
-name = "Arc fourchu"
-description = "L'Arc ardent gagne un voisin de plus par point."
-position = Vector2i(2, -1)
-parents = Dictionary[String, int]({
-"catalysis_exothermy": 1
-})
-points_max = 2
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_forked_arc_0")])
-
-[sub_resource type="Resource" id="L_catalysis_conductivity_0"]
-script = ExtResource("4_ligne")
-stat = "contagion"
-value_per_point = 16.0
-
-[sub_resource type="Resource" id="N_catalysis_conductivity"]
-script = ExtResource("3_noeud")
-id = "catalysis_conductivity"
-name = "Conductivité"
-description = "Le Givre conducteur transit des voisins plus lointains."
-position = Vector2i(2, 1)
-parents = Dictionary[String, int]({
-"catalysis_exothermy": 1
-})
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_conductivity_0")])
-
-[sub_resource type="Resource" id="L_catalysis_primer_0"]
-script = ExtResource("4_ligne")
-stat = "primer"
-value_per_point = 1.0
-
-[sub_resource type="Resource" id="N_catalysis_primer"]
-script = ExtResource("3_noeud")
-id = "catalysis_primer"
-name = "Amorce"
-description = "La Catalyse prête son élément : un ennemi qui ne porte qu'un état d'un autre élément réagit avec lui. Seul l'état qu'il portait est consommé."
+id = "trinity_arpeggio"
+name = "Arpège"
+icon = ExtResource("icon_trinity_arpeggio")
+description = "Par charge, les états élémentaires que posent vos sorts durent plus longtemps."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
-"catalysis_concentrate": 2,
-"catalysis_wide_circle": 2
-})
-points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_catalysis_primer_0")])
-
-[sub_resource type="Resource" id="L_rag_doll_gunpowder_0"]
-script = ExtResource("4_ligne")
-stat = "damage"
-percentage = true
-more = true
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_rag_doll_gunpowder"]
-script = ExtResource("3_noeud")
-id = "rag_doll_gunpowder"
-name = "Bourre de poudre"
-description = "L'éclat de la poupée frappe plus fort."
-position = Vector2i(-1, 0)
-points_max = 5
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_gunpowder_0")])
-
-[sub_resource type="Resource" id="L_rag_doll_stuffing_0"]
-script = ExtResource("4_ligne")
-stat = "doll_life"
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_rag_doll_stuffing"]
-script = ExtResource("3_noeud")
-id = "rag_doll_stuffing"
-name = "Rembourrage"
-description = "La poupée a plus de PV."
-position = Vector2i(1, 0)
-points_max = 5
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_stuffing_0")])
-
-[sub_resource type="Resource" id="L_rag_doll_decoy_0"]
-script = ExtResource("4_ligne")
-stat = "lure"
-value_per_point = 20.0
-
-[sub_resource type="Resource" id="N_rag_doll_decoy"]
-script = ExtResource("3_noeud")
-id = "rag_doll_decoy"
-name = "Appeau"
-description = "Les ennemis la croient plus proche qu'elle n'est : ils la préfèrent à vous de plus loin."
-position = Vector2i(0, 1)
-points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_decoy_0")])
-
-[sub_resource type="Resource" id="L_rag_doll_grudge_0"]
-script = ExtResource("4_ligne")
-stat = "grudge"
-value_per_point = 15.0
-
-[sub_resource type="Resource" id="N_rag_doll_grudge"]
-script = ExtResource("3_noeud")
-id = "rag_doll_grudge"
-name = "Rancune"
-description = "En éclatant, la poupée rend une part de ce qu'elle a encaissé, dans l'élément de son tour."
-position = Vector2i(-2, 0)
-parents = Dictionary[String, int]({
-"rag_doll_gunpowder": 1
-})
-points_max = 4
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_grudge_0")])
-
-[sub_resource type="Resource" id="L_rag_doll_transfer_0"]
-script = ExtResource("4_ligne")
-stat = "transfer"
-value_per_point = 10.0
-
-[sub_resource type="Resource" id="N_rag_doll_transfer"]
-script = ExtResource("3_noeud")
-id = "rag_doll_transfer"
-name = "Transfert"
-description = "Tant qu'elle tient, la poupée prend pour elle une part des dégâts que vous subissez."
-position = Vector2i(2, 0)
-parents = Dictionary[String, int]({
-"rag_doll_stuffing": 1
+"trinity_scale": 1
 })
 points_max = 3
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_transfer_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_arpeggio_0")])
 
-[sub_resource type="Resource" id="L_rag_doll_twins_0"]
+[sub_resource type="Resource" id="L_trinity_diapason_0"]
 script = ExtResource("4_ligne")
-stat = "simultaneous"
+stat = "diapason"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_trinity_diapason"]
+script = ExtResource("3_noeud")
+id = "trinity_diapason"
+name = "Diapason"
+icon = ExtResource("icon_trinity_diapason")
+description = "Un sort qui change d'élément sous l'Harmonie garde une part de ses dégâts dans l'élément précédent : de quoi en poser l'état, et deux états d'un seul sort."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"trinity_scale": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_diapason_0")])
+
+[sub_resource type="Resource" id="L_trinity_modulation_0"]
+script = ExtResource("4_ligne")
+stat = "modulation"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_trinity_modulation"]
+script = ExtResource("3_noeud")
+id = "trinity_modulation"
+name = "Modulation"
+icon = ExtResource("icon_trinity_modulation")
+description = "Chaque charge gagnée entretient le tour : les états élémentaires des ennemis à {portee_modulation} px de vous durent plus longtemps."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"trinity_fermata": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_modulation_0")])
+
+[sub_resource type="Resource" id="L_trinity_rubato_0"]
+script = ExtResource("4_ligne")
+stat = "rubato"
 value_per_point = 1.0
 
-[sub_resource type="Resource" id="N_rag_doll_twins"]
+[sub_resource type="Resource" id="N_trinity_rubato"]
 script = ExtResource("3_noeud")
-id = "rag_doll_twins"
-name = "Jumelles"
-description = "Deux poupées tiennent à la fois ; en poser une troisième fait éclater la plus ancienne."
-position = Vector2i(1, 1)
+id = "trinity_rubato"
+name = "Rubato"
+icon = ExtResource("icon_trinity_rubato")
+description = "À l'échéance, les charges ne tombent plus ensemble : une à une, toutes les {pas_rubato} s."
+position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
-"rag_doll_decoy": 2,
-"rag_doll_stuffing": 3
+"trinity_fermata": 1
 })
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_rag_doll_twins_0")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_rubato_0")])
+
+[sub_resource type="Resource" id="L_trinity_coda_0"]
+script = ExtResource("4_ligne")
+stat = "coda"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_trinity_coda"]
+script = ExtResource("3_noeud")
+id = "trinity_coda"
+name = "Coda"
+icon = ExtResource("icon_trinity_coda")
+description = "L'Accord parfait vous laisse une charge."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"trinity_perfect_chord": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_coda_0")])
+
+[sub_resource type="Resource" id="L_trinity_inversion_0"]
+script = ExtResource("4_ligne")
+stat = "inversion"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_trinity_inversion_1"]
+script = ExtResource("4_ligne")
+stat = "perfect_chord"
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_trinity_inversion"]
+script = ExtResource("3_noeud")
+id = "trinity_inversion"
+name = "Renversement"
+icon = ExtResource("icon_trinity_inversion")
+description = "L'Accord parfait part à une charge du plafond. En échange, il frappe moins fort."
+position = Vector2i(-2, 2)
+parents = Dictionary[String, int]({
+"trinity_perfect_chord": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_inversion_0"), SubResource("L_trinity_inversion_1")])
+
+[sub_resource type="Resource" id="L_trinity_false_note_0"]
+script = ExtResource("4_ligne")
+stat = "false_note"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_trinity_false_note"]
+script = ExtResource("3_noeud")
+id = "trinity_false_note"
+name = "Fausse note"
+icon = ExtResource("icon_trinity_false_note")
+description = "Les charges que la Dissonance fait perdre éclatent autour de vous, à {rayon_fausse_note} px, dans l'élément répété : {part_fausse_note} % du sort par charge perdue."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"trinity_dissonance": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_trinity_false_note_0")])
 
 [sub_resource type="Resource" id="L_familiar_faithful_echo_0"]
 script = ExtResource("4_ligne")
@@ -478,6 +596,7 @@ value_per_point = 6.0
 script = ExtResource("3_noeud")
 id = "familiar_faithful_echo"
 name = "Écho fidèle"
+icon = ExtResource("icon_familiar_faithful_echo")
 description = "Le corbeau rejoue vos sorts plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -493,6 +612,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "familiar_frugality"
 name = "Frugalité"
+icon = ExtResource("icon_familiar_frugality")
 description = "Le corbeau coûte moins de mana à entretenir."
 position = Vector2i(1, 0)
 points_max = 4
@@ -508,6 +628,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "familiar_black_wings"
 name = "Ailes noires"
+icon = ExtResource("icon_familiar_black_wings")
 description = "Tant que le corbeau vole, vous vous déplacez plus vite."
 position = Vector2i(0, 1)
 points_max = 5
@@ -522,6 +643,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "familiar_raven_eye"
 name = "Œil du corbeau"
+icon = ExtResource("icon_familiar_raven_eye")
 description = "L'écho ne part plus vers le point visé mais vers l'ennemi le plus proche de lui, dans ce rayon."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -544,6 +666,7 @@ value_per_point = -10.0
 script = ExtResource("3_noeud")
 id = "familiar_rumination"
 name = "Ressassement"
+icon = ExtResource("icon_familiar_rumination")
 description = "Le corbeau rejoue chaque sort une fois de plus par point, un instant après l'écho précédent. En échange, chaque écho est plus faible."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
@@ -561,6 +684,7 @@ value_per_point = 1.0
 script = ExtResource("3_noeud")
 id = "familiar_countersong"
 name = "Contre-chant"
+icon = ExtResource("icon_familiar_countersong")
 description = "L'écho prend l'élément suivant du tour : un sort de feu revient en froid, de froid en foudre, de foudre en feu."
 position = Vector2i(1, -1)
 parents = Dictionary[String, int]({
@@ -570,11 +694,135 @@ parents = Dictionary[String, int]({
 points_max = 1
 lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_countersong_0")])
 
+[sub_resource type="Resource" id="L_familiar_remiges_0"]
+script = ExtResource("4_ligne")
+stat = "remiges"
+value_per_point = 0.1
+
+[sub_resource type="Resource" id="N_familiar_remiges"]
+script = ExtResource("3_noeud")
+id = "familiar_remiges"
+name = "Rémiges"
+icon = ExtResource("icon_familiar_remiges")
+description = "Le corbeau rejoue plus tôt : chaque écho part avant son retard ordinaire."
+position = Vector2i(1, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_remiges_0")])
+
+[sub_resource type="Resource" id="L_familiar_dark_omen_0"]
+script = ExtResource("4_ligne")
+stat = "dark_omen"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_familiar_dark_omen"]
+script = ExtResource("3_noeud")
+id = "familiar_dark_omen"
+name = "Sombre augure"
+icon = ExtResource("icon_familiar_dark_omen")
+description = "Un écho frappe plus fort pour chaque état élémentaire que porte sa cible."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"familiar_raven_eye": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_dark_omen_0")])
+
+[sub_resource type="Resource" id="L_familiar_peck_0"]
+script = ExtResource("4_ligne")
+stat = "peck"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_familiar_peck"]
+script = ExtResource("3_noeud")
+id = "familiar_peck"
+name = "Becquée"
+icon = ExtResource("icon_familiar_peck")
+description = "Toutes les {rythme_becquee} s, le corbeau fond sur l'ennemi le plus proche de vous, à {portee_becquee} px au plus : une part de votre dernier sort, qui pose son état à coup sûr."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"familiar_black_wings": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_peck_0")])
+
+[sub_resource type="Resource" id="L_familiar_evil_eye_0"]
+script = ExtResource("4_ligne")
+stat = "evil_eye"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_familiar_evil_eye"]
+script = ExtResource("3_noeud")
+id = "familiar_evil_eye"
+name = "Mauvais œil"
+icon = ExtResource("icon_familiar_evil_eye")
+description = "Le corbeau ne rejoue plus, il maudit : chaque écho pose l'état de son élément, à sa force et à coup sûr, sur tous les ennemis à {rayon_mauvais_oeil} px du point visé. En échange, il ne fait plus de dégâts."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"familiar_frugality": 2,
+"familiar_countersong": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_evil_eye_0")])
+
+[sub_resource type="Resource" id="L_familiar_croak_0"]
+script = ExtResource("4_ligne")
+stat = "croak"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_familiar_croak"]
+script = ExtResource("3_noeud")
+id = "familiar_croak"
+name = "Croassement"
+icon = ExtResource("icon_familiar_croak")
+description = "Le Mauvais œil porte plus loin."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"familiar_evil_eye": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_croak_0")])
+
+[sub_resource type="Resource" id="L_familiar_jettatura_0"]
+script = ExtResource("4_ligne")
+stat = "jettatura"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_familiar_jettatura"]
+script = ExtResource("3_noeud")
+id = "familiar_jettatura"
+name = "Jettatura"
+icon = ExtResource("icon_familiar_jettatura")
+description = "Le Mauvais œil pose aussi l'état de l'élément suivant, à {force_jettatura} % de sa force : une paire prête à réagir."
+position = Vector2i(2, -2)
+parents = Dictionary[String, int]({
+"familiar_evil_eye": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_jettatura_0")])
+
+[sub_resource type="Resource" id="L_familiar_canon_0"]
+script = ExtResource("4_ligne")
+stat = "canon"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_familiar_canon"]
+script = ExtResource("3_noeud")
+id = "familiar_canon"
+name = "Canon"
+icon = ExtResource("icon_familiar_canon")
+description = "Sous le Contre-chant, chaque écho du Ressassement avance d'un élément sur le précédent : trois échos, trois éléments. Les échos frappent aussi un peu plus fort."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"familiar_countersong": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_canon_0")])
+
 [sub_resource type="Resource" id="C_projectile"]
 script = ExtResource("2_case")
 skill = ExtResource("10_projectile")
 position = Vector2i(0, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_elemental_projectile_arcana"), SubResource("N_elemental_projectile_celerity"), SubResource("N_elemental_projectile_electroshock"), SubResource("N_elemental_projectile_cross_affinity"), SubResource("N_elemental_projectile_ricochet"), SubResource("N_elemental_projectile_prism"), SubResource("N_elemental_projectile_triad")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_elemental_projectile_arcana"), SubResource("N_elemental_projectile_celerity"), SubResource("N_elemental_projectile_electroshock"), SubResource("N_elemental_projectile_cross_affinity"), SubResource("N_elemental_projectile_ricochet"), SubResource("N_elemental_projectile_prism"), SubResource("N_elemental_projectile_triad"), SubResource("N_elemental_projectile_sleight"), SubResource("N_elemental_projectile_equilibrium"), SubResource("N_elemental_projectile_precipitate"), SubResource("N_elemental_projectile_shimmer"), SubResource("N_elemental_projectile_spectrum"), SubResource("N_elemental_projectile_conjunction")])
 
 [sub_resource type="Resource" id="L_spell_amplification_overpower_0"]
 script = ExtResource("4_ligne")
@@ -588,6 +836,7 @@ value_per_point = 3.0
 script = ExtResource("3_noeud")
 id = "spell_amplification_overpower"
 name = "Surpuissance"
+icon = ExtResource("icon_spell_amplification_overpower")
 description = "Tant que l'amplification dure, vos sorts frappent encore plus fort."
 position = Vector2i(-1, 0)
 points_max = 5
@@ -603,6 +852,7 @@ value_per_point = 4.0
 script = ExtResource("3_noeud")
 id = "spell_amplification_volubility"
 name = "Volubilité"
+icon = ExtResource("icon_spell_amplification_volubility")
 description = "Tant que l'amplification dure, vous incantez plus vite."
 position = Vector2i(1, 0)
 points_max = 4
@@ -618,6 +868,7 @@ value_per_point = 15.0
 script = ExtResource("3_noeud")
 id = "spell_amplification_remanence"
 name = "Rémanence"
+icon = ExtResource("icon_spell_amplification_remanence")
 description = "L'amplification dure plus longtemps."
 position = Vector2i(0, 1)
 points_max = 3
@@ -632,6 +883,7 @@ value_per_point = 2.0
 script = ExtResource("3_noeud")
 id = "spell_amplification_siphon"
 name = "Siphon"
+icon = ExtResource("icon_spell_amplification_siphon")
 description = "Tant que l'amplification dure, chaque ennemi tué par un sort vous rend du mana."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
@@ -649,7 +901,8 @@ value_per_point = 0.3
 script = ExtResource("3_noeud")
 id = "spell_amplification_resonance"
 name = "Résonance"
-description = "Chaque sort qui frappe, lancé sous l'amplification, la prolonge de ces secondes, sans jamais dépasser sa durée entière."
+icon = ExtResource("icon_spell_amplification_resonance")
+description = "Chaque sort qui frappe, lancé sous l'amplification, la prolonge de ces secondes, sans jamais dépasser sa durée entière. Chaque prolongation ne vaut que {decroissance_resonance} % de la précédente."
 position = Vector2i(2, 0)
 parents = Dictionary[String, int]({
 "spell_amplification_volubility": 1
@@ -659,20 +912,20 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_resona
 
 [sub_resource type="Resource" id="L_spell_amplification_backlash_0"]
 script = ExtResource("4_ligne")
-stat = "damage_lightning"
-value_per_point = 6.0
-value_max_per_point = 14.0
+stat = "recoil"
+value_per_point = 1.0
 
 [sub_resource type="Resource" id="L_spell_amplification_backlash_1"]
 script = ExtResource("4_ligne")
 stat = "end_burst"
-value_per_point = 15.0
+value_per_point = 30.0
 
 [sub_resource type="Resource" id="N_spell_amplification_backlash"]
 script = ExtResource("3_noeud")
 id = "spell_amplification_backlash"
 name = "Contrecoup"
-description = "Quand l'amplification prend fin, elle éclate autour de vous : une explosion de foudre dans ce rayon."
+icon = ExtResource("icon_spell_amplification_backlash")
+description = "Quand l'amplification prend fin, elle éclate autour de vous en foudre. Ses dégâts s'accumulent avec le temps qu'elle a brûlé, jusqu'à {duree_contrecoup} s, et croissent de {gain_contrecoup} % par niveau du joueur."
 position = Vector2i(1, 1)
 parents = Dictionary[String, int]({
 "spell_amplification_remanence": 1,
@@ -681,38 +934,645 @@ parents = Dictionary[String, int]({
 points_max = 3
 lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_backlash_0"), SubResource("L_spell_amplification_backlash_1")])
 
+[sub_resource type="Resource" id="L_spell_amplification_recurrence_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_spell_amplification_recurrence"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_recurrence"
+name = "Récurrence"
+icon = ExtResource("icon_spell_amplification_recurrence")
+description = "L'amplification revient plus vite."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_recurrence_0")])
+
+[sub_resource type="Resource" id="L_spell_amplification_exacerbation_0"]
+script = ExtResource("4_ligne")
+stat = "ignite_effect"
+scope = "spell"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_spell_amplification_exacerbation_1"]
+script = ExtResource("4_ligne")
+stat = "chill_effect"
+scope = "spell"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="L_spell_amplification_exacerbation_2"]
+script = ExtResource("4_ligne")
+stat = "numb_effect"
+scope = "spell"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_spell_amplification_exacerbation"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_exacerbation"
+name = "Exacerbation"
+icon = ExtResource("icon_spell_amplification_exacerbation")
+description = "Tant que l'amplification brûle, les états élémentaires que posent vos sorts sont plus forts."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"spell_amplification_overpower": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_exacerbation_0"), SubResource("L_spell_amplification_exacerbation_1"), SubResource("L_spell_amplification_exacerbation_2")])
+
+[sub_resource type="Resource" id="L_spell_amplification_saturation_0"]
+script = ExtResource("4_ligne")
+stat = "saturation"
+scope = "spell"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_spell_amplification_saturation"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_saturation"
+name = "Saturation"
+icon = ExtResource("icon_spell_amplification_saturation")
+description = "Tant que l'amplification brûle, un sort qui touche un ennemi sans aucun état élémentaire a une chance de lui poser celui de son élément, en plus du tirage ordinaire."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"spell_amplification_exacerbation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_saturation_0")])
+
+[sub_resource type="Resource" id="L_spell_amplification_incarnation_0"]
+script = ExtResource("4_ligne")
+stat = "incarnation"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_spell_amplification_incarnation_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "spell"
+percentage = true
+more = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_spell_amplification_incarnation"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_incarnation"
+name = "Incarnation"
+icon = ExtResource("icon_spell_amplification_incarnation")
+description = "L'amplification prend l'élément de votre dernier sort : tant qu'elle brûle, tous vos sorts passent dans cet élément, et l'état qu'ils posent y est {effet_incarnation} % plus fort. En échange, l'amplification ajoute moins de dégâts."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"spell_amplification_overpower": 2,
+"spell_amplification_remanence": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_incarnation_0"), SubResource("L_spell_amplification_incarnation_1")])
+
+[sub_resource type="Resource" id="L_spell_amplification_aura_0"]
+script = ExtResource("4_ligne")
+stat = "aura"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_spell_amplification_aura"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_aura"
+name = "Aura"
+icon = ExtResource("icon_spell_amplification_aura")
+description = "Sous l'Incarnation, toutes les {rythme_aura} s, les ennemis à {portee_aura} px de vous prennent un coup de son élément, une part de votre dernier sort, qui pose son état à coup sûr."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"spell_amplification_incarnation": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_aura_0")])
+
+[sub_resource type="Resource" id="L_spell_amplification_metamorphosis_0"]
+script = ExtResource("4_ligne")
+stat = "metamorphosis"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_spell_amplification_metamorphosis"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_metamorphosis"
+name = "Métamorphose"
+icon = ExtResource("icon_spell_amplification_metamorphosis")
+description = "L'Incarnation change d'élément à chaque sort lancé, dans l'ordre du tour : feu, froid, foudre. Trinité y regagne ses charges."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"spell_amplification_incarnation": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_metamorphosis_0")])
+
+[sub_resource type="Resource" id="L_spell_amplification_triple_burst_0"]
+script = ExtResource("4_ligne")
+stat = "triple_burst"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_spell_amplification_triple_burst"]
+script = ExtResource("3_noeud")
+id = "spell_amplification_triple_burst"
+name = "Triple éclat"
+icon = ExtResource("icon_spell_amplification_triple_burst")
+description = "Le Contrecoup éclate une fois par élément lancé sous l'amplification, chacun dans le sien, au lieu d'une fois en foudre."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"spell_amplification_backlash": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_spell_amplification_triple_burst_0")])
+
 [sub_resource type="Resource" id="C_amplification"]
 script = ExtResource("2_case")
 skill = ExtResource("11_amplification")
 position = Vector2i(1, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_spell_amplification_overpower"), SubResource("N_spell_amplification_volubility"), SubResource("N_spell_amplification_remanence"), SubResource("N_spell_amplification_siphon"), SubResource("N_spell_amplification_resonance"), SubResource("N_spell_amplification_backlash")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_spell_amplification_overpower"), SubResource("N_spell_amplification_volubility"), SubResource("N_spell_amplification_remanence"), SubResource("N_spell_amplification_siphon"), SubResource("N_spell_amplification_resonance"), SubResource("N_spell_amplification_backlash"), SubResource("N_spell_amplification_recurrence"), SubResource("N_spell_amplification_exacerbation"), SubResource("N_spell_amplification_saturation"), SubResource("N_spell_amplification_incarnation"), SubResource("N_spell_amplification_aura"), SubResource("N_spell_amplification_metamorphosis"), SubResource("N_spell_amplification_triple_burst")])
 
-[sub_resource type="Resource" id="C_catalyse"]
-script = ExtResource("2_case")
-skill = ExtResource("12_catalyse")
+[sub_resource type="Resource" id="L_glyph_ink_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_glyph_ink"]
+script = ExtResource("3_noeud")
+id = "glyph_ink"
+name = "Encre"
+icon = ExtResource("icon_glyph_ink")
+description = "Les glyphes frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_ink_0")])
+
+[sub_resource type="Resource" id="L_glyph_flourish_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_glyph_flourish"]
+script = ExtResource("3_noeud")
+id = "glyph_flourish"
+name = "Paraphe"
+icon = ExtResource("icon_glyph_flourish")
+description = "L'éclat des glyphes s'élargit."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_flourish_0")])
+
+[sub_resource type="Resource" id="L_glyph_chalk_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_glyph_chalk"]
+script = ExtResource("3_noeud")
+id = "glyph_chalk"
+name = "Craie"
+icon = ExtResource("icon_glyph_chalk")
+description = "Les glyphes durent plus longtemps."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_chalk_0")])
+
+[sub_resource type="Resource" id="L_glyph_calligraphy_0"]
+script = ExtResource("4_ligne")
+stat = "arming"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_glyph_calligraphy"]
+script = ExtResource("3_noeud")
+id = "glyph_calligraphy"
+name = "Calligraphie"
+icon = ExtResource("icon_glyph_calligraphy")
+description = "Les glyphes s'arment plus vite."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_calligraphy_0")])
+
+[sub_resource type="Resource" id="L_glyph_engraving_0"]
+script = ExtResource("4_ligne")
+stat = "trigger"
+percentage = true
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_glyph_engraving"]
+script = ExtResource("3_noeud")
+id = "glyph_engraving"
+name = "Gravure"
+icon = ExtResource("icon_glyph_engraving")
+description = "Les glyphes sentent l'ennemi de plus loin."
 position = Vector2i(2, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_catalysis_concentrate"), SubResource("N_catalysis_exothermy"), SubResource("N_catalysis_wide_circle"), SubResource("N_catalysis_scalding_mist"), SubResource("N_catalysis_forked_arc"), SubResource("N_catalysis_conductivity"), SubResource("N_catalysis_primer")])
+parents = Dictionary[String, int]({
+"glyph_flourish": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_engraving_0")])
 
-[sub_resource type="Resource" id="C_poupee"]
+[sub_resource type="Resource" id="L_glyph_palimpsest_0"]
+script = ExtResource("4_ligne")
+stat = "palimpsest"
+value_per_point = 50.0
+
+[sub_resource type="Resource" id="N_glyph_palimpsest"]
+script = ExtResource("3_noeud")
+id = "glyph_palimpsest"
+name = "Palimpseste"
+icon = ExtResource("icon_glyph_palimpsest")
+description = "Un glyphe qui éclate sur un ennemi portant l'état d'un autre élément le fait réagir : ses états sont consommés, et chaque paire réagit."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"glyph_ink": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_palimpsest_0")])
+
+[sub_resource type="Resource" id="L_glyph_entwine_0"]
+script = ExtResource("4_ligne")
+stat = "entwine"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_glyph_entwine"]
+script = ExtResource("3_noeud")
+id = "glyph_entwine"
+name = "Entrelacs"
+icon = ExtResource("icon_glyph_entwine")
+description = "Deux glyphes armés se relient : toutes les {rythme_triangle} s, le fil entre eux frappe ce qui le traverse, dans leurs deux éléments."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"glyph_flourish": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_entwine_0")])
+
+[sub_resource type="Resource" id="L_glyph_lure_0"]
+script = ExtResource("4_ligne")
+stat = "lure"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_glyph_lure"]
+script = ExtResource("3_noeud")
+id = "glyph_lure"
+name = "Leurre"
+icon = ExtResource("icon_glyph_lure")
+description = "Un glyphe armé tire vers lui les ennemis à sa portée."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"glyph_chalk": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_lure_0")])
+
+[sub_resource type="Resource" id="L_glyph_signature_0"]
+script = ExtResource("4_ligne")
+stat = "signature"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_glyph_signature"]
+script = ExtResource("3_noeud")
+id = "glyph_signature"
+name = "Signature"
+icon = ExtResource("icon_glyph_signature")
+description = "Un coup reçu trace un glyphe à vos pieds, dans l'élément du tour, au plus un toutes les {attente_signature} s."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"glyph_calligraphy": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_signature_0")])
+
+[sub_resource type="Resource" id="L_glyph_seal_0"]
+script = ExtResource("4_ligne")
+stat = "seal"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_glyph_seal"]
+script = ExtResource("3_noeud")
+id = "glyph_seal"
+name = "Sceau"
+icon = ExtResource("icon_glyph_seal")
+description = "Un seul grand glyphe, qui n'éclate plus au contact : chaque sort lancé l'emplit de son élément. Relancé ou à sa fin, il éclate de {part_sceau} % d'un coup par élément versé. Plus de triangle."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"glyph_ink": 2,
+"glyph_chalk": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_seal_0")])
+
+[sub_resource type="Resource" id="L_glyph_rewrite_0"]
+script = ExtResource("4_ligne")
+stat = "rewrite"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_glyph_rewrite"]
+script = ExtResource("3_noeud")
+id = "glyph_rewrite"
+name = "Réécriture"
+icon = ExtResource("icon_glyph_rewrite")
+description = "Un glyphe qui a fait réagir se retrace aussitôt à sa place, dans l'élément suivant — une fois par glyphe."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"glyph_palimpsest": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_rewrite_0")])
+
+[sub_resource type="Resource" id="L_glyph_weft_0"]
+script = ExtResource("4_ligne")
+stat = "weft"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_glyph_weft"]
+script = ExtResource("3_noeud")
+id = "glyph_weft"
+name = "Trame"
+icon = ExtResource("icon_glyph_weft")
+description = "Les fils de l'Entrelacs posent à coup sûr l'état de leurs deux glyphes."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"glyph_entwine": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_weft_0")])
+
+[sub_resource type="Resource" id="L_glyph_counterseal_0"]
+script = ExtResource("4_ligne")
+stat = "counterseal"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_glyph_counterseal"]
+script = ExtResource("3_noeud")
+id = "glyph_counterseal"
+name = "Contresceau"
+icon = ExtResource("icon_glyph_counterseal")
+description = "Le Sceau éclaté laisse un glyphe ordinaire de chaque élément qu'il contenait."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"glyph_seal": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_glyph_counterseal_0")])
+
+[sub_resource type="Resource" id="C_glyphes"]
 script = ExtResource("2_case")
-skill = ExtResource("13_poupee")
+skill = ExtResource("12_glyphes")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_glyph_ink"), SubResource("N_glyph_flourish"), SubResource("N_glyph_chalk"), SubResource("N_glyph_calligraphy"), SubResource("N_glyph_engraving"), SubResource("N_glyph_palimpsest"), SubResource("N_glyph_entwine"), SubResource("N_glyph_lure"), SubResource("N_glyph_signature"), SubResource("N_glyph_seal"), SubResource("N_glyph_rewrite"), SubResource("N_glyph_weft"), SubResource("N_glyph_counterseal")])
+
+[sub_resource type="Resource" id="L_cauldron_simmer_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_cauldron_simmer"]
+script = ExtResource("3_noeud")
+id = "cauldron_simmer"
+name = "Mijotage"
+icon = ExtResource("icon_cauldron_simmer")
+description = "Le chaudron frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_simmer_0")])
+
+[sub_resource type="Resource" id="L_cauldron_belly_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_cauldron_belly"]
+script = ExtResource("3_noeud")
+id = "cauldron_belly"
+name = "Panse"
+icon = ExtResource("icon_cauldron_belly")
+description = "Le cercle du chaudron s'élargit."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_belly_0")])
+
+[sub_resource type="Resource" id="L_cauldron_low_heat_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_cauldron_low_heat"]
+script = ExtResource("3_noeud")
+id = "cauldron_low_heat"
+name = "Feu doux"
+icon = ExtResource("icon_cauldron_low_heat")
+description = "Le chaudron bout plus longtemps."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_low_heat_0")])
+
+[sub_resource type="Resource" id="L_cauldron_seething_0"]
+script = ExtResource("4_ligne")
+stat = "period"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_cauldron_seething"]
+script = ExtResource("3_noeud")
+id = "cauldron_seething"
+name = "Bouillonnement"
+icon = ExtResource("icon_cauldron_seething")
+description = "Les bouillons se suivent de plus près."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"cauldron_simmer": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_seething_0")])
+
+[sub_resource type="Resource" id="L_cauldron_brim_0"]
+script = ExtResource("4_ligne")
+stat = "brim"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_cauldron_brim"]
+script = ExtResource("3_noeud")
+id = "cauldron_brim"
+name = "Trop-plein"
+icon = ExtResource("icon_cauldron_brim")
+description = "L'explosion du chaudron frappe plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"cauldron_simmer": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_brim_0")])
+
+[sub_resource type="Resource" id="L_cauldron_froth_0"]
+script = ExtResource("4_ligne")
+stat = "froth"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_cauldron_froth"]
+script = ExtResource("3_noeud")
+id = "cauldron_froth"
+name = "Écume"
+icon = ExtResource("icon_cauldron_froth")
+description = "Chaque bouillon a une chance de projeter une goutte de ce qui bout vers l'ennemi le plus proche hors de son cercle, à {portee_goutte} px au plus."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"cauldron_belly": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_froth_0")])
+
+[sub_resource type="Resource" id="L_cauldron_philtre_0"]
+script = ExtResource("4_ligne")
+stat = "philtre"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cauldron_philtre"]
+script = ExtResource("3_noeud")
+id = "cauldron_philtre"
+name = "Philtre"
+icon = ExtResource("icon_cauldron_philtre")
+description = "Tant que vous vous tenez dans son cercle, vous regagnez du mana."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"cauldron_belly": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_philtre_0")])
+
+[sub_resource type="Resource" id="L_cauldron_mix_0"]
+script = ExtResource("4_ligne")
+stat = "mix"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cauldron_mix"]
+script = ExtResource("3_noeud")
+id = "cauldron_mix"
+name = "Mélange"
+icon = ExtResource("icon_cauldron_mix")
+description = "Le chaudron garde les deux derniers éléments lancés : chaque bouillon frappe dans les deux, moitié chacun, et pose les deux états — une paire prête à réagir."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"cauldron_low_heat": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_mix_0")])
+
+[sub_resource type="Resource" id="L_cauldron_lid_0"]
+script = ExtResource("4_ligne")
+stat = "lid"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cauldron_lid"]
+script = ExtResource("3_noeud")
+id = "cauldron_lid"
+name = "Couvercle"
+icon = ExtResource("icon_cauldron_lid")
+description = "Quand sa durée s'achève, le chaudron explose aussi, dans les éléments lancés depuis sa dernière explosion : chacun vaut un tiers de {part_couvercle} % d'une explosion complète."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"cauldron_low_heat": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_lid_0")])
+
+[sub_resource type="Resource" id="L_cauldron_decoction_0"]
+script = ExtResource("4_ligne")
+stat = "decoction"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cauldron_decoction"]
+script = ExtResource("3_noeud")
+id = "cauldron_decoction"
+name = "Décoction"
+icon = ExtResource("icon_cauldron_decoction")
+description = "Le chaudron boit au lieu de poser : chaque bouillon retire {gorgee} s aux états élémentaires des ennemis de son cercle, et chaque seconde bue accroît son explosion de {gain_gorgee} %. En échange, les bouillons ne posent plus d'état."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"cauldron_brim": 1,
+"cauldron_seething": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_decoction_0")])
+
+[sub_resource type="Resource" id="L_cauldron_bubbles_0"]
+script = ExtResource("4_ligne")
+stat = "bubbles"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_cauldron_bubbles"]
+script = ExtResource("3_noeud")
+id = "cauldron_bubbles"
+name = "Bulles"
+icon = ExtResource("icon_cauldron_bubbles")
+description = "Les gouttes de l'Écume éclatent à l'impact."
 position = Vector2i(3, 0)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_rag_doll_gunpowder"), SubResource("N_rag_doll_stuffing"), SubResource("N_rag_doll_decoy"), SubResource("N_rag_doll_grudge"), SubResource("N_rag_doll_transfer"), SubResource("N_rag_doll_twins")])
+parents = Dictionary[String, int]({
+"cauldron_froth": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_bubbles_0")])
+
+[sub_resource type="Resource" id="L_cauldron_emulsion_0"]
+script = ExtResource("4_ligne")
+stat = "emulsion"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_cauldron_emulsion"]
+script = ExtResource("3_noeud")
+id = "cauldron_emulsion"
+name = "Émulsion"
+icon = ExtResource("icon_cauldron_emulsion")
+description = "Le chaudron garde les trois éléments : chaque bouillon frappe dans les trois, un tiers chacun, et pose les trois états. En échange, il n'explose plus."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"cauldron_mix": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_emulsion_0")])
+
+[sub_resource type="Resource" id="L_cauldron_lees_0"]
+script = ExtResource("4_ligne")
+stat = "lees"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_cauldron_lees"]
+script = ExtResource("3_noeud")
+id = "cauldron_lees"
+name = "Lie"
+icon = ExtResource("icon_cauldron_lees")
+description = "Sous la Décoction, chaque seconde bue prolonge le chaudron."
+position = Vector2i(-2, -2)
+parents = Dictionary[String, int]({
+"cauldron_decoction": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_cauldron_lees_0")])
+
+[sub_resource type="Resource" id="C_chaudron"]
+script = ExtResource("2_case")
+skill = ExtResource("13_chaudron")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_cauldron_simmer"), SubResource("N_cauldron_belly"), SubResource("N_cauldron_low_heat"), SubResource("N_cauldron_seething"), SubResource("N_cauldron_brim"), SubResource("N_cauldron_froth"), SubResource("N_cauldron_philtre"), SubResource("N_cauldron_mix"), SubResource("N_cauldron_lid"), SubResource("N_cauldron_decoction"), SubResource("N_cauldron_bubbles"), SubResource("N_cauldron_emulsion"), SubResource("N_cauldron_lees")])
 
 [sub_resource type="Resource" id="C_trinite"]
 script = ExtResource("2_case")
 skill = ExtResource("14_trinite")
 position = Vector2i(0, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_trinity_scale"), SubResource("N_trinity_measure"), SubResource("N_trinity_fermata"), SubResource("N_trinity_dissonance"), SubResource("N_trinity_tempo"), SubResource("N_trinity_perfect_chord")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_trinity_scale"), SubResource("N_trinity_measure"), SubResource("N_trinity_fermata"), SubResource("N_trinity_dissonance"), SubResource("N_trinity_tempo"), SubResource("N_trinity_perfect_chord"), SubResource("N_trinity_arpeggio"), SubResource("N_trinity_diapason"), SubResource("N_trinity_modulation"), SubResource("N_trinity_rubato"), SubResource("N_trinity_coda"), SubResource("N_trinity_inversion"), SubResource("N_trinity_false_note")])
 
 [sub_resource type="Resource" id="C_familier"]
 script = ExtResource("2_case")
 skill = ExtResource("15_familier")
 position = Vector2i(1, 1)
-talents = Array[ExtResource("3_noeud")]([SubResource("N_familiar_faithful_echo"), SubResource("N_familiar_frugality"), SubResource("N_familiar_black_wings"), SubResource("N_familiar_raven_eye"), SubResource("N_familiar_rumination"), SubResource("N_familiar_countersong")])
+talents = Array[ExtResource("3_noeud")]([SubResource("N_familiar_faithful_echo"), SubResource("N_familiar_frugality"), SubResource("N_familiar_black_wings"), SubResource("N_familiar_raven_eye"), SubResource("N_familiar_rumination"), SubResource("N_familiar_countersong"), SubResource("N_familiar_remiges"), SubResource("N_familiar_dark_omen"), SubResource("N_familiar_peck"), SubResource("N_familiar_evil_eye"), SubResource("N_familiar_croak"), SubResource("N_familiar_jettatura"), SubResource("N_familiar_canon")])
 
 [resource]
 script = ExtResource("1_arch")
 id = "witch"
 name = "Manuel de la sorcière"
-cells = Array[ExtResource("2_case")]([SubResource("C_projectile"), SubResource("C_amplification"), SubResource("C_catalyse"), SubResource("C_poupee"), SubResource("C_trinite"), SubResource("C_familier")])
+cells = Array[ExtResource("2_case")]([SubResource("C_projectile"), SubResource("C_amplification"), SubResource("C_glyphes"), SubResource("C_chaudron"), SubResource("C_trinite"), SubResource("C_familier")])

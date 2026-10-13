@@ -34,8 +34,10 @@ static func converge(
 	for n in cast.damage_max.size():
 		if cast.damage_max[n] > 0.0:
 			natures.append(n)
-	if natures.is_empty():
-		natures.append(cast.nature)
+	# Une seule nature — l'Incarnation (jalon 49) — en fait toujours trois comètes, un tiers chacune.
+	if natures.size() < 2:
+		var only: int = natures[0] if not natures.is_empty() else cast.nature
+		natures.assign([only, only, only])
 	var toward := origin.direction_to(aim) if origin != aim else Vector2.RIGHT
 	var rolled := cast.roll(Game.rng)
 	for i in natures.size():
@@ -43,7 +45,7 @@ static func converge(
 		t._starts.append(origin + around - aim)
 		t._tints.append(DamageType.COLORS[natures[i]])
 		var own := DamageType.empty_parts()
-		own[natures[i]] = rolled[natures[i]]
+		own[natures[i]] = rolled[natures[i]] / float(natures.count(natures[i]))
 		t._parts.append(own)
 		t._struck.append({})
 	parent.add_child(t)
@@ -58,7 +60,12 @@ func _physics_process(delta: float) -> void:
 	for i in _starts.size():
 		_pierce(i, _at(i, before), _at(i, _age))
 	if _age >= TRAVEL:
-		Explosion.of_cast(get_parent(), global_position, _cast, _cast.radius, _author)
+		var burst := _cast
+		# La Conjonction (jalon 49) : l'éclat pose les trois états à coup sûr, pas les comètes.
+		if _cast.conjunction > 0.0:
+			burst = _cast.echoed(1.0)
+			burst.status_chance_increase += SkillStats.SURE_STATE
+		Explosion.of_cast(get_parent(), global_position, burst, _cast.radius, _author)
 		queue_free()
 		return
 	queue_redraw()

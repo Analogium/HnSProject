@@ -33,3 +33,10 @@ static func draw_ember(ci: CanvasItem, at: Vector2, tint: Color, fade: float, si
 		return
 	Glow.draw_blob(ci, at, size * 2.4, Color(tint, 0.30 * fade))
 	ci.draw_rect(Rect2(at - Vector2(size, size) * 0.5, Vector2(size, size)), Color(heart(tint), fade))
+
+
+## Le javelot ardent (jalon 49), choisi sur planche pour l'Éclair vif tiré en feu : la forme du
+## javelot de glace, l'arête au cœur du feu. Un éclair recoloré en orange se lisait comme une
+## faute ; une flamme couchée ne se dessine pas. `Projectile` y ajoute ses braises.
+static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
+	return Frost.shaped_javelin(tint, heart(tint), turn)

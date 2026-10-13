@@ -116,7 +116,7 @@ enum Group {
 	STATE, EFFECT, COST, DAMAGE, SHAPE, ESTIMATE, BUFF, ON_HIT, ON_TICK, ON_KILL,
 	# Jalon 38 : l'état qu'un lancer pose, et ce qu'il fait lever — sous leur nom.
 	INFLICTED, SUMMONED,
-	# Jalon 41 : ce qu'un sort charge en partant, et les réactions de la Catalyse.
+	# Jalon 41 : ce qu'un sort charge en partant ; les réactions du Précipité et du Palimpseste.
 	ON_CAST, REACTIONS,
 }
 
@@ -1182,6 +1182,8 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			var said := []
 			if cast.dissonance > 0.0:
 				said.append([Texts.t("même élément"), Texts.t("perd toutes les charges")])
+			if cast.false_note > 0.0:
+				said.append([Texts.t("fausse note"), "%d px" % roundi(SkillStats.FALSE_NOTE_RADIUS)])
 			if cast.tempo > 0.0:
 				said.append([Texts.t("recharges"), Texts.t("-%.1f s par charge") % cast.tempo])
 			if cast.perfect_chord > 0.0:
@@ -1191,6 +1193,16 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 				])
 			for pair: Array in said:
 				block.append(SheetLine.new(Group.BUFF, pair[0], pair[1], UiPalette.TEXT, heading))
+		# Le Contrecoup (jalon 49) : ce qu'il vaut au plein, au niveau du joueur.
+		if cast.recoil > 0.0:
+			block.append(SheetLine.new(
+				Group.BUFF, Texts.t("contrecoup"),
+				Texts.t("%d après %d s · %d px") % [
+					roundi(cast.recoil_damage(_player.level, SkillStats.RECOIL_MOST)),
+					roundi(SkillStats.RECOIL_MOST), roundi(cast.end_burst)
+				],
+				DamageType.COLORS[cast.nature], heading
+			))
 		for m in buff.mods(maxi(spent, 1)):
 			block.append(SheetLine.new(
 				Group.BUFF, StatMod.name(m.stat, m.scope), m.readable_value(),
@@ -1310,24 +1322,44 @@ func _summoned_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
 					int(cast.hatchlings), StatMod.percentage(roundi(SkillStats.SPLIT_PART * 100.0))
 				]
 			])
-	elif skill.shape == Skill.Shape.DOLL:
-		heading = Texts.t("Poupée")
-		if cast.max_simultaneous() > 1:
-			lines.append([Texts.t("debout"), str(cast.max_simultaneous())])
-		lines.append([Texts.t("PV"), str(roundi(_player.stats.max_health * RagDoll.life_part(cast)))])
-		lines.append([Texts.t("éclate"), "%d px" % roundi(cast.radius)])
-		if cast.grudge > 0.0:
+	elif skill.shape == Skill.Shape.CAULDRON:
+		heading = Texts.t("Chaudron")
+		lines.append([Texts.t("bout toutes les"), "%.2f s" % cast.period])
+		if cast.emulsion <= 0.0:
 			lines.append([
-				Texts.t("éclat, en plus"),
-				Texts.t("%s de ce qu'elle encaisse") % StatMod.percentage(roundi(cast.grudge))
+				Texts.t("explosion"),
+				"%s · %d px" % [
+					StatMod.percentage(roundi(SkillStats.SPILL_PART * (1.0 + cast.brim * 0.01) * 100.0)),
+					roundi(cast.radius * SkillStats.SPILL_REACH),
+				]
 			])
-		if cast.transfer > 0.0:
+		if cast.froth > 0.0:
+			lines.append([Texts.t("gouttes"), StatMod.percentage(roundi(cast.froth))])
+		if cast.philtre > 0.0:
+			lines.append([Texts.t("mana dans son cercle"), "%.1f/s" % cast.philtre])
+	elif skill.shape == Skill.Shape.GLYPH:
+		heading = Texts.t("Glyphes")
+		lines.append([Texts.t("armés en"), "%.2f s" % cast.arming])
+		lines.append([Texts.t("déclenchés à"), "%d px" % roundi(cast.trigger)])
+		if cast.seal > 0.0:
 			lines.append([
-				Texts.t("prend pour vous"),
-				Texts.t("%s de vos dégâts") % StatMod.percentage(roundi(minf(cast.transfer, 100.0)))
+				Texts.t("sceau"),
+				Texts.t("%s par élément · %d px") % [
+					StatMod.percentage(roundi(SkillStats.SEAL_PART * 100.0)),
+					roundi(cast.radius * SkillStats.SEAL_REACH),
+				]
 			])
+		else:
+			lines.append([
+				Texts.t("triangle"),
+				Texts.t("%s toutes les %.1f s") % [
+					StatMod.percentage(roundi(SkillStats.TRIANGLE_PART * 100.0)), SkillStats.TRIANGLE_PERIOD
+				]
+			])
+		if cast.entwine > 0.0:
+			lines.append([Texts.t("fils"), StatMod.percentage(roundi(cast.entwine))])
 		if cast.lure > 0.0:
-			lines.append([Texts.t("paraît plus proche de"), "%d px" % roundi(cast.lure)])
+			lines.append([Texts.t("leurre"), "%d px" % roundi(cast.lure)])
 	elif skill.shape == Skill.Shape.FAMILIAR:
 		heading = Texts.t("Échos")
 		lines.append([
@@ -1347,31 +1379,29 @@ func _summoned_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
 	return out
 
 
-## Ce que fait chaque paire d'états sous la Catalyse (jalon 41), son arbre compris.
+## Ce que fait chaque paire d'états sous le Précipité ou le Palimpseste (jalon 49), qui
+## réagissent à leur part du coup.
 func _reaction_lines(cast: SkillStats) -> Array[SheetLine]:
 	var tint := UiPalette.TEXT
+	var part := (cast.palimpsest if cast.shape == Skill.Shape.GLYPH else cast.precipitate) * 0.01
 	var out: Array[SheetLine] = [
 		SheetLine.new(
 			Group.REACTIONS, Texts.t("par réaction"),
-			Texts.t("%s d'un coup") % StatMod.percentage(roundi(Catalysis.reaction_part(cast) * 100.0)), tint
+			Texts.t("%s d'un coup") % StatMod.percentage(roundi(part * 100.0)), tint
 		),
 		SheetLine.new(
-			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.VAPOR]),
-			(Texts.t("souffle de %d px, nappe de %.1f s") % [roundi(Catalysis.VAPOR_RADIUS), cast.ground_duration])
-			if cast.ground_duration > 0.0 else Texts.t("souffle de %d px") % roundi(Catalysis.VAPOR_RADIUS),
-			tint
+			Group.REACTIONS, Texts.t(Reactions.NAMES[Reactions.Reaction.VAPOR]),
+			Texts.t("souffle de %d px") % roundi(Reactions.VAPOR_RADIUS), tint
 		),
 		SheetLine.new(
-			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.ARC]),
-			Texts.t("%d voisins à %d px") % [Catalysis.arcs(cast), roundi(Catalysis.ARC_REACH)], tint
+			Group.REACTIONS, Texts.t(Reactions.NAMES[Reactions.Reaction.ARC]),
+			Texts.t("%d voisins à %d px") % [Reactions.ARCS, roundi(Reactions.ARC_REACH)], tint
 		),
 		SheetLine.new(
-			Group.REACTIONS, Texts.t(Catalysis.NAMES[Catalysis.Reaction.CONDUCTION]),
-			Texts.t("transit à %d px") % roundi(Catalysis.spread_reach(cast)), tint
+			Group.REACTIONS, Texts.t(Reactions.NAMES[Reactions.Reaction.CONDUCTION]),
+			Texts.t("transit à %d px") % roundi(Reactions.SPREAD_REACH), tint
 		),
 	]
-	if cast.primer > 0.0:
-		out.append(SheetLine.new(Group.REACTIONS, Texts.t("amorce"), Texts.t("un état suffit"), tint))
 	return out
 
 
@@ -1599,7 +1629,7 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 	if posed >= 0 and skill.strikes():
 		out.append_array(_inflicted_lines(cast))
 	out.append_array(_summoned_lines(skill, cast))
-	if cast.shape == Skill.Shape.CATALYSIS:
+	if cast.palimpsest > 0.0 or cast.precipitate > 0.0:
 		out.append_array(_reaction_lines(cast))
 
 	return Sheet.new(

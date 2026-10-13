@@ -3,8 +3,8 @@ extends Node2D
 
 ## Le Brasero (jalon 42) : planté au point visé, il crache une boule vers l'ennemi le plus
 ## proche à chaque période, `simultaneous` à la fois par joueur — le plus ancien s'éteint.
-## Sous le Phare, il a des PV et les ennemis s'en prennent à lui (`Enemy.foe()`), comme la
-## Poupée de chiffon ; sous le Foyer du mage, il tire la Boule de feu du joueur.
+## Sous le Phare, il a des PV et les ennemis s'en prennent à lui (`Enemy.foe()`) ; sous le
+## Foyer du mage, il tire la Boule de feu du joueur.
 
 const HURT_RADIUS := 7.0
 ## Le haut de la coupe, d'où partent les boules et où se posent les langues.

@@ -28,6 +28,8 @@ const ICON_GAP := 1.0
 
 var _ratio := 1.0
 var _kinds: Array[int] = []
+## Les natures dont la résistance est entamée : une icône chacune, après celles des états.
+var _opened: Array[int] = []
 
 
 func _ready() -> void:
@@ -49,13 +51,15 @@ func set_health(current: float, maximum: float) -> void:
 ## Appelée par l'acteur quand un état apparaît ou prend fin, jamais à chaque image.
 func show_states(states: StatusEffects) -> void:
 	_kinds = states.kinds()
+	_opened = states.opened()
 	_refresh()
 
 
 ## Les icônes tiennent la barre visible à pleine vie : un ennemi remonté à fond
 ## reste transi, et c'est justement ce qu'on regarde.
 func _refresh() -> void:
-	visible = Settings.show_health_bars and _ratio > 0.0 and (_ratio < 1.0 or not _kinds.is_empty())
+	visible = Settings.show_health_bars and _ratio > 0.0 \
+			and (_ratio < 1.0 or not _kinds.is_empty() or not _opened.is_empty())
 	if visible:
 		queue_redraw()
 
@@ -75,8 +79,11 @@ func _draw() -> void:
 
 	var side := float(StatusIcon.SIDE)
 	var step := side + ICON_GAP
-	var px := roundf(-(float(_kinds.size()) * step - ICON_GAP) * 0.5)
+	var px := roundf(-(float(_kinds.size() + _opened.size()) * step - ICON_GAP) * 0.5)
 	var py := y - side - 1.0
 	for kind in _kinds:
 		draw_texture(StatusIcon.texture(kind), Vector2(px, py))
+		px += step
+	for nature in _opened:
+		draw_texture(StatusIcon.lowered(nature), Vector2(px, py))
 		px += step

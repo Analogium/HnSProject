@@ -159,12 +159,20 @@
     }
   ],
   "elemental_projectile": [
-    "three small glowing orbs of fire, ice and lightning swirling around each other",
-    4242
+    "Three small comets, one orange fire, one icy blue frost and one violet lightning, flying side by side diagonally toward the upper right, each with a short tapered tail.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "witch"
+    }
   ],
   "spell_amplification": [
-    "a glowing violet magic rune circle with a bright upward arrow, arcane power surge",
-    4242
+    "A glowing violet magic rune circle with a bright white upward arrow rising from its center, small violet sparks around it.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "witch"
+    }
   ],
   "quick_strike": [
     "a glowing arrow-shaped streak of steel shooting diagonally into a red target mark, sharp motion lines",
@@ -175,38 +183,35 @@
     4242
   ],
   "trinity": [
-    "a fire flame, an ice snowflake and a lightning bolt arranged in a magic triangle",
+    "A thin glowing white triangle with a small orange flame at its top corner, a small icy blue snowflake at its bottom left corner and a small violet lightning bolt at its bottom right corner, a white musical note in its center.",
     4242,
     {
-      "layout": true,
-      "denoise": 0.4,
-      "crisp": true
+      "qwen": true,
+      "nature": "witch"
     }
   ],
-  "catalysis": [
-    "a fire orb and an ice orb colliding in a bright white burst",
-    4242,
+  "glyph": [
+    "A glowing violet magic circle drawn flat on dark ground, a small orange flame in its center, six short white tick marks around its rim.",
+    1337,
     {
-      "layout": true,
-      "denoise": 0.4,
-      "crisp": true
+      "qwen": true,
+      "nature": "witch"
     }
   ],
-  "rag_doll": [
-    "a burlap voodoo rag doll with black button eyes, stitched mouth and a pin",
-    4242,
+  "cauldron": [
+    "A black iron cauldron on three short legs, bubbling with glowing violet liquid, a few round bubbles rising above it.",
+    1337,
     {
-      "layout": true,
-      "denoise": 0.4,
-      "crisp": true
+      "qwen": true,
+      "nature": "witch"
     }
   ],
   "familiar": [
-    "a black raven in flight with spread wings and a glowing violet eye, side view",
-    1337,
+    "A black raven in flight with wide spread wings, side view, one glowing violet eye.",
+    4242,
     {
-      "crisp": true,
-      "violet": true
+      "qwen": true,
+      "nature": "witch"
     }
   ],
   "brazier": [
