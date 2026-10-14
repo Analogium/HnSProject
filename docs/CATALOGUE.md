@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 42 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 46 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -690,18 +690,100 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 ### Manuels de classe
 
 Hors du catalogue : un par classe, au quatrième emplacement du râtelier, qui
-ne tombe pas et ne se range pas (`Character.CLASSES`). Celui du Vive lame n'a
-pas encore de quoi dépenser ses vingt points, et c'est accepté (jalon 28) ; celui
-de la sorcière est rempli depuis le jalon 41.
+ne tombe pas et ne se range pas (`Character.CLASSES`). Celui de la sorcière est
+rempli depuis le jalon 41, celui du Vive lame depuis le jalon 50.
 
 ### Manuel du Vive lame — `manual_swiftblade`
 
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Frappe vive | attaque physique | niveau 1 | 5 | 6 mana | 80 % du temps de l'arme | lunge · rayon 130 | 24 · 31 · 39 · 48 · 58 |
+| Rafale | attaque physique | niveau 2 | 5 | 7 mana | 120 % du temps de l'arme | flurry · rayon 48 | 10 · 13 · 16 · 20 · 25 |
+| Lames de jet | attaque physique | niveau 5 | 5 | 8 mana | cadence de l'arme | knives · ×3 sur 24° | 12 · 15 · 19 · 24 · 30 |
+| Coup de grâce | attaque physique | niveau 7 | 5 | 10 mana | 140 % du temps de l'arme | finisher · rayon 56 | 40 · 52 · 66 · 82 · 100 |
 | Soif de sang | attaque physique | niveau 3 | 1 | 0 mana | cadence de l'arme · recharge 0.60 s | buff · 5 charges de 3.0 s | Frénésie : +5 % de vitesse d'attaque accrue |
+| Contre-attaque | attaque physique | niveau 10 | 5 | 0 mana | cadence de l'arme | riposte · rayon 64 · draine 3 mana/s | 14 · 18 · 23 · 29 · 36 |
 
-6 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+| nœud | compétence | relié à (points demandés) | points | par point |
+|---|---|---|---|---|
+| Élancement | Frappe vive | — | 5 | +12 % de dégâts amplifiés |
+| Détente | Frappe vive | — | 3 | +15 % de rayon accru |
+| Épargne | Frappe vive | — | 3 | -10 % de coût en mana réduit |
+| Impétuosité | Frappe vive | Élancement (1) | 3 | +5 % dégâts par élan |
+| Premier sang | Frappe vive | Élancement (1) | 2 | +25 % dégâts contre les intacts |
+| Ouverture | Frappe vive | Premier sang (1) | 3 | +6 % dégâts subis par la cible |
+| Coup double | Frappe vive | Détente (1) | 2 | +30 % du second coup |
+| Repli | Frappe vive | Détente (2) ou Épargne (2) | 1 | +1 repli |
+| Dérobade | Frappe vive | Repli (1) | 1 | +1 dérobade |
+| Coup sur coup | Frappe vive | Élancement (2) | 2 | +1 relance par tué |
+| Furia | Frappe vive | Coup sur coup (1) | 2 | +15 % dégâts par relance enchaînée |
+| Fente | Frappe vive | Impétuosité (1) | 1 | +1 bond qui frappe · +20 % de temps du geste accru |
+| Coupe-file | Frappe vive | Fente (1) | 2 | +20 % du coup sur le passage |
+| Pointe | Rafale | — | 5 | +10 % de dégâts amplifiés |
+| Battement | Rafale | — | 3 | -8 % de temps du geste réduit |
+| Coup d'œil | Rafale | — | 4 | +20 % de chance critique de base accrue |
+| Fer long | Rafale | — | 3 | +15 % de rayon accru |
+| Montée | Rafale | Coup d'œil (1) | 2 | +25 % chance critique gagnée par estoc |
+| Insistance | Rafale | Pointe (1) | 3 | +8 % dégâts par estoc répété |
+| Pression | Rafale | Battement (1) | 3 | +1 mana par ennemi touché |
+| Quatrième estoc | Rafale | Battement (2) | 2 | +1 estocs en plus · +15 % de temps du geste accru |
+| Botte secrète | Rafale | Coup d'œil (2) ou Montée (1) | 1 | +1 dernier estoc critique |
+| Coup de Jarnac | Rafale | Botte secrète (1) | 1 | +1 dernier estoc qui traverse |
+| Éventail | Rafale | Fer long (2) | 1 | +1 estocs en éventail · -15 % de dégâts atténués |
+| Rose des vents | Rafale | Éventail (1) | 1 | +1 estocs en étoile |
+| Ivresse du sang | Rafale | Montée (1) | 2 | +0.3 secondes de Frénésie par critique |
+| Aiguisage | Lames de jet | — | 5 | +10 % de dégâts amplifiés |
+| Jet tendu | Lames de jet | — | 3 | +15 % de vitesse de projectile accrue |
+| Poignée | Lames de jet | — | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
+| Perce-armure | Lames de jet | Jet tendu (1) | 2 | +1 nombre d'ennemis traversés |
+| Lame chercheuse | Lames de jet | Jet tendu (1) | 3 | +20 rayon de chasse |
+| Tir lointain | Lames de jet | Aiguisage (1) | 3 | +5 % dégâts par distance |
+| Enfilade | Lames de jet | Perce-armure (1) | 3 | +15 % dégâts par ennemi traversé |
+| Retour de lame | Lames de jet | Jet tendu (2) ou Poignée (1) | 1 | +1 lames qui reviennent |
+| Récupération | Lames de jet | Retour de lame (1) | 2 | +1 mana par lame rattrapée |
+| Lame plantée | Lames de jet | Aiguisage (2) | 1 | +1 lames qui se plantent |
+| Ancrage | Lames de jet | Lame plantée (1) | 3 | +1 secondes de lame plantée |
+| Hérisson | Lames de jet | Lame plantée (1) | 2 | +4 % dégâts subis par lame plantée |
+| Seconde salve | Lames de jet | Poignée (2) | 1 | +1 seconde salve |
+| Estocade | Coup de grâce | — | 5 | +12 % de dégâts amplifiés |
+| Renverse | Coup de grâce | — | 3 | +20 recul |
+| Allonge | Coup de grâce | — | 3 | +15 % de rayon accru |
+| Dague de miséricorde | Coup de grâce | — | 4 | +1 % seuil d'achèvement |
+| Implacable | Coup de grâce | Estocade (1) | 3 | +8 % dégâts par charge consommée |
+| Acculé | Coup de grâce | Estocade (1) | 3 | +10 % dégâts contre les blessés |
+| Défaut de la cuirasse | Coup de grâce | Allonge (1) | 3 | +8 % armure ignorée |
+| Rançon | Coup de grâce | Implacable (1) | 2 | +2 mana par charge consommée |
+| Effroi | Coup de grâce | Dague de miséricorde (1) | 2 | +0.3 secondes d'effroi |
+| Sang-froid | Coup de grâce | Implacable (2) | 1 | +1 sang-froid · -10 % dégâts par charge consommée |
+| Patience | Coup de grâce | Sang-froid (1) | 1 | +1 patience |
+| Point final | Coup de grâce | Renverse (2) ou Allonge (2) | 1 | +1 point final |
+| Épilogue | Coup de grâce | Point final (1) | 1 | +1 épilogue |
+| Carnage | Soif de sang | — | 5 | +2 % de dégâts d'attaque accrus |
+| Ivresse | Soif de sang | — | 4 | +2 % de vitesse accrue |
+| Ténacité | Soif de sang | — | 4 | +0.5 secondes de tenue des charges |
+| Instinct | Soif de sang | Carnage (1) | 3 | +4 % de dégâts critiques accrus |
+| Sang chaud | Soif de sang | Ivresse (1) | 3 | +1 PV/s |
+| Moisson | Soif de sang | Ivresse (1) | 3 | +1 % PV max rendus par charge |
+| Fièvre | Soif de sang | Instinct (1) | 3 | +8 % chance de charge par critique |
+| Lampée | Soif de sang | Carnage (1) | 2 | +10 % chance de double charge |
+| Sans fond | Soif de sang | Ténacité (1) | 2 | +1 charges au plafond · -0.5 secondes de tenue des charges |
+| Berserk | Soif de sang | Carnage (2) ou Sans fond (1) | 1 | +1 berserk · +2 % dégâts subis |
+| Sans quartier | Soif de sang | Berserk (1) | 1 | +1 tués qui éclatent |
+| Dernier carré | Soif de sang | Ténacité (2) | 1 | +1 dernier carré |
+| Contre | Contre-attaque | — | 5 | +12 % de dégâts amplifiés |
+| Garde haute | Contre-attaque | — | 4 | +6 esquive |
+| Respiration | Contre-attaque | — | 3 | -10 % de mana drainé réduit |
+| Fer tendu | Contre-attaque | — | 3 | +15 % de rayon accru |
+| Sangsue | Contre-attaque | Contre (1) | 3 | +3 PV par ennemi touché |
+| Double riposte | Contre-attaque | Contre (2) | 2 | +1 ripostes en plus · -15 % de dégâts atténués |
+| Désarmement | Contre-attaque | Fer tendu (1) | 2 | +0.3 secondes de désarmement |
+| Représailles | Contre-attaque | Garde haute (1) | 3 | +10 % chance de représailles |
+| Calme | Contre-attaque | Respiration (1) | 3 | -2 % dégâts subis |
+| Pas de côté | Contre-attaque | Garde haute (1) | 3 | +4 esquive par pas de côté |
+| Contretemps | Contre-attaque | Garde haute (2) ou Pas de côté (1) | 1 | +1 contretemps |
+| Temps d'escrime | Contre-attaque | Contretemps (1) | 2 | +15 % dégâts du contretemps |
+
+26 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ### Manuel de la sorcière — `manual_witch`
 

@@ -2,21 +2,1511 @@
 
 [ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
 [ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
 [ext_resource type="Resource" path="res://resources/skills/quick_strike.tres" id="10_frappe"]
 [ext_resource type="Resource" path="res://resources/skills/bloodlust.tres" id="11_soif"]
+[ext_resource type="Resource" path="res://resources/skills/flurry.tres" id="12_rafale"]
+[ext_resource type="Resource" path="res://resources/skills/throwing_knives.tres" id="13_lames"]
+[ext_resource type="Resource" path="res://resources/skills/coup_de_grace.tres" id="14_grace"]
+[ext_resource type="Resource" path="res://resources/skills/counterattack.tres" id="15_contre"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_spring.png" id="icon_quick_strike_spring"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_thrift.png" id="icon_quick_strike_thrift"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_impetus.png" id="icon_quick_strike_impetus"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_first_blood.png" id="icon_quick_strike_first_blood"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_double_hit.png" id="icon_quick_strike_double_hit"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_retreat.png" id="icon_quick_strike_retreat"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_chain_strike.png" id="icon_quick_strike_chain_strike"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_furia.png" id="icon_quick_strike_furia"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_lunge_path.png" id="icon_quick_strike_lunge_path"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_cleave_path.png" id="icon_quick_strike_cleave_path"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_point.png" id="icon_flurry_point"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_beat.png" id="icon_flurry_beat"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_glance.png" id="icon_flurry_glance"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_long_steel.png" id="icon_flurry_long_steel"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_ascent.png" id="icon_flurry_ascent"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_insistence.png" id="icon_flurry_insistence"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_pressure.png" id="icon_flurry_pressure"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_fourth_thrust.png" id="icon_flurry_fourth_thrust"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_secret_thrust.png" id="icon_flurry_secret_thrust"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_jarnac.png" id="icon_flurry_jarnac"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_fan.png" id="icon_flurry_fan"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_compass.png" id="icon_flurry_compass"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/flurry_blood_rush.png" id="icon_flurry_blood_rush"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_carnage.png" id="icon_bloodlust_carnage"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_drunkenness.png" id="icon_bloodlust_drunkenness"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_tenacity.png" id="icon_bloodlust_tenacity"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_instinct.png" id="icon_bloodlust_instinct"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_hot_blood.png" id="icon_bloodlust_hot_blood"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_harvest.png" id="icon_bloodlust_harvest"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_fever.png" id="icon_bloodlust_fever"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_gulp.png" id="icon_bloodlust_gulp"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_bottomless.png" id="icon_bloodlust_bottomless"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_berserk.png" id="icon_bloodlust_berserk"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_no_quarter.png" id="icon_bloodlust_no_quarter"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/bloodlust_last_stand.png" id="icon_bloodlust_last_stand"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_whetting.png" id="icon_throwing_knives_whetting"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_taut_throw.png" id="icon_throwing_knives_taut_throw"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_handful.png" id="icon_throwing_knives_handful"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_armor_piercer.png" id="icon_throwing_knives_armor_piercer"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_seeking_blade.png" id="icon_throwing_knives_seeking_blade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_long_shot.png" id="icon_throwing_knives_long_shot"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_enfilade.png" id="icon_throwing_knives_enfilade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_recovery.png" id="icon_throwing_knives_recovery"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_planted_blade.png" id="icon_throwing_knives_planted_blade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_anchorage.png" id="icon_throwing_knives_anchorage"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_hedgehog.png" id="icon_throwing_knives_hedgehog"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_second_volley.png" id="icon_throwing_knives_second_volley"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_estocade.png" id="icon_coup_de_grace_estocade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_reversal.png" id="icon_coup_de_grace_reversal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_reach.png" id="icon_coup_de_grace_reach"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_misericord.png" id="icon_coup_de_grace_misericord"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_relentless.png" id="icon_coup_de_grace_relentless"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_cornered.png" id="icon_coup_de_grace_cornered"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_chink.png" id="icon_coup_de_grace_chink"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_ransom.png" id="icon_coup_de_grace_ransom"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_dread.png" id="icon_coup_de_grace_dread"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_composure.png" id="icon_coup_de_grace_composure"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_patience.png" id="icon_coup_de_grace_patience"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_final_point.png" id="icon_coup_de_grace_final_point"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/coup_de_grace_epilogue.png" id="icon_coup_de_grace_epilogue"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_breath.png" id="icon_counterattack_breath"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_taut_steel.png" id="icon_counterattack_taut_steel"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_double_riposte.png" id="icon_counterattack_double_riposte"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_disarm.png" id="icon_counterattack_disarm"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_reprisal.png" id="icon_counterattack_reprisal"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_calm.png" id="icon_counterattack_calm"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_sidestep.png" id="icon_counterattack_sidestep"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_counter_time.png" id="icon_counterattack_counter_time"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_fencing_time.png" id="icon_counterattack_fencing_time"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_slip.png" id="icon_quick_strike_slip"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/throwing_knives_return_blade.png" id="icon_throwing_knives_return_blade"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_counter.png" id="icon_counterattack_counter"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_high_guard.png" id="icon_counterattack_high_guard"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_momentum.png" id="icon_quick_strike_momentum"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/quick_strike_opening.png" id="icon_quick_strike_opening"]
+[ext_resource type="Texture2D" path="res://resources/icons/nodes/counterattack_leech.png" id="icon_counterattack_leech"]
 
-[sub_resource type="Resource" id="C_frappe"]
+[sub_resource type="Resource" id="L_quick_strike_momentum_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_quick_strike_momentum"]
+script = ExtResource("3_noeud")
+id = "quick_strike_momentum"
+name = "Élancement"
+icon = ExtResource("icon_quick_strike_momentum")
+description = "La frappe vive frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_momentum_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_spring_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_quick_strike_spring"]
+script = ExtResource("3_noeud")
+id = "quick_strike_spring"
+name = "Détente"
+icon = ExtResource("icon_quick_strike_spring")
+description = "Le bond porte plus loin : la cible se cherche dans un cercle plus large."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_spring_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_thrift_0"]
+script = ExtResource("4_ligne")
+stat = "mana_cost"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_quick_strike_thrift"]
+script = ExtResource("3_noeud")
+id = "quick_strike_thrift"
+name = "Épargne"
+icon = ExtResource("icon_quick_strike_thrift")
+description = "La frappe vive coûte moins de mana."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_thrift_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_impetus_0"]
+script = ExtResource("4_ligne")
+stat = "impetus"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_quick_strike_impetus"]
+script = ExtResource("3_noeud")
+id = "quick_strike_impetus"
+name = "Impétuosité"
+icon = ExtResource("icon_quick_strike_impetus")
+description = "Plus le bond est long, plus le coup est fort : un bonus par tranche de {pas_impetuosite} px franchis."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"quick_strike_momentum": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_impetus_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_first_blood_0"]
+script = ExtResource("4_ligne")
+stat = "first_blood"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_quick_strike_first_blood"]
+script = ExtResource("3_noeud")
+id = "quick_strike_first_blood"
+name = "Premier sang"
+icon = ExtResource("icon_quick_strike_first_blood")
+description = "Contre un ennemi encore intact, la frappe vive frappe bien plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"quick_strike_momentum": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_first_blood_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_opening_0"]
+script = ExtResource("4_ligne")
+stat = "opening"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_quick_strike_opening"]
+script = ExtResource("3_noeud")
+id = "quick_strike_opening"
+name = "Ouverture"
+icon = ExtResource("icon_quick_strike_opening")
+description = "La cible frappée subit davantage de tous vos coups pendant {duree_ouverture} s."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"quick_strike_first_blood": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_opening_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_double_hit_0"]
+script = ExtResource("4_ligne")
+stat = "double_hit"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_quick_strike_double_hit"]
+script = ExtResource("3_noeud")
+id = "quick_strike_double_hit"
+name = "Coup double"
+icon = ExtResource("icon_quick_strike_double_hit")
+description = "Un second coup suit le premier, plus faible."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"quick_strike_spring": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_double_hit_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_retreat_0"]
+script = ExtResource("4_ligne")
+stat = "retreat"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_quick_strike_retreat"]
+script = ExtResource("3_noeud")
+id = "quick_strike_retreat"
+name = "Repli"
+icon = ExtResource("icon_quick_strike_retreat")
+description = "Après le coup, on rebondit de {recul_repli} px vers d'où l'on venait : frapper et sortir."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"quick_strike_spring": 2,
+"quick_strike_thrift": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_retreat_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_slip_0"]
+script = ExtResource("4_ligne")
+stat = "slip"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_quick_strike_slip"]
+script = ExtResource("3_noeud")
+id = "quick_strike_slip"
+name = "Dérobade"
+icon = ExtResource("icon_quick_strike_slip")
+description = "Le repli rend intouchable {duree_derobade} s."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"quick_strike_retreat": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_slip_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_chain_strike_0"]
+script = ExtResource("4_ligne")
+stat = "chain_strike"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_quick_strike_chain_strike"]
+script = ExtResource("3_noeud")
+id = "quick_strike_chain_strike"
+name = "Coup sur coup"
+icon = ExtResource("icon_quick_strike_chain_strike")
+description = "Un ennemi tué par la frappe vive la relance aussitôt, sans payer, sur l'ennemi le plus proche à portée — une relance d'affilée par point."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"quick_strike_momentum": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_chain_strike_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_furia_0"]
+script = ExtResource("4_ligne")
+stat = "furia"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_quick_strike_furia"]
+script = ExtResource("3_noeud")
+id = "quick_strike_furia"
+name = "Furia"
+icon = ExtResource("icon_quick_strike_furia")
+description = "Chaque relance du Coup sur coup frappe plus fort que la précédente."
+position = Vector2i(-1, 2)
+parents = Dictionary[String, int]({
+"quick_strike_chain_strike": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_furia_0")])
+
+[sub_resource type="Resource" id="L_quick_strike_lunge_path_0"]
+script = ExtResource("4_ligne")
+stat = "lunge_path"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_quick_strike_lunge_path_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_quick_strike_lunge_path"]
+script = ExtResource("3_noeud")
+id = "quick_strike_lunge_path"
+name = "Fente"
+icon = ExtResource("icon_quick_strike_lunge_path")
+description = "Le bond frappe tout ce qu'il traverse, à {part_fente} % du coup — un geste plus lent."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"quick_strike_impetus": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_lunge_path_0"), SubResource("L_quick_strike_lunge_path_1")])
+
+[sub_resource type="Resource" id="L_quick_strike_cleave_path_0"]
+script = ExtResource("4_ligne")
+stat = "cleave_path"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_quick_strike_cleave_path"]
+script = ExtResource("3_noeud")
+id = "quick_strike_cleave_path"
+name = "Coupe-file"
+icon = ExtResource("icon_quick_strike_cleave_path")
+description = "Ce que traverse la Fente prend une plus grande part du coup."
+position = Vector2i(-3, 1)
+parents = Dictionary[String, int]({
+"quick_strike_lunge_path": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_quick_strike_cleave_path_0")])
+
+[sub_resource type="Resource" id="C_quick_strike"]
 script = ExtResource("2_case")
 skill = ExtResource("10_frappe")
 position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_quick_strike_momentum"), SubResource("N_quick_strike_spring"), SubResource("N_quick_strike_thrift"), SubResource("N_quick_strike_impetus"), SubResource("N_quick_strike_first_blood"), SubResource("N_quick_strike_opening"), SubResource("N_quick_strike_double_hit"), SubResource("N_quick_strike_retreat"), SubResource("N_quick_strike_slip"), SubResource("N_quick_strike_chain_strike"), SubResource("N_quick_strike_furia"), SubResource("N_quick_strike_lunge_path"), SubResource("N_quick_strike_cleave_path")])
 
-[sub_resource type="Resource" id="C_soif"]
+[sub_resource type="Resource" id="L_flurry_point_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_flurry_point"]
+script = ExtResource("3_noeud")
+id = "flurry_point"
+name = "Pointe"
+icon = ExtResource("icon_flurry_point")
+description = "Les estocs de la Rafale frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_point_0")])
+
+[sub_resource type="Resource" id="L_flurry_beat_0"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = -8.0
+
+[sub_resource type="Resource" id="N_flurry_beat"]
+script = ExtResource("3_noeud")
+id = "flurry_beat"
+name = "Battement"
+icon = ExtResource("icon_flurry_beat")
+description = "La Rafale se porte plus vite."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_beat_0")])
+
+[sub_resource type="Resource" id="L_flurry_glance_0"]
+script = ExtResource("4_ligne")
+stat = "crit_chance"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_flurry_glance"]
+script = ExtResource("3_noeud")
+id = "flurry_glance"
+name = "Coup d'œil"
+icon = ExtResource("icon_flurry_glance")
+description = "Les estocs critiquent plus souvent."
+position = Vector2i(0, -1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_glance_0")])
+
+[sub_resource type="Resource" id="L_flurry_long_steel_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_flurry_long_steel"]
+script = ExtResource("3_noeud")
+id = "flurry_long_steel"
+name = "Fer long"
+icon = ExtResource("icon_flurry_long_steel")
+description = "Les estocs portent plus loin."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_long_steel_0")])
+
+[sub_resource type="Resource" id="L_flurry_ascent_0"]
+script = ExtResource("4_ligne")
+stat = "ascent"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_flurry_ascent"]
+script = ExtResource("3_noeud")
+id = "flurry_ascent"
+name = "Montée"
+icon = ExtResource("icon_flurry_ascent")
+description = "D'un estoc à l'autre, la chance critique monte plus vite : chacun ajoutait {part_rafale} % au précédent."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"flurry_glance": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_ascent_0")])
+
+[sub_resource type="Resource" id="L_flurry_insistence_0"]
+script = ExtResource("4_ligne")
+stat = "insistence"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_flurry_insistence"]
+script = ExtResource("3_noeud")
+id = "flurry_insistence"
+name = "Insistance"
+icon = ExtResource("icon_flurry_insistence")
+description = "Un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"flurry_point": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_insistence_0")])
+
+[sub_resource type="Resource" id="L_flurry_pressure_0"]
+script = ExtResource("4_ligne")
+stat = "mana_on_hit"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_flurry_pressure"]
+script = ExtResource("3_noeud")
+id = "flurry_pressure"
+name = "Pression"
+icon = ExtResource("icon_flurry_pressure")
+description = "Chaque estoc qui touche rend du mana."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"flurry_beat": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_pressure_0")])
+
+[sub_resource type="Resource" id="L_flurry_fourth_thrust_0"]
+script = ExtResource("4_ligne")
+stat = "extra_thrusts"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_flurry_fourth_thrust_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_flurry_fourth_thrust"]
+script = ExtResource("3_noeud")
+id = "flurry_fourth_thrust"
+name = "Quatrième estoc"
+icon = ExtResource("icon_flurry_fourth_thrust")
+description = "Un estoc de plus par point dans chaque Rafale, au prix d'un geste plus long."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"flurry_beat": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_fourth_thrust_0"), SubResource("L_flurry_fourth_thrust_1")])
+
+[sub_resource type="Resource" id="L_flurry_secret_thrust_0"]
+script = ExtResource("4_ligne")
+stat = "secret_thrust"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_flurry_secret_thrust"]
+script = ExtResource("3_noeud")
+id = "flurry_secret_thrust"
+name = "Botte secrète"
+icon = ExtResource("icon_flurry_secret_thrust")
+description = "Le dernier estoc de la Rafale est critique à coup sûr."
+position = Vector2i(0, -2)
+parents = Dictionary[String, int]({
+"flurry_glance": 2,
+"flurry_ascent": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_secret_thrust_0")])
+
+[sub_resource type="Resource" id="L_flurry_jarnac_0"]
+script = ExtResource("4_ligne")
+stat = "jarnac"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_flurry_jarnac"]
+script = ExtResource("3_noeud")
+id = "flurry_jarnac"
+name = "Coup de Jarnac"
+icon = ExtResource("icon_flurry_jarnac")
+description = "Le dernier estoc porte deux fois plus loin et traverse tout ce qu'il rencontre."
+position = Vector2i(1, -2)
+parents = Dictionary[String, int]({
+"flurry_secret_thrust": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_jarnac_0")])
+
+[sub_resource type="Resource" id="L_flurry_fan_0"]
+script = ExtResource("4_ligne")
+stat = "fan"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_flurry_fan_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_flurry_fan"]
+script = ExtResource("3_noeud")
+id = "flurry_fan"
+name = "Éventail"
+icon = ExtResource("icon_flurry_fan")
+description = "Les estocs partent en éventail sur {ouverture_eventail}° : un groupe plutôt qu'un duel, au prix de leurs dégâts."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"flurry_long_steel": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_fan_0"), SubResource("L_flurry_fan_1")])
+
+[sub_resource type="Resource" id="L_flurry_compass_0"]
+script = ExtResource("4_ligne")
+stat = "compass"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_flurry_compass"]
+script = ExtResource("3_noeud")
+id = "flurry_compass"
+name = "Rose des vents"
+icon = ExtResource("icon_flurry_compass")
+description = "Sous l'Éventail, les estocs se répartissent sur tout le cercle."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"flurry_fan": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_compass_0")])
+
+[sub_resource type="Resource" id="L_flurry_blood_rush_0"]
+script = ExtResource("4_ligne")
+stat = "blood_rush"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_flurry_blood_rush"]
+script = ExtResource("3_noeud")
+id = "flurry_blood_rush"
+name = "Ivresse du sang"
+icon = ExtResource("icon_flurry_blood_rush")
+description = "Chaque critique de la Rafale ravive les charges de Frénésie de la Soif de sang."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"flurry_ascent": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_flurry_blood_rush_0")])
+
+[sub_resource type="Resource" id="C_flurry"]
+script = ExtResource("2_case")
+skill = ExtResource("12_rafale")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_flurry_point"), SubResource("N_flurry_beat"), SubResource("N_flurry_glance"), SubResource("N_flurry_long_steel"), SubResource("N_flurry_ascent"), SubResource("N_flurry_insistence"), SubResource("N_flurry_pressure"), SubResource("N_flurry_fourth_thrust"), SubResource("N_flurry_secret_thrust"), SubResource("N_flurry_jarnac"), SubResource("N_flurry_fan"), SubResource("N_flurry_compass"), SubResource("N_flurry_blood_rush")])
+
+[sub_resource type="Resource" id="L_throwing_knives_whetting_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_throwing_knives_whetting"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_whetting"
+name = "Aiguisage"
+icon = ExtResource("icon_throwing_knives_whetting")
+description = "Les couteaux frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_whetting_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_taut_throw_0"]
+script = ExtResource("4_ligne")
+stat = "projectile_speed"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_throwing_knives_taut_throw"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_taut_throw"
+name = "Jet tendu"
+icon = ExtResource("icon_throwing_knives_taut_throw")
+description = "Les couteaux filent plus vite, et donc plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_taut_throw_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_handful_0"]
+script = ExtResource("4_ligne")
+stat = "projectiles"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_throwing_knives_handful_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_throwing_knives_handful"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_handful"
+name = "Poignée"
+icon = ExtResource("icon_throwing_knives_handful")
+description = "Un couteau de plus par point dans l'éventail, chacun un peu plus faible."
+position = Vector2i(0, 1)
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_handful_0"), SubResource("L_throwing_knives_handful_1")])
+
+[sub_resource type="Resource" id="L_throwing_knives_armor_piercer_0"]
+script = ExtResource("4_ligne")
+stat = "pierce"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_armor_piercer"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_armor_piercer"
+name = "Perce-armure"
+icon = ExtResource("icon_throwing_knives_armor_piercer")
+description = "Chaque couteau traverse un ennemi de plus, critique ou non."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"throwing_knives_taut_throw": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_armor_piercer_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_seeking_blade_0"]
+script = ExtResource("4_ligne")
+stat = "seek_radius"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_throwing_knives_seeking_blade"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_seeking_blade"
+name = "Lame chercheuse"
+icon = ExtResource("icon_throwing_knives_seeking_blade")
+description = "Les couteaux s'infléchissent vers un ennemi proche de leur course."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"throwing_knives_taut_throw": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_seeking_blade_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_long_shot_0"]
+script = ExtResource("4_ligne")
+stat = "long_shot"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_throwing_knives_long_shot"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_long_shot"
+name = "Tir lointain"
+icon = ExtResource("icon_throwing_knives_long_shot")
+description = "Plus un couteau a volé, plus il frappe fort : un bonus par tranche de {pas_tir} px parcourus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"throwing_knives_whetting": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_long_shot_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_enfilade_0"]
+script = ExtResource("4_ligne")
+stat = "enfilade"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_throwing_knives_enfilade"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_enfilade"
+name = "Enfilade"
+icon = ExtResource("icon_throwing_knives_enfilade")
+description = "Un couteau qui traverse frappe plus fort chaque ennemi suivant."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"throwing_knives_armor_piercer": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_enfilade_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_return_blade_0"]
+script = ExtResource("4_ligne")
+stat = "return_blade"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_return_blade"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_return_blade"
+name = "Retour de lame"
+icon = ExtResource("icon_throwing_knives_return_blade")
+description = "En bout de course, les couteaux reviennent vers vous et frappent encore ce qu'ils croisent."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"throwing_knives_taut_throw": 2,
+"throwing_knives_handful": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_return_blade_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_recovery_0"]
+script = ExtResource("4_ligne")
+stat = "recovery"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_recovery"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_recovery"
+name = "Récupération"
+icon = ExtResource("icon_throwing_knives_recovery")
+description = "Chaque couteau rattrapé rend du mana."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"throwing_knives_return_blade": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_recovery_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_planted_blade_0"]
+script = ExtResource("4_ligne")
+stat = "planted"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_planted_blade"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_planted_blade"
+name = "Lame plantée"
+icon = ExtResource("icon_throwing_knives_planted_blade")
+description = "Un couteau qui s'arrête dans un ennemi y reste planté {duree_plantee} s, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"throwing_knives_whetting": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_planted_blade_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_anchorage_0"]
+script = ExtResource("4_ligne")
+stat = "anchorage"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_anchorage"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_anchorage"
+name = "Ancrage"
+icon = ExtResource("icon_throwing_knives_anchorage")
+description = "Les lames plantées tiennent plus longtemps."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"throwing_knives_planted_blade": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_anchorage_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_hedgehog_0"]
+script = ExtResource("4_ligne")
+stat = "hedgehog"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_throwing_knives_hedgehog"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_hedgehog"
+name = "Hérisson"
+icon = ExtResource("icon_throwing_knives_hedgehog")
+description = "Chaque lame plantée fait subir davantage de dégâts à son porteur."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"throwing_knives_planted_blade": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_hedgehog_0")])
+
+[sub_resource type="Resource" id="L_throwing_knives_second_volley_0"]
+script = ExtResource("4_ligne")
+stat = "second_volley"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_throwing_knives_second_volley"]
+script = ExtResource("3_noeud")
+id = "throwing_knives_second_volley"
+name = "Seconde salve"
+icon = ExtResource("icon_throwing_knives_second_volley")
+description = "Une seconde volée part {ecart_salve} s après la première, à {part_salve} %."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"throwing_knives_handful": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_throwing_knives_second_volley_0")])
+
+[sub_resource type="Resource" id="C_throwing_knives"]
+script = ExtResource("2_case")
+skill = ExtResource("13_lames")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_throwing_knives_whetting"), SubResource("N_throwing_knives_taut_throw"), SubResource("N_throwing_knives_handful"), SubResource("N_throwing_knives_armor_piercer"), SubResource("N_throwing_knives_seeking_blade"), SubResource("N_throwing_knives_long_shot"), SubResource("N_throwing_knives_enfilade"), SubResource("N_throwing_knives_return_blade"), SubResource("N_throwing_knives_recovery"), SubResource("N_throwing_knives_planted_blade"), SubResource("N_throwing_knives_anchorage"), SubResource("N_throwing_knives_hedgehog"), SubResource("N_throwing_knives_second_volley")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_estocade_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_estocade"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_estocade"
+name = "Estocade"
+icon = ExtResource("icon_coup_de_grace_estocade")
+description = "Le Coup de grâce frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_estocade_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_reversal_0"]
+script = ExtResource("4_ligne")
+stat = "knockback"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_reversal"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_reversal"
+name = "Renverse"
+icon = ExtResource("icon_coup_de_grace_reversal")
+description = "Le Coup de grâce repousse sa cible."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_reversal_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_reach_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_reach"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_reach"
+name = "Allonge"
+icon = ExtResource("icon_coup_de_grace_reach")
+description = "La cible se cherche plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_reach_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_misericord_0"]
+script = ExtResource("4_ligne")
+stat = "execution"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_misericord"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_misericord"
+name = "Dague de miséricorde"
+icon = ExtResource("icon_coup_de_grace_misericord")
+description = "Le Coup de grâce achève plus tôt, charges de Frénésie ou non."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_misericord_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_relentless_0"]
+script = ExtResource("4_ligne")
+stat = "relentless"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_relentless"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_relentless"
+name = "Implacable"
+icon = ExtResource("icon_coup_de_grace_relentless")
+description = "Chaque charge de Frénésie consommée vaut davantage : elle donnait +{part_charge_grace} % de dégâts plus."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"coup_de_grace_estocade": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_relentless_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_cornered_0"]
+script = ExtResource("4_ligne")
+stat = "cornered"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_cornered"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_cornered"
+name = "Acculé"
+icon = ExtResource("icon_coup_de_grace_cornered")
+description = "Contre un ennemi sous la moitié de sa vie, le Coup de grâce frappe plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"coup_de_grace_estocade": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_cornered_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_chink_0"]
+script = ExtResource("4_ligne")
+stat = "chink"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_chink"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_chink"
+name = "Défaut de la cuirasse"
+icon = ExtResource("icon_coup_de_grace_chink")
+description = "Le coup passe une part de l'armure de sa cible."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"coup_de_grace_reach": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_chink_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_ransom_0"]
+script = ExtResource("4_ligne")
+stat = "ransom"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_ransom"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_ransom"
+name = "Rançon"
+icon = ExtResource("icon_coup_de_grace_ransom")
+description = "Chaque charge consommée rend du mana."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"coup_de_grace_relentless": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_ransom_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_dread_0"]
+script = ExtResource("4_ligne")
+stat = "dread"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_coup_de_grace_dread"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_dread"
+name = "Effroi"
+icon = ExtResource("icon_coup_de_grace_dread")
+description = "Un ennemi achevé ou tué par le Coup de grâce assomme ses voisins à {portee_effroi} px."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"coup_de_grace_misericord": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_dread_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_composure_0"]
+script = ExtResource("4_ligne")
+stat = "composure"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_coup_de_grace_composure_1"]
+script = ExtResource("4_ligne")
+stat = "relentless"
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_composure"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_composure"
+name = "Sang-froid"
+icon = ExtResource("icon_coup_de_grace_composure")
+description = "Le Coup de grâce ne consomme que la moitié des charges, mais chacune vaut moins."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"coup_de_grace_relentless": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_composure_0"), SubResource("L_coup_de_grace_composure_1")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_patience_0"]
+script = ExtResource("4_ligne")
+stat = "patience"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_patience"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_patience"
+name = "Patience"
+icon = ExtResource("icon_coup_de_grace_patience")
+description = "Les charges que garde le Sang-froid repartent pour une tenue entière."
+position = Vector2i(-3, 1)
+parents = Dictionary[String, int]({
+"coup_de_grace_composure": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_patience_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_final_point_0"]
+script = ExtResource("4_ligne")
+stat = "final_point"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_final_point"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_final_point"
+name = "Point final"
+icon = ExtResource("icon_coup_de_grace_final_point")
+description = "À {charges_final} charges consommées, le coup éclate autour de sa cible : une explosion de {rayon_final} px, à {part_final} %."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"coup_de_grace_reversal": 2,
+"coup_de_grace_reach": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_final_point_0")])
+
+[sub_resource type="Resource" id="L_coup_de_grace_epilogue_0"]
+script = ExtResource("4_ligne")
+stat = "epilogue"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_coup_de_grace_epilogue"]
+script = ExtResource("3_noeud")
+id = "coup_de_grace_epilogue"
+name = "Épilogue"
+icon = ExtResource("icon_coup_de_grace_epilogue")
+description = "L'éclat du Point final achève aussi, au seuil du coup."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"coup_de_grace_final_point": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_coup_de_grace_epilogue_0")])
+
+[sub_resource type="Resource" id="C_coup_de_grace"]
+script = ExtResource("2_case")
+skill = ExtResource("14_grace")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_coup_de_grace_estocade"), SubResource("N_coup_de_grace_reversal"), SubResource("N_coup_de_grace_reach"), SubResource("N_coup_de_grace_misericord"), SubResource("N_coup_de_grace_relentless"), SubResource("N_coup_de_grace_cornered"), SubResource("N_coup_de_grace_chink"), SubResource("N_coup_de_grace_ransom"), SubResource("N_coup_de_grace_dread"), SubResource("N_coup_de_grace_composure"), SubResource("N_coup_de_grace_patience"), SubResource("N_coup_de_grace_final_point"), SubResource("N_coup_de_grace_epilogue")])
+
+[sub_resource type="Resource" id="L_bloodlust_carnage_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "attack"
+percentage = true
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_bloodlust_carnage"]
+script = ExtResource("3_noeud")
+id = "bloodlust_carnage"
+name = "Carnage"
+icon = ExtResource("icon_bloodlust_carnage")
+description = "Par charge de Frénésie, vos attaques font plus de dégâts."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_carnage_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_drunkenness_0"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_bloodlust_drunkenness"]
+script = ExtResource("3_noeud")
+id = "bloodlust_drunkenness"
+name = "Ivresse"
+icon = ExtResource("icon_bloodlust_drunkenness")
+description = "Par charge de Frénésie, vous courez plus vite."
+position = Vector2i(1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_drunkenness_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_tenacity_0"]
+script = ExtResource("4_ligne")
+stat = "stack_hold"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_bloodlust_tenacity"]
+script = ExtResource("3_noeud")
+id = "bloodlust_tenacity"
+name = "Ténacité"
+icon = ExtResource("icon_bloodlust_tenacity")
+description = "Les charges de Frénésie tiennent plus longtemps."
+position = Vector2i(0, 1)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_tenacity_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_instinct_0"]
+script = ExtResource("4_ligne")
+stat = "crit_multiplier"
+percentage = true
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_bloodlust_instinct"]
+script = ExtResource("3_noeud")
+id = "bloodlust_instinct"
+name = "Instinct"
+icon = ExtResource("icon_bloodlust_instinct")
+description = "Par charge de Frénésie, vos critiques frappent plus fort."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"bloodlust_carnage": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_instinct_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_hot_blood_0"]
+script = ExtResource("4_ligne")
+stat = "health_regen"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_bloodlust_hot_blood"]
+script = ExtResource("3_noeud")
+id = "bloodlust_hot_blood"
+name = "Sang chaud"
+icon = ExtResource("icon_bloodlust_hot_blood")
+description = "Par charge de Frénésie, vous regagnez de la vie chaque seconde."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"bloodlust_drunkenness": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_hot_blood_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_harvest_0"]
+script = ExtResource("4_ligne")
+stat = "harvest"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_bloodlust_harvest"]
+script = ExtResource("3_noeud")
+id = "bloodlust_harvest"
+name = "Moisson"
+icon = ExtResource("icon_bloodlust_harvest")
+description = "Chaque charge de Frénésie gagnée rend une part de vos PV max."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"bloodlust_drunkenness": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_harvest_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_fever_0"]
+script = ExtResource("4_ligne")
+stat = "fever"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_bloodlust_fever"]
+script = ExtResource("3_noeud")
+id = "bloodlust_fever"
+name = "Fièvre"
+icon = ExtResource("icon_bloodlust_fever")
+description = "Un coup critique d'attaque peut aussi donner une charge de Frénésie."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"bloodlust_instinct": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_fever_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_gulp_0"]
+script = ExtResource("4_ligne")
+stat = "gulp"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_bloodlust_gulp"]
+script = ExtResource("3_noeud")
+id = "bloodlust_gulp"
+name = "Lampée"
+icon = ExtResource("icon_bloodlust_gulp")
+description = "Un ennemi tué peut donner deux charges au lieu d'une."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"bloodlust_carnage": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_gulp_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_bottomless_0"]
+script = ExtResource("4_ligne")
+stat = "bottomless"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_bloodlust_bottomless_1"]
+script = ExtResource("4_ligne")
+stat = "stack_hold"
+value_per_point = -0.5
+
+[sub_resource type="Resource" id="N_bloodlust_bottomless"]
+script = ExtResource("3_noeud")
+id = "bloodlust_bottomless"
+name = "Sans fond"
+icon = ExtResource("icon_bloodlust_bottomless")
+description = "Une charge de plus au plafond par point, mais elles tiennent moins longtemps."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"bloodlust_tenacity": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_bottomless_0"), SubResource("L_bloodlust_bottomless_1")])
+
+[sub_resource type="Resource" id="L_bloodlust_berserk_0"]
+script = ExtResource("4_ligne")
+stat = "berserk"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_bloodlust_berserk_1"]
+script = ExtResource("4_ligne")
+stat = "damage_taken"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_bloodlust_berserk"]
+script = ExtResource("3_noeud")
+id = "bloodlust_berserk"
+name = "Berserk"
+icon = ExtResource("icon_bloodlust_berserk")
+description = "{charges_berserk} charges de plus au plafond ; à pleines charges, +{vitesse_berserk} % de vitesse d'attaque plus — mais chaque charge vous fait subir davantage."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"bloodlust_carnage": 2,
+"bloodlust_bottomless": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_berserk_0"), SubResource("L_bloodlust_berserk_1")])
+
+[sub_resource type="Resource" id="L_bloodlust_no_quarter_0"]
+script = ExtResource("4_ligne")
+stat = "no_quarter"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_bloodlust_no_quarter"]
+script = ExtResource("3_noeud")
+id = "bloodlust_no_quarter"
+name = "Sans quartier"
+icon = ExtResource("icon_bloodlust_no_quarter")
+description = "Sous le Berserk, à pleines charges, chaque ennemi tué d'une attaque éclate : une onde de {rayon_quartier} px, à {part_quartier} % du coup qui l'a tué."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"bloodlust_berserk": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_no_quarter_0")])
+
+[sub_resource type="Resource" id="L_bloodlust_last_stand_0"]
+script = ExtResource("4_ligne")
+stat = "last_stand"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_bloodlust_last_stand"]
+script = ExtResource("3_noeud")
+id = "bloodlust_last_stand"
+name = "Dernier carré"
+icon = ExtResource("icon_bloodlust_last_stand")
+description = "À l'échéance, la moitié des charges reste et repart pour une tenue entière."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"bloodlust_tenacity": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_bloodlust_last_stand_0")])
+
+[sub_resource type="Resource" id="C_bloodlust"]
 script = ExtResource("2_case")
 skill = ExtResource("11_soif")
+position = Vector2i(0, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_bloodlust_carnage"), SubResource("N_bloodlust_drunkenness"), SubResource("N_bloodlust_tenacity"), SubResource("N_bloodlust_instinct"), SubResource("N_bloodlust_hot_blood"), SubResource("N_bloodlust_harvest"), SubResource("N_bloodlust_fever"), SubResource("N_bloodlust_gulp"), SubResource("N_bloodlust_bottomless"), SubResource("N_bloodlust_berserk"), SubResource("N_bloodlust_no_quarter"), SubResource("N_bloodlust_last_stand")])
+
+[sub_resource type="Resource" id="L_counterattack_counter_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_counterattack_counter"]
+script = ExtResource("3_noeud")
+id = "counterattack_counter"
+name = "Contre"
+icon = ExtResource("icon_counterattack_counter")
+description = "Les ripostes frappent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_counter_0")])
+
+[sub_resource type="Resource" id="L_counterattack_high_guard_0"]
+script = ExtResource("4_ligne")
+stat = "evasion"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_counterattack_high_guard"]
+script = ExtResource("3_noeud")
+id = "counterattack_high_guard"
+name = "Garde haute"
+icon = ExtResource("icon_counterattack_high_guard")
+description = "Tant que la Contre-attaque tient, vous esquivez davantage."
 position = Vector2i(1, 0)
+points_max = 4
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_high_guard_0")])
+
+[sub_resource type="Resource" id="L_counterattack_breath_0"]
+script = ExtResource("4_ligne")
+stat = "mana_per_second"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_counterattack_breath"]
+script = ExtResource("3_noeud")
+id = "counterattack_breath"
+name = "Respiration"
+icon = ExtResource("icon_counterattack_breath")
+description = "La Contre-attaque draine moins de mana."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_breath_0")])
+
+[sub_resource type="Resource" id="L_counterattack_taut_steel_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_counterattack_taut_steel"]
+script = ExtResource("3_noeud")
+id = "counterattack_taut_steel"
+name = "Fer tendu"
+icon = ExtResource("icon_counterattack_taut_steel")
+description = "La riposte porte plus loin."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_taut_steel_0")])
+
+[sub_resource type="Resource" id="L_counterattack_leech_0"]
+script = ExtResource("4_ligne")
+stat = "life_on_hit"
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_counterattack_leech"]
+script = ExtResource("3_noeud")
+id = "counterattack_leech"
+name = "Sangsue"
+icon = ExtResource("icon_counterattack_leech")
+description = "Chaque riposte rend de la vie."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"counterattack_counter": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_leech_0")])
+
+[sub_resource type="Resource" id="L_counterattack_double_riposte_0"]
+script = ExtResource("4_ligne")
+stat = "ripostes"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_counterattack_double_riposte_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_counterattack_double_riposte"]
+script = ExtResource("3_noeud")
+id = "counterattack_double_riposte"
+name = "Double riposte"
+icon = ExtResource("icon_counterattack_double_riposte")
+description = "Une riposte de plus par point, sur l'ennemi suivant le plus proche, chacune plus faible."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"counterattack_counter": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_double_riposte_0"), SubResource("L_counterattack_double_riposte_1")])
+
+[sub_resource type="Resource" id="L_counterattack_disarm_0"]
+script = ExtResource("4_ligne")
+stat = "disarm"
+value_per_point = 0.3
+
+[sub_resource type="Resource" id="N_counterattack_disarm"]
+script = ExtResource("3_noeud")
+id = "counterattack_disarm"
+name = "Désarmement"
+icon = ExtResource("icon_counterattack_disarm")
+description = "L'ennemi riposté est assommé un instant."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"counterattack_taut_steel": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_disarm_0")])
+
+[sub_resource type="Resource" id="L_counterattack_reprisal_0"]
+script = ExtResource("4_ligne")
+stat = "reprisal"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_counterattack_reprisal"]
+script = ExtResource("3_noeud")
+id = "counterattack_reprisal"
+name = "Représailles"
+icon = ExtResource("icon_counterattack_reprisal")
+description = "Un coup reçu, non esquivé, peut aussi appeler une riposte."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"counterattack_high_guard": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_reprisal_0")])
+
+[sub_resource type="Resource" id="L_counterattack_calm_0"]
+script = ExtResource("4_ligne")
+stat = "damage_taken"
+value_per_point = -2.0
+
+[sub_resource type="Resource" id="N_counterattack_calm"]
+script = ExtResource("3_noeud")
+id = "counterattack_calm"
+name = "Calme"
+icon = ExtResource("icon_counterattack_calm")
+description = "Tant que la Contre-attaque tient, vous subissez moins de dégâts."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"counterattack_breath": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_calm_0")])
+
+[sub_resource type="Resource" id="L_counterattack_sidestep_0"]
+script = ExtResource("4_ligne")
+stat = "sidestep"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_counterattack_sidestep"]
+script = ExtResource("3_noeud")
+id = "counterattack_sidestep"
+name = "Pas de côté"
+icon = ExtResource("icon_counterattack_sidestep")
+description = "Chaque esquive donne de l'esquive pendant {duree_pas} s, {pas_max} fois au plus."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"counterattack_high_guard": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_sidestep_0")])
+
+[sub_resource type="Resource" id="L_counterattack_counter_time_0"]
+script = ExtResource("4_ligne")
+stat = "counter_time"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_counterattack_counter_time"]
+script = ExtResource("3_noeud")
+id = "counterattack_counter_time"
+name = "Contretemps"
+icon = ExtResource("icon_counterattack_counter_time")
+description = "Après une esquive, votre attaque suivante dans les {fenetre_contretemps} s est critique à coup sûr."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"counterattack_high_guard": 2,
+"counterattack_sidestep": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_counter_time_0")])
+
+[sub_resource type="Resource" id="L_counterattack_fencing_time_0"]
+script = ExtResource("4_ligne")
+stat = "fencing_time"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_counterattack_fencing_time"]
+script = ExtResource("3_noeud")
+id = "counterattack_fencing_time"
+name = "Temps d'escrime"
+icon = ExtResource("icon_counterattack_fencing_time")
+description = "Le critique du Contretemps frappe plus fort."
+position = Vector2i(3, 1)
+parents = Dictionary[String, int]({
+"counterattack_counter_time": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_counterattack_fencing_time_0")])
+
+[sub_resource type="Resource" id="C_counterattack"]
+script = ExtResource("2_case")
+skill = ExtResource("15_contre")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_counterattack_counter"), SubResource("N_counterattack_high_guard"), SubResource("N_counterattack_breath"), SubResource("N_counterattack_taut_steel"), SubResource("N_counterattack_leech"), SubResource("N_counterattack_double_riposte"), SubResource("N_counterattack_disarm"), SubResource("N_counterattack_reprisal"), SubResource("N_counterattack_calm"), SubResource("N_counterattack_sidestep"), SubResource("N_counterattack_counter_time"), SubResource("N_counterattack_fencing_time")])
 
 [resource]
 script = ExtResource("1_arch")
 id = "swiftblade"
 name = "Manuel du Vive lame"
-cells = Array[ExtResource("2_case")]([SubResource("C_frappe"), SubResource("C_soif")])
+cells = Array[ExtResource("2_case")]([SubResource("C_quick_strike"), SubResource("C_flurry"), SubResource("C_throwing_knives"), SubResource("C_coup_de_grace"), SubResource("C_bloodlust"), SubResource("C_counterattack")])

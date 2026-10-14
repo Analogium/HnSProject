@@ -306,7 +306,9 @@ func _on_damaged(info: DamageInfo) -> void:
 	_set_health(health - info.amount)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
-	if health <= 0.0:
+	# Le Coup de grâce (jalon 50) achève sous son seuil, au nom de qui l'a porté.
+	var finished := info.cast != null and health <= stats.max_health * info.cast.execution * 0.01
+	if health <= 0.0 or finished:
 		if info.author != null:
 			info.author.slew.emit(info.cast, global_position, states)
 		die()

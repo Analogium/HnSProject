@@ -61,6 +61,8 @@ const CHARGES_PER_AFFIX := 1.0
 @export var orb_scene: PackedScene
 ## Le tir du Projectile élémentaire : une comète dessinée, de la teinte de l'élément.
 @export var comet_scene: PackedScene
+## Les couteaux des Lames de jet (jalon 50).
+@export var knife_scene: PackedScene
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
@@ -185,6 +187,12 @@ var _last_cast := {}
 var _reprieve_wait := 0.0
 ## La Riposte (jalon 46) : le temps qui reste après un coup reçu.
 var _riposte_left := 0.0
+## La Contre-attaque (jalon 50) : l'attente avant la riposte suivante ; les Pas de côté
+## cumulés et ce qu'il leur reste ; ce qu'il reste au Contretemps armé.
+var _counter_wait := 0.0
+var _sidesteps := 0
+var _sidestep_left := 0.0
+var _counter_time_left := 0.0
 ## La Relance et l'Hallali (jalon 46) : les relances d'affilée, et si la dernière ruée en a
 ## gagné une. Le Pas chassé : les ruées enchaînées, et l'heure de la dernière.
 var _hallali := 0
@@ -246,9 +254,11 @@ func _ready() -> void:
 	hitbox.monitoring = false
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.damaged.connect(_on_damaged)
+	hurtbox.evaded.connect(_on_evaded)
 	hurtbox.states = states
 	states.struck.connect(_on_struck)
 	states.slew.connect(_on_slew)
+	states.critical.connect(_on_critical)
 	states.change.connect(_show_states)
 	states.reached.connect(_announce_state)
 	states.heal.connect(heal)
@@ -289,6 +299,13 @@ func _physics_process(delta: float) -> void:
 	_clock += delta
 	_reprieve_wait = maxf(_reprieve_wait - delta, 0.0)
 	_riposte_left = maxf(_riposte_left - delta, 0.0)
+	_counter_wait = maxf(_counter_wait - delta, 0.0)
+	_counter_time_left = maxf(_counter_time_left - delta, 0.0)
+	if _sidesteps > 0:
+		_sidestep_left -= delta
+		if _sidestep_left <= 0.0:
+			_sidesteps = 0
+			after_buff_change()
 	for index: int in _strides.keys():
 		_strides[index] -= delta
 		if _strides[index] <= 0.0:
@@ -433,7 +450,8 @@ func cast_slot(index: int) -> bool:
 	if skill.shape == Skill.Shape.SUMMON and cast.recall <= 0.0 \
 			and Minion.count_of(self, skill.id) >= Minion.cap(cast):
 		return false
-	if skill.shape == Skill.Shape.LUNGE and _lunge_target(cast) == null:
+	# Le Coup de grâce aussi (jalon 50) : parti dans le vide, il brûlerait les charges.
+	if skill.shape in [Skill.Shape.LUNGE, Skill.Shape.FINISHER] and _lunge_target(cast) == null:
 		return false
 
 	if cast.ramp > 0.0:
@@ -474,6 +492,13 @@ func cast_slot(index: int) -> bool:
 			cast = cast.echoed(1.0)
 			cast.crit_chance = 1.0
 			cast.is_sure = true
+	# Le Contretemps (jalon 50) : une esquive arme l'attaque suivante d'un critique sûr.
+	if _counter_time_left > 0.0 and skill.cadence == Skill.Cadence.WEAPON and skill.strikes() \
+			and not cast.sustained:
+		var counter := resolve(SkillCatalog.by_id(SkillStats.COUNTER_SKILL), skill_points(SkillStats.COUNTER_SKILL))
+		cast = cast.echoed(1.0 + counter.fencing_time * 0.01)
+		cast.crit_chance = 1.0
+		_counter_time_left = 0.0
 	# La Relance et l'Hallali (jalon 46) : la ruée rendue par un tué frappe plus fort ; une
 	# ruée lancée sans relance remet le compte à zéro.
 	if cast.relaunch > 0.0:
@@ -607,6 +632,17 @@ func _pose(
 			_roll(salvo, orb_scene, origin, toward, aim)
 		Skill.Shape.COMET:
 			_roll(salvo, comet_scene, origin, toward)
+		Skill.Shape.KNIVES:
+			_roll(salvo, knife_scene, origin, toward)
+			# La Seconde salve (jalon 50) : la même volée, plus faible, un instant après.
+			if cast.second_volley > 0.0:
+				var volley: Array[SkillStats] = [cast.echoed(SkillStats.VOLLEY_PART)]
+				volley[0].second_volley = 0.0
+				get_tree().create_timer(SkillStats.VOLLEY_GAP, false).timeout.connect(
+					func() -> void:
+						if not is_dead:
+							_roll(volley, knife_scene, self, facing)
+				)
 		Skill.Shape.FROST_ORB:
 			for direction in _spread(cast, toward):
 				FrozenOrb.send(parent, at, direction, cast, states, origin, bolt_scene, aim, self)
@@ -760,6 +796,12 @@ func _pose(
 			_swing(cast, SwingArc.Style.CROSS)
 		Skill.Shape.LUNGE:
 			_lunge(cast)
+		Skill.Shape.FLURRY:
+			_flurry(cast)
+		Skill.Shape.FINISHER:
+			_finish_off(cast)
+		Skill.Shape.RIPOSTE:
+			_light(skill.id, Buff.light(self, skill))
 		_:
 			_swing(cast)
 
@@ -1227,10 +1269,29 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 	# Les Âmes consumées (jalon 42) : chaque tué rend une part des PV max.
 	if cast.soul_feast > 0.0:
 		heal(stats.max_health * cast.soul_feast * 0.01)
+	# Le Coup sur coup (jalon 50) : la frappe vive repart du tué.
+	if cast.chain_strike > 0.0 and cast.chained < int(cast.chain_strike):
+		_chain_lunge.call_deferred(cast)
 	if cast.keywords.has(Keywords.ATTACK):
 		_stack_on_kill()
+		_no_quarter(cast, at)
 	elif cast.keywords.has(Keywords.SPELL):
 		_siphon()
+
+
+## Sans quartier (jalon 50) : sous le Berserk, à pleines charges, un tué d'attaque éclate. Une
+## onde sans lancer : ce qu'elle tue ne relance rien.
+func _no_quarter(cast: SkillStats, at: Vector2) -> void:
+	if not lit(SkillStats.FRENZY_SKILL):
+		return
+	var skill := SkillCatalog.by_id(SkillStats.FRENZY_SKILL)
+	var own := resolve(skill, skill_points(skill.id))
+	if own.no_quarter <= 0.0 or lit_stacks(skill.id) < Buff.cap_of(skill, own):
+		return
+	Explosion.put(
+		_effects_parent(), at, DamageType.scaled(cast.roll(Game.rng), SkillStats.NO_QUARTER_PART),
+		SkillStats.NO_QUARTER_RADIUS, null, DamageType.COLORS[DamageType.Kind.PHYSICAL], states, null
+	)
 
 
 func _relaunch(skill_id: String) -> void:
@@ -1263,13 +1324,42 @@ func _siphon() -> void:
 		gain_mana(resolve(skill, skill_points(skill.id)).siphon)
 
 
-## Chaque buff à charges allumé en gagne une. Rien n'y naît : la fiche seule est refaite.
+## Chaque buff à charges allumé en gagne une — deux sous la Lampée, et la Moisson soigne
+## (jalon 50). Rien n'y naît : la fiche seule est refaite.
 func _stack_on_kill() -> void:
 	var gained := false
 	for id: String in _lit:
-		if lit(id) and _lit[id] is Buff:
-			gained = (_lit[id] as Buff).stack(Skill.StackTrigger.KILL) or gained
+		var skill := SkillCatalog.by_id(id)
+		if not lit(id) or not _lit[id] is Buff or skill.stacks_max <= 0 \
+				or skill.stack_trigger != Skill.StackTrigger.KILL:
+			continue
+		var buff := _lit[id] as Buff
+		var own := resolve(skill, skill_points(id))
+		buff.stack(Skill.StackTrigger.KILL, own)
+		var gains := 1
+		if own.gulp > 0.0 and Game.rng.randf() * 100.0 < own.gulp:
+			buff.stack(Skill.StackTrigger.KILL, own)
+			gains += 1
+		heal(stats.max_health * own.harvest * 0.01 * float(gains))
+		gained = true
 	if gained:
+		after_buff_change()
+
+
+## Un critique porté (jalon 50) : l'Ivresse du sang ravive la Frénésie, la Fièvre en donne
+## une charge, à sa chance, sur un coup d'attaque.
+func _on_critical(cast: RefCounted) -> void:
+	var blow := cast as SkillStats
+	if blow == null or not lit(SkillStats.FRENZY_SKILL):
+		return
+	var frenzy := _lit[SkillStats.FRENZY_SKILL] as Buff
+	if blow.blood_rush > 0.0:
+		frenzy.revive(blow.blood_rush)
+	if not blow.keywords.has(Keywords.ATTACK):
+		return
+	var own := resolve(SkillCatalog.by_id(SkillStats.FRENZY_SKILL), skill_points(SkillStats.FRENZY_SKILL))
+	if own.fever > 0.0 and Game.rng.randf() * 100.0 < own.fever:
+		frenzy.stack(Skill.StackTrigger.KILL, own)
 		after_buff_change()
 
 
@@ -1449,9 +1539,11 @@ func _lunge_target(cast: SkillStats) -> Hurtbox:
 
 ## Une frappe vive : on se porte **contre** la cible, murs traversés comme une ruée, et on
 ## frappe elle seule — pas un arc, qui prendrait ses voisins. Gel et secousse d'une frappe.
-func _lunge(cast: SkillStats) -> void:
+## `prey` : la relance du Coup sur coup (jalon 50), qui choisit la sienne.
+func _lunge(cast: SkillStats, prey: Hurtbox = null) -> void:
 	# Choisie à l'impact : celle de l'appui a pu tomber pendant le geste (jalon 47).
-	var prey := _lunge_target(cast)
+	if prey == null:
+		prey = _lunge_target(cast)
 	if prey == null:
 		return
 	var toward := prey.global_position
@@ -1460,9 +1552,225 @@ func _lunge(cast: SkillStats) -> void:
 	if global_position != toward:
 		facing = global_position.direction_to(toward)
 	LungeTrail.leave(_effects_parent(), from_value, global_position, toward)
-	Targets.strike(prey, cast.roll(Game.rng), global_position, states, cast)
+	var blow := _lunge_blow(cast, prey, from_value.distance_to(global_position))
+	# La Fente : ce que le bond traverse, sans relance — seule la cible en donne une.
+	if cast.lunge_path > 0.0:
+		var passing := blow.echoed((SkillStats.PATH_PART + cast.cleave_path) * 0.01)
+		passing.chain_strike = 0.0
+		for crossed in Targets.in_capsule(get_world_2d(), from_value, global_position, SkillStats.PATH_WIDTH):
+			if crossed != prey:
+				Targets.strike(crossed, passing.roll(Game.rng), from_value, states, passing)
+	Targets.strike(prey, blow.roll(Game.rng), global_position, states, blow)
+	if cast.opening > 0.0 and is_instance_valid(prey) and prey.states != null:
+		prey.states.open_up(cast.opening, SkillStats.OPENING_TIME)
+	if cast.double_hit > 0.0:
+		var second := blow.echoed(cast.double_hit * 0.01)
+		second.chain_strike = 0.0
+		get_tree().create_timer(SkillStats.DOUBLE_GAP, false).timeout.connect(
+			func() -> void:
+				if is_instance_valid(prey) and not is_dead:
+					Targets.strike(prey, second.roll(Game.rng), global_position, states, second)
+		)
+	if cast.retreat > 0.0:
+		global_position = _landing(
+			global_position, global_position + global_position.direction_to(from_value) * SkillStats.RETREAT_REACH
+		)
+		if cast.slip > 0.0:
+			_untouchable(SkillStats.SLIP_TIME)
 	Game.hit_stop()
 	Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
+
+
+## L'Impétuosité, par tranche de bond, et le Premier sang, sur un ennemi intact (jalon 50).
+func _lunge_blow(cast: SkillStats, prey: Hurtbox, leapt: float) -> SkillStats:
+	var part := 1.0 + cast.impetus * 0.01 * floorf(leapt / SkillStats.IMPETUS_STEP)
+	var enemy := prey.get_parent() as Enemy
+	if cast.first_blood > 0.0 and enemy != null and enemy.health >= enemy.stats.max_health:
+		part *= 1.0 + cast.first_blood * 0.01
+	return cast.echoed(part) if part != 1.0 else cast
+
+
+## Le Coup sur coup (jalon 50) : un tué relance la frappe sur l'ennemi le plus proche, sans
+## payer, `chain_strike` fois d'affilée ; la Furia renforce chaque relance.
+func _chain_lunge(cast: SkillStats) -> void:
+	if is_dead:
+		return
+	var prey: Hurtbox = null
+	for candidate in Targets.in_circle(get_world_2d(), global_position, cast.radius):
+		var enemy := candidate.get_parent() as Enemy
+		if enemy != null and enemy.is_dead:
+			continue
+		if prey == null or global_position.distance_squared_to(candidate.global_position) \
+				< global_position.distance_squared_to(prey.global_position):
+			prey = candidate
+	if prey == null:
+		return
+	var next := cast.echoed(1.0 + cast.furia * 0.01)
+	next.chained = cast.chained + 1
+	_lunge(next, prey)
+
+
+## La Rafale (jalon 50) : des estocs à `FLURRY_GAP` l'un de l'autre, chacun plus enclin au
+## critique que le précédent. Chacun prend le premier corps sur sa ligne, vers où l'on
+## regarde à cet instant — ou sur la sienne sous l'Éventail.
+func _flurry(cast: SkillStats) -> void:
+	var count := SkillStats.FLURRY_THRUSTS + int(cast.extra_thrusts)
+	var escalation := SkillStats.FLURRY_CRIT + cast.ascent
+	var last: Hurtbox = null
+	var streak := 0
+	for i in count:
+		if i > 0:
+			await get_tree().create_timer(SkillStats.FLURRY_GAP, false).timeout
+		if is_dead:
+			return
+		var final := i == count - 1
+		var piercing := final and cast.jarnac > 0.0
+		var heading := facing.rotated(_flurry_turn(cast, i, count))
+		var reach := cast.radius * (SkillStats.JARNAC_REACH if piercing else 1.0)
+		var tip := global_position + heading * reach
+		var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.FLURRY_WIDTH)
+		if not struck.is_empty() and not piercing:
+			struck = [_nearest_of(struck)] as Array[Hurtbox]
+			tip = global_position + heading * global_position.distance_to(struck[0].global_position)
+		if not struck.is_empty():
+			streak = streak + 1 if struck[0] == last else 0
+			last = struck[0]
+		var thrust := cast.echoed(1.0 + cast.insistence * 0.01 * float(streak))
+		thrust.crit_chance = minf(cast.crit_chance * (1.0 + escalation * 0.01 * float(i)), 1.0)
+		if final and cast.secret_thrust > 0.0:
+			thrust.crit_chance = 1.0
+		var parts := thrust.roll(Game.rng)
+		for target in struck:
+			Targets.strike(target, parts, global_position, states, thrust)
+			gain_mana(cast.mana_on_hit)
+		if not struck.is_empty():
+			Game.hit_stop()
+			Game.shake_camera(camera, shake_amount)
+		# Le peigne : chaque estoc dessiné sur sa rangée, la ligne qui frappe au milieu.
+		var row := heading.orthogonal() * (float(i) - float(count - 1) * 0.5) * ThrustTrail.COMB_GAP
+		ThrustTrail.leave(
+			_effects_parent(), global_position + row, tip + row, DamageType.COLORS[thrust.nature],
+			ThrustTrail.COMB_WIDTH
+		)
+
+
+## L'écart de cet estoc à la visée : aucun, sur `FAN_SPREAD` sous l'Éventail, sur tout le
+## cercle sous la Rose des vents.
+func _flurry_turn(cast: SkillStats, i: int, count: int) -> float:
+	if cast.fan <= 0.0 or count < 2:
+		return 0.0
+	if cast.compass > 0.0:
+		return TAU * float(i) / float(count)
+	var spread := deg_to_rad(SkillStats.FAN_SPREAD)
+	return -spread * 0.5 + spread * float(i) / float(count - 1)
+
+
+func _nearest_of(bodies: Array[Hurtbox]) -> Hurtbox:
+	var best := bodies[0]
+	for body in bodies:
+		if global_position.distance_squared_to(body.global_position) \
+				< global_position.distance_squared_to(best.global_position):
+			best = body
+	return best
+
+
+## Le Coup de grâce (jalon 50) : la cible de la frappe vive, sans le bond. Il vide la
+## Frénésie — la moitié sous le Sang-froid : chaque charge le renforce et hausse le seuil
+## sous lequel la cible est achevée. Il arrache les lames plantées.
+func _finish_off(cast: SkillStats) -> void:
+	var prey := _lunge_target(cast)
+	if prey == null:
+		return
+	var charges := _spend_frenzy(cast)
+	var part := 1.0 + (SkillStats.FINISHER_POWER + cast.relentless) * 0.01 * float(charges)
+	part *= 1.0 + SkillStats.PLANT_POWER * 0.01 * float(PlantedKnives.rip(prey))
+	var enemy := prey.get_parent() as Enemy
+	if cast.cornered > 0.0 and enemy != null and enemy.health < enemy.stats.max_health * 0.5:
+		part *= 1.0 + cast.cornered * 0.01
+	var blow := cast.echoed(part)
+	blow.execution += SkillStats.FINISHER_EXECUTION * float(charges)
+	gain_mana(cast.ransom * float(charges))
+	facing = global_position.direction_to(prey.global_position)
+	var parts := blow.roll(Game.rng)
+	var at := prey.global_position
+	Targets.strike(prey, parts, global_position, states, blow, cast.knockback)
+	var tint: Color = DamageType.COLORS[blow.nature]
+	ThrustTrail.leave(_effects_parent(), global_position, at, tint, ThrustTrail.HEAVY_WIDTH, false)
+	GraceMark.carve(_effects_parent(), at, tint)
+	# Le Point final : à pleines charges, le coup éclate autour de sa cible ; l'Épilogue y
+	# garde le seuil d'achèvement.
+	if cast.final_point > 0.0 and charges >= SkillStats.FINAL_CHARGES:
+		var blast := blow.echoed(SkillStats.FINAL_PART)
+		if cast.epilogue <= 0.0:
+			blast.execution = 0.0
+		var shards := DamageType.scaled(parts, SkillStats.FINAL_PART)
+		for near in Targets.in_circle(get_world_2d(), at, SkillStats.FINAL_RADIUS):
+			if near != prey:
+				Targets.strike(near, shards, at, states, blast)
+		FinalBurst.burst(_effects_parent(), at, SkillStats.FINAL_RADIUS, tint)
+	if cast.dread > 0.0 and enemy != null and enemy.is_dead:
+		for near in Targets.in_circle(get_world_2d(), at, SkillStats.DREAD_REACH):
+			var neighbour := near.get_parent() as Enemy
+			if neighbour != null and not neighbour.is_dead:
+				neighbour.stun(cast.dread)
+	Game.hit_stop()
+	Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
+
+
+## Les charges de Frénésie que prend le Coup de grâce ; la Patience fait repartir celles
+## qu'il laisse.
+func _spend_frenzy(cast: SkillStats) -> int:
+	if not lit(SkillStats.FRENZY_SKILL):
+		return 0
+	var frenzy := _lit[SkillStats.FRENZY_SKILL] as Buff
+	var wanted := ceili(frenzy.stacks * 0.5) if cast.composure > 0.0 else frenzy.stacks
+	var spent := frenzy.spend(wanted)
+	if cast.patience > 0.0 and frenzy.stacks > 0:
+		frenzy.revive(INF)
+	after_buff_change()
+	return spent
+
+
+## La Contre-attaque (jalon 50) : un coup esquivé, et l'ennemi le plus proche de d'où il
+## venait prend une riposte. En différé : le coup arrive peut-être d'un rappel de collision.
+## Le Pas de côté s'y cumule, le Contretemps y arme l'attaque suivante.
+func _on_evaded(info: DamageInfo) -> void:
+	if is_dead or not lit(SkillStats.COUNTER_SKILL):
+		return
+	var counter := resolve(SkillCatalog.by_id(SkillStats.COUNTER_SKILL), skill_points(SkillStats.COUNTER_SKILL))
+	if counter.sidestep > 0.0:
+		_sidesteps = mini(_sidesteps + 1, SkillStats.SIDESTEP_MOST)
+		_sidestep_left = SkillStats.SIDESTEP_TIME
+		after_buff_change()
+	if counter.counter_time > 0.0:
+		_counter_time_left = SkillStats.COUNTER_WINDOW
+	if _counter_wait > 0.0:
+		return
+	_counter_wait = SkillStats.RIPOSTE_WAIT
+	_riposte.call_deferred(info.source_position)
+
+
+## Une riposte, puis une de plus par Double riposte, chacune sur le corps suivant le plus
+## proche de d'où venait le coup.
+func _riposte(toward: Vector2) -> void:
+	if is_dead or not lit(SkillStats.COUNTER_SKILL):
+		return
+	var skill := SkillCatalog.by_id(SkillStats.COUNTER_SKILL)
+	var cast := resolve(skill, skill_points(skill.id))
+	var near := Targets.in_circle(get_world_2d(), global_position, cast.radius)
+	near.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
+		return a.global_position.distance_squared_to(toward) < b.global_position.distance_squared_to(toward))
+	for prey: Hurtbox in near.slice(0, 1 + int(cast.ripostes)):
+		var at := prey.global_position
+		var enemy := prey.get_parent() as Enemy
+		Targets.strike(prey, cast.roll(Game.rng), global_position, states, cast)
+		heal(cast.life_on_hit)
+		if cast.disarm > 0.0 and is_instance_valid(enemy) and not enemy.is_dead:
+			enemy.stun(cast.disarm)
+		ThrustTrail.leave(
+			_effects_parent(), global_position, at, DamageType.COLORS[cast.nature],
+			ThrustTrail.PARRY_WIDTH, true, true
+		)
 
 
 ## Le point le plus proche de la visée où le corps tient, en reculant vers le départ.
@@ -1838,6 +2146,15 @@ func buff_mods() -> Array[StatMod]:
 		if skill.id == SkillStats.LIGHT_SKILL and resolve(skill, skill_points(skill.id)).epiphany > 0.0:
 			times *= SkillStats.EPIPHANY_FACTOR
 		out.append_array(skill.buff_mods(skill_points(skill.id) * times))
+		# Le Berserk (jalon 50) : à pleines charges, l'attaque s'emballe.
+		if skill.id == SkillStats.FRENZY_SKILL:
+			var own := resolve(skill, skill_points(skill.id))
+			if own.berserk > 0.0 and lit_stacks(skill.id) >= Buff.cap_of(skill, own):
+				out.append(StatMod.new("attack_speed", StatMod.Mode.MORE, SkillStats.BERSERK_SPEED))
+		# Le Pas de côté (jalon 50) : ce que chaque esquive récente ajoute.
+		if skill.id == SkillStats.COUNTER_SKILL and _sidesteps > 0:
+			var counter := resolve(skill, skill_points(skill.id))
+			out.append(StatMod.new("evasion", StatMod.Mode.FLAT, counter.sidestep * float(_sidesteps)))
 		# Les lignes de ses nœuds qui ne visent pas un nombre du lancer (jalon 34) : des
 		# lignes de buff, aux règles d'un passif, qui ne valent que tant qu'il brûle — et
 		# **par charge** sur un buff à charges (jalon 41).
@@ -2323,6 +2640,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	_set_health(health - lost)
 	_intercede(info, lost)
 	_riposte_left = SkillStats.RIPOSTE_WINDOW
+	_reprisal(info)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	sprite.flash()
 	if health <= 0.0:
@@ -2332,6 +2650,17 @@ func _on_damaged(info: DamageInfo) -> void:
 	_sign()
 	if _startle_wait <= 0.0:
 		_startle(lost)
+
+
+## Les Représailles (jalon 50) : sous la Contre-attaque, un coup reçu peut aussi appeler une
+## riposte, à sa chance.
+func _reprisal(info: DamageInfo) -> void:
+	if not lit(SkillStats.COUNTER_SKILL) or _counter_wait > 0.0:
+		return
+	var counter := resolve(SkillCatalog.by_id(SkillStats.COUNTER_SKILL), skill_points(SkillStats.COUNTER_SKILL))
+	if counter.reprisal > 0.0 and Game.rng.randf() * 100.0 < counter.reprisal:
+		_counter_wait = SkillStats.RIPOSTE_WAIT
+		_riposte.call_deferred(info.source_position)
 
 
 ## La Signature (jalon 49) : un coup reçu trace un glyphe à vos pieds, dans l'élément du tour,

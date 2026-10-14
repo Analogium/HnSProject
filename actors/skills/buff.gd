@@ -133,9 +133,26 @@ func hold_stacks(count: int, seconds: float) -> void:
 	_hold = seconds
 
 
+## L'Ivresse du sang et la Patience (jalon 50) : les charges regagnent ces secondes, jamais
+## au-delà de leur tenue entière.
+func revive(seconds: float) -> void:
+	_since_stack = maxf(_since_stack - seconds, 0.0)
+
+
+## Le Coup de grâce (jalon 50) : retire ses charges et rend combien il en a pris. Le joueur
+## refait sa fiche : les lignes comptaient par charge.
+func spend(count: int) -> int:
+	var spent := mini(count, stacks)
+	stacks -= spent
+	return spent
+
+
 ## Le plafond des charges et leur tenue : **le seul calcul**, que la fiche lit aussi.
 static func cap_of(skill: Skill, own: SkillStats) -> int:
-	return skill.stacks_max + (int(own.dissonance) if own != null else 0)
+	if own == null:
+		return skill.stacks_max
+	return skill.stacks_max + int(own.dissonance) + int(own.bottomless) \
+		+ (SkillStats.BERSERK_CHARGES if own.berserk > 0.0 else 0)
 
 
 static func hold_of(skill: Skill, own: SkillStats) -> float:
@@ -145,9 +162,14 @@ static func hold_of(skill: Skill, own: SkillStats) -> float:
 ## À l'échéance, toutes ensemble — ou une à une sous le Rubato (jalon 49), chacune
 ## `RUBATO_STEP` après la précédente.
 func _drop_stacks() -> void:
-	if _player.resolve(_skill, _player.skill_points(_skill.id)).rubato > 0.0:
+	var own := _player.resolve(_skill, _player.skill_points(_skill.id))
+	if own.rubato > 0.0:
 		stacks -= 1
 		_since_stack = _hold - SkillStats.RUBATO_STEP
+	# Le Dernier carré (jalon 50) : la moitié reste, et repart pour une tenue.
+	elif own.last_stand > 0.0 and stacks > 1:
+		stacks /= 2
+		_since_stack = 0.0
 	else:
 		stacks = 0
 	_player.after_buff_change()

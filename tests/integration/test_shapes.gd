@@ -1302,6 +1302,371 @@ func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
 	assert_true(_p.lit("bloodlust"), "la Soif de sang, elle, reste allumée")
 
 
+## La Rafale (jalon 50) : trois estocs, chacun sur le premier corps de sa ligne — pas celui
+## de derrière.
+func test_the_flurry_thrusts_three_times_at_the_first_in_line() -> void:
+	_learn_class(Character.SWIFTBLADE, ["flurry"])
+	var cast := _p.resolve(SkillCatalog.by_id("flurry"), 1)
+	var first := _target(Vector2(30, 0))
+	var behind := _target(Vector2(cast.radius - 4.0, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_hits(first), 1, "le premier estoc, à l'impact")
+	assert_eq(_children_of(ThrustTrail).size(), 1, "dessiné")
+	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	assert_eq(_hits(first), SkillStats.FLURRY_THRUSTS, "un coup par estoc")
+	assert_eq(_hits(behind), 0, "le premier sur la ligne, seul")
+
+
+## Les Lames de jet (jalon 50) : trois couteaux ; celui qui critique traverse, les autres
+## s'arrêtent sur le premier corps.
+func test_a_critical_knife_passes_through() -> void:
+	_learn_class(Character.SWIFTBLADE, ["throwing_knives"])
+	var front := _target(Vector2(60, 0))
+	var back := _target(Vector2(110, 0))
+	await wait_physics_frames(2)
+	_p.stats.crit_chance = 0.0
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_children_of(ThrowingKnife).size(), 3, "trois couteaux")
+	await wait_seconds(0.4)
+	assert_gt(_hits(front), 0)
+	assert_eq(_hits(back), 0, "sans critique, le couteau s'arrête")
+	_p.stats.crit_chance = 1.0
+	_p._recharges[2] = 0.0
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.4)
+	assert_gt(_hits(back), 0, "le critique traverse")
+
+
+## Le Coup de grâce (jalon 50) : refusé sans cible ; il vide la Frénésie et achève sous
+## `FINISHER_EXECUTION` par charge consommée (le test qui suit).
+func test_the_coup_de_grace_spends_the_frenzy() -> void:
+	_learn_class(Character.SWIFTBLADE, ["coup_de_grace", "bloodlust"])
+	_p.bar.put(3, "bloodlust")
+	assert_true(Gestures.cast(_p, 3))
+	var mana := _p.mana
+	assert_false(Gestures.cast(_p, 2), "personne à portée")
+	assert_eq(_p.mana, mana, "rien n'est payé")
+
+	for i in 5:
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	assert_eq(_p.lit_stacks("bloodlust"), 5)
+	var prey := _target(Vector2(40, 0))
+	await wait_physics_frames(2)
+	_p._recharges[2] = 0.0
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_hits(prey), 1)
+	assert_eq(_p.lit_stacks("bloodlust"), 0, "toutes les charges consommées")
+
+
+## L'achèvement se lit sur le coup : sous le seuil de son lancer, l'ennemi tombe.
+func test_a_blow_with_an_execution_threshold_finishes_below_it() -> void:
+	var grunt := _grunt(Vector2(200, 0))
+	await wait_physics_frames(2)
+	var cast := SkillStats.new()
+	cast.execution = 25.0
+	var blow := DamageType.empty_parts()
+	blow[DamageType.Kind.PHYSICAL] = grunt.stats.max_health * 0.05
+	grunt._set_health(grunt.stats.max_health * 0.5)
+	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector2.ZERO, blow))
+	assert_false(grunt.is_dead, "au-dessus du seuil")
+	grunt._set_health(grunt.stats.max_health * 0.27)
+	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector2.ZERO, blow))
+	assert_true(grunt.is_dead, "achevé")
+
+
+## La Contre-attaque (jalon 50) : sa Garde donne de l'esquive ; un coup esquivé appelle une
+## riposte sur l'ennemi le plus proche de d'où il venait, une au plus par `RIPOSTE_WAIT`.
+func test_an_evaded_blow_calls_a_riposte() -> void:
+	_learn_class(Character.SWIFTBLADE, ["counterattack"])
+	var evasion := _p.stats.evasion
+	assert_true(Gestures.cast(_p, 2))
+	assert_true(_p.lit("counterattack"))
+	assert_gt(_p.stats.evasion, evasion, "la Garde")
+	var near := _target(Vector2(30, 0))
+	var other := _target(Vector2(-30, 0))
+	await wait_physics_frames(2)
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	await wait_physics_frames(1)
+	assert_eq(_hits(near), 1, "une riposte, sur celui qui a frappé")
+	assert_eq(_hits(other), 0)
+	await wait_seconds(SkillStats.RIPOSTE_WAIT + 0.05)
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	await wait_physics_frames(1)
+	assert_eq(_hits(near), 2, "la suivante, après l'attente")
+
+
+# --------------------------------------------------------------------------
+# Les arbres du Vive lame (jalon 50)
+# --------------------------------------------------------------------------
+
+## Le manuel du Vive lame, ces nœuds de l'arbre de `skill_id` investis dans l'ordre — un point
+## par mention —, la compétence sur la troisième case, et une arme qui ne critique jamais.
+func _learn_swift(skill_id: String, nodes: Array) -> void:
+	_learn_class(Character.SWIFTBLADE, [skill_id])
+	for id: String in nodes:
+		assert_true(_p.invest(Rack.CLASS_SLOT, skill_id + "_" + id), id)
+	var blunt := Weapons.bare(false)
+	blunt.base.crit_chance = 0.0
+	_p.equip(blunt, EquipmentSlots.WEAPON)
+
+
+## La Soif de sang allumée sur la quatrième case, ces charges posées, et ces nœuds de son arbre.
+func _frenzy(charges: int, nodes := []) -> Buff:
+	if _p.skill_points("bloodlust") <= 0:
+		assert_true(_p.invest(Rack.CLASS_SLOT, "bloodlust"))
+	for id: String in nodes:
+		assert_true(_p.invest(Rack.CLASS_SLOT, "bloodlust_" + id), id)
+	_p.bar.put(3, "bloodlust")
+	assert_true(Gestures.cast(_p, 3))
+	for i in charges:
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	return _p._lit["bloodlust"] as Buff
+
+
+func _crits() -> Array:
+	var seen := []
+	_p.states.critical.connect(func(cast: RefCounted) -> void: seen.append(cast))
+	return seen
+
+
+## L'Impétuosité : un long bond frappe plus fort qu'un court.
+func test_impetuosity_rewards_a_long_leap() -> void:
+	_learn_swift("quick_strike", ["momentum", "impetus"])
+	var near := _target(Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	var short: float = _received_all[near][0]
+	near.queue_free()
+	_p.global_position = Vector2.ZERO
+	var far := _target(Vector2(120, 0))
+	await wait_physics_frames(2)
+	_p._recharges[2] = 0.0
+	assert_true(Gestures.cast(_p, 2))
+	assert_gt(_received_all[far][0], short, "plus loin, plus fort")
+
+
+## Le Coup double, le Repli et la Dérobade : un second coup, puis on rebondit en arrière,
+## intouchable.
+func test_a_double_hit_then_a_withdrawal() -> void:
+	_learn_swift("quick_strike", ["spring", "spring", "double_hit", "retreat", "slip"])
+	var prey := _target(Vector2(100, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_almost_eq(
+		_p.global_position.x, 100.0 - Player.LUNGE_REACH - SkillStats.RETREAT_REACH, 1.0, "repli"
+	)
+	assert_true(_p.hurtbox.invulnerable, "dérobade")
+	await wait_seconds(SkillStats.DOUBLE_GAP + 0.05)
+	assert_eq(_hits(prey), 2, "le coup double")
+
+
+## La Fente : ce que le bond traverse est frappé, à sa part.
+func test_the_lunge_strikes_what_it_crosses() -> void:
+	_learn_swift("quick_strike", ["momentum", "impetus", "lunge_path"])
+	var crossed := _target(Vector2(50, 0))
+	var prey := _target(Vector2(110, 0))
+	_p.facing = Vector2.RIGHT
+	await wait_physics_frames(2)
+	# La visée tombe sur la plus lointaine : la frappe vive la choisit.
+	_p._aim_with_mouse = false
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_hits(prey), 1)
+	assert_eq(_hits(crossed), 1, "traversée, frappée")
+	assert_lt(_received_all[crossed][0], _received_all[prey][0], "à sa part")
+
+
+## Coup sur coup : la frappe vive qui tue repart sur le plus proche.
+func test_a_kill_relaunches_the_quick_strike() -> void:
+	_learn_swift("quick_strike", ["momentum", "momentum", "chain_strike"])
+	var first := _grunt(Vector2(60, 0))
+	var second := _grunt(Vector2(60, 90))
+	await wait_physics_frames(2)
+	first._set_health(1.0)
+	second._set_health(second.stats.max_health)
+	var health := second.health
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(3)
+	assert_false(is_instance_valid(first), "tué")
+	assert_true(not is_instance_valid(second) or second.health < health, "relancée sur le suivant")
+
+
+## La Botte secrète : le dernier estoc critique à coup sûr, les autres non.
+func test_the_secret_thrust_crits_the_last_thrust() -> void:
+	_learn_swift("flurry", ["glance", "glance", "secret_thrust"])
+	var prey := _target(Vector2(30, 0))
+	var crits := _crits()
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	assert_eq(_hits(prey), SkillStats.FLURRY_THRUSTS)
+	assert_eq(crits.size(), 1, "le seul dernier")
+
+
+## Le Quatrième estoc, et l'Éventail : un estoc de plus ; les estocs couvrent trois lignes.
+func test_the_fan_spreads_the_thrusts() -> void:
+	_learn_swift("flurry", ["long_steel", "long_steel", "fan"])
+	var left := _target(Vector2(30, 0).rotated(-deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
+	var middle := _target(Vector2(30, 0))
+	var right := _target(Vector2(30, 0).rotated(deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	assert_eq([_hits(left), _hits(middle), _hits(right)], [1, 1, 1], "un estoc chacune")
+
+
+func test_a_fourth_thrust() -> void:
+	_learn_swift("flurry", ["beat", "beat", "fourth_thrust"])
+	var prey := _target(Vector2(30, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(SkillStats.FLURRY_GAP * 4.0 + 0.1)
+	assert_eq(_hits(prey), 4)
+
+
+## L'Ivresse du sang : un critique de la Rafale ravive les charges de Frénésie.
+func test_blood_rush_revives_the_frenzy() -> void:
+	_learn_swift("flurry", ["glance", "glance", "secret_thrust", "ascent", "blood_rush"])
+	var frenzy := _frenzy(1)
+	frenzy._hold = 100.0
+	_target(Vector2(30, 0))
+	await wait_physics_frames(2)
+	frenzy._since_stack = 5.0
+	var start := Time.get_ticks_msec()
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	var waited := (Time.get_ticks_msec() - start) * 0.001
+	assert_lt(frenzy._since_stack, 5.0 + waited - 0.2, "ravivées d'un critique")
+
+
+## Le Berserk : deux charges de plus au plafond, et la vitesse d'attaque plus à pleines charges.
+func test_berserk_raises_the_cap_and_rushes_at_full() -> void:
+	_learn_swift("quick_strike", [])
+	var frenzy := _frenzy(0, ["carnage", "carnage", "berserk"])
+	var skill := SkillCatalog.by_id("bloodlust")
+	for i in skill.stacks_max + SkillStats.BERSERK_CHARGES - 1:
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	var before := _p.stats.attack_speed
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	assert_eq(frenzy.stacks, skill.stacks_max + SkillStats.BERSERK_CHARGES)
+	assert_gt(_p.stats.attack_speed, before * 1.1, "le plein emballe")
+
+
+## Le Dernier carré : à l'échéance, la moitié reste.
+func test_the_last_stand_keeps_half() -> void:
+	_learn_swift("quick_strike", [])
+	var frenzy := _frenzy(4, ["tenacity", "tenacity", "last_stand"])
+	frenzy._since_stack = frenzy._hold - 0.001
+	await wait_physics_frames(2)
+	assert_eq(frenzy.stacks, 2)
+
+
+## La Moisson : chaque charge gagnée soigne.
+func test_the_harvest_heals_per_charge() -> void:
+	_learn_swift("quick_strike", [])
+	_frenzy(0, ["drunkenness", "harvest"])
+	_p._set_health(1.0)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	assert_almost_eq(_p.health, 1.0 + _p.stats.max_health * 0.01, 0.01)
+
+
+## Le Sang-froid consomme la moitié des charges ; le Point final éclate à cinq.
+func test_composure_spends_half_and_the_full_stop_bursts_at_five() -> void:
+	_learn_swift("coup_de_grace", ["estocade", "relentless", "relentless", "composure"])
+	var frenzy := _frenzy(5)
+	_target(Vector2(40, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(frenzy.stacks, 2, "trois prises, deux gardées")
+
+
+func test_the_full_stop_bursts_at_five_charges() -> void:
+	_learn_swift("coup_de_grace", ["reversal", "reversal", "final_point"])
+	_frenzy(5)
+	_target(Vector2(40, 0))
+	var near := _target(Vector2(40, SkillStats.FINAL_RADIUS - 10.0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_children_of(FinalBurst).size(), 1, "l'éclat")
+	assert_eq(_hits(near), 1, "qui frappe autour")
+
+
+## La Lame plantée : un couteau qui s'arrête reste dans sa cible, et le Coup de grâce l'arrache.
+func test_planted_blades_are_torn_out_by_the_coup_de_grace() -> void:
+	_learn_swift("throwing_knives", ["whetting", "whetting", "planted_blade"])
+	assert_true(_p.invest(Rack.CLASS_SLOT, "coup_de_grace"))
+	_p.bar.put(1, "coup_de_grace")
+	var prey := _target(Vector2(30, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.2)
+	var knives := PlantedKnives.of(prey)
+	assert_not_null(knives)
+	assert_gt(knives.count, 0, "plantées")
+	assert_true(Gestures.cast(_p, 1))
+	await wait_physics_frames(1)
+	assert_null(PlantedKnives.of(prey), "arrachées")
+
+
+## Le Retour de lame : en bout de course, le couteau revient et refrappe.
+func test_a_returning_blade_strikes_again() -> void:
+	_learn_swift("throwing_knives", ["taut_throw", "taut_throw", "return_blade"])
+	var far := _target(Vector2(200, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.2)
+	far.global_position = Vector2(10000, 0)
+	var crossing := _target(Vector2(100, 0))
+	await wait_seconds(1.5)
+	assert_gt(_hits(crossing), 0, "frappée au retour")
+	assert_eq(_children_of(ThrowingKnife).size(), 0, "rattrapés")
+
+
+## La Seconde salve : une deuxième volée, un instant après.
+func test_a_second_volley() -> void:
+	_learn_swift("throwing_knives", ["handful", "handful", "second_volley"])
+	assert_true(Gestures.cast(_p, 2))
+	var first := _children_of(ThrowingKnife).size()
+	await wait_seconds(SkillStats.VOLLEY_GAP + 0.05)
+	assert_eq(_children_of(ThrowingKnife).size(), first * 2)
+
+
+## Le Contretemps : après une esquive, l'attaque suivante critique ; la Double riposte frappe
+## deux corps ; le Pas de côté ajoute de l'esquive.
+func test_counter_time_double_riposte_and_sidestep() -> void:
+	_learn_swift("counterattack", [
+		"counter", "counter", "double_riposte", "high_guard", "high_guard", "sidestep", "counter_time",
+	])
+	assert_true(_p.invest(Rack.CLASS_SLOT, "flurry"))
+	_p.bar.put(1, "flurry")
+	assert_true(Gestures.cast(_p, 2))
+	var a := _target(Vector2(30, 0))
+	var b := _target(Vector2(30, 20))
+	var crits := _crits()
+	await wait_physics_frames(2)
+	var evasion := _p.stats.evasion
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	await wait_physics_frames(1)
+	assert_eq([_hits(a), _hits(b)], [1, 1], "deux ripostes")
+	assert_gt(_p.stats.evasion, evasion, "le pas de côté")
+	b.queue_free()
+	assert_true(Gestures.cast(_p, 1))
+	assert_gt(crits.size(), 0, "la Rafale suivante critique")
+
+
+## L'Ouverture : la cible subit davantage, puis plus rien.
+func test_the_opening_exposes_the_target() -> void:
+	_learn_swift("quick_strike", ["momentum", "first_blood", "opening"])
+	var grunt := _grunt(Vector2(60, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_gt(grunt.states.damage_taken_factor, 1.0, "ouverte")
+	await wait_seconds(SkillStats.OPENING_TIME + 0.1)
+	if is_instance_valid(grunt) and not grunt.is_dead:
+		assert_eq(grunt.states.damage_taken_factor, 1.0, "refermée")
+
+
 ## Un buff lancé : il se paie, dure, et le relancer le **refait** au lieu de l'éteindre.
 func test_spell_amplification_is_cast_and_refreshed() -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "spell_amplification"])

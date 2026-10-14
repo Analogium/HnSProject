@@ -1182,6 +1182,18 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			var said := []
 			if cast.dissonance > 0.0:
 				said.append([Texts.t("même élément"), Texts.t("perd toutes les charges")])
+			# La Soif de sang (jalon 50).
+			if cast.berserk > 0.0:
+				said.append([
+					Texts.t("pleines charges"),
+					Texts.t("%s vitesse d'attaque") % StatMod.percentage(roundi(SkillStats.BERSERK_SPEED), true)
+				])
+			if cast.last_stand > 0.0:
+				said.append([Texts.t("à l'échéance"), Texts.t("la moitié reste")])
+			if cast.fever > 0.0:
+				said.append([Texts.t("par critique"), _chance(cast.fever * 0.01)])
+			if cast.gulp > 0.0:
+				said.append([Texts.t("deux charges"), _chance(cast.gulp * 0.01)])
 			if cast.false_note > 0.0:
 				said.append([Texts.t("fausse note"), "%d px" % roundi(SkillStats.FALSE_NOTE_RADIUS)])
 			if cast.tempo > 0.0:
@@ -1631,12 +1643,76 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 	out.append_array(_summoned_lines(skill, cast))
 	if cast.palimpsest > 0.0 or cast.precipitate > 0.0:
 		out.append_array(_reaction_lines(cast))
+	out.append_array(_blade_lines(skill, cast))
 
 	return Sheet.new(
 		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,
 		Texts.t("Par coup moyen, sur une cible saine. Un coup qui lui retire une grosse part de ses PV pose plus souvent.")
 		if strikes else ""
 	)
+
+
+## Ce que font les gestes du Vive lame et leurs arbres (jalon 50), en nombres : la fiche
+## n'a que les lignes des nœuds, pas ce qu'elles déclenchent.
+func _blade_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
+	var said := []
+	match skill.shape:
+		Skill.Shape.LUNGE:
+			if cast.chain_strike > 0.0:
+				said.append([Texts.t("relances par tué"), str(int(cast.chain_strike))])
+			if cast.retreat > 0.0:
+				said.append([Texts.t("repli"), "%d px" % roundi(SkillStats.RETREAT_REACH)])
+			if cast.lunge_path > 0.0:
+				said.append([Texts.t("bond qui frappe"), StatMod.percentage(roundi(SkillStats.PATH_PART + cast.cleave_path))])
+		Skill.Shape.FLURRY:
+			var chances := PackedStringArray()
+			var count := SkillStats.FLURRY_THRUSTS + int(cast.extra_thrusts)
+			for i in count:
+				var chance := cast.crit_chance * (1.0 + (SkillStats.FLURRY_CRIT + cast.ascent) * 0.01 * float(i))
+				chances.append(_chance(1.0 if i == count - 1 and cast.secret_thrust > 0.0 else chance))
+			said.append([Texts.t("critique par estoc"), " · ".join(chances)])
+			if cast.blood_rush > 0.0:
+				said.append([Texts.t("Frénésie par critique"), "+%.1f s" % cast.blood_rush])
+		Skill.Shape.KNIVES:
+			said.append([Texts.t("au critique"), Texts.t("traverse")])
+			if cast.planted > 0.0:
+				said.append([
+					Texts.t("lame plantée"),
+					Texts.t("%d s · %s au Coup de grâce") % [
+						roundi(SkillStats.PLANT_TIME + cast.anchorage), StatMod.percentage(roundi(SkillStats.PLANT_POWER), true)
+					]
+				])
+			if cast.second_volley > 0.0:
+				said.append([Texts.t("seconde salve"), StatMod.percentage(roundi(SkillStats.VOLLEY_PART * 100.0))])
+		Skill.Shape.FINISHER:
+			said.append([
+				Texts.t("par charge"),
+				Texts.t("%s · achève sous %s") % [
+					StatMod.percentage(roundi(SkillStats.FINISHER_POWER + cast.relentless), true),
+					StatMod.percentage(SkillStats.FINISHER_EXECUTION)
+				]
+			])
+			var charges := _player.lit_stacks(SkillStats.FRENZY_SKILL)
+			said.append([
+				Texts.t("achève maintenant sous"),
+				StatMod.percentage(cast.execution + SkillStats.FINISHER_EXECUTION * float(charges))
+			])
+			if cast.final_point > 0.0:
+				said.append([
+					Texts.t("à %d charges") % SkillStats.FINAL_CHARGES,
+					Texts.t("éclat de %d px") % roundi(SkillStats.FINAL_RADIUS)
+				])
+		Skill.Shape.RIPOSTE:
+			said.append([
+				Texts.t("riposte"),
+				Texts.t("%d à %d px") % [1 + int(cast.ripostes), roundi(cast.radius)]
+			])
+			if cast.counter_time > 0.0:
+				said.append([Texts.t("après une esquive"), Texts.t("attaque critique")])
+	var out: Array[SheetLine] = []
+	for pair: Array in said:
+		out.append(SheetLine.new(Group.EFFECT, pair[0], pair[1], UiPalette.TEXT))
+	return out
 
 
 ## Une chance, bornée à 100 %.

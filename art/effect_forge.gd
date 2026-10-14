@@ -1114,6 +1114,15 @@ const SWORD := [
 	"....g............",
 ]
 
+## Le couteau des Lames de jet (jalon 50), **pointe à droite** : celui de l'épée en petit, la
+## lame sur deux tons, la garde d'or, le manche de cuir. Il se plante aussi dans les ennemis.
+const KNIFE := [
+	"....g........",
+	"hhh.Gcccccc..",
+	"hhh.Gdddddddd",
+	"....g........",
+]
+
 ## Le marteau du Marteau béni (jalon 48), **tête en haut** — choisi sur planche contre un
 ## maillet, un tau, une étoile, une traîne de grains et un croissant. La tête est la
 ## lumière, le manche plus sombre : tournée en biais, une silhouette toute claire sortait

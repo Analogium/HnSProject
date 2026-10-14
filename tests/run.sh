@@ -6,6 +6,7 @@
 #   tests/run.sh integration  seulement l'intégration
 #   tests/run.sh e2e          seulement la partie qui joue toute seule (lent)
 #   tests/run.sh balance      les couloirs du banc d'équilibrage, hors de « all »
+#   tests/run.sh integration coup_de_grace   les seuls tests dont le nom contient ce mot
 #
 # Le projet est **recopié dans un dossier temporaire** avant d'être lancé. Deux
 # raisons, toutes deux vérifiées à leurs dépens : lancer Godot sur le dossier de
@@ -16,6 +17,7 @@ set -uo pipefail
 
 GODOT="${GODOT:-/mnt/c/Program Files (x86)/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe}"
 SUITE="${1:-all}"
+FILTER="${2:-}"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STAMP="$(date +%s)-$$"
@@ -78,7 +80,7 @@ echo "== tests : $SUITE =="
 # anglais — l'échec le plus cher à comprendre, celui qui ne se reproduit pas.
 OUTPUT="$("$GODOT" --headless --path "$TMP_WIN" --language fr \
 	-s res://addons/gut/gut_cmdln.gd \
-	-gdir="$DIRS" -ginclude_subdirs -gexit -gdisable_colors 2>&1)"
+	-gdir="$DIRS" -ginclude_subdirs -gexit -gdisable_colors ${FILTER:+-gunit_test_name=$FILTER} 2>&1)"
 CODE=$?
 echo "$OUTPUT"
 

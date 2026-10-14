@@ -65,6 +65,10 @@ const ALL := [
 	preload("res://resources/skills/familiar.tres"),
 	preload("res://resources/skills/quick_strike.tres"),
 	preload("res://resources/skills/bloodlust.tres"),
+	preload("res://resources/skills/flurry.tres"),
+	preload("res://resources/skills/throwing_knives.tres"),
+	preload("res://resources/skills/coup_de_grace.tres"),
+	preload("res://resources/skills/counterattack.tres"),
 ]
 
 

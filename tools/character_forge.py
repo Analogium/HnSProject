@@ -379,13 +379,17 @@ def static_cells(cfg, cid):
 # Animations générées : un cycle entier en une seule image
 # --------------------------------------------------------------------------
 # L'arme suit l'équipement : chaque personnage a le coup d'épée **et** le lancer.
-ANIMS = {"walk": 4, "attack": 3, "cast": 3, "sweep": 5, "overhead": 5, "thrust": 5}
+ANIMS = {"walk": 4, "attack": 3, "cast": 3, "sweep": 5, "overhead": 5, "thrust": 5,
+         "flurry": 5, "throw": 5, "finisher": 5}
 STRIP = (1536, 640)
 MOTION = {"walk": "walking, walk cycle", "attack": "slashing attack motion, sword swing",
           "cast": "casting a spell, attack animation",
           "sweep": "horizontal slash, swinging the arm wide across the body, dynamic action pose",
           "overhead": "overhead strike, arm raised high above the head then slamming down, dynamic action pose",
-          "thrust": "lunging stab, arm thrust straight forward, deep lunge, dynamic action pose"}
+          "thrust": "lunging stab, arm thrust straight forward, deep lunge, dynamic action pose",
+          "flurry": "rapid flurry of quick stabs, arm jabbing straight forward again and again, fencing, dynamic action pose",
+          "throw": "throwing a knife, arm drawn back behind the head then hurled forward, dynamic action pose",
+          "finisher": "finishing blow, sword drawn far back then a deep lunging stab with the whole body, dynamic action pose"}
 ANIM_PROMPT = ("pixel art, game sprite sheet, {motion}, {n} frames of the same character in a row, "
                "{view}, {who}, full body, evenly spaced, identical character")
 ANIM_NEG = ("text, watermark, blurry, photo, 3d render, realistic proportions, gradient background, "
@@ -437,6 +441,33 @@ STRIKES = {
                                 ((585, 600), (535, 685)), ((630, 580), (625, 560)),
                                 ((610, 610), (615, 690))]},
                "lean": (-35, 75, 70, 20, 0), "crouch": (5, 30, 30, 10, 0), "lunge": (0, 1.0, 1.0, 0.5, 0)},
+    # Le Vive lame (jalon 50), pour sa seule planche : la Rafale — garde, estoc, retrait, deux
+    # estocs —, le lancer des Lames de jet — bras armé derrière la tête, lâcher devant —, et
+    # l'estoc fendu du Coup de grâce — l'épée ramenée loin derrière, puis tout le corps en avant.
+    "flurry": {"impact": 1,
+               "arm": {"side": [((440, 560), (500, 555)), ((640, 530), (770, 530)),
+                                ((520, 545), (600, 545)), ((640, 520), (770, 515)),
+                                ((640, 540), (770, 545))],
+                       "down": [((660, 560), (640, 510)), ((580, 600), (530, 690)),
+                                ((630, 580), (610, 600)), ((585, 600), (535, 685)),
+                                ((590, 595), (545, 690))]},
+               "lean": (-20, 60, 20, 60, 50), "crouch": (5, 25, 10, 25, 20), "lunge": (0, 0.8, 0.5, 0.9, 0.9)},
+    "throw": {"impact": 2,
+              "arm": {"side": [((470, 430), (420, 350)), ((540, 420), (600, 360)),
+                               ((620, 470), (730, 450)), ((600, 560), (680, 640)),
+                               ((540, 600), (560, 685))],
+                      "down": [((690, 430), (700, 330)), ((650, 420), (620, 350)),
+                               ((600, 560), (560, 640)), ((600, 620), (580, 710)),
+                               ((610, 610), (615, 690))]},
+              "lean": (-30, -10, 45, 55, 10), "crouch": (0, -5, 15, 25, 5), "lunge": (0, 0, 0.5, 0.6, 0.2)},
+    "finisher": {"impact": 2,
+                 "arm": {"side": [((430, 540), (360, 540)), ((420, 560), (340, 570)),
+                                  ((660, 530), (800, 530)), ((650, 535), (790, 535)),
+                                  ((560, 560), (620, 600))],
+                         "down": [((700, 560), (740, 500)), ((710, 570), (760, 520)),
+                                  ((585, 610), (540, 710)), ((585, 610), (540, 705)),
+                                  ((610, 610), (615, 690))]},
+                 "lean": (-45, -55, 90, 85, 25), "crouch": (10, 20, 40, 40, 10), "lunge": (0, 0, 1.0, 1.0, 0.4)},
 }
 REST_BLADE = (0.42, -0.91)
 # Le profil, jambes en fente : genou et cheville de la jambe avant, puis de l'arrière.

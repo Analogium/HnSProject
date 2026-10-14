@@ -279,6 +279,7 @@ func _on_area_entered(area: Area2D) -> void:
 	info.author = _author
 	if _cast != null and _cast.spectrum > 0.0:
 		info.multiplier(_spectrum(area as Hurtbox))
+	info.multiplier(_hit_factor())
 	(area as Hurtbox).take_damage(info)
 	# Le lanceur porte l'affixe : c'est lui qu'on soigne. **Valide avant le `as`** : un
 	# caster libéré ferait sinon traverser le joueur par son tir (invariant 4).
@@ -297,6 +298,8 @@ func _on_area_entered(area: Area2D) -> void:
 		)
 	if _cast != null and _cast.contagion > 0.0 and _cast.inflicted_state >= 0:
 		Projectile.contaminate.call_deferred(area, _cast.inflicted_state, _cast.contagion)
+	if _keeps_flying(info):
+		return
 	if _cast != null and _pierced < int(_cast.pierce):
 		_pierced += 1
 		_shatter(true)
@@ -305,7 +308,26 @@ func _on_area_entered(area: Area2D) -> void:
 		_bounced += 1
 		_bounce.call_deferred()
 		return
+	if _lodge(area as Hurtbox):
+		return
 	_finish()
+
+
+## Ce que ce tir ajoute à son coup, en facteur : 1, sauf le couteau (jalon 50).
+func _hit_factor() -> float:
+	return 1.0
+
+
+## Ce tir reste-t-il dans la cible où il s'arrête — il s'en charge alors : la lame plantée
+## (jalon 50). Les autres finissent leur course.
+func _lodge(_target: Hurtbox) -> bool:
+	return false
+
+
+## Ce tir passe-t-il outre la cible qu'il vient de frapper, sans rien compter : le couteau
+## qui critique (jalon 50). Les autres tirs s'y arrêtent.
+func _keeps_flying(_info: DamageInfo) -> bool:
+	return false
 
 
 ## Repart vers l'ennemi non frappé le plus proche, **dans tout le reste de sa course** et

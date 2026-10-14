@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/counterattack.png" id="2_icone"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="2_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="3_buff"]
+
+[sub_resource type="Resource" id="L_garde_esquive"]
+script = ExtResource("2_ligne")
+stat = "evasion"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="B_garde"]
+script = ExtResource("3_buff")
+id = "guard"
+name = "Garde"
+lines = Array[ExtResource("2_ligne")]([SubResource("L_garde_esquive")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "counterattack"
+name = "Contre-attaque"
+description = "Tant qu'elle tient, chaque coup esquivé appelle une riposte."
+nature = 0
+cadence = 0
+shape = 53
+mana_cost = 0.0
+mana_per_second = 3.0
+radius = 64.0
+damage_per_point = Array[float]([14.0, 18.0, 23.0, 29.0, 36.0])
+buffs = Array[ExtResource("3_buff")]([SubResource("B_garde")])
+required_manual_level = 10
+icon = ExtResource("2_icone")

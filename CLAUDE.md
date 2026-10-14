@@ -52,6 +52,7 @@ dossier. Vérifier le `sed` avant de lancer.
 ```bash
 tests/run.sh              # tout : ~2 min, dont 108 s de tests (mesuré le 22/09/2026)
 tests/run.sh unit         # ~20 s, dont 8 s de tests
+tests/run.sh integration coup_de_grace   # les seuls tests dont le nom contient ce mot
 ```
 
 **Rien ne s'annonce sans que la suite soit passée.** Du code qui compile n'est

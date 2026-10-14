@@ -371,3 +371,55 @@ Jamais pris : Paraphe, Craie, Calligraphie, Gravure, Entrelacs, Leurre, Signatur
 
 Jamais pris : Trop-plein, Philtre, Couvercle, Décoction, Bulles, Lie.
 
+## Manuel du Vive lame
+
+### Frappe vive
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 105/s | 120/s |
+| meilleur au paquet | Élancement 5, Impétuosité 3, Fente 1, Coupe-file 2, Coup sur coup 2, Détente 1, Coup double 2, Furia 2 | 477/s ×4,52 | 434/s ×3,63 |
+| meilleur au duel | Élancement 5, Détente 1, Coup double 2, Impétuosité 3, Premier sang 1, Ouverture 3 | 363/s ×3,45 | 618/s ×5,16 |
+
+Jamais pris : Épargne, Repli, Dérobade.
+
+### Rafale
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 68,7/s | 70,7/s |
+| meilleur au paquet | Coup d'œil 2, Botte secrète 1, Coup de Jarnac 1, Pointe 5, Battement 3, Insistance 3, Quatrième estoc 2 | 481/s ×7,01 | 516/s ×7,29 |
+| meilleur au duel | Coup d'œil 4, Botte secrète 1, Pointe 5, Insistance 3, Battement 3, Quatrième estoc 2, Montée 2 | 386/s ×5,62 | 569/s ×8,04 |
+
+Jamais pris : Fer long, Pression, Éventail, Rose des vents, Ivresse du sang.
+
+### Lames de jet
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 102/s | 107/s |
+| meilleur au paquet | Jet tendu 3, Perce-armure 2, Retour de lame 1, Poignée 2, Seconde salve 1, Aiguisage 5, Tir lointain 3, Enfilade 3 | 1623/s ×16,0 | 1202/s ×11,2 |
+| meilleur au duel | Poignée 2, Seconde salve 1, Aiguisage 5, Lame plantée 1, Hérisson 2, Retour de lame 1, Jet tendu 3, Perce-armure 2, Tir lointain 3 | 1108/s ×10,9 | 1202/s ×11,2 |
+
+Jamais pris : Lame chercheuse, Récupération, Ancrage.
+
+### Coup de grâce
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 102/s | 133/s |
+| meilleur au paquet | Estocade 5 | 190/s ×1,87 | 236/s ×1,78 |
+| meilleur au duel | Estocade 5, Allonge 1, Défaut de la cuirasse 3 | 190/s ×1,87 | 247/s ×1,86 |
+
+Jamais pris : Renverse, Dague de miséricorde, Implacable, Acculé, Rançon, Effroi, Sang-froid, Patience, Point final, Épilogue.
+
+### Contre-attaque
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 0,00/s | 0,00/s |
+| meilleur au paquet | — | 0,00/s | 0,00/s |
+| meilleur au duel | — | 0,00/s | 0,00/s |
+
+Jamais pris : Contre, Garde haute, Respiration, Fer tendu, Sangsue, Double riposte, Désarmement, Représailles, Calme, Pas de côté, Contretemps, Temps d'escrime.
+

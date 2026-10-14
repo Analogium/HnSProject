@@ -5,6 +5,9 @@ extends Area2D
 ## et le retour visuel s'y déclenchent, et non chez chaque acteur.
 
 signal damaged(info: DamageInfo)
+## Un coup évité : la Contre-attaque y riposte (jalon 50). Le coup n'a pas eu lieu, il n'est
+## pas `damaged`.
+signal evaded(info: DamageInfo)
 
 ## Layer 4, « player_hurtbox » : ne sert qu'à teinter le retour visuel.
 const PLAYER_LAYER := 1 << 3
@@ -57,6 +60,7 @@ func take_damage(info: DamageInfo) -> void:
 		if evade > 0.0 and Game.rng.randf() < evade:
 			if HitFeedback.current != null:
 				HitFeedback.current.miss(overhead(), on_player)
+			evaded.emit(info)
 			return
 		mitigate_part(info)
 
@@ -72,6 +76,8 @@ func take_damage(info: DamageInfo) -> void:
 	if info.author != null:
 		info.author.struck.emit(global_position, info.parts, states)
 		info.author.landed(info.amount)
+		if info.is_crit:
+			info.author.critical.emit(info.cast)
 	# Après le signal, et même sur un coup qui vient de tuer : le nombre de tirages
 	# ne dépend que de ce que le coup porte (invariant 3).
 	if states != null:
@@ -148,7 +154,8 @@ func _balance(info: DamageInfo) -> void:
 func mitigate_part(info: DamageInfo) -> void:
 	for kind in info.parts.size():
 		var lost := states.resistance_lost(kind) if states != null else 0.0
-		info.parts[kind] = stats.mitigate(kind, info.parts[kind], lost)
+		var kept := 1.0 - info.cast.chink * 0.01 if info.cast != null else 1.0
+		info.parts[kind] = stats.mitigate(kind, info.parts[kind], lost, kept)
 	# L'engourdissement après les défenses : « +10 % de dégâts reçus » se lit sur ce
 	# qui passe. Avant l'armure, elle en absorberait une part.
 	if states != null:

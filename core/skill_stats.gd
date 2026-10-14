@@ -364,6 +364,55 @@ const LABELS := {
 	BUBBLES: "rayon des bulles",
 	EMULSION: "émulsion",
 	LEES: "durée par seconde bue",
+	EXECUTION: "seuil d'achèvement",
+	IMPETUS: "dégâts par élan",
+	FIRST_BLOOD: "dégâts contre les intacts",
+	OPENING: "dégâts subis par la cible",
+	DOUBLE_HIT: "du second coup",
+	RETREAT: "repli",
+	SLIP: "dérobade",
+	CHAIN_STRIKE: "relance par tué",
+	FURIA: "dégâts par relance enchaînée",
+	LUNGE_PATH: "bond qui frappe",
+	CLEAVE_PATH: "du coup sur le passage",
+	ASCENT: "chance critique gagnée par estoc",
+	INSISTENCE: "dégâts par estoc répété",
+	EXTRA_THRUSTS: "estocs en plus",
+	SECRET_THRUST: "dernier estoc critique",
+	JARNAC: "dernier estoc qui traverse",
+	FAN: "estocs en éventail",
+	COMPASS: "estocs en étoile",
+	BLOOD_RUSH: "secondes de Frénésie par critique",
+	HARVEST: "PV max rendus par charge",
+	FEVER: "chance de charge par critique",
+	GULP: "chance de double charge",
+	BOTTOMLESS: "charges au plafond",
+	BERSERK: "berserk",
+	NO_QUARTER: "tués qui éclatent",
+	LAST_STAND: "dernier carré",
+	LONG_SHOT: "dégâts par distance",
+	ENFILADE: "dégâts par ennemi traversé",
+	RETURN_BLADE: "lames qui reviennent",
+	RECOVERY: "mana par lame rattrapée",
+	PLANTED: "lames qui se plantent",
+	ANCHORAGE: "secondes de lame plantée",
+	HEDGEHOG: "dégâts subis par lame plantée",
+	SECOND_VOLLEY: "seconde salve",
+	RELENTLESS: "dégâts par charge consommée",
+	CORNERED: "dégâts contre les blessés",
+	CHINK: "armure ignorée",
+	RANSOM: "mana par charge consommée",
+	DREAD: "secondes d'effroi",
+	COMPOSURE: "sang-froid",
+	PATIENCE: "patience",
+	FINAL_POINT: "point final",
+	EPILOGUE: "épilogue",
+	RIPOSTES: "ripostes en plus",
+	DISARM: "secondes de désarmement",
+	REPRISAL: "chance de représailles",
+	SIDESTEP: "esquive par pas de côté",
+	COUNTER_TIME: "contretemps",
+	FENCING_TIME: "dégâts du contretemps",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -714,6 +763,55 @@ const AGREEMENT := {
 	BUBBLES: "ms",
 	EMULSION: "fs",
 	LEES: "fs",
+	EXECUTION: "ms",
+	IMPETUS: "mp",
+	FIRST_BLOOD: "mp",
+	OPENING: "mp",
+	DOUBLE_HIT: "ms",
+	RETREAT: "ms",
+	SLIP: "fs",
+	CHAIN_STRIKE: "fs",
+	FURIA: "mp",
+	LUNGE_PATH: "ms",
+	CLEAVE_PATH: "ms",
+	ASCENT: "fs",
+	INSISTENCE: "mp",
+	EXTRA_THRUSTS: "mp",
+	SECRET_THRUST: "ms",
+	JARNAC: "ms",
+	FAN: "mp",
+	COMPASS: "mp",
+	BLOOD_RUSH: "fp",
+	HARVEST: "mp",
+	FEVER: "fs",
+	GULP: "fs",
+	BOTTOMLESS: "fp",
+	BERSERK: "ms",
+	NO_QUARTER: "mp",
+	LAST_STAND: "ms",
+	LONG_SHOT: "mp",
+	ENFILADE: "mp",
+	RETURN_BLADE: "fp",
+	RECOVERY: "ms",
+	PLANTED: "fp",
+	ANCHORAGE: "fp",
+	HEDGEHOG: "mp",
+	SECOND_VOLLEY: "fs",
+	RELENTLESS: "mp",
+	CORNERED: "mp",
+	CHINK: "fs",
+	RANSOM: "ms",
+	DREAD: "fp",
+	COMPOSURE: "ms",
+	PATIENCE: "fs",
+	FINAL_POINT: "ms",
+	EPILOGUE: "ms",
+	RIPOSTES: "fp",
+	DISARM: "fp",
+	REPRISAL: "fs",
+	SIDESTEP: "fs",
+	COUNTER_TIME: "ms",
+	FENCING_TIME: "mp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -1165,6 +1263,58 @@ const DECOCTION := "decoction"
 const BUBBLES := "bubbles"
 const EMULSION := "emulsion"
 const LEES := "lees"
+## Le Coup de grâce (jalon 50) : sous cette part de sa vie, en points de pourcentage, sa cible
+## est achevée. Posé au lancer par les charges consommées, que la Dague de miséricorde hausse.
+const EXECUTION := "execution"
+## Les arbres du Vive lame (jalon 50).
+const IMPETUS := "impetus"
+const FIRST_BLOOD := "first_blood"
+const OPENING := "opening"
+const DOUBLE_HIT := "double_hit"
+const RETREAT := "retreat"
+const SLIP := "slip"
+const CHAIN_STRIKE := "chain_strike"
+const FURIA := "furia"
+const LUNGE_PATH := "lunge_path"
+const CLEAVE_PATH := "cleave_path"
+const ASCENT := "ascent"
+const INSISTENCE := "insistence"
+const EXTRA_THRUSTS := "extra_thrusts"
+const SECRET_THRUST := "secret_thrust"
+const JARNAC := "jarnac"
+const FAN := "fan"
+const COMPASS := "compass"
+const BLOOD_RUSH := "blood_rush"
+const HARVEST := "harvest"
+const FEVER := "fever"
+const GULP := "gulp"
+const BOTTOMLESS := "bottomless"
+const BERSERK := "berserk"
+const NO_QUARTER := "no_quarter"
+const LAST_STAND := "last_stand"
+const LONG_SHOT := "long_shot"
+const ENFILADE := "enfilade"
+const RETURN_BLADE := "return_blade"
+const RECOVERY := "recovery"
+const PLANTED := "planted"
+const ANCHORAGE := "anchorage"
+const HEDGEHOG := "hedgehog"
+const SECOND_VOLLEY := "second_volley"
+const RELENTLESS := "relentless"
+const CORNERED := "cornered"
+const CHINK := "chink"
+const RANSOM := "ransom"
+const DREAD := "dread"
+const COMPOSURE := "composure"
+const PATIENCE := "patience"
+const FINAL_POINT := "final_point"
+const EPILOGUE := "epilogue"
+const RIPOSTES := "ripostes"
+const DISARM := "disarm"
+const REPRISAL := "reprisal"
+const SIDESTEP := "sidestep"
+const COUNTER_TIME := "counter_time"
+const FENCING_TIME := "fencing_time"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -1207,6 +1357,7 @@ const MECHANICS := [
 	SATURATION, INCARNATION, AURA, METAMORPHOSIS, TRIPLE_BURST, RECOIL,
 	REMIGES, DARK_OMEN, PECK, EVIL_EYE, CROAK, JETTATURA, CANON,
 	BRIM, FROTH, PHILTRE, MIX, LID, DECOCTION, BUBBLES, EMULSION, LEES,
+	RETREAT, SLIP, CHAIN_STRIKE, FURIA, LUNGE_PATH, CLEAVE_PATH, SECRET_THRUST, JARNAC, FAN, COMPASS, BLOOD_RUSH, FEVER, BERSERK, NO_QUARTER, LAST_STAND, ENFILADE, RETURN_BLADE, RECOVERY, PLANTED, ANCHORAGE, HEDGEHOG, SECOND_VOLLEY, COMPOSURE, PATIENCE, FINAL_POINT, EPILOGUE, COUNTER_TIME, FENCING_TIME,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -1592,6 +1743,59 @@ const FROTH_PART := 0.5
 const FROTH_REACH := 160.0
 const FROTH_SPEED := 200.0
 const LID_PART := 0.5
+## Le Vive lame (jalon 50). La Rafale : ses estocs, leur écart, leur largeur, et la chance
+## critique accrue que chacun ajoute au précédent. Le Coup de grâce : ce que vaut une charge
+## consommée — dégâts plus et seuil d'achèvement, en points de pourcentage. La Contre-attaque :
+## l'attente entre deux ripostes, sans quoi une meute qui rate dix fois en donnerait dix.
+const FRENZY_SKILL := "bloodlust"
+const COUNTER_SKILL := "counterattack"
+const FLURRY_THRUSTS := 3
+const FLURRY_GAP := 0.12
+const FLURRY_WIDTH := 12.0
+const FLURRY_CRIT := 50.0
+const FINISHER_POWER := 25.0
+const FINISHER_EXECUTION := 5.0
+const RIPOSTE_WAIT := 0.25
+## La Frappe vive : la tranche de bond que compte l'Impétuosité ; la durée de l'Ouverture ;
+## l'écart du Coup double ; le recul du Repli et l'intouchable de la Dérobade ; la largeur et
+## la part de ce que la Fente frappe en passant.
+const IMPETUS_STEP := 40.0
+const OPENING_TIME := 2.0
+const DOUBLE_GAP := 0.1
+const RETREAT_REACH := 60.0
+const SLIP_TIME := 0.4
+const PATH_WIDTH := 12.0
+const PATH_PART := 40.0
+## La Rafale : l'ouverture de l'Éventail, en degrés ; la portée du Coup de Jarnac, en multiple.
+const FAN_SPREAD := 60.0
+const JARNAC_REACH := 2.0
+## La Soif de sang : ce que le Berserk ajoute au plafond, et sa vitesse d'attaque plus à
+## pleines charges ; l'onde de Sans quartier.
+const BERSERK_CHARGES := 2
+const BERSERK_SPEED := 20.0
+const NO_QUARTER_RADIUS := 40.0
+const NO_QUARTER_PART := 0.3
+## Les Lames de jet : la tranche du Tir lointain ; la seconde salve, son écart et sa part ;
+## d'où une lame qui revient est rattrapée ; ce que tient une lame plantée, et ce que chacune
+## ajoute au Coup de grâce qui l'arrache, en points de pourcentage.
+const LONG_SHOT_STEP := 50.0
+const VOLLEY_GAP := 0.25
+const VOLLEY_PART := 0.5
+const CATCH_REACH := 12.0
+const PLANT_TIME := 4.0
+const PLANT_POWER := 20.0
+## Les lames qu'une cible porte au plus : sans plafond, le Hérisson rendait un duel sans fin
+## (×125 au banc des arbres, jalon 50).
+const PLANT_MOST := 5
+## Le Coup de grâce : les charges du Point final, son rayon et sa part ; la portée de l'Effroi.
+const FINAL_CHARGES := 5
+const FINAL_RADIUS := 40.0
+const FINAL_PART := 0.5
+const DREAD_REACH := 60.0
+## La Contre-attaque : ce que tient un Pas de côté, combien au plus ; la fenêtre du Contretemps.
+const SIDESTEP_TIME := 3.0
+const SIDESTEP_MOST := 5
+const COUNTER_WINDOW := 2.0
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -1989,12 +2193,63 @@ var decoction := 0.0
 var bubbles := 0.0
 var emulsion := 0.0
 var lees := 0.0
+var execution := 0.0
+var impetus := 0.0
+var first_blood := 0.0
+var opening := 0.0
+var double_hit := 0.0
+var retreat := 0.0
+var slip := 0.0
+var chain_strike := 0.0
+var furia := 0.0
+var lunge_path := 0.0
+var cleave_path := 0.0
+var ascent := 0.0
+var insistence := 0.0
+var extra_thrusts := 0.0
+var secret_thrust := 0.0
+var jarnac := 0.0
+var fan := 0.0
+var compass := 0.0
+var blood_rush := 0.0
+var harvest := 0.0
+var fever := 0.0
+var gulp := 0.0
+var bottomless := 0.0
+var berserk := 0.0
+var no_quarter := 0.0
+var last_stand := 0.0
+var long_shot := 0.0
+var enfilade := 0.0
+var return_blade := 0.0
+var recovery := 0.0
+var planted := 0.0
+var anchorage := 0.0
+var hedgehog := 0.0
+var second_volley := 0.0
+var relentless := 0.0
+var cornered := 0.0
+var chink := 0.0
+var ransom := 0.0
+var dread := 0.0
+var composure := 0.0
+var patience := 0.0
+var final_point := 0.0
+var epilogue := 0.0
+var ripostes := 0.0
+var disarm := 0.0
+var reprisal := 0.0
+var sidestep := 0.0
+var counter_time := 0.0
+var fencing_time := 0.0
 ## Le Chatoiement (jalon 49) : le lancer de chaque rebond, au tour suivant le précédent.
 ## Rempli par `Player._salvo()`, aucun nœud ne le vise.
 var bounce_turns: Array[SkillStats] = []
 ## Vrai sur le lancer que le Coup sûr a fait tomber juste : son gel et le Coup de massue le
 ## lisent au coup. Aucun nœud ne le vise.
 var is_sure := false
+## Le Coup sur coup (jalon 50) : les relances déjà enchaînées. Aucun nœud ne le vise.
+var chained := 0
 ## Le morceau de la Fracture, une fois fabriqué : un cache, que `echoed()` ne recopie pas.
 var _fragment: SkillStats
 ## Celui de la compétence, sauf un nœud qui l'affranchit (`TalentNode.frees`).
@@ -2385,6 +2640,31 @@ static func facts() -> Dictionary:
 		"gain_gorgee": roundi(DECOCTION_GAIN * 100.0),
 		"portee_goutte": roundi(FROTH_REACH),
 		"part_couvercle": roundi(LID_PART * 100.0),
+		"pas_impetuosite": roundi(IMPETUS_STEP),
+		"duree_ouverture": roundi(OPENING_TIME),
+		"recul_repli": roundi(RETREAT_REACH),
+		"duree_derobade": SLIP_TIME,
+		"part_fente": roundi(PATH_PART),
+		"part_rafale": roundi(FLURRY_CRIT),
+		"ouverture_eventail": roundi(FAN_SPREAD),
+		"charges_berserk": BERSERK_CHARGES,
+		"vitesse_berserk": roundi(BERSERK_SPEED),
+		"rayon_quartier": roundi(NO_QUARTER_RADIUS),
+		"part_quartier": roundi(NO_QUARTER_PART * 100.0),
+		"pas_tir": roundi(LONG_SHOT_STEP),
+		"ecart_salve": VOLLEY_GAP,
+		"part_salve": roundi(VOLLEY_PART * 100.0),
+		"duree_plantee": roundi(PLANT_TIME),
+		"part_plantee": roundi(PLANT_POWER),
+		"plantees_max": PLANT_MOST,
+		"charges_final": FINAL_CHARGES,
+		"rayon_final": roundi(FINAL_RADIUS),
+		"part_final": roundi(FINAL_PART * 100.0),
+		"portee_effroi": roundi(DREAD_REACH),
+		"duree_pas": roundi(SIDESTEP_TIME),
+		"pas_max": SIDESTEP_MOST,
+		"fenetre_contretemps": roundi(COUNTER_WINDOW),
+		"part_charge_grace": roundi(FINISHER_POWER),
 	}
 
 

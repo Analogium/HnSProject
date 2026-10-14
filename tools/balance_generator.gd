@@ -201,7 +201,7 @@ func _simulation(l: PackedStringArray) -> void:
 const TREE_PARTS := "user://arbres"
 const TREE_MANUALS := [
 	"manual_fire", "manual_lightning", "manual_cold", "manual_necrotic", "manual_weapons",
-	"manual_holy", "manual_witch",
+	"manual_holy", "manual_witch", "manual_swiftblade",
 ]
 
 

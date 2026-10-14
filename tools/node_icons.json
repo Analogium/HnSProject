@@ -2242,5 +2242,309 @@
   "glyph_counterseal": [
     "A cracked dark red wax seal breaking into three small glowing circles, orange, icy blue and violet.",
     777, "suite", {"nature": "witch"}
+  ],
+  "quick_strike_momentum": [
+    "A steel rapier blade lunging to the right, a thick white streak trailing behind it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_spring": [
+    "A coiled steel spring stretched out to the right, ready to launch.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_thrift": [
+    "A small leather coin purse tied shut, one blue mana drop beside it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_impetus": [
+    "A steel arrow flying to the right with three long white speed lines behind it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_first_blood": [
+    "A single drop of red blood falling from the tip of a steel blade.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_opening": [
+    "A steel breastplate with a big round hole punched in its center, bright white light shining through the hole.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_double_hit": [
+    "Two short thick white slash marks side by side, the second one smaller.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "quick_strike_retreat": [
+    "A thick curved white arrow bouncing back to the left off a small red target mark.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "quick_strike_slip": [
+    "A grey hooded cloak flying away empty, no person inside, no face.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "quick_strike_chain_strike": [
+    "Three red target marks in a zigzag row linked by a thin white dashed line.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "quick_strike_furia": [
+    "Three bright orange chevrons pointing right, growing larger from left to right.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "quick_strike_lunge_path": [
+    "A long straight white slash line passing through two small red target marks in a row.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "quick_strike_cleave_path": [
+    "A wide white blade trail cutting through a row of three small wooden posts.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "flurry_point": [
+    "The sharp tip of a steel rapier with a bright white glint on its point.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "flurry_beat": [
+    "A wooden metronome with its arm swinging, short white motion lines.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "flurry_glance": [
+    "A single wide open eye with a bright white star glinting in its pupil.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "flurry_long_steel": [
+    "A very long thin steel rapier lying horizontally, small gold guard.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "flurry_ascent": [
+    "Three steel blades pointing right, each one higher than the previous like stairs.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "flurry_insistence": [
+    "A red target mark pierced at its center by three thin steel needles.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "flurry_pressure": [
+    "A blue mana drop squeezed between two steel blades.",
+    777, "major", {"nature": "physical"}
+  ],
+  "flurry_fourth_thrust": [
+    "Four thin steel rapier blades side by side, pointing right.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "flurry_secret_thrust": [
+    "A steel rapier with a small golden keyhole on its blade.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "flurry_jarnac": [
+    "A steel rapier piercing straight through three round wooden shields in a row.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "flurry_fan": [
+    "Three steel blades spreading in a fan from one gold hilt, pointing right.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "flurry_compass": [
+    "A compass rose star whose eight points are steel blades.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "flurry_blood_rush": [
+    "A red heart with a bright white star spark beside it.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "bloodlust_carnage": [
+    "A blood-red steel blade with three red drops falling from it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_drunkenness": [
+    "A red leather boot with small white wings on its heel.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_tenacity": [
+    "A red hourglass gripped by a steel gauntlet.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_instinct": [
+    "A snarling red wolf head seen in profile.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_hot_blood": [
+    "A red heart wrapped in small orange flames.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_harvest": [
+    "A steel sickle with a red heart-shaped drop on its blade.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_fever": [
+    "A red thermometer with a bright white star at its bulb.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "bloodlust_gulp": [
+    "A steel goblet overflowing with red liquid.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_bottomless": [
+    "A tall steel goblet with no bottom, red liquid pouring straight through it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "bloodlust_berserk": [
+    "A horned steel helmet with glowing red eye slits, empty, no face, no person.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "bloodlust_no_quarter": [
+    "A red skull bursting into sharp white shards.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "bloodlust_last_stand": [
+    "A small square stone tower with a red banner on top.",
+    777, "major", {"nature": "physical"}
+  ],
+  "throwing_knives_whetting": [
+    "A grey whetstone sharpening a small steel knife, white sparks flying.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "throwing_knives_taut_throw": [
+    "A steel knife flying to the right with one long straight white motion line.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "throwing_knives_handful": [
+    "Five steel throwing knives held in a fan, hilts together.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "throwing_knives_armor_piercer": [
+    "A steel knife piercing through a bronze plate.",
+    777, "major", {"nature": "physical"}
+  ],
+  "throwing_knives_seeking_blade": [
+    "A steel knife following a curved white dashed arc toward a red target mark.",
+    777, "major", {"nature": "physical"}
+  ],
+  "throwing_knives_long_shot": [
+    "A brass spyglass, a small steel knife flying far away beyond it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "throwing_knives_enfilade": [
+    "A steel knife passing through three red target rings in a row.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "throwing_knives_return_blade": [
+    "A steel knife riding a curved white arrow that loops back to the left.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "throwing_knives_recovery": [
+    "A steel knife caught in a brown leather glove, a blue mana drop above.",
+    1337, "suite", {"nature": "physical"}
+  ],
+  "throwing_knives_planted_blade": [
+    "A steel knife stuck upright in a wooden log.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "throwing_knives_anchorage": [
+    "A steel knife stuck in a wooden log, a small hourglass beside it.",
+    4242, "suite", {"nature": "physical"}
+  ],
+  "throwing_knives_hedgehog": [
+    "A small brown hedgehog whose spines are steel knives.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "throwing_knives_second_volley": [
+    "Two rows of steel throwing knives flying to the right, one behind the other.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "coup_de_grace_estocade": [
+    "A heavy steel sword thrusting right, a big white impact star at its tip.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_reversal": [
+    "A thick white arrow pushing a round wooden shield backward to the right.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "coup_de_grace_reach": [
+    "A long steel spear tip extending far to the right.",
+    1337, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_misericord": [
+    "A slender steel dagger with a cross-shaped guard, pointing down.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_relentless": [
+    "A steel sword with five stacked red chevrons along its blade.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_cornered": [
+    "A cracked red heart, its upper half empty.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_chink": [
+    "A bronze breastplate with a narrow gap between two plates, a thin steel blade slipping into the gap.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_ransom": [
+    "A blue mana crystal held in a steel gauntlet.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_dread": [
+    "A white ghostly skull with wide eyes, short trembling lines around it.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "coup_de_grace_composure": [
+    "A steel sword balanced perfectly on a small stone pedestal.",
+    777, "major", {"nature": "physical"}
+  ],
+  "coup_de_grace_patience": [
+    "A steel sword leaning against a tall hourglass.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "coup_de_grace_final_point": [
+    "A big white burst star with eight sharp spikes, long and short alternating.",
+    1337, "major", {"nature": "physical"}
+  ],
+  "coup_de_grace_epilogue": [
+    "A closed leather book with a steel dagger plunged into its cover.",
+    777, "suite", {"nature": "physical"}
+  ],
+  "counterattack_counter": [
+    "A steel sword deflecting a red arrow away, a white spark where they meet.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_high_guard": [
+    "A steel sword held upright, blade up, in front of a small round buckler.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_breath": [
+    "A swirl of pale blue wind around a small blue mana drop.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_taut_steel": [
+    "A long thin steel rapier stretched horizontally, a taut white line along its edge.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_leech": [
+    "A fat dark brown segmented leech, a short tube shape with no eyes and no face, a round sucking mouth dripping one red drop.",
+    4242, "major", {"nature": "physical"}
+  ],
+  "counterattack_double_riposte": [
+    "Two curved white arrows bouncing back to the left off a steel shield.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "counterattack_disarm": [
+    "A steel sword spinning in the air, knocked away, white motion arcs around it.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_reprisal": [
+    "A round bronze shield covered with sharp steel spikes pointing outward.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_calm": [
+    "A still pale blue water drop above a single ripple ring.",
+    777, "basic", {"nature": "physical"}
+  ],
+  "counterattack_sidestep": [
+    "Two grey footprints stepping sideways, a curved white motion line between them.",
+    4242, "basic", {"nature": "physical"}
+  ],
+  "counterattack_counter_time": [
+    "A gold pocket watch whose hand is a tiny steel blade.",
+    777, "major", {"nature": "physical"}
+  ],
+  "counterattack_fencing_time": [
+    "A gold pocket watch with a bright white star at its center.",
+    4242, "suite", {"nature": "physical"}
   ]
 }

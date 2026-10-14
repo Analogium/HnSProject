@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/coup_de_grace.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "coup_de_grace"
+name = "Coup de grâce"
+description = "Un estoc lourd qui vide la Frénésie et achève ce qui chancelle."
+nature = 0
+cadence = 0
+attack_time_factor = 1.4
+shape = 52
+mana_cost = 10.0
+radius = 56.0
+damage_per_point = Array[float]([40.0, 52.0, 66.0, 82.0, 100.0])
+required_manual_level = 7
+icon = ExtResource("2_icone")

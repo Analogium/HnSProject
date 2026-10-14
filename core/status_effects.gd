@@ -30,6 +30,9 @@ signal struck(at: Vector2, parts: Array, victim: StatusEffects)
 ## y naissent. Émis par la victime, qui seule sait qu'elle meurt. Le lancer sans type,
 ## pour la même boucle que `struck`.
 signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
+## **Ce corps vient de porter un critique** (jalon 50) : la Fièvre et l'Ivresse du sang du
+## Vive lame. Le lancer sans type, comme `slew`.
+signal critical(cast: RefCounted)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 ## OVERHEAT : la Surchauffe de la Boule de feu (jalon 42), des charges que porte sa force.
@@ -240,6 +243,10 @@ var _to_show := 0.0
 ## reste. Pas un état : rien ne se montre, rien ne se passe ni ne se consomme.
 var _exposed := {}
 var _exposed_left := {}
+## L'Ouverture et le Hérisson (jalon 50) : les dégâts subis en plus, en points de
+## pourcentage, et ce qu'il leur reste. La plus forte l'emporte, comme l'Équilibre.
+var _opened := 0.0
+var _opened_left := 0.0
 
 
 ## Le joueur et les ennemis ont un champ `states` ; un tir ne connaît que son lanceur.
@@ -462,6 +469,15 @@ func resistance_lost(nature: int) -> float:
 	return float(_exposed.get(nature, 0.0)) + _lost_to_states(nature)
 
 
+## L'Ouverture (jalon 50) : ce corps subit `points` % de plus de tout, `seconds` durant.
+func open_up(points: float, seconds: float) -> void:
+	if points < _opened and _opened_left > 0.0:
+		return
+	_opened = points
+	_opened_left = seconds
+	_recompute()
+
+
 ## L'Équilibre (jalon 49) : la plus forte ouverture l'emporte, et sa durée repart.
 func expose(nature: int, points: float, seconds: float) -> void:
 	if points >= float(_exposed.get(nature, 0.0)):
@@ -570,6 +586,11 @@ func put(
 func advance(delta: float) -> float:
 	if not _exposed.is_empty():
 		_close(delta)
+	if _opened_left > 0.0:
+		_opened_left -= delta
+		if _opened_left <= 0.0:
+			_opened = 0.0
+			_recompute()
 	if _states.is_empty():
 		return 0.0
 	var amplified := damage_taken_factor
@@ -632,6 +653,8 @@ func clear() -> void:
 	_to_show = 0.0
 	_exposed.clear()
 	_exposed_left.clear()
+	_opened = 0.0
+	_opened_left = 0.0
 	if _states.is_empty():
 		return
 	_states.clear()
@@ -646,7 +669,7 @@ func _recompute() -> void:
 	if _holds > 0:
 		speed_factor = 0.0
 	var numb := _state(Kind.NUMB)
-	damage_taken_factor = 1.0 + NUMB * numb.strength if numb != null else 1.0
+	damage_taken_factor = (1.0 + NUMB * numb.strength if numb != null else 1.0) * (1.0 + _opened * 0.01)
 	var blessing := _state(Kind.BLESSING)
 	damage_dealt_factor = maxf(1.0 - BLESSING * blessing.strength, 0.0) if blessing != null else 1.0
 	# Le flétri n'est affaibli que par la force que son arbre ajoute (Asphyxie, jalon 38).

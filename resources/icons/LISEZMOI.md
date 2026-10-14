@@ -280,6 +280,14 @@ yeux côte à côte sortent en visage**, quelle que soit la consigne : un seul �
 sort en lettre** (un « R » sur la Récurrence) : une étoile la remplace. Une ressemblance
 gardée : le Diapason et la Dissonance (deux diapasons).
 
+Le Vive lame (jalon 50) : 76 nœuds sans reprise, palette `physical`, et quatre icônes de
+compétence en Qwen, et les deux du jalon 28 (Frappe vive, Soif de sang) refaites. Graines
+choisies sans l'utilisateur (`Bureau\hns-captures-vivelame-icones\`). **Un personnage ou une
+créature est accepté s'il dit le nœud** — l'escrimeur en fente de l'Élancement est resté ; on
+ne le rejette que s'il ne dit pas le nœud. **Une fissure fine ne survit pas aux 32 px** : un
+trou percé de lumière la remplace. **Une sangsue sort en crapaud, puis en serpent** :
+« segmented », « no eyes, no face » la donnent.
+
 
 ## Icônes d'objets
 

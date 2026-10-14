@@ -202,7 +202,8 @@ func test_a_bolt_carries_projectile_and_a_sword_swing_does_not() -> void:
 
 ## `projectile` se déduit de la forme (jalon 11), et d'elle seule : une chaîne ou
 ## un nuage n'en sont pas, et un affixe de projectile ne doit pas les servir. Le
-## Brasero, si : il tire des boules (jalon 42) ; l'Orbe gelée crache des éclats (jalon 44).
+## Brasero, si : il tire des boules (jalon 42) ; l'Orbe gelée crache des éclats (jalon 44) ;
+## les Lames de jet lancent des couteaux (jalon 50).
 func test_the_shape_gives_projectile() -> void:
 	var c := _skill([1.0] as Array[float])
 	for shape in Skill.Shape.values():
@@ -211,7 +212,7 @@ func test_the_shape_gives_projectile() -> void:
 			c.worn(Keywords.PROJECTILE),
 			shape in [
 				Skill.Shape.BOLT, Skill.Shape.BALL, Skill.Shape.COMET, Skill.Shape.ORB,
-				Skill.Shape.TURRET, Skill.Shape.FROST_ORB,
+				Skill.Shape.TURRET, Skill.Shape.FROST_ORB, Skill.Shape.KNIVES,
 			],
 			"forme %s" % Skill.Shape.keys()[shape]
 		)

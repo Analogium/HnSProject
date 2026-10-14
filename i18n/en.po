@@ -542,6 +542,33 @@ msgstr "Each enemy killed by an attack grants a Frenzy charge."
 msgid "Frénésie"
 msgstr "Frenzy"
 
+msgid "Rafale"
+msgstr "Flurry"
+
+msgid "Trois estocs droit devant, chacun plus prompt au critique."
+msgstr "Three thrusts straight ahead, each more prone to crit."
+
+msgid "Lames de jet"
+msgstr "Throwing Knives"
+
+msgid "Trois couteaux en éventail ; celui qui critique traverse."
+msgstr "Three knives in a fan; one that crits passes through."
+
+msgid "Coup de grâce"
+msgstr "Coup de Grâce"
+
+msgid "Un estoc lourd qui vide la Frénésie et achève ce qui chancelle."
+msgstr "A heavy thrust that spends Frenzy and finishes the staggering."
+
+msgid "Contre-attaque"
+msgstr "Counterattack"
+
+msgid "Tant qu'elle tient, chaque coup esquivé appelle une riposte."
+msgstr "While it lasts, each evaded blow calls for a riposte."
+
+msgid "Garde"
+msgstr "Guard"
+
 # ---------------------------------------------------------------------------
 # Passifs
 # ---------------------------------------------------------------------------
@@ -3098,8 +3125,8 @@ msgstr "A manual does nothing in the bag: it is studied on the rack, which has {
 msgid "Le manuel de classe"
 msgstr "The class manual"
 
-msgid "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres."
-msgstr "One more slot holds the class manual. It never drops and cannot be removed, but it learns, reads and takes points like the others."
+msgid "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres.\n\nCelui du Vive lame tourne autour de la Frénésie : la Soif de sang en gagne une charge à chaque ennemi tué d'une attaque, le Coup de grâce les dépense toutes — plus il en prend, plus il frappe fort et plus tôt il achève sa cible. Sa Contre-attaque riposte à chaque coup esquivé."
+msgstr "One more slot holds the class manual. It never drops and cannot be removed, but it learns, reads and takes points like the others.\n\nThe Swiftblade's revolves around Frenzy: Bloodlust gains a charge for each enemy killed by an attack, Coup de Grâce spends them all — the more it takes, the harder it hits and the sooner it executes its target. Its Counterattack ripostes to every evaded blow."
 
 msgid "Expérience et niveaux"
 msgstr "Experience and levels"
@@ -5817,6 +5844,9 @@ msgstr "seconds before the seal falls"
 msgid "seuil d'achèvement des maudits"
 msgstr "cursed execution threshold"
 
+msgid "seuil d'achèvement"
+msgstr "execution threshold"
+
 msgid "maudits tués qui se relèvent"
 msgstr "slain cursed that rise"
 
@@ -7274,3 +7304,670 @@ msgstr "of Persistence"
 
 msgid "dégâts du contrecoup par seconde"
 msgstr "backlash damage per second"
+
+# ---------------------------------------------------------------------------
+# Les arbres du Vive lame (jalon 50)
+# ---------------------------------------------------------------------------
+
+msgid "Élancement"
+msgstr "Spring"
+
+msgid "La frappe vive frappe plus fort."
+msgstr "Quick Strike hits harder."
+
+msgid "Détente"
+msgstr "Coil"
+
+msgid "Le bond porte plus loin : la cible se cherche dans un cercle plus large."
+msgstr "The leap carries farther: the target is sought in a wider circle."
+
+msgid "Épargne"
+msgstr "Thrift"
+
+msgid "La frappe vive coûte moins de mana."
+msgstr "Quick Strike costs less mana."
+
+msgid "Impétuosité"
+msgstr "Impetuosity"
+
+msgid "Plus le bond est long, plus le coup est fort : un bonus par tranche de {pas_impetuosite} px franchis."
+msgstr "The longer the leap, the stronger the blow: a bonus for every {pas_impetuosite} px crossed."
+
+msgid "Premier sang"
+msgstr "First Blood"
+
+msgid "Contre un ennemi encore intact, la frappe vive frappe bien plus fort."
+msgstr "Against an enemy still unharmed, Quick Strike hits much harder."
+
+msgid "Ouverture"
+msgstr "Opening"
+
+msgid "La cible frappée subit davantage de tous vos coups pendant {duree_ouverture} s."
+msgstr "The struck target takes more from all your blows for {duree_ouverture} s."
+
+msgid "Coup double"
+msgstr "Double Hit"
+
+msgid "Un second coup suit le premier, plus faible."
+msgstr "A second, weaker hit follows the first."
+
+msgid "Repli"
+msgstr "Withdraw"
+
+msgid "Après le coup, on rebondit de {recul_repli} px vers d'où l'on venait : frapper et sortir."
+msgstr "After the blow, you spring back {recul_repli} px toward where you came from: strike and leave."
+
+msgid "Dérobade"
+msgstr "Slip Away"
+
+msgid "Le repli rend intouchable {duree_derobade} s."
+msgstr "The withdrawal makes you untouchable for {duree_derobade} s."
+
+msgid "Coup sur coup"
+msgstr "Blow upon Blow"
+
+msgid "Un ennemi tué par la frappe vive la relance aussitôt, sans payer, sur l'ennemi le plus proche à portée — une relance d'affilée par point."
+msgstr "An enemy killed by Quick Strike relaunches it at once, free, at the nearest enemy in range — one relaunch in a row per point."
+
+msgid "Furia"
+msgstr "Furia"
+
+msgid "Chaque relance du Coup sur coup frappe plus fort que la précédente."
+msgstr "Each Blow upon Blow relaunch hits harder than the one before."
+
+msgid "Fente"
+msgstr "Lunge"
+
+msgid "Le bond frappe tout ce qu'il traverse, à {part_fente} % du coup — un geste plus lent."
+msgstr "The leap strikes everything it crosses, at {part_fente}% of the blow — a slower gesture."
+
+msgid "Coupe-file"
+msgstr "Cut Through"
+
+msgid "Ce que traverse la Fente prend une plus grande part du coup."
+msgstr "What the Lunge crosses takes a larger share of the blow."
+
+msgid "Pointe"
+msgstr "Point"
+
+msgid "Les estocs de la Rafale frappent plus fort."
+msgstr "Flurry's thrusts hit harder."
+
+msgid "Battement"
+msgstr "Beat"
+
+msgid "La Rafale se porte plus vite."
+msgstr "Flurry is delivered faster."
+
+msgid "Coup d'œil"
+msgstr "Keen Eye"
+
+msgid "Les estocs critiquent plus souvent."
+msgstr "The thrusts crit more often."
+
+msgid "Fer long"
+msgstr "Long Steel"
+
+msgid "Les estocs portent plus loin."
+msgstr "The thrusts reach farther."
+
+msgid "Montée"
+msgstr "Rise"
+
+msgid "D'un estoc à l'autre, la chance critique monte plus vite : chacun ajoutait {part_rafale} % au précédent."
+msgstr "From one thrust to the next, crit chance climbs faster: each added {part_rafale}% to the previous one."
+
+msgid "Insistance"
+msgstr "Insistence"
+
+msgid "Un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
+msgstr "A thrust that hits the same target as the previous one hits harder, and the next harder still."
+
+msgid "Pression"
+msgstr "Pressure"
+
+msgid "Chaque estoc qui touche rend du mana."
+msgstr "Each thrust that lands restores mana."
+
+msgid "Quatrième estoc"
+msgstr "Fourth Thrust"
+
+msgid "Un estoc de plus par point dans chaque Rafale, au prix d'un geste plus long."
+msgstr "One more thrust per point in each Flurry, at the cost of a longer gesture."
+
+msgid "Botte secrète"
+msgstr "Secret Thrust"
+
+msgid "Le dernier estoc de la Rafale est critique à coup sûr."
+msgstr "Flurry's last thrust is a sure critical hit."
+
+msgid "Coup de Jarnac"
+msgstr "Jarnac's Stroke"
+
+msgid "Le dernier estoc porte deux fois plus loin et traverse tout ce qu'il rencontre."
+msgstr "The last thrust reaches twice as far and pierces everything in its way."
+
+msgid "Éventail"
+msgstr "Fan"
+
+msgid "Les estocs partent en éventail sur {ouverture_eventail}° : un groupe plutôt qu'un duel, au prix de leurs dégâts."
+msgstr "The thrusts fan out over {ouverture_eventail}°: a group rather than a duel, at the cost of their damage."
+
+msgid "Rose des vents"
+msgstr "Compass Rose"
+
+msgid "Sous l'Éventail, les estocs se répartissent sur tout le cercle."
+msgstr "Under Fan, the thrusts spread over the whole circle."
+
+msgid "Ivresse du sang"
+msgstr "Blood Rush"
+
+msgid "Chaque critique de la Rafale ravive les charges de Frénésie de la Soif de sang."
+msgstr "Each Flurry critical hit revives Bloodlust's Frenzy charges."
+
+msgid "Carnage"
+msgstr "Carnage"
+
+msgid "Par charge de Frénésie, vos attaques font plus de dégâts."
+msgstr "Per Frenzy charge, your attacks deal more damage."
+
+msgid "Ivresse"
+msgstr "Intoxication"
+
+msgid "Par charge de Frénésie, vous courez plus vite."
+msgstr "Per Frenzy charge, you run faster."
+
+msgid "Ténacité"
+msgstr "Tenacity"
+
+msgid "Les charges de Frénésie tiennent plus longtemps."
+msgstr "Frenzy charges last longer."
+
+msgid "Instinct"
+msgstr "Instinct"
+
+msgid "Par charge de Frénésie, vos critiques frappent plus fort."
+msgstr "Per Frenzy charge, your critical hits hit harder."
+
+msgid "Sang chaud"
+msgstr "Hot Blood"
+
+msgid "Par charge de Frénésie, vous regagnez de la vie chaque seconde."
+msgstr "Per Frenzy charge, you regain life every second."
+
+msgid "Moisson"
+msgstr "Harvest"
+
+msgid "Chaque charge de Frénésie gagnée rend une part de vos PV max."
+msgstr "Each Frenzy charge gained restores a share of your max life."
+
+msgid "Fièvre"
+msgstr "Fever"
+
+msgid "Un coup critique d'attaque peut aussi donner une charge de Frénésie."
+msgstr "An attack critical hit can also grant a Frenzy charge."
+
+msgid "Lampée"
+msgstr "Gulp"
+
+msgid "Un ennemi tué peut donner deux charges au lieu d'une."
+msgstr "A killed enemy can grant two charges instead of one."
+
+msgid "Sans fond"
+msgstr "Bottomless"
+
+msgid "Une charge de plus au plafond par point, mais elles tiennent moins longtemps."
+msgstr "One more charge at the cap per point, but they last less long."
+
+msgid "Berserk"
+msgstr "Berserk"
+
+msgid "{charges_berserk} charges de plus au plafond ; à pleines charges, +{vitesse_berserk} % de vitesse d'attaque plus — mais chaque charge vous fait subir davantage."
+msgstr "{charges_berserk} more charges at the cap; at full charges, {vitesse_berserk}% more attack speed — but each charge makes you take more damage."
+
+msgid "Sans quartier"
+msgstr "No Quarter"
+
+msgid "Sous le Berserk, à pleines charges, chaque ennemi tué d'une attaque éclate : une onde de {rayon_quartier} px, à {part_quartier} % du coup qui l'a tué."
+msgstr "Under Berserk, at full charges, each enemy killed by an attack bursts: a {rayon_quartier} px wave at {part_quartier}% of the killing blow."
+
+msgid "Dernier carré"
+msgstr "Last Stand"
+
+msgid "À l'échéance, la moitié des charges reste et repart pour une tenue entière."
+msgstr "When they expire, half the charges remain and start a full hold again."
+
+msgid "Aiguisage"
+msgstr "Whetting"
+
+msgid "Les couteaux frappent plus fort."
+msgstr "The knives hit harder."
+
+msgid "Jet tendu"
+msgstr "Taut Throw"
+
+msgid "Les couteaux filent plus vite, et donc plus loin."
+msgstr "The knives fly faster, and so farther."
+
+msgid "Poignée"
+msgstr "Handful"
+
+msgid "Un couteau de plus par point dans l'éventail, chacun un peu plus faible."
+msgstr "One more knife per point in the fan, each a little weaker."
+
+msgid "Perce-armure"
+msgstr "Armor Piercer"
+
+msgid "Chaque couteau traverse un ennemi de plus, critique ou non."
+msgstr "Each knife pierces one more enemy, critical or not."
+
+msgid "Lame chercheuse"
+msgstr "Seeking Blade"
+
+msgid "Les couteaux s'infléchissent vers un ennemi proche de leur course."
+msgstr "The knives curve toward an enemy near their path."
+
+msgid "Tir lointain"
+msgstr "Long Shot"
+
+msgid "Plus un couteau a volé, plus il frappe fort : un bonus par tranche de {pas_tir} px parcourus."
+msgstr "The farther a knife has flown, the harder it hits: a bonus for every {pas_tir} px travelled."
+
+msgid "Enfilade"
+msgstr "Enfilade"
+
+msgid "Un couteau qui traverse frappe plus fort chaque ennemi suivant."
+msgstr "A knife that passes through hits each following enemy harder."
+
+msgid "Retour de lame"
+msgstr "Returning Blade"
+
+msgid "En bout de course, les couteaux reviennent vers vous et frappent encore ce qu'ils croisent."
+msgstr "At the end of their flight, the knives come back to you and hit again whatever they cross."
+
+msgid "Récupération"
+msgstr "Recovery"
+
+msgid "Chaque couteau rattrapé rend du mana."
+msgstr "Each knife caught back restores mana."
+
+msgid "Lame plantée"
+msgstr "Planted Blade"
+
+msgid "Un couteau qui s'arrête dans un ennemi y reste planté {duree_plantee} s, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
+msgstr "A knife that stops in an enemy stays planted for {duree_plantee} s, {plantees_max} at most; Coup de Grâce tears them out, {part_plantee}% more damage per blade."
+
+msgid "Ancrage"
+msgstr "Anchorage"
+
+msgid "Les lames plantées tiennent plus longtemps."
+msgstr "Planted blades stay in longer."
+
+msgid "Hérisson"
+msgstr "Hedgehog"
+
+msgid "Chaque lame plantée fait subir davantage de dégâts à son porteur."
+msgstr "Each planted blade makes its bearer take more damage."
+
+msgid "Seconde salve"
+msgstr "Second Volley"
+
+msgid "Une seconde volée part {ecart_salve} s après la première, à {part_salve} %."
+msgstr "A second volley leaves {ecart_salve} s after the first, at {part_salve}%."
+
+msgid "Estocade"
+msgstr "Estocade"
+
+msgid "Le Coup de grâce frappe plus fort."
+msgstr "Coup de Grâce hits harder."
+
+msgid "Renverse"
+msgstr "Reversal"
+
+msgid "Le Coup de grâce repousse sa cible."
+msgstr "Coup de Grâce knocks its target back."
+
+msgid "Allonge"
+msgstr "Reach"
+
+msgid "La cible se cherche plus loin."
+msgstr "The target is sought farther away."
+
+msgid "Dague de miséricorde"
+msgstr "Misericord"
+
+msgid "Le Coup de grâce achève plus tôt, charges de Frénésie ou non."
+msgstr "Coup de Grâce executes sooner, with Frenzy charges or not."
+
+msgid "Implacable"
+msgstr "Relentless"
+
+msgid "Chaque charge de Frénésie consommée vaut davantage : elle donnait +{part_charge_grace} % de dégâts plus."
+msgstr "Each Frenzy charge spent is worth more: it gave {part_charge_grace}% more damage."
+
+msgid "Acculé"
+msgstr "Cornered"
+
+msgid "Contre un ennemi sous la moitié de sa vie, le Coup de grâce frappe plus fort."
+msgstr "Against an enemy below half its life, Coup de Grâce hits harder."
+
+msgid "Défaut de la cuirasse"
+msgstr "Chink in the Armor"
+
+msgid "Le coup passe une part de l'armure de sa cible."
+msgstr "The blow bypasses part of its target's armor."
+
+msgid "Rançon"
+msgstr "Ransom"
+
+msgid "Chaque charge consommée rend du mana."
+msgstr "Each charge spent restores mana."
+
+msgid "Effroi"
+msgstr "Dread"
+
+msgid "Un ennemi achevé ou tué par le Coup de grâce assomme ses voisins à {portee_effroi} px."
+msgstr "An enemy executed or killed by Coup de Grâce stuns its neighbors within {portee_effroi} px."
+
+msgid "Sang-froid"
+msgstr "Composure"
+
+msgid "Le Coup de grâce ne consomme que la moitié des charges, mais chacune vaut moins."
+msgstr "Coup de Grâce spends only half the charges, but each is worth less."
+
+msgid "Patience"
+msgstr "Patience"
+
+msgid "Les charges que garde le Sang-froid repartent pour une tenue entière."
+msgstr "The charges Composure keeps start a full hold again."
+
+msgid "Point final"
+msgstr "Full Stop"
+
+msgid "À {charges_final} charges consommées, le coup éclate autour de sa cible : une explosion de {rayon_final} px, à {part_final} %."
+msgstr "At {charges_final} charges spent, the blow bursts around its target: a {rayon_final} px explosion at {part_final}%."
+
+msgid "Épilogue"
+msgstr "Epilogue"
+
+msgid "L'éclat du Point final achève aussi, au seuil du coup."
+msgstr "The Full Stop burst executes too, at the blow's threshold."
+
+msgid "Contre"
+msgstr "Counter"
+
+msgid "Les ripostes frappent plus fort."
+msgstr "Ripostes hit harder."
+
+msgid "Garde haute"
+msgstr "High Guard"
+
+msgid "Tant que la Contre-attaque tient, vous esquivez davantage."
+msgstr "While Counterattack lasts, you evade more."
+
+msgid "Respiration"
+msgstr "Breathing"
+
+msgid "La Contre-attaque draine moins de mana."
+msgstr "Counterattack drains less mana."
+
+msgid "Fer tendu"
+msgstr "Taut Steel"
+
+msgid "La riposte porte plus loin."
+msgstr "The riposte reaches farther."
+
+msgid "Sangsue"
+msgstr "Leech"
+
+msgid "Chaque riposte rend de la vie."
+msgstr "Each riposte restores life."
+
+msgid "Double riposte"
+msgstr "Double Riposte"
+
+msgid "Une riposte de plus par point, sur l'ennemi suivant le plus proche, chacune plus faible."
+msgstr "One more riposte per point, on the next nearest enemy, each weaker."
+
+msgid "Désarmement"
+msgstr "Disarm"
+
+msgid "L'ennemi riposté est assommé un instant."
+msgstr "The riposted enemy is stunned for a moment."
+
+msgid "Représailles"
+msgstr "Reprisal"
+
+msgid "Un coup reçu, non esquivé, peut aussi appeler une riposte."
+msgstr "A blow taken, not evaded, can also call for a riposte."
+
+msgid "Calme"
+msgstr "Calm"
+
+msgid "Tant que la Contre-attaque tient, vous subissez moins de dégâts."
+msgstr "While Counterattack lasts, you take less damage."
+
+msgid "Pas de côté"
+msgstr "Sidestep"
+
+msgid "Chaque esquive donne de l'esquive pendant {duree_pas} s, {pas_max} fois au plus."
+msgstr "Each evasion grants evasion for {duree_pas} s, up to {pas_max} times."
+
+msgid "Contretemps"
+msgstr "Counter-time"
+
+msgid "Après une esquive, votre attaque suivante dans les {fenetre_contretemps} s est critique à coup sûr."
+msgstr "After an evasion, your next attack within {fenetre_contretemps} s is a sure critical hit."
+
+msgid "Temps d'escrime"
+msgstr "Fencing Time"
+
+msgid "Le critique du Contretemps frappe plus fort."
+msgstr "The Counter-time critical hit strikes harder."
+
+msgid "dégâts par élan"
+msgstr "damage per momentum"
+
+msgid "dégâts contre les intacts"
+msgstr "damage vs the unharmed"
+
+msgid "dégâts subis par la cible"
+msgstr "damage taken by the target"
+
+msgid "du second coup"
+msgstr "second hit"
+
+msgid "repli"
+msgstr "withdrawal"
+
+msgid "dérobade"
+msgstr "evasion"
+
+msgid "relance par tué"
+msgstr "relaunch per kill"
+
+msgid "dégâts par relance enchaînée"
+msgstr "damage per chained relaunch"
+
+msgid "bond qui frappe"
+msgstr "striking leap"
+
+msgid "du coup sur le passage"
+msgstr "of the blow along the way"
+
+msgid "chance critique gagnée par estoc"
+msgstr "crit chance gained per thrust"
+
+msgid "dégâts par estoc répété"
+msgstr "damage per repeated thrust"
+
+msgid "estocs en plus"
+msgstr "extra thrusts"
+
+msgid "dernier estoc critique"
+msgstr "critical last thrust"
+
+msgid "dernier estoc qui traverse"
+msgstr "piercing last thrust"
+
+msgid "estocs en éventail"
+msgstr "fanned thrusts"
+
+msgid "estocs en étoile"
+msgstr "thrusts in a star"
+
+msgid "secondes de Frénésie par critique"
+msgstr "seconds of Frenzy per crit"
+
+msgid "PV max rendus par charge"
+msgstr "max life restored per charge"
+
+msgid "chance de charge par critique"
+msgstr "charge chance per crit"
+
+msgid "chance de double charge"
+msgstr "double charge chance"
+
+msgid "charges au plafond"
+msgstr "charges at the cap"
+
+msgid "berserk"
+msgstr "berserk"
+
+msgid "tués qui éclatent"
+msgstr "kills that burst"
+
+msgid "dernier carré"
+msgstr "last stand"
+
+msgid "dégâts par distance"
+msgstr "damage per distance"
+
+msgid "dégâts par ennemi traversé"
+msgstr "damage per enemy pierced"
+
+msgid "lames qui reviennent"
+msgstr "returning blades"
+
+msgid "mana par lame rattrapée"
+msgstr "mana per blade caught"
+
+msgid "lames qui se plantent"
+msgstr "blades that stick"
+
+msgid "secondes de lame plantée"
+msgstr "seconds of planted blade"
+
+msgid "dégâts subis par lame plantée"
+msgstr "damage taken per planted blade"
+
+msgid "seconde salve"
+msgstr "second volley"
+
+msgid "dégâts par charge consommée"
+msgstr "damage per charge spent"
+
+msgid "dégâts contre les blessés"
+msgstr "damage vs the wounded"
+
+msgid "armure ignorée"
+msgstr "armor ignored"
+
+msgid "mana par charge consommée"
+msgstr "mana per charge spent"
+
+msgid "secondes d'effroi"
+msgstr "seconds of dread"
+
+msgid "sang-froid"
+msgstr "composure"
+
+msgid "patience"
+msgstr "patience"
+
+msgid "point final"
+msgstr "full stop"
+
+msgid "épilogue"
+msgstr "epilogue"
+
+msgid "ripostes en plus"
+msgstr "extra ripostes"
+
+msgid "secondes de désarmement"
+msgstr "seconds of disarm"
+
+msgid "chance de représailles"
+msgstr "reprisal chance"
+
+msgid "esquive par pas de côté"
+msgstr "evasion per sidestep"
+
+msgid "contretemps"
+msgstr "counter-time"
+
+msgid "dégâts du contretemps"
+msgstr "counter-time damage"
+
+msgid "%s vitesse d'attaque"
+msgstr "%s attack speed"
+
+msgid "à l'échéance"
+msgstr "on expiry"
+
+msgid "la moitié reste"
+msgstr "half remain"
+
+msgid "par critique"
+msgstr "per crit"
+
+msgid "deux charges"
+msgstr "two charges"
+
+msgid "relances par tué"
+msgstr "relaunches per kill"
+
+msgid "critique par estoc"
+msgstr "crit per thrust"
+
+msgid "Frénésie par critique"
+msgstr "Frenzy per crit"
+
+msgid "au critique"
+msgstr "on a crit"
+
+msgid "traverse"
+msgstr "pierces"
+
+msgid "lame plantée"
+msgstr "planted blade"
+
+msgid "%d s · %s au Coup de grâce"
+msgstr "%d s · %s to Coup de Grâce"
+
+msgid "par charge"
+msgstr "per charge"
+
+msgid "%s · achève sous %s"
+msgstr "%s · executes below %s"
+
+msgid "achève maintenant sous"
+msgstr "executes now below"
+
+msgid "à %d charges"
+msgstr "at %d charges"
+
+msgid "éclat de %d px"
+msgstr "%d px burst"
+
+msgid "riposte"
+msgstr "riposte"
+
+msgid "%d à %d px"
+msgstr "%d within %d px"
+
+msgid "après une esquive"
+msgstr "after an evasion"
+
+msgid "attaque critique"
+msgstr "critical attack"

@@ -175,12 +175,20 @@
     }
   ],
   "quick_strike": [
-    "a glowing arrow-shaped streak of steel shooting diagonally into a red target mark, sharp motion lines",
-    4242
+    "A single long steel rapier pointing diagonally up to the right, small gold hand guard, three thick white motion streaks behind it, no person, no character.",
+    777,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
   ],
   "bloodlust": [
-    "a glowing red eye of rage with dripping blood",
-    4242
+    "A single steel dagger pointing up, its blade covered in dripping red blood, a big red blood splatter burst behind it, no hand, no person.",
+    777,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
   ],
   "trinity": [
     "A thin glowing white triangle with a small orange flame at its top corner, a small icy blue snowflake at its bottom left corner and a small violet lightning bolt at its bottom right corner, a white musical note in its center.",
@@ -304,6 +312,38 @@
     {
       "qwen": true,
       "nature": "holy"
+    }
+  ],
+  "flurry": [
+    "Three thin steel rapier blades thrusting to the right side by side in a row, a short white speed line behind each tip.",
+    1337,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "throwing_knives": [
+    "Three small steel throwing knives flying to the right in a fan, blades pointing right, short white motion lines behind them, no person, no character.",
+    777,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "coup_de_grace": [
+    "A steel sword plunging straight down through a thick white X slash mark, a bright white impact star at its tip.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "counterattack": [
+    "Two steel swords clashing in an X, a bright golden spark where the blades meet.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
     }
   ]
 }

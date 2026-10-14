@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/flurry.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "flurry"
+name = "Rafale"
+description = "Trois estocs droit devant, chacun plus prompt au critique."
+nature = 0
+cadence = 0
+attack_time_factor = 1.2
+shape = 50
+mana_cost = 7.0
+radius = 48.0
+damage_per_point = Array[float]([10.0, 13.0, 16.0, 20.0, 25.0])
+required_manual_level = 2
+icon = ExtResource("2_icone")

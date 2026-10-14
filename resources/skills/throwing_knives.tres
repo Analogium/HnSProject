@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Texture2D" path="res://resources/icons/throwing_knives.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "throwing_knives"
+name = "Lames de jet"
+description = "Trois couteaux en éventail ; celui qui critique traverse."
+nature = 0
+cadence = 0
+shape = 51
+mana_cost = 8.0
+projectiles = 3
+spread_in_degrees = 24.0
+projectile_speed = 460.0
+damage_per_point = Array[float]([12.0, 15.0, 19.0, 24.0, 30.0])
+required_manual_level = 5
+icon = ExtResource("2_icone")

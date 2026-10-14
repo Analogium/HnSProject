@@ -114,9 +114,8 @@ func _manuals(l: PackedStringArray) -> void:
 	l.append("### Manuels de classe")
 	l.append("")
 	l.append("Hors du catalogue : un par classe, au quatrième emplacement du râtelier, qui")
-	l.append("ne tombe pas et ne se range pas (`Character.CLASSES`). Celui du Vive lame n'a")
-	l.append("pas encore de quoi dépenser ses vingt points, et c'est accepté (jalon 28) ; celui")
-	l.append("de la sorcière est rempli depuis le jalon 41.")
+	l.append("ne tombe pas et ne se range pas (`Character.CLASSES`). Celui de la sorcière est")
+	l.append("rempli depuis le jalon 41, celui du Vive lame depuis le jalon 50.")
 	l.append("")
 	for base in Character.class_manual_bases():
 		_a_manual(l, base)

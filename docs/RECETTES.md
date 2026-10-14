@@ -425,7 +425,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`. `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET` et `FROST_ORB` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead` ou `thrust` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`, et pour le Vive lame (jalon 50) `FLURRY`, `KNIVES`, `FINISHER`, `RIPOSTE` (entretenue). `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET`, `FROST_ORB` et `KNIVES` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead`, `thrust`, ou ceux de la seule Vive lame, `flurry`, `throw`, `finisher` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -455,9 +455,10 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    compétence sans nœud reste jouable — sa case ouvre alors une vue qui ne montre
    que sa racine.
 
-5. **Une attaque : son geste** (jalon 47, règle de l'utilisateur). Elle prend un geste
-   existant de `Skill.GESTURE` — balayage, frappe de haut, estoc — et il n'y a rien à
-   générer. **Un mouvement neuf** se génère **pour chaque classe** : une entrée dans
+5. **Une attaque : son geste** (jalon 47, règle de l'utilisateur). Elle peut prendre un
+   geste existant de `Skill.GESTURE` — balayage, frappe de haut, estoc — sans rien à
+   générer ; mais **un mouvement neuf est bienvenu** dès que le geste diffère (jalon 50 :
+   « ça améliore le gameplay visuel »). **Un mouvement neuf** se génère **pour chaque classe** : une entrée dans
    `STRIKES` de `tools/character_forge.py`, puis `anim <classe> --only <geste>`, planche
    choisie par l'utilisateur, `keep`, `build` — la recette est
    [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). **Sauf dans un manuel
@@ -769,7 +770,7 @@ l'orienteraient chacun à leur façon.
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
    `sword_volley`, `extra_swords`, `waves`, puis au jalon 46 `sure_strike`, `maul`, `breach`,
    `collision`, `skittles`, `tremor`, `red_iron` et les trente-quatre de `SkillStats.LACERATION` à `CHASSE`, pour le sacré `blessing_effect`,
-   `wave_gain` et `aureole`, puis au jalon 48 les trente-huit de `SkillStats.LINKS` à `ECLIPSE`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `echo_power`, `echoes` et `countersong`, puis au jalon 49 ceux de `SkillStats.EQUILIBRIUM` à `LEES` (`SkillStats.PIERCE` et suivants). Un nombre qui renforce
+   `wave_gain` et `aureole`, puis au jalon 48 les trente-huit de `SkillStats.LINKS` à `ECLIPSE`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `echo_power`, `echoes` et `countersong`, puis au jalon 49 ceux de `SkillStats.EQUILIBRIUM` à `LEES` (`SkillStats.PIERCE` et suivants), pour le Vive lame (jalon 50) ceux de `SkillStats.IMPETUS` à `FENCING_TIME`, et `execution`, le seuil d'achèvement que lit l'ennemi. Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne

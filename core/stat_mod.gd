@@ -134,6 +134,9 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"equilibrium", "precipitate", "spectrum", "palimpsest", "entwine", "arpeggio", "diapason",
 	"saturation", "aura", "dark_omen", "peck", "croak", "canon",
 	"brim", "froth",
+	"execution", "impetus", "first_blood", "opening", "double_hit", "furia", "cleave_path",
+	"ascent", "insistence", "harvest", "fever", "gulp", "long_shot", "enfilade", "hedgehog",
+	"relentless", "cornered", "chink", "reprisal", "fencing_time",
 ]
 
 var stat: String

@@ -151,10 +151,11 @@ func strength_damage() -> float:
 
 
 ## La fraction retranchée à un coup physique de cette taille, avant mitigation.
-func armor_reduction(damage: float) -> float:
-	if armor <= 0.0 or damage <= 0.0:
+func armor_reduction(damage: float, kept := 1.0) -> float:
+	var held := armor * kept
+	if held <= 0.0 or damage <= 0.0:
 		return 0.0
-	return minf(armor / (armor + ARMOR_K * damage), MAX_ARMOR_REDUCTION)
+	return minf(held / (held + ARMOR_K * damage), MAX_ARMOR_REDUCTION)
 
 
 ## La probabilité d'éviter entièrement un coup, entre 0 et MAX_EVASION.
@@ -167,12 +168,13 @@ func evade_chance() -> float:
 ## Ce qui reste d'une part après sa défense : l'armure pour le physique, la
 ## résistance sinon. **La seule règle** : coup reçu et brûlure d'aura passent ici.
 ## `lost` : les points de résistance qu'un état retire — la malédiction.
-func mitigate(kind: int, part: float, lost := 0.0) -> float:
+## `armor_kept` : la part de l'armure qui compte — moins sous le Défaut de la cuirasse (jalon 50).
+func mitigate(kind: int, part: float, lost := 0.0, armor_kept := 1.0) -> float:
 	if part <= 0.0:
 		return part
 	var defended := part
 	if kind == DamageType.Kind.PHYSICAL:
-		defended *= 1.0 - armor_reduction(part)
+		defended *= 1.0 - armor_reduction(part, armor_kept)
 	else:
 		defended *= 1.0 - resistance(kind, lost) * 0.01
 	# Après la défense de la nature, et sur toutes : c'est un abri, pas une résistance.

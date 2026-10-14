@@ -60,6 +60,8 @@ enum Shape {
 	# Jalon 48 : le Faisceau, le Marteau béni ; les Chaînes du jugement et le Bouc émissaire,
 	# qui remplacent la Frappe sacrée. BEAM, HOLY_CROSS et RAY n'ont plus rien derrière.
 	RAY, HAMMER, CHAINS, SCAPEGOAT,
+	# Jalon 50, le Vive lame : la Rafale, les Lames de jet, le Coup de grâce, la Contre-attaque.
+	FLURRY, KNIVES, FINISHER, RIPOSTE,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -72,6 +74,8 @@ const GESTURE := {
 	Shape.ORBIT: "sweep",
 	Shape.STRIKE: "overhead", Shape.SLAM: "overhead",
 	Shape.LUNGE: "thrust",
+	# Jalon 50, la planche du Vive lame seule (manuel de classe).
+	Shape.FLURRY: "flurry", Shape.KNIVES: "throw", Shape.FINISHER: "finisher",
 }
 
 ## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà : le
@@ -151,6 +155,10 @@ const KEYWORD_OF_SHAPE := {
 	Shape.BUFF: Keywords.BUFF,
 	# On se jette sur une cible pour la frapper à l'arme : de la mêlée, d'où qu'on parte.
 	Shape.LUNGE: Keywords.MELEE,
+	Shape.FLURRY: Keywords.MELEE,
+	Shape.FINISHER: Keywords.MELEE,
+	Shape.RIPOSTE: Keywords.MELEE,
+	Shape.KNIVES: Keywords.PROJECTILE,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -159,7 +167,9 @@ const GROWTH_PER_EXTRA_LEVEL := 1.25
 
 ## Une table et non un champ : un troisième coup en croix n'aurait pas de dessin.
 ## Ce qui brûle tant qu'on l'entretient : ni « par lancer », ni transformation.
-const SUSTAINED_SHAPES: Array[Shape] = [Shape.AURA, Shape.BUFF, Shape.CYCLONE, Shape.FAMILIAR]
+const SUSTAINED_SHAPES: Array[Shape] = [
+	Shape.AURA, Shape.BUFF, Shape.CYCLONE, Shape.FAMILIAR, Shape.RIPOSTE,
+]
 
 ## Ce qu'une transformation peut quitter et rejoindre (jalon 34) : ce qui se pose et
 ## s'oublie — la malédiction aussi, depuis le jalon 38. Le reste tient un état chez le lanceur — ce qui brûle, la couronne, les
