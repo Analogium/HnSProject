@@ -1,0 +1,55 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, hooded cultist mage, long flared purple robe reaching the ground hiding the legs, purple mantle over the shoulders, tall pointed purple hood, no face, only a black hollow inside the hood with two glowing cyan ember eyes, thin pale hands, full body, front view, standing idle, two arms, empty hands",
+  "seeds": [
+   4242,
+   777,
+   1337,
+   403
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, hooded cultist mage, long flared purple robe reaching the ground hiding the legs, purple mantle over the shoulders, tall pointed purple hood, no face, only a black hollow inside the hood with two glowing cyan ember eyes, thin pale hands, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777,
+   101
+  ],
+  "ip_weight": 1.0
+ },
+ "frame": 64,
+ "feet": 60,
+ "weapon": "staff",
+ "blender": {
+  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, hooded cultist mage, long flared purple robe reaching the ground hiding the legs, purple mantle over the shoulders, tall pointed purple hood, no face, only a black hollow inside the hood with two glowing cyan ember eyes, thin pale hands, empty hands",
+  "source": "tools/characters/caster/3d",
+  "rest": "rest.blend",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 34,
+  "colors": 16,
+  "weapon_colors": 8,
+  "weapons": [
+   "staff"
+  ],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "cast",
+    8
+   ]
+  }
+ },
+ "scale": 0.7,
+ "palette": {
+  "cloth": "8547b8",
+  "skin": "ccad9e",
+  "accent": "73ebf2",
+  "metal": "999eb8",
+  "leather": "473357"
+ }
+}

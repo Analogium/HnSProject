@@ -1,0 +1,56 @@
+{
+ "concept": {
+  "prompt": "pixel art, solo, one single character, chibi game monster sprite, big head small body, hero siege style, bold readable silhouette, few large details with strong contrast, stocky hunched orc grunt, very broad shoulders, head sunk low between the shoulders, olive green skin, glowing orange eyes, small tusks, ragged olive green cloth wrap, brown leather straps and belt, bare forearms, short thick legs, full body, front view, standing idle, two arms two legs, empty hands",
+  "seeds": [
+   4242,
+   777,
+   1337,
+   403
+  ]
+ },
+ "views": {
+  "prompt": "pixel art, solo, chibi game monster sprite, stocky hunched orc grunt, very broad shoulders, head sunk low between the shoulders, olive green skin, glowing orange eyes, small tusks, ragged olive green cloth wrap, brown leather straps and belt, bare forearms, short thick legs, big head small body, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777,
+   101
+  ],
+  "ip_weight": 1.0
+ },
+ "frame": 64,
+ "feet": 60,
+ "weapon": "cleaver",
+ "blender": {
+  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, stocky hunched orc grunt, very broad shoulders, head sunk low between the shoulders, olive green skin, glowing orange eyes, small tusks, ragged olive green cloth wrap, brown leather straps and belt, bare forearms, short thick legs, empty hands",
+  "source": "tools/characters/grunt/3d",
+  "rest": "rest.blend",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 34,
+  "colors": 16,
+  "weapon_colors": 8,
+  "weapons": [
+   "cleaver"
+  ],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "sweep",
+    8
+   ]
+  }
+ },
+ "width": 1.5,
+ "scale": 0.7,
+ "palette": {
+  "cloth": "6b8c3d",
+  "skin": "94a86b",
+  "accent": "d95933",
+  "metal": "94856f",
+  "leather": "4d3d29"
+ }
+}

@@ -9,7 +9,7 @@
   "leather": "66422e"
  },
  "weapon": "sword",
- "scale": 1.0,
+ "scale": 0.7,
  "blender": {
   "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stocky heroic proportions, big head, broad shoulders, short legs, young man in his early twenties, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, empty hands",
   "source": "tools/characters/swiftblade/3d",
@@ -55,7 +55,7 @@
     8
    ]
   },
-  "size": 54,
+  "size": 38,
   "colors": 16,
   "weapons": [
    "sword",

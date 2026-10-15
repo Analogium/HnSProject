@@ -207,7 +207,7 @@
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
-  "size": 54,
+  "size": 38,
   "colors": 16,
   "weapon_colors": 8,
   "weapons": [
@@ -243,5 +243,5 @@
    ]
   }
  },
- "scale": 1.0
+ "scale": 0.7
 }

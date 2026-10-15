@@ -106,6 +106,11 @@ def build(kind, L):
                          cube("collier", (0.04 * L, 0.02 * L, 0.04 * L), (0, 0.18 * L, 0), GOLD),
                          _add("ico_sphere", "cristal", (0.03 * L, 0.05 * L, 0.03 * L), (0, 0.23 * L, 0),
                               CRYSTAL, True, subdivisions=1)],
+        # Les armes des ennemis : le hachoir du grunt, le bâton du caster.
+        "cleaver": lambda: [rod("manche", 0.018 * L, 0.12 * L, (0, 0.0, 0), WOOD),
+                            cube("lame", (0.12 * L, 0.20 * L, 0.018 * L), (0.035 * L, 0.16 * L, 0), STEEL)],
+        "staff": lambda: [rod("baton", 0.016 * L, 0.62 * L, (0, 0.12 * L, 0), WOOD),
+                          ball("orbe", 0.045 * L, (0, 0.47 * L, 0), CRYSTAL, glow=True)],
         "flute": lambda: [rod("tube", 0.018 * L, 0.34 * L, (0, 0.10 * L, 0), BONE),
                           _add("cone", "pavillon", (0.035 * L, 0.035 * L, 0.03 * L), (0, 0.28 * L, 0), BONE,
                                vertices=8, rot=(-math.pi / 2, 0, 0)),

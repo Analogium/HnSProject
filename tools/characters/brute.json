@@ -22,8 +22,8 @@
   ]
  },
  "width": 1.6,
- "frame": 48,
- "feet": 45,
+ "frame": 64,
+ "feet": 60,
  "height": 42,
  "recolor": [],
  "palette": {
@@ -65,5 +65,28 @@
  "concept_palette": true,
  "weapon": "none",
  "colors": {},
- "patches": {}
+ "patches": {},
+ "blender": {
+  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, massive armored juggernaut, broad shoulders, grey steel great helm with two curved horns and glowing red eye slits, dark crimson plate armor, steel pauldrons, leather loincloth, crimson greaves, empty hands",
+  "source": "tools/characters/brute/3d",
+  "rest": "rest.blend",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 44,
+  "colors": 16,
+  "weapon_colors": 8,
+  "weapons": [],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "overhead",
+    8
+   ]
+  }
+ },
+ "scale": 0.7
 }

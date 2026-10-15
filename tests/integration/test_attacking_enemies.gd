@@ -219,4 +219,4 @@ func test_every_archetype_comes_out_of_the_spawner() -> void:
 
 func test_a_sheet_enemy_is_built_once_for_all_its_variants() -> void:
 	assert_same(SpriteForge.frames("brute", 0), SpriteForge.frames("brute", 3))
-	assert_not_same(SpriteForge.frames("grunt", 0), SpriteForge.frames("grunt", 3), "les grilles varient")
+	assert_not_same(SpriteForge.frames("undead", 0), SpriteForge.frames("undead", 3), "les grilles varient")

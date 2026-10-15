@@ -20,8 +20,8 @@
    777
   ]
  },
- "frame": 48,
- "feet": 45,
+ "frame": 64,
+ "feet": 60,
  "height": 30,
  "recolor": [],
  "palette": {
@@ -133,5 +133,28 @@
    }
   ]
  },
- "width": 1.45
+ "width": 1.45,
+ "blender": {
+  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, chunky bald goblin with orange skin, two bent copper pipes sticking out of the sides of its head like horns, pointy ears, yellow eyes, toothy grin, brown leather tunic with belt, bare feet, empty hands",
+  "source": "tools/characters/mortar/3d",
+  "rest": "rest.blend",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 32,
+  "colors": 16,
+  "weapon_colors": 8,
+  "weapons": [],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "throw",
+    8
+   ]
+  }
+ },
+ "scale": 0.7
 }

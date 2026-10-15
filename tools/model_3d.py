@@ -3,15 +3,15 @@
 
     tools/model_3d.py image <id>          trois images « rendu 3D » de face, en pose A
     tools/model_3d.py back <id> <graine>  trois images de dos, d'après celle de face retenue
-    tools/model_3d.py mesh <id> <graine> [--back <graine>]
-        le modèle, puis le .fbx pour Mixamo : Stable Fast 3D en local avec l'image de dos,
-        TRELLIS.2 (quota Hugging Face, un par jour) sans elle
+    tools/model_3d.py mesh <id> <graine> [--back <graine> | --sf3d]
+        le modèle, puis le .fbx pour Mixamo : Stable Fast 3D en local avec l'image de dos
+        (ou sans, --sf3d), TRELLIS.2 (quota Hugging Face, un par jour) sinon
     tools/model_3d.py rig <id>            le gréage local, quand Mixamo refuse le modèle
 
 Une image pixel art donne un modèle plat : TRELLIS a besoin d'un rendu lissé. On le tire
 de la vue de face retenue (IPAdapter), LoRA pixel art éteint, bras écartés pour le gréage.
 Le prompt est `blender.model_prompt` de `tools/characters/<id>.json`."""
-import argparse, copy, json, os, subprocess, sys
+import argparse, copy, json, os, shutil, subprocess, sys
 import numpy as np
 from PIL import Image
 
@@ -48,11 +48,14 @@ def renders(cid, view, ref, label):
     """Trois images « rendu 3D » en pose A, vue `view` (down : de face, up : de dos)."""
     cfg = copy.deepcopy(cf.load(cid))
     cf.POSES[view] = a_pose(view)
-    prompt = cfg["blender"]["model_prompt"]
+    prompt, ip_weight, neg = cfg["blender"]["model_prompt"], 0.45, NEG
     if view == "up":
-        prompt = prompt.replace("front view, facing the viewer", cf.VIEW_WORDS["up"])
-    cfg["views"].update(prompt=prompt, ip_weight=0.45)
-    cfg["neg"] = cfg.get("neg", "") + NEG + (", face, eyes" if view == "up" else "")
+        # À 0,45 et la vue en milieu de prompt, les monstres aux yeux lumineux restaient de face.
+        prompt = "back view, character seen from behind, back of the head, " + \
+            prompt.replace("front view, facing the viewer, ", "") + ", back view, no face visible"
+        ip_weight, neg = 0.25, NEG + ", face, eyes, glowing eyes, mouth, teeth, front view, facing the viewer"
+    cfg["views"].update(prompt=prompt, ip_weight=ip_weight)
+    cfg["neg"] = cfg.get("neg", "") + neg
     os.makedirs(cf.RAW, exist_ok=True)
     row = []
     for seed in SEEDS:
@@ -96,17 +99,21 @@ def cmd_mesh(a):
         [BLENDER, "-b", "-P", win(os.path.join(here, "blender", script)), "--", *args],
         check=True, capture_output=True)
     cutout(a.id, a.seed, "down", front)
-    if a.back is None:
+    if a.back is None and not a.sf3d:
         subprocess.run([TRELLIS_PYTHON, "-I", win(os.path.join(here, "trellis_client.py")), win(front), win(glb),
                         str(a.seed)], check=True)
     else:
         # Stable Fast 3D ne voit que la face et devine le reste : face et dos sont ensuite
-        # repeints d'après leurs images (blender/project.py).
-        cutout(a.id, a.back, "up", back)
+        # repeints d'après leurs images (blender/project.py). Sans image de dos (le champignon,
+        # que SDXL ne sait pas tourner), on garde le dos qu'il devine.
         guess = os.path.join(d, "model_sf3d.glb")
         subprocess.run([LOCAL_PYTHON, "-I", win(os.path.join(here, "sf3d_client.py")), SF3D_SRC, win(front),
                         win(guess)], check=True)
-        blender("project.py", win(guess), win(front), win(back), win(glb))
+        if a.back is None:
+            shutil.copy(guess, glb)
+        else:
+            cutout(a.id, a.back, "up", back)
+            blender("project.py", win(guess), win(front), win(back), win(glb))
     shown = os.path.join(cf.DESKTOP, f"hns-{a.id}-modele-3d")
     os.makedirs(shown, exist_ok=True)
     blender("turntable.py", win(glb), win(shown))
@@ -119,7 +126,7 @@ def cmd_rig(a):
     posés sur ce personnage (blender/rig.py)."""
     d = os.path.join(cf.CHARS, a.id, "3d")
     pose = os.path.join(d, "pose.json")
-    json.dump(a_pose("down"), open(pose, "w"))
+    json.dump(cf.widened(a_pose("down"), cf.load(a.id)), open(pose, "w"))   # le squelette des images
     here = os.path.dirname(os.path.abspath(__file__))
     subprocess.run([BLENDER, "-b", "-P", win(os.path.join(here, "blender", "rig.py")), "--",
                     win(os.path.join(d, "model.glb")), win(os.path.join(d, "model_front.png")), win(pose),
@@ -134,6 +141,7 @@ def main():
     b = sub.add_parser("back"); b.add_argument("id"); b.add_argument("seed", type=int)
     m = sub.add_parser("mesh"); m.add_argument("id"); m.add_argument("seed", type=int)
     m.add_argument("--back", type=int, help="graine de l'image de dos : Stable Fast 3D en local, sinon TRELLIS.2")
+    m.add_argument("--sf3d", action="store_true", help="Stable Fast 3D sans image de dos")
     sub.add_parser("rig").add_argument("id")
     a = p.parse_args()
     {"image": cmd_image, "back": cmd_back, "mesh": cmd_mesh, "rig": cmd_rig}[a.cmd](a)
