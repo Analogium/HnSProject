@@ -156,7 +156,8 @@ que ce n'est pas la palette.
 
 ## 6. Reste à faire
 
-- Le joueur de flûte en 3D, avec la flûte en couche ; puis les ennemis.
+- ~~Le joueur de flûte en 3D, avec la flûte en couche ; puis les ennemis.~~ Fait au
+  jalon 52, le joueur de flûte redessiné.
 - Le manuel : ses cases, la nuée, le **Roi des Rats** et sa transformation.
 - Un geste **joué** (la flûte à la bouche) pour les sorts du manuel, à générer quand
   ils existeront.

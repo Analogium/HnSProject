@@ -48,6 +48,9 @@ def render(cid, b, name, source, count, extra, height=0.0):
     return next(float(l.split()[1]) for l in log.splitlines() if l.startswith("HAUTEUR"))
 
 
+LIGHT_MAX = 0.88
+
+
 def opaque(path):
     """Un rendu sans anticrénelage : l'alpha tranché suffit, aucun pixel n'est à demi."""
     x = np.asarray(Image.open(path).convert("RGBA")).copy()
@@ -61,7 +64,11 @@ def palette(images, n):
     palette par image ferait scintiller les couleurs d'une image à l'autre."""
     px = np.concatenate([im[im[..., 3] > 0][:, :3] for im in images])
     q = Image.fromarray(px[None].astype("uint8")).quantize(n, method=Image.MEDIANCUT)
-    return np.array(q.getpalette()[:n * 3]).reshape(-1, 3)
+    pal = np.array(q.getpalette()[:n * 3]).reshape(-1, 3).astype(float)
+    # Sous le seuil de glow du jeu (0,9), comme le haut de la rampe d'`ArtPalette` : les
+    # reflets des lames montaient à 0,913 et débordaient comme un sort.
+    lum = pal @ [0.2126, 0.7152, 0.0722] / 255
+    return np.round(pal * np.minimum(1.0, LIGHT_MAX / np.maximum(lum, 1e-6))[:, None]).astype(int)
 
 
 def locked(o, pal):

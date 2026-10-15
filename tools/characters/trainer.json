@@ -1,0 +1,43 @@
+{
+ "concept": {
+  "prompt": "planche Desktop/hns-pnj (jalon 52), npc_entraineur_1-veteran_777",
+  "seeds": []
+ },
+ "views": {
+  "prompt": "",
+  "seeds": [],
+  "ip_weight": 0.45
+ },
+ "neg": ", child, baby, cute, cartoon",
+ "frame": 64,
+ "feet": 60,
+ "scale": 0.7,
+ "weapon": "sword",
+ "palette": {
+  "cloth": "8a2a26",
+  "skin": "d9a37a",
+  "accent": "c9a227",
+  "metal": "9a9aa2",
+  "leather": "4a3020"
+ },
+ "blender": {
+  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, grizzled veteran swordmaster, short grey hair, grey beard, scarred face, worn steel pauldrons, dark red gambeson with leather straps and belt, long dark grey coat, leather boots, empty hands",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 38,
+  "colors": 16,
+  "weapon_colors": 8,
+  "source": "tools/characters/trainer/3d",
+  "rest": "rest.blend",
+  "weapons": [
+   "sword"
+  ],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ]
+  }
+ }
+}

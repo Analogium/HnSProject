@@ -1,6 +1,6 @@
 {
  "concept": {
-  "prompt": "calque composé à la main (tools/characters/piper/calque.py) habillé en img2img 0,55, graine 4242",
+  "prompt": "Hamelin sombre, planche hns-piper-flutiste (jalon 52), ligne 1, graine 4242",
   "seeds": []
  },
  "views": {
@@ -20,8 +20,8 @@
    777
   ]
  },
- "frame": 48,
- "feet": 45,
+ "frame": 64,
+ "feet": 60,
  "slim": 0.9,
  "squash": 0.8,
  "recolor": [],
@@ -106,11 +106,53 @@
  },
  "concept_palette": false,
  "weapon": "sword",
- "neg": ", skull, cape, beanie, cap, holding",
+ "neg": ", child, baby, cute, cartoon, plague doctor, beak mask, top hat, red hair, spiky hair, bare head",
  "authored_height": 36,
  "body": 16,
  "side_width": 1.3,
  "blender": {
-  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, the pied piper of hamelin, young man, dark brown hair, thin mustache, green tyrolean hat with a red band and a tall feather, white linen shirt with puffy sleeves, open brown leather vest, red sash, green pouch at the hip, red tights, green pointed shoes, empty hands"
- }
+  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, sinister pied piper, adult man, wearing a crimson velvet beret hat with a long black feather, pale gaunt face, thin mustache, short dark brown hair, long coat split half mustard yellow half crimson, embroidered doublet, crimson hose, red boots, leather belt with pouches, empty hands",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 38,
+  "colors": 16,
+  "weapon_colors": 8,
+  "source": "tools/characters/piper/3d",
+  "rest": "rest.blend",
+  "weapons": [
+   "sword",
+   "dagger",
+   "mace",
+   "wand",
+   "flute"
+  ],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "sweep",
+    8
+   ],
+   "cast": [
+    "cast",
+    8
+   ],
+   "sweep": [
+    "sweep",
+    8
+   ],
+   "overhead": [
+    "overhead",
+    8
+   ],
+   "thrust": [
+    "thrust",
+    8
+   ]
+  }
+ },
+ "scale": 0.7
 }

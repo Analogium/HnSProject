@@ -6,8 +6,8 @@ extends Node2D
 ## clic gauche l'utilise, n'importe où dans la zone, et ne lance pas d'attaque — le
 ## même refus que `GroundItem.takes_the_click()`.
 ##
-## Dessin provisoire, à reprendre par `/dessiner-un-effet` : le marchand et l'entraîneur
-## empruntent le guerrier en grilles, le coffre, les portails et le waypoint sont tracés.
+## Le marchand et l'entraîneur sont des planches 3D (jalon 52) ; dessin provisoire, à
+## reprendre par `/dessiner-un-effet` : le coffre, les portails et le waypoint, tracés.
 
 signal used
 
@@ -50,10 +50,10 @@ var _t := 0.0
 
 func _ready() -> void:
 	if look in [Look.MERCHANT, Look.TRAINER]:
+		var archetype := "merchant" if look == Look.MERCHANT else "trainer"
 		var body := AnimatedSprite2D.new()
-		body.sprite_frames = SpriteForge.frames("player", 3, "none") if look == Look.MERCHANT \
-			else SpriteForge.frames("player", 1, "sword")
-		body.offset = SpriteForge.offset_of("player")
+		body.sprite_frames = SpriteForge.frames(archetype)
+		body.offset = SpriteForge.offset_of(archetype)
 		body.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		body.play("idle_down")
 		add_child(body)

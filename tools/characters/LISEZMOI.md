@@ -99,14 +99,20 @@ choix.
 - **`palette`** : les rampes de la forge pour ce qu'elle dessine elle-même — le
   manche de l'arme, la main à l'attaque, qui doit avoir la couleur de la peau.
 
-## En 3D (jalon 51)
+## En 3D (jalons 51 et 52)
 
 Le chemin 2D perdait trop de détails dès que le personnage bougeait ou quittait la
 face. Un personnage passe donc par un **modèle 3D gréé**, dont Blender rend chaque
 image directement à la taille du jeu. Tout est gratuit : Stable Fast 3D en local (ou
 un Space Hugging Face), Mixamo et Blender. Le jeu lit le **même format** de planche,
 plus des couches d'arme. Le Vive lame a suivi le chemin TRELLIS + Mixamo ; la sorcière,
-le chemin local (Stable Fast 3D + gréage local), qui ne dépend d'aucun quota.
+le joueur de flûte et les six ennemis, le chemin local (Stable Fast 3D + gréage local),
+qui ne dépend d'aucun quota.
+
+0. **Concept**, pour un personnage neuf : une planche de directions en « rendu 3D »
+   (LoRA éteint), **proportions adultes**, l'utilisateur choisit. Le passage aux
+   proportions du jeu vient à l'étape 1 et se montre aussi avant la 3D. L'image retenue
+   devient `<id>/concept.png` et `<id>/down.png`.
 
 1. **Image source** : `tools/model_3d.py image <id>` tire trois images « rendu 3D »
    de face, en pose A, depuis la vue de face retenue. On garde la meilleure.
@@ -122,7 +128,9 @@ le chemin local (Stable Fast 3D + gréage local), qui ne dépend d'aucun quota.
    - `model_3d.py mesh <id> <graine> --back <graine de dos>` fait le modèle sur la
      carte locale, puis `blender/project.py` **repeint face et dos** d'après leurs
      images. Stable Fast 3D ne voit que la face et devine le dos :
-     celui de la sorcière sortait rose pâle au lieu de gris sombre.
+     celui de la sorcière sortait rose pâle au lieu de gris sombre ;
+   - `--sf3d` au lieu de `--back` : sans image de dos, le dos deviné. Pour ce que SDXL
+     ne sait pas tourner (le champignon garde son visage à toutes les graines).
 
    **Par TRELLIS.2**, sans `--back` : `model_3d.py mesh <id> <graine>` lance le Space
    `microsoft/TRELLIS.2` via `tools/trellis_client.py`. **Un modèle par jour** (quota
@@ -203,6 +211,23 @@ Pièges payés :
   fait), et le baker de texture tourne sur CPU (`sf3d_client.py`, `on_cpu`). Le
   modèle sort tourné vers l'arrière de la caméra du jeu : demi-tour sur Y.
 - **TripoSR**, essayé avant : couleurs ternes, abandonné.
+- **Le dos des monstres sortait de face** : leurs yeux lumineux l'emportaient. Le
+  dos se tire avec la vue en tête de prompt, l'image de face à 0,25 et le visage
+  interdit (`model_3d.renders`).
+- **Le détourage** : un rendu « studio » a un fond en dégradé (halo clair au
+  centre, sol). La médiane des bords ne le reconnaît pas, et le joueur de flûte
+  sortait avec une plaque au-dessus du chapeau et sous les pieds :
+  `model_3d.silhouette` retire en plus le fond qui varie doucement depuis les
+  bords, et le trait d'horizon.
+- **Le gréage local d'un corps élargi** (`width`) : la pose A écrite pour lui est
+  celle des images, élargie elle aussi, sinon les articulations tombent au centre.
+- **Le concept** : « chibi » dans le prompt donne des bébés ; le mot « rat » donne des
+  hommes-rats, même en accessoire ; un prompt trop long noie la description (la
+  mettre en tête). Un rat posé sur l'épaule a été refusé : illisible à 26 px.
+- **La taille** (jalon 52) : `blender.size` à 70 % de la taille d'origine, `scale`
+  0,7. Réduire au rendu, jamais étirer en jeu : les pixels resteraient inégaux.
+- **La palette est plafonnée à 0,88 de luminance** (`LIGHT_MAX`) : les reflets des
+  lames passaient le seuil de glow du jeu.
 - **Le dos repeint ne reprend pas la recoloration de la face** (`model_recolor`) : la
   règle, écrite pour la face, y repeignait la cape en bleu.
 - **Gréage local, les jambes** :

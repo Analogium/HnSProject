@@ -349,26 +349,24 @@ plutôt que compter sur les tests.
    `config()` : cinq couleurs, une dizaine de mesures, trois options. La
    silhouette doit se lire **avant** la couleur, dans une mêlée de soixante-dix.
 
-   Puis **son dessin**, par l'un des trois chemins, jamais deux :
+   Puis **son dessin**, par l'un des deux chemins, jamais les deux :
 
-   - **une planche** (`art/characters/<nom>.png`), par `tools/character_forge.py`
-     — le chemin des quatre ennemis du jalon 27, quand l'utilisateur veut du
-     style et du détail. Recette : `tools/characters/LISEZMOI.md`. `weapon` à
-     `none`, et ne générer que les gestes que son attaque joue (`anim --only`).
-     Un corps massif demande `width` (le squelette élargi), sinon il sort aussi
-     fin que la sorcière. Rien à écrire dans `config()` : la palette vient de la
-     planche ;
+   - **une planche 3D** (`art/characters/<nom>.png`) — le chemin des six ennemis
+     depuis le jalon 52. Recette : `tools/characters/LISEZMOI.md`, « En 3D » :
+     concept, `model_3d.py image`, `back`, `mesh --back`, `rig`, puis
+     `tools/blender_sheet.py`. Dans la section `blender` : la marche (`walk.blend`)
+     et **un** geste de `gestes.json` sous la clé `attack`, la seule rangée que
+     `Enemy._strike()` joue. `weapon` à `none`, ou une arme de `blender/weapons.py`
+     en couche. Un corps massif demande `width` (le squelette élargi), sinon il sort
+     aussi fin que la sorcière. `palette` dans `<nom>.json`, rien dans `config()` ;
 
    - **des grilles dessinées à la main** dans `ART` — un corps et trois paires de
      jambes par direction, écrits caractère par caractère avec la légende `INK`,
-     plus le poignet d'où part l'arme. C'est le chemin des acteurs du jeu : chaque
+     plus le poignet d'où part l'arme. C'est le chemin des morts-vivants : chaque
      pixel est posé, la palette reste paramétrable et l'animation vient du
      décalage des grilles. Dessiner hors de Godot puis recopier — `Image.save_png`
-     tourne en `--headless`, la forge se rend donc sans écran ;
-   - **l'assemblage de capsules** de `_draw_front` / `_draw_side`, qui déduit ses
-     tons d'un éclairage. Il reste pour ce qui n'est pas un personnage (le
-     mannequin) et pour un essai rapide : un archétype absent d'`ART` y tombe
-     tout seul.
+     tourne en `--headless`, la forge se rend donc sans écran. Un archétype sans
+     planche ni grille n'a plus de dessin de repli : `_draw_authored()` échoue sur lui.
 5. **Le faire naître** : une ligne dans `EnemySpawner.POPULATION` (scène → poids)
    pour le peuplement d'une zone — le banc d'équilibrage la lit aussi —, et une
    touche de `LONE_SCENES` dans `world/test_arena.gd` pour l'essayer seul.

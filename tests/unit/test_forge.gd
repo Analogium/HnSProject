@@ -79,17 +79,17 @@ func _witch(dir: String, anim: String, index: int, weapon := "") -> Image:
 
 
 ## Pieds sur ceux des grilles : collision, ombre et barre de vie y sont calées.
-## Le joueur de flûte : une planche 2D en case de 48, pieds à 45 (la sorcière est passée en 3D).
+## Une planche 3D en case de 64, pieds à 60 : (27 − 16) − (60 − 32) = −17.
 func test_a_sheet_puts_its_feet_where_the_grids_have_theirs() -> void:
 	var img := SpriteForge.frame_image(SpriteForge.config("piper", 0), "down", "idle", 0)
-	assert_eq(img.get_size(), Vector2i(48, 48), "la case de la planche, pas celle des grilles")
-	assert_eq(SpriteForge.offset_of("piper"), Vector2(0, -10))
+	assert_eq(img.get_size(), Vector2i(64, 64), "la case de la planche, pas celle des grilles")
+	assert_eq(SpriteForge.offset_of("piper"), Vector2(0, -17))
 	assert_eq(SpriteForge.offset_of("player"), Vector2.ZERO)
 
 
 ## Si deux images d'une animation sont identiques, rien ne bouge à l'écran.
 func test_every_animation_of_a_sheet_moves() -> void:
-	for body in ["witch", "swiftblade"]:
+	for body in ["witch", "swiftblade", "piper", "grunt", "caster", "charger", "mortar", "bloater", "brute"]:
 		var sheet := SpriteForge.sheet_of(body)
 		var cfg := SpriteForge.config(body, 0)
 		for dir in SpriteForge.DIRS:
@@ -215,3 +215,20 @@ func test_a_sheet_carries_its_ground_shadow_in_its_alpha() -> void:
 			if a > 0.0 and a < 0.5:
 				half_transparent += 1
 	assert_gt(half_transparent, 8, "l'ombre au sol a disparu du canal alpha")
+
+
+## Le seuil de glow (`fx/bloom.tres`) : un pixel de planche au-dessus de 0,9 déborde comme
+## un sort. Les reflets des lames rendues en 3D montaient à 0,913 (jalon 52).
+func test_no_sheet_pixel_passes_the_glow_threshold() -> void:
+	for file in DirAccess.get_files_at(SpriteForge.SHEET_DIR):
+		if not file.ends_with(".png"):
+			continue
+		var img := (load(SpriteForge.SHEET_DIR + file) as Texture2D).get_image()
+		img.convert(Image.FORMAT_RGBA8)
+		# Les octets plutôt que get_pixel() : 13 millions de pixels en tout.
+		var data := img.get_data()
+		var brightest := 0.0
+		for i in range(0, data.size(), 4):
+			if data[i + 3] > 127:
+				brightest = maxf(brightest, 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2])
+		assert_lt(brightest / 255.0, 0.9, file)

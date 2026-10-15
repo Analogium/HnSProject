@@ -1,0 +1,41 @@
+{
+ "concept": {
+  "prompt": "planche Desktop/hns-pnj (jalon 52), npc_marchand_1-colporteur_1337",
+  "seeds": []
+ },
+ "views": {
+  "prompt": "",
+  "seeds": [],
+  "ip_weight": 0.45
+ },
+ "neg": ", child, baby, cute, cartoon",
+ "frame": 64,
+ "feet": 60,
+ "scale": 0.7,
+ "weapon": "none",
+ "palette": {
+  "cloth": "6b4a2e",
+  "skin": "d9a37a",
+  "accent": "c9a227",
+  "metal": "8a8a92",
+  "leather": "4a3020"
+ },
+ "blender": {
+  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, travelling peddler, stout man with a bushy grey beard, wide brimmed brown hat, enormous backpack stacked with pots, scrolls and lanterns behind his shoulders, patched brown coat, coin purses on the belt, brown boots, empty hands",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 38,
+  "colors": 16,
+  "weapon_colors": 8,
+  "source": "tools/characters/merchant/3d",
+  "rest": "rest.blend",
+  "weapons": [],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ]
+  }
+ }
+}

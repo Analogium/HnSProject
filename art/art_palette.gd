@@ -28,7 +28,7 @@ const BASE_STOP := 0.55
 const SHADOW_STRENGTH := 0.78
 ## Plafonné par le seuil de glow : au-delà, le haut de la rampe passe 0,9 et les
 ## sprites se mettent à déborder comme un sort. Le plus clair de tout le jeu est
-## le cristal du caster, à **0,88** — il reste 0,02 de marge, pas plus.
+## à **0,88** — il reste 0,02 de marge, pas plus (les planches 3D : `LIGHT_MAX`).
 const LIGHT_STRENGTH := 0.52
 
 

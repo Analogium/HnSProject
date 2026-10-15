@@ -50,8 +50,8 @@ dossier. Vérifier le `sed` avant de lancer.
 ## Valider
 
 ```bash
-tests/run.sh              # tout : ~2 min, dont 108 s de tests (mesuré le 22/09/2026)
-tests/run.sh unit         # ~20 s, dont 8 s de tests
+tests/run.sh              # tout : ~7 min, dont 366 s de tests (mesuré le 15/10/2026)
+tests/run.sh unit         # ~1 min 30, dont 30 s de tests
 tests/run.sh integration coup_de_grace   # les seuls tests dont le nom contient ce mot
 ```
 
@@ -138,6 +138,6 @@ ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 - `/dessiner-un-effet` — **pour tout visuel** d'effet, de compétence ou
   d'icône : planche de variantes choisie par l'utilisateur, dessin pixel par
   pixel dans `EffectForge`, captures réelles sur le Bureau. Ses lanceurs sont
-  `tools/planche.sh` et `tools/capture.sh`. Un **personnage joueur** passe en
-  3D : `tools/model_3d.py`, Mixamo ou gréage local, `tools/blender_sheet.py` (recette :
+  `tools/planche.sh` et `tools/capture.sh`. Un **personnage**, joueur ou
+  ennemi, passe en 3D : `tools/model_3d.py`, Mixamo ou gréage local, `tools/blender_sheet.py` (recette :
   `tools/characters/LISEZMOI.md`, « En 3D »).
