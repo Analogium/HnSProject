@@ -32,7 +32,7 @@ const R_LEATHER := 4
 
 const DIRS := ["down", "side", "up"]
 const ARCHETYPES := [
-	"player", "swiftblade", "witch", "grunt", "caster", "dummy", "undead",
+	"player", "swiftblade", "witch", "piper", "grunt", "caster", "dummy", "undead",
 	"charger", "mortar", "bloater", "brute",
 ]
 
@@ -86,6 +86,20 @@ static var _sheets: Dictionary = {}
 class Sheet:
 	var image: Image
 	var meta: Dictionary
+	var path := ""
+	var _layers := {}
+
+	## La couche d'une arme rendue avec le corps (jalon 51), même découpage que `image` ;
+	## null si la planche n'en a pas, et la forge dessine alors l'arme elle-même.
+	func layer(kind: String) -> Image:
+		if not _layers.has(kind):
+			var img: Image = null
+			var file := path.get_basename() + "_" + kind + ".png"
+			if kind in meta.get("weapons", []) and ResourceLoader.exists(file):
+				img = (load(file) as Texture2D).get_image()
+				img.convert(Image.FORMAT_RGBA8)
+			_layers[kind] = img
+		return _layers[kind]
 
 	## Les images d'un geste généré ; une seule, la pose, s'il ne l'est pas.
 	func count(anim: String) -> int:
@@ -106,6 +120,7 @@ static func sheet_of(archetype: String) -> Sheet:
 		var sheet: Sheet = null
 		if ResourceLoader.exists(path):
 			sheet = Sheet.new()
+			sheet.path = path
 			sheet.image = (load(path) as Texture2D).get_image()
 			sheet.image.convert(Image.FORMAT_RGBA8)
 			sheet.meta = (load(SHEET_DIR + archetype + ".json") as JSON).data
@@ -697,7 +712,10 @@ static func config(archetype: String, variant := 0) -> Dictionary:
 		for role in palette:
 			base[role] = Color(palette[role])
 		cfg["weapon"] = sheet.meta["weapon"]
-		cfg["torso_r"] = 6.8
+		# `scale` : la taille du personnage face à ceux d'une case de 48 (jalon 51, le rendu
+		# de Hero Siege) ; l'arme et l'ombre au sol la suivent.
+		cfg["scale"] = float(sheet.meta.get("scale", 1.0))
+		cfg["torso_r"] = 6.8 * cfg["scale"]
 		amount = 0.0
 
 	# Variation par instance : nuance des étoffes et de la peau, corpulence.
@@ -1406,11 +1424,15 @@ static func _draw_sheet(
 	var out := under.to_image(cfg["palettes"])
 
 	var hand := Vector2(view["hand"][0], view["hand"][1])
+	var layer := sheet.layer(cfg["weapon"])
 	if anims.has(anim):
 		var cycle: Dictionary = anims[anim]
 		var i := index % int(cycle["count"])
 		var cell := Rect2i(i * f, int(cycle["rows"][dir]) * f, f, f)
 		out.blend_rect(sheet.image, cell, Vector2i.ZERO)
+		if layer != null:
+			out.blend_rect(layer, cell, Vector2i.ZERO)
+			return out
 		var at: Array = cycle["hands"][dir][i]
 		hand = Vector2(at[0], at[1])
 		# Les attaques du jalon 47 donnent la lame de chaque image, le long de l'avant-bras,
@@ -1424,11 +1446,16 @@ static func _draw_sheet(
 		var legs: int = view["legs"]
 		var bob: int = SHEET_BREATH[index % SHEET_BREATH.size()]
 		var pose := Rect2i(DIRS.find(dir) * f, 0, f, f)
-		out.blend_rect(sheet.image, Rect2i(pose.position.x, legs, f, f - legs), Vector2i(0, legs))
-		out.blend_rect(sheet.image, Rect2i(pose.position.x, 0, f, legs), Vector2i(0, bob))
-		if bob < 0:
-			out.blend_rect(sheet.image, Rect2i(pose.position.x, legs - 1, f, 1), Vector2i(0, legs - 1 + bob + 1))
+		for img: Image in [sheet.image, layer]:
+			if img == null:
+				continue
+			out.blend_rect(img, Rect2i(pose.position.x, legs, f, f - legs), Vector2i(0, legs))
+			out.blend_rect(img, Rect2i(pose.position.x, 0, f, legs), Vector2i(0, bob))
+			if bob < 0:
+				out.blend_rect(img, Rect2i(pose.position.x, legs - 1, f, 1), Vector2i(0, legs - 1 + bob + 1))
 		hand.y += bob
+		if layer != null:
+			return out
 
 	# La main de chaque image générée est celle de son squelette : l'arme la suit sans
 	# qu'on dessine une main par-dessus.
@@ -1650,7 +1677,7 @@ static func _draw_robe(c: PixelCanvas, cfg: Dictionary, hip_y: float, sw: float)
 
 
 static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2, bias: float) -> void:
-	var d := dir.normalized()
+	var d := dir.normalized() * float(cfg.get("scale", 1.0))
 	var perp := d.orthogonal()
 
 	match cfg["weapon"]:
@@ -1707,6 +1734,15 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 			# Cristal forcé au niveau maximal : c'est une source de lumière. Collé
 			# au bout du bâton — un pixel de trop et il flotte dans le vide.
 			c.disc(hand + d * 9.6, 2.0, R_ACCENT, 1.0)
+
+		"flute":
+			# L'instrument du joueur de flûte, pour les seules compétences de son manuel
+			# (`Character.CLASSES`, `instrument`) : l'os de `metal`, les trous de `leather`.
+			c.capsule(hand - d * 2.0, hand + d * 8.0, 0.9, R_METAL, bias)
+			c.disc(hand + d * 8.4, 1.3, R_METAL, bias)
+			for k: float in [3.0, 5.0, 7.0]:
+				var h: Vector2 = (hand + d * k + perp * 0.5).round()
+				c.dot_px(int(h.x), int(h.y), R_LEATHER, 0.0)
 
 
 ## Le mannequin n'a pas de squelette : un poteau, un sac, une cible peinte.

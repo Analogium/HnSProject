@@ -1,0 +1,116 @@
+{
+ "concept": {
+  "prompt": "calque composé à la main (tools/characters/piper/calque.py) habillé en img2img 0,55, graine 4242",
+  "seeds": []
+ },
+ "views": {
+  "prompt": "pixel art, chibi game character sprite, big head small body, the pied piper of hamelin, young man, dark brown hair, thin mustache, green tyrolean hat with a red band and a tall feather, white linen shirt with puffy sleeves, open brown leather vest, red sash, green pouch at the hip, red tights, green pointed shoes, empty hands, full body, {view}",
+  "seeds": [
+   4242,
+   777,
+   1337,
+   2024
+  ],
+  "ip_weight": 1.0
+ },
+ "anim": {
+  "who": "chibi, big head small body, the pied piper of hamelin, young man, dark brown hair, thin mustache, green tyrolean hat with a red band and a tall feather, white linen shirt with puffy sleeves, open brown leather vest, red sash, green pouch at the hip, red tights, green pointed shoes, legs visible, empty hands",
+  "seeds": [
+   4242,
+   777
+  ]
+ },
+ "frame": 48,
+ "feet": 45,
+ "slim": 0.9,
+ "squash": 0.8,
+ "recolor": [],
+ "colors": {
+  "S": "f2c8a6",
+  "s": "d9a888",
+  "n": "c98e70",
+  "k": "2a1a16",
+  "E": "f4f0e8",
+  "m": "4a2a1c",
+  "h": "5a3a28"
+ },
+ "patches": {
+  "down": [
+   {
+    "at": [
+     19,
+     18
+    ],
+    "grid": [
+     "hSSSSSSSSh",
+     "hSkESSEkSh",
+     "hSSSSSSSSh",
+     "hsSmmmmSsh",
+     "hhsSSSSshh",
+     ".hhsSSshh."
+    ]
+   }
+  ],
+  "side": [
+   {
+    "at": [
+     21,
+     18
+    ],
+    "grid": [
+     "hhSSSS.",
+     "hhSSEkS",
+     "hhSSSSn",
+     "hhsSmm.",
+     "hhsSS..",
+     ".hhs..."
+    ]
+   }
+  ]
+ },
+ "palette": {
+  "cloth": "7c2a26",
+  "skin": "c9bfa4",
+  "accent": "bccb3a",
+  "metal": "dcd2b4",
+  "leather": "3a2b24"
+ },
+ "anchors": {
+  "down": {
+   "hand": [
+    29.0,
+    34.0
+   ],
+   "waist": 34,
+   "legs": 43,
+   "head": 24
+  },
+  "side": {
+   "hand": [
+    24.0,
+    34.0
+   ],
+   "waist": 34,
+   "legs": 43,
+   "head": 24
+  },
+  "up": {
+   "hand": [
+    18.0,
+    34.0
+   ],
+   "waist": 34,
+   "legs": 43,
+   "head": 24
+  }
+ },
+ "concept_palette": false,
+ "weapon": "sword",
+ "neg": ", skull, cape, beanie, cap, holding",
+ "authored_height": 36,
+ "body": 16,
+ "side_width": 1.3,
+ "blender": {
+  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, the pied piper of hamelin, young man, dark brown hair, thin mustache, green tyrolean hat with a red band and a tall feather, white linen shirt with puffy sleeves, open brown leather vest, red sash, green pouch at the hip, red tights, green pointed shoes, empty hands"
+ }
+}

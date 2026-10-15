@@ -425,7 +425,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`, et pour le Vive lame (jalon 50) `FLURRY`, `KNIVES`, `FINISHER`, `RIPOSTE` (entretenue). `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET`, `FROST_ORB` et `KNIVES` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead`, `thrust`, ou ceux de la seule Vive lame, `flurry`, `throw`, `finisher` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`, et pour le Vive lame (jalon 50) `FLURRY`, `KNIVES`, `FINISHER`, `RIPOSTE` (entretenue). `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET`, `FROST_ORB` et `KNIVES` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead`, `thrust`, ou ceux de la seule Vive lame, `flurry`, `throw`, `finisher` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) ; pour une planche 3D, il s'écrit en poses-clés dans `tools/blender/gestes.json` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -458,7 +458,10 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
 5. **Une attaque : son geste** (jalon 47, règle de l'utilisateur). Elle peut prendre un
    geste existant de `Skill.GESTURE` — balayage, frappe de haut, estoc — sans rien à
    générer ; mais **un mouvement neuf est bienvenu** dès que le geste diffère (jalon 50 :
-   « ça améliore le gameplay visuel »). **Un mouvement neuf** se génère **pour chaque classe** : une entrée dans
+   « ça améliore le gameplay visuel »). **Un mouvement neuf** se fait **pour chaque classe**.
+   Une planche 3D l'écrit en poses-clés dans `tools/blender/gestes.json`, l'ajoute aux
+   `anims` de la section `blender`, puis `tools/blender_sheet.py <classe>`, GIF montrés à
+   l'utilisateur. Une planche 2D le génère : une entrée dans
    `STRIKES` de `tools/character_forge.py`, puis `anim <classe> --only <geste>`, planche
    choisie par l'utilisateur, `keep`, `build` — la recette est
    [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). **Sauf dans un manuel
@@ -903,8 +906,9 @@ deux paliers ; `test_flask_stats_roll_only_on_flasks`.
 
 ## Ajouter une classe jouable
 
-Le dessin d'abord, par `tools/character_forge.py` — la recette complète, pièges
-compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Puis :
+Le dessin d'abord, **en 3D** depuis le jalon 51 : vue de face par `tools/character_forge.py`,
+modèle par `tools/model_3d.py`, gréage Mixamo (ou local), planche par `tools/blender_sheet.py` — la
+recette complète, pièges compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Puis :
 
 1. **`core/character.gd`** — une entrée dans `CLASSES` : l'archétype de la forge
    (le nom de `art/characters/<id>.png`) et le nom affiché.
@@ -924,7 +928,8 @@ compris, est [tools/characters/LISEZMOI.md](../tools/characters/LISEZMOI.md). Pu
    `CLASSES`.
 
 **Ses gestes d'attaque** (jalon 47, règle de l'utilisateur) : une classe neuve reçoit
-**tous les mouvements déjà existants** — `anim <id> --only <toutes les clés de STRIKES>`
+**tous les mouvements déjà existants** — en 3D, une entrée par geste de `gestes.json` dans
+les `anims` de sa section `blender` ; en 2D, `anim <id> --only <toutes les clés de STRIKES>`
 (aujourd'hui `sweep overhead thrust`), planche choisie, `keep`, `build`. `test_each_class_sheet_has_the_gestures_of_its_attacks`
 parcourt `CLASSES` et refuse la classe qui en manque un.
 

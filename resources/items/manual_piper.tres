@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_base"]
+[ext_resource type="Resource" path="res://resources/manuals/piper.tres" id="2_arch"]
+
+[resource]
+script = ExtResource("1_base")
+id = "manual_piper"
+display_name = "Manuel du joueur de flûte"
+kind = "manual"
+family = "manual"
+tags = PackedStringArray("manual")
+lineage = "manual_piper"
+tier = 3
+required_level = 1
+manual = ExtResource("2_arch")

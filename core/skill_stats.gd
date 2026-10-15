@@ -1743,14 +1743,15 @@ const FROTH_PART := 0.5
 const FROTH_REACH := 160.0
 const FROTH_SPEED := 200.0
 const LID_PART := 0.5
-## Le Vive lame (jalon 50). La Rafale : ses estocs, leur écart, leur largeur, et la chance
+## Le Vive lame (jalon 50). La Rafale : ses estocs, leur écart (part du geste : les estocs
+## dessinés dans tools/blender/gestes.json sont deux images sur huit), leur largeur, et la chance
 ## critique accrue que chacun ajoute au précédent. Le Coup de grâce : ce que vaut une charge
 ## consommée — dégâts plus et seuil d'achèvement, en points de pourcentage. La Contre-attaque :
 ## l'attente entre deux ripostes, sans quoi une meute qui rate dix fois en donnerait dix.
 const FRENZY_SKILL := "bloodlust"
 const COUNTER_SKILL := "counterattack"
 const FLURRY_THRUSTS := 3
-const FLURRY_GAP := 0.12
+const FLURRY_GAP := 0.25
 const FLURRY_WIDTH := 12.0
 const FLURRY_CRIT := 50.0
 const FINISHER_POWER := 25.0

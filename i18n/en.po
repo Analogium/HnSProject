@@ -509,6 +509,9 @@ msgstr "A worn radiance that wards off holy and blesses your blows."
 msgid "Manuel de la sorcière"
 msgstr "Witch's Manual"
 
+msgid "Manuel du joueur de flûte"
+msgstr "Piper's Manual"
+
 msgid "Manuel du Vive lame"
 msgstr "Swiftblade's Manual"
 
@@ -1929,6 +1932,9 @@ msgstr "Swiftblade"
 
 msgid "Sorcière"
 msgstr "Witch"
+
+msgid "Joueur de flûte"
+msgstr "Pied Piper"
 
 msgid "Créer"
 msgstr "Create"

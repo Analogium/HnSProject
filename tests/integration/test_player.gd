@@ -717,6 +717,36 @@ func test_a_keyword_passive_serves_another_book_skills() -> void:
 	assert_eq(witch.manual.points_of("heart_of_embers"), 0, "et l'autre livre n'y est pour rien")
 
 
+## L'instrument de classe — la flûte du joueur de flûte — pour les compétences du manuel
+## de classe seulement : celles d'un autre livre, et l'attaque de départ, gardent l'arme.
+## Le manuel de la sorcière tient lieu de manuel de classe, celui du joueur étant vide.
+func test_the_instrument_serves_only_the_class_manual_skills() -> void:
+	var own := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	own.manual.gain_experience(999999)
+	_p.rack.seat(own)
+	assert_true(_p.invest(Rack.CLASS_SLOT, "elemental_projectile"))
+	_study("manual_lightning", ["storm_cloud"])
+	_p.instrument = "flute"
+
+	assert_eq(_p.held_for("elemental_projectile"), "flute")
+	assert_eq(_p.held_for("storm_cloud"), "", "un autre livre : l'arme")
+	assert_eq(_p.held_for(SkillCatalog.ID_ATTACK), "", "sans livre : l'arme")
+	_p.instrument = ""
+	assert_eq(_p.held_for("elemental_projectile"), "", "une classe sans instrument")
+	assert_eq(Character.create_new("Flûtiste", 0, Character.PIPER).instrument(), "flute")
+
+
+## Le geste joué avec l'instrument rend l'arme en finissant : la marche qui suit ne
+## garde pas la flûte en main.
+func test_the_instrument_goes_back_after_the_gesture() -> void:
+	var sprite := _p.sprite
+	var with_weapon := sprite.sprite_frames
+	sprite.attack(true, 0.0, "", "flute")
+	assert_ne(sprite.sprite_frames, with_weapon, "la flûte le temps du geste")
+	sprite._on_animation_finished()
+	assert_eq(sprite.sprite_frames, with_weapon, "puis l'arme")
+
+
 ## **La conversion se voit** : ce que le sort pose part dans la nature d'arrivée,
 ## et sa couleur la dit. Sans cela, le nœud le plus cher de l'arbre ne se
 ## remarquerait qu'en lisant une fiche.

@@ -1,79 +1,6 @@
 {
- "concept": {
-  "prompt": "pixel art, chibi game character sprite, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, full body, front view, standing idle, holding a sword",
-  "seeds": [
-   4242,
-   1337
-  ]
- },
- "views": {
-  "prompt": "pixel art, chibi game character sprite, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, empty hands, full body, {view}",
-  "seeds": [
-   4242,
-   777
-  ],
-  "ip_weight": 1.0
- },
- "anim": {
-  "who": "chibi, big head small body, agile young swordsman, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, no armor, legs visible, empty hands",
-  "seeds": [
-   4242,
-   777
-  ]
- },
- "frame": 48,
- "feet": 45,
- "height": 34,
- "slim": 0.85,
- "squash": 0.8,
- "recolor": [],
- "colors": {
-  "S": "f9c5a4",
-  "s": "e8a484",
-  "q": "c9826e",
-  "k": "2a1a26",
-  "E": "8fb4e0",
-  "m": "a0504a",
-  "b": "f09a8a",
-  "h": "bab2bc",
-  "d": "8c7f90"
- },
- "patches": {
-  "down": [
-   {
-    "at": [
-     17,
-     9
-    ],
-    "grid": [
-     "hSSSSSSSSSSSSh",
-     "dSSddSSSSddSSd",
-     "SSSkESSSSEkSSs",
-     "SSSSSSSSSSSSSs",
-     "sSSbSSSSSSbSSs",
-     ".sSSSSmmSSSSs.",
-     "..qsSSSSSSsq.."
-    ]
-   }
-  ],
-  "side": [
-   {
-    "at": [
-     25,
-     8
-    ],
-    "grid": [
-     "..SSSs",
-     ".SSSSs",
-     "SSkESs",
-     "SSSSSs",
-     "SbSSSs",
-     "SSSmS.",
-     "qsSSq."
-    ]
-   }
-  ]
- },
+ "frame": 64,
+ "feet": 60,
  "palette": {
   "cloth": "2c2a33",
   "skin": "e8b894",
@@ -81,36 +8,62 @@
   "metal": "b8c6dc",
   "leather": "66422e"
  },
- "anchors": {
-  "down": {
-   "hand": [
-    30.0,
-    27.0
-   ],
-   "waist": 29,
-   "legs": 40,
-   "head": 16
-  },
-  "side": {
-   "hand": [
-    23.0,
-    26.0
-   ],
-   "waist": 29,
-   "legs": 40,
-   "head": 15
-  },
-  "up": {
-   "hand": [
-    18.0,
-    27.0
-   ],
-   "waist": 29,
-   "legs": 40,
-   "head": 17
-  }
- },
- "concept_palette": true,
  "weapon": "sword",
- "authored_height": 45
+ "scale": 1.0,
+ "blender": {
+  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stocky heroic proportions, big head, broad shoulders, short legs, young man in his early twenties, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, empty hands",
+  "source": "tools/characters/swiftblade/3d",
+  "rest": "Breathing Idle.fbx",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "anims": {
+   "walk": [
+    "Walking.fbx",
+    8
+   ],
+   "attack": [
+    "sweep",
+    8
+   ],
+   "cast": [
+    "cast",
+    8
+   ],
+   "sweep": [
+    "sweep",
+    8
+   ],
+   "overhead": [
+    "overhead",
+    8
+   ],
+   "thrust": [
+    "thrust",
+    8
+   ],
+   "flurry": [
+    "flurry",
+    8
+   ],
+   "throw": [
+    "throw",
+    8
+   ],
+   "finisher": [
+    "finisher",
+    8
+   ]
+  },
+  "size": 54,
+  "colors": 16,
+  "weapons": [
+   "sword",
+   "dagger",
+   "mace",
+   "wand"
+  ],
+  "weapon_colors": 8
+ },
+ "model": "3d/model.glb : TRELLIS.2 (Hugging Face) sur 3d/model_source.png, une image « rendu 3D » en pose A tirée par SDXL sans LoRA pixel art ; gréé par Mixamo"
 }

@@ -1313,7 +1313,7 @@ func test_the_flurry_thrusts_three_times_at_the_first_in_line() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(first), 1, "le premier estoc, à l'impact")
 	assert_eq(_children_of(ThrustTrail).size(), 1, "dessiné")
-	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	await wait_seconds(_flurry_gap() * SkillStats.FLURRY_THRUSTS + 0.1)
 	assert_eq(_hits(first), SkillStats.FLURRY_THRUSTS, "un coup par estoc")
 	assert_eq(_hits(behind), 0, "le premier sur la ligne, seul")
 
@@ -1412,6 +1412,11 @@ func _learn_swift(skill_id: String, nodes: Array) -> void:
 	_p.equip(blunt, EquipmentSlots.WEAPON)
 
 
+## L'écart entre deux estocs de la Rafale, en secondes : une part de son geste.
+func _flurry_gap() -> float:
+	return _p.resolve(SkillCatalog.by_id("flurry"), 1).use_time * SkillStats.FLURRY_GAP
+
+
 ## La Soif de sang allumée sur la quatrième case, ces charges posées, et ces nœuds de son arbre.
 func _frenzy(charges: int, nodes := []) -> Buff:
 	if _p.skill_points("bloodlust") <= 0:
@@ -1499,7 +1504,7 @@ func test_the_secret_thrust_crits_the_last_thrust() -> void:
 	var crits := _crits()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	await wait_seconds(_flurry_gap() * SkillStats.FLURRY_THRUSTS + 0.1)
 	assert_eq(_hits(prey), SkillStats.FLURRY_THRUSTS)
 	assert_eq(crits.size(), 1, "le seul dernier")
 
@@ -1512,7 +1517,7 @@ func test_the_fan_spreads_the_thrusts() -> void:
 	var right := _target(Vector2(30, 0).rotated(deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	await wait_seconds(_flurry_gap() * SkillStats.FLURRY_THRUSTS + 0.1)
 	assert_eq([_hits(left), _hits(middle), _hits(right)], [1, 1, 1], "un estoc chacune")
 
 
@@ -1521,7 +1526,7 @@ func test_a_fourth_thrust() -> void:
 	var prey := _target(Vector2(30, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	await wait_seconds(SkillStats.FLURRY_GAP * 4.0 + 0.1)
+	await wait_seconds(_flurry_gap() * 4.0 + 0.1)
 	assert_eq(_hits(prey), 4)
 
 
@@ -1535,7 +1540,7 @@ func test_blood_rush_revives_the_frenzy() -> void:
 	frenzy._since_stack = 5.0
 	var start := Time.get_ticks_msec()
 	assert_true(Gestures.cast(_p, 2))
-	await wait_seconds(SkillStats.FLURRY_GAP * SkillStats.FLURRY_THRUSTS + 0.1)
+	await wait_seconds(_flurry_gap() * SkillStats.FLURRY_THRUSTS + 0.1)
 	var waited := (Time.get_ticks_msec() - start) * 0.001
 	assert_lt(frenzy._since_stack, 5.0 + waited - 0.2, "ravivées d'un critique")
 

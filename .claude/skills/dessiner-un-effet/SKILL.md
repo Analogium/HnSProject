@@ -56,10 +56,11 @@ avait été jugé immobile, alors qu'en mouvement il sortait comme un tube.
   l'hôte Windows (`ip route`) : le lancer avec le bac à sable désactivé.
 
 - **Un personnage joueur** ne se dessine pas en grilles texte : trop de détails
-  à placer à l'aveugle. Il passe par `tools/character_forge.py` — concept, puis
-  face / profil / dos par IPAdapter et OpenPose, puis réduction et retouches à la
-  main (le visage). Même principe de planche à chaque étape. Recette et pièges :
-  `tools/characters/LISEZMOI.md`.
+  à placer à l'aveugle. Depuis le jalon 51, il passe **en 3D** : vue de face par
+  `tools/character_forge.py`, modèle par `tools/model_3d.py` (Stable Fast 3D
+  en local), gréage Mixamo ou local, planche rendue par `tools/blender_sheet.py`, gestes écrits dans
+  `tools/blender/gestes.json`. On montre les GIF des gestes, face, profil et dos.
+  Recette et pièges : `tools/characters/LISEZMOI.md`, « En 3D ».
 
 ## 3. Dessiner dans la langue du décor
 

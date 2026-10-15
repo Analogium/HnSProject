@@ -79,10 +79,11 @@ func _witch(dir: String, anim: String, index: int, weapon := "") -> Image:
 
 
 ## Pieds sur ceux des grilles : collision, ombre et barre de vie y sont calées.
+## Le joueur de flûte : une planche 2D en case de 48, pieds à 45 (la sorcière est passée en 3D).
 func test_a_sheet_puts_its_feet_where_the_grids_have_theirs() -> void:
-	var img := _witch("down", "idle", 0)
+	var img := SpriteForge.frame_image(SpriteForge.config("piper", 0), "down", "idle", 0)
 	assert_eq(img.get_size(), Vector2i(48, 48), "la case de la planche, pas celle des grilles")
-	assert_eq(SpriteForge.offset_of("witch"), Vector2(0, -10))
+	assert_eq(SpriteForge.offset_of("piper"), Vector2(0, -10))
 	assert_eq(SpriteForge.offset_of("player"), Vector2.ZERO)
 
 

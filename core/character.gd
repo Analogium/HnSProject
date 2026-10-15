@@ -26,6 +26,7 @@ const LEGACY_SPELL_DAMAGE := "spell_damage"
 ## (clé de traduction), et le manuel qui n'appartient qu'à elles (jalon 28).
 const SWIFTBLADE := "swiftblade"
 const WITCH := "witch"
+const PIPER := "piper"
 const CLASSES := {
 	SWIFTBLADE: {
 		"archetype": "swiftblade", "name": "Vive lame",
@@ -34,6 +35,13 @@ const CLASSES := {
 	WITCH: {
 		"archetype": "witch", "name": "Sorcière",
 		"manual": preload("res://resources/items/manual_witch.tres"),
+	},
+	PIPER: {
+		"archetype": "piper", "name": "Joueur de flûte",
+		"manual": preload("res://resources/items/manual_piper.tres"),
+		# Tenu à la place de l'arme pour les compétences de ce manuel, et elles seules :
+		# du dessin, rien sur la fiche (`Player.held_for()`).
+		"instrument": "flute",
 	},
 }
 ## Le nom qu'a porté la Vive lame dans les premières sauvegardes v8.
@@ -102,6 +110,11 @@ static func unreadable_with(p_id: String) -> Character:
 ## Le corps que la forge dessine pour cette classe.
 func archetype() -> String:
 	return CLASSES[character_class]["archetype"]
+
+
+## Ce que la classe tient pour les compétences de son manuel, vide pour l'arme.
+func instrument() -> String:
+	return CLASSES[character_class].get("instrument", "")
 
 
 ## Les bases des manuels de classe, **hors du catalogue** : elles ne tombent pas, ne

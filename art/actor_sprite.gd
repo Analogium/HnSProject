@@ -36,6 +36,8 @@ var _anim := "idle"
 var _attacking := false
 var _variant := 0
 var _weapon := ""
+## Tenu le temps du geste en cours à la place de `_weapon`, vide sinon.
+var _held := ""
 
 
 func _ready() -> void:
@@ -112,9 +114,11 @@ func set_state(moving: bool, facing: Vector2) -> void:
 ## `spell` : un sort joue le lancer, quand le corps en a un — les grilles n'ont que
 ## le coup. `duration` étire le geste sur ce temps (jalon 47) ; zéro, sa cadence propre.
 ## `family` : le geste d'une attaque (`Skill.GESTURE`), s'il est sur la planche.
-func attack(spell := false, duration := 0.0, family := "") -> void:
+## `held` : ce que la main tient pour ce geste seul, vide pour l'arme.
+func attack(spell := false, duration := 0.0, family := "", held := "") -> void:
 	_attacking = true
 	_anim = "attack"
+	_hold(held)
 	var cast := "cast_%s" % _dir
 	var gesture := cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir
 	if not family.is_empty() and sprite_frames.has_animation("%s_%s" % [family, _dir]):
@@ -184,6 +188,7 @@ func show_states(states: StatusEffects) -> void:
 ## la naissance comme pour les changements de silhouette et d'arme. L'animation en
 ## cours reprend à zéro : sprite_frames est remplacé.
 func _rebuild() -> void:
+	_held = ""
 	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
 	offset = SpriteForge.offset_of(archetype)
 	_apply()
@@ -210,9 +215,18 @@ func _apply() -> void:
 		play(next)
 
 
+## Les planches de l'objet tenu : la forge les garde en cache, comme celles de l'arme.
+func _hold(kind: String) -> void:
+	if kind == _held:
+		return
+	_held = kind
+	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon if kind.is_empty() else kind)
+
+
 func _on_animation_finished() -> void:
 	if _attacking:
 		_attacking = false
+		_hold("")
 		speed_scale = 1.0
 		_anim = "idle"
 		_apply()

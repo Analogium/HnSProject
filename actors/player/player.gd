@@ -106,6 +106,8 @@ var bar := SkillBar.starting()
 
 ## Le manuel de départ a-t-il déjà été donné à ce personnage.
 var manual_given := false
+## `Character.instrument()`, recopié au chargement : vide, l'arme sert à tout.
+var instrument := ""
 
 ## Ce que l'équipement donne aux compétences d'un mot-clé, reconstruit par
 ## `recompute_stats()` et lu à chaque lancer.
@@ -540,7 +542,7 @@ func cast_slot(index: int) -> bool:
 			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
 		sprite.attack(
 			skill.cadence == Skill.Cadence.CAST,
-			cast.use_time / maxf(states.speed_factor, 0.01), family
+			cast.use_time / maxf(states.speed_factor, 0.01), family, held_for(skill.id)
 		)
 	var aim := _aim_point()
 	var pose := _pose.bind(skill, salvo, self, facing, aim)
@@ -1610,17 +1612,18 @@ func _chain_lunge(cast: SkillStats) -> void:
 	_lunge(next, prey)
 
 
-## La Rafale (jalon 50) : des estocs à `FLURRY_GAP` l'un de l'autre, chacun plus enclin au
+## La Rafale (jalon 50) : des estocs à `FLURRY_GAP` du geste l'un de l'autre, chacun plus enclin au
 ## critique que le précédent. Chacun prend le premier corps sur sa ligne, vers où l'on
 ## regarde à cet instant — ou sur la sienne sous l'Éventail.
 func _flurry(cast: SkillStats) -> void:
 	var count := SkillStats.FLURRY_THRUSTS + int(cast.extra_thrusts)
+	var gap := cast.use_time * SkillStats.FLURRY_GAP / maxf(states.speed_factor, 0.01)
 	var escalation := SkillStats.FLURRY_CRIT + cast.ascent
 	var last: Hurtbox = null
 	var streak := 0
 	for i in count:
 		if i > 0:
-			await get_tree().create_timer(SkillStats.FLURRY_GAP, false).timeout
+			await get_tree().create_timer(gap, false).timeout
 		if is_dead:
 			return
 		var final := i == count - 1
@@ -1887,6 +1890,13 @@ func skill_points(skill_id: String) -> int:
 	if SkillCatalog.is_starting(skill_id):
 		return BASIC_ATTACK_POINTS
 	return 0
+
+
+## Ce que la main tient pour cette compétence : l'instrument de la classe pour celles de
+## son manuel (la flûte du joueur de flûte), vide pour l'arme équipée.
+func held_for(skill_id: String) -> String:
+	var book := book_of(skill_id)
+	return instrument if book != null and book == rack.at(Rack.CLASS_SLOT) else ""
 
 
 ## **Le seul endroit qui le cherche** : points et nœuds viennent du même livre.
@@ -2342,6 +2352,7 @@ func load_character(character: Character) -> void:
 	manual_given = character.manual_given
 
 	sprite.set_archetype(character.archetype())
+	instrument = character.instrument()
 	var lift := SpriteForge.head_room(character.archetype())
 	health_bar.lift = lift
 	hurtbox.feedback_lift = lift

@@ -39,7 +39,7 @@ const THUMBNAIL_FEET := 9.0
 
 ## Ce qu'on choisit à la création : une classe et sa tenue. Une tenue par classe
 ## pour l'instant.
-const LOOKS := [[Character.SWIFTBLADE, 0], [Character.WITCH, 0]]
+const LOOKS := [[Character.SWIFTBLADE, 0], [Character.WITCH, 0], [Character.PIPER, 0]]
 
 ## Le mot à retaper pour un personnage sans nom lisible. **Traduit**, et lu des deux
 ## côtés par `_word_to_type()`.

@@ -86,10 +86,10 @@ func test_create_writes_and_selects_it() -> void:
 	assert_true(SaveStore.exists(selected.id), "et il est déjà sur le disque")
 
 
-func test_the_last_look_creates_a_witch_wand_in_hand() -> void:
+func test_the_witch_look_creates_a_witch_wand_in_hand() -> void:
 	_screen._open_creation()
 	_screen.name_field.text = "Morgane"
-	_screen._look = CharacterSelect.LOOKS.size() - 1
+	_screen._look = CharacterSelect.LOOKS.find([Character.WITCH, 0])
 	_screen._create()
 
 	var selected := _screen.selection()

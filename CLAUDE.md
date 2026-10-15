@@ -138,5 +138,6 @@ ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 - `/dessiner-un-effet` — **pour tout visuel** d'effet, de compétence ou
   d'icône : planche de variantes choisie par l'utilisateur, dessin pixel par
   pixel dans `EffectForge`, captures réelles sur le Bureau. Ses lanceurs sont
-  `tools/planche.sh` et `tools/capture.sh`. Un **personnage joueur** passe par
-  `tools/character_forge.py` (recette : `tools/characters/LISEZMOI.md`).
+  `tools/planche.sh` et `tools/capture.sh`. Un **personnage joueur** passe en
+  3D : `tools/model_3d.py`, Mixamo ou gréage local, `tools/blender_sheet.py` (recette :
+  `tools/characters/LISEZMOI.md`, « En 3D »).

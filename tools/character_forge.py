@@ -82,9 +82,10 @@ POSES = {
 HEAD = (0, 14, 15, 16, 17)
 
 
-def widened(kp, width):
-    """Le squelette élargi sous la tête : le prompt n'obtient pas une carrure que le
-    squelette dément, un colosse sortait aussi fin que la sorcière."""
+def widened(kp, cfg):
+    """Le squelette élargi sous la tête (`width`) : le prompt n'obtient pas une carrure que
+    le squelette dément, un colosse sortait aussi fin que la sorcière."""
+    width = cfg.get("width", 1.0)
     return {i: (x if i in HEAD else 512 + (x - 512) * width, y) for i, (x, y) in kp.items()}
 
 
@@ -128,11 +129,12 @@ def run(wf):
 def view_graph(cfg, concept, direction, seed):
     """IPAdapter tient l'identité du concept, OpenPose impose la vue. Réglages du
     jalon 25 : c'est avec eux que face, profil et dos sont sortis cohérents."""
-    wf = workflow(cfg["views"]["prompt"].format(view=VIEW_WORDS[direction]) + TAIL, seed, NEG)
+    # `neg` : ce que le concept pousse à tort (le visage pâle du joueur de flûte sortait en crâne).
+    wf = workflow(cfg["views"]["prompt"].format(view=VIEW_WORDS[direction]) + TAIL, seed, NEG + cfg.get("neg", ""))
     wf.update({
         "ref": {"class_type": "LoadImage", "inputs": {"image": concept}},
         "pimg": {"class_type": "LoadImage",
-                 "inputs": {"image": upload(skeleton(widened(POSES[direction], cfg.get("width", 1.0))), f"hns_pose_{direction}.png")}},
+                 "inputs": {"image": upload(skeleton(widened(POSES[direction], cfg)), f"hns_pose_{direction}.png")}},
         "ipm": {"class_type": "IPAdapterModelLoader",
                 "inputs": {"ipadapter_file": "ip-adapter-plus_sdxl_vit-h.safetensors"}},
         "cv": {"class_type": "CLIPVisionLoader",
@@ -199,19 +201,21 @@ def reduce(a, keep, scale):
 
 
 def recolor(o, rule):
-    """Change une teinte dans une bande de hauteur. Ce que le prompt n'obtient pas
+    """Change une teinte dans une bande de hauteur — et de largeur, `cols`, pour un
+    habit mi-parti que SDXL ne sait pas couper en deux. Ce que le prompt n'obtient pas
     — SDXL ignore « peau bleue » — se repeint ici, en gardant la valeur."""
     f = o[..., :3].astype(float) / 255
     h, w = o.shape[:2]
     lo, hi = rule["hue"]
+    c0, c1 = rule.get("cols", (0.0, 1.0))
     for y in range(int(h * rule["rows"][0]), int(h * rule["rows"][1])):
-        for x in range(w):
+        for x in range(int(w * c0), int(w * c1)):
             if not o[y, x, 3]:
                 continue
             hh, ss, vv = colorsys.rgb_to_hsv(*f[y, x])
             in_hue = (hh >= lo or hh <= hi) if lo > hi else lo <= hh <= hi
             if in_hue and rule["sat"][0] < ss < rule["sat"][1] and vv > rule["val_min"]:
-                r, g, b = colorsys.hsv_to_rgb(rule["to_hue"], rule["to_sat"], vv)
+                r, g, b = colorsys.hsv_to_rgb(rule["to_hue"], rule["to_sat"], vv * rule.get("val_mul", 1.0))
                 o[y, x, :3] = (r * 255, g * 255, b * 255)
 
 
@@ -303,12 +307,12 @@ def slimmed(cfg, a, keep, direction):
     hauteur gardée) ce qui est sous la tête, sur l'image source : réduite ensuite,
     elle reste nette. La tête ne bouge pas de taille, le visage retouché à la main
     y reste juste. Rend aussi de quoi déplacer un point de la source pareil."""
-    k, q = cfg.get("slim", 1.0), cfg.get("squash", 1.0)
+    k, q = slim_of(cfg, direction), cfg.get("squash", 1.0)
     x0, y0, x1, y1 = bbox(keep)
     cut = y0 + (y1 - y0) * cfg["anchors"][direction]["head"] / authored(cfg)
     cx = (x0 + x1) / 2
     move = lambda x, y: (cx + (x - cx) * k, y1 - (y1 - y) * q) if y >= cut else (x, y + (y1 - cut) * (1 - q))
-    if k >= 1 and q >= 1:
+    if k == 1 and q == 1:
         return a, keep, move
     h, w = keep.shape
     xs = np.clip(np.round(cx + (np.arange(w) - cx) / k).astype(int), 0, w - 1)
@@ -326,6 +330,12 @@ def slimmed(cfg, a, keep, direction):
     return out_a, out_k, move
 
 
+def slim_of(cfg, direction):
+    """La part de largeur gardée sous la tête. Le profil a la sienne (`side_width`) : son
+    squelette met les épaules l'une derrière l'autre, et le torse sortait en bâton."""
+    return cfg.get("slim", 1.0) * (cfg.get("side_width", 1.0) if direction == "side" else 1.0)
+
+
 def authored(cfg):
     """La hauteur pour laquelle repères et retouches ont été écrits ; `height` peut
     ensuite changer, ils suivent."""
@@ -339,7 +349,7 @@ def reshape_point(cfg, direction, x, y):
     F, feet = cfg["frame"], cfg["feet"]
     s = cfg["height"] / authored(cfg)
     x, y = F / 2 + (x - F / 2) * s, feet - (feet - y) * s
-    k, q = cfg.get("slim", 1.0), cfg.get("squash", 1.0)
+    k, q = slim_of(cfg, direction), cfg.get("squash", 1.0)
     cut = feet - (feet - cfg["anchors"][direction]["head"]) * s
     if y >= cut:
         return F / 2 + (x - F / 2) * k, feet - (feet - y) * q
@@ -474,7 +484,7 @@ REST_BLADE = (0.42, -0.91)
 LUNGE_LEGS = ((585, 785), (650, 905), (455, 805), (395, 905))
 
 
-def anim_pose(kind, direction, k, width=1.0):
+def anim_pose(kind, direction, k, cfg):
     kp = dict(POSES[direction])
     if kind in STRIKES:
         g = STRIKES[kind]
@@ -491,7 +501,7 @@ def anim_pose(kind, direction, k, width=1.0):
         if direction == "side" and t:
             for i, goal in zip((12, 13, 9, 10), LUNGE_LEGS):
                 kp[i] = (kp[i][0] + (goal[0] - kp[i][0]) * t, kp[i][1] + (goal[1] - kp[i][1]) * t)
-        return widened(kp, width)
+        return widened(kp, cfg)
     if kind == "walk":
         if direction == "side":
             kp[9], kp[10], kp[12], kp[13] = SIDE_STRIDE[k]
@@ -508,18 +518,18 @@ def anim_pose(kind, direction, k, width=1.0):
         if direction == "up":
             arm = tuple((1024 - x, y) for x, y in arm)
         kp[ARMED[1]], kp[ARMED[2]] = arm
-    return widened(kp, width)
+    return widened(kp, cfg)
 
 
 def columns(n):
     return STRIP[0] // n
 
 
-def strip_skeleton(kind, direction, width):
+def strip_skeleton(kind, direction, cfg):
     n = ANIMS[kind]; cw = columns(n)
     im = Image.new("RGB", STRIP)
     for k in range(n):
-        one = skeleton(anim_pose(kind, direction, k, width)).resize((round(1024 * 0.6), STRIP[1]))
+        one = skeleton(anim_pose(kind, direction, k, cfg)).resize((round(1024 * 0.6), STRIP[1]))
         im.paste(one, (k * cw + (cw - one.width) // 2, 0), one.convert("L").point(lambda v: 255 if v else 0))
     return im
 
@@ -535,8 +545,8 @@ def anim_graph(cfg, cid, kind, direction, seed):
     wf = view_graph(cfg, ref, direction, seed)
     wf["pos"]["inputs"]["text"] = ANIM_PROMPT.format(
         motion=MOTION[kind], n=ANIMS[kind], view=VIEW_WORDS[direction], who=cfg["anim"]["who"]) + TAIL
-    wf["neg"]["inputs"]["text"] = ANIM_NEG
-    wf["pimg"]["inputs"]["image"] = upload(strip_skeleton(kind, direction, cfg.get("width", 1.0)), f"hns_{kind}_{direction}.png")
+    wf["neg"]["inputs"]["text"] = ANIM_NEG + cfg.get("neg", "")
+    wf["pimg"]["inputs"]["image"] = upload(strip_skeleton(kind, direction, cfg), f"hns_{kind}_{direction}.png")
     wf["lat"]["inputs"].update(width=STRIP[0], height=STRIP[1])
     return wf
 
@@ -596,7 +606,7 @@ def anim_cells(cfg, path, kind, direction, ref):
         dx, dy = head_offset(cell, ref, rows)
         put_patches(cell, cfg, direction, dx, dy)
         bx0, by0, _, _ = bbox(keep)
-        pose = anim_pose(kind, direction, k, cfg.get("width", 1.0))
+        pose = anim_pose(kind, direction, k, cfg)
         wx, wy = move(*strip_to_column(kind, *pose[ARMED[2]], k))
         hands.append([round((wx - bx0) * scale + 1 + x0, 1), round((wy - by0) * scale + 1 + y0, 1)])
         # La lame prolonge l'avant-bras, après le même affinage que le corps.
@@ -639,8 +649,20 @@ def anim_gif(cells_by_dir, hands_by_dir, out, blades_by_dir=None, impact=-1):
 # --------------------------------------------------------------------------
 # Commandes
 # --------------------------------------------------------------------------
+# Du cou aux chevilles, dans les squelettes de `POSES` : le même pour toutes les vues.
+SKELETON_BODY = POSES["down"][10][1] - POSES["down"][1][1]
+
+
 def load(cid):
-    return json.load(open(os.path.join(CHARS, cid + ".json"), encoding="utf-8"))
+    """`body` (les classes jouables) fixe la taille par le corps, du cou aux chevilles,
+    et non par la silhouette : un grand chapeau rapetissait tout le personnage, et les
+    classes n'allaient pas ensemble. `height` s'en déduit, sur la vue de face retenue."""
+    cfg = json.load(open(os.path.join(CHARS, cid + ".json"), encoding="utf-8"))
+    down = os.path.join(CHARS, cid, "down.png")
+    if "body" in cfg and os.path.exists(down):
+        _, y0, _, y1 = bbox(silhouette(np.asarray(Image.open(down).convert("RGB")).astype(np.float32) / 255))
+        cfg["height"] = round((y1 - y0) * cfg["body"] / SKELETON_BODY)
+    return cfg
 
 
 def sheet_of(rows, labels, out):
@@ -758,6 +780,7 @@ def cmd_build(a):
     # `weapon` : l'arme que la forge dessine quand aucun équipement n'est donné
     # (vignettes de création, liste des personnages).
     meta = {"frame": F, "feet": feet, "palette": cfg["palette"], "weapon": cfg["weapon"],
+            "scale": cfg.get("scale", 1.0),
             "views": views, "anims": anims}
     json.dump(meta, open(os.path.join(out, a.id + ".json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
 
