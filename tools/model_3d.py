@@ -20,13 +20,14 @@ import character_forge as cf
 from blender_sheet import BLENDER, win
 
 SEEDS = (4242, 777, 1337)
-TEMP = "/mnt/c/Users/Theo/AppData/Local/Temp"
-TRELLIS_PYTHON = TEMP + "/hns-trellis-venv/Scripts/python.exe"
+# Hors de %TEMP%, que le nettoyage de Windows peut vider.
+TOOLS = "/mnt/c/Generate"
+TRELLIS_PYTHON = TOOLS + "/hns-trellis-venv/Scripts/python.exe"
 # Stable Fast 3D : venv et sources installés à la main (LISEZMOI, « En 3D »).
-LOCAL_PYTHON = TEMP + "/hns-local3d/venv/Scripts/python.exe"
+LOCAL_PYTHON = TOOLS + "/hns-local3d/venv/Scripts/python.exe"
 # Le squelette et les animations Mixamo que le gréage local reprend.
 MIXAMO = os.path.join(cf.CHARS, "swiftblade", "3d")
-SF3D_SRC = r"C:\Users\Theo\AppData\Local\Temp\hns-local3d\src\stable-fast-3d"
+SF3D_SRC = r"C:\Generate\hns-local3d\src\stable-fast-3d"
 NEG = ", pixel art, pixelated, sprite, flat colors, 2d, holding, weapon"
 
 

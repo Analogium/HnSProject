@@ -128,7 +128,7 @@ le chemin local (Stable Fast 3D + gréage local), qui ne dépend d'aucun quota.
    `microsoft/TRELLIS.2` via `tools/trellis_client.py`. **Un modèle par jour** (quota
    ZeroGPU).
    - TRELLIS passe par le Python **Windows** d'un venv :
-     `py -3.12 -m venv %TEMP%\hns-trellis-venv` puis
+     `py -3.12 -m venv C:\Generate\hns-trellis-venv` puis
      `pip install gradio_client huggingface_hub`.
    - Il faut aussi un jeton Hugging Face rangé par `huggingface-cli login` : en
      anonyme, le quota ZeroGPU ne suffit pas.
@@ -183,8 +183,8 @@ Installer Stable Fast 3D (une fois, sous Windows, carte AMD) :
 
 - Accepter la licence du dépôt `stabilityai/stable-fast-3d` sur Hugging Face (dépôt
   restreint, jeton de `huggingface-cli login`).
-- Cloner ses sources dans `%TEMP%\hns-local3d\src\stable-fast-3d`, et créer un venv
-  `%TEMP%\hns-local3d\venv` (Python 3.12). Le PyTorch ROCm vient de ComfyUI : un
+- Cloner ses sources dans `C:\Generate\hns-local3d\src\stable-fast-3d`, et créer un venv
+  `C:\Generate\hns-local3d\venv` (Python 3.12). Le PyTorch ROCm vient de ComfyUI : un
   fichier `zz_comfy.pth` dans les `site-packages` du venv contient
   `C:\Generate\ComfyUI\python_embeded\Lib\site-packages`.
 - `pip install -r requirements.txt` sans `texture_baker` ni `uv_unwrapper`, puis
@@ -195,7 +195,7 @@ Installer Stable Fast 3D (une fois, sous Windows, carte AMD) :
   `pip install --no-build-isolation`. Il faut d'abord copier un `c10_shim.cpp` dans
   leurs `csrc` : le PyTorch AMD pour Windows n'exporte pas un constructeur de
   `c10::ValueError` que ses en-têtes appellent. Le shim le remplace par un arrêt
-  (`/alternatename`). Le script et le shim sont dans `%TEMP%\hns-local3d\run\`.
+  (`/alternatename`). Le script et le shim sont dans `C:\Generate\hns-local3d\run\`.
 
 Pièges payés :
 
