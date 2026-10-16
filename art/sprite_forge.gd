@@ -33,7 +33,7 @@ const R_LEATHER := 4
 const DIRS := ["down", "side", "up"]
 const ARCHETYPES := [
 	"player", "swiftblade", "witch", "piper", "grunt", "caster", "dummy", "undead",
-	"charger", "mortar", "bloater", "brute", "merchant", "trainer",
+	"charger", "mortar", "bloater", "brute", "merchant", "trainer", "rat_king",
 ]
 
 ## Les archétypes dessinés hors du jeu (`tools/character_forge.py`) : trois poses
@@ -185,7 +185,8 @@ static func frames(archetype: String, variant := 0, weapon := "") -> SpriteFrame
 		return _cache[key]
 
 	var cfg := config(archetype, variant)
-	if not weapon.is_empty():
+	# Une planche sans arme garde les mains vides : le Roi des Rats prenait l'épée du joueur.
+	if not weapon.is_empty() and not (sheet_of(archetype) != null and cfg["weapon"] == "none"):
 		cfg["weapon"] = weapon
 	var sf := SpriteFrames.new()
 	sf.remove_animation("default")

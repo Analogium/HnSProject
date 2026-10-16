@@ -815,6 +815,9 @@ func test_no_manual_fills_up_entirely() -> void:
 ## Seuls les leviers de base y échappent, un par arbre au plus, et les échanges entiers : le
 ## Pouls lent (−50 % de cadence ⇄ +60 % plus) n'est pas un second nœud de dégâts (jalon 42).
 const BASE_LEVERS := ["damage", "radius", "duration"]
+## Les nœuds basiques peuvent revenir d'un arbre à l'autre (jalon 53, règle de l'utilisateur) :
+## l'originalité d'abord, mais ce qui sert partout n'est pas interdit.
+const BASIC_LINES := ["mana_cost", "use_time", "recharge", "mana_per_second", "max_health", "move_speed"]
 
 
 func test_trees_share_no_line_and_no_name() -> void:
@@ -832,6 +835,8 @@ func test_trees_share_no_line_and_no_name() -> void:
 				if _is_trade(n):
 					continue
 				for l in n.lines:
+					if l.stat in BASIC_LINES and l.scope.is_empty():
+						continue
 					var key := "%s@%s" % [l.stat, l.scope]
 					if l.stat in BASE_LEVERS and l.scope.is_empty():
 						# Ni un échange, qui prend, ni le prix d'un nœud qui change le jeu (le

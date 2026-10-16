@@ -1,8 +1,1550 @@
 [gd_resource type="Resource" script_class="ManualArchetype" format=3]
 
 [ext_resource type="Script" path="res://core/manual_archetype.gd" id="1_arch"]
+[ext_resource type="Script" path="res://core/manual_cell.gd" id="2_case"]
+[ext_resource type="Script" path="res://core/talent_node.gd" id="3_noeud"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="4_ligne"]
+[ext_resource type="Resource" path="res://resources/skills/rat_bite.tres" id="10_rat_bite"]
+[ext_resource type="Resource" path="res://resources/skills/rat_tide.tres" id="11_rat_tide"]
+[ext_resource type="Resource" path="res://resources/skills/hamelin_air.tres" id="12_hamelin_air"]
+[ext_resource type="Resource" path="res://resources/skills/danse_macabre.tres" id="13_danse_macabre"]
+[ext_resource type="Resource" path="res://resources/skills/contagion.tres" id="14_contagion"]
+[ext_resource type="Resource" path="res://resources/skills/feast.tres" id="15_feast"]
+[ext_resource type="Resource" path="res://resources/skills/rat_king.tres" id="16_rat_king"]
+
+[sub_resource type="Resource" id="L_rat_bite_jaw_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_rat_bite_jaw"]
+script = ExtResource("3_noeud")
+id = "rat_bite_jaw"
+name = "Mâchoire"
+description = "Le Coup de croc mord plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_jaw_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_snout_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_bite_snout"]
+script = ExtResource("3_noeud")
+id = "rat_bite_snout"
+name = "Long museau"
+description = "La morsure porte plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_snout_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_lean_fare_0"]
+script = ExtResource("4_ligne")
+stat = "mana_cost"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_rat_bite_lean_fare"]
+script = ExtResource("3_noeud")
+id = "rat_bite_lean_fare"
+name = "Maigre pitance"
+description = "Le Coup de croc coûte moins de mana."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_lean_fare_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_long_teeth_0"]
+script = ExtResource("4_ligne")
+stat = "fangs"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_bite_long_teeth"]
+script = ExtResource("3_noeud")
+id = "rat_bite_long_teeth"
+name = "Dents longues"
+description = "Les rats qu'il accroche rongent plus fort."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"rat_bite_jaw": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_long_teeth_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_double_ration_0"]
+script = ExtResource("4_ligne")
+stat = "rats"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_bite_double_ration"]
+script = ExtResource("3_noeud")
+id = "rat_bite_double_ration"
+name = "Double ration"
+description = "Chaque morsure accroche un rat de plus."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"rat_bite_jaw": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_double_ration_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_trip_0"]
+script = ExtResource("4_ligne")
+stat = "trip"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rat_bite_trip"]
+script = ExtResource("3_noeud")
+id = "rat_bite_trip"
+name = "Croc-en-jambe"
+description = "La cible mordue est ralentie {duree_croc} s."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"rat_bite_snout": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_trip_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_appetite_0"]
+script = ExtResource("4_ligne")
+stat = "appetite"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_rat_bite_appetite"]
+script = ExtResource("3_noeud")
+id = "rat_bite_appetite"
+name = "Appétit"
+description = "Plus la cible porte de rats, plus la morsure frappe fort."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"rat_bite_long_teeth": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_appetite_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_quick_tooth_0"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = -8.0
+
+[sub_resource type="Resource" id="N_rat_bite_quick_tooth"]
+script = ExtResource("3_noeud")
+id = "rat_bite_quick_tooth"
+name = "Dent vive"
+description = "Le geste de la morsure est plus court."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"rat_bite_lean_fare": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_quick_tooth_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_gaping_maw_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -25.0
+
+[sub_resource type="Resource" id="N_rat_bite_gaping_maw"]
+script = ExtResource("3_noeud")
+id = "rat_bite_gaping_maw"
+name = "Gueule béante"
+description = "La morsure prend tout l'arc devant vous : chaque ennemi touché reçoit son rat."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rat_bite_snout": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_gaping_maw_0")])
+transforms = true
+shape = 0
+
+[sub_resource type="Resource" id="L_rat_bite_iron_jaws_0"]
+script = ExtResource("4_ligne")
+stat = "iron_jaws"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_bite_iron_jaws"]
+script = ExtResource("3_noeud")
+id = "rat_bite_iron_jaws"
+name = "Mâchoires de fer"
+description = "Sous la Gueule béante, le premier ennemi mordu reçoit des rats de plus."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"rat_bite_gaping_maw": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_iron_jaws_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_sewer_rat_0"]
+script = ExtResource("4_ligne")
+stat = "sewer_rat"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_bite_sewer_rat"]
+script = ExtResource("3_noeud")
+id = "rat_bite_sewer_rat"
+name = "Rat d'égout"
+description = "Mordre un ennemi qui porte {rats_egout} rats lance une Marée de rats depuis lui, droit devant."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"rat_bite_appetite": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_sewer_rat_0")])
+
+[sub_resource type="Resource" id="L_rat_bite_flood_0"]
+script = ExtResource("4_ligne")
+stat = "flood"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_bite_flood"]
+script = ExtResource("3_noeud")
+id = "rat_bite_flood"
+name = "Crue"
+description = "La marée du Rat d'égout accroche des rats de plus."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"rat_bite_sewer_rat": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_bite_flood_0")])
+
+[sub_resource type="Resource" id="C_rat_bite"]
+script = ExtResource("2_case")
+skill = ExtResource("10_rat_bite")
+position = Vector2i(0, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rat_bite_jaw"), SubResource("N_rat_bite_snout"), SubResource("N_rat_bite_lean_fare"), SubResource("N_rat_bite_long_teeth"), SubResource("N_rat_bite_double_ration"), SubResource("N_rat_bite_trip"), SubResource("N_rat_bite_appetite"), SubResource("N_rat_bite_quick_tooth"), SubResource("N_rat_bite_gaping_maw"), SubResource("N_rat_bite_iron_jaws"), SubResource("N_rat_bite_sewer_rat"), SubResource("N_rat_bite_flood")])
+
+[sub_resource type="Resource" id="L_rat_tide_swarming_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rat_tide_swarming"]
+script = ExtResource("3_noeud")
+id = "rat_tide_swarming"
+name = "Fourmillement"
+description = "La marée mord plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_swarming_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_long_run_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_tide_long_run"]
+script = ExtResource("3_noeud")
+id = "rat_tide_long_run"
+name = "Longue course"
+description = "La marée court plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_long_run_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_broad_front_0"]
+script = ExtResource("4_ligne")
+stat = "breadth"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_rat_tide_broad_front"]
+script = ExtResource("3_noeud")
+id = "rat_tide_broad_front"
+name = "Large front"
+description = "La marée couvre plus large."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_broad_front_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_prolific_0"]
+script = ExtResource("4_ligne")
+stat = "prolific"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_tide_prolific"]
+script = ExtResource("3_noeud")
+id = "rat_tide_prolific"
+name = "Prolifique"
+description = "Un ennemi qui porte déjà des rats en reçoit davantage."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"rat_tide_swarming": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_prolific_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_eddy_0"]
+script = ExtResource("4_ligne")
+stat = "knockback"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_rat_tide_eddy"]
+script = ExtResource("3_noeud")
+id = "rat_tide_eddy"
+name = "Remous"
+description = "La marée repousse ce qu'elle traverse."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"rat_tide_broad_front": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_eddy_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_stumble_0"]
+script = ExtResource("4_ligne")
+stat = "stumble"
+value_per_point = 0.2
+
+[sub_resource type="Resource" id="N_rat_tide_stumble"]
+script = ExtResource("3_noeud")
+id = "rat_tide_stumble"
+name = "Faux pas"
+description = "Les ennemis traversés sont étourdis."
+position = Vector2i(-2, 1)
+parents = Dictionary[String, int]({
+"rat_tide_eddy": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_stumble_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_second_wave_0"]
+script = ExtResource("4_ligne")
+stat = "second_tide"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_rat_tide_second_wave_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_tide_second_wave"]
+script = ExtResource("3_noeud")
+id = "rat_tide_second_wave"
+name = "Seconde vague"
+description = "Une marée de plus part {ecart_vagues} s après la précédente."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"rat_tide_swarming": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_second_wave_0"), SubResource("L_rat_tide_second_wave_1")])
+
+[sub_resource type="Resource" id="L_rat_tide_sewer_0"]
+script = ExtResource("4_ligne")
+stat = "mana_on_hit"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_tide_sewer"]
+script = ExtResource("3_noeud")
+id = "rat_tide_sewer"
+name = "Égout"
+description = "Chaque ennemi traversé vous rend du mana."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"rat_tide_second_wave": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_sewer_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_three_rills_0"]
+script = ExtResource("4_ligne")
+stat = "rivulets"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="L_rat_tide_three_rills_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_rat_tide_three_rills"]
+script = ExtResource("3_noeud")
+id = "rat_tide_three_rills"
+name = "Trois rigoles"
+description = "La marée part en trois branches, écartées de {ecart_rigoles}°."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"rat_tide_broad_front": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_three_rills_0"), SubResource("L_rat_tide_three_rills_1")])
+
+[sub_resource type="Resource" id="L_rat_tide_delta_0"]
+script = ExtResource("4_ligne")
+stat = "rivulets"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_rat_tide_delta"]
+script = ExtResource("3_noeud")
+id = "rat_tide_delta"
+name = "Delta"
+description = "Cinq branches au lieu de trois."
+position = Vector2i(1, 2)
+parents = Dictionary[String, int]({
+"rat_tide_three_rills": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_delta_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_backwash_0"]
+script = ExtResource("4_ligne")
+stat = "backwash"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_tide_backwash"]
+script = ExtResource("3_noeud")
+id = "rat_tide_backwash"
+name = "Contre-courant"
+description = "Au bout de sa course, la marée revient vers vous et mord de nouveau."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rat_tide_long_run": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_backwash_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_mascaret_0"]
+script = ExtResource("4_ligne")
+stat = "mascaret"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_tide_mascaret"]
+script = ExtResource("3_noeud")
+id = "rat_tide_mascaret"
+name = "Mascaret"
+description = "Le retour de la marée mord plus fort."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"rat_tide_backwash": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_mascaret_0")])
+
+[sub_resource type="Resource" id="L_rat_tide_bilge_rats_0"]
+script = ExtResource("4_ligne")
+stat = "hold_rats"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_tide_bilge_rats"]
+script = ExtResource("3_noeud")
+id = "rat_tide_bilge_rats"
+name = "Rats de cale"
+description = "Un ennemi sous l'Air de Hamelin reçoit des rats de plus."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"rat_tide_prolific": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_tide_bilge_rats_0")])
+
+[sub_resource type="Resource" id="C_rat_tide"]
+script = ExtResource("2_case")
+skill = ExtResource("11_rat_tide")
+position = Vector2i(1, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rat_tide_swarming"), SubResource("N_rat_tide_long_run"), SubResource("N_rat_tide_broad_front"), SubResource("N_rat_tide_prolific"), SubResource("N_rat_tide_eddy"), SubResource("N_rat_tide_stumble"), SubResource("N_rat_tide_second_wave"), SubResource("N_rat_tide_sewer"), SubResource("N_rat_tide_three_rills"), SubResource("N_rat_tide_delta"), SubResource("N_rat_tide_backwash"), SubResource("N_rat_tide_mascaret"), SubResource("N_rat_tide_bilge_rats")])
+
+[sub_resource type="Resource" id="L_hamelin_air_bewitchment_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_hamelin_air_bewitchment"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_bewitchment"
+name = "Envoûtement"
+description = "L'air ronge plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_bewitchment_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_far_echo_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_hamelin_air_far_echo"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_far_echo"
+name = "Écho lointain"
+description = "L'air porte plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_far_echo_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_short_breath_0"]
+script = ExtResource("4_ligne")
+stat = "mana_per_second"
+percentage = true
+value_per_point = -15.0
+
+[sub_resource type="Resource" id="N_hamelin_air_short_breath"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_short_breath"
+name = "Souffle court"
+description = "L'air coûte moins de mana à entretenir."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_short_breath_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_enchantment_0"]
+script = ExtResource("4_ligne")
+stat = "pull"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_hamelin_air_enchantment"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_enchantment"
+name = "Ensorcellement"
+description = "L'air attire plus fort."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"hamelin_air_far_echo": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_enchantment_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_torpor_0"]
+script = ExtResource("4_ligne")
+stat = "torpor"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hamelin_air_torpor"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_torpor"
+name = "Torpeur"
+description = "L'air ralentit davantage."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"hamelin_air_bewitchment": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_torpor_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_threnody_0"]
+script = ExtResource("4_ligne")
+stat = "threnody"
+value_per_point = 4.0
+
+[sub_resource type="Resource" id="N_hamelin_air_threnody"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_threnody"
+name = "Mélopée"
+description = "Plus un ennemi reste sous l'air, plus il subit de dégâts, jusqu'à {melopee_max} s."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"hamelin_air_bewitchment": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_threnody_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_pavane_0"]
+script = ExtResource("4_ligne")
+stat = "move_speed"
+percentage = true
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_hamelin_air_pavane"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_pavane"
+name = "Pavane"
+description = "Vous marchez plus vite tant que l'air joue."
+position = Vector2i(0, 2)
+parents = Dictionary[String, int]({
+"hamelin_air_short_breath": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_pavane_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_charmed_rats_0"]
+script = ExtResource("4_ligne")
+stat = "charmed_rats"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_hamelin_air_charmed_rats"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_charmed_rats"
+name = "Rats charmés"
+description = "Toutes les {charme_tous} s, un ennemi sous l'air reçoit des rats."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"hamelin_air_torpor": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_charmed_rats_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_carousel_0"]
+script = ExtResource("4_ligne")
+stat = "carousel"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_hamelin_air_carousel"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_carousel"
+name = "Carrousel"
+description = "Les ennemis ne sont plus attirés : ils tournent autour de l'air."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"hamelin_air_enchantment": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_carousel_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_farandole_0"]
+script = ExtResource("4_ligne")
+stat = "farandole"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_hamelin_air_farandole"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_farandole"
+name = "Farandole"
+description = "Sous le Carrousel, chacun heurte son voisin et le blesse."
+position = Vector2i(3, 1)
+parents = Dictionary[String, int]({
+"hamelin_air_carousel": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_farandole_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_serenade_0"]
+script = ExtResource("4_ligne")
+stat = "serenade"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_hamelin_air_serenade"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_serenade"
+name = "Sérénade"
+description = "L'air se joue au point visé au lieu de vous suivre, deux fois plus large."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"hamelin_air_far_echo": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_serenade_0")])
+
+[sub_resource type="Resource" id="L_hamelin_air_requiem_0"]
+script = ExtResource("4_ligne")
+stat = "requiem"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_hamelin_air_requiem"]
+script = ExtResource("3_noeud")
+id = "hamelin_air_requiem"
+name = "Requiem"
+description = "Un ennemi qui meurt sous l'air y laisse une note qui frappe ses voisins."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"hamelin_air_serenade": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_hamelin_air_requiem_0")])
+
+[sub_resource type="Resource" id="C_hamelin_air"]
+script = ExtResource("2_case")
+skill = ExtResource("12_hamelin_air")
+position = Vector2i(2, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_hamelin_air_bewitchment"), SubResource("N_hamelin_air_far_echo"), SubResource("N_hamelin_air_short_breath"), SubResource("N_hamelin_air_enchantment"), SubResource("N_hamelin_air_torpor"), SubResource("N_hamelin_air_threnody"), SubResource("N_hamelin_air_pavane"), SubResource("N_hamelin_air_charmed_rats"), SubResource("N_hamelin_air_carousel"), SubResource("N_hamelin_air_farandole"), SubResource("N_hamelin_air_serenade"), SubResource("N_hamelin_air_requiem")])
+
+[sub_resource type="Resource" id="L_danse_macabre_funereal_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_danse_macabre_funereal"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_funereal"
+name = "Funèbre"
+description = "La danse frappe plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_funereal_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_splits_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_danse_macabre_splits"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_splits"
+name = "Grand écart"
+description = "L'éclat prend les rats plus loin."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_splits_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_glide_0"]
+script = ExtResource("4_ligne")
+stat = "glide"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_danse_macabre_glide"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_glide"
+name = "Glissade"
+description = "Chaque pas de la danse porte plus loin."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_glide_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_ossuary_0"]
+script = ExtResource("4_ligne")
+stat = "ossuary"
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_danse_macabre_ossuary"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_ossuary"
+name = "Ossuaire"
+description = "Chaque rat éclaté frappe plus fort."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"danse_macabre_funereal": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_ossuary_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_extra_time_0"]
+script = ExtResource("4_ligne")
+stat = "extra_steps"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_danse_macabre_extra_time_1"]
+script = ExtResource("4_ligne")
+stat = "use_time"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_danse_macabre_extra_time"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_extra_time"
+name = "Temps de plus"
+description = "La danse compte un coup de plus."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"danse_macabre_glide": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_extra_time_0"), SubResource("L_danse_macabre_extra_time_1")])
+
+[sub_resource type="Resource" id="L_danse_macabre_pirouette_0"]
+script = ExtResource("4_ligne")
+stat = "pirouette"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_danse_macabre_pirouette"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_pirouette"
+name = "Pirouette"
+description = "Le dernier coup frappe tout le cercle autour de sa cible."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"danse_macabre_splits": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_pirouette_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_gravedigger_0"]
+script = ExtResource("4_ligne")
+stat = "gravedigger"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_danse_macabre_gravedigger"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_gravedigger"
+name = "Fossoyeur"
+description = "Chaque rat éclaté vous rend du mana."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"danse_macabre_ossuary": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_gravedigger_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_rout_0"]
+script = ExtResource("4_ligne")
+stat = "rout"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_danse_macabre_rout"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_rout"
+name = "Sauve-qui-peut"
+description = "Les ennemis dont les rats éclatent prennent la fuite."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"danse_macabre_splits": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_rout_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_cross_step_0"]
+script = ExtResource("4_ligne")
+stat = "cross_step"
+value_per_point = 40.0
+
+[sub_resource type="Resource" id="N_danse_macabre_cross_step"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_cross_step"
+name = "Chassé-croisé"
+description = "La danse finie, vous reculez d'un pas."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"danse_macabre_glide": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_cross_step_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_dance_of_dead_0"]
+script = ExtResource("4_ligne")
+stat = "dead_dance"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_danse_macabre_dance_of_dead_1"]
+script = ExtResource("4_ligne")
+stat = "ossuary"
+value_per_point = -50.0
+
+[sub_resource type="Resource" id="N_danse_macabre_dance_of_dead"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_dance_of_dead"
+name = "Danse des morts"
+description = "L'éclat n'emporte plus les rats : ils restent accrochés."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"danse_macabre_ossuary": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_dance_of_dead_0"), SubResource("L_danse_macabre_dance_of_dead_1")])
+
+[sub_resource type="Resource" id="L_danse_macabre_ritornello_0"]
+script = ExtResource("4_ligne")
+stat = "ritornello"
+value_per_point = 30.0
+
+[sub_resource type="Resource" id="N_danse_macabre_ritornello"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_ritornello"
+name = "Ritournelle"
+description = "Les rats restés accrochés rongent plus fort jusqu'à leur fin."
+position = Vector2i(-3, -1)
+parents = Dictionary[String, int]({
+"danse_macabre_dance_of_dead": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_ritornello_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_totentanz_0"]
+script = ExtResource("4_ligne")
+stat = "totentanz"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_danse_macabre_totentanz"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_totentanz"
+name = "Totentanz"
+description = "Chaque coup de la danse fait éclater un rat de ce qu'il frappe."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"danse_macabre_funereal": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_totentanz_0")])
+
+[sub_resource type="Resource" id="L_danse_macabre_charnel_0"]
+script = ExtResource("4_ligne")
+stat = "charnel"
+value_per_point = 8.0
+
+[sub_resource type="Resource" id="N_danse_macabre_charnel"]
+script = ExtResource("3_noeud")
+id = "danse_macabre_charnel"
+name = "Charnier"
+description = "Chaque rat éclaté laisse un sol nécrotique pendant {duree_charnier} s."
+position = Vector2i(0, -1)
+parents = Dictionary[String, int]({
+"danse_macabre_totentanz": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_danse_macabre_charnel_0")])
+
+[sub_resource type="Resource" id="C_danse_macabre"]
+script = ExtResource("2_case")
+skill = ExtResource("13_danse_macabre")
+position = Vector2i(3, 0)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_danse_macabre_funereal"), SubResource("N_danse_macabre_splits"), SubResource("N_danse_macabre_glide"), SubResource("N_danse_macabre_ossuary"), SubResource("N_danse_macabre_extra_time"), SubResource("N_danse_macabre_pirouette"), SubResource("N_danse_macabre_gravedigger"), SubResource("N_danse_macabre_rout"), SubResource("N_danse_macabre_cross_step"), SubResource("N_danse_macabre_dance_of_dead"), SubResource("N_danse_macabre_ritornello"), SubResource("N_danse_macabre_totentanz"), SubResource("N_danse_macabre_charnel")])
+
+[sub_resource type="Resource" id="L_contagion_stench_0"]
+script = ExtResource("4_ligne")
+stat = "curse_effect"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_contagion_stench"]
+script = ExtResource("3_noeud")
+id = "contagion_stench"
+name = "Puanteur"
+description = "La malédiction mord plus profond."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_stench_0")])
+
+[sub_resource type="Resource" id="L_contagion_hearth_0"]
+script = ExtResource("4_ligne")
+stat = "radius"
+percentage = true
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_contagion_hearth"]
+script = ExtResource("3_noeud")
+id = "contagion_hearth"
+name = "Foyer"
+description = "La malédiction couvre plus large."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_hearth_0")])
+
+[sub_resource type="Resource" id="L_contagion_latency_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+percentage = true
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_contagion_latency"]
+script = ExtResource("3_noeud")
+id = "contagion_latency"
+name = "Latence"
+description = "La malédiction dure plus longtemps."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_latency_0")])
+
+[sub_resource type="Resource" id="L_contagion_fever_fit_0"]
+script = ExtResource("4_ligne")
+stat = "ague"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_contagion_fever_fit"]
+script = ExtResource("3_noeud")
+id = "contagion_fever_fit"
+name = "Accès de fièvre"
+description = "Un maudit qui meurt éclate plus fort."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"contagion_stench": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_fever_fit_0")])
+
+[sub_resource type="Resource" id="L_contagion_propagation_0"]
+script = ExtResource("4_ligne")
+stat = "propagation"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_contagion_propagation"]
+script = ExtResource("3_noeud")
+id = "contagion_propagation"
+name = "Propagation"
+description = "Les rats d'un mort se répartissent sur un voisin de plus."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"contagion_hearth": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_propagation_0")])
+
+[sub_resource type="Resource" id="L_contagion_lazaret_0"]
+script = ExtResource("4_ligne")
+stat = "lazaret"
+value_per_point = 6.0
+
+[sub_resource type="Resource" id="N_contagion_lazaret"]
+script = ExtResource("3_noeud")
+id = "contagion_lazaret"
+name = "Lazaret"
+description = "Les maudits frappent moins fort."
+position = Vector2i(-1, 1)
+parents = Dictionary[String, int]({
+"contagion_latency": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_lazaret_0")])
+
+[sub_resource type="Resource" id="L_contagion_carrier_0"]
+script = ExtResource("4_ligne")
+stat = "carrier"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_contagion_carrier"]
+script = ExtResource("3_noeud")
+id = "contagion_carrier"
+name = "Porteur sain"
+description = "Un ennemi maudit qui ne porte aucun rat en reçoit."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"contagion_latency": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_carrier_0")])
+
+[sub_resource type="Resource" id="L_contagion_buboes_0"]
+script = ExtResource("4_ligne")
+stat = "buboes"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_contagion_buboes"]
+script = ExtResource("3_noeud")
+id = "contagion_buboes"
+name = "Bubons noirs"
+description = "Les rats d'un maudit rongent plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"contagion_stench": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_buboes_0")])
+
+[sub_resource type="Resource" id="L_contagion_galloping_0"]
+script = ExtResource("4_ligne")
+stat = "galloping"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_contagion_galloping"]
+script = ExtResource("3_noeud")
+id = "contagion_galloping"
+name = "Peste galopante"
+description = "Un maudit qui meurt passe aussi sa malédiction à ses voisins, avec ce qu'il lui en restait."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"contagion_propagation": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_galloping_0")])
+
+[sub_resource type="Resource" id="L_contagion_great_plague_0"]
+script = ExtResource("4_ligne")
+stat = "great_plague"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_contagion_great_plague"]
+script = ExtResource("3_noeud")
+id = "contagion_great_plague"
+name = "Grande peste"
+description = "Chaque transmission prolonge la malédiction."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"contagion_galloping": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_great_plague_0")])
+
+[sub_resource type="Resource" id="L_contagion_black_death_0"]
+script = ExtResource("4_ligne")
+stat = "black_death"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_contagion_black_death_1"]
+script = ExtResource("4_ligne")
+stat = "curse_effect"
+value_per_point = -40.0
+
+[sub_resource type="Resource" id="N_contagion_black_death"]
+script = ExtResource("3_noeud")
+id = "contagion_black_death"
+name = "Peste noire"
+description = "La malédiction tombe sur tous les porteurs de rats alentour, au lieu du point visé."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"contagion_fever_fit": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_black_death_0"), SubResource("L_contagion_black_death_1")])
+
+[sub_resource type="Resource" id="L_contagion_plague_rats_0"]
+script = ExtResource("4_ligne")
+stat = "plague_rats"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_contagion_plague_rats"]
+script = ExtResource("3_noeud")
+id = "contagion_plague_rats"
+name = "Rats pesteux"
+description = "Un rat que la Danse macabre fait éclater sur un maudit en accroche un au plus proche voisin."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"contagion_buboes": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_contagion_plague_rats_0")])
+
+[sub_resource type="Resource" id="C_contagion"]
+script = ExtResource("2_case")
+skill = ExtResource("14_contagion")
+position = Vector2i(0, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_contagion_stench"), SubResource("N_contagion_hearth"), SubResource("N_contagion_latency"), SubResource("N_contagion_fever_fit"), SubResource("N_contagion_propagation"), SubResource("N_contagion_lazaret"), SubResource("N_contagion_carrier"), SubResource("N_contagion_buboes"), SubResource("N_contagion_galloping"), SubResource("N_contagion_great_plague"), SubResource("N_contagion_black_death"), SubResource("N_contagion_plague_rats")])
+
+[sub_resource type="Resource" id="L_feast_voracity_0"]
+script = ExtResource("4_ligne")
+stat = "gnaw_damage"
+value_per_point = 12.0
+
+[sub_resource type="Resource" id="N_feast_voracity"]
+script = ExtResource("3_noeud")
+id = "feast_voracity"
+name = "Voracité"
+description = "Vos rats rongent plus fort."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_voracity_0")])
+
+[sub_resource type="Resource" id="L_feast_carousing_0"]
+script = ExtResource("4_ligne")
+stat = "feast_life"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_feast_carousing"]
+script = ExtResource("3_noeud")
+id = "feast_carousing"
+name = "Ripaille"
+description = "Une mort rongée vous rend plus de vie."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_carousing_0")])
+
+[sub_resource type="Resource" id="L_feast_open_table_0"]
+script = ExtResource("4_ligne")
+stat = "feast_mana"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_feast_open_table"]
+script = ExtResource("3_noeud")
+id = "feast_open_table"
+name = "Table ouverte"
+description = "Une mort rongée vous rend plus de mana."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_open_table_0")])
+
+[sub_resource type="Resource" id="L_feast_nibble_0"]
+script = ExtResource("4_ligne")
+stat = "nibble"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_feast_nibble"]
+script = ExtResource("3_noeud")
+id = "feast_nibble"
+name = "Grignotage"
+description = "Vos rats tiennent plus longtemps."
+position = Vector2i(0, -1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_nibble_0")])
+
+[sub_resource type="Resource" id="L_feast_insatiable_0"]
+script = ExtResource("4_ligne")
+stat = "insatiable"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_feast_insatiable"]
+script = ExtResource("3_noeud")
+id = "feast_insatiable"
+name = "Insatiable"
+description = "Un ennemi peut porter plus de rats."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"feast_voracity": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_insatiable_0")])
+
+[sub_resource type="Resource" id="L_feast_hollow_belly_0"]
+script = ExtResource("4_ligne")
+stat = "hollow_belly"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_feast_hollow_belly"]
+script = ExtResource("3_noeud")
+id = "feast_hollow_belly"
+name = "Ventre creux"
+description = "Sous la moitié de votre vie, vos rats rongent plus fort."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"feast_carousing": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_hollow_belly_0")])
+
+[sub_resource type="Resource" id="L_feast_stoutness_0"]
+script = ExtResource("4_ligne")
+stat = "max_health"
+percentage = true
+value_per_point = 3.0
+
+[sub_resource type="Resource" id="N_feast_stoutness"]
+script = ExtResource("3_noeud")
+id = "feast_stoutness"
+name = "Embonpoint"
+description = "Plus de vie tant que le Festin dure."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"feast_carousing": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_stoutness_0")])
+
+[sub_resource type="Resource" id="L_feast_mastication_0"]
+script = ExtResource("4_ligne")
+stat = "mastication"
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_feast_mastication"]
+script = ExtResource("3_noeud")
+id = "feast_mastication"
+name = "Mastication"
+description = "Vos rats rongent plus vite."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"feast_voracity": 2
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_mastication_0")])
+
+[sub_resource type="Resource" id="L_feast_indigestion_0"]
+script = ExtResource("4_ligne")
+stat = "indigestion"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_feast_indigestion"]
+script = ExtResource("3_noeud")
+id = "feast_indigestion"
+name = "Indigestion"
+description = "Un ennemi tué par le rongement éclate sur ses voisins, d'une part de sa vie."
+position = Vector2i(-2, -1)
+parents = Dictionary[String, int]({
+"feast_mastication": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_indigestion_0")])
+
+[sub_resource type="Resource" id="L_feast_banquet_0"]
+script = ExtResource("4_ligne")
+stat = "banquet"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_feast_banquet_1"]
+script = ExtResource("4_ligne")
+stat = "mana_per_second"
+value_per_point = 2.0
+
+[sub_resource type="Resource" id="N_feast_banquet"]
+script = ExtResource("3_noeud")
+id = "feast_banquet"
+name = "Banquet"
+description = "Chaque rat qui ronge vous rend {soin_banquet} % de votre vie par seconde."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"feast_open_table": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_banquet_0"), SubResource("L_feast_banquet_1")])
+
+[sub_resource type="Resource" id="L_feast_agapes_0"]
+script = ExtResource("4_ligne")
+stat = "agapes"
+value_per_point = 25.0
+
+[sub_resource type="Resource" id="N_feast_agapes"]
+script = ExtResource("3_noeud")
+id = "feast_agapes"
+name = "Agapes"
+description = "Le mana rendu par mort rongée double, puis plus encore."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"feast_banquet": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_agapes_0")])
+
+[sub_resource type="Resource" id="L_feast_famine_0"]
+script = ExtResource("4_ligne")
+stat = "famine"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="L_feast_famine_1"]
+script = ExtResource("4_ligne")
+stat = "gnaw_damage"
+value_per_point = -20.0
+
+[sub_resource type="Resource" id="N_feast_famine"]
+script = ExtResource("3_noeud")
+id = "feast_famine"
+name = "Disette"
+description = "Vos rats ne meurent plus avec leur porteur : ils sautent sur le plus proche, à {portee_disette} px."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"feast_insatiable": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_feast_famine_0"), SubResource("L_feast_famine_1")])
+
+[sub_resource type="Resource" id="C_feast"]
+script = ExtResource("2_case")
+skill = ExtResource("15_feast")
+position = Vector2i(1, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_feast_voracity"), SubResource("N_feast_carousing"), SubResource("N_feast_open_table"), SubResource("N_feast_nibble"), SubResource("N_feast_insatiable"), SubResource("N_feast_hollow_belly"), SubResource("N_feast_stoutness"), SubResource("N_feast_mastication"), SubResource("N_feast_indigestion"), SubResource("N_feast_banquet"), SubResource("N_feast_agapes"), SubResource("N_feast_famine")])
+
+[sub_resource type="Resource" id="L_rat_king_majesty_0"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "attack"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="L_rat_king_majesty_1"]
+script = ExtResource("4_ligne")
+stat = "damage"
+scope = "spell"
+percentage = true
+more = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rat_king_majesty"]
+script = ExtResource("3_noeud")
+id = "rat_king_majesty"
+name = "Majesté"
+description = "Vos coups frappent plus fort pendant le règne."
+position = Vector2i(-1, 0)
+points_max = 5
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_majesty_0"), SubResource("L_rat_king_majesty_1")])
+
+[sub_resource type="Resource" id="L_rat_king_reign_0"]
+script = ExtResource("4_ligne")
+stat = "duration"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_king_reign"]
+script = ExtResource("3_noeud")
+id = "rat_king_reign"
+name = "Règne"
+description = "Le règne dure plus longtemps."
+position = Vector2i(1, 0)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_reign_0")])
+
+[sub_resource type="Resource" id="L_rat_king_bone_scepter_0"]
+script = ExtResource("4_ligne")
+stat = "recharge"
+percentage = true
+value_per_point = -10.0
+
+[sub_resource type="Resource" id="N_rat_king_bone_scepter"]
+script = ExtResource("3_noeud")
+id = "rat_king_bone_scepter"
+name = "Sceptre d'os"
+description = "Le Roi des Rats revient plus vite."
+position = Vector2i(0, 1)
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_bone_scepter_0")])
+
+[sub_resource type="Resource" id="L_rat_king_court_0"]
+script = ExtResource("4_ligne")
+stat = "court"
+value_per_point = 0.1
+
+[sub_resource type="Resource" id="N_rat_king_court"]
+script = ExtResource("3_noeud")
+id = "rat_king_court"
+name = "Cour des miracles"
+description = "Chaque rat consommé allonge davantage le règne."
+position = Vector2i(2, 0)
+parents = Dictionary[String, int]({
+"rat_king_reign": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_court_0")])
+
+[sub_resource type="Resource" id="L_rat_king_salt_tax_0"]
+script = ExtResource("4_ligne")
+stat = "salt_tax"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_king_salt_tax"]
+script = ExtResource("3_noeud")
+id = "rat_king_salt_tax"
+name = "Gabelle"
+description = "Chaque rat consommé vous rend de la vie."
+position = Vector2i(-2, 0)
+parents = Dictionary[String, int]({
+"rat_king_majesty": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_salt_tax_0")])
+
+[sub_resource type="Resource" id="L_rat_king_throne_0"]
+script = ExtResource("4_ligne")
+stat = "max_health"
+percentage = true
+value_per_point = 10.0
+
+[sub_resource type="Resource" id="N_rat_king_throne"]
+script = ExtResource("3_noeud")
+id = "rat_king_throne"
+name = "Trône"
+description = "Plus de vie pendant le règne."
+position = Vector2i(1, 1)
+parents = Dictionary[String, int]({
+"rat_king_bone_scepter": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_throne_0")])
+
+[sub_resource type="Resource" id="L_rat_king_teeming_0"]
+script = ExtResource("4_ligne")
+stat = "teeming"
+value_per_point = 15.0
+
+[sub_resource type="Resource" id="N_rat_king_teeming"]
+script = ExtResource("3_noeud")
+id = "rat_king_teeming"
+name = "Peuple grouillant"
+description = "La Marée de rats qui tourne autour du Roi mord plus fort."
+position = Vector2i(-1, -1)
+parents = Dictionary[String, int]({
+"rat_king_majesty": 2
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_teeming_0")])
+
+[sub_resource type="Resource" id="L_rat_king_terror_0"]
+script = ExtResource("4_ligne")
+stat = "terror"
+value_per_point = 0.5
+
+[sub_resource type="Resource" id="N_rat_king_terror"]
+script = ExtResource("3_noeud")
+id = "rat_king_terror"
+name = "Terreur"
+description = "Les ennemis que l'Air de Hamelin fait fuir fuient plus longtemps."
+position = Vector2i(2, 1)
+parents = Dictionary[String, int]({
+"rat_king_throne": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_terror_0")])
+
+[sub_resource type="Resource" id="L_rat_king_usurper_0"]
+script = ExtResource("4_ligne")
+stat = "usurper"
+value_per_point = 5.0
+
+[sub_resource type="Resource" id="N_rat_king_usurper"]
+script = ExtResource("3_noeud")
+id = "rat_king_usurper"
+name = "Usurpateur"
+description = "Pendant le règne, le Coup de croc draine davantage."
+position = Vector2i(-3, 0)
+parents = Dictionary[String, int]({
+"rat_king_salt_tax": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_usurper_0")])
+
+[sub_resource type="Resource" id="L_rat_king_abdication_0"]
+script = ExtResource("4_ligne")
+stat = "abdication"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_king_abdication"]
+script = ExtResource("3_noeud")
+id = "rat_king_abdication"
+name = "Abdication"
+description = "À la fin du règne, {marees_abdication} marées de rats jaillissent tout autour de vous."
+position = Vector2i(1, -1)
+parents = Dictionary[String, int]({
+"rat_king_reign": 2
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_abdication_0")])
+
+[sub_resource type="Resource" id="L_rat_king_regicide_0"]
+script = ExtResource("4_ligne")
+stat = "regicide"
+value_per_point = 20.0
+
+[sub_resource type="Resource" id="N_rat_king_regicide"]
+script = ExtResource("3_noeud")
+id = "rat_king_regicide"
+name = "Régicide"
+description = "Les marées de l'Abdication mordent plus fort."
+position = Vector2i(2, -1)
+parents = Dictionary[String, int]({
+"rat_king_abdication": 1
+})
+points_max = 2
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_regicide_0")])
+
+[sub_resource type="Resource" id="L_rat_king_tail_crown_0"]
+script = ExtResource("4_ligne")
+stat = "tail_crown"
+value_per_point = 1.0
+
+[sub_resource type="Resource" id="N_rat_king_tail_crown"]
+script = ExtResource("3_noeud")
+id = "rat_king_tail_crown"
+name = "Couronne de queues"
+description = "Chaque ennemi tué pendant le règne le prolonge de {temps_couronne} s."
+position = Vector2i(3, 0)
+parents = Dictionary[String, int]({
+"rat_king_court": 1
+})
+points_max = 1
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_tail_crown_0")])
+
+[sub_resource type="Resource" id="L_rat_king_legend_0"]
+script = ExtResource("4_ligne")
+stat = "legend"
+value_per_point = 0.1
+
+[sub_resource type="Resource" id="N_rat_king_legend"]
+script = ExtResource("3_noeud")
+id = "rat_king_legend"
+name = "Légende"
+description = "Chaque mort prolonge davantage le règne, et le Roi grandit toutes les {morts_legende} morts."
+position = Vector2i(3, -1)
+parents = Dictionary[String, int]({
+"rat_king_tail_crown": 1
+})
+points_max = 3
+lines = Array[ExtResource("4_ligne")]([SubResource("L_rat_king_legend_0")])
+
+[sub_resource type="Resource" id="C_rat_king"]
+script = ExtResource("2_case")
+skill = ExtResource("16_rat_king")
+position = Vector2i(2, 1)
+talents = Array[ExtResource("3_noeud")]([SubResource("N_rat_king_majesty"), SubResource("N_rat_king_reign"), SubResource("N_rat_king_bone_scepter"), SubResource("N_rat_king_court"), SubResource("N_rat_king_salt_tax"), SubResource("N_rat_king_throne"), SubResource("N_rat_king_teeming"), SubResource("N_rat_king_terror"), SubResource("N_rat_king_usurper"), SubResource("N_rat_king_abdication"), SubResource("N_rat_king_regicide"), SubResource("N_rat_king_tail_crown"), SubResource("N_rat_king_legend")])
 
 [resource]
 script = ExtResource("1_arch")
 id = "piper"
 name = "Manuel du joueur de flûte"
+cells = Array[ExtResource("2_case")]([SubResource("C_rat_bite"), SubResource("C_rat_tide"), SubResource("C_hamelin_air"), SubResource("C_danse_macabre"), SubResource("C_contagion"), SubResource("C_feast"), SubResource("C_rat_king")])

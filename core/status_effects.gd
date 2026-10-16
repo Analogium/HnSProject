@@ -33,11 +33,15 @@ signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
 ## **Ce corps vient de porter un critique** (jalon 50) : la Fièvre et l'Ivresse du sang du
 ## Vive lame. Le lancer sans type, comme `slew`.
 signal critical(cast: RefCounted)
+## **Les rats de ce corps viennent de tuer** (jalon 53) : le Festin et l'Indigestion. Émis
+## par la victime, sur l'auteur de ses rats.
+signal gnawed(at: Vector2, victim_max_health: float)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 ## OVERHEAT : la Surchauffe de la Boule de feu (jalon 42), des charges que porte sa force.
 ## BREACH : la Brèche de la Frappe lourde (jalon 46), sa force multiplie les coups d'arme.
-enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED, OVERHEAT, BREACH }
+## RATS : les rats accrochés du joueur de flûte (jalon 53), qui rongent ; leur nombre est sa force.
+enum Kind { IGNITE, NUMB, CHILL, ROT, BLESSING, BLEED, DECAY, WILTING, CURSED, OVERHEAT, BREACH, RATS }
 
 ## La nature de chaque état : ce qu'il brûle, et sa couleur.
 const NATURES := [
@@ -51,6 +55,7 @@ const NATURES := [
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.NECROTIC,
 	DamageType.Kind.FIRE,
+	DamageType.Kind.PHYSICAL,
 	DamageType.Kind.PHYSICAL,
 ]
 
@@ -69,7 +74,7 @@ const TICKING := [Kind.DECAY, Kind.WILTING]
 ## **Identifiants définitifs** (invariant 1) : un affixe les nomme, `damage_vs_ignite`.
 const IDS := [
 	"ignite", "numb", "chill", "rot", "blessing", "bleed", "decay", "wilting", "cursed",
-	"overheat", "breach",
+	"overheat", "breach", "rats",
 ]
 
 ## Ce qui précise des dégâts contre un état ; le terme se place avant : « dégâts accrus
@@ -86,18 +91,19 @@ const AGAINST := [
 	"contre les maudits",
 	"contre les surchauffés",
 	"contre les fêlés",
+	"contre les rongés",
 ]
 
 ## Le mot qui s'envole au-dessus du joueur atteint.
 const NAMES := [
 	"embrasé", "engourdi", "transi", "pourrissant", "béni", "saignant", "décomposé", "flétri",
-	"maudit", "surchauffé", "fêlé",
+	"maudit", "surchauffé", "fêlé", "rongé",
 ]
 
 ## Ce qui brûle, nommé par le compteur de DPS.
 const BURN_NAMES := {
 	Kind.IGNITE: "Embrasement", Kind.ROT: "Pourriture", Kind.BLEED: "Saignement",
-	Kind.DECAY: "Décomposition", Kind.WILTING: "Flétrissement",
+	Kind.DECAY: "Décomposition", Kind.WILTING: "Flétrissement", Kind.RATS: "Rongement",
 }
 
 ## Le champ de `CharacterStats` qui **accroît** la chance de chaque sorte, ou vide.
@@ -106,7 +112,7 @@ const BURN_NAMES := {
 ## une sorte à sa statistique — le porteur y écrit ses facteurs, la page du manuel y lit
 ## son libellé.
 const CHANCE_STATS := [
-	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "", "", "",
+	"ignite_chance", "", "chill_chance", "rot_chance", "blessing_chance", "", "", "", "", "", "", "",
 ]
 ## Le libellé de la chance d'une sorte **sans statistique** : un lancer peut l'accroître
 ## (le Projectile élémentaire, jalon 28) et la page doit pouvoir le dire.
@@ -114,7 +120,7 @@ const UNWORN_CHANCES := {Kind.NUMB: "chance d'engourdir", Kind.BLEED: "chance de
 
 ## En secondes. Le gel est plus court : quatre secondes au ralenti se liraient comme
 ## du lag.
-const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 3.0, 3.0]
+const DURATIONS := [4.0, 4.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 3.0, 3.0, 8.0]
 
 ## Pour **chaque nature présente** dans le coup, quelle que soit sa part (jalon 34, à la
 ## PoE 1) : les mêmes dégâts physiques font saigner aussi souvent sur toutes les
@@ -160,7 +166,14 @@ const OWN_COLORS := {
 	Kind.OVERHEAT: Color(1.0, 0.88, 0.50),
 	# Le bronze d'une armure qui cède : le blanc du physique est celui des coups.
 	Kind.BREACH: Color(0.78, 0.58, 0.34),
+	# Le gris brun d'un pelage de rat.
+	Kind.RATS: Color(0.56, 0.50, 0.46),
 }
+
+## Les rats qu'un ennemi porte au plus, et ce que chacun ronge par seconde : une part du coup
+## qui l'a accroché (jalon 53).
+const RATS_MOST := 10
+const GNAW_PART := 0.10
 
 ## Les pertes sans coup s'affichent par paquets : un chiffre par image en ferait
 ## soixante, à « 0 ». C'est aussi la période d'Immolation.
@@ -191,6 +204,22 @@ class State:
 	## Ronces, la Sentence se lisent sur lui. `posed` : sa durée à la pose, que le Râle rend.
 	var cast: SkillStats
 	var posed := 0.0
+	## Les rats seuls : ce qui les fait ronger plus fort jusqu'à leur fin (la Ritournelle).
+	var spur := 1.0
+
+
+## Ce que le joueur de flûte fait de ses rats (jalon 53), écrit par lui et lu sur l'auteur des
+## rats : le Festin et son arbre. Null sur tout autre corps.
+class RatRules:
+	## Multiplie le rongement de ses rats, lu à chaque image : le Festin allumé change ceux
+	## déjà accrochés.
+	var gnaw := 1.0
+	var most := RATS_MOST
+	var lasting: float = DURATIONS[Kind.RATS]
+	## La Disette : ses rats sautent sur un voisin à la mort de leur porteur.
+	var famine := false
+	## Les rats-secondes rongés depuis la dernière lecture : le Banquet.
+	var gnawed := 0.0
 
 
 ## Des pertes sans coup, montrées par paquets. Le joueur en a deux — Immolation et
@@ -243,6 +272,11 @@ var _to_show := 0.0
 ## reste. Pas un état : rien ne se montre, rien ne se passe ni ne se consomme.
 var _exposed := {}
 var _exposed_left := {}
+## Les règles des rats de ce corps, s'il en accroche (le joueur).
+var rat_rules: RatRules
+## Ralenti sans état (jalon 53) : le Croc-en-jambe, l'Air de Hamelin. Le plus fort l'emporte.
+var _hobbled := 0.0
+var _hobbled_left := 0.0
 ## L'Ouverture et le Hérisson (jalon 50) : les dégâts subis en plus, en points de
 ## pourcentage, et ce qu'il leur reste. La plus forte l'emporte, comme l'Équilibre.
 var _opened := 0.0
@@ -374,6 +408,11 @@ func cast_of(kind: int) -> SkillStats:
 	return state.cast if state != null else null
 
 
+func source_of(kind: int) -> String:
+	var state := _state(kind)
+	return state.source if state != null else ""
+
+
 func author_of(kind: int) -> StatusEffects:
 	var state := _state(kind)
 	return state.author.get_ref() as StatusEffects if state != null and state.author != null else null
@@ -478,6 +517,86 @@ func open_up(points: float, seconds: float) -> void:
 	_recompute()
 
 
+## Ralenti de `points` %, `seconds` durant ; le plus fort l'emporte, comme l'Ouverture.
+func hobble(points: float, seconds: float) -> void:
+	if points < _hobbled and _hobbled_left > 0.0:
+		return
+	_hobbled = clampf(points, 0.0, 100.0)
+	_hobbled_left = seconds
+	_recompute()
+
+
+## Les rats accrochés (jalon 53).
+func rats() -> int:
+	return roundi(strength(Kind.RATS)) if active(Kind.RATS) else 0
+
+
+## `count` rats de plus, chacun rongeant `gnaw` par seconde ; au plafond de l'auteur, un rat
+## neuf remplace un rat moyen. La durée repart pour tous.
+func add_rats(
+	count: int, gnaw: float, author: StatusEffects, source := "", cast: SkillStats = null
+) -> void:
+	if count <= 0 or gnaw <= 0.0:
+		return
+	var rules := author.rat_rules if author != null and author.rat_rules != null else RatRules.new()
+	var state := _state(Kind.RATS)
+	var fresh := state == null
+	if fresh:
+		state = State.new()
+		state.kind = Kind.RATS
+		state.strength = 0.0
+		_states.append(state)
+	var held := state.strength
+	for i in count:
+		if held < float(rules.most):
+			held += 1.0
+			state.per_second += gnaw
+		else:
+			state.per_second += gnaw - state.per_second / held
+	var more := held != state.strength
+	state.strength = held
+	state.remaining = rules.lasting
+	state.posed = state.remaining
+	state.author = weakref(author) if author != null else null
+	state.source = source
+	if cast != null:
+		state.cast = cast
+	if fresh:
+		_recompute()
+		reached.emit(Kind.RATS)
+	if more:
+		change.emit()
+
+
+## Ôte `count` rats (tous à −1) et rend combien il en a pris ; ce qu'ils rongeaient part avec
+## eux. La Danse macabre les fait éclater, le Roi des Rats les consomme.
+func take_rats(count := -1) -> int:
+	var state := _state(Kind.RATS)
+	if state == null:
+		return 0
+	var taken := int(state.strength) if count < 0 else mini(count, int(state.strength))
+	if taken >= int(state.strength):
+		remove(Kind.RATS)
+		return taken
+	state.per_second *= 1.0 - float(taken) / state.strength
+	state.strength -= float(taken)
+	change.emit()
+	return taken
+
+
+## Ce que ronge un de ses rats, par seconde : la Contagion et la Disette en passent à un voisin.
+func gnaw_per_rat() -> float:
+	var state := _state(Kind.RATS)
+	return state.per_second / state.strength if state != null and state.strength > 0.0 else 0.0
+
+
+## La Ritournelle : ses rats rongent plus fort jusqu'à leur fin ; la plus forte l'emporte.
+func spur_rats(factor: float) -> void:
+	var state := _state(Kind.RATS)
+	if state != null:
+		state.spur = maxf(state.spur, factor)
+
+
 ## L'Équilibre (jalon 49) : la plus forte ouverture l'emporte, et sa durée repart.
 func expose(nature: int, points: float, seconds: float) -> void:
 	if points >= float(_exposed.get(nature, 0.0)):
@@ -485,6 +604,7 @@ func expose(nature: int, points: float, seconds: float) -> void:
 		_exposed[nature] = points
 		_exposed_left[nature] = seconds
 		if fresh:
+			is_clear = false
 			change.emit()
 
 
@@ -591,6 +711,11 @@ func advance(delta: float) -> float:
 		if _opened_left <= 0.0:
 			_opened = 0.0
 			_recompute()
+	if _hobbled_left > 0.0:
+		_hobbled_left -= delta
+		if _hobbled_left <= 0.0:
+			_hobbled = 0.0
+			_recompute()
 	if _states.is_empty():
 		return 0.0
 	var amplified := damage_taken_factor
@@ -600,6 +725,8 @@ func advance(delta: float) -> float:
 	for state in _states:
 		if state.per_second > 0.0:
 			var burns := state.per_second * minf(delta, state.remaining) * amplified
+			if state.kind == Kind.RATS:
+				burns *= _gnaw_factor(state, delta)
 			loss += burns
 			state.unreported += burns
 			if state.kind == Kind.ROT:
@@ -631,12 +758,27 @@ func advance(delta: float) -> float:
 	return loss
 
 
+## Le Festin de l'auteur, les Bubons noirs d'un maudit de la Contagion, la Ritournelle ; et
+## les rats-secondes que compte le Banquet.
+func _gnaw_factor(state: State, delta: float) -> float:
+	var factor := state.spur
+	var author := state.author.get_ref() as StatusEffects if state.author != null else null
+	if author != null and author.rat_rules != null:
+		factor *= author.rat_rules.gnaw
+		author.rat_rules.gnawed += state.strength * delta
+	var curse := cast_of(Kind.CURSED)
+	if curse != null and curse.buboes > 0.0:
+		factor *= 1.0 + curse.buboes * 0.01
+	return factor
+
+
 func _close(delta: float) -> void:
 	for nature: int in _exposed_left.keys():
 		_exposed_left[nature] -= delta
 		if _exposed_left[nature] <= 0.0:
 			_exposed_left.erase(nature)
 			_exposed.erase(nature)
+			_recompute()
 			change.emit()
 
 
@@ -655,17 +797,23 @@ func clear() -> void:
 	_exposed_left.clear()
 	_opened = 0.0
 	_opened_left = 0.0
-	if _states.is_empty():
-		return
+	_hobbled = 0.0
+	_hobbled_left = 0.0
+	var had := not _states.is_empty()
 	_states.clear()
 	_recompute()
-	change.emit()
+	if had:
+		change.emit()
 
 
 func _recompute() -> void:
-	is_clear = _states.is_empty()
+	# Les minuteurs sans état aussi : l'EnemyManager n'avance que ce qui n'est pas net, et une
+	# Ouverture ou un ralenti posés seuls ne s'éteignaient jamais (jusqu'au jalon 53).
+	is_clear = _states.is_empty() and _opened_left <= 0.0 and _hobbled_left <= 0.0 \
+		and _exposed.is_empty()
 	var chill := _state(Kind.CHILL)
 	speed_factor = 1.0 - CHILL * chill.strength if chill != null else 1.0
+	speed_factor *= 1.0 - _hobbled * 0.01
 	if _holds > 0:
 		speed_factor = 0.0
 	var numb := _state(Kind.NUMB)
@@ -676,6 +824,10 @@ func _recompute() -> void:
 	var wilting := _state(Kind.WILTING)
 	if wilting != null:
 		damage_dealt_factor *= maxf(2.0 - wilting.strength, 0.0)
+	# Le Lazaret de la Contagion (jalon 53) : le maudit frappe moins fort.
+	var curse := cast_of(Kind.CURSED)
+	if curse != null and curse.lazaret > 0.0:
+		damage_dealt_factor *= maxf(1.0 - curse.lazaret * 0.01, 0.0)
 
 
 func _state(kind: int) -> State:

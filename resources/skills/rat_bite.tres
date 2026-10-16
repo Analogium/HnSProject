@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Skill" format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "rat_bite"
+name = "Coup de croc"
+description = "Mord le premier ennemi devant vous et lui accroche un rat."
+nature = 0
+cadence = 0
+attack_time_factor = 1.0
+shape = 54
+mana_cost = 5.0
+radius = 40.0
+rats = 1
+damage_per_point = Array[float]([10.0, 13.0, 16.0, 20.0, 25.0])
+required_manual_level = 1

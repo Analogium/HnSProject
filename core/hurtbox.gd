@@ -93,6 +93,8 @@ func take_damage(info: DamageInfo) -> void:
 			info.parts, info.author, Game.rng, stats.max_health if stats != null else 0.0,
 			info.cast.status_chance_increase if info.cast != null else 0.0, source, info.cast
 		)
+		if info.cast != null and info.cast.rats > 0.0:
+			_attach_rats(info, source)
 		if info.cast != null and info.cast.inflicted_state >= 0:
 			var kind := info.cast.inflicted_state
 			var lasting: float = StatusEffects.DURATIONS[kind] + info.cast.languor if info.cast.languor > 0.0 else 0.0
@@ -119,6 +121,16 @@ func take_damage(info: DamageInfo) -> void:
 		if info.cast != null and info.cast.breach > 0.0:
 			var breach := StatusEffects.Kind.BREACH
 			states.put(breach, 0.0, info.author, source, info.cast.strength_of(breach))
+
+
+## Les rats du joueur de flûte (jalon 53) : chacun ronge une part de ce coup, après défenses.
+## Le Prolifique en accroche davantage à qui en porte déjà.
+func _attach_rats(info: DamageInfo, source: String) -> void:
+	var count := int(info.cast.rats)
+	if info.cast.prolific > 0.0 and states.rats() > 0:
+		count += int(info.cast.prolific)
+	var gnaw := info.amount * StatusEffects.GNAW_PART * (1.0 + info.cast.fangs * 0.01)
+	states.add_rats(count, gnaw, info.author, source, info.cast)
 
 
 ## La Saturation (jalon 49) : un sort qui touche un corps sans état élémentaire a sa chance

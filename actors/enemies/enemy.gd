@@ -40,6 +40,10 @@ var _shove_author: StatusEffects
 var _shove_toward := Vector2.ZERO
 var _shove_left := 0.0
 var _skittle := 0.0
+## La fuite (jalon 53) : la Débandade de la Danse macabre, l'Air de Hamelin sous le Roi des Rats.
+## Il court loin de `_fear_from` sans attaquer ; l'EnemyManager le fait fuir au lieu de le ticker.
+var _fear_left := 0.0
+var _fear_from := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -153,6 +157,10 @@ func suffer_states(delta: float) -> void:
 	var digit := states.digit()
 	HitFeedback.damage_without_hit(hurtbox.global_position, digit, false)
 	if health <= 0.0:
+		# Le Festin (jalon 53) : une mort sous les rats est une mort rongée.
+		var gnawer := states.author_of(StatusEffects.Kind.RATS)
+		if gnawer != null:
+			gnawer.gnawed.emit(global_position, stats.max_health)
 		die()
 	elif states.doomed(health / stats.max_health):
 		_execute()
@@ -334,6 +342,26 @@ func stun(seconds: float) -> void:
 	StunMark.over(self, held)
 
 
+## Effrayé : une élite l'est deux fois moins longtemps, comme assommée.
+func frighten(seconds: float, from_value: Vector2) -> void:
+	if seconds <= 0.0 or is_dead:
+		return
+	_fear_left = maxf(_fear_left, seconds * (0.5 if not affixes.is_empty() else 1.0))
+	_fear_from = from_value
+
+
+func afraid() -> bool:
+	return _fear_left > 0.0
+
+
+func flee(delta: float) -> void:
+	_fear_left -= delta
+	var away := _fear_from.direction_to(global_position)
+	velocity = velocity.lerp(away * movement_speed(), 0.25)
+	move_and_slide()
+	_animate()
+
+
 ## Tiré par une chaîne (jalon 48) : un pas en plus du sien, qui bute sur les murs et les corps.
 func tug(motion: Vector2) -> void:
 	if not is_dead:
@@ -452,6 +480,8 @@ func die(award := true) -> void:
 	# Ce que ses états de lancer font à sa mort (jalon 45) : l'Épidémie change d'hôte — en
 	# différé, on meurt souvent dans un rappel de collision (invariant 4) —, et leur auteur
 	# l'apprend.
+	if states.active(StatusEffects.Kind.RATS) or states.active(StatusEffects.Kind.CURSED):
+		Vermin.on_death.call_deferred(get_world_2d(), global_position, states, hurtbox.get_instance_id())
 	for kind in states.kinds():
 		var by := states.cast_of(kind)
 		if by == null:

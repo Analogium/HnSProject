@@ -336,3 +336,41 @@ func test_the_cauldron_rim_is_kept_and_follows_the_radius() -> void:
 	assert_ne(EffectForge.cauldron_rim(FIRE, 50, 1).texture.get_image().get_data(), rim.texture.get_image().get_data())
 	assert_eq(rim.texture.get_width(), 50 * 2 + 9)
 	assert_gt(_painted(EffectForge.cauldron_rim(FIRE, 70, 0).texture), _painted(rim.texture))
+
+
+## Le rat de la Marée (jalon 53) : des grilles rectangulaires, huit caps de deux temps, un quart
+## de tour sans perte (les caps se répondent en taille), et rien au-dessus du seuil de glow.
+func test_the_rats_run_in_eight_lossless_headings() -> void:
+	for grids: Array in [EffectForge.RAT, EffectForge.RAT_DIAG]:
+		for grid: Array in grids:
+			for row: String in grid:
+				assert_eq(row.length(), (grid[0] as String).length())
+	var rats := EffectForge.rats(Piper.FUR)
+	assert_eq(rats.size(), EffectForge.CHIP_TURNS)
+	assert_same(rats, EffectForge.rats(Piper.FUR), "bâtis une fois")
+	for i in rats.size():
+		assert_eq((rats[i] as Array).size(), 2, "deux temps de course")
+	var east := (rats[0][0] as Texture2D).get_size()
+	assert_eq((rats[2][0] as Texture2D).get_size(), Vector2(east.y, east.x), "le sud, l'est tourné")
+	assert_eq((rats[4][0] as Texture2D).get_size(), east, "l'ouest")
+	for heading: Array in rats:
+		for frame: Texture2D in heading:
+			var img := frame.get_image()
+			for y in img.get_height():
+				for x in img.get_width():
+					assert_lt(img.get_pixel(x, y).get_luminance(), 0.9)
+
+
+## Les notes de l'Air (jalon 53) : un même cadre pour les deux, sous le seuil de glow.
+func test_the_notes_share_a_frame_and_stay_under_the_glow() -> void:
+	for grid: Array in EffectForge.NOTES:
+		assert_eq(grid.size(), EffectForge.NOTE_HEIGHT)
+		for row: String in grid:
+			assert_eq(row.length(), EffectForge.NOTE_WIDTH)
+	var tint: Color = DamageType.COLORS[DamageType.Kind.NECROTIC]
+	assert_same(EffectForge.notes(tint), EffectForge.notes(tint), "bâties une fois")
+	for note: Texture2D in EffectForge.notes(tint):
+		var img := note.get_image()
+		for y in img.get_height():
+			for x in img.get_width():
+				assert_lt(img.get_pixel(x, y).get_luminance(), 0.9)

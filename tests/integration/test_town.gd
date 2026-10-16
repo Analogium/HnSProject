@@ -155,6 +155,20 @@ func test_a_portal_opened_in_the_zone_leads_to_town() -> void:
 	assert_false(_zone.portal.visible, "et ne s'ouvre pas en ville")
 
 
+
+## Ce qui se pose au sol en ville s'y voit : le sol de la zone quittée y est caché et figé, et
+## la Marée de rats y naissait invisible. Quitter la ville le vide, comme ses tirs.
+func test_what_lands_in_town_lands_on_the_town_ground() -> void:
+	_zone.generate_zone(SEED)
+	_zone.open_portal()
+	_use(_zone.portal)
+	assert_eq(DashTrail.layer(_zone.player), _zone.town_ground)
+	_zone.town_ground.add_child(Node2D.new())
+	_use(_zone.way_back)
+	assert_eq(DashTrail.layer(_zone.player), _zone.ground, "de retour, celui de la zone")
+	await wait_process_frames(1)
+	assert_eq(_zone.town_ground.get_child_count(), 0)
+
 ## Arrivé en se connectant, il n'y a nulle part où revenir.
 func test_a_first_arrival_has_no_way_back() -> void:
 	assert_false(_zone.way_back.visible)

@@ -69,6 +69,14 @@ const ALL := [
 	preload("res://resources/skills/throwing_knives.tres"),
 	preload("res://resources/skills/coup_de_grace.tres"),
 	preload("res://resources/skills/counterattack.tres"),
+	# Le joueur de flûte (jalon 53).
+	preload("res://resources/skills/rat_bite.tres"),
+	preload("res://resources/skills/rat_tide.tres"),
+	preload("res://resources/skills/hamelin_air.tres"),
+	preload("res://resources/skills/danse_macabre.tres"),
+	preload("res://resources/skills/contagion.tres"),
+	preload("res://resources/skills/feast.tres"),
+	preload("res://resources/skills/rat_king.tres"),
 ]
 
 

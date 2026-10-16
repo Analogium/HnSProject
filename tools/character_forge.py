@@ -390,7 +390,7 @@ def static_cells(cfg, cid):
 # --------------------------------------------------------------------------
 # L'arme suit l'équipement : chaque personnage a le coup d'épée **et** le lancer.
 ANIMS = {"walk": 4, "attack": 3, "cast": 3, "sweep": 5, "overhead": 5, "thrust": 5,
-         "flurry": 5, "throw": 5, "finisher": 5}
+         "flurry": 5, "throw": 5, "finisher": 5, "bite": 5, "danse": 5, "play": 5}
 STRIP = (1536, 640)
 MOTION = {"walk": "walking, walk cycle", "attack": "slashing attack motion, sword swing",
           "cast": "casting a spell, attack animation",
@@ -399,7 +399,10 @@ MOTION = {"walk": "walking, walk cycle", "attack": "slashing attack motion, swor
           "thrust": "lunging stab, arm thrust straight forward, deep lunge, dynamic action pose",
           "flurry": "rapid flurry of quick stabs, arm jabbing straight forward again and again, fencing, dynamic action pose",
           "throw": "throwing a knife, arm drawn back behind the head then hurled forward, dynamic action pose",
-          "finisher": "finishing blow, sword drawn far back then a deep lunging stab with the whole body, dynamic action pose"}
+          "finisher": "finishing blow, sword drawn far back then a deep lunging stab with the whole body, dynamic action pose",
+          "bite": "crouching pounce, springing forward low with both arms reaching out like claws, dynamic action pose",
+          "danse": "dancing spin attack, swinging left then right while turning, then a low plunging strike, dynamic action pose",
+          "play": "playing a transverse flute held to the mouth, swaying gently"}
 ANIM_PROMPT = ("pixel art, game sprite sheet, {motion}, {n} frames of the same character in a row, "
                "{view}, {who}, full body, evenly spaced, identical character")
 ANIM_NEG = ("text, watermark, blurry, photo, 3d render, realistic proportions, gradient background, "
@@ -479,6 +482,9 @@ STRIKES = {
                                   ((610, 610), (615, 690))]},
                  "lean": (-45, -55, 90, 85, 25), "crouch": (10, 20, 40, 40, 10), "lunge": (0, 0, 1.0, 1.0, 0.4)},
 }
+# Les frappes écrites seulement en 3D (`blender/gestes.json`), sans pose 2D : la morsure et
+# la danse du joueur de flûte (jalon 53).
+STRIKES_3D = ("bite", "danse")
 REST_BLADE = (0.42, -0.91)
 # Le profil, jambes en fente : genou et cheville de la jambe avant, puis de l'arrière.
 LUNGE_LEGS = ((585, 785), (650, 905), (455, 805), (395, 905))

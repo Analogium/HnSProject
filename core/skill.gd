@@ -62,6 +62,9 @@ enum Shape {
 	RAY, HAMMER, CHAINS, SCAPEGOAT,
 	# Jalon 50, le Vive lame : la Rafale, les Lames de jet, le Coup de grâce, la Contre-attaque.
 	FLURRY, KNIVES, FINISHER, RIPOSTE,
+	# Jalon 53, le joueur de flûte : le Coup de croc, la Marée de rats, l'Air de Hamelin, la
+	# Danse macabre. Le Festin et le Roi des Rats sont des buffs.
+	BITE, TIDE, MELODY, DANCE,
 }
 
 @export var shape: Shape = Shape.ARC
@@ -76,6 +79,9 @@ const GESTURE := {
 	Shape.LUNGE: "thrust",
 	# Jalon 50, la planche du Vive lame seule (manuel de classe).
 	Shape.FLURRY: "flurry", Shape.KNIVES: "throw", Shape.FINISHER: "finisher",
+	# Jalon 53, la planche du joueur de flûte seule : le bond de la morsure, les trois temps
+	# de la danse.
+	Shape.BITE: "bite", Shape.DANCE: "danse",
 }
 
 ## Seulement ce que ni la nature, ni la cadence, ni la forme ne donnent déjà : le
@@ -159,6 +165,10 @@ const KEYWORD_OF_SHAPE := {
 	Shape.FINISHER: Keywords.MELEE,
 	Shape.RIPOSTE: Keywords.MELEE,
 	Shape.KNIVES: Keywords.PROJECTILE,
+	Shape.BITE: Keywords.MELEE,
+	Shape.DANCE: Keywords.MELEE,
+	Shape.TIDE: Keywords.AREA,
+	Shape.MELODY: Keywords.AREA,
 }
 
 ## Ce que vaut chaque niveau au-delà de la table, composé : la pente des tables
@@ -168,7 +178,7 @@ const GROWTH_PER_EXTRA_LEVEL := 1.25
 ## Une table et non un champ : un troisième coup en croix n'aurait pas de dessin.
 ## Ce qui brûle tant qu'on l'entretient : ni « par lancer », ni transformation.
 const SUSTAINED_SHAPES: Array[Shape] = [
-	Shape.AURA, Shape.BUFF, Shape.CYCLONE, Shape.FAMILIAR, Shape.RIPOSTE,
+	Shape.AURA, Shape.BUFF, Shape.CYCLONE, Shape.FAMILIAR, Shape.RIPOSTE, Shape.MELODY,
 ]
 
 ## Ce qu'une transformation peut quitter et rejoindre (jalon 34) : ce qui se pose et
@@ -181,6 +191,7 @@ const TRANSFORMABLE: Array[Shape] = [
 	Shape.ORB, Shape.WEB, Shape.TEMPEST, Shape.FISSURE, Shape.RING, Shape.IMPLOSION,
 	Shape.CURSE, Shape.BREATH, Shape.NEST, Shape.MARK, Shape.SLAM, Shape.BOOMERANG,
 	Shape.DRIFT, Shape.GLYPH, Shape.TRIAD, Shape.HAMMER, Shape.CHAINS, Shape.SCAPEGOAT,
+	Shape.BITE,
 ]
 
 ## Ce qu'une transformation ne lit pas (jalon 34) : la fiche d'un nœud de son arbre
@@ -250,6 +261,8 @@ const SHAPE_NUMBERS := {
 	Shape.SCAPEGOAT: {SkillStats.LINKS: 2.0, SkillStats.SOLIDARITY: 30.0},
 	# Les Glyphes (jalon 49) : armés en une demi-seconde, déclenchés à 16 px de leur centre.
 	Shape.GLYPH: {SkillStats.ARMING: 0.5, SkillStats.TRIGGER: 16.0},
+	# L'Air de Hamelin (jalon 53) attire comme le Tirage d'Immolation ; l'Ensorcellement s'y ajoute.
+	Shape.MELODY: {SkillStats.PULL: 40.0},
 }
 
 const HITS_PER_SHAPE := {
@@ -363,6 +376,11 @@ enum StackTrigger { KILL, ALTERNATION }
 ## Le niveau de manuel à partir duquel la case accepte son premier point. Zéro
 ## pour ce qui ne vient d'aucun manuel.
 @export var required_manual_level: int = 0
+
+## Les rats qu'elle accroche à chaque ennemi touché (jalon 53) : chacun ronge une part du coup.
+## Zéro partout ailleurs. Sur la compétence et non sur la forme : le Coup de croc transformé en
+## arc mord encore.
+@export var rats: int = 0
 
 ## L'image, ou null — un état normal : la barre dessine alors un disque de la
 ## couleur de la nature. Ramenée à la grille par `SkillIcon`.
@@ -547,6 +565,7 @@ func resolve(
 	r.status_chance_increase = status_chance_increase
 	r.inflicted_state = inflicted_state
 	r.inflict_chance = inflict_chance
+	r.rats = float(rats)
 	r.binds_caster = binds_caster and not freed
 	r.shape = cast_shape
 	var brought: Dictionary = SHAPE_NUMBERS.get(cast_shape, {})

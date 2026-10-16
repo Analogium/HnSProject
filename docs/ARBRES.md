@@ -423,3 +423,57 @@ Jamais pris : Renverse, Dague de miséricorde, Implacable, Acculé, Rançon, Eff
 
 Jamais pris : Contre, Garde haute, Respiration, Fer tendu, Sangsue, Double riposte, Désarmement, Représailles, Calme, Pas de côté, Contretemps, Temps d'escrime.
 
+## Manuel du joueur de flûte
+
+### Coup de croc
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 38,1/s | 43,4/s |
+| meilleur au paquet | Mâchoire 5, Dents longues 1, Appétit 3, Rat d'égout 1, Long museau 2, Gueule béante 1, Mâchoires de fer 2, Double ration 2, Maigre pitance 1, Dent vive 2 | 303/s ×7,96 | 228/s ×5,24 |
+| meilleur au duel | Mâchoire 5, Dents longues 3, Appétit 3, Maigre pitance 1, Dent vive 3, Double ration 2 | 175/s ×4,60 | 389/s ×8,95 |
+| Gueule béante au paquet (transformation) | Long museau 2, Gueule béante 1, Mâchoire 5, Dents longues 1, Appétit 3, Rat d'égout 1, Double ration 2, Maigre pitance 1, Dent vive 3, Crue 1 | 339/s ×8,88 | 227/s ×5,23 |
+| Gueule béante au duel (transformation) | Long museau 2, Gueule béante 1, Mâchoire 5, Dents longues 3, Appétit 3, Maigre pitance 1, Dent vive 3, Double ration 2 | 191/s ×5,01 | 269/s ×6,19 |
+
+Jamais pris : Croc-en-jambe.
+
+### Marée de rats
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 66,6/s | 57,9/s |
+| meilleur au paquet | Large front 2, Trois rigoles 1, Delta 1, Fourmillement 5, Seconde vague 2, Longue course 2, Contre-courant 1, Mascaret 2 | 3268/s ×49,0 | 1441/s ×24,9 |
+| meilleur au duel | Fourmillement 5, Seconde vague 2, Large front 2, Trois rigoles 1, Delta 1, Longue course 2, Contre-courant 1, Mascaret 2, Prolifique 3 | 3087/s ×46,3 | 1442/s ×24,9 |
+
+Jamais pris : Remous, Faux pas, Égout, Rats de cale.
+
+### Air de Hamelin
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 151/s | 19,0/s |
+| meilleur au paquet | Envoûtement 5, Mélopée 3, Écho lointain 1, Ensorcellement 2, Carrousel 1, Farandole 2 | 363/s ×2,40 | 49,8/s ×2,63 |
+| meilleur au duel | Envoûtement 5, Mélopée 3, Torpeur 1, Rats charmés 2 | 313/s ×2,07 | 72,8/s ×3,84 |
+
+Jamais pris : Souffle court, Pavane, Sérénade, Requiem.
+
+### Danse macabre
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 127/s | 65,4/s |
+| meilleur au paquet | Grand écart 1, Pirouette 2, Funèbre 5, Glissade 1, Temps de plus 2 | 445/s ×3,50 | 179/s ×2,73 |
+| meilleur au duel | Funèbre 5, Glissade 1, Temps de plus 2, Grand écart 1, Pirouette 2 | 445/s ×3,50 | 179/s ×2,73 |
+
+Jamais pris : Ossuaire, Fossoyeur, Sauve-qui-peut, Chassé-croisé, Danse des morts, Ritournelle, Totentanz, Charnier.
+
+### Contagion
+
+| build | points | paquet | duel |
+|---|---|---|---|
+| sans arbre | — | 0,00/s | 0,00/s |
+| meilleur au paquet | Latence 2, Porteur sain 2, Puanteur 2, Bubons noirs 3 | 116/s | 12,9/s |
+| meilleur au duel | Latence 2, Porteur sain 2, Puanteur 2, Bubons noirs 3 | 116/s | 12,9/s |
+
+Jamais pris : Foyer, Accès de fièvre, Propagation, Lazaret, Peste galopante, Grande peste, Peste noire, Rats pesteux.
+

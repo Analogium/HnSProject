@@ -146,9 +146,16 @@ static func patch(
 
 ## **Sous les corps** : au-dessus d'eux, on marchait sous sa propre traînée ; parmi les
 ## tirs, elle se triait en Y avec les corps et passait devant qui se tenait au-dessus.
+##
+## **Le premier qu'on voit** : la zone quittée pour la ville garde son sol, caché et figé
+## (`Zone._freeze_zone`), et ce qui s'y posait en ville n'apparaissait ni ne bougeait.
 static func layer(parent: Node) -> Node:
-	var ground := parent.get_tree().get_first_node_in_group(GROUND_LAYER) if parent.is_inside_tree() else null
-	return ground if ground != null else parent
+	if not parent.is_inside_tree():
+		return parent
+	for ground: CanvasItem in parent.get_tree().get_nodes_in_group(GROUND_LAYER):
+		if ground.is_visible_in_tree():
+			return ground
+	return parent
 
 
 func _ready() -> void:

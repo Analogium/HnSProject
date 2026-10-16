@@ -71,7 +71,7 @@ func _physics_process(delta: float) -> void:
 		if _marking:
 			_mark(Targets.nearest(get_world_2d(), global_position, MARK_REACH))
 		else:
-			for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+			for target in _covered():
 				_curse(target)
 	_age += delta
 	if _marking and not _holds():
@@ -80,6 +80,15 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 	if _age >= (_cast.duration if _marking else LIFETIME) or (_marking and _marked == null):
 		queue_free()
+
+
+## Son cercle, ou sous la Peste noire (jalon 53) tous les porteurs de rats autour du lanceur.
+func _covered() -> Array[Hurtbox]:
+	if _cast.black_death <= 0.0 or not is_instance_valid(_caster):
+		return Targets.in_circle(get_world_2d(), global_position, _cast.radius)
+	return Targets.in_circle(get_world_2d(), _caster.global_position, SkillStats.SCREEN_REACH).filter(
+		func(t: Hurtbox) -> bool: return t.states != null and t.states.rats() > 0
+	)
 
 
 ## La durée **qui reste** au lancer — la marque qui passe ne repart pas à zéro —, et le
@@ -93,6 +102,12 @@ func _curse(target: Hurtbox) -> void:
 		_cast.strength_of(_cast.inflicted_state) * gained, maxf(_cast.duration - _age, 0.01)
 	)
 	target.states.attach(_cast.inflicted_state, _cast)
+	# Le Porteur sain (jalon 53) : un maudit sans rat en reçoit, au rongement de l'éclat.
+	if _cast.carrier > 0.0 and target.states.rats() == 0:
+		target.states.add_rats(
+			int(_cast.carrier), _cast.average_per_hit() * StatusEffects.GNAW_PART, _author,
+			_cast.skill_id, _cast
+		)
 	if is_instance_valid(_caster):
 		_caster.gain_mana(_cast.tribute)
 

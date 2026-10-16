@@ -226,6 +226,14 @@ var _condensed_power := 0.0
 var _untouchable_left := 0.0
 var _faraday_wait := 0.0
 var _already_hit: Array[Node] = []
+## Le Festin résolu tant qu'il brûle, null sinon (jalon 53) : le Banquet et les morts rongées le
+## lisent à chaque image. Refait avec la fiche. `_gnaw_base` : le rongement hors Ventre creux.
+var _feast: SkillStats
+var _gnaw_base := 1.0
+## La planche du joueur hors du règne, gardée le temps qu'il est Roi des Rats.
+var _look := ""
+## Les morts du règne en cours : la Légende y lit la taille du Roi.
+var _reign_kills := 0
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
 
@@ -265,6 +273,7 @@ func _ready() -> void:
 	states.reached.connect(_announce_state)
 	states.heal.connect(heal)
 	states.fell.connect(_on_fell)
+	states.gnawed.connect(_on_gnawed)
 
 
 ## La souris sert-elle à viser ? Pas déduit de sa position, qui bouge avec la caméra.
@@ -329,6 +338,7 @@ func _physics_process(delta: float) -> void:
 
 	_regen(delta)
 	_drink(delta)
+	_feed_rats()
 	_suffer_states(delta)
 	if is_dead:
 		_gesture = null
@@ -424,6 +434,11 @@ func cast_slot(index: int) -> bool:
 				cast = cast.echoed(1.0 + necrosis.moribund * 0.01)
 	if skill.strikes():
 		cast = devoted(cast)
+	# Sous le Roi des Rats (jalon 53), le Coup de croc mord en nécrotique, et draine.
+	if skill.id == SkillStats.BITE_SKILL and reigns():
+		cast = cast.echoed(1.0)
+		cast.blend([DamageType.Kind.NECROTIC] as Array[int])
+		cast.nature = DamageType.Kind.NECROTIC
 
 	if cast.sustained:
 		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
@@ -680,8 +695,12 @@ func _pose(
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
-			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie.
-			var buff := Buff.light(self, skill, cast.duration, cast.binds_caster)
+			# Sa durée, ou zéro : un buff sans durée brûle tant qu'on le paie. Le règne du Roi
+			# des Rats dure d'autant plus qu'il a consommé de rats.
+			var lifetime := cast.duration + (_consume_rats(cast) if skill.id == SkillStats.KING_SKILL else 0.0)
+			var buff := Buff.light(self, skill, lifetime, cast.binds_caster)
+			if skill.id == SkillStats.KING_SKILL:
+				_reign(true)
 			# L'Incarnation (jalon 49) : l'élément du dernier sort, le feu s'il n'y en a pas.
 			if cast.incarnation > 0.0:
 				buff.incarnation = _last_spell_nature if _last_spell_nature in DamageType.ELEMENTS \
@@ -804,6 +823,18 @@ func _pose(
 			_finish_off(cast)
 		Skill.Shape.RIPOSTE:
 			_light(skill.id, Buff.light(self, skill))
+		Skill.Shape.BITE:
+			_bite(cast)
+		Skill.Shape.TIDE:
+			# Sous le Roi des Rats, elle tourne autour de lui, le Peuple grouillant en plus.
+			if reigns():
+				RatTide.orbit(parent, self, cast.echoed(1.0 + lit_number(SkillStats.TEEMING) * 0.01), states)
+			else:
+				RatTide.unleash(parent, at, toward, cast, states, self)
+		Skill.Shape.MELODY:
+			_light(skill.id, HamelinAir.play(self, skill))
+		Skill.Shape.DANCE:
+			_dance(cast)
 		_:
 			_swing(cast)
 
@@ -1008,11 +1039,14 @@ func aura_lit() -> bool:
 func extinguish(skill_id: String) -> void:
 	var node: Variant = _lit.get(skill_id)
 	_lit.erase(skill_id)
+	if skill_id == SkillStats.KING_SKILL:
+		_reign(false)
 	if is_instance_valid(node):
 		(node as Node).extinguish()
 		if node is Buff and not is_dead:
 			_shatter(SkillCatalog.by_id(skill_id), node as Buff)
 			_transfigure(skill_id)
+			_abdicate(skill_id)
 	after_buff_change()
 
 
@@ -1240,6 +1274,7 @@ func _untouchable(seconds: float) -> bool:
 ## Un ennemi tué. **Depuis un rappel de collision** : ce qui naît ici passe par
 ## `DeferredTree` (invariant 4) — l'explosion et le sol le font d'eux-mêmes.
 func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
+	_reign_kill()
 	if cast == null:
 		return
 	# L'état de la nature du lancer : un brasier devenu nécrotique fait exploser les pourrissants.
@@ -1734,6 +1769,226 @@ func _spend_frenzy(cast: SkillStats) -> int:
 	return spent
 
 
+## Le joueur de flûte (jalon 53) : le Roi des Rats règne-t-il ?
+func reigns() -> bool:
+	return lit(SkillStats.KING_SKILL)
+
+
+## Le buff du règne, dont la barre lit le temps ; null hors du règne.
+func reign() -> Buff:
+	return _lit[SkillStats.KING_SKILL] as Buff if reigns() else null
+
+
+## Le Coup de croc : le premier corps sur sa ligne, comme un estoc de la Rafale. Ses rats
+## s'accrochent au coup (`Hurtbox`) ; le Croc-en-jambe ralentit la cible, et le Rat d'égout
+## lance une marée depuis qui en porte assez.
+func _bite(cast: SkillStats) -> void:
+	var tip := global_position + facing * cast.radius
+	var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.BITE_WIDTH)
+	if not struck.is_empty():
+		var prey := _nearest_of(struck)
+		tip = prey.global_position
+		var info := DamageInfo.roll(
+			cast, global_position, cast.roll(Game.rng), stats.knockback_force + cast.knockback
+		)
+		info.author = states
+		prey.take_damage(info)
+		_drain_bite(cast, info.amount)
+		_bitten(prey, cast)
+		Game.hit_stop()
+		Game.shake_camera(camera, shake_amount)
+	ThrustTrail.leave(_effects_parent(), global_position, tip, DamageType.COLORS[cast.nature])
+
+
+## Ce que la morsure fait au mordu, en ligne ou en arc sous la Gueule béante : le Croc-en-jambe
+## le ralentit, le Rat d'égout lance une marée depuis lui s'il porte assez de rats — en différé,
+## l'arc mord dans un rappel de collision (invariant 4).
+func _bitten(prey: Hurtbox, cast: SkillStats) -> void:
+	if prey.states == null:
+		return
+	if cast.trip > 0.0:
+		prey.states.hobble(cast.trip, SkillStats.TRIP_TIME)
+	if cast.sewer_rat > 0.0 and prey.states.rats() >= SkillStats.SEWER_RATS:
+		_sewer.call_deferred(cast, prey.global_position)
+
+
+## Le Rat d'égout : une Marée de rats part du mordu, droit devant, la Crue en plus.
+func _sewer(cast: SkillStats, from_value: Vector2) -> void:
+	var skill := SkillCatalog.by_id(SkillStats.TIDE_SKILL)
+	var tide := resolve(skill, maxi(skill_points(skill.id), 1))
+	tide.rats += cast.flood
+	RatTide.unleash(_effects_parent(), from_value, facing, tide, states, self)
+
+
+## Sous le Roi des Rats, le Coup de croc rend une part de ce qu'il a fait passer ; l'Usurpateur
+## y ajoute.
+func _drain_bite(cast: SkillStats, amount: float) -> void:
+	if cast.skill_id == SkillStats.BITE_SKILL and reigns():
+		heal(amount * (SkillStats.KING_DRAIN + lit_number(SkillStats.USURPER)) * 0.01)
+
+
+## La Danse macabre : des coups à `FLURRY_GAP` du geste l'un de l'autre, chacun après un pas vers
+## la visée ; sous le Totentanz chacun fait éclater un rat de ce qu'il frappe, et le dernier fait
+## éclater tous ceux qui entourent sa cible.
+func _dance(cast: SkillStats) -> void:
+	var count := SkillStats.DANCE_STEPS + int(cast.extra_steps)
+	var gap := cast.use_time * SkillStats.FLURRY_GAP / maxf(states.speed_factor, 0.01)
+	var aim := _aim_point()
+	var popped := 0
+	for i in count:
+		if i > 0:
+			await get_tree().create_timer(gap, false).timeout
+		if is_dead:
+			return
+		if global_position.distance_to(aim) > SkillStats.DANCE_REACH:
+			facing = global_position.direction_to(aim)
+		global_position = _landing(global_position, global_position + facing * (SkillStats.DANCE_STRIDE + cast.glide))
+		var center := global_position + facing * SkillStats.DANCE_REACH
+		var struck := Targets.in_circle(get_world_2d(), center, SkillStats.DANCE_HIT)
+		var parts := cast.roll(Game.rng)
+		for target in struck:
+			Targets.strike(target, parts, global_position, states, cast)
+			if cast.totentanz > 0.0:
+				popped += Vermin.burst(target, cast, states, _effects_parent(), 1)
+		if not struck.is_empty():
+			center = _nearest_of(struck).global_position
+			Game.hit_stop()
+			Game.shake_camera(camera, shake_amount)
+		swing_arc.play(swing_duration)
+		if i == count - 1:
+			popped += _dance_finale(cast, center, parts)
+	gain_mana(cast.gravedigger * float(popped))
+	# Le Chassé-croisé : un pas en arrière, la danse finie.
+	if cast.cross_step > 0.0 and not is_dead:
+		global_position = _landing(global_position, global_position - facing * cast.cross_step)
+
+
+## Le dernier coup : les rats de tous ceux qui entourent la cible éclatent ; la Pirouette frappe
+## tout le cercle, la Débandade fait fuir ceux dont les rats ont éclaté. Rend combien.
+func _dance_finale(cast: SkillStats, center: Vector2, parts: Array[float]) -> int:
+	var popped := 0
+	for target in Targets.in_circle(get_world_2d(), center, cast.radius):
+		var burst := Vermin.burst(target, cast, states, _effects_parent())
+		popped += burst
+		var enemy := target.get_parent() as Enemy
+		if burst > 0 and cast.rout > 0.0 and enemy != null:
+			enemy.frighten(cast.rout, center)
+		if cast.pirouette > 0.0:
+			Targets.strike(target, DamageType.scaled(parts, cast.pirouette * 0.01), center, states, cast)
+	return popped
+
+
+## Le Roi des Rats : il consomme tous les rats accrochés à l'écran ; chacun allonge le règne et,
+## sous la Gabelle, rend de la vie. Rend les secondes gagnées.
+func _consume_rats(cast: SkillStats) -> float:
+	var eaten := 0
+	for target in Targets.in_circle(get_world_2d(), global_position, SkillStats.SCREEN_REACH):
+		if target.states != null:
+			eaten += target.states.take_rats()
+	heal(stats.max_health * cast.salt_tax * 0.01 * float(eaten))
+	return float(eaten) * (SkillStats.KING_PER_RAT + cast.court)
+
+
+## Le Roi des Rats prend sa planche le temps du règne et la rend à l'abdication ; barre de vie
+## et nombres suivent sa taille.
+func _reign(on: bool) -> void:
+	# Le Roi grandi commence lui aussi par `KING_LOOK` : ce n'est pas la planche du joueur.
+	if on and not sprite.archetype.begins_with(SkillStats.KING_LOOK):
+		_look = sprite.archetype
+		_reign_kills = 0
+	_wear(king_look() if on else _look)
+
+
+func _wear(look: String) -> void:
+	if look.is_empty():
+		return
+	sprite.set_archetype(look)
+	var lift := SpriteForge.head_room(look)
+	health_bar.lift = lift
+	hurtbox.feedback_lift = lift
+
+
+## La planche du Roi à la taille où la Légende l'a mené.
+func king_look() -> String:
+	var step := mini(_reign_kills / SkillStats.LEGEND_KILLS, SkillStats.KING_GROWN.size())
+	return SkillStats.KING_LOOK if step == 0 else SkillStats.KING_GROWN[step - 1]
+
+
+## La Couronne de queues : chaque mort du règne le prolonge ; la Légende davantage, et le Roi
+## grandit.
+func _reign_kill() -> void:
+	if not reigns():
+		return
+	var king := resolve(SkillCatalog.by_id(SkillStats.KING_SKILL), skill_points(SkillStats.KING_SKILL))
+	if king.tail_crown > 0.0:
+		(_lit[SkillStats.KING_SKILL] as Buff).lengthen(SkillStats.TAIL_CROWN_TIME + king.legend)
+	if king.legend > 0.0:
+		_reign_kills += 1
+		_wear(king_look())
+
+
+## L'Abdication : à la fin du règne, des marées jaillissent tout autour, le Régicide en plus.
+func _abdicate(skill_id: String) -> void:
+	if skill_id != SkillStats.KING_SKILL:
+		return
+	var king := resolve(SkillCatalog.by_id(skill_id), skill_points(skill_id))
+	if king.abdication <= 0.0:
+		return
+	var skill := SkillCatalog.by_id(SkillStats.TIDE_SKILL)
+	var tide := resolve(skill, maxi(skill_points(skill.id), 1)).echoed(1.0 + king.regicide * 0.01)
+	var count := SkillStats.ABDICATION_TIDES
+	for i in count:
+		var toward := Vector2.RIGHT.rotated(TAU * float(i) / float(count))
+		RatTide.send(_effects_parent(), global_position, toward, tide, states, self)
+
+
+## Le Festin : ce que valent les rats du joueur, écrit sur ses états où leurs porteurs le
+## lisent. Refait avec la fiche : il suit le Festin qu'on allume et ses points.
+func _rat_rules() -> void:
+	if states.rat_rules == null:
+		states.rat_rules = StatusEffects.RatRules.new()
+	var rules := states.rat_rules
+	var skill := SkillCatalog.by_id(SkillStats.FEAST_SKILL)
+	_feast = resolve(skill, skill_points(skill.id)) if lit(skill.id) else null
+	var feast := _feast if _feast != null else SkillStats.new()
+	_gnaw_base = maxf(1.0 + stats.gnaw_damage * 0.01, 0.0) * (1.0 + feast.mastication * 0.01)
+	rules.gnaw = _gnaw_base
+	rules.most = StatusEffects.RATS_MOST + int(feast.insatiable)
+	rules.lasting = StatusEffects.DURATIONS[StatusEffects.Kind.RATS] + feast.nibble
+	rules.famine = feast.famine > 0.0
+
+
+## Le Ventre creux, qui suit la vie à chaque image, et le Banquet, qui rend de la vie par rat
+## qui ronge.
+func _feed_rats() -> void:
+	var rules := states.rat_rules
+	if _feast != null:
+		var hollow := _feast.hollow_belly > 0.0 and health < stats.max_health * SkillStats.HOLLOW_LIFE
+		rules.gnaw = _gnaw_base * (1.0 + _feast.hollow_belly * 0.01 if hollow else 1.0)
+		if _feast.banquet > 0.0 and rules.gnawed > 0.0:
+			heal(stats.max_health * SkillStats.BANQUET_HEAL * rules.gnawed)
+	rules.gnawed = 0.0
+
+
+## Une mort rongée sous le Festin rend vie et mana — davantage sous les Agapes —, et
+## l'Indigestion la fait éclater sur ses voisins.
+func _on_gnawed(at: Vector2, victim_max_health: float) -> void:
+	if _feast == null or is_dead:
+		return
+	heal(stats.max_health * (SkillStats.FEAST_LIFE_BASE + _feast.feast_life * 0.01))
+	var mana_back := SkillStats.FEAST_MANA_BASE + _feast.feast_mana
+	if _feast.agapes > 0.0:
+		mana_back *= 2.0 * (1.0 + _feast.agapes * 0.01)
+	gain_mana(mana_back)
+	if _feast.indigestion > 0.0:
+		var parts := DamageType.empty_parts()
+		parts[DamageType.Kind.PHYSICAL] = victim_max_health * _feast.indigestion * 0.01
+		Explosion.put(
+			_effects_parent(), at, parts, SkillStats.INDIGESTION_REACH, null,
+			DamageType.COLORS[DamageType.Kind.PHYSICAL], states, null
+		)
+
+
 ## La Contre-attaque (jalon 50) : un coup esquivé, et l'ennemi le plus proche de d'où il
 ## venait prend une riposte. En différé : le coup arrive peut-être d'un rappel de collision.
 ## Le Pas de côté s'y cumule, le Contretemps y arme l'attaque suivante.
@@ -2139,6 +2394,7 @@ func recompute_stats() -> void:
 		if not field.is_empty():
 			states.chance_factors[kind] = 1.0 + float(stats.get(field)) * 0.01
 
+	_rat_rules()
 	# Réassignée : la hurtbox défendrait sinon avec l'ancienne fiche.
 	hurtbox.stats = stats
 	_reach_out()
@@ -2582,6 +2838,14 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	info.author = states
 	(area as Hurtbox).take_damage(info)
 	heal(_hit_cast.life_on_hit)
+	_drain_bite(_hit_cast, info.amount)
+	_bitten(area as Hurtbox, _hit_cast)
+	# Les Mâchoires de fer (jalon 53) : la Gueule béante accroche plus au premier mordu.
+	if _already_hit.size() == 1 and _hit_cast.iron_jaws > 0.0 and (area as Hurtbox).states != null:
+		(area as Hurtbox).states.add_rats(
+			int(_hit_cast.iron_jaws), info.amount * StatusEffects.GNAW_PART * (1.0 + _hit_cast.fangs * 0.01),
+			states, _hit_cast.skill_id, _hit_cast
+		)
 	_shove(area as Hurtbox, _hit_cast, global_position, info.knockback)
 	if _hit_index == 1 and _hit_cast.bloodletting > 0.0:
 		_bleed_out(area as Hurtbox, _hit_cast)

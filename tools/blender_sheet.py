@@ -85,22 +85,30 @@ def main():
     p.add_argument("--cached", action="store_true", help="réutiliser les rendus déjà faits")
     a = p.parse_args()
     cfg = cf.load(a.id)
-    b = cfg["blender"]
-    F, feet, size = cfg["frame"], cfg["feet"], b["size"]
-    out = os.path.join(WORK, a.id)
+    build(a.id, cfg, cfg["blender"]["size"], a.cached)
+    # `grown` : le même corps rendu plus grand, une planche par taille, jamais étiré en jeu (la
+    # Légende du Roi des Rats, jalon 53).
+    for size in cfg["blender"].get("grown", []):
+        build(f"{a.id}_{size}", cfg, size, a.cached)
+
+
+def build(sheet_id, cfg, size, cached):
+    b = dict(cfg["blender"], size=size)
+    F, feet = cfg["frame"], cfg["feet"]
+    out = os.path.join(WORK, sheet_id)
     kinds = [k for k in cf.ANIMS if k in b["anims"]]
     # Le corps sans arme, puis chaque arme seule, le corps en masque : le jeu pose la couche
     # de l'arme équipée sur la planche du corps.
     passes = {"body": ["weapon=none"]}
     passes.update({w: [f"weapon={w}", "layer=weapon"] for w in b["weapons"]})
 
-    if not (a.cached and os.path.exists(os.path.join(out, "body_rest.json"))):
+    if not (cached and os.path.exists(os.path.join(out, "body_rest.json"))):
         height = 0.0
         for layer, extra in passes.items():
-            height = render(a.id, b, f"{layer}_rest", b["rest"], 1, extra, height)
+            height = render(sheet_id, b, f"{layer}_rest", b["rest"], 1, extra, height)
             for kind in kinds:
                 source, count = b["anims"][kind]
-                render(a.id, b, f"{layer}_{kind}", source, count, extra, height)
+                render(sheet_id, b, f"{layer}_{kind}", source, count, extra, height)
 
     path = lambda layer, name, d, i: os.path.join(out, f"{layer}_{name}_{d}_{i}.png")
     marks_of = lambda name: json.load(open(os.path.join(out, f"body_{name}.json")))
@@ -145,7 +153,7 @@ def main():
         count = b["anims"][kind][1]
         marks = marks_of(kind)
         entry = {"count": count, "rows": {}, "hands": {}}
-        strike = kind in cf.STRIKES
+        strike = kind in cf.STRIKES or kind in cf.STRIKES_3D
         if strike:
             entry["blades"] = {}
             source = b["anims"][kind][0]
@@ -173,7 +181,7 @@ def main():
                 entry["blades"][d] = blades
         anims[kind] = entry
 
-    dest = os.path.join(cf.PROJ, "art", "characters", a.id)
+    dest = os.path.join(cf.PROJ, "art", "characters", sheet_id)
     body = sheet_of("body", palette(rest_body, b["colors"]))
     Image.fromarray(body).save(dest + ".png")
     preview = Image.new("RGBA", (body.shape[1], body.shape[0]), cf.GROUND + (255,))
@@ -186,9 +194,11 @@ def main():
         if w == cfg["weapon"]:
             preview.alpha_composite(Image.fromarray(layer))
     meta = {"frame": F, "feet": feet, "palette": cfg["palette"], "weapon": cfg["weapon"],
-            "weapons": b["weapons"], "scale": cfg.get("scale", 1.0), "views": views, "anims": anims}
+            "weapons": b["weapons"], "views": views, "anims": anims,
+            # L'ombre au sol suit la taille rendue.
+            "scale": round(cfg.get("scale", 1.0) * size / cfg["blender"]["size"], 3)}
     json.dump(meta, open(dest + ".json", "w", encoding="utf-8"), indent=1, ensure_ascii=False)
-    shown = os.path.join(cf.DESKTOP, f"hns-{a.id}-planche.png")
+    shown = os.path.join(cf.DESKTOP, f"hns-{sheet_id}-planche.png")
     preview.resize((preview.width * 4, preview.height * 4), Image.NEAREST).save(shown)
     print(shown)
 

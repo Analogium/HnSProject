@@ -628,3 +628,74 @@ func test_an_exposure_opens_a_resistance_then_closes() -> void:
 	e.expose(DamageType.Kind.LIGHTNING, 5.0, 3.0)
 	e.clear()
 	assert_eq(e.resistance_lost(DamageType.Kind.LIGHTNING), 0.0, "effacée à la mort")
+
+
+# --------------------------------------------------------------------------
+# Les rats du joueur de flûte (jalon 53)
+# --------------------------------------------------------------------------
+
+## Leur nombre est la force de l'état ; chacun ronge ce qu'on lui a donné, à la seconde.
+func test_rats_are_counted_and_each_one_gnaws() -> void:
+	var e := StatusEffects.new()
+	e.add_rats(3, 2.0, null)
+	assert_eq(e.rats(), 3)
+	assert_almost_eq(e.gnaw_per_rat(), 2.0, 1e-6)
+	assert_almost_eq(e.advance(1.0), 6.0, 1e-4, "trois rats à 2 par seconde")
+
+
+## Au plafond, un rat neuf ne s'ajoute pas : il remplace un rat moyen.
+func test_rats_stop_at_their_most_and_a_new_one_replaces_an_average_one() -> void:
+	var e := StatusEffects.new()
+	e.add_rats(StatusEffects.RATS_MOST, 1.0, null)
+	e.add_rats(1, 11.0, null)
+	assert_eq(e.rats(), StatusEffects.RATS_MOST)
+	assert_almost_eq(e.gnaw_per_rat(), 2.0, 1e-6, "un rat à 1 cède la place à un rat à 11")
+
+
+## Les règles de l'auteur : son plafond, et son rongement lu à chaque image — le Festin allumé
+## change les rats déjà accrochés.
+func test_the_author_rules_set_the_most_and_scale_the_gnawing() -> void:
+	var piper := StatusEffects.new()
+	piper.rat_rules = StatusEffects.RatRules.new()
+	piper.rat_rules.most = 2
+	var e := StatusEffects.new()
+	e.add_rats(5, 1.0, piper)
+	assert_eq(e.rats(), 2)
+	piper.rat_rules.gnaw = 3.0
+	assert_almost_eq(e.advance(1.0), 6.0, 1e-4)
+	assert_almost_eq(piper.rat_rules.gnawed, 2.0, 1e-4, "deux rats-secondes pour le Banquet")
+
+
+func test_taking_rats_takes_their_gnawing_with_them() -> void:
+	var e := StatusEffects.new()
+	e.add_rats(4, 1.0, null)
+	assert_eq(e.take_rats(1), 1)
+	assert_eq(e.rats(), 3)
+	assert_almost_eq(e.advance(1.0), 3.0, 1e-4)
+	assert_eq(e.take_rats(), 3)
+	assert_false(e.active(StatusEffects.Kind.RATS), "tous partis, l'état aussi")
+
+
+## Une Ouverture ou un ralenti posés seuls s'éteignent : l'EnemyManager n'avance que ce qui
+## n'est pas net, et jusqu'au jalon 53 ils tenaient pour toujours.
+func test_a_lone_opening_or_hobble_wears_off() -> void:
+	var e := StatusEffects.new()
+	e.open_up(20.0, 1.0)
+	e.hobble(30.0, 1.0)
+	assert_false(e.is_clear, "il reste à avancer")
+	assert_almost_eq(e.speed_factor, 0.7, 1e-6)
+	e.advance(1.5)
+	assert_true(e.is_clear)
+	assert_almost_eq(e.speed_factor, 1.0, 1e-6)
+	assert_almost_eq(e.damage_taken_factor, 1.0, 1e-6)
+
+
+## Le compteur des rats : un chiffre fait 3 px, un pixel entre deux, un de contour autour ; il
+## reste sous le seuil de glow.
+func test_the_rat_counter_is_painted_digit_by_digit() -> void:
+	assert_eq(StatusIcon.count(7).get_size(), Vector2(5, 7))
+	var ten := StatusIcon.count(10).get_image()
+	assert_eq(ten.get_size(), Vector2i(9, 7))
+	assert_gt(ten.get_pixel(1, 0).a, 0.9, "le contour")
+	assert_lt(ten.get_pixel(2, 2).get_luminance(), 0.9, "le chiffre, sous le glow")
+	assert_gt(ten.get_pixel(2, 2).get_luminance(), 0.5)

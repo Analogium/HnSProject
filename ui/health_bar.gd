@@ -30,6 +30,8 @@ var _ratio := 1.0
 var _kinds: Array[int] = []
 ## Les natures dont la résistance est entamée : une icône chacune, après celles des états.
 var _opened: Array[int] = []
+## Les rats accrochés (jalon 53) : leur nombre s'écrit à gauche de leur icône.
+var _rats := 0
 
 
 func _ready() -> void:
@@ -52,6 +54,7 @@ func set_health(current: float, maximum: float) -> void:
 func show_states(states: StatusEffects) -> void:
 	_kinds = states.kinds()
 	_opened = states.opened()
+	_rats = states.rats()
 	_refresh()
 
 
@@ -79,10 +82,18 @@ func _draw() -> void:
 
 	var side := float(StatusIcon.SIDE)
 	var step := side + ICON_GAP
-	var px := roundf(-(float(_kinds.size() + _opened.size()) * step - ICON_GAP) * 0.5)
+	# Le compteur chevauche le contour de l'icône des rats, d'un pixel avant et après.
+	var counter := StatusIcon.count(_rats) if _rats > 0 else null
+	var extra := float(counter.get_width()) - 2.0 if counter != null else 0.0
+	var px := roundf(-(float(_kinds.size() + _opened.size()) * step - ICON_GAP + extra) * 0.5)
 	var py := y - side - 1.0
 	for kind in _kinds:
-		draw_texture(StatusIcon.texture(kind), Vector2(px, py))
+		if kind == StatusEffects.Kind.RATS and counter != null:
+			px += extra
+			draw_texture(StatusIcon.texture(kind), Vector2(px, py))
+			draw_texture(counter, Vector2(px - extra, py + side - float(counter.get_height()) + 2.0))
+		else:
+			draw_texture(StatusIcon.texture(kind), Vector2(px, py))
 		px += step
 	for nature in _opened:
 		draw_texture(StatusIcon.lowered(nature), Vector2(px, py))

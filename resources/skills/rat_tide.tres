@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Skill" format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "rat_tide"
+name = "Marée de rats"
+description = "Des rats déferlent au sol vers la visée et mordent ce qu'ils couvrent."
+nature = 0
+cadence = 1
+shape = 55
+cast_time = 0.50
+mana_cost = 10.0
+radius = 220.0
+rats = 1
+damage_per_point = Array[float]([14.0, 18.0, 23.0, 29.0, 36.0])
+required_manual_level = 2

@@ -413,6 +413,67 @@ const LABELS := {
 	SIDESTEP: "esquive par pas de côté",
 	COUNTER_TIME: "contretemps",
 	FENCING_TIME: "dégâts du contretemps",
+	RATS: "rats accrochés par coup",
+	FANGS: "rongement de ses rats",
+	TRIP: "ralentissement de la cible mordue",
+	APPETITE: "dégâts par rat déjà accroché",
+	IRON_JAWS: "rats en plus au premier mordu",
+	SEWER_RAT: "marée de l'égout",
+	FLOOD: "rats en plus de la marée d'égout",
+	BREADTH: "largeur de la marée",
+	PROLIFIC: "rats en plus sur un porteur",
+	STUMBLE: "secondes d'étourdissement",
+	SECOND_TIDE: "marées en plus",
+	RIVULETS: "branches en plus",
+	BACKWASH: "retour de la marée",
+	MASCARET: "dégâts du retour",
+	HOLD_RATS: "rats en plus sous l'Air de Hamelin",
+	TORPOR: "ralentissement en plus",
+	THRENODY: "dégâts subis par seconde d'air",
+	CHARMED_RATS: "rats charmés en plus",
+	CAROUSEL: "carrousel",
+	FARANDOLE: "dégâts aux voisins heurtés",
+	SERENADE: "air joué au point visé",
+	REQUIEM: "dégâts de la note funèbre",
+	GLIDE: "longueur des pas",
+	OSSUARY: "dégâts par rat éclaté",
+	EXTRA_STEPS: "coups en plus",
+	PIROUETTE: "dégâts de la pirouette",
+	GRAVEDIGGER: "mana par rat éclaté",
+	ROUT: "secondes de fuite",
+	CROSS_STEP: "recul après la danse",
+	DEAD_DANCE: "rats gardés à l'éclat",
+	RITORNELLO: "rongement des rats gardés",
+	TOTENTANZ: "rat éclaté à chaque coup",
+	CHARNEL: "dégâts du sol des rats éclatés",
+	AGUE: "dégâts de l'éclat du mort",
+	PROPAGATION: "voisins en plus",
+	LAZARET: "dégâts infligés retirés aux maudits",
+	CARRIER: "rats posés sur les maudits",
+	BUBOES: "rongement sur les maudits",
+	GALLOPING: "malédiction transmise",
+	GREAT_PLAGUE: "secondes gagnées par transmission",
+	BLACK_DEATH: "malédiction sur tous les porteurs",
+	PLAGUE_RATS: "rats passés au voisin",
+	FEAST_LIFE: "PV max rendus par mort rongée",
+	FEAST_MANA: "mana par mort rongée",
+	NIBBLE: "secondes de vie des rats",
+	INSATIABLE: "rats au plus par ennemi",
+	HOLLOW_BELLY: "rongement à mi-vie",
+	MASTICATION: "cadence du rongement",
+	INDIGESTION: "éclat des morts rongées",
+	BANQUET: "soin par rat qui ronge",
+	AGAPES: "mana rendu sous le Banquet",
+	FAMINE: "rats qui changent d'hôte",
+	COURT: "secondes par rat consommé",
+	SALT_TAX: "PV max par rat consommé",
+	TEEMING: "dégâts de la marée du Roi",
+	TERROR: "secondes de fuite en plus",
+	USURPER: "drain du Coup de croc",
+	ABDICATION: "marée à la fin du règne",
+	REGICIDE: "dégâts de la marée d'abdication",
+	TAIL_CROWN: "secondes de règne par mort",
+	LEGEND: "secondes en plus par mort",
 }
 
 ## L'accord de chaque libellé, comme `StatMod.AGREEMENT`.
@@ -812,6 +873,67 @@ const AGREEMENT := {
 	SIDESTEP: "fs",
 	COUNTER_TIME: "ms",
 	FENCING_TIME: "mp",
+	RATS: "mp",
+	FANGS: "ms",
+	TRIP: "ms",
+	APPETITE: "mp",
+	IRON_JAWS: "mp",
+	SEWER_RAT: "fs",
+	FLOOD: "mp",
+	BREADTH: "fs",
+	PROLIFIC: "mp",
+	STUMBLE: "fp",
+	SECOND_TIDE: "fp",
+	RIVULETS: "fp",
+	BACKWASH: "ms",
+	MASCARET: "mp",
+	HOLD_RATS: "mp",
+	TORPOR: "ms",
+	THRENODY: "mp",
+	CHARMED_RATS: "mp",
+	CAROUSEL: "ms",
+	FARANDOLE: "mp",
+	SERENADE: "ms",
+	REQUIEM: "mp",
+	GLIDE: "fs",
+	OSSUARY: "mp",
+	EXTRA_STEPS: "mp",
+	PIROUETTE: "mp",
+	GRAVEDIGGER: "ms",
+	ROUT: "fp",
+	CROSS_STEP: "ms",
+	DEAD_DANCE: "mp",
+	RITORNELLO: "ms",
+	TOTENTANZ: "ms",
+	CHARNEL: "mp",
+	AGUE: "mp",
+	PROPAGATION: "mp",
+	LAZARET: "mp",
+	CARRIER: "mp",
+	BUBOES: "ms",
+	GALLOPING: "fs",
+	GREAT_PLAGUE: "fp",
+	BLACK_DEATH: "fs",
+	PLAGUE_RATS: "mp",
+	FEAST_LIFE: "mp",
+	FEAST_MANA: "ms",
+	NIBBLE: "fp",
+	INSATIABLE: "mp",
+	HOLLOW_BELLY: "ms",
+	MASTICATION: "fs",
+	INDIGESTION: "ms",
+	BANQUET: "ms",
+	AGAPES: "ms",
+	FAMINE: "mp",
+	COURT: "fp",
+	SALT_TAX: "mp",
+	TEEMING: "mp",
+	TERROR: "fp",
+	USURPER: "ms",
+	ABDICATION: "fs",
+	REGICIDE: "mp",
+	TAIL_CROWN: "fp",
+	LEGEND: "fp",
 }
 
 ## Les nombres de mécanique (jalon 34). Chacun est lu par les formes qui en ont l'usage,
@@ -1315,6 +1437,68 @@ const REPRISAL := "reprisal"
 const SIDESTEP := "sidestep"
 const COUNTER_TIME := "counter_time"
 const FENCING_TIME := "fencing_time"
+## Les arbres du joueur de flûte (jalon 53).
+const RATS := "rats"
+const FANGS := "fangs"
+const TRIP := "trip"
+const APPETITE := "appetite"
+const IRON_JAWS := "iron_jaws"
+const SEWER_RAT := "sewer_rat"
+const FLOOD := "flood"
+const BREADTH := "breadth"
+const PROLIFIC := "prolific"
+const STUMBLE := "stumble"
+const SECOND_TIDE := "second_tide"
+const RIVULETS := "rivulets"
+const BACKWASH := "backwash"
+const MASCARET := "mascaret"
+const HOLD_RATS := "hold_rats"
+const TORPOR := "torpor"
+const THRENODY := "threnody"
+const CHARMED_RATS := "charmed_rats"
+const CAROUSEL := "carousel"
+const FARANDOLE := "farandole"
+const SERENADE := "serenade"
+const REQUIEM := "requiem"
+const GLIDE := "glide"
+const OSSUARY := "ossuary"
+const EXTRA_STEPS := "extra_steps"
+const PIROUETTE := "pirouette"
+const GRAVEDIGGER := "gravedigger"
+const ROUT := "rout"
+const CROSS_STEP := "cross_step"
+const DEAD_DANCE := "dead_dance"
+const RITORNELLO := "ritornello"
+const TOTENTANZ := "totentanz"
+const CHARNEL := "charnel"
+const AGUE := "ague"
+const PROPAGATION := "propagation"
+const LAZARET := "lazaret"
+const CARRIER := "carrier"
+const BUBOES := "buboes"
+const GALLOPING := "galloping"
+const GREAT_PLAGUE := "great_plague"
+const BLACK_DEATH := "black_death"
+const PLAGUE_RATS := "plague_rats"
+const FEAST_LIFE := "feast_life"
+const FEAST_MANA := "feast_mana"
+const NIBBLE := "nibble"
+const INSATIABLE := "insatiable"
+const HOLLOW_BELLY := "hollow_belly"
+const MASTICATION := "mastication"
+const INDIGESTION := "indigestion"
+const BANQUET := "banquet"
+const AGAPES := "agapes"
+const FAMINE := "famine"
+const COURT := "court"
+const SALT_TAX := "salt_tax"
+const TEEMING := "teeming"
+const TERROR := "terror"
+const USURPER := "usurper"
+const ABDICATION := "abdication"
+const REGICIDE := "regicide"
+const TAIL_CROWN := "tail_crown"
+const LEGEND := "legend"
 ## Ceux qui changent **ce que fait** le lancer, pas combien : l'octogone d'un nœud les
 ## signale avant qu'on le survole.
 const MECHANICS := [
@@ -1358,6 +1542,12 @@ const MECHANICS := [
 	REMIGES, DARK_OMEN, PECK, EVIL_EYE, CROAK, JETTATURA, CANON,
 	BRIM, FROTH, PHILTRE, MIX, LID, DECOCTION, BUBBLES, EMULSION, LEES,
 	RETREAT, SLIP, CHAIN_STRIKE, FURIA, LUNGE_PATH, CLEAVE_PATH, SECRET_THRUST, JARNAC, FAN, COMPASS, BLOOD_RUSH, FEVER, BERSERK, NO_QUARTER, LAST_STAND, ENFILADE, RETURN_BLADE, RECOVERY, PLANTED, ANCHORAGE, HEDGEHOG, SECOND_VOLLEY, COMPOSURE, PATIENCE, FINAL_POINT, EPILOGUE, COUNTER_TIME, FENCING_TIME,
+	TRIP, APPETITE, IRON_JAWS, SEWER_RAT, FLOOD, PROLIFIC, STUMBLE, SECOND_TIDE, RIVULETS,
+	BACKWASH, MASCARET, HOLD_RATS, THRENODY, CHARMED_RATS, CAROUSEL, FARANDOLE, SERENADE,
+	REQUIEM, EXTRA_STEPS, PIROUETTE, GRAVEDIGGER, ROUT, CROSS_STEP, DEAD_DANCE, RITORNELLO,
+	TOTENTANZ, CHARNEL, PROPAGATION, LAZARET, CARRIER, BUBOES, GALLOPING, GREAT_PLAGUE,
+	BLACK_DEATH, PLAGUE_RATS, INSATIABLE, HOLLOW_BELLY, INDIGESTION, BANQUET, AGAPES, FAMINE,
+	COURT, SALT_TAX, TEEMING, TERROR, USURPER, ABDICATION, REGICIDE, TAIL_CROWN, LEGEND,
 ]
 ## Le nombre qui accroît la force de chaque état, quand un arbre en a un : **le seul
 ## lien** entre un état et sa force, que `strength_of()` et la fiche lisent.
@@ -1797,6 +1987,73 @@ const DREAD_REACH := 60.0
 const SIDESTEP_TIME := 3.0
 const SIDESTEP_MOST := 5
 const COUNTER_WINDOW := 2.0
+## Le joueur de flûte (jalon 53). Premier réglage, comme tout ce fichier.
+const BITE_SKILL := "rat_bite"
+const FEAST_SKILL := "feast"
+const KING_SKILL := "rat_king"
+## La planche que prend le joueur de flûte pendant le règne.
+const KING_LOOK := "rat_king"
+## La Légende : le Roi prend la taille suivante toutes les `LEGEND_KILLS` morts du règne. Une
+## planche rendue par taille (`blender.grown` de `tools/characters/rat_king.json`), jamais étirée.
+const LEGEND_KILLS := 5
+const KING_GROWN := ["rat_king_49", "rat_king_52", "rat_king_55", "rat_king_58"]
+const CONTAGION_SKILL := "contagion"
+const TIDE_SKILL := "rat_tide"
+const AIR_SKILL := "hamelin_air"
+## Les compétences que le règne change : leur case de barre porte la couronne, leur fiche le dit.
+const KING_CHANGES := [BITE_SKILL, TIDE_SKILL, AIR_SKILL]
+## Le Coup de croc : la largeur de sa ligne ; le Croc-en-jambe, sa durée ; les rats qui lancent
+## la marée du Rat d'égout ; le drain du Roi, en points de pourcentage.
+const BITE_WIDTH := 12.0
+const TRIP_TIME := 2.0
+const SEWER_RATS := 5
+const KING_DRAIN := 10.0
+## La Marée : sa vitesse, sa largeur, l'écart de ses branches en degrés, l'écart des marées
+## de la Seconde vague ; la ronde du Roi, son rayon et sa durée.
+const TIDE_SPEED := 180.0
+const TIDE_WIDTH := 40.0
+const TIDE_FAN := 25.0
+const TIDE_GAP := 0.3
+const TIDE_ORBIT := 48.0
+const TIDE_ORBIT_TIME := 1.5
+## L'Air de Hamelin : son ralenti, la fuite qu'il donne sous le Roi, ce que dure la Mélopée
+## au plus, tous les combien il charme un rat ; le rayon de la Farandole et de la note du
+## Requiem ; ce que la Sérénade élargit, en multiple ; la vitesse du Carrousel, en radians/s.
+const AIR_SLOW := 30.0
+const AIR_FEAR := 1.0
+const THRENODY_MOST := 5.0
+const CHARM_EVERY := 2.0
+const FARANDOLE_REACH := 24.0
+const REQUIEM_RADIUS := 32.0
+const SERENADE_WIDTH := 2.0
+const CAROUSEL_TURN := 1.5
+## La Danse macabre : ses coups, le pas de chacun, d'où il frappe devant soi et dans quel
+## rayon, la part d'un coup que vaut un rat éclaté ; le recul du Chassé-croisé ; ce que le
+## sol du Charnier dure.
+const DANCE_STEPS := 3
+const DANCE_STRIDE := 24.0
+const DANCE_REACH := 16.0
+const DANCE_HIT := 20.0
+const BURST_PART := 0.6
+const CHARNEL_TIME := 2.0
+## La Contagion : jusqu'où un maudit qui meurt passe ses rats et éclate.
+const CONTAGION_REACH := 80.0
+## Le Festin : ce que rend une mort rongée, en part des PV max et en mana ; le seuil du Ventre
+## creux ; la portée de l'Indigestion et de la Disette ; ce que le Banquet rend par rat et par
+## seconde, en part des PV max.
+const FEAST_LIFE_BASE := 0.02
+const FEAST_MANA_BASE := 3.0
+const HOLLOW_LIFE := 0.5
+const INDIGESTION_REACH := 48.0
+const FAMINE_REACH := 64.0
+const BANQUET_HEAL := 0.002
+## L'écran, à peu près : jusqu'où le Roi des Rats consomme et la Peste noire maudit.
+const SCREEN_REACH := 420.0
+## Le Roi des Rats : ce que vaut chaque rat consommé ; ses marées d'abdication ; ce que la
+## Couronne de queues rend par mort.
+const KING_PER_RAT := 0.5
+const ABDICATION_TIDES := 8
+const TAIL_CROWN_TIME := 0.5
 ## La recharge d'un geste affranchi (l'Armure de givre), **fixe** : ni nœud ni
 ## récupération ne la bougent. Le prix de marcher sous sa protection.
 const FREED_RECHARGE := 5.0
@@ -2243,6 +2500,67 @@ var reprisal := 0.0
 var sidestep := 0.0
 var counter_time := 0.0
 var fencing_time := 0.0
+var rats := 0.0
+var fangs := 0.0
+var trip := 0.0
+var appetite := 0.0
+var iron_jaws := 0.0
+var sewer_rat := 0.0
+var flood := 0.0
+var breadth := 0.0
+var prolific := 0.0
+var stumble := 0.0
+var second_tide := 0.0
+var rivulets := 0.0
+var backwash := 0.0
+var mascaret := 0.0
+var hold_rats := 0.0
+var torpor := 0.0
+var threnody := 0.0
+var charmed_rats := 0.0
+var carousel := 0.0
+var farandole := 0.0
+var serenade := 0.0
+var requiem := 0.0
+var glide := 0.0
+var ossuary := 0.0
+var extra_steps := 0.0
+var pirouette := 0.0
+var gravedigger := 0.0
+var rout := 0.0
+var cross_step := 0.0
+var dead_dance := 0.0
+var ritornello := 0.0
+var totentanz := 0.0
+var charnel := 0.0
+var ague := 0.0
+var propagation := 0.0
+var lazaret := 0.0
+var carrier := 0.0
+var buboes := 0.0
+var galloping := 0.0
+var great_plague := 0.0
+var black_death := 0.0
+var plague_rats := 0.0
+var feast_life := 0.0
+var feast_mana := 0.0
+var nibble := 0.0
+var insatiable := 0.0
+var hollow_belly := 0.0
+var mastication := 0.0
+var indigestion := 0.0
+var banquet := 0.0
+var agapes := 0.0
+var famine := 0.0
+var court := 0.0
+var salt_tax := 0.0
+var teeming := 0.0
+var terror := 0.0
+var usurper := 0.0
+var abdication := 0.0
+var regicide := 0.0
+var tail_crown := 0.0
+var legend := 0.0
 ## Le Chatoiement (jalon 49) : le lancer de chaque rebond, au tour suivant le précédent.
 ## Rempli par `Player._salvo()`, aucun nœud ne le vise.
 var bounce_turns: Array[SkillStats] = []
@@ -2426,6 +2744,9 @@ func against_factor(states: StatusEffects) -> float:
 	# La Surchauffe : un « plus » par charge, lu avant que ce coup n'en pose une autre.
 	if overheat > 0.0:
 		product *= 1.0 + overheat * 0.01 * states.strength(StatusEffects.Kind.OVERHEAT)
+	# L'Appétit (jalon 53) : un « plus » par rat déjà accroché, lu avant que ce coup n'en pose.
+	if appetite > 0.0:
+		product *= 1.0 + appetite * 0.01 * float(states.rats())
 	# La Brèche (jalon 46) : le fêlé subit tout coup d'arme à sa force, d'où qu'il vienne.
 	var cracked := states.strength(StatusEffects.Kind.BREACH)
 	if cracked > 0.0 and Keywords.ATTACK in keywords:
@@ -2666,6 +2987,30 @@ static func facts() -> Dictionary:
 		"pas_max": SIDESTEP_MOST,
 		"fenetre_contretemps": roundi(COUNTER_WINDOW),
 		"part_charge_grace": roundi(FINISHER_POWER),
+		"rats_egout": SEWER_RATS,
+		"duree_croc": roundi(TRIP_TIME),
+		"drain_roi": roundi(KING_DRAIN),
+		"ecart_rigoles": roundi(TIDE_FAN),
+		"ecart_vagues": TIDE_GAP,
+		"ralenti_air": roundi(AIR_SLOW),
+		"melopee_max": roundi(THRENODY_MOST),
+		"charme_tous": roundi(CHARM_EVERY),
+		"rayon_requiem": roundi(REQUIEM_RADIUS),
+		"part_rat": roundi(BURST_PART * 100.0),
+		"duree_charnier": roundi(CHARNEL_TIME),
+		"portee_contagion": roundi(CONTAGION_REACH),
+		"vie_festin": roundi(FEAST_LIFE_BASE * 100.0),
+		"mana_festin": roundi(FEAST_MANA_BASE),
+		"portee_indigestion": roundi(INDIGESTION_REACH),
+		"portee_disette": roundi(FAMINE_REACH),
+		"soin_banquet": BANQUET_HEAL * 100.0,
+		"temps_rat": KING_PER_RAT,
+		"marees_abdication": ABDICATION_TIDES,
+		"temps_couronne": TAIL_CROWN_TIME,
+		"morts_legende": LEGEND_KILLS,
+		"rats_max": StatusEffects.RATS_MOST,
+		"part_rongement": roundi(StatusEffects.GNAW_PART * 100.0),
+		"duree_rats": roundi(StatusEffects.DURATIONS[StatusEffects.Kind.RATS]),
 	}
 
 

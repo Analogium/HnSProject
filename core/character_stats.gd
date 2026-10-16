@@ -67,6 +67,9 @@ extends Resource
 @export var blessing_chance: float = 0.0
 ## Comme `ignite_chance`, pour la pourriture — les à-coups de décomposition compris.
 @export var rot_chance: float = 0.0
+## Les dégâts accrus du rongement de ses rats, en points de pourcentage : le Festin (jalon 53).
+## Comme les chances, une compétence la donne, et la fiche ne l'affiche pas.
+@export var gnaw_damage: float = 0.0
 
 ## Ce qui **raccourcit les recharges**, en points de pourcentage : à +50, une recharge
 ## de 3 s tombe à 2 s. La seule chose qui les touche — ni la vitesse d'attaque ni celle

@@ -423,7 +423,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `stacks_max` / `stack_duration` | Un buff **à charges** : ses lignes comptent une fois par charge, une charge par ennemi tué d'une attaque, jusqu'à `stacks_max` ; toutes tombent `stack_duration` secondes après la dernière. Zéro partout ailleurs |
    | `stack_trigger` | Ce qui donne une charge : `KILL` (0), un ennemi tué d'une attaque — la Soif de sang ; `ALTERNATION` (1), un sort qui frappe dans une autre nature que le précédent — Trinité |
    | `health_scaling` | La part des PV max du lanceur ajoutée aux dégâts propres, **par coup**. Zéro pour ce qui ne s'adosse pas à la vie |
-   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`, et pour le Vive lame (jalon 50) `FLURRY`, `KNIVES`, `FINISHER`, `RIPOSTE` (entretenue). `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET`, `FROST_ORB` et `KNIVES` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead`, `thrust`, ou ceux de la seule Vive lame, `flurry`, `throw`, `finisher` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) ; pour une planche 3D, il s'écrit en poses-clés dans `tools/blender/gestes.json` |
+   | `shape` | Ce que le lancer pose dans le monde, **et son dessin** : `ARC`, `BOLT`, `STRIKE`, `BALL`, `CHAIN`, `CLOUD`, `AURA`, `SNAKE`, `CROSS`, `ORBIT`, `DASH`, `BUFF`, `WAVE`, `CYCLONE`, `SPIKES`, `NOVA`, `VORTEX`, `PILLAR`, `PULSE`, `SUMMON`, `GATE`, `CURSE`, `LUNGE`, `COMET`, `GLYPH`, `CAULDRON`, `FAMILIAR`, `TURRET`, `FROST_ORB`, `HAMMER`, `CHAINS`, pour le Vive lame (jalon 50) `FLURRY`, `KNIVES`, `FINISHER`, `RIPOSTE` (entretenue), et pour le joueur de flûte (jalon 53) `BITE`, `TIDE`, `MELODY` (entretenue), `DANCE` — ces deux attaques reprennent l'estoc et le balayage en attendant leurs gestes. `BEAM`, `HOLY_CROSS` et `RAY` restent dans l'énumération sans plus rien derrière (la Frappe sacrée, partie au jalon 48). `BOLT`, `BALL`, `COMET`, `TURRET`, `FROST_ORB` et `KNIVES` donnent `projectile`. **Une forme d'attaque neuve** prend son geste dans `Skill.GESTURE` — `sweep`, `overhead`, `thrust`, ou ceux de la seule Vive lame, `flurry`, `throw`, `finisher` —, sinon elle frappe à l'appui, avant que le bras ne bouge, et le corps joue le vieux coup d'épée ; `test_only_attacks_wait_for_an_impact` refuse qu'un sort y entre. Un geste **neuf** se génère pour chaque classe (`tools/characters/LISEZMOI.md`) ; pour une planche 3D, il s'écrit en poses-clés dans `tools/blender/gestes.json` |
    | `declared_keywords` | **Seulement ce que rien d'autre ne dit** — aujourd'hui rien. Jamais la nature, la cadence ni la forme, qui donnent déjà `lightning`, `spell`, `attack` ou `projectile` |
    | `projectiles` / `spread_in_degrees` | 1 et 0 pour un trait ; 8 et 360 pour une nova |
    | `projectile_speed` | En pixels par seconde ; **obligatoire** dès qu'elle porte `projectile`. La scène du tir n'en déclare plus |
@@ -438,6 +438,7 @@ cliquable ne peuvent pas diverger), `test_the_panel_stays_in_frame`.
    | `inflicted_state` / `inflict_chance` | L'état qu'elle **pose** à ce qu'elle touche (`StatusEffects.Kind`, hors de `ROLLED`) et sa chance ; −1 pour rien. Ce qu'il brûle part du coup, donc du niveau du sort. Une malédiction n'a que ça |
    | `status_chance_increase` | Ce que ce lancer **accroît** à la chance de poser son état, en points de pourcentage — +50 sur la Nova de glace, qui fait passer 20 % à 30 %. Il s'additionne aux accrus du porteur. **Hors de portée des nœuds** : c'est ce qui distingue une compétence de sa voisine. La fiche le montre **avec ce qu'il donne**, sous le libellé de la statistique de la sorte (`StatusEffects.CHANCE_STATS`) ou, sans statistique, sous celui de `UNWORN_CHANCES` |
    | `binds_caster` | Ce geste enferme-t-il son lanceur : rien d'autre ne part, on ne bouge plus, et seule son extinction reste permise |
+   | `rats` | Les rats qu'elle accroche à chaque ennemi touché (jalon 53) : chacun ronge `StatusEffects.GNAW_PART` du coup. Zéro partout ailleurs |
    | `required_manual_level` | À partir de quand la case accepte son premier point |
 
 2. **`core/skill_catalog.gd`** — le `preload` dans `ALL`. C'est le seul
@@ -520,7 +521,7 @@ son test dans `tests/integration/test_shapes.gd`.
 **Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par
 l'utilisateur, puis captures réelles — et se fait dans son `_draw()`, avec le module de sa matière quand elle
 en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd`,
-`fx/slash.gd`, `fx/necrotic.gd` et `fx/witchcraft.gd`, qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
+`fx/slash.gd`, `fx/necrotic.gd`, `fx/witchcraft.gd` et `fx/piper.gd` (les rats et les notes), qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
 éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
 **tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
 `fx/glow.gd` plutôt que des primitives : un cœur
@@ -771,7 +772,7 @@ l'orienteraient chacun à leur façon.
    `bleed_effect`, `knockback`, `life_on_hit`, `mana_on_hit`, `blade_ward`,
    `sword_volley`, `extra_swords`, `waves`, puis au jalon 46 `sure_strike`, `maul`, `breach`,
    `collision`, `skittles`, `tremor`, `red_iron` et les trente-quatre de `SkillStats.LACERATION` à `CHASSE`, pour le sacré `blessing_effect`,
-   `wave_gain` et `aureole`, puis au jalon 48 les trente-huit de `SkillStats.LINKS` à `ECLIPSE`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `echo_power`, `echoes` et `countersong`, puis au jalon 49 ceux de `SkillStats.EQUILIBRIUM` à `LEES` (`SkillStats.PIERCE` et suivants), pour le Vive lame (jalon 50) ceux de `SkillStats.IMPETUS` à `FENCING_TIME`, et `execution`, le seuil d'achèvement que lit l'ennemi. Un nombre qui renforce
+   `wave_gain` et `aureole`, puis au jalon 48 les trente-huit de `SkillStats.LINKS` à `ECLIPSE`, pour la sorcière `numb_effect`, `resonance`, `siphon`, `stack_hold`, `dissonance`, `tempo`, `perfect_chord`, `reaction_power`, `primer`, `echo_power`, `echoes` et `countersong`, puis au jalon 49 ceux de `SkillStats.EQUILIBRIUM` à `LEES` (`SkillStats.PIERCE` et suivants), pour le Vive lame (jalon 50) ceux de `SkillStats.IMPETUS` à `FENCING_TIME`, pour le joueur de flûte (jalon 53) ceux de `SkillStats.RATS` à `LEGEND`, et `execution`, le seuil d'achèvement que lit l'ennemi. Un nombre qui renforce
    un état s'inscrit dans `SkillStats.EFFECT_OF`. Chacun n'est lu
    que par certaines formes : ARCHITECTURE, « Qu'est-ce qu'un nœud peut allumer ? »,
    dit lesquelles. **Sur une autre forme, la ligne ne fait rien** et aucun test ne
@@ -806,7 +807,9 @@ sont repris depuis le jalon 40),
 `test_each_conversion_is_one_point_and_alone_in_its_tree`,
 `test_trees_share_no_line_and_no_name` (tous les manuels depuis le jalon 44, le froid en
 dernier : **aucune ligne ni aucun nom d'un arbre à l'autre**, sauf un nœud de dégâts, de
-rayon et de durée par arbre) ; et
+rayon et de durée par arbre ; depuis le jalon 53, les lignes basiques de `BASIC_LINES` — coût,
+temps du geste, recharge, vie, vitesse — reviennent librement : l'originalité d'abord, pas
+d'interdit sur ce qui sert partout) ; et
 `tests/integration/test_manual_panel.gd : test_slots_and_nodes_fit_in_the_panel`,
 qui refuse un nœud posé hors de la fenêtre.
 

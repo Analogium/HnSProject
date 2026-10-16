@@ -1,0 +1,78 @@
+{
+ "concept": {
+  "prompt": "Roi des Rats, planche hns-roi-des-rats/2-rats-muscles (jalon 53), ligne 1, graine 777",
+  "seeds": []
+ },
+ "views": {
+  "prompt": "",
+  "seeds": [],
+  "ip_weight": 1.0
+ },
+ "width": 1.5,
+ "frame": 64,
+ "feet": 60,
+ "recolor": [],
+ "palette": {
+  "cloth": "7c2a26",
+  "skin": "8a8478",
+  "accent": "bccb3a",
+  "metal": "dcd2b4",
+  "leather": "3a2b24"
+ },
+ "concept_palette": false,
+ "weapon": "none",
+ "neg": ", child, baby, cute, cartoon, monkey, opossum, ape, round face, big eyes, pink clothes, magenta, green clothes, human face, skinny",
+ "blender": {
+  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, short legs, anthropomorphic rat king standing on two legs, real rat head with a long pointed snout, pink nose, long whiskers, large round ears, sharp yellow incisors, small glowing green eyes, extremely muscular bodybuilder body, huge biceps, broad chest, abs, grey fur, long pink tail, golden crown, wide mustard yellow belt with a skull buckle, torn crimson loincloth, crimson wristbands, clawed hands, empty hands",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 46,
+  "grown": [
+   49,
+   52,
+   55,
+   58
+  ],
+  "colors": 16,
+  "weapon_colors": 8,
+  "source": "tools/characters/rat_king/3d",
+  "rest": "rest.blend",
+  "weapons": [],
+  "anims": {
+   "walk": [
+    "walk.blend",
+    8
+   ],
+   "attack": [
+    "sweep",
+    8
+   ],
+   "cast": [
+    "cast",
+    8
+   ],
+   "sweep": [
+    "sweep",
+    8
+   ],
+   "overhead": [
+    "overhead",
+    8
+   ],
+   "thrust": [
+    "thrust",
+    8
+   ],
+   "bite": [
+    "bite",
+    8
+   ],
+   "danse": [
+    "danse",
+    8
+   ]
+  }
+ },
+ "scale": 0.7
+}

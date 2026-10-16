@@ -37,6 +37,7 @@ const LABELS := {
 	"chill_chance": "chance de transir",
 	"blessing_chance": "chance de bénir",
 	"rot_chance": "chance de pourrir",
+	"gnaw_damage": "dégâts de rongement",
 	"cooldown_recovery": "récupération de recharge",
 	"damage_taken": "dégâts subis",
 	"move_speed": "vitesse",
@@ -76,6 +77,7 @@ const AGREEMENT := {
 	"chill_chance": "fs",
 	"blessing_chance": "fs",
 	"rot_chance": "fs",
+	"gnaw_damage": "mp",
 	"cooldown_recovery": "fs",
 	"damage_taken": "mp",
 	"move_speed": "fs",
@@ -137,6 +139,10 @@ static var PERCENT_POINTS: Array = DamageType.RESIST_FIELDS.filter(
 	"execution", "impetus", "first_blood", "opening", "double_hit", "furia", "cleave_path",
 	"ascent", "insistence", "harvest", "fever", "gulp", "long_shot", "enfilade", "hedgehog",
 	"relentless", "cornered", "chink", "reprisal", "fencing_time",
+	"fangs", "trip", "appetite", "breadth", "mascaret", "torpor", "threnody", "farandole",
+	"requiem", "ossuary", "pirouette", "ritornello", "charnel", "ague", "lazaret", "buboes",
+	"feast_life", "hollow_belly", "mastication", "indigestion", "agapes", "salt_tax", "teeming",
+	"usurper", "regicide", "gnaw_damage",
 ]
 
 var stat: String

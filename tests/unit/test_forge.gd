@@ -232,3 +232,19 @@ func test_no_sheet_pixel_passes_the_glow_threshold() -> void:
 			if data[i + 3] > 127:
 				brightest = maxf(brightest, 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2])
 		assert_lt(brightest / 255.0, 0.9, file)
+
+
+## La Légende (jalon 53) : une planche par taille du Roi, chacune plus haute que la précédente.
+func test_each_grown_king_has_a_taller_sheet() -> void:
+	var looks: Array = [SkillStats.KING_LOOK] + SkillStats.KING_GROWN
+	for i in range(1, looks.size()):
+		assert_not_null(SpriteForge.sheet_of(looks[i]), looks[i])
+		assert_gt(SpriteForge.head_room(looks[i]), SpriteForge.head_room(looks[i - 1]), looks[i])
+
+
+## Une planche sans arme ne prend pas celle qu'on lui tend : le Roi des Rats tenait l'épée du
+## joueur de flûte.
+func test_a_sheet_without_weapon_keeps_its_hands_empty() -> void:
+	var bare := SpriteForge.frames(SkillStats.KING_LOOK, 0).get_frame_texture("idle_down", 0).get_image()
+	var handed := SpriteForge.frames(SkillStats.KING_LOOK, 0, "sword").get_frame_texture("idle_down", 0).get_image()
+	assert_eq(handed.get_data(), bare.get_data())

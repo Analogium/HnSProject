@@ -104,7 +104,10 @@ func _physics_process(delta: float) -> void:
 		if not e.states.is_clear:
 			e.suffer_states(delta)
 		e.regen(delta)
-		e.tick(delta)
+		if e.afraid():
+			e.flee(delta)
+		else:
+			e.tick(delta)
 		if e.shoved() and not e.is_dead:
 			e.collide(delta)
 

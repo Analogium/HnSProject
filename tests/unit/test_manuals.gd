@@ -317,7 +317,4 @@ func test_a_class_manual_is_outside_the_catalog() -> void:
 		assert_null(ItemCatalog.by_id(base.id), "« %s »" % base.id)
 		assert_not_null(base.manual, "« %s » porte un archétype" % base.id)
 		assert_eq(base.family, ItemBase.MANUAL_FAMILY)
-		# Le joueur de flûte arrive manuel vide, pour juger le personnage d'abord : à
-		# retirer d'ici quand son manuel aura ses cases.
-		if base.id != "manual_piper":
-			assert_false(base.manual.skills().is_empty(), "« %s » apprend à lancer" % base.id)
+		assert_false(base.manual.skills().is_empty(), "« %s » apprend à lancer" % base.id)

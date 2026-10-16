@@ -12,6 +12,7 @@ Une image pixel art donne un modèle plat : TRELLIS a besoin d'un rendu lissé. 
 de la vue de face retenue (IPAdapter), LoRA pixel art éteint, bras écartés pour le gréage.
 Le prompt est `blender.model_prompt` de `tools/characters/<id>.json`."""
 import argparse, copy, json, os, shutil, subprocess, sys
+import cv2
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -87,20 +88,22 @@ def cutout(cid, seed, view, dest):
     im = np.asarray(Image.open(raw(cid, seed, view)).convert("RGBA")).copy()
     for rule in cf.load(cid)["blender"].get("model_recolor", []) if view == "down" else []:
         cf.recolor(im, rule)
-    im[..., 3] = silhouette(im[..., :3].astype(np.float32) / 255) * 255
+    im[..., 3] = silhouette(raw(cid, seed, view)) * 255
     Image.fromarray(im).save(dest)
 
 
-def silhouette(a):
-    """Celle de la forge, moins le fond qui varie doucement depuis les bords : un rendu
-    « studio » a un halo clair au centre et un sol que la médiane des bords ne reconnaît
-    pas (le joueur de flûte sortait avec une plaque au-dessus du chapeau et sous les pieds)."""
-    lum = ndimage.gaussian_filter(a.mean(2), 1.5)
-    lab, _ = ndimage.label(np.hypot(ndimage.sobel(lum, 0), ndimage.sobel(lum, 1)) < 0.06)
-    edge = set(lab[0]) | set(lab[-1]) | set(lab[:, 0]) | set(lab[:, -1]); edge.discard(0)
-    keep = cf.silhouette(a) & ~ndimage.binary_dilation(np.isin(lab, list(edge)), iterations=2)
-    # Le trait d'horizon, fin et horizontal, part à l'élagage vertical ; le corps est haut.
-    keep = ndimage.binary_opening(ndimage.binary_opening(keep, np.ones((25, 1))), iterations=2)
+def silhouette(path):
+    """Le personnage, par GrabCut (OpenCV) dans un cadre qui ne laisse que les bords au fond.
+    Les deux méthodes d'avant, par couleur, prenaient le fond d'un rendu « studio » pour du
+    corps (le joueur de flûte sortait avec une plaque au-dessus du chapeau), ou un corps gris
+    pâle pour du fond (le Roi des Rats, jalon 53, perdait ses jambes)."""
+    img = cv2.imread(path)
+    h, w = img.shape[:2]
+    mask = np.zeros((h, w), np.uint8)
+    frame = (w // 25, h // 34, w - 2 * (w // 25), h - h // 34 - h // 50)
+    cv2.grabCut(img, mask, frame, np.zeros((1, 65)), np.zeros((1, 65)), 6, cv2.GC_INIT_WITH_RECT)
+    keep = (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD)
+    keep = ndimage.binary_fill_holes(ndimage.binary_opening(keep, iterations=2))
     lab, n = ndimage.label(keep)
     return lab == (np.argmax(ndimage.sum(keep, lab, range(1, n + 1))) + 1)
 

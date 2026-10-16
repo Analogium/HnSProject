@@ -3131,8 +3131,8 @@ msgstr "A manual does nothing in the bag: it is studied on the rack, which has {
 msgid "Le manuel de classe"
 msgstr "The class manual"
 
-msgid "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres.\n\nCelui du Vive lame tourne autour de la Frénésie : la Soif de sang en gagne une charge à chaque ennemi tué d'une attaque, le Coup de grâce les dépense toutes — plus il en prend, plus il frappe fort et plus tôt il achève sa cible. Sa Contre-attaque riposte à chaque coup esquivé."
-msgstr "One more slot holds the class manual. It never drops and cannot be removed, but it learns, reads and takes points like the others.\n\nThe Swiftblade's revolves around Frenzy: Bloodlust gains a charge for each enemy killed by an attack, Coup de Grâce spends them all — the more it takes, the harder it hits and the sooner it executes its target. Its Counterattack ripostes to every evaded blow."
+msgid "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres.\n\nCelui du Vive lame tourne autour de la Frénésie : la Soif de sang en gagne une charge à chaque ennemi tué d'une attaque, le Coup de grâce les dépense toutes — plus il en prend, plus il frappe fort et plus tôt il achève sa cible. Sa Contre-attaque riposte à chaque coup esquivé. Celui du joueur de flûte accroche des rats aux ennemis, qui les rongent : la Danse macabre les fait éclater, le Roi des Rats les consomme pour régner plus longtemps."
+msgstr "One more slot holds the class manual. It never drops and cannot be removed, but it learns, reads and takes points like the others.\n\nThe Swiftblade's revolves around Frenzy: Bloodlust gains a charge for each enemy killed by an attack, Coup de Grâce spends them all — the more it takes, the harder it hits and the sooner it executes its target. Its Counterattack ripostes to every evaded blow. The Piper's latches rats onto enemies, which gnaw at them: Danse Macabre bursts them, Rat King consumes them to reign longer."
 
 msgid "Expérience et niveaux"
 msgstr "Experience and levels"
@@ -7977,3 +7977,832 @@ msgstr "after an evasion"
 
 msgid "attaque critique"
 msgstr "critical attack"
+
+# ---------------------------------------------------------------------------
+# Le joueur de flûte (jalon 53)
+# ---------------------------------------------------------------------------
+
+msgid "Coup de croc"
+msgstr "Fang Strike"
+
+msgid "Mord le premier ennemi devant vous et lui accroche un rat."
+msgstr "Bites the first enemy ahead and latches a rat onto it."
+
+msgid "Marée de rats"
+msgstr "Rat Tide"
+
+msgid "Des rats déferlent au sol vers la visée et mordent ce qu'ils couvrent."
+msgstr "Rats surge along the ground toward the aim and bite what they cover."
+
+msgid "Air de Hamelin"
+msgstr "Hamelin's Air"
+
+msgid "Une mélodie autour de vous attire, ralentit et ronge les ennemis."
+msgstr "A tune around you draws in, slows and gnaws at enemies."
+
+msgid "Danse macabre"
+msgstr "Danse Macabre"
+
+msgid "Trois coups en avançant ; le dernier fait éclater les rats alentour."
+msgstr "Three blows while advancing; the last bursts the rats around."
+
+msgid "Maudit une zone : un maudit qui meurt éclate et passe ses rats."
+msgstr "Curses an area: a cursed enemy that dies bursts and passes on its rats."
+
+msgid "Festin"
+msgstr "Feast"
+
+msgid "Vos rats rongent plus fort, et leurs proies vous nourrissent."
+msgstr "Your rats gnaw harder, and their prey feeds you."
+
+msgid "Roi des Rats"
+msgstr "Rat King"
+
+msgid "Consomme les rats accrochés alentour et vous change en Roi des Rats."
+msgstr "Consumes the rats latched around and turns you into the Rat King."
+
+msgid "Règne"
+msgstr "Reign"
+
+msgid "rongé"
+msgstr "gnawed"
+
+msgid "Rongement"
+msgstr "Gnawing"
+
+msgid "contre les rongés"
+msgstr "against gnawed enemies"
+
+msgid "dégâts de rongement"
+msgstr "gnawing damage"
+
+msgid "Posé par les compétences du joueur de flûte, jamais par un coup ordinaire. Chaque rat accroché ronge {rongement} par seconde du coup qui l'a posé, jusqu'à {rats} rats, pendant {duree} s, qui repartent à chaque rat posé. Certaines compétences les font éclater, les consomment ou les passent aux voisins."
+msgstr "Applied by the Piper's skills, never by an ordinary hit. Each latched rat gnaws {rongement} per second of the hit that latched it, up to {rats} rats, for {duree} s, renewed with each new rat. Some skills burst them, consume them or pass them on to neighbours."
+
+msgid "rats accrochés par coup"
+msgstr "rats latched per hit"
+
+msgid "rongement de ses rats"
+msgstr "gnawing of its rats"
+
+msgid "ralentissement de la cible mordue"
+msgstr "slow on the bitten target"
+
+msgid "dégâts par rat déjà accroché"
+msgstr "damage per rat already latched"
+
+msgid "rats en plus au premier mordu"
+msgstr "extra rats on the first bitten"
+
+msgid "marée de l'égout"
+msgstr "sewer tide"
+
+msgid "rats en plus de la marée d'égout"
+msgstr "extra rats from the sewer tide"
+
+msgid "largeur de la marée"
+msgstr "tide width"
+
+msgid "rats en plus sur un porteur"
+msgstr "extra rats on a carrier"
+
+msgid "secondes d'étourdissement"
+msgstr "seconds of stun"
+
+msgid "marées en plus"
+msgstr "extra tides"
+
+msgid "branches en plus"
+msgstr "extra branches"
+
+msgid "retour de la marée"
+msgstr "returning tide"
+
+msgid "dégâts du retour"
+msgstr "return damage"
+
+msgid "rats en plus sous l'Air de Hamelin"
+msgstr "extra rats under Hamelin's Air"
+
+msgid "ralentissement en plus"
+msgstr "extra slow"
+
+msgid "dégâts subis par seconde d'air"
+msgstr "damage taken per second heard"
+
+msgid "rats charmés en plus"
+msgstr "extra charmed rats"
+
+msgid "carrousel"
+msgstr "carousel"
+
+msgid "dégâts aux voisins heurtés"
+msgstr "damage to jostled neighbours"
+
+msgid "air joué au point visé"
+msgstr "air played at the aim"
+
+msgid "dégâts de la note funèbre"
+msgstr "dirge note damage"
+
+msgid "longueur des pas"
+msgstr "step length"
+
+msgid "dégâts par rat éclaté"
+msgstr "damage per burst rat"
+
+msgid "coups en plus"
+msgstr "extra blows"
+
+msgid "dégâts de la pirouette"
+msgstr "pirouette damage"
+
+msgid "mana par rat éclaté"
+msgstr "mana per burst rat"
+
+msgid "secondes de fuite"
+msgstr "seconds of flight"
+
+msgid "recul après la danse"
+msgstr "step back after the dance"
+
+msgid "rats gardés à l'éclat"
+msgstr "rats kept on burst"
+
+msgid "rongement des rats gardés"
+msgstr "gnawing of kept rats"
+
+msgid "rat éclaté à chaque coup"
+msgstr "rat burst with every blow"
+
+msgid "dégâts du sol des rats éclatés"
+msgstr "ground damage of burst rats"
+
+msgid "dégâts de l'éclat du mort"
+msgstr "burst damage of the dead"
+
+msgid "voisins en plus"
+msgstr "extra neighbours"
+
+msgid "dégâts infligés retirés aux maudits"
+msgstr "less damage dealt by the cursed"
+
+msgid "rats posés sur les maudits"
+msgstr "rats placed on the cursed"
+
+msgid "rongement sur les maudits"
+msgstr "gnawing on the cursed"
+
+msgid "malédiction transmise"
+msgstr "curse passed on"
+
+msgid "secondes gagnées par transmission"
+msgstr "seconds gained per transmission"
+
+msgid "malédiction sur tous les porteurs"
+msgstr "curse on every carrier"
+
+msgid "rats passés au voisin"
+msgstr "rats passed to the neighbour"
+
+msgid "PV max rendus par mort rongée"
+msgstr "max HP restored per gnawed kill"
+
+msgid "mana par mort rongée"
+msgstr "mana per gnawed kill"
+
+msgid "secondes de vie des rats"
+msgstr "seconds of rat life"
+
+msgid "rats au plus par ennemi"
+msgstr "max rats per enemy"
+
+msgid "rongement à mi-vie"
+msgstr "gnawing below half HP"
+
+msgid "cadence du rongement"
+msgstr "gnawing pace"
+
+msgid "éclat des morts rongées"
+msgstr "burst of gnawed kills"
+
+msgid "soin par rat qui ronge"
+msgstr "healing per gnawing rat"
+
+msgid "mana rendu sous le Banquet"
+msgstr "mana restored under Banquet"
+
+msgid "rats qui changent d'hôte"
+msgstr "rats that change host"
+
+msgid "secondes par rat consommé"
+msgstr "seconds per consumed rat"
+
+msgid "PV max par rat consommé"
+msgstr "max HP per consumed rat"
+
+msgid "dégâts de la marée du Roi"
+msgstr "King's tide damage"
+
+msgid "secondes de fuite en plus"
+msgstr "extra seconds of flight"
+
+msgid "drain du Coup de croc"
+msgstr "Fang Strike drain"
+
+msgid "marée à la fin du règne"
+msgstr "tide when the reign ends"
+
+msgid "dégâts de la marée d'abdication"
+msgstr "abdication tide damage"
+
+msgid "secondes de règne par mort"
+msgstr "seconds of reign per kill"
+
+msgid "secondes en plus par mort"
+msgstr "extra seconds per kill"
+
+msgid "Mâchoire"
+msgstr "Jaw"
+
+msgid "Le Coup de croc mord plus fort."
+msgstr "Fang Strike bites harder."
+
+msgid "Long museau"
+msgstr "Long Snout"
+
+msgid "La morsure porte plus loin."
+msgstr "The bite reaches farther."
+
+msgid "Maigre pitance"
+msgstr "Meagre Fare"
+
+msgid "Le Coup de croc coûte moins de mana."
+msgstr "Fang Strike costs less mana."
+
+msgid "Dents longues"
+msgstr "Long Teeth"
+
+msgid "Les rats qu'il accroche rongent plus fort."
+msgstr "The rats it latches gnaw harder."
+
+msgid "Double ration"
+msgstr "Double Ration"
+
+msgid "Chaque morsure accroche un rat de plus."
+msgstr "Each bite latches one more rat."
+
+msgid "Croc-en-jambe"
+msgstr "Leg Bite"
+
+msgid "La cible mordue est ralentie {duree_croc} s."
+msgstr "The bitten target is slowed for {duree_croc} s."
+
+msgid "Appétit"
+msgstr "Appetite"
+
+msgid "Plus la cible porte de rats, plus la morsure frappe fort."
+msgstr "The more rats the target carries, the harder the bite."
+
+msgid "Dent vive"
+msgstr "Quick Tooth"
+
+msgid "Le geste de la morsure est plus court."
+msgstr "The bite's gesture is shorter."
+
+msgid "Gueule béante"
+msgstr "Gaping Maw"
+
+msgid "La morsure prend tout l'arc devant vous : chaque ennemi touché reçoit son rat."
+msgstr "The bite takes the whole arc ahead of you: each enemy hit gets its rat."
+
+msgid "Mâchoires de fer"
+msgstr "Iron Jaws"
+
+msgid "Sous la Gueule béante, le premier ennemi mordu reçoit des rats de plus."
+msgstr "Under Gaping Maw, the first enemy bitten gets extra rats."
+
+msgid "Rat d'égout"
+msgstr "Sewer Rat"
+
+msgid "Mordre un ennemi qui porte {rats_egout} rats lance une Marée de rats depuis lui, droit devant."
+msgstr "Biting an enemy that carries {rats_egout} rats sends a Rat Tide from it, straight ahead."
+
+msgid "Crue"
+msgstr "Spate"
+
+msgid "La marée du Rat d'égout accroche des rats de plus."
+msgstr "The Sewer Rat's tide latches extra rats."
+
+msgid "Fourmillement"
+msgstr "Swarming"
+
+msgid "La marée mord plus fort."
+msgstr "The tide bites harder."
+
+msgid "Longue course"
+msgstr "Long Run"
+
+msgid "La marée court plus loin."
+msgstr "The tide runs farther."
+
+msgid "Large front"
+msgstr "Broad Front"
+
+msgid "La marée couvre plus large."
+msgstr "The tide covers more width."
+
+msgid "Prolifique"
+msgstr "Prolific"
+
+msgid "Un ennemi qui porte déjà des rats en reçoit davantage."
+msgstr "An enemy already carrying rats gets more."
+
+msgid "Remous"
+msgstr "Eddy"
+
+msgid "La marée repousse ce qu'elle traverse."
+msgstr "The tide pushes back what it crosses."
+
+msgid "Faux pas"
+msgstr "Misstep"
+
+msgid "Les ennemis traversés sont étourdis."
+msgstr "Enemies crossed are stunned."
+
+msgid "Seconde vague"
+msgstr "Second Wave"
+
+msgid "Une marée de plus part {ecart_vagues} s après la précédente."
+msgstr "One more tide sets off {ecart_vagues} s after the previous one."
+
+msgid "Égout"
+msgstr "Sewer"
+
+msgid "Chaque ennemi traversé vous rend du mana."
+msgstr "Each enemy crossed restores mana."
+
+msgid "Trois rigoles"
+msgstr "Three Rills"
+
+msgid "La marée part en trois branches, écartées de {ecart_rigoles}°."
+msgstr "The tide splits into three branches, {ecart_rigoles}° apart."
+
+msgid "Delta"
+msgstr "Delta"
+
+msgid "Cinq branches au lieu de trois."
+msgstr "Five branches instead of three."
+
+msgid "Contre-courant"
+msgstr "Backwash"
+
+msgid "Au bout de sa course, la marée revient vers vous et mord de nouveau."
+msgstr "At the end of its run, the tide comes back to you and bites again."
+
+msgid "Mascaret"
+msgstr "Tidal Bore"
+
+msgid "Le retour de la marée mord plus fort."
+msgstr "The returning tide bites harder."
+
+msgid "Rats de cale"
+msgstr "Bilge Rats"
+
+msgid "Un ennemi sous l'Air de Hamelin reçoit des rats de plus."
+msgstr "An enemy under Hamelin's Air gets extra rats."
+
+msgid "Envoûtement"
+msgstr "Bewitchment"
+
+msgid "L'air ronge plus fort."
+msgstr "The air gnaws harder."
+
+msgid "Écho lointain"
+msgstr "Distant Echo"
+
+msgid "L'air porte plus loin."
+msgstr "The air carries farther."
+
+msgid "Souffle court"
+msgstr "Short Breath"
+
+msgid "L'air coûte moins de mana à entretenir."
+msgstr "The air costs less mana to sustain."
+
+msgid "Ensorcellement"
+msgstr "Enchantment"
+
+msgid "L'air attire plus fort."
+msgstr "The air pulls harder."
+
+msgid "Torpeur"
+msgstr "Torpor"
+
+msgid "L'air ralentit davantage."
+msgstr "The air slows more."
+
+msgid "Mélopée"
+msgstr "Threnody"
+
+msgid "Plus un ennemi reste sous l'air, plus il subit de dégâts, jusqu'à {melopee_max} s."
+msgstr "The longer an enemy stays under the air, the more damage it takes, up to {melopee_max} s."
+
+msgid "Pavane"
+msgstr "Pavane"
+
+msgid "Vous marchez plus vite tant que l'air joue."
+msgstr "You walk faster while the air plays."
+
+msgid "Rats charmés"
+msgstr "Charmed Rats"
+
+msgid "Toutes les {charme_tous} s, un ennemi sous l'air reçoit des rats."
+msgstr "Every {charme_tous} s, an enemy under the air gets rats."
+
+msgid "Carrousel"
+msgstr "Carousel"
+
+msgid "Les ennemis ne sont plus attirés : ils tournent autour de l'air."
+msgstr "Enemies are no longer pulled in: they circle around the air."
+
+msgid "Farandole"
+msgstr "Farandole"
+
+msgid "Sous le Carrousel, chacun heurte son voisin et le blesse."
+msgstr "Under Carousel, each one bumps its neighbour and hurts it."
+
+msgid "Sérénade"
+msgstr "Serenade"
+
+msgid "L'air se joue au point visé au lieu de vous suivre, deux fois plus large."
+msgstr "The air plays at the aim instead of following you, twice as wide."
+
+msgid "Requiem"
+msgstr "Requiem"
+
+msgid "Un ennemi qui meurt sous l'air y laisse une note qui frappe ses voisins."
+msgstr "An enemy dying under the air leaves a note that strikes its neighbours."
+
+msgid "Funèbre"
+msgstr "Funereal"
+
+msgid "La danse frappe plus fort."
+msgstr "The dance hits harder."
+
+msgid "Grand écart"
+msgstr "Splits"
+
+msgid "L'éclat prend les rats plus loin."
+msgstr "The burst takes rats from farther away."
+
+msgid "Glissade"
+msgstr "Glissade"
+
+msgid "Chaque pas de la danse porte plus loin."
+msgstr "Each step of the dance carries farther."
+
+msgid "Ossuaire"
+msgstr "Ossuary"
+
+msgid "Chaque rat éclaté frappe plus fort."
+msgstr "Each burst rat hits harder."
+
+msgid "Temps de plus"
+msgstr "Extra Beat"
+
+msgid "La danse compte un coup de plus."
+msgstr "The dance counts one more blow."
+
+msgid "Pirouette"
+msgstr "Pirouette"
+
+msgid "Le dernier coup frappe tout le cercle autour de sa cible."
+msgstr "The last blow strikes the whole circle around its target."
+
+msgid "Fossoyeur"
+msgstr "Gravedigger"
+
+msgid "Chaque rat éclaté vous rend du mana."
+msgstr "Each burst rat restores mana."
+
+msgid "Sauve-qui-peut"
+msgstr "Rout"
+
+msgid "Les ennemis dont les rats éclatent prennent la fuite."
+msgstr "Enemies whose rats burst take flight."
+
+msgid "Chassé-croisé"
+msgstr "Chassé-Croisé"
+
+msgid "La danse finie, vous reculez d'un pas."
+msgstr "When the dance ends, you step back."
+
+msgid "Danse des morts"
+msgstr "Dance of the Dead"
+
+msgid "L'éclat n'emporte plus les rats : ils restent accrochés."
+msgstr "The burst no longer takes the rats: they stay latched."
+
+msgid "Ritournelle"
+msgstr "Ritornello"
+
+msgid "Les rats restés accrochés rongent plus fort jusqu'à leur fin."
+msgstr "Rats that stay latched gnaw harder until they end."
+
+msgid "Totentanz"
+msgstr "Totentanz"
+
+msgid "Chaque coup de la danse fait éclater un rat de ce qu'il frappe."
+msgstr "Each blow of the dance bursts one rat of what it hits."
+
+msgid "Charnier"
+msgstr "Charnel Pit"
+
+msgid "Chaque rat éclaté laisse un sol nécrotique pendant {duree_charnier} s."
+msgstr "Each burst rat leaves necrotic ground for {duree_charnier} s."
+
+msgid "Puanteur"
+msgstr "Stench"
+
+msgid "La malédiction mord plus profond."
+msgstr "The curse bites deeper."
+
+msgid "Foyer"
+msgstr "Outbreak"
+
+msgid "La malédiction couvre plus large."
+msgstr "The curse covers a wider area."
+
+msgid "Latence"
+msgstr "Latency"
+
+msgid "Accès de fièvre"
+msgstr "Fever Fit"
+
+msgid "Un maudit qui meurt éclate plus fort."
+msgstr "A cursed enemy that dies bursts harder."
+
+msgid "Propagation"
+msgstr "Propagation"
+
+msgid "Les rats d'un mort se répartissent sur un voisin de plus."
+msgstr "A dead enemy's rats spread to one more neighbour."
+
+msgid "Lazaret"
+msgstr "Lazaretto"
+
+msgid "Les maudits frappent moins fort."
+msgstr "Cursed enemies hit less hard."
+
+msgid "Porteur sain"
+msgstr "Healthy Carrier"
+
+msgid "Un ennemi maudit qui ne porte aucun rat en reçoit."
+msgstr "A cursed enemy carrying no rat gets some."
+
+msgid "Bubons noirs"
+msgstr "Black Buboes"
+
+msgid "Les rats d'un maudit rongent plus fort."
+msgstr "A cursed enemy's rats gnaw harder."
+
+msgid "Peste galopante"
+msgstr "Galloping Plague"
+
+msgid "Un maudit qui meurt passe aussi sa malédiction à ses voisins, avec ce qu'il lui en restait."
+msgstr "A cursed enemy that dies also passes its curse to its neighbours, with what it had left."
+
+msgid "Grande peste"
+msgstr "Great Plague"
+
+msgid "Chaque transmission prolonge la malédiction."
+msgstr "Each transmission lengthens the curse."
+
+msgid "Peste noire"
+msgstr "Black Death"
+
+msgid "La malédiction tombe sur tous les porteurs de rats alentour, au lieu du point visé."
+msgstr "The curse falls on every rat carrier around, instead of the aim."
+
+msgid "Rats pesteux"
+msgstr "Plague Rats"
+
+msgid "Un rat que la Danse macabre fait éclater sur un maudit en accroche un au plus proche voisin."
+msgstr "A rat that Danse Macabre bursts on a cursed enemy latches one onto its nearest neighbour."
+
+msgid "Voracité"
+msgstr "Voracity"
+
+msgid "Vos rats rongent plus fort."
+msgstr "Your rats gnaw harder."
+
+msgid "Ripaille"
+msgstr "Carousing"
+
+msgid "Une mort rongée vous rend plus de vie."
+msgstr "A gnawed kill restores more life."
+
+msgid "Table ouverte"
+msgstr "Open Table"
+
+msgid "Une mort rongée vous rend plus de mana."
+msgstr "A gnawed kill restores more mana."
+
+msgid "Grignotage"
+msgstr "Nibbling"
+
+msgid "Vos rats tiennent plus longtemps."
+msgstr "Your rats last longer."
+
+msgid "Insatiable"
+msgstr "Insatiable"
+
+msgid "Un ennemi peut porter plus de rats."
+msgstr "An enemy can carry more rats."
+
+msgid "Ventre creux"
+msgstr "Empty Belly"
+
+msgid "Sous la moitié de votre vie, vos rats rongent plus fort."
+msgstr "Below half your life, your rats gnaw harder."
+
+msgid "Embonpoint"
+msgstr "Stoutness"
+
+msgid "Plus de vie tant que le Festin dure."
+msgstr "More life while Feast lasts."
+
+msgid "Mastication"
+msgstr "Mastication"
+
+msgid "Vos rats rongent plus vite."
+msgstr "Your rats gnaw faster."
+
+msgid "Indigestion"
+msgstr "Indigestion"
+
+msgid "Un ennemi tué par le rongement éclate sur ses voisins, d'une part de sa vie."
+msgstr "An enemy killed by gnawing bursts onto its neighbours, for a share of its life."
+
+msgid "Banquet"
+msgstr "Banquet"
+
+msgid "Chaque rat qui ronge vous rend {soin_banquet} % de votre vie par seconde."
+msgstr "Each gnawing rat restores {soin_banquet}% of your life per second."
+
+msgid "Agapes"
+msgstr "Agape"
+
+msgid "Le mana rendu par mort rongée double, puis plus encore."
+msgstr "The mana restored per gnawed kill doubles, then more."
+
+msgid "Disette"
+msgstr "Famine"
+
+msgid "Vos rats ne meurent plus avec leur porteur : ils sautent sur le plus proche, à {portee_disette} px."
+msgstr "Your rats no longer die with their carrier: they jump to the nearest, within {portee_disette} px."
+
+msgid "Majesté"
+msgstr "Majesty"
+
+msgid "Vos coups frappent plus fort pendant le règne."
+msgstr "Your blows hit harder during the reign."
+
+msgid "Le règne dure plus longtemps."
+msgstr "The reign lasts longer."
+
+msgid "Sceptre d'os"
+msgstr "Bone Sceptre"
+
+msgid "Le Roi des Rats revient plus vite."
+msgstr "Rat King comes back sooner."
+
+msgid "Cour des miracles"
+msgstr "Court of Miracles"
+
+msgid "Chaque rat consommé allonge davantage le règne."
+msgstr "Each consumed rat lengthens the reign more."
+
+msgid "Gabelle"
+msgstr "Salt Tax"
+
+msgid "Chaque rat consommé vous rend de la vie."
+msgstr "Each consumed rat restores life."
+
+msgid "Trône"
+msgstr "Throne"
+
+msgid "Plus de vie pendant le règne."
+msgstr "More life during the reign."
+
+msgid "Peuple grouillant"
+msgstr "Teeming Folk"
+
+msgid "La Marée de rats qui tourne autour du Roi mord plus fort."
+msgstr "The Rat Tide circling the King bites harder."
+
+msgid "Terreur"
+msgstr "Terror"
+
+msgid "Les ennemis que l'Air de Hamelin fait fuir fuient plus longtemps."
+msgstr "Enemies Hamelin's Air puts to flight flee longer."
+
+msgid "Usurpateur"
+msgstr "Usurper"
+
+msgid "Pendant le règne, le Coup de croc draine davantage."
+msgstr "During the reign, Fang Strike drains more."
+
+msgid "Abdication"
+msgstr "Abdication"
+
+msgid "À la fin du règne, {marees_abdication} marées de rats jaillissent tout autour de vous."
+msgstr "When the reign ends, {marees_abdication} rat tides burst out all around you."
+
+msgid "Régicide"
+msgstr "Regicide"
+
+msgid "Les marées de l'Abdication mordent plus fort."
+msgstr "Abdication's tides bite harder."
+
+msgid "Couronne de queues"
+msgstr "Crown of Tails"
+
+msgid "Chaque ennemi tué pendant le règne le prolonge de {temps_couronne} s."
+msgstr "Each enemy killed during the reign extends it by {temps_couronne} s."
+
+msgid "Légende"
+msgstr "Legend"
+
+msgid "Chaque mort prolonge davantage le règne, et le Roi grandit toutes les {morts_legende} morts."
+msgstr "Each kill extends the reign more, and the King grows every {morts_legende} kills."
+
+msgid "rats accrochés"
+msgstr "latched rats"
+
+msgid "%d · %s/s"
+msgstr "%d · %s/s"
+
+msgid "%d px · %d de large"
+msgstr "%d px · %d wide"
+
+msgid "ralentit"
+msgstr "slows"
+
+msgid "sous le Roi des Rats"
+msgstr "under Rat King"
+
+msgid "fait fuir"
+msgstr "puts to flight"
+
+msgid "rat éclaté"
+msgstr "burst rat"
+
+msgid "%s du coup, nécrotique"
+msgstr "%s of the blow, necrotic"
+
+msgid "maudit mort"
+msgstr "dead cursed"
+
+msgid "ses rats"
+msgstr "its rats"
+
+msgid "passent aux voisins"
+msgstr "go to neighbours"
+
+msgid "mort rongée"
+msgstr "gnawed kill"
+
+msgid "%s PV max · %d mana"
+msgstr "%s max HP · %d mana"
+
+msgid "par rat consommé"
+msgstr "per consumed rat"
+
+msgid "nature"
+msgstr "nature"
+
+msgid "trajet"
+msgstr "path"
+
+msgid "autour de vous"
+msgstr "around you"
+
+msgid "attraction"
+msgstr "pull"
+
+msgid "aucune"
+msgstr "none"
+
+msgid "pendant le règne"
+msgstr "during the reign"
+
+msgid "nécrotique · draine %s"
+msgstr "necrotic · drains %s"
+
+msgid "fait fuir %s"
+msgstr "puts to flight %s"
+
+msgid "tourne autour de vous"
+msgstr "circles around you"

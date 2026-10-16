@@ -151,6 +151,18 @@
    "thrust": [
     "thrust",
     8
+   ],
+   "bite": [
+    "bite",
+    8
+   ],
+   "danse": [
+    "danse",
+    8
+   ],
+   "play": [
+    "play",
+    8
    ]
   }
  },

@@ -839,23 +839,30 @@ func _draw_count(r: Rect2, label_of: String, tint: Color, size_value: int) -> vo
 ## La fiche de la case survolée : à trente-quatre pixels, un nom se tronque.
 ## `aside` : de l'autre côté du panneau, là où se pose la fenêtre des détails.
 func _draw_sheet(sheet: Sheet, anchor: Rect2, aside := false, glossary := true) -> void:
-	var r := _sheet_rect(anchor, _sheet_height(sheet), aside)
-	draw_rect(r, UiPalette.TIP_BACK)
-	draw_rect(r, UiPalette.BORDER, false, 1.0)
+	var r := _sheet_rect(anchor, sheet_height(_font, sheet), aside)
+	paint_sheet(self, _font, sheet, r, Rect2(Vector2.ZERO, size) if glossary else Rect2())
+
+
+## Une fiche dans `r`, sur n'importe quel panneau : celui des manuels, et la barre au survol
+## (jalon 53) — une seule fiche, dessinée une seule fois. `glossary` : le cadre où poser ses
+## encadrés, vide pour s'en passer.
+static func paint_sheet(canvas: Control, font: Font, sheet: Sheet, r: Rect2, glossary := Rect2()) -> void:
+	canvas.draw_rect(r, UiPalette.TIP_BACK)
+	canvas.draw_rect(r, UiPalette.BORDER, false, 1.0)
 
 	var left := r.position.x + SHEET_PAD
 	var width := r.size.x - SHEET_PAD * 2.0
 	var y := r.position.y + SHEET_PAD
-	_text(sheet.title_text, Vector2(left, y + SHEET_LINE), TITLE_SIZE, UiPalette.TEXT)
+	RichText.draw(canvas, font, Vector2(left, y + SHEET_LINE), sheet.title_text, TITLE_SIZE, UiPalette.TEXT)
 	# Ce qui peut l'améliorer : ici plutôt que sur la barre, qui sert à lancer.
-	_text(sheet.subtitle, Vector2(left, y + SHEET_LINE * 2.0 - 1.0), FONT_SIZE, KEYWORD)
+	RichText.draw(canvas, font, Vector2(left, y + SHEET_LINE * 2.0 - 1.0), sheet.subtitle, FONT_SIZE, KEYWORD)
 	y += SHEET_HEADER
 
 	# Le geste d'abord, en toutes lettres ; les nombres ensuite. Une liste de vingt
 	# valeurs ne dit pas ce qu'une compétence **fait**.
-	var paragraph := _description_lines(sheet.description, width)
+	var paragraph := _folded(font, sheet.description, width)
 	for text_value in paragraph:
-		_text(text_value, Vector2(left, y + SHEET_PROSE - 1.0), FONT_SIZE, DESCRIPTION)
+		RichText.draw(canvas, font, Vector2(left, y + SHEET_PROSE - 1.0), text_value, FONT_SIZE, DESCRIPTION)
 		y += SHEET_PROSE
 	if not paragraph.is_empty():
 		y += SHEET_SEPARATION
@@ -863,34 +870,35 @@ func _draw_sheet(sheet: Sheet, anchor: Rect2, aside := false, glossary := true) 
 	for i in sheet.lines.size():
 		var line := sheet.lines[i]
 		if _opens_a_group(sheet.lines, i):
-			_group_band(left, width, y, "" if i == 0 else _group_title(line))
+			_group_band(canvas, font, left, width, y, "" if i == 0 else _group_title(line))
 			y += _group_gap(line, i == 0)
 		var base := y + SHEET_LINE - 2.0
-		_text(line.label_of, Vector2(left, base), FONT_SIZE, UiPalette.HINT)
-		RichText.draw_right(self, _font, Vector2(left, base), left + width, line.value, FONT_SIZE, line.tint)
+		RichText.draw(canvas, font, Vector2(left, base), line.label_of, FONT_SIZE, UiPalette.HINT)
+		RichText.draw_right(canvas, font, Vector2(left, base), left + width, line.value, FONT_SIZE, line.tint)
 		y += SHEET_LINE
 
-	if not glossary:
+	if not glossary.has_area():
 		return
 	var described := PackedStringArray()
 	for line in sheet.lines:
 		described.append(line.label_of)
 		described.append(line.value)
-	GlossaryBoxes.draw(self, _font, r, Rect2(Vector2.ZERO, size), described)
+	GlossaryBoxes.draw(canvas, font, r, glossary, described)
 
 
 ## Le filet d'un groupe, **coupé en son centre par son titre** quand il en a un : c'est
 ## ce qui sépare « ce qu'elle coûte » de « ce qu'elle inflige » d'un coup d'œil.
-func _group_band(left: float, width: float, y: float, title_text: String) -> void:
-	draw_rect(Rect2(left, roundf(y + SHEET_SEPARATION * 0.5), width, 1.0), UiPalette.BORDER)
+static func _group_band(
+	canvas: Control, font: Font, left: float, width: float, y: float, title_text: String
+) -> void:
+	canvas.draw_rect(Rect2(left, roundf(y + SHEET_SEPARATION * 0.5), width, 1.0), UiPalette.BORDER)
 	if title_text.is_empty():
 		return
-	var label_of := title_text
-	var span := RichText.width(_font, label_of, FONT_SIZE)
+	var span := RichText.width(font, title_text, FONT_SIZE)
 	var x := roundf(left + (width - span) * 0.5)
 	# Le fond derrière le titre : sans lui, le filet lui passe au travers.
-	draw_rect(Rect2(x - 3.0, y, span + 6.0, SHEET_SEPARATION + TITLE_BAND), UiPalette.TIP_BACK)
-	_text(label_of, Vector2(x, y + SHEET_SEPARATION + TITLE_BAND - 1.0), FONT_SIZE, KEYWORD)
+	canvas.draw_rect(Rect2(x - 3.0, y, span + 6.0, SHEET_SEPARATION + TITLE_BAND), UiPalette.TIP_BACK)
+	RichText.draw(canvas, font, Vector2(x, y + SHEET_SEPARATION + TITLE_BAND - 1.0), title_text, FONT_SIZE, KEYWORD)
 
 
 ## Ce qu'un filet de groupe prend en hauteur. **La même fonction que le dessin** : deux
@@ -911,10 +919,10 @@ static func _group_title(line: SheetLine) -> String:
 
 
 ## Le paragraphe, replié sur la largeur de la fiche. Vide pour ce qui n'en a pas.
-func _description_lines(text_value: String, width: float) -> PackedStringArray:
-	if text_value.is_empty() or _font == null:
+static func _folded(font: Font, text_value: String, width: float) -> PackedStringArray:
+	if text_value.is_empty() or font == null:
 		return PackedStringArray()
-	return RichText.fold(_font, text_value, width, FONT_SIZE)
+	return RichText.fold(font, text_value, width, FONT_SIZE)
 
 
 ## La fiche de la case, quelle que soit sa sorte.
@@ -924,11 +932,19 @@ func _cell_sheet(manual: Manual, cell: ManualCell) -> Sheet:
 	return _passive_sheet(manual, cell.passive) if cell.passive != null else null
 
 
+## La fiche d'une compétence de la barre, telle qu'elle est à cet instant : la barre la montre
+## au survol (jalon 53).
+func skill_sheet(skill: Skill) -> Sheet:
+	var book := _player.book_of(skill.id)
+	return _skill_sheet(book.manual if book != null else null, skill)
+
+
 ## Chaque caractéristique de la compétence, **tous les nombres par
 ## `Player.resolve()`**, le chemin du lancer. Une ligne qui ne dit rien ne s'écrit
 ## pas ; sans point placé, ceux du premier.
 func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
-	var spent := manual.points_of(skill.id)
+	# Sans livre, l'attaque de départ : ses points sont ceux du joueur.
+	var spent := manual.points_of(skill.id) if manual != null else _player.skill_points(skill.id)
 	var cast := _player.resolve(skill, maxi(spent, 1))
 	var projectile := cast.keywords.has(Keywords.PROJECTILE)
 	var out: Array[SheetLine] = []
@@ -937,7 +953,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	if cast.bonus_levels != 0:
 		points_line += " (%+d)" % cast.bonus_levels
 	out.append(SheetLine.new(Group.STATE, Texts.t("points"), points_line, UiPalette.TEXT))
-	if manual.level() < skill.required_manual_level:
+	if manual != null and manual.level() < skill.required_manual_level:
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("verrouillée"),
 			Texts.t("niveau %d du manuel") % skill.required_manual_level,
@@ -1238,6 +1254,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	# ajoute ses fourchettes à tout ce qui est « sort » —, et les afficher mentirait.
 	# Une malédiction ne frappe pas non plus, mais sa zone et ce qu'elle pose sont ce
 	# qu'elle fait.
+	out.append_array(_reign_lines(skill))
 	if not skill.strikes():
 		var hidden := [Group.DAMAGE, Group.ESTIMATE]
 		if skill.inflicted_state < 0:
@@ -1644,6 +1661,7 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 	if cast.palimpsest > 0.0 or cast.precipitate > 0.0:
 		out.append_array(_reaction_lines(cast))
 	out.append_array(_blade_lines(skill, cast))
+	out.append_array(_piper_lines(skill, cast))
 
 	return Sheet.new(
 		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,
@@ -1715,6 +1733,90 @@ func _blade_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
 	return out
 
 
+## Ce que le règne du Roi des Rats change à ce geste (jalon 53), en dernier bloc sous son nom ;
+## sur le Roi, les trois à la fois. **En or pendant le règne** : c'est alors ce qui s'applique.
+## Le règne change le lancer, pas `resolve()` : sans ce bloc, la fiche le tairait.
+func _reign_lines(skill: Skill) -> Array[SheetLine]:
+	var king_skill := SkillCatalog.by_id(SkillStats.KING_SKILL)
+	var king := _player.resolve(king_skill, maxi(_player.skill_points(king_skill.id), 1))
+	var drain := StatMod.percentage(SkillStats.KING_DRAIN + king.usurper)
+	var flight := "%.1f s" % (SkillStats.AIR_FEAR + king.terror)
+	var said := []
+	var heading := RichText.capitalized(Texts.t("sous le Roi des Rats"))
+	match skill.id:
+		SkillStats.BITE_SKILL:
+			said.append([Texts.t("nature"), DamageType.name(DamageType.Kind.NECROTIC)])
+			said.append([Texts.t("drain"), Texts.t("%s des dégâts") % drain])
+		SkillStats.TIDE_SKILL:
+			said.append([Texts.t("trajet"), Texts.t("autour de vous")])
+			if king.teeming > 0.0:
+				said.append([Texts.t("dégâts"), _increase(1.0 + king.teeming * 0.01)])
+		SkillStats.AIR_SKILL:
+			said.append([Texts.t("attraction"), Texts.t("aucune")])
+			said.append([Texts.t("fait fuir"), flight])
+		SkillStats.KING_SKILL:
+			heading = RichText.capitalized(Texts.t("pendant le règne"))
+			said.append([
+				SkillCatalog.by_id(SkillStats.BITE_SKILL).displayed_name(),
+				Texts.t("nécrotique · draine %s") % drain
+			])
+			said.append([SkillCatalog.by_id(SkillStats.TIDE_SKILL).displayed_name(), Texts.t("tourne autour de vous")])
+			said.append([
+				SkillCatalog.by_id(SkillStats.AIR_SKILL).displayed_name(), Texts.t("fait fuir %s") % flight
+			])
+	var tint := FULL if _player.reigns() else UiPalette.TEXT
+	var out: Array[SheetLine] = []
+	for pair: Array in said:
+		out.append(SheetLine.new(Group.EFFECT, pair[0], pair[1], tint, heading))
+	return out
+
+
+## Ce que font les gestes du joueur de flûte (jalon 53) : ses rats, leur éclat, ce qui dure.
+func _piper_lines(skill: Skill, cast: SkillStats) -> Array[SheetLine]:
+	var said := []
+	if cast.rats > 0.0:
+		said.append([
+			Texts.t("rats accrochés"),
+			Texts.t("%d · %s/s") % [
+				int(cast.rats), StatMod.percentage(roundi(StatusEffects.GNAW_PART * 100.0 * (1.0 + cast.fangs * 0.01)))
+			]
+		])
+	match skill.shape:
+		Skill.Shape.TIDE:
+			said.append([
+				Texts.t("portée"),
+				Texts.t("%d px · %d de large") % [
+					roundi(cast.radius), roundi(SkillStats.TIDE_WIDTH * (1.0 + cast.breadth * 0.01))
+				]
+			])
+		Skill.Shape.MELODY:
+			said.append([Texts.t("ralentit"), StatMod.percentage(roundi(SkillStats.AIR_SLOW + cast.torpor))])
+		Skill.Shape.DANCE:
+			said.append([
+				Texts.t("rat éclaté"),
+				Texts.t("%s du coup, nécrotique") % StatMod.percentage(
+					roundi(SkillStats.BURST_PART * 100.0 * maxf(1.0 + cast.ossuary * 0.01, 0.0))
+				)
+			])
+	if skill.id == SkillStats.CONTAGION_SKILL:
+		said.append([Texts.t("maudit mort"), Texts.t("éclat de %d px") % roundi(SkillStats.CONTAGION_REACH)])
+		said.append([Texts.t("ses rats"), Texts.t("passent aux voisins")])
+	elif skill.id == SkillStats.KING_SKILL:
+		said.append([Texts.t("par rat consommé"), "+%.1f s" % (SkillStats.KING_PER_RAT + cast.court)])
+	elif skill.id == SkillStats.FEAST_SKILL:
+		said.append([
+			Texts.t("mort rongée"),
+			Texts.t("%s PV max · %d mana") % [
+				StatMod.percentage(roundi(SkillStats.FEAST_LIFE_BASE * 100.0 + cast.feast_life)),
+				roundi(SkillStats.FEAST_MANA_BASE + cast.feast_mana)
+			]
+		])
+	var out: Array[SheetLine] = []
+	for pair: Array in said:
+		out.append(SheetLine.new(Group.EFFECT, pair[0], pair[1], UiPalette.TEXT))
+	return out
+
+
 ## Une chance, bornée à 100 %.
 static func _chance(value: float) -> String:
 	return StatMod.percentage(roundi(minf(value, 1.0) * 100.0))
@@ -1738,10 +1840,10 @@ static func _opens_a_group(lines: Array[SheetLine], index: int) -> bool:
 
 ## Mesurée sur les lignes mêmes que le dessin écrit, paragraphe et titres de groupe
 ## compris.
-func _sheet_height(sheet: Sheet) -> float:
+static func sheet_height(font: Font, sheet: Sheet) -> float:
 	var lines := sheet.lines
 	var h := SHEET_PAD * 2.0 + SHEET_HEADER + SHEET_LINE * float(lines.size())
-	var paragraph := _description_lines(sheet.description, SHEET_W - SHEET_PAD * 2.0)
+	var paragraph := _folded(font, sheet.description, SHEET_W - SHEET_PAD * 2.0)
 	if not paragraph.is_empty():
 		h += SHEET_PROSE * float(paragraph.size()) + SHEET_SEPARATION
 	for i in lines.size():

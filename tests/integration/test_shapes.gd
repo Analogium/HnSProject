@@ -7067,3 +7067,183 @@ func test_a_tocsin_rings_out_of_the_slain() -> void:
 	var small: Array = _hammers().filter(func(h: BlessedHammer) -> bool: return h != hammer)
 	assert_eq(small.size(), 1)
 	assert_almost_eq((small[0] as BlessedHammer)._cast.total_min(), cast.total_min() * 0.4, 0.01)
+
+
+# --------------------------------------------------------------------------
+# Le joueur de flûte (jalon 53)
+# --------------------------------------------------------------------------
+
+## Le manuel du joueur de flûte, ces nœuds de l'arbre de `skill_id` investis dans l'ordre — un
+## point par mention —, la compétence sur la troisième case, et une arme qui ne critique jamais.
+func _learn_piper(skill_id: String, nodes := []) -> void:
+	_learn_class(Character.PIPER, [skill_id])
+	for id: String in nodes:
+		assert_true(_p.invest(Rack.CLASS_SLOT, skill_id + "_" + id), id)
+	var blunt := Weapons.bare(SkillCatalog.by_id(skill_id).cadence == Skill.Cadence.CAST)
+	blunt.base.crit_chance = 0.0
+	_p.equip(blunt, EquipmentSlots.WEAPON)
+
+
+## Une cible qui porte des états : les rats s'y accrochent.
+func _carrier(position: Vector2) -> Hurtbox:
+	var h := _target(position)
+	h.states = StatusEffects.new()
+	return h
+
+
+## Le Coup de croc mord le premier corps de sa ligne et lui accroche un rat, qui ronge une part
+## du coup ; le second, derrière, n'est pas mordu.
+func test_a_bite_latches_a_rat_on_the_first_body_only() -> void:
+	_learn_piper("rat_bite")
+	var first := _carrier(Vector2(20, 0))
+	var behind := _carrier(Vector2(34, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_hits(first), 1)
+	assert_eq(_hits(behind), 0, "une morsure, un corps")
+	assert_eq(first.states.rats(), 1)
+	var hit: float = _received_all[first][0]
+	assert_almost_eq(first.states.gnaw_per_rat(), hit * StatusEffects.GNAW_PART, 1e-3)
+
+
+## La Gueule béante : la morsure devient un arc, et chaque mordu reçoit son rat.
+func test_the_gaping_maw_bites_the_whole_arc() -> void:
+	_learn_piper("rat_bite", ["snout", "snout", "gaping_maw"])
+	var above := _carrier(Vector2(18, -6))
+	var below := _carrier(Vector2(18, 6))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(4)
+	assert_eq(above.states.rats(), 1)
+	assert_eq(below.states.rats(), 1)
+
+
+## La Marée mord une fois chaque corps qu'elle couvre et lui accroche un rat ; les Trois rigoles
+## la font partir en trois branches.
+func test_the_tide_bites_each_body_once() -> void:
+	_learn_piper("rat_tide")
+	var near := _carrier(Vector2(60, 0))
+	var far := _carrier(Vector2(150, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(220.0 / SkillStats.TIDE_SPEED + 0.2)
+	assert_eq(_hits(near), 1)
+	assert_eq(_hits(far), 1)
+	assert_eq(near.states.rats(), 1)
+
+
+func test_three_rills_send_three_branches() -> void:
+	_learn_piper("rat_tide", ["broad_front", "broad_front", "three_rills"])
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_children_of(RatTide).size(), 3)
+
+
+## L'Air de Hamelin frappe son cercle en nécrotique et ralentit ; il s'éteint à la touche.
+func test_the_air_gnaws_and_slows_its_circle() -> void:
+	_learn_piper("hamelin_air")
+	var inside := _carrier(Vector2(60, 0))
+	var outside := _carrier(Vector2(120, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(2)
+	assert_eq(_hits(inside), 1)
+	assert_eq(_hits(outside), 0)
+	assert_almost_eq(inside.states.speed_factor, 1.0 - SkillStats.AIR_SLOW * 0.01, 1e-6)
+	_p._recharges[2] = 0.0
+	assert_true(_p.cast_slot(2))
+	assert_false(_p.lit("hamelin_air"))
+
+
+## La Danse macabre avance d'un pas à chaque coup ; le dernier fait éclater les rats de ce qui
+## entoure sa cible, en nécrotique.
+func test_the_dance_advances_and_bursts_the_rats_around() -> void:
+	_learn_piper("danse_macabre")
+	var carrier := _carrier(Vector2(100, 0))
+	carrier.states.add_rats(3, 1.0, _p.states)
+	_p._aim_with_mouse = false
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(_p.resolve(SkillCatalog.by_id("danse_macabre"), 1).use_time)
+	assert_gt(_p.global_position.x, SkillStats.DANCE_STRIDE * 2.5, "trois pas")
+	assert_eq(carrier.states.rats(), 0, "ses rats ont éclaté")
+	assert_gt(_hits(carrier), 0)
+
+
+## Un maudit de la Contagion qui meurt éclate sur ses voisins et leur passe ses rats.
+func test_a_cursed_carrier_passes_its_rats_on_when_it_dies() -> void:
+	_learn_piper("contagion")
+	var dying := _grunt(Vector2(80, 0))
+	var heir := _grunt(Vector2(110, 0))
+	await wait_physics_frames(2)
+	_p._aim_with_mouse = false
+	_p.facing = Vector2.RIGHT
+	var curse := _p.resolve(SkillCatalog.by_id("contagion"), 1)
+	PutridCurse.fall(_effects, Vector2(90, 0), curse, _p.states, _p)
+	await wait_physics_frames(2)
+	assert_true(dying.states.active(StatusEffects.Kind.CURSED))
+	dying.states.add_rats(4, 1.0, _p.states)
+	var full := heir.health
+	dying.die()
+	await wait_physics_frames(2)
+	assert_eq(heir.states.rats(), 4, "ses rats passent au voisin")
+	assert_lt(heir.health, full, "et il éclate")
+
+
+## Sous le Festin, un ennemi tué par le rongement rend du mana.
+func test_a_gnawed_kill_feeds_the_piper_under_the_feast() -> void:
+	_learn_piper("feast")
+	assert_true(Gestures.cast(_p, 2))
+	assert_true(_p.lit("feast"))
+	var prey := _grunt(Vector2(200, 0))
+	await wait_physics_frames(2)
+	prey._set_health(1.0)
+	prey.states.add_rats(1, 100.0, _p.states)
+	_p._set_mana(0.0)
+	# Sans EnemyManager : ses états avancent à la main.
+	prey.suffer_states(0.1)
+	assert_true(prey.is_dead)
+	assert_gt(_p.mana, 0.0)
+
+
+## Le Roi des Rats consomme les rats alentour ; chacun allonge le règne. Le Coup de croc y draine.
+func test_the_rat_king_consumes_the_rats_and_reigns_longer() -> void:
+	_learn_piper("rat_king")
+	var a := _carrier(Vector2(100, 0))
+	var b := _carrier(Vector2(-100, 0))
+	a.states.add_rats(3, 1.0, _p.states)
+	b.states.add_rats(2, 1.0, _p.states)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_true(_p.reigns())
+	assert_eq(a.states.rats() + b.states.rats(), 0)
+	var reign := _p._lit["rat_king"] as Buff
+	assert_almost_eq(reign.remaining(), 8.0 + 5.0 * SkillStats.KING_PER_RAT, 0.05)
+
+
+## La Légende : toutes les `LEGEND_KILLS` morts du règne, le Roi prend la taille suivante ; la fin
+## du règne rend la planche du joueur de flûte.
+func test_the_legend_grows_the_king_then_gives_the_piper_back() -> void:
+	_learn_piper("rat_king", ["reign", "court", "tail_crown", "legend"])
+	var look := _p.sprite.archetype
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_p.sprite.archetype, SkillStats.KING_LOOK)
+	for i in SkillStats.LEGEND_KILLS:
+		_p._reign_kill()
+	assert_eq(_p.sprite.archetype, SkillStats.KING_GROWN[0])
+	_p.extinguish(SkillStats.KING_SKILL)
+	assert_eq(_p.sprite.archetype, look)
+
+
+## Effrayé, il fuit au lieu d'avancer, le temps qu'on lui a donné. Sans EnemyManager, sa fuite
+## avance à la main.
+func test_a_frightened_enemy_runs_away() -> void:
+	var grunt := _grunt(Vector2(40, 0))
+	await wait_physics_frames(2)
+	grunt.frighten(0.5, _p.global_position)
+	for i in 20:
+		grunt.flee(1.0 / 60.0)
+	assert_gt(grunt.global_position.x, 45.0)
+	assert_true(grunt.afraid())
+	for i in 20:
+		grunt.flee(1.0 / 60.0)
+	assert_false(grunt.afraid(), "une demi-seconde, pas plus")

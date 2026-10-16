@@ -114,12 +114,15 @@ func set_state(moving: bool, facing: Vector2) -> void:
 ## `spell` : un sort joue le lancer, quand le corps en a un — les grilles n'ont que
 ## le coup. `duration` étire le geste sur ce temps (jalon 47) ; zéro, sa cadence propre.
 ## `family` : le geste d'une attaque (`Skill.GESTURE`), s'il est sur la planche.
-## `held` : ce que la main tient pour ce geste seul, vide pour l'arme.
+## `held` : ce que la main tient pour ce geste seul, vide pour l'arme. Un sort lancé instrument
+## en main se **joue** (`play`, jalon 53), si la planche a ce geste.
 func attack(spell := false, duration := 0.0, family := "", held := "") -> void:
 	_attacking = true
 	_anim = "attack"
 	_hold(held)
 	var cast := "cast_%s" % _dir
+	if not held.is_empty() and sprite_frames.has_animation("play_%s" % _dir):
+		cast = "play_%s" % _dir
 	var gesture := cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir
 	if not family.is_empty() and sprite_frames.has_animation("%s_%s" % [family, _dir]):
 		gesture = "%s_%s" % [family, _dir]

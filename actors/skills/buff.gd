@@ -182,6 +182,12 @@ func prolong(seconds: float) -> void:
 		_age = maxf(_age - seconds, 0.0)
 
 
+## La Couronne de queues du Roi des Rats (jalon 53) : sa durée s'allonge, au-delà de la première.
+func lengthen(seconds: float) -> void:
+	if _lifetime > 0.0:
+		_lifetime += seconds
+
+
 ## La Résonance : chaque prolongation vaut `RESONANCE_DECAY` de la précédente (jalon 49).
 func resonate(seconds: float) -> void:
 	prolong(seconds * pow(SkillStats.RESONANCE_DECAY, _resonated))

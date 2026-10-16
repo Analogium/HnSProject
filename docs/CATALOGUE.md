@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-76 bases d'objets, 46 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
+76 bases d'objets, 53 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -878,6 +878,110 @@ rempli depuis le jalon 41, celui du Vive lame depuis le jalon 50.
 | Canon | Familier | Contre-chant (1) | 2 | +5 % dégâts de l'écho |
 
 24 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
+
+### Manuel du joueur de flûte — `manual_piper`
+
+| case | sorte | ouvre à | points | coût | cadence | forme | par point |
+|---|---|---|---|---|---|---|---|
+| Coup de croc | attaque physique | niveau 1 | 5 | 5 mana | cadence de l'arme | bite · rayon 40 | 10 · 13 · 16 · 20 · 25 |
+| Marée de rats | sort physique | niveau 2 | 5 | 10 mana | 0.50 s | tide · rayon 220 | 14 · 18 · 23 · 29 · 36 |
+| Air de Hamelin | sort nécrotique | niveau 3 | 5 | 0 mana | recharge 1.00 s | melody · rayon 90 · toutes les 0.50 s · draine 3 mana/s | 4 · 5 · 6 · 8 · 10 |
+| Danse macabre | attaque physique | niveau 5 | 5 | 9 mana | 130 % du temps de l'arme | dance · rayon 64 | 10 · 13 · 16 · 20 · 25 |
+| Contagion | sort nécrotique | niveau 7 | 5 | 12 mana | 0.40 s · recharge 4.00 s | curse · 6.0 s · rayon 60 | 20 · 26 · 33 · 41 · 50 |
+| Festin | buff | niveau 10 | 5 | 0 mana | recharge 1.00 s | buff · draine 2 mana/s | Festin : +20 % dégâts de rongement au premier point, puis +5 % par point |
+| Roi des Rats | sort nécrotique | niveau 14 | 5 | 20 mana | 0.50 s · recharge 30.00 s | buff · 8.0 s | Règne : +10 % de dégâts nécrotiques amplifiés au premier point, puis +3 par point |
+
+| nœud | compétence | relié à (points demandés) | points | par point |
+|---|---|---|---|---|
+| Mâchoire | Coup de croc | — | 5 | +12 % de dégâts amplifiés |
+| Long museau | Coup de croc | — | 3 | +15 % de rayon accru |
+| Maigre pitance | Coup de croc | — | 3 | -10 % de coût en mana réduit |
+| Dents longues | Coup de croc | Mâchoire (1) | 3 | +15 % rongement de ses rats |
+| Double ration | Coup de croc | Mâchoire (2) | 2 | +1 rats accrochés par coup |
+| Croc-en-jambe | Coup de croc | Long museau (1) | 2 | +10 % ralentissement de la cible mordue |
+| Appétit | Coup de croc | Dents longues (1) | 3 | +5 % dégâts par rat déjà accroché |
+| Dent vive | Coup de croc | Maigre pitance (1) | 3 | -8 % de temps du geste réduit |
+| Gueule béante | Coup de croc | Long museau (2) | 1 | -25 % de dégâts atténués |
+| Mâchoires de fer | Coup de croc | Gueule béante (1) | 2 | +1 rats en plus au premier mordu |
+| Rat d'égout | Coup de croc | Appétit (2) | 1 | +1 marée de l'égout |
+| Crue | Coup de croc | Rat d'égout (1) | 2 | +1 rats en plus de la marée d'égout |
+| Fourmillement | Marée de rats | — | 5 | +10 % de dégâts amplifiés |
+| Longue course | Marée de rats | — | 3 | +15 % de rayon accru |
+| Large front | Marée de rats | — | 3 | +20 % largeur de la marée |
+| Prolifique | Marée de rats | Fourmillement (1) | 3 | +1 rats en plus sur un porteur |
+| Remous | Marée de rats | Large front (1) | 2 | +30 recul |
+| Faux pas | Marée de rats | Remous (1) | 2 | +0.2 secondes d'étourdissement |
+| Seconde vague | Marée de rats | Fourmillement (2) | 2 | +1 marées en plus · +15 % de temps du geste accru |
+| Égout | Marée de rats | Seconde vague (1) | 3 | +1 mana par ennemi touché |
+| Trois rigoles | Marée de rats | Large front (2) | 1 | +2 branches en plus · -20 % de dégâts atténués |
+| Delta | Marée de rats | Trois rigoles (1) | 1 | +2 branches en plus |
+| Contre-courant | Marée de rats | Longue course (2) | 1 | +1 retour de la marée |
+| Mascaret | Marée de rats | Contre-courant (1) | 2 | +15 % dégâts du retour |
+| Rats de cale | Marée de rats | Prolifique (1) | 2 | +1 rats en plus sous l'Air de Hamelin |
+| Envoûtement | Air de Hamelin | — | 5 | +12 % de dégâts amplifiés |
+| Écho lointain | Air de Hamelin | — | 3 | +15 % de rayon accru |
+| Souffle court | Air de Hamelin | — | 3 | -15 % de mana drainé réduit |
+| Ensorcellement | Air de Hamelin | Écho lointain (1) | 3 | +20 % de force d'aspiration accrue |
+| Torpeur | Air de Hamelin | Envoûtement (1) | 3 | +10 % ralentissement en plus |
+| Mélopée | Air de Hamelin | Envoûtement (2) | 3 | +4 % dégâts subis par seconde d'air |
+| Pavane | Air de Hamelin | Souffle court (1) | 2 | +8 % de vitesse accrue |
+| Rats charmés | Air de Hamelin | Torpeur (1) | 2 | +1 rats charmés en plus |
+| Carrousel | Air de Hamelin | Ensorcellement (2) | 1 | +1 carrousel |
+| Farandole | Air de Hamelin | Carrousel (1) | 2 | +10 % dégâts aux voisins heurtés |
+| Sérénade | Air de Hamelin | Écho lointain (2) | 1 | +1 air joué au point visé |
+| Requiem | Air de Hamelin | Sérénade (1) | 2 | +20 % dégâts de la note funèbre |
+| Funèbre | Danse macabre | — | 5 | +10 % de dégâts amplifiés |
+| Grand écart | Danse macabre | — | 3 | +15 % de rayon accru |
+| Glissade | Danse macabre | — | 3 | +8 longueur des pas |
+| Ossuaire | Danse macabre | Funèbre (1) | 3 | +12 % dégâts par rat éclaté |
+| Temps de plus | Danse macabre | Glissade (1) | 2 | +1 coups en plus · +15 % de temps du geste accru |
+| Pirouette | Danse macabre | Grand écart (1) | 2 | +40 % dégâts de la pirouette |
+| Fossoyeur | Danse macabre | Ossuaire (1) | 2 | +1 mana par rat éclaté |
+| Sauve-qui-peut | Danse macabre | Grand écart (2) | 2 | +0.5 secondes de fuite |
+| Chassé-croisé | Danse macabre | Glissade (2) | 2 | +40 recul après la danse |
+| Danse des morts | Danse macabre | Ossuaire (2) | 1 | +1 rats gardés à l'éclat · -50 % dégâts par rat éclaté |
+| Ritournelle | Danse macabre | Danse des morts (1) | 1 | +30 % rongement des rats gardés |
+| Totentanz | Danse macabre | Funèbre (2) | 1 | +1 rat éclaté à chaque coup |
+| Charnier | Danse macabre | Totentanz (1) | 3 | +8 % dégâts du sol des rats éclatés |
+| Puanteur | Contagion | — | 5 | +15 % effet de la malédiction |
+| Foyer | Contagion | — | 3 | +15 % de rayon accru |
+| Latence | Contagion | — | 3 | +20 % de durée accrue |
+| Accès de fièvre | Contagion | Puanteur (1) | 3 | +15 % dégâts de l'éclat du mort |
+| Propagation | Contagion | Foyer (1) | 2 | +1 voisins en plus |
+| Lazaret | Contagion | Latence (1) | 2 | +6 % dégâts infligés retirés aux maudits |
+| Porteur sain | Contagion | Latence (2) | 2 | +1 rats posés sur les maudits |
+| Bubons noirs | Contagion | Puanteur (2) | 3 | +10 % rongement sur les maudits |
+| Peste galopante | Contagion | Propagation (1) | 1 | +1 malédiction transmise |
+| Grande peste | Contagion | Peste galopante (1) | 2 | +0.5 secondes gagnées par transmission |
+| Peste noire | Contagion | Accès de fièvre (2) | 1 | +1 malédiction sur tous les porteurs · -40 % effet de la malédiction |
+| Rats pesteux | Contagion | Bubons noirs (1) | 3 | +1 rats passés au voisin |
+| Voracité | Festin | — | 5 | +12 % dégâts de rongement |
+| Ripaille | Festin | — | 3 | +1 % PV max rendus par mort rongée |
+| Table ouverte | Festin | — | 3 | +1 mana par mort rongée |
+| Grignotage | Festin | — | 3 | +1 secondes de vie des rats |
+| Insatiable | Festin | Voracité (1) | 3 | +1 rats au plus par ennemi |
+| Ventre creux | Festin | Ripaille (1) | 2 | +20 % rongement à mi-vie |
+| Embonpoint | Festin | Ripaille (2) | 2 | +3 % de PV accrus |
+| Mastication | Festin | Voracité (2) | 3 | +10 % cadence du rongement |
+| Indigestion | Festin | Mastication (1) | 2 | +15 % éclat des morts rongées |
+| Banquet | Festin | Table ouverte (2) | 1 | +1 soin par rat qui ronge · +2 mana drainé |
+| Agapes | Festin | Banquet (1) | 2 | +25 % mana rendu sous le Banquet |
+| Disette | Festin | Insatiable (2) | 1 | +1 rats qui changent d'hôte · -20 % dégâts de rongement |
+| Majesté | Roi des Rats | — | 5 | +10 % de dégâts d'attaque amplifiés · +10 % de dégâts de sort amplifiés |
+| Règne | Roi des Rats | — | 3 | +1 durée |
+| Sceptre d'os | Roi des Rats | — | 3 | -10 % de recharge réduite |
+| Cour des miracles | Roi des Rats | Règne (1) | 3 | +0.1 secondes par rat consommé |
+| Gabelle | Roi des Rats | Majesté (1) | 2 | +1 % PV max par rat consommé |
+| Trône | Roi des Rats | Sceptre d'os (1) | 2 | +10 % de PV accrus |
+| Peuple grouillant | Roi des Rats | Majesté (2) | 2 | +15 % dégâts de la marée du Roi |
+| Terreur | Roi des Rats | Trône (1) | 2 | +0.5 secondes de fuite en plus |
+| Usurpateur | Roi des Rats | Gabelle (1) | 2 | +5 % drain du Coup de croc |
+| Abdication | Roi des Rats | Règne (2) | 1 | +1 marée à la fin du règne |
+| Régicide | Roi des Rats | Abdication (1) | 2 | +20 % dégâts de la marée d'abdication |
+| Couronne de queues | Roi des Rats | Cour des miracles (1) | 1 | +1 secondes de règne par mort |
+| Légende | Roi des Rats | Couronne de queues (1) | 3 | +0.1 secondes en plus par mort |
+
+35 destinations de points pour 20 gagnés ; chaque arbre a son propre pool de 20.
 
 ## Arbre de passifs
 

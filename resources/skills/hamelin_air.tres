@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Skill" format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+
+[resource]
+script = ExtResource("1_comp")
+id = "hamelin_air"
+name = "Air de Hamelin"
+description = "Une mélodie autour de vous attire, ralentit et ronge les ennemis."
+nature = 4
+cadence = 1
+shape = 56
+cooldown = 1.00
+mana_per_second = 3.0
+radius = 90.0
+period = 0.5
+damage_per_point = Array[float]([4.0, 5.0, 6.0, 8.0, 10.0])
+required_manual_level = 3

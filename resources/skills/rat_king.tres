@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="Skill" format=3]
+
+[ext_resource type="Script" path="res://core/skill.gd" id="1_comp"]
+[ext_resource type="Script" path="res://core/talent_line.gd" id="3_ligne"]
+[ext_resource type="Script" path="res://core/skill_buff.gd" id="4_buff"]
+
+[sub_resource type="Resource" id="L_regne_necrose"]
+script = ExtResource("3_ligne")
+stat = "damage"
+scope = "necrotic"
+percentage = true
+more = true
+value_per_point = 3.0
+first_point_bonus = 7.0
+
+[sub_resource type="Resource" id="B_regne"]
+script = ExtResource("4_buff")
+id = "reign"
+name = "Règne"
+lines = Array[ExtResource("3_ligne")]([SubResource("L_regne_necrose")])
+
+[resource]
+script = ExtResource("1_comp")
+id = "rat_king"
+name = "Roi des Rats"
+description = "Consomme les rats accrochés alentour et vous change en Roi des Rats."
+nature = 4
+cadence = 1
+shape = 11
+cast_time = 0.50
+cooldown = 30.0
+duration = 8.0
+mana_cost = 20.0
+declared_points_max = 5
+buffs = Array[ExtResource("4_buff")]([SubResource("B_regne")])
+required_manual_level = 14

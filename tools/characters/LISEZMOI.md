@@ -216,9 +216,12 @@ Pièges payés :
   interdit (`model_3d.renders`).
 - **Le détourage** : un rendu « studio » a un fond en dégradé (halo clair au
   centre, sol). La médiane des bords ne le reconnaît pas, et le joueur de flûte
-  sortait avec une plaque au-dessus du chapeau et sous les pieds :
-  `model_3d.silhouette` retire en plus le fond qui varie doucement depuis les
-  bords, et le trait d'horizon.
+  sortait avec une plaque au-dessus du chapeau et sous les pieds. À l'inverse, les
+  jambes gris pâle du Roi des Rats, sur un sol gris pâle, partaient avec le fond, et
+  son modèle 3D sortait sans jambes (jalon 53). Aucun tri par couleur ne tenait les
+  deux cas : `model_3d.silhouette` passe par **GrabCut** (OpenCV), dans un cadre qui
+  ne laisse que les bords au fond (`pip install opencv-python-headless`, dans le
+  Python de WSL).
 - **Le gréage local d'un corps élargi** (`width`) : la pose A écrite pour lui est
   celle des images, élargie elle aussi, sinon les articulations tombent au centre.
 - **Le concept** : « chibi » dans le prompt donne des bébés ; le mot « rat » donne des

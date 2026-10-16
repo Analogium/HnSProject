@@ -721,8 +721,8 @@ func test_the_details_stay_in_frame_beside_the_sheet() -> void:
 			if details.lines.is_empty():
 				continue
 			var sheet := _panel._cell_sheet(book.manual, cell)
-			var main := _panel._sheet_rect(anchor, _panel._sheet_height(sheet))
-			var aside := _panel._sheet_rect(anchor, _panel._sheet_height(details), true)
+			var main := _panel._sheet_rect(anchor, ManualPanel.sheet_height(_panel._font, sheet))
+			var aside := _panel._sheet_rect(anchor, ManualPanel.sheet_height(_panel._font, details), true)
 			var on_screen := Rect2(aside.position + _panel.global_position, aside.size)
 			assert_true(framing.encloses(on_screen), "« %s » : les détails sortent du cadrage" % cell.skill.id)
 			assert_false(main.intersects(aside), "« %s » : les détails couvrent la fiche" % cell.skill.id)
@@ -1079,7 +1079,7 @@ func test_the_sheet_stays_in_frame() -> void:
 
 
 func _measure(sheet: ManualPanel.Sheet, anchor: Rect2, framing: Rect2, what: String) -> void:
-	var r: Rect2 = _panel._sheet_rect(anchor, _panel._sheet_height(sheet))
+	var r: Rect2 = _panel._sheet_rect(anchor, ManualPanel.sheet_height(_panel._font, sheet))
 	var on_screen := Rect2(r.position + _panel.global_position, r.size)
 	assert_true(
 		framing.encloses(on_screen), "« %s » : la fiche %s sort de %s" % [what, on_screen, framing]
@@ -1198,3 +1198,27 @@ func test_the_chains_sheet_shows_what_they_share() -> void:
 	var lines := _sheet_of(book, "judgment_chains")
 	# Le premier touché, deux, un Maillon ; 30 %, et 6 de Solidarité.
 	assert_eq(_values(lines, "enchaînés"), PackedStringArray(["4 · 36 % partagés"]))
+
+
+## Ce que le règne du Roi des Rats change se lit sur la fiche, sous son nom, en or pendant le
+## règne (jalon 53) : le règne change le lancer, pas `resolve()`.
+func test_the_bite_sheet_tells_what_the_reign_changes() -> void:
+	var book := Item.new(Character.CLASSES[Character.PIPER]["manual"])
+	book.manual.gain_experience(999999)
+	_player.rack.seat(book)
+	assert_true(_player.invest(Rack.CLASS_SLOT, SkillStats.BITE_SKILL))
+	var bite := SkillCatalog.by_id(SkillStats.BITE_SKILL)
+	var heading := RichText.capitalized(Texts.t("sous le Roi des Rats"))
+	var reign := _panel.skill_sheet(bite).lines.filter(func(l: ManualPanel.SheetLine) -> bool:
+		return l.heading == heading)
+	assert_eq(reign.size(), 2, "nature et drain")
+	assert_eq((reign[0] as ManualPanel.SheetLine).tint, UiPalette.TEXT, "hors du règne")
+
+
+## La barre montre la fiche de toute case, l'attaque de départ comprise, qui n'a pas de livre.
+func test_a_starting_skill_has_a_sheet_without_a_book() -> void:
+	var skill := SkillCatalog.by_id(SkillCatalog.ID_ATTACK)
+	assert_null(_player.book_of(skill.id))
+	var sheet := _panel.skill_sheet(skill)
+	assert_eq(sheet.title_text, skill.displayed_name())
+	assert_gt(sheet.lines.size(), 0)

@@ -46,6 +46,8 @@ const DECOR_JITTER := 8.0
 @onready var zone_loot: Node2D = $Entities/Loot
 @onready var town_loot: Node2D = $Entities/Town/Loot
 @onready var ground: Node2D = $Ground
+## Le sol de la ville, sous ce qu'on y lance : celui de la zone quittée est figé sous elle.
+var town_ground := Node2D.new()
 @onready var decor: Node2D = $Entities/Decor
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
@@ -156,6 +158,12 @@ var _spawned := 0
 
 
 func _ready() -> void:
+	town_ground.name = "TownGround"
+	town_ground.visible = false
+	town_ground.add_to_group(DashTrail.GROUND_LAYER)
+	add_child(town_ground)
+	# Juste après celui de la zone : sous les corps, comme lui.
+	move_child(town_ground, ground.get_index() + 1)
 	var ts := TilesetBuilder.build()
 	floor_layer.tile_set = ts
 	wall_layer.tile_set = ts
@@ -180,6 +188,7 @@ func _ready() -> void:
 	manuals.bind(player)
 	passive_tree.bind(player)
 	bar.bind(player)
+	bar.manuals = manuals
 	flasks.bind(player)
 	# Ce qu'on range et qui ne tient plus dans le sac tombe devant soi, comme ce
 	# qu'on jette : un seul chemin pour poser un objet au sol.
@@ -630,10 +639,11 @@ func open_portal() -> void:
 func _set_town(on: bool) -> void:
 	in_town = on
 	town.visible = on
+	town_ground.visible = on
 	area_marks.visible = not on
 	loot = town_loot if on else zone_loot
 	portal.hide()
-	for node in projectiles.get_children() + town_loot.get_children():
+	for node in projectiles.get_children() + town_loot.get_children() + town_ground.get_children():
 		node.queue_free()
 	if not on and inventory.storage_open():
 		inventory.toggle()

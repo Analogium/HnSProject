@@ -22,9 +22,18 @@ const EMPTY := Color(0.16, 0.15, 0.20, 0.85)
 const SELECTED_FILL := Color(0.95, 0.82, 0.30)
 ## Le voile de recharge descend : à vingt-six pixels, un arc ne se lit pas.
 const COOLDOWN := Color(0.02, 0.02, 0.04, 0.62)
+## Le règne du Roi des Rats (jalon 53, choisis sur planche) : la couronne en coin des cases
+## qu'il change, et sa bande au-dessus de la barre — couronne, jauge, secondes.
+const REIGN := Color(0.95, 0.82, 0.30)
+const CROWN_INK := Color(0.16, 0.10, 0.04)
+const CROWN := ["#..#..#", "##.#.##", "#######", "#######"]
+const REIGN_BAND := 11.0
 
 var _player: Player
 var _font: Font
+## Le panneau des manuels, qui sait monter la fiche d'une compétence : la case survolée la
+## montre (jalon 53), telle qu'elle est à cet instant.
+var manuals: ManualPanel
 ## La case dont le menu, modal, est ouvert, ou -1.
 var _menu := -1
 var _hover := -1
@@ -71,8 +80,10 @@ func _process(_delta: float) -> void:
 			state |= 1 << (i + SkillBar.SLOT_COUNT)
 		if _player.lit(skill.id):
 			state |= 1 << (i + SkillBar.SLOT_COUNT * 2)
-	# Une recharge qui descend repeint à chaque image ; sinon, seul un changement d'état.
-	if state != _displayed_state or (state & ((1 << SkillBar.SLOT_COUNT) - 1)) != 0:
+	# Une recharge qui descend, ou la jauge du règne, repeint à chaque image ; sinon, seul un
+	# changement d'état.
+	if state != _displayed_state or (state & ((1 << SkillBar.SLOT_COUNT) - 1)) != 0 \
+			or _player.reigns():
 		_displayed_state = state
 		queue_redraw()
 
@@ -235,8 +246,54 @@ func _draw() -> void:
 
 	for i in SkillBar.SLOT_COUNT:
 		_draw_slot(i)
+	var reign := _player.reign()
+	if reign != null:
+		_draw_reign(reign)
 	if _menu >= 0:
 		_draw_menu()
+	elif _hover >= 0:
+		_draw_sheet(_player.bar.skill_of(_hover), REIGN_BAND if reign != null else 0.0)
+
+
+## La bande du règne, posée sur la barre : la jauge remonte quand une mort le prolonge.
+func _draw_reign(reign: Buff) -> void:
+	draw_rect(Rect2(0.0, -REIGN_BAND, size.x, REIGN_BAND), BACKGROUND)
+	_crown(Vector2(3.0, -REIGN_BAND + 2.0))
+	var seconds := "%.1f s" % reign.remaining()
+	var text_w := _font.get_string_size(seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE).x
+	var gauge := Rect2(13.0, -REIGN_BAND + 2.0, size.x - 13.0 - text_w - PAD * 2.0, 5.0)
+	draw_rect(gauge, UiPalette.BORDER, false, 1.0)
+	var inner := gauge.grow(-1.0)
+	draw_rect(Rect2(inner.position, Vector2(roundf(inner.size.x * reign.remaining_ratio()), inner.size.y)), REIGN)
+	draw_string(
+		_font, Vector2(size.x - PAD - text_w, -2.0), seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0,
+		FONT_SIZE, REIGN
+	)
+
+
+## La couronne du règne, son coin haut gauche en `at`, cernée d'un pixel.
+func _crown(at: Vector2) -> void:
+	for ink: bool in [true, false]:
+		for y in CROWN.size():
+			for x in CROWN[y].length():
+				if CROWN[y][x] != "#":
+					continue
+				var p := at + Vector2(x, y)
+				if ink:
+					draw_rect(Rect2(p - Vector2.ONE, Vector2(3.0, 3.0)), CROWN_INK)
+				else:
+					draw_rect(Rect2(p, Vector2.ONE), REIGN)
+
+
+## La fiche de la case survolée, au-dessus de la barre — et de la bande du règne, `lift` —,
+## calée sur son bord droit, comme elle.
+func _draw_sheet(skill: Skill, lift: float) -> void:
+	if skill == null or manuals == null:
+		return
+	var sheet := manuals.skill_sheet(skill)
+	var height := ManualPanel.sheet_height(_font, sheet)
+	var top := maxf(-height - PAD - lift, -global_position.y)
+	ManualPanel.paint_sheet(self, _font, sheet, Rect2(size.x - ManualPanel.SHEET_W, top, ManualPanel.SHEET_W, height))
 
 
 func _draw_slot(index: int) -> void:
@@ -266,6 +323,9 @@ func _draw_slot(index: int) -> void:
 	# disque de repli : la case dit déjà de quoi elle brûle.
 	if skill != null and _player.lit(skill.id):
 		draw_rect(r.grow(-1.0), DamageType.COLORS[skill.nature].lerp(Color.WHITE, 0.3), false, 1.0)
+	if skill != null and skill.id in SkillStats.KING_CHANGES and _player.reigns():
+		draw_rect(r, REIGN, false, 1.0)
+		_crown(r.position + Vector2(2.0, 2.0))
 
 	var key := key_label(index)
 	if not key.is_empty():

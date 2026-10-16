@@ -18,7 +18,7 @@ const FONT_SIZE := 9
 const ARTICLES := {
 	"states": ["Les états", "Chaque nature de dégâts pose son état : le feu embrase, la foudre engourdit, le froid transit, la nécrose fait pourrir, le sacré bénit, le physique fait saigner. Un coup a {chance} de chance de poser l'état de chaque nature qu'il porte, quelle que soit sa part, plus la part des points de vie maximum que cette nature retire. La force de l'état suit la part du coup.\n\nTous les états se portent à la fois. Deux du même ne se cumulent pas : un nouveau, au moins aussi fort, remet sa durée à zéro ; un plus faible ne change rien. Ce qui brûle ne s'esquive pas, et les ennemis en posent aussi."],
 	"rack": ["Le râtelier", "Un manuel ne fait rien dans le sac : il s'étudie au râtelier, qui a {places} emplacements — clic droit sur le manuel. Seuls les manuels du râtelier apprennent, et seuls leurs passifs comptent. Un même manuel ne s'étudie pas deux fois.\n\nLa touche {manuels} ouvre les manuels."],
-	"class_manual": ["Le manuel de classe", "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres.\n\nCelui du Vive lame tourne autour de la Frénésie : la Soif de sang en gagne une charge à chaque ennemi tué d'une attaque, le Coup de grâce les dépense toutes — plus il en prend, plus il frappe fort et plus tôt il achève sa cible. Sa Contre-attaque riposte à chaque coup esquivé."],
+	"class_manual": ["Le manuel de classe", "Un emplacement de plus porte le manuel de la classe. Il ne tombe jamais et ne se retire pas, mais apprend, se lit et s'investit comme les autres.\n\nCelui du Vive lame tourne autour de la Frénésie : la Soif de sang en gagne une charge à chaque ennemi tué d'une attaque, le Coup de grâce les dépense toutes — plus il en prend, plus il frappe fort et plus tôt il achève sa cible. Sa Contre-attaque riposte à chaque coup esquivé. Celui du joueur de flûte accroche des rats aux ennemis, qui les rongent : la Danse macabre les fait éclater, le Roi des Rats les consomme pour régner plus longtemps."],
 	"manual_levels": ["Expérience et niveaux", "Chaque ennemi tué donne à chaque manuel du râtelier autant d'expérience qu'au personnage. Un manuel monte jusqu'au niveau {max}, et chaque niveau lui donne un point."],
 	"cells": ["Les cases", "Une case porte une compétence ou un passif. Elle s'ouvre au niveau de manuel qu'elle demande ; un clic sur un passif y place un point, un clic sur une compétence ouvre son arbre. Un point se reprend d'un clic droit, tant que rien de ce qu'il ouvre n'en dépend."],
 	"talent_trees": ["Les arbres de talents", "Chaque compétence a son arbre, et ses propres points : un par niveau du manuel, en plus de ceux du livre. Le centre de l'arbre est la compétence, payée par le livre.\n\nUn nœud s'ouvre quand la compétence a un point et qu'un des nœuds qui y mènent en porte assez — les grains sur le lien. Certains nœuds transforment la compétence, d'autres en convertissent les dégâts : ceux-là sont tout ou rien.\n\nTenir {details} sur une compétence montre ce qu'elle peut déclencher, avec les vraies chances."],
@@ -43,6 +43,7 @@ const STATE_TEXTS := [
 	"Posé par certaines compétences, jamais par un coup ordinaire. Le maudit perd {force} points de résistance nécrotique, avant le plafond, pendant {duree} s. Certains nœuds du Maître de la nécromancie la rendent plus forte ou plus longue, ou achèvent le maudit sous un seuil de vie.",
 	"Posé par la Surchauffe de la Boule de feu, jamais par un coup ordinaire. Chaque coup de la boule en ajoute une charge, jusqu'à {charges}, pendant {duree} s : la boule suivante y frappe plus fort pour chaque charge.",
 	"Posé par la Brèche de la Frappe lourde, jamais par un coup ordinaire. Le fêlé subit davantage de tous les coups d'arme, pendant {duree} s : leurs dégâts sont multipliés par sa force, que la Brèche fixe.",
+	"Posé par les compétences du joueur de flûte, jamais par un coup ordinaire. Chaque rat accroché ronge {rongement} par seconde du coup qui l'a posé, jusqu'à {rats} rats, pendant {duree} s, qui repartent à chaque rat posé. Certaines compétences les font éclater, les consomment ou les passent aux voisins.",
 ]
 
 var _index: VBoxContainer
@@ -199,6 +200,8 @@ static func _state_text(kind: int) -> String:
 		"soin": StatMod.percentage(StatusEffects.ROT_HEAL * 100.0),
 		"ticks": StatMod.number(1.0 / StatusEffects.DOT_TICK),
 		"charges": SkillStats.OVERHEAT_MOST,
+		"rongement": StatMod.percentage(StatusEffects.GNAW_PART * 100.0),
+		"rats": StatusEffects.RATS_MOST,
 	})
 
 

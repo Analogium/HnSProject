@@ -108,7 +108,27 @@ const MASKS := [
 		"..#.#..",
 		"...#...",
 	],
+	[  # rongé : une tête de rat, les oreilles rondes (jalon 53, choisie sur planche)
+		"###.###",
+		"#o#.#o#",
+		".#####.",
+		".#x#x#.",
+		"..###..",
+		"...#...",
+		".......",
+	],
 ]
+
+## Le compteur des rats, à gauche de leur icône (jalon 53) : des chiffres 3×5 clairs, cernés
+## comme les icônes. Sous le seuil de glow : un blanc pur brillerait.
+const DIGITS := [
+	["###", "#.#", "#.#", "#.#", "###"], [".#.", "##.", ".#.", ".#.", "###"],
+	["###", "..#", "###", "#..", "###"], ["###", "..#", "###", "..#", "###"],
+	["#.#", "#.#", "###", "..#", "..#"], ["###", "#..", "###", "..#", "###"],
+	["###", "#..", "###", "#.#", "###"], ["###", "..#", "..#", "..#", "..#"],
+	["###", "#.#", "###", "#.#", "###"], ["###", "#.#", "###", "..#", "###"],
+]
+const COUNT_COLOR := Color(0.88, 0.86, 0.80)
 
 ## Une résistance entamée (jalon 49), « flèche sur disque sombre » choisie sur planche : la
 ## flèche qui descend, de la couleur de la nature, sur un fond `x` qui la sépare des états —
@@ -127,6 +147,7 @@ const HOLLOW := Color(0.10, 0.08, 0.14)
 
 static var _cache: Array[Texture2D] = []
 static var _lowered := {}
+static var _counts := {}
 
 
 static func texture(kind: int) -> Texture2D:
@@ -142,12 +163,31 @@ static func lowered(nature: int) -> Texture2D:
 	return _lowered[nature]
 
 
+## Ce nombre en chiffres cernés, d'un pixel de contour comme les icônes.
+static func count(n: int) -> Texture2D:
+	if not _counts.has(n):
+		var mask: Array = []
+		for y in 5:
+			var row := ""
+			for ch in str(n):
+				if not row.is_empty():
+					row += "."
+				row += DIGITS[int(ch)][y]
+			mask.append(row)
+		_counts[n] = _painted(mask, Vector2i(mask[0].length() + 2, 7), COUNT_COLOR)
+	return _counts[n]
+
+
 ## Publique : les icônes de l'arbre de passifs se peignent de la même main.
 static func paint(mask: Array, color: Color) -> Texture2D:
-	var img := Image.create_empty(SIDE, SIDE, false, Image.FORMAT_RGBA8)
+	return _painted(mask, Vector2i(SIDE, SIDE), color)
+
+
+static func _painted(mask: Array, size: Vector2i, color: Color) -> Texture2D:
+	var img := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
 	var glint := color.lightened(0.45)
-	for y in SIDE:
-		for x in SIDE:
+	for y in size.y:
+		for x in size.x:
 			var c := _cell(mask, x - 1, y - 1)
 			if c == "#":
 				img.set_pixel(x, y, color)
