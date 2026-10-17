@@ -1,5 +1,5 @@
 class_name Enemy
-extends CharacterBody2D
+extends CharacterBody3D
 
 signal died(enemy: Enemy)
 
@@ -26,7 +26,7 @@ var level := 1
 var health: float
 ## Sur Enemy : tous les archétypes la décomptent pareil.
 var _attack_cd := 0.0
-var target: Node2D
+var target: Node3D
 var is_dead := false
 var is_aggro := false
 ## Posé par EnemyManager.register() ; le caster y fait naître ses tirs.
@@ -37,13 +37,13 @@ var states := StatusEffects.new()
 ## le sens du recul, tant que dure la fenêtre. `_skittle` : le recul que les Quilles passent.
 var _shove: SkillStats
 var _shove_author: StatusEffects
-var _shove_toward := Vector2.ZERO
+var _shove_toward := Vector3.ZERO
 var _shove_left := 0.0
 var _skittle := 0.0
 ## La fuite (jalon 53) : la Débandade de la Danse macabre, l'Air de Hamelin sous le Roi des Rats.
 ## Il court loin de `_fear_from` sans attaquer ; l'EnemyManager le fait fuir au lieu de le ticker.
 var _fear_left := 0.0
-var _fear_from := Vector2.ZERO
+var _fear_from := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -64,7 +64,7 @@ func _ready() -> void:
 	var lift := SpriteForge.head_room(sprite.archetype)
 	health_bar.lift = lift
 	hurtbox.feedback_lift = lift
-	affix_tag.position.y -= lift
+	affix_tag.lift = lift
 	# Après échelle et affixes : sinon la hurtbox défendrait avec la fiche d'origine.
 	hurtbox.stats = stats
 	hurtbox.states = states
@@ -133,7 +133,7 @@ func _set_health(value: float) -> void:
 	health_bar.set_health(health, stats.max_health)
 
 
-func setup(p_target: Node2D) -> void:
+func setup(p_target: Node3D) -> void:
 	target = p_target
 
 
@@ -189,7 +189,7 @@ func tick(_delta: float) -> void:
 
 ## Ce qu'il attaque : le joueur, ou un mort-vivant ou un brasero du Phare plus proche
 ## que lui. Vers le joueur, la marche suit le champ ; vers un autre, la ligne droite.
-func foe() -> Node2D:
+func foe() -> Node3D:
 	var best := target
 	if Minion.living.is_empty() and Brazier.beacons.is_empty():
 		return best
@@ -209,12 +209,12 @@ func foe() -> Node2D:
 
 ## Le champ de flux quand la zone en a un, qui contourne les murs ; la ligne droite
 ## sinon (arène, banc, case sans direction).
-func heading() -> Vector2:
+func heading() -> Vector3:
 	if target == null:
-		return Vector2.ZERO
+		return Vector3.ZERO
 	if manager != null and manager.field != null:
 		var d := manager.field.direction_at(MapGenerator.cell_at(global_position))
-		if d != Vector2.ZERO:
+		if d != Vector3.ZERO:
 			return d
 	return (target.global_position - global_position).normalized()
 
@@ -225,7 +225,7 @@ const SEPARATION_FORCE := 0.35
 
 ## Marcher sur la victime : le champ quand c'est le joueur, la ligne droite vers un
 ## mort-vivant, qui est à côté de lui.
-func _close_in(victim: Node2D, accel: float) -> void:
+func _close_in(victim: Node3D, accel: float) -> void:
 	var desired := heading() if victim == target else (victim.global_position - global_position).normalized()
 	# Séparation : sans ça les corps se superposent en une bouillie illisible.
 	desired += _separation() * SEPARATION_FORCE
@@ -239,12 +239,12 @@ func _close_in(victim: Node2D, accel: float) -> void:
 ## Ne renvoie quelque chose que si les ennemis se percutent réellement, donc leur
 ## masque de collision doit inclure leur propre layer (voir grunt.tscn) — sinon
 ## get_slide_collision ne voit rien et la séparation est silencieusement morte.
-func _separation() -> Vector2:
-	var push := Vector2.ZERO
+func _separation() -> Vector3:
+	var push := Vector3.ZERO
 	for i in get_slide_collision_count():
 		var other := get_slide_collision(i).get_collider()
 		if other is Enemy:
-			var away: Vector2 = global_position - (other as Node2D).global_position
+			var away: Vector3 = global_position - (other as Node3D).global_position
 			if away.length() < SEPARATION_RADIUS:
 				push += away.normalized()
 	return push
@@ -262,7 +262,7 @@ func _cool_down(delta: float) -> void:
 
 
 ## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact.
-func _strike(facing: Vector2) -> void:
+func _strike(facing: Vector3) -> void:
 	_attack_cd = stats.attack_interval()
 	sprite.set_state(false, facing)
 	sprite.attack()
@@ -270,7 +270,7 @@ func _strike(facing: Vector2) -> void:
 
 ## Un coup au contact, porté en son nom. Le vol de vie se prend sur ce qui a passé
 ## l'armure, donc après le coup. Le grunt et le chevalier l'écrivaient chacun.
-func _hurt(hurtbox: Hurtbox, source: Vector2) -> void:
+func _hurt(hurtbox: Hurtbox, source: Vector3) -> void:
 	var info := DamageInfo.new(stats.attack_damage, source, stats.knockback_force)
 	info.author = states
 	hurtbox.take_damage(info)
@@ -285,8 +285,8 @@ func _hurt(hurtbox: Hurtbox, source: Vector2) -> void:
 ## Une zone qui frappera en son nom, dans cette nature. Le gonfle, le mortier et le
 ## colosse l'armaient chacun ; sans `author`, sa bénédiction ne l'affaiblirait plus.
 func _danger(
-	at: Vector2, shape: DangerZone.Shape, reach: float, delay: float, nature: DamageType.Kind,
-	facing := Vector2.RIGHT, spread := 0.0
+	at: Vector3, shape: DangerZone.Shape, reach: float, delay: float, nature: DamageType.Kind,
+	facing := Vector3.RIGHT, spread := 0.0
 ) -> DangerZone:
 	var zone := DangerZone.put(manager.ground(), at, shape, reach, delay, facing, spread)
 	zone.parts = DamageType.empty_parts()
@@ -325,7 +325,7 @@ func _on_damaged(info: DamageInfo) -> void:
 
 
 ## Armé par un coup qui repousse sous la Collision : `hit` est le coup de la collision.
-func shove(hit: SkillStats, author: StatusEffects, toward: Vector2, skittle := 0.0) -> void:
+func shove(hit: SkillStats, author: StatusEffects, toward: Vector3, skittle := 0.0) -> void:
 	_shove = hit
 	_shove_author = author
 	_shove_toward = toward
@@ -343,7 +343,7 @@ func stun(seconds: float) -> void:
 
 
 ## Effrayé : une élite l'est deux fois moins longtemps, comme assommée.
-func frighten(seconds: float, from_value: Vector2) -> void:
+func frighten(seconds: float, from_value: Vector3) -> void:
 	if seconds <= 0.0 or is_dead:
 		return
 	_fear_left = maxf(_fear_left, seconds * (0.5 if not affixes.is_empty() else 1.0))
@@ -363,7 +363,7 @@ func flee(delta: float) -> void:
 
 
 ## Tiré par une chaîne (jalon 48) : un pas en plus du sien, qui bute sur les murs et les corps.
-func tug(motion: Vector2) -> void:
+func tug(motion: Vector3) -> void:
 	if not is_dead:
 		move_and_collide(motion)
 
@@ -410,7 +410,7 @@ func _execute() -> void:
 		author.slew.emit(curse, global_position, states)
 	if curse.executioner > 0.0:
 		Enemy.relay.call_deferred(
-			get_world_2d(), global_position, states, StatusEffects.Kind.CURSED,
+			get_world_3d(), global_position, states, StatusEffects.Kind.CURSED,
 			hurtbox.get_instance_id(), SkillStats.EXECUTIONER_REACH, Targets.MAXIMUM
 		)
 	die()
@@ -419,7 +419,7 @@ func _execute() -> void:
 ## L'état d'un mort passe aux `most` plus proches dans `reach` qui ne le portent pas encore,
 ## à pleine durée : l'Épidémie, l'Exécuteur (jalon 45).
 static func relay(
-	world: World2D, at: Vector2, from: StatusEffects, kind: int, own: int, reach: float, most: int
+	world: World3D, at: Vector3, from: StatusEffects, kind: int, own: int, reach: float, most: int
 ) -> void:
 	var heirs := Targets.in_circle(world, at, reach).filter(
 		func(t: Hurtbox) -> bool:
@@ -481,14 +481,14 @@ func die(award := true) -> void:
 	# différé, on meurt souvent dans un rappel de collision (invariant 4) —, et leur auteur
 	# l'apprend.
 	if states.active(StatusEffects.Kind.RATS) or states.active(StatusEffects.Kind.CURSED):
-		Vermin.on_death.call_deferred(get_world_2d(), global_position, states, hurtbox.get_instance_id())
+		Vermin.on_death.call_deferred(get_world_3d(), global_position, states, hurtbox.get_instance_id())
 	for kind in states.kinds():
 		var by := states.cast_of(kind)
 		if by == null:
 			continue
 		if by.epidemic > 0.0:
 			Enemy.relay.call_deferred(
-				get_world_2d(), global_position, states, kind, hurtbox.get_instance_id(),
+				get_world_3d(), global_position, states, kind, hurtbox.get_instance_id(),
 				states.epidemic(kind), states.heirs(kind)
 			)
 		var author := states.author_of(kind)

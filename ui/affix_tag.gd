@@ -22,6 +22,8 @@ class Line:
 	var half: float
 
 
+## Ce que le corps dépasse le guerrier par le haut (`SpriteForge.head_room()`).
+var lift := 0.0
 var _lines: Array[Line] = []
 ## Gardés pour re-mesurer quand la langue change.
 var _affixes: Array[Affix] = []
@@ -29,11 +31,18 @@ var _font: Font
 
 
 func _ready() -> void:
-	# z_index : le parent est Y-trié.
-	z_index = 50
 	_font = ThemeDB.fallback_font
 	visible = false
 	Settings.changed.connect(_refresh)
+
+
+## À l'écran, au-dessus de son corps 3D (jalon 54), comme la barre de vie.
+func _process(_delta: float) -> void:
+	var body := get_parent() as Node3D
+	if body == null:
+		return
+	visible = _shown() and body.is_visible_in_tree()
+	position = Flat.on_screen(get_viewport(), body.global_position, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
 
 
 ## Des noms d'une autre longueur : on remesure depuis les affixes gardés.
@@ -60,8 +69,13 @@ func set_affixes(affixes: Array[Affix]) -> void:
 	_refresh()
 
 
+func _shown() -> bool:
+	return Settings.show_affix_names and not _lines.is_empty()
+
+
 func _refresh() -> void:
-	visible = Settings.show_affix_names and not _lines.is_empty()
+	visible = _shown()
+	set_process(visible)
 	if visible:
 		queue_redraw()
 
@@ -70,7 +84,7 @@ func _draw() -> void:
 	for i in _lines.size():
 		var line := _lines[i]
 		# Le premier en haut, le dernier au ras de la tête.
-		var y := roundf(OFFSET_Y - float(_lines.size() - 1 - i) * LINE_H / Game.WORLD_ZOOM)
+		var y := roundf(-float(_lines.size() - 1 - i) * LINE_H / Game.WORLD_ZOOM)
 		var pos := Vector2(roundf(-line.half), y)
 		# Contour noir : lisible sur tous les sols.
 		draw_string_outline(

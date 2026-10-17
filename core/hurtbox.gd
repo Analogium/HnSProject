@@ -1,5 +1,5 @@
 class_name Hurtbox
-extends Area2D
+extends Area3D
 
 ## **Le seul point de passage de tous les coups** : l'esquive, la mitigation, les états
 ## et le retour visuel s'y déclenchent, et non chez chaque acteur.
@@ -34,9 +34,10 @@ func has_state(kind: int) -> bool:
 	return states != null and states.active(kind)
 
 
-## D'où partent les nombres et les noms d'état de ce corps.
-func overhead() -> Vector2:
-	return global_position - Vector2(0.0, feedback_lift)
+## D'où partent les nombres et les noms d'état de ce corps : un point du plan, au nord du
+## corps comme le haut de l'écran en 2D — la marque du Paratonnerre s'y pose et cherche de là.
+func overhead() -> Vector3:
+	return global_position - Vector3(0.0, 0.0, feedback_lift)
 
 
 func take_damage(info: DamageInfo) -> void:

@@ -1,5 +1,5 @@
 class_name StaticCharge
-extends Node2D
+extends Node3D
 
 ## Une étincelle laissée sur un engourdi : elle s'écarte de quelques pixels, puis frappe
 ## ce qui entre dans son petit rayon. **Une fois par ennemi, et elle reste** : elle vit
@@ -29,7 +29,7 @@ static var _live: Array[StaticCharge] = []
 
 var _parts: Array[float] = []
 var _author: StatusEffects
-var _toward := Vector2.ZERO
+var _toward := Vector3.ZERO
 var _age := 0.0
 var _next := CHECK
 ## Qui elle a déjà mordu. Sa période est sa vie entière : une cible plantée dessus ne
@@ -44,7 +44,7 @@ var _on_bite := Callable()
 ## `parts` est ce que le coup a **réellement** infligé : la charge est petite quand
 ## l'armure a mangé le coup. Celles qu'une ruée sème portent leur propre part.
 static func put(
-	parent: Node, at: Vector2, direction: Vector2, parts: Array, author: StatusEffects,
+	parent: Node, at: Vector3, direction: Vector3, parts: Array, author: StatusEffects,
 	share := SHARE, mine := false, life := LIFE, on_bite := Callable()
 ) -> StaticCharge:
 	var charge := StaticCharge.new()
@@ -79,10 +79,6 @@ static func live() -> Array[StaticCharge]:
 	return _live
 
 
-func _ready() -> void:
-	z_index = 3
-
-
 func _exit_tree() -> void:
 	_live.erase(self)
 
@@ -91,7 +87,6 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	# Elle s'écarte vite puis se pose : une étincelle est projetée, elle ne dérive pas.
 	position += _toward * delta * maxf(1.0 - _age / LIFE, 0.0) * 2.0
-	queue_redraw()
 	if _age >= _life:
 		queue_free()
 		return
@@ -99,7 +94,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_next = _age + CHECK
 	_bitten.advance(CHECK)
-	for target in Targets.in_circle(get_world_2d(), global_position, _radius):
+	for target in Targets.in_circle(get_world_3d(), global_position, _radius):
 		if not _bitten.accepts(target):
 			continue
 		# Sans lancer : une charge ne critique pas et ne porte aucun bonus contre un état.
@@ -110,12 +105,3 @@ func _physics_process(delta: float) -> void:
 			queue_free()
 			return
 
-
-## L'étoile brisée, choisie sur planche : ses bras tournent et grésillent, décalés
-## d'une charge à l'autre pour que deux voisines ne battent pas à l'unisson. Elle se
-## défait sur son dernier tiers : disparaître d'un coup se lit comme un bug.
-func _draw() -> void:
-	Lightning.charge(
-		DamageType.COLORS[DamageType.Kind.LIGHTNING], _radius,
-		Lightning.hold(_age) + int(get_instance_id()), Lightning.gone(_age, _life)
-	).put(self, Vector2.ZERO)

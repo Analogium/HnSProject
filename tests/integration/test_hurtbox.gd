@@ -13,7 +13,7 @@ func _strike(st: CharacterStats, amount: float, nature: DamageType.Kind) -> floa
 	add_child_autofree(hb)
 	_received = -1.0
 	hb.damaged.connect(func(info: DamageInfo) -> void: _received = info.amount)
-	hb.take_damage(DamageInfo.new(amount, Vector2.ZERO, 0.0, false, nature))
+	hb.take_damage(DamageInfo.new(amount, Vector3.ZERO, 0.0, false, nature))
 	return _received
 
 
@@ -53,7 +53,7 @@ func test_without_sheet_no_mitigation() -> void:
 	add_child_autofree(hb)
 	_received = -1.0
 	hb.damaged.connect(func(info: DamageInfo) -> void: _received = info.amount)
-	hb.take_damage(DamageInfo.new(37.0, Vector2.ZERO))
+	hb.take_damage(DamageInfo.new(37.0, Vector3.ZERO))
 	assert_eq(_received, 37.0)
 
 
@@ -63,7 +63,7 @@ func test_invulnerable_emits_nothing() -> void:
 	add_child_autofree(hb)
 	_received = -1.0
 	hb.damaged.connect(func(info: DamageInfo) -> void: _received = info.amount)
-	hb.take_damage(DamageInfo.new(10.0, Vector2.ZERO))
+	hb.take_damage(DamageInfo.new(10.0, Vector3.ZERO))
 	assert_eq(_received, -1.0, "aucun signal")
 
 
@@ -106,7 +106,7 @@ func _absorb(st: CharacterStats, parts: Array[float]) -> DamageInfo:
 	var hb := Hurtbox.new()
 	hb.stats = st
 	add_child_autofree(hb)
-	var info := DamageInfo.as_parts(parts, Vector2.ZERO)
+	var info := DamageInfo.as_parts(parts, Vector3.ZERO)
 	hb.take_damage(info)
 	return info
 
@@ -148,10 +148,10 @@ func test_the_floor_applies_to_the_total() -> void:
 ## La nature d'un coup est celle de sa plus grosse part : c'est elle qui teint la
 ## gerbe d'éclats et dit contre quoi on frappe, et le nombre en montre le total.
 func test_a_hit_nature_is_that_of_its_biggest_part() -> void:
-	var info := DamageInfo.as_parts(_parts(0.0, 30.0, 10.0), Vector2.ZERO)
+	var info := DamageInfo.as_parts(_parts(0.0, 30.0, 10.0), Vector3.ZERO)
 	assert_eq(info.type, DamageType.Kind.COLD)
 	assert_eq(info.amount, 40.0)
-	assert_eq(DamageInfo.new(0.0, Vector2.ZERO).type, DamageType.Kind.PHYSICAL, "un coup nul reste physique")
+	assert_eq(DamageInfo.new(0.0, Vector3.ZERO).type, DamageType.Kind.PHYSICAL, "un coup nul reste physique")
 
 
 ## Les parts sont recopiées : la mitigation d'un ennemi ne doit pas revenir dans

@@ -10,15 +10,6 @@ extends Projectile
 var _returning := false
 
 
-## Dessiné : le couteau droit choisi sur planche, fabriqué à son cap (`Slash.knife()`).
-func _drawn() -> bool:
-	return true
-
-
-func _draw() -> void:
-	Slash.knife(Slash.turn_of(_dir.angle())).put(self, Vector2.ZERO)
-
-
 func _keeps_flying(info: DamageInfo) -> bool:
 	return info.is_crit or _returning
 

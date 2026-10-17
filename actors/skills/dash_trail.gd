@@ -1,5 +1,5 @@
 class_name DashTrail
-extends Node2D
+extends Node3D
 
 ## Ce qu'une ruée laisse derrière elle : un couloir qui frappe ce qui s'y trouve, une
 ## fois par période, jusqu'à la fin de sa durée. Il ne fige jamais le jeu, comme tout
@@ -11,48 +11,11 @@ extends Node2D
 ## L'écart entre deux sondes, en part du rayon. Au-delà de 1, un ennemi peut tenir entre
 ## deux cercles ; en dessous, on paie des requêtes pour rien.
 const STEP := 0.9
-
-## Le sillon « cœur et franges » (jalon 34, choisi sur planche) couvre **la largeur du
-## couloir qui frappe**, que l'ancienne file unique réduisait au tiers : un Braises à
-## trois points ne se voyait pas. Au cœur, une grande langue tous les onze pixels,
-## écartée de l'axe à tour de rôle ; autour, de petites langues semées jusqu'au bord.
-const FLAME_STEP := 11.0
-const CORE_SWAY := 2.0
-## Les franges : au plus une langue par case, **pas un tirage libre**, qui faisait des
-## paquets sur la planche ; ni dans le cœur, ni à moins de `FRINGE_MARGIN` du bord.
-const FRINGE_CELL := 8.0
-const FRINGE_CHANCE := 0.55
-const CORE_WIDTH := 5.0
-const FRINGE_MARGIN := 4.0
-## Le lit de brûlures : un essai tous les 4 × 3 px, d'autant plus rare qu'on s'écarte
-## de l'axe — un rectangle plein se lisait en tapis de briques.
-const BURN_ALONG := 4.0
-const BURN_ACROSS := 3.0
-const BURN_DENSITY := 0.5
-## Le sol d'une compétence convertie (jalon 34, choisi sur planche) : le même lit, en
-## givre ou en pourriture, sous un halo tramé ; des flocons ou des spores y montent de
-## `MOTE_RISE` pixels et recommencent. Un par `MOTE_AREA` pixels carrés du couloir.
-const STAIN_HALO := 0.30
-## Moitié moins dense que les brûlures : claires et cernées, les taches d'un serpent qui
-## repasse sur ses plaques faisaient un tapis (vu à la capture), là où la cendre sombre
-## se lit en terre brûlée.
-const STAIN_DENSITY := 0.25
-const MOTE_AREA := 150.0
-const MOTE_RISE := 8.0
-const MOTE_SPEED := 10.0
+## Le temps qu'un sol met à paraître : ravivé, il repart déjà paru (`_renew()`).
 const SPAWN := 0.12
-const FADE := 0.35
-## Les paliers du fondu : un sol ne se redessine que quand son image change (`_look()`).
-const FADE_STEPS := 8.0
-## La coupe de la Ruée tranchante : sa demi-largeur, en part du rayon qui mord, et
-## les étincelles arrachées de part et d'autre, avec leur vitesse en pixels par
-## seconde. Ce sont elles qui bougent, la coupe ne bouge pas.
-const CUT_WIDTH := 0.45
 ## La couche sous les corps, au-dessus du sol (`Zone.ground`, où se posent aussi les
 ## zones de danger). Sans elle, le couloir retombe chez qui le pose.
 const GROUND_LAYER := "ground_layer"
-const SPARKS := 8
-const SPARK_SPEED := 44.0
 ## La Mèche (jalon 42) : le temps entre deux plaques qui explosent, du départ à l'arrivée.
 const WICK_DELAY := 0.05
 
@@ -60,20 +23,11 @@ var _cast: SkillStats
 var _author: StatusEffects
 var _tint := Color.WHITE
 ## En repère local : le nœud est posé au départ de la ruée.
-var _toward := Vector2.ZERO
+var _toward := Vector3.ZERO
 var _age := 0.0
 var _strikes := 0
-## La coupe d'une ruée physique, fabriquée à la naissance à l'angle exact.
-var _cut: EffectForge.Piece
-## Le lit du sillon, tiré **une fois** à la naissance : il ne bouge pas. Des brûlures
-## pour le feu, des taches pour le froid et la nécrose.
-var _bed_at: Array[Vector2] = []
-## Les langues du feu, ou les flocons et les spores d'un sol converti.
-var _tongues: Array[Tongue] = []
 ## Un sol (`patch()`) et non le couloir d'une ruée : lui seul ne cumule pas.
 var _ground := false
-## L'image dessinée en dernier, telle que `_look()` la résume.
-var _drawn := -1
 ## Sa case dans `_laid`, pour un sol : où il se tient, de quelle compétence et de quelle nature.
 var _key := ""
 ## Où posent ses explosions — au-dessus des corps, pas sur sa couche. Le temps depuis que
@@ -90,22 +44,9 @@ static var _laid := {}
 const LAID_CELL := 0.5
 
 
-class Tongue:
-	var foot: Vector2
-	var big: bool
-	## Le décalage d'animation, en images entières : deux langues voisines ne battent pas
-	## ensemble, mais changent au même instant — le sol n'a qu'un rythme à redessiner.
-	var phase: float
-
-	func _init(p_foot: Vector2, p_big: bool, p_phase: float) -> void:
-		foot = p_foot
-		big = p_big
-		phase = p_phase
-
-
 ## `ground` : un sol en long — le Sillon d'acier d'une vague —, qui ne cumule pas.
 static func leave(
-	parent: Node, from_value: Vector2, to: Vector2, cast: SkillStats, author: StatusEffects,
+	parent: Node, from_value: Vector3, to: Vector3, cast: SkillStats, author: StatusEffects,
 	ground := false
 ) -> DashTrail:
 	var trail := DashTrail.new()
@@ -124,9 +65,10 @@ static func leave(
 ## Le **sol brûlant** (jalon 34) : un sillage sans longueur, posé sur place. Différé,
 ## parce qu'il naît aussi d'une mort, donc d'un rappel de collision.
 static func patch(
-	parent: Node, at: Vector2, ground: SkillStats, author: StatusEffects
+	parent: Node, at: Vector3, ground: SkillStats, author: StatusEffects
 ) -> DashTrail:
-	var cell := Vector2i((at / maxf(ground.radius * LAID_CELL, 1.0)).floor())
+	var side := maxf(ground.radius * LAID_CELL, 1.0)
+	var cell := Vector2i(floori(at.x / side), floori(at.z / side))
 	var key := "%s@%d@%d@%d" % [ground.skill_id, ground.nature, cell.x, cell.y]
 	var laid: DashTrail = _laid.get(key)
 	if is_instance_valid(laid) and not laid.is_queued_for_deletion():
@@ -152,21 +94,10 @@ static func patch(
 static func layer(parent: Node) -> Node:
 	if not parent.is_inside_tree():
 		return parent
-	for ground: CanvasItem in parent.get_tree().get_nodes_in_group(GROUND_LAYER):
+	for ground: Node3D in parent.get_tree().get_nodes_in_group(GROUND_LAYER):
 		if ground.is_visible_in_tree():
 			return ground
 	return parent
-
-
-func _ready() -> void:
-	# Le feu et la lame sont dessinés, et une planche cernée ne peut pas être
-	# additive. Le reste reste en lumière ajoutée.
-	if not _is_painted():
-		material = ArtPalette.ADDITIVE
-	if _cast.nature == DamageType.Kind.PHYSICAL:
-		_cut = Slash.cleave(_tint, _toward, _cast.radius * CUT_WIDTH)
-	elif _is_painted():
-		_lay_out_the_bed()
 
 
 ## Ravivé par un sol posé sur lui : il repart pour sa durée, déjà paru, et frappe aussitôt —
@@ -189,10 +120,6 @@ func _physics_process(delta: float) -> void:
 	while _strikes < due:
 		_strike()
 		_strikes += 1
-	var look := _look()
-	if look != _drawn:
-		_drawn = look
-		queue_redraw()
 	var spent := _age >= _cast.duration and _strikes >= _cast.strikes_over_duration()
 	# La Mèche brûle quand la traînée s'éteint ; la Mèche courte dès qu'elle est posée, et
 	# la traînée part avec elle.
@@ -223,7 +150,7 @@ func _strike() -> void:
 	var parts := _cast.roll(Game.rng)
 	var struck := {}
 	for point in _probes():
-		for target in Targets.in_circle(get_world_2d(), point, _cast.radius):
+		for target in Targets.in_circle(get_world_3d(), point, _cast.radius):
 			var id := target.get_instance_id()
 			if struck.has(id) or (_ground and not _first_ground_on(target)):
 				continue
@@ -243,181 +170,12 @@ func _first_ground_on(target: Hurtbox) -> bool:
 	return true
 
 
-## Ce qui change l'image : le pas de son animation et le palier de son fondu. Redessinées à
-## chaque pas, les 580 plaques d'un Serpent rejoué par le Familier coûtaient 82 ms par image
-## (jalon 41). Les étincelles d'une coupe bougent à chaque image.
-func _look() -> int:
-	if _cast.nature == DamageType.Kind.PHYSICAL:
-		return Engine.get_physics_frames()
-	var hz := 0.0
-	match _cast.nature:
-		DamageType.Kind.FIRE:
-			hz = EffectForge.FLAME_HZ
-		DamageType.Kind.COLD, DamageType.Kind.NECROTIC:
-			hz = MOTE_SPEED
-	return int(_age * hz) * 16 + roundi(_fade() * FADE_STEPS)
-
-
-func _fade() -> float:
-	var f := minf(_age / SPAWN, 1.0) * clampf((_cast.duration - _age) / FADE, 0.0, 1.0)
-	return roundf(f * FADE_STEPS) / FADE_STEPS
-
-
 ## Les centres des sondes, en repère global : les deux bouts au moins.
-func _probes() -> Array[Vector2]:
-	var out: Array[Vector2] = []
+func _probes() -> Array[Vector3]:
+	var out: Array[Vector3] = []
 	var span := _toward.length()
 	var count := maxi(ceili(span / maxf(_cast.radius * STEP, 1.0)), 1)
 	for i in count + 1:
 		out.append(global_position + _toward * (float(i) / float(count)))
 	return out
 
-
-func _draw() -> void:
-	var fade := _fade()
-	var last := _toward
-	var wide := _cast.radius * 0.5
-	# Le ruban large dit la portée et rien d'autre : à 0,10 d'un orange, il sortait
-	# **brun**, et on voyait un tapis avant de voir le feu (même piège qu'`Explosion`).
-	# Les traînées peintes s'en passent, comme de halo : il les délaverait.
-	if not _is_painted():
-		draw_line(Vector2.ZERO, last, Color(_tint, 0.06 * fade), _cast.radius * 2.0)
-		Glow.draw_blob(self, Vector2.ZERO, wide, Color(_tint, 0.30 * fade))
-		Glow.draw_blob(self, last, wide, Color(_tint, 0.30 * fade))
-
-	# **Le couloir luit pour tout le monde ; sa matière est par nature.** Le feu
-	# lèche, la lame tranche, le reste ne fait que luire : une ruée de glace
-	# n'avait aucune raison de laisser des flammes. Aucun de ces dessins ne frappe
-	# — la morsure, c'est le couloir.
-	match _cast.nature:
-		DamageType.Kind.FIRE:
-			_burnt_path(fade)
-		DamageType.Kind.COLD:
-			_stained_path(fade, EffectForge.frost_stains(_tint), EffectForge.flake(_tint))
-		DamageType.Kind.NECROTIC:
-			_stained_path(fade, EffectForge.rot_stains(_tint), EffectForge.spore(_tint))
-		DamageType.Kind.PHYSICAL:
-			_slashed_path(last)
-		_:
-			# Les natures sans matière propre n'ont que ce trait : le feu s'en passe,
-			# il lui barrait ses propres flammes d'une ligne droite.
-			draw_line(Vector2.ZERO, last, Color(_tint, 0.30 * fade), 2.0)
-
-
-## Le sillon : un lit de brûlures et des langues plantées dessus, sur toute la largeur
-## du couloir. Des planches posées à plat, jamais tournées : une brûlure pivotée se
-## rééchantillonne, et le couloir peut partir dans n'importe quelle direction.
-func _burnt_path(fade: float) -> void:
-	var burns := EffectForge.burns()
-	for i in _bed_at.size():
-		EffectForge.put_centered(self, burns[i % burns.size()], _bed_at[i], fade)
-	var tall := EffectForge.flames(_tint)
-	var short := EffectForge.small_flames(_tint)
-	for t in _tongues:
-		var sheet: Array = tall if t.big else short
-		var tex: Texture2D = sheet[int(_age * EffectForge.FLAME_HZ + t.phase) % sheet.size()]
-		_blit(tex, t.foot - Vector2(tex.get_width() * 0.5, tex.get_height() - 2), fade)
-
-
-## Le givre et la pourriture : le halo tramé le long du couloir, le lit de taches, et
-## les flocons ou les spores qui montent — coupés en haut de leur course, jamais pâlis.
-func _stained_path(fade: float, stains: Array, mote: Texture2D) -> void:
-	var r := int(_cast.radius)
-	var span := _toward.length()
-	var halos := maxi(ceili(span / float(maxi(r, 1))), 0)
-	for i in halos + 1:
-		var at := _toward * (float(i) / float(halos)) if halos > 0 else Vector2.ZERO
-		EffectForge.put_scorch(self, _tint, r, fade, STAIN_HALO, at)
-	for i in _bed_at.size():
-		EffectForge.put_centered(self, stains[i % stains.size()], _bed_at[i], fade)
-	for t in _tongues:
-		var rise := floorf(fmod(t.phase + _age * MOTE_SPEED, MOTE_RISE))
-		EffectForge.put_centered(self, mote, t.foot - Vector2(0.0, rise), fade)
-
-
-## Dans le repère du couloir — `a` le long, `b` en travers —, puis tourné vers `_toward`.
-## Un tirage **local**, semé sur le nœud (invariant 3). Sans longueur — le sol brûlant —,
-## la gélule devient un disque et le cœur une seule langue.
-func _lay_out_the_bed() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = int(get_instance_id())
-	var r := _cast.radius
-	var span := _toward.length()
-	var along := _toward / span if span > 0.0 else Vector2.RIGHT
-	var across := along.orthogonal()
-	var density := BURN_DENSITY if _cast.nature == DamageType.Kind.FIRE else STAIN_DENSITY
-
-	var b := -r
-	while b <= r:
-		var a := -r
-		while a <= span + r:
-			var d := _off_axis(a, b, span) / r
-			if d < 1.0 and rng.randf() < density * (1.0 - d * d):
-				_bed_at.append(
-					along * (a + rng.randf_range(-1.5, 1.5)) + across * (b + rng.randf_range(-1.0, 1.0))
-				)
-			a += BURN_ALONG
-		b += BURN_ACROSS
-
-	if _cast.nature != DamageType.Kind.FIRE:
-		var motes := maxi(int((span + 2.0 * r) * 2.0 * r / MOTE_AREA), 1)
-		while _tongues.size() < motes:
-			var p := Vector2(rng.randf_range(-r, span + r), rng.randf_range(-r, r))
-			# En part du rayon et non à une marge fixe : à rayon nul, la boucle ne finirait pas.
-			if _off_axis(p.x, p.y, span) <= r * 0.75:
-				_tongues.append(Tongue.new(along * p.x + across * p.y, false, float(rng.randi_range(0, int(MOTE_RISE) - 1))))
-		return
-
-	var count := maxi(int(span / FLAME_STEP), 1)
-	for i in count:
-		var sway := CORE_SWAY * (1.0 if i % 2 == 0 else -1.0)
-		_tongues.append(Tongue.new(
-			along * span * (float(i) + 0.5) / float(count) + across * sway, true, float(i * 2)
-		))
-	b = -r
-	while b < r:
-		var a := -r
-		while a < span + r:
-			var p := Vector2(a + rng.randf() * FRINGE_CELL, b + rng.randf() * FRINGE_CELL)
-			if absf(p.y) > CORE_WIDTH and _off_axis(p.x, p.y, span) <= r - FRINGE_MARGIN \
-					and rng.randf() < FRINGE_CHANCE:
-				_tongues.append(Tongue.new(along * p.x + across * p.y, false, float(rng.randi_range(0, 2))))
-			a += FRINGE_CELL
-		b += FRINGE_CELL
-	# Le plus bas passe devant : une langue du bord proche ne se cache pas derrière le cœur.
-	_tongues.sort_custom(func(t1: Tongue, t2: Tongue) -> bool: return t1.foot.y < t2.foot.y)
-
-
-## La distance d'un point au segment [0, span] de l'axe, dans le repère du couloir.
-static func _off_axis(a: float, b: float, span: float) -> float:
-	return Vector2(a - clampf(a, 0.0, span), b).length()
-
-
-## La Ruée tranchante : **un seul coup d'épée sur toute la traversée**, posé d'une
-## pièce, et des étincelles qui s'en arrachent de part et d'autre. La coupe ne pâlit
-## pas — une lame à demi transparente sur un sol sombre sort grise — : elle tient
-## son quart de seconde, puis elle n'est plus là.
-func _slashed_path(last: Vector2) -> void:
-	_cut.put(self, Vector2.ZERO)
-	var grain := EffectForge.spark(_tint)
-	var across := last.orthogonal().normalized()
-	for i in SPARKS:
-		var side := 1.0 if i % 2 == 0 else -1.0
-		var at := last * ((float(i) + 0.5) / float(SPARKS)) + across * side * (3.0 + _age * SPARK_SPEED)
-		EffectForge.put_centered(self, grain, at)
-
-
-## Peinte — fait de planches cernées — ou tracée en lumière ajoutée. La foudre et le
-## sacré n'ont pas encore de sol dessiné : leur couloir ne fait que luire.
-func _is_painted() -> bool:
-	return _cast.nature in [
-		DamageType.Kind.FIRE, DamageType.Kind.PHYSICAL, DamageType.Kind.COLD, DamageType.Kind.NECROTIC
-	]
-
-
-func _blit(tex: Texture2D, offset: Vector2, fade: float) -> void:
-	var corner := EffectForge.snap(self, offset)
-	draw_texture_rect(
-		tex, Rect2(corner, Vector2(tex.get_width(), tex.get_height())),
-		false, Color(1.0, 1.0, 1.0, fade)
-	)

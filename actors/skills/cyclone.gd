@@ -1,5 +1,5 @@
 class_name Cyclone
-extends Node2D
+extends Node3D
 
 ## Le cyclone : un geste d'arme entretenu. Tant qu'il tourne, il frappe son cercle à
 ## chaque période et draine le mana à chaque image ; la réserve vide l'arrête, là où la
@@ -11,16 +11,6 @@ extends Node2D
 ##
 ## Il ne ralentit pas son porteur : le tour d'épée est ce qu'on lance pour traverser un
 ## paquet, et l'arrêter sur place en ferait une seconde Immolation.
-
-## Les lames qui tournent, et leur vitesse en radians par seconde.
-const BLADES := 3
-const SPIN := 4.0
-## Ce que chaque lame traîne derrière elle, en radians, et son épaisseur.
-const TRAIL := 0.9
-const THICKNESS := 7.0
-## Ce qui vole autour : les éclats soulevés par le tour.
-const MOTES := 8
-const OPENING := 0.12
 
 var _player: Player
 var _skill: Skill
@@ -40,19 +30,13 @@ static func spin(player: Player, skill: Skill) -> Cyclone:
 	return node
 
 
-## Pas de lumière ajoutée : les lames sont **dessinées**, et une planche cernée ne
-## peut pas être additive — son contour sombre n'y ajoute rien.
-func _ready() -> void:
-	z_index = 2
-
-
 ## Appelée par `Player.extinguish()`, le seul chemin. Le Dénouement (jalon 46) : relâché,
 ## le tour frappe une dernière fois, d'autant plus fort qu'il a tourné longtemps.
 func extinguish() -> void:
 	if _cast != null and _cast.denouement > 0.0 and not _player.is_dead:
 		var spun := minf(_age, SkillStats.DENOUEMENT_MOST)
 		Targets.strike_circle(
-			get_world_2d(), global_position, _cast.radius, _cast, _player.states,
+			get_world_3d(), global_position, _cast.radius, _cast, _player.states,
 			SkillStats.GUST_FORCE if _cast.gust > 0.0 else 0.0,
 			1.0 + _cast.denouement * 0.01 * spun
 		)
@@ -81,7 +65,6 @@ func _physics_process(delta: float) -> void:
 	if _cast.dervishes > 0.0 and _age >= _next_dervish:
 		_next_dervish = _age + SkillStats.DERVISH_PERIOD
 		_loose()
-	queue_redraw()
 	if not _player.drain(_cast.mana_per_second, delta):
 		_player.extinguish(_skill.id)
 		return
@@ -94,7 +77,7 @@ func _physics_process(delta: float) -> void:
 ## par ennemi pris dans le tour.
 func _strike() -> void:
 	var struck := Targets.strike_circle(
-		get_world_2d(), global_position, _cast.radius, _cast, _player.states, -_cast.pull
+		get_world_3d(), global_position, _cast.radius, _cast, _player.states, -_cast.pull
 	)
 	_player.gain_mana(_cast.mana_on_hit * float(struck.size()))
 
@@ -106,29 +89,7 @@ func _loose() -> void:
 	for i in count:
 		var turn := (float(i) - float(count - 1) * 0.5) * SkillStats.DERVISH_FAN
 		Dervish.send(
-			_player._effects_parent(), global_position, _player.facing.rotated(turn), _cast,
+			_player._effects_parent(), global_position, Flat.rotated(_player.facing, turn), _cast,
 			_player.states
 		)
 
-
-## Des lames en rotation plutôt qu'un disque : c'est le mouvement qui dit « ça tourne »,
-## et un cercle plein au sol se lirait comme une aura de plus. Chaque lame est le
-## croissant d'un coup, tête devant : trois coups qui se poursuivent.
-##
-## Pas d'anneau au sol : le bout des lames dit déjà jusqu'où il fauche.
-func _draw() -> void:
-	if _cast == null:
-		return
-	var r := floorf(_cast.radius * minf(_age / OPENING, 1.0))
-	if r < THICKNESS:
-		return
-	var tint: Color = DamageType.COLORS[_cast.nature]
-	for i in BLADES:
-		var turn := Slash.turn_of(TAU * float(i) / float(BLADES) + _age * SPIN)
-		Slash.crescent(tint, r, THICKNESS, turn, -TRAIL, 0.0, 0.0).put(self, Vector2.ZERO)
-
-	var grain := EffectForge.spark(tint)
-	for i in MOTES:
-		var turn := _age * SPIN * 0.6 + TAU * float(i) / float(MOTES)
-		var distance := r * (0.4 + 0.55 * fmod(_age * 0.9 + float(i) * 0.121, 1.0))
-		EffectForge.put_centered(self, grain, Vector2.from_angle(turn) * distance)

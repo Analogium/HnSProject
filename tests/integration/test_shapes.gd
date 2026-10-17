@@ -11,7 +11,7 @@ const Gestures := preload("res://tests/gestures.gd")
 ## cible qu'on voulait hors du nuage y entrerait pendant l'attente.
 
 var _p: Player
-var _effects: Node2D
+var _effects: Node3D
 ## Les montants reçus par chaque cible. Un membre et non une locale : une lambda
 ## GDScript capture par valeur.
 var _received_all := {}
@@ -28,12 +28,12 @@ func before_each() -> void:
 	_received_all.clear()
 	_p = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(_p)
-	_effects = Node2D.new()
+	_effects = Node3D.new()
 	add_child_autofree(_effects)
 	_p.projectile_parent = _effects
 	# La visée à la manette : la souris d'un lancement sans fenêtre est n'importe où.
 	_p._aim_with_mouse = false
-	_p.facing = Vector2.RIGHT
+	_p.facing = Vector3.RIGHT
 	await wait_physics_frames(1)
 
 
@@ -58,12 +58,12 @@ func _learn(base_id: String, points: Array) -> void:
 	_p._set_mana(9999.0)
 
 
-func _target(position: Vector2) -> Hurtbox:
+func _target(position: Vector3) -> Hurtbox:
 	var h := Hurtbox.new()
 	h.collision_layer = Targets.ENEMIES
 	h.collision_mask = 0
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
+	var shape := CollisionShape3D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = 8.0
 	shape.shape = circle
 	h.add_child(shape)
@@ -84,13 +84,14 @@ func _hits(target: Hurtbox) -> int:
 
 ## Un pan de roche, sur le calque du décor : celui que l'atterrissage d'une ruée
 ## interroge, et le seul.
-func _wall(center: Vector2, extents: Vector2) -> StaticBody2D:
-	var body := StaticBody2D.new()
+func _wall(center: Vector3, extents: Vector3) -> StaticBody3D:
+	var body := StaticBody3D.new()
 	body.collision_layer = Targets.DECOR
 	body.collision_mask = 0
-	var shape := CollisionShape2D.new()
-	var box := RectangleShape2D.new()
-	box.size = extents
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	# Épaisse de part et d'autre du sol, comme les murs de la zone : les rayons passent à zéro.
+	box.size = Vector3(extents.x, Zone.WALL_HEIGHT * 2.0, extents.z)
 	shape.shape = box
 	body.add_child(shape)
 	add_child_autofree(body)
@@ -108,7 +109,7 @@ func _children_of(cls: Variant) -> Array:
 
 func test_the_chain_hits_three_enemies_and_not_the_fourth() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
-	var targets := [_target(Vector2(60, 0)), _target(Vector2(120, 0)), _target(Vector2(180, 0)), _target(Vector2(240, 0))]
+	var targets := [_target(Vector3(60, 0.0, 0)), _target(Vector3(120, 0.0, 0)), _target(Vector3(180, 0.0, 0)), _target(Vector3(240, 0.0, 0))]
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -119,8 +120,8 @@ func test_the_chain_hits_three_enemies_and_not_the_fourth() -> void:
 
 func test_the_chain_does_not_jump_beyond_its_range() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
-	var near := _target(Vector2(60, 0))
-	var too_far := _target(Vector2(60 + ChainLightning.JUMP + 20.0, 0))
+	var near := _target(Vector3(60, 0.0, 0))
+	var too_far := _target(Vector3(60 + ChainLightning.JUMP + 20.0, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -132,7 +133,7 @@ func test_the_chain_does_not_jump_beyond_its_range() -> void:
 ## béni frappe moins fort par sa chaîne comme par son épée.
 func test_the_chain_strikes_on_behalf_of_its_caster() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
-	var target := _target(Vector2(60, 0))
+	var target := _target(Vector3(60, 0.0, 0))
 	# Le critique est retiré, comme pour les dégâts contre un état : il tire une
 	# salve sur deux, doublerait l'une des deux et ferait dépendre le test de la
 	# place de ce lancer dans le fil de `Game.rng`.
@@ -151,7 +152,7 @@ func test_the_chain_strikes_on_behalf_of_its_caster() -> void:
 ## se lirait comme une touche morte.
 func test_the_chain_fires_into_the_void_without_a_target_ahead() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
-	var on_the_side := _target(Vector2(0, 60))
+	var on_the_side := _target(Vector3(0, 0.0, 60))
 	await wait_physics_frames(2)
 
 	var mana := _p.mana
@@ -168,7 +169,7 @@ func test_the_chain_fires_into_the_void_without_a_target_ahead() -> void:
 ## Une cible qui saigne déjà, et « +100 % contre les saignants » : elle doit prendre le
 ## double d'une cible nue touchée par le même geste. Le critique est retiré, qui
 ## tirerait une cible sur deux.
-func _bleeding_target(position: Vector2) -> Hurtbox:
+func _bleeding_target(position: Vector3) -> Hurtbox:
 	var h := _target(position)
 	h.states = StatusEffects.new()
 	h.states.put(StatusEffects.Kind.BLEED, 0.0)
@@ -194,8 +195,8 @@ func _assert_doubled(bleeding: Hurtbox, bare: Hurtbox, path: String) -> void:
 func test_a_chain_carries_its_damage_against_a_state() -> void:
 	_learn("manual_lightning", ["chain_lightning"])
 	_against_bleeding(Keywords.SPELL)
-	var bleeding := _bleeding_target(Vector2(60, 0))
-	var bare := _target(Vector2(120, 0))
+	var bleeding := _bleeding_target(Vector3(60, 0.0, 0))
+	var bare := _target(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	_assert_doubled(bleeding, bare, "Targets.strike")
@@ -204,8 +205,8 @@ func test_a_chain_carries_its_damage_against_a_state() -> void:
 func test_a_ball_carries_it_by_its_bolt_and_its_explosion() -> void:
 	_learn("manual_fire", ["fireball"])
 	_against_bleeding(Keywords.SPELL)
-	var bleeding := _bleeding_target(Vector2(40, 0))
-	var bare := _target(Vector2(40, 16))
+	var bleeding := _bleeding_target(Vector3(40, 0.0, 0))
+	var bare := _target(Vector3(40, 0.0, 16))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
@@ -216,7 +217,7 @@ func test_a_ball_carries_it_by_its_bolt_and_its_explosion() -> void:
 ## la boule par son tir et son explosion.
 func test_a_spell_crits_on_every_path() -> void:
 	var crits := []
-	for at in [Vector2(60, 0), Vector2(40, 40), Vector2(40, 56)]:
+	for at in [Vector3(60, 0.0, 0), Vector3(40, 0.0, 40), Vector3(40, 0.0, 56)]:
 		_target(at).damaged.connect(func(info: DamageInfo) -> void: crits.append(info.is_crit))
 	await wait_physics_frames(2)
 	_learn("manual_lightning", ["chain_lightning"])
@@ -225,7 +226,7 @@ func test_a_spell_crits_on_every_path() -> void:
 	_learn("manual_fire", ["fireball"])
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 10000.0)])
 	_p.bar.put(1, "fireball")
-	_p.facing = Vector2(1, 1).normalized()
+	_p.facing = Vector3(1, 0.0, 1).normalized()
 	assert_true(Gestures.cast(_p, 1), "la boule, sur une case qui ne recharge pas")
 	await wait_seconds(0.5)
 	assert_gt(crits.size(), 2)
@@ -235,8 +236,8 @@ func test_a_spell_crits_on_every_path() -> void:
 func test_a_swing_carries_it() -> void:
 	_learn("manual_weapons", ["heavy_strike"])
 	_against_bleeding(Keywords.ATTACK)
-	var bleeding := _bleeding_target(Vector2(20, -4))
-	var bare := _target(Vector2(20, 4))
+	var bleeding := _bleeding_target(Vector3(20, 0.0, -4))
+	var bare := _target(Vector3(20, 0.0, 4))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_p.swing_duration + 0.2)
@@ -251,9 +252,9 @@ func test_the_cloud_strikes_below_not_beside_then_vanishes() -> void:
 	_learn("manual_lightning", ["storm_cloud"])
 	# Une durée raccourcie, pour ne pas attendre trois secondes.
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -50.0, Keywords.SPELL)])
-	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var point := Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
 	var below := _target(point)
-	var beside := _target(point + Vector2(0, 80))
+	var beside := _target(point + Vector3(0, 0.0, 80))
 	await wait_physics_frames(2)
 
 	Game.hit_stop_duration = 0.05
@@ -280,8 +281,8 @@ func test_the_cloud_strikes_below_not_beside_then_vanishes() -> void:
 
 func test_the_aura_lights_strikes_burns_and_goes_out_for_free() -> void:
 	_learn("manual_fire", ["immolation"])
-	var near := _target(Vector2(20, 0))
-	var far := _target(Vector2(100, 0))
+	var near := _target(Vector3(20, 0.0, 0))
+	var far := _target(Vector3(100, 0.0, 0))
 	await wait_physics_frames(2)
 
 	var mana := _p.mana
@@ -318,7 +319,7 @@ func test_the_aura_does_not_flicker_while_the_key_is_held() -> void:
 ## Le Tirage : chaque impulsion tire vers le porteur — un recul négatif.
 func test_a_draught_pulls_what_the_aura_strikes() -> void:
 	_learn_with("manual_fire", "immolation", [[SkillStats.PULL, 40.0]])
-	var near := _target(Vector2(30, 0))
+	var near := _target(Vector3(30, 0.0, 0))
 	var knocks := []
 	near.damaged.connect(func(info: DamageInfo) -> void: knocks.append(info.knockback))
 	await wait_physics_frames(2)
@@ -338,7 +339,7 @@ func test_a_campfire_rises_while_still_and_keeps_vigil() -> void:
 	var risen := aura._cast.radius
 	assert_gt(risen, base * 1.3, "monté")
 	# Il remonte dès qu'on s'arrête : à l'impulsion suivante, il est reparti de zéro.
-	_p.global_position += Vector2(10, 0)
+	_p.global_position += Vector3(10, 0.0, 0)
 	await wait_seconds(aura._cast.period + 0.05)
 	assert_lt(aura._cast.radius, risen * 0.9, "retombé au premier pas")
 	aura._still = SkillStats.CAMPFIRE_MOST
@@ -352,8 +353,8 @@ func test_a_campfire_rises_while_still_and_keeps_vigil() -> void:
 func test_cinders_leap_to_an_enemy_outside_the_circle() -> void:
 	_learn_with("manual_fire", "immolation", [[SkillStats.EMBERS, 2.0]])
 	var radius := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
-	_target(Vector2(radius * 0.5, 0))
-	var outside := _target(Vector2(0, radius * 1.6))
+	_target(Vector3(radius * 0.5, 0.0, 0))
+	var outside := _target(Vector3(0, 0.0, radius * 1.6))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var aura: Immolation = _p._lit["immolation"]
@@ -372,8 +373,8 @@ func test_cinders_leap_to_an_enemy_outside_the_circle() -> void:
 func test_the_eye_of_the_blaze_strikes_harder_at_the_core() -> void:
 	_learn_with("manual_fire", "immolation", [[SkillStats.EYE, 24.0]])
 	var radius := _p.resolve(SkillCatalog.by_id("immolation"), 1).radius
-	var core := _target(Vector2(radius * 0.2, 0))
-	var edge := _target(Vector2(0, radius * 0.8))
+	var core := _target(Vector3(radius * 0.2, 0.0, 0))
+	var edge := _target(Vector3(0, 0.0, radius * 0.8))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
@@ -404,7 +405,7 @@ func test_consumed_souls_heal_on_each_kill() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
 	cast.soul_feast = 10.0
 	_p._set_health(_p.stats.max_health * 0.5)
-	_p.states.slew.emit(cast, Vector2.ZERO, null)
+	_p.states.slew.emit(cast, Vector3.ZERO, null)
 	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.01)
 
 
@@ -479,7 +480,7 @@ func test_the_aura_goes_out_when_its_book_leaves_the_rack() -> void:
 
 func test_the_snake_burns_what_it_touches_once_per_period() -> void:
 	_learn("manual_fire", ["hell_snake"])
-	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var point := Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
 	var below := _target(point)
 	await wait_physics_frames(2)
 
@@ -491,37 +492,19 @@ func test_the_snake_burns_what_it_touches_once_per_period() -> void:
 	assert_eq(_hits(below), 1, "pas deux fois dans la même période")
 
 
-## Le roulement de peinture : seul, un serpent a son tour à chaque image ; trois fois trop
-## nombreux, une image sur trois — et chacun la sienne.
-func test_a_crowd_of_snakes_takes_turns_to_repaint() -> void:
-	var before := HellSnake.crawling
-	HellSnake.crawling = 1
-	assert_true(HellSnake.on_turn(5, 0) and HellSnake.on_turn(5, 1), "seul, à chaque image")
-	HellSnake.crawling = HellSnake.PAINTED_PER_IMAGE * 3
-	var turns := 0
-	for image in 3:
-		turns += 1 if HellSnake.on_turn(5, image) else 0
-	var painted := 0
-	for slot in HellSnake.crawling:
-		painted += 1 if HellSnake.on_turn(slot, 7) else 0
-	HellSnake.crawling = before
-	assert_eq(turns, 1, "une image sur trois")
-	assert_eq(painted, HellSnake.PAINTED_PER_IMAGE, "pas plus par image")
-
-
 ## Un sol posé sur un sol vivant de la même compétence le ravive au lieu de s'ajouter.
 func test_a_ground_laid_on_a_ground_renews_it() -> void:
 	_learn("manual_fire", ["hell_snake"])
 	var ground := _p.resolve(SkillCatalog.by_id("hell_snake"), 1).ground()
 	ground.duration = 2.0
 	# Dans la même case de `LAID_CELL` × 14 px, loin d'une frontière.
-	var first := DashTrail.patch(_effects, Vector2(302, 302), ground, _p.states)
+	var first := DashTrail.patch(_effects, Vector3(302, 0.0, 302), ground, _p.states)
 	await wait_physics_frames(3)
 	first._age = 1.5
-	var again := DashTrail.patch(_effects, Vector2(303, 303), ground, _p.states)
+	var again := DashTrail.patch(_effects, Vector3(303, 0.0, 303), ground, _p.states)
 	assert_eq(again, first, "ravivé")
 	assert_almost_eq(first._age, DashTrail.SPAWN, 1e-4)
-	var aside := DashTrail.patch(_effects, Vector2(302 + ground.radius * 2.0, 302), ground, _p.states)
+	var aside := DashTrail.patch(_effects, Vector3(302 + ground.radius * 2.0, 0.0, 302), ground, _p.states)
 	assert_ne(aside, first, "plus loin, un autre sol")
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 2)
@@ -561,7 +544,7 @@ func test_spiral_sword_refuses_the_fourth_without_taking_anything() -> void:
 func test_the_sword_strikes_while_spinning_then_vanishes() -> void:
 	_learn("manual_weapons", ["spiral_sword"])
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
-	var on_the_circle := _target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
+	var on_the_circle := _target(Vector3(SkillCatalog.by_id("spiral_sword").radius, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -579,7 +562,7 @@ func test_the_sword_strikes_while_spinning_then_vanishes() -> void:
 ## arc plus large.
 func test_the_cross_hits_the_same_target_twice() -> void:
 	_learn("manual_weapons", ["cross_slash"])
-	var ahead := _target(Vector2(20, 0))
+	var ahead := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -589,9 +572,9 @@ func test_the_cross_hits_the_same_target_twice() -> void:
 
 func test_the_ball_wounds_the_neighbor_and_the_target_once() -> void:
 	_learn("manual_fire", ["fireball"])
-	var direct := _target(Vector2(40, 0))
-	var neighbor := _target(Vector2(40, 16))
-	var far := _target(Vector2(40, 70))
+	var direct := _target(Vector3(40, 0.0, 0))
+	var neighbor := _target(Vector3(40, 0.0, 16))
+	var far := _target(Vector3(40, 0.0, 70))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -621,8 +604,8 @@ func test_the_dash_carries_the_player_to_the_aim() -> void:
 ## Et sa trace frappe le couloir, pas ce qui est à côté, jusqu'à la fin de sa durée.
 func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
 	_learn("manual_fire", ["flame_dash"])
-	var on_the_way := _target(Vector2(60, 0))
-	var aside := _target(Vector2(60, 60))
+	var on_the_way := _target(Vector3(60, 0.0, 0))
+	var aside := _target(Vector3(60, 0.0, 60))
 	await wait_physics_frames(2)
 
 	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
@@ -634,57 +617,14 @@ func test_the_trail_strikes_its_corridor_until_it_fades() -> void:
 	assert_eq(_children_of(DashTrail).size(), 0, "la trace s'est effacée")
 
 
-## Le sillon de feu se dessine aussi large qu'il frappe (jalon 34) : l'ancienne file
-## unique n'en montrait que le tiers, et Braises ne se voyait pas.
-func test_the_fire_trail_is_drawn_as_wide_as_it_strikes() -> void:
-	var widest: Array[float] = []
-	for radius in [16.0, 25.6]:
-		var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
-		cast.radius = radius
-		var trail := DashTrail.new()
-		trail._cast = cast
-		trail._toward = Vector2(100.0, 0.0)
-		trail._lay_out_the_bed()
-		var reach := 0.0
-		for t in trail._tongues:
-			assert_lt(
-				DashTrail._off_axis(t.foot.x, t.foot.y, 100.0), radius, "aucune langue hors du couloir"
-			)
-			reach = maxf(reach, absf(t.foot.y))
-		widest.append(reach)
-		trail.free()
-	assert_gt(widest[0], 16.0 * 0.5, "les franges passent la moitié du rayon")
-	assert_gt(widest[1], widest[0], "Braises élargit le dessin")
-
-
-## Une traînée se couche **sous les corps**, sur la couche du sol : au-dessus d'eux, on
-## marchait sous sa propre traînée.
+## Une traînée se couche sur la couche du sol, pas parmi les tirs.
 func test_a_trail_lies_under_the_bodies() -> void:
-	var layer := Node2D.new()
+	var layer := Node3D.new()
 	layer.add_to_group(DashTrail.GROUND_LAYER)
 	add_child_autofree(layer)
 	var cast := _p.resolve(SkillCatalog.by_id("flame_dash"), 1)
-	var trail := DashTrail.leave(self, Vector2.ZERO, Vector2(40.0, 0.0), cast, _p.states)
+	var trail := DashTrail.leave(self, Vector3.ZERO, Vector3(40.0, 0.0, 0.0), cast, _p.states)
 	assert_eq(trail.get_parent(), layer, "sur la couche du sol, pas parmi les tirs")
-	assert_eq(trail.z_index, 0, "et pas relevée au-dessus des corps")
-
-
-## Le sol d'une compétence convertie se voit autant que le sol brûlant (jalon 34) : un lit
-## de givre ou de pourriture, des flocons ou des spores, et rien d'additif — il ne
-## luisait qu'en deux taches à 0,3, invisibles sur la terre.
-func test_a_converted_ground_is_drawn_like_the_fire() -> void:
-	for nature in [DamageType.Kind.COLD, DamageType.Kind.NECROTIC]:
-		var ground := _p.resolve(SkillCatalog.by_id("fireball"), 1).ground()
-		ground.nature = nature
-		var patch := DashTrail.new()
-		patch._cast = ground
-		add_child_autofree(patch)
-		assert_null(patch.material, "%s : dessiné, pas en lumière ajoutée" % DamageType.name(nature))
-		# Tiré au hasard, et moitié moins dense que la cendre : présent, pas compté.
-		assert_gt(patch._bed_at.size(), 0, "un lit de taches")
-		assert_gt(patch._tongues.size(), 0, "et ce qui en monte")
-		for t in patch._tongues:
-			assert_lt(t.foot.length(), ground.radius, "dans le cercle qui mord")
 
 
 ## La Ruée tranchante est une ruée dont la trace ne frappe **qu'une fois** : sa
@@ -692,9 +632,9 @@ func test_a_converted_ground_is_drawn_like_the_fire() -> void:
 ## fois même sous plusieurs sondes, et rien à côté.
 func test_the_slicing_dash_cuts_its_path_once() -> void:
 	_learn("manual_weapons", ["slicing_dash"])
-	var near := _target(Vector2(30, 0))
-	var far := _target(Vector2(90, 0))
-	var aside := _target(Vector2(60, 60))
+	var near := _target(Vector3(30, 0.0, 0))
+	var far := _target(Vector3(90, 0.0, 0))
+	var aside := _target(Vector3(60, 0.0, 60))
 	await wait_physics_frames(2)
 
 	var cast := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1)
@@ -771,10 +711,10 @@ func test_the_buff_goes_out_when_its_pool_is_empty() -> void:
 ## non. Le coup part par `Targets.strike()`, donc par la hurtbox, comme tous les coups.
 func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
 	_learn("manual_lightning", ["static_electricity"])
-	var numbed := _target(Vector2(30, 0))
+	var numbed := _target(Vector3(30, 0.0, 0))
 	numbed.states = StatusEffects.new()
 	numbed.states.put(StatusEffects.Kind.NUMB, 1.0)
-	var healthy := _target(Vector2(60, 0))
+	var healthy := _target(Vector3(60, 0.0, 0))
 	healthy.states = StatusEffects.new()
 	await wait_physics_frames(2)
 
@@ -783,11 +723,11 @@ func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
 	var parts := _all_in(DamageType.Kind.LIGHTNING)
 	parts[DamageType.Kind.LIGHTNING] = 50.0
 
-	Targets.strike(numbed, parts, Vector2.ZERO, _p.states, null)
+	Targets.strike(numbed, parts, Vector3.ZERO, _p.states, null)
 	await wait_physics_frames(2)
 	assert_eq(_children_of(StaticCharge).size(), 1, "une charge est restée sur l'engourdi")
 
-	Targets.strike(healthy, parts, Vector2.ZERO, _p.states, null)
+	Targets.strike(healthy, parts, Vector3.ZERO, _p.states, null)
 	await wait_physics_frames(2)
 	assert_eq(_children_of(StaticCharge).size(), 1, "et rien sur un ennemi sain")
 
@@ -795,10 +735,10 @@ func test_a_hit_on_a_numbed_enemy_leaves_a_static_charge() -> void:
 ## Elle attend, mord **une fois par corps**, et reste : deux ennemis qui la traversent
 ## la paient tous les deux, le même deux fois non.
 func test_the_static_charge_bites_once_per_body_and_stays() -> void:
-	var walker := _target(Vector2(40, 0))
+	var walker := _target(Vector3(40, 0.0, 0))
 	var parts := _all_in(DamageType.Kind.LIGHTNING)
 	parts[DamageType.Kind.LIGHTNING] = 50.0
-	StaticCharge.put(_effects, Vector2(40, 0), Vector2.RIGHT, parts, _p.states)
+	StaticCharge.put(_effects, Vector3(40, 0.0, 0), Vector3.RIGHT, parts, _p.states)
 	await wait_physics_frames(2)
 	assert_eq(_hits(walker), 0, "elle ne frappe pas à la naissance")
 
@@ -811,7 +751,7 @@ func test_the_static_charge_bites_once_per_body_and_stays() -> void:
 	assert_eq(_children_of(StaticCharge).size(), 1, "et elle reste")
 
 	# Un second corps, posé après coup, la paie aussi ; le premier, non.
-	var second := _target(Vector2(44, 0))
+	var second := _target(Vector3(44, 0.0, 0))
 	await wait_seconds(StaticCharge.CHECK * 3.0)
 	assert_eq(_hits(walker), 1, "le même corps ne la paie pas deux fois")
 	assert_eq(_hits(second), 1, "un autre, si")
@@ -823,7 +763,7 @@ func test_the_static_charge_bites_once_per_body_and_stays() -> void:
 ## Une ruée traverse ce qui est sur le chemin : c'est **l'arrivée** qui doit être libre.
 func test_the_dash_goes_through_what_is_on_the_way() -> void:
 	_learn("manual_fire", ["flame_dash"])
-	_wall(Vector2(70, 0), Vector2(16, 120))
+	_wall(Vector3(70, 0.0, 0), Vector3(16, 0.0, 120))
 	await wait_physics_frames(2)
 
 	var from_value := _p.global_position
@@ -837,7 +777,7 @@ func test_the_dash_goes_through_what_is_on_the_way() -> void:
 ## Et une arrivée prise recule jusqu'au premier point libre, plutôt que de refuser.
 func test_a_taken_landing_backs_up_to_the_first_free_point() -> void:
 	_learn("manual_fire", ["flame_dash"])
-	_wall(Vector2(Player.PLACEMENT_RANGE, 0), Vector2(60, 120))
+	_wall(Vector3(Player.PLACEMENT_RANGE, 0.0, 0), Vector3(60, 0.0, 120))
 	await wait_physics_frames(2)
 
 	var from_value := _p.global_position
@@ -876,8 +816,8 @@ func test_the_wave_travels_past_the_arm_and_bites_once() -> void:
 	_learn("manual_weapons", ["wave_slash"])
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
 	# Devant le départ de la vague, et hors de portée de la hitbox.
-	var ahead := _target(Vector2(SlashWave.START + cast.radius + 20.0, 0))
-	var behind := _target(Vector2(-60, 0))
+	var ahead := _target(Vector3(SlashWave.START + cast.radius + 20.0, 0.0, 0))
+	var behind := _target(Vector3(-60, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -892,8 +832,8 @@ func test_the_wave_travels_past_the_arm_and_bites_once() -> void:
 ## vide l'arrête, là où la brûlure d'Immolation tue.
 func test_the_cyclone_spins_on_mana_until_the_pool_runs_dry() -> void:
 	_learn("manual_weapons", ["cyclone"])
-	var near := _target(Vector2(20, 0))
-	var far := _target(Vector2(120, 0))
+	var near := _target(Vector3(20, 0.0, 0))
+	var far := _target(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -916,9 +856,9 @@ func test_the_cyclone_spins_on_mana_until_the_pool_runs_dry() -> void:
 ## Les pics frappent une fois au point visé, puis ne laissent rien.
 func test_the_spikes_strike_once_and_leave_nothing() -> void:
 	_learn("manual_cold", ["ice_spike"])
-	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var point := Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
 	var below := _target(point)
-	var beside := _target(point + Vector2(0, 80))
+	var beside := _target(point + Vector3(0, 0.0, 80))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -937,8 +877,8 @@ func test_the_spikes_strike_once_and_leave_nothing() -> void:
 func test_the_nova_bursts_around_the_caster_and_chills_better() -> void:
 	_learn("manual_cold", ["ice_nova"])
 	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
-	var near := _target(Vector2(30, 0))
-	var far := _target(Vector2(cast.radius + 40.0, 0))
+	var near := _target(Vector3(30, 0.0, 0))
+	var far := _target(Vector3(cast.radius + 40.0, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -987,7 +927,7 @@ func test_the_tomb_mends_then_thaws_on_its_own() -> void:
 func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
 	_learn("manual_cold", ["winter_disaster"])
 	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
-	var on_the_edge := _target(Vector2(cast.radius * 0.9, 0))
+	var on_the_edge := _target(Vector3(cast.radius * 0.9, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1010,9 +950,9 @@ func test_the_vortex_grows_and_reaches_the_edge_late() -> void:
 func test_the_pillar_strikes_its_circle_for_its_duration() -> void:
 	_learn("manual_holy", ["sacred_pillar"])
 	var cast := _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1)
-	var point := Vector2(Player.PLACEMENT_RANGE, 0)
+	var point := Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
 	var below := _target(point)
-	var beside := _target(point + Vector2(0, cast.radius + 40.0))
+	var beside := _target(point + Vector3(0, 0.0, cast.radius + 40.0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1031,7 +971,7 @@ func test_the_pillar_strikes_its_circle_for_its_duration() -> void:
 func test_the_pulse_follows_its_caster_then_ends_on_its_own() -> void:
 	_learn("manual_holy", ["holy_pulse"])
 	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
-	var away := Vector2(400, 0)
+	var away := Vector3(400, 0.0, 0)
 	var met := _target(away)
 	await wait_physics_frames(2)
 
@@ -1076,7 +1016,7 @@ func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
 # --------------------------------------------------------------------------
 
 ## Une cible qui porte des états : la Peste et la malédiction en posent.
-func _wearing_target(position: Vector2) -> Hurtbox:
+func _wearing_target(position: Vector3) -> Hurtbox:
 	var h := _target(position)
 	h.states = StatusEffects.new()
 	return h
@@ -1091,7 +1031,7 @@ func _on_authored(info: DamageInfo) -> void:
 
 func test_plague_leaves_decay_on_what_it_strikes() -> void:
 	_learn("manual_necrotic", ["plague"])
-	var target := _wearing_target(_p.global_position + Vector2(60, 0))
+	var target := _wearing_target(_p.global_position + Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -1101,9 +1041,9 @@ func test_plague_leaves_decay_on_what_it_strikes() -> void:
 
 func test_the_curse_marks_its_circle_without_striking() -> void:
 	_learn("manual_necrotic", ["putrid_curse"])
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
-	var inside := _wearing_target(aim + Vector2(30, 0))
-	var outside := _wearing_target(aim + Vector2(90, 0))
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
+	var inside := _wearing_target(aim + Vector3(30, 0.0, 0))
+	var outside := _wearing_target(aim + Vector3(90, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -1133,7 +1073,7 @@ func test_bone_legion_raises_a_third() -> void:
 
 func test_the_undead_strike_on_behalf_of_the_player() -> void:
 	_learn("manual_necrotic", ["rise"])
-	var target := _wearing_target(_p.global_position + Vector2(60, 0))
+	var target := _wearing_target(_p.global_position + Vector3(60, 0.0, 0))
 	_authors.clear()
 	target.damaged.connect(_on_authored)
 	assert_true(Gestures.cast(_p, 2))
@@ -1145,7 +1085,7 @@ func test_the_undead_strike_on_behalf_of_the_player() -> void:
 ## Son jumeau : ce qui reste hors de la zone du joueur n'est pas poursuivi.
 func test_the_undead_leave_alone_what_stays_outside_the_zone() -> void:
 	_learn("manual_necrotic", ["rise"])
-	var target := _target(_p.global_position + Vector2(200, 0))
+	var target := _target(_p.global_position + Vector3(200, 0.0, 0))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
 	assert_eq(_hits(target), 0)
@@ -1165,7 +1105,7 @@ func test_an_enemy_turns_on_the_closer_undead() -> void:
 	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
 	add_child_autofree(grunt)
 	grunt.setup(_p)
-	grunt.global_position = _p.global_position + Vector2(-100, 0)
+	grunt.global_position = _p.global_position + Vector3(-100, 0.0, 0)
 	assert_eq(grunt.foe(), _p, "sans mort-vivant, le joueur")
 	_learn("manual_necrotic", ["rise"])
 	assert_true(Gestures.cast(_p, 2))
@@ -1175,9 +1115,9 @@ func test_an_enemy_turns_on_the_closer_undead() -> void:
 
 func test_the_gate_spews_creatures_that_burst_on_an_enemy_in_sight() -> void:
 	_learn("manual_necrotic", ["rotting_gate"])
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
-	var seen := _target(aim + Vector2(60, 0))
-	var unseen := _target(aim + Vector2(0, 200))
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
+	var seen := _target(aim + Vector3(60, 0.0, 0))
+	var unseen := _target(aim + Vector3(0, 0.0, 200))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
@@ -1241,7 +1181,7 @@ func test_the_elemental_projectile_takes_each_element_in_turn() -> void:
 func test_the_quick_strike_needs_a_prey_in_range() -> void:
 	_learn_class(Character.SWIFTBLADE, ["quick_strike"])
 	var cast := _p.resolve(SkillCatalog.by_id("quick_strike"), 1)
-	var far := _target(Vector2(cast.radius + 40.0, 0))
+	var far := _target(Vector3(cast.radius + 40.0, 0.0, 0))
 	await wait_physics_frames(2)
 	var mana := _p.mana
 	assert_false(Gestures.cast(_p, 2))
@@ -1253,9 +1193,9 @@ func test_the_quick_strike_needs_a_prey_in_range() -> void:
 ## Deux à portée : la visée choisit. On arrive contre elle, et elle seule est frappée.
 func test_the_quick_strike_lands_on_the_prey_nearest_the_aim() -> void:
 	_learn_class(Character.SWIFTBLADE, ["quick_strike"])
-	var above := _target(Vector2(80, -50))
-	var below := _target(Vector2(80, 50))
-	_p.facing = Vector2(1.0, 0.6).normalized()
+	var above := _target(Vector3(80, 0.0, -50))
+	var below := _target(Vector3(80, 0.0, 50))
+	_p.facing = Vector3(1.0, 0.0, 0.6).normalized()
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1281,14 +1221,14 @@ func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
 	assert_eq(_p.lit_stacks("bloodlust"), 0)
 	assert_eq(_p.stats.attack_speed, base_speed, "allumée sans charge, rien")
 
-	_p.states.slew.emit(_blow(Keywords.SPELL), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.SPELL), Vector3.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), 0, "un sort ne compte pas")
-	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), 1)
 	var one := _p.stats.attack_speed
 	assert_gt(one, base_speed, "une charge accélère")
 	for i in skill.stacks_max + 2:
-		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), skill.stacks_max, "pas plus que le plafond")
 	assert_almost_eq(
 		_p.stats.attack_speed - base_speed, (one - base_speed) * skill.stacks_max, 1e-4,
@@ -1307,8 +1247,8 @@ func test_bloodlust_stacks_frenzy_on_attack_kills() -> void:
 func test_the_flurry_thrusts_three_times_at_the_first_in_line() -> void:
 	_learn_class(Character.SWIFTBLADE, ["flurry"])
 	var cast := _p.resolve(SkillCatalog.by_id("flurry"), 1)
-	var first := _target(Vector2(30, 0))
-	var behind := _target(Vector2(cast.radius - 4.0, 0))
+	var first := _target(Vector3(30, 0.0, 0))
+	var behind := _target(Vector3(cast.radius - 4.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(first), 1, "le premier estoc, à l'impact")
@@ -1322,8 +1262,8 @@ func test_the_flurry_thrusts_three_times_at_the_first_in_line() -> void:
 ## s'arrêtent sur le premier corps.
 func test_a_critical_knife_passes_through() -> void:
 	_learn_class(Character.SWIFTBLADE, ["throwing_knives"])
-	var front := _target(Vector2(60, 0))
-	var back := _target(Vector2(110, 0))
+	var front := _target(Vector3(60, 0.0, 0))
+	var back := _target(Vector3(110, 0.0, 0))
 	await wait_physics_frames(2)
 	_p.stats.crit_chance = 0.0
 	assert_true(Gestures.cast(_p, 2))
@@ -1349,9 +1289,9 @@ func test_the_coup_de_grace_spends_the_frenzy() -> void:
 	assert_eq(_p.mana, mana, "rien n'est payé")
 
 	for i in 5:
-		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_eq(_p.lit_stacks("bloodlust"), 5)
-	var prey := _target(Vector2(40, 0))
+	var prey := _target(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	_p._recharges[2] = 0.0
 	assert_true(Gestures.cast(_p, 2))
@@ -1361,17 +1301,17 @@ func test_the_coup_de_grace_spends_the_frenzy() -> void:
 
 ## L'achèvement se lit sur le coup : sous le seuil de son lancer, l'ennemi tombe.
 func test_a_blow_with_an_execution_threshold_finishes_below_it() -> void:
-	var grunt := _grunt(Vector2(200, 0))
+	var grunt := _grunt(Vector3(200, 0.0, 0))
 	await wait_physics_frames(2)
 	var cast := SkillStats.new()
 	cast.execution = 25.0
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = grunt.stats.max_health * 0.05
 	grunt._set_health(grunt.stats.max_health * 0.5)
-	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector2.ZERO, blow))
+	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector3.ZERO, blow))
 	assert_false(grunt.is_dead, "au-dessus du seuil")
 	grunt._set_health(grunt.stats.max_health * 0.27)
-	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector2.ZERO, blow))
+	grunt.hurtbox.take_damage(DamageInfo.roll(cast, Vector3.ZERO, blow))
 	assert_true(grunt.is_dead, "achevé")
 
 
@@ -1383,16 +1323,16 @@ func test_an_evaded_blow_calls_a_riposte() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("counterattack"))
 	assert_gt(_p.stats.evasion, evasion, "la Garde")
-	var near := _target(Vector2(30, 0))
-	var other := _target(Vector2(-30, 0))
+	var near := _target(Vector3(30, 0.0, 0))
+	var other := _target(Vector3(-30, 0.0, 0))
 	await wait_physics_frames(2)
-	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
-	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector3(32, 0.0, 0)))
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector3(32, 0.0, 0)))
 	await wait_physics_frames(1)
 	assert_eq(_hits(near), 1, "une riposte, sur celui qui a frappé")
 	assert_eq(_hits(other), 0)
 	await wait_seconds(SkillStats.RIPOSTE_WAIT + 0.05)
-	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector3(32, 0.0, 0)))
 	await wait_physics_frames(1)
 	assert_eq(_hits(near), 2, "la suivante, après l'attente")
 
@@ -1426,7 +1366,7 @@ func _frenzy(charges: int, nodes := []) -> Buff:
 	_p.bar.put(3, "bloodlust")
 	assert_true(Gestures.cast(_p, 3))
 	for i in charges:
-		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	return _p._lit["bloodlust"] as Buff
 
 
@@ -1439,13 +1379,13 @@ func _crits() -> Array:
 ## L'Impétuosité : un long bond frappe plus fort qu'un court.
 func test_impetuosity_rewards_a_long_leap() -> void:
 	_learn_swift("quick_strike", ["momentum", "impetus"])
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var short: float = _received_all[near][0]
 	near.queue_free()
-	_p.global_position = Vector2.ZERO
-	var far := _target(Vector2(120, 0))
+	_p.global_position = Vector3.ZERO
+	var far := _target(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 	_p._recharges[2] = 0.0
 	assert_true(Gestures.cast(_p, 2))
@@ -1456,7 +1396,7 @@ func test_impetuosity_rewards_a_long_leap() -> void:
 ## intouchable.
 func test_a_double_hit_then_a_withdrawal() -> void:
 	_learn_swift("quick_strike", ["spring", "spring", "double_hit", "retreat", "slip"])
-	var prey := _target(Vector2(100, 0))
+	var prey := _target(Vector3(100, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(
@@ -1470,9 +1410,9 @@ func test_a_double_hit_then_a_withdrawal() -> void:
 ## La Fente : ce que le bond traverse est frappé, à sa part.
 func test_the_lunge_strikes_what_it_crosses() -> void:
 	_learn_swift("quick_strike", ["momentum", "impetus", "lunge_path"])
-	var crossed := _target(Vector2(50, 0))
-	var prey := _target(Vector2(110, 0))
-	_p.facing = Vector2.RIGHT
+	var crossed := _target(Vector3(50, 0.0, 0))
+	var prey := _target(Vector3(110, 0.0, 0))
+	_p.facing = Vector3.RIGHT
 	await wait_physics_frames(2)
 	# La visée tombe sur la plus lointaine : la frappe vive la choisit.
 	_p._aim_with_mouse = false
@@ -1485,8 +1425,8 @@ func test_the_lunge_strikes_what_it_crosses() -> void:
 ## Coup sur coup : la frappe vive qui tue repart sur le plus proche.
 func test_a_kill_relaunches_the_quick_strike() -> void:
 	_learn_swift("quick_strike", ["momentum", "momentum", "chain_strike"])
-	var first := _grunt(Vector2(60, 0))
-	var second := _grunt(Vector2(60, 90))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var second := _grunt(Vector3(60, 0.0, 90))
 	await wait_physics_frames(2)
 	first._set_health(1.0)
 	second._set_health(second.stats.max_health)
@@ -1500,7 +1440,7 @@ func test_a_kill_relaunches_the_quick_strike() -> void:
 ## La Botte secrète : le dernier estoc critique à coup sûr, les autres non.
 func test_the_secret_thrust_crits_the_last_thrust() -> void:
 	_learn_swift("flurry", ["glance", "glance", "secret_thrust"])
-	var prey := _target(Vector2(30, 0))
+	var prey := _target(Vector3(30, 0.0, 0))
 	var crits := _crits()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -1512,9 +1452,9 @@ func test_the_secret_thrust_crits_the_last_thrust() -> void:
 ## Le Quatrième estoc, et l'Éventail : un estoc de plus ; les estocs couvrent trois lignes.
 func test_the_fan_spreads_the_thrusts() -> void:
 	_learn_swift("flurry", ["long_steel", "long_steel", "fan"])
-	var left := _target(Vector2(30, 0).rotated(-deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
-	var middle := _target(Vector2(30, 0))
-	var right := _target(Vector2(30, 0).rotated(deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
+	var left := _target(Flat.rotated(Vector3(30, 0.0, 0), -deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
+	var middle := _target(Vector3(30, 0.0, 0))
+	var right := _target(Flat.rotated(Vector3(30, 0.0, 0), deg_to_rad(SkillStats.FAN_SPREAD) * 0.5))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_flurry_gap() * SkillStats.FLURRY_THRUSTS + 0.1)
@@ -1523,7 +1463,7 @@ func test_the_fan_spreads_the_thrusts() -> void:
 
 func test_a_fourth_thrust() -> void:
 	_learn_swift("flurry", ["beat", "beat", "fourth_thrust"])
-	var prey := _target(Vector2(30, 0))
+	var prey := _target(Vector3(30, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(_flurry_gap() * 4.0 + 0.1)
@@ -1535,7 +1475,7 @@ func test_blood_rush_revives_the_frenzy() -> void:
 	_learn_swift("flurry", ["glance", "glance", "secret_thrust", "ascent", "blood_rush"])
 	var frenzy := _frenzy(1)
 	frenzy._hold = 100.0
-	_target(Vector2(30, 0))
+	_target(Vector3(30, 0.0, 0))
 	await wait_physics_frames(2)
 	frenzy._since_stack = 5.0
 	var start := Time.get_ticks_msec()
@@ -1551,9 +1491,9 @@ func test_berserk_raises_the_cap_and_rushes_at_full() -> void:
 	var frenzy := _frenzy(0, ["carnage", "carnage", "berserk"])
 	var skill := SkillCatalog.by_id("bloodlust")
 	for i in skill.stacks_max + SkillStats.BERSERK_CHARGES - 1:
-		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+		_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	var before := _p.stats.attack_speed
-	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_eq(frenzy.stacks, skill.stacks_max + SkillStats.BERSERK_CHARGES)
 	assert_gt(_p.stats.attack_speed, before * 1.1, "le plein emballe")
 
@@ -1572,7 +1512,7 @@ func test_the_harvest_heals_per_charge() -> void:
 	_learn_swift("quick_strike", [])
 	_frenzy(0, ["drunkenness", "harvest"])
 	_p._set_health(1.0)
-	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_almost_eq(_p.health, 1.0 + _p.stats.max_health * 0.01, 0.01)
 
 
@@ -1580,7 +1520,7 @@ func test_the_harvest_heals_per_charge() -> void:
 func test_composure_spends_half_and_the_full_stop_bursts_at_five() -> void:
 	_learn_swift("coup_de_grace", ["estocade", "relentless", "relentless", "composure"])
 	var frenzy := _frenzy(5)
-	_target(Vector2(40, 0))
+	_target(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(frenzy.stacks, 2, "trois prises, deux gardées")
@@ -1589,8 +1529,8 @@ func test_composure_spends_half_and_the_full_stop_bursts_at_five() -> void:
 func test_the_full_stop_bursts_at_five_charges() -> void:
 	_learn_swift("coup_de_grace", ["reversal", "reversal", "final_point"])
 	_frenzy(5)
-	_target(Vector2(40, 0))
-	var near := _target(Vector2(40, SkillStats.FINAL_RADIUS - 10.0))
+	_target(Vector3(40, 0.0, 0))
+	var near := _target(Vector3(40, 0.0, SkillStats.FINAL_RADIUS - 10.0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(FinalBurst).size(), 1, "l'éclat")
@@ -1602,7 +1542,7 @@ func test_planted_blades_are_torn_out_by_the_coup_de_grace() -> void:
 	_learn_swift("throwing_knives", ["whetting", "whetting", "planted_blade"])
 	assert_true(_p.invest(Rack.CLASS_SLOT, "coup_de_grace"))
 	_p.bar.put(1, "coup_de_grace")
-	var prey := _target(Vector2(30, 0))
+	var prey := _target(Vector3(30, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.2)
@@ -1617,12 +1557,12 @@ func test_planted_blades_are_torn_out_by_the_coup_de_grace() -> void:
 ## Le Retour de lame : en bout de course, le couteau revient et refrappe.
 func test_a_returning_blade_strikes_again() -> void:
 	_learn_swift("throwing_knives", ["taut_throw", "taut_throw", "return_blade"])
-	var far := _target(Vector2(200, 0))
+	var far := _target(Vector3(200, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.2)
-	far.global_position = Vector2(10000, 0)
-	var crossing := _target(Vector2(100, 0))
+	far.global_position = Vector3(10000, 0.0, 0)
+	var crossing := _target(Vector3(100, 0.0, 0))
 	await wait_seconds(1.5)
 	assert_gt(_hits(crossing), 0, "frappée au retour")
 	assert_eq(_children_of(ThrowingKnife).size(), 0, "rattrapés")
@@ -1646,12 +1586,12 @@ func test_counter_time_double_riposte_and_sidestep() -> void:
 	assert_true(_p.invest(Rack.CLASS_SLOT, "flurry"))
 	_p.bar.put(1, "flurry")
 	assert_true(Gestures.cast(_p, 2))
-	var a := _target(Vector2(30, 0))
-	var b := _target(Vector2(30, 20))
+	var a := _target(Vector3(30, 0.0, 0))
+	var b := _target(Vector3(30, 0.0, 20))
 	var crits := _crits()
 	await wait_physics_frames(2)
 	var evasion := _p.stats.evasion
-	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector2(32, 0)))
+	_p.hurtbox.evaded.emit(DamageInfo.new(10.0, Vector3(32, 0.0, 0)))
 	await wait_physics_frames(1)
 	assert_eq([_hits(a), _hits(b)], [1, 1], "deux ripostes")
 	assert_gt(_p.stats.evasion, evasion, "le pas de côté")
@@ -1663,7 +1603,7 @@ func test_counter_time_double_riposte_and_sidestep() -> void:
 ## L'Ouverture : la cible subit davantage, puis plus rien.
 func test_the_opening_exposes_the_target() -> void:
 	_learn_swift("quick_strike", ["momentum", "first_blood", "opening"])
-	var grunt := _grunt(Vector2(60, 0))
+	var grunt := _grunt(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_gt(grunt.states.damage_taken_factor, 1.0, "ouverte")
@@ -1736,9 +1676,9 @@ func _learn_with(base_id: String, skill_id: String, lines: Array, transforms_to 
 
 func test_a_piercing_bolt_goes_through_one_and_stops_on_the_next() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.PIERCE, 1.0]])
-	var first := _target(Vector2(40, 0))
-	var second := _target(Vector2(80, 0))
-	var third := _target(Vector2(120, 0))
+	var first := _target(Vector3(40, 0.0, 0))
+	var second := _target(Vector3(80, 0.0, 0))
+	var third := _target(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1750,8 +1690,8 @@ func test_a_piercing_bolt_goes_through_one_and_stops_on_the_next() -> void:
 
 func test_a_splitting_bolt_throws_its_shards_past_the_target_once() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.SPLITS, 3.0]])
-	var first := _target(Vector2(40, 0))
-	var behind := _target(Vector2(90, 0))
+	var first := _target(Vector3(40, 0.0, 0))
+	var behind := _target(Vector3(90, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1772,7 +1712,7 @@ func test_a_splitting_bolt_throws_its_shards_past_the_target_once() -> void:
 ## La Prise d'air (jalon 42) : plus la boule a volé, plus son explosion est large.
 func test_a_swelling_ball_bursts_wider_the_farther_it_flew() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.SWELL, 100.0]])
-	_target(Vector2(150, 0))
+	_target(Vector3(150, 0.0, 0))
 	await wait_physics_frames(2)
 	var radius := _p.resolve(SkillCatalog.by_id("fireball"), 1).radius
 
@@ -1790,7 +1730,7 @@ func test_a_swelling_ball_bursts_wider_the_farther_it_flew() -> void:
 ## La Surchauffe : chaque coup pose une charge, et la suivante frappe plus fort par charge.
 func test_an_overheating_ball_stacks_its_charges() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.OVERHEAT, 10.0]])
-	var target := _target(Vector2(40, 0))
+	var target := _target(Vector3(40, 0.0, 0))
 	target.states = StatusEffects.new()
 	await wait_physics_frames(2)
 	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
@@ -1810,7 +1750,7 @@ func test_a_fed_ball_grows_only_under_a_lit_aura() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
 	assert_eq(_p._stoke([cast] as Array[SkillStats])[0], cast, "sans brasier, le même lancer")
 
-	var aura := Node2D.new()
+	var aura := Node3D.new()
 	add_child_autofree(aura)
 	_p._lit["immolation"] = aura
 	var fed := _p._stoke([cast] as Array[SkillStats])[0]
@@ -1823,7 +1763,7 @@ func test_converging_balls_meet_on_the_aim() -> void:
 	_learn_with("manual_fire", "fireball", [["projectiles", 2.0], [SkillStats.CONVERGE, 1.0]])
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	var aim := _p.global_position + Vector2.RIGHT * Player.PLACEMENT_RANGE
+	var aim := _p.global_position + Vector3.RIGHT * Player.PLACEMENT_RANGE
 	var balls := _children_of(Fireball)
 	assert_eq(balls.size(), 3)
 	for ball: Fireball in balls:
@@ -1850,27 +1790,13 @@ func test_a_meteor_rains_small_ones_around_its_impact() -> void:
 func test_a_meteor_whose_source_vanished_bursts_once() -> void:
 	_learn_with("manual_fire", "fireball", [], Skill.Shape.METEOR)
 	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
-	var shoulder := Node2D.new()
+	var shoulder := Node3D.new()
 	add_child(shoulder)
-	Meteor.fall(_effects, _p.global_position + Vector2.RIGHT * 60.0, cast, _p.states, shoulder)
+	Meteor.fall(_effects, _p.global_position + Vector3.RIGHT * 60.0, cast, _p.states, shoulder)
 	shoulder.free()
 	await wait_seconds(Meteor.FALL + 0.05)
 	assert_eq(_children_of(Meteor).size(), 0, "le météore est parti")
 	assert_eq(_children_of(Explosion).size(), 1, "une seule explosion")
-
-
-## Le halo d'un souffle se cuit à son rayon final, pas à chaque rayon de son ouverture :
-## une nova de 83 px cuisait un halo par image, 6 ms le plus grand.
-func test_an_opening_blast_bakes_one_halo() -> void:
-	var parts := DamageType.empty_parts()
-	parts[DamageType.Kind.COLD] = 1.0
-	# Une teinte à lui : le cache des halos est partagé par toute la campagne.
-	var tint := Color(0.123, 0.456, 0.789)
-	Explosion.put(_effects, _p.global_position, parts, 83.0, null, tint, null, null)
-	await wait_seconds(Explosion.LIFETIME)
-	var prefix := tint.to_html(false) + "@"
-	var halos := EffectForge._scorches.keys().filter(func(k: String) -> bool: return k.begins_with(prefix))
-	assert_eq(halos, [prefix + "83@0.20"])
 
 
 ## Le Noyau dense sur un Météore : un « moins », que les +200 % de la chute ne noient pas.
@@ -1919,7 +1845,7 @@ func test_a_swelling_ball_grows_its_hit_shape() -> void:
 	await wait_seconds(0.8)
 	assert_eq(ball.size(), SkillStats.GIRTH_MOST, "plafonnée")
 	var probe := (load("res://actors/projectiles/player_fireball.tscn") as PackedScene).instantiate()
-	var scene_radius: float = (probe.get_node("CollisionShape2D").shape as CircleShape2D).radius
+	var scene_radius: float = (probe.get_node("CollisionShape3D").shape as SphereShape3D).radius
 	probe.free()
 	assert_eq(scene_radius, ball._hit_radius, "la forme de la scène n'a pas grandi")
 
@@ -1939,10 +1865,10 @@ func test_a_powder_keg_burst_always_ignites() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
 	cast.kill_burst = 30.0
 	cast.powder_keg = 1.0
-	var near := _target(Vector2(50, 0))
+	var near := _target(Vector3(50, 0.0, 0))
 	near.states = StatusEffects.new()
 	await wait_physics_frames(2)
-	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), _ignited())
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1)
 	assert_true(near.states.active(StatusEffects.Kind.IGNITE), "embrasé, sans tirage perdu")
@@ -1952,8 +1878,8 @@ func test_a_powder_keg_burst_always_ignites() -> void:
 ## demi-pas pour laisser l'axe au tir, qui continue et frappe seul l'ennemi suivant.
 func test_a_piercing_bolt_also_splits_on_what_it_goes_through() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.PIERCE, 1.0], [SkillStats.SPLITS, 3.0]])
-	var first := _target(Vector2(40, 0))
-	var second := _target(Vector2(160, 0))
+	var first := _target(Vector3(40, 0.0, 0))
+	var second := _target(Vector3(160, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -1962,7 +1888,7 @@ func test_a_piercing_bolt_also_splits_on_what_it_goes_through() -> void:
 	assert_eq(_children_of(Projectile).size(), 4, "le tir continue, trois éclats partis de la cible traversée")
 	for bolt: Projectile in _children_of(Projectile):
 		if bolt._cast.splits == 0.0:
-			assert_gt(absf(bolt._dir.angle()), 0.1, "aucun éclat dans l'axe du tir")
+			assert_gt(absf(Flat.angle(bolt._dir)), 0.1, "aucun éclat dans l'axe du tir")
 	await wait_seconds(0.8)
 	assert_eq(_hits(second), 1, "l'ennemi suivant, frappé par le tir seul")
 
@@ -1976,7 +1902,7 @@ func test_a_transformed_bolt_bursts_around_its_caster() -> void:
 	assert_false(cast.keywords.has(Keywords.PROJECTILE), "plus un projectile")
 	assert_true(cast.keywords.has(Keywords.AREA), "une surface")
 
-	var beside := _target(Vector2(0, 20))
+	var beside := _target(Vector3(0, 0.0, 20))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
@@ -1987,8 +1913,8 @@ func test_a_transformed_bolt_bursts_around_its_caster() -> void:
 ## Le Météore : rien pendant la chute, puis l'éclatement de la boule au point visé.
 func test_a_meteor_falls_then_bursts_on_the_aim() -> void:
 	_learn_with("manual_fire", "fireball", [], Skill.Shape.METEOR)
-	var below := _target(Vector2(Player.PLACEMENT_RANGE, 0))
-	var aside := _target(Vector2(0, 60))
+	var below := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 0))
+	var aside := _target(Vector3(0, 0.0, 60))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -2023,7 +1949,7 @@ func test_a_meteor_throws_its_shards_from_the_impact() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]], Skill.Shape.METEOR)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	var impact: Vector2 = _children_of(Meteor)[0].global_position
+	var impact: Vector3 = _children_of(Meteor)[0].global_position
 	await wait_seconds(Meteor.FALL + 0.05)
 	var shards := _children_of(Fireball)
 	assert_eq(shards.size(), 3)
@@ -2035,7 +1961,7 @@ func test_a_meteor_throws_its_shards_from_the_impact() -> void:
 ## Le Bond : ni traînée ni coup en chemin, l'arc et l'explosion à l'arrivée.
 func test_a_leap_leaves_no_trail_and_bursts_where_it_lands() -> void:
 	_learn_with("manual_fire", "flame_dash", [[SkillStats.END_BURST, 30.0]], Skill.Shape.LEAP)
-	var on_the_way := _target(Vector2(40, 0))
+	var on_the_way := _target(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -2049,7 +1975,7 @@ func test_a_leap_leaves_no_trail_and_bursts_where_it_lands() -> void:
 ## Les éclats de la boule sont des mini-boules, pas des boules entières.
 func test_the_shards_of_a_ball_are_drawn_small() -> void:
 	_learn_with("manual_fire", "fireball", [[SkillStats.SPLITS, 3.0]])
-	_target(Vector2(40, 0))
+	_target(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(14)
@@ -2086,7 +2012,7 @@ func test_a_swift_snake_crawls_faster() -> void:
 
 func test_a_hunting_snake_takes_the_nearest_enemy_for_anchor() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.SEEK, 200.0]])
-	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 90))
+	var prey := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 90))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -2136,7 +2062,7 @@ func test_a_gluttonous_snake_grows_on_its_own_prey() -> void:
 	assert_ne(fed._cast, other._cast, "chacun son lancer")
 	var life := fed.lifetime()
 	for i in SkillStats.GLUTTONY_MOST + 2:
-		_p.states.slew.emit(fed._cast, Vector2.ZERO, null)
+		_p.states.slew.emit(fed._cast, Vector3.ZERO, null)
 	assert_eq(fed._preys, SkillStats.GLUTTONY_MOST, "cinq proies au plus")
 	assert_eq(other._preys, 0)
 	assert_almost_eq(fed.lifetime(), life + SkillStats.GLUTTONY_LIFE * SkillStats.GLUTTONY_MOST, 1e-4)
@@ -2154,7 +2080,7 @@ func test_a_sated_snake_molts() -> void:
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_physics_frames(10)
 	for i in SkillStats.GLUTTONY_MOST:
-		_p.states.slew.emit(snake._cast, Vector2.ZERO, null)
+		_p.states.slew.emit(snake._cast, Vector3.ZERO, null)
 	await wait_physics_frames(1)
 	assert_eq(_children_of(Explosion).size(), 1, "la gerbe")
 	assert_eq(snake._preys, 0, "il recommence à grossir")
@@ -2166,7 +2092,7 @@ func test_a_sated_snake_molts() -> void:
 ## vite ; sous l'Étau, elle ne bouge plus — jusqu'à ce qu'il la lâche.
 func test_a_constricting_snake_coils_and_holds_its_prey() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.CONSTRICT, 1.0], [SkillStats.VISE, 1.0]])
-	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	var prey := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 0))
 	prey.states = StatusEffects.new()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -2184,7 +2110,7 @@ func test_a_constricting_snake_coils_and_holds_its_prey() -> void:
 ## L'Ouroboros tourne autour du point visé ; la Spirale resserre l'anneau.
 func test_an_ouroboros_circles_the_aim_and_a_spiral_tightens() -> void:
 	_learn_with("manual_fire", "hell_snake", [[SkillStats.OUROBOROS, 1.0], [SkillStats.SEEK, 300.0]])
-	_target(Vector2(Player.PLACEMENT_RANGE + 150, 0))
+	_target(Vector3(Player.PLACEMENT_RANGE + 150, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var snake: HellSnake = _children_of(HellSnake)[0]
@@ -2206,7 +2132,7 @@ func test_a_spitting_snake_fires_at_the_nearest_prey() -> void:
 	var snake: HellSnake = _children_of(HellSnake)[0]
 	await wait_seconds(SkillStats.SPIT_PERIOD + 0.1)
 	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
-	_target(snake._head + Vector2(0, SkillStats.SPIT_REACH * 0.8))
+	_target(snake._head + Vector3(0, 0.0, SkillStats.SPIT_REACH * 0.8))
 	await wait_physics_frames(3)
 	var balls := _children_of(Fireball)
 	assert_eq(balls.size(), 3, "une boule et deux de Gerbe")
@@ -2267,7 +2193,7 @@ func test_a_flying_start_bursts_at_both_ends() -> void:
 	var from_value := _p.global_position
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
-	var at := _children_of(Explosion).map(func(e: Explosion) -> Vector2: return e.global_position)
+	var at := _children_of(Explosion).map(func(e: Explosion) -> Vector3: return e.global_position)
 	assert_eq(at.size(), 2)
 	assert_true(at.has(from_value), "au départ")
 	assert_true(at.has(_p.global_position), "et à l'arrivée")
@@ -2292,7 +2218,7 @@ func test_a_wick_runs_along_the_spent_trail() -> void:
 	await wait_seconds(0.5)
 	assert_eq(_children_of(DashTrail).size(), 0, "la traînée finit avec sa mèche")
 
-	var trail := DashTrail.leave(_effects, Vector2.ZERO, Vector2(100, 0), cast, _p.states)
+	var trail := DashTrail.leave(_effects, Vector3.ZERO, Vector3(100, 0.0, 0), cast, _p.states)
 	cast.short_fuse = 1.0
 	await wait_physics_frames(2)
 	assert_gt(_children_of(Explosion).size(), 0, "la mèche courte, tout de suite")
@@ -2339,7 +2265,7 @@ func test_a_charmer_raises_a_snake_where_it_lands() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(HellSnake).size(), 0, "sans Serpent infernal appris, rien")
 	assert_true(_p.invest(0, "hell_snake"))
-	var old := HellSnake.drop(_effects, Vector2(-200, 0), _p.resolve(SkillCatalog.by_id("hell_snake"), 1), Vector2.RIGHT, _p.states, _p)
+	var old := HellSnake.drop(_effects, Vector3(-200, 0.0, 0), _p.resolve(SkillCatalog.by_id("hell_snake"), 1), Vector3.RIGHT, _p.states, _p)
 	_p._recharges[2] = 0.0
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(HellSnake).size(), 2, "un de plus, à l'arrivée")
@@ -2367,13 +2293,13 @@ func _ignited() -> StatusEffects:
 func test_an_ignited_kill_bursts() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("fireball"), 1)
 	cast.kill_burst = 30.0
-	var near := _target(Vector2(50, 0))
+	var near := _target(Vector3(50, 0.0, 0))
 	await wait_physics_frames(2)
 
-	_p.states.slew.emit(cast, Vector2(40, 0), StatusEffects.new())
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), StatusEffects.new())
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 0, "un tué qui ne brûlait pas n'explose pas")
-	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), _ignited())
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1)
 	assert_lt(
@@ -2388,18 +2314,17 @@ func test_a_converted_kill_burst_follows_the_nature() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("immolation"), 1)
 	cast.kill_burst = 30.0
 	cast.nature = DamageType.Kind.NECROTIC
-	var near := _target(Vector2(50, 0))
+	var near := _target(Vector3(50, 0.0, 0))
 	await wait_physics_frames(2)
 
-	_p.states.slew.emit(cast, Vector2(40, 0), _ignited())
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), _ignited())
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 0, "un embrasé n'explose plus")
 	var rotting := StatusEffects.new()
 	rotting.put(StatusEffects.Kind.ROT, 1.0)
-	_p.states.slew.emit(cast, Vector2(40, 0), rotting)
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), rotting)
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1, "un pourrissant, si")
-
 
 
 # --------------------------------------------------------------------------
@@ -2409,9 +2334,9 @@ func test_a_converted_kill_burst_follows_the_nature() -> void:
 ## Rebond : le tir repart de l'ennemi touché vers le plus proche qu'il n'a pas frappé.
 func test_a_bouncing_bolt_leaps_to_the_nearest_unstruck_enemy() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
-	var first := _target(Vector2(40, 0))
-	var off_axis := _target(Vector2(60, 60))
-	var behind := _target(Vector2(200, 0))
+	var first := _target(Vector3(40, 0.0, 0))
+	var off_axis := _target(Vector3(60, 0.0, 60))
+	var behind := _target(Vector3(200, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -2425,8 +2350,8 @@ func test_a_bouncing_bolt_leaps_to_the_nearest_unstruck_enemy() -> void:
 ## la course du tir l'y porte.
 func test_a_bolt_bounces_beyond_a_chain_jump() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
-	var first := _target(Vector2(60, 0))
-	var far_aside := _target(Vector2(60, ChainLightning.JUMP + 60.0))
+	var first := _target(Vector3(60, 0.0, 0))
+	var far_aside := _target(Vector3(60, 0.0, ChainLightning.JUMP + 60.0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.2)
@@ -2437,8 +2362,8 @@ func test_a_bolt_bounces_beyond_a_chain_jump() -> void:
 ## Sans cône : le rebond repart aussi vers l'arrière, à plus de 90°.
 func test_a_bolt_bounces_backward() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.BOUNCES, 1.0]])
-	var first := _target(Vector2(60, 0))
-	var behind_it := _target(Vector2(20, 45))
+	var first := _target(Vector3(60, 0.0, 0))
+	var behind_it := _target(Vector3(20, 0.0, 45))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.8)
@@ -2446,30 +2371,26 @@ func test_a_bolt_bounces_backward() -> void:
 	assert_eq(_hits(behind_it), 1, "à 132° de l'axe du tir")
 
 
-## Le Trait de glace est dessiné — ni pivoté, ni additif ; le tir de froid d'un caster
-## reste tracé, pour qu'on le distingue du sien (jalon 35).
-func test_the_glacial_bolt_is_drawn_and_the_enemy_bolt_is_not() -> void:
+## Le Trait de glace et le tir d'un caster de froid sont tous deux de froid (jalon 35).
+func test_the_glacial_bolt_and_the_enemy_bolt_are_cold() -> void:
 	_learn("manual_lightning", [
 		"swift_bolt", "swift_bolt_overload", "swift_bolt_overload", "swift_bolt_glacial_bolt",
 	])
-	_p.facing = Vector2(1.0, 1.0).normalized()
+	_p.facing = Vector3(1.0, 0.0, 1.0).normalized()
 	assert_true(Gestures.cast(_p, 2))
 	var bolt: Projectile = _children_of(Projectile)[0]
 	assert_eq(bolt.nature(), DamageType.Kind.COLD)
-	assert_eq(bolt.rotation, 0.0, "une planche ne pivote pas")
-	assert_null(bolt.material, "ni lumière ajoutée")
 
 	var enemy := Projectile.spawn_of_nature(
-		_effects, load("res://actors/projectiles/enemy_bolt.tscn"), Vector2(0, 80), Vector2(1, 1), 5.0, null
+		_effects, load("res://actors/projectiles/enemy_bolt.tscn"), Vector3(0, 0.0, 80), Vector3(1, 0.0, 1), 5.0, null
 	)
 	assert_eq(enemy.nature(), DamageType.Kind.COLD)
-	assert_ne(enemy.rotation, 0.0, "le tir ennemi reste un tracé qui pivote")
 
 
 func test_a_taut_arc_jumps_farther() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.JUMP_REACH, 40.0]])
-	var near := _target(Vector2(60, 0))
-	var far := _target(Vector2(60 + ChainLightning.JUMP + 20.0, 0))
+	var near := _target(Vector3(60, 0.0, 0))
+	var far := _target(Vector3(60 + ChainLightning.JUMP + 20.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(near), 1)
@@ -2480,7 +2401,7 @@ func test_a_taut_arc_jumps_farther() -> void:
 func test_each_jump_of_a_crescendo_hits_harder() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.JUMP_GAIN, 50.0]])
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
-	var targets := [_target(Vector2(60, 0)), _target(Vector2(120, 0)), _target(Vector2(180, 0))]
+	var targets := [_target(Vector3(60, 0.0, 0)), _target(Vector3(120, 0.0, 0)), _target(Vector3(180, 0.0, 0))]
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var first := float(_received_all[targets[0]][0])
@@ -2491,9 +2412,9 @@ func test_each_jump_of_a_crescendo_hits_harder() -> void:
 ## La Toile d'arcs : pas de cône ni de saut, les plus proches autour du lanceur.
 func test_an_arc_web_strikes_the_nearest_all_around() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [], Skill.Shape.WEB)
-	var ahead := _target(Vector2(60, 0))
-	var behind := _target(Vector2(-60, 0))
-	var far_from_all := _target(Vector2(0, ChainLightning.SCOPE + 30.0))
+	var ahead := _target(Vector3(60, 0.0, 0))
+	var behind := _target(Vector3(-60, 0.0, 0))
+	var far_from_all := _target(Vector3(0, 0.0, ChainLightning.SCOPE + 30.0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(ahead), 1)
@@ -2504,7 +2425,7 @@ func test_an_arc_web_strikes_the_nearest_all_around() -> void:
 
 func test_a_wandering_cloud_drifts_toward_the_nearest_enemy() -> void:
 	_learn_with("manual_lightning", "storm_cloud", [[SkillStats.SEEK, 200.0]])
-	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 100))
+	var prey := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 100))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var cloud: StormCloud = _children_of(StormCloud)[0]
@@ -2519,7 +2440,7 @@ func test_a_portable_storm_follows_its_caster() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	var cloud: StormCloud = _children_of(StormCloud)[0]
 	assert_eq(cloud.global_position, _p.global_position)
-	_p.global_position += Vector2(50, 20)
+	_p.global_position += Vector3(50, 0.0, 20)
 	await wait_physics_frames(2)
 	assert_eq(cloud.global_position, _p.global_position)
 
@@ -2532,7 +2453,7 @@ func test_a_static_orb_shocks_what_it_passes_by() -> void:
 	assert_gt(cast.duration, 0.0)
 	assert_gt(cast.period, 0.0)
 	assert_true(cast.keywords.has(Keywords.PROJECTILE))
-	var on_the_way := _target(Vector2(80, 10))
+	var on_the_way := _target(Vector3(80, 0.0, 10))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
@@ -2575,7 +2496,7 @@ func test_a_buff_drains_what_its_tree_leaves() -> void:
 ## Éclats : en retombant, l'étoile part du cercle et épargne ce qu'il a mordu.
 func test_sinking_spikes_throw_shards_that_spare_the_bitten() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 3.0]])
-	var bitten := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	var bitten := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(IceSpikes.LIFETIME + 0.05)
@@ -2597,7 +2518,7 @@ func test_a_frozen_nova_leaves_ground_under_its_caster() -> void:
 	await wait_physics_frames(3)
 	var ground: Array = _children_of(DashTrail)
 	assert_eq(ground.size(), 1)
-	assert_eq((ground[0] as Node2D).global_position, _p.global_position)
+	assert_eq((ground[0] as Node3D).global_position, _p.global_position)
 	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
 	assert_eq((ground[0] as DashTrail)._cast.radius, cast.radius, "de la taille de la nova")
 
@@ -2605,9 +2526,9 @@ func test_a_frozen_nova_leaves_ground_under_its_caster() -> void:
 ## Le Sillon : des cercles en ligne jusqu'au point visé, chacun mord une fois.
 func test_an_ice_furrow_raises_spikes_in_a_line_to_the_aim() -> void:
 	_learn_with("manual_cold", "ice_spike", [], Skill.Shape.FISSURE)
-	var near := _target(Vector2(30, 0))
-	var far := _target(Vector2(Player.PLACEMENT_RANGE - 20.0, 0))
-	var aside := _target(Vector2(80, 60))
+	var near := _target(Vector3(30, 0.0, 0))
+	var far := _target(Vector3(Player.PLACEMENT_RANGE - 20.0, 0.0, 0))
+	var aside := _target(Vector3(80, 0.0, 60))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_gt(_children_of(IceSpikes).size(), 2)
@@ -2631,9 +2552,9 @@ func test_each_circle_of_a_furrow_throws_its_shards() -> void:
 func test_a_frost_wave_reaches_three_radii_once_each() -> void:
 	_learn_with("manual_cold", "ice_nova", [], Skill.Shape.RING)
 	var cast := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
-	var close := _target(Vector2(20, 0))
-	var far := _target(Vector2(-cast.radius * 2.5, 0))
-	var beyond := _target(Vector2(0, cast.radius * FrostRing.REACH + 30.0))
+	var close := _target(Vector3(20, 0.0, 0))
+	var far := _target(Vector3(-cast.radius * 2.5, 0.0, 0))
+	var beyond := _target(Vector3(0, 0.0, cast.radius * FrostRing.REACH + 30.0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(FrostRing.LIFETIME + 0.1)
@@ -2645,7 +2566,7 @@ func test_a_frost_wave_reaches_three_radii_once_each() -> void:
 ## L'Aspiration : chaque impulsion tire vers le cœur, par un recul négatif.
 func test_a_sucking_vortex_pulls_toward_its_heart() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.PULL, 120.0]])
-	var prey := _target(Vector2(15, 0))
+	var prey := _target(Vector3(15, 0.0, 0))
 	var pulls := []
 	prey.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
 	await wait_physics_frames(2)
@@ -2663,7 +2584,7 @@ func test_an_implosion_closes_in_then_bursts_whole() -> void:
 	assert_almost_eq(vortex.reach(), cast.radius, 0.01, "il part à pleine taille")
 	await wait_seconds(cast.duration * 0.5)
 	assert_lt(vortex.reach(), cast.radius * 0.7, "et se resserre")
-	var edge := _target(Vector2(cast.radius * 0.9, 0))
+	var edge := _target(Vector3(cast.radius * 0.9, 0.0, 0))
 	while is_instance_valid(vortex):
 		await wait_physics_frames(1)
 	await wait_physics_frames(2)
@@ -2673,7 +2594,7 @@ func test_an_implosion_closes_in_then_bursts_whole() -> void:
 ## Éclatement : en sortant du tombeau, de soi-même, il éclate.
 func test_leaving_the_tomb_shatters_it() -> void:
 	_learn_with("manual_cold", "frost_tomb", [["damage_cold", 10.0], [SkillStats.END_BURST, 30.0]])
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	_p._recharges[2] = 0.0
@@ -2725,18 +2646,18 @@ func test_the_tomb_mends_what_its_tree_gives() -> void:
 ## Un sol ne cumule pas (jalon 37) : deux plaques de la même compétence sous une cible ne
 ## la frappent qu'une fois par impulsion ; une autre compétence frappe pour son compte.
 func test_grounds_of_one_skill_do_not_stack() -> void:
-	var target := _target(Vector2(40, 0))
+	var target := _target(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	var ball := _p.resolve(SkillCatalog.by_id("fireball"), 1)
 	ball.ground_duration = 0.4
 	for i in 3:
-		DashTrail.patch(_effects, Vector2(40, 0), ball.ground(), _p.states)
+		DashTrail.patch(_effects, Vector3(40, 0.0, 0), ball.ground(), _p.states)
 	await wait_seconds(0.3)
 	assert_eq(_hits(target), 1, "trois plaques, une seule frappe")
 
 	var nova := _p.resolve(SkillCatalog.by_id("ice_nova"), 1)
 	nova.ground_duration = 0.4
-	DashTrail.patch(_effects, Vector2(40, 0), nova.ground(), _p.states)
+	DashTrail.patch(_effects, Vector3(40, 0.0, 0), nova.ground(), _p.states)
 	await wait_seconds(0.3)
 	assert_eq(_hits(target), 2, "une autre compétence frappe aussi")
 
@@ -2748,8 +2669,8 @@ func test_grounds_of_one_skill_do_not_stack() -> void:
 ## Contagion : la décomposition de la cible gagne son voisin, qui n'est pas frappé.
 func test_contagion_spreads_decay_without_striking() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.CONTAGION, 30.0]])
-	var struck := _wearing_target(Vector2(60, 0))
-	var beside := _wearing_target(Vector2(60, 24))
+	var struck := _wearing_target(Vector3(60, 0.0, 0))
+	var beside := _wearing_target(Vector3(60, 0.0, 24))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -2761,7 +2682,7 @@ func test_contagion_spreads_decay_without_striking() -> void:
 ## La Nuée : un essaim lent qui mord en passant et décompose ce qu'il mord.
 func test_a_plague_swarm_decays_what_it_passes_by() -> void:
 	_learn_with("manual_necrotic", "plague", [], Skill.Shape.ORB)
-	var on_the_way := _wearing_target(Vector2(80, 10))
+	var on_the_way := _wearing_target(Vector3(80, 0.0, 10))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.4)
@@ -2787,8 +2708,8 @@ func test_ossature_raises_sturdier_undead() -> void:
 ## Le Colosse d'os : un seul, plus solide, qui frappe tout un cercle.
 func test_a_bone_colossus_stands_alone_and_strikes_a_circle() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0]])
-	var first := _target(Vector2(40, 0))
-	var next := _target(Vector2(40, 18))
+	var first := _target(Vector3(40, 0.0, 0))
+	var next := _target(Vector3(40, 0.0, 18))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	assert_eq(Minion.count_of(_p, "rise"), 1)
@@ -2832,9 +2753,9 @@ func test_a_bone_rampart_shields_by_the_head() -> void:
 func test_a_toxic_breath_strikes_its_cone_only() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [], Skill.Shape.BREATH)
 	var cast := _p.resolve(SkillCatalog.by_id("toxic_unleash"), 1)
-	var far_ahead := _target(Vector2(cast.radius * 2.2, 0))
-	var behind := _target(Vector2(-20, 0))
-	var aside := _target(Vector2(0, 40))
+	var far_ahead := _target(Vector3(cast.radius * 2.2, 0.0, 0))
+	var behind := _target(Vector3(-20, 0.0, 0))
+	var aside := _target(Vector3(0, 0.0, 40))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(ToxicBreath.LIFETIME + 0.1)
@@ -2846,8 +2767,8 @@ func test_a_toxic_breath_strikes_its_cone_only() -> void:
 ## Progéniture : une créature qui éclate lâche des petits.
 func test_a_bursting_creature_releases_young() -> void:
 	_learn_with("manual_necrotic", "rotting_gate", [[SkillStats.HATCHLINGS, 2.0]])
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
-	var prey := _target(aim + Vector2(50, 0))
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
+	var prey := _target(aim + Vector3(50, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var gate: RottingGate = _children_of(RottingGate)[0]
@@ -2865,9 +2786,9 @@ func test_a_carried_nest_follows_its_caster() -> void:
 	_learn_with("manual_necrotic", "rotting_gate", [], Skill.Shape.NEST)
 	assert_true(Gestures.cast(_p, 2))
 	var gate: RottingGate = _children_of(RottingGate)[0]
-	_p.global_position += Vector2(60, 0)
+	_p.global_position += Vector3(60, 0.0, 0)
 	await wait_physics_frames(2)
-	assert_almost_eq(gate.global_position, _p.global_position + RottingGate.NEST_OFFSET, Vector2.ONE)
+	assert_almost_eq(gate.global_position, _p.global_position + RottingGate.NEST_OFFSET, Vector3.ONE)
 
 
 ## Malédiction profonde, Longue malédiction et Tribut, d'un même sceau.
@@ -2876,9 +2797,9 @@ func test_a_deep_long_curse_pays_its_tribute() -> void:
 		[SkillStats.CURSE_EFFECT, 50.0], [SkillStats.TRIBUTE, 3.0], ["duration", 100.0, true],
 	])
 	var cast := _p.resolve(SkillCatalog.by_id("putrid_curse"), 1)
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
-	var one := _wearing_target(aim + Vector2(10, 0))
-	var two := _wearing_target(aim + Vector2(-10, 0))
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
+	var one := _wearing_target(aim + Vector3(10, 0.0, 0))
+	var two := _wearing_target(aim + Vector3(-10, 0.0, 0))
 	await wait_physics_frames(2)
 	_p._set_mana(100.0)
 	assert_true(Gestures.cast(_p, 2))
@@ -2891,9 +2812,9 @@ func test_a_deep_long_curse_pays_its_tribute() -> void:
 ## La Marque de mort : un seul ennemi, deux fois plus fort, et elle passe à sa mort.
 func test_a_death_mark_takes_one_then_moves_on() -> void:
 	_learn_with("manual_necrotic", "putrid_curse", [], Skill.Shape.MARK)
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
-	var marked := _wearing_target(aim + Vector2(10, 0))
-	var next := _wearing_target(aim + Vector2(50, 0))
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
+	var marked := _wearing_target(aim + Vector3(10, 0.0, 0))
+	var next := _wearing_target(aim + Vector3(50, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -2925,8 +2846,8 @@ func test_hardening_gnaws_less() -> void:
 ## Le Fardeau partagé : ce que la Nécrose ronge frappe autour.
 func test_a_shared_burden_strikes_around() -> void:
 	_learn_with("manual_necrotic", "advanced_necrosis", [[SkillStats.SHARED_BURDEN, 48.0]])
-	var near := _target(Vector2(20, 0))
-	var far := _target(Vector2(90, 0))
+	var near := _target(Vector3(20, 0.0, 0))
+	var far := _target(Vector3(90, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.BURDEN_PERIOD + 0.2)
@@ -2947,9 +2868,9 @@ func _knockbacks_on(target: Hurtbox) -> Array:
 ## Le Brise-sol : tout le cercle autour de l'impact, une fois, rien derrière soi.
 func test_a_groundbreaker_strikes_the_circle_of_its_impact() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [["radius", 28.0]], Skill.Shape.SLAM)
-	var beyond := _target(Vector2(_p.strike_reach() + 20.0, 0))
-	var aside := _target(Vector2(_p.strike_reach(), 24))
-	var behind := _target(Vector2(-30, 0))
+	var beyond := _target(Vector3(_p.strike_reach() + 20.0, 0.0, 0))
+	var aside := _target(Vector3(_p.strike_reach(), 0.0, 24))
+	var behind := _target(Vector3(-30, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.3)
@@ -2961,8 +2882,8 @@ func test_a_groundbreaker_strikes_the_circle_of_its_impact() -> void:
 ## Coup de bélier et Hargne : le recul voyage avec le coup, et chaque touché rend des PV.
 func test_a_ramming_furious_strike_pushes_and_heals() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.KNOCKBACK, 120.0], [SkillStats.LIFE_ON_HIT, 5.0]])
-	var one := _target(Vector2(20, -4))
-	var two := _target(Vector2(20, 4))
+	var one := _target(Vector3(20, 0.0, -4))
+	var two := _target(Vector3(20, 0.0, 4))
 	var pushes := _knockbacks_on(one)
 	await wait_physics_frames(2)
 	_p.stats.health_regen = 0.0
@@ -2993,7 +2914,7 @@ func test_a_blade_shield_lasts_while_the_swords_spin() -> void:
 func test_a_sword_volley_flies_to_the_nearest_enemy() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.SWORD_VOLLEY, 160.0]])
 	_p.skill_mods.assign([StatMod.new("duration", StatMod.Mode.PERCENT, -80.0, Keywords.ATTACK)])
-	var far := _target(Vector2(120, 30))
+	var far := _target(Vector3(120, 0.0, 30))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.6)
@@ -3005,7 +2926,7 @@ func test_a_sword_volley_flies_to_the_nearest_enemy() -> void:
 func test_a_wide_orbit_reaches_farther() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [["radius", 100.0, true]])
 	var radius := SkillCatalog.by_id("spiral_sword").radius * 2.0
-	var on_the_circle := _target(Vector2(radius, 0))
+	var on_the_circle := _target(Vector3(radius, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.5)
@@ -3016,7 +2937,7 @@ func test_a_wide_orbit_reaches_farther() -> void:
 func test_twin_waves_fan_out_and_a_backwash_bites_twice() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.WAVES, 1.0]], Skill.Shape.BOOMERANG)
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
-	var ahead := _target(Vector2(SlashWave.START + cast.radius + 20.0, 0))
+	var ahead := _target(Vector3(SlashWave.START + cast.radius + 20.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(SlashWave).size(), 2)
@@ -3029,7 +2950,7 @@ func test_twin_waves_fan_out_and_a_backwash_bites_twice() -> void:
 func test_a_steel_furrow_cuts_behind_the_wave() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.GROUND, 1.0]])
 	var cast := _p.resolve(SkillCatalog.by_id("wave_slash"), 1)
-	var on_the_way := _target(Vector2(SlashWave.START + 20.0, 0))
+	var on_the_way := _target(Vector3(SlashWave.START + 20.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(cast.duration + 0.1)
@@ -3056,8 +2977,8 @@ func test_a_hungry_whirlpool_pulls_and_feeds() -> void:
 	_learn_with("manual_weapons", "cyclone", [
 		[SkillStats.PULL, 50.0], [SkillStats.MANA_ON_HIT, 5.0], ["mana_per_second", -100.0, true],
 	])
-	var one := _target(Vector2(20, 0))
-	_target(Vector2(-20, 0))
+	var one := _target(Vector3(20, 0.0, 0))
+	_target(Vector3(-20, 0.0, 0))
 	var pulls := _knockbacks_on(one)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -3085,7 +3006,7 @@ func test_an_arsenal_summons_its_swords_at_once_within_the_round() -> void:
 
 func test_a_drifting_pillar_follows_the_nearest_enemy() -> void:
 	_learn_with("manual_holy", "sacred_pillar", [], Skill.Shape.DRIFT)
-	var prey := _target(Vector2(Player.PLACEMENT_RANGE, 80))
+	var prey := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 80))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var pillar: SacredPillar = _children_of(SacredPillar)[0]
@@ -3099,7 +3020,7 @@ func test_a_calling_pillar_pulls_then_collapses() -> void:
 	_learn_with("manual_holy", "sacred_pillar", [
 		[SkillStats.PULL, 40.0], [SkillStats.END_BURST, 30.0], ["duration", -70.0, true]
 	])
-	var prey := _target(Vector2(Player.PLACEMENT_RANGE + 15.0, 0))
+	var prey := _target(Vector3(Player.PLACEMENT_RANGE + 15.0, 0.0, 0))
 	var pulls := _knockbacks_on(prey)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -3118,7 +3039,7 @@ func test_an_exalted_pulse_swells_and_absolves() -> void:
 	_learn_with("manual_holy", "holy_pulse", [[SkillStats.WAVE_GAIN, 50.0], [SkillStats.LIFE_ON_HIT, 5.0]])
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
 	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	_p.stats.health_regen = 0.0
 	_p._set_health(_p.stats.max_health - 50.0)
@@ -3134,8 +3055,8 @@ func test_an_exalted_pulse_swells_and_absolves() -> void:
 ## L'Auréole bénit ce qui s'approche, sans le frapper.
 func test_an_aureole_blesses_what_comes_near() -> void:
 	_learn_with("manual_holy", "holy_light", [[SkillStats.AUREOLE, 40.0]])
-	var near := _wearing_target(Vector2(20, 0))
-	var far := _wearing_target(Vector2(90, 0))
+	var near := _wearing_target(Vector3(20, 0.0, 0))
+	var far := _wearing_target(Vector3(90, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.AUREOLE_PERIOD + 0.1)
@@ -3149,7 +3070,7 @@ func test_an_aureole_blesses_what_comes_near() -> void:
 # --------------------------------------------------------------------------
 
 ## Le point visé à la manette : droit devant, à la portée de pose.
-func _aim() -> Vector2:
+func _aim() -> Vector3:
 	return _p.global_position + _p.facing * Player.PLACEMENT_RANGE
 
 
@@ -3180,7 +3101,7 @@ func test_trinity_stacks_harmony_on_each_change_of_element() -> void:
 	assert_eq(_p.lit_stacks("trinity"), 0, "feu après feu")
 	_cast_again(2)
 	assert_eq(_p.lit_stacks("trinity"), 1, "froid après feu")
-	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_eq(_p.lit_stacks("trinity"), 1, "une mise à mort ne la charge pas")
 	_cast_again(2)
 	assert_eq(_p.lit_stacks("trinity"), 2)
@@ -3266,7 +3187,7 @@ func test_rubato_drops_the_stacks_one_by_one() -> void:
 ## Modulation : chaque charge gagnée prolonge les états élémentaires autour de soi.
 func test_modulation_prolongs_the_states_around_on_each_stack() -> void:
 	_trinity_with(["trinity_fermata", "trinity_modulation", "trinity_modulation"])
-	var near := _wearing_target(Vector2(0, 40))
+	var near := _wearing_target(Vector3(0, 0.0, 40))
 	near.states.put(StatusEffects.Kind.NUMB, 1.0)
 	near.states.advance(1.0)
 	var left := near.states.remaining(StatusEffects.Kind.NUMB)
@@ -3316,9 +3237,9 @@ func test_a_triad_under_the_incarnation_sends_three_comets_of_its_element() -> v
 	assert_false(cast.keywords.has(Keywords.COLD) or cast.keywords.has(Keywords.LIGHTNING))
 	_cast_again(2)
 	var triad := _children_of(Triad)[-1] as Triad
-	assert_eq(triad._tints.size(), 3)
+	assert_eq(triad._parts.size(), 3)
 	for i in 3:
-		assert_eq(triad._tints[i], DamageType.COLORS[DamageType.Kind.FIRE])
+		assert_eq(DamageType.dominant(triad._parts[i]), DamageType.Kind.FIRE)
 		assert_almost_eq(
 			DamageType.total(triad._parts[i]), DamageType.total(triad._parts[0]), 1e-4, "un tiers chacune"
 		)
@@ -3346,8 +3267,8 @@ func test_an_aura_strikes_around_under_the_incarnation() -> void:
 	])
 	_no_rolled_states()
 	_cast_again(2)
-	var near := _wearing_target(Vector2(0, SkillStats.AURA_REACH - 10.0))
-	var far := _wearing_target(Vector2(0, -SkillStats.AURA_REACH - 20.0))
+	var near := _wearing_target(Vector3(0, 0.0, SkillStats.AURA_REACH - 10.0))
+	var far := _wearing_target(Vector3(0, 0.0, -SkillStats.AURA_REACH - 20.0))
 	await wait_seconds(SkillStats.AURA_PERIOD + 0.1)
 	assert_gt(_hits(near), 0)
 	assert_true(near.states.active(StatusEffects.Kind.IGNITE), "à coup sûr")
@@ -3367,8 +3288,8 @@ func test_exacerbation_and_saturation_under_the_amplification() -> void:
 	cast.saturation = 100.0
 	cast.status_chance_increase = 0.0
 	_no_rolled_states()
-	var bare := _wearing_target(Vector2(0, 200))
-	var chilled := _wearing_target(Vector2(0, 240))
+	var bare := _wearing_target(Vector3(0, 0.0, 200))
+	var chilled := _wearing_target(Vector3(0, 0.0, 240))
 	chilled.states.put(StatusEffects.Kind.CHILL, 1.0)
 	cast.blend([DamageType.Kind.FIRE] as Array[int])
 	for target: Hurtbox in [bare, chilled]:
@@ -3441,7 +3362,7 @@ func test_an_evil_eye_curses_instead_of_striking() -> void:
 	_familiar_with([
 		"familiar_frugality", "familiar_frugality", "familiar_evil_eye", "familiar_jettatura",
 	])
-	var cursed := _wearing_target(_aim() + Vector2(0, 30))
+	var cursed := _wearing_target(_aim() + Vector3(0, 0.0, 30))
 	await wait_physics_frames(2)
 	_cast_again(2)
 	await wait_seconds(Familiar.ECHO_DELAY + 0.1)
@@ -3457,7 +3378,7 @@ func test_an_evil_eye_curses_instead_of_striking() -> void:
 func test_the_raven_pecks_the_nearest_enemy() -> void:
 	_familiar_with(["familiar_black_wings", "familiar_peck"])
 	_no_rolled_states()
-	var prey := _wearing_target(Vector2(0, 60))
+	var prey := _wearing_target(Vector3(0, 0.0, 60))
 	await wait_physics_frames(2)
 	_cast_again(2)
 	await wait_seconds(SkillStats.PECK_PERIOD + Familiar.DIVE_TIME * 0.5)
@@ -3527,7 +3448,7 @@ func test_equilibrium_opens_the_two_other_elements() -> void:
 		"elemental_projectile", "elemental_projectile_arcana", "elemental_projectile_cross_affinity",
 		"elemental_projectile_equilibrium",
 	])
-	var target := _wearing_target(Vector2(60, 0))
+	var target := _wearing_target(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -3546,10 +3467,10 @@ func test_a_precipitate_bolt_makes_the_two_other_states_react() -> void:
 		"elemental_projectile", "elemental_projectile_electroshock", "elemental_projectile_precipitate",
 	])
 	_no_rolled_states()
-	var target := _wearing_target(Vector2(60, 0))
+	var target := _wearing_target(Vector3(60, 0.0, 0))
 	target.states.put(StatusEffects.Kind.CHILL, 1.0)
 	target.states.put(StatusEffects.Kind.NUMB, 1.0)
-	var neighbor := _wearing_target(Vector2(60, 40))
+	var neighbor := _wearing_target(Vector3(60, 0.0, 40))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -3559,10 +3480,10 @@ func test_a_precipitate_bolt_makes_the_two_other_states_react() -> void:
 	assert_eq(_hits(target), 2, "le trait, puis le Givre conducteur")
 	assert_true(neighbor.states.active(StatusEffects.Kind.CHILL), "le transi a gagné")
 
-	var cold := _wearing_target(Vector2(0, 60))
+	var cold := _wearing_target(Vector3(0, 0.0, 60))
 	cold.states.put(StatusEffects.Kind.CHILL, 1.0)
 	cold.states.put(StatusEffects.Kind.NUMB, 1.0)
-	_p.facing = Vector2.DOWN
+	_p.facing = Vector3.BACK
 	await wait_physics_frames(2)
 	_cast_again(2)
 	await wait_seconds(0.5)
@@ -3585,7 +3506,7 @@ func test_a_shimmering_bolt_changes_element_on_each_bounce() -> void:
 	])
 	_natures_hit.clear()
 	for x in [40.0, 80.0, 120.0]:
-		_target(Vector2(x, 0)).damaged.connect(_on_nature_hit)
+		_target(Vector3(x, 0.0, 0)).damaged.connect(_on_nature_hit)
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -3608,7 +3529,7 @@ func test_a_spectrum_volley_strikes_harder_per_other_element() -> void:
 	assert_true(is_same((bolts[0] as Projectile).salvo_hits, (bolts[1] as Projectile).salvo_hits), "une salve")
 
 	var bolt := bolts[0] as Projectile
-	var target := _target(Vector2(0, 200))
+	var target := _target(Vector3(0, 0.0, 200))
 	bolt._nature = DamageType.Kind.FIRE
 	assert_eq(bolt._spectrum(target), 1.0, "le premier")
 	bolt._nature = DamageType.Kind.COLD
@@ -3647,7 +3568,7 @@ func test_the_triad_comets_pierce_what_they_cross() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
 	# Sur l'axe de la visée, que les trois trajectoires longent.
 	var crossed := _target(_p.global_position + _p.facing * 60.0)
-	var aside := _target(_p.global_position + Vector2(60, 70))
+	var aside := _target(_p.global_position + Vector3(60, 0.0, 70))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(Triad.TRAVEL + 0.1)
@@ -3678,9 +3599,9 @@ func test_the_amplification_tree_resonates_siphons_and_backlashes() -> void:
 	)
 
 	_p._set_mana(10.0)
-	_p.states.slew.emit(_blow(Keywords.SPELL), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.SPELL), Vector3.ZERO, null)
 	assert_almost_eq(_p.mana, 12.0, 1e-3, "un point de Siphon")
-	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector2.ZERO, null)
+	_p.states.slew.emit(_blow(Keywords.ATTACK), Vector3.ZERO, null)
 	assert_almost_eq(_p.mana, 12.0, 1e-3, "pas sur une attaque")
 
 	buff.lived = 30.0
@@ -3824,7 +3745,7 @@ func test_the_raven_eye_aims_the_echo_at_the_prey() -> void:
 	])
 	_p.bar.put(3, "familiar")
 	_p.bar.put(4, "glyph")
-	var prey := _target(_aim() + Vector2(0, 30))
+	var prey := _target(_aim() + Vector3(0, 0.0, 30))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 3))
 	assert_true(Gestures.cast(_p, 4))
@@ -3879,8 +3800,8 @@ func _cauldron() -> Cauldron:
 func test_the_cauldron_boils_its_element_onto_its_circle() -> void:
 	_learn_class(Character.WITCH, ["cauldron"])
 	_no_rolled_states()
-	var inside := _wearing_target(_aim() + Vector2(0, 20))
-	var outside := _wearing_target(_aim() + Vector2(0, 80))
+	var inside := _wearing_target(_aim() + Vector3(0, 0.0, 20))
+	var outside := _wearing_target(_aim() + Vector3(0, 0.0, 80))
 	await wait_physics_frames(2)
 
 	assert_true(Gestures.cast(_p, 2))
@@ -3936,7 +3857,7 @@ func test_a_decoction_drinks_the_states_instead_of_inflicting() -> void:
 	_learn_class(Character.WITCH, [
 		"cauldron", "cauldron_simmer", "cauldron_brim", "cauldron_decoction",
 	])
-	var soaked := _wearing_target(_aim() + Vector2(0, 20))
+	var soaked := _wearing_target(_aim() + Vector3(0, 0.0, 20))
 	soaked.states.put(StatusEffects.Kind.NUMB, 1.0)
 	var left := soaked.states.remaining(StatusEffects.Kind.NUMB)
 	await wait_physics_frames(2)
@@ -3974,7 +3895,7 @@ func test_a_lid_pops_at_the_end_and_a_philtre_restores_mana() -> void:
 
 ## Un glyphe de ce lancer dans cet élément, tracé à la main : le triangle et les fils veulent
 ## trois points distincts, que la visée ne donne pas.
-func _glyph_at(point: Vector2, nature: int) -> Glyph:
+func _glyph_at(point: Vector3, nature: int) -> Glyph:
 	var cast := _p.resolve(SkillCatalog.by_id("glyph"), 1)
 	Familiar.sing(cast, posmod(
 		DamageType.ELEMENTS.find(nature) - DamageType.ELEMENTS.find(cast.nature), DamageType.ELEMENTS.size()
@@ -4012,11 +3933,11 @@ func test_glyphs_take_each_element_and_keep_three() -> void:
 ## Trois glyphes armés des trois éléments : le triangle frappe ce qui s'y tient, pas au-delà.
 func test_three_glyphs_strike_their_triangle() -> void:
 	_learn_class(Character.WITCH, ["glyph"])
-	var center := Vector2(300, 0)
+	var center := Vector3(300, 0.0, 0)
 	for i in 3:
-		_glyph_at(center + Vector2.UP.rotated(TAU * float(i) / 3.0) * 60.0, DamageType.ELEMENTS[i])
+		_glyph_at(center + Flat.rotated(Vector3.FORWARD, TAU * float(i) / 3.0) * 60.0, DamageType.ELEMENTS[i])
 	var inside := _target(center)
-	var outside := _target(center + Vector2(0, 80))
+	var outside := _target(center + Vector3(0, 0.0, 80))
 	await wait_seconds(0.5 + SkillStats.TRIANGLE_PERIOD + 0.1)
 	assert_eq(_hits(inside), 1)
 	assert_eq(_hits(outside), 0)
@@ -4044,9 +3965,9 @@ func test_a_palimpsest_reacts_and_a_rewrite_retraces_the_glyph() -> void:
 ## de ses deux bouts.
 func test_an_entwined_thread_strikes_and_its_weft_sets_both_states() -> void:
 	_learn_class(Character.WITCH, ["glyph", "glyph_flourish", "glyph_entwine", "glyph_weft"])
-	_glyph_at(Vector2(260, 0), DamageType.Kind.FIRE)
-	_glyph_at(Vector2(360, 0), DamageType.Kind.COLD)
-	var crossing := _wearing_target(Vector2(310, 0))
+	_glyph_at(Vector3(260, 0.0, 0), DamageType.Kind.FIRE)
+	_glyph_at(Vector3(360, 0.0, 0), DamageType.Kind.COLD)
+	var crossing := _wearing_target(Vector3(310, 0.0, 0))
 	await wait_seconds(0.5 + SkillStats.TRIANGLE_PERIOD + 0.1)
 	assert_eq(_hits(crossing), 1)
 	assert_true(crossing.states.active(StatusEffects.Kind.IGNITE))
@@ -4056,15 +3977,15 @@ func test_an_entwined_thread_strikes_and_its_weft_sets_both_states() -> void:
 ## Leurre : un ennemi à sa portée est tiré vers le glyphe ; un autre au-delà, non.
 func test_a_lure_tugs_the_enemies_in_reach() -> void:
 	_learn_class(Character.WITCH, ["glyph", "glyph_chalk", "glyph_lure"])
-	var glyph := _glyph_at(Vector2(300, 0), DamageType.Kind.FIRE)
-	var near := _grunt(Vector2(330, 0))
-	var far := _grunt(Vector2(400, 0))
+	var glyph := _glyph_at(Vector3(300, 0.0, 0), DamageType.Kind.FIRE)
+	var near := _grunt(Vector3(330, 0.0, 0))
+	var far := _grunt(Vector3(400, 0.0, 0))
 	await wait_physics_frames(2)
-	near.velocity = Vector2.ZERO
-	far.velocity = Vector2.ZERO
+	near.velocity = Vector3.ZERO
+	far.velocity = Vector3.ZERO
 	glyph._tug()
 	assert_lt(near.velocity.x, 0.0, "vers le glyphe")
-	assert_eq(far.velocity, Vector2.ZERO)
+	assert_eq(far.velocity, Vector3.ZERO)
 
 
 ## Signature : un coup reçu trace un glyphe aux pieds, pas deux de suite.
@@ -4087,7 +4008,7 @@ func test_a_seal_fills_then_bursts_and_leaves_its_counterseal() -> void:
 	_p.bar.put(3, "elemental_projectile")
 	var prey := _wearing_target(_aim())
 	# Hors du chemin des traits, dans le cercle du Sceau.
-	var witness := _target(_aim() + Vector2(0, 40))
+	var witness := _target(_aim() + Vector3(0, 0.0, 40))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -4124,7 +4045,7 @@ func test_the_brazier_spits_at_the_nearest_enemy() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("brazier"), 1)
 	await wait_seconds(cast.period + 0.1)
 	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
-	var prey := _target(_aim() + Vector2(0, 60))
+	var prey := _target(_aim() + Vector3(0, 0.0, 60))
 	await wait_physics_frames(2)
 	var balls := _children_of(Fireball)
 	assert_eq(balls.size(), 1, "une boule, aussitôt")
@@ -4162,12 +4083,12 @@ func test_the_hearth_fires_your_fireball_without_its_meteor() -> void:
 	assert_almost_eq(b._ball.total_max(), _p.resolve(fireball, 1, true).total_max(), 0.01, "vos points, votre arbre")
 	_p.bar.put(3, "fireball")
 	var mana := _p.mana
-	Brazier.assist(_p, _aim() + Vector2(100, 0))
+	Brazier.assist(_p, _aim() + Vector3(100, 0.0, 0))
 	assert_almost_eq(_p.mana, mana - b._ball.mana_cost, 0.01, "le tir paie la Boule de feu")
 	await wait_physics_frames(1)
 	assert_eq(_children_of(Fireball).size(), 1, "la Main d'appoint : une boule, pas un météore")
 	_p._set_mana(b._ball.mana_cost * 0.5)
-	assert_false(b._shoot(_aim() + Vector2(100, 0)), "à court de mana, rien ne part")
+	assert_false(b._shoot(_aim() + Vector3(100, 0.0, 0)), "à court de mana, rien ne part")
 
 
 ## Sous le Foyer du mage, la Salve et la Mitraille restent au brasero : des boules en plus,
@@ -4191,7 +4112,7 @@ func test_a_beacon_draws_the_blows_and_falls_in_embers() -> void:
 	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
 	add_child_autofree(grunt)
 	grunt.setup(_p)
-	grunt.global_position = _aim() + Vector2(30, 0)
+	grunt.global_position = _aim() + Vector3(30, 0.0, 0)
 	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	await wait_physics_frames(1)
@@ -4211,9 +4132,9 @@ func test_a_kill_rekindles_the_brazier() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	var life := b.lifetime()
-	_p.states.slew.emit(_p.resolve(SkillCatalog.by_id("brazier"), 1), Vector2.ZERO, null)
+	_p.states.slew.emit(_p.resolve(SkillCatalog.by_id("brazier"), 1), Vector3.ZERO, null)
 	assert_eq(b.lifetime(), life, "le tué d'un autre lancer")
-	_p.states.slew.emit(b._cast, Vector2.ZERO, null)
+	_p.states.slew.emit(b._cast, Vector3.ZERO, null)
 	assert_eq(b.lifetime(), life + 1.0)
 	assert_true(b._quick, "un tir dû tout de suite")
 
@@ -4224,7 +4145,7 @@ func test_triangulated_braziers_burn_the_line_between_them() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(DashTrail).size(), 0, "seul, rien à relier")
 	var first := _brazier()
-	_p.global_position += Vector2(0, 60)
+	_p.global_position += Vector3(0, 0.0, 60)
 	_cast_again(2)
 	var trails := _children_of(DashTrail)
 	assert_eq(trails.size(), 1)
@@ -4268,7 +4189,6 @@ func test_a_full_throttle_bolt_fires_twice_every_fourth_shot() -> void:
 	assert_eq(_children_of(Projectile).size(), 2, "un second éclair suit le premier")
 
 
-
 ## Devenu orbe, le Plein régime double l'orbe.
 func test_a_full_throttle_orb_comes_twice() -> void:
 	_learn_with(
@@ -4286,13 +4206,13 @@ func test_a_full_throttle_orb_comes_twice() -> void:
 ## Le Paratonnerre : la cible touchée est marquée, et l'éclair suivant s'incurve vers elle.
 func test_a_lightning_rod_draws_the_next_bolts() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.LIGHTNING_ROD, 1.0]])
-	var marked := _target(Vector2(60, 0))
+	var marked := _target(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.4)
 	assert_eq(LightningRod.target_of(_p.states), marked)
 	# Hors de l'axe : un tir droit la manquerait.
-	marked.global_position = Vector2(80, 45)
+	marked.global_position = Vector3(80, 0.0, 45)
 	await wait_seconds(_p.remaining_cooldown(2) + 0.02)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -4303,8 +4223,8 @@ func test_a_lightning_rod_draws_the_next_bolts() -> void:
 func test_an_inherited_rod_passes_to_the_nearest_enemy() -> void:
 	var cast := SkillStats.new()
 	cast.rod_heir = 1.0
-	var first := _target(Vector2(60, 0))
-	var heir := _target(Vector2(100, 0))
+	var first := _target(Vector3(60, 0.0, 0))
+	var heir := _target(Vector3(100, 0.0, 0))
 	await wait_physics_frames(2)
 	LightningRod.mark(_effects, first, _p.states, cast)
 	await wait_physics_frames(2)
@@ -4317,12 +4237,12 @@ func test_an_inherited_rod_passes_to_the_nearest_enemy() -> void:
 func test_the_storm_strikes_the_lightning_rod() -> void:
 	var rod_cast := SkillStats.new()
 	rod_cast.storm_target = 1.0
-	var marked := _target(Vector2(200, 0))
-	var beside := _target(Vector2(100, 120))
+	var marked := _target(Vector3(200, 0.0, 0))
+	var beside := _target(Vector3(100, 0.0, 120))
 	await wait_physics_frames(2)
 	LightningRod.mark(_effects, marked, _p.states, rod_cast)
 	await wait_physics_frames(2)
-	StormCloud.put(_effects, Vector2(100, 0), _p.resolve(SkillCatalog.by_id("storm_cloud"), 1), _p.states)
+	StormCloud.put(_effects, Vector3(100, 0.0, 0), _p.resolve(SkillCatalog.by_id("storm_cloud"), 1), _p.states)
 	await wait_physics_frames(3)
 	assert_eq(_hits(marked), 1, "à 100 px, hors du cercle")
 	assert_eq(_hits(beside), 0)
@@ -4335,19 +4255,19 @@ func test_an_electrocuting_crit_always_numbs() -> void:
 	cast.electrocute = 1.0
 	cast.crit_chance = 1.0
 	for i in 20:
-		var h := _target(Vector2(300 + i * 20, 300))
+		var h := _target(Vector3(300 + i * 20, 0.0, 300))
 		h.states = StatusEffects.new()
 		var parts := DamageType.empty_parts()
 		parts[DamageType.Kind.LIGHTNING] = 1.0
-		h.take_damage(DamageInfo.roll(cast, Vector2.ZERO, parts))
+		h.take_damage(DamageInfo.roll(cast, Vector3.ZERO, parts))
 		assert_true(h.states.active(StatusEffects.Kind.NUMB))
 
 
 ## Le Carambolage : l'éclair repart du mur au lieu de s'y éteindre.
 func test_a_caroming_bolt_bounces_off_a_wall() -> void:
 	_learn_with("manual_lightning", "swift_bolt", [[SkillStats.CAROMS, 1.0]])
-	_wall(Vector2(60, 0), Vector2(10, 200))
-	var behind := _target(Vector2(-60, 0))
+	_wall(Vector3(60, 0.0, 0), Vector3(10, 0.0, 200))
+	var behind := _target(Vector3(-60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
@@ -4361,7 +4281,7 @@ func test_a_satellite_orb_circles_its_caster() -> void:
 	var orb: StaticOrb = _children_of(StaticOrb)[0]
 	await wait_seconds(0.3)
 	var start := orb.global_position
-	_p.global_position += Vector2(40, 30)
+	_p.global_position += Vector3(40, 0.0, 30)
 	await wait_seconds(0.3)
 	assert_almost_eq(orb.global_position.distance_to(_p.global_position), SkillStats.SATELLITE_RADIUS, 0.5)
 	assert_ne(orb.global_position, start)
@@ -4373,27 +4293,26 @@ func test_one_orb_too_many_dissolves_the_oldest() -> void:
 	cast.simultaneous = 6.0
 	var orbs: Array[StaticOrb] = []
 	for i in 7:
-		orbs.append(StaticOrb.send(_effects, Vector2(0, i * 40), Vector2.RIGHT, cast, _p.states, _p))
+		orbs.append(StaticOrb.send(_effects, Vector3(0, 0.0, i * 40), Vector3.RIGHT, cast, _p.states, _p))
 	assert_true(orbs[0].is_queued_for_deletion(), "le plus ancien")
 	for i in range(1, 7):
 		assert_false(orbs[i].is_queued_for_deletion())
-	var crow := Node2D.new()
+	var crow := Node3D.new()
 	autofree(crow)
-	StaticOrb.send(_effects, Vector2(0, 300), Vector2.RIGHT, cast, _p.states, crow)
+	StaticOrb.send(_effects, Vector3(0, 0.0, 300), Vector3.RIGHT, cast, _p.states, crow)
 	assert_false(orbs[1].is_queued_for_deletion(), "l'écho n'en chasse aucun")
 
 
-## Une frappe dans une meute ne dessine que quelques arcs : les dégâts, tous.
-func test_an_orb_strike_draws_only_a_few_arcs() -> void:
+## Une frappe dans une meute touche toute la meute.
+func test_an_orb_strike_hits_the_whole_pack() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
 	cast.radius = 40.0
 	var pack: Array[Hurtbox] = []
 	for i in Lightning.ARCS_MOST + 3:
-		pack.append(_target(Vector2(200 + i * 4, 200)))
+		pack.append(_target(Vector3(200 + i * 4, 0.0, 200)))
 	await wait_physics_frames(2)
-	var orb := StaticOrb.send(_effects, Vector2(200, 180), Vector2.RIGHT, cast, _p.states)
+	var orb := StaticOrb.send(_effects, Vector3(200, 0.0, 180), Vector3.RIGHT, cast, _p.states)
 	orb._strike()
-	assert_eq(orb._bolts.size(), Lightning.ARCS_MOST)
 	for target in pack:
 		assert_eq(_hits(target), 1)
 
@@ -4416,7 +4335,7 @@ func test_a_charged_orb_reaches_farther_per_enemy_met() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
 	cast.radius = 28.0
 	cast.charged_orb = 10.0
-	var orb := StaticOrb.send(_effects, Vector2.ZERO, Vector2.RIGHT, cast, _p.states)
+	var orb := StaticOrb.send(_effects, Vector3.ZERO, Vector3.RIGHT, cast, _p.states)
 	for i in SkillStats.CHARGED_ORB_MOST + 2:
 		orb._met[i] = true
 	assert_almost_eq(orb.reach(), 28.0 * 1.5, 0.001)
@@ -4430,7 +4349,7 @@ func test_live_ice_adds_lightning_against_the_chilled() -> void:
 	bolt._cast.live_ice = 50.0
 	bolt._parts = DamageType.empty_parts()
 	bolt._parts[DamageType.Kind.COLD] = 10.0
-	var target := _target(Vector2(300, 300))
+	var target := _target(Vector3(300, 0.0, 300))
 	target.states = StatusEffects.new()
 	assert_eq(bolt._conducted(target)[DamageType.Kind.LIGHTNING], 0.0, "rien sur un ennemi sain")
 	target.states.put(StatusEffects.Kind.CHILL, 1.0)
@@ -4446,13 +4365,13 @@ func test_a_fourth_cloud_dissipates_the_oldest() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("storm_cloud"), 1)
 	var clouds: Array[StormCloud] = []
 	for i in 4:
-		clouds.append(StormCloud.put(_effects, Vector2(i * 80, 0), cast, _p.states, null, _p))
+		clouds.append(StormCloud.put(_effects, Vector3(i * 80, 0.0, 0), cast, _p.states, null, _p))
 	assert_true(clouds[0].is_queued_for_deletion(), "le plus ancien")
 	for i in range(1, 4):
 		assert_false(clouds[i].is_queued_for_deletion())
-	var crow := Node2D.new()
+	var crow := Node3D.new()
 	autofree(crow)
-	var echo := StormCloud.put(_effects, Vector2(0, 80), cast, _p.states, null, crow)
+	var echo := StormCloud.put(_effects, Vector3(0, 0.0, 80), cast, _p.states, null, crow)
 	assert_false(clouds[1].is_queued_for_deletion(), "l'écho n'en chasse aucun")
 	assert_false(echo.is_queued_for_deletion())
 
@@ -4461,7 +4380,7 @@ func test_a_fourth_cloud_dissipates_the_oldest() -> void:
 # Chaîne d'éclairs (jalon 43)
 # --------------------------------------------------------------------------
 
-func _numbed(position: Vector2) -> Hurtbox:
+func _numbed(position: Vector3) -> Hurtbox:
 	var h := _target(position)
 	h.states = StatusEffects.new()
 	h.states.put(StatusEffects.Kind.NUMB, 1.0)
@@ -4471,9 +4390,9 @@ func _numbed(position: Vector2) -> Hurtbox:
 ## La Conductance : les engourdis ne comptent pas, la décharge va plus loin.
 func test_a_conductive_chain_runs_through_the_numbed() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.CONDUCTANCE, 1.0]])
-	var line: Array[Hurtbox] = [_numbed(Vector2(60, 0)), _numbed(Vector2(120, 0))]
+	var line: Array[Hurtbox] = [_numbed(Vector3(60, 0.0, 0)), _numbed(Vector3(120, 0.0, 0))]
 	for i in 4:
-		line.append(_target(Vector2(180 + i * 60, 0)))
+		line.append(_target(Vector3(180 + i * 60, 0.0, 0)))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	for i in 5:
@@ -4485,8 +4404,10 @@ func test_a_conductive_chain_runs_through_the_numbed() -> void:
 func test_a_bifurcating_chain_sends_a_branch() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.BIFURCATION, 100.0]])
 	for x in [60, 120, 180]:
-		_target(Vector2(x, 0))
-	var aside := _target(Vector2(120, 60))
+		_target(Vector3(x, 0.0, 0))
+	# Pas à égalité avec la troisième depuis la deuxième : l'ordre de deux cibles à égale
+	# distance est celui du moteur physique, qui a changé au jalon 54.
+	var aside := _target(Vector3(120, 0.0, 62))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(aside), 1, "pris par la branche, partie de la première cible")
@@ -4496,8 +4417,8 @@ func test_a_bifurcating_chain_sends_a_branch() -> void:
 ## Le Retour par la masse : du mana par ennemi touché.
 func test_a_grounded_chain_gives_back_mana() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.GROUNDING, 2.0]])
-	_target(Vector2(60, 0))
-	_target(Vector2(120, 0))
+	_target(Vector3(60, 0.0, 0))
+	_target(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 	_p._set_mana(100.0)
 	var cost := _p.resolve(SkillCatalog.by_id("chain_lightning"), 1).mana_cost
@@ -4505,10 +4426,10 @@ func test_a_grounded_chain_gives_back_mana() -> void:
 	assert_almost_eq(_p.mana, 100.0 - cost + 4.0, 0.001)
 
 
-func _charge_at(position: Vector2) -> StaticCharge:
+func _charge_at(position: Vector3) -> StaticCharge:
 	var parts := DamageType.empty_parts()
-	var charge := StaticCharge.put(_effects, position, Vector2.RIGHT, parts, _p.states)
-	charge._toward = Vector2.ZERO
+	var charge := StaticCharge.put(_effects, position, Vector3.RIGHT, parts, _p.states)
+	charge._toward = Vector3.ZERO
 	return charge
 
 
@@ -4516,9 +4437,9 @@ func _charge_at(position: Vector2) -> StaticCharge:
 ## Le Réamorçage : la charge rend son saut.
 func test_a_relayed_chain_jumps_through_a_static_charge() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [["targets", -1.0], [SkillStats.RELAY, 1.0]])
-	var first := _target(Vector2(60, 0))
-	var charge := _charge_at(Vector2(110, 0))
-	var beyond := _target(Vector2(160, 0))
+	var first := _target(Vector3(60, 0.0, 0))
+	var charge := _charge_at(Vector3(110, 0.0, 0))
+	var beyond := _target(Vector3(160, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(first), 1)
@@ -4531,9 +4452,9 @@ func test_a_reprimed_relay_gives_its_jump_back() -> void:
 		"manual_lightning", "chain_lightning",
 		[["targets", -1.0], [SkillStats.RELAY, 1.0], [SkillStats.RELAY_REFUND, 1.0]]
 	)
-	_target(Vector2(60, 0))
-	_charge_at(Vector2(110, 0))
-	var beyond := _target(Vector2(160, 0))
+	_target(Vector3(60, 0.0, 0))
+	_charge_at(Vector3(110, 0.0, 0))
+	var beyond := _target(Vector3(160, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(beyond), 1, "la charge n'a pas usé de saut")
@@ -4543,10 +4464,10 @@ func test_a_reprimed_relay_gives_its_jump_back() -> void:
 func test_each_arc_of_an_antlered_web_leaps_once_more() -> void:
 	_learn_with("manual_lightning", "chain_lightning", [[SkillStats.WEB_BRANCH, 50.0]], Skill.Shape.WEB)
 	_p.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, -100.0)])
-	var ahead := _target(Vector2(60, 0))
-	_target(Vector2(-60, 0))
-	_target(Vector2(0, 60))
-	var past := _target(Vector2(110, 0))
+	var ahead := _target(Vector3(60, 0.0, 0))
+	_target(Vector3(-60, 0.0, 0))
+	_target(Vector3(0, 0.0, 60))
+	var past := _target(Vector3(110, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(past), 1)
@@ -4558,11 +4479,11 @@ func test_an_overvolted_kill_relaunches_a_chain() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("chain_lightning"), 1)
 	cast.kill_burst = 20.0
 	cast.overvolt = 30.0
-	var near := _target(Vector2(110, 0))
+	var near := _target(Vector3(110, 0.0, 0))
 	await wait_physics_frames(2)
 	var victim := StatusEffects.new()
 	victim.put(StatusEffects.Kind.NUMB, 1.0)
-	_p.states.slew.emit(cast, Vector2(40, 0), victim)
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), victim)
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1, "hors de l'explosion, pris par la chaîne relancée")
 	assert_eq(_children_of(ChainLightning).size(), 1)
@@ -4587,10 +4508,10 @@ func _storm(changes: Dictionary) -> SkillStats:
 ## L'Accumulation : les frappes à vide chargent, la suivante qui touche les dépense.
 func test_an_accumulating_cloud_charges_on_empty_strikes() -> void:
 	var cast := _storm({SkillStats.ACCUMULATION: 20.0})
-	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	var cloud := StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	await wait_seconds(0.15)
 	assert_eq(cloud._charges, 2, "deux frappes à vide")
-	var under := _target(Vector2(300, 300))
+	var under := _target(Vector3(300, 0.0, 300))
 	await wait_seconds(0.12)
 	assert_almost_eq(float(_received_all[under][0]), cast.total_max() * 1.4, 0.01)
 	assert_eq(cloud._charges, 0, "dépensées")
@@ -4599,9 +4520,9 @@ func test_an_accumulating_cloud_charges_on_empty_strikes() -> void:
 ## Le Point de rupture : à pleines charges, la frappe va au double du rayon.
 func test_a_breaking_cloud_strikes_wide_at_full_charges() -> void:
 	var cast := _storm({SkillStats.ACCUMULATION: 20.0, SkillStats.BREAKING_POINT: 1.0})
-	var aside := _target(Vector2(300 + cast.radius * 1.5, 300))
+	var aside := _target(Vector3(300 + cast.radius * 1.5, 0.0, 300))
 	await wait_physics_frames(2)
-	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	var cloud := StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	cloud._charges = SkillStats.ACCUMULATION_MOST
 	await wait_physics_frames(2)
 	assert_eq(_hits(aside), 1)
@@ -4610,9 +4531,9 @@ func test_a_breaking_cloud_strikes_wide_at_full_charges() -> void:
 ## Le Débordement : un arc vers l'ennemi hors du cercle, à une part de la frappe.
 func test_an_overflowing_cloud_arcs_beyond_its_circle() -> void:
 	var cast := _storm({SkillStats.OVERFLOW: 40.0})
-	var aside := _target(Vector2(300 + cast.radius * 1.5, 300))
+	var aside := _target(Vector3(300 + cast.radius * 1.5, 0.0, 300))
 	await wait_physics_frames(2)
-	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	await wait_physics_frames(2)
 	assert_eq(_hits(aside), 1)
 	assert_almost_eq(float(_received_all[aside][0]), cast.total_max() * 0.4, 0.01)
@@ -4622,9 +4543,9 @@ func test_an_overflowing_cloud_arcs_beyond_its_circle() -> void:
 func test_a_twin_strike_lands_twice() -> void:
 	var cast := _storm({SkillStats.TWIN_STRIKE: 100.0})
 	cast.period = 0.5
-	var under := _target(Vector2(300, 300))
+	var under := _target(Vector3(300, 0.0, 300))
 	await wait_physics_frames(2)
-	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	await wait_seconds(SkillStats.TWIN_DELAY + 0.08)
 	assert_eq(_hits(under), 2)
 
@@ -4632,11 +4553,11 @@ func test_a_twin_strike_lands_twice() -> void:
 ## L'Appel d'air : la frappe tire vers le centre — un recul négatif.
 func test_an_updraft_pulls_toward_the_center() -> void:
 	var cast := _storm({SkillStats.PULL: 60.0})
-	var under := _target(Vector2(310, 300))
+	var under := _target(Vector3(310, 0.0, 300))
 	var pulls: Array[float] = []
 	under.damaged.connect(func(info: DamageInfo) -> void: pulls.append(info.knockback))
 	await wait_physics_frames(2)
-	StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	await wait_physics_frames(2)
 	assert_eq(pulls[0], -60.0)
 
@@ -4644,13 +4565,13 @@ func test_an_updraft_pulls_toward_the_center() -> void:
 ## La Traque : le nuage garde sa proie, même quand une autre passe plus près.
 func test_a_hunting_cloud_keeps_its_prey() -> void:
 	var cast := _storm({SkillStats.SEEK: 200.0, SkillStats.HUNT: 1.0})
-	var prey := _target(Vector2(380, 300))
-	var other := _target(Vector2(500, 300))
+	var prey := _target(Vector3(380, 0.0, 300))
+	var other := _target(Vector3(500, 0.0, 300))
 	await wait_physics_frames(2)
-	var cloud := StormCloud.put(_effects, Vector2(300, 300), cast, _p.states)
+	var cloud := StormCloud.put(_effects, Vector3(300, 0.0, 300), cast, _p.states)
 	await wait_physics_frames(2)
 	assert_eq(cloud._quarry, prey)
-	other.global_position = cloud.global_position + Vector2(5, 0)
+	other.global_position = cloud.global_position + Vector3(5, 0.0, 0)
 	await wait_seconds(0.25)
 	assert_eq(cloud._quarry, prey, "elle ne la lâche pas")
 
@@ -4659,16 +4580,15 @@ func test_a_hunting_cloud_keeps_its_prey() -> void:
 func test_a_moving_front_strikes_more_while_walking() -> void:
 	var cast := _storm({SkillStats.MOVING_FRONT: 100.0})
 	cast.duration = 0.5
-	var walker := Node2D.new()
+	var walker := Node3D.new()
 	add_child_autofree(walker)
-	var cloud := StormCloud.put(_effects, Vector2.ZERO, cast, _p.states, walker)
+	var cloud := StormCloud.put(_effects, Vector3.ZERO, cast, _p.states, walker)
 	var strikes := 0
 	while is_instance_valid(cloud) and not cloud.is_queued_for_deletion():
 		walker.position.x += 2.0
 		strikes = cloud._strikes
 		await wait_physics_frames(1)
 	assert_gt(strikes, cast.strikes_over_duration() + 2)
-
 
 
 # --------------------------------------------------------------------------
@@ -4678,8 +4598,8 @@ func test_a_moving_front_strikes_more_while_walking() -> void:
 ## Le Trait d'éclair : ce qui est sur le trajet est frappé, ce qui est à côté non.
 func test_a_lightning_streak_strikes_along_the_dash() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.BOLT_DASH, 1.0]])
-	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
-	var aside := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 60))
+	var on_the_way := _target(Vector3(Player.PLACEMENT_RANGE * 0.5, 0.0, 0))
+	var aside := _target(Vector3(Player.PLACEMENT_RANGE * 0.5, 0.0, 60))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(on_the_way), 1)
@@ -4689,7 +4609,7 @@ func test_a_lightning_streak_strikes_along_the_dash() -> void:
 ## L'Aller-retour : on revient au départ, et l'éclair refrappe le trajet.
 func test_a_round_trip_brings_back_to_the_start() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.BOLT_DASH, 1.0], [SkillStats.ROUND_TRIP, 1.0]])
-	var on_the_way := _target(Vector2(Player.PLACEMENT_RANGE * 0.5, 0))
+	var on_the_way := _target(Vector3(Player.PLACEMENT_RANGE * 0.5, 0.0, 0))
 	await wait_physics_frames(2)
 	var start := _p.global_position
 	assert_true(Gestures.cast(_p, 2))
@@ -4704,7 +4624,7 @@ func test_rolling_thunder_rumbles_twice_more() -> void:
 	_learn_with(
 		"manual_lightning", "storm_dash", [[SkillStats.END_BURST, 30.0], [SkillStats.ROLLING_THUNDER, 30.0]]
 	)
-	var landing := _target(Vector2(Player.PLACEMENT_RANGE, 0))
+	var landing := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.ROLLING_GAP * SkillStats.ROLLING_COUNT + 0.15)
@@ -4728,7 +4648,7 @@ func test_built_up_tension_charges_the_next_lightning_spell() -> void:
 func test_rearming_shortens_the_cooldown_per_numbed() -> void:
 	_learn_with("manual_lightning", "storm_dash", [[SkillStats.END_BURST, 40.0], [SkillStats.REARM, 0.5]])
 	for dy in [-10, 10]:
-		var h := _target(Vector2(Player.PLACEMENT_RANGE, dy))
+		var h := _target(Vector3(Player.PLACEMENT_RANGE, 0.0, dy))
 		h.states = StatusEffects.new()
 		h.states.put(StatusEffects.Kind.NUMB, 1.0)
 	await wait_physics_frames(2)
@@ -4741,9 +4661,9 @@ func test_rearming_shortens_the_cooldown_per_numbed() -> void:
 func test_a_static_mine_bites_once_then_goes_out() -> void:
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.LIGHTNING] = 10.0
-	var mine := StaticCharge.put(_effects, Vector2(300, 300), Vector2.RIGHT, parts, _p.states, 0.5, true)
-	mine._toward = Vector2.ZERO
-	var first := _target(Vector2(300 + StaticCharge.RADIUS * 1.5, 300))
+	var mine := StaticCharge.put(_effects, Vector3(300, 0.0, 300), Vector3.RIGHT, parts, _p.states, 0.5, true)
+	mine._toward = Vector3.ZERO
+	var first := _target(Vector3(300 + StaticCharge.RADIUS * 1.5, 0.0, 300))
 	await wait_seconds(0.3)
 	assert_eq(_hits(first), 1, "hors du rayon d'une charge, dans celui d'une mine")
 	assert_almost_eq(float(_received_all[first][0]), 10.0 * 0.5 * SkillStats.MINE_FACTOR, 0.01)
@@ -4771,9 +4691,9 @@ func test_gallop_stacks_thunder_call() -> void:
 ## L'Ionisation : chaque seconde, le champ engourdit ce qui est près de vous.
 func test_an_ionizing_field_numbs_around_you() -> void:
 	_learn_with("manual_lightning", "static_electricity", [[SkillStats.IONIZE, 100.0]])
-	var near := _target(Vector2(30, 0))
+	var near := _target(Vector3(30, 0.0, 0))
 	near.states = StatusEffects.new()
-	var far := _target(Vector2(SkillStats.IONIZE_RADIUS + 40, 0))
+	var far := _target(Vector3(SkillStats.IONIZE_RADIUS + 40, 0.0, 0))
 	far.states = StatusEffects.new()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -4789,13 +4709,13 @@ func test_capacitance_lengthens_the_static_charges() -> void:
 	_p.stats.static_charge_chance = 100.0
 	var victim := StatusEffects.new()
 	victim.put(StatusEffects.Kind.NUMB, 1.0)
-	_p._on_struck(Vector2(40, 0), DamageType.empty_parts(), victim)
+	_p._on_struck(Vector3(40, 0.0, 0), DamageType.empty_parts(), victim)
 	await wait_physics_frames(2)
 	var charge: StaticCharge = _children_of(StaticCharge)[0]
 	assert_almost_eq(charge._life, StaticCharge.LIFE + 1.5, 0.001)
 
 
-func _grunt(position: Vector2) -> Enemy:
+func _grunt(position: Vector3) -> Enemy:
 	var grunt: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
 	add_child_autofree(grunt)
 	grunt.global_position = position
@@ -4809,7 +4729,7 @@ func test_a_backlash_answers_a_melee_blow_then_the_cage_closes() -> void:
 		"manual_lightning", "static_electricity", [[SkillStats.BACKLASH, 50.0], [SkillStats.FARADAY, 1.0]]
 	)
 	assert_true(Gestures.cast(_p, 2))
-	var grunt := _grunt(Vector2(20, 0))
+	var grunt := _grunt(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	var full := grunt.health
 	_p.melee_blow(grunt, 20.0)
@@ -4839,7 +4759,7 @@ func test_a_full_capacitor_charges_the_next_lightning_spell() -> void:
 func test_a_total_discharge_bursts_by_itself() -> void:
 	_learn_with("manual_lightning", "static_electricity", [[SkillStats.TOTAL_DISCHARGE, 1.0]])
 	assert_true(Gestures.cast(_p, 2))
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	for i in SkillStats.CONDENSER_MOST:
 		_p._charge_bit(3.0)
@@ -4859,7 +4779,7 @@ func test_the_bullseye_bites_harder_at_the_heart() -> void:
 	_p.stats.crit_chance = 0.0
 	var point := _aim()
 	var heart := _target(point)
-	var rim := _target(point + Vector2(0, 20))
+	var rim := _target(point + Vector3(0, 0.0, 20))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
@@ -4894,7 +4814,7 @@ func test_an_aftershock_is_a_whole_spike_with_its_shards() -> void:
 func test_a_grove_raises_a_circle_beside_the_first() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.GROVE, 1.0]])
 	var radius := _p.resolve(SkillCatalog.by_id("ice_spike"), 1).radius
-	var beside := _target(_aim() + _p.facing.rotated(PI * 0.5) * radius * 2.0)
+	var beside := _target(_aim() + Flat.rotated(_p.facing, PI * 0.5) * radius * 2.0)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_children_of(IceSpikes).size(), 2)
@@ -4957,7 +4877,7 @@ func test_a_crevasse_opens_at_the_end_of_the_furrow() -> void:
 ## Le Grésil : un éclat qui partirait à côté s'incurve vers l'ennemi.
 func test_sleet_shards_curve_toward_an_enemy() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 1.0], [SkillStats.SEEK, 200.0]])
-	var aside := _target(_aim() + Vector2(60, 30))
+	var aside := _target(_aim() + Vector3(60, 0.0, 30))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(IceSpikes.LIFETIME + 0.6)
@@ -4970,11 +4890,11 @@ func test_sleet_shards_curve_toward_an_enemy() -> void:
 
 ## Le Grand froid : la nova frappe plus fort par transi dans son cercle, sain compris.
 func test_deep_cold_bites_harder_in_a_chilled_crowd() -> void:
-	for at in [Vector2(20, 0), Vector2(-20, 0)]:
+	for at in [Vector3(20, 0.0, 0), Vector3(-20, 0.0, 0)]:
 		var chilled := _target(at)
 		chilled.states = StatusEffects.new()
 		chilled.states.put(StatusEffects.Kind.CHILL, 1.0)
-	var healthy := _target(Vector2(0, 20))
+	var healthy := _target(Vector3(0, 0.0, 20))
 	await wait_physics_frames(2)
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.COLD] = 10.0
@@ -4997,7 +4917,7 @@ func test_the_nova_carries_its_crowd_and_its_push() -> void:
 ## Le Frimas : le transi de la nova dure davantage.
 func test_rime_makes_the_nova_chill_last() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.RIME, 1.5], ["status_chance_increase", 500.0]])
-	var target := _target(Vector2(20, 0))
+	var target := _target(Vector3(20, 0.0, 0))
 	target.states = StatusEffects.new()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -5012,13 +4932,13 @@ func test_rime_makes_the_nova_chill_last() -> void:
 func test_a_heavy_blow_startles_a_nova_out() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.STARTLE, 1.0]])
 	var full := _p.stats.max_health
-	_p._on_damaged(DamageInfo.new(full * 0.07, Vector2(10, 0)))
+	_p._on_damaged(DamageInfo.new(full * 0.07, Vector3(10, 0.0, 0)))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(Explosion).size(), 0, "un petit coup ne suffit pas")
-	_p._on_damaged(DamageInfo.new(full * 0.2, Vector2(10, 0)))
+	_p._on_damaged(DamageInfo.new(full * 0.2, Vector3(10, 0.0, 0)))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(Explosion).size(), 1)
-	_p._on_damaged(DamageInfo.new(full * 0.2, Vector2(10, 0)))
+	_p._on_damaged(DamageInfo.new(full * 0.2, Vector3(10, 0.0, 0)))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(Explosion).size(), 1, "pas avant son attente")
 
@@ -5026,7 +4946,7 @@ func test_a_heavy_blow_startles_a_nova_out() -> void:
 ## Le Qui-vive : un coup plus petit suffit.
 func test_on_alert_a_smaller_blow_startles() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.STARTLE, 1.0], [SkillStats.ALERT, 1.0]])
-	_p._on_damaged(DamageInfo.new(_p.stats.max_health * 0.07, Vector2(10, 0)))
+	_p._on_damaged(DamageInfo.new(_p.stats.max_health * 0.07, Vector3(10, 0.0, 0)))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(Explosion).size(), 1)
 	assert_almost_eq(_p._startle_wait, SkillStats.ALERT_PERIOD, 0.1, "et revient plus vite")
@@ -5035,7 +4955,7 @@ func test_on_alert_a_smaller_blow_startles() -> void:
 ## Le Reflux : l'anneau se referme et refrappe une fois ce qu'il croise.
 func test_an_ebbing_wave_strikes_again_on_its_way_back() -> void:
 	_learn_with("manual_cold", "ice_nova", [[SkillStats.EBB, 1.0]], Skill.Shape.RING)
-	var target := _target(Vector2(60, 0))
+	var target := _target(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(FrostRing.LIFETIME * 2.0 + 0.1)
@@ -5060,7 +4980,7 @@ func test_black_ice_remembers_the_frozen_ground() -> void:
 func test_frost_skin_chills_a_melee_attacker() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.FROST_SKIN, 60.0]])
 	assert_true(Gestures.cast(_p, 2))
-	var grunt := _grunt(Vector2(20, 0))
+	var grunt := _grunt(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	_p.melee_blow(grunt, 10.0)
 	var chill: StatusEffects.State = grunt.hurtbox.states._state(StatusEffects.Kind.CHILL)
@@ -5090,7 +5010,7 @@ func test_the_refuge_puts_out_the_wearer_states() -> void:
 ## Le Halo de givre : ce qui passe autour du porteur est transi.
 func test_a_rime_halo_chills_around_its_wearer() -> void:
 	_learn_with("manual_cold", "frost_tomb", [[SkillStats.RIME_HALO, 100.0]])
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	near.states = StatusEffects.new()
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.HALO_PERIOD + 0.1)
@@ -5104,7 +5024,7 @@ func test_endless_winter_gives_time_back_on_each_kill() -> void:
 	await wait_seconds(1.0)
 	var tomb: Buff = _p._lit["frost_tomb"]
 	var before := tomb.remaining()
-	_p._on_slew(SkillStats.new(), Vector2.ZERO, null)
+	_p._on_slew(SkillStats.new(), Vector3.ZERO, null)
 	assert_almost_eq(tomb.remaining(), before + SkillStats.ENDLESS_TIME, 0.001)
 
 
@@ -5114,7 +5034,7 @@ func test_an_ice_heart_burst_chills_twice_as_hard() -> void:
 		"manual_cold", "frost_tomb",
 		[["damage_cold", 10.0], [SkillStats.END_BURST, 30.0], [SkillStats.ICE_HEART, 1.0]]
 	)
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	near.states = StatusEffects.new()
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -5132,7 +5052,7 @@ func test_an_icebreaker_burst_pays_for_the_time_left() -> void:
 		"manual_cold", "frost_tomb",
 		[["damage_cold", 10.0], [SkillStats.END_BURST, 30.0], [SkillStats.ICEBREAKER, 100.0]]
 	)
-	var near := _target(Vector2(20, 0))
+	var near := _target(Vector3(20, 0.0, 0))
 	# Sans le critique : allumer le tombeau refait la fiche, et sa chance avec (5 %).
 	var bursts := []
 	near.damaged.connect(
@@ -5155,8 +5075,8 @@ func test_an_icebreaker_burst_pays_for_the_time_left() -> void:
 ## La Boule de neige : le vortex grossit de chaque ennemi frappé.
 func test_a_snowball_vortex_grows_from_what_it_hits() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.SNOWBALL, 10.0]])
-	_target(Vector2(10, 0))
-	_target(Vector2(-10, 0))
+	_target(Vector3(10, 0.0, 0))
+	_target(Vector3(-10, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -5186,7 +5106,7 @@ func test_the_lull_shelters_its_caster_in_the_eye() -> void:
 ## Le Givrage : un transi déjà posé se renforce à chaque impulsion.
 func test_frosting_strengthens_a_chill_each_pulse() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.FROSTING, 50.0]])
-	var target := _target(Vector2(10, 0))
+	var target := _target(Vector3(10, 0.0, 0))
 	target.states = StatusEffects.new()
 	target.states.put(StatusEffects.Kind.CHILL, 0.0)
 	await wait_physics_frames(2)
@@ -5198,7 +5118,7 @@ func test_frosting_strengthens_a_chill_each_pulse() -> void:
 ## La Supraconduction : un engourdi est transi à coup sûr et aspiré deux fois plus fort.
 func test_superconduction_chills_and_pulls_the_numbed_harder() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.PULL, 60.0], [SkillStats.SUPERCONDUCT, 1.0]])
-	var numbed := _target(Vector2(10, 0))
+	var numbed := _target(Vector3(10, 0.0, 0))
 	numbed.states = StatusEffects.new()
 	numbed.states.put(StatusEffects.Kind.NUMB, 0.0)
 	var pulls := []
@@ -5214,8 +5134,8 @@ func test_superconduction_chills_and_pulls_the_numbed_harder() -> void:
 func test_the_mill_bites_harder_at_the_core() -> void:
 	_learn_with("manual_cold", "winter_disaster", [[SkillStats.MILL, 50.0]])
 	_p.stats.crit_chance = 0.0
-	var core := _target(Vector2(5, 0))
-	var rim := _target(Vector2(22, 0))
+	var core := _target(Vector3(5, 0.0, 0))
+	var rim := _target(Vector3(22, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -5229,7 +5149,7 @@ func test_a_singularity_bursts_twice_as_wide() -> void:
 		Skill.Shape.IMPLOSION
 	)
 	var cast := _p.resolve(SkillCatalog.by_id("winter_disaster"), 1)
-	var far := _target(Vector2(cast.radius * 1.7, 0))
+	var far := _target(Vector3(cast.radius * 1.7, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var vortex: IceVortex = _children_of(IceVortex)[0]
@@ -5331,12 +5251,12 @@ func test_fracture_breaks_a_shard_on_a_chilled_enemy() -> void:
 ## Le Guidage : l'orbe s'incurve vers le curseur.
 func test_a_guided_orb_curves_toward_the_cursor() -> void:
 	_learn_with("manual_cold", "frozen_orb", [[SkillStats.GUIDED, 1.0]])
-	_p.facing = Vector2.RIGHT
+	_p.facing = Vector3.RIGHT
 	assert_true(Gestures.cast(_p, 2))
 	var orb: FrozenOrb = _children_of(FrozenOrb)[0]
-	_p.facing = Vector2.DOWN
+	_p.facing = Vector3.BACK
 	await wait_seconds(0.4)
-	assert_gt(orb._dir.y, 0.5, "elle a tourné vers le bas")
+	assert_gt(orb._dir.z, 0.5, "elle a tourné vers le bas")
 
 
 ## La Stase : l'orbe s'arrête au point visé ; le Cristallin y grossit ses éclats.
@@ -5354,10 +5274,10 @@ func test_a_stasis_orb_stops_at_the_aim_and_swells() -> void:
 ## Son lanceur parti — le corbeau éteint —, l'orbe se dissout sans cracher au nom d'un mort.
 func test_a_frozen_orb_dissolves_with_its_caster() -> void:
 	_learn("manual_cold", ["frozen_orb"])
-	var shoulder := Node2D.new()
+	var shoulder := Node3D.new()
 	_effects.add_child(shoulder)
 	var cast := _p.resolve(SkillCatalog.by_id("frozen_orb"), 1)
-	FrozenOrb.send(_effects, Vector2.ZERO, Vector2.RIGHT, cast, _p.states, shoulder, _p.bolt_scene, Vector2.ZERO, _p)
+	FrozenOrb.send(_effects, Vector3.ZERO, Vector3.RIGHT, cast, _p.states, shoulder, _p.bolt_scene, Vector3.ZERO, _p)
 	shoulder.free()
 	await wait_physics_frames(2)
 	assert_eq(_children_of(FrozenOrb).size(), 0)
@@ -5378,7 +5298,7 @@ func test_a_constellation_casts_more_orbs() -> void:
 ## souvent de ses à-coups, sans lancer derrière.
 func test_a_plague_bolt_marks_its_decay_as_epidemic() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.EPIDEMIC, 40.0]])
-	var struck := _wearing_target(Vector2(60, 0))
+	var struck := _wearing_target(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -5390,11 +5310,11 @@ func test_a_plague_bolt_marks_its_decay_as_epidemic() -> void:
 ## aux deux plus proches.
 func test_an_epidemic_changes_host_at_death() -> void:
 	for heirs in [1, 2]:
-		var dying := _grunt(Vector2(200, 0))
-		var nearest := _grunt(Vector2(225, 0))
-		var next := _grunt(Vector2(200, 30))
-		var already := _grunt(Vector2(185, 0))
-		var far := _grunt(Vector2(320, 0))
+		var dying := _grunt(Vector3(200, 0.0, 0))
+		var nearest := _grunt(Vector3(225, 0.0, 0))
+		var next := _grunt(Vector3(200, 0.0, 30))
+		var already := _grunt(Vector3(185, 0.0, 0))
+		var far := _grunt(Vector3(320, 0.0, 0))
 		await wait_physics_frames(2)
 		already.states.put(StatusEffects.Kind.DECAY, 1.0, _p.states, "plague")
 		var plague := SkillStats.new()
@@ -5415,9 +5335,9 @@ func test_an_epidemic_changes_host_at_death() -> void:
 ## Le Vecteur : le trait laisse le décomposé devant lui et s'incurve vers le sain.
 func test_a_vector_bolt_seeks_the_healthy() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.VECTOR, 120.0]])
-	var rotten := _wearing_target(Vector2(150, 0))
+	var rotten := _wearing_target(Vector3(150, 0.0, 0))
 	rotten.states.put(StatusEffects.Kind.DECAY, 1.0)
-	var healthy := _wearing_target(Vector2(90, 40))
+	var healthy := _wearing_target(Vector3(90, 0.0, 40))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.2)
@@ -5428,8 +5348,8 @@ func test_a_vector_bolt_seeks_the_healthy() -> void:
 ## Le Germe : un trait arrêté par un mur sans rien toucher crève en nuage qui décompose.
 func test_a_missed_bolt_bursts_into_a_germ_cloud() -> void:
 	_learn_with("manual_necrotic", "plague", [[SkillStats.GERM, 1.0]])
-	_wall(Vector2(60, 0), Vector2(10, 200))
-	var beside := _wearing_target(Vector2(42, 22))
+	_wall(Vector3(60, 0.0, 0), Vector3(10, 0.0, 200))
+	var beside := _wearing_target(Vector3(42, 0.0, 22))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -5441,15 +5361,15 @@ func test_a_missed_bolt_bursts_into_a_germ_cloud() -> void:
 func test_pustules_burst_a_decaying_kill() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("plague"), 1)
 	cast.kill_burst = 30.0
-	var near := _target(Vector2(50, 0))
+	var near := _target(Vector3(50, 0.0, 0))
 	var decaying := StatusEffects.new()
 	decaying.put(StatusEffects.Kind.DECAY, 1.0)
 	await wait_physics_frames(2)
-	_p.states.slew.emit(cast, Vector2(40, 0), decaying)
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), decaying)
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 0, "sans les Pustules")
 	cast.pustules = 1.0
-	_p.states.slew.emit(cast, Vector2(40, 0), decaying)
+	_p.states.slew.emit(cast, Vector3(40, 0.0, 0), decaying)
 	await wait_physics_frames(3)
 	assert_eq(_hits(near), 1)
 
@@ -5482,7 +5402,7 @@ func _wound(minion: Minion, part: float) -> void:
 ## Les Os rapiécés : un coup porté rend des PV au mort-vivant.
 func test_patched_bones_mend_on_each_blow() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.MEND, 10.0]])
-	_target(Vector2(30, 0))
+	_target(Vector3(30, 0.0, 0))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var minion := _undead()
@@ -5497,7 +5417,7 @@ func test_the_quarry_bites_harder_together() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
 	var pair := Minion.living.filter(func(m: Minion) -> bool: return m._player == _p)
-	var prey := _target(Vector2(300, 0))
+	var prey := _target(Vector3(300, 0.0, 0))
 	pair[0]._foe = prey
 	pair[1]._foe = null
 	assert_almost_eq(pair[0]._more(), 1.0, 0.001, "seul sur sa proie")
@@ -5522,7 +5442,7 @@ func test_a_recall_mends_and_rallies_those_standing() -> void:
 ## Les Lanceurs d'os : ils restent à leur place et jettent un os à ce qui approche.
 func test_bone_throwers_throw_from_their_post() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.BONE_THROW, 1.0]])
-	var prey := _target(Vector2(80, 0))
+	var prey := _target(Vector3(80, 0.0, 0))
 	var bones := [0]
 	# En différé : le tir entre dans l'arbre avant d'être marqué comme os.
 	var count := func(n: Node) -> void:
@@ -5565,7 +5485,7 @@ func test_a_martyr_rushes_to_explode() -> void:
 	var minion := _undead()
 	_wound(minion, 0.8)
 	assert_true(minion._martyr)
-	var prey := _target(Vector2(60, 0))
+	var prey := _target(Vector3(60, 0.0, 0))
 	await wait_seconds(1.5)
 	assert_false(is_instance_valid(minion), "tombé en explosant")
 	assert_gt(_hits(prey), 0)
@@ -5578,7 +5498,7 @@ func test_a_martyr_rushes_to_explode() -> void:
 ## La Langueur : le flétrissement de la Déferlante dure davantage.
 func test_languor_lengthens_the_wilting() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.LANGUOR, 2.0], ["inflict_chance", 100.0, true]])
-	var near := _wearing_target(Vector2(20, 0))
+	var near := _wearing_target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -5603,9 +5523,9 @@ func test_apnea_rewards_the_held_breath() -> void:
 ## La Succion : chaque flétri frappé rend des PV.
 func test_suction_drinks_from_the_wilting() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.SUCTION, 10.0]])
-	var wilting := _wearing_target(Vector2(20, 0))
+	var wilting := _wearing_target(Vector3(20, 0.0, 0))
 	wilting.states.put(StatusEffects.Kind.WILTING, 1.0)
-	_wearing_target(Vector2(-20, 0))
+	_wearing_target(Vector3(-20, 0.0, 0))
 	_p._set_health(_p.stats.max_health * 0.5)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
@@ -5618,7 +5538,7 @@ func test_the_breath_detonates_the_gate_crawlers() -> void:
 	_learn_with("manual_necrotic", "toxic_unleash", [[SkillStats.DETONATION, 50.0]])
 	assert_true(_p.invest(0, "rotting_gate"))
 	var gate_cast := _p.resolve(SkillCatalog.by_id("rotting_gate"), 1)
-	var gate := RottingGate.open(_effects, Vector2(20, 0), gate_cast, _p.states)
+	var gate := RottingGate.open(_effects, Vector3(20, 0.0, 0), gate_cast, _p.states)
 	await wait_seconds(gate_cast.period * 2.0 + 0.05)
 	var crawling := gate._crawlers.size()
 	assert_gt(crawling, 0)
@@ -5638,9 +5558,9 @@ func test_a_rattling_wilt_wears_with_each_blow() -> void:
 	wilted.attach(StatusEffects.Kind.WILTING, breath)
 	wilted.advance(2.0)
 	var left := wilted.remaining(StatusEffects.Kind.WILTING)
-	var victim := _target(Vector2(300, 0))
+	var victim := _target(Vector3(300, 0.0, 0))
 	await wait_physics_frames(2)
-	var info := DamageInfo.roll(null, Vector2.ZERO, DamageType.empty_parts())
+	var info := DamageInfo.roll(null, Vector3.ZERO, DamageType.empty_parts())
 	info.author = wilted
 	victim.take_damage(info)
 	assert_almost_eq(wilted.remaining(StatusEffects.Kind.WILTING), left + SkillStats.RATTLE_TIME, 0.001)
@@ -5668,7 +5588,7 @@ func test_a_coughing_fit_breathes_again() -> void:
 # --------------------------------------------------------------------------
 
 ## Un portail à la main, au lancer sans tirage : ses éclats se comparent.
-func _gate(changes: Dictionary, at := Vector2(20, 0), follow: Node2D = null) -> RottingGate:
+func _gate(changes: Dictionary, at := Vector3(20, 0.0, 0), follow: Node3D = null) -> RottingGate:
 	var cast := _p.resolve(SkillCatalog.by_id("rotting_gate"), 1)
 	cast.damage_min = cast.damage_max.duplicate()
 	for field: String in changes:
@@ -5699,18 +5619,13 @@ func test_gestation_swells_the_waiting() -> void:
 		1.0 + 0.1 * SkillStats.GESTATION_MOST, 0.001
 	)
 	assert_almost_eq(gate._swell(ripe), 1.0 + 0.1 * SkillStats.GESTATION_MOST, 0.001, "et le dessin grossit d'autant")
-	# Par paliers impairs : 7 × 1,3 → 9 ; l'amalgame part de 13.
-	assert_eq(gate._side(fresh), EffectForge.CRAWLER_SIZE)
-	assert_eq(gate._side(ripe), 9)
-	ripe.big = true
-	assert_eq(gate._side(ripe), 17, "13 × 1,3")
 
 
 ## La Laisse : la créature prend l'ennemi le plus proche de la visée, pas d'elle.
 func test_leashed_crawlers_go_for_the_aim() -> void:
 	var gate := _gate({SkillStats.LEASH: 1.0})
-	_target(Vector2(30, 0))
-	var aimed := _target(_aim() + Vector2(0, 10))
+	_target(Vector3(30, 0.0, 0))
+	var aimed := _target(_aim() + Vector3(0, 0.0, 10))
 	gate._spawn()
 	await wait_physics_frames(2)
 	gate._hunt()
@@ -5777,7 +5692,7 @@ func test_a_carried_nest_teems_when_struck() -> void:
 # --------------------------------------------------------------------------
 
 ## Un grunt maudit par le joueur, d'un lancer qui porte ces nombres.
-func _cursed_grunt(position: Vector2, changes: Dictionary) -> Enemy:
+func _cursed_grunt(position: Vector3, changes: Dictionary) -> Enemy:
 	var grunt := _grunt(position)
 	var curse := _p.resolve(SkillCatalog.by_id("putrid_curse"), 1)
 	for field: String in changes:
@@ -5789,13 +5704,13 @@ func _cursed_grunt(position: Vector2, changes: Dictionary) -> Enemy:
 
 ## Les Ronces : les coups du maudit lui reviennent en partie.
 func test_thorns_turn_the_blows_on_the_cursed() -> void:
-	var grunt := _cursed_grunt(Vector2(300, 0), {SkillStats.THORNS: 50.0})
-	var victim := _target(Vector2(-300, 0))
+	var grunt := _cursed_grunt(Vector3(300, 0.0, 0), {SkillStats.THORNS: 50.0})
+	var victim := _target(Vector3(-300, 0.0, 0))
 	await wait_physics_frames(2)
 	var full := grunt.health
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = 10.0
-	var info := DamageInfo.roll(null, Vector2.ZERO, blow)
+	var info := DamageInfo.roll(null, Vector3.ZERO, blow)
 	info.author = grunt.states
 	victim.take_damage(info)
 	assert_almost_eq(grunt.health, full - info.amount * 0.5, 0.01)
@@ -5804,7 +5719,7 @@ func test_thorns_turn_the_blows_on_the_cursed() -> void:
 ## Le Présage : le sceau tombe plus tard, et plus fort.
 func test_an_omen_delays_a_deeper_curse() -> void:
 	_learn_with("manual_necrotic", "putrid_curse", [[SkillStats.OMEN, 1.0], [SkillStats.CURSE_EFFECT, 50.0]])
-	var under := _wearing_target(_p.global_position + Vector2(Player.PLACEMENT_RANGE, 0))
+	var under := _wearing_target(_p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.6)
@@ -5815,18 +5730,18 @@ func test_an_omen_delays_a_deeper_curse() -> void:
 
 ## La Sentence achève le maudit sous son seuil ; l'Exécuteur passe la malédiction aux voisins.
 func test_the_sentence_executes_and_the_executioner_spreads() -> void:
-	var doomed := _cursed_grunt(Vector2(200, 0), {SkillStats.SENTENCE: 10.0, SkillStats.EXECUTIONER: 1.0})
-	var neighbour := _grunt(Vector2(230, 0))
-	var far := _grunt(Vector2(330, 0))
+	var doomed := _cursed_grunt(Vector3(200, 0.0, 0), {SkillStats.SENTENCE: 10.0, SkillStats.EXECUTIONER: 1.0})
+	var neighbour := _grunt(Vector3(230, 0.0, 0))
+	var far := _grunt(Vector3(330, 0.0, 0))
 	await wait_physics_frames(2)
 	# Les coups passent l'armure : on ne compte que sur un petit coup, au-dessus du plancher.
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = doomed.stats.max_health * 0.05
 	doomed._set_health(doomed.stats.max_health * 0.5)
-	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector3.ZERO, blow))
 	assert_false(doomed.is_dead, "au-dessus du seuil")
 	doomed._set_health(doomed.stats.max_health * 0.11)
-	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+	doomed.hurtbox.take_damage(DamageInfo.roll(null, Vector3.ZERO, blow))
 	assert_true(doomed.is_dead, "achevé")
 	await wait_physics_frames(2)
 	assert_true(neighbour.states.active(StatusEffects.Kind.CURSED))
@@ -5838,7 +5753,7 @@ func test_a_fallen_cursed_pays_a_tithe_and_rises() -> void:
 	_learn("manual_necrotic", ["rise"])
 	_p._set_mana(0.0)
 	for i in SkillStats.EXHUMED_MOST + 1:
-		var grunt := _cursed_grunt(Vector2(200, 30 * i), {SkillStats.TITHE: 3.0, SkillStats.EXHUME: 1.0})
+		var grunt := _cursed_grunt(Vector3(200, 0.0, 30 * i), {SkillStats.TITHE: 3.0, SkillStats.EXHUME: 1.0})
 		await wait_physics_frames(1)
 		var before := _p.mana
 		grunt.die(false)
@@ -5854,7 +5769,7 @@ func test_a_fallen_cursed_pays_a_tithe_and_rises() -> void:
 ## L'exhumé est un mort-vivant de la Relève, tout son arbre compris : un colosse sous le Colosse.
 func test_the_exhumed_follow_the_rise_tree() -> void:
 	_learn_with("manual_necrotic", "rise", [[SkillStats.COLOSSUS, 24.0]])
-	var grunt := _cursed_grunt(Vector2(200, 0), {SkillStats.EXHUME: 1.0})
+	var grunt := _cursed_grunt(Vector3(200, 0.0, 0), {SkillStats.EXHUME: 1.0})
 	await wait_physics_frames(1)
 	grunt.die(false)
 	await wait_physics_frames(2)
@@ -5869,9 +5784,9 @@ func test_the_exhumed_follow_the_rise_tree() -> void:
 ## L'Héritage : la marque passe plus forte.
 func test_a_legacy_mark_grows_as_it_passes() -> void:
 	_learn_with("manual_necrotic", "putrid_curse", [[SkillStats.LEGACY, 50.0]], Skill.Shape.MARK)
-	var aim := _p.global_position + Vector2(Player.PLACEMENT_RANGE, 0)
+	var aim := _p.global_position + Vector3(Player.PLACEMENT_RANGE, 0.0, 0)
 	var first := _grunt(aim)
-	var second := _grunt(aim + Vector2(30, 0))
+	var second := _grunt(aim + Vector3(30, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -5899,7 +5814,7 @@ func _necrosis_lit(lines: Array) -> void:
 func _blow_on_player(part: float) -> void:
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * part
-	_p._on_damaged(DamageInfo.roll(null, Vector2.ZERO, blow))
+	_p._on_damaged(DamageInfo.roll(null, Vector3.ZERO, blow))
 
 
 func _lethal_blow() -> void:
@@ -5910,9 +5825,9 @@ func _lethal_blow() -> void:
 func test_carrion_feeds_on_nearby_deaths() -> void:
 	_necrosis_lit([[SkillStats.CARRION, 10.0]])
 	_p._set_health(_p.stats.max_health * 0.5)
-	_p.feast(_p.global_position + Vector2(SkillStats.CARRION_REACH + 20.0, 0))
+	_p.feast(_p.global_position + Vector3(SkillStats.CARRION_REACH + 20.0, 0.0, 0))
 	assert_almost_eq(_p.health, _p.stats.max_health * 0.5, 0.01, "trop loin")
-	_p.feast(_p.global_position + Vector2(40, 0))
+	_p.feast(_p.global_position + Vector3(40, 0.0, 0))
 	assert_almost_eq(_p.health, _p.stats.max_health * 0.6, 0.01)
 
 
@@ -5997,7 +5912,7 @@ func _crits_on(target: Hurtbox) -> Array:
 
 
 ## Une hurtbox qui porte des états, comme un ennemi : la Brèche et le Fer rouge s'y posent.
-func _worn_target(position: Vector2) -> Hurtbox:
+func _worn_target(position: Vector3) -> Hurtbox:
 	var h := _target(position)
 	h.states = StatusEffects.new()
 	return h
@@ -6012,7 +5927,7 @@ func _strike_again() -> void:
 ## Le Coup sûr : le troisième lancer est critique, quoi que tire le hasard.
 func test_a_sure_blow_lands_every_third_strike() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.SURE_STRIKE, 1.0]])
-	var target := _target(Vector2(20, 0))
+	var target := _target(Vector3(20, 0.0, 0))
 	var crits := _crits_on(target)
 	await wait_physics_frames(2)
 	for i in 6:
@@ -6024,8 +5939,8 @@ func test_a_sure_blow_lands_every_third_strike() -> void:
 ## Le Coup de massue : le coup sûr frappe aussi autour de sa cible, hors de portée de l'arme.
 func test_a_bludgeon_strikes_around_the_sure_target() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.SURE_STRIKE, 1.0], [SkillStats.MAUL, 1.0]])
-	var struck := _target(Vector2(24, 0))
-	var beside := _target(Vector2(52, 0))
+	var struck := _target(Vector3(24, 0.0, 0))
+	var beside := _target(Vector3(52, 0.0, 0))
 	await wait_physics_frames(2)
 	await _strike_again()
 	assert_eq(_hits(beside), 0, "hors de portée, sans coup sûr")
@@ -6039,7 +5954,7 @@ func test_a_bludgeon_strikes_around_the_sure_target() -> void:
 ## — pas un sort.
 func test_a_breach_cracks_for_every_weapon_attack() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.BREACH, 20.0]])
-	var target := _worn_target(Vector2(20, 0))
+	var target := _worn_target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	await _strike_again()
 	var cracked := StatusEffects.Kind.BREACH
@@ -6054,7 +5969,7 @@ func test_a_breach_cracks_for_every_weapon_attack() -> void:
 ## Le Fer rouge : l'embrasement déjà là reprend du temps, jusqu'à sa pleine durée.
 func test_red_iron_gives_time_back_to_an_ignite() -> void:
 	_learn_with("manual_weapons", "heavy_strike", [[SkillStats.RED_IRON, 2.0]])
-	var target := _worn_target(Vector2(20, 0))
+	var target := _worn_target(Vector3(20, 0.0, 0))
 	var ignite := StatusEffects.Kind.IGNITE
 	target.states.put(ignite, 10.0)
 	target.states.advance(2.5)
@@ -6070,8 +5985,8 @@ func test_a_tremor_strikes_a_second_ring() -> void:
 		"manual_weapons", "heavy_strike", [["radius", 28.0], [SkillStats.TREMOR, 50.0]],
 		Skill.Shape.SLAM
 	)
-	var inner := _target(Vector2(_p.strike_reach() + 10.0, 0))
-	var outer := _target(Vector2(_p.strike_reach() + 44.0, 0))
+	var inner := _target(Vector3(_p.strike_reach() + 10.0, 0.0, 0))
+	var outer := _target(Vector3(_p.strike_reach() + 44.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.1)
@@ -6093,9 +6008,9 @@ func test_a_collision_hurts_whom_it_slams_and_skittles_carry_on() -> void:
 	manager.target = _p
 	add_child_autofree(manager)
 	var grunt: PackedScene = load("res://actors/enemies/grunt.tscn")
-	var first := manager.spawn(grunt, Vector2(24, 0))
-	var second := manager.spawn(grunt, Vector2(46, 0))
-	var third := manager.spawn(grunt, Vector2(68, 0))
+	var first := manager.spawn(grunt, Vector3(24, 0.0, 0))
+	var second := manager.spawn(grunt, Vector3(46, 0.0, 0))
+	var third := manager.spawn(grunt, Vector3(68, 0.0, 0))
 	# Assez de vie pour que personne ne tombe : un mort ne heurte plus rien.
 	var hits := [[], [], []]
 	for i in 3:
@@ -6119,7 +6034,7 @@ func test_a_collision_hurts_whom_it_slams_and_skittles_carry_on() -> void:
 ## La Lacération : le saignement déjà là reprend du temps.
 func test_a_laceration_gives_time_back_to_a_bleed() -> void:
 	_learn_with("manual_weapons", "cross_slash", [[SkillStats.LACERATION, 2.0]])
-	var target := _worn_target(Vector2(20, 0))
+	var target := _worn_target(Vector3(20, 0.0, 0))
 	var bleed := StatusEffects.Kind.BLEED
 	# Plus fort que ce que la croix pose : son propre saignement ne le remplace pas.
 	target.states.put(bleed, 1000.0)
@@ -6144,8 +6059,8 @@ func test_a_riposte_answers_a_blow_once() -> void:
 func test_a_tierce_thrusts_the_nearest_and_a_quarte_pierces() -> void:
 	_learn_with("manual_weapons", "cross_slash", [[SkillStats.TIERCE, 1.0]])
 	# Au-delà de l'allonge de l'épée (32 px), en deçà de l'estoc (44 px).
-	var near := _target(Vector2(48, 0))
-	var far := _target(Vector2(80, 0))
+	var near := _target(Vector3(48, 0.0, 0))
+	var far := _target(Vector3(80, 0.0, 0))
 	var trails := []
 	_effects.child_entered_tree.connect(
 		func(n: Node) -> void:
@@ -6163,8 +6078,8 @@ func test_a_tierce_thrusts_the_nearest_and_a_quarte_pierces() -> void:
 func test_a_quarte_thrust_goes_through_its_line() -> void:
 	_learn_with("manual_weapons", "cross_slash", [[SkillStats.TIERCE, 1.0], [SkillStats.QUARTE, 1.0]])
 	# Au-delà de l'allonge de l'épée (32 px), en deçà de l'estoc (44 px).
-	var near := _target(Vector2(48, 0))
-	var far := _target(Vector2(80, 0))
+	var near := _target(Vector3(48, 0.0, 0))
+	var far := _target(Vector3(80, 0.0, 0))
 	await wait_physics_frames(2)
 	await _strike_again()
 	await wait_seconds(SkillStats.TIERCE_GAP + 0.1)
@@ -6179,7 +6094,7 @@ func test_bloodletting_drains_the_bleed_and_transfusion_heals() -> void:
 		"manual_weapons", "cross_slash",
 		[[SkillStats.BLOODLETTING, 100.0], [SkillStats.TRANSFUSION, 10.0]]
 	)
-	var target := _worn_target(Vector2(20, 0))
+	var target := _worn_target(Vector3(20, 0.0, 0))
 	target.states.put(StatusEffects.Kind.BLEED, 1000.0)
 	await wait_physics_frames(2)
 	_p.stats.health_regen = 0.0
@@ -6196,7 +6111,7 @@ func test_an_ordeal_blesses_for_sure() -> void:
 		"cross_slash", "cross_slash_edge", "cross_slash_edge", "cross_slash_holy_blade",
 		"cross_slash_ordeal",
 	])
-	var target := _worn_target(Vector2(20, 0))
+	var target := _worn_target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	await _strike_again()
 	assert_true(target.states.active(StatusEffects.Kind.BLESSING))
@@ -6225,7 +6140,7 @@ func test_a_waltz_spins_the_swords_faster() -> void:
 ## L'Affûtage : chaque coupé compte, jusqu'au plafond.
 func test_honing_counts_what_a_sword_cuts() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.HONING, 10.0]])
-	_target(Vector2(SkillCatalog.by_id("spiral_sword").radius, 0))
+	_target(Vector3(SkillCatalog.by_id("spiral_sword").radius, 0.0, 0))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(3.2)
 	assert_gt(_p._crown._blades[0].honed, 1)
@@ -6240,9 +6155,9 @@ func test_a_parry_breaks_an_enemy_bolt() -> void:
 	var crown := _p._crown
 	var blade: BladeCrown.Blade = crown._blades[0]
 	var at := crown.to_global(crown._center(blade, crown._rotation + blade.place))
-	var shooter := Node2D.new()
+	var shooter := Node3D.new()
 	add_child_autofree(shooter)
-	var toward := Vector2.RIGHT
+	var toward := Vector3.RIGHT
 	var bolt := Projectile.spawn_of_nature(
 		_effects, load("res://actors/projectiles/enemy_bolt.tscn"), at - toward * Projectile.MUZZLE,
 		toward, 5.0, shooter
@@ -6281,7 +6196,7 @@ func test_an_escort_sends_a_sword_after_a_heavy_strike() -> void:
 			if n is FlyingSword:
 				sent.append(n)
 	)
-	_target(Vector2(20, 0))
+	_target(Vector3(20, 0.0, 0))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 3))
@@ -6309,7 +6224,7 @@ func test_a_rally_brings_the_volley_back() -> void:
 ## La Houle : grossie en fin de course, la vague atteint ce qu'elle frôlait.
 func test_a_swell_reaches_wider_at_the_end_of_the_run() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.BILLOW, 100.0]])
-	var aside := _target(Vector2(62, 32))
+	var aside := _target(Vector3(62, 0.0, 32))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.7)
@@ -6320,8 +6235,8 @@ func test_a_swell_reaches_wider_at_the_end_of_the_run() -> void:
 func test_a_prow_hits_the_first_bitten_harder() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.PROW, 100.0]])
 	# Hors de portée du coup d'arme qui lance la vague.
-	var first := _target(Vector2(42, 0))
-	var second := _target(Vector2(66, 0))
+	var first := _target(Vector3(42, 0.0, 0))
+	var second := _target(Vector3(66, 0.0, 0))
 	# Sans le critique, qui se tire coup par coup.
 	var bites := []
 	for t: Hurtbox in [first, second]:
@@ -6339,7 +6254,7 @@ func test_a_prow_hits_the_first_bitten_harder() -> void:
 ## La Lame de fond et les Brisants : le mordu est emporté, puis jeté.
 func test_an_undertow_carries_then_breakers_throw() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.UNDERTOW, 1.0], [SkillStats.BREAKERS, 50.0]])
-	var grunt := _grunt(Vector2(46, 0))
+	var grunt := _grunt(Vector3(46, 0.0, 0))
 	grunt.stats = grunt.stats.duplicate()
 	grunt.stats.max_health = 9999.0
 	grunt._set_health(9999.0)
@@ -6355,7 +6270,7 @@ func test_an_undertow_carries_then_breakers_throw() -> void:
 ## Le Va-et-vient : sous le Ressac, l'aller, le retour, et un troisième passage.
 func test_to_and_fro_sends_the_backwash_a_third_time() -> void:
 	_learn_with("manual_weapons", "wave_slash", [[SkillStats.TO_AND_FRO, 1.0]], Skill.Shape.BOOMERANG)
-	var ahead := _target(Vector2(50, 0))
+	var ahead := _target(Vector3(50, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(2.0)
@@ -6382,7 +6297,7 @@ func test_steadfast_holds_while_the_cyclone_spins() -> void:
 ## Le Vertige : après deux secondes de tour, les frappes se rapprochent.
 func test_vertigo_brings_the_strikes_closer() -> void:
 	_learn_with("manual_weapons", "cyclone", [[SkillStats.VERTIGO, 50.0]])
-	var target := _target(Vector2(20, 0))
+	var target := _target(Vector3(20, 0.0, 0))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(2.0)
 	var before := _hits(target)
@@ -6397,7 +6312,7 @@ func test_dervishes_set_out_and_a_waterspout_steers_them() -> void:
 		"manual_weapons", "cyclone",
 		[[SkillStats.DERVISHES, 1.0], [SkillStats.SIROCCO, 1.0], [SkillStats.WATERSPOUT, 1.0]]
 	)
-	var aside := _target(Vector2(70, 55))
+	var aside := _target(Vector3(70, 0.0, 55))
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(3)
 	assert_eq(_children_of(Dervish).size(), 2)
@@ -6408,7 +6323,7 @@ func test_dervishes_set_out_and_a_waterspout_steers_them() -> void:
 ## Le Dénouement et le Coup de vent : relâché, le tour frappe une dernière fois, et repousse.
 func test_an_unwinding_strikes_once_more_and_a_gust_pushes() -> void:
 	_learn_with("manual_weapons", "cyclone", [[SkillStats.DENOUEMENT, 20.0], [SkillStats.GUST, 1.0]])
-	var target := _target(Vector2(20, 0))
+	var target := _target(Vector3(20, 0.0, 0))
 	var pushes := _knockbacks_on(target)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
@@ -6436,7 +6351,7 @@ func test_a_mad_round_spins_the_swords_under_the_cyclone() -> void:
 # Ruée tranchante (jalon 46)
 # --------------------------------------------------------------------------
 
-func _frail_grunt(position: Vector2) -> Enemy:
+func _frail_grunt(position: Vector3) -> Enemy:
 	var grunt := _grunt(position)
 	grunt._set_health(1.0)
 	return grunt
@@ -6454,7 +6369,7 @@ func test_a_vault_shelters_on_landing() -> void:
 ## La Relance et l'Hallali : un tué rend la ruée, et la suivante compte la relance.
 func test_a_relaunch_refunds_the_dash_and_the_hallali_counts() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.RELAUNCH, 1.0], [SkillStats.HALLALI, 50.0]])
-	_frail_grunt(Vector2(60, 0))
+	_frail_grunt(Vector3(60, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.4)
@@ -6471,8 +6386,8 @@ func test_a_relaunch_refunds_the_dash_and_the_hallali_counts() -> void:
 ## La Trouée : chaque ennemi traversé renforce le choc d'arrivée.
 func test_a_breakthrough_feeds_the_arrival_shock() -> void:
 	_learn_with("manual_weapons", "slicing_dash", [[SkillStats.END_BURST, 20.0], [SkillStats.BREAKTHROUGH, 50.0]])
-	_target(Vector2(40, 0))
-	_target(Vector2(80, 0))
+	_target(Vector3(40, 0.0, 0))
+	_target(Vector3(80, 0.0, 0))
 	await wait_physics_frames(2)
 	var plain := _p.resolve(SkillCatalog.by_id("slicing_dash"), 1).total_max()
 	assert_true(Gestures.cast(_p, 2))
@@ -6487,7 +6402,7 @@ func test_a_fallout_stuns_on_landing() -> void:
 		"manual_weapons", "slicing_dash", [[SkillStats.END_BURST, 32.0], [SkillStats.FALLOUT, 1.0]],
 		Skill.Shape.LEAP
 	)
-	var grunt := _grunt(Vector2(Player.PLACEMENT_RANGE + 10.0, 0))
+	var grunt := _grunt(Vector3(Player.PLACEMENT_RANGE + 10.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(grunt.states.speed_factor, 0.0, "assommé")
@@ -6515,7 +6430,7 @@ func test_a_chasse_counts_chained_dashes() -> void:
 ## n'y changeait rien, la capsule était fixe dans la scène.
 func test_the_reach_of_the_sheet_moves_the_blade() -> void:
 	_learn("manual_weapons", ["heavy_strike"])
-	var far := _target(Vector2(46, 0))
+	var far := _target(Vector3(46, 0.0, 0))
 	await wait_physics_frames(2)
 	await _strike_again()
 	assert_eq(_hits(far), 0, "hors de l'allonge de base")
@@ -6542,7 +6457,7 @@ func test_a_hamstring_is_in_the_resolved_dash() -> void:
 ## Le coup tombe à l'impact du geste, pas à l'appui.
 func test_an_attack_lands_at_its_impact_not_on_the_press() -> void:
 	_learn("manual_weapons", ["heavy_strike"])
-	var ahead := _target(Vector2(20, 0))
+	var ahead := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
 	var impact := _p._gesture.left * _p.sprite.impact_of(Skill.GESTURE[Skill.Shape.STRIKE])
@@ -6597,7 +6512,7 @@ func _nets() -> Array:
 func _blow_on(target: Hurtbox) -> void:
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = 20.0
-	target.take_damage(DamageInfo.roll(null, Vector2.ZERO, blow))
+	target.take_damage(DamageInfo.roll(null, Vector3.ZERO, blow))
 
 
 ## Lance les chaînes sur `prey`, comme on vise, et attend que le trait l'ait pris.
@@ -6614,10 +6529,10 @@ func test_judgment_chains_bind_the_first_hit_and_share_its_blows() -> void:
 	_learn("manual_holy", ["judgment_chains"])
 	_no_crits()
 	var cast := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1)
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 40))
-	var other := _grunt(Vector2(100, 0))
-	var free := _grunt(Vector2(60, -(cast.radius + 30.0)))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 40))
+	var other := _grunt(Vector3(100, 0.0, 0))
+	var free := _grunt(Vector3(60, 0.0, -(cast.radius + 30.0)))
 	await _throw_chains(first)
 	assert_eq(_nets().size(), 1)
 	var net: JudgmentChains = _nets()[0]
@@ -6642,8 +6557,8 @@ func test_judgment_chains_bind_the_first_hit_and_share_its_blows() -> void:
 ## Les Maillons : un enchaîné de plus.
 func test_judgment_chains_links_bind_one_more() -> void:
 	_learn_with("manual_holy", "judgment_chains", [[SkillStats.LINKS, 1.0]])
-	var first := _grunt(Vector2(60, 0))
-	for at: Vector2 in [Vector2(60, 30), Vector2(60, -30), Vector2(90, 0), Vector2(30, 40)]:
+	var first := _grunt(Vector3(60, 0.0, 0))
+	for at: Vector3 in [Vector3(60, 0.0, 30), Vector3(60, 0.0, -30), Vector3(90, 0.0, 0), Vector3(30, 0.0, 40)]:
 		_grunt(at)
 	await _throw_chains(first)
 	var cast := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1)
@@ -6654,9 +6569,9 @@ func test_judgment_chains_links_bind_one_more() -> void:
 ## La Rupture : un enchaîné qui meurt éclate autour de lui.
 func test_judgment_chains_rupture_on_a_death() -> void:
 	_learn_with("manual_holy", "judgment_chains", [[SkillStats.RUPTURE, 50.0]])
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 40))
-	var bystander := _target(Vector2(60, 40 + SkillStats.RUPTURE_RADIUS - 10.0))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 40))
+	var bystander := _target(Vector3(60, 0.0, 40 + SkillStats.RUPTURE_RADIUS - 10.0))
 	await _throw_chains(first)
 	var before := _hits(bystander)
 	near.die(false)
@@ -6668,9 +6583,9 @@ func test_judgment_chains_rupture_on_a_death() -> void:
 ## faisceau, qui n'avait plus qu'un maillon, tient.
 func test_judgment_chains_hand_over_on_a_death() -> void:
 	_learn_with("manual_holy", "judgment_chains", [[SkillStats.HANDOVER, 1.0]])
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 60))
-	var spare := _grunt(Vector2(60, 140))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 60))
+	var spare := _grunt(Vector3(60, 0.0, 140))
 	await _throw_chains(first)
 	var net: JudgmentChains = _nets()[0]
 	assert_eq(net._members.size(), 2)
@@ -6685,8 +6600,8 @@ func test_judgment_chains_constrict_and_shackle() -> void:
 	_learn_with(
 		"manual_holy", "judgment_chains", [[SkillStats.CONSTRICTION, 200.0], [SkillStats.SHACKLE, 1.0]]
 	)
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 50))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 50))
 	await _throw_chains(first)
 	await wait_seconds(0.3)
 	assert_lte(near.global_position.distance_to(first.global_position), SkillStats.SHACKLE_CONTACT + 0.5)
@@ -6696,11 +6611,11 @@ func test_judgment_chains_constrict_and_shackle() -> void:
 ## Le Pilori : les enchaînés vont vers le Pilier sacré qui brûle.
 func test_judgment_chains_drag_toward_a_pillar() -> void:
 	_learn_with("manual_holy", "judgment_chains", [[SkillStats.PILLORY, 200.0]])
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 40))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 40))
 	await _throw_chains(first)
 	var pillar := SacredPillar.fall(
-		_effects, Vector2(60, 200), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1), _p.states
+		_effects, Vector3(60, 0.0, 200), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1), _p.states
 	)
 	var gap := near.global_position.distance_to(pillar.global_position)
 	await wait_seconds(0.2)
@@ -6710,8 +6625,8 @@ func test_judgment_chains_drag_toward_a_pillar() -> void:
 ## L'Unisson : l'état que porte le frappé passe aux autres enchaînés avec le coup partagé.
 func test_judgment_chains_unison_passes_the_states() -> void:
 	_learn_with("manual_holy", "judgment_chains", [[SkillStats.UNISON, 1.0]])
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 40))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 40))
 	await _throw_chains(first)
 	first.states.put(StatusEffects.Kind.CHILL, 0.0, _p.states, "trial")
 	assert_false(near.states.active(StatusEffects.Kind.CHILL))
@@ -6725,9 +6640,9 @@ func test_judgment_chains_unison_passes_the_states() -> void:
 ## chaînes dénoue le faisceau sans erreur.
 func test_judgment_chains_survive_a_freed_member() -> void:
 	_learn("manual_holy", ["judgment_chains"])
-	var first := _grunt(Vector2(60, 0))
-	var near := _grunt(Vector2(60, 40))
-	_grunt(Vector2(100, 0))
+	var first := _grunt(Vector3(60, 0.0, 0))
+	var near := _grunt(Vector3(60, 0.0, 40))
+	_grunt(Vector3(100, 0.0, 0))
 	await _throw_chains(first)
 	var net: JudgmentChains = _nets()[0]
 	near.is_dead = true
@@ -6739,22 +6654,14 @@ func test_judgment_chains_survive_a_freed_member() -> void:
 	assert_eq(_nets().size(), 0, "le faisceau se dénoue")
 
 
-## Deux enchaînés au contact gardent un anneau entre eux ; un long lien, un maillon tous les
-## cinq pixels.
-func test_judgment_chains_keep_a_link_between_close_bodies() -> void:
-	assert_eq(JudgmentChains.pieces(0.5), 1)
-	assert_eq(JudgmentChains.pieces(6.0), 1)
-	assert_eq(JudgmentChains.pieces(100.0), int(100.0 / Holy.LINK_PITCH) - 1)
-
-
 ## Le Bouc émissaire : les chaînes partent du joueur, et la part partagée des coups qu'il
 ## prend passe aux enchaînés ; les Stigmates le soignent de chaque coup détourné.
 func test_judgment_chains_scapegoat_takes_the_shared_part() -> void:
 	_learn_with(
 		"manual_holy", "judgment_chains", [[SkillStats.STIGMATA, 1.0]], Skill.Shape.SCAPEGOAT
 	)
-	var left := _grunt(Vector2(-40, 0))
-	var below := _grunt(Vector2(0, 40))
+	var left := _grunt(Vector3(-40, 0.0, 0))
+	var below := _grunt(Vector3(0, 0.0, 40))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -6764,7 +6671,7 @@ func test_judgment_chains_scapegoat_takes_the_shared_part() -> void:
 	var before := [_p.health, left.health, below.health]
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = 20.0
-	_p._on_damaged(DamageInfo.roll(null, Vector2.ZERO, blow))
+	_p._on_damaged(DamageInfo.roll(null, Vector3.ZERO, blow))
 	await wait_physics_frames(2)
 	var share := _p.resolve(SkillCatalog.by_id("judgment_chains"), 1).solidarity * 0.01
 	assert_almost_eq(_p.health, float(before[0]) - 20.0 * (1.0 - share) + _p.stats.max_health * 0.01, 0.01)
@@ -6810,7 +6717,7 @@ func test_a_consecrated_column_heals_and_blesses() -> void:
 		"manual_holy", "sacred_pillar", [[SkillStats.CONSECRATION, 10.0], [SkillStats.SANCTUARY, 1.0]]
 	)
 	var cast := _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1)
-	var beside := _wearing_target(_p.global_position + Vector2(10, 0))
+	var beside := _wearing_target(_p.global_position + Vector3(10, 0.0, 0))
 	_p.stats.health_regen = 0.0
 	_p._set_health(_p.stats.max_health * 0.5)
 	var before := _p.health
@@ -6839,8 +6746,8 @@ func test_an_apotheosis_swells_the_collapse() -> void:
 		[SkillStats.END_BURST, 30.0], [SkillStats.APOTHEOSIS, 10.0], ["duration", -70.0, true]
 	])
 	_no_crits()
-	var one := _target(_aim() + Vector2(5, 0))
-	var other := _target(_aim() - Vector2(5, 0))
+	var one := _target(_aim() + Vector3(5, 0.0, 0))
+	var other := _target(_aim() - Vector3(5, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.8)
@@ -6859,7 +6766,7 @@ func test_divine_wrath_gathers_the_waves() -> void:
 	_learn_with("manual_holy", "holy_pulse", [[SkillStats.WRATH, 1.0], ["duration", -60.0, true]])
 	_no_crits()
 	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
-	var far := _target(_p.global_position + Vector2(cast.radius * 1.3, 0))
+	var far := _target(_p.global_position + Vector3(cast.radius * 1.3, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(0.5)
@@ -6876,13 +6783,13 @@ func test_a_pulse_guards_cleanses_and_communes() -> void:
 		[SkillStats.AEGIS, 2.0], [SkillStats.MANA_ON_HIT, 3.0], [SkillStats.PURIFICATION, 50.0],
 		[SkillStats.COMMUNION, 50.0],
 	])
-	_target(_p.global_position + Vector2(20, 0))
-	_target(_p.global_position + Vector2(-20, 0))
+	_target(_p.global_position + Vector3(20, 0.0, 0))
+	_target(_p.global_position + Vector3(-20, 0.0, 0))
 	SacredPillar.fall(
-		_effects, _p.global_position + Vector2(40, 0), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1),
+		_effects, _p.global_position + Vector3(40, 0.0, 0), _p.resolve(SkillCatalog.by_id("sacred_pillar"), 1),
 		_p.states
 	)
-	var by_pillar := _target(_p.global_position + Vector2(55, 15))
+	var by_pillar := _target(_p.global_position + Vector3(55, 0.0, 15))
 	await wait_physics_frames(2)
 	_p.stats.mana_regen = 0.0
 	_p.states.put(StatusEffects.Kind.IGNITE, 1.0, null, "")
@@ -6907,7 +6814,7 @@ func test_an_epiphany_doubles_then_bursts() -> void:
 	_learn_with("manual_holy", "holy_light", [[SkillStats.EPIPHANY, 1.0], [SkillStats.TRANSFIGURATION, 1.0]])
 	var field: String = DamageType.RESIST_FIELDS[DamageType.Kind.HOLY]
 	var bare := float(_p.stats.get(field))
-	var near := _target(_p.global_position + Vector2(30, 0))
+	var near := _target(_p.global_position + Vector3(30, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var light := _p.resolve(SkillCatalog.by_id("holy_light"), 1)
@@ -6925,7 +6832,7 @@ func test_a_glorious_aureole_strikes_and_humbles() -> void:
 		[SkillStats.AUREOLE, 40.0], [SkillStats.GLORY, 2.0], [SkillStats.HUMILITY, 10.0]
 	])
 	_no_crits()
-	var near := _wearing_target(_p.global_position + Vector2(20, 0))
+	var near := _wearing_target(_p.global_position + Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(SkillStats.AUREOLE_PERIOD + 0.1)
@@ -6937,17 +6844,17 @@ func test_a_glorious_aureole_strikes_and_humbles() -> void:
 ## L'Intercession : un gros coup bénit son auteur, plus fort ; un petit, non.
 func test_an_intercession_blesses_a_heavy_blow() -> void:
 	_learn_with("manual_holy", "holy_light", [[SkillStats.INTERCESSION, 50.0]])
-	var grunt := _grunt(Vector2(300, 0))
+	var grunt := _grunt(Vector3(300, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	var blow := DamageType.empty_parts()
 	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * 0.05
-	var light_blow := DamageInfo.roll(null, Vector2.ZERO, blow)
+	var light_blow := DamageInfo.roll(null, Vector3.ZERO, blow)
 	light_blow.author = grunt.states
 	_p._on_damaged(light_blow)
 	assert_false(grunt.states.active(StatusEffects.Kind.BLESSING), "un petit coup")
 	blow[DamageType.Kind.PHYSICAL] = _p.stats.max_health * 0.2
-	var heavy := DamageInfo.roll(null, Vector2.ZERO, blow)
+	var heavy := DamageInfo.roll(null, Vector3.ZERO, blow)
 	heavy.author = grunt.states
 	_p._on_damaged(heavy)
 	assert_almost_eq(grunt.states.strength(StatusEffects.Kind.BLESSING), 1.5, 0.001)
@@ -6975,8 +6882,8 @@ func _hammers() -> Array:
 func test_a_blessed_hammer_spirals_out_then_ends() -> void:
 	_learn("manual_holy", ["blessed_hammer"])
 	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
-	var crossed := _target(_p.global_position + Vector2(cast.radius * 0.6, 0))
-	var beyond := _target(_p.global_position + Vector2(cast.radius + 30.0, 0))
+	var crossed := _target(_p.global_position + Vector3(cast.radius * 0.6, 0.0, 0))
+	var beyond := _target(_p.global_position + Vector3(cast.radius + 30.0, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hammers().size(), 1)
@@ -7005,7 +6912,7 @@ func test_a_gravitating_hammer_circles_its_caster() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
-	_p.global_position += Vector2(40, 0)
+	_p.global_position += Vector3(40, 0.0, 0)
 	await wait_seconds(0.5)
 	var hammer: BlessedHammer = _hammers()[0]
 	assert_almost_eq(
@@ -7020,9 +6927,9 @@ func test_hammering_grows_and_threshes() -> void:
 		"manual_holy", "blessed_hammer", [[SkillStats.MARTELLING, 10.0], [SkillStats.THRESHING, 40.0]]
 	)
 	_no_crits()
-	var anvil := _target(Vector2(400, 0))
+	var anvil := _target(Vector3(400, 0.0, 0))
 	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
-	var hammer := BlessedHammer.swing(_effects, Vector2(-400, 0), 0.0, cast, _p.states, null)
+	var hammer := BlessedHammer.swing(_effects, Vector3(-400, 0.0, 0), 0.0, cast, _p.states, null)
 	for i in SkillStats.THRESHING_EVERY:
 		hammer._blow(anvil)
 	var received: Array = _received_all[anvil]
@@ -7038,7 +6945,7 @@ func test_hammers_together_reach_the_threshing() -> void:
 	_learn_with(
 		"manual_holy", "blessed_hammer", [[SkillStats.HAMMERS, 2.0], [SkillStats.THRESHING, 40.0]]
 	)
-	var anvil := _grunt(Vector2(35, 0))
+	var anvil := _grunt(Vector3(35, 0.0, 0))
 	anvil.stats = anvil.stats.duplicate()
 	anvil.stats.max_health = 1.0e9
 	anvil._set_health(1.0e9)
@@ -7057,10 +6964,10 @@ func test_hammers_together_reach_the_threshing() -> void:
 ## Le Tocsin : un tué lâche un petit marteau, à sa part du coup.
 func test_a_tocsin_rings_out_of_the_slain() -> void:
 	_learn_with("manual_holy", "blessed_hammer", [[SkillStats.TOCSIN, 40.0]])
-	var prey := _grunt(Vector2(400, 0))
+	var prey := _grunt(Vector3(400, 0.0, 0))
 	await wait_physics_frames(2)
 	var cast := _p.resolve(SkillCatalog.by_id("blessed_hammer"), 1)
-	var hammer := BlessedHammer.swing(_effects, Vector2(-400, 0), 0.0, cast, _p.states, null)
+	var hammer := BlessedHammer.swing(_effects, Vector3(-400, 0.0, 0), 0.0, cast, _p.states, null)
 	prey._set_health(1.0)
 	hammer._blow(prey.hurtbox)
 	assert_true(prey.is_dead)
@@ -7086,7 +6993,7 @@ func _learn_piper(skill_id: String, nodes := []) -> void:
 
 
 ## Une cible qui porte des états : les rats s'y accrochent.
-func _carrier(position: Vector2) -> Hurtbox:
+func _carrier(position: Vector3) -> Hurtbox:
 	var h := _target(position)
 	h.states = StatusEffects.new()
 	return h
@@ -7096,8 +7003,8 @@ func _carrier(position: Vector2) -> Hurtbox:
 ## du coup ; le second, derrière, n'est pas mordu.
 func test_a_bite_latches_a_rat_on_the_first_body_only() -> void:
 	_learn_piper("rat_bite")
-	var first := _carrier(Vector2(20, 0))
-	var behind := _carrier(Vector2(34, 0))
+	var first := _carrier(Vector3(20, 0.0, 0))
+	var behind := _carrier(Vector3(34, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	assert_eq(_hits(first), 1)
@@ -7110,8 +7017,8 @@ func test_a_bite_latches_a_rat_on_the_first_body_only() -> void:
 ## La Gueule béante : la morsure devient un arc, et chaque mordu reçoit son rat.
 func test_the_gaping_maw_bites_the_whole_arc() -> void:
 	_learn_piper("rat_bite", ["snout", "snout", "gaping_maw"])
-	var above := _carrier(Vector2(18, -6))
-	var below := _carrier(Vector2(18, 6))
+	var above := _carrier(Vector3(18, 0.0, -6))
+	var below := _carrier(Vector3(18, 0.0, 6))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(4)
@@ -7123,8 +7030,8 @@ func test_the_gaping_maw_bites_the_whole_arc() -> void:
 ## la font partir en trois branches.
 func test_the_tide_bites_each_body_once() -> void:
 	_learn_piper("rat_tide")
-	var near := _carrier(Vector2(60, 0))
-	var far := _carrier(Vector2(150, 0))
+	var near := _carrier(Vector3(60, 0.0, 0))
+	var far := _carrier(Vector3(150, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(220.0 / SkillStats.TIDE_SPEED + 0.2)
@@ -7142,8 +7049,8 @@ func test_three_rills_send_three_branches() -> void:
 ## L'Air de Hamelin frappe son cercle en nécrotique et ralentit ; il s'éteint à la touche.
 func test_the_air_gnaws_and_slows_its_circle() -> void:
 	_learn_piper("hamelin_air")
-	var inside := _carrier(Vector2(60, 0))
-	var outside := _carrier(Vector2(120, 0))
+	var inside := _carrier(Vector3(60, 0.0, 0))
+	var outside := _carrier(Vector3(120, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -7159,7 +7066,7 @@ func test_the_air_gnaws_and_slows_its_circle() -> void:
 ## entoure sa cible, en nécrotique.
 func test_the_dance_advances_and_bursts_the_rats_around() -> void:
 	_learn_piper("danse_macabre")
-	var carrier := _carrier(Vector2(100, 0))
+	var carrier := _carrier(Vector3(100, 0.0, 0))
 	carrier.states.add_rats(3, 1.0, _p.states)
 	_p._aim_with_mouse = false
 	await wait_physics_frames(2)
@@ -7173,13 +7080,13 @@ func test_the_dance_advances_and_bursts_the_rats_around() -> void:
 ## Un maudit de la Contagion qui meurt éclate sur ses voisins et leur passe ses rats.
 func test_a_cursed_carrier_passes_its_rats_on_when_it_dies() -> void:
 	_learn_piper("contagion")
-	var dying := _grunt(Vector2(80, 0))
-	var heir := _grunt(Vector2(110, 0))
+	var dying := _grunt(Vector3(80, 0.0, 0))
+	var heir := _grunt(Vector3(110, 0.0, 0))
 	await wait_physics_frames(2)
 	_p._aim_with_mouse = false
-	_p.facing = Vector2.RIGHT
+	_p.facing = Vector3.RIGHT
 	var curse := _p.resolve(SkillCatalog.by_id("contagion"), 1)
-	PutridCurse.fall(_effects, Vector2(90, 0), curse, _p.states, _p)
+	PutridCurse.fall(_effects, Vector3(90, 0.0, 0), curse, _p.states, _p)
 	await wait_physics_frames(2)
 	assert_true(dying.states.active(StatusEffects.Kind.CURSED))
 	dying.states.add_rats(4, 1.0, _p.states)
@@ -7195,7 +7102,7 @@ func test_a_gnawed_kill_feeds_the_piper_under_the_feast() -> void:
 	_learn_piper("feast")
 	assert_true(Gestures.cast(_p, 2))
 	assert_true(_p.lit("feast"))
-	var prey := _grunt(Vector2(200, 0))
+	var prey := _grunt(Vector3(200, 0.0, 0))
 	await wait_physics_frames(2)
 	prey._set_health(1.0)
 	prey.states.add_rats(1, 100.0, _p.states)
@@ -7209,8 +7116,8 @@ func test_a_gnawed_kill_feeds_the_piper_under_the_feast() -> void:
 ## Le Roi des Rats consomme les rats alentour ; chacun allonge le règne. Le Coup de croc y draine.
 func test_the_rat_king_consumes_the_rats_and_reigns_longer() -> void:
 	_learn_piper("rat_king")
-	var a := _carrier(Vector2(100, 0))
-	var b := _carrier(Vector2(-100, 0))
+	var a := _carrier(Vector3(100, 0.0, 0))
+	var b := _carrier(Vector3(-100, 0.0, 0))
 	a.states.add_rats(3, 1.0, _p.states)
 	b.states.add_rats(2, 1.0, _p.states)
 	await wait_physics_frames(2)
@@ -7238,7 +7145,7 @@ func test_the_legend_grows_the_king_then_gives_the_piper_back() -> void:
 ## Effrayé, il fuit au lieu d'avancer, le temps qu'on lui a donné. Sans EnemyManager, sa fuite
 ## avance à la main.
 func test_a_frightened_enemy_runs_away() -> void:
-	var grunt := _grunt(Vector2(40, 0))
+	var grunt := _grunt(Vector3(40, 0.0, 0))
 	await wait_physics_frames(2)
 	grunt.frighten(0.5, _p.global_position)
 	for i in 20:
@@ -7297,7 +7204,7 @@ func test_the_requiem_note_strikes_the_neighbours_of_the_dead() -> void:
 	_learn_piper("hamelin_air", ["far_echo", "far_echo", "serenade", "requiem"])
 	var aim := _p.global_position + _p.facing * Player.PLACEMENT_RANGE
 	var dead := _grunt(aim)
-	var neighbour := _grunt(aim + Vector2(20, 0))
+	var neighbour := _grunt(aim + Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
@@ -7313,7 +7220,7 @@ func test_the_first_beat_kill_leaves_its_requiem_note() -> void:
 	_learn_piper("hamelin_air", ["far_echo", "far_echo", "serenade", "requiem"])
 	var aim := _p.global_position + _p.facing * Player.PLACEMENT_RANGE
 	var dead := _grunt(aim)
-	var neighbour := _target(aim + Vector2(20, 0))
+	var neighbour := _target(aim + Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	dead._set_health(1.0)
 	assert_true(Gestures.cast(_p, 2))

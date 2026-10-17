@@ -1,5 +1,5 @@
 class_name ChainLightning
-extends Node2D
+extends Node3D
 
 ## La décharge de Chaîne d'éclairs : elle choisit ses cibles, les frappe, puis
 ## reste un quart de seconde à l'écran en trait brisé.
@@ -14,15 +14,9 @@ const JUMP := 90.0
 const INTO_THE_VOID := 100.0
 const LIFETIME := 0.22
 
-var _points := PackedVector2Array()
+var _points := PackedVector3Array()
 var _tint := Color.WHITE
 var _age := 0.0
-## Tirage local et jamais `Game.rng` : un grésillement qui y puiserait décalerait
-## tous les tirages de la partie (invariant 3).
-var _flicker := RandomNumberGenerator.new()
-## La forme montrée et le battement qui l'a fabriquée : une par battement, pas par image.
-var _shown := -1
-var _pieces: Array[EffectForge.Piece]
 
 
 ## Le Relais (jalon 43) : le rayon où éclate une charge statique prise.
@@ -33,8 +27,8 @@ const RELAY_RADIUS := 20.0
 ## — ennemis, et charges sous le Relais —, et ses bifurcations : le point d'où part la
 ## branche et les sauts qu'elle emporte.
 class Run:
-	var points := PackedVector2Array()
-	var taken: Array[Node2D] = []
+	var points := PackedVector3Array()
+	var taken: Array[Node3D] = []
 	var forks: Array[Vector2i] = []
 
 
@@ -45,10 +39,10 @@ class Run:
 ## chaîne changerait ce que la requête suivante trouve. La Toile d'arcs (`WEB`, jalon 35)
 ## ne saute pas : chaque cible part du lanceur, et un trait par cible.
 static func unload(
-	parent: Node, caster_node: Node2D, cast: SkillStats, direction: Vector2
+	parent: Node, caster_node: Node3D, cast: SkillStats, direction: Vector3
 ) -> int:
 	return discharge(
-		parent, caster_node.get_world_2d(), caster_node.global_position,
+		parent, caster_node.get_world_3d(), caster_node.global_position,
 		StatusEffects.of(caster_node), cast, direction, caster_node
 	)
 
@@ -57,20 +51,20 @@ static func unload(
 ## tué (`direction` nulle : pas de cône, un saut). `caster`, s'il y en a un, reçoit le
 ## Retour par la masse.
 static func discharge(
-	parent: Node, world: World2D, origin: Vector2, author: StatusEffects, cast: SkillStats,
-	direction: Vector2, caster: Node2D = null
+	parent: Node, world: World3D, origin: Vector3, author: StatusEffects, cast: SkillStats,
+	direction: Vector3, caster: Node3D = null
 ) -> int:
 	var tint: Color = DamageType.COLORS[cast.nature]
 	var parts := cast.roll(Game.rng)
 	if cast.shape == Skill.Shape.WEB:
 		return _web(parent, world, origin, author, cast, parts, tint, direction)
-	var excluded: Array[Node2D] = []
+	var excluded: Array[Node3D] = []
 	var main := _run(world, origin, cast, direction, cast.target_count(), excluded, true)
 	var runs: Array[Run] = [main]
 	# Les branches après le tronc, qui garde ses cibles ; une branche ne bifurque plus.
 	var offsets: Array[int] = [0]
 	for fork in main.forks:
-		runs.append(_run(world, main.points[fork.x], cast, Vector2.ZERO, fork.y, excluded, false))
+		runs.append(_run(world, main.points[fork.x], cast, Vector3.ZERO, fork.y, excluded, false))
 		offsets.append(fork.x)
 	var struck := 0
 	for r in runs.size():
@@ -82,7 +76,7 @@ static func discharge(
 			trace(parent, run.points, tint)
 	# Le Retour par la masse (jalon 43) : la décharge revient au lanceur, et lui rend du mana.
 	if cast.grounding > 0.0 and struck > 0 and is_instance_valid(caster):
-		trace(parent, PackedVector2Array([main.points[-1], caster.global_position]), tint)
+		trace(parent, PackedVector3Array([main.points[-1], caster.global_position]), tint)
 		if caster is Player:
 			(caster as Player).gain_mana(cast.grounding * float(struck))
 	return struck
@@ -91,17 +85,17 @@ static func discharge(
 ## Saute de proche en proche, `left` fois au plus. Le premier saut dans le cône de la
 ## visée, s'il y en a une.
 static func _run(
-	world: World2D, from_value: Vector2, cast: SkillStats, cone: Vector2, left: int,
-	excluded: Array[Node2D], forks: bool
+	world: World3D, from_value: Vector3, cast: SkillStats, cone: Vector3, left: int,
+	excluded: Array[Node3D], forks: bool
 ) -> Run:
 	var run := Run.new()
 	run.points.append(from_value)
 	var jumps := 0
 	while left > 0 and jumps < SkillStats.CHAIN_JUMPS_MOST:
-		var aimed := jumps == 0 and cone != Vector2.ZERO
+		var aimed := jumps == 0 and cone != Vector3.ZERO
 		var next := _nearest_one(
 			world, run.points[-1], SCOPE if aimed else JUMP + cast.jump_reach, excluded,
-			cone if aimed else Vector2.ZERO, cast.relay > 0.0
+			cone if aimed else Vector3.ZERO, cast.relay > 0.0
 		)
 		if next == null:
 			break
@@ -120,7 +114,7 @@ static func _run(
 
 ## Un saut qui ne s'use pas : vers un engourdi sous la Conductance, vers une charge sous le
 ## Réamorçage (jalon 43).
-static func _free_hop(next: Node2D, cast: SkillStats) -> bool:
+static func _free_hop(next: Node3D, cast: SkillStats) -> bool:
 	if next is StaticCharge:
 		return cast.relay_refund > 0.0
 	return cast.conductance > 0.0 and (next as Hurtbox).has_state(StatusEffects.Kind.NUMB)
@@ -148,13 +142,13 @@ static func _strike(
 ## La Toile d'arcs : un arc du lanceur à chaque cible. La Ramure (jalon 43) : chaque arc
 ## saute encore une fois depuis sa cible, à une part du coup — choisis avant de frapper.
 static func _web(
-	parent: Node, world: World2D, origin: Vector2, author: StatusEffects, cast: SkillStats,
-	parts: Array[float], tint: Color, direction: Vector2
+	parent: Node, world: World3D, origin: Vector3, author: StatusEffects, cast: SkillStats,
+	parts: Array[float], tint: Color, direction: Vector3
 ) -> int:
-	var excluded: Array[Node2D] = []
+	var excluded: Array[Node3D] = []
 	var arcs: Array[Hurtbox] = []
 	for i in cast.target_count():
-		var target := _nearest_one(world, origin, SCOPE, excluded, Vector2.ZERO) as Hurtbox
+		var target := _nearest_one(world, origin, SCOPE, excluded, Vector3.ZERO) as Hurtbox
 		if target == null:
 			break
 		excluded.append(target)
@@ -162,33 +156,33 @@ static func _web(
 	var leaps := {}
 	if cast.web_branch > 0.0:
 		for target in arcs:
-			var next := _nearest_one(world, target.global_position, JUMP, excluded, Vector2.ZERO) as Hurtbox
+			var next := _nearest_one(world, target.global_position, JUMP, excluded, Vector3.ZERO) as Hurtbox
 			if next != null:
 				excluded.append(next)
 				leaps[target] = next
 	var leap := DamageType.scaled(parts, cast.web_branch * 0.01)
 	for target in arcs:
 		Targets.strike(target, parts, origin, author, cast)
-		trace(parent, PackedVector2Array([origin, target.global_position]), tint)
+		trace(parent, PackedVector3Array([origin, target.global_position]), tint)
 		if leaps.has(target):
 			var next: Hurtbox = leaps[target]
 			Targets.strike(next, leap, target.global_position, author, cast)
-			trace(parent, PackedVector2Array([target.global_position, next.global_position]), tint)
+			trace(parent, PackedVector3Array([target.global_position, next.global_position]), tint)
 	if arcs.is_empty():
-		trace(parent, PackedVector2Array([origin, origin + direction * INTO_THE_VOID]), tint)
+		trace(parent, PackedVector3Array([origin, origin + direction * INTO_THE_VOID]), tint)
 	return arcs.size() + leaps.size()
 
 
 ## Le Survoltage (jalon 43) : une petite chaîne depuis un engourdi tué. Différée par
 ## l'appelant — le tué meurt dans un rappel de collision, où l'espace refuse les requêtes.
 static func surge(
-	parent: Node, world: World2D, at: Vector2, author: StatusEffects, cast: SkillStats
+	parent: Node, world: World3D, at: Vector3, author: StatusEffects, cast: SkillStats
 ) -> void:
 	if is_instance_valid(parent):
-		discharge(parent, world, at, author, cast, Vector2.ZERO)
+		discharge(parent, world, at, author, cast, Vector3.ZERO)
 
 
-static func trace(parent: Node, points: PackedVector2Array, tint: Color) -> void:
+static func trace(parent: Node, points: PackedVector3Array, tint: Color) -> void:
 	var trace := ChainLightning.new()
 	trace._points = points
 	trace._tint = tint
@@ -199,23 +193,23 @@ static func trace(parent: Node, points: PackedVector2Array, tint: Color) -> void
 ## `cone` nul : pas de contrainte d'angle, c'est un saut. `charges` : les charges
 ## statiques sont des cibles comme les ennemis (le Relais).
 static func _nearest_one(
-	world: World2D, from_value: Vector2, scope: float, excluded_all: Array[Node2D], cone: Vector2,
+	world: World3D, from_value: Vector3, scope: float, excluded_all: Array[Node3D], cone: Vector3,
 	charges := false
-) -> Node2D:
-	var candidates: Array[Node2D] = []
+) -> Node3D:
+	var candidates: Array[Node3D] = []
 	candidates.assign(Targets.in_circle(world, from_value, scope))
 	if charges:
 		for charge in StaticCharge.live():
 			if from_value.distance_to(charge.global_position) <= scope:
 				candidates.append(charge)
-	var best_one: Node2D = null
+	var best_one: Node3D = null
 	var best_distance := INF
 	for target in candidates:
 		if excluded_all.has(target) or target.is_queued_for_deletion():
 			continue
 		var toward := target.global_position - from_value
 		var distance := toward.length_squared()
-		if cone != Vector2.ZERO and distance > 0.01 and cone.dot(toward.normalized()) < COS_HALF_CONE:
+		if cone != Vector3.ZERO and distance > 0.01 and cone.dot(toward.normalized()) < COS_HALF_CONE:
 			continue
 		if distance < best_distance and Targets.in_sight(world, from_value, target.global_position):
 			best_one = target
@@ -223,26 +217,8 @@ static func _nearest_one(
 	return best_one
 
 
-func _ready() -> void:
-	z_index = 5
-
-
 func _process(delta: float) -> void:
 	_age += delta
 	if _age >= LIFETIME:
 		queue_free()
-	queue_redraw()
 
-
-## La décharge ne s'éteint pas, elle **bat** : la forme tient une dix-huitième de
-## seconde puis saute, et se défait sur son dernier tiers.
-func _draw() -> void:
-	var beat := Lightning.hold(_age)
-	if beat != _shown:
-		_shown = beat
-		_flicker.seed = int(get_instance_id()) ^ beat
-		var local := PackedVector2Array()
-		for p in _points:
-			local.append(to_local(p))
-		_pieces = Lightning.chain(local, _flicker, _tint, 2, true, Lightning.gone(_age, LIFETIME))
-	Lightning.put(self, _pieces)

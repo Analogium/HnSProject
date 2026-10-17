@@ -75,7 +75,7 @@ var _hit_stop_end := 0
 
 ## La secousse en cours : un état et non une coroutine par appel, qui se disputaient
 ## le même `offset`.
-var _shake_camera: Camera2D
+var _shake_camera: Camera3D
 var _shake_amplitude := 0.0
 var _shake_remaining := 0.0
 var _shake_duration := 0.0
@@ -145,7 +145,7 @@ func hit_stop(duration: float = -1.0) -> void:
 
 
 ## Relancée, elle reprend la plus forte amplitude au lieu d'en ajouter une.
-func shake_camera(camera: Camera2D, amount: float = 3.0, duration: float = 0.15) -> void:
+func shake_camera(camera: Camera3D, amount: float = 3.0, duration: float = 0.15) -> void:
 	if camera == null or amount <= 0.0 or duration <= 0.0 or not Settings.screen_shake:
 		return
 	if camera != _shake_camera:
@@ -167,15 +167,14 @@ func _process(delta: float) -> void:
 		_settle_camera()
 		return
 	var falloff := _shake_remaining / _shake_duration
-	_shake_camera.offset = Vector2(
-		_rng_camera.randf_range(-_shake_amplitude, _shake_amplitude),
-		_rng_camera.randf_range(-_shake_amplitude, _shake_amplitude)
-	) * falloff
+	_shake_camera.h_offset = _rng_camera.randf_range(-_shake_amplitude, _shake_amplitude) * falloff
+	_shake_camera.v_offset = _rng_camera.randf_range(-_shake_amplitude, _shake_amplitude) * falloff
 
 
 func _settle_camera() -> void:
 	if is_instance_valid(_shake_camera):
-		_shake_camera.offset = Vector2.ZERO
+		_shake_camera.h_offset = 0.0
+		_shake_camera.v_offset = 0.0
 	_shake_camera = null
 	_shake_amplitude = 0.0
 	_shake_remaining = 0.0

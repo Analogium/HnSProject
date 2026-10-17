@@ -1,5 +1,5 @@
 class_name RottingGate
-extends Node2D
+extends Node3D
 
 ## Le portail de la Porte pourrissante : il crache une créature par période ; elles
 ## s'amassent autour de lui jusqu'à ce qu'un ennemi entre à portée, puis foncent
@@ -19,15 +19,12 @@ const CONTACT := 8.0
 const HUDDLE := 16.0
 ## Entre deux recherches de proie.
 const SEARCH_PERIOD := 0.2
-## Ce que la faille met à s'ouvrir et à se refermer, en secondes.
-const OPENING := 0.2
-const CLOSING := 0.3
 ## Le Nid porté (jalon 38) : où la faille se tient par rapport au joueur, à son épaule.
-const NEST_OFFSET := Vector2(-12.0, -4.0)
+const NEST_OFFSET := Vector3(-12.0, 0.0, -4.0)
 
 
 class Crawler:
-	var at: Vector2
+	var at: Vector3
 	var prey: Hurtbox
 	## Sa place dans l'amas, en angle.
 	var angle: float
@@ -60,7 +57,7 @@ var _age := 0.0
 var _born := 0
 var _search := 0.0
 var _crawlers: Array[Crawler] = []
-var _follow: Node2D
+var _follow: Node3D
 ## La Laisse (jalon 45) : celui dont elles suivent la visée.
 var _aimer: Player
 ## Le Grouillement : l'attente avant qu'un coup reçu en fasse cracher d'autres.
@@ -71,7 +68,7 @@ static var _open: Array[RottingGate] = []
 
 
 static func open(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, follow: Node2D = null,
+	parent: Node, point: Vector3, cast: SkillStats, author: StatusEffects, follow: Node3D = null,
 	aimer: Player = null
 ) -> RottingGate:
 	var gate := RottingGate.new()
@@ -87,18 +84,13 @@ static func open(
 	return gate
 
 
-## Pas de lumière ajoutée : la faille et ses créatures sont **dessinées**.
-func _ready() -> void:
-	z_index = 3
-
-
 func _exit_tree() -> void:
 	_open.erase(self)
 
 
 ## La Détonation (jalon 45) : les créatures de cet auteur dans ce cercle éclatent sur-le-champ,
 ## plus fort.
-static func detonate(center: Vector2, radius: float, author: StatusEffects, factor: float) -> void:
+static func detonate(center: Vector3, radius: float, author: StatusEffects, factor: float) -> void:
 	for gate in _open:
 		if gate._author != author:
 			continue
@@ -126,7 +118,6 @@ func _physics_process(delta: float) -> void:
 		_hunt()
 	for c in _crawlers.duplicate():
 		_crawl(c, delta)
-	queue_redraw()
 	if _age >= _cast.duration:
 		queue_free()
 
@@ -139,7 +130,7 @@ func _spawn() -> void:
 
 
 ## Le Grouillement (jalon 45) : un coup reçu par le porteur du nid en fait cracher d'autres.
-static func provoke(bearer: Node2D) -> void:
+static func provoke(bearer: Node3D) -> void:
 	for gate in _open:
 		if gate._follow == bearer and gate._cast.swarming > 0.0 and gate._provoked <= 0.0:
 			gate._provoked = SkillStats.SWARMING_PERIOD
@@ -168,14 +159,14 @@ func _fuse() -> void:
 ## Chaque créature sans proie prend l'ennemi à portée le plus proche d'elle — sous la Laisse,
 ## le plus proche de la visée.
 func _hunt() -> void:
-	var seen := Targets.in_circle(get_world_2d(), global_position, SIGHT + _cast.seek_radius)
+	var seen := Targets.in_circle(get_world_3d(), global_position, SIGHT + _cast.seek_radius)
 	if seen.is_empty():
 		return
-	var aimed := _aimer._aim_point() if is_instance_valid(_aimer) else Vector2.INF
+	var aimed := _aimer._aim_point() if is_instance_valid(_aimer) else Vector3.INF
 	for c in _crawlers:
 		if is_instance_valid(c.prey):
 			continue
-		var from := c.at if aimed == Vector2.INF else aimed
+		var from := c.at if aimed == Vector3.INF else aimed
 		var best_d := INF
 		for target in seen:
 			var d := from.distance_squared_to(target.global_position)
@@ -185,7 +176,7 @@ func _hunt() -> void:
 
 
 func _crawl(c: Crawler, delta: float) -> void:
-	var goal := global_position + Vector2.from_angle(c.angle + _age) * HUDDLE
+	var goal := global_position + Flat.from_angle(c.angle + _age) * HUDDLE
 	if not is_instance_valid(c.prey):
 		c.waited += delta
 	else:
@@ -196,16 +187,9 @@ func _crawl(c: Crawler, delta: float) -> void:
 	c.at = c.at.move_toward(goal, SPEED * (1.0 + _cast.crawl_speed * 0.01) * delta)
 
 
-## La Gestation (jalon 45) : ce qu'elle a grossi à attendre — ses dégâts, et son dessin.
+## La Gestation (jalon 45) : ce qu'elle a grossi à attendre — ses dégâts.
 func _swell(c: Crawler) -> float:
 	return 1.0 + _cast.gestation * 0.01 * minf(c.waited, SkillStats.GESTATION_MOST)
-
-
-## Sa taille dessinée : la Gestation la fait enfler par paliers impairs — une planche ne
-## s'étire pas —, l'amalgame part de plus grand.
-func _side(c: Crawler) -> int:
-	var base := EffectForge.AMALGAM_SIDE if c.big else EffectForge.CRAWLER_SIZE
-	return floori(float(base) * _swell(c) * 0.5) * 2 + 1
 
 
 ## Elle éclate ; Progéniture en lâche des petits là où elle était, qui chassent à leur tour.
@@ -231,27 +215,3 @@ func _burst(c: Crawler, factor := 1.0) -> void:
 		young.small = true
 		_crawlers.append(young)
 
-
-## La faille **debout**, sa base sur le point visé, qui s'ouvre et se referme en se
-## **découpant** depuis son milieu — une planche ne s'étire pas. Choisie sur planche
-## contre une fosse, une arche et une gueule (jalon 26). Les créatures sautillent
-## chacune à son temps.
-func _draw() -> void:
-	var rifts := EffectForge.rifts(_tint)
-	var rift: Texture2D = rifts[int(_age * EffectForge.RIFT_HZ) % rifts.size()]
-	var shown := clampf(_age / OPENING, 0.0, 1.0) * clampf((_cast.duration - _age) / CLOSING, 0.0, 1.0)
-	var size := Vector2(rift.get_width(), rift.get_height())
-	var rows := roundf(size.y * shown)
-	if rows >= 1.0:
-		var band := Rect2(0.0, floorf((size.y - rows) * 0.5), size.x, rows)
-		var corner := EffectForge.snap(self, Vector2(-floorf(size.x * 0.5), -size.y + band.position.y))
-		draw_texture_rect_region(rift, Rect2(corner, band.size), band)
-	var crawlers := EffectForge.crawlers(_tint)
-	for i in _crawlers.size():
-		var hop := int(_age * EffectForge.CRAWLER_HZ + float(i) * 0.7) % crawlers.size()
-		var c := _crawlers[i]
-		var side := _side(c)
-		var tex: Texture2D = crawlers[hop]
-		if side != EffectForge.CRAWLER_SIZE or c.big:
-			tex = EffectForge.grown_crawlers(_tint, side, c.big)[hop]
-		Necrotic.centered(self, tex, to_local(c.at) - Vector2(0.0, floorf(float(side) * 0.5)))

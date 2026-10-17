@@ -4,7 +4,7 @@ extends GutTest
 ## nouvelle touche. Aucun test ne pilote un vrai clavier ; l'appui passe par
 ## `_input` appelé à la main, comme partout ailleurs dans cette campagne.
 
-var _zone: Node2D
+var _zone: Zone
 var _menu: CanvasLayer
 
 

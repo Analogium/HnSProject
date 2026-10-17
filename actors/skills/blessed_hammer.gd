@@ -1,5 +1,5 @@
 class_name BlessedHammer
-extends Node2D
+extends Node3D
 
 ## Le marteau du Marteau béni (jalon 48) : il part du point de lancer en spirale qui
 ## s'élargit jusqu'à son rayon, frappe ce qu'il croise — un même ennemi au plus une fois par
@@ -8,15 +8,11 @@ extends Node2D
 ##
 ## Comme tout ce qui dure, il ne fige jamais le jeu.
 
-## Ce qu'il tourne sur lui-même en volant, en radians par seconde : sa tête suit la
-## spirale vers l'extérieur, et culbute par-dessus.
-const TUMBLE := 8.0
-
 var _cast: SkillStats
 var _author: StatusEffects
 ## Ce qu'il suit sous la Gravitation ; le centre de sa spirale sinon, posé au lancer.
-var _caster: Node2D
-var _center := Vector2.ZERO
+var _caster: Node3D
+var _center := Vector3.ZERO
 var _start := 0.0
 var _age := 0.0
 var _bite := SkillStats.HAMMER_BITE
@@ -30,8 +26,8 @@ static var _blows := {}
 
 ## `index` : son rang dans le Carillon, qui fait un bourdon sur trois.
 static func swing(
-	parent: Node, at: Vector2, start: float, cast: SkillStats, author: StatusEffects,
-	caster: Node2D, index := 0
+	parent: Node, at: Vector3, start: float, cast: SkillStats, author: StatusEffects,
+	caster: Node3D, index := 0
 ) -> BlessedHammer:
 	var hammer := BlessedHammer.new()
 	if cast.bourdon > 0.0 and index % SkillStats.BOURDON_EVERY == SkillStats.BOURDON_EVERY - 1:
@@ -55,29 +51,24 @@ static func swing(
 	return hammer
 
 
-func _ready() -> void:
-	z_index = 4
-
-
 func _physics_process(delta: float) -> void:
 	_age += delta
 	_contacts.advance(delta)
 	if _cast.gravitation > 0.0 and is_instance_valid(_caster):
 		_center = _caster.global_position
 	global_position = _at(_age)
-	for target in Targets.in_circle(get_world_2d(), global_position, _bite):
+	for target in Targets.in_circle(get_world_3d(), global_position, _bite):
 		if _contacts.accepts(target):
 			_blow(target)
-	queue_redraw()
 	if _age >= _cast.duration:
 		queue_free()
 
 
 ## Où il est à cet âge. La spirale s'ouvre de son centre jusqu'au rayon sur toute sa durée :
 ## la Ferrure, qui l'allonge, donne des tours de plus. La Prestesse le fait tourner plus vite.
-func _at(age: float) -> Vector2:
+func _at(age: float) -> Vector3:
 	var turn := _start + SkillStats.HAMMER_SPEED * (1.0 + _cast.hammer_spin * 0.01) * age
-	return _center + Vector2.from_angle(turn) * _reach(age)
+	return _center + Flat.from_angle(turn) * _reach(age)
 
 
 ## L'Éclipse élargit l'orbite de la Gravitation.
@@ -121,7 +112,7 @@ func _count(target: Hurtbox) -> int:
 
 ## Le Tocsin : un ennemi tué par ce marteau en lâche un petit, qui part en spirale du corps.
 ## Sous le Branle, le petit en lâche à son tour — une fois. En différé : on est dans le coup.
-func _on_slew(cast: SkillStats, at: Vector2, _victim: StatusEffects) -> void:
+func _on_slew(cast: SkillStats, at: Vector3, _victim: StatusEffects) -> void:
 	if cast != _cast or not is_instance_valid(get_parent()):
 		return
 	var small := _cast.echoed(_cast.tocsin * 0.01)
@@ -133,12 +124,6 @@ func _on_slew(cast: SkillStats, at: Vector2, _victim: StatusEffects) -> void:
 		small.tocsin = 0.0
 	small.peal = 0.0
 	BlessedHammer.swing.call_deferred(
-		get_parent(), at, _center.angle_to_point(at), small, _author, null
+		get_parent(), at, Flat.angle(at - _center), small, _author, null
 	)
 
-
-## Le marteau de guerre, choisi sur planche (`EffectForge.HAMMER`), à l'orientation la plus
-## proche de sa tête : vers l'extérieur de la spirale, plus ce qu'il a culbuté.
-func _draw() -> void:
-	var out := (global_position - _center).angle()
-	EffectForge.put_centered(self, Holy.hammer(_tint, out + _age * TUMBLE), Vector2.ZERO)

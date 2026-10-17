@@ -100,19 +100,24 @@ func test_a_zero_period_lets_each_impact_freeze() -> void:
 # --------------------------------------------------------------------------
 
 
-func _camera() -> Camera2D:
-	var cam := Camera2D.new()
+func _camera() -> Camera3D:
+	var cam := Camera3D.new()
 	add_child_autofree(cam)
 	return cam
+
+
+## La secousse d'une caméra 3D : ses deux décalages, comme l'`offset` de la caméra 2D.
+func _offset(cam: Camera3D) -> Vector2:
+	return Vector2(cam.h_offset, cam.v_offset)
 
 
 func test_the_shake_moves_the_camera_then_settles_it() -> void:
 	var cam := _camera()
 	Game.shake_camera(cam, 4.0, 0.1)
 	await wait_process_frames(2)
-	assert_ne(cam.offset, Vector2.ZERO, "la caméra bouge")
+	assert_ne(_offset(cam), Vector2.ZERO, "la caméra bouge")
 	await wait_seconds(0.2)
-	assert_eq(cam.offset, Vector2.ZERO, "et revient exactement à sa place")
+	assert_eq(_offset(cam), Vector2.ZERO, "et revient exactement à sa place")
 
 
 ## L'option coupe toutes les secousses à leur seule entrée.
@@ -122,18 +127,18 @@ func test_the_option_turns_the_shake_off() -> void:
 	Game.shake_camera(cam, 4.0, 0.1)
 	await wait_process_frames(2)
 	Settings.screen_shake = true
-	assert_eq(cam.offset, Vector2.ZERO, "la caméra ne bouge pas")
+	assert_eq(_offset(cam), Vector2.ZERO, "la caméra ne bouge pas")
 
 
 ## Cinq ennemis touchés par le même balayage lançaient cinq secousses, qui se
-## disputaient le même `offset` : la première finie le remettait à zéro sous les
+## disputaient le même décalage : la première finie le remettait à zéro sous les
 ## autres, et la caméra s'arrêtait net au milieu du geste.
 func test_five_shakes_in_a_row_make_only_one() -> void:
 	var cam := _camera()
 	for i in 5:
 		Game.shake_camera(cam, 3.0, 0.1)
 	await wait_seconds(0.2)
-	assert_eq(cam.offset, Vector2.ZERO, "une seule secousse, et elle se termine")
+	assert_eq(_offset(cam), Vector2.ZERO, "une seule secousse, et elle se termine")
 
 
 ## Relancée plus fort, la secousse prend la plus forte des deux amplitudes plutôt
@@ -147,10 +152,10 @@ func test_a_restarted_shake_keeps_the_strongest() -> void:
 	var biggest := 0.0
 	for i in 6:
 		await wait_process_frames(1)
-		biggest = maxf(biggest, cam.offset.length())
+		biggest = maxf(biggest, _offset(cam).length())
 	assert_gt(biggest, 1.5, "l'amplitude forte l'emporte")
 	await wait_seconds(0.5)
-	assert_eq(cam.offset, Vector2.ZERO)
+	assert_eq(_offset(cam), Vector2.ZERO)
 
 
 ## **Invariant 3.** La secousse est décorative : ses deux nombres par image
@@ -167,7 +172,7 @@ func test_the_shake_does_not_draw_from_the_game_randomness() -> void:
 ## La caméra part avec le joueur quand la zone se recharge. L'ancienne boucle
 ## tenait sa référence jusqu'au bout ; celle-ci doit s'arrêter d'elle-même.
 func test_a_freed_camera_does_not_block_what_follows() -> void:
-	var dead := Camera2D.new()
+	var dead := Camera3D.new()
 	add_child(dead)
 	Game.shake_camera(dead, 4.0, 0.3)
 	dead.free()
@@ -176,9 +181,9 @@ func test_a_freed_camera_does_not_block_what_follows() -> void:
 	var alive := _camera()
 	Game.shake_camera(alive, 4.0, 0.1)
 	await wait_process_frames(2)
-	assert_ne(alive.offset, Vector2.ZERO, "la secousse suivante part quand même")
+	assert_ne(_offset(alive), Vector2.ZERO, "la secousse suivante part quand même")
 	await wait_seconds(0.2)
-	assert_eq(alive.offset, Vector2.ZERO)
+	assert_eq(_offset(alive), Vector2.ZERO)
 
 
 # --------------------------------------------------------------------------

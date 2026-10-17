@@ -12,8 +12,8 @@ func after_each() -> void:
 	GroundItem.hovered = null
 
 
-func _drop(player: Player, item: Item, at: Vector2) -> GroundItem:
-	var ground := Node2D.new()
+func _drop(player: Player, item: Item, at: Vector3) -> GroundItem:
+	var ground := Node3D.new()
 	add_child_autofree(ground)
 	var drop := GroundItem.spawn(ground, at, item, player)
 	await wait_process_frames(1)
@@ -35,10 +35,10 @@ func _sword() -> Item:
 func test_clicking_the_name_picks_it_up() -> void:
 	var player := _player()
 	var item := _sword()
-	var drop: GroundItem = await _drop(player, item, Vector2(60, 0))
+	var drop: GroundItem = await _drop(player, item, Vector3(60, 0.0, 0))
 
 	assert_false(
-		drop.clicked(drop.global_position), "sous l'étiquette, le clic ne prend rien"
+		drop.clicked(Flat.on_screen(drop.get_viewport(), drop.global_position)), "sous l'étiquette, le clic ne prend rien"
 	)
 	assert_true(drop.clicked(drop.name_rect().get_center()), "sur le nom, si")
 	await wait_process_frames(1)
@@ -50,7 +50,7 @@ func test_clicking_the_name_picks_it_up() -> void:
 ## soit le temps qu'on y passe.
 func test_walking_over_it_leaves_it_there() -> void:
 	var player := _player()
-	var drop: GroundItem = await _drop(player, _sword(), Vector2(60, 0))
+	var drop: GroundItem = await _drop(player, _sword(), Vector3(60, 0.0, 0))
 
 	player.global_position = drop.global_position
 	await wait_physics_frames(6)
@@ -62,7 +62,7 @@ func test_walking_over_it_leaves_it_there() -> void:
 ## avoir lu son nom et décidé de faire de la place.
 func test_a_full_bag_leaves_it_on_the_ground() -> void:
 	var player := _player()
-	var drop: GroundItem = await _drop(player, _sword(), Vector2(60, 0))
+	var drop: GroundItem = await _drop(player, _sword(), Vector3(60, 0.0, 0))
 	while player.inventory.add(Item.new(ItemCatalog.by_id("sword"))):
 		pass
 
@@ -75,11 +75,11 @@ func test_a_full_bag_leaves_it_on_the_ground() -> void:
 func test_the_label_carries_the_composed_name() -> void:
 	var player := _player()
 	var item := _sword()
-	var drop: GroundItem = await _drop(player, item, Vector2(60, 0))
+	var drop: GroundItem = await _drop(player, item, Vector3(60, 0.0, 0))
 
 	assert_gt(drop.name_rect().size.x, 0.0, "l'étiquette est mesurée")
 	# Le nom décide de la largeur : un objet commun tient dans moins de place.
-	var plain: GroundItem = await _drop(player, Item.new(ItemCatalog.by_id("sword")), Vector2(90, 0))
+	var plain: GroundItem = await _drop(player, Item.new(ItemCatalog.by_id("sword")), Vector3(90, 0.0, 0))
 	assert_lt(plain.name_rect().size.x, drop.name_rect().size.x, "« %s » contre « %s »" % [
 		plain.data.display_name(), item.display_name()
 	])
@@ -89,14 +89,14 @@ func test_the_label_carries_the_composed_name() -> void:
 ## recouvrir, sinon le nom qu'on clique n'est pas celui qu'on lit.
 func test_labels_never_cover_each_other() -> void:
 	var player := _player()
-	var ground := Node2D.new()
+	var ground := Node3D.new()
 	add_child_autofree(ground)
 	var drops: Array[GroundItem] = []
 	for i in 8:
 		# Serrés comme un paquet d'ennemis, pas empilés à l'identique : c'est le cas
 		# qui se produit en jouant.
 		drops.append(GroundItem.spawn(
-			ground, Vector2(300.0 + i * 3.0, 260.0 + i * 2.0), _sword(), player
+			ground, Vector3(300.0 + i * 3.0, 0.0, 260.0 + i * 2.0), _sword(), player
 		))
 	await wait_process_frames(2)
 
@@ -107,7 +107,7 @@ func test_labels_never_cover_each_other() -> void:
 				"« %d » et « %d » se recouvrent" % [i, k]
 			)
 		assert_lt(
-			drops[i].name_rect().end.y, drops[i].global_position.y,
+			drops[i].name_rect().end.y, Flat.on_screen(drops[i].get_viewport(), drops[i].global_position).y,
 			"et chacune reste au-dessus de son objet"
 		)
 
@@ -116,10 +116,10 @@ func test_labels_never_cover_each_other() -> void:
 ## est celui qui se dessine, pas la place naturelle.
 func test_a_lifted_label_is_the_one_clicked() -> void:
 	var player := _player()
-	var ground := Node2D.new()
+	var ground := Node3D.new()
 	add_child_autofree(ground)
-	var under := GroundItem.spawn(ground, Vector2(300, 260), _sword(), player)
-	var over := GroundItem.spawn(ground, Vector2(302, 260), _sword(), player)
+	var under := GroundItem.spawn(ground, Vector3(300, 0.0, 260), _sword(), player)
+	var over := GroundItem.spawn(ground, Vector3(302, 0.0, 260), _sword(), player)
 	await wait_process_frames(2)
 
 	var lifted: GroundItem = over if over.name_rect().position.y < under.name_rect().position.y else under
@@ -131,12 +131,12 @@ func test_a_lifted_label_is_the_one_clicked() -> void:
 ## qui débordait de l'écran.
 func test_the_labels_switch_off_and_on() -> void:
 	var player := _player()
-	var ground := Node2D.new()
+	var ground := Node3D.new()
 	add_child_autofree(ground)
 
 	GroundItem.show_labels(false)
-	var under := GroundItem.spawn(ground, Vector2(300, 260), _sword(), player)
-	var over := GroundItem.spawn(ground, Vector2(302, 260), _sword(), player)
+	var under := GroundItem.spawn(ground, Vector3(300, 0.0, 260), _sword(), player)
+	var over := GroundItem.spawn(ground, Vector3(302, 0.0, 260), _sword(), player)
 	await wait_process_frames(2)
 	assert_true(under.name_rect().intersects(over.name_rect()), "éteints, rien n'est rangé")
 	assert_false(under.clicked(under.name_rect().get_center()), "et rien ne se ramasse")
@@ -160,10 +160,10 @@ func test_the_loot_filter_hides_without_destroying() -> void:
 	recolor.color = LootFilter.COLORS[4]
 	Settings.from_dict({"loot_filter_on": true, "loot_filter": [hide.to_dict(), recolor.to_dict()]})
 	var player := _player()
-	var ground := Node2D.new()
+	var ground := Node3D.new()
 	add_child_autofree(ground)
-	var hidden := GroundItem.spawn(ground, Vector2(300, 260), _sword(), player)
-	var other := GroundItem.spawn(ground, Vector2(302, 260), Item.new(ItemCatalog.by_id("ring")), player)
+	var hidden := GroundItem.spawn(ground, Vector3(300, 0.0, 260), _sword(), player)
+	var other := GroundItem.spawn(ground, Vector3(302, 0.0, 260), Item.new(ItemCatalog.by_id("ring")), player)
 	await wait_process_frames(2)
 
 	assert_false(hidden.visible, "l'épée disparaît")
@@ -187,7 +187,7 @@ func test_the_loot_filter_hides_without_destroying() -> void:
 ## nom empêchait de lancer un sort au clic droit.
 func test_a_hovered_label_holds_back_the_left_click_only() -> void:
 	var player := _player()
-	var drop: GroundItem = await _drop(player, _sword(), Vector2(300, 260))
+	var drop: GroundItem = await _drop(player, _sword(), Vector3(300, 0.0, 260))
 
 	GroundItem.hovered = null
 	assert_false(GroundItem.takes_the_click("skill_1"), "sans survol, rien n'est retenu")
@@ -202,7 +202,7 @@ func test_a_hovered_label_holds_back_the_left_click_only() -> void:
 ## le survol se lâche à la sortie de l'arbre, **toujours**.
 func test_it_lets_the_click_go_when_it_leaves() -> void:
 	var player := _player()
-	var drop: GroundItem = await _drop(player, _sword(), Vector2(300, 260))
+	var drop: GroundItem = await _drop(player, _sword(), Vector3(300, 0.0, 260))
 	GroundItem.hovered = drop
 	assert_true(GroundItem.takes_the_click("skill_1"), "le clic est retenu")
 

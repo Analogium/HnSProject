@@ -3,7 +3,7 @@ extends GutTest
 ## La page du filtre de butin, pilotée par ses boutons : cartes, blocs de conditions,
 ## recherche d'affixes, glisser-déposer et banc d'essai.
 
-var _zone: Node2D
+var _zone: Zone
 var _menu: CanvasLayer
 var _panel: LootFilterPanel
 var _before: Dictionary

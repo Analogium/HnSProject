@@ -36,7 +36,7 @@ func play(host: Node, character: Character, zone: int) -> Result:
 	_result = Result.new()
 	Game.zone_level = zone
 	var tree := host.get_tree()
-	var scene: Node2D = ZONE.instantiate()
+	var scene: Node3D = ZONE.instantiate()
 	host.add_child(scene)
 	scene.set_process_unhandled_input(false)
 	_player = scene.player
@@ -69,7 +69,7 @@ func play(host: Node, character: Character, zone: int) -> Result:
 			pending = FIELD_PERIOD
 		if target != null:
 			var toward := field.direction_at(MapGenerator.cell_at(_player.global_position))
-			if toward == Vector2.ZERO or _player.global_position.distance_to(target.global_position) < CONTACT:
+			if toward == Vector3.ZERO or _player.global_position.distance_to(target.global_position) < CONTACT:
 				toward = _player.global_position.direction_to(target.global_position)
 			_march(toward)
 		for i in SkillBar.SLOT_COUNT:
@@ -82,7 +82,7 @@ func play(host: Node, character: Character, zone: int) -> Result:
 		if _player.health < _player.stats.max_health * LOW_HEALTH:
 			_result.under_low_health += step
 
-	_march(Vector2.ZERO)
+	_march(Vector3.ZERO)
 	scene.queue_free()
 	await tree.process_frame
 	Game.zone_level = Game.MIN_LEVEL
@@ -102,11 +102,11 @@ func _nearest(manager: EnemyManager) -> Enemy:
 	return best
 
 
-func _march(toward: Vector2) -> void:
+func _march(toward: Vector3) -> void:
 	_press("move_right", toward.x)
 	_press("move_left", -toward.x)
-	_press("move_down", toward.y)
-	_press("move_up", -toward.y)
+	_press("move_down", toward.z)
+	_press("move_up", -toward.z)
 
 
 func _press(action: String, force: float) -> void:

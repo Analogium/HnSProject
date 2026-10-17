@@ -15,7 +15,7 @@ const CELL := 1
 const ACTION := "skill_2"
 
 var _p: Player
-var _bolts_fired: Node2D
+var _bolts_fired: Node3D
 ## Le numéro d'image physique de chaque tir parti. Les écarts se lisent dedans,
 ## ce qui rend la mesure indifférente à l'image où le test a commencé à attendre.
 var _frames: Array[int] = []
@@ -24,7 +24,7 @@ var _frames: Array[int] = []
 func before_each() -> void:
 	_p = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(_p)
-	_bolts_fired = Node2D.new()
+	_bolts_fired = Node3D.new()
 	add_child_autofree(_bolts_fired)
 	_p.projectile_parent = _bolts_fired
 	_bolts_fired.child_entered_tree.connect(_record)

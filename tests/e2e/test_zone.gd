@@ -16,7 +16,7 @@ const FRAMES := 600
 ## alors on écrit pourquoi ici.
 const EXPECTED_ENEMIES := 68
 
-var _zone: Node2D
+var _zone: Node3D
 ## Compteur de morts. Une variable membre et non une locale capturée par la
 ## lambda : en GDScript les closures capturent **par valeur**, et un compteur
 ## local incrémenté depuis un signal resterait à zéro.
@@ -81,10 +81,10 @@ func test_a_new_map_does_not_push_the_player_out_of_an_old_wall() -> void:
 	# suivante ne prouverait rien : selon que le moteur enchaîne d'abord une image
 	# de physique ou la fin d'image, les murs périmés ont déjà disparu ou non — et
 	# ce test passait sans le correctif.
-	_zone.player.velocity = Vector2.ZERO
+	_zone.player.velocity = Vector3.ZERO
 	_zone.player.move_and_slide()
 	assert_almost_eq(
-		_zone.player.global_position, expected, Vector2.ONE,
+		_zone.player.global_position, expected, Vector3.ONE,
 		"aucun mur de l'ancienne carte ne le repousse"
 	)
 
@@ -116,7 +116,7 @@ func test_six_hundred_frames_of_dense_combat() -> void:
 		if not em.enemies.is_empty() and i % 40 == 0:
 			var target: Enemy = em.enemies[0]
 			if is_instance_valid(target):
-				player.global_position = target.global_position + Vector2(10, 0)
+				player.global_position = target.global_position + Vector3(10, 0.0, 0)
 		if not player.is_dead:
 			# Les deux premières cases de la barre : le coup d'épée et le tir.
 			# `cast_slot()` porte lui-même la recharge, la réserve et la compétence
@@ -135,14 +135,14 @@ func test_six_hundred_frames_of_dense_combat() -> void:
 			var e: Enemy = targets[k]
 			if is_instance_valid(e) and not e.is_dead:
 				e.hurtbox.take_damage(DamageInfo.new(
-					9.0, e.global_position + Vector2(6, 0), 0.0, false, nature
+					9.0, e.global_position + Vector3(6, 0.0, 0), 0.0, false, nature
 				))
 		# Le joueur encaisse aussi, mais un coup sur dix : à chaque image il
 		# mourrait au bout de quelques secondes, et le test mesurerait surtout le
 		# rechargement de zone.
 		if not player.is_dead and i % 10 == 0:
 			player.hurtbox.take_damage(DamageInfo.new(
-				2.0, player.global_position + Vector2(6, 0), 0.0, false, nature
+				2.0, player.global_position + Vector3(6, 0.0, 0), 0.0, false, nature
 			))
 
 		# Un objet équipé puis retiré en plein combat : c'est là que le recalcul
@@ -168,10 +168,10 @@ func test_six_hundred_frames_of_dense_combat() -> void:
 
 ## Par défaut la zone du test courant, mais on peut lui en donner une autre :
 ## comparer deux zones est exactement ce que le test du niveau vient faire.
-func _footprint(zone: Node2D = _zone) -> int:
+func _footprint(zone: Node3D = _zone) -> int:
 	var h := 0
 	for e in zone.enemy_manager.enemies:
-		h = hash([h, Vector2i(e.global_position.round()), e.affixes.size()])
+		h = hash([h, Vector2i(Flat.xz(e.global_position).round()), e.affixes.size()])
 	return h
 
 
@@ -223,7 +223,7 @@ func test_an_enemy_behind_a_wall_gets_closer() -> void:
 ## qu\'ils lâchent le porte.
 func test_a_zone_takes_the_level_chosen_before_entering() -> void:
 	Game.zone_level = 30
-	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	var zone: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(zone)
 	await wait_physics_frames(1)
 
@@ -258,7 +258,7 @@ func test_the_level_does_not_change_the_map() -> void:
 	var at_level_1 := _footprint()
 
 	Game.zone_level = 45
-	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	var zone: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(zone)
 	await wait_physics_frames(1)
 	zone.generate_zone(SEED)

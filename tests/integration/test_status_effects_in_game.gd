@@ -43,7 +43,7 @@ func _player() -> Player:
 	return p
 
 
-func _grunt(where := Vector2.ZERO) -> Enemy:
+func _grunt(where := Vector3.ZERO) -> Enemy:
 	var e: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
 	e.position = where
 	add_child_autofree(e)
@@ -57,10 +57,10 @@ func _grunt(where := Vector2.ZERO) -> Enemy:
 func test_the_numbed_take_ten_percent_more() -> void:
 	var states := StatusEffects.new()
 	var hb := _zone(states)
-	hb.take_damage(DamageInfo.new(20.0, Vector2.ZERO))
+	hb.take_damage(DamageInfo.new(20.0, Vector3.ZERO))
 	assert_almost_eq(_received, 20.0, 0.001)
 	states.put(StatusEffects.Kind.NUMB, 1.0)
-	hb.take_damage(DamageInfo.new(20.0, Vector2.ZERO))
+	hb.take_damage(DamageInfo.new(20.0, Vector3.ZERO))
 	assert_almost_eq(_received, 22.0, 0.001)
 
 
@@ -68,7 +68,7 @@ func test_a_blessed_author_hits_less_hard() -> void:
 	var hb := _zone(StatusEffects.new())
 	var author := StatusEffects.new()
 	author.put(StatusEffects.Kind.BLESSING, 1.0)
-	var info := DamageInfo.new(20.0, Vector2.ZERO)
+	var info := DamageInfo.new(20.0, Vector3.ZERO)
 	info.author = author
 	hb.take_damage(info)
 	assert_almost_eq(_received, 16.0, 0.001)
@@ -81,7 +81,7 @@ func test_blessing_applies_before_armor() -> void:
 	hb.stats.armor = 60.0
 	var author := StatusEffects.new()
 	author.put(StatusEffects.Kind.BLESSING, 1.0)
-	var info := DamageInfo.new(15.0, Vector2.ZERO)
+	var info := DamageInfo.new(15.0, Vector3.ZERO)
 	info.author = author
 	hb.take_damage(info)
 	assert_almost_eq(_received, 12.0 * (1.0 - hb.stats.armor_reduction(12.0)), 0.001)
@@ -94,7 +94,7 @@ func test_an_elemental_hit_eventually_applies_its_state() -> void:
 	for i in 200:
 		if states.active(StatusEffects.Kind.CHILL):
 			break
-		hb.take_damage(DamageInfo.new(10.0, Vector2.ZERO, 0.0, false, DamageType.Kind.COLD))
+		hb.take_damage(DamageInfo.new(10.0, Vector3.ZERO, 0.0, false, DamageType.Kind.COLD))
 	assert_true(states.active(StatusEffects.Kind.CHILL), "un coup de froid finit par transir")
 	assert_false(states.active(StatusEffects.Kind.IGNITE), "et ne pose que le sien")
 
@@ -108,7 +108,7 @@ func test_a_physical_hit_eventually_causes_bleeding() -> void:
 	for i in 200:
 		if states.active(StatusEffects.Kind.BLEED):
 			break
-		hb.take_damage(DamageInfo.new(10.0, Vector2.ZERO))
+		hb.take_damage(DamageInfo.new(10.0, Vector3.ZERO))
 	assert_true(states.active(StatusEffects.Kind.BLEED))
 	assert_gt(states.advance(1.0), 0.0, "et il saigne")
 
@@ -127,7 +127,7 @@ func test_a_converted_hit_only_applies_its_new_nature() -> void:
 	var hb := _zone(states)
 	Game.rng.seed = 7
 	for i in 3000:
-		hb.take_damage(DamageInfo.as_parts(cast.roll(Game.rng), Vector2.ZERO))
+		hb.take_damage(DamageInfo.as_parts(cast.roll(Game.rng), Vector3.ZERO))
 	for kind: int in StatusEffects.ROLLED:
 		assert_eq(states.active(kind), kind == StatusEffects.Kind.CHILL, StatusEffects.NAMES[kind])
 
@@ -141,7 +141,7 @@ func test_an_enemy_dies_from_its_burn_and_rewards() -> void:
 	var m := EnemyManager.new()
 	m.target = player
 	add_child_autofree(m)
-	var e := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector2(300, 0))
+	var e := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector3(300, 0.0, 0))
 	await wait_physics_frames(1)
 	e._set_health(5.0)
 	e.states.put(StatusEffects.Kind.IGNITE, 40.0)
@@ -165,7 +165,7 @@ func test_a_chilled_enemy_walks_and_recharges_slower() -> void:
 func test_a_player_rot_heals_them() -> void:
 	var player := await _player()
 	player._set_health(50.0)
-	var e := _grunt(Vector2(300, 0))
+	var e := _grunt(Vector3(300, 0.0, 0))
 	e.states.put(StatusEffects.Kind.ROT, 100.0, player.states)
 	e.suffer_states(1.0)
 	assert_almost_eq(
@@ -192,10 +192,8 @@ func test_a_state_shows_on_the_body_and_above() -> void:
 	e.states.put(StatusEffects.Kind.IGNITE, 1.0)
 	assert_true(e.health_bar.visible, "une icône, même à pleine vie")
 	assert_eq(e.health_bar._kinds, [StatusEffects.Kind.IGNITE] as Array[int])
-	assert_almost_eq(float(e.sprite.material.get_shader_parameter("tint_strength")), ActorSprite.STATE_TINT, 0.001)
 	e.states.advance(10.0)
 	assert_false(e.health_bar.visible, "l'état fini, la barre se recache")
-	assert_eq(float(e.sprite.material.get_shader_parameter("tint_strength")), 0.0)
 
 
 # --------------------------------------------------------------------------
@@ -243,17 +241,17 @@ func test_a_blessed_player_bolt_hits_less_hard() -> void:
 	player.states.put(StatusEffects.Kind.BLESSING, 1.0)
 	var target := Hurtbox.new()
 	target.collision_layer = Targets.ENEMIES
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
+	var shape := CollisionShape3D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = 8.0
 	shape.shape = circle
 	target.add_child(shape)
 	add_child_autofree(target)
-	target.global_position = Vector2(60, 0)
+	target.global_position = Vector3(60, 0.0, 0)
 	target.damaged.connect(func(info: DamageInfo) -> void: _received = info.amount)
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.LIGHTNING] = 10.0
-	Projectile.spawn(self, player.bolt_scene, Vector2.ZERO, Vector2.RIGHT, parts, player, 300.0)
+	Projectile.spawn(self, player.bolt_scene, Vector3.ZERO, Vector3.RIGHT, parts, player, 300.0)
 	await wait_seconds(0.5)
 	assert_almost_eq(_received, 8.0, 0.001, "l'auteur voyage avec le tir")
 

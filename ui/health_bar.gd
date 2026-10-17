@@ -3,6 +3,9 @@ extends Node2D
 
 ## La barre de vie d'un acteur, dessinée à la volée : cachée à pleine vie, redessinée
 ## seulement quand la vie change, coupée à la racine quand le réglage est décoché.
+##
+## À l'écran, au-dessus de son corps 3D (jalon 54) : elle suit sa projection tant
+## qu'elle se montre.
 
 const WIDTH := 18.0
 const HEIGHT := 3.0
@@ -10,10 +13,7 @@ const HEIGHT := 3.0
 const OFFSET_Y := -28.0
 
 ## Ce que le corps dépasse le guerrier par le haut (`SpriteForge.head_room()`).
-var lift := 0.0:
-	set(value):
-		lift = value
-		queue_redraw()
+var lift := 0.0
 
 const BACK := Color(0.05, 0.04, 0.07, 0.85)
 const EDGE := Color(0.02, 0.02, 0.03, 0.95)
@@ -32,13 +32,20 @@ var _kinds: Array[int] = []
 var _opened: Array[int] = []
 ## Les rats accrochés (jalon 53) : leur nombre s'écrit à gauche de leur icône.
 var _rats := 0
+var _shown := false
 
 
 func _ready() -> void:
-	# z_index : le parent est Y-trié, l'enfant passerait derrière le corps.
-	z_index = 50
 	Settings.changed.connect(_refresh)
 	_refresh()
+
+
+func _process(_delta: float) -> void:
+	var body := get_parent() as Node3D
+	if body == null:
+		return
+	visible = _shown and body.is_visible_in_tree()
+	position = Flat.on_screen(get_viewport(), body.global_position, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
 
 
 ## Appelée par l'acteur à chaque changement de vie, et une fois à la naissance.
@@ -61,16 +68,18 @@ func show_states(states: StatusEffects) -> void:
 ## Les icônes tiennent la barre visible à pleine vie : un ennemi remonté à fond
 ## reste transi, et c'est justement ce qu'on regarde.
 func _refresh() -> void:
-	visible = Settings.show_health_bars and _ratio > 0.0 \
+	_shown = Settings.show_health_bars and _ratio > 0.0 \
 			and (_ratio < 1.0 or not _kinds.is_empty() or not _opened.is_empty())
-	if visible:
+	visible = _shown
+	set_process(_shown)
+	if _shown:
 		queue_redraw()
 
 
 func _draw() -> void:
 	# Coordonnées entières : pas de bavure.
 	var x := roundf(-WIDTH * 0.5)
-	var y := roundf(OFFSET_Y - lift)
+	var y := 0.0
 
 	if _ratio < 1.0:
 		draw_rect(Rect2(x - 1.0, y - 1.0, WIDTH + 2.0, HEIGHT + 2.0), EDGE)

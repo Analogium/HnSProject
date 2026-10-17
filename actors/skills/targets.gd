@@ -25,13 +25,13 @@ const ENEMY_BOLTS := 1 << 6
 ## **Jamais depuis un rappel de collision** : l'espace physique y est verrouillé, et
 ## la requête ne rend qu'une erreur (invariant 4).
 static func in_circle(
-	world: World2D, center: Vector2, radius: float, mask := ENEMIES
+	world: World3D, center: Vector3, radius: float, mask := ENEMIES
 ) -> Array[Hurtbox]:
 	if world == null or radius <= 0.0:
 		return [] as Array[Hurtbox]
-	var circle := CircleShape2D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = radius
-	return _touched(world, circle, Transform2D(0.0, center), mask)
+	return _touched(world, circle, Transform3D(Basis(), center), mask)
 
 
 ## La plus proche du centre dans ce cercle, ou null : le serpent qui chasse, le nuage qui
@@ -39,7 +39,7 @@ static func in_circle(
 ## sans mur entre les deux, un rayon de plus par candidat ; `unless` : un état qui écarte
 ## qui le porte — le Vecteur de la Peste cherche les sains (jalon 45).
 static func nearest(
-	world: World2D, center: Vector2, radius: float, skipped := {}, sighted := false, unless := -1
+	world: World3D, center: Vector3, radius: float, skipped := {}, sighted := false, unless := -1
 ) -> Hurtbox:
 	var best: Hurtbox = null
 	var best_distance := INF
@@ -56,28 +56,27 @@ static func nearest(
 ## Celles qui touchent un segment épais : ce que frappe un faisceau, sur toute sa
 ## ligne. Mêmes règles qu'`in_circle()`.
 static func in_capsule(
-	world: World2D, of: Vector2, toward: Vector2, width: float
+	world: World3D, of: Vector3, toward: Vector3, width: float
 ) -> Array[Hurtbox]:
 	var length := of.distance_to(toward)
 	if world == null or length <= 0.0 or width <= 0.0:
 		return [] as Array[Hurtbox]
-	var capsule := CapsuleShape2D.new()
+	var capsule := CapsuleShape3D.new()
 	capsule.radius = width * 0.5
 	# La hauteur de Godot compte les deux calottes : le segment, plus un rayon de chaque
-	# bout. Et la capsule est debout, d'où le quart de tour.
+	# bout. Et la capsule est debout le long de Y : couchée le long du segment.
 	capsule.height = length + width
-	return _touched(
-		world, capsule,
-		Transform2D((toward - of).angle() + PI * 0.5, (of + toward) * 0.5)
-	)
+	var along := (toward - of) / length
+	var side := Flat.orthogonal(along)
+	return _touched(world, capsule, Transform3D(Basis(side, along, side.cross(along)), (of + toward) * 0.5))
 
 
 ## Les traits ennemis qui touchent ce cercle : la Parade de l'Épée spirale (jalon 46).
-static func bolts_in_circle(world: World2D, center: Vector2, radius: float) -> Array[Projectile]:
+static func bolts_in_circle(world: World3D, center: Vector3, radius: float) -> Array[Projectile]:
 	var out: Array[Projectile] = []
-	var circle := CircleShape2D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = radius
-	for result in _query(world, circle, Transform2D(0.0, center), ENEMY_BOLTS):
+	for result in _query(world, circle, Transform3D(Basis(), center), ENEMY_BOLTS):
 		var bolt := result["collider"] as Projectile
 		if bolt != null:
 			out.append(bolt)
@@ -86,7 +85,7 @@ static func bolts_in_circle(world: World2D, center: Vector2, radius: float) -> A
 
 ## La requête elle-même, partagée : deux copies auraient fini par viser deux calques.
 static func _touched(
-	world: World2D, shape: Shape2D, at: Transform2D, mask := ENEMIES
+	world: World3D, shape: Shape3D, at: Transform3D, mask := ENEMIES
 ) -> Array[Hurtbox]:
 	var out: Array[Hurtbox] = []
 	for result in _query(world, shape, at, mask):
@@ -96,8 +95,8 @@ static func _touched(
 	return out
 
 
-static func _query(world: World2D, shape: Shape2D, at: Transform2D, mask: int) -> Array[Dictionary]:
-	var query := PhysicsShapeQueryParameters2D.new()
+static func _query(world: World3D, shape: Shape3D, at: Transform3D, mask: int) -> Array[Dictionary]:
+	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = shape
 	query.transform = at
 	query.collision_mask = mask
@@ -108,8 +107,8 @@ static func _query(world: World2D, shape: Shape2D, at: Transform2D, mask: int) -
 
 ## Aucun mur entre les deux points : une décharge qui traverse la pierre se lit
 ## comme un bug.
-static func in_sight(world: World2D, of: Vector2, toward: Vector2) -> bool:
-	var radius := PhysicsRayQueryParameters2D.create(of, toward, DECOR)
+static func in_sight(world: World3D, of: Vector3, toward: Vector3) -> bool:
+	var radius := PhysicsRayQueryParameters3D.create(of, toward, DECOR)
 	return world.direct_space_state.intersect_ray(radius).is_empty()
 
 
@@ -120,7 +119,7 @@ static func in_sight(world: World2D, of: Vector2, toward: Vector2) -> bool:
 ## L'auteur et le lancer voyagent avec le coup : ses états et ses dégâts contre un état
 ## changent ce qu'il inflige.
 static func strike(
-	target: Hurtbox, parts: Array[float], from_value: Vector2, author: StatusEffects, cast: SkillStats,
+	target: Hurtbox, parts: Array[float], from_value: Vector3, author: StatusEffects, cast: SkillStats,
 	knockback := 0.0
 ) -> void:
 	if is_instance_valid(target):
@@ -134,7 +133,7 @@ static func strike(
 ## qui tombent écrivaient ces trois lignes. Un recul négatif tire vers le centre ;
 ## `factor` multiplie le tirage (l'Exaltation de la pulsation).
 static func strike_circle(
-	world: World2D, center: Vector2, radius: float, cast: SkillStats, author: StatusEffects,
+	world: World3D, center: Vector3, radius: float, cast: SkillStats, author: StatusEffects,
 	knockback := 0.0, factor := 1.0
 ) -> Array[Hurtbox]:
 	var parts := DamageType.scaled(cast.roll(Game.rng), factor)

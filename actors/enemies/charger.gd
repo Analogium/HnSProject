@@ -20,7 +20,7 @@ const STUN := 0.9
 
 var _phase := Phase.APPROACH
 var _timer := 0.0
-var _dir := Vector2.RIGHT
+var _dir := Vector3.RIGHT
 ## Ce que cette charge a déjà touché : une charge frappe chacun une fois.
 var _hit: Array[Hurtbox] = []
 
@@ -58,12 +58,12 @@ func _approach() -> void:
 	var dist := to_victim.length()
 	if (
 		_attack_cd <= 0.0 and dist <= stats.attack_range and dist >= MIN_RANGE
-		and Targets.in_sight(get_world_2d(), global_position, victim.global_position)
+		and Targets.in_sight(get_world_3d(), global_position, victim.global_position)
 	):
 		_phase = Phase.WINDUP
 		_timer = WINDUP
 		_dir = to_victim / dist
-		velocity = Vector2.ZERO
+		velocity = Vector3.ZERO
 		sprite.set_state(false, _dir)
 		var lane := DangerZone.put(
 			manager.ground(), global_position, DangerZone.Shape.LANE, REACH, WINDUP, _dir, LANE_HALF
@@ -78,7 +78,7 @@ func _charge() -> void:
 	velocity = _dir * CHARGE_SPEED * states.speed_factor
 	move_and_slide()
 	sprite.set_state(true, _dir)
-	for hurtbox in Targets.in_circle(get_world_2d(), global_position, HIT_RADIUS, Targets.PLAYER_SIDE):
+	for hurtbox in Targets.in_circle(get_world_3d(), global_position, HIT_RADIUS, Targets.PLAYER_SIDE):
 		if hurtbox in _hit:
 			continue
 		_hit.append(hurtbox)
@@ -86,9 +86,9 @@ func _charge() -> void:
 		_hurt(hurtbox, global_position - _dir)
 	for i in get_slide_collision_count():
 		# Un corps l'arrête sans l'étourdir ; le décor, si.
-		if not get_slide_collision(i).get_collider() is CharacterBody2D:
+		if not get_slide_collision(i).get_collider() is CharacterBody3D:
 			_phase = Phase.STUNNED
 			_timer = STUN
-			velocity = Vector2.ZERO
+			velocity = Vector3.ZERO
 			sprite.set_state(false, _dir)
 			return

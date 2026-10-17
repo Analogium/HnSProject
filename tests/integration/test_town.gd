@@ -6,7 +6,7 @@ extends GutTest
 
 const SEED := 4242
 
-var _zone: Node2D
+var _zone: Zone
 var _id := ""
 
 
@@ -39,7 +39,7 @@ func _put(id: String, cell: Vector2i) -> Item:
 
 ## Un clic sur le corps d'un objet de la ville, là où il répond.
 func _use(target: Interactable) -> void:
-	assert_true(target.clicked(target.global_position + Interactable.HIT.get_center()), "le clic l'atteint")
+	assert_true(target.clicked(target._hit_rect().get_center()), "le clic l'atteint")
 
 
 func _center(cell: Vector2i, grid: Inventory = null) -> Vector2:
@@ -82,7 +82,7 @@ func test_the_road_chains_three_zones() -> void:
 	assert_eq(_zone.area, 3)
 	assert_eq(_zone.enemy_manager.level, 6)
 	assert_false(
-		_zone.area_exit.clicked(_zone.area_exit.global_position + Interactable.HIT.get_center()),
+		_zone.area_exit.clicked(_zone.area_exit._hit_rect().get_center()),
 		"pas de sortie après la dernière"
 	)
 
@@ -163,7 +163,7 @@ func test_what_lands_in_town_lands_on_the_town_ground() -> void:
 	_zone.open_portal()
 	_use(_zone.portal)
 	assert_eq(DashTrail.layer(_zone.player), _zone.town_ground)
-	_zone.town_ground.add_child(Node2D.new())
+	_zone.town_ground.add_child(Node3D.new())
 	_use(_zone.way_back)
 	assert_eq(DashTrail.layer(_zone.player), _zone.ground, "de retour, celui de la zone")
 	await wait_process_frames(1)
@@ -182,14 +182,14 @@ func test_the_way_back_returns_to_the_same_zone() -> void:
 	var map: MapGenerator = _zone.generator
 	var enemies: Array[Enemy] = _zone.enemy_manager.enemies.duplicate()
 	var on_the_ground: Array[Node] = _zone.zone_loot.get_children()
-	var at: Vector2 = _zone.player.global_position
+	var at: Vector3 = _zone.player.global_position
 	_zone.open_portal()
 	_use(_zone.portal)
 
 	assert_true(_zone.in_town)
 	assert_eq(_zone.enemy_manager.process_mode, Node.PROCESS_MODE_DISABLED, "la zone est figée")
 	assert_false(_zone.enemy_manager.visible, "et ne se voit pas depuis la ville")
-	_zone.player.global_position = Vector2(200.0, 200.0)
+	_zone.player.global_position = Vector3(200.0, 0.0, 200.0)
 
 	_use(_zone.way_back)
 	assert_false(_zone.in_town)
@@ -217,9 +217,9 @@ func test_the_zone_floor_comes_back_identical() -> void:
 
 ## Ce que la graine dessine : le masque des taches et chaque pièce de décor.
 func _scenery() -> Array:
-	var mask: ImageTexture = _zone.floor_layer.material.get_shader_parameter("mask")
+	var mask: ImageTexture = _zone.floor_mesh.material_override.get_shader_parameter("mask")
 	var out: Array = [mask.get_image().get_data()]
-	for sprite: Sprite2D in _zone.decor.get_children():
+	for sprite: Sprite3D in _zone.decor.get_children():
 		out.append([sprite.texture.resource_path, sprite.position, sprite.flip_h])
 	return out
 
@@ -287,7 +287,7 @@ func test_the_merchant_takes_the_left_click() -> void:
 func test_a_hidden_object_does_not_answer() -> void:
 	_zone.generate_zone(SEED)
 	var merchant: Interactable = _zone.merchant
-	assert_false(merchant.clicked(merchant.global_position + Interactable.HIT.get_center()))
+	assert_false(merchant.clicked(merchant._hit_rect().get_center()))
 
 
 # --------------------------------------------------------------------------
@@ -383,7 +383,7 @@ func test_a_frozen_enemy_cannot_be_struck() -> void:
 	_zone.generate_zone(SEED)
 	var enemy: Enemy = _zone.enemy_manager.enemies[0]
 	await wait_physics_frames(2)
-	var world: World2D = _zone.get_world_2d()
+	var world: World3D = _zone.get_world_3d()
 	assert_gt(Targets.in_circle(world, enemy.global_position, 8.0).size(), 0, "vivant, il se touche")
 	_zone.open_portal()
 	_use(_zone.portal)
@@ -451,13 +451,13 @@ func test_the_trainer_sets_the_dummies() -> void:
 ## Immortel, il cumule sans rien perdre ; mortel, il tombe puis se relève plein.
 func test_a_mortal_dummy_falls_and_rises() -> void:
 	var dummy := _dummies()[0]
-	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector2.ZERO))
+	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector3.ZERO))
 	assert_eq(dummy.health, dummy.stats.max_health, "immortel")
 	assert_true(dummy.visible)
 	_zone._on_trainer_choice(_zone.MORTAL_ID)
 	await wait_process_frames(1)
 	dummy = _dummies()[0]
-	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector2.ZERO))
+	dummy.hurtbox.take_damage(DamageInfo.new(dummy.health * 2.0, Vector3.ZERO))
 	await wait_physics_frames(1)
 	assert_false(dummy.visible, "à terre")
 	assert_eq(dummy.hurtbox.collision_layer, 0, "plus rien ne le touche")

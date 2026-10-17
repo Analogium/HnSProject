@@ -1,12 +1,12 @@
 class_name ActorSprite
-extends AnimatedSprite2D
+extends AnimatedSprite3D
 
 ## Le sprite d'un acteur : il reçoit un état (immobile / en marche / en train de
 ## frapper) et une direction, et choisit l'animation. Les acteurs ne connaissent
 ## donc jamais un nom d'animation.
 ##
 ## Volontairement sans _process : avec soixante-dix ennemis à l'écran, un rappel
-## par image et par sprite se paierait pour rien. AnimatedSprite2D lit déjà les
+## par image et par sprite se paierait pour rien. AnimatedSprite3D lit déjà les
 ## images, et la fin d'une attaque arrive par animation_finished.
 
 ## Doit correspondre à un nom connu de SpriteForge.ARCHETYPES.
@@ -44,6 +44,16 @@ var _held := ""
 
 
 func _ready() -> void:
+	# Debout face à la caméra, un pixel de planche pour une unité du monde : le pixel art reste
+	# net et à la taille du jeu (jalon 54, jusqu'à `ActorModel`).
+	billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pixel_size = 1.0
+	shaded = false
+	texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	# Une carte debout n'a pas d'ombre qui ait un sens, et elle coûtait : 600 ennemis tombaient
+	# à 107 img/s avec, 160 sans (banc, jalon 54). Les modèles de l'étape 2 auront la leur.
+	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_variant = variant if variant >= 0 else _pick()
 	animation_finished.connect(_on_animation_finished)
 	_rebuild()
@@ -90,8 +100,8 @@ func set_weapon(kind: String) -> void:
 ## avec un tirage, le même ennemi au même endroit change d'aspect à chaque
 ## lancement, et un jeu dont les visuels bougent tout seuls paraît instable.
 func _pick() -> int:
-	var body := get_parent() as Node2D
-	var at: Vector2 = body.position if body != null else position
+	var body := get_parent() as Node3D
+	var at: Vector3 = body.position if body != null else position
 	return SpawnSeed.at(at) % SpriteForge.VARIANTS
 
 
@@ -103,7 +113,7 @@ func _pick() -> int:
 ## face à sa trajectoire dès l'image suivante — il tire vers le joueur en jouant
 ## l'animation de côté — et le changement de nom d'animation relance le coup depuis
 ## sa première image.
-func set_state(moving: bool, facing: Vector2) -> void:
+func set_state(moving: bool, facing: Vector3) -> void:
 	if _attacking:
 		return
 	_face(facing)
@@ -148,18 +158,15 @@ func impact_of(family: String) -> float:
 
 
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est l'ActorSprite qui
-## porte le matériau.
-##
-## Ce matériau est propre à chaque instance grâce à `resource_local_to_scene`,
-## coché sur le ShaderMaterial des quatre scènes d'acteur — sans quoi tous les
-## grunts de l'écran flasheraient ensemble.
+## porte le matériau. Le sprite 3D n'en a pas (jalon 54) : flash, liseré et teinte
+## reviennent avec `ActorModel`.
 func flash() -> void:
-	if material == null:
+	if material_override == null:
 		return
-	material.set_shader_parameter("flash_amount", 1.0)
+	material_override.set_shader_parameter("flash_amount", 1.0)
 	await get_tree().create_timer(FLASH_TIME, true, false, true).timeout
-	if is_instance_valid(self) and material != null:
-		material.set_shader_parameter("flash_amount", 0.0)
+	if is_instance_valid(self) and material_override != null:
+		material_override.set_shader_parameter("flash_amount", 0.0)
 
 
 ## Le liseré permanent d'un affixe. Un liseré et non une teinte du corps :
@@ -170,11 +177,11 @@ func flash() -> void:
 ## une combinaisons, et les générer ferait exploser le cache de la forge pour une
 ## information qui tient dans un vec3.
 func set_rim(color: Color, amount: float, width := 1.0) -> void:
-	if material == null:
+	if material_override == null:
 		return
-	material.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
-	material.set_shader_parameter("rim_amount", amount)
-	material.set_shader_parameter("rim_width", width)
+	material_override.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
+	material_override.set_shader_parameter("rim_amount", amount)
+	material_override.set_shader_parameter("rim_width", width)
 
 
 ## La teinte du plus récent de ses états sur tout le corps, et l'animation ralentie
@@ -187,12 +194,12 @@ func show_states(states: StatusEffects) -> void:
 	_pace = states.speed_factor
 	if not _attacking:
 		speed_scale = _pace
-	if material == null:
+	if material_override == null:
 		return
 	var colors := states.colors()
 	var c := Color.WHITE if colors.is_empty() else colors[colors.size() - 1]
-	material.set_shader_parameter("tint_color", Vector3(c.r, c.g, c.b))
-	material.set_shader_parameter("tint_strength", 0.0 if colors.is_empty() else STATE_TINT)
+	material_override.set_shader_parameter("tint_color", Vector3(c.r, c.g, c.b))
+	material_override.set_shader_parameter("tint_strength", 0.0 if colors.is_empty() else STATE_TINT)
 
 
 ## Redemande ses planches à la forge et relance l'animation — le seul chemin, pour
@@ -201,18 +208,20 @@ func show_states(states: StatusEffects) -> void:
 func _rebuild() -> void:
 	_held = ""
 	sprite_frames = SpriteForge.frames(archetype, _variant, _weapon)
-	offset = SpriteForge.offset_of(archetype)
+	# Les pieds sur l'origine, donc sur le sol : calé comme en 2D, le corps descendait de
+	# `CENTER_ABOVE_FEET` sous le plan, et le sol le coupait à la taille. En 3D, le haut est +Y.
+	offset = Vector2(0.0, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of(archetype).y)
 	_apply()
 
 
-func _face(facing: Vector2) -> void:
+func _face(facing: Vector3) -> void:
 	if facing.length_squared() < 0.01:
 		return
-	if absf(facing.x) > absf(facing.y) * SIDE_BIAS:
+	if absf(facing.x) > absf(facing.z) * SIDE_BIAS:
 		_dir = "side"
 		flip_h = facing.x < 0.0
 	else:
-		_dir = "down" if facing.y > 0.0 else "up"
+		_dir = "down" if facing.z > 0.0 else "up"
 		flip_h = false
 
 

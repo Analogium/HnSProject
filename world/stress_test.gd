@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 ## La scène de stress test : on déverse des ennemis dans une vraie zone jusqu'à
 ## ce que ça casse, avec les compteurs sous les yeux. Le document de cadrage en
@@ -6,7 +6,7 @@ extends Node2D
 ## les limites avant de les atteindre en jouant.
 ##
 ## Elle instancie zone.tscn au lieu de refabriquer une carte : mesurer sur un
-## décor approximatif ne dirait rien. Ici les murs, le Y-sort, le TileMapLayer,
+## décor approximatif ne dirait rien. Ici les murs, le sol, la lumière,
 ## le culling de l'EnemyManager et les sprites de la forge sont ceux du jeu.
 ## La zone garde ses touches et son affichage éteints, c'est cette scène qui
 ## pilote.
@@ -45,7 +45,7 @@ const RAMP_PATIENCE := 30   # images sous la cible avant de déclarer la casse
 
 @onready var overlay: Label = $UI/Overlay
 
-var _zone: Node2D
+var _zone: Zone
 var _rng := RandomNumberGenerator.new()
 
 var _peak_physics := 0.0

@@ -34,7 +34,7 @@ const EXPOSURE_FRAMES := 180
 ## transformerait une malchance en régression.
 const FARM_ROUNDS := 20
 
-var _zone: Node2D
+var _zone: Node3D
 var _death := false
 var _rng_state := 0
 
@@ -189,9 +189,9 @@ func test_a_hundred_dropped_wands_without_attack_damage() -> void:
 ## Entrer dans une zone, c'est régler le niveau **puis** naître dedans : le
 ## manager le lit à la construction, et le poser après donnerait une zone de
 ## niveau 40 peuplée d'ennemis de niveau 1.
-func _enter(level: int) -> Node2D:
+func _enter(level: int) -> Node3D:
 	Game.zone_level = level
-	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	var zone: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(zone)
 	await wait_physics_frames(1)
 	zone.generate_zone(SEED)
@@ -212,14 +212,14 @@ func _raise_to(player: Player, level: int) -> void:
 ## Rend l'image à laquelle le joueur est tombé, ou -1 s'il a tenu. Par signal et
 ## non en relevant `is_dead` à la fin : la mort fait repeupler la zone, qui
 ## ressuscite le joueur au passage — le drapeau serait déjà retombé.
-func _expose(zone: Node2D, frames: int) -> int:
+func _expose(zone: Node3D, frames: int) -> int:
 	zone.kill_all()
 	var player: Player = zone.player
 	_death = false
 	player.died.connect(func() -> void: _death = true)
 
 	var grunt: Enemy = zone.enemy_manager.spawn(
-		load("res://actors/enemies/grunt.tscn"), player.global_position + Vector2(14.0, 0.0)
+		load("res://actors/enemies/grunt.tscn"), player.global_position + Vector3(14.0, 0.0, 0.0)
 	)
 	grunt.is_aggro = true
 	for i in frames:
@@ -237,7 +237,7 @@ func _expose(zone: Node2D, frames: int) -> int:
 ## acquise sur chaque chute — un torse de niveau 40 peut n'avoir qu'un T6, que la
 ## zone 1 donne aussi. Ce qui est promis, c'est qu'en jouant on finit par en voir
 ## un ; c'est donc une recherche bornée, et son échec est la régression.
-func _farm_the_chest(zone: Node2D, rounds: int) -> GroundItem:
+func _farm_the_chest(zone: Node3D, rounds: int) -> GroundItem:
 	for r in rounds:
 		# Une graine par ronde : le butin tire sur Game.rng et changerait de toute
 		# façon, mais vingt fois la même carte ne ferait mourir que la même

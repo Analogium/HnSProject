@@ -1,5 +1,5 @@
 class_name Player
-extends CharacterBody2D
+extends CharacterBody3D
 
 signal died
 ## Pour le HUD, par signal : vie et mana ne bougent qu'aux coups et à la régénération.
@@ -37,6 +37,11 @@ const BASIC_ATTACK_POINTS := 1
 ## Jusqu'où un nuage ou un serpent se posent du personnage. Au-delà du curseur, on
 ## poserait hors de l'écran à la manette ; en deçà, on se jetterait dans le paquet.
 const PLACEMENT_RANGE := 140.0
+## La caméra façon Torchlight Infinite, sur une capture du jeu (jalon 54) : champ vertical,
+## inclinaison — et le lissage de la caméra 2D d'avant. Le recul se déduit du cadre 2D.
+const CAMERA_FOV := 40.0
+const CAMERA_PITCH := 55.0
+const CAMERA_SMOOTHING := 8.0
 ## Ce qui distingue une frappe lourde d'un coup d'épée au toucher, en plus du dessin.
 const STRIKE_SHAKE := 2.0
 ## De combien on recule le long de la visée quand l'arrivée d'une ruée est prise. Huit
@@ -69,17 +74,17 @@ const CHARGES_PER_AFFIX := 1.0
 @onready var sprite: ActorSprite = $Sprite
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
-@onready var attack_pivot: Node2D = $AttackPivot
-@onready var hitbox: Area2D = $AttackPivot/Hitbox
-@onready var _hit_shape: CollisionShape2D = $AttackPivot/Hitbox/CollisionShape2D
+@onready var attack_pivot: Node3D = $AttackPivot
+@onready var hitbox: Area3D = $AttackPivot/Hitbox
+@onready var _hit_shape: CollisionShape3D = $AttackPivot/Hitbox/CollisionShape3D
 @onready var swing_arc: SwingArc = $AttackPivot/SwingArc
-@onready var camera: Camera2D = $Camera2D
+@onready var camera: Camera3D = $Camera3D
 ## Le corps, pour chercher où une ruée peut atterrir.
-@onready var body_shape: CollisionShape2D = $CollisionShape2D
+@onready var body_shape: CollisionShape3D = $CollisionShape3D
 
 ## Où atterrissent les tirs du joueur. Posé par la scène (zone ou arène) ;
 ## à défaut, ils naissent à côté du joueur.
-var projectile_parent: Node2D
+var projectile_parent: Node3D
 
 ## La fiche de travail — disque, attributs, équipement —, **recalculée d'un bloc** et
 ## jamais retouchée : sinon les bonus s'accumulent.
@@ -118,7 +123,7 @@ var mana: float
 var is_dead := false
 ## Ses états, comme ceux d'un ennemi.
 var states := StatusEffects.new()
-var facing := Vector2.RIGHT
+var facing := Vector3.RIGHT
 ## Une recharge par case : deux compétences voisines s'enchaînent.
 var _recharges := PackedFloat32Array()
 ## Ce que valait cette recharge au lancer, pour le voile de la barre. Gardé plutôt que
@@ -205,7 +210,7 @@ var _last_chasse := -INF
 var _hit_index := 0
 ## La Glace noire (jalon 44) : le dernier sol de la nova, son centre, son rayon, ce qu'il
 ## lui reste, ce qu'il donne. Le Sursaut : l'attente avant le suivant.
-var _black_ice_at := Vector2.ZERO
+var _black_ice_at := Vector3.ZERO
 var _black_ice_radius := 0.0
 var _black_ice_left := 0.0
 var _black_ice := 0.0
@@ -249,7 +254,11 @@ var _sips: Array[Sip] = []
 
 
 func _ready() -> void:
-	camera.zoom = Vector2.ONE * Game.WORLD_ZOOM
+	# Hors de la hiérarchie pour suivre en douceur ; posée sur le joueur dès la naissance.
+	camera.top_level = true
+	camera.fov = CAMERA_FOV
+	camera.global_position = global_position + _camera_offset()
+	camera.look_at(global_position)
 	Settings.veil(swing_arc, Settings.SPELLS)
 	# Sans .tres assigné on part sur des valeurs par défaut plutôt que de planter.
 	if base_stats == null:
@@ -301,6 +310,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			_held[i] = true
 
 
+## La caméra rejoint le joueur au rythme de l'image, pas de la physique : comme la caméra 2D.
+func _process(delta: float) -> void:
+	var goal := global_position + _camera_offset()
+	camera.global_position = camera.global_position.lerp(goal, 1.0 - exp(-CAMERA_SMOOTHING * delta))
+
+
+## Au plan du joueur, le monde qu'en montrait la caméra 2D (360 px au zoom du monde) : les
+## sprites y gardent leur taille d'avant, et les portées leur place à l'écran.
+func _camera_offset() -> Vector3:
+	var height := float(ProjectSettings.get_setting("display/window/size/viewport_height")) / Game.WORLD_ZOOM
+	var distance := height * 0.5 / tan(deg_to_rad(CAMERA_FOV) * 0.5)
+	var pitch := deg_to_rad(CAMERA_PITCH)
+	return Vector3(0.0, sin(pitch), cos(pitch)) * distance
+
+
 func _physics_process(delta: float) -> void:
 	# Le gel ralentit la recharge des cinq cases ici, la marche plus bas.
 	var cadence := states.speed_factor
@@ -346,31 +370,32 @@ func _physics_process(delta: float) -> void:
 	if _gesture != null:
 		_tick_gesture(delta * cadence)
 
-	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var stick := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var input := Vector3(stick.x, 0.0, stick.y)
 	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
 	# ZQSD tapé dans un champ de texte — la recherche de l'arbre — ne fait pas marcher.
 	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit:
-		input = Vector2.ZERO
+		input = Vector3.ZERO
 
 	if _aim_with_mouse:
-		var to_mouse := get_global_mouse_position() - global_position
+		var to_mouse := Flat.under_mouse(get_viewport()) - global_position
 		if to_mouse.length() > 4.0:
 			facing = to_mouse.normalized()
-	elif input != Vector2.ZERO:
+	elif input != Vector3.ZERO:
 		facing = input.normalized()
 
-	attack_pivot.rotation = facing.angle()
+	attack_pivot.rotation.y = -Flat.angle(facing)
 	# Le sprite suit la visée, pas le déplacement : on recule face à l'ennemi.
-	sprite.set_state(input != Vector2.ZERO, facing)
+	sprite.set_state(input != Vector3.ZERO, facing)
 
 	var slowed := _is_swinging or (_gesture != null and _gesture.weapon)
 	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if slowed else 1.0)
 	if _black_ice_left > 0.0 and global_position.distance_to(_black_ice_at) <= _black_ice_radius:
 		speed *= 1.0 + _black_ice * 0.01
-	if input != Vector2.ZERO:
+	if input != Vector3.ZERO:
 		velocity = velocity.lerp(input.normalized() * speed, ACCEL)
 	else:
-		velocity = velocity.lerp(Vector2.ZERO, FRICTION)
+		velocity = velocity.lerp(Vector3.ZERO, FRICTION)
 
 	move_and_slide()
 
@@ -638,7 +663,7 @@ func _salvo(skill: Skill, points: int, cast: SkillStats) -> Array[SkillStats]:
 ## le joueur, ou l'épaule du Familier qui rejoue un sort (jalon 41). Le premier lancer de
 ## la salve sert à tout ce qui n'est pas une volée de projectiles.
 func _pose(
-	skill: Skill, salvo: Array[SkillStats], origin: Node2D, toward: Vector2, aim: Vector2
+	skill: Skill, salvo: Array[SkillStats], origin: Node3D, toward: Vector3, aim: Vector3
 ) -> void:
 	salvo = _stoke(salvo)
 	var cast := salvo[0]
@@ -671,7 +696,7 @@ func _pose(
 			# Le Satellite (jalon 43) : répartis autour du lanceur, pas en éventail.
 			if cast.satellite > 0.0:
 				for i in directions.size():
-					directions[i] = toward.rotated(TAU * float(i) / float(directions.size()))
+					directions[i] = Flat.rotated(toward, TAU * float(i) / float(directions.size()))
 			for direction in directions:
 				StaticOrb.send(parent, at, direction, cast, states, origin)
 		Skill.Shape.METEOR:
@@ -679,7 +704,7 @@ func _pose(
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
 			var count := cast.projectile_count()
 			for i in count:
-				var across := toward.orthogonal() * (float(i) - float(count - 1) * 0.5) * cast.radius
+				var across := Flat.orthogonal(toward) * (float(i) - float(count - 1) * 0.5) * cast.radius
 				Meteor.fall(parent, aim + across, cast, states, origin, orb_scene)
 		Skill.Shape.CHAIN, Skill.Shape.WEB:
 			if ChainLightning.unload(parent, origin, cast, toward) > 0:
@@ -694,7 +719,7 @@ func _pose(
 			var brood := 1 + int(cast.brood)
 			for i in brood:
 				var turn := (float(i) - float(brood - 1) * 0.5) * HellSnake.BROOD_SPREAD
-				HellSnake.drop(parent, aim, cast, toward.rotated(turn), states, origin)
+				HellSnake.drop(parent, aim, cast, Flat.rotated(toward, turn), states, origin)
 		Skill.Shape.AURA:
 			_light(skill.id, Immolation.ignite(self, skill))
 		Skill.Shape.BUFF:
@@ -724,7 +749,7 @@ func _pose(
 			var count := 1 + int(cast.waves)
 			for i in count:
 				var turn := (float(i) - float(count - 1) * 0.5) * SlashWave.FAN
-				SlashWave.send(parent, global_position, facing.rotated(turn), cast, states, self)
+				SlashWave.send(parent, global_position, Flat.rotated(facing, turn), cast, states, self)
 		Skill.Shape.SLAM:
 			_slam(cast)
 		Skill.Shape.SPIKES:
@@ -764,13 +789,13 @@ func _pose(
 			var count := 1 + int(cast.hammers)
 			for i in count:
 				BlessedHammer.swing(
-					parent, at, toward.angle() + TAU * float(i) / float(count), cast, states, origin, i
+					parent, at, Flat.angle(toward) + TAU * float(i) / float(count), cast, states, origin, i
 				)
 		Skill.Shape.PILLAR, Skill.Shape.DRIFT:
 			# Le Triptyque (jalon 48) : trois colonnes en triangle autour du point visé.
 			if cast.triptych > 0.0:
 				for i in SkillStats.TRIPTYCH_COUNT:
-					var corner := Vector2.UP.rotated(TAU * float(i) / float(SkillStats.TRIPTYCH_COUNT))
+					var corner := Flat.rotated(Vector3.FORWARD, TAU * float(i) / float(SkillStats.TRIPTYCH_COUNT))
 					SacredPillar.fall(
 						parent, aim + corner * cast.radius * SkillStats.TRIPTYCH_SPREAD, cast, states, self
 					)
@@ -846,7 +871,7 @@ func _pose(
 ## s'il change de nature — le Tempo avec elle —, leur perte s'il la répète sous la
 ## Dissonance, ce que la Résonance rend à un buff lancé, l'écho du Familier, ce qui se verse
 ## au Chaudron (jalon 49).
-func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector2) -> void:
+func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
 	var nature := salvo[0].nature
 	var alternated := _last_spell_nature >= 0 and nature != _last_spell_nature
 	var repeated := nature == _last_spell_nature
@@ -920,7 +945,7 @@ func _diapason(salvo: Array[SkillStats]) -> void:
 func _modulate(seconds: float) -> void:
 	if seconds <= 0.0:
 		return
-	for target in Targets.in_circle(get_world_2d(), global_position, SkillStats.MODULATION_REACH):
+	for target in Targets.in_circle(get_world_3d(), global_position, SkillStats.MODULATION_REACH):
 		if target.states != null:
 			for kind: int in StatusEffects.ELEMENTAL:
 				target.states.extend(kind, seconds)
@@ -977,11 +1002,11 @@ func _chord(salvo: Array[SkillStats]) -> void:
 
 ## Le Familier rejoue un sort : la même pose depuis son épaule, vers le point visé au
 ## lancer. **Pas un lancer** — ni coût, ni tour, ni charge, ni écho de l'écho.
-func echo(skill: Skill, salvo: Array[SkillStats], origin: Node2D, aim: Vector2) -> void:
+func echo(skill: Skill, salvo: Array[SkillStats], origin: Node3D, aim: Vector3) -> void:
 	if is_dead:
 		return
 	var toward := origin.global_position.direction_to(aim)
-	if toward == Vector2.ZERO:
+	if toward == Vector3.ZERO:
 		toward = facing
 	_pose(skill, salvo, origin, toward, aim)
 
@@ -1013,7 +1038,7 @@ func _necrosis() -> SkillStats:
 
 ## Le Charognard (jalon 45) : un ennemi qui meurt près de soi rend des PV, sous la Nécrose.
 ## Appelée par l'`EnemyManager` à chaque mort qui rapporte.
-func feast(at: Vector2) -> void:
+func feast(at: Vector3) -> void:
 	if at.distance_to(global_position) > SkillStats.CARRION_REACH:
 		return
 	var necrosis := _necrosis()
@@ -1202,7 +1227,7 @@ func heal(amount: float) -> void:
 ## Un coup du joueur vient de toucher : **le seul endroit** qui tire la charge statique.
 ## La condition porte sur l'état — chance non nulle, cible engourdie — et jamais sur le
 ## résultat, donc le nombre de tirages ne dépend pas de ce qui sort (invariant 3).
-func _on_struck(at: Vector2, parts: Array, victim: StatusEffects) -> void:
+func _on_struck(at: Vector3, parts: Array, victim: StatusEffects) -> void:
 	if stats.static_charge_chance <= 0.0 or victim == null:
 		return
 	if not victim.active(StatusEffects.Kind.NUMB):
@@ -1256,7 +1281,7 @@ func melee_blow(attacker: Enemy, amount: float) -> void:
 	parts[DamageType.Kind.LIGHTNING] = amount * part * 0.01
 	Targets.strike(attacker.hurtbox, parts, global_position, states, null)
 	ChainLightning.trace(
-		_effects_parent(), PackedVector2Array([global_position, attacker.global_position]),
+		_effects_parent(), PackedVector3Array([global_position, attacker.global_position]),
 		DamageType.COLORS[DamageType.Kind.LIGHTNING]
 	)
 	if _faraday_wait <= 0.0 and lit_number(SkillStats.FARADAY) > 0.0 \
@@ -1276,7 +1301,7 @@ func _untouchable(seconds: float) -> bool:
 
 ## Un ennemi tué. **Depuis un rappel de collision** : ce qui naît ici passe par
 ## `DeferredTree` (invariant 4) — l'explosion et le sol le font d'eux-mêmes.
-func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
+func _on_slew(cast: SkillStats, at: Vector3, victim: StatusEffects) -> void:
 	_reign_kill()
 	if cast == null:
 		return
@@ -1297,7 +1322,7 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 		)
 		# Le Survoltage (jalon 43) : l'explosion relance une petite chaîne depuis le tué.
 		if cast.overvolt > 0.0:
-			ChainLightning.surge.call_deferred(_effects_parent(), get_world_2d(), at, states, cast.surged())
+			ChainLightning.surge.call_deferred(_effects_parent(), get_world_3d(), at, states, cast.surged())
 	# L'Hiver sans fin (jalon 44) : chaque tué rend du temps au tombeau allumé qui le porte.
 	if lit(SkillStats.TOMB_SKILL):
 		var tomb := resolve(SkillCatalog.by_id(SkillStats.TOMB_SKILL), skill_points(SkillStats.TOMB_SKILL))
@@ -1321,7 +1346,7 @@ func _on_slew(cast: SkillStats, at: Vector2, victim: StatusEffects) -> void:
 
 ## Sans quartier (jalon 50) : sous le Berserk, à pleines charges, un tué d'attaque éclate. Une
 ## onde sans lancer : ce qu'elle tue ne relance rien.
-func _no_quarter(cast: SkillStats, at: Vector2) -> void:
+func _no_quarter(cast: SkillStats, at: Vector3) -> void:
 	if not lit(SkillStats.FRENZY_SKILL):
 		return
 	var skill := SkillCatalog.by_id(SkillStats.FRENZY_SKILL)
@@ -1346,7 +1371,7 @@ func _relaunch(skill_id: String) -> void:
 ## Un corps qui portait l'état d'un de nos lancers est tombé, de quoi que ce soit (jalon 45) :
 ## la Dîme rend du mana, l'Exhumation le relève — mort-vivant de la Relève, tout son arbre
 ## compris, si l'on la connaît.
-func _on_fell(cast: SkillStats, at: Vector2) -> void:
+func _on_fell(cast: SkillStats, at: Vector3) -> void:
 	gain_mana(cast.tithe)
 	if cast.exhume <= 0.0:
 		return
@@ -1454,7 +1479,7 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 	for i in charges:
 		StaticCharge.put(
 			_effects_parent(), from_value.lerp(global_position, (float(i) + 0.5) / float(charges)),
-			(global_position - from_value).orthogonal() * (1.0 if i % 2 == 0 else -1.0),
+			Flat.orthogonal((global_position - from_value)) * (1.0 if i % 2 == 0 else -1.0),
 			cast.roll(Game.rng), states, SkillStats.TRAIL_CHARGE_PART, cast.static_mines > 0.0,
 			charge_life, _charge_bit
 		)
@@ -1462,12 +1487,12 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 		# La Trouée (jalon 46) : chaque ennemi traversé renforce le choc d'arrivée.
 		var burst := cast
 		if cast.breakthrough > 0.0:
-			var crossed := Targets.in_capsule(get_world_2d(), from_value, global_position, cast.radius * 2.0)
+			var crossed := Targets.in_capsule(get_world_3d(), from_value, global_position, cast.radius * 2.0)
 			burst = cast.echoed(1.0 + cast.breakthrough * 0.01 * float(crossed.size()))
 		Explosion.of_cast(_effects_parent(), global_position, burst, cast.end_burst, states)
 		# La Retombée (jalon 46) : la réception du bond assomme ce qu'elle frappe.
 		if cast.fallout > 0.0 and cast.shape == Skill.Shape.LEAP:
-			for target in Targets.in_circle(get_world_2d(), global_position, cast.end_burst):
+			for target in Targets.in_circle(get_world_3d(), global_position, cast.end_burst):
 				var body := target.get_parent() as Enemy
 				if body != null:
 					body.stun(SkillStats.FALLOUT_TIME)
@@ -1493,15 +1518,15 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 	_charm(cast)
 
 
-func _bolt_line(from_value: Vector2, to: Vector2, cast: SkillStats) -> void:
+func _bolt_line(from_value: Vector3, to: Vector3, cast: SkillStats) -> void:
 	var parts := cast.roll(Game.rng)
-	for target in Targets.in_capsule(get_world_2d(), from_value, to, SkillStats.BOLT_DASH_WIDTH):
+	for target in Targets.in_capsule(get_world_3d(), from_value, to, SkillStats.BOLT_DASH_WIDTH):
 		Targets.strike(target, parts, from_value, states, cast)
-	ChainLightning.trace(_effects_parent(), PackedVector2Array([from_value, to]), DamageType.COLORS[cast.nature])
+	ChainLightning.trace(_effects_parent(), PackedVector3Array([from_value, to]), DamageType.COLORS[cast.nature])
 
 
 ## L'Aller-retour : on revient d'où l'on est parti, murs traversés comme à l'aller.
-func _return_to(origin: Vector2, cast: SkillStats) -> void:
+func _return_to(origin: Vector3, cast: SkillStats) -> void:
 	if is_dead:
 		return
 	var from_value := global_position
@@ -1509,7 +1534,7 @@ func _return_to(origin: Vector2, cast: SkillStats) -> void:
 	_bolt_line(from_value, global_position, cast)
 
 
-func _rumble(at: Vector2, cast: SkillStats) -> void:
+func _rumble(at: Vector3, cast: SkillStats) -> void:
 	Explosion.of_cast(_effects_parent(), at, cast, cast.end_burst, states)
 
 
@@ -1517,7 +1542,7 @@ func _rumble(at: Vector2, cast: SkillStats) -> void:
 ## qu'elle frappe — raccourcit la recharge de la case.
 func _rearm(index: int, cast: SkillStats) -> void:
 	var numbed := 0
-	for target in Targets.in_circle(get_world_2d(), global_position, cast.end_burst):
+	for target in Targets.in_circle(get_world_3d(), global_position, cast.end_burst):
 		if target.has_state(StatusEffects.Kind.NUMB):
 			numbed += 1
 	_recharges[index] = maxf(_recharges[index] - cast.rearm * float(numbed), 0.0)
@@ -1541,7 +1566,7 @@ func _charm(cast: SkillStats) -> void:
 func _slam(cast: SkillStats) -> void:
 	var impact := global_position + facing * strike_reach()
 	var knockback := stats.knockback_force + cast.knockback
-	var struck := Targets.strike_circle(get_world_2d(), impact, cast.radius, cast, states, knockback)
+	var struck := Targets.strike_circle(get_world_3d(), impact, cast.radius, cast, states, knockback)
 	GroundSlam.leave(_effects_parent(), impact, cast)
 	heal(cast.life_on_hit * float(struck.size()))
 	for target in struck:
@@ -1555,12 +1580,12 @@ func _slam(cast: SkillStats) -> void:
 
 ## Le Tremblement (jalon 46) : un second anneau autour du Brise-sol, au-delà de son cercle.
 ## Un tirage pour tout l'anneau (invariant 3).
-func _tremor(impact: Vector2, cast: SkillStats) -> void:
+func _tremor(impact: Vector3, cast: SkillStats) -> void:
 	var ring := cast.echoed(cast.tremor * 0.01)
 	ring.radius = cast.radius * SkillStats.TREMOR_REACH
 	GroundSlam.leave(_effects_parent(), impact, ring)
 	var parts := ring.roll(Game.rng)
-	for target in Targets.in_circle(get_world_2d(), impact, ring.radius):
+	for target in Targets.in_circle(get_world_3d(), impact, ring.radius):
 		if impact.distance_to(target.global_position) > cast.radius:
 			Targets.strike(target, parts, impact, states, ring)
 
@@ -1570,7 +1595,7 @@ func _tremor(impact: Vector2, cast: SkillStats) -> void:
 func _lunge_target(cast: SkillStats) -> Hurtbox:
 	var aim := _aim_point()
 	var best: Hurtbox = null
-	for candidate in Targets.in_circle(get_world_2d(), global_position, cast.radius):
+	for candidate in Targets.in_circle(get_world_3d(), global_position, cast.radius):
 		if best == null or candidate.global_position.distance_squared_to(aim) \
 				< best.global_position.distance_squared_to(aim):
 			best = candidate
@@ -1597,7 +1622,7 @@ func _lunge(cast: SkillStats, prey: Hurtbox = null) -> void:
 	if cast.lunge_path > 0.0:
 		var passing := blow.echoed((SkillStats.PATH_PART + cast.cleave_path) * 0.01)
 		passing.chain_strike = 0.0
-		for crossed in Targets.in_capsule(get_world_2d(), from_value, global_position, SkillStats.PATH_WIDTH):
+		for crossed in Targets.in_capsule(get_world_3d(), from_value, global_position, SkillStats.PATH_WIDTH):
 			if crossed != prey:
 				Targets.strike(crossed, passing.roll(Game.rng), from_value, states, passing)
 	Targets.strike(prey, blow.roll(Game.rng), global_position, states, blow)
@@ -1636,7 +1661,7 @@ func _chain_lunge(cast: SkillStats) -> void:
 	if is_dead:
 		return
 	var prey: Hurtbox = null
-	for candidate in Targets.in_circle(get_world_2d(), global_position, cast.radius):
+	for candidate in Targets.in_circle(get_world_3d(), global_position, cast.radius):
 		var enemy := candidate.get_parent() as Enemy
 		if enemy != null and enemy.is_dead:
 			continue
@@ -1666,10 +1691,10 @@ func _flurry(cast: SkillStats) -> void:
 			return
 		var final := i == count - 1
 		var piercing := final and cast.jarnac > 0.0
-		var heading := facing.rotated(_flurry_turn(cast, i, count))
+		var heading := Flat.rotated(facing, _flurry_turn(cast, i, count))
 		var reach := cast.radius * (SkillStats.JARNAC_REACH if piercing else 1.0)
 		var tip := global_position + heading * reach
-		var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.FLURRY_WIDTH)
+		var struck := Targets.in_capsule(get_world_3d(), global_position, tip, SkillStats.FLURRY_WIDTH)
 		if not struck.is_empty() and not piercing:
 			struck = [_nearest_of(struck)] as Array[Hurtbox]
 			tip = global_position + heading * global_position.distance_to(struck[0].global_position)
@@ -1688,7 +1713,7 @@ func _flurry(cast: SkillStats) -> void:
 			Game.hit_stop()
 			Game.shake_camera(camera, shake_amount)
 		# Le peigne : chaque estoc dessiné sur sa rangée, la ligne qui frappe au milieu.
-		var row := heading.orthogonal() * (float(i) - float(count - 1) * 0.5) * ThrustTrail.COMB_GAP
+		var row := Flat.orthogonal(heading) * (float(i) - float(count - 1) * 0.5) * ThrustTrail.COMB_GAP
 		ThrustTrail.leave(
 			_effects_parent(), global_position + row, tip + row, DamageType.COLORS[thrust.nature],
 			ThrustTrail.COMB_WIDTH
@@ -1745,12 +1770,12 @@ func _finish_off(cast: SkillStats) -> void:
 		if cast.epilogue <= 0.0:
 			blast.execution = 0.0
 		var shards := DamageType.scaled(parts, SkillStats.FINAL_PART)
-		for near in Targets.in_circle(get_world_2d(), at, SkillStats.FINAL_RADIUS):
+		for near in Targets.in_circle(get_world_3d(), at, SkillStats.FINAL_RADIUS):
 			if near != prey:
 				Targets.strike(near, shards, at, states, blast)
 		FinalBurst.burst(_effects_parent(), at, SkillStats.FINAL_RADIUS, tint)
 	if cast.dread > 0.0 and enemy != null and enemy.is_dead:
-		for near in Targets.in_circle(get_world_2d(), at, SkillStats.DREAD_REACH):
+		for near in Targets.in_circle(get_world_3d(), at, SkillStats.DREAD_REACH):
 			var neighbour := near.get_parent() as Enemy
 			if neighbour != null and not neighbour.is_dead:
 				neighbour.stun(cast.dread)
@@ -1787,7 +1812,7 @@ func reign() -> Buff:
 ## lance une marée depuis qui en porte assez.
 func _bite(cast: SkillStats) -> void:
 	var tip := global_position + facing * cast.radius
-	var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.BITE_WIDTH)
+	var struck := Targets.in_capsule(get_world_3d(), global_position, tip, SkillStats.BITE_WIDTH)
 	if not struck.is_empty():
 		var prey := _nearest_of(struck)
 		tip = prey.global_position
@@ -1816,7 +1841,7 @@ func _bitten(prey: Hurtbox, cast: SkillStats) -> void:
 
 
 ## Le Rat d'égout : une Marée de rats part du mordu, droit devant, la Crue en plus.
-func _sewer(cast: SkillStats, from_value: Vector2) -> void:
+func _sewer(cast: SkillStats, from_value: Vector3) -> void:
 	var skill := SkillCatalog.by_id(SkillStats.TIDE_SKILL)
 	var tide := resolve(skill, maxi(skill_points(skill.id), 1))
 	tide.rats += cast.flood
@@ -1847,7 +1872,7 @@ func _dance(cast: SkillStats) -> void:
 			facing = global_position.direction_to(aim)
 		global_position = _landing(global_position, global_position + facing * (SkillStats.DANCE_STRIDE + cast.glide))
 		var center := global_position + facing * SkillStats.DANCE_REACH
-		var struck := Targets.in_circle(get_world_2d(), center, SkillStats.DANCE_HIT)
+		var struck := Targets.in_circle(get_world_3d(), center, SkillStats.DANCE_HIT)
 		var parts := cast.roll(Game.rng)
 		for target in struck:
 			Targets.strike(target, parts, global_position, states, cast)
@@ -1868,9 +1893,9 @@ func _dance(cast: SkillStats) -> void:
 
 ## Le dernier coup : les rats de tous ceux qui entourent la cible éclatent ; la Pirouette frappe
 ## tout le cercle, la Débandade fait fuir ceux dont les rats ont éclaté. Rend combien.
-func _dance_finale(cast: SkillStats, center: Vector2, parts: Array[float]) -> int:
+func _dance_finale(cast: SkillStats, center: Vector3, parts: Array[float]) -> int:
 	var popped := 0
-	for target in Targets.in_circle(get_world_2d(), center, cast.radius):
+	for target in Targets.in_circle(get_world_3d(), center, cast.radius):
 		var burst := Vermin.burst(target, cast, states, _effects_parent())
 		popped += burst
 		var enemy := target.get_parent() as Enemy
@@ -1885,7 +1910,7 @@ func _dance_finale(cast: SkillStats, center: Vector2, parts: Array[float]) -> in
 ## sous la Gabelle, rend de la vie. Rend les secondes gagnées.
 func _consume_rats(cast: SkillStats) -> float:
 	var eaten := 0
-	for target in Targets.in_circle(get_world_2d(), global_position, SkillStats.SCREEN_REACH):
+	for target in Targets.in_circle(get_world_3d(), global_position, SkillStats.SCREEN_REACH):
 		if target.states != null:
 			eaten += target.states.take_rats()
 	heal(stats.max_health * cast.salt_tax * 0.01 * float(eaten))
@@ -1941,7 +1966,7 @@ func _abdicate(skill_id: String) -> void:
 	var tide := resolve(skill, maxi(skill_points(skill.id), 1)).echoed(1.0 + king.regicide * 0.01)
 	var count := SkillStats.ABDICATION_TIDES
 	for i in count:
-		var toward := Vector2.RIGHT.rotated(TAU * float(i) / float(count))
+		var toward := Flat.rotated(Vector3.RIGHT, TAU * float(i) / float(count))
 		RatTide.send(_effects_parent(), global_position, toward, tide, states, self)
 
 
@@ -1975,7 +2000,7 @@ func _feed_rats() -> void:
 
 ## Une mort rongée sous le Festin rend vie et mana — davantage sous les Agapes —, et
 ## l'Indigestion la fait éclater sur ses voisins.
-func _on_gnawed(at: Vector2, victim_max_health: float) -> void:
+func _on_gnawed(at: Vector3, victim_max_health: float) -> void:
 	if _feast == null or is_dead:
 		return
 	heal(stats.max_health * (SkillStats.FEAST_LIFE_BASE + _feast.feast_life * 0.01))
@@ -2013,12 +2038,12 @@ func _on_evaded(info: DamageInfo) -> void:
 
 ## Une riposte, puis une de plus par Double riposte, chacune sur le corps suivant le plus
 ## proche de d'où venait le coup.
-func _riposte(toward: Vector2) -> void:
+func _riposte(toward: Vector3) -> void:
 	if is_dead or not lit(SkillStats.COUNTER_SKILL):
 		return
 	var skill := SkillCatalog.by_id(SkillStats.COUNTER_SKILL)
 	var cast := resolve(skill, skill_points(skill.id))
-	var near := Targets.in_circle(get_world_2d(), global_position, cast.radius)
+	var near := Targets.in_circle(get_world_3d(), global_position, cast.radius)
 	near.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
 		return a.global_position.distance_squared_to(toward) < b.global_position.distance_squared_to(toward))
 	for prey: Hurtbox in near.slice(0, 1 + int(cast.ripostes)):
@@ -2036,7 +2061,7 @@ func _riposte(toward: Vector2) -> void:
 
 ## Le point le plus proche de la visée où le corps tient, en reculant vers le départ.
 ## Le départ ferme la marche : on en vient, donc on y tient.
-func _landing(from_value: Vector2, toward: Vector2) -> Vector2:
+func _landing(from_value: Vector3, toward: Vector3) -> Vector3:
 	var steps := maxi(ceili(from_value.distance_to(toward) / LANDING_STEP), 1)
 	for i in steps:
 		var point := toward.lerp(from_value, float(i) / float(steps))
@@ -2047,20 +2072,20 @@ func _landing(from_value: Vector2, toward: Vector2) -> Vector2:
 
 ## **Le décor seul** : un ennemi sous les pieds se repousse de lui-même à l'image
 ## suivante, la roche non.
-func _fits_at(point: Vector2) -> bool:
-	var query := PhysicsShapeQueryParameters2D.new()
+func _fits_at(point: Vector3) -> bool:
+	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = body_shape.shape
-	query.transform = Transform2D(0.0, point)
+	query.transform = Transform3D(Basis(), point)
 	query.collision_mask = Targets.DECOR
 	query.collide_with_areas = false
-	return get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
+	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 
 ## Au curseur, à `PLACEMENT_RANGE` au plus ; à la manette, à cette distance devant.
-func _aim_point() -> Vector2:
+func _aim_point() -> Vector3:
 	var toward := facing * PLACEMENT_RANGE
 	if _aim_with_mouse:
-		toward = (get_global_mouse_position() - global_position).limit_length(PLACEMENT_RANGE)
+		toward = (Flat.under_mouse(get_viewport()) - global_position).limit_length(PLACEMENT_RANGE)
 	return global_position + toward
 
 
@@ -2216,8 +2241,10 @@ func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 
 	for hit in cast.hits:
 		if hit > 0:
-			# Un ennemi déjà dedans n'y *entre* pas deux fois : la hitbox doit être fermée une
-			# image de physique avant de se rouvrir.
+			# Un ennemi déjà dedans n'y *entre* pas deux fois : la hitbox doit être fermée
+			# pendant un pas de physique entier. Le signal part avant le pas : il en faut deux,
+			# sinon Jolt voit la fermeture et la réouverture avant le même pas.
+			await get_tree().physics_frame
 			await get_tree().physics_frame
 		_hit_parts = cast.roll(Game.rng)
 		_hit_cast = cast
@@ -2248,7 +2275,7 @@ func _thrust(cast: SkillStats) -> void:
 	var reach := stats.attack_range + SkillStats.TIERCE_BEYOND \
 		+ (SkillStats.QUARTE_REACH if cast.quarte > 0.0 else 0.0)
 	var tip := global_position + facing * reach
-	var struck := Targets.in_capsule(get_world_2d(), global_position, tip, SkillStats.TIERCE_WIDTH)
+	var struck := Targets.in_capsule(get_world_3d(), global_position, tip, SkillStats.TIERCE_WIDTH)
 	if cast.quarte <= 0.0 and not struck.is_empty():
 		struck.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
 			return global_position.distance_squared_to(a.global_position) \
@@ -2267,8 +2294,8 @@ func _thrust(cast: SkillStats) -> void:
 ## `SkillStats`, rien n'est relu sur la compétence.
 ## `salvo` : un lancer par trait, ou un seul pour tous (`_salvo()`).
 func _roll(
-	salvo: Array[SkillStats], scene: PackedScene, origin: Node2D, toward: Vector2,
-	aim := Vector2.INF
+	salvo: Array[SkillStats], scene: PackedScene, origin: Node3D, toward: Vector3,
+	aim := Vector3.INF
 ) -> void:
 	if scene == null:
 		return
@@ -2280,8 +2307,8 @@ func _roll(
 		var from := origin.global_position
 		var heading := directions[i]
 		# La Convergence (jalon 42) : côte à côte au départ, toutes vers le point visé.
-		if cast.converge > 0.0 and aim != Vector2.INF:
-			from += toward.orthogonal() * (float(i) - float(count - 1) * 0.5) * SkillStats.CONVERGE_GAP
+		if cast.converge > 0.0 and aim != Vector3.INF:
+			from += Flat.orthogonal(toward) * (float(i) - float(count - 1) * 0.5) * SkillStats.CONVERGE_GAP
 			heading = from.direction_to(aim)
 		# Un tirage par trait : trois traits identiques se liraient comme un seul coup.
 		var bolt := Projectile.spawn(
@@ -2296,7 +2323,7 @@ func _roll(
 
 ## Un cap par projectile, sur l'écart du geste. Un seul part droit devant, quelle que
 ## soit la dispersion.
-func _spread(cast: SkillStats, toward: Vector2) -> Array[Vector2]:
+func _spread(cast: SkillStats, toward: Vector3) -> Array[Vector3]:
 	var count := cast.projectile_count()
 	var spread := deg_to_rad(cast.spread_in_degrees)
 	# Un cercle complet divise l'écart par le nombre de traits et non par les intervalles
@@ -2307,9 +2334,9 @@ func _spread(cast: SkillStats, toward: Vector2) -> Array[Vector2]:
 	if count > 1:
 		step = spread / float(count if closes else count - 1)
 		start = -spread * 0.5 + (step * 0.5 if closes else 0.0)
-	var out: Array[Vector2] = []
+	var out: Array[Vector3] = []
 	for i in count:
-		out.append(toward.rotated(start + step * float(i)))
+		out.append(Flat.rotated(toward, start + step * float(i)))
 	return out
 
 
@@ -2330,7 +2357,7 @@ func strike_reach() -> float:
 ## L'allonge de la fiche (jalon 46) : le bout de la hitbox est à `attack_range`. Elle était
 ## fixe dans la scène, et l'allonge d'un affixe ou d'un passif ne changeait rien.
 func _reach_out() -> void:
-	var blade := (_hit_shape.shape as CapsuleShape2D).radius
+	var blade := (_hit_shape.shape as CapsuleShape3D).radius
 	_hit_shape.position.x = maxf(stats.attack_range - blade, 0.0)
 	swing_arc.impact_reach = _hit_shape.position.x
 
@@ -2803,7 +2830,7 @@ func _level_up() -> void:
 ## **Le seul chemin** d'une récompense, mort ou boule d'expérience : le retard sur la
 ## zone, puis le joueur et les manuels du râtelier, **du même montant**. Rien ne la
 ## borne vers le haut : descendre plus bas rapporte mieux.
-func reward(raw: float, zone_level_value: int, where: Vector2) -> int:
+func reward(raw: float, zone_level_value: int, where: Vector3) -> int:
 	var gain := maxi(roundi(raw * Enemy.experience_factor(zone_level_value, level)), 1)
 	gain_xp(gain)
 	for book in rack.equipped_items():
@@ -2829,7 +2856,7 @@ func pick_up(item: Item) -> bool:
 	return taken
 
 
-func _on_hitbox_area_entered(area: Area2D) -> void:
+func _on_hitbox_area_entered(area: Area3D) -> void:
 	if not area is Hurtbox or area in _already_hit:
 		return
 	_already_hit.append(area)   # un swing ne touche une cible qu'une fois
@@ -2890,7 +2917,7 @@ func _stop_of(cast: SkillStats) -> float:
 
 ## La Collision (jalon 46) : le repoussé est armé pour blesser celui qu'il heurtera ; les
 ## Quilles lui passent le recul du coup.
-func _shove(target: Hurtbox, cast: SkillStats, from_value: Vector2, knockback: float) -> void:
+func _shove(target: Hurtbox, cast: SkillStats, from_value: Vector3, knockback: float) -> void:
 	if cast.collision <= 0.0 or knockback <= 0.0:
 		return
 	var enemy := target.get_parent() as Enemy
@@ -3005,7 +3032,7 @@ func _die() -> void:
 		return
 	is_dead = true
 	set_physics_process(false)
-	velocity = Vector2.ZERO
+	velocity = Vector3.ZERO
 	# Ce qui brûlait pour lui s'éteint avec lui.
 	for id: String in _lit.keys():
 		extinguish(id)
@@ -3047,5 +3074,5 @@ func revive() -> void:
 	states.clear()
 	_set_health(stats.max_health)
 	_set_mana(stats.max_mana)
-	velocity = Vector2.ZERO
+	velocity = Vector3.ZERO
 	set_physics_process(true)

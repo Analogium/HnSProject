@@ -10,5 +10,6 @@ class_name SpawnSeed
 
 ## `salt` décorrèle deux tirages du même point — sans lui, la variante d'un corps
 ## et son affixe seraient liés, et un Colossal aurait toujours la même silhouette.
-static func at(point: Vector2, salt := 0) -> int:
-	return absi(hash(Vector2i(point.round()))) ^ salt
+## Le point du plan arrondi en `Vector2i`, comme en 2D : les graines n'ont pas bougé.
+static func at(point: Vector3, salt := 0) -> int:
+	return absi(hash(Vector2i(roundi(point.x), roundi(point.z)))) ^ salt

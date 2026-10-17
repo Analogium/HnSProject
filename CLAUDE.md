@@ -81,7 +81,9 @@ Banc `world/stress_test.tscn`, graine 4242, en fenêtré, après chauffe.
 | 562 | 165 | 6,77 ms |
 | 935 | 165 | 8,62 ms |
 
-La zone jouée en compte 69 : environ 25× de marge. Le chiffre qui compte est
+La zone jouée en compte 69 : environ 25× de marge. **Sur la branche `3d`**, la
+référence est le tableau de `JALONS/hack-n-slash-jalon-54.md`, §10 : la physique de Jolt
+décroche au-delà de ~550 ennemis simulés, environ 8× de marge. Le chiffre qui compte est
 **simulés**, pas **vivants** — au-delà de 700 px l'`EnemyManager` ne tick plus.
 
 **Le combat se mesure à part**, par `[5]` sur le même banc : le joueur lance sa

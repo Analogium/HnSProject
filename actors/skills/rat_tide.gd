@@ -1,5 +1,5 @@
 class_name RatTide
-extends Node2D
+extends Node3D
 
 ## La Marée de rats (jalon 53) : un tapis de rats qui déferle au sol jusqu'au bout de sa course
 ## (`radius`) et mord **une fois** chaque corps qu'il couvre, d'un coup et de rats. Sous le
@@ -12,9 +12,9 @@ const START := 16.0
 
 var _cast: SkillStats
 var _author: StatusEffects
-var _caster: Node2D
+var _caster: Node3D
 var _parts: Array[float] = []
-var _toward := Vector2.RIGHT
+var _toward := Vector3.RIGHT
 var _half_width := 0.0
 var _run := 0.0
 var _returning := false
@@ -24,14 +24,13 @@ var _bitten := {}
 var _orbit := 0.0
 var _angle := 0.0
 var _age := 0.0
-var _places: PackedVector2Array
 
 
 ## La marée d'un lancer : ses branches en éventail (les Trois rigoles), puis celles de la Seconde
 ## vague, chacune depuis où se tient alors le lanceur.
 static func unleash(
-	parent: Node, from_value: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
-	caster: Node2D
+	parent: Node, from_value: Vector3, toward: Vector3, cast: SkillStats, author: StatusEffects,
+	caster: Node3D
 ) -> void:
 	_fan(parent, from_value, toward, cast, author, caster)
 	for k in int(cast.second_tide):
@@ -43,18 +42,18 @@ static func unleash(
 
 
 static func _fan(
-	parent: Node, from_value: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
-	caster: Node2D
+	parent: Node, from_value: Vector3, toward: Vector3, cast: SkillStats, author: StatusEffects,
+	caster: Node3D
 ) -> void:
 	var count := 1 + int(cast.rivulets)
 	for i in count:
 		var turn := deg_to_rad((float(i) - float(count - 1) * 0.5) * SkillStats.TIDE_FAN)
-		send(parent, from_value, toward.rotated(turn), cast, author, caster)
+		send(parent, from_value, Flat.rotated(toward, turn), cast, author, caster)
 
 
 static func send(
-	parent: Node, from_value: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
-	caster: Node2D
+	parent: Node, from_value: Vector3, toward: Vector3, cast: SkillStats, author: StatusEffects,
+	caster: Node3D
 ) -> RatTide:
 	var tide := RatTide.new()
 	tide._cast = cast
@@ -72,17 +71,13 @@ static func send(
 
 ## La ronde du Roi des Rats : une marée par branche, réparties autour de lui, qui en font le
 ## tour une fois.
-static func orbit(parent: Node, caster: Node2D, cast: SkillStats, author: StatusEffects) -> void:
+static func orbit(parent: Node, caster: Node3D, cast: SkillStats, author: StatusEffects) -> void:
 	var count := 1 + int(cast.rivulets)
 	for i in count:
-		var tide := send(parent, caster.global_position, Vector2.RIGHT, cast, author, caster)
+		var tide := send(parent, caster.global_position, Vector3.RIGHT, cast, author, caster)
 		tide._orbit = SkillStats.TIDE_ORBIT
 		tide._angle = TAU * float(i) / float(count)
 		tide._place_on_orbit()
-
-
-func _ready() -> void:
-	_places = Piper.carpet(get_instance_id(), _half_width * 2.0)
 
 
 func _physics_process(delta: float) -> void:
@@ -98,32 +93,27 @@ func _physics_process(delta: float) -> void:
 		global_position += _heading() * step
 		_run += step
 	_bite()
-	queue_redraw()
 	var home := _returning and is_instance_valid(_caster) \
 		and global_position.distance_to(_caster.global_position) < _half_width
 	if _orbit <= 0.0 and (_run >= _cast.radius or home):
 		_end_of_run()
 
 
-func _draw() -> void:
-	Piper.pose_carpet(self, _places, _heading(), _half_width, _age, _age * SkillStats.TIDE_SPEED)
-
-
 ## Où courent les rats : la visée, le lanceur au retour, la tangente de la ronde.
-func _heading() -> Vector2:
+func _heading() -> Vector3:
 	if _orbit > 0.0:
-		return Vector2.from_angle(_angle + PI * 0.5)
+		return Flat.from_angle(_angle + PI * 0.5)
 	if _returning and is_instance_valid(_caster):
 		return global_position.direction_to(_caster.global_position)
 	return _toward
 
 
 func _place_on_orbit() -> void:
-	global_position = _caster.global_position + Vector2.from_angle(_angle) * _orbit
+	global_position = _caster.global_position + Flat.from_angle(_angle) * _orbit
 
 
 func _bite() -> void:
-	for target in Targets.in_circle(get_world_2d(), global_position, _half_width):
+	for target in Targets.in_circle(get_world_3d(), global_position, _half_width):
 		var id := target.get_instance_id()
 		if _bitten.has(id):
 			continue

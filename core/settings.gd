@@ -135,10 +135,12 @@ func reset_key_binds() -> void:
 
 
 ## Au visuel qui naît : l'opacité de son groupe, et le groupe lui-même, pour qu'un
-## curseur bougé atteigne aussi ce qui dure — l'aura, la couronne, l'arc d'arme.
-func veil(node: CanvasItem, group: StringName) -> void:
+## curseur bougé atteigne aussi ce qui dure — l'aura, la couronne, l'arc d'arme. Un nœud 3D
+## n'a pas encore de dessin (jalon 54, jusqu'à l'étape 4) : il ne prend que le groupe.
+func veil(node: Node, group: StringName) -> void:
 	node.add_to_group(group)
-	node.modulate.a = opacity_of(group)
+	if node is CanvasItem:
+		node.modulate.a = opacity_of(group)
 
 
 func opacity_of(group: StringName) -> float:
@@ -147,8 +149,9 @@ func opacity_of(group: StringName) -> float:
 
 func _reveil(group: StringName) -> void:
 	if is_inside_tree():
-		for node: CanvasItem in get_tree().get_nodes_in_group(group):
-			node.modulate.a = opacity_of(group)
+		for node in get_tree().get_nodes_in_group(group):
+			if node is CanvasItem:
+				node.modulate.a = opacity_of(group)
 	_announce()
 
 

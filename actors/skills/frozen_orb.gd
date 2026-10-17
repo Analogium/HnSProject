@@ -1,5 +1,5 @@
 class_name FrozenOrb
-extends Node2D
+extends Node3D
 
 ## L'Orbe gelée (jalon 44), à la Frozen Orb de Diablo II : une orbe lente qui file droit en
 ## tournant, crache un éclat de glace à chaque période dans une direction qui tourne, puis
@@ -9,8 +9,6 @@ extends Node2D
 ## L'angle entre deux éclats crachés : assez pour une spirale lisible, pas assez pour qu'elle
 ## se referme en étoile.
 const SPIN_STEP := 0.7
-## Les tours de la facette par seconde.
-const SPIN_HZ := 10.0
 
 ## Toutes celles qui volent : `simultaneous` par lanceur au plus, le Familier compté à part.
 ## Au-delà, les plus anciennes se dissolvent sans éclater.
@@ -19,10 +17,10 @@ static var _live: Array[FrozenOrb] = []
 var _cast: SkillStats
 var _author: StatusEffects
 ## Qui tire ses éclats : le joueur, ou l'épaule du Familier.
-var _source: Node2D
+var _source: Node3D
 var _shards: PackedScene
-var _dir := Vector2.RIGHT
-var _aim := Vector2.ZERO
+var _dir := Vector3.RIGHT
+var _aim := Vector3.ZERO
 ## Le joueur dont le curseur la guide, sous le Guidage.
 var _guide: Player
 var _tint := Color.WHITE
@@ -36,8 +34,8 @@ var _bitten := {}
 
 
 static func send(
-	parent: Node, from: Vector2, direction: Vector2, cast: SkillStats, author: StatusEffects,
-	source: Node2D, shards: PackedScene, aim: Vector2, guide: Player
+	parent: Node, from: Vector3, direction: Vector3, cast: SkillStats, author: StatusEffects,
+	source: Node3D, shards: PackedScene, aim: Vector3, guide: Player
 ) -> FrozenOrb:
 	_live.assign(_live.filter(func(o) -> bool: return is_instance_valid(o) and not o.is_queued_for_deletion()))
 	for old in cast.crowded(_live.filter(func(o: FrozenOrb) -> bool: return o._source == source)):
@@ -51,16 +49,12 @@ static func send(
 	orb._dir = direction.normalized()
 	orb._aim = aim
 	orb._guide = guide
-	orb._spin = direction.angle()
+	orb._spin = Flat.angle(direction)
 	orb._tint = DamageType.COLORS[cast.nature]
 	parent.add_child(orb)
 	Settings.veil(orb, Settings.SPELLS)
 	orb.global_position = from + orb._dir * Projectile.MUZZLE
 	return orb
-
-
-func _ready() -> void:
-	z_index = 5
 
 
 ## Son lanceur parti — le corbeau éteint —, elle se dissout : ses éclats n'auraient plus
@@ -81,7 +75,6 @@ func _physics_process(delta: float) -> void:
 		_spit()
 	if _cast.orb_bite > 0.0:
 		_bite()
-	queue_redraw()
 	if _age >= _cast.duration:
 		_burst()
 		queue_free()
@@ -99,9 +92,9 @@ func _move(delta: float) -> bool:
 		_dir = global_position.direction_to(_aim)
 	elif _cast.guided > 0.0 and is_instance_valid(_guide):
 		var turn := SkillStats.GUIDE_TURN * delta
-		_dir = _dir.rotated(clampf(_dir.angle_to(_guide._aim_point() - global_position), -turn, turn))
+		_dir = Flat.rotated(_dir, clampf(Flat.angle_to(_dir, _guide._aim_point() - global_position), -turn, turn))
 	var next := global_position + _dir * step
-	if not Targets.in_sight(get_world_2d(), global_position, next):
+	if not Targets.in_sight(get_world_3d(), global_position, next):
 		return false
 	global_position = next
 	return true
@@ -118,9 +111,9 @@ func _shard_cast() -> SkillStats:
 ## Un éclat sur la spirale ; sous le Viseur, vers l'ennemi le plus proche s'il y en a un.
 func _spit() -> void:
 	_spin += SPIN_STEP
-	var dir := Vector2.from_angle(_spin)
+	var dir := Flat.from_angle(_spin)
 	if _cast.aimed_spit > 0.0:
-		var prey := Targets.nearest(get_world_2d(), global_position, SkillStats.SPIT_SIGHT)
+		var prey := Targets.nearest(get_world_3d(), global_position, SkillStats.SPIT_SIGHT)
 		if prey != null:
 			dir = global_position.direction_to(prey.global_position)
 	var cast := _shard_cast()
@@ -134,14 +127,14 @@ func _spit() -> void:
 func _burst() -> void:
 	var cast := _shard_cast()
 	Projectile.split(
-		get_parent(), _shards, global_position, Vector2.from_angle(_spin), SkillStats.SHARD_SPEED,
+		get_parent(), _shards, global_position, Flat.from_angle(_spin), SkillStats.SHARD_SPEED,
 		cast.nature, _source, cast, SkillStats.FROST_ORB_BURST + int(_cast.shard_rain), {}
 	)
 
 
 ## L'Orbe mordante : ce qu'elle traverse, une fois chacun, à une part du coup.
 func _bite() -> void:
-	for target in Targets.in_circle(get_world_2d(), global_position, SkillStats.ORB_REACH):
+	for target in Targets.in_circle(get_world_3d(), global_position, SkillStats.ORB_REACH):
 		var id := target.get_instance_id()
 		if _bitten.has(id):
 			continue
@@ -149,6 +142,3 @@ func _bite() -> void:
 		var parts := DamageType.scaled(_cast.roll(Game.rng), _cast.orb_bite * 0.01)
 		Targets.strike(target, parts, global_position, _author, _cast)
 
-
-func _draw() -> void:
-	EffectForge.put_centered(self, Frost.orb(_tint, int(_age * SPIN_HZ)), Vector2.ZERO)

@@ -1,5 +1,5 @@
 class_name PutridCurse
-extends Node2D
+extends Node3D
 
 ## La Malédiction putride : un sceau posé au curseur qui maudit d'un coup tout ce qu'il
 ## couvre, puis s'efface. **Elle ne frappe pas** : l'état se pose directement, sans
@@ -15,20 +15,11 @@ extends Node2D
 ## Ce que le sceau reste à l'écran : l'état est posé à la première image, le reste
 ## est pour l'œil du joueur.
 const LIFETIME := 0.7
-## Les instants de l'œil, en part de la vie : il s'entrouvre, s'ouvre, se referme.
-const EYE_TIMES := [0.08, 0.2, 0.7, 0.82]
-## De combien l'œil flotte au-dessus du centre, en part du rayon.
-const EYE_LIFT := 0.62
-## L'opacité de la nappe au sol, **plus dense qu'un halo d'aura** : c'est une marque.
-const FILL := 0.5
 ## La Marque : où elle cherche sa cible, autour du point visé puis du marqué tombé.
 const MARK_REACH := 80.0
-## Au-dessus de la tête du marqué, en pixels.
-const MARK_LIFT := 18.0
 
 var _cast: SkillStats
 var _author: StatusEffects
-var _tint := Color.WHITE
 var _age := 0.0
 var _has_struck := false
 var _caster: Player
@@ -41,7 +32,7 @@ var _passes := 0
 
 
 static func fall(
-	parent: Node, point: Vector2, cast: SkillStats, author: StatusEffects, caster: Player = null
+	parent: Node, point: Vector3, cast: SkillStats, author: StatusEffects, caster: Player = null
 ) -> PutridCurse:
 	var curse := PutridCurse.new()
 	curse._cast = cast
@@ -49,35 +40,27 @@ static func fall(
 	curse._caster = caster
 	curse._marking = cast.shape == Skill.Shape.MARK
 	curse._wait = cast.omen
-	curse._tint = StatusEffects.color(cast.inflicted_state)
 	parent.add_child(curse)
 	Settings.veil(curse, Settings.SPELLS)
 	curse.global_position = point
 	return curse
 
 
-## Pas de lumière ajoutée : le sceau est **dessiné**.
-func _ready() -> void:
-	z_index = 3
-
-
 func _physics_process(delta: float) -> void:
 	if _wait > 0.0:
 		_wait -= delta
-		queue_redraw()
 		return
 	if not _has_struck:
 		_has_struck = true
 		if _marking:
-			_mark(Targets.nearest(get_world_2d(), global_position, MARK_REACH))
+			_mark(Targets.nearest(get_world_3d(), global_position, MARK_REACH))
 		else:
 			for target in _covered():
 				_curse(target)
 	_age += delta
 	if _marking and not _holds():
 		_passes += 1
-		_mark(Targets.nearest(get_world_2d(), global_position, MARK_REACH, _spent()))
-	queue_redraw()
+		_mark(Targets.nearest(get_world_3d(), global_position, MARK_REACH, _spent()))
 	if _age >= (_cast.duration if _marking else LIFETIME) or (_marking and _marked == null):
 		queue_free()
 
@@ -85,8 +68,8 @@ func _physics_process(delta: float) -> void:
 ## Son cercle, ou sous la Peste noire (jalon 53) tous les porteurs de rats autour du lanceur.
 func _covered() -> Array[Hurtbox]:
 	if _cast.black_death <= 0.0 or not is_instance_valid(_caster):
-		return Targets.in_circle(get_world_2d(), global_position, _cast.radius)
-	return Targets.in_circle(get_world_2d(), _caster.global_position, SkillStats.SCREEN_REACH).filter(
+		return Targets.in_circle(get_world_3d(), global_position, _cast.radius)
+	return Targets.in_circle(get_world_3d(), _caster.global_position, SkillStats.SCREEN_REACH).filter(
 		func(t: Hurtbox) -> bool: return t.states != null and t.states.rats() > 0
 	)
 
@@ -132,26 +115,3 @@ func _holds() -> bool:
 func _spent() -> Dictionary:
 	return {_marked.get_instance_id(): true} if is_instance_valid(_marked) else {}
 
-
-## Choisi sur planche contre un sceau runique, une spirale qui se resserre et un crâne
-## qui s'abat (jalon 26). La nappe tramée **s'efface en fondu** — un halo au sol est
-## fait pour ça —, le cercle se dissout, l'œil se referme.
-func _draw() -> void:
-	# Le Présage : le cercle seul, avant que l'œil ne s'ouvre.
-	if _wait > 0.0:
-		if not _marking:
-			Necrotic.put_band(self, Necrotic.ring(_tint, _cast.radius, 0.0), Vector2.ZERO)
-		return
-	if _marking:
-		# L'œil ouvert au-dessus du marqué, et rien au sol : il n'y a pas de zone.
-		Necrotic.centered(self, EffectForge.eyes(_tint)[2], Vector2(0.0, -MARK_LIFT))
-		return
-	var k := clampf(_age / LIFETIME, 0.0, 1.0)
-	var fade := 1.0 - clampf((k - 0.55) * 2.2, 0.0, 1.0)
-	EffectForge.put_scorch(self, _tint, int(_cast.radius), fade, FILL)
-	Necrotic.put_band(self, Necrotic.ring(_tint, _cast.radius, 1.0 - fade), Vector2.ZERO)
-	var eyes := EffectForge.eyes(_tint)
-	var open := 0
-	if k >= EYE_TIMES[0] and k < EYE_TIMES[3]:
-		open = 2 if k >= EYE_TIMES[1] and k < EYE_TIMES[2] else 1
-	Necrotic.centered(self, eyes[open], Vector2(0.0, -_cast.radius * EYE_LIFT))

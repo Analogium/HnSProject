@@ -9,7 +9,7 @@ extends GutTest
 
 const SEED := 4242
 
-var _zone: Node2D
+var _zone: Node3D
 var _id := ""
 
 
@@ -126,7 +126,7 @@ func test_a_zone_without_character_writes_nothing() -> void:
 	var before := SaveStore.read(_id).to_dict()
 	Game.character = null
 
-	var free: Node2D = load("res://world/zone.tscn").instantiate()
+	var free: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(free)
 	await wait_physics_frames(1)
 	free.player.gain_xp(5000)

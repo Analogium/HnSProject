@@ -15,7 +15,7 @@ const SEED := 4242
 ## un point par niveau, le premier compris.
 const TARGET_LEVEL := 3
 
-var _zone: Node2D
+var _zone: Node3D
 var _id := ""
 
 
@@ -212,7 +212,7 @@ func test_the_milestone_6_criterion() -> void:
 ## Ce test monte donc sa propre zone et ne la regénère pas : regénérer une
 ## seconde fois masque le défaut, puisque le joueur est alors déjà quelque part.
 func test_the_manual_drops_at_the_feet_on_first_entry() -> void:
-	var fresh_one: Node2D = load("res://world/zone.tscn").instantiate()
+	var fresh_one: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(fresh_one)
 	# Deux images : la position d'un objet au sol est écrite en différé.
 	await wait_process_frames(2)

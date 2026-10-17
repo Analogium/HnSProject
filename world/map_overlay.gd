@@ -17,11 +17,16 @@ const PLAYER_COLOR := Color(0.45, 0.80, 1.00)
 const GRUNT_COLOR := Color(0.52, 0.76, 0.33)
 const CASTER_COLOR := Color(0.82, 0.47, 0.92)
 const OUTLINE := Color(0, 0, 0, 0.9)
+## Les balises : le waypoint, allumé ou non, et le passage — doré, il ne mène pas où mène
+## le bleu du portail.
+const RUNE_ON := Color(0.40, 0.85, 1.0)
+const RUNE_OFF := Color(0.45, 0.40, 0.36)
+const GATE := Color(1.0, 0.72, 0.30)
 
 ## Part de l'écran occupée par la carte.
 const FIT := 0.88
 
-var player: Node2D
+var player: Node3D
 var enemy_manager: EnemyManager
 ## Waypoints et passages : montrés quand ils le sont en jeu, à leur couleur.
 var marks: Array[Interactable] = []
@@ -89,8 +94,8 @@ func _draw() -> void:
 
 func _color_of(mark: Interactable) -> Color:
 	if mark.look == Interactable.Look.WAYPOINT:
-		return Interactable.RUNE_ON if mark.lit else Interactable.RUNE_OFF
-	return Interactable.GATE
+		return RUNE_ON if mark.lit else RUNE_OFF
+	return GATE
 
 
 ## Échelle entière : à l'échelle fractionnaire les pixels de la carte bavent.
@@ -99,8 +104,8 @@ func _zoom() -> float:
 	return maxf(1.0, floorf(fit))
 
 
-func _marker(origin: Vector2, zoom: float, world_pos: Vector2, color: Color, grow: float) -> void:
-	var p := origin + (world_pos / float(_tile_size)) * zoom
+func _marker(origin: Vector2, zoom: float, world_pos: Vector3, color: Color, grow: float) -> void:
+	var p := origin + (Flat.xz(world_pos) / float(_tile_size)) * zoom
 	var s := zoom + grow * 2.0
 	# Liseré sombre : sans lui un marqueur sur du sol clair devient illisible.
 	draw_rect(Rect2(p - Vector2(s, s) * 0.5 - Vector2.ONE, Vector2(s + 2.0, s + 2.0)), OUTLINE)

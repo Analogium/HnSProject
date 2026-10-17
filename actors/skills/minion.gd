@@ -1,5 +1,5 @@
 class_name Minion
-extends CharacterBody2D
+extends CharacterBody3D
 
 ## Un mort-vivant de la Relève : il garde une zone autour du joueur et frappe pour lui.
 ## **Ce qu'il inflige, c'est le joueur qui l'inflige** — ses coups portent les états et
@@ -56,7 +56,7 @@ static func raise(player: Player, cast: SkillStats, parent: Node) -> int:
 			if minion._player == player and minion._cast.skill_id == cast.skill_id:
 				minion._rally()
 	for i in missing:
-		var minion := _spawn(player, cast, parent, TAU * float(i) / float(maxi(missing, 1)) + player.facing.angle())
+		var minion := _spawn(player, cast, parent, TAU * float(i) / float(maxi(missing, 1)) + Flat.angle(player.facing))
 		minion.global_position = minion._post()
 	return maxi(missing, 0)
 
@@ -91,7 +91,7 @@ static func cap(cast: SkillStats) -> int:
 ## anciens s'en vont. Différé : on les lève d'une mort, souvent dans un rappel de collision
 ## (invariant 4).
 static func risen(
-	player: Player, cast: SkillStats, parent: Node, at: Vector2, count: int, life: float,
+	player: Player, cast: SkillStats, parent: Node, at: Vector3, count: int, life: float,
 	kin: String, most := 0
 ) -> void:
 	if not is_instance_valid(player) or not is_instance_valid(parent):
@@ -106,7 +106,7 @@ static func risen(
 		var minion := _spawn(player, cast, parent, TAU * float(i) / float(count))
 		minion._expires = life
 		minion._kin = kin
-		minion.global_position = at + Vector2.from_angle(minion._angle) * REACH
+		minion.global_position = at + Flat.from_angle(minion._angle) * REACH
 
 
 ## Rempart d'os (jalon 38) : les points de dégâts subis que retirent ceux de ce joueur.
@@ -179,7 +179,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			goal = _foe.global_position
 			if to_foe.length() <= REACH:
-				velocity = Vector2.ZERO
+				velocity = Vector3.ZERO
 				if _martyr:
 					_fall(1.0 + _cast.martyr * 0.01)
 				elif _cooldown <= 0.0:
@@ -187,15 +187,15 @@ func _physics_process(delta: float) -> void:
 				return
 	var to_goal := goal - global_position
 	var speed := SPEED * (1.0 + _cast.march * 0.01)
-	var desired := to_goal.normalized() * speed if to_goal.length() > 4.0 else Vector2.ZERO
+	var desired := to_goal.normalized() * speed if to_goal.length() > 4.0 else Vector3.ZERO
 	velocity = velocity.lerp(desired, ACCEL)
 	move_and_slide()
 	sprite.set_state(velocity.length() > 8.0, velocity)
 
 
 ## Sa place derrière le joueur quand rien n'entre dans la zone.
-func _post() -> Vector2:
-	return _player.global_position + Vector2.from_angle(_angle) * FORMATION
+func _post() -> Vector3:
+	return _player.global_position + Flat.from_angle(_angle) * FORMATION
 
 
 ## Le plus proche de lui parmi ce qui est **dans la zone du joueur** : il ne court pas
@@ -203,7 +203,7 @@ func _post() -> Vector2:
 func _nearest_foe() -> Hurtbox:
 	var best: Hurtbox = null
 	var best_d := INF
-	for target in Targets.in_circle(get_world_2d(), _player.global_position, _cast.radius):
+	for target in Targets.in_circle(get_world_3d(), _player.global_position, _cast.radius):
 		var d := global_position.distance_squared_to(target.global_position)
 		if d < best_d:
 			best = target
@@ -211,21 +211,21 @@ func _nearest_foe() -> Hurtbox:
 	return best
 
 
-func _strike(toward: Vector2) -> void:
+func _strike(toward: Vector3) -> void:
 	_cooldown = _cast.period
 	sprite.set_state(false, toward)
 	sprite.attack()
 	var more := _more()
 	if _cast.colossus > 0.0:
 		var blow := _cast if more == 1.0 else _cast.echoed(more)
-		Targets.strike_circle(get_world_2d(), global_position, _cast.colossus, blow, _player.states)
+		Targets.strike_circle(get_world_3d(), global_position, _cast.colossus, blow, _player.states)
 	else:
 		Targets.strike(_foe, DamageType.scaled(_cast.roll(Game.rng), more), global_position, _player.states, _cast)
 	_mend()
 
 
 ## Les Lanceurs d'os : un os vers sa proie, depuis sa place.
-func _throw(toward: Vector2) -> void:
+func _throw(toward: Vector3) -> void:
 	_cooldown = _cast.period
 	sprite.set_state(false, toward)
 	sprite.attack()

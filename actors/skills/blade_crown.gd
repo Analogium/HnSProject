@@ -1,5 +1,5 @@
 class_name BladeCrown
-extends Node2D
+extends Node3D
 
 ## Les épées d'Épée spirale, qui tournent autour du joueur. Un seul nœud pour
 ## toutes : elles partagent une rotation, et se répartissent dessus. Chacune tourne au
@@ -13,10 +13,6 @@ const CONTACT := 14.0
 const OUTPUT := 0.15
 ## Sans glissement, les survivantes sautent d'un tiers de tour quand une épée part.
 const SLIDE := 8.0
-const VANISH := 0.5
-## Les images rémanentes : leur retard sur l'épée en radians, et la part d'elles que
-## laisse leur trame.
-const AFTERIMAGES := [[0.22, 0.30], [0.44, 0.14]]
 
 
 class Blade:
@@ -40,10 +36,6 @@ var effects: Node
 var _breakwater_wait := 0.0
 
 
-func _ready() -> void:
-	z_index = 1
-
-
 func count() -> int:
 	return _blades.size()
 
@@ -65,7 +57,6 @@ func add_to(cast: SkillStats) -> void:
 
 func clear() -> void:
 	_blades.clear()
-	queue_redraw()
 	_shelter_changed(null)
 
 
@@ -112,7 +103,6 @@ func _physics_process(delta: float) -> void:
 		_blades[i].place = lerp_angle(_blades[i].place, TAU * float(i) / float(_blades.size()), slides)
 	_slice()
 	_parry(delta)
-	queue_redraw()
 
 
 ## Une épée au bout de sa durée : sous la Volée d'épées, elle part d'où elle tourne.
@@ -154,7 +144,6 @@ func take_blow() -> bool:
 				blade.cast
 			)
 		_shelter_changed(blade.cast)
-		queue_redraw()
 		return true
 	return false
 
@@ -181,7 +170,7 @@ func _parry(delta: float) -> void:
 			widest = maxf(widest, blade.cast.radius)
 	if widest <= 0.0:
 		return
-	var bolts := Targets.bolts_in_circle(get_world_2d(), global_position, widest + CONTACT)
+	var bolts := Targets.bolts_in_circle(get_world_3d(), global_position, widest + CONTACT)
 	for blade in _blades:
 		if blade.cast.parry <= 0.0 or blade.parry_wait > 0.0:
 			continue
@@ -206,7 +195,7 @@ func _slice() -> void:
 	var widest := 0.0
 	for blade in _blades:
 		widest = maxf(widest, blade.cast.radius)
-	var targets := Targets.in_circle(get_world_2d(), global_position, widest + CONTACT)
+	var targets := Targets.in_circle(get_world_3d(), global_position, widest + CONTACT)
 	var mad := 1.0 + _madness() * 0.01
 	for blade in _blades:
 		var center := to_global(_center(blade, _rotation + blade.place))
@@ -220,27 +209,6 @@ func _slice() -> void:
 					blade.honed = mini(blade.honed + 1, SkillStats.HONING_MOST)
 
 
-func _center(blade: Blade, angle: float) -> Vector2:
-	return Vector2.from_angle(angle) * blade.cast.radius * smoothstep(0.0, OUTPUT, blade.age)
+func _center(blade: Blade, angle: float) -> Vector3:
+	return Flat.from_angle(angle) * blade.cast.radius * smoothstep(0.0, OUTPUT, blade.age)
 
-
-## L'épée **dessinée**, tournée au cap de sa course par `Slash.sword()`, et ses
-## images rémanentes réduites à leur silhouette et **tramées** plutôt que
-## transparentes : une ombre à 30 % d'opacité sur un sol sombre sortait grise.
-##
-## Tangente au cercle, pointe en avant : l'épée file dans le sens où elle tourne.
-## Pointée vers l'extérieur, elle se lisait comme une lame de scie.
-func _draw() -> void:
-	for blade in _blades:
-		var angle := _rotation + blade.place
-		var fade := clampf((blade.cast.duration - blade.age) / VANISH, 0.0, 1.0)
-		var gone := floorf((1.0 - fade) * 4.0) / 4.0
-		var tint: Color = DamageType.COLORS[blade.cast.nature]
-		for r: Array in AFTERIMAGES:
-			var delay := angle - float(r[0])
-			Slash.sword(
-				tint, Slash.turn_of(delay + PI * 0.5), true, maxf(1.0 - float(r[1]), gone)
-			).put(self, _center(blade, delay))
-		Slash.sword(tint, Slash.turn_of(angle + PI * 0.5), false, gone).put(
-			self, _center(blade, angle)
-		)

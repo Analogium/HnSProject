@@ -1,5 +1,5 @@
 class_name GroundSlam
-extends Node2D
+extends Node3D
 
 ## Ce que laisse le Brise-sol (jalon 39) : le sol fendu sous l'impact, `Slash.fissures()`.
 ## Il ne frappe pas — le coup est porté par `Player._slam()`, sur l'instant — et se
@@ -12,7 +12,7 @@ var _pattern := 0
 var _age := 0.0
 
 
-static func leave(parent: Node, at: Vector2, cast: SkillStats) -> GroundSlam:
+static func leave(parent: Node, at: Vector3, cast: SkillStats) -> GroundSlam:
 	var slam := GroundSlam.new()
 	slam._cast = cast
 	slam._pattern = Game.rng.randi() % Slash.FISSURE_PATTERNS
@@ -24,11 +24,6 @@ static func leave(parent: Node, at: Vector2, cast: SkillStats) -> GroundSlam:
 
 func _physics_process(delta: float) -> void:
 	_age += delta
-	queue_redraw()
 	if _age >= LIFE:
 		queue_free()
 
-
-func _draw() -> void:
-	var step := mini(int(_age / LIFE * 4.0), 3)
-	Slash.fissures(DamageType.COLORS[_cast.nature], _cast.radius, _pattern, step).put(self, Vector2.ZERO)

@@ -25,7 +25,7 @@ func _hit(cold: float, lightning: float, crit := false) -> DamageInfo:
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.COLD] = cold
 	parts[DamageType.Kind.LIGHTNING] = lightning
-	return DamageInfo.as_parts(parts, Vector2(-10.0, 0.0), 0.0, crit)
+	return DamageInfo.as_parts(parts, Vector3(-10.0, 0.0, 0.0), 0.0, crit)
 
 
 ## Par la vraie `Hurtbox` : le nombre est ce que la vie perd, toutes les parts
@@ -46,11 +46,11 @@ func test_the_number_is_white_whatever_the_nature() -> void:
 	var hits := [
 		_hit(9.0, 3.0),
 		_hit(0.0, 5.0),
-		DamageInfo.new(4.0, Vector2.ZERO),
-		DamageInfo.new(4.0, Vector2.ZERO, 0.0, false, DamageType.Kind.FIRE),
+		DamageInfo.new(4.0, Vector3.ZERO),
+		DamageInfo.new(4.0, Vector3.ZERO, 0.0, false, DamageType.Kind.FIRE),
 	]
 	for hit: DamageInfo in hits:
-		_fx.hit(Vector2.ZERO, hit, false)
+		_fx.hit(Vector3.ZERO, hit, false)
 		assert_eq(
 			_fx._numbers.back().tint, HitFeedback.NUMBER,
 			"un coup surtout %s" % DamageType.NAMES[hit.type]
@@ -66,7 +66,7 @@ func test_crit_and_player_keep_their_color() -> void:
 ## La gerbe d'éclats dit encore contre quoi on frappe : la couleur de la part la
 ## plus forte.
 func test_the_spray_takes_the_color_of_the_strongest_part() -> void:
-	_fx.hit(Vector2.ZERO, _hit(9.0, 3.0), false)
+	_fx.hit(Vector3.ZERO, _hit(9.0, 3.0), false)
 	assert_gt(_fx._p.size(), 0, "des éclats sont partis")
 	var cold: Color = DamageType.COLORS[DamageType.Kind.COLD]
 	assert_almost_eq(_fx._p[7], cold.r, 0.001)
@@ -82,26 +82,26 @@ func test_the_spray_takes_the_color_of_the_strongest_part() -> void:
 ## reste, c'est elle qui dit qu'un coup a porté.
 func test_each_slot_only_cuts_its_side() -> void:
 	Settings.damage_taken_visible = false
-	_fx.hit(Vector2.ZERO, _hit(5.0, 0.0), true)
+	_fx.hit(Vector3.ZERO, _hit(5.0, 0.0), true)
 	assert_eq(_fx._numbers.size(), 0, "rien au-dessus du joueur")
 	assert_gt(_fx._p.size(), 0, "mais la gerbe part")
-	_fx.hit(Vector2.ZERO, _hit(5.0, 0.0), false)
+	_fx.hit(Vector3.ZERO, _hit(5.0, 0.0), false)
 	assert_eq(_fx._numbers.size(), 1, "les ennemis gardent leur chiffre")
 
 	Settings.damage_taken_visible = true
 	Settings.damage_dealt_visible = false
-	_fx.hit(Vector2.ZERO, _hit(5.0, 0.0), false)
+	_fx.hit(Vector3.ZERO, _hit(5.0, 0.0), false)
 	assert_eq(_fx._numbers.size(), 1, "plus rien au-dessus des ennemis")
-	_fx.hit(Vector2.ZERO, _hit(5.0, 0.0), true)
+	_fx.hit(Vector3.ZERO, _hit(5.0, 0.0), true)
 	assert_eq(_fx._numbers.size(), 2, "le joueur a retrouvé le sien")
 
 
 ## « Esquive » et « raté » tiennent la place d'un chiffre : ils suivent sa case.
 func test_evasion_follows_its_side_slot() -> void:
 	Settings.damage_dealt_visible = false
-	_fx.miss(Vector2.ZERO, false)
+	_fx.miss(Vector3.ZERO, false)
 	assert_eq(_fx._numbers.size(), 0)
-	_fx.miss(Vector2.ZERO, true)
+	_fx.miss(Vector3.ZERO, true)
 	assert_eq(_fx._numbers.size(), 1)
 
 
@@ -133,6 +133,6 @@ func test_burn_is_displayed_in_packs() -> void:
 ## deux mille coups par seconde, leur dessin faisait tomber le jeu à 29 img/s (jalon 43).
 func test_a_flood_of_hits_stays_under_the_caps() -> void:
 	for i in HitFeedback.NUMBERS_MOST + 50:
-		_fx.hit(Vector2(i, 0.0), _hit(0.0, 5.0, i % 3 == 0), false)
+		_fx.hit(Vector3(i, 0.0, 0.0), _hit(0.0, 5.0, i % 3 == 0), false)
 	assert_eq(_fx._numbers.size(), HitFeedback.NUMBERS_MOST)
 	assert_lt(_fx._p.size() / HitFeedback.P_STRIDE, HitFeedback.PARTICLES_MOST + HitFeedback.CRIT_PARTICLES)

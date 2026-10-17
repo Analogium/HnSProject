@@ -4,7 +4,7 @@ extends GutTest
 ## passifs peint un fond plein sur tout l'écran, donc tout panneau ouvert par-dessus
 ## doit être **après lui** dans la scène. Ouverts ensemble, ils se superposent.
 
-var _zone: Node2D
+var _zone: Node3D
 
 
 func before_each() -> void:

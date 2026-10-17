@@ -31,9 +31,9 @@ func _march(field: FlowField, from_value: Vector2i, cap := 400) -> int:
 		if where == field.origin:
 			return step
 		var d := field.direction_at(where)
-		if d == Vector2.ZERO:
+		if d == Vector3.ZERO:
 			return -1
-		where += Vector2i(roundi(d.x), roundi(d.y))
+		where += Vector2i(roundi(d.x), roundi(d.z))
 	return -1
 
 
@@ -94,7 +94,7 @@ func test_a_closed_pocket_has_no_direction() -> void:
 
 	assert_true(field.reaches(Vector2i(2, 2)), "son côté est atteignable")
 	assert_false(field.reaches(Vector2i(4, 1)), "l'autre côté ne l'est pas")
-	assert_eq(field.direction_at(Vector2i(4, 1)), Vector2.ZERO, "et n'a pas de direction")
+	assert_eq(field.direction_at(Vector2i(4, 1)), Vector3.ZERO, "et n'a pas de direction")
 
 
 ## Sans ce test, une diagonale passerait entre deux pierres qui se touchent par
@@ -119,7 +119,7 @@ func test_the_player_cell_has_no_direction() -> void:
 	var field := FlowField.new(gen)
 	field.rebuild(Vector2i(2, 1), 20)
 	assert_true(field.reaches(Vector2i(2, 1)), "on y est")
-	assert_eq(field.direction_at(Vector2i(2, 1)), Vector2.ZERO, "il n'y a plus où aller")
+	assert_eq(field.direction_at(Vector2i(2, 1)), Vector3.ZERO, "il n'y a plus où aller")
 
 
 ## Le rayon vient de la distance de culling : au-delà, l'EnemyManager ne fait
@@ -135,7 +135,7 @@ func test_the_field_stops_at_the_requested_radius() -> void:
 	field.rebuild(Vector2i(2, 4), 3)
 	assert_true(field.reaches(Vector2i(5, 4)), "trois cases : dedans")
 	assert_false(field.reaches(Vector2i(12, 4)), "dix cases : dehors")
-	assert_eq(field.direction_at(Vector2i(12, 4)), Vector2.ZERO)
+	assert_eq(field.direction_at(Vector2i(12, 4)), Vector3.ZERO)
 
 
 ## Un joueur repoussé dans la pierre ne doit pas faire décrocher tous les

@@ -1109,10 +1109,10 @@ func test_a_crit_is_rolled_only_for_a_cast() -> void:
 	cast.crit_multiplier = 3.0
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.FIRE] = 10.0
-	var info := DamageInfo.roll(cast, Vector2.ZERO, parts)
+	var info := DamageInfo.roll(cast, Vector3.ZERO, parts)
 	assert_true(info.is_crit)
 	assert_eq(info.amount, 30.0)
-	assert_false(DamageInfo.roll(null, Vector2.ZERO, parts).is_crit, "un coup d'ennemi")
+	assert_false(DamageInfo.roll(null, Vector3.ZERO, parts).is_crit, "un coup d'ennemi")
 
 
 # --------------------------------------------------------------------------

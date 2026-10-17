@@ -4,6 +4,9 @@ extends Node2D
 ## Le retour visuel d'un coup : le nombre qui s'envole et la gerbe d'éclats. **Un seul
 ## nœud dessine tout**, sans allocation par coup, et s'enregistre dans `current`. Le
 ## delta n'est pas dé-scalé : tout se fige pendant un gel.
+##
+## À l'écran (jalon 54) : chaque point d'entrée projette le point du monde au moment du
+## coup (`_on_screen()`), et le libellé s'envole ensuite dans le canevas.
 
 ## Mis à jour depuis _ready / _exit_tree : jamais de référence morte.
 static var current: HitFeedback
@@ -92,14 +95,20 @@ func _exit_tree() -> void:
 
 
 ## **Le point d'entrée**, appelé par Hurtbox : l'éclat part dans l'axe du coup.
-func hit(at: Vector2, info: DamageInfo, on_player: bool) -> void:
-	var away := at - info.source_position
+func hit(point: Vector3, info: DamageInfo, on_player: bool) -> void:
+	var at := _on_screen(point)
+	var away := at - _on_screen(info.source_position)
 	away = away.normalized() if away.length_squared() > 0.01 else Vector2.UP
 
 	# Le chiffre seulement : la gerbe reste.
 	if Settings.shows_damage(on_player):
 		_add_number(at, info.amount, info.is_crit, number_color(info, on_player))
 	_add_burst(at - away * IMPACT_OFFSET, away, info.is_crit, _spray_color(info, on_player))
+
+
+## Un corps se voit à mi-hauteur : son origine est à ses pieds, sur le sol.
+func _on_screen(point: Vector3) -> Vector2:
+	return Flat.on_screen(get_viewport(), point, SpriteForge.CENTER_ABOVE_FEET)
 
 
 ## Le rouge quand c'est le joueur qui encaisse, l'or d'un critique, et le blanc
@@ -127,24 +136,25 @@ func _spray_color(info: DamageInfo, on_player: bool) -> Color:
 ## vie sans coup — les états d'un ennemi, ceux du joueur, sa brûlure d'aura —
 ## écrivaient le même test de nullité, et l'oublier plante partout où le retour
 ## visuel est simplement absent (un test, une scène de réglage).
-static func damage_without_hit(at: Vector2, amount: float, on_player: bool) -> void:
+static func damage_without_hit(point: Vector3, amount: float, on_player: bool) -> void:
 	if amount <= 0.0 or current == null or not Settings.shows_damage(on_player):
 		return
-	current._add_number(at, amount, false, PLAYER if on_player else NUMBER)
+	current._add_number(current._on_screen(point), amount, false, PLAYER if on_player else NUMBER)
 
 
 ## Un état neuf, sur le joueur seulement : sur soixante-dix ennemis, les pastilles
 ## suffisent.
-func state(at: Vector2, kind: int) -> void:
+func state(point: Vector3, kind: int) -> void:
+	var at := _on_screen(point)
 	_add_label(at + Vector2(0.0, -XP_HEIGHT), StatusEffects.name(kind), XP_SIZE, StatusEffects.color(kind), XP_RISE)
 
 
 ## Pas de gerbe : rien n'a été touché. Même case que le chiffre qu'il remplace.
-func miss(at: Vector2, on_player: bool) -> void:
+func miss(point: Vector3, on_player: bool) -> void:
 	if not Settings.shows_damage(on_player):
 		return
 	_add_label(
-		at + Vector2(0.0, -NUMBER_HEIGHT),
+		_on_screen(point) + Vector2(0.0, -NUMBER_HEIGHT),
 		# Un contexte : « esquive » est aussi la statistique (« evasion »).
 		Texts.t("esquive", "coup évité") if on_player else Texts.t("raté"),
 		XP_SIZE,
@@ -154,15 +164,15 @@ func miss(at: Vector2, on_player: bool) -> void:
 
 
 ## Pas d'éclat : ce n'est pas un impact.
-func xp_gain(at: Vector2, amount: int) -> void:
+func xp_gain(point: Vector3, amount: int) -> void:
 	if amount <= 0:
 		return
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), Texts.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
+	_add_label(_on_screen(point) + Vector2(0.0, -XP_HEIGHT), Texts.t("+%d exp") % amount, XP_SIZE, XP, XP_RISE)
 
 
 ## Le nom de l'objet ramassé, au-dessus du joueur.
-func loot_gain(at: Vector2, text: String) -> void:
-	_add_label(at + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, LOOT, XP_RISE)
+func loot_gain(point: Vector3, text: String) -> void:
+	_add_label(_on_screen(point) + Vector2(0.0, -XP_HEIGHT), text, XP_SIZE, LOOT, XP_RISE)
 
 
 func _add_number(at: Vector2, amount: float, is_crit: bool, tint: Color) -> void:

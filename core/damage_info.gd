@@ -6,7 +6,7 @@ extends RefCounted
 
 ## Indexées par `DamageType.Kind` ; `Hurtbox` les réduit une à une.
 var parts: Array[float] = []
-var source_position: Vector2
+var source_position: Vector3
 var knockback: float
 var is_crit: bool
 ## Les états de qui a porté le coup : sa bénédiction l'affaiblit, et la pourriture
@@ -30,7 +30,7 @@ var type: DamageType.Kind:
 ## Un coup d'une seule nature, physique par défaut : celui des ennemis.
 func _init(
 	p_amount: float,
-	p_source: Vector2,
+	p_source: Vector3,
 	p_knockback: float = 0.0,
 	p_crit: bool = false,
 	p_type: DamageType.Kind = DamageType.Kind.PHYSICAL
@@ -44,7 +44,7 @@ func _init(
 
 ## Les parts sont recopiées : la mitigation d'un ennemi ne revient pas dans le sort.
 static func as_parts(
-	p_parts: Array[float], p_source: Vector2, p_knockback: float = 0.0, p_crit: bool = false
+	p_parts: Array[float], p_source: Vector3, p_knockback: float = 0.0, p_crit: bool = false
 ) -> DamageInfo:
 	var info := DamageInfo.new(0.0, p_source, p_knockback, p_crit)
 	for i in mini(p_parts.size(), info.parts.size()):
@@ -69,7 +69,7 @@ func multiplier(factor: float) -> void:
 ## Un coup d'un lancer — attaque ou sort : **le critique ne s'applique qu'ici**, un
 ## tirage par coup. Sans lancer, un coup d'ennemi, ni critique ni tirage (invariant 3).
 static func roll(
-	cast: SkillStats, source: Vector2, p_parts: Array[float], p_knockback: float = 0.0
+	cast: SkillStats, source: Vector3, p_parts: Array[float], p_knockback: float = 0.0
 ) -> DamageInfo:
 	var crit := cast != null and Game.rng.randf() < cast.crit_chance
 	var info := DamageInfo.as_parts(p_parts, source, p_knockback, crit)

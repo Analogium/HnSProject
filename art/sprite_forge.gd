@@ -21,6 +21,9 @@ const FRAME := 32
 ## la demie donne une silhouette symétrique — sinon le flip_h décale d'un pixel.
 const CX := 15.5
 const FEET := 27.0
+## Le centre d'un corps au-dessus de ses pieds : l'origine d'un acteur en 2D. En 3D l'origine
+## est aux pieds, sur le sol, et ce qui se calait sur le centre (barre, nombres) monte d'autant.
+const CENTER_ABOVE_FEET := FEET - FRAME * 0.5
 
 ## Identifiants de rampe. Le dessin ne connaît que ces cinq rôles ; les couleurs
 ## sont décidées par la palette, ce qui rend les variantes gratuites.
@@ -165,7 +168,7 @@ static func offset_of(archetype: String) -> Vector2:
 	if sheet == null:
 		return Vector2.ZERO
 	var f: float = sheet.meta["frame"]
-	return Vector2(0.0, (FEET - FRAME * 0.5) - (float(sheet.meta["feet"]) - f * 0.5))
+	return Vector2(0.0, CENTER_ABOVE_FEET - (float(sheet.meta["feet"]) - f * 0.5))
 
 
 ## Le point d'entrée du jeu. Les SpriteFrames sont partagées entre toutes les

@@ -2,9 +2,7 @@
 
 [ext_resource type="Script" path="res://actors/items/ground_item.gd" id="1_item"]
 
-[node name="GroundItem" type="Node2D"]
-z_index = 1
+[node name="GroundItem" type="Node3D"]
 script = ExtResource("1_item")
 
-[node name="Icon" type="Sprite2D" parent="."]
-position = Vector2(0, -4)
+[node name="Icon" type="Sprite3D" parent="."]

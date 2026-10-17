@@ -1,5 +1,5 @@
 class_name Triad
-extends Node2D
+extends Node3D
 
 ## La Triade (jalon 41) : trois comètes, une par élément, naissent autour du lanceur et se
 ## rejoignent au point visé, où elles éclatent ensemble — un coup qui porte les trois
@@ -15,17 +15,16 @@ const WIDTH := 6.0
 
 var _cast: SkillStats
 var _author: StatusEffects
-## Le départ de chaque comète, relatif au point visé, sa teinte, sa part du coup — tirée
+## Le départ de chaque comète, relatif au point visé, sa part du coup — tirée
 ## une fois au départ, comme un trait —, et ce qu'elle a déjà frappé.
-var _starts: Array[Vector2] = []
-var _tints: Array[Color] = []
+var _starts: Array[Vector3] = []
 var _parts: Array = []
 var _struck: Array[Dictionary] = []
 var _age := 0.0
 
 
 static func converge(
-	parent: Node, origin: Vector2, aim: Vector2, cast: SkillStats, author: StatusEffects
+	parent: Node, origin: Vector3, aim: Vector3, cast: SkillStats, author: StatusEffects
 ) -> Triad:
 	var t := Triad.new()
 	t._cast = cast
@@ -38,12 +37,11 @@ static func converge(
 	if natures.size() < 2:
 		var only: int = natures[0] if not natures.is_empty() else cast.nature
 		natures.assign([only, only, only])
-	var toward := origin.direction_to(aim) if origin != aim else Vector2.RIGHT
+	var toward := origin.direction_to(aim) if origin != aim else Vector3.RIGHT
 	var rolled := cast.roll(Game.rng)
 	for i in natures.size():
-		var around := toward.rotated(TAU * float(i) / float(natures.size())) * SPAWN
+		var around := Flat.rotated(toward, TAU * float(i) / float(natures.size())) * SPAWN
 		t._starts.append(origin + around - aim)
-		t._tints.append(DamageType.COLORS[natures[i]])
 		var own := DamageType.empty_parts()
 		own[natures[i]] = rolled[natures[i]] / float(natures.count(natures[i]))
 		t._parts.append(own)
@@ -67,27 +65,20 @@ func _physics_process(delta: float) -> void:
 			burst.status_chance_increase += SkillStats.SURE_STATE
 		Explosion.of_cast(get_parent(), global_position, burst, _cast.radius, _author)
 		queue_free()
-		return
-	queue_redraw()
 
 
 ## Où est la comète `i` à cet âge, relativement au point visé : elle accélère en arrivant.
-func _at(i: int, age: float) -> Vector2:
+func _at(i: int, age: float) -> Vector3:
 	var t := age / TRAVEL
-	return _starts[i].lerp(Vector2.ZERO, t * t)
+	return _starts[i].lerp(Vector3.ZERO, t * t)
 
 
 ## Ce que la comète a traversé depuis l'image précédente, hors du cercle de l'éclat.
-func _pierce(i: int, from: Vector2, to: Vector2) -> void:
-	for target in Targets.in_capsule(get_world_2d(), global_position + from, global_position + to, WIDTH):
+func _pierce(i: int, from: Vector3, to: Vector3) -> void:
+	for target in Targets.in_capsule(get_world_3d(), global_position + from, global_position + to, WIDTH):
 		var id := target.get_instance_id()
 		if _struck[i].has(id) or target.global_position.distance_to(global_position) <= _cast.radius:
 			continue
 		_struck[i][id] = true
 		Targets.strike(target, _parts[i], global_position + to, _author, _cast)
 
-
-func _draw() -> void:
-	for i in _starts.size():
-		var turn := Slash.turn_of((-_starts[i]).angle())
-		Comet.piece(_tints[i], turn, int(_age * Comet.HZ) + i).put(self, _at(i, _age))

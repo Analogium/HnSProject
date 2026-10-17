@@ -1,5 +1,5 @@
 class_name Cauldron
-extends Node2D
+extends Node3D
 
 ## Le Chaudron (jalon 49) : posé au point visé, il **bout dans l'élément du dernier sort** de
 ## sa maîtresse — à chaque période, il frappe son cercle dans cet élément et y pose son état.
@@ -7,10 +7,7 @@ extends Node2D
 ## natures, plus large, les trois états à coup sûr — puis se remet à bouillir, vide. Un seul
 ## par joueur, sauf ce que `simultaneous` permet ; le plus ancien s'éteint.
 
-const LIFT := Vector2(0.0, -9.0)
-## La vapeur : jusqu'où elle monte au-dessus du bord, en tours par seconde.
-const VAPOR_HEIGHT := 12.0
-const VAPOR_RISE := 0.8
+const LIFT := Vector3(0.0, 0.0, -9.0)
 
 ## Tous ceux qui bouillent : le joueur leur verse ses sorts.
 static var boiling: Array[Cauldron] = []
@@ -31,7 +28,7 @@ var _drunk := 0.0
 var _out := false
 
 
-static func place(player: Player, point: Vector2, cast: SkillStats, parent: Node) -> Cauldron:
+static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node) -> Cauldron:
 	var own := boiling.filter(func(c: Cauldron) -> bool: return c._player == player and not c._out)
 	for old in cast.crowded(own):
 		(old as Cauldron)._go_out(false)
@@ -96,7 +93,6 @@ func _physics_process(delta: float) -> void:
 	if _since_bubble >= _cast.period:
 		_since_bubble -= _cast.period
 		_bubble()
-	queue_redraw()
 
 
 ## Un bouillon : son cercle frappé dans ce qu'il contient. Sous la Décoction, il boit
@@ -111,7 +107,7 @@ func _bubble() -> void:
 		bubble.status_chance_increase -= SkillStats.SURE_STATE
 	else:
 		bubble.status_chance_increase += SkillStats.SURE_STATE
-	Targets.strike_circle(get_world_2d(), global_position, _cast.radius, bubble, states)
+	Targets.strike_circle(get_world_3d(), global_position, _cast.radius, bubble, states)
 	if _cast.froth > 0.0 and Game.rng.randf() * 100.0 < _cast.froth:
 		_spit(bubble)
 
@@ -129,7 +125,7 @@ func _contents() -> Array[int]:
 ## qu'il boit grossit l'explosion — la Lie prolonge le chaudron d'autant.
 func _drink() -> void:
 	var sip := 0.0
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+	for target in Targets.in_circle(get_world_3d(), global_position, _cast.radius):
 		if target.states == null:
 			continue
 		for kind: int in StatusEffects.ELEMENTAL:
@@ -143,7 +139,7 @@ func _drink() -> void:
 
 ## L'Écume : une goutte vers l'ennemi le plus proche hors du cercle — qui éclate sous les Bulles.
 func _spit(bubble: SkillStats) -> void:
-	var prey := Targets.nearest(get_world_2d(), global_position, SkillStats.FROTH_REACH, _inside())
+	var prey := Targets.nearest(get_world_3d(), global_position, SkillStats.FROTH_REACH, _inside())
 	if prey == null:
 		return
 	var drop := bubble.echoed(SkillStats.FROTH_PART)
@@ -161,7 +157,7 @@ func _spit(bubble: SkillStats) -> void:
 ## Ce qui est déjà dans son cercle, que la goutte ne vise pas.
 func _inside() -> Dictionary:
 	var out := {}
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+	for target in Targets.in_circle(get_world_3d(), global_position, _cast.radius):
 		out[target.get_instance_id()] = true
 	return out
 
@@ -197,19 +193,3 @@ func _go_out(ended: bool) -> void:
 func _tint() -> Color:
 	return DamageType.COLORS[element]
 
-
-## La marmite (`EffectForge.cauldron()`) sur la brûlure de son cercle, bordé de bulles là où il
-## frappe, à la teinte de ce qui bout, et deux grains de vapeur qui montent : sans eux, entre deux
-## bulles, elle se lit éteinte.
-func _draw() -> void:
-	var tint := _tint()
-	EffectForge.put_scorch(self, tint, roundi(_cast.radius), 0.35)
-	var frames := EffectForge.cauldron(tint)
-	var frame := int(_age * EffectForge.CAULDRON_HZ) % frames.size()
-	EffectForge.cauldron_rim(tint, roundi(_cast.radius), frame).put(self, Vector2.ZERO)
-	var tex := frames[frame]
-	EffectForge.put_centered(self, tex, Vector2(0.0, -tex.get_height() * 0.5 + 1.0))
-	for i in 2:
-		var rise := fmod(_age * VAPOR_RISE + float(i) * 0.5, 1.0)
-		var at := Vector2(-3.0 + 6.0 * float(i), -EffectForge.CAULDRON_HEIGHT - 2.0 - rise * VAPOR_HEIGHT)
-		draw_rect(Rect2(EffectForge.snap(self, at), Vector2.ONE), tint.lerp(Color.WHITE, 0.5))

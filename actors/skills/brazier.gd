@@ -1,5 +1,5 @@
 class_name Brazier
-extends Node2D
+extends Node3D
 
 ## Le Brasero (jalon 42) : planté au point visé, il crache une boule vers l'ennemi le plus
 ## proche à chaque période, `simultaneous` à la fois par joueur — le plus ancien s'éteint.
@@ -8,7 +8,7 @@ extends Node2D
 
 const HURT_RADIUS := 7.0
 ## Le haut de la coupe, d'où partent les boules et où se posent les langues.
-const MOUTH := Vector2(0.0, -9.0)
+const MOUTH := Vector3(0.0, 0.0, -9.0)
 ## La Triangulation : son trait ne s'éteint que par ses braseros (`_exit_tree()`) — une
 ## durée finie, que le compte des impulsions puisse lire.
 const LINK_HOLD := 3600.0
@@ -39,7 +39,7 @@ var _bar: HealthBar
 var _links: Array[DashTrail] = []
 
 
-static func place(player: Player, point: Vector2, cast: SkillStats, parent: Node) -> Brazier:
+static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node) -> Brazier:
 	var own := lit.filter(func(b: Brazier) -> bool: return b._player == player and not b._out)
 	for old in cast.crowded(own):
 		(old as Brazier)._go_out(false)
@@ -78,7 +78,7 @@ static func place(player: Player, point: Vector2, cast: SkillStats, parent: Node
 
 
 ## La Main d'appoint : chaque brasero de ce joueur qui la porte tire avec lui vers sa visée.
-static func assist(player: Player, aim: Vector2) -> void:
+static func assist(player: Player, aim: Vector3) -> void:
 	for b in lit:
 		if b._player == player and not b._out and b._cast.helping_hand > 0.0 and b._ball != null:
 			b._shoot(aim)
@@ -109,8 +109,8 @@ func _ready() -> void:
 	hurtbox = Hurtbox.new()
 	hurtbox.collision_layer = Targets.PLAYER_SIDE
 	hurtbox.collision_mask = 0
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
+	var shape := CollisionShape3D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = HURT_RADIUS
 	shape.shape = circle
 	hurtbox.add_child(shape)
@@ -135,17 +135,16 @@ func _physics_process(delta: float) -> void:
 		return
 	if _since_shot >= _cast.period or _quick:
 		var reach := SkillStats.TURRET_SIGHT + _cast.sight
-		var prey := Targets.nearest(get_world_2d(), global_position, reach)
+		var prey := Targets.nearest(get_world_3d(), global_position, reach)
 		if prey != null and _shoot(prey.global_position):
 			_since_shot = 0.0
 			_quick = false
-	queue_redraw()
 
 
 ## Ses boules, ou la Boule de feu du joueur sous le Foyer du mage — posée par le chemin
 ## du joueur, depuis la coupe, comme le Familier rejoue un sort de son épaule. Faux quand
 ## rien n'est parti.
-func _shoot(at: Vector2) -> bool:
+func _shoot(at: Vector3) -> bool:
 	var from := global_position + MOUTH
 	var toward := from.direction_to(at)
 	if _ball != null:
@@ -163,7 +162,7 @@ func _shoot(at: Vector2) -> bool:
 
 ## Un tué de ses boules : le Feu sacré lui rend du temps, le Brasier ravivé le fait tirer
 ## aussitôt. **Depuis un rappel de collision** : le tir attend le pas suivant.
-func _on_slew(cast: SkillStats, _at: Vector2, _victim: StatusEffects) -> void:
+func _on_slew(cast: SkillStats, _at: Vector3, _victim: StatusEffects) -> void:
 	if _out or (cast != _cast and cast != _ball):
 		return
 	_life_bonus += _cast.rekindle
@@ -191,27 +190,9 @@ func _go_out(spent: bool) -> void:
 	if spent and _cast.last_breath > 0.0:
 		var crown := _cast.echoed(_cast.last_breath * 0.01)
 		for i in SkillStats.LAST_BREATH_BALLS:
-			var toward := Vector2.from_angle(TAU * float(i) / float(SkillStats.LAST_BREATH_BALLS))
+			var toward := Flat.from_angle(TAU * float(i) / float(SkillStats.LAST_BREATH_BALLS))
 			Fireball.spark(
 				_player._effects_parent(), global_position + MOUTH, toward, crown, states, false
 			)
 	queue_free()
 
-
-## Le trépied (`EffectForge.brazier()`), les pieds sur sa place ; trois langues dans la coupe,
-## la grande au milieu, chacune à son temps.
-func _draw() -> void:
-	var tint: Color = DamageType.COLORS[_cast.nature]
-	var tex := EffectForge.brazier(tint)
-	EffectForge.put_centered(self, tex, Vector2(0.0, -tex.get_height() * 0.5 + 1.0))
-	var big := EffectForge.flames(tint)
-	var small := EffectForge.small_flames(tint)
-	var frame := int(_age * EffectForge.FLAME_HZ)
-	for i in 2:
-		_put_foot(small[(frame + i * 2 + 1) % small.size()], MOUTH + Vector2(8.0 * i - 4.0, 1.0))
-	_put_foot(big[frame % big.size()], MOUTH)
-
-
-func _put_foot(tex: Texture2D, foot: Vector2) -> void:
-	var size := Vector2(tex.get_width(), tex.get_height())
-	draw_texture_rect(tex, Rect2(EffectForge.snap(self, foot - Vector2(size.x * 0.5, size.y)), size), false)

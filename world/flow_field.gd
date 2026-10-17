@@ -129,16 +129,16 @@ func rebuild(from: Vector2i, cells: int) -> void:
 			queue += 1
 
 
-## La direction à suivre depuis cette case, ou Vector2.ZERO quand le champ n'a
+## La direction à suivre depuis cette case, dans le plan, ou zéro quand le champ n'a
 ## rien à en dire. Le zéro n'est pas une erreur : c'est le signal que l'appelant
 ## doit se débrouiller autrement — en général, foncer en ligne droite.
-func direction_at(cell: Vector2i) -> Vector2:
+func direction_at(cell: Vector2i) -> Vector3:
 	if not _generator.in_bounds(cell):
-		return Vector2.ZERO
+		return Vector3.ZERO
 	var d := _dirs[_index(cell)]
 	if d >= HERE:
-		return Vector2.ZERO
-	return Vector2(DIRS[d]).normalized()
+		return Vector3.ZERO
+	return Vector3(DIRS[d].x, 0.0, DIRS[d].y).normalized()
 
 
 ## Vrai quand cette case a un chemin vers l'origine. Distinct de la direction :

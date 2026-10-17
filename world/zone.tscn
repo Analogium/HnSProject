@@ -1,7 +1,7 @@
 [gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
-[ext_resource type="Environment" path="res://fx/bloom.tres" id="15_bloom"]
+[ext_resource type="PackedScene" path="res://world/lighting.tscn" id="15_light"]
 [ext_resource type="PackedScene" path="res://actors/player/player.tscn" id="2_player"]
 [ext_resource type="Script" path="res://actors/enemies/enemy_manager.gd" id="3_manager"]
 [ext_resource type="Script" path="res://world/map_overlay.gd" id="4_map"]
@@ -23,89 +23,75 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
 shader = ExtResource("19_vignette")
 
-[node name="Zone" type="Node2D"]
+[node name="Zone" type="Node3D"]
 script = ExtResource("1_zone")
 
-[node name="Glow" type="WorldEnvironment" parent="."]
-environment = ExtResource("15_bloom")
+[node name="Lighting" parent="." instance=ExtResource("15_light")]
 
-[node name="Beyond" type="ColorRect" parent="."]
-mouse_filter = 2
+[node name="Floor" type="MeshInstance3D" parent="."]
 
-[node name="FloorLayer" type="TileMapLayer" parent="."]
-texture_filter = 1
+[node name="Ground" type="Node3D" parent="." groups=["ground_layer"]]
 
-[node name="Ground" type="Node2D" parent="." groups=["ground_layer"]]
+[node name="Entities" type="Node3D" parent="."]
 
-[node name="Entities" type="Node2D" parent="."]
-y_sort_enabled = true
+[node name="Walls" type="StaticBody3D" parent="Entities"]
+collision_mask = 0
 
-[node name="WallLayer" type="TileMapLayer" parent="Entities"]
-texture_filter = 1
-y_sort_enabled = true
+[node name="Blocks" type="MultiMeshInstance3D" parent="Entities/Walls"]
 
-[node name="Decor" type="Node2D" parent="Entities"]
-texture_filter = 1
-y_sort_enabled = true
+[node name="Decor" type="Node3D" parent="Entities"]
 
 [node name="Player" parent="Entities" instance=ExtResource("2_player")]
-position = Vector2(320, 240)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 320, 0, 240)
 
-[node name="EnemyManager" type="Node2D" parent="Entities"]
-y_sort_enabled = true
+[node name="EnemyManager" type="Node3D" parent="Entities"]
 script = ExtResource("3_manager")
 
-[node name="Projectiles" type="Node2D" parent="Entities"]
-y_sort_enabled = true
+[node name="Projectiles" type="Node3D" parent="Entities"]
 
-[node name="Loot" type="Node2D" parent="Entities"]
-y_sort_enabled = true
+[node name="Loot" type="Node3D" parent="Entities"]
 
-[node name="Town" type="Node2D" parent="Entities"]
+[node name="Town" type="Node3D" parent="Entities"]
 visible = false
-y_sort_enabled = true
 
-[node name="Merchant" type="Node2D" parent="Entities/Town"]
+[node name="Merchant" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 
-[node name="Stash" type="Node2D" parent="Entities/Town"]
+[node name="Stash" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 look = 1
 
-[node name="Gate" type="Node2D" parent="Entities/Town"]
+[node name="Gate" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 look = 3
 
-[node name="WayBack" type="Node2D" parent="Entities/Town"]
+[node name="WayBack" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 look = 2
 
-[node name="Waypoint" type="Node2D" parent="Entities/Town"]
+[node name="Waypoint" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 look = 4
 
-[node name="Trainer" type="Node2D" parent="Entities/Town"]
+[node name="Trainer" type="Node3D" parent="Entities/Town"]
 script = ExtResource("17_town")
 look = 5
 
-[node name="Dummies" type="Node2D" parent="Entities/Town"]
-y_sort_enabled = true
+[node name="Dummies" type="Node3D" parent="Entities/Town"]
 
-[node name="Loot" type="Node2D" parent="Entities/Town"]
-y_sort_enabled = true
+[node name="Loot" type="Node3D" parent="Entities/Town"]
 
-[node name="Area" type="Node2D" parent="Entities"]
-y_sort_enabled = true
+[node name="Area" type="Node3D" parent="Entities"]
 
-[node name="Waypoint" type="Node2D" parent="Entities/Area"]
+[node name="Waypoint" type="Node3D" parent="Entities/Area"]
 script = ExtResource("17_town")
 look = 4
 
-[node name="Exit" type="Node2D" parent="Entities/Area"]
+[node name="Exit" type="Node3D" parent="Entities/Area"]
 script = ExtResource("17_town")
 look = 3
 
-[node name="Portal" type="Node2D" parent="Entities"]
+[node name="Portal" type="Node3D" parent="Entities"]
 visible = false
 script = ExtResource("17_town")
 look = 2

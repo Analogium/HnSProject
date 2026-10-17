@@ -1,5 +1,5 @@
 class_name TrainingDummy
-extends CharacterBody2D
+extends CharacterBody3D
 
 ## Cible d'entraînement : elle ne rend pas les coups, elle sert à juger le hit-stop et
 ## le flash et à lire les dégâts cumulés. Elle porte les états comme un ennemi.
@@ -30,7 +30,7 @@ var mortal := false
 
 var states := StatusEffects.new()
 var health := 0.0
-var _home := Vector2.ZERO
+var _home := Vector3.ZERO
 var _total_damage := 0.0
 var _hurt_layer := 0
 ## Le temps qui reste avant de se relever ; positif, elle est à terre.
@@ -55,7 +55,7 @@ func _physics_process(delta: float) -> void:
 		if _down <= 0.0:
 			reset()
 		return
-	velocity = velocity.lerp(Vector2.ZERO, FRICTION)
+	velocity = velocity.lerp(Vector3.ZERO, FRICTION)
 	move_and_slide()
 	global_position = global_position.lerp(_home, RETURN_SPEED)
 	if not states.is_clear:
@@ -67,7 +67,7 @@ func _physics_process(delta: float) -> void:
 
 func reset() -> void:
 	global_position = _home
-	velocity = Vector2.ZERO
+	velocity = Vector3.ZERO
 	_total_damage = 0.0
 	label.text = ""
 	_down = 0.0

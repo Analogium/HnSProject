@@ -16,13 +16,13 @@ func test_an_orb_is_worth_grunts_of_the_zone() -> void:
 func test_walking_over_an_orb_picks_it_up() -> void:
 	var player: Player = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(player)
-	var ground := Node2D.new()
+	var ground := Node3D.new()
 	add_child_autofree(ground)
-	var orb := ExperienceOrb.put(ground, Vector2(60, 0), 20.0, 1)
+	var orb := ExperienceOrb.put(ground, Vector3(60, 0.0, 0), 20.0, 1)
 	await wait_physics_frames(3)
 	assert_eq(player.xp, 0, "loin du joueur, elle attend")
 
-	player.global_position = Vector2(60, 0)
+	player.global_position = Vector3(60, 0.0, 0)
 	await wait_physics_frames(3)
 	assert_eq(player.xp, 20, "au contact, elle récompense")
 	assert_false(is_instance_valid(orb), "et disparaît")
@@ -31,7 +31,7 @@ func test_walking_over_an_orb_picks_it_up() -> void:
 ## La zone les pose en couronne, hors de portée de ramassage : sous les pieds, elles
 ## seraient prises avant d'avoir été vues.
 func test_the_zone_places_orbs_around_the_player() -> void:
-	var zone: Node2D = load("res://world/zone.tscn").instantiate()
+	var zone: Node3D = load("res://world/zone.tscn").instantiate()
 	add_child_autofree(zone)
 	await wait_physics_frames(1)
 	zone.drop_orbs(10)

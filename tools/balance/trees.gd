@@ -56,8 +56,8 @@ class Target extends Hurtbox:
 		_health = sheet.max_health
 		collision_layer = Targets.ENEMIES
 		collision_mask = 0
-		var shape := CollisionShape2D.new()
-		var circle := CircleShape2D.new()
+		var shape := CollisionShape3D.new()
+		var circle := SphereShape3D.new()
 		circle.radius = 8.0
 		shape.shape = circle
 		add_child(shape)
@@ -159,17 +159,17 @@ func _run(manual_id: String, skill_id: String, nodes: Array, scene: Scene, dista
 func _play(manual_id: String, skill_id: String, nodes: Array, scene: Scene, distance: float) -> Measure:
 	runs += 1
 	var tree := _host.get_tree()
-	var world := Node2D.new()
+	var world := Node3D.new()
 	# Caché : rien ne se dessine, et le banc ne regarde que les chiffres.
 	world.visible = false
 	_host.add_child(world)
 	var player: Player = PLAYER.instantiate()
 	world.add_child(player)
-	var effects := Node2D.new()
+	var effects := Node3D.new()
 	world.add_child(effects)
 	player.projectile_parent = effects
 	player._aim_with_mouse = false
-	player.facing = Vector2.RIGHT
+	player.facing = Vector3.RIGHT
 	player.hurtbox.invulnerable = true
 
 	var book := Item.new(book_base(manual_id))
@@ -184,13 +184,13 @@ func _play(manual_id: String, skill_id: String, nodes: Array, scene: Scene, dist
 	Weapons.arm(player, skill_id)
 
 	var targets: Array[Target] = []
-	var center := Vector2(distance + PACK_SPACING, 0.0)
+	var center := Vector3(distance + PACK_SPACING, 0.0, 0.0)
 	var count := 1 if scene == Scene.DUEL else PACK_RING + 1
 	for i in count:
 		var t := Target.new(_endless if scene == Scene.DUEL else _grunt.duplicate())
 		world.add_child(t)
 		t.global_position = center + (
-			Vector2.ZERO if i == 0 else Vector2.from_angle(TAU * float(i) / PACK_RING) * PACK_SPACING
+			Vector3.ZERO if i == 0 else Flat.from_angle(TAU * float(i) / PACK_RING) * PACK_SPACING
 		)
 		targets.append(t)
 	await tree.physics_frame
@@ -219,8 +219,8 @@ func _play(manual_id: String, skill_id: String, nodes: Array, scene: Scene, dist
 		# vague : ni une nova ni une aura n'atteignaient le fond du paquet.
 		var aim := _nearest_alive(targets, player.global_position)
 		if aim != null:
-			player.global_position = aim.global_position - Vector2(distance, 0.0)
-		player.facing = Vector2.RIGHT
+			player.global_position = aim.global_position - Vector3(distance, 0.0, 0.0)
+		player.facing = Vector3.RIGHT
 		player._set_health(player.stats.max_health)
 		if not (sustained and player.lit(skill_id)):
 			player.cast_slot(0)
@@ -238,7 +238,7 @@ func _play(manual_id: String, skill_id: String, nodes: Array, scene: Scene, dist
 	return m
 
 
-func _nearest_alive(targets: Array[Target], from: Vector2) -> Target:
+func _nearest_alive(targets: Array[Target], from: Vector3) -> Target:
 	var best: Target = null
 	for t in targets:
 		if not t.dead and (best == null or t.global_position.distance_to(from) < best.global_position.distance_to(from)):

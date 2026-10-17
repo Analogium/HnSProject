@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://actors/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://art/actor_sprite.gd" id="7_sprite"]
@@ -7,28 +7,23 @@
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_fireball.tscn" id="8_boule"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_comet.tscn" id="10_comete"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_knife.tscn" id="11_couteau"]
-[ext_resource type="Shader" path="res://core/flash.gdshader" id="2_flash"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Resource" path="res://resources/stats/player_stats.tres" id="4_stats"]
 [ext_resource type="Script" path="res://ui/health_bar.gd" id="9_bar"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_player"]
-resource_local_to_scene = true
-shader = ExtResource("2_flash")
-shader_parameter/flash_amount = 0.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
 radius = 7.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_hurt"]
 radius = 8.0
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hit"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hit"]
 radius = 8.0
 height = 32.0
 
-[node name="Player" type="CharacterBody2D"]
-y_sort_enabled = true
+[node name="Player" type="CharacterBody3D"]
+motion_mode = 1
+axis_lock_linear_y = true
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_player")
@@ -38,8 +33,7 @@ orb_scene = ExtResource("8_boule")
 comet_scene = ExtResource("10_comete")
 knife_scene = ExtResource("11_couteau")
 
-[node name="Sprite" type="AnimatedSprite2D" parent="."]
-material = SubResource("ShaderMaterial_player")
+[node name="Sprite" type="AnimatedSprite3D" parent="."]
 script = ExtResource("7_sprite")
 archetype = "player"
 variant = 0
@@ -47,33 +41,30 @@ variant = 0
 [node name="HealthBar" type="Node2D" parent="."]
 script = ExtResource("9_bar")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 4)
-shape = SubResource("CircleShape2D_body")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0, 4)
+shape = SubResource("SphereShape3D_body")
 
-[node name="Hurtbox" type="Area2D" parent="."]
+[node name="Hurtbox" type="Area3D" parent="."]
 collision_layer = 8
 collision_mask = 64
 script = ExtResource("3_hurtbox")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
-shape = SubResource("CircleShape2D_hurt")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("SphereShape3D_hurt")
 
-[node name="AttackPivot" type="Node2D" parent="."]
+[node name="AttackPivot" type="Node3D" parent="."]
 
-[node name="SwingArc" type="Node2D" parent="AttackPivot"]
-z_index = 5
+[node name="SwingArc" type="Node3D" parent="AttackPivot"]
 script = ExtResource("5_arc")
 
-[node name="Hitbox" type="Area2D" parent="AttackPivot"]
+[node name="Hitbox" type="Area3D" parent="AttackPivot"]
 monitoring = false
 collision_layer = 32
 collision_mask = 16
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/Hitbox"]
-position = Vector2(20, 0)
-shape = SubResource("CapsuleShape2D_hit")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackPivot/Hitbox"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 20, 0, 0)
+shape = SubResource("CapsuleShape3D_hit")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position_smoothing_enabled = true
-position_smoothing_speed = 8.0
+[node name="Camera3D" type="Camera3D" parent="."]

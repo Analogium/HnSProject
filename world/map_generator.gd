@@ -277,15 +277,15 @@ func center_cell() -> Vector2i:
 	return best
 
 
-## Le centre d'une case, en pixels. Le demi-décalage est la seule subtilité, et
-## c'est le seul endroit qui l'écrit.
-static func cell_center(cell: Vector2i) -> Vector2:
-	return (Vector2(cell) + Vector2(0.5, 0.5)) * float(TILE)
+## Le centre d'une case, en pixels, dans le plan du monde. Le demi-décalage est la seule
+## subtilité, et c'est le seul endroit qui l'écrit.
+static func cell_center(cell: Vector2i) -> Vector3:
+	return Vector3(float(cell.x) + 0.5, 0.0, float(cell.y) + 0.5) * float(TILE)
 
 
-## La conversion inverse : dans quelle case tombe ce point.
-static func cell_at(pos: Vector2) -> Vector2i:
-	return Vector2i((pos / float(TILE)).floor())
+## La conversion inverse : dans quelle case tombe ce point du plan.
+static func cell_at(pos: Vector3) -> Vector2i:
+	return Vector2i(floori(pos.x / float(TILE)), floori(pos.z / float(TILE)))
 
 
 ## La grille peinte en image, un pixel par case — la carte superposée du jeu et

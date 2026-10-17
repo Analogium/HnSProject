@@ -1,5 +1,5 @@
 class_name EnemyManager
-extends Node2D
+extends Node3D
 
 ## **Le pilote unique de tous les ennemis** : aucun n'a de _physics_process. D'où le
 ## culling, et un ralenti propre aux ennemis.
@@ -13,7 +13,7 @@ const FIELD_CELLS := int(CULL_DISTANCE / float(MapGenerator.TILE)) + 2
 const FIELD_PERIOD := 0.10
 
 var enemies: Array[Enemy] = []
-var target: Node2D
+var target: Node3D
 
 ## Le niveau de la zone, posé par elle. Un champ et non l'autoload : un test le règle.
 var level := 1
@@ -28,15 +28,15 @@ var ticked := 0
 
 ## Où atterrissent les projectiles. Laissé à null, ils naissent sous le manager.
 ## L'arène lui donne un conteneur dédié pour pouvoir les balayer d'un coup.
-var projectile_parent: Node2D
+var projectile_parent: Node3D
 
 ## Où se posent les zones de danger (jalon 27) : sous les corps, au-dessus du sol.
 ## Lu par `ground()`, qui retombe sur les projectiles.
-var ground_parent: Node2D
+var ground_parent: Node3D
 
 ## Où atterrit le butin. Même principe, et séparé des projectiles : on balaie
 ## les tirs au rechargement d'une zone, jamais les objets au sol.
-var loot_parent: Node2D
+var loot_parent: Node3D
 
 
 func _ready() -> void:
@@ -47,12 +47,12 @@ func _ready() -> void:
 
 
 ## Lu à l'emploi et non posé dans `_ready` : la scène règle ses conteneurs après.
-func ground() -> Node2D:
+func ground() -> Node3D:
 	return ground_parent if ground_parent != null else projectile_parent
 
 
 ## **Le seul chemin** pour poser un ennemi.
-func spawn(scene: PackedScene, at: Vector2) -> Enemy:
+func spawn(scene: PackedScene, at: Vector3) -> Enemy:
 	if scene == null:
 		return null
 	var enemy: Enemy = scene.instantiate()

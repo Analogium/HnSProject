@@ -777,7 +777,7 @@ func test_the_sheet_announces_what_really_leaves() -> void:
 		"la fiche en annonce deux"
 	)
 
-	var bolts := Node2D.new()
+	var bolts := Node3D.new()
 	add_child_autofree(bolts)
 	_player.projectile_parent = bolts
 	_player.bar.put(2, "swift_bolt")

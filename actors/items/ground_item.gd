@@ -1,20 +1,12 @@
 class_name GroundItem
-extends Node2D
+extends Node3D
 
 ## Un objet posé au sol, sous son nom : l'étiquette **est** le bouton, on ramasse
 ## en cliquant dessus. Au contact, le sac avalait ce qu'on traversait ; depuis que
 ## les noms se composent, ce qu'on ramasse se lit d'abord et se choisit ensuite.
-
-## Halo au sol. Sans lui, une icône de 14 px posée sur des tuiles texturées se
-## perd — c'est le halo qu'on repère du coin de l'œil, pas l'objet. Il prend la
-## couleur de rareté : de loin, on sait si ça vaut le détour.
 ##
-## Taillé sur l'icône (`SpriteForge.GROUND`), les boules d'expérience compris : plus
-## large qu'elle, il se lit comme une flaque et on ne voit plus ce qui est posé
-## dessus.
-const GLOW_ALPHA := 0.34
-const GLOW_RX := 7.0
-const GLOW_RY := 3.5
+## L'étiquette est **à l'écran** (jalon 54) : rangée, dessinée et cliquée en
+## coordonnées du canevas, au-dessus de la projection de l'objet (`Flat.on_screen()`).
 
 ## Flottement : c'est ce qui distingue un objet à ramasser d'un détail du décor.
 const BOB_SPEED := 3.2
@@ -36,7 +28,7 @@ const NAME_GAP := 3.0
 const NAME_BACK := Color(0.055, 0.051, 0.075, 0.90)
 const NAME_HOVER := Color(0.16, 0.15, 0.20, 0.95)
 
-@onready var icon: Sprite2D = $Icon
+@onready var icon: Sprite3D = $Icon
 
 var data: Item
 ## Celui qui ramasse. Passé à la pose, les deux appelants l'ayant sous la main :
@@ -44,15 +36,15 @@ var data: Item
 var taker: Player
 
 var _t := 0.0
-## Hauteur de repos de l'icône, déduite de sa taille : à hauteur fixe, un plastron
-## cache complètement le halo qui sert à le repérer.
+## Hauteur de repos de l'icône, déduite de sa taille : posée au sol, pas dedans.
 var _rest_y := 0.0
-var _glow := Color(0.98, 0.86, 0.45, GLOW_ALPHA)
+## Où se dessine l'étiquette : un nœud du canevas, enfant de l'objet 3D.
+var _overlay: Node2D
 
 var _font: Font
 var _name := ""
-## L'étiquette à sa place naturelle, en coordonnées locales, mesurée une fois : la
-## mesurer à chaque image ferait relire une police pour un texte qui ne change pas.
+## L'étiquette à sa place naturelle, relative à son ancre (`_anchor()`), mesurée une fois :
+## la mesurer à chaque image ferait relire une police pour un texte qui ne change pas.
 var _label := Rect2()
 ## Où elle se dessine vraiment, une fois montée pour ne recouvrir personne. Égale à
 ## `_label` tant qu'aucune autre ne la gêne.
@@ -60,7 +52,7 @@ var _shown := Rect2()
 ## La position qui a servi au dernier rangement. La position arrive **après**
 ## `_ready` (`DeferredTree`), donc c'est elle, et non un drapeau posé à la pose, qui
 ## dit que le rangement est à refaire.
-var _laid_at := Vector2(NAN, NAN)
+var _laid_at := Vector3(NAN, 0.0, NAN)
 var _hovered := false
 ## La couleur du nom : celle de la rareté, ou celle d'une règle qui recolore.
 var _tint := Color.WHITE
@@ -88,7 +80,7 @@ static var hovered: GroundItem = null
 ## callback de physique — le `area_entered` d'un coup d'épée ou d'un tir — et un
 ## nœud posé là arrive dans un arbre que Godot est en train de parcourir. Le
 ## différé porte aussi le garde-fou du parent libéré (invariant 4).
-static func spawn(parent: Node, at: Vector2, item: Item, player: Player) -> GroundItem:
+static func spawn(parent: Node, at: Vector3, item: Item, player: Player) -> GroundItem:
 	# Chargée à la première pose et non par preload : un script qui préchargerait
 	# la scène dont il est lui-même le script forme un cycle de dépendances que
 	# Godot refuse.
@@ -110,7 +102,7 @@ static func show_labels(on: bool) -> void:
 	_dirty = true
 	for one in _all:
 		if is_instance_valid(one):
-			one.queue_redraw()
+			one._overlay.queue_redraw()
 
 
 ## L'icône se construit ici et non dans une méthode à appeler après coup : le nœud
@@ -120,7 +112,15 @@ func _ready() -> void:
 		return
 	_font = ThemeDB.fallback_font
 	icon.texture = SpriteForge.ground_icon(data.base)
-	_rest_y = -icon.texture.get_height() * 0.5 - 1.0
+	icon.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	icon.pixel_size = 1.0
+	icon.shaded = false
+	icon.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	icon.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	_rest_y = icon.texture.get_height() * 0.5 + 1.0
+	_overlay = Node2D.new()
+	_overlay.draw.connect(_draw_label)
+	add_child(_overlay)
 	_measure()
 	_all.append(self)
 	Settings.changed.connect(_filter)
@@ -133,7 +133,6 @@ func _filter() -> void:
 	var rule := Settings.loot_rule(data)
 	visible = not LootFilter.hides(rule)
 	_tint = LootFilter.color_for(data, rule)
-	_glow = Color(_tint, GLOW_ALPHA)
 	if not visible and hovered == self:
 		hovered = null
 	_dirty = true
@@ -159,6 +158,8 @@ func _process(delta: float) -> void:
 	# Position entière : un sprite à cheval sur deux pixels bave et trahit le
 	# rendu pixel art.
 	icon.position.y = roundf(sin(_t) * BOB_AMOUNT + _rest_y)
+	_overlay.position = _anchor()
+	_overlay.visible = is_visible_in_tree()
 
 	# Posé, ou déplacé par une zone qui se régénère : les étiquettes se rangent.
 	# Un masqué n'est jamais rangé : sa position ne dirait jamais qu'il l'est.
@@ -169,12 +170,12 @@ func _process(delta: float) -> void:
 	if _dirty and labels_shown:
 		_relayout()
 
-	_hovered = labels_shown and visible and _shown.has_point(to_local(get_global_mouse_position()))
+	_hovered = labels_shown and visible and name_rect().has_point(get_viewport().get_mouse_position())
 	if _hovered:
 		hovered = self
 	elif hovered == self:
 		hovered = null
-	queue_redraw()
+	_overlay.queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -187,15 +188,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## Un clic dans le monde : vrai s'il a pris l'objet. **Le seul chemin du
-## ramassage** — la souris n'est qu'un moyen d'y arriver, et les tests n'en ont pas.
+## Un clic à l'écran, en coordonnées du canevas : vrai s'il a pris l'objet. **Le seul
+## chemin du ramassage** — la souris n'est qu'un moyen d'y arriver, et les tests n'en ont pas.
 ##
 ## L'objet ne disparaît que si le sac l'a réellement pris : sac plein, il reste au
 ## sol et son nom reste cliquable.
-func clicked(world_point: Vector2) -> bool:
+func clicked(screen_point: Vector2) -> bool:
 	if data == null or taker == null or not labels_shown or not visible:
 		return false
-	if not name_rect().has_point(world_point):
+	if not name_rect().has_point(screen_point):
 		return false
 	if not taker.pick_up(data):
 		# Sac plein, une pile a pu y verser une partie : le nom dit ce qui reste.
@@ -213,27 +214,28 @@ static func takes_the_click(action: String) -> bool:
 	return hovered != null and Keybinds.uses_left_click(action)
 
 
-## L'étiquette dans le monde, telle qu'elle se dessine — montée comprise : c'est
-## elle qui reçoit le clic, pas la place naturelle. L'icône ne répond pas, elle
-## danse, et une cible qui bouge se rate.
+## L'étiquette à l'écran, telle qu'elle se dessine — montée comprise : c'est elle qui
+## reçoit le clic, pas la place naturelle. L'icône ne répond pas, elle danse, et une
+## cible qui bouge se rate.
 func name_rect() -> Rect2:
-	return Rect2(global_position + _shown.position, _shown.size)
+	return Rect2(_anchor() + _shown.position, _shown.size)
 
 
-func _draw() -> void:
-	# Un cercle unitaire écrasé par la transformation : c'est le seul moyen de
-	# tracer une ellipse sans construire un polygone à la main.
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(GLOW_RX, GLOW_RY))
-	draw_circle(Vector2.ZERO, 1.0, _glow)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+## Le pied de l'étiquette : au-dessus de la plus grande icône possible. Au-dessus de
+## `SpriteForge.GROUND` et non de l'icône réelle : à hauteur propre, deux étiquettes
+## voisines ne s'alignent plus.
+func _anchor() -> Vector2:
+	return Flat.on_screen(get_viewport(), global_position, float(SpriteForge.GROUND.y) + NAME_GAP)
 
+
+func _draw_label() -> void:
 	if _font == null or _name.is_empty() or not labels_shown:
 		return
-	draw_rect(_shown, NAME_HOVER if _hovered else NAME_BACK)
-	draw_rect(_shown, _tint, false, 1.0)
+	_overlay.draw_rect(_shown, NAME_HOVER if _hovered else NAME_BACK)
+	_overlay.draw_rect(_shown, _tint, false, 1.0)
 	# La ligne de base, et non le haut du cadre : `draw_string` pose le texte dessus.
 	var baseline := _shown.position + Vector2(NAME_PAD.x, NAME_PAD.y + _font.get_ascent(Game.world_font(NAME_SIZE)))
-	draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE), _tint)
+	_overlay.draw_string(_font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE), _tint)
 
 
 ## Le nom et son cadre, centré sur l'objet, à sa place naturelle. C'est
@@ -242,11 +244,11 @@ func _measure() -> void:
 	_name = data.display_name() if data.count <= 1 else "%d × %s" % [data.count, data.display_name()]
 	var size := _font.get_string_size(_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, Game.world_font(NAME_SIZE))
 	size = (size + NAME_PAD * 2.0).round()
-	var top := -(float(SpriteForge.GROUND.y) + NAME_GAP) - size.y
-	_label = Rect2(Vector2(roundf(-size.x * 0.5), top), size)
+	_label = Rect2(Vector2(roundf(-size.x * 0.5), -size.y), size)
 	_shown = _label
 	_dirty = true
-	queue_redraw()
+	if _overlay != null:
+		_overlay.queue_redraw()
 
 
 ## Range les étiquettes pour qu'aucune n'en recouvre une autre : chacune part de sa
@@ -271,16 +273,19 @@ static func _relayout() -> void:
 	# L'abscisse départage : à ordonnée égale, un ordre stable évite que deux
 	# étiquettes échangent leur place d'une image à l'autre.
 	shown.sort_custom(func(a: GroundItem, b: GroundItem) -> bool:
-		if is_equal_approx(a.global_position.y, b.global_position.y):
-			return a.global_position.x < b.global_position.x
-		return a.global_position.y > b.global_position.y
+		var at_a := a._anchor()
+		var at_b := b._anchor()
+		if is_equal_approx(at_a.y, at_b.y):
+			return at_a.x < at_b.x
+		return at_a.y > at_b.y
 	)
 
 	var ceiling := _visible_top(shown)
 	var taken: Array[Rect2] = []
 	for one in shown:
 		one._laid_at = one.global_position
-		var r := Rect2(one.global_position + one._label.position, one._label.size)
+		var anchor := one._anchor()
+		var r := Rect2(anchor + one._label.position, one._label.size)
 		# Chaque tour passe au-dessus de la plus haute gêne, donc en libère au moins
 		# une : autant de tours que de voisines déjà posées suffit toujours.
 		for _guard in taken.size():
@@ -297,11 +302,11 @@ static func _relayout() -> void:
 				break
 			r.position.y = lifted
 		taken.append(r)
-		one._shown = Rect2(r.position - one.global_position, r.size)
-		one.queue_redraw()
+		one._shown = Rect2(r.position - anchor, r.size)
+		one._overlay.queue_redraw()
 
 
-## Le haut de ce qui est à l'écran, en coordonnées du monde ; `-INF` hors de l'arbre.
+## Le haut de ce qui est à l'écran, en coordonnées du canevas ; `-INF` hors de l'arbre.
 ## C'est la borne du rangement : une étiquette poussée plus haut sortirait du cadre.
 static func _visible_top(live: Array[GroundItem]) -> float:
 	if live.is_empty():

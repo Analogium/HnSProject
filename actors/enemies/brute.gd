@@ -15,7 +15,7 @@ const SHAKE := 4.0
 ## Tant qu'elle court, il est planté : la zone frappe à la fin, et tombe avec lui.
 var _zone: DangerZone
 var _timer := 0.0
-var _dir := Vector2.DOWN
+var _dir := Vector3.BACK
 
 
 func tick(delta: float) -> void:
@@ -35,7 +35,7 @@ func tick(delta: float) -> void:
 	var to_victim := victim.global_position - global_position
 	if to_victim.length() < stats.attack_range and _attack_cd <= 0.0:
 		_dir = to_victim.normalized()
-		velocity = Vector2.ZERO
+		velocity = Vector3.ZERO
 		sprite.set_state(false, _dir)
 		_zone = _danger(
 			global_position, DangerZone.Shape.CONE, REACH, WINDUP, DamageType.Kind.PHYSICAL,

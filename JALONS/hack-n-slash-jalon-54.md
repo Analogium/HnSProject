@@ -37,10 +37,15 @@ les remplace ; le visuel d'une compétence est un nœud enfant de sa compétence
 
 **Unité : 1 m = 16 px** de l'ancien repère (un personnage de ~27 px fait ~1,7 m).
 Toutes les distances des `.tres` (portées, rayons, vitesses) sont en pixels : on les
-convertit **en un seul endroit** à la lecture, ou on les réécrit en mètres. **Tranché
-le 17 octobre : la conversion à la lecture pour l'étape 1**, pour que la campagne portée
-garde ses chiffres (les tests les écrivent à travers la même conversion). **Le but reste
-les `.tres` en mètres** : un geste à part, une fois le gameplay prouvé intact en 3D.
+convertit **en un seul endroit** à la lecture, ou on les réécrit en mètres. Mesuré à
+l'ouverture de l'étape 1 : les pixels ne sont pas que dans les `.tres` (~70 champs), mais
+aussi dans ~220 constantes du code et ~1 000 vecteurs des tests — une conversion « à la
+lecture » en aurait demandé plus de 250. **Tranché le 17 octobre : pour l'étape 1, le monde
+3D se mesure en pixels, 1 unité = 1 px.** Aucun chiffre du gameplay ne bouge, et la
+campagne portée garde ses valeurs. Seul le visuel connaît les mètres, en un endroit : le
+modèle posé ×16, caméra et lumière en pixels. **Le but final reste les mètres partout** :
+un geste à part et mécanique — toutes les distances ÷ 16, la campagne pour filet —, une
+fois le gameplay prouvé intact en 3D.
 
 ## 3. Ce qui ne bouge pas
 
@@ -97,6 +102,10 @@ le tri en Y, `Hurtbox` en `Area2D`) mentiraient dès l'étape 1.
 - ~~Caméra perspective à focale étroite ou orthographique~~ — **tranché le 17 octobre :
   la façon Torchlight**, `proche-perspective` de `tools/look_3d.gd` : perspective, champ
   vertical de 30°, 20 m, inclinée de 45°. Elle montre moins de sol que l'écran 2D.
+  **Recadrée le 17 octobre** sur une capture de Torchlight Infinite fournie par
+  l'utilisateur : champ de 40°, inclinée de 55°, et le recul qui montre au plan du joueur
+  le monde de la caméra 2D (360 px au zoom de 85 %, soit 582 unités) — les sprites
+  gardent leur taille d'avant, les portées leur place à l'écran.
 - L'interface, pensée à 640 × 360 en pixel art, à côté d'un monde net : à juger une
   fois le monde fait.
 - La performance : remesurer `world/stress_test.tscn` après l'étape 2 (meshes
@@ -135,7 +144,7 @@ parce que le Vive lame est un modèle TRELLIS : le risque n°1 portait sur Stabl
 - Les armes, des volumes pensés pour 36 px, font plastique sous une vraie lumière.
 - Le sol est la texture 2D posée telle quelle : sa refonte est l'étape 3.
 
-## 8. Reste à faire
+## 8. Après l'étape 0
 
 - ~~Réparer `project.py`~~ — fait : il ne repeint que ce qui fait face à une image, le
   reste garde la texture de Stable Fast 3D ramenée au ton de la face. La sorcière est à
@@ -154,4 +163,126 @@ parce que le Vive lame est un modèle TRELLIS : le risque n°1 portait sur Stabl
     garde tend le bras armé loin du corps, et les autres gestes sont à juger sur capture.
   - Les autres personnages suivent le même chemin : concept, `model_3d.py image`, `mesh
     --sf3d`, `rig`, `blender_sheet.py --glb`.
-- Étape 1.
+
+## 9. Étape 1 — le plan, écrit avant de porter (17 octobre)
+
+Mesuré : ~23 000 lignes de jeu (`Vector2` : 634 `global_position`, 76 `from_angle`, 32
+`angle()`, 32 `rotated`, 21 `orthogonal`), ~25 000 de tests (815 `Vector2` dans
+l'intégration). Le jeu ne se lance pas tant que l'étape n'est pas finie.
+
+**Conventions.**
+
+- **1 unité = 1 px** (§2). Le plan de jeu est XZ : le `(x, y)` 2D devient `(x, 0, y)`. La
+  caméra regarde depuis +Y et +Z : le bas de l'écran est +Z, comme le +y d'avant, et un
+  angle 2D garde son sens — `Flat.from_angle(a)` vaut `(cos a, 0, sin a)`.
+- **`Flat`** (`core/flat.gd`) est le seul utilitaire de plan : `from_angle`, `angle`,
+  `rotated`, `orthogonal`, ce que `Vector3` n'a pas. Partout ailleurs, les méthodes de
+  `Vector3` (`distance_to`, `normalized`, `lerp`…) servent telles quelles.
+- **Hauteur verrouillée à 0** : `CharacterBody3D` (`axis_lock_linear_y`), `Area3D` et
+  `Node3D` posés à y = 0.
+- **Formes** : un cercle de rayon r devient une sphère de rayon r — les centres étant tous
+  à y = 0, la collision est la même ; une capsule 2D, une `CapsuleShape3D` couchée dans le
+  plan ; un rectangle, une boîte.
+- **Murs** : des `StaticBody3D` bâtis depuis la grille de `MapGenerator`, épais de part et
+  d'autre de y = 0 pour qu'un rayon à hauteur 0 les traverse.
+- **Requêtes physiques** (4) : `PhysicsDirectSpaceState3D`, mêmes formes.
+- **Visée** : une seule fonction, le rayon de la caméra par la souris contre le plan y = 0.
+- **Caméra** : `Camera3D` sur le joueur, la façon Torchlight (§6) en pixels — champ de 40°,
+  inclinée de 55°, le recul déduit du cadre 2D. La secousse passe par `h_offset` / `v_offset`.
+- **Lumière** : `world/lighting.tscn`, ses distances passées en pixels.
+
+**Ce qui s'affiche à la fin de l'étape.**
+
+- **Écart avec §5 : pas de capsules.** `ActorSprite` passe en `AnimatedSprite3D`, en
+  billboard, un pixel pour une unité : les acteurs montrent leurs planches debout dans le
+  monde 3D. Il garde son interface **et ses données** — l'image d'impact des gestes, que la
+  campagne vérifie ; une capsule les aurait laissées sans propriétaire. L'étape 2 le
+  remplace par `ActorModel`, même interface. Flash, liseré et teinte passent en shader
+  `spatial`.
+- **L'affichage tête haute en espace écran** : barres de vie, nombres de dégâts, noms au
+  sol, noms des objets de la ville sur un `CanvasLayer`, chacun posé par la projection de
+  la caméra (`unproject_position`) ; survol et clic se testent à l'écran.
+- **Les compétences et `fx/` gardent leur logique, leur dessin s'éteint** : `_draw` et
+  `queue_redraw` retirés (l'étape 4 les redessine ; les anciens sont dans `master`). Les
+  télégraphes ennemis aussi : le jeu se joue, moins lisible, jusqu'à l'étape 4.
+- **Le sol** : un plan à la texture du biome ; décor et vrai sol, à l'étape 3.
+- **Tri en Y et `z_index`** : supprimés, le tampon de profondeur les remplace.
+
+**L'ordre**, du bas vers le haut, l'analyse statique (`--check-only`) à chaque palier :
+
+1. `core/` : `Flat`, `Hurtbox` en `Area3D`, `DamageInfo.source_position`, `DeferredTree`,
+   la secousse de `Game`.
+2. `actors/skills/targets.gd` (les requêtes), projectiles, objets au sol, ennemis et
+   `EnemyManager`, joueur.
+3. Les 48 compétences.
+4. `fx/`, `art/` (`ActorSprite`, `HealthBar`), `world/` (zone, murs, champ de chemin,
+   peuplement, banc, arène), ce que `ui/` lit du monde.
+5. Les tests : les positions du monde en `Vector3(x, 0, y)`, **aucune valeur attendue
+   changée**. Un test qui casse est une régression du portage.
+6. La campagne entière, puis le banc de performance remesuré (§6).
+
+## 10. Étape 1, faite le 17 octobre 2026
+
+Le jeu tourne en 3D sur un plan, mesuré en pixels (§2, §9). Ce qui a bougé en route :
+
+- **`Flat`** porte aussi `cross`, `angle_to`, `xz`, `PX_PER_M`, et l'inverse de la visée,
+  `on_screen()` : sans caméra, il rend le plan à plat — c'est ce qui laisse les tests des
+  étiquettes, des nombres et des barres sur leurs chiffres.
+- **`Hurtbox.overhead()` reste un point du plan au nord du corps**, comme en 2D : la marque
+  du Paratonnerre s'y pose et cherche son héritier de là.
+- **Les murs ont une demi-case de haut** : à une case, la caméra à 45° perdait le joueur
+  derrière le moindre mur (capture). Leur forme est l'étape 3.
+- **Les pieds sur l'origine**, donc sur le sol : calé comme en 2D, le centre du corps sur
+  l'origine, le sprite descendait de 11 px sous le plan et le sol le coupait à la taille.
+  Barres, étiquettes d'affixes et nombres montent d'autant
+  (`SpriteForge.CENTER_ABOVE_FEET`) ; sans caméra (les tests), ils restent à plat.
+- **La croix attend deux images de physique** entre ses coups : Jolt voyait la fermeture et
+  la réouverture de la hitbox avant le même pas, et le second coup ne touchait plus.
+- **`ActorSprite` en billboard** plutôt que des capsules (§9) ; flash, liseré et teinte d'état
+  éteints jusqu'à `ActorModel`. **Un bug d'avant, sur `master` aussi** : la teinte d'état n'a
+  jamais paru — `ActorSprite` posait `tint_color`, le shader attendait `teinte_couleur`.
+- Les bibliothèques de dessin (`fx/`, `EffectForge`) restent : la forge (F4) les montre, et
+  l'étape 4 pourra reprendre leurs pièces.
+
+**La campagne garde ses valeurs.** Ce qui a changé dans les tests : les positions du monde en
+`Vector3(x, 0, y)`, les points d'écran par `Flat.on_screen()`, la secousse par `h_offset` et
+`v_offset`, et ces tests du **dessin 2D**, retirés ou réduits à leur part de jeu
+(`test_shapes.gd` sauf mention) :
+
+- le tour de peinture des serpents (`HellSnake.on_turn`), les maillons des Chaînes du
+  jugement (`pieces`), le lit de flammes du sillon, le lit de taches d'un sol converti, le
+  halo cuit d'une explosion : retirés ;
+- le Trait de glace, l'orbe statique en meute, la traînée sous les corps, la Gestation :
+  sans leurs assertions de rotation, de matériau, d'arcs dessinés, de `z_index` et de
+  taille dessinée ;
+- la Triade sous l'Incarnation et le nœud de conversion (`test_player.gd`) : la nature du
+  coup au lieu de la teinte dessinée ;
+- `test_status_effects_in_game.gd` : sans la teinte du sprite ;
+- la Bifurcation : la cible écartée passe de 60 à 62 px — à 60, deux cibles étaient à
+  égale distance, et leur ordre est celui du moteur physique.
+
+**Le banc** (`world/stress_test.tscn`, graine 4242, fenêtré, 240 images de chauffe puis
+1 440 mesurées), contre la référence 2D de `CLAUDE.md` :
+
+| ennemis simulés | 2D : img/s, physique | 3D : img/s, physique |
+|---|---|---|
+| ~140 | 165, 4,54 ms | 164, 2,25 ms |
+| ~282 | 165, 4,41 ms | 162, 4,46 ms |
+| ~552 | 165, 6,77 ms | 148, 8,48 ms (160 et 6,66 ms à un autre passage) |
+| 935 / 834 | 165, 8,62 ms | **10**, 18,91 ms |
+| combat, 300 | 165, 11 ms, 6 % figé | 165, 7,58 ms, 5,7 % figé |
+
+L'ombre des sprites d'acteur est éteinte : une carte debout n'en a pas de sensée, et elle
+faisait tomber 600 ennemis à 107 img/s. **Au-delà de ~550 simulés, la physique de Jolt coûte
+deux fois celle de la 2D**, et à 1 000 elle ne suit plus le pas. La zone jouée en compte 69 :
+environ 8× de marge, contre 25× avant.
+
+## 11. Reste à faire
+
+- La physique au-delà de 550 ennemis : à creuser avant que l'étape 2 ajoute ses meshes
+  skinnés (§6).
+- Étape 2 : `ActorModel` — avec lui reviennent flash, liseré et teinte (la vraie, cette fois).
+- `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
+  grand. À trancher avec l'interface (§6).
+- Les télégraphes ennemis n'ont plus de dessin : le jeu se joue sans voir venir l'obus du
+  mortier, jusqu'à l'étape 4.

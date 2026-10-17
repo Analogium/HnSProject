@@ -16,7 +16,7 @@ func test_affixing_does_not_touch_the_shared_resource() -> void:
 	var before := disk.max_health
 	for i in 12:
 		var e: Enemy = load("res://actors/enemies/grunt.tscn").instantiate()
-		e.position = Vector2(i * 37, i * 53)   # le tirage se déduit de la case
+		e.position = Vector3(i * 37, 0.0, i * 53)   # le tirage se déduit de la case
 		add_child_autofree(e)
 	assert_eq(disk.max_health, before, "grunt_stats.tres est intact")
 
@@ -40,7 +40,7 @@ func test_the_manager_adds_and_removes() -> void:
 	add_child_autofree(m)
 	var scene: PackedScene = load("res://actors/enemies/grunt.tscn")
 	for i in 5:
-		assert_not_null(m.spawn(scene, Vector2(i * 40, 0)))
+		assert_not_null(m.spawn(scene, Vector3(i * 40, 0.0, 0)))
 	assert_eq(m.enemies.size(), 5)
 	m.clear()
 	await wait_physics_frames(2)
@@ -61,7 +61,7 @@ func test_an_enemy_spawns_at_its_zone_level() -> void:
 	var scene: PackedScene = load("res://actors/enemies/grunt.tscn")
 	var weak: CharacterStats = load("res://resources/stats/grunt_stats.tres")
 
-	var e := m.spawn(scene, Vector2(500, 500))
+	var e := m.spawn(scene, Vector3(500, 0.0, 500))
 	assert_eq(e.level, 40)
 	assert_gt(e.stats.max_health, weak.max_health * 7.0, "huit fois la vie, affixes en plus")
 	assert_eq(e.health, e.stats.max_health, "et il naît en pleine santé")
@@ -81,7 +81,7 @@ func test_scaling_does_not_touch_the_shared_resource() -> void:
 	add_child_autofree(m)
 	var scene: PackedScene = load("res://actors/enemies/grunt.tscn")
 	for i in 8:
-		m.spawn(scene, Vector2(i * 41, i * 67))
+		m.spawn(scene, Vector3(i * 41, 0.0, i * 67))
 	assert_eq(disk.max_health, before, "grunt_stats.tres est intact")
 
 
@@ -90,7 +90,7 @@ func test_scaling_does_not_touch_the_shared_resource() -> void:
 func test_without_a_set_level_the_enemy_stays_at_the_first() -> void:
 	var m := EnemyManager.new()
 	add_child_autofree(m)
-	var e := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector2(300, 300))
+	var e := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector3(300, 0.0, 300))
 	var disk: CharacterStats = load("res://resources/stats/grunt_stats.tres")
 	assert_eq(e.level, 1)
 	assert_almost_eq(e.stats.max_health, disk.max_health, 0.001)
@@ -207,7 +207,7 @@ func test_the_character_gains_exactly_what_it_used_to() -> void:
 var _slain_with: Array = []
 
 
-func _on_slew(cast: RefCounted, _at: Vector2, _victim: StatusEffects) -> void:
+func _on_slew(cast: RefCounted, _at: Vector3, _victim: StatusEffects) -> void:
 	_slain_with.append((cast as SkillStats).keywords)
 
 
@@ -223,13 +223,13 @@ func test_a_kill_tells_its_author_the_keywords_of_the_blow() -> void:
 
 	var parts := DamageType.empty_parts()
 	parts[DamageType.Kind.PHYSICAL] = 1.0
-	var info := DamageInfo.roll(cast, Vector2.ZERO, parts)
+	var info := DamageInfo.roll(cast, Vector3.ZERO, parts)
 	info.author = author
 	grunt.hurtbox.take_damage(info)
 	assert_eq(_slain_with.size(), 0, "un coup qui ne tue pas")
 
 	parts[DamageType.Kind.PHYSICAL] = grunt.stats.max_health * 10.0
-	info = DamageInfo.roll(cast, Vector2.ZERO, parts)
+	info = DamageInfo.roll(cast, Vector3.ZERO, parts)
 	info.author = author
 	grunt.hurtbox.take_damage(info)
 	assert_eq(_slain_with.size(), 1, "le coup qui tue")

@@ -1,4 +1,4 @@
-extends Node2D
+extends Node3D
 
 ## Arène de test des étapes 3 à 6 : quelques murs, des mannequins immobiles
 ## qui servent de référence pour juger le coup, des grunts, et un panneau de
@@ -18,11 +18,11 @@ const LONE_SCENES := {
 	KEY_B: preload("res://actors/enemies/brute.tscn"),
 }
 
-const ARENA_SIZE := Vector2(640, 480)
+const ARENA_SIZE := Vector3(640, 0.0, 480)
 const WALL_THICKNESS := 16.0
 const WALL_COLOR := Color(0.16, 0.15, 0.19)
 
-## Obstacles intérieurs, en coordonnées monde. Le centre reste dégagé : c'est
+## Obstacles intérieurs, dans le plan du monde (x, z). Le centre reste dégagé : c'est
 ## là qu'apparaît le joueur, et c'est autour de lui que tombent les paquets.
 const PILLARS := [
 	Rect2(140, 120, 48, 48),
@@ -34,8 +34,8 @@ const PILLARS := [
 ## On en garde deux : une cible qui ne bouge pas reste le meilleur repère pour
 ## juger le hit-stop et le flash sans que ça riposte.
 const DUMMY_POSITIONS := [
-	Vector2(240, 130),
-	Vector2(400, 130),
+	Vector3(240, 0.0, 130),
+	Vector3(400, 0.0, 130),
 ]
 
 ## Taille d'un paquet, et distance à laquelle il apparaît du joueur.
@@ -47,12 +47,12 @@ const PACK_CASTERS := 1
 const PACK_DISTANCE := 130.0
 const CASTER_DISTANCE := 190.0
 
-@onready var walls: Node2D = $Walls
-@onready var entities: Node2D = $Entities
+@onready var walls: Node3D = $Walls
+@onready var entities: Node3D = $Entities
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
-@onready var projectiles: Node2D = $Entities/Projectiles
-@onready var ground: Node2D = $Ground
+@onready var projectiles: Node3D = $Entities/Projectiles
+@onready var ground: Node3D = $Ground
 @onready var overlay: Label = $UI/Overlay
 
 var _dummies: Array[TrainingDummy] = []
@@ -153,15 +153,14 @@ func _overlay_text() -> String:
 
 
 ## Murs construits par code : plus simple à retoucher qu'une scène pleine de
-## noeuds. L'arène ne passera pas au TileMapLayer comme la zone l'a fait — ces
-## quatre bords et ces piliers sont un décor de réglage, pas une carte.
+## noeuds. Ces quatre bords et ces piliers sont un décor de réglage, pas une carte.
 func _build_walls() -> void:
 	var t := WALL_THICKNESS
 	var borders := [
 		Rect2(0, 0, ARENA_SIZE.x, t),                          # haut
-		Rect2(0, ARENA_SIZE.y - t, ARENA_SIZE.x, t),           # bas
-		Rect2(0, 0, t, ARENA_SIZE.y),                          # gauche
-		Rect2(ARENA_SIZE.x - t, 0, t, ARENA_SIZE.y),           # droite
+		Rect2(0, ARENA_SIZE.z - t, ARENA_SIZE.x, t),           # bas
+		Rect2(0, 0, t, ARENA_SIZE.z),                          # gauche
+		Rect2(ARENA_SIZE.x - t, 0, t, ARENA_SIZE.z),           # droite
 	]
 	for rect: Rect2 in borders:
 		walls.add_child(_make_wall(rect))
@@ -169,30 +168,36 @@ func _build_walls() -> void:
 		walls.add_child(_make_wall(rect))
 
 
-func _make_wall(rect: Rect2) -> StaticBody2D:
-	var body := StaticBody2D.new()
+## Un mur de ce rectangle du plan, haut comme ceux de la zone ; sa collision déborde
+## sous le sol, comme eux : les rayons du jeu passent à hauteur zéro.
+func _make_wall(rect: Rect2) -> StaticBody3D:
+	var body := StaticBody3D.new()
 	body.collision_layer = 1   # décor
 	body.collision_mask = 0
-	body.position = rect.position + rect.size * 0.5
+	var center := rect.position + rect.size * 0.5
+	body.position = Vector3(center.x, 0.0, center.y)
 
-	var shape := RectangleShape2D.new()
-	shape.size = rect.size
-	var col := CollisionShape2D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(rect.size.x, Zone.WALL_HEIGHT * 2.0, rect.size.y)
+	var col := CollisionShape3D.new()
 	col.shape = shape
 	body.add_child(col)
 
-	var visual := ColorRect.new()
-	visual.color = WALL_COLOR
-	visual.position = -rect.size * 0.5
-	visual.size = rect.size
-	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var block := BoxMesh.new()
+	block.size = Vector3(rect.size.x, Zone.WALL_HEIGHT, rect.size.y)
+	var stone := StandardMaterial3D.new()
+	stone.albedo_color = WALL_COLOR
+	block.material = stone
+	var visual := MeshInstance3D.new()
+	visual.mesh = block
+	visual.position.y = Zone.WALL_HEIGHT * 0.5
 	body.add_child(visual)
 
 	return body
 
 
 func _spawn_dummies() -> void:
-	for pos: Vector2 in DUMMY_POSITIONS:
+	for pos: Vector3 in DUMMY_POSITIONS:
 		var dummy: TrainingDummy = DUMMY_SCENE.instantiate()
 		dummy.position = pos
 		entities.add_child(dummy)
@@ -209,19 +214,19 @@ func _spawn_pack() -> void:
 		var is_caster := i >= PACK_GRUNTS
 		var radius := CASTER_DISTANCE if is_caster else PACK_DISTANCE
 		var scene := CASTER_SCENE if is_caster else GRUNT_SCENE
-		_add_enemy(scene, origin + Vector2.from_angle(angle) * radius)
+		_add_enemy(scene, origin + Flat.from_angle(angle) * radius)
 
 
 ## Un ennemi seul, pour juger son comportement sans la mêlée autour.
 func _spawn_lone(scene: PackedScene) -> void:
 	var angle := Game.rng.randf() * TAU
-	_add_enemy(scene, player.global_position + Vector2.from_angle(angle) * CASTER_DISTANCE)
+	_add_enemy(scene, player.global_position + Flat.from_angle(angle) * CASTER_DISTANCE)
 
 
-func _add_enemy(scene: PackedScene, pos: Vector2) -> void:
+func _add_enemy(scene: PackedScene, pos: Vector3) -> void:
 	# On garde l'ennemi à l'intérieur des murs.
 	pos.x = clampf(pos.x, WALL_THICKNESS + 10.0, ARENA_SIZE.x - WALL_THICKNESS - 10.0)
-	pos.y = clampf(pos.y, WALL_THICKNESS + 10.0, ARENA_SIZE.y - WALL_THICKNESS - 10.0)
+	pos.z = clampf(pos.z, WALL_THICKNESS + 10.0, ARENA_SIZE.z - WALL_THICKNESS - 10.0)
 
 	enemy_manager.spawn(scene, pos)
 

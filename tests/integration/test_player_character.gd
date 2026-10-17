@@ -133,7 +133,7 @@ func test_loading_a_witch_changes_the_body() -> void:
 	p.character_class = Character.WITCH
 	_p.load_character(p)
 	assert_eq(_p.sprite.archetype, "witch")
-	assert_eq(_p.sprite.offset, SpriteForge.offset_of("witch"), "les pieds restent sur la collision")
+	assert_eq(_p.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("witch").y, "les pieds sur l'origine, au sol")
 
 
 ## Un emplacement que le joueur ne sait pas porter est écarté au lieu d'entrer

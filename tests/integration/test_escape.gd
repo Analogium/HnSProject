@@ -7,7 +7,7 @@ extends GutTest
 ## `_unhandled_input` appelés à la main, dans l'ordre où Godot les distribue — la
 ## zone avant le menu, qui est son dernier enfant.
 
-var _zone: Node2D
+var _zone: Node3D
 var _menu: CanvasLayer
 
 

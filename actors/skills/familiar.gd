@@ -1,10 +1,10 @@
 class_name Familiar
-extends Node2D
+extends Node3D
 
 ## Le Familier (jalon 41) : un corbeau à l'épaule de la sorcière, entretenu à la seconde,
 ## qui **rejoue** chaque sort posé à `ECHO_PART` de ses dégâts, `ECHO_DELAY` plus tard,
 ## depuis sa place et vers le point visé au lancer (`Player.echo()`). Ses lignes de buff
-## sont versées par le joueur, comme celles d'un buff : ce nœud porte le prix et le dessin.
+## sont versées par le joueur, comme celles d'un buff : ce nœud porte le prix.
 
 ## La part des dégâts d'un écho, avant son arbre (`echo_part()`), et son retard — celui
 ## de chaque écho en plus du Ressassement s'y ajoute. Premier réglage.
@@ -12,16 +12,13 @@ const ECHO_PART := 0.4
 const ECHO_DELAY := 0.4
 ## Sa place, à droite du chapeau, sur le fond du sol : posé sur la sorcière, il se
 ## perdait dans le sombre de sa robe (capture du jalon 41). Et son vol sur place.
-const SHOULDER := Vector2(15.0, -30.0)
+const SHOULDER := Vector3(15.0, 0.0, -30.0)
 const BOB := 1.5
-## Battements d'ailes par seconde.
-const FLAP_HZ := 6.0
 ## La Becquée (jalon 49) : l'aller du piqué — le retour prend autant —, la hauteur de son arc,
-## où il vise sur la proie, et ce que dure l'éclat du bec.
+## et où il vise sur la proie.
 const DIVE_TIME := 0.18
 const DIVE_ARC := 14.0
-const DIVE_AIM := Vector2(-4.0, -18.0)
-const STRIKE_TIME := 0.08
+const DIVE_AIM := Vector3(-4.0, 0.0, -18.0)
 ## Ce qu'il rejoue : ce qui se pose et s'oublie (`Skill.TRANSFORMABLE`), **sans ce qui part
 ## du corps** — ruées, coups d'arme, l'orage porté, le nid.
 const ECHOED: Array[Skill.Shape] = [
@@ -39,7 +36,7 @@ const ECHOED: Array[Skill.Shape] = [
 class Echo:
 	var skill: Skill
 	var salvo: Array[SkillStats] = []
-	var aim: Vector2
+	var aim: Vector3
 	var left := ECHO_DELAY
 	var seek := 0.0
 	var evil_eye := false
@@ -69,8 +66,6 @@ static func summon(player: Player, skill: Skill) -> Familiar:
 	f._skill = skill
 	f.states = player.states
 	f.position = SHOULDER
-	# Il vole : au-dessus du décor, qu'un rocher derrière la sorcière ne le couvre pas.
-	f.z_index = 3
 	player.add_child(f)
 	Settings.veil(f, Settings.SPELLS)
 	return f
@@ -80,7 +75,7 @@ static func summon(player: Player, skill: Skill) -> Familiar:
 ## écho du Ressassement, chacune `ECHO_DELAY` après la précédente.
 ## Les Rémiges (jalon 49) avancent chaque écho ; sous le Canon, chacun avance d'un élément
 ## sur le précédent ; le Sombre augure le fait frapper plus fort par état élémentaire porté.
-func echo(skill: Skill, salvo: Array[SkillStats], aim: Vector2) -> void:
+func echo(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
 	_last = salvo[0]
 	if not salvo[0].shape in ECHOED:
 		return
@@ -139,7 +134,7 @@ func _physics_process(delta: float) -> void:
 	if not _player.drain(_player.resolve(_skill, points).mana_per_second, delta):
 		_player.extinguish(_skill.id)
 		return
-	position = SHOULDER + Vector2(0.0, sin(_age * 4.0) * BOB)
+	position = SHOULDER + Vector3(0.0, 0.0, sin(_age * 4.0) * BOB)
 	_dive(delta)
 	# Le Ressassement mêle les retards : la file n'est plus dans l'ordre où ils tombent.
 	var due: Array[Echo] = []
@@ -154,7 +149,6 @@ func _physics_process(delta: float) -> void:
 		else:
 			_player.echo(e.skill, e.salvo, self, _aim_of(e))
 	_peck(delta)
-	queue_redraw()
 
 
 ## Le Mauvais œil (jalon 49) : l'écho ne frappe plus, il pose l'état de chacun de ses
@@ -167,7 +161,7 @@ func _curse(e: Echo) -> void:
 	var radius := SkillStats.EVIL_EYE_RADIUS * (1.0 + own.croak * 0.01)
 	var point := _aim_of(e)
 	EvilEye.open(_player._effects_parent(), point, radius, DamageType.COLORS[cast.nature])
-	for target in Targets.in_circle(get_world_2d(), point, radius):
+	for target in Targets.in_circle(get_world_3d(), point, radius):
 		if target.states == null:
 			continue
 		for kind: int in StatusEffects.ELEMENTAL:
@@ -199,7 +193,7 @@ func _peck(delta: float) -> void:
 	var own := _player.resolve(_skill, _player.skill_points(_skill.id))
 	if own.peck <= 0.0:
 		return
-	var prey := Targets.nearest(get_world_2d(), _player.global_position, SkillStats.PECK_REACH)
+	var prey := Targets.nearest(get_world_3d(), _player.global_position, SkillStats.PECK_REACH)
 	if prey == null:
 		return
 	_peck_hit = _last.echoed(own.peck * 0.01)
@@ -225,27 +219,13 @@ func _dive(delta: float) -> void:
 	var t := _dive_age / DIVE_TIME
 	if t > 1.0:
 		t = 2.0 - t
-	position = SHOULDER.lerp(_goal, t) - Vector2(0.0, sin(t * PI) * DIVE_ARC)
+	position = SHOULDER.lerp(_goal, t) - Vector3(0.0, 0.0, sin(t * PI) * DIVE_ARC)
 
 
 ## L'Œil du corbeau : l'ennemi le plus proche du point visé dans son rayon, ou le point.
-func _aim_of(e: Echo) -> Vector2:
+func _aim_of(e: Echo) -> Vector3:
 	if e.seek <= 0.0:
 		return e.aim
-	var prey := Targets.nearest(get_world_2d(), e.aim, e.seek)
+	var prey := Targets.nearest(get_world_3d(), e.aim, e.seek)
 	return prey.global_position if prey != null else e.aim
 
-
-## Le corbeau (`EffectForge.crow()`), tourné comme sa maîtresse ; à l'aller d'un piqué, ailes
-## repliées vers sa proie (`crow_dive()`), et l'éclat du bec à l'arrivée.
-func _draw() -> void:
-	if _dive_age >= 0.0 and _dive_age < DIVE_TIME:
-		var toward := 1 if _goal.x < SHOULDER.x else 0
-		EffectForge.put_centered(self, EffectForge.crow_dive()[toward], Vector2.ZERO)
-		return
-	var side: Array = EffectForge.crow()[1 if _player.facing.x < 0.0 else 0]
-	EffectForge.put_centered(self, side[int(_age * FLAP_HZ) % side.size()], Vector2.ZERO)
-	if _dive_age >= DIVE_TIME and _dive_age < DIVE_TIME + STRIKE_TIME and _peck_hit != null:
-		EffectForge.put_centered(
-			self, EffectForge.strike(DamageType.COLORS[_peck_hit.nature]), _goal - position + Vector2(3.0, 2.0)
-		)

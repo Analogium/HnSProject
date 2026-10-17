@@ -8,15 +8,14 @@ extends Caster
 ## Le vol et le télégraphe : l'obus tombe quand le plein atteint le bord.
 const FLIGHT := 1.1
 const BLAST := 26.0
-const ARC_HEIGHT := 40.0
 
 
 ## Par-dessus les murs.
-func _has_line_of_sight(_victim: Node2D) -> bool:
+func _has_line_of_sight(_victim: Node3D) -> bool:
 	return true
 
 
-func _fire(_dir: Vector2) -> void:
+func _fire(_dir: Vector3) -> void:
 	var at := foe().global_position
 	_danger(at, DangerZone.Shape.DISC, BLAST, FLIGHT, DamageType.Kind.FIRE)
 	var shell := Shell.new()
@@ -27,26 +26,20 @@ func _fire(_dir: Vector2) -> void:
 
 
 ## La boule de feu du joueur, en cloche : la planche existe déjà, et le souffle qui
-## suit est celui de sa nature.
+## suit est celui de sa nature. Elle ne frappe pas : c'est la zone au sol.
 class Shell:
-	extends Node2D
+	extends Node3D
 
-	var from: Vector2
-	var to: Vector2
+	var from: Vector3
+	var to: Vector3
 	var _age := 0.0
 
 	func _ready() -> void:
-		z_index = 3
 		global_position = from
 
 	func _physics_process(delta: float) -> void:
 		_age += delta
 		var k := minf(_age / Mortar.FLIGHT, 1.0)
-		global_position = from.lerp(to, k) + Vector2(0.0, -Mortar.ARC_HEIGHT * 4.0 * k * (1.0 - k))
-		queue_redraw()
+		global_position = from.lerp(to, k)
 		if k >= 1.0:
 			queue_free()
-
-	func _draw() -> void:
-		var balls := EffectForge.balls(DamageType.COLORS[DamageType.Kind.FIRE])
-		EffectForge.put_centered(self, balls[int(_age * EffectForge.BALL_HZ) % balls.size()], Vector2.ZERO)

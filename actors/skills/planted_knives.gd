@@ -1,15 +1,9 @@
 class_name PlantedKnives
-extends Node2D
+extends Node3D
 
 ## Les lames plantées dans un ennemi (jalon 50) : combien, et ce qu'il leur reste. Le Coup de
 ## grâce les arrache (`rip()`), le Hérisson fait subir davantage à leur porteur. Enfant de la
 ## hurtbox : elles suivent le corps et tombent avec lui.
-
-## L'écart entre deux couteaux de l'éventail, d'où il part sur le corps, et à quelle distance
-## de ce point ils sont posés.
-const FAN := 0.55
-const LIFT := Vector2(0, -4)
-const OUT := 9.0
 
 var count := 0
 var _left := 0.0
@@ -30,8 +24,6 @@ static func plant(target: Hurtbox, cast: SkillStats) -> void:
 	knives._left = SkillStats.PLANT_TIME + cast.anchorage
 	knives._hedgehog = cast.hedgehog
 	knives._expose()
-	knives.z_index = 1
-	knives.queue_redraw()
 
 
 static func of(target: Hurtbox) -> PlantedKnives:
@@ -66,10 +58,3 @@ func _physics_process(delta: float) -> void:
 	if _left <= 0.0:
 		_fall()
 
-
-## Les manches fichés (« manches fichés » choisis sur planche) : les couteaux sortent du haut
-## du corps en éventail, lame dedans, manche dehors.
-func _draw() -> void:
-	for i in count:
-		var angle := -PI * 0.5 + (float(i) - float(count - 1) * 0.5) * FAN
-		Slash.knife(Slash.turn_of(angle + PI)).put(self, LIFT + Vector2.from_angle(angle) * OUT)

@@ -26,7 +26,7 @@ func tick(delta: float) -> void:
 		return
 	var victim := foe()
 	if global_position.distance_to(victim.global_position) < stats.attack_range:
-		velocity = Vector2.ZERO
+		velocity = Vector3.ZERO
 		sprite.set_state(false, victim.global_position - global_position)
 		_zone = _burst(SWELL)
 		_timer = SWELL

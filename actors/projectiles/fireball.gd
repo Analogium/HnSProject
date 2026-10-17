@@ -5,9 +5,6 @@ extends Projectile
 ## `Projectile` ; le dessin et l'explosion sont à lui.
 
 const SCENE := "res://actors/projectiles/player_fireball.tscn"
-## Les bouffées de la traînée, et leur écart en pixels derrière la boule.
-const TRAIL := 3
-const TRAIL_STEP := 6.0
 
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
 var explosion_radius := 0.0
@@ -19,7 +16,7 @@ var is_shard := false
 var _burst_frame := -1
 ## Le Gonflement (jalon 42) : sa propre forme de touche, que la boule agrandit en volant —
 ## celle de la scène est partagée par toutes les boules (invariant 2).
-var _hit_shape: CircleShape2D
+var _hit_shape: SphereShape3D
 var _hit_radius := 0.0
 
 
@@ -28,7 +25,7 @@ var _hit_radius := 0.0
 ## jamais —, l'auteur posé à la main. Chargée à l'appel : la scène porte ce script.
 ## `burst` à faux : pas d'explosion, la touche directe seule — les boules du Brasero.
 static func spark(
-	parent: Node, from: Vector2, toward: Vector2, cast: SkillStats, author: StatusEffects,
+	parent: Node, from: Vector3, toward: Vector3, cast: SkillStats, author: StatusEffects,
 	burst := true
 ) -> Fireball:
 	var ball := Projectile.spawn(
@@ -42,50 +39,12 @@ static func spark(
 	return ball
 
 
-func _ready() -> void:
-	super()
-	# **Une planche cernée ne peut pas être additive** : son contour sombre n'y
-	# ajoute rien, il disparaît, et avec lui ce qui la rattache au décor.
-	material = null
-
-
-## **La boule ne tourne pas.** `Projectile` aligne son nœud sur la trajectoire, ce
-## qui convient à un tracé et jamais à une planche : pivotée, elle se
-## rééchantillonne et ses pixels se brisent. Une boule n'a pas d'orientation, et sa
-## traînée se place à la main.
-func setup(
-	dir: Vector2, parts: Array[float], source: Node2D, p_speed := 0.0, nature := -1
-) -> void:
-	super(dir, parts, source, p_speed, nature)
-	rotation = 0.0
-
-
-func _draw() -> void:
-	var t := tint()
-	var puffs := EffectForge.puffs(t)
-	if is_shard:
-		EffectForge.put_centered(self, puffs[1], -_dir * 5.0)
-		EffectForge.put_centered(self, puffs[2], -_dir * 9.0)
-		EffectForge.put_centered(self, EffectForge.shard(t), Vector2.ZERO)
-		return
-	# Gonflée, la boule est fabriquée à sa taille, impaire, et sa traînée recule d'autant.
-	var side := 2 * floori(EffectForge.BALL_SIZE * 0.5 * size()) + 1
-	var behind := float(side - EffectForge.BALL_SIZE) * 0.5
-	for i in TRAIL:
-		EffectForge.put_centered(
-			self, puffs[mini(i, puffs.size() - 1)], -_dir * (behind + TRAIL_STEP * float(i + 1))
-		)
-
-	var balls := EffectForge.balls(t) if side <= EffectForge.BALL_SIZE else EffectForge.grown_balls(t, side)
-	EffectForge.put_centered(self, balls[int(_life * EffectForge.BALL_HZ) % balls.size()], Vector2.ZERO)
-
-
 func _physics_process(delta: float) -> void:
 	super(delta)
 	if _cast == null or _cast.girth <= 0.0:
 		return
 	if _hit_shape == null:
-		var holder := get_node("CollisionShape2D") as CollisionShape2D
+		var holder := get_node("CollisionShape3D") as CollisionShape3D
 		_hit_shape = holder.shape.duplicate()
 		holder.shape = _hit_shape
 		_hit_radius = _hit_shape.radius
@@ -99,13 +58,13 @@ func size() -> float:
 	return minf(1.0 + _cast.girth * 0.01 * speed * _life / SkillStats.SWELL_STEP, SkillStats.GIRTH_MOST)
 
 
-func _on_area_entered(area: Area2D) -> void:
+func _on_area_entered(area: Area3D) -> void:
 	if strikes(area):
 		_explode(area as Hurtbox)
 	super(area)
 
 
-func _on_body_entered(body: Node2D) -> void:
+func _on_body_entered(body: Node3D) -> void:
 	_explode(null)
 	super(body)
 

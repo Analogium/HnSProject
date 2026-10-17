@@ -1,5 +1,5 @@
 class_name ExperienceOrb
-extends Area2D
+extends Area3D
 
 ## Une boule d'expérience posée au sol par l'établi, ramassée au contact.
 ##
@@ -16,14 +16,9 @@ const GRUNT := preload("res://resources/stats/grunt_stats.tres")
 const PICKUP_RADIUS := 8.0
 ## Layer 2, « player_body » : seul le joueur la ramasse.
 const PLAYER_BODY := 1 << 1
-## Le bleu du « +N exp » flottant : la boule annonce ce qu'elle donnera.
-const COLOR := HitFeedback.XP
-const GLINT := Color(1.0, 1.0, 1.0, 0.9)
-const HEIGHT := 5.0
 
 var value := 0.0
 var level := 1
-var _t := 0.0
 
 
 ## Ce que vaut une boule dans une zone de ce niveau, avant le retard du joueur.
@@ -34,14 +29,14 @@ static func value_for(zone_level_value: int) -> float:
 
 
 ## Entrée dans l'arbre différée, comme `GroundItem.spawn()`.
-static func put(parent: Node, at: Vector2, p_value: float, p_level: int) -> ExperienceOrb:
+static func put(parent: Node, at: Vector3, p_value: float, p_level: int) -> ExperienceOrb:
 	var orb := ExperienceOrb.new()
 	orb.value = p_value
 	orb.level = p_level
 	orb.collision_layer = 0
 	orb.collision_mask = PLAYER_BODY
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
+	var shape := CollisionShape3D.new()
+	var circle := SphereShape3D.new()
 	circle.radius = PICKUP_RADIUS
 	shape.shape = circle
 	orb.add_child(shape)
@@ -51,26 +46,9 @@ static func put(parent: Node, at: Vector2, p_value: float, p_level: int) -> Expe
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	# Déphasées : dix boules qui flottent à l'unisson se lisent comme un seul objet.
-	_t = float(get_instance_id() % 97) * 0.1
 
 
-func _process(delta: float) -> void:
-	_t += delta * GroundItem.BOB_SPEED
-	queue_redraw()
-
-
-func _draw() -> void:
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(GroundItem.GLOW_RX, GroundItem.GLOW_RY))
-	draw_circle(Vector2.ZERO, 1.0, Color(COLOR, GroundItem.GLOW_ALPHA))
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	var center := Vector2(0.0, roundf(-HEIGHT + sin(_t) * GroundItem.BOB_AMOUNT))
-	draw_circle(center, 4.5, Color(COLOR, 0.35))
-	draw_circle(center, 3.0, COLOR)
-	draw_circle(center + Vector2(-1.0, -1.0), 1.0, GLINT)
-
-
-func _on_body_entered(body: Node2D) -> void:
+func _on_body_entered(body: Node3D) -> void:
 	var player := body as Player
 	if player == null or is_queued_for_deletion():
 		return

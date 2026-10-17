@@ -142,7 +142,7 @@ func _hit(cast: SkillStats, sheet: CharacterStats) -> float:
 	var parts := DamageType.empty_parts()
 	for i in parts.size():
 		parts[i] = (cast.damage_min[i] + cast.damage_max[i]) * 0.5
-	var info := DamageInfo.as_parts(parts, Vector2.ZERO)
+	var info := DamageInfo.as_parts(parts, Vector3.ZERO)
 	info.multiplier(1.0 + cast.crit_chance * (cast.crit_multiplier - 1.0))
 	_target.stats = sheet
 	_target.mitigate_part(info)
@@ -166,6 +166,6 @@ func _seconds(cast: SkillStats, sheet: CharacterStats) -> float:
 
 ## Les dégâts par seconde d'un ennemi de cette fiche, après défenses et esquive.
 func _taken(sheet: CharacterStats, nature: int) -> float:
-	var info := DamageInfo.new(sheet.attack_damage, Vector2.ZERO, 0.0, false, nature)
+	var info := DamageInfo.new(sheet.attack_damage, Vector3.ZERO, 0.0, false, nature)
 	_player.hurtbox.mitigate_part(info)
 	return info.amount * (1.0 - _player.stats.evade_chance()) / sheet.attack_interval()

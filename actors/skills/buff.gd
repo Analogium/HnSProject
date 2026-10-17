@@ -1,35 +1,12 @@
 class_name Buff
-extends Node2D
+extends Node3D
 
 ## Un geste entretenu qui ne frappe rien : il draine une réserve par seconde et, tant
 ## qu'il brûle, ses lignes sont dans la fiche du porteur — c'est `Player` qui les y
-## verse, ce nœud ne porte que le prix et le dessin.
+## verse, ce nœud ne porte que le prix.
 ##
 ## Il relit les points à chaque image, comme l'aura : un livre qui quitte le râtelier
 ## éteint ce qu'il enseignait.
-
-const HALO := 9.0
-const MOTES := 6
-const RISE := 14.0
-## Ce qu'on voit du porteur à travers son tombeau. À 1 il disparaît dans la glace,
-## à 0,6 le bloc n'est plus qu'un reflet : c'est le seul dessin du jeu qu'on
-## regarde **à travers**, et il se pose donc à alpha partiel.
-const TOMB_ALPHA := 0.8
-## L'Auréole, « couronne de grains » choisie sur planche (jalon 40) : l'écart entre deux
-## grains, gardé à tout rayon — à 20 px, trente-six grains feraient un anneau plein —,
-## leur écart au cercle, qui casse la palissade, et la vitesse du tour en radians/s.
-const CROWN_SPACING := 10.5
-const CROWN_JITTER := [0.0, 2.0, -1.0, 1.0, -2.0, 0.5]
-const CROWN_TURN := 0.3
-## L'Aura (jalon 49), « cercle de runes » choisi sur planche : son cercle en pointillés — un
-## grain tous les deux pixels, un sur trois retiré — et trois icônes de l'état de son élément
-## qui en font le tour, en radians par seconde.
-const AURA_DOTS := 2.0
-const AURA_TURN := 1.2
-const DRAWN := [
-	DamageType.Kind.COLD, DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING,
-	DamageType.Kind.NECROTIC,
-]
 
 var _player: Player
 var _skill: Skill
@@ -49,20 +26,19 @@ var binds := false
 ## Ce que la Nécrose a rongé depuis le dernier Fardeau partagé, en PV, et depuis quand.
 var _burden := 0.0
 var _since_burden := 0.0
-## Depuis la dernière fois que l'Auréole a béni, et son rayon, pour le dessin.
+## Depuis la dernière fois que l'Auréole a béni.
 var _since_blessing := 0.0
 ## L'Ionisation (jalon 43) : depuis quand le champ n'a pas engourdi autour de lui.
 var _since_ion := 0.0
 ## Le Halo de givre (jalon 44) : depuis quand il n'a pas transi autour de lui.
 var _since_halo := 0.0
-var _aureole := 0.0
 ## L'Incarnation (jalon 49) : l'élément que prennent les sorts tant qu'il brûle, -1 sans
 ## elle ; le dernier sort converti, que l'Aura reprend ; depuis quand l'Aura n'a pas frappé.
 var incarnation := -1
 var last_spell: SkillStats
 var _since_aura := 0.0
 ## Ce que l'Aura frappe, en points de pourcentage, relu à chaque période ; -1 avant la première
-## lecture. Le dessin la lit : sans Aura, pas de cercle.
+## lecture.
 var _aura := -1.0
 ## Le Triple éclat (jalon 49) : les éléments lancés tant qu'il brûle.
 var natures_cast := {}
@@ -83,14 +59,6 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 	player.add_child(buff)
 	Settings.veil(buff, Settings.SPELLS)
 	return buff
-
-
-func _ready() -> void:
-	# Le tombeau, la clarté sacrée, l'électricité et la nécrose sont **dessinés**, et une
-	# planche cernée ne peut pas être additive : son contour sombre n'y ajoute rien. Les
-	# braises d'Ignition sont encore tracées et gardent la lumière ajoutée.
-	if not _skill.nature in DRAWN:
-		material = ArtPalette.ADDITIVE
 
 
 ## Depuis quand il brûle : la Dévotion (jalon 48) monte avec.
@@ -224,7 +192,6 @@ func _physics_process(delta: float) -> void:
 	if not _player.drain(cast.mana_per_second if cast != null else 0.0, delta):
 		_player.extinguish(_skill.id)
 		return
-	queue_redraw()
 	_player.mend(cast.self_heal if cast != null else 0.0, delta)
 	# En dernier : la brûlure peut tuer le porteur, qui éteint alors le buff. Ce qu'il
 	# ronge des PV **actuels** s'y ramène en part des PV max, et ne tue donc jamais.
@@ -261,7 +228,7 @@ func _radiate(delta: float) -> void:
 		return
 	var hit := last_spell.echoed(_aura * 0.01)
 	hit.status_chance_increase += SkillStats.SURE_STATE
-	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.AURA_REACH):
+	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.AURA_REACH):
 		Targets.strike(target, hit.roll(Game.rng), _player.global_position, _player.states, hit)
 
 
@@ -274,7 +241,7 @@ func _ionize(cast: SkillStats, delta: float) -> void:
 	if _since_ion < SkillStats.IONIZE_PERIOD:
 		return
 	_since_ion = 0.0
-	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.IONIZE_RADIUS):
+	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.IONIZE_RADIUS):
 		if target.states != null and Game.rng.randf() * 100.0 < cast.ionize:
 			target.states.put(
 				StatusEffects.Kind.NUMB, 1.0, _player.states, _skill.id,
@@ -291,7 +258,7 @@ func _halo(cast: SkillStats, delta: float) -> void:
 	if _since_halo < SkillStats.HALO_PERIOD:
 		return
 	_since_halo = 0.0
-	for target in Targets.in_circle(get_world_2d(), _player.global_position, SkillStats.HALO_RADIUS):
+	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.HALO_RADIUS):
 		if target.states != null:
 			target.states.put(StatusEffects.Kind.CHILL, 0.0, _player.states, _skill.id, cast.rime_halo * 0.01)
 
@@ -327,8 +294,7 @@ func unburden(cast: SkillStats) -> void:
 ## (jalon 48), qui frappe ce qu'elle bénit d'une part des PV max ; l'Humilité y fond la
 ## résistance au sacré.
 func _bless(cast: SkillStats, delta: float) -> void:
-	_aureole = cast.aureole
-	if _aureole <= 0.0:
+	if cast.aureole <= 0.0:
 		return
 	_since_blessing += delta
 	if _since_blessing < SkillStats.AUREOLE_PERIOD:
@@ -337,7 +303,7 @@ func _bless(cast: SkillStats, delta: float) -> void:
 	var strength := cast.strength_of(StatusEffects.Kind.BLESSING)
 	var glory := DamageType.empty_parts()
 	glory[cast.nature] = _player.stats.max_health * cast.glory * 0.01
-	for target in Targets.in_circle(get_world_2d(), _player.global_position, _aureole):
+	for target in Targets.in_circle(get_world_3d(), _player.global_position, cast.aureole):
 		if target.states != null:
 			target.states.put(StatusEffects.Kind.BLESSING, 0.0, _player.states, cast.skill_id, strength)
 			if cast.humility > 0.0:
@@ -345,93 +311,3 @@ func _bless(cast: SkillStats, delta: float) -> void:
 		if cast.glory > 0.0:
 			Targets.strike(target, glory, _player.global_position, _player.states, cast)
 
-
-## Discret : le buff dure des minutes, et ce qui clignote fort finit par fatiguer.
-## Sauf celui qui enferme : on ne bouge plus, et rien d'autre ne le dirait.
-func _draw() -> void:
-	var tint: Color = DamageType.COLORS[_skill.nature]
-	if binds:
-		_tomb(tint)
-		return
-	var pulse := 0.5 + 0.5 * sin(_age * 3.0)
-	if _skill.nature in [DamageType.Kind.HOLY, DamageType.Kind.LIGHTNING]:
-		# Tramé plutôt que tracé : ces deux buffs sont dessinés de bout en bout.
-		EffectForge.put_scorch(self, tint, int(HALO), 0.5 + 0.5 * pulse)
-	# La nécrose n'a pas de halo : elle ne rayonne pas, elle ronge — ses spores suffisent.
-	elif _skill.nature != DamageType.Kind.NECROTIC:
-		Glow.draw_ring(self, Vector2.ZERO, HALO, Color(tint, 0.12 + 0.12 * pulse))
-	for i in MOTES:
-		var rise := fmod(_age * 0.8 + float(i) * 0.163, 1.0)
-		var angle := TAU * float(i) / float(MOTES) + _age * 0.6
-		var p := Vector2.from_angle(angle) * HALO * 0.8 + Vector2(0.0, -rise * RISE)
-		# Ce qui monte a la matière du geste : des braises pour une combustion, des
-		# flocons pour un froid, des grains pour une clarté ou une charge, des spores
-		# pour ce qui ronge. Et rien
-		# d'autre — ce geste dure des minutes, et ce qui clignote fort finit par fatiguer.
-		#
-		# Les grains **dessinés** montent à pleine opacité et s'éteignent d'un coup en
-		# haut de leur course : trois pixels qui s'effacent s'éteignent en gris bien
-		# avant d'avoir disparu. Les braises, tracées, gardent leur fondu.
-		match _skill.nature:
-			DamageType.Kind.FIRE:
-				Fire.draw_ember(self, p, tint, 0.7 * (1.0 - rise))
-			DamageType.Kind.COLD:
-				Frost.drift(self, p, tint, 1.0)
-			DamageType.Kind.HOLY:
-				Holy.spark(self, p, tint, 1.0)
-			DamageType.Kind.LIGHTNING:
-				EffectForge.put_centered(self, EffectForge.lightning_speck(tint), p)
-			DamageType.Kind.NECROTIC:
-				Necrotic.centered(self, EffectForge.spore(tint), p)
-			_:
-				draw_rect(Rect2(p, Vector2.ONE), Color(tint.lerp(Color.WHITE, 0.4), 0.7 * (1.0 - rise)))
-	if _aureole > 0.0:
-		_crown(tint)
-	if incarnation >= 0 and last_spell != null and _aura > 0.0:
-		_aura_ring()
-
-
-## Le cercle de l'Aura, là où elle frappe, et les trois icônes de son état qui en font le tour.
-func _aura_ring() -> void:
-	var tint: Color = DamageType.COLORS[incarnation]
-	var n := roundi(TAU * SkillStats.AURA_REACH / AURA_DOTS)
-	for k in n:
-		if k % 3 == 0:
-			continue
-		var p := Vector2.from_angle(TAU * float(k) / float(n)) * SkillStats.AURA_REACH
-		draw_rect(Rect2(EffectForge.snap(self, p), Vector2.ONE), tint)
-	var icon := StatusIcon.texture(StatusEffects.rolled_by(incarnation))
-	for i in 3:
-		var a := TAU * float(i) / 3.0 + _age * AURA_TURN
-		EffectForge.put_centered(self, icon, Vector2.from_angle(a) * SkillStats.AURA_REACH)
-
-
-## Un grain de lumière sur deux, un pixel de son cœur entre eux : grand et petit en
-## alternance, qui tournent lentement sur le cercle où l'Auréole bénit.
-func _crown(tint: Color) -> void:
-	var count := maxi(roundi(TAU * _aureole / CROWN_SPACING), 6)
-	for i in count:
-		var p := Vector2.from_angle(TAU * float(i) / float(count) + _age * CROWN_TURN) \
-			* (_aureole + float(CROWN_JITTER[i % CROWN_JITTER.size()]))
-		if i % 2 == 0:
-			Holy.spark(self, p, tint, 1.0)
-		else:
-			draw_rect(Rect2(EffectForge.snap(self, p), Vector2.ONE), Holy.halo(tint))
-
-
-## Le bloc de glace, **dessiné** : vingt et un pixels sur vingt-sept, posé à
-## alpha partiel pour qu'on voie qui est dedans. Les six pans tracés d'avant
-## faisaient un hexagone, pas un volume — ce qui manquait, ce sont les facettes et
-## les fêlures, et aucune des deux ne se trace.
-##
-## Trois flocons qui montent le long du bloc : trois secondes d'image fixe se
-## lisent comme un jeu figé.
-func _tomb(tint: Color) -> void:
-	var block := EffectForge.tomb(tint)
-	var size := Vector2(block.get_size())
-	EffectForge.put_centered(self, block, Vector2.ZERO, TOMB_ALPHA)
-	for i in 3:
-		var rise := fmod(_age * 0.5 + float(i) * 0.33, 1.0)
-		Frost.drift(
-			self, Vector2((float(i) - 1.0) * 7.0, size.y * 0.5 - rise * size.y), tint, 1.0
-		)

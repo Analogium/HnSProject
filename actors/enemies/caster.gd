@@ -25,7 +25,7 @@ var _strafe_dir := 1.0
 ## Le sens de rotation se déduit de la case d'apparition, comme la silhouette
 ## (voir ActorSprite._pick). Surtout pas Game.rng : un caster qui tourne dans
 ## l'autre sens change tout l'engagement, et une graine doit redonner le même.
-func setup(p_target: Node2D) -> void:
+func setup(p_target: Node3D) -> void:
 	super(p_target)
 	_strafe_dir = 1.0 if SpawnSeed.at(position) % 2 == 0 else -1.0
 
@@ -39,7 +39,7 @@ func tick(delta: float) -> void:
 	var dist := to_target.length()
 	var dir := to_target.normalized()
 
-	var move := Vector2.ZERO
+	var move := Vector3.ZERO
 	var strafing := false
 	if dist > preferred_distance:
 		# Le chemin, pas la ligne droite : c'est en se rapprochant qu'il a des
@@ -52,7 +52,7 @@ func tick(delta: float) -> void:
 		# bas) fait spiraler le caster vers l'extérieur, ce qui se lit comme une
 		# fuite lente.
 		var offset := global_position - victim.global_position
-		var goal := victim.global_position + offset.rotated(_strafe_dir * orbit_step)
+		var goal := victim.global_position + Flat.rotated(offset, _strafe_dir * orbit_step)
 		move = (goal - global_position).normalized() * strafe_bias
 		strafing = true
 
@@ -73,11 +73,11 @@ func tick(delta: float) -> void:
 
 ## Pas dans le document, mais une arène à piliers rend l'absence de test
 ## immédiatement visible : sans lui le caster tire à travers les murs.
-func _has_line_of_sight(victim: Node2D) -> bool:
-	return Targets.in_sight(get_world_2d(), global_position, victim.global_position)
+func _has_line_of_sight(victim: Node3D) -> bool:
+	return Targets.in_sight(get_world_3d(), global_position, victim.global_position)
 
 
-func _fire(dir: Vector2) -> void:
+func _fire(dir: Vector3) -> void:
 	Projectile.spawn_of_nature(
 		manager.projectile_parent, projectile_scene,
 		global_position, dir, stats.attack_damage, self

@@ -9,7 +9,7 @@ extends RefCounted
 
 ## Un porteur de rats ou un maudit vient de tomber. En différé : on meurt souvent dans un
 ## rappel de collision (invariant 4). `own` : sa hurtbox, encore dans l'arbre.
-static func on_death(world: World2D, at: Vector2, states: StatusEffects, own: int) -> void:
+static func on_death(world: World3D, at: Vector3, states: StatusEffects, own: int) -> void:
 	var curse := states.cast_of(StatusEffects.Kind.CURSED)
 	if curse != null and curse.skill_id == SkillStats.CONTAGION_SKILL:
 		_contagion(world, at, states, own, curse)
@@ -24,7 +24,7 @@ static func on_death(world: World2D, at: Vector2, states: StatusEffects, own: in
 ## La Contagion : le maudit éclate sur ses voisins, leur passe ses rats, et sous la Peste
 ## galopante sa malédiction, avec ce qu'il lui en restait.
 static func _contagion(
-	world: World2D, at: Vector2, states: StatusEffects, own: int, curse: SkillStats
+	world: World3D, at: Vector3, states: StatusEffects, own: int, curse: SkillStats
 ) -> void:
 	var author := states.author_of(StatusEffects.Kind.CURSED)
 	var near := neighbours(world, at, own, SkillStats.CONTAGION_REACH)
@@ -48,7 +48,7 @@ static func _contagion(
 
 ## `count` rats de ce porteur, répartis entre ces héritiers, au rongement qu'ils avaient ; on
 ## les voit courir de `at` jusqu'à chacun.
-static func _hand(states: StatusEffects, at: Vector2, heirs: Array[Hurtbox], count: int) -> void:
+static func _hand(states: StatusEffects, at: Vector3, heirs: Array[Hurtbox], count: int) -> void:
 	if count <= 0 or heirs.is_empty():
 		return
 	var gnaw := states.gnaw_per_rat()
@@ -62,7 +62,7 @@ static func _hand(states: StatusEffects, at: Vector2, heirs: Array[Hurtbox], cou
 
 
 ## Les vivants autour de ce point, du plus proche au plus loin, sauf `own`.
-static func neighbours(world: World2D, at: Vector2, own: int, reach: float) -> Array[Hurtbox]:
+static func neighbours(world: World3D, at: Vector3, own: int, reach: float) -> Array[Hurtbox]:
 	var out := Targets.in_circle(world, at, reach).filter(
 		func(t: Hurtbox) -> bool:
 			var body := t.get_parent() as Enemy
@@ -92,7 +92,7 @@ static func burst(
 	var at := target.global_position
 	var curse := target.states.cast_of(StatusEffects.Kind.CURSED)
 	if curse != null and curse.plague_rats > 0.0:
-		var heirs := neighbours(target.get_world_2d(), at, target.get_instance_id(), SkillStats.CONTAGION_REACH)
+		var heirs := neighbours(target.get_world_3d(), at, target.get_instance_id(), SkillStats.CONTAGION_REACH)
 		if not heirs.is_empty():
 			heirs[0].states.add_rats(popped * int(curse.plague_rats), gnaw, author, cast.skill_id)
 	if cast.dead_dance > 0.0:

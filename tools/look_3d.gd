@@ -6,7 +6,8 @@ extends Node
 ## `tools/look_3d.py` monte en GIF.
 ##   tools/capture.sh tools/look_3d.gd modele-3d && tools/look_3d.py modele-3d
 
-## Le modèle et l'arme qu'il montre.
+## Le modèle et l'arme qu'il montre. Le monde est en pixels comme le jeu (`Flat.PX_PER_M`) :
+## les distances ci-dessous sont en mètres, et converties à l'usage.
 const MODELS := {"swiftblade": "weapon_sword"}
 const SPACING := 1.4
 ## De trois quarts : de face, la lame et le profil se lisent mal.
@@ -32,7 +33,8 @@ func _ready() -> void:
 	var x := -SPACING * (MODELS.size() - 1) / 2.0
 	for id in MODELS:
 		var model: Node3D = load("res://art/models/%s.glb" % id).instantiate()
-		model.position.x = x
+		model.scale = Vector3.ONE * Flat.PX_PER_M
+		model.position.x = x * Flat.PX_PER_M
 		model.rotation_degrees.y = YAW
 		x += SPACING
 		world.add_child(model)
@@ -45,10 +47,10 @@ func _ready() -> void:
 	for c in CAMERAS:
 		camera.projection = Camera3D.PROJECTION_PERSPECTIVE if c[1] else Camera3D.PROJECTION_ORTHOGONAL
 		camera.fov = c[2]
-		camera.size = c[2]
+		camera.size = c[2] * Flat.PX_PER_M
 		var pitch := deg_to_rad(c[4])
-		camera.position = AIM + Vector3(0, sin(pitch), cos(pitch)) * c[3]
-		camera.look_at(AIM)
+		camera.position = (AIM + Vector3(0, sin(pitch), cos(pitch)) * c[3]) * Flat.PX_PER_M
+		camera.look_at(AIM * Flat.PX_PER_M)
 		for anim in players[0].get_animation_list():
 			var frames := int(minf(players[0].get_animation(anim).length, LONGEST) * FPS)
 			for n in frames:
@@ -64,12 +66,12 @@ func _ready() -> void:
 
 func _ground() -> MeshInstance3D:
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(120, 120)
+	plane.size = Vector2(120, 120) * Flat.PX_PER_M
 	var material := StandardMaterial3D.new()
 	material.albedo_texture = load("res://art/tiles/ground_base.png")
-	# Un pixel de la tuile pour 1/16 m, comme la carte 2D.
+	# Un pixel de la tuile pour un pixel du monde, comme la carte.
 	material.uv1_triplanar = true
-	material.uv1_scale = Vector3.ONE * 16.0 / 256.0
+	material.uv1_scale = Vector3.ONE / 256.0
 	var ground := MeshInstance3D.new()
 	ground.mesh = plane
 	ground.material_override = material

@@ -9,7 +9,7 @@ const Gestures := preload("res://tests/gestures.gd")
 var _p: Player
 ## Retenu et pas seulement branché : le test des dégâts de sort a besoin d'aller
 ## regarder le tir qui vient d'en sortir.
-var _bolts_fired: Node2D
+var _bolts_fired: Node3D
 
 
 func before_each() -> void:
@@ -17,7 +17,7 @@ func before_each() -> void:
 	add_child_autofree(_p)
 	# Un parent dédié pour les tirs : sans lui ils naissent sous le script de
 	# test et y restent après coup, ce que GUT signale en enfants non libérés.
-	_bolts_fired = Node2D.new()
+	_bolts_fired = Node3D.new()
 	add_child_autofree(_bolts_fired)
 	_p.projectile_parent = _bolts_fired
 	await wait_physics_frames(1)
@@ -535,7 +535,7 @@ func test_a_salvo_leaves_as_a_crown() -> void:
 
 	var angles := {}
 	for bolt in _bolts_fired.get_children():
-		angles[snappedf(rad_to_deg((bolt as Projectile)._dir.angle()), 0.1)] = true
+		angles[snappedf(rad_to_deg(Flat.angle((bolt as Projectile)._dir)), 0.1)] = true
 	assert_eq(angles.size(), 8, "et ils ne partent pas deux au même endroit")
 
 
@@ -559,7 +559,7 @@ func _crown(count: int, spread: float) -> SkillStats:
 ## la souris sans qu'aucune assertion ne s'en aperçoive.
 func test_a_single_bolt_flies_straight_along_the_aim() -> void:
 	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
-	_p.facing = Vector2(0.6, -0.8)
+	_p.facing = Vector3(0.6, 0.0, -0.8)
 	assert_true(Gestures.cast(_p, 1), "le tir de départ")
 	assert_eq(_bolts_fired.get_child_count(), 1, "un seul trait")
 	assert_eq(
@@ -612,7 +612,7 @@ func test_each_spell_leaves_with_its_sheet_numbers() -> void:
 		for bolt: Projectile in _bolts_fired.get_children():
 			assert_eq(bolt._parts[c.nature], c.damage(points), "« %s » : dégâts" % c.name)
 			assert_eq(
-				DamageInfo.as_parts(bolt._parts, Vector2.ZERO).amount, c.damage(points),
+				DamageInfo.as_parts(bolt._parts, Vector3.ZERO).amount, c.damage(points),
 				"« %s » : et aucune autre nature" % c.name
 			)
 			assert_eq(bolt.speed, c.projectile_speed, "« %s » : vitesse" % c.name)
@@ -635,7 +635,7 @@ func test_a_bolt_with_one_more_projectile_fires_two() -> void:
 	var a := (_bolts_fired.get_child(0) as Projectile)._dir
 	var b := (_bolts_fired.get_child(1) as Projectile)._dir
 	assert_almost_eq(
-		rad_to_deg(absf(a.angle_to(b))), SkillStats.MIN_SPREAD, 0.01,
+		rad_to_deg(absf(Flat.angle_to(a, b))), SkillStats.MIN_SPREAD, 0.01,
 		"et ils ne partent pas l'un sur l'autre"
 	)
 
@@ -768,7 +768,7 @@ func test_a_conversion_node_changes_the_nature_of_what_leaves() -> void:
 		parts[DamageType.Kind.COLD], parts[DamageType.Kind.LIGHTNING],
 		"les trois cinquièmes sont du froid"
 	)
-	assert_eq(cloud._tint, DamageType.COLORS[DamageType.Kind.COLD], "et le nuage frappe en froid")
+	assert_eq(cloud._cast.nature, DamageType.Kind.COLD, "et le nuage frappe en froid")
 
 
 ## Ce qu'un nœud ne change pas : un ajout d'objet ne déplace pas la couleur du
@@ -793,7 +793,7 @@ func test_a_reward_feeds_the_player_and_its_manuals() -> void:
 	var book := Item.new(ItemCatalog.by_id("manual_lightning"))
 	_p.study(book)
 	var book_exp := book.manual.experience
-	assert_eq(_p.reward(10.0, 1, Vector2.ZERO), 10)
+	assert_eq(_p.reward(10.0, 1, Vector3.ZERO), 10)
 	assert_eq(_p.xp, 10)
 	assert_eq(book.manual.experience, book_exp + 10, "le livre apprend du même montant")
 
@@ -802,7 +802,7 @@ func test_a_reward_feeds_the_player_and_its_manuals() -> void:
 ## monter un personnage de niveau 20 dans la zone 1 aussi vite qu'en jeu dans la 20.
 func test_a_zone_left_behind_rewards_less() -> void:
 	_p.level = 20
-	var gain := _p.reward(100.0, 1, Vector2.ZERO)
+	var gain := _p.reward(100.0, 1, Vector3.ZERO)
 	assert_eq(gain, maxi(roundi(100.0 * Enemy.experience_factor(1, 20)), 1))
 	assert_lt(gain, 100)
 

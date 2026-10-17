@@ -19,23 +19,23 @@ signal heal(amount: float)
 signal recoil(amount: float)
 ## **Un corps qui portait l'état d'un lancer de ce corps vient de tomber**, de quoi que ce
 ## soit : la Dîme et l'Exhumation (jalon 45). Le lancer sans type, comme `slew`.
-signal fell(cast: RefCounted, at: Vector2)
+signal fell(cast: RefCounted, at: Vector3)
 ## **Ce corps vient de porter un coup** : où il a touché, ce qui est passé, les états de
 ## la cible. Pour ce qui réagit à un coup réussi sans pouvoir vivre dans la hurtbox —
 ## la charge statique. Sans type sur les parts : nommer `DamageInfo`, qui nomme cette
 ## classe, refermerait la boucle.
-signal struck(at: Vector2, parts: Array, victim: StatusEffects)
+signal struck(at: Vector3, parts: Array, victim: StatusEffects)
 ## **Ce corps vient de tuer** : le lancer du coup (`SkillStats`, null sans lancer), où, et
 ## les états de la victime. La Soif de sang y compte ses charges, les explosions des tués
 ## y naissent. Émis par la victime, qui seule sait qu'elle meurt. Le lancer sans type,
 ## pour la même boucle que `struck`.
-signal slew(cast: RefCounted, at: Vector2, victim: StatusEffects)
+signal slew(cast: RefCounted, at: Vector3, victim: StatusEffects)
 ## **Ce corps vient de porter un critique** (jalon 50) : la Fièvre et l'Ivresse du sang du
 ## Vive lame. Le lancer sans type, comme `slew`.
 signal critical(cast: RefCounted)
 ## **Les rats de ce corps viennent de tuer** (jalon 53) : le Festin et l'Indigestion. Émis
 ## par la victime, sur l'auteur de ses rats.
-signal gnawed(at: Vector2, victim_max_health: float)
+signal gnawed(at: Vector3, victim_max_health: float)
 
 ## **Ajouter à la fin** : les tables ci-dessous sont indexées par cette enum.
 ## OVERHEAT : la Surchauffe de la Boule de feu (jalon 42), des charges que porte sa force.

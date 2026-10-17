@@ -1,5 +1,5 @@
 class_name HamelinAir
-extends Node2D
+extends Node3D
 
 ## L'Air de Hamelin (jalon 53) : une mélodie entretenue autour du joueur de flûte — au point
 ## visé sous la Sérénade. À chaque battement (`period`) elle frappe son cercle en nécrotique,
@@ -37,15 +37,11 @@ static func play(player: Player, skill: Skill) -> HamelinAir:
 
 
 ## Ce point est-il sous un air qui joue ?
-static func covers(point: Vector2) -> bool:
+static func covers(point: Vector3) -> bool:
 	for air in playing:
 		if air._cast != null and air.global_position.distance_to(point) <= air._cast.radius:
 			return true
 	return false
-
-
-func _ready() -> void:
-	z_index = 3
 
 
 func _enter_tree() -> void:
@@ -80,14 +76,8 @@ func _physics_process(delta: float) -> void:
 	if _cast.charmed_rats > 0.0 and _since_charm >= SkillStats.CHARM_EVERY:
 		_since_charm = 0.0
 		_charm()
-	queue_redraw()
 	if not _player.drain(_cast.mana_per_second, delta):
 		_player.extinguish(_skill.id)
-
-
-func _draw() -> void:
-	if _cast != null:
-		Piper.pose_notes(self, DamageType.COLORS[_cast.nature], _cast.radius, _age)
 
 
 ## Un battement : **un tirage** pour tout le cercle (invariant 3). Le Carrousel et le Roi ne
@@ -97,7 +87,7 @@ func _beat() -> void:
 	var reigning := _player.reigns()
 	var pull := 0.0 if _cast.carousel > 0.0 or reigning else -_cast.pull
 	var fear := SkillStats.AIR_FEAR + _player.lit_number(SkillStats.TERROR) if reigning else 0.0
-	var targets := Targets.in_circle(get_world_2d(), global_position, _cast.radius)
+	var targets := Targets.in_circle(get_world_3d(), global_position, _cast.radius)
 	var heard := {}
 	for target in targets:
 		var id := target.get_instance_id()
@@ -125,12 +115,12 @@ func _beat() -> void:
 
 ## Le Carrousel : ceux du cercle tournent autour du centre au lieu d'y tomber.
 func _turn(delta: float) -> void:
-	for target in Targets.in_circle(get_world_2d(), global_position, _cast.radius):
+	for target in Targets.in_circle(get_world_3d(), global_position, _cast.radius):
 		var body := target.get_parent() as Enemy
 		if body == null or body.is_dead:
 			continue
 		var arm := body.global_position - global_position
-		body.tug(arm.orthogonal() * SkillStats.CAROUSEL_TURN * delta)
+		body.tug(Flat.orthogonal(arm) * SkillStats.CAROUSEL_TURN * delta)
 
 
 ## La Farandole : chacun heurte son plus proche voisin du cercle.
@@ -153,7 +143,7 @@ func _jostle(targets: Array[Hurtbox], parts: Array[float]) -> void:
 
 ## Les Rats charmés : un ennemi de son cercle en reçoit, au rongement d'un battement.
 func _charm() -> void:
-	var targets := Targets.in_circle(get_world_2d(), global_position, _cast.radius)
+	var targets := Targets.in_circle(get_world_3d(), global_position, _cast.radius)
 	if targets.is_empty():
 		return
 	var target: Hurtbox = targets[Game.rng.randi_range(0, targets.size() - 1)]
@@ -171,9 +161,9 @@ func _on_died(body: Enemy) -> void:
 		_note.call_deferred(body.global_position)
 
 
-func _note(at: Vector2) -> void:
+func _note(at: Vector3) -> void:
 	if _cast == null:
 		return
 	var note := DamageType.scaled(_cast.roll(Game.rng), _cast.requiem * 0.01)
-	for target in Targets.in_circle(get_world_2d(), at, SkillStats.REQUIEM_RADIUS):
+	for target in Targets.in_circle(get_world_3d(), at, SkillStats.REQUIEM_RADIUS):
 		Targets.strike(target, note, at, _player.states, _cast)

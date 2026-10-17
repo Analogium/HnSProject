@@ -1,5 +1,5 @@
 class_name LightningRod
-extends Node2D
+extends Node3D
 
 ## Le Paratonnerre de l'Éclair vif (jalon 43) : la marque posée sur le premier ennemi
 ## touché, vers laquelle les éclairs suivants s'incurvent. **Une par lanceur** : une autre
@@ -15,7 +15,6 @@ var _target: Hurtbox
 var _left := SkillStats.ROD_LIFE
 var _heir := false
 var _storm := false
-var _age := 0.0
 
 
 ## Ce que vise la marque de ce lanceur, ou null.
@@ -61,24 +60,13 @@ static func _rod_of(author: StatusEffects) -> LightningRod:
 	return rod
 
 
-func _ready() -> void:
-	z_index = 6
-
-
 func _physics_process(delta: float) -> void:
-	_age += delta
 	_left -= delta
 	if not is_instance_valid(_target) or _target.is_queued_for_deletion():
 		# La Foudre héritée : la marque passe au plus proche, avec le temps qui lui restait.
-		_target = Targets.nearest(get_world_2d(), global_position, SkillStats.ROD_REACH) if _heir else null
+		_target = Targets.nearest(get_world_3d(), global_position, SkillStats.ROD_REACH) if _heir else null
 	if _target == null or _left <= 0.0:
 		queue_free()
 		return
-	global_position = _target.overhead() - Vector2(0.0, HEAD)
-	queue_redraw()
+	global_position = _target.overhead() - Vector3(0.0, 0.0, HEAD)
 
-
-func _draw() -> void:
-	Lightning.rod(
-		DamageType.COLORS[DamageType.Kind.LIGHTNING], int(_age * Lightning.ROD_HZ) + int(get_instance_id())
-	).put(self, Vector2.ZERO)

@@ -40,7 +40,7 @@ static func react(
 	var at := target.global_position
 	var reactions := reactions_of(reacting)
 	if Reaction.CONDUCTION in reactions:
-		for other in Targets.in_circle(target.get_world_2d(), at, SPREAD_REACH):
+		for other in Targets.in_circle(target.get_world_3d(), at, SPREAD_REACH):
 			if other != target and other.states != null:
 				# Prêté, le transi n'est pas sur l'ennemi : il se pose sur ses voisins.
 				if StatusEffects.Kind.CHILL in held:
@@ -99,7 +99,7 @@ static func reactions_of(held: Array[int]) -> Array[Reaction]:
 ## Chaque réaction frappe l'ennemi qui réagit ; la Vapeur souffle autour de lui, l'Arc
 ## ardent gagne ses voisins.
 static func _trigger(
-	parent: Node, reaction: Reaction, target: Hurtbox, at: Vector2, cast: SkillStats,
+	parent: Node, reaction: Reaction, target: Hurtbox, at: Vector3, cast: SkillStats,
 	author: StatusEffects, part: float
 ) -> void:
 	var parts := _parts(reaction, cast, part)
@@ -110,12 +110,12 @@ static func _trigger(
 			Targets.strike(target, parts, at, author, cast)
 			var struck := {target.get_instance_id(): true}
 			for i in ARCS:
-				var next := Targets.nearest(target.get_world_2d(), at, ARC_REACH, struck)
+				var next := Targets.nearest(target.get_world_3d(), at, ARC_REACH, struck)
 				if next == null:
 					break
 				struck[next.get_instance_id()] = true
 				Targets.strike(next, parts, at, author, cast)
-				ChainLightning.trace(parent, PackedVector2Array([at, next.global_position]), _color(reaction))
+				ChainLightning.trace(parent, PackedVector3Array([at, next.global_position]), _color(reaction))
 		Reaction.CONDUCTION:
 			Targets.strike(target, parts, at, author, cast)
 
