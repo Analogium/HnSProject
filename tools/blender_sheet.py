@@ -102,13 +102,16 @@ def build(sheet_id, cfg, size, cached):
     passes = {"body": ["weapon=none"]}
     passes.update({w: [f"weapon={w}", "layer=weapon"] for w in b["weapons"]})
 
-    if not (cached and os.path.exists(os.path.join(out, "body_rest.json"))):
-        height = 0.0
-        for layer, extra in passes.items():
-            height = render(sheet_id, b, f"{layer}_rest", b["rest"], 1, extra, height)
-            for kind in kinds:
-                source, count = b["anims"][kind]
-                render(sheet_id, b, f"{layer}_{kind}", source, count, extra, height)
+    # `--cached` ne rend que les passes qui manquent : une arme ajoutée ne refait pas le corps.
+    done = lambda layer: cached and os.path.exists(os.path.join(out, f"{layer}_rest.json"))
+    height = 0.0
+    for layer, extra in passes.items():
+        if done(layer):
+            continue
+        height = render(sheet_id, b, f"{layer}_rest", b["rest"], 1, extra, height)
+        for kind in kinds:
+            source, count = b["anims"][kind]
+            render(sheet_id, b, f"{layer}_{kind}", source, count, extra, height)
 
     path = lambda layer, name, d, i: os.path.join(out, f"{layer}_{name}_{d}_{i}.png")
     marks_of = lambda name: json.load(open(os.path.join(out, f"body_{name}.json")))

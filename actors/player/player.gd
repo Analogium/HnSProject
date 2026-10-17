@@ -555,9 +555,12 @@ func cast_slot(index: int) -> bool:
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		if cast.use_time > 0.0:
 			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
+		# Une image de physique de plus : le geste finit sur une image de physique, jusqu'à une
+		# après son temps exact ; plus court, le corps retombait au repos une image par coup.
 		sprite.attack(
 			skill.cadence == Skill.Cadence.CAST,
-			cast.use_time / maxf(states.speed_factor, 0.01), family, held_for(skill.id)
+			cast.use_time / maxf(states.speed_factor, 0.01) + 1.0 / Engine.physics_ticks_per_second,
+			family, held_for(skill.id)
 		)
 	var aim := _aim_point()
 	var pose := _pose.bind(skill, salvo, self, facing, aim)
@@ -2366,8 +2369,7 @@ func recompute_stats() -> void:
 	var on_the_rest: Array[StatMod] = []
 	var on_skills: Array[StatMod] = []
 	for m in mods:
-		# Un accru de chance critique multiplie au lancer la base que la fiche porte : l'arme et les plats.
-		if not m.scope.is_empty() or (m.stat == SkillStats.CRIT_CHANCE and m.mode != StatMod.Mode.FLAT):
+		if not m.scope.is_empty() or SkillStats.every_skill(m):
 			on_skills.append(m)
 		elif m.stat in CharacterStats.ATTRIBUTES:
 			over_attributes.append(m)

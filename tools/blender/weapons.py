@@ -10,6 +10,7 @@ OVERSIZE = 1.4
 
 STEEL, GOLD, LEATHER = (0.80, 0.83, 0.90, 1), (0.86, 0.64, 0.22, 1), (0.36, 0.20, 0.12, 1)
 WOOD, DARK, BONE, CRYSTAL = (0.45, 0.27, 0.14, 1), (0.30, 0.30, 0.34, 1), (0.86, 0.82, 0.68, 1), (0.35, 0.75, 1.0, 1)
+ARCANE = (0.62, 0.45, 1.0, 1)
 
 
 def _material(label, color, glow=False):
@@ -106,6 +107,13 @@ def build(kind, L):
                          cube("collier", (0.04 * L, 0.02 * L, 0.04 * L), (0, 0.18 * L, 0), GOLD),
                          _add("ico_sphere", "cristal", (0.03 * L, 0.05 * L, 0.03 * L), (0, 0.23 * L, 0),
                               CRYSTAL, True, subdivisions=1)],
+        # La lame runique, arme hybride (jalon 53) : « lame arcane » choisie sur planche — toute
+        # la lame luit ; des runes sur une lame de deux pixels ne se lisaient pas.
+        "runeblade": lambda: [cube("lame", (0.06 * L, 0.33 * L, 0.02 * L), (0, 0.21 * L, 0), ARCANE, glow=True),
+                              tip("pointe", 0.06 * L, 0.07 * L, (0, 0.41 * L, 0), ARCANE),
+                              cube("garde", (0.13 * L, 0.025 * L, 0.03 * L), (0, 0.035 * L, 0), DARK),
+                              rod("poignee", 0.016 * L, 0.08 * L, (0, -0.01 * L, 0), LEATHER),
+                              ball("pommeau", 0.025 * L, (0, -0.06 * L, 0), DARK)],
         # Les armes des ennemis : le hachoir du grunt, le bâton du caster.
         "cleaver": lambda: [rod("manche", 0.018 * L, 0.12 * L, (0, 0.0, 0), WOOD),
                             cube("lame", (0.12 * L, 0.20 * L, 0.018 * L), (0.035 * L, 0.16 * L, 0), STEEL)],

@@ -1148,7 +1148,8 @@ static func _weapon(c: PixelCanvas, cfg: Dictionary, hand: Vector2, dir: Vector2
 	var perp := d.orthogonal()
 
 	match cfg["weapon"]:
-		"sword":
+		# La lame runique (jalon 53) a la silhouette d'une épée : sa couleur vient de sa planche.
+		"sword", "runeblade":
 			c.capsule(hand + d * 1.6, hand + d * 11.0, 1.1, R_METAL, bias)
 			var guard := hand + d * 2.6
 			c.capsule(guard - perp * 2.2, guard + perp * 2.2, 0.9, R_ACCENT, bias)

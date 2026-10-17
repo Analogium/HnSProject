@@ -210,18 +210,22 @@ func test_no_flat_crit_outside_a_weapon() -> void:
 				assert_ne(m.mode, StatMod.Mode.FLAT, "nœud « %s »" % n.id)
 
 
-## Chaque arme a sa base, et son type : 10 % à l'attaque, 5 % à l'incantation.
+## Chaque arme a sa base, et son type : 10 % à l'attaque, 5 % à l'incantation, entre les deux
+## pour l'hybride (jalon 53), qui lance les deux.
 func test_each_weapon_has_its_crit_and_its_kind() -> void:
 	for base: ItemBase in ItemCatalog.ALL:
+		var attacks := base.allows(Keywords.ATTACK)
+		var spells := base.allows(Keywords.SPELL)
 		if base.family != ItemBase.WEAPON_FAMILY:
 			assert_eq(base.crit_chance, 0.0, base.id)
-			assert_eq(base.allowed_keyword(), "", base.id)
-		elif base.tags.has(ItemBase.CASTER_TAG):
+			assert_false(attacks or spells, base.id)
+		elif attacks and spells:
+			assert_eq(base.crit_chance, 0.075, base.id)
+		elif spells:
 			assert_eq(base.crit_chance, 0.05, base.id)
-			assert_eq(base.allowed_keyword(), Keywords.SPELL, base.id)
 		else:
 			assert_eq(base.crit_chance, 0.1, base.id)
-			assert_eq(base.allowed_keyword(), Keywords.ATTACK, base.id)
+			assert_true(attacks, base.id)
 
 
 # --------------------------------------------------------------------------

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemBase" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://core/item_base.gd" id="1_lame"]
+[ext_resource type="Texture2D" path="res://resources/icons/items/arcane_blade.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_lame")
+id = "arcane_blade"
+display_name = "Lame arcane"
+kind = "runeblade"
+tags = PackedStringArray("weapon", "melee", "caster")
+lineage = "runeblade"
+tier = 2
+required_level = 24
+implicit_stat = "damage"
+implicit_percent = true
+implicit_value = 12.0
+implicit_roll_max = 17.0
+crit_chance = 0.075
+icon = ExtResource("2_icon")

@@ -34,6 +34,9 @@ const DEFAULT_IMPACT := 0.4
 var _dir := "down"
 var _anim := "idle"
 var _attacking := false
+## Le pas que donnent les états (le gel ralentit) : celui de la marche et du repos. Un geste a le
+## sien, calé sur son temps, qu'un état posé pendant le coup n'écrase plus.
+var _pace := 1.0
 var _variant := 0
 var _weapon := ""
 ## Tenu le temps du geste en cours à la place de `_weapon`, vide sinon.
@@ -126,11 +129,14 @@ func attack(spell := false, duration := 0.0, family := "", held := "") -> void:
 	var gesture := cast if spell and sprite_frames.has_animation(cast) else "attack_%s" % _dir
 	if not family.is_empty() and sprite_frames.has_animation("%s_%s" % [family, _dir]):
 		gesture = "%s_%s" % [family, _dir]
-	speed_scale = 1.0
+	speed_scale = _pace
 	if duration > 0.0:
 		speed_scale = sprite_frames.get_frame_count(gesture) \
 				/ sprite_frames.get_animation_speed(gesture) / duration
 	play(gesture)
+	# Sous le même nom, `play()` **continue** le geste en cours : une touche tenue relance sur sa
+	# dernière image, qui finissait aussitôt et rendait le repos pour tout le coup (jalon 53).
+	set_frame_and_progress(0, 0.0)
 
 
 ## Où tombe le coup dans ce geste : son image d'impact sur la planche, sinon
@@ -178,7 +184,9 @@ func set_rim(color: Color, amount: float, width := 1.0) -> void:
 ## affixe est l'identité d'un ennemi et ne doit pas lui voler sa couleur ; un état
 ## dure quelques secondes et doit se lire d'un coup d'œil dans un paquet.
 func show_states(states: StatusEffects) -> void:
-	speed_scale = states.speed_factor
+	_pace = states.speed_factor
+	if not _attacking:
+		speed_scale = _pace
 	if material == null:
 		return
 	var colors := states.colors()
@@ -230,6 +238,6 @@ func _on_animation_finished() -> void:
 	if _attacking:
 		_attacking = false
 		_hold("")
-		speed_scale = 1.0
+		speed_scale = _pace
 		_anim = "idle"
 		_apply()

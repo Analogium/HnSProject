@@ -242,5 +242,17 @@
   "plate_sabatons": [
     "a pair of polished steel plate sabatons with golden trim and knee guards, side view",
     1337
+  ],
+  "rune_blade": [
+    "a slender sword with a glowing violet arcane blade, a dark iron crossguard and a black leather grip, blade pointing straight up",
+    1337
+  ],
+  "arcane_blade": [
+    "an elegant sword with a radiant purple crystal blade etched with glowing runes and a dark silver guard, blade pointing straight up",
+    777
+  ],
+  "astral_blade": [
+    "an ornate sword with a glowing violet blade full of tiny white stars and a winged dark golden guard, blade pointing straight up",
+    1337
   ]
 }

@@ -102,20 +102,21 @@ func _beat() -> void:
 	for target in targets:
 		var id := target.get_instance_id()
 		heard[id] = float(_heard.get(id, 0.0)) + _cast.period
+		var body := target.get_parent() as Enemy
+		# Guetté **avant** la frappe : celle-ci peut le tuer, et sa note se perdait.
+		if body != null and _cast.requiem > 0.0 and not _mourned.has(id):
+			_mourned[id] = true
+			body.died.connect(_on_died)
 		Targets.strike(target, parts, global_position, _player.states, _cast, pull)
 		if target.states != null:
 			target.states.hobble(SkillStats.AIR_SLOW + _cast.torpor, _cast.period * 2.0)
 			if _cast.threnody > 0.0:
 				var listened := minf(heard[id], SkillStats.THRENODY_MOST)
 				target.states.open_up(_cast.threnody * listened, _cast.period * 2.0)
-		var body := target.get_parent() as Enemy
 		if body == null:
 			continue
 		if reigning:
 			body.frighten(fear, global_position)
-		if _cast.requiem > 0.0 and not _mourned.has(id):
-			_mourned[id] = true
-			body.died.connect(_on_died)
 	# Qui est sorti du cercle recommence la Mélopée à zéro.
 	_heard = heard
 	if _cast.farandole > 0.0 and _cast.carousel > 0.0 and not reigning:

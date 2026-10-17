@@ -212,6 +212,7 @@ def quant(im, colors=32):
 
 GROUPS = {
   "armes": "sword broadsword war_blade dagger misericorde mace battle_mace war_hammer wand scepter runic_scepter",
+  "armes2": "rune_blade arcane_blade astral_blade",
   "tetes": "shield kite_shield pavise helmet great_helm armet hood masters_hood",
   "mains": "gloves reinforced_gloves masters_gloves gauntlets mail_gauntlets plate_gauntlets",
   "torses": "breastplate chainmail full_plate tunic jerkin",

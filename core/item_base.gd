@@ -113,11 +113,15 @@ const WEAPON_FAMILY := "weapon"
 const CASTER_TAG := "caster"
 
 
-## Le mot-clé des compétences que cette arme laisse lancer, vide hors des armes.
-func allowed_keyword() -> String:
+## Laisse-t-elle lancer les compétences de ce mot-clé ? Les sorts pour une arme `caster`, les
+## attaques pour les autres ; **les deux pour une hybride** (jalon 53, la lame runique), qui porte
+## `caster` et `melee` — donc aussi les affixes des deux. Rien hors des armes.
+func allows(keyword: String) -> bool:
 	if family != WEAPON_FAMILY:
-		return ""
-	return Keywords.SPELL if tags.has(CASTER_TAG) else Keywords.ATTACK
+		return false
+	if keyword == Keywords.SPELL:
+		return tags.has(CASTER_TAG)
+	return keyword == Keywords.ATTACK and (tags.has(Keywords.MELEE) or not tags.has(CASTER_TAG))
 
 
 ## Les défenses qu'une pièce porte en implicite : c'est sa défense de base, que ses

@@ -48,7 +48,7 @@ def ik(bone, target):
 hand_t = empty("main")
 hand_t.rotation_mode = "QUATERNION"
 L = H
-# `weapon` : le type d'arme du jeu (sword, dagger, mace, wand, flute), « none » pour le corps seul.
+# `weapon` : le type d'arme du jeu (sword, dagger, mace, wand, runeblade, flute), « none » pour le corps seul.
 if opt.get("weapon", "sword") != "none":
     weapons.build(opt.get("weapon", "sword"), L).parent = hand_t
 

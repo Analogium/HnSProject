@@ -14,9 +14,9 @@
   "dagger",
   "mace",
   "wand",
+  "runeblade",
   "flute"
  ],
- "scale": 0.7,
  "views": {
   "down": {
    "hand": [
@@ -1580,5 +1580,6 @@
     ]
    }
   }
- }
+ },
+ "scale": 0.7
 }

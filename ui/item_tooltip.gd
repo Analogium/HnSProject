@@ -62,6 +62,16 @@ class Line:
 		return line
 
 
+## Ce que l'arme laisse lancer, en toutes lettres : la lame runique (jalon 53) lance les deux,
+## et rien d'autre ne le dirait avant d'essayer.
+static func launches(base: ItemBase) -> String:
+	var attacks := base.allows(Keywords.ATTACK)
+	var spells := base.allows(Keywords.SPELL)
+	if attacks and spells:
+		return Texts.t("attaques et sorts")
+	return Texts.t("sorts") if spells else Texts.t("attaques")
+
+
 ## Les lignes dans l'ordre où elles se lisent. Un bloc vide ne laisse pas de trait
 ## derrière lui : c'est `_block()` qui en décide. `detailed` : la touche « détails »
 ## tenue, qui ajoute les paliers.
@@ -73,6 +83,7 @@ static func lines(item: Item, detailed: bool) -> Array[Line]:
 	# défense d'une armure. En avant quand une ligne locale l'a montée, en clair sinon.
 	var properties: Array[Line] = []
 	if item.base.family == ItemBase.WEAPON_FAMILY:
+		properties.append(Line.property(Texts.t("Lance :"), launches(item.base), VALUE))
 		var raised := not is_equal_approx(item.crit_chance(), item.base.crit_chance)
 		properties.append(Line.property(
 			Texts.t("Chance critique de base :"),

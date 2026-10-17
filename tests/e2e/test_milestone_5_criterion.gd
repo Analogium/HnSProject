@@ -171,7 +171,8 @@ func test_a_hundred_dropped_wands_without_attack_damage() -> void:
 	while views < 100 and attempts < 20000:
 		attempts += 1
 		var item := LootTable.roll(0, LEVEL)
-		if item == null or item.base.family != "weapon" or not item.base.tags.has("caster"):
+		# Une baguette : une arme qui ne lance que des sorts — pas l'hybride (jalon 53).
+		if item == null or not item.base.allows(Keywords.SPELL) or item.base.allows(Keywords.ATTACK):
 			continue
 		views += 1
 		for r in item.explicits:

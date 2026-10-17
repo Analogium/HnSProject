@@ -20,6 +20,10 @@ const ALL := [
 	preload("res://resources/items/wand.tres"),
 	preload("res://resources/items/scepter.tres"),
 	preload("res://resources/items/runic_scepter.tres"),
+	# runique : l'hybride (jalon 53), attaques et sorts, les affixes des deux
+	preload("res://resources/items/rune_blade.tres"),
+	preload("res://resources/items/arcane_blade.tres"),
+	preload("res://resources/items/astral_blade.tres"),
 	# bouclier
 	preload("res://resources/items/shield.tres"),
 	preload("res://resources/items/kite_shield.tres"),

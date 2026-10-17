@@ -8806,3 +8806,24 @@ msgstr "puts to flight %s"
 
 msgid "tourne autour de vous"
 msgstr "circles around you"
+
+msgid "Lame runique"
+msgstr "Runeblade"
+
+msgid "Lame arcane"
+msgstr "Arcane Blade"
+
+msgid "Lame astrale"
+msgstr "Astral Blade"
+
+msgid "Lance :"
+msgstr "Used for:"
+
+msgid "attaques"
+msgstr "attacks"
+
+msgid "sorts"
+msgstr "spells"
+
+msgid "attaques et sorts"
+msgstr "attacks and spells"

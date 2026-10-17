@@ -6563,7 +6563,8 @@ func test_a_second_slot_waits_for_the_gesture() -> void:
 	assert_true(_p.cast_slot(3), "libre à la fin du geste")
 
 
-## Le corps joue son geste sur toute sa durée, vitesse d'attaque comprise.
+## Le corps joue son geste sur toute sa durée, vitesse d'attaque comprise — et une image de
+## physique de plus (jalon 53) : le geste finit sur une image de physique, l'animation jamais avant.
 func test_the_body_plays_the_gesture_over_its_length() -> void:
 	_learn("manual_weapons", ["heavy_strike"])
 	_p.stats.attack_speed = 2.0
@@ -6573,7 +6574,7 @@ func test_the_body_plays_the_gesture_over_its_length() -> void:
 	var frames := sprite.sprite_frames
 	var played := frames.get_frame_count(sprite.animation) \
 			/ frames.get_animation_speed(sprite.animation) / sprite.speed_scale
-	assert_almost_eq(played, _p._gesture.left, 1e-4)
+	assert_almost_eq(played, _p._gesture.left + 1.0 / Engine.physics_ticks_per_second, 1e-4)
 	assert_almost_eq(
 		_p._gesture.left, SkillCatalog.by_id("heavy_strike").use_time(_p.stats), 1e-4,
 		"la vitesse d'attaque raccourcit le geste"
@@ -7247,3 +7248,75 @@ func test_a_frightened_enemy_runs_away() -> void:
 	for i in 20:
 		grunt.flee(1.0 / 60.0)
 	assert_false(grunt.afraid(), "une demi-seconde, pas plus")
+
+
+## Touche tenue (jalon 53) : chaque coup garde son geste jusqu'au bout. Relancé sur la dernière
+## image du précédent, `play()` continuait celui-ci, qui finissait aussitôt et rendait le repos
+## pour tout le coup suivant.
+func test_a_held_attack_plays_every_gesture() -> void:
+	_p.sprite.set_archetype("swiftblade")
+	_p.bar.put(2, SkillCatalog.ID_ATTACK)
+	Weapons.arm(_p, SkillCatalog.ID_ATTACK)
+	Input.action_press("skill_3")
+	_p._held[2] = true
+	var gestures := 0
+	var resting := 0
+	var last: Object = null
+	for i in 180:
+		await wait_physics_frames(1)
+		var gesture: Object = _p._gesture
+		if gesture == null:
+			continue
+		if gesture != last:
+			last = gesture
+			gestures += 1
+		var anim := String(_p.sprite.animation)
+		# Dès le deuxième : c'est la relance qui perdait le geste ; le premier part du repos, et
+		# le banc sans fenêtre fige parfois ses premières images.
+		if gestures >= 2 and (anim.begins_with("idle") or anim.begins_with("walk")):
+			resting += 1
+	assert_gt(gestures, 3, "la touche tenue relance")
+	assert_eq(resting, 0, "images au repos en plein geste, sur %d coups" % gestures)
+
+
+## Un état posé en plein coup ne change pas le pas du geste, calé sur son temps ; il vaut pour
+## la suite (jalon 53). `show_states()` l'écrasait par celui de la marche.
+func test_a_state_during_a_swing_keeps_its_pace() -> void:
+	_p.sprite.set_archetype("swiftblade")
+	_p.sprite.attack(false, 0.25, "sweep")
+	var pace := _p.sprite.speed_scale
+	_p.states.hobble(50.0, 1.0)
+	_p.sprite.show_states(_p.states)
+	assert_eq(_p.sprite.speed_scale, pace, "le geste garde son pas")
+	_p.sprite._on_animation_finished()
+	assert_almost_eq(_p.sprite.speed_scale, _p.states.speed_factor, 1e-6, "le repos prend celui des états")
+
+
+## Le Requiem : un ennemi qui meurt sous l'air y laisse une note qui frappe ses voisins.
+func test_the_requiem_note_strikes_the_neighbours_of_the_dead() -> void:
+	_learn_piper("hamelin_air", ["far_echo", "far_echo", "serenade", "requiem"])
+	var aim := _p.global_position + _p.facing * Player.PLACEMENT_RANGE
+	var dead := _grunt(aim)
+	var neighbour := _grunt(aim + Vector2(20, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(2)
+	var before := neighbour.health
+	dead.die()
+	await wait_physics_frames(2)
+	assert_lt(neighbour.health, before, "la note frappe le voisin")
+
+
+## Tué par le premier battement qui le touche, il laisse aussi sa note : l'air le guettait après
+## la frappe, et ce mort-là ne sonnait pas.
+func test_the_first_beat_kill_leaves_its_requiem_note() -> void:
+	_learn_piper("hamelin_air", ["far_echo", "far_echo", "serenade", "requiem"])
+	var aim := _p.global_position + _p.facing * Player.PLACEMENT_RANGE
+	var dead := _grunt(aim)
+	var neighbour := _target(aim + Vector2(20, 0))
+	await wait_physics_frames(2)
+	dead._set_health(1.0)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(3)
+	assert_false(is_instance_valid(dead) and not dead.is_dead, "tué par le battement")
+	assert_eq(_hits(neighbour), 2, "le battement, puis la note")

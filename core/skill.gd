@@ -416,7 +416,7 @@ func interval(stats: CharacterStats) -> float:
 
 ## Une attaque veut une arme d'attaque, un sort une arme d'incantation.
 func usable_with(weapon: ItemBase) -> bool:
-	return weapon != null and weapon.allowed_keyword() == KEYWORD_OF_CADENCE[cadence]
+	return weapon != null and weapon.allows(KEYWORD_OF_CADENCE[cadence])
 
 
 ## La nature de ce tour-là : `nature`, ou son rang dans `nature_cycle`.
@@ -600,7 +600,7 @@ func resolve(
 		# Le coût a sa voie, la réserve : un objet ne le vise pas. Un nœud, si (le Météore).
 		if m.stat == "mana_cost":
 			continue
-		if Keywords.covered(worn_items, m.scope) or (m.scope.is_empty() and m.stat == SkillStats.CRIT_CHANCE) \
+		if Keywords.covered(worn_items, m.scope) or SkillStats.every_skill(m) \
 				or (m.stat == "radius" and Keywords.covered(reach, m.scope)):
 			_store(r, m, fields, damage_percents)
 	for t: InvestedTalent in talents:

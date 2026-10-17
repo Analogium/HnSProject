@@ -214,7 +214,8 @@
    "sword",
    "dagger",
    "mace",
-   "wand"
+   "wand",
+   "runeblade"
   ],
   "anims": {
    "walk": [

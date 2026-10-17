@@ -2654,6 +2654,15 @@ static func against_stat(kind: StatusEffects.Kind) -> String:
 	return AGAINST_PREFIX + StatusEffects.IDS[kind]
 
 
+## Ce modificateur **sans portée** vise-t-il quand même toute compétence ? Un accru de chance
+## critique, qui multiplie au lancer la base que porte la fiche ; et les dégâts accrus de la lame
+## runique (jalon 53), aux attaques comme aux sorts — aucune portée ne dit « l'un ou l'autre ».
+static func every_skill(m: StatMod) -> bool:
+	if not m.scope.is_empty():
+		return false
+	return m.stat == DAMAGE or (m.stat == CRIT_CHANCE and m.mode != StatMod.Mode.FLAT)
+
+
 ## Un nombre nommé, des dégâts ajoutés d'une nature connue, ou contre un état connu.
 static func modifiable(stat: String) -> bool:
 	return LABELS.has(stat) or added_nature(stat) >= 0 or against(stat) >= 0

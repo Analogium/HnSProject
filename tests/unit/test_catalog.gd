@@ -98,18 +98,21 @@ func test_implicits_target_real_stats() -> void:
 		if base.implicit_stat.is_empty():
 			continue
 		# Un implicite porté vise un mot-clé et un nombre de lancer, comme un
-		# affixe porté : l'épée ajoute des dégâts aux attaques.
-		if not base.implicit_scope.is_empty():
-			assert_true(Keywords.exists(base.implicit_scope), "« %s » : portée inconnue" % base.display_name)
+		# affixe porté : l'épée ajoute des dégâts aux attaques. Sans mot-clé, un nombre
+		# que toute compétence lit : la lame runique accroît tous les dégâts.
+		if not base.implicit_scope.is_empty() or SkillStats.every_skill(base.implicit()):
+			assert_true(
+				base.implicit_scope.is_empty() or Keywords.exists(base.implicit_scope),
+				"« %s » : portée inconnue" % base.display_name
+			)
 			assert_true(
 				SkillStats.modifiable(base.implicit_stat),
 				"« %s » vise « %s », qu'un modificateur ne peut pas toucher"
 					% [base.display_name, base.implicit_stat]
 			)
-			assert_gte(
-				base.implicit_value_max, base.implicit_value,
-				"« %s » : fourchette à l'envers" % base.display_name
-			)
+			# La fourchette des dégâts ajoutés ; un accru se tire sur `implicit_roll_max`.
+			var top: float = base.implicit_value_max if StatMod.ranged_stat(base.implicit_stat) else base.implicit_roll_max
+			assert_gte(top, base.implicit_value, "« %s » : fourchette à l'envers" % base.display_name)
 			continue
 		assert_true(
 			sheet.get(base.implicit_stat) != null,
@@ -420,3 +423,26 @@ func test_milestone_4_ids_survive() -> void:
 	]:
 		assert_not_null(ItemCatalog.by_id(id), "« %s » a disparu du catalogue" % id)
 		assert_eq(ItemCatalog.by_id(id).tier, 1, "« %s » reste le premier palier" % id)
+
+
+## La lame runique (jalon 53), arme hybride : elle lance attaques et sorts, et son implicite
+## accroît les dégâts des deux — un « dégâts accrus » sans portée vise toute compétence.
+func test_the_rune_blade_casts_both_and_lifts_both() -> void:
+	var blade := ItemCatalog.by_id("rune_blade")
+	var implicit: Array[StatMod] = [blade.implicit()]
+	for id: String in [SkillCatalog.ID_ATTACK, SkillCatalog.ID_BOLT]:
+		var skill := SkillCatalog.by_id(id)
+		assert_true(skill.usable_with(blade), id)
+		var bare := skill.resolve(1, CharacterStats.new())
+		var lifted := skill.resolve(1, CharacterStats.new(), implicit)
+		assert_almost_eq(lifted.increased, bare.increased + blade.implicit_value * 0.01, 1e-6, id)
+
+
+## L'infobulle d'une arme dit ce qu'elle lance : l'hybride, les deux (jalon 53).
+func test_a_weapon_tooltip_says_what_it_casts() -> void:
+	assert_eq(ItemTooltip.launches(ItemCatalog.by_id("sword")), Texts.t("attaques"))
+	assert_eq(ItemTooltip.launches(ItemCatalog.by_id("wand")), Texts.t("sorts"))
+	assert_eq(ItemTooltip.launches(ItemCatalog.by_id("rune_blade")), Texts.t("attaques et sorts"))
+	var texts := ItemTooltip.lines(Item.new(ItemCatalog.by_id("wand")), false).map(
+		func(l: ItemTooltip.Line) -> String: return l.text)
+	assert_has(texts, Texts.t("Lance :"))

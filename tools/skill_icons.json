@@ -345,5 +345,61 @@
       "qwen": true,
       "nature": "physical"
     }
+  ],
+  "rat_bite": [
+    "A grey rat head seen from the side lunging to the right, jaws wide open, two long sharp yellow incisors.",
+    1337,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "rat_tide": [
+    "One big grey rat running to the right with a curling grey wave of fur rising behind it like an ocean wave.",
+    777,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "hamelin_air": [
+    "A bone-white transverse flute lying diagonally, three green musical notes floating above it.",
+    777,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
+  ],
+  "danse_macabre": [
+    "A grinning white skull with a crimson velvet beret, a steel rapier slashing behind it in a curved white swoosh.",
+    777,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "contagion": [
+    "A grey rat seen from the side with big green plague boils bursting on its back.",
+    777,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
+  ],
+  "feast": [
+    "A crimson banquet bowl overflowing with gnawed bones.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "physical"
+    }
+  ],
+  "rat_king": [
+    "A fierce muscular grey rat head wearing a golden crown, glowing green eyes.",
+    4242,
+    {
+      "qwen": true,
+      "nature": "necrotic"
+    }
   ]
 }
