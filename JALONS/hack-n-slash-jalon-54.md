@@ -262,25 +262,28 @@ Le jeu tourne en 3D sur un plan, mesuré en pixels (§2, §9). Ce qui a bougé e
   égale distance, et leur ordre est celui du moteur physique.
 
 **Le banc** (`world/stress_test.tscn`, graine 4242, fenêtré, 240 images de chauffe puis
-1 440 mesurées), contre la référence 2D de `CLAUDE.md` :
+1 440 mesurées), contre la référence 2D de `CLAUDE.md`. Remesuré le 18 octobre, caméra
+recadrée (§6) :
 
-| ennemis simulés | 2D : img/s, physique | 3D : img/s, physique |
+| ennemis simulés (2D / 3D) | 2D : img/s, physique | 3D : img/s, physique |
 |---|---|---|
-| ~140 | 165, 4,54 ms | 164, 2,25 ms |
-| ~282 | 165, 4,41 ms | 162, 4,46 ms |
-| ~552 | 165, 6,77 ms | 148, 8,48 ms (160 et 6,66 ms à un autre passage) |
-| 935 / 834 | 165, 8,62 ms | **10**, 18,91 ms |
-| combat, 300 | 165, 11 ms, 6 % figé | 165, 7,58 ms, 5,7 % figé |
+| 142 / 131 | 165, 4,54 ms | 165, 1,39 ms |
+| 284 / 265 | 165, 4,41 ms | 165, 2,41 ms |
+| 562 / 520 | 165, 6,77 ms | 165, 5,30 ms |
+| — / 777 | — | 165, 8,51 ms |
+| 935 / 918 | 165, 8,62 ms | 158, 9,40 ms |
+| — / 1 114 | — | 65, 13,59 ms |
+| combat, 300 | 165, 11 ms, 6 % figé | 165, 5,03 ms, 5,2 % figé |
 
 L'ombre des sprites d'acteur est éteinte : une carte debout n'en a pas de sensée, et elle
-faisait tomber 600 ennemis à 107 img/s. **Au-delà de ~550 simulés, la physique de Jolt coûte
-deux fois celle de la 2D**, et à 1 000 elle ne suit plus le pas. La zone jouée en compte 69 :
-environ 8× de marge, contre 25× avant.
+faisait tomber 600 ennemis à 107 img/s. **La 3D tient la 2D jusqu'à ~920 simulés** et décroche
+vers 1 100. Un premier relevé, le 17, donnait 10 img/s à 834 : il ne se reproduit pas, ni
+avec la caméra d'alors (840 à 165 img/s). À 920, par pas de physique : 7,3 ms dans la boucle
+de l'`EnemyManager`, dont 4 ms de `move_and_slide()` — le script et le glissement, pas le
+pas de Jolt.
 
 ## 11. Reste à faire
 
-- La physique au-delà de 550 ennemis : à creuser avant que l'étape 2 ajoute ses meshes
-  skinnés (§6).
 - Étape 2 : `ActorModel` — avec lui reviennent flash, liseré et teinte (la vraie, cette fois).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).
