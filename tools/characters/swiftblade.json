@@ -11,15 +11,15 @@
  "weapon": "sword",
  "scale": 0.7,
  "blender": {
-  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stocky heroic proportions, big head, broad shoulders, short legs, young man in his early twenties, short messy silver hair, long red scarf, sleeveless dark leather vest over a white shirt, rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, empty hands",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, semi-realistic anime-influenced face, adult heroic proportions, seven heads tall, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a young swordsman in his early twenties, short messy silver hair, red scarf wrapped snugly around the neck with short ends tucked into the vest, sleeveless dark leather vest over a white shirt with rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
   "source": "tools/characters/swiftblade/3d",
-  "rest": "Breathing Idle.fbx",
+  "rest": "rest.blend",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
   "anims": {
    "walk": [
-    "Walking.fbx",
+    "walk.blend",
     8
    ],
    "attack": [
@@ -66,5 +66,5 @@
   ],
   "weapon_colors": 8
  },
- "model": "3d/model.glb : TRELLIS.2 (Hugging Face) sur 3d/model_source.png, une image « rendu 3D » en pose A tirée par SDXL sans LoRA pixel art ; gréé par Mixamo"
+ "model": "3d/model.glb : Stable Fast 3D sur 3d/model_source.png (Qwen-Image, graine 4242, direction « Torchlight » choisie sur planche au jalon 54), face repeinte d'après elle, dos deviné ; gréage local (`model_3d.py rig`)"
 }

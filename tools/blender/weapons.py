@@ -20,7 +20,10 @@ def _material(label, color, glow=False):
     bsdf.inputs["Base Color"].default_value = color
     if glow:
         # Une source de lumière ne prend pas l'ombrage : elle reste au plus clair (voir `stage.toon`).
+        # L'émission ne sert qu'au .glb : la planche passe par `toon`, qui ne la lit pas.
         m["glow"] = True
+        bsdf.inputs["Emission Color"].default_value = color
+        bsdf.inputs["Emission Strength"].default_value = 1.0
     return m
 
 
@@ -69,7 +72,7 @@ def orient(blade):
 def carry(root, arm, hand, blade, H):
     """La main armée en garde : une cible portée par le bassin, à `hand` (droite, avant,
     haut, en hauteurs de personnage) de l'épaule ; le bras s'y plie, l'arme (`root`, ou
-    aucune pour la passe du corps) y est fixée."""
+    aucune pour la passe du corps) y est fixée. Rend la cible."""
     pb = lambda s: next(b for b in arm.pose.bones if b.name.endswith(s))
     bpy.context.view_layer.update()
     at = arm.matrix_world @ pb("RightArm").head + local(hand) * H
@@ -83,11 +86,13 @@ def carry(root, arm, hand, blade, H):
     ik.target, ik.chain_count = target, 2
     if root is not None:
         root.parent = target
+    return target
 
 
-def build(kind, L):
-    """Rend le parent ; ses enfants sont marqués `prop`, hors du cadrage du personnage."""
-    L *= OVERSIZE
+def build(kind, L, oversize=OVERSIZE):
+    """Rend le parent ; ses enfants sont marqués `prop`, hors du cadrage du personnage.
+    `oversize` à 1 pour le .glb : en 3D, l'arme garde son échelle."""
+    L *= oversize
     parts = {
         "sword": lambda: [cube("lame", (0.06 * L, 0.33 * L, 0.02 * L), (0, 0.21 * L, 0), STEEL),
                           tip("pointe", 0.06 * L, 0.07 * L, (0, 0.41 * L, 0), STEEL),

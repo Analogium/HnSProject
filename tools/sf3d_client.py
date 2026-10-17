@@ -29,7 +29,7 @@ for name in ("rasterize", "interpolate", "get_mask"):
     setattr(model.baker, name, on_cpu(getattr(model.baker, name)))
 image = resize_foreground(Image.open(image_path).convert("RGBA"), 0.85)
 with torch.no_grad(), torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-    mesh, _ = model.run_image([image], bake_resolution=1024, remesh="none", vertex_count=-1)
+    mesh, _ = model.run_image([image], bake_resolution=2048, remesh="none", vertex_count=-1)
 # SF3D tourne le dos à la caméra de face du jeu.
 mesh.apply_transform(trimesh.transformations.rotation_matrix(np.pi, [0, 1, 0]))
 mesh.export(out, include_normals=True)

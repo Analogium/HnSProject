@@ -7,6 +7,7 @@ mais la main et la lame de chaque image viennent des os.
 
     tools/blender_sheet.py <id>            rend tout, puis assemble la planche
     tools/blender_sheet.py <id> --cached   réutilise les rendus déjà faits
+    tools/blender_sheet.py <id> --glb      écrit art/models/<id>.glb, pour le jeu en 3D
 
 Réglages dans `tools/characters/<id>.json`, section `blender`."""
 import argparse, json, os, subprocess, sys
@@ -21,6 +22,7 @@ WORK = "/mnt/c/Users/Theo/AppData/Local/Temp/hns-blender"
 RENDER = os.path.join(os.path.dirname(__file__), "blender", "render_anim.py")
 POSE = os.path.join(os.path.dirname(__file__), "blender", "pose_anim.py")
 GESTURES = os.path.join(os.path.dirname(__file__), "blender", "gestes.json")
+EXPORT = os.path.join(os.path.dirname(__file__), "blender", "export_glb.py")
 # La main du squelette est au poignet ; l'arme se tient dans la paume, un peu au-delà.
 PALM = 0.3
 
@@ -83,13 +85,33 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("id")
     p.add_argument("--cached", action="store_true", help="réutiliser les rendus déjà faits")
+    p.add_argument("--glb", action="store_true", help="le modèle du jeu en 3D, pas la planche")
     a = p.parse_args()
     cfg = cf.load(a.id)
+    if a.glb:
+        return export(a.id, cfg["blender"])
     build(a.id, cfg, cfg["blender"]["size"], a.cached)
     # `grown` : le même corps rendu plus grand, une planche par taille, jamais étiré en jeu (la
     # Légende du Roi des Rats, jalon 53).
     for size in cfg["blender"].get("grown", []):
         build(f"{a.id}_{size}", cfg, size, a.cached)
+
+
+def export(cid, b):
+    """Le corps gréé, une action par geste et les armes à la main, en un .glb (jalon 54). Les
+    tailles de `grown` n'y sont pas : un modèle 3D s'agrandit sans rien perdre."""
+    src = lambda f: win(os.path.join(cf.PROJ, b["source"], f))
+    out = os.path.join(cf.PROJ, "art", "models", cid + ".glb")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    os.makedirs(WORK, exist_ok=True)
+    spec = os.path.join(WORK, cid + "_glb.json")
+    json.dump({"rest": src(b["rest"]), "gestures": win(GESTURES), "weapons": b["weapons"], "size": b["size"],
+               "anims": {k: src(s) if s.endswith((".fbx", ".blend")) else s for k, (s, _) in b["anims"].items()},
+               "out": win(out)}, open(spec, "w", encoding="utf-8"))
+    log = subprocess.run([BLENDER, "-b", "-P", win(EXPORT), "--", win(spec)], capture_output=True, text=True).stdout
+    if "Traceback" in log or "EXPORT" not in log:
+        sys.exit(f"Blender a échoué sur l'export :\n{log[-1500:]}")
+    print(next(l for l in log.splitlines() if l.startswith("EXPORT")))
 
 
 def build(sheet_id, cfg, size, cached):

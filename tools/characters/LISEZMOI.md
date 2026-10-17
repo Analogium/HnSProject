@@ -115,22 +115,30 @@ qui ne dépend d'aucun quota.
    devient `<id>/concept.png` et `<id>/down.png`.
 
 1. **Image source** : `tools/model_3d.py image <id>` tire trois images « rendu 3D »
-   de face, en pose A, depuis la vue de face retenue. On garde la meilleure.
-   - Le prompt est `blender.model_prompt` dans `<id>.json`.
+   de face, en pose A, par **Qwen-Image au prompt seul** (jalon 54 ; SDXL avait besoin
+   d'IPAdapter et d'OpenPose), **sur fond vert** d'incrustation. On garde la meilleure.
+   - Le prompt est `blender.model_prompt` dans `<id>.json` ; `{view}` y dit la vue.
    - Le LoRA pixel art est éteint : **une image pixel art donne un modèle plat**.
+   - Le fond vert se découpe à la couleur (`model_3d.silhouette`). Sur le fond gris
+     d'avant, GrabCut bouchait l'entrejambe et collait l'ombre du sol aux pieds.
 2. **Modèle**, par l'un des deux chemins ci-dessous. Les deux écrivent
    `<id>/3d/model.glb`, puis `<id>/3d/<id>.fbx`, allégé pour Mixamo. Un tour du
    modèle sous six angles est déposé sur le Bureau.
 
    **En local, Stable Fast 3D** (le chemin par défaut) :
-   - `model_3d.py back <id> <graine de face>` tire trois images de dos d'après celle
-     de face retenue ; on garde la meilleure ;
+   - `model_3d.py back <id>` tire trois images de dos au même prompt ; on garde celle
+     qui s'écarte le moins de la face. Sans image de référence, Qwen fait pendre une
+     écharpe dans le dos qui pend devant : un tel dos repeint ferait une traînée ;
    - `model_3d.py mesh <id> <graine> --back <graine de dos>` fait le modèle sur la
      carte locale, puis `blender/project.py` **repeint face et dos** d'après leurs
      images. Stable Fast 3D ne voit que la face et devine le dos :
      celui de la sorcière sortait rose pâle au lieu de gris sombre ;
-   - `--sf3d` au lieu de `--back` : sans image de dos, le dos deviné. Pour ce que SDXL
-     ne sait pas tourner (le champignon garde son visage à toutes les graines).
+   - `--sf3d` au lieu de `--back` : sans image de dos, la face seule est repeinte et le
+     dos reste deviné. Pour une tenue simple (le Vive lame), ou ce que le générateur ne
+     sait pas tourner (le champignon garde son visage à toutes les graines).
+   - La repeinture ne touche que ce qui fait face à une image ; le reste garde la
+     texture de Stable Fast 3D, ramenée au ton de la face. Elle rend aussi le net : la
+     texture cuite (2048 px) laisse un visage flou.
 
    **Par TRELLIS.2**, sans `--back` : `model_3d.py mesh <id> <graine>` lance le Space
    `microsoft/TRELLIS.2` via `tools/trellis_client.py`. **Un modèle par jour** (quota
@@ -146,11 +154,14 @@ qui ne dépend d'aucun quota.
    - télécharger **Breathing Idle** et **Walking** en *FBX Binary, With Skin, 30 fps* ;
    - les déposer dans `<id>/3d/`.
 
-   **Si l'auto-rig refuse le modèle** (la sorcière : sa cape colle les bras au buste),
-   `model_3d.py rig <id>` grée en local (`blender/rig.py`). Il reprend le squelette et
-   les animations du Vive lame, place les articulations sur les points OpenPose de
-   l'image source, peint les poids, et écrit `<id>/3d/rest.blend` et `walk.blend`, que
-   `anims` et `rest` nomment comme un `.fbx`.
+   **Ou en local, sans Mixamo** (le Vive lame adulte du jalon 54, la sorcière dont la cape
+   colle les bras au buste) : `model_3d.py rig <id>` (`blender/rig.py`). Il reprend le
+   squelette et les animations Mixamo de `swiftblade/3d/`, place les articulations sur
+   les points de l'image source, peint les poids, et écrit `<id>/3d/rest.blend` et
+   `walk.blend`, que `anims` et `rest` nomment comme un `.fbx`. Les points se lisent sur
+   la silhouette en pose A (`model_3d.joints`) : poignets au bout des bras, aisselles où
+   le bras rejoint le buste, chevilles dans les bottes. Une silhouette qui n'est pas en
+   pose A (un monstre sans bras) n'y passe pas.
 4. **Planche** : `tools/blender_sheet.py <id>` (`--cached` pour ne refaire que
    l'assemblage). Les réglages vivent dans la section `blender` de `<id>.json` :
    - `rest` : le repos ;
@@ -160,6 +171,11 @@ qui ne dépend d'aucun quota.
    - `elevation` (10°), `sun`, `ambient` ;
    - `colors` et `weapon_colors` : les palettes ;
    - `weapons` : une couche par arme.
+5. **Modèle du jeu en 3D** (jalon 54) : `tools/blender_sheet.py <id> --glb` écrit
+   `art/models/<id>.glb` depuis les mêmes réglages — corps, une animation par geste, les
+   armes sous l'os de la main. `tools/capture.sh tools/look_3d.gd <sujet>` filme chaque
+   animation sous la lumière du jeu, et `tools/look_3d.py <sujet>` en fait des GIF sur le
+   Bureau.
 
 Les gestes d'attaque **s'écrivent**, ils ne se téléchargent pas : Mixamo n'a pas nos
 coups. Chaque geste de `gestes.json` est une suite de poses-clés, et c'est

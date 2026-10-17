@@ -1,9 +1,10 @@
-# Repeint la texture d'un modèle avec ses images de face et de dos.
-#   blender -b -P project.py -- <modele.glb> <face.png> <dos.png> <sortie.glb>
-# Stable Fast 3D ne voit que la face et devine le reste : le dos de la sorcière sortait rose
-# pâle au lieu de gris sombre. Chaque texel visible de face ou de dos prend la couleur de
-# l'image ; ce qu'aucune ne voit (flancs, dessus du chapeau) prend la plus proche, sur le
-# modèle (`align.py` les cale). Limite connue : le dessus du bord d'un grand chapeau.
+# Repeint la texture d'un modèle avec son image de face, et de dos s'il y en a une.
+#   blender -b -P project.py -- <modele.glb> <face.png> <dos.png ou -> <sortie.glb>
+# Stable Fast 3D cuit une texture floue (le visage) et devine le dos : celui de la sorcière
+# sortait rose pâle au lieu de gris sombre. Chaque texel qui fait face à une image en prend
+# la couleur (`align.py` les cale) ; le reste garde celle de Stable Fast 3D, ramenée au ton
+# des images. Le remplir du texel vu le plus proche faisait des taches là où la caméra du jeu
+# regarde : le dessus du bord du chapeau (jalon 54).
 import bpy, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
@@ -85,27 +86,25 @@ def project(png, toward):
 
 
 cf_, wf = project(front_png, -1)
-cb_, wb = project(back_png, 1)
-# Tirée à part, l'image de dos n'a pas la luminosité de celle de face : ramenée dessus,
-# canal par canal, sur ce que chacune couvre.
-f, b = cf_[wf > 0.5], cb_[wb > 0.5]
-cb_ = np.clip((cb_ - b.mean(0)) / (b.std(0) + 1e-6) * f.std(0) + f.mean(0), 0, 1)
+f = cf_[wf > 0.5]
+
+
+def matched(c, w):
+    """Une couleur ramenée, canal par canal, au ton de l'image de face sur ce qu'elle couvre."""
+    o = c[w > 0.5]
+    return np.clip((c - o.mean(0)) / (o.std(0) + 1e-6) * f.std(0) + f.mean(0), 0, 1)
+
+
+if back_png == "-":
+    cb_, wb = cf_, np.zeros_like(wf)
+else:
+    # Tirée à part, l'image de dos n'a pas la luminosité de celle de face.
+    cb_, wb = project(back_png, 1)
+    cb_ = matched(cb_, wb)
 cover = np.maximum(wf, wb)
 proj = (cf_ * wf[:, None] + cb_ * wb[:, None]) / np.maximum(wf + wb, 1e-6)[:, None]
-# Ce que les images ne voient pas : la vraie couleur des texels vus de même couleur chez
-# Stable Fast 3D (il peint un même tissu d'un même ton), de même orientation, près de là.
-sf3d = tex[ty, tx, :3].copy()
-sure = np.where(cover > 0.5)[0]
-rng = np.random.default_rng(0)
-ref = rng.choice(sure, min(len(sure), 8000), replace=False)
-key = lambda i: np.hstack([sf3d[i], pos[i] / height * 0.5, tn[i] * 0.3])
-rk = key(ref)
-near = np.empty_like(proj)
-for c0 in range(0, len(pos), 20000):
-    q = key(np.arange(c0, min(c0 + 20000, len(pos))))
-    d = (q ** 2).sum(1)[:, None] - 2 * q @ rk.T + (rk ** 2).sum(1)[None]
-    near[c0:c0 + len(q)] = proj[ref[d.argmin(1)]]
-color = proj * cover[:, None] + near * (1 - cover[:, None])
+sf3d = matched(tex[ty, tx, :3].copy(), wf)
+color = proj * cover[:, None] + sf3d * (1 - cover[:, None])
 
 painted = np.zeros((H, W), bool)
 tex[ty, tx, :3] = color

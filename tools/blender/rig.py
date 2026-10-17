@@ -116,9 +116,10 @@ bpy.ops.object.mode_set(mode="OBJECT")
 TORSO = ["Hips", "Spine", "Spine1", "Spine2", "Neck", "Head", "LeftShoulder", "RightShoulder"]
 MAIN = TORSO + [s + p for s in ("Left", "Right") for p in ("Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase")]
 # D'un membre à la cape, en hauteurs de modèle. Le haut d'une botte est large : à la mesure
-# d'un bras, il suivait à moitié le bassin, et la botte s'étirait à chaque pas.
-LIMB_NEAR = {"Leg": 0.07, "Foot": 0.07, "ToeBase": 0.07}
-LIMB_FAR = {"Leg": 0.10, "Foot": 0.10, "ToeBase": 0.10}
+# d'un bras, il suivait à moitié le bassin, et la botte s'étirait à chaque pas. Les doigts
+# écartés d'une main adulte aussi (jalon 54) : ils restaient au bassin, à l'horizontale.
+LIMB_NEAR = {"Leg": 0.07, "Foot": 0.07, "ToeBase": 0.07, "Hand": 0.12}
+LIMB_FAR = {"Leg": 0.10, "Foot": 0.10, "ToeBase": 0.10, "Hand": 0.16}
 bones = [named(arm.pose.bones, n) for n in MAIN]
 A = np.array([np.array(arm.matrix_world @ b.bone.head_local) for b in bones])
 B = np.array([np.array(arm.matrix_world @ b.bone.tail_local) for b in bones])

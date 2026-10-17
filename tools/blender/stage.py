@@ -11,6 +11,9 @@ LIGHT = (-0.6, 0.8)  # d'où vient la lumière, en repère écran : à gauche, e
 # retourne pour regarder à droite : vue du côté de la main armée, la lame passait sur le
 # corps ; de l'autre côté, le corps la masque là où elle passe derrière lui.
 VIEWS = (("down", 0, False), ("side", 90, True), ("up", 180, False))
+# La case de rendu fait 1,5 fois la hauteur du personnage : `size` / FRAMING est sa taille en
+# pixels de jeu, que `export_glb.py` reprend pour le .glb.
+FRAMING = 1.5
 
 
 def options(argv):
@@ -126,7 +129,7 @@ class Stage:
         self.target = bpy.data.objects.new("target", None); scene.collection.objects.link(self.target)
         self.target.location = self.center
         cam = self.cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam")); scene.collection.objects.link(cam)
-        cam.data.type = "ORTHO"; cam.data.ortho_scale = self.height * 1.5
+        cam.data.type = "ORTHO"; cam.data.ortho_scale = self.height * FRAMING
         cam.constraints.new("TRACK_TO").target = self.target
         scene.camera = cam
         sun = self.sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); scene.collection.objects.link(sun)
