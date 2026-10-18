@@ -122,12 +122,8 @@ def cmd_back(a):
 
 
 def cutout(cid, seed, view, dest):
-    """L'image détourée (alpha). De face, la peau repeinte : ce que SDXL ignore (la peau
-    bleue de la sorcière) doit être dans la texture. Pas de dos : la règle, écrite pour la
-    face, y repeignait le gris rosé de la cape."""
+    """L'image détourée (alpha)."""
     im = np.asarray(Image.open(raw(cid, seed, view)).convert("RGBA")).copy()
-    for rule in cf.load(cid)["blender"].get("model_recolor", []) if view == "down" else []:
-        cf.recolor(im, rule)
     keep = silhouette(raw(cid, seed, view))
     im[..., 3] = keep * 255
     # Le vert qui déborde sur les bords (les cheveux argentés), ramené au plus fort du rouge et du bleu.

@@ -342,6 +342,15 @@ continue d'avancer après. La mort et un changement de zone oublient le point
 pas. **Les jambes de la course** étaient trop écartées : cuisses resserrées de 12°
 (`walk_leg_space`, choisi sur planche parmi 0, 6 et 12°).
 
+**Le 18 octobre, la sorcière** passe au même chemin que le Vive lame. Son prompt reprend la
+direction « Torchlight » en proportions adultes, et sa cape devient une pèlerine courte :
+l'ancienne collait les bras au buste, Mixamo ne pouvait pas la gréer. Qwen-Image, graine 1337
+(la 4242 avait quatre bras, la 777 une cape longue) ; il peint la peau bleue de lui-même, la
+règle qui la repeignait pour SDXL (`model_recolor`) est retirée. TRELLIS.2 au quota du jour,
+gréée par Mixamo, six animations armées dont une course posée — le sprint du Vive lame levait
+les avant-bras. La baguette suit le bras (`wield`) ; sur planche, gestes lisibles. Ses jambes
+étaient aussi trop écartées dans la course : −12°, comme lui.
+
 ## 12. Reste à faire
 
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
@@ -362,6 +371,12 @@ pas. **Les jambes de la course** étaient trop écartées : cuisses resserrées 
   **L'impact de l'estoc tombait sur le retrait** (0,47) : aussi vif que le coup. `impact`
   écarte les images où le bras perd plus de 2 % d'allonge ; l'estoc frappe à 0,17, les
   autres gestes n'ont pas bougé.
+- **La réduction des modèles TRELLIS.2 fend les visages** au zoom (sorcière nettement, Vive
+  lame moins) : voir `tools/characters/LISEZMOI.md`, pièges. Le remaillage en voxels perce le
+  Vive lame ; le Space ne réduit pas sous 100 000 faces. À trancher : garder le modèle brut
+  (200 000 faces) pour les personnages vus de près, ou l'extraction à 100 000.
+- **Cheveux et peau claire de la sorcière « brûlent »** : ils passent le seuil de lueur de la
+  2D, que l'étape 5 revoit.
 - **Au zoom maximal, un sprite du décor (arbre mort) peut masquer le joueur** : leur forme
   est l'étape 3.
 - Étape 2 : les onze autres personnages en proportions adultes, un par un. **TRELLIS.2 pour

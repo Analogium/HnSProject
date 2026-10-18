@@ -105,9 +105,9 @@ Le chemin 2D perdait trop de détails dès que le personnage bougeait ou quittai
 face. Un personnage passe donc par un **modèle 3D gréé**, dont Blender rend chaque
 image directement à la taille du jeu. Tout est gratuit : Stable Fast 3D en local (ou
 un Space Hugging Face), Mixamo et Blender. Le jeu lit le **même format** de planche,
-plus des couches d'arme. Le Vive lame a suivi le chemin TRELLIS + Mixamo ; la sorcière,
-le joueur de flûte et les six ennemis, le chemin local (Stable Fast 3D + gréage local),
-qui ne dépend d'aucun quota.
+plus des couches d'arme. Le Vive lame et la sorcière (jalon 54) ont suivi le chemin
+TRELLIS + Mixamo ; le joueur de flûte et les six ennemis, le chemin local (Stable Fast 3D +
+gréage local), qui ne dépend d'aucun quota.
 
 0. **Concept**, pour un personnage neuf : une planche de directions en « rendu 3D »
    (LoRA éteint), **proportions adultes**, l'utilisateur choisit. Le passage aux
@@ -174,7 +174,7 @@ qui ne dépend d'aucun quota.
      (`export_glb.spread`, 40° pour lui, choisi sur planche parmi 0 à 45°). Ce ne sont pas
      ses poids : vérifié os par os, la main passait derrière la hanche, dans la sacoche.
    - **Jambes trop écartées** dans la course : `blender.walk_leg_space`, en degrés, négatif
-     pour resserrer les cuisses (−12° pour le Vive lame, choisi sur planche).
+     pour resserrer les cuisses (−12° pour le Vive lame, choisi sur planche, et la sorcière).
    - **Avant-bras trop levés** : la course de Mixamo (« Running ») est un sprint, les mains
      montent au menton. `blender.elbows` déplie les coudes de cette part de leur pli, hors
      repos (`export_glb.straighten`, 0,5 pour le Vive lame, à confirmer en jeu).
@@ -189,8 +189,8 @@ qui ne dépend d'aucun quota.
    - **Pas dans `<id>/3d/`** : les `Breathing Idle` et `Walking` de `swiftblade/3d/` sont le
      squelette de référence du gréage local, et le restent.
 
-   **Ou en local, sans Mixamo** (le Vive lame adulte du jalon 54, la sorcière dont la cape
-   colle les bras au buste) : `model_3d.py rig <id>` (`blender/rig.py`). Il reprend le
+   **Ou en local, sans Mixamo** (la sorcière avant le jalon 54, dont la cape collait les
+   bras au buste ; refaite en pèlerine courte, elle passe par Mixamo) : `model_3d.py rig <id>` (`blender/rig.py`). Il reprend le
    squelette et les animations Mixamo de `swiftblade/3d/`, place les articulations sur
    les points de l'image source, peint les poids, et écrit `<id>/3d/rest.blend` et
    `walk.blend`, que `anims` et `rest` nomment comme un `.fbx`. Les points se lisent sur
@@ -296,8 +296,12 @@ Pièges payés :
   0,7. Réduire au rendu, jamais étirer en jeu : les pixels resteraient inégaux.
 - **La palette est plafonnée à 0,88 de luminance** (`LIGHT_MAX`) : les reflets des
   lames passaient le seuil de glow du jeu.
-- **Le dos repeint ne reprend pas la recoloration de la face** (`model_recolor`) : la
-  règle, écrite pour la face, y repeignait la cape en bleu.
+- **La réduction fend les visages** (jalon 54) : ramené de 200 000 à 40 000 faces
+  (`bake_color.py`), le maillage de TRELLIS.2 garde ses boucles de cheveux et écrase le
+  visage en éclats, fendu de noir au zoom — la sorcière nettement, le Vive lame moins. Un
+  remaillage en voxels d'abord réparait la sorcière et perçait le Vive lame (surfaces
+  ouvertes : écharpe, mèches) : écarté. Le Space réduit lui-même à l'extraction, mais pas
+  sous 100 000 faces. **Ouvert.**
 - **Gréage local, le haut du crâne** (jalon 54) : sans point OpenPose, `HeadTop_End`
   gardait la tête chibi du squelette d'emprunt et dépassait le Vive lame adulte d'un tiers
   de sa taille. Gestes et armes se mesurent à lui : le bras se tendait à fond, l'épée était
