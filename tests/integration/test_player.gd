@@ -931,6 +931,18 @@ func test_the_weapon_is_put_away_while_walking_or_throwing() -> void:
 	assert_false(sword.visible, "les lames de jet partent de la main nue")
 
 
+## Jalon 54 : le corps des vues de face est le modèle net, qui n'a que le repos, et dit sa hauteur.
+func test_a_portrait_body_is_the_sharp_model_at_rest() -> void:
+	var portrait := ActorModel.new()
+	portrait.portrait = true
+	portrait.archetype = "witch"
+	add_child_autofree(portrait)
+	var player: AnimationPlayer = portrait.find_children("*", "AnimationPlayer", true, false)[0]
+	assert_true(player.has_animation(ActorModel.REST))
+	assert_false(player.has_animation(ActorModel.WALK), "le portrait n'a que le repos")
+	assert_gt(portrait.height(), 0.0, "l'export a écrit sa hauteur")
+
+
 ## Jalon 54, le clic-déplacement de PoE : à la souris, le clic gauche au sol mène au point
 ## cliqué ; un coup l'interrompt, sauf bouton tenu.
 func test_a_left_click_on_the_ground_walks_there_in_mouse_mode() -> void:

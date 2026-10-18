@@ -210,7 +210,9 @@ gréage local), qui ne dépend d'aucun quota.
    `art/models/<id>.glb` depuis les mêmes réglages — corps, une animation par geste, les
    armes sous l'os de la main, images d'impact et arme par défaut (`weapon`) en métadonnées.
    **Dès que ce fichier existe, le jeu montre le modèle à la place de la planche**
-   (`ActorModel`). `tools/capture.sh tools/look_3d.gd <sujet>` filme chaque
+   (`ActorModel`). S'il y a `<id>/3d/model_trellis.glb`, l'export écrit aussi
+   `art/models/<id>_portrait.glb`, le modèle brut, net, pour la sélection et l'inventaire :
+   il reprend les poids du corps de jeu, sans repasser par Mixamo. `tools/capture.sh tools/look_3d.gd <sujet>` filme chaque
    animation sous la lumière du jeu, et `tools/look_3d.py <sujet>` en fait des GIF sur le
    Bureau.
 
@@ -301,7 +303,8 @@ Pièges payés :
   visage en éclats, fendu de noir au zoom — la sorcière nettement, le Vive lame moins. Un
   remaillage en voxels d'abord réparait la sorcière et perçait le Vive lame (surfaces
   ouvertes : écharpe, mèches) : écarté. Le Space réduit lui-même à l'extraction, mais pas
-  sous 100 000 faces. **Ouvert.**
+  sous 100 000 faces. **Tranché avec l'utilisateur** : en zone, le corps réduit, vu de loin ;
+  de face, le portrait garde le modèle brut (étape 5 ci-dessous).
 - **Gréage local, le haut du crâne** (jalon 54) : sans point OpenPose, `HeadTop_End`
   gardait la tête chibi du squelette d'emprunt et dépassait le Vive lame adulte d'un tiers
   de sa taille. Gestes et armes se mesurent à lui : le bras se tendait à fond, l'épée était

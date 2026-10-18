@@ -187,3 +187,14 @@ func test_arrows_change_character() -> void:
 	assert_eq(_screen.selection(), first, "et on est revenu")
 	_screen._move(-1)
 	assert_eq(_screen.selection(), first, "sans sortir de la liste par le haut")
+
+
+## Jalon 54 : le personnage choisi, en 3D, à droite de la liste ; rendu tant qu'il se montre.
+func test_the_chosen_character_shows_in_3d_beside_the_list() -> void:
+	var p := SaveStore.create("Morgane", 0, Character.WITCH)
+	_created.append(p.id)
+	_screen.reload()
+	assert_eq(_screen._portrayed()[0], "witch")
+	assert_eq(_screen._portrait.model.archetype, "witch", "son modèle de portrait")
+	assert_eq(_screen._portrait.render_target_update_mode, SubViewport.UPDATE_ALWAYS, "rendu tant qu'il se montre")
+	assert_gte(_screen._portrait_rect().position.x, _screen._list_rect().end.x, "à droite de la liste")

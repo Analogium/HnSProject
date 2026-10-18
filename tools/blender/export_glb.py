@@ -7,7 +7,8 @@
 # bras, hors repos), walk_leg_space (de même pour les cuisses, dans la course, négatif pour
 # les resserrer), elbows (part du pli des coudes ôtée, hors repos), sheathed (les gestes sans
 # arme), repeat ({nom: {strikes, gap}}, le coup de la source répété à cette cadence), size (la
-# case de la planche, qui fixe la taille en jeu), out (.glb).
+# case de la planche, qui fixe la taille en jeu), out (.glb), portrait (le modèle brut de
+# TRELLIS.2, vide sans lui) et portrait_out (.glb des vues de face).
 import bpy, json, os, sys
 import math
 from mathutils import Matrix, Quaternion, Vector
@@ -207,6 +208,67 @@ def repeat(action, first, last, at, strikes, gap):
     return round(windup / end, 2)
 
 
+def world_box(o):
+    dg = bpy.context.evaluated_depsgraph_get()
+    e = o.evaluated_get(dg)
+    pts = [e.matrix_world @ v.co for v in e.data.vertices]
+    return (Vector([min(p[i] for p in pts) for i in range(3)]),
+            Vector([max(p[i] for p in pts) for i in range(3)]))
+
+
+def portrait(raw, out):
+    """Le corps des vues de face, sélection et inventaire : le modèle brut de TRELLIS.2, net,
+    là où la réduction du jeu fendait le visage (jalon 54). Même forme que le corps de jeu : il
+    en reprend les poids, calé sur lui, sans repasser par Mixamo. Seul le repos l'anime."""
+    body, = [o for o in arm.children if o.type == "MESH" and any(m.type == "ARMATURE" for m in o.modifiers)]
+    arm.data.pose_position = "REST"
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=raw)
+    new = [o for o in bpy.data.objects if o not in before]
+    meshes = [o for o in new if o.type == "MESH"]
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in meshes:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    if len(meshes) > 1:
+        bpy.ops.object.join()
+    sharp = bpy.context.view_layer.objects.active
+    bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+    for o in new:
+        if o.name in bpy.data.objects and o is not sharp:
+            bpy.data.objects.remove(o)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    (blo, bhi), (slo, shi) = world_box(body), world_box(sharp)
+    k = (bhi.z - blo.z) / (shi.z - slo.z)
+    sharp.scale = (k, k, k)
+    sharp.location = (blo + bhi) / 2 - (slo + shi) / 2 * k
+    sharp.location.z = blo.z - slo.z * k
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    weights = sharp.modifiers.new("poids", "DATA_TRANSFER")
+    weights.object, weights.use_vert_data = body, True
+    weights.data_types_verts, weights.vert_mapping = {"VGROUP_WEIGHTS"}, "POLYINTERP_NEAREST"
+    bpy.ops.object.datalayout_transfer(modifier=weights.name)
+    bpy.ops.object.modifier_apply(modifier=weights.name)
+    sharp.parent = arm
+    sharp.matrix_parent_inverse = arm.matrix_world.inverted()
+    sharp.modifiers.new("os", "ARMATURE").object = arm
+    bpy.data.objects.remove(body)
+    for track in list(arm.animation_data.nla_tracks):
+        if track.name != "rest":
+            arm.animation_data.nla_tracks.remove(track)
+    arm.data.pose_position = "POSE"
+    export(out)
+
+
+def export(out):
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in [arm] + list(arm.children_recursive):
+        o.select_set(True)
+    bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_selection=True,
+                              export_animation_mode="NLA_TRACKS", export_anim_slide_to_zero=True,
+                              export_extras=True)
+
+
 def impact(first, last):
     """L'image où la main armée va le plus vite sans que le bras se replie, en part du geste :
     le coup d'une animation Mixamo, qu'aucune clé n'annonce. Le retrait de l'estoc est aussi
@@ -279,12 +341,13 @@ arm.location.z -= lo.z * s
 for o in arm.children_recursive:
     o.pop("prop", None)
 arm["impacts"] = impacts
+# La hauteur du corps, en mètres : les vues de face le cadrent d'après elle (`ActorPortrait`) ;
+# Godot ne déforme pas la boîte englobante d'un maillage gréé.
+arm["height"] = round((hi.z - lo.z) * s, 3)
 # Celle qu'il tient sans équipement : `ActorModel` la montre quand on ne lui en donne pas.
 arm["weapon"] = spec["weapon"]
-bpy.ops.object.select_all(action="DESELECT")
-for o in [arm] + list(arm.children_recursive):
-    o.select_set(True)
-bpy.ops.export_scene.gltf(filepath=spec["out"], export_format="GLB", use_selection=True,
-                          export_animation_mode="NLA_TRACKS", export_anim_slide_to_zero=True,
-                          export_extras=True)
+export(spec["out"])
 print("EXPORT", spec["out"], round(hi.z - lo.z, 3), "->", round((hi.z - lo.z) * s, 3), "m")
+if spec["portrait"]:
+    portrait(spec["portrait"], spec["portrait_out"])
+    print("PORTRAIT", spec["portrait_out"])

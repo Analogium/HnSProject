@@ -13,8 +13,12 @@ extends Node3D
 ## -1 : silhouette déduite de la position d'apparition. Un numéro fixe force une
 ## variante précise, ce dont on se sert pour le joueur. Seules les planches en ont.
 @export var variant: int = -1
+## Le corps des vues de face (`ActorPortrait`) : `<archétype>_portrait.glb`, le modèle net
+## que le jeu ne charge pas en zone, s'il existe (jalon 54). Il n'a que le repos.
+@export var portrait := false
 
 const MODELS := "res://art/models/%s.glb"
+const PORTRAITS := "res://art/models/%s_portrait.glb"
 
 ## L'impact d'un geste qu'aucune planche ni aucun modèle ne décrit : au milieu du coup, un peu avant.
 const DEFAULT_IMPACT := 0.4
@@ -170,6 +174,12 @@ func impact_of(family: String) -> float:
 	return float(_extras.get("impacts", {}).get(family, DEFAULT_IMPACT))
 
 
+## La hauteur du corps, pieds au sol, en unités du monde : écrite par l'export, nulle pour
+## une planche ou un modèle d'avant elle.
+func height() -> float:
+	return float(_extras.get("height", 0.0)) * Flat.PX_PER_M
+
+
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est le corps qui porte le
 ## matériau. Une planche n'en a pas en 3D.
 func flash() -> void:
@@ -231,7 +241,10 @@ func _rebuild() -> void:
 		sprite.set_pace(_pace)
 		return
 
-	_body = (load(MODELS % archetype) as PackedScene).instantiate()
+	var path := MODELS % archetype
+	if portrait and ResourceLoader.exists(PORTRAITS % archetype):
+		path = PORTRAITS % archetype
+	_body = (load(path) as PackedScene).instantiate()
 	# Modelé en mètres, posé dans le monde en pixels (jalon 54, §2).
 	_body.scale = Vector3.ONE * Flat.PX_PER_M
 	add_child(_body)
@@ -239,7 +252,8 @@ func _rebuild() -> void:
 	_player.animation_finished.connect(_on_animation_finished)
 	# Le glTF n'écrit pas de boucle ; l'animation est partagée, la poser une fois suffit.
 	for gait in [REST, WALK]:
-		_player.get_animation(gait).loop_mode = Animation.LOOP_LINEAR
+		if _player.has_animation(gait):
+			_player.get_animation(gait).loop_mode = Animation.LOOP_LINEAR
 	_extras = _body.find_child("Armature", true, false).get_meta("extras", {})
 	if _overlay == null:
 		_overlay = ShaderMaterial.new()

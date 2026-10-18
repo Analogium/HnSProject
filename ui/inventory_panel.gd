@@ -44,6 +44,8 @@ const DOLL_AREA := Rect2(0, 0, 3, 3)
 const DOLL_ANIM := "idle_down"
 ## Les pieds sous le centre de la zone : la sorcière y gagne la place de son chapeau.
 const DOLL_FEET := 9.0
+## Le portrait 3D tourne d'un tour pour ce glissé, en pixels du canevas (jalon 54).
+const TURN_DRAG := 240.0
 
 ## Un emplacement vide montre l'objet qu'il attend, très sombre : lisible sans texte.
 const GHOST := Color(1.0, 1.0, 1.0, 0.13)
@@ -133,12 +135,18 @@ var _doll_frames: SpriteFrames
 ## l'animation.
 var _doll_shown := 0
 var _doll_key := ""
+## Le corps en 3D à la place de la planche, quand l'archétype a son modèle (jalon 54).
+var _portrait := ActorPortrait.new()
+## Le clic gauche tenu sur le portrait le fait tourner.
+var _turning := false
 
 
 func _ready() -> void:
 	visible = false
 	_font = ThemeDB.fallback_font
 	title.add_theme_color_override("font_color", INK)
+	add_child(_portrait)
+	visibility_changed.connect(_activate_portrait)
 
 
 ## Sans garde : effacer une prise absente ne coûte rien, et la condition finissait
@@ -242,6 +250,8 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if mouse is InputEventMouseMotion:
+		if _turning:
+			_portrait.turn((mouse as InputEventMouseMotion).relative.x * TAU / TURN_DRAG)
 		_track(mouse.position)
 		return
 
@@ -251,6 +261,7 @@ func _input(event: InputEvent) -> void:
 	var button := mouse as InputEventMouseButton
 	if not button.pressed:
 		if button.button_index == MOUSE_BUTTON_LEFT:
+			_turning = false
 			_track(button.position)
 			_release(button.position)
 			get_viewport().set_input_as_handled()
@@ -271,6 +282,8 @@ func _input(event: InputEvent) -> void:
 				_resolve(button.position, false)
 			elif button.ctrl_pressed and _storage != null:
 				_transfer(button.position)
+			elif _shows_portrait() and _doll_area_rect().has_point(button.position):
+				_turning = true
 			else:
 				_take(button.position)
 		MOUSE_BUTTON_RIGHT:
@@ -582,7 +595,24 @@ func _refresh_doll() -> void:
 	if key == _doll_key:
 		return
 	_doll_key = key
-	_doll_frames = SpriteForge.frames(body, variant_index, weapon)
+	_doll_frames = null
+	if _shows_portrait():
+		_portrait.show_actor(body, weapon)
+	else:
+		_doll_frames = SpriteForge.frames(body, variant_index, weapon)
+	_activate_portrait()
+
+
+func _shows_portrait() -> bool:
+	return _player != null and ActorModel.has_model(_player.model.archetype)
+
+
+## Rendu le temps que le sac est ouvert ; recalé sur la fenêtre, qui a pu changer de taille.
+func _activate_portrait() -> void:
+	var on := visible and _shows_portrait()
+	if on:
+		_portrait.fit(_doll_area_rect().size)
+	_portrait.set_active(on)
 
 
 func _on_changed() -> void:
@@ -843,6 +873,9 @@ func _doll_area_rect() -> Rect2:
 ## La silhouette et l'arme réellement tenue, en grand, à même le cadre.
 func _draw_doll() -> void:
 	var zone := _doll_area_rect()
+	if _shows_portrait():
+		draw_texture_rect(_portrait.get_texture(), zone, false)
+		return
 	if _doll_frames == null or not _doll_frames.has_animation(DOLL_ANIM):
 		return
 	var tex := _doll_frames.get_frame_texture(DOLL_ANIM, _doll_shown)

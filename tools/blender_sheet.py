@@ -109,6 +109,8 @@ def export(cid, cfg):
     b = cfg["blender"]
     src = lambda f: win(os.path.join(cf.PROJ, b["source"], f))
     out = os.path.join(cf.PROJ, "art", "models", cid + ".glb")
+    # Le modèle brut de TRELLIS.2, pour les vues de face : seuls ceux qui en ont un.
+    raw = os.path.join(cf.CHARS, cid, "3d", "model_trellis.glb")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     os.makedirs(WORK, exist_ok=True)
     spec = os.path.join(WORK, cid + "_glb.json")
@@ -121,11 +123,12 @@ def export(cid, cfg):
                               "gap": float(gd_const("core/skill_stats.gd", "FLURRY_GAP"))}
                           for k in b.get("repeat", [])},
                "anims": {k: src(s) if s.endswith((".fbx", ".blend")) else s for k, (s, _) in b["anims"].items()},
-               "out": win(out)}, open(spec, "w", encoding="utf-8"))
+               "out": win(out), "portrait": win(raw) if os.path.exists(raw) else "",
+               "portrait_out": win(os.path.join(os.path.dirname(out), cid + "_portrait.glb"))}, open(spec, "w", encoding="utf-8"))
     log = subprocess.run([BLENDER, "-b", "-P", win(EXPORT), "--", win(spec)], capture_output=True, text=True).stdout
     if "Traceback" in log or "EXPORT" not in log:
         sys.exit(f"Blender a échoué sur l'export :\n{log[-1500:]}")
-    print(next(l for l in log.splitlines() if l.startswith("EXPORT")))
+    print("\n".join(l for l in log.splitlines() if l.startswith(("EXPORT", "PORTRAIT"))))
 
 
 def build(sheet_id, cfg, size, cached):

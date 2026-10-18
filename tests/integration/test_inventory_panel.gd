@@ -277,3 +277,33 @@ func test_applying_from_a_stack_spends_one() -> void:
 	_click(MOUSE_BUTTON_RIGHT, Vector2i(0, 0))
 	_click(MOUSE_BUTTON_LEFT, Vector2i(2, 1))
 	assert_eq(coins.count, 2)
+
+
+## Jalon 54 : un archétype qui a son modèle montre son portrait 3D à la place de la planche,
+## et un glissé dessus le fait tourner, sans rien prendre en main.
+func test_a_drag_on_the_3d_portrait_turns_it() -> void:
+	_panel.visible = true
+	_player.model.set_archetype("witch")
+	_panel._refresh_doll()
+	assert_true(_panel._shows_portrait(), "la sorcière a son modèle")
+	assert_eq(_panel._portrait.model.archetype, "witch")
+	var to_screen := _panel.get_global_transform_with_canvas()
+	var at := _panel._doll_area_rect().get_center()
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = to_screen * at
+	_panel._input(press)
+	var before: float = _panel._portrait._pivot.rotation.y
+	var drag := InputEventMouseMotion.new()
+	drag.position = to_screen * (at + Vector2(30.0, 0.0))
+	drag.relative = Vector2(30.0, 0.0)
+	_panel._input(drag)
+	assert_almost_eq(_panel._portrait._pivot.rotation.y - before, 30.0 * TAU / InventoryPanel.TURN_DRAG, 1e-4,
+		"il tourne d'autant que le glissé")
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = drag.position
+	_panel._input(release)
+	assert_false(_panel._turning, "le relâchement arrête")
+	assert_null(_panel._held, "rien n'a été pris")

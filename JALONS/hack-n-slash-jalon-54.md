@@ -351,6 +351,17 @@ gréée par Mixamo, six animations armées dont une course posée — le sprint 
 les avant-bras. La baguette suit le bras (`wield`) ; sur planche, gestes lisibles. Ses jambes
 étaient aussi trop écartées dans la course : −12°, comme lui.
 
+**Le 18 octobre, les vues de face.** Le modèle brut de TRELLIS.2 (200 000 faces) est net là où
+le corps de jeu, réduit, se fend ; l'utilisateur le veut « quand on voit le personnage de
+face », pas sur l'acteur. L'export écrit `art/models/<id>_portrait.glb` : le brut, calé sur le
+corps gréé par Mixamo, ses poids recopiés (transfert au plus proche), le repos seul — sans
+repasser par Mixamo. `ActorPortrait` le rend dans un monde à part, sous la lumière du jeu et un
+appoint rasant (de face, le chapeau mangeait le visage), cadré sur la hauteur que l'export
+écrit (`extras.height`) : la boîte englobante d'un maillage gréé ne suit pas le squelette.
+**Sélection de personnage** : le personnage choisi en grand à droite de la liste, la classe
+choisie à droite de la création ; la liste se décale, les deux centrés ensemble. **Inventaire** :
+la poupée devient le portrait, tournable au glissé. Une classe sans modèle garde sa planche.
+
 ## 12. Reste à faire
 
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
@@ -372,9 +383,10 @@ les avant-bras. La baguette suit le bras (`wield`) ; sur planche, gestes lisible
   écarte les images où le bras perd plus de 2 % d'allonge ; l'estoc frappe à 0,17, les
   autres gestes n'ont pas bougé.
 - **La réduction des modèles TRELLIS.2 fend les visages** au zoom (sorcière nettement, Vive
-  lame moins) : voir `tools/characters/LISEZMOI.md`, pièges. Le remaillage en voxels perce le
-  Vive lame ; le Space ne réduit pas sous 100 000 faces. À trancher : garder le modèle brut
-  (200 000 faces) pour les personnages vus de près, ou l'extraction à 100 000.
+  lame moins) : voir `tools/characters/LISEZMOI.md`, pièges. Tranché : le corps réduit reste
+  en zone, où on le voit de loin ; les vues de face prennent le modèle brut (ci-dessus).
+- **La poupée de l'inventaire est petite** (3 × 3 cases) pour un portrait 3D : à agrandir si
+  l'utilisateur le demande.
 - **Cheveux et peau claire de la sorcière « brûlent »** : ils passent le seuil de lueur de la
   2D, que l'étape 5 revoit.
 - **Au zoom maximal, un sprite du décor (arbre mort) peut masquer le joueur** : leur forme

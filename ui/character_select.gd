@@ -14,6 +14,12 @@ const VISIBLE_ROWS := 4
 ## Les pieds d'un personnage, au-dessus du bas de sa ligne.
 const LINE_FEET := 4.0
 const LIST_W := 340.0
+## Le personnage choisi en grand, à droite de la liste ou de la fenêtre de création
+## (jalon 54) : la liste et lui sont centrés ensemble.
+const PORTRAIT_W := 140.0
+const PORTRAIT_GAP := 12.0
+## Une planche sans modèle 3D, grossie d'autant dans ce cadre.
+const PORTRAIT_SHEET_SCALE := 3.0
 const LIST_Y := 56.0
 
 ## Création et suppression au même endroit, une à la fois.
@@ -67,6 +73,9 @@ const ERROR_COLOR := Color(0.92, 0.45, 0.42)
 
 @onready var silhouettes: Node2D = $Silhouettes
 
+## Le corps 3D du personnage choisi, quand son archétype a son modèle.
+var _portrait := ActorPortrait.new()
+
 var _characters: Array[Character] = []
 var _index := 0
 ## Premier personnage affiché : la liste défile quand la sélection sort du cadre.
@@ -77,6 +86,7 @@ var _font: Font
 
 
 func _ready() -> void:
+	add_child(_portrait)
 	_font = ThemeDB.fallback_font
 	# Couleurs d'ici et non du `.tscn`, qui ne suivrait pas la palette.
 	title_text.add_theme_color_override("font_color", UiPalette.TEXT)
@@ -316,8 +326,27 @@ func _say(text_value: String) -> void:
 
 func _list_rect() -> Rect2:
 	return Rect2(
-		(size.x - LIST_W) * 0.5, LIST_Y, LIST_W, LINE * float(VISIBLE_ROWS)
+		(size.x - LIST_W - PORTRAIT_GAP - PORTRAIT_W) * 0.5, LIST_Y, LIST_W, LINE * float(VISIBLE_ROWS)
 	)
+
+
+## À droite de la liste, ou de la fenêtre de création.
+func _portrait_rect() -> Rect2:
+	var beside := _list_rect() if _state == State.LIST else MODAL
+	return Rect2(beside.end.x + PORTRAIT_GAP, beside.position.y, PORTRAIT_W, beside.size.y)
+
+
+## Qui se montre en grand : [archétype, arme, silhouette], vide pour personne. À la
+## création, la classe choisie, son arme par défaut.
+func _portrayed() -> Array:
+	if _state == State.CREATION:
+		var look: Array = LOOKS[_look]
+		return [Character.CLASSES[look[0]]["archetype"], "", look[1]]
+	var p := selection()
+	if _state != State.LIST or p == null or p.unreadable:
+		return []
+	var weapon: Item = p.equipment.get(EquipmentSlots.WEAPON)
+	return [p.archetype(), "" if weapon == null else weapon.base.kind, p.silhouette]
 
 
 func _refresh() -> void:
@@ -346,6 +375,15 @@ func _place_silhouettes() -> void:
 	for child in silhouettes.get_children():
 		child.queue_free()
 
+	var shown := _portrayed()
+	var modeled := not shown.is_empty() and ActorModel.has_model(shown[0])
+	if modeled:
+		_portrait.show_actor(shown[0], shown[1])
+		_portrait.fit(_portrait_rect().size)
+	elif not shown.is_empty():
+		_add_silhouette(_portrait_rect().get_center(), shown[0], shown[2], PORTRAIT_SHEET_SCALE)
+	_portrait.set_active(modeled)
+
 	if _state == State.CREATION:
 		for i in LOOKS.size():
 			var look: Array = LOOKS[i]
@@ -373,11 +411,12 @@ func _place_silhouettes() -> void:
 		)
 
 
-func _add_silhouette(center: Vector2, archetype: String, variant_index: int) -> void:
+func _add_silhouette(center: Vector2, archetype: String, variant_index: int, zoom := 1.0) -> void:
 	var s := AnimatedSprite2D.new()
 	s.sprite_frames = SpriteForge.frames(archetype, posmod(variant_index, SpriteForge.VARIANTS))
 	s.offset = SpriteForge.offset_of(archetype)
 	s.position = center
+	s.scale = Vector2(zoom, zoom)
 	s.play("idle_down")
 	silhouettes.add_child(s)
 
@@ -392,6 +431,19 @@ func _draw() -> void:
 		draw_rect(MODAL, UiPalette.BORDER, false, 1.0)
 		if _state == State.CREATION:
 			_paint_silhouette_choice()
+	_paint_portrait()
+
+
+## Le cadre du personnage choisi ; une planche s'y pose d'elle-même (`_place_silhouettes`).
+func _paint_portrait() -> void:
+	var shown := _portrayed()
+	if shown.is_empty():
+		return
+	var frame := _portrait_rect()
+	draw_rect(frame, UiPalette.BACK_FULL)
+	draw_rect(frame, UiPalette.BORDER, false, 1.0)
+	if ActorModel.has_model(shown[0]):
+		draw_texture_rect(_portrait.get_texture(), frame, false)
 
 
 func _paint_list() -> void:
