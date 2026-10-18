@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://actors/skills/minion.gd" id="1_minion"]
-[ext_resource type="Script" path="res://art/actor_sprite.gd" id="2_sprite"]
+[ext_resource type="Script" path="res://art/actor_model.gd" id="2_sprite"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="4_hurtbox"]
 [ext_resource type="Script" path="res://ui/health_bar.gd" id="5_bar"]
 
@@ -18,7 +18,7 @@ collision_layer = 0
 collision_mask = 1
 script = ExtResource("1_minion")
 
-[node name="Sprite" type="AnimatedSprite3D" parent="."]
+[node name="Model" type="Node3D" parent="."]
 script = ExtResource("2_sprite")
 archetype = "undead"
 variant = 0

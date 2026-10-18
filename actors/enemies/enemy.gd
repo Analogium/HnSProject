@@ -9,7 +9,7 @@ signal died(enemy: Enemy)
 ## (700 px), le garde-fou de performance.
 @export var detection_radius: float = 350.0
 
-@onready var sprite: ActorSprite = $Sprite
+@onready var model: ActorModel = $Model
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
 @onready var affix_tag: AffixTag = $AffixTag
@@ -61,7 +61,7 @@ func _ready() -> void:
 		stats = sheet_of(stats, level, affixes)
 		_apply_affixes()
 	# Un corps en planche (jalon 27) dépasse le grunt : barre, nombres et affixes montent.
-	var lift := SpriteForge.head_room(sprite.archetype)
+	var lift := SpriteForge.head_room(model.archetype)
 	health_bar.lift = lift
 	hurtbox.feedback_lift = lift
 	affix_tag.lift = lift
@@ -112,7 +112,7 @@ func _apply_affixes() -> void:
 	for a in affixes:
 		lifesteal += a.lifesteal
 
-	sprite.set_rim(
+	model.set_rim(
 		AffixPool.tint_of(affixes),
 		AffixPool.rim_amount_of(affixes),
 		AffixPool.rim_width_of(affixes)
@@ -173,7 +173,7 @@ func _heal(amount: float) -> void:
 
 
 func _show_states() -> void:
-	sprite.show_states(states)
+	model.show_states(states)
 	health_bar.show_states(states)
 
 
@@ -252,7 +252,7 @@ func _separation() -> Vector3:
 
 ## En fin de tick() : le sprite suit la vitesse réelle, pas l'intention.
 func _animate() -> void:
-	sprite.set_state(velocity.length() > 8.0, velocity)
+	model.set_state(velocity.length() > 8.0, velocity)
 
 
 ## Une fois par tick, **hors** du test de portée, sinon l'attente se fige. Le gel
@@ -264,8 +264,8 @@ func _cool_down(delta: float) -> void:
 ## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact.
 func _strike(facing: Vector3) -> void:
 	_attack_cd = stats.attack_interval()
-	sprite.set_state(false, facing)
-	sprite.attack()
+	model.set_state(false, facing)
+	model.attack()
 
 
 ## Un coup au contact, porté en son nom. Le vol de vie se prend sur ce qui a passé
@@ -313,7 +313,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	is_aggro = true
 	_set_health(health - info.amount)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
-	sprite.flash()
+	model.flash()
 	# Le Coup de grâce (jalon 50) achève sous son seuil, au nom de qui l'a porté.
 	var finished := info.cast != null and health <= stats.max_health * info.cast.execution * 0.01
 	if health <= 0.0 or finished:

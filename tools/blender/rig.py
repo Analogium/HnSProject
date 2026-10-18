@@ -9,6 +9,7 @@ import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 sys.path.insert(0, os.path.dirname(__file__))
 from align import Frame, mesh_points
+import stage
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 glb, front, pose_json, rest_fbx, walk_fbx, out = argv
@@ -84,6 +85,12 @@ def placed(p):
 # Les axes se relèvent tous avant de rien bouger : un os chaîné bouge avec son parent.
 new_heads = {n: placed(p) for n, p in heads.items()}
 new_tails = {n: placed(p) for n, p in tails.items()}
+# Le haut du crâne n'a pas de point OpenPose : interpolé, il gardait la tête chibi du squelette
+# d'emprunt et dépassait le Vive lame adulte d'un tiers de sa taille. Gestes et armes se
+# mesurent à lui : le bras se tendait à fond, l'épée était trop grande (jalon 54).
+head, top = named(eb, "Head").name, named(eb, "HeadTop_End").name
+new_heads[top] = new_tails[head] = np.array([new_heads[head][0], new_heads[head][1], co[:, 2].max()])
+new_tails[top] = new_heads[top] + np.array([0.0, 0.0, 0.05 * H])
 # La profondeur des jambes se lit sur le modèle : le devant de la jambe, plus son rayon. Celle
 # du squelette d'emprunt laissait les chevilles 7 cm derrière les bottes, et la sorcière
 # marchait pieds en avant, le dos en arrière. Ce qui pend sous un os le suit.
@@ -106,7 +113,55 @@ for b in eb:
     b.head, b.tail = Mi @ Vector(new_heads[b.name]), Mi @ Vector(new_tails[b.name])
 for b in eb:
     b.align_roll(z_axes[b.name])
+
+
+def hand_frame(side):
+    """Le poignet, l'axe de la main (du coude vers les doigts), la ligne des jointures, la paume
+    et la longueur de la main, lue sur le maillage. En pose A, bras à 45°, les doigts s'étalent
+    dans le plan de face : la ligne des jointures descend vers le dedans, le pouce de ce côté, la
+    paume tournée vers l'arrière (mesuré sur le Vive lame de TRELLIS.2, jalon 54)."""
+    wrist = new_heads[named(eb, side + "Hand").name]
+    d = wrist - new_heads[named(eb, side + "ForeArm").name]
+    d /= np.linalg.norm(d)
+    knuckles = np.array([d[2], 0.0, -d[0]])
+    knuckles = knuckles if knuckles[2] < 0 else -knuckles
+    knuckles -= knuckles.dot(d) * d
+    knuckles /= np.linalg.norm(knuckles)
+    # Main droite : paume = pouce × doigts ; la gauche en miroir.
+    palm = np.cross(knuckles, d) if side == "Right" else np.cross(d, knuckles)
+    s = (co - wrist) @ d
+    radial = np.linalg.norm(co - wrist - s[:, None] * d, axis=1)
+    near = (s > 0) & (s < HAND_REACH * H) & (radial < HAND_RADIUS * H)
+    return wrist, d, knuckles, palm, near, s, np.percentile(s[near], 99)
+
+
+# Les mains sortent ouvertes, doigts écartés, sans os à eux : repliées une fois dans le maillage
+# vers la paume, au-delà des jointures, elles deviennent des poings. Un os de prise, sans poids,
+# marque le creux du poing : +Y le long du pouce (l'axe de la lame), +Z vers la paume.
+HAND_REACH, HAND_RADIUS = 0.15, 0.08   # en hauteurs de modèle
+KNUCKLES = 0.45                        # part de la main avant les doigts
+CURL = math.radians(120)
+prefix = named(eb, "Hips").name.removesuffix("Hips")
+fists = {}
+for side in ("Left", "Right"):
+    wrist, d, thumb, palm, near, s, length = hand_frame(side)
+    knuckle = KNUCKLES * length
+    grip = wrist + d * 0.9 * knuckle + palm * 0.3 * (length - knuckle)
+    bone = eb.new(prefix + side + "HandGrip")
+    bone.head, bone.tail = Mi @ Vector(grip), Mi @ Vector(grip + thumb * 0.05 * H)
+    bone.parent, bone.use_deform = eb[named(eb, side + "Hand").name], False
+    bone.align_roll(Mi.to_3x3() @ Vector(palm))
+    fingers = near & (s > knuckle)
+    fists[side] = (wrist + d * knuckle, np.cross(d, palm), fingers, (s - knuckle) / (length - knuckle))
+    print("poing", side, int(fingers.sum()), "sommets repliés, main", round(length / H, 3))
 bpy.ops.object.mode_set(mode="OBJECT")
+for pivot, axis, fingers, along in fists.values():
+    for i in np.nonzero(fingers)[0]:
+        turn = Matrix.Rotation(CURL * min(float(along[i]), 1.0) ** 0.7, 3, Vector(axis))
+        co[i] = pivot + np.array(turn @ Vector(co[i] - pivot))
+local = np.c_[co, np.ones(len(co))] @ np.array(body.matrix_world.inverted()).T
+body.data.vertices.foreach_set("co", local[:, :3].astype(np.float32).ravel())
+body.data.update()
 
 # Les poids : par distance aux os du corps (pas aux doigts), deux os au plus par sommet.
 # Ce qui est loin de tout membre — la cape, son ourlet — ne suit que le buste : par la
@@ -225,17 +280,11 @@ def save(action, name):
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out, name))
 
 
-def fcurves(action):
-    if getattr(action, "fcurves", None):
-        return action.fcurves
-    return action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
-
-
 def shorter_steps(action, amount):
     """Les jambes à `amount` de leur rotation : en cape longue, le pas d'un épéiste
     étirait la cape, faite d'un seul tenant avec les bottes."""
     curves = {}
-    for fc in fcurves(action):
+    for fc in stage.fcurves(action):
         if fc.data_path.endswith("rotation_quaternion") and any(
                 ":" + side + n + '"' in fc.data_path for side in ("Left", "Right") for n in ("UpLeg", "Leg", "Foot")):
             curves.setdefault(fc.data_path, [None] * 4)[fc.array_index] = fc

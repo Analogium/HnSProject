@@ -105,7 +105,9 @@ le tri en Y, `Hurtbox` en `Area2D`) mentiraient dès l'étape 1.
   **Recadrée le 17 octobre** sur une capture de Torchlight Infinite fournie par
   l'utilisateur : champ de 40°, inclinée de 55°, et le recul qui montre au plan du joueur
   le monde de la caméra 2D (360 px au zoom de 85 %, soit 582 unités) — les sprites
-  gardent leur taille d'avant, les portées leur place à l'écran.
+  gardent leur taille d'avant, les portées leur place à l'écran. **Le 18, la molette** la
+  rapproche jusqu'au quart de ce recul, comme dans Path of Exile, pour voir les modèles de
+  près ; jamais plus loin que le cadre par défaut.
 - L'interface, pensée à 640 × 360 en pixel art, à côté d'un monde net : à juger une
   fois le monde fait.
 - La performance : remesurer `world/stress_test.tscn` après l'étape 2 (meshes
@@ -128,6 +130,8 @@ règlera la vitesse. Deux choses ont dû bouger pour que le geste soit fait **d'
 sous l'os de la main, pas un fichier par arme. La prise (où la main tient la poignée) et
 la taille dépendent du corps ; posées dans Blender, elles arrivent justes à l'import, sans
 réglage par personnage côté jeu. `set_weapon` n'aura qu'à en montrer une.
+L'arme se range pendant la marche et le lancer des Lames de jet, demande de l'utilisateur
+(`ActorModel.SHEATHED`) : l'export, qui lit cette liste, n'y tourne pas la main (`wield`).
 
 **Le regard** (`world/lighting.tscn`, `tools/look_3d.gd`, captures dans
 `Bureau\hns-captures-modele-3d\`) : soleil chaud en haut à gauche côté caméra, ambiance
@@ -282,9 +286,89 @@ avec la caméra d'alors (840 à 165 img/s). À 920, par pas de physique : 7,3 ms
 de l'`EnemyManager`, dont 4 ms de `move_and_slide()` — le script et le glissement, pas le
 pas de Jolt.
 
-## 11. Reste à faire
+## 11. Étape 2, en cours (18 octobre)
 
-- Étape 2 : `ActorModel` — avec lui reviennent flash, liseré et teinte (la vraie, cette fois).
+**Tranché avec l'utilisateur : un personnage sans modèle garde sa planche** — le jeu reste
+jouable pendant que les onze autres passent en 3D, chacun dès que son `.glb` existe.
+
+- **`ActorModel`** (`art/actor_model.gd`) est le nœud `Model` de chaque acteur, `sprite`
+  devenu `model` chez eux. Il pose `art/models/<archétype>.glb` s'il existe, son
+  `ActorSprite` sinon (`ActorModel.sprite`) ; changer d'archétype en jeu change de genre de
+  corps. La silhouette tirée du lieu d'apparition vit chez lui.
+- **Le modèle** : ×`Flat.PX_PER_M`, tourné vers sa direction (sans les trois vues d'une
+  planche), `rest` et `walk` en boucle, un geste relancé depuis zéro. L'export écrit
+  désormais l'arme par défaut (`weapon`) à côté des images d'impact.
+- **Flash, liseré et teinte reviennent** : `art/actor_overlay.gdshader` en
+  `material_overlay`, par uniformes d'instance — un matériau pour tous les corps. Une planche
+  n'en a pas : `ActorSprite` a perdu les siens, qui ne s'allumaient plus depuis l'étape 1.
+- Les tests qui lisent l'intérieur d'une planche y passent par `model.sprite` ; celui de la
+  touche tenue compte aussi `rest` et `walk` pour du repos. Aucune valeur attendue changée.
+- Le Vive lame est le seul modèle : vu en jeu (`Bureau\hns-captures-modele-en-jeu\`),
+  ombre, coup, flash et transi.
+
+**Le 18 octobre, les détails du Vive lame** (retours de l'utilisateur, au zoom) :
+
+- **Bras droit trop tendu, épée trop grande** : une seule cause, le haut du crâne du
+  gréage local, resté chibi (voir `tools/characters/LISEZMOI.md`, pièges). Recalé.
+- **L'épée flottait à côté du poing**, **le bras gauche** gardait la pose d'un autre
+  squelette : os de prise au creux du poing, main gauche posée au repos et en marche.
+- **La garde C** (« garde prête »), choisie sur planche parmi quatre.
+- **Les doigts** restent des moignons repliés : la limite de Stable Fast 3D.
+
+**Le générateur 3D.** L'utilisateur veut un rendu poli, sans payer. Stable Fast 3D donne une
+figurine molle. Comparés sur la même image : **Hunyuan3D 2 / 2.1, TripoSG et Step1X-3D sont
+exclus** — la licence de Hunyuan3D ne s'applique pas dans l'UE, ses sorties comprises, et les
+deux autres en reprennent du code (HunyuanDiT, FlashVDM, décodeur Hunyuan 3D), sous des
+licences qui excluent aussi l'UE. Hunyuan avait été lancé avant de lire sa licence : poids et
+sorties retirés. **TRELLIS.2** (MIT, aucun code Tencent ; nvdiffrast tourne chez Hugging Face)
+sort une forme nette — doigts, plis, visage — et sa propre texture, tout autour du corps : le
+seul candidat propre, au prix du quota ZeroGPU (environ un modèle par jour). **Retenu** : le
+Vive lame est refait par lui, réduit à 40 000 faces, regréé (poings repliés autour de la
+ligne des jointures — les doigts étaient de vrais doigts, l'ancien repli les déchirait), en
+garde C, vu en jeu au zoom ; le flash moucheté venait de faces retournées par la réduction.
+
+**Le 18 octobre, le déplacement** (demande de l'utilisateur) : **le corps regarde où il va**,
+plus la souris ; elle ne le tourne que pour frapper (`model.set_state(false, facing)` avant
+le geste, comme les ennemis). La visée, elle, suit toujours le curseur. Et **le clic gauche
+au sol fait marcher**, comme dans PoE et Torchlight (`Player._walk_click()`) : maintenu, le
+point suit le curseur. **Le même jour, deux façons de jouer, pas les deux à la fois**
+(retour de l'utilisateur) : `Settings.control_mode`, choisi par deux onglets de la page des
+touches, ZQSD et Souris, chacun avec ses touches gardées. À la souris, plus de
+déplacements au clavier ; « Déplacement » est sur le clic gauche, montré et jamais changé ;
+les cases au clic droit, A, Z, E, R. Au clavier, rien ne change : le clic gauche est la
+première case. Un coup interrompt la marche vers un point, mais pas bouton tenu : on
+continue d'avancer après. La mort et un changement de zone oublient le point
+(`Player.halt()`). Sans recherche de chemin : un mur arrête la marche, il ne la contourne
+pas. **Les jambes de la course** étaient trop écartées : cuisses resserrées de 12°
+(`walk_leg_space`, choisi sur planche parmi 0, 6 et 12°).
+
+## 12. Reste à faire
+
+- **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
+  naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est
+  exclu (leur travail) ; Mixamo donne de la vraie capture, gratuite et libre dans un jeu.
+  L'utilisateur a choisi neuf animations (repos, course, balayage, frappe de haut, estoc,
+  rafale, coup 360°, lancer, sort) ; l'export les joue telles quelles, l'épée sur un os de
+  prise posé d'après les doigts, l'impact pris à la plus grande vitesse de la main. Ses
+  attaques sont à mains nues : l'épée suivait un poing vide (vers le dos, le sol, à rebours
+  du coup). L'export oriente la main image par image (`export_glb.wield`) : la lame prolonge
+  le levier épaule → main, penchée de 0,7 vers l'avant et 0,3 vers le haut du buste, son
+  plat repris de l'image d'avant. Vérifié sur planche, sept attaques × huit images, poignets
+  compris (`Bureau\hns-captures-epee\`). Des animations Mixamo d'épée resteraient mieux.
+  **La Rafale jouait le « Combo Ver. 3 »**, des coups de poing : le jeu porte trois estocs
+  à 0,25 du geste l'un de l'autre (`FLURRY_GAP`). L'export la tire de l'estoc (`repeat`) :
+  préparation, extension, puis deux fois retrait à rebours et extension à sa vitesse
+  d'origine, calés sur la cadence lue dans `skill_stats.gd` ; impacts à 0,11, 0,36, 0,61.
+  **L'impact de l'estoc tombait sur le retrait** (0,47) : aussi vif que le coup. `impact`
+  écarte les images où le bras perd plus de 2 % d'allonge ; l'estoc frappe à 0,17, les
+  autres gestes n'ont pas bougé.
+- **Au zoom maximal, un sprite du décor (arbre mort) peut masquer le joueur** : leur forme
+  est l'étape 3.
+- Étape 2 : les onze autres personnages en proportions adultes, un par un. **TRELLIS.2 pour
+  ceux qu'on voit de près** (les trois classes, le Roi des Rats, marchand, entraîneur), au
+  quota gratuit du jour ; les ennemis, TRELLIS.2 ou Stable Fast 3D, à trancher sur les
+  premiers vus en jeu. SPAR3D essayé à la demande de l'utilisateur : pas mieux que SF3D.
+- **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).
 - Les télégraphes ennemis n'ont plus de dessin : le jeu se joue sans voir venir l'obus du

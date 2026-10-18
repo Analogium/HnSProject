@@ -23,6 +23,12 @@ extends CanvasLayer
 ## **Deux colonnes** : seize lignes en une seule dépassent du cadre de 360 px, et le
 ## bouton « Retour » se retrouve hors de l'écran.
 @onready var key_rows: HBoxContainer = $Root/Center/Panel/Keys/Rows
+## Les deux onglets de la page des touches, un par façon de jouer : choisir l'un la met en
+## place, avec ses touches (jalon 54).
+@onready var mode_tabs := {
+	Keybinds.KEYBOARD: $Root/Center/Panel/Keys/Modes/Keyboard as Button,
+	Keybinds.MOUSE: $Root/Center/Panel/Keys/Modes/Mouse as Button,
+}
 @onready var center: CenterContainer = $Root/Center
 ## Hors du cadre centré : la page du filtre prend tout l'écran.
 @onready var loot: LootFilterPanel = $Root/LootPage
@@ -32,6 +38,9 @@ extends CanvasLayer
 ## ne peuvent pas écouter en même temps.
 var _capturing := ""
 
+## La ligne du déplacement à la souris : le clic gauche, montré et jamais changé.
+const WALK_ROW := "walk"
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -40,6 +49,10 @@ func _ready() -> void:
 	keys.visible = false
 	loot.visible = false
 	guide.visible = false
+	var tabs := ButtonGroup.new()
+	for mode: String in mode_tabs:
+		mode_tabs[mode].button_group = tabs
+		mode_tabs[mode].pressed.connect(_choose_mode.bind(mode))
 	_build_key_rows()
 
 	# La valeur est posée avant la connexion : dans l'autre sens, l'initialisation
@@ -84,6 +97,12 @@ func _ready() -> void:
 		Settings.reset_key_binds()
 		_refresh_key_rows()
 	)
+
+
+func _choose_mode(mode: String) -> void:
+	Settings.control_mode = mode
+	_capturing = ""
+	_build_key_rows()
 
 
 ## Un curseur de 0 à 100 sur un réglage de 0 à 1, et son pourcentage à côté.
@@ -221,26 +240,37 @@ func _show_page(shown: Control) -> void:
 # --------------------------------------------------------------------------
 
 
-## Un bouton par action, dans l'ordre de la table, colonne après colonne. Construit une
-## fois : seul le libellé change ensuite.
+## Un bouton par action de la façon de jouer en place, dans l'ordre de la table, colonne
+## après colonne. Reconstruit quand elle change : seul le libellé change sinon.
 func _build_key_rows() -> void:
 	var columns := key_rows.get_children()
-	var per_column := int(ceilf(Keybinds.ACTIONS.size() / float(columns.size())))
-	var placed := 0
-	for action: String in Keybinds.ACTIONS:
+	for column: Node in columns:
+		for row: Node in column.get_children():
+			column.remove_child(row)
+			row.queue_free()
+	mode_tabs[Settings.control_mode].button_pressed = true
+	var actions := Keybinds.actions_of(Settings.control_mode)
+	if Settings.control_mode == Keybinds.MOUSE:
+		actions.push_front(WALK_ROW)
+	var per_column := int(ceilf(actions.size() / float(columns.size())))
+	for placed in actions.size():
+		var action: String = actions[placed]
 		var row := Button.new()
 		row.name = action
 		row.custom_minimum_size = Vector2(170.0, 0.0)
 		row.add_theme_font_size_override("font_size", 9)
+		row.disabled = action == WALK_ROW
 		row.pressed.connect(_capture.bind(action))
 		columns[mini(placed / per_column, columns.size() - 1)].add_child(row)
-		placed += 1
 	_refresh_key_rows()
 
 
 func _refresh_key_rows() -> void:
 	for row: Button in _key_buttons():
 		var action := String(row.name)
+		if action == WALK_ROW:
+			row.text = "%s   %s" % [Texts.t("Déplacement"), Texts.t(Keybinds.MOUSE_LABELS[MOUSE_BUTTON_LEFT])]
+			continue
 		# Les points de suspension ne se traduisent pas.
 		var written := "…" if action == _capturing else Keybinds.key_label(action)
 		row.text = "%s   %s" % [Keybinds.label_of(action), written]

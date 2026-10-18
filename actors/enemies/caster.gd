@@ -23,7 +23,7 @@ var _strafe_dir := 1.0
 
 
 ## Le sens de rotation se déduit de la case d'apparition, comme la silhouette
-## (voir ActorSprite._pick). Surtout pas Game.rng : un caster qui tourne dans
+## (voir ActorModel._pick). Surtout pas Game.rng : un caster qui tourne dans
 ## l'autre sens change tout l'engagement, et une graine doit redonner le même.
 func setup(p_target: Node3D) -> void:
 	super(p_target)

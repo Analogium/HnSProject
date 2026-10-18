@@ -51,6 +51,23 @@ const MOUSE_LABELS := {
 ## Faute de touche : une action peut rester sans rien le temps d'un échange.
 const UNBOUND := "—"
 
+## Les deux façons de jouer (jalon 54), chacune avec ses touches : au clavier, ZQSD marche
+## et le clic gauche est une case ; à la souris, le clic gauche marche, et lui seul.
+## **Identifiants définitifs** : ils partent dans `settings.json`.
+const KEYBOARD := "keyboard"
+const MOUSE := "mouse"
+## Ce qui n'existe pas à la souris.
+const MOVES := ["move_up", "move_down", "move_left", "move_right"]
+## Les défauts de la souris qui diffèrent de `project.godot` : le clic gauche pris, les
+## cases passent au clic droit puis à A, Z, E, R (des positions : Q, W, E, R d'un QWERTY).
+const MOUSE_DEFAULTS := {
+	"skill_1": "mouse:%d" % MOUSE_BUTTON_RIGHT,
+	"skill_2": "pos:%d" % KEY_Q,
+	"skill_3": "pos:%d" % KEY_W,
+	"skill_4": "pos:%d" % KEY_E,
+	"skill_5": "pos:%d" % KEY_R,
+}
+
 ## Les événements de `project.godot`, relevés avant le premier changement : une
 ## action réécrite a perdu les siens, et « rétablir » n'aurait plus rien à rendre.
 static var _defaults := {}
@@ -60,13 +77,16 @@ static var _defaults := {}
 ## partout ailleurs. **Remplace tous les événements** d'une action rebindée — la
 ## flèche et la manette d'un déplacement partent avec. Une action, une touche :
 ## c'est ce que l'onglet montre, et montrer autre chose mentirait.
-static func apply(binds: Dictionary) -> void:
+static func apply(binds: Dictionary, mode := KEYBOARD) -> void:
 	_capture_defaults()
 	for action in ACTIONS:
 		if not InputMap.has_action(action):
 			continue
-		var chosen := from_text(String(binds.get(action, "")))
 		InputMap.action_erase_events(action)
+		if not action in actions_of(mode):
+			continue
+		var fallback: String = MOUSE_DEFAULTS.get(action, "") if mode == MOUSE else ""
+		var chosen := from_text(String(binds.get(action, fallback)))
 		if chosen != null:
 			InputMap.action_add_event(action, chosen)
 			continue
@@ -77,9 +97,9 @@ static func apply(binds: Dictionary) -> void:
 ## Le tableau des choix après avoir posé `event` sur `action`. **Un échange et non
 ## un écrasement** : la touche prise ailleurs y laisse celle qu'elle remplace, donc
 ## aucune action ne se retrouve muette et deux n'ont jamais la même.
-static func rebound(binds: Dictionary, action: String, event: InputEvent) -> Dictionary:
+static func rebound(binds: Dictionary, action: String, event: InputEvent, mode := KEYBOARD) -> Dictionary:
 	var wanted := to_text(event)
-	if wanted.is_empty() or not ACTIONS.has(action):
+	if wanted.is_empty() or not action in actions_of(mode) or not allowed(wanted, mode):
 		return binds
 	var out := binds.duplicate()
 	var freed := text_of(action)
@@ -159,6 +179,17 @@ static func key_label(action: String) -> String:
 		if written != UNBOUND:
 			return written
 	return UNBOUND
+
+
+## Les actions de ce mode, dans l'ordre de l'onglet.
+static func actions_of(mode: String) -> Array:
+	return ACTIONS.keys().filter(func(action: String) -> bool: return mode != MOUSE or not action in MOVES)
+
+
+## Une touche que ce mode laisse prendre : à la souris, le clic gauche est le déplacement,
+## et il ne se change pas.
+static func allowed(written: String, mode: String) -> bool:
+	return mode != MOUSE or written != "mouse:%d" % MOUSE_BUTTON_LEFT
 
 
 ## Cette action part-elle au clic gauche ? La question du butin au sol, qui se

@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://actors/enemies/caster.gd" id="1_caster"]
-[ext_resource type="Script" path="res://art/actor_sprite.gd" id="6_sprite"]
+[ext_resource type="Script" path="res://art/actor_model.gd" id="6_sprite"]
 [ext_resource type="Script" path="res://core/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Resource" path="res://resources/stats/caster_stats.tres" id="4_stats"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/enemy_bolt.tscn" id="5_proj"]
@@ -23,7 +23,7 @@ script = ExtResource("1_caster")
 stats = ExtResource("4_stats")
 projectile_scene = ExtResource("5_proj")
 
-[node name="Sprite" type="AnimatedSprite3D" parent="."]
+[node name="Model" type="Node3D" parent="."]
 script = ExtResource("6_sprite")
 archetype = "caster"
 

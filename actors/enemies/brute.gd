@@ -36,7 +36,7 @@ func tick(delta: float) -> void:
 	if to_victim.length() < stats.attack_range and _attack_cd <= 0.0:
 		_dir = to_victim.normalized()
 		velocity = Vector3.ZERO
-		sprite.set_state(false, _dir)
+		model.set_state(false, _dir)
 		_zone = _danger(
 			global_position, DangerZone.Shape.CONE, REACH, WINDUP, DamageType.Kind.PHYSICAL,
 			_dir, SPREAD

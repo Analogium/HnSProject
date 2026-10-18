@@ -1,9 +1,8 @@
 class_name ActorSprite
 extends AnimatedSprite3D
 
-## Le sprite d'un acteur : il reçoit un état (immobile / en marche / en train de
-## frapper) et une direction, et choisit l'animation. Les acteurs ne connaissent
-## donc jamais un nom d'animation.
+## La planche d'un acteur dont l'archétype n'a pas encore de modèle 3D : `ActorModel` la
+## pose et lui passe état, direction et geste (jalon 54, étape 2).
 ##
 ## Volontairement sans _process : avec soixante-dix ennemis à l'écran, un rappel
 ## par image et par sprite se paierait pour rien. AnimatedSprite3D lit déjà les
@@ -11,25 +10,12 @@ extends AnimatedSprite3D
 
 ## Doit correspondre à un nom connu de SpriteForge.ARCHETYPES.
 @export var archetype: String = "grunt"
-## -1 : silhouette déduite de la position d'apparition. Un numéro fixe force une
-## variante précise, ce dont on se sert pour le joueur.
-@export var variant: int = -1
+## Choisie par `ActorModel`.
+@export var variant: int = 0
 
 ## Marge avant de basculer en vue de profil. Sans elle, une trajectoire proche de
 ## la diagonale ferait clignoter le sprite entre deux directions à chaque image.
 const SIDE_BIAS := 1.15
-
-## Durée du flash blanc encaissé. En secondes réelles : le hit-stop ralentit le
-## jeu d'un facteur 50, et un flash étiré d'autant resterait à l'écran presque
-## quatre secondes.
-const FLASH_TIME := 0.08
-
-## La part de la couleur d'un état dans le corps. À moitié ou presque : assez pour
-## lire « embrasé » dans une mêlée, pas assez pour qu'un grunt cesse d'être vert.
-const STATE_TINT := 0.45
-
-## L'impact d'un geste qu'aucune planche ne décrit : au milieu du coup, un peu avant.
-const DEFAULT_IMPACT := 0.4
 
 var _dir := "down"
 var _anim := "idle"
@@ -54,7 +40,7 @@ func _ready() -> void:
 	# Une carte debout n'a pas d'ombre qui ait un sens, et elle coûtait : 600 ennemis tombaient
 	# à 107 img/s avec, 160 sans (banc, jalon 54). Les modèles de l'étape 2 auront la leur.
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_variant = variant if variant >= 0 else _pick()
+	_variant = variant
 	animation_finished.connect(_on_animation_finished)
 	_rebuild()
 
@@ -67,13 +53,6 @@ func set_variant(index: int) -> void:
 		return
 	_variant = clamped
 	_rebuild()
-
-
-## La silhouette effectivement dessinée. Publique parce qu'elle peut avoir été
-## déduite de la position d'apparition plutôt que choisie : c'est elle qu'on
-## sauvegarde, pas le champ exporté qui vaut -1.
-func current_variant() -> int:
-	return _variant
 
 
 ## Change de corps : la classe d'un personnage chargé après le _ready du sprite.
@@ -94,15 +73,6 @@ func set_weapon(kind: String) -> void:
 		return
 	_weapon = kind
 	_rebuild()
-
-
-## La silhouette se déduit de la case où l'ennemi apparaît, et non d'un tirage :
-## avec un tirage, le même ennemi au même endroit change d'aspect à chaque
-## lancement, et un jeu dont les visuels bougent tout seuls paraît instable.
-func _pick() -> int:
-	var body := get_parent() as Node3D
-	var at: Vector3 = body.position if body != null else position
-	return SpawnSeed.at(at) % SpriteForge.VARIANTS
 
 
 ## Appelée par l'acteur à chaque tick. facing peut être nul : on garde alors la
@@ -150,56 +120,18 @@ func attack(spell := false, duration := 0.0, family := "", held := "") -> void:
 
 
 ## Où tombe le coup dans ce geste : son image d'impact sur la planche, sinon
-## `DEFAULT_IMPACT` — les grilles n'ont que le coup.
+## `ActorModel.DEFAULT_IMPACT` — les grilles n'ont que le coup.
 func impact_of(family: String) -> float:
 	var sheet := SpriteForge.sheet_of(archetype)
 	var at := sheet.impact(family) if sheet != null else -1.0
-	return at if at >= 0.0 else DEFAULT_IMPACT
+	return at if at >= 0.0 else ActorModel.DEFAULT_IMPACT
 
 
-## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est l'ActorSprite qui
-## porte le matériau. Le sprite 3D n'en a pas (jalon 54) : flash, liseré et teinte
-## reviennent avec `ActorModel`.
-func flash() -> void:
-	if material_override == null:
-		return
-	material_override.set_shader_parameter("flash_amount", 1.0)
-	await get_tree().create_timer(FLASH_TIME, true, false, true).timeout
-	if is_instance_valid(self) and material_override != null:
-		material_override.set_shader_parameter("flash_amount", 0.0)
-
-
-## Le liseré permanent d'un affixe. Un liseré et non une teinte du corps :
-## repeindre le sprite fait perdre la couleur de l'archétype, et un grunt cyan ne
-## se lit plus comme un grunt.
-##
-## Sur le shader et non sur une variante de sprite : cinq affixes font trente et
-## une combinaisons, et les générer ferait exploser le cache de la forge pour une
-## information qui tient dans un vec3.
-func set_rim(color: Color, amount: float, width := 1.0) -> void:
-	if material_override == null:
-		return
-	material_override.set_shader_parameter("rim_color", Vector3(color.r, color.g, color.b))
-	material_override.set_shader_parameter("rim_amount", amount)
-	material_override.set_shader_parameter("rim_width", width)
-
-
-## La teinte du plus récent de ses états sur tout le corps, et l'animation ralentie
-## par le gel.
-##
-## **Une teinte, contre la règle du liseré juste au-dessus**, et c'est voulu : un
-## affixe est l'identité d'un ennemi et ne doit pas lui voler sa couleur ; un état
-## dure quelques secondes et doit se lire d'un coup d'œil dans un paquet.
-func show_states(states: StatusEffects) -> void:
-	_pace = states.speed_factor
+## Le pas des allures, que donnent les états (le gel ralentit) ; un geste en cours garde le sien.
+func set_pace(pace: float) -> void:
+	_pace = pace
 	if not _attacking:
 		speed_scale = _pace
-	if material_override == null:
-		return
-	var colors := states.colors()
-	var c := Color.WHITE if colors.is_empty() else colors[colors.size() - 1]
-	material_override.set_shader_parameter("tint_color", Vector3(c.r, c.g, c.b))
-	material_override.set_shader_parameter("tint_strength", 0.0 if colors.is_empty() else STATE_TINT)
 
 
 ## Redemande ses planches à la forge et relance l'animation — le seul chemin, pour

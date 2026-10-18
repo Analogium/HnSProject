@@ -83,9 +83,15 @@ func test_a_damaged_file_falls_back_on_the_defaults() -> void:
 		"panel_inventory": "key:%d" % KEY_J,
 		"action_from_2027": "key:%d" % KEY_K,
 		"panel_manuals": "n'importe quoi",
-	})
+	}, Keybinds.KEYBOARD)
 	assert_eq(kept, {"panel_inventory": "key:%d" % KEY_J}, "l'action inconnue et la touche illisible partent")
-	assert_eq(Settings.valid_binds("pas un dictionnaire"), {})
+	assert_eq(Settings.valid_binds("pas un dictionnaire", Keybinds.KEYBOARD), {})
+	var mouse := Settings.valid_binds({
+		"move_up": "pos:%d" % KEY_W,
+		"skill_1": "mouse:%d" % MOUSE_BUTTON_LEFT,
+		"skill_2": "key:%d" % KEY_J,
+	}, Keybinds.MOUSE)
+	assert_eq(mouse, {"skill_2": "key:%d" % KEY_J}, "à la souris, ni déplacement ni clic gauche")
 
 
 func test_without_a_choice_the_project_defaults_stand() -> void:
@@ -150,3 +156,30 @@ func test_no_two_default_keys_collide() -> void:
 			action, seen.get(written, ""), written
 		])
 		seen[written] = action
+
+
+## Jalon 54, la souris : pas de déplacements, le clic gauche à personne, les cases au clic
+## droit puis à A, Z, E, R — et toujours une touche par action, sans doublon.
+func test_the_mouse_mode_frees_the_left_click_and_shifts_the_slots() -> void:
+	Keybinds.apply({}, Keybinds.MOUSE)
+	for action: String in Keybinds.MOVES:
+		assert_eq(InputMap.action_get_events(action).size(), 0, "« %s » n'existe pas à la souris" % action)
+	assert_eq(Keybinds.text_of("skill_1"), "mouse:%d" % MOUSE_BUTTON_RIGHT)
+	assert_eq(Keybinds.text_of("skill_3"), "pos:%d" % KEY_W, "Z d'un AZERTY")
+	var seen := {}
+	for action: String in Keybinds.actions_of(Keybinds.MOUSE):
+		var written := Keybinds.text_of(action)
+		assert_ne(written, "", "« %s » sans touche" % action)
+		assert_true(Keybinds.allowed(written, Keybinds.MOUSE), "« %s » sur le clic gauche" % action)
+		assert_false(seen.has(written), "« %s » et « %s » partagent %s" % [action, seen.get(written, ""), written])
+		seen[written] = action
+
+
+func test_the_mouse_mode_never_gives_the_left_click_away() -> void:
+	Keybinds.apply({}, Keybinds.MOUSE)
+	var left := InputEventMouseButton.new()
+	left.button_index = MOUSE_BUTTON_LEFT
+	assert_eq(Keybinds.rebound({}, "skill_2", left, Keybinds.MOUSE), {}, "le déplacement ne se change pas")
+	var key := InputEventKey.new()
+	key.keycode = KEY_J
+	assert_eq(Keybinds.rebound({}, "move_up", key, Keybinds.MOUSE), {}, "ni un déplacement qui n'existe pas")

@@ -10,7 +10,7 @@ mais la main et la lame de chaque image viennent des os.
     tools/blender_sheet.py <id> --glb      écrit art/models/<id>.glb, pour le jeu en 3D
 
 Réglages dans `tools/characters/<id>.json`, section `blender`."""
-import argparse, json, os, subprocess, sys
+import argparse, json, os, re, subprocess, sys
 import numpy as np
 from PIL import Image
 
@@ -25,6 +25,12 @@ GESTURES = os.path.join(os.path.dirname(__file__), "blender", "gestes.json")
 EXPORT = os.path.join(os.path.dirname(__file__), "blender", "export_glb.py")
 # La main du squelette est au poignet ; l'arme se tient dans la paume, un peu au-delà.
 PALM = 0.3
+
+
+def gd_const(path, name):
+    """Une constante du jeu, lue dans son script : l'écrire ici en ferait deux vérités."""
+    return re.search(r"^const %s := (.+)$" % name, open(os.path.join(cf.PROJ, path), encoding="utf-8").read(),
+                     re.M).group(1)
 
 
 def win(path):
@@ -89,7 +95,7 @@ def main():
     a = p.parse_args()
     cfg = cf.load(a.id)
     if a.glb:
-        return export(a.id, cfg["blender"])
+        return export(a.id, cfg)
     build(a.id, cfg, cfg["blender"]["size"], a.cached)
     # `grown` : le même corps rendu plus grand, une planche par taille, jamais étiré en jeu (la
     # Légende du Roi des Rats, jalon 53).
@@ -97,15 +103,23 @@ def main():
         build(f"{a.id}_{size}", cfg, size, a.cached)
 
 
-def export(cid, b):
+def export(cid, cfg):
     """Le corps gréé, une action par geste et les armes à la main, en un .glb (jalon 54). Les
     tailles de `grown` n'y sont pas : un modèle 3D s'agrandit sans rien perdre."""
+    b = cfg["blender"]
     src = lambda f: win(os.path.join(cf.PROJ, b["source"], f))
     out = os.path.join(cf.PROJ, "art", "models", cid + ".glb")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     os.makedirs(WORK, exist_ok=True)
     spec = os.path.join(WORK, cid + "_glb.json")
-    json.dump({"rest": src(b["rest"]), "gestures": win(GESTURES), "weapons": b["weapons"], "size": b["size"],
+    json.dump({"rest": src(b["rest"]), "gestures": win(GESTURES), "weapons": b["weapons"], "weapon": cfg["weapon"],
+               "size": b["size"], "guard": b.get("guard", True),
+               "arm_space": b.get("arm_space", 0), "elbows": b.get("elbows", 0),
+               "walk_leg_space": b.get("walk_leg_space", 0),
+               "sheathed": re.findall(r'&"(\w+)"', gd_const("art/actor_model.gd", "SHEATHED")),
+               "repeat": {k: {"strikes": int(gd_const("core/skill_stats.gd", "FLURRY_THRUSTS")),
+                              "gap": float(gd_const("core/skill_stats.gd", "FLURRY_GAP"))}
+                          for k in b.get("repeat", [])},
                "anims": {k: src(s) if s.endswith((".fbx", ".blend")) else s for k, (s, _) in b["anims"].items()},
                "out": win(out)}, open(spec, "w", encoding="utf-8"))
     log = subprocess.run([BLENDER, "-b", "-P", win(EXPORT), "--", win(spec)], capture_output=True, text=True).stdout

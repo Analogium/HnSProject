@@ -44,7 +44,7 @@ var _overlay: Node2D
 
 func _ready() -> void:
 	if look in [Look.MERCHANT, Look.TRAINER]:
-		var body := ActorSprite.new()
+		var body := ActorModel.new()
 		body.archetype = "merchant" if look == Look.MERCHANT else "trainer"
 		add_child(body)
 	_overlay = Node2D.new()

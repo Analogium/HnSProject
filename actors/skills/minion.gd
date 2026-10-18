@@ -24,7 +24,7 @@ const SEARCH_PERIOD := 0.2
 ## Tous ceux qui marchent, pour les ennemis qui cherchent qui frapper.
 static var living: Array[Minion] = []
 
-@onready var sprite: ActorSprite = $Sprite
+@onready var model: ActorModel = $Model
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
 
@@ -71,7 +71,7 @@ static func _spawn(player: Player, cast: SkillStats, parent: Node, angle: float)
 	parent.add_child(minion)
 	# Le dessin seul : un corps physique mis à l'échelle déforme ses collisions.
 	if cast.colossus > 0.0:
-		minion.sprite.scale *= SkillStats.COLOSSUS_SCALE
+		minion.model.scale *= SkillStats.COLOSSUS_SCALE
 	return minion
 
 
@@ -190,7 +190,7 @@ func _physics_process(delta: float) -> void:
 	var desired := to_goal.normalized() * speed if to_goal.length() > 4.0 else Vector3.ZERO
 	velocity = velocity.lerp(desired, ACCEL)
 	move_and_slide()
-	sprite.set_state(velocity.length() > 8.0, velocity)
+	model.set_state(velocity.length() > 8.0, velocity)
 
 
 ## Sa place derrière le joueur quand rien n'entre dans la zone.
@@ -213,8 +213,8 @@ func _nearest_foe() -> Hurtbox:
 
 func _strike(toward: Vector3) -> void:
 	_cooldown = _cast.period
-	sprite.set_state(false, toward)
-	sprite.attack()
+	model.set_state(false, toward)
+	model.attack()
 	var more := _more()
 	if _cast.colossus > 0.0:
 		var blow := _cast if more == 1.0 else _cast.echoed(more)
@@ -227,8 +227,8 @@ func _strike(toward: Vector3) -> void:
 ## Les Lanceurs d'os : un os vers sa proie, depuis sa place.
 func _throw(toward: Vector3) -> void:
 	_cooldown = _cast.period
-	sprite.set_state(false, toward)
-	sprite.attack()
+	model.set_state(false, toward)
+	model.attack()
 	var parts := DamageType.scaled(_cast.roll(Game.rng), SkillStats.BONE_THROW_PART * _more())
 	var thrown := Projectile.spawn(
 		get_parent(), _player.bolt_scene, global_position, toward.normalized(), parts, _player,
@@ -288,7 +288,7 @@ func _on_damaged(info: DamageInfo) -> void:
 		return
 	health = maxf(health - info.amount, 0.0)
 	health_bar.set_health(health, max_health)
-	sprite.flash()
+	model.flash()
 	if health <= 0.0:
 		_fall(1.0)
 	elif _cast.martyr > 0.0 and health <= max_health * SkillStats.MARTYR_LIFE:

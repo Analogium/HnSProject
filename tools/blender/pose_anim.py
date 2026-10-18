@@ -10,6 +10,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 import stage, weapons
 
 RIGHT, FORWARD, UP = Vector((-1, 0, 0)), Vector((0, -1, 0)), Vector((0, 0, 1))
+# La main gauche d'une clé qui ne la pose pas, depuis l'épaule gauche.
+LHAND = [0.02, 0.06, -0.23]
 
 
 def play(arm, keys, weapon, span):
@@ -49,7 +51,7 @@ def play(arm, keys, weapon, span):
         weapons.build(weapon, H).parent = hand_t
 
     lhand_t = empty("main_gauche")
-    ik("RightForeArm", hand_t)
+    weapons.hold(arm, hand_t)
     ik("LeftForeArm", lhand_t)
     feet = {}
     for side in ("Left", "Right"):
@@ -74,7 +76,7 @@ def play(arm, keys, weapon, span):
         hand_t.location = place(k["hand"], moved(shoulder))
         hand_t.rotation_quaternion = weapons.orient(weapons.local(k["blade"]))
         # `lhand` : la main gauche, ou "grip" pour tenir l'arme à deux mains.
-        lh = k.get("lhand", [0.02, 0.06, -0.23])
+        lh = k.get("lhand", LHAND)
         lhand_t.location = hand_t.location.copy() if lh == "grip" else place(lh, moved(lshoulder))
         for o, path in ((hand_t, "location"), (hand_t, "rotation_quaternion"), (lhand_t, "location")):
             o.keyframe_insert(path, frame=f)

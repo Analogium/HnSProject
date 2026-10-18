@@ -18,6 +18,8 @@ signal flasks_changed
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
 const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
+## Le clic-déplacement (jalon 54) : arrivé à ce rayon du point cliqué, on s'arrête.
+const WALK_ARRIVAL := 4.0
 
 ## La ressource du disque, **jamais modifiée** (invariant 2).
 @export var base_stats: CharacterStats
@@ -42,6 +44,10 @@ const PLACEMENT_RANGE := 140.0
 const CAMERA_FOV := 40.0
 const CAMERA_PITCH := 55.0
 const CAMERA_SMOOTHING := 8.0
+## La molette rapproche la caméra, comme dans Path of Exile : le cadre par défaut est le plus
+## large — il fixe ce que le jeu montre —, on n'avance que jusqu'au quart du recul.
+const CAMERA_ZOOM_MIN := 0.25
+const CAMERA_ZOOM_STEP := 0.85
 ## Ce qui distingue une frappe lourde d'un coup d'épée au toucher, en plus du dessin.
 const STRIKE_SHAKE := 2.0
 ## De combien on recule le long de la visée quand l'arrivée d'une ruée est prise. Huit
@@ -71,7 +77,7 @@ const CHARGES_PER_AFFIX := 1.0
 ## Secousse de caméra à l'impact. 0 pour la couper.
 @export var shake_amount: float = 2.0
 
-@onready var sprite: ActorSprite = $Sprite
+@onready var model: ActorModel = $Model
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
 @onready var attack_pivot: Node3D = $AttackPivot
@@ -241,6 +247,13 @@ var _look := ""
 var _reign_kills := 0
 ## Souris = visée au curseur, manette = visée dans la direction du stick.
 var _aim_with_mouse := true
+## La part du recul de la caméra, 1 au cadre par défaut ; la molette la règle.
+var camera_zoom := 1.0
+## Le point où mène le clic gauche, tant que `_walking` ; `_steering` tant que le bouton
+## reste enfoncé, et le point suit alors le curseur.
+var _walk_to := Vector3.ZERO
+var _walking := false
+var _steering := false
 
 
 ## Une gorgée en cours. Deux gorgées de vie se cumulent, comme dans PoE 1.
@@ -304,10 +317,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	for i in EquipmentSlots.flasks().size():
 		if event.is_action_pressed("flask_%d" % (i + 1)):
 			use_flask(i)
+	var walk := _walk_click(event)
+	if walk:
+		_walk_to = Flat.under_mouse(get_viewport())
+		_walking = true
+		_steering = true
 	for i in SkillBar.SLOT_COUNT:
 		var action := "skill_%d" % (i + 1)
-		if event.is_action_pressed(action) and not _click_taken(action):
+		if event.is_action_pressed(action) and not walk and not _click_taken(action):
 			_held[i] = true
+			# Un coup interrompt la marche vers un point ; bouton tenu, elle reprend.
+			_walking = _steering
+	var wheel := event as InputEventMouseButton
+	if wheel != null and wheel.pressed and wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		var step := CAMERA_ZOOM_STEP if wheel.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / CAMERA_ZOOM_STEP
+		camera_zoom = clampf(camera_zoom * step, CAMERA_ZOOM_MIN, 1.0)
 
 
 ## La caméra rejoint le joueur au rythme de l'image, pas de la physique : comme la caméra 2D.
@@ -320,7 +344,7 @@ func _process(delta: float) -> void:
 ## sprites y gardent leur taille d'avant, et les portées leur place à l'écran.
 func _camera_offset() -> Vector3:
 	var height := float(ProjectSettings.get_setting("display/window/size/viewport_height")) / Game.WORLD_ZOOM
-	var distance := height * 0.5 / tan(deg_to_rad(CAMERA_FOV) * 0.5)
+	var distance := height * 0.5 / tan(deg_to_rad(CAMERA_FOV) * 0.5) * camera_zoom
 	var pitch := deg_to_rad(CAMERA_PITCH)
 	return Vector3(0.0, sin(pitch), cos(pitch)) * distance
 
@@ -366,12 +390,28 @@ func _physics_process(delta: float) -> void:
 	_suffer_states(delta)
 	if is_dead:
 		_gesture = null
+		halt()
 		return
 	if _gesture != null:
 		_tick_gesture(delta * cadence)
 
 	var stick := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var input := Vector3(stick.x, 0.0, stick.y)
+	if _steering:
+		_steering = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+		if _steering:
+			_walk_to = Flat.under_mouse(get_viewport())
+			_walking = true
+	# Les touches reprennent la main sur le clic.
+	if input != Vector3.ZERO:
+		_walking = false
+	elif _walking:
+		var to := _walk_to - global_position
+		to.y = 0.0
+		if to.length() > WALK_ARRIVAL:
+			input = to.normalized()
+		elif not _steering:
+			_walking = false
 	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
 	# ZQSD tapé dans un champ de texte — la recherche de l'arbre — ne fait pas marcher.
 	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit:
@@ -385,8 +425,9 @@ func _physics_process(delta: float) -> void:
 		facing = input.normalized()
 
 	attack_pivot.rotation.y = -Flat.angle(facing)
-	# Le sprite suit la visée, pas le déplacement : on recule face à l'ennemi.
-	sprite.set_state(input != Vector3.ZERO, facing)
+	# Le corps regarde où il va, comme dans PoE ; la visée ne le tourne que pour frapper.
+	var moving := input != Vector3.ZERO
+	model.set_state(moving, input if moving and _gesture == null and not _is_swinging else facing)
 
 	var slowed := _is_swinging or (_gesture != null and _gesture.weapon)
 	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if slowed else 1.0)
@@ -427,6 +468,22 @@ func _tick_gesture(step: float) -> void:
 func _click_taken(action: String) -> bool:
 	return Game.ui_grabs_input or GroundItem.takes_the_click(action) \
 			or Interactable.takes_the_click(action)
+
+
+## À la souris (`Settings.control_mode`), le clic gauche fait marcher, et rien d'autre ;
+## le butin, les PNJ et l'interface le prennent avant.
+func _walk_click(event: InputEvent) -> bool:
+	var click := event as InputEventMouseButton
+	if Settings.control_mode != Keybinds.MOUSE or click == null or not click.pressed \
+			or click.button_index != MOUSE_BUTTON_LEFT:
+		return false
+	return not (Game.ui_grabs_input or GroundItem.hovered != null or Interactable.hovered != null)
+
+
+## Oublie le point cliqué : à la mort, et quand la zone change sous les pieds.
+func halt() -> void:
+	_walking = false
+	_steering = false
 
 
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
@@ -580,9 +637,11 @@ func cast_slot(index: int) -> bool:
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		if cast.use_time > 0.0:
 			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
+		# Le corps, tourné vers où il marchait, fait face à la visée pour frapper.
+		model.set_state(false, facing)
 		# Une image de physique de plus : le geste finit sur une image de physique, jusqu'à une
 		# après son temps exact ; plus court, le corps retombait au repos une image par coup.
-		sprite.attack(
+		model.attack(
 			skill.cadence == Skill.Cadence.CAST,
 			cast.use_time / maxf(states.speed_factor, 0.01) + 1.0 / Engine.physics_ticks_per_second,
 			family, held_for(skill.id)
@@ -590,7 +649,7 @@ func cast_slot(index: int) -> bool:
 	var aim := _aim_point()
 	var pose := _pose.bind(skill, salvo, self, facing, aim)
 	if _gesture != null and not family.is_empty():
-		_gesture.to_impact = cast.use_time * sprite.impact_of(family)
+		_gesture.to_impact = cast.use_time * model.impact_of(family)
 		_gesture.strike = pose
 	else:
 		pose.call()
@@ -1435,7 +1494,7 @@ func _announce_state(kind: int) -> void:
 
 
 func _show_states() -> void:
-	sprite.show_states(states)
+	model.show_states(states)
 	health_bar.show_states(states)
 
 
@@ -1921,8 +1980,8 @@ func _consume_rats(cast: SkillStats) -> float:
 ## et nombres suivent sa taille.
 func _reign(on: bool) -> void:
 	# Le Roi grandi commence lui aussi par `KING_LOOK` : ce n'est pas la planche du joueur.
-	if on and not sprite.archetype.begins_with(SkillStats.KING_LOOK):
-		_look = sprite.archetype
+	if on and not model.archetype.begins_with(SkillStats.KING_LOOK):
+		_look = model.archetype
 		_reign_kills = 0
 	_wear(king_look() if on else _look)
 
@@ -1930,7 +1989,7 @@ func _reign(on: bool) -> void:
 func _wear(look: String) -> void:
 	if look.is_empty():
 		return
-	sprite.set_archetype(look)
+	model.set_archetype(look)
 	var lift := SpriteForge.head_room(look)
 	health_bar.lift = lift
 	hurtbox.feedback_lift = lift
@@ -2636,12 +2695,12 @@ func load_character(character: Character) -> void:
 		bar.put(i, character.bar.id_of(i))
 	manual_given = character.manual_given
 
-	sprite.set_archetype(character.archetype())
+	model.set_archetype(character.archetype())
 	instrument = character.instrument()
 	var lift := SpriteForge.head_room(character.archetype())
 	health_bar.lift = lift
 	hurtbox.feedback_lift = lift
-	sprite.set_variant(character.silhouette)
+	model.set_variant(character.silhouette)
 	# Recalcul, plafonds et arme visible : trois choses qu'on oublierait à la main.
 	_after_equipment_change()
 	_set_health(stats.max_health)
@@ -2659,7 +2718,7 @@ func fill(character: Character) -> void:
 	character.level = level
 	character.experience = xp
 	character.passives = passives.duplicate()
-	character.silhouette = sprite.current_variant()
+	character.silhouette = model.current_variant()
 
 	character.bag = Inventory.new(inventory.cols, inventory.rows)
 	for placed in inventory.placed:
@@ -2770,7 +2829,7 @@ func _after_passives_change() -> void:
 ## manuel passe par ici aussi, ses passifs étant une pièce d'armure.
 func _after_equipment_change() -> void:
 	_restat()
-	sprite.set_weapon(weapon_kind())
+	model.set_weapon(weapon_kind())
 	equipment_changed.emit()
 
 
@@ -2946,7 +3005,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	_riposte_left = SkillStats.RIPOSTE_WINDOW
 	_reprisal(info)
 	velocity += (global_position - info.source_position).normalized() * info.knockback
-	sprite.flash()
+	model.flash()
 	if health <= 0.0:
 		_die()
 		return

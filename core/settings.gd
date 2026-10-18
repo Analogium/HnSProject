@@ -105,14 +105,32 @@ var enemy_attack_opacity := 1.0:
 
 ## Les touches choisies par le joueur, action → « key:76 ». **Seules celles qu'il a
 ## changées** y sont ; le reste vient de `project.godot`, par `Keybinds`. Posées, elles
-## réécrivent la table du moteur — c'est le seul endroit qui la touche.
+## réécrivent la table du moteur — c'est le seul endroit qui la touche. Une table par
+## façon de jouer (jalon 54) : `key_binds` au clavier, `mouse_binds` à la souris.
 var key_binds := {}:
 	set(value):
 		key_binds = value
-		Keybinds.apply(key_binds)
-		if _loading:
-			return
+		_rebind()
+var mouse_binds := {}:
+	set(value):
+		mouse_binds = value
+		_rebind()
+## `Keybinds.KEYBOARD` ou `MOUSE` : passer de l'un à l'autre pose les touches de l'autre.
+var control_mode := Keybinds.KEYBOARD:
+	set(value):
+		control_mode = value if value in [Keybinds.KEYBOARD, Keybinds.MOUSE] else Keybinds.KEYBOARD
+		_rebind()
+
+
+func _rebind() -> void:
+	Keybinds.apply(binds(), control_mode)
+	if not _loading:
 		_announce()
+
+
+## Les touches choisies de la façon de jouer en place.
+func binds() -> Dictionary:
+	return mouse_binds if control_mode == Keybinds.MOUSE else key_binds
 
 
 ## Un réglage vient de changer : ceux qui le lisent, puis le disque. Six setters
@@ -126,12 +144,19 @@ func _announce() -> void:
 ## Le seul chemin d'un changement de touche : l'échange décidé par `Keybinds`, puis
 ## la table du moteur et le disque, par le setter.
 func bind(action: String, event: InputEvent) -> void:
-	key_binds = Keybinds.rebound(key_binds, action, event)
+	_set_binds(Keybinds.rebound(binds(), action, event, control_mode))
 
 
-## Rend toutes les touches à `project.godot`.
+## Rend les touches de la façon de jouer en place à leurs défauts.
 func reset_key_binds() -> void:
-	key_binds = {}
+	_set_binds({})
+
+
+func _set_binds(value: Dictionary) -> void:
+	if control_mode == Keybinds.MOUSE:
+		mouse_binds = value
+	else:
+		key_binds = value
 
 
 ## Au visuel qui naît : l'opacité de son groupe, et le groupe lui-même, pour qu'un
@@ -408,6 +433,8 @@ func to_dict() -> Dictionary:
 		"language": language,
 		"scale_factor": scale_factor,
 		"key_binds": key_binds,
+		"mouse_binds": mouse_binds,
+		"control_mode": control_mode,
 		"loot_filter_on": loot_filter_on,
 		"loot_filters": loot_filters.map(func(f: LootFilter) -> Dictionary: return f.to_dict()),
 		"loot_filter_index": loot_filter_index,
@@ -432,7 +459,9 @@ func from_dict(source: Dictionary) -> void:
 			set(key, float(source[key]))
 	# Normalisée par le setter : un fichier écrit à la main peut dire « de ».
 	language = String(source.get("language", language))
-	key_binds = valid_binds(source.get("key_binds", {}))
+	control_mode = String(source.get("control_mode", control_mode))
+	key_binds = valid_binds(source.get("key_binds", {}), Keybinds.KEYBOARD)
+	mouse_binds = valid_binds(source.get("mouse_binds", {}), Keybinds.MOUSE)
 	loot_filter_on = bool(source.get("loot_filter_on", loot_filter_on))
 	var read: Array[LootFilter] = []
 	if source.get("loot_filters") is Array:
@@ -463,16 +492,17 @@ static func _is_number(value: Variant) -> bool:
 	return value is float or value is int
 
 
-## Ce qu'un fichier peut contenir de valide : une action connue, une touche lisible.
-## Le reste retombe sur le défaut — un `settings.json` retouché à la main ne doit pas
-## priver le joueur d'une touche.
-static func valid_binds(source: Variant) -> Dictionary:
+## Ce qu'un fichier peut contenir de valide : une action de ce mode, une touche lisible
+## qu'il laisse prendre. Le reste retombe sur le défaut — un `settings.json` retouché à la
+## main ne doit pas priver le joueur d'une touche.
+static func valid_binds(source: Variant, mode: String) -> Dictionary:
 	var out := {}
 	if not source is Dictionary:
 		return out
 	for action: Variant in source:
 		var written := String(source[action])
-		if Keybinds.ACTIONS.has(action) and Keybinds.from_text(written) != null:
+		if action in Keybinds.actions_of(mode) and Keybinds.from_text(written) != null \
+				and Keybinds.allowed(written, mode):
 			out[String(action)] = written
 	return out
 

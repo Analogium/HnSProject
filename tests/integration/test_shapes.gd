@@ -6460,7 +6460,7 @@ func test_an_attack_lands_at_its_impact_not_on_the_press() -> void:
 	var ahead := _target(Vector3(20, 0.0, 0))
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
-	var impact := _p._gesture.left * _p.sprite.impact_of(Skill.GESTURE[Skill.Shape.STRIKE])
+	var impact := _p._gesture.left * _p.model.impact_of(Skill.GESTURE[Skill.Shape.STRIKE])
 	await wait_seconds(impact * 0.5)
 	assert_eq(_hits(ahead), 0, "le bras est encore levé")
 	await wait_seconds(impact * 0.5 + _p.swing_duration + 0.1)
@@ -6485,7 +6485,7 @@ func test_the_body_plays_the_gesture_over_its_length() -> void:
 	_p.stats.attack_speed = 2.0
 	await wait_physics_frames(2)
 	assert_true(_p.cast_slot(2))
-	var sprite := _p.sprite
+	var sprite := _p.model.sprite
 	var frames := sprite.sprite_frames
 	var played := frames.get_frame_count(sprite.animation) \
 			/ frames.get_animation_speed(sprite.animation) / sprite.speed_scale
@@ -7132,14 +7132,14 @@ func test_the_rat_king_consumes_the_rats_and_reigns_longer() -> void:
 ## du règne rend la planche du joueur de flûte.
 func test_the_legend_grows_the_king_then_gives_the_piper_back() -> void:
 	_learn_piper("rat_king", ["reign", "court", "tail_crown", "legend"])
-	var look := _p.sprite.archetype
+	var look := _p.model.archetype
 	assert_true(Gestures.cast(_p, 2))
-	assert_eq(_p.sprite.archetype, SkillStats.KING_LOOK)
+	assert_eq(_p.model.archetype, SkillStats.KING_LOOK)
 	for i in SkillStats.LEGEND_KILLS:
 		_p._reign_kill()
-	assert_eq(_p.sprite.archetype, SkillStats.KING_GROWN[0])
+	assert_eq(_p.model.archetype, SkillStats.KING_GROWN[0])
 	_p.extinguish(SkillStats.KING_SKILL)
-	assert_eq(_p.sprite.archetype, look)
+	assert_eq(_p.model.archetype, look)
 
 
 ## Effrayé, il fuit au lieu d'avancer, le temps qu'on lui a donné. Sans EnemyManager, sa fuite
@@ -7161,7 +7161,7 @@ func test_a_frightened_enemy_runs_away() -> void:
 ## image du précédent, `play()` continuait celui-ci, qui finissait aussitôt et rendait le repos
 ## pour tout le coup suivant.
 func test_a_held_attack_plays_every_gesture() -> void:
-	_p.sprite.set_archetype("swiftblade")
+	_p.model.set_archetype("swiftblade")
 	_p.bar.put(2, SkillCatalog.ID_ATTACK)
 	Weapons.arm(_p, SkillCatalog.ID_ATTACK)
 	Input.action_press("skill_3")
@@ -7177,10 +7177,11 @@ func test_a_held_attack_plays_every_gesture() -> void:
 		if gesture != last:
 			last = gesture
 			gestures += 1
-		var anim := String(_p.sprite.animation)
+		var anim := String(_p.model.animation)
 		# Dès le deuxième : c'est la relance qui perdait le geste ; le premier part du repos, et
 		# le banc sans fenêtre fige parfois ses premières images.
-		if gestures >= 2 and (anim.begins_with("idle") or anim.begins_with("walk")):
+		if gestures >= 2 and (anim in [String(ActorModel.REST), String(ActorModel.WALK)] \
+				or anim.begins_with("idle") or anim.begins_with("walk")):
 			resting += 1
 	assert_gt(gestures, 3, "la touche tenue relance")
 	assert_eq(resting, 0, "images au repos en plein geste, sur %d coups" % gestures)
@@ -7189,14 +7190,14 @@ func test_a_held_attack_plays_every_gesture() -> void:
 ## Un état posé en plein coup ne change pas le pas du geste, calé sur son temps ; il vaut pour
 ## la suite (jalon 53). `show_states()` l'écrasait par celui de la marche.
 func test_a_state_during_a_swing_keeps_its_pace() -> void:
-	_p.sprite.set_archetype("swiftblade")
-	_p.sprite.attack(false, 0.25, "sweep")
-	var pace := _p.sprite.speed_scale
+	_p.model.set_archetype("swiftblade")
+	_p.model.attack(false, 0.25, "sweep")
+	var pace := _p.model.speed_scale
 	_p.states.hobble(50.0, 1.0)
-	_p.sprite.show_states(_p.states)
-	assert_eq(_p.sprite.speed_scale, pace, "le geste garde son pas")
-	_p.sprite._on_animation_finished()
-	assert_almost_eq(_p.sprite.speed_scale, _p.states.speed_factor, 1e-6, "le repos prend celui des états")
+	_p.model.show_states(_p.states)
+	assert_eq(_p.model.speed_scale, pace, "le geste garde son pas")
+	_p.model._on_animation_finished()
+	assert_almost_eq(_p.model.speed_scale, _p.states.speed_factor, 1e-6, "le repos prend celui des états")
 
 
 ## Le Requiem : un ennemi qui meurt sous l'air y laisse une note qui frappe ses voisins.

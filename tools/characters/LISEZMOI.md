@@ -125,7 +125,9 @@ qui ne dépend d'aucun quota.
    `<id>/3d/model.glb`, puis `<id>/3d/<id>.fbx`, allégé pour Mixamo. Un tour du
    modèle sous six angles est déposé sur le Bureau.
 
-   **En local, Stable Fast 3D** (le chemin par défaut) :
+   **Par TRELLIS.2** (le chemin retenu au jalon 54 pour les personnages vus de près) : voir
+   plus bas. **En local, Stable Fast 3D** (illimité, mais une figurine molle, mains en
+   moignons) :
    - `model_3d.py back <id>` tire trois images de dos au même prompt ; on garde celle
      qui s'écarte le moins de la face. Sans image de référence, Qwen fait pendre une
      écharpe dans le dos qui pend devant : un tel dos repeint ferait une traînée ;
@@ -141,7 +143,11 @@ qui ne dépend d'aucun quota.
      texture cuite (2048 px) laisse un visage flou.
 
    **Par TRELLIS.2**, sans `--back` : `model_3d.py mesh <id> <graine>` lance le Space
-   `microsoft/TRELLIS.2` via `tools/trellis_client.py`. **Un modèle par jour** (quota
+   `microsoft/TRELLIS.2` via `tools/trellis_client.py` : une forme nette — doigts, plis,
+   visage — et sa propre texture, tout autour du corps. Son modèle brut (~190 000 faces) est
+   gardé dans `model_trellis.glb` (une relance ne refait pas le quota), puis réduit à 40 000
+   faces et sa texture recuite sur la version réduite (`blender/bake_color.py`, normales
+   remises à l'endroit : la réduction en retourne). **Un modèle par jour** (quota
    ZeroGPU).
    - TRELLIS passe par le Python **Windows** d'un venv :
      `py -3.12 -m venv C:\Generate\hns-trellis-venv` puis
@@ -149,10 +155,39 @@ qui ne dépend d'aucun quota.
    - Il faut aussi un jeton Hugging Face rangé par `huggingface-cli login` : en
      anonyme, le quota ZeroGPU ne suffit pas.
    - Hunyuan3D est exclu : sa licence exclut l'UE.
-3. **Gréage**, à la main, sur **www.mixamo.com** (gratuit, compte Adobe) :
-   - envoyer le `.fbx` et laisser l'auto-rig faire ;
-   - télécharger **Breathing Idle** et **Walking** en *FBX Binary, With Skin, 30 fps* ;
-   - les déposer dans `<id>/3d/`.
+3. **Gréage**, à la main, sur **www.mixamo.com** (gratuit, compte Adobe ; libre dans un jeu,
+   les fichiers d'animation ne se redistribuent pas seuls) — **le chemin retenu au jalon 54** :
+   l'auto-rig donne des doigts, et ses animations, captées sur des acteurs, tombent juste :
+   - envoyer le `.fbx` (repères : menton, poignets, coudes, genoux, aine ; *Standard
+     Skeleton (65)*, avec les doigts) ;
+   - choisir une animation par geste du jeu — repos, marche, chaque attaque, le sort — et
+     les télécharger en *FBX Binary, 30 fps, Keyframe Reduction none*, la première *With
+     Skin* (elle porte le personnage gréé), les autres *Without Skin*, *In Place* pour ce qui
+     se déplace ;
+   - les déposer dans `<id>/mixamo/`, nommées du geste (`rest.fbx`, `walk.fbx`,
+     `sweep.fbx`…), et les nommer dans `blender.anims` avec `"guard": false` : l'export les
+     joue telles quelles, l'image d'impact prise où la main armée va le plus vite sans que
+     le bras se replie (`export_glb.impact`). Le Vive lame (jalon 54) en est l'exemple.
+   - **Les bras rentrent dans le corps** : Mixamo anime un acteur plus mince. Son curseur
+     *Character Arm-Space* n'a pas suffi au Vive lame (gilet, sacoches) ; `blender.arm_space`
+     écarte les bras de ce nombre de degrés sur toutes les animations sauf le repos
+     (`export_glb.spread`, 40° pour lui, choisi sur planche parmi 0 à 45°). Ce ne sont pas
+     ses poids : vérifié os par os, la main passait derrière la hanche, dans la sacoche.
+   - **Jambes trop écartées** dans la course : `blender.walk_leg_space`, en degrés, négatif
+     pour resserrer les cuisses (−12° pour le Vive lame, choisi sur planche).
+   - **Avant-bras trop levés** : la course de Mixamo (« Running ») est un sprint, les mains
+     montent au menton. `blender.elbows` déplie les coudes de cette part de leur pli, hors
+     repos (`export_glb.straighten`, 0,5 pour le Vive lame, à confirmer en jeu).
+   - **L'arme suit le bras, pas le poing** : sur des attaques à mains nues, la main ne tient
+     rien et l'épée partait n'importe où. L'export tourne la main à chaque image pour que la
+     lame prolonge le levier épaule → main (`export_glb.wield`, hors gréage local et marche :
+     le jeu range l'arme quand on se déplace ou qu'on lance, `ActorModel.SHEATHED`).
+   - **Un coup répété** que Mixamo n'a pas (la Rafale, trois estocs) : nommer la source du
+     coup seul (`"flurry": ["thrust.fbx", 8]`) et le geste dans `blender.repeat` ; l'export
+     le répète à la cadence du jeu (`FLURRY_THRUSTS`, `FLURRY_GAP`), le retrait rejoué à
+     rebours (`export_glb.repeat`).
+   - **Pas dans `<id>/3d/`** : les `Breathing Idle` et `Walking` de `swiftblade/3d/` sont le
+     squelette de référence du gréage local, et le restent.
 
    **Ou en local, sans Mixamo** (le Vive lame adulte du jalon 54, la sorcière dont la cape
    colle les bras au buste) : `model_3d.py rig <id>` (`blender/rig.py`). Il reprend le
@@ -173,7 +208,9 @@ qui ne dépend d'aucun quota.
    - `weapons` : une couche par arme.
 5. **Modèle du jeu en 3D** (jalon 54) : `tools/blender_sheet.py <id> --glb` écrit
    `art/models/<id>.glb` depuis les mêmes réglages — corps, une animation par geste, les
-   armes sous l'os de la main. `tools/capture.sh tools/look_3d.gd <sujet>` filme chaque
+   armes sous l'os de la main, images d'impact et arme par défaut (`weapon`) en métadonnées.
+   **Dès que ce fichier existe, le jeu montre le modèle à la place de la planche**
+   (`ActorModel`). `tools/capture.sh tools/look_3d.gd <sujet>` filme chaque
    animation sous la lumière du jeu, et `tools/look_3d.py <sujet>` en fait des GIF sur le
    Bureau.
 
@@ -181,8 +218,8 @@ Les gestes d'attaque **s'écrivent**, ils ne se téléchargent pas : Mixamo n'a 
 coups. Chaque geste de `gestes.json` est une suite de poses-clés, et c'est
 `blender/pose_anim.py` qui les joue :
 
-- la **main armée** et la **direction de la lame**, en hauteurs de personnage depuis
-  l'épaule ;
+- la **main armée** — le creux du poing, où passe la poignée — et la **direction de la
+  lame**, en hauteurs de personnage depuis l'épaule ;
 - le buste qui tourne et s'incline (`twist`, `lean`), le corps qui fléchit ou se fend
   (`crouch`, `forward`) ;
 - la main gauche (`lhand`, ou `"grip"` pour une arme à deux mains), les pieds
@@ -190,7 +227,19 @@ coups. Chaque geste de `gestes.json` est une suite de poses-clés, et c'est
 - l'image d'impact (`impact`).
 
 La cinématique inverse plie bras et jambes. `rest` est **la garde** : le repos, la
-marche, et le départ et le retour de chaque geste.
+marche, et le départ et le retour de chaque geste — la garde C, « garde prête », choisie
+sur planche au jalon 54 (coude plié, lame vers l'avant). Au repos et en marche, la main
+gauche y est posée aussi : l'animation d'emprunt ne garde que son balancement, recentré
+(`export_glb.left_hand`), sa pose propre venant d'un autre squelette.
+
+Ce qui précède vaut pour le gréage local : ses animations viennent d'un autre squelette,
+d'où la garde tenue. Un personnage gréé par Mixamo joue les siennes (`"guard": false`).
+
+**La main tient l'arme par son os de prise** (`RightHandGrip`, au creux du poing, +Y le long
+des jointures vers le pouce, +Z vers la paume ; posé par `rig.py`, ou d'après les os des
+doigts d'un squelette Mixamo par `weapons.grip_bone()`) : `weapons.hold()` place le poignet pour que le poing tombe
+sur la poignée, et l'arme du `.glb` est accrochée à cet os. Tenue par le poignet, la poignée
+flottait à côté de la main.
 
 Ce que la planche fait du rendu :
 
@@ -249,6 +298,19 @@ Pièges payés :
   lames passaient le seuil de glow du jeu.
 - **Le dos repeint ne reprend pas la recoloration de la face** (`model_recolor`) : la
   règle, écrite pour la face, y repeignait la cape en bleu.
+- **Gréage local, le haut du crâne** (jalon 54) : sans point OpenPose, `HeadTop_End`
+  gardait la tête chibi du squelette d'emprunt et dépassait le Vive lame adulte d'un tiers
+  de sa taille. Gestes et armes se mesurent à lui : le bras se tendait à fond, l'épée était
+  trop grande. `rig.py` le pose sur le haut du maillage.
+- **Gréage local, les mains** : elles sortent ouvertes, sans os aux doigts. `rig.py` les
+  replie en poings dans le maillage, **autour de la ligne des jointures, vers la paume** :
+  en pose A, bras à 45°, les doigts s'étalent dans le plan de face, le pouce au dedans, la
+  paume vers l'arrière (mesuré sur TRELLIS.2). Replier autour de l'autre axe couchait les
+  doigts les uns sur les autres et déchirait le maillage. Sur les moignons de Stable Fast 3D,
+  le résultat reste grossier.
+- **Les candidats écartés** (jalon 54) : Hunyuan3D (licence hors UE, sorties comprises),
+  TripoSG et Step1X-3D (ils en reprennent du code sous licence hors UE), SPAR3D (pas mieux
+  que Stable Fast 3D). **Lire la licence d'un générateur avant de le lancer.**
 - **Gréage local, les jambes** :
   - leurs os sont posés devant le maillage puis reculés d'un rayon de jambe ;
   - aucun poids ne mêle gauche et droite, et les faces qui joignent les deux jambes

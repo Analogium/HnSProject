@@ -27,7 +27,7 @@ func tick(delta: float) -> void:
 	var victim := foe()
 	if global_position.distance_to(victim.global_position) < stats.attack_range:
 		velocity = Vector3.ZERO
-		sprite.set_state(false, victim.global_position - global_position)
+		model.set_state(false, victim.global_position - global_position)
 		_zone = _burst(SWELL)
 		_timer = SWELL
 		return
@@ -41,8 +41,8 @@ func _swell(delta: float) -> void:
 	_pulse -= delta
 	if _pulse <= 0.0:
 		_pulse = PULSE
-		sprite.flash()
-	sprite.position.x = 1.0 if sprite.position.x <= 0.0 else -1.0
+		model.flash()
+	model.position.x = 1.0 if model.position.x <= 0.0 else -1.0
 	if _timer <= 0.0:
 		# Ce n'est pas une victoire du joueur : ni expérience ni butin.
 		die(false)

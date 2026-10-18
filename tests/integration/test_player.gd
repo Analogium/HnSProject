@@ -12,6 +12,12 @@ var _p: Player
 var _bolts_fired: Node3D
 
 
+## La façon de jouer est un réglage global : rendue au clavier, sinon le test suivant
+## jouerait à la souris.
+func after_each() -> void:
+	Settings.control_mode = Keybinds.KEYBOARD
+
+
 func before_each() -> void:
 	_p = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(_p)
@@ -739,7 +745,7 @@ func test_the_instrument_serves_only_the_class_manual_skills() -> void:
 ## Le geste joué avec l'instrument rend l'arme en finissant : la marche qui suit ne
 ## garde pas la flûte en main.
 func test_the_instrument_goes_back_after_the_gesture() -> void:
-	var sprite := _p.sprite
+	var sprite := _p.model.sprite
 	var with_weapon := sprite.sprite_frames
 	sprite.attack(true, 0.0, "", "flute")
 	assert_ne(sprite.sprite_frames, with_weapon, "la flûte le temps du geste")
@@ -884,3 +890,102 @@ func test_storing_a_book_clears_the_slots_that_pointed_to_it() -> void:
 	_p.stop_studying(0)
 	assert_eq(_p.bar.id_of(2), "", "la case est vide")
 	assert_eq(_p.bar.id_of(0), SkillCatalog.ID_ATTACK, "les attaques de départ restent")
+
+
+## La molette rapproche la caméra jusqu'au quart de son recul, et ne recule jamais au-delà du
+## cadre par défaut : c'est lui qui fixe ce que le jeu montre.
+func test_the_wheel_zooms_in_and_back_to_the_default_frame() -> void:
+	var far := _p._camera_offset().length()
+	_wheel(MOUSE_BUTTON_WHEEL_UP, 1)
+	assert_almost_eq(_p._camera_offset().length(), far * Player.CAMERA_ZOOM_STEP, 1e-3, "un cran plus près")
+	_wheel(MOUSE_BUTTON_WHEEL_UP, 40)
+	assert_almost_eq(_p._camera_offset().length(), far * Player.CAMERA_ZOOM_MIN, 1e-3, "pas plus près que le quart")
+	_wheel(MOUSE_BUTTON_WHEEL_DOWN, 40)
+	assert_almost_eq(_p._camera_offset().length(), far, 1e-3, "ni plus loin que le cadre par défaut")
+
+
+func _wheel(button: MouseButton, notches: int) -> void:
+	for i in notches:
+		var wheel := InputEventMouseButton.new()
+		wheel.button_index = button
+		wheel.pressed = true
+		_p._unhandled_input(wheel)
+
+
+## Jalon 54 : l'arme se range pendant la marche et le lancer des Lames de jet, et ressort
+## pour le coup, même porté en courant.
+func test_the_weapon_is_put_away_while_walking_or_throwing() -> void:
+	var model := _p.model
+	model.set_archetype("swiftblade")
+	assert_true(model.has_model("swiftblade"), "le Vive lame a son modèle 3D")
+	var sword: Node3D = model.find_child("weapon_sword", true, false)
+	assert_true(sword.visible, "au repos, l'épée en main")
+	model.set_state(true, Vector3.FORWARD)
+	assert_false(sword.visible, "en marchant, rangée")
+	model.attack()
+	assert_true(sword.visible, "le coup la ressort")
+	model._on_animation_finished()
+	model.set_state(true, Vector3.FORWARD)
+	assert_false(sword.visible, "rangée à nouveau quand la marche reprend")
+	model.attack(false, 0.0, "throw")
+	assert_false(sword.visible, "les lames de jet partent de la main nue")
+
+
+## Jalon 54, le clic-déplacement de PoE : à la souris, le clic gauche au sol mène au point
+## cliqué ; un coup l'interrompt, sauf bouton tenu.
+func test_a_left_click_on_the_ground_walks_there_in_mouse_mode() -> void:
+	Settings.control_mode = Keybinds.MOUSE
+	_p._unhandled_input(_left_click())
+	assert_true(_p._walking, "le clic au sol fait marcher")
+	var goal := _p.global_position + Vector3(30.0, 0.0, 0.0)
+	_p._walk_to = goal
+	await wait_seconds(1.5)
+	assert_lt(_p.global_position.distance_to(goal), Player.WALK_ARRIVAL * 2.0, "arrivé au point")
+	assert_false(_p._walking, "et arrêté là")
+
+
+func test_a_left_click_does_not_walk_in_keyboard_mode() -> void:
+	Settings.control_mode = Keybinds.KEYBOARD
+	_p._unhandled_input(_left_click())
+	assert_false(_p._walking, "au clavier, le clic gauche est une case")
+
+
+func test_a_skill_stops_a_walk_unless_the_button_is_held() -> void:
+	Settings.control_mode = Keybinds.MOUSE
+	var skill := InputEventKey.new()
+	skill.physical_keycode = KEY_Q
+	skill.pressed = true
+	_p._walking = true
+	_p._unhandled_input(skill)
+	assert_false(_p._walking, "le coup interrompt la marche vers un point")
+	_p._walking = true
+	_p._steering = true
+	_p._unhandled_input(skill)
+	assert_true(_p._walking, "bouton tenu, on continue d'avancer")
+
+
+func test_the_keys_take_over_from_a_click() -> void:
+	Settings.control_mode = Keybinds.MOUSE
+	_p._unhandled_input(_left_click())
+	Settings.control_mode = Keybinds.KEYBOARD
+	Input.action_press("move_right")
+	await wait_physics_frames(1)
+	Input.action_release("move_right")
+	assert_false(_p._walking, "une touche de déplacement oublie le point cliqué")
+
+
+## Le corps regarde où il va, pas la souris ; elle ne le tourne que pour frapper.
+func test_the_body_faces_where_it_walks_not_the_mouse() -> void:
+	_p.model.set_archetype("swiftblade")
+	_p._walk_to = _p.global_position + Vector3(0.0, 0.0, 200.0)
+	_p._walking = true
+	await wait_physics_frames(3)
+	assert_almost_eq(_p.model.rotation.y, 0.0, 0.01, "tourné vers +Z, où il marche")
+	assert_true(_p.facing.dot(Vector3.BACK) < 0.99, "alors que la visée regarde ailleurs")
+
+
+func _left_click() -> InputEventMouseButton:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	return click

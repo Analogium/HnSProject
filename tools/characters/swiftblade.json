@@ -12,46 +12,46 @@
  "scale": 0.7,
  "blender": {
   "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, semi-realistic anime-influenced face, adult heroic proportions, seven heads tall, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a young swordsman in his early twenties, short messy silver hair, red scarf wrapped snugly around the neck with short ends tucked into the vest, sleeveless dark leather vest over a white shirt with rolled sleeves, fingerless gloves, belt with pouches, slim dark trousers, brown boots, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
-  "source": "tools/characters/swiftblade/3d",
-  "rest": "rest.blend",
+  "source": "tools/characters/swiftblade/mixamo",
+  "rest": "rest.fbx",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "cast": [
-    "cast",
+    "cast.fbx",
     8
    ],
    "sweep": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "overhead": [
-    "overhead",
+    "overhead.fbx",
     8
    ],
    "thrust": [
-    "thrust",
+    "thrust.fbx",
     8
    ],
    "flurry": [
-    "flurry",
+    "thrust.fbx",
     8
    ],
    "throw": [
-    "throw",
+    "throw.fbx",
     8
    ],
    "finisher": [
-    "finisher",
+    "finisher.fbx",
     8
    ]
   },
@@ -64,7 +64,14 @@
    "wand",
    "runeblade"
   ],
-  "weapon_colors": 8
+  "weapon_colors": 8,
+  "guard": false,
+  "arm_space": 40,
+  "walk_leg_space": -12,
+  "elbows": 0.5,
+  "repeat": [
+   "flurry"
+  ]
  },
- "model": "3d/model.glb : Stable Fast 3D sur 3d/model_source.png (Qwen-Image, graine 4242, direction « Torchlight » choisie sur planche au jalon 54), face repeinte d'après elle, dos deviné ; gréage local (`model_3d.py rig`)"
+ "model": "3d/model_trellis.glb : TRELLIS.2 sur 3d/model_front.png (Qwen-Image, graine 4242, direction « Torchlight » choisie sur planche au jalon 54), réduit à 40 000 faces ; gréé par Mixamo, ses animations dans mixamo/ (jalon 54)"
 }

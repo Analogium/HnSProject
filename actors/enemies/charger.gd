@@ -64,7 +64,7 @@ func _approach() -> void:
 		_timer = WINDUP
 		_dir = to_victim / dist
 		velocity = Vector3.ZERO
-		sprite.set_state(false, _dir)
+		model.set_state(false, _dir)
 		var lane := DangerZone.put(
 			manager.ground(), global_position, DangerZone.Shape.LANE, REACH, WINDUP, _dir, LANE_HALF
 		)
@@ -77,7 +77,7 @@ func _approach() -> void:
 func _charge() -> void:
 	velocity = _dir * CHARGE_SPEED * states.speed_factor
 	move_and_slide()
-	sprite.set_state(true, _dir)
+	model.set_state(true, _dir)
 	for hurtbox in Targets.in_circle(get_world_3d(), global_position, HIT_RADIUS, Targets.PLAYER_SIDE):
 		if hurtbox in _hit:
 			continue
@@ -90,5 +90,5 @@ func _charge() -> void:
 			_phase = Phase.STUNNED
 			_timer = STUN
 			velocity = Vector3.ZERO
-			sprite.set_state(false, _dir)
+			model.set_state(false, _dir)
 			return

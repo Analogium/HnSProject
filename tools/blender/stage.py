@@ -20,6 +20,13 @@ def options(argv):
     return dict(a.split("=", 1) for a in argv)
 
 
+def fcurves(action):
+    """Les courbes d'une action, à plat ou rangées par emplacement (Blender 4.4 et après)."""
+    if getattr(action, "fcurves", None):
+        return action.fcurves
+    return action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+
+
 def load(path):
     """Un .fbx de Mixamo, ou un .blend du gréage local (blender/rig.py)."""
     if path.endswith(".blend"):

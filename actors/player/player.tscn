@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://actors/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://art/actor_sprite.gd" id="7_sprite"]
+[ext_resource type="Script" path="res://art/actor_model.gd" id="7_sprite"]
 [ext_resource type="Script" path="res://actors/player/swing_arc.gd" id="5_arc"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_bolt.tscn" id="6_bolt"]
 [ext_resource type="PackedScene" path="res://actors/projectiles/player_fireball.tscn" id="8_boule"]
@@ -33,7 +33,7 @@ orb_scene = ExtResource("8_boule")
 comet_scene = ExtResource("10_comete")
 knife_scene = ExtResource("11_couteau")
 
-[node name="Sprite" type="AnimatedSprite3D" parent="."]
+[node name="Model" type="Node3D" parent="."]
 script = ExtResource("7_sprite")
 archetype = "player"
 variant = 0

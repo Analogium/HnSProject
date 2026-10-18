@@ -18,6 +18,9 @@ func before_each() -> void:
 ## La table du moteur et le disque sont globaux : rendus dans l'état où on les a
 ## trouvés, sinon l'échec voyage jusqu'au test suivant.
 func after_each() -> void:
+	Settings.control_mode = Keybinds.MOUSE
+	Settings.reset_key_binds()
+	Settings.control_mode = Keybinds.KEYBOARD
 	Settings.reset_key_binds()
 	get_tree().paused = false
 
@@ -101,3 +104,26 @@ func test_reset_gives_every_key_back() -> void:
 	assert_eq(Keybinds.key_label("panel_inventory"), "I")
 	assert_eq(Keybinds.key_label("panel_character"), "C")
 	assert_eq(Settings.key_binds, {}, "et plus rien n'est écrit dans les réglages")
+
+
+## Jalon 54 : un onglet par façon de jouer. Le choisir la met en place, avec ses touches ;
+## chacune garde les siennes, et revenir à l'autre les retrouve.
+func test_each_control_mode_keeps_its_own_keys() -> void:
+	_menu.open()
+	_menu._show_keys()
+	_menu._choose_mode(Keybinds.MOUSE)
+	assert_eq(Settings.control_mode, Keybinds.MOUSE, "l'onglet choisit la façon de jouer")
+	var rows: Array = _menu._key_buttons()
+	assert_eq(rows.size(), Keybinds.actions_of(Keybinds.MOUSE).size() + 1, "les actions, plus le déplacement")
+	assert_true((rows[0] as Button).disabled, "le déplacement au clic gauche ne se change pas")
+	_menu._capture("skill_2")
+	_menu._input(_press(KEY_J))
+	assert_eq(Keybinds.key_label("skill_2"), "J")
+
+	_menu._choose_mode(Keybinds.KEYBOARD)
+	assert_eq(_menu._key_buttons().size(), Keybinds.ACTIONS.size(), "ZQSD revient")
+	assert_eq(Keybinds.key_label("skill_2"), Texts.t("clic D"), "avec ses touches à lui")
+	assert_eq(Settings.key_binds, {}, "rien n'y a été écrit")
+
+	_menu._choose_mode(Keybinds.MOUSE)
+	assert_eq(Keybinds.key_label("skill_2"), "J", "et la souris retrouve les siennes")

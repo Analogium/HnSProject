@@ -125,15 +125,15 @@ func test_loading_does_not_replace_the_bag_object() -> void:
 func test_loading_equips_and_changes_the_silhouette() -> void:
 	_p.load_character(_played_character())
 	assert_eq(_p.equipped("chest").base.id, "breastplate")
-	assert_eq(_p.sprite.current_variant(), 2, "la silhouette choisie à la création")
+	assert_eq(_p.model.current_variant(), 2, "la silhouette choisie à la création")
 
 
 func test_loading_a_witch_changes_the_body() -> void:
 	var p := _played_character()
 	p.character_class = Character.WITCH
 	_p.load_character(p)
-	assert_eq(_p.sprite.archetype, "witch")
-	assert_eq(_p.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("witch").y, "les pieds sur l'origine, au sol")
+	assert_eq(_p.model.archetype, "witch")
+	assert_eq(_p.model.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("witch").y, "les pieds sur l'origine, au sol")
 
 
 ## Un emplacement que le joueur ne sait pas porter est écarté au lieu d'entrer

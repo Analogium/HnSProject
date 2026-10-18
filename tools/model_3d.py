@@ -170,8 +170,13 @@ def cmd_mesh(a):
         check=True, capture_output=True)
     cutout(a.id, a.seed, "down", front)
     if a.back is None and not a.sf3d:
-        subprocess.run([TRELLIS_PYTHON, "-I", win(os.path.join(here, "trellis_client.py")), win(front), win(glb),
-                        str(a.seed)], check=True)
+        # TRELLIS.2 sort près de 200 000 faces : réduit au compte du jeu, sa texture recuite sur la
+        # version réduite (blender/bake_color.py). Son modèle brut est gardé : il coûte le quota du jour.
+        raw_glb = os.path.join(d, "model_trellis.glb")
+        if not os.path.exists(raw_glb):
+            subprocess.run([TRELLIS_PYTHON, "-I", win(os.path.join(here, "trellis_client.py")), win(front),
+                            win(raw_glb), str(a.seed)], check=True)
+        blender("bake_color.py", win(raw_glb), win(raw_glb), win(glb))
     else:
         # Stable Fast 3D cuit une texture floue et devine le dos : la face, et le dos s'il y a
         # son image, sont repeints d'après elles (blender/project.py). Sans image de dos (le

@@ -341,10 +341,9 @@ plutôt que compter sur les tests.
    l'évaluation paresseuse figerait l'attente d'un ennemi hors de portée.
 
 3. **`actors/enemies/<name>.tscn`** — copier `grunt.tscn`. Les enfants attendus
-   par `Enemy` sont `Sprite` (un `ActorSprite`), `Hurtbox`, `HealthBar`,
-   `AffixTag`. **Le `ShaderMaterial` du sprite doit être
-   `resource_local_to_scene`**, sinon tous les ennemis de l'écran flashent
-   ensemble.
+   par `Enemy` sont `Model` (un `ActorModel`), `Hurtbox`, `HealthBar`,
+   `AffixTag`. Flash, liseré et teinte passent par des uniformes d'instance :
+   rien à dupliquer par ennemi.
 4. **`art/sprite_forge.gd`** — le nom dans `ARCHETYPES`, et un cas dans
    `config()` : cinq couleurs, une dizaine de mesures, trois options. La
    silhouette doit se lire **avant** la couleur, dans une mêlée de soixante-dix.

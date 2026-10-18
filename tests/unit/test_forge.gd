@@ -182,7 +182,7 @@ func test_an_attack_plays_its_gesture_and_reads_its_impact() -> void:
 	add_child_autofree(grid)
 	grid.attack(false, 0.5, "overhead")
 	assert_eq(grid.animation, &"attack_down", "les grilles n'ont que le coup")
-	assert_eq(grid.impact_of("overhead"), ActorSprite.DEFAULT_IMPACT)
+	assert_eq(grid.impact_of("overhead"), ActorModel.DEFAULT_IMPACT)
 
 
 ## Un sort joue le lancer, un coup d'arme le coup ; un corps sans lancer (les

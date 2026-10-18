@@ -159,7 +159,7 @@ func test_a_chilled_enemy_walks_and_recharges_slower() -> void:
 	assert_almost_eq(e.movement_speed(), speed * 0.75, 0.001)
 	e._cool_down(0.4)
 	assert_almost_eq(e._attack_cd, 0.7, 0.001, "la recharge en cours ralentit aussi")
-	assert_almost_eq(e.sprite.speed_scale, 0.75, 0.001, "et son animation avec")
+	assert_almost_eq(e.model.speed_scale, 0.75, 0.001, "et son animation avec")
 
 
 func test_a_player_rot_heals_them() -> void:

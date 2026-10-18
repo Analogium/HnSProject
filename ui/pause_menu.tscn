@@ -223,6 +223,21 @@ theme_override_font_sizes/font_size = 8
 horizontal_alignment = 1
 text = "Cliquer une action, puis la touche voulue"
 
+[node name="Modes" type="HBoxContainer" parent="Root/Center/Panel/Keys"]
+theme_override_constants/separation = 4
+
+[node name="Keyboard" type="Button" parent="Root/Center/Panel/Keys/Modes"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+toggle_mode = true
+text = "ZQSD"
+
+[node name="Mouse" type="Button" parent="Root/Center/Panel/Keys/Modes"]
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+toggle_mode = true
+text = "Souris"
+
 [node name="Rows" type="HBoxContainer" parent="Root/Center/Panel/Keys"]
 theme_override_constants/separation = 4
 

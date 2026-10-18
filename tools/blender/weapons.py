@@ -71,8 +71,8 @@ def orient(blade):
 
 def carry(root, arm, hand, blade, H):
     """La main armée en garde : une cible portée par le bassin, à `hand` (droite, avant,
-    haut, en hauteurs de personnage) de l'épaule ; le bras s'y plie, l'arme (`root`, ou
-    aucune pour la passe du corps) y est fixée. Rend la cible."""
+    haut, en hauteurs de personnage) de l'épaule ; la main la tient (`hold`), l'arme (`root`,
+    ou aucune pour la passe du corps) y est fixée. Rend la cible."""
     pb = lambda s: next(b for b in arm.pose.bones if b.name.endswith(s))
     bpy.context.view_layer.update()
     at = arm.matrix_world @ pb("RightArm").head + local(hand) * H
@@ -82,11 +82,61 @@ def carry(root, arm, hand, blade, H):
     target.parent, target.parent_type, target.parent_bone = arm, "BONE", hips.name
     bpy.context.view_layer.update()
     target.matrix_world = Matrix.LocRotScale(at, orient(blade), (1, 1, 1))
-    ik = pb("RightForeArm").constraints.new("IK")
-    ik.target, ik.chain_count = target, 2
+    hold(arm, target)
     if root is not None:
         root.parent = target
     return target
+
+
+def grip_bone(arm):
+    """Le nom de l'os de prise de la main droite : celui du gréage local (`rig.py`), sinon posé
+    d'après les doigts d'un squelette gréé par Mixamo — au creux du poing, +Y le long des
+    jointures vers le pouce (l'axe de la lame), +Z vers la paume, du côté où les doigts plient."""
+    names = [b.name for b in arm.data.bones]
+    found = next((n for n in names if n.endswith("RightHandGrip")), None)
+    if found:
+        return found
+    prefix = next(n for n in names if n.endswith("Hips")).removesuffix("Hips")
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    eb = arm.data.edit_bones
+    hand = eb[prefix + "RightHand"]
+    at = lambda finger: eb[prefix + "RightHand" + finger].head
+    wrist, base = hand.head.copy(), at("Middle1")
+    reach = (base - wrist).length
+    fingers = (base - wrist).normalized()
+    knuckles = (at("Index1") - at("Pinky1")).normalized()
+    palm = fingers.cross(knuckles).normalized()
+    if (at("Middle3") - base).dot(palm) < 0:
+        palm = -palm
+    bone = eb.new(prefix + "RightHandGrip")
+    bone.head = base + palm * 0.35 * reach
+    bone.tail = bone.head + knuckles * reach
+    bone.parent, bone.use_deform = hand, False
+    bone.align_roll(palm)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return prefix + "RightHandGrip"
+
+
+def hold(arm, target):
+    """La main droite tient `target` (la poignée à l'origine, la lame le long de +Y) par son os
+    de prise (`RightHandGrip`, posé par `rig.py` au creux du poing, +Y le long du pouce) : le
+    poignet se place pour que le poing tombe sur la poignée, l'avant-bras s'y plie, la main en
+    prend l'orientation. Rend le poignet, enfant de `target`."""
+    pb = lambda s: next(b for b in arm.pose.bones if b.name.endswith(s))
+    hand, grip = pb("RightHand"), arm.pose.bones[grip_bone(arm)]
+    world = lambda b: arm.matrix_world @ b.bone.matrix_local
+    g, h = world(grip), world(hand)
+    turn = g.to_3x3().normalized().transposed()
+    wrist = bpy.data.objects.new("poignet", None)
+    bpy.context.scene.collection.objects.link(wrist)
+    wrist.parent = target
+    wrist.matrix_basis = Matrix.LocRotScale(turn @ (h.translation - g.translation),
+                                            (turn @ h.to_3x3().normalized()).to_quaternion(), (1, 1, 1))
+    ik = pb("RightForeArm").constraints.new("IK")
+    ik.target, ik.chain_count = wrist, 2
+    hand.constraints.new("COPY_ROTATION").target = wrist
+    return wrist
 
 
 def build(kind, L, oversize=OVERSIZE):

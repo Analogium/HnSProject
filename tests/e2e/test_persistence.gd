@@ -44,7 +44,7 @@ func _recast() -> Player:
 
 func test_a_new_character_arrives_in_the_zone() -> void:
 	assert_eq(_zone.player.level, 1)
-	assert_eq(_zone.player.sprite.current_variant(), 1, "sa silhouette, pas celle par défaut")
+	assert_eq(_zone.player.model.current_variant(), 1, "sa silhouette, pas celle par défaut")
 	assert_eq(_zone.player.weapon_kind(), "sword", "l'épée en main, pour l'attaque de départ")
 	assert_eq(_zone.player.inventory.placed.size(), 1, "la baguette au sac, pour le tir")
 	assert_eq(_zone.player.inventory.placed[0].data.base.id, ItemCatalog.ID_STARTING_WAND)

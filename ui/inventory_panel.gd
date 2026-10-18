@@ -575,9 +575,9 @@ func _doll_frame_index() -> int:
 func _refresh_doll() -> void:
 	if _player == null:
 		return
-	var variant_index := _player.sprite.current_variant()
+	var variant_index := _player.model.current_variant()
 	var weapon := _player.weapon_kind()
-	var body := _player.sprite.archetype
+	var body := _player.model.archetype
 	var key := "%s:%d:%s" % [body, variant_index, weapon]
 	if key == _doll_key:
 		return
@@ -850,7 +850,7 @@ func _draw_doll() -> void:
 		return
 	# Taille native, pieds calés comme en jeu : sans `offset_of()`, la sorcière,
 	# plus haute, serait posée plus bas que le guerrier.
-	var at := (zone.get_center() - tex.get_size() * 0.5 + SpriteForge.offset_of(_player.sprite.archetype)).round()
+	var at := (zone.get_center() - tex.get_size() * 0.5 + SpriteForge.offset_of(_player.model.archetype)).round()
 	draw_texture(tex, at + Vector2(0.0, DOLL_FEET))
 
 

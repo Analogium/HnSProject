@@ -2553,6 +2553,15 @@ msgstr "Click an action, then the key you want"
 msgid "Rétablir les touches"
 msgstr "Reset keys"
 
+msgid "ZQSD"
+msgstr "WASD"
+
+msgid "Souris"
+msgstr "Mouse"
+
+msgid "Déplacement"
+msgstr "Move"
+
 msgid "Avancer"
 msgstr "Move up"
 

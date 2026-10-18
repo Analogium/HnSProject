@@ -676,6 +676,8 @@ func _open_stash() -> void:
 
 ## Pose la carte de `generator` : sol, murs, carte superposée, champ de flux.
 func _lay_out() -> void:
+	# Un clic-déplacement mène à un point de la zone d'avant.
+	player.halt()
 	var t0 := Time.get_ticks_usec()
 	_paint()
 	_paint_ms = float(Time.get_ticks_usec() - t0) / 1000.0

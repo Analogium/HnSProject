@@ -20,7 +20,7 @@ var stats: CharacterStats
 ## expérience ni butin : ceux-là passent par l'EnemyManager.
 var mortal := false
 
-@onready var sprite: ActorSprite = $Sprite
+@onready var model: ActorModel = $Model
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_bar: HealthBar = $HealthBar
 ## Le cumul des dégâts encaissés. Sous les pieds : au-dessus de la tête passent
@@ -87,7 +87,7 @@ func _on_damaged(info: DamageInfo) -> void:
 		return
 	velocity += (global_position - info.source_position).normalized() * info.knockback
 	label.modulate = Color(1.0, 0.85, 0.3) if info.is_crit else Color(1, 1, 1)
-	sprite.flash()
+	model.flash()
 	_lose(info.amount)
 	if _down > 0.0 and info.author != null:
 		info.author.slew.emit(info.cast, global_position, states)
@@ -114,5 +114,5 @@ func _fall() -> void:
 
 
 func _show_states() -> void:
-	sprite.show_states(states)
+	model.show_states(states)
 	health_bar.show_states(states)
