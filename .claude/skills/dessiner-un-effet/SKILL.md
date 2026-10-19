@@ -1,133 +1,171 @@
 ---
 name: dessiner-un-effet
-description: La méthode visuelle du projet pour tout effet, geste de compétence ou icône — planche de variantes rendue hors du jeu et choisie par l'utilisateur, puis dessin pixel par pixel dans EffectForge (jamais en polygones tracés), captures réelles déposées sur le Bureau, coût mesuré, doc à jour. À invoquer dès qu'on crée ou refait le visuel d'une compétence, d'un manuel, d'un effet ou d'une icône, ou qu'on ajoute une compétence qui en a besoin.
+description: La méthode visuelle du projet pour tout effet, geste de compétence ou icône, en 3D depuis le jalon 54 — planche de variantes posées dans une vraie zone et choisie par l'utilisateur, puis l'effet en shaders, particules ou modèle sous la lumière du jeu, captures réelles déposées sur le Bureau, coût mesuré, doc à jour. À invoquer dès qu'on crée ou refait le visuel d'une compétence, d'un manuel, d'un effet ou d'une icône, ou qu'on ajoute une compétence qui en a besoin.
 ---
 
 # Dessiner un effet
 
-C'est la méthode du jalon 24, qui a redessiné les manuels de feu, de glace, du
-sacré et du maître d'armes. L'utilisateur l'a validée et veut qu'elle serve
-**à chaque fois**. Son principe : **l'utilisateur choisit sur pièce, jamais sur
-description**. Il choisit vite quand on lui montre des images. Quand on lui
-demande ce qui manque, il a du mal à le dire.
+La méthode est née au jalon 24, qui a redessiné en pixel art les manuels de feu, de glace,
+du sacré et du maître d'armes. Elle est passée en 3D au jalon 54. L'utilisateur veut
+qu'elle serve **à chaque fois**, et son principe tient toujours : **l'utilisateur choisit
+sur pièce, jamais sur description**. Il choisit vite quand on lui montre des images. Quand
+on lui demande ce qui manque, il a du mal à le dire.
 
-Le raisonnement complet et les chiffres sont dans
-`JALONS/hack-n-slash-jalon-24.md`. Les règles en vigueur sont dans les lignes
-« À quoi ressemble… » et « Un effet est-il dessiné ou fabriqué ? » de
-`docs/ARCHITECTURE.md`. Les lire avant de commencer : ce skill dit **dans quel
-ordre** faire les choses, il ne remplace pas ces documents.
+Les règles en vigueur sont dans `docs/ARCHITECTURE.md`, aux lignes « Que montre une
+compétence en 3D ? », « Comment un ennemi prévient-il de son attaque ? » et « Comment voiler
+les sorts… ». Le raisonnement et les chiffres sont au jalon 54, §13. Lire ces documents
+avant de commencer : ce skill dit **dans quel ordre** faire les choses, il ne les remplace
+pas.
 
 ## 1. Lire l'existant
 
-- Trouver les gestes concernés : `resources/skills/*.tres` (`shape`, `nature`),
-  puis le nœud qui les dessine dans `actors/skills/` ou `actors/player/`.
-- Repérer la **matière** de ces gestes et le fichier qui la pose : `fx/fire.gd`,
-  `fx/frost.gd`, `fx/holy.gd`, `fx/slash.gd`. Une matière nouvelle a droit à son
-  propre fichier `fx/`, qui tient **son** blanc (mesuré au-dessus de 0,9 de
-  luminance) et ses fonctions de pose.
-- Chercher les couleurs écrites plusieurs fois. Le blanc du feu, puis celui du
-  sacré, vivaient chacun dans trois ou quatre fichiers avec des valeurs
-  différentes.
+- Trouver les gestes concernés dans `resources/skills/*.tres` (`shape`, `nature`), puis le
+  nœud qui les montre dans `actors/skills/` ou `actors/player/`.
+- Ce nœud montre déjà le **visuel générique** de sa nature : une ligne `ElementFx.trail`,
+  `burst`, `sweep`, `area`, `line` ou `keep` à sa naissance. Le dessin propre **remplace
+  cette ligne**, sauf si la planche garde les étincelles en plus.
+- **Le parti pris de la 2D** (jalons 24 à 53) reste la référence de ce que l'utilisateur
+  a déjà choisi sur planche : la comète du projectile, la croix gravée du coup de grâce,
+  le cercle runique des glyphes… Il est écrit dans les lignes « À quoi ressemble… »
+  d'ARCHITECTURE. On le porte en 3D, on ne le redécide pas sans planche. Les grilles
+  d'`EffectForge` et les fichiers `fx/` en 2D ne tournent plus depuis l'étape 1.
+- **« Ça ne marche pas » peut être un visuel** : compter d'abord ce qui naît, image par image
+  (`is` et non `find_children()` avec un nom de classe de script, qui ne le reconnaît pas). La
+  Fragmentation lâchait bien ses éclats, mais ils avaient l'allure de la boule et naissaient
+  dans l'éclair de l'explosion.
+- **Demander une référence** si l'utilisateur en a une : au jalon 54, cinq variantes de
+  boule de feu (particules, plasma, couronne, toon, lave) lui ont paru « pas assez
+  parlantes » ; une capture de Path of Exile a tranché, et la planche suivante en a décliné
+  quatre façons.
+- La teinte vient de `DamageType.COLORS[nature]`. Un sort qui change d'élément a **un
+  dessin par élément** quand une simple teinte n'a pas de sens, comme un éclair en feu.
 
 ## 2. La planche d'abord
 
-Rendre **4 à 7 variantes aux partis pris francs**. Une variante timide ne se
-remarque pas sur la planche. Montrer **le geste**, pas le dessin isolé : sept
-pics en couronne, un croissant en cinq temps, un trait en biais. Le serpent
-avait été jugé immobile, alors qu'en mouvement il sortait comme un tube.
+Rendre **4 à 7 variantes aux partis pris francs**. Une variante timide ne se remarque pas
+sur la planche. Montrer **le geste**, pas le dessin isolé : à deux instants au moins (30 et
+80 % pour ce qui se remplit), et dans les trois natures qu'il prend.
 
-- Écrire un script `extends SceneTree` dans le dossier de travail. Il dessine
-  avec `PixelCanvas` et les grilles de `EffectForge`, puis appelle
-  `Image.save_png("user://….png")`. Poser les variantes sur le sol du jeu
-  (`art/tiles/ground.png`, ou `TilesetBuilder.FLOOR_BASE` en aplat), les numéroter avec des chiffres en pixels, et
-  agrandir le tout ×4 à ×6 au plus proche voisin.
-- `tools/planche.sh <script.gd> <sujet>` le rend en headless et dépose le
-  résultat dans `C:\Users\Theo\Desktop\hns-captures-<sujet>\`.
-- **Regarder la planche soi-même d'abord** avec l'outil Read. Remplacer toute
-  variante manifestement ratée avant de la montrer : le prisme sortait en sapin,
-  le croissant en feuille.
-- Numéroter le fichier dans l'ordre du récit, donner son chemin Windows, puis
-  poser la question avec `AskUserQuestion` : une option par variante, et la
-  description dit ce qu'on y voit. **Ne rien implémenter avant la réponse.**
-- **Une icône** suit le même principe, avec `tools/skill_icons.py` et la recette
-  de `resources/icons/LISEZMOI.md`. Faire une planche de 4 sujets × 3 graines, à
-  côté des icônes déjà posées du manuel. Puis inscrire sujet et graine dans
-  `tools/skill_icons.json` et lancer `apply --only <id>`. ComfyUI tourne sur
-  l'hôte Windows (`ip route`) : le lancer avec le bac à sable désactivé.
+- **Une planche 3D se rend dans le vrai jeu, en fenêtré.** En `--headless`, le pilote de
+  rendu est un bouchon et les captures sortent vides. On écrit un scénario `extends Node`
+  dans le scratchpad, sur le modèle de `tools/capture_scenario.gd` : il entre en zone
+  (`enter_area(1)`), cache l'interface (`overlay`), vide les ennemis (`kill_all()`), puis
+  pose ses variantes autour du joueur. Chacune est un `MeshInstance3D` au shader écrit
+  dans le script, des `GPUParticles3D`, ou les deux. Il capture
+  (`get_viewport().get_texture().get_image().save_png("user://<n>-<nom>-<instant>.png")`)
+  puis quitte. On le lance par `tools/capture.sh <scénario>.gd <sujet>`, qui dépose les
+  images dans `C:\Users\Theo\Desktop\hns-captures-<sujet>\`.
+- **Le joueur naît au bord de la carte** : ce qui est posé trop loin tombe dans la falaise.
+  Recentrer, et assombrir le rouge clair, qui se fond dans l'ocre. Figer la zone
+  (`Game.rng.seed` avant `enter_area`) pour que deux rendus se comparent.
+- **Faire un premier passage à blanc** : chaque matière neuve se compile ~100 ms à sa
+  première image, et ce qui vole saute d'autant (des perles dans une traînée).
+- **Montrer une boule en vol avec sa traînée entière** : elle part assez tôt pour avoir
+  parcouru sa longueur à l'instant de la capture.
+- **Regarder la planche soi-même d'abord**, avec l'outil Read, recadrée et agrandie par PIL.
+  Remplacer toute variante manifestement ratée avant de la montrer : au jalon 54,
+  « l'énergie » sortait en rond blanc déchiqueté.
+- Numéroter les fichiers dans l'ordre du récit, donner le chemin Windows, puis poser la
+  question avec `AskUserQuestion`. Mettre une option par variante, dont la description dit
+  ce qu'on y voit. **Ne rien implémenter avant la réponse.**
+- **Une icône** reste en 2D. Elle suit le même principe avec `tools/skill_icons.py` et la
+  recette de `resources/icons/LISEZMOI.md` : une planche de 4 sujets × 3 graines, à côté
+  des icônes déjà posées du manuel, rendue par `tools/planche.sh` (pur calcul, headless).
+  Inscrire ensuite sujet et graine dans `tools/skill_icons.json` et lancer
+  `apply --only <id>`. ComfyUI tourne sur l'hôte Windows (`ip route`) : le lancer avec le
+  bac à sable désactivé.
+- **Un personnage, une créature ou un objet qui a un corps** ne se dessine pas en shader :
+  joueur, ennemi, rat, corbeau, invocation, marmite. Il passe par un modèle :
+  `tools/model_3d.py`, TRELLIS.2 au quota du jour, gréage Mixamo, puis
+  `tools/blender_sheet.py --glb`. On montre ses animations sous la lumière du jeu
+  (`tools/look_3d.gd`). Recette et pièges : `tools/characters/LISEZMOI.md`, « En 3D ».
+  **Une forme simple qui suit des points du jeu** (le Serpent infernal le long de ses
+  anneaux) se construit plutôt : une grille fixe que le shader courbe (`SerpentBody`). Une
+  silhouette d'abord — un ruban de feu « ne disait pas serpent », un corps à tête en losange,
+  cou pincé et queue effilée, si.
 
-- **Un personnage**, joueur ou ennemi (jalon 52), ne se dessine pas en grilles texte : trop de détails
-  à placer à l'aveugle. Depuis le jalon 51, il passe **en 3D** : vue de face par
-  `tools/character_forge.py`, modèle par `tools/model_3d.py` (Stable Fast 3D
-  en local), gréage Mixamo ou local, planche rendue par `tools/blender_sheet.py`, gestes écrits dans
-  `tools/blender/gestes.json`. On montre les GIF des gestes, face, profil et dos.
-  Recette et pièges : `tools/characters/LISEZMOI.md`, « En 3D ».
+## 3. Dessiner dans la langue du monde
 
-## 3. Dessiner dans la langue du décor
+Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
 
-Les règles qui ne se discutent plus :
+1. **Une couleur mêlée reste sous 1.** Le tonemapping ACES et la lueur, au seuil de 1,
+   blanchissent tout ce qui le dépasse : feu, froid et foudre sortaient du même blanc. Mais
+   mêlée vers le blanc, une teinte sort **beige sur l'ocre** : une rampe par élément,
+   saturée (cœur, milieu, profond, bord), comme `FlameFx.RAMPS`. **Ce qui est de la
+   lumière s'additionne** (`blend_add`, couches à moitié de leur couleur) : sous le soleil
+   du sol ocre, une flamme mêlée sortait peinte et terne. Saturée, la somme qui passe 1
+   monte au jaune et la lueur garde sa teinte.
+2. **L'opacité du menu passe par le shader.** `Settings.veil(nœud, groupe)` se pose à la
+   naissance. Tout shader d'effet déclare `instance uniform float opacity = 1.0;` et la
+   multiplie dans `ALPHA`, parce que `transparency` ne fait rien sur un shader qui écrit
+   `ALPHA` (mesuré). Ce qu'un nœud fait naître hors de lui reprend ses groupes, comme
+   `ElementFx._make()`.
+3. **Shader d'effet** : `unshaded`, `depth_draw_never`, `cull_disabled`, ombres coupées. Un
+   effet au sol flotte d'un rien au-dessus du relief (`DangerZone.LIFT`). Une géométrie
+   **à la taille de sa forme**, tournée vers son cap (`rotation.y = -Flat.angle(cap)`) :
+   un couloir de charge dans un carré aurait couvert 340 px, presque tout jeté. Un contour
+   d'épaisseur égale se calcule en distance au bord, forme par forme (`danger_zone.gdshader`).
+4. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles ; et ce qui ne
+   bouge que pour se montrer (un météore qui tombe) **bouge dans `_process()`** : posé au pas de
+   physique, il reste immobile entre deux pas, et sa traînée sort aussi en perles ;
+   `local_coords = false` pour une traînée ; un point doux, pas un carré. Quelques pièges :
+   - `finished` ne vient jamais sans rendu, donc ce qui se libère passe par une minuterie ;
+   - changer `amount` relance l'émetteur, donc on change la matière (`ElementFx.keep()`) ;
+   - un émetteur posé parmi les projectiles fausse les tests qui en comptent les enfants :
+     il vit à la racine du viewport et suit son porteur.
+5. **Les matières se gardent**, par teinte et par forme (`ElementFx._process_material`). Une
+   matière fabriquée à chaque tir repart au GPU à chaque fois. **Et elles se chauffent** :
+   la première apparition d'une matière gèle le jeu ~100 ms ; elle entre dans
+   `ElementFx.warm()`, qui la fait paraître invisible au chargement de la zone.
+   **Le bruit se calcule dans le shader** (`fx/flame_common.gdshaderinc`) : une
+   `NoiseTexture2D` se génère en différé, la première boule partait sans.
+6. **Un effet ne se colle pas à la lumière** : il ne prend pas d'ombre et n'en jette pas.
+   **Mais il peut en porter** : une `OmniLight3D` sans ombre sur ce qui brûle éclaire le
+   sol autour (la boule de feu, l'éclair de son explosion), et c'est ce qui le fait vivre.
+7. **Un maillage fabriqué montre ses faces dans le bon sens** : retournées, la caméra voit le
+   dedans du fond, et rien ne lui donne de volume — le serpent sortait « dessin plat » à
+   chaque retouche de matière. Le vérifier avant de régler la lumière.
+8. **1 unité = 1 px du jeu 2D** (`Flat.PX_PER_M` = 16 pour Blender) : une portée de
+   compétence se lit telle quelle comme une taille d'effet.
 
-1. **Dessiné, pas tracé.** Des grilles à la main dans `EffectForge` (`1` à `5`
-   pour la rampe de la teinte, `w` pour le cœur), cuites par `_sheet()` pour
-   chaque teinte. Pas de `draw_colored_polygon`, pas de `Glow` pour une matière
-   dessinée.
-2. **Pas d'additif** : un contour sombre n'ajoute rien en lumière ajoutée. Le
-   nœud ne pose `ArtPalette.ADDITIVE` que pour les natures encore tracées.
-3. **Calé sur le pixel** : toujours passer par `EffectForge.snap()`,
-   `EffectForge.put_centered()` ou `EffectForge.Piece.put()`.
-4. **Ni rotation ni étirement d'une planche.** Selon le cas :
-   - planche d'animation, si la taille est fixe ;
-   - planches replacées une à une, si la forme se répète à toute taille ;
-   - orientations dessinées à la main (`EffectForge.chips()`, huit) ;
-   - fabrication à la direction demandée, avec cache (`Slash`, trente-deux
-     directions) ;
-   - rastérisation à l'angle exact, une fois par geste (`Holy.lance`,
-     `Slash.cleave`) — quand arrondir la direction ferait mentir la portée ;
-   - découpage au lieu d'étirement (`Frost.raise_spike`).
-5. **Rien ne pâlit.** Une planche à demi transparente sur un sol sombre sort
-   grise, ou brune pour le feu. Ce qui disparaît se coupe, rentre sous terre, se
-   résorbe, ou se dissout en damier **après** le contour
-   (`EffectForge.dissolve()`). Seuls les halos tramés au sol ont le droit de
-   s'effacer en fondu.
-6. **La régularité fait la palissade**, pas le nombre d'éléments : alterner
-   grand et petit, écarter de l'axe.
-7. **Une lumière n'a pas de dessous** : ce qui *est* la lumière se pousse en haut
-   de sa rampe (`Holy.LIT`).
+## 4. Mesurer ce qui coûte
 
-## 4. Mesurer ce qui se fabrique en jeu
-
-Toute rastérisation qui a lieu **pendant la partie** (au lancer, ou au premier
-passage par une direction) se mesure au banc headless avant d'écrire un
-chiffre. Passer par `tools/planche.sh` avec un script qui chronomètre par
-`Time.get_ticks_usec()`. Au-delà d'environ 1 ms par événement, chercher ce qui
-balaie du vide : c'est ainsi que `PixelCanvas` a gagné son balayage par rangée,
-et la rotation son saut hors de la lame.
+On n'écrit un chiffre de performance qu'après l'avoir mesuré, sur un **banc A/B** :
+`world/stress_test.tscn` sur deux copies, A l'effet coupé et B l'arbre courant, avec 300
+ennemis en combat, sans vsync, 240 images de chauffe puis 1 440 mesurées, cinq paires au
+moins **en alternant l'ordre**. La machine varie : le 19 octobre, la même configuration
+allait de 3,2 à 9,5 ms l'image. On compare les moyennes de B − A, jamais une paire seule.
 
 ## 5. Capturer en jeu
 
-- Recopier `tools/capture_scenario.gd` dans le dossier de travail et n'éditer
-  que ses constantes (manuel, compétences, nœuds, baguette, direction, frise).
-  Lancer ensuite `tools/capture.sh <copie>.gd <sujet>`, en fenêtré.
-- Recadrer et agrandir les captures avec PIL (×3 à ×5) et les regarder
-  **soi-même**. Les défauts de ce jalon ne se sont vus qu'à la capture : cristaux
-  gris, tombeau en caillou, trait « os », croissant qui se trame en finissant.
-- Corriger et recapturer tant que ça ne tient pas. Puis copier les images
-  retenues sur le Bureau, numérotées à la suite.
+- Recopier `tools/capture_scenario.gd` dans le scratchpad et n'éditer que ses constantes :
+  manuel, compétences, nœuds (avec leurs parents, dans l'ordre), baguette, cap, frise —
+  `["area"]` d'abord pour jouer en zone, `["pack"]` pour avoir sur quoi exploser. Puis
+  lancer `tools/capture.sh <copie>.gd <sujet>`. Ce script tue les processus `hns-` : ne
+  jamais capturer pendant que les tests tournent.
+- **Une capture fige le jeu ~110 ms** : le gabarit garde les images en mémoire et les écrit
+  à `quit`. Écrites au fil de la frise, elles cassaient la traînée en bouffées.
+- Recadrer et agrandir les captures avec PIL, et les regarder **soi-même**. Au jalon 54,
+  des étincelles de 4 px ne se voyaient pas en combat, et les tirs rapides laissaient des
+  perles : ces défauts ne se sont vus qu'à la capture.
+- Corriger et recapturer tant que ça ne tient pas. Puis laisser les images retenues sur le
+  Bureau, numérotées à la suite.
 
 ## 6. Livrer
 
-- Tests : les grilles rectangulaires, ce qui tourne (un quart de tour ne perd
-  aucun pixel), le cache (deux demandes, une seule fabrication), la luminance du
-  cœur. Voir `tests/unit/test_effect_forge.gd` et `test_slash.gd`.
-- Supprimer ce que la livraison rend mort : fonctions de tracé sans appelant,
-  couleurs doublées, avec leurs tests.
-- `tests/run.sh` complet. La suite unitaire seule ne charge pas les nœuds de
-  compétence : elle peut passer alors que le jeu ne compile plus.
-- Doc dans le même geste :
-  - la ligne « À quoi ressemble… » de `docs/ARCHITECTURE.md` ;
-  - `docs/RECETTES.md` si un fichier `fx/` apparaît ;
-  - une section au jalon en cours, avec **le choix fait sur planche**, **les
-    erreurs vues à la capture** et **les chiffres mesurés**.
-- Contenu touché (`.tres`) : lancer `tools/catalog.sh`, puis
-  `tools/balance.sh calculation`.
-- Rendre compte : les chemins des images sur le Bureau, ce qui a été choisi, ce
-  que les captures ont corrigé. Ne pas commiter.
+- **Tests**, comme `tests/integration/test_element_fx.gd` : l'effet suit son porteur et lui
+  survit le temps de retomber, ce qui finit se libère, le voile atteint le shader, et ce
+  qui se garde est repris plutôt que refait.
+- **Supprimer ce que la livraison rend mort**, avec ses tests : l'appel `ElementFx` remplacé,
+  et le morceau 2D de ce geste dans `EffectForge` ou `fx/`.
+- `tests/run.sh` complet. La suite unitaire seule ne charge pas les nœuds de compétence :
+  elle peut passer alors que le jeu ne compile plus.
+- **La doc dans le même geste** :
+  - la ligne « Que montre une compétence en 3D ? » de `docs/ARCHITECTURE.md`, et la ligne
+    « À quoi ressemble… » du geste ;
+  - `docs/RECETTES.md`, si un fichier `fx/` apparaît ;
+  - une section au jalon en cours, avec **le choix fait sur planche**, **les erreurs vues
+    à la capture** et **les chiffres mesurés**.
+- Contenu touché (`.tres`) : lancer `tools/catalog.sh`, puis `tools/balance.sh calculation`.
+- Rendre compte : les chemins des images sur le Bureau, ce qui a été choisi, ce que les
+  captures ont corrigé. Ne pas commiter.

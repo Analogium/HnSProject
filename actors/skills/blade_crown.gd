@@ -27,6 +27,7 @@ class Blade:
 
 var _blades: Array[Blade] = []
 var _rotation := 0.0
+var _sparks: ElementFx
 ## Celui qui les a lancées, pour ce que ses états changent à leurs coups. Posé une
 ## fois : la couronne ne change pas de porteur.
 var author: StatusEffects
@@ -53,11 +54,15 @@ func add_to(cast: SkillStats) -> void:
 	blade.place = TAU * float(_blades.size()) / float(_blades.size() + 1)
 	_blades.append(blade)
 	_shelter_changed(cast)
+	# Le cercle où tournent les lames : `ElementFx`, à leur rayon et leur nature.
+	_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[cast.nature], cast.radius)
 
 
 func clear() -> void:
 	_blades.clear()
 	_shelter_changed(null)
+	if is_instance_valid(_sparks):
+		_sparks.let_go()
 
 
 ## Bouclier de lames (jalon 39) : les points de dégâts subis que retirent les épées qui

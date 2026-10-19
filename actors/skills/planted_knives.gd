@@ -5,6 +5,9 @@ extends Node3D
 ## grâce les arrache (`rip()`), le Hérisson fait subir davantage à leur porteur. Enfant de la
 ## hurtbox : elles suivent le corps et tombent avec lui.
 
+## Les couteaux plantés se voient en étincelles sur la cible, à ce rayon.
+const SPARKS := 6.0
+
 var count := 0
 var _left := 0.0
 var _hedgehog := 0.0
@@ -20,6 +23,7 @@ static func plant(target: Hurtbox, cast: SkillStats) -> void:
 		knives = PlantedKnives.new()
 		knives._target = target
 		target.add_child(knives)
+		ElementFx.area(knives, DamageType.COLORS[cast.nature], SPARKS)
 	knives.count = mini(knives.count + 1, SkillStats.PLANT_MOST)
 	knives._left = SkillStats.PLANT_TIME + cast.anchorage
 	knives._hedgehog = cast.hedgehog

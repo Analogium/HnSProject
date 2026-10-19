@@ -21,7 +21,7 @@
  "feet": 60,
  "weapon": "cleaver",
  "blender": {
-  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, stocky hunched orc grunt, very broad shoulders, head sunk low between the shoulders, olive green skin, glowing orange eyes, small tusks, ragged olive green cloth wrap, brown leather straps and belt, bare forearms, short thick legs, empty hands",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a hulking orc grunt warrior, adult heroic proportions, stocky and hunched, very broad shoulders, thick neck, head sunk low between the shoulders, olive green skin, heavy brow, glowing orange eyes, small lower tusks, ragged olive green cloth wrap around the hips, brown leather straps crossed on the bare chest, wide brown leather belt, bare muscular forearms, short thick legs, bare feet wrapped in cloth, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
   "source": "tools/characters/grunt/3d",
   "rest": "rest.blend",
   "elevation": 10,

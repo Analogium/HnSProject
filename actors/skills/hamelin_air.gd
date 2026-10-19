@@ -16,6 +16,7 @@ var _skill: Skill
 var _cast: SkillStats
 var _age := 0.0
 var _next := 0.0
+var _sparks: ElementFx
 var _since_charm := 0.0
 ## La Mélopée : depuis quand chaque ennemi l'écoute, par identifiant de hurtbox.
 var _heard := {}
@@ -68,6 +69,7 @@ func _physics_process(delta: float) -> void:
 		_cast = _player.resolve(_skill, points)
 		if _cast.serenade > 0.0:
 			_cast.radius *= SkillStats.SERENADE_WIDTH
+		_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[_cast.nature], _cast.radius)
 		_next = _age + _cast.period
 		_beat()
 	if _cast.carousel > 0.0 and not _player.reigns():

@@ -139,8 +139,9 @@ ne bloquent rien — comparer avant → après, ne pas les corriger en passant.
 - `/revue-systemes` — la passe de revue : une règle, un endroit ; ce qu'on
   refuse de factoriser et pourquoi.
 - `/dessiner-un-effet` — **pour tout visuel** d'effet, de compétence ou
-  d'icône : planche de variantes choisie par l'utilisateur, dessin pixel par
-  pixel dans `EffectForge`, captures réelles sur le Bureau. Ses lanceurs sont
-  `tools/planche.sh` et `tools/capture.sh`. Un **personnage**, joueur ou
-  ennemi, passe en 3D : `tools/model_3d.py`, Mixamo ou gréage local, `tools/blender_sheet.py` (recette :
+  d'icône : planche de variantes posée dans une vraie zone et choisie par
+  l'utilisateur, effet en shaders ou particules sous la lumière du jeu, captures
+  réelles sur le Bureau. Son lanceur est `tools/capture.sh` (`tools/planche.sh`
+  pour les icônes, en 2D). Un **personnage**, une créature, tout ce qui a un
+  corps passe par un modèle : `tools/model_3d.py`, Mixamo, `tools/blender_sheet.py` (recette :
   `tools/characters/LISEZMOI.md`, « En 3D »).

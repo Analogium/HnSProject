@@ -2,15 +2,18 @@ class_name Fireball
 extends Projectile
 
 ## Le tir de Boule de feu. Le trajet et la touche directe sont ceux de
-## `Projectile` ; le dessin et l'explosion sont à lui.
+## `Projectile` ; le dessin (`FlameFx`) et l'explosion sont à lui.
 
 const SCENE := "res://actors/projectiles/player_fireball.tscn"
-
 ## Posé par le lanceur depuis le geste résolu : un nœud l'agrandit.
 var explosion_radius := 0.0
 ## Un éclat de Fragmentation : la mini-boule et deux bouffées, pas la boule entière —
 ## sinon on ne distingue pas les éclats de la boule qui les a lâchés.
-var is_shard := false
+var is_shard := false:
+	set(value):
+		if value and not is_shard and _flame != null:
+			_flame.as_shard()
+		is_shard = value
 ## Deux hurtbox entrées dans le même pas ne font pas deux explosions ; une boule qui
 ## traverse en fait une par cible, à des pas différents.
 var _burst_frame := -1
@@ -18,6 +21,7 @@ var _burst_frame := -1
 ## celle de la scène est partagée par toutes les boules (invariant 2).
 var _hit_shape: SphereShape3D
 var _hit_radius := 0.0
+var _flame: FlameFx
 
 
 ## Une étincelle lancée par ce qui n'a pas de corps à états : le crachat du serpent, les
@@ -49,6 +53,13 @@ func _physics_process(delta: float) -> void:
 		holder.shape = _hit_shape
 		_hit_radius = _hit_shape.radius
 	_hit_shape.radius = _hit_radius * size()
+	_flame.core.scale = Vector3.ONE * size() * (FlameFx.SHARD if is_shard else 1.0)
+
+
+## Son voile, puis son feu, à la place des étincelles génériques.
+func _show(group: StringName) -> void:
+	Settings.veil(self, group)
+	_flame = FlameFx.ball(self, nature())
 
 
 ## Sa taille, en multiple de la sienne : un sous le Gonflement, plafonnée à `GIRTH_MOST`.
@@ -80,4 +91,4 @@ func _explode(direct_target: Hurtbox) -> void:
 		var gain := 1.0 + _cast.swell * 0.01 * speed * _life / SkillStats.SWELL_STEP
 		parts = DamageType.scaled(parts, gain)
 		radius *= gain
-	Explosion.put(get_parent(), global_position, parts, radius, direct_target, tint(), _author, _cast)
+	Explosion.put(get_parent(), global_position, parts, radius, direct_target, tint(), _author, _cast).flames = true

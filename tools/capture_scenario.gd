@@ -13,7 +13,9 @@ extends Node
 ##   lancer avant la frise ci-dessous, qui démarre à l'arrivée en zone ;
 ## - **ce qui se pose au curseur** tombe à `PLACEMENT_RANGE` devant, dans `FACING` :
 ##   recadrer là, pas au centre de l'écran ;
-## - **un geste entretenu** (cyclone, aura) tourne encore aux captures suivantes.
+## - **un geste entretenu** (cyclone, aura) tourne encore aux captures suivantes ;
+## - **une capture fige le jeu ~110 ms** : ce qui vole saute d'autant, une traînée sortait en
+##   bouffées. Les images restent en mémoire et s'écrivent à `quit`.
 
 ## Le livre étudié, et les compétences à placer dans la barre, dans l'ordre des cases.
 const MANUAL := "manual_weapons"
@@ -24,9 +26,10 @@ const POINTS := 3
 const WAND := false
 ## En biais par défaut : c'est la visée qui éprouve ce qui pivote.
 const FACING := Vector3(1.0, 0.0, -0.55)
-## La frise, en images de physique depuis l'arrivée en zone : `["cast", case]`,
-## `["shot", "nom"]`, `["pack"]` pour lâcher des ennemis, `["quit"]`.
+## La frise, en images de physique depuis l'arrivée en ville : `["area"]` pour la première
+## zone, `["cast", case]`, `["shot", "nom"]`, `["pack"]` pour lâcher des ennemis, `["quit"]`.
 const TIMELINE := {
+	5: ["area"],
 	40: ["pack"],
 	70: ["cast", 0],
 	72: ["shot", "1-debut"],
@@ -40,6 +43,7 @@ var _player: Player
 var _tick := 0
 var _armed := false
 var _pending: Array[String] = []
+var _shots := {}
 
 
 func _physics_process(_delta: float) -> void:
@@ -62,6 +66,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	var step: Array = TIMELINE[_tick]
 	match String(step[0]):
+		"area":
+			_zone.enter_area(1)
+			_zone.overlay.visible = false
 		"pack":
 			_zone.spawn_pack()
 		"cast":
@@ -70,6 +77,9 @@ func _physics_process(_delta: float) -> void:
 			_pending.append(String(step[1]))
 			call_deferred("_save")
 		"quit":
+			for shot: String in _shots:
+				_shots[shot].save_png("user://%s.png" % shot)
+				print("capture : ", shot)
 			get_tree().quit()
 
 
@@ -94,5 +104,4 @@ func _arm() -> void:
 func _save() -> void:
 	await RenderingServer.frame_post_draw
 	var name: String = _pending.pop_front()
-	get_viewport().get_texture().get_image().save_png("user://%s.png" % name)
-	print("capture : ", name)
+	_shots[name] = get_viewport().get_texture().get_image()

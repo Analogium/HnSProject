@@ -59,3 +59,13 @@ func test_the_sparks_take_their_host_veil() -> void:
 	assert_true(fx.is_in_group(Settings.ENEMY_ATTACKS))
 	assert_almost_eq(fx.get_instance_shader_parameter(&"opacity"), 0.3, 0.001)
 	Settings.from_dict(before)
+
+
+## Une aura garde son disque d'un pas à l'autre ; lâché, il en faut un neuf.
+func test_an_aura_keeps_its_disc_until_let_go() -> void:
+	var host := _host()
+	var fx := ElementFx.keep(null, host, Color.ORANGE, 20.0)
+	assert_eq(ElementFx.keep(fx, host, Color.ORANGE, 30.0), fx, "le même, à son nouveau rayon")
+	assert_eq((fx.process_material as ParticleProcessMaterial).emission_ring_radius, 30.0)
+	fx.let_go()
+	assert_ne(ElementFx.keep(fx, host, Color.ORANGE, 30.0), fx, "lâché, un neuf")

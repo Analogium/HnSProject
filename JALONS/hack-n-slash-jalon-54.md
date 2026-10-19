@@ -90,7 +90,7 @@ Chaque étape livre du code définitif ; aucune ne pose d'échafaudage à démon
 4. **Les effets**, compétence par compétence. **Une compétence sans dessin 3D montre
    le visuel générique de son élément** — le même principe que l'icône absente
    (« le champ vide reste un état normal »). `/dessiner-un-effet` est à réécrire
-   pour la 3D avant la première.
+   pour la 3D avant la première — fait le 19 octobre, voir §13.
 5. **Lumière et post-traitement** pensés pour la 3D : le seuil de lueur de 0,9 et le
    plafond de 0,88 (`ArtPalette`, `blender_sheet.LIGHT_MAX`) tombent.
 
@@ -469,8 +469,88 @@ la racine du viewport ; `finished` ne vient jamais sans rendu, la gerbe se libè
 boîte le long du segment). Branchées en une ligne à la naissance de trente nœuds ; vues en
 combat (`Bureau\hns-captures-fx-lightning\`, `-cold\`) : la chaîne saute d'ennemi en ennemi,
 le nuage crache, l'orbe gelé file. Le sol qui brûle naît en différé, sa position après lui :
-son disque se pose en différé lui aussi. Restent sans rien les créatures (rats, corbeau,
-invocations), les buffs et auras portés par le joueur, et trois cas à part.
+son disque se pose en différé lui aussi. **Les auras** ensuite : leur rayon change en route
+(l'immolation monte, un nœud pris en cours), d'où `ElementFx.keep()`, qui reprend le disque
+avec une autre matière — changer le nombre d'étincelles relancerait l'émetteur ; l'impulsion
+sacrée jette une gerbe par onde, un buff un halo. Vues en combat (`Bureau\hns-captures-aura-*\`).
+Restent sans rien les créatures (rats, corbeau, invocations), qui passeront par les modèles.
+
+**`/dessiner-un-effet` réécrit pour la 3D**, avant le premier dessin propre : la planche se
+rend dans le vrai jeu, en fenêtré (`tools/capture.sh`, un scénario qui pose ses variantes
+autour du joueur) ; les règles de la grille 2D (pas d'additif, calé sur le pixel, rien ne
+pâlit) cèdent la place à celles payées ici — couleur sous 1, opacité par paramètre
+d'instance, géométrie à la taille de sa forme, particules sans `fixed_fps`, matières gardées.
+Le parti pris choisi en 2D reste la référence ; ce qui a un corps passe par un modèle.
+
+**Le manuel des flammes, la boule de feu d'abord** (l'utilisateur veut avancer manuel par
+manuel). Première planche, cinq façons — flammes en particules, plasma, la couronne de la 2D
+portée, aplats toon, noyau de lave (`Bureau\hns-captures-boule-de-feu\`) : « pas assez
+parlantes ». L'utilisateur a montré la boule de feu de Path of Exile : un cœur brûlant dans un
+halo, une longue traînée de flammes vives qui s'effilochent, la lumière portée au sol.
+Deuxième planche, quatre déclinaisons (`Bureau\hns-captures-boule-de-feu-poe\`) : **retenue,
+« en lumière »** — des flammèches qui s'additionnent. `FlameFx` (`fx/flame_fx.gd`, hérite
+d'`ElementFx` pour suivre sa boule et lui survivre) : cœur marbré poussé à 1,4, lumière
+portée sans ombre, traînée additive ; à l'explosion, flammes, fumée mêlée dessinée dessous,
+brûlure au sol, éclair de lumière, à l'échelle du rayon. Le froid de la boule de Givre a sa
+rampe. Ce que les planches et les captures ont corrigé :
+
+- **La teinte mêlée vers le blanc sortait beige sur l'ocre** : une rampe saturée par
+  élément (cœur, milieu, profond, bord), et la règle « sous 1 » réduite à ce qui se mêle.
+  **Une flamme mêlée sortait peinte** — opaque, terne sous le soleil du sol — : en lumière,
+  la somme monte au jaune où les flammèches s'empilent, saturée, la lueur garde la teinte.
+- **Un bruit trop fin** mouchetait les bords au lieu de faire des langues ; trop de blanc au
+  cœur des flammèches pâlissait toute la traînée.
+- **Des perles dans la traînée**, deux causes, aucune dans l'effet : la compilation d'une
+  matière neuve (la planche fait désormais un passage à blanc), et **chaque capture qui fige
+  le jeu ~110 ms** — le gabarit `tools/capture_scenario.gd` garde maintenant ses images en
+  mémoire jusqu'à `quit`, et sait entrer en zone (`["area"]`).
+- **La première apparition de chaque matière gèle le jeu** : 89 ms pour les étincelles (déjà
+  là depuis l'étape 4), 105 pour la boule, ~130 pour son explosion, mesurés image par image.
+  `ElementFx.warm()`, appelé par la zone, fait paraître chaque famille une fois, invisible :
+  plus aucune image lente ensuite ; le chargement passe de 140 à 147 ms.
+- Le bruit se calcule dans les shaders (`fx/flame_common.gdshaderinc`) : une
+  `NoiseTexture2D` se génère en différé.
+- Captures en jeu, feu et Givre, de près et au zoom du jeu (`Bureau\hns-captures-boule-de-feu-jeu\`).
+
+**Coût** (300 ennemis en combat, la boule de feu tenue en case 0 des deux côtés, sans vsync,
+A avec les étincelles génériques contre B avec `FlameFx`, six paires alternées) : sous le
+bruit — B − A vaut −0,28 ms en moyenne (de −1,96 à +1,46) ; les quatre dernières paires,
+calmes, donnent ~3,3 ms l'image des deux côtés.
+
+**Le Serpent infernal.** Première planche dans la langue de la boule (traînée, ruban de feu,
+anneaux de braise, lave, ruban et flammes ; `Bureau\hns-captures-serpent\`) : « un peu trop
+moche, on ne dirait pas un serpent ». Un serpent se lit à sa silhouette — tête en losange plus
+large que le cou, corps qui s'effile — : deuxième planche, un vrai corps construit le long des
+anneaux, en quatre matières (`Bureau\hns-captures-serpent-corps\`), **retenue : « braise »**.
+Vu en jeu : « pas assez de volume, un dessin plat », puis, relief et reflets ajoutés, « toujours
+un dessin sur le sol ». La cause était ailleurs : **les faces du tube étaient tournées à
+l'envers**, la caméra voyait le dedans du fond du corps, et aucune lumière ne pouvait lui donner
+de volume. Retournées, troisième planche de posture (`Bureau\hns-captures-serpent-volume\`) :
+**retenu, l'avant dressé en cobra, un tiers plus épais**, écailles bombées, reflets, liseré chaud,
+la lueur posée devant la tête — au-dessus, elle l'écrasait d'un rouge uniforme. `SerpentBody`
+est une grille fixe que le shader courbe le long des anneaux : refaite en GDScript à chaque image
+(la planche), elle aurait coûté des milliers de sommets par serpent et par image. Le Venin a sa
+rampe nécrotique. Captures en jeu (`Bureau\hns-captures-serpent-jeu\`). **Coût** (même banc, le
+serpent en case 0, trois en vie, machine calme) : 1,86 ms l'image des deux côtés, B − A = 0,00 ms
+en moyenne (de −0,07 à +0,07).
+
+**Retour sur la boule de feu** (20 octobre). « Le nœud Fragmentation ne marche pas » : il
+marchait — compté image par image, la boule lâche ses trois éclats à l'impact et en bout de
+course —, mais chaque éclat portait la traînée et la lumière d'une boule entière, et partait du
+cœur de l'éclair de l'explosion : on ne le voyait pas naître. Un éclat a désormais son allure
+(`FlameFx.as_shard()`) : cœur et flammèches à 0,55, traînée brève, sans lumière ; et l'éclair
+d'une explosion suit son rayon. **Le Météore** n'avait que les étincelles génériques : planche
+de quatre chutes (boule géante ou rocher en fusion, ombre qui grandit ou cercle qui se remplit ;
+`Bureau\hns-captures-meteore\`), **retenue : la boule et l'ombre**. Il tombe en biais —
+vue d'en haut, une chute droite ne se lit pas — avec une traînée dense, et éclate en flammes.
+Vu en jeu, sa traînée sortait en perles : la boule bougeait au pas de physique, plus lent que
+l'image ; elle bouge à l'image. Captures : `Bureau\hns-captures-fragmentation\`,
+`-meteore-jeu\`.
+
+La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
+géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
+mêlées à celles de l'éclat, du météore et des bouffées des rats, elles partiront avec le
+reste du manuel.
 
 **Coût** (300 ennemis en combat, sans vsync, A sans étincelles contre B, six paires alternées) :
 sous le bruit du jour — la même configuration allait de 3,2 à 9,5 ms l'image, et B − A valait
@@ -509,6 +589,10 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   ceux qu'on voit de près** (les trois classes, le Roi des Rats, marchand, entraîneur), au
   quota gratuit du jour ; les ennemis, TRELLIS.2 ou Stable Fast 3D, à trancher sur les
   premiers vus en jeu. SPAR3D essayé à la demande de l'utilisateur : pas mieux que SF3D.
+  **Le grunt d'abord**, au même prompt « Torchlight » adulte : image source tirée le
+  19 octobre (graine 4242, les bras les plus détachés du buste), TRELLIS.2 refusé faute de
+  quota ce jour-là — `model_3d.py mesh grunt 4242` à relancer, puis Mixamo (repos, course,
+  attaque au couperet).
 - **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).

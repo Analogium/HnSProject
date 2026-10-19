@@ -33,6 +33,8 @@ var crowd := 0.0
 var drink := 0.0
 ## Qui elle frappe : les ennemis, ou le camp du joueur quand c'est un ennemi qui explose.
 var _mask := Targets.ENEMIES
+## Celle d'une boule de feu (jalon 54) : ses flammes (`FlameFx.blast`) au lieu de la gerbe générique.
+var flames := false
 
 
 static func put(
@@ -66,7 +68,10 @@ static func of_cast(
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
-		ElementFx.burst(self, global_position, _tint, _radius)
+		if flames:
+			FlameFx.blast(self, global_position, _nature(), _radius)
+		else:
+			ElementFx.burst(self, global_position, _tint, _radius)
 		var targets := Targets.in_circle(get_world_3d(), global_position, _radius, _mask)
 		if crowd > 0.0:
 			_crowded(targets)

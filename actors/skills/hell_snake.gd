@@ -67,6 +67,7 @@ var _life_bonus := 0.0
 var _coiled: Hurtbox
 var _held: StatusEffects
 var _since_spit := 0.0
+var _look: SerpentBody
 
 
 ## `owner` : qui le lâche, et dont il compte dans la limite ; null pour un petit.
@@ -103,7 +104,8 @@ static func drop(
 	s._body = s._rings()
 	parent.add_child(s)
 	Settings.veil(s, Settings.SPELLS)
-	ElementFx.trail(s, DamageType.COLORS[cast.nature])
+	s._look = SerpentBody.dress(s, cast.nature)
+	s._look.lay(s._body, size, 0.0)
 	return s
 
 
@@ -126,6 +128,7 @@ func _physics_process(delta: float) -> void:
 	_contacts.advance(delta * (2.0 if _coiled != null else 1.0))
 	_ramp(delta)
 	_body = _rings()
+	_look.lay(_body, _size, clampf((_age - lifetime() + DISSIPATION) / DISSIPATION, 0.0, 1.0))
 	if not _vanishing:
 		_bite()
 		if _cast.spit > 0.0:

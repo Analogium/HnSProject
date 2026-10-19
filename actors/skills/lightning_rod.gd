@@ -7,6 +7,8 @@ extends Node3D
 
 ## Au-dessus de `Hurtbox.overhead()`, le sommet de la tête, où l'éclair tombe : vu à la capture.
 const HEAD := 10.0
+## Le paratonnerre se voit en étincelles sur sa cible, à ce rayon.
+const SPARKS := 8.0
 
 ## Par lanceur : l'identifiant de ses états → sa marque.
 static var _of := {}
@@ -46,6 +48,8 @@ static func mark(parent: Node, target: Hurtbox, author: StatusEffects, cast: Ski
 	_of[author.get_instance_id()] = rod
 	Settings.veil(rod, Settings.SPELLS)
 	DeferredTree.add_deferred(parent, rod, target.global_position)
+	# Après l'entrée différée, qui le pose : `ElementFx` le suit dès sa vraie place.
+	ElementFx.area.call_deferred(rod, DamageType.COLORS[cast.nature], SPARKS)
 
 
 ## La marque vivante de ce lanceur. Une marque dont le parent a disparu avant l'appel

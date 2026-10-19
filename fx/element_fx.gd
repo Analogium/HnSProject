@@ -28,6 +28,7 @@ const SWEEP_HALF := 1.1
 
 static var _draw: QuadMesh
 static var _materials := {}
+static var _warmed := false
 
 var _host: Node3D
 var _offset := Vector3.ZERO
@@ -75,6 +76,48 @@ static func area(host: Node3D, tint: Color, radius: float) -> ElementFx:
 	return fx
 
 
+## Le disque d'une aura dont la nature ou le rayon changent en route (l'immolation qui monte,
+## un nœud pris en cours) : `fx` créé à la première demande, puis repris. La matière change,
+## pas le nombre d'étincelles — le changer relance l'émetteur.
+static func keep(fx: ElementFx, host: Node3D, tint: Color, radius: float) -> ElementFx:
+	if not is_instance_valid(fx) or not fx.emitting:
+		return area(host, tint, radius)
+	fx.process_material = _process_material(tint, 15.0, 18.0, radius, 0.0)
+	return fx
+
+
+## Une fois par partie, chaque famille paraît, invisible, sous `host` : la première apparition
+## d'une matière se compile en ~100 ms (étincelles 89, boule de feu 105, son explosion 130,
+## mesurés le 19 octobre) — en plein combat, sinon.
+static func warm(host: Node3D) -> void:
+	if _warmed:
+		return
+	_warmed = true
+	var probe := Node3D.new()
+	host.add_child(probe)
+	var at := probe.global_position
+	var made: Array[Node] = [
+		trail(probe, Color.WHITE), burst(probe, at, Color.WHITE, 10.0), area(probe, Color.WHITE, 10.0),
+		line(probe, at, at + Vector3.RIGHT * 10.0, Color.WHITE), FlameFx.ball(probe, DamageType.Kind.FIRE),
+	]
+	made.append_array(FlameFx.blast(probe, at, DamageType.Kind.FIRE, 10.0))
+	var straight: Array[Vector3] = []
+	for i in HellSnake.RINGS:
+		straight.append(at - Vector3.RIGHT * HellSnake.SPACING * i)
+	SerpentBody.dress(probe, DamageType.Kind.FIRE).lay(straight, 1.0, 0.0)
+	var meteor := FlameFx.ball(probe, DamageType.Kind.FIRE)
+	meteor.as_meteor()
+	made.append(meteor)
+	FlameFx.shadow(probe, 10.0)
+	made.append_array(probe.find_children("*", "", true, false))
+	for node in made:
+		if node is GeometryInstance3D:
+			node.set_instance_shader_parameter(&"opacity", 0.0)
+		elif node is Light3D:
+			node.light_energy = 0.0
+	host.get_tree().create_timer(0.2).timeout.connect(probe.queue_free)
+
+
 ## Un trait de `from` à `to` (une chaîne, un sillon) : des étincelles semées tout du long, une fois.
 static func line(host: Node3D, from: Vector3, to: Vector3, tint: Color) -> ElementFx:
 	var length := from.distance_to(to)
@@ -107,11 +150,15 @@ static func _make(
 		m.shader = MATERIAL
 		_draw.material = m
 	fx.draw_pass_1 = _draw
-	# Le voile du porteur : sort ou attaque ennemie, réglé dans les options.
+	veil_like(fx, host)
+	return fx
+
+
+## Le voile du porteur : sort ou attaque ennemie, réglé dans les options.
+static func veil_like(node: Node, host: Node) -> void:
 	for group in [Settings.SPELLS, Settings.ENEMY_ATTACKS]:
 		if host.is_in_group(group):
-			Settings.veil(fx, group)
-	return fx
+			Settings.veil(node, group)
 
 
 ## Une par nature, mouvement et forme (`ring` : un disque de ce rayon ; `length` : un trait),
@@ -163,12 +210,12 @@ func _process(delta: float) -> void:
 		return
 	# `== null` ne voit pas un porteur libéré : il resterait suivi à jamais.
 	if not is_instance_valid(_host) or not _host.is_inside_tree():
-		_let_go()
+		let_go()
 		return
 	if _sweep_t >= 0.0:
 		_sweep_t += delta / _sweep_time
 		if _sweep_t >= 1.0:
-			_let_go()
+			let_go()
 			return
 	_place()
 
@@ -182,6 +229,6 @@ func _place() -> void:
 
 
 ## Le porteur parti ou le coup fini : plus rien ne naît, ce qui vole retombe, puis rien.
-func _let_go() -> void:
+func let_go() -> void:
 	emitting = false
 	get_tree().create_timer(lifetime).timeout.connect(queue_free)

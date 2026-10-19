@@ -159,6 +159,7 @@ func _ready() -> void:
 	player.died.connect(_on_player_died)
 
 	player.projectile_parent = projectiles
+	ElementFx.warm(player)
 	map_overlay.player = player
 	map_overlay.enemy_manager = enemy_manager
 	map_overlay.marks = [area_waypoint, area_exit, town_waypoint, town_gate]

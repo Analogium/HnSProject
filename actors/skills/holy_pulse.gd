@@ -72,6 +72,7 @@ func _strike() -> void:
 	var struck := float(Targets.strike_circle(
 		get_world_3d(), global_position, radius, cast, _player.states, 0.0, factor
 	).size())
+	ElementFx.burst(self, global_position, DamageType.COLORS[cast.nature], radius)
 	_player.heal(_cast.life_on_hit * struck)
 	_player.gain_mana(_cast.mana_on_hit * struck)
 	if _cast.aegis > 0.0:

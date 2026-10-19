@@ -8,6 +8,9 @@ extends Node3D
 ## Il relit les points à chaque image, comme l'aura : un livre qui quitte le râtelier
 ## éteint ce qu'il enseignait.
 
+## Un buff qui n'est pas une aura n'a pas de portée : ses étincelles l'entourent, à ce rayon.
+const HALO_SPARKS := 12.0
+
 var _player: Player
 var _skill: Skill
 ## Tout dans la nature du buff : il n'inflige rien, donc sa brûlure n'a qu'une part.
@@ -58,6 +61,8 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 	buff._distribution[skill.nature] = 1.0
 	player.add_child(buff)
 	Settings.veil(buff, Settings.SPELLS)
+	var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
+	ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)
 	return buff
 
 

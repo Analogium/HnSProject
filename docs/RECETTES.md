@@ -517,22 +517,15 @@ par `Settings.veil(nœud, Settings.SPELLS)` à sa naissance pour suivre le curse
 d'opacité des sorts —, et
 son test dans `tests/integration/test_shapes.gd`.
 
-**Son dessin** suit le skill `/dessiner-un-effet` — planche choisie par
-l'utilisateur, puis captures réelles — et se fait dans son `_draw()`, avec le module de sa matière quand elle
-en a une — `fx/lightning.gd` (tracée), `fx/fire.gd`, `fx/frost.gd`, `fx/holy.gd`,
-`fx/slash.gd`, `fx/necrotic.gd`, `fx/witchcraft.gd` et `fx/piper.gd` (les rats et les notes), qui posent les planches de `EffectForge` (dessinées) —, parce que quatre façons de dessiner un
-éclair, une flamme ou un cristal ne se liraient pas comme la même chose. Une matière
-**tracée** prend `material = ArtPalette.ADDITIVE` au `_ready()` et les textures de
-`fx/glow.gd` plutôt que des primitives : un cœur
-(`Glow.draw_blob`), un bord de zone (`Glow.draw_ring`, dont la crête tombe pile sur le
-rayon qui mord), une comète (`Glow.draw_streak`, tête sur `from` — elle repose la
-transformation à l'identité, donc un appelant qui en avait posé une la repose). Un
-`draw_arc` d'un pixel se lit comme un affichage de portée, et surtout **rien ne brille
-en dessous de 0,9 de luminance** : un effet a besoin d'un cœur presque blanc, pas d'un
-aplat à alpha 0,25. Une matière **dessinée**, elle, ne prend **pas** l'additif — son
-contour sombre n'y ajoute rien —, se cale sur `EffectForge.snap()`, et ne s'éteint
-pas en pâlissant : une planche à demi-transparente sur un sol sombre sort grise. Elle
-se coupe, redescend sous terre ou se vide de ses pièces. Si elle a un nombre neuf : le
+**Son dessin** suit le skill `/dessiner-un-effet` — planche posée dans une vraie zone
+et choisie par l'utilisateur, puis captures réelles. Tant qu'elle n'en a pas, elle
+montre le visuel générique de sa nature : **une ligne `ElementFx`** à la naissance du
+nœud, après sa position (`trail`, `burst`, `sweep`, `area`, `line`, `keep` pour une aura
+dont le rayon change ; voir ARCHITECTURE, « Que montre une compétence en 3D ? »). Un
+dessin propre est un shader ou des particules, dans son fichier `fx/` comme
+`fx/flame_fx.gd` : **sous 1** de couleur quand il se mêle (le tonemapping blanchit
+au-delà), qui déclare `instance uniform float opacity` pour le voile, et dont la matière
+entre dans `ElementFx.warm()` — sinon sa première apparition gèle le jeu ~100 ms. Si elle a un nombre neuf : le
 champ dans `SkillStats` et son `LABELS`, sa copie dans
 `Skill.resolve()`, sa ligne dans la fiche du manuel, et sa condition dans
 `test_each_shape_has_the_numbers_it_needs`.

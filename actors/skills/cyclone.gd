@@ -19,6 +19,7 @@ var _age := 0.0
 var _next_threshold := 0.0
 ## Les Derviches (jalon 46) : l'heure du prochain.
 var _next_dervish := 0.0
+var _sparks: ElementFx
 
 
 static func spin(player: Player, skill: Skill) -> Cyclone:
@@ -58,6 +59,7 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	if _cast == null or _age >= _next_threshold:
 		_cast = _player.resolve(_skill, points)
+		_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[_cast.nature], _cast.radius)
 		# Le Vertige (jalon 46) : chaque seconde tournée rapproche les frappes.
 		var vertigo := 1.0 + _cast.vertigo * 0.01 * minf(_age, SkillStats.VERTIGO_MOST)
 		_next_threshold = _age + _cast.period / vertigo
