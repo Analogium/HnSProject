@@ -23,7 +23,7 @@
  "weapon": "none",
  "neg": ", child, baby, cute, cartoon, monkey, opossum, ape, round face, big eyes, pink clothes, magenta, green clothes, human face, skinny",
  "blender": {
-  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, short legs, anthropomorphic rat king standing on two legs, real rat head with a long pointed snout, pink nose, long whiskers, large round ears, sharp yellow incisors, small glowing green eyes, extremely muscular bodybuilder body, huge biceps, broad chest, abs, grey fur, long pink tail, golden crown, wide mustard yellow belt with a skull buckle, torn crimson loincloth, crimson wristbands, clawed hands, empty hands",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, an anthropomorphic rat king standing upright on two legs, adult heroic proportions, real rat head with a long pointed snout, pink nose, long whiskers, large round ears, sharp yellow incisors, small glowing green eyes, extremely muscular bodybuilder body, huge biceps, broad chest, abs, grey fur, long pink tail coiled around the waist, golden crown, wide mustard yellow belt with a skull buckle, short torn crimson loincloth, crimson wristbands, clawed hands, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
