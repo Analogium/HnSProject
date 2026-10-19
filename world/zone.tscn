@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://world/zone.gd" id="1_zone"]
 [ext_resource type="PackedScene" path="res://world/lighting.tscn" id="15_light"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" path="res://actors/town/interactable.gd" id="17_town"]
 [ext_resource type="Script" path="res://ui/flask_bar.gd" id="18_flasks"]
 [ext_resource type="Shader" path="res://world/vignette.gdshader" id="19_vignette"]
+[ext_resource type="Script" path="res://world/scenery.gd" id="20_scenery"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
 shader = ExtResource("19_vignette")
@@ -37,9 +38,8 @@ script = ExtResource("1_zone")
 [node name="Walls" type="StaticBody3D" parent="Entities"]
 collision_mask = 0
 
-[node name="Blocks" type="MultiMeshInstance3D" parent="Entities/Walls"]
-
 [node name="Decor" type="Node3D" parent="Entities"]
+script = ExtResource("20_scenery")
 
 [node name="Player" parent="Entities" instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 320, 0, 240)

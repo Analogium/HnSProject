@@ -17,33 +17,15 @@ const PACK_CASTERS := 1
 const PACK_RADIUS_TILES := 6
 const PACK_MIN_TILES := 3
 
-## Le décor du biome, semé par case (jalon 33). Les arbres poussent sur le bord sud
-## des murs, où l'on ne marche jamais : ils ne portent pas de collision, et le
-## champ de flux n'a pas à les connaître. Buissons et rochers se traversent.
-const TREES: Array[Texture2D] = [preload("res://art/decor/tree_a.png"), preload("res://art/decor/tree_b.png")]
-const BUSH := preload("res://art/decor/bush.png")
-const ROCK := preload("res://art/decor/rock.png")
-## Par case de bord de mur, puis par case de sol : 7 buissons et 3 rochers pour
-## 225 cases sur la planche.
-const TREE_CHANCE := 0.15
-const BUSH_CHANCE := 0.03
-const ROCK_CHANCE := 0.013
-## Assez pour casser l'alignement sur la grille, pas assez pour qu'un rocher
-## déborde sur un mur.
-const DECOR_JITTER := 8.0
-## Les murs : des blocs d'une case de côté, tous dans un seul `MultiMesh`. Une demi-case de
-## haut : à une case, la caméra à 45° perdait le joueur derrière le moindre mur (capture du
-## jalon 54) ; leur vraie forme est l'étape 3. Leur collision va par bandes, une boîte par
-## suite de murs d'une rangée, épaisse de part et d'autre du sol : les rayons du jeu passent
-## à hauteur zéro.
+## La collision des murs : par bandes, une boîte par suite de murs d'une rangée, épaisse de
+## part et d'autre du sol — les rayons du jeu passent à hauteur zéro. Ce qui se voit est le
+## relief (`Terrain`, jalon 54, étape 3).
 const WALL_HEIGHT := MapGenerator.TILE * 0.5
-## Ce que le sol déborde de la carte : la route touche les bords, et la caméra
-## montrait là le fond.
-const BEYOND := 640.0
 
 @onready var floor_mesh: MeshInstance3D = $Floor
+## Le relief de la zone en place : le décor s'y pose (`Terrain.height_at`).
+var terrain: Terrain
 @onready var walls: StaticBody3D = $Entities/Walls
-@onready var wall_mesh: MultiMeshInstance3D = $Entities/Walls/Blocks
 @onready var player: Player = $Entities/Player
 @onready var enemy_manager: EnemyManager = $Entities/EnemyManager
 @onready var projectiles: Node3D = $Entities/Projectiles
@@ -52,7 +34,7 @@ const BEYOND := 640.0
 @onready var ground: Node3D = $Ground
 ## Le sol de la ville, sous ce qu'on y lance : celui de la zone quittée est figé sous elle.
 var town_ground := Node3D.new()
-@onready var decor: Node3D = $Entities/Decor
+@onready var decor: Scenery = $Entities/Decor
 @onready var overlay: Label = $UI/Overlay
 @onready var map_overlay: MapOverlay = $UI/MapOverlay
 @onready var hud: Hud = $UI/Hud
@@ -168,15 +150,6 @@ func _ready() -> void:
 	add_child(town_ground)
 	# Juste après celui de la zone : sous les corps, comme lui.
 	move_child(town_ground, ground.get_index() + 1)
-	floor_mesh.mesh = PlaneMesh.new()
-	var block := BoxMesh.new()
-	block.size = Vector3(MapGenerator.TILE, WALL_HEIGHT, MapGenerator.TILE)
-	var stone := StandardMaterial3D.new()
-	stone.albedo_color = TilesetBuilder.WALL_BASE
-	block.material = stone
-	wall_mesh.multimesh = MultiMesh.new()
-	wall_mesh.multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	wall_mesh.multimesh.mesh = block
 
 	enemy_manager.target = player
 	enemy_manager.projectile_parent = projectiles
@@ -705,53 +678,27 @@ func _place_and_populate() -> void:
 
 
 func _paint() -> void:
-	var width := float(generator.width * MapGenerator.TILE)
-	var depth := float(generator.height * MapGenerator.TILE)
-	(floor_mesh.mesh as PlaneMesh).size = Vector2(width, depth) + Vector2.ONE * BEYOND * 2.0
-	floor_mesh.position = Vector3(width, 0.0, depth) * 0.5
+	var seed := zone_rng.randi()
+	terrain = Terrain.build(generator, seed)
+	floor_mesh.mesh = terrain.mesh
 	# `free` et non `queue_free` : une zone repeinte deux fois dans la même image
-	# garderait sinon le décor et les murs de la première.
-	for node in decor.get_children():
-		node.free()
+	# garderait sinon les murs de la première.
 	for node in walls.get_children():
 		if node is CollisionShape3D:
 			node.free()
-	floor_mesh.material_override = TilesetBuilder.ground_material(
-		Vector2i(generator.width, generator.height), zone_rng.randi(), generator.road
+	floor_mesh.material_override = TilesetBuilder.terrain_material(
+		Vector2i(generator.width, generator.height), seed, generator.road
 	)
-	if floor_mesh.material_override == null:
-		var plain := StandardMaterial3D.new()
-		plain.albedo_color = TilesetBuilder.FLOOR_BASE
-		floor_mesh.material_override = plain
-	# Rien ne pousse sur la route.
-	var on_road := {}
-	for cell in generator.road:
-		on_road[cell] = true
-
-	var blocks: Array[Vector3] = []
 	for y in generator.height:
 		var run := 0
 		for x in generator.width:
-			var cell := Vector2i(x, y)
 			if generator.grid[y][x] == MapGenerator.FLOOR:
 				_wall_run(x - run, x, y)
 				run = 0
-				if in_town or on_road.has(cell):
-					continue
-				var roll := zone_rng.randf()
-				if roll < ROCK_CHANCE:
-					_plant(ROCK, cell)
-				elif roll < ROCK_CHANCE + BUSH_CHANCE:
-					_plant(BUSH, cell)
 			else:
-				blocks.append(MapGenerator.cell_center(cell) + Vector3(0.0, WALL_HEIGHT * 0.5, 0.0))
 				run += 1
-				if _lit_top(x, y) and not in_town and zone_rng.randf() < TREE_CHANCE:
-					_plant(TREES[zone_rng.randi() % TREES.size()], cell, false)
 		_wall_run(generator.width - run, generator.width, y)
-	wall_mesh.multimesh.instance_count = blocks.size()
-	for i in blocks.size():
-		wall_mesh.multimesh.set_instance_transform(i, Transform3D(Basis(), blocks[i]))
+	decor.scatter(generator, terrain, zone_rng, in_town)
 
 
 ## La collision des murs de `from` à `to` (exclu) sur la rangée `y`.
@@ -764,34 +711,6 @@ func _wall_run(from: int, to: int, y: int) -> void:
 	shape.shape = box
 	shape.position = Vector3(float(from + to) * 0.5, 0.0, float(y) + 0.5) * MapGenerator.TILE
 	walls.add_child(shape)
-
-
-## Le pied de l'image sur le bas de la case. Un arbre ne bouge pas de son mur ; le reste
-## se décale un peu.
-func _plant(texture: Texture2D, cell: Vector2i, jitter := true) -> void:
-	var sprite := Sprite3D.new()
-	sprite.texture = texture
-	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.pixel_size = 1.0
-	sprite.shaded = false
-	sprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	sprite.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
-	sprite.offset = Vector2(0.0, texture.get_height() * 0.5)
-	sprite.flip_h = zone_rng.randf() < 0.5
-	var at := MapGenerator.cell_center(cell) + Vector3(0.0, 0.0, MapGenerator.TILE / 2.0)
-	if jitter:
-		at += Vector3(zone_rng.randf_range(-1, 1), 0.0, zone_rng.randf_range(-1, 0)) * DECOR_JITTER
-	sprite.position = at.round()
-	decor.add_child(sprite)
-
-
-## Le bord d'une masse de murs, au contact du sol au-dessus : là poussent les arbres, où
-## l'on ne marche jamais.
-func _lit_top(x: int, y: int) -> bool:
-	# Type explicite : grid est un Array non typé, donc la comparaison rend un
-	# Variant et l'inférence échoue.
-	var above_is_floor: bool = y > 0 and generator.grid[y - 1][x] == MapGenerator.FLOOR
-	return above_is_floor
 
 
 ## Paquet mixte autour du joueur, sur des cases praticables uniquement. Pas en ville :

@@ -1087,62 +1087,36 @@ les waypoints déjà activés pointeraient sur la suivante.
 
 ---
 
-## Refaire le décor du biome
+## Refaire le monde d'une zone
+
+Le relief, ses matières et son décor sont en 3D depuis le jalon 54 (étape 3) :
 
 ```bash
-tools/tiles.py gen            # trois graines par sujet, ~10 s l'une
-tools/tiles.py make           # écrit art/tiles/ et art/decor/ depuis les graines retenues
+tools/terrain_textures.py     # sol, plaques brûlées, route, roche, dessus des falaises → art/tiles/
+tools/decor_3d.py [nom…]      # rochers, bois mort, buisson, arbres morts → art/decor/<nom>.glb
 ```
 
-ComfyUI doit tourner ; depuis WSL il répond sur l'IP de l'hôte, pas sur
-`127.0.0.1` (variable `COMFY`). Le sujet et la graine retenue sont **la même
-ligne** de `tools/tiles.json` — le mur, puis chaque pièce de décor avec son
-cadre en pixels : refaire un arbre, c'est changer l'un des trois. Une pièce de
-plus s'y ajoute, puis se sème dans `Zone._paint()`.
-
-Ce que `make` écrit, et ce qui en décide :
-
-| Sortie | Réglage |
-|---|---|
-| `ground_base.png`, `ground_patch.png` | **Pas de ComfyUI** : SDXL sort des dalles quel que soit le prompt. Un bruit raccordable, les rampes `GROUND_BASE` / `GROUND_PATCH` (le biome), les touffes `GRASS_TUFTS`. Les deux textures partagent le grain : ne jamais les tirer séparément |
-| `atlas.png` | Le sol uni, le mur (`CROP`, l'échelle de la pierre ; `WALL_LUM`) et son dessus éclairé, peint par la règle |
-| `art/decor/*.png` | `keyed()` : détourage par couleur **sur toute l'image** — celui des icônes laisse le fond pris entre deux branches —, sans l'ombre grise que SDXL pose au pied malgré le prompt (`cast_shadow()`), puis 16 couleurs et l'ombre du jeu |
-
-Le négatif du mur refuse explicitement la maçonnerie (`brick`, `masonry`, `mortar
-lines`, `running bond`, `wall`) : sans ça, une texture de pierre sort un mur de
-briques à tous les coups.
-
-La largeur de la route et son bord se règlent dans `TilesetBuilder` (`ROAD_RADIUS`,
-`ROAD_RAGGED`, `MASK_FREQUENCY`), ses lacets dans `MapGenerator.ROAD_BEND` : pas
-dans l'outil, c'est le masque de la zone.
+- **Le relief** (`world/terrain.gd`) se tire de la grille : sa forme se règle là
+  (`CLIFF`, `RISE`, `FOOT`, `BUMP`), jamais dans la zone. Les collisions restent les
+  boîtes de `Zone._wall_run()` : changer le relief ne change pas le gameplay.
+- **Une matière** : un scan de Poly Haven (CC0, sans territoire) dans `SCANS`, sa couleur
+  recalée à mi-chemin sur `TilesetBuilder.FLOOR_BASE` / `ROCK_BASE` (`PALETTE`, `GRADE`).
+  Chacune donne `<nom>.png` et `<nom>_nr.png` — relief en RGB, rugosité en alpha : un
+  shader n'a pas assez d'unités de texture pour en lire trois par matière.
+- **Une pièce de décor** : une ligne de `DECOR` (le modèle, ses triangles, sa taille en jeu,
+  la pièce d'un lot), puis son nom dans une liste de `world/scenery.gd` (`ROCKS`, `WOOD`,
+  `HEIGHTS`…), avec sa part de couleur du biome dans `DRYING`. Les tailles dépassent le réel,
+  comme les armes : un caillou de 30 cm ne se voit pas de la caméra. Les **arbres morts
+  debout** sont générés (`tools/blender/dead_tree.py`, une graine par forme dans `TREES`) :
+  Poly Haven n'en a pas.
+- La largeur de la route et son bord se règlent dans `TilesetBuilder` (`ROAD_RADIUS`,
+  `ROAD_RAGGED`, `MASK_FREQUENCY`), ses lacets dans `MapGenerator.ROAD_BEND`.
 
 **Ce qui refusera un oubli** : `test_the_zone_floor_comes_back_identical`, pour le
-décor qui ne reviendrait pas au retour de portail ; `test_the_road_walks_from_entry_to_the_farthest_cell`
-pour la route. Pour le reste, rien : juger
-sur une capture réelle en fenêtré, avec des ennemis dessus, jamais sur l'atlas
-seul.
-
----|---|
-| `CROP` | **L'échelle de la pierre**, en part du rendu de 1024 px. À 10 %, un pavé fait six pixels dans la tuile ; à 30 %, il en fait un et il ne reste qu'un grain gris |
-| `FLOOR_LUM` / `WALL_LUM` | La luminance visée. **Plus basse que celle de la couleur de base** : à moyenne égale, une pierre appareillée se lit plus claire qu'un aplat, et les ennemis s'y noient |
-| `FLOOR_SPREAD` | Le contraste interne. C'est lui qui fait la différence entre « de la pierre » et « un damier qui crie » |
-| `FLOOR_PATCHES` | **Combien d'amas de pierre par variante, la première étant nue.** Une texture qui couvre son cadre d'un bord à l'autre est une paroi, quelle que soit sa couleur : un sol, c'est de la terre et quelques pierres. Et quatre tuiles toutes marquées se répètent visiblement dès qu'on en voit trente |
-
-Le négatif refuse explicitement la maçonnerie (`brick`, `masonry`, `mortar
-lines`, `running bond`, `wall`) : sans ça, « dungeon stone floor » sort un mur de
-briques à tous les coups, et le sol finit par être le mur repeint d'une autre
-couleur.
-
-Le modèle donne la **matière** — le grain, les fissures, la distribution des
-valeurs. Il ne décide ni la valeur du sol, ni quelle tuile de mur porte son
-dessus éclairé : ça, c'est `tools/tiles.py` et `TilesetBuilder`, et ça ne se
-délègue pas, sous peine de perdre l'écart mesuré entre le décor et les acteurs.
-
-**Ce qui refusera un oubli** : rien. Aucune assertion ne voit une tuile — juger
-sur une capture réelle en fenêtré, avec des ennemis dessus, jamais sur l'atlas
-seul.
-
----
+décor qui ne reviendrait pas au retour de portail ;
+`test_the_road_walks_from_entry_to_the_farthest_cell` pour la route. Pour le reste,
+rien : juger sur une capture réelle en fenêtré, avec des ennemis dessus, et remesurer
+le banc — le relief coûte au rendu (§ « Étape 3 » du jalon 54).
 
 ## Régénérer la documentation
 

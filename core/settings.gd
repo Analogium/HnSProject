@@ -160,12 +160,11 @@ func _set_binds(value: Dictionary) -> void:
 
 
 ## Au visuel qui naît : l'opacité de son groupe, et le groupe lui-même, pour qu'un
-## curseur bougé atteigne aussi ce qui dure — l'aura, la couronne, l'arc d'arme. Un nœud 3D
-## n'a pas encore de dessin (jalon 54, jusqu'à l'étape 4) : il ne prend que le groupe.
+## curseur bougé atteigne aussi ce qui dure — l'aura, la couronne, l'arc d'arme. En 3D
+## (jalon 54), une géométrie la prend si son shader lit `instance uniform float opacity`.
 func veil(node: Node, group: StringName) -> void:
 	node.add_to_group(group)
-	if node is CanvasItem:
-		node.modulate.a = opacity_of(group)
+	_fade(node, opacity_of(group))
 
 
 func opacity_of(group: StringName) -> float:
@@ -175,9 +174,16 @@ func opacity_of(group: StringName) -> float:
 func _reveil(group: StringName) -> void:
 	if is_inside_tree():
 		for node in get_tree().get_nodes_in_group(group):
-			if node is CanvasItem:
-				node.modulate.a = opacity_of(group)
+			_fade(node, opacity_of(group))
 	_announce()
+
+
+static func _fade(node: Node, opacity: float) -> void:
+	if node is CanvasItem:
+		node.modulate.a = opacity
+	elif node is GeometryInstance3D:
+		# Et non `transparency`, sans effet mesuré sur un shader qui écrit ALPHA.
+		node.set_instance_shader_parameter(&"opacity", opacity)
 
 
 ## Le choix entre les deux cases, ici et nulle part ailleurs.

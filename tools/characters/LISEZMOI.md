@@ -181,7 +181,9 @@ gréage local), qui ne dépend d'aucun quota.
    - **L'arme suit le bras, pas le poing** : sur des attaques à mains nues, la main ne tient
      rien et l'épée partait n'importe où. L'export tourne la main à chaque image pour que la
      lame prolonge le levier épaule → main (`export_glb.wield`, hors gréage local et marche :
-     le jeu range l'arme quand on se déplace ou qu'on lance, `ActorModel.SHEATHED`).
+     le jeu range l'arme quand on se déplace ou qu'on lance, `ActorModel.SHEATHED`). La main
+     ne s'écarte pas de plus de 40° de celle de l'animation (`WRIST`) : sans borne, le
+     poignet cassait jusqu'à 145°, la main « posée de travers comme un lego ».
    - **Un coup répété** que Mixamo n'a pas (la Rafale, trois estocs) : nommer la source du
      coup seul (`"flurry": ["thrust.fbx", 8]`) et le geste dans `blender.repeat` ; l'export
      le répète à la cadence du jeu (`FLURRY_THRUSTS`, `FLURRY_GAP`), le retrait rejoué à
@@ -305,6 +307,14 @@ Pièges payés :
   ouvertes : écharpe, mèches) : écarté. Le Space réduit lui-même à l'extraction, mais pas
   sous 100 000 faces. **Tranché avec l'utilisateur** : en zone, le corps réduit, vu de loin ;
   de face, le portrait garde le modèle brut (étape 5 ci-dessous).
+- **La recuisson noircit le métal** (jalon 54) : TRELLIS.2 pose une carte métallique sur
+  tout le corps, et la couleur diffuse que Blender cuit d'une surface métallique est noire.
+  Le joueur de flûte (métal 0,88 en moyenne) sortait en habits noirs ; `bake_color.py`
+  éteint le métal de la source avant de cuire. La sorcière (0,73) et le Vive lame (0,51),
+  cuits avant, ont été **recuits sans regréer** : `bake_color.py` sur `3d/model.glb` pour
+  forme garde son dépliage (`blender -b -P bake_color.py -- model.glb model_trellis.glb
+  model.glb`), qui est celui que Mixamo a reçu et rendu tel quel (vérifié : maillage, UV et
+  texture identiques) ; l'export reprend la couleur de `model.glb` (`color`).
 - **Gréage local, le haut du crâne** (jalon 54) : sans point OpenPose, `HeadTop_End`
   gardait la tête chibi du squelette d'emprunt et dépassait le Vive lame adulte d'un tiers
   de sa taille. Gestes et armes se mesurent à lui : le bras se tendait à fond, l'épée était

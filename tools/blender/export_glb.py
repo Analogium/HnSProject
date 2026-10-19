@@ -8,7 +8,8 @@
 # les resserrer), elbows (part du pli des coudes ôtée, hors repos), sheathed (les gestes sans
 # arme), repeat ({nom: {strikes, gap}}, le coup de la source répété à cette cadence), size (la
 # case de la planche, qui fixe la taille en jeu), out (.glb), portrait (le modèle brut de
-# TRELLIS.2, vide sans lui) et portrait_out (.glb des vues de face).
+# TRELLIS.2, vide sans lui), portrait_out (.glb des vues de face) et color (son `model.glb`
+# recuit, vide sans lui).
 import bpy, json, os, sys
 import math
 from mathutils import Matrix, Quaternion, Vector
@@ -22,12 +23,27 @@ PX_PER_M = 16
 BLADE_FORWARD, BLADE_UP = 0.7, 0.3
 # Un bras qui perd plus de 2 % d'allonge en une image se replie : ce n'est pas le coup (`impact`).
 RECOIL = 0.98
+# Ce que `wield` peut écarter la main de celle de l'animation, en degrés : sans borne, la lame
+# prolongeait le levier au prix d'un poignet cassé jusqu'à 145° (choisi sur planche, jalon 54).
+WRIST = 40
 
 spec = json.load(open(sys.argv[sys.argv.index("--") + 1], encoding="utf-8"))
 gestures = json.load(open(spec["gestures"], encoding="utf-8"))
 guard = gestures["rest"]["keys"][0]
 arm = stage.load(spec["rest"])
 scene = bpy.context.scene
+# La couleur recuite de `model.glb` remplace la copie que Mixamo en garde : même dépliage
+# (vérifié au jalon 54), et recuire n'oblige pas à regréer.
+if spec["color"]:
+    before, seen = set(bpy.data.objects), set(bpy.data.images)
+    bpy.ops.import_scene.gltf(filepath=spec["color"])
+    baked = next(i for i in bpy.data.images if i not in seen)
+    body = bpy.data.images["couleur"]
+    body.pixels.foreach_set(baked.pixels[:])
+    body.pack()
+    for o in set(bpy.data.objects) - before:
+        bpy.data.objects.remove(o)
+    bpy.data.images.remove(baked)
 idle = arm.animation_data.action
 pb = lambda s: next(b for b in arm.pose.bones if b.name.endswith(s))
 scene.frame_set(int(idle.frame_range[0]))
@@ -142,8 +158,9 @@ def straighten(action, share):
 
 def wield(action, first, last, grip_name):
     """Oriente la main droite, image par image, pour que la lame prolonge le levier épaule →
-    main, penchée vers l'avant et le haut du buste : les attaques de Mixamo sont à mains nues,
-    et l'épée suivait un poing qui ne tient rien (vers le dos, le sol, à rebours du coup)."""
+    main, penchée vers l'avant et le haut du buste, à `WRIST` au plus de la main d'origine :
+    les attaques de Mixamo sont à mains nues, et l'épée suivait un poing qui ne tient rien
+    (vers le dos, le sol, à rebours du coup)."""
     use(action)
     hand, grip, spine = pb("RightHand"), arm.pose.bones[grip_name], pb("Spine2")
     to_body = arm.matrix_world.to_3x3().inverted()
@@ -161,7 +178,11 @@ def wield(action, first, last, grip_name):
         if palm is None:
             palm = grip.matrix.to_3x3() @ Vector((0, 0, 1))
         palm = (palm - blade * palm.dot(blade)).normalized()
-        turned = Matrix((blade.cross(palm), blade, palm)).transposed() @ offset.inverted()
+        turned = (Matrix((blade.cross(palm), blade, palm)).transposed() @ offset.inverted()).to_quaternion()
+        own = hand.matrix.to_quaternion()
+        bend = own.rotation_difference(turned).angle
+        if bend > math.radians(WRIST):
+            turned = own.slerp(turned, math.radians(WRIST) / bend)
         hand.matrix = Matrix.LocRotScale(hand.matrix.translation, turned, None)
         hand.keyframe_insert("rotation_quaternion", frame=f)
     arm.animation_data.action = None

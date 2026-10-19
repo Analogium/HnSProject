@@ -152,6 +152,18 @@ func test_an_unreadable_scale_does_not_go_fullscreen() -> void:
 	Settings.from_dict(before)
 
 
+## En 3D (jalon 54), une géométrie prend l'opacité de son groupe par un paramètre d'instance.
+func test_an_opacity_reaches_a_3d_visual() -> void:
+	var before := Settings.to_dict()
+	var zone: MeshInstance3D = add_child_autofree(MeshInstance3D.new())
+	Settings.enemy_attack_opacity = 0.4
+	Settings.veil(zone, Settings.ENEMY_ATTACKS)
+	assert_almost_eq(zone.get_instance_shader_parameter(&"opacity"), 0.4, 0.001, "posée à la naissance")
+	Settings.enemy_attack_opacity = 1.0
+	assert_almost_eq(zone.get_instance_shader_parameter(&"opacity"), 1.0, 0.001, "reprise sur ce qui vit")
+	Settings.from_dict(before)
+
+
 ## Un curseur bougé atteint aussi ce qui brûle déjà — l'aura reste des minutes —, et
 ## chaque famille garde la sienne.
 func test_an_opacity_reaches_the_living_visuals() -> void:

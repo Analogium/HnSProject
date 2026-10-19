@@ -1,5 +1,5 @@
 class_name DangerZone
-extends Node3D
+extends MeshInstance3D
 
 ## Le télégraphe des attaques ennemies (jalon 27) : une zone au sol où le plein monte
 ## du départ jusqu'au bord ; quand il l'atteint, elle frappe. **Un seul signal pour
@@ -12,8 +12,11 @@ extends Node3D
 
 enum Shape { DISC, LANE, CONE }
 
-## Le temps qu'elle reste après la frappe, le temps de se dissoudre.
+const MATERIAL := preload("res://fx/danger_zone.gdshader")
+## Le temps qu'elle reste après la frappe, le temps de s'effacer.
 const FADE := 0.18
+## Au-dessus du sol plat : à sa hauteur, elle s'y mêlerait par endroits.
+const LIFT := 0.5
 
 var shape := Shape.DISC
 var reach := 0.0
@@ -49,6 +52,29 @@ static func put(
 	return z
 
 
+## Un plan juste à la taille de la forme, tourné vers son cap : le couloir de la charge
+## couvrirait sinon un carré de 340 px, presque tout jeté par le shader.
+func _ready() -> void:
+	rotation.y = -Flat.angle(facing)
+	var plane := PlaneMesh.new()
+	var side := reach * sin(minf(spread, PI * 0.5)) if shape == Shape.CONE else spread
+	if shape == Shape.DISC:
+		plane.size = Vector2.ONE * reach * 2.0
+	else:
+		plane.size = Vector2(reach, side * 2.0)
+		plane.center_offset.x = reach * 0.5
+	plane.size += Vector2.ONE * 2.0
+	plane.center_offset.y = LIFT
+	mesh = plane
+	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var m := ShaderMaterial.new()
+	m.shader = MATERIAL
+	m.set_shader_parameter("shape", shape)
+	m.set_shader_parameter("reach", reach)
+	m.set_shader_parameter("spread", spread)
+	material_override = m
+
+
 func _physics_process(delta: float) -> void:
 	if bound != null and (not is_instance_valid(bound) or bound.is_dead):
 		queue_free()
@@ -58,11 +84,14 @@ func _physics_process(delta: float) -> void:
 		_struck = true
 		bound = null
 		_strike()
+	var m := material_override as ShaderMaterial
+	m.set_shader_parameter("progress", minf(_age / delay, 1.0))
+	m.set_shader_parameter("gone", maxf(_age - delay, 0.0) / FADE)
 	if _age >= delay + FADE:
 		queue_free()
 
 
-## Ce qui est frappé — et, quand elle aura son dessin, ce qui est dessiné.
+## Le miroir de `measure()` dans le shader : ce qui est dessiné est ce qui est frappé.
 func contains(point: Vector3) -> bool:
 	var p := point - global_position
 	match shape:

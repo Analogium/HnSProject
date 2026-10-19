@@ -1,19 +1,18 @@
 class_name TilesetBuilder
 
-## La case de la carte, la palette du biome et le matériau qui peint le sol
-## (`ground.gdshader`, sur les textures de `art/tiles/`). Les murs sont des blocs posés
-## par `Zone._paint()`.
+## La case de la carte, la palette du biome et le matériau du relief (`Terrain`,
+## `terrain.gdshader`) : le sol sur les textures de `art/tiles/`, la roche des falaises.
 
 const TILE := 32
 
-## Le biome ocre (jalon 33). Le sol uni n'est vu que sans `ground_material` ; les murs
-## restent plus sombres que le sol, c'est leur écart qui les fait lire.
+## Le biome ocre (jalon 33) : le ton dominant du sol, et celui de la roche des falaises
+## (jalon 54). `tools/terrain_textures.py` y recale la couleur de ses textures peintes.
 const FLOOR_BASE := Color(0.27, 0.16, 0.10)
-const WALL_BASE := Color(0.12, 0.07, 0.05)
+const ROCK_BASE := Color(0.30, 0.22, 0.17)
 
-const GROUND_BASE_PATH := "res://art/tiles/ground_base.png"
-const GROUND_PATCH_PATH := "res://art/tiles/ground_patch.png"
-const GROUND_SHADER := preload("res://world/ground.gdshader")
+## Les textures peintes du relief (`tools/terrain_textures.py`), du nom de leur paramètre.
+const TERRAIN_TEXTURES := ["ground", "grass", "road", "rock", "top"]
+const TERRAIN_SHADER := preload("res://world/terrain.gdshader")
 ## La route : un texel de masque pour MASK_CELL px du monde. Chaque case de route
 ## pose un disque qui décroît sur ROAD_RADIUS texels, et le bruit ronge le bord ;
 ## le shader coupe à mi-hauteur, soit une route d'environ ROAD_RADIUS texels de large.
@@ -23,20 +22,18 @@ const ROAD_RAGGED := 0.45
 const MASK_FREQUENCY := 0.08
 
 
-## Le sol d'une carte de `size` cases et sa route : le bord de la route se tire de
-## `seed`, donc une graine redonne le même. Null sans les textures — le sol uni
-## prend le relais.
-static func ground_material(size: Vector2i, seed: int, road: Array[Vector2i]) -> ShaderMaterial:
-	if not ResourceLoader.exists(GROUND_BASE_PATH):
-		return null
+## Le relief d'une carte de `size` cases et sa route : le bord de la route se tire de
+## `seed`, donc une graine redonne le même.
+static func terrain_material(size: Vector2i, seed: int, road: Array[Vector2i]) -> ShaderMaterial:
 	var texels := size * TILE / MASK_CELL
 	var material := ShaderMaterial.new()
-	material.shader = GROUND_SHADER
-	material.set_shader_parameter("base_tex", load(GROUND_BASE_PATH))
-	material.set_shader_parameter("patch_tex", load(GROUND_PATCH_PATH))
+	material.shader = TERRAIN_SHADER
+	for name: String in TERRAIN_TEXTURES:
+		material.set_shader_parameter(name + "_tex", load("res://art/tiles/%s.png" % name))
+		material.set_shader_parameter(name + "_nr", load("res://art/tiles/%s_nr.png" % name))
 	material.set_shader_parameter("mask", ImageTexture.create_from_image(_road_mask(texels, seed, road)))
 	material.set_shader_parameter("map_px", Vector2(size * TILE))
-	material.set_shader_parameter("beyond", WALL_BASE)
+	material.set_shader_parameter("cliff", Terrain.CLIFF)
 	return material
 
 

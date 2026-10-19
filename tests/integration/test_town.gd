@@ -210,7 +210,7 @@ func test_the_zone_floor_comes_back_identical() -> void:
 	assert_gt(before.size(), 100, "la zone a son décor")
 	_zone.open_portal()
 	_use(_zone.portal)
-	assert_eq(_zone.decor.get_child_count(), 0, "pas de décor en ville")
+	assert_eq(_zone.decor.pieces.size(), 0, "pas de décor en ville")
 	_use(_zone.way_back)
 	assert_eq(_scenery(), before)
 
@@ -219,8 +219,7 @@ func test_the_zone_floor_comes_back_identical() -> void:
 func _scenery() -> Array:
 	var mask: ImageTexture = _zone.floor_mesh.material_override.get_shader_parameter("mask")
 	var out: Array = [mask.get_image().get_data()]
-	for sprite: Sprite3D in _zone.decor.get_children():
-		out.append([sprite.texture.resource_path, sprite.position, sprite.flip_h])
+	out.append_array(_zone.decor.pieces)
 	return out
 
 

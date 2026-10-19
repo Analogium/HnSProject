@@ -68,7 +68,7 @@ func _ground() -> MeshInstance3D:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(120, 120) * Flat.PX_PER_M
 	var material := StandardMaterial3D.new()
-	material.albedo_texture = load("res://art/tiles/ground_base.png")
+	material.albedo_texture = load("res://art/tiles/ground.png")
 	# Un pixel de la tuile pour un pixel du monde, comme la carte.
 	material.uv1_triplanar = true
 	material.uv1_scale = Vector3.ONE / 256.0

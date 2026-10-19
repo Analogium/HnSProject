@@ -976,6 +976,19 @@ func test_a_skill_stops_a_walk_unless_the_button_is_held() -> void:
 	assert_true(_p._walking, "bouton tenu, on continue d'avancer")
 
 
+## Comme dans PoE : le corps s'arrête pour son geste, et la marche tenue reprend après.
+func test_a_gesture_stops_the_body_then_the_walk_resumes() -> void:
+	_p._walk_to = _p.global_position + Vector3(100.0, 0.0, 0.0)
+	_p._walking = true
+	_p._gesture = Player.Gesture.new(0.3)
+	var start := _p.global_position
+	await wait_seconds(0.2)
+	assert_almost_eq(_p.global_position.distance_to(start), 0.0, 0.01, "immobile pendant le geste")
+	await wait_seconds(0.3)
+	assert_null(_p._gesture)
+	assert_gt(_p.global_position.distance_to(start), 10.0, "la marche a repris")
+
+
 func test_the_keys_take_over_from_a_click() -> void:
 	Settings.control_mode = Keybinds.MOUSE
 	_p._unhandled_input(_left_click())

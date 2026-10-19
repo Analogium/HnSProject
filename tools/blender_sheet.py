@@ -109,7 +109,8 @@ def export(cid, cfg):
     b = cfg["blender"]
     src = lambda f: win(os.path.join(cf.PROJ, b["source"], f))
     out = os.path.join(cf.PROJ, "art", "models", cid + ".glb")
-    # Le modèle brut de TRELLIS.2, pour les vues de face : seuls ceux qui en ont un.
+    # Le modèle brut de TRELLIS.2, pour les vues de face, et sa version réduite recuite (couleur
+    # du corps) : seuls ceux qui en ont un.
     raw = os.path.join(cf.CHARS, cid, "3d", "model_trellis.glb")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     os.makedirs(WORK, exist_ok=True)
@@ -124,6 +125,7 @@ def export(cid, cfg):
                           for k in b.get("repeat", [])},
                "anims": {k: src(s) if s.endswith((".fbx", ".blend")) else s for k, (s, _) in b["anims"].items()},
                "out": win(out), "portrait": win(raw) if os.path.exists(raw) else "",
+               "color": win(os.path.join(os.path.dirname(raw), "model.glb")) if os.path.exists(raw) else "",
                "portrait_out": win(os.path.join(os.path.dirname(out), cid + "_portrait.glb"))}, open(spec, "w", encoding="utf-8"))
     log = subprocess.run([BLENDER, "-b", "-P", win(EXPORT), "--", win(spec)], capture_output=True, text=True).stdout
     if "Traceback" in log or "EXPORT" not in log:

@@ -1,6 +1,7 @@
 # Réduit une forme au compte de faces du jeu, la déplie, et y cuit la couleur d'un modèle
 # texturé du même personnage, calé par la boîte englobante (jalon 54). Pour TRELLIS.2, les deux
-# sont le même fichier : son modèle brut, recuit sur sa version réduite.
+# sont le même fichier : son modèle brut, recuit sur sa version réduite ; recuire, c'est passer
+# `model.glb` pour forme.
 #   blender -b -P bake_color.py -- <forme.glb> <modele_texture.glb> <sortie.glb>
 import bpy, sys
 from mathutils import Vector
@@ -43,6 +44,14 @@ def box(o):
 
 
 src, dst = load(colored_glb), load(shape_glb)
+# La couleur diffuse d'une surface métallique cuit noire : TRELLIS.2 en met partout (0,88 en
+# moyenne sur le joueur de flûte, ses habits sortaient noirs). Le jeu n'en lit pas.
+for slot in src.material_slots:
+    for node in slot.material.node_tree.nodes:
+        if node.type == "BSDF_PRINCIPLED":
+            for link in list(node.inputs["Metallic"].links):
+                slot.material.node_tree.links.remove(link)
+            node.inputs["Metallic"].default_value = 0.0
 (slo, shi), (dlo, dhi) = box(src), box(dst)
 k = (shi.z - slo.z) / (dhi.z - dlo.z)
 dst.scale = (k, k, k)
@@ -53,16 +62,19 @@ dst.select_set(True)
 bpy.context.view_layer.objects.active = dst
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 faces = len(dst.data.polygons)
-dst.modifiers.new("reduire", "DECIMATE").ratio = min(1.0, FACES / faces)
-bpy.ops.object.modifier_apply(modifier="reduire")
-bpy.ops.object.shade_smooth()
-bpy.ops.object.mode_set(mode="EDIT")
-bpy.ops.mesh.select_all(action="SELECT")
-# La réduction retourne des faces : le flash du jeu les écartait (corps moucheté), et la cuisson
-# les laissait noires.
-bpy.ops.mesh.normals_make_consistent(inside=False)
-bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.002)
-bpy.ops.object.mode_set(mode="OBJECT")
+# Déjà réduite (`model.glb`), la forme garde son dépliage : c'est celui que Mixamo a reçu, et
+# l'export y reprend la couleur recuite sans regréer (`export_glb`, `color`).
+if faces > FACES:
+    dst.modifiers.new("reduire", "DECIMATE").ratio = FACES / faces
+    bpy.ops.object.modifier_apply(modifier="reduire")
+    bpy.ops.object.shade_smooth()
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    # La réduction retourne des faces : le flash du jeu les écartait (corps moucheté), et la
+    # cuisson les laissait noires.
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.002)
+    bpy.ops.object.mode_set(mode="OBJECT")
 
 image = bpy.data.images.new("couleur", TEXTURE, TEXTURE)
 material = bpy.data.materials.new("corps")

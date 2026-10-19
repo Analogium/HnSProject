@@ -111,15 +111,15 @@
  "body": 16,
  "side_width": 1.3,
  "blender": {
-  "model_prompt": "3d render of a stylized game character, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, sinister pied piper, adult man, wearing a crimson velvet beret hat with a long black feather, pale gaunt face, thin mustache, short dark brown hair, long coat split half mustard yellow half crimson, embroidered doublet, crimson hose, red boots, leather belt with pouches, empty hands",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, semi-realistic anime-influenced face, adult heroic proportions, seven heads tall, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a sinister pied piper, a gaunt man in his thirties, pale face, thin mustache, short dark brown hair, crimson velvet beret with a long black feather, fitted parti-colored doublet split half mustard yellow half crimson ending at the hips, embroidered collar, leather belt with small pouches, slim parti-colored hose, crimson knee boots, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
   "size": 38,
   "colors": 16,
   "weapon_colors": 8,
-  "source": "tools/characters/piper/3d",
-  "rest": "rest.blend",
+  "source": "tools/characters/piper/mixamo",
+  "rest": "rest.fbx",
   "weapons": [
    "sword",
    "dagger",
@@ -130,42 +130,34 @@
   ],
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "cast": [
-    "cast",
+    "cast.fbx",
     8
    ],
    "sweep": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "overhead": [
-    "overhead",
+    "overhead.fbx",
     8
    ],
    "thrust": [
-    "thrust",
-    8
-   ],
-   "bite": [
-    "bite",
-    8
-   ],
-   "danse": [
-    "danse",
-    8
-   ],
-   "play": [
-    "play",
+    "thrust.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 40,
+  "walk_leg_space": -12
  },
- "scale": 0.7
+ "scale": 0.7,
+ "model": "3d/model_trellis.glb : TRELLIS.2 sur 3d/model_front.png (Qwen-Image, graine 1337, direction « Torchlight » du Vive lame, pourpoint aux hanches pour dégager les jambes), réduit à 40 000 faces ; gréé par Mixamo, ses animations dans mixamo/ (jalon 54) ; Mixamo n'a ni danse ni flûte : la Danse et la Morsure jouent le coup, l'air le lancer"
 }

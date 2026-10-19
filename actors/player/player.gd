@@ -17,7 +17,6 @@ signal flasks_changed
 
 const ACCEL := 0.25          # réactivité au démarrage
 const FRICTION := 0.35       # freinage à l'arrêt
-const ATTACK_MOVE_MULT := 0.4  # on ralentit pendant le coup, on ne fige pas
 ## Le clic-déplacement (jalon 54) : arrivé à ce rayon du point cliqué, on s'arrête.
 const WALK_ARRIVAL := 4.0
 
@@ -154,11 +153,9 @@ class Gesture:
 	var to_impact := 0.0
 	## Le `_pose()` qui reste à porter ; vide une fois porté, ou d'emblée pour un sort.
 	var strike := Callable()
-	var weapon := false
 
-	func _init(length: float, of_weapon: bool) -> void:
+	func _init(length: float) -> void:
 		left = length
-		weapon = of_weapon
 
 var _gesture: Gesture
 ## Les gestes entretenus allumés, par identifiant de compétence : une aura et les
@@ -338,6 +335,16 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	var goal := global_position + _camera_offset()
 	camera.global_position = camera.global_position.lerp(goal, 1.0 - exp(-CAMERA_SMOOTHING * delta))
+	_show_through()
+
+
+## Ce qui passe entre la caméra et le corps s'estompe autour de lui (`terrain.gdshader`) : le
+## centre de l'écran à sa poitrine, et sa profondeur de vue.
+func _show_through() -> void:
+	var chest := global_position + Vector3.UP * SpriteForge.CENTER_ABOVE_FEET
+	var screen := get_viewport().get_visible_rect().size
+	RenderingServer.global_shader_parameter_set(&"fade_center", camera.unproject_position(chest) / screen)
+	RenderingServer.global_shader_parameter_set(&"fade_depth", -(camera.global_transform.affine_inverse() * chest).z)
 
 
 ## Au plan du joueur, le monde qu'en montrait la caméra 2D (360 px au zoom du monde) : les
@@ -414,7 +421,9 @@ func _physics_process(delta: float) -> void:
 			_walking = false
 	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
 	# ZQSD tapé dans un champ de texte — la recherche de l'arbre — ne fait pas marcher.
-	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit:
+	# Un geste arrête le corps, comme dans PoE : la marche tenue reprend après lui.
+	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit \
+			or _gesture != null or _is_swinging:
 		input = Vector3.ZERO
 
 	if _aim_with_mouse:
@@ -427,10 +436,9 @@ func _physics_process(delta: float) -> void:
 	attack_pivot.rotation.y = -Flat.angle(facing)
 	# Le corps regarde où il va, comme dans PoE ; la visée ne le tourne que pour frapper.
 	var moving := input != Vector3.ZERO
-	model.set_state(moving, input if moving and _gesture == null and not _is_swinging else facing)
+	model.set_state(moving, input if moving else facing)
 
-	var slowed := _is_swinging or (_gesture != null and _gesture.weapon)
-	var speed := stats.move_speed * cadence * (ATTACK_MOVE_MULT if slowed else 1.0)
+	var speed := stats.move_speed * cadence
 	if _black_ice_left > 0.0 and global_position.distance_to(_black_ice_at) <= _black_ice_radius:
 		speed *= 1.0 + _black_ice * 0.01
 	if input != Vector3.ZERO:
@@ -636,7 +644,7 @@ func cast_slot(index: int) -> bool:
 	var family: String = Skill.GESTURE.get(cast.shape, "")
 	if cast.shape not in [Skill.Shape.DASH, Skill.Shape.LEAP]:
 		if cast.use_time > 0.0:
-			_gesture = Gesture.new(cast.use_time, skill.cadence == Skill.Cadence.WEAPON)
+			_gesture = Gesture.new(cast.use_time)
 		# Le corps, tourné vers où il marchait, fait face à la visée pour frapper.
 		model.set_state(false, facing)
 		# Une image de physique de plus : le geste finit sur une image de physique, jusqu'à une

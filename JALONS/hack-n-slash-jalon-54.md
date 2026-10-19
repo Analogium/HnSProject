@@ -338,7 +338,10 @@ déplacements au clavier ; « Déplacement » est sur le clic gauche, montré et
 les cases au clic droit, A, Z, E, R. Au clavier, rien ne change : le clic gauche est la
 première case. Un coup interrompt la marche vers un point, mais pas bouton tenu : on
 continue d'avancer après. La mort et un changement de zone oublient le point
-(`Player.halt()`). Sans recherche de chemin : un mur arrête la marche, il ne la contourne
+(`Player.halt()`). **Le geste arrête le corps** (retour de l'utilisateur, le 19) : on
+s'arrête pour frapper ou lancer, et la marche tenue, touches ou clic, reprend après, comme
+dans PoE. Revient sur le jalon 47, §4, qui ralentissait à 0,4 sans figer (`ATTACK_MOVE_MULT`,
+retiré). Sans recherche de chemin : un mur arrête la marche, il ne la contourne
 pas. **Les jambes de la course** étaient trop écartées : cuisses resserrées de 12°
 (`walk_leg_space`, choisi sur planche parmi 0, 6 et 12°).
 
@@ -362,7 +365,86 @@ appoint rasant (de face, le chapeau mangeait le visage), cadré sur la hauteur q
 choisie à droite de la création ; la liste se décale, les deux centrés ensemble. **Inventaire** :
 la poupée devient le portrait, tournable au glissé. Une classe sans modèle garde sa planche.
 
-## 12. Reste à faire
+**Le 19 octobre, le joueur de flûte** suit la sorcière : prompt « Torchlight » adulte, le
+long manteau devenu un pourpoint mi-moutarde mi-cramoisi arrêté aux hanches (un pan long se
+grée mal sur les jambes), graine 1337 sur trois, TRELLIS.2, Mixamo, six animations. Mixamo
+n'a ni danse ni flûte : la Morsure et la Danse jouent le coup, ses airs le lancer (le
+geste `bite` ira au Roi des Rats). **Ses bras rentraient dans le buste** pendant la course,
+comme ceux du Vive lame : 40° d'écart (`arm_space`), choisi sur planche parmi 0, 20, 30 et
+40°, rendue en orthographique et sans arme — en perspective, chaque colonne était vue d'un
+autre angle, et l'épée, rangée en jeu, brouillait la lecture. **Sa main armée était
+« cassée », posée de travers sur le bras** : pour que la lame prolonge le levier, `wield`
+tournait le poignet jusqu'à 145° de la main de Mixamo (115° chez le Vive lame, 130° chez la
+sorcière, et 60 à 75° au repos). Borné à 40° (`WRIST`, choisi sur planche parmi sans borne,
+60, 40 et 25°), pour les trois : la lame suit encore le balayage et la frappe haute, et se
+redresse à l'estoc. **Il sortait en habits noirs** : TRELLIS.2 lui avait posé
+du métal partout (0,88 en moyenne), que la cuisson de couleur de Blender rend noir.
+`bake_color.py` éteint désormais le métal de la source. La sorcière (0,73) et le Vive lame
+(0,51), cuits avant, étaient plus sombres que leur modèle brut : recuits sur leur propre
+dépliage, que Mixamo rend à l'identique, sans regréer — l'export prend la couleur du
+`model.glb` recuit au lieu de la copie de Mixamo. Couleur moyenne de la texture : sorcière
+18-40-44 → 37-56-63, Vive lame 57-43-39 → 75-58-52.
+
+## 12. Étape 3, le monde (18-19 octobre)
+
+Tranché avec l'utilisateur : **des falaises qui montent**, comme Torchlight Infinite, et des
+matières de Poly Haven (CC0, licence lue : sans territoire).
+
+- **Le relief** (`Terrain`) : un maillage par zone, un sommet tous les 8 px, la hauteur tirée
+  de la distance au praticable — plat sur le sol, falaise de 2,5 m dès la première case de
+  mur, bosses sur le dessus. Le pied recule d'au plus 6 px dans le mur, jamais sur le sol.
+  Les collisions restent les boîtes d'avant : **le gameplay ne bouge pas**, la campagne passe
+  sans une valeur changée. Construit en 494 ms au premier jet, **97 ms** une fois la distance
+  calculée par case (le sol utile est toujours dans les huit cases voisines : moins d'une
+  case de montée).
+- **L'estompage** : ce qui dépasse du sol, est plus près de la caméra que le joueur et tombe
+  près de lui à l'écran passe en pointillé. Il règle aussi l'arbre qui masquait le joueur au
+  zoom.
+- **Les matières** : peintes d'abord par Qwen-Image (`tools/terrain_textures.py` l'a fait),
+  jugées par l'utilisateur « pas mal, mais trop dessiné / cartoon » ; **des scans PBR** de
+  Poly Haven retenus sur planche A/B (`Bureau\hns-captures-monde\planche-A-B.png`). Leur
+  couleur recalée sur la palette en entier faisait un aplat orange : à mi-chemin, les nuances
+  restent. Relief et rugosité dans une image par matière (`_nr`) : cinq matières à trois
+  textures dépassaient les unités d'un shader.
+- **Le décor** : neuf scans de Poly Haven réduits (rochers, gros bloc, bois mort couché,
+  buisson teint de sec), grandis au-delà du réel comme les armes ; **les arbres morts debout
+  sont générés** (`blender/dead_tree.py`) — le seul de Poly Haven faisait un poteau pâle.
+  Un `MultiMesh` par modèle. Les sprites 2D du décor, l'atlas, les textures 2D du sol et
+  `tools/tiles.py` sont partis.
+
+**Coût, mesuré** (banc, 300 ennemis en combat, 1280 × 720, sans vsync, 1 440 images après
+240 de chauffe, paires alternées) :
+
+| | img/s | image | physique |
+|---|---|---|---|
+| avant l'étape 3 | 760 à 816 | 1,27 ms | 7,3 à 11,9 ms |
+| relief et décor, couches toutes lues | 299 à 302 | 3,33 ms | 3,8 à 4,5 ms |
+| **une couche à poids nul sautée** | **398** | **2,51 ms** | 3,1 à 3,5 ms |
+
+Le rendu coûte 1,2 ms de plus par image : on reste à ~400 img/s, loin au-dessus des 165 de
+l'écran. La physique n'en dépend pas (son écart vient du semis : 291 ennemis vivants contre
+298). La première zone d'une partie coûte 1,7 s de plus, le chargement des modèles du décor.
+
+## 13. Étape 4, les effets (19 octobre)
+
+**Les télégraphes ennemis d'abord**, le seul manque qui changeait la façon de jouer. Cinq
+dessins sur planche, en zone, à 30 et 80 % du plein (`Bureau\hns-captures-telegraphes\`) :
+le pixel tramé de la 2D porté tel quel, un voile lisse, l'anneau qui se remplit, le sol qui
+rougeoie, des hachures. **Retenu : l'anneau qui se remplit** — contour net, plein léger qui
+monte, plus dense vers son front ; il laisse voir le sol. Premier essai de planche : les
+disques tombaient dans la falaise (le joueur naît au bord de la carte) et le rouge clair se
+fondait dans l'ocre ; recentrées et assombries, les cinq variantes se lisaient.
+
+`DangerZone` devient la géométrie elle-même (`MeshInstance3D`) : un plan à la taille de sa
+forme, tourné vers son cap — le couloir de la charge aurait couvert un carré de 340 px,
+presque tout jeté. La distance au bord se calcule par forme (`measure()`), ce qui donne un
+contour d'épaisseur égale. **L'opacité du menu** : `transparency` ne fait rien sur un
+shader qui écrit `ALPHA` (mesuré sur capture : même intensité à 40 %). `Settings.veil()`
+pose donc un paramètre d'instance `opacity`, que chaque shader 3D d'effet déclare.
+Vérifié en zone (`Bureau\hns-captures-telegraphes-jeu\`) : à 40 %, 1 106 pixels rouge vif
+au lieu de 7 187.
+
+## 14. Reste à faire
 
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est
@@ -389,8 +471,6 @@ la poupée devient le portrait, tournable au glissé. Une classe sans modèle ga
   l'utilisateur le demande.
 - **Cheveux et peau claire de la sorcière « brûlent »** : ils passent le seuil de lueur de la
   2D, que l'étape 5 revoit.
-- **Au zoom maximal, un sprite du décor (arbre mort) peut masquer le joueur** : leur forme
-  est l'étape 3.
 - Étape 2 : les onze autres personnages en proportions adultes, un par un. **TRELLIS.2 pour
   ceux qu'on voit de près** (les trois classes, le Roi des Rats, marchand, entraîneur), au
   quota gratuit du jour ; les ennemis, TRELLIS.2 ou Stable Fast 3D, à trancher sur les
@@ -398,5 +478,3 @@ la poupée devient le portrait, tournable au glissé. Une classe sans modèle ga
 - **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).
-- Les télégraphes ennemis n'ont plus de dessin : le jeu se joue sans voir venir l'obus du
-  mortier, jusqu'à l'étape 4.

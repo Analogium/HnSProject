@@ -136,13 +136,18 @@ func test_loading_a_witch_changes_the_body() -> void:
 	assert_null(_p.model.sprite, "son modèle 3D, plus sa planche (jalon 54)")
 
 
-## Une classe encore sans modèle 3D garde sa planche, les pieds au sol (jalon 54).
-func test_a_class_without_a_model_keeps_its_sheet_on_the_ground() -> void:
+func test_loading_a_piper_changes_the_body() -> void:
 	var p := _played_character()
 	p.character_class = Character.PIPER
 	_p.load_character(p)
 	assert_eq(_p.model.archetype, "piper")
-	assert_eq(_p.model.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("piper").y, "les pieds sur l'origine, au sol")
+	assert_null(_p.model.sprite, "son modèle 3D, plus sa planche (jalon 54)")
+
+
+## Un corps encore sans modèle 3D (un ennemi) garde sa planche, les pieds au sol (jalon 54).
+func test_a_body_without_a_model_keeps_its_sheet_on_the_ground() -> void:
+	_p.model.set_archetype("grunt")
+	assert_eq(_p.model.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("grunt").y, "les pieds sur l'origine, au sol")
 
 
 ## Un emplacement que le joueur ne sait pas porter est écarté au lieu d'entrer

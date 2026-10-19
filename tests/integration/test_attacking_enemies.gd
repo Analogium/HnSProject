@@ -76,6 +76,18 @@ func test_a_cone_opens_forward_only() -> void:
 	assert_false(z.contains(Vector3(-10, 0.0, 0)), "rien derrière")
 
 
+## Le dessin (jalon 54) : un plan juste à la forme, tourné vers le cap, qui se remplit.
+func test_a_lane_is_drawn_along_its_course() -> void:
+	var z := await _zone(DangerZone.Shape.LANE, 100.0, Vector3.BACK, 7.0)
+	var plane := z.mesh as PlaneMesh
+	assert_almost_eq(plane.size.x, 102.0, 0.01, "la longueur du couloir, et un pixel de bord")
+	assert_almost_eq(plane.size.y, 16.0, 0.01)
+	var far := z.global_transform * (plane.center_offset + Vector3(plane.size.x * 0.5, 0, 0))
+	assert_almost_eq(far.z, 101.0, 0.01, "le bout du plan est au bout du couloir, vers +Z")
+	var progress: float = (z.material_override as ShaderMaterial).get_shader_parameter("progress")
+	assert_between(progress, 0.01, 0.5, "le plein monte")
+
+
 func test_a_zone_strikes_the_player_side_when_full() -> void:
 	_victim(Vector3(10, 0.0, 0))
 	var z := DangerZone.put(self, Vector3.ZERO, DangerZone.Shape.CONE, 40.0, 0.2, Vector3.RIGHT, 0.6)
