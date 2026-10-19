@@ -43,6 +43,7 @@ static func leave(
 	parent.add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
+	ElementFx.line(trail, from_value, tip, tint)
 	return trail
 
 

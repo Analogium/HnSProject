@@ -184,6 +184,8 @@ gréage local), qui ne dépend d'aucun quota.
      le jeu range l'arme quand on se déplace ou qu'on lance, `ActorModel.SHEATHED`). La main
      ne s'écarte pas de plus de 40° de celle de l'animation (`WRIST`) : sans borne, le
      poignet cassait jusqu'à 145°, la main « posée de travers comme un lego ».
+   - **Un corps sans arme** (`blender.weapons` vide, le Roi des Rats) n'a ni prise ni main
+     tournée : Mixamo peut le gréer sans doigts.
    - **Un coup répété** que Mixamo n'a pas (la Rafale, trois estocs) : nommer la source du
      coup seul (`"flurry": ["thrust.fbx", 8]`) et le geste dans `blender.repeat` ; l'export
      le répète à la cadence du jeu (`FLURRY_THRUSTS`, `FLURRY_GAP`), le retrait rejoué à

@@ -27,6 +27,7 @@ static func send(
 	parent.add_child(dervish)
 	Settings.veil(dervish, Settings.SPELLS)
 	dervish.global_position = from_value
+	ElementFx.trail(dervish, DamageType.COLORS[cast.nature])
 	return dervish
 
 

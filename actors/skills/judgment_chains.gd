@@ -76,6 +76,7 @@ static func _made(
 	parent.add_child(chains)
 	Settings.veil(chains, Settings.SPELLS)
 	chains.global_position = at
+	ElementFx.area(chains, DamageType.COLORS[cast.nature], cast.radius)
 	return chains
 
 

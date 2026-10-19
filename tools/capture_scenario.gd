@@ -23,7 +23,7 @@ const NODES: Array[String] = []
 const POINTS := 3
 const WAND := false
 ## En biais par défaut : c'est la visée qui éprouve ce qui pivote.
-const FACING := Vector2(1.0, -0.55)
+const FACING := Vector3(1.0, 0.0, -0.55)
 ## La frise, en images de physique depuis l'arrivée en zone : `["cast", case]`,
 ## `["shot", "nom"]`, `["pack"]` pour lâcher des ennemis, `["quit"]`.
 const TIMELINE := {

@@ -1949,7 +1949,7 @@ func _dance(cast: SkillStats) -> void:
 			center = _nearest_of(struck).global_position
 			Game.hit_stop()
 			Game.shake_camera(camera, shake_amount)
-		swing_arc.play(swing_duration)
+		swing_arc.play(swing_duration, SwingArc.Style.ARC, DamageType.COLORS[cast.nature])
 		if i == count - 1:
 			popped += _dance_finale(cast, center, parts)
 	gain_mana(cast.gravedigger * float(popped))
@@ -2304,7 +2304,7 @@ func available_skills() -> Array[Skill]:
 func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 	_is_swinging = true
 	_hit_shake = shake_amount * (STRIKE_SHAKE if style == SwingArc.Style.STRIKE else 1.0)
-	swing_arc.play(swing_duration * float(cast.hits), style)
+	swing_arc.play(swing_duration * float(cast.hits), style, DamageType.COLORS[cast.nature])
 
 	for hit in cast.hits:
 		if hit > 0:

@@ -18,6 +18,7 @@ static func burst(parent: Node, at: Vector3, radius: float, tint: Color) -> Fina
 	parent.add_child(b)
 	Settings.veil(b, Settings.SPELLS)
 	b.global_position = at
+	ElementFx.burst(b, at, tint, radius)
 	return b
 
 

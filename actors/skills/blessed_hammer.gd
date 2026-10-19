@@ -48,6 +48,7 @@ static func swing(
 	parent.add_child(hammer)
 	Settings.veil(hammer, Settings.SPELLS)
 	hammer.global_position = hammer._at(0.0)
+	ElementFx.trail(hammer, DamageType.COLORS[cast.nature])
 	return hammer
 
 

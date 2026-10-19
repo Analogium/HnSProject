@@ -19,6 +19,7 @@ static func leave(parent: Node, at: Vector3, cast: SkillStats) -> GroundSlam:
 	DashTrail.layer(parent).add_child(slam)
 	Settings.veil(slam, Settings.SPELLS)
 	slam.global_position = at
+	ElementFx.burst(slam, at, DamageType.COLORS[cast.nature], cast.radius)
 	return slam
 
 

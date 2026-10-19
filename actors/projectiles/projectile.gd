@@ -73,7 +73,7 @@ static func spawn(
 		if cast != null:
 			bolt._turns = cast.bounce_turns
 		bolt.setup(dir, parts, source, p_speed, nature)
-		Settings.veil(bolt, Settings.SPELLS)
+		bolt._show(Settings.SPELLS)
 	return bolt
 
 
@@ -87,8 +87,14 @@ static func spawn_of_nature(
 		var parts := DamageType.empty_parts()
 		parts[bolt.damage_type] = amount
 		bolt.setup(dir, parts, source)
-		Settings.veil(bolt, Settings.ENEMY_ATTACKS)
+		bolt._show(Settings.ENEMY_ATTACKS)
 	return bolt
+
+
+## Son voile, puis sa traînée, qui le reprend (`ElementFx`).
+func _show(group: StringName) -> void:
+	Settings.veil(self, group)
+	ElementFx.trail(self, tint())
 
 
 static func _spawn(parent: Node, scene: PackedScene, from: Vector3, dir: Vector3) -> Projectile:

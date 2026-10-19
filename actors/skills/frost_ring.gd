@@ -29,6 +29,7 @@ static func spread(
 	parent.add_child(ring)
 	Settings.veil(ring, Settings.SPELLS)
 	ring.global_position = point
+	ElementFx.burst(ring, point, DamageType.COLORS[cast.nature], cast.radius)
 	return ring
 
 

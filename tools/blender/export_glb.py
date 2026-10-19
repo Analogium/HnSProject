@@ -299,10 +299,11 @@ def impact(first, last):
     return round(speed.index(max(speed)) / (last - first), 2)
 
 
-# L'arme dans le poing, sur l'os de prise : la poignée au creux, la lame le long du pouce.
-grip_name = weapons.grip_bone(arm)
+# L'arme dans le poing, sur l'os de prise : la poignée au creux, la lame le long du pouce. Sans
+# arme (le Roi des Rats, que Mixamo gréé sans doigts), ni prise ni main tournée.
+grip_name = weapons.grip_bone(arm) if spec["weapons"] else ""
 scene.frame_set(int(idle.frame_range[0]))
-grip = arm.matrix_world @ arm.pose.bones[grip_name].matrix
+grip = arm.matrix_world @ arm.pose.bones[grip_name].matrix if grip_name else None
 for kind in spec["weapons"]:
     root = weapons.build(kind, H, 1.0)
     root.name = "weapon_" + kind
@@ -341,7 +342,7 @@ for name, source in [("rest", idle)] + list(spec["anims"].items()):
     if name != "rest" and spec["elbows"]:
         straighten(baked[-1], spec["elbows"])
     # Sans arme montrée (`ActorModel.SHEATHED`), la main reste la sienne.
-    if not spec["guard"] and name not in spec["sheathed"]:
+    if grip_name and not spec["guard"] and name not in spec["sheathed"]:
         wield(baked[-1], first, last, grip_name)
     if name in spec["repeat"]:
         impacts[name] = repeat(baked[-1], first, last, impacts[name], **spec["repeat"][name])
@@ -367,6 +368,9 @@ arm["impacts"] = impacts
 arm["height"] = round((hi.z - lo.z) * s, 3)
 # Celle qu'il tient sans équipement : `ActorModel` la montre quand on ne lui en donne pas.
 arm["weapon"] = spec["weapon"]
+# La case de planche à laquelle il est mis à l'échelle : un corps « grandi » (`<id>_<case>`, la
+# Légende du Roi des Rats) en est le rapport (`ActorModel`).
+arm["size"] = spec["size"]
 export(spec["out"])
 print("EXPORT", spec["out"], round(hi.z - lo.z, 3), "->", round((hi.z - lo.z) * s, 3), "m")
 if spec["portrait"]:

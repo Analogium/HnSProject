@@ -188,6 +188,8 @@ static func trace(parent: Node, points: PackedVector3Array, tint: Color) -> void
 	trace._tint = tint
 	parent.add_child(trace)
 	Settings.veil(trace, Settings.SPELLS)
+	for i in points.size() - 1:
+		ElementFx.line(trace, points[i], points[i + 1], tint)
 
 
 ## `cone` nul : pas de contrainte d'angle, c'est un saut. `charges` : les charges

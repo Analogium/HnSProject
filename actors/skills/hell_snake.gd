@@ -103,6 +103,7 @@ static func drop(
 	s._body = s._rings()
 	parent.add_child(s)
 	Settings.veil(s, Settings.SPELLS)
+	ElementFx.trail(s, DamageType.COLORS[cast.nature])
 	return s
 
 

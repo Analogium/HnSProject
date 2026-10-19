@@ -66,6 +66,8 @@ var _body: Node3D
 var _player: AnimationPlayer
 ## Les métadonnées de l'export (`tools/blender/export_glb.py`) : images d'impact, arme.
 var _extras: Dictionary = {}
+## L'agrandissement d'un corps grandi (`_modeled()`), 1 sinon.
+var _grown := 1.0
 var _meshes: Array[GeometryInstance3D] = []
 
 
@@ -75,7 +77,16 @@ func _ready() -> void:
 
 
 static func has_model(name_value: String) -> bool:
-	return ResourceLoader.exists(MODELS % name_value)
+	return ResourceLoader.exists(MODELS % _modeled(name_value))
+
+
+## Le modèle d'un archétype. `<base>_<case>` (le Roi grandi par la Légende) est celui de
+## `<base>`, agrandi au rapport de sa case (`_grown`) : la planche, elle, en a une par taille.
+static func _modeled(name_value: String) -> String:
+	var cut := name_value.rfind("_")
+	if ResourceLoader.exists(MODELS % name_value) or cut < 0 or not name_value.substr(cut + 1).is_valid_int():
+		return name_value
+	return name_value.substr(0, cut)
 
 
 ## Change la silhouette. Elle doit pouvoir s'appliquer **après** le _ready du
@@ -177,7 +188,7 @@ func impact_of(family: String) -> float:
 ## La hauteur du corps, pieds au sol, en unités du monde : écrite par l'export, nulle pour
 ## une planche ou un modèle d'avant elle.
 func height() -> float:
-	return float(_extras.get("height", 0.0)) * Flat.PX_PER_M
+	return float(_extras.get("height", 0.0)) * Flat.PX_PER_M * _grown
 
 
 ## Le blanchiment encaissé. Ici et non chez chaque acteur : c'est le corps qui porte le
@@ -241,9 +252,10 @@ func _rebuild() -> void:
 		sprite.set_pace(_pace)
 		return
 
-	var path := MODELS % archetype
-	if portrait and ResourceLoader.exists(PORTRAITS % archetype):
-		path = PORTRAITS % archetype
+	var modeled := _modeled(archetype)
+	var path := MODELS % modeled
+	if portrait and ResourceLoader.exists(PORTRAITS % modeled):
+		path = PORTRAITS % modeled
 	_body = (load(path) as PackedScene).instantiate()
 	# Modelé en mètres, posé dans le monde en pixels (jalon 54, §2).
 	_body.scale = Vector3.ONE * Flat.PX_PER_M
@@ -255,6 +267,10 @@ func _rebuild() -> void:
 		if _player.has_animation(gait):
 			_player.get_animation(gait).loop_mode = Animation.LOOP_LINEAR
 	_extras = _body.find_child("Armature", true, false).get_meta("extras", {})
+	_grown = 1.0
+	if modeled != archetype:
+		_grown = float(archetype.substr(modeled.length() + 1)) / float(_extras.get("size", 1))
+		_body.scale *= _grown
 	if _overlay == null:
 		_overlay = ShaderMaterial.new()
 		_overlay.shader = preload("res://art/actor_overlay.gdshader")

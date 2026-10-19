@@ -47,6 +47,7 @@ static func fall(
 	parent.add_child(pillar)
 	Settings.veil(pillar, Settings.SPELLS)
 	pillar.global_position = point
+	ElementFx.area(pillar, DamageType.COLORS[cast.nature], cast.radius)
 	_standing.assign(_standing.filter(
 		func(p) -> bool: return is_instance_valid(p) and not p.is_queued_for_deletion()
 	))

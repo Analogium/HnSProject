@@ -62,6 +62,7 @@ static func place(
 	DashTrail.layer(parent).add_child(g)
 	Settings.veil(g, Settings.SPELLS)
 	g.global_position = point
+	ElementFx.area(g, DamageType.COLORS[cast.nature], cast.radius)
 	return g
 
 

@@ -59,6 +59,7 @@ static func leave(
 	layer(parent).add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
+	ElementFx.line(trail, from_value, to, trail._tint)
 	return trail
 
 
@@ -114,6 +115,13 @@ func _exit_tree() -> void:
 
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
+## Un sol qui brûle a son disque d'étincelles (`ElementFx`), posé une fois là : le sol ravivé
+## arrive en différé, sa position après lui.
+func _ready() -> void:
+	if _ground:
+		ElementFx.area.call_deferred(self, _tint, _cast.radius)
+
+
 func _physics_process(delta: float) -> void:
 	_age += delta
 	var due := _cast.strikes_due(_age)

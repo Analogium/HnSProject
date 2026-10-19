@@ -53,6 +53,7 @@ static func send(
 	parent.add_child(wave)
 	Settings.veil(wave, Settings.SPELLS)
 	wave.global_position = from_value + wave._toward * START
+	ElementFx.trail(wave, DamageType.COLORS[cast.nature])
 	wave._start = wave.global_position
 	return wave
 

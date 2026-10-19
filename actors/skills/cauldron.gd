@@ -41,6 +41,7 @@ static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node
 	parent.add_child(c)
 	Settings.veil(c, Settings.SPELLS)
 	c.global_position = point
+	ElementFx.area(c, DamageType.COLORS[cast.nature], cast.radius)
 	return c
 
 

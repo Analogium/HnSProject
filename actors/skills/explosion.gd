@@ -66,6 +66,7 @@ static func of_cast(
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
+		ElementFx.burst(self, global_position, _tint, _radius)
 		var targets := Targets.in_circle(get_world_3d(), global_position, _radius, _mask)
 		if crowd > 0.0:
 			_crowded(targets)

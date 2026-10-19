@@ -81,6 +81,7 @@ static func open(
 	parent.add_child(gate)
 	Settings.veil(gate, Settings.SPELLS)
 	gate.global_position = point
+	ElementFx.area(gate, DamageType.COLORS[cast.nature], cast.radius)
 	return gate
 
 

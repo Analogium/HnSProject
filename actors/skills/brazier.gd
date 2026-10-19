@@ -63,6 +63,7 @@ static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node
 	parent.add_child(b)
 	Settings.veil(b, Settings.SPELLS)
 	b.global_position = point
+	ElementFx.area(b, DamageType.COLORS[cast.nature], HURT_RADIUS)
 	# La Triangulation : un trait de feu jusqu'au plus jeune des autres, éteint avec le
 	# premier des deux à partir.
 	var others := own.filter(func(o: Brazier) -> bool: return not o._out)

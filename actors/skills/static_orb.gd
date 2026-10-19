@@ -39,6 +39,7 @@ static func send(
 	parent.add_child(orb)
 	Settings.veil(orb, Settings.SPELLS)
 	orb.global_position = from + orb._dir * Projectile.MUZZLE
+	ElementFx.trail(orb, DamageType.COLORS[cast.nature])
 	if cast.satellite > 0.0 and around != null:
 		orb._orbits = true
 		orb._angle = Flat.angle(orb._dir)

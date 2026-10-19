@@ -7142,6 +7142,16 @@ func test_the_legend_grows_the_king_then_gives_the_piper_back() -> void:
 	assert_eq(_p.model.archetype, look)
 
 
+## En 3D (jalon 54), le Roi grandi est son modèle agrandi au rapport de sa case, pas une planche.
+func test_a_grown_king_is_his_model_scaled() -> void:
+	_p.model.set_archetype(SkillStats.KING_LOOK)
+	var base := _p.model.height()
+	assert_null(_p.model.sprite, "le Roi a son modèle")
+	_p.model.set_archetype(SkillStats.KING_GROWN[1])
+	assert_null(_p.model.sprite, "grandi, il le garde")
+	assert_almost_eq(_p.model.height(), base * 52.0 / 46.0, 0.01, "rat_king_52 : 52 sur la case 46 du Roi")
+
+
 ## Effrayé, il fuit au lieu d'avancer, le temps qu'on lui a donné. Sans EnemyManager, sa fuite
 ## avance à la main.
 func test_a_frightened_enemy_runs_away() -> void:

@@ -385,6 +385,15 @@ dépliage, que Mixamo rend à l'identique, sans regréer — l'export prend la c
 `model.glb` recuit au lieu de la copie de Mixamo. Couleur moyenne de la texture : sorcière
 18-40-44 → 37-56-63, Vive lame 57-43-39 → 75-58-52.
 
+**Le Roi des Rats** (19 octobre, deuxième passage TRELLIS.2 du jour, le quota le permettait) :
+même prompt « Torchlight », la queue enroulée à la taille pour ne pas se gréer sur les jambes
+(TRELLIS.2 en a quand même fait une longue, qui pend derrière et suit sans se tordre), graine 777
+— la seule aux bras nettement détachés du buste. Mixamo l'a gréé **sans os de doigts** : l'export
+cherchait une prise d'arme sur le majeur ; sans arme, il n'en pose plus, ni ne tourne la main.
+Ni morsure ni danse : le coup. Bras écartés de 40° comme les classes. **Le Roi grandi** de la
+Légende (`rat_king_49` à `_58`, une planche par case) n'a pas de modèle à son nom : c'est celui du
+Roi, agrandi au rapport de sa case sur la sienne (46, écrite par l'export dans `extras.size`).
+
 ## 12. Étape 3, le monde (18-19 octobre)
 
 Tranché avec l'utilisateur : **des falaises qui montent**, comme Torchlight Infinite, et des
@@ -443,6 +452,31 @@ shader qui écrit `ALPHA` (mesuré sur capture : même intensité à 40 %). `Set
 pose donc un paramètre d'instance `opacity`, que chaque shader 3D d'effet déclare.
 Vérifié en zone (`Bureau\hns-captures-telegraphes-jeu\`) : à 40 %, 1 106 pixels rouge vif
 au lieu de 7 187.
+
+**Le visuel générique par élément.** Une cinquantaine de formes de compétence, presque toutes
+invisibles depuis l'étape 1. Planche en zone : trois familles (projectile, éclatement, arc de
+coup) en feu, froid et foudre, quatre façons (`Bureau\hns-captures-elements\`). **Retenu : les
+particules.** Deux erreurs vues à la planche : au-dessus de 1, le tonemapping blanchissait
+toutes les natures en un même blanc, et un bruit d'« énergie » trop fin sortait en rond blanc
+déchiqueté (remplacé par un mélange lumière-particules). `ElementFx` : traînée des projectiles
+(ceux des ennemis compris), gerbe des explosions, balayage des coups. Vu en combat
+(`Bureau\hns-captures-etincelles\`) : à 4 px les étincelles ne se voyaient pas, passées à 7 ;
+nées à 30 images par seconde (le défaut), les tirs rapides laissaient des perles. Pièges : posée
+parmi les projectiles, la traînée cassait treize tests qui en comptent les enfants — elle vit à
+la racine du viewport ; `finished` ne vient jamais sans rendu, la gerbe se libère sur minuterie.
+**Deux familles de plus**, même langage : le disque d'une zone qui dure (`ElementFx.area`, des
+étincelles qui montent d'un anneau au rayon de la zone) et le semis d'un trait (`line`, une
+boîte le long du segment). Branchées en une ligne à la naissance de trente nœuds ; vues en
+combat (`Bureau\hns-captures-fx-lightning\`, `-cold\`) : la chaîne saute d'ennemi en ennemi,
+le nuage crache, l'orbe gelé file. Le sol qui brûle naît en différé, sa position après lui :
+son disque se pose en différé lui aussi. Restent sans rien les créatures (rats, corbeau,
+invocations), les buffs et auras portés par le joueur, et trois cas à part.
+
+**Coût** (300 ennemis en combat, sans vsync, A sans étincelles contre B, six paires alternées) :
+sous le bruit du jour — la même configuration allait de 3,2 à 9,5 ms l'image, et B − A valait
+en moyenne −0,4 ms (de −0,95 à +0,36). La matière de particules est gardée par nature : fabriquée
+à chaque tir, sa rampe partait au GPU à chaque fois. Les télégraphes, mesurés de même, ne se
+distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5 ms du §12.
 
 ## 14. Reste à faire
 

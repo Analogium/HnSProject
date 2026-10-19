@@ -43,6 +43,7 @@ static func fall(
 	parent.add_child(curse)
 	Settings.veil(curse, Settings.SPELLS)
 	curse.global_position = point
+	ElementFx.area(curse, DamageType.COLORS[cast.nature], cast.radius)
 	return curse
 
 

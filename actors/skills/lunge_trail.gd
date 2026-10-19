@@ -23,6 +23,7 @@ static func leave(parent: Node, from_value: Vector3, landing: Vector3, target: V
 	parent.add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
+	ElementFx.line(trail, from_value, landing, DamageType.COLORS[DamageType.Kind.PHYSICAL])
 	return trail
 
 

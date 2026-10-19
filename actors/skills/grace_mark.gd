@@ -6,6 +6,8 @@ extends Node3D
 ## frappe rien : le coup est parti de `Player._finish_off()`.
 
 const LIFETIME := 0.45
+## Le rayon de la gerbe sur la cible : la croix n'a pas de portée, juste sa taille.
+const MARK_SPARKS := 14.0
 
 var _age := 0.0
 var _tint := Color.WHITE
@@ -17,6 +19,7 @@ static func carve(parent: Node, at: Vector3, tint: Color) -> GraceMark:
 	parent.add_child(mark)
 	Settings.veil(mark, Settings.SPELLS)
 	mark.global_position = at
+	ElementFx.burst(mark, at, tint, MARK_SPARKS)
 	return mark
 
 

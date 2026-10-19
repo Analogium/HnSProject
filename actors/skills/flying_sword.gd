@@ -27,6 +27,7 @@ static func throw(
 	parent.add_child(sword)
 	Settings.veil(sword, Settings.SPELLS)
 	sword.global_position = from_value
+	ElementFx.trail(sword, DamageType.COLORS[cast.nature])
 	# L'Escorte (jalon 46) vise sa cible ; la volée, la plus proche.
 	if prey == null:
 		prey = Targets.nearest(sword.get_world_3d(), from_value, cast.sword_volley)

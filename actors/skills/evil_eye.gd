@@ -19,6 +19,7 @@ static func open(parent: Node, at: Vector3, radius: float, tint: Color) -> EvilE
 	DashTrail.layer(parent).add_child(e)
 	Settings.veil(e, Settings.SPELLS)
 	e.global_position = at
+	ElementFx.area(e, tint, radius)
 	return e
 
 

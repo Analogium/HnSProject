@@ -54,6 +54,7 @@ static func send(
 	parent.add_child(orb)
 	Settings.veil(orb, Settings.SPELLS)
 	orb.global_position = from + orb._dir * Projectile.MUZZLE
+	ElementFx.trail(orb, DamageType.COLORS[cast.nature])
 	return orb
 
 

@@ -51,6 +51,7 @@ static func open(
 	parent.add_child(vortex)
 	Settings.veil(vortex, Settings.SPELLS)
 	vortex.global_position = point
+	ElementFx.area(vortex, DamageType.COLORS[cast.nature], cast.radius)
 	vortex._aim = aim
 	vortex._rut_at = point
 	return vortex

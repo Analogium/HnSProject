@@ -51,6 +51,7 @@ static func put(
 	parent.add_child(cloud)
 	Settings.veil(cloud, Settings.SPELLS)
 	cloud.global_position = point
+	ElementFx.area(cloud, DamageType.COLORS[cast.nature], cast.radius)
 	return cloud
 
 

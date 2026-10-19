@@ -34,6 +34,7 @@ static func fall(
 	parent.add_child(meteor)
 	Settings.veil(meteor, Settings.SPELLS)
 	meteor.global_position = point
+	ElementFx.area(meteor, DamageType.COLORS[cast.nature], cast.radius)
 	return meteor
 
 

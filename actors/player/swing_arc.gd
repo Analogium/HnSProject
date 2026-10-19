@@ -38,9 +38,10 @@ func _ready() -> void:
 	set_process(false)
 
 
-func play(duration: float, style := Style.ARC) -> void:
+func play(duration: float, style := Style.ARC, tint: Color = DamageType.COLORS[DamageType.Kind.PHYSICAL]) -> void:
 	_style = style
 	_duration = maxf(duration * duration_scale * (STRIKE_SLOWNESS if style == Style.STRIKE else 1.0), 0.01)
+	ElementFx.sweep(self, tint, impact_reach, _duration)
 	_t = 0.0
 	visible = true
 	set_process(true)

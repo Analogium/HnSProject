@@ -49,6 +49,7 @@ static func converge(
 	parent.add_child(t)
 	Settings.veil(t, Settings.SPELLS)
 	t.global_position = aim
+	ElementFx.area(t, DamageType.COLORS[cast.nature], cast.radius)
 	return t
 
 

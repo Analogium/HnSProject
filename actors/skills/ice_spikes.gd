@@ -39,6 +39,7 @@ static func raise_at(
 	parent.add_child(spikes)
 	Settings.veil(spikes, Settings.SPELLS)
 	spikes.global_position = point
+	ElementFx.burst(spikes, point, DamageType.COLORS[cast.nature], cast.radius)
 	return spikes
 
 

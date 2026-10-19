@@ -36,43 +36,39 @@
   ],
   "colors": 16,
   "weapon_colors": 8,
-  "source": "tools/characters/rat_king/3d",
-  "rest": "rest.blend",
+  "source": "tools/characters/rat_king/mixamo",
+  "rest": "rest.fbx",
   "weapons": [],
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "cast": [
-    "cast",
+    "cast.fbx",
     8
    ],
    "sweep": [
-    "sweep",
+    "sweep.fbx",
     8
    ],
    "overhead": [
-    "overhead",
+    "overhead.fbx",
     8
    ],
    "thrust": [
-    "thrust",
-    8
-   ],
-   "bite": [
-    "bite",
-    8
-   ],
-   "danse": [
-    "danse",
+    "thrust.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 40,
+  "walk_leg_space": -12
  },
- "scale": 0.7
+ "scale": 0.7,
+ "model": "3d/model_trellis.glb : TRELLIS.2 sur 3d/model_front.png (Qwen-Image, graine 777, direction « Torchlight » des classes, queue enroulée à la taille pour le gréage), réduit à 40 000 faces ; gréé par Mixamo, ses animations dans mixamo/ (jalon 54) ; sans morsure ni danse : elles jouent le coup"
 }

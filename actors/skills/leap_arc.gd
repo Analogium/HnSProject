@@ -21,6 +21,7 @@ static func leave(parent: Node, from_value: Vector3, to: Vector3, cast: SkillSta
 	parent.add_child(arc)
 	Settings.veil(arc, Settings.SPELLS)
 	arc.global_position = from_value
+	ElementFx.line(arc, from_value, to, DamageType.COLORS[cast.nature])
 	return arc
 
 
