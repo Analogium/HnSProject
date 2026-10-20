@@ -547,6 +547,63 @@ Vu en jeu, sa traînée sortait en perles : la boule bougeait au pas de physique
 l'image ; elle bouge à l'image. Captures : `Bureau\hns-captures-fragmentation\`,
 `-meteore-jeu\`.
 
+**L'Immolation.** Première planche dans la langue de la boule (couronne de flammes, brasier
+plein, porteur en feu, couronne et onde ; `Bureau\hns-captures-immolation\`), après deux
+erreurs vues sur planche : les flammèches rondes de la boule, vues d'en haut, ne montaient pas —
+des bulles ; d'où des **langues debout**, tournées vers la caméra autour de la verticale ; puis,
+poussées vers le blanc, elles sortaient crème — le cœur reste dans la rampe. Verdict : « quelque
+chose d'un peu plus sobre ». Deuxième planche, plus tenue (`-immolation-sobre\`) : **retenu, le
+liseré de feu au rayon et quatorze flammèches**. `FireRing` suit le rayon (Feu de camp, Brasier)
+et la nature (Flamme noire) à chaque impulsion. Vu en jeu (`-immolation-jeu\`) ; contre une
+falaise, le liseré passe sous elle, comme le sol.
+
+**La Ruée ardente** (20 octobre). Première planche toute en shader, dans la langue de la boule
+(cœur et franges, braises, sol en flammes, rideau, lave ; `Bureau\hns-captures-ruee\`) : sur
+l'ocre, les langues additionnées sortaient crème tant qu'un **lit calciné** sombre ne passait
+pas dessous. Verdict : « assez cheap », faute de matière. Sans référence à montrer,
+l'utilisateur voulait des textures peintes. Deuxième planche (`-ruee-matiere\`) : un scan de
+terre craquelée de Poly Haven (CC0), noirci, dont les fissures rougeoient, et des flammes
+photographiées par Qwen-Image sur fond noir, additionnées. Debout, ces flammes sortaient
+tassées sous la caméra plongeante : tournées vers elle en entier, elles ont gardé leur
+hauteur. Le sol « vu de dessus » de Qwen sortait en étoile de lave, pas en texture qui se
+répète. **Retenu : les fissures seules**, sans flammes. `BurntPath` remplace, pour toute
+trace de feu, le semis d'étincelles qui jurait par-dessus en jeu. Le Brasero y gagne le trait
+de sa Triangulation. Captures en jeu : `-ruee-jeu\`. **Coût** (340 ennemis increvables, la
+ruée en case 0, sans vsync, six paires alternées) : +0,035 ms l'image en moyenne (de −0,07
+à +0,16), 1,49 contre 1,53 ms ; la physique, dans le bruit (+0,11, de −0,58 à +1,39).
+
+**Le Serpent infernal, en textures vraies** (20 octobre, « le même procédé » à la demande de
+l'utilisateur). Planche de sept peaux sur le corps de `SerpentBody` (`Bureau\hns-captures-
+serpent-matiere\`, l'actuelle en 0) : deux peaux de serpent et deux d'écailles calcinées à
+braises tirées par Qwen-Image, trois scans de Poly Haven (roche veinée, pierre de lave, terre
+craquelée). Les scans sortaient bruns et sans écailles. Première passe : la peau, répétée sept
+fois, se perdait (une écaille par pixel) et sortait argentée sous le soleil ; répétée trois
+fois de long et une fois du tour (un nombre entier, sinon la couture du tour se voit), assombrie
+et chauffée, elle se lit. **Retenu : « écailles B »**, une peau noire aux écailles fines dont les
+joints rougeoient. Le tirage ne se raccorde pas : `tools/fx_textures.py` le recouvre de sa moitié
+décalée, fondue vers les bords (la couture s'y devine), et tire relief et joints de sa clarté.
+L'outil prend aussi les fissures de la Ruée, qui vivaient un temps dans `terrain_textures.py`.
+Captures en jeu : `-serpent-peau-jeu\`. Coût non remesuré : deux lectures de texture prennent
+la place du bruit et du hachage des écailles dessinées.
+
+**La méthode retenue pour toutes les compétences** (20 octobre) : « on va garder cette méthode
+pour les skills (et leurs variantes depuis leurs arbres bien sûr) », dit l'utilisateur après la
+Ruée et le Serpent — des textures vraies, et la boule de feu et le Météore refaits ainsi.
+Planche (`Bureau\hns-captures-boule-matiere\`) : la boule photographiée en vol avec trois
+traînées (volutes photo, langues photo, volutes et braises) ; le Météore en boule géante ou en
+rocher de croûte de lave dans une couronne de feu ; une même explosion pour tous (photo
+d'explosion, volutes, fumée photo, la brûlure craquelée de la Ruée). Qwen tire des boules de feu
+en spirale, belles mais dessinées, et des explosions en champignon : seul le nuage se garde, la
+colonne ne se lit pas d'en haut ; découpé, il donne aussi les volutes. **Retenus : « photo » et
+« boule géante »**. Erreurs vues sur planche puis en jeu : l'explosion montait au blanc (sept
+photos et 220 volutes au Météore : deux photos, 120 volutes au plus, plus faibles) ; un grand
+quad d'explosion enfoncé dans le sol y était coupé net (levé de 0,7 de sa taille) ; poussées par
+la rampe du Givre, les photos sortaient en perles — la rampe s'éteint déjà vers le noir, et la
+clarté la multipliait une seconde fois. Le feu garde les couleurs de la photo, une autre nature
+y lit sa rampe. Les flammèches en bruit de shader (`flame_wisp`, `flame_smoke`, `flame_core`)
+sont supprimées. Captures en jeu : `-boule-photo-boule\`, `-meteore\`, `-givre\`. Coût non
+remesuré.
+
 La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
 géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
 mêlées à celles de l'éclat, du météore et des bouffées des rats, elles partiront avec le
@@ -560,6 +617,16 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
 
 ## 14. Reste à faire
 
+- **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
+  vraies (§13) sauf **le Brasero**, le suivant — sa planche d'abord (`/dessiner-un-effet`), les
+  photos de feu de `tools/fx_textures.py fire` sous la main. Puis les autres manuels, chacun en
+  textures vraies, variantes d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) :
+  la peau du Serpent et la boule de feu en photos. **Les couloirs d'équilibrage** à relever
+  avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
+  l'élan, le colosse reste planté plus longtemps) — en dernier, jalon 13, §7. Le grunt est
+  fait ; **les cinq autres ennemis** (caster, chevalier, mortier, gonflé, colosse) attendent leur
+  modèle, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
+  (l'utilisateur dépose les `.fbx` dans `<id>/mixamo/`), `blender_sheet.py <id> --glb`.
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est
   exclu (leur travail) ; Mixamo donne de la vraie capture, gratuite et libre dans un jeu.
@@ -591,8 +658,20 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   premiers vus en jeu. SPAR3D essayé à la demande de l'utilisateur : pas mieux que SF3D.
   **Le grunt d'abord**, au même prompt « Torchlight » adulte : image source tirée le
   19 octobre (graine 4242, les bras les plus détachés du buste), TRELLIS.2 refusé faute de
-  quota ce jour-là — `model_3d.py mesh grunt 4242` à relancer, puis Mixamo (repos, course,
-  attaque au couperet).
+  quota ce jour-là, passé le 20 (un orque massif, texture tenue de dos ; tour dans
+  `Bureau\hns-grunt-modele-3d\`). Le tirage source, dans un temporaire, avait disparu :
+  `mesh` reprend le détourage rangé à côté du modèle. Gréé par Mixamo le 20 (repos « Breathing
+  Idle », course « Unarmed Run Forward », attaque « Standing Melee Attack Downward ») : Mixamo
+  n'a trouvé que l'index, et l'export, qui posait la prise d'après les doigts, s'arrêtait ;
+  elle se pose maintenant d'après l'os de la main. Vu sous la lumière du jeu
+  (`Bureau\hns-captures-grunt-3d\`, GIF) et en zone (`-grunt-jeu\`). La course est un sprint,
+  le couperet levé devant le visage : `blender.elbows` si l'utilisateur le trouve gênant. Vu
+  par l'utilisateur : « ses bras rentrent dans son corps à lui aussi » — `blender.arm_space` à
+  40°, comme le Vive lame (`Bureau\hns-captures-grunt-bras\`). Et « il continue d'avancer
+  pendant son attaque » : **un corps ne bouge pas pendant son geste**, joueur comme ennemi, pour
+  que la vitesse d'attaque fasse enchaîner ; le coup part à l'impact (`Enemy._strike`, voir
+  ARCHITECTURE, « Quand le personnage joue-t-il son attaque ? »). Tranché avec lui : un tireur
+  ne se plante que le temps de son tir (`Caster.SHOT`), pas toute sa cadence de 1,5 à 3,2 s.
 - **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).

@@ -23,13 +23,10 @@ func tick(delta: float) -> void:
 		return
 	_cool_down(delta)
 	if _zone != null:
-		# L'horloge de la zone, pas ralentie par le gel : le geste suit la frappe.
+		# L'horloge de la zone, pas ralentie par le gel : elle frappe d'elle-même.
 		_timer -= delta
 		if _timer <= 0.0:
 			_zone = null
-			_strike(_dir)
-			if target is Player:
-				Game.shake_camera((target as Player).camera, SHAKE)
 		return
 	var victim := foe()
 	var to_victim := victim.global_position - global_position
@@ -44,6 +41,15 @@ func tick(delta: float) -> void:
 		_zone.knockback = stats.knockback_force
 		_zone.bound = self
 		_timer = WINDUP
+		# Les poings levés dès l'annonce : l'impact du geste tombe quand la zone frappe. La
+		# cadence court depuis la frappe, comme avant que le geste ne parte de l'annonce.
+		_strike(_dir, _slam, WINDUP / model.impact_of("attack"))
+		_attack_cd += WINDUP
 		return
 	_close_in(victim, ACCEL)
 	_animate()
+
+
+func _slam() -> void:
+	if target is Player:
+		Game.shake_camera((target as Player).camera, SHAKE)

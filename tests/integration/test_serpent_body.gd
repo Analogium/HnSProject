@@ -29,6 +29,13 @@ func test_a_snake_wears_its_body_ahead_of_its_head() -> void:
 	assert_almost_eq(spine[0].distance_to(snake._body[0]), SerpentBody.SNOUT, 0.01, "le museau devant la tête")
 
 
+## Sa peau est une texture vraie (`tools/fx_textures.py serpent`), relief et joints compris.
+func test_a_snake_wears_its_skin() -> void:
+	var m := _snake()._look.material_override as ShaderMaterial
+	assert_eq(m.get_shader_parameter(&"skin"), SerpentBody.SKIN)
+	assert_eq(m.get_shader_parameter(&"skin_n"), SerpentBody.SKIN_N)
+
+
 func test_each_snake_bends_its_own_material() -> void:
 	assert_ne(_snake()._look.material_override, _snake()._look.material_override)
 

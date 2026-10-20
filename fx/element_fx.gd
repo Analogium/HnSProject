@@ -109,6 +109,8 @@ static func warm(host: Node3D) -> void:
 	meteor.as_meteor()
 	made.append(meteor)
 	FlameFx.shadow(probe, 10.0)
+	FireRing.light_up(probe).show_as(DamageType.Kind.FIRE, 10.0)
+	BurntPath.lay(probe, Vector3.RIGHT * 10.0, DamageType.Kind.FIRE, 10.0, 1.0)
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in made:
 		if node is GeometryInstance3D:

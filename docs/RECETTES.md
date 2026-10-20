@@ -522,7 +522,9 @@ et choisie par l'utilisateur, puis captures réelles. Tant qu'elle n'en a pas, e
 montre le visuel générique de sa nature : **une ligne `ElementFx`** à la naissance du
 nœud, après sa position (`trail`, `burst`, `sweep`, `area`, `line`, `keep` pour une aura
 dont le rayon change ; voir ARCHITECTURE, « Que montre une compétence en 3D ? »). Un
-dessin propre est un shader ou des particules, dans son fichier `fx/` comme
+dessin propre est **en textures vraies** (décision de l'utilisateur, jalon 54) : un scan de
+Poly Haven ou une photo de Qwen-Image, choisi sur planche et tiré par `tools/fx_textures.py`,
+jamais à la main, porté par des shaders et des particules dans son fichier `fx/` comme
 `fx/flame_fx.gd` : **sous 1** de couleur quand il se mêle (le tonemapping blanchit
 au-delà), qui déclare `instance uniform float opacity` pour le voile, et dont la matière
 entre dans `ElementFx.warm()` — sinon sa première apparition gèle le jeu ~100 ms. Si elle a un nombre neuf : le
@@ -1087,6 +1089,7 @@ Le relief, ses matières et son décor sont en 3D depuis le jalon 54 (étape 3) 
 ```bash
 tools/terrain_textures.py     # sol, plaques brûlées, route, roche, dessus des falaises → art/tiles/
 tools/decor_3d.py [nom…]      # rochers, bois mort, buisson, arbres morts → art/decor/<nom>.glb
+tools/fx_textures.py cracks|serpent  # textures des effets : sol calciné, peau du serpent → fx/
 ```
 
 - **Le relief** (`world/terrain.gd`) se tire de la grille : sa forme se règle là

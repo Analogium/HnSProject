@@ -26,6 +26,11 @@ var level := 1
 var health: float
 ## Sur Enemy : tous les archétypes la décomptent pareil.
 var _attack_cd := 0.0
+## Le geste en cours, comme celui du joueur : le corps ne bouge pas tant qu'il dure, et son
+## coup (`_blow`) part à l'image d'impact. Vite, l'ennemi enchaîne ; il ne marche qu'entre deux.
+var _acting := 0.0
+var _to_impact := 0.0
+var _blow := Callable()
 var target: Node3D
 var is_dead := false
 var is_aggro := false
@@ -221,15 +226,26 @@ func heading() -> Vector3:
 
 const SEPARATION_RADIUS := 18.0
 const SEPARATION_FORCE := 0.35
+## Le freinage d'un corps qui s'arrête pour frapper.
+const STOP := 0.3
 
 
 ## Marcher sur la victime : le champ quand c'est le joueur, la ligne droite vers un
 ## mort-vivant, qui est à côté de lui.
 func _close_in(victim: Node3D, accel: float) -> void:
+	if _acting > 0.0:
+		_stand()
+		return
 	var desired := heading() if victim == target else (victim.global_position - global_position).normalized()
 	# Séparation : sans ça les corps se superposent en une bouillie illisible.
 	desired += _separation() * SEPARATION_FORCE
 	velocity = velocity.lerp(desired.normalized() * movement_speed(), accel)
+	move_and_slide()
+
+
+## Planté pendant son geste ; le recul d'un coup reçu glisse encore.
+func _stand() -> void:
+	velocity = velocity.lerp(Vector3.ZERO, STOP)
 	move_and_slide()
 
 
@@ -256,16 +272,33 @@ func _animate() -> void:
 
 
 ## Une fois par tick, **hors** du test de portée, sinon l'attente se fige. Le gel
-## l'étire.
+## l'étire, le geste comme l'attente.
 func _cool_down(delta: float) -> void:
-	_attack_cd = maxf(_attack_cd - delta * states.speed_factor, 0.0)
+	var step := delta * states.speed_factor
+	_attack_cd = maxf(_attack_cd - step, 0.0)
+	_acting = maxf(_acting - step, 0.0)
+	_to_impact -= step
+	if _blow.is_valid() and _to_impact <= 0.0:
+		var blow := _blow
+		_blow = Callable()
+		blow.call()
 
 
-## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact.
-func _strike(facing: Vector3) -> void:
+## Le temps d'un geste. Au contact, c'est sa cadence : tenu au corps à corps, il enchaîne
+## sans marcher, et la vitesse d'attaque le fait enchaîner plus vite.
+func action_time() -> float:
+	return stats.attack_interval()
+
+
+## Face à la cible et non dans le sens de la vitesse, quasi nulle au contact. Le geste dure
+## `action` et `blow` part à son impact.
+func _strike(facing: Vector3, blow := Callable(), action := action_time()) -> void:
 	_attack_cd = stats.attack_interval()
+	_acting = action
+	_to_impact = action * model.impact_of("attack")
+	_blow = blow
 	model.set_state(false, facing)
-	model.attack()
+	model.attack(false, action)
 
 
 ## Un coup au contact, porté en son nom. Le vol de vie se prend sur ce qui a passé

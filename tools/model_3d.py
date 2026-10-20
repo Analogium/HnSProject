@@ -164,7 +164,13 @@ def cmd_mesh(a):
     blender = lambda script, *args: subprocess.run(
         [BLENDER, "-b", "-P", win(os.path.join(here, "blender", script)), "--", *args],
         check=True, capture_output=True)
-    cutout(a.id, a.seed, "down", front)
+    # Le tirage vit dans un temporaire que Windows vide ; le détourage, lui, reste à côté du modèle.
+    if os.path.exists(raw(a.id, a.seed, "down")):
+        cutout(a.id, a.seed, "down", front)
+    elif os.path.exists(front):
+        print("tirage disparu : détourage gardé,", front)
+    else:
+        sys.exit("ni tirage ni détourage : relancer `image " + a.id + "`")
     if a.back is None and not a.sf3d:
         # TRELLIS.2 sort près de 200 000 faces : réduit au compte du jeu, sa texture recuite sur la
         # version réduite (blender/bake_color.py). Son modèle brut est gardé : il coûte le quota du jour.

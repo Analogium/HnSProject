@@ -186,6 +186,9 @@ gréage local), qui ne dépend d'aucun quota.
      poignet cassait jusqu'à 145°, la main « posée de travers comme un lego ».
    - **Un corps sans arme** (`blender.weapons` vide, le Roi des Rats) n'a ni prise ni main
      tournée : Mixamo peut le gréer sans doigts.
+   - **Une main en moufle** : quand Mixamo ne trouve pas les doigts (le grunt, doigts serrés
+     dans l'image source), il ne grée que l'index. La prise se pose alors d'après les axes de
+     l'os de la main (`weapons.grip_bone`), qui suivent jointures et paume à 0,99 près.
    - **Un coup répété** que Mixamo n'a pas (la Rafale, trois estocs) : nommer la source du
      coup seul (`"flurry": ["thrust.fbx", 8]`) et le geste dans `blender.repeat` ; l'export
      le répète à la cadence du jeu (`FLURRY_THRUSTS`, `FLURRY_GAP`), le retrait rejoué à

@@ -33,10 +33,21 @@ pas.
   (`is` et non `find_children()` avec un nom de classe de script, qui ne le reconnaît pas). La
   Fragmentation lâchait bien ses éclats, mais ils avaient l'allure de la boule et naissaient
   dans l'éclair de l'explosion.
+- **Une aura qui dure reste sobre** : elle tourne sous les yeux pendant tout le combat.
+  L'Immolation en couronne de flammes et en brasier plein a été jugée trop chargée ; un liseré
+  et quelques flammèches ont été retenus.
 - **Demander une référence** si l'utilisateur en a une : au jalon 54, cinq variantes de
   boule de feu (particules, plasma, couronne, toon, lave) lui ont paru « pas assez
   parlantes » ; une capture de Path of Exile a tranché, et la planche suivante en a décliné
   quatre façons.
+- **Une compétence se dessine en textures vraies**, elle et ses variantes d'arbre (décision de
+  l'utilisateur, 20 octobre) : une Ruée ardente toute en shader (bruit, langues, flammèches) a
+  été jugée « cheap » ; refaite d'un scan de terre craquelée (Poly Haven, CC0), elle a été
+  retenue, puis le Serpent a pris une peau photographiée. La planche compare des textures, et
+  `tools/fx_textures.py` tire celle choisie. Qwen-Image peint de bonnes
+  **flammes photographiques sur fond noir** (additionnées, le noir disparaît ; tournées vers la
+  caméra en entier, debout elles sortaient tassées), mais un sol « vu de dessus » lui sort en
+  étoile de lave, pas en texture qui se répète.
 - La teinte vient de `DamageType.COLORS[nature]`. Un sort qui change d'élément a **un
   dessin par élément** quand une simple teinte n'a pas de sens, comme un éclair en feu.
 
@@ -105,7 +116,10 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
    **à la taille de sa forme**, tournée vers son cap (`rotation.y = -Flat.angle(cap)`) :
    un couloir de charge dans un carré aurait couvert 340 px, presque tout jeté. Un contour
    d'épaisseur égale se calcule en distance au bord, forme par forme (`danger_zone.gdshader`).
-4. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles ; et ce qui ne
+4. **Une flamme posée se dresse** : vue d'en haut, une flammèche ronde qui monte ne se voit
+   pas monter — des bulles. Une langue de feu est un quad debout, tourné vers la caméra autour
+   de la verticale, posé par sa base (`fx/flame_tongue.gdshader`).
+5. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles ; et ce qui ne
    bouge que pour se montrer (un météore qui tombe) **bouge dans `_process()`** : posé au pas de
    physique, il reste immobile entre deux pas, et sa traînée sort aussi en perles ;
    `local_coords = false` pour une traînée ; un point doux, pas un carré. Quelques pièges :
@@ -113,19 +127,19 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
    - changer `amount` relance l'émetteur, donc on change la matière (`ElementFx.keep()`) ;
    - un émetteur posé parmi les projectiles fausse les tests qui en comptent les enfants :
      il vit à la racine du viewport et suit son porteur.
-5. **Les matières se gardent**, par teinte et par forme (`ElementFx._process_material`). Une
+6. **Les matières se gardent**, par teinte et par forme (`ElementFx._process_material`). Une
    matière fabriquée à chaque tir repart au GPU à chaque fois. **Et elles se chauffent** :
    la première apparition d'une matière gèle le jeu ~100 ms ; elle entre dans
    `ElementFx.warm()`, qui la fait paraître invisible au chargement de la zone.
    **Le bruit se calcule dans le shader** (`fx/flame_common.gdshaderinc`) : une
    `NoiseTexture2D` se génère en différé, la première boule partait sans.
-6. **Un effet ne se colle pas à la lumière** : il ne prend pas d'ombre et n'en jette pas.
+7. **Un effet ne se colle pas à la lumière** : il ne prend pas d'ombre et n'en jette pas.
    **Mais il peut en porter** : une `OmniLight3D` sans ombre sur ce qui brûle éclaire le
    sol autour (la boule de feu, l'éclair de son explosion), et c'est ce qui le fait vivre.
-7. **Un maillage fabriqué montre ses faces dans le bon sens** : retournées, la caméra voit le
+8. **Un maillage fabriqué montre ses faces dans le bon sens** : retournées, la caméra voit le
    dedans du fond, et rien ne lui donne de volume — le serpent sortait « dessin plat » à
    chaque retouche de matière. Le vérifier avant de régler la lumière.
-8. **1 unité = 1 px du jeu 2D** (`Flat.PX_PER_M` = 16 pour Blender) : une portée de
+9. **1 unité = 1 px du jeu 2D** (`Flat.PX_PER_M` = 16 pour Blender) : une portée de
    compétence se lit telle quelle comme une taille d'effet.
 
 ## 4. Mesurer ce qui coûte

@@ -17,7 +17,7 @@ var _next_threshold := 0.0
 ## Le Feu de camp (jalon 42) : les secondes passées sans bouger, et où le porteur était.
 var _still := 0.0
 var _was_at := Vector3.INF
-var _sparks: ElementFx
+var _look: FireRing
 
 
 static func ignite(player: Player, skill: Skill) -> Immolation:
@@ -26,6 +26,7 @@ static func ignite(player: Player, skill: Skill) -> Immolation:
 	aura._skill = skill
 	player.add_child(aura)
 	Settings.veil(aura, Settings.SPELLS)
+	aura._look = FireRing.light_up(aura)
 	return aura
 
 
@@ -46,7 +47,7 @@ func _physics_process(delta: float) -> void:
 	if _cast == null or _age >= _next_threshold:
 		_cast = _player.resolve(_skill, points)
 		_cast.radius *= _rise()
-		_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[_cast.nature], _cast.radius)
+		_look.show_as(_cast.nature, _cast.radius)
 		_next_threshold = _age + _cast.period
 		_strike()
 	# La Veillée : à pleine montée du feu de camp, le brasier soigne.

@@ -10,6 +10,9 @@ extends Enemy
 ## percer jusqu'à lui est récompensé — il reste mobile en tournant.
 
 const ACCEL := 0.06
+## Le geste d'un tir, à vitesse d'attaque 1 : il s'arrête le temps de tirer, puis tourne de
+## nouveau pendant sa recharge. Toute sa cadence planté, il devenait une tourelle.
+const SHOT := 0.5
 
 @export var projectile_scene: PackedScene
 @export var preferred_distance: float = 150.0
@@ -56,19 +59,24 @@ func tick(delta: float) -> void:
 		move = (goal - global_position).normalized() * strafe_bias
 		strafing = true
 
-	velocity = velocity.lerp(move * movement_speed(), ACCEL)
-	move_and_slide()
-
-	# Sans ça il s'use contre les murs en tournant toujours du même côté.
-	if strafing and get_slide_collision_count() > 0:
-		_strafe_dir = -_strafe_dir
+	if _acting > 0.0:
+		_stand()
+	else:
+		velocity = velocity.lerp(move * movement_speed(), ACCEL)
+		move_and_slide()
+		# Sans ça il s'use contre les murs en tournant toujours du même côté.
+		if strafing and get_slide_collision_count() > 0:
+			_strafe_dir = -_strafe_dir
 
 	_cool_down(delta)
-	if dist < preferred_distance * 1.4 and _attack_cd <= 0.0 and _has_line_of_sight(victim):
-		_strike(dir)
-		_fire(dir)
-	else:
+	if dist < preferred_distance * 1.4 and _attack_cd <= 0.0 and _acting <= 0.0 and _has_line_of_sight(victim):
+		_strike(dir, _fire.bind(dir))
+	elif _acting <= 0.0:
 		_animate()
+
+
+func action_time() -> float:
+	return SHOT / maxf(stats.attack_speed, 0.1)
 
 
 ## Pas dans le document, mais une arène à piliers rend l'absence de test

@@ -22,8 +22,8 @@
  "weapon": "cleaver",
  "blender": {
   "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a hulking orc grunt warrior, adult heroic proportions, stocky and hunched, very broad shoulders, thick neck, head sunk low between the shoulders, olive green skin, heavy brow, glowing orange eyes, small lower tusks, ragged olive green cloth wrap around the hips, brown leather straps crossed on the bare chest, wide brown leather belt, bare muscular forearms, short thick legs, bare feet wrapped in cloth, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers together, feet slightly apart, full body from head to feet, orthographic",
-  "source": "tools/characters/grunt/3d",
-  "rest": "rest.blend",
+  "source": "tools/characters/grunt/mixamo",
+  "rest": "rest.fbx",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
@@ -35,14 +35,16 @@
   ],
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "sweep",
+    "attack.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 40
  },
  "width": 1.5,
  "scale": 0.7,

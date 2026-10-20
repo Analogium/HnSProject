@@ -59,7 +59,10 @@ static func leave(
 	layer(parent).add_child(trail)
 	Settings.veil(trail, Settings.SPELLS)
 	trail.global_position = from_value
-	ElementFx.line(trail, from_value, to, trail._tint)
+	if cast.nature == DamageType.Kind.FIRE:
+		BurntPath.lay(trail, trail._toward, cast.nature, cast.radius, cast.duration)
+	else:
+		ElementFx.line(trail, from_value, to, trail._tint)
 	return trail
 
 

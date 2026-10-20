@@ -102,13 +102,20 @@ def grip_bone(arm):
     eb = arm.data.edit_bones
     hand = eb[prefix + "RightHand"]
     at = lambda finger: eb[prefix + "RightHand" + finger].head
-    wrist, base = hand.head.copy(), at("Middle1")
-    reach = (base - wrist).length
-    fingers = (base - wrist).normalized()
-    knuckles = (at("Index1") - at("Pinky1")).normalized()
-    palm = fingers.cross(knuckles).normalized()
-    if (at("Middle3") - base).dot(palm) < 0:
-        palm = -palm
+    if prefix + "RightHandMiddle1" in eb:
+        wrist, base = hand.head.copy(), at("Middle1")
+        reach = (base - wrist).length
+        fingers = (base - wrist).normalized()
+        knuckles = (at("Index1") - at("Pinky1")).normalized()
+        palm = fingers.cross(knuckles).normalized()
+        if (at("Middle3") - base).dot(palm) < 0:
+            palm = -palm
+    else:
+        # Une main en moufle, l'index seul (Mixamo n'a pas trouvé les doigts du grunt) : les axes
+        # de l'os de la main, x et z, suivent jointures et paume à 0,99 près sur le Vive lame.
+        base = at("Index1")
+        reach = (base - hand.head).length
+        knuckles, palm = hand.x_axis.normalized(), hand.z_axis.normalized()
     bone = eb.new(prefix + "RightHandGrip")
     bone.head = base + palm * 0.35 * reach
     bone.tail = bone.head + knuckles * reach

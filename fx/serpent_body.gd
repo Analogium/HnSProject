@@ -1,12 +1,14 @@
 class_name SerpentBody
 extends MeshInstance3D
 
-## Le corps du Serpent infernal en 3D (jalon 54, « braise » choisie sur planche, après un ruban
-## de feu jugé « pas un serpent ») : museau, mâchoire, cou pincé, corps qui s'effile, écailles
-## calcinées, yeux qui brûlent, et sa lueur portée au sol. La grille ne change jamais : le
+## Le corps du Serpent infernal en 3D (jalon 54 ; un ruban de feu était « pas un serpent », des
+## écailles dessinées « un dessin plat ») : museau, mâchoire, cou pincé, corps qui s'effile, une
+## peau de serpent vraie aux joints qui rougeoient, yeux qui brûlent, et sa lueur portée au sol. La grille ne change jamais : le
 ## shader la courbe le long des anneaux, seuls `SPINE` points partent au GPU à chaque pas.
 
 const SHADER := preload("res://fx/serpent.gdshader")
+const SKIN := preload("res://fx/serpent_skin.png")
+const SKIN_N := preload("res://fx/serpent_skin_n.png")
 ## Le museau et les anneaux de `HellSnake` ; écrit aussi dans `fx/serpent.gdshader`.
 const SPINE := 21
 const SAMPLES := 60
@@ -35,9 +37,11 @@ static func dress(snake: Node3D, nature: int) -> SerpentBody:
 	var m := ShaderMaterial.new()
 	m.shader = SHADER
 	var ramp := FlameFx.ramp(nature)
-	for i in 4:
+	for i in 3:
 		var c: Color = ramp[i]
-		m.set_shader_parameter([&"heart", &"tint", &"deep", &"rim"][i], Vector3(c.r, c.g, c.b))
+		m.set_shader_parameter([&"heart", &"tint", &"deep"][i], Vector3(c.r, c.g, c.b))
+	m.set_shader_parameter(&"skin", SKIN)
+	m.set_shader_parameter(&"skin_n", SKIN_N)
 	# Le sien : ses anneaux ne sont qu'à lui.
 	body.material_override = m
 	snake.add_child(body)

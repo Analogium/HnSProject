@@ -52,6 +52,12 @@ func tick(delta: float) -> void:
 				_phase = Phase.APPROACH
 
 
+## Sa charge est son geste : planté le temps de toute sa cadence, il attendait 3 s après chaque
+## charge.
+func action_time() -> float:
+	return REACH / CHARGE_SPEED
+
+
 func _approach() -> void:
 	var victim := foe()
 	var to_victim := victim.global_position - global_position

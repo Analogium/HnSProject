@@ -144,11 +144,48 @@ func test_the_charger_shows_its_lane_then_hits_along_it() -> void:
 	assert_eq(_hits, 1, "une charge frappe une fois")
 
 
+## Comme le joueur : planté tout son geste, il enchaîne s'il est vif, ne marche qu'entre deux ;
+## et son coup part à l'impact, sur qui est encore à portée.
+func test_a_grunt_stands_through_its_swing_and_misses_who_left() -> void:
+	var victim := _victim(Vector3.ZERO)
+	var m := _manager(victim)
+	var grunt := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector3(15, 0.0, 0))
+	for i in 30:
+		if grunt._acting > 0.0:
+			break
+		await wait_physics_frames(1)
+	assert_gt(grunt._acting, 0.0, "au contact, il frappe")
+	var planted := grunt.global_position
+	victim.position = Vector3(-200, 0.0, 0)
+	await wait_seconds(grunt.action_time() * 0.9)
+	assert_almost_eq(grunt.global_position.x, planted.x, 1.0, "il ne marche pas pendant son geste")
+	assert_eq(_hits, 0, "parti avant l'impact, on n'est pas touché")
+	await wait_seconds(0.5)
+	assert_lt(grunt.global_position.x, planted.x - 5.0, "son geste fini, il repart")
+
+
+func test_a_quicker_grunt_swings_shorter() -> void:
+	var m := _manager(_victim(Vector3.ZERO))
+	var grunt := m.spawn(load("res://actors/enemies/grunt.tscn"), Vector3(300, 0.0, 0))
+	var slow := grunt.action_time()
+	grunt.stats.attack_speed *= 2.0
+	assert_almost_eq(grunt.action_time(), slow / 2.0, 0.001)
+
+
+## L'obus part à l'impact du geste de tir (`Caster.SHOT`), pas à son début.
+func _shell_away(m: EnemyManager) -> void:
+	for i in 60:
+		if not _zones(m).is_empty():
+			return
+		await wait_physics_frames(1)
+
+
 func test_the_mortar_hits_where_the_victim_stood() -> void:
 	var victim := _victim(Vector3.ZERO)
 	var m := _manager(victim)
 	m.spawn(load("res://actors/enemies/mortar.tscn"), Vector3(150, 0.0, 0))
-	await wait_physics_frames(80)
+	await _shell_away(m)
+	await wait_physics_frames(77)
 	assert_gt(_hits, 0)
 
 
@@ -156,7 +193,7 @@ func test_the_mortar_misses_who_moved_away() -> void:
 	var victim := _victim(Vector3.ZERO)
 	var m := _manager(victim)
 	m.spawn(load("res://actors/enemies/mortar.tscn"), Vector3(150, 0.0, 0))
-	await wait_physics_frames(3)
+	await _shell_away(m)
 	assert_eq(_zones(m).size(), 1, "l'obus est parti")
 	victim.position = Vector3(0, 0.0, 80)
 	await wait_physics_frames(66)

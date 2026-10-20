@@ -1,10 +1,11 @@
 shader_type spatial;
 render_mode world_vertex_coords, cull_back;
 
-// Le corps du Serpent infernal (`SerpentBody`, « braise » choisie sur planche, l'avant dressé) :
-// écailles calcinées et bombées dont les joints rougeoient au passage d'une onde de chaleur,
-// reflets, liseré chaud, ventre qui couve, yeux qui brûlent. Le maillage est une grille droite (UV.x le long, du museau à la queue ;
-// UV.y le tour, 0,25 le dos) que le vertex courbe le long de `spine`.
+// Le corps du Serpent infernal (`SerpentBody`, l'avant dressé) : une peau de serpent noire
+// (« écailles B » choisie sur planche) dont les joints rougeoient au passage d'une onde de
+// chaleur, reflets, liseré chaud, ventre qui couve, yeux qui brûlent. Le maillage est une grille
+// droite (UV.x le long, du museau à la queue ; UV.y le tour, 0,25 le dos) que le vertex courbe
+// le long de `spine`.
 
 #include "res://fx/flame_common.gdshaderinc"
 
@@ -17,7 +18,11 @@ uniform float scales = 26.0;
 uniform vec3 heart = vec3(1.0, 0.72, 0.22);
 uniform vec3 tint = vec3(1.0, 0.36, 0.04);
 uniform vec3 deep = vec3(0.72, 0.1, 0.02);
-uniform vec3 rim = vec3(0.22, 0.03, 0.01);
+// La peau (`tools/fx_textures.py serpent`) : l'albédo ; le relief en RG, les joints en B.
+uniform sampler2D skin : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D skin_n : filter_linear_mipmap, repeat_enable;
+// Combien d'écailles de long tient une répétition de la peau.
+const float SKIN_ROWS = 8.7;
 // Le voile des sorts et la fin du serpent : il se dissout en pointillé, sans transparence.
 instance uniform float opacity = 1.0;
 instance uniform float fade = 0.0;
@@ -76,23 +81,19 @@ void fragment() {
 	if (hash(floor(FRAGCOORD.xy)) > opacity * (1.0 - fade)) {
 		discard;
 	}
-	vec2 g = vec2(along * scales, UV.y * 16.0);
-	vec2 q = vec2(g.x + g.y, g.x - g.y) * 0.5;
-	float edge = max(abs(fract(q.x) - 0.5), abs(fract(q.y) - 0.5));
-	float seam = smoothstep(0.42, 0.5, edge);
-	float own = hash(floor(q));
+	vec2 uv = vec2(along * scales / SKIN_ROWS, UV.y);
+	vec3 relief = texture(skin_n, uv).rgb;
 	float flow = noise(vec2(along * scales * 0.9 - TIME * 2.2, UV.y * 5.0));
-	float pulse = smoothstep(0.62, 0.9, flow);
+	float pulse = smoothstep(0.55, 0.9, flow);
 	float belly = smoothstep(0.55, 0.7, UV.y) * (1.0 - smoothstep(0.85, 0.95, UV.y));
 	// Deux yeux, sur le haut de la tête, de part et d'autre du dos.
 	float eye = 1.0 - smoothstep(0.35, 0.6, length(vec2((along - 0.06) * scales * 2.2, (abs(UV.y - 0.25) - 0.09) * 14.0)));
-	// Chaque écaille bombe : sa pente vers le bord, le long du corps et autour.
-	vec2 c = vec2(fract(q.x) - 0.5, fract(q.y) - 0.5);
-	NORMAL_MAP = vec3(0.5 + vec2(c.x + c.y, c.x - c.y) * 0.9, 1.0);
-	ALBEDO = mix(vec3(0.16, 0.06, 0.04), rim, own * 0.6) + belly * deep * 0.1;
-	ROUGHNESS = 0.22;
-	SPECULAR = 0.85;
+	NORMAL_MAP = vec3(relief.rg, 1.0);
+	// La photo assombrie et chauffée : telle quelle, la peau sortait argentée sous le soleil.
+	ALBEDO = texture(skin, uv).rgb * vec3(0.45, 0.38, 0.36);
+	ROUGHNESS = 0.45;
+	SPECULAR = 0.5;
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
-	EMISSION = (mix(deep, tint, pulse) * (0.5 + 0.9 * pulse) + heart * pow(pulse, 4.0) * 0.6) * seam
-		+ deep * belly * 0.35 + heart * eye * 2.0 + tint * fres * 0.6;
+	EMISSION = (mix(deep, tint, pulse) * (0.35 + 0.9 * pulse) + heart * pow(pulse, 4.0) * 0.5) * relief.b * 0.7
+		+ deep * belly * 0.35 + heart * eye * 2.0 + tint * fres * 0.5;
 }
