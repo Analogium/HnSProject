@@ -33,6 +33,10 @@ const RAMPS := {
 	DamageType.Kind.COLD: [
 		Color(0.7, 0.95, 1.0), Color(0.3, 0.72, 1.0), Color(0.08, 0.3, 0.85), Color(0.03, 0.08, 0.3)
 	],
+	# La Lanterne d'orage du Brasero : tirée de sa couleur pâle, la foudre sortait blanche.
+	DamageType.Kind.LIGHTNING: [
+		Color(0.6, 0.48, 1.0), Color(0.34, 0.18, 0.92), Color(0.13, 0.05, 0.5), Color(0.05, 0.02, 0.18)
+	],
 	DamageType.Kind.NECROTIC: [
 		Color(0.82, 1.0, 0.3), Color(0.38, 0.82, 0.08), Color(0.1, 0.38, 0.04), Color(0.04, 0.1, 0.02)
 	],
@@ -85,7 +89,7 @@ var _glow: OmniLight3D
 
 ## La boule de `host` (un projectile) : le cœur et la lumière sur elle, la traînée qui la suit.
 static func ball(host: Node3D, nature: int) -> FlameFx:
-	var fx := _emitter(host, flame_material(nature, &"trail", BOARD_RADIUS), 90, FLAME_LIFE, _draw_of(nature, &"wisp"))
+	var fx := _emitter(host, flame_material(nature, &"trail", BOARD_RADIUS), 90, FLAME_LIFE, draw_of(nature, &"wisp"))
 	fx._follow(host, Vector3.UP * LIFT)
 	fx._nature = nature
 	fx.core = MeshInstance3D.new()
@@ -99,7 +103,7 @@ static func ball(host: Node3D, nature: int) -> FlameFx:
 	fx.core.position = Vector3.UP * LIFT
 	host.add_child(fx.core)
 	veil_like(fx.core, host)
-	fx._glow = _light(nature, BALL_LIGHT, BALL_REACH)
+	fx._glow = light_of(nature, BALL_LIGHT, BALL_REACH)
 	fx._glow.position = Vector3.UP * LIFT
 	host.add_child(fx._glow)
 	return fx
@@ -109,7 +113,7 @@ static func ball(host: Node3D, nature: int) -> FlameFx:
 func as_meteor() -> void:
 	core.scale = Vector3.ONE * METEOR
 	process_material = flame_material(_nature, &"meteor", BOARD_RADIUS)
-	draw_pass_1 = _draw_of(_nature, &"meteor")
+	draw_pass_1 = draw_of(_nature, &"meteor")
 	amount = METEOR_WISPS
 	lifetime = METEOR_LIFE
 
@@ -146,9 +150,9 @@ static func blast(host: Node3D, at: Vector3, nature: int, radius: float) -> Arra
 	var root := host.get_viewport()
 	var mid := at + Vector3.UP * LIFT * 0.7
 	# Plafonnées : un Météore en lâchait 220, et leur somme montait au blanc.
-	var flames := _emitter(host, flame_material(nature, &"blast", radius), clampi(int(110.0 * k), 40, 120), BLAST_LIFE, _draw_of(nature, &"spray"))
-	var smoke := _emitter(host, flame_material(nature, &"smoke", radius), clampi(int(26.0 * k), 10, 60), SMOKE_LIFE, _draw_of(nature, &"smoke"))
-	var burst := _emitter(host, flame_material(nature, &"photo", radius), BLASTS, BLAST_LIFE, _draw_of(nature, &"blast"))
+	var flames := _emitter(host, flame_material(nature, &"blast", radius), clampi(int(110.0 * k), 40, 120), BLAST_LIFE, draw_of(nature, &"spray"))
+	var smoke := _emitter(host, flame_material(nature, &"smoke", radius), clampi(int(26.0 * k), 10, 60), SMOKE_LIFE, draw_of(nature, &"smoke"))
+	var burst := _emitter(host, flame_material(nature, &"photo", radius), BLASTS, BLAST_LIFE, draw_of(nature, &"blast"))
 	for fx in [flames, smoke, burst]:
 		fx.one_shot = true
 		fx.explosiveness = 0.9
@@ -173,7 +177,7 @@ static func blast(host: Node3D, at: Vector3, nature: int, radius: float) -> Arra
 	burn.tween_method(func(p: float) -> void: scorch.set_instance_shader_parameter(&"progress", p), 0.0, 1.0, SCORCH_LIFE)
 	burn.tween_callback(scorch.queue_free)
 	# À l'échelle du souffle : celui d'un éclat éclairait autant que celui de la boule.
-	var flash := _light(nature, FLASH_LIGHT * clampf(k, 0.35, 1.5), radius * 3.5)
+	var flash := light_of(nature, FLASH_LIGHT * clampf(k, 0.35, 1.5), radius * 3.5)
 	root.add_child(flash)
 	flash.global_position = mid + Vector3.UP * 6.0
 	var fade := flash.create_tween()
@@ -197,7 +201,7 @@ static func _emitter(host: Node3D, pm: ParticleProcessMaterial, count: int, life
 
 ## Le quad d'une photo de `PHOTOS`, par nature et par geste ; `&"smoke"`, la fumée, teinte par
 ## sa particule, la même pour toutes.
-static func _draw_of(nature: int, kind: StringName) -> QuadMesh:
+static func draw_of(nature: int, kind: StringName) -> QuadMesh:
 	if kind == &"smoke":
 		if _smoke_draw == null:
 			_smoke_draw = QuadMesh.new()
@@ -342,7 +346,7 @@ static func _scorch_material(nature: int) -> ShaderMaterial:
 	return _scorches[nature]
 
 
-static func _light(nature: int, energy: float, reach: float) -> OmniLight3D:
+static func light_of(nature: int, energy: float, reach: float) -> OmniLight3D:
 	var light := OmniLight3D.new()
 	light.light_color = ramp(nature)[1]
 	light.light_energy = energy

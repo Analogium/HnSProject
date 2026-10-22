@@ -7,114 +7,6 @@ extends GutTest
 const FIRE := Color(1.00, 0.48, 0.18)
 
 
-## Une grille mal alignée décale toute la colonne suivante sans rien casser : le
-## pixel se pose, simplement ailleurs.
-func test_every_flame_frame_is_rectangular() -> void:
-	for frame: Array in EffectForge.FLAME:
-		assert_eq(frame.size(), EffectForge.FLAME_HEIGHT, "hauteur de la grille")
-		for row: String in frame:
-			assert_eq(row.length(), EffectForge.FLAME_WIDTH, "largeur de « %s »" % row)
-
-
-## Le contour est ce qui rattache un effet au décor : les sprites en ont, les
-## polygones n'en avaient aucun. `PixelCanvas` le pose autour de la silhouette,
-## donc il suffit de vérifier qu'il est arrivé — plus sombre que le plus sombre
-## de la rampe.
-func test_a_flame_is_outlined_and_uses_few_colours() -> void:
-	var image: Image = EffectForge.flames(FIRE)[0].get_image()
-	var floor_of_ramp: Color = ArtPalette.ramp(FIRE)[0]
-	var seen := {}
-	var outlined := 0
-	for y in image.get_height():
-		for x in image.get_width():
-			var c := image.get_pixel(x, y)
-			if c.a < 0.5:
-				continue
-			seen[c.to_html(false)] = true
-			if c.get_luminance() < floor_of_ramp.get_luminance():
-				outlined += 1
-	assert_gt(outlined, 10, "la langue porte un contour")
-	assert_lt(seen.size(), 13, "et deux rampes de cinq tons, contour compris")
-
-
-## Une aura la redemande soixante fois par seconde.
-func test_a_sheet_is_built_once() -> void:
-	assert_eq(EffectForge.flames(FIRE), EffectForge.flames(FIRE), "deux appels, une planche")
-
-
-## Le halo tramé n'a que ses paliers : un dégradé continu le trahirait.
-func test_the_scorch_is_dithered_into_steps() -> void:
-	var image: Image = EffectForge.scorch(FIRE, 20).get_image()
-	var alphas := {}
-	for y in image.get_height():
-		for x in image.get_width():
-			alphas[snappedf(image.get_pixel(x, y).a, 0.001)] = true
-	assert_lt(alphas.size(), EffectForge.SCORCH_STEPS + 2, "trois paliers et le vide")
-
-
-## La planche de la boule de feu : six temps dessinés à la main, donc six grilles
-## qu'un décalage d'un caractère suffit à tordre sans rien casser.
-func test_every_ball_frame_is_rectangular() -> void:
-	for frame: Array in EffectForge.BALL:
-		assert_eq(frame.size(), EffectForge.BALL_SIZE, "hauteur de la grille")
-		for row: String in frame:
-			assert_eq(row.length(), EffectForge.BALL_SIZE, "largeur de « %s »" % row)
-	for frame: Array in EffectForge.PUFF:
-		assert_eq(frame.size(), EffectForge.PUFF_SIZE, "hauteur de la bouffée")
-		for row: String in frame:
-			assert_eq(row.length(), EffectForge.PUFF_SIZE, "largeur de « %s »" % row)
-
-
-## Les six temps doivent **différer**, sinon l'animation est une image fixe payée
-## six fois — et rien dans le dessin ne le dirait.
-func test_the_ball_actually_changes_from_frame_to_frame() -> void:
-	var seen := {}
-	for frame: Array in EffectForge.BALL:
-		seen["".join(PackedStringArray(frame))] = true
-	assert_eq(seen.size(), EffectForge.BALL.size(), "six temps distincts")
-
-
-## La boule du Gonflement (jalon 42) : fabriquée à sa taille, une fois par taille, ses
-## temps distincts, et son cœur dans le blanc chaud du feu.
-func test_a_grown_ball_is_forged_once_at_its_size() -> void:
-	var frames := EffectForge.grown_balls(FIRE, 21)
-	assert_eq(frames, EffectForge.grown_balls(FIRE, 21), "deux appels, une cuisson")
-	assert_eq(frames.size(), EffectForge.GROWN_FRAMES)
-	var seen := {}
-	for tex: Texture2D in frames:
-		assert_eq(tex.get_size(), Vector2(21, 21))
-		seen[tex.get_image().get_data()] = true
-	assert_eq(seen.size(), EffectForge.GROWN_FRAMES, "des temps distincts")
-	var image: Image = frames[0].get_image()
-	assert_gt(image.get_pixel(9, 9).get_luminance(), 0.9, "le cœur blanc, en haut à gauche du centre")
-
-
-## Les deux dernières planches : l'éclat du souffle et la brûlure au sol. Une
-## grille mal alignée décale toute la colonne suivante sans rien casser.
-func test_flash_and_burn_grids_are_rectangular() -> void:
-	for frame: Array in EffectForge.FLASH:
-		assert_eq(frame.size(), EffectForge.FLASH_SIZE, "hauteur de l'éclat")
-		for row: String in frame:
-			assert_eq(row.length(), EffectForge.FLASH_SIZE, "largeur de « %s »" % row)
-	for mark: Array in EffectForge.BURN:
-		assert_eq(mark.size(), EffectForge.BURN_HEIGHT, "hauteur de la brûlure")
-		for row: String in mark:
-			assert_eq(row.length(), EffectForge.BURN_WIDTH, "largeur de « %s »" % row)
-
-
-## La brûlure est **plus sombre que le sol**, sinon elle se lit comme une lueur et
-## non comme une trace. Le ton dominant du sol est `TilesetBuilder.FLOOR_BASE`.
-func test_a_burn_is_darker_than_the_floor() -> void:
-	var image: Image = EffectForge.burns()[0].get_image()
-	var brightest := 0.0
-	for y in image.get_height():
-		for x in image.get_width():
-			var c := image.get_pixel(x, y)
-			if c.a > 0.5:
-				brightest = maxf(brightest, c.get_luminance())
-	assert_lt(brightest, TilesetBuilder.FLOOR_BASE.get_luminance(), "la cendre reste sous le sol")
-
-
 ## Les grilles de la glace. Une ligne mal alignée décale toute la colonne suivante
 ## sans rien casser : le pixel se pose, simplement ailleurs.
 func test_every_ice_grid_is_rectangular() -> void:
@@ -318,15 +210,6 @@ func test_the_evil_eye_opens_and_is_kept() -> void:
 	var open := Witchcraft.eye(50.0, 2, FIRE)
 	assert_same(Witchcraft.eye(50.0, 2, FIRE), open)
 	assert_gt(_painted(open.texture), _painted(shut.texture) * 3, "l'œil ouvert couvre son amande")
-
-
-## Le javelot ardent a la forme du javelot de glace, pas son arête.
-func test_the_fire_javelin_is_the_ice_shape_with_a_fire_edge() -> void:
-	var turn := Slash.turn_of(0.0)
-	var fire := Fire.javelin(FIRE, turn)
-	var ice := Frost.javelin(FIRE, turn)
-	assert_eq(_painted(fire.texture), _painted(ice.texture))
-	assert_ne(fire.texture.get_image().get_data(), ice.texture.get_image().get_data())
 
 
 ## Le bord du Chaudron : gardé par teinte, rayon et temps, et sa couronne grandit avec le cercle.

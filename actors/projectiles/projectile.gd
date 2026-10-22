@@ -45,6 +45,9 @@ var salvo_hits := {}
 var _turns: Array[SkillStats] = []
 ## L'os des Lanceurs d'os (jalon 45) : dessiné, il tournoie et ne s'oriente pas.
 var bone := false
+## Ce qui le montre : l'éclair de la foudre, ou la traînée d'étincelles des autres natures.
+var _bolt_fx: BoltFx
+var _trail: ElementFx
 
 
 func _ready() -> void:
@@ -91,10 +94,25 @@ static func spawn_of_nature(
 	return bolt
 
 
-## Son voile, puis sa traînée, qui le reprend (`ElementFx`).
+## Son voile, puis ce qui le montre, qui le reprend.
 func _show(group: StringName) -> void:
 	Settings.veil(self, group)
-	ElementFx.trail(self, tint())
+	_dress()
+
+
+## L'éclair pour la foudre (`BoltFx`), les étincelles de sa nature sinon (`ElementFx`). Un
+## rebond du Chatoiement change de nature : l'ancien visuel s'efface, le neuf prend la suite.
+func _dress() -> void:
+	if _bolt_fx != null:
+		_bolt_fx.queue_free()
+		_bolt_fx = null
+	if _trail != null:
+		_trail.let_go()
+		_trail = null
+	if nature() == DamageType.Kind.LIGHTNING:
+		_bolt_fx = BoltFx.show_on(self, nature())
+	else:
+		_trail = ElementFx.trail(self, tint())
 
 
 static func _spawn(parent: Node, scene: PackedScene, from: Vector3, dir: Vector3) -> Projectile:
@@ -217,7 +235,9 @@ func _bounce() -> void:
 	if _bounced <= _turns.size():
 		_cast = _turns[_bounced - 1]
 		_parts = _cast.roll(Game.rng)
-		_nature = _cast.nature
+		if _cast.nature != nature():
+			_nature = _cast.nature
+			_dress()
 
 
 ## Le Précipité (jalon 49) : les deux états des autres éléments, lus avant que le coup ne
@@ -317,6 +337,8 @@ func _finish() -> void:
 			get_parent(), global_position, cloud.roll(Game.rng), SkillStats.GERM_RADIUS, null,
 			tint(), _author, cloud
 		)
+	if _bolt_fx != null:
+		_bolt_fx.flare()
 	queue_free()
 
 

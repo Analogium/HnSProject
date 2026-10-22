@@ -104,9 +104,9 @@
   ]
  },
  "blender": {
-  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, ram knight, closed crimson great helm with big curled ivory ram horns, glowing yellow eyes in the visor, crimson and steel plate armor, steel pauldrons, crimson tabard with steel trim, steel gauntlets, steel greaves, empty hands",
-  "source": "tools/characters/charger/3d",
-  "rest": "rest.blend",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a heavy ram knight, adult heroic proportions, broad armored shoulders, closed crimson great helm with big curled ivory ram horns, glowing yellow eyes in the visor slit, crimson and dented steel plate armor, large steel pauldrons, crimson tabard with steel trim reaching the knees, steel gauntlets, steel greaves and sabatons, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers apart, feet slightly apart, full body from head to feet, orthographic",
+  "source": "tools/characters/charger/mixamo",
+  "rest": "rest.fbx",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
@@ -116,14 +116,13 @@
   "weapons": [],
   "anims": {
    "walk": [
-    "walk.blend",
-    8
-   ],
-   "attack": [
-    "thrust",
+    "walk.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 70,
+  "elbows": 0.5
  },
  "scale": 0.7
 }

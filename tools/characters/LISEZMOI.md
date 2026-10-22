@@ -173,6 +173,10 @@ gréage local), qui ne dépend d'aucun quota.
      écarte les bras de ce nombre de degrés sur toutes les animations sauf le repos
      (`export_glb.spread`, 40° pour lui, choisi sur planche parmi 0 à 45°). Ce ne sont pas
      ses poids : vérifié os par os, la main passait derrière la hanche, dans la sacoche.
+   - **Un corps qui se téléporte** : une animation prise sans *In Place* avance les hanches (la
+     marche du caster, 1,52 m sur le cycle), et le corps revient d'un coup à sa place à la boucle
+     ou au geste suivant. L'export ôte cette dérive horizontale, du premier au dernier pas
+     (`export_glb.in_place`) ; le balancement reste. Les gestes d'attaque reviennent d'eux-mêmes.
    - **Jambes trop écartées** dans la course : `blender.walk_leg_space`, en degrés, négatif
      pour resserrer les cuisses (−12° pour le Vive lame, choisi sur planche, et la sorcière).
    - **Avant-bras trop levés** : la course de Mixamo (« Running ») est un sprint, les mains
@@ -225,7 +229,10 @@ gréage local), qui ne dépend d'aucun quota.
 
 Les gestes d'attaque **s'écrivent**, ils ne se téléchargent pas : Mixamo n'a pas nos
 coups. Chaque geste de `gestes.json` est une suite de poses-clés, et c'est
-`blender/pose_anim.py` qui les joue :
+`blender/pose_anim.py` qui les joue. Un personnage gréé par Mixamo en prend aussi, nommé
+dans `blender.anims` à côté de ses `.fbx`, quand Mixamo n'a pas le geste : le coup des deux
+poings au sol du colosse (`smash`, jalon 54). `arm_space` et `elbows` ne s'y appliquent pas :
+écrit pour ce corps, il n'a pas les bras trop serrés de l'acteur de Mixamo.
 
 - la **main armée** — le creux du poing, où passe la poignée — et la **direction de la
   lame**, en hauteurs de personnage depuis l'épaule ;

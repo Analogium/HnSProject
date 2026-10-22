@@ -141,6 +141,37 @@ func test_a_fire_ring_takes_its_host_veil() -> void:
 	Settings.from_dict(before)
 
 
+## Le Brasero : un trépied de fer pour tous, des braises, des flammes et une lumière à sa nature.
+func test_a_brazier_stands_on_one_tripod_in_the_colours_of_its_nature() -> void:
+	var fire := BrazierFx.light_up(_host(), DamageType.Kind.FIRE)
+	var storm := BrazierFx.light_up(_host(), DamageType.Kind.LIGHTNING)
+	assert_eq(fire.body.mesh, storm.body.mesh, "un maillage pour tous")
+	assert_eq(fire.body.material_override, storm.body.material_override, "un fer pour tous")
+	var lights := storm.find_children("*", "OmniLight3D", false, false)
+	assert_eq(lights.size(), 1)
+	assert_eq((lights[0] as OmniLight3D).light_color, FlameFx.ramp(DamageType.Kind.LIGHTNING)[1], "la Lanterne d'orage")
+	var again := BrazierFx.light_up(_host(), DamageType.Kind.LIGHTNING)
+	var flames := func(fx: BrazierFx) -> Material:
+		return (fx.find_children("*", "GPUParticles3D", false, false)[0] as GPUParticles3D).process_material
+	assert_eq(flames.call(storm), flames.call(again), "les flammes d'une nature, gardées")
+	assert_ne(flames.call(storm), flames.call(fire))
+
+
+func test_a_brazier_takes_its_host_veil() -> void:
+	var before := Settings.to_dict()
+	Settings.spell_opacity = 0.25
+	var host := _host()
+	Settings.veil(host, Settings.SPELLS)
+	var fx := BrazierFx.light_up(host, DamageType.Kind.FIRE)
+	var veiled := fx.find_children("*", "GeometryInstance3D", false, false).filter(
+		func(n: Node) -> bool: return n != fx.body
+	)
+	assert_eq(veiled.size(), 3, "les braises, les flammes, les escarbilles")
+	for node: GeometryInstance3D in veiled:
+		assert_almost_eq(node.get_instance_shader_parameter(&"opacity"), 0.25, 0.001)
+	Settings.from_dict(before)
+
+
 ## La Ruée ardente : un sol calciné aussi long et aussi large que le couloir qui frappe.
 func test_a_fire_dash_lays_a_burnt_path_as_wide_as_it_strikes() -> void:
 	var cast := SkillStats.new()

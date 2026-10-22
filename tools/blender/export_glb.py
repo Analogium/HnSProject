@@ -141,6 +141,30 @@ def spread(action, limb, degrees):
             c.update()
 
 
+def in_place(action, first, last):
+    """Ôte aux hanches leur dérive horizontale, du premier au dernier pas : une animation de
+    Mixamo prise sans « In Place » avance le corps (la marche du caster, d'un corps entier sur le
+    cycle), qui revient d'un coup à sa place à la boucle ou au geste suivant — il se téléportait.
+    Le balancement et le rebond restent."""
+    hips = pb("Hips")
+    use(action)
+    scene.frame_set(first)
+    start = arm.matrix_world @ hips.head
+    scene.frame_set(last)
+    drift = arm.matrix_world @ hips.head - start
+    arm.animation_data.action = None
+    drift.z = 0.0
+    if drift.length < 1e-4:
+        return
+    local = (arm.matrix_world.to_3x3() @ hips.bone.matrix_local.to_3x3()).inverted() @ drift
+    path = f'pose.bones["{hips.name}"].location'
+    for c in stage.fcurves(action):
+        if c.data_path == path:
+            for k in c.keyframe_points:
+                k.co[1] -= local[c.array_index] * (k.co[0] - first) / max(last - first, 1)
+            c.update()
+
+
 def straighten(action, share):
     """Déplie les coudes de `share` de leur pli, sur toute l'animation : la course de Mixamo est
     un sprint, ses avant-bras montaient au menton."""
@@ -316,7 +340,10 @@ fps = scene.render.fps
 impacts, baked = {}, []
 for name, source in [("rest", idle)] + list(spec["anims"].items()):
     extra = set(bpy.data.objects)
-    if isinstance(source, str) and source in gestures:
+    # Un geste écrit l'est pour ce corps : l'écart des bras et des coudes corrige l'acteur de
+    # Mixamo, plus mince, et défaisait les poings joints du colosse.
+    written = isinstance(source, str) and source in gestures
+    if written:
         use(idle)
         pose_anim.play(arm, gestures[source]["keys"], "none", fps)
         first, last = 1, 1 + fps
@@ -335,11 +362,12 @@ for name, source in [("rest", idle)] + list(spec["anims"].items()):
         elif name not in ("rest", "walk"):
             impacts[name] = impact(first, last)
     baked.append(bake(name, first, last))
-    if name != "rest" and spec["arm_space"]:
+    in_place(baked[-1], first, last)
+    if name != "rest" and spec["arm_space"] and not written:
         spread(baked[-1], "Arm", spec["arm_space"])
     if name == "walk" and spec["walk_leg_space"]:
         spread(baked[-1], "UpLeg", spec["walk_leg_space"])
-    if name != "rest" and spec["elbows"]:
+    if name != "rest" and spec["elbows"] and not written:
         straighten(baked[-1], spec["elbows"])
     # Sans arme montrée (`ActorModel.SHEATHED`), la main reste la sienne.
     if grip_name and not spec["guard"] and name not in spec["sheathed"]:

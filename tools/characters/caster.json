@@ -21,9 +21,9 @@
  "feet": 60,
  "weapon": "staff",
  "blender": {
-  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, hooded cultist mage, long flared purple robe reaching the ground hiding the legs, purple mantle over the shoulders, tall pointed purple hood, no face, only a black hollow inside the hood with two glowing cyan ember eyes, thin pale hands, empty hands",
-  "source": "tools/characters/caster/3d",
-  "rest": "rest.blend",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a gaunt hooded cultist mage, adult heroic proportions, tall and thin, narrow shoulders, deep purple robe reaching the shins, split at the front over dark trousers and black leather boots, purple mantle over the shoulders, tall pointed purple hood, no face, only a black hollow inside the hood with two glowing cyan ember eyes, dark leather belt with small pouches, thin pale bare forearms, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers apart, feet slightly apart, full body from head to feet, orthographic",
+  "source": "tools/characters/caster/mixamo",
+  "rest": "rest.fbx",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
@@ -35,14 +35,16 @@
   ],
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "cast",
+    "attack.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 40
  },
  "scale": 0.7,
  "palette": {

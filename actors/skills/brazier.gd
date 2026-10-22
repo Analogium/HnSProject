@@ -7,8 +7,6 @@ extends Node3D
 ## Foyer du mage, il tire la Boule de feu du joueur.
 
 const HURT_RADIUS := 7.0
-## Le haut de la coupe, d'où partent les boules et où se posent les langues.
-const MOUTH := Vector3(0.0, 0.0, -9.0)
 ## La Triangulation : son trait ne s'éteint que par ses braseros (`_exit_tree()`) — une
 ## durée finie, que le compte des impulsions puisse lire.
 const LINK_HOLD := 3600.0
@@ -50,7 +48,12 @@ static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node
 	if cast.hearth > 0.0:
 		var points := player.skill_points(SkillStats.HEARTH_SKILL)
 		if points > 0:
-			b._ball = player.resolve(SkillCatalog.by_id(SkillStats.HEARTH_SKILL), points, true)
+			# Converti (Lanterne d'orage), le brasero impose sa nature ; sinon la boule garde
+			# la sienne, Givre compris.
+			var converted := cast.nature != SkillCatalog.by_id(cast.skill_id).nature
+			b._ball = player.resolve(
+				SkillCatalog.by_id(SkillStats.HEARTH_SKILL), points, true, cast.nature if converted else -1
+			)
 			# La Salve et la Mitraille restent à lui : des boules en plus, un rebond.
 			var extra := cast.projectile_count() - 1
 			b._ball.projectiles += float(extra)
@@ -63,7 +66,7 @@ static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node
 	parent.add_child(b)
 	Settings.veil(b, Settings.SPELLS)
 	b.global_position = point
-	ElementFx.area(b, DamageType.COLORS[cast.nature], HURT_RADIUS)
+	BrazierFx.light_up(b, cast.nature)
 	# La Triangulation : un trait de feu jusqu'au plus jeune des autres, éteint avec le
 	# premier des deux à partir.
 	var others := own.filter(func(o: Brazier) -> bool: return not o._out)
@@ -143,10 +146,10 @@ func _physics_process(delta: float) -> void:
 
 
 ## Ses boules, ou la Boule de feu du joueur sous le Foyer du mage — posée par le chemin
-## du joueur, depuis la coupe, comme le Familier rejoue un sort de son épaule. Faux quand
+## du joueur, depuis la coupe (le visuel de la boule la lève à sa hauteur), comme le Familier rejoue un sort de son épaule. Faux quand
 ## rien n'est parti.
 func _shoot(at: Vector3) -> bool:
-	var from := global_position + MOUTH
+	var from := global_position
 	var toward := from.direction_to(at)
 	if _ball != null:
 		# Le prix du Foyer : chaque tir paie la Boule de feu ; à court de mana, rien.
@@ -193,7 +196,7 @@ func _go_out(spent: bool) -> void:
 		for i in SkillStats.LAST_BREATH_BALLS:
 			var toward := Flat.from_angle(TAU * float(i) / float(SkillStats.LAST_BREATH_BALLS))
 			Fireball.spark(
-				_player._effects_parent(), global_position + MOUTH, toward, crown, states, false
+				_player._effects_parent(), global_position, toward, crown, states, false
 			)
 	queue_free()
 

@@ -42,7 +42,7 @@ static func lay(trail: Node3D, toward: Vector3, nature: int, radius: float, dura
 	path._ground.set_instance_shader_parameter(&"half_len", half)
 	path._ground.set_instance_shader_parameter(&"radius", radius)
 	path.add_child(path._ground)
-	path._embers = _embers_of(nature, half, radius)
+	path._embers = embers_of(nature, half, radius)
 	path.add_child(path._embers)
 	path._light = OmniLight3D.new()
 	path._light.light_color = FlameFx.ramp(nature)[1]
@@ -81,7 +81,7 @@ static func _material(nature: int) -> ShaderMaterial:
 
 ## Les braises, semées dans le couloir : la matière de leur nature, recopiée pour sa longueur —
 ## la rampe reste partagée, c'est elle qui coûte au GPU.
-static func _embers_of(nature: int, half: float, radius: float) -> GPUParticles3D:
+static func embers_of(nature: int, half: float, radius: float) -> GPUParticles3D:
 	if not _ember_materials.has(nature):
 		var ramp := FlameFx.ramp(nature)
 		var pm := ParticleProcessMaterial.new()

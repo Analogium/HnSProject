@@ -2182,13 +2182,15 @@ func cost_of(skill: Skill) -> float:
 
 
 ## `plain` : sans les nœuds qui la transforment — la Boule de feu que tire le Foyer du mage
-## reste une boule, Météore pris ou non (jalon 42).
-func resolve(skill: Skill, points: int, plain := false) -> SkillStats:
+## reste une boule, Météore pris ou non (jalon 42). `element` : celui qu'un autre geste lui
+## impose, comme l'Incarnation — le brasero de la Lanterne d'orage tire de la foudre.
+func resolve(skill: Skill, points: int, plain := false, element := -1) -> SkillStats:
 	var talents: Array = talents_of(skill.id)
 	if plain:
 		talents = talents.filter(func(t: InvestedTalent) -> bool: return not t.node.transforms)
 	return skill.resolve(
-		points, stats, skill_mods, talents, int(_turns.get(skill.id, 0)), _incarnation_of(skill)
+		points, stats, skill_mods, talents, int(_turns.get(skill.id, 0)),
+		element if element >= 0 else _incarnation_of(skill)
 	)
 
 

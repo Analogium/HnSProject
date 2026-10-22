@@ -943,6 +943,20 @@ func test_a_portrait_body_is_the_sharp_model_at_rest() -> void:
 	assert_gt(portrait.height(), 0.0, "l'export a écrit sa hauteur")
 
 
+## Un corps sans geste d'attaque (le chevalier, gréé avec le repos et la course) garde ce qu'il joue
+## quand on lui demande un coup : sa charge part en courant, au lieu d'arrêter le jeu.
+func test_a_body_without_an_attack_keeps_running() -> void:
+	var model := ActorModel.new()
+	model.archetype = "charger"
+	add_child_autofree(model)
+	var player: AnimationPlayer = model.find_children("*", "AnimationPlayer", true, false)[0]
+	assert_false(player.has_animation(&"attack"), "gréé sans attaque")
+	model.set_state(true, Vector3.FORWARD)
+	model.attack(false, 0.6)
+	assert_false(model._attacking)
+	assert_eq(player.current_animation, String(ActorModel.WALK), "il court toujours")
+
+
 ## Jalon 54, le clic-déplacement de PoE : à la souris, le clic gauche au sol mène au point
 ## cliqué ; un coup l'interrompt, sauf bouton tenu.
 func test_a_left_click_on_the_ground_walks_there_in_mouse_mode() -> void:

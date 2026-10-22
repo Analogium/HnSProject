@@ -113,6 +113,8 @@ def upload(img, name):
 
 
 def run(wf):
+    # Un graphe déjà tiré revient du cache sans image : un nom neuf rejoue l'enregistrement seul.
+    wf["save"]["inputs"]["filename_prefix"] += "_" + uuid.uuid4().hex[:8]
     pid = post("/prompt", {"prompt": wf})["prompt_id"]
     while True:
         h = json.load(urllib.request.urlopen(f"{HOST}/history/{pid}"))

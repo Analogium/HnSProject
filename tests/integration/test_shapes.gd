@@ -4042,6 +4042,7 @@ func test_the_brazier_spits_at_the_nearest_enemy() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	assert_eq(b.global_position, _aim())
+	assert_true(b.get_children().any(func(n: Node) -> bool: return n is BrazierFx), "son trépied")
 	var cast := _p.resolve(SkillCatalog.by_id("brazier"), 1)
 	await wait_seconds(cast.period + 0.1)
 	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")
@@ -4089,6 +4090,22 @@ func test_the_hearth_fires_your_fireball_without_its_meteor() -> void:
 	assert_eq(_children_of(Fireball).size(), 1, "la Main d'appoint : une boule, pas un météore")
 	_p._set_mana(b._ball.mana_cost * 0.5)
 	assert_false(b._shoot(_aim() + Vector3(100, 0.0, 0)), "à court de mana, rien ne part")
+
+
+## Sous la Lanterne d'orage, le Foyer du mage tire votre Boule de feu en foudre ; sans elle,
+## la boule garde sa nature.
+func test_the_storm_lantern_converts_the_hearth_fireball() -> void:
+	_learn("manual_fire", [
+		"brazier", "brazier_poker", "brazier_poker", "brazier_volley", "brazier_hearth",
+		"brazier_bellows", "brazier_bellows", "brazier_storm_lantern",
+	])
+	assert_true(_p.invest(0, "fireball"))
+	assert_true(Gestures.cast(_p, 2))
+	var b := _brazier()
+	assert_eq(b._cast.nature, DamageType.Kind.LIGHTNING, "la Lanterne d'orage")
+	assert_eq(b._ball.nature, DamageType.Kind.LIGHTNING, "la boule du Foyer, convertie aussi")
+	assert_true(Keywords.LIGHTNING in b._ball.keywords and not Keywords.FIRE in b._ball.keywords, "le mot-clé suit")
+	assert_eq(_p.resolve(SkillCatalog.by_id("fireball"), 1).nature, DamageType.Kind.FIRE, "la vôtre reste de feu")
 
 
 ## Sous le Foyer du mage, la Salve et la Mitraille restent au brasero : des boules en plus,

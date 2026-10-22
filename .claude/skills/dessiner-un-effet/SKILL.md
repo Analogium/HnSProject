@@ -48,6 +48,13 @@ pas.
   **flammes photographiques sur fond noir** (additionnées, le noir disparaît ; tournées vers la
   caméra en entier, debout elles sortaient tassées), mais un sol « vu de dessus » lui sort en
   étoile de lave, pas en texture qui se répète.
+- **La silhouette d'abord, la matière ensuite.** Étirée en dard de 34 px, une photo d'arc
+  électrique sortait en plume ou en fumée : « ça ne ressemble pas à un éclair ». Le zigzag est
+  venu d'un ruban que le shader casse, qui porte la photo — comme la peau du Serpent sur son
+  corps ; puis une capture de Kinetic Bolt (Path of Exile) a tranché, comme celle de la boule de
+  feu : un orbe qui zigzague autour de sa trajectoire et une traînée qui en garde la forme. Qwen sort des arcs plumeux au tronc droit, même quand on demande des
+  angles vifs. Une photo au cœur blanc, passée par la rampe de sa nature, perd ce cœur : le
+  garder en haut de la rampe (`fx/lightning_common.gdshaderinc`).
 - La teinte vient de `DamageType.COLORS[nature]`. Un sort qui change d'élément a **un
   dessin par élément** quand une simple teinte n'a pas de sens, comme un éclair en feu.
 
@@ -120,7 +127,9 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
    pas monter — des bulles. Une langue de feu est un quad debout, tourné vers la caméra autour
    de la verticale, posé par sa base (`fx/flame_tongue.gdshader`).
 5. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles ; et ce qui ne
-   bouge que pour se montrer (un météore qui tombe) **bouge dans `_process()`** : posé au pas de
+   bouge que pour se montrer (un météore qui tombe) **bouge dans `_process()`** — un dessin net
+   porté par un tir se pose entre ses deux derniers pas de physique (`BoltFx`), sinon il avance
+   par à-coups et « ça lag » : posé au pas de
    physique, il reste immobile entre deux pas, et sa traînée sort aussi en perles ;
    `local_coords = false` pour une traînée ; un point doux, pas un carré. Quelques pièges :
    - `finished` ne vient jamais sans rendu, donc ce qui se libère passe par une minuterie ;

@@ -97,8 +97,7 @@ static func javelin(tint: Color, turn: int) -> EffectForge.Piece:
 	return shaped_javelin(tint, rim(tint), turn)
 
 
-## Sa forme, l'arête à la couleur `core` : le givre ici, le cœur du feu pour l'Éclair vif
-## converti (`Fire.javelin()`, jalon 49).
+## Sa forme, l'arête à la couleur `core`.
 static func shaped_javelin(tint: Color, core: Color, turn: int) -> EffectForge.Piece:
 	var key := "%s|%s|%d" % [tint.to_html(false), core.to_html(false), posmod(turn, Slash.TURNS)]
 	if not _javelins.has(key):

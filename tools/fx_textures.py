@@ -11,6 +11,12 @@
                                     cases de 256²) et fire_smoke.png, les photos de feu de
                                     `FlameFx` : des tirages de Qwen-Image sur fond noir (la fumée
                                     sur fond blanc, sa densité en R)
+    tools/fx_textures.py lightning  fx/lightning_bolt.png (le tronc d'un éclair, en bande),
+                                    fx/lightning_spark.png et fx/lightning_orb.png, l'Éclair vif
+                                    (`BoltFx`) : des tirages de Qwen-Image sur fond noir
+    tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
+                                    du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
+                                    couleur et relief (convention OpenGL, celle de Godot)
 
 Une texture vraie et non un bruit de shader : une Ruée toute en shader était « cheap »."""
 import io, json, os, sys, urllib.request
@@ -24,6 +30,8 @@ import node_icons
 FX = os.path.join(cf.PROJ, "fx")
 SIDE = 512
 CRACKS = "mud_cracked_dry_03"
+# « Trépied, flammes » sur la planche : un fer brun, contre un fer peint moucheté de rouille.
+IRON = "rust_coarse_01"
 # « Écailles B » sur la planche : le second des deux tirages.
 SKIN_PROMPT = ("macro photograph of black snake skin, overlapping diamond scales, seamless tileable texture, "
                "flat even lighting, top-down orthographic view, high detail, fills the whole frame")
@@ -40,6 +48,20 @@ FIRE_PROMPTS = {
     "smoke": "a photograph of a single puff of dark grey smoke, isolated on a pure white background, realistic, "
              "soft billowing edges, VFX stock footage, centered",
 }
+# « Dents de scie » sur la planche de l'Éclair vif (façon Kinetic Bolt) : la photo donne le tronc,
+# cœur blanc et halo, à la traînée et aux arcs ; le zigzag, c'est le dessin qui le trace. Qwen sort
+# des arcs plumeux au tronc presque droit, même quand on lui demande des angles vifs.
+BOLT_PROMPT = ("a photograph of a single thin jagged lightning bolt, sharp angular zigzag bends, crossing the whole frame "
+               "horizontally from left to right, very few short branches, blinding white core, intense violet glow around "
+               "it, isolated on a pure black background, realistic, VFX stock footage")
+BOLT_SEED = 33
+SPARK_PROMPT = ("a photograph of an electric spark burst, a small star of crackling lightning arcs radiating from one "
+                "bright point, white core, violet and blue glow, centered, isolated on a pure black background, realistic, "
+                "VFX stock footage")
+SPARK_SEED = 11
+ORB_PROMPT = ("a photograph of ball lightning, a glowing sphere of electric plasma wrapped in thin crackling arcs, "
+              "bright white core, violet glow, centered, isolated on a pure black background, realistic, VFX stock footage")
+ORB_SEED = 11
 CELL = 256
 # L'API refuse le client sans nom (403) : elle demande qu'on se présente.
 AGENT = {"User-Agent": "HnSProject-decor/1.0"}
@@ -93,6 +115,12 @@ def cmd_cracks():
     save(np.stack([gray, joints(gray), np.zeros_like(gray)], -1), "burnt_cracks.png")
 
 
+def cmd_iron():
+    files = json.loads(fetch("https://api.polyhaven.com/files/" + IRON))
+    for kind, name in (("Diffuse", "brazier_iron.png"), ("nor_gl", "brazier_iron_n.png")):
+        save(square(Image.open(io.BytesIO(fetch(files[kind]["1k"]["jpg"]["url"])))), name)
+
+
 def cmd_serpent():
     skin = tileable(square(Image.fromarray((qwen(SKIN_PROMPT, SKIN_SEED) * 255).astype(np.uint8))))
     gray = skin.mean(-1)
@@ -118,6 +146,14 @@ def cell(rgb, box, fade):
     return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / (1.0 - fade), 0.0, 1.0)[..., None]
 
 
+def cmd_lightning():
+    bolt = qwen(BOLT_PROMPT, BOLT_SEED)
+    band = Image.fromarray((bolt[int(0.3 * bolt.shape[0]):int(0.7 * bolt.shape[0])] * 255).astype(np.uint8))
+    save(np.asarray(band.resize((SIDE, SIDE // 2), Image.LANCZOS), np.float32) / 255.0, "lightning_bolt.png")
+    save(cell(qwen(SPARK_PROMPT, SPARK_SEED), (0.0, 0.0, 1.0, 1.0), 0.75), "lightning_spark.png")
+    save(cell(qwen(ORB_PROMPT, ORB_SEED), (0.1, 0.1, 0.9, 0.9), 0.75), "lightning_orb.png")
+
+
 def cmd_fire():
     balls = [qwen(FIRE_PROMPTS["ball"], seed) for seed in (11, 22, 33)]
     save(np.concatenate([cell(b, (0.03, 0.03, 0.97, 0.97), 0.8) for b in balls], 1), "fire_ball.png")
@@ -133,4 +169,4 @@ def cmd_fire():
 
 
 if __name__ == "__main__":
-    {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire}[sys.argv[1]]()
+    {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning}[sys.argv[1]]()

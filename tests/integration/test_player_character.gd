@@ -144,10 +144,11 @@ func test_loading_a_piper_changes_the_body() -> void:
 	assert_null(_p.model.sprite, "son modèle 3D, plus sa planche (jalon 54)")
 
 
-## Un corps encore sans modèle 3D (un ennemi) garde sa planche, les pieds au sol (jalon 54).
+## Un corps encore sans modèle 3D (le marchand, en attente du sien) garde sa planche, les pieds au
+## sol (jalon 54).
 func test_a_body_without_a_model_keeps_its_sheet_on_the_ground() -> void:
-	_p.model.set_archetype("caster")
-	assert_eq(_p.model.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("caster").y, "les pieds sur l'origine, au sol")
+	_p.model.set_archetype("merchant")
+	assert_eq(_p.model.sprite.offset.y, SpriteForge.CENTER_ABOVE_FEET - SpriteForge.offset_of("merchant").y, "les pieds sur l'origine, au sol")
 
 
 ## Un emplacement que le joueur ne sait pas porter est écarté au lieu d'entrer

@@ -135,9 +135,9 @@
  },
  "width": 1.45,
  "blender": {
-  "model_prompt": "3d render of a stylized game monster, smooth shading, soft studio lighting, blender, full body, A-pose, arms slightly away from the body, front view, facing the viewer, stylized proportions, big head, short legs, chunky bald goblin with orange skin, two bent copper pipes sticking out of the sides of its head like horns, pointy ears, yellow eyes, toothy grin, brown leather tunic with belt, bare feet, empty hands",
-  "source": "tools/characters/mortar/3d",
-  "rest": "rest.blend",
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a chunky bald goblin artillerist, adult proportions, short and stocky, orange skin, two bent copper pipes sticking out of the sides of its head like horns, long pointy ears, yellow eyes, toothy grin, soot smudges on the face, brown leather tunic with a wide belt and brass buckles, leather bracers, bare forearms, short bandy legs, bare clawed feet, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers apart, feet slightly apart, full body from head to feet, orthographic",
+  "source": "tools/characters/mortar/mixamo",
+  "rest": "rest.fbx",
   "elevation": 10,
   "sun": 4,
   "ambient": 0.7,
@@ -147,14 +147,17 @@
   "weapons": [],
   "anims": {
    "walk": [
-    "walk.blend",
+    "walk.fbx",
     8
    ],
    "attack": [
-    "throw",
+    "attack.fbx",
     8
    ]
-  }
+  },
+  "guard": false,
+  "arm_space": 60,
+  "elbows": 0.5
  },
  "scale": 0.7
 }

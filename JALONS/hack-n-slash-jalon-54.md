@@ -604,6 +604,60 @@ y lit sa rampe. Les flammèches en bruit de shader (`flame_wisp`, `flame_smoke`,
 sont supprimées. Captures en jeu : `-boule-photo-boule\`, `-meteore\`, `-givre\`. Coût non
 remesuré.
 
+**Le Brasero** (20 octobre), dernier du manuel des flammes. Un objet qui a un corps : Poly Haven n'a
+pas de trépied (un foyer de pierre, des pots de laiton, un poêle-baril). Planche de cinq façons en feu
+et sous la Lanterne d'orage (`Bureau\hns-captures-brasero-matiere\`) : le trépied du jalon 42 en fer
+rouillé scanné, avec une colonne de flammes photographiées, des braises seules, ou le cœur de la boule
+dans la coupe ; une corbeille de barreaux en fer noirci ; le foyer de pierre scanné. **Retenu : le
+trépied et ses flammes.** `BrazierFx` le bâtit de primitives fondues en un maillage, plaqué en
+triplanaire — la coupe et les pieds n'ont pas d'UV qui se suivent. Vu sur planche : la foudre sortait
+blanche, sans rampe à elle dans `FlameFx.RAMPS` (elle en a une) ; les fissures de la Ruée, répétées à
+72 px, ne faisaient dans la coupe qu'une craquelure, une assiette brune — à 8 px, des braises. Le
+`MOUTH` du Brasero, (0, 0, −9), était la hauteur de la coupe en 2D portée telle quelle : ses boules
+partaient 9 px au nord, au sol ; elles partent du centre, et le visuel de la boule les lève au-dessus
+du rebord. La grille 2D d'`EffectForge.brazier()`, morte depuis l'étape 1, est partie. Captures en
+jeu, feu et foudre, au zoom du jeu et de près : `Bureau\hns-captures-brasero-jeu\`. **Vu par l'utilisateur** : sous
+la Lanterne d'orage, le Foyer du mage tirait la Boule de feu en feu — résolue à part, avec son arbre,
+elle ignorait la conversion du brasero. Un brasero converti lui impose sa nature, par le paramètre de
+l'Incarnation (`Player.resolve(…, element)`) ; mots-clés et affixes suivent. Vue en jeu, la boule de
+foudre sortait presque blanche, sa traînée surtout : la rampe de la foudre, foncée, la garde violette
+(`Bureau\hns-captures-brasero-foyer\`). Coût non mesuré
+(deux braseros à la fois de base : 36 particules et une lumière chacun).
+
+**Le manuel de la foudre, l'Éclair vif d'abord** (21 octobre). Son trait est le projectile commun
+du joueur : le Trait et la Peste le prennent aussi, et il change de nature dans l'arbre — froid du
+Trait de glace, feu quand le Familier le rejoue. Première planche, en foudre, cinq façons en photos
+d'arcs électriques de Qwen-Image (dard d'arc, plasma, comète, fil, éclair long ;
+`Bureau\hns-captures-eclair-vif\`) : additionnés sur l'ocre, leurs cœurs blancs blanchissaient tout —
+passés par la rampe de la foudre, violets mais sans cœur, ils sortaient en plumes ou en fumée.
+Verdict : « ça ne ressemble pas vraiment à un éclair ». Un éclair se lit à son **zigzag** et à son
+**cœur blanc fin** ; Qwen, même prié d'angles vifs, sort des arcs plumeux au tronc presque droit.
+Deuxième planche (`-eclair-zigzag\`) : un ruban que le shader casse en coudes, retirés à chaque
+battement, qui porte le tronc de la photo, et une rampe qui garde le blanc en haut. Premier rendu en
+tube de néon, trop épais et trop doux : la bande de photo élargie (le tronc blanc reste fin dans le
+ruban) et des crans fins entre les coudes. **Retenu d'abord : le zigzag** (contre fourches, crépitant, long,
+photo nette), livré et capturé en jeu. Puis l'utilisateur a montré **Kinetic Bolt** de Path of Exile,
+« auquel on ajoute un visuel électrique » : une trajectoire qui zigzague, une longue traînée qui en
+garde la forme, un orbe d'énergie en tête. Troisième planche (`-eclair-kinetic\`) : équerre, dents de
+scie, droit avec des arcs qui jaillissent de la traînée, équerre à gros orbe, équerre en bleu.
+**Retenu : les dents de scie, en violet** — la couleur de la foudre partout ailleurs dans le jeu. Le
+zigzag est un dessin seul : l'orbe s'écarte de 10 px au plus de la trajectoire, qui reste droite et
+seule à toucher. `BoltFx` refait : l'orbe et ses trois arcs, la traînée (`BoltFx.Trail`, un ruban
+refait à chaque image sur les positions passées de l'orbe, qui survit au tir) ; l'éclat de fin de
+course naît en différé, la fin venant d'un rappel de collision. Captures en jeu : `-eclair-jeu\`. **« Ça lag un peu
+quand je fais plusieurs éclairs »** (Paratonnerre pris aussi) : mesuré en zone, sans vsync, Surcharge
+et Fourche sur deux meutes increvables, ce n'est pas le temps d'image — 3,7 à 6,6 ms avec ou sans
+Paratonnerre, traînée ou lumières (les écarts entre phases identiques sont du bruit), aucune image au-delà
+de 11 ms aux premiers tirs, aucun nœud qui s'accumule. C'est le pas : le tir avance au pas de
+physique (60 Hz), de 3,83 px une image sur deux ou trois à 165 Hz, immobile entre deux ; les
+étincelles le cachaient, un orbe net non. `BoltFx` se pose désormais à l'image entre les deux derniers
+pas (1,39 px à chaque image, mesuré). Les gels d'impact figent 6 à 8 % du temps en tir continu,
+sous les 10 % où le jeu se met à ressembler à du lag ; ils ne sont pas touchés. Coût non mesuré. Le premier tirage des textures par
+l'outil est revenu vide : même prompt et même graine que la planche, ComfyUI servait le graphe de son
+cache, sans image ; `character_forge.run()` donne un nom neuf au nœud d'enregistrement. Restent le
+Trait de glace et le trait passé au feu (une planche par élément), les Esquilles, l'Orbe statique et
+son Satellite.
+
 La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
 géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
 mêlées à celles de l'éclat, du météore et des bouffées des rats, elles partiront avec le
@@ -618,14 +672,57 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13) sauf **le Brasero**, le suivant — sa planche d'abord (`/dessiner-un-effet`), les
-  photos de feu de `tools/fx_textures.py fire` sous la main. Puis les autres manuels, chacun en
-  textures vraies, variantes d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) :
-  la peau du Serpent et la boule de feu en photos. **Les couloirs d'équilibrage** à relever
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; suivent son Trait de glace, son trait en feu, les Esquilles, l'Orbe statique. Puis les autres manuels, chacun en textures vraies, variantes
+  d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
+  de feu en photos, le Brasero, l'Éclair vif. **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
   l'élan, le colosse reste planté plus longtemps) — en dernier, jalon 13, §7. Le grunt est
-  fait ; **les cinq autres ennemis** (caster, chevalier, mortier, gonflé, colosse) attendent leur
-  modèle, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
+  fait. **Le caster** a son modèle TRELLIS.2 (20 octobre, graine 4242 : les bras les plus détachés,
+  doigts ouverts pour Mixamo, robe ouverte sur les jambes ; tour dans `Bureau\hns-caster-modele-3d\`),
+  dans `tools/characters/caster/3d/` — **les yeux cyan se perdent au fond du capuchon**, déjà sur le
+  modèle brut : un point lumineux en jeu ou une retouche de texture, à trancher. Gréé par Mixamo
+  le 20 (repos « Idle », marche « Walk With Briefcase », sort « Standing 1H Magic Attack 01 »),
+  `arm_space` à 40° d'office comme le grunt et le Vive lame ; vu sous la lumière du jeu à côté du
+  grunt (`Bureau\hns-captures-caster-3d\`, GIF) et en zone, qui tire (`-caster-jeu\`). « Quand il se déplace et
+  qu'il attaque, il se place un peu à l'écart, comme s'il se téléportait » : sa marche, « Walk With
+  Briefcase », n'était pas *In Place* — les hanches avançaient de 1,52 m sur le cycle (mesuré dans
+  le `.glb`), et le corps revenait d'un coup à sa place au sort ou à la boucle. L'export ôte la
+  dérive horizontale des hanches (`export_glb.in_place`) : 0,03 m. Les autres marches et tous les
+  gestes Mixamo du projet, mesurés, revenaient déjà à leur point de départ. **Le chevalier** (`charger`) est prêt pour TRELLIS.2 : son prompt
+  « Torchlight » adulte écrit, image source tirée le 20 (graine 777, la seule sans cape — celle de la
+  sorcière collait ses bras au buste ; `Bureau\hns-charger-modele.png`), détourage rangé dans
+  `charger/3d/model_front.png`. TRELLIS a refusé ce soir-là, quota du jour épuisé après le caster ;
+  passé le 21 (tour dans `Bureau\hns-charger-modele-3d\` : cornes, plates et tabard tenus, dos plus
+  sombre). Gréé par Mixamo le 21 (repos « Idle », course « Running »). Les bras rentraient dans
+  l'armure à 40° : comparés sur capture à 55 et 70° (`Bureau\hns-captures-charger-bras-*\`),
+  **70° et `elbows` à 0,5** — l'écart seul laissait les poings croiser devant le tabard, la course
+  de Mixamo étant un sprint. Vu en zone, qui charge (`-charger-jeu\`). Sa charge **appelle**
+  `attack()` (`Enemy._strike()` à la fin de l'élan) : son ancien geste écrit retiré, `ActorModel.attack()`
+  plantait faute d'animation ; un corps sans geste d'attaque garde maintenant celui qu'il joue, et
+  la charge part en courant. Une animation de charge Mixamo (épaule en avant) irait mieux. **Le mortier** : prompt « Torchlight » adulte (le gobelin cuivré
+  du jalon 27), graine 4242 le 21 (`Bureau\hns-mortar-modele.png` : bras détachés, et la seule à
+  porter des tubes de cuivre sur les épaules, comme des fûts — ils se lisent en plongée), passé par
+  TRELLIS.2 le même jour après le chevalier (tour dans `Bureau\hns-mortar-modele-3d\`). Gréé par
+  Mixamo le 21 (« Idle », « Running », « Throw » pour son obus en cloche) ; bras comparés sur
+  capture (`-mortar-bras-40\`, `-60\`) : à 40°, les poings croisaient devant le ventre à la course et
+  en fin de lancer — **60° et `elbows` à 0,5**. Vu en zone, qui tire (`-mortar-jeu\`). **Le gonflé et le colosse** :
+  prompts « Torchlight » adultes, graines 777 le 22 (`Bureau\hns-bloater-modele.png`,
+  `hns-brute-modele.png` ; bras détachés — la 4242 du gonflé portait des volutes de spores le long
+  des bras), passés par TRELLIS.2 le même jour (tours `-bloater-modele-3d\`, `-brute-modele-3d\`) ;
+  les volutes sont restées en petites fumées sombres le long des bras du gonflé. **Le quota est de
+  deux modèles par jour**, et se recharge 24 h après le premier de la veille (16 h 49), pas à
+  minuit — « 174s left » ne suffit pas avant. Le marchand (graine 777, la lanterne pend à la hotte)
+  et l'entraîneur (4242, manteau long ouvert, bras dégagés) ont leur image source
+  (`Bureau\hns-merchant-modele.png`, `hns-trainer-modele.png`) et attendent le quota du 23 :
+  `tools/model_3d.py mesh merchant 777`, puis `mesh trainer 4242`. Gréés par Mixamo le 22 : le gonflé
+  (« Idle », « Fast Run » ; il enfle sur place, sans geste), le colosse (« Idle », « Orc Walk »).
+  **Le coup au sol du colosse, Mixamo ne l'a pas** : écrit à la main, `smash` dans
+  `tools/blender/gestes.json` — les deux poings au-dessus du heaume en se cambrant, puis abattus
+  ensemble au sol devant lui, buste plongé et un pied en avant, impact à 0,55. Un geste écrit
+  l'est pour ce corps : `export_glb` ne lui applique plus `arm_space` ni `elbows`, qui
+  corrigent l'acteur de Mixamo et défaisaient les poings joints. 60° et `elbows` 0,5 d'office,
+  comme le mortier. Vus en zone (`Bureau\hns-captures-lourds-jeu\`) : le gonflé enfle et
+  éclate, le colosse montre son cône et frappe. Le marchand et l'entraîneur attendent, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
   (l'utilisateur dépose les `.fbx` dans `<id>/mixamo/`), `blender_sheet.py <id> --glb`.
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est
@@ -672,6 +769,16 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   que la vitesse d'attaque fasse enchaîner ; le coup part à l'impact (`Enemy._strike`, voir
   ARCHITECTURE, « Quand le personnage joue-t-il son attaque ? »). Tranché avec lui : un tireur
   ne se plante que le temps de son tir (`Caster.SHOT`), pas toute sa cadence de 1,5 à 3,2 s.
+- **L'interpolation de physique de Godot, pour tout le jeu — à faire une fois l'Éclair vif fini**
+  (Trait de glace, trait en feu, Esquilles, Orbe statique, Satellite), décision de l'utilisateur
+  le 21 octobre. À 60 pas sur un écran à 165 Hz, tout ce qui bouge au pas de physique avance par
+  à-coups (le tir : 3,83 px une image sur deux ou trois, mesuré, §13) ; `BoltFx` se lisse à la
+  main, ce qui ne passe pas à l'échelle d'un jeu à la PoE — du GDScript par effet et par image,
+  recopié dans chaque visuel. Le geste : l'activer au projet ; `reset_physics_interpolation()` à
+  chaque téléportation (portail, waypoint, entrée en zone, apparition, ruées, Bond) ; la caméra
+  sur la position interpolée du joueur ; hors interpolation ce qui bouge déjà à l'image (le
+  Météore) ; retirer le lissage de `BoltFx` ; mesurer `world/stress_test.tscn` avant et après.
+  Écarté : 120 pas de physique, qui doublent ce qui limite le nombre d'ennemis.
 - **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).

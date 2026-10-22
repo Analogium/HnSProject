@@ -160,12 +160,15 @@ func attack(spell := false, duration := 0.0, family := "", held := "") -> void:
 	if sprite != null:
 		sprite.attack(spell, duration, family, held)
 		return
-	_attacking = true
-	_held = held
 	var cast := &"play" if not held.is_empty() and _player.has_animation(&"play") else &"cast"
 	var gesture := cast if spell and _player.has_animation(cast) else &"attack"
 	if not family.is_empty() and _player.has_animation(family):
 		gesture = StringName(family)
+	# Un corps sans geste d'attaque (le chevalier, qui charge en courant) garde celui qu'il joue.
+	if not _player.has_animation(gesture):
+		return
+	_attacking = true
+	_held = held
 	_player.speed_scale = _pace
 	if duration > 0.0:
 		_player.speed_scale = _player.get_animation(gesture).length / duration
