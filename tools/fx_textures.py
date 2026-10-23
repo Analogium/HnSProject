@@ -19,6 +19,10 @@
                                     froid) : des tirages de Qwen-Image sur fond noir
     tools/fx_textures.py streak     fx/fire_streak.png, la traînée du trait passé au feu (`BoltFx`
                                     en feu), en bande : un tirage de Qwen-Image sur fond noir
+    tools/fx_textures.py storm      fx/storm_puff.png (trois bosses de cumulus, relief en RGB et densité
+                                    en A) et fx/storm_bolt.png (le tronc d'un éclair qui tombe, pied en
+                                    bas), le Nuage d'orage (`StormCloudFx`) : des tirages de Qwen-Image
+                                    sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -80,6 +84,15 @@ FROST = {
 STREAK = ("a photograph of a long horizontal streak of fire, a straight comet tail of flames and glowing embers crossing "
           "the whole frame from left to right, bright yellow head on the right, orange and red flames trailing to the left, "
           "isolated on a pure black background, realistic, VFX stock footage", 11)
+# « Volutes » sur la deuxième planche du Nuage d'orage : des bosses blanches sur noir, dont la
+# clarté donne la densité ; le nuage prend sa couleur et sa lumière dans le jeu.
+STORM_PUFF = ("a photograph of a single small round puff of cumulus cloud, one billowing ball of white cloud with "
+              "soft cauliflower bulges, lit from above, isolated on a pure black background, realistic, VFX stock "
+              "footage, centered")
+STORM_PUFF_SEEDS = (11, 22, 33)
+STORM_BOLT = ("a photograph of a single lightning bolt striking straight down vertically from the top of the frame to "
+              "the bottom, jagged angular bends, blinding white core, intense violet glow, isolated on a pure black "
+              "background, realistic, VFX stock footage, centered", 11)
 CELL = 256
 # L'API refuse le client sans nom (403) : elle demande qu'on se présente.
 AGENT = {"User-Agent": "HnSProject-decor/1.0"}
@@ -186,6 +199,40 @@ def cmd_streak():
     band(qwen(*STREAK), 0.3, 0.7, "fire_streak.png")
 
 
+def puff(rgb):
+    """Une bosse : la densité tirée de la clarté, fondue en rond ; le relief, un dôme flou de cette
+    densité plus le détail de la photo (sans le dôme, la bosse sortait plate sous le soleil)."""
+    gray = np.asarray(Image.fromarray((rgb * 255).astype(np.uint8)).resize((CELL, CELL), Image.LANCZOS),
+                      np.float32).mean(-1) / 255.0
+    y, x = np.mgrid[0:CELL, 0:CELL] / (CELL - 1) * 2.0 - 1.0
+    a = np.clip((gray - 0.06) / 0.5, 0.0, 1.0) * np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.35, 0.0, 1.0)
+    soft = lambda g, r: np.asarray(Image.fromarray((np.clip(g, 0, 1) * 255).astype(np.uint8)).filter(
+        ImageFilter.GaussianBlur(r)), np.float32) / 255.0
+    h = soft(a, 14) * 1.6 + soft(gray, 1.5) * 0.5
+    dx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * 20.0
+    dy = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * 20.0
+    n = np.stack([-dx, dy, np.ones_like(h)], -1)
+    return np.concatenate([n / np.linalg.norm(n, axis=-1, keepdims=True) * 0.5 + 0.5, a[..., None]], -1)
+
+
+def cmd_storm():
+    puffs = np.concatenate([puff(qwen(STORM_PUFF, seed)) for seed in STORM_PUFF_SEEDS], 1)
+    path = os.path.join(FX, "storm_puff.png")
+    Image.fromarray((puffs * 255).astype(np.uint8), "RGBA").save(path)
+    print(path)
+    # Le tronc seul : le voile violet coupé (la rampe du jeu le refait), le haut fondu, d'où il naît.
+    rgb = qwen(*STORM_BOLT)
+    w = rgb.shape[1]
+    trunk = rgb[:, int(w * 0.15):int(w * 0.85)].max(-1)
+    trunk = np.asarray(Image.fromarray((trunk * 255).astype(np.uint8)).resize((int(CELL * 0.7), CELL * 2),
+                                                                              Image.LANCZOS), np.float32) / 255.0
+    trunk = np.clip((trunk - 0.4) / 0.6, 0.0, 1.0) ** 0.8
+    y = np.linspace(0, 1, trunk.shape[0])[:, None]
+    x = np.abs(np.linspace(-1, 1, trunk.shape[1]))[None, :]
+    trunk = trunk * np.clip(y / 0.12, 0.0, 1.0) * np.clip((1.0 - x) / 0.25, 0.0, 1.0)
+    save(np.repeat(trunk[..., None], 3, -1), "storm_bolt.png")
+
+
 def cmd_fire():
     balls = [qwen(FIRE_PROMPTS["ball"], seed) for seed in (11, 22, 33)]
     save(np.concatenate([cell(b, (0.03, 0.03, 0.97, 0.97), 0.8) for b in balls], 1), "fire_ball.png")
@@ -202,4 +249,4 @@ def cmd_fire():
 
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
-     "frost": cmd_frost, "streak": cmd_streak}[sys.argv[1]]()
+     "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm}[sys.argv[1]]()

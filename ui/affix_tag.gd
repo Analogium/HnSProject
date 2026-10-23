@@ -42,7 +42,8 @@ func _process(_delta: float) -> void:
 	if body == null:
 		return
 	visible = _shown() and body.is_visible_in_tree()
-	position = Flat.on_screen(get_viewport(), body.global_position, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
+	var seen := body.get_global_transform_interpolated().origin
+	position = Flat.on_screen(get_viewport(), seen, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
 
 
 ## Des noms d'une autre longueur : on remesure depuis les affixes gardés.

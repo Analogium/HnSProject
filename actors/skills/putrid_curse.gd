@@ -101,6 +101,7 @@ func _mark(target: Hurtbox) -> void:
 	if target != null:
 		_curse(target)
 		global_position = target.global_position
+		reset_physics_interpolation()
 
 
 ## Le marqué la porte encore : la marque le suit.

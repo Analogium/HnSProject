@@ -14,6 +14,9 @@ uniform float hz = 18.0;
 uniform float kinks = 7.0;
 // L'écart des coudes, en largeurs de ruban.
 uniform float amp = 0.8;
+// La part du ruban, depuis sa queue, qui s'allume : un arc autour de l'orbe naît de rien, un saut de
+// la Chaîne d'éclairs part plein de sa source.
+uniform float tail = 0.5;
 instance uniform float opacity = 1.0;
 // Par tir : deux éclairs côte à côte ne se cassent pas aux mêmes coudes.
 instance uniform float seed = 0.0;
@@ -45,5 +48,5 @@ void vertex() {
 
 void fragment() {
 	vec3 p = texture(photo, vec2(UV.x * 0.5 + seed * 0.37, UV.y)).rgb;
-	ALBEDO = ramp_of(max(p.r, max(p.g, p.b))) * boost * smoothstep(0.0, 0.5, UV.x) * opacity;
+	ALBEDO = ramp_of(max(p.r, max(p.g, p.b))) * boost * smoothstep(0.0, tail, UV.x) * opacity;
 }

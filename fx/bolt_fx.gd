@@ -50,18 +50,26 @@ const ZAP_WIDTH := 7.0
 const ZAP_LIFE := 0.14
 const ZAP_FLASH := 12.0
 const ZAP_FLASH_LIFE := 0.2
+## Un saut de la Chaîne d'éclairs (« tresse », choisie sur planche contre la photo ramifiée, le ruban
+## seul, le ruban sur sa ramure et un arc qui court) : trois rubans fins aux coudes différents.
+const BRAID := 3
+const BRAID_WIDTH := 4.0
+const BRAID_AMP := 2.5
+const BRAID_KINKS := 7
+const BRAID_BOOST := 0.75
+const BRAID_LIGHT := 3.0
+const BRAID_REACH := 34.0
 
 static var _arc_draw := {}
 static var _photos := {}
 static var _trails := {}
+static var _braids := {}
 
 var trail: Trail
 var _orb: Node3D
 var _nature := 0
 var _look: Look
-## Les deux dernières positions du tir au pas de physique, et celle de l'image d'avant.
-var _before := Vector3.ZERO
-var _after := Vector3.ZERO
+## Où le tir se voyait à l'image d'avant.
 var _last := Vector3.ZERO
 var _dir := Vector3.RIGHT
 var _run := 0.0
@@ -74,15 +82,11 @@ static func show_on(host: Node3D, nature: int, orb := false, orbits := false) ->
 	fx._nature = nature
 	fx._look = Look.of(nature, orb)
 	host.add_child(fx)
-	# Posé à l'image, pas au pas de physique : sur un écran à 165 Hz, un tir à 60 pas restait
-	# immobile deux images sur trois, puis sautait — l'orbe net avançait par à-coups.
-	fx.top_level = true
-	fx.process_physics_priority = 1
-	fx._before = host.global_position
-	fx._after = fx._before
-	fx._last = fx._before
-	fx.global_position = fx._before + Vector3.UP * ElementFx.LIFT
+	fx.position = Vector3.UP * ElementFx.LIFT
+	fx._last = fx.global_position
 	fx._orb = Node3D.new()
+	# Son écart se pose à l'image ; le tir qui le porte, lui, est interpolé par le moteur.
+	fx._orb.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	fx.add_child(fx._orb)
 	var look := fx._look
 	var shown: Array[GeometryInstance3D] = [_photo_quad(nature, look.orb, look.cell, look.size, look.spin)]
@@ -133,23 +137,14 @@ func zap(targets: Array) -> void:
 		flash.global_position = to
 		for node: GeometryInstance3D in [arc, flash]:
 			ElementFx.veil_like(node, get_parent())
-		_fade(arc, Vector3(arc.scale.x, ZAP_WIDTH, 1.0), ZAP_LIFE)
-		_fade(flash, Vector3.ONE * ZAP_FLASH, ZAP_FLASH_LIFE)
+		fade(arc, Vector3(arc.scale.x, ZAP_WIDTH, 1.0), ZAP_LIFE)
+		fade(flash, Vector3.ONE * ZAP_FLASH, ZAP_FLASH_LIFE)
 
 
-## Après le tir, qui avance dans son propre `_physics_process()` : sans la priorité, l'enfant passait
-## avant lui, et le dessin traînait d'un pas.
-func _physics_process(_delta: float) -> void:
-	_before = _after
-	_after = (get_parent() as Node3D).global_position
-
-
-## Entre les deux derniers pas, à la fraction où tombe l'image. Le cap se lit sur le chemin fait
-## depuis l'image d'avant : le tir ne le dit pas, et un rebond le change d'un pas à l'autre.
-## L'écart suit une dent de scie le long du chemin, nul au départ.
+## Le cap se lit sur le chemin fait depuis l'image d'avant : le tir ne le dit pas, et un rebond
+## le change d'un pas à l'autre. L'écart suit une dent de scie le long du chemin, nul au départ.
 func _process(delta: float) -> void:
-	var at := _before.lerp(_after, Engine.get_physics_interpolation_fraction())
-	global_position = at + Vector3.UP * ElementFx.LIFT
+	var at := get_global_transform_interpolated().origin
 	var moved := at - _last
 	_last = at
 	if moved.length_squared() > 0.0001:
@@ -160,6 +155,35 @@ func _process(delta: float) -> void:
 	_orb.rotation.y += delta * ARC_SPIN
 
 
+## Un saut de la Chaîne d'éclairs, de `from` à `to`, sous `host` qui le dissout ; à l'arrivée, un
+## éclat et une lumière, qui se libèrent seuls.
+static func braid(host: Node3D, from: Vector3, to: Vector3, nature: int) -> void:
+	from += Vector3.UP * ElementFx.LIFT
+	to += Vector3.UP * ElementFx.LIFT
+	var length := from.distance_to(to)
+	if length < 0.01:
+		return
+	for i in BRAID:
+		var strand := MeshInstance3D.new()
+		strand.mesh = _braid_mesh(nature, i)
+		strand.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		strand.scale = Vector3(length, BRAID_WIDTH, 1.0)
+		strand.extra_cull_margin = length
+		strand.set_instance_shader_parameter(&"seed", randf() * 100.0)
+		host.add_child(strand)
+		strand.global_position = to
+		strand.rotation.y = -Flat.angle(to - from)
+		ElementFx.veil_like(strand, host)
+	var flash := flash_of(nature)
+	host.get_viewport().add_child(flash)
+	flash.global_position = to
+	ElementFx.veil_like(flash, host)
+	var light := FlameFx.light_of(nature, BRAID_LIGHT, BRAID_REACH)
+	flash.add_child(light)
+	light.create_tween().tween_property(light, ^"light_energy", 0.0, ZAP_FLASH_LIFE)
+	fade(flash, Vector3.ONE * ZAP_FLASH, ZAP_FLASH_LIFE)
+
+
 func _flare(viewport: Viewport, at: Vector3, host: Node, size: float) -> void:
 	if not is_instance_valid(viewport):
 		return
@@ -168,11 +192,11 @@ func _flare(viewport: Viewport, at: Vector3, host: Node, size: float) -> void:
 	if is_instance_valid(host):
 		ElementFx.veil_like(flash, host)
 	flash.global_position = at
-	_fade(flash, Vector3.ONE * FLARE * size, FLARE_LIFE)
+	fade(flash, Vector3.ONE * FLARE * size, FLARE_LIFE)
 
 
 ## Grandit jusqu'à `to` en s'éteignant, puis se libère.
-static func _fade(node: GeometryInstance3D, to: Vector3, life: float) -> void:
+static func fade(node: GeometryInstance3D, to: Vector3, life: float) -> void:
 	var tween := node.create_tween().set_parallel()
 	tween.tween_property(node, "scale", to, life)
 	tween.tween_method(
@@ -190,7 +214,7 @@ static func flash_of(nature: int) -> MeshInstance3D:
 static func _photo_quad(nature: int, photo: Texture2D, cell: Vector4, size: float, spin: float) -> MeshInstance3D:
 	var key := "%d %s %s %s" % [nature, photo.resource_path, cell, spin]
 	if not _photos.has(key):
-		var m := _ramped(FROST if nature == DamageType.Kind.COLD else PHOTO, photo, nature)
+		var m := ramped(FROST if nature == DamageType.Kind.COLD else PHOTO, photo, nature)
 		m.set_shader_parameter(&"spin", spin)
 		if cell != Look.WHOLE:
 			m.set_shader_parameter(&"cell", cell)
@@ -224,7 +248,7 @@ static func _arc_mesh(nature: int) -> QuadMesh:
 		var quad := QuadMesh.new()
 		quad.center_offset = Vector3(-0.5, 0.0, 0.0)
 		quad.subdivide_width = 24
-		var m := _ramped(ARC, BOLT_PHOTO, nature)
+		var m := ramped(ARC, BOLT_PHOTO, nature)
 		m.set_shader_parameter(&"kinks", 3.0)
 		m.set_shader_parameter(&"boost", 1.0)
 		quad.material = m
@@ -232,10 +256,27 @@ static func _arc_mesh(nature: int) -> QuadMesh:
 	return _arc_draw[nature]
 
 
+## Un brin de la tresse : ses coudes à lui, assez de crans pour qu'aucun ne tombe entre deux sommets.
+static func _braid_mesh(nature: int, strand: int) -> QuadMesh:
+	var key := "%d %d" % [nature, strand]
+	if not _braids.has(key):
+		var quad := QuadMesh.new()
+		quad.center_offset = Vector3(-0.5, 0.0, 0.0)
+		quad.subdivide_width = 64
+		var m := ramped(ARC, BOLT_PHOTO, nature)
+		m.set_shader_parameter(&"kinks", float(BRAID_KINKS + strand))
+		m.set_shader_parameter(&"amp", BRAID_AMP)
+		m.set_shader_parameter(&"boost", BRAID_BOOST)
+		m.set_shader_parameter(&"tail", 0.03)
+		quad.material = m
+		_braids[key] = quad
+	return _braids[key]
+
+
 static func _trail_material(nature: int) -> ShaderMaterial:
 	if not _trails.has(nature):
 		var look := Look.of(nature, false)
-		var m := _ramped(FROST_TRAIL if nature == DamageType.Kind.COLD else TRAIL, look.streak, nature)
+		var m := ramped(FROST_TRAIL if nature == DamageType.Kind.COLD else TRAIL, look.streak, nature)
 		if nature == DamageType.Kind.FIRE:
 			# La photo d'une comète, tête à droite : la traînée n'en prend que le corps.
 			m.set_shader_parameter(&"along", 0.65)
@@ -244,7 +285,9 @@ static func _trail_material(nature: int) -> ShaderMaterial:
 	return _trails[nature]
 
 
-static func _ramped(shader: Shader, photo: Texture2D, nature: int) -> ShaderMaterial:
+## La matière d'une photo passée par la rampe de sa nature (`fx/lightning_common.gdshaderinc`) ;
+## l'éclair du Nuage d'orage la prend aussi.
+static func ramped(shader: Shader, photo: Texture2D, nature: int) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = shader
 	m.set_shader_parameter(&"photo", photo)
@@ -324,7 +367,7 @@ class Trail extends MeshInstance3D:
 		while not points.is_empty() and float(points[0][1]) > TRAIL_LIFE:
 			points.pop_front()
 		if is_instance_valid(target) and target.is_inside_tree():
-			add_point(target.global_position)
+			add_point(target.get_global_transform_interpolated().origin)
 		elif points.is_empty():
 			queue_free()
 			return

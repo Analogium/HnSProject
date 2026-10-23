@@ -241,7 +241,7 @@ func _advance_ramp(delta: float) -> void:
 ## Au centre de la carte, où les relevés de référence ont été pris : l'entrée de la
 ## route est contre le bord, et la moitié des vagues y tomberait dans le mur.
 func _center() -> void:
-	_zone.player.global_position = MapGenerator.cell_center(_zone.generator.center_cell())
+	_zone.player.warp(MapGenerator.cell_center(_zone.generator.center_cell()))
 
 
 ## Même ordre que _ready : generate_zone repeuple la zone avec ses propres

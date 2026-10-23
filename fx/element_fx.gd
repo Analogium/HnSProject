@@ -120,6 +120,12 @@ static func warm(host: Node3D) -> void:
 	BoltFx.show_on(probe, DamageType.Kind.LIGHTNING, true)
 	# Le fer ne lit pas `opacity` : réduit à un point, il se compile sans se voir.
 	BrazierFx.light_up(probe, DamageType.Kind.FIRE).body.scale = Vector3.ONE * 0.001
+	probe.add_child(StormCloudFx.bolt_of(DamageType.Kind.LIGHTNING))
+	probe.add_child(StormCloudFx.stone())
+	# Le nuage vit hors de la sonde : libéré avec elle, sans se dissiper.
+	var storm := StormCloudFx.gather(probe, DamageType.Kind.LIGHTNING, 10.0)
+	made.append_array(storm.find_children("*", "", true, false))
+	host.get_tree().create_timer(0.2).timeout.connect(storm.queue_free)
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in made:
 		if node is GeometryInstance3D:
@@ -209,9 +215,11 @@ static func _process_material(
 	return pm
 
 
+## Posé à l'image sur le porteur **où il se voit** : interpolé lui-même, l'émetteur traînerait d'un pas.
 func _follow(host: Node3D, offset: Vector3) -> void:
 	_host = host
 	_offset = offset
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	host.get_viewport().add_child(self)
 	_place()
 
@@ -232,10 +240,11 @@ func _process(delta: float) -> void:
 
 
 func _place() -> void:
-	var at := _host.global_position
+	var seen := _host.get_global_transform_interpolated()
+	var at := seen.origin
 	if _sweep_t >= 0.0:
 		var a := lerpf(-SWEEP_HALF, SWEEP_HALF, _sweep_t)
-		at = _host.global_transform * (Vector3(cos(a), 0.0, sin(a)) * _sweep_radius)
+		at = seen * (Vector3(cos(a), 0.0, sin(a)) * _sweep_radius)
 	global_position = at + _offset
 
 

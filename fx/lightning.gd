@@ -1,8 +1,8 @@
 class_name Lightning
 extends RefCounted
 
-## La foudre du jeu, **dessinée** en un seul endroit : la chaîne, les éclairs du
-## nuage, la charge statique et la traînée de la ruée (le trait et l'orbe sont en 3D, `BoltFx`).
+## La foudre du jeu, **dessinée** en un seul endroit : les éclairs du nuage, la charge
+## statique et la traînée de la ruée (le trait, l'orbe et la chaîne sont en 3D, `BoltFx`).
 ##
 ## Le **fil cerné**, choisi sur planche contre cinq autres (jalon 24) : un corps de
 ## trois pixels, un filament presque blanc au milieu, deux fourches courtes. Un
@@ -115,13 +115,6 @@ static func chain(
 		var end := PackedVector2Array([points[i + 1]]) if struck else PackedVector2Array()
 		out.append(_bake(strokes, end, tint, gone_part))
 	return out
-
-
-## Du dernier saut au premier : l'éclat qui finit un saut se pose sur le départ du
-## suivant et cache la jointure de leurs contours.
-static func put(ci: CanvasItem, pieces: Array[EffectForge.Piece]) -> void:
-	for i in range(pieces.size() - 1, -1, -1):
-		pieces[i].put(ci, Vector2.ZERO)
 
 
 ## La charge statique dans sa forme `form` : six bras en éclair qui vont jusqu'au

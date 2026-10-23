@@ -115,7 +115,8 @@ static func _trigger(
 					break
 				struck[next.get_instance_id()] = true
 				Targets.strike(next, parts, at, author, cast)
-				ChainLightning.trace(parent, PackedVector3Array([at, next.global_position]), _color(reaction))
+				# Ardent : la tresse en feu.
+				ChainLightning.trace(parent, PackedVector3Array([at, next.global_position]), DamageType.Kind.FIRE)
 		Reaction.CONDUCTION:
 			Targets.strike(target, parts, at, author, cast)
 

@@ -127,11 +127,11 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
 4. **Une flamme posée se dresse** : vue d'en haut, une flammèche ronde qui monte ne se voit
    pas monter — des bulles. Une langue de feu est un quad debout, tourné vers la caméra autour
    de la verticale, posé par sa base (`fx/flame_tongue.gdshader`).
-5. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles ; et ce qui ne
-   bouge que pour se montrer (un météore qui tombe) **bouge dans `_process()`** — un dessin net
-   porté par un tir se pose entre ses deux derniers pas de physique (`BoltFx`), sinon il avance
-   par à-coups et « ça lag » : posé au pas de
-   physique, il reste immobile entre deux pas, et sa traînée sort aussi en perles ;
+5. **Particules** : `fixed_fps = 0`, sinon les tirs rapides laissent des perles. Ce qui bouge
+   au pas de physique, l'interpolation du moteur le lisse (ARCHITECTURE, « Le mouvement entre deux
+   pas ») ; ce qui ne bouge que pour se montrer (un météore qui tombe, le zigzag de `BoltFx`)
+   **bouge dans `_process()`**, en `PHYSICS_INTERPOLATION_MODE_OFF`, et ce qui y suit un corps lit
+   `get_global_transform_interpolated()` — sinon il traîne d'un pas et « ça lag » ;
    `local_coords = false` pour une traînée ; un point doux, pas un carré. Quelques pièges :
    - `finished` ne vient jamais sans rendu, donc ce qui se libère passe par une minuterie ;
    - changer `amount` relance l'émetteur, donc on change la matière (`ElementFx.keep()`) ;

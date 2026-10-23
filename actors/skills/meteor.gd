@@ -46,6 +46,9 @@ static func fall(
 	Settings.veil(meteor, Settings.SPELLS)
 	meteor.global_position = point
 	meteor._faller = Node3D.new()
+	# Posée à l'image, hors de l'interpolation de physique : immobile entre deux pas, sa traînée
+	# sortait en perles.
+	meteor._faller.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	meteor.add_child(meteor._faller)
 	meteor._faller.position = FROM
 	var ball := FlameFx.ball(meteor._faller, cast.nature)

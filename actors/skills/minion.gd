@@ -161,6 +161,7 @@ func _physics_process(delta: float) -> void:
 			return
 	if global_position.distance_to(_player.global_position) > LEASH:
 		global_position = _post()
+		reset_physics_interpolation()
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	_rallied = maxf(_rallied - delta, 0.0)
 	_search -= delta

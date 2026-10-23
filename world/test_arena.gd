@@ -68,7 +68,7 @@ func _ready() -> void:
 
 	_build_walls()
 	_spawn_dummies()
-	player.global_position = ARENA_SIZE * 0.5
+	player.warp(ARENA_SIZE * 0.5)
 	player.died.connect(_on_player_died)
 
 	# Le target doit être posé avant tout register() : c'est lui que le manager
@@ -246,7 +246,7 @@ func _reset_arena() -> void:
 			d.reset()
 	_kill_all()
 	player.revive()
-	player.global_position = ARENA_SIZE * 0.5
+	player.warp(ARENA_SIZE * 0.5)
 	_spawn_pack()
 
 

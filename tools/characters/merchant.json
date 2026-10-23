@@ -28,14 +28,11 @@
   "size": 38,
   "colors": 16,
   "weapon_colors": 8,
-  "source": "tools/characters/merchant/3d",
-  "rest": "rest.blend",
+  "source": "tools/characters/merchant/mixamo",
+  "rest": "rest.fbx",
   "weapons": [],
-  "anims": {
-   "walk": [
-    "walk.blend",
-    8
-   ]
-  }
+  "anims": {},
+    "guard": false,
+    "arm_space": 40
  }
 }

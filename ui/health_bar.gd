@@ -45,7 +45,9 @@ func _process(_delta: float) -> void:
 	if body == null:
 		return
 	visible = _shown and body.is_visible_in_tree()
-	position = Flat.on_screen(get_viewport(), body.global_position, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
+	# Où le corps se voit, interpolé entre deux pas : sinon la barre tremble sur lui.
+	var seen := body.get_global_transform_interpolated().origin
+	position = Flat.on_screen(get_viewport(), seen, SpriteForge.CENTER_ABOVE_FEET - OFFSET_Y + lift)
 
 
 ## Appelée par l'acteur à chaque changement de vie, et une fois à la naissance.

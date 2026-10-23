@@ -264,8 +264,10 @@ var _sips: Array[Sip] = []
 
 
 func _ready() -> void:
-	# Hors de la hiérarchie pour suivre en douceur ; posée sur le joueur dès la naissance.
+	# Hors de la hiérarchie pour suivre en douceur ; posée sur le joueur dès la naissance. Elle
+	# bouge à l'image : interpolée, elle traînerait d'un pas derrière le joueur.
 	camera.top_level = true
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	camera.fov = CAMERA_FOV
 	camera.global_position = global_position + _camera_offset()
 	camera.look_at(global_position)
@@ -331,17 +333,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera_zoom = clampf(camera_zoom * step, CAMERA_ZOOM_MIN, 1.0)
 
 
-## La caméra rejoint le joueur au rythme de l'image, pas de la physique : comme la caméra 2D.
+## La caméra rejoint le joueur au rythme de l'image, pas de la physique : comme la caméra 2D. Elle
+## suit le corps **où il se voit**, interpolé entre deux pas, pas où la physique l'a laissé.
 func _process(delta: float) -> void:
-	var goal := global_position + _camera_offset()
+	var seen := get_global_transform_interpolated().origin
+	var goal := seen + _camera_offset()
 	camera.global_position = camera.global_position.lerp(goal, 1.0 - exp(-CAMERA_SMOOTHING * delta))
-	_show_through()
+	_show_through(seen)
 
 
 ## Ce qui passe entre la caméra et le corps s'estompe autour de lui (`terrain.gdshader`) : le
 ## centre de l'écran à sa poitrine, et sa profondeur de vue.
-func _show_through() -> void:
-	var chest := global_position + Vector3.UP * SpriteForge.CENTER_ABOVE_FEET
+func _show_through(seen: Vector3) -> void:
+	var chest := seen + Vector3.UP * SpriteForge.CENTER_ABOVE_FEET
 	var screen := get_viewport().get_visible_rect().size
 	RenderingServer.global_shader_parameter_set(&"fade_center", camera.unproject_position(chest) / screen)
 	RenderingServer.global_shader_parameter_set(&"fade_depth", -(camera.global_transform.affine_inverse() * chest).z)
@@ -1351,7 +1355,7 @@ func melee_blow(attacker: Enemy, amount: float) -> void:
 	Targets.strike(attacker.hurtbox, parts, global_position, states, null)
 	ChainLightning.trace(
 		_effects_parent(), PackedVector3Array([global_position, attacker.global_position]),
-		DamageType.COLORS[DamageType.Kind.LIGHTNING]
+		DamageType.Kind.LIGHTNING
 	)
 	if _faraday_wait <= 0.0 and lit_number(SkillStats.FARADAY) > 0.0 \
 			and _untouchable(SkillStats.FARADAY_TIME):
@@ -1515,7 +1519,7 @@ func _show_states() -> void:
 ## un rayon et une période, ou un buff bref sur le lanceur quand elle a des lignes.
 func _dash(skill: Skill, cast: SkillStats) -> void:
 	var from_value := global_position
-	global_position = _landing(from_value, _aim_point())
+	warp(_landing(from_value, _aim_point()))
 	# Le Bond (jalon 34) : un saut, qui ne laisse que son arc et son cratère.
 	if cast.shape == Skill.Shape.LEAP:
 		LeapArc.leave(_effects_parent(), from_value, global_position, cast)
@@ -1591,7 +1595,7 @@ func _bolt_line(from_value: Vector3, to: Vector3, cast: SkillStats) -> void:
 	var parts := cast.roll(Game.rng)
 	for target in Targets.in_capsule(get_world_3d(), from_value, to, SkillStats.BOLT_DASH_WIDTH):
 		Targets.strike(target, parts, from_value, states, cast)
-	ChainLightning.trace(_effects_parent(), PackedVector3Array([from_value, to]), DamageType.COLORS[cast.nature])
+	ChainLightning.trace(_effects_parent(), PackedVector3Array([from_value, to]), cast.nature)
 
 
 ## L'Aller-retour : on revient d'où l'on est parti, murs traversés comme à l'aller.
@@ -1599,7 +1603,7 @@ func _return_to(origin: Vector3, cast: SkillStats) -> void:
 	if is_dead:
 		return
 	var from_value := global_position
-	global_position = _landing(from_value, origin)
+	warp(_landing(from_value, origin))
 	_bolt_line(from_value, global_position, cast)
 
 
@@ -1682,7 +1686,7 @@ func _lunge(cast: SkillStats, prey: Hurtbox = null) -> void:
 		return
 	var toward := prey.global_position
 	var from_value := global_position
-	global_position = _landing(from_value, toward - from_value.direction_to(toward) * LUNGE_REACH)
+	warp(_landing(from_value, toward - from_value.direction_to(toward) * LUNGE_REACH))
 	if global_position != toward:
 		facing = global_position.direction_to(toward)
 	LungeTrail.leave(_effects_parent(), from_value, global_position, toward)
@@ -1706,9 +1710,9 @@ func _lunge(cast: SkillStats, prey: Hurtbox = null) -> void:
 					Targets.strike(prey, second.roll(Game.rng), global_position, states, second)
 		)
 	if cast.retreat > 0.0:
-		global_position = _landing(
+		warp(_landing(
 			global_position, global_position + global_position.direction_to(from_value) * SkillStats.RETREAT_REACH
-		)
+		))
 		if cast.slip > 0.0:
 			_untouchable(SkillStats.SLIP_TIME)
 	Game.hit_stop()
@@ -1939,7 +1943,7 @@ func _dance(cast: SkillStats) -> void:
 			return
 		if global_position.distance_to(aim) > SkillStats.DANCE_REACH:
 			facing = global_position.direction_to(aim)
-		global_position = _landing(global_position, global_position + facing * (SkillStats.DANCE_STRIDE + cast.glide))
+		warp(_landing(global_position, global_position + facing * (SkillStats.DANCE_STRIDE + cast.glide)))
 		var center := global_position + facing * SkillStats.DANCE_REACH
 		var struck := Targets.in_circle(get_world_3d(), center, SkillStats.DANCE_HIT)
 		var parts := cast.roll(Game.rng)
@@ -1957,7 +1961,7 @@ func _dance(cast: SkillStats) -> void:
 	gain_mana(cast.gravedigger * float(popped))
 	# Le Chassé-croisé : un pas en arrière, la danse finie.
 	if cast.cross_step > 0.0 and not is_dead:
-		global_position = _landing(global_position, global_position - facing * cast.cross_step)
+		warp(_landing(global_position, global_position - facing * cast.cross_step))
 
 
 ## Le dernier coup : les rats de tous ceux qui entourent la cible éclatent ; la Pirouette frappe
@@ -2126,6 +2130,13 @@ func _riposte(toward: Vector3) -> void:
 			_effects_parent(), global_position, at, DamageType.COLORS[cast.nature],
 			ThrustTrail.PARRY_WIDTH, true, true
 		)
+
+
+## Un saut de place — ruée, zone, portail : sans le `reset`, l'interpolation de physique le
+## montrerait glisser d'un bout à l'autre pendant un pas.
+func warp(at: Vector3) -> void:
+	global_position = at
+	reset_physics_interpolation()
 
 
 ## Le point le plus proche de la visée où le corps tient, en reculant vers le départ.

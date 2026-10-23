@@ -708,6 +708,47 @@ desserrer) — sur une orbite peuplée, chaque orbe naît au milieu du plus gran
 (`StaticOrb._widest_gap()`) ; une orbite vide part toujours vers la visée. Trois orbes par lancer
 avec la Fourche : 12 orbes régulièrement répartis (`Bureau\hns-captures-satellite-cercle-fourche\`).
 
+**La Chaîne d'éclairs** (23 octobre). Le tronc de l'Éclair vif, mince et presque sans branches,
+manquait de ramure sur un saut de 90 à 150 px qui ne dure que 0,22 s : deux sujets tirés par
+Qwen-Image (graines 11, 22, 33, `Bureau\hns-chaine-eclairs-textures\` ; la sous-commande, morte avec le choix, est partie),
+un saut ramifié — bons tous les trois — et un impact, où un éclair tombait du ciel dans chaque
+tirage : l'étincelle de la foudre reste. Un faisceau de filaments, demandé deux fois, sortait noué
+autour d'un objet. Planche en zone, cinq couloirs d'une source à trois grunts figés
+(`Bureau\hns-captures-chaine-planche\`) : la photo ramifiée couchée de cible en cible, le ruban de
+l'Orbe seul, le ruban sur sa ramure, **la tresse** (trois rubans fins aux coudes différents, façon
+Arc de Path of Exile), et un arc qui court de saut en saut. Au premier rendu, les photos couchées
+montraient leur voile violet en rectangles (seuil de clarté relevé à 0,4, bords adoucis) et la
+tresse, à 1,4 largeur d'écart, ne se distinguait pas d'un ruban (2,5). **Retenue : la tresse.**
+`BoltFx.braid()` en pose une par saut, le shader du ruban gagne `tail` (plein dès la source) ;
+`ChainLightning.trace()` prend une nature au lieu d'une teinte, et l'Arc ardent (allumé et
+engourdi) passe en feu. Vue en jeu sur une meute (`Bureau\hns-captures-chaine-jeu\`). Coût non
+mesuré : trois maillages et une lumière par saut au lieu d'un semis de particules.
+
+**Le Nuage d'orage** (23 octobre). Il n'avait que le disque d'étincelles générique, et ses frappes
+ne se voyaient pas. Première planche, cinq nuages sur des grunts figés, frappant à la période de la
+compétence (`Bureau\hns-captures-nuage-orage\`, refaite depuis) : un cumulonimbus photographié par
+Qwen-Image, des volutes, une spirale d'orage couchée à plat, une ombre seule au sol avec un éclair
+photographié qui tombe du ciel, un nuage embrasé de violet. Erreurs vues sur planche : posés à 46 px,
+les nuages cachaient leurs cibles (montés à 80, aplatis) ; leur lueur additive montait au cœur blanc
+de la rampe. Verdict : « beaucoup trop moche ». **La cause : une photo de nuage plaquée en `unshaded`
+n'a pas de volume** — un autocollant flou, dont le gris-bleu mêlé à l'ocre virait à l'olive. Un nuage
+n'est pas de la lumière : il doit prendre celle du jeu. Deuxième planche (même dossier) : des bosses
+de cumulus tirées sur fond noir, leur **relief** tiré de leur clarté (un dôme flou plus le détail),
+éclairées par le soleil, une lumière dedans qui flashe à chaque frappe ; une grappe de boules
+bosselées, des volutes, des volutes sous la pluie, un nuage d'encre, une enclume basse. Premier rendu
+blanc-lavande (albédo trop clair, flash trop fort) ; l'enclume basse cachait ses cibles, remplacée par
+un nuage haut et translucide. **Retenues : les volutes**, sans pluie. Planche de la Grêle sur ce nuage
+(`Bureau\hns-captures-grele\`) : grêlons sur cible, averse continue, colonne de grêle photographiée,
+nuage de glace ; les grêlons en billboards ne se voyaient pas, des billes éclairées si ; la colonne
+sortait violette (la rampe de la foudre par défaut), puis en rayon bleu. **Retenus : les grêlons sur
+cible.** `StormCloudFx` (ARCHITECTURE, « Que montre une compétence en 3D ? ») : quinze bosses, ventre
+plus sombre, à l'échelle du rayon (l'Orage portatif rapetisse, la hauteur reste) ; la lueur du dedans
+monte avec l'Accumulation ; chaque frappe, Foudre jumelle comprise, tombe sur trois cibles au plus, le
+paratonnerre de la Cible de l'orage et l'ennemi du Débordement ; à vide, sur un point du cercle. Le
+dessin vit à la racine du viewport et se dissipe après son nuage. Captures en jeu, au cadre et de
+près : `-nuage-foudre-jeu\`, `-nuage-grele-jeu\`. Coût non mesuré : seize billboards éclairés par
+nuage, trois nuages au plus par lanceur.
+
 La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
 géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
 mêlées à celles de l'éclat, du météore et des bouffées des rats, elles partiront avec le
@@ -722,9 +763,9 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; suit l'interpolation de physique (plus bas). Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; suit le reste du manuel. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
-  de feu en photos, le Brasero, l'Éclair vif. **Les couloirs d'équilibrage** à relever
+  de feu en photos, le Brasero, l'Éclair vif, la Chaîne d'éclairs, le Nuage d'orage. **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
   l'élan, le colosse reste planté plus longtemps) — en dernier, jalon 13, §7. Le grunt est
   fait. **Le caster** a son modèle TRELLIS.2 (20 octobre, graine 4242 : les bras les plus détachés,
@@ -763,8 +804,14 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   deux modèles par jour**, et se recharge 24 h après le premier de la veille (16 h 49), pas à
   minuit — « 174s left » ne suffit pas avant. Le marchand (graine 777, la lanterne pend à la hotte)
   et l'entraîneur (4242, manteau long ouvert, bras dégagés) ont leur image source
-  (`Bureau\hns-merchant-modele.png`, `hns-trainer-modele.png`) et attendent le quota du 23 :
-  `tools/model_3d.py mesh merchant 777`, puis `mesh trainer 4242`. Gréés par Mixamo le 22 : le gonflé
+  (`Bureau\hns-merchant-modele.png`, `hns-trainer-modele.png`). Le marchand est passé par TRELLIS.2
+  le 23 à 19 h 35 (tour dans `Bureau\hns-merchant-modele-3d\`), gréé par Mixamo le 24 : un repos
+  seul (« Idle »), il ne marche jamais ; `arm_space` à 40° d'office. Vu sous la lumière du jeu
+  (`Bureau\hns-captures-merchant-3d\`, GIF). L'entraîneur est le dernier corps sans modèle : le test
+  du repli sur planche le prend ; son modèle venu, ce repli n'aura plus de sujet. L'entraîneur a été refusé juste
+  après (« 120s requested vs. 171s left », réessayer 24 h plus tard) : ce jour-là, il ne restait
+  qu'un passage. Son tirage, perdu avec le `/tmp` de WSL, a été retiré le 23 à la même graine,
+  et son détourage est rangé : `tools/model_3d.py mesh trainer 4242` à partir du 24, 19 h 45. Gréés par Mixamo le 22 : le gonflé
   (« Idle », « Fast Run » ; il enfle sur place, sans geste), le colosse (« Idle », « Orc Walk »).
   **Le coup au sol du colosse, Mixamo ne l'a pas** : écrit à la main, `smash` dans
   `tools/blender/gestes.json` — les deux poings au-dessus du heaume en se cambrant, puis abattus
@@ -772,7 +819,7 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   l'est pour ce corps : `export_glb` ne lui applique plus `arm_space` ni `elbows`, qui
   corrigent l'acteur de Mixamo et défaisaient les poings joints. 60° et `elbows` 0,5 d'office,
   comme le mortier. Vus en zone (`Bureau\hns-captures-lourds-jeu\`) : le gonflé enfle et
-  éclate, le colosse montre son cône et frappe. Le marchand et l'entraîneur attendent, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
+  éclate, le colosse montre son cône et frappe. L'entraîneur attend, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
   (l'utilisateur dépose les `.fbx` dans `<id>/mixamo/`), `blender_sheet.py <id> --glb`.
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est
@@ -819,16 +866,27 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   que la vitesse d'attaque fasse enchaîner ; le coup part à l'impact (`Enemy._strike`, voir
   ARCHITECTURE, « Quand le personnage joue-t-il son attaque ? »). Tranché avec lui : un tireur
   ne se plante que le temps de son tir (`Caster.SHOT`), pas toute sa cadence de 1,5 à 3,2 s.
-- **L'interpolation de physique de Godot, pour tout le jeu — la suite, l'Éclair vif étant fini**
-  (Trait de glace, trait en feu, Esquilles, Orbe statique, Satellite), décision de l'utilisateur
-  le 21 octobre. À 60 pas sur un écran à 165 Hz, tout ce qui bouge au pas de physique avance par
-  à-coups (le tir : 3,83 px une image sur deux ou trois, mesuré, §13) ; `BoltFx` se lisse à la
-  main, ce qui ne passe pas à l'échelle d'un jeu à la PoE — du GDScript par effet et par image,
-  recopié dans chaque visuel. Le geste : l'activer au projet ; `reset_physics_interpolation()` à
-  chaque téléportation (portail, waypoint, entrée en zone, apparition, ruées, Bond) ; la caméra
-  sur la position interpolée du joueur ; hors interpolation ce qui bouge déjà à l'image (le
-  Météore) ; retirer le lissage de `BoltFx` ; mesurer `world/stress_test.tscn` avant et après.
-  Écarté : 120 pas de physique, qui doublent ce qui limite le nombre d'ennemis.
+- **L'interpolation de physique de Godot, pour tout le jeu — faite le 23 octobre** (décision de
+  l'utilisateur le 21). À 60 pas sur un écran à 165 Hz, tout ce qui bougeait au pas avançait par
+  à-coups (le tir : 3,83 px une image sur deux ou trois, §13) ; `BoltFx` se lissait à la main, ce
+  qui ne passait pas à l'échelle. Activée au projet (`physics_jitter_fix` à 0, comme le veut
+  Godot avec elle) ; ARCHITECTURE, « Le mouvement entre deux pas », en tient les trois règles.
+  **Vérifié sur un projet d'essai** (Godot 4.7.2) avant d'écrire : un nœud posé dans l'image de
+  son `add_child` n'a rien à déclarer ; un saut sans `reset` glisse sur un pas (190 → 400 → 695 →
+  991 au lieu de 1 000) ; un nœud interpolé qu'on bouge à l'image traîne et tremble (27,0, 27,6,
+  28,9, 30,0 pour 28 à 31) ; un enfant hors interpolation suit son parent interpolé. D'où
+  `Player.warp()` (zone, waypoint, portail, ruées, Bond, danse) et des `reset` (portail, rappel
+  d'un serviteur, marque qui change de cible, mannequin) ; hors interpolation la caméra, les
+  émetteurs d'`ElementFx`, l'écart du zigzag de `BoltFx`, la chute du Météore ; caméra, barres de
+  vie, affixes, émetteurs et traînée lisent `get_global_transform_interpolated()`. **Le Serpent
+  infernal**, fait d'uniformes que le moteur n'interpole pas, s'interpole à la main
+  (`SerpentBody._process()`). Le lissage de `BoltFx` est retiré. **Coût** (300 ennemis en combat,
+  sans vsync, A coupée contre B active par `get_tree().physics_interpolation`, sur le même arbre,
+  quatre paires alternées — deux premières écartées, ComfyUI tournait sur la carte) : 7,86 contre
+  8,18 ms l'image, **+0,31 ms**, de même signe dans les quatre paires ; physique 4,61 contre 4,73,
+  dans le bruit. Pas encore jugé en jouant. Au passage, sur le banc seul :
+  `ElementFx.warm()`, appelé du `_ready()` de la zone pendant celui du banc, ne peut rien ajouter
+  au viewport (trois erreurs `create_timer`, A comme B) — sans effet sur la mesure.
 - **Le guide du jeu**, en fin de jalon : la molette, et les deux façons de jouer (ZQSD ou souris).
 - `Game.WORLD_ZOOM` grossit encore le texte posé « dans le monde », devenu écran : 18 % trop
   grand. À trancher avec l'interface (§6).

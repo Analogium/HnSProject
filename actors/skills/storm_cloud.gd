@@ -32,6 +32,7 @@ var _charges := 0
 var _twin := -1.0
 ## Le Front mobile : l'horloge des frappes, plus vive tant que son porteur marche.
 var _clock := 0.0
+var _fx: StormCloudFx
 
 
 static func put(
@@ -51,7 +52,7 @@ static func put(
 	parent.add_child(cloud)
 	Settings.veil(cloud, Settings.SPELLS)
 	cloud.global_position = point
-	ElementFx.area(cloud, DamageType.COLORS[cast.nature], cast.radius)
+	cloud._fx = StormCloudFx.gather(cloud, cast.nature, cast.radius)
 	return cloud
 
 
@@ -102,29 +103,42 @@ func _strike() -> void:
 	)
 	if _cast.accumulation > 0.0:
 		_charges = 0 if touched else mini(_charges + 1, SkillStats.ACCUMULATION_MOST)
+		_fx.charge = float(_charges) / SkillStats.ACCUMULATION_MOST
 	if _cast.twin_strike > 0.0 and Game.rng.randf() * 100.0 < _cast.twin_strike:
 		_twin = SkillStats.TWIN_DELAY
 
 
 ## L'impulsion elle-même, dans ce rayon et à ce facteur : l'Appel d'air tire vers le centre,
 ## le paratonnerre prend sa part (la Cible de l'orage), le Débordement arque vers un ennemi
-## au-delà. Rend vrai si elle a touché quelqu'un dans son cercle.
+## au-delà. Rend vrai si elle a touché quelqu'un dans son cercle. Le dessin frappe
+## `Lightning.ARCS_MOST` cibles au plus, quel que soit leur nombre ; à vide, un point du cercle.
 func _hit(reach: float, factor: float) -> bool:
 	var world := get_world_3d()
 	var targets := Targets.strike_circle(world, global_position, reach, _cast, _author, -_cast.pull, factor)
+	var shown: Array[Node3D] = []
+	shown.assign(targets.slice(0, Lightning.ARCS_MOST))
 	# La Cible de l'orage (jalon 43) : le paratonnerre de l'Éclair vif prend aussi la frappe.
 	var rod := LightningRod.storm_target_of(_author)
 	if rod != null and rod not in targets \
 			and global_position.distance_to(rod.global_position) <= SkillStats.STORM_ROD_REACH:
 		Targets.strike(rod, _cast.roll(Game.rng), global_position, _author, _cast)
+		shown.append(rod)
 	if _cast.overflow > 0.0:
-		_overflow(world, reach, targets)
+		var beyond := _overflow(world, reach, targets)
+		if beyond != null:
+			shown.append(beyond)
+	var points: Array[Vector3] = []
+	for target in shown:
+		points.append(Vector3(target.global_position.x, global_position.y, target.global_position.z))
+	if points.is_empty():
+		points.append(global_position + Vector3.RIGHT.rotated(Vector3.UP, randf() * TAU) * sqrt(randf()) * reach * 0.8)
+	_fx.strike(points)
 	return not targets.is_empty()
 
 
 ## Le Débordement : un arc vers l'ennemi le plus proche hors du cercle, jusqu'à
-## `OVERFLOW_REACH` fois son rayon, à une part d'une frappe.
-func _overflow(world: World3D, reach: float, inside: Array[Hurtbox]) -> void:
+## `OVERFLOW_REACH` fois son rayon, à une part d'une frappe. Rend celui qu'il frappe.
+func _overflow(world: World3D, reach: float, inside: Array[Hurtbox]) -> Hurtbox:
 	var best: Hurtbox = null
 	var best_distance := INF
 	for target in Targets.in_circle(world, global_position, reach * SkillStats.OVERFLOW_REACH):
@@ -133,7 +147,8 @@ func _overflow(world: World3D, reach: float, inside: Array[Hurtbox]) -> void:
 			best = target
 			best_distance = distance
 	if best == null:
-		return
+		return null
 	var parts := DamageType.scaled(_cast.roll(Game.rng), _cast.overflow * 0.01)
 	Targets.strike(best, parts, global_position, _author, _cast)
+	return best
 

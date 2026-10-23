@@ -2,7 +2,7 @@ class_name ChainLightning
 extends Node3D
 
 ## La décharge de Chaîne d'éclairs : elle choisit ses cibles, les frappe, puis
-## reste un quart de seconde à l'écran en trait brisé.
+## reste un quart de seconde à l'écran, une tresse d'arcs par saut (`BoltFx.braid()`).
 
 const SCOPE := 150.0
 ## Le cône de la première cible, en cosinus du demi-angle : 45° de part et d'autre
@@ -14,8 +14,6 @@ const JUMP := 90.0
 const INTO_THE_VOID := 100.0
 const LIFETIME := 0.22
 
-var _points := PackedVector3Array()
-var _tint := Color.WHITE
 var _age := 0.0
 
 
@@ -57,7 +55,7 @@ static func discharge(
 	var tint: Color = DamageType.COLORS[cast.nature]
 	var parts := cast.roll(Game.rng)
 	if cast.shape == Skill.Shape.WEB:
-		return _web(parent, world, origin, author, cast, parts, tint, direction)
+		return _web(parent, world, origin, author, cast, parts, direction)
 	var excluded: Array[Node3D] = []
 	var main := _run(world, origin, cast, direction, cast.target_count(), excluded, true)
 	var runs: Array[Run] = [main]
@@ -73,10 +71,10 @@ static func discharge(
 		main.points.append(origin + direction * INTO_THE_VOID)
 	for run in runs:
 		if run.points.size() > 1:
-			trace(parent, run.points, tint)
+			trace(parent, run.points, cast.nature)
 	# Le Retour par la masse (jalon 43) : la décharge revient au lanceur, et lui rend du mana.
 	if cast.grounding > 0.0 and struck > 0 and is_instance_valid(caster):
-		trace(parent, PackedVector3Array([main.points[-1], caster.global_position]), tint)
+		trace(parent, PackedVector3Array([main.points[-1], caster.global_position]), cast.nature)
 		if caster is Player:
 			(caster as Player).gain_mana(cast.grounding * float(struck))
 	return struck
@@ -143,7 +141,7 @@ static func _strike(
 ## saute encore une fois depuis sa cible, à une part du coup — choisis avant de frapper.
 static func _web(
 	parent: Node, world: World3D, origin: Vector3, author: StatusEffects, cast: SkillStats,
-	parts: Array[float], tint: Color, direction: Vector3
+	parts: Array[float], direction: Vector3
 ) -> int:
 	var excluded: Array[Node3D] = []
 	var arcs: Array[Hurtbox] = []
@@ -163,13 +161,13 @@ static func _web(
 	var leap := DamageType.scaled(parts, cast.web_branch * 0.01)
 	for target in arcs:
 		Targets.strike(target, parts, origin, author, cast)
-		trace(parent, PackedVector3Array([origin, target.global_position]), tint)
+		trace(parent, PackedVector3Array([origin, target.global_position]), cast.nature)
 		if leaps.has(target):
 			var next: Hurtbox = leaps[target]
 			Targets.strike(next, leap, target.global_position, author, cast)
-			trace(parent, PackedVector3Array([target.global_position, next.global_position]), tint)
+			trace(parent, PackedVector3Array([target.global_position, next.global_position]), cast.nature)
 	if arcs.is_empty():
-		trace(parent, PackedVector3Array([origin, origin + direction * INTO_THE_VOID]), tint)
+		trace(parent, PackedVector3Array([origin, origin + direction * INTO_THE_VOID]), cast.nature)
 	return arcs.size() + leaps.size()
 
 
@@ -182,14 +180,12 @@ static func surge(
 		discharge(parent, world, at, author, cast, Vector3.ZERO)
 
 
-static func trace(parent: Node, points: PackedVector3Array, tint: Color) -> void:
+static func trace(parent: Node, points: PackedVector3Array, nature: int) -> void:
 	var trace := ChainLightning.new()
-	trace._points = points
-	trace._tint = tint
 	parent.add_child(trace)
 	Settings.veil(trace, Settings.SPELLS)
 	for i in points.size() - 1:
-		ElementFx.line(trace, points[i], points[i + 1], tint)
+		BoltFx.braid(trace, points[i], points[i + 1], nature)
 
 
 ## `cone` nul : pas de contrainte d'angle, c'est un saut. `charges` : les charges
@@ -219,8 +215,13 @@ static func _nearest_one(
 	return best_one
 
 
+## Elle se dissout sur son dernier tiers, sous le voile des sorts.
 func _process(delta: float) -> void:
 	_age += delta
 	if _age >= LIFETIME:
 		queue_free()
+		return
+	var fading := clampf((LIFETIME - _age) / (LIFETIME / 3.0), 0.0, 1.0) * Settings.opacity_of(Settings.SPELLS)
+	for strand in get_children():
+		(strand as GeometryInstance3D).set_instance_shader_parameter(&"opacity", fading)
 

@@ -67,6 +67,7 @@ func _physics_process(delta: float) -> void:
 
 func reset() -> void:
 	global_position = _home
+	reset_physics_interpolation()
 	velocity = Vector3.ZERO
 	_total_damage = 0.0
 	label.text = ""

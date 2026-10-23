@@ -128,17 +128,19 @@ func test_the_orb_zigzags_around_the_true_path() -> void:
 	assert_almost_eq(bolt.global_position.z, 0.0, 0.01, "le tir, droit")
 
 
-## Posé à l'image entre les deux derniers pas de physique : jamais devant le tir, au plus un pas
-## derrière — deux ici, un pas pouvant tomber entre l'image et l'assertion.
+## L'interpolation de physique du moteur le pose entre les deux derniers pas du tir : jamais devant
+## lui, au plus un pas derrière.
 func test_the_bolt_glides_between_physics_steps() -> void:
 	var bolt := _shoot(DamageType.Kind.LIGHTNING, Vector3.RIGHT)
 	var fx: BoltFx = _fx_of(bolt)[0]
-	assert_true(fx.top_level, "le tir ne le déplace pas")
+	assert_true(fx.is_physics_interpolated_and_enabled(), "le tir et lui, interpolés")
+	assert_false(fx._orb.is_physics_interpolated(), "l'écart, posé à l'image")
+	var step := bolt.speed / float(Engine.physics_ticks_per_second)
 	for i in 10:
 		await wait_process_frames(1)
-		var step := bolt.speed / float(Engine.physics_ticks_per_second)
-		assert_between(fx.global_position.x, bolt.global_position.x - step * 2.0 - 0.01, bolt.global_position.x + 0.01)
-		assert_almost_eq(fx.global_position.y, ElementFx.LIFT, 0.01)
+		var seen := fx.get_global_transform_interpolated().origin
+		assert_between(seen.x, bolt.global_position.x - step - 0.01, bolt.global_position.x + 0.01)
+		assert_almost_eq(seen.y, ElementFx.LIFT, 0.01)
 
 
 func test_the_trail_outlives_the_bolt() -> void:
@@ -194,4 +196,40 @@ func test_the_bolt_takes_the_spell_veil() -> void:
 	veiled.append(fx.trail)
 	for node: GeometryInstance3D in veiled:
 		assert_almost_eq(node.get_instance_shader_parameter(&"opacity"), 0.25, 0.001)
+	Settings.from_dict(before)
+
+
+## La Chaîne d'éclairs : une tresse de trois brins par saut, aux coudes différents mais gardés d'une
+## chaîne à l'autre ; à chaque arrivée un éclat et une lumière, qui se libèrent seuls.
+func test_a_chain_jump_is_a_braid_of_three_strands() -> void:
+	var before := get_viewport().get_children()
+	var points := PackedVector3Array([Vector3.ZERO, Vector3(90, 0, 0), Vector3(150, 0, 60)])
+	ChainLightning.trace(_world, points, DamageType.Kind.LIGHTNING)
+	var trace: ChainLightning = _world.get_children().filter(func(n: Node) -> bool: return n is ChainLightning)[0]
+	var strands := trace.get_children()
+	assert_eq(strands.size(), BoltFx.BRAID * 2, "trois brins par saut")
+	assert_ne((strands[0] as MeshInstance3D).mesh, (strands[1] as MeshInstance3D).mesh, "chacun ses coudes")
+	assert_almost_eq((strands[0] as Node3D).global_position, points[1] + Vector3.UP * ElementFx.LIFT, Vector3.ONE * 0.01)
+	ChainLightning.trace(_world, points, DamageType.Kind.LIGHTNING)
+	var other: ChainLightning = _world.get_children().filter(func(n: Node) -> bool: return n is ChainLightning)[1]
+	assert_eq((other.get_child(0) as MeshInstance3D).mesh, (strands[0] as MeshInstance3D).mesh, "gardés")
+	var flashes := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	assert_eq(flashes.size(), 4, "un éclat par arrivée")
+	assert_eq(flashes[0].find_children("*", "OmniLight3D", false, false).size(), 1, "et sa lumière")
+	await wait_seconds(maxf(ChainLightning.LIFETIME, BoltFx.ZAP_FLASH_LIFE) + 0.1)
+	assert_false(is_instance_valid(trace), "puis rien")
+	assert_true(flashes.all(func(flash: Variant) -> bool: return not is_instance_valid(flash)))
+
+
+func test_the_chain_dissolves_under_the_spell_veil() -> void:
+	var before := Settings.to_dict()
+	Settings.spell_opacity = 0.5
+	ChainLightning.trace(_world, PackedVector3Array([Vector3.ZERO, Vector3(90, 0, 0)]), DamageType.Kind.LIGHTNING)
+	var trace: ChainLightning = _world.get_children().filter(func(n: Node) -> bool: return n is ChainLightning)[0]
+	var strand: GeometryInstance3D = trace.get_child(0)
+	trace._process(0.0)
+	assert_almost_eq(strand.get_instance_shader_parameter(&"opacity"), 0.5, 0.001, "pleine, sous le voile")
+	trace._age = ChainLightning.LIFETIME * 5.0 / 6.0
+	trace._process(0.0)
+	assert_almost_eq(strand.get_instance_shader_parameter(&"opacity"), 0.25, 0.001, "à mi-chemin de son dernier tiers")
 	Settings.from_dict(before)

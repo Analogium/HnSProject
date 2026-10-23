@@ -436,7 +436,7 @@ func enter_area(index: int, at_waypoint := false) -> void:
 	area = clampi(index, 1, AREAS.size() - 1)
 	generate_zone(Game.rng.randi())
 	if at_waypoint:
-		player.global_position = MapGenerator.cell_center(generator.waypoint_cell())
+		player.warp(MapGenerator.cell_center(generator.waypoint_cell()))
 	_announce(Texts.t(AREAS[area]))
 	create_tween().tween_property(indicator, "modulate:a", 0.0, 1.4).set_delay(1.2)
 
@@ -582,7 +582,7 @@ func enter_town(keep_zone := true) -> void:
 	_lay_out()
 	player.revive()
 	player.refill_flasks()
-	player.global_position = MapGenerator.cell_center(generator.get_spawn_cell())
+	player.warp(MapGenerator.cell_center(generator.get_spawn_cell()))
 	way_back.visible = _left_zone != null
 	# Pas quand une zone attend : le sien y est encore au sol, et l'on en ramasserait deux.
 	if _left_zone == null:
@@ -601,7 +601,7 @@ func return_to_zone() -> void:
 	zone_rng.seed = _seed
 	_lay_out()
 	_freeze_zone(false)
-	player.global_position = _left_at
+	player.warp(_left_at)
 
 
 ## Le portail vers la ville, devant le joueur : un seul à la fois, comme dans PoE.
@@ -609,6 +609,7 @@ func open_portal() -> void:
 	if in_town:
 		return
 	portal.global_position = player.global_position + player.facing * PORTAL_AHEAD
+	portal.reset_physics_interpolation()
 	portal.show()
 
 
@@ -674,7 +675,7 @@ func _lay_out() -> void:
 func _place_and_populate() -> void:
 	var spawn_cell := generator.get_spawn_cell()
 	player.revive()
-	player.global_position = MapGenerator.cell_center(spawn_cell)
+	player.warp(MapGenerator.cell_center(spawn_cell))
 	_spawned = spawner.populate(generator, enemy_manager, spawn_cell, _seed)
 
 

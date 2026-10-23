@@ -527,7 +527,10 @@ Poly Haven ou une photo de Qwen-Image, choisi sur planche et tiré par `tools/fx
 jamais à la main, porté par des shaders et des particules dans son fichier `fx/` comme
 `fx/flame_fx.gd` : **sous 1** de couleur quand il se mêle (le tonemapping blanchit
 au-delà), qui déclare `instance uniform float opacity` pour le voile, et dont la matière
-entre dans `ElementFx.warm()` — sinon sa première apparition gèle le jeu ~100 ms. Si elle a un nombre neuf : le
+entre dans `ElementFx.warm()` — sinon sa première apparition gèle le jeu ~100 ms. **Ce qui
+bouge au pas n'a rien à lisser** (l'interpolation de physique, voir ARCHITECTURE, « Le mouvement
+entre deux pas ») ; ce qu'il pose à l'image passe `PHYSICS_INTERPOLATION_MODE_OFF`, et un saut de
+place appelle `reset_physics_interpolation()`. Si elle a un nombre neuf : le
 champ dans `SkillStats` et son `LABELS`, sa copie dans
 `Skill.resolve()`, sa ligne dans la fiche du manuel, et sa condition dans
 `test_each_shape_has_the_numbers_it_needs`.
@@ -1089,7 +1092,7 @@ Le relief, ses matières et son décor sont en 3D depuis le jalon 54 (étape 3) 
 ```bash
 tools/terrain_textures.py     # sol, plaques brûlées, route, roche, dessus des falaises → art/tiles/
 tools/decor_3d.py [nom…]      # rochers, bois mort, buisson, arbres morts → art/decor/<nom>.glb
-tools/fx_textures.py cracks|serpent|fire|iron|lightning|frost|streak  # textures des effets : sol calciné, peau du serpent, photos de feu, fer du Brasero, éclair, Trait de glace, traînée du trait en feu → fx/
+tools/fx_textures.py cracks|serpent|fire|iron|lightning|frost|streak|storm  # textures des effets : sol calciné, peau du serpent, photos de feu, fer du Brasero, éclair, Trait de glace, traînée du trait en feu, Nuage d'orage → fx/
 ```
 
 - **Le relief** (`world/terrain.gd`) se tire de la grille : sa forme se règle là

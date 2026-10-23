@@ -28,6 +28,9 @@ const LIGHT_REACH := 45.0
 static var _grid: ArrayMesh
 
 var _light: OmniLight3D
+## Les deux derniers pas du corps : le moteur n'interpole que les nœuds, et lui est fait d'uniformes.
+var _was := PackedVector3Array()
+var _now := PackedVector3Array()
 
 
 ## Le corps de `snake`, à la rampe de `nature` ; `lay()` le pose à chaque pas.
@@ -59,6 +62,8 @@ static func dress(snake: Node3D, nature: int) -> SerpentBody:
 func lay(rings: Array[Vector3], size: float, fade: float) -> void:
 	var spine := PackedVector3Array([rings[0] + (rings[0] - rings[1]).normalized() * SNOUT * size])
 	spine.append_array(rings)
+	_was = _now if _now.size() == spine.size() else spine
+	_now = spine
 	var m := material_override as ShaderMaterial
 	m.set_shader_parameter(&"spine", spine)
 	m.set_shader_parameter(&"girth", GIRTH * size)
@@ -72,6 +77,15 @@ func lay(rings: Array[Vector3], size: float, fade: float) -> void:
 	custom_aabb = box.grow((GIRTH * 1.4 + WAVE + REAR) * size)
 	var ahead := (rings[0] - rings[2]).normalized()
 	_light.global_position = rings[0] + ahead * 10.0 + Vector3(-ahead.z, 0.0, ahead.x) * 12.0 + Vector3.UP * 7.0
+
+
+## Entre les deux derniers pas, à la fraction où tombe l'image.
+func _process(_delta: float) -> void:
+	var f := Engine.get_physics_interpolation_fraction()
+	var spine := _now.duplicate()
+	for i in spine.size():
+		spine[i] = _was[i].lerp(_now[i], f)
+	(material_override as ShaderMaterial).set_shader_parameter(&"spine", spine)
 
 
 ## La grille : `SAMPLES` cercles de `SIDES` côtés, UV.x le long, UV.y le tour.
