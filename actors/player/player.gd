@@ -760,12 +760,14 @@ func _pose(
 				FrozenOrb.send(parent, at, direction, cast, states, origin, bolt_scene, aim, self)
 		Skill.Shape.ORB:
 			var directions := _spread(cast, toward)
-			# Le Satellite (jalon 43) : répartis autour du lanceur, pas en éventail.
+			# Le Satellite (jalon 43) : répartis autour du lanceur, pas en éventail ; sur une orbite
+			# déjà peuplée, chacun comble le plus grand vide.
+			var fill := cast.satellite > 0.0 and StaticOrb.circling(origin)
 			if cast.satellite > 0.0:
 				for i in directions.size():
 					directions[i] = Flat.rotated(toward, TAU * float(i) / float(directions.size()))
 			for direction in directions:
-				StaticOrb.send(parent, at, direction, cast, states, origin)
+				StaticOrb.send(parent, at, direction, cast, states, origin, fill)
 		Skill.Shape.METEOR:
 			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.

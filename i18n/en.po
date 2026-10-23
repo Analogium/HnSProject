@@ -4834,8 +4834,8 @@ msgstr "The bolt bounces off walls instead of dying on them, once per point, wit
 msgid "Satellite"
 msgstr "Satellite"
 
-msgid "L'orbe ne file plus droit : il tourne autour de vous, à {orbite} px, le temps de sa course, et foudroie ce qui approche. Les murs ne l'éteignent plus."
-msgstr "The orb no longer flies straight: it circles you at {orbite} px for its whole course, shocking whatever comes near. Walls no longer put it out."
+msgid "L'orbe ne file plus droit : il tourne autour de vous, à {orbite} px, un tour entier au moins, et foudroie ce qui approche. Les murs ne l'éteignent plus."
+msgstr "The orb no longer flies straight: it circles you at {orbite} px for at least one full lap, shocking whatever comes near. Walls no longer put it out."
 
 msgid "Orbe chargé"
 msgstr "Charged Orb"

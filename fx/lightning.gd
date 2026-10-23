@@ -2,7 +2,7 @@ class_name Lightning
 extends RefCounted
 
 ## La foudre du jeu, **dessinée** en un seul endroit : la chaîne, les éclairs du
-## nuage, la charge statique, l'orbe statique, la traînée de la ruée et le projectile.
+## nuage, la charge statique et la traînée de la ruée (le trait et l'orbe sont en 3D, `BoltFx`).
 ##
 ## Le **fil cerné**, choisi sur planche contre cinq autres (jalon 24) : un corps de
 ## trois pixels, un filament presque blanc au milieu, deux fourches courtes. Un
@@ -32,23 +32,10 @@ const CORE := 0.92
 ## violet à demi transparent sort gris sur le sol —, il se défait.
 const GONE := 0.5
 
-## Le projectile, couché sur sa course : sa queue et sa tête, depuis le centre du tir.
-const DART_TAIL := 13.0
-const DART_HEAD := 7.0
-## Les formes entre lesquelles un projectile grésille, fabriquées une fois par cap.
-const DART_FORMS := 4
-
 ## Les bras de la charge statique. Chaque forme les tourne d'un sixième de leur
 ## écart : six formes bouclent sans saut.
 const ARMS := 6
 const CHARGE_FORMS := 6
-
-## L'Orbe statique (jalon 35), « boule de plasma » choisie sur planche : une boule pleine
-## au cœur blanc et deux ou trois arcs longs et maigres — quatre courts en couronne
-## faisaient des pattes, et l'étoile de la charge le confondait avec elle.
-const ORB_RADIUS := 4.5
-const ORB_ARC := 0.5
-const ORB_FORMS := 6
 
 ## La marque du Paratonnerre (jalon 43), « la foudre appelée » choisie sur planche contre
 ## un signe ⚡, une cible au sol, un losange, une tige : un éclair tombe du ciel sur la tête
@@ -71,9 +58,7 @@ const RING_FLASH := 0.35
 const R_TINT := EffectForge.R_TINT
 const R_CORE := EffectForge.R_CORE
 
-static var _darts := {}
 static var _charges := {}
-static var _orbs := {}
 static var _rods := {}
 static var _rings := {}
 
@@ -139,19 +124,6 @@ static func put(ci: CanvasItem, pieces: Array[EffectForge.Piece]) -> void:
 		pieces[i].put(ci, Vector2.ZERO)
 
 
-## Le projectile au cap `turn` (`Slash.turn_of`), dans sa forme `form`.
-static func dart(tint: Color, turn: int, form: int) -> Array[EffectForge.Piece]:
-	var key := "%s|%d|%d" % [tint.to_html(false), turn, posmod(form, DART_FORMS)]
-	if not _darts.has(key):
-		var rng := RandomNumberGenerator.new()
-		rng.seed = posmod(form, DART_FORMS)
-		var facing := Vector2.from_angle(Slash.angle_of(turn))
-		_darts[key] = chain(
-			PackedVector2Array([-facing * DART_TAIL, facing * DART_HEAD]), rng, tint, 1
-		)
-	return _darts[key]
-
-
 ## La charge statique dans sa forme `form` : six bras en éclair qui vont jusqu'au
 ## rayon qui mord — le dessin dit où elle frappe, sinon on marche dedans sans
 ## l'avoir vue.
@@ -168,22 +140,6 @@ static func charge(tint: Color, radius: float, form: int, gone_part: float) -> E
 			strokes.append(Stroke.new(path(Vector2.ZERO, tip, rng, 1.2, 3.5), FORK, true))
 		_charges[key] = _bake(strokes, PackedVector2Array(), tint, gone_part)
 	return _charges[key]
-
-
-## L'orbe dans sa forme `form` : ses arcs changent d'une forme à l'autre, la boule reste.
-static func orb(tint: Color, form: int, gone_part: float) -> EffectForge.Piece:
-	var turn := posmod(form, ORB_FORMS)
-	var key := "%s|%d|%d" % [tint.to_html(false), turn, int(round(gone_part * 16.0))]
-	if not _orbs.has(key):
-		var rng := RandomNumberGenerator.new()
-		rng.seed = turn
-		var strokes: Array[Stroke] = []
-		for i in 2 + turn % 2:
-			var angle := rng.randf() * TAU
-			var tip := Vector2.from_angle(angle + rng.randf_range(-0.6, 0.6)) * rng.randf_range(11.0, 14.0)
-			strokes.append(Stroke.new(path(Vector2.from_angle(angle) * ORB_RADIUS, tip, rng, 1.5, 4.0), ORB_ARC, true))
-		_orbs[key] = _bake(strokes, PackedVector2Array(), tint, gone_part, ORB_RADIUS)
-	return _orbs[key]
 
 
 ## La marque dans sa forme `form`, l'éclat sur la tête à l'ancrage : les formes paires
@@ -239,23 +195,18 @@ static func _bolt(
 
 
 ## Tous les corps d'abord, les filaments ensuite : une fourche posée après le trait
-## principal lui mangerait son filament là où elle en part. `ball` : la boule d'un orbe
-## à l'origine, sous les arcs, et son cœur blanc par-dessus tout.
+## principal lui mangerait son filament là où elle en part.
 static func _bake(
-	strokes: Array[Stroke], struck: PackedVector2Array, tint: Color, gone_part: float, ball := 0.0
+	strokes: Array[Stroke], struck: PackedVector2Array, tint: Color, gone_part: float
 ) -> EffectForge.Piece:
 	var box := Rect2(strokes[0].points[0], Vector2.ZERO)
 	for s in strokes:
 		for p in s.points:
 			box = box.expand(p)
-	if ball > 0.0:
-		box = box.expand(Vector2.ONE * ball).expand(-Vector2.ONE * ball)
 	var margin := Vector2.ONE * (float(EffectForge.STRIKE_SIZE / 2) + 2.0)
 	var corner := (box.position - margin).floor()
 	var size := (box.end + margin - corner).ceil()
 	var canvas := PixelCanvas.new(int(size.x), int(size.y))
-	if ball > 0.0:
-		canvas.disc(-corner, ball, R_TINT, Holy.LIT)
 	for s in strokes:
 		for j in s.points.size() - 1:
 			canvas.capsule(s.points[j] - corner, s.points[j + 1] - corner, s.radius, R_TINT, Holy.LIT)
@@ -263,8 +214,6 @@ static func _bake(
 		if s.core:
 			for j in s.points.size() - 1:
 				canvas.line(s.points[j] - corner, s.points[j + 1] - corner, R_CORE, 1.0)
-	if ball > 0.0:
-		canvas.disc(-corner - Vector2.ONE, ball * 0.45, R_CORE, 1.0)
 	var half := Vector2i.ONE * (EffectForge.STRIKE_SIZE / 2)
 	for at in struck:
 		canvas.stamp(EffectForge.STRIKE, Vector2i((at - corner).round()) - half, EffectForge.INK)

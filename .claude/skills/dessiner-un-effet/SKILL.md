@@ -112,7 +112,8 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
    saturée (cœur, milieu, profond, bord), comme `FlameFx.RAMPS`. **Ce qui est de la
    lumière s'additionne** (`blend_add`, couches à moitié de leur couleur) : sous le soleil
    du sol ocre, une flamme mêlée sortait peinte et terne. Saturée, la somme qui passe 1
-   monte au jaune et la lueur garde sa teinte.
+   monte au jaune et la lueur garde sa teinte. **La glace n'est pas de la lumière** : additionné à l'ocre,
+   le cyan sortait blanc ; ses photos se mêlent au sol, l'alpha tiré de leur clarté (`fx/frost_photo.gdshader`).
 2. **L'opacité du menu passe par le shader.** `Settings.veil(nœud, groupe)` se pose à la
    naissance. Tout shader d'effet déclare `instance uniform float opacity = 1.0;` et la
    multiplie dans `ALPHA`, parce que `transparency` ne fait rien sur un shader qui écrit

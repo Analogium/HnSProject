@@ -405,7 +405,7 @@ script = ExtResource("3_noeud")
 id = "swift_bolt_satellite"
 name = "Satellite"
 icon = ExtResource("icon_swift_bolt_satellite")
-description = "L'orbe ne file plus droit : il tourne autour de vous, à {orbite} px, le temps de sa course, et foudroie ce qui approche. Les murs ne l'éteignent plus."
+description = "L'orbe ne file plus droit : il tourne autour de vous, à {orbite} px, un tour entier au moins, et foudroie ce qui approche. Les murs ne l'éteignent plus."
 position = Vector2i(3, -1)
 parents = Dictionary[String, int]({
 "swift_bolt_static_orb": 1

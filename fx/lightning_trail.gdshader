@@ -10,10 +10,12 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 
 uniform sampler2D photo : filter_linear_mipmap, repeat_enable;
 uniform float boost = 1.1;
+// La part de la photo par 70 px de chemin : en feu, le corps de la comète sans sa tête.
+uniform float along = 1.0;
 instance uniform float opacity = 1.0;
 
 void fragment() {
-	vec3 p = texture(photo, vec2(UV.x, mix(0.05, 0.95, UV.y))).rgb;
+	vec3 p = texture(photo, vec2(UV.x * along, mix(0.05, 0.95, UV.y))).rgb;
 	float l = max(p.r, max(p.g, p.b));
 	ALBEDO = ramp_of(l * mix(0.6, 1.0, COLOR.a)) * boost * pow(COLOR.a, 1.4) * opacity;
 }

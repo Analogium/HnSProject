@@ -4304,6 +4304,32 @@ func test_a_satellite_orb_circles_its_caster() -> void:
 	assert_ne(orb.global_position, start)
 
 
+## Le Satellite vit un tour entier au moins : sa course seule laissait un quart du cercle vide.
+func test_a_satellite_orb_lives_a_full_lap() -> void:
+	_learn_with("manual_lightning", "swift_bolt", [["projectile_speed", -60.0, true], [SkillStats.SATELLITE, 1.0]], Skill.Shape.ORB)
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	assert_almost_eq(cast.duration, TAU * SkillStats.SATELLITE_RADIUS / cast.projectile_speed, 0.01)
+	cast.duration = 9.0
+	cast.finalize()
+	assert_eq(cast.duration, 9.0, "une durée plus longue reste")
+
+
+## Sur une orbite peuplée, chaque orbe naît au milieu du plus grand vide : lancés vite ou à
+## plusieurs, ils se tassaient en paquets devant le lanceur.
+func test_a_satellite_orb_fills_the_widest_gap() -> void:
+	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
+	cast.satellite = 1.0
+	cast.simultaneous = 12.0
+	var first := StaticOrb.send(_effects, _p.global_position, Vector3.RIGHT, cast, _p.states, _p)
+	assert_almost_eq(first._angle, 0.0, 0.001, "le premier part vers la visée")
+	assert_true(StaticOrb.circling(_p))
+	var second := StaticOrb.send(_effects, _p.global_position, Vector3.RIGHT, cast, _p.states, _p, true)
+	assert_almost_eq(fposmod(second._angle, TAU), PI, 0.001, "à l'opposé")
+	var third := StaticOrb.send(_effects, _p.global_position, Vector3.RIGHT, cast, _p.states, _p, true)
+	assert_almost_eq(absf(fposmod(third._angle, PI) - PI * 0.5), 0.0, 0.001, "dans un des deux demi-cercles")
+	assert_almost_eq(third.global_position.distance_to(_p.global_position), SkillStats.SATELLITE_RADIUS, 0.01)
+
+
 ## Une limite par lanceur : un orbe de trop dissout le plus ancien, et le Familier compte à part.
 func test_one_orb_too_many_dissolves_the_oldest() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)

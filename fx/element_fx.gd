@@ -112,9 +112,12 @@ static func warm(host: Node3D) -> void:
 	FireRing.light_up(probe).show_as(DamageType.Kind.FIRE, 10.0)
 	BurntPath.lay(probe, Vector3.RIGHT * 10.0, DamageType.Kind.FIRE, 10.0, 1.0)
 	# La traînée vit hors du tir : ramenée sous la sonde, avec de quoi se dessiner.
-	var bolt := BoltFx.show_on(probe, DamageType.Kind.LIGHTNING)
-	bolt.trail.reparent(probe)
-	bolt.trail.add_point(at + Vector3.RIGHT * 10.0)
+	for nature in [DamageType.Kind.LIGHTNING, DamageType.Kind.COLD, DamageType.Kind.FIRE]:
+		var bolt := BoltFx.show_on(probe, nature)
+		bolt.trail.reparent(probe)
+		bolt.trail.add_point(at + Vector3.RIGHT * 10.0)
+		probe.add_child(BoltFx.flash_of(nature))
+	BoltFx.show_on(probe, DamageType.Kind.LIGHTNING, true)
 	# Le fer ne lit pas `opacity` : réduit à un point, il se compile sans se voir.
 	BrazierFx.light_up(probe, DamageType.Kind.FIRE).body.scale = Vector3.ONE * 0.001
 	made.append_array(probe.find_children("*", "", true, false))

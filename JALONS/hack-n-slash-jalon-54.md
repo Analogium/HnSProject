@@ -654,9 +654,59 @@ physique (60 Hz), de 3,83 px une image sur deux ou trois à 165 Hz, immobile ent
 pas (1,39 px à chaque image, mesuré). Les gels d'impact figent 6 à 8 % du temps en tir continu,
 sous les 10 % où le jeu se met à ressembler à du lag ; ils ne sont pas touchés. Coût non mesuré. Le premier tirage des textures par
 l'outil est revenu vide : même prompt et même graine que la planche, ComfyUI servait le graphe de son
-cache, sans image ; `character_forge.run()` donne un nom neuf au nœud d'enregistrement. Restent le
-Trait de glace et le trait passé au feu (une planche par élément), les Esquilles, l'Orbe statique et
-son Satellite.
+cache, sans image ; `character_forge.run()` donne un nom neuf au nœud d'enregistrement. 
+**Le Trait de glace** (23 octobre), l'Éclair vif passé au froid. Planche en photos de Qwen-Image
+(`Bureau\hns-captures-trait-de-glace\`) : un javelot de cristal en volume — le parti pris de la 2D,
+une bipyramide éclairée qui tourne —, la photo d'un éclat couchée sur le cap, le geste de la foudre
+en glace, un orbe dans la brume, une salve de trois cristaux. Deux sujets ont été retirés avant la
+planche : l'éclatement sortait en glaçon cubique qui casse, la traînée portait une fougère de flocon.
+Premier rendu tout blanc : **additionné à l'ocre, le cyan monte au blanc** — c'est la règle du froid,
+qui s'ombre ; les photos passent par la rampe du froid et se **mêlent** au sol (alpha tiré de la
+clarté), sous 0,85 de la rampe pour que son haut blanc ne vienne pas. **Retenu : le Kinetic de
+glace** — le même geste que la foudre, ce qui dit « c'est le même sort ». `BoltFx` le prend pour le
+froid **du joueur** : un orbe de glace hérissé sans arcs, une traînée de givre, un éclatement d'éclats ;
+le tir de glace des casters garde ses étincelles. Le javelot 2D (`Frost.javelin`) est retiré. Captures
+en jeu : `-trait-de-glace-jeu\`. Les éclats de l'Orbe gelée, des tirs de froid du joueur, le prennent
+aussi en attendant le manuel de glace. Coût non mesuré (moins que la foudre : un quad, pas d'arcs).
+
+**La fin de l'Éclair vif** (23 octobre) : quatre planches montrées d'un coup, à la demande de
+l'utilisateur, avec cinq photos neuves de Qwen-Image (traînée de feu, javelot de flammes, braise,
+globe de plasma, boule d'orage ; `Temp\hns-planche-eclair2\`), les autres reprises de `fx/`.
+- **Le trait en feu** (`Bureau\hns-captures-eclair-feu\`) : Kinetic de feu, javelot ardent (la
+  2D), comète, braise filante. Premier rendu blanc : la boule et les flammes additionnées à
+  l'ocre montent au blanc ; passées par la rampe du feu, au cœur jaune, et à demi-force (0,55),
+  elles restent orange. **Retenu : le Kinetic de feu** — le même geste dans les trois natures.
+- **Les Esquilles** (`-esquilles\`) : mini Kinetic, étincelles, arcs, filaments. La traînée d'un
+  éclat, courte, ne prenait qu'un bout de la photo du tronc et sortait en rectangles avant de la
+  répéter plus serrée. **Retenu : le mini Kinetic** (le trait à 0,55, traînée comprise).
+- **L'Orbe statique** (`-eclair-orbe\`) : boule de plasma (la 2D), globe à vrilles, boule d'orage
+  (additionnée, son nuage gris sortait en coton ; mêlée, il reste sombre), cœur au cercle de
+  portée. **Retenu : la boule de plasma** — les décharges en arcs, `Lightning.ARCS_MOST` au plus
+  par frappe (un arc par cible coûtait 467 ms par seconde au jalon 43).
+- **Le Satellite** (`-eclair-satellite\`) : orbe seul, sillage, anneau d'orbite, lien au joueur.
+  **Retenu : le sillage.**
+Tout passe par `BoltFx` (une fiche par allure, `BoltFx.Look`). Captures en jeu :
+`-eclair-feu-jeu\` (le trait en feu tiré à la main, le Familier ne se pilote pas d'un scénario),
+`-eclair-esquilles-jeu\`, `-eclair-orbe-jeu\`, `-eclair-satellite-jeu\`. Le dessin 2D du trait
+et de l'orbe (`Lightning.dart`, `Lightning.orb`) est retiré. Les tirs de feu du joueur hors de la
+Boule de feu (la comète d'un Chaudron converti) prennent aussi le Kinetic de feu. Coût non
+mesuré. **L'Éclair vif est fini.**
+
+**Le Satellite fait un tour entier** (23 octobre). « Au maximum les orbes n'entourent pas
+complètement le joueur » ; l'utilisateur proposait de doubler la limite. Mesuré en tir continu :
+6 orbes au plus, sous la limite de 12 — elle n'y était pour rien. Un orbe vivait 2,5 s, un tour
+à 60 px et 92 px/s en prend 4,1 : un quart du cercle restait vide. **Retenu : un tour entier au
+moins** (`SkillStats.finalize()`, une durée plus longue reste), contre des orbes plus gros ou une
+orbite plus courte : 10 orbes, le cercle fermé (`Bureau\hns-captures-satellite-cercle\` ; la
+première capture, au pied d'une falaise, en cachait la moitié dans la roche). Environ 64 % de
+dégâts en plus en tir continu, à relever avec les couloirs. Puis l'utilisateur a montré le vrai
+cas : « quand on cast un peu plus vite et/ou avec plusieurs projectiles » — trois paquets d'orbes
+superposés en taches blanches. Chaque lancer posait ses orbes aux mêmes angles (devant le
+lanceur, puis tous les 120°), la limite de 12 atteinte n'en gardait que quatre par paquet.
+**Retenu : combler les vides** (contre doubler la limite, qui allongeait les paquets sans les
+desserrer) — sur une orbite peuplée, chaque orbe naît au milieu du plus grand vide
+(`StaticOrb._widest_gap()`) ; une orbite vide part toujours vers la visée. Trois orbes par lancer
+avec la Fourche : 12 orbes régulièrement répartis (`Bureau\hns-captures-satellite-cercle-fourche\`).
 
 La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
 géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
@@ -672,7 +722,7 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; suivent son Trait de glace, son trait en feu, les Esquilles, l'Orbe statique. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; suit l'interpolation de physique (plus bas). Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero, l'Éclair vif. **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
@@ -769,7 +819,7 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   que la vitesse d'attaque fasse enchaîner ; le coup part à l'impact (`Enemy._strike`, voir
   ARCHITECTURE, « Quand le personnage joue-t-il son attaque ? »). Tranché avec lui : un tireur
   ne se plante que le temps de son tir (`Caster.SHOT`), pas toute sa cadence de 1,5 à 3,2 s.
-- **L'interpolation de physique de Godot, pour tout le jeu — à faire une fois l'Éclair vif fini**
+- **L'interpolation de physique de Godot, pour tout le jeu — la suite, l'Éclair vif étant fini**
   (Trait de glace, trait en feu, Esquilles, Orbe statique, Satellite), décision de l'utilisateur
   le 21 octobre. À 60 pas sur un écran à 165 Hz, tout ce qui bouge au pas de physique avance par
   à-coups (le tir : 3,83 px une image sur deux ou trois, mesuré, §13) ; `BoltFx` se lisse à la

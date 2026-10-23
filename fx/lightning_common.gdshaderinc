@@ -1,4 +1,4 @@
-// La rampe de la foudre (jalon 54) : celle de `FlameFx.RAMPS`, passée par le nœud, et un cœur
+// La rampe de la foudre et du givre (jalon 54) : celle de `FlameFx.RAMPS`, passée par le nœud, et un cœur
 // blanc au-dessus. C'est le cœur fin qui dit l'éclair : sans lui, une fumée violette.
 
 uniform vec3 heart = vec3(0.6, 0.48, 1.0);

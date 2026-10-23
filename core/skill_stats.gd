@@ -3301,6 +3301,10 @@ func finalize() -> void:
 	extra_swords = float(maxi(roundi(extra_swords), 0))
 	hammers = float(maxi(roundi(hammers), 0))
 	duration = maxf(duration, 0.0)
+	# Le Satellite : un tour entier au moins, sinon ses orbes laissaient un quart du cercle vide
+	# (2,5 s de vie, 4,1 s le tour à 92 px/s ; décision de l'utilisateur, 23 octobre).
+	if satellite > 0.0 and projectile_speed > 0.0:
+		duration = maxf(duration, TAU * SATELLITE_RADIUS / projectile_speed)
 	radius = maxf(radius, 0.0)
 	# La Fécondité de la Porte (jalon 45) : une cadence de ponte, qui se lit en période.
 	period = maxf(period, 0.0) / (1.0 + fertility * 0.01)

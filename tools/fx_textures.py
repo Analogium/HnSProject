@@ -14,6 +14,11 @@
     tools/fx_textures.py lightning  fx/lightning_bolt.png (le tronc d'un éclair, en bande),
                                     fx/lightning_spark.png et fx/lightning_orb.png, l'Éclair vif
                                     (`BoltFx`) : des tirages de Qwen-Image sur fond noir
+    tools/fx_textures.py frost      fx/frost_orb.png, fx/frost_streak.png (une traînée de givre, en
+                                    bande) et fx/frost_burst.png, le Trait de glace (`BoltFx` en
+                                    froid) : des tirages de Qwen-Image sur fond noir
+    tools/fx_textures.py streak     fx/fire_streak.png, la traînée du trait passé au feu (`BoltFx`
+                                    en feu), en bande : un tirage de Qwen-Image sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -62,6 +67,19 @@ SPARK_SEED = 11
 ORB_PROMPT = ("a photograph of ball lightning, a glowing sphere of electric plasma wrapped in thin crackling arcs, "
               "bright white core, violet glow, centered, isolated on a pure black background, realistic, VFX stock footage")
 ORB_SEED = 11
+FROST = {
+    "orb": ("a photograph of a glowing sphere of solid blue ice, a frozen orb covered in frost crystals and spikes, cold "
+            "cyan glow, centered, isolated on a pure black background, realistic, VFX stock footage", 11),
+    "streak": ("a photograph of a long horizontal band of glittering ice dust and frost particles with motion blur, a "
+               "straight comet tail of frozen mist crossing the whole frame from left to right, icy cyan, no snowflake, "
+               "isolated on a pure black background, realistic, VFX stock footage", 44),
+    "burst": ("a photograph of an explosion of small sharp ice shards and glittering frost powder radiating outward in "
+              "every direction from one bright point in the center, a starburst of ice splinters, icy cyan, no block, no "
+              "cube, isolated on a pure black background, realistic, VFX stock footage", 44),
+}
+STREAK = ("a photograph of a long horizontal streak of fire, a straight comet tail of flames and glowing embers crossing "
+          "the whole frame from left to right, bright yellow head on the right, orange and red flames trailing to the left, "
+          "isolated on a pure black background, realistic, VFX stock footage", 11)
 CELL = 256
 # L'API refuse le client sans nom (403) : elle demande qu'on se présente.
 AGENT = {"User-Agent": "HnSProject-decor/1.0"}
@@ -146,12 +164,26 @@ def cell(rgb, box, fade):
     return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / (1.0 - fade), 0.0, 1.0)[..., None]
 
 
+def band(rgb, top, bottom, name):
+    """La bande de `top` à `bottom` (en part de la hauteur), en 512 × 256 : une traînée, un tronc."""
+    cut = Image.fromarray((rgb[int(top * rgb.shape[0]):int(bottom * rgb.shape[0])] * 255).astype(np.uint8))
+    save(np.asarray(cut.resize((SIDE, SIDE // 2), Image.LANCZOS), np.float32) / 255.0, name)
+
+
 def cmd_lightning():
-    bolt = qwen(BOLT_PROMPT, BOLT_SEED)
-    band = Image.fromarray((bolt[int(0.3 * bolt.shape[0]):int(0.7 * bolt.shape[0])] * 255).astype(np.uint8))
-    save(np.asarray(band.resize((SIDE, SIDE // 2), Image.LANCZOS), np.float32) / 255.0, "lightning_bolt.png")
+    band(qwen(BOLT_PROMPT, BOLT_SEED), 0.3, 0.7, "lightning_bolt.png")
     save(cell(qwen(SPARK_PROMPT, SPARK_SEED), (0.0, 0.0, 1.0, 1.0), 0.75), "lightning_spark.png")
     save(cell(qwen(ORB_PROMPT, ORB_SEED), (0.1, 0.1, 0.9, 0.9), 0.75), "lightning_orb.png")
+
+
+def cmd_frost():
+    save(cell(qwen(*FROST["orb"]), (0.1, 0.1, 0.9, 0.9), 0.75), "frost_orb.png")
+    band(qwen(*FROST["streak"]), 0.25, 0.75, "frost_streak.png")
+    save(cell(qwen(*FROST["burst"]), (0.0, 0.0, 1.0, 1.0), 0.75), "frost_burst.png")
+
+
+def cmd_streak():
+    band(qwen(*STREAK), 0.3, 0.7, "fire_streak.png")
 
 
 def cmd_fire():
@@ -169,4 +201,5 @@ def cmd_fire():
 
 
 if __name__ == "__main__":
-    {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning}[sys.argv[1]]()
+    {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
+     "frost": cmd_frost, "streak": cmd_streak}[sys.argv[1]]()

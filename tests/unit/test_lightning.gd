@@ -63,30 +63,12 @@ func test_a_chain_is_one_piece_per_jump() -> void:
 	assert_eq(Lightning.chain(points, rng, VIOLET).size(), 3, "trois sauts, trois planches")
 
 
-func test_the_same_dart_is_made_once() -> void:
-	var a := Lightning.dart(VIOLET, 5, 2)
-	var b := Lightning.dart(VIOLET, 5, 2 + Lightning.DART_FORMS)
-	assert_same(a, b, "deux demandes, une fabrication")
-
-
 ## Six formes d'un sixième d'écart chacune : la septième est la première, sinon la
 ## charge sauterait d'un cran à chaque tour.
 func test_the_charge_loops_on_its_forms() -> void:
 	var a := Lightning.charge(VIOLET, 7.0, 1, 0.0)
 	assert_same(a, Lightning.charge(VIOLET, 7.0, 1 + Lightning.CHARGE_FORMS, 0.0), "la boucle retombe")
 	assert_ne(a, Lightning.charge(VIOLET, 7.0, 2, 0.0), "deux formes voisines diffèrent")
-
-
-## L'orbe boucle sur ses formes comme la charge, et sa boule ne grésille pas : son cœur
-## est au même pixel d'une forme à l'autre.
-func test_the_orb_loops_and_keeps_its_ball() -> void:
-	var a := Lightning.orb(VIOLET, 1, 0.0)
-	assert_same(a, Lightning.orb(VIOLET, 1 + Lightning.ORB_FORMS, 0.0), "la boucle retombe")
-	var b := Lightning.orb(VIOLET, 2, 0.0)
-	assert_ne(a, b, "deux formes voisines diffèrent")
-	for piece: EffectForge.Piece in [a, b]:
-		var center := Vector2i(-piece.offset) - Vector2i.ONE
-		assert_gt(piece.texture.get_image().get_pixelv(center).get_luminance(), THRESHOLD, "le cœur blanc")
 
 
 ## La marque du Paratonnerre boucle sur ses formes : l'éclair qui tombe, puis l'éclat seul,

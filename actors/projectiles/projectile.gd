@@ -45,8 +45,10 @@ var salvo_hits := {}
 var _turns: Array[SkillStats] = []
 ## L'os des Lanceurs d'os (jalon 45) : dessiné, il tournoie et ne s'oriente pas.
 var bone := false
-## Ce qui le montre : l'éclair de la foudre, ou la traînée d'étincelles des autres natures.
+## Ce qui le montre : le trait de `BoltFx`, ou la traînée d'étincelles des autres natures.
 var _bolt_fx: BoltFx
+## Un éclat des Esquilles : son trait en petit, rebonds compris.
+var _small := false
 var _trail: ElementFx
 
 
@@ -100,8 +102,10 @@ func _show(group: StringName) -> void:
 	_dress()
 
 
-## L'éclair pour la foudre (`BoltFx`), les étincelles de sa nature sinon (`ElementFx`). Un
-## rebond du Chatoiement change de nature : l'ancien visuel s'efface, le neuf prend la suite.
+## Le trait de `BoltFx` pour la foudre, et pour le froid et le feu du joueur (le Trait de glace, le
+## trait que rejoue le Familier) ; les étincelles de sa nature sinon (`ElementFx`) : le tir de glace
+## des casters les garde, qu'on distingue du sien en combat. Un rebond du Chatoiement change de
+## nature : l'ancien visuel s'efface, le neuf suit.
 func _dress() -> void:
 	if _bolt_fx != null:
 		_bolt_fx.queue_free()
@@ -109,8 +113,11 @@ func _dress() -> void:
 	if _trail != null:
 		_trail.let_go()
 		_trail = null
-	if nature() == DamageType.Kind.LIGHTNING:
+	var mine := _cast != null and nature() in [DamageType.Kind.COLD, DamageType.Kind.FIRE]
+	if nature() == DamageType.Kind.LIGHTNING or mine:
 		_bolt_fx = BoltFx.show_on(self, nature())
+		if _small:
+			_bolt_fx.shrink()
 	else:
 		_trail = ElementFx.trail(self, tint())
 
@@ -357,6 +364,12 @@ func _shatter(pierced := false) -> void:
 	)
 
 
+func shrink() -> void:
+	_small = true
+	if _bolt_fx != null:
+		_bolt_fx.shrink()
+
+
 ## La Fracture (jalon 44) : sur un transi, un tirage.
 func _fractures(target: Hurtbox) -> bool:
 	return target.has_state(StatusEffects.Kind.CHILL) and Game.rng.randf() * 100.0 < _cast.fracture
@@ -415,3 +428,5 @@ static func split(
 			if bolt is Fireball:
 				(bolt as Fireball).explosion_radius = shard.radius
 				(bolt as Fireball).is_shard = true
+			else:
+				bolt.shrink()
