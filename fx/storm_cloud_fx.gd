@@ -188,13 +188,18 @@ func _roll(t: float) -> void:
 
 
 func _bolt(to: Vector3) -> void:
-	var node := bolt_of(_nature)
-	var tall := HEIGHT * BOLT_SEEN
+	drop(self, to, _nature, HEIGHT * BOLT_SEEN, _host_or_self())
+
+
+## Un éclair qui tombe sur `to`, haut de `tall` à l'écran, sous `parent` et sous le voile de `host` :
+## celui du nuage, et la foudre appelée du Paratonnerre.
+static func drop(parent: Node, to: Vector3, nature: int, tall: float, host: Node) -> void:
+	var node := bolt_of(nature)
 	node.scale = Vector3(tall * BOLT_ASPECT, tall, 1.0)
 	node.extra_cull_margin = tall
 	node.set_instance_shader_parameter(&"flip", float(randi() % 2))
-	add_child(node)
-	ElementFx.veil_like(node, _host_or_self())
+	parent.add_child(node)
+	ElementFx.veil_like(node, host)
 	node.global_position = to
 	# Il s'amincit et s'éteint : un fondu écrirait `opacity` par-dessus le voile du menu.
 	var tween := node.create_tween()

@@ -195,14 +195,6 @@ func test_the_cauldron_is_baked_once_per_tint() -> void:
 	assert_ne(frames[0].get_image().get_data(), frames[1].get_image().get_data())
 
 
-## L'anneau de foudre : un par rayon et par temps, et rien au dernier — le souffle s'est éteint.
-func test_the_lightning_ring_is_baked_per_radius_and_frame() -> void:
-	var tint := Color(0.72, 0.56, 1.00)
-	var first := Lightning.ring(tint, 40, 1)
-	assert_same(Lightning.ring(tint, 40, 1), first)
-	assert_false(first.is_empty())
-	assert_true(Lightning.ring(tint, 40, Lightning.RING_FRAMES - 1).is_empty())
-
 
 ## L'œil du Mauvais œil : gardé par rayon, temps et teinte ; fermé, un trait ; ouvert, l'amande.
 func test_the_evil_eye_opens_and_is_kept() -> void:

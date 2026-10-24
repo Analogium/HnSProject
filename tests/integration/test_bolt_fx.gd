@@ -233,3 +233,116 @@ func test_the_chain_dissolves_under_the_spell_veil() -> void:
 	trace._process(0.0)
 	assert_almost_eq(strand.get_instance_shader_parameter(&"opacity"), 0.25, 0.001, "à mi-chemin de son dernier tiers")
 	Settings.from_dict(before)
+
+
+## La Ruée d'orage (jalon 54) : un éclair bref du départ à l'arrivée, qui s'éteint de la queue ;
+## son appel du tonnerre crépite aux pieds ; ses explosions s'ouvrent en couronne d'arcs ; ses
+## charges statiques grésillent.
+func test_a_storm_dash_flashes_a_brief_bolt_then_nothing() -> void:
+	var before := get_viewport().get_children()
+	BoltFx.dash(get_viewport(), Vector3.ZERO, Vector3(130, 0, 0))
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var strands := born.filter(func(n: Node) -> bool: return (n as MeshInstance3D).mesh.surface_get_material(0).shader == BoltFx.ARC)
+	assert_eq(strands.size(), BoltFx.DASH_STRANDS)
+	assert_eq(born.size() - strands.size(), 2, "un éclat à chaque bout")
+	assert_almost_eq((strands[0] as Node3D).global_position, Vector3(130, ElementFx.LIFT, 0), Vector3.ONE * 0.01,
+		"posé par sa tête, à l'arrivée")
+	assert_true((strands[0] as Node).is_in_group(Settings.SPELLS), "sous le voile des sorts")
+	await wait_seconds(maxf(BoltFx.DASH_LIFE, BoltFx.FLARE_LIFE) + 0.1)
+	assert_true(born.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
+
+
+func test_the_thunder_call_crackles_at_the_feet() -> void:
+	var host := Node3D.new()
+	_world.add_child(host)
+	var ring := BoltFx.feet(host)
+	assert_eq(ring.find_children("*", "MeshInstance3D", true, false).size(), BoltFx.ARCS)
+	assert_eq(ring.find_children("*", "OmniLight3D", true, false).size(), 1, "et une lueur")
+	var turn := ring.rotation.y
+	await wait_process_frames(5)
+	assert_ne(ring.rotation.y, turn, "ils tournent")
+
+
+func test_a_lightning_explosion_opens_a_crown_then_frees_it() -> void:
+	var parts := DamageType.empty_parts()
+	parts[DamageType.Kind.LIGHTNING] = 10.0
+	var before := get_viewport().get_children()
+	Explosion.put(_world, Vector3.ZERO, parts, 45.0, null, DamageType.COLORS[DamageType.Kind.LIGHTNING], null, null)
+	await wait_physics_frames(2)
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var rings := born.filter(func(n: Node) -> bool: return n.get_child_count() > 1)
+	assert_eq(rings.size(), 1, "un anneau, et l'éclat au centre")
+	var arcs := (rings[0] as Node).get_children()
+	assert_eq(arcs.size(), roundi(TAU * 45.0 / BoltFx.CROWN_STEP))
+	await wait_seconds(BoltFx.CROWN_OPEN)
+	assert_almost_eq(Flat.xz((arcs[0] as Node3D).position).length(), 45.0, 1.0, "ouvert jusqu'au bord")
+	assert_almost_eq((arcs[0] as Node3D).scale.y, BoltFx.CROWN_WIDTH, 0.01, "à largeur constante")
+	await wait_seconds(BoltFx.CROWN_FADE + 0.1)
+	assert_true(born.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
+
+
+func test_a_static_charge_sparks_as_wide_as_its_bite() -> void:
+	var charge := StaticCharge.put(_world, Vector3.ZERO, Vector3.RIGHT, [10.0], null)
+	var mine := StaticCharge.put(_world, Vector3.ZERO, Vector3.RIGHT, [10.0], null, StaticCharge.SHARE, true)
+	await wait_process_frames(2)
+	var spark: MeshInstance3D = charge.find_children("*", "MeshInstance3D", false, false)[0]
+	assert_almost_eq(spark.scale.x, StaticCharge.RADIUS * 2.0, 0.01)
+	assert_almost_eq(spark.position.y, StaticCharge.RADIUS, 0.01, "levée de son rayon : rien sous le sol")
+	var wide: MeshInstance3D = mine.find_children("*", "MeshInstance3D", false, false)[0]
+	assert_almost_eq(wide.scale.x, StaticCharge.RADIUS * SkillStats.MINE_REACH * 2.0, 0.01, "une mine, plus large")
+	assert_true(spark.is_in_group(Settings.SPELLS), "sous le voile des sorts")
+
+
+## L'Électricité statique (jalon 54) : l'Ionisation ouvre un anneau discret jusqu'à sa portée ; la Cage
+## de Faraday pose un dôme d'arcs, le temps de l'invulnérabilité.
+func test_an_ionizing_pulse_opens_to_its_reach_then_frees() -> void:
+	var before := get_viewport().get_children()
+	BoltFx.pulse(_world, SkillStats.IONIZE_RADIUS)
+	var rings := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	assert_eq(rings.size(), 1)
+	var arcs := (rings[0] as Node).get_children()
+	assert_almost_eq(Flat.xz((arcs[0] as Node3D).position).length(), BoltFx.PULSE_START, 0.5, "il part du corps")
+	await wait_seconds(BoltFx.PULSE_OPEN * 0.9)
+	assert_almost_eq(Flat.xz((arcs[0] as Node3D).position).length(), SkillStats.IONIZE_RADIUS, 2.0, "jusqu'à sa portée")
+	await wait_seconds(BoltFx.PULSE_OPEN * 0.1 + BoltFx.CROWN_FADE + 0.1)
+	assert_true(rings.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
+
+
+func test_the_faraday_cage_is_a_dome_for_its_time() -> void:
+	var host := Node3D.new()
+	_world.add_child(host)
+	var dome := BoltFx.cage(host, 0.3)
+	var arcs := dome.find_children("*", "MeshInstance3D", true, false)
+	assert_eq(arcs.size(), BoltFx.CAGE_MERIDIANS * BoltFx.CAGE_STEPS)
+	var top := arcs.map(func(a: Node3D) -> float: return a.global_position.y).max() as float
+	assert_almost_eq(top, BoltFx.CAGE_RADIUS, 0.01, "un méridien monte jusqu'au sommet")
+	assert_true((arcs[0] as Node).is_in_group(Settings.SPELLS), "sous le voile des sorts")
+	await wait_seconds(0.4)
+	assert_false(is_instance_valid(dome), "levée avec l'invulnérabilité")
+
+
+## La marque du Paratonnerre (jalon 54, « foudre appelée ») : sur sa cible et non à côté, une étincelle
+## sur la tête, et l'éclair du nuage qui y tombe à chaque appel.
+func test_the_rod_calls_lightning_down_on_the_head() -> void:
+	var target := Hurtbox.new()
+	_world.add_child(target)
+	target.global_position = Vector3(40, 0, 20)
+	var cast := SkillStats.new()
+	cast.nature = DamageType.Kind.LIGHTNING
+	var author := StatusEffects.new()
+	LightningRod.mark(_world, target, author, cast)
+	await wait_physics_frames(2)
+	await wait_process_frames(2)
+	var rod: LightningRod = _world.get_children().filter(func(n: Node) -> bool: return n is LightningRod)[0]
+	assert_almost_eq(rod.global_position, target.global_position, Vector3.ONE * 0.01, "sur sa cible")
+	assert_almost_eq(rod._spark.position.y, LightningRod.HEAD + LightningRod.SPARK * 0.5, 0.01,
+		"l'étincelle sur la tête (sans modèle 3D, à la hauteur par défaut)")
+	var bolts := rod.get_children().filter(func(n: Node) -> bool:
+		return n is MeshInstance3D and (n as MeshInstance3D).mesh.surface_get_material(0).shader == StormCloudFx.BOLT)
+	assert_eq(bolts.size(), 1, "un éclair tombe dès la pose")
+	assert_almost_eq((bolts[0] as Node3D).global_position.y, LightningRod.HEAD, 0.01, "posé sur la tête")
+	await wait_seconds(LightningRod.CALL + 0.05)
+	var again := rod.get_children().filter(func(n: Node) -> bool:
+		return n is MeshInstance3D and (n as MeshInstance3D).mesh.surface_get_material(0).shader == StormCloudFx.BOLT)
+	assert_eq(again.size(), 1, "le premier éteint, le suivant tombé")
+	assert_ne(again[0], bolts[0])

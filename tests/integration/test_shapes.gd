@@ -793,9 +793,12 @@ func test_the_storm_dash_leaves_speed_and_no_trail() -> void:
 	var speed := _p.stats.move_speed
 	var cast := _p.resolve(SkillCatalog.by_id("storm_dash"), 1)
 
+	var before := get_viewport().get_children()
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 0, "rien au sol")
+	var drawn := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	assert_eq(drawn.size(), BoltFx.DASH_STRANDS + 2, "son éclair bref (jalon 54) : deux brins, un éclat à chaque bout")
 	assert_true(_p.lit("storm_dash"), "mais un buff sur le lanceur")
 	assert_gt(_p.stats.move_speed, speed, "qui le presse")
 	assert_lt(_p.lit_ratio("storm_dash"), 1.0, "et dont le compte à rebours descend")
@@ -4351,7 +4354,7 @@ func test_an_orb_strike_hits_the_whole_pack() -> void:
 	var cast := _p.resolve(SkillCatalog.by_id("swift_bolt"), 1)
 	cast.radius = 40.0
 	var pack: Array[Hurtbox] = []
-	for i in Lightning.ARCS_MOST + 3:
+	for i in BoltFx.ARCS_MOST + 3:
 		pack.append(_target(Vector3(200 + i * 4, 0.0, 200)))
 	await wait_physics_frames(2)
 	var orb := StaticOrb.send(_effects, Vector3(200, 0.0, 180), Vector3.RIGHT, cast, _p.states)
@@ -4739,10 +4742,20 @@ func test_an_ionizing_field_numbs_around_you() -> void:
 	var far := _target(Vector3(SkillStats.IONIZE_RADIUS + 40, 0.0, 0))
 	far.states = StatusEffects.new()
 	await wait_physics_frames(2)
+	var halos := _halos()
 	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(2)
+	assert_eq(_halos(), halos, "le champ ne montre rien sur le porteur (jalon 54)")
+	var before := get_viewport().get_children()
 	await wait_seconds(SkillStats.IONIZE_PERIOD + 0.1)
 	assert_true(near.states.active(StatusEffects.Kind.NUMB))
 	assert_false(far.states.active(StatusEffects.Kind.NUMB))
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	assert_eq(born.filter(func(n: Node) -> bool: return n.get_child_count() >= 8).size(), 1, "l'anneau de l'impulsion")
+
+
+func _halos() -> int:
+	return get_viewport().get_children().filter(func(n: Node) -> bool: return n is ElementFx).size()
 
 
 ## La Capacité : sous le champ, une charge laissée vit plus longtemps.
@@ -4778,6 +4791,8 @@ func test_a_backlash_answers_a_melee_blow_then_the_cage_closes() -> void:
 	_p.melee_blow(grunt, 20.0)
 	assert_lt(grunt.health, full, "l'arc l'a frappé")
 	assert_true(_p.hurtbox.invulnerable, "la cage")
+	assert_eq(_p.get_children().filter(func(n: Node) -> bool: return n.get_child_count() == BoltFx.CAGE_MERIDIANS + 1).size(), 1,
+		"et son dôme d'arcs (jalon 54)")
 	await wait_seconds(SkillStats.FARADAY_TIME + 0.1)
 	assert_false(_p.hurtbox.invulnerable, "levée")
 	_p.melee_blow(grunt, 20.0)

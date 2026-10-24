@@ -20,6 +20,8 @@ uniform float tail = 0.5;
 instance uniform float opacity = 1.0;
 // Par tir : deux éclairs côte à côte ne se cassent pas aux mêmes coudes.
 instance uniform float seed = 0.0;
+// La part du ruban, depuis sa queue, déjà éteinte : la Ruée d'orage s'éteint du départ vers l'arrivée.
+instance uniform float gone = 0.0;
 
 float hash(float n) {
 	return fract(sin(n * 12.9898 + seed * 78.233) * 43758.5453);
@@ -48,5 +50,6 @@ void vertex() {
 
 void fragment() {
 	vec3 p = texture(photo, vec2(UV.x * 0.5 + seed * 0.37, UV.y)).rgb;
-	ALBEDO = ramp_of(max(p.r, max(p.g, p.b))) * boost * smoothstep(0.0, tail, UV.x) * opacity;
+	float alive = gone > 0.0 ? smoothstep(gone, gone + 0.25, UV.x) : 1.0;
+	ALBEDO = ramp_of(max(p.r, max(p.g, p.b))) * boost * smoothstep(0.0, tail, UV.x) * alive * opacity;
 }

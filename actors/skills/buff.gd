@@ -10,6 +10,9 @@ extends Node3D
 
 ## Un buff qui n'est pas une aura n'a pas de portée : ses étincelles l'entourent, à ce rayon.
 const HALO_SPARKS := 12.0
+## Rien sur le porteur (jalon 54, choisi sur planche) : le champ statique brûle tout le combat, et
+## les charges qu'il sème disent assez qu'il est allumé.
+const BARE := ["static_electricity"]
 
 var _player: Player
 var _skill: Skill
@@ -61,8 +64,12 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 	buff._distribution[skill.nature] = 1.0
 	player.add_child(buff)
 	Settings.veil(buff, Settings.SPELLS)
-	var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
-	ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)
+	# L'appel du tonnerre d'une ruée de foudre : des arcs aux pieds plutôt que le halo.
+	if skill.shape == Skill.Shape.DASH and skill.nature == DamageType.Kind.LIGHTNING:
+		BoltFx.feet(buff)
+	elif skill.id not in BARE:
+		var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
+		ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)
 	return buff
 
 
@@ -246,6 +253,7 @@ func _ionize(cast: SkillStats, delta: float) -> void:
 	if _since_ion < SkillStats.IONIZE_PERIOD:
 		return
 	_since_ion = 0.0
+	BoltFx.pulse(self, SkillStats.IONIZE_RADIUS)
 	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.IONIZE_RADIUS):
 		if target.states != null and Game.rng.randf() * 100.0 < cast.ionize:
 			target.states.put(

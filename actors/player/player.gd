@@ -1360,6 +1360,7 @@ func melee_blow(attacker: Enemy, amount: float) -> void:
 	if _faraday_wait <= 0.0 and lit_number(SkillStats.FARADAY) > 0.0 \
 			and _untouchable(SkillStats.FARADAY_TIME):
 		_faraday_wait = SkillStats.FARADAY_PERIOD
+		BoltFx.cage(self, SkillStats.FARADAY_TIME)
 
 
 ## Invulnérable pour ce temps — la Cage de Faraday, la Voltige. Jamais par-dessus une
@@ -1535,13 +1536,16 @@ func _dash(skill: Skill, cast: SkillStats) -> void:
 			buff.hold_stacks(mini(held + 1, SkillStats.GALLOP_MOST), cast.duration)
 		_light(skill.id, buff)
 	# Le Trait d'éclair (jalon 43) : un éclair relie le départ à l'arrivée, et frappe ce qu'il
-	# traverse ; l'Aller-retour y ramène, par le même chemin. La Tension accumulée se charge.
+	# traverse ; l'Aller-retour y ramène, par le même chemin. Sans lui, la ruée de foudre a son
+	# éclair bref (jalon 54), qui ne frappe pas. La Tension accumulée se charge.
 	if cast.bolt_dash > 0.0:
 		_bolt_line(from_value, global_position, cast)
 		if cast.round_trip > 0.0:
 			get_tree().create_timer(SkillStats.ROUND_TRIP_DELAY, false, true).timeout.connect(
 				_return_to.bind(from_value, cast)
 			)
+	elif cast.shape == Skill.Shape.DASH and cast.nature == DamageType.Kind.LIGHTNING:
+		BoltFx.dash(get_viewport(), from_value, global_position)
 	if cast.charged_run > 0.0:
 		var run := minf(from_value.distance_to(global_position), SkillStats.CHARGED_RUN_MOST)
 		_tension = cast.charged_run * run / SkillStats.CHARGED_RUN_STEP

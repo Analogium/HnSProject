@@ -749,6 +749,72 @@ dessin vit à la racine du viewport et se dissipe après son nuage. Captures en 
 près : `-nuage-foudre-jeu\`, `-nuage-grele-jeu\`. Coût non mesuré : seize billboards éclairés par
 nuage, trois nuages au plus par lanceur.
 
+**La Ruée d'orage** (24 octobre). Elle ne montrait rien : une téléportation nue (jalon 20), le halo
+d'étincelles de son buff, la gerbe générique à l'explosion d'arrivée, et ses charges statiques n'avaient
+aucun dessin. Deux planches en zone, photos de Qwen-Image (figures de Lichtenberg, onde de choc,
+traînée de plasma) tirées lentement — Torchlight Infinite ouvert prenait 3 Go de VRAM, ComfyUI en
+débordait de 6 en mémoire partagée, cinq minutes par image au lieu de quinze secondes ; une graine par
+sujet. La ruée et son buff (`Bureau\hns-captures-ruee-orage\`) : éclair bref, traînée de plasma, brûlures
+au départ et à l'arrivée, semis actuel. L'arrivée et les charges (`-ruee-orage-arrivee\`) : couronne
+d'arcs (la 2D), onde de choc, brûlure de Lichtenberg, les deux ; mini-orbe, étincelle, étoile d'arcs (la
+2D). Au premier rendu, la traînée de plasma sortait en trait laser (la photo lue sur toute sa hauteur,
+pas sa bande), les brûlures en disques pleins, les arcs aux pieds trop petits pour se voir. **Retenus :
+l'éclair bref, les arcs aux pieds, la couronne d'arcs, l'étincelle** (ARCHITECTURE, « Que montre une
+compétence en 3D ? »). La couronne vaut pour toute explosion de foudre du jeu, la charge pour celles
+qu'un engourdi laisse. Le ruban de la tresse devient `_ribbon_mesh`, partagé avec la ruée. Les dessins
+2D de l'anneau et de la charge (`Lightning.ring`, `Lightning.charge`) partent avec leurs tests ; le reste
+de `fx/lightning.gd` attend la fin du manuel. Captures en jeu, Coup de tonnerre et Sillage statique pris :
+`-ruee-orage-jeu\`. Coût non mesuré.
+
+**L'Électricité statique** (24 octobre), dernière du manuel. Ses charges ont l'étincelle de la Ruée
+d'orage. Restaient le buff, qui brûle tout le combat (sobre), l'Ionisation et la Cage de Faraday ; le
+Choc en retour a déjà la tresse, la Décharge totale la couronne. Deux planches, photos déjà dans `fx/`
+(`Bureau\hns-captures-electricite-statique\`, `-ionisation\`) : halo, arcs sur le corps, grésillement
+au sol, étincelles volantes, orbe à l'épaule ; dôme d'arcs, barreaux, bulle de plasma ; anneau qui
+s'ouvre, arcs vers les engourdis, rien de plus. Les arcs vers les engourdis ne se voyaient pas à la
+première capture : prise trop tard (0,3 s après l'impulsion pour « 0,1 s », l'anneau le montrait déjà
+ouvert), les arcs de 0,16 s étaient éteints. L'utilisateur a pris le champ pour les charges, déjà faites :
+la question était ce que montre le porteur. **Retenus : rien sur le porteur, le dôme d'arcs, l'anneau
+qui s'ouvre.** L'impulsion est la couronne en plus discret : `BoltFx._ring()` sert aux deux. Captures en
+jeu, un Choc en retour provoqué : `-electricite-statique-jeu\`. Coût non mesuré. Les cinq compétences du
+manuel de la foudre sont en 3D ; la marque du Paratonnerre suit, plus bas.
+
+**La marque du Paratonnerre** (24 octobre), le reste du manuel. Elle n'avait que les étincelles
+génériques et se calait encore sur `Hurtbox.overhead()`, décalée vers le nord comme en 2D : en 3D, au sol
+à côté de sa cible. Planche de cinq marques sur des grunts figés, dessins déjà choisis repris
+(`Bureau\hns-captures-paratonnerre\`) : la foudre appelée (la 2D, l'éclair du nuage), une couronne d'arcs
+sur la tête, l'étincelle des charges, une cible au sol, le halo. **Retenue : la foudre appelée.** La tête
+est la hauteur du modèle (`ActorModel.height()`) ; l'éclair qui tombe devient `StormCloudFx.drop()`,
+partagé avec le nuage. Captures en jeu, une meute increvable — le premier tir tuait sa cible et la marque
+partait avec elle (`-paratonnerre-jeu\`). **`fx/lightning.gd` part**, avec ses tests et le grain de foudre
+d'`EffectForge` : plus rien de la foudre 2D ne tournait ; `ARCS_MOST` passe dans `BoltFx`. **Le manuel de
+la foudre est fini en 3D.** Coût non mesuré.
+
+**Coût du manuel de la foudre** (24 octobre), au banc A/B : `world/stress_test.tscn` sur une copie,
+300 grunts increvables collés au joueur (`SPAWN_RADIUS_TILES` 4, vie 1e9), sans vsync, 240 images de
+chauffe puis 1 440 mesurées, l'ordre alterné dans chaque paire. A coupe sur la même copie le seul dessin
+du scénario (`-- cut=…`, posé dans chaque dessin par le patch du banc), B est l'arbre. B − A, en moyenne
+± l'erreur type :
+
+| scénario | paires | image A → B (ms) | B − A image | B − A physique |
+|---|---|---|---|---|
+| Éclair vif (trait, traînée) | 5 | 10,41 → 10,59 | +0,19 ± 0,39 | +0,56 ± 0,33 |
+| Chaîne d'éclairs (tresse) | 5 | 11,17 → 11,45 | +0,27 ± 0,54 | +0,16 ± 0,50 |
+| Nuage d'orage (volutes, éclairs) | 10 | 12,33 → 12,27 | −0,06 ± 0,31 | −0,18 ± 0,25 |
+| Ruée d'orage (éclair bref, arcs aux pieds, couronne, étincelles) | 10 | 10,92 → 10,99 | +0,07 ± 0,48 | +0,45 ± 0,29 |
+| Électricité statique (Ionisation, étincelles) | 10 | 16,05 → 15,04 | −1,01 ± 0,74 | −2,39 ± 1,25 |
+| Paratonnerre (foudre appelée) | 5 | 10,89 → 10,95 | +0,05 ± 0,69 | +0,03 ± 0,67 |
+
+**Rien ne sort du bruit** : d'une paire à l'autre l'écart va de −2 à +2,7 ms, et aucune moyenne ne
+dépasse deux erreurs types. La physique de l'Éclair vif et de la Ruée (+0,5) frôle 1,6 erreur type ;
+les dessins tournent dans `_process`, pas dans la physique. Ce banc, ennemis collés et increvables, est
+plus lourd que celui du §12 (10 à 12 ms l'image contre 2,5). **À part, un coût de jeu et non de dessin** :
+sous le champ statique avec l'Ionisation, la physique monte à 16-19 ms, contre 7-8 avec le trait seul —
+trois cents engourdis, des charges qui mordent ; à examiner. Le premier essai du scénario était faux :
+la case 0 relancée à chaque pas refusait le lancer du champ, jamais allumé ; il est relancé à sa place
+tant qu'il est éteint. Sur ce banc, `ElementFx.warm()` échoue (la zone entre dans l'arbre pendant le
+`_ready()` de la scène, la racine refuse alors les enfants) : des deux côtés, sans fausser la comparaison.
+
 La lumière portée ne suit pas le voile des sorts (`Settings.veil` n'atteint que la
 géométrie). Les grilles 2D de la boule dans `EffectForge` restent : mortes depuis l'étape 1,
 mêlées à celles de l'éclat, du météore et des bouffées des rats, elles partiront avec le
@@ -763,9 +829,9 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; suit le reste du manuel. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
-  de feu en photos, le Brasero, l'Éclair vif, la Chaîne d'éclairs, le Nuage d'orage. **Les couloirs d'équilibrage** à relever
+  de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
   l'élan, le colosse reste planté plus longtemps) — en dernier, jalon 13, §7. Le grunt est
   fait. **Le caster** a son modèle TRELLIS.2 (20 octobre, graine 4242 : les bras les plus détachés,

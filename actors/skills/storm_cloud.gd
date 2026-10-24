@@ -111,12 +111,12 @@ func _strike() -> void:
 ## L'impulsion elle-même, dans ce rayon et à ce facteur : l'Appel d'air tire vers le centre,
 ## le paratonnerre prend sa part (la Cible de l'orage), le Débordement arque vers un ennemi
 ## au-delà. Rend vrai si elle a touché quelqu'un dans son cercle. Le dessin frappe
-## `Lightning.ARCS_MOST` cibles au plus, quel que soit leur nombre ; à vide, un point du cercle.
+## `BoltFx.ARCS_MOST` cibles au plus, quel que soit leur nombre ; à vide, un point du cercle.
 func _hit(reach: float, factor: float) -> bool:
 	var world := get_world_3d()
 	var targets := Targets.strike_circle(world, global_position, reach, _cast, _author, -_cast.pull, factor)
 	var shown: Array[Node3D] = []
-	shown.assign(targets.slice(0, Lightning.ARCS_MOST))
+	shown.assign(targets.slice(0, BoltFx.ARCS_MOST))
 	# La Cible de l'orage (jalon 43) : le paratonnerre de l'Éclair vif prend aussi la frappe.
 	var rod := LightningRod.storm_target_of(_author)
 	if rod != null and rod not in targets \

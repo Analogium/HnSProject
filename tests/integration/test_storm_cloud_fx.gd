@@ -92,7 +92,7 @@ func test_an_empty_strike_still_shows_and_a_crowd_shows_at_most_three() -> void:
 	await wait_physics_frames(2)
 	before = fx.get_child_count()
 	cloud._hit(StormCloudFx.RADIUS, 1.0)
-	assert_eq(fx.get_child_count() - before, Lightning.ARCS_MOST * 2, "trois éclairs au plus, et leurs éclats")
+	assert_eq(fx.get_child_count() - before, BoltFx.ARCS_MOST * 2, "trois éclairs au plus, et leurs éclats")
 
 
 func test_accumulation_charges_the_glow() -> void:
