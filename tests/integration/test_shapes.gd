@@ -2508,6 +2508,19 @@ func test_sinking_spikes_throw_shards_that_spare_the_bitten() -> void:
 	assert_eq(_hits(bitten), 1, "les éclats l'épargnent")
 
 
+## Éclats : de part et d'autre de la visée. Lancés vers le haut de l'écran, à gauche et à droite.
+func test_shards_fly_to_either_side_of_the_aim() -> void:
+	_learn_with("manual_cold", "ice_spike", [[SkillStats.SPLITS, 2.0]])
+	_p.facing = Vector3.FORWARD
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(IceSpikes.LIFETIME + 0.05)
+	var shards: Array = _children_of(Projectile)
+	assert_eq(shards.size(), 2)
+	for shard: Projectile in shards:
+		assert_almost_eq(absf(shard._dir.x), 1.0, 0.01, "à gauche ou à droite")
+	assert_almost_eq(shards[0]._dir.x, -shards[1]._dir.x, 0.01, "un de chaque côté")
+
+
 func test_spikes_leave_frozen_ground() -> void:
 	_learn_with("manual_cold", "ice_spike", [[SkillStats.GROUND, 1.0]])
 	assert_true(Gestures.cast(_p, 2))

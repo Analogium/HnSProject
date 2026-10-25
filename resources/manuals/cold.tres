@@ -163,7 +163,7 @@ script = ExtResource("3_noeud")
 id = "ice_spike_shards"
 name = "Éclats"
 icon = ExtResource("icon_ice_spike_shards")
-description = "En retombant, les pics projettent des éclats de glace en étoile, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
+description = "En retombant, les pics projettent des éclats de glace de part et d'autre de la visée, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
 position = Vector2i(-1, 1)
 parents = Dictionary[String, int]({
 "ice_spike_edge": 2

@@ -126,6 +126,11 @@ static func warm(host: Node3D) -> void:
 	var storm := StormCloudFx.gather(probe, DamageType.Kind.LIGHTNING, 10.0)
 	made.append_array(storm.find_children("*", "", true, false))
 	host.get_tree().create_timer(0.2).timeout.connect(storm.queue_free)
+	# Figés, brisés d'emblée : la lumière ne se rallume pas, les éclats compilent leur matière.
+	var spikes := IceSpikesFx.raise(probe, at, DamageType.Kind.COLD, 10.0)
+	spikes.process_mode = Node.PROCESS_MODE_DISABLED
+	spikes.shatter()
+	made.append_array(spikes.find_children("*", "", true, false))
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in made:
 		if node is GeometryInstance3D:

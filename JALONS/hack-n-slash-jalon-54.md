@@ -826,10 +826,61 @@ en moyenne −0,4 ms (de −0,95 à +0,36). La matière de particules est gardé
 à chaque tir, sa rampe partait au GPU à chaque fois. Les télégraphes, mesurés de même, ne se
 distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5 ms du §12.
 
+**Le manuel du froid, les Pics de glace d'abord** (25 octobre). Ils n'avaient que la gerbe
+générique. Poly Haven n'a pas de glace (de la neige seulement) : trois sujets tirés par Qwen-Image,
+deux graines chacun — un bouquet de pics sur fond noir, une glace veinée raccordable, du givre au sol.
+Lents : ~5 min le tirage, ComfyUI débordait de 3,2 Go en mémoire partagée (iCUE en tenait 4,2).
+Première planche, cinq façons sur des grunts figés (`Bureau\hns-captures-pics-de-glace\`) : la 2D
+portée (deux flancs et une arête, sans lumière), des cristaux éclairés plaqués de la glace veinée,
+le bouquet photographié debout, un pic-roi et sa couronne, la glace éclairée avec du givre au sol.
+Erreurs vues sur planche : des pics de 12 à 26 px ne se voyaient pas au cadre du jeu (24 à 40) ; les
+cristaux éclairés sortaient en silhouettes blanches — **enroulés à l'inverse de ce que Godot tient
+pour l'avant** (l'ordre horaire), la caméra voyait le dedans du fond et le reflet de bord, au
+maximum, blanchissait tout ; le givre restait invisible, sa fondue partagée laissée à 0 par le cycle
+d'avant. Verdict : « trop moche, ça fait trop pauvre », sans gâcher le gameplay — on les voit tout
+le temps. Deuxième planche, le geste **habillé** (`-pics-de-glace-2\`) : un éclair de lumière froide,
+le sol fendu de givre (les fissures de la Ruée), de la brume (la fumée de la boule de feu), et des
+pics qui se brisent en éclats au lieu de rentrer sous terre ; en glace réfractante, en glace pleine
+lumineuse, en cascade (petits au centre, couronne haute au bord), et **sobre** — la réfractante sans
+brume, douze pics. Erreurs vues : des éclats qui volaient à 60 px hors du cercle (ils parlaient d'une
+zone qui n'avait pas frappé), une brume qui cachait le grunt, un voile du bleu profond qui virait au
+mauve sur l'ocre. **Retenu : sobre.** `IceSpikesFx` (ARCHITECTURE, « Que montre une compétence en
+3D ? ») ; le dessin naît quand le cercle frappe, ce qui échelonne aussi le Sillon. En jeu, deux
+pièges que la planche cachait : elle **étirait après avoir penché** (`Basis.scaled`, en repère
+global), ce qui redressait les grands pics — refait dans l'autre ordre, ils sortaient en lames
+couchées qui débordaient du cercle ; et les éclats, des pics entiers réduits, retombaient en galets
+dressés — une esquille fine cuite couchée, qui tourne autour de la verticale, les remplace. La traînée
+blanche vue à la première capture en jeu était le tir de glace d'un caster. Le cristal 2D
+(`EffectForge.spike`, `Frost.raise_spike`) part avec ses tests. Captures en jeu, une meute de grunts
+figés et le Sillon : `Bureau\hns-captures-pics-de-glace-jeu\`, `-sillon\`. **Coût** (le banc de la
+foudre refait : 300 grunts increvables collés au joueur, les Pics en case 0, sans vsync, 240 images
+de chauffe puis 1 440, A coupe le dessin sur la même copie, six paires alternées, ~48 lancers par
+mesure ; ComfyUI arrêté) : 16,83 → 16,92 ms l'image, **B − A = +0,09 ± 0,37 ms**, physique
++0,17 ± 0,31, pire image +1,2 ± 3,1 — dans le bruit. Mesuré avant une correction qui ne fait
+qu'alléger B : une seconde salve d'éclats repartait en fin de vie, `emitting` retombant à la fin de
+la salve.
+**Les Éclats de part et d'autre** (25 octobre, demande de l'utilisateur) : ils partaient en étoile
+autour d'un axe fixe, la droite du monde — deux éclats allaient toujours à gauche et à droite de
+l'écran. Ils partent maintenant de part et d'autre du lancer, en éventail par flanc
+(`IceSpikes.flanks()`) : visés vers le haut, à gauche et à droite ; visés à droite, en haut et en bas.
+Chaque cercle garde la direction de son lancer, Bosquet, Sillon, Crevasse et Réplique compris ; l'étoile
+reste à l'Orbe gelée et au Météore. Vu en jeu, quatre éclats lancés vers le haut :
+`Bureau\hns-captures-pics-de-glace-eclats\`.
+**Le visuel des Éclats** (25 octobre) : ils portaient l'orbe du Trait de glace en petit, sans rien des
+pics d'où ils sortent. Planche de cinq façons, quatre éclats lancés de part et d'autre d'une zone qui se
+brise (`Bureau\hns-captures-eclats-de-glace\`) : l'actuel, une esquille de la glace des pics avec la
+traînée du Trait, une esquille qui tournoie dans une poudre de givre, un javelot deux fois plus long, une
+grappe de trois. La poudre sortait d'abord en coton blanc (les étincelles génériques, 7 px, presque
+blanches), puis en pointillé de craie : dispersée et teintée du cyan moyen de la rampe, elle se tient.
+**Retenu : l'esquille.** `IceShardFx` ; l'éclat de fin du Trait, à la taille d'un éclat, devient
+`BoltFx.flare_at`, partagé. Captures en jeu, un grunt de chaque côté :
+`Bureau\hns-captures-eclats-de-glace-jeu\`. Coût non mesuré : un cristal et une traînée par éclat, à la
+place d'un orbe, de sa lumière et de sa traînée.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre » (§13). Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
@@ -877,7 +928,8 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   du repli sur planche le prend ; son modèle venu, ce repli n'aura plus de sujet. L'entraîneur a été refusé juste
   après (« 120s requested vs. 171s left », réessayer 24 h plus tard) : ce jour-là, il ne restait
   qu'un passage. Son tirage, perdu avec le `/tmp` de WSL, a été retiré le 23 à la même graine,
-  et son détourage est rangé : `tools/model_3d.py mesh trainer 4242` à partir du 24, 19 h 45. Gréés par Mixamo le 22 : le gonflé
+  et son détourage est rangé. Passé par TRELLIS.2 le 24 à 19 h 35, 31 s après le retour du quota
+  (tour dans `Bureau\hns-trainer-modele-3d\` : plates, tunique, manteau tenus ; le dos plus sombre). Gréés par Mixamo le 22 : le gonflé
   (« Idle », « Fast Run » ; il enfle sur place, sans geste), le colosse (« Idle », « Orc Walk »).
   **Le coup au sol du colosse, Mixamo ne l'a pas** : écrit à la main, `smash` dans
   `tools/blender/gestes.json` — les deux poings au-dessus du heaume en se cambrant, puis abattus
@@ -885,7 +937,7 @@ distinguent pas non plus du bruit ; aux mesures calmes le banc retrouve les ~2,5
   l'est pour ce corps : `export_glb` ne lui applique plus `arm_space` ni `elbows`, qui
   corrigent l'acteur de Mixamo et défaisaient les poings joints. 60° et `elbows` 0,5 d'office,
   comme le mortier. Vus en zone (`Bureau\hns-captures-lourds-jeu\`) : le gonflé enfle et
-  éclate, le colosse montre son cône et frappe. L'entraîneur attend, comme lui : `model_3d.py image`, `mesh` au quota TRELLIS du jour, Mixamo à la main
+  éclate, le colosse montre son cône et frappe. L'entraîneur gréé par Mixamo le 24 (« Idle » seul, l'épée en main, `arm_space` 40) : **tous les personnages ont leur modèle**. Le repli sur planche (`ActorSprite`) reste : le mannequin d'entraînement, les morts-vivants invoqués et le corps par défaut du joueur sont encore des grilles 2D — retiré un moment sur la foi des seules planches de `art/characters/`, il a cassé 510 tests et a été rendu. Le test du repli porte sur le mannequin. Avant lui : Mixamo à la main
   (l'utilisateur dépose les `.fbx` dans `<id>/mixamo/`), `blender_sheet.py <id> --glb`.
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est

@@ -95,53 +95,6 @@ static func rot_puffs(tint: Color) -> Array:
 	return _sheet(_rot_puffs, PUFF, PUFF_SIZE, PUFF_SIZE, tint, Necrotic.core(tint))
 
 
-## Le cristal du manuel de glace, neuf pixels sur quinze : deux flancs francs et
-## l'arête de givre entre les deux. Choisi sur planche contre cinq autres
-## silhouettes (jalon 24) — l'aiguille se lisait comme un pilier, le prisme à
-## étages comme un sapin, et la dalle comme un caillou.
-##
-## **Il n'a pas de temps.** Une flamme bat parce qu'elle brûle ; un cristal est
-## fixe, et ce qui l'anime est sa sortie de terre, découpée à la volée par
-## `draw_texture_rect_region`. Une planche de quatre temps de glace clignoterait.
-const SPIKE := [
-	"....w....",
-	"....w....",
-	"...4w3...",
-	"...4w3...",
-	"...4w33..",
-	"..44w33..",
-	"..44w333.",
-	".444w333.",
-	".444w3332",
-	".444w3332",
-	"4444w3322",
-	"4444w3322",
-	"4444w3222",
-	"444ww3222",
-	"44443222.",
-]
-
-const SPIKE_WIDTH := 9
-const SPIKE_HEIGHT := 15
-
-## Le petit cristal, cinq sur neuf. Alterné avec le grand plutôt que tiré au sort :
-## sept pics de la même taille font une palissade — la leçon de la Ruée ardente,
-## où le défaut n'était pas le nombre mais la **régularité**.
-const SPIKE_SMALL := [
-	"..w..",
-	"..w..",
-	".4w3.",
-	".4w3.",
-	"44w33",
-	"44w32",
-	"44w22",
-	"44w22",
-	"44322",
-]
-
-const SMALL_SPIKE_WIDTH := 5
-const SMALL_SPIKE_HEIGHT := 9
-
 ## L'éclat emporté par un tourbillon, cinq pixels de côté, **pointe à droite** :
 ## c'est le zéro des huit orientations. Un tourbillon dont les éclats pointent
 ## tous en haut n'est qu'une chute de neige.
@@ -177,22 +130,8 @@ const FLAKE := [
 
 const FLAKE_SIZE := 3
 
-static var _spikes := {}
-static var _small_spikes := {}
 static var _chips := {}
 static var _flakes := {}
-
-
-## Le grand cristal de cette teinte.
-static func spike(tint: Color) -> Texture2D:
-	return _sheet(_spikes, [SPIKE], SPIKE_WIDTH, SPIKE_HEIGHT, tint, Frost.rim(tint))[0]
-
-
-## Le petit cristal de cette teinte.
-static func small_spike(tint: Color) -> Texture2D:
-	return _sheet(
-		_small_spikes, [SPIKE_SMALL], SMALL_SPIKE_WIDTH, SMALL_SPIKE_HEIGHT, tint, Frost.rim(tint)
-	)[0]
 
 
 ## Les huit orientations de l'éclat, dans le sens des aiguilles à partir de la

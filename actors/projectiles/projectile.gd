@@ -47,6 +47,9 @@ var _turns: Array[SkillStats] = []
 var bone := false
 ## Ce qui le montre : le trait de `BoltFx`, ou la traînée d'étincelles des autres natures.
 var _bolt_fx: BoltFx
+## L'éclat des Pics de glace (`wear_sliver()`), à la place du trait.
+var _sliver_fx: IceShardFx
+var _sliver := false
 ## Un éclat des Esquilles : son trait en petit, rebonds compris.
 var _small := false
 var _trail: ElementFx
@@ -110,11 +113,16 @@ func _dress() -> void:
 	if _bolt_fx != null:
 		_bolt_fx.queue_free()
 		_bolt_fx = null
+	if _sliver_fx != null:
+		_sliver_fx.queue_free()
+		_sliver_fx = null
 	if _trail != null:
 		_trail.let_go()
 		_trail = null
 	var mine := _cast != null and nature() in [DamageType.Kind.COLD, DamageType.Kind.FIRE]
-	if nature() == DamageType.Kind.LIGHTNING or mine:
+	if _sliver:
+		_sliver_fx = IceShardFx.show_on(self, nature(), _dir)
+	elif nature() == DamageType.Kind.LIGHTNING or mine:
 		_bolt_fx = BoltFx.show_on(self, nature())
 		if _small:
 			_bolt_fx.shrink()
@@ -346,6 +354,8 @@ func _finish() -> void:
 		)
 	if _bolt_fx != null:
 		_bolt_fx.flare()
+	if _sliver_fx != null:
+		_sliver_fx.flare()
 	queue_free()
 
 
@@ -362,6 +372,12 @@ func _shatter(pierced := false) -> void:
 		get_parent(), load(scene_file_path), global_position, dir, speed, _nature,
 		_source, _cast.shard(), count, _struck.duplicate()
 	)
+
+
+## Un éclat des Pics de glace : un cristal des pics, et non le trait en petit.
+func wear_sliver() -> void:
+	_sliver = true
+	_dress()
 
 
 func shrink() -> void:
@@ -414,11 +430,22 @@ static func split(
 	parent: Node, scene: PackedScene, at: Vector3, dir: Vector3, p_speed: float,
 	nature: int, source, shard: SkillStats, count: int, struck: Dictionary
 ) -> void:
-	if not is_instance_valid(parent):
-		return
-	var author: Node3D = source if is_instance_valid(source) else null
+	var star: Array[Vector3] = []
 	for i in count:
-		var toward := Flat.rotated(dir, TAU * float(i) / float(count))
+		star.append(Flat.rotated(dir, TAU * float(i) / float(count)))
+	scatter(parent, scene, at, star, p_speed, nature, source, shard, struck)
+
+
+## Un éclat par direction de `directions`, comme `split` ; rend ceux qui sont nés.
+static func scatter(
+	parent: Node, scene: PackedScene, at: Vector3, directions: Array[Vector3], p_speed: float,
+	nature: int, source, shard: SkillStats, struck: Dictionary
+) -> Array[Projectile]:
+	var born: Array[Projectile] = []
+	if not is_instance_valid(parent):
+		return born
+	var author: Node3D = source if is_instance_valid(source) else null
+	for toward in directions:
 		var bolt := spawn(
 			parent, scene, at - toward * MUZZLE, toward, shard.roll(Game.rng), author,
 			p_speed, nature, shard
@@ -430,3 +457,5 @@ static func split(
 				(bolt as Fireball).is_shard = true
 			else:
 				bolt.shrink()
+			born.append(bolt)
+	return born

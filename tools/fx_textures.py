@@ -23,6 +23,8 @@
                                     en A) et fx/storm_bolt.png (le tronc d'un éclair qui tombe, pied en
                                     bas), le Nuage d'orage (`StormCloudFx`) : des tirages de Qwen-Image
                                     sur fond noir
+    tools/fx_textures.py ice        fx/ice_veins.png, la glace veinée des Pics de glace (`IceSpikesFx`) :
+                                    un tirage de Qwen-Image, raccordable
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -93,6 +95,9 @@ STORM_PUFF_SEEDS = (11, 22, 33)
 STORM_BOLT = ("a photograph of a single lightning bolt striking straight down vertically from the top of the frame to "
               "the bottom, jagged angular bends, blinding white core, intense violet glow, isolated on a pure black "
               "background, realistic, VFX stock footage, centered", 11)
+# « Sobre » sur la deuxième planche des Pics de glace : Poly Haven n'a que de la neige, pas de glace.
+ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
+       "even lighting, fills the whole frame, high detail", 11)
 CELL = 256
 # L'API refuse le client sans nom (403) : elle demande qu'on se présente.
 AGENT = {"User-Agent": "HnSProject-decor/1.0"}
@@ -195,6 +200,10 @@ def cmd_frost():
     save(cell(qwen(*FROST["burst"]), (0.0, 0.0, 1.0, 1.0), 0.75), "frost_burst.png")
 
 
+def cmd_ice():
+    save(tileable(square(Image.fromarray((qwen(*ICE) * 255).astype(np.uint8)))), "ice_veins.png")
+
+
 def cmd_streak():
     band(qwen(*STREAK), 0.3, 0.7, "fire_streak.png")
 
@@ -249,4 +258,4 @@ def cmd_fire():
 
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
-     "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm}[sys.argv[1]]()
+     "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice}[sys.argv[1]]()

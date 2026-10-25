@@ -146,7 +146,7 @@ static func show_on(host: Node3D, nature: int, orb := false, orbits := false) ->
 	fx._orb.add_child(FlameFx.light_of(nature, LIGHT, REACH))
 	if not orb or orbits:
 		fx.trail = Trail.new()
-		fx.trail.material_override = _trail_material(nature)
+		fx.trail.material_override = trail_material(nature)
 		fx.trail.target = fx._orb
 		host.get_viewport().add_child(fx.trail)
 		shown.append(fx.trail)
@@ -163,7 +163,7 @@ func shrink() -> void:
 
 ## L'éclat de fin de course, sur l'orbe. **Différé** : la fin arrive souvent d'un rappel de collision.
 func flare() -> void:
-	_flare.call_deferred(get_viewport(), _orb.global_position, get_parent(), scale.x)
+	flare_at.call_deferred(get_viewport(), _orb.global_position, get_parent(), _nature, scale.x)
 
 
 ## Une décharge de l'Orbe statique : un arc de l'orbe à chaque cible, `ARCS_MOST` au plus,
@@ -378,10 +378,11 @@ static func spark(host: Node3D, reach: float) -> MeshInstance3D:
 	return node
 
 
-func _flare(viewport: Viewport, at: Vector3, host: Node, size: float) -> void:
+## L'éclat de fin de course de `nature` en `at`, à `size` : public pour l'éclat des pics.
+static func flare_at(viewport: Viewport, at: Vector3, host: Node, nature: int, size: float) -> void:
 	if not is_instance_valid(viewport):
 		return
-	var flash := flash_of(_nature)
+	var flash := flash_of(nature)
 	viewport.add_child(flash)
 	if is_instance_valid(host):
 		ElementFx.veil_like(flash, host)
@@ -468,7 +469,7 @@ static func _ribbon_mesh(nature: int, kinks: int, amp: float, boost: float) -> Q
 	return _ribbons[key]
 
 
-static func _trail_material(nature: int) -> ShaderMaterial:
+static func trail_material(nature: int) -> ShaderMaterial:
 	if not _trails.has(nature):
 		var look := Look.of(nature, false)
 		var m := ramped(FROST_TRAIL if nature == DamageType.Kind.COLD else TRAIL, look.streak, nature)

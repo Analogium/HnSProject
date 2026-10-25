@@ -3254,8 +3254,8 @@ msgstr "Chilblain"
 msgid "Augmente la chance que ce sort pose l'état de sa nature à ce qu'il touche — le transi pour le froid, qui ralentit l'ennemi."
 msgstr "Increases the chance that this spell applies the state of its nature to what it hits — chill for cold, which slows the enemy."
 
-msgid "En retombant, les pics projettent des éclats de glace en étoile, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
-msgstr "As they sink back, the spikes throw ice shards in a star, which spare what they have already bitten. Each shard carries {part_eclat}% of the damage."
+msgid "En retombant, les pics projettent des éclats de glace de part et d'autre de la visée, qui épargnent ce qu'ils ont déjà mordu. Chaque éclat porte {part_eclat} % des dégâts."
+msgstr "As they sink back, the spikes throw ice shards to either side of the aim, which spare what they have already bitten. Each shard carries {part_eclat}% of the damage."
 
 msgid "Givre persistant"
 msgstr "Lingering Frost"

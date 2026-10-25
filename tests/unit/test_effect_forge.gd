@@ -11,10 +11,6 @@ const FIRE := Color(1.00, 0.48, 0.18)
 ## sans rien casser : le pixel se pose, simplement ailleurs.
 func test_every_ice_grid_is_rectangular() -> void:
 	var grids := {
-		"cristal": [EffectForge.SPIKE, EffectForge.SPIKE_WIDTH, EffectForge.SPIKE_HEIGHT],
-		"petit cristal": [
-			EffectForge.SPIKE_SMALL, EffectForge.SMALL_SPIKE_WIDTH, EffectForge.SMALL_SPIKE_HEIGHT
-		],
 		"éclat": [EffectForge.CHIP, EffectForge.CHIP_SIZE, EffectForge.CHIP_SIZE],
 		"éclat en biais": [EffectForge.CHIP_DIAG, EffectForge.CHIP_SIZE, EffectForge.CHIP_SIZE],
 		"flocon": [EffectForge.FLAKE, EffectForge.FLAKE_SIZE, EffectForge.FLAKE_SIZE],

@@ -1,10 +1,10 @@
 class_name Frost
 extends RefCounted
 
-## La glace du jeu, **posée** en un seul endroit : les cristaux de Pics de glace,
-## la couronne de la Nova, les éclats du Désastre hivernal et les flocons du
-## Tombeau. Les dessins viennent de `EffectForge` ; ce fichier dit comment ils se
-## posent — calés sur le pixel du jeu, et sortant de terre plutôt que grandissant.
+## La glace du jeu en 2D, **posée** en un seul endroit : la couronne de la Nova, les
+## éclats du Désastre hivernal et les flocons du Tombeau. Les dessins viennent de
+## `EffectForge` ; ce fichier dit comment ils se posent, calés sur le pixel du jeu. Les
+## Pics de glace sont en 3D (`IceSpikesFx`).
 ##
 ## **Le froid ne se blanchit pas, il s'ombre.** Son cyan porte déjà 0,81 de
 ## luminance — la matière la plus claire du jeu, contre 0,57 pour le feu et 0,63
@@ -22,32 +22,6 @@ const RIM := 0.5
 ## Le givre d'un cristal de cette teinte : le seul trait qui a le droit de briller.
 static func rim(tint: Color) -> Color:
 	return tint.lerp(RIME, RIM)
-
-
-## Lève un cristal hors du sol. On **découpe** la planche au ras du sol plutôt que
-## de l'étirer : une planche redimensionnée se rééchantillonne et ses blocs de deux
-## pixels se brisent. `out` va de 0 — rien — à 1, le cristal entier.
-##
-## Le pied reste au sol et la pointe monte : c'est l'inverse d'un cristal qui
-## grandit sur place, et c'est ce qui dit qu'il **perce**.
-##
-## **Pas d'opacité à régler : un cristal ne pâlit pas, il redescend.** Posé à
-## demi-transparent sur un sol sombre, le cyan sort gris — c'est le même piège que
-## l'orange peu opaque du feu, qui sortait brun. Ce qui s'efface, ce sont les
-## flocons et le givre au sol, qui sont faits pour ça.
-static func raise_spike(
-	ci: CanvasItem, foot: Vector2, big: bool, out: float, tint: Color
-) -> void:
-	if out <= 0.0:
-		return
-	var tex: Texture2D = EffectForge.spike(tint) if big else EffectForge.small_spike(tint)
-	var width := tex.get_width()
-	var shown := maxi(int(round(float(tex.get_height()) * minf(out, 1.0))), 1)
-	var size := Vector2(float(width), float(shown))
-	ci.draw_texture_rect_region(
-		tex, Rect2(EffectForge.snap(ci, foot - Vector2(float(width) * 0.5, float(shown))), size),
-		Rect2(0.0, 0.0, size.x, size.y)
-	)
 
 
 ## Un éclat couché sur son cap, pris parmi les huit orientations : c'est lui qui

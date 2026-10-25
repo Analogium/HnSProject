@@ -33,6 +33,12 @@ pas.
   (`is` et non `find_children()` avec un nom de classe de script, qui ne le reconnaît pas). La
   Fragmentation lâchait bien ses éclats, mais ils avaient l'allure de la boule et naissaient
   dans l'éclair de l'explosion.
+- **« Trop pauvre » se corrige en habillant le geste**, pas en changeant de matière : des
+  Pics de glace lisses qui rentraient sous terre ont été refusés ; avec un éclair de lumière
+  portée, le sol touché (les fissures de la Ruée, en givre) et une fin qui se brise en
+  esquilles, ils ont plu — dans le cercle qui frappe, éteints en moins d'une seconde. Un sort
+  qu'on lance sans cesse garde la version sobre : la brume a été écartée.
+  La matière peut être changée quand même.
 - **Une aura qui dure reste sobre** : elle tourne sous les yeux pendant tout le combat.
   L'Immolation en couronne de flammes et en brasier plein a été jugée trop chargée ; un liseré
   et quelques flammèches ont été retenus.
@@ -148,7 +154,11 @@ Les règles qui ne se discutent plus, toutes payées d'une capture ratée :
    sol autour (la boule de feu, l'éclair de son explosion), et c'est ce qui le fait vivre.
 8. **Un maillage fabriqué montre ses faces dans le bon sens** : retournées, la caméra voit le
    dedans du fond, et rien ne lui donne de volume — le serpent sortait « dessin plat » à
-   chaque retouche de matière. Le vérifier avant de régler la lumière.
+   chaque retouche de matière. Le vérifier avant de régler la lumière. **Godot tient pour
+   face avant l'ordre horaire vu de devant** : des Pics de glace enroulés à l'inverse
+   sortaient en silhouettes blanches, le reflet de bord au maximum sur le dedans.
+   Et `Basis.scaled()` étire en repère **global** : ce qu'on a vu sur planche, il faut le
+   refaire dans le même ordre (`Basis.from_scale(s) * rotation`).
 9. **1 unité = 1 px du jeu 2D** (`Flat.PX_PER_M` = 16 pour Blender) : une portée de
    compétence se lit telle quelle comme une taille d'effet.
 
