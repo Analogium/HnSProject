@@ -89,3 +89,27 @@ func test_the_swirl_takes_the_spell_veil_and_keeps_its_material() -> void:
 	Settings.from_dict(before)
 	a.queue_free()
 	b.queue_free()
+
+
+## L'Aspiration : à chaque frappe, une onde de distorsion part du bord et se resserre vers le cœur,
+## en tirant le sol vers lui ; sans elle, rien.
+func test_suction_sends_a_pulling_wave_toward_the_core_at_each_strike() -> void:
+	var plain := IceVortex.open(_world, Vector3(300, 0, 0), _cast(), null)
+	await wait_physics_frames(1)
+	assert_null(_fx()._suck, "pas d'aspiration, pas d'onde")
+	plain.queue_free()
+	var cast := _cast()
+	cast.pull = 30.0
+	var vortex := IceVortex.open(_world, Vector3.ZERO, cast, null)
+	await wait_physics_frames(1)
+	var fx := _fx()
+	assert_not_null(fx._suck)
+	var covers := func() -> float: return fx._suck.get_instance_shader_parameter(&"front") * fx._suck.scale.x
+	vortex._age = cast.period * 2.0 + 0.01
+	fx._process(0.0)
+	assert_almost_eq(covers.call(), vortex.reach(), 1.0, "au bord à la frappe")
+	assert_lt(fx._suck.get_instance_shader_parameter(&"strength"), 0.0, "elle tire vers le cœur")
+	vortex._age = cast.period * 2.8
+	fx._process(0.0)
+	assert_lt(covers.call(), vortex.reach() * 0.5, "puis se resserre")
+	vortex.queue_free()

@@ -8,6 +8,10 @@ extends Node3D
 ## dirait un sol gelé. Le buff éteint, les cristaux se rongent et leurs esquilles volent.
 ##
 ## Il vit à la racine du viewport et suit son porteur : le buff parti, il finit de se briser.
+##
+## **Le Halo de givre** (« onde qui s'ouvre » choisie sur planche contre rien, un liseré tenu et un souffle
+## d'esquilles) : à chaque impulsion, l'onde de choc de la Nova part du corps jusqu'à sa portée et se ronge
+## (`pulse()`).
 
 const CRYSTALS := 9
 ## Autour du porteur, en px : assez loin pour qu'on le voie, assez près pour qu'il y soit enfermé.
@@ -27,6 +31,10 @@ const EATEN := 0.25
 const SHARDS := 24
 const SHARD_LIFE := 0.55
 const SHARD_LENGTH := Vector2(5.0, 9.0)
+## L'onde du Halo : ouverte en `PULSE_OPEN`, rongée en `PULSE_LIFE`, du quart de sa portée au bord.
+const PULSE_OPEN := 0.3
+const PULSE_LIFE := 0.55
+const PULSE_WIDTH := 0.12
 
 var _buff: Node3D
 var _clock := 0.0
@@ -128,6 +136,22 @@ func _show() -> void:
 	for i in GLINTS:
 		IceNovaFx.shine(_glints, i, lit * IceNovaFx.twinkle(_clock, _glint_phases[i], 4.0, 10.0))
 	_light.light_energy = (LIGHT + FLASH * pow(1.0 - clampf(_clock / FLASH_LIFE, 0.0, 1.0), 2.0)) * (1.0 - eaten)
+
+
+## Une impulsion du Halo de givre sur `buff`, jusqu'à `radius` ; elle le suit et se libère seule.
+static func pulse(buff: Node3D, radius: float, nature: int) -> MeshInstance3D:
+	var ring := IceNovaFx.flat(buff, IceNovaFx.material(IceNovaFx.SHOCK, nature), radius * 1.1, DangerZone.LIFT + 0.6)
+	ElementFx.veil_like(ring, buff)
+	var show := func(t: float) -> void:
+		ring.set_instance_shader_parameter(&"front", lerpf(0.25, 0.9, ease(clampf(t / PULSE_OPEN, 0.0, 1.0), 0.4)))
+		ring.set_instance_shader_parameter(&"width", PULSE_WIDTH)
+		ring.set_instance_shader_parameter(&"clock", t)
+		ring.set_instance_shader_parameter(&"dissolve", smoothstep(0.15, PULSE_LIFE, t))
+	show.call(0.0)
+	var tween := ring.create_tween()
+	tween.tween_method(show, 0.0, PULSE_LIFE, PULSE_LIFE)
+	tween.tween_callback(ring.queue_free)
+	return ring
 
 
 ## L'esquille `i`, une fois le buff éteint ; publique pour les tests, le moteur sans rendu ne relit pas un

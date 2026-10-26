@@ -101,7 +101,8 @@ func _show() -> void:
 	var front := ease(clampf(_clock / SHOCK_OPEN, 0.0, 1.0), 0.4)
 	_shock.visible = _clock < SHOCK_EATEN.y
 	_shock.set_instance_shader_parameter(&"front", front * 0.92)
-	_shock.set_instance_shader_parameter(&"width", 0.12 + 0.18 * front)
+	# Pas plus large que celle de la Nova, en pixels : à 104 px (la Singularité), un beignet blanc.
+	_shock.set_instance_shader_parameter(&"width", (0.12 + 0.18 * front) * minf(1.0, RADIUS / _radius))
 	_shock.set_instance_shader_parameter(&"clock", _clock)
 	_shock.set_instance_shader_parameter(&"dissolve", smoothstep(SHOCK_EATEN.x, SHOCK_EATEN.y, _clock))
 	_warp.visible = _clock < WARP_LIFE

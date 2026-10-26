@@ -7,7 +7,9 @@ extends Node3D
 ## (`fx/frost_vortex.png`) qui tourne au rayon du vortex ; des esquilles des Pics qui orbitent, plus vite
 ## au cœur ; des scintillements là où il couvre ; une lumière froide tenue ; pas de glace au sol, qui
 ## dirait un sol gelé. Il grandit avec le vortex — l'Implosion le resserre — et, le vortex parti, se
-## ronge.
+## ronge. **L'Aspiration** (« distorsion » choisie sur planche contre des esquilles aspirées, un anneau qui
+## se resserre et les deux) : à chaque frappe, une onde de distorsion part du bord et se resserre vers le
+## cœur, le sol et les ennemis tirés vers le centre.
 ##
 ## Il vit à la racine du viewport et suit son vortex : la Coulée le fait rouler.
 
@@ -23,6 +25,10 @@ const GLINTS := 14
 const LIGHT := 1.5
 ## La fin : rongé en `EATEN`.
 const EATEN := 0.35
+## L'onde de l'Aspiration : jusqu'où vers le cœur, en part de la portée, sa force et sa bande.
+const SUCK_DEPTH := 0.2
+const SUCK_STRENGTH := 0.03
+const SUCK_SPREAD := 0.12
 
 var _vortex: IceVortex
 var _radius := 0.0
@@ -37,6 +43,9 @@ var _glints: MultiMeshInstance3D
 var _glint_phases: Array[float] = []
 var _glint_spots: Array[float] = []
 var _light: OmniLight3D
+var _suck: MeshInstance3D
+## Depuis la dernière frappe, en part de la période : l'onde de l'Aspiration en part.
+var _beat := 0.0
 
 
 ## Le tourbillon de `vortex`, taillé pour `radius`, sa plus grande portée (Boule de neige comprise) ; il suit
@@ -53,6 +62,9 @@ static func spin_up(vortex: IceVortex, nature: int, radius: float) -> IceVortexF
 	for i in CHIPS:
 		fx._orbits.append(Vector3(randf_range(0.2, 1.0), randf() * TAU, randf_range(CHIP_HEIGHT.x, CHIP_HEIGHT.y)))
 	fx._glints = IceNovaFx.scatter_glints(fx, GLINTS, radius, nature, fx._glint_phases, fx._glint_spots)
+	if vortex._cast.pull > 0.0:
+		fx._suck = IceNovaFx.flat(fx, IceNovaFx.material(IceNovaFx.WARP, nature), radius * SPAN, DangerZone.LIFT + 0.8)
+		fx._suck.set_instance_shader_parameter(&"spread", SUCK_SPREAD)
 	fx._light = FlameFx.light_of(nature, LIGHT, radius * 2.0)
 	fx._light.light_color = FlameFx.ramp(nature)[0]
 	fx._light.position = Vector3.UP * 18.0
@@ -78,6 +90,8 @@ func _process(delta: float) -> void:
 func _follow() -> void:
 	global_position = _vortex.get_global_transform_interpolated().origin
 	_reach = _vortex.reach()
+	if _vortex._cast.period > 0.0:
+		_beat = fposmod(_vortex._age, _vortex._cast.period) / _vortex._cast.period
 
 
 func _show() -> void:
@@ -95,6 +109,10 @@ func _show() -> void:
 		var on := 1.0 - eaten if _glint_spots[i] < _reach else 0.0
 		IceNovaFx.shine(_glints, i, on * IceNovaFx.twinkle(_clock, _glint_phases[i], 5.0, 8.0))
 	_light.light_energy = LIGHT * (1.0 - eaten)
+	if _suck != null:
+		_suck.set_instance_shader_parameter(&"front", _reach / (_radius * SPAN) * lerpf(1.0, SUCK_DEPTH, _beat))
+		# Négative : le sol est tiré vers le cœur.
+		_suck.set_instance_shader_parameter(&"strength", -SUCK_STRENGTH * (1.0 - _beat) * (1.0 - eaten))
 
 
 ## L'esquille `i` à cet instant, couchée sur son orbite ; publique pour les tests, le moteur sans rendu ne

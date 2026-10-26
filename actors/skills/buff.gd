@@ -265,7 +265,7 @@ func _ionize(cast: SkillStats, delta: float) -> void:
 
 
 ## Le Halo de givre (jalon 44) : à chaque période, ce qui est autour du porteur est transi,
-## sans coup, à la force du nœud.
+## sans coup, à la force du nœud ; une onde de givre le montre (`FrostTombFx.pulse()`).
 func _halo(cast: SkillStats, delta: float) -> void:
 	if cast.rime_halo <= 0.0:
 		return
@@ -276,6 +276,7 @@ func _halo(cast: SkillStats, delta: float) -> void:
 	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.HALO_RADIUS):
 		if target.states != null:
 			target.states.put(StatusEffects.Kind.CHILL, 0.0, _player.states, _skill.id, cast.rime_halo * 0.01)
+	FrostTombFx.pulse(self, SkillStats.HALO_RADIUS, _skill.nature)
 
 
 ## Le Fardeau partagé (jalon 38) : ce que la Nécrose a rongé, rendu aux ennemis proches

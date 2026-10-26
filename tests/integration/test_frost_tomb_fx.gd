@@ -79,3 +79,25 @@ func test_lighting_the_tomb_encases_its_caster() -> void:
 	buff.queue_free()
 	await wait_process_frames(3)
 	assert_gte(made[0]._broken_at, 0.0, "elle se brise avec lui")
+
+
+## Le Halo de givre : à chaque impulsion, une onde de givre part du porteur jusqu'à sa portée, puis rien.
+func test_each_rime_halo_pulse_sends_a_ring_out_to_its_reach() -> void:
+	var player: Player = load("res://actors/player/player.tscn").instantiate()
+	add_child_autofree(player)
+	var buff := Buff.light(player, SkillCatalog.by_id(SkillStats.TOMB_SKILL), 3.0, true)
+	var rings := func() -> Array: return buff.get_children().filter(func(n: Node) -> bool: return n is MeshInstance3D)
+	var cast := SkillStats.new()
+	cast.rime_halo = 10.0
+	buff._halo(cast, SkillStats.HALO_PERIOD * 0.5)
+	assert_eq(rings.call().size(), 0, "rien entre deux impulsions")
+	buff._halo(cast, SkillStats.HALO_PERIOD * 0.5)
+	assert_eq(rings.call().size(), 1, "une onde par impulsion")
+	var ring: MeshInstance3D = rings.call()[0]
+	assert_almost_eq(ring.scale.x, SkillStats.HALO_RADIUS * 1.1, 0.01, "à la portée du halo")
+	var start: float = ring.get_instance_shader_parameter(&"front")
+	await wait_seconds(FrostTombFx.PULSE_OPEN)
+	assert_gt(ring.get_instance_shader_parameter(&"front"), start, "elle s'ouvre")
+	await wait_seconds(FrostTombFx.PULSE_LIFE - FrostTombFx.PULSE_OPEN + 0.1)
+	assert_false(is_instance_valid(ring), "puis rien")
+	buff.queue_free()

@@ -1010,6 +1010,16 @@ décal, seul suspect restant (un atlas de décals refait à la première texture
 **Les éclats de l'Orbe gelée** : « les zig zag sont inutiles ». Ils gardaient le Trait de glace, l'orbe
 qui zigzague ; ils prennent l'esquille des Pics (`IceShardFx`, déjà choisie sur planche), crachés comme
 à l'éclatement, et la Fracture brise une esquille en deux esquilles (`Projectile.fork(…, sliver)`).
+**Les deux nœuds qui agissaient sans se montrer**, et les variantes jamais capturées. Planche
+(`Bureau\hns-captures-halo-aspiration-planche\`) : le Halo de givre en rien, onde qui s'ouvre, liseré
+tenu, souffle d'esquilles ; l'Aspiration en rien, esquilles aspirées (un mouvement, invisible sur image
+fixe), anneau qui se resserre, distorsion qui aspire, esquilles et anneau. **Retenus par l'utilisateur :
+l'onde qui s'ouvre, et la distorsion** — celle de la Nova à l'envers. Captures en jeu :
+`Bureau\hns-captures-halo-aspiration-jeu\`. Les variantes (`-variantes-froid-jeu\`,
+`-variantes-froid-coulee-jeu\`), prises par un scénario qui déclenche ses prises à la naissance d'une
+explosion de froid : la Crevasse, l'Éclatement du Tombeau, l'Implosion sous la Singularité, la Coulée et
+son Ornière. Erreur vue : à 104 px, l'onde de choc de la Nova, large d'une part de son rayon, devenait **un
+beignet blanc** ; plafonnée à sa largeur en pixels à 46 px, la Nova ne change pas.
 
 ## 14. Reste à faire
 

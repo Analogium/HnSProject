@@ -57,7 +57,15 @@ func test_a_wider_explosion_throws_further_than_it_grows() -> void:
 	assert_gt(_farthest(fx), IceNovaFx.RADIUS * 2.0, "les esquilles suivent le rayon")
 	var size := fx.sliver(0).basis.get_scale()
 	assert_almost_eq(size.y, IceNovaFx.SLIVER_SIZE.y * 2.0, 0.01, "la taille suit sa racine")
+	var nova := IceNovaFx.blow(_world, Vector3.ZERO, COLD, IceNovaFx.RADIUS)
+	for f: IceNovaFx in [fx, nova]:
+		f._clock = IceNovaFx.SHOCK_OPEN
+		f._show()
+	assert_almost_eq(fx._shock.get_instance_shader_parameter(&"width") * fx._shock.scale.x,
+			nova._shock.get_instance_shader_parameter(&"width") * nova._shock.scale.x, 0.01,
+			"une onde de choc pas plus large que celle de la Nova")
 	fx.queue_free()
+	nova.queue_free()
 
 
 func test_materials_are_kept_per_nature() -> void:
