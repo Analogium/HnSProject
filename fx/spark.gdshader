@@ -1,9 +1,9 @@
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
 
-// Une braise, par instance d'un `MultiMesh` : un point chaud tourné vers la caméra, étiré le long de sa
-// course (l'axe Y du quad, que le script couche sur sa vitesse). Son âge, de 0 à 1, dans le rouge de
-// `INSTANCE_CUSTOM` : elle passe du cœur de la rampe au rouge profond et s'éteint.
+// Une étincelle de `Sparks`, par instance d'un `MultiMesh` : un point chaud tourné vers la caméra, étiré le
+// long de sa course (l'axe Y du quad, que le script couche sur sa vitesse). Son âge, de 0 à 1, dans le
+// rouge de `INSTANCE_CUSTOM` : elle passe du cœur de la rampe à son fond et s'éteint.
 
 uniform vec3 heart = vec3(1.0, 0.72, 0.22);
 uniform vec3 tint = vec3(1.0, 0.36, 0.04);

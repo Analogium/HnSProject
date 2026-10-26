@@ -797,7 +797,7 @@ func test_the_storm_dash_leaves_speed_and_no_trail() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(2)
 	assert_eq(_children_of(DashTrail).size(), 0, "rien au sol")
-	var drawn := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var drawn := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before and n is MeshInstance3D)
 	assert_eq(drawn.size(), BoltFx.DASH_STRANDS + 2, "son éclair bref (jalon 54) : deux brins, un éclat à chaque bout")
 	assert_true(_p.lit("storm_dash"), "mais un buff sur le lanceur")
 	assert_gt(_p.stats.move_speed, speed, "qui le presse")

@@ -35,7 +35,7 @@ func test_a_ball_carries_its_core_and_light_and_its_trail_outlives_it() -> void:
 
 
 func test_a_blast_frees_all_it_lays() -> void:
-	var sparks := func() -> int: return get_viewport().get_children().filter(func(n: Node) -> bool: return n is FireEmbers).size()
+	var sparks := func() -> int: return get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks).size()
 	var before: int = sparks.call()
 	var made := FlameFx.blast(_host(), Vector3(5, 0, 5), DamageType.Kind.FIRE, 30.0)
 	assert_eq(sparks.call(), before + 1, "des étincelles")
@@ -82,14 +82,14 @@ func test_the_fire_layers_take_their_host_veil() -> void:
 	var fx := FireBlastFx.blow(host, Vector3.ZERO, DamageType.Kind.FIRE, 20.0)
 	assert_almost_eq(fx._shock.get_instance_shader_parameter(&"opacity"), 0.3, 0.001)
 	assert_almost_eq(fx._heat.get_instance_shader_parameter(&"opacity"), 0.3, 0.001)
-	var sparks := get_viewport().get_children().filter(func(n: Node) -> bool: return n is FireEmbers)
+	var sparks := get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks)
 	assert_almost_eq(sparks.back().get_instance_shader_parameter(&"opacity"), 0.3, 0.001)
 	Settings.from_dict(before)
 
 
 ## Des étincelles jetées volent vers le dehors puis retombent, éteintes à la fin de leur vie.
 func test_burst_embers_fly_out_and_fall() -> void:
-	var fx := FireEmbers.burst(_host(), Vector3.ZERO, DamageType.Kind.FIRE, 20, 20.0)
+	var fx := Sparks.burst(_host(), Vector3.ZERO, DamageType.Kind.FIRE, 20, 20.0)
 	fx.process_mode = Node.PROCESS_MODE_DISABLED
 	fx._clock = 0.15
 	var early := fx.ember(0)

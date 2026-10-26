@@ -60,7 +60,7 @@ static func dress(snake: Node3D, nature: int) -> SerpentBody:
 	body._light.omni_range = LIGHT_REACH
 	body._light.shadow_enabled = false
 	body.add_child(body._light)
-	FireEmbers.trail(snake, nature, EMBERS, EMBER_LIFE, body._ember_spot, true)
+	Sparks.trail(snake, nature, EMBERS, EMBER_LIFE, body._ember_spot, true)
 	return body
 
 

@@ -1033,7 +1033,7 @@ flamme en biais), 20 s le pas — **la 7** (`fx/fire_wind.png`, `tools/fx_textur
 **Trois couches neuves**, partagées : la chaleur qui tremble (`fx/heat_haze.gdshader`, l'écran décalé par
 un bruit qui monte, **dessinée avant le feu** : l'écran qu'elle relit n'a pas les effets, posée après elle
 aurait effacé les flammes derrière elle), l'onde de feu (`fx/fire_shock.gdshader`, l'onde de choc de la
-Nova en lumière) et les braises (`FireEmbers`, un `MultiMesh` balistique posé par `ember(i)`, **semé au
+Nova en lumière) et les braises (`Sparks`, un `MultiMesh` balistique posé par `ember(i)`, **semé au
 temps** : semé par image, le compte suivait l'écran à 165 Hz).
 - **La boule** : l'actuelle, la pile (braises, chaleur), la pile rouge (la même, ses volutes à 55 %), et
   un ruban de flammes sous la boule — une bande plate aux bouts carrés, écarté. **Retenue : la pile rouge.**
@@ -1066,6 +1066,33 @@ l'image) : **B − A = +0,65 ± 0,42 ms l'image** (erreur type 0,15 ; sept paire
 physique +0,30 ± 0,54 (0,19), pire image −0,4 ± 2,7. **Hors du bruit, cette fois** : environ 6 % de l'image
 quand on ne fait que lancer des boules dans une meute de 300. Les braises se posent en GDScript à chaque
 image (35 par boule) : la première chose à couper si le combat dense le demande.
+**Le manuel de la foudre à la même barre** (26 octobre). L'utilisateur, après le feu : « c'est vraiment pas
+mal, fait la même pour le manuel de foudre » — **la pile de couches est adoptée** pour tous les manuels
+(sa phrase d'avant : « si j'aime bien on adoptera cette méthode définitivement »). Planches tranchées par
+moi, laissées sur le Bureau (`hns-captures-foudre-planche\`, l'état d'avant dans `-foudre-avant\`, le
+résultat posé dans `-foudre-final\`). La foudre avait déjà ses rubans cassés, ses photos, sa couronne
+d'arcs et ses lumières ; manquaient **les étincelles** et **la distorsion**. Les braises du feu deviennent
+`Sparks` (`fx/sparks.gd`, `fx/spark.gdshader`), partagées : un cran plus haut sur la rampe pour la foudre
+(le cœur blanc), fines et longues.
+- **L'impact de l'Éclair vif, l'explosion de foudre (20 et 45 px), la frappe du nuage** : l'actuel, les
+  étincelles, étincelles et distorsion, et (explosion, nuage) une lueur au sol en plus. **Retenues :
+  étincelles et distorsion** (`BoltFx.shock()`) ; la lueur **noyait l'explosion d'un voile lilas**.
+- **L'éclair en vol** : des étincelles semées derrière l'orbe — invisibles, l'orbe les couvre. Écartées.
+- **La Ruée d'orage** : des gerbes le long du trait et la frappe à l'arrivée. **Retenue.**
+- **La Chaîne** : des étincelles à chaque cible, discrètes sous la tresse. **Retenues**, et pour les
+  décharges de l'Orbe statique.
+
+**Erreur vue sur planche** : à la largeur des braises, les étincelles de la foudre sortaient en **pétales
+blancs** — 1 px de large, deux fois plus étirées par la course. Rien au sol : une brûlure de Lichtenberg
+dirait un sol qui frappe. Les arcs se défont toujours en fondu d'opacité : un dissolve n'y gagnait
+rien à cette taille. **Défaut d'avant, vu en relisant, laissé tel quel** : ce fondu (`BoltFx.fade()`,
+`_ring()`) écrit `opacity` par-dessus le voile du menu — un éclat voilé à 25 % repart de 100 %. Captures en jeu :
+`Bureau\hns-captures-manuel-foudre-jeu\`, ennemis figés au loin.
+**Coût** (l'Éclair vif en case 0 contre 300 grunts increvables, sans vsync, huit paires alternées, A coupe
+étincelles et distorsion, ComfyUI arrêté) : **B − A = +1,0 ± 1,7 ms l'image** (erreur type 0,6), physique
++0,3 ± 0,7 (0,2), pire image −1,1 ± 8,6. Dans le bruit, mais un bruit plus fort qu'au feu — la même
+configuration allait de 15,5 à 20,7 ms : ce banc exclut un surcoût de 2 à 3 ms, pas d'un. Chaque fin de
+course jette une gerbe et une distorsion ; un éclair qui traverse une meute en déclenche beaucoup.
 
 ## 14. Reste à faire
 

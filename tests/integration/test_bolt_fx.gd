@@ -100,8 +100,9 @@ func test_the_static_orb_is_a_plasma_ball_that_zaps() -> void:
 	fx.zap([target])
 	var arcs := fx.get_children().filter(func(n: Node) -> bool: return n is MeshInstance3D and n.top_level)
 	assert_eq(arcs.size(), 1, "un arc vers la cible")
-	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before and n is MeshInstance3D)
 	assert_eq(born.size(), 1, "un éclat sur elle")
+	assert_true(get_viewport().get_children().any(func(n: Node) -> bool: return n is Sparks and not n in before), "et des étincelles")
 	await wait_seconds(BoltFx.ZAP_FLASH_LIFE + 0.1)
 	assert_false(is_instance_valid(arcs[0]), "puis rien")
 	assert_false(is_instance_valid(born[0]))
@@ -171,9 +172,10 @@ func test_the_end_of_the_run_flares_then_the_flare_frees_itself() -> void:
 	bolt._finish()
 	await wait_process_frames(2)
 	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
-	assert_eq(born.size(), 1, "un éclat, posé hors du tir")
-	await wait_seconds(BoltFx.FLARE_LIFE + 0.1)
-	assert_false(is_instance_valid(born[0]), "puis rien")
+	assert_eq(born.filter(func(n: Node) -> bool: return n is MeshInstance3D).size(), 1, "un éclat, posé hors du tir")
+	assert_eq(born.filter(func(n: Node) -> bool: return n is Sparks).size(), 1, "et ses étincelles")
+	await wait_seconds(BoltFx.SHOCK_LIFE.y + 0.1)
+	assert_true(born.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
 
 
 func test_bolts_of_a_nature_share_their_materials() -> void:
@@ -213,8 +215,10 @@ func test_a_chain_jump_is_a_braid_of_three_strands() -> void:
 	ChainLightning.trace(_world, points, DamageType.Kind.LIGHTNING)
 	var other: ChainLightning = _world.get_children().filter(func(n: Node) -> bool: return n is ChainLightning)[1]
 	assert_eq((other.get_child(0) as MeshInstance3D).mesh, (strands[0] as MeshInstance3D).mesh, "gardés")
-	var flashes := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var flashes := born.filter(func(n: Node) -> bool: return n is MeshInstance3D)
 	assert_eq(flashes.size(), 4, "un éclat par arrivée")
+	assert_eq(born.filter(func(n: Node) -> bool: return n is Sparks).size(), 4, "et ses étincelles")
 	assert_eq(flashes[0].find_children("*", "OmniLight3D", false, false).size(), 1, "et sa lumière")
 	await wait_seconds(maxf(ChainLightning.LIFETIME, BoltFx.ZAP_FLASH_LIFE) + 0.1)
 	assert_false(is_instance_valid(trace), "puis rien")
@@ -242,13 +246,15 @@ func test_a_storm_dash_flashes_a_brief_bolt_then_nothing() -> void:
 	var before := get_viewport().get_children()
 	BoltFx.dash(get_viewport(), Vector3.ZERO, Vector3(130, 0, 0))
 	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
-	var strands := born.filter(func(n: Node) -> bool: return (n as MeshInstance3D).mesh.surface_get_material(0).shader == BoltFx.ARC)
+	var drawn := born.filter(func(n: Node) -> bool: return n is MeshInstance3D)
+	var strands := drawn.filter(func(n: Node) -> bool: return (n as MeshInstance3D).mesh.surface_get_material(0).shader == BoltFx.ARC)
 	assert_eq(strands.size(), BoltFx.DASH_STRANDS)
-	assert_eq(born.size() - strands.size(), 2, "un éclat à chaque bout")
+	assert_eq(drawn.size() - strands.size(), 2, "un éclat à chaque bout")
+	assert_eq(born.filter(func(n: Node) -> bool: return n is Sparks).size(), BoltFx.DASH_SPARKS + 1, "des étincelles le long, et à l'arrivée")
 	assert_almost_eq((strands[0] as Node3D).global_position, Vector3(130, ElementFx.LIFT, 0), Vector3.ONE * 0.01,
 		"posé par sa tête, à l'arrivée")
 	assert_true((strands[0] as Node).is_in_group(Settings.SPELLS), "sous le voile des sorts")
-	await wait_seconds(maxf(BoltFx.DASH_LIFE, BoltFx.FLARE_LIFE) + 0.1)
+	await wait_seconds(BoltFx.SHOCK_LIFE.y + 0.1)
 	assert_true(born.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
 
 
@@ -346,3 +352,38 @@ func test_the_rod_calls_lightning_down_on_the_head() -> void:
 		return n is MeshInstance3D and (n as MeshInstance3D).mesh.surface_get_material(0).shader == StormCloudFx.BOLT)
 	assert_eq(again.size(), 1, "le premier éteint, le suivant tombé")
 	assert_ne(again[0], bolts[0])
+
+
+## Une frappe de foudre jette des étincelles fines et pousse l'air, puis tout se libère ; les autres
+## natures ont leurs couches à elles.
+func test_a_lightning_shock_throws_sparks_and_pushes_the_air() -> void:
+	var host := Node3D.new()
+	_world.add_child(host)
+	var before := get_viewport().get_children()
+	BoltFx.shock(host, Vector3(20, 0, 0), DamageType.Kind.LIGHTNING, 20.0)
+	var born := get_viewport().get_children().filter(func(n: Node) -> bool: return not n in before)
+	var sparks: Array = born.filter(func(n: Node) -> bool: return n is Sparks)
+	assert_eq(sparks.size(), 1)
+	assert_eq((sparks[0] as Sparks).multimesh.instance_count, BoltFx.SHOCK_SPARKS + 10)
+	assert_lt((sparks[0] as Sparks)._width, Sparks.WIDTH, "plus fines que des braises")
+	var warps := born.filter(func(n: Node) -> bool: return n.get_child_count() == 1)
+	assert_eq(warps.size(), 1, "la distorsion")
+	var warp := warps[0].get_child(0) as MeshInstance3D
+	assert_eq(warp.material_override, IceNovaFx.material(IceNovaFx.WARP, DamageType.Kind.LIGHTNING))
+	await wait_seconds(BoltFx.SHOCK_OPEN)
+	assert_gt(float(warp.get_instance_shader_parameter(&"front")), 0.8, "ouverte")
+	await wait_seconds(BoltFx.SHOCK_LIFE.y)
+	assert_true(born.all(func(n: Variant) -> bool: return not is_instance_valid(n)), "puis rien")
+	var others := get_viewport().get_child_count()
+	BoltFx.shock(host, Vector3.ZERO, DamageType.Kind.COLD, 20.0)
+	assert_eq(get_viewport().get_child_count(), others, "pas sur la glace")
+
+
+func test_a_chain_jump_sparks_at_its_target() -> void:
+	var host := Node3D.new()
+	_world.add_child(host)
+	var before := get_viewport().get_children()
+	BoltFx.braid(host, Vector3.ZERO, Vector3(60, 0, 0), DamageType.Kind.LIGHTNING)
+	var sparks := get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks and not n in before)
+	assert_eq(sparks.size(), 1)
+	assert_almost_eq((sparks[0] as Node3D).global_position, Vector3(60, 0, 0), Vector3.ONE * 0.01, "à la cible")

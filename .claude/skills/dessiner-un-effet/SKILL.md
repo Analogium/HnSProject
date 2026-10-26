@@ -68,7 +68,10 @@ pas.
   Au feu (26 octobre) : **une distorsion se dessine avant le feu** (`render_priority`) — l'écran qu'elle
   relit n'a pas les effets, posée après elle effaçait les flammes ; **un liseré brûlant prend le milieu de la
   rampe**, pas son cœur multiplié, qui sortait blanc ; et ce qui naît au fil du temps (des braises) se
-  sème **par seconde**, pas par image — l'écran tourne à 165 Hz. **Un dessin ne promet pas une
+  sème **par seconde**, pas par image — l'écran tourne à 165 Hz.
+  **La pile de couches est adoptée pour tous les manuels** (l'utilisateur, 26 octobre, après le feu). Les
+  étincelles (`Sparks`) se partagent : la foudre les veut **fines et longues** — à la largeur des braises,
+  des pétales blancs. **Un dessin ne promet pas une
   mécanique absente** : la glace au sol se lit « sol gelé », et l'utilisateur l'a fait retirer de tout
   sort qui ne gèle pas le sol (26 octobre). Ce qui couvre large reste sous 0,75
   d'opacité : un tourbillon de 104 px, plus opaque, sortait en disque blanc. Des éclats qui doivent se

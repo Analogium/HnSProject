@@ -1,24 +1,32 @@
-class_name FireEmbers
+class_name Sparks
 extends MultiMeshInstance3D
 
-## Des braises de feu en 3D (jalon 54, la « pile rouge » du manuel des flammes à la barre de Last Epoch) :
-## des points chauds étirés sur leur course (`fx/fire_ember.gdshader`), du cœur de la rampe au rouge
-## profond. Balistiques et posées par `ember(i)` à un instant — des particules ne se posent pas, ni sur
-## planche ni en test : jetées d'un coup (`burst`, l'explosion) ou semées au fil d'un porteur (`trail`, la
-## boule, le serpent). Elles vivent à la racine du viewport et se libèrent éteintes.
+## Des étincelles en 3D (jalon 54, nées des braises du manuel des flammes à la barre de Last Epoch, reprises
+## par la foudre) : des points chauds étirés sur leur course (`fx/spark.gdshader`), du cœur de la rampe à
+## son fond — la foudre part de son cœur blanc. Balistiques et posées par `ember(i)` à un instant — des
+## particules ne se posent pas, ni sur planche ni en test : jetées d'un coup (`burst`, une explosion, un
+## impact) ou semées au fil d'un porteur (`trail`, la boule, le serpent). Elles vivent à la racine du
+## viewport et se libèrent éteintes.
 
-const SHADER := preload("res://fx/fire_ember.gdshader")
+const SHADER := preload("res://fx/spark.gdshader")
 ## Le freinage de l'air, par seconde ; la chute d'une étincelle jetée, la montée d'une braise semée.
 const DRAG := 4.0
 const FALL := 20.0
 const RISE := 12.0
+## La largeur d'une étincelle, et combien sa course l'étire ; la foudre fine et longue : aussi larges que
+## les braises, ses étincelles sortaient en pétales blancs.
 const WIDTH := 2.4
+const STRETCH := 0.03
+const BOLT_WIDTH := 1.0
+const BOLT_STRETCH := 0.06
 
 static var _materials := {}
 
 ## Semées : le point d'où elles partent, rendu à chaque image ; vide, elles ne naissent plus.
 var _source: Callable
 var _rising := false
+var _width := WIDTH
+var _stretch := STRETCH
 ## Semées par seconde, et ce qui reste dû d'une image à l'autre : par image, leur nombre aurait suivi
 ## l'écran (165 Hz).
 var _rate := 0.0
@@ -35,25 +43,29 @@ class Ember:
 	var life := 1.0
 
 
-## Jetées d'un coup en `at`, sous le voile de `host`, aussi loin que `radius` : elles retombent.
-static func burst(host: Node3D, at: Vector3, nature: int, count: int, radius: float) -> FireEmbers:
+## Jetées d'un coup en `at`, sous le voile de `host`, aussi loin que `radius` : elles retombent. `life`,
+## leur vie au plus court et au plus long ; `throw`, leur élan en rayons par seconde.
+static func burst(
+	host: Node3D, at: Vector3, nature: int, count: int, radius: float,
+	life := Vector2(0.45, 0.9), throw := Vector2(2.0, 5.0)
+) -> Sparks:
 	var fx := _make(host, nature, count)
 	fx.global_position = at
 	for e in fx._embers:
 		var h := randf() * TAU
-		var out := randf_range(radius * 2.0, radius * 5.0)
+		var out := randf_range(radius * throw.x, radius * throw.y)
 		e.from = Vector3.UP * ElementFx.LIFT * 0.6
 		e.speed = Vector3(cos(h) * out, randf_range(30.0, 90.0), sin(h) * out)
 		e.born = 0.0
-		e.life = randf_range(0.45, 0.9)
-	fx.get_tree().create_timer(0.95).timeout.connect(fx.queue_free)
+		e.life = randf_range(life.x, life.y)
+	fx.get_tree().create_timer(life.y + 0.05).timeout.connect(fx.queue_free)
 	fx.pose()
 	return fx
 
 
 ## Semées derrière `host` tant qu'il vit, `rate` par seconde, de `source`, en repère global ; `rising`, elles
 ## montent au lieu de retomber. Chacune vit au plus `life` secondes.
-static func trail(host: Node3D, nature: int, rate: float, life: float, source: Callable, rising := false) -> FireEmbers:
+static func trail(host: Node3D, nature: int, rate: float, life: float, source: Callable, rising := false) -> Sparks:
 	var fx := _make(host, nature, ceili(rate * life))
 	fx._source = source
 	fx._rising = rising
@@ -64,8 +76,8 @@ static func trail(host: Node3D, nature: int, rate: float, life: float, source: C
 	return fx
 
 
-static func _make(host: Node3D, nature: int, count: int) -> FireEmbers:
-	var fx := FireEmbers.new()
+static func _make(host: Node3D, nature: int, count: int) -> Sparks:
+	var fx := Sparks.new()
 	fx.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
@@ -74,6 +86,9 @@ static func _make(host: Node3D, nature: int, count: int) -> FireEmbers:
 	mm.instance_count = count
 	fx.multimesh = mm
 	fx.material_override = _material(nature)
+	if nature == DamageType.Kind.LIGHTNING:
+		fx._width = BOLT_WIDTH
+		fx._stretch = BOLT_STRETCH
 	fx.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for i in count:
 		fx._embers.append(Ember.new())
@@ -128,7 +143,7 @@ func ember(i: int) -> Transform3D:
 	at.y = maxf(at.y, 1.0)
 	var axis := v.normalized() if v.length() > 1.0 else Vector3.UP
 	var side := axis.cross(Vector3.UP).normalized() if absf(axis.y) < 0.99 else Vector3.RIGHT
-	return Transform3D(Basis(side * WIDTH, axis * (2.4 + v.length() * 0.03), side.cross(axis)), at)
+	return Transform3D(Basis(side * _width, axis * (2.4 + v.length() * _stretch), side.cross(axis)), at)
 
 
 static func _material(nature: int) -> ShaderMaterial:
@@ -136,6 +151,9 @@ static func _material(nature: int) -> ShaderMaterial:
 		var m := ShaderMaterial.new()
 		m.shader = SHADER
 		var ramp := FlameFx.ramp(nature)
+		# La foudre un cran plus haut : son cœur blanc (`fx/lightning_common.gdshaderinc`) dit l'éclair.
+		if nature == DamageType.Kind.LIGHTNING:
+			ramp = [Color(0.95, 0.93, 1.0)] + ramp
 		for k in 3:
 			m.set_shader_parameter([&"heart", &"tint", &"deep"][k], Vector3(ramp[k].r, ramp[k].g, ramp[k].b))
 		_materials[nature] = m

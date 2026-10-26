@@ -5,7 +5,7 @@ extends Node3D
 ## contre l'actuelle, la pile aux photos pleines — une boule blanche — et la pile sans photos d'explosion) :
 ## une onde de feu couchée qui s'ouvre et se ronge au liseré brûlant (`fx/fire_shock.gdshader`), la chaleur
 ## qui tremble sur son front (`fx/heat_haze.gdshader`), des étincelles qui volent et retombent
-## (`FireEmbers`). Les photos, les volutes, la fumée et l'éclair restent à `FlameFx.blast`, qui le pose.
+## (`Sparks`). Les photos, les volutes, la fumée et l'éclair restent à `FlameFx.blast`, qui le pose.
 ##
 ## Il vit à la racine du viewport et se libère seul.
 
@@ -44,7 +44,7 @@ static func blow(host: Node3D, at: Vector3, nature: int, radius: float) -> FireB
 	fx._heat.set_instance_shader_parameter(&"spread", 0.18)
 	for node in [fx._shock, fx._heat]:
 		ElementFx.veil_like(node, host)
-	FireEmbers.burst(host, at, nature, SPARKS + int(10.0 * radius / RADIUS), radius)
+	Sparks.burst(host, at, nature, SPARKS + int(10.0 * radius / RADIUS), radius)
 	fx._show()
 	fx.get_tree().create_timer(HAZE_LIFE.y + 0.05).timeout.connect(fx.queue_free)
 	return fx

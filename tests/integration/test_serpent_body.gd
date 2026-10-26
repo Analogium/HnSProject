@@ -59,10 +59,10 @@ func test_a_vanishing_snake_dissolves() -> void:
 ## Des braises montent de son corps tant qu'il vit, puis finissent de monter.
 func test_embers_rise_from_its_body() -> void:
 	var snake := _snake()
-	var sparks: FireEmbers = get_viewport().get_children().filter(func(n: Node) -> bool: return n is FireEmbers).back()
+	var sparks: Sparks = get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks).back()
 	await wait_process_frames(10)
 	assert_gt(sparks._next, 0, "des braises semées")
-	var e: FireEmbers.Ember = sparks._embers[0]
+	var e: Sparks.Ember = sparks._embers[0]
 	assert_lt(e.from.distance_to(snake._look._now[0]), 60.0, "sur son corps")
 	sparks._clock = e.born + e.life * 0.5
 	assert_gt(sparks.ember(0).origin.y, e.from.y, "elles montent")

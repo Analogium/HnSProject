@@ -231,6 +231,7 @@ func _impact(at: Vector3) -> void:
 	flash.add_child(light)
 	light.create_tween().tween_property(light, ^"light_energy", 0.0, IMPACT_LIFE)
 	BoltFx.fade(flash, Vector3.ONE * IMPACT, IMPACT_LIFE)
+	BoltFx.shock(flash, at, _nature, IMPACT)
 
 
 func _host_or_self() -> Node:

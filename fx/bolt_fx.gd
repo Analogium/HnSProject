@@ -13,6 +13,9 @@ extends Node3D
 ## **En feu** (le Familier, « Kinetic de feu ») : la boule de `FlameFx`, une traînée de flammes. **Les
 ## Esquilles** : le trait en petit. **L'Orbe statique** (« boule de plasma ») : un gros orbe aux arcs,
 ## qui file droit et décharge en arcs ; **le Satellite** lui ajoute la traînée (« sillage »).
+## **À la barre de Last Epoch** (« étincelles, distorsion » choisi sur planche contre l'actuel, les étincelles
+## seules et une lueur au sol — un voile lilas) : chaque frappe de foudre jette des étincelles et pousse
+## l'air (`shock()`) ; la Chaîne et les décharges de l'Orbe statique, des étincelles à chaque cible.
 
 const ARC := preload("res://fx/lightning_bolt.gdshader")
 const PHOTO := preload("res://fx/lightning_spark.gdshader")
@@ -104,6 +107,18 @@ const CAGE_LIGHT := 1.5
 ## photographiée qui tourne sur place, aussi large que le rayon qui mord.
 const CHARGE_SPIN := 3.0
 const CHARGE_LIGHT := 0.8
+## Une frappe (`shock()`) : des étincelles, autant que `SHOCK_SPARKS` plus une par deux pixels de rayon,
+## brèves et lancées loin ; la distorsion de la Nova qui s'ouvre en `SHOCK_OPEN` et retombe.
+const SHOCK_SPARKS := 12
+const SHOCK_LIFE := Vector2(0.15, 0.4)
+const SHOCK_THROW := Vector2(5.0, 12.0)
+const SHOCK_OPEN := 0.18
+const SHOCK_WARP := 0.035
+const SHOCK_WARP_LIFE := 0.25
+## La Ruée d'orage sème ses étincelles en `DASH_SPARKS` gerbes le long du trait ; la Chaîne et l'Orbe
+## statique en jettent à chaque cible.
+const DASH_SPARKS := 5
+const BRAID_SPARKS := 10
 
 static var _arc_draw := {}
 static var _photos := {}
@@ -184,6 +199,8 @@ func zap(targets: Array) -> void:
 			ElementFx.veil_like(node, get_parent())
 		fade(arc, Vector3(arc.scale.x, ZAP_WIDTH, 1.0), ZAP_LIFE)
 		fade(flash, Vector3.ONE * ZAP_FLASH, ZAP_FLASH_LIFE)
+		if _nature == DamageType.Kind.LIGHTNING:
+			Sparks.burst(flash, target.global_position, _nature, BRAID_SPARKS, 5.0, SHOCK_LIFE, SHOCK_THROW)
 
 
 ## Le cap se lit sur le chemin fait depuis l'image d'avant : le tir ne le dit pas, et un rebond
@@ -227,6 +244,8 @@ static func braid(host: Node3D, from: Vector3, to: Vector3, nature: int) -> void
 	flash.add_child(light)
 	light.create_tween().tween_property(light, ^"light_energy", 0.0, ZAP_FLASH_LIFE)
 	fade(flash, Vector3.ONE * ZAP_FLASH, ZAP_FLASH_LIFE)
+	if nature == DamageType.Kind.LIGHTNING:
+		Sparks.burst(host, to - Vector3.UP * ElementFx.LIFT, nature, BRAID_SPARKS, 5.0, SHOCK_LIFE, SHOCK_THROW)
 
 
 ## La Ruée d'orage de `from` à `to` : deux brins, un éclat à chaque bout, à la racine de `viewport`.
@@ -249,8 +268,10 @@ static func dash(viewport: Viewport, from: Vector3, to: Vector3) -> void:
 		var tween := strand.create_tween()
 		tween.tween_method(func(t: float) -> void: strand.set_instance_shader_parameter(&"gone", t), 0.0, 1.0, DASH_LIFE)
 		tween.tween_callback(strand.queue_free)
+	var landing: MeshInstance3D
 	for end: Array in [[from, DASH_FLASH], [to, DASH_LANDING]]:
 		var flash := flash_of(nature)
+		landing = flash
 		viewport.add_child(flash)
 		Settings.veil(flash, Settings.SPELLS)
 		flash.global_position = end[0]
@@ -258,6 +279,11 @@ static func dash(viewport: Viewport, from: Vector3, to: Vector3) -> void:
 		flash.add_child(light)
 		light.create_tween().tween_property(light, ^"light_energy", 0.0, FLARE_LIFE)
 		fade(flash, Vector3.ONE * float(end[1]), FLARE_LIFE)
+	# L'éclat d'arrivée, voilé, porte le reste : on ne lui demande que son viewport et son voile.
+	for k in DASH_SPARKS:
+		var at := from.lerp(to, (k + 0.5) / DASH_SPARKS) - Vector3.UP * ElementFx.LIFT
+		Sparks.burst(landing, at, nature, 5, 4.0, SHOCK_LIFE * 0.8, SHOCK_THROW * 0.8)
+	shock(landing, to - Vector3.UP * ElementFx.LIFT, nature, 14.0)
 
 
 ## L'appel du tonnerre sous `host` (le buff, qui suit son porteur) : trois arcs qui tournent autour
@@ -294,6 +320,27 @@ static func crown(host: Node3D, at: Vector3, radius: float, nature: int) -> void
 	light.create_tween().tween_property(light, ^"light_energy", 0.0, FLARE_LIFE)
 	fade(flash, Vector3.ONE * radius * CROWN_FLASH, FLARE_LIFE)
 	_ring(host, at + Vector3.UP * 3.0, _ribbon_mesh(nature, 3, 0.8, 1.0), radius * 0.5, radius, CROWN_WIDTH, CROWN_OPEN)
+	shock(host, at, nature, radius)
+
+
+## Une frappe de foudre en `at`, sous le voile de `host`, à ce rayon : des étincelles jetées et l'air
+## poussé vers le dehors, à la racine du viewport ; tout se libère seul. La foudre seule : la glace a ses
+## esquilles, le feu ses braises.
+static func shock(host: Node3D, at: Vector3, nature: int, radius: float) -> void:
+	if nature != DamageType.Kind.LIGHTNING:
+		return
+	Sparks.burst(host, at, nature, SHOCK_SPARKS + roundi(radius * 0.5), radius, SHOCK_LIFE, SHOCK_THROW)
+	var holder := Node3D.new()
+	host.get_viewport().add_child(holder)
+	holder.global_position = at
+	var warp := IceNovaFx.flat(holder, IceNovaFx.material(IceNovaFx.WARP, nature), radius * 1.4, DangerZone.LIFT + 0.8)
+	ElementFx.veil_like(warp, host)
+	var tween := holder.create_tween()
+	tween.tween_method(func(t: float) -> void:
+		warp.set_instance_shader_parameter(&"front", lerpf(0.15, 0.9, ease(clampf(t / SHOCK_OPEN, 0.0, 1.0), 0.4)))
+		warp.set_instance_shader_parameter(&"strength", SHOCK_WARP * (1.0 - smoothstep(0.05, SHOCK_WARP_LIFE, t))),
+		0.0, SHOCK_WARP_LIFE, SHOCK_WARP_LIFE)
+	tween.tween_callback(holder.queue_free)
 
 
 ## Une impulsion de l'Ionisation autour de `host` (le buff, au porteur), jusqu'à `radius`.
@@ -388,6 +435,8 @@ static func flare_at(viewport: Viewport, at: Vector3, host: Node, nature: int, s
 		ElementFx.veil_like(flash, host)
 	flash.global_position = at
 	fade(flash, Vector3.ONE * FLARE * size, FLARE_LIFE)
+	# L'éclat, voilé comme le tir, porte la frappe : le tir, différé jusqu'ici, peut être parti.
+	shock(flash, at - Vector3.UP * ElementFx.LIFT, nature, 6.0 * size)
 
 
 ## Grandit jusqu'à `to` en s'éteignant, puis se libère.

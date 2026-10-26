@@ -89,7 +89,7 @@ var core: MeshInstance3D
 var _nature := 0
 var _glow: OmniLight3D
 var _heat: MeshInstance3D
-var _sparks: FireEmbers
+var _sparks: Sparks
 
 
 ## La boule de `host` (un projectile) : le cœur et la lumière sur elle, la traînée qui la suit.
@@ -115,7 +115,7 @@ static func ball(host: Node3D, nature: int) -> FlameFx:
 	fx._heat.set_instance_shader_parameter(&"spread", 0.9)
 	fx._heat.set_instance_shader_parameter(&"strength", HEAT_STRENGTH)
 	veil_like(fx._heat, host)
-	fx._sparks = FireEmbers.trail(host, nature, EMBERS, EMBER_LIFE,
+	fx._sparks = Sparks.trail(host, nature, EMBERS, EMBER_LIFE,
 			func() -> Vector3: return host.get_global_transform_interpolated().origin + Vector3.UP * LIFT)
 	return fx
 
