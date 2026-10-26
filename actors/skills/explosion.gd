@@ -72,6 +72,8 @@ func _physics_process(delta: float) -> void:
 			FlameFx.blast(self, global_position, _nature(), _radius)
 		elif _nature() == DamageType.Kind.LIGHTNING:
 			BoltFx.crown(self, global_position, _radius, _nature())
+		elif _nature() == DamageType.Kind.COLD:
+			IceNovaFx.blow(self, global_position, _nature(), _radius)
 		else:
 			ElementFx.burst(self, global_position, _tint, _radius)
 		var targets := Targets.in_circle(get_world_3d(), global_position, _radius, _mask)

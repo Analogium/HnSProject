@@ -95,62 +95,10 @@ static func rot_puffs(tint: Color) -> Array:
 	return _sheet(_rot_puffs, PUFF, PUFF_SIZE, PUFF_SIZE, tint, Necrotic.core(tint))
 
 
-## L'éclat emporté par un tourbillon, cinq pixels de côté, **pointe à droite** :
-## c'est le zéro des huit orientations. Un tourbillon dont les éclats pointent
-## tous en haut n'est qu'une chute de neige.
-const CHIP := [
-	".....",
-	"..5w.",
-	"4455w",
-	".332.",
-	".....",
-]
-
-## Le même éclat en diagonale, pointe en bas à droite : la rotation d'un quart de
-## tour ne donne jamais les diagonales, il faut les dessiner.
-const CHIP_DIAG := [
-	"ww4..",
-	"454..",
-	".554.",
-	"..532",
-	"...2.",
-]
-
-const CHIP_SIZE := 5
-## Huit orientations : quatre quarts de tour sur chacun des deux dessins. En
-## dessous, l'œil voit les éclats sauter d'une orientation à l'autre.
+## Huit orientations : quatre quarts de tour sur chacun des deux dessins, droit et en
+## diagonale. En dessous, l'œil voit le dessin sauter d'une orientation à l'autre.
 const CHIP_TURNS := 8
 
-## Le flocon, trois pixels : une croix, pas un carré. Un carré est un confetti.
-const FLAKE := [
-	".w.",
-	"w5w",
-	".w.",
-]
-
-const FLAKE_SIZE := 3
-
-static var _chips := {}
-static var _flakes := {}
-
-
-## Les huit orientations de l'éclat, dans le sens des aiguilles à partir de la
-## droite : `chips(t)[chip_turn(angle)]`. Les grilles ne se construisent qu'au
-## premier appel — les faire tourner soixante fois par seconde pour retomber sur
-## le cache serait payer la rotation sans jamais s'en servir.
-static func chips(tint: Color) -> Array:
-	var key := tint.to_html(false)
-	if not _chips.has(key):
-		var grids: Array = []
-		var straight := CHIP
-		var diagonal := CHIP_DIAG
-		for i in CHIP_TURNS / 2:
-			grids.append(straight)
-			grids.append(diagonal)
-			straight = turned(straight)
-			diagonal = turned(diagonal)
-		_chips[key] = _bake(grids, CHIP_SIZE, CHIP_SIZE, tint, Frost.rim(tint))
-	return _chips[key]
 
 
 ## Le rat de la Marée (jalon 53), vu de dessus, tourné vers l'est, en deux temps de course : le
@@ -173,7 +121,7 @@ const RAT := [[
 	".....222222p...",
 	"........2..2...",
 ]]
-## Le même en diagonale, museau en bas à droite, comme `CHIP_DIAG`.
+## Le même en diagonale, museau en bas à droite.
 const RAT_DIAG := [[
 	"p............",
 	".pp..........",
@@ -280,14 +228,9 @@ static func notes(tint: Color) -> Array:
 	return _sheet(_notes, NOTES, NOTE_WIDTH, NOTE_HEIGHT, tint, tint)
 
 
-## L'orientation d'éclat la plus proche d'un cap.
+## L'orientation la plus proche d'un cap, parmi les huit.
 static func chip_turn(angle: float) -> int:
 	return posmod(int(round(angle / (TAU / float(CHIP_TURNS)))), CHIP_TURNS)
-
-
-## Le flocon de cette teinte.
-static func flake(tint: Color) -> Texture2D:
-	return _sheet(_flakes, [FLAKE], FLAKE_SIZE, FLAKE_SIZE, tint, Frost.rim(tint))[0]
 
 
 ## Cale un dessin sur le pixel du jeu : posé à une demi-unité, il se
@@ -328,51 +271,6 @@ static func turned(grid: Array) -> Array:
 ## qu'on regarde **à travers**. Il se pose donc à alpha partiel, et son intérieur
 ## est plein — un bloc évidé n'était que deux piliers.
 ##
-## Trois fêlures de givre en travers : sans elles, les facettes font un volume
-## propre, et un bloc de glace propre est une vitre.
-const TOMB := [
-	"........wwwww........",
-	"......555555555......",
-	"....5555555555555....",
-	"..55555444333333334..",
-	"ww5555544433333333444",
-	"ww5555544433333333444",
-	"ww5w55544433333333444",
-	"ww55w5544433333333444",
-	"ww555w544433333333444",
-	"ww5555w44433333333444",
-	"ww55555w4433333333444",
-	"ww555554w433333333444",
-	"ww5555544w33333333444",
-	"ww55555444w333333w444",
-	"ww555554443w3333w3444",
-	"ww5555544433333w33444",
-	"ww555554443333w333444",
-	"ww55555444333w3333444",
-	"ww555w544433w33333444",
-	"ww5555w4443w333333444",
-	"ww55555w4433333333444",
-	"ww555554w433333333444",
-	"ww5555544w33333333444",
-	"ww55555444w3333333444",
-	"..555554443w3333334..",
-	"....5554443333333....",
-	"......333333333......",
-	"........33333........",
-	".........333.........",
-]
-
-const TOMB_WIDTH := 21
-const TOMB_HEIGHT := 29
-
-static var _tombs := {}
-
-
-## Le bloc de glace de cette teinte.
-static func tomb(tint: Color) -> Texture2D:
-	return _sheet(_tombs, [TOMB], TOMB_WIDTH, TOMB_HEIGHT, tint, Frost.rim(tint))[0]
-
-
 ## Un grain de lumière sacrée, trois pixels : le cœur au milieu et quatre pointes
 ## de teinte. La croix de la glace a la forme inverse — branches de givre, centre
 ## teinté —, parce qu'un cristal *accroche* la lumière quand un grain **est** la

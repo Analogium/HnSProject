@@ -29,23 +29,37 @@ static func spread(
 	parent.add_child(ring)
 	Settings.veil(ring, Settings.SPELLS)
 	ring.global_position = point
-	ElementFx.burst(ring, point, DamageType.COLORS[cast.nature], cast.radius)
+	FrostRingFx.dress(ring, cast.nature)
 	return ring
 
 
 ## Ce qu'il couvre maintenant : vite au départ, lent au bout — une onde qui s'épuise.
 func reach() -> float:
-	var k := clampf(_age / LIFETIME, 0.0, 1.0)
-	if _returning():
-		k = clampf(2.0 - _age / LIFETIME, 0.0, 1.0)
+	return reach_at(_age)
+
+
+## Ce qu'il couvre à `age` : son dessin le lit à l'image, entre deux pas de physique.
+func reach_at(age: float) -> float:
+	var k := clampf(age / LIFETIME, 0.0, 1.0)
+	if returning_at(age):
+		k = clampf(2.0 - age / LIFETIME, 0.0, 1.0)
 	return _cast.radius * _reach * (1.0 - pow(1.0 - k, 2.0))
 
 
+## Sa plus grande portée, au bout de l'aller.
+func farthest() -> float:
+	return _cast.radius * _reach
+
+
+func returning_at(age: float) -> bool:
+	return _cast.ebb > 0.0 and age > LIFETIME
+
+
 func _returning() -> bool:
-	return _cast.ebb > 0.0 and _age > LIFETIME
+	return returning_at(_age)
 
 
-func _life_span() -> float:
+func life_span() -> float:
 	return LIFETIME * (2.0 if _cast.ebb > 0.0 else 1.0)
 
 
@@ -64,6 +78,6 @@ func _physics_process(delta: float) -> void:
 			continue
 		_struck[id] = true
 		Targets.strike(target, _parts, global_position, _author, _cast, _cast.knockback)
-	if _age >= _life_span():
+	if _age >= life_span():
 		queue_free()
 

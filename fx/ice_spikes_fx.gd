@@ -2,14 +2,15 @@ class_name IceSpikesFx
 extends Node3D
 
 ## Les Pics de glace en 3D (jalon 54, « sobre » choisi sur une deuxième planche ; la première, des
-## cristaux lisses qui rentraient sous terre, « trop pauvre ») : une douzaine de cristaux de glace
-## claire percent le sol, penchés vers le dehors, puis se brisent en éclats qui retombent ; un éclair
-## de lumière froide et le sol fendu de givre marquent le cercle qui frappe, et rien n'en sort.
+## cristaux lisses qui rentraient sous terre, « trop pauvre »), puis à la barre de Last Epoch (« pile »,
+## contre l'ancienne, la pile avec une onde de choc au pied et la pile sans esquilles) : une douzaine de
+## cristaux de glace claire percent le sol, penchés vers le dehors, puis **se rongent** pendant que leurs
+## esquilles volent et retombent ; une distorsion à la frappe, des scintillements et un éclair de lumière
+## froide marquent le cercle qui frappe. Pas de glace au sol : elle disait un sol gelé qu'ils ne posent pas.
 ##
-## Il vit à la racine du viewport : le nœud du jeu parti, les éclats et le givre finissent de tomber.
+## Il vit à la racine du viewport : le nœud du jeu parti, les éclats finissent de tomber.
 
 const CRYSTAL := preload("res://fx/ice_crystal.gdshader")
-const CRACKS := preload("res://fx/frost_cracks.gdshader")
 const VEINS := preload("res://fx/ice_veins.png")
 ## Dessiné pour le rayon de la compétence : un autre rayon écarte les pics, et les grandit moins.
 const RADIUS := 26.0
@@ -21,29 +22,36 @@ const SMALL_LENGTH := Vector2(14.0, 26.0)
 const SMALL_WIDTH := Vector2(4.0, 6.5)
 const RISE := 0.06
 const STAGGER := 0.07
-## Ils se brisent juste avant que le nœud du jeu ne parte (`IceSpikes.LIFETIME`).
+## Ils se brisent juste avant que le nœud du jeu ne parte (`IceSpikes.LIFETIME`), et se rongent vite :
+## à demi rongé, un grand pic sortait en papier déchiré blanc.
 const SHATTER := 0.4
-const SHARDS := 24
-const SHARD_LIFE := 0.45
+const EATEN := 0.1
+const SHARDS := 28
+const SHARD_LIFE := 0.5
+const SHARD_LENGTH := Vector2(6.0, 11.0)
+const GRAVITY := 420.0
+const WARP_LIFE := 0.22
+const WARP_STRENGTH := 0.03
+const GLINTS := 10
 const LIGHT := 3.0
 const LIGHT_LIFE := 0.5
-const CRACKS_LIFE := 0.95
-const CRACKS_OPEN := 0.08
 const SHAPES := 6
+## Le givre des arêtes et des liserés. **Le froid ne se blanchit pas, il s'ombre** : son cyan porte déjà
+## 0,81 de luminance ; éclairci, un cristal se lit comme du verre.
+const RIME := Color(0.86, 0.97, 1.00)
 
 static var _meshes: Array[ArrayMesh] = []
-static var _sliver: ArrayMesh
 static var _crystals := {}
-static var _floors := {}
-static var _shard_motions := {}
 static var _plane: PlaneMesh
 
 var _clock := 0.0
-var _broken := false
 var _spikes: Array[Spike] = []
+var _shards: MultiMeshInstance3D
+var _flights: Array[Flight] = []
+var _warp: MeshInstance3D
+var _glints: MultiMeshInstance3D
+var _glint_phases: Array[float] = []
 var _light: OmniLight3D
-var _cracks: MeshInstance3D
-var _shards: GPUParticles3D
 
 
 class Spike:
@@ -52,6 +60,20 @@ class Spike:
 	## Du pied à la pointe, à la taille du pic.
 	var tip: Vector3
 	var delay := 0.0
+
+
+## Une esquille : d'où elle part, sa vitesse, l'axe sur lequel elle tourne ; le Tombeau la prend aussi.
+class Flight:
+	var from: Vector3
+	var speed: Vector3
+	var axis: Vector3
+	var length := 0.0
+
+	## Où elle est `t` secondes après son départ, jamais sous le sol ; `turn` la décale sur son axe.
+	func at(t: float, turn: float) -> Transform3D:
+		var p := from + speed * t + Vector3.DOWN * 0.5 * GRAVITY * t * t
+		p.y = maxf(p.y, 1.0)
+		return Transform3D(Basis(axis, t * 14.0 + turn) * Basis.from_scale(Vector3(0.35, 1.0, 0.35) * length), p)
 
 
 ## Les pics de `host` (pour son voile) en `at`, au rayon qui frappe ; ils se libèrent seuls.
@@ -83,66 +105,70 @@ static func raise(host: Node3D, at: Vector3, nature: int, radius: float) -> IceS
 				* Basis(Quaternion(Vector3.UP, lean)) * Basis(Vector3.UP, randf() * TAU)
 		spike.tip = spike.node.basis * Vector3.UP
 		fx._spikes.append(spike)
+	# Les esquilles partent du corps des pics, vers le haut et un peu dehors : plus loin, elles parlaient
+	# d'une zone qui n'avait pas frappé.
+	for i in SHARDS:
+		var spike := fx._spikes[randi() % SPIKES]
+		var flight := Flight.new()
+		flight.from = spike.foot + spike.tip * randf_range(0.3, 0.95)
+		var out := Vector3(spike.foot.x, 0.0, spike.foot.z).normalized() if spike.foot.length() > 0.5 else Vector3.RIGHT
+		flight.speed = Vector3.UP * randf_range(40.0, 85.0) + out * randf_range(10.0, 30.0) * grown
+		flight.axis = Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5).normalized()
+		flight.length = randf_range(SHARD_LENGTH.x, SHARD_LENGTH.y) * grown
+		fx._flights.append(flight)
+	fx._shards = IceNovaFx.multimesh(fx, crystals()[2], SHARDS, crystal(nature))
+	fx._warp = IceNovaFx.flat(fx, IceNovaFx.material(IceNovaFx.WARP, nature), radius * 1.6, DangerZone.LIFT + 0.8)
+	fx._glints = IceNovaFx.scatter_glints(fx, GLINTS, radius, nature, fx._glint_phases)
 	fx._light = FlameFx.light_of(nature, LIGHT, radius * 3.0)
 	fx._light.light_color = FlameFx.ramp(nature)[0]
 	fx._light.position = Vector3.UP * 14.0
 	fx.add_child(fx._light)
-	fx._cracks = MeshInstance3D.new()
-	if _plane == null:
-		_plane = PlaneMesh.new()
-		_plane.size = Vector2.ONE * 2.0
-	fx._cracks.mesh = _plane
-	fx._cracks.material_override = _floor(nature)
-	fx._cracks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	fx._cracks.position = Vector3.UP * DangerZone.LIFT
-	fx._cracks.scale = Vector3.ONE * radius * 1.2
-	fx._cracks.rotation.y = randf() * TAU
-	fx.add_child(fx._cracks)
-	fx._shards = GPUParticles3D.new()
-	fx._shards.amount = SHARDS
-	fx._shards.lifetime = SHARD_LIFE
-	fx._shards.one_shot = true
-	fx._shards.explosiveness = 1.0
-	fx._shards.emitting = false
-	fx._shards.local_coords = false
-	fx._shards.fixed_fps = 0
-	fx._shards.process_material = _shard_motion(radius)
-	fx._shards.draw_pass_1 = _sliver_mesh()
-	fx._shards.material_override = crystal(nature)
-	fx._shards.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	fx._shards.position = Vector3.UP * 15.0 * grown
-	fx.add_child(fx._shards)
 	for node in fx.find_children("*", "GeometryInstance3D", true, false):
 		ElementFx.veil_like(node, host)
 	fx._show()
-	fx.get_tree().create_timer(maxf(SHATTER + SHARD_LIFE, CRACKS_LIFE) + 0.05).timeout.connect(fx.queue_free)
+	fx.get_tree().create_timer(SHATTER + SHARD_LIFE + 0.05).timeout.connect(fx.queue_free)
 	return fx
 
 
 func _process(delta: float) -> void:
 	_clock += delta
-	# Et non `emitting`, qui retombe à la fin de la salve : elle repartait.
-	if _clock >= SHATTER and not _broken:
-		shatter()
 	_show()
 
 
 func _show() -> void:
+	var eaten := smoothstep(SHATTER, SHATTER + EATEN, _clock)
 	for spike in _spikes:
 		var out := ease(clampf((_clock - spike.delay) / RISE, 0.0, 1.0), 0.35)
 		# Le pied reste au sol et la pointe monte : il perce, il ne grandit pas.
 		spike.node.position = spike.foot + spike.tip * (out - 1.0) * 1.05
+		spike.node.visible = eaten < 1.0
+		spike.node.set_instance_shader_parameter(&"dissolve", eaten)
+	var flown := _clock - SHATTER
+	_shards.visible = flown > 0.0 and flown < SHARD_LIFE
+	if _shards.visible:
+		for i in SHARDS:
+			_shards.multimesh.set_instance_transform(i, shard(i))
+		_shards.set_instance_shader_parameter(&"dissolve", smoothstep(SHARD_LIFE * 0.5, SHARD_LIFE, flown))
+	_warp.visible = _clock < WARP_LIFE
+	_warp.set_instance_shader_parameter(&"front", ease(clampf(_clock / (WARP_LIFE * 0.6), 0.0, 1.0), 0.4) * 0.85)
+	_warp.set_instance_shader_parameter(&"strength", WARP_STRENGTH * (1.0 - smoothstep(0.08, WARP_LIFE, _clock)))
+	var lit := smoothstep(0.05, 0.15, _clock) * (1.0 - smoothstep(SHATTER, SHATTER + SHARD_LIFE, _clock))
+	for i in GLINTS:
+		IceNovaFx.shine(_glints, i, lit * IceNovaFx.twinkle(_clock, _glint_phases[i]))
 	_light.light_energy = LIGHT * pow(1.0 - clampf(_clock / LIGHT_LIFE, 0.0, 1.0), 2.0)
-	_cracks.set_instance_shader_parameter(&"spread", ease(clampf(_clock / CRACKS_OPEN, 0.0, 1.0), 0.4))
-	_cracks.set_instance_shader_parameter(&"fade", 1.0 - smoothstep(0.55, 1.0, _clock / CRACKS_LIFE))
 
 
-## Les pics disparaissent, leurs éclats volent : public pour `ElementFx.warm()`.
-func shatter() -> void:
-	_broken = true
-	for spike in _spikes:
-		spike.node.visible = false
-	_shards.emitting = true
+## L'esquille `i` à cet instant ; publique pour les tests, le moteur sans rendu ne relit pas un `MultiMesh`.
+func shard(i: int) -> Transform3D:
+	return _flights[i].at(maxf(_clock - SHATTER, 0.0), float(i))
+
+
+## Un plan au sol de 2 × 2, mis à l'échelle de son rayon (`IceNovaFx.flat()`).
+static func plane() -> PlaneMesh:
+	if _plane == null:
+		_plane = PlaneMesh.new()
+		_plane.size = Vector2.ONE * 2.0
+	return _plane
 
 
 ## Penché vers le dehors du cercle, d'autant plus qu'il est loin du centre.
@@ -162,58 +188,12 @@ static func crystal(nature: int) -> ShaderMaterial:
 	return _crystals[nature]
 
 
-static func _floor(nature: int) -> ShaderMaterial:
-	if not _floors.has(nature):
-		var m := ShaderMaterial.new()
-		m.shader = CRACKS
-		m.set_shader_parameter(&"cracks", BurntPath.CRACKS)
-		_ramp_into(m, nature)
-		_floors[nature] = m
-	return _floors[nature]
-
-
 static func _ramp_into(m: ShaderMaterial, nature: int) -> void:
 	var ramp := FlameFx.ramp(nature)
 	m.set_shader_parameter(&"heart", Vector3(ramp[0].r, ramp[0].g, ramp[0].b))
 	m.set_shader_parameter(&"tint", Vector3(ramp[1].r, ramp[1].g, ramp[1].b))
 	m.set_shader_parameter(&"deep", Vector3(ramp[2].r, ramp[2].g, ramp[2].b))
-	m.set_shader_parameter(&"rime", Vector3(Frost.RIME.r, Frost.RIME.g, Frost.RIME.b))
-
-
-## Les éclats : jetés vers le haut et un peu dehors, ils retombent dans le cercle — plus loin, ils
-## parlaient d'une zone qui n'avait pas frappé.
-static func _shard_motion(radius: float) -> ParticleProcessMaterial:
-	var key := roundi(radius)
-	if not _shard_motions.has(key):
-		var pm := ParticleProcessMaterial.new()
-		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
-		pm.emission_ring_axis = Vector3.UP
-		pm.emission_ring_radius = radius * 0.6
-		pm.emission_ring_inner_radius = radius * 0.1
-		pm.emission_ring_height = 30.0 * sqrt(radius / RADIUS)
-		pm.direction = Vector3.UP
-		pm.spread = 35.0
-		pm.initial_velocity_min = 40.0
-		pm.initial_velocity_max = 80.0
-		pm.radial_velocity_min = 12.0
-		pm.radial_velocity_max = 28.0
-		pm.gravity = Vector3(0.0, -420.0, 0.0)
-		pm.particle_flag_rotate_y = true
-		pm.angle_min = -180.0
-		pm.angle_max = 180.0
-		pm.angular_velocity_min = -720.0
-		pm.angular_velocity_max = 720.0
-		pm.scale_min = 4.0
-		pm.scale_max = 7.0
-		var shrink := Curve.new()
-		shrink.add_point(Vector2(0.0, 1.0))
-		shrink.add_point(Vector2(0.6, 1.0))
-		shrink.add_point(Vector2(1.0, 0.0))
-		var curve := CurveTexture.new()
-		curve.curve = shrink
-		pm.scale_curve = curve
-		_shard_motions[key] = pm
-	return _shard_motions[key]
+	m.set_shader_parameter(&"rime", Vector3(RIME.r, RIME.g, RIME.b))
 
 
 ## Six cristaux irréguliers de cinq ou six pans : pied sous le sol, ventre, épaule, pointe décentrée ;
@@ -225,19 +205,6 @@ static func crystals() -> Array[ArrayMesh]:
 		for i in SHAPES:
 			_meshes.append(_crystal_mesh(rng))
 	return _meshes
-
-
-## L'éclat d'un pic brisé : un cristal trois fois plus fin, centré et couché, qui tourne autour de la
-## verticale. Réduits d'un bloc, les pics entiers retombaient en galets trapus et dressés.
-static func _sliver_mesh() -> ArrayMesh:
-	if _sliver == null:
-		var rng := RandomNumberGenerator.new()
-		rng.seed = 9
-		var st := SurfaceTool.new()
-		st.append_from(_crystal_mesh(rng, 0.33), 0, Transform3D(Basis(Vector3.RIGHT, 1.2), Vector3.ZERO)
-				* Transform3D(Basis.IDENTITY, Vector3.DOWN * 0.35))
-		_sliver = st.commit()
-	return _sliver
 
 
 static func _crystal_mesh(rng: RandomNumberGenerator, slim := 1.0) -> ArrayMesh:

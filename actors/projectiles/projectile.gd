@@ -197,7 +197,7 @@ func _on_area_entered(area: Area3D) -> void:
 	if _cast != null and _cast.fracture > 0.0 and _fractures(area as Hurtbox):
 		Projectile.fork.call_deferred(
 			get_parent(), load(scene_file_path), global_position, _dir, speed, _nature, _source,
-			_cast.fragment(), _struck.duplicate()
+			_cast.fragment(), _struck.duplicate(), _sliver
 		)
 	if _cast != null and _cast.contagion > 0.0 and _cast.inflicted_state >= 0:
 		Projectile.contaminate.call_deferred(area, _cast.inflicted_state, _cast.contagion)
@@ -374,7 +374,7 @@ func _shatter(pierced := false) -> void:
 	)
 
 
-## Un éclat des Pics de glace : un cristal des pics, et non le trait en petit.
+## Un éclat des Pics de glace ou de l'Orbe gelée : un cristal des pics, et non le trait en petit.
 func wear_sliver() -> void:
 	_sliver = true
 	_dress()
@@ -391,11 +391,11 @@ func _fractures(target: Hurtbox) -> bool:
 	return target.has_state(StatusEffects.Kind.CHILL) and Game.rng.randf() * 100.0 < _cast.fracture
 
 
-## Les deux morceaux d'un éclat brisé, en V sur son cap. Différée et statique, comme les
-## éclats : l'impact est un rappel de collision.
+## Les deux morceaux d'un éclat brisé, en V sur son cap, à son allure (`sliver`). Différée et
+## statique, comme les éclats : l'impact est un rappel de collision.
 static func fork(
 	parent: Node, scene: PackedScene, at: Vector3, dir: Vector3, p_speed: float, nature: int,
-	source, piece: SkillStats, struck: Dictionary
+	source, piece: SkillStats, struck: Dictionary, sliver := false
 ) -> void:
 	if not is_instance_valid(parent):
 		return
@@ -407,6 +407,8 @@ static func fork(
 		)
 		if bolt != null:
 			bolt._struck = struck.duplicate()
+			if sliver:
+				bolt.wear_sliver()
 
 
 ## La Contagion (jalon 38) : l'état que le tir a posé gagne les voisins de sa cible,
@@ -423,17 +425,17 @@ static func contaminate(target, kind: int, radius: float) -> void:
 			from_target.states.pass_on(kind, other.states)
 
 
-## En étoile, le premier dans `dir`. **Différé** : la fin de course arrive d'un
-## rappel de collision, où un tir ne naît pas (invariant 4). Statique, parce que le tir
-## est déjà libéré quand l'appel arrive ; `source` sans type pour la même raison.
+## En étoile, le premier dans `dir` ; rend ceux qui sont nés. **Différé** : la fin de course
+## arrive d'un rappel de collision, où un tir ne naît pas (invariant 4). Statique, parce que le
+## tir est déjà libéré quand l'appel arrive ; `source` sans type pour la même raison.
 static func split(
 	parent: Node, scene: PackedScene, at: Vector3, dir: Vector3, p_speed: float,
 	nature: int, source, shard: SkillStats, count: int, struck: Dictionary
-) -> void:
+) -> Array[Projectile]:
 	var star: Array[Vector3] = []
 	for i in count:
 		star.append(Flat.rotated(dir, TAU * float(i) / float(count)))
-	scatter(parent, scene, at, star, p_speed, nature, source, shard, struck)
+	return scatter(parent, scene, at, star, p_speed, nature, source, shard, struck)
 
 
 ## Un éclat par direction de `directions`, comme `split` ; rend ceux qui sont nés.

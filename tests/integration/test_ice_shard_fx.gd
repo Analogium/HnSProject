@@ -68,6 +68,33 @@ func test_other_shards_keep_the_bolt() -> void:
 			assert_null((node as Projectile)._sliver_fx)
 
 
+## L'Orbe gelée crache et éclate en esquilles des Pics : le zigzag du Trait n'y servait à rien
+## (l'utilisateur, 26 octobre).
+func test_a_frozen_orb_spits_and_bursts_slivers() -> void:
+	var cast := SkillStats.new()
+	cast.nature = COLD
+	cast.projectile_speed = 110.0
+	cast.duration = 0.2
+	cast.period = 0.05
+	FrozenOrb.send(_world, Vector3.ZERO, Vector3.RIGHT, cast, null, _world, BOLT, Vector3.RIGHT * 100.0, null)
+	await wait_seconds(cast.duration + 0.1)
+	var shards := _world.get_children().filter(func(n: Node) -> bool: return n is Projectile)
+	assert_gt(shards.size(), SkillStats.FROST_ORB_BURST, "crachés puis la couronne")
+	for shard: Projectile in shards:
+		assert_not_null(shard._sliver_fx, "une esquille")
+		assert_null(shard._bolt_fx, "pas le trait qui zigzague")
+
+
+func test_a_fractured_sliver_breaks_into_slivers() -> void:
+	var cast := SkillStats.new()
+	cast.nature = COLD
+	Projectile.fork(_world, BOLT, Vector3.ZERO, Vector3.RIGHT, 0.0, COLD, null, cast, {}, true)
+	var pieces := _world.get_children().filter(func(n: Node) -> bool: return n is Projectile)
+	assert_eq(pieces.size(), 2)
+	for piece: Projectile in pieces:
+		assert_not_null(piece._sliver_fx)
+
+
 func test_the_sliver_takes_the_spell_veil() -> void:
 	var before := Settings.to_dict()
 	Settings.spell_opacity = 0.25

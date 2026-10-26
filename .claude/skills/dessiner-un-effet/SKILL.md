@@ -54,6 +54,24 @@ pas.
   **flammes photographiques sur fond noir** (additionnées, le noir disparaît ; tournées vers la
   caméra en entier, debout elles sortaient tassées), mais un sol « vu de dessus » lui sort en
   étoile de lave, pas en texture qui se répète.
+- **La barre est Last Epoch** (décision de l'utilisateur, 25 octobre) : « un jeu beau », pas un
+  sort qui se lit. Un sort y est **une pile de couches**, chacune une technique — la Nova de glace
+  (`IceNovaFx`) en est le gabarit : une onde maillée dont une texture vraie défile, **rongée**
+  (dissolve à liseré, plutôt qu'un fondu ou un rétrécissement) ; une distorsion sur le front ; des
+  éclats qui se rongent ; **un `Decal`** au sol, qui épouse le relief ; des scintillements ; une
+  lumière. La planche oppose la pile à l'actuelle, et une pile privée d'une couche à la pile entière :
+  c'est ainsi que la brume en flipbook a été écartée. **Une texture recyclée d'un autre sort se dit**,
+  et la planche de textures ComfyUI se propose d'office. Le flipbook (fumée, explosion) se rend dans
+  Blender, `tools/blender/mist_flipbook.py`. Qwen sort le « givre au sol » en feuilles de fougère :
+  une glace craquelée vue de dessus lui réussit. Un décal se teinte au cyan (le soleil blanchit un
+  albédo clair) et reste bas, sinon il se projette sur les corps. **Un dessin ne promet pas une
+  mécanique absente** : la glace au sol se lit « sol gelé », et l'utilisateur l'a fait retirer de tout
+  sort qui ne gèle pas le sol (26 octobre). Ce qui couvre large reste sous 0,75
+  d'opacité : un tourbillon de 104 px, plus opaque, sortait en disque blanc. Des éclats qui doivent se
+  montrer à un instant précis (planche, tests) volent en `MultiMesh` balistique, pas en particules
+  (`IceSpikesFx.Flight`). Une brume photographiée derrière des cristaux se trie derrière eux
+  (`sorting_offset`), sinon elle les grise. Un grand cristal à demi rongé sort en papier déchiré
+  blanc : le ronger vite.
 - **La silhouette d'abord, la matière ensuite.** Étirée en dard de 34 px, une photo d'arc
   électrique sortait en plume ou en fumée : « ça ne ressemble pas à un éclair ». Le zigzag est
   venu d'un ruban que le shader casse, qui porte la photo — comme la peau du Serpent sur son
@@ -80,7 +98,9 @@ sur la planche. Montrer **le geste**, pas le dessin isolé : à deux instants au
   puis quitte. On le lance par `tools/capture.sh <scénario>.gd <sujet>`, qui dépose les
   images dans `C:\Users\Theo\Desktop\hns-captures-<sujet>\`.
 - **Le joueur naît au bord de la carte** : ce qui est posé trop loin tombe dans la falaise.
-  Recentrer, et assombrir le rouge clair, qui se fond dans l'ocre. Figer la zone
+  Recentrer, et assombrir le rouge clair, qui se fond dans l'ocre. Un effet au sol lancé
+  contre la falaise sort **coupé en carré** — le plateau, plus haut que lui, le masque case
+  par case : `warp` le joueur vers un coin dégagé avant de capturer (Nova de glace). Figer la zone
   (`Game.rng.seed` avant `enter_area`) pour que deux rendus se comparent.
 - **Faire un premier passage à blanc** : chaque matière neuve se compile ~100 ms à sa
   première image, et ce qui vole saute d'autant (des perles dans une traînée).

@@ -25,6 +25,14 @@
                                     sur fond noir
     tools/fx_textures.py ice        fx/ice_veins.png, la glace veinée des Pics de glace (`IceSpikesFx`) :
                                     un tirage de Qwen-Image, raccordable
+    tools/fx_textures.py nova       fx/nova_ice.png, la glace craquelée en étoile du sol gelé
+                                    (`FrostGroundFx`, un décal : couleur et alpha ; tirée pour la Nova),
+                                    et fx/frost_wind.png, le vent de givre de l'onde de choc de la Nova
+                                    (`IceNovaFx`, bande raccordable en x) : des tirages de Qwen-Image
+    tools/fx_textures.py vortex     fx/frost_vortex.png, la spirale de lames de glace vue de dessus du Désastre
+                                    hivernal (`IceVortexFx`) : un tirage de Qwen-Image sur fond noir
+    tools/fx_textures.py orb        fx/frozen_orb_mist.png, la brume de givre derrière l'Orbe gelée
+                                    (`FrozenOrbFx`) : un tirage de Qwen-Image sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -96,6 +104,21 @@ STORM_BOLT = ("a photograph of a single lightning bolt striking straight down ve
               "the bottom, jagged angular bends, blinding white core, intense violet glow, isolated on a pure black "
               "background, realistic, VFX stock footage, centered", 11)
 # « Sobre » sur la deuxième planche des Pics de glace : Poly Haven n'a que de la neige, pas de glace.
+# « Vitrine sans brume » sur la planche de la Nova (qualité Last Epoch) : la glace « A », contre une glace aux
+# fissures plus fines ; deux tirages de givre au sol sortaient en feuilles de fougère.
+NOVA_ICE = ("top-down photograph of a frozen puddle surface, cracked clear ice with white frost along the cracks and air "
+            "bubbles, seamless tileable texture, flat even lighting, orthographic view, high detail, fills the whole "
+            "frame", 31)
+FROST_WIND = ("a photograph of a horizontal streak of swirling icy wind, white and pale blue frost mist wisps and tiny "
+              "ice crystals blowing from left to right, isolated on a pure black background, VFX stock footage", 7)
+# « Lames » sur la planche du Désastre hivernal, contre un blizzard en spirale (graine 7 : « top-down photograph of
+# a swirling blizzard vortex ») qui, tenu sur 52 px, couvrait le sol d'un disque presque blanc.
+VORTEX = ("top-down view of a spiral whirlwind of ice shards and snow, a cyclone of frost seen from above with curved "
+          "spiral arms, pale blue and white, isolated on a pure black background, VFX stock footage, centered", 21)
+# « Oursin, brume légère » sur la planche de l'Orbe gelée : la brume derrière les cristaux, contre la même photo seule,
+# en grand, et l'orbe du Trait de glace en grand.
+ORB_MIST = ("a photograph of a frozen orb, a glowing sphere of pale blue ice with sharp frost crystals growing out of it "
+            "and swirling frost mist around it, isolated on a pure black background, VFX stock footage, centered", 11)
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
 CELL = 256
@@ -204,6 +227,50 @@ def cmd_ice():
     save(tileable(square(Image.fromarray((qwen(*ICE) * 255).astype(np.uint8)))), "ice_veins.png")
 
 
+def nova_ice(rgb):
+    """Un décal : la glace en couleur et en alpha, bord rond cassé le long des fissures de la Ruée. Éclairé
+    par le soleil du jeu, un albédo presque blanc sortait en disque blanc : il reste au cyan."""
+    gray = square(Image.fromarray((rgb * 255).astype(np.uint8))).mean(-1)
+    lum = (gray - gray.min()) / (gray.max() - gray.min())
+    color = np.array([0.18, 0.42, 0.68]) * (1.0 - lum[..., None]) + np.array([0.55, 0.8, 0.95]) * lum[..., None]
+    cracks = np.asarray(Image.open(os.path.join(FX, "burnt_cracks.png")).convert("RGB"), np.float32)[..., 1] / 255.0
+    y, x = np.mgrid[0:SIDE, 0:SIDE] / (SIDE - 1) * 2.0 - 1.0
+    edge = np.clip((0.92 - np.sqrt(x * x + y * y) - cracks * 0.18) / 0.12, 0.0, 1.0)
+    alpha = np.clip((lum - 0.25) / 0.6, 0.0, 1.0) * 0.75 * edge
+    return np.concatenate([color, alpha[..., None]], -1)
+
+
+def frost_wind(rgb):
+    """La bande du milieu, en 512 × 256, raccordée en x : elle fait le tour de l'onde."""
+    h = rgb.shape[0]
+    cut = Image.fromarray((rgb[int(h * 0.25):int(h * 0.75)] * 255).astype(np.uint8)).resize((SIDE, SIDE // 2), Image.LANCZOS)
+    b = np.asarray(cut, np.float32) / 255.0
+    x = np.abs(np.arange(SIDE) - SIDE / 2) / (SIDE / 2)
+    w = np.clip(x * 1.6 - 0.6, 0.0, 1.0)[None, :, None]
+    return b * (1.0 - w) + np.roll(b, SIDE // 2, 1) * w
+
+
+def cmd_nova():
+    save(nova_ice(qwen(*NOVA_ICE)), "nova_ice.png")
+    save(frost_wind(qwen(*FROST_WIND)), "frost_wind.png")
+
+
+def vortex(rgb):
+    """Le tourbillon entier en 512², le noir de fond ramené à 0 et un fondu rond au bord : il tourne."""
+    img = Image.fromarray((rgb * 255).astype(np.uint8)).resize((SIDE, SIDE), Image.LANCZOS)
+    c = np.clip((np.asarray(img, np.float32) / 255.0 - 0.03) / 0.97, 0.0, 1.0)
+    y, x = np.mgrid[0:SIDE, 0:SIDE] / (SIDE - 1) * 2.0 - 1.0
+    return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.15, 0.0, 1.0)[..., None]
+
+
+def cmd_vortex():
+    save(vortex(qwen(*VORTEX)), "frost_vortex.png")
+
+
+def cmd_orb():
+    save(cell(qwen(*ORB_MIST), (0.05, 0.05, 0.95, 0.95), 0.75), "frozen_orb_mist.png")
+
+
 def cmd_streak():
     band(qwen(*STREAK), 0.3, 0.7, "fire_streak.png")
 
@@ -258,4 +325,5 @@ def cmd_fire():
 
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
-     "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice}[sys.argv[1]]()
+     "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
+     "nova": cmd_nova, "vortex": cmd_vortex, "orb": cmd_orb}[sys.argv[1]]()

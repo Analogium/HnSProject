@@ -876,11 +876,145 @@ blanches), puis en pointillé de craie : dispersée et teintée du cyan moyen de
 `BoltFx.flare_at`, partagé. Captures en jeu, un grunt de chaque côté :
 `Bureau\hns-captures-eclats-de-glace-jeu\`. Coût non mesuré : un cristal et une traînée par éclat, à la
 place d'un orbe, de sa lumière et de sa traînée.
+**La Nova de glace** (25 octobre), le second sort du manuel du froid. Elle n'avait que la gerbe
+générique (`Explosion`). Planche de cinq façons, posées à des instants exacts plutôt qu'à l'horloge
+(une capture gèle le jeu ~110 ms), au cadre du jeu puis de près sur le joueur
+(`Bureau\hns-captures-nova-de-glace\`) : la couronne de la 2D portée (un anneau d'esquilles qui file,
+puis onze cristaux des Pics debout sur le bord), le sol qui gèle seul derrière un front de glace
+veinée, un souffle d'esquilles sur l'éclatement photographié du Trait couché au sol, un anneau de
+brume (la fumée de la boule de feu, passée au froid), un dôme de glace qui éclate. Toutes avec
+l'éclair et le sol fendu des Pics. Erreurs vues sur planche, avant de la montrer : **tout sortait
+blanc** — le front du sol gelé monté au givre, la photo montée au cœur de la rampe, la brume en
+coton (le reproche fait aux Éclats) ; redescendus du bleu profond au cyan, ils se tiennent. Le dôme
+sortait laiteux et cachait le grunt : à moitié opaque. **Retenu : le souffle d'esquilles.**
+`IceNovaFx` (ARCHITECTURE, « Que montre une compétence en 3D ? ») : les quarante esquilles dans un
+seul `MultiMeshInstance3D` ; `Explosion` le pose pour **toute explosion de froid**, comme la
+couronne pour la foudre. Le moteur sans rendu ne relit pas les transformations d'un `MultiMesh` :
+les tests passent par `sliver(i)`. En jeu (`Bureau\hns-captures-nova-de-glace-jeu\`), un piège
+de capture : lancée contre la falaise où naît le joueur, la Nova sortait **coupée en carré** — le
+plateau, plus haut que le plan, la masque case par case ; capturée en terrain dégagé, elle rend comme
+la planche. **Coût** (le banc des Pics : 300 grunts increvables collés au joueur, la Nova en case 0,
+~16 lancers par mesure, sans vsync, 240 images de chauffe puis 1 440, A coupe le dessin sur la même
+copie, paires alternées) : un premier banc de six paires donnait +0,61 ± 0,58 ms l'image et une pire
+image à +5,0 ± 3,3 ms ; un second, plus bruité, qui coupait aussi les seules esquilles, −0,12 ± 0,80
+et +0,35 ± 8,9. Sur les douze paires, **B − A = +0,24 ± 0,77 ms l'image** (erreur type 0,22),
+physique +0,26 ± 0,67, pire image +2,7 ± 6,9 — dans le bruit ; les esquilles coupées ne se
+distinguent ni de l'un ni de l'autre.
+**L'Onde de givre et le sol gelé** (25 octobre), le reste de l'arbre de la Nova : la transformation
+n'avait que la gerbe générique, le Givre persistant qu'un disque d'étincelles. Le Bris passe déjà par
+`IceNovaFx` (une explosion de froid), le Souffle n'en change que le rayon. Une planche pour les deux
+(`Bureau\hns-captures-onde-de-givre\`) : l'Onde en javelots (la 2D portée), en mur de pics qui court,
+en front de glace veinée, en brume basse, à l'aller et au Reflux ; le sol en fissures tenues, en plaque
+de glace, en givre poudreux, en fissures semées de cristaux. Erreurs vues sur planche : le sol fendu des
+Pics étiré sur les 138 px de l'Onde devenait une grande plaque blanche qui écrasait tout — retiré de
+l'Onde ; le givre poudreux sortait en disque de neige opaque, puis, éclairci, en voile gris-mauve (le
+cyan pâle posé sur l'ocre) — en grains nets, il se tient. **Retenus : les javelots, « mais il faut bien
+inverser le sens des cristaux lors du retour »**, et **les fissures**. `FrostRingFx` (un
+`MultiMeshInstance3D` sur l'anneau ; le rayon lu à l'image par `FrostRing.reach_at()`, la formule
+restant dans `FrostRing`) ; le sol gelé dans `DashTrail` pour toute nature froide (Pics et Désastre
+compris), ravivé avec son sol. Captures en jeu : `Bureau\hns-captures-onde-de-givre-jeu\` (pointes
+dehors à l'aller, vers le centre au Reflux) et `-sol-gele-jeu\` — le joueur, tué par la meute à la
+première prise, renaissait contre la falaise : increvable, il reste en terrain dégagé. **Coût non
+mesuré** : un `MultiMesh` d'une cinquantaine de cristaux par Onde, un plan par sol gelé.
+**La Nova à la barre de Last Epoch** (25-26 octobre). L'utilisateur : « je veux un jeu beau, un peu
+comme Last Epoch au niveau de la qualité visuelle des skills ». Sa liste des techniques (bruit qui
+défile, dissolve à liseré, gradient mapping, mesh VFX, trails, flipbooks, additif et bloom, fresnel,
+distorsion, décals) recoupée avec le projet : les rampes, les rubans, les traînées, l'additif et le
+fresnel y étaient ; manquaient le dissolve, les flipbooks, la distorsion et les décals. La Nova, en
+vitrine. **Les textures** : six tirages de Qwen-Image (ComfyUI relancé, débordant de 3,2 Go en mémoire
+partagée — 4 à 7 min le tirage) ; le « givre au sol » sortait en feuilles de fougère, deux fois ;
+une glace craquelée vue de dessus, en étoile, et une bande de vent de givre ont tenu
+(`tools/fx_textures.py nova`). **Le flipbook** : une bouffée de fumée Mantaflow rendue dans Blender
+(`tools/blender/mist_flipbook.py`) — les normales d'un tore soufflaient dans tous les sens et
+s'annulaient (un champ de force pousse), à 60 la fumée quittait le domaine en trois images, contre
+les parois elle s'écrasait en carré. Planche (`Bureau\hns-captures-nova-vitrine\`) : l'actuelle,
+la pile avec brume sur deux glaces, la pile sans brume. Erreurs vues sur planche : **le décal sortait
+en disque blanc** — éclairé par le soleil du jeu, son albédo presque blanc —, ramené au cyan ; et il
+**bleuissait les grunts**, sa boîte de 40 px de haut les prenant : 8 px. **Retenu : la vitrine sans
+brume**, la glace « A ». `IceNovaFx` refait (ARCHITECTURE, « Que montre une compétence en 3D ? ») :
+onde de choc rongée, distorsion, esquilles qui se rongent (`dissolve`, ajouté au cristal des Pics, à 0
+pour les autres), décal, scintillements par `INSTANCE_CUSTOM` ; la photo couchée et le sol fendu de
+la Nova partent. Le voile du menu atteint un `Decal` (`Settings._fade`), et `ElementFx.warm()` l'éteint.
+Vue en jeu : `Bureau\hns-captures-nova-vitrine-jeu\`. **Coût** (le banc de la Nova, huit paires
+alternées) : un premier passage tournait à 49 ms l'image **des deux côtés** — ComfyUI gardait
+Qwen-Image chargé, 19,3 Go de mémoire graphique, que `POST /free` ne rendait pas ; ComfyUI arrêté, le
+banc retrouve ses 11 ms : **B − A = −0,20 ± 0,48 ms l'image** (erreur type 0,17), physique −0,15 ±
+0,43, pire image −1,2 ± 1,9 — dans le bruit. Arrêter ComfyUI avant tout banc.
+**L'arbre de la Nova à la même barre** (26 octobre) : l'Onde de givre et le sol gelé prennent les
+couches de la Nova. Planche (`Bureau\hns-captures-nova-arbre\`) : l'Onde actuelle, la pile (onde de
+choc sous les javelots, distorsion, scintillements, javelots qui se rongent) avec la glace de la Nova
+laissée au sol, la pile sans glace, la pile dont les javelots partent un à un ; le sol actuel, la glace
+« A », la glace « B », la glace « A » sous un liseré de givre qui frémit. Erreurs vues sur planche : la
+glace étirée sur les 138 px de l'Onde devenait **une étoile géante blanche** qui écrasait tout — à 45 %
+encore trop ; l'onde de choc, à 26 px, sortait en trait lisse sous les javelots — 40 px, son bord 14 px
+devant eux ; le liseré sortait en anneau épais. **Retenus : la pile sans glace, et la glace « A ».**
+`FrostRingFx` reçoit l'onde de choc, la distorsion et les scintillements, ses javelots se rongent au
+lieu de partir un à un ; le sol gelé devient `FrostGroundFx`, que `DashTrail` fait vivre. Les couches
+partagées sortent d'`IceNovaFx` en fonctions (`lay_ice`, `scatter_glints`, `multimesh`, `flat`,
+`material`). Captures en jeu : `Bureau\hns-captures-onde-vitrine-jeu\`, `-sol-gele-vitrine-jeu\`.
+**Coût de l'Onde** (l'Onde et son Reflux en case 0, ~25 Ondes par mesure, huit paires alternées,
+ComfyUI arrêté) : **B − A = +0,71 ± 1,57 ms l'image** (erreur type 0,56), physique +0,51 ± 1,66, pire
+image +1,2 ± 6,0 — dans le bruit, mais un bruit fort : la même configuration allait de 9,4 à 13,2 ms,
+une partie des grunts mourant avant d'être rendus increvables (264 à 284 survivants). Le sol gelé, un
+décal et dix scintillements, n'est pas mesuré.
+**Le reste du manuel du froid à la même barre** (26 octobre). L'utilisateur : « refait donc les pics,
+ainsi que tout le reste du manuel, et montre moi quand tout est finis ». Les planches ont donc été
+**tranchées par moi**, sur pièce, et sont laissées sur le Bureau pour qu'il les conteste. Restaient les
+Pics (« sobre »), le Tombeau de glace (le halo d'étincelles des buffs), le Désastre hivernal et son
+Implosion (le disque d'étincelles), l'Orbe gelée (la traînée d'étincelles). **Les textures** : trois
+tirages de Qwen-Image (4 à 6 min chacun) — un blizzard en spirale vu de dessus, une spirale de lames
+de glace, une orbe hérissée dans sa brume ; ComfyUI arrêté ensuite, avant le banc. Planches :
+`Bureau\hns-captures-pics-tombeau\`, `-orbe-gelee\`, `-desastre\`.
+- **Les Pics** : l'actuel, la pile (cristaux qui se rongent, esquilles balistiques, glace de la Nova en
+  décal, distorsion, scintillements), la pile sous une onde de choc au pied — un anneau blanc épais —,
+  la pile sans esquilles. **Retenu : la pile.** Erreur vue sur planche : à demi rongé, un grand pic
+  sortait en **papier déchiré blanc** ; rongé en 0,1 s, on ne le voit qu'en passant. Les esquilles
+  quittent les particules pour un `MultiMesh` balistique (`IceSpikesFx.Flight`), qui se pose à un
+  instant — sur planche comme en test. Le sol fendu (`fx/frost_cracks.gdshader`) part.
+- **Le Tombeau** : le halo, une gangue de neuf cristaux penchés vers le joueur, un bloc taillé, la
+  gangue sur un anneau de vent. Le bloc **cachait le joueur** (on ne le voyait plus au travers), l'anneau
+  sortait en beignet blanc. **Retenu : la gangue** (`FrostTombFx`), qui se brise en esquilles au buff
+  éteint.
+- **Le Désastre** : le disque, le blizzard A, les lames B, le vent de la Nova enroulé en spirale (la
+  texture recyclée, dite), le blizzard sous une distorsion qui tourne — trop brouillée. Le blizzard
+  couvrait le cercle d'un **disque presque blanc** ; les lames laissent voir le sol entre leurs bras.
+  **Retenu : les lames** (`IceVortexFx`), descendues à 0,75 d'opacité après la capture en jeu.
+- **L'Orbe gelée** : un oursin de huit cristaux, l'orbe du Trait de glace en grand — une boule bleue qui
+  luit —, un cœur dans la brume, une sphère hérissée, l'oursin dans une brume légère, la photo seule.
+  **Retenu : l'oursin dans sa brume** (`FrozenOrbFx`). Erreur vue : la brume, triée avec les cristaux,
+  passait devant et les grisait — `sorting_offset`. La couronne d'éclats posée sur planche à la fin
+  faisait double emploi avec les vrais éclats de l'orbe : un éclat du Trait en grand suffit.
+
+Captures en jeu : `Bureau\hns-captures-manuel-froid-jeu\` (les quatre), `-arbre-froid-jeu\` (le
+Sillon, ses éclats, l'Implosion qui se resserre — son éclatement, celui de la Nova, tombe après la
+dernière prise : le Blizzard allonge la durée). **Le code 2D de la glace part** avec le manuel fini,
+comme `fx/lightning.gd` : `fx/frost.gd` (son givre, `RIME`, passe à `IceSpikesFx`), les éclats, le flocon
+et le bloc du Tombeau d'`EffectForge`. Un piège de test : `wait_frames` compte des images de physique,
+entre lesquelles le `_process` d'un dessin peut ne pas avoir tourné — les tests l'appellent eux-mêmes.
+**Coût** (le banc des Pics, la compétence en case 0, huit paires alternées par sort, A coupe le dessin,
+ComfyUI arrêté — mais **Torchlight Infinite ouvert** sur la machine, 2,2 Go : la même configuration
+allait de 18 à 42 ms l'image, contre 16,8 ms stables le 25) : Pics **B − A = +2,5 ± 6,4 ms l'image**
+(erreur type 2,3), physique +0,1 ± 1,0 ; Désastre +3,0 ± 6,4 (2,3), physique +0,5 ± 1,0 ; Orbe gelée
+−0,9 ± 7,6 (2,7), physique −0,1 ± 1,3. Tout est dans le bruit, mais un bruit de 2 à 3 ms d'erreur type :
+ce banc exclut un surcoût de l'ordre de 5 ms, pas d'un millième. **À remesurer machine calme.** Le
+Tombeau, qui enferme trois secondes, ne se lance pas en boucle : non mesuré.
+**La glace au sol retirée** (26 octobre, au retour de l'utilisateur) : « enlève le visuel du sol gelé sous
+les skills qui n'en utilisent pas (encore) (genre désastre etc) ». La glace craquelée en décal se lit
+« sol gelé » ; elle ne reste qu'au vrai sol gelé (`FrostGroundFx`, qui garde sa texture et sa pose) et
+part du Désastre, des Pics, du Tombeau **et de la Nova** — qui ne gèle pas le sol sans Givre persistant,
+la même règle, bien qu'elle ait été choisie dans la vitrine. Signalé aussi : « une petite frame où quelque
+chose apparaît puis disparaît » au lancer du Désastre. Pas reproduit : filmé image par image en mode
+film de Godot (`--write-movie`, à 60 puis à 165 images par seconde, l'écran de l'utilisateur), le
+tourbillon naît net ; le seul éclat bref vu est le blanc d'un ennemi touché et ses pixels de mort. Le
+décal, seul suspect restant (un atlas de décals refait à la première texture), part avec la glace.
+**Les éclats de l'Orbe gelée** : « les zig zag sont inutiles ». Ils gardaient le Trait de glace, l'orbe
+qui zigzague ; ils prennent l'esquille des Pics (`IceShardFx`, déjà choisie sur planche), crachés comme
+à l'éclatement, et la Fracture brise une esquille en deux esquilles (`Projectile.fork(…, sliver)`).
 
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre » (§13). Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à

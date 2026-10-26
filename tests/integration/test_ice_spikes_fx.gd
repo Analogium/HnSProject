@@ -1,8 +1,9 @@
 extends GutTest
 
-## Les Pics de glace en 3D (jalon 54, « sobre ») : une douzaine de cristaux qui percent le sol au
-## rayon qui frappe, puis se brisent en éclats ; la lumière froide et le sol fendu s'éteignent après.
-## Le dessin vit hors du nœud du jeu et se libère seul.
+## Les Pics de glace en 3D (jalon 54, « sobre », puis la « pile » de Last Epoch) : une douzaine de
+## cristaux qui percent le sol au rayon qui frappe, puis se rongent pendant que leurs esquilles volent ;
+## la lumière froide s'éteint après. Le dessin vit hors du nœud du jeu et se libère
+## seul.
 
 const COLD := DamageType.Kind.COLD
 
@@ -50,26 +51,41 @@ func test_a_wider_circle_spreads_them_more_than_it_grows_them() -> void:
 	wide.queue_free()
 
 
-func test_they_shatter_then_everything_frees() -> void:
+func test_they_are_eaten_while_their_shards_fly_then_everything_frees() -> void:
 	var fx := IceSpikesFx.raise(_world, Vector3.ZERO, COLD, IceSpikesFx.RADIUS)
 	var lit := fx._light.light_energy
-	assert_false(fx._shards.emitting, "pas d'éclats avant de se briser")
-	await wait_seconds(IceSpikesFx.SHATTER + 0.05)
-	assert_true(fx._shards.emitting, "les éclats volent")
+	assert_false(fx._shards.visible, "pas d'éclats avant de se briser")
+	assert_eq(fx._spikes[0].node.get_instance_shader_parameter(&"dissolve"), 0.0, "entiers")
+	fx._clock = IceSpikesFx.SHATTER + IceSpikesFx.EATEN * 0.5
+	fx._show()
+	assert_gt(fx._spikes[0].node.get_instance_shader_parameter(&"dissolve"), 0.0, "rongés, pas effacés")
+	assert_true(fx._shards.visible, "les éclats volent")
+	var low := INF
+	for i in IceSpikesFx.SHARDS:
+		low = minf(low, fx.shard(i).origin.y)
+	fx._clock = IceSpikesFx.SHATTER + IceSpikesFx.SHARD_LIFE * 0.9
+	fx._show()
 	for spike in fx._spikes:
 		assert_false(spike.node.visible, "les pics sont partis")
+	for i in IceSpikesFx.SHARDS:
+		var at := fx.shard(i).origin
+		assert_gte(at.y, 1.0, "jamais sous le sol")
+		assert_lt(Vector2(at.x, at.z).length(), IceSpikesFx.RADIUS * 2.5, "ils retombent près du cercle")
+	assert_gt(fx._shards.get_instance_shader_parameter(&"dissolve"), 0.0, "et se rongent")
 	assert_lt(fx._light.light_energy, lit, "la lumière retombe")
-	await wait_seconds(IceSpikesFx.SHARD_LIFE + 0.05)
-	assert_false(fx._shards.emitting, "une salve, pas deux")
-	await wait_seconds(IceSpikesFx.CRACKS_LIFE - IceSpikesFx.SHATTER - IceSpikesFx.SHARD_LIFE + 0.1)
+	fx._clock = IceSpikesFx.SHATTER + IceSpikesFx.SHARD_LIFE + 0.01
+	fx._show()
+	assert_false(fx._shards.visible, "une salve, pas deux")
+	assert_eq(fx.find_children("*", "Decal", true, false).size(), 0, "pas de glace au sol : ils n'en posent pas")
+	await wait_seconds(IceSpikesFx.SHATTER + IceSpikesFx.SHARD_LIFE + 0.1)
 	assert_false(is_instance_valid(fx), "puis rien")
 
 
 func test_materials_are_kept_per_nature() -> void:
 	var a := IceSpikesFx.raise(_world, Vector3.ZERO, COLD, IceSpikesFx.RADIUS)
 	var b := IceSpikesFx.raise(_world, Vector3.ZERO, COLD, IceSpikesFx.RADIUS)
-	assert_same(a._cracks.material_override, b._cracks.material_override)
-	assert_same(a._shards.process_material, b._shards.process_material)
+	assert_same(a._warp.material_override, b._warp.material_override)
+	assert_same(a._shards.material_override, b._shards.material_override)
 	assert_same(a._spikes[0].node.material_override, b._spikes[0].node.material_override)
 	a.queue_free()
 	b.queue_free()

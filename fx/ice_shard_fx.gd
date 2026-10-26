@@ -4,7 +4,8 @@ extends Node3D
 ## L'éclat des Pics de glace en 3D (jalon 54, « esquille » choisie sur planche contre l'orbe du Trait de
 ## glace en petit, une esquille qui tournoie dans la poudre, un javelot et une grappe) : un cristal fin
 ## de la glace des pics, pointe dans le sens du vol, qui tourne sur son axe ; la traînée de givre du
-## Trait de glace, plus fine. Il vit sur son tir ; la traînée, à la racine du viewport, lui survit.
+## Trait de glace, plus fine. Les éclats de l'Orbe gelée le portent aussi. Il vit sur son tir ; la traînée,
+## à la racine du viewport, lui survit.
 
 const LENGTH := 14.0
 const WIDTH := 4.0

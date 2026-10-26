@@ -7,32 +7,16 @@ extends GutTest
 const FIRE := Color(1.00, 0.48, 0.18)
 
 
-## Les grilles de la glace. Une ligne mal alignée décale toute la colonne suivante
-## sans rien casser : le pixel se pose, simplement ailleurs.
-func test_every_ice_grid_is_rectangular() -> void:
-	var grids := {
-		"éclat": [EffectForge.CHIP, EffectForge.CHIP_SIZE, EffectForge.CHIP_SIZE],
-		"éclat en biais": [EffectForge.CHIP_DIAG, EffectForge.CHIP_SIZE, EffectForge.CHIP_SIZE],
-		"flocon": [EffectForge.FLAKE, EffectForge.FLAKE_SIZE, EffectForge.FLAKE_SIZE],
-		"tombeau": [EffectForge.TOMB, EffectForge.TOMB_WIDTH, EffectForge.TOMB_HEIGHT],
-	}
-	for name: String in grids:
-		var grid: Array = grids[name][0]
-		assert_eq(grid.size(), grids[name][2], "hauteur du %s" % name)
-		for row: String in grid:
-			assert_eq(row.length(), grids[name][1], "largeur de « %s » (%s)" % [row, name])
-
-
 ## Quatre quarts de tour ramènent au point de départ : si la rotation perdait une
-## colonne, les huit orientations d'un éclat seraient huit dessins différents.
+## colonne, les huit orientations d'un rat seraient huit dessins différents.
 func test_four_quarter_turns_come_back_to_the_start() -> void:
-	var grid: Array = EffectForge.CHIP
+	var grid: Array = EffectForge.RAT[0]
 	for i in 4:
 		grid = EffectForge.turned(grid)
-	assert_eq(grid, EffectForge.CHIP, "le tour complet ne perd rien")
+	assert_eq(grid, EffectForge.RAT[0], "le tour complet ne perd rien")
 
 
-## Le cap d'un éclat tombe sur l'orientation la plus proche, et les angles négatifs
+## Un cap tombe sur l'orientation la plus proche, et les angles négatifs
 ## comme ceux qui dépassent le tour retombent dans les huit.
 func test_a_heading_finds_the_nearest_of_the_eight_turns() -> void:
 	assert_eq(EffectForge.chip_turn(0.0), 0, "droite")
@@ -40,24 +24,6 @@ func test_a_heading_finds_the_nearest_of_the_eight_turns() -> void:
 	assert_eq(EffectForge.chip_turn(-TAU / 8.0), 7, "et le précédent, par l'autre bout")
 	assert_eq(EffectForge.chip_turn(TAU), 0, "un tour entier revient au départ")
 	assert_eq(EffectForge.chip_turn(PI), 4, "le demi-tour est à l'opposé")
-
-
-## Huit orientations qui se ressemblent seraient huit fois la même image payée
-## huit fois — et un tourbillon dont les éclats ne tournent pas.
-func test_the_eight_chips_all_differ() -> void:
-	var seen := {}
-	for tex: Texture2D in EffectForge.chips(Color(0.50, 0.88, 1.00)):
-		seen[tex.get_image().get_data().hex_encode()] = true
-	assert_eq(seen.size(), EffectForge.CHIP_TURNS, "huit dessins distincts")
-
-
-## L'Orbe gelée (jalon 44) : une fabrication par position de la facette, et un demi-tour
-## suffit — la neuvième retombe sur la première.
-func test_the_frozen_orb_is_built_once_per_facet() -> void:
-	var tint: Color = DamageType.COLORS[DamageType.Kind.COLD]
-	assert_same(Frost.orb(tint, 2), Frost.orb(tint, 2))
-	assert_same(Frost.orb(tint, Frost.ORB_TURNS), Frost.orb(tint, 0))
-	assert_false(Frost.orb(tint, 1).get_image().is_invisible())
 
 
 ## L'os des Lanceurs d'os (jalon 45) : une cuisson pour la partie, quatre temps, et le

@@ -31,6 +31,7 @@ var _spin := 0.0
 var _stopped := 0.0
 ## L'Orbe mordante : qui elle a déjà mordu.
 var _bitten := {}
+var _fx: FrozenOrbFx
 
 
 static func send(
@@ -54,7 +55,7 @@ static func send(
 	parent.add_child(orb)
 	Settings.veil(orb, Settings.SPELLS)
 	orb.global_position = from + orb._dir * Projectile.MUZZLE
-	ElementFx.trail(orb, DamageType.COLORS[cast.nature])
+	orb._fx = FrozenOrbFx.dress(orb, cast.nature)
 	return orb
 
 
@@ -118,19 +119,23 @@ func _spit() -> void:
 		if prey != null:
 			dir = global_position.direction_to(prey.global_position)
 	var cast := _shard_cast()
-	Projectile.spawn(
+	var shard := Projectile.spawn(
 		get_parent(), _shards, global_position, dir, cast.roll(Game.rng), _source,
 		SkillStats.SHARD_SPEED, cast.nature, cast
 	)
+	if shard != null:
+		shard.wear_sliver()
 
 
 ## La couronne de la fin, qui part de la spirale où elle en était.
 func _burst() -> void:
+	_fx.flare()
 	var cast := _shard_cast()
-	Projectile.split(
+	for shard in Projectile.split(
 		get_parent(), _shards, global_position, Flat.from_angle(_spin), SkillStats.SHARD_SPEED,
 		cast.nature, _source, cast, SkillStats.FROST_ORB_BURST + int(_cast.shard_rain), {}
-	)
+	):
+		shard.wear_sliver()
 
 
 ## L'Orbe mordante : ce qu'elle traverse, une fois chacun, à une part du coup.

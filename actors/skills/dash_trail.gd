@@ -35,6 +35,8 @@ var _key := ""
 var _effects: Node
 var _fuse := 0.0
 var _fused := 0
+## Le sol gelé (jalon 54) : la glace de la Nova, tenue sa durée.
+var _frost: FrostGroundFx
 
 ## Les sols vivants par case : **un sol ne se pose pas sur un sol** de la même compétence et
 ## de la même nature, il le ravive. Ils ne cumulent pas leurs coups ; sans cela, 144 serpents
@@ -119,14 +121,21 @@ func _exit_tree() -> void:
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
 ## Un sol qui brûle a son disque d'étincelles (`ElementFx`), posé une fois là : le sol ravivé
-## arrive en différé, sa position après lui.
+## arrive en différé, sa position après lui. Un sol gelé, sa glace (`FrostGroundFx`).
 func _ready() -> void:
-	if _ground:
+	if not _ground:
+		return
+	if _cast.nature != DamageType.Kind.COLD:
 		ElementFx.area.call_deferred(self, _tint, _cast.radius)
+		return
+	_frost = FrostGroundFx.lay(self, _cast.radius, _cast.nature)
+	_frost.thaw(_age, _cast.duration, SPAWN)
 
 
 func _physics_process(delta: float) -> void:
 	_age += delta
+	if _frost != null:
+		_frost.thaw(_age, _cast.duration, SPAWN)
 	var due := _cast.strikes_due(_age)
 	while _strikes < due:
 		_strike()

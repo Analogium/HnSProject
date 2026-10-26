@@ -64,9 +64,11 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 	buff._distribution[skill.nature] = 1.0
 	player.add_child(buff)
 	Settings.veil(buff, Settings.SPELLS)
-	# L'appel du tonnerre d'une ruée de foudre : des arcs aux pieds plutôt que le halo.
+	# L'appel du tonnerre d'une ruée de foudre : des arcs aux pieds plutôt que le halo ; le Tombeau, sa gangue.
 	if skill.shape == Skill.Shape.DASH and skill.nature == DamageType.Kind.LIGHTNING:
 		BoltFx.feet(buff)
+	elif skill.id == SkillStats.TOMB_SKILL:
+		FrostTombFx.encase(buff, skill.nature)
 	elif skill.id not in BARE:
 		var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
 		ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)

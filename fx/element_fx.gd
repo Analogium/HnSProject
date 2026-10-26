@@ -129,8 +129,13 @@ static func warm(host: Node3D) -> void:
 	# Figés, brisés d'emblée : la lumière ne se rallume pas, les éclats compilent leur matière.
 	var spikes := IceSpikesFx.raise(probe, at, DamageType.Kind.COLD, 10.0)
 	spikes.process_mode = Node.PROCESS_MODE_DISABLED
-	spikes.shatter()
+	spikes._clock = IceSpikesFx.SHATTER + 0.05
+	spikes._show()
 	made.append_array(spikes.find_children("*", "", true, false))
+	IceNovaFx.flat(probe, IceNovaFx.material(IceVortexFx.SWIRL, DamageType.Kind.COLD), 10.0, 0.0)
+	var nova := IceNovaFx.blow(probe, at, DamageType.Kind.COLD, 10.0)
+	nova.process_mode = Node.PROCESS_MODE_DISABLED
+	made.append_array(nova.find_children("*", "", true, false))
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in made:
 		if node is GeometryInstance3D:
