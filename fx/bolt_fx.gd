@@ -377,7 +377,7 @@ static func _ring(host: Node3D, at: Vector3, mesh: QuadMesh, start: float, end: 
 	tween.tween_method(spread, start, end, open).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_method(func(o: float) -> void:
 		for arc in arcs:
-			arc.set_instance_shader_parameter(&"opacity", o), 1.0, 0.0, CROWN_FADE)
+			arc.set_instance_shader_parameter(&"opacity", o * Settings.veil_of(arc)), 1.0, 0.0, CROWN_FADE)
 	tween.tween_callback(ring.queue_free)
 
 
@@ -439,12 +439,12 @@ static func flare_at(viewport: Viewport, at: Vector3, host: Node, nature: int, s
 	shock(flash, at - Vector3.UP * ElementFx.LIFT, nature, 6.0 * size)
 
 
-## Grandit jusqu'à `to` en s'éteignant, puis se libère.
+## Grandit jusqu'à `to` en s'éteignant, sous son voile, puis se libère.
 static func fade(node: GeometryInstance3D, to: Vector3, life: float) -> void:
 	var tween := node.create_tween().set_parallel()
 	tween.tween_property(node, "scale", to, life)
 	tween.tween_method(
-		func(o: float) -> void: node.set_instance_shader_parameter(&"opacity", o), 1.0, 0.0, life
+		func(o: float) -> void: node.set_instance_shader_parameter(&"opacity", o * Settings.veil_of(node)), 1.0, 0.0, life
 	)
 	tween.chain().tween_callback(node.queue_free)
 

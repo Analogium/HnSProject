@@ -91,6 +91,10 @@ func test_the_fire_layers_take_their_host_veil() -> void:
 func test_burst_embers_fly_out_and_fall() -> void:
 	var fx := Sparks.burst(_host(), Vector3.ZERO, DamageType.Kind.FIRE, 20, 20.0)
 	fx.process_mode = Node.PROCESS_MODE_DISABLED
+	# Une braise choisie : tirée au hasard, lancée haut avec une vie courte, elle n'avait pas le temps de
+	# retomber.
+	fx._embers[0].speed = Vector3(80.0, 30.0, 0.0)
+	fx._embers[0].life = 1.0
 	fx._clock = 0.15
 	var early := fx.ember(0)
 	assert_gt(Vector2(early.origin.x, early.origin.z).length(), 5.0, "parties vers le dehors")

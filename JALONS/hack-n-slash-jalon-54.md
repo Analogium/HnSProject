@@ -1085,8 +1085,10 @@ d'arcs et ses lumières ; manquaient **les étincelles** et **la distorsion**. L
 **Erreur vue sur planche** : à la largeur des braises, les étincelles de la foudre sortaient en **pétales
 blancs** — 1 px de large, deux fois plus étirées par la course. Rien au sol : une brûlure de Lichtenberg
 dirait un sol qui frappe. Les arcs se défont toujours en fondu d'opacité : un dissolve n'y gagnait
-rien à cette taille. **Défaut d'avant, vu en relisant, laissé tel quel** : ce fondu (`BoltFx.fade()`,
-`_ring()`) écrit `opacity` par-dessus le voile du menu — un éclat voilé à 25 % repart de 100 %. Captures en jeu :
+rien à cette taille. **Défaut d'avant, vu en relisant** : ce fondu (`BoltFx.fade()`, `_ring()`)
+écrivait `opacity` par-dessus le voile du menu — un éclat voilé à 25 % repartait de 100 %. Corrigé à la
+demande de l'utilisateur : le fondu se multiplie au voile que porte le nœud, lu à chaque pas
+(`Settings.veil_of()`, que la Chaîne prend aussi au lieu du voile des sorts écrit en dur). Captures en jeu :
 `Bureau\hns-captures-manuel-foudre-jeu\`, ennemis figés au loin.
 **Coût** (l'Éclair vif en case 0 contre 300 grunts increvables, sans vsync, huit paires alternées, A coupe
 étincelles et distorsion, ComfyUI arrêté) : **B − A = +1,0 ± 1,7 ms l'image** (erreur type 0,6), physique

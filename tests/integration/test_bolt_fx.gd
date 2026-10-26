@@ -387,3 +387,19 @@ func test_a_chain_jump_sparks_at_its_target() -> void:
 	var sparks := get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks and not n in before)
 	assert_eq(sparks.size(), 1)
 	assert_almost_eq((sparks[0] as Node3D).global_position, Vector3(60, 0, 0), Vector3.ONE * 0.01, "à la cible")
+
+
+## Un éclat qui s'éteint le fait sous le voile du menu : écrit tel quel, le fondu l'effaçait, et un
+## éclat voilé à 25 % repartait de 100 %.
+func test_a_fading_flash_keeps_the_spell_veil() -> void:
+	var before := Settings.to_dict()
+	Settings.spell_opacity = 0.25
+	var flash := BoltFx.flash_of(DamageType.Kind.LIGHTNING)
+	_world.add_child(flash)
+	Settings.veil(flash, Settings.SPELLS)
+	BoltFx.fade(flash, Vector3.ONE * 10.0, 10.0)
+	await wait_process_frames(2)
+	var o := float(flash.get_instance_shader_parameter(&"opacity"))
+	assert_gt(o, 0.2, "il commence à s'éteindre")
+	assert_lt(o, 0.251, "sous son voile")
+	Settings.from_dict(before)

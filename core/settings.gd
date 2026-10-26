@@ -172,6 +172,15 @@ func opacity_of(group: StringName) -> float:
 	return spell_opacity if group == SPELLS else enemy_attack_opacity
 
 
+## Le voile que porte `node`, 1 s'il n'en a pas : un fondu s'y multiplie — écrit tel quel, il effaçait
+## le voile, et un éclat voilé à 25 % repartait de 100 %.
+func veil_of(node: Node) -> float:
+	for group in [SPELLS, ENEMY_ATTACKS]:
+		if node.is_in_group(group):
+			return opacity_of(group)
+	return 1.0
+
+
 func _reveil(group: StringName) -> void:
 	if is_inside_tree():
 		for node in get_tree().get_nodes_in_group(group):

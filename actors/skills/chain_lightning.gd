@@ -221,7 +221,7 @@ func _process(delta: float) -> void:
 	if _age >= LIFETIME:
 		queue_free()
 		return
-	var fading := clampf((LIFETIME - _age) / (LIFETIME / 3.0), 0.0, 1.0) * Settings.opacity_of(Settings.SPELLS)
+	var fading := clampf((LIFETIME - _age) / (LIFETIME / 3.0), 0.0, 1.0)
 	for strand in get_children():
-		(strand as GeometryInstance3D).set_instance_shader_parameter(&"opacity", fading)
+		(strand as GeometryInstance3D).set_instance_shader_parameter(&"opacity", fading * Settings.veil_of(strand))
 
