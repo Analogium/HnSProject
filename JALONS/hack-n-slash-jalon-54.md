@@ -1021,10 +1021,56 @@ explosion de froid : la Crevasse, l'Éclatement du Tombeau, l'Implosion sous la 
 son Ornière. Erreur vue : à 104 px, l'onde de choc de la Nova, large d'une part de son rayon, devenait **un
 beignet blanc** ; plafonnée à sa largeur en pixels à 46 px, la Nova ne change pas.
 
+**Le manuel des flammes à la barre de Last Epoch** (26 octobre). L'utilisateur, après le froid : « refait
+donc le visuel des skills du manuel de feu avec cette nouvelle méthode, si j'aime bien on adoptera cette
+méthode définitivement ». Comme pour le froid, **les planches sont tranchées par moi** et restent sur le
+Bureau (`hns-captures-feu-planche-boule\`, `-feu-planche-sol\`) ; l'état d'avant est dans
+`-feu-avant\`. Manquaient au feu, parmi les techniques de la Nova : le dissolve à liseré, la distorsion,
+des éclats balistiques posables ; et une couche promettait une mécanique absente — **la brûlure craquelée
+sous chaque explosion disait un sol qui brûle** (la règle du sol gelé, 26 octobre) : elle part.
+**La texture** : une bande de flammes de Qwen-Image pour l'onde de feu, deux graines (7 et 21, la même
+flamme en biais), 20 s le pas — **la 7** (`fx/fire_wind.png`, `tools/fx_textures.py fire_wind`).
+**Trois couches neuves**, partagées : la chaleur qui tremble (`fx/heat_haze.gdshader`, l'écran décalé par
+un bruit qui monte, **dessinée avant le feu** : l'écran qu'elle relit n'a pas les effets, posée après elle
+aurait effacé les flammes derrière elle), l'onde de feu (`fx/fire_shock.gdshader`, l'onde de choc de la
+Nova en lumière) et les braises (`FireEmbers`, un `MultiMesh` balistique posé par `ember(i)`, **semé au
+temps** : semé par image, le compte suivait l'écran à 165 Hz).
+- **La boule** : l'actuelle, la pile (braises, chaleur), la pile rouge (la même, ses volutes à 55 %), et
+  un ruban de flammes sous la boule — une bande plate aux bouts carrés, écarté. **Retenue : la pile rouge.**
+- **L'explosion** (et le Météore, au même code) : l'actuelle, la pile, la pile rouge (photos et volutes
+  baissées), la pile sans photos d'explosion. **Erreurs vues** : l'onde aux couleurs de sa photo sortait
+  **blanc crème** sur l'ocre — passée à la rampe du feu ; large d'une part de son rayon, elle couvrait **un
+  disque plein**, au Météore surtout — plafonnée en pixels à 20 px de rayon ; la somme des photos montait
+  au blanc. **Retenue : la pile rouge** (`FireBlastFx`).
+- **L'Immolation** : l'actuelle, son liseré en onde de feu sous la chaleur, la même plus une onde à chaque
+  impulsion, l'actuelle sous la chaleur. **Retenu : le liseré de flammes** — une onde toutes les demi-secondes
+  charge une aura qu'on garde tout le combat.
+- **La Ruée** : l'actuelle, la pile aux langues de feu le long du couloir — **des dents orange** —, la pile
+  sans elles : chaleur, et **fin rongée au liseré brûlant** au lieu du fondu. **Retenue : la fin rongée.**
+- **Le Brasero** : l'actuel (il disparaissait d'un coup), la pile (chaleur, feu qui tombe, fer rongé au
+  liseré), la même aux langues de feu dans la coupe, qu'on ne voit pas d'en haut. **Retenue : la pile** ;
+  le fer passe en shader (`fx/brazier_iron.gdshader`) et `BrazierFx` à la racine du viewport, qui survit
+  `OUT` s à son brasero.
+- **Le Serpent** : l'actuel (fin en pointillé), la pile (braises qui montent du corps, fin rongée au liseré,
+  la queue d'abord). **Retenue : la pile.**
+
+**Une erreur de planche** à retenir : mon horloge avançait d'un soixantième par image, et l'écran en tourne
+165 — les fins à « 2,95 s » tombaient à 1,1 s, jamais atteintes. Les liserés brûlants sortaient tous blancs
+(le cœur de la rampe × 3 à 4) : la teinte du milieu, × 1,3 à 1,6. Captures en jeu :
+`Bureau\hns-captures-manuel-feu-jeu\`, `-manuel-feu-fins-jeu\` (la Ruée, le Brasero et le Serpent qui finissent) ; la chaleur de
+l'explosion marbrait trop le sol, à 0,03 : 0,02. `ElementFx.warm()` éteint désormais tout ce que sa chauffe
+fait naître à la racine du viewport, plutôt que de le nommer un par un.
+**Coût** (la boule de feu en case 0 contre 300 grunts increvables, sans vsync, huit paires alternées, A
+coupe les couches neuves — onde, chaleur, braises —, ComfyUI arrêté, machine calme : 9,6 à 11,2 ms
+l'image) : **B − A = +0,65 ± 0,42 ms l'image** (erreur type 0,15 ; sept paires sur huit positives),
+physique +0,30 ± 0,54 (0,19), pire image −0,4 ± 2,7. **Hors du bruit, cette fois** : environ 6 % de l'image
+quand on ne fait que lancer des boules dans une meute de 300. Les braises se posent en GDScript à chaque
+image (35 par boule) : la première chose à couper si le combat dense le demande.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à

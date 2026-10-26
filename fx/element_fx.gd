@@ -96,6 +96,8 @@ static func warm(host: Node3D) -> void:
 	var probe := Node3D.new()
 	host.add_child(probe)
 	var at := probe.global_position
+	# Ce qui vit à la racine du viewport (nuage, Pics, Nova, braises, explosion de feu) s'éteint aussi.
+	var rooted := host.get_viewport().get_children()
 	var made: Array[Node] = [
 		trail(probe, Color.WHITE), burst(probe, at, Color.WHITE, 10.0), area(probe, Color.WHITE, 10.0),
 		line(probe, at, at + Vector3.RIGHT * 10.0, Color.WHITE), FlameFx.ball(probe, DamageType.Kind.FIRE),
@@ -124,19 +126,20 @@ static func warm(host: Node3D) -> void:
 	probe.add_child(StormCloudFx.stone())
 	# Le nuage vit hors de la sonde : libéré avec elle, sans se dissiper.
 	var storm := StormCloudFx.gather(probe, DamageType.Kind.LIGHTNING, 10.0)
-	made.append_array(storm.find_children("*", "", true, false))
 	host.get_tree().create_timer(0.2).timeout.connect(storm.queue_free)
 	# Figés, brisés d'emblée : la lumière ne se rallume pas, les éclats compilent leur matière.
 	var spikes := IceSpikesFx.raise(probe, at, DamageType.Kind.COLD, 10.0)
 	spikes.process_mode = Node.PROCESS_MODE_DISABLED
 	spikes._clock = IceSpikesFx.SHATTER + 0.05
 	spikes._show()
-	made.append_array(spikes.find_children("*", "", true, false))
 	IceNovaFx.flat(probe, IceNovaFx.material(IceVortexFx.SWIRL, DamageType.Kind.COLD), 10.0, 0.0)
 	var nova := IceNovaFx.blow(probe, at, DamageType.Kind.COLD, 10.0)
 	nova.process_mode = Node.PROCESS_MODE_DISABLED
-	made.append_array(nova.find_children("*", "", true, false))
 	made.append_array(probe.find_children("*", "", true, false))
+	for node in host.get_viewport().get_children():
+		if node not in rooted:
+			made.append_array(node.find_children("*", "", true, false))
+			made.append(node)
 	for node in made:
 		if node is GeometryInstance3D:
 			node.set_instance_shader_parameter(&"opacity", 0.0)

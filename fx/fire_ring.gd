@@ -2,8 +2,11 @@ class_name FireRing
 extends Node3D
 
 ## Le brasier d'Immolation en 3D (jalon 54, « liseré et flammèches » choisi sur planche, après
-## une première planche jugée trop chargée) : un liseré de feu qui vacille au rayon qui frappe,
-## quelques langues de feu dessus, une chaleur douce au sol, une lumière tenue.
+## une première planche jugée trop chargée ; puis à la barre de Last Epoch, « liseré de flammes » contre
+## l'actuel, l'actuel sous la chaleur et une onde à chaque impulsion — trop chargée pour une aura) : au
+## rayon qui frappe, l'onde de feu de l'explosion (`FireBlastFx`) tenue en liseré, qui frémit et se ronge
+## un peu ; quelques langues de feu dessus, la chaleur qui tremble dans le cercle, une chaleur douce au
+## sol, une lumière tenue.
 
 const GROUND := preload("res://fx/fire_ring.gdshader")
 const TONGUE := preload("res://fx/flame_tongue.gdshader")
@@ -13,12 +16,19 @@ const BAND := 0.93
 const TONGUE_SIZE := 7.0
 const TONGUE_LIFE := 0.6
 const LIGHT := 3.0
+## Le liseré, en part du rayon ; ce que son bruit en ronge, qui frémit.
+const RIM := 0.09
+const RIM_EATEN := Vector2(0.22, 0.08)
+const HEAT_STRENGTH := 0.006
 
 static var _tongue_draw: QuadMesh
 
 var _ground: MeshInstance3D
 var _tongues: GPUParticles3D
 var _light: OmniLight3D
+var _rim: MeshInstance3D
+var _heat: MeshInstance3D
+var _clock := 0.0
 var _nature := -1
 var _radius := 0.0
 
@@ -51,9 +61,19 @@ static func light_up(host: Node3D) -> FireRing:
 	ring._light.shadow_enabled = false
 	ring._light.position = Vector3.UP * 14.0
 	ring.add_child(ring._light)
-	for node in [ring._ground, ring._tongues]:
+	ring._heat = IceNovaFx.flat(ring, FireBlastFx.haze_material(), 1.0, DangerZone.LIFT + 0.3)
+	ring._heat.set_instance_shader_parameter(&"spread", 1.0)
+	ring._heat.set_instance_shader_parameter(&"strength", HEAT_STRENGTH)
+	for node in [ring._ground, ring._tongues, ring._heat]:
 		ElementFx.veil_like(node, host)
 	return ring
+
+
+func _process(delta: float) -> void:
+	_clock += delta
+	if _rim != null:
+		_rim.set_instance_shader_parameter(&"clock", _clock * 0.6)
+		_rim.set_instance_shader_parameter(&"dissolve", RIM_EATEN.x + RIM_EATEN.y * sin(_clock * 5.0))
 
 
 ## Sa nature et son rayon, à chaque impulsion : le Feu de camp le fait monter, un nœud pris en
@@ -63,6 +83,12 @@ func show_as(nature: int, radius: float) -> void:
 		return
 	var ramp := FlameFx.ramp(nature)
 	if nature != _nature:
+		if _rim != null:
+			_rim.queue_free()
+		_rim = IceNovaFx.flat(self, FireBlastFx.shock_material(nature), 1.0, DangerZone.LIFT + 0.7)
+		_rim.set_instance_shader_parameter(&"front", 1.0)
+		_rim.set_instance_shader_parameter(&"width", RIM)
+		ElementFx.veil_like(_rim, get_parent())
 		var m := _ground.material_override as ShaderMaterial
 		m.set_shader_parameter(&"tint", Vector3(ramp[1].r, ramp[1].g, ramp[1].b))
 		m.set_shader_parameter(&"deep", Vector3(ramp[2].r, ramp[2].g, ramp[2].b))
@@ -70,6 +96,8 @@ func show_as(nature: int, radius: float) -> void:
 	_nature = nature
 	_radius = radius
 	_ground.scale = Vector3(radius, 1.0, radius)
+	_rim.scale = Vector3.ONE * radius
+	_heat.scale = Vector3.ONE * radius
 	_light.omni_range = radius * 2.2
 	var pm := FlameFx.flame_material(nature, &"trail", FlameFx.BOARD_RADIUS).duplicate() as ParticleProcessMaterial
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING

@@ -3,8 +3,10 @@ extends MeshInstance3D
 
 ## Le corps du Serpent infernal en 3D (jalon 54 ; un ruban de feu était « pas un serpent », des
 ## écailles dessinées « un dessin plat ») : museau, mâchoire, cou pincé, corps qui s'effile, une
-## peau de serpent vraie aux joints qui rougeoient, yeux qui brûlent, et sa lueur portée au sol. La grille ne change jamais : le
-## shader la courbe le long des anneaux, seuls `SPINE` points partent au GPU à chaque pas.
+## peau de serpent vraie aux joints qui rougeoient, yeux qui brûlent, et sa lueur portée au sol ; à la
+## barre de Last Epoch (« braises, fin rongée » contre l'actuel), des braises qui montent de son corps et
+## une fin rongée au liseré brûlant. La grille ne change jamais : le shader la courbe le long des
+## anneaux, seuls `SPINE` points partent au GPU à chaque pas.
 
 const SHADER := preload("res://fx/serpent.gdshader")
 const SKIN := preload("res://fx/serpent_skin.png")
@@ -24,6 +26,9 @@ const SCALE := 2.2
 ## Sa lueur, posée devant la tête et de côté : au-dessus, elle l'écrasait d'un rouge uniforme.
 const LIGHT := 5.0
 const LIGHT_REACH := 45.0
+## Les braises qui montent du corps : par seconde, et leur vie.
+const EMBERS := 40.0
+const EMBER_LIFE := 0.8
 
 static var _grid: ArrayMesh
 
@@ -55,7 +60,12 @@ static func dress(snake: Node3D, nature: int) -> SerpentBody:
 	body._light.omni_range = LIGHT_REACH
 	body._light.shadow_enabled = false
 	body.add_child(body._light)
+	FireEmbers.trail(snake, nature, EMBERS, EMBER_LIFE, body._ember_spot, true)
 	return body
+
+
+func _ember_spot() -> Vector3:
+	return _now[randi() % _now.size()] + Vector3.UP * 3.0 if not _now.is_empty() else global_position
 
 
 ## Les anneaux du jeu, tête d'abord ; `size` celle du serpent, `fade` sa fin (0 → 1).

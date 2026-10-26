@@ -29,6 +29,9 @@
                                     (`FrostGroundFx`, un décal : couleur et alpha ; tirée pour la Nova),
                                     et fx/frost_wind.png, le vent de givre de l'onde de choc de la Nova
                                     (`IceNovaFx`, bande raccordable en x) : des tirages de Qwen-Image
+    tools/fx_textures.py fire_wind  fx/fire_wind.png, la bande de flammes de l'onde de feu (`FireBlastFx`,
+                                    le liseré de `FireRing`), raccordable en x : un tirage de Qwen-Image
+                                    sur fond noir
     tools/fx_textures.py vortex     fx/frost_vortex.png, la spirale de lames de glace vue de dessus du Désastre
                                     hivernal (`IceVortexFx`) : un tirage de Qwen-Image sur fond noir
     tools/fx_textures.py orb        fx/frozen_orb_mist.png, la brume de givre derrière l'Orbe gelée
@@ -119,6 +122,11 @@ VORTEX = ("top-down view of a spiral whirlwind of ice shards and snow, a cyclone
 # en grand, et l'orbe du Trait de glace en grand.
 ORB_MIST = ("a photograph of a frozen orb, a glowing sphere of pale blue ice with sharp frost crystals growing out of it "
             "and swirling frost mist around it, isolated on a pure black background, VFX stock footage, centered", 11)
+# « Pile rouge » sur la planche du manuel des flammes à la barre de Last Epoch : la bande de l'onde de feu
+# (l'explosion, le liseré de l'Immolation), contre la graine 21, la même flamme en biais.
+FIRE_WIND = ("a photograph of a horizontal band of roaring flames blowing from left to right, a wall of fire swept by "
+             "strong wind, bright yellow and orange tongues of flame with dark red edges, isolated on a pure black "
+             "background, realistic fire, VFX stock footage", 7)
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
 CELL = 256
@@ -263,6 +271,10 @@ def vortex(rgb):
     return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.15, 0.0, 1.0)[..., None]
 
 
+def cmd_fire_wind():
+    save(frost_wind(qwen(*FIRE_WIND)), "fire_wind.png")
+
+
 def cmd_vortex():
     save(vortex(qwen(*VORTEX)), "frost_vortex.png")
 
@@ -326,4 +338,4 @@ def cmd_fire():
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
      "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
-     "nova": cmd_nova, "vortex": cmd_vortex, "orb": cmd_orb}[sys.argv[1]]()
+     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb}[sys.argv[1]]()

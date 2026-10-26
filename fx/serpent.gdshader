@@ -23,7 +23,8 @@ uniform sampler2D skin : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D skin_n : filter_linear_mipmap, repeat_enable;
 // Combien d'écailles de long tient une répétition de la peau.
 const float SKIN_ROWS = 8.7;
-// Le voile des sorts et la fin du serpent : il se dissout en pointillé, sans transparence.
+// Le voile des sorts, en pointillé, sans transparence ; la fin du serpent, rongée par un bruit au liseré
+// brûlant, la queue d'abord (la barre de Last Epoch, contre le pointillé).
 instance uniform float opacity = 1.0;
 instance uniform float fade = 0.0;
 // L'avant du corps dressé, tête relevée : en pixels du monde, à la tête.
@@ -78,9 +79,15 @@ void vertex() {
 }
 
 void fragment() {
-	if (hash(floor(FRAGCOORD.xy)) > opacity * (1.0 - fade)) {
+	if (hash(floor(FRAGCOORD.xy)) > opacity) {
 		discard;
 	}
+	float eaten = noise(vec2(along * scales * 0.8, UV.y * 6.0)) * 0.55
+		+ noise(vec2(along * scales * 2.3, UV.y * 13.0)) * 0.25 + (1.0 - along) * 0.2;
+	if (eaten < fade) {
+		discard;
+	}
+	float burn = (1.0 - smoothstep(fade, fade + 0.07, eaten)) * step(0.01, fade);
 	vec2 uv = vec2(along * scales / SKIN_ROWS, UV.y);
 	vec3 relief = texture(skin_n, uv).rgb;
 	float flow = noise(vec2(along * scales * 0.9 - TIME * 2.2, UV.y * 5.0));
@@ -95,5 +102,5 @@ void fragment() {
 	SPECULAR = 0.5;
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
 	EMISSION = (mix(deep, tint, pulse) * (0.35 + 0.9 * pulse) + heart * pow(pulse, 4.0) * 0.5) * relief.b * 0.7
-		+ deep * belly * 0.35 + heart * eye * 2.0 + tint * fres * 0.5;
+		+ deep * belly * 0.35 + heart * eye * 2.0 + tint * fres * 0.5 + (tint * 1.5 + heart * 0.4) * burn;
 }

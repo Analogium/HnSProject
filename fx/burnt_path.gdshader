@@ -2,8 +2,9 @@ shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled;
 
 // Le sol de `BurntPath` : la terre craquelée d'un scan, noircie, dont les fissures rougeoient et
-// pulsent ; son bord casse le long d'une craquelure. Le plan fait 2 de côté, mis à l'échelle
-// du couloir : `half_len` et `radius` le redonnent en pixels.
+// pulsent ; son bord casse le long d'une craquelure ; à sa fin, rongé par un bruit au liseré brûlant,
+// plutôt que fondu (la barre de Last Epoch). Le plan fait 2 de côté, mis à l'échelle du couloir :
+// `half_len` et `radius` le redonnent en pixels.
 
 #include "res://fx/flame_common.gdshaderinc"
 
@@ -41,5 +42,12 @@ void fragment() {
 	vec3 burnt = vec3(0.035, 0.024, 0.018) * (0.5 + 1.1 * m.r);
 	float glow = 1.0 - smoothstep(0.55, 1.0, life);
 	ALBEDO = burnt + (lit * c * 0.9 + deep * pow(1.0 - d, 2.0) * 0.06 * n) * glow;
-	ALPHA = smoothstep(1.0, 0.82, d) * (1.0 - smoothstep(0.8, 1.0, life)) * opacity;
+	float eat = smoothstep(0.78, 1.0, life);
+	float e = noise(world * 0.12) * 0.6 + noise(world * 0.4) * 0.4;
+	if (e < eat) {
+		discard;
+	}
+	float edge = (1.0 - smoothstep(eat, eat + 0.08, e)) * step(0.01, eat);
+	ALBEDO += tint * edge * 1.3;
+	ALPHA = max(smoothstep(1.0, 0.82, d), edge) * opacity;
 }

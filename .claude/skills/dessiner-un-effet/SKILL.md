@@ -64,7 +64,11 @@ pas.
   et la planche de textures ComfyUI se propose d'office. Le flipbook (fumée, explosion) se rend dans
   Blender, `tools/blender/mist_flipbook.py`. Qwen sort le « givre au sol » en feuilles de fougère :
   une glace craquelée vue de dessus lui réussit. Un décal se teinte au cyan (le soleil blanchit un
-  albédo clair) et reste bas, sinon il se projette sur les corps. **Un dessin ne promet pas une
+  albédo clair) et reste bas, sinon il se projette sur les corps.
+  Au feu (26 octobre) : **une distorsion se dessine avant le feu** (`render_priority`) — l'écran qu'elle
+  relit n'a pas les effets, posée après elle effaçait les flammes ; **un liseré brûlant prend le milieu de la
+  rampe**, pas son cœur multiplié, qui sortait blanc ; et ce qui naît au fil du temps (des braises) se
+  sème **par seconde**, pas par image — l'écran tourne à 165 Hz. **Un dessin ne promet pas une
   mécanique absente** : la glace au sol se lit « sol gelé », et l'utilisateur l'a fait retirer de tout
   sort qui ne gèle pas le sol (26 octobre). Ce qui couvre large reste sous 0,75
   d'opacité : un tourbillon de 104 px, plus opaque, sortait en disque blanc. Des éclats qui doivent se
@@ -102,6 +106,8 @@ sur la planche. Montrer **le geste**, pas le dessin isolé : à deux instants au
   contre la falaise sort **coupé en carré** — le plateau, plus haut que lui, le masque case
   par case : `warp` le joueur vers un coin dégagé avant de capturer (Nova de glace). Figer la zone
   (`Game.rng.seed` avant `enter_area`) pour que deux rendus se comparent.
+- **L'horloge d'une planche lit le vrai `delta`** (plafonné, une prise fige le jeu) : à un soixantième
+  par image, elle courait 2,75 fois trop vite à 165 Hz et les fins n'étaient jamais atteintes.
 - **Faire un premier passage à blanc** : chaque matière neuve se compile ~100 ms à sa
   première image, et ce qui vole saute d'autant (des perles dans une traînée).
 - **Montrer une boule en vol avec sa traînée entière** : elle part assez tôt pour avoir

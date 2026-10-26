@@ -3,7 +3,9 @@ extends Node3D
 
 ## Le couloir d'une ruée de feu en 3D (jalon 54, « fissures » choisi sur une deuxième planche,
 ## la première jugée « cheap ») : la terre craquelée d'un scan (Poly Haven, CC0), noircie, dont
-## les fissures rougeoient ; des braises qui montent ; une lueur tenue. Il s'éteint sur sa durée.
+## les fissures rougeoient ; des braises qui montent ; une lueur tenue ; et, à la barre de Last Epoch
+## (« fin rongée » contre l'actuel, et la même sous des langues de feu — des dents orange), la chaleur
+## qui tremble dessus. Il s'éteint sur sa durée, puis se ronge au liseré brûlant.
 
 const SHADER := preload("res://fx/burnt_path.gdshader")
 const CRACKS := preload("res://fx/burnt_cracks.png")
@@ -13,6 +15,7 @@ const EMBER_LIFE := 1.4
 const LIGHT := 2.5
 ## La part de la durée où les braises et la lueur commencent à s'éteindre.
 const DIMMING := 0.45
+const HEAT_STRENGTH := 0.008
 
 static var _plane: PlaneMesh
 static var _ember_draw: QuadMesh
@@ -22,6 +25,7 @@ static var _ember_materials := {}
 var _ground: MeshInstance3D
 var _embers: GPUParticles3D
 var _light: OmniLight3D
+var _heat: MeshInstance3D
 
 
 ## Le couloir de `trail`, posé à son départ, jusqu'à `toward` (en repère global).
@@ -51,7 +55,15 @@ static func lay(trail: Node3D, toward: Vector3, nature: int, radius: float, dura
 	path._light.shadow_enabled = false
 	path._light.position = Vector3.UP * radius
 	path.add_child(path._light)
-	for node in [path._ground, path._embers]:
+	path._heat = MeshInstance3D.new()
+	path._heat.mesh = IceSpikesFx.plane()
+	path._heat.material_override = FireBlastFx.haze_material()
+	path._heat.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	path._heat.scale = Vector3(half + radius, 1.0, radius)
+	path._heat.position = Vector3.UP * (DangerZone.LIFT + 0.3)
+	path._heat.set_instance_shader_parameter(&"stretch", (half + radius) / radius)
+	path.add_child(path._heat)
+	for node in [path._ground, path._embers, path._heat]:
 		ElementFx.veil_like(node, trail)
 	path._fade(duration)
 	return path
@@ -63,6 +75,8 @@ func _fade(duration: float) -> void:
 		0.0, 1.0, duration)
 	tween.tween_property(_embers, "amount_ratio", 0.0, duration * (1.0 - DIMMING)).set_delay(duration * DIMMING)
 	tween.tween_property(_light, "light_energy", 0.0, duration * (1.0 - DIMMING)).set_delay(duration * DIMMING)
+	tween.tween_method(func(k: float) -> void: _heat.set_instance_shader_parameter(&"strength", k),
+		HEAT_STRENGTH, 0.0, duration * 0.85)
 
 
 static func _material(nature: int) -> ShaderMaterial:

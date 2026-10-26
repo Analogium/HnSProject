@@ -4058,7 +4058,8 @@ func test_the_brazier_spits_at_the_nearest_enemy() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	var b := _brazier()
 	assert_eq(b.global_position, _aim())
-	assert_true(b.get_children().any(func(n: Node) -> bool: return n is BrazierFx), "son trépied")
+	# À la racine du viewport : il survit au brasero le temps de se ronger.
+	assert_true(b.get_viewport().get_children().any(func(n: Node) -> bool: return n is BrazierFx and n._host == b), "son trépied")
 	var cast := _p.resolve(SkillCatalog.by_id("brazier"), 1)
 	await wait_seconds(cast.period + 0.1)
 	assert_eq(_children_of(Fireball).size(), 0, "personne à portée")

@@ -4,11 +4,15 @@ extends Node3D
 ## Le Brasero en 3D (jalon 54, « trépied, flammes » choisi sur planche contre des braises seules,
 ## le cœur de la boule dans la coupe, une corbeille de fer et un foyer de pierre) : le trépied de
 ## fer du jalon 42 sous un scan rouillé, un lit de braises, une colonne de flammes photographiées
-## et la lumière qu'elles portent au sol.
+## et la lumière qu'elles portent au sol. À la barre de Last Epoch (« chaleur, fin rongée » contre
+## l'actuel et la même aux langues de feu dans la coupe, qu'on ne voit pas d'en haut) : la chaleur qui
+## tremble au-dessus, et, éteint, le feu qui tombe et le fer rongé au liseré rougeoyant — il disparaissait
+## d'un coup. Il vit donc à la racine du viewport, posé sur son brasero, et lui survit `OUT` secondes.
 
 const IRON := preload("res://fx/brazier_iron.png")
 const IRON_RELIEF := preload("res://fx/brazier_iron_n.png")
 const COALS := preload("res://fx/brazier_coals.gdshader")
+const IRON_SHADER := preload("res://fx/brazier_iron.gdshader")
 ## Le rebord de la coupe, en pixels : sous `ElementFx.LIFT`, d'où ses boules semblent sortir.
 const RIM := 9.0
 const BOWL_RADIUS := 7.5
@@ -18,22 +22,38 @@ const FLAME_LIFE := 0.6
 const EMBERS := 10
 const LIGHT := 3.0
 const LIGHT_REACH := 34.0
+const HEAT := 16.0
+const HEAT_STRENGTH := 0.012
+## Éteint : le fer se ronge et les braises s'éteignent en `OUT` secondes.
+const OUT := 0.6
 
 static var _body: ArrayMesh
-static var _iron: StandardMaterial3D
+static var _iron: ShaderMaterial
 static var _coals := {}
 static var _flames := {}
 
 var body: MeshInstance3D
+var _host: Node3D
+var _bed: MeshInstance3D
+var _heat: MeshInstance3D
+var _light: OmniLight3D
+var _clock := 0.0
+var _out_at := -1.0
+## Sa lumière quand il s'éteint : elle part de là, pas de `LIGHT` (la chauffe des matières l'éteint).
+var _lit := 0.0
 
 
-## Le brasero de `host`, qui le porte, à la nature de son lancer.
+## Le brasero posé sur `host`, à la nature de son lancer ; `host` parti, il s'éteint.
 static func light_up(host: Node3D, nature: int) -> BrazierFx:
 	var fx := BrazierFx.new()
-	host.add_child(fx)
+	fx._host = host
+	host.get_viewport().add_child(fx)
+	fx.global_position = host.global_position
 	fx.body = MeshInstance3D.new()
 	fx.body.mesh = _tripod()
 	fx.body.material_override = _iron_material()
+	var ramp := FlameFx.ramp(nature)
+	fx.body.set_instance_shader_parameter(&"tint", Vector3(ramp[1].r, ramp[1].g, ramp[1].b))
 	fx.add_child(fx.body)
 	var floor_y := RIM - 1.5
 	var coals := MeshInstance3D.new()
@@ -45,6 +65,7 @@ static func light_up(host: Node3D, nature: int) -> BrazierFx:
 	coals.position = Vector3.UP * floor_y
 	coals.scale = Vector3(BOWL_RADIUS - 1.3, 1.0, BOWL_RADIUS - 1.3)
 	fx.add_child(coals)
+	fx._bed = coals
 	var flames := GPUParticles3D.new()
 	flames.amount = FLAMES
 	flames.lifetime = FLAME_LIFE
@@ -60,12 +81,33 @@ static func light_up(host: Node3D, nature: int) -> BrazierFx:
 	embers.amount = EMBERS
 	embers.position = Vector3.UP * floor_y
 	fx.add_child(embers)
-	var light := FlameFx.light_of(nature, LIGHT, LIGHT_REACH)
-	light.position = Vector3.UP * (RIM + 6.0)
-	fx.add_child(light)
-	for node in [coals, flames, embers]:
+	fx._light = FlameFx.light_of(nature, LIGHT, LIGHT_REACH)
+	fx._light.position = Vector3.UP * (RIM + 6.0)
+	fx.add_child(fx._light)
+	fx._heat = IceNovaFx.flat(fx, FireBlastFx.haze_material(), HEAT, RIM + 4.0)
+	fx._heat.set_instance_shader_parameter(&"spread", 1.0)
+	fx._heat.set_instance_shader_parameter(&"strength", HEAT_STRENGTH)
+	for node in [coals, flames, embers, fx._heat]:
 		ElementFx.veil_like(node, host)
 	return fx
+
+
+func _process(delta: float) -> void:
+	_clock += delta
+	if _out_at < 0.0:
+		if is_instance_valid(_host) and _host.is_inside_tree():
+			return
+		_out_at = _clock
+		_lit = _light.light_energy
+		for fire: GPUParticles3D in find_children("*", "GPUParticles3D", false, false):
+			fire.emitting = false
+	var out := clampf((_clock - _out_at) / OUT, 0.0, 1.0)
+	body.set_instance_shader_parameter(&"dissolve", out)
+	_bed.scale = Vector3.ONE * (BOWL_RADIUS - 1.3) * maxf(1.0 - out * 1.6, 0.001)
+	_light.light_energy = _lit * (1.0 - out)
+	_heat.set_instance_shader_parameter(&"strength", HEAT_STRENGTH * (1.0 - out))
+	if out >= 1.0:
+		queue_free()
 
 
 ## Une coupe évasée ouverte, son rebord, une tige, trois pieds qui s'écartent : un maillage pour
@@ -107,19 +149,12 @@ static func _tripod() -> ArrayMesh:
 	return _body
 
 
-## Le fer : plaqué en triplanaire, la coupe et ses pieds n'ont pas d'UV qui se suivent.
-static func _iron_material() -> StandardMaterial3D:
+static func _iron_material() -> ShaderMaterial:
 	if _iron == null:
-		_iron = StandardMaterial3D.new()
-		_iron.albedo_texture = IRON
-		# Le scan, brun clair, sortait cuivré sous le soleil du sol.
-		_iron.albedo_color = Color(0.42, 0.42, 0.42)
-		_iron.normal_enabled = true
-		_iron.normal_texture = IRON_RELIEF
-		_iron.metallic = 0.55
-		_iron.roughness = 0.65
-		_iron.uv1_triplanar = true
-		_iron.uv1_scale = Vector3.ONE / 12.0
+		_iron = ShaderMaterial.new()
+		_iron.shader = IRON_SHADER
+		_iron.set_shader_parameter(&"iron", IRON)
+		_iron.set_shader_parameter(&"relief", IRON_RELIEF)
 	return _iron
 
 

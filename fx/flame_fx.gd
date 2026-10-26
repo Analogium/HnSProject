@@ -2,26 +2,27 @@ class_name FlameFx
 extends ElementFx
 
 ## La boule de feu en 3D (jalon 54, « photo » choisie sur une planche de textures vraies, après
-## des flammèches en bruit de shader) : une boule de feu photographiée qui tournoie, une traînée
-## de volutes de feu photographiées qui s'additionnent, la lueur portée au sol ; à l'explosion,
-## une photo d'explosion, des volutes, une fumée photographiée, une brûlure craquelée et un
-## éclair de lumière. La traînée suit sa boule et lui survit comme les étincelles d'`ElementFx` ;
-## le cœur et la lumière partent avec la boule.
+## des flammèches en bruit de shader ; puis la « pile rouge » à la barre de Last Epoch) : une boule
+## de feu photographiée qui tournoie, une traînée de volutes de feu photographiées qui s'additionnent,
+## des braises qu'elle sème, la chaleur qui tremble sous elle, la lueur portée au sol ; à l'explosion,
+## une photo d'explosion, des volutes, une fumée photographiée, un éclair de lumière, et les couches de
+## `FireBlastFx`. Sa brûlure craquelée au sol est partie : elle disait un sol qui brûle. La traînée suit
+## sa boule et lui survit comme les étincelles d'`ElementFx` ; le cœur et la lumière partent avec elle.
 
 const PHOTO := preload("res://fx/fire_photo.gdshader")
 const SMOKE := preload("res://fx/fire_smoke.gdshader")
-const SCORCH := preload("res://fx/flame_scorch.gdshader")
 const SHADOW := preload("res://fx/meteor_shadow.gdshader")
 const SMOKES := preload("res://fx/fire_smoke.png")
 ## Chaque photo de feu (`tools/fx_textures.py fire`) : [atlas, cases, tournoiement, intensité].
-## La traînée du Météore et les volutes d'une explosion, plus nombreuses, plus faibles : à pleine
-## intensité, leur somme montait au blanc.
+## Les volutes de la traînée, du Météore et d'une explosion, et ses photos, plus faibles que la flamme
+## du Brasero : leur somme montait au blanc (la « pile rouge » contre la pile aux photos pleines).
 const PHOTOS := {
 	&"core": [preload("res://fx/fire_ball.png"), 3.0, 3.0, 1.1],
 	&"wisp": [preload("res://fx/fire_puff.png"), 4.0, 2.0, 0.7],
+	&"trail": [preload("res://fx/fire_puff.png"), 4.0, 2.0, 0.38],
 	&"meteor": [preload("res://fx/fire_puff.png"), 4.0, 2.0, 0.3],
-	&"spray": [preload("res://fx/fire_puff.png"), 4.0, 2.0, 0.14],
-	&"blast": [preload("res://fx/fire_blast.png"), 2.0, 0.6, 0.3],
+	&"spray": [preload("res://fx/fire_puff.png"), 4.0, 2.0, 0.07],
+	&"blast": [preload("res://fx/fire_blast.png"), 2.0, 0.6, 0.18],
 }
 
 ## Cœur, milieu, profond, bord, saturés : mêlée vers le blanc, la teinte sortait beige sur
@@ -44,13 +45,17 @@ const RAMPS := {
 const FLAME_LIFE := 0.45
 const BLAST_LIFE := 0.6
 const SMOKE_LIFE := 1.0
-const SCORCH_LIFE := 1.4
 ## En pixels du monde : le cœur, et une flammèche de la traînée.
 const CORE_SIZE := 12.0
 const WISP_SIZE := 10.0
 ## La lueur portée au sol par la boule, puis l'éclair de l'explosion qui s'éteint.
 const BALL_LIGHT := 14.0
 const BALL_REACH := 60.0
+## Les braises semées par la boule (par seconde, leur vie) et la chaleur sous elle.
+const EMBERS := 70.0
+const EMBER_LIFE := 0.5
+const HEAT := 16.0
+const HEAT_STRENGTH := 0.012
 const FLASH_LIGHT := 10.0
 ## Un éclat (Fragmentation, crachat, escarbille) : son cœur et sa traînée en part de ceux de la
 ## boule, ses flammèches moins nombreuses et plus brèves, sans lumière à lui. À l'identique de la
@@ -73,23 +78,23 @@ const BLAST_SIZE := 21.0
 const BLAST_LIFT := 0.7
 
 static var _smoke_draw: QuadMesh
-static var _scorch_plane: PlaneMesh
 static var _swell: CurveTexture
 static var _bloom: CurveTexture
 static var _flame_materials := {}
 static var _photos := {}
 static var _draws := {}
-static var _scorches := {}
 
 ## Le cœur de la boule, que la boule grossit (le Gonflement) ou réduit (un éclat).
 var core: MeshInstance3D
 var _nature := 0
 var _glow: OmniLight3D
+var _heat: MeshInstance3D
+var _sparks: FireEmbers
 
 
 ## La boule de `host` (un projectile) : le cœur et la lumière sur elle, la traînée qui la suit.
 static func ball(host: Node3D, nature: int) -> FlameFx:
-	var fx := _emitter(host, flame_material(nature, &"trail", BOARD_RADIUS), 90, FLAME_LIFE, draw_of(nature, &"wisp"))
+	var fx := _emitter(host, flame_material(nature, &"trail", BOARD_RADIUS), 90, FLAME_LIFE, draw_of(nature, &"trail"))
 	fx._follow(host, Vector3.UP * LIFT)
 	fx._nature = nature
 	fx.core = MeshInstance3D.new()
@@ -106,6 +111,12 @@ static func ball(host: Node3D, nature: int) -> FlameFx:
 	fx._glow = light_of(nature, BALL_LIGHT, BALL_REACH)
 	fx._glow.position = Vector3.UP * LIFT
 	host.add_child(fx._glow)
+	fx._heat = IceNovaFx.flat(host, FireBlastFx.haze_material(), HEAT, LIFT * 0.5)
+	fx._heat.set_instance_shader_parameter(&"spread", 0.9)
+	fx._heat.set_instance_shader_parameter(&"strength", HEAT_STRENGTH)
+	veil_like(fx._heat, host)
+	fx._sparks = FireEmbers.trail(host, nature, EMBERS, EMBER_LIFE,
+			func() -> Vector3: return host.get_global_transform_interpolated().origin + Vector3.UP * LIFT)
 	return fx
 
 
@@ -141,10 +152,13 @@ func as_shard() -> void:
 	process_material = flame_material(_nature, &"shard", BOARD_RADIUS)
 	amount = SHARD_WISPS
 	lifetime = SHARD_LIFE
-	_glow.queue_free()
+	# Une Fragmentation en lâche des dizaines : ni lumière, ni braises, ni chaleur à eux.
+	for node: Node in [_glow, _heat, _sparks]:
+		node.queue_free()
 
 
-## L'explosion de rayon `radius` en `at` : tout se libère seul. Rend ce qu'elle pose.
+## L'explosion de rayon `radius` en `at` : tout se libère seul. Rend ce qu'elle pose, ses couches de
+## Last Epoch (`FireBlastFx`) en dernier.
 static func blast(host: Node3D, at: Vector3, nature: int, radius: float) -> Array[Node]:
 	var k := radius / BOARD_RADIUS
 	var root := host.get_viewport()
@@ -162,20 +176,6 @@ static func blast(host: Node3D, at: Vector3, nature: int, radius: float) -> Arra
 		fx.get_tree().create_timer(fx.lifetime).timeout.connect(fx.queue_free)
 	burst.explosiveness = 1.0
 	burst.global_position = at + Vector3.UP * BLAST_SIZE * k * BLAST_LIFT
-	var scorch := MeshInstance3D.new()
-	if _scorch_plane == null:
-		_scorch_plane = PlaneMesh.new()
-		_scorch_plane.size = Vector2.ONE * 2.2
-	scorch.mesh = _scorch_plane
-	scorch.material_override = _scorch_material(nature)
-	scorch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(scorch)
-	scorch.global_position = at + Vector3.UP * 0.6
-	scorch.scale = Vector3(radius, 1.0, radius)
-	veil_like(scorch, host)
-	var burn := scorch.create_tween()
-	burn.tween_method(func(p: float) -> void: scorch.set_instance_shader_parameter(&"progress", p), 0.0, 1.0, SCORCH_LIFE)
-	burn.tween_callback(scorch.queue_free)
 	# À l'échelle du souffle : celui d'un éclat éclairait autant que celui de la boule.
 	var flash := light_of(nature, FLASH_LIGHT * clampf(k, 0.35, 1.5), radius * 3.5)
 	root.add_child(flash)
@@ -183,7 +183,7 @@ static func blast(host: Node3D, at: Vector3, nature: int, radius: float) -> Arra
 	var fade := flash.create_tween()
 	fade.tween_property(flash, "light_energy", 0.0, BLAST_LIFE).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	fade.tween_callback(flash.queue_free)
-	return [flames, smoke, burst, scorch, flash]
+	return [flames, smoke, burst, flash, FireBlastFx.blow(host, at, nature, radius)]
 
 
 static func _emitter(host: Node3D, pm: ParticleProcessMaterial, count: int, life: float, draw: QuadMesh) -> FlameFx:
@@ -332,18 +332,6 @@ static func ramp(nature: int) -> Array:
 		return RAMPS[nature]
 	var c: Color = DamageType.COLORS[nature]
 	return [c.lerp(Color.WHITE, 0.35), c, c * Color(0.6, 0.6, 0.6), c * Color(0.2, 0.2, 0.2)]
-
-
-static func _scorch_material(nature: int) -> ShaderMaterial:
-	if not _scorches.has(nature):
-		var m := ShaderMaterial.new()
-		m.shader = SCORCH
-		m.set_shader_parameter(&"cracks", BurntPath.CRACKS)
-		var ramp := ramp(nature)
-		m.set_shader_parameter(&"tint", Vector3(ramp[1].r, ramp[1].g, ramp[1].b))
-		m.set_shader_parameter(&"deep", Vector3(ramp[2].r, ramp[2].g, ramp[2].b))
-		_scorches[nature] = m
-	return _scorches[nature]
 
 
 static func light_of(nature: int, energy: float, reach: float) -> OmniLight3D:
