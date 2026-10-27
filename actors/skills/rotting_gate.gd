@@ -7,8 +7,8 @@ extends Node3D
 ## durée sur la période borne déjà l'amas.
 ##
 ## **Les créatures ne sont pas des corps** : les ennemis ne les ciblent pas, elles ne
-## vivent que pour exploser. Le portail les fait avancer et les dessine lui-même, et
-## celles qui restent tombent avec lui.
+## vivent que pour exploser. Le portail les fait avancer et les dessine lui-même (`RotGateFx`),
+## et celles qui restent tombent avec lui.
 
 ## D'où elles voient une proie, depuis le portail.
 const SIGHT := 110.0
@@ -25,6 +25,8 @@ const NEST_OFFSET := Vector3(-12.0, 0.0, -4.0)
 
 class Crawler:
 	var at: Vector3
+	## Où elle était au pas d'avant : le dessin glisse de l'un à l'autre entre deux pas.
+	var was: Vector3
 	var prey: Hurtbox
 	## Sa place dans l'amas, en angle.
 	var angle: float
@@ -62,6 +64,7 @@ var _follow: Node3D
 var _aimer: Player
 ## Le Grouillement : l'attente avant qu'un coup reçu en fasse cracher d'autres.
 var _provoked := 0.0
+var _fx: RotGateFx
 
 ## Toutes celles qui sont ouvertes : la Détonation de la Déferlante les cherche (jalon 45).
 static var _open: Array[RottingGate] = []
@@ -81,7 +84,7 @@ static func open(
 	parent.add_child(gate)
 	Settings.veil(gate, Settings.SPELLS)
 	gate.global_position = point
-	ElementFx.area(gate, DamageType.COLORS[cast.nature], cast.radius)
+	gate._fx = RotGateFx.open(gate, cast.nature, cast.duration, follow != null)
 	return gate
 
 
@@ -126,6 +129,8 @@ func _physics_process(delta: float) -> void:
 func _spawn() -> void:
 	var c: Crawler = Crawler.new()
 	c.at = global_position
+	c.was = c.at
+	_fx.spit()
 	c.angle = float(_born + _crawlers.size()) * 2.4
 	_crawlers.append(c)
 
@@ -149,6 +154,7 @@ func _fuse() -> void:
 		var big: Crawler = Crawler.new()
 		big.big = true
 		big.at = global_position
+		big.was = big.at
 		for i in SkillStats.AMALGAM_SIZE:
 			var c: Crawler = idle.pop_back()
 			_crawlers.erase(c)
@@ -177,6 +183,7 @@ func _hunt() -> void:
 
 
 func _crawl(c: Crawler, delta: float) -> void:
+	c.was = c.at
 	var goal := global_position + Flat.from_angle(c.angle + _age) * HUDDLE
 	if not is_instance_valid(c.prey):
 		c.waited += delta
@@ -203,6 +210,7 @@ func _burst(c: Crawler, factor := 1.0) -> void:
 		for i in SkillStats.AMALGAM_SIZE:
 			var freed: Crawler = Crawler.new()
 			freed.at = c.at
+			freed.was = freed.at
 			freed.angle = c.angle + float(i) * TAU / float(SkillStats.AMALGAM_SIZE)
 			freed.loose = true
 			_crawlers.append(freed)
@@ -211,8 +219,21 @@ func _burst(c: Crawler, factor := 1.0) -> void:
 	for i in int(_cast.hatchlings):
 		var young: Crawler = Crawler.new()
 		young.at = c.at
+		young.was = young.at
 		young.angle = c.angle + float(i + 1) * 2.4
 		young.last = c.small
 		young.small = true
 		_crawlers.append(young)
 
+
+## Le dessin des créatures, à l'image : entre deux pas, chacune glisse de `was` à `at`.
+func _process(_delta: float) -> void:
+	var k := Engine.get_physics_interpolation_fraction()
+	var at: Array[Vector3] = []
+	var sizes: Array[float] = []
+	var heads: Array[Vector3] = []
+	for c in _crawlers:
+		at.append(c.was.lerp(c.at, k))
+		sizes.append(RotGateFx.size_of(c.small, c.last, c.big, c.waited))
+		heads.append(c.at - c.was if c.at.distance_squared_to(c.was) > 0.0001 else c.at - global_position)
+	_fx.crawl(at, sizes, heads)

@@ -3452,8 +3452,8 @@ msgstr "Frame"
 msgid "Ils se lèvent avec plus de PV."
 msgstr "They rise with more HP."
 
-msgid "Un mort-vivant de plus se lève."
-msgstr "One more undead rises."
+msgid "Un mort-vivant de plus peut tenir debout."
+msgstr "One more undead can stand at once."
 
 msgid "Ils frappent plus souvent."
 msgstr "They hit more often."

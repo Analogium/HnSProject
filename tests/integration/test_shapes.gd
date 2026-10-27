@@ -1076,23 +1076,34 @@ func test_the_curse_marks_its_circle_without_striking() -> void:
 	assert_eq(_hits(inside), 0, "une malédiction ne frappe pas")
 
 
-func test_rise_raises_two_undead_then_refuses_a_third() -> void:
-	_learn("manual_necrotic", ["rise"])
-	assert_true(Gestures.cast(_p, 2))
-	await wait_physics_frames(1)
-	assert_eq(Minion.count_of(_p, "rise"), 2)
-	_p._recharges[2] = 0.0
-	var mana := _p.mana
-	assert_false(Gestures.cast(_p, 2), "au complet : refusée")
-	assert_eq(_p.mana, mana, "sans rien prendre")
-
-
-## Un nœud atteint le lancer, donc le plafond : Légion d'os en lève un de plus.
-func test_bone_legion_raises_a_third() -> void:
+## Relancée au complet, elle relève quand même : les plus entamés cèdent la place, puis les plus anciens.
+func test_rise_recast_replaces_the_most_worn_then_the_oldest() -> void:
 	_learn("manual_necrotic", ["rise", "rise", "rise", "rise_bone_legion"])
 	assert_true(Gestures.cast(_p, 2))
 	await wait_physics_frames(1)
+	assert_eq(Minion.count_of(_p, "rise"), Minion.PER_CAST, "un lancer en lève deux")
+	_p._recharges[2] = 0.0
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(1)
+	var first: Array = Minion.living.filter(func(m: Minion) -> bool: return m._player == _p)
+	assert_eq(first.size(), 3, "le maximum, pas plus")
+	var worn: Minion = first[2]
+	worn.health = worn.max_health * 0.5
+	_p._recharges[2] = 0.0
+	var mana := _p.mana
+	assert_true(Gestures.cast(_p, 2), "au complet : relancée quand même")
+	await wait_physics_frames(1)
+	assert_lt(_p.mana, mana, "et payée")
+	assert_false(is_instance_valid(worn) and not worn.is_queued_for_deletion(), "le plus entamé part")
+	assert_false(is_instance_valid(first[0]) and not first[0].is_queued_for_deletion(), "puis le plus ancien")
+	assert_true(is_instance_valid(first[1]) and not first[1].is_queued_for_deletion())
 	assert_eq(Minion.count_of(_p, "rise"), 3)
+
+
+## Un nœud atteint le lancer, donc le plafond : Légion d'os en tient un de plus debout.
+func test_bone_legion_holds_a_third() -> void:
+	_learn("manual_necrotic", ["rise", "rise", "rise", "rise_bone_legion"])
+	assert_eq(Minion.cap(_p.resolve(SkillCatalog.by_id("rise"), _p.skill_points("rise"))), 3)
 
 
 func test_the_undead_strike_on_behalf_of_the_player() -> void:
@@ -1104,6 +1115,50 @@ func test_the_undead_strike_on_behalf_of_the_player() -> void:
 	await wait_seconds(1.5)
 	assert_gt(_hits(target), 0, "ils vont frapper ce qui entre dans la zone")
 	assert_eq(_authors[0], _p.states, "au nom du joueur : sa pourriture le soignera")
+
+
+## Le geste se joue en entier, comme celui du joueur : planté le temps de la période, le coup part à
+## l'impact et non à l'élan.
+func test_the_undead_hold_their_swing_and_hit_at_impact() -> void:
+	_learn("manual_necrotic", ["rise"])
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	var target := _wearing_target(minion.global_position + Vector3(10, 0.0, 0))
+	minion._foe = target
+	minion._begin(Vector3.RIGHT, minion._strike)
+	var at := minion.global_position
+	assert_eq(_hits(target), 0, "rien à l'élan")
+	await wait_seconds(minion._cast.period * minion.model.impact_of("attack") + 0.05)
+	assert_eq(_hits(target), 1, "le coup à l'impact")
+	target.global_position += Vector3(40, 0.0, 0)
+	await wait_physics_frames(3)
+	assert_gt(minion._acting, 0.0)
+	assert_eq(minion.global_position, at, "planté jusqu'au bout du geste")
+
+
+## Ils bougent par eux-mêmes : un pas du joueur ne les déplace pas ; loin, ils le rejoignent.
+func test_the_undead_keep_their_spot_until_the_player_walks_away() -> void:
+	_learn("manual_necrotic", ["rise"])
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(1)
+	var minion := _undead()
+	minion._wander = 99.0
+	var spot := minion._spot
+	_p.global_position += Vector3(10, 0.0, 0)
+	await wait_physics_frames(3)
+	assert_eq(minion._spot, spot, "un pas : il garde sa place")
+	_p.global_position += Vector3(Minion.FOLLOW.y + 40.0, 0.0, 0)
+	await wait_physics_frames(3)
+	assert_lt(minion._spot.distance_to(_p.global_position), Minion.FORMATION.y + 0.1, "loin : une place neuve près de lui")
+
+
+## Les Lanceurs d'os jettent à mains nues : pas d'épée.
+func test_bone_throwers_carry_no_sword() -> void:
+	_learn_with("manual_necrotic", "rise", [[SkillStats.BONE_THROW, 1.0]])
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(1)
+	assert_eq(_undead().model._weapon, "none")
 
 
 ## Son jumeau : ce qui reste hors de la zone du joueur n'est pas poursuivi.
@@ -2753,8 +2808,12 @@ func test_a_bone_colossus_stands_alone_and_strikes_a_circle() -> void:
 	assert_almost_eq(
 		_undead().max_health, _p.stats.max_health * Minion.LIFE * SkillStats.COLOSSUS_LIFE, 0.01
 	)
+	var old := _undead()
 	_p._recharges[2] = 0.0
-	assert_false(Gestures.cast(_p, 2), "un colosse, pas deux")
+	assert_true(Gestures.cast(_p, 2), "relancé, il remplace le premier")
+	await wait_physics_frames(1)
+	assert_eq(Minion.count_of(_p, "rise"), 1, "un colosse, pas deux")
+	assert_false(is_instance_valid(old) and not old.is_queued_for_deletion())
 	await wait_seconds(1.5)
 	assert_gt(_hits(first), 0)
 	assert_gt(_hits(next), 0, "son coup prend aussi le voisin")
@@ -5551,7 +5610,7 @@ func test_bone_throwers_throw_from_their_post() -> void:
 	assert_gt(_hits(prey), 0)
 	assert_gt(bones[0], 0, "ce sont des os qui volent")
 	for minion in Minion.living:
-		assert_lt(minion.global_position.distance_to(_p.global_position), Minion.FORMATION + 8.0, "à sa place")
+		assert_lt(minion.global_position.distance_to(_p.global_position), Minion.FORMATION.y + 8.0, "à sa place")
 
 
 ## L'Éboulis d'os : le colosse tombé se brise en trois, qui ne comptent pas dans la limite et

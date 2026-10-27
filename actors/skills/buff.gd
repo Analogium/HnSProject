@@ -35,7 +35,7 @@ var _since_burden := 0.0
 ## Depuis la dernière fois que l'Auréole a béni.
 var _since_blessing := 0.0
 ## Le dessin de la Lumière sacrée, où l'Auréole pose son cercle.
-var _holy_light: HolyHaloFx
+var _halo_fx: HaloFx
 ## L'Ionisation (jalon 43) : depuis quand le champ n'a pas engourdi autour de lui.
 var _since_ion := 0.0
 ## Le Halo de givre (jalon 44) : depuis quand il n'a pas transi autour de lui.
@@ -71,8 +71,8 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 		BoltFx.feet(buff)
 	elif skill.id == SkillStats.TOMB_SKILL:
 		FrostTombFx.encase(buff, skill.nature)
-	elif skill.id == SkillStats.LIGHT_SKILL:
-		buff._holy_light = HolyHaloFx.light_up(buff, skill.nature)
+	elif skill.id in [SkillStats.LIGHT_SKILL, SkillStats.NECROSIS_SKILL]:
+		buff._halo_fx = HaloFx.light_up(buff, skill.nature)
 	elif skill.id not in BARE:
 		var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
 		ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)
@@ -306,7 +306,7 @@ func unburden(cast: SkillStats) -> void:
 	Explosion.put(
 		_player._effects_parent(), _player.global_position, parts, cast.shared_burden, null,
 		DamageType.COLORS[cast.nature], _player.states, cast
-	)
+	).around = _player
 
 
 ## L'Auréole (jalon 40) : ce qui entre dans son cercle est béni, pour la durée de l'état.
@@ -314,8 +314,8 @@ func unburden(cast: SkillStats) -> void:
 ## (jalon 48), qui frappe ce qu'elle bénit d'une part des PV max ; l'Humilité y fond la
 ## résistance au sacré.
 func _bless(cast: SkillStats, delta: float) -> void:
-	if _holy_light != null:
-		_holy_light.crown(cast.aureole)
+	if _halo_fx != null:
+		_halo_fx.crown(cast.aureole)
 	if cast.aureole <= 0.0:
 		return
 	_since_blessing += delta

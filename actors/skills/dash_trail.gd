@@ -121,11 +121,11 @@ func _exit_tree() -> void:
 ## Les impulsions se comptent par `strikes_over_duration()`, la fonction même de
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
 ## Un sol qui brûle a son disque d'étincelles (`ElementFx`), posé une fois là : le sol ravivé
-## arrive en différé, sa position après lui. Un sol gelé, sa glace (`FrostGroundFx`).
+## arrive en différé, sa position après lui. Un sol gelé, sa glace ; le Marais, sa boue (`FrostGroundFx`).
 func _ready() -> void:
 	if not _ground:
 		return
-	if _cast.nature != DamageType.Kind.COLD:
+	if not FrostGroundFx.GROUNDS.has(_cast.nature):
 		ElementFx.area.call_deferred(self, _tint, _cast.radius)
 		return
 	_frost = FrostGroundFx.lay(self, _cast.radius, _cast.nature)

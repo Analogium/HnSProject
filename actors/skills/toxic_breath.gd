@@ -29,7 +29,7 @@ static func exhale(
 	parent.add_child(breath)
 	Settings.veil(breath, Settings.SPELLS)
 	breath.global_position = point
-	ElementFx.area(breath, DamageType.COLORS[cast.nature], cast.radius)
+	RotBlastFx.blow(breath, point, cast.nature, cast.radius * REACH, breath._facing, HALF_ANGLE / PI, LIFETIME)
 	return breath
 
 

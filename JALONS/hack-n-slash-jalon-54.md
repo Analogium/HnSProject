@@ -1163,10 +1163,84 @@ touché assomme tous les enchaînés, premier touché et ceux encore en route co
 coup déjà rechargé partait quand même — l'`EnemyManager` ne fait plus penser un ennemi tenu (`StatusEffects.held()`).
 Vaut pour tout ce qui assomme ou enlace (la Retombée, l'Étau…).
 
+**Le manuel nécrotique à la barre de Last Epoch** (27 octobre). L'utilisateur : « en accord avec le jalon, fais
+maintenant les skills du manuel nécrotique ». Tout y montrait le visuel générique — des étincelles vertes — et **les
+créatures de la Porte ne se dessinaient plus du tout** depuis le passage en 3D : le portail les faisait avancer et
+exploser, invisibles. Comme pour le feu, la foudre et la lumière, **les planches sont tranchées par moi** et restent sur
+le Bureau (`hns-captures-necro-planche\` à `-planche-4\`, dans l'ordre des retouches). **Les textures** : huit sujets de
+Qwen-Image (`hns-captures-necro-textures\`) — une bande de gaz toxique, une volute, un crâne de fumée, une faille de chair,
+un œil, un sceau de runes au crâne, une flaque de boue, une peau pourrie — ; **la 7 partout** (`tools/fx_textures.py
+rot`), les deux graines n'ayant été tirées que pour le gaz et la volute : ComfyUI est passé de 1,5 à 12 s le pas en
+cours de tirage. Qwen sort la volute en champignon atomique : on n'en garde que la tête.
+**La nécrose ronge, elle n'éclaire pas** (le parti pris de la 2D) : tout se mêle au sol, rien ne s'additionne, aucune
+lumière portée.
+- **Le souffle** (Déferlante, créatures, Germe, Bubons…) : l'actuel, la pile (mur de gaz rongé au liseré maladif, volutes,
+  air poussé), la pile sans volutes, la pile et des spores qui montent. **Retenue : la pile**, sans spores — des points
+  pâles qui n'ajoutaient rien au mur.
+- **La Peste** : l'actuelle, le crâne et sa traînée de volutes, le crâne seul, la traînée seule. **Retenus : les deux.**
+- **La Malédiction** : l'actuelle, le sceau et l'œil, le sceau seul, l'œil seul. **Retenus : les deux.**
+- **La Porte** : l'actuelle (des étincelles, et rien pour les créatures), la faille et ses créatures, les créatures sans
+  faille, le nid porté. **Retenue : la faille et ses créatures.**
+- **L'Haleine** : l'actuelle, la pile en cône, sans volutes, sans l'air poussé. **Retenue : la pile, sans l'air poussé.**
+- L'aura de la Nécrose (le liseré de la Lumière sacrée en gaz, des spores, sans lumière), le Marais (de la boue en décal),
+  la Nuée (un nuage et ses mouches, qui mord d'un souffle), l'os des Lanceurs d'os (un os d'ivoire éclairé qui tournoie),
+  la Marque de mort (l'œil sur la tête du marqué) et la levée d'un mort-vivant (un souffle à son pied) : une variante
+  chacun, vue sur la même planche.
+
+**Erreurs vues sur planche** : posées à gauche du joueur, les variantes tombaient dans la falaise et la Peste y mourait
+aussitôt — la planche se déplace d'abord en terrain dégagé (`Player.warp()`). **Au cœur de la rampe, le gaz sortait en
+aplat de peinture néon** ; aux couleurs de sa photo, en coton pâle : il prend la rampe **un cran plus bas**
+(`photo_material(…, low)`), translucide, et le mur le bas de rampe. **La faille, debout autour de la verticale, n'était
+qu'un trait** sous la caméra qui plonge : tournée vers elle ; à la rampe, sa chair sortait en feuille verte : elle garde
+ses couleurs. **Les créatures sortaient en choux** (peau verte sombre), puis en cailloux (grises) : une chair verdâtre au
+liseré humide, les yeux sur le dessus. **L'Haleine tordait le sol tout autour du lanceur** (l'air poussé, en disque
+entier) et ses volutes, toutes dans le cône, s'empilaient en aplat : pas d'air poussé en cône, des volutes à la part du
+cône. **La boue du Marais sortait presque blanche** sous le soleil : assombrie (`SLUDGE_SHADE`). **L'os gardait le crâne
+de la Peste** — le tir naît habillé en trait nécrotique, puis devient os : le crâne part avec sa traînée
+(`PlagueFx.let_go()`). Captures en jeu (`Bureau\hns-captures-manuel-necrotique-jeu\`) : les six compétences lancées de la
+barre dans une meute, puis la Marque, l'Haleine, la Nuée et les Lanceurs d'os. **Ce qui reste** : le mort-vivant est
+toujours un squelette en grilles 2D — un corps passe par un modèle (TRELLIS.2, Mixamo), pas par un shader. Le 2D de la
+nécrose part avec ses tests : `fx/necrotic.gd`, et le crâne, la faille, les créatures, l'œil, la spore et l'os
+d'`EffectForge` ; les bouffées des rats du joueur de flûte gardent le cœur maladif (`EffectForge.ROT_CORE`).
+**Coût** (300 grunts increvables collés au joueur, la compétence en case 0, sans vsync, 240 images de chauffe puis
+1 440, paires alternées, A = le visuel générique du commit d'avant, B = l'arbre, ComfyUI arrêté ; 10,3 à 16,4 ms
+l'image) : **la Peste, B − A = +0,16 ± 0,76 ms l'image** (six paires, erreur type 0,31), physique +0,14 ± 0,62 — dans le
+bruit. **La Porte, −0,34 ± 0,66** (0,27) l'image, mais **physique +0,79 ± 0,72** (0,30), cinq paires sur six positives :
+chaque créature qui éclate pose un souffle (trois maillages, un émetteur) au lieu d'une gerbe, au pas de physique. **La
+Déferlante, +0,73 ± 1,85** (dix paires, 0,59), six sur dix positives : dans le bruit, mais un bruit large — deux B
+consécutives à 16 ms contre 12 ailleurs ; ce banc n'exclut pas 1,5 ms. Les volutes sont des particules : la première
+chose à couper si une meute de Déferlantes le demande.
+
+**Les retours de l'utilisateur sur le manuel nécrotique** (27 octobre) :
+- **La Peste en Nuée** : plusieurs essaims partaient du même point, leurs nuages confondus ; ils partent côte à côte
+  en travers de la visée (`StaticOrb.ABREAST`).
+- **La Relève** : « les minions doivent avoir leur propre fonctionnement, comme dans tous les HnS cités » (Path of
+  Exile, Last Epoch). Ils étaient collés à une place fixe autour du joueur : chacun garde maintenant une place à lui,
+  qu'il rejoint en courant quand le joueur s'en éloigne au-delà de **sa** portée, tirée au hasard, et qu'il change de
+  temps en temps à l'arrêt. « Qu'ils terminent leurs animations en cours avant d'en effectuer une autre, comme pour le
+  joueur » : le coup partait à l'élan, l'animation de 2,27 s était relancée toutes les 0,8 s, et ils marchaient en
+  frappant ; le geste dure la période, l'animation s'y étire, le coup part à l'impact, le corps reste planté. « Un
+  petit peu trop d'attack speed de base » : la période passe de 0,8 à **1,0 s** (le grunt joue la même animation sur
+  0,9 s) ; **le DPS de la Relève baisse d'autant**, à revoir à l'équilibrage. L'épée reste en main en marchant
+  (`armed_walk`, la règle « arme rangée en marche » levée pour ce corps seul : l'export lui tourne la main dans la
+  marche), sauf sous les Lanceurs d'os, qui n'en ont plus du tout.
+- **La Porte** « pas très belle, fait très 2D » (la faille photographiée, tournée vers la caméra). Planche
+  (`Bureau\hns-captures-porte-planche\`, `-planche-2\`) : une gueule dans le sol, un anneau de chair debout, un sac
+  qui s'ouvre, l'actuelle. **Retenue : la gueule** ; le sac pour le Nid porté, qui flotte à l'épaule. Erreurs vues :
+  des lèvres trop fines ne montraient que le tourbillon, et un puits clair au centre se lisait comme une flaque fluo.
+  L'anneau debout, en plongée, n'était qu'une bosse verte.
+- **Le Fardeau partagé** ne restait pas autour du joueur qui marchait : l'explosion se dessinait où il était. Son
+  dessin, et celui de la Déferlante, suit maintenant son porteur (`Explosion.around`) ; le coup frappe toujours où il
+  était.
+- **Relancer la Relève au complet** : refusée jusque-là. Elle relève maintenant ses deux morts-vivants, et ceux qui
+  cèdent la place sont les plus entamés en part de leurs PV, puis les plus anciens (décision de l'utilisateur).
+  Légion d'os relève le plafond et non la levée : sa description passe de « se lève » à « peut tenir debout ».
+Captures en jeu : `Bureau\hns-captures-manuel-necrotique-jeu-2\`.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13). Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
@@ -1223,7 +1297,7 @@ Vaut pour tout ce qui assomme ou enlace (la Retombée, l'Étau…).
   l'est pour ce corps : `export_glb` ne lui applique plus `arm_space` ni `elbows`, qui
   corrigent l'acteur de Mixamo et défaisaient les poings joints. 60° et `elbows` 0,5 d'office,
   comme le mortier. Vus en zone (`Bureau\hns-captures-lourds-jeu\`) : le gonflé enfle et
-  éclate, le colosse montre son cône et frappe. L'entraîneur gréé par Mixamo le 24 (« Idle » seul, l'épée en main, `arm_space` 40) : **tous les personnages ont leur modèle**. Le repli sur planche (`ActorSprite`) reste : le mannequin d'entraînement, les morts-vivants invoqués et le corps par défaut du joueur sont encore des grilles 2D — retiré un moment sur la foi des seules planches de `art/characters/`, il a cassé 510 tests et a été rendu. Le test du repli porte sur le mannequin. Avant lui : Mixamo à la main
+  éclate, le colosse montre son cône et frappe. L'entraîneur gréé par Mixamo le 24 (« Idle » seul, l'épée en main, `arm_space` 40) : **tous les personnages ont leur modèle**. Le repli sur planche (`ActorSprite`) reste : le mannequin d'entraînement et le corps par défaut du joueur sont encore des grilles 2D (les morts-vivants ont leur modèle depuis le 27) — retiré un moment sur la foi des seules planches de `art/characters/`, il a cassé 510 tests et a été rendu. Le test du repli porte sur le mannequin. Avant lui : Mixamo à la main
   (l'utilisateur dépose les `.fbx` dans `<id>/mixamo/`), `blender_sheet.py <id> --glb`.
 - **Le Vive lame gréé par Mixamo** (18 octobre) : sa garde écrite à la main n'avait « rien de
   naturel », le bras gauche rentré dans les côtes. Copier les animations d'autres jeux est

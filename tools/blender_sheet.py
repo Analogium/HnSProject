@@ -119,7 +119,9 @@ def export(cid, cfg):
                "size": b["size"], "guard": b.get("guard", True),
                "arm_space": b.get("arm_space", 0), "elbows": b.get("elbows", 0),
                "walk_leg_space": b.get("walk_leg_space", 0),
-               "sheathed": re.findall(r'&"(\w+)"', gd_const("art/actor_model.gd", "SHEATHED")),
+               # `armed_walk` : il marche l'arme au poing (le mort-vivant de la Relève).
+               "sheathed": [g for g in re.findall(r'&"(\w+)"', gd_const("art/actor_model.gd", "SHEATHED"))
+                            if not (b.get("armed_walk") and g == "walk")],
                "repeat": {k: {"strikes": int(gd_const("core/skill_stats.gd", "FLURRY_THRUSTS")),
                               "gap": float(gd_const("core/skill_stats.gd", "FLURRY_GAP"))}
                           for k in b.get("repeat", [])},

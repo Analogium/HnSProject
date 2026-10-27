@@ -141,6 +141,13 @@ static func warm(host: Node3D) -> void:
 	for m: Material in [HolyHammerFx.material(DamageType.Kind.HOLY), HolyHammerFx.trail_material(DamageType.Kind.HOLY)]:
 		var plate := IceNovaFx.flat(probe, m, 1.0, 0.0)
 		plate.mesh = HolyHammerFx.mesh()
+	var rot := DamageType.Kind.NECROTIC
+	RotBlastFx.blow(probe, at, rot, 10.0)
+	PlagueFx.show_on(probe, rot)
+	PlagueFx.show_on(probe, rot, true)
+	PlagueFx.bone(probe)
+	CurseFx.fall(probe, rot, 10.0, 0.2)
+	RotGateFx.open(probe, rot, 0.2).crawl([at], [1.0], [Vector3.RIGHT])
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in host.get_viewport().get_children():
 		if node not in rooted:

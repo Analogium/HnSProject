@@ -35,6 +35,9 @@ var drink := 0.0
 var _mask := Targets.ENEMIES
 ## Celle d'une boule de feu (jalon 54) : ses flammes (`FlameFx.blast`) au lieu de la gerbe générique.
 var flames := false
+## Celui autour de qui elle souffle (la Déferlante, le Fardeau partagé) : elle frappe où il était, mais
+## son dessin le suit le temps de s'ouvrir — posé là, il restait derrière qui marchait.
+var around: Node3D
 
 
 static func put(
@@ -68,16 +71,22 @@ static func of_cast(
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
+		var shown: Node3D = null
 		if flames:
 			FlameFx.blast(self, global_position, _nature(), _radius)
 		elif _nature() == DamageType.Kind.LIGHTNING:
 			BoltFx.crown(self, global_position, _radius, _nature())
 		elif _nature() == DamageType.Kind.COLD:
-			IceNovaFx.blow(self, global_position, _nature(), _radius)
+			shown = IceNovaFx.blow(self, global_position, _nature(), _radius)
 		elif _nature() == DamageType.Kind.HOLY:
-			HolyBlastFx.blow(self, global_position, _nature(), _radius)
+			shown = HolyBlastFx.blow(self, global_position, _nature(), _radius)
+		elif _nature() == DamageType.Kind.NECROTIC:
+			shown = RotBlastFx.blow(self, global_position, _nature(), _radius)
 		else:
 			ElementFx.burst(self, global_position, _tint, _radius)
+		# Enfant de son porteur, il en suit la position interpolée.
+		if shown != null and is_instance_valid(around):
+			shown.reparent(around)
 		var targets := Targets.in_circle(get_world_3d(), global_position, _radius, _mask)
 		if crowd > 0.0:
 			_crowded(targets)

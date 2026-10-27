@@ -41,6 +41,12 @@
                                     le marteau et les chaînes, `HolyBlastFx`) et fx/holy_glyph.png (le sol consacré,
                                     un décal) et fx/holy_flare.png (l'éclat au cœur du souffle) : des tirages
                                     de Qwen-Image sur fond noir
+    tools/fx_textures.py rot        le manuel nécrotique : fx/rot_gas.png (une bande de gaz, raccordée en x : le
+                                    mur de `RotBlastFx`), fx/rot_puff.png (deux volutes en atlas), fx/plague_skull.png
+                                    (le crâne de la Peste), fx/curse_eye.png
+                                    et fx/curse_sigil.png (l'œil et le sceau de la Malédiction), fx/rot_sludge.png (la
+                                    boue du Marais, un décal), fx/rot_flesh.png (la peau des créatures, raccordable) :
+                                    des tirages de Qwen-Image sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -144,6 +150,23 @@ HOLY = {
               "footage, centered", 7),
     "glyph": ("top-down view of a glowing golden sacred circle engraved with holy runes and a radiant star pattern, "
               "ornate celestial sigil made of light, isolated on a pure black background, VFX stock footage, centered", 7),
+}
+BLACK = ", isolated on a pure black background, VFX stock footage"
+ROT = {
+    "gas": ("a photograph of a horizontal band of thick toxic green gas and sickly yellow-green smoke billowing from "
+            "left to right, poisonous miasma wisps" + BLACK, 7),
+    "puff": ("a photograph of a single billowing cloud of thick toxic green smoke, a round poisonous gas puff" + BLACK
+             + ", centered", (7, 21)),
+    "skull": ("a photograph of a ghostly skull made of swirling toxic green smoke, a plague spirit with smoke wisps "
+              "trailing behind it" + BLACK + ", centered", 7),
+    "eye": ("a photograph of a single evil eye wide open, sickly yellow iris with a black slit pupil, veined bloodshot "
+            "white, dark rotting eyelids" + BLACK + ", centered", 7),
+    "sigil": ("top-down view of a glowing sickly green cursed circle of necromantic runes around a skull sigil, ornate "
+              "occult seal made of toxic light" + BLACK + ", centered", 7),
+    "sludge": ("top-down photograph of a puddle of bubbling toxic green sludge, poisonous slime pool with bubbles and "
+               "foam" + BLACK + ", centered", 7),
+    "flesh": ("macro photograph of rotting pustulent grey-green flesh, boils, dark veins and wet skin, seamless tileable "
+              "texture, flat even lighting, fills the whole frame, high detail", 7),
 }
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
@@ -319,6 +342,18 @@ def cmd_holy():
     save(cell(qwen(*HOLY["flare"]), (0.1, 0.1, 0.9, 0.9), 0.6), "holy_flare.png")
 
 
+def cmd_rot():
+    save(frost_wind(qwen(*ROT["gas"])), "rot_gas.png")
+    prompt, seeds = ROT["puff"]
+    # Qwen les sort en champignon : la tête seule.
+    save(np.concatenate([cell(qwen(prompt, seed), (0.08, 0.04, 0.92, 0.68), 0.6) for seed in seeds], 1), "rot_puff.png")
+    save(cell(qwen(*ROT["skull"]), (0.2, 0.02, 0.95, 0.92), 0.75), "plague_skull.png")
+    save(cell(qwen(*ROT["eye"]), (0.0, 0.15, 1.0, 0.85), 0.9), "curse_eye.png")
+    save(cell(qwen(*ROT["sigil"]), (0.0, 0.0, 1.0, 1.0), 0.9), "curse_sigil.png")
+    save(holy_glyph(qwen(*ROT["sludge"])), "rot_sludge.png")
+    save(tileable(square(Image.fromarray((qwen(*ROT["flesh"]) * 255).astype(np.uint8)))), "rot_flesh.png")
+
+
 def cmd_fire_wind():
     save(frost_wind(qwen(*FIRE_WIND)), "fire_wind.png")
 
@@ -386,4 +421,4 @@ def cmd_fire():
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
      "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
-     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy}[sys.argv[1]]()
+     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy, "rot": cmd_rot}[sys.argv[1]]()

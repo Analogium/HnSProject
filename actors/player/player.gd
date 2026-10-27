@@ -557,10 +557,6 @@ func cast_slot(index: int) -> bool:
 	# rien.
 	if skill.shape == Skill.Shape.ORBIT and _blade_crown().full(cast.max_simultaneous()):
 		return false
-	# Sauf le Rappel (jalon 45), qui remet sur pied ceux qui sont debout.
-	if skill.shape == Skill.Shape.SUMMON and cast.recall <= 0.0 \
-			and Minion.count_of(self, skill.id) >= Minion.cap(cast):
-		return false
 	# Le Coup de grâce aussi (jalon 50) : parti dans le vide, il brûlerait les charges.
 	if skill.shape in [Skill.Shape.LUNGE, Skill.Shape.FINISHER] and _lunge_target(cast) == null:
 		return false
@@ -770,8 +766,11 @@ func _pose(
 			if cast.satellite > 0.0:
 				for i in directions.size():
 					directions[i] = Flat.rotated(toward, TAU * float(i) / float(directions.size()))
-			for direction in directions:
-				StaticOrb.send(parent, at, direction, cast, states, origin, fill)
+			# Côte à côte en travers de la visée : partis du même point, les nuages de la Nuée se couvraient.
+			var side := Flat.rotated(toward, PI * 0.5) * StaticOrb.ABREAST
+			for i in directions.size():
+				var beside := Vector3.ZERO if cast.satellite > 0.0 else side * (float(i) - float(directions.size() - 1) * 0.5)
+				StaticOrb.send(parent, at + beside, directions[i], cast, states, origin, fill)
 		Skill.Shape.METEOR:
 			# Plusieurs boules deviennent une rangée de météores en travers de la visée, à
 			# un rayon l'un de l'autre : leurs explosions se chevauchent de moitié.
@@ -837,6 +836,7 @@ func _pose(
 			# L'explosion de la boule de feu, posée sur soi : elle frappe une fois son
 			# cercle et s'efface, ce qu'une nova fait exactement. Son sol a sa taille.
 			var nova := Explosion.of_cast(parent, at, cast, cast.radius, states)
+			nova.around = origin
 			nova.knockback = cast.knockback
 			nova.crowd = cast.deep_cold
 			nova.drink = stats.max_health * cast.suction * 0.01

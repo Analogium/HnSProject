@@ -1,0 +1,49 @@
+{
+ "concept": {
+  "prompt": "jalon 54 : pas de concept 2D, l'image source vient du prompt du modèle",
+  "seeds": []
+ },
+ "views": {
+  "prompt": "",
+  "seeds": [],
+  "ip_weight": 0.45
+ },
+ "frame": 64,
+ "feet": 60,
+ "scale": 0.7,
+ "weapon": "sword",
+ "palette": {
+  "cloth": "665c4d",
+  "skin": "dbd6bd",
+  "accent": "9ef259",
+  "metal": "8c8575",
+  "leather": "4d3d33"
+ },
+ "blender": {
+  "model_prompt": "polished stylized 3d game character render in the style of Torchlight Infinite, hand-painted textures, saturated colors, clean readable shapes, soft rim light, {view}, a risen undead skeleton warrior, adult proportions, a whole human skeleton of old ivory bones, thick sturdy bones, broad rib cage, skull with glowing sickly green eye sockets, dark hollow rib cage with no glow inside, tattered grey-brown cloth rags hanging from the hips, a few rusty iron shoulder plates tied with leather straps, bony hands with long fingers, empty hands, standing in a symmetrical A-pose, arms straight and held out diagonally at 45 degrees away from the body, palms facing down, fingers apart, feet slightly apart, full body from head to feet, orthographic",
+  "source": "tools/characters/undead/mixamo",
+  "rest": "rest.fbx",
+  "elevation": 10,
+  "sun": 4,
+  "ambient": 0.7,
+  "size": 34,
+  "colors": 16,
+  "weapon_colors": 8,
+  "weapons": [
+   "sword"
+  ],
+  "anims": {
+   "walk": [
+    "walk.fbx",
+    8
+   ],
+   "attack": [
+    "attack.fbx",
+    8
+   ]
+  },
+  "guard": false,
+  "armed_walk": true,
+  "arm_space": 40
+ }
+}

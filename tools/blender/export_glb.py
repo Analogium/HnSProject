@@ -399,6 +399,9 @@ arm["weapon"] = spec["weapon"]
 # La case de planche à laquelle il est mis à l'échelle : un corps « grandi » (`<id>_<case>`, la
 # Légende du Roi des Rats) en est le rapport (`ActorModel`).
 arm["size"] = spec["size"]
+# Les gestes où l'arme est rangée : ceux du jeu (`ActorModel.SHEATHED`), moins la marche d'un corps qui
+# marche l'arme au poing.
+arm["sheathed"] = spec["sheathed"]
 export(spec["out"])
 print("EXPORT", spec["out"], round(hi.z - lo.z, 3), "->", round((hi.z - lo.z) * s, 3), "m")
 if spec["portrait"]:

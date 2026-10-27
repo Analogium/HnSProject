@@ -1,9 +1,10 @@
-class_name HolyHaloFx
+class_name HaloFx
 extends Node3D
 
-## La Lumière sacrée en 3D (jalon 54, à la barre de Last Epoch) : une aura qu'on garde tout le combat, donc
-## sobre — un liseré de lumière aux pieds (l'onde du souffle sacré tenue, comme celui de l'Immolation),
-## quelques grains qui montent, une lumière douce sur le porteur. Sous l'Auréole, un second liseré, plus
+## La Lumière sacrée et la Nécrose avancée en 3D (jalon 54, à la barre de Last Epoch) : une aura qu'on garde
+## tout le combat, donc sobre — un liseré aux pieds (l'onde du souffle sacré tenue, comme celui de
+## l'Immolation ; le mur de gaz de `RotBlastFx` pour la nécrose), quelques grains ou spores qui montent, une
+## lumière douce sur le porteur — pas sur la nécrose, qui n'éclaire pas. Sous l'Auréole, un second liseré, plus
 ## pâle, au cercle où elle bénit.
 ##
 ## Il vit sur son buff, qui le libère avec lui.
@@ -26,17 +27,19 @@ var _nature := DamageType.Kind.HOLY
 var _clock := 0.0
 
 
-static func light_up(host: Node3D, nature: int) -> HolyHaloFx:
-	var fx := HolyHaloFx.new()
+static func light_up(host: Node3D, nature: int) -> HaloFx:
+	var fx := HaloFx.new()
 	fx._nature = nature
 	host.add_child(fx)
 	ElementFx.veil_like(fx, host)
 	fx._rim = fx._ring(RADIUS, RIM, BOOST)
+	Sparks.trail(fx, nature, MOTES, MOTE_LIFE, fx._mote_source, true)
+	if nature == DamageType.Kind.NECROTIC:
+		return fx
 	var light := FlameFx.light_of(nature, LIGHT, LIGHT_REACH)
 	light.light_color = FlameFx.ramp(nature)[0]
 	light.position = Vector3.UP * 20.0
 	fx.add_child(light)
-	Sparks.trail(fx, nature, MOTES, MOTE_LIFE, fx._mote_source, true)
 	return fx
 
 
@@ -61,7 +64,8 @@ func _process(delta: float) -> void:
 
 
 func _ring(radius: float, width: float, boost: float) -> MeshInstance3D:
-	var ring := IceNovaFx.flat(self, FireBlastFx.shock_material(_nature), radius, DangerZone.LIFT + 0.7)
+	var m := RotBlastFx.gas_material(_nature) if _nature == DamageType.Kind.NECROTIC else FireBlastFx.shock_material(_nature)
+	var ring := IceNovaFx.flat(self, m, radius, DangerZone.LIFT + 0.7)
 	ring.set_instance_shader_parameter(&"front", 1.0)
 	ring.set_instance_shader_parameter(&"width", width)
 	ring.set_instance_shader_parameter(&"boost", boost)

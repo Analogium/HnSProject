@@ -29,6 +29,7 @@ var _marked: Hurtbox
 ## passages de la marque.
 var _wait := 0.0
 var _passes := 0
+var _fx: CurseFx
 
 
 static func fall(
@@ -43,7 +44,8 @@ static func fall(
 	parent.add_child(curse)
 	Settings.veil(curse, Settings.SPELLS)
 	curse.global_position = point
-	ElementFx.area(curse, DamageType.COLORS[cast.nature], cast.radius)
+	var life := cast.duration if curse._marking else cast.omen + LIFETIME
+	curse._fx = CurseFx.fall(curse, cast.nature, cast.radius, life, curse._marking)
 	return curse
 
 
@@ -56,6 +58,7 @@ func _physics_process(delta: float) -> void:
 		if _marking:
 			_mark(Targets.nearest(get_world_3d(), global_position, MARK_REACH))
 		else:
+			_fx.strike(_cast.nature, _cast.radius)
 			for target in _covered():
 				_curse(target)
 	_age += delta
@@ -102,6 +105,7 @@ func _mark(target: Hurtbox) -> void:
 		_curse(target)
 		global_position = target.global_position
 		reset_physics_interpolation()
+		_fx.over(LightningRod.head_of(target))
 
 
 ## Le marqué la porte encore : la marque le suit.

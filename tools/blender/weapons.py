@@ -106,7 +106,9 @@ def grip_bone(arm):
         wrist, base = hand.head.copy(), at("Middle1")
         reach = (base - wrist).length
         fingers = (base - wrist).normalized()
-        knuckles = (at("Index1") - at("Pinky1")).normalized()
+        # Une main à quatre doigts (le mort-vivant) : Mixamo n'y pose pas d'auriculaire.
+        outer = "Pinky1" if prefix + "RightHandPinky1" in eb else "Ring1"
+        knuckles = (at("Index1") - at(outer)).normalized()
         palm = fingers.cross(knuckles).normalized()
         if (at("Middle3") - base).dot(palm) < 0:
             palm = -palm

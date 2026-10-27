@@ -36,7 +36,8 @@ const STATE_TINT := 0.45
 const REST := &"rest"
 const WALK := &"walk"
 ## Les gestes où l'arme est rangée : la marche, et le lancer des Lames de jet, qui part de la
-## main nue (jalon 54). `tools/blender_sheet.py` la lit : l'export n'y tourne pas la main.
+## main nue (jalon 54). `tools/blender_sheet.py` la lit : l'export n'y tourne pas la main. Un modèle
+## qui marche l'arme au poing (le mort-vivant) écrit les siens (`sheathed`, dans ses métadonnées).
 const SHEATHED := [&"walk", &"throw"]
 
 static var _overlay: ShaderMaterial
@@ -300,7 +301,8 @@ func _show_weapon() -> void:
 	var kind := _held if not _held.is_empty() else _weapon
 	if kind.is_empty():
 		kind = String(_extras.get("weapon", ""))
-	var shown := "" if _playing in SHEATHED else "weapon_" + kind
+	var sheathed := PackedStringArray(_extras.get("sheathed", SHEATHED))
+	var shown := "" if sheathed.has(String(_playing)) else "weapon_" + kind
 	for weapon: Node3D in _body.find_children("weapon_*", "", true, false):
 		weapon.visible = weapon.name == shown
 

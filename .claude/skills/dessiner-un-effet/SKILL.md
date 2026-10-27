@@ -83,6 +83,14 @@ pas.
   cœur d'or ; **un objet se mêle et s'éclaire** (le marteau, les maillons) : additionné, il sortait en
   tache blanche ; une colonne de lumière aux bouts francs se lit comme un tuyau, et rongée, en papier
   déchiré : ses bouts se fondent, et elle s'en va par où elle est venue.
+  À la nécrose (27 octobre) : **ce qui ronge se mêle**, l'alpha tiré de la clarté, et **un cran plus bas
+  sur la rampe** — au cœur, le gaz sortait en aplat de peinture néon ; aux couleurs de la photo, en coton
+  pâle. Une photo qui a sa matière (la chair d'une faille, un œil) garde ses couleurs. **Une photo plate
+  « fait très 2D »** pour ce qui est un objet (la faille de la Porte, debout puis tournée vers la caméra,
+  refusée) : un objet se construit en volume, éclairé — la gueule de chair, un tore aplati sous la peau
+  des créatures, autour d'un puits en shader. Un anneau debout, en plongée, n'est qu'une bosse. Un cône ne pousse pas l'air tout autour (la distorsion tordait le sol derrière le lanceur), et ses
+  volutes se comptent à la part du cône. Une petite créature éclairée vire au chou en vert sombre, au
+  caillou en gris : chair verdâtre, liseré humide, yeux **sur le dessus**.
 - **La silhouette d'abord, la matière ensuite.** Étirée en dard de 34 px, une photo d'arc
   électrique sortait en plume ou en fumée : « ça ne ressemble pas à un éclair ». Le zigzag est
   venu d'un ruban que le shader casse, qui porte la photo — comme la peau du Serpent sur son

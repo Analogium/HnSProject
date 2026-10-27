@@ -17,6 +17,8 @@ instance uniform float front = 0.0;
 instance uniform float width = 0.25;
 instance uniform float dissolve = 0.0;
 instance uniform float clock = 0.0;
+// La part du tour gardée de part et d'autre de +X : l'Haleine en cône (`RotBlastFx`).
+instance uniform float span = 1.0;
 
 float fbm(vec2 p) {
 	return noise(p) * 0.55 + noise(p * 2.1) * 0.3 + noise(p * 4.3) * 0.15;
@@ -29,6 +31,10 @@ void fragment() {
 	if (v < 0.0 || v > 1.0) {
 		discard;
 	}
+	float side = abs(atan(d.y, d.x)) / 3.1415927;
+	if (side > span) {
+		discard;
+	}
 	float a = atan(d.y, d.x) / 6.2831853 + 0.5;
 	vec3 w3 = texture(wind, vec2(a * 3.0 - clock * 0.6, 0.15 + v * 0.7)).rgb;
 	float w = max(w3.r, max(w3.g, w3.b));
@@ -37,7 +43,7 @@ void fragment() {
 		discard;
 	}
 	float glow = (1.0 - smoothstep(dissolve, dissolve + 0.07, m)) * step(0.01, dissolve);
-	float profile = smoothstep(0.0, 0.75, v) * (1.0 - smoothstep(0.88, 1.0, v));
+	float profile = smoothstep(0.0, 0.75, v) * (1.0 - smoothstep(0.88, 1.0, v)) * (span >= 1.0 ? 1.0 : smoothstep(span, span - 0.04, side));
 	ALBEDO = mix(mix(deep, tint, w), rime, max(glow, w * w * 0.25));
 	ALPHA = clamp(w * profile + glow * 0.8, 0.0, 0.95) * opacity;
 }

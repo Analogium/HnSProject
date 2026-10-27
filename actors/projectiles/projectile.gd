@@ -43,8 +43,9 @@ var _quarry: Hurtbox
 var salvo_hits := {}
 ## Le Chatoiement (jalon 49) : le lancer de chaque rebond, pris au départ.
 var _turns: Array[SkillStats] = []
-## L'os des Lanceurs d'os (jalon 45) : dessiné, il tournoie et ne s'oriente pas.
+## L'os des Lanceurs d'os (jalon 45, `wear_bone()`) : dessiné, il tournoie et ne s'oriente pas.
 var bone := false
+var _bone_fx: MeshInstance3D
 ## Ce qui le montre : le trait de `BoltFx`, ou la traînée d'étincelles des autres natures.
 var _bolt_fx: BoltFx
 ## L'éclat des Pics de glace (`wear_sliver()`), à la place du trait.
@@ -119,13 +120,20 @@ func _dress() -> void:
 	if _trail != null:
 		_trail.let_go()
 		_trail = null
+	if _bone_fx != null:
+		_bone_fx.queue_free()
+		_bone_fx = null
 	var mine := _cast != null and nature() in [DamageType.Kind.COLD, DamageType.Kind.FIRE]
-	if _sliver:
+	if bone:
+		_bone_fx = PlagueFx.bone(self)
+	elif _sliver:
 		_sliver_fx = IceShardFx.show_on(self, nature(), _dir)
 	elif nature() == DamageType.Kind.LIGHTNING or mine:
 		_bolt_fx = BoltFx.show_on(self, nature())
 		if _small:
 			_bolt_fx.shrink()
+	elif nature() == DamageType.Kind.NECROTIC and _cast != null:
+		_trail = PlagueFx.show_on(self, nature())
 	else:
 		_trail = ElementFx.trail(self, tint())
 
@@ -356,6 +364,8 @@ func _finish() -> void:
 		_bolt_fx.flare()
 	if _sliver_fx != null:
 		_sliver_fx.flare()
+	if _trail is PlagueFx:
+		(_trail as PlagueFx).pop(nature())
 	queue_free()
 
 
@@ -377,6 +387,11 @@ func _shatter(pierced := false) -> void:
 ## Un éclat des Pics de glace ou de l'Orbe gelée : un cristal des pics, et non le trait en petit.
 func wear_sliver() -> void:
 	_sliver = true
+	_dress()
+
+
+func wear_bone() -> void:
+	bone = true
 	_dress()
 
 

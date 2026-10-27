@@ -593,7 +593,7 @@ le livre a de niveaux ; le palier d'un nœud compte ceux des nœuds moins profon
 | case | sorte | ouvre à | points | coût | cadence | forme | par point |
 |---|---|---|---|---|---|---|---|
 | Peste | sort nécrotique | niveau 1 | 5 | 9 mana | 0.50 s | bolt | 18 · 23 · 29 · 36 · 44 |
-| Relève | sort nécrotique | niveau 3 | 5 | 22 mana | 1.00 s | summon · rayon 110 · toutes les 0.80 s · 2 au plus | 10 · 13 · 16 · 20 · 25 |
+| Relève | sort nécrotique | niveau 3 | 5 | 22 mana | 1.00 s | summon · rayon 110 · toutes les 1.00 s · 2 au plus | 10 · 13 · 16 · 20 · 25 |
 | Déferlante toxique | sort nécrotique | niveau 5 | 5 | 18 mana | 0.90 s | nova · rayon 48 | 12 · 15 · 19 · 24 · 30 |
 | Porte pourrissante | sort nécrotique | niveau 8 | 5 | 24 mana | 1.00 s · recharge 6.00 s | gate · 6.0 s · rayon 22 · toutes les 0.75 s | 14 · 18 · 22 · 28 · 35 |
 | Malédiction putride | sort nécrotique | niveau 7 | 1 | 12 mana | 0.40 s · recharge 5.00 s | curse · 5.0 s · rayon 48 |  |

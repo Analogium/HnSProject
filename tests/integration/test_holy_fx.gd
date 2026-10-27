@@ -148,7 +148,7 @@ func test_holy_light_wears_a_rim_and_the_aureole_its_circle() -> void:
 	var player: Player = load("res://actors/player/player.tscn").instantiate()
 	add_child_autofree(player)
 	var buff := Buff.light(player, SkillCatalog.by_id("holy_light"))
-	var halo := buff._holy_light
+	var halo := buff._halo_fx
 	assert_not_null(halo)
 	assert_null(halo._crown)
 	halo.crown(40.0)

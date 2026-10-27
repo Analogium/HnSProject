@@ -3,13 +3,16 @@ extends Node3D
 
 ## L'Orbe statique (jalon 35, transformation d'Éclair vif) : un orbe lent qui file droit
 ## et foudroie à chaque période ce qui passe dans son rayon. Il ne frappe pas à l'impact
-## et traverse les ennemis ; un mur l'éteint. Dessiné par `BoltFx` : la boule de plasma, ses
+## et traverse les ennemis ; un mur l'éteint. En nécrose, la Nuée, dessinée par `PlagueFx` : un nuage
+## de gaz et ses mouches, qui mord d'un souffle de gaz. Sinon par `BoltFx` : la boule de plasma, ses
 ## décharges en arcs, et la traînée du Satellite.
 
 
 ## Tous ceux qui volent : `simultaneous` par lanceur au plus (jalon 43), le Familier compté
 ## à part. Au-delà, les plus anciens se dissolvent.
 static var _live: Array[StaticOrb] = []
+## L'écart entre deux orbes d'un même lancer, au départ : le nuage de la Nuée et sa marge.
+const ABREAST := PlagueFx.SWARM * 1.6
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -45,7 +48,10 @@ static func send(
 		orb._angle = _widest_gap(around) if fill else Flat.angle(orb._dir)
 		orb._orbits = true
 		orb.global_position = around.global_position + Flat.from_angle(orb._angle) * SkillStats.SATELLITE_RADIUS
-	orb._fx = BoltFx.show_on(orb, cast.nature, true, orb._orbits)
+	if cast.nature == DamageType.Kind.NECROTIC:
+		PlagueFx.show_on(orb, cast.nature, true)
+	else:
+		orb._fx = BoltFx.show_on(orb, cast.nature, true, orb._orbits)
 	return orb
 
 
@@ -116,7 +122,10 @@ func _strike() -> void:
 	var targets := Targets.strike_circle(get_world_3d(), global_position, reach(), _cast, _author)
 	for target in targets:
 		_met[target.get_instance_id()] = true
-	_fx.zap(targets)
+	if _fx != null:
+		_fx.zap(targets)
+	else:
+		RotBlastFx.blow(self, global_position, _cast.nature, reach())
 
 
 ## Son rayon de frappe, grossi par l'Orbe chargé à chaque ennemi rencontré.
