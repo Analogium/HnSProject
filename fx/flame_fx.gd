@@ -41,6 +41,10 @@ const RAMPS := {
 	DamageType.Kind.NECROTIC: [
 		Color(0.82, 1.0, 0.3), Color(0.38, 0.82, 0.08), Color(0.1, 0.38, 0.04), Color(0.04, 0.1, 0.02)
 	],
+	# Un cœur d'or sur un corps rose : tirée de son rose pâle, la lumière sortait beige sur l'ocre.
+	DamageType.Kind.HOLY: [
+		Color(1.0, 0.8, 0.42), Color(0.95, 0.4, 0.55), Color(0.5, 0.08, 0.28), Color(0.15, 0.02, 0.08)
+	],
 }
 const FLAME_LIFE := 0.45
 const BLAST_LIFE := 0.6

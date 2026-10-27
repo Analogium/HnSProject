@@ -875,8 +875,11 @@ func _pose(
 			else:
 				SacredPillar.fall(parent, aim, cast, states, self)
 		Skill.Shape.PULSE:
-			# Portée par le joueur et non posée : elle suit celui qui l'a lancée.
-			HolyPulse.emanate(self, cast)
+			# Portée par le joueur et non posée : elle suit celui qui l'a lancée. Allumée pour le bandeau
+			# seulement — elle ne verse rien à la fiche, qui n'a pas à se refaire ; l'Antienne la relance
+			# avant sa fin sans couper la première.
+			_lit[skill.id] = HolyPulse.emanate(self, cast)
+			buffs_changed.emit()
 		Skill.Shape.ORBIT:
 			# Arsenal : des épées en plus à chaque lancer, dans la limite de la ronde.
 			var crown := _blade_crown()
@@ -2564,6 +2567,8 @@ func lit_skills() -> Array[Skill]:
 ## une aura, un buff sans durée : le bandeau n'y dessine aucun voile.
 func lit_ratio(skill_id: String) -> float:
 	var node: Variant = _lit.get(skill_id)
+	if is_instance_valid(node) and node is HolyPulse:
+		return (node as HolyPulse).remaining_ratio()
 	if not is_instance_valid(node) or not node is Buff:
 		return 1.0
 	return (node as Buff).remaining_ratio()

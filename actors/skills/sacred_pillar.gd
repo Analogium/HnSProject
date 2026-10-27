@@ -26,6 +26,7 @@ var _caster: Player
 ## L'Ascension : les secondes déjà gagnées. L'Apothéose : les ennemis frappés.
 var _gained := 0.0
 var _struck := 0
+var _fx: SacredPillarFx
 
 
 ## `caster` : le joueur qui se tient dans la colonne, pour la Consécration.
@@ -47,7 +48,9 @@ static func fall(
 	parent.add_child(pillar)
 	Settings.veil(pillar, Settings.SPELLS)
 	pillar.global_position = point
-	ElementFx.area(pillar, DamageType.COLORS[cast.nature], cast.radius)
+	pillar._fx = SacredPillarFx.raise(
+		pillar, cast.nature, cast.radius, cast.consecration > 0.0, cast.end_burst > 0.0
+	)
 	_standing.assign(_standing.filter(
 		func(p) -> bool: return is_instance_valid(p) and not p.is_queued_for_deletion()
 	))
@@ -106,6 +109,7 @@ func _strike(factor := 1.0) -> void:
 	_struck += Targets.strike_circle(
 		get_world_3d(), global_position, _cast.radius, _cast, _author, -_cast.pull, factor
 	).size()
+	_fx.strike()
 	if _cast.shape == Skill.Shape.DRIFT:
 		_prey = Targets.nearest(get_world_3d(), global_position, DRIFT_SIGHT)
 
@@ -116,6 +120,7 @@ func commune(part: float) -> void:
 	_struck += Targets.strike_circle(
 		get_world_3d(), global_position, _cast.radius, _cast, _author, -_cast.pull, part
 	).size()
+	_fx.strike()
 
 
 ## L'Ascension (jalon 48) : un ennemi tué par cette colonne la fait brûler plus longtemps.

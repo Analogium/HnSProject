@@ -598,7 +598,10 @@ class Look:
 class Trail extends MeshInstance3D:
 	var target: Node3D
 	var width := TRAIL_WIDTH
-	## [position, âge en secondes], du plus vieux au plus jeune.
+	## Le repère où elle se pose, null pour le monde : le marteau de la Gravitation tourne autour de son
+	## lanceur, et posée dans le monde, sa traînée se courbait quand il avançait.
+	var frame: Node3D
+	## [position dans le repère, âge en secondes], du plus vieux au plus jeune.
 	var points: Array = []
 	var _strip := ImmediateMesh.new()
 
@@ -612,13 +615,16 @@ class Trail extends MeshInstance3D:
 		while not points.is_empty() and float(points[0][1]) > TRAIL_LIFE:
 			points.pop_front()
 		if is_instance_valid(target) and target.is_inside_tree():
-			add_point(target.get_global_transform_interpolated().origin)
+			add_point(target.get_global_transform_interpolated().origin - _base())
 		elif points.is_empty():
 			queue_free()
 			return
 		_build()
 
-	## Un point de plus, s'il s'est assez écarté du dernier.
+	func _base() -> Vector3:
+		return frame.get_global_transform_interpolated().origin if is_instance_valid(frame) else Vector3.ZERO
+
+	## Un point de plus, dans le repère, s'il s'est assez écarté du dernier.
 	func add_point(at: Vector3) -> void:
 		if points.is_empty() or (points.back()[0] as Vector3).distance_squared_to(at) > 0.25:
 			points.append([at, 0.0])
@@ -628,11 +634,12 @@ class Trail extends MeshInstance3D:
 		if points.size() < 2:
 			return
 		var camera := get_viewport().get_camera_3d()
+		var base := _base()
 		_strip.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
 		var along := 0.0
 		for i in points.size():
-			var p: Vector3 = points[i][0]
-			var q: Vector3 = points[maxi(i - 1, 0)][0] if i > 0 else points[1][0]
+			var p: Vector3 = points[i][0] + base
+			var q: Vector3 = (points[maxi(i - 1, 0)][0] if i > 0 else points[1][0]) + base
 			var dir := (p - q) if i > 0 else (q - p)
 			along += p.distance_to(q) if i > 0 else 0.0
 			var eye := (camera.global_position - p) if camera != null else Vector3.UP

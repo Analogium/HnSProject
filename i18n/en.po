@@ -6738,8 +6738,8 @@ msgstr "The chains start from you: they bind you to the nearest enemies, as many
 msgid "Carcan"
 msgstr "Shackle"
 
-msgid "Un enchaîné que le Resserrement amène au contact du premier touché est assommé {carcan} s, une fois par lien."
-msgstr "A chained enemy that Tightening brings into contact with the first one hit is stunned for {carcan} s, once per link."
+msgid "Un enchaîné que le Resserrement amène au contact du premier touché assomme toute la chaîne {carcan} s, une fois par lien."
+msgstr "A chained enemy that Tightening brings into contact with the first one hit stuns the whole chain for {carcan} s, once per link."
 
 msgid "Passation"
 msgstr "Handover"

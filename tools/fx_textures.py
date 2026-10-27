@@ -36,6 +36,11 @@
                                     hivernal (`IceVortexFx`) : un tirage de Qwen-Image sur fond noir
     tools/fx_textures.py orb        fx/frozen_orb_mist.png, la brume de givre derrière l'Orbe gelée
                                     (`FrozenOrbFx`) : un tirage de Qwen-Image sur fond noir
+    tools/fx_textures.py holy       fx/holy_shaft.png (une colonne de lumière, raccordée en x : le Pilier sacré,
+                                    `SacredPillarFx`), fx/holy_wave.png (une bande de lumière : l'onde, les rayons,
+                                    le marteau et les chaînes, `HolyBlastFx`) et fx/holy_glyph.png (le sol consacré,
+                                    un décal) et fx/holy_flare.png (l'éclat au cœur du souffle) : des tirages
+                                    de Qwen-Image sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -127,6 +132,19 @@ ORB_MIST = ("a photograph of a frozen orb, a glowing sphere of pale blue ice wit
 FIRE_WIND = ("a photograph of a horizontal band of roaring flames blowing from left to right, a wall of fire swept by "
              "strong wind, bright yellow and orange tongues of flame with dark red edges, isolated on a pure black "
              "background, realistic fire, VFX stock footage", 7)
+HOLY = {
+    "shaft": ("a photograph of a single vertical column of divine light falling from the sky, a bright beam of warm "
+              "golden white light with soft god rays and glowing dust motes, from the top of the frame to the bottom, "
+              "isolated on a pure black background, realistic, VFX stock footage, centered", 7),
+    "wave": ("a photograph of a horizontal band of radiant holy light, streaks of warm golden and pale pink light energy "
+             "with tiny glittering motes blowing from left to right, isolated on a pure black background, VFX stock "
+             "footage", 7),
+    "flare": ("a photograph of a burst of divine light rays radiating outward from one bright point in the center, "
+              "a starburst of sharp golden white light beams, lens flare, isolated on a pure black background, VFX stock "
+              "footage, centered", 7),
+    "glyph": ("top-down view of a glowing golden sacred circle engraved with holy runes and a radiant star pattern, "
+              "ornate celestial sigil made of light, isolated on a pure black background, VFX stock footage, centered", 7),
+}
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
 CELL = 256
@@ -271,6 +289,36 @@ def vortex(rgb):
     return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.15, 0.0, 1.0)[..., None]
 
 
+def holy_shaft(rgb):
+    """Le milieu de la colonne, en 512², raccordé en x : il fait le tour du cylindre."""
+    w = rgb.shape[1]
+    cut = Image.fromarray((rgb[:, int(w * 0.2):int(w * 0.8)] * 255).astype(np.uint8)).resize((SIDE, SIDE), Image.LANCZOS)
+    b = np.asarray(cut, np.float32) / 255.0
+    x = np.abs(np.arange(SIDE) - SIDE / 2) / (SIDE / 2)
+    k = np.clip(x * 1.6 - 0.6, 0.0, 1.0)[None, :, None]
+    return b * (1.0 - k) + np.roll(b, SIDE // 2, 1) * k
+
+
+def holy_wave(rgb):
+    """La bande de `frost_wind`, sans le soleil où elle naît, à droite : raccordée, il faisait une tache."""
+    return frost_wind(rgb[:, :int(rgb.shape[1] * 0.72)])
+
+
+def holy_glyph(rgb):
+    """Un décal : le cercle en couleur et en alpha (sa clarté), le noir de fond ramené à rien."""
+    img = Image.fromarray((rgb * 255).astype(np.uint8)).resize((SIDE, SIDE), Image.LANCZOS)
+    c = np.clip((np.asarray(img, np.float32) / 255.0 - 0.04) / 0.96, 0.0, 1.0)
+    lum = c.max(-1)
+    return np.concatenate([c / np.maximum(lum[..., None], 1e-3) * np.sqrt(lum[..., None]), lum[..., None]], -1)
+
+
+def cmd_holy():
+    save(holy_shaft(qwen(*HOLY["shaft"])), "holy_shaft.png")
+    save(holy_wave(qwen(*HOLY["wave"])), "holy_wave.png")
+    save(holy_glyph(qwen(*HOLY["glyph"])), "holy_glyph.png")
+    save(cell(qwen(*HOLY["flare"]), (0.1, 0.1, 0.9, 0.9), 0.6), "holy_flare.png")
+
+
 def cmd_fire_wind():
     save(frost_wind(qwen(*FIRE_WIND)), "fire_wind.png")
 
@@ -338,4 +386,4 @@ def cmd_fire():
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
      "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
-     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb}[sys.argv[1]]()
+     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy}[sys.argv[1]]()

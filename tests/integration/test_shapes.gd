@@ -993,6 +993,27 @@ func test_the_pulse_follows_its_caster_then_ends_on_its_own() -> void:
 	assert_eq(still.size(), 0, "puis elle s'en est allée")
 
 
+## Le bandeau la montre, avec ce qu'il lui reste ; relancée avant sa fin (l'Antienne), la première ne
+## s'éteint pas.
+func test_holy_pulse_is_lit_while_it_lasts() -> void:
+	_learn_with("manual_holy", "holy_pulse", [["recharge", -80.0, true]])
+	var cast := _p.resolve(SkillCatalog.by_id("holy_pulse"), 1)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_true(_p.lit("holy_pulse"))
+	assert_true(SkillCatalog.by_id("holy_pulse") in _p.lit_skills())
+	await wait_seconds(cast.duration * 0.5)
+	assert_almost_eq(_p.lit_ratio("holy_pulse"), 0.5, 0.1)
+	var first: HolyPulse = _p.get_children().filter(func(n: Node) -> bool: return n is HolyPulse)[0]
+	_p._set_mana(9999.0)
+	assert_true(Gestures.cast(_p, 2), "l'Antienne la relance")
+	await wait_physics_frames(1)
+	assert_true(is_instance_valid(first) and not first.is_queued_for_deletion(), "sans couper la première")
+	assert_gt(_p.lit_ratio("holy_pulse"), 0.9, "le bandeau suit la dernière")
+	await wait_seconds(cast.duration + 0.2)
+	assert_false(_p.lit("holy_pulse"))
+
+
 ## La clarté verse ses deux lignes : la résistance sur la fiche, la chance de bénir
 ## dans les facteurs que la hurtbox de la cible lira.
 func test_holy_light_raises_resistance_and_the_chance_to_bless() -> void:
@@ -6667,17 +6688,21 @@ func test_judgment_chains_hand_over_on_a_death() -> void:
 	assert_true(spare.hurtbox in net._members)
 
 
-## Le Resserrement tire l'enchaîné vers le premier touché ; le Carcan l'assomme au contact.
+## Le Resserrement tire l'enchaîné vers le premier touché ; au contact, le Carcan assomme toute la chaîne,
+## le premier touché et celui qui arrive encore compris.
 func test_judgment_chains_constrict_and_shackle() -> void:
 	_learn_with(
 		"manual_holy", "judgment_chains", [[SkillStats.CONSTRICTION, 200.0], [SkillStats.SHACKLE, 1.0]]
 	)
 	var first := _grunt(Vector3(60, 0.0, 0))
-	var near := _grunt(Vector3(60, 0.0, 50))
+	var near := _grunt(Vector3(60, 0.0, 30))
+	var far := _grunt(Vector3(60, 0.0, -85))
 	await _throw_chains(first)
-	await wait_seconds(0.3)
+	assert_true(far.hurtbox in (_children_of(JudgmentChains)[0] as JudgmentChains).members())
 	assert_lte(near.global_position.distance_to(first.global_position), SkillStats.SHACKLE_CONTACT + 0.5)
-	assert_eq(near.states.speed_factor, 0.0, "assommé")
+	assert_gt(far.global_position.distance_to(first.global_position), SkillStats.SHACKLE_CONTACT + 5.0, "en route")
+	for grunt: Enemy in [first, near, far]:
+		assert_true(grunt.states.held(), "%s assommé" % grunt.name)
 
 
 ## Le Pilori : les enchaînés vont vers le Pilier sacré qui brûle.

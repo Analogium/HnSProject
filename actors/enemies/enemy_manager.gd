@@ -104,7 +104,11 @@ func _physics_process(delta: float) -> void:
 		if not e.states.is_clear:
 			e.suffer_states(delta)
 		e.regen(delta)
-		if e.afraid():
+		# Tenu, il ne pense plus : la vitesse à zéro figeait sa marche et ses recharges, mais un coup
+		# déjà rechargé partait encore.
+		if e.states.held():
+			pass
+		elif e.afraid():
 			e.flee(delta)
 		else:
 			e.tick(delta)

@@ -1092,7 +1092,7 @@ Le relief, ses matières et son décor sont en 3D depuis le jalon 54 (étape 3) 
 ```bash
 tools/terrain_textures.py     # sol, plaques brûlées, route, roche, dessus des falaises → art/tiles/
 tools/decor_3d.py [nom…]      # rochers, bois mort, buisson, arbres morts → art/decor/<nom>.glb
-tools/fx_textures.py cracks|serpent|fire|iron|lightning|frost|streak|storm|ice|nova|fire_wind|vortex|orb  # textures des effets : sol calciné, peau du serpent, photos de feu, fer du Brasero, éclair, Trait de glace, traînée du trait en feu, Nuage d'orage, glace des Pics, glace et vent de la Nova, bande de l'onde de feu, spirale du Désastre, brume de l'Orbe gelée → fx/
+tools/fx_textures.py cracks|serpent|fire|iron|lightning|frost|streak|storm|ice|nova|fire_wind|vortex|orb|holy  # textures des effets : sol calciné, peau du serpent, photos de feu, fer du Brasero, éclair, Trait de glace, traînée du trait en feu, Nuage d'orage, glace des Pics, glace et vent de la Nova, bande de l'onde de feu, spirale du Désastre, brume de l'Orbe gelée, colonne, bande, éclat et runes du sacré → fx/
 ```
 
 - **Le relief** (`world/terrain.gd`) se tire de la grille : sa forme se règle là

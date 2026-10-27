@@ -24,7 +24,9 @@ static var _materials := {}
 
 ## Semées : le point d'où elles partent, rendu à chaque image ; vide, elles ne naissent plus.
 var _source: Callable
-var _rising := false
+## Aspirées : le point où elles arrivent au bout de leur vie, rendu à leur naissance ; sans pesanteur.
+var _toward: Callable
+var rising := false
 var _width := WIDTH
 var _stretch := STRETCH
 ## Semées par seconde, et ce qui reste dû d'une image à l'autre : par image, leur nombre aurait suivi
@@ -68,11 +70,18 @@ static func burst(
 static func trail(host: Node3D, nature: int, rate: float, life: float, source: Callable, rising := false) -> Sparks:
 	var fx := _make(host, nature, ceili(rate * life))
 	fx._source = source
-	fx._rising = rising
+	fx.rising = rising
 	fx._rate = rate
 	for e in fx._embers:
 		e.life = randf_range(life * 0.6, life)
 	host.tree_exiting.connect(fx._orphan)
+	return fx
+
+
+## Semées comme `trail`, mais aspirées vers `toward` (la Colère divine qui s'amasse).
+static func gather(host: Node3D, nature: int, rate: float, life: float, source: Callable, toward: Callable) -> Sparks:
+	var fx := trail(host, nature, rate, life, source)
+	fx._toward = toward
 	return fx
 
 
@@ -97,8 +106,12 @@ static func _make(host: Node3D, nature: int, count: int) -> Sparks:
 	return fx
 
 
+## Au `quit`, elles peuvent quitter l'arbre avant leur porteur.
 func _orphan() -> void:
 	_source = Callable()
+	if not is_inside_tree():
+		queue_free()
+		return
 	get_tree().create_timer(_longest()).timeout.connect(queue_free)
 
 
@@ -117,8 +130,10 @@ func _process(delta: float) -> void:
 		var e := _embers[_next % _embers.size()]
 		_next += 1
 		e.from = _source.call() + Vector3(randf_range(-3, 3), randf_range(-3, 3), randf_range(-3, 3))
-		e.speed = (Vector3(randf_range(-20, 20), randf_range(30, 60), randf_range(-20, 20)) if _rising
+		e.speed = (Vector3(randf_range(-20, 20), randf_range(30, 60), randf_range(-20, 20)) if rising
 				else Vector3(randf_range(-25, 25), randf_range(10, 40), randf_range(-25, 25)))
+		if _toward.is_valid():
+			e.speed = (_toward.call() - e.from) * DRAG / (1.0 - exp(-DRAG * e.life))
 		e.born = _clock
 	pose()
 
@@ -137,7 +152,7 @@ func ember(i: int) -> Transform3D:
 	var a := _clock - e.born
 	if a < 0.0 or a >= e.life:
 		return Transform3D(Basis.from_scale(Vector3.ONE * 0.001), e.from)
-	var fall := -RISE if _rising else FALL
+	var fall := 0.0 if _toward.is_valid() else (-RISE if rising else FALL)
 	var v := e.speed * exp(-DRAG * a) + Vector3.DOWN * fall * 2.0 * a
 	var at := e.from + e.speed * (1.0 - exp(-DRAG * a)) / DRAG + Vector3.DOWN * fall * a * a
 	at.y = maxf(at.y, 1.0)

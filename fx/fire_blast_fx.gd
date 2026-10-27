@@ -66,12 +66,12 @@ func _show() -> void:
 	_heat.set_instance_shader_parameter(&"strength", HAZE_STRENGTH * (1.0 - smoothstep(HAZE_LIFE.x, HAZE_LIFE.y, _clock)))
 
 
-## L'onde de feu, une matière par nature, gardée.
+## L'onde de feu, une matière par nature, gardée ; le sacré y passe sa bande de lumière (`HolyBlastFx`).
 static func shock_material(nature: int) -> ShaderMaterial:
 	if not _materials.has(nature):
 		var m := ShaderMaterial.new()
 		m.shader = SHOCK
-		m.set_shader_parameter(&"wind", WIND)
+		m.set_shader_parameter(&"wind", HolyBlastFx.WAVE if nature == DamageType.Kind.HOLY else WIND)
 		var ramp := FlameFx.ramp(nature)
 		for k in 3:
 			m.set_shader_parameter([&"heart", &"tint", &"deep"][k], Vector3(ramp[k].r, ramp[k].g, ramp[k].b))

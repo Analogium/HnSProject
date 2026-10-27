@@ -135,6 +135,12 @@ static func warm(host: Node3D) -> void:
 	IceNovaFx.flat(probe, IceNovaFx.material(IceVortexFx.SWIRL, DamageType.Kind.COLD), 10.0, 0.0)
 	var nova := IceNovaFx.blow(probe, at, DamageType.Kind.COLD, 10.0)
 	nova.process_mode = Node.PROCESS_MODE_DISABLED
+	HolyBlastFx.blow(probe, at, DamageType.Kind.HOLY, 10.0)
+	SacredPillarFx.raise(probe, DamageType.Kind.HOLY, 10.0, true)
+	# Le marteau veut son marteau : sa matière et sa traînée paraissent seules.
+	for m: Material in [HolyHammerFx.material(DamageType.Kind.HOLY), HolyHammerFx.trail_material(DamageType.Kind.HOLY)]:
+		var plate := IceNovaFx.flat(probe, m, 1.0, 0.0)
+		plate.mesh = HolyHammerFx.mesh()
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in host.get_viewport().get_children():
 		if node not in rooted:

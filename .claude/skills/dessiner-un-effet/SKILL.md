@@ -58,8 +58,8 @@ pas.
   sort qui se lit. Un sort y est **une pile de couches**, chacune une technique — la Nova de glace
   (`IceNovaFx`) en est le gabarit : une onde maillée dont une texture vraie défile, **rongée**
   (dissolve à liseré, plutôt qu'un fondu ou un rétrécissement) ; une distorsion sur le front ; des
-  éclats qui se rongent ; **un `Decal`** au sol, qui épouse le relief ; des scintillements ; une
-  lumière. La planche oppose la pile à l'actuelle, et une pile privée d'une couche à la pile entière :
+  éclats qui se rongent ; **un `Decal`** au sol, qui épouse le relief — seulement si le sort agit
+  vraiment sur le sol (voir plus bas) ; des scintillements ; une lumière. La planche oppose la pile à l'actuelle, et une pile privée d'une couche à la pile entière :
   c'est ainsi que la brume en flipbook a été écartée. **Une texture recyclée d'un autre sort se dit**,
   et la planche de textures ComfyUI se propose d'office. Le flipbook (fumée, explosion) se rend dans
   Blender, `tools/blender/mist_flipbook.py`. Qwen sort le « givre au sol » en feuilles de fougère :
@@ -79,6 +79,10 @@ pas.
   (`IceSpikesFx.Flight`). Une brume photographiée derrière des cristaux se trie derrière eux
   (`sorting_offset`), sinon elle les grise. Un grand cristal à demi rongé sort en papier déchiré
   blanc : le ronger vite.
+  Au sacré (27 octobre) : une lumière rose additionnée à l'ocre sort en trait de craie — une rampe au
+  cœur d'or ; **un objet se mêle et s'éclaire** (le marteau, les maillons) : additionné, il sortait en
+  tache blanche ; une colonne de lumière aux bouts francs se lit comme un tuyau, et rongée, en papier
+  déchiré : ses bouts se fondent, et elle s'en va par où elle est venue.
 - **La silhouette d'abord, la matière ensuite.** Étirée en dard de 34 px, une photo d'arc
   électrique sortait en plume ou en fumée : « ça ne ressemble pas à un éclair ». Le zigzag est
   venu d'un ruban que le shader casse, qui porte la photo — comme la peau du Serpent sur son
@@ -109,8 +113,10 @@ sur la planche. Montrer **le geste**, pas le dessin isolé : à deux instants au
   contre la falaise sort **coupé en carré** — le plateau, plus haut que lui, le masque case
   par case : `warp` le joueur vers un coin dégagé avant de capturer (Nova de glace). Figer la zone
   (`Game.rng.seed` avant `enter_area`) pour que deux rendus se comparent.
-- **L'horloge d'une planche lit le vrai `delta`** (plafonné, une prise fige le jeu) : à un soixantième
-  par image, elle courait 2,75 fois trop vite à 165 Hz et les fins n'étaient jamais atteintes.
+- **L'horloge d'une planche lit le vrai `delta`** : à un soixantième par image, elle courait 2,75 fois
+  trop vite à 165 Hz et les fins n'étaient jamais atteintes. Plafonnée à un trentième, elle prenait du
+  retard sur l'effet dès que ComfyUI tenait la carte (moins de 30 images par seconde) : une planche
+  qui suit un effet à son vrai `delta` lit le même, sans plafond.
 - **Faire un premier passage à blanc** : chaque matière neuve se compile ~100 ms à sa
   première image, et ce qui vole saute d'autant (des perles dans une traînée).
 - **Montrer une boule en vol avec sa traînée entière** : elle part assez tôt pour avoir

@@ -267,22 +267,6 @@ static func turned(grid: Array) -> Array:
 	return out
 
 
-## Le Tombeau de glace : vingt et un pixels sur vingt-neuf, le seul dessin du jeu
-## qu'on regarde **à travers**. Il se pose donc à alpha partiel, et son intérieur
-## est plein — un bloc évidé n'était que deux piliers.
-##
-## Un grain de lumière sacrée, trois pixels : le cœur au milieu et quatre pointes
-## de teinte. La croix de la glace a la forme inverse — branches de givre, centre
-## teinté —, parce qu'un cristal *accroche* la lumière quand un grain **est** la
-## lumière.
-const SPECK := [
-	".5.",
-	"5w5",
-	".5.",
-]
-
-const SPECK_SIZE := 3
-
 ## L'éclat d'un coup porté. Ses diagonales sont pointillées, sinon il couvre l'ennemi frappé.
 const STRIKE := [
 	"3..4..3",
@@ -295,75 +279,12 @@ const STRIKE := [
 ]
 const STRIKE_SIZE := 7
 
-## La tranche de colonne du Pilier sacré, dix-sept pixels sur douze, **qui se
-## carrelle**. Sa grille est pleine bord à bord, donc `PixelCanvas` ne lui pose
-## aucun contour — deux tranches posées l'une sur l'autre montreraient sinon une
-## barre sombre tous les douze pixels. Le bord sombre de la colonne est donc
-## dessiné *dans* la tranche.
-##
-## Son cœur blanc s'élargit et se resserre d'une rangée à l'autre : défilé vers le
-## bas, c'est ce qui fait **couler** la lumière. Des rangées identiques ne
-## feraient que glisser un motif.
-const SHAFT := [
-	"1234455www5544321",
-	"123445wwwww544321",
-	"12344wwwwwww44321",
-	"123445wwwww544321",
-	"1234455www5544321",
-	"123445wwwww544321",
-	"12344wwwwwww44321",
-	"12344wwwwwww44321",
-	"123445wwwww544321",
-	"1234455www5544321",
-	"123445wwwww544321",
-	"12344wwwwwww44321",
-]
-
-## Le haut de la colonne, qui s'affine jusqu'à trois pixels. Sans lui, la colonne
-## se termine par une coupe nette et se lit comme un tube posé là ; sa dernière
-## rangée reprend exactement le profil de la tranche, donc le raccord ne se voit
-## pas.
-const SHAFT_TIP := [
-	".......www.......",
-	"......5www5......",
-	".....45www54.....",
-	"....345www543....",
-	"...2345www5432...",
-	"..12345www54321..",
-	".112344www443211.",
-	"1234455www5544321",
-]
-
-const SHAFT_WIDTH := 17
-const SHAFT_HEIGHT := 12
-const SHAFT_TIP_HEIGHT := 8
-
-static var _specks := {}
-static var _shafts := {}
-static var _tips := {}
-
-
 static var _strikes := {}
 
 
 ## L'éclat d'un coup porté, seul : la Becquée (jalon 49) le pose où le bec frappe.
 static func strike(tint: Color) -> Texture2D:
 	return _sheet(_strikes, [STRIKE], STRIKE_SIZE, STRIKE_SIZE, tint, tint.lerp(Color.WHITE, 0.85))[0]
-
-
-## Le grain de lumière de cette teinte.
-static func spark(tint: Color) -> Texture2D:
-	return _sheet(_specks, [SPECK], SPECK_SIZE, SPECK_SIZE, tint, Holy.halo(tint))[0]
-
-
-## La tranche de colonne de cette teinte.
-static func shaft(tint: Color) -> Texture2D:
-	return _sheet(_shafts, [SHAFT], SHAFT_WIDTH, SHAFT_HEIGHT, tint, Holy.halo(tint))[0]
-
-
-## Le haut de la colonne de cette teinte.
-static func shaft_tip(tint: Color) -> Texture2D:
-	return _sheet(_tips, [SHAFT_TIP], SHAFT_WIDTH, SHAFT_TIP_HEIGHT, tint, Holy.halo(tint))[0]
 
 
 ## Un dessin fabriqué à la demande et son point d'ancrage : ce qui se rastérise au
@@ -543,24 +464,6 @@ const KNIFE := [
 	"....g........",
 ]
 
-## Le marteau du Marteau béni (jalon 48), **tête en haut** — choisi sur planche contre un
-## maillet, un tau, une étoile, une traîne de grains et un croissant. La tête est la
-## lumière, le manche plus sombre : tournée en biais, une silhouette toute claire sortait
-## en tache. Ses huit orientations sont tournées au premier besoin (`Holy.hammer()`).
-const HAMMER := [
-	".34444444443.",
-	"3455555555543",
-	"345wwwwwww543",
-	"3455555555543",
-	".34444444443.",
-	"......4......",
-	".....232.....",
-	".....232.....",
-	".....232.....",
-	".....232.....",
-	".....121.....",
-	"......1......",
-]
 
 
 # --------------------------------------------------------------------------

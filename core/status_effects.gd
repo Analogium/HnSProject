@@ -481,6 +481,11 @@ func hold(on: bool) -> void:
 	_recompute()
 
 
+## Tenu (assommé, enlacé) : il ne pense plus, voir `EnemyManager`.
+func held() -> bool:
+	return _holds > 0
+
+
 ## La force de cet état, zéro s'il n'est pas là.
 func strength(kind: int) -> float:
 	var state := _state(kind)

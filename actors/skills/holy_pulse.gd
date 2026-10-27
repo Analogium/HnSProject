@@ -8,6 +8,10 @@ extends Node3D
 ##
 ## Comme tout ce qui dure, elle ne fige jamais le jeu.
 
+## La Colère divine, comme en 2D : les grains aspirés du bord vers le porteur, par seconde, et leur vie.
+const GATHERED := 45.0
+const GATHER_LIFE := 0.6
+
 var _player: Player
 var _cast: SkillStats
 var _age := 0.0
@@ -24,7 +28,31 @@ static func emanate(player: Player, cast: SkillStats) -> HolyPulse:
 	pulse._cast = cast
 	player.add_child(pulse)
 	Settings.veil(pulse, Settings.SPELLS)
+	# La Colère divine : rien ne frappe pendant la litanie, la lumière s'amasse sur le porteur.
+	if cast.wrath > 0.0:
+		Sparks.gather(pulse, cast.nature, GATHERED, GATHER_LIFE, pulse._rim, pulse._heart)
 	return pulse
+
+
+## D'où vient un grain amassé : du cercle de l'onde.
+func _rim() -> Vector3:
+	var h := randf() * TAU
+	return _heart() + Vector3(cos(h), 0.0, sin(h)) * _cast.radius * randf_range(0.8, 1.1)
+
+
+func _heart() -> Vector3:
+	return get_global_transform_interpolated().origin + Vector3.UP * ElementFx.LIFT
+
+
+## Ce qu'il reste à la litanie, entre 0 et 1, pour le bandeau.
+func remaining_ratio() -> float:
+	return clampf(1.0 - _age / _cast.duration, 0.0, 1.0) if _cast.duration > 0.0 else 0.0
+
+
+## Le joueur meurt : elle se tait avec lui.
+func extinguish() -> void:
+	set_physics_process(false)
+	queue_free()
 
 
 ## L'Égide ne survit pas à la litanie.
@@ -72,7 +100,9 @@ func _strike() -> void:
 	var struck := float(Targets.strike_circle(
 		get_world_3d(), global_position, radius, cast, _player.states, 0.0, factor
 	).size())
-	ElementFx.burst(self, global_position, DamageType.COLORS[cast.nature], radius)
+	# La dernière onde de la Colère divine ou de l'Extase a les rayons d'une explosion.
+	var crowned := last and (_cast.wrath > 0.0 or _cast.ecstasy > 0.0)
+	HolyBlastFx.blow(self, global_position, cast.nature, radius, crowned)
 	_player.heal(_cast.life_on_hit * struck)
 	_player.gain_mana(_cast.mana_on_hit * struck)
 	if _cast.aegis > 0.0:

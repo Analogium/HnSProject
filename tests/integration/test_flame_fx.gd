@@ -35,16 +35,18 @@ func test_a_ball_carries_its_core_and_light_and_its_trail_outlives_it() -> void:
 
 
 func test_a_blast_frees_all_it_lays() -> void:
-	var sparks := func() -> int: return get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks).size()
-	var before: int = sparks.call()
+	# Celles d'avant peuvent s'éteindre pendant l'attente : on suit les siennes.
+	var sparks := func() -> Array: return get_viewport().get_children().filter(func(n: Node) -> bool: return n is Sparks)
+	var before: Array = sparks.call()
 	var made := FlameFx.blast(_host(), Vector3(5, 0, 5), DamageType.Kind.FIRE, 30.0)
-	assert_eq(sparks.call(), before + 1, "des étincelles")
+	var own: Array = (sparks.call() as Array).filter(func(n: Node) -> bool: return n not in before)
+	assert_eq(own.size(), 1, "des étincelles")
 	assert_eq(made.size(), 5, "flammes, fumée, souffle, éclair, couches")
 	assert_true(made.back() is FireBlastFx)
 	await wait_seconds(FlameFx.SMOKE_LIFE + 0.2)
 	for node in made:
 		assert_false(is_instance_valid(node), "%s libéré" % node)
-	assert_eq(sparks.call(), before, "les étincelles aussi")
+	assert_false(is_instance_valid(own[0]), "les étincelles aussi")
 
 
 ## Pas de brûlure au sol : elle disait un sol qui brûle, que la boule ne pose pas.

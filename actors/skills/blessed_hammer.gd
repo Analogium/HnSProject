@@ -18,6 +18,7 @@ var _age := 0.0
 var _bite := SkillStats.HAMMER_BITE
 var _tint := Color.WHITE
 var _contacts: Targets.Contacts
+var _fx: HolyHammerFx
 ## Le Martèlement : les coups des marteaux de chaque lanceur sur chaque ennemi, **tous marteaux
 ## confondus** — un marteau seul ne touche un même ennemi que deux fois sur sa spirale, et le
 ## Battage n'éclatait jamais —, et l'image du dernier. Par « lanceur:ennemi ».
@@ -48,7 +49,9 @@ static func swing(
 	parent.add_child(hammer)
 	Settings.veil(hammer, Settings.SPELLS)
 	hammer.global_position = hammer._at(0.0)
-	ElementFx.trail(hammer, DamageType.COLORS[cast.nature])
+	hammer._fx = HolyHammerFx.show_on(
+		hammer, cast.nature, hammer._bite / SkillStats.HAMMER_BITE, caster if cast.gravitation > 0.0 else null
+	)
 	return hammer
 
 
@@ -63,6 +66,11 @@ func _physics_process(delta: float) -> void:
 			_blow(target)
 	if _age >= _cast.duration:
 		queue_free()
+
+
+## Le centre de sa spirale, ou son lanceur sous la Gravitation.
+func center() -> Vector3:
+	return _center
 
 
 ## Où il est à cet âge. La spirale s'ouvre de son centre jusqu'au rayon sur toute sa durée :
@@ -87,6 +95,7 @@ func _blow(target: Hurtbox) -> void:
 	var parts := DamageType.scaled(_cast.roll(Game.rng), 1.0 + _cast.martelling * 0.01 * grown)
 	var at := target.global_position
 	Targets.strike(target, parts, global_position, _author, _cast)
+	_fx.blow(at)
 	if _cast.threshing > 0.0 and count % SkillStats.THRESHING_EVERY == 0:
 		Explosion.put(
 			get_parent(), at, DamageType.scaled(parts, _cast.threshing * 0.01),

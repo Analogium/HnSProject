@@ -267,7 +267,7 @@ script = ExtResource("3_noeud")
 id = "judgment_chains_shackle"
 name = "Carcan"
 icon = ExtResource("icon_judgment_chains_shackle")
-description = "Un enchaîné que le Resserrement amène au contact du premier touché est assommé {carcan} s, une fois par lien."
+description = "Un enchaîné que le Resserrement amène au contact du premier touché assomme toute la chaîne {carcan} s, une fois par lien."
 position = Vector2i(1, 2)
 parents = Dictionary[String, int]({
 "judgment_chains_constriction": 1

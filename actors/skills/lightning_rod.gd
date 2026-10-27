@@ -56,7 +56,7 @@ static func mark(parent: Node, target: Hurtbox, author: StatusEffects, cast: Ski
 	rod._heir = cast.rod_heir > 0.0
 	rod._storm = cast.storm_target > 0.0
 	rod._nature = cast.nature
-	rod._head = _head_of(target)
+	rod._head = head_of(target)
 	_of[author.get_instance_id()] = rod
 	Settings.veil(rod, Settings.SPELLS)
 	rod._spark = BoltFx.spark(rod, SPARK)
@@ -64,8 +64,9 @@ static func mark(parent: Node, target: Hurtbox, author: StatusEffects, cast: Ski
 	DeferredTree.add_deferred(parent, rod, target.global_position)
 
 
-## Le sommet de la tête de ce que vise la marque : la hauteur de son modèle 3D, ou `HEAD`.
-static func _head_of(target: Hurtbox) -> float:
+## Le sommet de la tête de ce que vise la marque — et de l'assommé (`StunMark`) : la hauteur de son
+## modèle 3D, ou `HEAD`.
+static func head_of(target: Hurtbox) -> float:
 	var body := target.get_parent()
 	var model: Variant = body.get(&"model") if body != null else null
 	var height := (model as ActorModel).height() if model is ActorModel else 0.0
@@ -90,7 +91,7 @@ func _physics_process(delta: float) -> void:
 		# La Foudre héritée : la marque passe au plus proche, avec le temps qui lui restait.
 		_target = Targets.nearest(get_world_3d(), global_position, SkillStats.ROD_REACH) if _heir else null
 		if _target != null:
-			_head = _head_of(_target)
+			_head = head_of(_target)
 			_spark.position = Vector3.UP * (_head + SPARK * 0.5)
 	if _target == null or _left <= 0.0:
 		queue_free()

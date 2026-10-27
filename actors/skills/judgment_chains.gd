@@ -33,7 +33,7 @@ var _members: Array[Hurtbox] = []
 var _hooks := {}
 var _age := 0.0
 var _handovers := 0
-## Le Carcan : ceux qu'il a déjà assommés.
+## Le Carcan : ceux qui ont déjà heurté le premier touché.
 var _shackled := {}
 
 
@@ -76,8 +76,25 @@ static func _made(
 	parent.add_child(chains)
 	Settings.veil(chains, Settings.SPELLS)
 	chains.global_position = at
-	ElementFx.area(chains, DamageType.COLORS[cast.nature], cast.radius)
+	JudgmentChainsFx.bind(chains, cast.nature)
 	return chains
+
+
+## Ce que lit son dessin (`JudgmentChainsFx`).
+func flying() -> bool:
+	return _flying
+
+
+func heading() -> Vector3:
+	return _heading
+
+
+func anchor() -> Node3D:
+	return _anchor
+
+
+func members() -> Array[Hurtbox]:
+	return _members
 
 
 ## Ce que le joueur frappé garde de `lost` : sous le Bouc émissaire, la part partagée passe
@@ -285,7 +302,7 @@ func _snapped(member: Hurtbox) -> bool:
 	return member.global_position.distance_squared_to(_anchor.global_position) > reach * reach
 
 
-## Le Resserrement tire vers le premier touché et le Carcan assomme qui y arrive ; le Pilori
+## Le Resserrement tire vers le premier touché et le Carcan assomme la chaîne quand l'un y arrive ; le Pilori
 ## tire vers le Pilier sacré le plus proche.
 func _drag(member: Hurtbox, delta: float) -> void:
 	var enemy := member.get_parent() as Enemy
@@ -295,8 +312,11 @@ func _drag(member: Hurtbox, delta: float) -> void:
 			enemy.tug(member.global_position.direction_to(_anchor.global_position) \
 					* minf(_cast.constriction * delta, gap - SkillStats.SHACKLE_CONTACT))
 		elif _cast.shackle > 0.0 and not _shackled.has(member.get_instance_id()):
+			# Le choc assomme toute la chaîne, premier touché compris (demande de l'utilisateur).
 			_shackled[member.get_instance_id()] = true
-			enemy.stun(SkillStats.SHACKLE_TIME)
+			for bound in _members:
+				if is_instance_valid(bound) and bound.get_parent() is Enemy:
+					(bound.get_parent() as Enemy).stun(SkillStats.SHACKLE_TIME)
 	if _cast.pillory > 0.0:
 		var pillar := _nearest_pillar(member.global_position)
 		if pillar != null:

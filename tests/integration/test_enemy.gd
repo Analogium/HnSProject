@@ -234,3 +234,21 @@ func test_a_kill_tells_its_author_the_keywords_of_the_blow() -> void:
 	grunt.hurtbox.take_damage(info)
 	assert_eq(_slain_with.size(), 1, "le coup qui tue")
 	assert_true((_slain_with[0] as PackedStringArray).has(Keywords.ATTACK))
+
+
+## Assommé, il ne marche ni ne frappe — même un coup déjà rechargé —, puis reprend.
+func test_a_stunned_enemy_neither_walks_nor_strikes() -> void:
+	var player: Player = load("res://actors/player/player.tscn").instantiate()
+	add_child_autofree(player)
+	var manager := EnemyManager.new()
+	add_child_autofree(manager)
+	manager.target = player
+	var grunt := manager.spawn(load("res://actors/enemies/grunt.tscn"), player.global_position + Vector3(10, 0, 0))
+	grunt.stun(0.5)
+	await wait_physics_frames(1)
+	var at := grunt.global_position
+	await wait_seconds(0.4)
+	assert_eq(grunt._acting, 0.0, "aucun geste")
+	assert_almost_eq(grunt.global_position, at, Vector3.ONE * 0.01, "pas un pas")
+	await wait_seconds(0.3)
+	assert_gt(grunt._acting, 0.0, "puis il frappe")

@@ -1096,10 +1096,77 @@ demande de l'utilisateur : le fondu se multiplie au voile que porte le nœud, lu
 configuration allait de 15,5 à 20,7 ms : ce banc exclut un surcoût de 2 à 3 ms, pas d'un. Chaque fin de
 course jette une gerbe et une distorsion ; un éclair qui traverse une meute en déclenche beaucoup.
 
+**Le manuel de la lumière à la barre de Last Epoch** (26-27 octobre). L'utilisateur : « en accord avec le jalon,
+fais le manuel de lumière, tous les skills ». Il n'avait que le visuel générique, des étincelles roses
+(`Bureau\hns-captures-sacre-avant\`). Comme pour le feu et la foudre, **les planches sont tranchées par moi** et
+restent sur le Bureau (`hns-captures-sacre-planche\` à `-planche-5\`, dans l'ordre des retouches). **Les textures** :
+quatre sujets de Qwen-Image, deux graines chacun — une colonne de lumière, une bande de lumière or et rose, un
+cercle de runes vu de dessus, une gerbe de rayons — ; **la 7 partout** (`tools/fx_textures.py holy`). Les deux
+cercles portent un hexagramme au milieu : la 7 a un soleil en son cœur. ComfyUI tournait à 19 s le pas
+(5 à 6 min le tirage) même relancé, l'éditeur de l'utilisateur ouvert.
+- **Le souffle sacré** (`HolyBlastFx`) : l'onde de feu sur la bande de lumière, les rayons de gloire de la 2D, puis
+  un éclat photographié au cœur et des grains qui montent. **Retenu : la pile entière** pour les explosions, l'onde
+  seule pour la Pulsation et le Pilier (une onde par impulsion, sinon trop chargé), la pile pour la dernière onde de
+  la Colère divine.
+- **Le Pilier** : la pile (colonne, lumière au sol, grains, onde à l'impulsion), la même sans la lumière au sol —
+  la colonne flottait —, et la Consécration en runes. **Retenue : la pile**, les runes sous la Consécration seule.
+- **Le Marteau et les Chaînes** : en lumière additionnée, en or éclairé. **Ni l'un ni l'autre** : en lumière, le
+  marteau sortait en tache blanche, en or il virait au rose de son émission ; un fer béni éclairé, tête claire et
+  manche sombre, qui luit, les a remplacés — les maillons le prennent.
+- **La Lumière sacrée** : un liseré aux pieds, et sous l'Auréole un second au cercle où elle bénit (sa couronne de
+  grains de la 2D n'est pas portée).
+
+**Erreurs vues sur planche** : l'onde rose additionnée à l'ocre sortait **en trait de craie blanc** — la rampe
+passée à un cœur d'or (`FlameFx.RAMPS`, sacré), l'onde moins forte et plus large ; elle reste crème. Des rayons à 5 %
+du rayon faisaient 1,5 px, invisibles : 14 %, effilés. **Mon horloge de planche, plafonnée à un trentième, prenait
+du retard** quand ComfyUI tenait la carte (moins de 30 images par seconde) : l'effet, à son vrai `delta`, avait fini
+quand la prise croyait le saisir à 60 ms — les rayons semblaient manquer. Une colonne aux bouts francs **se lisait
+comme un tuyau** : ils se fondent ; rongée à sa fin, elle sortait en papier déchiré : elle **remonte au ciel**. Le
+marteau taillé au coup qu'il porte (8 px) n'était qu'un point : × 1,3, sa traînée amincie. **Un `EnemyManager` figé
+laisse ses corps hors des requêtes** : les Chaînes traversaient les grunts de la planche — assommés, ils prennent. Un
+argument de trop m'a donné un Effondrement de 1,5 px (`end_burst` est son rayon). Sur le sol consacré, l'éclat
+**blanchissait l'Effondrement** : `FLARE_GLOW`. Au `quit`, des étincelles quittaient l'arbre avant leur porteur
+(`Sparks._orphan()`, `get_tree()` nul) : gardé. Captures en jeu, les cinq compétences et les variantes (Colère divine,
+Consécration, Effondrement, Triptyque, Carillon et Bourdon, Gravitation, Bouc émissaire, Rupture, Auréole) :
+`Bureau\hns-captures-manuel-lumiere-jeu\`. Le 2D du sacré part avec ses tests : `fx/holy.gd`, et le grain, la
+tranche de colonne et le marteau d'`EffectForge`.
+**Coût** (300 grunts increvables collés au joueur, la compétence en case 0, sans vsync, 240 images de chauffe puis
+1 440, six paires alternées, A = le visuel générique d'avant sur la même copie, ComfyUI arrêté ; 10,9 à 15,7 ms
+l'image) : **le Pilier, B − A = +0,44 ± 0,74 ms l'image** (erreur type 0,30), physique −0,24 ± 1,14 — dans le bruit.
+**Le Marteau, +1,81 ± 1,38** (0,56), pire image +10,6 : hors du bruit. Un second banc, A le marteau sans ses grains au
+coup : **+1,49 ± 0,65** (0,27) — une gerbe et son nœud à chaque ennemi croisé, contre 300. Les grains sont espacés
+d'un dixième et demi par marteau (`HolyHammerFx.BLOW_GAP`) ; remesurés de même : **−0,03 ± 0,63** (0,26), dans le
+bruit. Le reste du marteau (maillage, traînée, lumière) n'a pas été mesuré seul. Les Chaînes, la Pulsation et la
+Lumière sacrée, qu'on ne lance pas en boucle contre une meute, non plus.
+
+**Les nœuds de la lumière qui « ne marchaient pas »** (27 octobre, au retour de l'utilisateur) : le Carcan,
+l'Effondrement, l'Antienne et la Communion, et la Gravitation dont les marteaux « se courbent quand on avance ». Joués
+d'abord par un test aux valeurs du vrai arbre (parents compris), puis en zone par la barre : **tous agissaient** — le
+Carcan assomme deux grunts qui marchent, l'Effondrement éclate, l'Antienne mène la recharge de 5 à 3,5 s, la
+Communion ajoute son coup. Ce qui manquait, c'était **de les voir** :
+- **l'assommé n'avait plus de dessin** depuis le passage en 3D (`StunMark` n'était plus qu'une minuterie) : ses
+  trois étoiles d'or, portées de la 2D ;
+- **l'Effondrement remontait au ciel** comme une colonne qui s'éteint, son éclat (15 px par point, sous les 32 de la
+  colonne) noyé dans sa lumière : la colonne s'écrase maintenant dans son éclat. Son rayon reste plus petit que la
+  colonne au premier point — un réglage, à l'équilibrage ;
+- **la Pulsation ne se voyait pas battre** : elle s'allume au bandeau avec ce qu'il lui reste (demande de l'utilisateur),
+  et la case de la barre est cernée tant qu'elle bat ; l'Antienne la relance avant sa fin sans couper la première ;
+- **la traînée de la Gravitation se posait dans le monde** : autour d'un lanceur qui marche, elle dessinait une spirale.
+  Elle se pose dans son repère.
+Captures : `Bureau\hns-captures-noeuds-lumiere-jeu\` (en zone, bandeau compris), `-noeuds-lumiere-zoom\` (l'assommé,
+l'Effondrement image par image) ; l'écrasé montrait à son tour un bout franc, fondu comme l'autre.
+
+**Le Carcan assomme toute la chaîne** (27 octobre, demande de l'utilisateur : « il faut que tout le groupe qui
+s'entrechoque soit étourdi, et donc ne bouge/attaque plus durant ce laps de temps ») : un enchaîné qui heurte le premier
+touché assomme tous les enchaînés, premier touché et ceux encore en route compris, une fois par enchaîné qui arrive.
+**Un assommé attaquait encore** : `hold()` met la vitesse à zéro, ce qui figeait sa marche et ses recharges, mais un
+coup déjà rechargé partait quand même — l'`EnemyManager` ne fait plus penser un ennemi tenu (`StatusEffects.held()`).
+Vaut pour tout ce qui assomme ou enlace (la Retombée, l'Étau…).
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13). Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à
