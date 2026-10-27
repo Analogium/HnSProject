@@ -426,11 +426,12 @@ func _physics_process(delta: float) -> void:
 	# Enfermé dans la glace : la visée et le sprite suivent encore, les pieds non. Et
 	# ZQSD tapé dans un champ de texte — la recherche de l'arbre — ne fait pas marcher.
 	# Un geste arrête le corps, comme dans PoE : la marche tenue reprend après lui.
-	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit \
-			or _gesture != null or _is_swinging:
+	var acting := _gesture != null or _is_swinging
+	if not _bound.is_empty() or get_viewport().gui_get_focus_owner() is LineEdit or acting:
 		input = Vector3.ZERO
 
-	if _aim_with_mouse:
+	# Le corps ne tourne pas pendant son geste : il frappe où il visait en le lançant.
+	if _aim_with_mouse and not acting:
 		var to_mouse := Flat.under_mouse(get_viewport()) - global_position
 		if to_mouse.length() > 4.0:
 			facing = to_mouse.normalized()
@@ -458,6 +459,8 @@ func _physics_process(delta: float) -> void:
 	for i in SkillBar.SLOT_COUNT:
 		var action := "skill_%d" % (i + 1)
 		if not Input.is_action_pressed(action):
+			if _held[i]:
+				_let_go(i)
 			_held[i] = false
 		elif _held[i] and not _click_taken(action):
 			cast_slot(i)
@@ -498,6 +501,13 @@ func halt() -> void:
 	_steering = false
 
 
+## La touche de cette case relâchée : ce qu'elle canalisait s'arrête.
+func _let_go(index: int) -> void:
+	var skill := bar.skill_of(index)
+	if skill != null and skill.channels() and lit(skill.id):
+		extinguish(skill.id)
+
+
 ## Lance la compétence de cette case. **Le seul chemin** — touches, barre, tests — et
 ## il porte les neuf refus : case vide, non apprise, geste en cours, mauvaise arme, réserve,
 ## recharge, orbite pleine, morts-vivants au complet, frappe vive sans personne à portée.
@@ -534,7 +544,10 @@ func cast_slot(index: int) -> bool:
 		cast.blend([DamageType.Kind.NECROTIC] as Array[int])
 		cast.nature = DamageType.Kind.NECROTIC
 
-	if cast.sustained:
+	# Canalisé : la touche tenue le garde allumé ; c'est la relâcher qui l'éteint (`_let_go()`).
+	if cast.sustained and skill.channels() and lit(skill.id):
+		return false
+	if cast.sustained and not skill.channels():
 		# Tenir la touche n'alterne pas : un geste entretenu qui clignote serait
 		# inutilisable.
 		_held[index] = false
@@ -1393,10 +1406,11 @@ func _on_slew(cast: SkillStats, at: Vector3, victim: StatusEffects) -> void:
 		if cast.powder_keg > 0.0:
 			blast = cast.echoed(1.0)
 			blast.status_chance_increase += SkillStats.SURE_STATE
-		Explosion.put(
+		var burst := Explosion.put(
 			_effects_parent(), at, parts, cast.kill_burst, null,
 			DamageType.COLORS[cast.nature], states, blast
 		)
+		burst.gore = cast.nature == DamageType.Kind.PHYSICAL
 		# Le Survoltage (jalon 43) : l'explosion relance une petite chaîne depuis le tué.
 		if cast.overvolt > 0.0:
 			ChainLightning.surge.call_deferred(_effects_parent(), get_world_3d(), at, states, cast.surged())
@@ -1654,6 +1668,9 @@ func _slam(cast: SkillStats) -> void:
 	if not struck.is_empty():
 		Game.hit_stop(_stop_of(cast))
 		Game.shake_camera(camera, shake_amount * STRIKE_SHAKE)
+		# L'Escorte suit la Frappe lourde jusque sous le Brise-sol, qui frappe sans la hitbox.
+		if _crown != null and cast.skill_id in SkillStats.ESCORTED:
+			_crown.escort(struck[0])
 	if cast.tremor > 0.0:
 		get_tree().create_timer(SkillStats.TREMOR_GAP, false).timeout.connect(_tremor.bind(impact, cast))
 
@@ -1795,7 +1812,7 @@ func _flurry(cast: SkillStats) -> void:
 		# Le peigne : chaque estoc dessiné sur sa rangée, la ligne qui frappe au milieu.
 		var row := Flat.orthogonal(heading) * (float(i) - float(count - 1) * 0.5) * ThrustTrail.COMB_GAP
 		ThrustTrail.leave(
-			_effects_parent(), global_position + row, tip + row, DamageType.COLORS[thrust.nature],
+			_effects_parent(), global_position + row, tip + row, thrust.nature,
 			ThrustTrail.COMB_WIDTH
 		)
 
@@ -1841,7 +1858,7 @@ func _finish_off(cast: SkillStats) -> void:
 	var at := prey.global_position
 	Targets.strike(prey, parts, global_position, states, blow, cast.knockback)
 	var tint: Color = DamageType.COLORS[blow.nature]
-	ThrustTrail.leave(_effects_parent(), global_position, at, tint, ThrustTrail.HEAVY_WIDTH, false)
+	ThrustTrail.leave(_effects_parent(), global_position, at, blow.nature, ThrustTrail.HEAVY_WIDTH, false)
 	GraceMark.carve(_effects_parent(), at, tint)
 	# Le Point final : à pleines charges, le coup éclate autour de sa cible ; l'Épilogue y
 	# garde le seuil d'achèvement.
@@ -1905,7 +1922,7 @@ func _bite(cast: SkillStats) -> void:
 		_bitten(prey, cast)
 		Game.hit_stop()
 		Game.shake_camera(camera, shake_amount)
-	ThrustTrail.leave(_effects_parent(), global_position, tip, DamageType.COLORS[cast.nature])
+	ThrustTrail.leave(_effects_parent(), global_position, tip, cast.nature)
 
 
 ## Ce que la morsure fait au mordu, en ligne ou en arc sous la Gueule béante : le Croc-en-jambe
@@ -1962,7 +1979,7 @@ func _dance(cast: SkillStats) -> void:
 			center = _nearest_of(struck).global_position
 			Game.hit_stop()
 			Game.shake_camera(camera, shake_amount)
-		swing_arc.play(swing_duration, SwingArc.Style.ARC, DamageType.COLORS[cast.nature])
+		swing_arc.play(swing_duration, SwingArc.Style.ARC, cast.nature)
 		if i == count - 1:
 			popped += _dance_finale(cast, center, parts)
 	gain_mana(cast.gravedigger * float(popped))
@@ -2134,7 +2151,7 @@ func _riposte(toward: Vector3) -> void:
 		if cast.disarm > 0.0 and is_instance_valid(enemy) and not enemy.is_dead:
 			enemy.stun(cast.disarm)
 		ThrustTrail.leave(
-			_effects_parent(), global_position, at, DamageType.COLORS[cast.nature],
+			_effects_parent(), global_position, at, cast.nature,
 			ThrustTrail.PARRY_WIDTH, true, true
 		)
 
@@ -2326,7 +2343,7 @@ func available_skills() -> Array[Skill]:
 func _swing(cast: SkillStats, style := SwingArc.Style.ARC) -> void:
 	_is_swinging = true
 	_hit_shake = shake_amount * (STRIKE_SHAKE if style == SwingArc.Style.STRIKE else 1.0)
-	swing_arc.play(swing_duration * float(cast.hits), style, DamageType.COLORS[cast.nature])
+	swing_arc.play(swing_duration * float(cast.hits), style, cast.nature)
 
 	for hit in cast.hits:
 		if hit > 0:
@@ -2376,7 +2393,7 @@ func _thrust(cast: SkillStats) -> void:
 	# Sans la Quarte, l'étoile éclate sur celui qu'il frappe.
 	if cast.quarte <= 0.0 and not struck.is_empty():
 		tip = global_position + facing * global_position.distance_to(struck[0].global_position)
-	ThrustTrail.leave(_effects_parent(), global_position, tip, DamageType.COLORS[thrust.nature])
+	ThrustTrail.leave(_effects_parent(), global_position, tip, thrust.nature)
 
 
 ## Les traits répartis sur l'écart du geste résolu : tout vient de

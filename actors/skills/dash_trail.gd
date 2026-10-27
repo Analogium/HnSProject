@@ -18,6 +18,11 @@ const SPAWN := 0.12
 const GROUND_LAYER := "ground_layer"
 ## La Mèche (jalon 42) : le temps entre deux plaques qui explosent, du départ à l'arrivée.
 const WICK_DELAY := 0.05
+## La ruée d'acier : son fil, en part du rayon, que la lame parcourt en ce temps ; et les entailles qu'elle
+## laisse à chaque coup, au plus sur tant de frappés.
+const CUT_WIDTH := 1.4
+const CUT_SWEEP := 0.08
+const NICKS := 4
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -63,6 +68,10 @@ static func leave(
 	trail.global_position = from_value
 	if cast.nature == DamageType.Kind.FIRE:
 		BurntPath.lay(trail, trail._toward, cast.nature, cast.radius, cast.duration)
+	elif cast.nature == DamageType.Kind.PHYSICAL and ground:
+		SteelFx.furrow(trail, from_value, to, cast.radius, cast.duration)
+	elif cast.nature == DamageType.Kind.PHYSICAL:
+		SteelFx.cut(trail, from_value, to, cast.nature, cast.radius * CUT_WIDTH, CUT_SWEEP, cast.duration)
 	else:
 		ElementFx.line(trail, from_value, to, trail._tint)
 	return trail
@@ -122,8 +131,9 @@ func _exit_tree() -> void:
 ## l'estimation : la fiche et la trace ne peuvent pas annoncer deux nombres.
 ## Un sol qui brûle a son disque d'étincelles (`ElementFx`), posé une fois là : le sol ravivé
 ## arrive en différé, sa position après lui. Un sol gelé, sa glace ; le Marais, sa boue (`FrostGroundFx`).
+## Un sol en long (le Sillon d'acier) s'est dessiné à sa pose.
 func _ready() -> void:
-	if not _ground:
+	if not _ground or _toward != Vector3.ZERO:
 		return
 	if not FrostGroundFx.GROUNDS.has(_cast.nature):
 		ElementFx.area.call_deferred(self, _tint, _cast.radius)
@@ -176,6 +186,8 @@ func _strike() -> void:
 				continue
 			struck[id] = true
 			Targets.strike(target, parts, point, _author, _cast)
+			if _cast.nature == DamageType.Kind.PHYSICAL and not _ground and struck.size() <= NICKS:
+				SteelFx.nick(self, target.global_position, _cast.nature, _cast.radius * 1.6)
 
 
 ## **Un sol ne cumule pas** (jalon 37) : une cible déjà frappée par un sol de la même

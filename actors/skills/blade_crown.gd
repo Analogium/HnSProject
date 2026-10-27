@@ -23,11 +23,14 @@ class Blade:
 	## L'Affûtage (jalon 46) : les ennemis qu'elle a coupés. La Parade : son attente.
 	var honed := 0
 	var parry_wait := 0.0
+	## Son épée (`SteelFx.sword`), posée à l'image.
+	var shown: Node3D
 
 
 var _blades: Array[Blade] = []
 var _rotation := 0.0
-var _sparks: ElementFx
+## Radians par seconde au dernier pas : l'image place les épées entre deux pas.
+var _spin := ROTATION
 ## Celui qui les a lancées, pour ce que ses états changent à leurs coups. Posé une
 ## fois : la couronne ne change pas de porteur.
 var author: StatusEffects
@@ -53,16 +56,15 @@ func add_to(cast: SkillStats) -> void:
 	# Elle naît à la place qui l'attend : ce sont les autres qui glissent.
 	blade.place = TAU * float(_blades.size()) / float(_blades.size() + 1)
 	_blades.append(blade)
+	blade.shown = SteelFx.sword(self, self, cast.nature, self)
 	_shelter_changed(cast)
-	# Le cercle où tournent les lames : `ElementFx`, à leur rayon et leur nature.
-	_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[cast.nature], cast.radius)
 
 
 func clear() -> void:
+	for blade in _blades:
+		blade.shown.queue_free()
 	_blades.clear()
 	_shelter_changed(null)
-	if is_instance_valid(_sparks):
-		_sparks.let_go()
 
 
 ## Bouclier de lames (jalon 39) : les points de dégâts subis que retirent les épées qui
@@ -88,8 +90,8 @@ func _physics_process(delta: float) -> void:
 	var waltz := 0.0
 	for blade in _blades:
 		waltz = maxf(waltz, blade.cast.waltz)
-	var spin := ROTATION * (1.0 + waltz * 0.01) * (SkillStats.MAD_SPIN if _madness() > 0.0 else 1.0)
-	_rotation = fmod(_rotation + spin * delta, TAU)
+	_spin = ROTATION * (1.0 + waltz * 0.01) * (SkillStats.MAD_SPIN if _madness() > 0.0 else 1.0)
+	_rotation = fmod(_rotation + _spin * delta, TAU)
 	var alive_ones: Array[Blade] = []
 	var gone: Array[Blade] = []
 	for blade in _blades:
@@ -110,8 +112,18 @@ func _physics_process(delta: float) -> void:
 	_parry(delta)
 
 
+## Les épées où on les voit : entre deux pas, pointe en avant sur leur cercle.
+func _process(_delta: float) -> void:
+	var between := _spin * Engine.get_physics_interpolation_fraction() / float(Engine.physics_ticks_per_second)
+	for blade in _blades:
+		var angle := _rotation + blade.place + between
+		blade.shown.position = _center(blade, angle) + Vector3.UP * ElementFx.LIFT
+		blade.shown.basis = Basis.looking_at(Flat.from_angle(angle + PI * 0.5))
+
+
 ## Une épée au bout de sa durée : sous la Volée d'épées, elle part d'où elle tourne.
 func _leave(blade: Blade) -> void:
+	blade.shown.queue_free()
 	if blade.cast.sword_volley > 0.0:
 		var at := to_global(_center(blade, _rotation + blade.place))
 		var sword := FlyingSword.throw(effects, at, at - global_position, blade.cast, author)
@@ -140,6 +152,7 @@ func take_blow() -> bool:
 		if blade.cast.breakwater <= 0.0:
 			continue
 		_blades.erase(blade)
+		blade.shown.queue_free()
 		_breakwater_wait = SkillStats.BREAKWATER_WAIT
 		if blade.cast.grapeshot > 0.0:
 			Explosion.put(
@@ -163,7 +176,9 @@ func escort(target: Hurtbox) -> void:
 	var sent := blade.cast.echoed(blade.cast.escort * 0.01)
 	sent.sword_volley = at.distance_to(target.global_position) + CONTACT
 	sent.rally = 0.0
-	FlyingSword.throw(effects, at, at.direction_to(target.global_position), sent, author, target)
+	FlyingSword.throw(
+		effects, at, at.direction_to(target.global_position), sent, author, target, FlyingSword.ESCORT_SPEED
+	)
 
 
 ## La Parade (jalon 46) : une épée qui croise un trait ennemi le brise, puis attend.

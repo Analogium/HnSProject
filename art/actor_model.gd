@@ -35,6 +35,8 @@ const STATE_TINT := 0.45
 ## Les allures, qui bouclent ; un geste finit et rend le repos.
 const REST := &"rest"
 const WALK := &"walk"
+## Le Cyclone (jalon 54) : la pose tenue des deux mains, qui boucle pendant que le corps tourne (`spin()`).
+const SPIN := &"spin"
 ## Les gestes où l'arme est rangée : la marche, et le lancer des Lames de jet, qui part de la
 ## main nue (jalon 54). `tools/blender_sheet.py` la lit : l'export n'y tourne pas la main. Un modèle
 ## qui marche l'arme au poing (le mort-vivant) écrit les siens (`sheathed`, dans ses métadonnées).
@@ -62,6 +64,8 @@ var _held := ""
 ## calé sur son temps, qu'un état posé pendant le coup n'écrase pas.
 var _pace := 1.0
 var _attacking := false
+## Il canalise le Cyclone : sa boucle remplace repos et marche, et sa direction lui est donnée.
+var _spinning := false
 var _playing := &""
 var _body: Node3D
 var _player: AnimationPlayer
@@ -146,11 +150,22 @@ func set_state(moving: bool, facing: Vector3) -> void:
 	if sprite != null:
 		sprite.set_state(moving, facing)
 		return
-	if _attacking:
+	if _attacking or _spinning:
 		return
 	if facing.length_squared() >= 0.01:
 		rotation.y = atan2(facing.x, facing.z)
 	_play(WALK if moving else REST)
+
+
+## Le Cyclone allumé ou éteint. Vrai s'il a sa boucle : un corps sans elle (une planche, le Roi des
+## Rats) garde ses allures et ne tourne pas.
+func spin(on: bool) -> bool:
+	if sprite != null or not _player.has_animation(SPIN):
+		return false
+	_spinning = on
+	_attacking = false
+	_play(SPIN if on else REST)
+	return true
 
 
 ## `spell` : un sort joue le lancer, quand le corps en a un. `duration` étire le geste
@@ -245,6 +260,7 @@ func _rebuild() -> void:
 	_body = null
 	_held = ""
 	_attacking = false
+	_spinning = false
 	_playing = &""
 	_meshes.clear()
 	if not has_model(archetype):
@@ -267,7 +283,7 @@ func _rebuild() -> void:
 	_player = _body.find_children("*", "AnimationPlayer", true, false)[0]
 	_player.animation_finished.connect(_on_animation_finished)
 	# Le glTF n'écrit pas de boucle ; l'animation est partagée, la poser une fois suffit.
-	for gait in [REST, WALK]:
+	for gait in [REST, WALK, SPIN]:
 		if _player.has_animation(gait):
 			_player.get_animation(gait).loop_mode = Animation.LOOP_LINEAR
 	_extras = _body.find_child("Armature", true, false).get_meta("extras", {})
@@ -316,4 +332,5 @@ func _on_animation_finished(_name := &"") -> void:
 	if _attacking:
 		_attacking = false
 		_held = ""
-		_play(REST)
+		# Un geste lancé en plein Cyclone rend la boucle du tour, pas le repos.
+		_play(SPIN if _spinning else REST)

@@ -1237,10 +1237,80 @@ chose à couper si une meute de Déferlantes le demande.
   Légion d'os relève le plafond et non la levée : sa description passe de « se lève » à « peut tenir debout ».
 Captures en jeu : `Bureau\hns-captures-manuel-necrotique-jeu-2\`.
 
+**Le manuel du chevalier à la barre de Last Epoch** (27 octobre). L'utilisateur : « en accord avec le jalon, comme pour
+les autres manuels, je veux que tu t'occupes des skills du manuel du chevalier ». Tout y montrait le visuel générique —
+des étincelles blanches, un balayage pour tout coup d'arme —, et les épées de l'Épée spirale ne se voyaient pas : un disque
+d'étincelles sous elles. Comme pour les autres manuels, **les planches sont tranchées par moi** et restent sur le Bureau
+(`hns-captures-acier-planche\` à `-planche-3\`, dans l'ordre des retouches ; A est toujours l'actuelle). **Les textures** :
+six sujets de Qwen-Image, la 7 partout (`tools/fx_textures.py steel`) — une traînée de taille, une bande de poussière, un
+cratère vu de dessus, un éclat sur l'acier, un sillon, une gerbe de sang. **Le sillon, demandé « par une lame géante »,
+sortait avec l'épée en travers** : « rien d'autre dans le cadre ». ComfyUI tournait à 18 à 28 s le pas (6 min le tirage),
+l'éditeur ouvert : une graine par sujet après la première.
+- **La trace de la lame** (`SteelFx.swing`, sous la `SwingArc`) : la traînée photographiée sur un ruban que la tête parcourt.
+  Le croissant couché pour tout coup de taille, à la rampe de la nature — vu en acier, en feu et en sacré ; debout pour la
+  Frappe lourde, l'impact jeté au bout (étincelles, éclat, bouffée, air poussé) ; deux entailles pour la croix.
+  **Retenus : la pile entière** ; contre la frappe sans poussière ni air, trop sèche.
+- **Le Brise-sol** : la pile (cratère, poussière, mottes, étincelles, éclat, air), sans mottes, en feu. **Retenue : la pile.**
+- **La vague** : un croissant plié qui vole, épais au milieu, tourné vers sa course ; le Sillon d'acier en décal.
+- **Le Cyclone** : trois lames pliées, sans poussière, un derviche. Puis **deux traînées de lame qui se poursuivent** sur
+  un demi-tour chacune, pointe devant — **retenues**, avec la poussière à ses pieds.
+- **Les épées** : celles du modèle des classes, pointe en avant sur leur cercle, leur traînée dans le repère du porteur.
+- **La ruée** : un couloir que la lame parcourt, et des croix brèves sur ce qu'elle frappe ; le bond en arc couché.
+- **Le souffle** (Choc d'arrivée, Grenaille, obus) : poussière, mottes, étincelles, air ; **la Gerbe de sang** en sang.
+
+**Erreurs vues sur planche** : **aucun ruban balayé ne paraissait**. Le shader était juste (rejoué en numpy sur la vraie
+texture), les paramètres passaient (six rubans fixes) : la tête courait au-delà du bout et le ronger commençait à mi-course
+— à 0,18 s le geste, l'arc était mangé avant d'être vu, et chaque capture (~110 ms) en sautait la moitié. La tête s'arrête au
+bout, l'arc entier reste allumé, puis se ronge ; **la planche tourne au quart de vitesse** (`Engine.time_scale`), sans quoi
+ses gels mangeaient tout un coup. **Les épées sortaient en cubes jaunes**, debout : l'épée du modèle est faite de cinq
+volumes de Blender (j'en prenais un, la garde), et le glTF couche déjà la lame le long de -Z (le +Y de Blender) ; toutes ses
+pièces, centrées, élargies — à l'échelle, 3 px se perdaient dans leur traînée. **La poussière sortait en anneau de papier
+pâle**, et **le cratère en autocollant** : assombris, la poussière plus transparente et en bouffée, l'alpha du cratère tiré
+de ses ombres (fissures, creux) — le sol du jeu passe au travers. **Les mottes ne se voyaient pas**, de la couleur du sol :
+plus sombres, plus grosses. **La croix ne se lisait pas en X** : ses deux entailles ne se voyaient jamais ensemble — la
+seconde part plus tôt, la première reste. **L'acier sortait blanc pur**, additionné à l'ocre au blanc chaud de sa couleur :
+une rampe froide (`FlameFx.RAMPS`). La planche posée trop à droite tombait sur la falaise : recentrée. Captures en jeu, les
+cinq compétences de la barre dans une meute puis les variantes (Brise-sol et Tremblement, croix sainte et Tierce, Vagues
+jumelles, Ressac et Sillon, Volée d'épées, Saut de guerre, Lame ardente, Gerbe de sang, Ruée, Derviches) :
+`Bureau\hns-captures-acier-jeu\`, `-acier-jeu-arbre\`, `-acier-jeu-arbre-2\`. Le 2D du chevalier part avec ses tests : le
+croissant, l'entaille, l'épée, les fissures et la spirale de `fx/slash.gd`, l'épée et l'étoile de l'estoc d'`EffectForge`,
+et le balayage d'`ElementFx` ; le fuseau, l'étoile du Point final et le couteau restent au Vive lame.
+**Coût, non tranché** (la Frappe lourde relancée sans cesse dans 300 grunts increvables, sans vsync, 240 images de chauffe
+puis 1 440, six paires alternées, A = le visuel générique du commit d'avant, ComfyUI arrêté) : **Torchlight Infinite était
+ouvert** et tenait 40 % de la carte — le même arbre allait de 23 à 41 ms l'image (10 à 16 aux bancs précédents). **B − A =
+−0,30 ± 9,19 ms l'image** (erreur type 3,75), **physique −0,11 ± 1,36** (0,56) : ce banc n'exclut rien sous ~7 ms ; à
+refaire jeu fermé, la Frappe et le Brise-sol (six nœuds par coup, une bouffée, un décal), le Cyclone. Le dessin ne touche
+pas la physique : ce qui naît au coup est posé une fois, et ne bouge qu'à l'image.
+
+**Les retours de l'utilisateur sur le manuel du chevalier** (28 octobre) :
+- **« Quand on effectue une action, notre personnage ne doit pas pouvoir tourner sur soi-même »** (tout le jeu). Le corps
+  se figeait déjà (`ActorModel.set_state` ignore la direction pendant l'attaque), mais pas **la visée** : pendant le
+  geste, la souris tournait encore `facing`, et avec lui l'`AttackPivot` — la hitbox et la trace du coup suivaient la
+  souris. Elle reste où elle était au lancer, jusqu'au geste fini (`test_the_aim_holds_still_during_a_gesture`).
+- **Le Coup en croix « pas très beau »**, sans idée de ce qu'il voulait : planche (`Bureau\hns-captures-croix-vague-planche\`)
+  — l'actuelle, deux croissants croisés, un X debout face à la caméra, les croissants et un impact, deux épées spectrales.
+  **Choisi : le X debout**, un éclat au croisement. Vu en jeu : `Bureau\hns-captures-acier-croix-jeu\`.
+- **L'Escorte « ne marche pas »** : elle partait bien, mais seulement quand la Frappe touchait, et son épée volait les
+  quelque 30 px jusqu'à sa cible en un dixième de seconde — on ne la voyait pas. Et **sous le Brise-sol elle ne partait
+  jamais** : il frappe par `Player._slam()`, hors de la hitbox. Elle vole à `FlyingSword.ESCORT_SPEED` et éclate sur ce
+  qu'elle mord (`SteelFx.bite`, aussi pour la Volée) ; le Brise-sol l'envoie.
+- **La Vague tranchante « pas très belle »** : même planche — l'actuelle, un croissant net, une lame d'air debout qui soulève la
+  poussière, le croissant et ses échos, le croissant et des traînées à ses pointes. **Choisi : le croissant et ses
+  traînées** (`fx/steel_wave.gdshader`). Erreurs vues : des échos empilés du croissant plié sortaient en plumes.
+- **Le Cyclone** : « j'imaginais plus notre personnage tenir son arme à deux mains avec les bras bien droits devant lui, et
+  se mettre à tourner sur lui-même, comme du lancer de poids ; je n'ai pas trouvé d'animation sur Mixamo ». Le geste écrit
+  `spin` (les deux mains sur la poignée, bras tendus, buste en contrepoids, les pieds qui piétinent), vu sur le Vive lame
+  (`Bureau\hns-captures-cyclone-pose\`, GIF) — d'abord les bras pliés et la lame de côté : bras tendus à 0,42, lame dans
+  leur prolongement — puis validé, et exporté pour les trois classes (`-cyclone-classes\`). Le corps tourne avec le tour de
+  lame. Et **il devient canalisé** (demande de l'utilisateur) : mot-clé « Canalisé », la touche tenue le garde, relâchée
+  l'arrête ; l'affixe « de la Transe » (dégâts des compétences canalisées, gants de mêlée) le vise, comme le veut la
+  recette des mots-clés. Le Dénouement frappe donc au relâchement. Captures en jeu : `Bureau\hns-captures-acier-reprise-jeu\`.
+  `docs/EQUILIBRAGE.md` bouge partout d'un rien : l'équipement simulé se tire dans une réserve qui compte un affixe de plus.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le manuel du chevalier** le 27 au soir (§13) : l'acier, `SteelFx`. Son coût est à remesurer jeu fermé (§13). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à

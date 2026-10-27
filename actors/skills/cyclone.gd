@@ -10,7 +10,8 @@ extends Node3D
 ## enseignait.
 ##
 ## Il ne ralentit pas son porteur : le tour d'épée est ce qu'on lance pour traverser un
-## paquet, et l'arrêter sur place en ferait une seconde Immolation.
+## paquet, et l'arrêter sur place en ferait une seconde Immolation. **Canalisé** (jalon 54) : il
+## tourne tant que la touche est tenue (`Player._let_go()`), le corps avec lui (`ActorModel.spin()`).
 
 var _player: Player
 var _skill: Skill
@@ -19,7 +20,7 @@ var _age := 0.0
 var _next_threshold := 0.0
 ## Les Derviches (jalon 46) : l'heure du prochain.
 var _next_dervish := 0.0
-var _sparks: ElementFx
+var _whirl: SteelFx.Whirl
 
 
 static func spin(player: Player, skill: Skill) -> Cyclone:
@@ -42,6 +43,9 @@ func extinguish() -> void:
 			1.0 + _cast.denouement * 0.01 * spun
 		)
 	set_physics_process(false)
+	_player.model.spin(false)
+	if is_instance_valid(_whirl):
+		_whirl.let_go()
 	queue_free()
 
 
@@ -59,7 +63,12 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	if _cast == null or _age >= _next_threshold:
 		_cast = _player.resolve(_skill, points)
-		_sparks = ElementFx.keep(_sparks, self, DamageType.COLORS[_cast.nature], _cast.radius)
+		if _whirl == null:
+			_whirl = SteelFx.whirl(self, _cast.nature, _cast.radius)
+			# Le corps tourne avec le tour, les deux mains sur l'arme, s'il a cette boucle.
+			if _player.model.spin(true):
+				_whirl.body = _player.model
+		_whirl.resize(_cast.radius)
 		# Le Vertige (jalon 46) : chaque seconde tournée rapproche les frappes.
 		var vertigo := 1.0 + _cast.vertigo * 0.01 * minf(_age, SkillStats.VERTIGO_MOST)
 		_next_threshold = _age + _cast.period / vertigo

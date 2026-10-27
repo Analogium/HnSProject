@@ -4,8 +4,7 @@ extends GPUParticles3D
 ## Le visuel générique d'une compétence en 3D (jalon 54, étape 4) : des étincelles à la
 ## couleur de sa nature, choisies sur planche contre une lumière pleine, un mélange et des
 ## aplats. **Toute compétence sans dessin propre le montre**, par sa famille : la traînée d'un
-## projectile, la gerbe d'un éclatement, le balayage d'un coup, le disque d'une zone qui dure,
-## le semis d'un trait.
+## projectile, la gerbe d'un éclatement, le disque d'une zone qui dure, le semis d'un trait.
 ##
 ## L'émetteur vit **à la racine du viewport de son porteur** — son monde, hors des conteneurs
 ## que le jeu compte (les tirs, les effets) — et le suit : un projectile qui touche se
@@ -21,10 +20,7 @@ const SPARK := 7.0
 
 const TRAIL_LIFE := 0.35
 const BURST_LIFE := 0.45
-const SWEEP_LIFE := 0.3
 const AREA_LIFE := 0.6
-## Le balayage d'un coup, de part et d'autre de la visée, en radians.
-const SWEEP_HALF := 1.1
 
 static var _draw: QuadMesh
 static var _materials := {}
@@ -32,10 +28,6 @@ static var _warmed := false
 
 var _host: Node3D
 var _offset := Vector3.ZERO
-## Le balayage : son rayon, sa durée et où il en est (0 → 1).
-var _sweep_radius := 0.0
-var _sweep_time := 0.0
-var _sweep_t := -1.0
 
 
 ## La traînée d'un projectile, tant qu'il vit.
@@ -54,17 +46,6 @@ static func burst(host: Node3D, at: Vector3, tint: Color, radius: float) -> Elem
 	fx.global_position = at + Vector3.UP * SPARK
 	# Et non `finished`, que les particules n'émettent pas sans rendu (en headless).
 	fx.get_tree().create_timer(fx.lifetime).timeout.connect(fx.queue_free)
-	return fx
-
-
-## Le balayage d'un coup : l'émetteur parcourt l'arc devant `host` (son x local est la
-## visée) en `duration` secondes, au rayon `radius`.
-static func sweep(host: Node3D, tint: Color, radius: float, duration: float) -> ElementFx:
-	var fx := _make(host, tint, SWEEP_LIFE, 32, 30.0, 30.0)
-	fx._sweep_radius = radius
-	fx._sweep_time = maxf(duration, 0.01)
-	fx._sweep_t = 0.0
-	fx._follow(host, Vector3.UP * LIFT)
 	return fx
 
 
@@ -148,6 +129,15 @@ static func warm(host: Node3D) -> void:
 	PlagueFx.bone(probe)
 	CurseFx.fall(probe, rot, 10.0, 0.2)
 	RotGateFx.open(probe, rot, 0.2).crawl([at], [1.0], [Vector3.RIGHT])
+	# L'acier : ses rubans, sa poussière et ses mottes, une épée de la ronde. Le cratère, un décal, n'a pas de
+	# matière à compiler.
+	var steel := DamageType.Kind.PHYSICAL
+	SteelFx.swing(probe, steel, 10.0, 0.1, SwingArc.Style.ARC)
+	SteelFx.blast(probe, at, 10.0)
+	# Le fer de l'épée ne lit pas `opacity` : réduit à un point, comme celui du Brasero.
+	SteelFx.sword(probe, probe, steel).scale = Vector3.ONE * 0.001
+	SteelFx.whirl(probe, steel, 10.0)
+	SteelFx.wave(probe, steel, 10.0)
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in host.get_viewport().get_children():
 		if node not in rooted:
@@ -250,28 +240,18 @@ func _follow(host: Node3D, offset: Vector3) -> void:
 	_place()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not emitting:
 		return
 	# `== null` ne voit pas un porteur libéré : il resterait suivi à jamais.
 	if not is_instance_valid(_host) or not _host.is_inside_tree():
 		let_go()
 		return
-	if _sweep_t >= 0.0:
-		_sweep_t += delta / _sweep_time
-		if _sweep_t >= 1.0:
-			let_go()
-			return
 	_place()
 
 
 func _place() -> void:
-	var seen := _host.get_global_transform_interpolated()
-	var at := seen.origin
-	if _sweep_t >= 0.0:
-		var a := lerpf(-SWEEP_HALF, SWEEP_HALF, _sweep_t)
-		at = seen * (Vector3(cos(a), 0.0, sin(a)) * _sweep_radius)
-	global_position = at + _offset
+	global_position = _host.get_global_transform_interpolated().origin + _offset
 
 
 ## Le porteur parti ou le coup fini : plus rien ne naît, ce qui vole retombe, puis rien.

@@ -15,36 +15,21 @@ func test_a_heading_finds_the_nearest_of_the_turns() -> void:
 	assert_eq(Slash.turn_of(TAU), 0, "un tour entier revient au départ")
 
 
-func test_the_same_crescent_is_made_once() -> void:
-	var a := Slash.crescent(STEEL, 28.0, 10.0, 5, -0.5, 0.4, 0.0)
-	var b := Slash.crescent(STEEL, 28.0, 10.0, 5, -0.5, 0.4, 0.0)
-	assert_same(a, b, "deux demandes, une fabrication")
-
-
-## Le sol fendu du Brise-sol : une fabrication par rayon et par temps, à la taille du
-## rayon qu'un nœud agrandit.
-func test_the_fissures_are_made_once_at_their_radius() -> void:
-	var a := Slash.fissures(STEEL, 28.0, 1, 2)
-	assert_same(Slash.fissures(STEEL, 28.0, 1, 2), a, "deux demandes, une fabrication")
-	var wide := Slash.fissures(STEEL, 45.0, 1, 2)
-	assert_gt(wide.texture.get_width(), a.texture.get_width(), "Cratère les allonge")
-
-
 ## Un quart de tour ne perd ni n'invente d'encre : le vote tombe juste quand les
-## pixels tombent juste. S'il en perdait, l'épée de l'Épée spirale changerait de
-## silhouette selon son cap.
+## pixels tombent juste — sur une grille de côtés impairs, dont le centre est un pixel
+## (l'épée de l'Épée spirale, partie au jalon 54 ; le couteau, 13 × 4, n'en est pas une).
+const ODD := ["....g....", "hhhhGdddd", "....g...."]
+
+
 func test_a_quarter_turn_keeps_every_pixel() -> void:
-	assert_eq(
-		_ink(EffectForge.rotated(EffectForge.SWORD, PI * 0.5)), _ink(EffectForge.SWORD),
-		"autant d'encre avant et après"
-	)
+	assert_eq(_ink(EffectForge.rotated(ODD, PI * 0.5)), _ink(ODD), "autant d'encre avant et après")
 
 
 ## En biais, le vote arrondit : un peu d'encre en plus ou en moins, jamais la
 ## moitié. Au plus proche voisin, une lame d'un pixel se cassait en pointillés.
 func test_a_slanted_turn_keeps_the_blade_whole() -> void:
-	var before := float(_ink(EffectForge.SWORD))
-	var after := float(_ink(EffectForge.rotated(EffectForge.SWORD, PI * 0.25)))
+	var before := float(_ink(EffectForge.KNIFE))
+	var after := float(_ink(EffectForge.rotated(EffectForge.KNIFE, PI * 0.25)))
 	assert_almost_eq(after / before, 1.0, 0.2, "la lame garde sa matière en biais")
 
 

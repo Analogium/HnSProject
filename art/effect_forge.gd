@@ -420,13 +420,6 @@ static func rotated(grid: Array, angle: float) -> Array:
 # Le chevalier (jalon 46)
 # --------------------------------------------------------------------------
 
-## L'étoile d'impact de l'estoc de la Tierce, en trois temps : elle éclate, s'ouvre, se
-## résorbe. Choisie sur planche avec son fuseau.
-const THRUST_STAR := [
-	[".......", "...w...", "...4...", ".w444w.", "...4...", "...w...", "......."],
-	[".......", "..w.w..", ".w.4.w.", "...4...", ".w.4.w.", "..w.w..", "......."],
-	[".......", "...3...", "..3.3..", ".3...3.", "..3.3..", "...3...", "......."],
-]
 ## Les étoiles de l'assommé : la grande devant la tête, la petite derrière (planche).
 const STUN_STARS := [
 	[".......", "...4...", "...4...", ".44w44.", "...4...", "...4...", "......."],
@@ -436,31 +429,15 @@ const STAR_SIDE := 7
 ## L'or des étoiles de l'assommé : ni le jaune pâle du sacré, ni le violet de la foudre.
 const STUN_GOLD := Color(1.0, 0.88, 0.45)
 
-static var _thrust_stars := {}
 static var _stun_stars := {}
-
-
-static func thrust_stars(tint: Color) -> Array:
-	return _sheet(_thrust_stars, THRUST_STAR, STAR_SIDE, STAR_SIDE, tint, tint.lerp(Color.WHITE, 0.7))
 
 
 static func stun_stars() -> Array:
 	return _sheet(_stun_stars, STUN_STARS, STAR_SIDE, STAR_SIDE, STUN_GOLD, STUN_GOLD.lerp(Color.WHITE, 0.7))
 
 
-## L'épée d'Épée spirale, **pointe à droite** — le cap zéro —, dessinée une seule
-## fois : ses trente-deux caps sont tournés au premier besoin (`rotated()`). Acier
-## sur trois tons, le fil blanc au milieu, la garde d'or, la poignée de cuir.
-const SWORD := [
-	"....g............",
-	"....gccccccccc...",
-	"hhhhGddddddddddd.",
-	"....gbbbbbbbbbb..",
-	"....g............",
-]
-
-## Le couteau des Lames de jet (jalon 50), **pointe à droite** : celui de l'épée en petit, la
-## lame sur deux tons, la garde d'or, le manche de cuir. Il se plante aussi dans les ennemis.
+## Le couteau des Lames de jet (jalon 50), **pointe à droite** — le cap zéro —, tourné au premier
+## besoin (`rotated()`) : la lame sur deux tons, la garde d'or, le manche de cuir. Il se plante aussi dans les ennemis.
 const KNIFE := [
 	"....g........",
 	"hhh.Gcccccc..",

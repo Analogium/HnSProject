@@ -36,21 +36,12 @@ func _painted(tex: Texture2D) -> int:
 	return n
 
 
-## Les étoiles du chevalier (jalon 46) : l'impact de l'estoc et l'assommé, à leur côté.
-func test_the_knight_stars_are_square() -> void:
-	for frame: Array in EffectForge.THRUST_STAR + EffectForge.STUN_STARS:
+## Les étoiles de l'assommé (jalon 46), à leur côté.
+func test_the_stun_stars_are_square() -> void:
+	for frame: Array in EffectForge.STUN_STARS:
 		assert_eq(frame.size(), EffectForge.STAR_SIDE)
 		for row: String in frame:
 			assert_eq(row.length(), EffectForge.STAR_SIDE, "largeur de « %s »" % row)
-
-
-## La spirale du derviche : fabriquée une fois par cap, et un demi-tour la redonne.
-func test_the_dervish_spiral_is_built_once_per_half_turn() -> void:
-	var tint := Color(1.0, 0.98, 0.88)
-	var first := Slash.spiral(tint, 3)
-	assert_same(Slash.spiral(tint, 3), first, "gardée")
-	assert_same(Slash.spiral(tint, 3 + Slash.TURNS / 2), first, "symétrique d'un demi-tour")
-	assert_ne(Slash.spiral(tint, 4).texture.get_image().get_data(), first.texture.get_image().get_data())
 
 
 ## Les dessins du jalon 49, choisis sur planche : la marmite, le piqué, l'icône de résistance.

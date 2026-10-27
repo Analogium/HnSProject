@@ -831,8 +831,40 @@ func test_the_wave_travels_past_the_arm_and_bites_once() -> void:
 	assert_eq(_children_of(SlashWave).size(), 0, "et sa course finit avec sa durée")
 
 
-## Le cyclone s'allume et s'éteint comme l'aura, mais se paie en mana : la réserve
-## vide l'arrête, là où la brûlure d'Immolation tue.
+## Le Cyclone est canalisé : la touche tenue le garde, la relancer ne l'éteint pas ; c'est la
+## relâcher qui l'arrête.
+func test_the_cyclone_turns_while_its_key_is_held() -> void:
+	_learn("manual_weapons", ["cyclone"])
+	assert_true(Gestures.cast(_p, 2))
+	assert_true(SkillCatalog.by_id("cyclone").channels())
+	_p._recharges[2] = 0.0
+	assert_false(Gestures.cast(_p, 2), "tenue, la touche ne le relance pas")
+	assert_true(_p.lit("cyclone"), "et ne l'éteint pas")
+	await _release(2)
+	assert_false(_p.lit("cyclone"), "relâchée, il s'arrête")
+
+
+## Sous le Cyclone, le corps joue sa pose à deux mains et tourne avec la traînée ; éteint, il la quitte.
+func test_the_body_spins_with_the_cyclone() -> void:
+	_p.model.set_archetype("swiftblade")
+	_learn("manual_weapons", ["cyclone"])
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(3)
+	assert_eq(_p.model.animation, ActorModel.SPIN)
+	var cyclone: Cyclone = _p._lit["cyclone"]
+	assert_almost_eq(_p.model.rotation.y, cyclone._whirl.rotation.y, 0.001, "l'épée à la tête de la traînée")
+	await _release(2)
+	assert_eq(_p.model.animation, ActorModel.REST)
+
+
+## La touche de cette case, tenue puis relâchée : le joueur le voit à son pas suivant.
+func _release(slot: int) -> void:
+	_p._held[slot] = true
+	await wait_physics_frames(1)
+
+
+## Le cyclone se paie en mana, comme l'aura : la réserve vide l'arrête, là où la brûlure
+## d'Immolation tue.
 func test_the_cyclone_spins_on_mana_until_the_pool_runs_dry() -> void:
 	_learn("manual_weapons", ["cyclone"])
 	var near := _target(Vector3(20, 0.0, 0))
@@ -6357,6 +6389,29 @@ func test_an_escort_sends_a_sword_after_a_heavy_strike() -> void:
 	assert_eq(_p.orbiting_swords(), 1, "l'épée continue de tourner")
 
 
+## L'Escorte suit aussi la Frappe lourde sous le Brise-sol, qui frappe sans passer par la hitbox.
+func test_an_escort_follows_the_shatter_too() -> void:
+	var round := SkillStats.new()
+	round.radius = 26.0
+	round.duration = 5.0
+	round.period = 0.5
+	round.escort = 50.0
+	_p._blade_crown().add_to(round)
+	var sent := []
+	_effects.child_entered_tree.connect(
+		func(n: Node) -> void:
+			if n is FlyingSword:
+				sent.append(n)
+	)
+	_target(_p.global_position + _p.facing * _p.strike_reach())
+	await wait_physics_frames(2)
+	var slam := SkillStats.new()
+	slam.skill_id = "heavy_strike"
+	slam.radius = 28.0
+	_p._slam(slam)
+	assert_eq(sent.size(), 1, "une épée de la ronde suit le coup au sol")
+
+
 ## Le Ralliement : l'épée de la volée revient tourner, puis s'en va.
 func test_a_rally_brings_the_volley_back() -> void:
 	_learn_with("manual_weapons", "spiral_sword", [[SkillStats.SWORD_VOLLEY, 40.0], [SkillStats.RALLY, 1.0]])
@@ -6441,8 +6496,8 @@ func test_steadfast_holds_while_the_cyclone_spins() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	assert_almost_eq(_p.stats.damage_taken, taken - 5.0, 0.001)
 	assert_almost_eq(_p.stats.move_speed, speed * 0.9, 0.01)
-	_p._recharges[2] = 0.0
-	assert_true(Gestures.cast(_p, 2), "éteint")
+	await _release(2)
+	assert_false(_p.lit("cyclone"), "éteint")
 	assert_almost_eq(_p.stats.damage_taken, taken, 0.001)
 
 
@@ -6480,8 +6535,7 @@ func test_an_unwinding_strikes_once_more_and_a_gust_pushes() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(1.0)
 	var before := pushes.size()
-	_p._recharges[2] = 0.0
-	assert_true(Gestures.cast(_p, 2))
+	await _release(2)
 	assert_eq(pushes.size(), before + 1)
 	assert_eq(pushes[-1], SkillStats.GUST_FORCE)
 

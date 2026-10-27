@@ -35,6 +35,8 @@ var drink := 0.0
 var _mask := Targets.ENEMIES
 ## Celle d'une boule de feu (jalon 54) : ses flammes (`FlameFx.blast`) au lieu de la gerbe générique.
 var flames := false
+## Celle d'un tué qui saignait (la Gerbe de sang) : du sang au lieu de la poussière.
+var gore := false
 ## Celui autour de qui elle souffle (la Déferlante, le Fardeau partagé) : elle frappe où il était, mais
 ## son dessin le suit le temps de s'ouvrir — posé là, il restait derrière qui marchait.
 var around: Node3D
@@ -82,6 +84,8 @@ func _physics_process(delta: float) -> void:
 			shown = HolyBlastFx.blow(self, global_position, _nature(), _radius)
 		elif _nature() == DamageType.Kind.NECROTIC:
 			shown = RotBlastFx.blow(self, global_position, _nature(), _radius)
+		elif _nature() == DamageType.Kind.PHYSICAL:
+			SteelFx.blast(self, global_position, _radius, gore)
 		else:
 			ElementFx.burst(self, global_position, _tint, _radius)
 		# Enfant de son porteur, il en suit la position interpolée.

@@ -16,6 +16,8 @@ const CURSE := "curse"
 const BUFF := "buff"
 ## Ce qui continue de blesser après le coup — un état qu'un lancer pose. Déclaré.
 const DOT := "dot"
+## Ce qui dure tant que sa touche est tenue, et s'arrête relâchée (le Cyclone). Déclaré.
+const CHANNELLING := "channelling"
 const LIGHTNING := "lightning"
 const FIRE := "fire"
 const COLD := "cold"
@@ -38,6 +40,7 @@ const LABELS := {
 	CURSE: "Malédiction",
 	BUFF: "Buff",
 	DOT: "Dégâts continus",
+	CHANNELLING: "Canalisé",
 	LIGHTNING: "Foudre",
 	FIRE: "Feu",
 	COLD: "Froid",
@@ -60,6 +63,7 @@ const RECIPIENTS := {
 	CURSE: "aux malédictions",
 	BUFF: "aux buffs",
 	DOT: "aux compétences à dégâts continus",
+	CHANNELLING: "aux compétences canalisées",
 	LIGHTNING: "aux compétences de foudre",
 	FIRE: "aux compétences de feu",
 	COLD: "aux compétences de froid",
@@ -84,6 +88,7 @@ const QUALIFIERS := {
 	SUMMON: "d'invocation",
 	CURSE: "de malédiction",
 	BUFF: "de buff",
+	CHANNELLING: "de canalisation",
 	LIGHTNING: "de foudre",
 	FIRE: "de feu",
 	COLD: "de froid",

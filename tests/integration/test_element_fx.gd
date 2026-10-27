@@ -41,15 +41,6 @@ func test_a_burst_frees_itself() -> void:
 	assert_false(is_instance_valid(fx))
 
 
-func test_a_sweep_runs_the_arc_then_stops() -> void:
-	var host := _host()
-	var fx := ElementFx.sweep(host, Color.WHITE, 20.0, 0.1)
-	var start := fx.global_position
-	assert_almost_eq(Flat.angle(start), -ElementFx.SWEEP_HALF, 0.01, "le balayage part d'un côté de la visée")
-	await wait_seconds(0.15)
-	assert_false(fx.emitting, "le coup fini, plus rien ne naît")
-
-
 func test_the_sparks_take_their_host_veil() -> void:
 	var before := Settings.to_dict()
 	Settings.enemy_attack_opacity = 0.3

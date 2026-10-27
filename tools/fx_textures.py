@@ -47,6 +47,12 @@
                                     et fx/curse_sigil.png (l'œil et le sceau de la Malédiction), fx/rot_sludge.png (la
                                     boue du Marais, un décal), fx/rot_flesh.png (la peau des créatures, raccordable) :
                                     des tirages de Qwen-Image sur fond noir
+    tools/fx_textures.py steel      le manuel du chevalier (`SteelFx`) : fx/steel_slash.png (une traînée de taille en
+                                    bande, pointe à droite : le ruban d'un coup), fx/steel_dust.png (une bande de
+                                    poussière, raccordée en x : l'onde d'un coup au sol), fx/steel_crater.png et
+                                    fx/steel_blood.png (le sol frappé, le sang de la Gerbe : des décals),
+                                    fx/steel_furrow.png (le Sillon d'acier, un décal en long) et fx/steel_glint.png
+                                    (l'éclat sur l'acier) : des tirages de Qwen-Image sur fond noir
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -167,6 +173,23 @@ ROT = {
                "foam" + BLACK + ", centered", 7),
     "flesh": ("macro photograph of rotting pustulent grey-green flesh, boils, dark veins and wet skin, seamless tileable "
               "texture, flat even lighting, fills the whole frame, high detail", 7),
+}
+STEEL = {
+    "slash": ("a photograph of a single horizontal streak of a sword slash, a sharp bright white and pale silver motion "
+              "blur trail of a blade cutting through the air, thick on the left and tapering to a fine point on the right, "
+              "thin wispy air streaks" + BLACK, 7),
+    "dust": ("a photograph of a horizontal band of billowing light brown dust and sand cloud blowing from left to right, "
+             "a dusty shockwave with small flying grit" + BLACK, 7),
+    "crater": ("top-down photograph of a small impact crater in dry ocher earth, the ground shattered by a heavy blow, "
+               "deep radial cracks spreading outward from the center, broken clods of dirt" + BLACK + ", centered", 7),
+    "glint": ("a photograph of a sharp glint of light on polished steel, a bright white four-pointed star sparkle with a "
+              "thin horizontal lens flare streak" + BLACK + ", centered", 7),
+    # « Par une lame géante » : Qwen posait l'épée en travers du sillon.
+    "furrow": ("top-down photograph of a long straight trench ploughed into cracked dry ocher earth, a deep groove with "
+               "crumbling broken edges and loose grit, seen from directly above, running from left to right, nothing "
+               "else in the frame" + BLACK, 7),
+    "blood": ("top-down photograph of a splatter of dark red blood on the ground, a radial burst of droplets and streaks "
+              "spraying outward from the center" + BLACK + ", centered", 7),
 }
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
@@ -354,6 +377,49 @@ def cmd_rot():
     save(tileable(square(Image.fromarray((qwen(*ROT["flesh"]) * 255).astype(np.uint8)))), "rot_flesh.png")
 
 
+def steel_slash(rgb):
+    """La traînée sans le noir autour, en 512 × 256, pointe à droite ; sa queue coupée nette, fondue."""
+    h, w = rgb.shape[:2]
+    cut = Image.fromarray((rgb[int(h * 0.2):int(h * 0.8), :int(w * 0.95)] * 255).astype(np.uint8))
+    b = np.asarray(cut.resize((SIDE, SIDE // 2), Image.LANCZOS), np.float32) / 255.0
+    return b * np.clip(np.linspace(0.0, 1.0, SIDE) / 0.15, 0.0, 1.0)[None, :, None]
+
+
+def ground_decal(rgb, long=False, solid=True, shade=0.42):
+    """Un décal du sol frappé, assombri (sous le soleil, un albédo clair sort blanc). `solid` : l'alpha est
+    la silhouette remplie, qui garde ses fissures noires au lieu d'y laisser voir le sol, pesée par l'ombre ; sinon la clarté
+    (le sang, dont le fond passe entre les gouttes). `long` : la bande du milieu, fondue aux bouts."""
+    h = rgb.shape[0]
+    if long:
+        rgb = rgb[int(h * 0.3):int(h * 0.7)]
+    size = (SIDE, SIDE // 2) if long else (SIDE, SIDE)
+    c = np.asarray(Image.fromarray((rgb * 255).astype(np.uint8)).resize(size, Image.LANCZOS), np.float32) / 255.0
+    lum = c.max(-1)
+    if solid:
+        body = Image.fromarray(((lum > 0.12) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5))
+        # Ses ombres seules (fissures, creux) : en entier, sa terre claire sortait en autocollant.
+        a = np.clip(np.asarray(body, np.float32) / 255.0 * 1.4, 0.0, 1.0) * (0.2 + 0.8 * np.clip(1.0 - lum / 0.7, 0.0, 1.0))
+    else:
+        a = np.clip((lum - 0.04) * 3.0, 0.0, 1.0)
+    y, x = np.mgrid[0:size[1], 0:size[0]]
+    x = x / (size[0] - 1) * 2.0 - 1.0
+    y = y / (size[1] - 1) * 2.0 - 1.0
+    if long:
+        a *= np.clip((1.0 - np.abs(x)) / 0.2, 0.0, 1.0) * np.clip((1.0 - np.abs(y)) / 0.3, 0.0, 1.0)
+    else:
+        a *= np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.25, 0.0, 1.0)
+    return np.concatenate([c * shade, a[..., None]], -1)
+
+
+def cmd_steel():
+    save(steel_slash(qwen(*STEEL["slash"])), "steel_slash.png")
+    save(frost_wind(qwen(*STEEL["dust"])), "steel_dust.png")
+    save(cell(qwen(*STEEL["glint"]), (0.1, 0.1, 0.9, 0.9), 0.6), "steel_glint.png")
+    save(ground_decal(qwen(*STEEL["crater"])), "steel_crater.png")
+    save(ground_decal(qwen(*STEEL["furrow"]), long=True), "steel_furrow.png")
+    save(ground_decal(qwen(*STEEL["blood"]), solid=False, shade=0.6), "steel_blood.png")
+
+
 def cmd_fire_wind():
     save(frost_wind(qwen(*FIRE_WIND)), "fire_wind.png")
 
@@ -421,4 +487,5 @@ def cmd_fire():
 if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
      "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
-     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy, "rot": cmd_rot}[sys.argv[1]]()
+     "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy, "rot": cmd_rot,
+     "steel": cmd_steel}[sys.argv[1]]()

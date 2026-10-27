@@ -500,6 +500,11 @@ func worn(keyword: String) -> bool:
 	return keywords().has(keyword)
 
 
+## Canalisée : elle dure tant que sa touche est tenue (`Player`), au lieu de s'allumer et de s'éteindre.
+func channels() -> bool:
+	return worn(Keywords.CHANNELLING)
+
+
 ## Ceux de la compétence ; la page du manuel affiche ceux du geste résolu, nœuds
 ## compris.
 func keywords_label() -> String:

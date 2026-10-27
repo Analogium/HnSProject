@@ -3,8 +3,7 @@ extends Node3D
 
 ## Les Derviches du Cyclone (jalon 46) : un petit tour qui file droit devant et fauche ce
 ## qu'il croise, une fois par période du cyclone ; sous la Trombe, il s'incurve vers
-## l'ennemi le plus proche. Une spirale d'acier qui tourne (`Slash.spiral()`, planche du
-## jalon 46).
+## l'ennemi le plus proche. Le tour du Cyclone en petit (`SteelFx.whirl`).
 
 ## Son virage sous la Trombe, en radians par seconde.
 const TURN := 4.0
@@ -14,6 +13,7 @@ var _author: StatusEffects
 var _toward := Vector3.RIGHT
 var _age := 0.0
 var _bitten: Targets.Contacts
+var _whirl: SteelFx.Whirl
 
 
 static func send(
@@ -27,7 +27,7 @@ static func send(
 	parent.add_child(dervish)
 	Settings.veil(dervish, Settings.SPELLS)
 	dervish.global_position = from_value
-	ElementFx.trail(dervish, DamageType.COLORS[cast.nature])
+	dervish._whirl = SteelFx.whirl(dervish, cast.nature, SkillStats.DERVISH_RADIUS)
 	return dervish
 
 
@@ -44,5 +44,6 @@ func _physics_process(delta: float) -> void:
 		if _bitten.accepts(target):
 			Targets.strike(target, _cast.roll(Game.rng), global_position, _author, _cast)
 	if _age >= SkillStats.DERVISH_LIFE:
+		_whirl.let_go()
 		queue_free()
 

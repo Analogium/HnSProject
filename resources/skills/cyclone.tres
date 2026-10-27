@@ -7,7 +7,8 @@
 script = ExtResource("1_comp")
 id = "cyclone"
 name = "Cyclone"
-description = "Un tour d'arme entretenu, qui fauche tout ce qui approche."
+description = "Un tour d'arme canalisé, qui fauche tout ce qui approche tant que la touche est tenue."
+declared_keywords = PackedStringArray("channelling")
 nature = 0
 cadence = 0
 shape = 13

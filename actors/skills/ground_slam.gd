@@ -1,25 +1,21 @@
 class_name GroundSlam
 extends Node3D
 
-## Ce que laisse le Brise-sol (jalon 39) : le sol fendu sous l'impact, `Slash.fissures()`.
-## Il ne frappe pas — le coup est porté par `Player._slam()`, sur l'instant — et se
-## dissout. Sous les corps, comme une traînée : par-dessus, il fendrait les ennemis.
+## Ce que laisse le Brise-sol (jalon 39) : le sol frappé sous l'impact (`SteelFx.impact`) — la
+## lame qui s'abat, le cratère, la poussière et les mottes. Il ne frappe pas — le coup est porté
+## par `Player._slam()`, sur l'instant. Sous les corps, comme une traînée.
 
 const LIFE := 0.45
 
-var _cast: SkillStats
-var _pattern := 0
 var _age := 0.0
 
 
 static func leave(parent: Node, at: Vector3, cast: SkillStats) -> GroundSlam:
 	var slam := GroundSlam.new()
-	slam._cast = cast
-	slam._pattern = Game.rng.randi() % Slash.FISSURE_PATTERNS
 	DashTrail.layer(parent).add_child(slam)
 	Settings.veil(slam, Settings.SPELLS)
 	slam.global_position = at
-	ElementFx.burst(slam, at, DamageType.COLORS[cast.nature], cast.radius)
+	SteelFx.impact(slam, at, cast.nature, cast.radius, true)
 	return slam
 
 
@@ -27,4 +23,3 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	if _age >= LIFE:
 		queue_free()
-

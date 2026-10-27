@@ -231,7 +231,7 @@ Les gestes d'attaque **s'écrivent**, ils ne se téléchargent pas : Mixamo n'a 
 coups. Chaque geste de `gestes.json` est une suite de poses-clés, et c'est
 `blender/pose_anim.py` qui les joue. Un personnage gréé par Mixamo en prend aussi, nommé
 dans `blender.anims` à côté de ses `.fbx`, quand Mixamo n'a pas le geste : le coup des deux
-poings au sol du colosse (`smash`, jalon 54). `arm_space` et `elbows` ne s'y appliquent pas :
+poings au sol du colosse (`smash`, jalon 54). Et la pose tenue du Cyclone (`spin`, jalon 54), nommée dans `blender.anims` de **chaque classe** (Vive lame, sorcière, joueur de flûte) : une boucle, les deux mains sur la poignée (`"lhand": "grip"`) ; c'est le jeu qui fait tourner le corps (`ActorModel.spin()`), le script ne sait pas pivoter tout le corps. `arm_space` et `elbows` ne s'y appliquent pas :
 écrit pour ce corps, il n'a pas les bras trop serrés de l'acteur de Mixamo.
 
 - la **main armée** — le creux du poing, où passe la poignée — et la **direction de la

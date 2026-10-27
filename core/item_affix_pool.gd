@@ -78,6 +78,9 @@ const ALL := [
 	# Les deux portées du jalon 19 : sans elles, « Mêlée » et « Zone » s'afficheraient
 	# sur des compétences sans que rien ne les vise (`test_each_keyword_is_targeted…`).
 	preload("res://resources/item_affixes/crushing.tres"),
+	# Le pendant d'`crushing` pour ce qui se canalise (le Cyclone, jalon 54) : sans lui, « Canalisé »
+	# s'afficherait sans que rien ne le vise.
+	preload("res://resources/item_affixes/trance.tres"),
 	preload("res://resources/item_affixes/expansive.tres"),
 	# Jalon 49 : « Buff » s'affiche sur l'Amplification et la Trinité.
 	preload("res://resources/item_affixes/persistent.tres"),

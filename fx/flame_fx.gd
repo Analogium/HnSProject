@@ -41,6 +41,10 @@ const RAMPS := {
 	DamageType.Kind.NECROTIC: [
 		Color(0.82, 1.0, 0.3), Color(0.38, 0.82, 0.08), Color(0.1, 0.38, 0.04), Color(0.04, 0.1, 0.02)
 	],
+	# L'acier : froid et non le blanc chaud de sa couleur, qui sortait blanc pur additionné à l'ocre.
+	DamageType.Kind.PHYSICAL: [
+		Color(0.9, 0.92, 0.96), Color(0.56, 0.6, 0.68), Color(0.22, 0.24, 0.29), Color(0.07, 0.07, 0.09)
+	],
 	# Un cœur d'or sur un corps rose : tirée de son rose pâle, la lumière sortait beige sur l'ocre.
 	DamageType.Kind.HOLY: [
 		Color(1.0, 0.8, 0.42), Color(0.95, 0.4, 0.55), Color(0.5, 0.08, 0.28), Color(0.15, 0.02, 0.08)

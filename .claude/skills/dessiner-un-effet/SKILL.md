@@ -125,6 +125,9 @@ sur la planche. Montrer **le geste**, pas le dessin isolé : à deux instants au
   trop vite à 165 Hz et les fins n'étaient jamais atteintes. Plafonnée à un trentième, elle prenait du
   retard sur l'effet dès que ComfyUI tenait la carte (moins de 30 images par seconde) : une planche
   qui suit un effet à son vrai `delta` lit le même, sans plafond.
+  **Un geste bref se planche au ralenti** (`Engine.time_scale = 0.25` à l'arrivée en zone) : un coup
+  d'arme dure 0,2 s, et chaque capture (~110 ms) en sautait la moitié — au chevalier, aucun ruban ne
+  paraissait. Et un ruban qui se ronge pendant sa course n'est jamais vu entier : il se ronge au bout.
 - **Faire un premier passage à blanc** : chaque matière neuve se compile ~100 ms à sa
   première image, et ce qui vole saute d'autant (des perles dans une traînée).
 - **Montrer une boule en vol avec sa traînée entière** : elle part assez tôt pour avoir

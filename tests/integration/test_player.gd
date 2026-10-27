@@ -1023,6 +1023,19 @@ func test_the_body_faces_where_it_walks_not_the_mouse() -> void:
 	assert_true(_p.facing.dot(Vector3.BACK) < 0.99, "alors que la visée regarde ailleurs")
 
 
+## Le corps ne tourne pas sur lui-même pendant un geste : la visée reste où il l'a lancé.
+func test_the_aim_holds_still_during_a_gesture() -> void:
+	await wait_physics_frames(2)
+	var mouse := _p.facing
+	_p.facing = -mouse
+	_p._gesture = Player.Gesture.new(0.2)
+	await wait_physics_frames(3)
+	assert_almost_eq(_p.facing, -mouse, Vector3.ONE * 0.001, "la souris ne la tourne pas")
+	assert_almost_eq(_p.attack_pivot.rotation.y, -Flat.angle(-mouse), 0.001, "ni le coup qui part")
+	await wait_seconds(0.3)
+	assert_almost_eq(_p.facing, mouse, Vector3.ONE * 0.001, "le geste fini, elle suit de nouveau")
+
+
 func _left_click() -> InputEventMouseButton:
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT

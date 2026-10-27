@@ -2,7 +2,7 @@
 
 <!-- Fichier généré par tools/catalog.sh — ne pas éditer à la main. -->
 
-79 bases d'objets, 53 compétences, 73 affixes d'objets, 5 affixes d'ennemis.
+79 bases d'objets, 53 compétences, 74 affixes d'objets, 5 affixes d'ennemis.
 
 Deux règles ne se lisent dans aucun `.tres`, et il faut les avoir en tête
 pour lire les tables :
@@ -1566,6 +1566,7 @@ coupe rien. Les petits nœuds sont listés par région, dans l'ordre du fichier.
 | `shrewd` | mana | caster, helmet, jewellery | — | 8 | 7 | 19 / 79 |
 | `stormy` | dégâts de sort de foudre (%) | caster | — | 8 | 6 | 8 / 79 |
 | `sturdy` | PV (%) | armour, belt | — | 10 | 6 | 28 / 79 |
+| `trance` | dégâts de canalisation (%) | melee, gloves | — | 2 | 5 | 17 / 79 |
 | `unholy` | rés. sacré | *partout* | weapon | 9 | 5 | 36 / 79 |
 | `vigorous` | PV | armour, belt, jewellery | — | 12 | 8 | 34 / 79 |
 | `whistling` | vitesse de projectile aux projectiles (%) | caster, gloves | — | 8 | 5 | 14 / 79 |
@@ -2312,6 +2313,16 @@ T1 est le meilleur. « ouvre à » est le niveau d'objet minimum du palier.
 | T4 | 20 | 14–19 % | 10 |
 | T5 | 10 | 9–13 % | 10 |
 | T6 | 1 | 5–8 % | 10 |
+
+**`trance`** — « de la Transe », dégâts de canalisation, arrondi 1
+
+| palier | ouvre à | plage | poids |
+|---|---|---|---|
+| T1 | 52 | 32–40 % | 10 |
+| T2 | 34 | 24–31 % | 10 |
+| T3 | 19 | 16–23 % | 10 |
+| T4 | 6 | 10–15 % | 10 |
+| T5 | 1 | 6–9 % | 10 |
 
 **`unholy`** — « du Blasphème », rés. sacré, arrondi 1
 

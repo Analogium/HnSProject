@@ -169,6 +169,8 @@ static func _material(nature: int) -> ShaderMaterial:
 		# La foudre un cran plus haut : son cœur blanc (`fx/lightning_common.gdshaderinc`) dit l'éclair.
 		if nature == DamageType.Kind.LIGHTNING:
 			ramp = [Color(0.95, 0.93, 1.0)] + ramp
+		elif nature == DamageType.Kind.PHYSICAL:
+			ramp = SteelFx.SPARK_RAMP
 		for k in 3:
 			m.set_shader_parameter([&"heart", &"tint", &"deep"][k], Vector3(ramp[k].r, ramp[k].g, ramp[k].b))
 		_materials[nature] = m

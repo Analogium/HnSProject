@@ -306,6 +306,9 @@ msgstr "attack"
 msgid "de mêlée"
 msgstr "melee"
 
+msgid "de canalisation"
+msgstr "channelling"
+
 msgid "aux projectiles"
 msgstr "to projectiles"
 
@@ -338,6 +341,9 @@ msgstr "to cold skills"
 
 msgid "aux attaques de mêlée"
 msgstr "to melee attacks"
+
+msgid "aux compétences canalisées"
+msgstr "to channelling skills"
 
 msgid "Sillage"
 msgstr "Wake"
@@ -396,8 +402,8 @@ msgstr "Cyclone"
 msgid "Un coup de taille qui détache son arc et l'envoie devant soi."
 msgstr "A slash whose arc breaks free and flies out ahead of you."
 
-msgid "Un tour d'arme entretenu, qui fauche tout ce qui approche."
-msgstr "A sustained weapon spin, reaping all that comes close."
+msgid "Un tour d'arme canalisé, qui fauche tout ce qui approche tant que la touche est tenue."
+msgstr "A channelled weapon spin, reaping all that comes close while the key is held."
 
 msgid "Manuel du froid"
 msgstr "Manual of Cold"
@@ -1418,6 +1424,9 @@ msgstr "Area"
 msgid "Mêlée"
 msgstr "Melee"
 
+msgid "Canalisé"
+msgstr "Channelling"
+
 msgid "Projectile"
 msgstr "Projectile"
 
@@ -2419,6 +2428,9 @@ msgstr "of Cruelty"
 
 msgid "de l'Écrasement"
 msgstr "of Crushing"
+
+msgid "de la Transe"
+msgstr "of Trance"
 
 msgid "de la Cuirasse"
 msgstr "of the Cuirass"

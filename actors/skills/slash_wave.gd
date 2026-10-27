@@ -15,6 +15,8 @@ const START := 18.0
 
 ## L'écart entre deux Vagues jumelles, en radians.
 const FAN := 0.35
+## Le croissant d'acier qui vole (`SteelFx.wave`), en part du rayon qui mord.
+const ARC_SPAN := 1.3
 
 var _cast: SkillStats
 var _author: StatusEffects
@@ -36,6 +38,7 @@ var _prow_taken := false
 var _carried := []
 var _heading := Vector3.RIGHT
 var _third := false
+var _arc: MeshInstance3D
 
 
 static func send(
@@ -53,7 +56,8 @@ static func send(
 	parent.add_child(wave)
 	Settings.veil(wave, Settings.SPELLS)
 	wave.global_position = from_value + wave._toward * START
-	ElementFx.trail(wave, DamageType.COLORS[cast.nature])
+	wave._arc = SteelFx.wave(wave, cast.nature, cast.radius * ARC_SPAN)
+	wave._arc.rotation.y = -Flat.angle(wave._toward)
 	wave._start = wave.global_position
 	return wave
 
@@ -68,6 +72,8 @@ func _physics_process(delta: float) -> void:
 	_bitten.advance(delta)
 	_carry(step)
 	var grown := _grown()
+	_arc.rotation.y = -Flat.angle(_toward)
+	_arc.scale = Vector3.ONE * _cast.radius * ARC_SPAN * grown
 	for target in Targets.in_circle(get_world_3d(), global_position, _cast.radius * grown):
 		if _bitten.accepts(target):
 			var factor := grown
@@ -91,12 +97,12 @@ func _end_of_run() -> void:
 		DashTrail.leave(get_parent(), _start, global_position, _cast.ground(), _author, true)
 	_throw_carried()
 	if _cast.shape != Skill.Shape.BOOMERANG or _third:
-		queue_free()
+		_gone()
 		return
 	if _returning:
 		# Le Va-et-vient (jalon 46) : revenue, elle repart vers la visée, plus faible.
 		if _cast.to_and_fro <= 0.0:
-			queue_free()
+			_gone()
 			return
 		_third = true
 		_returning = false
@@ -107,6 +113,12 @@ func _end_of_run() -> void:
 	_age = 0.0
 	_start = global_position
 	_bitten = Targets.Contacts.new(_cast.duration)
+
+
+## Son croissant reste où elle s'arrête, le temps de se ronger.
+func _gone() -> void:
+	SteelFx.release(_arc)
+	queue_free()
 
 
 ## La Houle (jalon 46) : le rayon et les dégâts grandissent au fil de la course, de un au
