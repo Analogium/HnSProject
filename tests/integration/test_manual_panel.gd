@@ -744,7 +744,7 @@ func test_a_movement_skill_shows_no_damage() -> void:
 	assert_gt(cast.total_max(), 0.0, "le lancer, lui, porte ce que l'équipement ajoute")
 
 	var lines := _sheet_of(book, "storm_dash")
-	for label_of in ["ajoutés", "par coup", "chance critique", "cibles", "moyenne par lancer"]:
+	for label_of in ["ajoutés", "par coup", "critique", "cibles", "par lancer"]:
 		assert_eq(_values(lines, label_of).size(), 0, "« %s » n'a rien à faire là" % label_of)
 	assert_eq(_values(lines, "coût").size(), 1, "le coût reste")
 	assert_eq(_values(lines, "durée").size(), 1, "et la durée de son buff")
@@ -819,7 +819,7 @@ func test_the_sheet_announces_levels_and_damage_against_a_state() -> void:
 		),
 	])
 	var lines := _sheet_of(book, "swift_bolt")
-	assert_eq(_values(lines, "points"), PackedStringArray(["1 / 5 (+2)"]))
+	assert_eq(_panel._skill_sheet(book.manual, SkillCatalog.by_id("swift_bolt")).points, "1 / 5 (+2)")
 	assert_eq(_values(lines, "dégâts accrus contre les engourdis"), PackedStringArray(["+30 %"]))
 
 
@@ -832,7 +832,7 @@ func test_the_sheet_announces_the_crit_of_the_skill() -> void:
 	))
 	_player.skill_mods.assign([StatMod.new("crit_chance", StatMod.Mode.PERCENT, 50.0, Keywords.SPELL)])
 	var lines := _sheet_of(book, "swift_bolt")
-	assert_eq(_values(lines, "chance critique"), PackedStringArray(["12 %"]), "(5 + 3) × 1,5")
+	assert_eq(_values(lines, "critique"), PackedStringArray(["12 %"]), "(5 + 3) × 1,5")
 	assert_eq(_values(lines, "dégâts critiques"), PackedStringArray(["200 %"]))
 
 
@@ -868,7 +868,7 @@ func test_a_passive_sheet_says_what_it_gives() -> void:
 	var sheet := _panel._passive_sheet(book.manual, passive)
 	assert_eq(sheet.title_text, passive.displayed_name())
 	assert_eq(sheet.subtitle, "toujours actif", "ce qu'il faut savoir de lui avant ses nombres")
-	assert_eq(_values(sheet.lines, "points"), PackedStringArray(["2 / %d" % passive.points_max]))
+	assert_eq(sheet.points, "2 / %d" % passive.points_max)
 	assert_eq(_values(sheet.lines, "armure"), PackedStringArray(["+24"]), "deux points de douze")
 
 
@@ -912,7 +912,7 @@ func test_an_attack_sheet_shows_its_share_of_the_weapon_time() -> void:
 		PackedStringArray([StatMod.percentage(heavy.attack_time_factor * 100.0)])
 	)
 	assert_eq(
-		_values(lines, "temps d'attaque"),
+		_values(lines, "attaque"),
 		PackedStringArray(["%.2f s" % heavy.use_time(_player.stats)]),
 		"et le temps qu'elle donne, à côté"
 	)
@@ -947,10 +947,10 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 	var cast := _player.resolve(bolt, 2)
 	var lines := _sheet_of(book, "swift_bolt")
 
-	assert_eq(_values(lines, "points"), PackedStringArray(["2 / %d" % bolt.points_max()]))
+	assert_eq(_panel._skill_sheet(book.manual, bolt).points, "2 / %d" % bolt.points_max())
 	assert_eq(_values(lines, "coût"), PackedStringArray(["%d mana" % roundi(cast.mana_cost)]))
 	assert_eq(
-		_values(lines, "temps d'incantation"), PackedStringArray(["%.2f s" % cast.use_time]),
+		_values(lines, "incantation"), PackedStringArray(["%.2f s" % cast.use_time]),
 		"un sort sans recharge n'annonce que son geste"
 	)
 	assert_eq(_values(lines, "recharge"), PackedStringArray(), "et pas de recharge")
@@ -976,7 +976,7 @@ func test_each_line_comes_from_the_cast_resolution() -> void:
 		PackedStringArray(["%d px/s" % roundi(cast.projectile_speed)])
 	)
 	assert_eq(
-		_values(lines, "moyenne par lancer"),
+		_values(lines, "par lancer"),
 		PackedStringArray([str(roundi(cast.average_per_cast()))])
 	)
 	assert_eq(
@@ -1029,7 +1029,7 @@ func test_a_locked_slot_says_what_it_requires() -> void:
 		_values(lines, "verrouillée"),
 		PackedStringArray(["niveau %d du manuel" % high.required_manual_level])
 	)
-	assert_eq(_values(lines, "points"), PackedStringArray(["0 / %d" % high.points_max()]))
+	assert_eq(_panel._skill_sheet(book.manual, high).points, "0 / %d" % high.points_max())
 	assert_eq(
 		_values(lines, "de base"),
 		PackedStringArray(["%d foudre" % roundi(high.damage_per_point[0])]), "le premier point"

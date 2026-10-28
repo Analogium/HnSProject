@@ -243,18 +243,6 @@ msgstr "Two weapon blows struck crosswise, one after the other."
 msgid "Une épée en orbite autour de soi, qui coupe ce qu'elle croise."
 msgstr "A sword orbiting around you, cutting what it crosses."
 
-msgid "Effets"
-msgstr "Effects"
-
-msgid "Lancer"
-msgstr "Cast"
-
-msgid "Dégâts"
-msgstr "Damage"
-
-msgid "Forme"
-msgstr "Shape"
-
 msgid "En moyenne, si tout touche"
 msgstr "On average, if all hits"
 
@@ -1543,6 +1531,9 @@ msgstr "necrotic res."
 msgid "rés. sacré"
 msgstr "holy res."
 
+msgid "attaque"
+msgstr "attack time"
+
 msgid "temps d'attaque"
 msgstr "attack time"
 
@@ -1558,7 +1549,7 @@ msgstr "cast speed"
 msgid "allonge"
 msgstr "reach"
 
-msgid "chance critique"
+msgid "critique"
 msgstr "crit chance"
 
 msgid "dégâts critiques"
@@ -2148,9 +2139,6 @@ msgstr "mechanic"
 msgid "conversion"
 msgstr "conversion"
 
-msgid "points"
-msgstr "points"
-
 msgid "verrouillée"
 msgstr "locked"
 
@@ -2190,9 +2178,6 @@ msgstr "targets"
 msgid "coups"
 msgstr "hits"
 
-msgid "toutes les"
-msgstr "every"
-
 msgid "en même temps"
 msgstr "at once"
 
@@ -2205,7 +2190,7 @@ msgstr "self-burn"
 msgid "soin"
 msgstr "mending"
 
-msgid "temps d'incantation"
+msgid "incantation"
 msgstr "cast time"
 
 msgid "%d mana/s"
@@ -2215,8 +2200,8 @@ msgctxt "fiche de compétence"
 msgid "vitesse"
 msgstr "projectile speed"
 
-msgid "moyenne par lancer"
-msgstr "average per cast"
+msgid "par lancer"
+msgstr "per cast"
 
 msgid "par seconde"
 msgstr "per second"

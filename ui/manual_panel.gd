@@ -82,20 +82,17 @@ const SHEET_W := 176.0
 const SHEET_PAD := 6.0
 const SHEET_GAP := 4.0
 ## La hauteur d'une ligne de fiche, **plus serrée que celle de la page** : la fiche la
-## plus chargée du jeu tient tout juste au-dessus des jauges, et c'est ce pixel par
-## ligne qui lui laisse son paragraphe.
+## plus chargée du jeu tient tout juste au-dessus des jauges.
 const SHEET_LINE := 9.0
 ## Une ligne de paragraphe, plus serrée encore : de la prose, pas un tableau de valeurs.
 const SHEET_PROSE := 8.0
-## Le nom et les mots-clés, au-dessus des lignes.
-const SHEET_HEADER := SHEET_LINE * 2.0
-## Le filet entre deux groupes. Serré, comme tout le reste de la fiche : la plus haute
-## du jeu — le nuage — tient à trois pixels près au-dessus des jauges.
-const SHEET_SEPARATION := 4.0
-## Ce qu'un titre de groupe prend en plus du filet. Moins qu'une ligne pleine : la fiche
-## la plus chargée du jeu tient tout juste au-dessus des jauges, et cinq titres y
-## coûteraient une case de contenu.
-const TITLE_BAND := 7.0
+## Le bandeau du nom, collé au cadre comme celui d'un objet, teinté de la nature.
+const SHEET_BAND := 14.0
+## Le filet qui ouvre une section ; un titre de bloc le coupe et prend une ligne.
+const SHEET_RULE := 7.0
+## Le retrait des puces, et l'écart entre les deux colonnes de l'en-tête.
+const BULLET := 6.0
+const GRID_GAP := 6.0
 ## Ce qui manque pour ouvrir : « pas encore », pas une erreur.
 const MISSING := Color(0.92, 0.50, 0.44)
 ## Ce qu'un échange coûte : le rouge de ce qui manque, lu de la même façon.
@@ -120,14 +117,15 @@ enum Group {
 	ON_CAST, REACTIONS,
 }
 
-## Le titre que porte le filet d'un groupe. La fiche se lit alors par blocs — ce qu'elle
-## coûte, ce qu'elle inflige, ce qu'elle pose — au lieu d'une liste d'une vingtaine de
-## lignes. **Le premier groupe n'en a pas** : il suit l'en-tête, qui le dit déjà.
+## L'en-tête, en grille de deux colonnes sous les mots-clés (planche « B », à la PoE) :
+## ce qui manque pour l'ouvrir, puis ce que coûte un lancer. Le reste se lit en puces.
+const HEADER_GROUPS: Array[int] = [Group.STATE, Group.COST]
+## Les moyennes aussi, deux nombres qui se comparent côte à côte.
+const GRID_GROUPS: Array[int] = [Group.STATE, Group.COST, Group.ESTIMATE]
+
+## Le titre que porte le filet d'un bloc. Coût, dégâts et forme n'en ont pas : l'en-tête
+## et la liste de puces se lisent sans, comme sur PoE.
 const GROUP_TITLES := {
-	Group.EFFECT: "Effets",
-	Group.COST: "Lancer",
-	Group.DAMAGE: "Dégâts",
-	Group.SHAPE: "Forme",
 	# Ce que les moyennes supposent se dit dans leur titre : en note sous elles, c'était
 	# une ligne de plus dans la fiche la plus haute du jeu.
 	Group.ESTIMATE: "En moyenne, si tout touche",
@@ -171,14 +169,21 @@ class Sheet:
 	## les lignes **sont** la description ; un nœud en a une depuis le jalon 34.
 	var description: String
 	var lines: Array[SheetLine]
+	## « 3 / 5 », à droite du bandeau ; vide pour la fenêtre des déclenchements.
+	var points: String
+	## Le nom et son bandeau : la nature d'une compétence, la sorte d'un nœud.
+	var tint: Color
 
 	func _init(
-		p_title: String, p_subtitle: String, p_lines: Array[SheetLine], p_description := ""
+		p_title: String, p_subtitle: String, p_lines: Array[SheetLine], p_description := "",
+		p_points := "", p_tint := UiPalette.TEXT
 	) -> void:
 		title_text = p_title
 		subtitle = p_subtitle
 		description = p_description
 		lines = p_lines
+		points = p_points
+		tint = p_tint
 
 var _player: Player
 var _font: Font
@@ -849,33 +854,7 @@ func _draw_sheet(sheet: Sheet, anchor: Rect2, aside := false, glossary := true) 
 static func paint_sheet(canvas: Control, font: Font, sheet: Sheet, r: Rect2, glossary := Rect2()) -> void:
 	canvas.draw_rect(r, UiPalette.TIP_BACK)
 	canvas.draw_rect(r, UiPalette.BORDER, false, 1.0)
-
-	var left := r.position.x + SHEET_PAD
-	var width := r.size.x - SHEET_PAD * 2.0
-	var y := r.position.y + SHEET_PAD
-	RichText.draw(canvas, font, Vector2(left, y + SHEET_LINE), sheet.title_text, TITLE_SIZE, UiPalette.TEXT)
-	# Ce qui peut l'améliorer : ici plutôt que sur la barre, qui sert à lancer.
-	RichText.draw(canvas, font, Vector2(left, y + SHEET_LINE * 2.0 - 1.0), sheet.subtitle, FONT_SIZE, KEYWORD)
-	y += SHEET_HEADER
-
-	# Le geste d'abord, en toutes lettres ; les nombres ensuite. Une liste de vingt
-	# valeurs ne dit pas ce qu'une compétence **fait**.
-	var paragraph := _folded(font, sheet.description, width)
-	for text_value in paragraph:
-		RichText.draw(canvas, font, Vector2(left, y + SHEET_PROSE - 1.0), text_value, FONT_SIZE, DESCRIPTION)
-		y += SHEET_PROSE
-	if not paragraph.is_empty():
-		y += SHEET_SEPARATION
-
-	for i in sheet.lines.size():
-		var line := sheet.lines[i]
-		if _opens_a_group(sheet.lines, i):
-			_group_band(canvas, font, left, width, y, "" if i == 0 else _group_title(line))
-			y += _group_gap(line, i == 0)
-		var base := y + SHEET_LINE - 2.0
-		RichText.draw(canvas, font, Vector2(left, base), line.label_of, FONT_SIZE, UiPalette.HINT)
-		RichText.draw_right(canvas, font, Vector2(left, base), left + width, line.value, FONT_SIZE, line.tint)
-		y += SHEET_LINE
+	_lay_out(canvas, font, sheet, r)
 
 	if not glossary.has_area():
 		return
@@ -886,27 +865,108 @@ static func paint_sheet(canvas: Control, font: Font, sheet: Sheet, r: Rect2, glo
 	GlossaryBoxes.draw(canvas, font, r, glossary, described)
 
 
-## Le filet d'un groupe, **coupé en son centre par son titre** quand il en a un : c'est
-## ce qui sépare « ce qu'elle coûte » de « ce qu'elle inflige » d'un coup d'œil.
-static func _group_band(
-	canvas: Control, font: Font, left: float, width: float, y: float, title_text: String
-) -> void:
-	canvas.draw_rect(Rect2(left, roundf(y + SHEET_SEPARATION * 0.5), width, 1.0), UiPalette.BORDER)
+## Rend la hauteur de la fiche, et la dessine dans `r` quand `canvas` est donné : **un
+## seul parcours** pour la mesure et le dessin, qui ne peuvent plus se décaler d'une ligne.
+static func _lay_out(canvas: Control, font: Font, sheet: Sheet, r: Rect2) -> float:
+	var left := r.position.x + SHEET_PAD
+	var width := r.size.x - SHEET_PAD * 2.0
+	var y := r.position.y
+	if canvas != null:
+		canvas.draw_rect(
+			Rect2(r.position + Vector2.ONE, Vector2(r.size.x - 2.0, SHEET_BAND - 1.0)),
+			Color(sheet.tint, ItemTooltip.BAND_ALPHA)
+		)
+		var band := y + SHEET_BAND - 4.0
+		RichText.draw(canvas, font, Vector2(left, band), sheet.title_text, TITLE_SIZE, sheet.tint)
+		RichText.draw_right(canvas, font, Vector2(left, band), left + width, sheet.points, FONT_SIZE, UiPalette.TEXT)
+		# Ce qui peut l'améliorer : ici plutôt que sur la barre, qui sert à lancer.
+		RichText.draw(canvas, font, Vector2(left, y + SHEET_BAND + SHEET_LINE - 2.0), sheet.subtitle, FONT_SIZE, KEYWORD)
+	y += SHEET_BAND + SHEET_LINE
+
+	var head: Array[SheetLine] = []
+	var body: Array[SheetLine] = []
+	for line in sheet.lines:
+		(head if line.group in HEADER_GROUPS else body).append(line)
+	y = _grid_rows(canvas, font, head, left, width, y)
+
+	# Le geste en toutes lettres, entre ce qu'il coûte et ce qu'il fait.
+	var paragraph := _folded(font, sheet.description, width)
+	if not paragraph.is_empty():
+		y = _rule(canvas, font, left, width, y, "")
+		for text_value in paragraph:
+			if canvas != null:
+				RichText.draw(canvas, font, Vector2(left, y + SHEET_PROSE - 1.0), text_value, FONT_SIZE, DESCRIPTION)
+			y += SHEET_PROSE
+
+	var start := 0
+	for i in body.size() + 1:
+		if i < body.size() and (i == 0 or not _opens_a_group(body, i)):
+			continue
+		if i > start:
+			var block := body.slice(start, i)
+			y = _rule(canvas, font, left, width, y, _group_title(block[0]))
+			if block[0].group in GRID_GROUPS:
+				y = _grid_rows(canvas, font, block, left, width, y)
+			else:
+				y = _bullets(canvas, font, block, left, y)
+		start = i
+	return y + SHEET_PAD - r.position.y
+
+
+## Le filet qui ouvre une section ; un titre le coupe à gauche — un nom de buff, d'état.
+static func _rule(canvas: Control, font: Font, left: float, width: float, y: float, title_text: String) -> float:
 	if title_text.is_empty():
-		return
-	var span := RichText.width(font, title_text, FONT_SIZE)
-	var x := roundf(left + (width - span) * 0.5)
-	# Le fond derrière le titre : sans lui, le filet lui passe au travers.
-	canvas.draw_rect(Rect2(x - 3.0, y, span + 6.0, SHEET_SEPARATION + TITLE_BAND), UiPalette.TIP_BACK)
-	RichText.draw(canvas, font, Vector2(x, y + SHEET_SEPARATION + TITLE_BAND - 1.0), title_text, FONT_SIZE, KEYWORD)
+		if canvas != null:
+			canvas.draw_rect(Rect2(left, y + 3.0, width, 1.0), UiPalette.BORDER)
+		return y + SHEET_RULE
+	if canvas != null:
+		# En 9 et non en 8 : à 8, le point du « i » se soude à sa tige, « Familier » se lisait « Famllier ».
+		var span := RichText.width(font, title_text, TITLE_SIZE) + 3.0
+		RichText.draw(canvas, font, Vector2(left, y + SHEET_LINE), title_text, TITLE_SIZE, KEYWORD)
+		canvas.draw_rect(Rect2(left + span, y + 6.0, width - span, 1.0), UiPalette.BORDER)
+	return y + SHEET_LINE + 1.0
 
 
-## Ce qu'un filet de groupe prend en hauteur. **La même fonction que le dessin** : deux
-## calculs se décaleraient d'une ligne à chaque titre ajouté.
-static func _group_gap(line: SheetLine, first: bool) -> float:
-	if first or _group_title(line).is_empty():
-		return SHEET_SEPARATION
-	return SHEET_SEPARATION + TITLE_BAND
+## Deux par rangée quand les deux tiennent dans leur demi-colonne, sinon la rangée entière.
+static func _grid_rows(canvas: Control, font: Font, lines: Array[SheetLine], left: float, width: float, y: float) -> float:
+	var half := (width - GRID_GAP) * 0.5
+	var i := 0
+	while i < lines.size():
+		var paired := (
+			i + 1 < lines.size() and _span(font, lines[i]) <= half and _span(font, lines[i + 1]) <= half
+		)
+		if canvas != null:
+			_cell(canvas, font, lines[i], left, y, ItemTooltip.LABEL)
+			if paired:
+				_cell(canvas, font, lines[i + 1], left + half + GRID_GAP, y, ItemTooltip.LABEL)
+		i += 2 if paired else 1
+		y += SHEET_LINE
+	return y
+
+
+## Ce que fait la compétence : l'intitulé dans le bleu des affixes, la valeur en clair.
+static func _bullets(canvas: Control, font: Font, lines: Array[SheetLine], left: float, y: float) -> float:
+	for line in lines:
+		if canvas != null:
+			canvas.draw_rect(Rect2(left + 1.0, y + 3.0, 2.0, 2.0), ItemTooltip.EXPLICIT)
+			_cell(canvas, font, line, left + BULLET, y, ItemTooltip.EXPLICIT)
+		y += SHEET_LINE
+	return y
+
+
+static func _cell(canvas: Control, font: Font, line: SheetLine, x: float, y: float, label_tint: Color) -> void:
+	var base := y + SHEET_LINE - 2.0
+	RichText.draw(canvas, font, Vector2(x, base), line.label_of, FONT_SIZE, label_tint)
+	var after := x + RichText.width(font, line.label_of, FONT_SIZE) + ItemTooltip.PROP_GAP
+	RichText.draw(canvas, font, Vector2(after, base), line.value, FONT_SIZE, line.tint)
+
+
+## La place d'une ligne « intitulé valeur ».
+static func _span(font: Font, line: SheetLine) -> float:
+	return (
+		RichText.width(font, line.label_of, FONT_SIZE) + ItemTooltip.PROP_GAP
+		+ RichText.width(font, line.value, FONT_SIZE)
+	)
 
 
 ## Le nom du buff qu'elle porte — **déjà traduit**, c'est du contenu —, à défaut le
@@ -952,7 +1012,6 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	var points_line := "%d / %d" % [spent, skill.points_max()]
 	if cast.bonus_levels != 0:
 		points_line += " (%+d)" % cast.bonus_levels
-	out.append(SheetLine.new(Group.STATE, Texts.t("points"), points_line, UiPalette.TEXT))
 	if manual != null and manual.level() < skill.required_manual_level:
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("verrouillée"),
@@ -972,8 +1031,8 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	if cast.use_time > 0.0:
 		out.append(SheetLine.new(
 			Group.COST,
-			Texts.t("temps d'attaque") if skill.cadence == Skill.Cadence.WEAPON
-			else Texts.t("temps d'incantation"),
+			Texts.t("attaque") if skill.cadence == Skill.Cadence.WEAPON
+			else Texts.t("incantation"),
 			"%.2f s" % cast.use_time, UiPalette.TEXT
 		))
 	# La part du temps de l'arme que prend cette attaque (jalon 47) : 130 % pour un coup qui pèse.
@@ -1068,12 +1127,13 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 			Group.DAMAGE, Texts.t("par projectile") if projectile else Texts.t("par coup"),
 			SkillStats.readable_range(cast.total_min(), cast.total_max()), FULL
 		))
-		# La chance du coup, accrus compris : plus une base, d'où son nom à part. Le
-		# multiplicateur est celui de la fiche.
-		out.append(SheetLine.new(
-			Group.DAMAGE, Texts.t("chance critique"),
-			StatMod.format(SkillStats.CRIT_CHANCE, cast.crit_chance), UiPalette.TEXT
-		))
+		# La chance du coup, accrus compris : plus une base, d'où son nom à part. En
+		# en-tête, à côté du coût ; le multiplicateur est celui de la fiche.
+		if skill.strikes():
+			out.append(SheetLine.new(
+				Group.COST, Texts.t("critique"),
+				StatMod.format(SkillStats.CRIT_CHANCE, cast.crit_chance), UiPalette.TEXT
+			))
 		out.append(SheetLine.new(
 			Group.DAMAGE, Texts.t(StatMod.LABELS["crit_multiplier"]),
 			StatMod.format("crit_multiplier", cast.crit_multiplier), UiPalette.TEXT
@@ -1157,7 +1217,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		))
 	if cast.period > 0.0:
 		out.append(SheetLine.new(
-			Group.SHAPE, Texts.t("toutes les"), "%.2f s" % cast.period, UiPalette.TEXT
+			Group.SHAPE, Texts.t("frappe toutes les"), "%.2f s" % cast.period, UiPalette.TEXT
 		))
 	if cast.max_simultaneous() > 0 and not timed:
 		out.append(SheetLine.new(
@@ -1243,7 +1303,7 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 	var per_second := cast.average_per_second()
 	if per_cast > 0.0:
 		out.append(SheetLine.new(
-			Group.ESTIMATE, Texts.t("moyenne par lancer"), str(roundi(per_cast)), FULL
+			Group.ESTIMATE, Texts.t("par lancer"), str(roundi(per_cast)), FULL
 		))
 	if per_second > 0.0:
 		out.append(SheetLine.new(
@@ -1262,7 +1322,8 @@ func _skill_sheet(manual: Manual, skill: Skill) -> Sheet:
 		out.assign(out.filter(func(l: SheetLine) -> bool: return not l.group in hidden))
 
 	return Sheet.new(
-		skill.displayed_name(), cast.keywords_label(), out, skill.displayed_description()
+		skill.displayed_name(), cast.keywords_label(), out, skill.displayed_description(),
+		points_line, DamageType.COLORS[cast.nature]
 	)
 
 
@@ -1443,10 +1504,6 @@ static func _times(factor: float) -> String:
 func _passive_sheet(manual: Manual, passive: Passive) -> Sheet:
 	var spent := manual.points_of(passive.id)
 	var out: Array[SheetLine] = []
-	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [spent, passive.points_max],
-		UiPalette.TEXT
-	))
 	if manual.level() < passive.required_manual_level:
 		out.append(SheetLine.new(
 			Group.STATE, Texts.t("verrouillé"),
@@ -1455,17 +1512,16 @@ func _passive_sheet(manual: Manual, passive: Passive) -> Sheet:
 	if spent == 0:
 		out.append(_first_point_line())
 	out.append_array(_effect_lines(passive.mods(maxi(spent, 1))))
-	return Sheet.new(passive.displayed_name(), Texts.t("toujours actif"), out)
+	return Sheet.new(
+		passive.displayed_name(), Texts.t("toujours actif"), out, "",
+		"%d / %d" % [spent, passive.points_max]
+	)
 
 
 ## Ce qu'un nœud change, et ce qu'il demande — lu sur le manuel, jamais recalculé.
 func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 	var spent := manual.points_of(node.id)
 	var out: Array[SheetLine] = []
-	out.append(SheetLine.new(
-		Group.STATE, Texts.t("points"), "%d / %d" % [spent, node.points_max],
-		UiPalette.TEXT
-	))
 	out.append_array(_requirement_lines(manual, cell, node))
 	if spent == 0:
 		out.append(_first_point_line())
@@ -1490,7 +1546,11 @@ func _node_sheet(manual: Manual, cell: ManualCell, node: TalentNode) -> Sheet:
 	var subtitle := Texts.t("talent")
 	if not node.kind().is_empty():
 		subtitle = "%s · %s" % [subtitle, Texts.t(node.kind())]
-	return Sheet.new(node.displayed_name(), subtitle, out, node.displayed_description())
+	return Sheet.new(
+		node.displayed_name(), subtitle, out, node.displayed_description(),
+		"%d / %d" % [spent, node.points_max],
+		UiPalette.TEXT if node.kind().is_empty() else _kind_color(node)
+	)
 
 
 ## **Tout ce qui manque**, dans l'ordre où `Manual.node_open()` refuse : la compétence,
@@ -1666,7 +1726,7 @@ func _trigger_sheet(skill: Skill) -> Sheet:
 	return Sheet.new(
 		skill.displayed_name(), Texts.t("Ce qu'elle peut déclencher"), out,
 		Texts.t("Par coup moyen, sur une cible saine. Un coup qui lui retire une grosse part de ses PV pose plus souvent.")
-		if strikes else ""
+		if strikes else "", "", DamageType.COLORS[cast.nature]
 	)
 
 
@@ -1828,28 +1888,21 @@ func _first_point_line() -> SheetLine:
 	)
 
 
-## Deux buffs à la suite sont deux blocs : ils partagent leur groupe et pas leur nom.
+## Un bloc change de titre ou de forme : deux buffs à la suite sont deux blocs, les
+## dégâts et la forme d'un coup n'en font qu'un.
 static func _opens_a_group(lines: Array[SheetLine], index: int) -> bool:
 	if index == 0:
 		return true
+	var line := lines[index]
+	var before := lines[index - 1]
 	return (
-		lines[index].group != lines[index - 1].group
-		or lines[index].heading != lines[index - 1].heading
+		_group_title(line) != _group_title(before)
+		or (line.group in GRID_GROUPS) != (before.group in GRID_GROUPS)
 	)
 
 
-## Mesurée sur les lignes mêmes que le dessin écrit, paragraphe et titres de groupe
-## compris.
 static func sheet_height(font: Font, sheet: Sheet) -> float:
-	var lines := sheet.lines
-	var h := SHEET_PAD * 2.0 + SHEET_HEADER + SHEET_LINE * float(lines.size())
-	var paragraph := _folded(font, sheet.description, SHEET_W - SHEET_PAD * 2.0)
-	if not paragraph.is_empty():
-		h += SHEET_PROSE * float(paragraph.size()) + SHEET_SEPARATION
-	for i in lines.size():
-		if _opens_a_group(lines, i):
-			h += _group_gap(lines[i], i == 0)
-	return h
+	return _lay_out(null, font, sheet, Rect2(0.0, 0.0, SHEET_W, 0.0))
 
 
 ## À droite de ce qu'elle décrit, **tenue dans le cadrage** au-dessus du HUD ; à
