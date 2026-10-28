@@ -138,6 +138,9 @@ var _recharge_totals := PackedFloat32Array()
 ## Les cases tenues depuis un appui **né en jeu** : sinon le clic qui choisit une
 ## compétence dans le menu de la barre la lancerait aussitôt.
 var _held: Array[bool] = []
+## Les cases tenues, de la plus ancienne à la dernière enfoncée : la dernière a la main, et
+## relâchée, la précédente encore tenue reprend.
+var _pressed: Array[int] = []
 ## Les parts du coup en cours, **tirées une fois au départ du geste** : tout l'arc
 ## reçoit la même valeur.
 var _hit_parts: Array[float] = []
@@ -325,6 +328,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		var action := "skill_%d" % (i + 1)
 		if event.is_action_pressed(action) and not walk and not _click_taken(action):
 			_held[i] = true
+			_pressed.erase(i)
+			_pressed.append(i)
 			# Un coup interrompt la marche vers un point ; bouton tenu, elle reprend.
 			_walking = _steering
 	var wheel := event as InputEventMouseButton
@@ -455,15 +460,18 @@ func _physics_process(delta: float) -> void:
 
 	# Sondage des cinq cases. Tenue, la touche relance à chaque fin de recharge : la
 	# cadence est celle de `cast_slot()`. Un survol qui réclame le clic **suspend** la
-	# case sans la désarmer : seul le relâchement désarme.
+	# case sans la désarmer : seul le relâchement désarme. **La dernière enfoncée d'abord** :
+	# dans l'ordre de la barre, la première case tenue affamait les autres.
 	for i in SkillBar.SLOT_COUNT:
-		var action := "skill_%d" % (i + 1)
-		if not Input.is_action_pressed(action):
+		if not Input.is_action_pressed("skill_%d" % (i + 1)):
 			if _held[i]:
 				_let_go(i)
 			_held[i] = false
-		elif _held[i] and not _click_taken(action):
-			cast_slot(i)
+			_pressed.erase(i)
+	for k in range(_pressed.size() - 1, -1, -1):
+		var i := _pressed[k]
+		if _held[i] and not _click_taken("skill_%d" % (i + 1)) and cast_slot(i):
+			break
 
 
 ## Au rythme des recharges : le gel ralentit le geste comme il ralentit les cases.
@@ -685,6 +693,8 @@ func cast_slot(index: int) -> bool:
 			)
 	if skill.id == SkillStats.HEARTH_SKILL:
 		Brazier.assist(self, aim)
+	if spell or _elemental_spell(cast):
+		_harmonize(salvo[0])
 	if spell:
 		_after_spell(skill, salvo, aim)
 	return true
@@ -956,16 +966,44 @@ func _pose(
 			_swing(cast)
 
 
-## Ce qu'un sort qui frappe déclenche chez son lanceur (jalon 41) : une charge d'Harmonie
-## s'il change de nature — le Tempo avec elle —, leur perte s'il la répète sous la
-## Dissonance, ce que la Résonance rend à un buff lancé, l'écho du Familier, ce qui se verse
-## au Chaudron (jalon 49).
-func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
-	var nature := salvo[0].nature
+## Un sort élémentaire, qu'il frappe ou non (la Ruée d'orage) : sort et élément dans ses mots-clés, et
+## lancé — un geste entretenu qu'on allume n'en est pas un.
+static func _elemental_spell(cast: SkillStats) -> bool:
+	return not cast.sustained and cast.keywords.has(Keywords.SPELL) \
+			and DamageType.ELEMENTS.any(func(n: int) -> bool: return cast.keywords.has(Skill.KEYWORD_OF_NATURE[n]))
+
+
+## La Trinité (jalon 41) : une charge d'Harmonie au sort qui change de nature — le Tempo et la
+## Modulation avec elle —, leur perte s'il la répète sous la Dissonance. Tout sort qui frappe
+## compte, et tout sort élémentaire même s'il ne frappe pas (décision de l'utilisateur, jalon 54).
+func _harmonize(cast: SkillStats) -> void:
+	var nature := cast.nature
 	var alternated := _last_spell_nature >= 0 and nature != _last_spell_nature
 	var repeated := nature == _last_spell_nature
 	_last_spell_nature = nature
 	var changed := false
+	for id: String in _lit:
+		if not lit(id) or not _lit[id] is Buff:
+			continue
+		var buff := _lit[id] as Buff
+		var own := resolve(SkillCatalog.by_id(id), skill_points(id))
+		if alternated and buff.stack(Skill.StackTrigger.ALTERNATION, own):
+			changed = true
+			_hasten(own.tempo)
+			_modulate(own.modulation)
+		elif repeated and own.dissonance > 0.0 and buff.stacks > 0:
+			if own.false_note > 0.0:
+				_false_note(cast, buff.stacks)
+			buff.stacks = 0
+			changed = true
+	if changed:
+		after_buff_change()
+
+
+## Ce qu'un sort qui frappe déclenche encore chez son lanceur (jalon 41) : ce que la Résonance
+## rend à un buff lancé, l'écho du Familier, ce qui se verse au Chaudron et au Sceau (jalon 49).
+func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
+	var nature := salvo[0].nature
 	for id: String in _lit:
 		if not lit(id):
 			continue
@@ -976,23 +1014,12 @@ func _after_spell(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
 			continue
 		var buff := _lit[id] as Buff
 		var own := resolve(SkillCatalog.by_id(id), skill_points(id))
-		if alternated and buff.stack(Skill.StackTrigger.ALTERNATION, own):
-			changed = true
-			_hasten(own.tempo)
-			_modulate(own.modulation)
-		elif repeated and own.dissonance > 0.0 and buff.stacks > 0:
-			if own.false_note > 0.0:
-				_false_note(salvo[0], buff.stacks)
-			buff.stacks = 0
-			changed = true
 		if own.resonance > 0.0:
 			buff.resonate(own.resonance)
 		if own.triple_burst > 0.0:
 			buff.natures_cast[nature] = true
 	Cauldron.pour_all(self, nature)
 	Glyph.pour_all(self, nature)
-	if changed:
-		after_buff_change()
 
 
 ## L'Incarnation (jalon 49) : le sort, déjà résolu dans son élément (`_incarnation_of()`), y

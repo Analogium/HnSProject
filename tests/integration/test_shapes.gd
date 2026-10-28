@@ -3476,6 +3476,25 @@ func test_the_familiar_echoes_a_posed_spell_weaker_and_later() -> void:
 	assert_false(_p.lit("familiar"), "éteint à la touche")
 
 
+## Il ne rejoue que l'élémentaire (décision de l'utilisateur, jalon 54) : sous le Contre-chant, la foudre
+## ajoutée aux Chaînes du jugement passait au feu et posait l'embrasé.
+func test_the_familiar_ignores_a_spell_that_is_not_elemental() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"])
+	var holy := Item.new(ItemCatalog.by_id("manual_holy"))
+	holy.manual.gain_experience(999999)
+	_p.study(holy)
+	assert_true(_p.invest(_p.rack.slot_of(holy), "judgment_chains"))
+	_p.bar.put(3, "familiar")
+	_p.bar.put(4, "judgment_chains")
+	assert_true(Gestures.cast(_p, 3))
+	assert_true(Gestures.cast(_p, 4))
+	await wait_physics_frames(2)
+	var thrown := _children_of(JudgmentChains).size()
+	assert_gt(thrown, 0, "les Chaînes sont parties")
+	await wait_seconds(Familiar.ECHO_DELAY + 0.1)
+	assert_lte(_children_of(JudgmentChains).size(), thrown, "pas d'écho sacré")
+
+
 ## Le Familier allumé en case 4, ces nœuds pris.
 func _familiar_with(nodes: Array) -> void:
 	_learn_class(Character.WITCH, ["elemental_projectile", "familiar"] + nodes)
@@ -3581,6 +3600,25 @@ func test_the_triad_bursts_once_with_the_three_elements() -> void:
 	assert_eq(_children_of(Projectile).size(), 0, "pas de tir")
 	await wait_seconds(Triad.TRAVEL + 0.1)
 	assert_eq(_hits(target), 1, "au point visé, l'éclat seul")
+
+
+## Un projectile en plus n'ajoute pas de comète à la Triade, il la fait frapper `triad_volley` % plus fort,
+## une ligne de son nœud (décision de l'utilisateur, jalon 54) : le Prisme garde son échange, −10 %.
+func test_extra_projectiles_strengthen_the_triad() -> void:
+	_learn_class(Character.WITCH, [
+		"elemental_projectile", "elemental_projectile_arcana", "elemental_projectile_arcana",
+		"elemental_projectile_triad",
+	])
+	var plain := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
+	for id: String in ["elemental_projectile_celerity", "elemental_projectile_ricochet", "elemental_projectile_prism"]:
+		assert_true(_p.invest(Rack.CLASS_SLOT, id))
+	var volley := _p.resolve(SkillCatalog.by_id("elemental_projectile"), 1)
+	assert_eq(volley.projectile_count(), 2)
+	assert_eq(volley.triad_volley, 10.0, "la ligne du nœud")
+	assert_almost_eq(volley.more / plain.more, (1.0 + volley.triad_volley * 0.01) * 0.9, 1e-4)
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	assert_eq(_children_of(Triad).size(), 1, "une Triade, trois comètes")
 
 
 ## Équilibre : un trait de feu ouvre le froid et la foudre, pas le feu.
@@ -3791,6 +3829,23 @@ func test_trinity_dissonance_holds_one_more_and_loses_all_on_a_repeat() -> void:
 	assert_eq(buff.stacks, 0, "le feu répété")
 
 
+## Tout sort élémentaire compte, même s'il ne frappe pas (décision de l'utilisateur, jalon 54) : la Ruée
+## d'orage après un sort de foudre fait tout perdre sous la Dissonance.
+func test_trinity_counts_an_elemental_spell_that_hits_nothing() -> void:
+	_learn_class(Character.WITCH, ["elemental_projectile", "trinity", "trinity_scale", "trinity_dissonance"])
+	_p.bar.put(3, "trinity")
+	_p.bar.put(0, "elemental_projectile")
+	assert_true(Gestures.cast(_p, 3))
+	_learn("manual_lightning", ["storm_dash"])
+	assert_false(SkillCatalog.by_id("storm_dash").strikes(), "la Ruée ne frappe rien")
+	for i in 3:
+		_cast_again(0)
+	var buff: Buff = _p._lit["trinity"]
+	assert_eq(buff.stacks, 2, "feu, froid, foudre")
+	_cast_again(2)
+	assert_eq(buff.stacks, 0, "la foudre répétée par la Ruée")
+
+
 ## Tempo : un sort qui charge l'Harmonie rend du temps aux recharges, pas aux simples gestes.
 func test_trinity_tempo_shortens_the_running_cooldowns() -> void:
 	_learn_class(Character.WITCH, [
@@ -3855,6 +3910,28 @@ func test_the_familiar_ruminates_in_the_next_element() -> void:
 	assert_eq(raven._pending.size(), 1, "le second attend encore")
 	await wait_seconds(Familiar.ECHO_DELAY)
 	assert_eq(raven._pending.size(), 0, "rejoué à son tour")
+
+
+## Le Contre-chant suit l'élément du sort, pas ses dégâts ajoutés (décision de l'utilisateur, jalon 54) :
+## un sort de feu chargé de foudre revient tout en froid ; la Triade garde ses trois éléments.
+func test_the_countersong_follows_the_spell_element_not_its_added_damage() -> void:
+	var cast := SkillStats.new()
+	cast.nature = DamageType.Kind.FIRE
+	cast.damage_min[DamageType.Kind.FIRE] = 10.0
+	cast.damage_max[DamageType.Kind.FIRE] = 10.0
+	cast.damage_min[DamageType.Kind.LIGHTNING] = 4.0
+	cast.damage_max[DamageType.Kind.LIGHTNING] = 4.0
+	Familiar.sing(cast, 1)
+	assert_eq(cast.nature, DamageType.Kind.COLD)
+	assert_eq(cast.damage_max[DamageType.Kind.COLD], 14.0, "tout passe au froid")
+	assert_eq(cast.damage_max[DamageType.Kind.FIRE], 0.0, "rien ne reste au feu, la foudre n'y passe pas")
+	var triad := SkillStats.new()
+	triad.shape = Skill.Shape.TRIAD
+	triad.nature = DamageType.Kind.FIRE
+	triad.blend(DamageType.ELEMENTS)
+	triad.damage_max[DamageType.Kind.FIRE] = 3.0
+	Familiar.sing(triad, 1)
+	assert_eq(triad.damage_max[DamageType.Kind.FIRE], 3.0, "la Triade garde ses trois")
 
 
 ## Le Contre-chant ne demande pas un sort qui tourne : une Boule de feu revient en froid.
@@ -7399,6 +7476,7 @@ func test_a_held_attack_plays_every_gesture() -> void:
 	Weapons.arm(_p, SkillCatalog.ID_ATTACK)
 	Input.action_press("skill_3")
 	_p._held[2] = true
+	_p._pressed.append(2)
 	var gestures := 0
 	var resting := 0
 	var last: Object = null

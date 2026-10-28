@@ -73,6 +73,10 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 		FrostTombFx.encase(buff, skill.nature)
 	elif skill.id in [SkillStats.LIGHT_SKILL, SkillStats.NECROSIS_SKILL]:
 		buff._halo_fx = HaloFx.light_up(buff, skill.nature)
+	elif skill.id == SkillStats.AMPLIFY_SKILL:
+		WitchFx.amplify(buff, skill.nature)
+	elif skill.stack_trigger == Skill.StackTrigger.ALTERNATION:
+		WitchFx.harmony(buff)
 	elif skill.id not in BARE:
 		var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
 		ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)
@@ -246,6 +250,7 @@ func _radiate(delta: float) -> void:
 		return
 	var hit := last_spell.echoed(_aura * 0.01)
 	hit.status_chance_increase += SkillStats.SURE_STATE
+	WitchFx.pulse(self, incarnation, SkillStats.AURA_REACH)
 	for target in Targets.in_circle(get_world_3d(), _player.global_position, SkillStats.AURA_REACH):
 		Targets.strike(target, hit.roll(Game.rng), _player.global_position, _player.states, hit)
 

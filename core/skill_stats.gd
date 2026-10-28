@@ -324,6 +324,7 @@ const LABELS := {
 	PRECIPITATE: "du trait par réaction",
 	SHIMMER: "chatoiement",
 	SPECTRUM: "dégâts par autre élément",
+	TRIAD_VOLLEY: "dégâts par projectile en plus",
 	CONJUNCTION: "conjonction",
 	ARMING: "temps d'armement",
 	TRIGGER: "rayon de déclenchement",
@@ -784,6 +785,7 @@ const AGREEMENT := {
 	PRECIPITATE: "fs",
 	SHIMMER: "ms",
 	SPECTRUM: "mp",
+	TRIAD_VOLLEY: "mp",
 	CONJUNCTION: "fs",
 	ARMING: "ms",
 	TRIGGER: "ms",
@@ -1334,6 +1336,9 @@ const PRECIPITATE := "precipitate"
 const SHIMMER := "shimmer"
 const SPECTRUM := "spectrum"
 const CONJUNCTION := "conjunction"
+## La Triade (décision de l'utilisateur, jalon 54) : un projectile en plus n'ajoute pas de comète, il la
+## fait frapper ce pourcentage plus fort — une ligne de son nœud.
+const TRIAD_VOLLEY := "triad_volley"
 ## Les Glyphes (jalon 49, à la place de la Catalyse). L'armement en secondes et le
 ## déclenchement en pixels, que la forme apporte (`Skill.SHAPE_NUMBERS`) et que deux nœuds
 ## simples raccourcissent ou élargissent ; le Palimpseste et l'Entrelacs en points de
@@ -1883,6 +1888,8 @@ const EQUILIBRIUM_TIME := 3.0
 ## Un même ennemi ne réagit qu'une fois dans ce délai (jalon 49) : deux glyphes qui éclatent
 ## ensemble, ou le trait et son écho, le referaient réagir sur-le-champ.
 const REACTION_GUARD := 0.5
+## L'Amplification des sorts, que son dessin reconnaît (jalon 54).
+const AMPLIFY_SKILL := "spell_amplification"
 ## Les Glyphes (jalon 49) : le rythme et la part d'un coup du triangle et des fils de
 ## l'Entrelacs, l'épaisseur d'un fil ; le pas et la force du Leurre ; l'attente de la
 ## Signature ; la part d'un coup par élément du Sceau, son rayon en part du cercle, et l'écart
@@ -2411,6 +2418,7 @@ var equilibrium := 0.0
 var precipitate := 0.0
 var shimmer := 0.0
 var spectrum := 0.0
+var triad_volley := 0.0
 var conjunction := 0.0
 var arming := 0.0
 var trigger := 0.0

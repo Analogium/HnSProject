@@ -302,7 +302,8 @@ func _draw_slot(index: int) -> void:
 
 	var skill := _player.bar.skill_of(index)
 	if skill != null:
-		SkillIcon.draw_into(self, r, skill)
+		# L'Incarnation : l'icône prend l'élément incarné.
+		SkillIcon.draw_into(self, r, skill, Color.WHITE, _player.lit_incarnation(skill.id))
 		if _player.mana < _player.cost_of(skill):
 			draw_rect(r, COOLDOWN)
 

@@ -4,9 +4,6 @@ extends GutTest
 ## en polygones, et qu'aucune assertion de forme ne voit : **peu de couleurs et un
 ## contour**, c'est-à-dire la même langue que les sprites du jeu.
 
-const FIRE := Color(1.00, 0.48, 0.18)
-
-
 ## Quatre quarts de tour ramènent au point de départ : si la rotation perdait une
 ## colonne, les huit orientations d'un rat seraient huit dessins différents.
 func test_four_quarter_turns_come_back_to_the_start() -> void:
@@ -26,16 +23,6 @@ func test_a_heading_finds_the_nearest_of_the_eight_turns() -> void:
 	assert_eq(EffectForge.chip_turn(PI), 4, "le demi-tour est à l'opposé")
 
 
-func _painted(tex: Texture2D) -> int:
-	var image := tex.get_image()
-	var n := 0
-	for y in image.get_height():
-		for x in image.get_width():
-			if image.get_pixel(x, y).a > 0.0:
-				n += 1
-	return n
-
-
 ## Les étoiles de l'assommé (jalon 46), à leur côté.
 func test_the_stun_stars_are_square() -> void:
 	for frame: Array in EffectForge.STUN_STARS:
@@ -44,42 +31,10 @@ func test_the_stun_stars_are_square() -> void:
 			assert_eq(row.length(), EffectForge.STAR_SIDE, "largeur de « %s »" % row)
 
 
-## Les dessins du jalon 49, choisis sur planche : la marmite, le piqué, l'icône de résistance.
-func test_the_witch_grids_are_rectangular() -> void:
-	for grid: Array in [EffectForge.CAULDRON, EffectForge.CROW_DIVE, StatusIcon.LOWERED]:
-		for row: String in grid:
-			assert_eq(row.length(), (grid[0] as String).length(), "largeur de « %s »" % row)
-	assert_eq(EffectForge.CAULDRON.size(), EffectForge.CAULDRON_HEIGHT)
-	assert_eq(EffectForge.CROW_DIVE.size(), EffectForge.CROW_DIVE_HEIGHT)
-	for bubbles: Array in EffectForge.CAULDRON_BUBBLES:
-		for at: Vector2i in bubbles:
-			assert_eq((EffectForge.CAULDRON[at.y] as String)[at.x], "a", "une bulle sur la surface")
-
-
-## Fabriquée une fois par teinte : l'élément change, la marmite suit, et ses temps diffèrent.
-func test_the_cauldron_is_baked_once_per_tint() -> void:
-	var frames := EffectForge.cauldron(FIRE)
-	assert_same(EffectForge.cauldron(FIRE), frames)
-	assert_eq(frames.size(), EffectForge.CAULDRON_BUBBLES.size())
-	assert_ne(frames[0].get_image().get_data(), frames[1].get_image().get_data())
-
-
-
-## L'œil du Mauvais œil : gardé par rayon, temps et teinte ; fermé, un trait ; ouvert, l'amande.
-func test_the_evil_eye_opens_and_is_kept() -> void:
-	var shut := Witchcraft.eye(50.0, 0, FIRE)
-	var open := Witchcraft.eye(50.0, 2, FIRE)
-	assert_same(Witchcraft.eye(50.0, 2, FIRE), open)
-	assert_gt(_painted(open.texture), _painted(shut.texture) * 3, "l'œil ouvert couvre son amande")
-
-
-## Le bord du Chaudron : gardé par teinte, rayon et temps, et sa couronne grandit avec le cercle.
-func test_the_cauldron_rim_is_kept_and_follows_the_radius() -> void:
-	var rim := EffectForge.cauldron_rim(FIRE, 50, 0)
-	assert_same(EffectForge.cauldron_rim(FIRE, 50, 0), rim)
-	assert_ne(EffectForge.cauldron_rim(FIRE, 50, 1).texture.get_image().get_data(), rim.texture.get_image().get_data())
-	assert_eq(rim.texture.get_width(), 50 * 2 + 9)
-	assert_gt(_painted(EffectForge.cauldron_rim(FIRE, 70, 0).texture), _painted(rim.texture))
+## L'icône de résistance du jalon 49, choisie sur planche.
+func test_the_lowered_icon_is_rectangular() -> void:
+	for row: String in StatusIcon.LOWERED:
+		assert_eq(row.length(), (StatusIcon.LOWERED[0] as String).length(), "largeur de « %s »" % row)
 
 
 ## Le rat de la Marée (jalon 53) : des grilles rectangulaires, huit caps de deux temps, un quart

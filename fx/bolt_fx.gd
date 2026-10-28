@@ -170,6 +170,11 @@ static func show_on(host: Node3D, nature: int, orb := false, orbits := false) ->
 	return fx
 
 
+## Un simple projectile, qui file droit : le Projectile élémentaire, ses gouttes et ses comètes.
+func straighten() -> void:
+	_look.amp = 0.0
+
+
 ## Un éclat des Esquilles : tout en petit, traînée comprise.
 func shrink() -> void:
 	scale = Vector3.ONE * SHARD

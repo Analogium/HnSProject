@@ -344,10 +344,10 @@ Jamais pris : Envolée, Allègement, Prestesse, Gravitation, Branle, Éclipse.
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 95,8/s | 111/s |
-| meilleur au paquet | Fulgurance 1, Ricochet 2, Prisme 2, Arcanes 4, Affinité croisée 3, Prestidigitation 3, Spectre 2, Électrochoc 1, Précipité 2 | 1249/s ×13,0 | 772/s ×6,97 |
-| meilleur au duel | Fulgurance 1, Ricochet 1, Prisme 2, Arcanes 5, Affinité croisée 3, Spectre 2, Prestidigitation 3, Équilibre 3 | 1039/s ×10,8 | 1139/s ×10,3 |
-| Triade au paquet (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Prestidigitation 3, Équilibre 3, Électrochoc 4 | 520/s ×5,42 | 337/s ×3,04 |
-| Triade au duel (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Équilibre 3, Prestidigitation 3, Électrochoc 4, Conjonction 1 | 520/s ×5,42 | 340/s ×3,07 |
+| meilleur au paquet | Fulgurance 1, Ricochet 2, Prisme 2, Spectre 2, Prestidigitation 3, Arcanes 5, Affinité croisée 3, Électrochoc 1, Précipité 1 | 1238/s ×12,9 | 962/s ×8,68 |
+| meilleur au duel | Fulgurance 1, Ricochet 1, Prisme 2, Arcanes 5, Affinité croisée 3, Spectre 2, Prestidigitation 3, Équilibre 3 | 1041/s ×10,9 | 1293/s ×11,7 |
+| Triade au paquet (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Prestidigitation 3, Équilibre 3, Électrochoc 4 | 504/s ×5,27 | 337/s ×3,04 |
+| Triade au duel (transformation) | Arcanes 5, Triade 1, Affinité croisée 3, Équilibre 3, Prestidigitation 3, Électrochoc 4, Conjonction 1 | 504/s ×5,27 | 340/s ×3,07 |
 
 Jamais pris : Chatoiement.
 

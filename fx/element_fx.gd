@@ -138,6 +138,18 @@ static func warm(host: Node3D) -> void:
 	SteelFx.sword(probe, probe, steel).scale = Vector3.ONE * 0.001
 	SteelFx.whirl(probe, steel, 10.0)
 	SteelFx.wave(probe, steel, 10.0)
+	# La sorcière : le cercle additionné et le froid mêlé, le Sceau, un fil et le triangle, le chaudron (sa fonte
+	# réduite à un point, comme le Brasero), le corbeau (son shader de vol, réduit aussi), l'œil couché.
+	var witch: Array[int] = [DamageType.Kind.FIRE, DamageType.Kind.COLD, DamageType.Kind.LIGHTNING]
+	# Un glyphe se pose à côté du sien : sur la sonde, sous un repère à elle.
+	var mark := Node3D.new()
+	probe.add_child(mark)
+	GlyphFx.trace(mark, DamageType.Kind.FIRE, 10.0, 0.0)
+	GlyphFx.trace(mark, DamageType.Kind.COLD, 10.0, 0.0, true)
+	GlyphFx.weave(probe, [at, at + Vector3.RIGHT, at + Vector3.BACK], witch, probe)
+	CauldronFx.set_down(probe, witch, 10.0).body.scale = Vector3.ONE * 0.001
+	CrowFx.perch(probe).scale = Vector3.ONE * 0.001
+	WitchFx.evil_eye(probe, DamageType.Kind.FIRE, 10.0, 0.2)
 	made.append_array(probe.find_children("*", "", true, false))
 	for node in host.get_viewport().get_children():
 		if node not in rooted:

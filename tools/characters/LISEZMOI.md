@@ -367,6 +367,19 @@ Pièges payés :
 - **Vider l'animation du repos** (`animation_data_clear`) laisse les os où ils sont ;
   changer leur `rotation_mode` les renvoie à la pose de liaison.
 
+### Un corps qui n'est pas un personnage (jalon 54)
+
+Le corbeau du Familier et la marmite du Chaudron passent par les mêmes étapes 1 et 2, sans
+`<id>.json` ni gréage : leur image source (prompt « Torchlight » sur fond vert, rangé dans
+`tools/fx_textures.py`, `WITCH_BODIES`), son détourage
+(`model_3d.silhouette`) dans `<id>/3d/model_front.png`, puis TRELLIS.2 (`trellis_client.py`,
+`blender/bake_color.py`) ou Stable Fast 3D (`sf3d_client.py`, `blender/project.py`), et le
+`model.glb` recopié dans `art/models/`. **Le corbeau** (TRELLIS.2, graine 7) n'a pas de
+squelette — Mixamo ne gréé pas un oiseau : ses ailes battent dans un shader de sommets
+(`fx/crow_flap.gdshader`). **La marmite** (Stable Fast 3D, graine 7 : TRELLIS.2 avait épuisé
+son quota) sort **penchée** d'une image vue en plongée : `CauldronFx.TILT` la redresse, mesuré
+sur ses sommets (le bord le plus à plat).
+
 ## Les gestes d'attaque (jalon 47)
 
 `STRIKES`, dans l'outil : pour chaque geste, coude et poignet armés en cinq temps (face et

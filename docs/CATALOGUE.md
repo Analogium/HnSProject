@@ -806,8 +806,8 @@ rempli depuis le jalon 41, celui du Vive lame depuis le jalon 50.
 | Électrochoc | Projectile élémentaire | — | 4 | +15 % effet de l'engourdi |
 | Affinité croisée | Projectile élémentaire | Arcanes (1) | 3 | +8 % de dégâts accrus contre les embrasés · +8 % de dégâts accrus contre les transis · +8 % de dégâts accrus contre les engourdis |
 | Ricochet | Projectile élémentaire | Fulgurance (1) | 2 | +1 nombre de rebonds |
-| Prisme | Projectile élémentaire | Ricochet (1) | 2 | +1 nombre de projectiles · -15 % de dégâts atténués |
-| Triade | Projectile élémentaire | Arcanes (2) ou Électrochoc (2) | 1 | +30 rayon · +25 % de temps du geste accru |
+| Prisme | Projectile élémentaire | Ricochet (1) | 2 | +1 nombre de projectiles · -10 % de dégâts atténués |
+| Triade | Projectile élémentaire | Arcanes (2) ou Électrochoc (2) | 1 | +30 rayon · +25 % de temps du geste accru · +10 % dégâts par projectile en plus |
 | Prestidigitation | Projectile élémentaire | — | 3 | -8 % de temps du geste réduit |
 | Équilibre | Projectile élémentaire | Affinité croisée (1) | 3 | +5 % résistance ouverte |
 | Précipité | Projectile élémentaire | Électrochoc (1) | 2 | +20 % du trait par réaction |
@@ -869,7 +869,7 @@ rempli depuis le jalon 41, celui du Vive lame depuis le jalon 50.
 | Écho fidèle | Familier | — | 5 | +6 % dégâts rejoués |
 | Frugalité | Familier | — | 4 | -10 % de mana drainé réduit |
 | Ailes noires | Familier | — | 5 | +2 % de vitesse accrue |
-| Œil du corbeau | Familier | Écho fidèle (1) | 4 | +15 rayon de chasse |
+| Œil du corbeau | Familier | Écho fidèle (1) | 4 | +40 rayon de chasse |
 | Ressassement | Familier | Écho fidèle (2) | 2 | +1 nombre d'échos · -10 % dégâts rejoués |
 | Contre-chant | Familier | Frugalité (2) ou Ressassement (1) | 1 | +1 élément d'avance de l'écho |
 | Rémiges | Familier | — | 3 | +0.1 écho avancé |

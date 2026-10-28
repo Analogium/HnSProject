@@ -88,12 +88,33 @@ static func factor(tex: Texture2D, side: float) -> int:
 	return maxi(int(floor(side / biggest)), 1)
 
 
+## L'icône passée dans une autre nature (l'Incarnation) : chaque pixel coloré prend la teinte de cette
+## nature, sa saturation et sa clarté gardées — multipliée par sa couleur, elle sortait sale. Gardée.
+static func of_nature(skill: Skill, nature: int) -> Texture2D:
+	var base := texture(skill)
+	if base == null or nature < 0 or nature == skill.nature:
+		return base
+	var key := "%s@%d" % [skill.id, nature]
+	if not _cache.has(key):
+		var img := base.get_image()
+		var hue: float = DamageType.COLORS[nature].h
+		for y in img.get_height():
+			for x in img.get_width():
+				var c := img.get_pixel(x, y)
+				if c.s > 0.12:
+					c.h = hue
+					img.set_pixel(x, y, c)
+		_cache[key] = ImageTexture.create_from_image(img)
+	return _cache[key]
+
+
 ## Pose l'icône au centre de ce cadre, agrandie d'un **facteur entier** — ou, dans un
 ## cadre plus petit qu'elle, réduite d'un **diviseur entier** (une ligne sur deux, pas
 ## une sur trois ici et deux là) ; à défaut d'image, le disque de la couleur de la nature.
-static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill, tint := Color.WHITE) -> void:
+## `nature` : celle qu'elle prend (`of_nature()`), -1 pour la sienne.
+static func draw_into(canvas: CanvasItem, r: Rect2, skill: Skill, tint := Color.WHITE, nature := -1) -> void:
 	var side := minf(r.size.x, r.size.y)
-	var tex := texture(skill)
+	var tex := of_nature(skill, nature)
 	if tex == null:
 		canvas.draw_circle(r.get_center(), side * 0.30, DamageType.COLORS[skill.nature])
 		return

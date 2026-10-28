@@ -196,7 +196,7 @@ script = ExtResource("4_ligne")
 stat = "damage"
 percentage = true
 more = true
-value_per_point = -15.0
+value_per_point = -10.0
 
 [sub_resource type="Resource" id="N_elemental_projectile_prism"]
 script = ExtResource("3_noeud")
@@ -222,19 +222,24 @@ stat = "use_time"
 percentage = true
 value_per_point = 25.0
 
+[sub_resource type="Resource" id="L_elemental_projectile_triad_2"]
+script = ExtResource("4_ligne")
+stat = "triad_volley"
+value_per_point = 10.0
+
 [sub_resource type="Resource" id="N_elemental_projectile_triad"]
 script = ExtResource("3_noeud")
 id = "elemental_projectile_triad"
 name = "Triade"
 icon = ExtResource("icon_elemental_projectile_triad")
-description = "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. En échange, le geste est plus lent."
+description = "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. Un projectile en plus n'ajoute pas de comète : il la fait frapper plus fort. En échange, le geste est plus lent."
 position = Vector2i(-1, -1)
 parents = Dictionary[String, int]({
 "elemental_projectile_arcana": 2,
 "elemental_projectile_electroshock": 2
 })
 points_max = 1
-lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_triad_0"), SubResource("L_elemental_projectile_triad_1")])
+lines = Array[ExtResource("4_ligne")]([SubResource("L_elemental_projectile_triad_0"), SubResource("L_elemental_projectile_triad_1"), SubResource("L_elemental_projectile_triad_2")])
 transforms = true
 shape = 43
 
@@ -410,7 +415,7 @@ script = ExtResource("3_noeud")
 id = "trinity_dissonance"
 name = "Dissonance"
 icon = ExtResource("icon_trinity_dissonance")
-description = "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre."
+description = "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre — tout sort élémentaire compte, même sans frapper."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "trinity_scale": 1
@@ -637,7 +642,7 @@ lines = Array[ExtResource("4_ligne")]([SubResource("L_familiar_black_wings_0")])
 [sub_resource type="Resource" id="L_familiar_raven_eye_0"]
 script = ExtResource("4_ligne")
 stat = "seek_radius"
-value_per_point = 15.0
+value_per_point = 40.0
 
 [sub_resource type="Resource" id="N_familiar_raven_eye"]
 script = ExtResource("3_noeud")

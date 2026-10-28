@@ -34,6 +34,7 @@ var _rewritten := false
 ## Les éléments versés au Sceau, le sien compris.
 var _poured := {}
 var _out := false
+var _fx: GlyphFx
 
 
 ## `owner` : le joueur, ou le corbeau qui rejoue — chacun sa limite.
@@ -62,7 +63,7 @@ static func place(
 	DashTrail.layer(parent).add_child(g)
 	Settings.veil(g, Settings.SPELLS)
 	g.global_position = point
-	ElementFx.area(g, DamageType.COLORS[cast.nature], cast.radius)
+	g._fx = GlyphFx.trace(g, cast.nature, g.reach() if as_seal else cast.trigger, cast.arming, as_seal)
 	return g
 
 
@@ -73,6 +74,7 @@ static func pour_all(player: Player, nature: int) -> void:
 	for g in traced:
 		if g._player == player and g.sealed and not g._out:
 			g._poured[nature] = true
+			g._fx.pour(nature)
 
 
 func _enter_tree() -> void:
@@ -139,6 +141,7 @@ func _burst() -> void:
 	var hit := _cast.echoed(1.0)
 	hit.status_chance_increase += SkillStats.SURE_STATE
 	Targets.strike_circle(world, global_position, reach(), hit, states)
+	_fx.burst([element] as Array[int], reach())
 	_go(true)
 	# La Réécriture : le piège se retrace aussitôt, dans l'élément suivant. Après son départ,
 	# pour ne pas compter contre la limite.
@@ -162,12 +165,13 @@ func _link() -> void:
 	var kin := _kin()
 	if kin.is_empty() or kin[0] != self:
 		return
-	if kin.size() == DamageType.ELEMENTS.size() and _all_elements(kin):
+	var woven := kin.size() == DamageType.ELEMENTS.size() and _all_elements(kin)
+	if woven:
 		_triangle(kin)
 	if _cast.entwine > 0.0 and kin.size() >= 2:
 		for i in kin.size():
 			for j in range(i + 1, kin.size()):
-				_thread(kin[i], kin[j])
+				_thread(kin[i], kin[j], not woven)
 
 
 static func _all_elements(kin: Array[Glyph]) -> bool:
@@ -182,12 +186,17 @@ static func _all_elements(kin: Array[Glyph]) -> bool:
 func _triangle(kin: Array[Glyph]) -> void:
 	var corners := PackedVector2Array()
 	var middle := Vector3.ZERO
+	var points: Array[Vector3] = []
+	var natures: Array[int] = []
 	for g in kin:
+		points.append(g.global_position)
+		natures.append(g.element)
 		corners.append(Flat.xz(g.global_position))
 		middle += g.global_position / float(kin.size())
 	var span := 0.0
 	for g in kin:
 		span = maxf(span, middle.distance_to(g.global_position))
+	GlyphFx.weave(get_parent(), points, natures, self)
 	var strike := _cast.echoed(SkillStats.TRIANGLE_PART)
 	strike.blend(DamageType.ELEMENTS)
 	var parts := strike.roll(Game.rng)
@@ -197,8 +206,10 @@ func _triangle(kin: Array[Glyph]) -> void:
 
 
 ## Un fil de l'Entrelacs : ce qui le traverse, dans les éléments de ses deux bouts. La Trame y
-## pose leurs états à coup sûr.
-func _thread(a: Glyph, b: Glyph) -> void:
+## pose leurs états à coup sûr. `shown` : faux sur un bord que le triangle dessine déjà.
+func _thread(a: Glyph, b: Glyph, shown: bool) -> void:
+	if shown:
+		GlyphFx.thread(get_parent(), a.global_position, b.global_position, a.element, b.element, self)
 	var strike := _cast.echoed(_cast.entwine * 0.01)
 	var natures: Array[int] = [a.element]
 	if b.element != a.element:
@@ -225,6 +236,7 @@ func _seal_burst() -> void:
 	var natures := _natures()
 	var blast := _cast.echoed(SkillStats.SEAL_PART * float(natures.size()))
 	blast.blend(natures)
+	_fx.burst(natures, reach())
 	Targets.strike_circle(get_world_3d(), global_position, reach(), blast, states)
 	if _cast.counterseal <= 0.0:
 		return

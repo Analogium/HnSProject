@@ -53,6 +53,11 @@
                                     fx/steel_blood.png (le sol frappé, le sang de la Gerbe : des décals),
                                     fx/steel_furrow.png (le Sillon d'acier, un décal en long) et fx/steel_glint.png
                                     (l'éclat sur l'acier) : des tirages de Qwen-Image sur fond noir
+    tools/fx_textures.py witch      le manuel de la sorcière : fx/witch_glyph.png et fx/witch_seal.png (le cercle
+                                    runique des Glyphes, `GlyphFx`, et le Sceau aux trois logements), fx/witch_thread.png
+                                    (un fil de lumière en bande raccordée en x : l'Entrelacs, le triangle), fx/witch_brew.png (ce qui bout
+                                    dans le Chaudron, raccordable) et fx/witch_vapor.png (sa vapeur) : des tirages de
+                                    Qwen-Image, en clarté seule — la rampe de l'élément les colore
     tools/fx_textures.py iron       fx/brazier_iron.png et fx/brazier_iron_n.png, le fer rouillé
                                     du Brasero (`BrazierFx`) : un scan de Poly Haven (CC0),
                                     couleur et relief (convention OpenGL, celle de Godot)
@@ -190,6 +195,34 @@ STEEL = {
                "else in the frame" + BLACK, 7),
     "blood": ("top-down photograph of a splatter of dark red blood on the ground, a radial burst of droplets and streaks "
               "spraying outward from the center" + BLACK + ", centered", 7),
+}
+# Une graine chacun (7) : ComfyUI tournait à 25 s le pas l'éditeur ouvert. Le Sceau, tiré pour voir, avait
+# ses trois logements aux coins du triangle, sur l'anneau : `GlyphFx.SOCKETS` les y suit, mesurés.
+WITCH = {
+    "glyph": ("top-down view of a glowing witch's magic circle, a ring of arcane runes and occult symbols around an "
+              "inner triangle sigil, thin lines drawn in pure white light" + BLACK + ", centered", 7),
+    "seal": ("top-down view of a large glowing occult seal, three small empty circles placed at the corners of a "
+             "triangle inside a ring of arcane witch runes, drawn in pure white light" + BLACK + ", centered", 7),
+    "thread": ("a photograph of a horizontal thin strand of glowing white magical energy, a twisted thread of light "
+               "with tiny sparkles, running from left to right across the frame" + BLACK, 7),
+    "brew": ("top-down photograph of the surface of a boiling magic potion, glowing liquid with many round bubbles "
+             "bursting and swirling foam, seamless tileable texture, fills the whole frame, high detail", 7),
+    "vapor": ("a photograph of a single wisp of glowing magical vapor rising and curling, soft swirling white steam"
+              + BLACK + ", centered", 7),
+}
+# Les images sources des deux corps de la sorcière, tirées une fois pour un modèle (tools/characters/LISEZMOI.md,
+# « Un corps qui n'est pas un personnage ») : graine 7 chacune.
+WITCH_BODIES = {
+    "crow": ("polished stylized 3d game creature render in the style of Torchlight Infinite, hand-painted textures, "
+             "saturated colors, clean readable shapes, soft rim light, front view, facing the viewer, a black raven "
+             "familiar flying with its wings spread wide open to both sides, symmetrical, glossy blue-black feathers, "
+             "sharp grey beak, small glowing violet eyes, tail fanned out, isolated on a solid flat pure chroma key "
+             "green background (#00FF00), no floor, no shadow, no text", 7),
+    "cauldron": ("polished stylized 3d game prop render in the style of Torchlight Infinite, hand-painted textures, "
+                 "saturated colors, clean readable shapes, soft rim light, three-quarter view from slightly above, an "
+                 "empty witch's cauldron, a round pot-bellied black cast iron cauldron standing on three short clawed "
+                 "legs, thick rolled rim, two small ring handles, dark empty inside, isolated on a solid flat pure "
+                 "chroma key green background (#00FF00), no floor, no shadow, no text", 7),
 }
 ICE = ("macro photograph of clear blue glacier ice, deep cracks and trapped air bubbles, seamless tileable texture, flat "
        "even lighting, fills the whole frame, high detail", 11)
@@ -420,6 +453,28 @@ def cmd_steel():
     save(ground_decal(qwen(*STEEL["blood"]), solid=False, shade=0.6), "steel_blood.png")
 
 
+def clarity(rgb):
+    """La clarté seule, le noir de fond ramené à 0 : la rampe de l'élément colore."""
+    lum = np.clip((rgb.max(-1) - 0.04) / 0.96, 0.0, 1.0)
+    return np.repeat(lum[..., None], 3, -1)
+
+
+def sigil(rgb):
+    """Un cercle en 512², fondu à son bord : il tourne."""
+    c = clarity(np.asarray(Image.fromarray((rgb * 255).astype(np.uint8)).resize((SIDE, SIDE), Image.LANCZOS),
+                           np.float32) / 255.0)
+    y, x = np.mgrid[0:SIDE, 0:SIDE] / (SIDE - 1) * 2.0 - 1.0
+    return c * np.clip((1.0 - np.sqrt(x * x + y * y)) / 0.04, 0.0, 1.0)[..., None]
+
+
+def cmd_witch():
+    save(sigil(qwen(*WITCH["glyph"])), "witch_glyph.png")
+    save(sigil(qwen(*WITCH["seal"])), "witch_seal.png")
+    save(frost_wind(clarity(qwen(*WITCH["thread"]))), "witch_thread.png")
+    save(clarity(tileable(square(Image.fromarray((qwen(*WITCH["brew"]) * 255).astype(np.uint8))))), "witch_brew.png")
+    save(clarity(cell(qwen(*WITCH["vapor"]), (0.1, 0.05, 0.9, 0.85), 0.6)), "witch_vapor.png")
+
+
 def cmd_fire_wind():
     save(frost_wind(qwen(*FIRE_WIND)), "fire_wind.png")
 
@@ -488,4 +543,4 @@ if __name__ == "__main__":
     {"cracks": cmd_cracks, "serpent": cmd_serpent, "fire": cmd_fire, "iron": cmd_iron, "lightning": cmd_lightning,
      "frost": cmd_frost, "streak": cmd_streak, "storm": cmd_storm, "ice": cmd_ice,
      "nova": cmd_nova, "fire_wind": cmd_fire_wind, "vortex": cmd_vortex, "orb": cmd_orb, "holy": cmd_holy, "rot": cmd_rot,
-     "steel": cmd_steel}[sys.argv[1]]()
+     "steel": cmd_steel, "witch": cmd_witch}[sys.argv[1]]()

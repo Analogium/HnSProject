@@ -1181,6 +1181,26 @@ func test_a_skill_without_image_has_no_icon() -> void:
 	)
 
 
+## L'Incarnation : l'icône passée dans l'élément incarné prend sa teinte, garde sa clarté, et se garde ;
+## dans sa propre nature, c'est la même.
+func test_an_incarnated_icon_takes_the_element_hue() -> void:
+	var skill := SkillCatalog.by_id("spell_amplification")
+	SkillIcon.forget()
+	var fire := SkillIcon.of_nature(skill, DamageType.Kind.FIRE)
+	assert_same(SkillIcon.of_nature(skill, DamageType.Kind.FIRE), fire, "gardée")
+	assert_same(SkillIcon.of_nature(skill, skill.nature), SkillIcon.texture(skill), "sa nature, son icône")
+	var before := SkillIcon.texture(skill).get_image()
+	var after := fire.get_image()
+	var hue: float = DamageType.COLORS[DamageType.Kind.FIRE].h
+	var wrong := 0
+	for y in after.get_height():
+		for x in after.get_width():
+			var c := after.get_pixel(x, y)
+			if absf(c.v - before.get_pixel(x, y).v) > 0.02 or (c.s > 0.12 and absf(c.h - hue) > 0.02):
+				wrong += 1
+	assert_eq(wrong, 0)
+
+
 ## Une illustration générée fait mille pixels de côté, pas vingt-quatre. Sans
 ## cette réduction elle sortirait de sa case et recouvrirait ses voisines.
 func test_a_large_image_is_brought_back_to_the_frame() -> void:

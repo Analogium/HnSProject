@@ -39,6 +39,7 @@ func before_each() -> void:
 ## joueur du fichier suivant tirerait sans que rien ne le lui demande.
 func after_each() -> void:
 	Input.action_release(ACTION)
+	Input.action_release("skill_1")
 	Game.grab_ui_input(self, false)
 
 
@@ -48,9 +49,9 @@ func _record(_bolt: Node) -> void:
 
 ## Un appui qui traverse l'arbre d'entrées, comme au clavier. `Input.action_press`
 ## baisse la touche sans événement : c'est le clic que l'interface a pris.
-func _press() -> void:
+func _press(action := ACTION) -> void:
 	var event := InputEventAction.new()
-	event.action = ACTION
+	event.action = action
 	event.pressed = true
 	Input.parse_input_event(event)
 
@@ -76,6 +77,34 @@ func test_the_held_key_recasts_at_cooldown_pace() -> void:
 			_frames[i] - _frames[i - 1], cooldown, cooldown + 1,
 			"le tir %d part une recharge après le précédent" % (i + 1)
 		)
+
+
+## Deux touches tenues : la dernière enfoncée a la main ; relâchée, la première reprend. Dans l'ordre de
+## la barre, la case de plus petit numéro affamait l'autre.
+func test_the_last_held_key_takes_over_then_hands_back() -> void:
+	_p.bar.put(0, SkillCatalog.ID_BOLT)
+	var cooldown := _cooldown_in_frames()
+	_press("skill_1")
+	await wait_physics_frames(cooldown * 2)
+	_press()
+	var casts := [0, 0]
+	for frame in cooldown * 4:
+		var before := _p._recharges.duplicate()
+		await wait_physics_frames(1)
+		for i in 2:
+			if _p._recharges[i] > before[i]:
+				casts[i] += 1
+	assert_gt(casts[1], 1, "la dernière enfoncée relance")
+	assert_eq(casts[0], 0, "la première attend, plus petite case comprise")
+	Input.action_release(ACTION)
+	await wait_physics_frames(2)
+	var resumed := 0
+	for frame in cooldown * 3:
+		var before: float = _p._recharges[0]
+		await wait_physics_frames(1)
+		if _p._recharges[0] > before:
+			resumed += 1
+	assert_gt(resumed, 1, "relâchée, la première reprend")
 
 
 func test_the_released_key_no_longer_recasts() -> void:

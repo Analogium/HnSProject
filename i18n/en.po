@@ -4061,8 +4061,8 @@ msgstr "One more bolt per point, in a fan. Each bolt of the volley takes the nex
 msgid "Triade"
 msgstr "Triad"
 
-msgid "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. En échange, le geste est plus lent."
-msgstr "Three comets, one per element, form around you and meet at the aimed point. On the way, each pierces what it crosses and strikes it with its element; where they meet, they burst together: the hit carries all three elements, a third each, and can inflict all three states. In exchange, the cast is slower."
+msgid "Trois comètes, une par élément, naissent autour de vous et se rejoignent au point visé. En route, chacune perce ce qu'elle traverse et le frappe de son élément ; à la jonction, elles éclatent ensemble : le coup porte les trois éléments, un tiers chacun, et peut poser les trois états. Un projectile en plus n'ajoute pas de comète : il la fait frapper plus fort. En échange, le geste est plus lent."
+msgstr "Three comets, one per element, form around you and meet at the aimed point. On the way, each pierces what it crosses and strikes it with its element; where they meet, they burst together: the hit carries all three elements, a third each, and can inflict all three states. An extra projectile adds no comet: it makes the Triad hit harder. In exchange, the cast is slower."
 
 msgid "Surpuissance"
 msgstr "Overpower"
@@ -4103,8 +4103,8 @@ msgstr "When the amplification ends, it bursts around you in lightning. Its dama
 msgid "Trinité"
 msgstr "Trinity"
 
-msgid "Un sort qui frappe dans un autre élément que le sort précédent donne une charge d'Harmonie, qui renforce vos sorts. Répéter le même élément n'en donne pas."
-msgstr "A damaging spell of a different element than the previous one grants a Harmony charge, which empowers your spells. Repeating the same element grants none."
+msgid "Un sort élémentaire, ou tout sort qui frappe, dans un autre élément que le sort précédent donne une charge d'Harmonie, qui renforce vos sorts. Répéter le même élément n'en donne pas."
+msgstr "An elemental spell, or any damaging spell, of a different element than the previous one grants a Harmony charge, which empowers your spells. Repeating the same element grants none."
 
 msgid "Harmonie"
 msgstr "Harmony"
@@ -4112,8 +4112,8 @@ msgstr "Harmony"
 msgid "Familier"
 msgstr "Familiar"
 
-msgid "Un corbeau qui rejoue vos sorts, moins fort, un instant après."
-msgstr "A raven that recasts your spells, weaker, a moment later."
+msgid "Un corbeau qui rejoue vos sorts élémentaires, moins fort, un instant après."
+msgstr "A raven that recasts your elemental spells, weaker, a moment later."
 
 msgid "effet de l'engourdi"
 msgstr "numb effect"
@@ -4216,8 +4216,8 @@ msgstr "Each Harmony charge protects you from fire, cold and lightning."
 msgid "Les charges d'Harmonie tiennent plus longtemps."
 msgstr "Harmony charges last longer."
 
-msgid "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre."
-msgstr "One more Harmony charge at most, per point. In exchange, a spell that repeats the previous one's element loses them all."
+msgid "Une charge d'Harmonie de plus au plafond, par point. En échange, un sort qui répète l'élément du précédent les fait toutes perdre — tout sort élémentaire compte, même sans frapper."
+msgstr "One more Harmony charge at most, per point. In exchange, a spell that repeats the previous one's element loses them all — any elemental spell counts, even one that hits nothing."
 
 msgid "Chaque sort qui donne ou ravive l'Harmonie raccourcit les recharges en cours de vos compétences à recharge."
 msgstr "Each spell that grants or refreshes Harmony shortens the running cooldowns of your skills that have one."
@@ -6861,6 +6861,9 @@ msgstr "shimmer"
 
 msgid "dégâts par autre élément"
 msgstr "damage per other element"
+
+msgid "dégâts par projectile en plus"
+msgstr "damage per extra projectile"
 
 msgid "conjonction"
 msgstr "conjunction"

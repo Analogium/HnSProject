@@ -1170,6 +1170,27 @@ func test_a_node_says_what_a_mechanic_ignores() -> void:
 	assert_eq(_values(guidance.lines, "sans effet avec"), PackedStringArray(["Stase"]))
 
 
+## Le Sceau n'éclate pas au contact et ne se relie pas (demande de l'utilisateur, jalon 54).
+func test_a_node_says_what_the_seal_ignores() -> void:
+	var book := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	var cell := book.base.manual.cell_of("glyph")
+	for id: String in ["glyph_calligraphy", "glyph_engraving", "glyph_palimpsest", "glyph_entwine", "glyph_lure"]:
+		var sheet := _panel._node_sheet(book.manual, cell, cell.node_of(id))
+		assert_eq(_values(sheet.lines, "sans effet avec"), PackedStringArray(["Sceau"]), id)
+	var ink := _panel._node_sheet(book.manual, cell, cell.node_of("glyph_ink"))
+	assert_eq(_values(ink.lines, "sans effet avec").size(), 0, "il frappe plus fort, Sceau compris")
+
+
+## La Triade lit le nombre de projectiles (en dégâts) ; le Spectre, toujours pas.
+func test_the_triad_no_longer_ignores_the_prism() -> void:
+	var book := Item.new(Character.CLASSES[Character.WITCH]["manual"])
+	var cell := book.base.manual.cell_of("elemental_projectile")
+	var prism := _panel._node_sheet(book.manual, cell, cell.node_of("elemental_projectile_prism"))
+	assert_eq(_values(prism.lines, "sans effet avec").size(), 0)
+	var spectrum := _panel._node_sheet(book.manual, cell, cell.node_of("elemental_projectile_spectrum"))
+	assert_eq(_values(spectrum.lines, "sans effet avec"), PackedStringArray(["Triade"]))
+
+
 ## Ce qu'un échange coûte s'écrit en rouge ; ce qu'il donne, non.
 func test_a_trade_writes_its_loss_in_red() -> void:
 	var book := Item.new(ItemCatalog.by_id("manual_fire"))

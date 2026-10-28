@@ -2,7 +2,7 @@ class_name Familiar
 extends Node3D
 
 ## Le Familier (jalon 41) : un corbeau à l'épaule de la sorcière, entretenu à la seconde,
-## qui **rejoue** chaque sort posé à `ECHO_PART` de ses dégâts, `ECHO_DELAY` plus tard,
+## qui **rejoue** chaque sort élémentaire posé à `ECHO_PART` de ses dégâts, `ECHO_DELAY` plus tard,
 ## depuis sa place et vers le point visé au lancer (`Player.echo()`). Ses lignes de buff
 ## sont versées par le joueur, comme celles d'un buff : ce nœud porte le prix.
 
@@ -10,15 +10,13 @@ extends Node3D
 ## de chaque écho en plus du Ressassement s'y ajoute. Premier réglage.
 const ECHO_PART := 0.4
 const ECHO_DELAY := 0.4
-## Sa place, à droite du chapeau, sur le fond du sol : posé sur la sorcière, il se
-## perdait dans le sombre de sa robe (capture du jalon 41). Et son vol sur place.
-const SHOULDER := Vector3(15.0, 0.0, -30.0)
-const BOB := 1.5
-## La Becquée (jalon 49) : l'aller du piqué — le retour prend autant —, la hauteur de son arc,
-## et où il vise sur la proie.
+## Sa place au sol, à côté de la sorcière : ses échos en partent. Le corbeau vole au-dessus
+## (`CrowFx.HEIGHT`) ; plus près, ses ailes passaient sur elle.
+const SHOULDER := Vector3(14.0, 0.0, 2.0)
+## La Becquée (jalon 49) : l'aller du piqué — le retour prend autant —, et de combien il
+## plonge vers la proie.
 const DIVE_TIME := 0.18
 const DIVE_ARC := 14.0
-const DIVE_AIM := Vector3(-4.0, 0.0, -18.0)
 ## Ce qu'il rejoue : ce qui se pose et s'oublie (`Skill.TRANSFORMABLE`), **sans ce qui part
 ## du corps** — ruées, coups d'arme, l'orage porté, le nid.
 const ECHOED: Array[Skill.Shape] = [
@@ -58,6 +56,7 @@ var _prey: Hurtbox
 var _peck_hit: SkillStats
 var _dive_age := -1.0
 var _goal := SHOULDER
+var crow: CrowFx
 
 
 static func summon(player: Player, skill: Skill) -> Familiar:
@@ -68,6 +67,7 @@ static func summon(player: Player, skill: Skill) -> Familiar:
 	f.position = SHOULDER
 	player.add_child(f)
 	Settings.veil(f, Settings.SPELLS)
+	f.crow = CrowFx.perch(f)
 	return f
 
 
@@ -77,7 +77,9 @@ static func summon(player: Player, skill: Skill) -> Familiar:
 ## sur le précédent ; le Sombre augure le fait frapper plus fort par état élémentaire porté.
 func echo(skill: Skill, salvo: Array[SkillStats], aim: Vector3) -> void:
 	_last = salvo[0]
-	if not salvo[0].shape in ECHOED:
+	# Élémentaire seulement (décision de l'utilisateur, jalon 54) : le Contre-chant tournait la foudre
+	# ajoutée aux Chaînes du jugement en feu, et un sort sacré posait l'embrasé.
+	if not salvo[0].shape in ECHOED or not salvo[0].nature in DamageType.ELEMENTS:
 		return
 	var own := _player.resolve(_skill, _player.skill_points(_skill.id))
 	var delay := maxf(ECHO_DELAY - own.remiges, SkillStats.REMIGES_FLOOR)
@@ -102,21 +104,17 @@ static func echo_part(own: SkillStats) -> float:
 	return maxf(ECHO_PART + (own.echo_power + own.canon) * 0.01, 0.0)
 
 
-## Le Contre-chant (jalon 41) : chaque élément du lancer avance d'autant de crans dans le
-## tour feu → froid → foudre, sa nature avec. Les autres natures restent.
+## Le Contre-chant (jalon 41) : le lancer avance d'autant de crans dans le tour feu → froid
+## → foudre **d'après son élément**, et tous ses dégâts y passent, ajoutés compris, comme sous
+## l'Incarnation (décision de l'utilisateur, jalon 54 : décalés nature par nature, la foudre
+## ajoutée à un sort sacré passait au feu). La Triade, déjà aux trois, ne change que de nature.
 static func sing(cast: SkillStats, steps: int) -> void:
-	if steps <= 0:
+	var at := DamageType.ELEMENTS.find(cast.nature)
+	if steps <= 0 or at < 0:
 		return
-	var low := cast.damage_min.duplicate()
-	var top := cast.damage_max.duplicate()
-	var order := DamageType.ELEMENTS
-	for i in order.size():
-		var to := order[(i + steps) % order.size()]
-		cast.damage_min[to] = low[order[i]]
-		cast.damage_max[to] = top[order[i]]
-	var at := order.find(cast.nature)
-	if at >= 0:
-		cast.nature = order[(at + steps) % order.size()]
+	cast.nature = DamageType.ELEMENTS[(at + steps) % DamageType.ELEMENTS.size()]
+	if cast.shape != Skill.Shape.TRIAD:
+		cast.blend([cast.nature] as Array[int])
 
 
 ## Appelée par `Player.extinguish()`, le seul chemin : ce qu'il n'a pas encore rejoué se perd.
@@ -134,7 +132,8 @@ func _physics_process(delta: float) -> void:
 	if not _player.drain(_player.resolve(_skill, points).mana_per_second, delta):
 		_player.extinguish(_skill.id)
 		return
-	position = SHOULDER + Vector3(0.0, 0.0, sin(_age * 4.0) * BOB)
+	position = SHOULDER
+	crow.face(_player.facing)
 	_dive(delta)
 	# Le Ressassement mêle les retards : la file n'est plus dans l'ordre où ils tombent.
 	var due: Array[Echo] = []
@@ -144,6 +143,7 @@ func _physics_process(delta: float) -> void:
 			due.append(e)
 	for e in due:
 		_pending.erase(e)
+		crow.cry()
 		if e.evil_eye:
 			_curse(e)
 		else:
@@ -160,7 +160,7 @@ func _curse(e: Echo) -> void:
 	var parts := cast.roll(Game.rng)
 	var radius := SkillStats.EVIL_EYE_RADIUS * (1.0 + own.croak * 0.01)
 	var point := _aim_of(e)
-	EvilEye.open(_player._effects_parent(), point, radius, DamageType.COLORS[cast.nature])
+	EvilEye.open(_player._effects_parent(), point, radius, cast.nature)
 	for target in Targets.in_circle(get_world_3d(), point, radius):
 		if target.states == null:
 			continue
@@ -209,7 +209,7 @@ func _dive(delta: float) -> void:
 	var before := _dive_age
 	_dive_age += delta
 	if is_instance_valid(_prey):
-		_goal = _player.to_local(_prey.global_position) + DIVE_AIM
+		_goal = _player.to_local(_prey.global_position)
 	if before < DIVE_TIME and _dive_age >= DIVE_TIME and is_instance_valid(_prey):
 		Targets.strike(_prey, _peck_hit.roll(Game.rng), _prey.global_position, states, _peck_hit)
 	if _dive_age >= DIVE_TIME * 2.0:
@@ -219,7 +219,8 @@ func _dive(delta: float) -> void:
 	var t := _dive_age / DIVE_TIME
 	if t > 1.0:
 		t = 2.0 - t
-	position = SHOULDER.lerp(_goal, t) - Vector3(0.0, 0.0, sin(t * PI) * DIVE_ARC)
+	position = SHOULDER.lerp(_goal, t) - Vector3.UP * sin(t * PI) * DIVE_ARC
+	crow.face(_goal - SHOULDER)
 
 
 ## L'Œil du corbeau : l'ennemi le plus proche du point visé dans son rayon, ou le point.

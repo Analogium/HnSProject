@@ -40,6 +40,8 @@ var gore := false
 ## Celui autour de qui elle souffle (la Déferlante, le Fardeau partagé) : elle frappe où il était, mais
 ## son dessin le suit le temps de s'ouvrir — posé là, il restait derrière qui marchait.
 var around: Node3D
+## Faux quand on dessine son souffle à part : la Triade et le chaudron, un par élément.
+var drawn := true
 
 
 static func put(
@@ -73,21 +75,7 @@ static func of_cast(
 func _physics_process(delta: float) -> void:
 	if not _has_struck:
 		_has_struck = true
-		var shown: Node3D = null
-		if flames:
-			FlameFx.blast(self, global_position, _nature(), _radius)
-		elif _nature() == DamageType.Kind.LIGHTNING:
-			BoltFx.crown(self, global_position, _radius, _nature())
-		elif _nature() == DamageType.Kind.COLD:
-			shown = IceNovaFx.blow(self, global_position, _nature(), _radius)
-		elif _nature() == DamageType.Kind.HOLY:
-			shown = HolyBlastFx.blow(self, global_position, _nature(), _radius)
-		elif _nature() == DamageType.Kind.NECROTIC:
-			shown = RotBlastFx.blow(self, global_position, _nature(), _radius)
-		elif _nature() == DamageType.Kind.PHYSICAL:
-			SteelFx.blast(self, global_position, _radius, gore)
-		else:
-			ElementFx.burst(self, global_position, _tint, _radius)
+		var shown := paint(self, global_position, _nature(), _radius, _tint, flames, gore) if drawn else null
 		# Enfant de son porteur, il en suit la position interpolée.
 		if shown != null and is_instance_valid(around):
 			shown.reparent(around)
@@ -104,6 +92,28 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	if _age >= _life_span():
 		queue_free()
+
+
+## Le dessin d'un souffle de `nature` : une explosion, ou un éclat qui frappe sans elle (le glyphe, la
+## Triade). Rend ce qui peut suivre un porteur, ou rien.
+static func paint(
+	host: Node3D, at: Vector3, nature: int, radius: float, tint: Color, flames := false, gore := false
+) -> Node3D:
+	if flames:
+		FlameFx.blast(host, at, nature, radius)
+	elif nature == DamageType.Kind.LIGHTNING:
+		BoltFx.crown(host, at, radius, nature)
+	elif nature == DamageType.Kind.COLD:
+		return IceNovaFx.blow(host, at, nature, radius)
+	elif nature == DamageType.Kind.HOLY:
+		return HolyBlastFx.blow(host, at, nature, radius)
+	elif nature == DamageType.Kind.NECROTIC:
+		return RotBlastFx.blow(host, at, nature, radius)
+	elif nature == DamageType.Kind.PHYSICAL:
+		SteelFx.blast(host, at, radius, gore)
+	else:
+		ElementFx.burst(host, at, tint, radius)
+	return null
 
 
 func _crowded(targets: Array[Hurtbox]) -> void:

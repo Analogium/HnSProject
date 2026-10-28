@@ -221,9 +221,9 @@ const IGNORED_BY_SHAPE := {
 	Shape.BREATH: [SkillStats.GROUND, SkillStats.SUCTION, SkillStats.DETONATION],
 	Shape.MARK: ["radius"],
 	# Les trois comètes ne sont pas des tirs : elles naissent autour du lanceur et se
-	# rejoignent au point visé.
+	# rejoignent au point visé. Un projectile en plus les fait frapper plus fort (`triad_volley`).
 	Shape.TRIAD: [
-		"projectiles", "projectile_speed", SkillStats.BOUNCES, SkillStats.PRECIPITATE,
+		"projectile_speed", SkillStats.BOUNCES, SkillStats.PRECIPITATE,
 		SkillStats.SHIMMER, SkillStats.SPECTRUM,
 	],
 	# Le Brise-sol frappe déjà tout le cercle de l'impact : la massue n'y ajouterait rien.
@@ -245,6 +245,12 @@ const IGNORED_BY_MECHANIC := {
 	# Le Mauvais œil (jalon 49) ne rejoue plus de dégâts ; la Décoction ne pose plus rien.
 	SkillStats.EVIL_EYE: [SkillStats.ECHO_POWER, SkillStats.DARK_OMEN],
 	SkillStats.DECOCTION: [SkillStats.MIX, SkillStats.EMULSION],
+	# Le Sceau n'éclate pas au contact et ne se relie pas : ni armement, ni déclenchement, ni réaction, ni
+	# leurre, ni fil (demande de l'utilisateur, jalon 54). Les glyphes du Contresceau, ordinaires, les lisent.
+	SkillStats.SEAL: [
+		SkillStats.ARMING, SkillStats.TRIGGER, SkillStats.PALIMPSEST, SkillStats.REWRITE, SkillStats.LURE,
+		SkillStats.ENTWINE, SkillStats.WEFT,
+	],
 }
 
 ## Les nombres qu'une forme apporte quand la compétence n'en a pas (jalon 35) : un trait
@@ -631,6 +637,7 @@ func resolve(
 			more *= 1.0 + m.value * 0.01
 		else:
 			increased += m.value
+	more *= 1.0 + r.triad_volley * 0.01 * maxf(roundf(r.projectiles) - 1.0, 0.0)
 	r.scale_damage(increased, more)
 	# La Triade (jalon 41) : les trois comètes portent chacune son élément du tour. Sous
 	# l'Incarnation, tout passe dans son élément, fourchettes ajoutées comprises.

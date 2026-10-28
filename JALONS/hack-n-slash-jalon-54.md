@@ -1317,10 +1317,125 @@ pas la physique : ce qui naît au coup est posé une fois, et ne bouge qu'à l'i
   Exile — la période divisée par elle dans `Skill.resolve()`, la fiche l'annonce. **Le DPS du Cyclone monte d'autant** avec
   la vitesse d'attaque : à revoir à l'équilibrage (`tests/run.sh balance`).
 
+**Le manuel de la sorcière à la barre de Last Epoch** (28 octobre). L'utilisateur : « en accord avec le jalon,
+j'aimerais maintenant que tu t'occupes de tous les skills du manuel unique de la sorcière, fais la totalité et
+reviens vers moi quand c'est fini ». Rien n'y avait de dessin propre : le disque d'étincelles générique pour les
+Glyphes, le Chaudron, la Triade et le Mauvais œil, le halo pour l'Amplification et la Trinité, et **le corbeau ne
+se dessinait plus du tout** — ni ses comètes la Triade. Comme pour les autres manuels, **les planches sont
+tranchées par moi** et restent sur le Bureau (`hns-captures-sorciere-planche\` à `-planche-3\`). **Les
+textures** : cinq sujets de Qwen-Image, la graine 7 partout (`tools/fx_textures.py witch`) — un cercle runique
+tracé en lumière blanche, un Sceau aux trois logements vides (tiré pour voir, il avait ses logements aux coins
+de son triangle, sur l'anneau : adopté tel quel), une tresse de lumière, une surface de breuvage, une volute de
+vapeur ; toutes lues en clarté, la rampe de l'élément les colore. ComfyUI tournait à 20-30 s le pas, l'éditeur
+ouvert : 5 min l'image. **La langue du manuel** : la sorcière tient ce qui se passe entre les éléments, donc un
+même cercle runique en lumière dans l'élément de chaque geste.
+- **Le glyphe** (`GlyphFx`) : couché au rayon qui le déclenche (celui de la 2D), il monte comme une encre le temps
+  de s'armer, terne, puis s'allume, tourne et porte une lumière ; il éclate en s'ouvrant et se ronge sous le
+  souffle de son élément. **Le tracé d'un tour de plume** (un balayage angulaire à pointe vive) **se lisait
+  comme un chargement** en « camembert » : écarté pour la dissolution à rebours.
+- **Le froid se mêle** (`witch_sigil_ice.gdshader`) : additionné à l'ocre, son cercle sortait blanc, comme
+  la glace de la Nova.
+- **Les fils** de l'Entrelacs et les bords du triangle, la tresse d'une rampe à l'autre. **Le triangle en grille
+  régulière sortait en maillage de synthèse** : un voile qui scintille aux couleurs des coins. Le fil d'un bord
+  déjà tiré par le triangle ne se double pas.
+- **La jonction** de la Triade, le débordement du Chaudron et l'éclat du Sceau jettent le souffle de chaque élément
+  (`Explosion.paint()`, extrait d'`Explosion` sans rien changer à ses choix). **Superposés au même rayon, le
+  froid couvrait tout**, ses aiguilles blanches par-dessus : emboîtés (`WitchFx.NESTED`), le feu au cœur, la
+  foudre autour, le froid dehors.
+- **La Triade** : ses trois comètes sont le trait du joueur dans chaque élément (`BoltFx`, comme le Projectile
+  élémentaire lui-même depuis l'Éclair vif) — sous l'Incarnation, trois traits de l'élément incarné.
+- **L'Amplification** : le cercle aux pieds, petit, des grains, une lumière, à l'élément incarné ; l'Aura de
+  l'Incarnation l'ouvre jusqu'à sa portée à chaque coup. **La Trinité** : une rune par charge d'Harmonie qui
+  tourne autour de la sorcière — à 5 px, invisibles : 8.
+- **Le Mauvais œil** : l'œil de la Malédiction repris tel quel (`fx/curse_eye.png`, recyclé), couché au sol à la
+  rampe de l'élément. Il se lit d'un coup d'œil dans les trois.
+- **Le corbeau**, un corps : TRELLIS.2 sur une image de Qwen-Image (prompt « Torchlight », ailes déployées,
+  graine 7 ; tour dans `Bureau\hns-crow-modele-3d\`) — plumes, bec et serres tenus de tous les côtés. **Mixamo
+  ne gréé pas un oiseau** : ses ailes battent par un shader de sommets (au-delà de l'épaule, chaque sommet
+  tourne autour de l'axe du corps), plus amples quand il rejoue. Erreur vue : `out`, nom de variable, est un
+  mot réservé du langage des shaders — il ne compilait pas, sans rien dire en jeu.
+- **La marmite**, un corps aussi : image de Qwen-Image (pieds griffus, vide, vue de trois quarts en plongée),
+  **TRELLIS.2 refusé**, le quota du jour pris par le corbeau (« 120s requested vs. 139s left », 72 min) :
+  Stable Fast 3D en local (tour dans `Bureau\hns-cauldron-modele-3d\`). **Il la sortait penchée**, la plongée
+  de l'image gardée dans la géométrie : redressée de −0,625 rad, l'angle qui met son bord le plus à plat, mesuré
+  sur ses sommets. Sous le fer scanné du Brasero (repris : il sait se ronger), son SF3D étant flou. **Contre une
+  marmite en primitives tournées** (`Bureau\hns-captures-sorciere-planche-2\`) : faces retournées, elle
+  sortait creuse, un anneau sur une ombre — et le modèle se lisait marmite. **Toutes deux trop petites** à 16 px :
+  27 px de large. Dedans, le breuvage qui tourne à la rampe de l'élément qui bout, une vapeur, une lumière ;
+  chaque bouillon l'éclaire et jette une couronne de vapeur au cercle qu'il frappe.
+
+**Le Familier gardait la géométrie de la 2D** : son épaule « à droite du chapeau » était à 30 px au nord **au sol**,
+son vol sur place et son piqué le long de −Z (le haut de l'écran). En 3D, sa place est à côté de la sorcière
+(ses échos en partent), le corbeau vole à hauteur d'épaule (`CrowFx.HEIGHT`), son piqué plonge vers la proie. De
+même la goutte de l'Écume partait 9 px au nord du chaudron (`Cauldron.LIFT`) : de son centre. **La 2D de la
+sorcière part avec ses tests** : `fx/witchcraft.gd` (glyphes, fils, triangle, Sceau, œil), `fx/comet.gd` (la
+comète du jalon 28, morte depuis que le trait du joueur la porte), le corbeau, le piqué et la marmite
+d'`EffectForge`. Captures en jeu, les compétences lancées de la barre dans une meute puis les variantes (Triade,
+Entrelacs, Becquée, Incarnation et Aura ; Sceau, Mauvais œil, Écume et Bulles, Trinité) :
+`Bureau\hns-captures-sorciere-jeu\`, `-jeu-arbre\`, `-jeu-arbre-2\`, `-jeu-arbre-3\`.
+**Coût** (la sorcière dans 300 grunts increvables collés, le corbeau allumé, qui rejoue tout ; trait, glyphe et
+chaudron lancés en tour toutes les 15 images de physique — débordements, éclats et jonctions en série, un pire cas ;
+sans vsync, 240 images de chauffe puis 1 440, six paires alternées, A = le visuel générique du commit d'avant,
+ComfyUI arrêté) : **B − A = +0,97 ± 0,89 ms l'image** (erreur type 0,36, cinq paires sur six positives ; 23,3
+contre 24,3 ms), **physique +0,52 ± 0,40** (0,16, cinq sur six). **La jonction en porte la physique** : un second
+banc, C l'arbre courant réduit à un souffle par jonction, donne **B − C = +0,55 ± 0,41** de physique (quatre
+paires sur cinq) — trois souffles posés au même pas au lieu d'une gerbe. L'image y a dérivé de 24 à 35 ms en
+cours de banc (la machine a changé de charge) et ne tranche rien. **La première chose à couper** si une meute de
+chaudrons le demande : les souffles de la jonction, un par élément.
+
+**Les retours de l'utilisateur sur le manuel de la sorcière** (28 octobre) :
+- **Deux touches tenues** (tout le jeu) : la case de plus petit numéro gagnait toujours — maintenir la seconde
+  ne la lançait pas, ou coupait la première, selon leurs places. **La dernière enfoncée a la main**, relâchée la
+  précédente encore tenue reprend (`Player._pressed`) ; une case en recharge laisse partir la suivante.
+  Éprouvé par de vraies actions d'entrée (`test_the_last_held_key_takes_over_then_hands_back`).
+- **« Pas besoin de zigzag, ce sont juste des projectiles »** : le Projectile élémentaire, les gouttes de
+  l'Écume et les comètes de la Triade filent droit (`BoltFx.straighten()`) ; le trait des autres manuels garde
+  son Kinetic.
+- **La Triade lit les projectiles en dégâts** (décision de l'utilisateur) : chacun en plus, +10 % plus
+  (une ligne de son nœud, voir plus bas), au lieu d'être sans effet — le Prisme n'est plus « sans effet avec Triade », le
+  Spectre l'est toujours. Le Prisme garde son échange (−15 % plus par point) : sous la Triade, un point vaut
+  donc ×0,935. À revoir à l'équilibrage si c'est trop peu.
+- **L'icône de l'Amplification** prend l'élément incarné, dans la barre comme au HUD (`SkillIcon.of_nature()`,
+  la teinte de chaque pixel coloré ; le HUD la multipliait par la couleur).
+- **Les logements du Sceau** : les mini-glyphes débordaient en bas. Qwen ne les a pas posés en triangle
+  équilatéral (±36,6° au lieu de ±30°) : centres mesurés sur le tirage (`GlyphFx.SOCKETS`). **Sans effet avec
+  Sceau** : Calligraphie, Gravure, Palimpseste, Réécriture, Leurre, Entrelacs, Trame (`IGNORED_BY_MECHANIC`) —
+  les glyphes ordinaires du Contresceau les lisent encore.
+- **Le Couvercle** : il saute bien à la fin (`test_a_lid_pops_at_the_end_and_a_philtre_restores_mana`), dans
+  les éléments versés depuis la dernière explosion — pas quand une relance remplace le chaudron, ni si rien
+  n'a été versé depuis un débordement. Vérifié en jeu : `Bureau\hns-captures-sorciere-retours\`.
+- **Le Mélange et l'Émulsion** se voient : deux ou trois rampes en volutes dans le breuvage, une vapeur et une
+  couronne de chaque élément autour (`CauldronFx.fill()`).
+- **La Dissonance et la Ruée d'orage** : la Ruée ne frappe rien (une téléportation) — elle n'est pas « un sort
+  qui frappe », ne donne pas de charge et n'en fait pas perdre. La Dissonance le dit maintenant (« un sort qui
+  frappe dans l'élément du précédent »).
+- **Le corbeau** trop gros : 16 px d'envergure au lieu de 28. **L'Œil du corbeau** de 15 à 40 px par point
+  (160 au plus). **Le Familier ne rejoue plus que l'élémentaire** (proposition de l'utilisateur) : sous le
+  Contre-chant, l'écho des Chaînes du jugement posait l'embrasé — la foudre ajoutée (Amplification) passait au
+  feu, la part sacrée restait. Un sort sacré, nécrotique ou physique n'a plus d'écho.
+
+**Deuxième tour de retours** (28 octobre) :
+- **Tout sort élémentaire compte pour la Trinité**, même sans frapper (décision de l'utilisateur) : la Ruée
+  d'orage après un sort de foudre fait tout perdre sous la Dissonance, et donne une charge après un autre
+  élément. Un sort élémentaire : sort et élément dans ses mots-clés, et lancé — l'Amplification et la Trinité
+  (buffs nus), l'Électricité statique (entretenue) n'en sont pas (`Player._elemental_spell()`, `_harmonize()`,
+  sorti de `_after_spell()`). Les sorts qui frappent hors élément comptent comme avant.
+- **Le Contre-chant suit l'élément du sort**, pas ses dégâts ajoutés : l'écho passe à l'élément suivant et tous
+  ses dégâts y vont, comme sous l'Incarnation (`Familiar.sing()`). Avant, chaque nature avançait pour son
+  compte. La Triade, aux trois éléments, ne change que de nature ; la Réécriture et le Contresceau, qui passent
+  par le même calcul, suivent.
+- **La Triade** : son gain est une ligne de son nœud, « +10 % dégâts par projectile en plus » (`triad_volley`,
+  lue par `Skill.resolve()`), au lieu d'une constante qu'aucune fiche ne montrait ; **le Prisme passe de −15 à
+  −10 % plus par point** (demande de l'utilisateur) — partout, pas seulement sous la Triade : sous elle, un point
+  vaut ×0,99.
+  `docs/ARBRES.md` remesuré (Projectile élémentaire) : la Triade passe de 520 à 504/s, **mais le commit d'avant
+  donne déjà 504** — le rapport n'avait pas été refait depuis le 17 octobre, avant l'étape 1 ; l'écart vient
+  d'avant cette livraison. Le meilleur build au paquet, Prisme compris : 1 249 → 1 238/s.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le manuel du chevalier** le 27 au soir (§13) : l'acier, `SteelFx`. Son coût est à remesurer jeu fermé (§13). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le manuel du chevalier** le 27 au soir (§13) : l'acier, `SteelFx`. Son coût est à remesurer jeu fermé (§13). **Le manuel de la sorcière** le 28 (§13) : un cercle runique en lumière pour tout le manuel, et deux corps par modèle — le corbeau (TRELLIS.2, ailes battues par shader), la marmite (Stable Fast 3D, TRELLIS.2 n'ayant plus de quota ce jour-là : à repasser si l'utilisateur la trouve molle). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à

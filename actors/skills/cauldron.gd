@@ -7,8 +7,6 @@ extends Node3D
 ## natures, plus large, les trois états à coup sûr — puis se remet à bouillir, vide. Un seul
 ## par joueur, sauf ce que `simultaneous` permet ; le plus ancien s'éteint.
 
-const LIFT := Vector3(0.0, 0.0, -9.0)
-
 ## Tous ceux qui bouillent : le joueur leur verse ses sorts.
 static var boiling: Array[Cauldron] = []
 
@@ -26,6 +24,7 @@ var _since_bubble := 0.0
 var _poured := {}
 var _drunk := 0.0
 var _out := false
+var _fx: CauldronFx
 
 
 static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node) -> Cauldron:
@@ -41,7 +40,7 @@ static func place(player: Player, point: Vector3, cast: SkillStats, parent: Node
 	parent.add_child(c)
 	Settings.veil(c, Settings.SPELLS)
 	c.global_position = point
-	ElementFx.area(c, DamageType.COLORS[cast.nature], cast.radius)
+	c._fx = CauldronFx.set_down(c, c._contents(), cast.radius)
 	return c
 
 
@@ -59,6 +58,7 @@ func _pour(nature: int) -> void:
 	if nature != element:
 		_previous = element
 		element = nature
+		_fx.fill(_contents())
 	_poured[nature] = true
 	if _poured.size() == DamageType.ELEMENTS.size() and _cast.emulsion <= 0.0:
 		_overflow(1.0)
@@ -109,6 +109,7 @@ func _bubble() -> void:
 	else:
 		bubble.status_chance_increase += SkillStats.SURE_STATE
 	Targets.strike_circle(get_world_3d(), global_position, _cast.radius, bubble, states)
+	_fx.boil()
 	if _cast.froth > 0.0 and Game.rng.randf() * 100.0 < _cast.froth:
 		_spit(bubble)
 
@@ -146,7 +147,7 @@ func _spit(bubble: SkillStats) -> void:
 	var drop := bubble.echoed(SkillStats.FROTH_PART)
 	drop.status_chance_increase = _cast.status_chance_increase
 	var scene := _player.orb_scene if _cast.bubbles > 0.0 else _player.comet_scene
-	var from := global_position + LIFT
+	var from := global_position
 	var bolt := Projectile.spawn(
 		get_parent(), scene, from, from.direction_to(prey.global_position), drop.roll(Game.rng),
 		self, SkillStats.FROTH_SPEED, element, drop
@@ -175,10 +176,9 @@ func _overflow(part: float) -> void:
 	spill.blend(natures if part < 1.0 else DamageType.ELEMENTS)
 	spill.status_chance_increase += SkillStats.SURE_STATE
 	_drunk = 0.0
-	Explosion.put(
-		get_parent(), global_position, spill.roll(Game.rng),
-		_cast.radius * SkillStats.SPILL_REACH, null, _tint(), states, spill
-	)
+	var reach := _cast.radius * SkillStats.SPILL_REACH
+	Explosion.put(get_parent(), global_position, spill.roll(Game.rng), reach, null, _tint(), states, spill).drawn = false
+	WitchFx.junction(self, global_position, natures if part < 1.0 else DamageType.ELEMENTS, reach)
 
 
 ## Le Couvercle : à sa fin, il explose dans ce qui a été versé, à sa part.

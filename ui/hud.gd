@@ -48,8 +48,6 @@ const BUFF_SIDE := float(SkillIcon.SIDE)
 const BUFF_GAP := 4.0
 ## Ce qu'il reste d'un buff à durée, en voile descendant — celui de la barre.
 const BUFF_SPENT := Color(0.02, 0.02, 0.04, 0.62)
-## Le filtre de l'Incarnation : la teinte de l'élément, éclaircie pour que l'icône reste lisible.
-const INCARNATION_LIGHT := 0.35
 
 var _player: Player
 var _points_left := 0
@@ -219,12 +217,10 @@ func _draw_buffs() -> void:
 		draw_rect(r, BACK)
 		# L'Incarnation (jalon 49) : l'icône prend l'élément du prochain sort.
 		var nature := skill.nature
-		var tint := Color.WHITE
 		var incarnated := _player.lit_incarnation(skill.id)
 		if incarnated >= 0:
 			nature = incarnated as DamageType.Kind
-			tint = DamageType.COLORS[nature].lerp(Color.WHITE, INCARNATION_LIGHT)
-		SkillIcon.draw_into(self, r, skill, tint)
+		SkillIcon.draw_into(self, r, skill, Color.WHITE, incarnated)
 		# Ce qu'il reste descend comme le voile de recharge de la barre ; un geste qu'on
 		# entretient n'en a pas, et son cadre le dit déjà.
 		var left := _player.lit_ratio(skill.id)

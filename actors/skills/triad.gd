@@ -10,7 +10,7 @@ extends Node3D
 ## À quelle distance du lanceur elles naissent, et le temps qu'elles mettent à se rejoindre.
 const SPAWN := 16.0
 const TRAVEL := 0.35
-## La largeur de ce qu'une comète touche en route : sa tête (`Comet.HEAD`, de rayon 2,6).
+## La largeur de ce qu'une comète touche en route : sa tête.
 const WIDTH := 6.0
 
 var _cast: SkillStats
@@ -21,6 +21,7 @@ var _starts: Array[Vector3] = []
 var _parts: Array = []
 var _struck: Array[Dictionary] = []
 var _age := 0.0
+var _natures: Array[int] = []
 
 
 static func converge(
@@ -37,6 +38,7 @@ static func converge(
 	if natures.size() < 2:
 		var only: int = natures[0] if not natures.is_empty() else cast.nature
 		natures.assign([only, only, only])
+	t._natures = natures
 	var toward := origin.direction_to(aim) if origin != aim else Vector3.RIGHT
 	var rolled := cast.roll(Game.rng)
 	for i in natures.size():
@@ -49,7 +51,7 @@ static func converge(
 	parent.add_child(t)
 	Settings.veil(t, Settings.SPELLS)
 	t.global_position = aim
-	ElementFx.area(t, DamageType.COLORS[cast.nature], cast.radius)
+	WitchFx.triad(t, natures, t._starts, TRAVEL)
 	return t
 
 
@@ -64,7 +66,8 @@ func _physics_process(delta: float) -> void:
 		if _cast.conjunction > 0.0:
 			burst = _cast.echoed(1.0)
 			burst.status_chance_increase += SkillStats.SURE_STATE
-		Explosion.of_cast(get_parent(), global_position, burst, _cast.radius, _author)
+		Explosion.of_cast(get_parent(), global_position, burst, _cast.radius, _author).drawn = false
+		WitchFx.junction(self, global_position, _natures, _cast.radius)
 		queue_free()
 
 
