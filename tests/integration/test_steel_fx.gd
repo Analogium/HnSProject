@@ -51,11 +51,17 @@ func _cast(radius := 20.0, duration := 0.5) -> SkillStats:
 
 func test_steel_swing_lays_its_crescent_sweeps_it_then_frees_it() -> void:
 	var host := _host()
+	host.rotation.y = 0.7
 	SteelFx.swing(host, PHYS, 20.0, 0.2, SwingArc.Style.ARC)
 	var arcs := _ribbons()
 	assert_eq(arcs.size(), 1, "un croissant")
 	var arc: MeshInstance3D = arcs[0]
-	assert_eq(arc.get_parent(), host, "sous la visée, qu'il suit")
+	var laid := arc.global_transform
+	assert_almost_eq(laid.basis.x.normalized(), host.global_basis.x, Vector3.ONE * 0.001, "vers où le coup part")
+	host.rotation.y = -1.5
+	assert_almost_eq(arc.global_transform.origin, laid.origin, Vector3.ONE * 0.001,
+		"la visée qui tourne ensuite ne l'emporte pas")
+	assert_almost_eq(arc.global_basis.x, laid.basis.x, Vector3.ONE * 0.001)
 	assert_almost_eq(arc.scale.x, 20.0 + SteelFx.BLADE, 0.01, "jusqu'au bout de la lame")
 	assert_almost_eq(arc.get_instance_shader_parameter(&"opacity"), Settings.opacity_of(Settings.SPELLS), 0.001,
 		"le voile des sorts")
@@ -81,8 +87,9 @@ func test_steel_heavy_strike_stands_up_and_bites_where_it_falls() -> void:
 
 func test_steel_cross_cuts_twice_and_the_second_waits() -> void:
 	var host := _host()
+	var before := _ribbons()
 	SteelFx.swing(host, PHYS, 20.0, 0.3, SwingArc.Style.CROSS)
-	var cuts := _ribbons()
+	var cuts := _ribbons().filter(func(n: Node) -> bool: return not n in before)
 	assert_eq(cuts.size(), 2, "deux entailles")
 	await wait_seconds(0.05)
 	assert_gt(float(cuts[0].get_instance_shader_parameter(&"head")), 0.0, "la première part")

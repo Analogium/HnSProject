@@ -65,10 +65,13 @@ func _physics_process(delta: float) -> void:
 		_cast = _player.resolve(_skill, points)
 		if _whirl == null:
 			_whirl = SteelFx.whirl(self, _cast.nature, _cast.radius)
-			# Le corps tourne avec le tour, les deux mains sur l'arme, s'il a cette boucle.
-			if _player.model.spin(true):
-				_whirl.body = _player.model
 		_whirl.resize(_cast.radius)
+		# Le corps tourne avec le tour, les deux mains sur l'arme, s'il a cette boucle ; l'un et l'autre
+		# d'autant plus vite que l'attaque l'est, le gel compris.
+		var speed := _player.stats.attack_speed
+		_whirl.pace = speed * _player.states.speed_factor
+		if _player.model.spin(true, speed):
+			_whirl.body = _player.model
 		# Le Vertige (jalon 46) : chaque seconde tournée rapproche les frappes.
 		var vertigo := 1.0 + _cast.vertigo * 0.01 * minf(_age, SkillStats.VERTIGO_MOST)
 		_next_threshold = _age + _cast.period / vertigo

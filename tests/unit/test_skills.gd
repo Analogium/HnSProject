@@ -63,6 +63,19 @@ func test_each_skill_has_what_it_takes_to_deal_damage() -> void:
 		assert_gt(c.points_max(), 0, "« %s » n'a aucun point dans sa table" % c.name)
 
 
+## Le Cyclone frappe à la vitesse d'attaque, comme il tourne ; une aura de sort garde sa période.
+func test_the_cyclone_strikes_at_attack_speed() -> void:
+	var slow := CharacterStats.new()
+	var fast := CharacterStats.new()
+	fast.attack_speed = 2.0
+	var cyclone := SkillCatalog.by_id("cyclone")
+	assert_almost_eq(cyclone.resolve(1, fast).period, cyclone.resolve(1, slow).period / 2.0, 1e-4)
+	assert_almost_eq(cyclone.resolve(1, fast).average_per_second(), cyclone.resolve(1, slow).average_per_second() * 2.0,
+		1e-3, "la fiche l'annonce")
+	var aura := SkillCatalog.by_id("immolation")
+	assert_almost_eq(aura.resolve(1, fast).period, aura.resolve(1, slow).period, 1e-4)
+
+
 ## Les PV du lanceur s'ajoutent aux dégâts propres de ce qui s'y adosse, et à rien
 ## d'autre : c'est ce qui fait monter Immolation avec le personnage (jalon 20).
 func test_the_health_of_the_caster_scales_what_leans_on_it() -> void:

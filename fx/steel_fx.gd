@@ -87,18 +87,22 @@ static var _sword: Array[Array] = []
 static var _sword_fit := Transform3D.IDENTITY
 
 
-## Le coup d'arme, posé sous `host` (la `SwingArc`, dont le x local est la visée) : `reach`, le centre de la
-## hitbox ; `duration`, le temps du geste. La Frappe lourde jette aussi son impact.
+## Le coup d'arme de `host` (la `SwingArc`, dont le x local est la visée) : `reach`, le centre de la hitbox ;
+## `duration`, le temps du geste. La Frappe lourde jette aussi son impact. **Posé dans le monde** où et vers où
+## le coup part : sous la visée, la trace, plus longue que le coup, tournait avec la souris une fois le coup fini.
 static func swing(host: Node3D, nature: int, reach: float, duration: float, style: int) -> void:
+	var at := _holder(host, host.global_position)
+	at.global_basis = host.global_basis
+	var life := duration + FADE
 	match style:
 		SwingArc.Style.STRIKE:
-			var arc := _ribbon(host, _sector(OVERHEAD.x, OVERHEAD.y), nature, duration * 0.6, FADE)
+			var arc := _ribbon(at, _sector(OVERHEAD.x, OVERHEAD.y), nature, duration * 0.6, FADE)
 			arc.basis = Basis(Vector3.RIGHT, -PI * 0.5).scaled(Vector3.ONE * (reach + BLADE))
 			arc.position.y = OVERHEAD_LIFT
-			impact(host, host.to_global(Vector3.RIGHT * (reach + BLADE * 0.5)), nature, reach)
+			impact(host, at.to_global(Vector3.RIGHT * (reach + BLADE * 0.5)), nature, reach)
 		SwingArc.Style.CROSS:
 			var face := Node3D.new()
-			host.add_child(face)
+			at.add_child(face)
 			face.position = Vector3(reach, CROSS_LIFT, 0.0)
 			var camera := host.get_viewport().get_camera_3d()
 			if camera != null:
@@ -108,15 +112,14 @@ static func swing(host: Node3D, nature: int, reach: float, duration: float, styl
 				var cut := _ribbon(face, _strip(), nature, duration * 0.3, FADE + duration * 0.3, duration * 0.3 * i)
 				cut.basis = Basis(Vector3.BACK, CROSS_TURN * side) * Basis(Vector3.RIGHT, PI * 0.5) \
 						* Basis.from_scale(Vector3((reach + BLADE) * CROSS_LENGTH, 1.0, CROSS_WIDTH))
-			var tween := face.create_tween()
-			tween.tween_interval(duration * 0.6)
-			tween.tween_callback(func() -> void: glint(host, face.global_position, nature, CROSS_GLINT))
-			tween.tween_interval(FADE + duration * 0.3)
-			tween.tween_callback(face.queue_free)
+			at.get_tree().create_timer(duration * 0.6).timeout.connect(
+				func() -> void: glint(at, face.global_position, nature, CROSS_GLINT))
+			life += duration * 0.3
 		_:
-			var arc := _ribbon(host, _sector(-SWING_HALF, SWING_HALF), nature, duration, FADE)
+			var arc := _ribbon(at, _sector(-SWING_HALF, SWING_HALF), nature, duration, FADE)
 			arc.scale = Vector3.ONE * (reach + BLADE)
 			arc.position.y = ElementFx.LIFT
+	at.get_tree().create_timer(life + 0.05).timeout.connect(at.queue_free)
 
 
 ## Ce que mord un coup lourd, en `at` : étincelles, éclat, une bouffée de poussière et l'air poussé ; sur le
@@ -568,6 +571,8 @@ class Whirl extends Node3D:
 	var floor_dust: MeshInstance3D
 	## Le corps qui tourne avec lui, l'épée à la tête de la première traînée (son +Z) ; null sinon.
 	var body: Node3D
+	## Sa vitesse, en part de `WHIRL_SPIN` : la vitesse d'attaque du porteur sous le Cyclone.
+	var pace := 1.0
 	var _clock := 0.0
 
 	func resize(radius: float) -> void:
@@ -576,7 +581,7 @@ class Whirl extends Node3D:
 		floor_dust.scale = Vector3.ONE * radius * 1.1
 
 	func _physics_process(delta: float) -> void:
-		rotation.y = wrapf(rotation.y - WHIRL_SPIN * delta, -PI, PI)
+		rotation.y = wrapf(rotation.y - WHIRL_SPIN * pace * delta, -PI, PI)
 		if is_instance_valid(body):
 			body.rotation.y = rotation.y
 

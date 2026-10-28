@@ -1306,6 +1306,16 @@ pas la physique : ce qui naît au coup est posé une fois, et ne bouge qu'à l'i
   l'arrête ; l'affixe « de la Transe » (dégâts des compétences canalisées, gants de mêlée) le vise, comme le veut la
   recette des mots-clés. Le Dénouement frappe donc au relâchement. Captures en jeu : `Bureau\hns-captures-acier-reprise-jeu\`.
   `docs/EQUILIBRAGE.md` bouge partout d'un rien : l'équipement simulé se tire dans une réserve qui compte un affixe de plus.
+- **« Il y a encore des problèmes de rotation lorsque l'on effectue un coup »** (capture : la croix partie vers le
+  mannequin, ses entailles retournées de l'autre côté) : la trace du coup vivait **sous l'`AttackPivot`**, et dure plus
+  longtemps que le coup ; la visée, libérée au coup fini, l'emportait. Elle se pose dans le monde, où et vers où le coup
+  part (`SteelFx.swing`). Vu en jeu, la visée forcée à l'opposé dès le coup fini : `Bureau\hns-captures-acier-croix-tourne\`.
+- **« Lors du Cyclone, le personnage doit montrer qu'il tourne plus vite en fonction de sa vitesse d'attaque »** : le tour
+  et le corps tournent à `WHIRL_SPIN` × vitesse d'attaque (× le gel), les pieds de la boucle au même rythme. Vu en jeu à 1
+  et 2,5 : `Bureau\hns-captures-cyclone-vitesse\` (GIF). Les frappes gardaient leur période (0,35 s) : il tournait plus
+  vite sans frapper plus souvent. **Tranché par l'utilisateur** : elles suivent la vitesse d'attaque, comme dans Path of
+  Exile — la période divisée par elle dans `Skill.resolve()`, la fiche l'annonce. **Le DPS du Cyclone monte d'autant** avec
+  la vitesse d'attaque : à revoir à l'équilibrage (`tests/run.sh balance`).
 
 ## 14. Reste à faire
 

@@ -66,6 +66,7 @@ var _pace := 1.0
 var _attacking := false
 ## Il canalise le Cyclone : sa boucle remplace repos et marche, et sa direction lui est donnée.
 var _spinning := false
+var _spin_pace := 1.0
 var _playing := &""
 var _body: Node3D
 var _player: AnimationPlayer
@@ -157,14 +158,19 @@ func set_state(moving: bool, facing: Vector3) -> void:
 	_play(WALK if moving else REST)
 
 
-## Le Cyclone allumé ou éteint. Vrai s'il a sa boucle : un corps sans elle (une planche, le Roi des
-## Rats) garde ses allures et ne tourne pas.
-func spin(on: bool) -> bool:
+## Le Cyclone allumé ou éteint, et la vitesse de sa boucle (la vitesse d'attaque : les pieds piétinent au
+## rythme du tour). Rappelé allumé, il ne fait que régler cette vitesse, sans couper un geste en cours. Vrai
+## s'il a sa boucle : un corps sans elle (une planche, le Roi des Rats) garde ses allures et ne tourne pas.
+func spin(on: bool, pace := 1.0) -> bool:
 	if sprite != null or not _player.has_animation(SPIN):
 		return false
-	_spinning = on
-	_attacking = false
-	_play(SPIN if on else REST)
+	_spin_pace = pace
+	if on != _spinning:
+		_spinning = on
+		_attacking = false
+		_play(SPIN if on else REST)
+	if _spinning and not _attacking:
+		_player.speed_scale = _pace * _spin_pace
 	return true
 
 
@@ -242,7 +248,7 @@ func show_states(states: StatusEffects) -> void:
 		sprite.set_pace(_pace)
 		return
 	if not _attacking:
-		_player.speed_scale = _pace
+		_player.speed_scale = _pace * (_spin_pace if _spinning else 1.0)
 	var colors := states.colors()
 	var c := Color.WHITE if colors.is_empty() else colors[colors.size() - 1]
 	_overlay_set(&"tint_color", Vector3(c.r, c.g, c.b))
@@ -307,7 +313,7 @@ func _play(gait: StringName) -> void:
 		return
 	_playing = gait
 	_show_weapon()
-	_player.speed_scale = _pace
+	_player.speed_scale = _pace * (_spin_pace if gait == SPIN else 1.0)
 	_player.play(gait)
 
 

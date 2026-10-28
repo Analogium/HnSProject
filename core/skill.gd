@@ -639,6 +639,10 @@ func resolve(
 	elif triad:
 		r.blend(nature_cycle)
 	r.finalize()
+	# Un geste d'arme qui dure (le Cyclone) frappe à la vitesse d'attaque, comme il tourne (décision de
+	# l'utilisateur, 28 octobre) ; borné comme `CharacterStats.attack_interval()`.
+	if r.sustained and cadence == Cadence.WEAPON and stats != null:
+		r.period /= maxf(stats.attack_speed, 0.1)
 	# Ici et non dans `finalize()` : zéro veut dire « sans limite », et un nœud ne doit
 	# pas rendre infinie une orbite bornée.
 	if simultaneous > 0:

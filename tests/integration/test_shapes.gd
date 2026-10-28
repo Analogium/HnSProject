@@ -857,6 +857,19 @@ func test_the_body_spins_with_the_cyclone() -> void:
 	assert_eq(_p.model.animation, ActorModel.REST)
 
 
+## Le tour, et le corps avec lui, vont d'autant plus vite que l'attaque : il se voit tourner plus vite.
+func test_the_cyclone_spins_faster_with_attack_speed() -> void:
+	_p.model.set_archetype("swiftblade")
+	_p.base_stats.attack_speed = 2.0
+	_learn("manual_weapons", ["cyclone"])
+	assert_true(Gestures.cast(_p, 2))
+	await wait_physics_frames(2)
+	var cyclone: Cyclone = _p._lit["cyclone"]
+	assert_gt(_p.stats.attack_speed, 1.9)
+	assert_almost_eq(cyclone._whirl.pace, _p.stats.attack_speed, 0.001, "le tour à la vitesse d'attaque")
+	assert_almost_eq(_p.model.speed_scale, _p.stats.attack_speed, 0.001, "et les pieds au même rythme")
+
+
 ## La touche de cette case, tenue puis relâchée : le joueur le voit à son pas suivant.
 func _release(slot: int) -> void:
 	_p._held[slot] = true
