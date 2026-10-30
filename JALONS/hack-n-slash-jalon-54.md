@@ -1432,10 +1432,94 @@ chaudrons le demande : les souffles de la jonction, un par élément.
   donne déjà 504** — le rapport n'avait pas été refait depuis le 17 octobre, avant l'étape 1 ; l'écart vient
   d'avant cette livraison. Le meilleur build au paquet, Prisme compris : 1 249 → 1 238/s.
 
+**Le manuel du Vive lame à la barre de Last Epoch** (30 octobre). L'utilisateur : « en accord avec le jalon, maintenant
+fais le manuel unique du Vive lame, préviens-moi quand tout est fini ». Tout y était générique : un trait d'étincelles
+pour la Frappe vive, une gerbe pour la croix du Coup de grâce et pour l'étoile du Point final, des étincelles sur le
+couteau, sur les lames plantées, autour de la Frénésie et de la Garde ; la Rafale et la riposte avaient déjà les fuseaux
+du chevalier (`ThrustTrail`). Comme pour les autres manuels, **les planches sont tranchées par moi** et restent sur le
+Bureau (`hns-captures-vivelame-planche\`, `-planche-2\`, au quart de vitesse, caméra rapprochée). **Aucune texture
+neuve** : ComfyUI était arrêté, et c'est le même acier — la traînée de taille, l'éclat, la poussière et le sang du
+chevalier sont repris (`BladeFx`, `fx/blade_fx.gd`).
+- **La Frappe vive** : le fil seul sortait en trait blanc maigre ; **retenus : le couloir de la lame, trois lignes de
+  vitesse qui le débordent, la poussière du départ, une entaille debout sur la cible et l'air poussé** (l'air retiré
+  ensuite, voir le coût), contre le couloir
+  seul, les lignes seules et un croissant à l'arrivée. L'entaille couchée de la première planche se perdait sous le grunt :
+  debout face à la caméra, elle se lit — la branche de la croix du chevalier, sortie en `SteelFx.slit()`.
+- **Le Coup de grâce** : la croix du chevalier, à sa portée (67 px), couvrait trois grunts ; **à la taille d'une cible, et
+  la Gerbe de sang au sol**, contre un X couché (trop petit) et un X rouge (rose sur l'ocre, la rampe additionnée).
+- **Le Point final** : l'étoile de fuseaux de la 2D, huit rais longs et courts — **avec l'éclat au cœur, la poussière et
+  l'air**, contre l'étoile seule et un anneau de lame.
+- **Le couteau** : l'épée du modèle réduite (`SteelFx.bare_sword()`, à 0,55), pointe en avant ; un couteau qui tournoie se
+  lisait moins. **La traînée des épées lui en faisait 200 px** à 460 px/s : `BoltFx.Trail.life`, 0,15 s pour lui.
+- **Les lames plantées** : fichées au centre du corps, on n'en voyait que la pointe au-dessus de la tête ; **au flanc d'où
+  elles viennent**, en éventail, le manche dehors (`PlantedKnives.plant()` reçoit le cap du couteau).
+- **La Frénésie** : une étoile rouge par charge, l'éclat de l'acier à la rampe du sang, qui tourne avec sa traînée —
+  contre des lames en orbite (l'Épée spirale) et un anneau rouge aux pieds (rose, faible).
+- **La Garde** : deux croissants d'acier pâles qui tournent bas — contre un cercle à sa portée (un trait de craie) et un
+  X couché devant lui (qui ne disait rien).
+
+**Erreur vue en jeu** : posées à la main dans le scénario, les charges de Frénésie tombaient à l'image suivante — leur
+tenue était nulle (`Buff.hold_stacks()`, pas `stacks`) ; le dessin n'y était pour rien. **Erreur vue aux tests** : l'éclat
+de la croix, différé, capturait son porteur ; libéré avec la scène d'un test, le minuteur sonnait dans le suivant
+(« Lambda capture at index 0 was freed »). Il attend sur un ancrage du viewport (`SteelFx.laid()`). Le 2D du Vive lame part
+avec son test : `fx/slash.gd` (fuseau, étoile, couteau), le couteau, la dissolution en damier et la rotation par vote
+d'`EffectForge`, qu'il était seul à porter. Captures en jeu, les compétences lancées de la barre sur des grunts figés,
+Lame plantée et Point final pris : `Bureau\hns-captures-vivelame-jeu\`.
+**Coût** (le Vive lame dans 300 ennemis increvables du banc, 240 à 280 simulés, la compétence en case 0 relancée à chaque
+pas, sans vsync, 240 images de chauffe puis 1 440, six paires alternées, A = le visuel générique du commit d'avant, ComfyUI
+arrêté ; 10 à 21 ms l'image) : **les Lames de jet, B − A = +0,02 ± 1,20 ms l'image** (erreur type 0,49), **physique
++0,42 ± 0,73** (0,30), quatre paires sur six positives — dans le bruit. **La Frappe vive coûtait : +2,51 ± 2,19 ms l'image**
+(0,89), **physique +1,20 ± 1,24** (0,51), cinq paires sur six. Un banc B contre C, la même sans l'air poussé sur la cible,
+en donne plus de la moitié à la distorsion (**+1,37 ± 1,62** l'image, cinq sur six) : elle relit l'écran, et un sort lancé
+sans cesse garde la version sobre — **retirée**. **La Frappe vive livrée, C − A = +0,23 ± 1,95 ms l'image** (0,80),
+**physique +0,21 ± 0,98** (0,40), trois paires sur six : dans le bruit, mais un bruit large — la machine est montée à 21 ms
+en milieu de banc ; ce banc n'exclut pas 1,5 ms. Le Point final garde son air : il ne part qu'à cinq charges. La
+première chose à couper ensuite : les trois lignes de vitesse, trois rubans par frappe.
+
+**Les retours de l'utilisateur sur le manuel du Vive lame** (30 octobre) :
+- **L'Insistance** « doit indiquer que c'est seulement une augmentation de deux fois » : l'utilisateur la lisait **par
+  Rafale** (une Rafale relancée sur la même cible), elle compte **par estoc, dans une même Rafale** — sa description ne le
+  disait pas. Un plafond à deux fois, essayé (le meilleur build au duel, sous le Quatrième estoc, de 561 à 474/s), est
+  écarté par l'utilisateur : par estoc, sans plafond ; la description le dit (« Dans une même Rafale… »).
+  `docs/ARBRES.md` (Rafale) remesuré : 436/s au paquet, 561/s au duel au lieu de 481 et 569 — **le commit d'avant donne
+  les mêmes** ; le rapport n'avait pas été refait depuis un changement antérieur.
+- **La Lame chercheuse ne touchait pas toujours** : la traque prenait le virage borné du Paratonnerre (9 rad/s) — à
+  460 px/s, un rayon de 51 px (74 sous le Jet tendu), plus large que son rayon de chasse : le couteau tournait autour de sa
+  proie. « La vitesse du projectile ne doit pas être un problème » : **la traque file droit sur sa proie, et son pas
+  s'arrête sur elle** (`Projectile._seek()`), sans quoi un tir très rapide sautait par-dessus. Le Grésil et le Vecteur de la
+  Peste, qui passent par là, aussi ; le Paratonnerre garde son virage borné, voulu (« pas un aimant »). Éprouvé à 200 et
+  3 000 px/s (`test_a_seeking_shot_hits_its_prey_at_any_speed`).
+- **La touche tenue, la visée changée : le corps ne se tournait pas** (tout le jeu). Le geste suivant part sur la dernière
+  image de physique du précédent, que l'animation tient encore : `ActorModel.set_state()` ignorait la nouvelle direction, et
+  le corps rejouait son coup vers l'ancienne — les couteaux, eux, partaient bien. **Le départ d'un geste tourne le corps
+  même verrouillé** (`ActorModel.face()`), pour le joueur, l'ennemi et le serviteur (un mort-vivant de la Relève enchaîne
+  aussi ses coups au bout de sa période). Éprouvé contre l'ancien code (`test_a_chained_gesture_turns_the_body_to_its_new_aim`).
+- **La Lame plantée « ne plante pas visuellement »** : elle plantait (une lame par volée sur une cible seule — les deux
+  couteaux du bord de l'éventail la manquent ; un couteau qui critique, traverse ou revient ne s'arrête pas, donc ne se
+  plante pas), mais au zoom du jeu, au flanc et à la taille du couteau en vol, elle ne faisait que quelques pixels blancs.
+  **En haut du corps** (à 0,7 de la hauteur du modèle), plus grande (0,8 de l'épée), le manche relevé — le parti pris de
+  la 2D : « les couteaux sortent du haut du corps en éventail ». Vue au zoom du jeu et à mi-zoom
+  (`Bureau\hns-captures-vivelame-plantees\`).
+- **« Les couteaux plantés ne se voient toujours pas »** : en combat (une meute normale, le zoom du jeu), **six lames plantées
+  sur sept l'étaient dans un mort** — le couteau qui tue s'arrête dans sa cible, et `Enemy.die()` libère le corps dans
+  l'image, avec ce qu'il porte ; la septième restait dans un grunt à 2 PV. Les captures d'avant figeaient des grunts
+  increvables. **Une lame qui lâche sa cible tombe au sol** (`BladeFx.drop()`, à sa mort, sous le Coup de grâce ou au
+  bout de sa durée), pointe en bas, y reste fichée 1,2 s puis s'enfonce. Vue en combat (`Bureau\hns-captures-vivelame-plantees-meute\`) :
+  de petites lames manche en l'air où tombent les morts.
+- **« Les couteaux plantés ne se voient toujours pas »** : en combat (une meute normale, le zoom du jeu), **six lames plantées
+  sur sept l'étaient dans un mort** — le couteau qui tue s'arrête dans sa cible, et `Enemy.die()` libère le corps dans
+  l'image, avec ce qu'il porte ; les captures d'avant figeaient des grunts increvables. **Une lame qui lâche sa cible tombe
+  au sol** (`BladeFx.drop()`, à sa mort, sous le Coup de grâce ou au bout de sa durée), pointe en bas, y reste fichée
+  1,2 s puis s'enfonce (`Bureau\hns-captures-vivelame-plantees-meute\`). **Et rien ne se plantait chez l'utilisateur** :
+  son Vive lame (lu dans sa sauvegarde, sans y écrire) a Perce-armure 2 — ses couteaux traversaient deux corps, et un
+  critique traverse aussi ; seul un couteau qui s'arrête se plantait. **Tranché par l'utilisateur : une lame dans chaque
+  ennemi touché**, même traversé (`ThrowingKnife._on_area_entered()`) ; la description le dit. Plus de lames, donc plus de
+  Hérisson et de Coup de grâce sous la Perce-armure : à revoir à l'équilibrage.
+
 ## 14. Reste à faire
 
 - **Où en est l'étape 4** (20 octobre au soir) : le manuel des flammes est refait en textures
-  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le manuel du chevalier** le 27 au soir (§13) : l'acier, `SteelFx`. Son coût est à remesurer jeu fermé (§13). **Le manuel de la sorcière** le 28 (§13) : un cercle runique en lumière pour tout le manuel, et deux corps par modèle — le corbeau (TRELLIS.2, ailes battues par shader), la marmite (Stable Fast 3D, TRELLIS.2 n'ayant plus de quota ce jour-là : à repasser si l'utilisateur la trouve molle). **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
+  vraies (§13), Brasero compris. **La foudre** commence : l'Éclair vif en foudre est fait (§13) ; fini le 23, Trait de glace, trait en feu, Esquilles, Orbe statique et Satellite compris ; l'interpolation de physique faite le 23 (plus bas) ; la Chaîne d'éclairs faite le 23 (§13, la tresse) ; le Nuage d'orage le 23 (§13, les volutes, la Grêle en grêlons) ; la Ruée d'orage, l'Électricité statique et la marque du Paratonnerre le 24 (§13) : **le manuel de la foudre est fini**, `fx/lightning.gd` retiré. **Le manuel du froid commence** le 25 : les Pics de glace, « sobre », puis la Nova de glace, « souffle d'esquilles », son Onde de givre en javelots et le sol gelé en fissures ; **la Nova refaite à la barre de Last Epoch**, gabarit des manuels à venir (§13) ; le 26, son arbre, puis les Pics, le Tombeau, le Désastre et l'Orbe gelée à la même barre : **le manuel du froid est fini**, `fx/frost.gd` retiré (§13). **Le manuel des flammes refait à la même barre** le 26 (§13) : la méthode adoptée pour de bon si l'utilisateur l'aime. **Le manuel de la lumière** fait le 27 à la même barre (§13), **le manuel nécrotique** le même jour (§13). **Le manuel du chevalier** le 27 au soir (§13) : l'acier, `SteelFx`. Son coût est à remesurer jeu fermé (§13). **Le manuel de la sorcière** le 28 (§13) : un cercle runique en lumière pour tout le manuel, et deux corps par modèle — le corbeau (TRELLIS.2, ailes battues par shader), la marmite (Stable Fast 3D, TRELLIS.2 n'ayant plus de quota ce jour-là : à repasser si l'utilisateur la trouve molle). **Le manuel du Vive lame** le 30 (§13) : l'acier du chevalier en traits vifs, sans texture neuve. **Le mort-vivant** passe par TRELLIS.2 le 27 : prompt « Torchlight » adulte, un squelette aux épaulières rouillées et au pagne en lambeaux (`Bureau\hns-undead-modele.png`) ; **la lueur verte entre les côtes se détourait avec le fond d'incrustation** et coupait le corps à la colonne (bassin et jambes perdus) : retirée du prompt, seules les orbites gardent leur vert, que le crâne referme. Graine 1337, les bras les plus écartés (tour dans `Bureau\hns-undead-modele-3d\`). Gréé par Mixamo le même jour (repos « Zombie Idle », marche « Standing Walk Forward », coup « Standing Melee Attack Downward », celui du grunt), **une épée en main droite** (demande de l'utilisateur), `arm_space` à 40° d'office. **Mixamo lui a vu quatre doigts** : sans auriculaire, la prise posée d'après les doigts plantait ; elle prend l'annulaire à défaut (`weapons.grip_bone`). Vu sous la lumière du jeu à côté du grunt (`Bureau\hns-captures-undead-3d\`, GIF) et levé par la Relève en zone (`-undead-jeu\`). Au repos, la lame part un peu de côté. Puis les autres manuels, chacun en textures vraies, variantes
   d'arbre comprises. **Coût à remesurer** au banc A/B (§13, Ruée) : la peau du Serpent, la boule
   de feu en photos, le Brasero ; le manuel de la foudre est mesuré (§13, dans le bruit). **Les couloirs d'équilibrage** à relever
   avant/après la règle « un corps ne bouge pas pendant son geste » (le grunt s'esquive à

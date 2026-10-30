@@ -388,8 +388,8 @@ Jamais pris : Épargne, Repli, Dérobade.
 | build | points | paquet | duel |
 |---|---|---|---|
 | sans arbre | — | 68,7/s | 70,7/s |
-| meilleur au paquet | Coup d'œil 2, Botte secrète 1, Coup de Jarnac 1, Pointe 5, Battement 3, Insistance 3, Quatrième estoc 2 | 481/s ×7,01 | 516/s ×7,29 |
-| meilleur au duel | Coup d'œil 4, Botte secrète 1, Pointe 5, Insistance 3, Battement 3, Quatrième estoc 2, Montée 2 | 386/s ×5,62 | 569/s ×8,04 |
+| meilleur au paquet | Coup d'œil 2, Botte secrète 1, Coup de Jarnac 1, Pointe 5, Battement 3, Insistance 3 | 436/s ×6,34 | 373/s ×5,27 |
+| meilleur au duel | Coup d'œil 4, Botte secrète 1, Pointe 5, Insistance 3, Battement 3, Quatrième estoc 2, Montée 2 | 349/s ×5,09 | 561/s ×7,93 |
 
 Jamais pris : Fer long, Pression, Éventail, Rose des vents, Ivresse du sang.
 

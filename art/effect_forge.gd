@@ -24,15 +24,6 @@ const INK := {
 	"5": [R_TINT, 4], "w": [R_CORE, 4],
 }
 
-## La matrice de Bayer 4×4, la façon dont le pixel art fait ses dégradés depuis
-## toujours : un damier ordonné plutôt qu'une rampe continue.
-const BAYER := [
-	[0, 8, 2, 10],
-	[12, 4, 14, 6],
-	[3, 11, 1, 9],
-	[15, 7, 13, 5],
-]
-
 ## Une planche par teinte, bâtie une fois et gardée pour la session : une aura la
 ## redemande soixante fois par seconde, et sa teinte ne change qu'à la conversion.
 static func _sheet(
@@ -291,131 +282,6 @@ static func strike(tint: Color) -> Texture2D:
 	return _sheet(_strikes, [STRIKE], STRIKE_SIZE, STRIKE_SIZE, tint, tint.lerp(Color.WHITE, 0.85))[0]
 
 
-## Un dessin fabriqué à la demande et son point d'ancrage : ce qui se rastérise au
-## cap où on le demande n'a pas de cadre fixe, donc il porte le sien.
-class Piece:
-	var texture: Texture2D
-	## Du point d'ancrage au coin de la planche.
-	var offset: Vector2
-
-	func _init(p_texture: Texture2D, p_offset: Vector2) -> void:
-		texture = p_texture
-		offset = p_offset
-
-	## Posé sur `at`, calé sur le pixel du jeu.
-	func put(ci: CanvasItem, at: Vector2) -> void:
-		var size := Vector2(texture.get_width(), texture.get_height())
-		ci.draw_texture_rect(texture, Rect2(EffectForge.snap(ci, at + offset), size), false)
-
-
-## Dissout une image **après** son contour, en damier ordonné : `gone` est la part
-## qui disparaît. C'est ainsi qu'un dessin s'efface sans pâlir — une planche à
-## demi-transparente sur un sol sombre sort grise. Avant le contour, chaque pixel
-## restant serait cerné pour lui-même et le dessin tournerait en poussière noire.
-##
-## Par un masque natif et non pixel par pixel : un `set_pixel()` par pixel coûtait
-## 1,1 ms sur l'anneau de 113 pixels du mur de gaz (jalon 26).
-static func dissolve(img: Image, gone: float) -> void:
-	if gone <= 0.0:
-		return
-	var size := img.get_size()
-	var kept := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
-	kept.blit_rect_mask(
-		img.duplicate() if img.get_format() == Image.FORMAT_RGBA8 else _rgba(img),
-		_keep_mask(gone, size).get_region(Rect2i(Vector2i.ZERO, size)), Rect2i(Vector2i.ZERO, size),
-		Vector2i.ZERO
-	)
-	img.copy_from(kept)
-
-
-## La pièce et ses `steps` crans de dissolution, du plein au presque vide : ce qui naît à
-## l'angle exact une fois par geste (la frappe vive, l'estoc de la Tierce) s'efface ainsi.
-static func dissolving(piece: Piece, steps: int) -> Array[Piece]:
-	var out: Array[Piece] = [piece]
-	var img := piece.texture.get_image()
-	for i in range(1, steps):
-		var copy := img.duplicate() as Image
-		dissolve(copy, float(i) / float(steps))
-		out.append(Piece.new(ImageTexture.create_from_image(copy), piece.offset))
-	return out
-
-
-static func _rgba(img: Image) -> Image:
-	var copy := img.duplicate()
-	copy.convert(Image.FORMAT_RGBA8)
-	return copy
-
-
-## Le côté de départ des masques gardés ; ils grandissent si une pièce les dépasse.
-const MASK_SIDE := 128
-static var _masks := {}
-
-
-## Les pixels que la dissolution **garde** à ce degré, au moins de cette taille : le
-## damier de Bayer, bâti une fois par seuil. Seize seuils possibles, pas plus.
-static func _keep_mask(gone: float, at_least: Vector2i) -> Image:
-	var threshold := ceili(gone * 16.0)
-	var held: Image = _masks.get(threshold)
-	if held == null or held.get_width() < at_least.x or held.get_height() < at_least.y:
-		var side := maxi(MASK_SIDE, maxi(at_least.x, at_least.y) + 3) / 4 * 4 + 4
-		var tile := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
-		for y in 4:
-			for x in 4:
-				if BAYER[y][x] >= threshold:
-					tile.set_pixel(x, y, Color.WHITE)
-		var mask := Image.create_empty(side, side, false, Image.FORMAT_RGBA8)
-		for y in range(0, side, 4):
-			for x in range(0, side, 4):
-				mask.blit_rect(tile, Rect2i(0, 0, 4, 4), Vector2i(x, y))
-		_masks[threshold] = mask
-	return _masks[threshold]
-
-
-## Tourne une grille d'un angle quelconque. Chaque pixel d'arrivée échantillonne
-## **neuf points** de la grille de départ et garde l'encre la plus fréquente : au
-## plus proche voisin, un trait d'un pixel se casse en pointillés dès qu'il passe
-## en biais. Comparé sur planche (jalon 24), c'est le vote qui garde la lame d'une
-## épée d'un seul tenant.
-##
-## Rien de ce qu'il rend n'est cerné : le contour se pose ensuite, sur la
-## silhouette tournée — tourner un contour le rendrait épais d'un côté.
-static func rotated(grid: Array, angle: float) -> Array:
-	var width: int = (grid[0] as String).length()
-	var height: int = grid.size()
-	var side := int(ceil(sqrt(float(width * width + height * height)))) + 2
-	# Le cadre prend la parité de la grille : sinon chaque centre de pixel d'arrivée
-	# tombe **sur une frontière** de la grille de départ, et le vote tranche au
-	# hasard — un quart de tour de l'épée perdait cinq pixels sur trente-neuf.
-	side += (side - width) % 2
-	var from_center := Vector2(float(width), float(height)) * 0.5
-	var to_center := Vector2(float(side), float(side)) * 0.5
-	var out: Array = []
-	for y in side:
-		var line := ""
-		for x in side:
-			# Loin de la grille, le vote est joué d'avance : une épée n'occupe qu'un
-			# cinquième de son cadre tourné, et voter partout coûtait trois fois plus.
-			var middle := (Vector2(x, y) + Vector2(0.5, 0.5) - to_center).rotated(-angle) + from_center
-			if middle.x < -1.0 or middle.y < -1.0 or middle.x > float(width) + 1.0 or middle.y > float(height) + 1.0:
-				line += "."
-				continue
-			var votes := {}
-			for sample in 9:
-				var inside := Vector2(float(sample % 3) + 0.5, float(sample / 3) + 0.5) / 3.0
-				var p := (Vector2(x, y) + inside - to_center).rotated(-angle) + from_center
-				var ink := "."
-				if p.x >= 0.0 and p.y >= 0.0 and p.x < float(width) and p.y < float(height):
-					ink = (grid[int(p.y)] as String)[int(p.x)]
-				votes[ink] = int(votes.get(ink, 0)) + 1
-			var best := "."
-			for ink: String in votes:
-				if int(votes[ink]) > int(votes.get(best, 0)):
-					best = ink
-			line += best
-		out.append(line)
-	return out
-
-
 # --------------------------------------------------------------------------
 # Le chevalier (jalon 46)
 # --------------------------------------------------------------------------
@@ -435,12 +301,3 @@ static var _stun_stars := {}
 static func stun_stars() -> Array:
 	return _sheet(_stun_stars, STUN_STARS, STAR_SIDE, STAR_SIDE, STUN_GOLD, STUN_GOLD.lerp(Color.WHITE, 0.7))
 
-
-## Le couteau des Lames de jet (jalon 50), **pointe à droite** — le cap zéro —, tourné au premier
-## besoin (`rotated()`) : la lame sur deux tons, la garde d'or, le manche de cuir. Il se plante aussi dans les ennemis.
-const KNIFE := [
-	"....g........",
-	"hhh.Gcccccc..",
-	"hhh.Gdddddddd",
-	"....g........",
-]

@@ -4,10 +4,35 @@ extends Projectile
 ## Un couteau des Lames de jet (jalon 50) : le trajet et la touche de `Projectile`, et **un
 ## couteau qui critique traverse** sa cible au lieu de s'y arrêter. Son arbre : il frappe
 ## plus fort de loin (Tir lointain) et de corps en corps (Enfilade), revient vers son lanceur
-## (Retour de lame) ou se plante (Lame plantée).
+## (Retour de lame) ou laisse une lame dans chaque corps qu'il touche (Lame plantée).
 
 ## Sur le chemin du retour : il ne s'arrête plus, et chaque corps peut être refrappé une fois.
 var _returning := false
+## Le couteau dessiné (`BladeFx.knife`), pointe vers où il va.
+var _knife: Node3D
+
+
+func _dress() -> void:
+	if _knife == null:
+		_knife = BladeFx.knife(self, nature())
+	_point()
+
+
+func _point() -> void:
+	_knife.rotation.y = -Flat.angle(_dir) - PI * 0.5
+
+
+## Ce qu'il mord jette un éclat, qu'il s'y arrête ou le traverse ; sous la Lame plantée, il y laisse une lame
+## même en le traversant (décision de l'utilisateur) — un critique et la Perce-armure ne la plantaient jamais.
+func _on_area_entered(area: Area3D) -> void:
+	var biting := strikes(area)
+	var planting := biting and _plants()
+	super(area)
+	if biting:
+		SteelFx.bite(self, global_position, nature())
+	if planting:
+		# En différé : la lame arrive d'un rappel de collision (invariant 4).
+		PlantedKnives.plant.call_deferred(area, _cast, _dir)
 
 
 func _keeps_flying(info: DamageInfo) -> bool:
@@ -22,10 +47,14 @@ func _hit_factor() -> float:
 	return far * (1.0 + _cast.enfilade * 0.01 * float(_struck.size() - 1))
 
 
-func _lodge(target: Hurtbox) -> bool:
-	if _cast == null or _cast.planted <= 0.0 or _returning:
+func _plants() -> bool:
+	return _cast != null and _cast.planted > 0.0 and not _returning
+
+
+## Arrêté dans sa cible, il y est déjà planté (`_on_area_entered`) : il ne reste rien qui vole.
+func _lodge(_target: Hurtbox) -> bool:
+	if not _plants():
 		return false
-	PlantedKnives.plant.call_deferred(target, _cast)
 	queue_free()
 	return true
 
@@ -40,6 +69,7 @@ func _physics_process(delta: float) -> void:
 			_caught()
 			return
 	super(delta)
+	_point()
 
 
 ## La fin de course : sous le Retour de lame, il repart vers son lanceur — sa course

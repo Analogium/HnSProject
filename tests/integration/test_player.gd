@@ -1036,6 +1036,23 @@ func test_the_aim_holds_still_during_a_gesture() -> void:
 	assert_almost_eq(_p.facing, mouse, Vector3.ONE * 0.001, "le geste fini, elle suit de nouveau")
 
 
+
+## La touche tenue : le geste suivant part sur la dernière image du précédent, le corps encore verrouillé.
+## Il fait face à la nouvelle visée — il rejouait son coup tourné vers l'ancienne.
+func test_a_chained_gesture_turns_the_body_to_its_new_aim() -> void:
+	_p.model.set_archetype("swiftblade")
+	_p.equip(Weapons.bare(true), EquipmentSlots.WEAPON)
+	_p._aim_with_mouse = false
+	_p.model.attack(false, 1.0)
+	assert_true(_p.model._attacking, "le geste précédent tient encore le corps")
+	var before := _p.model.rotation.y
+	_p.facing = Vector3.LEFT
+	assert_true(Gestures.cast(_p, 1))
+	assert_almost_eq(_p.model.rotation.y, -PI * 0.5, 0.001, "tourné vers la nouvelle visée")
+	assert_ne(_p.model.rotation.y, before)
+	_p.model.set_state(false, Vector3.RIGHT)
+	assert_almost_eq(_p.model.rotation.y, -PI * 0.5, 0.001, "et le geste le garde ainsi")
+
 func _left_click() -> InputEventMouseButton:
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT

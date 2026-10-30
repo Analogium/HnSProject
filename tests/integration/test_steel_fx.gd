@@ -246,4 +246,4 @@ func test_steel_sparks_burn_hot_not_grey() -> void:
 func test_steel_materials_are_kept() -> void:
 	assert_same(SteelFx.slash_material(PHYS), SteelFx.slash_material(PHYS))
 	assert_same(SteelFx.dust_material(), SteelFx.dust_material())
-	assert_same(SteelFx._sector(-1.0, 1.0), SteelFx._sector(-1.0, 1.0))
+	assert_same(SteelFx.sector(-1.0, 1.0), SteelFx.sector(-1.0, 1.0))

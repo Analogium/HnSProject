@@ -422,7 +422,7 @@ script = ExtResource("3_noeud")
 id = "flurry_insistence"
 name = "Insistance"
 icon = ExtResource("icon_flurry_insistence")
-description = "Un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
+description = "Dans une même Rafale, un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "flurry_point": 1
@@ -750,7 +750,7 @@ script = ExtResource("3_noeud")
 id = "throwing_knives_planted_blade"
 name = "Lame plantée"
 icon = ExtResource("icon_throwing_knives_planted_blade")
-description = "Un couteau qui s'arrête dans un ennemi y reste planté {duree_plantee} s, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
+description = "Chaque ennemi que touche un couteau en garde une lame plantée {duree_plantee} s, même s'il le traverse, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
 position = Vector2i(-2, 0)
 parents = Dictionary[String, int]({
 "throwing_knives_whetting": 2

@@ -603,6 +603,8 @@ class Look:
 class Trail extends MeshInstance3D:
 	var target: Node3D
 	var width := TRAIL_WIDTH
+	## Le couteau du Vive lame la veut courte : à 460 px/s, `TRAIL_LIFE` lui traînait 200 px.
+	var life := TRAIL_LIFE
 	## Le repère où elle se pose, null pour le monde : le marteau de la Gravitation tourne autour de son
 	## lanceur, et posée dans le monde, sa traînée se courbait quand il avançait.
 	var frame: Node3D
@@ -617,7 +619,7 @@ class Trail extends MeshInstance3D:
 	func _process(delta: float) -> void:
 		for p: Array in points:
 			p[1] += delta
-		while not points.is_empty() and float(points[0][1]) > TRAIL_LIFE:
+		while not points.is_empty() and float(points[0][1]) > life:
 			points.pop_front()
 		if is_instance_valid(target) and target.is_inside_tree():
 			add_point(target.get_global_transform_interpolated().origin - _base())
@@ -648,10 +650,10 @@ class Trail extends MeshInstance3D:
 			var dir := (p - q) if i > 0 else (q - p)
 			along += p.distance_to(q) if i > 0 else 0.0
 			var eye := (camera.global_position - p) if camera != null else Vector3.UP
-			var life := clampf(1.0 - float(points[i][1]) / TRAIL_LIFE, 0.0, 1.0)
-			var side := dir.cross(eye).normalized() * width * (0.6 + 0.4 * life)
+			var left := clampf(1.0 - float(points[i][1]) / life, 0.0, 1.0)
+			var side := dir.cross(eye).normalized() * width * (0.6 + 0.4 * left)
 			for edge in [-1.0, 1.0]:
-				_strip.surface_set_color(Color(1.0, 1.0, 1.0, life))
+				_strip.surface_set_color(Color(1.0, 1.0, 1.0, left))
 				_strip.surface_set_uv(Vector2(along / 70.0, 0.5 + edge * 0.5))
 				_strip.surface_add_vertex(p + side * edge)
 		_strip.surface_end()

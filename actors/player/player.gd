@@ -667,7 +667,7 @@ func cast_slot(index: int) -> bool:
 		if cast.use_time > 0.0:
 			_gesture = Gesture.new(cast.use_time)
 		# Le corps, tourné vers où il marchait, fait face à la visée pour frapper.
-		model.set_state(false, facing)
+		model.face(facing)
 		# Une image de physique de plus : le geste finit sur une image de physique, jusqu'à une
 		# après son temps exact ; plus court, le corps retombait au repos une image par coup.
 		model.attack(
@@ -1740,7 +1740,7 @@ func _lunge(cast: SkillStats, prey: Hurtbox = null) -> void:
 	warp(_landing(from_value, toward - from_value.direction_to(toward) * LUNGE_REACH))
 	if global_position != toward:
 		facing = global_position.direction_to(toward)
-	LungeTrail.leave(_effects_parent(), from_value, global_position, toward)
+	LungeTrail.leave(_effects_parent(), from_value, global_position, toward, cast.nature)
 	var blow := _lunge_blow(cast, prey, from_value.distance_to(global_position))
 	# La Fente : ce que le bond traverse, sans relance — seule la cible en donne une.
 	if cast.lunge_path > 0.0:
@@ -1884,9 +1884,8 @@ func _finish_off(cast: SkillStats) -> void:
 	var parts := blow.roll(Game.rng)
 	var at := prey.global_position
 	Targets.strike(prey, parts, global_position, states, blow, cast.knockback)
-	var tint: Color = DamageType.COLORS[blow.nature]
 	ThrustTrail.leave(_effects_parent(), global_position, at, blow.nature, ThrustTrail.HEAVY_WIDTH, false)
-	GraceMark.carve(_effects_parent(), at, tint)
+	GraceMark.carve(_effects_parent(), at, blow.nature)
 	# Le Point final : à pleines charges, le coup éclate autour de sa cible ; l'Épilogue y
 	# garde le seuil d'achèvement.
 	if cast.final_point > 0.0 and charges >= SkillStats.FINAL_CHARGES:
@@ -1897,7 +1896,7 @@ func _finish_off(cast: SkillStats) -> void:
 		for near in Targets.in_circle(get_world_3d(), at, SkillStats.FINAL_RADIUS):
 			if near != prey:
 				Targets.strike(near, shards, at, states, blast)
-		FinalBurst.burst(_effects_parent(), at, SkillStats.FINAL_RADIUS, tint)
+		FinalBurst.burst(_effects_parent(), at, SkillStats.FINAL_RADIUS, blow.nature)
 	if cast.dread > 0.0 and enemy != null and enemy.is_dead:
 		for near in Targets.in_circle(get_world_3d(), at, SkillStats.DREAD_REACH):
 			var neighbour := near.get_parent() as Enemy

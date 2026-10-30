@@ -283,7 +283,7 @@ func _begin(toward: Vector3, blow: Callable) -> void:
 	_to_impact = _cast.period * model.impact_of("attack")
 	_blow = blow.bind(toward)
 	velocity = Vector3.ZERO
-	model.set_state(false, toward)
+	model.face(toward)
 	model.attack(false, _cast.period)
 
 

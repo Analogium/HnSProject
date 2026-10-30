@@ -91,32 +91,26 @@ static var _sword_fit := Transform3D.IDENTITY
 ## `duration`, le temps du geste. La Frappe lourde jette aussi son impact. **Posé dans le monde** où et vers où
 ## le coup part : sous la visée, la trace, plus longue que le coup, tournait avec la souris une fois le coup fini.
 static func swing(host: Node3D, nature: int, reach: float, duration: float, style: int) -> void:
-	var at := _holder(host, host.global_position)
+	var at := laid(host, host.global_position)
 	at.global_basis = host.global_basis
 	var life := duration + FADE
 	match style:
 		SwingArc.Style.STRIKE:
-			var arc := _ribbon(at, _sector(OVERHEAD.x, OVERHEAD.y), nature, duration * 0.6, FADE)
+			var arc := ribbon(at, sector(OVERHEAD.x, OVERHEAD.y), nature, duration * 0.6, FADE)
 			arc.basis = Basis(Vector3.RIGHT, -PI * 0.5).scaled(Vector3.ONE * (reach + BLADE))
 			arc.position.y = OVERHEAD_LIFT
 			impact(host, at.to_global(Vector3.RIGHT * (reach + BLADE * 0.5)), nature, reach)
 		SwingArc.Style.CROSS:
-			var face := Node3D.new()
-			at.add_child(face)
-			face.position = Vector3(reach, CROSS_LIFT, 0.0)
-			var camera := host.get_viewport().get_camera_3d()
-			if camera != null:
-				face.global_basis = camera.global_basis
+			var crossing := at.to_global(Vector3(reach, CROSS_LIFT, 0.0))
 			for i in 2:
 				var side := 1.0 if i == 0 else -1.0
-				var cut := _ribbon(face, _strip(), nature, duration * 0.3, FADE + duration * 0.3, duration * 0.3 * i)
-				cut.basis = Basis(Vector3.BACK, CROSS_TURN * side) * Basis(Vector3.RIGHT, PI * 0.5) \
-						* Basis.from_scale(Vector3((reach + BLADE) * CROSS_LENGTH, 1.0, CROSS_WIDTH))
+				slit(host, crossing, nature, CROSS_TURN * side, (reach + BLADE) * CROSS_LENGTH, CROSS_WIDTH,
+						duration * 0.3, FADE + duration * 0.3, duration * 0.3 * i)
 			at.get_tree().create_timer(duration * 0.6).timeout.connect(
-				func() -> void: glint(at, face.global_position, nature, CROSS_GLINT))
+				func() -> void: glint(at, crossing, nature, CROSS_GLINT))
 			life += duration * 0.3
 		_:
-			var arc := _ribbon(at, _sector(-SWING_HALF, SWING_HALF), nature, duration, FADE)
+			var arc := ribbon(at, sector(-SWING_HALF, SWING_HALF), nature, duration, FADE)
 			arc.scale = Vector3.ONE * (reach + BLADE)
 			arc.position.y = ElementFx.LIFT
 	at.get_tree().create_timer(life + 0.05).timeout.connect(at.queue_free)
@@ -150,20 +144,35 @@ static func blast(host: Node3D, at: Vector3, radius: float, blood := false) -> v
 ## Un fuseau droit de `from` à `to` (l'estoc, la ruée, une entaille), à hauteur de lame : la tête le parcourt
 ## en `sweep`, puis il se ronge en `fade`.
 static func cut(host: Node3D, from: Vector3, to: Vector3, nature: int, width: float, sweep: float, fade: float) -> void:
-	var holder := _holder(host, (from + to) * 0.5)
+	var holder := laid(host, (from + to) * 0.5)
 	var span := to - from
-	var line := _ribbon(holder, _strip(), nature, sweep, fade)
+	var line := ribbon(holder, _strip(), nature, sweep, fade)
 	line.basis = Basis(Vector3.UP, -Flat.angle(span)) * Basis.from_scale(Vector3(maxf(span.length(), 1.0), 1.0, width))
 	line.position.y = ElementFx.LIFT
 	holder.get_tree().create_timer(sweep + fade + 0.05).timeout.connect(holder.queue_free)
 
 
+## Une entaille debout face à la caméra en `at`, tournée de `turn`, de `length` sur `width` (une branche de la
+## croix, l'entaille du Vive lame) : la tête la parcourt en `sweep` après `delay`, puis elle se ronge en `fade`.
+static func slit(
+	host: Node3D, at: Vector3, nature: int, turn: float, length: float, width: float, sweep: float, fade: float,
+	delay := 0.0
+) -> void:
+	var face := laid(host, at)
+	var camera := host.get_viewport().get_camera_3d()
+	if camera != null:
+		face.global_basis = camera.global_basis
+	var cut := ribbon(face, _strip(), nature, sweep, fade, delay)
+	cut.basis = Basis(Vector3.BACK, turn) * Basis(Vector3.RIGHT, PI * 0.5) * Basis.from_scale(Vector3(length, 1.0, width))
+	face.get_tree().create_timer(delay + sweep + fade + 0.05).timeout.connect(face.queue_free)
+
+
 ## Une croix brève en `at`, de `size` pixels : la ruée qui taille ce qu'elle traverse.
 static func nick(host: Node3D, at: Vector3, nature: int, size: float) -> void:
-	var holder := _holder(host, at)
+	var holder := laid(host, at)
 	var turn := randf() * TAU
 	for i in 2:
-		var line := _ribbon(holder, _strip(), nature, 0.05, 0.16, 0.04 * i)
+		var line := ribbon(holder, _strip(), nature, 0.05, 0.16, 0.04 * i)
 		line.basis = Basis(Vector3.UP, turn + PI * 0.5 * i) * Basis.from_scale(Vector3(size, 1.0, size * 0.3))
 		line.position.y = ElementFx.LIFT
 	holder.get_tree().create_timer(0.3).timeout.connect(holder.queue_free)
@@ -171,7 +180,7 @@ static func nick(host: Node3D, at: Vector3, nature: int, size: float) -> void:
 
 ## L'arc du bond, de `from` à `to` : un ruban couché qui suit la course en l'air, puis se ronge.
 static func arch(host: Node3D, from: Vector3, to: Vector3, nature: int, width: float) -> void:
-	var holder := _holder(host, from)
+	var holder := laid(host, from)
 	var span := to - from
 	var height := minf(span.length() * 0.35, 40.0)
 	var side := Flat.orthogonal(span).normalized() if span.length() > 0.1 else Vector3.FORWARD
@@ -184,7 +193,7 @@ static func arch(host: Node3D, from: Vector3, to: Vector3, nature: int, width: f
 		for edge in [0.0, 1.0]:
 			st.set_uv(Vector2(k, lerpf(0.05, 0.95, edge)))
 			st.add_vertex(p + side * width * (edge - 0.5))
-	_ribbon(holder, st.commit(), nature, 0.12, 0.35)
+	ribbon(holder, st.commit(), nature, 0.12, 0.35)
 	dust(host, from, width * 2.0)
 	holder.get_tree().create_timer(0.55).timeout.connect(holder.queue_free)
 
@@ -193,7 +202,7 @@ static func arch(host: Node3D, from: Vector3, to: Vector3, nature: int, width: f
 ## décal, qui s'efface à la fin.
 static func furrow(host: Node3D, from: Vector3, to: Vector3, width: float, life: float) -> void:
 	var span := to - from
-	var holder := _holder(host, (from + to) * 0.5)
+	var holder := laid(host, (from + to) * 0.5)
 	var scar := Decal.new()
 	scar.texture_albedo = FURROW
 	scar.upper_fade = 0.5
@@ -215,7 +224,7 @@ static func whirl(host: Node3D, nature: int, radius: float) -> Whirl:
 	var fx := Whirl.new()
 	host.add_child(fx)
 	for i in WHIRL_BLADES:
-		var blade := _ribbon(fx, _sector(-WHIRL_ARC * 0.5, WHIRL_ARC * 0.5), nature, 0.0, 0.0)
+		var blade := ribbon(fx, sector(-WHIRL_ARC * 0.5, WHIRL_ARC * 0.5), nature, 0.0, 0.0)
 		blade.set_instance_shader_parameter(&"head", 1.0)
 		blade.set_instance_shader_parameter(&"boost", WHIRL_BOOST)
 		blade.rotation.y = TAU * float(i) / float(WHIRL_BLADES)
@@ -235,7 +244,7 @@ static func whirl(host: Node3D, nature: int, radius: float) -> Whirl:
 ## pointe.
 static func wave(host: Node3D, nature: int, radius: float) -> MeshInstance3D:
 	var arc := MeshInstance3D.new()
-	arc.mesh = _sector(-WAVE_HALF, WAVE_HALF, WAVE_INNER, Vector2(0.0, 1.0))
+	arc.mesh = sector(-WAVE_HALF, WAVE_HALF, WAVE_INNER, Vector2(0.0, 1.0))
 	arc.material_override = wave_material(nature)
 	arc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	arc.set_instance_shader_parameter(&"dissolve", 1.0)
@@ -273,15 +282,8 @@ static func release(node: GeometryInstance3D, gone := WAVE_GONE) -> void:
 ## ronde tourne autour de son porteur ; posée dans le monde, la traînée se courbait quand il marchait). Sa
 ## pointe va vers le -Z du nœud rendu, le plat vers le ciel.
 static func sword(parent: Node3D, host: Node3D, nature: int, frame: Node3D = null) -> Node3D:
-	var holder := Node3D.new()
+	var holder := bare_sword(parent)
 	holder.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	parent.add_child(holder)
-	for part: Array in sword_parts():
-		var body := MeshInstance3D.new()
-		body.mesh = part[0]
-		body.transform = _sword_fit * (part[1] as Transform3D)
-		body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		holder.add_child(body)
 	var trail := BoltFx.Trail.new()
 	trail.material_override = trail_material(nature)
 	trail.width = 2.5
@@ -289,6 +291,20 @@ static func sword(parent: Node3D, host: Node3D, nature: int, frame: Node3D = nul
 	trail.frame = frame
 	host.get_viewport().add_child(trail)
 	ElementFx.veil_like(trail, host)
+	return holder
+
+
+## L'épée du modèle seule, à `SWORD_LENGTH`, sous `parent` : pointe vers -Z, le plat vers le ciel. Les couteaux
+## du Vive lame la réduisent (`BladeFx`).
+static func bare_sword(parent: Node) -> Node3D:
+	var holder := Node3D.new()
+	parent.add_child(holder)
+	for part: Array in sword_parts():
+		var body := MeshInstance3D.new()
+		body.mesh = part[0]
+		body.transform = _sword_fit * (part[1] as Transform3D)
+		body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		holder.add_child(body)
 	return holder
 
 
@@ -343,7 +359,7 @@ static func glint(host: Node3D, at: Vector3, nature: int, size := GLINT_SIZE) ->
 
 ## L'onde de poussière couchée en `at`, jusqu'à `radius`.
 static func dust(host: Node3D, at: Vector3, radius: float) -> void:
-	var holder := _holder(host, at)
+	var holder := laid(host, at)
 	var ring := IceNovaFx.flat(holder, dust_material(), radius, DangerZone.LIFT + 0.5)
 	ring.rotation.y = randf() * TAU
 	ElementFx.veil_like(ring, host)
@@ -360,7 +376,7 @@ static func dust(host: Node3D, at: Vector3, radius: float) -> void:
 
 ## L'air poussé par le coup, sur son front.
 static func warp(host: Node3D, at: Vector3, radius: float, nature: int) -> void:
-	var holder := _holder(host, at)
+	var holder := laid(host, at)
 	var air := IceNovaFx.flat(holder, IceNovaFx.material(IceNovaFx.WARP, nature), radius * 1.4, DangerZone.LIFT + 0.8)
 	ElementFx.veil_like(air, host)
 	var tween := holder.create_tween()
@@ -373,7 +389,7 @@ static func warp(host: Node3D, at: Vector3, radius: float, nature: int) -> void:
 
 ## Le sol frappé en décal (`texture`, le cratère ou le sang), qui épouse le relief et s'efface.
 static func crater(host: Node3D, at: Vector3, radius: float, texture: Texture2D) -> void:
-	var holder := _holder(host, at)
+	var holder := laid(host, at)
 	var mark := Decal.new()
 	mark.texture_albedo = texture
 	mark.upper_fade = 0.5
@@ -391,7 +407,7 @@ static func crater(host: Node3D, at: Vector3, radius: float, texture: Texture2D)
 
 ## Des mottes de terre qui jaillissent de `at` et retombent, éclairées comme le sol.
 static func clods(host: Node3D, at: Vector3, radius: float, m: Material = null) -> void:
-	var holder := _holder(host, at)
+	var holder := laid(host, at)
 	var count := clampi(roundi(CLODS * sqrt(radius / 30.0)), 6, 30)
 	var lumps := IceNovaFx.multimesh(holder, _pebble(), count, m if m != null else _clod_material())
 	ElementFx.veil_like(lumps, host)
@@ -415,7 +431,7 @@ static func clods(host: Node3D, at: Vector3, radius: float, m: Material = null) 
 
 ## Un ruban de `mesh` sous `parent`, que la tête parcourt de 0 au bout en `sweep` après `delay`, puis qui se
 ## ronge en `fade`. Sans `sweep`, il reste tel quel : son porteur le règle.
-static func _ribbon(parent: Node3D, mesh: Mesh, nature: int, sweep: float, fade: float, delay := 0.0) -> MeshInstance3D:
+static func ribbon(parent: Node3D, mesh: Mesh, nature: int, sweep: float, fade: float, delay := 0.0) -> MeshInstance3D:
 	var node := MeshInstance3D.new()
 	node.mesh = mesh
 	node.material_override = slash_material(nature)
@@ -438,7 +454,7 @@ static func _ribbon(parent: Node3D, mesh: Mesh, nature: int, sweep: float, fade:
 
 
 ## Posé à la racine du viewport en `at` : ce qui reste où le coup a porté.
-static func _holder(host: Node3D, at: Vector3) -> Node3D:
+static func laid(host: Node3D, at: Vector3) -> Node3D:
 	var holder := Node3D.new()
 	holder.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	host.get_viewport().add_child(holder)
@@ -451,7 +467,7 @@ static func _holder(host: Node3D, at: Vector3) -> Node3D:
 ## Un croissant de rayon 1 couché autour de +X, de `from` à `to` (UV.x le long, la tête au bout), son bord
 ## intérieur à `inner` ; UV.y va de `rows.x` (dedans) à `rows.y` (dehors) : pour la traînée, la photo y met sa
 ## ligne claire près du bord extérieur, là où la pointe de la lame passe le plus vite.
-static func _sector(from: float, to: float, inner := INNER, rows := Vector2(0.95, 0.3)) -> ArrayMesh:
+static func sector(from: float, to: float, inner := INNER, rows := Vector2(0.95, 0.3)) -> ArrayMesh:
 	var key := "sector %s %s %s %s" % [from, to, inner, rows]
 	if not _meshes.has(key):
 		var st := SurfaceTool.new()

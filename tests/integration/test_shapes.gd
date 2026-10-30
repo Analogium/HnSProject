@@ -1678,6 +1678,22 @@ func test_planted_blades_are_torn_out_by_the_coup_de_grace() -> void:
 	assert_null(PlantedKnives.of(prey), "arrachées")
 
 
+
+## Sous la Perce-armure, le couteau traverse — et laisse une lame dans chaque corps qu'il touche.
+func test_a_piercing_knife_plants_a_blade_in_each_body() -> void:
+	_learn_swift("throwing_knives", ["whetting", "whetting", "planted_blade", "taut_throw", "armor_piercer"])
+	var first := _target(Vector3(30, 0.0, 0))
+	var second := _target(Vector3(60, 0.0, 0))
+	await wait_physics_frames(2)
+	assert_true(Gestures.cast(_p, 2))
+	await wait_seconds(0.4)
+	assert_gt(_hits(second), 0, "traversé, le couteau va au suivant")
+	for prey in [first, second]:
+		var knives := PlantedKnives.of(prey)
+		assert_not_null(knives, "une lame dans chaque corps")
+		if knives != null:
+			assert_eq(knives.get_child_count(), knives.count, "et chacune se voit")
+
 ## Le Retour de lame : en bout de course, le couteau revient et refrappe.
 func test_a_returning_blade_strikes_again() -> void:
 	_learn_swift("throwing_knives", ["taut_throw", "taut_throw", "return_blade"])
@@ -5156,6 +5172,26 @@ func test_sleet_shards_curve_toward_an_enemy() -> void:
 	assert_true(Gestures.cast(_p, 2))
 	await wait_seconds(IceSpikes.LIFETIME + 0.6)
 	assert_eq(_hits(aside), 1)
+
+
+
+## La traque (Grésil, Lame chercheuse, Vecteur) touche sa proie, quelle que soit la vitesse du tir : au
+## virage borné, un tir rapide lui tournait autour, et un pas trop long sautait par-dessus.
+func test_a_seeking_shot_hits_its_prey_at_any_speed() -> void:
+	for speed in [200.0, 3000.0]:
+		var prey := _target(_p.global_position + Vector3(50, 0.0, 30))
+		var cast := SkillStats.new()
+		cast.seek_radius = 80.0
+		var parts := DamageType.empty_parts()
+		parts[DamageType.Kind.PHYSICAL] = 1.0
+		Projectile.spawn(
+			_effects, load("res://actors/projectiles/player_knife.tscn"), _p.global_position, Vector3.RIGHT,
+			parts, _p, speed, DamageType.Kind.PHYSICAL, cast
+		)
+		await wait_seconds(0.7)
+		assert_eq(_hits(prey), 1, "à %d px/s" % speed)
+		prey.queue_free()
+		await wait_physics_frames(1)
 
 
 # --------------------------------------------------------------------------

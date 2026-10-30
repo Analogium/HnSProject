@@ -77,6 +77,10 @@ static func light(player: Player, skill: Skill, lifetime := 0.0, binds := false)
 		WitchFx.amplify(buff, skill.nature)
 	elif skill.stack_trigger == Skill.StackTrigger.ALTERNATION:
 		WitchFx.harmony(buff)
+	elif skill.id == SkillStats.FRENZY_SKILL:
+		BladeFx.frenzy(buff)
+	elif skill.id == SkillStats.COUNTER_SKILL:
+		BladeFx.guard(buff)
 	elif skill.id not in BARE:
 		var reach := SkillStats.AURA_REACH if skill.shape == Skill.Shape.AURA else HALO_SPARKS
 		ElementFx.area(buff, DamageType.COLORS[skill.nature], reach)

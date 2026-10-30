@@ -165,11 +165,12 @@ func setup(
 
 
 func _physics_process(delta: float) -> void:
+	var step := speed * delta
 	if _cast != null and _cast.lightning_rod > 0.0:
 		_home(delta)
 	elif _cast != null and (_cast.seek_radius > 0.0 or _cast.vector > 0.0):
-		_seek(delta)
-	global_position += _dir * speed * delta
+		step = _seek(step)
+	global_position += _dir * step
 	_life += delta
 	if _life >= lifetime:
 		_finish()
@@ -294,16 +295,23 @@ func _home(delta: float) -> void:
 
 ## Le Grésil (jalon 44) : vers l'ennemi non frappé le plus proche, gardé jusqu'à ce qu'il
 ## soit frappé ou mort. Le Vecteur de la Peste (jalon 45) : vers le plus proche **sain**,
-## lâché dès qu'il se décompose.
-func _seek(delta: float) -> void:
+## lâché dès qu'il se décompose. **Droit sur sa proie, et jamais au-delà** : le pas rendu
+## s'arrête sur elle. Au virage borné du Paratonnerre, un couteau à 460 px/s tournait sur 51 px
+## et passait à côté d'une proie plus proche ; à toute vitesse, un pas sautait par-dessus.
+func _seek(step: float) -> float:
 	var healthy := StatusEffects.Kind.DECAY if _cast.vector > 0.0 else -1
 	if not is_instance_valid(_quarry) or _struck.has(_quarry.get_instance_id()) \
 			or (healthy >= 0 and _quarry.has_state(healthy)):
 		_quarry = Targets.nearest(
 			get_world_3d(), global_position, maxf(_cast.seek_radius, _cast.vector), _struck, true, healthy
 		)
-	if _quarry != null:
-		_steer(_quarry.global_position, delta)
+	if _quarry == null:
+		return step
+	var toward := Flat.xz(_quarry.global_position - global_position)
+	if toward.length() < 0.01:
+		return 0.0
+	_dir = Vector3(toward.x, 0.0, toward.y).normalized()
+	return minf(step, toward.length())
 
 
 func _steer(toward: Vector3, delta: float) -> void:

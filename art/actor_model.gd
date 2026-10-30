@@ -153,9 +153,18 @@ func set_state(moving: bool, facing: Vector3) -> void:
 		return
 	if _attacking or _spinning:
 		return
-	if facing.length_squared() >= 0.01:
-		rotation.y = atan2(facing.x, facing.z)
+	face(facing)
 	_play(WALK if moving else REST)
+
+
+## Le départ d'un geste : le corps fait face à `facing`, **même verrouillé**. Un geste qui en enchaîne un
+## autre (la touche tenue) part sur la dernière image du précédent, que `set_state()` ignorait : le corps
+## rejouait son coup tourné vers l'ancienne visée.
+func face(facing: Vector3) -> void:
+	if sprite != null:
+		sprite.face(facing)
+	elif facing.length_squared() >= 0.01:
+		rotation.y = atan2(facing.x, facing.z)
 
 
 ## Le Cyclone allumé ou éteint, et la vitesse de sa boucle (la vitesse d'attaque : les pieds piétinent au

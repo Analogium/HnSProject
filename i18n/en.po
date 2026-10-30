@@ -7435,8 +7435,8 @@ msgstr "From one thrust to the next, crit chance climbs faster: each added {part
 msgid "Insistance"
 msgstr "Insistence"
 
-msgid "Un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
-msgstr "A thrust that hits the same target as the previous one hits harder, and the next harder still."
+msgid "Dans une même Rafale, un estoc qui frappe la même cible que le précédent frappe plus fort, et le suivant encore plus."
+msgstr "Within a single Flurry, a thrust that hits the same target as the previous one hits harder, and the next harder still."
 
 msgid "Pression"
 msgstr "Pressure"
@@ -7609,8 +7609,8 @@ msgstr "Each knife caught back restores mana."
 msgid "Lame plantée"
 msgstr "Planted Blade"
 
-msgid "Un couteau qui s'arrête dans un ennemi y reste planté {duree_plantee} s, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
-msgstr "A knife that stops in an enemy stays planted for {duree_plantee} s, {plantees_max} at most; Coup de Grâce tears them out, {part_plantee}% more damage per blade."
+msgid "Chaque ennemi que touche un couteau en garde une lame plantée {duree_plantee} s, même s'il le traverse, {plantees_max} au plus ; le Coup de grâce les arrache, +{part_plantee} % de dégâts plus par lame."
+msgstr "Every enemy a knife hits keeps a planted blade for {duree_plantee} s, even if the knife passes through, {plantees_max} at most; Coup de Grâce tears them out, {part_plantee}% more damage per blade."
 
 msgid "Ancrage"
 msgstr "Anchorage"

@@ -86,7 +86,7 @@ func set_weapon(kind: String) -> void:
 func set_state(moving: bool, facing: Vector3) -> void:
 	if _attacking:
 		return
-	_face(facing)
+	face(facing)
 	_anim = "walk" if moving else "idle"
 	_apply()
 
@@ -146,7 +146,7 @@ func _rebuild() -> void:
 	_apply()
 
 
-func _face(facing: Vector3) -> void:
+func face(facing: Vector3) -> void:
 	if facing.length_squared() < 0.01:
 		return
 	if absf(facing.x) > absf(facing.z) * SIDE_BIAS:

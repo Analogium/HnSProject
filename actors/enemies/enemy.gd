@@ -297,7 +297,7 @@ func _strike(facing: Vector3, blow := Callable(), action := action_time()) -> vo
 	_acting = action
 	_to_impact = action * model.impact_of("attack")
 	_blow = blow
-	model.set_state(false, facing)
+	model.face(facing)
 	model.attack(false, action)
 
 
